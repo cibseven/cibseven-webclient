@@ -1,7 +1,8 @@
+/target/
 /.settings/
+/.classpath
 /.project
-.vscode/
-
-**/Chart.lock
-**/charts/
-*.tgz
+/bin/
+/.springBeans
+/build/
+/src/main/resources/seven-webclient.yaml
