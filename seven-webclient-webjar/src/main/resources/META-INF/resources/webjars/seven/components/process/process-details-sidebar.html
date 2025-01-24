@@ -1,0 +1,130 @@
+<div class="h-100 d-flex flex-column bg-light">
+	<div class="overflow-auto h-100">
+		<b-button style="top: 2px; right: 60px" class="border-0 position-absolute"
+			variant="btn-outline-primary" size="sm" :disabled="loading" :title="$t('process.loadVersions')" 
+			@click="lazyLoadHistory = false; getVersions(lazyLoadHistory); $emit('load-instances')">
+			<span class="mdi mdi-18px mdi-cog-refresh-outline"></span>
+		</b-button>
+		<b-button style="top: 2px; right: 30px" class="border-0 position-absolute"
+			variant="btn-outline-primary" size="sm" :disabled="loading" :title="$t('process.refreshVersions')" 
+			@click="getVersions(lazyLoadHistory); $emit('load-instances')">
+			<span class="mdi mdi-18px mdi-refresh"></span>
+		</b-button>
+		<b-list-group class="mx-3 mb-3">
+			<b-list-group-item @click="selectedVersion = version.id; $emit('load-version-process', version)" v-for="version of versions" :key="version.id" 
+			class="rounded-0 mt-3 p-2 bg-white border-0" :class="version.id === selectedVersion ? 'active shadow' : ''" style="cursor: pointer">
+				<b-button v-if="processByPermissions($root.config.permissions.deleteProcessDefinition, version)" @click.stop="showConfirm({ ok: deleteProcessDefinition, version: version })"
+					variant="link" class="border-0 shadow-none position-absolute px-2 text-danger" style="bottom: 5px; right: 0" :title="$t('process.deleteProcessDefinition')">
+					<span class="mdi mdi-18px mdi-delete-outline"></span>
+				</b-button>
+				<div class="d-flex align-items-center">
+					<h6 style="font-size: 1rem">
+						<span class="font-weight-bold">{{ $t('process.details.definitionVersion') + ': ' + version.version }}</span>
+					</h6>
+					<div class="d-flex ms-auto" :id="version.id">
+						<span class="mdi mdi-18px mdi-information-outline text-info"></span>
+					</div>
+				</div>
+				<div class="mb-1">
+					<div class="mb-1">{{ $t('process.details.unfinishedInstances') + ': ' + version.runningInstances }}</div>
+					<div>{{ $t('process.details.totalInstances') + ': ' + version.allInstances }}</div>
+				</div>							
+				<b-popover :target="version.id" triggers="hover" placement="right" boundary="viewport" max-width="350px">
+			  		<div class="row">
+			  			<span class="text-secondary font-weight-bold col-8 pe-0">{{ $t('process.details.versionTag') }}</span>
+			  			<span class="col-4 text-end">{{ process.versionTag }}</span>
+			  		</div>
+			  		<hr class="my-2">
+					<div class="row">
+						<span class="text-secondary font-weight-bold col-12">
+							{{ $t('process.details.definitionId') }}
+							<button @click="copyValueToClipboard(version.id)" class="btn btn-sm mdi mdi-content-copy float-end" 
+								:title="$t('process.details.copyValue')"></button>
+						</span>
+						<span class="col-12">{{ version.id }}</span>
+					</div>
+					<hr class="my-2">
+					<div class="row">
+						<span class="text-secondary font-weight-bold col-12">
+							{{ $t('process.details.definitionKey') }}
+							<button @click="copyValueToClipboard(version.key)" class="btn btn-sm mdi mdi-content-copy float-end" 
+								:title="$t('process.details.copyValue')"></button>
+						</span>
+						<span class="col-12">{{ version.key }}</span>
+					</div>
+					<hr class="my-2">
+					<div class="row">
+						<span class="text-secondary font-weight-bold col-12">
+							{{ $t('process.details.definitionName') }}
+							<button @click="copyValueToClipboard(version.name)" class="btn btn-sm mdi mdi-content-copy float-end" 
+								:title="$t('process.details.copyValue')"></button>
+						</span>
+						<span class="col-12">{{ version.name }}</span>
+					</div>
+					<hr class="my-2">
+					<div class="row">
+						<span class="text-secondary font-weight-bold col-12">
+							{{ $t('process.details.deploymentId') }}
+							<button @click="copyValueToClipboard(process.deploymentId)" class="btn btn-sm mdi mdi-content-copy float-end" 
+								:title="$t('process.details.copyValue')"></button>
+						</span>
+						<span class="col-12">{{ process.deploymentId }}</span>
+					</div>
+					<hr class="my-2">
+					<div class="row">
+						<span class="text-secondary font-weight-bold col-12">
+							{{ $t('process.details.historyTimeToLive') }}
+							<button @click="copyValueToClipboard(process.historyTimeToLive)" class="btn btn-sm mdi mdi-content-copy float-end" 
+								:title="$t('process.details.copyValue')"></button>
+							<button @click="editHistoryTimeToLive()" class="btn btn-sm mdi mdi-pencil float-end" 
+								:title="$t('process-instance.edit')"></button>
+						</span>
+						<span class="col-12">{{ process.historyTimeToLive + ' ' + $t('process.days') }}</span>
+					</div>
+					<hr class="my-2">
+					<div class="row">
+						<span class="text-secondary font-weight-bold col-5 pe-0">{{ $t('process.details.firstStart') }}</span>
+						<span class="col-7 text-end">{{ getDate('min') }}</span>
+					</div>
+					<hr class="my-2">
+					<div class="row">
+						<span class="text-secondary font-weight-bold col-5 pe-0">{{ $t('process.details.lastStart') }}</span>
+						<span class="col-7 text-end">{{ getDate('max') }}</span>
+					</div>
+					<hr class="my-2">
+					<div class="row align-items-center">
+						<span class="text-secondary font-weight-bold col-8 pe-0">{{ $t('process.details.unfinishedInstances') }}</span>
+						<span class="col-4 text-end">{{ version.runningInstances }}</span>
+					</div>
+					<hr class="my-2">
+					<div class="row align-items-center">
+						<span class="text-secondary font-weight-bold col-8 pe-0">{{ $t('process.details.totalInstances') }}</span>
+						<span class="col-4 text-end">{{ version.allInstances }}</span>
+					</div>
+					<hr class="my-2">
+					<div class="row align-items-center">
+						<span class="text-secondary font-weight-bold col-8 pe-0">{{ $t('process.details.finishedInstances') }}</span>
+						<span class="col-4 text-end">{{ version.completedInstances }}</span>
+					</div>
+			  	</b-popover>
+			</b-list-group-item>
+		</b-list-group>
+	</div>
+	<b-modal ref="historyTimeToLive" :title="$t('process.details.historyTimeToLive')">
+		<div class="d-flex col-6 align-items-center ps-0">
+	 		<input class="form-control" type="number" v-model="historyTimeToLive">
+	 		<span class="ms-2">{{ $t('process.days') }}</span>
+		</div>
+   		<template v-slot:modal-footer>
+			<b-button @click="$refs.historyTimeToLive.hide()" class="text-secondary" variant="link">{{ $t('confirm.cancel') }}</b-button>
+	   		<b-button @click="updateHistoryTimeToLive()" variant="primary">{{ $t('process-instance.save') }}</b-button>
+		</template>
+  	</b-modal>
+	<success ref="messageCopy"> {{ $t('process.copySuccess') }} </success>
+	<success ref="successOperation"> {{ $t('alert.successOperation') }}</success>
+	<confirm ref="confirm" @ok="$event.ok($event.version)">
+		<template v-slot="scope">
+			{{ $t('confirm.performOperation') }}
+		</template>
+	</confirm>	
+</div>

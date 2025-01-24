@@ -1,0 +1,45 @@
+<b-modal ref="assignationModal" :title="selectedIdentity.type === 'assignee' ? $t('process-instance.assignModal.manageAssignee') : $t('process-instance.assignModal.manageUsersGroups')">
+	<div class="container-fluid">
+	
+	<b-tabs content-class="mt-3" class="mb-4" title-link-class="py-1"> 
+		<b-tab v-for="(identity, idx) in filteredIdentities" :key="idx" :id="'identityTab-'+ idx" :title="$t('process-instance.assignModal.' + identity.text)" @click="selectedIdentity = identity">
+			<div v-if="hasIndentityLinks(identity)">
+				<table class="table table-striped">
+					<thead>
+						<tr>
+							<th class="col-10 border-top-0">{{ $t('process-instance.assignModal.' + identity.value) }}</th>
+							<th class="border-top-0">{{ $t('process-instance.assignModal.actions') }}</th>
+						</tr>
+					</thead>
+					<tbody>				
+						<template v-for="(identityLink, idx) in identityLinks" :key="identityLink[identity.value]">		
+							<tr v-if="identityLink[identity.value] && identityLink.type === identity.type">
+								<td class="align-middle py-1">{{ identityLink[identity.value] }}</td>
+								<td class="text-center py-1">
+									<b-button @click="removeIdentityLink(identityLink, idx)" variant="outline-secondary" 
+										class="border-0 mdi mdi-18px mdi-delete" :title="$t('process-instance.assignModal.delete')">
+									</b-button>
+								</td>
+							</tr>
+						</template>
+					</tbody>
+				</table>
+			</div>
+			<p v-else class="text-center mt-4">{{ $t('process-instance.noResults') }}</p>
+		</b-tab>
+	</b-tabs>
+
+	<b-input-group>
+	      	<b-form-input v-model="identity" @keyup.enter="addIdentity" autocomplete="off" />
+	      	<b-input-group-append>
+	        	<b-button @click="addIdentity" variant="primary" :disabled="!identity" :title="$t('process-instance.assignModal.add')">
+	        		{{ $t('process-instance.assignModal.add') }}
+        		</b-button>
+      		</b-input-group-append>
+	    </b-input-group>
+	    <p v-if="identityExists" class="mt-1 text-danger">{{ $t('process-instance.assignModal.exists') }}</p>			
+	</div>
+	<template v-slot:modal-footer>
+		<b-button v-t="'confirm.close'" @click="$refs.assignationModal.hide()"></b-button>
+	</template>
+</b-modal>

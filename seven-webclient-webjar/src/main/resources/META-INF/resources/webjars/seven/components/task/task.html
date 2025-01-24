@@ -1,0 +1,64 @@
+<div class="h-100 d-flex flex-column">
+	<div class="visually-hidden" ref="ariaLiveText" aria-live="polite"></div>
+	<div v-if="isMobile()" class="container-fluid border-top-0" style="min-height: 40px;">
+		<div v-if="task" class="row pt-2">
+			<div class="col-12">
+				<b-input-group v-if="task.assignee == null">
+					<b-input-group-prepend>
+						<span><b-button ref="assignToMeButton" variant="link" class="p-0 text-dark me-2" @click="assignee = $root.user.id"><span class="mdi mdi-18px mdi-account-question mdi-dark"></span> {{ $t('task.assignToMe') }}</b-button></span>
+					</b-input-group-prepend>
+					<filterable-select v-model:loading="loadingUsers" @enter="findUsers($event)" 
+						 @clean-elements="resetUsers($event)" v-model="assignee" :elements="$store.state.user.searchUsers" :placeholder="$t('task.assign')" noInvalidValues/>
+				</b-input-group>
+				<b-input-group v-if="task.assignee != null">
+					<b-form-tag variant="secondary" @remove="assignee = null; update()" :key="task.id" :title="getCompleteName" :remove-label="$t('task.assignedUserTitle')" class="mdi mdi-18px mdi-account">
+						{{ '  ' + getCompleteName }}
+					</b-form-tag>				
+				</b-input-group>
+			</div>
+		</div>
+	</div>
+	<div v-else class="container-fluid border-bottom border-top-0 bg-white" style="min-height: 40px;">
+		<div v-if="task" class="row py-2">
+			<div class="col-12">
+				<div class="form-inline">
+					<div class="form-group d-flex align-items-center mb-0">
+						<span ref="titleTask" tabindex="0" class="mb-0 me-4 d-inline" :is="isMobile() ? 'h6' : 'h5'">{{ task.name }}</span>
+						<span v-if="task.assignee != null">
+							<b-form-tag variant="secondary" @remove="assignee = null; update()" :key="task.id" :title="getCompleteName" :remove-label="$t('task.assignedUserTitle')" class="mdi mdi-18px mdi-account">
+								{{ '  ' + getCompleteName }}
+							</b-form-tag>
+							<!-- <span class="mdi mdi-18px mdi-account mdi-dark"></span><span class="p-1" style="line-height: initial">{{ getCompleteName }}</span> -->
+						</span>
+						<span v-if="task.assignee == null"><b-button ref="assignToMeButton" variant="link" class="p-0 text-dark me-2" @click="assignee = $root.user.id"><span class="mdi mdi-18px mdi-account-question mdi-dark"></span> {{ $t('task.assignToMe') }}</b-button></span>
+						<filterable-select v-if="task.assignee == null" v-model:loading="loadingUsers" @enter="findUsers($event)" 
+						 @clean-elements="resetUsers($event)" class="w-25" v-model="assignee" :elements="$store.state.user.searchUsers" :placeholder="$t('task.assign')" noInvalidValues/>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<div class="flex-grow-1">
+		<div class="overflow-auto shadow bg-white" style="margin: 10px; height: calc(100% - 25px)">
+			<div class="h-100 p-2">
+				<div class="h-100 position-relative" v-if="task">
+					<div v-if="(task.assignee && task.assignee.toLowerCase() !== $root.user.id.toLowerCase()) || this.task.assignee == null" 
+						class="col-12 shadow-0" style="top: 0px; left: 0px; bottom: 0px; right: 0px; cursor: not-allowed; position: absolute; z-index: 1; background-color: rgba(238,238,238,0.33)">
+					</div>
+					<render-template v-if="task" :task="task" @click.prevent class="h-100" @complete-task="$emit('complete-task', $event)" :style="renderTemplateStyles"></render-template>
+				</div>
+			</div>
+		</div>
+	</div>
+	<b-popover v-if="$root.config.layout.showPopoverHowToAssign" :target="function() { return $refs.titleTask }" :show="displayPopover && !isMobile()" placement="bottom" triggers="manual" max-width="300px">
+		<b>{{ $t('task.assignPopoverTitle') }}</b>
+		<p>{{ $t('task.assignPopoverContent') }}</p>
+		<p>{{ $t('task.assignPopoverContent2') }}</p>
+		<b-form-checkbox @input="disablePopover()">{{ $t('task.disablePopover') }}</b-form-checkbox>
+		<img :alt="$t('task.assign')" src="webjars/seven/components/task/asign_task.svg">
+	</b-popover>
+	<confirm ref="confirmTaskAssign" @ok="update()" @cancel="assignee = null">		
+		<span>{{ $t('confirm.assignUser') }}</span>		
+	</confirm>
+</div>

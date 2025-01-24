@@ -1,0 +1,26 @@
+<div class="bg-white">
+	<b-list-group>	
+		<sidebar-item class="bg-transparent" style="border-color: #0f2133!important" icon-class="mdi mdi-24px mdi-grain" :tooltip="$t('start.startProcesses')" to="/flow/auth/processes"></sidebar-item>
+		<sidebar-item class="bg-transparent" style="border-color: #0f2133!important" icon-class="mdi mdi-24px mdi-format-line-style" :tooltip="$t('start.taskList')" to="/flow/auth/tasks"></sidebar-item>
+		<sidebar-item class="bg-transparent" style="border-color: #0f2133!important" icon-class="mdi mdi-24px mdi-google-downasaur" :tooltip="$t('start.modeler')" to="/flow/auth/modeler"></sidebar-item>
+		<sidebar-item class="bg-transparent" style="border-color: #0f2133!important" icon-class="mdi mdi-24px mdi-test-tube" :tooltip="$t('start.easyForm')" to="/flow/auth/easy-form"></sidebar-item>
+		<sidebar-item class="bg-transparent" style="border-color: #0f2133!important" icon-class="mdi mdi-24px mdi-sheep" :tooltip="$t('start.resources')" to="/flow/auth/flow-resource"></sidebar-item>
+		<sidebar-item class="bg-transparent" style="border-color: #0f2133!important" icon-class="mdi mdi-24px mdi-gradient-horizontal" :tooltip="$t('start.admin')" to="/flow/auth/process-management"></sidebar-item>
+		<sidebar-dropright class="bg-transparent" icon-class="mdi mdi-24px mdi-account-cog-outline" v-b-popover.hover.right style="height: 43px">				
+			<b-dropdown-group :header="$t('start.adminPanel')" header-classes="text-secondary">				
+				<b-dropdown-item action class="border-0" to="/flow/auth/admin/users">
+				 	<span class="p-1"><span class="mdi mdi-24px mdi-account"></span></span>
+					<span>{{$t('admin.users.title')}}</span>
+				</b-dropdown-item>
+				<b-dropdown-item action class="border-0" to="/flow/auth/admin/groups">
+				 	<span class="p-1"><span class="mdi mdi-24px mdi-account-group-outline"></span></span>
+					<span>{{ $t('admin.groups.title') }}</span>
+				</b-dropdown-item>
+				<b-dropdown-item action class="border-0" to="/flow/auth/admin/authorizations">
+				 	<span class="p-1"><span class="mdi mdi-24px mdi-account-key"></span></span>
+					<span>{{ $t('admin.authorizations.title') }}</span>
+				</b-dropdown-item>			
+			</b-dropdown-group>			
+		</sidebar-dropright>	
+	</b-list-group>
+</div>

@@ -1,0 +1,9 @@
+/target/
+/.settings/
+/.classpath
+/.project
+/bin/
+/.springBeans
+/build/
+/src/main/resources/cibflow-webclient.properties
+/src/main/resources/cibflow-webclient.yaml

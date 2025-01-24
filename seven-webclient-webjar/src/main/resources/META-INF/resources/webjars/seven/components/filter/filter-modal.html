@@ -1,0 +1,91 @@
+<b-modal size="lg" scrollable ref="filterHandler" :title="$t('nav-bar.filters.addFilter')" @shown="$emit('display-popover', false)" @hidden="$emit('display-popover', true)">
+	<div class="row">
+	    <div class="col-md-8">
+        	<b-form-group label-size="sm" :label-cols="4" :label="$t('nav-bar.filters.filterNameLabel')" :invalid-feedback="$t('nav-bar.filters.filterExists')">
+            	<b-form-input size="sm" v-model="selectedFilterName" :placeholder="$t('nav-bar.filters.filterNamePlaceholder')" :state="existFilter ? false : null"></b-form-input>
+	        </b-form-group>
+	    </div>
+	    <div class="col-md-4">
+	        <b-form-group label-size="sm" :label-cols="6" :label="$t('nav-bar.filters.filterPriorityLabel')">
+	            <b-form-input size="sm" v-model="selectedFilterPriority"></b-form-input>
+	        </b-form-group>
+	    </div>
+	</div>
+	<hr>
+	<b-form-group :label-cols="12" label-class="mb-3" label-size="sm" :label="$t('nav-bar.filters.selectedCriteria')">
+		<div class="container">
+			<div class="row text-center px-3">
+				<b-form-select style="background-image: none" class="col-4" size="sm" @change="selectCriteria($event)" v-model="selectedCriteriaKey" :options="criteriasGrouped">
+					<template v-slot:first>
+						<b-form-select-option :value="null" disabled>-- {{ $t('nav-bar.filters.selectProperty') }} --</b-form-select-option>
+					</template>
+				</b-form-select>
+				<div v-if="selectedCriteriaType !== 'variable'" class="col-5 pe-0">
+					<filterable-select v-if="$store.state.user.searchUsers.length > 1 && selectedCriteriaType === 'filterable'" class="w-100" :placeholder="$t('nav-bar.filters.insertValue')"
+					v-model="selectedCriteriaValue" :elements="$store.state.user.searchUsers" noInvalidValues/>
+					<b-form-input v-else size="sm" :placeholder="$t('nav-bar.filters.insertValue')" v-model="selectedCriteriaValue"></b-form-input>
+				</div>
+				<div class="col-3 p-0">
+					<b-button v-if="!isEditing" :disabled="!selectedCriteriaKey" @click="addCriteria" size="sm" class="mdi mdi-plus" variant="secondary">{{ $t('nav-bar.filters.addCriteria') }}</b-button>
+					<div v-else>
+	    				<b-button style="opacity: 1" class="px-2 border-0 shadow-none" variant="link">
+	    				<span class="mdi mdi-18px mdi-content-save-outline" @click="updateCriteria()"></span></b-button>		    						
+						<span class="border-start h-50"></span>
+	    				<b-button style="opacity: 1" class="px-2 border-0 shadow-none" variant="link" @click="cancelEditCriteria()"><span class="mdi mdi-18px mdi-block-helper"></span></b-button>
+	    			</div>
+				</div>
+			</div>
+			<div class="row mt-2"><small class="col-12" style="color: var(--gray)">{{ $t('nav-bar.filters.legendExpression') }}</small></div>
+			<div class="row"><small class="col-12" style="color: var(--gray)">{{ $t('nav-bar.filters.legendMultiple') }}</small></div>
+			<div v-if="selectedCriteriaType === 'variable'" class="mt-4">
+				<div v-for="(criteria, index) of selectedCriteriaVariable" class="col-12 input-group px-0 pb-3">
+					<b-form-input class="rounded me-2" size="sm" :placeholder="$t('nav-bar.filters.insertVariableKey')" v-model="criteria.name"></b-form-input>
+					<b-form-select class="rounded me-2" :options="variableOperators" size="sm" v-model="criteria.operator"></b-form-select>
+					<b-form-input class="rounded me-2" size="sm" :placeholder="$t('nav-bar.filters.insertValue')" v-model="criteria.value"></b-form-input>
+					<b-button :class="index > 0 ? '': 'invisible'" variant="outline-secondary" class="mdi mdi-18px mdi-delete-outline border-0 p-0" @click="deleteProcessVariable(index)"></b-button>
+				</div>
+				<b-button size="sm" variant="outline-secondary" class="mdi mdi-18px mdi-plus-circle-outline border-0" @click="addProcessVariable()"></b-button>
+			</div>
+		</div>
+	</b-form-group>
+	
+	<div class="container-fluid border">
+		<flow-table :selectable="false" striped :items="criteriasToAdd" prefix="nav-bar.filters.criteria."
+			:fields="[{label: 'key', key: 'name', class: 'col-5'},
+					{label: 'value', key: 'value', class: 'col-5'},
+					{label: '', key: 'buttons', class: 'col-2', sortable: false, tdClass: 'py-0'}]">
+			<template v-slot:cell(value)="row">
+				<div v-if="row.item.key === 'processVariables'">
+					<div v-for="item of row.item.value" class="row g-0">
+						<div :title="item.name" class="col-5 p-0 text-truncate">{{ item.name }}</div>
+						<div class="col-2 text-center">{{ $t('nav-bar.filters.operators.' + item.operator) }}</div>
+						<div :title="item.value" class="col-5 p-0 text-truncate text-end">{{ item.value }}</div>
+					</div>
+				</div>
+				<span v-else> {{ formatCriteria(row.item.value) }} </span>
+			</template> 
+			<template v-slot:cell(buttons)="row">
+				<b-button class="p-0 border-0 mdi mdi-24px mdi-delete-outline mx-2" variant="outline-secondary" @click="deleteCriteria(row.index)"></b-button>
+				<b-button variant="outline-secondary" class="mdi mdi-18px mdi-pencil border-0 p-0 mx-2" @click="editCriteria(row.index)"></b-button>				
+			</template>
+		</flow-table>
+		<div v-if="criteriasToAdd.length < 1">
+			<img src="webjars/seven/components/task/no_tasks_pending.svg" class="d-block mx-auto mb-3" style="width: 200px">		
+			<div class="h5 text-secondary text-center">{{ $t('nav-bar.filters.noCriterias') }}</div>
+		</div>
+		<hr>
+		<b-form-checkbox v-if="existCandidateSelected" class="mb-3" v-model="includeAssigned" switch>
+			<span>{{ $t('nav-bar.filters.includeAssigned') }}</span>
+		</b-form-checkbox>
+		<b-form-checkbox class="mb-3" v-model="matchAllCriteria" name="check-button" switch>
+			<span>{{ $t('nav-bar.filters.matchAllCriteria') }}</span>
+			<!-- <span v-if="matchAllCriteria">{{ $t('nav-bar.filters.matchAllCriteria') }}</span>
+			<span v-else>{{ $t('nav-bar.filters.matchAnyCriteria') }}</span> -->
+		</b-form-checkbox>
+	</div>
+	
+   	<template v-slot:modal-footer>
+		<b-button @click="$refs.filterHandler.hide()" class="text-secondary" variant="link">{{ $t('confirm.cancel') }}</b-button>
+		<b-button @click="createFilter" :disabled="checkValidity" variant="primary">{{ mode === 'create' ? $t('nav-bar.filters.addFilter') : $t('nav-bar.filters.updateFilter') }}</b-button>
+	</template>
+</b-modal>

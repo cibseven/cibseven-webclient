@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" monitorInterval="30">
+	<Properties>
+		<Property name="defaultFormat">%5p %d{dd.MM.yy HH:mm:ss} [%t] [%c] [seven-webclient] %m%n
+		</Property>
+	</Properties>
+	<Appenders>
+		<Console name="console" target="SYSTEM_OUT">
+			<PatternLayout pattern="${defaultFormat}" />
+		</Console>
+	</Appenders>
+	<Loggers>
+		<Root level="INFO">
+			<AppenderRef ref="console" />
+		</Root>
+		<Logger name="org.cibseven" level="INFO">
+			<AppenderRef ref="console" />
+		</Logger>
+	</Loggers>
+</Configuration>

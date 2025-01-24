@@ -1,0 +1,46 @@
+<div>
+	<cib-form @submitted="onLogin">
+		<b-form-group label-cols="4" :label="$t('login.username')" :invalid-feedback="$t('errors.invalid')">
+			<input ref="username" v-model="credentials.username" name="username" class="form-control" required autofocus autocomplete="username">			
+		</b-form-group>
+		<b-form-group label-cols="4" :label="$t('login.username')" style="opacity: 0; position: absolute; top: 0; left: 0; height: 0; width: 0">
+			<input ref="lastname" v-model="credentials.lastname" name="cibflow-lastname" tabindex="-1">			
+		</b-form-group>
+		<b-form-group label-cols="4" :label="$t('login.password')">
+			<secure-input ref="password" v-model="credentials.password" class="col-8" required></secure-input>					
+		</b-form-group>
+		
+		<slot></slot>
+		
+		<div class="d-flex justify-content-between">
+			<div class="form-group float-left">
+				<b-form-checkbox v-model="rememberMe">{{ $t('login.rememberMe') }}</b-form-checkbox>
+			</div>
+			<div v-if="!hideForgotten" class="form-group float-right">
+				<a v-t="'login.forgotten'" class="text-primary" style="cursor:pointer" @click="$refs.passwordModal.show()"></a>		
+			</div>
+		</div>
+		
+		<div class="form-group">
+			<button type="submit" class="btn btn-primary btn-block w-100" v-t="'login.login'"></button>
+		</div>	
+		<div v-if="onRegister" class="form-group text-center">
+			{{ $t('login.register') }}
+			<a @click="onRegister" v-t="'login.registerLink'" class="text-primary" style="cursor:pointer"></a>		
+		</div>		
+	</cib-form>
+	
+	<otp-dialog ref="otpDialog" :credentials2="credentials2" :remember-me="rememberMe" @success="$emit('success', $event)"></otp-dialog>
+	<reset-dialog ref="resetDialog" :credentials2="credentials2" @success="$refs.emailSent.show(true)"></reset-dialog>
+	<success ref="emailSent">{{ $t('login.emailSent', [email]) }}</success>
+	<password-recover ref="passwordModal"></password-recover>
+</div>
+
+<!-- https://getbootstrap.com/docs/4.0/components/forms/#how-it-works -->
+<!-- https://getbootstrap.com/docs/4.0/utilities/clearfix/ -->
+<!-- https://getbootstrap.com/docs/4.0/utilities/spacing/ -->
+<!-- https://getbootstrap.com/docs/4.0/utilities/borders/ -->
+<!-- https://getbootstrap.com/docs/4.0/utilities/text/#text-alignment -->
+<!-- https://bootstrap-vue.js.org/docs/components/form-checkbox -->
+<!-- https://bootstrap-vue.js.org/docs/components/form-group/ -->
+<!-- https://bootstrap-vue.js.org/docs/components/modal -->

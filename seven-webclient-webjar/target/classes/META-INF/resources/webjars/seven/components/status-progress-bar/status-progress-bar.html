@@ -1,0 +1,15 @@
+<div>
+	<ul :style="style">
+       	<template v-for="st in statusData">
+            <div class="status-progress-bar-item" :class="getClasses(st)">
+            	<div tabindex="0" class="d-flex justify-content-between">
+            		<div class="h5 mb-0">{{ st.title }} 
+            			<span class="sr-only">{{ $t('status-progress.state') + ': ' + $t('status-progress.stateOptions.' + st.status) }}</span>
+            		</div>
+            		<span v-if="st.endDate" class="ms-1">({{ st.endDate }})</span>
+            	</div>
+            	<div v-if="st.subtitle">{{ st.subtitle }}</div>
+            </div>
+       	</template>
+	</ul>
+</div>

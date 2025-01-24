@@ -1,0 +1,92 @@
+<div v-if="process" class="h-100">
+	<div @mousedown="handleMouseDown" class="v-resizable position-absolute w-100" style="left: 0" :style="'height: ' + bpmnViewerHeight + 'px; ' + toggleTransition">
+		<bpmn-viewer @activity-id="$emit('activity-id', $event)"  @task-selected="selectTask($event)" @open-subprocess="$emit('open-subprocess', $event)" :processDefinitionId="process.id"
+			:activityId="activityId" :activityInstance="activityInstance" :activityInstanceHistory="activityInstanceHistory" :statistics="process.statistics" 
+			ref="diagram" class="h-100">
+		</bpmn-viewer>
+	</div>
+  	
+	<ul class="nav nav-tabs position-absolute border-0 bg-light" style="left: -1px" :style="'top: ' + (bottomContentPosition - toggleButtonHeight) + 'px; ' + toggleTransition">
+		<span role="button" size="sm" variant="light" class="border-bottom-0 bg-white rounded-top border py-1 px-2 me-1" @click="toggleContent">
+			<span class="mdi mdi-18px" :class="toggleIcon"></span>
+		</span>
+		<li class="nav-item m-0" v-for="tab in tabs">
+			<a role="button" @click="changeTab(tab)" class="nav-link py-2" :class="{ 'active': tab.active, 'bg-light border border-bottom-0': !tab.active }">
+				{{ $t('process.' + tab.id) }}
+			</a>
+	  	</li>
+	</ul>
+  	
+  	<div class="position-absolute w-100" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
+		<div v-if="activeTab === 'instances'">
+			<div ref="filterTable" class="bg-light d-flex position-absolute w-100">
+				 <div class="col-3 p-3">
+				 	<b-input-group size="sm">
+					    <template #prepend>
+				      		<b-button :title="$t('searches.search')" aria-hidden="true" size="sm" class="rounded-left" variant="secondary"><span class="mdi mdi-magnify" style="line-height: initial"></span></b-button>
+					    </template>
+					    <b-form-input :title="$t('searches.search')" size="sm" :placeholder="$t('searches.search')" @input="onInput"></b-form-input>
+					    <b-button size="sm" variant="light" @click="$refs.sortModal.show()" class="ms-1 border"><span class="mdi mdi-sort" style="line-height: initial"></span></b-button>
+					</b-input-group>
+				 </div>
+				 <div class="col-1 p-3">		 	
+					<span v-if="activityId" class="badge badge-info badge-pill p-2" style="font-weight: 500; font-size: 0.75rem">
+						<span @click="$emit('activity-id', '')" role="button" class="mdi mdi-close-thick py-2 px-1"></span> {{ activityId }} 
+					</span>
+				 </div>
+				 <div class="col-8 p-3 text-end">
+					 <div>
+						<b-button v-if="process.suspended === 'false'" class="border" size="sm" variant="light" @click="showConfirm({ ok: suspendProcess })" :title="$t('process.suspendProcess')">
+							<span class="mdi mdi-pause-circle-outline"></span> {{ $t('process.suspendProcess') }}
+						</b-button>
+						<b-button v-else class="border" size="sm" variant="light" @click="showConfirm({ ok: activateProcess })" :title="$t('process.activateProcess')">
+							<span class="mdi mdi-play-circle-outline"></span> {{ $t('process.activateProcess') }}
+						</b-button>
+						<b-button  class="border"size="sm" variant="light" @click="openInModeler()" :title="$t('process.openModeler')">
+							<span class="mdi mdi-map-search-outline"></span> {{ $t('process.openModeler') }}
+						</b-button>
+						<b-button  class="border"size="sm" variant="light" @click="downloadBpmn()" :title="$t('process.downloadBpmn')">
+							<span class="mdi mdi-download"></span> {{ $t('process.downloadBpmn') }}
+						</b-button>
+						<b-button  class="border"size="sm" variant="light" @click="viewDeployment()" :title="$t('process.showDeployment')">
+							<span class="mdi mdi-file-eye-outline"></span> {{ $t('process.showDeployment') }}
+						</b-button>
+					 </div>
+				</div>
+			</div>
+			<div ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 60px; left: 0; bottom: 0" @scroll="handleScrollProcesses">
+				<instances-table ref="instancesTable" v-if="instances && !sorting" :instances="instances" :sortByDefaultKey="sortByDefaultKey" :sortDesc="sortDesc"
+					@select-instance="selectInstance" @view-process="viewProcess" @instance-deleted="$emit('instance-deleted')"
+				></instances-table>			
+				<div class="py-3 text-center w-100" v-if="loading">
+					<loader class="d-inline me-2" styling="width: 35px"></loader> {{ $t('admin.loading') }}
+				</div>
+			</div>
+		</div>
+		<!--
+		<div v-if="activeTab === 'statistics'">
+			<div ref="rContent" class="overflow-auto container-fluid bg-white position-absolute" style="top: 60px; left: 0; bottom: 0" @scroll="handleScrollProcesses">
+				<flow-table v-if="usages.length" striped thead-class="sticky-header" :items="usages" primary-key="id" prefix="process."
+					sort-by="startTimeOriginal" :sort-desc="true" :fields="[
+					{ label: 'event', key: 'event', class: 'col-4', tdClass: 'justify-content-center py-0 border-end border-top-0' },
+					{ label: 'date', key: 'date', class: 'col-2', tdClass: 'border-end py-1 border-top-0' },
+					{ label: 'productCode', key: 'productCode', class: 'col-4', tdClass: 'border-end py-1 border-top-0' },
+					{ label: 'usageCount', key: 'usageCount', class: 'col-2', tdClass: 'border-end py-1 border-top-0' }]"
+					@click="selectInstance($event)">
+				</flow-table>
+				<div class="py-3 text-center w-100" v-if="loading">
+					<loader class="d-inline me-2" styling="width: 35px"></loader> {{ $t('admin.loading') }}
+				</div>
+			</div>
+		</div>
+		-->
+	</div>
+	<confirm ref="confirm" @ok="$event.ok($event.instance)">
+		<template v-slot="scope">
+			{{ $t('confirm.performOperation') }}
+		</template>
+	</confirm>
+	<success ref="messageCopy"> {{ $t('process.copySuccess') }} </success>
+    <success top="0" style="z-index: 1031" ref="success"> {{ $t('alert.successOperation') }}</success>
+    <multisort-modal ref="sortModal" :items="instances" :sortKeys="['state', 'businessKey', 'startTimeOriginal', 'endTimeOriginal', 'id', 'startUserId', 'incidents']" :prefix="'process.'" @apply-sorting="applySorting"></multisort-modal>
+</div>

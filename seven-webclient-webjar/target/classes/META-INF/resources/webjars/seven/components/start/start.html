@@ -1,0 +1,211 @@
+<div :style="{ 'height': 'calc(100% - 55px)' }" class="d-flex flex-column bg-light overflow-auto">
+	<div class="h-100 container" :style="countStartItems === 4 ? 'max-width: 960px' : ''">
+		<div ref="startContainer" class="row justify-content-center py-5">
+			<div v-if="applicationPermissions($root.config.permissions.tasklist, 'tasklist') && startableProcesses" 
+				class="col-4 mt-5 mx-2 mx-md-3 bg-white rounded" style="max-width: 330px; min-width: 250px; height:250px">		
+				<div class="row border rounded shadow-sm h-100">
+					<div class="align-top" style="flex:auto">
+						<div class="text-truncate ps-1"></div>
+						<router-link to="/flow/auth/processes" class="h-100 text-decoration-none text-reset">
+							<div class="container">
+								<div class="row ps-3" style="height:55px">
+									<div class="col-12 align-items-center d-flex">
+										<span class="border-start h-100 me-3 border-primary" style="border-width: 3px !important"></span>
+										<h4 class="m-0">{{ $t('start.startProcesses') }}</h4>
+									</div>
+								</div>
+								<div class="row text-center">
+									<div class="col-12 p-0 pt-1">
+										<img :alt="$t('start.startProcesses')" src="webjars/seven/components/start/process.svg" style="height:180px; max-width:225px">
+									</div>
+								</div>
+							</div>
+						</router-link>
+					</div>
+				</div>
+			</div>
+			<div v-if="applicationPermissions($root.config.permissions.tasklist, 'tasklist')" 
+				class="col-4 mt-5 mx-2 mx-md-3 bg-white rounded" style="max-width: 330px; min-width: 250px; height:250px">		
+				<div class="row border rounded shadow-sm h-100">
+					<div class="align-top" style="flex:auto">
+						<div class="text-truncate ps-1"></div>
+						<router-link to="/flow/auth/tasks" class="h-100 text-decoration-none text-reset">
+							<div class="container">
+								<div class="row ps-3" style="height:55px">
+									<div class="col-12 align-items-center d-flex">
+										<span class="border-start h-100 me-3 border-primary" style="border-width: 3px !important"></span>
+										<h4 class="m-0">{{ $t('start.taskList') }}</h4>
+									</div>
+								</div>
+								<div class="row text-center">
+									<div class="col-12 p-0 pt-1">
+										<img :alt="$t('start.taskList')" src="webjars/seven/components/start/task.svg" style="height:180px; max-width:225px">
+									</div>
+								</div>
+							</div>
+						</router-link>
+					</div>
+				</div>
+			</div>
+			<div v-if="applicationPermissions($root.config.permissions.modeler, 'modeler')" 
+				class="col-4 mt-5 mx-2 mx-md-3 bg-white rounded" style="max-width: 330px; min-width: 250px; height:250px">
+				<div class="row border rounded shadow-sm h-100">
+					<div class="align-top" style="flex:auto">
+						<div class="text-truncate ps-1"></div>
+						<router-link to="/flow/auth/modeler" class="h-100 text-decoration-none text-reset">
+							<div class="container">
+								<div class="row ps-3" style="height:55px">
+									<div class="col-12 align-items-center d-flex">
+										<span class="border-start h-100 me-3 border-primary" style="border-width: 3px !important"></span>
+										<h4 class="m-0">{{ $t('start.modeler') }}</h4>
+									</div>
+								</div>
+								<div class="row text-center">
+									<div class="col-12 p-0 pt-1">
+										<img :alt="$t('start.modeler')" src="webjars/seven/components/start/webmodeler.svg" style="height:180px; max-width:225px">
+									</div>
+								</div>
+							</div>
+						</router-link>
+					</div>
+				</div>
+			</div>		
+			<div v-if="applicationPermissions($root.config.permissions.easyform, 'easyform')" 
+				class="col-4 mt-5 mx-2 mx-md-3 bg-white rounded" style="max-width: 330px; min-width: 250px; height:250px">
+				<div class="row border rounded shadow-sm h-100">
+					<div class="align-top" style="flex:auto">
+						<div class="text-truncate ps-1"></div>
+						<router-link to="/flow/auth/easy-form" class="h-100 text-decoration-none text-reset">
+							<div class="container">
+								<div class="row ps-3" style="height:55px">
+									<div class="col-12 align-items-center d-flex">
+										<span class="border-start h-100 me-3 border-primary" style="border-width: 3px !important"></span>
+										<h4 class="m-0">{{ $t('start.easyForm') }}</h4>
+									</div>
+								</div>
+								<div class="row text-center">
+									<div class="col-12 p-0 pt-1">
+										<img :alt="$t('start.easyForm')" src="webjars/seven/components/start/form-builder.svg" style="height:180px; max-width:225px">
+									</div>
+								</div>
+							</div>
+						</router-link>
+					</div>
+				</div>
+			</div>
+			<div v-if="applicationPermissions($root.config.permissions.cockpit, 'cockpit')" 
+				class="col-4 mt-5 mx-2 mx-md-3 bg-white rounded" style="max-width: 330px; min-width: 250px; height:250px">		
+				<div class="row border rounded shadow-sm h-100">
+					<div class="align-top" style="flex:auto">
+						<div class="text-truncate ps-1"></div>
+						<router-link to="/flow/auth/process-management" class="h-100 text-decoration-none text-reset">
+							<div class="container">
+								<div class="row ps-3" style="height:55px">
+									<div class="col-12 align-items-center d-flex">
+										<span class="border-start h-100 me-3 border-primary" style="border-width: 3px !important"></span>
+										<h4 class="m-0">{{ $t('start.admin') }}</h4>
+									</div>
+								</div>
+								<div class="row text-center">
+									<div class="col-12 p-0 pt-1">
+										<img :alt="$t('start.admin')" src="webjars/seven/components/start/management.svg" style="height:180px; max-width:225px">
+									</div>
+								</div>
+							</div>
+						</router-link>
+					</div>
+				</div>
+			</div>
+			<div v-if="hasAdminManagementPermissions($root.config.permissions)" 
+			class="col-4 mt-5 mx-2 mx-md-3 bg-white rounded" style="max-width: 330px; min-width: 250px; height:250px" tabindex="0"
+			@focus="showAdminOptions = true" @blur="showAdminOptions = true" @click="showAdminOptions = true" @mouseover="showAdminOptions = true" @mouseleave="showAdminOptions = false">					
+				<div class="row border rounded shadow-sm h-100">
+					<div class="align-top" style="flex:auto">
+						<div class="text-truncate ps-1"></div>
+						<router-link to="" class="h-100 text-decoration-none text-reset" tabindex="-1">
+							<div class="container">
+								<div class="row ps-3" style="height:55px">
+									<div class="col-12 align-items-center d-flex">
+										<span class="border-start h-100 me-3 border-primary" style="border-width: 3px !important"></span>
+										<h4 class="m-0">{{ $t('start.adminPanel') }}</h4>
+									</div>
+								</div>
+								<div class="row text-center">
+									<div class="col-12 p-0 pt-1">
+										<img :alt="$t('start.adminPanel')" src="webjars/seven/components/start/admin.svg" style="height:180px; max-width:225px">
+									</div>
+								</div>
+							</div>
+						</router-link>
+					</div>
+					<b-overlay :show="showAdminOptions" :opacity="0" no-center no-wrap>
+						 <template #overlay>
+					        <b-list-group class="py-2 bg-white rounded-bottom" style="opacity: .9; position: absolute; bottom: 1px; width: calc(100% - 2px); margin-left: 1px">
+								<b-list-group-item v-if="adminManagementPermissions($root.config.permissions.usersManagement, 'user')"
+									to="/flow/auth/admin/users" class="py-1 px-3 border-start-0 border-top-0 border-end-0 h6 fw-normal mb-0" :title="$t('admin.users.title')">
+									<span class="mdi mdi-18px mdi-account-search-outline pe-1"></span>{{ $t('admin.users.title') }}</b-list-group-item>
+								<b-list-group-item v-if="adminManagementPermissions($root.config.permissions.groupsManagement, 'group')"
+									to="/flow/auth/admin/groups" class="py-1 px-3 border-start-0 border-top-0 border-end-0 h6 fw-normal mb-0" :title="$t('admin.groups.title')">
+									<span class="mdi mdi-18px mdi-account-group-outline pe-1"></span>{{ $t('admin.groups.title') }}</b-list-group-item>			
+								<b-list-group-item v-if="adminManagementPermissions($root.config.permissions.authorizationsManagement, 'authorization')"
+									to="/flow/auth/admin/authorizations" class="py-1 px-3 border-0 h6 fw-normal mb-0" :title="$t('admin.authorizations.title')">
+									<span class="mdi mdi-18px mdi-account-key-outline pe-1"></span>{{ $t('admin.authorizations.title') }}</b-list-group-item>
+							</b-list-group>
+				      	</template>
+					</b-overlay>
+				</div>					
+			</div>
+			<div v-if="applicationPermissions($root.config.permissions.flowresource, 'flowresource')" 
+				class="col-4 mt-5 mx-2 mx-md-3 bg-white rounded" style="max-width: 330px; min-width: 250px; height:250px">		
+				<div class="row border rounded shadow-sm h-100">
+					<div class="align-top" style="flex:auto">
+						<div class="text-truncate ps-1"></div>
+						<router-link to="/flow/auth/flow-resource" class="h-100 text-decoration-none text-reset">
+							<div class="container">
+								<div class="row ps-3" style="height:55px">
+									<div class="col-12 align-items-center d-flex">
+										<span class="border-start h-100 me-3 border-primary" style="border-width: 3px !important;"></span>
+										<h4 class="m-0">{{ $t('start.resources') }}</h4>
+									</div>
+								</div>
+								<div class="row text-center">
+									<div class="col-12 p-0 pt-1">
+										<img :alt="$t('start.resources')" src="webjars/seven/components/start/resources.svg" style="height:180px; max-width:225px">
+									</div>
+								</div>
+							</div>
+						</router-link>						
+					</div>
+				</div>
+			</div>
+			<div v-if="applicationPermissions($root.config.permissions.flowprocessmanagement, 'flowprocessmanagement')" 
+				class="col-4 mt-5 mx-2 mx-md-3 bg-white rounded" style="max-width: 330px; min-width: 250px; height:250px">		
+				<div class="row border rounded shadow-sm h-100">
+					<div class="align-top" style="flex:auto">
+						<div class="text-truncate ps-1"></div>
+						<router-link to="/flow/auth/flow-process-management" class="h-100 text-decoration-none text-reset">
+							<div class="container">
+								<div class="row ps-3" style="height:55px">
+									<div class="col-12 align-items-center d-flex">
+										<span class="border-start h-100 me-3 border-primary" style="border-width: 3px !important;"></span>
+										<h4 class="m-0">{{ $t('start.flowProcessManagement') }}</h4>
+									</div>
+								</div>
+								<div class="row text-center">
+									<div class="col-12 p-0 pt-1">
+										<img :alt="$t('start.flowProcessManagement')" src="webjars/seven/components/start/process-management.svg" style="height:180px; max-width:225px">
+									</div>
+								</div>
+							</div>
+						</router-link>						
+					</div>
+				</div>
+			</div>				
+		</div>	
+		<div v-if="!applicationPermissions($root.config.permissions.tasklist, 'tasklist') && 
+			!applicationPermissions($root.config.permissions.cockpit, 'cockpit') && !hasAdminManagementPermissions($root.config.permissions)">
+			<img :alt="$t('start.emptyStart')" src="webjars/seven/components/start/empty_start_page.svg" class="d-block mx-auto mt-5 mb-3" style="max-width: 250px">	
+			<div class="h5 text-secondary text-center">{{ $t('start.emptyStart') }}</div>
+		</div>
+	</div>
+</div>

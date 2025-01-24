@@ -1,0 +1,193 @@
+server:
+  #port: 8086
+  servlet:
+    context-path: /seven-webclient-web
+
+spring:
+  banner:
+    location: classpath:banner.txt
+  config:
+    import:
+      - optional:classpath:seven-webclient.yaml
+  servlet:
+    multipart:
+      # Configures the maximum size for each individual file upload.
+      max-file-size: 10MB
+      # Configures the maximum size allowed for the entire request, including all files and form data.
+      max-request-size: 1GB
+  mvc:
+    static-path-pattern: "/webapps/**"
+  web:
+    resources:
+      static-locations: 
+        - "classpath:/webapps/"
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui
+    operationsSorter: alpha
+    tagsSorter: alpha
+    doc-expansion: none 
+  # webclient server url for the swagger-ui. Only needs to be set if the automatic detection is wrong.
+  flowWebclient:
+    serverUrl: ""
+
+# see https://springdoc.org/properties.html
+api:
+  common:
+    title: "CIB Flow webclient API"
+    description: "This API exposes the functionality of CIB Flow webclient as a REST service."
+    termsOfService: "https://www.cib.de"
+    license: "Proprietary License of CIB software GmbH"
+    licenseUrl: "https://www.cib.de"
+    contact:
+      name: "CIB software GmbH"
+      url: "https://www.cib.de"
+      email: "support@cib.de"
+
+# LDAP
+ldap:
+  url: ldap://ldap.cib.de
+  folder: DC=cib,DC=de
+  userNameAttribute: samAccountName
+  userDisplayNameAttribute: name
+  modifiedDateFormat: yyyyMMddHHmmss.SX
+  followReferrals: follow
+
+# Token generation
+authentication:
+  jwtSecret: YWY1NDhhOdYxOGJjNTg2NjMzOWM0ZTQ5NjkwNjZlNjU4NTk4ODYWY1NDhhOdYxOGJjNTg2NjMzOWM0ZTQ5NjkwNjZlNjU4NTk4ODYWY1NDhhOdYxOGJjNTg2NjMzOWM0ZTQ5NjkwNjZlNjU4NTk4OD
+  tokenValidMinutes: 60
+  tokenProlongMinutes: 1440
+  recover:
+    jwtSecret: YWY1NDhhOdYxOGJjNTg2NjMzOWM0ZTQ5NjkwNjZlNjU4NTk4ODYWY1NDhhOdYxOGJjNTg2NjMzOWM0ZTQ5NjkwNjZlNjU4NTk4ODYWY1NDhhOdYxOGJjNTg2NjMzOWM0ZTQ5NjkwNjZlNjU4NTk4OD
+    tokenValidMinutes: 60
+    tokenProlongMinutes: 1440
+  
+# BPM Provider
+bpm:
+  provider: de.cib.cibflow.camunda.CamundaProvider
+
+# User providers
+user:
+  provider: de.cib.cibflow.auth.CamundaUserProvider
+  # provider: de.cib.cibflow.auth.CamundaUserProvider
+  # provider: de.cib.cibflow.auth.KeycloakUserProvider
+  # provider: de.cib.cibflow.auth.AdfsUserProvider
+
+# Set the wild card is gonna be used for the users search. By default is "*".
+users:
+  search:
+    wildcard:
+
+userAnon:
+  id: demo
+
+# Engine rest
+camunda:
+  engineRest:
+    url: http://localhost:8080
+  historyLevel: full
+
+# Error report
+errorReportUrl: https://doxiview.cib.de/report/error
+
+flow:
+  webclient:
+    task:
+      url: http://localhost:8080/client/#/flow/auth/tasks/*/
+  # If this params is set to false, the number of instances and incidents wont be taken.
+  fetchInstances: true
+  fetchIncidents: true
+  # External token user creation
+  token:
+    secret: YWY1NDhhOdYxOGJjNTg2NjMzOWM0ZTQ5NjkwNjZlNjU4NTk4ODYWY1NDhhOdYxOGJjNTg2NjMzOWM0ZTQ5NjkwNjZlNjU4NTk4ODYWY1NDhhOdYxOGJjNTg2NjMzOWM0ZTQ5NjkwNjZlNjU4NTk4OD
+    deny:
+      external:
+        ip: true
+  datasource:
+    fileValue:
+      enabled: false
+
+# CIB flow dataflow - External Database.     
+dataflow:
+  enable: false
+  url: http://localhost:8090/dataflow
+        
+# CIB flow webclient properties used in client side.
+# CIB flow ui-element-templates URL
+ui:
+  element:
+    template:
+      url: http://localhost:8090/ui-element-templates
+
+# Camunda Cockpit URL
+cockpit:
+  url: http://localhost:8080/camunda/app/cockpit/default/
+
+# Used to set a theme (Bootstrap)
+theme: cib
+
+#Used to set the title of the page
+#productNamePageTitle: L Bank flow
+
+#support-dialog: |
+#  {
+#    "de": {
+#      "support-hotline": "Support-Hotline",
+#      "opening-hours": "Öffnungszeiten",
+#      "opening-hours-info": "Mo - Fr, 08.00 - 19.00 Uhr",
+#      "phone": "Telefon", 
+#      "phone-number": "+49 89 14360 111",
+#      "email-address": "E-Mail-Adresse",
+#      "email": "cibsupport@cib.de"
+#    } 
+#  }
+
+# CIB flow modeler URL
+modeler:
+  url: http://localhost:8080/flow-modeler
+        
+# CIB Flow Formbuilder URL
+formbuilder:
+  url: http://localhost:8090/easy-form
+
+doxima:
+  login:
+    url: https://doximawebtestix.cib.de/doxima/#/client/auth/token/doxisafe/
+
+# Metering
+metering:
+  url: https://doxiview-test.cib.de/metering-service/metering
+  
+#Password Recovery
+passwordRecovery:
+  mail:
+    host: outlook.office365.com
+    user: 
+    password: 
+    passwordRecoverLink: http://localhost:8090/client/#/flow/password-recover
+    
+# Activate "/actuator/info" and "/actuator/health" endpoints
+management:
+  endpoints:
+    enabled-by-default: false # Disable all endpoints by default
+    web:
+      exposure:
+        include: health,info # Include only health and info endpoints
+  endpoint:
+    info:
+      enabled: true # Enable the info endpoint
+    health:
+      enabled: true # Enable the health endpoint
+      probes:
+        enabled: true # Enable health probes (if applicable)
+  info:
+    build:
+      enabled: true # Enable build information
+    git:
+      enabled: true # Enable git information
+      mode: full # Use full mode for git information
+    java:
+      enabled: true # Enable Java information (ensure your setup supports this)
+        

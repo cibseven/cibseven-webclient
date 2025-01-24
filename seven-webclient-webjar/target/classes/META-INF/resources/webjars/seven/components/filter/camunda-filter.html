@@ -1,0 +1,18 @@
+<div>
+	<div v-if="layout" class="form-group input-group">
+		<select class="form-control form-control-sm border-light" @change="selectFilter($event.target.value)">
+			<option v-if="$store.state.filter.list.length > 0" v-for="(item) in filtersSorted" :value="item.id" :key="item.id" :selected="item.id === selectedFilterId">{{ item.name }}</option>
+		</select>
+		<div class="input-group-append">
+			<button v-if="filterByPermissions($root.config.permissions.editFilter, $store.state.filter.selected)" class="btn btn-outline-secondary btn-sm border-light" @click="showFilterDialog('edit')" type="button"><span class="mdi mdi-pencil"></span></button>
+			<button v-if="filterByPermissions($root.config.permissions.deleteFilter, $store.state.filter.selected)" class="btn btn-outline-secondary btn-sm border-light" @click="$refs.confirmDeleteFilter.show()" type="button"><span class="mdi mdi-close"></span></button>
+			<button v-if="filterByPermissions($root.config.permissions.createFilter, null, true)" class="btn btn-outline-secondary btn-sm border-light" @click="showFilterDialog('create')" type="button"><span class="mdi mdi-plus"></span></button>
+		</div>
+	</div>
+		
+	<filter-modal ref="filterModal"></filter-modal>
+	
+	<confirm ref="confirmDeleteFilter" @ok="deleteFilter()">
+		<span v-html="$t('confirm.deleteFilter', [selectedFilterName])"></span>
+	</confirm>	
+</div>

@@ -1,0 +1,125 @@
+<div class="h-100 d-flex flex-column">
+	<cib-header-flow v-if="$root.header === 'true'" class="flex-shrink-0" :languages="$root.config.supportedLanguages" :user="$root.user" @logout="logout">
+		<b-navbar-brand class="py-0" :title="$t('navigation.home')" to="/">    
+			<img height="38px" :alt="$t('cib-header.productName')" :src="$root.logoPath"/>
+			<span class="d-none d-md-inline align-middle"></span>
+		</b-navbar-brand>
+		<div v-if="pageTitle" style="max-height: 38px;" class="d-flex align-items-center text-truncate">
+			<span class="border-start border-secondary py-3 me-3"></span>
+			<h3 :title="pageTitle" :style="isMobile() ? 'max-width: 100px; line-height: normal' : 'line-height: normal'" 
+			class="m-0 text-secondary text-truncate">{{ pageTitle }}</h3>
+		</div>
+		<div style="max-height: 38px; display: flex" class="ms-auto">
+			<b-button v-if="$root.user && startableProcesses && $route.name === 'tasklist'" class="d-none d-sm-block py-0 me-3" variant="outline-secondary" :title="$t('start.startProcesses')" @click="openStartProcess()">
+		     	<span class="mdi mdi-18px mdi-rocket"><span class="d-none d-lg-inline">{{ $t('start.startProcesses') }}</span></span>
+		    </b-button>
+		    
+			<b-collapse v-if="$root.user && ((applicationPermissions($root.config.permissions.tasklist, 'tasklist') && startableProcesses) || 
+			applicationPermissions($root.config.permissions.cockpit, 'cockpit'))" is-nav id="nav_collapse" class="flex-grow-0 d-none d-md-flex">
+		        <b-navbar-nav>
+		            <b-nav-item-dropdown extra-toggle-classes="py-1" right :title="$t('navigation.menu')">
+		            	<template v-slot:button-content> 
+		            		<span class="visually-hidden">{{ $t('navigation.menu') }}</span>
+		            		<span class="mdi mdi-24px mdi-menu align-middle"></span>
+		            	</template>
+						<b-dropdown-item exact v-if="applicationPermissions($root.config.permissions.tasklist, 'tasklist') && startableProcesses" to="/flow/auth/processes">{{ $t('start.startProcesses') }}</b-dropdown-item>
+						<b-dropdown-item v-if="applicationPermissions($root.config.permissions.tasklist, 'tasklist')" to="/flow/auth/tasks">{{ $t('start.taskList') }}</b-dropdown-item>
+						<b-dropdown-item v-if="applicationPermissions($root.config.permissions.modeler, 'modeler')" to="/flow/auth/modeler">{{ $t('start.modeler') }}</b-dropdown-item>
+						<b-dropdown-item exact v-if="applicationPermissions($root.config.permissions.cockpit, 'cockpit')" to="/flow/auth/process-management">{{ $t('start.admin') }}</b-dropdown-item>
+						<b-dropdown-item v-if="applicationPermissions($root.config.permissions.cockpit, 'cockpit')" to="/flow/auth/deployments">{{ $t('deployment.title') }}</b-dropdown-item>
+						<b-dropdown-item v-if="applicationPermissions($root.config.permissions.easyform, 'easyform')" to="/flow/auth/easy-form">{{ $t('start.easyForm') }}</b-dropdown-item>
+						<b-dropdown-item v-if="hasAdminManagementPermissions($root.config.permissions)" to="/flow/auth/admin/users-management">{{ $t('start.adminPanel') }}</b-dropdown-item>
+						<b-dropdown-item v-if="applicationPermissions($root.config.permissions.cockpit, 'cockpit')" :href="$root.config.cockpitUrl" target="_blank">{{ $t('start.cockpit') }}</b-dropdown-item>
+						<!-- <b-dropdown-item @click="openDoximaLogin()">{{ $t('start.doximaConnection') }}</b-dropdown-item> -->
+		            </b-nav-item-dropdown>            
+		        </b-navbar-nav>
+		    </b-collapse>
+		    
+		    <b-button v-if="$root.config.layout.showFeedbackButton" variant="outline-secondary" @click="$refs.report.show()" class="border-0 py-0 d-none d-md-flex" :title="$t('seven.feedback')">
+		     	<span class="mdi mdi-24px mdi-message-alert"></span>
+		    </b-button>
+		    
+			<b-collapse v-if="$root.config.layout.showInfoAndHelp" is-nav class="flex-grow-0 d-none d-md-flex">
+		        <b-navbar-nav>
+		            <b-nav-item-dropdown extra-toggle-classes="py-1" right :title="$t('navigation.infoAndHelp')">
+		            	<template v-slot:button-content> 
+		            		<span class="visually-hidden">{{ $t('navigation.infoAndHelp') }}</span>
+		            		<span class="mdi mdi-24px mdi-help-circle align-middle"></span>
+		            	</template>
+		            	<b-dropdown-item v-if="$root.config.flowLinkHelp != ''" :href="$root.config.flowLinkHelp" target="_blank">{{ $t('infoAndHelp.flowLinkHelp') }}</b-dropdown-item>
+		            	<b-dropdown-item v-if="$root.config.flowLinkAccessibility != ''" :href="$root.config.flowLinkAccessibility" target="_blank">{{ $t('infoAndHelp.flowLinkAccessibility') }}</b-dropdown-item>
+						<b-dropdown-item v-if="$root.config.flowLinkTerms != ''" :href="$root.config.flowLinkTerms" target="_blank">{{ $t('infoAndHelp.flowLinkTerms') }}</b-dropdown-item>
+						<b-dropdown-item v-if="$root.config.flowLinkPrivacy != ''" :href="$root.config.flowLinkPrivacy" target="_blank">{{ $t('infoAndHelp.flowLinkPrivacy') }}</b-dropdown-item>
+						<b-dropdown-item v-if="$root.config.flowLinkImprint != ''" :href="$root.config.flowLinkImprint" target="_blank">{{ $t('infoAndHelp.flowLinkImprint') }}</b-dropdown-item>
+						<b-dropdown-item v-if="$root.config.layout.showSupportInfo" @click="$refs.support.show()">{{ $t('infoAndHelp.flowModalSupport.modalText') }}</b-dropdown-item>
+						<b-dropdown-item @click="$refs.about.show()">{{ $t('infoAndHelp.flowModalAbout.modalText') }}</b-dropdown-item>
+		            </b-nav-item-dropdown>
+		        </b-navbar-nav>
+		    </b-collapse>
+	    </div>
+	    <template v-slot:userItems>
+		    <b-dropdown-item v-if="$root.user && $root.config.layout.showUserSettings && !applicationPermissionsDenied($root.config.permissions.userProfile, 'userProfile')" 
+		    	:to="'/seven/auth/account/' + $root.user.id">{{ $t('seven.account') }}</b-dropdown-item>
+	    </template>
+	</cib-header-flow>
+
+	<support-modal ref="support" v-if="$root.config.layout.showSupportInfo"></support-modal>
+	
+	<b-modal ref="about" :title="$t('infoAndHelp.flowModalAbout.title')">
+		<div class="row">
+			<div class="col-2">
+				<svg id="Ebene_1" data-name="Ebene 1"
+					xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+						<path
+						d="M12,2A10,10,0,1,1,2,12,10,10,0,0,1,12,2m0-2A12,12,0,1,0,24,12,12,12,0,0,0,12,0Z"
+						fill="var(--info)" />
+						<g>
+							<path
+						d="M13.11,9.93s-.1,6.9,0,7a5.81,5.81,0,0,0,1.33.24,2.13,2.13,0,0,1,1.08.3,1.05,1.05,0,0,1,0,1.51,1.58,1.58,0,0,1-1.08.3H9.57A1.58,1.58,0,0,1,8.49,19a1,1,0,0,1-.32-.76.93.93,0,0,1,.32-.75,2.43,2.43,0,0,1,1.08-.3c.27,0,1.42,0,1.42-.33s0-4.18,0-4.53S10.44,12,10,12a1.67,1.67,0,0,1-1-.25,1,1,0,0,1,0-1.52,1.61,1.61,0,0,1,1.08-.29Z"
+						fill="var(--info)" />
+							<path d="M13,7.43a1.5,1.5,0,1,1-1.5-1.5A1.5,1.5,0,0,1,13,7.43Z"
+						fill="var(--info)" />
+						</g>
+					</svg>
+			</div>
+			<div class="col-10 d-flex" style="align-items:center">{{ $t('infoAndHelp.flowModalSupport.version') }}: {{ version }}</div>
+		</div>
+		<template v-slot:modal-footer>
+			<b-button v-t="'confirm.ok'" variant="primary" @click="$emit('ok'); $refs.about.hide()"></b-button>
+		</template>
+	</b-modal>
+
+	<div v-if="$root.user && expertMode" class="d-flex flex-grow-1 overflow-hidden">
+		<sidebar class="w-100">
+			<template #left>
+				 <quick-nav-bar class="h-100" style="box-shadow: #e300003b 0px 0px 14px 1px inset; width: 55px"></quick-nav-bar>
+			</template>
+				<div class="h-100 d-flex flex-column bg-light">
+			 		<router-view class="flex-grow-1 overflow-hidden" ref="down"></router-view>
+			 	</div>
+		</sidebar>
+	</div>
+	
+	<router-view v-else class="flex-grow-1 overflow-hidden" ref="down"></router-view>
+	
+	<b-modal ref="ieNotification" :title="$t('seven.titleInfo')">
+		<div class="container-fluid">
+			<div class="row">
+				{{ $t('ienotify.text') }}
+			</div>
+		</div>
+		<template v-slot:modal-footer>
+			<div class="row w-100 me-0">
+				<div class="col col-8 p-0 pt-1"><b-form-checkbox v-model="rememberNotShow">{{$t('ienotify.remember')}}</b-form-checkbox></div>
+				<div class="col col-4"><b-button variant="primary" @click="doNotShowIeNotification();$refs.ieNotification.hide()" class="float-right">{{ $t('start.close') }}</b-button></div>
+			</div>
+		</template>
+	</b-modal>
+
+	<problem-report ref="report" url="feedback" :email="$root.user && $root.user.email" @report="$refs.down.$emit('report', $event)"></problem-report>
+	
+	<GlobalEvents v-if="$root.user && applicationPermissions($root.config.permissions.tasklist, 'tasklist')" @keydown.ctrl.left.prevent="$router.push('/flow/auth/processes')"></GlobalEvents>
+	<GlobalEvents v-if="$root.user && applicationPermissions($root.config.permissions.cockpit, 'cockpit')" @keydown.ctrl.right.prevent="$router.push('/flow/auth/process-management')"></GlobalEvents>
+	<GlobalEvents v-if="$root.user && applicationPermissions($root.config.permissions.tasklist, 'tasklist')" @keydown.ctrl.down.prevent="$router.push('/flow/auth/tasks')"></GlobalEvents>
+
+</div>

@@ -1,0 +1,19 @@
+<div>
+	<b-button variant="light" class="rounded-0 text-nowrap position-absolute" @click="$emit('update:leftOpen', true)"
+		style="right: 100%; top: 0; transform: rotate(-90deg); transform-origin: right top; height: 40px" 
+		:style="favoriteFilters.length > 0 ? 'width: ' + sizes.arrow + 'px' : ''">
+		<span v-if="favoriteFilters.length <= 0">{{ $t('seven.filters') }}</span>
+		<i class="mdi mdi-18px mdi-chevron-down"></i>
+	</b-button>
+	<b-button v-for="(filter, key) in favoritesDisplayed" v-if="filter && filter.display" :title="filter.name" variant="light" 
+		class="rounded-0 border-0 text-truncate position-absolute"
+		style="right: 100%; transform: rotate(-90deg); transform-origin: right top; height: 40px" :style="getStyles(filter, key)" 
+		@click="selectFilter(filter)" :key="filter.id"> <span class="h5">{{ filter.name }}</span>
+	</b-button>
+	<b-dropdown v-if="favoritesNoDisplayed.length > 0" variant="link" toggle-class="px-0" no-caret class="position-absolute" style="left: 0" :style="getDotsStyle()">
+	   	<template #button-content>
+	     	<i v-hover-style="{ classes: ['text-primary'] }" class="mdi mdi-18px mdi-dots-horizontal"></i>
+	    </template>
+	    <b-dd-item-btn v-for="filter in favoritesNoDisplayed" @click="selectFilter(filter)" :key="filter.id">{{ filter.name }}</b-dd-item-btn>
+ 	</b-dropdown>
+</div>

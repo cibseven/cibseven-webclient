@@ -1,0 +1,12 @@
+<div v-if="task" class="h-100 d-flex flex-column bg-light">
+	<div v-if="statusDataset.length > 0" class="flex-grow-1 p-2 py-3" style="transition: scroll-top 0.3s easy-in-out">
+		<status-progress-bar :statusData="statusDataset"></status-progress-bar>
+	</div>
+	<div v-else class="h-100 d-flex justify-content-center align-items-center">
+		<div class="h5 p-3">{{ $t('status-progress.noState') }}</div>
+	</div>
+</div>
+<div v-else>
+	<img :alt="$t('seven.selectTask')" src="webjars/seven/components/task/tasklist_empty.svg" class="d-block mx-auto mt-5 mb-3" style="width: 200px">		
+	<div class="h5 px-3 text-secondary text-center">{{ $t('seven.selectTask') }}</div>
+</div>

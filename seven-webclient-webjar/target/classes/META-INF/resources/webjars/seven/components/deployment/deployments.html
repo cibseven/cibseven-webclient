@@ -1,0 +1,72 @@
+<div class="d-flex flex-column">
+	<div style="background-color: rgba(98, 142, 199, 0.2)">
+		<div class="d-flex align-items-center py-2 container-fluid">
+			<div class="col-3">
+			 	<b-input-group>
+<!-- 					<b-button :title="$t('start.admin')" variant="outline-secondary" href="#/flow/auth/process-management" class="mdi mdi-18px mdi-arrow-left border-0"></b-button> -->
+				    <b-input-group-prepend>
+			      		<b-button :title="$t('searches.search')" aria-hidden="true" size="sm" class="rounded-left" variant="secondary"><span class="mdi mdi-magnify" style="line-height: initial"></span></b-button>
+				    </b-input-group-prepend>
+				    <b-input-group-append>
+					    <b-form-input :title="$t('searches.search')" size="sm" :placeholder="$t('searches.search')" v-model="filter"></b-form-input>
+				    </b-input-group-append>
+				</b-input-group>
+			 </div>
+			 <div class="col-3">
+			 	<b-form-group class="mb-0">
+					<b-input-group size="sm" class="align-items-center">
+						<b-input-group-prepend class="me-2 align-items-center">
+							<span class="text-primary mdi mdi-18px mdi-filter-variant" :title="$t('sorting.sortBy')"></span><span>{{ $t('sorting.sortBy') }}</span>
+						</b-input-group-prepend>
+						<b-input-group-append class="d-flex align-items-center">
+							<b-form-select size="sm" v-model="sorting.key" :options="sortingFields" class="mb-0"></b-form-select>
+							<b-button size="sm" v-hover-style="{ classes: ['text-primary'] }" variant="secondary-outline" @click="changeSortingOrder()" class="mdi mdi-18px ms-1" 
+								:class="sorting.order === 'desc' ? 'mdi-arrow-down' : 'mdi-arrow-up'" 
+								:title="sorting.order === 'desc' ? $t('sorting.desc') : $t('sorting.asc')"></b-button>
+						</b-input-group-append>
+					</b-input-group>
+				</b-form-group>
+			 </div>
+			 <div class="col-6">
+				 <b-input-group size="sm" class="align-items-center justify-content-end">
+				 	<b-form-checkbox class="me-3" size="sm" @change="changeSelected">
+			      		<span>{{ $t('deployment.selectAll') }}</span>
+				    </b-form-checkbox>
+				    <b-button class="border-secondary" size="sm" :disabled="!deploymentsSelected.length > 0 || deleteLoader" variant="light" @click="$refs.deleteModal.show()" :title="$t('deployment.deleteDeployments')">
+						<span v-if="deleteLoader"><b-spinner small></b-spinner> {{ $t('deployment.deleteDeployments') }}</span>
+						<span v-else class="mdi mdi-delete-outline">{{ $t('deployment.deleteDeployments') }}</span>
+					</b-button>
+				 </b-input-group>
+			 </div>
+		</div>
+	</div>
+	<sidebars-flow ref="sidebars" class="border-top overflow-auto" v-model:right-open="rightOpen" :right-caption="$t('deployment.resourcesCaption')" :rightSize="[12, 4, 3, 3, 3]">
+		<template v-slot:right>
+			<resources-nav-bar :resources="resources" :deployment="deployment"></resources-nav-bar>
+		</template>
+		<deployment-list v-if="deploymentsFiltered.length > 0" :deployments="deploymentsFiltered" :deployment="deployment" :sorting="sorting"
+		@select-deployment="selectDeployment($event)"></deployment-list>
+		<div v-else class="text-center text-secondary">
+			<img src="webjars/seven/components/task/no_tasks_pending.svg" class="d-block mx-auto mt-5 mb-3" style="width: 200px">		
+			<div class="h5 text-secondary text-center">{{ $t('deployment.noDeployments') }}</div>
+		</div>
+	</sidebars-flow>
+	<b-modal ref="deleteModal" :title="$t('confirm.title')">
+		<div class="container-fluid">
+			<div class="row align-items-center">
+				<div class="col-2">
+					<span class="mdi-36px mdi mdi-alert-outline text-warning me-3"></span>
+				</div>	
+				<div class="col-10">
+					<span>{{ $t('deployment.confirmDeleteDeployment') }}</span>
+					<b-form-checkbox disabled v-model="cascadeDelete" class="mt-3">{{ $t('deployment.deleteRunningInstances') }}</b-form-checkbox>
+				</div>			
+			</div>
+		</div>
+		<template v-slot:modal-footer>
+			<b-button v-t="'confirm.ok'" variant="primary" @click="deleteDeployments(); $refs.deleteModal.hide()"></b-button>
+			<b-button v-t="'confirm.cancel'" @click="$refs.deleteModal.hide()"></b-button>
+		</template>
+	</b-modal>
+	<success top="0" style="z-index: 1031" ref="deploymentsDeleted"> {{ $t('deployment.deploymentsDeleted', [deploymentsDelData.deleted, deploymentsDelData.total]) }}</success>
+</div>

@@ -1,0 +1,121 @@
+<div class="h-100 d-flex flex-column">
+	<div class="visually-hidden" ref="ariaLiveText" aria-live="polite"></div>
+	<div v-if="processInstanceHistory && task" class="container-fluid h-100">
+		<span class="font-weight-bold mdi mdi-24px mdi-dark d-flex align-items-center" 
+			:class="false ? 'mdi-menu-up' : 'mdi-menu-down'" 
+			v-b-toggle="'taskActions' + processInstanceHistory.id" style="cursor: pointer">{{ $t('task.actions.title') }}</span>
+		<b-collapse visible :id="'taskActions' + processInstanceHistory.id">
+			<b-form-row class="mb-2 align-items-center">
+				<b-col cols="12"><span class="col-form-label-sm">{{ $t('task.details.assignee') }}</span></b-col>
+			</b-form-row>
+			<b-form-row class="mb-2 align-items-center">
+				<b-col cols="12">
+					<b-input-group size="sm">
+						<b-form-tag v-if="task.assignee" variant="secondary" @remove="assignee = null; update()" :key="task.id" :title="getCompleteName" 
+						:remove-label="$t('task.assignedUserTitle')" class="mdi mdi-18px mdi-account w-100">
+							{{ '  ' + getCompleteName }}
+						</b-form-tag>
+						<div class="w-100" v-else>
+							<b-button ref="assign" variant="link" class="text-dark" @click.stop="assignToMe">
+								<span class="mdi mdi-18px mdi-account-question mdi-dark"></span> {{ $t('task.assignToMe') }}
+							</b-button>
+							<b-input-group-append>
+								<filterable-select class="col-md-12 col-sm-12 px-0" @enter="findUsers($event)" @clean-elements="resetUsers($event)"
+									v-model="assignee" v-model:loading="loadingUsers" :elements="$store.state.user.searchUsers" :placeholder="$t('task.assign')" noInvalidValues/>
+							</b-input-group-append>
+						</div>
+					</b-input-group>
+				</b-col>
+			</b-form-row>
+			<b-form-row class="mb-2 align-items-center">
+				<b-col cols="12"><span class="col-form-label-sm">{{ $t('task.reminder') }}</span></b-col>
+			</b-form-row>
+			<b-form-row class="mb-2 align-items-center">
+				<b-col cols="12">
+					<b-input-group size="sm">
+						<template v-slot:prepend>
+							<b-input-group-text class="py-0"><span class="mdi mdi-16px mdi-dark mdi-alarm"></span></b-input-group-text>
+						</template>
+						<cib-datepicker2 v-model="reminderDate" :disabledDate="isInThePast"></cib-datepicker2>
+					</b-input-group>
+				</b-col>
+			</b-form-row>
+			<b-form-row class="mb-2 align-items-center">
+				<b-col cols="12"><span class="col-form-label-sm" :class="dueColor">{{ $t('task.details.due') }}</span></b-col>
+			</b-form-row>
+			<b-form-row class="mb-2 align-items-center">
+				<b-col cols="12">
+					<b-input-group size="sm">
+						<template v-slot:prepend>
+							<b-input-group-text class="py-0"><span class="mdi mdi-16px mdi-dark mdi-calendar-alert"></span></b-input-group-text>
+						</template>
+						<cib-datepicker2 v-model="dueDate"></cib-datepicker2>
+					</b-input-group>
+				</b-col>
+			</b-form-row>
+			<b-form-row class="mb-2 align-items-center">
+				<b-col cols="12"></b-col>
+			</b-form-row>
+			<b-form-row class="mb-2 align-items-center">
+				<b-col cols="12">
+					<b-input-group size="sm">
+						<template v-slot:prepend>
+							<b-input-group-text class="py-0"><span class="mdi mdi-16px mdi-dark mdi-alarm"></span></b-input-group-text>
+						</template>
+						<b-form-timepicker v-model="time.due" @input="setTime($event, 'due')" no-close-button :label-no-time-selected="$t('cib-timepicker.noDate')"
+							reset-button reset-value="23:59:00" class="flex-fill" :label-reset-button="$t('cib-timepicker.reset')" :locale="currentLanguage()"></b-form-timepicker>
+					</b-input-group>
+				</b-col>
+			</b-form-row>
+		</b-collapse>
+		
+		<span class="font-weight-bold mdi mdi-24px mdi-dark d-flex align-items-center" 
+			:class="false ? 'mdi-menu-up' : 'mdi-menu-down'" 
+			v-b-toggle="'processInstanceHistory' + processInstanceHistory.id" style="cursor: pointer">{{ $t('process-instance.info') }}</span>
+		<b-collapse visible :id="'processInstanceHistory' + processInstanceHistory.id">
+			<sidebar-element-group :value="processInstanceHistory.processDefinitionId" :cols="12" icon="mdi-clipboard-text" :label="$t('process.details.definitionId')"></sidebar-element-group>
+			<sidebar-element-group :value="processInstanceHistory.startUserId" :cols="12" icon="mdi-account" :label="$t('process-instance.details.startUser')"></sidebar-element-group> 
+			<sidebar-element-group :value="processInstanceHistory.startTime" :cols="12" icon="mdi-calendar-month" :label="$t('process-instance.details.start')"></sidebar-element-group>
+		</b-collapse>
+		
+		<!-- TODO: current task, merge it -->
+		<span v-if="processInstanceHistory.tasksHistory[0]" class="font-weight-bold mdi mdi-24px mdi-dark d-flex align-items-center" 
+				:class="false ? 'mdi-menu-up' : 'mdi-menu-down'" 
+				v-b-toggle="'task' + processInstanceHistory.tasksHistory[0].id" style="cursor: pointer"> {{ $t('task.currentTask') }} : {{ processInstanceHistory.tasksHistory[0].name }}</span>		
+
+		<b-collapse visible v-if="processInstanceHistory.tasksHistory[0]" :id="'task' + processInstanceHistory.tasksHistory[0].id">
+			<sidebar-element-group :value="processInstanceHistory.tasksHistory[0].assignee" :cols="12" 
+			:icon="processInstanceHistory.tasksHistory[0].assignee != null ? 'mdi-account' : 'mdi-account-question'" :label="$t('task.details.assignee')"></sidebar-element-group>
+			<sidebar-element-group :value="processInstanceHistory.tasksHistory[0].startTime" :cols="12" icon="mdi-calendar-month" :label="$t('task.details.created')"></sidebar-element-group>
+			<sidebar-element-group :value="processInstanceHistory.tasksHistory[0].endTime" :cols="12" icon="mdi-calendar-month" :label="$t('task.details.finish')"></sidebar-element-group>
+		</b-collapse>		
+		
+		<div v-for="(taskHistory, index) of processInstanceHistory.tasksHistory" :key="taskHistory.id">							
+			<div v-if="index > 0"> 
+				<span class="font-weight-bold mdi mdi-24px mdi-dark d-flex align-items-center" 
+					:class="false ? 'mdi-menu-up' : 'mdi-menu-down'" v-b-toggle="'previousTasks'" style="cursor: pointer"> {{ $t('task.completedTasks') }} </span>
+					
+				<b-collapse visible id="previousTasks" class="ps-2">
+					<span class="font-weight-bold mdi mdi-24px mdi-dark d-flex align-items-center" 
+						:class="false ? 'mdi-menu-up' : 'mdi-menu-down'" 
+						v-b-toggle="'task' + taskHistory.id" style="cursor: pointer"> {{ $t('task.title') }} 
+						{{ processInstanceHistory.tasksHistory.length - index }} : {{ taskHistory.name }}</span>			
+					<b-collapse visible :id="'task' + taskHistory.id">
+						<sidebar-element-group :value="taskHistory.assignee" :cols="12" :icon="taskHistory.assignee != null ? 'mdi-account' : 'mdi-account-question'" 
+						:label="$t('task.details.assignee')"></sidebar-element-group>
+						<sidebar-element-group :value="taskHistory.startTime" :cols="12" icon="mdi-calendar-month" :label="$t('task.details.created')"></sidebar-element-group>
+						<sidebar-element-group :value="taskHistory.endTime" :cols="12" icon="mdi-calendar-month" :label="$t('task.details.finish')"></sidebar-element-group>
+						<sidebar-element-group :value="formatDate(taskHistory.due)" :cols="12" icon="mdi-calendar-alert" :label="$t('task.details.due')"></sidebar-element-group>
+					</b-collapse>
+				</b-collapse>
+			</div>				
+		</div>
+	</div>
+	<div v-else>
+		<img src="webjars/seven/components/task/tasklist_empty.svg" class="d-block mx-auto mt-5 mb-3">		
+		<div class="h5 text-secondary text-center">{{ $t('seven.selectTask') }}</div>
+	</div>
+	<confirm ref="confirmTaskAssign" @ok="update()" @cancel="assignee = null">
+		<span>{{ $t('confirm.assignUser') }}</span>
+	</confirm>
+</div>

@@ -1,0 +1,37 @@
+<b-modal ref="addVariable" :title="$t('process-instance.addVariable')" @hide="reset()">
+	<div>
+		<b-form-group>
+			<template #label>{{ $t('process-instance.variables.name') }}*</template>
+   			<b-form-input v-model="variable.name"></b-form-input>
+   		</b-form-group>
+   		<b-form-group :label="$t('process-instance.variables.type')">
+   			<b-form-select v-model="variable.type" :options="types"></b-form-select>
+   		</b-form-group>
+   		<div v-if="variable.type === 'Object'">
+   			<b-form-group>
+   				<template #label>{{ $t('process-instance.variables.objectTypeName') }}*</template>
+	   			<b-form-input v-model="variable.valueInfo.objectTypeName"></b-form-input>
+	   		</b-form-group>
+	   		<b-form-group>
+	   			<template #label>{{ $t('process-instance.variables.serializationDataFormat') }}*</template>
+	   			<b-form-input v-model="variable.valueInfo.serializationDataFormat"></b-form-input>
+	   		</b-form-group>
+   		</div>
+   		<b-form-group>
+   			<template #label>{{ $t('process-instance.variables.value') }}*</template>
+   			<b-form-select v-if="variable.type === 'Boolean'" v-model="variable.value">
+   				<b-form-select-option :value="true">{{ $t('process.true') }}</b-form-select-option>
+      			<b-form-select-option :value="false">{{ $t('process.false') }}</b-form-select-option>
+   			</b-form-select>
+   			<b-form-input v-else-if="['Short', 'Integer', 'Long', 'Double'].includes(variable.type)" 
+   				v-model="variable.value" type="number"></b-form-input>
+			<cib-datepicker2 v-else-if="variable.type === 'Date'" v-model="variable.value"></cib-datepicker2>
+   			<div v-else-if="variable.type === 'Null'"></div>
+   			<b-form-textarea v-else v-model="variable.value"></b-form-textarea>
+   		</b-form-group>
+	</div>
+	<template v-slot:modal-footer>
+		<b-button v-t="'confirm.cancel'" @click="$refs.addVariable.hide()"></b-button>
+		<b-button :disabled="!isValid" v-t="'confirm.ok'" variant="primary" @click="addVariable()"></b-button>
+	</template>
+</b-modal>

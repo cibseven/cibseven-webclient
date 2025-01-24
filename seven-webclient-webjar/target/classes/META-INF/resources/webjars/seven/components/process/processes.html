@@ -1,0 +1,70 @@
+<div class="d-flex flex-column bg-light" :style="{ height: 'calc(100% - 55px)' }">
+	<div class="container pt-4">
+		<div class="row align-items-center">
+			 <div :class="isMobile() ? 'col-12 pb-2' : 'col-md-2 p-0'">
+			 	<b-button squared @click="selectedOptionHandler('all')" variant="light" :style="setOptionSelected('all')">{{ $t('process.sections.all') }}</b-button>	 	
+			 	<b-button squared @click="selectedOptionHandler('favorites')" variant="light" :style="setOptionSelected('favorites')">
+			 		<span class="mdi mdi-star" style="line-height: initial"></span> {{ $t('process.sections.favorites') }}
+			 	</b-button>
+			 </div>
+			 <div :class="isMobile() ? 'col-12' : 'col-md-3 p-0'">
+			 	<b-input-group size="sm">
+				    <template #prepend>
+			      		<b-button :title="$t('searches.search')" aria-hidden="true" class="rounded-left" variant="secondary"><span class="mdi mdi-magnify" style="line-height: initial"></span></b-button>
+				    </template>
+				    <b-form-input  :title="$t('searches.search')" :placeholder="$t('searches.search')" v-model="filter"></b-form-input>
+  				</b-input-group>
+			 </div>
+			<div v-if="!isMobile()" class="col-md-7 d-flex align-items-center justify-content-end">
+				<div class="d-inline me-1">{{ $t('process.' + view) }}</div>
+				<b-dropdown variant="outline-secondary" toggle-class="border-0 p-0" right class="d-inline-flex">
+	            	<template v-slot:button-content>
+		            	<span :title="$t('process.' + view)"><span :class="activeViewMode"></span></span>
+	            	</template>
+	                <b-dropdown-item-button @click="changeViewMode('image-outline')">
+	                	<span class="mdi mdi-24px mdi-image-outline" style="line-height: initial"> {{ $t('process.image-outline') }}</span>
+	                </b-dropdown-item-button>
+	                <b-dropdown-item-button @click="changeViewMode('view-module')">
+	               		<span class="mdi mdi-24px mdi-view-module" style="line-height: initial"> {{ $t('process.view-module') }}</span>
+	                </b-dropdown-item-button>
+	                <b-dropdown-item-button @click="changeViewMode('view-comfy')">
+	                	<span class="mdi mdi-24px mdi-view-comfy" style="line-height: initial"> {{ $t('process.view-comfy') }}</span>
+	                </b-dropdown-item-button>
+	                <b-dropdown-item-button @click="changeViewMode('view-list')">
+	                	<span class="mdi mdi-24px mdi-view-list" style="line-height: initial"> {{ $t('process.view-list') }}</span>
+	                </b-dropdown-item-button>
+	            </b-dropdown>
+			</div>
+	 	</div>
+	 </div>
+	<div class="container-fluid overflow-auto h-100" :class="!isTable ? 'bg-light' : ''">		
+	 	<div v-if="processesByOptions.length && isTable" class="d-flex h-100">
+			<process-table :processes="processesByOptions" @start-process="startProcess($event)" @view-process="viewProcess($event)" @favorite="favoriteHandler($event)"></process-table>
+	 	</div>
+		<div v-if="processesByOptions.length && !isTable" class="d-flex flex-wrap px-5 pt-3 justify-content-center">
+			<div v-for="process in processesByOptions">
+				<process-card v-if="view !== 'image-outline'" :process="process" :process-name="processName(process)" :view="view" 
+					@start-process="startProcess($event)" @view-process="viewProcess($event)" @favorite="favoriteHandler($event)"></process-card>
+				<process-advanced v-else :process="process" :process-name="processName(process)" :view="view"
+					@start-process="startProcess($event)" @view-process="viewProcess($event)" @favorite="favoriteHandler($event)"></process-advanced>
+			</div>
+		</div>
+		<start-process ref="processStart" @process-started="$refs.processStarted.show(10)" hideProcessSelection></start-process>
+		<div v-if="!processesByOptions.length">
+			<img :alt="$t(textEmptyProcessesList)" src="webjars/seven/components/process/images/empty_processes_list.svg" class="d-block mx-auto mt-5 mb-3" style="max-width: 250px">	
+			<div class="h5 text-secondary text-center">{{ $t(textEmptyProcessesList) }}</div>
+		</div>
+		<success top="0" style="z-index: 1031" ref="processStarted">
+			<span>
+			    {{ $t('process.processCheck') }}
+			    <router-link to="/flow/auth/tasks" place="tasks">{{ $t('process.tasks') }}</router-link>
+			</span>
+		</success>
+		<b-modal static ref="diagramModal" size="xl" :title="$t('process.diagram.title', [processName(selected)])" dialog-class="h-75" content-class="h-100">
+			<div class="container-fluid h-100 p-0">
+				<bpmn-viewer class="h-100" ref="diagram"></bpmn-viewer>
+			</div>
+			<template v-slot:modal-footer><b-button variant="secondary" @click="$refs.diagramModal.hide()">{{ $t('start.close') }}</b-button></template>
+		</b-modal>
+	</div>
+</div>

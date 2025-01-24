@@ -1,0 +1,41 @@
+<div v-if="task" class="h-100 d-flex flex-column bg-light">
+	<div ref="chat" v-if="chatComments && (chatComments.length > 0) && !loadingComments" class="flex-grow-1 p-2" 
+		style="transition: scroll-top 0.3s easy-in-out; overflow-y: auto; overflow-x: hidden">
+		<div v-for="(comment, index) in chatComments" class="card border-0 mb-2" style="width: 95%" :class="comment.editor === $root.user.userID ? 'float-right' : 'float-left' ">
+			<div v-if="index < 1 && comment.editor !== $root.user.userID" class="card-header border-0 bg-light p-1">
+				<small class="float-left font-weight-bold">{{ comment.editorDisplayName ? comment.editorDisplayName : comment.editor }}</small>
+			</div>
+			<div v-if="index > 0 && comment.editor !== $root.user.userID && chatComments[index-1].editor !== comment.editor" class="card-header border-0 bg-light p-1">
+				<small class="float-left font-weight-bold">{{ comment.editorDisplayName ? comment.editorDisplayName : comment.editor }}</small>
+			</div>			
+			<div class="card-body border p-1 rounded shadow-sm">			
+				<pre class="card-text" style="font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,sans-serif;
+					font-size: .875rem;
+					font-weight: 400;
+					line-height: 1.5;
+					white-space: pre-wrap;">{{ comment.note }}</pre>
+					<small class="float-right">{{ comment.date }}</small>
+			</div>
+		</div>
+	</div>
+	<div v-else class="h-100 d-flex justify-content-center align-items-center">
+		<span>No messages</span>
+	</div>	
+	<div v-if="loadingComments" class="h-100 d-flex justify-content-center align-items-center">
+		<b-spinner style="width: 3rem; height: 3rem;"></b-spinner>
+	</div>
+	<div class="border-top p-2">
+		<b-input-group class="mb-2 me-sm-2 mb-sm-0">
+			<b-form-textarea ref="textareaComment" no-resize rows="3" class="border flex-grow-1 mb-0" size="sm" placeholder="Type a message here..."
+			v-model="comment.note"></b-form-textarea>
+			<b-input-group-append>
+				<b-button class="border" @click="setComment()" variant="outline-secondary" ><strong class="mdi mdi-send-outline"></strong></b-button>
+			</b-input-group-append>											      	
+	    </b-input-group>
+	    <GlobalEvents v-if="comment.note !== ''" @keydown.enter.prevent="handleEnterDown($event)"></GlobalEvents>			
+	</div>
+</div>
+<div v-else>
+	<img :alt="$t('seven.selectTask')" src="webjars/seven/components/task/tasklist_empty.svg" class="d-block mx-auto mt-5 mb-3" style="width: 200px">		
+	<div class="h5 text-secondary text-center">{{ $t('seven.selectTask') }}</div>
+</div>

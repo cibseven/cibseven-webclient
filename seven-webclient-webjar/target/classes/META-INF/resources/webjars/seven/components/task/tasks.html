@@ -1,0 +1,54 @@
+<sidebars-flow ref="regionFilter" role="region" :aria-label="$t('seven.filters')" @selected-filter="selectedFilter()" v-model:left-open="leftOpenFilter" :left-caption="leftCaptionFilter" :rightSize="[12, 4, 2, 2, 2]" :leftSize="[12, 4, 2, 2, 2]">
+	<GlobalEvents @keydown.alt.prevent="handleKeydown"></GlobalEvents>
+	<template v-slot:left>
+		<filter-nav-bar ref="filterNavbar" @filter-alert="showFilterAlert($event)"
+			@selected-filter="selectedFilter()" @set-filter="filter = $event;listTasksWithFilter()" @selected-task="selectedTask($event)"
+			@display-popover="displayPopover($event)" @refresh-tasks="listTasksWithFilter()" @n-filters-shown="nFiltersShown = $event" class="border-0 bg-white"></filter-nav-bar>
+	</template>
+	<template v-slot:filter>
+		<filter-nav-collapsed v-if="!leftOpenFilter && leftCaptionFilter" v-model:left-open="leftOpenFilter"></filter-nav-collapsed>
+	</template>
+	<sidebars-flow ref="regionTasks" role="region" :aria-label="$t('seven.allTasks')" class="h-100 bg-light" :number="nTasksShown" header-margin="55px" v-model:left-open="leftOpenTask" v-model:right-open="rightOpenTask"
+		:leftSize="getTasksNavbarSize" :left-caption="leftCaptionTask" :right-caption="rightCaptionTask">
+		<template v-slot:left>
+			<tasks-nav-bar @filter-alert="showFilterAlert($event)" ref="navbar" :tasks="tasks" @selected-task="selectedTask($event)" 
+				@update-assignee="updateAssignee($event, 'task')" @set-filter="filter = $event;listTasksWithFilter()"
+				@open-sidebar-date="rightOpenTask = true" @show-more="showMore()" :taskResultsIndex="taskResultsIndex"
+				@process-started="listTasksWithFilter();$refs.processStarted.show(10); checkAndOpenTask($event, true)" @display-popover="displayPopover($event)" 
+				@search-filter="search = $event" @refresh-tasks="listTasksWithFilter()"></tasks-nav-bar>
+		</template>
+												
+		<transition name="slide-in" mode="out-in">
+			<router-view v-if="task !== null" role="region" :aria-label="$t('task.selectedTask')" ref="down" class="h-100" style="overflow-y: auto" @display-popover="displayPopover($event)"
+			@update-task="updateTask($event)" @update-assignee="updateAssignee($event, 'taskList')" :task="task" @complete-task="completedTask($event)"></router-view>
+			<loader v-else-if="task === null && $route.query.externalMode !== undefined" class="h-100 d-flex justify-content-center" styling="width:20%"></loader>
+			<div v-else class="text-secondary text-center">
+				<img :alt="$t('seven.selectTask')" src="webjars/seven/components/task/tasklist_empty.svg" class="mt-5" style="max-width: 250px">
+				<h5>{{ $t('seven.selectTask') }}</h5>
+			</div>
+		</transition>
+		<template v-slot:leftIcon>
+			<div>
+				<b-button style="top: 3px; right: 0" :title="tasksNavbarSize !== 2 ? $t('task.expand') : $t('task.collapse')" 
+				class="border-0 position-absolute" size="sm" variant="link" @click.stop="manageNavbarSize()">
+					<span v-if="tasksNavbarSize !== 2" class="mdi mdi-18px mdi-chevron-right"></span>
+					<span v-else class="mdi mdi-18px mdi-chevron-left"></span>
+				</b-button>
+				<b-button style="top: 3px; right: 60px" class="border-0 position-absolute" variant="link" size="sm" :title="$t('task.collapse')" @click.stop="collapseNavbar()">
+					<span class="mdi mdi-18px mdi-chevron-left"></span>
+				</b-button>
+			</div>
+		</template>
+		<template v-slot:right>
+			<div class="bg-white h-100" style="overflow-y: auto">		
+				<task-details-sidebar-all :task="task" :processInstanceHistory="processInstanceHistory" @update-assignee="updateAssignee($event, 'taskList')"></task-details-sidebar-all>			
+			</div>
+		</template>
+	</sidebars-flow>
+	<success top="0" style="z-index: 1031" ref="completedTask">{{ $t('seven.taskCompleted') }}</success>
+	<success top="0" style="z-index: 1031" ref="processStarted">{{ $t('process.processStarted') }}</success>
+	<success top="0" style="z-index: 1031" ref="filter"><span v-html="$t('nav-bar.filters.' + filterMessage, [filterName])"></span></success>
+<!-- 	<confirm ref="confirmTaskClosed" @ok="$router.push('/flow/auth/tasks/' + $route.params.filterId); setIntervalTaskList()">		 -->
+<!-- 		<span>{{ $t('errors.taskSelectedNotExist') }}</span>		 -->
+<!-- 	</confirm> -->
+</sidebars-flow>

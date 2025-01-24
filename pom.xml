@@ -1,0 +1,74 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.cibseven</groupId>
+	<artifactId>seven-webclient</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	
+	<modules>
+		<module>seven-webclient-web</module>
+		<module>seven-webclient-webjar</module>
+	</modules>
+	
+	<properties>
+		<target.path>${project.basedir}/target</target.path>
+		<version.flow.api>2.0.3-SNAPSHOT</version.flow.api>
+		<version.spring.boot>3.3.4</version.spring.boot>
+		<version.flow.api>2.0.3-SNAPSHOT</version.flow.api>
+		<version.openapi-starter-webmvc-ui>2.6.0</version.openapi-starter-webmvc-ui>
+		<maven.compiler.source>17</maven.compiler.source>
+		<maven.compiler.target>17</maven.compiler.target>
+	</properties>
+		
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-dependencies</artifactId>
+				<scope>import</scope>
+				<type>pom</type>
+				<version>${version.spring.boot}</version>
+			</dependency>			
+			<dependency>
+				<groupId>de.cib.cibflow</groupId>
+				<artifactId>flow-cloud-api</artifactId>
+				<version>${version.flow.api}</version>
+			</dependency>			
+			<dependency>
+				<groupId>de.cib.cibflow</groupId>
+				<artifactId>flow-cloud-api</artifactId>
+				<scope>import</scope>
+				<type>pom</type>
+				<version>${version.flow.api}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>		
+		
+	<dependencies>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<scope>provided</scope>
+		</dependency>
+	</dependencies>
+	
+	<build>
+		<plugins>
+			<plugin>
+	            <groupId>org.apache.maven.plugins</groupId>
+	            <artifactId>maven-compiler-plugin</artifactId>
+	            <version>3.13.0</version>
+		            <configuration>
+		                <source>${maven.compiler.source}</source>
+		                <target>${maven.compiler.target}</target>
+		                <compilerArgs>
+		                    <arg>-parameters</arg>
+		                </compilerArgs>
+		            </configuration>
+	        </plugin>
+						
+		</plugins>	
+	</build>	
+</project>

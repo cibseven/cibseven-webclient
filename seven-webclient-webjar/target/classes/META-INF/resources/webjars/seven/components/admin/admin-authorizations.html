@@ -1,0 +1,18 @@
+<div>
+	<sidebars-flow ref="sidebars" v-model:left-open="leftOpen" 
+		:left-caption="$t('seven.types')" :left-size="[12, 6, 4, 3, 2]">
+		<template v-slot:left>
+			<authorizations-nav-bar ref="navbar" @middle="$refs.sidebars.showMain(false)" class="h-100" style="overflow-y: auto"></authorizations-nav-bar>
+		</template>
+												
+		<transition name="slide-in" mode="out-in">
+			<router-view v-if="$route.params.resourceTypeId != undefined" ref="down" class="h-100" style="overflow-y: auto"></router-view>
+			<div v-else>
+				<div class="text-center text-secondary">
+					<img src="webjars/seven/components/task/no_tasks_pending.svg" class="d-block mx-auto mt-5 mb-3" style="width: 200px">
+					<h5> {{ $t('admin.authorizations.noAuthSelected') }}</h5>
+				</div>
+			</div>
+		</transition>
+	</sidebars-flow>
+</div>

@@ -1,0 +1,34 @@
+<div v-if="task" class="d-flex flex-column" style="height:100vh; max-height: calc(100vh - 96px);">
+	<!-- the calc(100vh - 96px) is used to set the maximum height of the parent div 
+	element to the viewport height minus the height of the top and bottom toolbars or headers,
+	ensuring that the layout remains consistent and scrollable within the container. -->
+	
+	<b-button v-if="$root.config.layout.showTaskDetailsSidebar" v-b-toggle.taskInfo class="fw-semibold text-start" variant="light">{{ $t('task.info') }}
+		<span class="mdi mdi-18px mdi-chevron-right"></span> 
+	</b-button>
+	<b-collapse v-if="$root.config.layout.showTaskDetailsSidebar" id="taskInfo" class="flex-grow-1" accordion="accordion-options" style="max-height: 100vh; overflow-y: auto; overflow-x: hidden;" v-model="showInfo">
+		<b-card class="h-100 border-0" body-class="p-0" >
+			<task-details-sidebar :task="task" :processInstanceHistory="processInstanceHistory"></task-details-sidebar>
+		</b-card>
+	</b-collapse>
+	<b-button v-if="$root.config.layout.showStatusBar" v-b-toggle.taskStatus class="fw-semibold text-start" variant="light">{{ $t('status-progress.state') }}
+		<span class="mdi mdi-18px mdi-chevron-right"></span> 
+	</b-button>
+	<b-collapse v-if="$root.config.layout.showStatusBar" id="taskStatus" class="flex-grow-1" accordion="accordion-options" style="max-height: 100vh; overflow-y: auto; overflow-x: hidden;" v-model="showStatus">
+		<b-card class="h-100 border-0" body-class="p-0">
+	        <task-details-sidebar-status :task="task"></task-details-sidebar-status>
+		</b-card>
+	</b-collapse>
+	<b-button v-if="$root.config.layout.showChat" v-b-toggle.taskChat class="fw-semibold text-start" variant="light">{{ $t('seven.chat') }}
+		<span class="mdi mdi-18px mdi-chevron-right"></span> 
+	</b-button>
+	<b-collapse v-if="$root.config.layout.showChat" id="taskChat" class="flex-grow-1" accordion="accordion-options" style="max-height: 100vh; overflow: hidden;" v-model="showChat">
+		<b-card class="h-100 border-0" style="overflow: auto;" body-class="p-0" >
+			<task-details-sidebar-chat :task="task" style="overflow: auto;"></task-details-sidebar-chat>
+		</b-card>
+	</b-collapse>
+</div>
+<div v-else>
+	<img :alt="$t('seven.selectTask')" src="webjars/seven/components/task/tasklist_empty.svg" class="d-block mx-auto mt-5 mb-3 h-100">		
+	<div class="h5 text-secondary text-center">{{ $t('seven.selectTask') }}</div>
+</div>
