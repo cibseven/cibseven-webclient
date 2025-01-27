@@ -66,7 +66,7 @@
 						return 'password'
 					},
 					onReset: function() {
-						this.$router.push('/flow/login')
+						this.$router.push('/seven/login')
 					},	
 					notEmpty: function(value) {
 						if (value === null) return null
@@ -101,7 +101,7 @@
 								'', this.recoverToken).then(() => {
 								this.passwordPolicyError = false
 								setTimeout(() => {
-									this.$router.push('/flow/login')			
+									this.$router.push('/seven/login')			
 								}, 1000)
 							}, error => {
 								var data = error.response.data

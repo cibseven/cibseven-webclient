@@ -132,7 +132,7 @@
 					this.submitForm = false
 				} else {
 					this.$emit('complete-task', data)
-					this.$router.push('/flow/auth/tasks/' + this.$route.params.filterId)
+					this.$router.push('/seven/auth/tasks/' + this.$route.params.filterId)
 					this.submitForm = false
 				}
 			},
@@ -154,7 +154,7 @@
 				}
 				this.$root.$refs.error.show({ type: type, params: errorParams })
 				if (params.status === 404 && params.type !== 'generic') 
-					this.$router.push('/flow/auth/tasks/' + this.$route.params.filterId) 
+					this.$router.push('/seven/auth/tasks/' + this.$route.params.filterId) 
 			},
 			cancelTask: function() {
 				this.$router.push('.')
@@ -176,7 +176,7 @@
 				if (selectedFilter) {
 					this.$store.state.filter.selected = selectedFilter
 					localStorage.setItem('filter', JSON.stringify(selectedFilter))
-					var path = '/flow/auth/tasks/' + selectedFilter.id + 
+					var path = '/seven/auth/tasks/' + selectedFilter.id + 
 						(this.$route.params.taskId ? '/' + this.$route.params.taskId : '')
 					if (this.$route.path !== path) this.$router.replace(path)
 				}

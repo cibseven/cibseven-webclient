@@ -22,13 +22,13 @@
 		            		<span class="visually-hidden">{{ $t('navigation.menu') }}</span>
 		            		<span class="mdi mdi-24px mdi-menu align-middle"></span>
 		            	</template>
-						<b-dropdown-item exact v-if="applicationPermissions($root.config.permissions.tasklist, 'tasklist') && startableProcesses" to="/flow/auth/processes">{{ $t('start.startProcesses') }}</b-dropdown-item>
-						<b-dropdown-item v-if="applicationPermissions($root.config.permissions.tasklist, 'tasklist')" to="/flow/auth/tasks">{{ $t('start.taskList') }}</b-dropdown-item>
-						<b-dropdown-item v-if="applicationPermissions($root.config.permissions.modeler, 'modeler')" to="/flow/auth/modeler">{{ $t('start.modeler') }}</b-dropdown-item>
-						<b-dropdown-item exact v-if="applicationPermissions($root.config.permissions.cockpit, 'cockpit')" to="/flow/auth/process-management">{{ $t('start.admin') }}</b-dropdown-item>
-						<b-dropdown-item v-if="applicationPermissions($root.config.permissions.cockpit, 'cockpit')" to="/flow/auth/deployments">{{ $t('deployment.title') }}</b-dropdown-item>
-						<b-dropdown-item v-if="applicationPermissions($root.config.permissions.easyform, 'easyform')" to="/flow/auth/easy-form">{{ $t('start.easyForm') }}</b-dropdown-item>
-						<b-dropdown-item v-if="hasAdminManagementPermissions($root.config.permissions)" to="/flow/auth/admin/users-management">{{ $t('start.adminPanel') }}</b-dropdown-item>
+						<b-dropdown-item exact v-if="applicationPermissions($root.config.permissions.tasklist, 'tasklist') && startableProcesses" to="/seven/auth/processes">{{ $t('start.startProcesses') }}</b-dropdown-item>
+						<b-dropdown-item v-if="applicationPermissions($root.config.permissions.tasklist, 'tasklist')" to="/seven/auth/tasks">{{ $t('start.taskList') }}</b-dropdown-item>
+						<b-dropdown-item v-if="applicationPermissions($root.config.permissions.modeler, 'modeler')" to="/seven/auth/modeler">{{ $t('start.modeler') }}</b-dropdown-item>
+						<b-dropdown-item exact v-if="applicationPermissions($root.config.permissions.cockpit, 'cockpit')" to="/seven/auth/process-management">{{ $t('start.admin') }}</b-dropdown-item>
+						<b-dropdown-item v-if="applicationPermissions($root.config.permissions.cockpit, 'cockpit')" to="/seven/auth/deployments">{{ $t('deployment.title') }}</b-dropdown-item>
+						<b-dropdown-item v-if="applicationPermissions($root.config.permissions.easyform, 'easyform')" to="/seven/auth/easy-form">{{ $t('start.easyForm') }}</b-dropdown-item>
+						<b-dropdown-item v-if="hasAdminManagementPermissions($root.config.permissions)" to="/seven/auth/admin/users-management">{{ $t('start.adminPanel') }}</b-dropdown-item>
 						<b-dropdown-item v-if="applicationPermissions($root.config.permissions.cockpit, 'cockpit')" :href="$root.config.cockpitUrl" target="_blank">{{ $t('start.cockpit') }}</b-dropdown-item>
 						<!-- <b-dropdown-item @click="openDoximaLogin()">{{ $t('start.doximaConnection') }}</b-dropdown-item> -->
 		            </b-nav-item-dropdown>            
@@ -118,8 +118,8 @@
 
 	<problem-report ref="report" url="feedback" :email="$root.user && $root.user.email" @report="$refs.down.$emit('report', $event)"></problem-report>
 	
-	<GlobalEvents v-if="$root.user && applicationPermissions($root.config.permissions.tasklist, 'tasklist')" @keydown.ctrl.left.prevent="$router.push('/flow/auth/processes')"></GlobalEvents>
-	<GlobalEvents v-if="$root.user && applicationPermissions($root.config.permissions.cockpit, 'cockpit')" @keydown.ctrl.right.prevent="$router.push('/flow/auth/process-management')"></GlobalEvents>
-	<GlobalEvents v-if="$root.user && applicationPermissions($root.config.permissions.tasklist, 'tasklist')" @keydown.ctrl.down.prevent="$router.push('/flow/auth/tasks')"></GlobalEvents>
+	<GlobalEvents v-if="$root.user && applicationPermissions($root.config.permissions.tasklist, 'tasklist')" @keydown.ctrl.left.prevent="$router.push('/seven/auth/processes')"></GlobalEvents>
+	<GlobalEvents v-if="$root.user && applicationPermissions($root.config.permissions.cockpit, 'cockpit')" @keydown.ctrl.right.prevent="$router.push('/seven/auth/process-management')"></GlobalEvents>
+	<GlobalEvents v-if="$root.user && applicationPermissions($root.config.permissions.tasklist, 'tasklist')" @keydown.ctrl.down.prevent="$router.push('/seven/auth/tasks')"></GlobalEvents>
 
 </div>

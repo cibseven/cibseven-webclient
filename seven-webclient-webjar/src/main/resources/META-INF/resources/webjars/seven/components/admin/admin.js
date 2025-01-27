@@ -78,7 +78,7 @@
 						})
 					}),
 					add: function () {
-						this.$router.push('/flow/auth/admin/create-user')
+						this.$router.push('/seven/auth/admin/create-user')
 					},
 					prepareRemove: function (user) {
 						this.userSelected = user
@@ -92,7 +92,7 @@
 						})
 					},
 					edit: function (user) {
-						this.$router.push('/flow/auth/admin/user/' + user.id + '?tab=profile')
+						this.$router.push('/seven/auth/admin/user/' + user.id + '?tab=profile')
 					},
 					showMore: function(el) {
 						if (this.firstResult <= this.users.length && !this.loading) {
@@ -188,7 +188,7 @@
 						})
 					}),		
 					add: function() {
-						this.$router.push('/flow/auth/admin/create-group')
+						this.$router.push('/seven/auth/admin/create-group')
 					},
 					prepareRemove: function(group) {
 						this.groupSelected = group
@@ -202,7 +202,7 @@
 						})
 					},
 					edit: function(group) {
-						this.$router.push('/flow/auth/admin/group/' + group.id + '?tab=information')
+						this.$router.push('/seven/auth/admin/group/' + group.id + '?tab=information')
 					},
 					showMore: function(el) {
 						if (this.firstResult <= this.groups.length && !this.loading) {
@@ -550,7 +550,7 @@
 							this.userIdError = false
 							this.$refs.userCreated.show(1)
 							setTimeout(() => {
-								this.$router.push('/flow/auth/admin/users')			
+								this.$router.push('/seven/auth/admin/users')			
 							}, 1000)
 						}, error => {
 							var data = error.response.data
@@ -561,7 +561,7 @@
 						})
 					},
 					onReset: function() {
-						this.$router.push('/flow/auth/admin/users')
+						this.$router.push('/seven/auth/admin/users')
 					},
 					notEmpty: function(value) {
 						return notEmpty(value)
@@ -591,12 +591,12 @@
 						AdminService.createGroup(this.group).then(() => {
 							this.$refs.groupCreated.show(1)
 							setTimeout(() => {
-								this.$router.push('/flow/auth/admin/groups')			
+								this.$router.push('/seven/auth/admin/groups')			
 							}, 1000)
 						})
 					},
 					onReset: function() {
-						this.$router.push('/flow/auth/admin/groups')
+						this.$router.push('/seven/auth/admin/groups')
 					},
 					notEmpty: function(value) {
 						return notEmpty(value)
@@ -638,7 +638,7 @@
 				watch: {
 					'$route.params.userId': function() {
 						if (!this.editMode && this.$route.params.userId !== this.$router.app.user.id) {							
-							this.$router.push('/flow/auth/start')
+							this.$router.push('/seven/auth/start')
 						} else {
 							this.loadUser(this.$route.params.userId)
 							this.clean()
@@ -705,7 +705,7 @@
 					deleteUser: function() {
 						AdminService.deleteUser(this.user.id).then(() => {
 							this.$refs.deleteUser.show(2)
-							this.$router.push('/flow/auth/admin/users')
+							this.$router.push('/seven/auth/admin/users')
 						})
 					},
 					unassignGroup: function(group) {
@@ -815,7 +815,7 @@
 					deleteGroup: function() {
 						AdminService.deleteGroup(this.group.id).then(() => {
 							this.$refs.deleteGroup.show(2)
-							this.$router.push('/flow/auth/admin/groups')
+							this.$router.push('/seven/auth/admin/groups')
 						})
 					},
 					clean: function () {

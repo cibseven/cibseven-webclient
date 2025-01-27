@@ -355,7 +355,7 @@
 						})
 					},
 					viewDeployment: function() {
-						this.$router.push('/flow/auth/deployments/' + this.process.deploymentId)
+						this.$router.push('/seven/auth/deployments/' + this.process.deploymentId)
 					},
 					downloadBpmn: function() {
 						var filename = this.process.resource.substr(this.process.resource.lastIndexOf('/') + 1, this.process.resource.lenght)
@@ -363,7 +363,7 @@
 							'&token=' + this.$root.user.authToken
 					},
 					openInModeler: function() {
-						this.$router.push('/flow/auth/modeler/' + this.process.id)
+						this.$router.push('/seven/auth/modeler/' + this.process.id)
 					},			
                 	clearState: function() {
             			this.selectedInstance = null
@@ -821,7 +821,7 @@
 						ProcessService.deleteProcessDefinition(process.id, true).then(() => {
 							this.getVersions(this.lazyLoadHistory).then(versions => {
 								if (versions.length === 0) {
-									this.$router.push('/flow/auth/process-management')
+									this.$router.push('/seven/auth/process-management')
 								} else {
 									this.$emit('load-version-process', versions[0])
 									this.selectedVersion = versions[0].id

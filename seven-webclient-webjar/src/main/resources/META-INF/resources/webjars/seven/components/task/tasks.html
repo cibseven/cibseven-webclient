@@ -48,7 +48,7 @@
 	<success top="0" style="z-index: 1031" ref="completedTask">{{ $t('seven.taskCompleted') }}</success>
 	<success top="0" style="z-index: 1031" ref="processStarted">{{ $t('process.processStarted') }}</success>
 	<success top="0" style="z-index: 1031" ref="filter"><span v-html="$t('nav-bar.filters.' + filterMessage, [filterName])"></span></success>
-<!-- 	<confirm ref="confirmTaskClosed" @ok="$router.push('/flow/auth/tasks/' + $route.params.filterId); setIntervalTaskList()">		 -->
+<!-- 	<confirm ref="confirmTaskClosed" @ok="$router.push('/seven/auth/tasks/' + $route.params.filterId); setIntervalTaskList()">		 -->
 <!-- 		<span>{{ $t('errors.taskSelectedNotExist') }}</span>		 -->
 <!-- 	</confirm> -->
 </sidebars-flow>

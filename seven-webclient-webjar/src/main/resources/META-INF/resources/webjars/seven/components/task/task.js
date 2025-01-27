@@ -222,7 +222,7 @@
 								var taskRedirect = tasks.find(t => t.processInstanceId === resOrin.rootProcessInstanceId)
 								if (taskRedirect) {
 									clearInterval(intervalId)
-									this.$router.push('/flow/auth/tasks/' + this.$store.state.filter.selected.id + '/' + taskRedirect.id)
+									this.$router.push('/seven/auth/tasks/' + this.$store.state.filter.selected.id + '/' + taskRedirect.id)
 								} else {
 									this.openTaskByTaskInstance(tasks, tasks.shift(), resOrin, intervalId)
 								}
@@ -235,7 +235,7 @@
 								if (taskH[0]) {
 									if (taskH[0].rootProcessInstanceId === resOrin.rootProcessInstanceId) {
 										clearInterval(intervalId)
-										this.$router.push('/flow/auth/tasks/' + this.$store.state.filter.selected.id + '/' + taskH[0].id)
+										this.$router.push('/seven/auth/tasks/' + this.$store.state.filter.selected.id + '/' + taskH[0].id)
 									} else {
 										this.openTaskByTaskInstance(tasks, tasks.shift(), resOrin, intervalId)
 									}
@@ -311,7 +311,7 @@
 						this.task = null
 						if (this.$route.params.filterId) {
 							this.listTasksWithFilterAuto()
-							var path = '/flow/auth/tasks/' + this.$route.params.filterId
+							var path = '/seven/auth/tasks/' + this.$route.params.filterId
 							if (path !== this.$route.path) this.$router.push(path)	
 						}
 					},
@@ -362,10 +362,10 @@
 								clearInterval(this.interval)
 								TaskService.checkActiveTask(this.task.id, this.$root.user.authToken).catch(() => {
 									if (this.$route.params.taskId === this.task.id) {
-										if (this.$router.currentRoute.path !== '/flow/auth/tasks/' + this.$route.params.filterId){
-											this.$router.push('/flow/auth/tasks/' + this.$route.params.filterId)
+										if (this.$router.currentRoute.path !== '/seven/auth/tasks/' + this.$route.params.filterId){
+											this.$router.push('/seven/auth/tasks/' + this.$route.params.filterId)
 										}
-										//this.$router.push('/flow/auth/tasks/' + this.$route.params.filterId)
+										//this.$router.push('/seven/auth/tasks/' + this.$route.params.filterId)
 										this.setIntervalTaskList()
 									}
 //									this.$refs.confirmTaskClosed.show()

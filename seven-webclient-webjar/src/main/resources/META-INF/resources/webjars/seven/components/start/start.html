@@ -6,7 +6,7 @@
 				<div class="row border rounded shadow-sm h-100">
 					<div class="align-top" style="flex:auto">
 						<div class="text-truncate ps-1"></div>
-						<router-link to="/flow/auth/processes" class="h-100 text-decoration-none text-reset">
+						<router-link to="/seven/auth/processes" class="h-100 text-decoration-none text-reset">
 							<div class="container">
 								<div class="row ps-3" style="height:55px">
 									<div class="col-12 align-items-center d-flex">
@@ -29,7 +29,7 @@
 				<div class="row border rounded shadow-sm h-100">
 					<div class="align-top" style="flex:auto">
 						<div class="text-truncate ps-1"></div>
-						<router-link to="/flow/auth/tasks" class="h-100 text-decoration-none text-reset">
+						<router-link to="/seven/auth/tasks" class="h-100 text-decoration-none text-reset">
 							<div class="container">
 								<div class="row ps-3" style="height:55px">
 									<div class="col-12 align-items-center d-flex">
@@ -52,7 +52,7 @@
 				<div class="row border rounded shadow-sm h-100">
 					<div class="align-top" style="flex:auto">
 						<div class="text-truncate ps-1"></div>
-						<router-link to="/flow/auth/modeler" class="h-100 text-decoration-none text-reset">
+						<router-link to="/seven/auth/modeler" class="h-100 text-decoration-none text-reset">
 							<div class="container">
 								<div class="row ps-3" style="height:55px">
 									<div class="col-12 align-items-center d-flex">
@@ -75,7 +75,7 @@
 				<div class="row border rounded shadow-sm h-100">
 					<div class="align-top" style="flex:auto">
 						<div class="text-truncate ps-1"></div>
-						<router-link to="/flow/auth/easy-form" class="h-100 text-decoration-none text-reset">
+						<router-link to="/seven/auth/easy-form" class="h-100 text-decoration-none text-reset">
 							<div class="container">
 								<div class="row ps-3" style="height:55px">
 									<div class="col-12 align-items-center d-flex">
@@ -98,7 +98,7 @@
 				<div class="row border rounded shadow-sm h-100">
 					<div class="align-top" style="flex:auto">
 						<div class="text-truncate ps-1"></div>
-						<router-link to="/flow/auth/process-management" class="h-100 text-decoration-none text-reset">
+						<router-link to="/seven/auth/process-management" class="h-100 text-decoration-none text-reset">
 							<div class="container">
 								<div class="row ps-3" style="height:55px">
 									<div class="col-12 align-items-center d-flex">
@@ -142,13 +142,13 @@
 						 <template #overlay>
 					        <b-list-group class="py-2 bg-white rounded-bottom" style="opacity: .9; position: absolute; bottom: 1px; width: calc(100% - 2px); margin-left: 1px">
 								<b-list-group-item v-if="adminManagementPermissions($root.config.permissions.usersManagement, 'user')"
-									to="/flow/auth/admin/users" class="py-1 px-3 border-start-0 border-top-0 border-end-0 h6 fw-normal mb-0" :title="$t('admin.users.title')">
+									to="/seven/auth/admin/users" class="py-1 px-3 border-start-0 border-top-0 border-end-0 h6 fw-normal mb-0" :title="$t('admin.users.title')">
 									<span class="mdi mdi-18px mdi-account-search-outline pe-1"></span>{{ $t('admin.users.title') }}</b-list-group-item>
 								<b-list-group-item v-if="adminManagementPermissions($root.config.permissions.groupsManagement, 'group')"
-									to="/flow/auth/admin/groups" class="py-1 px-3 border-start-0 border-top-0 border-end-0 h6 fw-normal mb-0" :title="$t('admin.groups.title')">
+									to="/seven/auth/admin/groups" class="py-1 px-3 border-start-0 border-top-0 border-end-0 h6 fw-normal mb-0" :title="$t('admin.groups.title')">
 									<span class="mdi mdi-18px mdi-account-group-outline pe-1"></span>{{ $t('admin.groups.title') }}</b-list-group-item>			
 								<b-list-group-item v-if="adminManagementPermissions($root.config.permissions.authorizationsManagement, 'authorization')"
-									to="/flow/auth/admin/authorizations" class="py-1 px-3 border-0 h6 fw-normal mb-0" :title="$t('admin.authorizations.title')">
+									to="/seven/auth/admin/authorizations" class="py-1 px-3 border-0 h6 fw-normal mb-0" :title="$t('admin.authorizations.title')">
 									<span class="mdi mdi-18px mdi-account-key-outline pe-1"></span>{{ $t('admin.authorizations.title') }}</b-list-group-item>
 							</b-list-group>
 				      	</template>
@@ -160,7 +160,7 @@
 				<div class="row border rounded shadow-sm h-100">
 					<div class="align-top" style="flex:auto">
 						<div class="text-truncate ps-1"></div>
-						<router-link to="/flow/auth/flow-resource" class="h-100 text-decoration-none text-reset">
+						<router-link to="/seven/auth/flow-resource" class="h-100 text-decoration-none text-reset">
 							<div class="container">
 								<div class="row ps-3" style="height:55px">
 									<div class="col-12 align-items-center d-flex">
@@ -183,7 +183,7 @@
 				<div class="row border rounded shadow-sm h-100">
 					<div class="align-top" style="flex:auto">
 						<div class="text-truncate ps-1"></div>
-						<router-link to="/flow/auth/flow-process-management" class="h-100 text-decoration-none text-reset">
+						<router-link to="/seven/auth/flow-process-management" class="h-100 text-decoration-none text-reset">
 							<div class="container">
 								<div class="row ps-3" style="height:55px">
 									<div class="col-12 align-items-center d-flex">

@@ -64,16 +64,16 @@
 				},
 				methods: {
 					goToDeployment: function(process) {
-						this.$router.push('/flow/auth/deployments/' + process.deploymentId)
+						this.$router.push('/seven/auth/deployments/' + process.deploymentId)
 					},
 					goToCockpit: function(process) {
 						window.open(this.$root.config.cockpitUrl + '#/process-definition/' + process.id, '_blank')
 					},
 					goToShowProcessHistory: function(process) {
-						this.$router.push('/flow/auth/management/' + process.key)
+						this.$router.push('/seven/auth/management/' + process.key)
 					},
 					openInModeler: function(process) {
-						this.$router.push('/flow/auth/modeler/' + process.id)
+						this.$router.push('/seven/auth/modeler/' + process.id)
 					}
 				}
 			}

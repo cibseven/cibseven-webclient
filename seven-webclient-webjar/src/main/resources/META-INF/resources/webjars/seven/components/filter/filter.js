@@ -54,7 +54,7 @@
 									Object.keys(this.$route.query).forEach(key => {
 										query += key + '=' + this.$route.query[key]
 									})							
-									this.$router.replace('/flow/auth/tasks/' + selectedFilter.id + '/' + (this.$route.params.taskId || '') + query)
+									this.$router.replace('/seven/auth/tasks/' + selectedFilter.id + '/' + (this.$route.params.taskId || '') + query)
 								}	
 							} else {
 								this.selectFilter(filterID)								
@@ -511,7 +511,7 @@
 								this.$emit('selected-filter', this.$store.state.filter.selected.id)
 								localStorage.setItem('filter', JSON.stringify(this.$store.state.filter.selected))
 								if (this.$route.params.filterId === '*') return this.handleTaskLink(taskId)
-								var path = '/flow/auth/tasks/' + this.$store.state.filter.selected.id + 
+								var path = '/seven/auth/tasks/' + this.$store.state.filter.selected.id + 
 									(taskId ? '/' + taskId : '')
 								if (this.$route.path !== path) this.$router.replace(path)
 							}
@@ -527,7 +527,7 @@
 							this.$emit('filter-alert', { message: 'msgFilterDeleted', filter: this.$store.state.filter.selected.name })
 							localStorage.removeItem('filter')
 							if (this.$store.state.filter.list[0]) this.selectFilter(this.$store.state.filter.list[0])
-							else this.$router.push('/flow/auth/tasks')
+							else this.$router.push('/seven/auth/tasks')
 						})
 					},
 					showFilterDialog: function(mode) {
@@ -570,7 +570,7 @@
 							if (results.some(r => { return r })) this.$emit('selected-task', task)
 							else {
 								this.$root.$refs.error.show({ type: 'AccessDeniedException', params: [task.id] })
-								this.$router.push('/flow/auth/tasks/' + this.$store.state.filter.selected.id)
+								this.$router.push('/seven/auth/tasks/' + this.$store.state.filter.selected.id)
 							}
 						})
 					}
@@ -652,7 +652,7 @@
 							this.$store.state.filter.selected = selectedFilter
 							this.$emit('selected-filter', selectedFilter.id)
 							localStorage.setItem('filter', JSON.stringify(selectedFilter))
-							var path = '/flow/auth/tasks/' + selectedFilter.id + 
+							var path = '/seven/auth/tasks/' + selectedFilter.id + 
 								(this.$route.params.taskId ? '/' + this.$route.params.taskId : '')
 							if (this.$route.path !== path) this.$router.replace(path)
 						}

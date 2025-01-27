@@ -220,7 +220,7 @@
 						Vue.nextTick(function() {
 							this.$refs.navbar.getVersions()
 						}.bind(this))
-						this.$router.push('/flow/auth/management/' + event.key)
+						this.$router.push('/seven/auth/management/' + event.key)
 					},
 					exportCSV: function() {
 						var headers = [

@@ -28,7 +28,7 @@ clearTimeout, setTimeout, window, encodeURIComponent, document */
 				},
 				watch: {
 					pageTitle: function(title) {
-						let defaultTitle = 'CIB flow'
+						let defaultTitle = 'CIB Seven'
 						if (this.$root.config.productNamePageTitle) defaultTitle = this.$root.config.productNamePageTitle
 						if (!title) document.title = defaultTitle
 						else document.title = defaultTitle +' | ' + title						
@@ -87,7 +87,7 @@ clearTimeout, setTimeout, window, encodeURIComponent, document */
 	    				var isNotifiedUser = localStorage.getItem('ienotify')
 	    				if (!isNotifiedUser) this.$refs.ieNotification.show() //must notify the user
     				}
-					let defaultTitle = 'CIB flow'
+					let defaultTitle = 'CIB Seven'
 					if (this.$root.config.productNamePageTitle) defaultTitle = this.$root.config.productNamePageTitle
 					
 					if (!this.pageTitle) document.title = defaultTitle

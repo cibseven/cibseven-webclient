@@ -173,7 +173,7 @@
 				},
 				methods: {
 					setDeployment: function(d) {
-						this.$router.push('/flow/auth/deployments/' + d.id)
+						this.$router.push('/seven/auth/deployments/' + d.id)
 					},
 					setDeploymentFromUrl: function(deploymentId) {
 						if (this.deployments.length > 0 && deploymentId) {

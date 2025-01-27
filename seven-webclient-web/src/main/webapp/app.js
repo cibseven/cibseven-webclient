@@ -109,7 +109,7 @@
 				css.setAttribute('href', 'webjars/common-frontend/bootstrap/custom-bootstrap.css?v=1.14.0')
 				document.title = 'CIB flow'
 			} else {
-				css.setAttribute('href', 'themes/' + theme + '/bootstrap_4.5.0.min.css')
+				css.setAttribute('href', 'webjars/seven/themes/' + theme + '/bootstrap_4.5.0.min.css')
 				document.title = 'Aufgabenübersicht'
 			}
 
@@ -120,12 +120,12 @@
 			css.setAttribute('type', 'text/css')
 			favicon.setAttribute('rel', 'icon')
 			favicon.setAttribute('type', 'image/x-icon')
-			favicon.setAttribute('href', 'themes/' + theme + '/favicon.ico')
+			favicon.setAttribute('href', 'webjars/seven/themes/' + theme + '/favicon.ico')
 			document.head.appendChild(css)
 			document.head.appendChild(favicon)
-			logoPath = 'themes/' + theme + '/logo.svg'
-			loginImgPath = 'themes/' + theme + '/login-image.svg'
-			resetPasswordImgPath = 'components/password//reset-password.svg'
+			logoPath = 'webjars/seven/themes/' + theme + '/logo.svg'
+			loginImgPath = 'webjars/seven/themes/' + theme + '/login-image.svg'
+			resetPasswordImgPath = 'webjars/seven/components/password/reset-password.svg'
 		}
 		
 		loadTheme()
@@ -309,9 +309,9 @@
 				history: VueRouter.createWebHashHistory(),
 				linkActiveClass: 'active',
 				routes: [
-					{ path: '/', redirect: '/flow/auth/start' },
+					{ path: '/', redirect: '/seven/auth/start' },
 					{ path: '/start-process', name: 'start-process', component: () => {
-						return axios.get('components/process/external-start-process.html').then(function(html) {
+						return axios.get('webjars/seven/components/process/external-start-process.html').then(function(html) {
 							return { 
 								template: html, 
 								data: function() {
@@ -358,7 +358,7 @@
 									else next()
 								})
 							}, component: () => { 
-							return axios.get('components/login.html').then(function(html) {
+							return axios.get('webjars/seven/components/login.html').then(function(html) {
 								return { 
 									template: html, 
 									data: function() {
@@ -405,7 +405,7 @@
 							},
 						}, children: [
 							{ path: 'start', name: 'start', component: () => { 
-								return axios.get('components/start/start.html').then(function(html) {
+								return axios.get('webjars/seven/components/start/start.html').then(function(html) {
 									return { 
 										template: html, 
 										mixins: [permissionsMixin],
@@ -520,7 +520,7 @@
 							}, 
 							children: [
 								{ path: 'users-management', name: 'usersManagement', component: () => { 
-									return axios.get('components/admin/users-management.html').then(function(html) {
+									return axios.get('webjars/seven/components/admin/users-management.html').then(function(html) {
 										return { 
 											template: html, 
 											mixins: [permissionsMixin]
