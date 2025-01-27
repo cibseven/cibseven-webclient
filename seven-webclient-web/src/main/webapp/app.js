@@ -16,40 +16,40 @@
 	import { ResetDialog, OtpDialog } from './webjars/common-frontend/auth.js'
 	import { HoverStyle } from './webjars/common-frontend/directives.js'
 	import { CIBForm, CIBDatepicker2, SecureInput } from './webjars/common-frontend/forms.js'
-	import { permissionsMixin } from './permissions.js';
-	import { QuickNavBar, Sidebar, SidebarItem, SidebarDropright } from './components/quick-nav-bar.js';
-	import { PasswordRecover } from './components/password/password.js';
-	import { Seven, FilterableSelect, SidebarElementGroup, SmartSearch, SidebarsFlow, IconButton, MultisortModal, LoginFlow } from './components/components.js';
+	import { permissionsMixin } from './webjars/seven/permissions.js';
+	import { QuickNavBar, Sidebar, SidebarItem, SidebarDropright } from './webjars/seven/components/quick-nav-bar.js';
+	import { PasswordRecover } from './webjars/seven/components/password/password.js';
+	import { Seven, FilterableSelect, SidebarElementGroup, SmartSearch, SidebarsFlow, IconButton, MultisortModal, LoginFlow } from './webjars/seven/components/components.js';
 	// COCKPIT COMPONENTS //
-	import { BpmnViewer } from './components/process/bpmn-viewer.js';
-	import { ProcessManagement } from './components/process/process-management.js';
+	import { BpmnViewer } from './webjars/seven/components/process/bpmn-viewer.js';
+	import { ProcessManagement } from './webjars/seven/components/process/process-management.js';
 	// Inside this process.js, there are components which belong, for example, to the "Start process" section
 	// is this considered cockpit or tasklist?, depending on that, maybe we should split it.
 	import { Process, InstancesTable, ProcessVariablesSidebar, ProcessVariablesTable, Processes, 
 		ProcessDetailsSidebar, ProcessCard, ProcessAdvanced, ProcessTable, UserTasksTable, 
-		TaskAssignationModal, AddVariableModal } from './components/process/process.js';
-	import { Management } from './components/management/management.js';
-	import { Deployments, ResourcesNavBar, DeploymentList } from './components/deployment/deployment.js';
+		TaskAssignationModal, AddVariableModal } from './webjars/seven/components/process/process.js';
+	import { Management } from './webjars/seven/components/management/management.js';
+	import { Deployments, ResourcesNavBar, DeploymentList } from './webjars/seven/components/deployment/deployment.js';
 	/////////////////////////////
 	// TASKLIST COMPONENTS //
-	import { Tasks, TasksNavBar, Task, AdvancedSearchModal } from './components/task/task.js';
-	import { TaskDetailsSidebarAll, TaskDetailsSidebar, TaskDetailsSidebarChat, TaskDetailsSidebarStatus } from './components/task/task-sidebars.js';
-	import { CamundaFilter, FilterModal, FilterNavBar, FilterNavCollapsed } from './components/filter/filter.js';
-	import { RenderTemplate } from './components/render-template/render-template.js';
-	import { StartProcess } from './components/process/start-process.js';
+	import { Tasks, TasksNavBar, Task, AdvancedSearchModal } from './webjars/seven/components/task/task.js';
+	import { TaskDetailsSidebarAll, TaskDetailsSidebar, TaskDetailsSidebarChat, TaskDetailsSidebarStatus } from './webjars/seven/components/task/task-sidebars.js';
+	import { CamundaFilter, FilterModal, FilterNavBar, FilterNavCollapsed } from './webjars/seven/components/filter/filter.js';
+	import { RenderTemplate } from './webjars/seven/components/render-template/render-template.js';
+	import { StartProcess } from './webjars/seven/components/process/start-process.js';
 	/////////////////////////////
 	// ADMIN COMPONENTS //
 	import { AdminUsers, AdminGroups, AdminAuthorizations, AdminAuthorizationsTable,
-		AuthorizationsNavBar, CreateUser, CreateGroup, ProfileUser, ProfileGroup } from './components/admin/admin.js';
+		AuthorizationsNavBar, CreateUser, CreateGroup, ProfileUser, ProfileGroup } from './webjars/seven/components/admin/admin.js';
 	//////////////////////////
-	import { Modeler } from './components/modeler/modeler.js';
-	import { EasyForm } from './components/easy-form/easy-form.js';
-	import { FlowResource } from './components/flow-resource/flow-resource.js';
-	import { FlowProcessManagement } from './components/flow-process-management/flow-process-management.js';
-	import { SupportModal } from './components/support-modal.js';
-	import { StatusProgressBar } from './components/status-progress-bar/status-progress-bar.js';
-	import { buildProcessStore, buildFilterStore, buildUserStore, buildAdvancedSearchStore } from  './store.js';
-	import { FilterService, ProcessService, AdminService, InfoService, AuthService } from './services.js';
+	import { Modeler } from './webjars/seven/components/modeler/modeler.js';
+	import { EasyForm } from './webjars/seven/components/easy-form/easy-form.js';
+	import { FlowResource } from './webjars/seven/components/flow-resource/flow-resource.js';
+	import { FlowProcessManagement } from './webjars/seven/components/flow-process-management/flow-process-management.js';
+	import { SupportModal } from './webjars/seven/components/support-modal.js';
+	import { StatusProgressBar } from './webjars/seven/components/status-progress-bar/status-progress-bar.js';
+	import { buildProcessStore, buildFilterStore, buildUserStore, buildAdvancedSearchStore } from  './webjars/seven/store.js';
+	import { FilterService, ProcessService, AdminService, InfoService, AuthService } from './webjars/seven/services.js';
 	 
 	const eventBus = mitt()
 	checkExternalReturn(window.location.href, window.location.hash)
@@ -223,7 +223,7 @@
 				handleTaskWorker: function() {
 					if (window.Worker && localStorage.getItem('tasksCheckNotificationsDisabled') !== 'true' &&
 						this.$root.config.notifications.tasks.enabled && Notification.permission === 'granted') {
-					    const taskWorker = new Worker('./task-worker.js')
+					    const taskWorker = new Worker('./webjars/seven/task-worker.js')
 						const authToken = sessionStorage.getItem('token') || localStorage.getItem('token')
 					    taskWorker.postMessage({ type: 'setup', interval: this.$root.config.notifications.tasks.interval, 
 							authToken: authToken, userId: this.$root.user.id })

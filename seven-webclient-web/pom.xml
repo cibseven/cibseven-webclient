@@ -19,8 +19,44 @@
 	    <dependency>
 	        <groupId>de.cib.cibflow</groupId>
 	        <artifactId>flow-common-frontend-jar</artifactId>
-	        <version>1.0.1</version>
+			<version>1.1.0-SNAPSHOT</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.webjars.npm</groupId>
+					<artifactId>vuex</artifactId>
+				</exclusion>
+			</exclusions>			
 	    </dependency>
+	     <dependency>
+		    <groupId>org.webjars.npm</groupId>
+		    <artifactId>vue</artifactId>
+		    <version>3.5.13</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.webjars.npm</groupId>
+		    <artifactId>vuex</artifactId>
+		    <version>4.1.0</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.webjars.npm</groupId>
+		    <artifactId>vue-router</artifactId>
+		    <version>4.5.0</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.webjars.npm</groupId>
+		    <artifactId>vue-i18n</artifactId>
+		    <version>9.14.0</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.webjars.npm</groupId>
+		    <artifactId>mitt</artifactId>
+		    <version>3.0.1</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.webjars</groupId>
+		    <artifactId>zxcvbn</artifactId>
+		    <version>4.4.2</version>
+		</dependency>
 	   	<dependency>
 			<groupId>org.webjars</groupId>
 			<artifactId>momentjs</artifactId>

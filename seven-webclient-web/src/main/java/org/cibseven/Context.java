@@ -89,9 +89,7 @@ public class Context implements WebMvcConfigurer, HandlerMethodArgumentResolver 
 
 	@Override // http://www.webjars.org/documentation
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {
-		//registry.addResourceHandler("/webjars/**").addResourceLocations("/webjars/");
 	    registry.addResourceHandler("/webjars/**").addResourceLocations("classpath:/META-INF/resources/webjars/");		
-		//registry.addResourceHandler("/webjars/**").addResourceLocations("/webjars/");
 		registry.addResourceHandler("**").addResourceLocations("/").setCacheControl(CacheControl.noCache());
 	}
 
