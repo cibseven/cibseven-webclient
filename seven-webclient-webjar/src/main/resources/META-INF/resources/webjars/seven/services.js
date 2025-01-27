@@ -289,6 +289,9 @@
 		findActivitiesInstancesHistory: function(processInstanceId) { 
 			return axios.get("flow-engine/process-history/activity/by-process-instance/" + processInstanceId) 
 		},
+		findActivitiesProcessDefinitionHistory: function(processDefinitionId) { 
+			return axios.get("flow-engine/process-history/activity/by-process-definition/" + processDefinitionId) 
+		},
 		fetchProcessInstanceVariablesHistory: function(processInstanceId, deserialize) { 
 			return axios.get("flow-engine/process-history/instance/by-process-instance/" + processInstanceId + "/variables",
 				{ params: { 

@@ -53,6 +53,7 @@
 							this.process = process
 							this.loadInstances()
 							if (!this.process.statistics) this.loadStatistics()
+							if (!this.process.activitiesHistory) this.loadProcessActivitiesHistory()
 						})
 					}
 				},							
@@ -66,6 +67,12 @@
 							this.process = process
 							this.loadInstances()
 							if (!this.process.statistics) this.loadStatistics()
+							if (!this.process.activitiesHistory) this.loadProcessActivitiesHistory()
+						})
+					},
+					loadProcessActivitiesHistory: function() {
+						HistoryService.findActivitiesProcessDefinitionHistory(this.process.id).then(activities => {
+							this.process.activitiesHistory = activities
 						})
 					},
 					loadProcessVersion: function(process) {
@@ -74,6 +81,7 @@
 							this.process = process
 							this.loadInstances()
 							if (!this.process.statistics) this.loadStatistics()
+							if (!this.process.activitiesHistory) this.loadProcessActivitiesHistory()
 						}
 					},
 					loadInstances: function(showMore) {

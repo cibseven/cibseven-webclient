@@ -7,19 +7,19 @@
 	</div>
 	<sidebars-flow ref="sidebars" class="border-top overflow-auto" v-model:left-open="leftOpen" :left-caption="shortendLeftCaption">
 		<template v-slot:left>
-			<process-details-sidebar ref="navbar" v-if="instances" :process="process" :selectedInstance="selectedInstance" :selectedTask="task"
+			<process-details-sidebar ref="navbar" v-if="instances" :process="process" :selected-instance="selectedInstance" :selected-task="task"
 				@load-version-process="loadVersionProcess($event)" @load-instances="loadInstances()"
 				:instances="instances"></process-details-sidebar>
 		</template>
 		<transition name="slide-in" mode="out-in">
-			<process ref="process" v-if="instances && !selectedInstance" :activityId="activityId" :loading="loading" :process="process" :instances="instances" :activityInstance="activityInstance" :first-result="firstResult" :max-results="maxResults" @show-more="showMore()"
-			 :activityInstanceHistory="activityInstanceHistory" @activity-id="filterByActivityId($event)" @instance-deleted="clearInstance()" @instance-selected="setSelectedInstance($event)" @task-selected="setSelectedTask($event)" @filter-instances="filterInstances($event)"
+			<process ref="process" v-if="instances && !selectedInstance" :activity-id="activityId" :loading="loading" :process="process" :instances="instances" :activity-instance="activityInstance" :first-result="firstResult" :max-results="maxResults" @show-more="showMore()"
+			 :activity-instance-history="activityInstanceHistory" @activity-id="filterByActivityId($event)" @instance-deleted="clearInstance()" @instance-selected="setSelectedInstance($event)" @task-selected="setSelectedTask($event)" @filter-instances="filterInstances($event)"
 			 @open-subprocess="openSubprocess($event)" @update-items="updateItems"
 			 ></process>
 		</transition>
 		<transition name="slide-in" mode="out-in">
-			<process-variables-table ref="navbar-variables" v-if="selectedInstance" :process="process" :activityInstance="activityInstance" :activityInstanceHistory="activityInstanceHistory" @open-subprocess="openSubprocess($event)"
-			:selectedInstance="selectedInstance" @clear-state="setSelectedInstance({ selectedInstance: null })" @task-selected="setSelectedTask($event)" @unselect-instance="selectedInstance = null"></process-variables-table>
+			<process-variables-table ref="navbar-variables" v-if="selectedInstance" :process="process" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" @open-subprocess="openSubprocess($event)"
+			:selected-instance="selectedInstance" @clear-state="setSelectedInstance({ selectedInstance: null })" @task-selected="setSelectedTask($event)" @unselect-instance="selectedInstance = null"></process-variables-table>
 		</transition>
 	</sidebars-flow>
 	<task-popper ref="importPopper"></task-popper>
