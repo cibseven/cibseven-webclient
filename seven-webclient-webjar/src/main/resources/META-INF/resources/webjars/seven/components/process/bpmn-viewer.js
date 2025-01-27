@@ -3,7 +3,7 @@
 	import { ProcessService } from '../../services.js';	
 
 	var interactionTypes = ['bpmn:UserTask', 'bpmn:CallActivity']
-	var drawedTypes = ['userTask', 'serviceTask', 'scriptTask', 'callActivity', 'exclusiveGateway']
+	var drawedTypes = ['userTask', 'serviceTask', 'scriptTask', 'callActivity', 'exclusiveGateway', 'endEvent', 'startEvent']
 	var events = ['element.click', 'element.hover', 'element.out']
 	
 	function getActivitiesToMark(treeObj) {
@@ -26,8 +26,17 @@
 		return axios.get('webjars/seven/components/process/bpmn-viewer.html').then(function (html) {
             return {
                 template: html,
-                props: { activityInstance: Object, activityInstanceHistory: Array, statistics: Array, activityId: String, processDefinitionId: String },
-				data: function() { return { viewer: null, currentElement: null, overlayList: [], loader: true, runningActivities: [] } },
+                props: { activityInstance: Object, activityInstanceHistory: Array, 
+					statistics: Array, activityId: String, processDefinitionId: String, activitiesHistory: Array },
+				data: function() { 
+					return { 
+						viewer: null,
+						currentElement: null,
+						overlayList: [],
+						loader: true,
+						runningActivities: [] 
+					} 
+				},
 				watch: {
 					activityInstanceHistory: function() {
 						setTimeout(() => {
@@ -107,36 +116,27 @@
 							})
 						}
 						if (this.activityInstanceHistory != null) {
-							var filledActivities = []
-							this.activityInstanceHistory.forEach(item => {
-								var typeAllowed = this.getTypeAllowed(item.activityType, drawedTypes)
-								if (!typeAllowed || !item.endTime) return
-								if (!filledActivities.includes(item.activityId)) {
-									filledActivities.push(item.activityId)
-									var shape = elementRegistry.get(item.activityId)
-									if (shape) {
-										var overlayHtml = '<span class="position-absolute" style="width: max-content">'
-										overlayHtml += '<span class="badge bg-gray rounded-pill border border-dark px-2 py-1 me-1">' + 1 + '</span>'
-										this.setHtmlOnDiagram(overlays, item.activityId, overlayHtml, { bottom: 15, right: 13 })
-									}
-								}
-							})
+							this.drawActivitiesHistory(this.activityInstanceHistory, elementRegistry, overlays)
 						}
-						if (this.statistics && (!this.activityInstance && !this.activityInstanceHistory)) {
-							this.statistics.forEach(item => {
-								var shape = elementRegistry.get(item.id)
-								if (shape) {
-									var htmlTemplate = '<span class="position-absolute" style="width: max-content">'
-								 	htmlTemplate += '<span class="badge bg-info rounded-pill border border-dark px-2 py-1 me-1">' + item.instances + '</span>'
-									if (item.failedJobs > 0) {
-										htmlTemplate += '<span class="badge bg-danger rounded-pill text-white border border-dark px-2 py-1">'
-										htmlTemplate += item.failedJobs + '</span>'
-									}
-									htmlTemplate += '</span>'
-									this.setHtmlOnDiagram(overlays, item.id, htmlTemplate, { bottom: 15, left: -7 })
-									shape.nInstances = item.instances
-								} 
-							})
+						if (!this.activityInstance && !this.activityInstanceHistory) {
+							if (this.statistics) {
+								this.statistics.forEach(item => {
+									var shape = elementRegistry.get(item.id)
+									if (shape) {
+										var htmlTemplate = this.getBadgeOverlayHtml(item.instances, 'bg-info')
+										if (item.failedJobs > 0) {
+											htmlTemplate += '<span class="badge bg-danger rounded-pill text-white border border-dark px-2 py-1">'
+											htmlTemplate += item.failedJobs + '</span>'
+										}
+										this.setHtmlOnDiagram(overlays, item.id, htmlTemplate, { bottom: 15, left: -7 })
+										shape.nInstances = item.instances
+									} 
+								})
+							}
+							if (this.activitiesHistory) {
+								filledActivities = {}
+								this.drawActivitiesHistory(this.activitiesHistory, elementRegistry, overlays)
+							}
 						}
 						
 						var callActivitiesList = elementRegistry.getAll().filter(function(element) {
@@ -153,10 +153,9 @@
 									var tempDiv = document.createElement('div')
 									tempDiv.innerHTML = htmlTemplate
 									var button = tempDiv.firstChild
-									button.addEventListener('click', function() {
+									button.addEventListener('click', () => {
 										this.openSubprocess(ca.id)
-									}.bind(this))
-									
+									})
 									this.setHtmlOnDiagram(overlays, ca.id, button, { bottom: -7, right: 15 })									
 								} 
 							})
@@ -189,6 +188,27 @@
 					        })
 						})						
 					  	
+					},
+					drawActivitiesHistory: function(activities, elementRegistry, overlays) {
+						var filledActivities = {}
+						activities.forEach(item => {
+							var typeAllowed = this.getTypeAllowed(item.activityType, drawedTypes)
+							if (!typeAllowed || !item.endTime) return
+							if (!filledActivities[item.activityId]) filledActivities[item.activityId] = 1
+							else filledActivities[item.activityId]++
+						})
+						Object.keys(filledActivities).forEach(key => {
+							var shape = elementRegistry.get(key)
+							if (shape) {
+								this.setHtmlOnDiagram(overlays, key, this.getBadgeOverlayHtml(filledActivities[key], 'bg-gray'), 
+									{ bottom: 15, right: 13 })
+							}
+						})
+					},
+					getBadgeOverlayHtml: function(number, classes) {
+						var overlayHtml = `<span class="position-absolute" style="width: max-content">
+							<span class="badge rounded-pill border border-dark px-2 py-1 me-1 ${classes}">${number}</span>`
+						return overlayHtml
 					},
 					cleanDiagramState: function() {
 						var overlays = this.viewer.get('overlays')

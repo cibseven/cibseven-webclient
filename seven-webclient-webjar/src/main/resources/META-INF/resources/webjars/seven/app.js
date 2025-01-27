@@ -19,21 +19,29 @@
 	import { permissionsMixin } from './permissions.js';
 	import { QuickNavBar, Sidebar, SidebarItem, SidebarDropright } from './components/quick-nav-bar.js';
 	import { PasswordRecover } from './components/password/password.js';
-	import { BpmnViewer } from './components/process/bpmn-viewer.js';
 	import { Seven, FilterableSelect, SidebarElementGroup, SmartSearch, SidebarsFlow, IconButton, MultisortModal, LoginFlow } from './components/components.js';
-	import { Tasks, TasksNavBar, Task, AdvancedSearchModal } from './components/task/task.js';
-	import { TaskDetailsSidebarAll, TaskDetailsSidebar, TaskDetailsSidebarChat, TaskDetailsSidebarStatus } from './components/task/task-sidebars.js';
-	import { CamundaFilter, FilterModal, FilterNavBar, FilterNavCollapsed } from './components/filter/filter.js';
+	// COCKPIT COMPONENTS //
+	import { BpmnViewer } from './components/process/bpmn-viewer.js';
+	import { ProcessManagement } from './components/process/process-management.js';
+	// Inside this process.js, there are components which belong, for example, to the "Start process" section
+	// is this considered cockpit or tasklist?, depending on that, maybe we should split it.
 	import { Process, InstancesTable, ProcessVariablesSidebar, ProcessVariablesTable, Processes, 
 		ProcessDetailsSidebar, ProcessCard, ProcessAdvanced, ProcessTable, UserTasksTable, 
 		TaskAssignationModal, AddVariableModal } from './components/process/process.js';
-	import { ProcessManagement } from './components/process/process-management.js';
 	import { Management } from './components/management/management.js';
 	import { Deployments, ResourcesNavBar, DeploymentList } from './components/deployment/deployment.js';
+	/////////////////////////////
+	// TASKLIST COMPONENTS //
+	import { Tasks, TasksNavBar, Task, AdvancedSearchModal } from './components/task/task.js';
+	import { TaskDetailsSidebarAll, TaskDetailsSidebar, TaskDetailsSidebarChat, TaskDetailsSidebarStatus } from './components/task/task-sidebars.js';
+	import { CamundaFilter, FilterModal, FilterNavBar, FilterNavCollapsed } from './components/filter/filter.js';
 	import { RenderTemplate } from './components/render-template/render-template.js';
 	import { StartProcess } from './components/process/start-process.js';
-	import { AdminUsers, AdminGroups, AdminAuthorizations, AdminAuthorizationsTable, 
+	/////////////////////////////
+	// ADMIN COMPONENTS //
+	import { AdminUsers, AdminGroups, AdminAuthorizations, AdminAuthorizationsTable,
 		AuthorizationsNavBar, CreateUser, CreateGroup, ProfileUser, ProfileGroup } from './components/admin/admin.js';
+	//////////////////////////
 	import { Modeler } from './components/modeler/modeler.js';
 	import { EasyForm } from './components/easy-form/easy-form.js';
 	import { FlowResource } from './components/flow-resource/flow-resource.js';
