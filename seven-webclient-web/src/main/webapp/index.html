@@ -7,16 +7,10 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 	<meta name="description" content="cibseven.">
 
-	<!--<title>CIB </title>-->
-	<!--<link rel="icon" type="image/x-icon" href="themes/generic/favicon.ico">-->
-
-	<link rel="stylesheet" href="webjars/common-frontend/bootstrap/bootstrap_4.5.0.min.css">
-	<link rel="stylesheet" href="webjars/common-frontend/lib/bootstrap-vue_2.21.2.min.css"/>
+	<link rel="stylesheet" href="webjars/common-frontend/bootstrap/custom-bootstrap.css">
 	<link rel="stylesheet" href="webjars/common-frontend/material-icons/css/materialdesignicons_6.5.95.min.css">
-	<link rel="stylesheet" href="webjars/common-frontend/lib/vue-datepicker-local.css">
 	<link rel="stylesheet" href="webjars/common-frontend/animations.css">
 	<link rel="stylesheet" href="webjars/common-frontend/cib-icons/style.css">
-	<link rel="stylesheet" href="webjars/seven/flow-icons/cib-icons.css">
 	<link rel="stylesheet" href="webjars/seven/components/status-progress-bar/status-progress-bar.css">
 
 	<style>
@@ -111,19 +105,14 @@
 		<router-view></router-view>
 		<error ref="error"></error>
 		<confirm ref="report" @ok="sendReport">
-			<span slot-scope="_" v-cloak>{{ _.param && $t('errors.' + _.param.type) }}</span>
+			<template v-slot:default="data">
+		        <span v-cloak>{{ data.param && $t('errors.' + data.param.type) }}</span>
+		    </template>
 		</confirm>
 	</div>
 	
-	<script src="webjars/common-frontend/lib/lottie_5.7.12.min.js"></script>
-	
-	<script src="webjars/common-frontend/forms.js"></script>
-	<script src="webjars/common-frontend/auth.js"></script>
-	<script src="webjars/common-frontend/dialogs/dialogs.js"></script>
-	<script src="webjars/common-frontend/layout/layout.js"></script>
-	<script src="webjars/common-frontend/files/files.js"></script>
-	<script src="webjars/common-frontend/lottie.js"></script>
-	<script src="webjars/common-frontend/directives.js"></script>
+	<script src="webjars/common-frontend/bootstrap/popper.js"></script>
+	<script src="webjars/common-frontend/bootstrap/bootstrap.bundle_5.3.3.min.js"></script>
 	<script src="webjars/common-frontend/polyfills.js"></script>
 	
 	<script type="module" src="app.js"></script>
