@@ -6,12 +6,12 @@
 	<artifactId>seven-webclient</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
-	
+
 	<modules>
 		<module>seven-webclient-web</module>
 		<module>seven-webclient-webjar</module>
 	</modules>
-	
+
 	<properties>
 		<target.path>${project.basedir}/target</target.path>
 		<version.flow.api>2.0.3-SNAPSHOT</version.flow.api>
@@ -21,15 +21,30 @@
 		<maven.compiler.source>17</maven.compiler.source>
 		<maven.compiler.target>17</maven.compiler.target>
 		<project.git.url>https://gitlab.cib.de/web/flow/cloud/seven-webclient.git</project.git.url>
+		<nexus-repository.url>https://nexus.cib.de/repository</nexus-repository.url>
 	</properties>
-	
+
 	<scm>
 		<connection>scm:git:${project.git.url}</connection>
 		<developerConnection>scm:git:${project.git.url}</developerConnection>
 		<url>${project.git.url}</url>
 		<tag>HEAD</tag>
 	</scm>
-	
+
+	<distributionManagement>
+		<repository>
+			<id>mvn-release-local</id>
+			<name>CIB maven release repository</name>
+			<url>${nexus-repository.url}/mvn-release-local</url>
+		</repository>
+		<snapshotRepository>
+			<id>mvn-snapshot-local</id>
+			<name>CIB maven snapshot repository</name>
+			<url>${nexus-repository.url}/mvn-snapshot-local</url>
+		</snapshotRepository>
+	</distributionManagement>
+
+
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
@@ -38,12 +53,12 @@
 				<scope>import</scope>
 				<type>pom</type>
 				<version>${version.spring.boot}</version>
-			</dependency>			
+			</dependency>
 			<dependency>
 				<groupId>de.cib.cibflow</groupId>
 				<artifactId>flow-cloud-api</artifactId>
 				<version>${version.flow.api}</version>
-			</dependency>			
+			</dependency>
 			<dependency>
 				<groupId>de.cib.cibflow</groupId>
 				<artifactId>flow-cloud-api</artifactId>
@@ -52,8 +67,8 @@
 				<version>${version.flow.api}</version>
 			</dependency>
 		</dependencies>
-	</dependencyManagement>		
-		
+	</dependencyManagement>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -61,22 +76,22 @@
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
-	
+
 	<build>
 		<plugins>
 			<plugin>
-	            <groupId>org.apache.maven.plugins</groupId>
-	            <artifactId>maven-compiler-plugin</artifactId>
-	            <version>3.13.0</version>
-		            <configuration>
-		                <source>${maven.compiler.source}</source>
-		                <target>${maven.compiler.target}</target>
-		                <compilerArgs>
-		                    <arg>-parameters</arg>
-		                </compilerArgs>
-		            </configuration>
-	        </plugin>
-						
-		</plugins>	
-	</build>	
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.13.0</version>
+				<configuration>
+					<source>${maven.compiler.source}</source>
+					<target>${maven.compiler.target}</target>
+					<compilerArgs>
+						<arg>-parameters</arg>
+					</compilerArgs>
+				</configuration>
+			</plugin>
+
+		</plugins>
+	</build>
 </project>
