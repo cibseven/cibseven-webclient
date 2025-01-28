@@ -454,19 +454,6 @@
 								}, component: { 
 									template: '<profile-user></profile-user>'
 							}},
-					        { path: 'modeler/:processId?', name: 'modeler', beforeEnter: permissionsGuard('modeler'), component: {
-			        			template: '<modeler :processId="$route.params.processId"></modeler>'
-							}},
-					        { path: 'easy-form', name: 'easyForm', beforeEnter: permissionsGuard('easyform'), component: {
-			        			template: '<easy-form></easy-form>'
-							}},
-					        { path: 'flow-resource', name: 'flowResource', beforeEnter: permissionsGuard('flowresource'), component: {
-			        			template: '<flow-resource></flow-resource>'
-							}},	
-							{ path: 'flow-process-management', name: 'flowProcessManagement', 
-								beforeEnter: permissionsGuard('flowprocessmanagement'), component: {
-			        			template: '<flow-process-management></flow-process-management>'
-							}},		
 							{ path: 'management/:processId', name: 'management', beforeEnter: permissionsGuard('cockpit'), component: { 
 								template: '<management :processId="$route.params.processId"></management>'
 							}},
