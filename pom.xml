@@ -14,7 +14,7 @@
 
 	<properties>
 		<target.path>${project.basedir}/target</target.path>
-		<version.flow.api>2.0.3-SNAPSHOT</version.flow.api>
+		<version.flow.api>2.0.3</version.flow.api>
 		<version.spring.boot>3.3.4</version.spring.boot>
 		<version.flow.api>2.0.4-SNAPSHOT</version.flow.api>
 		<version.openapi-starter-webmvc-ui>2.6.0</version.openapi-starter-webmvc-ui>
@@ -22,6 +22,9 @@
 		<maven.compiler.target>17</maven.compiler.target>
 		<project.git.url>https://gitlab.cib.de/web/flow/cloud/seven-webclient.git</project.git.url>
 		<nexus-repository.url>https://nexus.cib.de/repository</nexus-repository.url>
+		<maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
+		<git-commit-id-maven-plugin.version>9.0.1</git-commit-id-maven-plugin.version>
+		<maven-war-plugin.version>3.4.0</maven-war-plugin.version>
 	</properties>
 
 	<scm>

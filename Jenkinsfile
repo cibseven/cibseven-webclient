@@ -34,10 +34,9 @@ standardMavenPipeline(
     uiParamPresets: [
         // The Docker image is created in the custom stage with its own Maven profile
         'CREATE_DOCKER_IMAGE': false,
-        'DEPLOY_HELM_CHARTS_TO_HARBOR': true
+        'DEPLOY_HELM_CHARTS_TO_HARBOR': false
     ],
     helmChartPaths: ['helm/seven-webclient'],
-    customStageBody: customCreateDockerImage,
     office365WebhookId: Constants.OFFICE_365_FLOW_WEBHOOK_ID,
     mvnContainerName: Constants.MAVEN_JDK_21_CONTAINER
 )
