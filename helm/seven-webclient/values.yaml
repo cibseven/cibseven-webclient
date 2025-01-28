@@ -1,0 +1,751 @@
+# Default values for seven-webclient.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Configuration shared by multiple cib (seven) charts
+global:
+  authentication:
+    jwtSecret: ""
+    tokenValidMinutes: "60"
+    tokenProlongMinutes: "1440"
+
+  flowDatasourceFileValueEnabled: true
+
+  camunda:
+    historyLevel: full
+
+  flow:
+    bpmnEngine:
+      name: "flow-cibseven" 
+
+  host: ""
+
+  image:
+    repository: harbor.cib.de/dev
+    pullPolicy: IfNotPresent
+
+  logging:
+    jsonFormat: true
+
+  otel:
+    # prometheus(default for cib docker images), otlp
+    metricsExporter: "prometheus"
+    # otlp, jaeger(deprecated)
+    tracesExporter: "otlp"
+    otlpTracesEndpoint: "http://observability-grafana-agent.observability:4317"
+    otlpTracesProtocol: "grpc" # see https://opentelemetry.io/docs/languages/sdk-configuration/otlp-exporter/#otel_exporter_otlp_traces_protocol
+
+  podLabels: { }
+
+  probes:
+    enabled: true
+
+  resources:
+    enabled: false
+
+application:
+  server:
+    servlet:
+      context-path: /seven
+
+  spring:
+    banner:
+      location: classpath:banner.txt  
+    config:
+      import:
+        - optional:classpath:seven-webclient.yaml
+    servlet:
+      multipart:
+        # Configures the maximum size for each individual file upload.
+        max-file-size: 10MB
+        # Configures the maximum size allowed for the entire request, including all files and form data.
+        max-request-size: 1GB
+    mvc:
+      static-path-pattern: "/webapps/**"
+    web:
+      resources:
+        static-locations: 
+          - "classpath:/webapps/"   
+               
+  # LDAP
+  ldap:
+    url: ""
+    folder: ""
+    userNameAttribute: ""
+    userDisplayNameAttribute: ""
+    modifiedDateFormat: ""
+    followReferrals: ""
+    user: ""
+    password: ""
+
+  # Keycloak / ADFS (see src/main/resources for more info)
+  #sso: {}
+
+  # Token generation
+  authentication:
+    jwtSecret: "{{ .Values.global.authentication.jwtSecret }}"
+    tokenValidMinutes: "{{ .Values.global.authentication.tokenValidMinutes }}"
+    tokenProlongMinutes: "{{ .Values.global.authentication.tokenProlongMinutes }}"
+    # Token generated for recover password
+    recover:
+      jwtSecret: "{{ .Values.global.authentication.jwtSecret }}"
+      tokenValidMinutes: "{{ .Values.global.authentication.tokenValidMinutes }}"
+      tokenProlongMinutes: "{{ .Values.global.authentication.tokenProlongMinutes }}"
+
+  # BPM Provider
+  bpm:
+    provider: de.cib.cibflow.camunda.CamundaProvider
+    #provider: de.cib.cibflow.camunda.Camunda8Provider
+
+  # User providers
+  user:
+    #provider: de.cib.cibflow.auth.LdapUserProvider
+    provider: de.cib.cibflow.auth.CamundaUserProvider
+    #provider: de.cib.cibflow.auth.Camunda8UserProvider
+    #provider: de.cib.cibflow.auth.KeycloakUserProvider
+    #provider: de.cib.cibflow.auth.AdfsUserProvider
+
+  # Set the wild card is gonna be used for the users search.
+  users:
+    search:
+      #wildcard: "*" # use this only when LDAP user provider is used!
+      wildcard: ""
+
+  userAnon:
+    id: demo
+
+  # Engine rest
+  camunda:
+    engineRest:
+      url: http://{{ .Release.Name }}-{{ .Values.global.flow.bpmnEngine.name }}:8080
+    historyLevel: "{{ .Values.global.camunda.historyLevel }}"
+    #redundant with engine Rest
+    url: http://{{ .Release.Name }}-{{ .Values.global.flow.bpmnEngine.name }}:8080
+    c8:
+      tasklistUrl: "{{.Values.application.camunda.url}}/tasklist"
+      operateUrl: "{{.Values.application.camunda.url}}/operate"
+
+  # CIB flow dataflow - External Database.
+  dataflow:
+    enabled: false
+    url: http://{{ .Release.Name }}-dataflow:8080/dataflow
+
+  # Error report
+  errorReportUrl: ""
+
+  # CIB Metering service
+  metering:
+    url: ""
+    username: ""
+    password: ""
+
+  # CIB flow task URL
+  flow:
+    processManagement:
+      url: https://{{ .Values.global.host }}/flow-process-management
+    webclient:
+      task:
+        url: https://{{ .Values.global.host }}/client/#/flow/auth/tasks/*/
+    property:
+      url: https://{{ .Values.global.host }}/flow-property
+    resource:
+      url: https://{{ .Values.global.host }}/flow-resource
+    link:
+      terms: ""
+      privacy: ""
+      imprint: ""
+      accessibility: ""
+    # If this params is set to false, the number of instances and incidents wont be taken.
+    fetchInstances: "true"
+    fetchIncidents: "true"
+    # External token user creation
+    token:
+      secret: "{{ .Values.application.authentication.jwtSecret }}"
+      deny:
+        external:
+          ip: "true"
+    # This defines if the camunda File Value or the cib File Value should be used for files
+    datasource:
+      fileValue:
+        enabled: "{{ .Values.global.flowDatasourceFileValueEnabled }}"
+
+  # CIB flow webclient properties used in client side.
+  # CIB flow ui-element-templates URL
+  ui:
+    element:
+      template:
+        url: https://{{ .Values.global.host }}/ui-element-templates/#
+
+  # Camunda Cockpit URL
+  cockpit:
+    url: https://{{ .Values.global.host }}/camunda/app/cockpit/default/
+
+  # Used to set a theme (Bootstrap)
+  theme: cib
+
+  productNamePageTitle: CIB seven
+
+  # Following property can be used to change from external property the content of the support dialog in flow-webclient
+  #support-dialog: |
+  #{
+  #  "de": {
+  #    "support-hotline": "Support-Hotline",
+  #    "opening-hours": "Öffnungszeiten",
+  #    "opening-hours-info": "Mo - Fr, 08.00 - 19.00 Uhr",
+  #    "phone": "Telefon",
+  #    "phone-number": "+49 89 14360 111",
+  #    "email-address": "E-Mail-Adresse",
+  #    "email": "cibsupport@cib.de"
+  #  }
+  #}
+
+  # CIB flow modeler URL
+  modeler:
+    url: https://{{ .Values.global.host }}/flow-modeler
+
+  # CIB Flow Formbuilder URL
+  formbuilder:
+    url: https://{{ .Values.global.host }}/easy-form
+
+  doxima:
+    login:
+      url: ""
+
+  #Password Recovery
+  passwordRecovery:
+    mail:
+      host: outlook.office365.com
+      user: ""
+      password: ""
+      port: "25"
+      passwordRecoverLink: https://{{ .Values.global.host }}/#/flow/password-recover
+
+  springdoc:
+    swagger-ui:
+      path: /swagger-ui
+      operationsSorter: alpha
+      tagsSorter: alpha
+      doc-expansion: none
+    # webclient server url for the swagger-ui. Only needs to be set if the automatic detection is wrong.
+    flowWebclient:
+      serverUrl: ""
+
+  # see https://springdoc.org/properties.html
+  api:
+    common:
+      title: "CIB seven webclient API"
+      description: "This API exposes the functionality of CIB seven webclient as a REST service."
+      termsOfService: "https://www.cib.de"
+      license: "Proprietary License of CIB software GmbH"
+      licenseUrl: "https://www.cib.de"
+      contact:
+        name: "CIB software GmbH"
+        url: "https://www.cib.de"
+        email: "support@cib.de"
+
+  # Activate "/actuator/info" and "/actuator/health" endpoints
+  management:
+    endpoints:
+      enabled-by-default: false # Disable all endpoints by default
+      web:
+        exposure:
+          include: health,info # Include only health and info endpoints
+    endpoint:
+      info:
+        enabled: true # Enable the info endpoint
+      health:
+        enabled: true # Enable the health endpoint
+        probes:
+          enabled: true # Enable health probes (if applicable)
+    info:
+      build:
+        enabled: true # Enable build information
+      git:
+        enabled: true # Enable git information
+        mode: full # Use full mode for git information
+      java:
+        enabled: true # Enable Java information (ensure your setup supports this)
+
+ui:
+  supportedLanguages: ["de", "en", "es", "ru"]
+  taskListTime: "30000"
+  taskFilter:
+    smartSearch:
+      options: []
+    advancedSearch:
+      modalEnabled: false
+      filterEnabled: false
+      criteriaKeys: ["processVariables"]
+      processVariables: []
+    tasksNumber:
+      enabled: false
+      interval: 30000
+  layout:
+    showPopoverHowToAssign: true
+    showBusinessKey: true
+    showTaskDetailsSidebar: true
+    showFilterDueDate: true
+    showFilterReminderDate: true
+    showFeedbackButton: true
+    showTaskListManualRefresh: true
+    disableCandidateUsers: false
+    showProcessName: true
+    showSupportInfo: true
+    showInfoAndHelp: true
+    showChat: false
+    showUserSettings: true
+    showStatusBar: false
+  admin:
+    passwordPolicyEnabled: false
+  notifications:
+    tasks:
+      enabled: false
+      interval: 0
+  maxTaskResults: "20"
+  maxProcessesResults: "50"
+  maxUsersResults: "10"
+  modelerEnabled: true
+  easyFormEnabled: true
+  notAssignedTaskLayer: true
+  automaticallyOpenTask: false
+  pauseButtonTime: "5000"
+  lazyLoadHistory: true
+  filtersSearch: false
+
+logging:
+  consoleAppenderLayout: >-
+    {{ if eq (.Values.global.logging.jsonFormat | toString) "true" -}}
+    <JsonTemplateLayout eventTemplateUri="classpath:LogstashJsonEventLayoutV1.json" />
+    {{- else -}}
+    <PatternLayout pattern="${defaultFormat}" />
+    {{- end }}
+
+rootContext:
+  # Set this to true, if you want the webclient to be reachable under context / in
+  # addition to /seven. Note that you also need to update your ingress
+  enabled: false
+
+
+
+configmaps:
+  env:
+    OTEL_SERVICE_NAME: "{{ .Release.Name }}-seven-webclient"
+    OTEL_METRICS_EXPORTER: "{{ .Values.global.otel.metricsExporter }}"
+    OTEL_TRACES_EXPORTER: "{{ .Values.global.otel.tracesExporter }}"
+    OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: "{{ .Values.global.otel.otlpTracesEndpoint }}"
+    OTEL_EXPORTER_OTLP_TRACES_PROTOCOL: "{{ .Values.global.otel.otlpTracesProtocol }}"
+  files:
+    password-recover-template_de.yaml:
+      path: "/opt/bitnami/tomcat/webapps/seven/WEB-INF/classes/password-recover-template_de.yaml"
+      value: |-
+        subject: "Passwort-Wiederherstellung"
+        body: |
+          <p>Hallo {userName},</p>
+          <p>Sie haben kürzlich angefordert, das Passwort für Ihr Konto bei <strong>CIB seven</strong> zurückzusetzen. Um den Vorgang abzuschließen, klicken Sie bitte auf den folgenden Link:</p>
+          <p><a href="{resetLink}">klicken Sie hier</a></p>
+          <p>Dieser Link ist 5 Minuten gültig. Wenn Sie kein Passwort-Reset angefordert haben, ignorieren Sie diese Nachricht bitte und Ihr Passwort bleibt unverändert.</p>
+
+          <p>Vielen Dank für Ihre Aufmerksamkeit.</p>
+          <p>Mit freundlichen Grüßen,</p>
+          <p>CIB seven</p>
+    password-recover-template_en.yaml:
+      path: "/opt/bitnami/tomcat/webapps/seven/WEB-INF/classes/password-recover-template_en.yaml"
+      value: |-
+        subject: "Password Recovery"
+        body: |
+          <p>Hello {userName},</p>
+          <p>You recently requested to reset your password for your account at <strong>CIB seven</strong>. To complete the process, please click the following link:</p>
+          <p><a href="{resetLink}">click here</a></p>
+          <p>This link will be valid for 5 minutes. If you did not request a password reset, please ignore this message and your password will remain unchanged.</p>
+
+          <p>Thank you for your attention.</p>
+          <p>Best regards,</p>
+          <p>CIB seven</p>
+    password-recover-template_es.yaml:
+      path: "/opt/bitnami/tomcat/webapps/seven/WEB-INF/classes/password-recover-template_es.yaml"
+      value: |-
+        subject: "Recuperación de Contraseña"
+        body: |
+          <p>Hola {userName},</p>
+          <p>Recientemente solicitaste restablecer tu contraseña para tu cuenta en <strong>CIB seven</strong>. Para completar el proceso, por favor haz clic en el siguiente enlace:</p>
+          <p><a href="{resetLink}">Haz click aqui</a></p>
+          <p>Este enlace será válido por 5 minutos. Si no has solicitado restablecer tu contraseña, por favor ignora este mensaje y tu contraseña permanecerá sin cambios.</p>
+
+          <p>Gracias por tu atención.</p>
+          <p>Saludos cordiales,</p>
+          <p>CIB seven</p>
+
+    # Needed if client should be reachable under root context / in addition to /client
+    # See .Values.rootContext.enabled
+    server.xml:
+      path: /opt/bitnami/tomcat/conf/server.xml
+      value: |-
+        <?xml version="1.0" encoding="UTF-8"?>
+        <Server port="8005" shutdown="SHUTDOWN">
+          <Listener className="org.apache.catalina.startup.VersionLoggerListener"/>
+          <Listener className="org.apache.catalina.core.AprLifecycleListener" SSLEngine="on"/>
+          <Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener"/>
+          <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener"/>
+          <Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener"/>
+
+          <GlobalNamingResources>
+            <Resource name="UserDatabase" auth="Container" type="org.apache.catalina.UserDatabase" description="User database that can be updated and saved" factory="org.apache.catalina.users.MemoryUserDatabaseFactory" pathname="conf/tomcat-users.xml"/>
+          </GlobalNamingResources>
+
+          <Service name="Catalina">
+            <Connector port="8080" protocol="HTTP/1.1" connectionTimeout="20000" redirectPort="8443" maxParameterCount="1000"/>
+            <Engine name="Catalina" defaultHost="localhost">
+              <Realm className="org.apache.catalina.realm.LockOutRealm">
+                <Realm className="org.apache.catalina.realm.UserDatabaseRealm" resourceName="UserDatabase"/>
+              </Realm>
+
+              <Host name="localhost" appBase="webapps" unpackWARs="true" autoDeploy="true">
+                <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs" prefix="localhost_access_log" suffix=".txt" pattern="%h %l %u %t &quot;%r&quot; %s %b"/>
+                {{ if .Values.rootContext.enabled -}}
+                <Context path="" docBase="client"/>
+                {{- end }}
+              </Host>
+            </Engine>
+          </Service>
+        </Server>
+
+    # IMPORTANT:
+    # - Depending on .Values.logging.jsonFormat, the appender is configured
+    #   differently below
+    # - Set .Values.logging.jsonFormat to true in umbrella chart if you want to
+    #   use CIB observability stack properly
+    log4j2.xml:
+      path: /opt/cib/conf/log4j2.xml
+      value: |-
+        <?xml version="1.0" encoding="UTF-8"?>
+        <Configuration status="WARN" monitorInterval="30">
+            <Properties>
+                <Property name="defaultFormat">%5p %d{dd.MM.yy HH:mm:ss} [%t] [%c] %m%n</Property>
+            </Properties>
+            <Appenders>
+                <Console name="console" target="SYSTEM_OUT">
+                    {{ .Values.logging.consoleAppenderLayout }}
+                </Console>
+            </Appenders>
+            <Loggers>
+                <Root level="INFO">
+                    <AppenderRef ref="console" />
+                </Root>
+                <Logger name="de.cib.cibflow" level="INFO">
+                    <AppenderRef ref="console" />
+                </Logger>
+            </Loggers>
+        </Configuration>
+
+    config.json:
+      path: /opt/bitnami/tomcat/webapps/seven/config.json
+      value: |-
+        {
+          "supportedLanguages": {{ toJson .Values.ui.supportedLanguages }},
+          "filters": [
+            { "key": "processInstanceId", "text": "processInstanceId", "type": "text", "group": "processInstanceGroup" },
+            { "key": "processInstanceBusinessKey", "text": "processInstanceBusinessKey", "type": "text", "group": "processInstanceGroup"  },
+            { "key": "processInstanceBusinessKeyExpression", "text": "processInstanceBusinessKeyExpression", "type": "text", "group": "processInstanceGroup"  },
+            { "key": "processInstanceBusinessKeyLike", "text": "processInstanceBusinessKeyLike", "type": "text", "group": "processInstanceGroup"  },
+            { "key": "processInstanceBusinessKeyLikeExpression", "text": "processInstanceBusinessKeyLikeExpression", "type": "text", "group": "processInstanceGroup"  },
+            { "key": "processDefinitionId", "text": "processDefinitionId", "type": "text", "group": "processDefinitionGroup" },
+            { "key": "processDefinitionKey", "text": "processDefinitionKey", "type": "text", "group": "processDefinitionGroup"  },
+            { "key": "processDefinitionKeyIn", "text": "processDefinitionKeyIn", "type": "array", "group": "processDefinitionGroup" },
+            { "key": "processDefinitionName", "text": "processDefinitionName", "type": "text", "group": "processDefinitionGroup" },
+            { "key": "processDefinitionNameLike", "text": "processDefinitionNameLike", "type": "text", "group": "processDefinitionGroup" },
+            { "key": "caseInstanceId", "text": "caseInstanceId", "type": "text", "group": "caseInstanceGroup" },
+            { "key": "caseInstanceBusinessKey", "text": "caseInstanceBusinessKey", "type": "text", "group": "caseInstanceGroup" },
+            { "key": "caseInstanceBusinessKeyLike", "text": "caseInstanceBusinessKeyLike", "type": "text", "group": "caseInstanceGroup" },
+            { "key": "caseDefinitionId", "text": "caseDefinitionId", "type": "text", "group": "caseDefinitionGroup" },
+            { "key": "caseDefinitionKey", "text": "caseDefinitionKey", "type": "text", "group": "caseDefinitionGroup" },
+            { "key": "caseDefinitionName", "text": "caseDefinitionName", "type": "text", "group": "caseDefinitionGroup" },
+            { "key": "caseDefinitionNameLike", "text": "caseDefinitionNameLike", "type": "text", "group": "caseDefinitionGroup" },
+            { "key": "executionId", "text": "executionId", "type": "text", "group": "otherGroup" },
+            { "key": "activityInstanceIdIn", "text": "activityInstanceIdIn", "type": "array", "group": "otherGroup" },
+            { "key": "active", "text": "active", "type": "text", "group": "otherGroup" },
+            { "key": "assignee", "text": "assignee", "type": "text", "group": "usersGroup" },
+            { "key": "assigneeExpression", "text": "assigneeExpression", "type": "text", "group": "usersGroup" },
+            { "key": "assigneeIn", "text": "assigneeIn", "type": "array", "group": "usersGroup" },
+            { "key": "assigneeLike", "text": "assigneeLike", "type": "text", "group": "usersGroup" },
+            { "key": "assigneeLikeExpression", "text": "assigneeLikeExpression", "type": "text", "group": "usersGroup" },
+            { "key": "ownerExpression", "text": "ownerExpression", "type": "text", "group": "usersGroup" },
+            { "key": "candidateGroup", "text": "candidateGroup", "type": "text", "group": "usersGroup" },
+            { "key": "candidateGroupExpression", "text": "candidateGroupExpression", "type": "text", "group": "usersGroup" },
+            { "key": "candidateGroups", "text": "candidateGroups", "type": "text", "group": "usersGroup" },
+            { "key": "candidateGroupsExpression", "text": "candidateGroupsExpression", "type": "text", "group": "usersGroup" },
+            { "key": "candidateUser", "text": "candidateUser", "type": "text", "group": "usersGroup" },
+            { "key": "candidateUserExpression", "text": "candidateUserExpression", "type": "text", "group": "usersGroup" },
+            { "key": "involvedUser", "text": "involvedUser", "type": "text", "group": "usersGroup" },
+            { "key": "involvedUserExpression", "text": "involvedUserExpression", "type": "text", "group": "usersGroup" },
+            { "key": "unassigned", "text": "unassigned", "type": "text", "group": "usersGroup" },
+            { "key": "delegationState", "text": "delegationState", "type": "text", "group": "usersGroup" },
+            { "key": "taskDefinitionKey", "text": "taskDefinitionKey", "type": "text", "group": "taskGroup" },
+            { "key": "taskDefinitionKeyIn", "text": "taskDefinitionKeyIn", "type": "array", "group": "taskGroup" },
+            { "key": "taskDefinitionKeyLike", "text": "taskDefinitionKeyLike", "type": "text", "group": "taskGroup" },
+            { "key": "name", "text": "name", "type": "text", "group": "taskGroup" },
+            { "key": "nameLike", "text": "nameLike", "type": "text", "group": "taskGroup" },
+            { "key": "description", "text": "description", "type": "text", "group": "taskGroup" },
+            { "key": "descriptionLike", "text": "descriptionLike", "type": "text", "group": "taskGroup" },
+            { "key": "priority", "text": "priority", "type": "text", "group": "taskGroup" },
+            { "key": "maxPriority", "text": "maxPriority", "type": "text", "group": "taskGroup" },
+            { "key": "minPriority", "text": "minPriority", "type": "text", "group": "taskGroup" },
+            { "key": "tenantIdIn", "text": "tenantIdIn", "type": "array", "group": "taskGroup" },
+            { "key": "withoutTenantId", "text": "withoutTenantId", "type": "text", "group": "taskGroup" },
+            { "key": "createdBefore", "text": "createdBefore", "type": "text", "group": "datesGroup" },
+            { "key": "createdBeforeExpression", "text": "createdBeforeExpression", "type": "text", "group": "datesGroup" },
+            { "key": "dueBefore", "text": "dueBefore", "type": "text", "group": "datesGroup" },
+            { "key": "dueBeforeExpression", "text": "dueBeforeExpression", "type": "text", "group": "datesGroup" },
+            { "key": "dueAfter", "text": "dueAfter", "type": "text", "group": "datesGroup" },
+            { "key": "dueAfterExpression", "text": "dueAfterExpression", "type": "text", "group": "datesGroup" },
+            { "key": "followUpAfter", "text": "followUpAfter", "type": "text", "group": "datesGroup" },
+            { "key": "followUpAfterExpression", "text": "followUpAfterExpression", "type": "text", "group": "datesGroup" },
+            { "key": "followUpBefore", "text": "followUpBefore", "type": "text", "group": "datesGroup" },
+            { "key": "followUpBeforeExpression", "text": "followUpBeforeExpression", "type": "text", "group": "datesGroup" },
+            { "key": "followUpBeforeOrNotExistent", "text": "followUpBeforeOrNotExistent", "type": "text", "group": "datesGroup" },
+            { "key": "followUpBeforeOrNotExistentExpression", "text": "followUpBeforeOrNotExistentExpression", "type": "text", "group": "datesGroup"},
+            { "key": "processVariables", "text": "processVariables", "type": "variable", "group": "otherGroup"}
+          ],
+          "taskListTime": "{{ .Values.ui.taskListTime }}",
+          "warnOnDueExpirationIn": 48,
+          "permissions": {
+            "tasklist": {
+              "application": ["ALL"]
+            },
+            "cockpit": {
+              "application": ["ALL"]
+            },
+            "easyform": {
+              "application": ["ALL"]
+            },
+            "flowresource": {
+              "application": ["ALL"]
+            },
+            "flowprocessmanagement": {
+              "application": ["ALL"]
+            },
+            "modeler": {
+              "application": ["ALL"]
+            },
+            "displayTasks": {
+              "task": ["READ", "UPDATE"]
+            },
+            "displayFilter": {
+              "filter": ["READ"]
+            },
+            "editFilter": {
+              "filter": ["UPDATE"]
+            },
+            "deleteFilter": {
+              "filter": ["DELETE"]
+            },
+            "createFilter": {
+              "filter": ["CREATE"]
+            },
+            "startProcess": {
+              "processDefinition": ["READ", "CREATE_INSTANCE"],
+              "processInstance": ["CREATE"]
+            },
+            "displayProcess": {
+              "processDefinition": ["READ"]
+            },
+            "managementProcess": {
+              "processDefinition": ["READ"]
+            },
+            "historyProcess": {
+              "processDefinition": ["READ", "READ_HISTORY"]
+            },
+            "usersManagement": {
+              "user": ["ALL"]
+            },
+            "groupsManagement": {
+              "group": ["ALL"]
+            },
+            "authorizationsManagement": {
+              "authorization": ["ALL"]
+            },
+            "userProfile": {
+              "application": ["ALL"]
+            },
+            "deleteProcessDefinition": {
+              "processDefinition": ["DELETE"]
+            },
+            "deleteProcessInstance": {
+             "processInstance": ["DELETE"]
+            }
+          },
+          "taskSorting": {
+            "fields": [
+              "created",
+              "dueDate",
+              "followUpDate",
+              "name",
+              "assignee",
+              "priority"
+            ],
+            "default": {
+              "sortOrder": "desc",
+              "sortBy": "created"
+            }
+          },
+          "subProcessFolder": "activities/",
+          "taskFilter": {{ .Values.ui.taskFilter | toPrettyJson | indent 2 }},
+          "layout": {{ .Values.ui.layout | toPrettyJson | indent 2 }},
+          "admin": {
+            "resourcesTypes": {
+              "0": { "id": "0", "key": "application", "permissions": ["ACCESS"] },
+              "4": { "id": "4", "key": "authorization", "permissions": ["READ","UPDATE","CREATE","DELETE"] },
+              "13": { "id": "13", "key": "batch", "permissions": [
+                "READ","UDPATE","CREATE","DELETE","READ_HISTORY","DELETE_HISTORY","CREATE_BATCH_MIGRATE_PROCESS_INSTANCES",
+                "CREATE_BATCH_MODIFY_PROCESS_INSTANCES","CREATE_BATCH_RESTART_PROCESS_INSTANCES","CREATE_BATCH_DELETE_RUNNING_PROCESS_INSTANCES",
+                "CREATE_BATCH_DELETE_FINISHED_PROCESS_INSTANCES","CREATE_BATCH_DELETE_DECISION_INSTANCES","CREATE_BATCH_SET_JOB_RETRIES",
+                "CREATE_BATCH_SET_REMOVAL_TIME","CREATE_BATCH_SET_EXTERNAL_TASK_RETRIES",
+                "CREATE_BATCH_UPDATE_PROCESS_INSTANCES_SUSPEND","CREATE_BATCH_SET_VARIABLES"
+              ] },
+              "10": { "id": "10", "key": "decisionDefinition", "permissions": ["READ","UPDATE","CREATE_INSTANCE","READ_HISTORY","DELETE_HISTORY"] },
+              "14": { "id": "14", "key": "decisionRequirements", "permissions": ["READ"] },
+              "9": { "id": "9", "key": "deployment", "permissions": ["CREATE","READ","DELETE"] },
+              "5": { "id": "5", "key": "filter", "permissions": ["READ","UPDATE","CREATE","DELETE"]  },
+              "2": { "id": "2", "key": "group", "permissions": ["READ","UPDATE","CREATE","DELETE"] },
+              "3": { "id": "3", "key": "groupMembership", "permissions": ["CREATE","DELETE"]  },
+              "20": { "id": "20", "key": "historicProcessInstance", "permissions": ["READ"] },
+              "19": { "id": "19", "key": "historicTask", "permissions": ["READ","READ_VARIABLE"] },
+              "17": { "id": "17", "key": "userOperationLogCategory", "permissions": ["READ","DELETE","UPDATE"] },
+              "6": { "id": "6", "key": "processDefinition", "permissions": [
+                "READ","UPDATE","DELETE","SUSPEND","CREATE_INSTANCE","READ_INSTANCE","UPDATE_INSTANCE",
+                "RETRY_JOB","SUSPEND_INSTANCE","DELETE_INSTANCE","MIGRATE_INSTANCE","READ_TASK",
+                "UPDATE_TASK","TASK_ASSIGN","TASK_WORK","READ_TASK_VARIABLE","READ_HISTORY","READ_HISTORY_VARIABLE",
+                "DELETE_HISTORY","READ_INSTANCE_VARIABLE","UPDATE_INSTANCE_VARIABLE","UPDATE_TASK_VARIABLE","UPDATE_HISTORY"
+              ] },
+              "8": { "id": "8", "key": "processInstance", "permissions": ["CREATE","READ","UPDATE","DELETE","RETRY_JOB","SUSPEND","UPDATE_VARIABLE"] },
+              "7": { "id": "7", "key": "task", "permissions": ["CREATE","READ","UPDATE","DELETE","TASK_ASSIGN","TASK_WORK","UPDATE_VARIABLE","READ_VARIABLE"] },
+              "11": { "id": "11", "key": "tenant", "permissions": ["READ","UPDATE","CREATE","DELETE"] },
+              "12": { "id": "12", "key": "tenantMembership", "permissions": ["CREATE","DELETE"] },
+              "1": { "id": "1", "key": "user", "permissions": ["READ","UPDATE","CREATE","DELETE"] }
+            },
+            "types": {
+              "0": { "id": "0", "key": "global" },
+              "1": { "id": "1", "key": "allow" },
+              "2": { "id": "2", "key": "deny" }
+            },
+            "passwordPolicyEnabled": {{ .Values.ui.admin.passwordPolicyEnabled }}
+          },
+          "notifications": {{ .Values.ui.notifications | toJson }},
+          "maxTaskResults": {{ .Values.ui.maxTaskResults }},
+          "maxProcessesResults": {{ .Values.ui.maxProcessesResults }},
+          "maxUsersResults": {{ .Values.ui.maxUsersResults }},
+          "modelerEnabled": {{ .Values.ui.modelerEnabled }},
+          "formbuilderEnabled": {{ .Values.ui.easyFormEnabled }},
+          "notAssignedTaskLayer": {{ .Values.ui.notAssignedTaskLayer }},
+          "automaticallyOpenTask": {{ .Values.ui.automaticallyOpenTask }},
+          "pauseButtonTime": {{ .Values.ui.pauseButtonTime }},
+          "lazyLoadHistory": {{ .Values.ui.lazyLoadHistory }},
+          "filtersSearch": {{ .Values.ui.filtersSearch }}
+        }
+
+secrets:
+  env: { }
+  files:
+    application.yaml:
+      path: /opt/cib/conf/application.yaml
+      value: |-
+        {{ .Values.application | toYaml | toString }}
+    template-config.properties:
+      path: /opt/cib/conf/template-config.properties
+      value: |-
+        # CIB flow dataflow - External Database.
+        dataflow.enable= {{ .Values.application.dataflow.enabled }}
+        dataflow.url= {{ .Values.application.dataflow.url }}
+
+volumes: { }
+
+initContainers: { }
+
+replicaCount: 1
+
+image:
+  repository: "{{ .Values.global.image.repository }}"
+  name: seven-webclient
+  #name: flow-webclient-c8
+  pullPolicy: "{{ .Values.global.image.pullPolicy }}"
+  tag: ""
+
+imagePullSecrets: [ ]
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: false
+  annotations: { }
+  name: ""
+
+podLabels: "{{ .Values.global.podLabels | toYaml }}"
+
+podSecurityContext:
+  fsGroup: 1000
+
+securityContext:
+  capabilities:
+    drop:
+      - ALL
+  runAsNonRoot: true
+  runAsUser: 1000
+
+service:
+  ports:
+    http:
+      port: 8080
+      contexts:
+        - /client
+    # Metrics port is required by CIB observability stack for exporting of metrics
+    # via Prometheus
+    metrics:
+      port: 9464
+
+probes:
+  enabled: "{{ .Values.global.probes.enabled }}"
+  startupProbe:
+    httpGet:
+      path: /client/actuator/health/liveness
+      port: http
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 1
+    failureThreshold: 12
+  readinessProbe:
+    httpGet:
+      path: /client/actuator/health/readiness
+      port: http
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 3
+  livenessProbe:
+    httpGet:
+      path: /client/actuator/health/liveness
+      port: http
+    initialDelaySeconds: 60
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 6
+
+ingress:
+  enabled: false
+
+resources:
+  enabled: "{{ .Values.global.resources.enabled }}"
+  limits:
+    cpu: 500m
+    memory: 1000Mi
+  requests:
+    cpu: 200m
+    memory: 400Mi
+
+autoscaling:
+  enabled: false
+
+nodeSelector: { }
+
+tolerations: [ ]
+
+affinity: { }

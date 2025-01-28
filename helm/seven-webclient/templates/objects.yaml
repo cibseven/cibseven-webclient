@@ -1,0 +1,5 @@
+{{/*
+Of course you can just take the defined template's contents and insert it here
+to do further customizations.
+*/}}
+{{ include "common-tpl-lib-2.5.0.objects" . }}
