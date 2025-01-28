@@ -20,8 +20,16 @@
 		<version.openapi-starter-webmvc-ui>2.6.0</version.openapi-starter-webmvc-ui>
 		<maven.compiler.source>17</maven.compiler.source>
 		<maven.compiler.target>17</maven.compiler.target>
+		<project.git.url>${gitlab.url}/web/flow/cloud/seven-webclient.git</project.git.url>
 	</properties>
-		
+	
+	<scm>
+		<connection>scm:git:${project.git.url}</connection>
+		<developerConnection>scm:git:${project.git.url}</developerConnection>
+		<url>${project.git.url}</url>
+		<tag>HEAD</tag>
+	</scm>
+	
 	<dependencyManagement>
 		<dependencies>
 			<dependency>

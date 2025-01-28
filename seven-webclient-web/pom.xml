@@ -10,6 +10,11 @@
 	<artifactId>seven-webclient-web</artifactId>
 	<packaging>war</packaging>
 
+	<properties>
+		<jib.from.image>${image.tomcat-10-base}</jib.from.image>
+		<jib.to.image>harbor.cib.de/dev/seven-webclient:${project.version}</jib.to.image>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.cibseven</groupId>
@@ -290,6 +295,24 @@
 				<configuration>
 					<dependentWarExcludes>META-INF/*.SF, META-INF/*.DSA,
 						META-INF/*.RSA</dependentWarExcludes>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>io.github.git-commit-id</groupId>
+				<artifactId>git-commit-id-maven-plugin</artifactId>
+				<configuration>
+					<skip>false</skip>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>com.google.cloud.tools</groupId>
+				<artifactId>jib-maven-plugin</artifactId>
+				<configuration>
+					<skip>false</skip>
+					<container>
+						<appRoot>/opt/bitnami/tomcat/webapps/seven</appRoot>
+					</container>
 				</configuration>
 			</plugin>
 
