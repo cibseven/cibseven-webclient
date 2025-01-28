@@ -25,7 +25,7 @@
    			</b-form-select>
    			<b-form-input v-else-if="['Short', 'Integer', 'Long', 'Double'].includes(variable.type)" 
    				v-model="variable.value" type="number"></b-form-input>
-			<cib-datepicker2 v-else-if="variable.type === 'Date'" v-model="variable.value"></cib-datepicker2>
+			<b-form-datepicker v-else-if="variable.type === 'Date'" v-model="variable.value"></b-form-datepicker>
    			<div v-else-if="variable.type === 'Null'"></div>
    			<b-form-textarea v-else v-model="variable.value"></b-form-textarea>
    		</b-form-group>
