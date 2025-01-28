@@ -47,52 +47,6 @@
 					</div>
 				</div>
 			</div>
-			<div v-if="applicationPermissions($root.config.permissions.modeler, 'modeler')" 
-				class="col-4 mt-5 mx-2 mx-md-3 bg-white rounded" style="max-width: 330px; min-width: 250px; height:250px">
-				<div class="row border rounded shadow-sm h-100">
-					<div class="align-top" style="flex:auto">
-						<div class="text-truncate ps-1"></div>
-						<router-link to="/seven/auth/modeler" class="h-100 text-decoration-none text-reset">
-							<div class="container">
-								<div class="row ps-3" style="height:55px">
-									<div class="col-12 align-items-center d-flex">
-										<span class="border-start h-100 me-3 border-primary" style="border-width: 3px !important"></span>
-										<h4 class="m-0">{{ $t('start.modeler') }}</h4>
-									</div>
-								</div>
-								<div class="row text-center">
-									<div class="col-12 p-0 pt-1">
-										<img :alt="$t('start.modeler')" src="webjars/seven/components/start/webmodeler.svg" style="height:180px; max-width:225px">
-									</div>
-								</div>
-							</div>
-						</router-link>
-					</div>
-				</div>
-			</div>		
-			<div v-if="applicationPermissions($root.config.permissions.easyform, 'easyform')" 
-				class="col-4 mt-5 mx-2 mx-md-3 bg-white rounded" style="max-width: 330px; min-width: 250px; height:250px">
-				<div class="row border rounded shadow-sm h-100">
-					<div class="align-top" style="flex:auto">
-						<div class="text-truncate ps-1"></div>
-						<router-link to="/seven/auth/easy-form" class="h-100 text-decoration-none text-reset">
-							<div class="container">
-								<div class="row ps-3" style="height:55px">
-									<div class="col-12 align-items-center d-flex">
-										<span class="border-start h-100 me-3 border-primary" style="border-width: 3px !important"></span>
-										<h4 class="m-0">{{ $t('start.easyForm') }}</h4>
-									</div>
-								</div>
-								<div class="row text-center">
-									<div class="col-12 p-0 pt-1">
-										<img :alt="$t('start.easyForm')" src="webjars/seven/components/start/form-builder.svg" style="height:180px; max-width:225px">
-									</div>
-								</div>
-							</div>
-						</router-link>
-					</div>
-				</div>
-			</div>
 			<div v-if="applicationPermissions($root.config.permissions.cockpit, 'cockpit')" 
 				class="col-4 mt-5 mx-2 mx-md-3 bg-white rounded" style="max-width: 330px; min-width: 250px; height:250px">		
 				<div class="row border rounded shadow-sm h-100">
@@ -154,53 +108,7 @@
 				      	</template>
 					</b-overlay>
 				</div>					
-			</div>
-			<div v-if="applicationPermissions($root.config.permissions.flowresource, 'flowresource')" 
-				class="col-4 mt-5 mx-2 mx-md-3 bg-white rounded" style="max-width: 330px; min-width: 250px; height:250px">		
-				<div class="row border rounded shadow-sm h-100">
-					<div class="align-top" style="flex:auto">
-						<div class="text-truncate ps-1"></div>
-						<router-link to="/seven/auth/flow-resource" class="h-100 text-decoration-none text-reset">
-							<div class="container">
-								<div class="row ps-3" style="height:55px">
-									<div class="col-12 align-items-center d-flex">
-										<span class="border-start h-100 me-3 border-primary" style="border-width: 3px !important;"></span>
-										<h4 class="m-0">{{ $t('start.resources') }}</h4>
-									</div>
-								</div>
-								<div class="row text-center">
-									<div class="col-12 p-0 pt-1">
-										<img :alt="$t('start.resources')" src="webjars/seven/components/start/resources.svg" style="height:180px; max-width:225px">
-									</div>
-								</div>
-							</div>
-						</router-link>						
-					</div>
-				</div>
-			</div>
-			<div v-if="applicationPermissions($root.config.permissions.flowprocessmanagement, 'flowprocessmanagement')" 
-				class="col-4 mt-5 mx-2 mx-md-3 bg-white rounded" style="max-width: 330px; min-width: 250px; height:250px">		
-				<div class="row border rounded shadow-sm h-100">
-					<div class="align-top" style="flex:auto">
-						<div class="text-truncate ps-1"></div>
-						<router-link to="/seven/auth/flow-process-management" class="h-100 text-decoration-none text-reset">
-							<div class="container">
-								<div class="row ps-3" style="height:55px">
-									<div class="col-12 align-items-center d-flex">
-										<span class="border-start h-100 me-3 border-primary" style="border-width: 3px !important;"></span>
-										<h4 class="m-0">{{ $t('start.flowProcessManagement') }}</h4>
-									</div>
-								</div>
-								<div class="row text-center">
-									<div class="col-12 p-0 pt-1">
-										<img :alt="$t('start.flowProcessManagement')" src="webjars/seven/components/start/process-management.svg" style="height:180px; max-width:225px">
-									</div>
-								</div>
-							</div>
-						</router-link>						
-					</div>
-				</div>
-			</div>				
+			</div>			
 		</div>	
 		<div v-if="!applicationPermissions($root.config.permissions.tasklist, 'tasklist') && 
 			!applicationPermissions($root.config.permissions.cockpit, 'cockpit') && !hasAdminManagementPermissions($root.config.permissions)">

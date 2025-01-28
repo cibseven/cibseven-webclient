@@ -8,8 +8,8 @@
 	<template v-slot:filter>
 		<filter-nav-collapsed v-if="!leftOpenFilter && leftCaptionFilter" v-model:left-open="leftOpenFilter"></filter-nav-collapsed>
 	</template>
-	<sidebars-flow ref="regionTasks" role="region" :aria-label="$t('seven.allTasks')" class="h-100 bg-light" :number="nTasksShown" header-margin="55px" v-model:left-open="leftOpenTask" v-model:right-open="rightOpenTask"
-		:leftSize="getTasksNavbarSize" :left-caption="leftCaptionTask" :right-caption="rightCaptionTask">
+	<sidebars-flow ref="regionTasks" role="region" :aria-label="$t('seven.allTasks')" class="h-100 bg-light" :number="nTasksShown" header-margin="55px" v-model:left-open="leftOpenTask"
+		:leftSize="getTasksNavbarSize" :left-caption="leftCaptionTask">
 		<template v-slot:left>
 			<tasks-nav-bar @filter-alert="showFilterAlert($event)" ref="navbar" :tasks="tasks" @selected-task="selectedTask($event)" 
 				@update-assignee="updateAssignee($event, 'task')" @set-filter="filter = $event;listTasksWithFilter()"
@@ -37,11 +37,6 @@
 				<b-button style="top: 3px; right: 60px" class="border-0 position-absolute" variant="link" size="sm" :title="$t('task.collapse')" @click.stop="collapseNavbar()">
 					<span class="mdi mdi-18px mdi-chevron-left"></span>
 				</b-button>
-			</div>
-		</template>
-		<template v-slot:right>
-			<div class="bg-white h-100" style="overflow-y: auto">		
-				<task-details-sidebar-all :task="task" :processInstanceHistory="processInstanceHistory" @update-assignee="updateAssignee($event, 'taskList')"></task-details-sidebar-all>			
 			</div>
 		</template>
 	</sidebars-flow>

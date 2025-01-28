@@ -33,7 +33,6 @@
 	/////////////////////////////
 	// TASKLIST COMPONENTS //
 	import { Tasks, TasksNavBar, Task, AdvancedSearchModal } from './webjars/seven/components/task/task.js';
-	import { TaskDetailsSidebarAll, TaskDetailsSidebar, TaskDetailsSidebarChat, TaskDetailsSidebarStatus } from './webjars/seven/components/task/task-sidebars.js';
 	import { CamundaFilter, FilterModal, FilterNavBar, FilterNavCollapsed } from './webjars/seven/components/filter/filter.js';
 	import { RenderTemplate } from './webjars/seven/components/render-template/render-template.js';
 	import { StartProcess } from './webjars/seven/components/process/start-process.js';
@@ -42,10 +41,6 @@
 	import { AdminUsers, AdminGroups, AdminAuthorizations, AdminAuthorizationsTable,
 		AuthorizationsNavBar, CreateUser, CreateGroup, ProfileUser, ProfileGroup } from './webjars/seven/components/admin/admin.js';
 	//////////////////////////
-	import { Modeler } from './webjars/seven/components/modeler/modeler.js';
-	import { EasyForm } from './webjars/seven/components/easy-form/easy-form.js';
-	import { FlowResource } from './webjars/seven/components/flow-resource/flow-resource.js';
-	import { FlowProcessManagement } from './webjars/seven/components/flow-process-management/flow-process-management.js';
 	import { SupportModal } from './webjars/seven/components/support-modal.js';
 	import { StatusProgressBar } from './webjars/seven/components/status-progress-bar/status-progress-bar.js';
 	import { buildProcessStore, buildFilterStore, buildUserStore, buildAdvancedSearchStore } from  './webjars/seven/store.js';
@@ -666,10 +661,6 @@
 		app.component('tasks-nav-bar', TasksNavBar)
 		app.component('task', Task)
 		app.component('advanced-search-modal', AdvancedSearchModal)
-		app.component('task-details-sidebar-all', TaskDetailsSidebarAll)
-		app.component('task-details-sidebar', TaskDetailsSidebar)
-		app.component('task-details-sidebar-chat', TaskDetailsSidebarChat)
-		app.component('task-details-sidebar-status', TaskDetailsSidebarStatus)
 		app.component('camunda-filter', CamundaFilter)
 		app.component('filter-modal', FilterModal)
 		app.component('filter-nav-bar', FilterNavBar)
@@ -701,10 +692,6 @@
 		app.component('create-group', CreateGroup)
 		app.component('profile-user', ProfileUser)
 		app.component('profile-group', ProfileGroup)
-		app.component('modeler', Modeler)
-		app.component('easy-form', EasyForm)
-		app.component('flow-resource', FlowResource)
-		app.component('flow-process-management', FlowProcessManagement)
 		app.component('support-modal', SupportModal)
 		app.component('status-progress-bar', StatusProgressBar)
 		app.component('add-variable-modal', AddVariableModal)
