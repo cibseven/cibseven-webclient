@@ -130,7 +130,7 @@ clearTimeout, setTimeout, window, encodeURIComponent, document */
 				<div v-if="loading" class="w-100 text-center"><b-spinner></b-spinner></div>\
 				<b-dropdown-group v-if="elements && !loading" style="max-height:150px" class="overflow-auto">\
 					<b-dd-item-btn button-class="p-1 d-flex" v-for="(label, value, index) in filteredElements"\
-					:key="index" @click="$emit(\'input\', label.id)">\
+					:key="index" @click="$emit(\'update:modelValue\', label.id)">\
 							<b-avatar class="me-2" :text="label.id.substring(0, 2)" variant="light"></b-avatar>\
 							<span class="me-auto">\
 								<div>{{ label.firstName + " " + label.lastName }}</div>\
