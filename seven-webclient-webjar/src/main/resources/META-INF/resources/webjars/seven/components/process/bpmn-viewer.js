@@ -134,7 +134,6 @@
 								})
 							}
 							if (this.activitiesHistory) {
-								filledActivities = {}
 								this.drawActivitiesHistory(this.activitiesHistory, elementRegistry, overlays)
 							}
 						}
