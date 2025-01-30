@@ -365,27 +365,12 @@
 										if (this.$router.currentRoute.path !== '/seven/auth/tasks/' + this.$route.params.filterId){
 											this.$router.push('/seven/auth/tasks/' + this.$route.params.filterId)
 										}
-										//this.$router.push('/seven/auth/tasks/' + this.$route.params.filterId)
 										this.setIntervalTaskList()
 									}
-//									this.$refs.confirmTaskClosed.show()
 								})
 							}
 						}
-					},
-					handleKeydown: function(event) {
-						if (event.altKey) {
-					        const keyRegionMap = {
-					            '1': 'regionFilter',
-					            '2': 'regionTasks',
-					            '3': 'regionTask',
-					        }
-					        const region = keyRegionMap[event.key]
-					        if (region) {
-					            this.navigateRegion(region)
-					        }
-					    }
-			        }
+					}
 				},
 				beforeRouteLeave: function(to, from, next) {
 					clearInterval(this.interval)
