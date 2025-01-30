@@ -64,11 +64,6 @@
 								}
 							})
 						})
-					},
-					handleKeyDownEvent: function(event) {
-						if (event.ctrlKey && event.key === 'x') {
-							this.$refs.startProcess.show()
-			            }
 					}
 				},
 				beforeUnmount: function() {

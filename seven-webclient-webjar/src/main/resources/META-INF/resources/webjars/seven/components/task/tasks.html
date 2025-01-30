@@ -1,5 +1,7 @@
 <sidebars-flow ref="regionFilter" role="region" :aria-label="$t('seven.filters')" @selected-filter="selectedFilter()" v-model:left-open="leftOpenFilter" :left-caption="leftCaptionFilter" :rightSize="[12, 4, 2, 2, 2]" :leftSize="[12, 4, 2, 2, 2]">
-	<GlobalEvents @keydown.alt.prevent="handleKeydown"></GlobalEvents>
+	<GlobalEvents @keydown.alt.1.prevent="navigateRegion('regionFilter')"></GlobalEvents>
+	<GlobalEvents @keydown.alt.2.prevent="navigateRegion('regionTasks')"></GlobalEvents>
+	<GlobalEvents @keydown.alt.3.prevent="navigateRegion('regionTask')"></GlobalEvents>
 	<template v-slot:left>
 		<filter-nav-bar ref="filterNavbar" @filter-alert="showFilterAlert($event)"
 			@selected-filter="selectedFilter()" @set-filter="filter = $event;listTasksWithFilter()" @selected-task="selectedTask($event)"

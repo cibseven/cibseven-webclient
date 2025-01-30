@@ -1,5 +1,5 @@
 <span>
-	<GlobalEvents v-if="!hideProcessSelection" @keydown.ctrl.prevent="handleKeyDownEvent"></GlobalEvents>
+	<GlobalEvents v-if="!hideProcessSelection" @keydown.ctrl.x.prevent="$refs.startProcess.show()"></GlobalEvents>
 	<b-button v-if="!hideProcessSelection" variant="outline-primary" @click="startProcess()">
 		<span class="icon-cib-18px icon-start-process me-1" style="vertical-align: middle;display: inline-block; line-height: 0;"></span>{{ $t('process.startProcess') }}
 	</b-button>
