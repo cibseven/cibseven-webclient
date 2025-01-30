@@ -1,6 +1,6 @@
 <div class="d-flex flex-column bg-light" :style="{ height: 'calc(100% - 55px)' }">
-	<div class="container-fluid py-3">
-		<div class="row align-items-center px-3">		
+	<div class="container-fluid pb-2 pt-4">
+		<div class="row align-items-center px-4">		
 			<div class="col-4">  				
 			 	<b-input-group size="sm">
 				    <template #prepend>
@@ -10,7 +10,7 @@
   				</b-input-group>
 			 </div>
 			 <div class="col-8 text-end">
-			 	<b-button class="border" size="sm" variant="light" @click="add()">
+			 	<b-button class="border me-1" size="sm" variant="light" @click="add()">
 			 		<span class="mdi mdi-plus"> {{ $t('admin.authorizations.add') }} </span>
 		 		</b-button>
 		 		<b-button v-if="$root.config.userProvider === 'de.cib.cibflow.auth.CamundaUserProvider' && exportableAuth" class="border" size="sm" variant="light" 
@@ -21,8 +21,8 @@
 			 </div>
 	 	</div>
 	</div>
-	<div class="container-fluid overflow-auto h-100" @scroll="showMore">		
-	 	<div class="row px-4 pt-3 mb-5">			
+	<div class="container-fluid overflow-auto h-100 g-0" @scroll="showMore">		
+	 	<div class="px-4 mb-5">			
 			<flow-table striped thead-class="sticky-header light" :items="authorizations" primary-key="id"
 			 	prefix="admin.authorizations." :fields="authorizationFields"
 				@contextmenu="focused = $event" @mouseenter="focused = $event" @mouseleave="focused = null">
