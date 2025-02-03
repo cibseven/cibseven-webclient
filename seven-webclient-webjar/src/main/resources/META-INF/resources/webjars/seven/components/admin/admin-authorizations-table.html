@@ -58,9 +58,8 @@
 						</b-input-group>
 					</div>
 					<div v-else>
-                        <span class="mdi" :class="row.item.userId ? 'mdi-account' : 'mdi-account-group'">
-                       		{{ row.item.userId != null ? row.item.userId : row.item.groupId }} 
-                       	</span>
+                        <span class="mdi" :class="row.item.userId ? 'mdi-account' : 'mdi-account-group'"></span>
+                        {{ row.item.userId != null ? row.item.userId : row.item.groupId }} 
 					</div>
                    </template>
 				<template v-slot:cell(permissions)="row">
@@ -98,10 +97,11 @@
 				</template>        
                 <template v-slot:cell(name)="row">
                 	<div v-if="edit === row.item.id">
-                		<select class="form-control" v-model="row.item.name" @change="onFilterNameChange(row.item)">
-                			<option value=""></option>
-				      		<option v-for="fname in filterNameOptions">{{ fname }}</option>
-					    </select>
+                		<b-form-select v-model="row.item.name" :options="filterNameOptions" @change="onFilterNameChange(row.item)">
+                			<template v-slot:first>
+								<b-form-select-option :value="null"></b-form-select-option>
+							</template>
+                		</b-form-select>
                 	</div>
                 	<div v-else> {{ row.item.name }} </div>
                 </template>
