@@ -268,8 +268,8 @@
 						this.listTasksWithFilter() 
 					},
 					displayPopover: function(evt) {
-						if (this.$refs.down) 
-							this.$refs.down.$refs.task.displayPopover = localStorage.getItem('showPopoverHowToAssign') === 'false' ? false : evt
+						if (this.$refs.taskComponent) 
+							this.$refs.taskComponent.$refs.task.displayPopover = localStorage.getItem('showPopoverHowToAssign') === 'false' ? false : evt
 					},
 					showFilterAlert: function(evt) {
 						this.filterMessage = evt.message
@@ -352,7 +352,7 @@
 						if (['regionFilter', 'regionTasks'].includes(region)) {
 							this.$refs[region].$refs.leftSidebar.focus()
 						} else {
-							if (this.$refs.down) this.$refs.down.$refs.task.$refs.titleTask.focus() 
+							if (this.$refs.taskComponent) this.$refs.taskComponent.$refs.task.$refs.titleTask.focus() 
 						}
 					},
 					checkActiveTask: function() {

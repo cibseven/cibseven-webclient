@@ -21,8 +21,8 @@
 	<transition name="slide-in" mode="out-in">
 		<div class="d-flex flex-column bg-light w-100 h-100" v-if="user.id">
 			<b-button v-if="editMode" variant="light" style="min-height: 35px; line-height: 20px;" :block="true" class="rounded-0 border-bottom text-start" href="#/seven/auth/admin/users">
-		   		<span class="mdi mdi-arrow-left me-2 float-left"></span>
-		   			{{ $t('admin.users.title') }}   	
+		   		<span class="mdi mdi-arrow-left me-2"></span>
+		   		<span class="fw-bold">{{ $t('admin.users.title') }}</span>
    			</b-button>
 			<div class="container-fluid overflow-auto">
 				<div v-if="$route.query.tab === 'profile'" class="row">
@@ -32,17 +32,17 @@
 								<cib-form @submitted="update()">								
 									<b-form-group :label="$t('admin.users.firstName') + '*'" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4"
 										:invalid-feedback="$t('errors.invalid')">
-										<b-form-input v-model="user.firstName" @update="dirty=true"
+										<b-form-input v-model="user.firstName"  @update:modelValue="dirty=true"
 											:state="notEmpty(user.firstName)" :readonly="readOnlyUser || !editMode" required></b-form-input>
 									</b-form-group>						
 									<b-form-group :label="$t('admin.users.lastName') + '*'" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4"
 										:invalid-feedback="$t('errors.invalid')">
-										<b-form-input v-model="user.lastName" @update="dirty=true"
+										<b-form-input v-model="user.lastName"  @update:modelValue="dirty=true"
 											:state="notEmpty(user.lastName)" :readonly="readOnlyUser || !editMode" required></b-form-input>
 									</b-form-group>
 									<b-form-group :label="$t('admin.users.email')" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4"
 										:invalid-feedback="$t('errors.invalid')">
-										<b-form-input v-model="user.email" type="email" autocomplete="email" @update="dirty = true" :readonly="readOnlyUser || !editMode"></b-form-input>
+										<b-form-input v-model="user.email" type="email" autocomplete="email"  @update:modelValue="dirty = true" :readonly="readOnlyUser || !editMode"></b-form-input>
 									</b-form-group>
 									<div class="float-end" v-if="$root.config.userProvider === 'de.cib.cibflow.auth.CamundaUserProvider'">
 										<b-button type="submit" variant="secondary" :disabled="!dirty" >{{ $t('admin.users.update') }}</b-button>
@@ -126,8 +126,8 @@
 			 	</div>
 				<div v-if="$route.query.tab === 'groups'" class="row">
 					<div class="col-12">
-						<b-card class="border-0 bg-light">
-							<b-form-group labels-cols-lg="2" label-size="lg" label-class="font-weight-bold pt-0" 
+						<div class="p-3">
+							<b-form-group labels-cols-lg="2" label-size="lg" label-class="fw-bold pt-0" 
 								:label="$t('admin.users.editMessage', [user.firstName + ' ' + user.lastName])">
 							</b-form-group>
 							<div class="row pt-3">
@@ -142,7 +142,7 @@
 									</div>
 								</div>
 					 		</div>
-							<div v-if="groups" class="container-fluid overflow-auto bg-white shadow">		
+							<div v-if="groups" class="container-fluid overflow-auto bg-white shadow g-0">		
 								<flow-table v-if="$root.config.userProvider === 'de.cib.cibflow.auth.CamundaUserProvider' && editMode" striped :items="groups" primary-key="id"
 									prefix="admin.groups." :fields="[{label: 'id', key: 'id', class: 'col-md-4 col-sm-4', tdClass: 'border-end py-1' },
 											{label: 'name', key: 'name', class: 'col-md-4 col-sm-4', tdClass: 'border-end py-1' },
@@ -164,7 +164,7 @@
 									@contextmenu="focusedGroup = $event" @mouseenter="focusedGroup = $event" @mouseleave="focusedGroup = null">
 								</flow-table>
 						 	</div>							 		
-						</b-card>
+						</div>
 					</div>		
 				</div>
 				<div v-if="$route.query.tab === 'preferences'" class="row">
@@ -183,7 +183,7 @@
 			</div>
 			<!-- Assign Groups Modal -->
 			<b-modal v-if="editMode" ref="assignGroupsModal" :title="$t('admin.users.group.add')" size="lg">
-				<div v-if="unAssignedGroups.length > 0" class="container">
+				<div v-if="unAssignedGroups.length > 0" class="container g-0">
 					<flow-table :items="unAssignedGroups" primary-key="id" prefix="admin.groups." striped
 						:fields="[{ label: '', key: 'selected', class: 'col-sm-1', sortable: false, thClass: 'text-center, border-top-0', tdClass: 'text-center' },
 						{ label: 'id', key: 'id', class: 'col-sm-3', thClass: 'border-top-0' },
@@ -198,9 +198,8 @@
 					{{ $t('admin.users.group.noResults') }}
 				</div>
 				<template v-slot:modal-footer>
-					<b-button v-t="'confirm.ok'" variant="primary" 
-						@click="assignGroups(); $refs.assignGroupsModal.hide()"></b-button>				
-					<b-button v-t="'confirm.cancel'" @click="$refs.assignGroupsModal.hide()"></b-button>
+					<b-button v-t="'confirm.cancel'" variant="link" @click="$refs.assignGroupsModal.hide()"></b-button>
+					<b-button v-t="'confirm.ok'" variant="primary" @click="assignGroups(); $refs.assignGroupsModal.hide()"></b-button>				
 				</template>
 			</b-modal>
 			<b-modal v-if="editMode" ref="deleteModal" :title="$t('confirm.title')">

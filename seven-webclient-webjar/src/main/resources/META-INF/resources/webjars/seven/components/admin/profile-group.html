@@ -14,8 +14,8 @@
 	<transition name="slide-in" mode="out-in">
 		<div  v-if="group.id" class="d-flex flex-column h-100 bg-light">
 			<b-button variant="light" style="min-height: 35px; line-height: 20px;" :block="true" class="rounded-0 border-bottom text-start" href="#/seven/auth/admin/groups">
-		   		<span class="mdi mdi-arrow-left me-2 float-left"></span>
-		   			{{ $t('admin.groups.title') }}
+		   		<span class="mdi mdi-arrow-left me-2"></span>
+	   			<span class="fw-semibold">{{ $t('admin.groups.title') }}</span>
    			</b-button>
 			<div class="container-fluid overflow-auto">
 				<div v-if="$route.query.tab === 'information'" class="row">
@@ -25,17 +25,15 @@
 								<cib-form @submitted="update()">									
 									<b-form-group :label="$t('admin.groups.name') + '*'" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4"
 										:invalid-feedback="$t('errors.invalid')">
-										<b-form-input v-model="group.name" @update="dirty=true" :state="notEmpty(group.name)" required></b-form-input>
+										<b-form-input v-model="group.name" @update:modelValue="dirty=true" :state="notEmpty(group.name)" required></b-form-input>
 									</b-form-group>						
 									<b-form-group :label="$t('admin.groups.type')" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4">
-										<b-form-input v-model="group.type" @update="dirty = true"></b-form-input>
+										<b-form-input v-model="group.type" @update:modelValue="dirty = true"></b-form-input>
 									</b-form-group>
-									<div class="float-right">
-										<b-button v-if="$root.config.userProvider === 'de.cib.cibflow.auth.CamundaUserProvider'" type="submit" variant="secondary" :disabled="!dirty" >{{ $t('admin.groups.update') }}</b-button>
-									</div>
-									<div class="float-left" v-if="$root.config.userProvider === 'de.cib.cibflow.auth.CamundaUserProvider'">
+									<div class="d-flex justify-content-between" v-if="$root.config.userProvider === 'de.cib.cibflow.auth.CamundaUserProvider'">
 										<b-button variant="warning" @click="$refs.deleteModal.show()">{{ $t('admin.groups.deleteGroup') }}</b-button>
-									</div>	
+										<b-button type="submit" variant="secondary" :disabled="!dirty" >{{ $t('admin.groups.update') }}</b-button>
+									</div>
 								</cib-form>
 							</b-card-text>
 						</b-card>
@@ -43,8 +41,8 @@
 			 	</div>
 				<div v-if="$route.query.tab === 'users'" class="row">
 					<div class="col-12">
-						<b-card class="border-0 bg-light">
-							<b-form-group labels-cols-lg="2" label-size="lg" label-class="font-weight-bold pt-0" 
+						<div class="p-3">
+							<b-form-group labels-cols-lg="2" label-size="lg" label-class="fw-bold pt-0" 
 								:label="$t('admin.groups.editMessage', [group.name])">
 							</b-form-group>
 							<div class="row py-3">
@@ -52,7 +50,7 @@
 									<h5>{{ $t('admin.groups.user.title') }}</h5>
 								</div>
 					 		</div>
-							<div v-if="users" class="container-fluid overflow-auto bg-white shadow">											
+							<div v-if="users" class="container-fluid overflow-auto bg-white shadow g-0">											
 								<flow-table :items="users" primary-key="id" striped
 								 	prefix="admin.users." :fields="[{label: 'id', key: 'id', class: 'col-md-3 col-sm-3', tdClass: 'border-end py-2' },
 										{label: 'firstName', key: 'firstName', class: 'col-md-3 col-sm-3', tdClass: 'border-end py-2' },
@@ -61,7 +59,7 @@
 									@contextmenu="focusedUser = $event" @mouseenter="focusedUser = $event" @mouseleave="focusedUser = null">
 								</flow-table>
 						 	</div>							 		
-						</b-card>
+						</div>
 					</div>		
 				</div>
 			</div>
