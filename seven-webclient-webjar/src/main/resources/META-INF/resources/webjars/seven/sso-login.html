@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<script src="webjars/common-frontend/lib/axios_0.27.2.min.js"></script>
-		<script src="webjars/seven/lib/js-sha256.min.js"></script>
+		<script src="../common-frontend/lib/axios_0.27.2.min.js"></script>
+		<script src="lib/js-sha256.min.js"></script>
 	</head>
 	<body>
 		<script>
 			"use strict";
 			
+			axios.defaults.baseURL = "../../"
 			axios.interceptors.response.use(function(res) { return res.data; }, handler);
 			
 			function handler(error) {
@@ -28,7 +29,7 @@
 				var ssoCallback = parseParams(location.hash.substr(1))
 				var callbackState = JSON.parse(sessionStorage.getItem('callbackState') || '{}')
 				var queryParams = parseParams(location.search.substr(1))
-				var redirectTo = callbackState.redirectTo || './#' + (queryParams.nextUrl || '').replace(/^(.*\/\/.*?\/|\/)/, '')
+				var redirectTo = callbackState.redirectTo || axios.defaults.baseURL + './#' + (queryParams.nextUrl || '').replace(/^(.*\/\/.*?\/|\/)/, '')
 				
 				if (!(callbackState.state && ssoCallback.state === callbackState.state)) {
 					ssoLogin(callbackState, redirectTo)
