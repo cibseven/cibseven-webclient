@@ -1,0 +1,46 @@
+<cib-form @submitted="$emit('sent', $data)">
+	<b-form-group label-cols="4" :label="$t('blame-form.reason')" :invalid-feedback="$t('errors.invalid')"> 
+		<b-form-select v-model="reason" required class="form-control">
+	    	<option value="violence" v-t="'blame-form.reasonViolence'"></option>
+	    	<option value="hate" v-t="'blame-form.reasonHate'"></option>
+	    	<option value="molestation" v-t="'blame-form.reasonMolestation'"></option>
+	    	<option value="harmful" v-t="'blame-form.reasonHarmful'"></option>
+	    	<option value="disinformation" v-t="'blame-form.reasonDisinformation'"></option>
+	    	<option value="childAbuse" v-t="'blame-form.reasonChildAbuse'"></option>
+	    	<option value="terrorism" v-t="'blame-form.reasonTerrorism'"></option>
+	    	<option value="spam" v-t="'blame-form.reasonSpam'"></option>
+	    	<option value="copyright" v-t="'blame-form.reasonCopyright'"></option>
+	    	<option value="malware" v-t="'blame-form.reasonMalware'"></option>
+	    	<option value="misc" v-t="'blame-form.reasonMisc'"></option>    			    						     
+	    </b-form-select>
+	</b-form-group> 
+	<b-form-group label-cols="4" :label="$t('blame-form.justification')" :invalid-feedback="$t('errors.invalid')"> 
+		<b-form-textarea v-model="justification" :rows="7" :max-rows="7" class="form-control" required></b-form-textarea>
+	</b-form-group>
+	<b-form-group label-cols="4" :label="$t('blame-form.storage')" :invalid-feedback="$t('errors.invalid')"> 
+		<input v-model="storage" :readonly="presetStorage != null" class="form-control" required>
+	</b-form-group>	
+	
+	<h5 class="mb-3" v-t="'blame-form.contact'"></h5>	
+	<b-form-group label-cols="4" :label="$t('blame-form.contactName')" :invalid-feedback="$t('errors.invalid')"> 
+		<input v-model="contactName" class="form-control" required>
+	</b-form-group>
+	<b-form-group label-cols="4" :label="$t('blame-form.contactOrganisation')" :invalid-feedback="$t('errors.invalid')"> 
+		<input v-model="contactOrganisation" class="form-control">
+	</b-form-group>	
+	<b-form-group label-cols="4" :label="$t('blame-form.contactEmail')" :invalid-feedback="$t('errors.invalid')"> 
+		<input v-model="contactEmail" type="email" class="form-control" required>
+	</b-form-group>	
+	<b-form-group label-cols="4" :label="$t('blame-form.contactPhone')" :invalid-feedback="$t('errors.invalid')"> 
+		<input v-model="contactPhone" class="form-control">
+	</b-form-group>		
+	
+	<b-form-row>
+		<b-col cols="4">
+			<button type="submit" class="btn btn-primary" v-t="'blame-form.submit'"></button>
+		</b-col>
+		<b-col>
+			<b-form-checkbox class="mb-3" name="confirm" required>{{ $t('blame-form.confirm') }}</b-form-checkbox>	
+		</b-col>
+	</b-form-row>
+</cib-form>

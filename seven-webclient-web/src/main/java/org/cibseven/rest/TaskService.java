@@ -8,6 +8,14 @@ import java.util.Optional;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import org.cibseven.auth.CIBUser;
+import org.cibseven.exception.SystemException;
+import org.cibseven.providers.SevenProvider;
+import org.cibseven.rest.model.IdentityLink;
+import org.cibseven.rest.model.Task;
+import org.cibseven.rest.model.TaskCount;
+import org.cibseven.rest.model.TaskFiltering;
+import org.cibseven.rest.model.VariableHistory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -19,14 +27,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import de.cib.cibflow.api.exception.SystemException;
-import de.cib.cibflow.api.rest.camunda.model.IdentityLink;
-import de.cib.cibflow.api.rest.camunda.model.Task;
-import de.cib.cibflow.api.rest.camunda.model.TaskCount;
-import de.cib.cibflow.api.rest.camunda.model.TaskFiltering;
-import de.cib.cibflow.api.rest.camunda.model.VariableHistory;
-import de.cib.cibflow.CIBFlowUser;
-import de.cib.cibflow.camunda.CamundaProvider;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -36,20 +36,20 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 	@ApiResponse(responseCode = "500", description = "An unexpected system error occured"),
 	@ApiResponse(responseCode = "401", description = "Unauthorized")
 })
-@RestController @RequestMapping("/flow-engine")
+@RestController @RequestMapping("${services.basePath:/services/v1}")
 public class TaskService extends BaseService implements InitializingBean {
 	
-	CamundaProvider camundaProvider;
+	SevenProvider sevenProvider;
 	
 	public void afterPropertiesSet() {
-		if (bpmProvider instanceof CamundaProvider)
-			camundaProvider = (CamundaProvider) bpmProvider;
+		if (bpmProvider instanceof SevenProvider)
+			sevenProvider = (SevenProvider) bpmProvider;
 		else throw new SystemException("TaskService expects a BpmProvider");
 	}	
 	
 	/*
 	@RequestMapping(value = "/task", method = RequestMethod.GET)
-	public Collection<Task> findTasks(@RequestParam Optional<String> filter, Locale loc, CIBFlowUser user) {
+	public Collection<Task> findTasks(@RequestParam Optional<String> filter, Locale loc, CIBSevenUser user) {
 		return bpmProvider.findTasks(filter.isPresent() ? filter.get() : null, user);
 	}
 	*/
@@ -65,13 +65,13 @@ public class TaskService extends BaseService implements InitializingBean {
 			@Parameter(description = "Task definition key") @RequestParam Optional<String> taskDefinitionKey,
 			@Parameter(description = "Task definition key in") @RequestParam Optional<String> taskDefinitionKeyIn,
 			Locale loc, HttpServletRequest rq) {
-		CIBFlowUser user = checkAuthorization(rq, true, false);
-		return camundaProvider.findTasksCount(name, nameLike, taskDefinitionKey, taskDefinitionKeyIn, user);
+		CIBUser user = checkAuthorization(rq, true, false);
+		return sevenProvider.findTasksCount(name, nameLike, taskDefinitionKey, taskDefinitionKeyIn, user);
 	}
 	 
 	//Not used
 	@RequestMapping(value = "/task/by-process-instance/{processInstanceId}", method = RequestMethod.GET)
-	public Collection<Task> findTasksByProcessInstance(@PathVariable String processInstanceId, Locale loc, CIBFlowUser user) {
+	public Collection<Task> findTasksByProcessInstance(@PathVariable String processInstanceId, Locale loc, CIBUser user) {
 		return bpmProvider.findTasksByProcessInstance(processInstanceId, user);
 	}
 
@@ -83,7 +83,7 @@ public class TaskService extends BaseService implements InitializingBean {
 	public Collection<Task> findTasksByProcessInstanceAsignee(
 			@Parameter(description = "Process instance Id") @RequestParam Optional<String> processInstanceId,
 			@Parameter(description = "Created after") @RequestParam Optional<String> createdAfter,
-			Locale loc, CIBFlowUser user) {
+			Locale loc, CIBUser user) {
 		return bpmProvider.findTasksByProcessInstanceAsignee(processInstanceId, createdAfter, user);
 	}
 	
@@ -94,7 +94,7 @@ public class TaskService extends BaseService implements InitializingBean {
 	@RequestMapping(value = "/task/{taskId}", method = RequestMethod.GET)
 	public Task findTaskById(
 			@Parameter(description = "Task Id") @PathVariable String taskId,
-			Locale loc, CIBFlowUser user) {
+			Locale loc, CIBUser user) {
 		return bpmProvider.findTaskById(taskId, user);
 	}
 	
@@ -109,7 +109,7 @@ public class TaskService extends BaseService implements InitializingBean {
 			@Parameter(description = "Filter Id") @PathVariable String filterId,
 			@Parameter(description = "Index of the first result to return") @RequestParam Integer firstResult,
 			@Parameter(description = "Maximum number of results to return") @RequestParam Integer maxResults,
-			Locale loc, CIBFlowUser user) {
+			Locale loc, CIBUser user) {
 		return bpmProvider.findTasksByFilter(filters, filterId, user, firstResult, maxResults);
 	}
 	
@@ -122,7 +122,7 @@ public class TaskService extends BaseService implements InitializingBean {
 	public Integer findTasksCountByFilter(
 			@Parameter(description = "Filter Id") @PathVariable String filterId,
 			@RequestBody TaskFiltering filters,
-			Locale loc, CIBFlowUser user) {
+			Locale loc, CIBUser user) {
 		return bpmProvider.findTasksCountByFilter(filterId, user, filters);
 	}
 	
@@ -134,7 +134,7 @@ public class TaskService extends BaseService implements InitializingBean {
 	@RequestMapping(value = "/task/submit/{taskId}", method = RequestMethod.POST)
 	public void submit(
 			@Parameter(description = "Task Id") @PathVariable String taskId,
-			Locale loc, CIBFlowUser user) {
+			Locale loc, CIBUser user) {
 		bpmProvider.submit(taskId, user);
 	}
 	
@@ -145,7 +145,7 @@ public class TaskService extends BaseService implements InitializingBean {
 	@RequestMapping(value = "/task/{taskId}/form-reference", method = RequestMethod.GET)
 	public Object formReference(
 			@Parameter(description = "Task Id") @PathVariable String taskId,
-			Locale loc, CIBFlowUser user) {
+			Locale loc, CIBUser user) {
 		return bpmProvider.formReference(taskId, user);
 	}
 	
@@ -157,7 +157,7 @@ public class TaskService extends BaseService implements InitializingBean {
 	public void setAssignee(
 			@Parameter(description = "Task Id") @PathVariable String taskId,
 			@Parameter(description = "User to be set as assignee") @PathVariable String userId,
-			Locale loc, CIBFlowUser user) {
+			Locale loc, CIBUser user) {
 		bpmProvider.setAssignee(taskId, userId, user);
 	}
 	
@@ -168,7 +168,7 @@ public class TaskService extends BaseService implements InitializingBean {
 	@RequestMapping(value = "/task/update", method = RequestMethod.PUT)
 	public void update(
 			@RequestBody Task task,
-			Locale loc, CIBFlowUser user) {
+			Locale loc, CIBUser user) {
 		bpmProvider.update(task, user);
 	}
 
@@ -183,8 +183,8 @@ public class TaskService extends BaseService implements InitializingBean {
 	public Collection<Task> findTasksPost(
 			@RequestBody Map<String, Object> data,
 			Locale loc, HttpServletRequest rq) {
-		CIBFlowUser user = checkAuthorization(rq, true, false);
-		return camundaProvider.findTasksPost(data, user);
+		CIBUser user = checkAuthorization(rq, true, false);
+		return sevenProvider.findTasksPost(data, user);
 	}
 
 	@Operation(
@@ -195,7 +195,7 @@ public class TaskService extends BaseService implements InitializingBean {
 	public Collection<IdentityLink> findIdentityLink(
 			@Parameter(description = "Task Id") @PathVariable String taskId,
 			@Parameter(description = "Type of links to include e.g. 'candidate'") @RequestParam Optional<String> type,
-			Locale loc, CIBFlowUser user) {
+			Locale loc, CIBUser user) {
 		return bpmProvider.findIdentityLink(taskId, type, user);
 	}
 	
@@ -206,7 +206,7 @@ public class TaskService extends BaseService implements InitializingBean {
 	public void createIdentityLink(
 			@Parameter(description = "Task Id") @PathVariable String taskId,
 			@RequestBody Map<String, Object> data,
-			Locale loc, CIBFlowUser user) {
+			Locale loc, CIBUser user) {
 		bpmProvider.createIdentityLink(taskId, data, user);
 	}
 	
@@ -217,7 +217,7 @@ public class TaskService extends BaseService implements InitializingBean {
 	public void deleteIdentityLink(
 			@Parameter(description = "Task Id") @PathVariable String taskId,
 			@RequestBody Map<String, Object> data,
-			Locale loc, CIBFlowUser user) {
+			Locale loc, CIBUser user) {
 		bpmProvider.deleteIdentityLink(taskId, data, user);
 	}
 	
@@ -228,7 +228,7 @@ public class TaskService extends BaseService implements InitializingBean {
 	@RequestMapping(value = "/task/{activityInstanceId}/variables", method = RequestMethod.GET)
 	public Collection<VariableHistory> fetchActivityVariables(
 			@Parameter(description = "Activity instance Id") @PathVariable String activityInstanceId,
-			Locale loc, CIBFlowUser user) {
+			Locale loc, CIBUser user) {
 		checkCockpitRights(user);
 		return bpmProvider.fetchActivityVariables(activityInstanceId, user);
 	}
@@ -238,7 +238,7 @@ public class TaskService extends BaseService implements InitializingBean {
 			description = "<strong>Return: File data")
 	@ApiResponse(responseCode = "404", description= "Variable name not found")
 	@RequestMapping(value = "/task/{processInstanceId}/variable/download/{variableName}", method = RequestMethod.GET)
-	public ResponseEntity<byte[]> downloadFiles(@PathVariable String processInstanceId, @PathVariable String variableName, CIBFlowUser user) {
+	public ResponseEntity<byte[]> downloadFiles(@PathVariable String processInstanceId, @PathVariable String variableName, CIBUser user) {
 		return bpmProvider.fetchProcessInstanceVariableData(processInstanceId, variableName, user);
 	}
 	

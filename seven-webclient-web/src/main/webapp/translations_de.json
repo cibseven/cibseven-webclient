@@ -618,9 +618,7 @@
 		"easyForm": "Easy Form",
 		"adminPanel": "Benutzerverwaltung",
 		"properties": "Properties",
-		"resources": "Ressourcen",
-		"doximaConnection": "doXima",
-		"flowProcessManagement": "Prozessmanagement"
+		"resources": "Ressourcen"
 	},
 	"errors": {		
 		"invalid": "Es fehlt eine gültige Eingabe",

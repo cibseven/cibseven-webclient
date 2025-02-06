@@ -66,14 +66,14 @@ authentication:
   
 # BPM Provider
 bpm:
-  provider: de.cib.cibflow.camunda.CamundaProvider
+  provider: org.cibseven.providers.SevenProvider
 
 # User providers
 user:
-  provider: de.cib.cibflow.auth.CamundaUserProvider
-  # provider: de.cib.cibflow.auth.CamundaUserProvider
-  # provider: de.cib.cibflow.auth.KeycloakUserProvider
-  # provider: de.cib.cibflow.auth.AdfsUserProvider
+  provider: org.cibseven.auth.SevenUserProvider
+  # provider: org.cibseven.auth.SevenUserProvider
+  # provider: org.cibseven.auth.KeycloakUserProvider
+  # provider: org.cibseven.auth.AdfsUserProvider
 
 # Set the wild card is gonna be used for the users search. By default is "*".
 users:
@@ -144,22 +144,6 @@ theme: cib
 #    } 
 #  }
 
-# CIB flow modeler URL
-modeler:
-  url: http://localhost:8080/flow-modeler
-        
-# CIB Flow Formbuilder URL
-formbuilder:
-  url: http://localhost:8090/easy-form
-
-doxima:
-  login:
-    url: https://doximawebtestix.cib.de/doxima/#/client/auth/token/doxisafe/
-
-# Metering
-metering:
-  url: https://doxiview-test.cib.de/metering-service/metering
-  
 #Password Recovery
 passwordRecovery:
   mail:
@@ -167,7 +151,11 @@ passwordRecovery:
     user: 
     password: 
     passwordRecoverLink: http://localhost:8090/client/#/flow/password-recover
-    
+
+services:
+  # Value here used to be flow-engine
+  basePath: services/v1
+
 # Activate "/actuator/info" and "/actuator/health" endpoints
 management:
   endpoints:

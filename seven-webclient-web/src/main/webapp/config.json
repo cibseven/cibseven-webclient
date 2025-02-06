@@ -72,18 +72,6 @@
 		"cockpit": {
 			"application": ["ALL"]
 		},
-		"easyform": {
-			"application": ["ALL"]
-		},
-		"flowresource": {
-			"application": ["ALL"]
-		},
-		"flowprocessmanagement": {
-			"application": ["ALL"]
-		},		
-		"modeler": {
-			"application": ["ALL"]
-		},
 		"displayTasks": {
 			"task": ["READ", "UPDATE"]
 		},
@@ -219,8 +207,6 @@
 	"maxTaskResults": 20,
 	"maxProcessesResults": 50,
 	"maxUsersResults": 10,
-	"modelerEnabled": true,
-	"formbuilderEnabled": true,
 	"notAssignedTaskLayer": true,
 	"automaticallyOpenTask": false,
 	"pauseButtonTime": 5000,

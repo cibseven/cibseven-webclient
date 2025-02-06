@@ -29,10 +29,6 @@ public class InfoService extends BaseService {
 	@Value("${sso.scopes:}") private String scopes;
 	@Value("${camunda.historyLevel:}") private String camundaHistoryLevel;
 	@Value("${user.provider:}") private String userProvider;
-	@Value("${modeler.url:}") private String modelerUrl;
-	
-	@Value("${metering.username:}") private String meteringUsername;
-	@Value("${metering.password:}") private String meteringPassword;
 	
 	@Value("${flow.link.terms:}") private String flowLinkTerms;
 	@Value("${flow.link.privacy:}") private String flowLinkPrivacy;
@@ -40,16 +36,10 @@ public class InfoService extends BaseService {
 	@Value("${flow.link.accessibility:}") private String flowLinkAccessibility;
 	@Value("${flow.link.help:}") private String flowLinkHelp;
 	
-	@Value("${formbuilder.url:}") private String formbuilderUrl;
-	
-	@Value("${doxima.login.url:}") String doximaLoginUrl;
-	
-	@Value("${flow.resource.url:}") private String flowResourceUrl;
-	@Value("${flow.processManagement.url:}") private String flowProcessManagementUrl;
-	
-	@Value("${productNamePageTitle:CIB flow}") private String productNamePageTitle;
+	@Value("${productNamePageTitle:CIB seven}") private String productNamePageTitle;
 	
 	@Value("${support-dialog:}") private String supportDialog;
+	@Value("${services.basePath:services/v1}") private String servicesBasePath;
 	
 	
 	@Operation(
@@ -71,7 +61,6 @@ public class InfoService extends BaseService {
 		ObjectNode configJson = JsonNodeFactory.instance.objectNode();
 		configJson.put("uiElementTemplateUrl", uiElementTemplateUrl);
 		configJson.put("cockpitUrl", cockpitUrl);
-		configJson.put("modelerUrl", modelerUrl);
 		configJson.put("theme", theme);
 		configJson.put("ssoActive", ssoActive);
 		configJson.put("camundaHistoryLevel", camundaHistoryLevel);
@@ -81,11 +70,8 @@ public class InfoService extends BaseService {
 		configJson.put("flowLinkImprint", flowLinkImprint);
 		configJson.put("flowLinkAccessibility", flowLinkAccessibility);
 		configJson.put("flowLinkHelp", flowLinkHelp);
-		configJson.put("formbuilderUrl", formbuilderUrl);
-		configJson.put("doximaLoginUrl", doximaLoginUrl);
-		configJson.put("flowResourceUrl", flowResourceUrl);
-		configJson.put("flowProcessManagementUrl", flowProcessManagementUrl);
 		configJson.put("productNamePageTitle", productNamePageTitle);
+		configJson.put("servicesBasePath", servicesBasePath);
 		
         try {
             ObjectMapper mapper = new ObjectMapper();

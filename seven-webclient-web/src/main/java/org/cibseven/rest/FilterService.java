@@ -3,24 +3,24 @@ package org.cibseven.rest;
 import java.util.Collection;
 import java.util.Locale;
 
+import org.cibseven.auth.CIBUser;
+import org.cibseven.rest.model.Filter;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import de.cib.cibflow.api.rest.camunda.model.Filter;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import de.cib.cibflow.CIBFlowUser;
 
 @ApiResponses({
 	@ApiResponse(responseCode = "500", description = "An unexpected system error occured"),
 	@ApiResponse(responseCode = "401", description = "Unauthorized")
 })
-@RestController @RequestMapping("/flow-engine/filter")
+@RestController @RequestMapping("${services.basePath:/services/v1}" + "/filter")
 public class FilterService extends BaseService{
 	
 	@Operation(
@@ -29,7 +29,7 @@ public class FilterService extends BaseService{
 			"<strong>Return: Collection filters fetched in the search")
 	@RequestMapping(method = RequestMethod.GET)
 	public Collection<Filter> findFilter(
-			Locale loc, CIBFlowUser user) {
+			Locale loc, CIBUser user) {
 		return bpmProvider.findFilters(user);
 	}
 	
@@ -40,7 +40,7 @@ public class FilterService extends BaseService{
 	@RequestMapping(method = RequestMethod.POST)
 	public Filter createFilter(
 			@RequestBody Filter filter,
-			Locale loc, CIBFlowUser user) {
+			Locale loc, CIBUser user) {
 		return bpmProvider.createFilter(filter, user);
 	}
 	
@@ -51,7 +51,7 @@ public class FilterService extends BaseService{
 	@RequestMapping(method = RequestMethod.PUT)
 	public void updateFilter(
 			@RequestBody Filter filter,
-			Locale loc, CIBFlowUser user) {
+			Locale loc, CIBUser user) {
 		bpmProvider.updateFilter(filter, user);
 	}
 	
@@ -62,7 +62,7 @@ public class FilterService extends BaseService{
 	@RequestMapping(value = "/{filterId}", method = RequestMethod.DELETE)
 	public void deleteFilter(
 			@Parameter(description = "Filter Id") @PathVariable String filterId,
-			Locale loc, CIBFlowUser user) {
+			Locale loc, CIBUser user) {
 		bpmProvider.deleteFilter(filterId, user);
 	}
 	

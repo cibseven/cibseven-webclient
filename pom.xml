@@ -4,19 +4,19 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.cibseven</groupId>
 	<artifactId>seven-webclient</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.2-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<modules>
 		<module>seven-webclient-web</module>
 		<module>seven-webclient-webjar</module>
+		<module>seven-webclient-core</module>
 	</modules>
 
 	<properties>
 		<target.path>${project.basedir}/target</target.path>
-		<version.spring.boot>3.3.4</version.spring.boot>
-		<version.flow.api>2.0.4-SNAPSHOT</version.flow.api>
-		<version.openapi-starter-webmvc-ui>2.6.0</version.openapi-starter-webmvc-ui>
+		<version.spring.boot>3.4.2</version.spring.boot>
+		<version.openapi-starter-webmvc-ui>2.8.4</version.openapi-starter-webmvc-ui>
 		<maven.compiler.source>17</maven.compiler.source>
 		<maven.compiler.target>17</maven.compiler.target>
 		<project.git.url>https://gitlab.cib.de/web/flow/cloud/seven-webclient.git</project.git.url>
@@ -56,18 +56,6 @@
 				<type>pom</type>
 				<version>${version.spring.boot}</version>
 			</dependency>
-			<dependency>
-				<groupId>de.cib.cibflow</groupId>
-				<artifactId>flow-cloud-api</artifactId>
-				<version>${version.flow.api}</version>
-			</dependency>
-			<dependency>
-				<groupId>de.cib.cibflow</groupId>
-				<artifactId>flow-cloud-api</artifactId>
-				<scope>import</scope>
-				<type>pom</type>
-				<version>${version.flow.api}</version>
-			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
@@ -93,7 +81,6 @@
 					</compilerArgs>
 				</configuration>
 			</plugin>
-
 		</plugins>
 	</build>
 </project>

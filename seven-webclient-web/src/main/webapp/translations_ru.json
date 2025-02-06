@@ -556,9 +556,7 @@
 		"userAdmin": "Управление пользователями",
 		"modeler": "Разработчик моделей процессов",
 		"easyForm": "Easy Form",
-		"adminPanel": "Управление пользователями",
-		"doximaConnection": "doXima",
-		"flowProcessManagement": "Управление процессами"
+		"adminPanel": "Управление пользователями"
 	},
 	"errors": {
 		"invalid": "Пожалуйста, введите достоверную информацию",

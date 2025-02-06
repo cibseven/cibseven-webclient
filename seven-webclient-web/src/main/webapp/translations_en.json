@@ -617,9 +617,7 @@
 		"easyForm": "Easy Form",
 		"adminPanel": "Users Management",
 		"properties": "Properties",
-		"resources": "Resources",
-		"doximaConnection": "doXima",
-		"flowProcessManagement": "Process Management"
+		"resources": "Resources"
 	},
 	"errors": {
 		"invalid": "Please enter some valid information",

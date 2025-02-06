@@ -1,0 +1,29 @@
+<b-modal ref="modal" :title="title || $t('prompt.title')" @shown="$refs.input.focus()" @hide="onHide">
+	<cib-form ref="form" @submitted="$refs.modal.hide('ok')">
+			<div class="container-fluid">
+				<div class="d-flex align-items-center">
+					<div class="mr-4">
+						<span class="mdi-36px mdi mdi-comment-question-outline text-info"></span>
+					</div>
+					<div class="w-100">
+						<slot :param="param"></slot>
+<!-- 					<div class="input-group" :class="secure ? 'mb-5 pb-3' : ''"> -->
+						<div class="input-group">
+							<input ref="input" v-model="text" :type="hide ? 'password' : 'text'" class="form-control rounded-right" 
+								required :pattern="pattern" :class="{ 'is-invalid' : showFeedback, 'pr-5': secure }" @input="showFeedback = false">						
+							<div class="invalid-feedback">{{ feedback || $t('errors.invalid') }} </div>
+							<span v-if="secure" @click="hide = !hide" class="mdi mdi-18px mdi-eye text-secondary" 
+								style="position: absolute; right: 11px; top: 4px; z-index: 3; cursor: pointer"></span>
+<!-- 						<security-bar v-if="secure" :target="function(){ return $refs.input }" :password="text" placement="bottom"></security-bar> -->
+						</div>
+					</div>			
+				</div>
+			</div>
+	</cib-form>
+	<template v-slot:modal-footer>
+		<b-button v-t="'confirm.ok'" @click="$refs.form.onSubmit()" variant="primary"></b-button>
+		<b-button v-t="'confirm.cancel'" @click="$refs.modal.hide('cancel')"></b-button>
+	</template>
+</b-modal>
+
+<!-- https://bootstrap-vue.js.org/docs/components/modal -->

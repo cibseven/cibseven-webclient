@@ -7,6 +7,12 @@ import java.util.Optional;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import org.cibseven.auth.CIBUser;
+import org.cibseven.auth.SevenUserProvider;
+import org.cibseven.exception.SystemException;
+import org.cibseven.providers.BpmProvider;
+import org.cibseven.providers.SevenProvider;
+import org.cibseven.rest.model.Incident;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,12 +22,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import de.cib.cibflow.api.exception.SystemException;
-import de.cib.cibflow.api.rest.camunda.model.Incident;
-import de.cib.cibflow.auth.FlowUserProvider;
-import de.cib.cibflow.CIBFlowUser;
-import de.cib.cibflow.camunda.BpmProvider;
-import de.cib.cibflow.camunda.CamundaProvider;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -31,16 +31,16 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 	@ApiResponse(responseCode= "500", description = "An unexpected system error occured"),
 	@ApiResponse(responseCode= "401", description = "Unauthorized")
 })
-@RestController @RequestMapping("/flow-engine/incident")
+@RestController @RequestMapping("${services.basePath:/services/v1}" + "/incident")
 public class IncidentService extends BaseService implements InitializingBean {
 
 	@Autowired BpmProvider bpmProvider;
-	@Autowired FlowUserProvider provider;
-	CamundaProvider camundaProvider;
+	@Autowired SevenUserProvider provider;
+	SevenProvider sevenProvider;
 	
 	public void afterPropertiesSet() {
-		if (bpmProvider instanceof CamundaProvider)
-			camundaProvider = (CamundaProvider) bpmProvider;
+		if (bpmProvider instanceof SevenProvider)
+			sevenProvider = (SevenProvider) bpmProvider;
 		else throw new SystemException("AdminService expects a BpmProvider");
 	}	
 	
@@ -66,8 +66,8 @@ public class IncidentService extends BaseService implements InitializingBean {
 			@Parameter(description = "Incidents that have one of the given comma-separated job definition Ids") @RequestParam Optional<String> jobDefinitionIdIn,
 			@Parameter(description = "Incidents that have one of the given name") @RequestParam Optional<String> name,
 			Locale loc, HttpServletRequest rq) {
-		CIBFlowUser user = checkAuthorization(rq, true, false);
-		return camundaProvider.countIncident(incidentId, incidentType, incidentMessage, processDefinitionId, processDefinitionKeyIn, processInstanceId, executionId, activityId,
+		CIBUser user = checkAuthorization(rq, true, false);
+		return sevenProvider.countIncident(incidentId, incidentType, incidentMessage, processDefinitionId, processDefinitionKeyIn, processInstanceId, executionId, activityId,
 				causeIncidentId, rootCauseIncidentId, configuration, tenantIdIn, jobDefinitionIdIn, name, user);
 	}
 	
@@ -93,8 +93,8 @@ public class IncidentService extends BaseService implements InitializingBean {
 			@Parameter(description = "Incidents that have one of the given comma-separated job definition Ids") @RequestParam Optional<String> jobDefinitionIdIn,	
 			Locale loc, HttpServletRequest rq) 
 	{
-		CIBFlowUser user = checkAuthorization(rq, true, false);
-		return camundaProvider.findIncident(incidentId, incidentType, incidentMessage, processDefinitionId, processDefinitionKeyIn, processInstanceId, executionId, activityId,
+		CIBUser user = checkAuthorization(rq, true, false);
+		return sevenProvider.findIncident(incidentId, incidentType, incidentMessage, processDefinitionId, processDefinitionKeyIn, processInstanceId, executionId, activityId,
 				causeIncidentId, rootCauseIncidentId, configuration, tenantIdIn, jobDefinitionIdIn, user);
 	}
 		
@@ -106,8 +106,8 @@ public class IncidentService extends BaseService implements InitializingBean {
 	public String findStacktrace(
 			@Parameter(description = "Job Id") @PathVariable String jobId, 
 			Locale loc, HttpServletRequest rq) {
-		CIBFlowUser user = checkAuthorization(rq, true, false);
-		return camundaProvider.findStacktrace(jobId, user);
+		CIBUser user = checkAuthorization(rq, true, false);
+		return sevenProvider.findStacktrace(jobId, user);
 	}
 	
 	@Operation(
@@ -119,8 +119,8 @@ public class IncidentService extends BaseService implements InitializingBean {
 			@Parameter(description = "Job Id") @PathVariable String jobId, 
 			@RequestBody Map<String, Object> data, 
 			Locale loc, HttpServletRequest rq) {
-		CIBFlowUser user = checkAuthorization(rq, true, false);
-		camundaProvider.retryJobById(jobId, data, user);
+		CIBUser user = checkAuthorization(rq, true, false);
+		sevenProvider.retryJobById(jobId, data, user);
 	}
 	
 }

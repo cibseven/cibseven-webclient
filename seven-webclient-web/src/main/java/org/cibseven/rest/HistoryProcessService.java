@@ -7,6 +7,10 @@ import java.util.Optional;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import org.cibseven.auth.CIBUser;
+import org.cibseven.rest.model.ActivityInstanceHistory;
+import org.cibseven.rest.model.ProcessInstance;
+import org.cibseven.rest.model.VariableHistory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,25 +18,21 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import de.cib.cibflow.api.rest.camunda.model.ActivityInstanceHistory;
-import de.cib.cibflow.api.rest.camunda.model.ProcessInstance;
-import de.cib.cibflow.api.rest.camunda.model.VariableHistory;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import de.cib.cibflow.CIBFlowUser;
 
 @ApiResponses({
 	@ApiResponse(responseCode = "500", description = "An unexpected system error occured"),
 	@ApiResponse(responseCode = "401", description = "Unauthorized")
 })
-@RestController @RequestMapping("/flow-engine")
+@RestController @RequestMapping("${services.basePath:/services/v1}")
 public class HistoryProcessService extends BaseService {
 
 	/*
 	@RequestMapping(value = "/instance-history/by-process-instance/{processInstanceId}", method = RequestMethod.GET)
-	public ProcessInstance findHistoryProcessInstanceHistory(@PathVariable String processInstanceId, Locale loc, CIBFlowUser user) {
+	public ProcessInstance findHistoryProcessInstanceHistory(@PathVariable String processInstanceId, Locale loc, CIBSevenUser user) {
 		return bpmProvider.findHistoryProcessInstanceHistory(processInstanceId, user);
 	}
 	*/
@@ -47,7 +47,7 @@ public class HistoryProcessService extends BaseService {
 			@Parameter(description = "True means that unfinished processes will be fetched<br>False only finished processes will be fetched") @RequestParam Optional<Boolean> active, 
 			@Parameter(description = "Index of the first result to return") @RequestParam Integer firstResult,
 			@Parameter(description = "Maximum number of results to return") @RequestParam Integer maxResults,
-			Locale loc, CIBFlowUser user) {
+			Locale loc, CIBUser user) {
 		return bpmProvider.findProcessesInstancesHistory(key, active, firstResult, maxResults, user);
 	}
 	
@@ -63,7 +63,7 @@ public class HistoryProcessService extends BaseService {
 			@Parameter(description = "Index of the first result to return") @RequestParam Integer firstResult,
 			@Parameter(description = "Maximum number of results to return") @RequestParam Integer maxResults,
 			@Parameter(description = "Filter by text") @RequestParam String text,
-			Locale loc, CIBFlowUser user) {
+			Locale loc, CIBUser user) {
 		return bpmProvider.findProcessesInstancesHistoryById(id, activityId, active, firstResult, maxResults, text, user);
 	}
 	
@@ -77,7 +77,7 @@ public class HistoryProcessService extends BaseService {
 	@RequestMapping(value = "/process-history/activity/by-process-instance/{processInstanceId}", method = RequestMethod.GET)
 	public Collection<ActivityInstanceHistory> findActivitiesInstancesHistory(
 			@Parameter(description = "Filter by process instance Id") @PathVariable String processInstanceId,
-			Locale loc, CIBFlowUser user) {
+			Locale loc, CIBUser user) {
 		return bpmProvider.findActivitiesInstancesHistory(processInstanceId, user);
 	}
 	
@@ -90,10 +90,11 @@ public class HistoryProcessService extends BaseService {
 	public Collection<VariableHistory> fetchProcessInstanceVariablesHistory(
 			@Parameter(description = "Filter by process instance Id") @PathVariable String processInstanceId,
 			@Parameter(description = "Deserialize value") @RequestParam Optional<Boolean> deserialize,
-			Locale loc, CIBFlowUser user) {
+			Locale loc, CIBUser user) {
 		return bpmProvider.fetchProcessInstanceVariablesHistory(processInstanceId, user, deserialize);
 	}
 	
+	/*
 	@Operation(
 			summary = "Get activities instances that belong to a process definition",
 			description = "The activities found belongs to the history, they have other attributes and activities from finished processes are also fetched")
@@ -104,16 +105,17 @@ public class HistoryProcessService extends BaseService {
 	@RequestMapping(value = "/process-history/activity/by-process-definition/{processDefinitionId}", method = RequestMethod.GET)
 	public Collection<ActivityInstanceHistory> findActivitiesProcessDefinitionHistory(
 			@Parameter(description = "Filter by process definition Id") @PathVariable String processDefinitionId,
-			Locale loc, CIBFlowUser user) {
+			Locale loc, CIBSevenUser user) {
 		return bpmProvider.findActivitiesProcessDefinitionHistory(processDefinitionId, user);
 	}
+	*/
 	
 	@Operation(summary = "Get a variable data from the process history")
 	@ApiResponse(responseCode = "404", description = "Variable not found")
 	@RequestMapping(value = "/process-history/variable/{id}/data", method = RequestMethod.GET)
 	public ResponseEntity<byte[]> fetchHistoryVariableDataById(
 			@Parameter(description = "Id of the variable") @PathVariable String id,
-			Locale loc, CIBFlowUser user) {
+			Locale loc, CIBUser user) {
 		return bpmProvider.fetchHistoryVariableDataById(id, user);
 	}
 	
@@ -123,7 +125,7 @@ public class HistoryProcessService extends BaseService {
 	public ProcessInstance findProcessInstance(
 			@Parameter(description = "Process instance Id") @PathVariable String processInstanceId,
 			Locale loc, HttpServletRequest rq) {
-		CIBFlowUser user = checkAuthorization(rq, true, false);
+		CIBUser user = checkAuthorization(rq, true, false);
 		return bpmProvider.findHistoryProcessInstanceHistory(processInstanceId, user);
 	}
 	
@@ -132,7 +134,7 @@ public class HistoryProcessService extends BaseService {
 	public void deleteProcessInstanceFromHistory(
 			@Parameter(description = "Process instance Id") @PathVariable String id,
 			Locale loc, HttpServletRequest rq) {
-		CIBFlowUser user = checkAuthorization(rq, true, false);
+		CIBUser user = checkAuthorization(rq, true, false);
 		bpmProvider.deleteProcessInstanceFromHistory(id, user);
 	}
 	
@@ -141,7 +143,7 @@ public class HistoryProcessService extends BaseService {
 	@RequestMapping(value = "/process-history/instance/{id}/variables", method = RequestMethod.DELETE)
 	public void deleteVariableHistoryInstance(
 			@Parameter(description = "Id of the variable") @PathVariable String id,
-			Locale loc, CIBFlowUser user) {
+			Locale loc, CIBUser user) {
 		checkCockpitRights(user);
 		bpmProvider.deleteVariableHistoryInstance(id, user);
 	}

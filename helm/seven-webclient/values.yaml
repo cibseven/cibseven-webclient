@@ -94,16 +94,15 @@ application:
 
   # BPM Provider
   bpm:
-    provider: de.cib.cibflow.camunda.CamundaProvider
-    #provider: de.cib.cibflow.camunda.Camunda8Provider
+    provider: org.cibseven.providers.SevenProvider
 
   # User providers
   user:
-    #provider: de.cib.cibflow.auth.LdapUserProvider
-    provider: de.cib.cibflow.auth.CamundaUserProvider
-    #provider: de.cib.cibflow.auth.Camunda8UserProvider
-    #provider: de.cib.cibflow.auth.KeycloakUserProvider
-    #provider: de.cib.cibflow.auth.AdfsUserProvider
+    #provider: org.cibseven.auth.LdapUserProvider
+    provider: org.cibseven.auth.SevenUserProvider
+    #provider: org.cibseven.auth.Camunda8UserProvider
+    #provider: org.cibseven.auth.KeycloakUserProvider
+    #provider: org.cibseven.auth.AdfsUserProvider
 
   # Set the wild card is gonna be used for the users search.
   users:
@@ -121,35 +120,15 @@ application:
     historyLevel: "{{ .Values.global.camunda.historyLevel }}"
     #redundant with engine Rest
     url: http://{{ .Release.Name }}-{{ .Values.global.flow.bpmnEngine.name }}:8080
-    c8:
-      tasklistUrl: "{{.Values.application.camunda.url}}/tasklist"
-      operateUrl: "{{.Values.application.camunda.url}}/operate"
-
-  # CIB flow dataflow - External Database.
-  dataflow:
-    enabled: false
-    url: http://{{ .Release.Name }}-dataflow:8080/dataflow
 
   # Error report
   errorReportUrl: ""
 
-  # CIB Metering service
-  metering:
-    url: ""
-    username: ""
-    password: ""
-
   # CIB flow task URL
   flow:
-    processManagement:
-      url: https://{{ .Values.global.host }}/flow-process-management
     webclient:
       task:
-        url: https://{{ .Values.global.host }}/client/#/flow/auth/tasks/*/
-    property:
-      url: https://{{ .Values.global.host }}/flow-property
-    resource:
-      url: https://{{ .Values.global.host }}/flow-resource
+        url: https://{{ .Values.global.host }}/seven/#/seven/auth/tasks/*/
     link:
       terms: ""
       privacy: ""
@@ -199,27 +178,6 @@ application:
   #  }
   #}
 
-  # CIB flow modeler URL
-  modeler:
-    url: https://{{ .Values.global.host }}/flow-modeler
-
-  # CIB Flow Formbuilder URL
-  formbuilder:
-    url: https://{{ .Values.global.host }}/easy-form
-
-  doxima:
-    login:
-      url: ""
-
-  #Password Recovery
-  passwordRecovery:
-    mail:
-      host: outlook.office365.com
-      user: ""
-      password: ""
-      port: "25"
-      passwordRecoverLink: https://{{ .Values.global.host }}/#/flow/password-recover
-
   springdoc:
     swagger-ui:
       path: /swagger-ui
@@ -242,6 +200,9 @@ application:
         name: "CIB software GmbH"
         url: "https://www.cib.de"
         email: "support@cib.de"
+
+  services:
+    basePath: /services/v1
 
   # Activate "/actuator/info" and "/actuator/health" endpoints
   management:
@@ -514,18 +475,6 @@ configmaps:
             "cockpit": {
               "application": ["ALL"]
             },
-            "easyform": {
-              "application": ["ALL"]
-            },
-            "flowresource": {
-              "application": ["ALL"]
-            },
-            "flowprocessmanagement": {
-              "application": ["ALL"]
-            },
-            "modeler": {
-              "application": ["ALL"]
-            },
             "displayTasks": {
               "task": ["READ", "UPDATE"]
             },
@@ -633,8 +582,6 @@ configmaps:
           "maxTaskResults": {{ .Values.ui.maxTaskResults }},
           "maxProcessesResults": {{ .Values.ui.maxProcessesResults }},
           "maxUsersResults": {{ .Values.ui.maxUsersResults }},
-          "modelerEnabled": {{ .Values.ui.modelerEnabled }},
-          "formbuilderEnabled": {{ .Values.ui.easyFormEnabled }},
           "notAssignedTaskLayer": {{ .Values.ui.notAssignedTaskLayer }},
           "automaticallyOpenTask": {{ .Values.ui.automaticallyOpenTask }},
           "pauseButtonTime": {{ .Values.ui.pauseButtonTime }},
@@ -665,7 +612,6 @@ replicaCount: 1
 image:
   repository: "{{ .Values.global.image.repository }}"
   name: seven-webclient
-  #name: flow-webclient-c8
   pullPolicy: "{{ .Values.global.image.pullPolicy }}"
   tag: ""
 

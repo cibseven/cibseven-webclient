@@ -13,7 +13,7 @@
 			 	<b-button class="border me-1" size="sm" variant="light" @click="add()">
 			 		<span class="mdi mdi-plus"> {{ $t('admin.authorizations.add') }} </span>
 		 		</b-button>
-		 		<b-button v-if="$root.config.userProvider === 'de.cib.cibflow.auth.CamundaUserProvider' && exportableAuth" class="border" size="sm" variant="light" 
+		 		<b-button v-if="$root.config.userProvider === 'org.cibseven.auth.SevenUserProvider' && exportableAuth" class="border" size="sm" variant="light" 
 					:disabled="exporting" @click="exportCSV()">
 					<span v-if="exporting"><b-spinner small></b-spinner> {{ $t('admin.exportCsv') }}</span>
 					<span v-else class="mdi mdi-download"> {{ $t('admin.exportCsv') }} </span>

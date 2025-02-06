@@ -36,7 +36,7 @@
 				} else {
 					history.pushState('', document.title, location.pathname + location.search); //Delete hashParams
 				    axios.post('auth/login', {
-						type: 'de.cib.cibflow.auth.sso.SSOLogin',
+						type: 'org.cibseven.auth.sso.SSOLogin',
 						code: ssoCallback.code,
 						nonce: callbackState.nonce,
 						redirectUrl: location.origin + location.pathname

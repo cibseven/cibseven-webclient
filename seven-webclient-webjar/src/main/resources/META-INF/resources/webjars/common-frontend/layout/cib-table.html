@@ -1,0 +1,33 @@
+<table class="table table-striped table-hover" :style="sizes && 'table-layout: fixed'">
+	<thead>
+		<tr :class="sizes && 'row'">
+			<slot name="left-header"></slot>
+			<th v-for="(col, index) in columns" :class="sizes ? ['align-items-start', sizes[index]] : 'align-middle'" class="py-1"
+					:style="sizes && 'display: flex'" @click="desc = col === sortBy ? -1 * desc : 1; sortBy = col">
+				<a style="cursor: pointer" class="text-secondary" v-t="prefix + col"></a>					
+				<i v-if="col === sortBy" :class="['mdi', desc > 0 ? 'mdi-menu-down' : 'mdi-menu-up']"></i>
+				<i v-else class="mdi mdi-menu-swap text-muted"></i>
+			</th>
+			<slot name="right-header"></slot>
+		</tr>
+	</thead>		
+	<transition-group :name="limit ? 'no-animation' : 'list'" tag="tbody">
+		<tr v-for="row in sorted" :key="row[keyMember]" style="cursor: pointer" :class="{ 'font-weight-bold': row[keyMember] === selected, 'row': !!sizes }"
+			@mouseenter="$emit('mouseenter', row)" @mouseleave="$emit('mouseleave', row)" @contextmenu="$emit('contextmenu', row)"> <!-- prevent ? -->
+			<slot name="left" :row="row"></slot>
+			<td v-for="(col, index) in columns" :class="sizes ? ['align-items-center', sizes[index]] : 'align-middle'" class="py-1"
+					:style="sizes ? 'display: flex' : 'max-width: 50vw'" @click="$emit('click', row); selected = row[keyMember]">								
+				<slot :name="col" :row="row">
+					<div v-if="isMoment(row, col)" :title="access(row, col).fromNow()" class="text-truncate">{{ access(row, col).format('L LTS') }}</div>
+					<div v-else-if="isDate(row, col)" class="text-truncate">{{ access(row, col).toLocaleString('de-DE') }}</div>
+					<div v-else :title="tooltips && tooltips.includes(col) ? access(row, col) : null" class="text-truncate">{{ access(row, col) }}</div>					
+				</slot>			
+			</td>
+			<slot name="right" :row="row"></slot>
+		</tr>
+	</transition-group>
+</table>
+
+<!-- https://stackoverflow.com/questions/45759805/issues-combining-displayflex-tables-and-text-overflow-ellipsis -->
+<!-- https://css-tricks.com/flexbox-truncated-text/ -->
+<!-- https://vanseodesign.com/css/vertical-centering/ -->

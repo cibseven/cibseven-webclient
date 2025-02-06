@@ -5,6 +5,8 @@
 	import { permissionsMixin } from '../../permissions.js';
 	import { TaskService, ProcessService, HistoryService, IncidentService } from '../../services.js';
 	
+	import appConfig from '../../appConfig.js'	
+
 	var fileObjects = ['de.cib.cibflow.api.files.FileValueDataFlowSource', 'de.cib.cibflow.api.files.FileValueDataSource']
 	
 	const serviceMap = {
@@ -291,20 +293,7 @@
 						})
 					},
 					activeTab: function() {
-						/*
-						if (this.activeTab === 'statistics') {
-							this.MeteringService.fetchEvents(this.process.key).then(events => {
-								events.forEach(event => {
-									this.events[event] = []
-									this.MeteringService.fetchInfoUsage(this.process.key, "2020-09-04T00:00:00+01:00", "2030-10-03T23:59:59+01:00", event)
-									.then(usages => {
-										this.events.event = JSON.parse(usages)
-										this.usages = this.usages.concat(JSON.parse(usages))
-									})
-								})
-							})
-						}
-						*/
+
 					}
     			},
 				mounted: function() {
@@ -359,7 +348,7 @@
 					},
 					downloadBpmn: function() {
 						var filename = this.process.resource.substr(this.process.resource.lastIndexOf('/') + 1, this.process.resource.lenght)
-						window.location.href = 'flow-engine/process/' + this.process.id + '/data?filename=' + filename + 
+						window.location.href = appConfig.servicesBasePath + '/process/' + this.process.id + '/data?filename=' + filename + 
 							'&token=' + this.$root.user.authToken
 					},
 					openInModeler: function() {

@@ -1,0 +1,33 @@
+<div v-if="!nodes || (nodes && nodes.length)">
+	<transition-collapse>
+		<div v-if="state.open">
+			<div class="py-1 pr-0 pl-4">
+				<ul class="list-unstyled">
+					<li v-for="(node, index) in nodes" :key="node[nodeKey]" @click.stop="$emit('click', node)">
+						<slot v-if="isLeaf(node)" name="leaf" :node="node" :parent="parent">
+							<span :class="'mdi mdi-18px mdi-' + (node.icon || 'file-outline')"> {{ node.name }}</span>
+						</slot>
+						<div v-else>
+							<div class="py-1 pl-1 d-flex align-items-center" @click.stop="toggleFolder(node);$emit('click', node);"
+								 :style="{ 'cursor': node.children && !node.children.length ? 'default' : 'pointer' }">
+								<span class="mdi mdi-18px"
+									:class="(node.children && !node.children.length ? 'invisible ' : '') + (childsState(node, index).open ? 'mdi-chevron-down' : 'mdi-chevron-right')">
+								</span>
+								<slot name="branch" :parent="parent" :node="node" :state="childsState(node)"></slot>
+							</div>
+							<tree :ref="'childFrom' + node[nodeKey]" :nodeKey="nodeKey" @click="$emit('click', $event)" :isLeaf="isLeaf" :nodes="node.children" :parent="node" :path="path + '/' + node[nodeKey]">
+								<template v-slot:leaf="_"><slot name="leaf" :node="_.node" :parent="_.parent">
+									<span :class="'mdi mdi-18px mdi-' + (_.node.icon || 'file-outline')"> {{ _.node.name }}</span><!-- default -->
+								</slot></template>
+								<template v-slot:branch="_"><slot name="branch" :node="_.node" :parent="_.parent" :state="_.state">
+									<span :class="'mdi mdi-18px mdi-' + (_.node.icon || (_.state.open ? 'folder-open' : 'folder'))"> s{{ _.node.name }}</span>
+								</slot></template>
+							</tree>
+						</div>
+					</li>
+					<li v-if="!nodes"><img src="dialogs/waitImage.svg" style="width: 30px"/></li>
+				</ul>
+			</div>
+		</div>
+	</transition-collapse>
+</div>

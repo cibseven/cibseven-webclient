@@ -3,6 +3,8 @@
 
 importScripts('webjars/momentjs/2.29.4/min/moment.min.js')
 
+import appConfig from './appConfig.js'	
+
 var authToken = ''
 var createdAfter = ''
 var interval = ''
@@ -11,7 +13,7 @@ var userId = ''
 var Services = {
 	findTasksPost: function(body) {
 		'use strict';
-		const url = 'flow-engine/task'
+		const url = appConfig.servicesBasePath + '/task'
 		return fetch(url, {
             method: 'POST',
             headers: {

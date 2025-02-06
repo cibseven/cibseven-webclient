@@ -8,6 +8,14 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
+import org.cibseven.auth.CIBUser;
+import org.cibseven.exception.SystemException;
+import org.cibseven.providers.BpmProvider;
+import org.cibseven.providers.SevenProvider;
+import org.cibseven.rest.model.Authorization;
+import org.cibseven.rest.model.NewUser;
+import org.cibseven.rest.model.User;
+import org.cibseven.rest.model.UserGroup;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -18,14 +26,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import de.cib.cibflow.api.exception.SystemException;
-import de.cib.cibflow.api.rest.camunda.model.Authorization;
-import de.cib.cibflow.api.rest.camunda.model.NewUser;
-import de.cib.cibflow.api.rest.camunda.model.User;
-import de.cib.cibflow.api.rest.camunda.model.UserGroup;
-import de.cib.cibflow.CIBFlowUser;
-import de.cib.cibflow.camunda.BpmProvider;
-import de.cib.cibflow.camunda.CamundaProvider;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -35,15 +35,15 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 	@ApiResponse(responseCode  = "500", description  = "An unexpected system error occured"),
 	@ApiResponse(responseCode  = "401", description  = "Unauthorized")
 })
-@RestController @RequestMapping("/flow-engine/admin")
+@RestController @RequestMapping("${services.basePath:/services/v1}" + "/admin")
 public class AdminService implements InitializingBean {
 
 	@Autowired BpmProvider bpmProvider;
-	CamundaProvider camundaProvider;
+	SevenProvider sevenProvider;
 	
 	public void afterPropertiesSet() {
-		if (bpmProvider instanceof CamundaProvider)
-			camundaProvider = (CamundaProvider) bpmProvider;
+		if (bpmProvider instanceof SevenProvider)
+			sevenProvider = (SevenProvider) bpmProvider;
 		else throw new SystemException("AdminService expects a BpmProvider");
 	}	
 	
@@ -68,7 +68,7 @@ public class AdminService implements InitializingBean {
 			+ "<br>Will return less results if there are no more results left") @RequestParam Optional<String> maxResults,
 	@Parameter(description = "Specifies the field to sort by") @RequestParam Optional<String> sortBy,
 	@Parameter(description = "Specifies the order of the sorting") @RequestParam Optional<String> sortOrder,
-			Locale loc, CIBFlowUser user) {
+			Locale loc, CIBUser user) {
 		return bpmProvider.findUsers(id, firstName, firstNameLike, lastName, lastNameLike, 
 				email, emailLike, memberOfGroup, memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder, user);
 	}
@@ -88,7 +88,7 @@ public class AdminService implements InitializingBean {
 	@RequestMapping(value = "/user/create", method = RequestMethod.POST)
 	public void createUser(
 			@RequestBody NewUser user,
-			Locale loc, CIBFlowUser flowUser) {
+			Locale loc, CIBUser flowUser) {
 		bpmProvider.createUser(user, flowUser);
 	}
 
@@ -110,7 +110,7 @@ public class AdminService implements InitializingBean {
 	public void updateUserProfile(
 			@Parameter(description = "User Id") @PathVariable String userId, 
 			@RequestBody User user, 
-			Locale loc, CIBFlowUser flowUser) {
+			Locale loc, CIBUser flowUser) {
 		bpmProvider.updateUserProfile(userId, user, flowUser);
 	}
 	
@@ -132,7 +132,7 @@ public class AdminService implements InitializingBean {
 	public void addMemberToGroup(
 			@Parameter(description = "Group Id") @PathVariable String groupId, 
 			@Parameter(description = "User Id") @PathVariable String userId, 
-			Locale loc, CIBFlowUser flowUser) {
+			Locale loc, CIBUser flowUser) {
 		bpmProvider.addMemberToGroup(groupId, userId, flowUser);
 	}
 	
@@ -154,7 +154,7 @@ public class AdminService implements InitializingBean {
 	public void deleteMemberFromGroup(
 			@Parameter(description = "Group Id") @PathVariable String groupId, 
 			@Parameter(description = "User Id") @PathVariable String userId, 
-			Locale loc, CIBFlowUser flowUser) {
+			Locale loc, CIBUser flowUser) {
 		bpmProvider.deleteMemberFromGroup(groupId, userId, flowUser);
 	}
 	
@@ -178,7 +178,7 @@ public class AdminService implements InitializingBean {
 	public void updateUserCredentials(
 			@Parameter(description = "User Id") @PathVariable String userId, 
 			@RequestBody Map<String, Object> data, 
-			Locale loc, CIBFlowUser user) {
+			Locale loc, CIBUser user) {
 		bpmProvider.updateUserCredentials(userId, data, user);
 	}
 
@@ -196,7 +196,7 @@ public class AdminService implements InitializingBean {
 	@RequestMapping(value = "/user/{userId}", method = RequestMethod.DELETE)
 	public void deleteUser(
 			@Parameter(description = "User Id") @PathVariable String userId, 
-			Locale loc, CIBFlowUser user) {
+			Locale loc, CIBUser user) {
 		bpmProvider.deleteUser(userId, user);
 	}
 
@@ -221,7 +221,7 @@ public class AdminService implements InitializingBean {
 			@Parameter(description = "Specifies the index of the first result to return") @RequestParam Optional<String> firstResult,
 			@Parameter(description = "Specifies the maximum number of results to return"
 					+ "<br>Will return less results if there are no more results left") @RequestParam Optional<String> maxResults,		
-			Locale loc, CIBFlowUser user) {
+			Locale loc, CIBUser user) {
 		
 		String decodedMember = member.map(value -> {
 			try {
@@ -270,7 +270,7 @@ public class AdminService implements InitializingBean {
 	@RequestMapping(value = "/group/create", method = RequestMethod.POST)
 	public void createGroup(
 			@RequestBody UserGroup group,
-			Locale loc, CIBFlowUser user) {
+			Locale loc, CIBUser user) {
 		bpmProvider.createGroup(group, user);
 	}
 
@@ -292,7 +292,7 @@ public class AdminService implements InitializingBean {
 	public void updateGroup(
 			@Parameter(description = "Group Id") @PathVariable String groupId, 
 			@RequestBody UserGroup group, 
-			Locale loc, CIBFlowUser user) {
+			Locale loc, CIBUser user) {
 		bpmProvider.updateGroup(groupId, group, user);
 	}
 
@@ -310,7 +310,7 @@ public class AdminService implements InitializingBean {
 	@RequestMapping(value = "/group/{groupId}", method = RequestMethod.DELETE)
 	public void deleteGroup(
 			@Parameter(description = "Group Id") @PathVariable String groupId, 
-			Locale loc, CIBFlowUser user) {
+			Locale loc, CIBUser user) {
 		bpmProvider.deleteGroup(groupId, user);
 	}
 	
@@ -337,7 +337,7 @@ public class AdminService implements InitializingBean {
 			@Parameter(description = "Index of the first result to return") @RequestParam Optional<String> firstResult,
 			@Parameter(description = "Maximum number of results to return"
 					+ "<br>Will return less results if there are no more results left") @RequestParam Optional<String> maxResults,
-			Locale loc, CIBFlowUser user) {
+			Locale loc, CIBUser user) {
 		return bpmProvider.findAuthorization(id, type, userIdIn, groupIdIn, resourceType, resourceId,
 				sortBy, sortOrder, firstResult, maxResults, user);
 	}
@@ -364,7 +364,7 @@ public class AdminService implements InitializingBean {
 	@RequestMapping(value = "/authorization/create", method = RequestMethod.POST)
 	public ResponseEntity<Authorization> createAuthorization(
 			@RequestBody Authorization authorization,
-			Locale loc, CIBFlowUser user) {
+			Locale loc, CIBUser user) {
 		return bpmProvider.createAuthorization(authorization, user);
 	}
 
@@ -392,7 +392,7 @@ public class AdminService implements InitializingBean {
 	public void updateAuthorization(
 			@Parameter(description = "Authorization Id") @PathVariable String authorizationId, 
 			@RequestBody Map<String, Object> data, 
-			Locale loc, CIBFlowUser user) {
+			Locale loc, CIBUser user) {
 		bpmProvider.updateAuthorization(authorizationId, data, user);
 	}
 
@@ -410,7 +410,7 @@ public class AdminService implements InitializingBean {
 	@RequestMapping(value = "/authorization/{authorizationId}", method = RequestMethod.DELETE)
 	public void deleteAuthorization(
 			@Parameter(description = "Authorization Id") @PathVariable String authorizationId, 
-			Locale loc, CIBFlowUser user) {
+			Locale loc, CIBUser user) {
 		bpmProvider.deleteAuthorization(authorizationId, user);
 	}
 

@@ -1,0 +1,57 @@
+<div>
+	<b-modal ref="consent" v-model="show" size="lg" modal-class="d-flex align-items-end" hide-header no-close-on-esc no-close-on-backdrop>
+		<div>
+			<span>{{ $t('cookie-consent.text1') }}</span><br/>
+			<span>{{ $t('cookie-consent.text2') }}</span>
+			<b-button class="p-0 mb-1" variant="link" @click="showSettings = !showSettings">{{ $t('cookie-consent.settingsText') }}</b-button>
+			<span>{{ $t('cookie-consent.text3') }}</span>
+		</div>
+		
+		<div ref="settings" v-if="showSettings" class="mt-3">
+			<h5>{{ $t('cookie-consent.settings.privacy') }}</h5>
+			<p class="mb-0 mt-3">{{ $t('cookie-consent.settings.text') }}</p>
+			<b-link :href="$t('cookie-consent.settings.privacyPolicyLink')" target="_blank">{{ $t('cookie-consent.settings.privacyPolicy') }}</b-link>
+			<div class="my-3" role="tablist">
+				<b-card class="mb-2 border-0" no-body>
+					<b-button class="d-flex justify-content-between bg-light" variant="light" block @click="showNecessary = !showNecessary">
+						<div>
+							<i :class="'mdi mdi-24px ' + (showNecessary ? 'mdi-chevron-up' : 'mdi-chevron-down')"></i>
+							<span class="align-text-bottom">{{ $t('cookie-consent.settings.necessary') }}</span>
+						</div>
+						<b-form-checkbox class="my-1" v-model="selected" value="necessary" switch size="lg" disabled @click.native.stop></b-form-checkbox>
+					</b-button>
+					<b-collapse v-model="showNecessary">
+						<b-card-body class="bg-light rounded-bottom">
+							<b-card-text>
+								{{ $t('cookie-consent.settings.necessaryText') }}
+							</b-card-text>
+						</b-card-body>
+					</b-collapse>
+				</b-card>
+				<b-card class="border-0" no-body>
+					<b-button class="d-flex justify-content-between bg-light" variant="light" block @click="showOptional = !showOptional">
+						<div>
+							<i :class="'mdi mdi-24px ' + (showOptional ? 'mdi-chevron-up' : 'mdi-chevron-down')"></i>
+							<span class="align-text-bottom">{{ $t('cookie-consent.settings.optional') }}</span>
+						</div>
+						<b-form-checkbox class="my-1" v-model="selected" value="optional" switch size="lg" @click.native.stop></b-form-checkbox>
+					</b-button>
+					<b-collapse v-model="showOptional">
+						<b-card-body class="bg-light rounded-bottom">
+							<b-card-text>
+								{{ $t('cookie-consent.settings.optionalText') }}
+							</b-card-text>
+						</b-card-body>
+					</b-collapse>
+				</b-card>
+			</div>
+		</div>
+
+		<template #modal-footer>
+			<b-button v-if="showSettings" variant="secondary" @click="enableAll">{{ $t('cookie-consent.settings.enable') }}</b-button>
+			<b-button v-if="showSettings" variant="outline-secondary" @click="saveSettings">{{ $t('cookie-consent.settings.save') }}</b-button>
+			<b-button v-if="!showSettings" variant="secondary" @click="acceptCookies">{{ $t('cookie-consent.accept') }}</b-button>
+			<b-button v-if="!showSettings" variant="outline-secondary" @click="rejectCookies">{{ $t('cookie-consent.reject') }}</b-button>
+		</template>
+	</b-modal>
+</div>

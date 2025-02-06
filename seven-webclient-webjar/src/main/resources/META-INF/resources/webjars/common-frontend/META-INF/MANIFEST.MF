@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Created-By: Maven WAR Plugin 3.4.0
+Build-Jdk-Spec: 21
+Implementation-Title: common-frontend
+Implementation-Vendor: CIB software
+Implementation-Version: 
+Specification-Version: 1.30.1-SNAPSHOT
+

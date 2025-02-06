@@ -5,14 +5,55 @@
 	<parent>
 		<groupId>org.cibseven</groupId>
 		<artifactId>seven-webclient</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
+		<version>0.0.2-SNAPSHOT</version>
 	</parent>
 	<artifactId>seven-webclient-webjar</artifactId>
 	
+	<properties>
+		<version.vue>3.5.13</version.vue>
+		<version.vuex>4.1.0</version.vuex>
+		<version.vue-router>4.5.0</version.vue-router>
+		<version.vue-i18n>9.14.0</version.vue-i18n>
+		<version.mitt>3.0.1</version.mitt>
+		<version.zxcvbn>4.4.2</version.zxcvbn>
+		<version.momentjs>2.29.4</version.momentjs>
+	</properties>
+
 	<dependencies>
+	     <dependency>
+		    <groupId>org.webjars.npm</groupId>
+		    <artifactId>vue</artifactId>
+		    <version>${version.vue}</version>
+		</dependency>
 		<dependency>
-			<groupId>de.cib.cibflow</groupId>
-			<artifactId>flow-cloud-api</artifactId>
+		    <groupId>org.webjars.npm</groupId>
+		    <artifactId>vuex</artifactId>
+		    <version>${version.vuex}</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.webjars.npm</groupId>
+		    <artifactId>vue-router</artifactId>
+		    <version>${version.vue-router}</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.webjars.npm</groupId>
+		    <artifactId>vue-i18n</artifactId>
+		    <version>${version.vue-i18n}</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.webjars.npm</groupId>
+		    <artifactId>mitt</artifactId>
+		    <version>${version.mitt}</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.webjars</groupId>
+		    <artifactId>zxcvbn</artifactId>
+		    <version>${version.zxcvbn}</version>
+		</dependency>
+	   	<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>momentjs</artifactId>
+			<version>${version.momentjs}</version>
 		</dependency>
 	</dependencies>
 

@@ -61,9 +61,6 @@ clearTimeout, setTimeout, window, encodeURIComponent, document */
 							case 'deployments': return this.$t('deployment.title')
 							case 'processes': return this.$t('start.startProcesses')
 							case 'management': return this.$t('start.admin')
-							case 'modeler': return this.$t('start.modeler')
-							case 'easyForm': return this.$t('start.easyForm')
-							case 'flowResource': return this.$t('start.resources')
 							case 'adminUsers':
 							case 'createUser': 
 								return this.$t('admin.users.title')
@@ -108,9 +105,6 @@ clearTimeout, setTimeout, window, encodeURIComponent, document */
 						this.$eventBus.emit('openStartProcess')
 					},
 					doNotShowIeNotification: function() { if (this.rememberNotShow) localStorage.setItem('ienotify', true) },
-					openDoximaLogin: function () {
-						window.location.href = this.$root.config.doximaLoginUrl + encodeURIComponent(window.location.href)
-					}
     			}
 			}
 		})

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		
+		<title>My application</title>
+		<link rel="icon" type="image/png" href="icon.png">
+				
+		<link rel="stylesheet" href="bootstrap/bootstrap_4.5.0.min.css?v=1.19.0">
+		<!-- 		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"/> -->	
+ 		<link rel="stylesheet" href="lib/bootstrap-vue_2.21.2.min.css"/>
+		<link rel="stylesheet" href="material-icons/css/materialdesignicons_6.5.95.min.css">		
+<!-- 		<link rel="stylesheet" href="files/file-area.css">	    -->
+		<link rel="stylesheet" href="animations.css">
+		
+<!-- 		<script src="lib/polyfill_ES6_Promise_MutationObserver.min.js"></script> -->
+		<script src="lib/axios_0.27.2.min.js"></script>		
+		<script src="webjars/vue/2.6.14/vue.js"></script>
+		<script src="lib/vue-router_3.5.2.min.js"></script>
+		<script src="lib/bootstrap-vue_2.21.2.min.js"></script>
+		<script src="lib/vue-i18n_8.24.5.min.js"></script>		
+		<script src="webjars/zxcvbn/4.3.0/zxcvbn.js"></script>	
+		<!-- https://github.com/ElemeFE/vue-infinite-scroll -->
+<!-- 		<script src="https://unpkg.com/vue-infinite-scroll@2.0.2/vue-infinite-scroll.js"></script>				 -->
+				
+<!-- 		<script src="webjars/jquery/2.2.4/jquery.min.js"></script> -->
+<!-- 		<script src="lib/cib.iwc.1.0.0.min.js"></script>		 -->
+	</head>
+	
+	<body>
+		<div id="app">				
+			<cib-header class="flex-shrink-0" :languages="['de','en','es']" :user="{ displayName: 'user' }">
+				<div style="max-height: 38px; display: flex" class="ml-auto"></div>
+				<template slot="userItems">								
+	                <b-dropdown-item>
+	                    <span>Profile</span>
+	                </b-dropdown-item>					
+	                <b-dropdown-item>
+	                    <span>Change user</span>
+	                </b-dropdown-item>
+	                <hr>
+	            </template>	            	            
+			</cib-header>
+			
+			<sidebar :left-open.sync="leftOpen" :right-open.sync="rightOpen" left-caption="Links" right-caption="Freigabe" header-margin="55px">
+				<template v-slot:left>
+					<b-list-group>
+						<b-list-group-item class="border-0 p-0" title="tooltip" action to="/safe/auth/changes">
+							<sidebar-dropright icon-class="mdi mdi-24px mdi-navigation-variant-outline">					    
+							    <b-list-group-item class="border-0 px-3" action to="/safe/auth/quick-start">
+									<span class="cib-icon-quick-start cib-icon-18px"></span>
+									<span>Ab die Post</span>
+								</b-list-group-item>
+						
+								<b-list-group-item action class="border-0 px-3" to="/safe/auth/MongoAccount">
+									<span> <img width="18" height="18" src="safe/auth/connect/MongoAccount.svg"></img> </span>
+									<span>doXisafe</span>			
+								</b-list-group-item>								
+								
+								<b-list-group-item class="border-0 px-3">
+									<span style="cursor: default">Freigaben</span>
+									<b-list-group @click="$emit('middle')">
+										<b-list-group-item action class="border-0 rounded-0 py-2" to="/safe/auth/shares">
+											<span class="mdi-18px mdi mdi-account-multiple"></span>
+											<span>Meine Freigaben</span>				
+										</b-list-group-item>
+										<b-list-group-item action class="border-0 rounded-0 py-2" to="/safe/auth/foreign">
+											<span class="mdi-18px mdi mdi-account"></span>
+											<span>Mit mir geteilt</span>													
+										</b-list-group-item>
+										<b-list-group-item action class="border-0 rounded-0 py-2" to="/safe/auth/cleanup">
+											<span class="cib-icon-shares-to-review cib-icon-18px"></span>
+											<span>Konflikte bereinigen</span>
+										</b-list-group-item>
+									</b-list-group>
+								</b-list-group-item>
+								
+								<b-list-group-item class="border-0 px-3" action to="/safe/auth/tags">
+									<span class="mdi-18px mdi mdi-tag-multiple"></span>
+									<span>Labels editieren</span>
+								</b-list-group-item>
+							
+								<b-list-group-item class="border-0 px-3" action to="/safe/auth/duplicates">
+									<span class="mdi mdi-18px mdi-animation-outline"></span>
+									<span>Duplikate bereinigen</span>									
+								</b-list-group-item>				
+							
+								<b-list-group-item class="border-0 px-3" action to="/safe/auth/changes">
+									<span class="mdi mdi-18px mdi-lightbulb-on"></span>
+									<span>Neueste Features</span>
+								</b-list-group-item>	
+							</sidebar-dropright>											
+						</b-list-group-item>
+						<b-list-group-item class="border-0 px-3 py-1" action to="/safe/auth/quick-start">
+							<span class="mdi mdi-18px mdi-lightbulb-on"></span>
+							<small>Post</small>
+						</b-list-group-item>	
+						<b-list-group-item class="border-0 px-3 py-1" action to="/safe/auth/duplicates">
+							<span class="mdi mdi-18px mdi-animation-outline"></span>
+							<small>Duplik</small>									
+						</b-list-group-item>	
+					</b-list-group>
+				</template>								
+						  	
+				<div>				
+					<login :credentials="{ username: null, password: null, type: 'de.cib.doxishare.rest.StandardLogin' }" :on-register="log" @success="log"></login>							
+					<task-popper v-slot="_" :title="$t('task-popper.title')" placement="bottom"> <!-- https://alligator.io/vuejs/scoped-component-slots/ -->
+						<file-area :multiple="true" :disabled="_.busy" @select="onSelect($event, _.add)" ref="area"></file-area>
+					</task-popper>				
+				</div>					
+				<button @click="$refs.error.show('Das ging nach hinten los')">Fehler</button>
+				<button @click="$refs.prompt.show()">Was eingeben</button>													
+				<cib-table :rows="[{id:'1', name:'test1', size:'121212'},{id:'2', name:'test1', size:'121212'},{id:'3', name:'test1', size:'121212'},{id:'4', name:'test1', size:'121212'}]" :columns="['name', 'size']" prefix="storage." key-member="id">
+				</cib-table>	
+				<template v-slot:right>3 of three columns</template>
+			</sidebars>			
+			
+			<error ref="error"></error>
+			<prompt ref="prompt">Irgendwas eingeben</prompt>
+			<cookie-consent></cookie-consent>
+<!-- 			<doxiview url="http://doxisafe-test.cib.de/doxiview" :start-parameters="{ repo_alias: 'cmis-repository', cmisDocumentId: '5e2842b5-72b7-4535-b9a1-089179fda1a5;1.0', ui:'doxisafe' }"></doxiview> -->
+		</div>
+		
+		<script src="polyfills.js"></script>
+		<script src="forms.js"></script>		
+		<script src="auth.js"></script>
+		<script src="doxiview.js"></script>
+		<script src="dialogs/dialogs.js"></script>
+		<script src="layout/layout.js"></script>				
+		<script src="files/files.js"></script>				
+		<script src="app.js"></script>					
+	</body>
+</html>

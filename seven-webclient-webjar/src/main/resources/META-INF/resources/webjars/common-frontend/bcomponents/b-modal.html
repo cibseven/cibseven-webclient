@@ -1,0 +1,19 @@
+<div class="modal fade" ref="modal" tabindex="-1" role="dialog" :aria-labelledby="'modal-title'">
+    <div class="modal-dialog" :class="modalClasses" role="document">
+        <div class="modal-content" :class="{ 'modal-dialog-scrollable': scrollable }">
+            <div class="modal-header" :class="headerClass">
+                <h5 class="modal-title" :id="'modal-title'">{{ title }}</h5>
+                <button type="button" class="btn-close" @click="hide('headerclose')" :aria-label="$t('bcomponents.ariaLabelClose')"></button>
+            </div>
+            <div class="modal-body" :class="bodyClass">
+                <slot></slot>
+            </div>
+            <div v-if="!hideFooter" class="modal-footer" :class="footerClass">
+                <slot name="modal-footer" :cancel="cancel" :ok="ok">
+                    <b-button v-t="'confirm.ok'" variant="primary" @click="hide('ok')"></b-button>
+                    <b-button v-if="!okOnly" variant="secondary" v-t="'confirm.cancel'" @click="hide('cancel')"></b-button>
+                </slot>
+            </div>
+        </div>
+    </div>
+</div>

@@ -16,35 +16,36 @@
 	import { ResetDialog, OtpDialog } from './webjars/common-frontend/auth.js'
 	import { HoverStyle } from './webjars/common-frontend/directives.js'
 	import { CIBForm, CIBDatepicker2, SecureInput } from './webjars/common-frontend/forms.js'
-	import { permissionsMixin } from './webjars/seven/permissions.js';
-	import { QuickNavBar, Sidebar, SidebarItem, SidebarDropright } from './webjars/seven/components/quick-nav-bar.js';
+	import { permissionsMixin } from './webjars/seven/permissions.js'
+	import { QuickNavBar, Sidebar, SidebarItem, SidebarDropright } from './webjars/seven/components/quick-nav-bar.js'
 	import { PasswordRecover } from './webjars/seven/components/password/password.js';
-	import { Seven, FilterableSelect, SidebarElementGroup, SmartSearch, SidebarsFlow, IconButton, MultisortModal, LoginFlow } from './webjars/seven/components/components.js';
+	import { Seven, FilterableSelect, SidebarElementGroup, SmartSearch, SidebarsFlow, IconButton, MultisortModal, LoginFlow } from './webjars/seven/components/components.js'
 	// COCKPIT COMPONENTS //
-	import { BpmnViewer } from './webjars/seven/components/process/bpmn-viewer.js';
-	import { ProcessManagement } from './webjars/seven/components/process/process-management.js';
+	import { BpmnViewer } from './webjars/seven/components/process/bpmn-viewer.js'
+	import { ProcessManagement } from './webjars/seven/components/process/process-management.js'
 	// Inside this process.js, there are components which belong, for example, to the "Start process" section
 	// is this considered cockpit or tasklist?, depending on that, maybe we should split it.
 	import { Process, InstancesTable, ProcessVariablesSidebar, ProcessVariablesTable, Processes, 
 		ProcessDetailsSidebar, ProcessCard, ProcessAdvanced, ProcessTable, UserTasksTable, 
-		TaskAssignationModal, AddVariableModal } from './webjars/seven/components/process/process.js';
-	import { Management } from './webjars/seven/components/management/management.js';
-	import { Deployments, ResourcesNavBar, DeploymentList } from './webjars/seven/components/deployment/deployment.js';
+		TaskAssignationModal, AddVariableModal } from './webjars/seven/components/process/process.js'
+	import { Management } from './webjars/seven/components/management/management.js'
+	import { Deployments, ResourcesNavBar, DeploymentList } from './webjars/seven/components/deployment/deployment.js'
 	/////////////////////////////
 	// TASKLIST COMPONENTS //
-	import { Tasks, TasksNavBar, Task, AdvancedSearchModal } from './webjars/seven/components/task/task.js';
-	import { CamundaFilter, FilterModal, FilterNavBar, FilterNavCollapsed } from './webjars/seven/components/filter/filter.js';
-	import { RenderTemplate } from './webjars/seven/components/render-template/render-template.js';
-	import { StartProcess } from './webjars/seven/components/process/start-process.js';
+	import { Tasks, TasksNavBar, Task, AdvancedSearchModal } from './webjars/seven/components/task/task.js'
+	import { CamundaFilter, FilterModal, FilterNavBar, FilterNavCollapsed } from './webjars/seven/components/filter/filter.js'
+	import { RenderTemplate } from './webjars/seven/components/render-template/render-template.js'
+	import { StartProcess } from './webjars/seven/components/process/start-process.js'
 	/////////////////////////////
 	// ADMIN COMPONENTS //
 	import { AdminUsers, AdminGroups, AdminAuthorizations, AdminAuthorizationsTable,
-		AuthorizationsNavBar, CreateUser, CreateGroup, ProfileUser, ProfileGroup } from './webjars/seven/components/admin/admin.js';
+		AuthorizationsNavBar, CreateUser, CreateGroup, ProfileUser, ProfileGroup } from './webjars/seven/components/admin/admin.js'
 	//////////////////////////
-	import { SupportModal } from './webjars/seven/components/support-modal.js';
-	import { StatusProgressBar } from './webjars/seven/components/status-progress-bar/status-progress-bar.js';
-	import { buildProcessStore, buildFilterStore, buildUserStore, buildAdvancedSearchStore } from  './webjars/seven/store.js';
-	import { FilterService, ProcessService, AdminService, InfoService, AuthService } from './webjars/seven/services.js';
+	import { SupportModal } from './webjars/seven/components/support-modal.js'
+	import { StatusProgressBar } from './webjars/seven/components/status-progress-bar/status-progress-bar.js'
+	import { buildProcessStore, buildFilterStore, buildUserStore, buildAdvancedSearchStore } from  './webjars/seven/store.js'
+	import { FilterService, ProcessService, AdminService, InfoService, AuthService } from './webjars/seven/services.js'
+	import appConfig from './webjars/seven/appConfig.js'
 	 
 	const eventBus = mitt()
 	checkExternalReturn(window.location.href, window.location.hash)
@@ -52,16 +53,6 @@
 		var hrefAux = href
 		var hashAux = hash
 		
-		if (hrefAux.indexOf('doximatoken=') >= 0) {
-			var doximaToken = ''
-			var doXimatokenStartPos = hashAux.indexOf('doximatoken=') + 'doximatoken='.length
-			if(hashAux.indexOf('&', doXimatokenStartPos) > -1) doximaToken = hashAux.substring(doXimatokenStartPos, hashAux.indexOf('&', doXimatokenStartPos))
-			else doximaToken = hashAux.substring(doXimatokenStartPos)
-			
-			localStorage.setItem('doximaToken', doximaToken)
-			
-			window.location.href = hashAux = hashAux.replace('doximatoken=' + doximaToken, '')
-		}
 		if (hashAux.includes('token=')) {
 			var token = ''
 	
@@ -85,6 +76,12 @@
 	var configRequest = Promise.all([axios.get('config.json'), InfoService.getProperties()]).then(responses => {
 		Object.assign(responses[0].data, responses[1].data)
 		var config = responses[0].data
+		
+		appConfig.servicesBasePath = config.servicesBasePath
+		
+		// (Optional) check if possible
+		//axios.defaults.baseURL = appConfig.adminBasePath
+		
 		// Load personalized-css
 		var theme = localStorage.getItem('theme') || config.theme 
 		var logoPath = ''
@@ -102,7 +99,7 @@
 			if (theme === 'generic') {
 				//css.setAttribute('href', 'bootstrap/bootstrap_5.3.3.min.css?v=1.14.0')
 				css.setAttribute('href', 'webjars/common-frontend/bootstrap/custom-bootstrap.css?v=1.14.0')
-				document.title = 'CIB flow'
+				document.title = 'CIB seven'
 			} else {
 				css.setAttribute('href', 'webjars/seven/themes/' + theme + '/bootstrap_4.5.0.min.css')
 				document.title = 'Aufgabenübersicht'
@@ -273,8 +270,8 @@
 						sessionStorage.getItem('token') ? sessionStorage.removeItem('token') : localStorage.removeItem('token')   
 						axios.defaults.headers.common.authorization = ''
 						root.user = null
-						if (router.currentRoute.path !== '/flow/login'){
-							router.push('/flow/login/?nextUrl=' + router.currentRoute.path)	
+						if (router.currentRoute.path !== '/seven/login'){
+							router.push('/seven/login/?nextUrl=' + router.currentRoute.path)	
 						}
 						root.$refs.error.show(res.data || res.statusText)
 					}
@@ -361,7 +358,7 @@
 											credentials : { 
 												username: null,
 												password: null,
-												type: 'de.cib.cibflow.rest.StandardLogin'
+												type: 'org.cibseven.auth.StandardLogin'
 											}
 										}			
 									},
@@ -371,19 +368,16 @@
 					    						user.permissions = permissions
 												this.$root.user = user
 												this.$route.query.nextUrl ? this.$router.push(this.$route.query.nextUrl) : 
-													this.$router.push('/flow/auth/start') 
+													this.$router.push('/seven/auth/start') 
 					    					})		    					
 										},
 					    				onForgotten: function() {
-											this.$router.push('/flow/password-recover') 	    					
+											this.$router.push('/seven/password-recover') 	    					
 										}									
 									}
 								}
 							})
-						}},
-						{ path: 'password-recover', beforeEnter: checkCamundaUserProvider(), component: {
-			        			template: '<password-recover></password-recover>'
-						} },					
+						}},			
 						{ path: 'auth', beforeEnter: authGuard(true), component: { 
 							template: '<loader ref="loader" class="d-flex justify-content-center" styling="width:20%">\
 								<router-view ref="down" class="w-100 h-100"></router-view></loader>',
@@ -448,7 +442,7 @@
 										else {
 								      		if (to.params.userId && to.params.userId === root.user.id && 
 												root.config.layout.showUserSettings)next()
-									      	else next('/flow/auth/start')
+									      	else next('/seven/auth/start')
 								    	}
 								  	})
 								}, component: { 
@@ -468,7 +462,7 @@
 														return filtername.toUpperCase() === filter.name.toUpperCase() 
 													})
 													if (filter) {
-														this.$router.push('/flow/auth/tasks/' + filter.id + '/' + taskId)
+														this.$router.push('/seven/auth/tasks/' + filter.id + '/' + taskId)
 													}
 												}
 											}
@@ -549,10 +543,10 @@
 			})
 			return router
 			
-			function checkCamundaUserProvider() {
+			function checkSevenUserProvider() {
 				return function(to, from, next) {
 					configRequest.then(function(config) {
-						if (config.userProvider === 'de.cib.cibflow.auth.CamundaUserProvider') next()
+						if (config.userProvider === 'org.cibseven.auth.SevenUserProvider') next()
 					})				
 				}
 			}
@@ -573,7 +567,7 @@
 							} else {
 								console && console.warn('Not authenticated, redirecting ...')			
 								sessionStorage.getItem('token') ? sessionStorage.removeItem('token') : localStorage.removeItem('token') 
-								next({ path: strict ? '/flow/login' : undefined, query: { nextUrl: to.fullPath } })
+								next({ path: strict ? '/seven/login' : undefined, query: { nextUrl: to.fullPath } })
 								if ((res.data.type !== 'AuthenticationException' && res.data.type !== 'TokenExpiredException') || params)
 									root.$refs.error.show(res.data) // When reloading $refs.error is often undefined => init race condition ?
 							}						
@@ -600,23 +594,23 @@
 			function permissionsGuard(permission) {
 				return function(to, from, next) {
 					//Custom access permission handler for 'Start Process' option
-					var perm = to.fullPath === '/flow/auth/processes' ? 'tasklist' : permission
+					var perm = to.fullPath === '/seven/auth/processes' ? 'tasklist' : permission
 					if (root.applicationPermissions(root.config.permissions[perm], perm)) next()
-					else next('/flow/auth/start')
+					else next('/seven/auth/start')
 				}
 			}
 			function permissionsDeniedGuard(permission) {
 				return function(to, from, next) {
 					//Custom access permission handler for 'Start Process' option
-					var perm = to.fullPath === '/flow/auth/processes' ? 'tasklist' : permission
+					var perm = to.fullPath === '/seven/auth/processes' ? 'tasklist' : permission
 					if (!root.applicationPermissionsDenied(root.config.permissions[perm], perm)) next()
-					else next('/flow/auth/start')
+					else next('/seven/auth/start')
 				}
 			}
 			function permissionsGuardUserAdmin(permission, condition) {
 				return function(to, from, next) {
 					if (root.adminManagementPermissions(root.config.permissions[permission], condition)) next()
-					else next('/flow/auth/start')
+					else next('/seven/auth/start')
 				}
 			}
 		}

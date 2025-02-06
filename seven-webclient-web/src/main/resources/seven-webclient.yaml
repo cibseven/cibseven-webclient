@@ -17,46 +17,16 @@ ldap:
   password: B5iCQ8kX2SrvujDmJl9y
 
 user:
-  provider: de.cib.cibflow.auth.CamundaUserProvider
+  provider: org.cibseven.auth.SevenUserProvider
 bpm:
-  provider: de.cib.cibflow.camunda.CamundaProvider
+  provider: org.cibseven.providers.SevenProvider
 ui:
   element:
     template:
       url: "http://localhost:8088/ui-element-templates/#"
-
-# camunda:
-#   engineRest:
-#     url: "http://localhost:8086"
-# cockpit:
-#   url: "http://localhost:8086"
-# modeler:
-#   url: "http://localhost:8086/modeler"
-formbuilder:
-  url: "http://localhost:8090/easy-form"
-
-# CIB flow modeler URL
-modeler:
-  url: "http://localhost:8088/flow-modeler"
-
-# CIB flow Property Service URL
-flow:
-  processManagement:
-    url: "http://localhost:8088/flow-process-management"
-  property:
-    url: "http://localhost:8090/flow-property"
-  resource:
-    url: "http://localhost:8088/flow-resource"
-  link:
-    accessibility: "http://localhost:8090/flow-resource"
    
 custom:
   spring:
     jackson:
       parser:
         max-size: 25000000
-        
-passwordRecovery:
-  mail:
-    user: workflow@cib.de
-    password: ln2riahKUCgdyv5D1NN6    

@@ -1,0 +1,10 @@
+<div ref="targetRef">
+	<slot :add="addTask" :download="triggerDownload" :busy="busy"></slot>
+	<b-popover :manual="true" :placement="placement" ref="pop" @hidden="tasks = []"	:content="''">
+		<template v-slot:title>
+			<b-button-close style="margin-top: -0.25rem" @click="closePopover" :title="$t('task-popper.close')"></b-button-close>
+			<span>{{ title }}</span>
+		</template>
+		<task-list :tasks="tasks" :almost="delayAt"></task-list>
+	</b-popover>
+</div>

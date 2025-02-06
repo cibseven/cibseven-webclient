@@ -1,0 +1,47 @@
+<div class="row g-0 position-relative">
+    <transition name="slide-left"> <!-- In a fixed component the margin-top must be applied right in the component -->
+	    <div v-show="leftOpen" class="border border-top-0" :class="colClasses(leftSize)" style="position: absolute; top: 0; left: 0; bottom: 0; z-index: 0">	
+			<b-button v-if="leftCaption" variant="light" :block="true" class="rounded-0 border border-top-0 border-end-0" @click="$emit('update:leftOpen', false)">
+				<span class="mdi mdi-chevron-left float-end"></span>
+				{{ leftCaption }}
+			</b-button>
+	    	<div :style="{ height: leftCaption ? 'calc(100% - 36px)' : '100%' }">
+	    		<slot name="left"></slot>		    
+	    	</div>	
+	    </div>
+    </transition>
+        	
+    <div class="sidebars-middle h-100" :class="middleClasses" 
+    	:style="{ 'padding-left': leftCaption && !leftOpen ? '36px' : '0', 'padding-right': rightCaption && !rightOpen ? '36px' : '0' }">	    				
+    	<slot></slot>	    				   
+    </div>
+    <transition name="fade"> <!-- In a fixed component the margin-top must be applied right in the component -->
+		<b-button v-if="!leftOpen && leftCaption" variant="light" class="rounded-0 border border-end-0 text-nowrap w-auto" @click="$emit('update:leftOpen', true)"
+			style="position: absolute; right: 100%; transform: rotate(-90deg); transform-origin: right top"> 
+			{{ leftCaption }}
+			<i class="mdi mdi-chevron-down"></i>
+		</b-button>
+	</transition>   		
+		
+	<transition name="slide-right"> <!-- In a fixed component the margin-top must be applied right in the component -->   
+	    <div v-show="rightOpen" class="border border-top-0" :class="colClasses(rightSize)" style="position: absolute; top: 0; right: 0; bottom: 0">
+	    	<b-button v-if="rightCaption" variant="light" :block="true" class="rounded-0 border border-top-0 border-start-0" @click="$emit('update:rightOpen', false)">
+	    		<span class="mdi mdi-chevron-right float-start"></span>
+	    		{{ rightCaption }}
+	    	</b-button>
+	    	<div :style="{ height: rightCaption ? 'calc(100% - 36px)' : '100%' }">
+	    		<slot name="right"></slot>		    
+	    	</div>		    	
+	    </div>
+    </transition>
+    <transition name="fade"> <!-- In a fixed component the margin-top must be applied right in the component -->
+		<b-button v-if="!rightOpen && rightCaption" variant="light" class="rounded-0 border border-start-0 text-nowrap" @click="$emit('update:rightOpen', true)"
+			style="position: absolute; left: 100%; transform: rotate(90deg); transform-origin: left top"> 
+			<i class="mdi mdi-chevron-down"></i>
+			{{ rightCaption }}			
+		</b-button>
+	</transition>
+ </div>
+
+<!-- https://webplatform.github.io/docs/tutorials/absolute_and_fixed_positioning/#Local-stacking-contexts -->
+<!-- https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Positioning/Understanding_z_index/The_stacking_context -->

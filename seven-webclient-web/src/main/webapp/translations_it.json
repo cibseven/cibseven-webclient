@@ -517,9 +517,7 @@
 		"userAdmin": "Gestione utenti",
 		"modeler": "Modellatore di processo",
 		"easyForm": "Easy Form",
-		"adminPanel": "Users Management",
-		"doximaConnection": "doXima",
-		"flowProcessManagement": "Process Management"
+		"adminPanel": "Users Management"
 	},
 	"errors": {
 		"invalid": "Inserisci un indirizzo valido",

@@ -247,7 +247,7 @@
 					},
 					selectedTask: function(task) {
 						this.task = task
-						let defaultTitle = 'CIB flow'
+						let defaultTitle = 'CIB seven'
 						if (this.$root.config.productNamePageTitle) defaultTitle = this.$root.config.productNamePageTitle
 						document.title = defaultTitle +' | ' + this.$t('start.taskList') + ' | ' + task.name
 						if (this.isMobile()) {

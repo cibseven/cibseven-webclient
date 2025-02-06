@@ -30,7 +30,7 @@
 									<b-form-group :label="$t('admin.groups.type')" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4">
 										<b-form-input v-model="group.type" @update:modelValue="dirty = true"></b-form-input>
 									</b-form-group>
-									<div class="d-flex justify-content-between" v-if="$root.config.userProvider === 'de.cib.cibflow.auth.CamundaUserProvider'">
+									<div class="d-flex justify-content-between" v-if="$root.config.userProvider === 'org.cibseven.auth.SevenUserProvider'">
 										<b-button variant="warning" @click="$refs.deleteModal.show()">{{ $t('admin.groups.deleteGroup') }}</b-button>
 										<b-button type="submit" variant="secondary" :disabled="!dirty" >{{ $t('admin.groups.update') }}</b-button>
 									</div>

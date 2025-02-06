@@ -1,0 +1,93 @@
+{
+	"login": {
+		"username": "Nome utente",
+		"password": "Password",
+		"rememberMe": "Ricordami",
+		"forgotten": "Password dimenticata?",
+		"reset": "Ripristina password",
+		"email": "Email",
+		"register": "Non hai ancora un account?",
+		"registerLink": "Iscriviti",
+		"login": "Accedi",
+		"emailSent": "An E-mail has been sent to the following address: {0}"
+	},
+	"account-form": {
+		"title": "Gestisci account",
+		"username": "@:login.username",
+		"password": "@:login.password",		
+		"confirmPassword": "Conferma password",
+		"passwordStrength": "Forza minima della password: {0}",
+		"passwordDescription": "<span>Per l'assegnazione della password forte si consiglia di:</span><ul><li>Utilizzare password più lunghe o addirittura frasi - 9 caratteri o più.</li><li> Creare una combinazione di lettere maiuscole e minuscole, numeri e caratteri speciali.</li><li>Non utilizzare termini comuni o combinazioni di base di nomi e numeri che possano essere ricondotti all'utente, come il nome e la data di nascita.</li><li>Evitare le ripetizioni. (ad esempio 123123123)</ul>",	
+		"email": "@:login.email",
+		"update": "Salva",
+		"delete": "Rimuovi account",
+		"deleteMessage": "Sei sicuro di voler rimuovere il tuo account e tutti i documenti?"		
+	},
+	"security-bar": {
+		"strength1": "Insicura",
+		"strength2": "Debole",
+		"strength3": "Accettabile",
+		"strength4": "Robusta",
+		"strength5": "Perfetta",
+		"prefix": "Sicurezza:",
+		"crackTime": "Tempo minimo per rompere:"
+	},	
+	"error": {
+		"title": "Errore",
+		"ok": "@:confirm.ok"
+	},
+	"confirm": {
+		"title": "Si prega di confermare",
+		"ok": "Ok",
+		"cancel": "Cancella"
+	},
+	"prompt": {
+		"title": "Informazione richiesta",
+		"ok": "@:confirm.ok",
+		"cancel": "@:confirm.cancel"
+	},
+	"problem-report": {
+		"title": "Ti preghiamo di comunicarci il tuo problema o suggerimenti di miglioramento",
+		"ok": "Invia",
+		"cancel": "@:confirm.cancel",
+		"email": "@:account-form.email"
+	},
+	"cib-header": {
+		"languages" : "Lingua",
+		"helpItems": "Informazioni e Aiuto",
+		"user": "Conto",
+		"logout" : "Esci",
+	    "en": "English",
+	    "de": "Deutsch",
+	    "es": "Español",
+	    "ru": "Русский",
+	    "it": "Italiano"
+	},
+	"cib-datepicker": {
+		"months" : "Gennaio_Febbraio_Marzo_Aprile_Maggio_Giugno_Luglio_Agosto_Agosto_Settembre_Ottobre_Novembre_Dicembre",
+		"weeks": "Lu_Ma_Me_Gio_Ve_Sa_Do"
+	},
+	"cib-datepicker2": {
+		"noDate": "No date selected",
+		"reset" : "Clear selection",
+		"today": "Today"
+	},
+	"snapshot": {
+		"titleAbove": "Incolla lo screenshot dagli appunti",
+		"titleBelow": "con [Ctrl] + [V]"
+	},
+	"file-area": {
+		"titleAbove": "Trascina i tuoi documenti",
+		"titleBelow": "o scegli"
+	},
+	"task-popper": {
+		"title": "Drop file(s) here",
+		"close": "Close (without cancelling)"
+	},
+	"task-list": {
+		"close": "@:confirm.cancel"
+	},
+	"errors": {
+		"invalid": "Por favor, introduzca un valor válido"
+	}
+}

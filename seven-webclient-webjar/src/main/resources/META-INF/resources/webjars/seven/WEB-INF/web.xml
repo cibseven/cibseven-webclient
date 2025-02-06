@@ -3,5 +3,5 @@
  "http://java.sun.com/dtd/web-app_2_3.dtd" >
 
 <web-app>
-  <display-name>cibflow-webclient</display-name>
+  <display-name>seven-webclient</display-name>
 </web-app>

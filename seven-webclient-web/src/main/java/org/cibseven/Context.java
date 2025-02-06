@@ -4,6 +4,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import org.cibseven.auth.BaseUserProvider;
+import org.cibseven.providers.BpmProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -37,14 +39,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import de.cib.auth.User;
-import de.cib.cibflow.auth.FlowUserProvider;
-import de.cib.cibflow.camunda.BpmProvider;
 
 @Configuration
-@ComponentScan({ "de.cib.cibflow.rest", "de.cib.cibflow.api", "de.cib.cibflow.camunda.providers", "org.cibseven.rest" })
+@ComponentScan({ "org.cibseven.providers", "org.cibseven.rest", "org.cibseven.config", "de.cib.auth" })
 public class Context implements WebMvcConfigurer, HandlerMethodArgumentResolver {
 
-	FlowUserProvider provider;
+	BaseUserProvider provider;
 
 	@Value("${custom.spring.jackson.parser.max-size:20000000}")
 	int jacksonParserMaxSize;
@@ -129,10 +129,10 @@ public class Context implements WebMvcConfigurer, HandlerMethodArgumentResolver 
 	}
 
 	@Bean @Primary
-	public FlowUserProvider flowUserProvider(@Value("${user.provider}") Class<FlowUserProvider> providerClass)
+	public BaseUserProvider baseUserProvider(@Value("${user.provider}") Class<BaseUserProvider> providerClass)
 			throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException,
 			NoSuchMethodException, SecurityException {
-		this.provider = (FlowUserProvider) providerClass.getConstructor().newInstance();
+		this.provider = (BaseUserProvider) providerClass.getConstructor().newInstance();
 		return provider;
 	}
 

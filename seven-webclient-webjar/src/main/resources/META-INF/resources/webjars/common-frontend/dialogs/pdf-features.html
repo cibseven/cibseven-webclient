@@ -1,0 +1,66 @@
+<b-modal ref="modal" size="lg" :title="mode === 3 ? $t('pdf-features.title2') : $t('pdf-features.title')" @hide="onHide">		
+	<div>{{ mode === 3 ? $t('pdf-features.text2') : $t('pdf-features.text') }}</div>
+	<div class="mt-3 text-danger" v-if="signed.length > 0">{{ $t('pdf-features.signedWarning') }}</div>
+	<b-card-group class="mt-3">		   
+      	<b-card>
+        	<b-form-group class="d-inline">						
+				<b-form-checkbox :checked="level !== null" :disabled="processing" @change="level = $event ? 'normal' : null">
+					{{ $t('pdf-features.compress') }}
+					<i ref="compress" class="mdi mdi-18px mdi-help-circle text-secondary" style="line-height: initial"></i>
+				</b-form-checkbox>																
+			</b-form-group>			
+			<b-form-group :label="$t('pdf-features.level') + ':'" style="height: 100px">
+				<b-form-select v-model="level" plain :disabled="level == null || processing">
+			    	<option value="lossless" v-t="'pdf-features.lossless'"></option>
+			    	<option value="highest" v-t="'pdf-features.low'"></option>		    	
+			    	<option value="higher" v-t="'pdf-features.normal'"></option>		    	
+			    	<option value="normal" v-t="'pdf-features.higher'"></option>
+			    	<option value="low" v-t="'pdf-features.highest'"></option>		    			    						     
+			    </b-form-select>
+			</b-form-group>
+			<b-card no-body>
+				<b-card-body class="d-flex align-items-center font-italic">
+					<div class="cib-icon-compress-upload cib-icon-24px mr-2"></div>
+					<div>{{ $t('pdf-compression.text') }}</div>
+				</b-card-body>							
+			</b-card>
+			<b-popover :target="function() { return $refs.compress }" triggers="hover focus" placement="right">
+				<b-card class="border-0" :title="$t('pdf-compression.title')" img-src="dialogs/compress-animation.gif">{{ $t('pdf-compression.text') }}</b-card>
+			</b-popover>
+      	</b-card>
+      	<b-card>      		
+        	<b-form-group class="d-inline">
+				<b-form-checkbox :checked="password !== null" :disabled="processing" @change="password = $event ? '' : null">
+					{{ $t('pdf-features.encrypt') }}
+					<i ref="encrypt" class="mdi mdi-18px mdi-help-circle text-secondary" style="line-height: initial"></i>
+				</b-form-checkbox>								
+			</b-form-group>			
+			<cib-form ref="form" @submitted="process(password, level, files, param)">
+				<!-- Fixed height because invalid feedback pushes down the rest otherwise -->
+				<b-form-group :label="$t('pdf-features.password') + ':'" :invalid-feedback="$t('errors.invalid')" style="height: 100px">
+					<secure-input ref="input" v-model="password" :disabled="password == null || processing" required autocomplete="new-password"></secure-input>
+					<security-bar :target="function(){ return $refs.input && $refs.input.$refs.input }" :password="password" placement="bottom"></security-bar>	
+				</b-form-group>	
+			</cib-form>
+			<b-card no-body>
+				<b-card-body class="d-flex align-items-center font-italic">
+					<div class="cib-icon-encrypt-upload cib-icon-24px mr-2"></div>
+					<div>{{ $t('pdf-encryption.text') }}</div>
+				</b-card-body>							
+			</b-card>
+			<b-popover :target="function() { return $refs.encrypt }" triggers="hover focus" placement="right">
+				<b-card :title="$t('pdf-encryption.title')" img-src="dialogs/encrypt-animation.gif">{{ $t('pdf-encryption.text') }}</b-card>
+			</b-popover>
+      	</b-card>
+  	</b-card-group>  	
+	
+	<template v-slot:modal-footer>
+		<b-button :disabled="processing" @click="$refs.form.onSubmit()" variant="primary">			
+			<b-spinner v-if="processing" small type="grow"></b-spinner>
+			{{ $t('confirm.ok') }}
+		</b-button>
+		<b-button v-t="'confirm.cancel'" @click="$refs.modal.hide('cancel')"></b-button>
+	</template>
+</b-modal>
+
+<!-- https://bootstrap-vue.js.org/docs/components/modal -->

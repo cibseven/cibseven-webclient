@@ -10,7 +10,7 @@
 					<h1 class="text-dark text-center">{{ $t('login.productName') }}</h1>
 					<h3 class="text-secondary text-center">{{ $t('login.productSlogan') }}</h3>
 					<login-flow :credentials="credentials" 
-						:hideForgotten="!($root.config.userProvider === 'de.cib.cibflow.auth.CamundaUserProvider')"
+						:hideForgotten="!($root.config.userProvider === 'org.cibseven.auth.SevenUserProvider')"
 						@success="onSuccess" @forgotten="onForgotten"
 						@update-credentials="updateCredentials"></login-flow>
 				</div>			

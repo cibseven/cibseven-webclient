@@ -1,0 +1,40 @@
+<div style="height: 55px"> <!-- Empty container with height of navbar -->
+	<b-navbar toggleable="md" fixed="top" type="light" class="border-bottom bg-white px-3">	    
+	    <slot></slot>	       	
+	    <b-navbar-toggle target="nav_collapse"></b-navbar-toggle>    
+	    <b-collapse is-nav id="nav_collapse" class="flex-grow-0">
+	        <b-navbar-nav>
+	            <b-nav-item-dropdown extra-toggle-classes="py-1" right :title="$t('cib-header.languages')">
+	            	<template v-slot:button-content>
+						<span class="visually-hidden">{{ $t('cib-header.languages') }}</span>
+	            		<span class="mdi mdi-24px mdi-web align-middle"></span>
+	            	</template>
+	                <b-dropdown-item v-for="lang in languages" :key="lang" :active="lang === currentLanguage()" @click="currentLanguage(lang)">
+	                	<span class="text-uppercase text-dark bg-light rounded px-1">{{ lang }}</span>
+	                	{{ $t('cib-header.' + lang) }}
+	                </b-dropdown-item>
+	            </b-nav-item-dropdown>
+	            
+	             <b-nav-item-dropdown v-if="$slots.helpItems" extra-toggle-classes="py-1" right>
+	            	<template v-slot:button-content>
+	            		<span :title="$t('cib-header.helpItems')" class="mdi mdi-24px mdi-help-circle align-middle"></span>
+	            		{{ $t('cib-header.helpItems') }}
+	            	</template>
+	            	<slot name="helpItems"></slot>
+	            </b-nav-item-dropdown>
+	            
+	            <b-nav-item-dropdown v-if="user" :title="$t('admin.users.account')" extra-toggle-classes="py-1" right>
+	            	<template v-slot:button-content>
+	            		<span class="visually-hidden">{{ $t('admin.users.account') }}</span>
+            			<span class="mdi mdi-24px mdi-account align-middle"></span> {{ user.displayName }}
+	            	</template>
+	            	<slot name="userItems"></slot> 
+	                <b-dropdown-item @click="logout">{{ $t('cib-header.logout') }}</b-dropdown-item>
+	            </b-nav-item-dropdown>            
+	        </b-navbar-nav>
+	    </b-collapse>	   
+	</b-navbar>
+</div>
+
+<!-- https://getbootstrap.com/docs/4.0/utilities/colors -->
+<!-- https://getbootstrap.com/docs/4.0/utilities/text/ -->

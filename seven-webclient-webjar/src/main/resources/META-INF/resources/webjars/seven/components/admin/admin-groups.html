@@ -10,10 +10,10 @@
   				</b-input-group>
 			 </div>
 			 <div class="col-8 text-end">
-			 	<b-button class="border me-1" size="sm" variant="light" v-if="$root.config.userProvider === 'de.cib.cibflow.auth.CamundaUserProvider'" @click="add()">
+			 	<b-button class="border me-1" size="sm" variant="light" v-if="$root.config.userProvider === 'org.cibseven.auth.SevenUserProvider'" @click="add()">
 					<span class="mdi mdi-plus"> {{ $t('admin.groups.add') }} </span>
 				</b-button>
-				<b-button v-if="$root.config.userProvider === 'de.cib.cibflow.auth.CamundaUserProvider'" class="border" size="sm" variant="light" 
+				<b-button v-if="$root.config.userProvider === 'org.cibseven.auth.SevenUserProvider'" class="border" size="sm" variant="light" 
 					:disabled="exporting" @click="exportCSV()">
 					<span v-if="exporting"><b-spinner small></b-spinner> {{ $t('admin.exportCsv') }}</span>
 					<span v-else class="mdi mdi-download"> {{ $t('admin.exportCsv') }} </span>
@@ -29,7 +29,7 @@
 					{label: 'actions', key: 'actions', class: 'col-md-2 col-sm-2', sortable: false, thClass: 'justify-content-center', tdClass: 'justify-content-center py-0' }]"
 			@contextmenu="focused = $event" @mouseenter="focused = $event" @mouseleave="focused = null">
 			<template v-slot:cell(actions)="row">
-   				<div v-if="$root.config.userProvider === 'de.cib.cibflow.auth.CamundaUserProvider'">
+   				<div v-if="$root.config.userProvider === 'org.cibseven.auth.SevenUserProvider'">
    					<b-button :disabled="focused !== row.item" style="opacity: 1" @click="edit(row.item)" class="px-2 border-0 shadow-none" :title="$t('admin.groups.editGroup')" variant="link">
 						<span class="mdi mdi-18px mdi-pencil-outline"></span>
 					</b-button>

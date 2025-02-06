@@ -1,0 +1,21 @@
+<div @focusin="focused = true" @focusout="focused = false" @paste="screenShoot" style="position: relative; border-radius: 20px"
+	:style="{ border: focused && !disabled ? '2px solid var(--primary)' : '2px solid var(--gray)', 
+		'background-image': imgSrc ? 'url(' + imgSrc + ')' : 'none', 'background-size': 'cover' }">
+		
+	<div style="opacity: 0; width: 100%; height: 100%; position: absolute" 
+		:style="focused && !disabled ? { 'background-color': 'var(--primary)', opacity: 0.05 } : null"></div>
+		
+	<div style="text-align: center" 
+		:style="{ 'text-decoration': focused && !disabled ? 'underline' : null, visibility: imgSrc && 'hidden', 'margin-top': (height || 43)/4 + 'px' }">
+		{{ $t('snapshot.titleAbove') }}
+	</div>
+
+	<img :src="img || 'webjars/common-frontend/files/screenshot.svg'" style="display: block; margin-left: auto; margin-right: auto" 
+		:style="{ visibility: imgSrc && 'hidden', height: (height || 43) + 'px' }">
+			
+	<div style="text-align: center" 
+		:style="{ 'text-decoration': focused && !disabled ? 'underline' : null, visibility: imgSrc && 'hidden', 'margin-bottom': (height || 43)/4 + 'px' }">
+		{{ $t('snapshot.titleBelow') }}
+	</div>	
+</div>
+

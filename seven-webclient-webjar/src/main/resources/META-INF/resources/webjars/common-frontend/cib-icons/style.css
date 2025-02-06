@@ -1,0 +1,96 @@
+@font-face {
+  font-family: 'CIB-Icons';
+  src:  url('fonts/CIB-Icons.eot?xb8zxy');
+  src:  url('fonts/CIB-Icons.eot?xb8zxy#iefix') format('embedded-opentype'),
+    url('fonts/CIB-Icons.woff2?xb8zxy') format('woff2'),
+    url('fonts/CIB-Icons.ttf?xb8zxy') format('truetype'),
+    url('fonts/CIB-Icons.woff?xb8zxy') format('woff'),
+    url('fonts/CIB-Icons.svg?xb8zxy#CIB-Icons') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+
+[class^="cib-icon-"]::before, [class*=" cib-icon-"]::before {
+  /* use !important to prevent issues with browser extensions that change fonts */
+  font-family: 'CIB-Icons' !important;
+  speak: none;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.cib-icon-easyRead-off::before {
+  content: "\e910";
+}
+.cib-icon-easyRead-on::before {
+  content: "\e911";
+}
+.cib-icon-sign::before {
+  content: "\e903";
+}
+.cib-icon-folder-new::before {
+  content: "\e902";
+}
+.cib-icon-share-new::before {
+  content: "\e903";
+}
+.cib-icon-screenshot-save::before {
+  content: "\e904";
+}
+/* .cib-icon-delete::before { */
+/*   content: "\e905"; */
+/* } */
+.cib-icon-delete::before {
+  content: "\e91a";
+}
+.cib-icon-send::before {
+  content: "\e906";
+}
+.cib-icon-warning::before {
+  content: "\e907";
+}
+.cib-icon-copy-link::before {
+  content: "\e908";
+}
+.cib-icon-doxisafe::before {
+  content: "\e90a";
+}
+.cib-icon-add-cloud::before {
+  content: "\e90b";
+}
+.cib-icon-quick-start::before {
+  content: "\e909";
+}
+.cib-icon-shares-to-review::before {
+  content: "\e90c";
+}
+.cib-icon-upload-manpulate::before {
+  content: "\e90d";
+}
+.cib-icon-encrypt-upload::before {
+  content: "\e900";
+}
+.cib-icon-compress-upload::before {
+  content: "\e901";
+}
+.cib-icon-url-to-pdf::before {
+  content: "\e90e";
+}
+.cib-icon-note-search::before {
+  content: "\e90f";
+}
+.cib-icon-feedback-icon:before {
+  content: "\21";
+}
+
+.cib-icon-24px::before {
+	font-size: 24px
+}
+.cib-icon-18px::before {
+	font-size: 18px
+}

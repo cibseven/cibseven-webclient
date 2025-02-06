@@ -1,0 +1,24 @@
+.slide-in-enter-active { transition: transform .5s ease }
+.slide-in-enter { transform: translateX(500px) }
+
+.fade-enter, .fade-leave-to { opacity: 0 }
+.fade-enter-active, .fade-leave-active { transition: opacity 1s ease }
+
+.list-move { transition: transform .5s }
+.list-enter { opacity: 0; transform: translateY(-100px) }
+.list-enter-active, .list-leave-active { transition: all .5s }
+.list-leave-to { opacity: 0; transform: translateY(100px) }
+
+/* .delay-enter, .delay-enter-to { display: none } */
+/* .delay-enter-active { transition: none .3s } */
+.slide-left-enter, .slide-left-leave-to { transform: translateX(-600px) }
+.slide-left-enter-active, .slide-left-leave-active { transition: transform .5s ease }
+.slide-right-enter, .slide-right-leave-to { transform: translateX(600px) }
+.slide-right-enter-active, .slide-right-leave-active { transition: transform .5s ease }
+.sidebars-middle { transition: all .5s }
+/*
+.sidebars-button-left { position: fixed; left: 0; top: -38px; transform: rotate(90deg); transform-origin: left bottom; z-index: 1 }
+.sidebars-button-right { position: fixed; right: 0; top: -38px; transform: rotate(-90deg); transform-origin: right bottom }
+.turn-clock-enter {	top: 0;	transform: rotate(0deg) }
+.turn-clock-enter-active { transition: transform .5s ease }
+*/

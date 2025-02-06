@@ -617,9 +617,7 @@
 		"easyForm": "Easy Form",
 		"adminPanel": "Gestión de Usuarios",
 		"properties": "Propiedades",		
-		"resources": "Recursos",
-		"doximaConnection": "doXima",
-		"flowProcessManagement": "Process Management"
+		"resources": "Recursos"
 	},
 	"errors": {
 		"invalid": "Por favor, introduce un valor válido",

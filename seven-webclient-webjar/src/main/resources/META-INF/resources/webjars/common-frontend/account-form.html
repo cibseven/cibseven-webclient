@@ -1,0 +1,51 @@
+<div>
+	<cib-form @submitted="onUpdate">
+		<div class="d-flex align-items-center mb-3">
+			<h2 v-t="'account-form.title'" class="mr-3"></h2>
+			<button v-if="!hideDelete" type="button" class="btn btn-outline-secondary border-0" :title="$t('account-form.delete')" @click="$refs.dialog.show()"
+				style="padding-left: 10px; padding-right: 10px; padding-top : 0; padding-bottom: 0">
+				<i class="mdi mdi-24px mdi-delete"></i>
+			</button>
+		</div>
+
+		<b-form-group label-cols="4" :label="$t('account-form.email')" :invalid-feedback="$t('errors.invalid')"> 
+			<input v-model="registration.email" type="email" class="form-control col-9" required> 
+		</b-form-group> 
+		<b-form-group label-cols="4" :label="$t('account-form.username')" :invalid-feedback="$t('errors.invalid')"> 
+			<input v-model="registration.username" class="form-control col-9" required>
+		</b-form-group>
+		<div class="form-group form-row">
+			<label class="col-4 col-form-label" v-t="'account-form.password'"></label>
+			<secure-input ref="pass" v-model="registration.password" class="col-6 pr-0" autocomplete="new-password"></secure-input>
+			<security-bar :target="function() { return $refs.pass ? $refs.pass.$refs.input : '' }" :password="registration.password" placement="bottom"
+				@zxcvbn="score = $event.score + 1"></security-bar>
+	
+			<span ref="passwordDescription" :class="[!registration.password ? 'mdi-information-outline' : 
+				(score < minPasswordStrength ? 'mdi-alert-circle-outline text-danger' : 'mdi-check-circle-outline text-success'), 'mdi mdi-18px ml-1 my-auto']"></span>
+			<b-tooltip :target="function() { return $refs.passwordDescription }" placement="left"> 
+				<div v-html="$t('account-form.passwordDescription')" class="text-left small"></div>
+			</b-tooltip>
+			<small v-if="minPasswordStrength" class="form-text offset-4 pl-2" :class="score < minPasswordStrength ? ['text-danger'] : []">
+				{{ $t('account-form.passwordStrength', [$t('security-bar.strength' + minPasswordStrength)]) }}
+			</small>
+		</div>
+		<div class="form-group form-row">
+			<label class="col-4 col-form-label" v-t="'account-form.confirmPassword'"></label>
+			<secure-input v-model="confirmPassword" class="col-6 pr-0"></secure-input>
+			<span :class="[{ 'mdi-check-circle-outline text-success': registration.password === confirmPassword },
+						{ 'mdi-alert-circle-outline text-danger': registration.password && registration.password !== confirmPassword }, 
+						'mdi mdi-18px ml-1 my-auto']"></span>
+		</div>
+		<div class="form-group">
+			<button type="submit" :disabled="registration.password && (registration.password !== confirmPassword || score < minPasswordStrength)"
+				class="btn btn-primary" v-t="'account-form.update'"></button>
+		</div>
+	</cib-form>
+
+	<confirm ref="dialog" @ok="onDelete">{{ $t('account-form.deleteMessage') }}</confirm>
+</div>
+
+<!-- https://getbootstrap.com/docs/4.0/components/forms/#how-it-works -->
+<!-- https://getbootstrap.com/docs/4.0/utilities/spacing/ -->
+<!-- https://bootstrap-vue.js.org/docs/components/form-group/ -->
+<!-- https://bootstrap-vue.js.org/docs/components/modal -->

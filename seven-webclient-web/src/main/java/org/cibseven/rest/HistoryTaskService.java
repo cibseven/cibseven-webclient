@@ -3,25 +3,25 @@ package org.cibseven.rest;
 import java.util.Collection;
 import java.util.Locale;
 
+import org.cibseven.auth.CIBUser;
+import org.cibseven.rest.model.TaskHistory;
+import org.cibseven.rest.model.VariableHistory;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import de.cib.cibflow.api.rest.camunda.model.TaskHistory;
-import de.cib.cibflow.api.rest.camunda.model.VariableHistory;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import de.cib.cibflow.CIBFlowUser;
 
 @ApiResponses({
 	@ApiResponse(responseCode= "500", description = "An unexpected system error occured"),
 	@ApiResponse(responseCode= "401", description = "Unauthorized")
 })
-@RestController @RequestMapping("/flow-engine")
+@RestController @RequestMapping("${services.basePath:/services/v1}")
 public class HistoryTaskService extends BaseService {
 	
 	@Operation(
@@ -32,7 +32,7 @@ public class HistoryTaskService extends BaseService {
 	@RequestMapping(value = "/task-history/{activityInstanceId}/variables", method = RequestMethod.GET)
 	public Collection<VariableHistory> fetchActivityVariablesHistory(
 			@Parameter(description = "Activity instance Id") @PathVariable String activityInstanceId,
-			Locale loc, CIBFlowUser user) {
+			Locale loc, CIBUser user) {
 		return bpmProvider.fetchActivityVariablesHistory(activityInstanceId, user);
 	}
 	
@@ -45,7 +45,7 @@ public class HistoryTaskService extends BaseService {
 	public Collection<TaskHistory> findTasksByDefinitionKeyHistory(
 			@Parameter(description = "Restrict to tasks that have the given key") @RequestParam String taskDefinitionKey,
 			@Parameter(description = "Process instance Id") @RequestParam String processInstanceId,
-			Locale loc, CIBFlowUser user) {
+			Locale loc, CIBUser user) {
 		return bpmProvider.findTasksByDefinitionKeyHistory(taskDefinitionKey, processInstanceId, user);
 	}
 
@@ -57,7 +57,7 @@ public class HistoryTaskService extends BaseService {
 	@RequestMapping(value = "/task-history/by-process-instance/{processInstanceId}", method = RequestMethod.GET)
 	public Collection<TaskHistory> findTasksByProcessInstanceHistory(
 			@Parameter(description = "Process instance Id") @PathVariable String processInstanceId,
-			Locale loc, CIBFlowUser user) {
+			Locale loc, CIBUser user) {
 		return bpmProvider.findTasksByProcessInstanceHistory(processInstanceId, user);
 	}
 	
@@ -69,7 +69,7 @@ public class HistoryTaskService extends BaseService {
 	@RequestMapping(value = "/task-history/by-task-id/{taskId}", method = RequestMethod.GET)
 	public Collection<TaskHistory> findTasksByTaskIdHistory(
 			@Parameter(description = "Task Id") @PathVariable String taskId,
-			Locale loc, CIBFlowUser user) {
+			Locale loc, CIBUser user) {
 		return bpmProvider.findTasksByTaskIdHistory(taskId, user);
 	}
 

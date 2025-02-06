@@ -1,0 +1,28 @@
+<div @mouseover="dragover = true" @mouseleave="dragover = false" @dragover="dragover = true" @dragleave="dragover = false" @click="$emit('click')" 
+	style="position: relative; border-radius: 20px"
+	:style="{ border: dragover && !disabled ? '2px solid var(--primary)' : '2px solid var(--gray)' }">
+		
+	<div style="opacity: 0; width: 100%; height: 100%; position: absolute; z-index: -1" 
+		:style="dragover && !disabled ? { 'background-color': 'var(--primary)', opacity: 0.05 } : null"></div>
+		
+	<div style="text-align: center" :style="{ 'text-decoration': dragover && !disabled ? 'underline' : null, 'margin-top': (height || 100)/4 + 'px' }">
+		{{ textAbove }}
+	</div>
+		
+	<img :src="img" style="display: block; margin-left: auto; margin-right: auto" :style="{ height: (height || 43) + 'px' }">
+			
+	<div style="text-align: center" :style="{ 'text-decoration': dragover && !disabled ? 'underline' : null, 'margin-bottom': (height || 100)/4 + 'px' }">
+		{{ textBelow }}
+	</div>
+</div>
+
+<!-- https://wiki.cib.de/index.php/Upload_area -->
+
+<!-- https://medium.freecodecamp.org/everything-you-need-to-know-about-css-variables-c74d922ea855 -->
+<!-- https://getbootstrap.com/docs/4.0/getting-started/theming/#css-variables -->
+
+<!-- https://css-tricks.com/non-transparent-elements-inside-transparent-elements/ -->
+<!-- https://www.w3schools.com/css/css_positioning.asp -->
+
+<!-- https://www.w3schools.com/howto/howto_css_image_center.asp -->
+

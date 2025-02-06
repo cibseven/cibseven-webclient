@@ -1,0 +1,54 @@
+<div>
+	<cib-form @submitted="onLogin">	
+		<b-form-group label-cols="4" :label="$t('login.username')" :invalid-feedback="$t('errors.invalid')">
+			<input ref="username" v-model="credentials.username" class="form-control" required autofocus autocomplete="username">			
+		</b-form-group>
+		<div class="form-group form-row">	
+			<label class="col-4 col-form-label" v-t="'login.password'"></label>		
+			<secure-input ref="password" v-model="credentials.password" class="col-8" required></secure-input>					
+		</div>
+		
+		<slot></slot>
+		
+		<div class="clearfix">
+			<div class="form-group float-left">
+				<b-form-checkbox v-model="rememberMe">{{ $t('login.rememberMe') }}</b-form-checkbox>
+			</div>
+			<div v-if="!hideForgotten" class="form-group float-right">
+				<a v-t="'login.forgotten'" class="text-primary" style="cursor:pointer" @click="$refs.emailDialog.show()"></a>		
+			</div>
+		</div>
+		
+		<div class="form-group">
+			<button type="submit" class="btn btn-primary btn-block" v-t="'login.login'"></button>
+		</div>	
+		<div v-if="onRegister" class="form-group text-center">
+			{{ $t('login.register') }}
+			<a @click="onRegister" v-t="'login.registerLink'" class="text-primary" style="cursor:pointer"></a>		
+		</div>		
+	</cib-form>
+	
+	<b-modal ref="emailDialog" :title="$t('login.forgotten')" @shown="$refs.email.focus()">		
+		<cib-form ref="form" @submitted="onForgotten">	
+			<b-form-group :invalid-feedback="$t('errors.invalid')">
+				<input ref="email" :type="forgottenType" :placeholder="$t('login.email')" class="form-control" required autocomplete="email">
+			</b-form-group>			
+		</cib-form>
+		<template v-slot:modal-footer>
+			<button class="btn btn-primary" @click="$refs.form.onSubmit()">OK</button>
+		</template>		
+	</b-modal>
+	
+	<otp-dialog ref="otpDialog" :credentials2="credentials2" :remember-me="rememberMe" @success="$emit('success', $event)"></otp-dialog>
+	<reset-dialog ref="resetDialog" :credentials2="credentials2" @success="$refs.emailSent.show(true)"></reset-dialog>
+	<success ref="emailSent">{{ $t('login.emailSent', [email]) }}</success>
+</div>
+
+<!-- https://getbootstrap.com/docs/4.0/components/forms/#how-it-works -->
+<!-- https://getbootstrap.com/docs/4.0/utilities/clearfix/ -->
+<!-- https://getbootstrap.com/docs/4.0/utilities/spacing/ -->
+<!-- https://getbootstrap.com/docs/4.0/utilities/borders/ -->
+<!-- https://getbootstrap.com/docs/4.0/utilities/text/#text-alignment -->
+<!-- https://bootstrap-vue.js.org/docs/components/form-checkbox -->
+<!-- https://bootstrap-vue.js.org/docs/components/form-group/ -->
+<!-- https://bootstrap-vue.js.org/docs/components/modal -->

@@ -654,7 +654,7 @@
 				},
 				computed: {
 					readOnlyUser: function() {
-						return (this.$root.config.userProvider !== 'de.cib.cibflow.auth.CamundaUserProvider')
+						return (this.$root.config.userProvider !== 'org.cibseven.auth.SevenUserProvider')
 					},
 					tasksCheckNotificationsDisabled: {
 						get: function() {
