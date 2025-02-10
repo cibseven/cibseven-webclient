@@ -19,6 +19,7 @@ import org.cibseven.exception.InvalidUserIdException;
 import org.cibseven.exception.InvalidValueHistoryTimeToLive;
 import org.cibseven.exception.MissingVariableException;
 import org.cibseven.exception.NoObjectFoundException;
+import org.cibseven.exception.OptimisticLockingException;
 import org.cibseven.exception.PasswordPolicyException;
 import org.cibseven.exception.SubmitDeniedException;
 import org.cibseven.exception.SystemException;
@@ -296,6 +297,8 @@ public abstract class SevenProviderBase {
 				|| technicalErrorMsg.matches(".*process instance variable with name.*does not exist.*")
 				|| technicalErrorMsg.matches(".*Filter with id.*does not exist.*")) {
 			wrapperException = new NoObjectFoundException(cause);
+		} else if (technicalErrorMsg.matches(".*OptimisticLockingException.*")) {
+			wrapperException = new OptimisticLockingException(cause);
 		} else if (technicalErrorMsg.matches(".*task variable with name.*does not exist.*")) {
 			wrapperException = new MissingVariableException(cause);
 		} else if (technicalErrorMsg.matches(".*Password does not match policy.*")) {
