@@ -358,7 +358,7 @@
 											credentials : { 
 												username: null,
 												password: null,
-												type: 'org.cibseven.auth.StandardLogin'
+												type: 'org.cibseven.rest.StandardLogin'
 											}
 										}			
 									},
