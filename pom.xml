@@ -75,6 +75,27 @@
 		</dependency>
 	</dependencies>
 
+	<profiles>
+		<profile>
+			<id>nexus-repository</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<distributionManagement>
+				<repository>
+					<id>mvn-release-local</id>
+					<name>CIB maven release repository</name>
+					<url>${nexus-repository.url}/mvn-release-local</url>
+				</repository>
+				<snapshotRepository>
+					<id>mvn-snapshot-local</id>
+					<name>CIB maven snapshot repository</name>
+					<url>${nexus-repository.url}/mvn-snapshot-local</url>
+				</snapshotRepository>
+			</distributionManagement>
+		</profile>
+	</profiles>
+
 	<build>
 		<plugins>
 			<plugin>
