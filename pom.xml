@@ -15,15 +15,23 @@
 
 	<properties>
 		<target.path>${project.basedir}/target</target.path>
-		<version.spring.boot>3.4.2</version.spring.boot>
-		<version.openapi-starter-webmvc-ui>2.8.4</version.openapi-starter-webmvc-ui>
-		<maven.compiler.source>17</maven.compiler.source>
-		<maven.compiler.target>17</maven.compiler.target>
 		<project.git.url>https://gitlab.cib.de/web/flow/cloud/seven-webclient.git</project.git.url>
 		<nexus-repository.url>https://nexus.cib.de/repository</nexus-repository.url>
-		<maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
-		<git-commit-id-maven-plugin.version>9.0.1</git-commit-id-maven-plugin.version>
+		
+		<maven.compiler.source>17</maven.compiler.source>
+		<maven.compiler.target>17</maven.compiler.target>
 		<maven-war-plugin.version>3.4.0</maven-war-plugin.version>
+		<maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
+		<maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
+		
+		<git-commit-id-maven-plugin.version>9.0.1</git-commit-id-maven-plugin.version>
+		
+		<jjwt.version>0.12.6</jjwt.version>
+		<swagger-annotations.version>2.2.27</swagger-annotations.version>
+		<commons-io.version>2.18.0</commons-io.version>
+		<common-auth.version>2.1.0</common-auth.version>
+		<version.spring.boot>3.4.2</version.spring.boot>
+		<version.openapi-starter-webmvc-ui>2.8.4</version.openapi-starter-webmvc-ui>
 	</properties>
 
 	<scm>
@@ -72,7 +80,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.13.0</version>
+				<version>${maven-compiler-plugin.version}</version>
 				<configuration>
 					<source>${maven.compiler.source}</source>
 					<target>${maven.compiler.target}</target>

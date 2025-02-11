@@ -18,7 +18,6 @@
 	import { CIBForm, CIBDatepicker2, SecureInput } from './webjars/common-frontend/forms.js'
 	import { permissionsMixin } from './webjars/seven/permissions.js'
 	import { QuickNavBar, Sidebar, SidebarItem, SidebarDropright } from './webjars/seven/components/quick-nav-bar.js'
-	import { PasswordRecover } from './webjars/seven/components/password/password.js';
 	import { Seven, FilterableSelect, SidebarElementGroup, SmartSearch, SidebarsFlow, IconButton, MultisortModal, LoginFlow } from './webjars/seven/components/components.js'
 	// COCKPIT COMPONENTS //
 	import { BpmnViewer } from './webjars/seven/components/process/bpmn-viewer.js'
@@ -628,7 +627,6 @@
 		app.component('sidebar', Sidebar)
 		app.component('sidebar-item', SidebarItem)
 		app.component('sidebar-dropright', SidebarDropright)
-		app.component('password-recover', PasswordRecover)
 		app.component('bpmn-viewer', BpmnViewer)
 		app.component('seven', Seven)
 		app.component('filterable-select', FilterableSelect)

@@ -1,5 +1,4 @@
 server:
-  #port: 8086
   servlet:
     context-path: /seven-webclient-web
 
@@ -22,29 +21,6 @@ spring:
       static-locations: 
         - "classpath:/webapps/"
 
-springdoc:
-  swagger-ui:
-    path: /swagger-ui
-    operationsSorter: alpha
-    tagsSorter: alpha
-    doc-expansion: none 
-  # webclient server url for the swagger-ui. Only needs to be set if the automatic detection is wrong.
-  flowWebclient:
-    serverUrl: ""
-
-# see https://springdoc.org/properties.html
-api:
-  common:
-    title: "CIB Flow webclient API"
-    description: "This API exposes the functionality of CIB Flow webclient as a REST service."
-    termsOfService: "https://www.cib.de"
-    license: "Proprietary License of CIB software GmbH"
-    licenseUrl: "https://www.cib.de"
-    contact:
-      name: "CIB software GmbH"
-      url: "https://www.cib.de"
-      email: "support@cib.de"
-
 # LDAP
 ldap:
   url: ldap://ldap.cib.de
@@ -59,10 +35,6 @@ authentication:
   jwtSecret: YWY1NDhhOdYxOGJjNTg2NjMzOWM0ZTQ5NjkwNjZlNjU4NTk4ODYWY1NDhhOdYxOGJjNTg2NjMzOWM0ZTQ5NjkwNjZlNjU4NTk4ODYWY1NDhhOdYxOGJjNTg2NjMzOWM0ZTQ5NjkwNjZlNjU4NTk4OD
   tokenValidMinutes: 60
   tokenProlongMinutes: 1440
-  recover:
-    jwtSecret: YWY1NDhhOdYxOGJjNTg2NjMzOWM0ZTQ5NjkwNjZlNjU4NTk4ODYWY1NDhhOdYxOGJjNTg2NjMzOWM0ZTQ5NjkwNjZlNjU4NTk4ODYWY1NDhhOdYxOGJjNTg2NjMzOWM0ZTQ5NjkwNjZlNjU4NTk4OD
-    tokenValidMinutes: 60
-    tokenProlongMinutes: 1440
   
 # BPM Provider
 bpm:
@@ -71,7 +43,7 @@ bpm:
 # User providers
 user:
   provider: org.cibseven.auth.SevenUserProvider
-  # provider: org.cibseven.auth.SevenUserProvider
+  # provider: org.cibseven.auth.LdapUserProvider
   # provider: org.cibseven.auth.KeycloakUserProvider
   # provider: org.cibseven.auth.AdfsUserProvider
 
@@ -109,12 +81,6 @@ flow:
     fileValue:
       enabled: false
 
-# CIB flow dataflow - External Database.     
-dataflow:
-  enable: false
-  url: http://localhost:8090/dataflow
-        
-# CIB flow webclient properties used in client side.
 # CIB flow ui-element-templates URL
 ui:
   element:
@@ -128,33 +94,36 @@ cockpit:
 # Used to set a theme (Bootstrap)
 theme: cib
 
-#Used to set the title of the page
-#productNamePageTitle: L Bank flow
-
-#support-dialog: |
-#  {
-#    "de": {
-#      "support-hotline": "Support-Hotline",
-#      "opening-hours": "Öffnungszeiten",
-#      "opening-hours-info": "Mo - Fr, 08.00 - 19.00 Uhr",
-#      "phone": "Telefon", 
-#      "phone-number": "+49 89 14360 111",
-#      "email-address": "E-Mail-Adresse",
-#      "email": "cibsupport@cib.de"
-#    } 
-#  }
-
-#Password Recovery
-passwordRecovery:
-  mail:
-    host: outlook.office365.com
-    user: 
-    password: 
-    passwordRecoverLink: http://localhost:8090/client/#/flow/password-recover
-
 services:
-  # Value here used to be flow-engine
   basePath: services/v1
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui
+    operationsSorter: alpha
+    tagsSorter: alpha
+    doc-expansion: none 
+  # webclient server url for the swagger-ui. Only needs to be set if the automatic detection is wrong.
+  flowWebclient:
+    serverUrl: ""
+
+api:
+  common:
+    title: "CIB Flow webclient API"
+    description: "This API exposes the functionality of CIB Flow webclient as a REST service."
+    termsOfService: "https://www.cib.de"
+    license: "Proprietary License of CIB software GmbH"
+    licenseUrl: "https://www.cib.de"
+    contact:
+      name: "CIB software GmbH"
+      url: "https://www.cib.de"
+      email: "support@cib.de"
+
+#custom:
+#  spring:
+#    jackson:
+#      parser:
+#        max-size: 25000000
 
 # Activate "/actuator/info" and "/actuator/health" endpoints
 management:
@@ -178,4 +147,19 @@ management:
       mode: full # Use full mode for git information
     java:
       enabled: true # Enable Java information (ensure your setup supports this)
-        
+
+  #Used to set the title of the page
+  #productNamePageTitle: L Bank flow
+
+  #support-dialog: |
+  #  {
+  #    "de": {
+  #      "support-hotline": "Support-Hotline",
+  #      "opening-hours": "Öffnungszeiten",
+  #      "opening-hours-info": "Mo - Fr, 08.00 - 19.00 Uhr",
+  #      "phone": "Telefon", 
+  #      "phone-number": "+49 89 14360 111",
+  #      "email-address": "E-Mail-Adresse",
+  #      "email": "cibsupport@cib.de"
+  #    } 
+  #  }
