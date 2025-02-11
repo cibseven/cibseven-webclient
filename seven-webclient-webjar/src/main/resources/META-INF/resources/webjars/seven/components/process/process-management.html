@@ -31,14 +31,14 @@
 			<template v-slot:cell(incidents)="table">
 				<span v-if="loadingInstances"><b-spinner small></b-spinner></span>
 				<div v-else-if="table.item.incidents > 0">
-					<span :title="getIconTitle(table.item.state)" class="mdi mdi-18px mdi-alert-outline text-warning"></span><span>{{ table.item.incidents }}</span>
+					<span :title="$t('process.instanceIncidents')" class="mdi mdi-18px mdi-alert-outline text-warning"></span><span>{{ table.item.incidents }}</span>
 				</div>
-				<span :title="getIconTitle(table.item.state)" v-else class="mdi mdi-18px mdi-check-circle-outline text-success"></span>
+				<span :title="$t('process.instanceFinished')" v-else class="mdi mdi-18px mdi-check-circle-outline text-success"></span>
 			</template>
 			<template v-slot:cell(runningInstances)="table">
 				<span v-if="loadingInstances"><b-spinner small></b-spinner></span>
 				<div v-else-if="table.item.runningInstances > 0">
-					<span :title="getIconTitle(table.item.state)" class="mdi mdi-18px mdi-chevron-triple-right text-success"></span><span>{{ table.item.runningInstances }}</span>
+					<span :title="$t('process.instanceRunning')" class="mdi mdi-18px mdi-chevron-triple-right text-success"></span><span>{{ table.item.runningInstances }}</span>
 				</div>
 				<span v-else>___</span>
 			</template>
