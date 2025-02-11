@@ -74,15 +74,6 @@
 					},
 					openInModeler: function(process) {
 						this.$router.push('/seven/auth/modeler/' + process.id)
-					},
-					getIconTitle: function(state) {
-						switch(state) {
-							case 'ACTIVE':
-								return this.$t('process.instanceRunning')
-							case 'SUSPENDED':
-								return this.$t('process.instanceIncidents')
-						}
-						return this.$t('process.instanceFinished')
 					}
 				}
 			}
