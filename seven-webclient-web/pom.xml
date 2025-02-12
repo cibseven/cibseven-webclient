@@ -155,8 +155,6 @@
 				<artifactId>jib-maven-plugin</artifactId>
 				<version>${jib-maven-plugin.version}</version>
 				<configuration>
-					<!-- we don't want jib to execute in general -->
-					<skip>false</skip>
 					<from>
 						<image>${jib.from.image}</image>
 					</from>
