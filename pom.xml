@@ -7,6 +7,10 @@
 	<version>0.0.2-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
+	<name>Seven webclient</name>
+	<description>Seven WebClient is a modern web-based interface for managing and interacting with the Seven cloud platform, 
+		providing seamless access to services and optimized workflows.</description>
+
 	<modules>
 		<module>seven-webclient-web</module>
 		<module>seven-webclient-webjar</module>
