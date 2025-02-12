@@ -126,7 +126,7 @@
 						</container>
 					</configuration>
 				</plugin>
-			<plugins>
+			</plugins>
 		</pluginManagement>
 	</build>
 </project>
