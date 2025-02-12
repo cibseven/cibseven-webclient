@@ -69,6 +69,8 @@
 						<directory>src/main/resources</directory>
 						<filtering>false</filtering>
 						<includes>
+							<include>application.yaml</include>
+							<include>application-deploy-k8s.yaml</include>						
 							<include>*.jpg</include>
 							<include>*.txt</include>
 						</includes>

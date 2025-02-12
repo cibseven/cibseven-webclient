@@ -593,7 +593,7 @@ secrets:
   env: { }
   files:
     application.yaml:
-      path: /opt/cib/conf/application.yaml
+      path: /opt/cib/conf/seven-webclient.yaml
       value: |-
         {{ .Values.application | toYaml | toString }}
     template-config.properties:
