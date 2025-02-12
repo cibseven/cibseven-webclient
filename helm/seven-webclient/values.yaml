@@ -599,9 +599,6 @@ secrets:
     template-config.properties:
       path: /opt/cib/conf/template-config.properties
       value: |-
-        # CIB flow dataflow - External Database.
-        dataflow.enable= {{ .Values.application.dataflow.enabled }}
-        dataflow.url= {{ .Values.application.dataflow.url }}
 
 volumes: { }
 
