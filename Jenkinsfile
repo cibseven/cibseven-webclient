@@ -5,7 +5,7 @@
 import de.cib.pipeline.library.Constants
 
 standardMavenPipeline(
-    mvnParams: '-Pdeploy-k8s -U',
+    mvnParams: '-Pdeploy-k8s -U jib:build',
     uiParamPresets: [
         // The Docker image is created in the custom stage with its own Maven profile
         'CREATE_DOCKER_IMAGE': true,
