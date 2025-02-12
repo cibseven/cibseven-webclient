@@ -336,7 +336,7 @@ configmaps:
           <p>Saludos cordiales,</p>
           <p>CIB seven</p>
 
-    # Needed if client should be reachable under root context / in addition to /client
+    # Needed if client should be reachable under root context / in addition to /seven
     # See .Values.rootContext.enabled
     server.xml:
       path: /opt/bitnami/tomcat/conf/server.xml
@@ -639,7 +639,7 @@ service:
     http:
       port: 8080
       contexts:
-        - /client
+        - /seven
     # Metrics port is required by CIB observability stack for exporting of metrics
     # via Prometheus
     metrics:
@@ -649,7 +649,7 @@ probes:
   enabled: "{{ .Values.global.probes.enabled }}"
   startupProbe:
     httpGet:
-      path: /client/actuator/health/liveness
+      path: /seven/actuator/health/liveness
       port: http
     initialDelaySeconds: 5
     periodSeconds: 5
@@ -657,7 +657,7 @@ probes:
     failureThreshold: 12
   readinessProbe:
     httpGet:
-      path: /client/actuator/health/readiness
+      path: /seven/actuator/health/readiness
       port: http
     initialDelaySeconds: 10
     periodSeconds: 10
@@ -665,7 +665,7 @@ probes:
     failureThreshold: 3
   livenessProbe:
     httpGet:
-      path: /client/actuator/health/liveness
+      path: /seven/actuator/health/liveness
       port: http
     initialDelaySeconds: 60
     periodSeconds: 10
