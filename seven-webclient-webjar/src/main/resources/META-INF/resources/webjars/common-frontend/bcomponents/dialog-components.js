@@ -61,6 +61,11 @@
 	                headerClass: String,
 	                footerClass: [String, Object]
 	            },
+				data: function() {
+			  		return {
+			    		lastFocused: null
+				  	}
+				},
 	            mounted: function() {
 	                this.modal = new bootstrap.Modal(this.$refs.modal, {
 	                    backdrop: 'static',
@@ -100,8 +105,12 @@
 	                hide: function(trigger) {
 	                    this.modal.hide()
 	                    this.$emit('hide', trigger)
+						if (this.lastFocused && typeof this.lastFocused.focus === 'function') {
+					    	this.lastFocused.focus();
+				     	}
 	                },
 	                show: function() {
+						this.lastFocused = document.activeElement
 	                    this.modal.show()
 	                }
 	            }
