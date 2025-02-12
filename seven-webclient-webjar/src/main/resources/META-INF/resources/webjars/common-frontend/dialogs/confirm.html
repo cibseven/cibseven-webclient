@@ -1,7 +1,7 @@
-<b-modal ref='modal' :title="$t('confirm.title')" @hide="$event.trigger !== 'ok' && $emit('cancel', param)">
+<b-modal ref='modal' :title="$t('confirm.title')" @hide="($event && $event.trigger !== 'ok') && $emit('cancel', param)">
 	<div class="container-fluid">
 		<div class="d-flex align-items-center">
-			<div class="mr-4">
+			<div class="me-4">
 				<span class="mdi-36px mdi mdi-alert-outline text-warning"></span>
 			</div>	
 			<div>
@@ -12,7 +12,7 @@
 	</div>
 	<template v-slot:modal-footer>
 		<b-button v-t="'confirm.ok'" variant="primary" @click="$emit('ok', param); $refs.modal.hide('ok')"></b-button>
-		<b-button v-t="'confirm.cancel'" @click="$refs.modal.hide('cancel')"></b-button>
+		<b-button v-t="'confirm.cancel'" variant="secondary" @click="$refs.modal.hide('cancel')"></b-button>
 	</template>
 </b-modal>
 
