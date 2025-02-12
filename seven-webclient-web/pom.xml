@@ -153,30 +153,11 @@
 			<plugin>
 				<groupId>com.google.cloud.tools</groupId>
 				<artifactId>jib-maven-plugin</artifactId>
-				<version>${jib-maven-plugin.version}</version>
 				<configuration>
-					<from>
-						<image>${jib.from.image}</image>
-					</from>
-					<to>
-						<image>${jib.to.image}</image>
-					</to>
+					<skip>false</skip>
 					<!-- https://github.com/GoogleContainerTools/jib/blob/master/jib-maven-plugin/README.md#extended-usage -->
 					<container>
 						<appRoot>/opt/bitnami/tomcat/webapps/seven</appRoot>
-						<labels>
-							<!-- https://github.com/opencontainers/image-spec/blob/main/annotations.md#pre-defined-annotation-keys -->
-							<org.opencontainers.image.vendor>CIB software GmbH</org.opencontainers.image.vendor>
-							<org.opencontainers.image.authors>CIB software GmbH</org.opencontainers.image.authors>
-							<org.opencontainers.image.licenses>Proprietary software by CIB software GmbH</org.opencontainers.image.licenses>
-							<org.opencontainers.image.title>${project.name}</org.opencontainers.image.title>
-							<org.opencontainers.image.version>${project.version}</org.opencontainers.image.version>
-							<org.opencontainers.image.ref.name>${jib.to.image}</org.opencontainers.image.ref.name>
-							<org.opencontainers.image.description>${project.description}</org.opencontainers.image.description>
-							<org.opencontainers.image.source>${project.git.url}</org.opencontainers.image.source>
-							<org.opencontainers.image.url>${project.git.url}</org.opencontainers.image.url>
-							<org.opencontainers.image.base.name>${jib.from.image}</org.opencontainers.image.base.name>
-						</labels>
 					</container>
 				</configuration>
 			</plugin>				
