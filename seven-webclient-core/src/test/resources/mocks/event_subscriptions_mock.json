@@ -1,0 +1,22 @@
+[
+	{
+		"id": "event-subscription-1",
+		"eventType": "message",
+		"eventName": "MessageName",
+		"executionId": "execution-1",
+		"processInstanceId": "process-instance-1",
+		"activityId": "activity-1",
+		"createdDate": "2025-01-20T10:00:00Z",
+		"tenantId": "tenant-1"
+	},
+	{
+		"id": "event-subscription-2",
+		"eventType": "signal",
+		"eventName": "SignalName",
+		"executionId": "execution-2",
+		"processInstanceId": "process-instance-2",
+		"activityId": "activity-2",
+		"createdDate": "2025-01-20T11:00:00Z",
+		"tenantId": "tenant-2"
+	}
+]

@@ -1,0 +1,32 @@
+{
+    "id": "activity-instance-1",
+    "name": "Sample Activity",
+    "activityId": "activity-1",
+    "activityName": "User Task",
+    "activityType": "userTask",
+    "executionIds": ["execution-1"],
+    "parentActivityInstanceId": "parent-activity-1",
+    "processDefinitionId": "process-def-1",
+    "processInstanceId": "process-instance-1",
+    "childActivityInstances": [
+        {
+            "id": "child-activity-1",
+            "activityName": "Child Activity",
+            "activityType": "serviceTask"
+        }
+    ],
+    "childTransitionInstances": [
+        {
+            "id": "transition-1",
+            "parentActivityInstanceId": "parent-activity-1",
+            "processInstanceId": "process-instance-1",
+            "processDefinitionId": "process-def-1",
+            "activityId": "activity-2",
+            "activityName": "Transition Activity",
+            "activityType": "transitionType",
+            "executionId": "execution-2",
+            "targetActivityId": "target-activity-1",
+            "incidentIds": ["incident-1", "incident-2"]
+        }
+    ]
+}

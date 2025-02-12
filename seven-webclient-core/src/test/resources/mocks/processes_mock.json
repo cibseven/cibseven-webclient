@@ -1,0 +1,14 @@
+[
+    {
+        "id": "process-1",
+        "key": "processKey1",
+        "name": "Process One",
+        "version": "1"
+    },
+    {
+        "id": "process-2",
+        "key": "processKey2",
+        "name": "Process Two",
+        "version": "2"
+    }
+]

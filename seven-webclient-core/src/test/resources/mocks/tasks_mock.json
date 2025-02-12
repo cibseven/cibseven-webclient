@@ -1,0 +1,26 @@
+[
+	{
+		"id": "task-1",
+		"name": "Task One",
+		"assignee": "user-1",
+		"description": "Description for task 1.",
+		"priority": 50,
+		"due": "2025-01-25T15:00:00.000+0000",
+		"created": "2025-01-20T12:00:00.000+0000",
+		"processInstanceId": "process-instance-1",
+		"taskDefinitionKey": "task-definition-key-1",
+		"processDefinitionId": "process-definition-1"
+	},
+	{
+		"id": "task-2",
+		"name": "Task Two",
+		"assignee": "user-2",
+		"description": "Description for task 2.",
+		"priority": 60,
+		"due": "2025-01-26T10:00:00.000+0000",
+		"created": "2025-01-21T09:00:00.000+0000",
+		"processInstanceId": "process-instance-2",
+		"taskDefinitionKey": "task-definition-key-2",
+		"processDefinitionId": "process-definition-2"
+	}
+]

@@ -1,0 +1,12 @@
+[
+    {
+        "id": "resource-1",
+        "name": "Resource One",
+        "deploymentId": "deployment-1"
+    },
+    {
+        "id": "resource-2",
+        "name": "Resource Two",
+        "deploymentId": "deployment-1"
+    }
+]

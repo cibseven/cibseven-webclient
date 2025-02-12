@@ -1,0 +1,12 @@
+[
+	{
+		"id": "group-1",
+		"name": "Admin Group",
+		"type": "ADMIN"
+	},
+	{
+		"id": "group-2",
+		"name": "User Group",
+		"type": "USER"
+	}
+]
