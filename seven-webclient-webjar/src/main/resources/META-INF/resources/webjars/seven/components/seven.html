@@ -24,10 +24,8 @@
 		            	</template>
 						<b-dropdown-item exact v-if="applicationPermissions($root.config.permissions.tasklist, 'tasklist') && startableProcesses" to="/seven/auth/processes">{{ $t('start.startProcesses') }}</b-dropdown-item>
 						<b-dropdown-item v-if="applicationPermissions($root.config.permissions.tasklist, 'tasklist')" to="/seven/auth/tasks">{{ $t('start.taskList') }}</b-dropdown-item>
-						<b-dropdown-item v-if="applicationPermissions($root.config.permissions.modeler, 'modeler')" to="/seven/auth/modeler">{{ $t('start.modeler') }}</b-dropdown-item>
 						<b-dropdown-item exact v-if="applicationPermissions($root.config.permissions.cockpit, 'cockpit')" to="/seven/auth/process-management">{{ $t('start.admin') }}</b-dropdown-item>
 						<b-dropdown-item v-if="applicationPermissions($root.config.permissions.cockpit, 'cockpit')" to="/seven/auth/deployments">{{ $t('deployment.title') }}</b-dropdown-item>
-						<b-dropdown-item v-if="applicationPermissions($root.config.permissions.easyform, 'easyform')" to="/seven/auth/easy-form">{{ $t('start.easyForm') }}</b-dropdown-item>
 						<b-dropdown-item v-if="hasAdminManagementPermissions($root.config.permissions)" to="/seven/auth/admin/users-management">{{ $t('start.adminPanel') }}</b-dropdown-item>
 						<b-dropdown-item v-if="applicationPermissions($root.config.permissions.cockpit, 'cockpit')" :href="$root.config.cockpitUrl" target="_blank">{{ $t('start.cockpit') }}</b-dropdown-item>
 		            </b-nav-item-dropdown>            
