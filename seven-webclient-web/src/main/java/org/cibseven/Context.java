@@ -41,7 +41,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.cib.auth.User;
 
 @Configuration
-@ComponentScan({ "org.cibseven.providers", "org.cibseven.rest", "org.cibseven.config", "de.cib.auth" })
+@ComponentScan({ "org.cibseven.providers", "org.cibseven.auth", "org.cibseven.rest", "org.cibseven.config", "de.cib.auth" })
 public class Context implements WebMvcConfigurer, HandlerMethodArgumentResolver {
 
 	BaseUserProvider provider;
