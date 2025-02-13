@@ -35,7 +35,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 public class IncidentService extends BaseService implements InitializingBean {
 
 	@Autowired BpmProvider bpmProvider;
-	@Autowired SevenUserProvider provider;
 	SevenProvider sevenProvider;
 	
 	public void afterPropertiesSet() {
