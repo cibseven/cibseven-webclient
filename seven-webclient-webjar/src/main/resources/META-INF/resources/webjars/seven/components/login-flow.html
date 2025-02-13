@@ -16,9 +16,6 @@
 			<div class="form-group float-left">
 				<b-form-checkbox v-model="rememberMe">{{ $t('login.rememberMe') }}</b-form-checkbox>
 			</div>
-			<div v-if="!hideForgotten" class="form-group float-right">
-				<a v-t="'login.forgotten'" class="text-primary" style="cursor:pointer" @click="$refs.passwordModal.show()"></a>		
-			</div>
 		</div>
 		
 		<div class="form-group">
@@ -33,7 +30,6 @@
 	<otp-dialog ref="otpDialog" :credentials2="credentials2" :remember-me="rememberMe" @success="$emit('success', $event)"></otp-dialog>
 	<reset-dialog ref="resetDialog" :credentials2="credentials2" @success="$refs.emailSent.show(true)"></reset-dialog>
 	<success ref="emailSent">{{ $t('login.emailSent', [email]) }}</success>
-	<password-recover ref="passwordModal"></password-recover>
 </div>
 
 <!-- https://getbootstrap.com/docs/4.0/components/forms/#how-it-works -->
