@@ -67,11 +67,17 @@ public class SsoHelper {
 
 		if (tokens != null) {
 			String hashedNonce = hashString(nonce);
-			Claims accessClaims = keyResolver.checkToken(tokens.getAccess_token());
+			Claims accessClaims = null;
+			
+			if(keyResolver.isJwt(tokens.getAccess_token())) { //access token can just be a random String
+				accessClaims = keyResolver.checkToken(tokens.getAccess_token());				
+			}
+			
 			Claims idClaims = keyResolver.checkToken(tokens.getId_token());
-			if ( nonceInAccess && !hashedNonce.equals(accessClaims.get("nonce"))
-					||  nonceInId && !hashedNonce.equals(idClaims.get("nonce")))
+			if ((nonceInAccess && accessClaims != null && !hashedNonce.equals(accessClaims.get("nonce")))
+		            || (nonceInId && !hashedNonce.equals(idClaims.get("nonce"))))
 				throw new AuthenticationException("Nonce check failed; hashed nonce: " + hashedNonce);
+			
 			tokens.accessClaims = accessClaims;
 			tokens.idClaims = idClaims;
 		}
