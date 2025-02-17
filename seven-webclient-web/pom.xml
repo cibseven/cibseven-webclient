@@ -38,49 +38,21 @@
 		</dependency>		
 	</dependencies>
 
-	<profiles>
-		<profile>
-			<id>local</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-			<build>
-				<resources>
-					<resource>
-						<directory>src/main/resources</directory>
-						<filtering>false</filtering>
-						<includes>
-							<include>application.yaml</include>
-							<include>seven-webclient.yaml</include>
-							<include>*.jpg</include>
-							<include>*.xml</include>
-							<include>*.txt</include>
-						</includes>
-					</resource>
-				</resources>
-			</build>
-		</profile>
-
-		<profile>
-			<id>deploy-k8s</id>
-			<build>
-				<resources>
-					<resource>
-						<directory>src/main/resources</directory>
-						<filtering>false</filtering>
-						<includes>
-							<include>application.yaml</include>
-							<include>application-deploy-k8s.yaml</include>						
-							<include>*.jpg</include>
-							<include>*.txt</include>
-						</includes>
-					</resource>
-				</resources>
-			</build>
-		</profile>
-	</profiles>
-
 	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>false</filtering>
+				<includes>
+					<include>application.yaml</include>
+					<include>*.jpg</include>
+					<include>*.txt</include>
+					<!-- <include>*.xml</include> -->
+					<include>*.txt</include>
+				</includes>
+			</resource>
+		</resources>
+			
 		<plugins>
 			<!-- Index.html contain projectVersion variable which needs to be
 			replace by the current version of the project -->

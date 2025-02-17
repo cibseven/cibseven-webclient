@@ -47,25 +47,6 @@ application:
   server:
     servlet:
       context-path: /seven
-
-  spring:
-    banner:
-      location: classpath:banner.txt  
-    config:
-      import:
-        - optional:classpath:seven-webclient.yaml
-    servlet:
-      multipart:
-        # Configures the maximum size for each individual file upload.
-        max-file-size: 10MB
-        # Configures the maximum size allowed for the entire request, including all files and form data.
-        max-request-size: 1GB
-    mvc:
-      static-path-pattern: "/webapps/**"
-    web:
-      resources:
-        static-locations: 
-          - "classpath:/webapps/"   
                
   # LDAP
   ldap:
@@ -178,54 +159,9 @@ application:
   #  }
   #}
 
-  springdoc:
-    swagger-ui:
-      path: /swagger-ui
-      operationsSorter: alpha
-      tagsSorter: alpha
-      doc-expansion: none
-    # webclient server url for the swagger-ui. Only needs to be set if the automatic detection is wrong.
-    flowWebclient:
-      serverUrl: ""
-
-  # see https://springdoc.org/properties.html
-  api:
-    common:
-      title: "CIB seven webclient API"
-      description: "This API exposes the functionality of CIB seven webclient as a REST service."
-      termsOfService: "https://www.cib.de"
-      license: "Proprietary License of CIB software GmbH"
-      licenseUrl: "https://www.cib.de"
-      contact:
-        name: "CIB software GmbH"
-        url: "https://www.cib.de"
-        email: "support@cib.de"
-
   services:
     basePath: /services/v1
 
-  # Activate "/actuator/info" and "/actuator/health" endpoints
-  management:
-    endpoints:
-      enabled-by-default: false # Disable all endpoints by default
-      web:
-        exposure:
-          include: health,info # Include only health and info endpoints
-    endpoint:
-      info:
-        enabled: true # Enable the info endpoint
-      health:
-        enabled: true # Enable the health endpoint
-        probes:
-          enabled: true # Enable health probes (if applicable)
-    info:
-      build:
-        enabled: true # Enable build information
-      git:
-        enabled: true # Enable git information
-        mode: full # Use full mode for git information
-      java:
-        enabled: true # Enable Java information (ensure your setup supports this)
 
 ui:
   supportedLanguages: ["de", "en", "es", "ru"]
