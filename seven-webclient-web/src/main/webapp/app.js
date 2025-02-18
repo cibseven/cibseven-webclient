@@ -345,7 +345,7 @@
 						{ path: 'login', name: 'login', beforeEnter: function(to, from, next) {
 								configRequest.then(function(config) {
 									if (config.ssoActive) //If SSO go to other login
-										location.href = 'sso-login.html?nextUrl=' + encodeURIComponent(to.query.nextUrl ? to.query.nextUrl : '')
+										location.href = 'webjars/seven/sso-login.html?nextUrl=' + encodeURIComponent(to.query.nextUrl ? to.query.nextUrl : '')
 									else next()
 								})
 							}, component: () => { 

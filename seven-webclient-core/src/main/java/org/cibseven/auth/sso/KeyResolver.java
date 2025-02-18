@@ -22,6 +22,7 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.LocatorAdapter;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.ProtectedHeader;
 import io.jsonwebtoken.impl.lang.Function;
 import lombok.Getter;
@@ -90,6 +91,15 @@ public class KeyResolver extends LocatorAdapter<Key> implements Function<Header,
 	@Override
 	protected Key locate(JweHeader header) {
 		return resolveKey(header);
+	}
+	
+	public boolean isJwt(String token) {
+		try {
+			parser.parse(token);
+            return true;
+        } catch (MalformedJwtException e) {
+            return false;
+        }
 	}
 	
 	private Key resolveKey(ProtectedHeader header) {
