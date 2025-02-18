@@ -13,12 +13,12 @@
 	import { Error, Confirm, ProblemReport, Loader, Success } from './webjars/common-frontend/dialogs/dialogs.js'
 	import { TaskPopper, Clipboard, TaskList } from './webjars/common-frontend/files/files.js'
 	import { CIBHeaderFlow, Sidebars } from './webjars/common-frontend/layout/layout.js'
-	import { ResetDialog, OtpDialog } from './webjars/common-frontend/auth.js'
+	import { ResetDialog, OtpDialog, Login } from './webjars/common-frontend/auth.js'
 	import { HoverStyle } from './webjars/common-frontend/directives.js'
 	import { CIBForm, CIBDatepicker2, SecureInput } from './webjars/common-frontend/forms.js'
 	import { permissionsMixin } from './webjars/seven/permissions.js'
 	import { QuickNavBar, Sidebar, SidebarItem, SidebarDropright } from './webjars/seven/components/quick-nav-bar.js'
-	import { Seven, FilterableSelect, SidebarElementGroup, SmartSearch, SidebarsFlow, IconButton, MultisortModal, LoginFlow } from './webjars/seven/components/components.js'
+	import { Seven, FilterableSelect, SidebarElementGroup, SmartSearch, SidebarsFlow, IconButton, MultisortModal } from './webjars/seven/components/components.js'
 	// COCKPIT COMPONENTS //
 	import { BpmnViewer } from './webjars/seven/components/process/bpmn-viewer.js'
 	import { ProcessManagement } from './webjars/seven/components/process/process-management.js'
@@ -635,7 +635,7 @@
 		app.component('sidebars-flow', SidebarsFlow)
 		app.component('icon-button', IconButton)
 		app.component('multisort-modal', MultisortModal)
-		app.component('login-flow', LoginFlow)
+		app.component('login', Login)
 		app.component('tasks', Tasks)
 		app.component('tasks-nav-bar', TasksNavBar)
 		app.component('task', Task)
