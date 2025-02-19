@@ -2,11 +2,13 @@ package org.cibseven.auth;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 import jakarta.validation.constraints.NotNull;
 
 import org.cibseven.exception.AnonUserBlockedException;
+import org.cibseven.rest.model.Authorization;
 import org.cibseven.rest.model.Authorizations;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -67,6 +69,39 @@ public abstract class BaseUserProvider<R extends StandardLogin> implements JwtUs
 	        }
 	        return false;
 		});		
+	}
+	
+	public boolean hasAdminManagementPermissions(Authorizations authorizations, String action, String type, List<String> permissions) {
+		Collection<Authorization> authList;
+        switch (type) {
+            case "user":
+                authList = authorizations.getUser();
+                break;
+            case "group":
+                authList = authorizations.getGroup();
+                break;
+            case "authorization":
+                authList = authorizations.getAuthorization();
+                break;
+            default:
+                return false;
+        }
+        
+        boolean hasDeny = authList.stream().anyMatch(auth -> {
+            if (auth.getType() == 2 && auth.getPermissions().length > 0 && permissions.contains(auth.getPermissions()[0])) {
+                return true;
+            }
+            return false;
+        });
+        
+        if (hasDeny) return false;
+
+        return authList.stream().anyMatch(auth -> {
+            if ((auth.getType() == 1 || auth.getType() == 0) && auth.getPermissions().length > 0 && permissions.contains(auth.getPermissions()[0])) {
+                return true;
+            }
+            return false;
+        });
 	}
 	
 	public boolean hasSpecificProcessRights(Authorizations authorizations, String processKey) {
