@@ -2,6 +2,7 @@ package org.cibseven.rest;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.List;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -64,5 +65,12 @@ public class BaseService {
 			throw new AuthenticationException("You are not authorized to do this");
 		}
 	}
+	
+	public void hasAdminManagementPermissions(CIBUser user, String action, String type, List<String> permissions) {
+		Authorizations authorizations = bpmProvider.getUserAuthorization(user.getId(), user);
+		if (!baseUserProvider.hasAdminManagementPermissions(authorizations, action, type, permissions)) {
+			throw new AuthenticationException("You are not authorized to do this");
+		}
+	}	
 	
 }
