@@ -32,17 +32,17 @@
 	background-color: #FFF;
 }
 .status-progress-bar-item.status-progress-bar-done::before {
-	border-left: 2px solid var(--primary);
+	border-left: 2px solid var(--bs-primary);
 }
 .status-progress-bar-item.status-progress-bar-done::after {
 	content: "✔";
 	font-size: 16px;
 	color: #FFF;
 	text-align: center;
-	border: 2px solid var(--primary);
-	background-color: var(--primary);
+	border: 2px solid var(--bs-primary);
+	background-color: var(--bs-primary);
 }
 .status-progress-bar-item.status-progress-bar-current::after {
 	content: "";
-	border: 2px solid var(--primary);
+	border: 2px solid var(--bs-primary);
 }

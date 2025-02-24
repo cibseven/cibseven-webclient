@@ -18,7 +18,7 @@ var resizableTablesMixin = {
 				Object.assign(grip.style, {
 					top: 0, right: '-1px', bottom: 0, width: '10px',
 					position: 'absolute', cursor: 'col-resize',
-					borderRight: '1px solid var(--light)'
+					borderRight: '1px solid var(--bs-light)'
 				})
 				
 				grip.addEventListener('mousedown', function (e) {

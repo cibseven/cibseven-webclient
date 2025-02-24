@@ -706,7 +706,7 @@
 					},
 					setOptionSelected: function(option) {
 						return option === this.selectedOption ? 
-							'border-bottom: 3px solid var(--primary); background: var(--light)' : 'background: var(--white)'
+							'border-bottom: 3px solid var(--bs-primary); background: var(--bs-light)' : 'background: var(--bs-white)'
 					},
 					selectedOptionHandler: function(option) {
 						this.selectedOption = option

@@ -635,7 +635,7 @@
 						var styles = { top: key * this.sizes.filter + this.sizes.arrow + 'px', width: this.sizes.filter + 'px' }
 						if (this.$store.state.filter.selected.id === filter.id) {
 							styles['border-top'] = '5px solid!important'
-							styles['border-top-color'] = 'var(--primary)!important'
+							styles['border-top-color'] = 'var(--bs-primary)!important'
 						}
 						return styles
 					},
