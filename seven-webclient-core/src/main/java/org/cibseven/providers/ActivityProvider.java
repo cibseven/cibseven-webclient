@@ -1,6 +1,7 @@
 package org.cibseven.providers;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import org.cibseven.auth.CIBUser;
@@ -54,6 +55,13 @@ public class ActivityProvider extends SevenProviderBase implements IActivityProv
 	protected HttpHeaders addAuthHeader(HttpHeaders headers, CIBUser user) {
 		if (user != null) headers.add("Authorization", user.getAuthToken());
 		return headers;
+	}
+
+	@Override
+	public Collection<ActivityInstanceHistory> findActivitiesProcessDefinitionHistory(String processDefinitionId,
+			CIBUser user) {
+		String url = camundaUrl + "/engine-rest/history/activity-instance?processDefinitionId=" + processDefinitionId;
+		return Arrays.asList(((ResponseEntity<ActivityInstanceHistory[]>) doGet(url, ActivityInstanceHistory[].class, user, false)).getBody());
 	}
 	
 }

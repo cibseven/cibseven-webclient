@@ -94,7 +94,7 @@ public class HistoryProcessService extends BaseService {
 		return bpmProvider.fetchProcessInstanceVariablesHistory(processInstanceId, user, deserialize);
 	}
 	
-	/*
+	
 	@Operation(
 			summary = "Get activities instances that belong to a process definition",
 			description = "The activities found belongs to the history, they have other attributes and activities from finished processes are also fetched")
@@ -105,10 +105,10 @@ public class HistoryProcessService extends BaseService {
 	@RequestMapping(value = "/process-history/activity/by-process-definition/{processDefinitionId}", method = RequestMethod.GET)
 	public Collection<ActivityInstanceHistory> findActivitiesProcessDefinitionHistory(
 			@Parameter(description = "Filter by process definition Id") @PathVariable String processDefinitionId,
-			Locale loc, CIBSevenUser user) {
+			Locale loc, CIBUser user) {
 		return bpmProvider.findActivitiesProcessDefinitionHistory(processDefinitionId, user);
 	}
-	*/
+	
 	
 	@Operation(summary = "Get a variable data from the process history")
 	@ApiResponse(responseCode = "404", description = "Variable not found")

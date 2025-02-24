@@ -900,5 +900,8 @@ public interface BpmProvider {
 	void deleteVariableHistoryInstance(String id, CIBUser user);
 
 	void putLocalExecutionVariable(String executionId, String varName, Map<String, Object> data, CIBUser user);
+
+	Collection<ActivityInstanceHistory> findActivitiesProcessDefinitionHistory(String processDefinitionId,
+			CIBUser user);
 	
 }

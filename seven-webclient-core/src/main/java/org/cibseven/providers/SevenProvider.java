@@ -740,4 +740,10 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 		variableProvider.putLocalExecutionVariable(executionId, varName, data, user);
 	}
 
+	@Override
+	public Collection<ActivityInstanceHistory> findActivitiesProcessDefinitionHistory(String processDefinitionId,
+			CIBUser user) {
+		return activityProvider.findActivitiesProcessDefinitionHistory(processDefinitionId, user);
+	}
+
 }
