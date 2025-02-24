@@ -40,5 +40,6 @@ public interface IVariableProvider {
 	public void saveVariableInProcessInstanceId(String processInstanceId, List<Variable> variables, CIBUser user) throws SystemException;
 	public void submitVariables(String processInstanceId, List<Variable> formResult, CIBUser user, String processDefinitionId) throws SystemException;
 	public Map<String, Variable> fetchProcessFormVariablesById(String id, CIBUser user) throws SystemException;
+	public void putLocalExecutionVariable(String executionId, String varName, Map<String, Object> data, CIBUser user);
 	
 }

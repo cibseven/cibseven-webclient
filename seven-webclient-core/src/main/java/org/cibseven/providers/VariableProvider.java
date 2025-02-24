@@ -1,7 +1,6 @@
 package org.cibseven.providers;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -493,6 +492,12 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		headers.add("Content-Type", "application/octet-stream");
 		ResponseEntity<byte[]> responseEntity = new ResponseEntity<>(content, headers, HttpStatus.OK);
 		return responseEntity;
+	}
+
+	@Override
+	public void putLocalExecutionVariable(String executionId, String varName, Map<String, Object> data, CIBUser user) {
+		String url = camundaUrl + "/engine-rest/execution/" + executionId + "/localVariables/" + varName;
+		doPut(url, data, user);
 	}	
 	
 }

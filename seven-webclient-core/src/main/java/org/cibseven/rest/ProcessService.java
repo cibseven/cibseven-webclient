@@ -643,7 +643,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 		bpmProvider.updateHistoryTimeToLive(id, data, user);
 	}
 	
-	/*
+	
 	@Operation(summary = "Create a variable in the process instance")
 	@ApiResponse(responseCode = "404", description = "Execution not found")
 	@RequestMapping(value = "/execution/{executionId}/localVariables/{varName}", method = RequestMethod.PUT)
@@ -651,9 +651,9 @@ public class ProcessService extends BaseService implements InitializingBean {
 			@Parameter(description = "Id of the execution") @PathVariable String executionId,
 			@Parameter(description = "Variable name") @PathVariable String varName,
 			@RequestBody Map<String, Object> data,
-			Locale loc, CIBSevenUser user) {
+			Locale loc, CIBUser user) {
 		checkCockpitRights(user);
 		bpmProvider.putLocalExecutionVariable(executionId, varName, data, user);
 	}
-	*/
+	
 }

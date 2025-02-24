@@ -898,5 +898,7 @@ public interface BpmProvider {
 	void deleteVariableByExecutionId(String executionId, String variableName, CIBUser user);
 
 	void deleteVariableHistoryInstance(String id, CIBUser user);
+
+	void putLocalExecutionVariable(String executionId, String varName, Map<String, Object> data, CIBUser user);
 	
 }
