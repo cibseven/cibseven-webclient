@@ -735,4 +735,9 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 		return headers;
 	}
 
+	@Override
+	public void putLocalExecutionVariable(String executionId, String varName, Map<String, Object> data, CIBUser user) {
+		variableProvider.putLocalExecutionVariable(executionId, varName, data, user);
+	}
+
 }
