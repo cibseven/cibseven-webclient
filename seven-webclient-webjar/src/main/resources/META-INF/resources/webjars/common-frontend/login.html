@@ -3,24 +3,23 @@
 		<b-form-group label-cols="4" :label="$t('login.username')" :invalid-feedback="$t('errors.invalid')">
 			<input ref="username" v-model="credentials.username" class="form-control" required autofocus autocomplete="username">			
 		</b-form-group>
-		<div class="form-group form-row">	
-			<label class="col-4 col-form-label" v-t="'login.password'"></label>		
+		<b-form-group label-cols="4" :label="$t('login.password')">
 			<secure-input ref="password" v-model="credentials.password" class="col-8" required></secure-input>					
-		</div>
+		</b-form-group>
 		
 		<slot></slot>
 		
-		<div class="clearfix">
-			<div class="form-group float-left">
+		<div class="d-flex justify-content-between">
+			<div class="form-group float-start">
 				<b-form-checkbox v-model="rememberMe">{{ $t('login.rememberMe') }}</b-form-checkbox>
 			</div>
-			<div v-if="!hideForgotten" class="form-group float-right">
+			<div v-if="!hideForgotten" class="form-group float-end">
 				<a v-t="'login.forgotten'" class="text-primary" style="cursor:pointer" @click="$refs.emailDialog.show()"></a>		
 			</div>
 		</div>
 		
 		<div class="form-group">
-			<button type="submit" class="btn btn-primary btn-block" v-t="'login.login'"></button>
+			<button type="submit" class="btn btn-primary btn-block w-100" v-t="'login.login'"></button>
 		</div>	
 		<div v-if="onRegister" class="form-group text-center">
 			{{ $t('login.register') }}
