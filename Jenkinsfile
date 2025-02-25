@@ -7,7 +7,6 @@ import de.cib.pipeline.library.Constants
 standardMavenPipeline(
     mvnParams: '-U',
     uiParamPresets: [
-        // The Docker image is created in the custom stage with its own Maven profile
         'CREATE_DOCKER_IMAGE': true,
         'DEPLOY_HELM_CHARTS_TO_HARBOR': true
     ],
