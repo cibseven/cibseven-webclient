@@ -121,8 +121,15 @@
 		
 		loadTheme()
 		
-		const i18n = VueI18n.createI18n({ locale: localStorage.getItem('language') || navigator.language.split('-')[0] || navigator.userLanguage || 'en' })
-		
+		let language = localStorage.getItem('language')
+
+		if (!language) {
+		    language = navigator.language.split('-')[0] || navigator.userLanguage || 'en'
+		    localStorage.setItem('language', language)
+		}
+
+		const i18n = VueI18n.createI18n({ locale: language })	
+			
 		i18n.global.locale = config.supportedLanguages.includes(i18n.global.locale) ? i18n.global.locale : config.supportedLanguages[0]
 		
 		axios.defaults.headers.common['Accept-Language'] = i18n.global.locale
