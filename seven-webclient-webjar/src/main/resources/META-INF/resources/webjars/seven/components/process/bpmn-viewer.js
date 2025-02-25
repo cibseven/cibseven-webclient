@@ -178,7 +178,8 @@
 					  	})
 					  	
 					  	this.viewer.on('element.hover', function(event) {
-							if (self.getTypeAllowed(event.element.type, interactionTypes) && self.statistics.some(obj => obj.id === event.element.id)) 
+							if (self.getTypeAllowed(event.element.type, interactionTypes) && self.statistics && 
+								self.statistics.some(obj => obj.id === event.element.id)) 
 								event.gfx.classList.add('selectable', 'highlight')
 								
 							event.gfx.addEventListener('mouseleave', function() {

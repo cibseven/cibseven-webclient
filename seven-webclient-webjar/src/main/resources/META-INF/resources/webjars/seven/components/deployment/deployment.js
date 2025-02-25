@@ -136,9 +136,11 @@
 							if (processesDefinition.length > 0 ) {
 								this.$refs.diagramModal.show()
 								var processDefinition = processesDefinition[0]
-								ProcessService.fetchDiagram(processDefinition.id).then(response => {
-									this.$refs.diagram.showDiagram(response.bpmn20Xml, null, null)
-								})
+								setTimeout(() => {
+									ProcessService.fetchDiagram(processDefinition.id).then(response => {
+										this.$refs.diagram.showDiagram(response.bpmn20Xml, null, null)
+									})
+								}, 500)
 							}
 							else this.processesDefinition = null
 						})
