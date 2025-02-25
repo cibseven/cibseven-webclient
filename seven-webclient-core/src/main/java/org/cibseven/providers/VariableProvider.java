@@ -481,12 +481,18 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 	}
 
 	@Override
+	public void putLocalExecutionVariable(String executionId, String varName, Map<String, Object> data, CIBUser user) {
+		String url = camundaUrl + "/engine-rest/execution/" + executionId + "/localVariables/" + varName;
+		doPut(url, data, user);
+	}
+	
+	@Override
 	protected HttpHeaders addAuthHeader(HttpHeaders headers, CIBUser user) {
 		if (user != null) headers.add("Authorization", user.getAuthToken());
 		return headers;
 	}
 	
-	private ResponseEntity<byte[]> generateFileResponse(byte[] content) throws IOException {
+	protected ResponseEntity<byte[]> generateFileResponse(byte[] content) throws IOException {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setCacheControl(CacheControl.noCache().getHeaderValue());
 		headers.add("Content-Type", "application/octet-stream");
@@ -494,10 +500,5 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		return responseEntity;
 	}
 
-	@Override
-	public void putLocalExecutionVariable(String executionId, String varName, Map<String, Object> data, CIBUser user) {
-		String url = camundaUrl + "/engine-rest/execution/" + executionId + "/localVariables/" + varName;
-		doPut(url, data, user);
-	}	
 	
 }
