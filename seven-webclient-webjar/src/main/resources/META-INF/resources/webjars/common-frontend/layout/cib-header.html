@@ -4,6 +4,7 @@
 	    <b-navbar-toggle target="nav_collapse"></b-navbar-toggle>    
 	    <b-collapse is-nav id="nav_collapse" class="flex-grow-0">
 	        <b-navbar-nav>
+	        	<slot name="collapsible"></slot>
 	            <b-nav-item-dropdown extra-toggle-classes="py-1" right :title="$t('cib-header.languages')">
 	            	<template v-slot:button-content>
 						<span class="visually-hidden">{{ $t('cib-header.languages') }}</span>
