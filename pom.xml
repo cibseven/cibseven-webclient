@@ -1,10 +1,8 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.cibseven</groupId>
 	<artifactId>seven-webclient</artifactId>
-	<version>0.0.2-SNAPSHOT</version>
+	<version>0.0.2</version>
 	<packaging>pom</packaging>
 
 	<name>Seven webclient</name>
@@ -46,7 +44,7 @@
 		<connection>scm:git:${project.git.url}</connection>
 		<developerConnection>scm:git:${project.git.url}</developerConnection>
 		<url>${project.git.url}</url>
-		<tag>HEAD</tag>
+		<tag>RT-REL-0.0.2</tag>
 	</scm>
 
 	<distributionManagement>
