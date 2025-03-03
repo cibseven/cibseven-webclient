@@ -47,18 +47,19 @@
 				{{ $t('process-descriptions.' + table.item.key) }}</div>
 			</template>
 			<template v-slot:cell(actions)="table">
-				<b-button :disabled="focused !== table.item" style="opacity: 1" @click="openInModeler(table.item)" class="px-2 border-0 shadow-none" :title="$t('process.openModeler')" variant="link">
+				<b-button :disabled="focused !== table.item" style="opacity: 1" @click.stop="openInModeler(table.item)" class="px-2 border-0 shadow-none" :title="$t('process.openModeler')" variant="link">
 					<span class="mdi mdi-18px mdi-map-search-outline"></span>
 				</b-button>
-				<b-button :disabled="focused !== table.item" style="opacity: 1" @click="goToShowProcessHistory(table.item)" class="px-2 border-0 shadow-none" :title="$t('process.showManagement')" variant="link">
+				<span class="border-start h-50" :class="focused === table.item ? 'border-secondary' : ''"></span>
+				<b-button :disabled="focused !== table.item" style="opacity: 1" @click.stop="goToShowProcessHistory(table.item)" class="px-2 border-0 shadow-none" :title="$t('process.showManagement')" variant="link">
 					<span class="mdi mdi-18px mdi-account-tie-outline"></span>
 				</b-button>
 				<span class="border-start h-50" :class="focused === table.item ? 'border-secondary' : ''"></span>
-				<b-button :disabled="focused !== table.item" style="opacity: 1" @click="goToDeployment(table.item)" class="px-2 border-0 shadow-none" :title="$t('process.showDeployment')" variant="link">
+				<b-button :disabled="focused !== table.item" style="opacity: 1" @click.stop="goToDeployment(table.item)" class="px-2 border-0 shadow-none" :title="$t('process.showDeployment')" variant="link">
 					<span class="mdi mdi-18px mdi-file-eye-outline"></span>
 				</b-button>
 				<span class="border-start h-50" :class="focused === table.item ? 'border-secondary' : ''"></span>		
-				<b-button :disabled="focused !== table.item" style="opacity: 1" @click="goToCockpit(table.item)" class="px-2 border-0 shadow-none" :title="$t('process.showCockpit')" variant="link">
+				<b-button :disabled="focused !== table.item" style="opacity: 1" @click.stop="goToCockpit(table.item)" class="px-2 border-0 shadow-none" :title="$t('process.showCockpit')" variant="link">
 					<span class="mdi mdi-18px mdi-radar"></span>
 				</b-button>
 			</template>
