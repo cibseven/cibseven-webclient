@@ -276,8 +276,10 @@
 						sessionStorage.getItem('token') ? sessionStorage.removeItem('token') : localStorage.removeItem('token')   
 						axios.defaults.headers.common.authorization = ''
 						root.user = null
-						if (router.currentRoute.path !== '/seven/login'){
-							router.push('/seven/login/?nextUrl=' + router.currentRoute.path)	
+						if (router.currentRoute.path !== '/seven/login') {
+							let url = '/seven/login'
+							if (router.currentRoute.path) url += '?nextUrl=' + router.currentRoute.path
+							router.push(url)	
 						}
 						root.$refs.error.show(res.data || res.statusText)
 					}
