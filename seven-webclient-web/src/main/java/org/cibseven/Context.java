@@ -4,8 +4,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-import org.cibseven.auth.BaseUserProvider;
-import org.cibseven.providers.BpmProvider;
+import org.cibseven.webapp.auth.BaseUserProvider;
+import org.cibseven.webapp.providers.BpmProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;

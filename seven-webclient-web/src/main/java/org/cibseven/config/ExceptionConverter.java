@@ -2,9 +2,9 @@ package org.cibseven.config;
 
 import java.util.Arrays;
 
-import org.cibseven.exception.ApplicationException;
-import org.cibseven.exception.ErrorMessage;
-import org.cibseven.exception.NoObjectFoundException;
+import org.cibseven.webapp.exception.ApplicationException;
+import org.cibseven.webapp.exception.ErrorMessage;
+import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;

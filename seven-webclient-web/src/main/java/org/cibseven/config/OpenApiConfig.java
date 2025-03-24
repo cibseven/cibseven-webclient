@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.cibseven.rest.InfoService;
+import org.cibseven.webapp.rest.InfoService;
 import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
