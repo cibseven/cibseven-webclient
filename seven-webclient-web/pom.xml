@@ -113,7 +113,7 @@
 				<version>${version.spring.boot}</version>
 				<configuration>
 					<fork>true</fork>
-					<mainClass>org.cibseven.Application</mainClass>
+					<mainClass>org.cibseven.webapp.Application</mainClass>
 				</configuration>
 				<executions>
 					<execution>

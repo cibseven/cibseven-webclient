@@ -31,7 +31,7 @@ export default {
       credentials : {
         username: null,
         password: null,
-        type: 'org.cibseven.rest.StandardLogin'
+        type: 'org.cibseven.webapp.rest.StandardLogin'
       }
     }
   },

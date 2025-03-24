@@ -1,4 +1,4 @@
-package org.cibseven;
+package org.cibseven.webapp;
 
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;

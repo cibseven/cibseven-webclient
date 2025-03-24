@@ -1,4 +1,4 @@
-package org.cibseven.config;
+package org.cibseven.webapp.config;
 
 import java.util.Arrays;
 import java.util.Map;
