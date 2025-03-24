@@ -1,0 +1,67 @@
+{
+	"confirm": {
+		"title": "Please confirm",
+		"ok": "Ok",
+		"cancel": "Cancel",
+		"close": "Close"
+	},
+	"bcomponents": {
+		"ariaSortAsc": "Ascending",
+		"ariaSortDes": "Descending",
+		"ariaSortNone": "None",
+		"ariaLabelClose": "Close",
+		"ariaLabelDropdownGroup": "Dropdown group",
+		"calendar": {
+			"selectedDate": "Selected date",
+			"noDate": "No date",
+			"prevYear": "Previous year",
+			"prevMonth": "Previous month",
+			"nextMonth": "Next month",
+			"nextYear": "Next year",
+			"daysOfWeek": "Mon,Tue,Wed,Thu,Fri,Sat,Sun",
+			"dayOfWeek": "Day of the week",
+			"today": "Today",
+			"clearSelection": "Clear selection"
+		},
+		"avatar": {
+			"avatarFor": "Avatar of {name}",
+			"defaultAvatar": "Avatar"
+		},
+		"formTag": {
+			"remove": "Remove tag"
+		},
+		"timepicker": {
+			"label": "Time picker",
+			"selectedTime": "Selected time",
+			"incrementHour": "Increase hour",
+			"decrementHour": "Decrease hour",
+			"incrementMinute": "Increase minute",
+			"decrementMinute": "Decrease minute",
+			"hour": "Hour",
+			"minute": "Minute",
+			"clearSelection": "Clear selection",
+			"noTimeSelected": "No time selected"
+		},
+		"datepicker": {
+			"label": "Date picker",
+			"selectedDate": "Selected date",
+			"noDate": "No date",
+			"prevMonth": "Previous month",
+			"nextMonth": "Next month",
+			"daysOfWeek": "Mon,Tue,Wed,Thu,Fri,Sat,Sun",
+			"selectToday": "Today",
+			"clearSelection": "Clear selection"
+		},
+		"navbar": {
+			"mainNavigation": "Main navigation",
+			"toggleNavigation": "Toggle navigation",
+			"brand": "Brand",
+			"toggleDropdown": "Toggle dropdown"
+		},
+		"pagination": {
+			"label": "Pagination",
+			"prevPage": "Previous page",
+			"nextPage": "Next page"
+		}
+	}
+}

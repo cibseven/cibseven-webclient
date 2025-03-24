@@ -1,0 +1,12 @@
+{
+	"authenticated": true,
+	"userId": "user-1",
+	"groups": [
+		"group-1",
+		"group-2"
+	],
+	"tenants": [
+		"tenant-1",
+		"tenant-2"
+	]
+}

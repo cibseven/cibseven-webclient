@@ -1,0 +1,54 @@
+{
+  "name": "cib-common-components",
+  "description": "Common vue components for building different web applications",
+  "version": "1.0.11",
+  "type": "module",
+  "license": "Apache-2.0",
+  "main": "./src/main.js",
+  "files": [
+    "dist/cib-common-components.css",
+    "dist/cib-common-components.es.js",
+    "dist/cib-common-components.umd.js"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/cib-common-components.es.js",
+      "require": "./dist/cib-common-components.umd.js"
+    }
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build:library": "cross-env BUILD_MODE=library vite build",
+    "preview": "vite preview",
+    "test:unit": "vitest",
+    "test:e2e": "start-server-and-test preview http://localhost:4173 'cypress run --e2e'",
+    "test:e2e:dev": "start-server-and-test 'vite dev --port 4173' http://localhost:4173 'cypress open --e2e'",
+    "lint": "eslint . --fix"
+  },
+  "dependencies": {
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0",
+    "vue-i18n": "^11.0.0-rc.1",
+    "bootstrap": "^5.3.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.18.0",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "@vitest/eslint-plugin": "1.1.25",
+    "@vue/test-utils": "^2.4.6",
+    "cross-env": "^7.0.3",
+    "cypress": "^14.1.0",
+    "eslint": "^9.18.0",
+    "eslint-plugin-cypress": "^4.1.0",
+    "eslint-plugin-vue": "^9.32.0",
+    "jsdom": "^26.0.0",
+    "start-server-and-test": "^2.0.10",
+    "vite": "^6.0.11",
+    "vite-plugin-vue-devtools": "^7.7.0",
+    "vitest": "^3.0.2"
+  },
+  "publishConfig": {
+    "registry": "https://artifacts.cibseven.org/repository/npm-hosted/"
+  }
+}

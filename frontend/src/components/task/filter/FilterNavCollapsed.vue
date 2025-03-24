@@ -1,0 +1,103 @@
+<template>
+  <div>
+    <b-button variant="light" class="rounded-0 text-nowrap position-absolute" @click="$emit('update:leftOpen', true)"
+      style="right: 100%; top: 0; transform: rotate(-90deg); transform-origin: right top; height: 40px"
+      :style="favoriteFilters.length > 0 ? 'width: ' + sizes.arrow + 'px' : ''">
+      <span v-if="favoriteFilters.length <= 0">{{ $t('seven.filters') }}</span>
+      <i class="mdi mdi-18px mdi-chevron-down"></i>
+    </b-button>
+    <template v-for="(filter, key) in favoritesDisplayed">
+      <b-button v-if="filter && filter.display" :title="filter.name" variant="light"
+        class="rounded-0 border-0 text-truncate position-absolute"
+        style="right: 100%; transform: rotate(-90deg); transform-origin: right top; height: 40px" :style="getStyles(filter, key)"
+        @click="selectFilter(filter)" :key="filter.id"> <span class="h5">{{ filter.name }}</span>
+      </b-button>
+    </template>
+    <b-dropdown v-if="favoritesNoDisplayed.length > 0" variant="link" toggle-class="px-0" no-caret class="position-absolute" style="left: 0" :style="getDotsStyle()">
+      <template #button-content>
+        <i v-hover-style="{ classes: ['text-primary'] }" class="mdi mdi-18px mdi-dots-horizontal"></i>
+      </template>
+      <b-dd-item-btn v-for="filter in favoritesNoDisplayed" @click="selectFilter(filter)" :key="filter.id">{{ filter.name }}</b-dd-item-btn>
+    </b-dropdown>
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'FilterNavCollapsed',
+  props: { leftOpen: Boolean },
+  data: function() {
+    return {
+      sizes: { filter: 140, arrow: 40, header: 55, dots: 40 }
+    }
+  },
+  watch: {
+    favoriteFilters: function() {
+      this.setDisplayFavorites()
+    }
+  },
+  computed: {
+    favoriteFilters: function() {
+      var filters = this.$store.state.filter.list.filter(f => {
+        return f.favorite
+      })
+      return filters.sort(function(a, b) {
+        return a.properties.priority - b.properties.priority
+      })
+    },
+    favoritesDisplayed: function() {
+      return this.favoriteFilters.filter(filter => {
+        return filter.display
+      })
+    },
+    favoritesNoDisplayed: function() {
+      return this.favoriteFilters.filter(filter => {
+        return !filter.display
+      })
+    }
+  },
+  mounted: function() {
+    this.setDisplayFavorites()
+    window.addEventListener('resize', this.setDisplayFavorites)
+  },
+  methods: {
+    setDisplayFavorites: function() {
+      this.favoriteFilters.forEach((filter, key) => {
+        if ((key * this.sizes.filter + this.sizes.arrow + this.sizes.header +
+          this.sizes.filter + this.sizes.dots) < window.innerHeight) {
+            filter.display = true
+        } else filter.display = false
+      })
+    },
+    getStyles: function(filter, key) {
+      var styles = { top: key * this.sizes.filter + this.sizes.arrow + 'px', width: this.sizes.filter + 'px' }
+      if (this.$store.state.filter.selected.id === filter.id) {
+        styles['border-top'] = '5px solid!important'
+        styles['border-top-color'] = 'var(--bs-primary)!important'
+      }
+      return styles
+    },
+    getDotsStyle: function() {
+      var styles = { width: this.sizes.dots + 'px' }
+      styles.top = this.favoritesDisplayed.length * this.sizes.filter + this.sizes.arrow + 'px'
+      return styles
+    },
+    selectFilter: function(filter) {
+      var selectedFilter = this.$store.state.filter.list.find(f => {
+        return f.id === filter.id
+      })
+      if (selectedFilter) {
+        this.$store.state.filter.selected = selectedFilter
+        this.$emit('selected-filter', selectedFilter.id)
+        localStorage.setItem('filter', JSON.stringify(selectedFilter))
+        var path = '/seven/auth/tasks/' + selectedFilter.id +
+          (this.$route.params.taskId ? '/' + this.$route.params.taskId : '')
+        if (this.$route.path !== path) this.$router.replace(path)
+      }
+    }
+  },
+  beforeUnmount: function() {
+    window.removeEventListener('resize', this.setDisplayFavorites)
+  }
+}
+</script>

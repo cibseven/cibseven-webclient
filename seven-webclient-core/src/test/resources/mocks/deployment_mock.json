@@ -1,0 +1,20 @@
+[
+    {
+        "id": "deployment-1",
+        "name": "Deployment One",
+        "source": "source-1",
+        "deploymentTime": "2025-01-20T10:00:00.000+0000",
+        "tenantId": "tenant-1",
+        "deployedProcessDefinitions": {
+            "process1": {"id": "process1-id"}
+        }
+    },
+    {
+        "id": "deployment-2",
+        "name": "Deployment Two",
+        "source": "source-2",
+        "deploymentTime": "2025-01-21T11:00:00.000+0000",
+        "tenantId": "tenant-2",
+        "deployedProcessDefinitions": {}
+    }
+]

@@ -1,0 +1,67 @@
+{
+	"confirm": {
+		"title": "Confirmar",
+		"ok": "Ok",
+		"cancel": "Cancelar",
+		"close": "Cerrar"
+	},
+	"bcomponents": {
+		"ariaSortAsc": "Ascendente",
+		"ariaSortDes": "Descendente",
+		"ariaSortNone": "Ninguno",
+		"ariaLabelClose": "Cerrar",
+		"ariaLabelDropdownGroup": "Dropdown group",
+		"calendar": {
+			"selectedDate": "Fecha seleccionada",
+			"noDate": "Sin fecha",
+			"prevYear": "Año anterior",
+			"prevMonth": "Mes anterior",
+			"nextMonth": "Mes siguiente",
+			"nextYear": "Año siguiente",
+			"daysOfWeek": "Lun,Mar,Mié,Jue,Vie,Sáb,Dom",
+			"dayOfWeek": "Día de la semana",
+			"today": "Hoy",
+			"clearSelection": "Borrar selección"
+		},
+		"avatar": {
+			"avatarFor": "Avatar de {name}",
+			"defaultAvatar": "Avatar"
+		},
+		"formTag": {
+			"remove": "Eliminar etiqueta"
+		},
+		"timepicker": {
+			"label": "Selector de hora",
+			"selectedTime": "Hora seleccionada",
+			"incrementHour": "Incrementar hora",
+			"decrementHour": "Disminuir hora",
+			"incrementMinute": "Incrementar minuto",
+			"decrementMinute": "Disminuir minuto",
+			"hour": "Hora",
+			"minute": "Minuto",
+			"clearSelection": "Borrar selección",
+			"noTimeSelected": "Ninguna hora seleccionada"
+		},
+		"datepicker": {
+			"label": "Selector de fecha",
+			"selectedDate": "Fecha seleccionada",
+			"noDate": "Sin fecha",
+			"prevMonth": "Mes anterior",
+			"nextMonth": "Mes siguiente",
+			"daysOfWeek": "Lun,Mar,Mié,Jue,Vie,Sáb,Dom",
+			"selectToday": "Hoy",
+			"clearSelection": "Borrar selección"
+		},
+		"navbar": {
+			"mainNavigation": "Navegación principal",
+			"toggleNavigation": "Alternar navegación",
+			"brand": "Marca",
+			"toggleDropdown": "Alternar desplegable"
+		},
+		"pagination": {
+			"label": "Paginación",
+			"prevPage": "Página anterior",
+			"nextPage": "Página siguiente"
+		}
+	}
+}

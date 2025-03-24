@@ -1,0 +1,8 @@
+/.settings/
+/.project
+.vscode/
+
+**/Chart.lock
+**/charts/
+*.tgz
+.factorypath

@@ -1,0 +1,9 @@
+{
+	"id": "process-instance-1",
+	"definitionId": "definition-1",
+	"businessKey": "business-key-1",
+	"caseInstanceId": "case-instance-1",
+	"ended": false,
+	"suspended": false,
+	"tenantId": "tenant-1"
+}

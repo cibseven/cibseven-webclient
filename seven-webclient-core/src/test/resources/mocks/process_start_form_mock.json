@@ -1,0 +1,9 @@
+{
+    "key": "startFormKey",
+    "contextPath": "/startFormPath",
+    "camundaFormRef": {
+        "key": "formKey",
+        "binding": "latest",
+        "version": "1"
+    }
+}

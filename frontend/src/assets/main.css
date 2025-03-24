@@ -1,0 +1,60 @@
+[v-cloak] { display: none }
+.bjs-powered-by { bottom: 15px!important; right: 60px!important; }
+.selectable { cursor: pointer }
+.highlight .djs-outline {
+  stroke-width: 2px !important;
+    stroke: #155cb5 !important;
+    fill: rgba(194,213,237,0.4) !important;
+}
+.djs-overlays {
+   /*pointer-events: none;*/
+}
+.list-group-item.active {
+    z-index: 2;
+    color: #000;
+     border-top: 0!important;
+     border-bottom: 0!important;
+     border-right: 0!important;
+    border-left: 5px solid!important;
+    border-color: var(--bs-primary)!important;
+}
+.mdi-16px { font-size: 16px; }
+.Pane2 { overflow: auto; }	/* Miragon Modeler - Fix scroll overflow in property panel.*/
+.resizer:hover { border-bottom: 5px solid var(--bs-gray)!important }
+table .sticky-header { position: sticky; top: 0; z-index: 1; }
+table .sticky-header tr { background: var(--bs-white) }
+table .sticky-header.light tr { background: var(--bs-light) }
+thead.resizable th, thead.resizable + tbody td {
+  display: table-cell!important;
+  flex: none!important;
+  position: relative;
+  vertical-align: middle;
+}		
+thead.resizable tr, thead.resizable + tbody tr {
+  display: table-row!important;
+}
+.v-resizable::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 10px;
+    cursor: ns-resize;
+    border-bottom: 1px solid var(--bs-gray);
+}
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    border: 0;
+    padding: 0;
+    clip: rect(0 0 0 0);
+    overflow: hidden;
+}
+.bg-expert-custom {
+  background-color: #2cdd3b59!important;
+}
+.bg-task-filter {
+        background-color: rgb(98, 142, 199, 0.2);
+}

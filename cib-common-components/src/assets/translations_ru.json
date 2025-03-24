@@ -1,0 +1,67 @@
+{
+	"confirm": {
+		"title": "Необходимо подтверждение",
+		"ok": "OK",
+		"cancel": "Отмена",
+		"close": "Закрыть"
+	},
+	"bcomponents": {
+		"ariaSortAsc": "По возрастанию",
+		"ariaSortDes": "По убыванию",
+		"ariaSortNone": "Без сортировки",
+		"ariaLabelClose": "Закрыть",
+		"ariaLabelDropdownGroup": "Группа выпадающих элементов",
+		"calendar": {
+			"selectedDate": "Выбранная дата",
+			"noDate": "Нет даты",
+			"prevYear": "Предыдущий год",
+			"prevMonth": "Предыдущий месяц",
+			"nextMonth": "Следующий месяц",
+			"nextYear": "Следующий год",
+			"daysOfWeek": "Пн,Вт,Ср,Чт,Пт,Сб,Вс",
+			"dayOfWeek": "День недели",
+			"today": "Сегодня",
+			"clearSelection": "Очистить выбор"
+		},
+		"avatar": {
+			"avatarFor": "Аватар {name}",
+			"defaultAvatar": "Аватар"
+		},
+		"formTag": {
+			"remove": "Удалить тэг"
+		},
+		"timepicker": {
+			"label": "Выбор времени",
+			"selectedTime": "Выбранное время",
+			"incrementHour": "Увеличить на час",
+			"decrementHour": "Уменьшить на час",
+			"incrementMinute": "Увеличить на минуту",
+			"decrementMinute": "Уменьшить на минуту",
+			"hour": "Час",
+			"minute": "Минута",
+			"clearSelection": "Очистить выбор",
+			"noTimeSelected": "Время не выбрано"
+		},
+		"datepicker": {
+			"label": "Выбор даты",
+			"selectedDate": "Выбранная дата",
+			"noDate": "Нет даты",
+			"prevMonth": "Предыдущий месяц",
+			"nextMonth": "Следующий месяц",
+			"daysOfWeek": "Пн,Вт,Ср,Чт,Пт,Сб,Вс",
+			"selectToday": "Сегодня",
+			"clearSelection": "Очистить выбор"
+		},
+		"navbar": {
+			"mainNavigation": "Основная навигация",
+			"toggleNavigation": "Переключить навигацию",
+			"brand": "Бренд",
+			"toggleDropdown": "Переключить"
+		},
+		"pagination": {
+			"label": "Постраничная навигация",
+			"prevPage": "Предыдущая страница",
+			"nextPage": "Следующая страница"
+		}
+	}
+}

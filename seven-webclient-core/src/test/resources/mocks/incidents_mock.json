@@ -1,0 +1,24 @@
+[
+	{
+		"id": "incident-1",
+		"processDefinitionId": "process-def-1",
+		"processInstanceId": "process-instance-1",
+		"executionId": "execution-1",
+		"incidentTimestamp": "2025-01-20T10:00:00Z",
+		"incidentType": "failedJob",
+		"activityId": "activity-1",
+		"incidentMessage": "Job execution failed",
+		"tenantId": "tenant-1"
+	},
+	{
+		"id": "incident-2",
+		"processDefinitionId": "process-def-2",
+		"processInstanceId": "process-instance-2",
+		"executionId": "execution-2",
+		"incidentTimestamp": "2025-01-20T11:00:00Z",
+		"incidentType": "failedJob",
+		"activityId": "activity-2",
+		"incidentMessage": "Job execution failed again",
+		"tenantId": "tenant-2"
+	}
+]

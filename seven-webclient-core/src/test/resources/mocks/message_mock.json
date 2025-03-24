@@ -1,0 +1,43 @@
+[
+	{
+		"resultType": "Execution",
+		"execution": {
+			"id": "execution-12345",
+			"processInstanceId": "process-instance-67890"
+		},
+		"processInstance": {
+			"id": "process-instance-67890",
+			"businessKey": "business-key-001"
+		},
+		"variables": {
+			"key1": {
+				"value": "value1",
+				"type": "String"
+			},
+			"key2": {
+				"value": 42,
+				"type": "Integer"
+			}
+		}
+	}, {
+		"resultType": "Execution",
+		"execution": {
+			"id": "execution-67890",
+			"processInstanceId": "process-instance-12345"
+		},
+		"processInstance": {
+			"id": "process-instance-12345",
+			"businessKey": "business-key-002"
+		},
+		"variables": {
+			"key1": {
+				"value": "value2",
+				"type": "String"
+			},
+			"key2": {
+				"value": 42,
+				"type": "Integer"
+			}
+		}
+	}	
+]

@@ -1,0 +1,240 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.cibseven</groupId>
+		<artifactId>release-parent</artifactId>
+		<version>1.1.0</version>
+	</parent>
+	<artifactId>seven-webclient</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
+	<packaging>pom</packaging>
+
+	<name>Seven webclient</name>
+	<description>Seven WebClient is a modern web-based interface for managing and interacting with the Seven cloud platform, 
+		providing seamless access to services and optimized workflows.</description>
+
+	<modules>
+		<module>seven-webclient-web</module>
+		<module>seven-webclient-core</module>
+	</modules>
+
+	<properties>
+		<target.path>${project.basedir}/target</target.path>
+		<project.git.url>https://github.com/cibseven/seven-webclient.git</project.git.url>
+		<nexus-repository.url>https://nexus.cib.de/repository</nexus-repository.url>
+		
+		<maven.compiler.source>17</maven.compiler.source>
+		<maven.compiler.target>17</maven.compiler.target>
+		<maven-war-plugin.version>3.4.0</maven-war-plugin.version>
+		<maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
+		<maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
+		
+		<git-commit-id-maven-plugin.version>9.0.1</git-commit-id-maven-plugin.version>
+		
+		<jjwt.version>0.12.6</jjwt.version>
+		<swagger-annotations.version>2.2.27</swagger-annotations.version>
+		<commons-io.version>2.18.0</commons-io.version>
+		<common-auth.version>2.1.0</common-auth.version>
+		<version.spring.boot>3.4.2</version.spring.boot>
+		<version.openapi-starter-webmvc-ui>2.8.4</version.openapi-starter-webmvc-ui>
+		<image.tomcat-10-base>harbor.cib.de/dev/tomcat-10-base:1.1.0</image.tomcat-10-base>
+		<jib-maven-plugin.version>3.4.4</jib-maven-plugin.version>
+		<jib.from.image>${image.tomcat-10-base}</jib.from.image>
+		<jib.to.image>harbor.cib.de/dev/seven-webclient:${project.version}</jib.to.image>
+		
+		<version.eirslett.frontend.maven.plugin>1.12.1</version.eirslett.frontend.maven.plugin>
+    	<version.nodejs>22.14.0</version.nodejs>
+	    <version.npm>10.9.2</version.npm>
+	    
+	</properties>
+
+	<scm>
+		<connection>scm:git:${project.git.url}</connection>
+		<developerConnection>scm:git:${project.git.url}</developerConnection>
+		<url>${project.git.url}</url>
+		<tag>HEAD</tag>
+	</scm>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-dependencies</artifactId>
+				<scope>import</scope>
+				<type>pom</type>
+				<version>${version.spring.boot}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<scope>provided</scope>
+		</dependency>
+	</dependencies>
+
+
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-clean-plugin</artifactId>
+				<inherited>false</inherited>
+				<configuration>
+					<filesets>
+						<fileset>
+							<directory>./frontend/target</directory>
+						</fileset>
+					</filesets>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>com.github.eirslett</groupId>
+				<artifactId>frontend-maven-plugin</artifactId>
+				<version>${version.eirslett.frontend.maven.plugin}</version>
+				<inherited>false</inherited>
+				<configuration>
+					<nodeVersion>v${version.nodejs}</nodeVersion>
+            		<npmVersion>${version.npm}</npmVersion>
+					<workingDirectory>./frontend</workingDirectory>
+					<outputdir>${project.build.directory}/webapp</outputdir>
+					<skip>${skip.frontend.build}</skip>
+				</configuration>
+				<executions>
+					<execution>
+						<id>install node and npm</id>
+						<goals>
+							<goal>install-node-and-npm</goal>
+						</goals>
+					</execution>
+					<!--
+					<execution>
+						<id>install-pnpm</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>npm</goal>
+						</goals>
+						<configuration>
+							<arguments>install -g pnpm</arguments>
+						</configuration>
+					</execution>
+					-->
+					<!--
+					<execution>
+						<id>npm-install</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>npm</goal>
+						</goals>
+						<configuration>
+							<arguments>install</arguments>
+						</configuration>
+					</execution>
+					-->
+					<execution>
+						<id>npm ci</id>
+						<goals>
+							<goal>npm</goal>
+						</goals>
+						<phase>generate-resources</phase>
+						<configuration>
+							<arguments>ci --no-audit --no-fund</arguments>
+						</configuration>
+					</execution>
+					<execution>
+						<id>npm version</id>
+						<goals>
+							<goal>npm</goal>
+						</goals>
+						<phase>generate-resources</phase>
+						<configuration>
+							<arguments>version --allow-same-version
+								--no-git-tag-version ${project.version}</arguments>
+						</configuration>
+					</execution>
+					<!--
+					<execution>
+						<id>License check</id>
+						<goals>
+							<goal>npm</goal>
+						</goals>
+						<phase>generate-resources</phase>
+						<configuration>
+							<arguments>run license-check</arguments>
+						</configuration>
+					</execution>
+					-->
+					<execution>
+						<id>Build</id>
+						<goals>
+							<goal>npm</goal>
+						</goals>
+						<phase>generate-resources</phase>
+						<configuration>
+							<arguments>run build</arguments>
+						</configuration>
+					</execution>
+					<execution>
+						<id>npm version back</id>
+						<goals>
+							<goal>npm</goal>
+						</goals>
+						<phase>generate-resources</phase>
+						<configuration>
+							<arguments>version --allow-same-version
+								--no-git-tag-version 0.0.0</arguments>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${maven-compiler-plugin.version}</version>
+				<configuration>
+					<source>${maven.compiler.source}</source>
+					<target>${maven.compiler.target}</target>
+					<compilerArgs>
+						<arg>-parameters</arg>
+					</compilerArgs>
+				</configuration>
+			</plugin>	
+		</plugins>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>com.google.cloud.tools</groupId>
+					<artifactId>jib-maven-plugin</artifactId>
+					<version>${jib-maven-plugin.version}</version>
+					<configuration>
+						<skip>true</skip>
+						<from>
+							<image>${jib.from.image}</image>
+						</from>
+						<to>
+							<image>${jib.to.image}</image>
+						</to>
+						<!-- https://github.com/GoogleContainerTools/jib/blob/master/jib-maven-plugin/README.md#extended-usage -->
+						<container>
+							<labels>
+								<!-- https://github.com/opencontainers/image-spec/blob/main/annotations.md#pre-defined-annotation-keys -->
+								<org.opencontainers.image.vendor>CIB software GmbH</org.opencontainers.image.vendor>
+								<org.opencontainers.image.authors>CIB software GmbH</org.opencontainers.image.authors>
+								<org.opencontainers.image.licenses>Proprietary software by CIB software GmbH</org.opencontainers.image.licenses>
+								<org.opencontainers.image.title>${project.name}</org.opencontainers.image.title>
+								<org.opencontainers.image.version>${project.version}</org.opencontainers.image.version>
+								<org.opencontainers.image.ref.name>${jib.to.image}</org.opencontainers.image.ref.name>
+								<org.opencontainers.image.description>${project.description}</org.opencontainers.image.description>
+								<org.opencontainers.image.source>${project.git.url}</org.opencontainers.image.source>
+								<org.opencontainers.image.url>${project.git.url}</org.opencontainers.image.url>
+								<org.opencontainers.image.base.name>${jib.from.image}</org.opencontainers.image.base.name>
+							</labels>
+						</container>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+</project>

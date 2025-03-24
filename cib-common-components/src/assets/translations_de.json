@@ -1,0 +1,67 @@
+{
+	"confirm": {
+		"title": "Bitte bestätigen",
+		"ok": "Ok",
+		"cancel": "Abbrechen",
+		"close": "Schließen"
+	},
+	"bcomponents": {
+		"ariaSortAsc": "Aufsteigend",
+		"ariaSortDes": "Absteigend",
+		"ariaSortNone": "Keine",
+		"ariaLabelClose": "Schließen",
+		"ariaLabelDropdownGroup": "Dropdown-Gruppe",
+		"calendar": {
+			"selectedDate": "Ausgewähltes Datum",
+			"noDate": "Kein Datum",
+			"prevYear": "Vorheriges Jahr",
+			"prevMonth": "Vorheriger Monat",
+			"nextMonth": "Nächster Monat",
+			"nextYear": "Nächstes Jahr",
+			"daysOfWeek": "Mo,Di,Mi,Do,Fr,Sa,So",
+			"dayOfWeek": "Wochentag",
+			"today": "Heute",
+			"clearSelection": "Auswahl löschen"
+		},
+		"avatar": {
+			"avatarFor": "Avatar von {name}",
+			"defaultAvatar": "Avatar"
+		},
+		"formTag": {
+			"remove": "Tag entfernen"
+		},
+		"timepicker": {
+			"label": "Zeitwähler",
+			"selectedTime": "Ausgewählte Zeit",
+			"incrementHour": "Stunde erhöhen",
+			"decrementHour": "Stunde verringern",
+			"incrementMinute": "Minute erhöhen",
+			"decrementMinute": "Minute verringern",
+			"hour": "Stunde",
+			"minute": "Minute",
+			"clearSelection": "Auswahl löschen",
+			"noTimeSelected": "Keine Zeit ausgewählt"
+		},
+		"datepicker": {
+			"label": "Datumsauswahl",
+			"selectedDate": "Ausgewähltes Datum",
+			"noDate": "Kein Datum",
+			"prevMonth": "Vorheriger Monat",
+			"nextMonth": "Nächster Monat",
+			"daysOfWeek": "Mo,Di,Mi,Do,Fr,Sa,So",
+			"selectToday": "Heute",
+			"clearSelection": "Auswahl löschen"
+		},
+		"navbar": {
+			"mainNavigation": "Hauptnavigation",
+			"toggleNavigation": "Navigation umschalten",
+			"brand": "Marke",
+			"toggleDropdown": "Dropdown umschalten"
+		},
+		"pagination": {
+			"label": "Seitennummerierung",
+			"prevPage": "Vorherige Seite",
+			"nextPage": "Nächste Seite"
+		}
+	}
+}

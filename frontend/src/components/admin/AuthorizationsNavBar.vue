@@ -1,0 +1,20 @@
+<template>
+  <b-list-group>
+    <b-list-group-item v-for="resourceType in resourcesTypes" :key="resourceType.id" class="border-0 px-3 py-2"
+      action :to="'/seven/auth/admin/authorizations/' + resourceType.id + '/' + resourceType.key"
+      @click="$emit('middle')">
+      <!-- <span class="cib-icon-quick-start cib-icon-18px"></span> -->
+      <span> {{ $t('admin.authorizations.resourcesTypes.' + resourceType.key) }}</span>
+    </b-list-group-item>
+  </b-list-group>
+</template>
+
+<script>
+export default {
+  data: function() {
+    return {
+      resourcesTypes: this.$root.config.admin.resourcesTypes
+    }
+  }
+}
+</script>

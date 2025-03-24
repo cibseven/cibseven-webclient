@@ -1,0 +1,17 @@
+[
+	{
+		"name": "var1",
+		"type": "String",
+		"value": "value1",
+		"valueInfo": {
+			"filename": "file1.txt",
+			"mimeType": "text/plain"
+		}
+	},
+	{
+		"name": "var2",
+		"type": "Integer",
+		"value": 123,
+		"valueInfo": {}
+	}
+]

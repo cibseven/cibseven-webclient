@@ -1,0 +1,26 @@
+apiVersion: v2
+name: seven-webclient
+description: Base Helm chart for the webclient component of CIB seven
+home: https://gitlab.cib.de/web/flow/cloud/seven-webclient
+sources:
+  - https://gitlab.cib.de/web/flow/cloud/seven-webclient.git
+
+maintainers:
+  - name: CIB software GmbH
+    email: support@cib.de
+    url: https://www.cib.de/
+
+keywords:
+  - seven-webclient
+  - CIB seven
+
+type: application
+
+version: 0.0.0-MANAGED-BY-JENKINS
+
+appVersion: 0.0.0-MANAGED-BY-JENKINS
+
+dependencies:
+  - name: common-tpl-lib
+    version: 2.5.0
+    repository: oci://harbor.cib.de/charts

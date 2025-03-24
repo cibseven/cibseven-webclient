@@ -1,0 +1,14 @@
+[
+    {
+        "id": "filter-1",
+        "resourceType": "Task",
+        "name": "Filter One",
+        "owner": "user1"
+    },
+    {
+        "id": "filter-2",
+        "resourceType": "Task",
+        "name": "Filter Two",
+        "owner": "user2"
+    }
+]

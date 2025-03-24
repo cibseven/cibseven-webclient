@@ -1,0 +1,12 @@
+{
+	"id": "task-1",
+	"name": "Task One",
+	"assignee": "user-1",
+	"description": "This is a sample task description.",
+	"priority": 50,
+	"due": "2025-01-25T15:00:00.000+0000",
+	"created": "2025-01-20T12:00:00.000+0000",
+	"processInstanceId": "process-instance-1",
+	"taskDefinitionKey": "task-definition-key-1",
+	"processDefinitionId": "process-definition-1"
+}
