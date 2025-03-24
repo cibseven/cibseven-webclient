@@ -35,7 +35,7 @@
 		<jjwt.version>0.12.6</jjwt.version>
 		<swagger-annotations.version>2.2.27</swagger-annotations.version>
 		<commons-io.version>2.18.0</commons-io.version>
-		<common-auth.version>1.0.0-SNAPSHOT</common-auth.version>
+		<common-auth.version>2.1.0</common-auth.version>
 		<version.spring.boot>3.4.2</version.spring.boot>
 		<version.openapi-starter-webmvc-ui>2.8.4</version.openapi-starter-webmvc-ui>
 		<image.tomcat-10-base>harbor.cib.de/dev/tomcat-10-base:1.1.0</image.tomcat-10-base>
