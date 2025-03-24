@@ -72,7 +72,7 @@
 		</dependency>
 		
 		<dependency>
-			<groupId>org.cibseven.webapp.auth</groupId>
+			<groupId>de.cib</groupId>
 			<artifactId>common-auth</artifactId>
 			<version>${common-auth.version}</version>
 		</dependency>
