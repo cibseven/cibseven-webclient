@@ -418,7 +418,7 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 		String wcard = "";
 		if (!wildcard.equals("")) wcard = wildcard;
 		else {
-			if (userProvider.equals("org.cibseven.auth.LdapUserProvider") || userProvider.equals("org.cibseven.auth.AdfsUserProvider")) {
+			if (userProvider.equals("org.cibseven.webapp.auth.LdapUserProvider") || userProvider.equals("org.cibseven.webapp.auth.AdfsUserProvider")) {
 				wcard = "*";				
 			} else wcard = "%";
 		}
