@@ -46,7 +46,7 @@
               <b-button class="border" size="sm" variant="light" @click="downloadBpmn()" :title="$t('process.downloadBpmn')">
                 <span class="mdi mdi-download"></span> {{ $t('process.downloadBpmn') }}
               </b-button>
-              <b-button class="border" size="sm" variant="light" @click="viewDeployment()" :title="$t('process.showDeployment')">
+              <b-button class="border" size="sm" variant="light" :href="'#/seven/auth/deployments/' + this.process.deploymentId" :title="$t('process.showDeployment')">
                 <span class="mdi mdi-file-eye-outline"></span> {{ $t('process.showDeployment') }}
               </b-button>
               <component :is="ProcessActions" v-if="ProcessActions" :process="process"></component>
@@ -112,7 +112,10 @@ export default {
   inject: ['loadProcesses'],
   mixins: [permissionsMixin, resizerMixin, copyToClipboardMixin],
   props: { instances: Array, process: Object, firstResult: Number, maxResults: Number,
-    activityInstance: Object, activityInstanceHistory: Array, activityId: String, loading: Boolean },
+    activityInstance: Object, activityInstanceHistory: Array, activityId: String, loading: Boolean,
+    processKey: String,
+    versionIndex: { type: String, default: '' }
+ },
   data: function() {
     return {
       selectedInstance: null,
@@ -190,9 +193,6 @@ export default {
         this.$refs.diagram.showDiagram(response.bpmn20Xml, null, null)
         this.$refs.diagramModal.show()
       })
-    },
-    viewDeployment: function() {
-      this.$router.push('/seven/auth/deployments/' + this.process.deploymentId)
     },
     downloadBpmn: function() {
       var filename = this.process.resource.substr(this.process.resource.lastIndexOf('/') + 1, this.process.resource.lenght)
