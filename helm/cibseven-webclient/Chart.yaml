@@ -1,9 +1,9 @@
 apiVersion: v2
 name: seven-webclient
 description: Base Helm chart for the webclient component of CIB seven
-home: https://gitlab.cib.de/web/flow/cloud/seven-webclient
+home: https://github.com/cibseven/cibseven-webclient
 sources:
-  - https://gitlab.cib.de/web/flow/cloud/seven-webclient.git
+  - https://github.com/cibseven/cibseven-webclient.git
 
 maintainers:
   - name: CIB software GmbH
@@ -11,7 +11,7 @@ maintainers:
     url: https://www.cib.de/
 
 keywords:
-  - seven-webclient
+  - cibseven-webclient
   - CIB seven
 
 type: application
