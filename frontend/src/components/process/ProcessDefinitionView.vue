@@ -9,7 +9,6 @@
     <SidebarsFlow ref="sidebars" class="border-top overflow-auto" v-model:left-open="leftOpen" :left-caption="shortendLeftCaption">
       <template v-slot:left>
         <ProcessDetailsSidebar ref="navbar" v-if="instances"
-          :process="process"
           :processKey="processKey"
           :processDefinitions="processDefinitions"
           :versionIndex="versionIndex"
@@ -18,7 +17,7 @@
           :instances="instances"></ProcessDetailsSidebar>
       </template>
       <transition name="slide-in" mode="out-in">
-        <Process ref="process" v-if="instances && !selectedInstance"
+        <Process ref="process" v-if="process && instances && !selectedInstance"
           :activity-id="activityId"
           :loading="loading"
           :process="process"
@@ -40,7 +39,7 @@
         ></Process>
       </transition>
       <transition name="slide-in" mode="out-in">
-        <ProcessVariablesTable ref="navbar-variables" v-if="selectedInstance" :process="process" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" @open-subprocess="openSubprocess($event)"
+        <ProcessVariablesTable ref="navbar-variables" v-if="process && selectedInstance" :process="process" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" @open-subprocess="openSubprocess($event)"
         :selected-instance="selectedInstance" @clear-state="setSelectedInstance({ selectedInstance: null })" @task-selected="setSelectedTask($event)" @unselect-instance="selectedInstance = null"></ProcessVariablesTable>
       </transition>
     </SidebarsFlow>
@@ -100,7 +99,7 @@ export default {
       return this.$t('process.details.variable')
     },
     processName: function() {
-      if (!this.process) return this.$t('process.process')
+      if (!this.process) return ''
       return this.process.name ? this.process.name : this.process.key
     }
   },
@@ -121,20 +120,43 @@ export default {
     updateItems: function(sortedItems) {
       this.instances = sortedItems
     },
-    onDeleteProcessDefinition: function(processDefinition) {
-      ProcessService.deleteProcessDefinition(processDefinition.id, true).then(() => {
+    onDeleteProcessDefinition: function(params) {
+      ProcessService.deleteProcessDefinition(params.processDefinition.id, true).then(() => {
         // reload versions
-        if (processDefinition.version !== this.versionIndex) {
-          this.onRefreshProcessDefinitions({ lazyLoadHistory: this.lazyLoadHistory }).then(versions => {
-            if (versions.length === 0) {
-              this.$router.push('/seven/auth/processes')
-            }
-          })
-        }
-        else {
-          // selected version was delete => let's jump to default version
-          this.$router.push('/seven/auth/process/' + processDefinition.key)
-        }
+        ProcessService.findProcessVersionsByDefinitionKey(this.processKey).then(versions => {
+          if (versions.length === 0) {
+            // no more process-definitions with such key
+            this.$router.replace('/seven/auth/processes')
+          }
+          else if (params.processDefinition.version !== this.versionIndex) {
+            // remove deleted process-definition from the list
+            this.processDefinitions = versions
+          }
+          else {
+            // Find nearest process-definition to deleted one and select it.
+            //
+            // 5 4 3 2 1
+            //     ^      - deleted
+            //   ^   ^    - one of final nextVersionIndex
+            //
+            var nextVersionIndex = versions[0].version
+            versions.forEach((version) => {
+              const currentDistance = Math.abs(Number(nextVersionIndex) - Number(params.processDefinition.version))
+              const thisDistance = Math.abs(Number(nextVersionIndex) - Number(version.version))
+              if (currentDistance > thisDistance) {
+                nextVersionIndex = version.version
+              }
+            })
+
+            this.$router.replace({
+              name: 'process',
+              params: {
+                processKey: params.processDefinition.key,
+                versionIndex: nextVersionIndex,
+              }
+            })
+          }
+        })
       })
     },
     // call from:
@@ -151,9 +173,9 @@ export default {
     },
     loadProcessByDefinitionKey: function() {
       ProcessService.findProcessVersionsByDefinitionKey(this.processKey).then(versions => {
-        this.processDefinitions = versions
-        let requestedDefinition = versions.find(processDefinition => processDefinition.version === this.versionIndex)
+        const requestedDefinition = versions.find(processDefinition => processDefinition.version === this.versionIndex)
         if (requestedDefinition) {
+          this.processDefinitions = versions
           const needCalcStats = this.process == null
           this.loadProcessVersion(requestedDefinition)
           if (needCalcStats) {

@@ -51,7 +51,7 @@
       </div>
     </div>
     <SuccessAlert ref="successOperation"> {{ $t('alert.successOperation') }}</SuccessAlert>
-    <ConfirmDialog ref="confirm" @ok="$event.ok($event.version)">
+    <ConfirmDialog ref="confirm" @ok="$event.ok($event.processDefinition)">
       {{ $t('confirm.performOperation') }}
     </ConfirmDialog>
   </div>
@@ -69,7 +69,6 @@ export default {
   components: { SuccessAlert, ConfirmDialog, ProcessDefinitionDetails },
   mixins: [copyToClipboardMixin, permissionsMixin],
   props: {
-    process: Object,
     processDefinitions: {
       type: Array,
       required: true
@@ -77,13 +76,13 @@ export default {
     instances: Array,
     processKey: String,
     versionIndex: { type: String, default: '' }
-   },
+  },
   methods: {
     onRefreshProcessDefinitions: function(lazyLoadHistory) {
       this.$emit('onRefreshProcessDefinitions', { lazyLoadHistory: lazyLoadHistory })
     },
     onDeleteClicked: function(processDefinition) {
-      this.$refs.confirm.show({ ok: this.deleteProcessDefinition, version: processDefinition })
+      this.$refs.confirm.show({ ok: this.deleteProcessDefinition, processDefinition: processDefinition })
     },
     deleteProcessDefinition: function(processDefinition) {
       this.$emit('onDeleteProcessDefinition', { processDefinition: processDefinition })
