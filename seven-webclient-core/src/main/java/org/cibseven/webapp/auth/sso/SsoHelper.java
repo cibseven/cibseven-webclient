@@ -6,6 +6,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 
 import org.cibseven.webapp.auth.SystemException;
+import org.cibseven.webapp.auth.exception.AuthenticationException;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -16,7 +17,6 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
-import de.cib.auth.AuthenticationException;
 import io.jsonwebtoken.Claims;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;

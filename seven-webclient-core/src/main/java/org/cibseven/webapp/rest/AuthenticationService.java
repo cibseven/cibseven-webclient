@@ -4,11 +4,10 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 
-import de.cib.auth.User;
-import de.cib.auth.rest.StandardLogin;
-
 import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.auth.User;
+import org.cibseven.webapp.auth.rest.StandardLogin;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.rest.model.Authorizations;
 import org.springframework.beans.factory.annotation.Autowired;

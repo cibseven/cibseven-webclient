@@ -2,6 +2,7 @@ package org.cibseven.webapp.config;
 
 import java.util.Arrays;
 
+import org.cibseven.webapp.auth.exception.AuthenticationException;
 import org.cibseven.webapp.exception.ApplicationException;
 import org.cibseven.webapp.exception.ErrorMessage;
 import org.cibseven.webapp.exception.NoObjectFoundException;
@@ -11,7 +12,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import de.cib.auth.AuthenticationException;
 import lombok.extern.slf4j.Slf4j;
 
 @ControllerAdvice @ResponseBody

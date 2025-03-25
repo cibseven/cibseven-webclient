@@ -11,9 +11,9 @@ import java.util.Base64;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.cibseven.webapp.auth.exception.AuthenticationException;
 import org.springframework.web.client.RestTemplate;
 
-import de.cib.auth.AuthenticationException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Header;
 import io.jsonwebtoken.JweHeader;

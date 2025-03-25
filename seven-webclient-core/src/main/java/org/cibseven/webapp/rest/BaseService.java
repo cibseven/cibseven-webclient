@@ -8,8 +8,8 @@ import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import de.cib.auth.AuthenticationException;
-import de.cib.auth.rest.StandardLogin;
+import org.cibseven.webapp.auth.exception.AuthenticationException;
+import org.cibseven.webapp.auth.rest.StandardLogin;
 
 import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.CIBUser;

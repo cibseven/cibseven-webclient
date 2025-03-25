@@ -1,6 +1,7 @@
 package org.cibseven.webapp.auth.sso;
 
-import de.cib.auth.rest.StandardLogin;
+import org.cibseven.webapp.auth.rest.StandardLogin;
+
 import lombok.Getter;
 import lombok.Setter;
 

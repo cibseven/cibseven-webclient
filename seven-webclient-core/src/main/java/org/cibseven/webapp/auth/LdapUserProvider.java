@@ -19,6 +19,11 @@ import javax.naming.directory.InitialDirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
+import org.cibseven.webapp.auth.exception.AuthenticationException;
+import org.cibseven.webapp.auth.exception.LoginException;
+import org.cibseven.webapp.auth.exception.TokenExpiredException;
+import org.cibseven.webapp.auth.providers.JwtUserProvider;
+import org.cibseven.webapp.auth.rest.StandardLogin;
 import org.cibseven.webapp.exception.SystemException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,12 +32,6 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import de.cib.auth.AuthenticationException;
-import de.cib.auth.JwtUserProvider;
-import de.cib.auth.LoginException;
-import de.cib.auth.TokenExpiredException;
-import de.cib.auth.User;
-import de.cib.auth.rest.StandardLogin;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;

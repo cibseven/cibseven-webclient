@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.cibseven.webapp.auth.BaseUserProvider;
+import org.cibseven.webapp.auth.User;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -38,10 +39,8 @@ import com.fasterxml.jackson.core.StreamReadConstraints;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
-import de.cib.auth.User;
-
 @Configuration
-@ComponentScan({ "org.cibseven.webapp.providers", "org.cibseven.webapp.auth", "org.cibseven.webapp.rest", "org.cibseven.webapp.config", "de.cib.auth" })
+@ComponentScan({ "org.cibseven.webapp.providers", "org.cibseven.webapp.auth", "org.cibseven.webapp.rest", "org.cibseven.webapp.config" })
 public class Context implements WebMvcConfigurer, HandlerMethodArgumentResolver {
 
 	BaseUserProvider provider;
