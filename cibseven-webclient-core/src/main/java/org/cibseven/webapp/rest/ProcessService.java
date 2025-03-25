@@ -11,6 +11,7 @@ import org.cibseven.webapp.Data;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.exception.AuthenticationException;
 import org.cibseven.webapp.exception.AnonUserBlockedException;
+import org.cibseven.webapp.exception.ApplicationException;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.logger.TaskLogger;
@@ -385,7 +386,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			rq = new HeaderModifyingRequestWrapper(rq, token);
 			try {
 				return response(bpmProvider.fetchDataFromDeploymentResource(rq, deploymentId, resourceId, filename));
-			} catch (AuthenticationException x) {
+			} catch (ApplicationException x) {
 				res.sendRedirect("../../../#/flow/auth/deployments/" + deploymentId + "/resources/" + resourceId);
 				throw x;
 			}
