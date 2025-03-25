@@ -8,8 +8,7 @@ import java.util.Optional;
 
 import javax.crypto.SecretKey;
 
-import jakarta.servlet.http.HttpServletRequest;
-
+import org.cibseven.exception.SystemException;
 import org.cibseven.providers.BpmProvider;
 import org.cibseven.providers.SevenProvider;
 import org.cibseven.rest.model.SevenUser;
@@ -31,6 +30,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
 
 public class SevenUserProvider extends BaseUserProvider<StandardLogin> implements InitializingBean {
 	

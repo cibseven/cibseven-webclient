@@ -40,8 +40,12 @@ export default defineConfig({
             globals: {
               vue: 'Vue',
             },
+            // Ensure CSS is extracted and placed in the dist folder
+            assetFileNames: 'cib-common-components.[ext]',
           },
         },
+        cssCodeSplit: true, // Ensure CSS is extracted into a separate file
+        outDir: 'dist', // The output directory
       }
     : {}
 })

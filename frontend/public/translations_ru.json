@@ -104,7 +104,7 @@
 		"refreshVersions": "Обновить версии истории",
 		"loadVersions": "Загрузить все версии истории",
 		"externalProcessStarted": "Процесс успешно запущен",
-		"onlyActive": "Только активы",
+		"onlyActive": "Только активные",
 		"exportInstances": "Экспорт экземпляров",
 		"days": "дней",
 		"deleteProcessDefinition": "Удалить определение процесса",

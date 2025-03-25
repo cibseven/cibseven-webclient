@@ -1,5 +1,8 @@
 import mitt from 'mitt'
 
+// Import the CSS to ensure it is bundled with the package
+import '../public/cib-common-components.css';
+
 import BAlert from './components/BAlert.vue'
 import BAvatar from './components/BAvatar.vue'
 import BBadge from './components/BBadge.vue'

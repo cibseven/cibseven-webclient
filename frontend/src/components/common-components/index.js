@@ -56,11 +56,14 @@ import StartProcessList from '@/components/start-process/StartProcessList.vue'
 import StartProcessView from '@/components/start-process/StartProcessView.vue'
 import ProcessList from '@/components/processes/list/ProcessList.vue'
 import ProcessListView from '@/components/processes/list/ProcessListView.vue'
-import ProcessTable from '@/components/process/ProcessTable.vue'
+import ProcessTable from '@/components/start-process/ProcessTable.vue'
 import ProcessVariablesTable from '@/components/process/ProcessVariablesTable.vue'
-import StartProcess from '@/components/process/StartProcess.vue'
+import StartProcess from '@/components/start-process/StartProcess.vue'
 import TaskAssignationModal from '@/components/process/TaskAssignationModal.vue'
-import UserTasksTable from '@/components/process/UserTasksTable.vue'
+import VariablesTable from '@/components/process/tables/VariablesTable.vue'
+import IncidentsTable from '@/components/process/tables/IncidentsTable.vue'
+import UserTasksTable from '@/components/process/tables/UserTasksTable.vue'
+
 
 import RenderTemplate from '@/components/render-template/RenderTemplate.vue'
 
@@ -83,7 +86,7 @@ export {
     IconButton, MultisortModal, StartProcess, BpmnViewer,
     ProcessList, Process, InstancesTable, StartProcessList,
     ProcessDetailsSidebar, ProcessCard, ProcessAdvanced,
-    ProcessTable, UserTasksTable, TaskAssignationModal,
+    ProcessTable, VariablesTable, IncidentsTable, UserTasksTable, TaskAssignationModal,
     AddVariableModal, ProcessView, DeploymentsView, ResourcesNavBar,
     DeploymentList, Tasks, TasksNavBar, Task, AdvancedSearchModal,
     FilterModal, FilterNavBar, FilterNavCollapsed,
