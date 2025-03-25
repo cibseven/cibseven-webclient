@@ -1,13 +1,13 @@
-package org.cibseven.template;
+package org.cibseven.webapp.template;
 
 import java.util.List;
 import java.util.Map;
 
-import org.cibseven.rest.model.ActivityInstance;
-import org.cibseven.rest.model.ActivityInstanceHistory;
-import org.cibseven.rest.model.ProcessDiagram;
-import org.cibseven.rest.model.Task;
-import org.cibseven.rest.model.Variable;
+import org.cibseven.webapp.rest.model.ActivityInstance;
+import org.cibseven.webapp.rest.model.ActivityInstanceHistory;
+import org.cibseven.webapp.rest.model.ProcessDiagram;
+import org.cibseven.webapp.rest.model.Task;
+import org.cibseven.webapp.rest.model.Variable;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

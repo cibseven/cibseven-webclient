@@ -7,20 +7,16 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
 import org.cibseven.webapp.Data;
 import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.exception.AnonUserBlockedException;
 import org.cibseven.webapp.auth.exception.AuthenticationException;
+import org.cibseven.webapp.exception.AnonUserBlockedException;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
-import org.cibseven.logger.TaskLogger;
+import org.cibseven.webapp.logger.TaskLogger;
 import org.cibseven.webapp.providers.SevenProvider;
-import org.cibseven.webapp.rest.HeaderModifyingRequestWrapper;
 import org.cibseven.webapp.rest.model.ActivityInstance;
-import org.cibseven.rest.model.Authorizations;
+import org.cibseven.webapp.rest.model.Authorizations;
 import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.DeploymentResource;
 import org.cibseven.webapp.rest.model.EventSubscription;

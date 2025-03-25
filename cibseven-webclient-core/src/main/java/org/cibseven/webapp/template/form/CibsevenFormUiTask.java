@@ -1,4 +1,4 @@
-package org.cibseven.template.form;
+package org.cibseven.webapp.template.form;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -8,14 +8,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.cibseven.auth.CIBUser;
-import org.cibseven.logger.TaskLogger;
-import org.cibseven.providers.BpmProvider;
-import org.cibseven.rest.model.Task;
-import org.cibseven.rest.model.Variable;
-import org.cibseven.template.StartFormTemplate;
-import org.cibseven.template.Template;
-import org.cibseven.template.TemplateTask;
+import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.logger.TaskLogger;
+import org.cibseven.webapp.providers.BpmProvider;
+import org.cibseven.webapp.rest.model.Task;
+import org.cibseven.webapp.rest.model.Variable;
+import org.cibseven.webapp.template.StartFormTemplate;
+import org.cibseven.webapp.template.Template;
+import org.cibseven.webapp.template.TemplateTask;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;

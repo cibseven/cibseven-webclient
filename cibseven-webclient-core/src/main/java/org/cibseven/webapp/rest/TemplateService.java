@@ -1,19 +1,17 @@
-package org.cibseven.rest;
+package org.cibseven.webapp.rest;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import org.cibseven.auth.BaseUserProvider;
-import org.cibseven.auth.CIBUser;
-import org.cibseven.exception.AnonUserBlockedException;
-import org.cibseven.exception.SystemException;
-import org.cibseven.providers.BpmProvider;
-import org.cibseven.rest.model.Authorizations;
-import org.cibseven.template.StartFormTemplate;
-import org.cibseven.template.Template;
-import org.cibseven.template.TemplateTask;
+import org.cibseven.webapp.auth.BaseUserProvider;
+import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.webapp.providers.BpmProvider;
+import org.cibseven.webapp.template.StartFormTemplate;
+import org.cibseven.webapp.template.Template;
+import org.cibseven.webapp.template.TemplateTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;

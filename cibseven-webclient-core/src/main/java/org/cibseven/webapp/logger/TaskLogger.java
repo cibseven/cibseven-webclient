@@ -1,4 +1,4 @@
-package org.cibseven.logger;
+package org.cibseven.webapp.logger;
 
 import org.apache.logging.log4j.ThreadContext;
 

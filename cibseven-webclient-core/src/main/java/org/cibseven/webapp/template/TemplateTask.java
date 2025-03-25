@@ -1,8 +1,8 @@
-package org.cibseven.template;
+package org.cibseven.webapp.template;
 
 import java.util.Optional;
 
-import org.cibseven.auth.CIBUser;
+import org.cibseven.webapp.auth.CIBUser;
 
 
 public interface TemplateTask {

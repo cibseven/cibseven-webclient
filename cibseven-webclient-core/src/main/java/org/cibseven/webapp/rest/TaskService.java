@@ -1,24 +1,24 @@
 package org.cibseven.webapp.rest;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
-import org.cibseven.NamedByteArrayDataSource;
+import org.cibseven.webapp.NamedByteArrayDataSource;
 import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.exception.AccessDeniedException;
-import org.cibseven.exception.NoObjectFoundException;
+import org.cibseven.webapp.auth.exception.TokenExpiredException;
+import org.cibseven.webapp.exception.AccessDeniedException;
+import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
-import org.cibseven.logger.TaskLogger;
+import org.cibseven.webapp.logger.TaskLogger;
 import org.cibseven.webapp.providers.SevenProvider;
 import org.cibseven.webapp.rest.model.IdentityLink;
 import org.cibseven.webapp.rest.model.Task;
 import org.cibseven.webapp.rest.model.TaskCount;
 import org.cibseven.webapp.rest.model.TaskFiltering;
-import org.cibseven.rest.model.Variable;
+import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.http.HttpHeaders;
@@ -31,7 +31,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import de.cib.auth.TokenExpiredException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
