@@ -8,8 +8,6 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Optional;
 
-import jakarta.annotation.PostConstruct;
-
 import javax.crypto.SecretKey;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -18,12 +16,12 @@ import javax.naming.SizeLimitExceededException;
 import javax.naming.directory.InitialDirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
-import jakarta.servlet.http.HttpServletRequest;
 
 import org.cibseven.auth.sso.SSOLogin;
 import org.cibseven.auth.sso.SSOUser;
 import org.cibseven.auth.sso.SsoHelper;
 import org.cibseven.auth.sso.TokenResponse;
+import org.cibseven.exception.SystemException;
 import org.springframework.beans.factory.annotation.Value;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -39,6 +37,8 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 

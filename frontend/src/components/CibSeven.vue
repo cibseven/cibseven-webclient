@@ -1,14 +1,14 @@
 <template>
   <div class="h-100 d-flex flex-column">
     <CIBHeaderFlow v-if="$root.header === 'true'" class="flex-shrink-0" :languages="$root.config.supportedLanguages" :user="$root.user" @logout="logout">
-      <div class="me-auto d-flex flex-column flex-md-row">
+      <div class="me-auto d-flex flex-column flex-md-row" style="height: 38px">
         <b-navbar-brand class="py-0" :title="$t('navigation.home')" to="/">
           <img height="38px" :alt="$t('cib-header.productName')" :src="$root.logoPath"/>
           <span class="d-none d-md-inline align-middle"></span>
         </b-navbar-brand>
         <div v-if="pageTitle" style="max-height: 38px;" class="d-flex align-items-center text-truncate">
           <span class="border-start border-secondary py-3 me-3"></span>
-          <h3 :style="isMobile() ? 'max-width: 100px; line-height: normal' : 'line-height: normal'"
+          <h3 style="line-height: normal"
           class="m-0 text-secondary text-truncate">{{ pageTitle }}</h3>
         </div>
       </div>
@@ -17,20 +17,20 @@
         <span class="mdi mdi-18px mdi-rocket"><span class="d-none d-lg-inline">{{ $t('start.startProcesses') }}</span></span>
       </b-button>
 
-      <b-collapse v-if="$root.user && ((applicationPermissions($root.config.permissions.tasklist, 'tasklist') && startableProcesses) ||
-      applicationPermissions($root.config.permissions.cockpit, 'cockpit'))" is-nav id="nav_collapse" class="flex-grow-0 d-none d-md-flex">
+      <b-collapse v-if="(permissionsTaskList && startableProcesses) || permissionsCockpit" is-nav id="nav_collapse" class="flex-grow-0 d-none d-md-flex">
         <b-navbar-nav>
           <b-nav-item-dropdown extra-toggle-classes="py-1" right :title="$t('navigation.menu')">
             <template v-slot:button-content>
               <span class="visually-hidden">{{ $t('navigation.menu') }}</span>
               <span class="mdi mdi-24px mdi-menu align-middle"></span>
             </template>
-            <b-dropdown-item v-if="applicationPermissions($root.config.permissions.tasklist, 'tasklist') && startableProcesses" to="/seven/auth/start-process" :active="$route.path.includes('seven/auth/start-process')">{{ $t('start.startProcesses') }}</b-dropdown-item>
-            <b-dropdown-item v-if="applicationPermissions($root.config.permissions.tasklist, 'tasklist')" to="/seven/auth/tasks" :active="$route.path.includes('seven/auth/tasks')">{{ $t('start.taskList') }}</b-dropdown-item>
-            <b-dropdown-item v-if="applicationPermissions($root.config.permissions.cockpit, 'cockpit')" to="/seven/auth/processes" :active="$route.path.includes('seven/auth/processes')">{{ $t('start.admin') }}</b-dropdown-item>
-            <b-dropdown-item v-if="applicationPermissions($root.config.permissions.cockpit, 'cockpit')" to="/seven/auth/deployments" :active="$route.path.includes('seven/auth/deployments')">{{ $t('deployment.title') }}</b-dropdown-item>
-            <b-dropdown-item v-if="hasAdminManagementPermissions($root.config.permissions)" to="/seven/auth/admin/users-management" :active="$route.path.includes('seven/auth/admin/users-management')">{{ $t('start.adminPanel') }}</b-dropdown-item>
-            <b-dropdown-item v-if="applicationPermissions($root.config.permissions.cockpit, 'cockpit')" :href="$root.config.cockpitUrl" target="_blank">{{ $t('start.cockpit') }}</b-dropdown-item>
+            <b-dropdown-item v-if="permissionsTaskList && startableProcesses" to="/seven/auth/start-process" :active="$route.path.includes('seven/auth/start-process')">{{ $t('start.startProcesses') }}</b-dropdown-item>
+            <b-dropdown-item v-if="permissionsTaskList" to="/seven/auth/tasks" :active="$route.path.includes('seven/auth/tasks')">{{ $t('start.taskList') }}</b-dropdown-item>
+            <b-dropdown-divider v-if="permissionsTaskList && (permissionsCockpit || permissionsUsers)"></b-dropdown-divider>
+            <b-dropdown-item v-if="permissionsCockpit" to="/seven/auth/processes" :active="$route.path.includes('seven/auth/process')">{{ $t('start.admin') }}</b-dropdown-item>
+            <b-dropdown-item v-if="permissionsCockpit" to="/seven/auth/deployments" :active="$route.path.includes('seven/auth/deployments')">{{ $t('deployment.title') }}</b-dropdown-item>
+            <b-dropdown-item v-if="permissionsUsers" to="/seven/auth/admin/users-management" :active="isUsersManagementActive">{{ $t('start.adminPanel') }}</b-dropdown-item>
+            <b-dropdown-item v-if="permissionsCockpit" :href="$root.config.cockpitUrl" target="_blank">{{ $t('start.cockpit') }}</b-dropdown-item>
           </b-nav-item-dropdown>
         </b-navbar-nav>
       </b-collapse>
@@ -107,9 +107,9 @@
 
     <ProblemReport ref="report" url="feedback" :email="$root.user && $root.user.email" @report="$refs.down.$emit('report', $event)"></ProblemReport>
 
-    <GlobalEvents v-if="$root.user && applicationPermissions($root.config.permissions.tasklist, 'tasklist')" @keydown.ctrl.left.prevent="$router.push('/seven/auth/start-process')"></GlobalEvents>
-    <GlobalEvents v-if="$root.user && applicationPermissions($root.config.permissions.cockpit, 'cockpit')" @keydown.ctrl.right.prevent="$router.push('/seven/auth/processes/list')"></GlobalEvents>
-    <GlobalEvents v-if="$root.user && applicationPermissions($root.config.permissions.tasklist, 'tasklist')" @keydown.ctrl.down.prevent="$router.push('/seven/auth/tasks')"></GlobalEvents>
+    <GlobalEvents v-if="permissionsTaskList" @keydown.ctrl.left.prevent="$router.push('/seven/auth/start-process')"></GlobalEvents>
+    <GlobalEvents v-if="permissionsCockpit" @keydown.ctrl.right.prevent="$router.push('/seven/auth/processes/list')"></GlobalEvents>
+    <GlobalEvents v-if="permissionsTaskList" @keydown.ctrl.down.prevent="$router.push('/seven/auth/tasks')"></GlobalEvents>
 
   </div>
 </template>
@@ -195,6 +195,20 @@ export default {
           return this.$t('admin.authorizations.title')
         default: return ''
       }
+    },
+    permissionsTaskList: function() {
+      return this.$root.user && this.applicationPermissions(this.$root.config.permissions.tasklist, 'tasklist')
+    },
+    permissionsCockpit: function() {
+      return this.$root.user && this.applicationPermissions(this.$root.config.permissions.tasklist, 'cockpit')
+    },
+    permissionsUsers: function() {
+      return this.$root.user && this.hasAdminManagementPermissions(this.$root.config.permissions)
+    },
+    isUsersManagementActive: function() {
+      return this.$route.path.includes('seven/auth/admin/user') ||
+        this.$route.path.includes('seven/auth/admin/group') ||
+        this.$route.path.includes('seven/auth/admin/authorizations')
     }
   },
   mounted: function () {
@@ -225,3 +239,11 @@ export default {
   }
 }
 </script>
+
+<style lang="css" scoped>
+/* Customizing the separator to reduce gap */
+.dropdown-divider {
+  margin-top: 0.15rem; /* Reduce top gap */
+  margin-bottom: 0.15rem; /* Reduce bottom gap */
+}
+</style>

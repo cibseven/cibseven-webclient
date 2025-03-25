@@ -43,23 +43,21 @@
               <b-button v-else class="border" size="sm" variant="light" @click="showConfirm({ ok: activateProcess })" :title="$t('process.activateProcess')">
                 <span class="mdi mdi-play-circle-outline"></span> {{ $t('process.activateProcess') }}
               </b-button>
-              <b-button class="border" size="sm" variant="light" @click="openInModeler()" :title="$t('process.openModeler')">
-                <span class="mdi mdi-map-search-outline"></span> {{ $t('process.openModeler') }}
-              </b-button>
               <b-button class="border" size="sm" variant="light" @click="downloadBpmn()" :title="$t('process.downloadBpmn')">
                 <span class="mdi mdi-download"></span> {{ $t('process.downloadBpmn') }}
               </b-button>
               <b-button class="border" size="sm" variant="light" @click="viewDeployment()" :title="$t('process.showDeployment')">
                 <span class="mdi mdi-file-eye-outline"></span> {{ $t('process.showDeployment') }}
               </b-button>
+              <component :is="ProcessActions" v-if="ProcessActions" :process="process"></component>
             </div>
           </div>
         </div>
         <div ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 60px; left: 0; bottom: 0" @scroll="handleScrollProcesses">
-          <InstancesTable ref="instancesTable" v-if="instances && !sorting" :instances="instances" :sortByDefaultKey="sortByDefaultKey" :sortDesc="sortDesc"
+          <InstancesTable ref="instancesTable" v-if="!loading && instances && !sorting" :instances="instances" :sortByDefaultKey="sortByDefaultKey" :sortDesc="sortDesc"
             @select-instance="selectInstance" @view-process="viewProcess" @instance-deleted="$emit('instance-deleted')"
           ></InstancesTable>
-          <div class="py-3 text-center w-100" v-if="loading">
+          <div v-else-if="loading" class="py-3 text-center w-100">
             <BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}
           </div>
         </div>
@@ -149,6 +147,11 @@ export default {
     })
   },
   computed: {
+    ProcessActions: function() {
+      return this.$options.components && this.$options.components.ProcessActions
+        ? this.$options.components.ProcessActions
+        : null
+    },
     processName: function() {
       return this.process.name !== null ? this.process.name : this.process.key
     }
@@ -195,9 +198,6 @@ export default {
       var filename = this.process.resource.substr(this.process.resource.lastIndexOf('/') + 1, this.process.resource.lenght)
       window.location.href = appConfig.servicesBasePath + '/process/' + this.process.id + '/data?filename=' + filename +
         '&token=' + this.$root.user.authToken
-    },
-    openInModeler: function() {
-      this.$router.push('/seven/auth/modeler/' + this.process.id)
     },
     clearState: function() {
       this.selectedInstance = null

@@ -1,13 +1,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-
-	<parent>
-		<groupId>org.cibseven</groupId>
-		<artifactId>release-parent</artifactId>
-		<version>1.1.0</version>
-	</parent>
+	<groupId>org.cibseven</groupId>
 	<artifactId>seven-webclient</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
+	<version>1.1.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>Seven webclient</name>
@@ -21,7 +16,7 @@
 
 	<properties>
 		<target.path>${project.basedir}/target</target.path>
-		<project.git.url>https://github.com/cibseven/seven-webclient.git</project.git.url>
+		<project.git.url>https://gitlab.cib.de/web/flow/cloud/seven-webclient.git</project.git.url>
 		<nexus-repository.url>https://nexus.cib.de/repository</nexus-repository.url>
 		
 		<maven.compiler.source>17</maven.compiler.source>
@@ -55,6 +50,19 @@
 		<url>${project.git.url}</url>
 		<tag>HEAD</tag>
 	</scm>
+
+	<distributionManagement>
+		<repository>
+			<id>mvn-release-local</id>
+			<name>CIB maven release repository</name>
+			<url>${nexus-repository.url}/mvn-release-local</url>
+		</repository>
+		<snapshotRepository>
+			<id>mvn-snapshot-local</id>
+			<name>CIB maven snapshot repository</name>
+			<url>${nexus-repository.url}/mvn-snapshot-local</url>
+		</snapshotRepository>
+	</distributionManagement>
 
 	<dependencyManagement>
 		<dependencies>

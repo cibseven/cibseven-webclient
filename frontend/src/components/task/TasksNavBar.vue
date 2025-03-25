@@ -171,7 +171,7 @@
 import moment from 'moment'
 import { TaskService } from '@/services.js'
 import { debounce } from '@/utils/debounce.js'
-import StartProcess from '@/components/process/StartProcess.vue'
+import StartProcess from '@/components/start-process/StartProcess.vue'
 import AdvancedSearchModal from '@/components/task/AdvancedSearchModal.vue'
 import SmartSearch from '@/components/task/SmartSearch.vue'
 import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
@@ -198,8 +198,12 @@ export default {
     }
   },
   watch: {
-    tasks: function() { this.checkTaskIdInUrl(this.$route.params.taskId) },
-    '$route.params.taskId': function(to) { this.checkTaskIdInUrl(to) },
+    '$route.params.taskId': {
+      immediate: true,
+      handler: function (taskId) {
+        this.checkTaskIdInUrl(taskId) 
+      }
+    },
     'advancedFilter': {
       deep: true,
       handler: function (newValues) {
@@ -290,7 +294,45 @@ export default {
           return task.id === taskId
         })
         if (index > -1) this.$emit('selected-task', this.tasks[index])
+        else {
+          this.handleTaskLink(taskId)
+        }
+      } else if (taskId) this.handleTaskLink(taskId)
+    },
+    handleTaskLink: function(taskId) {
+      TaskService.findTaskById(taskId).then(task => {
+        if (task.assignee && (task.assignee.toLowerCase() === this.$root.user.userID.toLowerCase()))
+          return this.$emit('selected-task', task)
+        else {
+          TaskService.findIdentityLinks(taskId).then(identityLinks => {
+            var userIdLink = identityLinks.find(i => {
+              return i.type === 'candidate' && i.userId && i.userId.toLowerCase() === this.$root.user.userID.toLowerCase()
+            })
+            if (userIdLink) return this.$emit('selected-task', task)
+            this.manageCandidateGroups(identityLinks, task)
+          })
+        }
+      })
+    },
+    manageCandidateGroups: function(identityLinks, task) {
+      var promises = []
+      for (var i in identityLinks) {
+        if (identityLinks[i].type === 'candidate' && identityLinks[i].groupId) {
+          var promise = AdminService.findUsers({ memberOfGroup: identityLinks[i].groupId }).then(users => {
+            return users.some(u => {
+              return u.id.toLowerCase() === this.$root.user.userID.toLowerCase()
+            })
+          })
+          promises.push(promise)
+        }
       }
+      Promise.all(promises).then(results => {
+        if (results.some(r => { return r })) this.$emit('selected-task', task)
+        else {
+          this.$root.$refs.error.show({ type: 'AccessDeniedException', params: [task.id] })
+          this.$router.push('/seven/auth/tasks/' + this.$store.state.filter.selected.id)
+        }
+      })
     },
     getDateFormatted: function(date, format, emptyMsg) {
       if (!date) return this.$t('task.' + emptyMsg)

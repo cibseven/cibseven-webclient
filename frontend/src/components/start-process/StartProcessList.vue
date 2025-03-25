@@ -1,43 +1,43 @@
 <template>
   <div class="d-flex flex-column bg-light" :style="{ height: 'calc(100% - 55px)' }">
     <div class="container pt-4">
-      <div class="row align-items-center">
-          <div :class="isMobile() ? 'col-12 pb-2' : 'col-md-2 p-0'">
+      <div class="row align-items-center pb-2">
+        <div :class="isMobile() ? 'col-12 pb-2' : 'col-md-3 p-0'">
           <b-button squared @click="selectedOptionHandler('all')" variant="light" :style="setOptionSelected('all')">{{ $t('process.sections.all') }}</b-button>
           <b-button squared @click="selectedOptionHandler('favorites')" variant="light" :style="setOptionSelected('favorites')">
             <span class="mdi mdi-star" style="line-height: initial"></span> {{ $t('process.sections.favorites') }}
           </b-button>
-          </div>
-          <div :class="isMobile() ? 'col-12' : 'col-md-3 p-0'">
+        </div>
+        <div :class="isMobile() ? 'col-12' : 'col-md-6 p-0 d-flex'">
           <b-input-group size="sm">
             <template #prepend>
               <b-button :title="$t('searches.search')" aria-hidden="true" class="rounded-left" variant="secondary"><span class="mdi mdi-magnify" style="line-height: initial"></span></b-button>
             </template>
             <b-form-input  :title="$t('searches.search')" :placeholder="$t('searches.search')" v-model="filter"></b-form-input>
           </b-input-group>
-          </div>
-        <div v-if="!isMobile()" class="col-md-7 d-flex align-items-center justify-content-end">
+        </div>
+        <div v-if="!isMobile()" class="col-md-3 d-flex align-items-center justify-content-end p-0">
           <div class="d-inline me-1">{{ $t('process.' + view) }}</div>
-          <b-dropdown variant="outline-secondary" toggle-class="border-0 p-0" right class="d-inline-flex">
+          <b-dropdown ref="viewDropdown" variant="outline-secondary" toggle-class="border-0 p-0" right class="d-inline-flex">
             <template v-slot:button-content>
               <span :title="$t('process.' + view)"><span :class="activeViewMode"></span></span>
             </template>
-            <b-dropdown-item-button @click="changeViewMode('image-outline')">
-              <span class="mdi mdi-24px mdi-image-outline" style="line-height: initial"> {{ $t('process.image-outline') }}</span>
-            </b-dropdown-item-button>
-            <b-dropdown-item-button @click="changeViewMode('view-module')">
-              <span class="mdi mdi-24px mdi-view-module" style="line-height: initial"> {{ $t('process.view-module') }}</span>
-            </b-dropdown-item-button>
-            <b-dropdown-item-button @click="changeViewMode('view-comfy')">
-              <span class="mdi mdi-24px mdi-view-comfy" style="line-height: initial"> {{ $t('process.view-comfy') }}</span>
-            </b-dropdown-item-button>
-            <b-dropdown-item-button @click="changeViewMode('view-list')">
-              <span class="mdi mdi-24px mdi-view-list" style="line-height: initial"> {{ $t('process.view-list') }}</span>
-            </b-dropdown-item-button>
+            <b-dropdown-item @click="changeViewMode('image-outline')" :active="view === 'image-outline'">
+              <span class="mdi mdi-24px mdi-image-outline centered-icon">{{ $t('process.image-outline') }}</span>
+            </b-dropdown-item>
+            <b-dropdown-item @click="changeViewMode('view-module')" :active="view === 'view-module'">
+              <span class="mdi mdi-24px mdi-view-module centered-icon">{{ $t('process.view-module') }}</span>
+            </b-dropdown-item>
+            <b-dropdown-item @click="changeViewMode('view-comfy')" :active="view === 'view-comfy'">
+              <span class="mdi mdi-24px mdi-view-comfy centered-icon">{{ $t('process.view-comfy') }}</span>
+            </b-dropdown-item>
+            <b-dropdown-item @click="changeViewMode('view-list')" :active="view === 'view-list'">
+              <span class="mdi mdi-24px mdi-view-list centered-icon">{{ $t('process.view-list') }}</span>
+            </b-dropdown-item>
           </b-dropdown>
         </div>
       </div>
-      </div>
+    </div>
     <div class="container-fluid overflow-auto h-100" :class="!isTable ? 'bg-light' : ''">
       <div v-if="processesByOptions.length && isTable" class="d-flex h-100">
         <ProcessTable :processes="processesByOptions" @start-process="startProcess($event)" @view-process="viewProcess($event)" @favorite="favoriteHandler($event)"></ProcessTable>
@@ -50,11 +50,11 @@
             @start-process="startProcess($event)" @view-process="viewProcess($event)" @favorite="favoriteHandler($event)"></ProcessAdvanced>
         </div>
       </div>
-      <StartProcess ref="processStart" @process-started="$refs.processStarted.show(10)" hideProcessSelection></StartProcess>
       <div v-if="!processesByOptions.length">
-        <img :alt="$t(textEmptyProcessesList)" src="/assets/images/process/empty_processes_list.svg" class="d-block mx-auto mt-5 mb-3" style="max-width: 250px">
+        <img :alt="$t(textEmptyProcessesList)" src="/assets/images/process/empty_processes_list_dark_background.svg" class="d-block mx-auto mt-5 mb-3" style="max-width: 250px">
         <div class="h5 text-secondary text-center">{{ $t(textEmptyProcessesList) }}</div>
       </div>
+      <StartProcess ref="processStart" @process-started="$refs.processStarted.show(10)" hideProcessSelection></StartProcess>
       <SuccessAlert top="0" style="z-index: 1031" ref="processStarted">
         <span>
           {{ $t('process.processCheck') }}
@@ -73,10 +73,10 @@
 
 <script>
 import { permissionsMixin } from '@/permissions.js'
-import ProcessTable from '@/components/process/ProcessTable.vue'
+import ProcessTable from '@/components/start-process/ProcessTable.vue'
 import ProcessAdvanced from '@/components/process/ProcessAdvanced.vue'
 import ProcessCard from '@/components/process/ProcessCard.vue'
-import StartProcess from '@/components/process/StartProcess.vue'
+import StartProcess from '@/components/start-process/StartProcess.vue'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import { ProcessService } from '@/services.js'
@@ -92,7 +92,6 @@ export default {
       filter: '',
       showProcesses: true,
       view: 'image-outline',
-      isTable: false,
       selectedOption: localStorage.getItem('optionSelected') || 'all'
     }
   },
@@ -103,7 +102,6 @@ export default {
   },
   created: function() {
     this.view = this.isMobile() ? 'image-outline' : localStorage.getItem('viewMode') || 'image-outline'
-    this.isTable = this.view === 'view-list'
   },
   computed: {
     processesFiltered: function() {
@@ -124,6 +122,7 @@ export default {
         return comp
       })
     },
+    isTable: function() { return this.view === 'view-list' },
     activeViewMode: function() { return 'mdi mdi-24px mdi-' + this.view },
     processesByOptions: function() { return this[this.selectedOption + 'Filter'](this.processesFiltered) },
     textEmptyProcessesList: function() {
@@ -166,8 +165,8 @@ export default {
     },
     changeViewMode: function(mdi) {
       this.view = mdi
-      this.isTable = this.view === 'view-list'
       localStorage.setItem('viewMode', this.view)
+      this.$refs.viewDropdown.hide()
     },
     setOptionSelected: function(option) {
       return option === this.selectedOption ?
@@ -188,3 +187,19 @@ export default {
   }
 }
 </script>
+
+<style lang="css" scoped>
+.centered-icon {
+  /* vertically center the Material Design icon with the text */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+
+  /* add gap between icon and text */
+  gap: 6px;
+
+  /* others */
+  line-height: initial;
+}
+</style>

@@ -8,10 +8,8 @@ import java.util.Optional;
 
 import javax.crypto.SecretKey;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.constraints.NotNull;
-
 import org.cibseven.exception.ErrorMessage;
+import org.cibseven.exception.SystemException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -27,17 +25,19 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
-import lombok.extern.slf4j.Slf4j;
 import de.cib.auth.AuthenticationException;
 import de.cib.auth.JwtUserProvider;
 import de.cib.auth.TokenExpiredException;
 import de.cib.auth.User;
 import de.cib.auth.rest.StandardLogin;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.constraints.NotNull;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class GenericUserProvider extends BaseUserProvider<StandardLogin> implements InitializingBean {

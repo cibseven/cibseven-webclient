@@ -7,15 +7,15 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
 import org.cibseven.Data;
 import org.cibseven.auth.CIBUser;
+import org.cibseven.exception.AnonUserBlockedException;
 import org.cibseven.exception.NoObjectFoundException;
 import org.cibseven.exception.SystemException;
+import org.cibseven.logger.TaskLogger;
 import org.cibseven.providers.SevenProvider;
 import org.cibseven.rest.model.ActivityInstance;
+import org.cibseven.rest.model.Authorizations;
 import org.cibseven.rest.model.Deployment;
 import org.cibseven.rest.model.DeploymentResource;
 import org.cibseven.rest.model.EventSubscription;
@@ -31,7 +31,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.InputStreamSource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -44,13 +43,14 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import de.cib.auth.AuthenticationException;
-
-import org.cibseven.rest.HeaderModifyingRequestWrapper;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.core.MediaType;
 
 @ApiResponses({
 	@ApiResponse(responseCode = "500", description = "An unexpected system error occured"),
@@ -611,7 +611,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 	
 	ResponseEntity<InputStreamSource> response(Data ds) {
 		HttpHeaders headers = new HttpHeaders(); // http://stackoverflow.com/questions/5673260/downloading-a-file-from-spring-controllers
-		headers.setContentType(MediaType.valueOf(ds.getContentType())); // better with Firefox, Chrome worked fine without
+		headers.setContentType(org.springframework.http.MediaType.valueOf(ds.getContentType())); // better with Firefox, Chrome worked fine without
 		headers.setContentDispositionFormData("attachment", ds.getName());
 		if (ds.getSize() != -1)
 			headers.setContentLength(ds.getSize());
@@ -655,5 +655,61 @@ public class ProcessService extends BaseService implements InitializingBean {
 		checkCockpitRights(user);
 		bpmProvider.putLocalExecutionVariable(executionId, varName, data, user);
 	}
+	
+	  @Consumes(MediaType.APPLICATION_JSON)
+	  @RequestMapping(value = "{processDefinitionId}/submit-startform-variables", method = RequestMethod.POST)
+	  public ResponseEntity<ProcessStart> submitStartFormVariables(
+	      @PathVariable String processDefinitionId, 
+	      @RequestBody List<Variable> formResult, 
+	      @RequestParam Optional<String> assignee, HttpServletRequest rq) {
+	    CIBUser user;
+	    try {
+	      user = (CIBUser) baseUserProvider.authenticateUser(rq);
+	    } catch(AnonUserBlockedException e) {
+	      user = (CIBUser) e.getUser();
+	      Authorizations authorizations = bpmProvider.getUserAuthorization(user.getId(), user);
+	      baseUserProvider.hasSpecificProcessRights(authorizations, processDefinitionId);
+	    }
+	    String[] processDefinitionIdChunks = processDefinitionId.split(":");
+	    String processDefinitionUuid = processDefinitionIdChunks.length >= 3 ? processDefinitionIdChunks[2] : processDefinitionIdChunks[0];
+	    TaskLogger logger = new TaskLogger(processDefinitionId, processDefinitionUuid, processDefinitionUuid, processDefinitionUuid);
+	    
+	    logger.info("[INFO] Start process with key=" + processDefinitionId + " (" + getClass().getSimpleName() + ")");
+	    ProcessStart processStart = bpmProvider.submitStartFormVariables(processDefinitionId, formResult, user);
+	    logger.info("[INFO] Started process with key=" + processDefinitionId + " (" + getClass().getSimpleName() + ")");
+	    return new ResponseEntity<>(processStart, new HttpHeaders(), HttpStatus.OK);
+	  }
+	  
+	  @Consumes(MediaType.APPLICATION_JSON)
+	  @RequestMapping(value = "{processInstanceId}/variables", method = RequestMethod.POST)
+	  public ResponseEntity<String> saveVariable(@PathVariable String processInstanceId, @RequestBody List<Variable> variables, HttpServletRequest rq) {
+	    try {
+	      CIBUser userAuth = (CIBUser) baseUserProvider.authenticateUser(rq);
+	      bpmProvider.saveVariableInProcessInstanceId(processInstanceId, variables, userAuth);    
+	      return new ResponseEntity<>("ok", new HttpHeaders(), HttpStatus.OK);
+	    } catch (Exception e) {
+	      if (e instanceof NoObjectFoundException) return generateErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND);
+	      else return generateErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
+	    }
+	  }
+	  
+	  @Consumes(MediaType.APPLICATION_JSON)
+	  @RequestMapping(value = "{processInstanceId}/variable/{variableName}", method = RequestMethod.GET)
+	  public ResponseEntity<Variable> fetchVariableByProcessInstanceId(@PathVariable String processInstanceId, @PathVariable String variableName, HttpServletRequest rq) {
+	    try {
+	      CIBUser userAuth = (CIBUser) baseUserProvider.authenticateUser(rq);
+	      Variable variable = bpmProvider.fetchVariableByProcessInstanceId(processInstanceId, variableName, userAuth);    
+	      return new ResponseEntity<>(variable, new HttpHeaders(), HttpStatus.OK);
+	    } catch (Exception e) {
+	      if (e instanceof NoObjectFoundException) return generateErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND);
+	      else return generateErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
+	    }
+	  }
+	  
+	  @SuppressWarnings("unchecked")
+	  protected <T> ResponseEntity<T> generateErrorResponse(String message, HttpStatus status) {
+	    ResponseEntity<?> response = new ResponseEntity<>(message, status);
+	    return (ResponseEntity<T>) response;
+	  }
 	
 }

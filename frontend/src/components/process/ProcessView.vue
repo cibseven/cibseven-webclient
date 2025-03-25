@@ -195,9 +195,6 @@ export default {
         this.selectedInstance = selectedInstance
         if (this.selectedInstance.state === 'ACTIVE') {
           //Management
-          TaskService.findTasksByProcessInstance(selectedInstance.id).then(tasks => {
-            this.selectedInstance.currentTasks = tasks
-          })
           ProcessService.findActivityInstance(selectedInstance.id).then(activityInstance => {
             this.activityInstance = activityInstance
             HistoryService.findActivitiesInstancesHistory(selectedInstance.id).then(activityInstanceHistory => {
@@ -218,7 +215,7 @@ export default {
       if (this.selectedInstance && selectedTask) {
         HistoryService.findTasksByDefinitionKeyHistory(selectedTask.id, this.selectedInstance.id).then(function(task) {
           if (task.length === 0) {
-            this.task = false
+            this.task = null
             return
           }
           this.task = task[0]
