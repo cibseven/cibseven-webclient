@@ -6,6 +6,8 @@
 		<artifactId>release-parent</artifactId>
 		<version>1.1.0</version>
 	</parent>
+	
+	<groupId>org.cibseven.webapp</groupId>
 	<artifactId>cibseven-webclient</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
@@ -21,8 +23,8 @@
 
 	<properties>
 		<target.path>${project.basedir}/target</target.path>
-		<project.git.url>https://github.com/cibseven/seven-webclient.git</project.git.url>
-		<nexus-repository.url>https://nexus.cib.de/repository</nexus-repository.url>
+		<project.git.url>https://github.com/cibseven/cibseven-webclient.git</project.git.url>
+		<nexus-repository.url>https://artifacts.cibseven.org</nexus-repository.url>
 		
 		<maven.compiler.source>17</maven.compiler.source>
 		<maven.compiler.target>17</maven.compiler.target>
