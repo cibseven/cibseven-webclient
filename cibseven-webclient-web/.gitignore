@@ -6,3 +6,6 @@
 /.springBeans
 /build/
 /src/main/resources/seven-webclient.yaml
+/src/main/resources/flow-webclient.yaml
+/src/main/resources/cibseven-webclient.yaml
+/src/main/resources/cibflow-webclient.yaml
