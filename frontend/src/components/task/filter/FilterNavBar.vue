@@ -207,9 +207,8 @@ export default {
           this.$store.state.filter.selected = selectedFilter || this.$store.state.filter.list[0]
           this.$emit('selected-filter', this.$store.state.filter.selected.id)
           localStorage.setItem('filter', JSON.stringify(this.$store.state.filter.selected))
-          if (this.$route.params.filterId === '*') return this.handleTaskLink(taskId)
-          var path = '/seven/auth/tasks/' + this.$store.state.filter.selected.id +
-            (taskId ? '/' + taskId : '')
+          var filterId = this.$route.params.filterId === '*' ? '*' : this.$store.state.filter.selected.id
+          var path = '/seven/auth/tasks/' + filterId + (taskId ? '/' + taskId : '')
           if (this.$route.path !== path) this.$router.replace(path)
         }
       }
@@ -238,41 +237,6 @@ export default {
     deleteFavoriteFilter: function(filter) {
       this.$store.dispatch('deleteFavoriteFilter', { filterId: filter.id })
     },
-    handleTaskLink: function(taskId) {
-      TaskService.findTaskById(taskId).then(task => {
-        if (task.assignee && (task.assignee.toLowerCase() === this.$root.user.userID.toLowerCase()))
-          return this.$emit('selected-task', task)
-        else {
-          TaskService.findIdentityLinks(taskId).then(identityLinks => {
-            var userIdLink = identityLinks.find(i => {
-              return i.type === 'candidate' && i.userId && i.userId.toLowerCase() === this.$root.user.userID.toLowerCase()
-            })
-            if (userIdLink) return this.$emit('selected-task', task)
-            this.manageCandidateGroups(identityLinks, task)
-          })
-        }
-      })
-    },
-    manageCandidateGroups: function(identityLinks, task) {
-      var promises = []
-      for (var i in identityLinks) {
-        if (identityLinks[i].type === 'candidate' && identityLinks[i].groupId) {
-          var promise = AdminService.findUsers({ memberOfGroup: identityLinks[i].groupId }).then(users => {
-            return users.some(u => {
-              return u.id.toLowerCase() === this.$root.user.userID.toLowerCase()
-            })
-          })
-          promises.push(promise)
-        }
-      }
-      Promise.all(promises).then(results => {
-        if (results.some(r => { return r })) this.$emit('selected-task', task)
-        else {
-          this.$root.$refs.error.show({ type: 'AccessDeniedException', params: [task.id] })
-          this.$router.push('/seven/auth/tasks/' + this.$store.state.filter.selected.id)
-        }
-      })
-    }
   },
   beforeUnmount: function() {
     clearInterval(this.interval)
@@ -281,5 +245,5 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="css" scoped>
 </style>

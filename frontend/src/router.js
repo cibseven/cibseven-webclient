@@ -24,6 +24,8 @@ import TasksView from '@/components/task/TasksView.vue'
 import TaskContent from '@/components/task/TaskContent.vue'
 import LoginView from '@/components/login/LoginView.vue'
 import { BWaitingBox } from 'cib-common-components'
+import DeployedForm from '@/components/forms/DeployedForm.vue'
+import StartDeployedForm from '@/components/forms/StartDeployedForm.vue'
 
 const router = createRouter({
   history: createWebHashHistory(),
@@ -157,7 +159,19 @@ const router = createRouter({
         { path: 'admin/create-user', name: 'createUser', component: CreateUser },
         { path: 'admin/create-group', name: 'createGroup', beforeEnter: permissionsGuard('cockpit'), component: CreateGroup }
       ]}
-    ]}
+    ]},
+    {
+      path: '/deployed-form/:locale/:taskId/:token?/:theme?/:translation?',
+      beforeEnter: combineGuards(authGuard(false), permissionsGuard('tasklist')),
+      props: true,
+      component: DeployedForm
+    },
+    {
+      path: '/start-deployed-form/:locale/:processDefinitionId/:token?/:theme?/:translation?',
+      beforeEnter: combineGuards(authGuard(false), permissionsGuard('tasklist')),
+      props: true,
+      component: StartDeployedForm
+    },
   ]
 })
 
@@ -219,6 +233,30 @@ function permissionsGuardUserAdmin(permission, condition) {
     if (router.root.adminManagementPermissions(router.root.config.permissions[permission], condition)) next()
     else next('/seven/auth/start')
   }
+}
+
+function combineGuards(...guards) {
+  return function(to, from, next) {
+    let index = 0;
+
+    const runGuard = () => {
+      if (index < guards.length) {
+        const guard = guards[index];
+        index++;
+        guard(to, from, (result) => {
+          if (result === false || result instanceof Error || typeof result === 'string' || result?.path) {
+            next(result); // Stop if a guard blocks navigation
+          } else {
+            runGuard(); // Proceed to the next guard
+          }
+        });
+      } else {
+        next(); // All guards passed
+      }
+    };
+
+    runGuard();
+  };
 }
 
 router.setRoot = function(value) {

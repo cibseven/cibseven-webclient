@@ -359,5 +359,61 @@ var InfoService = {
   }
 }
 
+var FormsService = {
+  submitVariables: function(task, formResult, close) {
+    return axios.post(appConfig.servicesBasePath + '/task/' + task.id + '/submit-variables', formResult, {
+      params: {
+        name: task.name,
+        processInstanceId: task.processInstanceId,
+        processDefinitionId: task.processDefinitionId,
+        assignee: task.assignee,
+        close: close
+      }
+    })
+  },
+  submitStartFormVariables: function(processDefinitionKey, formResult, locale) {
+    formResult.push({ name: '_locale', type: 'String', value: locale })
+    return axios.post(appConfig.servicesBasePath + '/process/' + processDefinitionKey + '/submit-startform-variables', formResult)
+  },
+  downloadFiles: function(processInstanceId, documentsList) {
+    return axios.post(appConfig.servicesBasePath + '/task/' + processInstanceId + '/download', documentsList, { responseType: 'blob' } )
+  },
+  downloadFile: function(processInstanceId, fileVariable) {
+    return axios.get(appConfig.servicesBasePath + '/task/' + processInstanceId + '/variable/download/' + fileVariable, { responseType: 'blob' })
+  },
+  fetchVariable: function(taskId, variableName, deserialize) {
+    return axios.get(appConfig.servicesBasePath + '/task/' + taskId + '/variable/' + variableName, { params: { deserialize: deserialize } })
+  },
+  sendMessage: function(data) {
+    return axios.post(appConfig.servicesBasePath + '/process/message', data)
+  },
+  fetchVariables: function(taskId, deserialize) {
+    return axios.post(appConfig.servicesBasePath + '/task/' + taskId, null, { params: { deserialize: deserialize } } )
+  },
+  deleteVariable: function(taskId, variableName) {
+    return axios.delete(appConfig.servicesBasePath + '/task/' + taskId + '/variable/' + variableName)
+  },
+  handleBpmnError: function(taskId, data) {
+    return axios.post(appConfig.servicesBasePath + '/task/' + taskId + '/bpmnError', data)
+  }
+}
+
+var TemplateService = {
+  getTemplate: function(element, taskId, locale, token) {
+	return axios.get(appConfig.servicesBasePath + '/template/' + element + '/' + taskId + '?locale=' + locale, {
+	    headers: {
+        Authorization: `${token}`
+	    }
+	  })
+  },
+  getStartFormTemplate: function(element, processDefinitionId, locale, token) {
+    return axios.get(appConfig.servicesBasePath + '/template/' + element + '/key/' + processDefinitionId + '?locale=' + locale, {
+	    headers: {
+        Authorization: `${token}`
+	    }
+	  })
+  }
+}
+
 export { TaskService, FilterService, ProcessService, AdminService,
-  HistoryService, IncidentService, AuthService, InfoService }
+  HistoryService, IncidentService, AuthService, InfoService, FormsService, TemplateService }

@@ -10,17 +10,21 @@
             <b-form-input :title="$t('searches.search')" :placeholder="$t('searches.search')" v-model="filter"></b-form-input>
           </b-input-group>
         </div>
-        <div class="col-4">
-          <div class="d-flex">
-            <b-form-checkbox v-model="onlyIncidents" switch>
-              {{ $t('process.onlyIncidents') }}
-            </b-form-checkbox>
-            <b-form-checkbox class="ms-4" v-model="onlyActive" switch>
-              {{ $t('process.onlyActive') }}
-            </b-form-checkbox>
+        <div class="col-5">
+          <div class="d-flex row">
+            <div class="d-inline-block align-content-start" style="width: 210px">
+              <b-form-checkbox v-model="onlyIncidents" switch>
+                {{ $t('process.onlyIncidents') }}
+              </b-form-checkbox>
+            </div>
+            <div class="d-inline-block align-content-start" style="width: 210px">
+              <b-form-checkbox v-model="onlyActive" switch>
+                {{ $t('process.onlyActive') }}
+              </b-form-checkbox>
+            </div>
           </div>
         </div>
-        <div class="col-4 text-end">
+        <div class="col-3 text-end">
           <b-button class="border" size="sm" variant="light" to="/seven/auth/deployments/" :title="$t('process.organizeDeployment')">
             <span class="mdi mdi-file-eye-outline"></span> {{ $t('process.organizeDeployment') }}
           </b-button>
@@ -48,10 +52,7 @@
           {{ $t('process-descriptions.' + table.item.key) }}</div>
         </template>
         <template v-slot:cell(actions)="table">
-          <b-button :disabled="focused !== table.item" style="opacity: 1" @click.stop="openInModeler(table.item)" class="px-2 border-0 shadow-none" :title="$t('process.openModeler')" variant="link">
-            <span class="mdi mdi-18px mdi-map-search-outline"></span>
-          </b-button>
-          <span class="border-start h-50" :class="focused === table.item ? 'border-secondary' : ''"></span>
+          <component :is="ProcessDefinitionActions" v-if="ProcessDefinitionActions" :focused="focused" :item="table.item"></component>
           <b-button :disabled="focused !== table.item" style="opacity: 1" @click.stop="goToShowProcessHistory(table.item)" class="px-2 border-0 shadow-none" :title="$t('process.showManagement')" variant="link">
             <span class="mdi mdi-18px mdi-account-tie-outline"></span>
           </b-button>
@@ -93,6 +94,11 @@ export default {
     }
   },
   computed: {
+    ProcessDefinitionActions: function() {
+      return this.$options.components && this.$options.components.ProcessDefinitionActions
+        ? this.$options.components.ProcessDefinitionActions
+        : null
+    },
     processesFiltered: function() {
       if (!this.$store.state.process.list) return []
       var processes = this.$store.state.process.list.filter(process => {
@@ -125,7 +131,8 @@ export default {
         class: 'col-1 d-flex align-items-center justify-content-center' },
         { label: 'runningInstances', key: 'runningInstances', class: 'col-1 justify-content-center',
         tdClass: 'border-end py-1 border-top-0' },
-        { label: 'name', key: 'name', class: 'col-7', tdClass: 'border-end py-1 border-top-0' },
+        { label: 'key', key: 'key', class: 'col-3', tdClass: 'border-end py-1 border-top-0' },
+        { label: 'name', key: 'name', class: 'col-4', tdClass: 'border-end py-1 border-top-0' },
         { label: 'actions', key: 'actions', sortable: false, class: 'col-3 d-flex justify-content-center',
         tdClass: 'border-end py-0 border-top-0' },
       ]
@@ -145,9 +152,6 @@ export default {
     },
     goToShowProcessHistory: function(process) {
       this.$router.push('/seven/auth/process/' + process.key)
-    },
-    openInModeler: function(process) {
-      this.$router.push('/seven/auth/modeler/' + process.id)
     }
   }
 }

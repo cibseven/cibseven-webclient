@@ -10,7 +10,7 @@ import router from './router.js'
 import registerOwnComponents from './register.js'
 import { permissionsMixin }  from './permissions.js'
 
-import { InfoService } from './services.js'
+import { InfoService, AuthService } from './services.js'
 import { getTheme, hasHeader, isMobile, checkExternalReturn } from './utils/init'
 import { i18n, switchLanguage } from './i18n'
 
@@ -81,7 +81,8 @@ Promise.all([
                   this.$store.commit('setProcesses', { processes })
               })
           },
-          isMobile: isMobile
+          isMobile: isMobile,
+          AuthService: AuthService
         }
       },
       data: function() {
