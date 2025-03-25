@@ -1,15 +1,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-
-	<parent>
-		<groupId>org.cibseven</groupId>
-		<artifactId>release-parent</artifactId>
-		<version>1.1.0</version>
-	</parent>
-	
-	<groupId>org.cibseven.webapp</groupId>
-	<artifactId>cibseven-webclient</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
+	<groupId>org.cibseven</groupId>
+	<artifactId>seven-webclient</artifactId>
+	<version>1.1.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>Seven webclient</name>
@@ -17,14 +10,14 @@
 		providing seamless access to services and optimized workflows.</description>
 
 	<modules>
-		<module>cibseven-webclient-web</module>
-		<module>cibseven-webclient-core</module>
+		<module>seven-webclient-web</module>
+		<module>seven-webclient-core</module>
 	</modules>
 
 	<properties>
 		<target.path>${project.basedir}/target</target.path>
-		<project.git.url>https://github.com/cibseven/cibseven-webclient.git</project.git.url>
-		<nexus-repository.url>https://artifacts.cibseven.org</nexus-repository.url>
+		<project.git.url>https://gitlab.cib.de/web/flow/cloud/seven-webclient.git</project.git.url>
+		<nexus-repository.url>https://nexus.cib.de/repository</nexus-repository.url>
 		
 		<maven.compiler.source>17</maven.compiler.source>
 		<maven.compiler.target>17</maven.compiler.target>
@@ -37,7 +30,7 @@
 		<jjwt.version>0.12.6</jjwt.version>
 		<swagger-annotations.version>2.2.27</swagger-annotations.version>
 		<commons-io.version>2.18.0</commons-io.version>
-		<common-auth.version>1.0.0-SNAPSHOT</common-auth.version>
+		<common-auth.version>2.1.0</common-auth.version>
 		<version.spring.boot>3.4.2</version.spring.boot>
 		<version.openapi-starter-webmvc-ui>2.8.4</version.openapi-starter-webmvc-ui>
 		<image.tomcat-10-base>harbor.cib.de/dev/tomcat-10-base:1.1.0</image.tomcat-10-base>
@@ -57,6 +50,19 @@
 		<url>${project.git.url}</url>
 		<tag>HEAD</tag>
 	</scm>
+
+	<distributionManagement>
+		<repository>
+			<id>mvn-release-local</id>
+			<name>CIB maven release repository</name>
+			<url>${nexus-repository.url}/mvn-release-local</url>
+		</repository>
+		<snapshotRepository>
+			<id>mvn-snapshot-local</id>
+			<name>CIB maven snapshot repository</name>
+			<url>${nexus-repository.url}/mvn-snapshot-local</url>
+		</snapshotRepository>
+	</distributionManagement>
 
 	<dependencyManagement>
 		<dependencies>

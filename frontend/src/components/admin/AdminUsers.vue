@@ -11,10 +11,10 @@
           </b-input-group>
         </div>
         <div class="col-8 text-end">
-          <b-button class="border me-1" size="sm" variant="light" v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'" @click="add()">
+          <b-button class="border me-1" size="sm" variant="light" v-if="$root.config.userProvider === 'org.cibseven.auth.SevenUserProvider'" @click="add()">
             <span class="mdi mdi-plus"> {{ $t('admin.users.add') }} </span>
           </b-button>
-          <b-button v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'" class="border" size="sm" variant="light"
+          <b-button v-if="$root.config.userProvider === 'org.cibseven.auth.SevenUserProvider'" class="border" size="sm" variant="light"
             :disabled="exporting" @click="exportCSV()">
             <span v-if="exporting"><b-spinner small></b-spinner> {{ $t('admin.exportCsv') }}</span>
             <span v-else class="mdi mdi-download"> {{ $t('admin.exportCsv') }} </span>
@@ -23,7 +23,7 @@
       </div>
     </div>
     <div class="container overflow-auto bg-white shadow g-0" @scroll="showMore">
-      <FlowTable striped v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'" thead-class="sticky-header" :items="users" primary-key="id"
+      <FlowTable striped v-if="$root.config.userProvider === 'org.cibseven.auth.SevenUserProvider'" thead-class="sticky-header" :items="users" primary-key="id"
         prefix="admin.users." :fields="[{label: 'id', key: 'id', class: 'col-md-2 col-sm-2', tdClass: 'border-end py-1' },
             {label: 'firstName', key: 'firstName', class: 'col-md-3 col-sm-3', tdClass: 'border-end py-1' },
             {label: 'lastName', key: 'lastName', class: 'col-md-2 col-sm-2', tdClass: 'border-end py-1' },

@@ -45,7 +45,7 @@
                       :invalid-feedback="$t('errors.invalid')">
                       <b-form-input v-model="user.email" type="email" autocomplete="email"  @update:modelValue="dirty = true" :readonly="readOnlyUser || !editMode"></b-form-input>
                     </b-form-group>
-                    <div class="float-end" v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'">
+                    <div class="float-end" v-if="$root.config.userProvider === 'org.cibseven.auth.SevenUserProvider'">
                       <b-button type="submit" variant="secondary" :disabled="!dirty" >{{ $t('admin.users.update') }}</b-button>
                     </div>
                   </CIBForm>
@@ -112,11 +112,11 @@
                       </b-input-group>
                     </b-form-group>
 
-                    <div class="float-right" v-if="$root.config.userProvider === 'dorg.cibseven.webapp.auth.SevenUserProvider'">
+                    <div class="float-right" v-if="$root.config.userProvider === 'dorg.cibseven.auth.SevenUserProvider'">
                       <b-button type="submit" variant="secondary">{{ $t('admin.users.changePassword') }}</b-button>
                     </div>
 
-                    <div class="float-left" v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider' && editMode">
+                    <div class="float-left" v-if="$root.config.userProvider === 'org.cibseven.auth.SevenUserProvider' && editMode">
                       <b-button variant="warning" @click="$refs.deleteModal.show()">{{ $t('admin.users.deleteUser') }}</b-button>
                     </div>
                   </b-card-text>
@@ -137,14 +137,14 @@
                   </div>
                   <div v-if="editMode" class="col-3 pb-3">
                     <div class="float-end">
-                      <b-button class="border" size="sm" variant="light" v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'" @click="openAssignGroupModal">
+                      <b-button class="border" size="sm" variant="light" v-if="$root.config.userProvider === 'org.cibseven.auth.SevenUserProvider'" @click="openAssignGroupModal">
                         <span class="mdi mdi-plus"> {{ $t('admin.users.group.add') }} </span>
                       </b-button>
                     </div>
                   </div>
                 </div>
                 <div v-if="groups" class="container-fluid overflow-auto bg-white shadow g-0">
-                  <FlowTable v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider' && editMode" striped :items="groups" primary-key="id"
+                  <FlowTable v-if="$root.config.userProvider === 'org.cibseven.auth.SevenUserProvider' && editMode" striped :items="groups" primary-key="id"
                     prefix="admin.groups." :fields="[{label: 'id', key: 'id', class: 'col-md-4 col-sm-4', tdClass: 'border-end py-1' },
                         {label: 'name', key: 'name', class: 'col-md-4 col-sm-4', tdClass: 'border-end py-1' },
                         {label: 'type', key: 'type', class: 'col-md-2 col-sm-2', tdClass: 'border-end py-1' },
@@ -241,7 +241,7 @@
 </template>
 
 <script>
-import { AdminService, AuthService } from '@/services.js'
+import { AdminService } from '@/services.js'
 import { notEmpty, same } from '@/components/admin/utils.js'
 import Sidebars from '@/components/common-components/Sidebars.vue'
 import FlowTable from '@/components/common-components/FlowTable.vue'
@@ -251,6 +251,7 @@ import CIBForm from '@/components/common-components/CIBForm.vue'
 export default {
   name: 'ProfileUser',
   components: { Sidebars, FlowTable, SuccessAlert, CIBForm },
+  inject: ['AuthService'],
   props: {
     editMode: {
       type: Boolean,
@@ -292,7 +293,7 @@ export default {
   },
   computed: {
     readOnlyUser: function() {
-      return (this.$root.config.userProvider !== 'org.cibseven.webapp.auth.SevenUserProvider')
+      return (this.$root.config.userProvider !== 'org.cibseven.auth.SevenUserProvider')
     },
     tasksCheckNotificationsDisabled: {
       get: function() {
@@ -390,7 +391,7 @@ export default {
     },
     onSendEmail: function() {
       this.sendingEmail = true
-      AuthService.passwordRecover({ id: this.user.id }).then(() => {
+      this.AuthService.passwordRecover({ id: this.user.id }).then(() => {
         this.sendingEmail = false
         this.$refs.emailSent.show()
       }, () => {

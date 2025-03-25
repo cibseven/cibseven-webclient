@@ -1,0 +1,165 @@
+server:
+  servlet:
+    context-path: /seven-webclient-web
+
+spring:
+  banner:
+    location: classpath:banner.txt
+  config:
+    import:
+      - optional:classpath:seven-webclient.yaml
+  servlet:
+    multipart:
+      # Configures the maximum size for each individual file upload.
+      max-file-size: 10MB
+      # Configures the maximum size allowed for the entire request, including all files and form data.
+      max-request-size: 1GB
+  mvc:
+    static-path-pattern: "/webapps/**"
+  web:
+    resources:
+      static-locations: 
+        - "classpath:/webapps/"
+
+# LDAP
+ldap:
+  url: ldap://ldap.cib.de
+  folder: DC=cib,DC=de
+  userNameAttribute: samAccountName
+  userDisplayNameAttribute: name
+  modifiedDateFormat: yyyyMMddHHmmss.SX
+  followReferrals: follow
+
+# Token generation
+authentication:
+  jwtSecret: 
+  tokenValidMinutes: 60
+  tokenProlongMinutes: 1440
+  
+# BPM Provider
+bpm:
+  provider: org.cibseven.providers.SevenProvider
+
+# User providers
+user:
+  provider: org.cibseven.auth.SevenUserProvider
+  # provider: org.cibseven.auth.LdapUserProvider
+  # provider: org.cibseven.auth.KeycloakUserProvider
+  # provider: org.cibseven.auth.AdfsUserProvider
+
+# Set the wild card is gonna be used for the users search. By default is "*".
+users:
+  search:
+    wildcard:
+
+userAnon:
+  id: demo
+
+# Engine rest
+camunda:
+  engineRest:
+    url: http://localhost:8080
+  historyLevel: full
+
+# Error report
+errorReportUrl: https://doxiview.cib.de/report/error
+
+flow:
+  webclient:
+    task:
+      url: http://localhost:8080/client/#/flow/auth/tasks/*/
+  # If this params is set to false, the number of instances and incidents wont be taken.
+  fetchInstances: true
+  fetchIncidents: true
+  # External token user creation
+  token:
+    secret: 
+    deny:
+      external:
+        ip: true
+  datasource:
+    fileValue:
+      enabled: false
+
+# CIB flow ui-element-templates URL
+ui:
+  element:
+    template:
+      url: http://localhost:8090/ui-element-templates
+
+# Camunda Cockpit URL
+cockpit:
+  url: http://localhost:8080/camunda/app/cockpit/default/
+
+# Used to set a theme (Bootstrap)
+theme: cib
+
+services:
+  basePath: services/v1
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui
+    operationsSorter: alpha
+    tagsSorter: alpha
+    doc-expansion: none 
+  # webclient server url for the swagger-ui. Only needs to be set if the automatic detection is wrong.
+  flowWebclient:
+    serverUrl: ""
+
+api:
+  common:
+    title: "CIB Flow webclient API"
+    description: "This API exposes the functionality of CIB Flow webclient as a REST service."
+    termsOfService: "https://www.cib.de"
+    license: "Proprietary License of CIB software GmbH"
+    licenseUrl: "https://www.cib.de"
+    contact:
+      name: "CIB software GmbH"
+      url: "https://www.cib.de"
+      email: "support@cib.de"
+
+#custom:
+#  spring:
+#    jackson:
+#      parser:
+#        max-size: 25000000
+
+# Activate "/actuator/info" and "/actuator/health" endpoints
+management:
+  endpoints:
+    enabled-by-default: false # Disable all endpoints by default
+    web:
+      exposure:
+        include: health,info # Include only health and info endpoints
+  endpoint:
+    info:
+      enabled: true # Enable the info endpoint
+    health:
+      enabled: true # Enable the health endpoint
+      probes:
+        enabled: true # Enable health probes (if applicable)
+  info:
+    build:
+      enabled: true # Enable build information
+    git:
+      enabled: true # Enable git information
+      mode: full # Use full mode for git information
+    java:
+      enabled: true # Enable Java information (ensure your setup supports this)
+
+  #Used to set the title of the page
+  #productNamePageTitle: L Bank flow
+
+  #support-dialog: |
+  #  {
+  #    "de": {
+  #      "support-hotline": "Support-Hotline",
+  #      "opening-hours": "Öffnungszeiten",
+  #      "opening-hours-info": "Mo - Fr, 08.00 - 19.00 Uhr",
+  #      "phone": "Telefon", 
+  #      "phone-number": "+49 89 14360 111",
+  #      "email-address": "E-Mail-Adresse",
+  #      "email": "cibsupport@cib.de"
+  #    } 
+  #  }

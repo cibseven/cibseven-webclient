@@ -20,24 +20,24 @@
 </template>
 
 <script>
-import { AuthService } from '@/services.js'
 import LoginForm from '@/components/login/LoginForm.vue'
 
 export default {
   name: 'LoginView',
   components: { LoginForm },
+  inject: ['AuthService'],
   data: function() {
     return {
       credentials : {
         username: null,
         password: null,
-        type: 'org.cibseven.webapp.auth.rest.StandardLogin'
+        type: 'org.cibseven.rest.StandardLogin'
       }
     }
   },
   methods: {
     onSuccess: function(user) {
-      AuthService.fetchAuths().then(permissions => {
+      this.AuthService.fetchAuths().then(permissions => {
       user.permissions = permissions
       this.$root.user = user
       this.$route.query.nextUrl ? this.$router.push(this.$route.query.nextUrl) :
