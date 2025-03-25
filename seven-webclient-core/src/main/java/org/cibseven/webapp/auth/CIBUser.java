@@ -2,7 +2,6 @@ package org.cibseven.webapp.auth;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import de.cib.auth.User;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

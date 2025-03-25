@@ -8,8 +8,10 @@ import java.util.Optional;
 
 import javax.crypto.SecretKey;
 
-import jakarta.servlet.http.HttpServletRequest;
-
+import org.cibseven.webapp.auth.exception.AuthenticationException;
+import org.cibseven.webapp.auth.exception.TokenExpiredException;
+import org.cibseven.webapp.auth.providers.JwtUserProvider;
+import org.cibseven.webapp.auth.rest.StandardLogin;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.providers.SevenProvider;
 import org.cibseven.webapp.rest.model.SevenUser;
@@ -21,16 +23,12 @@ import org.springframework.beans.factory.annotation.Value;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import de.cib.auth.AuthenticationException;
-import de.cib.auth.JwtUserProvider;
-import de.cib.auth.TokenExpiredException;
-import de.cib.auth.User;
-import de.cib.auth.rest.StandardLogin;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
 
 public class SevenUserProvider extends BaseUserProvider<StandardLogin> implements InitializingBean {
 	

@@ -5,8 +5,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-import jakarta.validation.constraints.NotNull;
-
+import org.cibseven.webapp.auth.exception.AuthenticationException;
+import org.cibseven.webapp.auth.providers.JwtUserProvider;
+import org.cibseven.webapp.auth.rest.StandardLogin;
 import org.cibseven.webapp.exception.AnonUserBlockedException;
 import org.cibseven.webapp.rest.model.Authorization;
 import org.cibseven.webapp.rest.model.Authorizations;
@@ -15,12 +16,9 @@ import org.springframework.beans.factory.annotation.Value;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-import de.cib.auth.AuthenticationException;
-import de.cib.auth.JwtUserProvider;
-import de.cib.auth.User;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
-import de.cib.auth.rest.StandardLogin;
 
 public abstract class BaseUserProvider<R extends StandardLogin> implements JwtUserProvider<R> {
 

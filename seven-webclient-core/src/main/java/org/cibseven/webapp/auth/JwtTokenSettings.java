@@ -2,7 +2,8 @@ package org.cibseven.webapp.auth;
 
 import java.time.Duration;
 
-import de.cib.auth.JwtUserProvider.TokenSettings;
+import org.cibseven.webapp.auth.providers.JwtUserProvider.TokenSettings;
+
 import lombok.AllArgsConstructor;
 import lombok.Setter;
 

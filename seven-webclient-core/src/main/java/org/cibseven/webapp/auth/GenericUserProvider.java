@@ -8,9 +8,10 @@ import java.util.Optional;
 
 import javax.crypto.SecretKey;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.constraints.NotNull;
-
+import org.cibseven.webapp.auth.exception.AuthenticationException;
+import org.cibseven.webapp.auth.exception.TokenExpiredException;
+import org.cibseven.webapp.auth.providers.JwtUserProvider;
+import org.cibseven.webapp.auth.rest.StandardLogin;
 import org.cibseven.webapp.exception.ErrorMessage;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,12 +33,9 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
-import de.cib.auth.AuthenticationException;
-import de.cib.auth.JwtUserProvider;
-import de.cib.auth.TokenExpiredException;
-import de.cib.auth.User;
-import de.cib.auth.rest.StandardLogin;
 
 @Slf4j
 public class GenericUserProvider extends BaseUserProvider<StandardLogin> implements InitializingBean {

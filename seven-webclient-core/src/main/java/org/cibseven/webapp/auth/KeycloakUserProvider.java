@@ -11,10 +11,9 @@ import java.util.stream.Collectors;
 
 import javax.crypto.SecretKey;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.constraints.NotNull;
-
+import org.cibseven.webapp.auth.exception.AuthenticationException;
+import org.cibseven.webapp.auth.exception.TokenExpiredException;
+import org.cibseven.webapp.auth.providers.JwtUserProvider;
 import org.cibseven.webapp.auth.sso.SSOLogin;
 import org.cibseven.webapp.auth.sso.SSOUser;
 import org.cibseven.webapp.auth.sso.SsoHelper;
@@ -34,10 +33,6 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import de.cib.auth.AuthenticationException;
-import de.cib.auth.JwtUserProvider;
-import de.cib.auth.TokenExpiredException;
-import de.cib.auth.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
@@ -46,6 +41,9 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.InvalidKeyException;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 

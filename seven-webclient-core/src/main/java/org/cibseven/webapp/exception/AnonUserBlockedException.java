@@ -1,7 +1,8 @@
 package org.cibseven.webapp.exception;
 
-import de.cib.auth.AuthenticationException;
-import de.cib.auth.User;
+import org.cibseven.webapp.auth.User;
+import org.cibseven.webapp.auth.exception.AuthenticationException;
+
 import lombok.Getter;
 
 public class AnonUserBlockedException extends AuthenticationException {
