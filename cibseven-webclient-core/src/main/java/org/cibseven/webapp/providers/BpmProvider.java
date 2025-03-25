@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.cibseven.webapp.rest.model.Decision;
 import org.cibseven.webapp.Data;
 import org.cibseven.webapp.NamedByteArrayDataSource;
 import org.cibseven.webapp.auth.CIBUser;
@@ -903,5 +904,23 @@ public interface BpmProvider {
 
 	Collection<ActivityInstanceHistory> findActivitiesProcessDefinitionHistory(String processDefinitionId,
 			CIBUser user);
+	
+	Collection<Decision> getDecisionDefinitionList(Map<String, Object> queryParams);
+	Object getDecisionDefinitionListCount(Map<String, Object> queryParams);
+	Decision getDecisionDefinitionByKey(String key);
+	Object getDiagramByKey(String key);
+	Object evaluateDecisionDefinitionByKey(Map<String, Object> data, String key, CIBUser user);
+	void updateHistoryTTLByKey(Map<String, Object> data, String key, CIBUser user);
+	Decision getDecisionDefinitionByKeyAndTenant(String key, String tenant);
+	Object getDiagramByKeyAndTenant(String key, String tenant);
+	Object evaluateDecisionDefinitionByKeyAndTenant(String key, String tenant);
+	Object updateHistoryTTLByKeyAndTenant(String key, String tenant);
+	Object getXmlByKey(String key);
+	Object getXmlByKeyAndTenant(String key, String tenant);
+	Decision getDecisionDefinitionById(String id);
+	Object getDiagramById(String id);
+	Object evaluateDecisionDefinitionById(String id);
+	Object updateHistoryTTLById(String id);
+	Object getXmlById(String id);
 	
 }
