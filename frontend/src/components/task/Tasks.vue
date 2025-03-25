@@ -11,8 +11,8 @@
     <template v-slot:filter>
       <FilterNavCollapsed v-if="!leftOpenFilter && leftCaptionFilter" v-model:left-open="leftOpenFilter"></FilterNavCollapsed>
     </template>
-    <SidebarsFlow ref="regionTasks" role="region" :aria-label="$t('seven.allTasks')" class="h-100 bg-light" :number="nTasksShown" header-margin="55px" v-model:left-open="leftOpenTask"
-      :leftSize="getTasksNavbarSize" :left-caption="leftCaptionTask">
+    <SidebarsFlow ref="regionTasks" role="region" :aria-label="$t('seven.allTasks')" class="h-100 bg-light" :number="nTasksShown" header-margin="55px" v-model:left-open="leftOpenTask" v-model:right-open="rightOpenTask"
+      :leftSize="getTasksNavbarSize" :left-caption="leftCaptionTask" :right-caption="TasksRightSidebar ? rightCaptionTask : null">
       <template v-slot:left>
         <TasksNavBar @filter-alert="showFilterAlert($event)" ref="navbar" :tasks="tasks" @selected-task="selectedTask($event)"
           @update-assignee="updateAssignee($event, 'task')" @set-filter="filter = $event;listTasksWithFilter()"
@@ -44,6 +44,11 @@
           </b-button>
         </div>
       </template>
+      <template v-slot:right>
+        <component :is="TasksRightSidebar" v-if="TasksRightSidebar" 
+          :task="task" :processInstanceHistory="processInstanceHistory" @update-assignee="updateAssignee($event, 'taskList')">
+        </component>
+      </template>
     </SidebarsFlow>
     <SuccessAlert top="0" style="z-index: 1031" ref="completedTask">{{ $t('seven.taskCompleted') }}</SuccessAlert>
     <SuccessAlert top="0" style="z-index: 1031" ref="processStarted">{{ $t('process.processStarted') }}</SuccessAlert>
@@ -60,7 +65,7 @@
 <script>
 import moment from 'moment'
 import { permissionsMixin } from '@/permissions.js'
-import { TaskService, ProcessService, HistoryService, AuthService } from '@/services.js'
+import { TaskService, ProcessService, HistoryService } from '@/services.js'
 import { debounce } from '@/utils/debounce.js'
 import TasksNavBar from '@/components/task/TasksNavBar.vue'
 import FilterNavBar from '@/components/task/filter/FilterNavBar.vue'
@@ -73,7 +78,7 @@ import { updateAppTitle } from '@/utils/init'
 export default {
   name: 'Tasks',
   components: { TasksNavBar, FilterNavBar, FilterNavCollapsed, SidebarsFlow, SuccessAlert, BWaitingBox },
-  inject: ['isMobile'],
+  inject: ['isMobile', 'AuthService'],
   mixins: [permissionsMixin],
   data: function () {
     var leftOpenFilter = localStorage.getItem('leftOpenFilter') ?
@@ -83,7 +88,7 @@ export default {
     return {
       leftOpenFilter: leftOpenFilter,
       leftOpenTask: !externalMode,
-      rightOpenTask:  localStorage.getItem('rightOpenTask') === 'true' && this.canOpenRightTask(),
+      rightOpenTask: localStorage.getItem('rightOpenTask') === 'true' && this.canOpenRightTask(),
       tasks: [],
       task: null,
       processInstanceHistory: null,
@@ -101,6 +106,11 @@ export default {
     }
   },
   computed: {
+    TasksRightSidebar: function() {
+      return this.$options.components && this.$options.components.TasksRightSidebar
+        ? this.$options.components.TasksRightSidebar
+        : null
+    },
     rightCaptionTask: function() {
       if (this.canOpenRightTask())
         return this.$t('task.options')
@@ -141,6 +151,7 @@ export default {
   },
   methods: {
     canOpenRightTask: function() {
+      if (!this.TasksRightSidebar) return false
       return (this.$root.config.layout.showTaskDetailsSidebar ||
           this.$root.config.layout.showChat ||
           this.$root.config.layout.showStatusBar)
@@ -190,7 +201,7 @@ export default {
       if (this.$root.config.taskFilter.advancedSearch.filterEnabled) {
         this.$store.dispatch('loadAdvancedSearchData')
       }
-      AuthService.fetchAuths().then(permissions => {
+      this.AuthService.fetchAuths().then(permissions => {
         this.$root.user.permissions = permissions
         var advCriterias = this.$store.state.advancedSearch.criterias
         if (advCriterias.length > 0) {
@@ -311,8 +322,8 @@ export default {
       }
       // Only needed when the task side detail is load.
       if (this.$root.config.layout.showTaskDetailsSidebar) {
-        ProcessService.findProcessInstance(this.task.processInstanceId).then(instance => {
-          HistoryService.findTasksByProcessInstanceHistory(this.task.processInstanceId).then(tasksHistory => {
+        ProcessService.findProcessInstance(task.processInstanceId).then(instance => {
+          HistoryService.findTasksByProcessInstanceHistory(task.processInstanceId).then(tasksHistory => {
             this.processInstanceHistory = instance
             this.processInstanceHistory.tasksHistory = tasksHistory
           })
@@ -320,7 +331,6 @@ export default {
       }
     },
     selectedFilter: function() {
-      this.task = null
       this.listTasksWithFilter()
     },
     displayPopover: function(evt) {

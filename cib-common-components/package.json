@@ -5,6 +5,7 @@
   "type": "module",
   "license": "Apache-2.0",
   "main": "./src/main.js",
+  "style": "dist/cib-common-components.css",
   "files": [
     "dist/cib-common-components.css",
     "dist/cib-common-components.es.js",

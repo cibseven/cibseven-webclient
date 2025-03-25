@@ -1,20 +1,24 @@
 package org.cibseven.webapp.rest;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
-import jakarta.servlet.http.HttpServletRequest;
-
+import org.cibseven.NamedByteArrayDataSource;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.exception.AccessDeniedException;
+import org.cibseven.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.logger.TaskLogger;
 import org.cibseven.webapp.providers.SevenProvider;
 import org.cibseven.webapp.rest.model.IdentityLink;
 import org.cibseven.webapp.rest.model.Task;
 import org.cibseven.webapp.rest.model.TaskCount;
 import org.cibseven.webapp.rest.model.TaskFiltering;
+import org.cibseven.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.http.HttpHeaders;
@@ -27,10 +31,14 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import de.cib.auth.TokenExpiredException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.core.MediaType;
 
 @ApiResponses({
 	@ApiResponse(responseCode = "500", description = "An unexpected system error occured"),
@@ -241,5 +249,77 @@ public class TaskService extends BaseService implements InitializingBean {
 	public ResponseEntity<byte[]> downloadFiles(@PathVariable String processInstanceId, @PathVariable String variableName, CIBUser user) {
 		return bpmProvider.fetchProcessInstanceVariableData(processInstanceId, variableName, user);
 	}
+	
+	 @Consumes(MediaType.APPLICATION_JSON)
+	  @RequestMapping(value = "/task/{taskId}/submit-variables", method = RequestMethod.POST)
+	  public ResponseEntity<String> submitVariables(@PathVariable String taskId, @RequestBody List<Variable> formResult, 
+	      @RequestParam String processInstanceId, @RequestParam Optional<String> assignee, @RequestParam String processDefinitionId,
+	      @RequestParam Optional<Boolean> close, @RequestParam Optional<String> name, HttpServletRequest rq) {
+	    String taskName = name.orElse("null");
+	    TaskLogger logger = new TaskLogger(processDefinitionId, processInstanceId, taskName, taskId);
+	    try {
+	      CIBUser userAuth = (CIBUser) baseUserProvider.authenticateUser(rq);
+	      logger.info("[INFO] Submit variables in task with name=" + taskName + " and ID=" + taskId + " (" + getClass().getSimpleName() + ")");
+	      Task task = bpmProvider.findTaskById(taskId, userAuth);
+	      if (!task.getAssignee().equals(userAuth.getUserID())) {
+	        throw new AccessDeniedException("The user submiting the task is not the one assigned");
+	      }
+	      
+	      if (close.orElse(false)) {
+	        bpmProvider.submit(task, formResult, userAuth);
+	      } else {
+	        bpmProvider.submitVariables(processInstanceId, formResult, userAuth, processDefinitionId);
+	      }
+	      
+	      logger.info("[INFO] Submited variables in task with name=" + taskName + " and ID=" + taskId + " (" + getClass().getSimpleName() + ")");
+	      return new ResponseEntity<>("ok", new HttpHeaders(), HttpStatus.OK);
+	    } catch (Exception e) {
+	      logger.info("[INFO] Exception when submiting variables in task with name=" + taskName + " and ID=" + taskId + " (" + getClass().getSimpleName() + ")", e);
+	      if (e instanceof NoObjectFoundException) return generateErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND);
+	      if (e instanceof TokenExpiredException) throw e;
+	      else return generateErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
+	    }
+	  }
+	  
+	  @SuppressWarnings("unchecked")
+	  protected <T> ResponseEntity<T> generateErrorResponse(String message, HttpStatus status) {
+	    ResponseEntity<?> response = new ResponseEntity<>(message, status);
+	    return (ResponseEntity<T>) response;
+	  }
+
+	  @RequestMapping(value = "/task/{taskId}/variable/{variableName}", method = RequestMethod.GET)
+	  public Variable fetchVariable(@PathVariable String taskId, @PathVariable String variableName, 
+	      @RequestParam Optional<Boolean> deserialize, HttpServletRequest rq) {
+	    CIBUser userAuth = (CIBUser) baseUserProvider.authenticateUser(rq);
+	    return bpmProvider.fetchVariable(taskId, variableName, deserialize, userAuth);
+	  }
+	  
+	  @RequestMapping(value = "/task/{taskId}/variable/{variableName}/data", method = RequestMethod.GET)
+	  public byte[] fetchVariableFileData(@PathVariable String taskId, @PathVariable String variableName, 
+	      @RequestParam Optional<Boolean> deserialize, HttpServletRequest rq) {
+	    CIBUser userAuth = (CIBUser) baseUserProvider.authenticateUser(rq);
+	    NamedByteArrayDataSource res = bpmProvider.fetchVariableFileData(taskId, variableName, userAuth);
+	    return res.getContent();
+	  }
+
+	  @RequestMapping(value = "/task/{taskId}", method = RequestMethod.POST)
+	  public Map<String, Variable> fetchVariables(@PathVariable String taskId, 
+	      @RequestParam Optional<Boolean> deserialize, 
+	      @RequestParam Optional<String> locale, CIBUser user) throws Exception {
+	    return bpmProvider.fetchFormVariables(taskId, deserialize.orElse(false), user);
+	  }
+
+	  @RequestMapping(value = "/task/{taskId}/variable/{variableName}", method = RequestMethod.DELETE)
+	  public void deleteVariable(@PathVariable String taskId, @PathVariable String variableName, HttpServletRequest rq) {
+	    CIBUser userAuth = (CIBUser) baseUserProvider.authenticateUser(rq);
+	    bpmProvider.deleteVariable(taskId, variableName, userAuth);
+	  }
+	  
+	  @RequestMapping(value = "/task/{taskId}/bpmnError", method = RequestMethod.POST)
+	  public void handleBpmnError(@PathVariable String taskId, @RequestBody Map<String, Object> data, 
+	      @RequestParam Optional<String> locale, CIBUser user) throws Exception {
+	    bpmProvider.handleBpmnError(taskId, data, user);
+	  }
+
 	
 }

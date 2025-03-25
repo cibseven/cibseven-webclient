@@ -28,6 +28,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import de.cib.auth.AuthenticationException;
+import de.cib.auth.JwtUserProvider;
+import de.cib.auth.TokenExpiredException;
+import de.cib.auth.User;
+import de.cib.auth.rest.StandardLogin;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;

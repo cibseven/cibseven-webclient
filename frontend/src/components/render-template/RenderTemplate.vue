@@ -18,7 +18,7 @@
 
 <script>
 import { permissionsMixin } from '@/permissions.js'
-import { TaskService, AuthService } from '@/services.js'
+import { TaskService } from '@/services.js'
 import IconButton from '@/components/render-template/IconButton.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import { BWaitingBox } from 'cib-common-components'
@@ -28,7 +28,7 @@ export default {
   components: { IconButton, SuccessAlert, BWaitingBox },
   props: ['task'],
   mixins: [permissionsMixin],
-  inject: ['currentLanguage'],
+  inject: ['currentLanguage', 'AuthService'],
   data: function() {
     return {
       userInstruction: null,
@@ -93,23 +93,32 @@ export default {
       }
       if (this.task.url) {
         var formFrame = this.$refs['template-frame']
-        formFrame.src = this.task.url + '&locale=' + this.currentLanguage() + '&token=' + this.$root.user.authToken +
+        console.log('this.task.url', this.task.url)
+        formFrame.src = this.task.url
+        /*
+         + '&locale=' + this.currentLanguage() + '&token=' + this.$root.user.authToken +
         '&theme=' + themeContext + '&translation=' + translationContext
+        */
         this.loader = false
       } else if (this.task.id) {
 
         TaskService.formReference(this.task.id).then(formReference => {
           if (this.task.camundaFormRef) {
-            formReference = 'camunda-form-template'
+            formReference = 'deployed-form'
           } else if (formReference === 'empty-task') {
             this.loader = false
             this.formFrame = false
             return
           }
           var formFrame = this.$refs['template-frame']
-          formFrame.src = this.$root.config.uiElementTemplateUrl + '/' + formReference + '?taskId=' + this.task.id +
-          '&locale=' + this.currentLanguage() + '&token=' + this.$root.user.authToken +
-          '&theme=' + themeContext + '&translation=' + translationContext
+          //formFrame.src = this.$root.config.uiElementTemplateUrl + '/' + formReference + '?taskId=' + this.task.id +
+          formFrame.src = window.location.origin + '/webapp/#' +
+							  '/' + formReference +
+							  '/' + this.currentLanguage() +
+							  '/' + this.task.id +
+							  '/' + this.$root.user.authToken
+//          '&locale=' + this.currentLanguage() + '&token=' + this.$root.user.authToken +
+//          '&theme=' + themeContext + '&translation=' + translationContext
           this.loader = false
         }, () => {
           // Not needed but just in case something changes in the backend method
@@ -168,7 +177,7 @@ export default {
       this.$router.push('.')
     },
     updateFilters: function(data) {
-      AuthService.fetchAuths().then(permissions => {
+      this.AuthService.fetchAuths().then(permissions => {
         this.$root.user.permissions = permissions
         this.$store.dispatch('findFilters').then(response => {
           this.$store.commit('setFilters',

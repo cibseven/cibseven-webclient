@@ -1,6 +1,6 @@
 <template>
   <div class="overflow-auto bg-white position-absolute container-fluid g-0" style="top: 0; bottom: 0">
-    <FlowTable v-if="userTasks.length > 0" resizable striped thead-class="sticky-header" :items="userTasks" primary-key="id" prefix="process-instance.usertasks."
+    <FlowTable v-if="!loading && userTasks.length > 0" resizable striped thead-class="sticky-header" :items="userTasks" primary-key="id" prefix="process-instance.usertasks."
       sort-by="label" :sort-desc="true" :fields="[
       { label: 'activity', key: 'name', class: 'col-2', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' },
       { label: 'assignee', key: 'assignee', class: 'col-1', thClass: 'border-end', tdClass: 'position-relative py-1 border-end border-top-0' },
@@ -28,10 +28,13 @@
         </div>
       </template>
       <template v-slot:cell(actions)="table">
-        <b-button :title="$t('process-instance.assignModal.manageUsersGroups')" @click="$refs.taskAssignationModal.show(table.item.id, false)" 
+        <b-button :title="$t('process-instance.assignModal.manageUsersGroups')" @click="$refs.taskAssignationModal.show(table.item.id, false)"
           size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-account"></b-button>
       </template>
     </FlowTable>
+    <div v-else-if="loading === true">
+      <p class="text-center p-4"><BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}</p>
+    </div>
     <div v-else>
       <p class="text-center p-4">{{ $t('process-instance.noResults') }}</p>
     </div>
@@ -47,14 +50,16 @@ import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import TaskAssignationModal from '@/components/process/TaskAssignationModal.vue'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
+import { BWaitingBox } from 'cib-common-components'
 
 export default {
   name: 'UserTasksTable',
-  components: { TaskAssignationModal, FlowTable, SuccessAlert },
+  components: { TaskAssignationModal, FlowTable, SuccessAlert, BWaitingBox },
   mixins: [copyToClipboardMixin],
   props: { selectedInstance: Object },
   data: function() {
     return {
+      loading: true,
       userTasks: [],
       focusedCell: null
     }
@@ -64,6 +69,7 @@ export default {
       processInstanceId: this.selectedInstance.id,
       processDefinitionId: this.selectedInstance.processDefinitionId
     }).then(res => {
+      this.loading = false
       this.userTasks = res
     })
   },

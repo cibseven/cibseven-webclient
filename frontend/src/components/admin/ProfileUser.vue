@@ -241,7 +241,7 @@
 </template>
 
 <script>
-import { AdminService, AuthService } from '@/services.js'
+import { AdminService } from '@/services.js'
 import { notEmpty, same } from '@/components/admin/utils.js'
 import Sidebars from '@/components/common-components/Sidebars.vue'
 import FlowTable from '@/components/common-components/FlowTable.vue'
@@ -251,6 +251,7 @@ import CIBForm from '@/components/common-components/CIBForm.vue'
 export default {
   name: 'ProfileUser',
   components: { Sidebars, FlowTable, SuccessAlert, CIBForm },
+  inject: ['AuthService'],
   props: {
     editMode: {
       type: Boolean,
@@ -390,7 +391,7 @@ export default {
     },
     onSendEmail: function() {
       this.sendingEmail = true
-      AuthService.passwordRecover({ id: this.user.id }).then(() => {
+      this.AuthService.passwordRecover({ id: this.user.id }).then(() => {
         this.sendingEmail = false
         this.$refs.emailSent.show()
       }, () => {

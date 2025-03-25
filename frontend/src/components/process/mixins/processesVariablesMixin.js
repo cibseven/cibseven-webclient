@@ -9,6 +9,7 @@ export default {
     props: { process: Object, selectedInstance: Object, activityInstance: Object, activityInstanceHistory: Array },
     data: function() {
         return {
+            loading: true,
             variables: [],
             file: null,
             selectedVariable: null
@@ -82,6 +83,7 @@ export default {
                 })
                 this.variables = variables.sort((a, b) => a.name.localeCompare(b.name))
                 this.filteredVariables = variables.sort((a, b) => a.name.localeCompare(b.name))
+                this.loading = false
             })
         },
         downloadFile: function(variable) {
