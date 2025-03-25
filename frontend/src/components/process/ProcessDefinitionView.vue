@@ -72,7 +72,7 @@ export default {
   props: {
     processKey: { type: String, required: true },
     versionIndex: { type: String, required: true }
-   },
+  },
   data: function() {
     return {
       leftOpen: true,
@@ -105,61 +105,21 @@ export default {
     }
   },
   created: function() {
-    console.log('ProcessDefinitionView created')
-    this.loadProcessByDefinitionKey(this.processKey, this.versionIndex)
+    this.loadProcessByDefinitionKey()
   },
   beforeUpdate: function() {
     if (this.process != null && this.process.version !== this.versionIndex) {
-      console.log('ProcessDefinitionView beforeUpdate ' +  this.process.version + ' != ' + this.versionIndex)
+      // different process-definition was selected
       this.selectedInstance = null
       this.activityInstance = null
       this.activityInstanceHistory = null
       this.task = null
-
-      this.onRefreshProcessDefinitions({ lazyLoadHistory: this.lazyLoadHistory }).then(versions => {
-        let requestedDefinition = versions.find(processDefinition => processDefinition.version === this.versionIndex)
-        if (requestedDefinition) {
-          this.loadProcessVersion(requestedDefinition)
-        }
-        else {
-          // definition is no longer available
-          // let's redirect to the latest one
-          this.$router.push('/seven/auth/process/' + this.processKey)
-        }
-      })
-    }
-    else {
-      console.log('ProcessDefinitionView beforeUpdate SKIP')
+      this.loadProcessByDefinitionKey()
     }
   },
   methods: {
     updateItems: function(sortedItems) {
       this.instances = sortedItems
-    },
-    onRefreshProcessDefinitions: function(params) {
-      console.log('ProcessDefinitionView onRefreshProcessDefinitions ' + params.lazyLoadHistory)
-      return ProcessService.findProcessVersionsByDefinitionKey(this.processKey).then(versions => {
-        this.processDefinitions = versions
-        if (params.lazyLoadHistory) {
-          versions.forEach(v => {
-            v.runningInstances = '-'
-            v.allInstances = '-'
-            v.completedInstances = '-'
-          })
-
-          if (this.process != null) {
-            ProcessService.findProcessById(this.process.id, true).then(process => {
-              for (let v of this.processDefinitions) {
-                if (v.id === process.id) {
-                  Object.assign(v, process)
-                  break
-                }
-              }
-            })
-          }
-        }
-        return versions
-      })
     },
     onDeleteProcessDefinition: function(processDefinition) {
       ProcessService.deleteProcessDefinition(processDefinition.id, true).then(() => {
@@ -177,26 +137,55 @@ export default {
         }
       })
     },
-    loadProcessByDefinitionKey: function(processKey, versionIndex) {
-      console.log('ProcessDefinitionView loadProcessByDefinitionKey ' + processKey + ' ' + versionIndex)
-      if (!versionIndex) {
-        this.$store.dispatch('getProcessByDefinitionKey', { key: processKey }).then(process => {
-          this.loadProcessVersion(process)
-          console.log(process)
-        })
-      }
-
-      this.onRefreshProcessDefinitions({ lazyLoadHistory: this.lazyLoadHistory }).then(versions => {
+    // call from:
+    // - user have deleted a non-selected process definition (this.process is still valid)
+    // - user clicked "refresh process definitions" button
+    onRefreshProcessDefinitions: function(params) {
+      return ProcessService.findProcessVersionsByDefinitionKey(this.processKey).then(versions => {
+        this.processDefinitions = versions
+        if (this.processDefinitions.length > 0) {
+          this.calcProcessDefinitionsStats(this.process, params.lazyLoadHistory)
+        }
+        return versions
+      })
+    },
+    loadProcessByDefinitionKey: function() {
+      ProcessService.findProcessVersionsByDefinitionKey(this.processKey).then(versions => {
+        this.processDefinitions = versions
         let requestedDefinition = versions.find(processDefinition => processDefinition.version === this.versionIndex)
         if (requestedDefinition) {
+          const needCalcStats = this.process == null
           this.loadProcessVersion(requestedDefinition)
+          if (needCalcStats) {
+            this.calcProcessDefinitionsStats(requestedDefinition, this.lazyLoadHistory)
+          }
         }
         else {
           // definition is no longer available
           // let's redirect to the latest one
-          this.$router.push('/seven/auth/process/' + processKey)
+          this.$router.push('/seven/auth/process/' + this.processKey)
         }
       })
+    },
+    calcProcessDefinitionsStats: function(selectedProcess, lazyLoadHistory) {
+      if (lazyLoadHistory) {
+        this.processDefinitions.forEach(v => {
+          v.runningInstances = '-'
+          v.allInstances = '-'
+          v.completedInstances = '-'
+        })
+
+        if (selectedProcess != null) {
+          ProcessService.findProcessById(selectedProcess.id, true).then(process => {
+            for (let v of this.processDefinitions) {
+              if (v.id === process.id) {
+                Object.assign(v, process)
+                break
+              }
+            }
+          })
+        }
+      }
     },
     loadProcessActivitiesHistory: function() {
       HistoryService.findActivitiesProcessDefinitionHistory(this.process.id).then(activities => {
@@ -204,7 +193,6 @@ export default {
       })
     },
     loadProcessVersion: function(process) {
-      console.log('ProcessDefinitionView loadProcessVersion ' + process.id)
       if (!this.process || this.process.id !== process.id) {
         this.firstResult = 0
         this.process = process
@@ -227,7 +215,6 @@ export default {
       else {
         ProcessService.findProcessVersionsByDefinitionKey(this.process.key).then(versions => {
           this.processDefinitions = versions
-          console.log(this.processDefinitions)
 
           var promises = []
           this.processDefinitions.forEach(() => {
