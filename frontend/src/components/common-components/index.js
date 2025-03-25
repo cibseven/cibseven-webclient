@@ -58,6 +58,7 @@ import ProcessList from '@/components/processes/list/ProcessList.vue'
 import ProcessListView from '@/components/processes/list/ProcessListView.vue'
 import ProcessTable from '@/components/start-process/ProcessTable.vue'
 import ProcessVariablesTable from '@/components/process/ProcessVariablesTable.vue'
+import ProcessDefinitionView from '@/components/process/ProcessDefinitionView.vue'
 import StartProcess from '@/components/start-process/StartProcess.vue'
 import TaskAssignationModal from '@/components/process/TaskAssignationModal.vue'
 import VariablesTable from '@/components/process/tables/VariablesTable.vue'
@@ -95,6 +96,6 @@ export {
     CreateGroup, ProfileUser, ProfileGroup, SupportModal,
     UsersManagement, processesVariablesMixin, processesMixin,
     resizerMixin, StartProcessView, ProcessListView,
-    ProcessVariablesTable, TaskContent, TasksView,
+    ProcessVariablesTable, ProcessDefinitionView, TaskContent, TasksView,
     usersMixin, copyToClipboardMixin, debounce
 }
