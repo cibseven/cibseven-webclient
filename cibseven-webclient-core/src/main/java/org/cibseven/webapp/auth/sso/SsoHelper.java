@@ -5,7 +5,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 
-import org.cibseven.webapp.auth.SystemException;
+import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.auth.exception.AuthenticationException;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;

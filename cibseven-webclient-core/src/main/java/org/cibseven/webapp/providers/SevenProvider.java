@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.cibseven.webapp.rest.model.Decision;
 import org.cibseven.webapp.Data;
 import org.cibseven.webapp.NamedByteArrayDataSource;
 import org.cibseven.webapp.auth.CIBUser;
@@ -63,6 +64,7 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
     @Autowired private IUtilsProvider utilsProvider;
     @Autowired private IIncidentProvider incidentProvider;
     @Autowired private IUserProvider userProvider;
+    @Autowired private IDecisionProvider decisionProvider;
 
     
     /*
@@ -744,6 +746,102 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	public Collection<ActivityInstanceHistory> findActivitiesProcessDefinitionHistory(String processDefinitionId,
 			CIBUser user) {
 		return activityProvider.findActivitiesProcessDefinitionHistory(processDefinitionId, user);
+	}
+	
+	/*
+	
+	██████  ███████  ██████ ██ ███████ ██  ██████  ███    ██     ██████  ██████   ██████  ██    ██ ██ ██████  ███████ ██████  
+	██   ██ ██      ██      ██ ██      ██ ██    ██ ████   ██     ██   ██ ██   ██ ██    ██ ██    ██ ██ ██   ██ ██      ██   ██ 
+	██   ██ █████   ██      ██ ███████ ██ ██    ██ ██ ██  ██     ██████  ██████  ██    ██ ██    ██ ██ ██   ██ █████   ██████  
+	██   ██ ██      ██      ██      ██ ██ ██    ██ ██  ██ ██     ██      ██   ██ ██    ██  ██  ██  ██ ██   ██ ██      ██   ██ 
+	██████  ███████  ██████ ██ ███████ ██  ██████  ██   ████     ██      ██   ██  ██████    ████   ██ ██████  ███████ ██   ██ 
+	                                                                                                                                                                                                                              
+	*/
+	
+	@Override
+	public Collection<Decision> getDecisionDefinitionList(Map<String, Object> queryParams) {
+		return decisionProvider.getDecisionDefinitionList(queryParams);
+	}
+	
+	
+	@Override
+	public Object getDecisionDefinitionListCount(Map<String, Object> queryParams) {
+		return decisionProvider.getDecisionDefinitionListCount(queryParams);
+	}
+	
+	@Override
+	public Decision getDecisionDefinitionByKey(String key) {
+		return decisionProvider.getDecisionDefinitionByKey(key);
+	}
+	
+	@Override
+	public Object getDiagramByKey(String key) {
+		return decisionProvider.getDiagramByKey(key);
+	}
+
+	@Override
+	public Object evaluateDecisionDefinitionByKey(Map<String, Object> data, String key, CIBUser user) {
+		return decisionProvider.evaluateDecisionDefinitionByKey(data, key, user);
+	}
+	
+	@Override
+	public void updateHistoryTTLByKey(Map<String, Object> data, String key, CIBUser user) {
+		decisionProvider.updateHistoryTTLByKey(data, key, user);
+	}
+	
+	@Override
+	public Decision getDecisionDefinitionByKeyAndTenant(String key, String tenant) {
+		return decisionProvider.getDecisionDefinitionByKeyAndTenant(key, tenant);
+	}
+	
+	@Override
+	public Object getDiagramByKeyAndTenant(String key, String tenant) {
+		return decisionProvider.getDiagramByKeyAndTenant(key, tenant);
+	}
+	
+	@Override
+	public Object evaluateDecisionDefinitionByKeyAndTenant(String key, String tenant) {
+		return decisionProvider.evaluateDecisionDefinitionByKeyAndTenant(key, tenant);
+	}
+	
+	@Override
+	public Object updateHistoryTTLByKeyAndTenant(String key, String tenant) {
+		return decisionProvider.updateHistoryTTLByKeyAndTenant(key, tenant);
+	}
+	
+	@Override
+	public Object getXmlByKey(String key) {
+		return decisionProvider.getXmlByKey(key);
+	}
+	
+	@Override
+	public Object getXmlByKeyAndTenant(String key, String tenant) {
+		return decisionProvider.getXmlByKeyAndTenant(key, tenant);
+	}
+	
+	@Override
+	public Decision getDecisionDefinitionById(String id) {
+		return decisionProvider.getDecisionDefinitionById(id);
+	}
+	
+	@Override
+	public Object getDiagramById(String id) {
+		return decisionProvider.getDiagramById(id);
+	}
+	
+	@Override
+	public Object evaluateDecisionDefinitionById(String id) {
+		return decisionProvider.evaluateDecisionDefinitionById(id);
+	}
+	
+	@Override
+	public Object updateHistoryTTLById(String id) {
+		return decisionProvider.updateHistoryTTLById(id);
+	}
+	
+	@Override
+	public Object getXmlById(String id) {
+		return decisionProvider.getXmlById(id);
 	}
 
 }
