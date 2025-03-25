@@ -1,13 +1,13 @@
 server:
   servlet:
-    context-path: /seven-webclient-web
+    context-path: /webapp
 
 spring:
   banner:
     location: classpath:banner.txt
   config:
     import:
-      - optional:classpath:seven-webclient.yaml
+      - optional:classpath:cibseven-webclient.yaml
   servlet:
     multipart:
       # Configures the maximum size for each individual file upload.
