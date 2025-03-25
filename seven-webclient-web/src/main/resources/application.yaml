@@ -1,6 +1,6 @@
 server:
   servlet:
-    context-path: /seven-webclient-web
+    context-path: /webapp
 
 spring:
   banner:
