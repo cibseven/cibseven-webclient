@@ -58,19 +58,6 @@
 		<tag>HEAD</tag>
 	</scm>
 
-	<distributionManagement>
-		<repository>
-			<id>mvn-release-local</id>
-			<name>CIB maven release repository</name>
-			<url>${nexus-repository.url}/mvn-release-local</url>
-		</repository>
-		<snapshotRepository>
-			<id>mvn-snapshot-local</id>
-			<name>CIB maven snapshot repository</name>
-			<url>${nexus-repository.url}/mvn-snapshot-local</url>
-		</snapshotRepository>
-	</distributionManagement>
-
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
