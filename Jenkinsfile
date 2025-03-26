@@ -175,7 +175,7 @@ pipeline {
                         withMaven() {
                             sh """
                                 # Copy the .npmrc file to the frontend directory
-                                cp ${NPMRC_FILE} ./frontend/.npmrc
+                                cp ${NPMRC_FILE} ./.npmrc
                                 
                                 # Run Maven with the required profile
                                 mvn -T4 -Dbuild.number=${BUILD_NUMBER} clean install -Drelease-common-components=true

@@ -60,7 +60,81 @@
             </modules>
 			<build>
 				<plugins>
-
+					<plugin>
+						<groupId>com.github.eirslett</groupId>
+						<artifactId>frontend-maven-plugin</artifactId>
+						<version>${version.eirslett.frontend.maven.plugin}</version>
+						<inherited>false</inherited>
+						<configuration>
+							<nodeVersion>v${version.nodejs}</nodeVersion>
+							<npmVersion>${version.npm}</npmVersion>
+							<workingDirectory>./frontend</workingDirectory>
+							<outputdir>${project.build.directory}/webapp</outputdir>
+							<skip>${skip.frontend.build}</skip>
+						</configuration>
+						<executions>
+							<execution>
+								<id>install node and npm</id>
+								<goals>
+									<goal>install-node-and-npm</goal>
+								</goals>
+							</execution>
+							<execution>
+								<id>npm ci</id>
+								<goals>
+									<goal>npm</goal>
+								</goals>
+								<phase>generate-resources</phase>
+								<configuration>
+									<arguments>ci --no-audit --no-fund</arguments>
+								</configuration>
+							</execution>
+							<execution>
+								<id>npm version</id>
+								<goals>
+									<goal>npm</goal>
+								</goals>
+								<phase>generate-resources</phase>
+								<configuration>
+									<arguments>version --allow-same-version
+										--no-git-tag-version ${project.version}</arguments>
+								</configuration>
+							</execution>
+							<!--
+							<execution>
+								<id>License check</id>
+								<goals>
+									<goal>npm</goal>
+								</goals>
+								<phase>generate-resources</phase>
+								<configuration>
+									<arguments>run license-check</arguments>
+								</configuration>
+							</execution>
+							-->
+							<execution>
+								<id>Build</id>
+								<goals>
+									<goal>npm</goal>
+								</goals>
+								<phase>generate-resources</phase>
+								<configuration>
+									<arguments>run build</arguments>
+								</configuration>
+							</execution>
+							<execution>
+								<id>npm version back</id>
+								<goals>
+									<goal>npm</goal>
+								</goals>
+								<phase>generate-resources</phase>
+								<configuration>
+									<arguments>version --allow-same-version
+										--no-git-tag-version 0.0.0</arguments>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
 				</plugins>
 			</build>
         </profile>
@@ -81,17 +155,33 @@
 						<configuration>
 							<nodeVersion>v${version.nodejs}</nodeVersion>
 							<npmVersion>${version.npm}</npmVersion>
-							<workingDirectory>./frontend</workingDirectory>
+							<workingDirectory>cib-common-components</workingDirectory>
 							<outputdir>${project.build.directory}/webapp</outputdir>
 							<skip>${skip.frontend.build}</skip>
 						</configuration>
 						<executions>
 							<execution>
+								<id>install node and npm</id>
+								<goals>
+									<goal>install-node-and-npm</goal>
+								</goals>
+							</execution>
+							<execution>
+								<id>Build</id>
+								<goals>
+									<goal>npm</goal>
+								</goals>
+								<phase>generate-resources</phase>
+								<configuration>
+									<arguments>run build:library</arguments>
+								</configuration>
+							</execution>
+							<execution>
 								<id>npm publish</id>
 								<goals>
 									<goal>npm</goal>
 								</goals>
-								<phase>install</phase>
+								<phase>generate-resources</phase>
 								<configuration>
 									<arguments>publish</arguments>
 								</configuration>
@@ -125,81 +215,6 @@
 
 	<build>
 		<plugins>
-			<plugin>
-				<groupId>com.github.eirslett</groupId>
-				<artifactId>frontend-maven-plugin</artifactId>
-				<version>${version.eirslett.frontend.maven.plugin}</version>
-				<inherited>false</inherited>
-				<configuration>
-					<nodeVersion>v${version.nodejs}</nodeVersion>
-					<npmVersion>${version.npm}</npmVersion>
-					<workingDirectory>./frontend</workingDirectory>
-					<outputdir>${project.build.directory}/webapp</outputdir>
-					<skip>${skip.frontend.build}</skip>
-				</configuration>
-				<executions>
-					<execution>
-						<id>install node and npm</id>
-						<goals>
-							<goal>install-node-and-npm</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>npm ci</id>
-						<goals>
-							<goal>npm</goal>
-						</goals>
-						<phase>generate-resources</phase>
-						<configuration>
-							<arguments>ci --no-audit --no-fund</arguments>
-						</configuration>
-					</execution>
-					<execution>
-						<id>npm version</id>
-						<goals>
-							<goal>npm</goal>
-						</goals>
-						<phase>generate-resources</phase>
-						<configuration>
-							<arguments>version --allow-same-version
-								--no-git-tag-version ${project.version}</arguments>
-						</configuration>
-					</execution>
-					<!--
-					<execution>
-						<id>License check</id>
-						<goals>
-							<goal>npm</goal>
-						</goals>
-						<phase>generate-resources</phase>
-						<configuration>
-							<arguments>run license-check</arguments>
-						</configuration>
-					</execution>
-					-->
-					<execution>
-						<id>Build</id>
-						<goals>
-							<goal>npm</goal>
-						</goals>
-						<phase>generate-resources</phase>
-						<configuration>
-							<arguments>run build</arguments>
-						</configuration>
-					</execution>
-					<execution>
-						<id>npm version back</id>
-						<goals>
-							<goal>npm</goal>
-						</goals>
-						<phase>generate-resources</phase>
-						<configuration>
-							<arguments>version --allow-same-version
-								--no-git-tag-version 0.0.0</arguments>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
 			<plugin>
 				<artifactId>maven-clean-plugin</artifactId>
 				<inherited>false</inherited>
