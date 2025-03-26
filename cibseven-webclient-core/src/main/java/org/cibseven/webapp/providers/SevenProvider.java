@@ -852,4 +852,29 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 		return decisionProvider.getDecisionVersionsByKey(key, lazyLoad);
 	}
 	
+	@Override
+	public Object getHistoricDecisionInstances(Map<String, Object> queryParams){
+		return decisionProvider.getHistoricDecisionInstances(queryParams);
+	}
+	
+	@Override
+	public Object getHistoricDecisionInstanceCount(Map<String, Object> queryParams){
+		return decisionProvider.getHistoricDecisionInstanceCount(queryParams);
+	}
+	
+	@Override
+	public Object getHistoricDecisionInstanceById(String id, Map<String, Object> queryParams){
+		return decisionProvider.getHistoricDecisionInstanceById(id, queryParams);
+	}
+	
+	@Override
+	public Object deleteHistoricDecisionInstances(Map<String, Object> body){
+		return decisionProvider.deleteHistoricDecisionInstances(queryParams);
+	}
+	
+	@Override
+	public Object setHistoricDecisionInstanceRemovalTime(Map<String, Object> body){
+		return decisionProvider.setHistoricDecisionInstanceRemovalTime(queryParams);
+	}
+	
 }

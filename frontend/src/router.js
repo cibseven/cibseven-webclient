@@ -138,7 +138,7 @@ const router = createRouter({
         },
         { path: 'decision/:decisionKey/:versionIndex?', name: 'decision', beforeEnter: permissionsGuard('cockpit'),
           component: DecisionView, props: route => ({
-            processKey: route.params.decisionKey,
+            decisionKey: route.params.decisionKey,
             versionIndex: route.params.versionIndex,
           })
         },

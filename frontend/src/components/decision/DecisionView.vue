@@ -11,8 +11,8 @@
           :instances="instances"></DecisionDetailsSidebar>
       </template>
       <transition name="slide-in" mode="out-in">
-        <Decision ref="decision" v-if="instances && !selectedInstance" :activity-id="activityId" :loading="loading" :process="process" :instances="instances" :first-result="firstResult" :max-results="maxResults" @show-more="showMore()"
-        @instance-deleted="clearInstance()" @instance-selected="setSelectedInstance($event)" @task-selected="setSelectedTask($event)" @filter-instances="filterInstances($event)"
+        <Decision ref="decision" v-if="instances && !selectedInstance" :activity-id="activityId" :loading="loading" :decision="decision" :instances="instances" :first-result="firstResult" :max-results="maxResults" @show-more="showMore()"
+        @instance-deleted="clearInstance()" @instance-selected="setSelectedInstance($event)"
         @update-items="updateItems"
         ></Decision>
       </transition>
@@ -24,11 +24,16 @@
 
 <script>
 import { nextTick } from 'vue'
-import moment from 'moment'
 import { DecisionService } from '@/services.js'
 import Decision from '@/components/decision/Decision.vue'
 import DecisionDetailsSidebar from '@/components/decision/DecisionDetailsSidebar.vue'
 import SidebarsFlow from '@/components/common-components/SidebarsFlow.vue'
+
+/* 
+  TODO: Refactor this class.
+  TODO[ivan]: Establish same arquitecture than Process, to navigate easily via URL
+  TODO[ivan]: Implement incomplete methods - check if they are needed and remove them. This can be done after refactor.
+*/
 
 export default {
   name: 'DecisionView',
@@ -61,7 +66,7 @@ export default {
     }
   },
   created: function() {
-      this.loadDecisionByKey(this.processKey, this.versionIndex)
+      this.loadDecisionByKey(this.decisionKey, this.versionIndex)
   },
   methods: {
     updateItems: function(sortedItems) {
@@ -99,15 +104,19 @@ export default {
     loadInstances: function(showMore) {
       if (this.$root.config.camundaHistoryLevel !== 'none') {
         this.loading = true
-        /*
-        HistoryService.findProcessesInstancesHistoryById(this.process.id, this.activityId,
-          this.firstResult, this.maxResults, this.filter
-        ).then(instances => {
+        
+        this.$store.dispatch('getHistoricDecisionInstances', {
+          decisionDefinitionKey: this.decision.key,
+          includeInputs: true,
+          includeOutputs: true,
+          firstResult: this.firstResult,
+          maxResults: this.maxResults
+        }).then(instances => {
           this.loading = false
           if (!showMore) this.instances = instances
           else this.instances = !this.instances ? instances : this.instances.concat(instances)
         })
-          */
+        
       }
       else {
         DecisionService.getDecisionVersionsByKey(this.decision.key).then(decisionDefinitions => {
@@ -135,7 +144,7 @@ export default {
     },
     clearInstance: function() {
       this.setSelectedInstance({ selectedInstance: null })
-      this.$refs.process.clearState()
+      this.$refs.decision.clearState()
       this.firstResult = 0
       this.loadInstances()
     },
@@ -201,7 +210,7 @@ export default {
       this.selectedInstance = null
       nextTick(function() {
         this.activityId = ''
-        this.$refs.process.clearState()
+        this.$refs.decision.clearState()
         this.loadVersionDecision(event)
       }.bind(this))
     }

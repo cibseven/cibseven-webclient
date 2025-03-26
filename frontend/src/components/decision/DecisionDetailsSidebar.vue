@@ -31,7 +31,7 @@
             <div>{{ $t('decision.details.totalInstances') + ': ' + version.allInstances }}</div>
           </div>
           <b-popover :target="version.id" triggers="hover" placement="right" boundary="viewport" max-width="350px">
-            <ProcessDefinitionDetails :version="version" :instances="instances" @onUpdateHistoryTimeToLive="onUpdateHistoryTimeToLive"></ProcessDefinitionDetails>
+            <DecisionDefinitionDetails :version="version" :instances="instances" @onUpdateHistoryTimeToLive="onUpdateHistoryTimeToLive"></DecisionDefinitionDetails>
           </b-popover>
         </b-list-group-item>
       </b-list-group>
@@ -50,6 +50,13 @@ import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
 import DecisionDefinitionDetails from '@/components/decision/DecisionDefinitionDetails.vue'
+
+/* 
+  TODO: Refactor this class.
+  TODO[ivan]: Request directly from store, not from services.
+  TODO[ivan]: Create methods in permissionsMixin that applies to decisions
+  TODO[ivan]: Establish same arquitecture than Process, to navigate easily via URL
+*/
 
 export default {
   name: 'DecisionDetailsSidebar',
@@ -96,7 +103,7 @@ export default {
         return versions
       })
     },
-    findAndUpdateProcess: function() {
+    findAndUpdateDecision: function() {
       DecisionService.getDecisionDefinitionById(this.selectedVersionId, true).then(process => {
         for (let v of this.versions) {
           if (v.id === process.id) {

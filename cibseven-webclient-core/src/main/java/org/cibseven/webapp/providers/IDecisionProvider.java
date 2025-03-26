@@ -27,4 +27,9 @@ public interface IDecisionProvider {
 	public Object updateHistoryTTLById(String id);
 	public Object getXmlById(String id);
 	public Collection<Decision> getDecisionVersionsByKey(String key, Optional<Boolean> lazyLoad);
+	public Object getHistoricDecisionInstances(Map<String, Object> queryParams);
+	public Object getHistoricDecisionInstanceCount(Map<String, Object> queryParams);
+	public Object getHistoricDecisionInstanceById(String id, Map<String, Object> queryParams);
+	public Object deleteHistoricDecisionInstances(Map<String, Object> body);
+	public Object setHistoricDecisionInstanceRemovalTime(Map<String, Object> body);
 }

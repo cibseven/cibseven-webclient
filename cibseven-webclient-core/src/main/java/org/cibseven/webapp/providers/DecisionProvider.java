@@ -140,6 +140,36 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 	}
 	
 	@Override
+	public Object getHistoricDecisionInstances(Map<String, Object> queryParams){
+		String url = buildUrlWithParams(camundaUrl + "/engine-rest/history/decision-instance", queryParams);
+		return ((ResponseEntity<Object>) doGet(url, Object.class, null, false)).getBody();
+	}
+	
+	@Override
+	public Object getHistoricDecisionInstanceCount(Map<String, Object> queryParams){
+		String url = buildUrlWithParams(camundaUrl + "/engine-rest/history/decision-instance/count", queryParams);
+		return ((ResponseEntity<Object>) doGet(url, Object.class, null, false)).getBody();
+	}
+	
+	@Override
+	public Object getHistoricDecisionInstanceById(String id, Map<String, Object> queryParams){
+		String url = buildUrlWithParams(camundaUrl + "/engine-rest/history/decision-instance/" + id, queryParams);
+		return ((ResponseEntity<Object>) doGet(url, Object.class, null, false)).getBody();
+	}
+	
+	@Override
+	public Object deleteHistoricDecisionInstances(Map<String, Object> body){
+		String url = camundaUrl + "/engine-rest/history/decision-instance/delete";
+		return ((ResponseEntity<Object>) doPost(url, body, null, null)).getBody();
+	}
+	
+	@Override
+	public Object setHistoricDecisionInstanceRemovalTime(Map<String, Object> body){
+		String url = camundaUrl + "/engine-rest/history/decision-instance/set-removal-time";
+		return ((ResponseEntity<Object>) doPost(url, body, null, null)).getBody();
+	}
+	
+	@Override
 	protected HttpHeaders addAuthHeader(HttpHeaders headers, CIBUser user) {
 		if (user != null) headers.add("Authorization", user.getAuthToken());
 		return headers;

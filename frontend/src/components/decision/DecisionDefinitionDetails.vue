@@ -51,16 +51,6 @@
     <span class="col-12">{{ historyTimeToLive + ' ' + $t('decision.days') }}</span>
   </div>
   <hr class="my-2">
-  <div class="row">
-    <span class="text-secondary font-weight-bold col-5 pe-0">{{ $t('decision.details.firstStart') }}</span>
-    <span class="col-7 text-end">{{ getDate('min') }}</span>
-  </div>
-  <hr class="my-2">
-  <div class="row">
-    <span class="text-secondary font-weight-bold col-5 pe-0">{{ $t('decision.details.lastStart') }}</span>
-    <span class="col-7 text-end">{{ getDate('max') }}</span>
-  </div>
-  <hr class="my-2">
   <div class="row align-items-center">
     <span class="text-secondary font-weight-bold col-8 pe-0">{{ $t('decision.details.unfinishedInstances') }}</span>
     <span class="col-4 text-end">{{ version.runningInstances }}</span>
@@ -91,10 +81,15 @@
 </template>
 
 <script>
-import moment from 'moment'
-import { DecisionService } from '@/services.js'
+
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
+
+/* 
+  TODO: Refactor this class.
+  TODO[ivan]: Establish same arquitecture than Process, to navigate easily via URL
+  TODO[ivan]: Implement updateHistoryTimeToLive
+*/
 
 export default {
   name: 'DecisionDefinitionDetails',
@@ -116,25 +111,11 @@ export default {
     this.historyTimeToLive = this.version.historyTimeToLive
   },
   methods: {
-    getDate: function(type) {
-      if (this.instances.length === 0) return null
-      var date = type === 'min' ?
-          Math.min.apply(Math, this.instances.map(i => { return moment(i.startTimeOriginal) })) :
-          Math.max.apply(Math, this.instances.map(i => { return moment(i.startTimeOriginal) }))
-      return moment(date).format('LL HH:mm')
-    },
     editHistoryTimeToLive: function() {
       this.historyTimeToLiveChanged = this.historyTimeToLive
       this.$refs.historyTimeToLive.show()
     },
-    updateHistoryTimeToLive: function() {
-      var data = { historyTimeToLive: this.historyTimeToLiveChanged || null }
-      DecisionService.updateHistoryTimeToLive(this.version.id, data).then(() => {
-        this.historyTimeToLive = data.historyTimeToLive
-        this.$refs.historyTimeToLive.hide()
-        this.$emit('onUpdateHistoryTimeToLive', this.version.id, data.historyTimeToLive);
-      })
-    }
+    updateHistoryTimeToLive: function() { }
   }
 }
 </script>

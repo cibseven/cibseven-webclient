@@ -83,7 +83,7 @@ Promise.all([
           },
           loadDecisions() {
             const method = 'getDecisionList'
-            return this.$store.dispatch(method).then((result) => {
+            return this.$store.dispatch(method, { latestVersion: true }).then((result) => {
                 const decisions = result
                 decisions.forEach(decision => decision.loading = false)
                 this.$store.commit('setDecisions', { decisions })

@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -136,6 +135,38 @@ public class DecisionService extends BaseService implements InitializingBean {
 			@Parameter(description = "Decision definition key") @PathVariable String key,
 			@RequestParam Optional<Boolean> lazyLoad, Locale loc) {
 		return bpmProvider.getDecisionVersionsByKey(key, lazyLoad);
+	}
+	
+	@Operation(summary = "Get a list of historic decision instances")
+	@GetMapping("/history/instances")
+	public Object getHistoricDecisionInstances(@RequestParam Map<String, Object> queryParams) {
+	    return bpmProvider.getHistoricDecisionInstances(queryParams);
+	}
+	
+	@Operation(summary = "Get the count of historic decision instances")
+	@GetMapping("/history/instances/count")
+	public Object getHistoricDecisionInstanceCount(@RequestParam Map<String, Object> queryParams) {
+	    return bpmProvider.getHistoricDecisionInstanceCount(queryParams);
+	}
+
+	@Operation(summary = "Get a single historic decision instance by ID")
+	@GetMapping("/history/instances/{id}")
+	public Object getHistoricDecisionInstanceById(
+	        @PathVariable String id,
+	        @RequestParam Map<String, Object> queryParams) {
+	    return bpmProvider.getHistoricDecisionInstanceById(id, queryParams);
+	}
+
+	@Operation(summary = "Delete historic decision instances asynchronously")
+	@PostMapping("/history/instances/delete")
+	public Object deleteHistoricDecisionInstances(@RequestBody Map<String, Object> body) {
+	    return bpmProvider.deleteHistoricDecisionInstances(body);
+	}
+
+	@Operation(summary = "Set removal time for historic decision instances asynchronously")
+	@PostMapping("/history/instances/set-removal-time")
+	public Object setHistoricDecisionInstanceRemovalTime(@RequestBody Map<String, Object> body) {
+	    return bpmProvider.setHistoricDecisionInstanceRemovalTime(body);
 	}
 	
 }

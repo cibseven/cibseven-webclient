@@ -924,4 +924,10 @@ public interface BpmProvider {
 	Object getXmlById(String id);
 	Collection<Decision> getDecisionVersionsByKey(String key, Optional<Boolean> lazyLoad);
 	
+	Object getHistoricDecisionInstances(Map<String, Object> queryParams);
+	Object getHistoricDecisionInstanceCount(Map<String, Object> queryParams);
+	Object getHistoricDecisionInstanceById(String id, Map<String, Object> queryParams);
+	Object deleteHistoricDecisionInstances(Map<String, Object> body);
+	Object setHistoricDecisionInstanceRemovalTime(Map<String, Object> body);
+	
 }

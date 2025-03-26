@@ -869,13 +869,52 @@
 		"newTasksTitle": "Ihnen wurden neue Aufgaben in CIB flow zugewiesen."
 	},
 	"decision" : {
+		"id": "ID",
 		"name": "Name",
 		"actions": "Aktionen",
 		"emptyProcessList": "Ihre Entscheidungsliste ist derzeit leer.",
 		"emptyProcessListFiltered": "Es gibt keinen Entscheidung für den angewandten Filter.",
 		"decision": "Entscheidung",
+		"deleteProcessDefinition": "Prozessdefinition löschen",
+		"refreshVersions": "Historische Versionen aktualisieren",
+		"loadVersions": "Alle Versionen der Historie laden",
+		"days": "Tage",
+		"instances": "Instanzen",
+		"activateProcess": "Prozessdefinition aktivieren",
+		"downloadBpmn": "BPMN file herunterladen",
+		"showDeployment": "Deployment ansehen",
+		"showInstance": "Instanz anzeigen",
+		"evaluationTime": "Evaluation Time",
+		"callingProcess": "Calling Process/Case",
+		"callingInstanceId": "Calling Instance ID",
+		"activityId": "Activity ID",
+		"copySuccess": "Ausgewählter Wert kopiert",
 		"details": {
-			"historyVersions": "Historie versionen"
+			"titleProcessActions": "Aktionen zur Prozessdefinition",
+			"titleInstancesActions": "Aktionen zu dem Prozess",
+			"firstStart": "Erster Start am",
+			"lastStart": "Letzter Start am",
+			"totalInstances": "Gesamtanzahl der Instanzen",
+			"unfinishedInstances": "Laufende Instanzen",
+			"finishedInstances": "Abgeschlossene Instanzen ohne Fehler",
+			"definitionVersion": "Definition der Version",
+			"versionTag": "Versionstag",
+			"definitionId": "Definition ID",
+			"definitionKey": "Definitionsschlüssel",
+			"definitionName": "Definition Name",
+			"deploymentId": "Deployment-ID",
+			"instancesRunning": "Laufende Instanzen",
+			"currentVersion": "Aktuelle Version",
+			"allVersions": "Alle Versionen",
+			"versionInstances": "Instanzen dieser Version",
+			"historyVersions": "Historie versionen",
+			"variable": "Prozessvariablen",
+			"copyValue": "Wert kopieren",
+			"historyTimeToLive": "Geschichte Zeit zu leben"
 		}
+	},
+	"decision-instance": {
+		"edit": "Bearbeiten",
+		"save": "Speichern"
 	}
 }
