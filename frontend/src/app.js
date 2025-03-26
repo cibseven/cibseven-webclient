@@ -81,6 +81,14 @@ Promise.all([
                   this.$store.commit('setProcesses', { processes })
               })
           },
+          loadDecisions() {
+            const method = 'getDecisionList'
+            return this.$store.dispatch(method).then((result) => {
+                const decisions = result
+                decisions.forEach(decision => decision.loading = false)
+                this.$store.commit('setDecisions', { decisions })
+            })
+          },
           isMobile: isMobile,
           AuthService: AuthService
         }

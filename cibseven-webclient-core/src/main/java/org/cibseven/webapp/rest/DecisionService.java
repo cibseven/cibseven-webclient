@@ -3,11 +3,13 @@ package org.cibseven.webapp.rest;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.providers.SevenProvider;
 import org.cibseven.webapp.rest.model.Decision;
+import org.cibseven.webapp.rest.model.Process;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,10 +17,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
@@ -125,6 +129,13 @@ public class DecisionService extends BaseService implements InitializingBean {
 	@GetMapping("/id/{id}/xml")
 	public Object getXmlById(@PathVariable String id) {
 		return bpmProvider.getXmlById(id);
+	}
+	
+	@GetMapping("/key/{key}/versions")
+	public Collection<Decision> getDecisionVersionsByKey(
+			@Parameter(description = "Decision definition key") @PathVariable String key,
+			@RequestParam Optional<Boolean> lazyLoad, Locale loc) {
+		return bpmProvider.getDecisionVersionsByKey(key, lazyLoad);
 	}
 	
 }

@@ -1,5 +1,6 @@
 package org.cibseven.webapp.providers;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +50,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.multipart.MultipartFile;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -844,4 +847,9 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 		return decisionProvider.getXmlById(id);
 	}
 
+	@Override
+	public Collection<Decision> getDecisionVersionsByKey(String key, Optional<Boolean> lazyLoad) {
+		return decisionProvider.getDecisionVersionsByKey(key, lazyLoad);
+	}
+	
 }

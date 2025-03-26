@@ -621,7 +621,10 @@
 		"easyForm": "Easy Form",
 		"adminPanel": "Benutzerverwaltung",
 		"properties": "Properties",
-		"resources": "Ressourcen"
+		"resources": "Ressourcen",
+		"adminProcesses": "Prozesses",
+		"adminDecisions": "Decisions",
+		"adminHumanTasks": "Human Tasks"
 	},
 	"errors": {		
 		"invalid": "Es fehlt eine gültige Eingabe",
@@ -864,5 +867,15 @@
 	"notification": {
 		"newTasks": "Neue Aufgaben",
 		"newTasksTitle": "Ihnen wurden neue Aufgaben in CIB flow zugewiesen."
+	},
+	"decision" : {
+		"name": "Name",
+		"actions": "Aktionen",
+		"emptyProcessList": "Ihre Entscheidungsliste ist derzeit leer.",
+		"emptyProcessListFiltered": "Es gibt keinen Entscheidung für den angewandten Filter.",
+		"decision": "Entscheidung",
+		"details": {
+			"historyVersions": "Historie versionen"
+		}
 	}
 }

@@ -415,5 +415,20 @@ var TemplateService = {
   }
 }
 
-export { TaskService, FilterService, ProcessService, AdminService,
+var DecisionService = {
+  getDecisionList: function() {
+    return axios.get(appConfig.servicesBasePath + "/decision")
+  },
+  getDecisionVersionsByKey: function(key, lazyLoad = false) {
+    return axios.get(appConfig.servicesBasePath + "/decision/key/" + key + "/versions" + '?lazyLoad=' + lazyLoad)
+  },
+  getDecisionDefinitionById: function(id, extraInfo = false) {
+    return axios.get(appConfig.servicesBasePath + "/decision/id/" + id + '?extraInfo=' + extraInfo)
+  },
+  getDecisionByKey: function(key) {
+    return axios.get(appConfig.servicesBasePath + "/decision/key/" + key)
+  }
+}
+
+export { TaskService, FilterService, ProcessService, AdminService, DecisionService,
   HistoryService, IncidentService, AuthService, InfoService, FormsService, TemplateService }

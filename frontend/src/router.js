@@ -10,6 +10,8 @@ import StartView from '@/components/start/StartView.vue'
 import StartProcessView from '@/components/start-process/StartProcessView.vue'
 import ProcessView from '@/components/process/ProcessView.vue'
 import ProcessListView from '@/components/processes/list/ProcessListView.vue'
+import DecisionView from '@/components/decision/DecisionView.vue'
+import DecisionListView from '@/components/decisions/list/DecisionListView.vue'
 import UsersManagement from '@/components/admin/UsersManagement.vue'
 import AdminUsers from '@/components/admin/AdminUsers.vue'
 import CreateUser from '@/components/admin/CreateUser.vue'
@@ -82,10 +84,11 @@ const router = createRouter({
         components: { BWaitingBox }, template: '<BWaitingBox ref="loader" class="d-flex justify-content-center" styling="width:20%">\
           <router-view ref="down" class="w-100 h-100"></router-view></BWaitingBox>',
         mixins: [permissionsMixin],
-        inject: ['loadProcesses'],
+        inject: ['loadProcesses', 'loadDecisions'],
         mounted: function() {
           this.$refs.loader.done = true
           this.$refs.loader.wait(this.loadProcesses(false))
+          this.$refs.loader.wait(this.loadDecisions())
           // Preload the filters to have them in the admin view.
           this.$store.dispatch('findFilters').then(response => {
             this.$store.commit('setFilters',
@@ -126,6 +129,16 @@ const router = createRouter({
         { path: 'process/:processKey/:versionIndex?', name: 'process', beforeEnter: permissionsGuard('cockpit'),
           component: ProcessView, props: route => ({
             processKey: route.params.processKey,
+            versionIndex: route.params.versionIndex,
+          })
+        },
+        { path: 'decisions', redirect: '/seven/auth/decisions/list', beforeEnter: permissionsGuard('cockpit') },
+        { path: 'decisions/list', name: 'decisionManagement', beforeEnter: permissionsGuard('cockpit'),
+          component: DecisionListView
+        },
+        { path: 'decision/:decisionKey/:versionIndex?', name: 'decision', beforeEnter: permissionsGuard('cockpit'),
+          component: DecisionView, props: route => ({
+            processKey: route.params.decisionKey,
             versionIndex: route.params.versionIndex,
           })
         },

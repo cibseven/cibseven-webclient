@@ -922,5 +922,6 @@ public interface BpmProvider {
 	Object evaluateDecisionDefinitionById(String id);
 	Object updateHistoryTTLById(String id);
 	Object getXmlById(String id);
+	Collection<Decision> getDecisionVersionsByKey(String key, Optional<Boolean> lazyLoad);
 	
 }

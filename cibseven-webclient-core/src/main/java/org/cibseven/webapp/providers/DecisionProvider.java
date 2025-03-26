@@ -3,14 +3,18 @@ package org.cibseven.webapp.providers;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.providers.SevenProviderBase;
 import org.cibseven.webapp.rest.model.Decision;
+import org.cibseven.webapp.rest.model.Process;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 @Component
 public class DecisionProvider extends SevenProviderBase implements IDecisionProvider{
@@ -115,6 +119,24 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 	public Object getXmlById(String id) {
 		String url = camundaUrl + "/engine-rest/decision-definition/" + id + "/xml";
 		return ((ResponseEntity<Object>) doGet(url, Object.class, null, false)).getBody();
+	}
+	
+	@Override
+	public Collection<Decision> getDecisionVersionsByKey(String key, Optional<Boolean> lazyLoad) {
+		String url = camundaUrl + "/engine-rest/decision-definition?key=" + key + "&sortBy=version&sortOrder=desc";
+		Collection<Decision> decisions = Arrays.asList(((ResponseEntity<Decision[]>) doGet(url, Decision[].class, null, false)).getBody());		
+		
+		if (!lazyLoad.isPresent() || (lazyLoad.isPresent() && !lazyLoad.get())) {
+			for(Decision decision : decisions) {
+				String urlInstances = camundaUrl + "/engine-rest/history/process-instance/count?processDefinitionId=" + decision.getId();
+				decision.setAllInstances(((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, null, false)).getBody().get("count").asLong());
+				urlInstances = camundaUrl + "/engine-rest/history/process-instance/count?unfinished=true&processDefinitionId=" + decision.getId();
+				decision.setRunningInstances(((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, null, false)).getBody().get("count").asLong());
+				urlInstances = camundaUrl + "/engine-rest/history/process-instance/count?completed=true&processDefinitionId=" + decision.getId();
+				decision.setCompletedInstances(((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, null, false)).getBody().get("count").asLong());
+			}
+		}
+		return decisions;
 	}
 	
 	@Override

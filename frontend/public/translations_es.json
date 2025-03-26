@@ -620,7 +620,10 @@
 		"easyForm": "Easy Form",
 		"adminPanel": "Gestión de Usuarios",
 		"properties": "Propiedades",		
-		"resources": "Recursos"
+		"resources": "Recursos",
+		"adminProcesses": "Prozesses",
+		"adminDecisions": "Decisions",
+		"adminHumanTasks": "Human Tasks"
 	},
 	"errors": {
 		"invalid": "Por favor, introduce un valor válido",
@@ -861,5 +864,11 @@
 	"notification": {
 		"newTasks": "Nuevas tareas",
 		"newTasksTitle": "Tiene nuevas tareas asignadas en CIB flow"
+	},
+	"decision" : {
+		"name": "Nombre",
+		"actions": "Actions",
+		"emptyProcessList": "Actualmente su lista de decisiones está vacía.",
+		"emptyProcessListFiltered": "No existe ninguna decision para el filtro aplicado."
 	}
 }
