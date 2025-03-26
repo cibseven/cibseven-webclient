@@ -27,8 +27,9 @@
           :activity-instance="activityInstance"
           :first-result="firstResult"
           :max-results="maxResults"
-          @show-more="showMore()"
           :activity-instance-history="activityInstanceHistory"
+          :incidents="incidents"
+          @show-more="showMore()"
           @activity-id="filterByActivityId($event)"
           @instance-deleted="clearInstance()"
           @instance-selected="setSelectedInstance($event)"
@@ -50,7 +51,7 @@
 <script>
 import { nextTick } from 'vue'
 import moment from 'moment'
-import { TaskService, ProcessService, HistoryService } from '@/services.js'
+import { TaskService, ProcessService, HistoryService, IncidentService } from '@/services.js'
 import Process from '@/components/process/Process.vue'
 import ProcessDetailsSidebar from '@/components/process/ProcessDetailsSidebar.vue'
 import ProcessVariablesTable from '@/components/process/ProcessVariablesTable.vue'
@@ -197,7 +198,7 @@ export default {
           v.completedInstances = '-'
         })
 
-        if (selectedProcess != null) {
+        if (selectedProcess) {
           ProcessService.findProcessById(selectedProcess.id, true).then(process => {
             for (let v of this.processDefinitions) {
               if (v.id === process.id) {
@@ -219,6 +220,7 @@ export default {
         this.firstResult = 0
         this.process = process
         this.loadInstances()
+        this.loadIncidents()
         if (!this.process.statistics) this.loadStatistics()
         if (!this.process.activitiesHistory) this.loadProcessActivitiesHistory()
       }
@@ -371,6 +373,9 @@ export default {
       var csvBlob = new Blob([csvContent], { type: 'text/csv' })
       var filename = 'Management_Instances_' + moment().format('YYYYMMDD_HHmm') + '.csv'
       this.$refs.importPopper.triggerDownload(csvBlob, filename)
+    },
+    async loadIncidents() {
+      this.incidents = await IncidentService.findIncidents(this.process.id)
     }
   }
 }

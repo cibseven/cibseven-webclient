@@ -1,6 +1,6 @@
 <template>
   <div class="overflow-auto bg-white position-absolute container-fluid g-0" style="top: 0; bottom: 0">
-    <FlowTable v-if="!loading && selectedInstance.incidents.length > 0" striped thead-class="sticky-header" :items="selectedInstance.incidents" primary-key="id" prefix="process-instance.incidents."
+    <FlowTable v-if="incidents.length > 0" striped thead-class="sticky-header" :items="incidents" primary-key="id" prefix="process-instance.incidents."
       sort-by="label" :sort-desc="true" :fields="[
       { label: 'message', key: 'incidentMessage', class: 'col-3', tdClass: 'py-1 border-end border-top-0' },
       { label: 'timestamp', key: 'incidentTimestamp', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
@@ -15,7 +15,7 @@
         <div :title="table.item.incidentTimestamp" class="text-truncate">{{ showPrettyTimestamp(table.item.incidentTimestamp) }}</div>
       </template>
       <template v-slot:cell(activityId)="table">
-        <div :title="table.item.activityId" class="text-truncate">{{ this.getActivityName(table.item.activityId) }}</div>
+        <div :title="table.item.activityId" class="text-truncate">{{ getActivityName(table.item.activityId) }}</div>
       </template>
       <template v-slot:cell(failedActivityId)="table">
         <div :title="table.item.failedActivityId" class="text-truncate">{{ getFailingActivity(table.item.failedActivityId) }}</div>
@@ -30,9 +30,6 @@
         </b-button>
       </template>
     </FlowTable>
-    <div v-else-if="loading">
-      <p class="text-center p-4"><BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}</p>
-    </div>
     <div v-else>
       <p class="text-center p-4">{{ $t('process-instance.noIncidents') }}</p>
     </div>
@@ -78,7 +75,10 @@ export default {
     }
   },
   props: {
-    getFailingActivity: Function
+    getFailingActivity: Function,
+    incidents: Array,
+	  activityInstance: Object,
+    activityInstanceHistory: Object
   },
   methods: {
     getActivityName: function(activityId) {
@@ -87,20 +87,16 @@ export default {
         result = this.activityInstance.childTransitionInstances.find(activity => {
           return activity.activityId === activityId
         })
-        if (result !== undefined) {
-          return result.activityName
-        }
+        if (result) return result.activityName
       }
       // original code
-      result = this.activityInstanceHistory.find(activity => {
-        return activity.activityId === activityId
-      })
-      if (result !== undefined) {
-        return result.activityName
+      if (this.activityInstanceHistory) {
+        result = this.activityInstanceHistory.find(activity => {
+          return activity.activityId === activityId
+        })
       }
-      else {
-        return 'N/A'
-      }
+      if (result)  return result.activityName
+      else return 'N/A'
     },
     showIncidentMessage: function(jobDefinitionId) {
       this.stackTraceMessage = ''
@@ -114,7 +110,7 @@ export default {
     },
     retryJob: function(jobDefinitionId) {
       IncidentService.retryJobById(jobDefinitionId).then(() => {
-        this.selectedInstance.incidents.splice(this.selectedInstance.incidents.findIndex(obj => obj.configuration === jobDefinitionId), 1)
+        this.incidents.splice(this.incidents.findIndex(obj => obj.configuration === jobDefinitionId), 1)
         this.$refs.successRetryJob.show()
       })
     }
