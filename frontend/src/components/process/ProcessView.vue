@@ -15,7 +15,7 @@
       <transition name="slide-in" mode="out-in">
         <Process ref="process" v-if="instances && !selectedInstance" :activity-id="activityId" :loading="loading" :process="process" :instances="instances" :activity-instance="activityInstance" :first-result="firstResult" :max-results="maxResults" @show-more="showMore()"
         :activity-instance-history="activityInstanceHistory" @activity-id="filterByActivityId($event)" @instance-deleted="clearInstance()" @instance-selected="setSelectedInstance($event)" @task-selected="setSelectedTask($event)" @filter-instances="filterInstances($event)"
-        @open-subprocess="openSubprocess($event)" @update-items="updateItems"
+        @open-subprocess="openSubprocess($event)" @update-items="updateItems" :incidents="incidents"
         ></Process>
       </transition>
       <transition name="slide-in" mode="out-in">
@@ -30,7 +30,7 @@
 <script>
 import { nextTick } from 'vue'
 import moment from 'moment'
-import { TaskService, ProcessService, HistoryService } from '@/services.js'
+import { TaskService, ProcessService, HistoryService, IncidentService } from '@/services.js'
 import Process from '@/components/process/Process.vue'
 import ProcessDetailsSidebar from '@/components/process/ProcessDetailsSidebar.vue'
 import ProcessVariablesTable from '@/components/process/ProcessVariablesTable.vue'
@@ -67,7 +67,8 @@ export default {
       maxResults: this.$root.config.maxProcessesResults,
       filter: '',
       activityId: '',
-      loading: false
+      loading: false,
+      incidents: []
     }
   },
   computed: {
@@ -112,8 +113,7 @@ export default {
           let requestedDefinition = processDefinitions.find(processDefinition => processDefinition.version === this.versionIndex)
           if (requestedDefinition) {
               this.loadProcessVersion(requestedDefinition)
-          }
-          else {
+          } else {
             // definition is no longer available
             // let's redirect to the latest one
             this.loadProcessByDefinitionKey(processKey, undefined)
@@ -132,6 +132,7 @@ export default {
         this.firstResult = 0
         this.process = process
         this.loadInstances()
+        this.loadIncidents()
         if (!this.process.statistics) this.loadStatistics()
         if (!this.process.activitiesHistory) this.loadProcessActivitiesHistory()
       }
@@ -291,6 +292,9 @@ export default {
       var csvBlob = new Blob([csvContent], { type: 'text/csv' })
       var filename = 'Management_Instances_' + moment().format('YYYYMMDD_HHmm') + '.csv'
       this.$refs.importPopper.triggerDownload(csvBlob, filename)
+    },
+    async loadIncidents() {
+      this.incidents = await IncidentService.findIncidents(this.process.id)
     }
   }
 }
