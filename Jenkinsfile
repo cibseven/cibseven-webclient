@@ -171,8 +171,16 @@ pipeline {
             }
             steps {
                 script {
-                    withMaven() {
-                        sh "mvn -T4 -Dbuild.number=${BUILD_NUMBER} clean install -Drelease-common-components=true"
+                    withCredentials([file(credentialsId: 'npmrc', variable: 'NPMRC_FILE')]) {
+                        withMaven() {
+                            sh """
+                                # Copy the .npmrc file to the frontend directory
+                                cp ${NPMRC_FILE} ./frontend/.npmrc
+                                
+                                # Run Maven with the required profile
+                                mvn -T4 -Dbuild.number=${BUILD_NUMBER} clean install -Drelease-common-components=true
+                            """
+                        }
                     }
                 }
             }
