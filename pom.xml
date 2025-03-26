@@ -167,6 +167,16 @@
 								</goals>
 							</execution>
 							<execution>
+								<id>npm ci</id>
+								<goals>
+									<goal>npm</goal>
+								</goals>
+								<phase>generate-resources</phase>
+								<configuration>
+									<arguments>ci --no-audit --no-fund</arguments>
+								</configuration>
+							</execution>
+							<execution>
 								<id>Build</id>
 								<goals>
 									<goal>npm</goal>
