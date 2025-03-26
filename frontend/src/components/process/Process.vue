@@ -64,7 +64,7 @@
       </div>
       <div v-show="activeTab === 'jobDefinitions'">
         <div ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 0px; left: 0; bottom: 0" @scroll="handleScrollProcesses">
-          <JobDefinitionsTable ref="jobDefinitionsTable" :processId="process.id" :activityMap="activityMap"></JobDefinitionsTable>			
+          <JobDefinitionsTable ref="jobDefinitionsTable" :processId="process.id" :activityMap="activityMap" @highlight-activity="highlightActivity"></JobDefinitionsTable>			
         </div>
       </div>
       <!--
@@ -233,6 +233,9 @@ export default {
         })
         this.$refs.success.show()
       })
+    },
+    highlightActivity: function(jobDefinition) {
+      this.$refs.diagram.highlightElement(jobDefinition)
     },
     handleScrollProcesses: function(el) {
       if (this.instances.length < this.firstResult) return

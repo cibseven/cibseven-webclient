@@ -1,6 +1,7 @@
 <template>
-    <FlowTable if="jobDefinitions.length" striped thead-class="sticky-header" :items="jobDefinitions" primary-key="id" prefix="process-instance.jobDefinitions."
-      sort-by="label" :sort-desc="true" :fields="[
+    <FlowTable if="jobDefinitions.length" striped thead-class="sticky-header" @click="showJobDefinition($event)" 
+      :items="jobDefinitions" primary-key="id" prefix="process-instance.jobDefinitions." sort-by="label" 
+      :sort-desc="true" :fields="[
       { label: 'state', key: 'suspended', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
       { label: 'activity', key: 'activityId', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
       { label: 'type', key: 'jobType', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
@@ -22,11 +23,11 @@
         <b-button :title="stateActionKey(table.item)"
           size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px"
           :class="table.item.suspended ? 'mdi-play' : 'mdi-pause'"
-          @click="openChangeStateJobModal(table.item)">
+          @click.stop="openChangeStateJobModal(table.item)">
         </b-button>
         <b-button :title="$t('process-instance.jobDefinitions.changeJobPriority')"
           size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-cog"
-          @click="openChangeJobPriorityModal(table.item)">
+          @click.stop="openChangeJobPriorityModal(table.item)">
         </b-button>
       </template>      
     </FlowTable>
@@ -115,6 +116,7 @@ export default {
     processId: String,
     activityMap: Object
   },
+  emits: ['highlight-activity'],
   data: function() {
     const now = new Date()
     now.setMinutes(now.getMinutes() + 5)
@@ -156,6 +158,9 @@ export default {
       }).then(res => {
         this.jobDefinitions = res
       })
+    },
+    showJobDefinition: function(jobDefinition) {
+      this.$emit('highlight-activity', jobDefinition)
     },
     getStateLabel: function(item) {
       return item.suspended

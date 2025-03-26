@@ -223,7 +223,15 @@ export default {
             event.gfx.classList.remove('selectable', 'highlight')
         })
       })
-
+      
+      const activityMap = {}
+      elementRegistry.getAll().forEach(el => {
+        const bo = el.businessObject
+        if (bo?.id && bo?.name) {
+          activityMap[bo.id] = bo.name
+        }
+      })
+      this.$emit('activity-map-ready', activityMap)
     },
     drawActivitiesHistory: function(activities, elementRegistry, overlays) {
       var filledActivities = {}
@@ -279,7 +287,49 @@ export default {
           this.$emit('open-subprocess', process)
         }
       })
+    },
+    drawJobDefinitionBadges: function() {
+      /*const overlays = this.viewer.get('overlays')
+      this.jobDefinitions.forEach(jobDefinition => {
+        if (jobDefinition.suspended) {
+          const suspendedBadge = `
+            <span class="badge bg-danger rounded-pill text-white border border-dark px-2 py-1">
+              <span class="mdi mdi-pause"></span>
+            </span>`
+          this.setHtmlOnDiagram(
+            overlays,
+            jobDefinition.activityId,
+            suspendedBadge,
+            { top: -10, right: 10 }
+          )
+        }
+      })*/
+    },
+    highlightElement: function(jobDefinition) {
+      const elementRegistry = this.viewer.get('elementRegistry')
+      const canvas = this.viewer.get('canvas')
+      const element = elementRegistry.get(jobDefinition.activityId)
+      if (!element) return
+      if (this.currentHighlight) {
+        this.currentHighlight.classList.remove('bpmn-highlight')
+      }
+
+      const gfx = elementRegistry.getGraphics(element)
+      const shape = gfx.querySelector('rect, path')
+      if (shape) {
+        shape.classList.add('bpmn-highlight')
+        this.currentHighlight = shape
+      }
+      canvas.scrollToElement(jobDefinition.activityId)
     }
   }
 }
 </script>
+<style>
+  .bpmn-highlight {
+    stroke: var(--info) !important;
+    stroke-width: 2px !important;
+    fill-opacity: 0.1 !important;
+    fill: var(--info) !important;
+  }
+</style>
