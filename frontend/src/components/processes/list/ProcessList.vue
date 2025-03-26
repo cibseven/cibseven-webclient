@@ -53,11 +53,11 @@
         </template>
         <template v-slot:cell(actions)="table">
           <component :is="ProcessDefinitionActions" v-if="ProcessDefinitionActions" :focused="focused" :item="table.item"></component>
-          <b-button :disabled="focused !== table.item" style="opacity: 1" :href="'#/seven/auth/process/' + table.item.key" class="px-2 border-0 shadow-none" :title="$t('process.showManagement')" variant="link">
+          <b-button :disabled="focused !== table.item" style="opacity: 1" @click.stop="goToShowProcessHistory(table.item)" class="px-2 border-0 shadow-none" :title="$t('process.showManagement')" variant="link">
             <span class="mdi mdi-18px mdi-account-tie-outline"></span>
           </b-button>
           <span class="border-start h-50" :class="focused === table.item ? 'border-secondary' : ''"></span>
-          <b-button :disabled="focused !== table.item" style="opacity: 1" :href="'#/seven/auth/deployments/' + table.item.deploymentId" class="px-2 border-0 shadow-none" :title="$t('process.showDeployment')" variant="link">
+          <b-button :disabled="focused !== table.item" style="opacity: 1" @click.stop="goToDeployment(table.item)" class="px-2 border-0 shadow-none" :title="$t('process.showDeployment')" variant="link">
             <span class="mdi mdi-18px mdi-file-eye-outline"></span>
           </b-button>
           <span class="border-start h-50" :class="focused === table.item ? 'border-secondary' : ''"></span>
@@ -144,6 +144,9 @@ export default {
     })
   },
   methods: {
+    goToDeployment: function(process) {
+      this.$router.push('/seven/auth/deployments/' + process.deploymentId)
+    },
     goToCockpit: function(process) {
       window.open(this.$root.config.cockpitUrl + '#/process-definition/' + process.id, '_blank')
     },
