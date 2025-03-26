@@ -1,5 +1,6 @@
 package org.cibseven.webapp.providers;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +50,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.multipart.MultipartFile;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -844,4 +847,34 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 		return decisionProvider.getXmlById(id);
 	}
 
+	@Override
+	public Collection<Decision> getDecisionVersionsByKey(String key, Optional<Boolean> lazyLoad) {
+		return decisionProvider.getDecisionVersionsByKey(key, lazyLoad);
+	}
+	
+	@Override
+	public Object getHistoricDecisionInstances(Map<String, Object> queryParams){
+		return decisionProvider.getHistoricDecisionInstances(queryParams);
+	}
+	
+	@Override
+	public Object getHistoricDecisionInstanceCount(Map<String, Object> queryParams){
+		return decisionProvider.getHistoricDecisionInstanceCount(queryParams);
+	}
+	
+	@Override
+	public Object getHistoricDecisionInstanceById(String id, Map<String, Object> queryParams){
+		return decisionProvider.getHistoricDecisionInstanceById(id, queryParams);
+	}
+	
+	@Override
+	public Object deleteHistoricDecisionInstances(Map<String, Object> body){
+		return decisionProvider.deleteHistoricDecisionInstances(queryParams);
+	}
+	
+	@Override
+	public Object setHistoricDecisionInstanceRemovalTime(Map<String, Object> body){
+		return decisionProvider.setHistoricDecisionInstanceRemovalTime(queryParams);
+	}
+	
 }

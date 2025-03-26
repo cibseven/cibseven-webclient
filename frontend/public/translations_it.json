@@ -520,7 +520,10 @@
 		"userAdmin": "Gestione utenti",
 		"modeler": "Modellatore di processo",
 		"easyForm": "Easy Form",
-		"adminPanel": "Users Management"
+		"adminPanel": "Users Management",
+		"adminProcesses": "Prozesses",
+		"adminDecisions": "Decisions",
+		"adminHumanTasks": "Human Tasks"
 	},
 	"errors": {
 		"invalid": "Inserisci un indirizzo valido",
@@ -708,5 +711,11 @@
 	"notification": {
 		"newTasks": "Nuove attività",
 		"newTasksTitle": "Hai ricevuto nuove attività assegnate su CIB flow"
+	},
+	"decision" : {
+		"name": "Nome",
+		"actions": "Azioni",
+		"emptyProcessList": "La lista dei decisione è attualmente vuota.",
+		"emptyProcessListFiltered": "La lista dei decisione è attualmente vuota."
 	}
 }

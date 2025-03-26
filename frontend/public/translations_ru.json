@@ -620,7 +620,10 @@
 		"easyForm": "Easy Form",
 		"adminPanel": "Управление пользователями",
 		"properties": "Properties",
-		"resources": "Ресурсы"
+		"resources": "Ресурсы",
+		"adminProcesses": "Prozesses",
+		"adminDecisions": "Decisions",
+		"adminHumanTasks": "Human Tasks"
 	},
 	"errors": {
 		"invalid": "Пожалуйста, введите достоверную информацию",
@@ -863,5 +866,11 @@
 	"notification": {
 		"newTasks": "Новые задачи",
 		"newTasksTitle": "Вы получили новые задачи, назначенные на CIB flow"
+	},
+	"decision" : {
+		"name": "Имя",
+		"actions": "Действия",
+		"emptyProcessList": "Ваш список решений пуст.",
+		"emptyProcessListFiltered": "Для примененного фильтра нет решений."
 	}
 }

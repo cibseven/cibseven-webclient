@@ -2,6 +2,7 @@ package org.cibseven.webapp.providers;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.rest.model.Decision;
@@ -25,4 +26,10 @@ public interface IDecisionProvider {
 	public Object evaluateDecisionDefinitionById(String id);
 	public Object updateHistoryTTLById(String id);
 	public Object getXmlById(String id);
+	public Collection<Decision> getDecisionVersionsByKey(String key, Optional<Boolean> lazyLoad);
+	public Object getHistoricDecisionInstances(Map<String, Object> queryParams);
+	public Object getHistoricDecisionInstanceCount(Map<String, Object> queryParams);
+	public Object getHistoricDecisionInstanceById(String id, Map<String, Object> queryParams);
+	public Object deleteHistoricDecisionInstances(Map<String, Object> body);
+	public Object setHistoricDecisionInstanceRemovalTime(Map<String, Object> body);
 }
