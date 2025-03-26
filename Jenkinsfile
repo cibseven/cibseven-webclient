@@ -171,7 +171,7 @@ pipeline {
             }
             steps {
                 script {
-                    withCredentials([file(credentialsId: 'npmrc', variable: 'NPMRC_FILE')]) {
+                    withCredentials([file(credentialsId: 'credential-cibseven-artifacts-npmrc', variable: 'NPMRC_FILE')]) {
                         withMaven() {
                             sh """
                                 # Copy the .npmrc file to the frontend directory
