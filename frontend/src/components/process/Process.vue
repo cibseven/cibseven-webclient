@@ -62,6 +62,9 @@
           </div>
         </div>
       </div>
+      <div v-else-if="activeTab === 'incidents'" ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 60px; left: 0; bottom: 0">
+        <IncidentsTable v-if="!loading" :incidents="incidents" :activity-instance="activityInstance" :activity-instance-history="process.activitiesHistory" :get-failing-activity="getFailingActivity"></IncidentsTable>
+      </div>
       <div v-show="activeTab === 'jobDefinitions'">
         <div ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 0px; left: 0; bottom: 0" @scroll="handleScrollProcesses">
           <JobDefinitionsTable ref="jobDefinitionsTable" :processId="process.id" :activityMap="activityMap" @highlight-activity="highlightActivity"></JobDefinitionsTable>			
@@ -101,6 +104,7 @@ import { permissionsMixin } from '@/permissions.js'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
 import InstancesTable from '@/components/process/InstancesTable.vue'
 import JobDefinitionsTable from '@/components/process/tables/JobDefinitionsTable.vue'
+import IncidentsTable from '@/components/process/tables/IncidentsTable.vue'
 import MultisortModal from '@/components/process/MultisortModal.vue'
 // import FlowTable from '@/components/common-components/FlowTable.vue'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
@@ -114,11 +118,14 @@ export default {
   name: 'Process',
   components: { InstancesTable, JobDefinitionsTable, BpmnViewer, MultisortModal,
      //FlowTable,
-     SuccessAlert, ConfirmDialog, BWaitingBox },
+     SuccessAlert, ConfirmDialog, BWaitingBox, IncidentsTable },
   inject: ['loadProcesses'],
   mixins: [permissionsMixin, resizerMixin, copyToClipboardMixin],
-  props: { instances: Array, process: Object, firstResult: Number, maxResults: Number,
-    activityInstance: Object, activityInstanceHistory: Array, activityId: String, loading: Boolean },
+  props: { instances: Array, process: Object, firstResult: Number, maxResults: Number, incidents: Array,
+    activityInstance: Object, activityInstanceHistory: Array, activityId: String, loading: Boolean,
+    processKey: String,
+    versionIndex: { type: String, default: '' }
+ },
   data: function() {
     return {
       selectedInstance: null,
@@ -126,7 +133,8 @@ export default {
       topBarHeight: 0,
       tabs: [
         { id: 'instances', active: true },
-        { id: 'jobDefinitions', active: false }
+        { id: 'jobDefinitions', active: false },
+        { id: 'incidents', active: false }
       ],
       activeTab: 'instances',
       events: {},
@@ -142,9 +150,6 @@ export default {
       ProcessService.fetchDiagram(this.process.id).then(response => {
         this.$refs.diagram.showDiagram(response.bpmn20Xml, null, null)
       })
-    },
-    activeTab: function() {
-
     }
   },
   mounted: function() {
@@ -243,7 +248,12 @@ export default {
         this.$emit('show-more')
       }
     },
-    onInput: debounce(800, function(evt) { this.$emit('filter-instances', evt) })
+    onInput: debounce(800, function(evt) { this.$emit('filter-instances', evt) }),
+    getFailingActivity: function(activityId) {
+      let element = this.$refs.diagram.viewer.get('elementRegistry').get(activityId)
+      if (element) return element.businessObject.name
+      return ''
+    }
   }
 }
 </script>

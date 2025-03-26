@@ -160,11 +160,11 @@ export default {
             var shape = elementRegistry.get(item.id)
             if (shape) {
               var htmlTemplate = this.getBadgeOverlayHtml(item.instances, 'bg-info')
-              if (item.failedJobs > 0) {
-                htmlTemplate += '<span class="badge bg-danger rounded-pill text-white border border-dark px-2 py-1">'
-                htmlTemplate += item.failedJobs + '</span>'
-              }
               this.setHtmlOnDiagram(overlays, item.id, htmlTemplate, { bottom: 15, left: -7 })
+              if (item.failedJobs > 0) {
+                var htmlTemplate = this.getBadgeOverlayHtml(item.failedJobs, 'bg-danger')
+                this.setHtmlOnDiagram(overlays, item.id, htmlTemplate, { top: -7, right: 15 })
+              }
               shape.nInstances = item.instances
             }
           })
