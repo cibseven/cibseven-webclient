@@ -48,9 +48,9 @@ public class UtilsProvider extends SevenProviderBase implements IUtilsProvider {
 			Optional<String> eventType, Optional<String> eventName, CIBUser user) {
 		String url = camundaUrl + "/engine-rest/event-subscription";
 		String param = "";
-		param += addQueryParameter(param, "processInstanceId", processInstanceId);
-		param += addQueryParameter(param, "eventType", eventType);
-		param += addQueryParameter(param, "eventName", eventName);
+		param += addQueryParameter(param, "processInstanceId", processInstanceId, true);
+		param += addQueryParameter(param, "eventType", eventType, true);
+		param += addQueryParameter(param, "eventName", eventName, true);
 		url += param;
 		return Arrays.asList(((ResponseEntity<EventSubscription[]>) doGet(url, EventSubscription[].class, user, false)).getBody());
 	}

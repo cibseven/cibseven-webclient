@@ -32,6 +32,7 @@
 	</dependencies>
 
 	<build>
+		<finalName>webapp</finalName>
 		<resources>
 			<resource>
 				<directory>src/main/resources</directory>
@@ -76,25 +77,35 @@
 							</resources>
 						</configuration>
 					</execution>
+			        <!-- Add new execution for frontend resources to project root -->
+			        <execution>
+			            <id>copy-frontend-resources</id>
+			            <phase>validate</phase>
+			            <goals>
+			                <goal>copy-resources</goal>
+			            </goals>
+			            <configuration>
+			                <!-- This puts content at the root of the WAR -->
+			                <outputDirectory>src/main/webapp</outputDirectory>
+			                <resources>
+			                    <resource>
+			                        <directory>../frontend/dist</directory>
+			                        <includes>
+			                            <include>**/*</include>
+			                        </includes>
+			                        <targetPath>.</targetPath>
+			                    </resource>
+			                </resources>
+			            </configuration>
+			        </execution>
 				</executions>
 			</plugin>
-
+			
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-war-plugin</artifactId>
-				<version>${maven-war-plugin.version}</version>
 				<configuration>
-					<dependentWarExcludes>META-INF/*.SF, META-INF/*.DSA,
-						META-INF/*.RSA</dependentWarExcludes>
-					<webResources>
-			            <resource>
-			                <directory>../frontend/dist</directory>
-			                <targetPath>/</targetPath>
-			                <includes>
-			                    <include>**/*</include>
-			                </includes>
-			            </resource>
-			        </webResources>
+					<warSourceExcludes>**/README.md</warSourceExcludes>
 				</configuration>
 			</plugin>
 
