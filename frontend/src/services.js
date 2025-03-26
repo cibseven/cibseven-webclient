@@ -318,6 +318,18 @@ var HistoryService = {
   }
 }
 
+var JobDefinitionService = {
+  findJobDefinitions: function(params) {
+    return axios.post(appConfig.servicesBasePath + "/job-definition", params)
+  },
+  suspendJobDefinition: function(jobDefinitionId, params) {
+    return axios.put(appConfig.servicesBasePath + "/job-definition/" + jobDefinitionId + "/suspend", params)
+  },
+  overrideJobDefinitionPriority: function(jobDefinitionId, params) {
+    return axios.put(appConfig.servicesBasePath + "/job-definition/" + jobDefinitionId + "/job-priority", params)
+  }
+}
+
 var IncidentService = {
   fetchIncidentStacktraceByJobId: function(id) {
     return axios.get(appConfig.servicesBasePath + "/incident/" + id + "/stacktrace")
@@ -416,4 +428,4 @@ var TemplateService = {
 }
 
 export { TaskService, FilterService, ProcessService, AdminService,
-  HistoryService, IncidentService, AuthService, InfoService, FormsService, TemplateService }
+  HistoryService, JobDefinitionService, IncidentService, AuthService, InfoService, FormsService, TemplateService }

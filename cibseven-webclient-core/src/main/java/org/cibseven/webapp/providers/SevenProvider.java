@@ -25,6 +25,7 @@ import org.cibseven.webapp.rest.model.EventSubscription;
 import org.cibseven.webapp.rest.model.Filter;
 import org.cibseven.webapp.rest.model.IdentityLink;
 import org.cibseven.webapp.rest.model.Incident;
+import org.cibseven.webapp.rest.model.JobDefinition;
 import org.cibseven.webapp.rest.model.Message;
 import org.cibseven.webapp.rest.model.NewUser;
 import org.cibseven.webapp.rest.model.Process;
@@ -63,6 +64,7 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
     @Autowired private IFilterProvider filterProvider;
     @Autowired private IUtilsProvider utilsProvider;
     @Autowired private IIncidentProvider incidentProvider;
+    @Autowired private IJobProvider jobProvider;
     @Autowired private IUserProvider userProvider;
     @Autowired private IDecisionProvider decisionProvider;
 
@@ -616,6 +618,31 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	@Override
 	public Collection<Incident> fetchIncidents(String processDefinitionKey, CIBUser user) {
 		return incidentProvider.fetchIncidents(processDefinitionKey, user);
+	}
+	
+	/*
+	 
+	    ██  ██████  ██████      ██████  ██████   ██████  ██    ██ ██ ██████  ███████ ██████  
+	    ██ ██    ██ ██   ██     ██   ██ ██   ██ ██    ██ ██    ██ ██ ██   ██ ██      ██   ██ 
+	    ██ ██    ██ ██████      ██████  ██████  ██    ██ ██    ██ ██ ██   ██ █████   ██████  
+	██  ██ ██    ██ ██   ██     ██      ██   ██ ██    ██  ██  ██  ██ ██   ██ ██      ██   ██ 
+	█████   ██████  ██████      ██      ██   ██  ██████    ████   ██ ██████  ███████ ██   ██ 
+	                                                                                     
+	*/
+	
+	@Override
+	public Collection<JobDefinition> findJobDefinitions(String params, CIBUser user) {
+		return jobProvider.findJobDefinitions(params, user);
+	}
+	
+	@Override
+	public void suspendJobDefinition(String jobDefinitionId, String params, CIBUser user) {
+		jobProvider.suspendJobDefinition(jobDefinitionId, params, user);
+	}
+	
+	@Override
+	public void overrideJobDefinitionPriority(String jobDefinitionId, String params, CIBUser user) {
+		jobProvider.overrideJobDefinitionPriority(jobDefinitionId, params, user);
 	}
 
 

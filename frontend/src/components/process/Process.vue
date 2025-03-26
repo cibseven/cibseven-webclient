@@ -1,8 +1,8 @@
 <template>
   <div v-if="process" class="h-100">
     <div @mousedown="handleMouseDown" class="v-resizable position-absolute w-100" style="left: 0" :style="'height: ' + bpmnViewerHeight + 'px; ' + toggleTransition">
-      <BpmnViewer ref="diagram" @activity-id="$emit('activity-id', $event)" @task-selected="selectTask($event)" @open-subprocess="$emit('open-subprocess', $event)" :process-definition-id="process.id"
-        :activity-id="activityId" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" :statistics="process.statistics"
+      <BpmnViewer ref="diagram" @activity-id="$emit('activity-id', $event)" @task-selected="selectTask($event)" @open-subprocess="$emit('open-subprocess', $event)" @activity-map-ready="activityMap = $event"
+        :process-definition-id="process.id" :activity-id="activityId" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" :statistics="process.statistics"
         :activities-history="process.activitiesHistory" class="h-100">
       </BpmnViewer>
     </div>
@@ -62,6 +62,11 @@
           </div>
         </div>
       </div>
+      <div v-show="activeTab === 'jobDefinitions'">
+        <div ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 0px; left: 0; bottom: 0" @scroll="handleScrollProcesses">
+          <JobDefinitionsTable ref="jobDefinitionsTable" :processId="process.id" :activityMap="activityMap"></JobDefinitionsTable>			
+        </div>
+      </div>
       <!--
       <div v-if="activeTab === 'statistics'">
         <div ref="rContent" class="overflow-auto container-fluid bg-white position-absolute" style="top: 60px; left: 0; bottom: 0" @scroll="handleScrollProcesses">
@@ -95,6 +100,7 @@ import { ProcessService } from '@/services.js'
 import { permissionsMixin } from '@/permissions.js'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
 import InstancesTable from '@/components/process/InstancesTable.vue'
+import JobDefinitionsTable from '@/components/process/tables/JobDefinitionsTable.vue'
 import MultisortModal from '@/components/process/MultisortModal.vue'
 // import FlowTable from '@/components/common-components/FlowTable.vue'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
@@ -106,7 +112,7 @@ import { BWaitingBox } from 'cib-common-components'
 
 export default {
   name: 'Process',
-  components: { InstancesTable, BpmnViewer, MultisortModal,
+  components: { InstancesTable, JobDefinitionsTable, BpmnViewer, MultisortModal,
      //FlowTable,
      SuccessAlert, ConfirmDialog, BWaitingBox },
   inject: ['loadProcesses'],
@@ -120,13 +126,15 @@ export default {
       topBarHeight: 0,
       tabs: [
         { id: 'instances', active: true },
+        { id: 'jobDefinitions', active: false }
       ],
       activeTab: 'instances',
       events: {},
       usages: [],
       sortByDefaultKey: 'startTimeOriginal',
       sorting: false,
-      sortDesc: true
+      sortDesc: true,
+      activityMap: {}
     }
   },
   watch: {
