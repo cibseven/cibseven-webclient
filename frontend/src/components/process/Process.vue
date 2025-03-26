@@ -116,7 +116,10 @@ export default {
   inject: ['loadProcesses'],
   mixins: [permissionsMixin, resizerMixin, copyToClipboardMixin],
   props: { instances: Array, process: Object, firstResult: Number, maxResults: Number, incidents: Array,
-    activityInstance: Object, activityInstanceHistory: Array, activityId: String, loading: Boolean },
+    activityInstance: Object, activityInstanceHistory: Array, activityId: String, loading: Boolean,
+    processKey: String,
+    versionIndex: { type: String, default: '' }
+ },
   data: function() {
     return {
       selectedInstance: null,
