@@ -36,6 +36,11 @@ pipeline {
             description: 'Build and test'
         )
         booleanParam(
+            name: 'RELEASE_COMMON_COMPONENTS',
+            defaultValue: false,
+            description: 'Build and deploy cib-common-components to artifacts.cibseven.org'
+        )
+        booleanParam(
             name: 'DEPLOY_TO_ARTIFACTS',
             defaultValue: false,
             description: 'Deploy artifacts to artifacts.cibseven.org'
@@ -154,6 +159,21 @@ pipeline {
                     }
 
                     junit allowEmptyResults: true, testResults: ConstantsInternal.MAVEN_TEST_RESULTS
+                }
+            }
+        }
+
+        stage('Release cib-common-components') {
+            when {
+                allOf {
+                    expression { params.RELEASE_COMMON_COMPONENTS }
+                }
+            }
+            steps {
+                script {
+                    withMaven() {
+                        sh "mvn -T4 -Dbuild.number=${BUILD_NUMBER} clean install -Drelease-common-components=true"
+                    }
                 }
             }
         }
