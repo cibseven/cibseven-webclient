@@ -54,31 +54,16 @@
           </div>
         </div>
         <div ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 60px; left: 0; bottom: 0" @scroll="handleScrollProcesses">
-          <InstancesTable ref="instancesTable" v-if="!loading && instances && !sorting" :instances="instances" :sortByDefaultKey="sortByDefaultKey" :sortDesc="sortDesc"
-            @select-instance="selectInstance" @view-process="viewProcess" @instance-deleted="$emit('instance-deleted')"
+          <InstancesTable ref="instancesTable" v-if="!loading && instances && !sorting"
+            :instances="instances"
+            :sortByDefaultKey="sortByDefaultKey"
+            :sortDesc="sortDesc"
           ></InstancesTable>
           <div v-else-if="loading" class="py-3 text-center w-100">
             <BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}
           </div>
         </div>
       </div>
-      <!--
-      <div v-if="activeTab === 'statistics'">
-        <div ref="rContent" class="overflow-auto container-fluid bg-white position-absolute" style="top: 60px; left: 0; bottom: 0" @scroll="handleScrollProcesses">
-          <FlowTable v-if="usages.length" striped thead-class="sticky-header" :items="usages" primary-key="id" prefix="process."
-            sort-by="startTimeOriginal" :sort-desc="true" :fields="[
-            { label: 'event', key: 'event', class: 'col-4', tdClass: 'justify-content-center py-0 border-end border-top-0' },
-            { label: 'date', key: 'date', class: 'col-2', tdClass: 'border-end py-1 border-top-0' },
-            { label: 'productCode', key: 'productCode', class: 'col-4', tdClass: 'border-end py-1 border-top-0' },
-            { label: 'usageCount', key: 'usageCount', class: 'col-2', tdClass: 'border-end py-1 border-top-0' }]"
-            @click="selectInstance($event)">
-          </FlowTable>
-          <div class="py-3 text-center w-100" v-if="loading">
-            <BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}
-          </div>
-        </div>
-      </div>
-      -->
     </div>
     <ConfirmDialog ref="confirm" @ok="$event.ok($event.instance)">
       {{ $t('confirm.performOperation') }}
@@ -96,7 +81,6 @@ import { permissionsMixin } from '@/permissions.js'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
 import InstancesTable from '@/components/process/InstancesTable.vue'
 import MultisortModal from '@/components/process/MultisortModal.vue'
-// import FlowTable from '@/components/common-components/FlowTable.vue'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { debounce } from '@/utils/debounce.js'
@@ -115,7 +99,7 @@ export default {
     activityInstance: Object, activityInstanceHistory: Array, activityId: String, loading: Boolean,
     processKey: String,
     versionIndex: { type: String, default: '' }
- },
+  },
   data: function() {
     return {
       selectedInstance: null,
@@ -176,23 +160,9 @@ export default {
       })
       this.activeTab = selectedTab.id
     },
-    selectInstance: function(event) {
-      if (!this.selectedInstance) this.$refs.diagram.setEvents()
-      this.selectedInstance = event.instance
-      this.$emit('instance-selected', { selectedInstance: event.instance, reload: event.reload })
-      this.$refs.diagram.cleanDiagramState()
-    },
     selectTask: function(event) {
       this.selectedTask = event
       this.$emit('task-selected', event);
-    },
-    viewProcess: function() {
-      this.$refs.diagram.clearEvents()
-      this.$refs.diagram.cleanDiagramState()
-      ProcessService.fetchDiagram(this.process.id).then(response => {
-        this.$refs.diagram.showDiagram(response.bpmn20Xml, null, null)
-        this.$refs.diagramModal.show()
-      })
     },
     viewDeployment: function() {
       this.$router.push('/seven/auth/deployments/' + this.process.deploymentId)
@@ -201,14 +171,6 @@ export default {
       var filename = this.process.resource.substr(this.process.resource.lastIndexOf('/') + 1, this.process.resource.lenght)
       window.location.href = appConfig.servicesBasePath + '/process/' + this.process.id + '/data?filename=' + filename +
         '&token=' + this.$root.user.authToken
-    },
-    clearState: function() {
-      this.selectedInstance = null
-      this.selectedTask = null
-      this.$emit('instance-selected', { selectedInstance: null })
-      this.$emit('task-selected', null)
-      this.$refs.diagram.clearEvents()
-      this.$refs.diagram.cleanDiagramState()
     },
     showConfirm: function(type) { this.$refs.confirm.show(type) },
     suspendProcess: function() {

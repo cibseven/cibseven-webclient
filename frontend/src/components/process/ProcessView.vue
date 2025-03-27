@@ -3,6 +3,7 @@
       v-if="!loading && computedVersionIndex !== ''"
       :processKey="processKey"
       :versionIndex="computedVersionIndex"
+      :instanceId="computedInstanceId"
     ></ProcessDefinitionView>
 </template>
 
@@ -14,7 +15,8 @@ export default {
   components: { ProcessDefinitionView },
   props: {
     processKey: { type: String, required: true },
-    versionIndex: { type: String, default: '' }
+    versionIndex: { type: String, default: '' },
+    instanceId: { type: String, default: '' }
    },
   data: function() {
     return {
@@ -32,6 +34,15 @@ export default {
       }
       else if (this.process !== null) {
         return this.process.version
+      }
+      else {
+        return ''
+      }
+    },
+    computedInstanceId: function() {
+      if (this.versionIndex !== '') {
+        // only valid with proper "versionIndex"
+        return this.instanceId
       }
       else {
         return ''
