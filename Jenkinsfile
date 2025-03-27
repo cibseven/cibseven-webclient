@@ -204,7 +204,7 @@ pipeline {
                                 # Copy the .npmrc file to the frontend directory
                                 cp ${NPMRC_FILE} ./frontend/.npmrc
                                 # Run Maven with the required profile
-                                mvn -T4 -Dbuild.number=${BUILD_NUMBER} clean generate-resources -Drelease-npm-library=cibseven-components
+                                mvn -T4 -Dbuild.number=${BUILD_NUMBER} clean generate-resources -Drelease-npm-library=frontend
                             """
                         }
                     }
