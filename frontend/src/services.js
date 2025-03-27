@@ -36,6 +36,17 @@ function patchDeployment(deployment) {
   return deployment
 }
 
+function patchJob(job) {
+  if (Array.isArray(job)) job.forEach(patchJob)
+  else {
+    job.createTimeOriginal = job.createTime
+    job.dueDateOriginal = job.dueDate
+    if (job.createTime) job.createTime = moment(job.createTime).format('LL HH:mm')
+    if (job.dueDate) job.dueDate = moment(job.dueDate).format('LL HH:mm')
+  }
+  return job
+}
+
 function filterToUrlParams(filters) {
   var filter = ''
   if (Array.isArray(filters)) {
@@ -430,5 +441,14 @@ var TemplateService = {
   }
 }
 
-export { TaskService, FilterService, ProcessService, AdminService,
-  HistoryService, JobDefinitionService, IncidentService, AuthService, InfoService, FormsService, TemplateService }
+var JobService = {
+  getJobs(params) {
+    return axios.post(appConfig.servicesBasePath + '/job', params).then(patchJob)
+  },
+  setSuspended(id, data) {
+    return axios.put(appConfig.servicesBasePath + '/job/' + id + '/suspended', data)
+  }
+}
+
+export { TaskService, FilterService, ProcessService, AdminService, JobService, JobDefinitionService,
+  HistoryService, IncidentService, AuthService, InfoService, FormsService, TemplateService }

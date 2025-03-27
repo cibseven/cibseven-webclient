@@ -110,7 +110,8 @@
 		"deleteProcessDefinition": "Delete process definition",
 		"true": "True",
 		"false": "False",				
-		"jobDefinitions": "Job definitions"
+		"jobDefinitions": "Job definitions",
+		"jobs": "Jobs"
 	},
 	"process-instance": {
 		"processInstanceId": "Processs Instance ID",
@@ -209,7 +210,18 @@
 		"copyValueToClipboard": "Copy value to clipboard",
 		"confirmRetryJob": "Are you sure to increment the number of retries?",
 		"successRetryJob": "Incrementing the number of retries finished successfully.",
-		"addVariable": "Add variable"
+		"addVariable": "Add variable",
+		"jobs": {
+			"id": "ID",
+			"dueDate": "Due Date",
+			"createTime": "Creation Date",
+			"retries": "Retries",
+			"activity": "Activity",
+			"failedActivity": "Failed activity",
+			"actions": "Actions",
+			"suspend": "Suspend",
+			"resume": "Resume"
+		}
 	},
 	"bpmn-viewer": {
 		"zoomIn": "Zoom in",

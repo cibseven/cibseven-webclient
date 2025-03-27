@@ -26,6 +26,7 @@ import org.cibseven.webapp.rest.model.Filter;
 import org.cibseven.webapp.rest.model.IdentityLink;
 import org.cibseven.webapp.rest.model.Incident;
 import org.cibseven.webapp.rest.model.JobDefinition;
+import org.cibseven.webapp.rest.model.Job;
 import org.cibseven.webapp.rest.model.Message;
 import org.cibseven.webapp.rest.model.NewUser;
 import org.cibseven.webapp.rest.model.Process;
@@ -67,6 +68,7 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
     @Autowired private IJobDefinitionProvider jobDefinitionProvider;
     @Autowired private IUserProvider userProvider;
     @Autowired private IDecisionProvider decisionProvider;
+    @Autowired private IJobProvider jobProvider;
 
     
     /*
@@ -619,32 +621,6 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	public Collection<Incident> fetchIncidents(String processDefinitionKey, CIBUser user) {
 		return incidentProvider.fetchIncidents(processDefinitionKey, user);
 	}
-	
-	/*
-	 
-	    ██  ██████  ██████      ██████  ██████   ██████  ██    ██ ██ ██████  ███████ ██████  
-	    ██ ██    ██ ██   ██     ██   ██ ██   ██ ██    ██ ██    ██ ██ ██   ██ ██      ██   ██ 
-	    ██ ██    ██ ██████      ██████  ██████  ██    ██ ██    ██ ██ ██   ██ █████   ██████  
-	██  ██ ██    ██ ██   ██     ██      ██   ██ ██    ██  ██  ██  ██ ██   ██ ██      ██   ██ 
-	█████   ██████  ██████      ██      ██   ██  ██████    ████   ██ ██████  ███████ ██   ██ 
-	                                                                                     
-	*/
-	
-	@Override
-	public Collection<JobDefinition> findJobDefinitions(String params, CIBUser user) {
-		return jobDefinitionProvider.findJobDefinitions(params, user);
-	}
-	
-	@Override
-	public void suspendJobDefinition(String jobDefinitionId, String params, CIBUser user) {
-		jobDefinitionProvider.suspendJobDefinition(jobDefinitionId, params, user);
-	}
-	
-	@Override
-	public void overrideJobDefinitionPriority(String jobDefinitionId, String params, CIBUser user) {
-		jobDefinitionProvider.overrideJobDefinitionPriority(jobDefinitionId, params, user);
-	}
-
 
 	/*
 	
@@ -869,6 +845,41 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	@Override
 	public Object getXmlById(String id) {
 		return decisionProvider.getXmlById(id);
+	}
+
+	/*
+	
+	     ██  ██████  ██████      ██████  ██████   ██████  ██    ██ ██ ██████  ███████ ██████  
+	     ██ ██    ██ ██   ██     ██   ██ ██   ██ ██    ██ ██    ██ ██ ██   ██ ██      ██   ██ 
+	     ██ ██    ██ ██████      ██████  ██████  ██    ██ ██    ██ ██ ██   ██ █████   ██████  
+	██   ██ ██    ██ ██   ██     ██      ██   ██ ██    ██  ██  ██  ██ ██   ██ ██      ██   ██ 
+	 █████   ██████  ██████      ██      ██   ██  ██████    ████   ██ ██████  ███████ ██   ██ 
+	                                                                                          
+	*/
+	
+	@Override
+	public Collection<JobDefinition> findJobDefinitions(String params, CIBUser user) {
+		return jobDefinitionProvider.findJobDefinitions(params, user);
+	}
+	
+	@Override
+	public void suspendJobDefinition(String jobDefinitionId, String params, CIBUser user) {
+		jobDefinitionProvider.suspendJobDefinition(jobDefinitionId, params, user);
+	}
+	
+	@Override
+	public void overrideJobDefinitionPriority(String jobDefinitionId, String params, CIBUser user) {
+		jobDefinitionProvider.overrideJobDefinitionPriority(jobDefinitionId, params, user);
+	}
+	
+	@Override
+	public Collection<Job> getJobs(Map<String, Object> params, CIBUser user) {
+		return jobProvider.getJobs(params, user);
+	}
+
+	@Override
+	public void setSuspended(String id, Map<String, Object> params, CIBUser user) {
+		jobProvider.setSuspended(id, params, user);
 	}
 
 }

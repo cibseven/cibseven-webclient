@@ -51,7 +51,7 @@
 <script>
 import { nextTick } from 'vue'
 import moment from 'moment'
-import { TaskService, ProcessService, HistoryService, IncidentService } from '@/services.js'
+import { TaskService, ProcessService, HistoryService, IncidentService, JobService } from '@/services.js'
 import Process from '@/components/process/Process.vue'
 import ProcessDetailsSidebar from '@/components/process/ProcessDetailsSidebar.vue'
 import ProcessVariablesTable from '@/components/process/ProcessVariablesTable.vue'
@@ -90,7 +90,7 @@ export default {
       filter: '',
       activityId: '',
       loading: false,
-      incidents: []
+	    incidents: []
     }
   },
   computed: {
@@ -300,6 +300,7 @@ export default {
             })
           }
         }
+        this.setJobs()
       }
     },
     setSelectedTask: function(selectedTask) {
@@ -377,6 +378,9 @@ export default {
     },
     async loadIncidents() {
       this.incidents = await IncidentService.findIncidents(this.process.id)
+    },
+    async setJobs() {
+      this.selectedInstance.jobs = await JobService.getJobs({ processInstanceId: this.selectedInstance.id })
     }
   }
 }

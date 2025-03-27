@@ -36,6 +36,11 @@ pipeline {
             description: 'Build and test'
         )
         booleanParam(
+            name: 'RELEASE_COMMON_COMPONENTS',
+            defaultValue: false,
+            description: 'Build and deploy cib-common-components to artifacts.cibseven.org'
+        )
+        booleanParam(
             name: 'DEPLOY_TO_ARTIFACTS',
             defaultValue: false,
             description: 'Deploy artifacts to artifacts.cibseven.org'
@@ -154,6 +159,28 @@ pipeline {
                     }
 
                     junit allowEmptyResults: true, testResults: ConstantsInternal.MAVEN_TEST_RESULTS
+                }
+            }
+        }
+
+        stage('Release cib-common-components') {
+            when {
+                allOf {
+                    expression { params.RELEASE_COMMON_COMPONENTS }
+                }
+            }
+            steps {
+                script {
+                    withCredentials([file(credentialsId: 'credential-cibseven-artifacts-npmrc', variable: 'NPMRC_FILE')]) {
+                        withMaven() {
+                            sh """
+                                # Copy the .npmrc file to the frontend directory
+                                cp ${NPMRC_FILE} ./cib-common-components/.npmrc
+                                # Run Maven with the required profile
+                                mvn -T4 -Dbuild.number=${BUILD_NUMBER} clean generate-resources -Drelease-common-components=true
+                            """
+                        }
+                    }
                 }
             }
         }
