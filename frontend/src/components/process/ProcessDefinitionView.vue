@@ -17,7 +17,7 @@
           :instances="instances"></ProcessDetailsSidebar>
       </template>
       <transition name="slide-in" mode="out-in">
-        <Process ref="process" v-if="process && instances && !selectedInstance && instanceId == ''"
+        <Process ref="process" v-if="process && instances && !selectedInstance && !instanceId"
           :activity-id="activityId"
           :loading="loading"
           :process="process"
@@ -39,7 +39,7 @@
         ></Process>
       </transition>
       <transition name="slide-in" mode="out-in">
-        <ProcessVariablesTable ref="navbar-variables" v-if="process && selectedInstance && instanceId != ''"
+        <ProcessVariablesTable ref="navbar-variables" v-if="process && selectedInstance && instanceId"
           :process="process"
           :activity-instance="activityInstance"
           :activity-instance-history="activityInstanceHistory"
@@ -110,16 +110,10 @@ export default {
     }
   },
   created: function() {
-    console.log('created before loadProcessByDefinitionKey')
     return this.loadProcessByDefinitionKey().then((redirected) => {
-      console.log('created after loadProcessByDefinitionKey')
-      console.log(redirected)
       if (!redirected && this.instanceId) {
-        console.log(this.instanceId)
         if (this.instances) {
-          console.log(this.instances)
           const selectedInstance = this.instances.find((instance) => instance.id == this.instanceId)
-          console.log(selectedInstance)
           if (selectedInstance) {
             this.setSelectedInstance({ selectedInstance: selectedInstance })
           }
@@ -128,9 +122,7 @@ export default {
     })
   },
   beforeUpdate: function() {
-    console.log('beforeUpdate...')
     if (this.process != null && this.process.version !== this.versionIndex) {
-      console.log('beforeUpdate new version')
       // different process-definition was selected
       this.selectedInstance = null
       this.activityInstance = null
@@ -138,20 +130,15 @@ export default {
       this.task = null
       this.loadProcessByDefinitionKey()
     }
-    else if (this.selectedInstance == null && this.instanceId != '') {
-      console.log('beforeUpdate switch to instance')
-
+    else if (this.selectedInstance == null && this.instanceId) {
       if (this.instances) {
-        console.log(this.instances)
         const selectedInstance = this.instances.find((instance) => instance.id == this.instanceId)
-        console.log(selectedInstance)
         if (selectedInstance) {
           this.setSelectedInstance({ selectedInstance: selectedInstance })
         }
       }
     }
     else {
-      console.log('beforeUpdate else')
       this.selectedInstance = null
       this.activityInstance = null
       this.activityInstanceHistory = null
@@ -266,7 +253,6 @@ export default {
     },
     loadProcessVersion: function(process) {
       return new Promise((resolve) => {
-        console.log('loadProcessVersion')
         if (!this.process || this.process.id !== process.id) {
           this.firstResult = 0
           this.process = process
@@ -283,8 +269,6 @@ export default {
       });
     },
     loadInstances: function(showMore) {
-      console.log('loadInstances')
-
       if (this.$root.config.camundaHistoryLevel !== 'none') {
         this.loading = true
         return HistoryService.findProcessesInstancesHistoryById(this.process.id, this.activityId,

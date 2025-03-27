@@ -29,7 +29,7 @@ export default {
       if (this.loading) {
         return ''
       }
-      else if (this.versionIndex !== '') {
+      else if (this.versionIndex) {
         return this.versionIndex
       }
       else if (this.process !== null) {
@@ -40,13 +40,8 @@ export default {
       }
     },
     computedInstanceId: function() {
-      if (this.versionIndex !== '') {
-        // only valid with proper "versionIndex"
-        return this.instanceId
-      }
-      else {
-        return ''
-      }
+      // only valid with proper "versionIndex"
+      return this.versionIndex ? this.instanceId : '';
     }
   },
   created: function() {
@@ -57,7 +52,7 @@ export default {
         this.loading = false
       })
     }
-    else if (this.versionIndex == '') {
+    else if (!this.versionIndex) {
       this.loading = true
       this.$store.dispatch('getProcessByDefinitionKey', { key: this.processKey }).then(process => {
         this.process = process
