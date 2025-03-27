@@ -17,6 +17,7 @@ import org.cibseven.webapp.exception.UnsupportedTypeException;
 import org.cibseven.webapp.rest.model.Process;
 import org.cibseven.webapp.rest.model.ProcessDiagram;
 import org.cibseven.webapp.rest.model.ProcessInstance;
+import org.cibseven.webapp.rest.model.HistoryProcessInstance;
 import org.cibseven.webapp.rest.model.ProcessStart;
 import org.cibseven.webapp.rest.model.ProcessStatistics;
 import org.cibseven.webapp.rest.model.StartForm;
@@ -145,7 +146,6 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	
 	@Override
 	public Collection<ProcessInstance> findCurrentProcessesInstances(Map<String, Object> data, CIBUser user) {
-		
 		String url = camundaUrl + "/engine-rest/process-instance";
 		return Arrays.asList(((ResponseEntity<ProcessInstance[]>) doPost(url, data, ProcessInstance[].class, user)).getBody());
 	}
@@ -211,24 +211,24 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	}
 	
 	@Override
-	public ProcessInstance findHistoryProcessInstanceHistory(String processInstanceId, CIBUser user) {
+	public HistoryProcessInstance findHistoryProcessInstanceHistory(String processInstanceId, CIBUser user) {
 		String url = camundaUrl + "/engine-rest/history/process-instance/" + processInstanceId;
-		return ((ResponseEntity<ProcessInstance>) doGet(url, ProcessInstance.class, user, false)).getBody();
+		return ((ResponseEntity<HistoryProcessInstance>) doGet(url, HistoryProcessInstance.class, user, false)).getBody();
 	}
 	
 	@Override
-	public Collection<ProcessInstance> findProcessesInstancesHistory(String key, Optional<Boolean> active, 
+	public Collection<HistoryProcessInstance> findProcessesInstancesHistory(String key, Optional<Boolean> active, 
 			Integer firstResult, Integer maxResults, CIBUser user) {
 		String url = camundaUrl + "/engine-rest/history/process-instance?processDefinitionKey=" + key;
 		if (active.isPresent()) {
 			url += (active.get()) ? "&unfinished=true" : "&finished=true";
 		}
 		url += "&firstResult=" + firstResult + "&maxResults=" + maxResults;
-		return Arrays.asList(((ResponseEntity<ProcessInstance[]>) doGet(url, ProcessInstance[].class, user, false)).getBody());	
+		return Arrays.asList(((ResponseEntity<HistoryProcessInstance[]>) doGet(url, HistoryProcessInstance[].class, user, false)).getBody());	
 	}
 	
 	@Override
-	public Collection<ProcessInstance> findProcessesInstancesHistoryById(String id, Optional<String> activityId, Optional<Boolean> active, 
+	public Collection<HistoryProcessInstance> findProcessesInstancesHistoryById(String id, Optional<String> activityId, Optional<Boolean> active, 
 			Integer firstResult, Integer maxResults, String text, CIBUser user) {
 		String url = camundaUrl + "/engine-rest/history/process-instance?processDefinitionId=" + id;
 		Map<String, Object> data = new HashMap<String, Object>();
@@ -256,7 +256,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 			throw new SystemException(e);
 		}
 		//findIncident
-		Collection<ProcessInstance> processes = Arrays.asList(((ResponseEntity<ProcessInstance[]>) doPost(url, body, ProcessInstance[].class, user)).getBody());
+		Collection<HistoryProcessInstance> processes = Arrays.asList(((ResponseEntity<HistoryProcessInstance[]>) doPost(url, body, HistoryProcessInstance[].class, user)).getBody());
 		processes.forEach(p -> {
 			p.setIncidents(incidentProvider.findIncidentByInstanceId(p.getId(), user));
 		});

@@ -31,6 +31,7 @@ import org.cibseven.webapp.rest.model.NewUser;
 import org.cibseven.webapp.rest.model.Process;
 import org.cibseven.webapp.rest.model.ProcessDiagram;
 import org.cibseven.webapp.rest.model.ProcessInstance;
+import org.cibseven.webapp.rest.model.HistoryProcessInstance;
 import org.cibseven.webapp.rest.model.ProcessStart;
 import org.cibseven.webapp.rest.model.ProcessStatistics;
 import org.cibseven.webapp.rest.model.SevenUser;
@@ -277,13 +278,13 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 	
 	@Override
-	public Collection<ProcessInstance> findProcessesInstancesHistory(String key, Optional<Boolean> active, 
+	public Collection<HistoryProcessInstance> findProcessesInstancesHistory(String key, Optional<Boolean> active, 
 			Integer firstResult, Integer maxResults, CIBUser user) {
 		return processProvider.findProcessesInstancesHistory(key, active, firstResult, maxResults, user);
 	}
 	
 	@Override
-	public Collection<ProcessInstance> findProcessesInstancesHistoryById(String id, Optional<String> activityId, Optional<Boolean> active, 
+	public Collection<HistoryProcessInstance> findProcessesInstancesHistoryById(String id, Optional<String> activityId, Optional<Boolean> active, 
 			Integer firstResult, Integer maxResults, String text, CIBUser user) {
 		return processProvider.findProcessesInstancesHistoryById(id, activityId, active, firstResult, maxResults, text, user);
 	}	
@@ -299,7 +300,7 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}	
 	
 	@Override
-	public ProcessInstance findHistoryProcessInstanceHistory(String processInstanceId, CIBUser user) {
+	public HistoryProcessInstance findHistoryProcessInstanceHistory(String processInstanceId, CIBUser user) {
 		return processProvider.findHistoryProcessInstanceHistory(processInstanceId, user);
 	}
 	
