@@ -41,9 +41,9 @@ pipeline {
             description: 'Build and deploy cib-common-components to artifacts.cibseven.org'
         )
         booleanParam(
-            name: 'RELEASE_FRONTEND_LIBRARY',
+            name: 'RELEASE_CIBSEVEN_COMPONENTS',
             defaultValue: false,
-            description: 'Build and deploy frontend-library to artifacts.cibseven.org'
+            description: 'Build and deploy cibseven-components to artifacts.cibseven.org'
         )
         booleanParam(
             name: 'DEPLOY_TO_ARTIFACTS',
@@ -190,10 +190,10 @@ pipeline {
             }
         }
 
-        stage('Release frontend-library') {
+        stage('Release cibseven-components') {
             when {
                 allOf {
-                    expression { params.RELEASE_FRONTEND_LIBRARY }
+                    expression { params.RELEASE_CIBSEVEN_COMPONENTS }
                 }
             }
             steps {
@@ -204,7 +204,7 @@ pipeline {
                                 # Copy the .npmrc file to the frontend directory
                                 cp ${NPMRC_FILE} ./frontend/.npmrc
                                 # Run Maven with the required profile
-                                mvn -T4 -Dbuild.number=${BUILD_NUMBER} clean generate-resources -Drelease-npm-library=frontend
+                                mvn -T4 -Dbuild.number=${BUILD_NUMBER} clean generate-resources -Drelease-npm-library=cibseven-components
                             """
                         }
                     }

@@ -185,7 +185,7 @@
 								<configuration>
 									<arguments>version --allow-same-version
 										--no-git-tag-version ${project.version}</arguments>
-									<skip>${release-npm-library != 'frontend'}</skip>
+									<skip>${release-npm-library != 'cibseven-components'}</skip>
 								</configuration>
 							</execution>
 							<execution>
