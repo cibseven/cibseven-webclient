@@ -1,7 +1,6 @@
 {
   "name": "cibseven-frontend",
   "version": "0.0.0",
-  "private": true,
   "type": "module",
   "license": "",
   "main": "./src/main.js",
@@ -64,5 +63,8 @@
     "vite": "^6.2.3",
     "vite-plugin-vue-devtools": "^7.7.1",
     "vitest": "^3.0.5"
+  },
+  "publishConfig": {
+    "registry": "https://artifacts.cibseven.org/repository/npm-hosted/"
   }
 }
