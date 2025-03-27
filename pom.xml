@@ -155,7 +155,6 @@
 						<configuration>
 							<nodeVersion>v${version.nodejs}</nodeVersion>
 							<npmVersion>${version.npm}</npmVersion>
-							<workingDirectory>cib-common-components</workingDirectory> <!-- TODO -->
 							<workingDirectory>${release-npm-library}</workingDirectory>
 							<outputdir>${project.build.directory}/webapp</outputdir>
 							<skip>${skip.frontend.build}</skip>
@@ -175,6 +174,18 @@
 								<phase>generate-resources</phase>
 								<configuration>
 									<arguments>ci --no-audit --no-fund</arguments>
+								</configuration>
+							</execution>
+							<execution>
+								<id>npm version</id>
+								<goals>
+									<goal>npm</goal>
+								</goals>
+								<phase>generate-resources</phase>
+								<configuration>
+									<arguments>version --allow-same-version
+										--no-git-tag-version ${project.version}</arguments>
+									<skip>${release-npm-library != 'frontend'}</skip>
 								</configuration>
 							</execution>
 							<execution>

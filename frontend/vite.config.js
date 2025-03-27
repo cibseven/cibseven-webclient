@@ -53,9 +53,9 @@ export default defineConfig({
     ? {
         lib: {
           entry: path.resolve(__dirname, 'src/library.js'),
-          name: 'cibseven-webclient',
+          name: 'cibseven-components',
           formats: ['es', 'umd'],
-          fileName: (format) => `cibseven-frontend.${format}.js`,
+          fileName: (format) => `cibseven-components.${format}.js`,
         },
         rollupOptions: {
           external: ['vue'],
@@ -64,7 +64,7 @@ export default defineConfig({
               vue: 'Vue',
             },
             // Ensure CSS is extracted and placed in the dist folder
-            assetFileNames: 'cibseven-frontend.[ext]',
+            assetFileNames: 'cibseven-components.[ext]',
           },
         },
         cssCodeSplit: true, // Ensure CSS is extracted into a separate file

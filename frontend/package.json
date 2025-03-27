@@ -4,16 +4,16 @@
   "type": "module",
   "license": "",
   "main": "./src/main.js",
-  "style": "dist/cibseven-frontend.css",
+  "style": "dist/cibseven-components.css",
   "files": [
-    "dist/cibseven-frontend.css",
-    "dist/cibseven-frontend.es.js",
-    "dist/cibseven-frontend.umd.js"
+    "dist/cibseven-components.css",
+    "dist/cibseven-components.es.js",
+    "dist/cibseven-components.umd.js"
   ],
   "exports": {
     ".": {
-      "import": "./dist/cibseven-frontend.es.js",
-      "require": "./dist/cibseven-frontend.umd.js"
+      "import": "./dist/cibseven-components.es.js",
+      "require": "./dist/cibseven-components.umd.js"
     }
   },
   "scripts": {
