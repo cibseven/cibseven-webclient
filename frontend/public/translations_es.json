@@ -109,7 +109,8 @@
 		"days": "días",
 		"deleteProcessDefinition": "Eliminar definición de proceso",
 		"true": "Verdadero",
-		"false": "Falso"
+		"false": "Falso",
+		"jobs": "Trabajos"
 	},
 	"process-instance": {
 		"processInstanceId": "ID de la instancia del proceso",
@@ -181,7 +182,18 @@
 		"copyValueToClipboard": "Copiar valor al portapapeles",
 		"confirmRetryJob": "¿Desea incrementar el número de reintentos?",
 		"successRetryJob": "Se ha incrementado con éxito el número de reintentos.",
-		"addVariable": "Agregar variable"
+		"addVariable": "Agregar variable",
+		"jobs": {
+			"id": "ID",
+			"dueDate": "Fecha de vencimiento",
+			"createTime": "Fecha de creación",
+			"retries": "Reintentos",
+			"activity": "Actividad",
+			"failedActivity": "Actividad fallida",
+			"actions": "Acciones",
+			"suspend": "Suspender",
+			"resume": "Reanudar"
+		}
 	},
 	"bpmn-viewer": {
 		"zoomIn": "Acercarse",

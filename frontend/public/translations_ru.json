@@ -109,7 +109,8 @@
 		"days": "дней",
 		"deleteProcessDefinition": "Удалить определение процесса",
 		"true": "Истина",
-		"false": "Ложь"
+		"false": "Ложь",
+		"jobs": "Задания"
 	},
 	"process-instance": {
 		"processInstanceId": "Processs Instance ID",
@@ -181,7 +182,18 @@
 		"copyValueToClipboard": "Скопировать значение в буфер обмена",
 		"confirmRetryJob": "Вы действительно хотите увеличить число повторных попыток выполнения активности при неудачи?",
 		"successRetryJob": "Успешно увеличено число повторных попыток выполнения активности при неудачи.",
-		"addVariable": "Добавить переменную"
+		"addVariable": "Добавить переменную",
+		"jobs": {
+			"id": "ID",
+			"dueDate": "Срок выполнения",
+			"createTime": "Дата создания",
+			"retries": "Повторы",
+			"activity": "Активность",
+			"failedActivity": "Неудачная активность",
+			"actions": "Действия",
+			"suspend": "Приостановить",
+			"resume": "Возобновить"
+		}
 	},
 	"bpmn-viewer": {
 		"zoomIn": "Увеличить",
