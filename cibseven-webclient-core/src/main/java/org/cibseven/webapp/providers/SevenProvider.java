@@ -25,6 +25,7 @@ import org.cibseven.webapp.rest.model.EventSubscription;
 import org.cibseven.webapp.rest.model.Filter;
 import org.cibseven.webapp.rest.model.IdentityLink;
 import org.cibseven.webapp.rest.model.Incident;
+import org.cibseven.webapp.rest.model.Job;
 import org.cibseven.webapp.rest.model.Message;
 import org.cibseven.webapp.rest.model.NewUser;
 import org.cibseven.webapp.rest.model.Process;
@@ -65,6 +66,7 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
     @Autowired private IIncidentProvider incidentProvider;
     @Autowired private IUserProvider userProvider;
     @Autowired private IDecisionProvider decisionProvider;
+    @Autowired private IJobProvider jobProvider;
 
     
     /*
@@ -842,6 +844,26 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	@Override
 	public Object getXmlById(String id) {
 		return decisionProvider.getXmlById(id);
+	}
+
+	/*
+	
+	     ██  ██████  ██████      ██████  ██████   ██████  ██    ██ ██ ██████  ███████ ██████  
+	     ██ ██    ██ ██   ██     ██   ██ ██   ██ ██    ██ ██    ██ ██ ██   ██ ██      ██   ██ 
+	     ██ ██    ██ ██████      ██████  ██████  ██    ██ ██    ██ ██ ██   ██ █████   ██████  
+	██   ██ ██    ██ ██   ██     ██      ██   ██ ██    ██  ██  ██  ██ ██   ██ ██      ██   ██ 
+	 █████   ██████  ██████      ██      ██   ██  ██████    ████   ██ ██████  ███████ ██   ██ 
+	                                                                                          
+	*/
+	
+	@Override
+	public Collection<Job> getJobs(Map<String, Object> params, CIBUser user) {
+		return jobProvider.getJobs(params, user);
+	}
+
+	@Override
+	public void setSuspended(String id, Map<String, Object> params, CIBUser user) {
+		jobProvider.setSuspended(id, params, user);
 	}
 
 }

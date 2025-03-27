@@ -27,6 +27,7 @@ import org.cibseven.webapp.rest.model.EventSubscription;
 import org.cibseven.webapp.rest.model.Filter;
 import org.cibseven.webapp.rest.model.IdentityLink;
 import org.cibseven.webapp.rest.model.Incident;
+import org.cibseven.webapp.rest.model.Job;
 import org.cibseven.webapp.rest.model.Message;
 import org.cibseven.webapp.rest.model.NewUser;
 import org.cibseven.webapp.rest.model.Process;
@@ -922,5 +923,8 @@ public interface BpmProvider {
 	Object evaluateDecisionDefinitionById(String id);
 	Object updateHistoryTTLById(String id);
 	Object getXmlById(String id);
+
+	Collection<Job> getJobs(Map<String, Object> params, CIBUser user);
+	void setSuspended(String id, Map<String, Object> data, CIBUser user);
 	
 }

@@ -110,7 +110,8 @@
 		"days": "Tage",
 		"deleteProcessDefinition": "Prozessdefinition löschen",
 		"true": "Wahr",
-		"false": "Falsch"
+		"false": "Falsch",
+		"jobs": "Jobs"
 	},
 	"process-instance": {
 		"processInstanceId": "Prozessinstanz Id",
@@ -182,7 +183,18 @@
 		"copyValueToClipboard": "Wert in die Zwischenablage kopieren",
 		"confirmRetryJob": "Sind Sie sicher, die Anzahl der Wiederholungsversuche zu erhöhen?",
 		"successRetryJob": "Die Erhöhung der Anzahl der Wiederholungsversuche wurde erfolgreich abgeschlossen."		,
-		"addVariable": "Variable hinzufügen"
+		"addVariable": "Variable hinzufügen",
+		"jobs": {
+			"id": "ID",
+			"dueDate": "Fälligkeitsdatum",
+			"createTime": "Erstellungsdatum",
+			"retries": "Wiederholungen",
+			"activity": "Aktivität",
+			"failedActivity": "Fehlgeschlagene Aktivität",
+			"actions": "Aktionen",
+			"suspend": "Anhalten",
+			"resume": "Fortsetzen"
+		}
 	},
 	"bpmn-viewer": {
 		"zoomIn": "Heranzoomen",
