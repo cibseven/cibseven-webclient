@@ -5,7 +5,14 @@
 /bin/
 /.springBeans
 /build/
+
 /src/main/resources/seven-webclient.yaml
 /src/main/resources/flow-webclient.yaml
 /src/main/resources/cibseven-webclient.yaml
 /src/main/resources/cibflow-webclient.yaml
+
+# Ignore everything in the webapp folder
+/src/main/webapp/*
+
+# But do not ignore the README file
+!src/main/webapp/README.md

@@ -28,9 +28,9 @@
 
     <div ref="rContent" class="position-absolute w-100" style="bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
 
-      <VariablesTable v-if="activeTab === 'variables'" :selectedInstance="selectedInstance" :activityInstance="activityInstance" :activityInstanceHistory="activityInstanceHistory"></VariablesTable>
-      <IncidentsTable v-else-if="activeTab === 'incidents'" :selectedInstance="selectedInstance" :activityInstance="activityInstance" :activityInstanceHistory="activityInstanceHistory" :getFailingActivity="getFailingActivity"></IncidentsTable>
-      <UserTasksTable v-else-if="activeTab === 'usertasks'" :selectedInstance="selectedInstance"></UserTasksTable>
+      <VariablesTable v-if="activeTab === 'variables'" :selected-instance="selectedInstance" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory"></VariablesTable>
+      <IncidentsTable v-else-if="activeTab === 'incidents'" :incidents="selectedInstance.incidents" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" :get-failing-activity="getFailingActivity"></IncidentsTable>
+      <UserTasksTable v-else-if="activeTab === 'usertasks'" :selected-instance="selectedInstance"></UserTasksTable>
 
     </div>
 
@@ -56,7 +56,7 @@ export default {
   props: {
     selectedInstance: Object,
     activityInstance: Object,
-    activityInstanceHistory: Object,
+    activityInstanceHistory: Object
   },
   data: function() {
     return {
@@ -97,7 +97,7 @@ export default {
     },
     getFailingActivity: function(activityId) {
       return this.$refs.diagram.viewer.get('elementRegistry').get(activityId).businessObject.name
-    },
+    }
   }
 }
 </script>
