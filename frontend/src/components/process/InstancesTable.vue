@@ -65,6 +65,7 @@ import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
 export default {
   name: 'InstancesTable',
   components: { FlowTable, SuccessAlert, ConfirmDialog },
+  emits: ['instance-deleted'],
   mixins: [copyToClipboardMixin, permissionsMixin],
   props: { instances: Array, sortDesc: Boolean, sortByDefaultKey: String },
   data: function() {
@@ -86,32 +87,14 @@ export default {
     showConfirm: function(type) { this.$refs.confirm.show(type) },
     deleteInstance: function(instance) {
       ProcessService.deleteInstance(instance.id).then(() => {
-        this.$router.push({
-          name: 'process',
-          params: {
-            processKey: instance.processDefinitionKey,
-            versionIndex: instance.processDefinitionVersion
-          }
-        })
+        this.$emit('instance-deleted')
         this.$refs.success.show()
-      }).catch((error) => {
-        // TODO: show error message to user
-        console.log(error);
       })
     },
     deleteHistoryInstance: function(instance) {
       HistoryService.deleteProcessInstanceFromHistory(instance.id).then(() => {
-        this.$router.push({
-          name: 'process',
-          params: {
-            processKey: instance.processDefinitionKey,
-            versionIndex: instance.processDefinitionVersion
-          }
-        })
+        this.$emit('instance-deleted')
         this.$refs.success.show()
-      }).catch((error) => {
-        // TODO: show error message to user
-        console.log(error);
       })
     },
     suspendInstance: function(instance) {

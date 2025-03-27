@@ -58,6 +58,7 @@
             :instances="instances"
             :sortByDefaultKey="sortByDefaultKey"
             :sortDesc="sortDesc"
+            @instance-deleted="$emit('instance-deleted')"
           ></InstancesTable>
           <div v-else-if="loading" class="py-3 text-center w-100">
             <BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}
@@ -183,6 +184,11 @@ export default {
       var filename = this.process.resource.substr(this.process.resource.lastIndexOf('/') + 1, this.process.resource.lenght)
       window.location.href = appConfig.servicesBasePath + '/process/' + this.process.id + '/data?filename=' + filename +
         '&token=' + this.$root.user.authToken
+    },
+    refreshDiagram: function() {
+      this.$refs.diagram.clearEvents()
+      this.$refs.diagram.cleanDiagramState()
+      this.$refs.diagram.drawDiagramState()
     },
     showConfirm: function(type) { this.$refs.confirm.show(type) },
     suspendProcess: function() {

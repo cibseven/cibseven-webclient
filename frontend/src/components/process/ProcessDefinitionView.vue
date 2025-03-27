@@ -31,6 +31,7 @@
           :incidents="incidents"
           @show-more="showMore()"
           @activity-id="filterByActivityId($event)"
+          @instance-deleted="onInstanceDeleted()"
           @task-selected="setSelectedTask($event)"
           @filter-instances="filterInstances($event)"
           @open-subprocess="openSubprocess($event)"
@@ -321,6 +322,19 @@ export default {
     loadStatistics: function() {
       ProcessService.findProcessStatistics(this.process.id).then(statistics => {
         this.$store.dispatch('setStatistics', { process: this.process, statistics: statistics })
+      })
+    },
+    onInstanceDeleted: function() {
+      this.setSelectedInstance({ selectedInstance: null })
+      this.firstResult = 0
+      return Promise.all([
+        this.loadInstances(),
+        this.loadIncidents(),
+        this.loadStatistics(),
+        this.loadProcessActivitiesHistory()
+      ]).then(() => {
+        this.calcProcessDefinitionsStats(this.process, this.lazyLoadHistory)
+        this.$refs.process.refreshDiagram()
       })
     },
     setSelectedInstance: function(evt) {
