@@ -8,6 +8,13 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 const backendUrl = 'http://localhost:8080'
 
+// Detect build mode
+/* eslint-disable no-undef */
+const isLibrary = process.env.BUILD_MODE === 'library'
+/* eslint-enable no-undef */
+
+console.log('isLibrary', isLibrary)
+
 // https://vite.dev/config/
 export default defineConfig({
   base: '/webapp/',
@@ -41,4 +48,28 @@ export default defineConfig({
       },
     },
   },
+  build: isLibrary
+    ? {
+        lib: {
+          /* eslint-disable no-undef */
+          entry: path.resolve(__dirname, 'src/library.js'),
+          /* eslint-enable no-undef */
+          name: 'cibseven-webclient',
+          formats: ['es', 'umd'],
+          fileName: (format) => `cibseven-frontend.${format}.js`,
+        },
+        rollupOptions: {
+          external: ['vue'],
+          output: {
+            globals: {
+              vue: 'Vue',
+            },
+            // Ensure CSS is extracted and placed in the dist folder
+            assetFileNames: 'cibseven-frontend.[ext]',
+          },
+        },
+        cssCodeSplit: true, // Ensure CSS is extracted into a separate file
+        outDir: 'dist', // The output directory
+      }
+    : {}
 })

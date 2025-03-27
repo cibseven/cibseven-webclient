@@ -3,9 +3,24 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "license": "",
+  "main": "./src/main.js",
+  "style": "dist/cibseven-frontend.css",
+  "files": [
+    "dist/cibseven-frontend.css",
+    "dist/cibseven-frontend.es.js",
+    "dist/cibseven-frontend.umd.js"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/cibseven-frontend.es.js",
+      "require": "./dist/cibseven-frontend.umd.js"
+    }
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:library": "cross-env BUILD_MODE=library vite build",
     "preview": "vite preview",
     "test:unit": "vitest",
     "prepare": "cypress install",
@@ -38,6 +53,7 @@
     "@vitest/eslint-plugin": "1.1.25",
     "@vue/eslint-config-prettier": "^10.1.0",
     "@vue/test-utils": "^2.4.6",
+    "cross-env": "^7.0.3",
     "cypress": "^14.1.0",
     "eslint": "^9.18.0",
     "eslint-plugin-cypress": "^4.1.0",
