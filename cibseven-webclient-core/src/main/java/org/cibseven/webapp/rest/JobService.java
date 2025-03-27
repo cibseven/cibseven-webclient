@@ -11,12 +11,7 @@ import org.cibseven.webapp.providers.SevenProvider;
 import org.cibseven.webapp.rest.model.Job;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletRequest;
 
 @RestController @RequestMapping("${services.basePath:/services/v1}" + "/job")
@@ -31,7 +26,7 @@ public class JobService extends BaseService implements InitializingBean {
 		else throw new SystemException("JobService expects a BpmProvider");
 	}
 
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
 	public Collection<Job> getJobs(
 			@RequestBody Map<String, Object> params,
 			Locale loc, HttpServletRequest rq) {
@@ -39,7 +34,7 @@ public class JobService extends BaseService implements InitializingBean {
 		return bpmProvider.getJobs(params, user);
 	}
 
-    @RequestMapping(value="/{id}/suspended", method = RequestMethod.PUT)
+    @PutMapping("/{id}/suspended")
 	public void setSuspended(
 			@PathVariable String id,
 			@RequestBody Map<String, Object> data,
