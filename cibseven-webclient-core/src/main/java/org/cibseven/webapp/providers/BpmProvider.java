@@ -33,6 +33,7 @@ import org.cibseven.webapp.rest.model.NewUser;
 import org.cibseven.webapp.rest.model.Process;
 import org.cibseven.webapp.rest.model.ProcessDiagram;
 import org.cibseven.webapp.rest.model.ProcessInstance;
+import org.cibseven.webapp.rest.model.HistoryProcessInstance;
 import org.cibseven.webapp.rest.model.ProcessStart;
 import org.cibseven.webapp.rest.model.ProcessStatistics;
 import org.cibseven.webapp.rest.model.SevenUser;
@@ -237,7 +238,7 @@ public interface BpmProvider {
      * @return Fetched processes instances.
      * @throws SystemException in case of an error.
      */
-	Collection<ProcessInstance> findProcessesInstancesHistory(String key, Optional<Boolean> active, Integer firstResult, Integer maxResults, CIBUser user) throws SystemException;
+	Collection<HistoryProcessInstance> findProcessesInstancesHistory(String key, Optional<Boolean> active, Integer firstResult, Integer maxResults, CIBUser user) throws SystemException;
 	
 	/**
 	 * Search processes instances with a specific process key.
@@ -271,7 +272,7 @@ public interface BpmProvider {
      * @throws NoObjectFoundException when the process instance searched for could not be found.
      * @throws SystemException in case of any other error.
      */	
-	ProcessInstance findHistoryProcessInstanceHistory(String processInstanceId, CIBUser user) throws SystemException, NoObjectFoundException;
+	HistoryProcessInstance findHistoryProcessInstanceHistory(String processInstanceId, CIBUser user) throws SystemException, NoObjectFoundException;
 	
 	/**
 	 * FindTask by filter
@@ -751,7 +752,7 @@ public interface BpmProvider {
      * @return Fetched processes instances.
      * @throws SystemException in case of an error.
      */
-	Collection<ProcessInstance> findProcessesInstancesHistoryById(String id, Optional<String> activityId, Optional<Boolean> active,
+	Collection<HistoryProcessInstance> findProcessesInstancesHistoryById(String id, Optional<String> activityId, Optional<Boolean> active,
 			Integer firstResult, Integer maxResults, String text, CIBUser user);
 	
 	/**
