@@ -52,7 +52,9 @@ export default defineConfig({
   build: isLibrary
     ? {
         lib: {
+          /* eslint-disable no-undef */
           entry: path.resolve(__dirname, 'src/library.js'),
+          /* eslint-enable no-undef */
           name: 'cibseven-webclient',
           formats: ['es', 'umd'],
           fileName: (format) => `cibseven-frontend.${format}.js`,
