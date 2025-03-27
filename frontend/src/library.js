@@ -1,206 +1,212 @@
-
 // Import the CSS to ensure it is bundled with the package
 import './assets/main.css';
 
-import BAlert from './components/BAlert.vue'
-import BAvatar from './components/BAvatar.vue'
-import BBadge from './components/BBadge.vue'
-import BButton from './components/BButton.vue'
-import BButtonClose from './components/BButtonClose.vue'
-import BCalendar from './components/BCalendar.vue'
-import BCard from './components/BCard.vue'
-import BCardBody from './components/BCardBody.vue'
-import BCardText from './components/BCardText.vue'
-import BCol from './components/BCol.vue'
-import BCollapse from './components/BCollapse.vue'
-import BDdItemBtn from './components/BDdItemBtn.vue'
-import BDPopover from './components/BDPopover.vue'
-import BDropdown from './components/BDropdown.vue'
-import BDropdownDivider from './components/BDropdownDivider.vue'
-import BDropdownForm from './components/BDropdownForm.vue'
-import BDropdownGroup from './components/BDropdownGroup.vue'
-import BDropdownItem from './components/BDropdownItem.vue'
-import BDropdownItemButton from './components/BDropdownItemButton.vue'
-import BForm from './components/BForm.vue'
-import BFormCheckbox from './components/BFormCheckbox.vue'
-import BFormDatepicker from './components/BFormDatepicker.vue'
-import BFormFile from './components/BFormFile.vue'
-import BFormGroup from './components/BFormGroup.vue'
-import BFormInput from './components/BFormInput.vue'
-import BFormRow from './components/BFormRow.vue'
-import BFormSelect from './components/BFormSelect.vue'
-import BFormSelectOption from './components/BFormSelectOption.vue'
-import BFormTag from './components/BFormTag.vue'
-import BFormTextarea from './components/BFormTextarea.vue'
-import BFormTimepicker from './components/BFormTimepicker.vue'
-import BInputGroup from './components/BInputGroup.vue'
-import BInputGroupAppend from './components/BInputGroupAppend.vue'
-import BInputGroupPrepend from './components/BInputGroupPrepend.vue'
-import BInputGroupText from './components/BInputGroupText.vue'
-import BLink from './components/BLink.vue'
-import BListGroup from './components/BListGroup.vue'
-import BListGroupItem from './components/BListGroupItem.vue'
-import BModal from './components/BModal.vue'
-import BNavItemDropdown from './components/BNavItemDropdown.vue'
-import BNavbar from './components/BNavbar.vue'
-import BNavbarBrand from './components/BNavbarBrand.vue'
-import BNavbarNav from './components/BNavbarNav.vue'
-import BNavbarToggle from './components/BNavbarToggle.vue'
-import BOverlay from './components/BOverlay.vue'
-import BPagination from './components/BPagination.vue'
-import BPopover from './components/BPopover.vue'
-import BProgress from './components/BProgress.vue'
-import BProgressBar from './components/BProgressBar.vue'
-import BSpinner from './components/BSpinner.vue'
-import BTab from './components/BTab.vue'
-import BTabs from './components/BTabs.vue'
-import BToggle from './components/BToggle.vue'
-import BWaitingBox from './components/BWaitingBox.vue'
+import CibSeven from '@/components/CibSeven.vue'
+import FlowTable from '@/components/common-components/FlowTable.vue'
+import ErrorDialog from '@/components/common-components/ErrorDialog.vue'
+import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
+import ProblemReport from '@/components/common-components/ProblemReport.vue'
+import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
+import TaskPopper from '@/components/common-components/TaskPopper.vue'
+import Clipboard from '@/components/common-components/Clipboard.vue'
+import TaskList from '@/components/common-components/TaskList.vue'
+import CIBHeaderFlow from '@/components/common-components/CIBHeaderFlow.vue'
+import Sidebars from '@/components/common-components/Sidebars.vue'
+import ResetDialog from '@/components/login/ResetDialog.vue'
+import OtpDialog from '@/components/login/OtpDialog.vue'
+import CIBForm from '@/components/common-components/CIBForm.vue'
+import SecureInput from '@/components/login/SecureInput.vue'
+import FilterableSelect from '@/components/task/filter/FilterableSelect.vue'
+import IconButton from '@/components/render-template/IconButton.vue'
+import MultisortModal from '@/components/process/MultisortModal.vue'
+import SidebarsFlow from '@/components/common-components/SidebarsFlow.vue'
+import SmartSearch from '@/components/task/SmartSearch.vue'
+import SupportModal from '@/components/common-components/SupportModal.vue'
+import AdminAuthorizations from '@/components/admin/AdminAuthorizations.vue'
+import AdminAuthorizationsTable from '@/components/admin/AdminAuthorizationsTable.vue'
+import AdminGroups from '@/components/admin/AdminGroups.vue'
+import AdminUsers from '@/components/admin/AdminUsers.vue'
+import AuthorizationsNavBar from '@/components/admin/AuthorizationsNavBar.vue'
+import CreateGroup from '@/components/admin/CreateGroup.vue'
+import CreateUser from '@/components/admin/CreateUser.vue'
+import ProfileGroup from '@/components/admin/ProfileGroup.vue'
+import ProfileUser from '@/components/admin/ProfileUser.vue'
+import UsersManagement from '@/components/admin/UsersManagement.vue'
+import DeploymentList from '@/components/deployment/DeploymentList.vue'
+import DeploymentsView from '@/components/deployment/DeploymentsView.vue'
+import ResourcesNavBar from '@/components/deployment/ResourcesNavBar.vue'
+import FilterModal from '@/components/task/filter/FilterModal.vue'
+import FilterNavBar from '@/components/task/filter/FilterNavBar.vue'
+import FilterNavCollapsed from '@/components/task/filter/FilterNavCollapsed.vue'
+import ProcessView from '@/components/process/ProcessView.vue'
+import AddVariableModal from '@/components/process/AddVariableModal.vue'
+import BpmnViewer from '@/components/process/BpmnViewer.vue'
+import InstancesTable from '@/components/process/InstancesTable.vue'
+import Process from '@/components/process/Process.vue'
+import ProcessAdvanced from '@/components/process/ProcessAdvanced.vue'
+import ProcessCard from '@/components/process/ProcessCard.vue'
+import ProcessDetailsSidebar from '@/components/process/ProcessDetailsSidebar.vue'
+import StartProcessList from '@/components/start-process/StartProcessList.vue'
+import StartProcessView from '@/components/start-process/StartProcessView.vue'
+import ProcessList from '@/components/processes/list/ProcessList.vue'
+import ProcessListView from '@/components/processes/list/ProcessListView.vue'
+import ProcessTable from '@/components/start-process/ProcessTable.vue'
+import ProcessVariablesTable from '@/components/process/ProcessVariablesTable.vue'
+import ProcessDefinitionView from '@/components/process/ProcessDefinitionView.vue'
+import StartProcess from '@/components/start-process/StartProcess.vue'
+import TaskAssignationModal from '@/components/process/TaskAssignationModal.vue'
+import VariablesTable from '@/components/process/tables/VariablesTable.vue'
+import IncidentsTable from '@/components/process/tables/IncidentsTable.vue'
+import UserTasksTable from '@/components/process/tables/UserTasksTable.vue'
+import RenderTemplate from '@/components/render-template/RenderTemplate.vue'
+import AdvancedSearchModal from '@/components/task/AdvancedSearchModal.vue'
+import Task from '@/components/task/Task.vue'
+import TaskContent from '@/components/task/TaskContent.vue'
+import Tasks from '@/components/task/Tasks.vue'
+import TasksNavBar from '@/components/task/TasksNavBar.vue'
+import TasksView from '@/components/task/TasksView.vue'
+import HighlightedText from '@/components/common-components/HighlightedText.vue'
 
 const registerComponents = function(app) {
-
-  app.component('b-alert', BAlert)
-  app.component('b-avatar', BAvatar)
-  app.component('b-badge', BBadge)
-  app.component('b-button', BButton)
-  app.component('b-button-close', BButtonClose)
-  app.component('b-calendar', BCalendar)
-  app.component('b-card', BCard)
-  app.component('b-card-body', BCardBody)
-  app.component('b-card-text', BCardText)
-  app.component('b-col', BCol)
-  app.component('b-collapse', BCollapse)
-  app.component('b-dd-item-btn', BDdItemBtn)
-  app.component('b-dropdown', BDropdown)
-  app.component('b-dropdown-divider', BDropdownDivider)
-  app.component('b-dropdown-form', BDropdownForm)
-  app.component('b-dropdown-group', BDropdownGroup)
-  app.component('b-dropdown-item', BDropdownItem)
-  app.component('b-dropdown-item-button', BDropdownItemButton)
-  app.component('b-form', BForm)
-  app.component('b-form-checkbox', BFormCheckbox)
-  app.component('b-form-datepicker', BFormDatepicker)
-  app.component('b-form-file', BFormFile)
-  app.component('b-form-group', BFormGroup)
-  app.component('b-form-input', BFormInput)
-  app.component('b-form-row', BFormRow)
-  app.component('b-form-select', BFormSelect)
-  app.component('b-form-select-option', BFormSelectOption)
-  app.component('b-form-tag', BFormTag)
-  app.component('b-form-textarea', BFormTextarea)
-  app.component('b-form-timepicker', BFormTimepicker)
-  app.component('b-input-group', BInputGroup)
-  app.component('b-input-group-append', BInputGroupAppend)
-  app.component('b-input-group-prepend', BInputGroupPrepend)
-  app.component('b-input-group-text', BInputGroupText)
-  app.component('b-link', BLink)
-  app.component('b-list-group', BListGroup)
-  app.component('b-list-group-item', BListGroupItem)
-  app.component('b-modal', BModal)
-  app.component('b-nav-item-dropdown', BNavItemDropdown)
-  app.component('b-navbar', BNavbar)
-  app.component('b-navbar-brand', BNavbarBrand)
-  app.component('b-navbar-nav', BNavbarNav)
-  app.component('b-navbar-toggle', BNavbarToggle)
-  app.component('b-overlay', BOverlay)
-  app.component('b-pagination', BPagination)
-  app.component('b-popover', BPopover)
-  app.component('b-progress', BProgress)
-  app.component('b-progress-bar', BProgressBar)
-  app.component('b-spinner', BSpinner)
-  app.component('b-tab', BTab)
-  app.component('b-tabs', BTabs)
-  app.component('b-waiting-box', BWaitingBox)
-  app.directive('b-popover', BDPopover)
-
-  const eventBus = mitt()
-  app.directive('b-toggle', BToggle(eventBus))
-  app.config.globalProperties.$eventBus = eventBus
+  app.component('cib-seven', CibSeven)
+  app.component('flow-table', FlowTable)
+  app.component('error-dialog', ErrorDialog)
+  app.component('confirm-dialog', ConfirmDialog)
+  app.component('problem-report', ProblemReport)
+  app.component('success-alert', SuccessAlert)
+  app.component('task-popper', TaskPopper)
+  app.component('clipboard', Clipboard)
+  app.component('task-list', TaskList)
+  app.component('cib-header-flow', CIBHeaderFlow)
+  app.component('sidebars', Sidebars)
+  app.component('reset-dialog', ResetDialog)
+  app.component('otp-dialog', OtpDialog)
+  app.component('cib-form', CIBForm)
+  app.component('secure-input', SecureInput)
+  app.component('filterable-select', FilterableSelect)
+  app.component('icon-button', IconButton)
+  app.component('multisort-modal', MultisortModal)
+  app.component('sidebars-flow', SidebarsFlow)
+  app.component('smart-search', SmartSearch)
+  app.component('support-modal', SupportModal)
+  app.component('admin-authorizations', AdminAuthorizations)
+  app.component('admin-authorizations-table', AdminAuthorizationsTable)
+  app.component('admin-groups', AdminGroups)
+  app.component('admin-users', AdminUsers)
+  app.component('authorizations-nav-bar', AuthorizationsNavBar)
+  app.component('create-group', CreateGroup)
+  app.component('create-user', CreateUser)
+  app.component('profile-group', ProfileGroup)
+  app.component('profile-user', ProfileUser)
+  app.component('users-management', UsersManagement)
+  app.component('deployment-list', DeploymentList)
+  app.component('deployments-view', DeploymentsView)
+  app.component('resources-nav-bar', ResourcesNavBar)
+  app.component('filter-modal', FilterModal)
+  app.component('filter-nav-bar', FilterNavBar)
+  app.component('filter-nav-collapsed', FilterNavCollapsed)
+  app.component('process-view', ProcessView)
+  app.component('add-variable-modal', AddVariableModal)
+  app.component('bpmn-viewer', BpmnViewer)
+  app.component('instances-table', InstancesTable)
+  app.component('process', Process)
+  app.component('process-advanced', ProcessAdvanced)
+  app.component('process-card', ProcessCard)
+  app.component('process-details-sidebar', ProcessDetailsSidebar)
+  app.component('start-process-list', StartProcessList)
+  app.component('start-process-view', StartProcessView)
+  app.component('process-list', ProcessList)
+  app.component('process-list-view', ProcessListView)
+  app.component('process-table', ProcessTable)
+  app.component('process-variables-table', ProcessVariablesTable)
+  app.component('process-definition-view', ProcessDefinitionView)
+  app.component('start-process', StartProcess)
+  app.component('task-assignation-modal', TaskAssignationModal)
+  app.component('variables-table', VariablesTable)
+  app.component('incidents-table', IncidentsTable)
+  app.component('user-tasks-table', UserTasksTable)
+  app.component('render-template', RenderTemplate)
+  app.component('advanced-search-modal', AdvancedSearchModal)
+  app.component('task', Task)
+  app.component('task-content', TaskContent)
+  app.component('tasks', Tasks)
+  app.component('tasks-nav-bar', TasksNavBar)
+  app.component('tasks-view', TasksView)
+  app.component('highlighted-text', HighlightedText)
 }
 
-import en from '@/assets/translations_en.json'
-import de from '@/assets/translations_de.json'
-import es from '@/assets/translations_es.json'
-import it from '@/assets/translations_it.json'
-import ru from '@/assets/translations_ru.json'
-
 const mergeLocaleMessage = function(i18n, lang) {
-  if (lang === 'en') {
-    i18n.global.mergeLocaleMessage(lang, en)
-  }
-  else if (lang === 'de') {
-    i18n.global.mergeLocaleMessage(lang, de)
-  }
-  else if (lang === 'es') {
-    i18n.global.mergeLocaleMessage(lang, es)
-  }
-  else if (lang === 'it') {
-    i18n.global.mergeLocaleMessage(lang, it)
-  }
-  else if (lang === 'ru') {
-    i18n.global.mergeLocaleMessage(lang, ru)
-  }
-  else {
-    i18n.global.mergeLocaleMessage(lang, en)
-  }
+  // This function is now just a placeholder since translations are loaded dynamically
+  // via the fetchTranslation function in i18n.js
+  return Promise.resolve()
 }
 
 export {
   registerComponents,
   mergeLocaleMessage,
-
-  BAlert,
-  BAvatar,
-  BBadge,
-  BButton,
-  BButtonClose,
-  BCalendar,
-  BCard,
-  BCardBody,
-  BCardText,
-  BCol,
-  BCollapse,
-  BDPopover,
-  BDdItemBtn,
-  BDropdown,
-  BDropdownDivider,
-  BDropdownForm,
-  BDropdownGroup,
-  BDropdownItem,
-  BDropdownItemButton,
-  BForm,
-  BFormCheckbox,
-  BFormDatepicker,
-  BFormFile,
-  BFormGroup,
-  BFormInput,
-  BFormRow,
-  BFormSelect,
-  BFormSelectOption,
-  BFormTag,
-  BFormTextarea,
-  BFormTimepicker,
-  BInputGroup,
-  BInputGroupAppend,
-  BInputGroupPrepend,
-  BInputGroupText,
-  BLink,
-  BListGroup,
-  BListGroupItem,
-  BModal,
-  BNavItemDropdown,
-  BNavbar,
-  BNavbarBrand,
-  BNavbarNav,
-  BNavbarToggle,
-  BOverlay,
-  BPagination,
-  BPopover,
-  BProgress,
-  BProgressBar,
-  BSpinner,
-  BTab,
-  BTabs,
-  BToggle,
-  BWaitingBox
+  CibSeven,
+  FlowTable,
+  ErrorDialog,
+  ConfirmDialog,
+  ProblemReport,
+  SuccessAlert,
+  TaskPopper,
+  Clipboard,
+  TaskList,
+  CIBHeaderFlow,
+  Sidebars,
+  ResetDialog,
+  OtpDialog,
+  CIBForm,
+  SecureInput,
+  FilterableSelect,
+  IconButton,
+  MultisortModal,
+  SidebarsFlow,
+  SmartSearch,
+  SupportModal,
+  AdminAuthorizations,
+  AdminAuthorizationsTable,
+  AdminGroups,
+  AdminUsers,
+  AuthorizationsNavBar,
+  CreateGroup,
+  CreateUser,
+  ProfileGroup,
+  ProfileUser,
+  UsersManagement,
+  DeploymentList,
+  DeploymentsView,
+  ResourcesNavBar,
+  FilterModal,
+  FilterNavBar,
+  FilterNavCollapsed,
+  ProcessView,
+  AddVariableModal,
+  BpmnViewer,
+  InstancesTable,
+  Process,
+  ProcessAdvanced,
+  ProcessCard,
+  ProcessDetailsSidebar,
+  StartProcessList,
+  StartProcessView,
+  ProcessList,
+  ProcessListView,
+  ProcessTable,
+  ProcessVariablesTable,
+  ProcessDefinitionView,
+  StartProcess,
+  TaskAssignationModal,
+  VariablesTable,
+  IncidentsTable,
+  UserTasksTable,
+  RenderTemplate,
+  AdvancedSearchModal,
+  Task,
+  TaskContent,
+  Tasks,
+  TasksNavBar,
+  TasksView,
+  HighlightedText
 }
