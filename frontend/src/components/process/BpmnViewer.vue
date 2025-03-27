@@ -70,7 +70,8 @@ export default {
       currentElement: null,
       overlayList: [],
       loader: true,
-      runningActivities: []
+      runningActivities: [],
+      suspendedOverlayMap: {}
     }
   },
   computed: {
@@ -308,26 +309,22 @@ export default {
       const overlays = this.viewer?.get('overlays')
       const elementRegistry = this.viewer?.get('elementRegistry')
       if (!overlays || !elementRegistry || !Array.isArray(this.jobDefinitions)) return
-      
-      this.jobDefinitions.forEach(jobDefinition => {
-        const shape = elementRegistry.get(jobDefinition.activityId)
-        if (shape) {
-          overlays.remove({ element: jobDefinition.activityId })
-        }
+      Object.entries(this.suspendedOverlayMap).forEach(([activityId, overlayId]) => {
+        overlays.remove(overlayId)
       })
+      this.suspendedOverlayMap = {}
       this.jobDefinitions.forEach(jobDefinition => {
         const shape = elementRegistry.get(jobDefinition.activityId)
         if (shape && jobDefinition.suspended) {
           const suspendedBadge = `
-            <span class="badge bg-danger rounded-pill text-white border border-dark px-2 py-1">
+            <span class="badge bg-warning rounded-pill text-white border border-dark px-2 py-1">
               <span class="mdi mdi-pause"></span>
             </span>`
-          this.setHtmlOnDiagram(
-            overlays,
-            jobDefinition.activityId,
-            suspendedBadge,
-            { top: -10, left: -15 }
-          )
+          const overlayId = overlays.add(jobDefinition.activityId, {
+            position: { top: -10, left: -15 },
+            html: suspendedBadge
+          })
+          this.suspendedOverlayMap[jobDefinition.activityId] = overlayId
         }
       })
     },

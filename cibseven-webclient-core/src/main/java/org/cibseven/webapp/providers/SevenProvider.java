@@ -64,7 +64,7 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
     @Autowired private IFilterProvider filterProvider;
     @Autowired private IUtilsProvider utilsProvider;
     @Autowired private IIncidentProvider incidentProvider;
-    @Autowired private IJobProvider jobProvider;
+    @Autowired private IJobDefinitionProvider jobDefinitionProvider;
     @Autowired private IUserProvider userProvider;
     @Autowired private IDecisionProvider decisionProvider;
 
@@ -632,17 +632,17 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public Collection<JobDefinition> findJobDefinitions(String params, CIBUser user) {
-		return jobProvider.findJobDefinitions(params, user);
+		return jobDefinitionProvider.findJobDefinitions(params, user);
 	}
 	
 	@Override
 	public void suspendJobDefinition(String jobDefinitionId, String params, CIBUser user) {
-		jobProvider.suspendJobDefinition(jobDefinitionId, params, user);
+		jobDefinitionProvider.suspendJobDefinition(jobDefinitionId, params, user);
 	}
 	
 	@Override
 	public void overrideJobDefinitionPriority(String jobDefinitionId, String params, CIBUser user) {
-		jobProvider.overrideJobDefinitionPriority(jobDefinitionId, params, user);
+		jobDefinitionProvider.overrideJobDefinitionPriority(jobDefinitionId, params, user);
 	}
 
 

@@ -10,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 @Component
-public class JobProvider extends SevenProviderBase implements IJobProvider {	
+public class JobDefinitionProvider extends SevenProviderBase implements IJobDefinitionProvider {	
 
 	@Override
 	public Collection<JobDefinition> findJobDefinitions(String params, CIBUser user) {

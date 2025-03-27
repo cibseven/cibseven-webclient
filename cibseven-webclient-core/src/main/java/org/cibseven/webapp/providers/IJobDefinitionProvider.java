@@ -5,7 +5,7 @@ import java.util.Collection;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.rest.model.JobDefinition;
 
-public interface IJobProvider {
+public interface IJobDefinitionProvider {
 	public Collection<JobDefinition> findJobDefinitions(String params, CIBUser user);
 
 	public void suspendJobDefinition(String jobDefinitionId, String params, CIBUser user);	
