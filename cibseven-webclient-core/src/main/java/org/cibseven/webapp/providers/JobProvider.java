@@ -14,15 +14,15 @@ import org.springframework.stereotype.Component;
 public class JobProvider extends SevenProviderBase implements IJobProvider {
 
 	@Override
-	public Collection<Job> getJobs(Map<String, Object> params, CIBUser user) {
-		String url = camundaUrl + "/engine-rest/job";
-		return Arrays.asList(((ResponseEntity<Job[]>) doPost(url, params, Job[].class, user)).getBody());
-	}
-
-	@Override
 	protected HttpHeaders addAuthHeader(HttpHeaders headers, CIBUser user) {
 		if (user != null) headers.add("Authorization", user.getAuthToken());
 		return headers;
+	}
+
+	@Override
+	public Collection<Job> getJobs(Map<String, Object> params, CIBUser user) {
+		String url = camundaUrl + "/engine-rest/job";
+		return Arrays.asList(((ResponseEntity<Job[]>) doPost(url, params, Job[].class, user)).getBody());
 	}
 
 	@Override

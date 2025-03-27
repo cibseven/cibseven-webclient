@@ -50,7 +50,7 @@ import BpmnViewer from '@/components/process/BpmnViewer.vue'
 
 export default {
   name: 'ProcessVariablesTable',
-  components: { VariablesTable, IncidentsTable, UserTasksTable, BpmnViewer, JobsTable},
+  components: { VariablesTable, IncidentsTable, UserTasksTable, BpmnViewer, JobsTable },
   mixins: [procesessVariablesMixin, resizerMixin],
   props: {
     selectedInstance: Object,

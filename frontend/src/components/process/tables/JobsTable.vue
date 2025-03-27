@@ -42,8 +42,6 @@ export default {
   components: { FlowTable, SuccessAlert },
   mixins: [copyToClipboardMixin],
   props: { jobs: Array },
-  mounted: function() {
-  },
   methods: {
     setSuspended(job, suspended) {
       JobService.setSuspended(job.id, { suspended: suspended }).then(() => {
