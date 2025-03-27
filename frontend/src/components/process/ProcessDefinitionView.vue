@@ -89,7 +89,8 @@ export default {
       maxResults: this.$root.config.maxProcessesResults,
       filter: '',
       activityId: '',
-      loading: false
+      loading: false,
+      incidents: []
     }
   },
   computed: {

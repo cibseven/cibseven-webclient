@@ -124,7 +124,6 @@ export default {
     const minutes = now.getMinutes().toString().padStart(2, '0')
 
     return {
-      jobDefinitions: [],
       selectedJobDefinition: null,
       includeExistingJob: true,
       executionOption: 'immediately',
@@ -141,6 +140,9 @@ export default {
     }
   },
   computed: {
+    jobDefinitions: function() {
+      return this.$store.getters['jobDefinition/getJobDefinitions']
+    },
     getStateMsg: function() {
       if (!this.selectedJobDefinition) return null
       return this.selectedJobDefinition.suspended
@@ -153,10 +155,8 @@ export default {
   },
   methods: {
     getJobDefinitions: function() {
-      JobDefinitionService.findJobDefinitions({
-        'processDefinitionId': this.processId
-      }).then(res => {
-        this.jobDefinitions = res
+      this.$store.dispatch('jobDefinition/getJobDefinitions', {
+        processDefinitionId: this.processId
       })
     },
     showJobDefinition: function(jobDefinition) {
@@ -187,10 +187,12 @@ export default {
         includeJobs: this.includeExistingJob,
         executionDate: executionDate
       }
-      JobDefinitionService.suspendJobDefinition(this.selectedJobDefinition.id, data).then(() => {
-        this.$refs.changeJobStateModal.hide()
-        this.getJobDefinitions()
+      this.$store.dispatch('jobDefinition/suspendJobDefinition', {
+        jobDefinitionId: this.selectedJobDefinition.id,
+        params: data,
+        fetchParams: { processDefinitionId: this.processId }
       })
+      this.$refs.changeJobStateModal.hide()
     },
     openChangeJobPriorityModal: function(item) {
       this.selectedJobDefinition = item
@@ -206,10 +208,12 @@ export default {
           priority: this.priority
         }
       }
-      JobDefinitionService.overrideJobDefinitionPriority(this.selectedJobDefinition.id, data).then(() => {
-        this.$refs.overrideJobPriorityModal.hide()
-        this.getJobDefinitions()
+      this.$store.dispatch('jobDefinition/overridePriority', {
+        jobDefinitionId: this.selectedJobDefinition.id,
+        params: data,
+        fetchParams: { processDefinitionId: this.processId }
       })
+      this.$refs.overrideJobPriorityModal.hide()
     },
     isInThePast: function(ymd, date) {
       return date < moment().startOf('day')

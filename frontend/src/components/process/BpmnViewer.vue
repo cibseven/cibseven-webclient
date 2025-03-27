@@ -73,6 +73,11 @@ export default {
       runningActivities: []
     }
   },
+  computed: {
+    jobDefinitions() {
+      return this.$store.getters['jobDefinition/getJobDefinitions']
+    }
+  },
   watch: {
     activityInstanceHistory: function() {
       setTimeout(() => {
@@ -81,6 +86,15 @@ export default {
         this.currentElement = null
         this.$emit('task-selected', null)
       }, 100)
+    },
+    jobDefinitions: {
+      handler() {
+        if (this.viewer) {
+          this.drawJobDefinitionBadges()
+        }
+      },
+      immediate: true,
+      deep: true
     }
   },
   mounted: function() {
@@ -172,7 +186,7 @@ export default {
         if (this.activitiesHistory) {
           this.drawActivitiesHistory(this.activitiesHistory, elementRegistry, overlays)
         }
-      }
+      }      
 
       var callActivitiesList = elementRegistry.getAll().filter(function(element) {
         return element.type === 'bpmn:CallActivity'
@@ -223,6 +237,8 @@ export default {
             event.gfx.classList.remove('selectable', 'highlight')
         })
       })
+
+      if (this.jobDefinitions) this.drawJobDefinitionBadges()
       
       const activityMap = {}
       elementRegistry.getAll().forEach(el => {
@@ -289,7 +305,10 @@ export default {
       })
     },
     drawJobDefinitionBadges: function() {
-      /*const overlays = this.viewer.get('overlays')
+      const overlays = this.viewer.get('overlays')
+      this.jobDefinitions.forEach(jobDefinition => {
+        overlays.remove({ element: jobDefinition.activityId })
+      })
       this.jobDefinitions.forEach(jobDefinition => {
         if (jobDefinition.suspended) {
           const suspendedBadge = `
@@ -303,7 +322,7 @@ export default {
             { top: -10, right: 10 }
           )
         }
-      })*/
+      })
     },
     highlightElement: function(jobDefinition) {
       const elementRegistry = this.viewer.get('elementRegistry')
