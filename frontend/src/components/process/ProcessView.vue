@@ -1,8 +1,9 @@
 <template>
     <ProcessDefinitionView
-      v-if="!loading && computedVersionIndex !== ''"
+      v-if="!loading && computedVersionIndex"
       :processKey="processKey"
       :versionIndex="computedVersionIndex"
+      :instanceId="computedInstanceId"
     ></ProcessDefinitionView>
 </template>
 
@@ -14,7 +15,8 @@ export default {
   components: { ProcessDefinitionView },
   props: {
     processKey: { type: String, required: true },
-    versionIndex: { type: String, default: '' }
+    versionIndex: { type: String, default: '' },
+    instanceId: { type: String, default: '' }
    },
   data: function() {
     return {
@@ -27,7 +29,7 @@ export default {
       if (this.loading) {
         return ''
       }
-      else if (this.versionIndex !== '') {
+      else if (this.versionIndex) {
         return this.versionIndex
       }
       else if (this.process !== null) {
@@ -36,6 +38,10 @@ export default {
       else {
         return ''
       }
+    },
+    computedInstanceId: function() {
+      // only valid with proper "versionIndex"
+      return this.versionIndex ? this.instanceId : '';
     }
   },
   created: function() {
@@ -46,7 +52,7 @@ export default {
         this.loading = false
       })
     }
-    else if (this.versionIndex == '') {
+    else if (!this.versionIndex) {
       this.loading = true
       this.$store.dispatch('getProcessByDefinitionKey', { key: this.processKey }).then(process => {
         this.process = process

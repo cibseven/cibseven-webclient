@@ -1,12 +1,15 @@
 <template>
   <div v-if="selectedInstance" class="h-100">
-    <b-button variant="light" style="min-height: 40px; line-height: 20px;" :block="true" class="rounded-0 border-bottom text-start" @click="$emit('clear-state'); $emit('unselect-instance')">
+    <router-link
+      class="btn btn-light rounded-0 border-bottom text-start w-100 align-middle d-flex align-items-center"
+      :to="'/seven/auth/process/' + process.key + '/' + process.version">
       <span class="mdi mdi-18px mdi-arrow-left me-2 float-start"></span>
       <h5 class="m-0">
         {{ $t('process-instance.processInstanceId') }}: {{ selectedInstance.id }}
         <span v-if="selectedInstance.businessKey"> | {{ $t('process-instance.businessKey') }}: {{ selectedInstance.businessKey }}</span>
       </h5>
-    </b-button>
+    </router-link>
+
     <div @mousedown="handleMouseDown" class="v-resizable position-absolute w-100" style="left: 0" :style="'height: ' + bpmnViewerHeight + 'px; ' + toggleTransition">
       <BpmnViewer @child-activity="filterByChildActivity($event)" @task-selected="selectTask($event)" :activityId="activityId" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" :statistics="process.statistics"
       @open-subprocess="$emit('open-subprocess', $event)" :process-definition-id="process.id" ref="diagram" class="h-100" :activities-history="process.activitiesHistory"></BpmnViewer>
