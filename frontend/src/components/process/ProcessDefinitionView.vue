@@ -271,8 +271,10 @@ export default {
           this.process = process
           if (!this.process.statistics) this.loadStatistics()
           if (!this.process.activitiesHistory) this.loadProcessActivitiesHistory()
-          return this.loadInstances().then(() => {
+          return Promise.all([
+            this.loadInstances(),
             this.loadIncidents()
+          ]).then(() => {
             resolve();
           })
         }

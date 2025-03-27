@@ -65,7 +65,17 @@
         </div>
       </div>
       <div v-else-if="activeTab === 'incidents'" ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 60px; left: 0; bottom: 0">
-        <IncidentsTable v-if="!loading" :incidents="incidents" :activity-instance="activityInstance" :activity-instance-history="process.activitiesHistory" :get-failing-activity="getFailingActivity"></IncidentsTable>
+        <IncidentsTable v-if="!loading && incidents && incidents.length > 0"
+          :incidents="incidents"
+          :activity-instance="activityInstance"
+          :activity-instance-history="process.activitiesHistory"
+          :get-failing-activity="getFailingActivity"></IncidentsTable>
+        <div v-else-if="loading" class="py-3 text-center w-100">
+          <BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}
+        </div>
+        <div v-else class="py-3 text-center w-100">
+          {{ $t('process-instance.noIncidents') }}
+        </div>
       </div>
     </div>
     <ConfirmDialog ref="confirm" @ok="$event.ok($event.instance)">

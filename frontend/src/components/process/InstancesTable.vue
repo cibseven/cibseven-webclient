@@ -94,6 +94,9 @@ export default {
           }
         })
         this.$refs.success.show()
+      }).catch((error) => {
+        // TODO: show error message to user
+        console.log(error);
       })
     },
     deleteHistoryInstance: function(instance) {
@@ -106,6 +109,9 @@ export default {
           }
         })
         this.$refs.success.show()
+      }).catch((error) => {
+        // TODO: show error message to user
+        console.log(error);
       })
     },
     suspendInstance: function(instance) {
