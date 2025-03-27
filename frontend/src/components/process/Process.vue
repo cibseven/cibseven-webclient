@@ -62,13 +62,13 @@
           </div>
         </div>
       </div>
-      <div v-else-if="activeTab === 'incidents'" ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 60px; left: 0; bottom: 0">
-        <IncidentsTable v-if="!loading" :incidents="incidents" :activity-instance="activityInstance" :activity-instance-history="process.activitiesHistory" :get-failing-activity="getFailingActivity"></IncidentsTable>
-      </div>
-      <div v-show="activeTab === 'jobDefinitions'">
-        <div ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 0px; left: 0; bottom: 0" @scroll="handleScrollProcesses">
-          <JobDefinitionsTable ref="jobDefinitionsTable" :processId="process.id" :activityMap="activityMap" @highlight-activity="highlightActivity"></JobDefinitionsTable>			
-        </div>
+      <div v-if="activeTab === 'incidents' || activeTab === 'jobDefinitions'" 
+          ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 0px; left: 0; bottom: 0">
+        <IncidentsTable v-if="activeTab === 'incidents' && !loading"
+          :incidents="incidents" :activity-instance="activityInstance"
+          :activity-instance-history="process.activitiesHistory" :get-failing-activity="getFailingActivity" />
+        <JobDefinitionsTable v-else-if="activeTab === 'jobDefinitions'"
+          :processId="process.id" :activityMap="activityMap" @highlight-activity="highlightActivity" />
       </div>
       <!--
       <div v-if="activeTab === 'statistics'">
@@ -149,7 +149,8 @@ export default {
     'process.id': function() {
       ProcessService.fetchDiagram(this.process.id).then(response => {
         this.$refs.diagram.showDiagram(response.bpmn20Xml, null, null)
-      })
+      }),      
+      this.getJobDefinitions()
     }
   },
   mounted: function() {
@@ -157,7 +158,8 @@ export default {
       setTimeout(() => {
         this.$refs.diagram.showDiagram(response.bpmn20Xml, null, null)
       }, 100)
-    })
+    }),
+    this.getJobDefinitions()
   },
   computed: {
     ProcessActions: function() {
@@ -253,7 +255,12 @@ export default {
       let element = this.$refs.diagram.viewer.get('elementRegistry').get(activityId)
       if (element) return element.businessObject.name
       return ''
-    }
+    },    
+    getJobDefinitions: function() {
+      this.$store.dispatch('jobDefinition/getJobDefinitions', {
+        processDefinitionId: this.process.id
+      })
+    },
   }
 }
 </script>

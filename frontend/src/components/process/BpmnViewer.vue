@@ -305,12 +305,19 @@ export default {
       })
     },
     drawJobDefinitionBadges: function() {
-      const overlays = this.viewer.get('overlays')
+      const overlays = this.viewer?.get('overlays')
+      const elementRegistry = this.viewer?.get('elementRegistry')
+      if (!overlays || !elementRegistry || !Array.isArray(this.jobDefinitions)) return
+      
       this.jobDefinitions.forEach(jobDefinition => {
-        overlays.remove({ element: jobDefinition.activityId })
+        const shape = elementRegistry.get(jobDefinition.activityId)
+        if (shape) {
+          overlays.remove({ element: jobDefinition.activityId })
+        }
       })
       this.jobDefinitions.forEach(jobDefinition => {
-        if (jobDefinition.suspended) {
+        const shape = elementRegistry.get(jobDefinition.activityId)
+        if (shape && jobDefinition.suspended) {
           const suspendedBadge = `
             <span class="badge bg-danger rounded-pill text-white border border-dark px-2 py-1">
               <span class="mdi mdi-pause"></span>
@@ -319,7 +326,7 @@ export default {
             overlays,
             jobDefinition.activityId,
             suspendedBadge,
-            { top: -10, right: 10 }
+            { top: -10, left: -15 }
           )
         }
       })

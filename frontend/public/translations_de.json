@@ -204,7 +204,8 @@
 		    "exists": "Diese Entität ist bereits zugewiesen"
 		},
 		"noResults": "Keine Ergebnisse",
-		"noIncidents": "Keine Vorfälle",
+		"noIncidents": "Keine Vorfälle",		
+		"noJobDefinitions": "Keine Job-Definitionen",
 		"stacktrace": "Stacktrace",
 		"copyValueToClipboard": "Wert in die Zwischenablage kopieren",
 		"confirmRetryJob": "Sind Sie sicher, die Anzahl der Wiederholungsversuche zu erhöhen?",
