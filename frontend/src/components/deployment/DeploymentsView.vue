@@ -44,15 +44,15 @@
     <SidebarsFlow ref="sidebars" class="border-top overflow-auto" v-model:right-open="rightOpen" :right-caption="$t('deployment.resourcesCaption')" :rightSize="[12, 4, 3, 3, 3]">
       <template v-slot:right>
         <ResourcesNavBar :resources="resources" :deployment="deployment"></ResourcesNavBar>
-      </template>
-      <div v-if="isLoading" class="h-100 d-flex justify-content-center align-items-center">
-        <b-waiting-box styling="width: 55%"></b-waiting-box>
-      </div>
-      <DeploymentList v-if="deploymentsFiltered.length > 0 && !isLoading" :deployments="deploymentsFiltered" :deployment="deployment" :sorting="sorting"
+      </template>     
+      <DeploymentList v-if="deploymentsFiltered.length > 0 && !loading" :deployments="deploymentsFiltered" :deployment="deployment" :sorting="sorting"
         @select-deployment="selectDeployment($event)"></DeploymentList>
-      <div v-if="!isLoading && deploymentsFiltered.length === 0" class="text-center text-secondary">
+      <div v-else-if="!loading && deploymentsFiltered.length === 0" class="text-center text-secondary">
         <img src="/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mt-5 mb-3" style="width: 200px">
         <div class="h5 text-secondary text-center">{{ $t('deployment.noDeployments') }}</div>
+      </div>
+      <div v-if="loading" class="h-100 d-flex justify-content-center align-items-center">
+        <b-waiting-box styling="width: 55%"></b-waiting-box>
       </div>
     </SidebarsFlow>
     <b-modal ref="deleteModal" :title="$t('confirm.title')">
@@ -102,7 +102,6 @@ export default {
       cascadeDelete: true,
       resources: [],
       deploymentsDelData: { total: 0, deleted: 0 },
-      isLoading: true
     }
   },
   watch: {
@@ -139,7 +138,7 @@ export default {
         d.isSelected = false
       })
       this.deployments = deployments
-      this.isLoading = false
+      this.loading = false
     })
   },
   methods: {
