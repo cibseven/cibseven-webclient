@@ -3,7 +3,7 @@
     <div class="h-100 d-flex flex-column border border-end-0 border-top-0 bg-light">
 
       <b-button style="top: 3px; right: 30px" class="border-0 position-absolute" v-if="$root.config.layout.showTaskListManualRefresh"
-        variant="btn-outline-primary" size="sm" :disabled="pauseRefreshButton" :title="$t('nav-bar.refresh')" @click="$emit('refresh-tasks'); pauseButton()">
+        variant="btn-outline-primary" size="sm" :title="$t('nav-bar.refresh')" @click="refreshTasks()" :style="pauseRefreshButton ? 'opacity: 0.5' : ''">
         <span class="visually-hidden">{{ $t('nav-bar.refresh') }}</span>
         <span class="mdi mdi-18px mdi-refresh"></span>
       </b-button>
@@ -451,6 +451,12 @@ export default {
         return this.$root.config.layout.showFilterDueDate
       } else {
         return true
+      }
+    },
+    refreshTasks() {
+      if (!this.pauseRefreshButton) {
+        this.$emit('refresh-tasks')
+        this.pauseButton()
       }
     }
   }

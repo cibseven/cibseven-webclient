@@ -17,7 +17,7 @@
           :instances="instances"></ProcessDetailsSidebar>
       </template>
       <transition name="slide-in" mode="out-in">
-        <Process ref="process" v-if="process && instances && !selectedInstance"
+        <Process ref="process" v-if="process && instances && !selectedInstance && !instanceId"
           :activity-id="activityId"
           :loading="loading"
           :process="process"
@@ -31,8 +31,7 @@
           :incidents="incidents"
           @show-more="showMore()"
           @activity-id="filterByActivityId($event)"
-          @instance-deleted="clearInstance()"
-          @instance-selected="setSelectedInstance($event)"
+          @instance-deleted="onInstanceDeleted()"
           @task-selected="setSelectedTask($event)"
           @filter-instances="filterInstances($event)"
           @open-subprocess="openSubprocess($event)"
@@ -40,8 +39,13 @@
         ></Process>
       </transition>
       <transition name="slide-in" mode="out-in">
-        <ProcessVariablesTable ref="navbar-variables" v-if="process && selectedInstance" :process="process" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" @open-subprocess="openSubprocess($event)"
-        :selected-instance="selectedInstance" @clear-state="setSelectedInstance({ selectedInstance: null })" @task-selected="setSelectedTask($event)" @unselect-instance="selectedInstance = null"></ProcessVariablesTable>
+        <ProcessVariablesTable ref="navbar-variables" v-if="process && selectedInstance && instanceId"
+          :process="process"
+          :activity-instance="activityInstance"
+          :activity-instance-history="activityInstanceHistory"
+          @open-subprocess="openSubprocess($event)"
+          :selected-instance="selectedInstance"
+          @task-selected="setSelectedTask($event)"></ProcessVariablesTable>
       </transition>
     </SidebarsFlow>
     <TaskPopper ref="importPopper"></TaskPopper>
@@ -71,7 +75,8 @@ export default {
   components: { Process, ProcessDetailsSidebar, ProcessVariablesTable, SidebarsFlow, TaskPopper },
   props: {
     processKey: { type: String, required: true },
-    versionIndex: { type: String, required: true }
+    versionIndex: { type: String, required: true },
+    instanceId: { type: String, required: true }
   },
   data: function() {
     return {
@@ -106,7 +111,16 @@ export default {
     }
   },
   created: function() {
-    this.loadProcessByDefinitionKey()
+    return this.loadProcessByDefinitionKey().then((redirected) => {
+      if (!redirected && this.instanceId) {
+        if (this.instances) {
+          const selectedInstance = this.instances.find((instance) => instance.id == this.instanceId)
+          if (selectedInstance) {
+            this.setSelectedInstance({ selectedInstance: selectedInstance })
+          }
+        }
+      }
+    })
   },
   beforeUpdate: function() {
     if (this.process != null && this.process.version !== this.versionIndex) {
@@ -116,6 +130,20 @@ export default {
       this.activityInstanceHistory = null
       this.task = null
       this.loadProcessByDefinitionKey()
+    }
+    else if (this.selectedInstance == null && this.instanceId) {
+      if (this.instances) {
+        const selectedInstance = this.instances.find((instance) => instance.id == this.instanceId)
+        if (selectedInstance) {
+          this.setSelectedInstance({ selectedInstance: selectedInstance })
+        }
+      }
+    }
+    else {
+      this.selectedInstance = null
+      this.activityInstance = null
+      this.activityInstanceHistory = null
+      this.task = null
     }
   },
   methods: {
@@ -174,20 +202,25 @@ export default {
       })
     },
     loadProcessByDefinitionKey: function() {
-      ProcessService.findProcessVersionsByDefinitionKey(this.processKey).then(versions => {
+      return ProcessService.findProcessVersionsByDefinitionKey(this.processKey).then(versions => {
         const requestedDefinition = versions.find(processDefinition => processDefinition.version === this.versionIndex)
         if (requestedDefinition) {
           this.processDefinitions = versions
           const needCalcStats = this.process == null
-          this.loadProcessVersion(requestedDefinition)
-          if (needCalcStats) {
-            this.calcProcessDefinitionsStats(requestedDefinition, this.lazyLoadHistory)
-          }
+          return this.loadProcessVersion(requestedDefinition).then(() => {
+            if (needCalcStats) {
+              this.calcProcessDefinitionsStats(requestedDefinition, this.lazyLoadHistory)
+            }
+            // false - no redirect
+            return false
+          })
         }
         else {
           // definition is no longer available
           // let's redirect to the latest one
           this.$router.push('/seven/auth/process/' + this.processKey)
+          // true - redirect
+          return true
         }
       })
     },
@@ -210,6 +243,9 @@ export default {
           })
         }
       }
+
+      // false - no redirect
+      return false
     },
     loadProcessActivitiesHistory: function() {
       HistoryService.findActivitiesProcessDefinitionHistory(this.process.id).then(activities => {
@@ -217,19 +253,26 @@ export default {
       })
     },
     loadProcessVersion: function(process) {
-      if (!this.process || this.process.id !== process.id) {
-        this.firstResult = 0
-        this.process = process
-        this.loadInstances()
-        this.loadIncidents()
-        if (!this.process.statistics) this.loadStatistics()
-        if (!this.process.activitiesHistory) this.loadProcessActivitiesHistory()
-      }
+      return new Promise((resolve) => {
+        if (!this.process || this.process.id !== process.id) {
+          this.firstResult = 0
+          this.process = process
+          if (!this.process.statistics) this.loadStatistics()
+          if (!this.process.activitiesHistory) this.loadProcessActivitiesHistory()
+          return Promise.all([
+            this.loadInstances(),
+            this.loadIncidents()
+          ]).then(() => {
+            resolve();
+          })
+        }
+        resolve();
+      });
     },
     loadInstances: function(showMore) {
       if (this.$root.config.camundaHistoryLevel !== 'none') {
         this.loading = true
-        HistoryService.findProcessesInstancesHistoryById(this.process.id, this.activityId,
+        return HistoryService.findProcessesInstancesHistoryById(this.process.id, this.activityId,
           this.firstResult, this.maxResults, this.filter
         ).then(instances => {
           this.loading = false
@@ -238,7 +281,7 @@ export default {
         })
       }
       else {
-        ProcessService.findProcessVersionsByDefinitionKey(this.process.key).then(versions => {
+        return ProcessService.findProcessVersionsByDefinitionKey(this.process.key).then(versions => {
           this.processDefinitions = versions
 
           var promises = []
@@ -266,11 +309,18 @@ export default {
         this.$store.dispatch('setStatistics', { process: this.process, statistics: statistics })
       })
     },
-    clearInstance: function() {
+    onInstanceDeleted: function() {
       this.setSelectedInstance({ selectedInstance: null })
-      this.$refs.process.clearState()
       this.firstResult = 0
-      this.loadInstances()
+      return Promise.all([
+        this.loadInstances(),
+        this.loadIncidents(),
+        this.loadStatistics(),
+        this.loadProcessActivitiesHistory()
+      ]).then(() => {
+        this.calcProcessDefinitionsStats(this.process, this.lazyLoadHistory)
+        this.$refs.process.refreshDiagram()
+      })
     },
     setSelectedInstance: function(evt) {
       var selectedInstance = evt.selectedInstance
@@ -282,7 +332,8 @@ export default {
       this.activityInstance = null
       this.activityInstanceHistory = selectedInstance ? this.activityInstanceHistory : null
       if (selectedInstance) {
-        if (this.selectedInstance && this.selectedInstance.id === selectedInstance.id && !evt.reload) return
+        // do not load the same data once again
+        if (this.selectedInstance && this.selectedInstance.id === selectedInstance.id) return
         this.selectedInstance = selectedInstance
         if (this.selectedInstance.state === 'ACTIVE') {
           //Management
