@@ -111,6 +111,7 @@
 		"deleteProcessDefinition": "Prozessdefinition löschen",
 		"true": "Wahr",
 		"false": "Falsch",
+		"jobDefinitions": "Job-Definitionen",
 		"jobs": "Jobs"
 	},
 	"process-instance": {
@@ -154,6 +155,32 @@
 		    "retryJob": "Anzahl der Wiederholungsversuche eines fehlgeschlagenen Jobs erhöhen",
 		    "actions": "Aktionen"
 		},
+		"jobDefinitions": {
+			"state": "Status",
+			"activity": "Aktivität",
+			"type": "Typ",
+			"configuration": "Konfiguration",
+			"overridingJobPriority": "Überschriebene Job-Priorität",
+			"actions": "Aktionen",
+			"active": "Aktiv",
+			"suspendJob": "Job-Definition aussetzen",
+			"activateJob": "Job-Definition aktivieren",
+			"suspended": "Ausgesetzt",
+			"activateMsg": "Diese Job-Definition wird aktiviert, sodass neue Jobs basierend auf dieser Definition standardmäßig aktiv sind.",
+			"suspendMsg": "Diese Job-Definition wird ausgesetzt, sodass neue Jobs basierend auf dieser Definition standardmäßig ausgesetzt sind.",
+			"includeExisting": "Vorhandene Jobs einbeziehen",
+			"execute": "Ausführen",
+			"immediately": "Sofort",
+			"delayed": "Verzögert",
+			"scheduleAt": "Planen um",
+			"suspend": "Aussetzen",
+			"activate": "Aktivieren",
+			"changeJobPriority": "Überschriebene Job-Priorität ändern",
+			"overridingMsg": "Die überschriebene Priorität für Jobs der angegebenen Job-Definition ändern.",
+			"jobPriority": "Priorität",
+			"clear": "Überschriebene Job-Priorität löschen",
+			"set": "Überschriebene Job-Priorität festlegen"
+		},
 		"usertasks": {
 		    "activity": "Aktivität",
 		    "assignee": "Bearbeiter",
@@ -178,7 +205,8 @@
 		    "exists": "Diese Entität ist bereits zugewiesen"
 		},
 		"noResults": "Keine Ergebnisse",
-		"noIncidents": "Keine Vorfälle",
+		"noIncidents": "Keine Vorfälle",		
+		"noJobDefinitions": "Keine Job-Definitionen",
 		"stacktrace": "Stacktrace",
 		"copyValueToClipboard": "Wert in die Zwischenablage kopieren",
 		"confirmRetryJob": "Sind Sie sicher, die Anzahl der Wiederholungsversuche zu erhöhen?",

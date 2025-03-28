@@ -27,6 +27,7 @@ import org.cibseven.webapp.rest.model.EventSubscription;
 import org.cibseven.webapp.rest.model.Filter;
 import org.cibseven.webapp.rest.model.IdentityLink;
 import org.cibseven.webapp.rest.model.Incident;
+import org.cibseven.webapp.rest.model.JobDefinition;
 import org.cibseven.webapp.rest.model.Job;
 import org.cibseven.webapp.rest.model.Message;
 import org.cibseven.webapp.rest.model.NewUser;
@@ -906,6 +907,12 @@ public interface BpmProvider {
 
 	Collection<ActivityInstanceHistory> findActivitiesProcessDefinitionHistory(String processDefinitionId,
 			CIBUser user);
+	
+	Collection<JobDefinition> findJobDefinitions(String params, CIBUser user);
+
+	void suspendJobDefinition(String jobDefinitionId, String params, CIBUser user);
+	
+	void overrideJobDefinitionPriority(String jobDefinitionId, String params, CIBUser user);
 	
 	Collection<Decision> getDecisionDefinitionList(Map<String, Object> queryParams);
 	Object getDecisionDefinitionListCount(Map<String, Object> queryParams);
