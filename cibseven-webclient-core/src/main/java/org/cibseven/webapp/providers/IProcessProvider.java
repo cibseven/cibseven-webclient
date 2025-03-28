@@ -12,6 +12,7 @@ import org.cibseven.webapp.exception.UnsupportedTypeException;
 import org.cibseven.webapp.rest.model.Process;
 import org.cibseven.webapp.rest.model.ProcessDiagram;
 import org.cibseven.webapp.rest.model.ProcessInstance;
+import org.cibseven.webapp.rest.model.HistoryProcessInstance;
 import org.cibseven.webapp.rest.model.ProcessStart;
 import org.cibseven.webapp.rest.model.ProcessStatistics;
 import org.cibseven.webapp.rest.model.StartForm;
@@ -37,10 +38,10 @@ public interface IProcessProvider {
 	public ProcessStart startProcess(String processDefinitionKey, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException;
 	public ProcessStart submitForm(String processDefinitionKey, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException;
 	public Collection<ProcessStatistics> findProcessStatistics(String processId, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException;
-	public ProcessInstance findHistoryProcessInstanceHistory(String processInstanceId, CIBUser user);
-	public Collection<ProcessInstance> findProcessesInstancesHistory(String key, Optional<Boolean> active, 
+	public HistoryProcessInstance findHistoryProcessInstanceHistory(String processInstanceId, CIBUser user);
+	public Collection<HistoryProcessInstance> findProcessesInstancesHistory(String key, Optional<Boolean> active, 
 			Integer firstResult, Integer maxResults, CIBUser user);
-	public Collection<ProcessInstance> findProcessesInstancesHistoryById(String id, Optional<String> activityId, Optional<Boolean> active, 
+	public Collection<HistoryProcessInstance> findProcessesInstancesHistoryById(String id, Optional<String> activityId, Optional<Boolean> active, 
 			Integer firstResult, Integer maxResults, String text, CIBUser user);
 	public ProcessInstance findProcessInstance(String processInstanceId, CIBUser user);
 	public Variable fetchProcessInstanceVariable(String processInstanceId, String variableName, String deserializeValue, CIBUser user) throws SystemException;
