@@ -1,7 +1,7 @@
 <template>
   <div v-if="process" class="h-100">
     <div @mousedown="handleMouseDown" class="v-resizable position-absolute w-100" style="left: 0" :style="'height: ' + bpmnViewerHeight + 'px; ' + toggleTransition">
-      <BpmnViewer ref="diagram" @activity-id="$emit('activity-id', $event)" @task-selected="selectTask($event)" @open-subprocess="$emit('open-subprocess', $event)" @activity-map-ready="activityMap = $event"
+      <BpmnViewer ref="diagram" @activity-id="$emit('activity-id', $event)" @task-selected="selectTask($event)" @open-subprocess="$emit('open-subprocess', $event)" 
         :process-definition-id="process.id" :activity-id="activityId" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" :statistics="process.statistics"
         :activities-history="process.activitiesHistory" class="h-100">
       </BpmnViewer>
@@ -65,13 +65,13 @@
           </div>
         </div>
       </div>
-      <div v-if="activeTab === 'incidents' || activeTab === 'jobDefinitions'" 
+      <div v-if="['incidents', 'jobDefinitions'].includes(activeTab)" 
           ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 0px; left: 0; bottom: 0">
         <IncidentsTable v-if="activeTab === 'incidents' && !loading"
           :incidents="incidents" :activity-instance="activityInstance"
-          :activity-instance-history="process.activitiesHistory" :get-failing-activity="getFailingActivity" />
+          :activity-instance-history="process.activitiesHistory"/>
         <JobDefinitionsTable v-else-if="activeTab === 'jobDefinitions'"
-          :processId="process.id" :activityMap="activityMap" @highlight-activity="highlightActivity" />
+          :process-id="process.id" @highlight-activity="highlightActivity" />
       </div>
     </div>
     <ConfirmDialog ref="confirm" @ok="$event.ok($event.instance)">
@@ -126,8 +126,7 @@ export default {
       usages: [],
       sortByDefaultKey: 'startTimeOriginal',
       sorting: false,
-      sortDesc: true,
-      activityMap: {}
+      sortDesc: true
     }
   },
   watch: {
@@ -219,11 +218,6 @@ export default {
       }
     },
     onInput: debounce(800, function(evt) { this.$emit('filter-instances', evt) }),
-    getFailingActivity: function(activityId) {
-      let element = this.$refs.diagram.viewer.get('elementRegistry').get(activityId)
-      if (element) return element.businessObject.name
-      return ''
-    },    
     getJobDefinitions: function() {
       this.$store.dispatch('jobDefinition/getJobDefinitions', {
         processDefinitionId: this.process.id

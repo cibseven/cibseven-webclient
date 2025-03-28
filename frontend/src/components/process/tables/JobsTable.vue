@@ -6,7 +6,7 @@
       { label: 'dueDate', key: 'dueDate', class: 'col-2', thClass: 'border-end', tdClass: 'position-relative py-1 border-end border-top-0' },
       { label: 'createTime', key: 'createTime', class: 'col-2', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' },
       { label: 'retries', key: 'retries', class: 'col-1', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0' },
-      { label: 'activity', key: 'activity', class: 'col-2', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0' },
+      { label: 'activity', key: 'activityId', class: 'col-2', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0' },
       { label: 'failedActivity', key: 'failedActivityId', class: 'col-2', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0' },
       { label: 'actions', key: 'actions', class: 'col-1', sortable: false, tdClass: 'py-1 border-top-0' }]">
       <template v-slot:cell(id)="table">
@@ -17,6 +17,12 @@
       </template>
       <template v-slot:cell(createTime)="table">
         <span :title="table.item.createTime" class="text-truncate">{{ table.item.createTime }}</span>
+      </template>
+      <template v-slot:cell(activityId)="table">
+        <span :title="table.item.activityId" class="text-truncate">{{ $store.state.activity.processActivities[table.item.activityId] }}</span>
+      </template>
+      <template v-slot:cell(failedActivityId)="table">
+        <span :title="table.item.failedActivityId" class="text-truncate">{{ $store.state.activity.processActivities[table.item.failedActivityId] }}</span>
       </template>
       <template v-slot:cell(actions)="table">
         <b-button :title="suspendedStatusText(table.item)" @click="setSuspended(table.item, !table.item.suspended)"

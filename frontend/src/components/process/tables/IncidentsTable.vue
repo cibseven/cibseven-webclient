@@ -15,10 +15,10 @@
         <div :title="table.item.incidentTimestamp" class="text-truncate">{{ showPrettyTimestamp(table.item.incidentTimestamp) }}</div>
       </template>
       <template v-slot:cell(activityId)="table">
-        <div :title="table.item.activityId" class="text-truncate">{{ getActivityName(table.item.activityId) }}</div>
+        <div :title="table.item.activityId" class="text-truncate">{{ $store.state.activity.processActivities[table.item.activityId] }}</div>
       </template>
       <template v-slot:cell(failedActivityId)="table">
-        <div :title="table.item.failedActivityId" class="text-truncate">{{ getFailingActivity(table.item.failedActivityId) }}</div>
+        <div :title="table.item.failedActivityId" class="text-truncate">{{ $store.state.activity.processActivities[table.item.failedActivityId] }}</div>
       </template>
       <template v-slot:cell(incidentType)="table">
         <div :title="table.item.incidentType" class="text-truncate">{{ table.item.incidentType }}</div>
@@ -74,29 +74,11 @@ export default {
     }
   },
   props: {
-    getFailingActivity: Function,
     incidents: Array,
-	  activityInstance: Object,
+    activityInstance: Object,
     activityInstanceHistory: Object
   },
   methods: {
-    getActivityName: function(activityId) {
-      var result = null
-      if (this.activityInstance && this.activityInstance.childTransitionInstances) {
-        result = this.activityInstance.childTransitionInstances.find(activity => {
-          return activity.activityId === activityId
-        })
-        if (result) return result.activityName
-      }
-      // original code
-      if (this.activityInstanceHistory) {
-        result = this.activityInstanceHistory.find(activity => {
-          return activity.activityId === activityId
-        })
-      }
-      if (result)  return result.activityName
-      else return 'N/A'
-    },
     showIncidentMessage: function(jobDefinitionId) {
       this.stackTraceMessage = ''
       IncidentService.fetchIncidentStacktraceByJobId(jobDefinitionId).then(res => {
