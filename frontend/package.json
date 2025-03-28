@@ -1,11 +1,25 @@
 {
-  "name": "cibseven-frontend",
+  "name": "cibseven-components",
   "version": "0.0.0",
-  "private": true,
   "type": "module",
+  "license": "",
+  "main": "./src/main.js",
+  "style": "dist/cibseven-components.css",
+  "files": [
+    "dist/cibseven-components.css",
+    "dist/cibseven-components.es.js",
+    "dist/cibseven-components.umd.js"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/cibseven-components.es.js",
+      "require": "./dist/cibseven-components.umd.js"
+    }
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:library": "cross-env BUILD_MODE=library vite build",
     "preview": "vite preview",
     "test:unit": "vitest",
     "prepare": "cypress install",
@@ -38,6 +52,7 @@
     "@vitest/eslint-plugin": "1.1.25",
     "@vue/eslint-config-prettier": "^10.1.0",
     "@vue/test-utils": "^2.4.6",
+    "cross-env": "^7.0.3",
     "cypress": "^14.1.0",
     "eslint": "^9.18.0",
     "eslint-plugin-cypress": "^4.1.0",
@@ -48,5 +63,8 @@
     "vite": "^6.2.3",
     "vite-plugin-vue-devtools": "^7.7.1",
     "vitest": "^3.0.5"
+  },
+  "publishConfig": {
+    "registry": "https://artifacts.cibseven.org/repository/npm-hosted/"
   }
 }

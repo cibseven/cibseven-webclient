@@ -41,6 +41,11 @@ pipeline {
             description: 'Build and deploy cib-common-components to artifacts.cibseven.org'
         )
         booleanParam(
+            name: 'RELEASE_CIBSEVEN_COMPONENTS',
+            defaultValue: false,
+            description: 'Build and deploy cibseven-components to artifacts.cibseven.org'
+        )
+        booleanParam(
             name: 'DEPLOY_TO_ARTIFACTS',
             defaultValue: false,
             description: 'Deploy artifacts to artifacts.cibseven.org'
@@ -177,7 +182,29 @@ pipeline {
                                 # Copy the .npmrc file to the frontend directory
                                 cp ${NPMRC_FILE} ./cib-common-components/.npmrc
                                 # Run Maven with the required profile
-                                mvn -T4 -Dbuild.number=${BUILD_NUMBER} clean generate-resources -Drelease-common-components=true
+                                mvn -T4 -Dbuild.number=${BUILD_NUMBER} clean generate-resources -Drelease-npm-library=cib-common-components
+                            """
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Release cibseven-components') {
+            when {
+                allOf {
+                    expression { params.RELEASE_CIBSEVEN_COMPONENTS }
+                }
+            }
+            steps {
+                script {
+                    withCredentials([file(credentialsId: 'credential-cibseven-artifacts-npmrc', variable: 'NPMRC_FILE')]) {
+                        withMaven() {
+                            sh """
+                                # Copy the .npmrc file to the frontend directory
+                                cp ${NPMRC_FILE} ./frontend/.npmrc
+                                # Run Maven with the required profile
+                                mvn -T4 -Dbuild.number=${BUILD_NUMBER} clean generate-resources -Drelease-npm-library=frontend
                             """
                         }
                     }
