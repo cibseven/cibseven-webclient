@@ -47,7 +47,7 @@
 <script>
 import { TaskService } from '@/services.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
-import TaskAssignationModal from '@/components/process/TaskAssignationModal.vue'
+import TaskAssignationModal from '@/components/process/modals/TaskAssignationModal.vue'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import { BWaitingBox } from 'cib-common-components'

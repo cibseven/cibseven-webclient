@@ -17,7 +17,7 @@
           :instances="instances"></ProcessDetailsSidebar>
       </template>
       <transition name="slide-in" mode="out-in">
-        <Process ref="process" v-if="process && instances && !selectedInstance && !instanceId"
+        <ProcessInstancesView ref="process" v-if="process && instances && !selectedInstance && !instanceId"
           :activity-id="activityId"
           :loading="loading"
           :process="process"
@@ -36,16 +36,16 @@
           @filter-instances="filterInstances($event)"
           @open-subprocess="openSubprocess($event)"
           @update-items="updateItems"
-        ></Process>
+        ></ProcessInstancesView>
       </transition>
       <transition name="slide-in" mode="out-in">
-        <ProcessVariablesTable ref="navbar-variables" v-if="process && selectedInstance && instanceId"
+        <ProcessInstanceView ref="navbar-variables" v-if="process && selectedInstance && instanceId"
           :process="process"
           :activity-instance="activityInstance"
           :activity-instance-history="activityInstanceHistory"
           @open-subprocess="openSubprocess($event)"
           :selected-instance="selectedInstance"
-          @task-selected="setSelectedTask($event)"></ProcessVariablesTable>
+          @task-selected="setSelectedTask($event)"></ProcessInstanceView>
       </transition>
     </SidebarsFlow>
     <TaskPopper ref="importPopper"></TaskPopper>
@@ -56,9 +56,9 @@
 import { nextTick } from 'vue'
 import moment from 'moment'
 import { TaskService, ProcessService, HistoryService, IncidentService, JobService } from '@/services.js'
-import Process from '@/components/process/Process.vue'
+import ProcessInstancesView from '@/components/process/ProcessInstancesView.vue'
 import ProcessDetailsSidebar from '@/components/process/ProcessDetailsSidebar.vue'
-import ProcessVariablesTable from '@/components/process/ProcessVariablesTable.vue'
+import ProcessInstanceView from '@/components/process/ProcessInstanceView.vue'
 import SidebarsFlow from '@/components/common-components/SidebarsFlow.vue'
 import TaskPopper from '@/components/common-components/TaskPopper.vue'
 
@@ -72,7 +72,7 @@ function getStringObjByKeys(keys, obj) {
 
 export default {
   name: 'ProcessDefinitionView',
-  components: { Process, ProcessDetailsSidebar, ProcessVariablesTable, SidebarsFlow, TaskPopper },
+  components: { ProcessInstancesView, ProcessDetailsSidebar, ProcessInstanceView, SidebarsFlow, TaskPopper },
   props: {
     processKey: { type: String, required: true },
     versionIndex: { type: String, required: true },

@@ -93,9 +93,9 @@ import appConfig from '@/appConfig.js'
 import { ProcessService } from '@/services.js'
 import { permissionsMixin } from '@/permissions.js'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
-import InstancesTable from '@/components/process/InstancesTable.vue'
+import InstancesTable from '@/components/process/tables/InstancesTable.vue'
 import IncidentsTable from '@/components/process/tables/IncidentsTable.vue'
-import MultisortModal from '@/components/process/MultisortModal.vue'
+import MultisortModal from '@/components/process/modals/MultisortModal.vue'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { debounce } from '@/utils/debounce.js'
@@ -104,7 +104,7 @@ import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
 import { BWaitingBox } from 'cib-common-components'
 
 export default {
-  name: 'Process',
+  name: 'ProcessInstancesView',
   components: { InstancesTable, BpmnViewer, MultisortModal,
      //FlowTable,
      SuccessAlert, ConfirmDialog, BWaitingBox, IncidentsTable },

@@ -97,7 +97,7 @@ import procesessVariablesMixin from '@/components/process/mixins/processesVariab
 import { ProcessService, HistoryService } from '@/services.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import TaskPopper from '@/components/common-components/TaskPopper.vue'
-import AddVariableModal from '@/components/process/AddVariableModal.vue'
+import AddVariableModal from '@/components/process/modals/AddVariableModal.vue'
 import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import { BWaitingBox } from 'cib-common-components'
