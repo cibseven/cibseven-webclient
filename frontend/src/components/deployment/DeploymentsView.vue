@@ -44,7 +44,7 @@
     <SidebarsFlow ref="sidebars" class="border-top overflow-auto" v-model:right-open="rightOpen" :right-caption="$t('deployment.resourcesCaption')" :rightSize="[12, 4, 3, 3, 3]">
       <template v-slot:right>
         <ResourcesNavBar :resources="resources" :deployment="deployment"></ResourcesNavBar>
-      </template>     
+      </template>
       <DeploymentList v-if="deploymentsFiltered.length > 0 && !loading" :deployments="deploymentsFiltered" :deployment="deployment" :sorting="sorting"
         @select-deployment="selectDeployment($event)"></DeploymentList>
       <div v-else-if="!loading && deploymentsFiltered.length === 0" class="text-center text-secondary">
@@ -101,7 +101,7 @@ export default {
       sorting: {},
       cascadeDelete: true,
       resources: [],
-      deploymentsDelData: { total: 0, deleted: 0 },
+      deploymentsDelData: { total: 0, deleted: 0 }
     }
   },
   watch: {
