@@ -13,6 +13,12 @@ import org.springframework.stereotype.Component;
 public class JobDefinitionProvider extends SevenProviderBase implements IJobDefinitionProvider {	
 
 	@Override
+	protected HttpHeaders addAuthHeader(HttpHeaders headers, CIBUser user) {
+		if (user != null) headers.add("Authorization", user.getAuthToken());
+		return headers;
+	}
+	
+	@Override
 	public Collection<JobDefinition> findJobDefinitions(String params, CIBUser user) {
 		String url = camundaUrl + "/engine-rest/job-definition";
 		return Arrays.asList(((ResponseEntity<JobDefinition[]>) doPost(url, params, JobDefinition[].class, user)).getBody());
@@ -31,9 +37,9 @@ public class JobDefinitionProvider extends SevenProviderBase implements IJobDefi
 	}
 	
 	@Override
-	protected HttpHeaders addAuthHeader(HttpHeaders headers, CIBUser user) {
-		if (user != null) headers.add("Authorization", user.getAuthToken());
-		return headers;
+	public JobDefinition findJobDefinition(String id, CIBUser user) {
+		String url = camundaUrl + "/engine-rest/job-definition/" + id;
+		return ((ResponseEntity<JobDefinition>) doGet(url, JobDefinition.class, user, false)).getBody();
 	}	
 
 }

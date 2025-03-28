@@ -248,7 +248,7 @@ export default {
           activityMap[bo.id] = bo.name
         }
       })
-      this.$emit('activity-map-ready', activityMap)
+      this.$store.commit('setProcessActivities', activityMap)
     },
     drawActivitiesHistory: function(activities, elementRegistry, overlays) {
       var filledActivities = {}

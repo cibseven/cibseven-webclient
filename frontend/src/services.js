@@ -338,6 +338,9 @@ var JobDefinitionService = {
   },
   overrideJobDefinitionPriority: function(jobDefinitionId, params) {
     return axios.put(appConfig.servicesBasePath + "/job-definition/" + jobDefinitionId + "/job-priority", params)
+  },
+  findJobDefinition: function(id) {
+    return axios.get(appConfig.servicesBasePath + "/job-definition/" + id)
   }
 }
 
