@@ -62,7 +62,7 @@ import RenderTemplate from '@/components/render-template/RenderTemplate.vue'
 import AdvancedSearchModal from '@/components/task/AdvancedSearchModal.vue'
 import Task from '@/components/task/Task.vue'
 import TaskContent from '@/components/task/TaskContent.vue'
-import Tasks from '@/components/task/Tasks.vue'
+import TasksContent from '@/components/task/TasksContent.vue'
 import TasksNavBar from '@/components/task/TasksNavBar.vue'
 import TasksView from '@/components/task/TasksView.vue'
 import HighlightedText from '@/components/common-components/HighlightedText.vue'
@@ -129,7 +129,7 @@ const registerComponents = function(app) {
   app.component('advanced-search-modal', AdvancedSearchModal)
   app.component('task', Task)
   app.component('task-content', TaskContent)
-  app.component('tasks', Tasks)
+  app.component('Tasks-content', TasksContent)
   app.component('tasks-nav-bar', TasksNavBar)
   app.component('tasks-view', TasksView)
   app.component('highlighted-text', HighlightedText)

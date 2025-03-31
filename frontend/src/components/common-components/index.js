@@ -71,7 +71,7 @@ import RenderTemplate from '@/components/render-template/RenderTemplate.vue'
 import AdvancedSearchModal from '@/components/task/AdvancedSearchModal.vue'
 import Task from '@/components/task/Task.vue'
 import TaskContent from '@/components/task/TaskContent.vue'
-import Tasks from '@/components/task/Tasks.vue'
+import TasksContent from '@/components/task/TasksContent.vue'
 import TasksNavBar from '@/components/task/TasksNavBar.vue'
 import TasksView from '@/components/task/TasksView.vue'
 
@@ -89,7 +89,7 @@ export {
     ProcessDetailsSidebar, ProcessCard, ProcessAdvanced,
     ProcessTable, VariablesTable, IncidentsTable, UserTasksTable, TaskAssignationModal,
     AddVariableModal, ProcessView, DeploymentsView, ResourcesNavBar,
-    DeploymentList, Tasks, TasksNavBar, Task, AdvancedSearchModal,
+    DeploymentList, TasksContent, TasksNavBar, Task, AdvancedSearchModal,
     FilterModal, FilterNavBar, FilterNavCollapsed,
     RenderTemplate, AdminUsers, AdminGroups, AdminAuthorizations,
     AdminAuthorizationsTable, AuthorizationsNavBar, CreateUser,
