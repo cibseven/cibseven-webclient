@@ -1,5 +1,5 @@
 <template>
-  <b-modal ref="about" :title="$t('infoAndHelp.flowModalAbout.title')">
+  <b-modal ref="about" :title="$t('infoAndHelp.flowModalAbout.title')" okOnly>
     <div class="row">
       <div class="col-2">
         <svg id="Ebene_1" data-name="Ebene 1"
@@ -18,9 +18,6 @@
       </div>
       <div class="col-10 d-flex" style="align-items:center">{{ $t('infoAndHelp.flowModalSupport.version') }}: {{ version }}</div>
     </div>
-    <template v-slot:modal-footer>
-      <b-button variant="primary" @click="$emit('ok'); $refs.about.hide()">{{ $t('confirm.ok') }}</b-button>
-    </template>
   </b-modal>
 </template>
 
@@ -34,18 +31,15 @@ export default {
       version: ''
     }
   },
-  mounted: function() {
-    console.log('mounted')
-    InfoService.getVersion().then(version => {
-      this.version = version
-    })
-    .catch(error => {
-      console.error("Error loading version:", error)
-      this.version = "n/a"
-    })
-  },
   methods: {
     show: function() {
+      InfoService.getVersion().then(version => {
+        this.version = version || 'n/a'
+      })
+      .catch(error => {
+        console.error("Error loading version:", error)
+        this.version = "n/a"
+      })
       this.$refs.about.show()
     }
   }
