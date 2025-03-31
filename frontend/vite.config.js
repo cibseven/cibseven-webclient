@@ -7,7 +7,7 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
-const backendUrl = 'http://localhost:8088'
+const backendUrl = 'http://localhost:8080'
 
 // Detect build mode
 /* eslint-disable no-undef */
@@ -40,10 +40,10 @@ export default defineConfig({
             console.log('proxy error', err)
           })
           proxy.on('proxyReq', (proxyReq, req, _res) => {
-            console.log('Sending Request to the Target:', req.method, backendUrl + req.url)
+            //console.log('Sending Request to the Target:', req.method, backendUrl + req.url)
           })
           proxy.on('proxyRes', (proxyRes, req, _res) => {
-            console.log('Received Response from the Target:', proxyRes.statusCode, backendUrl + req.url)
+            //console.log('Received Response from the Target:', proxyRes.statusCode, backendUrl + req.url)
           })
         },
       },
