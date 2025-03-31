@@ -109,7 +109,9 @@
 		"days": "días",
 		"deleteProcessDefinition": "Eliminar definición de proceso",
 		"true": "Verdadero",
-		"false": "Falso"
+		"false": "Falso",		
+		"jobDefinitions": "Definiciones de trabajos",
+		"jobs": "Trabajos"
 	},
 	"process-instance": {
 		"processInstanceId": "ID de la instancia del proceso",
@@ -151,7 +153,33 @@
 		    "incidentType": "Tipo de incidente",
 		    "retryJob": "Incrementar el número de reintentos de trabajo fallido",
 		    "actions": "Acciones"
-		},		
+		},
+		"jobDefinitions": {
+			"state": "Estado",
+			"activity": "Actividad",
+			"type": "Tipo",
+			"configuration": "Configuración",
+			"overridingJobPriority": "Prioridad sobrescrita",
+			"actions": "Acciones",
+			"active": "Activo",
+			"suspended": "Suspendido",
+			"activateJob": "Activar definición de trabajo",
+			"suspendJob": "Suspender definición de trabajo",
+			"activateMsg": "Esta definición de trabajo será activada, por lo que los nuevos trabajos basados en esta definición estarán activos inicialmente.",
+			"suspendMsg": "Esta definición de trabajo será suspendida, por lo que los nuevos trabajos basados en esta definición estarán suspendidos inicialmente.",
+			"includeExisting": "Incluir trabajos existentes",
+			"execute": "Ejecutar",
+			"immediately": "Inmediatamente",
+			"delayed": "Programado",
+			"scheduleAt": "Programar para",
+			"suspend": "Suspender",
+			"activate": "Activar",
+			"changeJobPriority": "Cambiar la prioridad sobrescrita del trabajo",
+			"overridingMsg": "Cambiar la prioridad sobrescrita para los trabajos de la definición de trabajo indicada.",
+			"jobPriority": "Prioridad",
+			"clear": "Borrar prioridad sobrescrita del trabajo",
+			"set": "Establecer prioridad sobrescrita del trabajo"
+		},	
 		"usertasks": {
 			"activity": "Actividad",
 		    "assignee": "Asignado a",
@@ -177,11 +205,23 @@
 		},
 		"noResults": "Sin resultados",
 		"noIncidents": "Sin incidencias",
+		"noJobDefinitions": "Sin definiciones de trabajos",
 		"stacktrace": "Traza de pila",	
 		"copyValueToClipboard": "Copiar valor al portapapeles",
 		"confirmRetryJob": "¿Desea incrementar el número de reintentos?",
 		"successRetryJob": "Se ha incrementado con éxito el número de reintentos.",
-		"addVariable": "Agregar variable"
+		"addVariable": "Agregar variable",
+		"jobs": {
+			"id": "ID",
+			"dueDate": "Fecha de vencimiento",
+			"createTime": "Fecha de creación",
+			"retries": "Reintentos",
+			"activity": "Actividad",
+			"failedActivity": "Actividad fallida",
+			"actions": "Acciones",
+			"suspend": "Suspender",
+			"resume": "Reanudar"
+		}
 	},
 	"bpmn-viewer": {
 		"zoomIn": "Acercarse",

@@ -63,11 +63,10 @@ import { IncidentService } from '@/services.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
-import { BWaitingBox } from 'cib-common-components'
 
 export default {
   name: 'IncidentsTable',
-  components: { FlowTable, SuccessAlert, ConfirmDialog, BWaitingBox },
+  components: { FlowTable, SuccessAlert, ConfirmDialog },
   mixins: [procesessVariablesMixin, copyToClipboardMixin],
   data: function() {
     return {

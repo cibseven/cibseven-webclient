@@ -101,7 +101,8 @@
 		"days": "giorni",
 		"deleteProcessDefinition": "Elimina definizione del processo",
 		"true": "Vero",
-		"false": "Falso"
+		"false": "Falso",
+		"jobs": "Job"
 	},
 	"process-instance": {
 		"info": "Dettagli del processo",
@@ -133,7 +134,18 @@
 			"objectTypeName": "Nome tipo oggetto",
 			"serializationDataFormat": "Formato dati serializzazione"
 		},
-		"addVariable": "Aggiungi variabile"
+		"addVariable": "Aggiungi variabile",
+		"jobs": {
+			"id": "ID",
+			"dueDate": "Data di scadenza",
+			"createTime": "Data di creazione",
+			"retries": "Tentativi",
+			"activity": "Attività",
+			"failedActivity": "Attività fallita",
+			"actions": "Azioni",
+			"suspend": "Sospendere",
+			"resume": "Riprendere"
+		}
 	},
 	"bpmn-viewer": {
 		"zoomIn": "Zoom in",

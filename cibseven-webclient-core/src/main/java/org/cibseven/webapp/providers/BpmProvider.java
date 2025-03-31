@@ -27,11 +27,14 @@ import org.cibseven.webapp.rest.model.EventSubscription;
 import org.cibseven.webapp.rest.model.Filter;
 import org.cibseven.webapp.rest.model.IdentityLink;
 import org.cibseven.webapp.rest.model.Incident;
+import org.cibseven.webapp.rest.model.JobDefinition;
+import org.cibseven.webapp.rest.model.Job;
 import org.cibseven.webapp.rest.model.Message;
 import org.cibseven.webapp.rest.model.NewUser;
 import org.cibseven.webapp.rest.model.Process;
 import org.cibseven.webapp.rest.model.ProcessDiagram;
 import org.cibseven.webapp.rest.model.ProcessInstance;
+import org.cibseven.webapp.rest.model.HistoryProcessInstance;
 import org.cibseven.webapp.rest.model.ProcessStart;
 import org.cibseven.webapp.rest.model.ProcessStatistics;
 import org.cibseven.webapp.rest.model.SevenUser;
@@ -236,7 +239,7 @@ public interface BpmProvider {
      * @return Fetched processes instances.
      * @throws SystemException in case of an error.
      */
-	Collection<ProcessInstance> findProcessesInstancesHistory(String key, Optional<Boolean> active, Integer firstResult, Integer maxResults, CIBUser user) throws SystemException;
+	Collection<HistoryProcessInstance> findProcessesInstancesHistory(String key, Optional<Boolean> active, Integer firstResult, Integer maxResults, CIBUser user) throws SystemException;
 	
 	/**
 	 * Search processes instances with a specific process key.
@@ -270,7 +273,7 @@ public interface BpmProvider {
      * @throws NoObjectFoundException when the process instance searched for could not be found.
      * @throws SystemException in case of any other error.
      */	
-	ProcessInstance findHistoryProcessInstanceHistory(String processInstanceId, CIBUser user) throws SystemException, NoObjectFoundException;
+	HistoryProcessInstance findHistoryProcessInstanceHistory(String processInstanceId, CIBUser user) throws SystemException, NoObjectFoundException;
 	
 	/**
 	 * FindTask by filter
@@ -750,7 +753,7 @@ public interface BpmProvider {
      * @return Fetched processes instances.
      * @throws SystemException in case of an error.
      */
-	Collection<ProcessInstance> findProcessesInstancesHistoryById(String id, Optional<String> activityId, Optional<Boolean> active,
+	Collection<HistoryProcessInstance> findProcessesInstancesHistoryById(String id, Optional<String> activityId, Optional<Boolean> active,
 			Integer firstResult, Integer maxResults, String text, CIBUser user);
 	
 	/**
@@ -905,6 +908,12 @@ public interface BpmProvider {
 	Collection<ActivityInstanceHistory> findActivitiesProcessDefinitionHistory(String processDefinitionId,
 			CIBUser user);
 	
+	Collection<JobDefinition> findJobDefinitions(String params, CIBUser user);
+
+	void suspendJobDefinition(String jobDefinitionId, String params, CIBUser user);
+	
+	void overrideJobDefinitionPriority(String jobDefinitionId, String params, CIBUser user);
+	
 	Collection<Decision> getDecisionDefinitionList(Map<String, Object> queryParams);
 	Object getDecisionDefinitionListCount(Map<String, Object> queryParams);
 	Decision getDecisionDefinitionByKey(String key);
@@ -922,6 +931,7 @@ public interface BpmProvider {
 	Object evaluateDecisionDefinitionById(String id);
 	Object updateHistoryTTLById(String id);
 	Object getXmlById(String id);
+
 	Collection<Decision> getDecisionVersionsByKey(String key, Optional<Boolean> lazyLoad);
 	
 	Object getHistoricDecisionInstances(Map<String, Object> queryParams);
@@ -929,5 +939,8 @@ public interface BpmProvider {
 	Object getHistoricDecisionInstanceById(String id, Map<String, Object> queryParams);
 	Object deleteHistoricDecisionInstances(Map<String, Object> body);
 	Object setHistoricDecisionInstanceRemovalTime(Map<String, Object> body);
+
+	Collection<Job> getJobs(Map<String, Object> params, CIBUser user);
+	void setSuspended(String id, Map<String, Object> data, CIBUser user);
 	
 }
