@@ -909,10 +909,9 @@ public interface BpmProvider {
 			CIBUser user);
 	
 	Collection<JobDefinition> findJobDefinitions(String params, CIBUser user);
-
 	void suspendJobDefinition(String jobDefinitionId, String params, CIBUser user);
-	
 	void overrideJobDefinitionPriority(String jobDefinitionId, String params, CIBUser user);
+	JobDefinition findJobDefinition(String id, CIBUser user);
 	
 	Collection<Decision> getDecisionDefinitionList(Map<String, Object> queryParams);
 	Object getDecisionDefinitionListCount(Map<String, Object> queryParams);
@@ -942,5 +941,6 @@ public interface BpmProvider {
 
 	Collection<Job> getJobs(Map<String, Object> params, CIBUser user);
 	void setSuspended(String id, Map<String, Object> data, CIBUser user);
+
 	
 }

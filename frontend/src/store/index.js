@@ -7,6 +7,7 @@ import AdvancedSearchStore from './AdvancedSearchStore.js'
 import UserStore from './UserStore.js'
 import DecisionStore from './DecisionStore.js'
 import JobDefinitionStore from './JobDefinitionStore.js'
+import ActivityStore from './ActivityStore.js'
 
 const store = createStore({
   modules: {
@@ -15,7 +16,8 @@ const store = createStore({
     advancedSearch: AdvancedSearchStore,
     user: UserStore,
     decision: DecisionStore,
-    jobDefinition: JobDefinitionStore
+    jobDefinition: JobDefinitionStore,
+    activity: ActivityStore
   }
 })
 
