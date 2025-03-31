@@ -11,7 +11,7 @@
 import Task from '@/components/task/Task.vue'
 
 export default {
-  name: 'TaskContent',
+  name: 'TaskView',
   components: { Task },
   props: { task: Object }
 }

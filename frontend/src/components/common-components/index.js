@@ -70,7 +70,7 @@ import RenderTemplate from '@/components/render-template/RenderTemplate.vue'
 
 import AdvancedSearchModal from '@/components/task/AdvancedSearchModal.vue'
 import Task from '@/components/task/Task.vue'
-import TaskContent from '@/components/task/TaskContent.vue'
+import TaskView from '@/components/task/TaskView.vue'
 import TasksContent from '@/components/task/TasksContent.vue'
 import TasksNavBar from '@/components/task/TasksNavBar.vue'
 import TasksView from '@/components/task/TasksView.vue'
@@ -96,6 +96,6 @@ export {
     CreateGroup, ProfileUser, ProfileGroup, SupportModal,
     UsersManagement, processesVariablesMixin, processesMixin,
     resizerMixin, StartProcessView, ProcessListView,
-    ProcessInstanceView, ProcessDefinitionView, TaskContent, TasksView,
+    ProcessInstanceView, ProcessDefinitionView, TaskView, TasksView,
     usersMixin, copyToClipboardMixin, debounce
 }
