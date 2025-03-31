@@ -70,7 +70,13 @@ export default {
       currentElement: null,
       overlayList: [],
       loader: true,
-      runningActivities: []
+      runningActivities: [],
+      suspendedOverlayMap: {}
+    }
+  },
+  computed: {
+    jobDefinitions() {
+      return this.$store.getters['jobDefinition/getJobDefinitions']
     }
   },
   watch: {
@@ -81,6 +87,15 @@ export default {
         this.currentElement = null
         this.$emit('task-selected', null)
       }, 100)
+    },
+    jobDefinitions: {
+      handler() {
+        if (this.viewer) {
+          this.drawJobDefinitionBadges()
+        }
+      },
+      immediate: true,
+      deep: true
     }
   },
   mounted: function() {
@@ -172,7 +187,7 @@ export default {
         if (this.activitiesHistory) {
           this.drawActivitiesHistory(this.activitiesHistory, elementRegistry, overlays)
         }
-      }
+      }      
 
       var callActivitiesList = elementRegistry.getAll().filter(function(element) {
         return element.type === 'bpmn:CallActivity'
@@ -224,6 +239,16 @@ export default {
         })
       })
 
+      if (this.jobDefinitions) this.drawJobDefinitionBadges()
+      
+      const activityMap = {}
+      elementRegistry.getAll().forEach(el => {
+        const bo = el.businessObject
+        if (bo?.id && bo?.name) {
+          activityMap[bo.id] = bo.name
+        }
+      })
+      this.$emit('activity-map-ready', activityMap)
     },
     drawActivitiesHistory: function(activities, elementRegistry, overlays) {
       var filledActivities = {}
@@ -279,7 +304,55 @@ export default {
           this.$emit('open-subprocess', process)
         }
       })
+    },
+    drawJobDefinitionBadges: function() {
+      const overlays = this.viewer?.get('overlays')
+      const elementRegistry = this.viewer?.get('elementRegistry')
+      if (!overlays || !elementRegistry || !Array.isArray(this.jobDefinitions)) return
+      Object.entries(this.suspendedOverlayMap).forEach(([activityId, overlayId]) => {
+        overlays.remove(overlayId)
+      })
+      this.suspendedOverlayMap = {}
+      this.jobDefinitions.forEach(jobDefinition => {
+        const shape = elementRegistry.get(jobDefinition.activityId)
+        if (shape && jobDefinition.suspended) {
+          const suspendedBadge = `
+            <span class="badge bg-warning rounded-pill text-white border border-dark px-2 py-1">
+              <span class="mdi mdi-pause"></span>
+            </span>`
+          const overlayId = overlays.add(jobDefinition.activityId, {
+            position: { top: -10, left: -15 },
+            html: suspendedBadge
+          })
+          this.suspendedOverlayMap[jobDefinition.activityId] = overlayId
+        }
+      })
+    },
+    highlightElement: function(jobDefinition) {
+      const elementRegistry = this.viewer.get('elementRegistry')
+      const canvas = this.viewer.get('canvas')
+      const element = elementRegistry.get(jobDefinition.activityId)
+      if (!element) return
+      if (this.currentHighlight) {
+        this.currentHighlight.classList.remove('bpmn-highlight')
+      }
+
+      const gfx = elementRegistry.getGraphics(element)
+      const shape = gfx.querySelector('rect, path')
+      if (shape) {
+        shape.classList.add('bpmn-highlight')
+        this.currentHighlight = shape
+      }
+      canvas.scrollToElement(jobDefinition.activityId)
     }
   }
 }
 </script>
+<style>
+  .bpmn-highlight {
+    stroke: var(--info) !important;
+    stroke-width: 2px !important;
+    fill-opacity: 0.1 !important;
+    fill: var(--info) !important;
+  }
+</style>

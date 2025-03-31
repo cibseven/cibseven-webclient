@@ -38,7 +38,7 @@
       size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-pause-circle-outline" :title="$t('process.suspendInstance')"></b-button>
       <b-button v-if="table.item.state === 'SUSPENDED'" @click.stop="showConfirm({ ok: activateInstance, instance: table.item  })"
       size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-play-circle-outline" :title="$t('process.activateInstance')"></b-button>
-      <b-button @click="selectInstance(table.item, true); viewProcess()" size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-eye-outline" :title="$t('process.showInstance')"></b-button>
+      <b-button @click="selectInstance(table.item)" size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-eye-outline" :title="$t('process.showInstance')"></b-button>
       <b-button v-if="['ACTIVE', 'SUSPENDED'].includes(table.item.state) && processByPermissions($root.config.permissions.deleteProcessInstance, table.item)"
       @click.stop="showConfirm({ ok: deleteInstance, instance: table.item  })"
       size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-delete-outline" :title="$t('process.deleteInstance')"></b-button>
@@ -65,7 +65,7 @@ import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
 export default {
   name: 'InstancesTable',
   components: { FlowTable, SuccessAlert, ConfirmDialog },
-  emits: ['select-instance', 'view-process', 'instance-deleted'],
+  emits: ['instance-deleted'],
   mixins: [copyToClipboardMixin, permissionsMixin],
   props: { instances: Array, sortDesc: Boolean, sortByDefaultKey: String },
   data: function() {
@@ -74,11 +74,15 @@ export default {
     }
   },
   methods: {
-    selectInstance: function(instance, reload) {
-      this.$emit('select-instance', { instance, reload })
-    },
-    viewProcess: function() {
-      this.$emit('view-process')
+    selectInstance: function(instance) {
+      this.$router.push({
+        name: 'process',
+        params: {
+          processKey: instance.processDefinitionKey,
+          versionIndex: instance.processDefinitionVersion,
+          instanceId: instance.id,
+        }
+      })
     },
     showConfirm: function(type) { this.$refs.confirm.show(type) },
     deleteInstance: function(instance) {

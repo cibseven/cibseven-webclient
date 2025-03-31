@@ -1,8 +1,8 @@
 <template>
   <div v-if="process" class="h-100">
     <div @mousedown="handleMouseDown" class="v-resizable position-absolute w-100" style="left: 0" :style="'height: ' + bpmnViewerHeight + 'px; ' + toggleTransition">
-      <BpmnViewer ref="diagram" @activity-id="$emit('activity-id', $event)" @task-selected="selectTask($event)" @open-subprocess="$emit('open-subprocess', $event)" :process-definition-id="process.id"
-        :activity-id="activityId" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" :statistics="process.statistics"
+      <BpmnViewer ref="diagram" @activity-id="$emit('activity-id', $event)" @task-selected="selectTask($event)" @open-subprocess="$emit('open-subprocess', $event)" @activity-map-ready="activityMap = $event"
+        :process-definition-id="process.id" :activity-id="activityId" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" :statistics="process.statistics"
         :activities-history="process.activitiesHistory" class="h-100">
       </BpmnViewer>
     </div>
@@ -54,34 +54,25 @@
           </div>
         </div>
         <div ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 60px; left: 0; bottom: 0" @scroll="handleScrollProcesses">
-          <InstancesTable ref="instancesTable" v-if="!loading && instances && !sorting" :instances="instances" :sortByDefaultKey="sortByDefaultKey" :sortDesc="sortDesc"
-            @select-instance="selectInstance" @view-process="viewProcess" @instance-deleted="$emit('instance-deleted')"
+          <InstancesTable ref="instancesTable" v-if="!loading && instances && !sorting"
+            :instances="instances"
+            :sortByDefaultKey="sortByDefaultKey"
+            :sortDesc="sortDesc"
+            @instance-deleted="$emit('instance-deleted')"
           ></InstancesTable>
           <div v-else-if="loading" class="py-3 text-center w-100">
             <BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}
           </div>
         </div>
       </div>
-      <div v-else-if="activeTab === 'incidents'" ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 60px; left: 0; bottom: 0">
-        <IncidentsTable v-if="!loading" :incidents="incidents" :activity-instance="activityInstance" :activity-instance-history="process.activitiesHistory" :get-failing-activity="getFailingActivity"></IncidentsTable>
+      <div v-if="activeTab === 'incidents' || activeTab === 'jobDefinitions'" 
+          ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 0px; left: 0; bottom: 0">
+        <IncidentsTable v-if="activeTab === 'incidents' && !loading"
+          :incidents="incidents" :activity-instance="activityInstance"
+          :activity-instance-history="process.activitiesHistory" :get-failing-activity="getFailingActivity" />
+        <JobDefinitionsTable v-else-if="activeTab === 'jobDefinitions'"
+          :processId="process.id" :activityMap="activityMap" @highlight-activity="highlightActivity" />
       </div>
-      <!--
-      <div v-if="activeTab === 'statistics'">
-        <div ref="rContent" class="overflow-auto container-fluid bg-white position-absolute" style="top: 60px; left: 0; bottom: 0" @scroll="handleScrollProcesses">
-          <FlowTable v-if="usages.length" striped thead-class="sticky-header" :items="usages" primary-key="id" prefix="process."
-            sort-by="startTimeOriginal" :sort-desc="true" :fields="[
-            { label: 'event', key: 'event', class: 'col-4', tdClass: 'justify-content-center py-0 border-end border-top-0' },
-            { label: 'date', key: 'date', class: 'col-2', tdClass: 'border-end py-1 border-top-0' },
-            { label: 'productCode', key: 'productCode', class: 'col-4', tdClass: 'border-end py-1 border-top-0' },
-            { label: 'usageCount', key: 'usageCount', class: 'col-2', tdClass: 'border-end py-1 border-top-0' }]"
-            @click="selectInstance($event)">
-          </FlowTable>
-          <div class="py-3 text-center w-100" v-if="loading">
-            <BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}
-          </div>
-        </div>
-      </div>
-      -->
     </div>
     <ConfirmDialog ref="confirm" @ok="$event.ok($event.instance)">
       {{ $t('confirm.performOperation') }}
@@ -97,10 +88,10 @@ import appConfig from '@/appConfig.js'
 import { ProcessService } from '@/services.js'
 import { permissionsMixin } from '@/permissions.js'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
-import InstancesTable from '@/components/process/InstancesTable.vue'
+import InstancesTable from '@/components/process/tables/InstancesTable.vue'
+import JobDefinitionsTable from '@/components/process/tables/JobDefinitionsTable.vue'
 import IncidentsTable from '@/components/process/tables/IncidentsTable.vue'
-import MultisortModal from '@/components/process/MultisortModal.vue'
-// import FlowTable from '@/components/common-components/FlowTable.vue'
+import MultisortModal from '@/components/process/modals/MultisortModal.vue'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { debounce } from '@/utils/debounce.js'
@@ -109,9 +100,8 @@ import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
 import { BWaitingBox } from 'cib-common-components'
 
 export default {
-  name: 'Process',
-  components: { InstancesTable, BpmnViewer, MultisortModal,
-     //FlowTable,
+  name: 'ProcessInstancesView',
+  components: { InstancesTable, JobDefinitionsTable, BpmnViewer, MultisortModal,
      SuccessAlert, ConfirmDialog, BWaitingBox, IncidentsTable },
   inject: ['loadProcesses'],
   mixins: [permissionsMixin, resizerMixin, copyToClipboardMixin],
@@ -119,7 +109,7 @@ export default {
     activityInstance: Object, activityInstanceHistory: Array, activityId: String, loading: Boolean,
     processKey: String,
     versionIndex: { type: String, default: '' }
- },
+  },
   data: function() {
     return {
       selectedInstance: null,
@@ -127,6 +117,7 @@ export default {
       topBarHeight: 0,
       tabs: [
         { id: 'instances', active: true },
+        { id: 'jobDefinitions', active: false },
         { id: 'incidents', active: false }
       ],
       activeTab: 'instances',
@@ -134,14 +125,16 @@ export default {
       usages: [],
       sortByDefaultKey: 'startTimeOriginal',
       sorting: false,
-      sortDesc: true
+      sortDesc: true,
+      activityMap: {}
     }
   },
   watch: {
     'process.id': function() {
       ProcessService.fetchDiagram(this.process.id).then(response => {
         this.$refs.diagram.showDiagram(response.bpmn20Xml, null, null)
-      })
+      }),      
+      this.getJobDefinitions()
     }
   },
   mounted: function() {
@@ -149,7 +142,8 @@ export default {
       setTimeout(() => {
         this.$refs.diagram.showDiagram(response.bpmn20Xml, null, null)
       }, 100)
-    })
+    }),
+    this.getJobDefinitions()
   },
   computed: {
     ProcessActions: function() {
@@ -178,23 +172,9 @@ export default {
       })
       this.activeTab = selectedTab.id
     },
-    selectInstance: function(event) {
-      if (!this.selectedInstance) this.$refs.diagram.setEvents()
-      this.selectedInstance = event.instance
-      this.$emit('instance-selected', { selectedInstance: event.instance, reload: event.reload })
-      this.$refs.diagram.cleanDiagramState()
-    },
     selectTask: function(event) {
       this.selectedTask = event
       this.$emit('task-selected', event);
-    },
-    viewProcess: function() {
-      this.$refs.diagram.clearEvents()
-      this.$refs.diagram.cleanDiagramState()
-      ProcessService.fetchDiagram(this.process.id).then(response => {
-        this.$refs.diagram.showDiagram(response.bpmn20Xml, null, null)
-        this.$refs.diagramModal.show()
-      })
     },
     viewDeployment: function() {
       this.$router.push('/seven/auth/deployments/' + this.process.deploymentId)
@@ -204,13 +184,10 @@ export default {
       window.location.href = appConfig.servicesBasePath + '/process/' + this.process.id + '/data?filename=' + filename +
         '&token=' + this.$root.user.authToken
     },
-    clearState: function() {
-      this.selectedInstance = null
-      this.selectedTask = null
-      this.$emit('instance-selected', { selectedInstance: null })
-      this.$emit('task-selected', null)
+    refreshDiagram: function() {
       this.$refs.diagram.clearEvents()
       this.$refs.diagram.cleanDiagramState()
+      this.$refs.diagram.drawDiagramState()
     },
     showConfirm: function(type) { this.$refs.confirm.show(type) },
     suspendProcess: function() {
@@ -231,6 +208,9 @@ export default {
         this.$refs.success.show()
       })
     },
+    highlightActivity: function(jobDefinition) {
+      this.$refs.diagram.highlightElement(jobDefinition)
+    },
     handleScrollProcesses: function(el) {
       if (this.instances.length < this.firstResult) return
       if (Math.ceil(el.target.scrollTop + el.target.clientHeight) >= el.target.scrollHeight) {
@@ -242,7 +222,12 @@ export default {
       let element = this.$refs.diagram.viewer.get('elementRegistry').get(activityId)
       if (element) return element.businessObject.name
       return ''
-    }
+    },    
+    getJobDefinitions: function() {
+      this.$store.dispatch('jobDefinition/getJobDefinitions', {
+        processDefinitionId: this.process.id
+      })
+    },
   }
 }
 </script>

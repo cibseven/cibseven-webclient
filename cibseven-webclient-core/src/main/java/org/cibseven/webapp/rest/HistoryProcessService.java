@@ -9,7 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.rest.model.ActivityInstanceHistory;
-import org.cibseven.webapp.rest.model.ProcessInstance;
+import org.cibseven.webapp.rest.model.HistoryProcessInstance;
 import org.cibseven.webapp.rest.model.VariableHistory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -42,7 +42,7 @@ public class HistoryProcessService extends BaseService {
 			description = "Parameters firstResult and maxResults are used for pagination")
 	@ApiResponse(responseCode = "404", description = "Process not found")
 	@RequestMapping(value = "/process-history/instance/by-process-key/{key}", method = RequestMethod.GET)
-	public Collection<ProcessInstance> findProcessesInstancesHistory(
+	public Collection<HistoryProcessInstance> findProcessesInstancesHistory(
 			@Parameter(description = "Process key") @PathVariable String key, 
 			@Parameter(description = "True means that unfinished processes will be fetched<br>False only finished processes will be fetched") @RequestParam Optional<Boolean> active, 
 			@Parameter(description = "Index of the first result to return") @RequestParam Integer firstResult,
@@ -56,7 +56,7 @@ public class HistoryProcessService extends BaseService {
 			description = "Parameters firstResult and maxResults are used for pagination<br>Parameters text and activityId are used for filtering")
 	@ApiResponse(responseCode = "404", description = "Process not found")
 	@RequestMapping(value = "/process-history/instance/by-process-id/{id}", method = RequestMethod.GET)
-	public Collection<ProcessInstance> findProcessesInstancesHistoryById(
+	public Collection<HistoryProcessInstance> findProcessesInstancesHistoryById(
 			@Parameter(description = "Process Id") @PathVariable String id,
 			@Parameter(description = "Process Activity Id") @RequestParam Optional<String> activityId,
 			@Parameter(description = "True means that unfinished processes will be fetched<br>False only finished processes will be fetched") @RequestParam Optional<Boolean> active,
@@ -122,7 +122,7 @@ public class HistoryProcessService extends BaseService {
 	// Used for chat-comments, to find parent of a process instanceId
 	@ApiResponse(responseCode = "404", description = "Process instance not found")
 	@RequestMapping(value = "/process-history/instance/{processInstanceId}", method = RequestMethod.GET)
-	public ProcessInstance findProcessInstance(
+	public HistoryProcessInstance findProcessInstance(
 			@Parameter(description = "Process instance Id") @PathVariable String processInstanceId,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true, false);

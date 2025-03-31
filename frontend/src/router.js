@@ -126,10 +126,11 @@ const router = createRouter({
         { path: 'processes/list', name: 'processManagement', beforeEnter: permissionsGuard('cockpit'),
           component: ProcessListView
         },
-        { path: 'process/:processKey/:versionIndex?', name: 'process', beforeEnter: permissionsGuard('cockpit'),
+        { path: 'process/:processKey/:versionIndex?/:instanceId?', name: 'process', beforeEnter: permissionsGuard('cockpit'),
           component: ProcessView, props: route => ({
             processKey: route.params.processKey,
             versionIndex: route.params.versionIndex,
+            instanceId: route.params.instanceId,
           })
         },
         // decisions

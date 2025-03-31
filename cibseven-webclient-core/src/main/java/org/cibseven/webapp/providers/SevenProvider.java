@@ -26,11 +26,14 @@ import org.cibseven.webapp.rest.model.EventSubscription;
 import org.cibseven.webapp.rest.model.Filter;
 import org.cibseven.webapp.rest.model.IdentityLink;
 import org.cibseven.webapp.rest.model.Incident;
+import org.cibseven.webapp.rest.model.JobDefinition;
+import org.cibseven.webapp.rest.model.Job;
 import org.cibseven.webapp.rest.model.Message;
 import org.cibseven.webapp.rest.model.NewUser;
 import org.cibseven.webapp.rest.model.Process;
 import org.cibseven.webapp.rest.model.ProcessDiagram;
 import org.cibseven.webapp.rest.model.ProcessInstance;
+import org.cibseven.webapp.rest.model.HistoryProcessInstance;
 import org.cibseven.webapp.rest.model.ProcessStart;
 import org.cibseven.webapp.rest.model.ProcessStatistics;
 import org.cibseven.webapp.rest.model.SevenUser;
@@ -66,8 +69,10 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
     @Autowired private IFilterProvider filterProvider;
     @Autowired private IUtilsProvider utilsProvider;
     @Autowired private IIncidentProvider incidentProvider;
+    @Autowired private IJobDefinitionProvider jobDefinitionProvider;
     @Autowired private IUserProvider userProvider;
     @Autowired private IDecisionProvider decisionProvider;
+    @Autowired private IJobProvider jobProvider;
 
     
     /*
@@ -278,13 +283,13 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 	
 	@Override
-	public Collection<ProcessInstance> findProcessesInstancesHistory(String key, Optional<Boolean> active, 
+	public Collection<HistoryProcessInstance> findProcessesInstancesHistory(String key, Optional<Boolean> active, 
 			Integer firstResult, Integer maxResults, CIBUser user) {
 		return processProvider.findProcessesInstancesHistory(key, active, firstResult, maxResults, user);
 	}
 	
 	@Override
-	public Collection<ProcessInstance> findProcessesInstancesHistoryById(String id, Optional<String> activityId, Optional<Boolean> active, 
+	public Collection<HistoryProcessInstance> findProcessesInstancesHistoryById(String id, Optional<String> activityId, Optional<Boolean> active, 
 			Integer firstResult, Integer maxResults, String text, CIBUser user) {
 		return processProvider.findProcessesInstancesHistoryById(id, activityId, active, firstResult, maxResults, text, user);
 	}	
@@ -300,7 +305,7 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}	
 	
 	@Override
-	public ProcessInstance findHistoryProcessInstanceHistory(String processInstanceId, CIBUser user) {
+	public HistoryProcessInstance findHistoryProcessInstanceHistory(String processInstanceId, CIBUser user) {
 		return processProvider.findHistoryProcessInstanceHistory(processInstanceId, user);
 	}
 	
@@ -621,7 +626,6 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 		return incidentProvider.fetchIncidents(processDefinitionKey, user);
 	}
 
-
 	/*
 	
 	██    ██  █████  ██████  ██  █████  ██████  ██      ███████ ███████     ██████  ██████   ██████  ██    ██ ██ ██████  ███████ ██████  
@@ -877,4 +881,39 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 		return decisionProvider.setHistoricDecisionInstanceRemovalTime(queryParams);
 	}
 	
+	/*
+	
+	     ██  ██████  ██████      ██████  ██████   ██████  ██    ██ ██ ██████  ███████ ██████  
+	     ██ ██    ██ ██   ██     ██   ██ ██   ██ ██    ██ ██    ██ ██ ██   ██ ██      ██   ██ 
+	     ██ ██    ██ ██████      ██████  ██████  ██    ██ ██    ██ ██ ██   ██ █████   ██████  
+	██   ██ ██    ██ ██   ██     ██      ██   ██ ██    ██  ██  ██  ██ ██   ██ ██      ██   ██ 
+	 █████   ██████  ██████      ██      ██   ██  ██████    ████   ██ ██████  ███████ ██   ██ 
+	                                                                                          
+	*/
+	
+	@Override
+	public Collection<JobDefinition> findJobDefinitions(String params, CIBUser user) {
+		return jobDefinitionProvider.findJobDefinitions(params, user);
+	}
+	
+	@Override
+	public void suspendJobDefinition(String jobDefinitionId, String params, CIBUser user) {
+		jobDefinitionProvider.suspendJobDefinition(jobDefinitionId, params, user);
+	}
+	
+	@Override
+	public void overrideJobDefinitionPriority(String jobDefinitionId, String params, CIBUser user) {
+		jobDefinitionProvider.overrideJobDefinitionPriority(jobDefinitionId, params, user);
+	}
+	
+	@Override
+	public Collection<Job> getJobs(Map<String, Object> params, CIBUser user) {
+		return jobProvider.getJobs(params, user);
+	}
+
+	@Override
+	public void setSuspended(String id, Map<String, Object> params, CIBUser user) {
+		jobProvider.setSuspended(id, params, user);
+	}
+
 }
