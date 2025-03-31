@@ -118,7 +118,7 @@
 import platform from 'platform'
 import { permissionsMixin } from '@/permissions.js'
 import { InfoService } from '@/services.js'
-import SupportModal from '@/components/common-components/SupportModal.vue'
+import SupportModal from '@/components/modals/SupportModal.vue'
 import CIBHeaderFlow from '@/components/common-components/CIBHeaderFlow.vue'
 import FeedbackModal from '@/components/modals/FeedbackModal.vue'
 import { updateAppTitle } from '@/utils/init'
