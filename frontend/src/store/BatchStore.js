@@ -27,27 +27,27 @@ const BatchStore = {
         }
     },
     actions: {
-        async fetchHistoricBatches({ commit }, query) {
+        async getHistoricBatches({ commit }, query) {
             const result = await BatchService.getHistoricBatches(query)
             commit('setHistoricBatches', result)
             return result
         },
-        async fetchHistoricBatch({ commit }, id) {
+        async getHistoricBatch({ commit }, id) {
             const result = await BatchService.getHistoricBatch(id)
             commit('setSelectedHistoricBatch', result)
             return result
         },
-        async fetchHistoricBatchCount({ commit }, query) {
+        async getHistoricBatchCount({ commit }, query) {
             const result = await BatchService.getHistoricBatchCount(query)
             commit('setHistoricBatchCount', result.count)
             return result.count
         },
-        async fetchCleanableBatchReport({ commit }, query) {
+        async getCleanableBatchReport({ commit }, query) {
             const result = await BatchService.getCleanableBatchReport(query)
             commit('setCleanableBatchReport', result)
             return result
         },
-        async fetchCleanableBatchReportCount({ commit }) {
+        async getCleanableBatchReportCount({ commit }) {
             const result = await BatchService.getCleanableBatchReportCount()
             commit('setCleanableBatchReportCount', result.count)
             return result.count
@@ -55,7 +55,7 @@ const BatchStore = {
         async deleteHistoricBatch(_, id) {
             return BatchService.deleteHistoricBatch(id)
         },
-        async setRemovalTime(_, payload) {
+        async setHistoricBatchRemovalTime(_, payload) {
             return BatchService.setHistoricBatchRemovalTime(payload)
         }
     },
