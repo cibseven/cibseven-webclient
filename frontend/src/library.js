@@ -129,7 +129,7 @@ const registerComponents = function(app) {
   app.component('advanced-search-modal', AdvancedSearchModal)
   app.component('task-content', TaskContent)
   app.component('task-view', TaskView)
-  app.component('Tasks-content', TasksContent)
+  app.component('tasks-content', TasksContent)
   app.component('tasks-nav-bar', TasksNavBar)
   app.component('tasks-view', TasksView)
   app.component('highlighted-text', HighlightedText)
