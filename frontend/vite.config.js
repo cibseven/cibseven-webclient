@@ -70,5 +70,12 @@ export default defineConfig({
         cssCodeSplit: true, // Ensure CSS is extracted into a separate file
         outDir: 'dist', // The output directory
       }
-    : {}
+    : {
+      rollupOptions: {
+        input: {
+          main: path.resolve(__dirname, 'index.html'),
+          ssoLogin: path.resolve(__dirname, 'sso-login.html')
+        }
+      }
+    }
 })

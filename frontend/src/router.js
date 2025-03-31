@@ -77,7 +77,7 @@ const router = createRouter({
     { path: '/seven', component: CibSeven, children: [
       { path: 'login', name: 'login', beforeEnter: function(to, from, next) {
           if (router.root.config.ssoActive) //If SSO go to other login
-            location.href = 'sso-login.html?nextUrl=' + encodeURIComponent(to.query.nextUrl ? to.query.nextUrl : '')
+            location.href = './sso-login.html?nextUrl=' + encodeURIComponent(to.query.nextUrl ? to.query.nextUrl : '')
           else next()
         }, component: LoginView },
       { path: 'auth', beforeEnter: authGuard(true), component: {

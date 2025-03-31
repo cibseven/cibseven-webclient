@@ -40,6 +40,7 @@
     "cib-common-components": "^1.0.14",
     "cibseven-frontend": "file:",
     "dmn-js": "^17.2.0",
+    "js-sha256": "^0.11.0",
     "moment": "^2.30.1",
     "platform": "^1.3.6",
     "vue": "^3.5.13",
