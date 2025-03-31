@@ -25,20 +25,20 @@ public class IncidentProvider extends SevenProviderBase implements IIncidentProv
 		String url = camundaUrl + "/engine-rest/incident/count";
 		
 		String param = "";
-		param += addQueryParameter(param, "incidentId", incidentId);
-		param += addQueryParameter(param, "incidentType", incidentType);
-		param += addQueryParameter(param, "incidentMessage", incidentMessage);
-		param += addQueryParameter(param, "processDefinitionId", processDefinitionId);
-		param += addQueryParameter(param, "processDefinitionKeyIn", processDefinitionKeyIn);
-		param += addQueryParameter(param, "processInstanceId", processInstanceId);
-		param += addQueryParameter(param, "executionId", executionId);
-		param += addQueryParameter(param, "activityId", activityId);
-		param += addQueryParameter(param, "causeIncidentId", causeIncidentId);
-		param += addQueryParameter(param, "rootCauseIncidentId", rootCauseIncidentId);
-		param += addQueryParameter(param, "configuration", configuration);
-		param += addQueryParameter(param, "tenantIdIn", tenantIdIn);
-		param += addQueryParameter(param, "jobDefinitionIdIn", jobDefinitionIdIn);
-		param += addQueryParameter(param, "name", name);
+		param += addQueryParameter(param, "incidentId", incidentId, true);
+		param += addQueryParameter(param, "incidentType", incidentType, true);
+		param += addQueryParameter(param, "incidentMessage", incidentMessage, true);
+		param += addQueryParameter(param, "processDefinitionId", processDefinitionId, false);
+		param += addQueryParameter(param, "processDefinitionKeyIn", processDefinitionKeyIn, false);
+		param += addQueryParameter(param, "processInstanceId", processInstanceId, true);
+		param += addQueryParameter(param, "executionId", executionId, true);
+		param += addQueryParameter(param, "activityId", activityId, true);
+		param += addQueryParameter(param, "causeIncidentId", causeIncidentId, true);
+		param += addQueryParameter(param, "rootCauseIncidentId", rootCauseIncidentId, true);
+		param += addQueryParameter(param, "configuration", configuration, true);
+		param += addQueryParameter(param, "tenantIdIn", tenantIdIn, true);
+		param += addQueryParameter(param, "jobDefinitionIdIn", jobDefinitionIdIn, true);
+		param += addQueryParameter(param, "name", name, true);
 		
 		url += param;
 		
@@ -54,19 +54,19 @@ public class IncidentProvider extends SevenProviderBase implements IIncidentProv
 		String url = camundaUrl + "/engine-rest/incident";
 		
 		String param = "";
-		param += addQueryParameter(param, "incidentId", incidentId);
-		param += addQueryParameter(param, "incidentType", incidentType);
-		param += addQueryParameter(param, "incidentMessage", incidentMessage);
-		param += addQueryParameter(param, "processDefinitionId", processDefinitionId);
-		param += addQueryParameter(param, "processDefinitionKeyIn", processDefinitionKeyIn);
-		param += addQueryParameter(param, "processInstanceId", processInstanceId);
-		param += addQueryParameter(param, "executionId", executionId);
-		param += addQueryParameter(param, "activityId", activityId);
-		param += addQueryParameter(param, "causeIncidentId", causeIncidentId);
-		param += addQueryParameter(param, "rootCauseIncidentId", rootCauseIncidentId);
-		param += addQueryParameter(param, "configuration", configuration);
-		param += addQueryParameter(param, "tenantIdIn", tenantIdIn);
-		param += addQueryParameter(param, "jobDefinitionIdIn", jobDefinitionIdIn);
+		param += addQueryParameter(param, "incidentId", incidentId, true);
+		param += addQueryParameter(param, "incidentType", incidentType, true);
+		param += addQueryParameter(param, "incidentMessage", incidentMessage, true);
+		param += addQueryParameter(param, "processDefinitionId", processDefinitionId, false);
+		param += addQueryParameter(param, "processDefinitionKeyIn", processDefinitionKeyIn, false);
+		param += addQueryParameter(param, "processInstanceId", processInstanceId, true);
+		param += addQueryParameter(param, "executionId", executionId, true);
+		param += addQueryParameter(param, "activityId", activityId, true);
+		param += addQueryParameter(param, "causeIncidentId", causeIncidentId, true);
+		param += addQueryParameter(param, "rootCauseIncidentId", rootCauseIncidentId, true);
+		param += addQueryParameter(param, "configuration", configuration, true);
+		param += addQueryParameter(param, "tenantIdIn", tenantIdIn, true);
+		param += addQueryParameter(param, "jobDefinitionIdIn", jobDefinitionIdIn, true);
 		
 		url += param;
 		
@@ -78,7 +78,7 @@ public class IncidentProvider extends SevenProviderBase implements IIncidentProv
 		String url = camundaUrl + "/engine-rest/incident";
 		
 		String param = "";
-		param += addQueryParameter(param, "processInstanceId", Optional.of(processInstanceId));
+		param += addQueryParameter(param, "processInstanceId", Optional.of(processInstanceId), true);
 		
 		url += param;
 		

@@ -172,7 +172,7 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 		if (firstNameLike.isPresent()) { // javier, JAVIER, Javier
 			try {
 				String fnDecoded = URLDecoder.decode(firstNameLike.get(), "UTF-8");
-				param += addQueryParameter(param, "firstNameLike", Optional.of(fnDecoded.replace("*", wcard)));
+				param += addQueryParameter(param, "firstNameLike", Optional.of(fnDecoded.replace("*", wcard)), true);
 			} catch (UnsupportedEncodingException e) {
 				throw new SystemException(e);
 			}
@@ -180,7 +180,7 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 		if (lastNameLike.isPresent()) { // medina, MEDINA, Medina
 			try {
 				String lnDecoded = URLDecoder.decode(lastNameLike.get(), "UTF-8");
-				param += addQueryParameter(param, "lastNameLike", Optional.of(lnDecoded.replace("*", wcard)));
+				param += addQueryParameter(param, "lastNameLike", Optional.of(lnDecoded.replace("*", wcard)), true);
 			} catch (UnsupportedEncodingException e) {
 				throw new SystemException(e);
 			}
@@ -188,7 +188,7 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 		if (emailLike.isPresent()) { 
 			try {
 				String eDecoded = URLDecoder.decode(emailLike.get(), "UTF-8");
-				param += addQueryParameter(param, "emailLike", Optional.of(eDecoded.replace("*", wcard)));
+				param += addQueryParameter(param, "emailLike", Optional.of(eDecoded.replace("*", wcard)), true);
 			} catch (UnsupportedEncodingException e) {
 				throw new SystemException(e);
 			}
@@ -196,22 +196,22 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 		if (id.isPresent()) { 
 			try {
 				String eDecoded = URLDecoder.decode(id.get(), "UTF-8");
-				param += addQueryParameter(param, "id", Optional.of(eDecoded));
+				param += addQueryParameter(param, "id", Optional.of(eDecoded), true);
 			} catch (UnsupportedEncodingException e) {
 				throw new SystemException(e);
 			}
 		}
 		
-		param += addQueryParameter(param, "firstName", firstName);
-		param += addQueryParameter(param, "lastName", lastName);
-		param += addQueryParameter(param, "email", email);
-		param += addQueryParameter(param, "memberOfGroup", memberOfGroup);
-		param += addQueryParameter(param, "memberOfTenant", memberOfTenant);
-		param += addQueryParameter(param, "idIn", idIn);
-		param += addQueryParameter(param, "firstResult", firstResult);
-		param += addQueryParameter(param, "maxResults", maxResults);
-		param += addQueryParameter(param, "sortBy", sortBy);
-		param += addQueryParameter(param, "sortOrder", sortOrder);
+		param += addQueryParameter(param, "firstName", firstName, true);
+		param += addQueryParameter(param, "lastName", lastName, true);
+		param += addQueryParameter(param, "email", email, true);
+		param += addQueryParameter(param, "memberOfGroup", memberOfGroup, true);
+		param += addQueryParameter(param, "memberOfTenant", memberOfTenant, true);
+		param += addQueryParameter(param, "idIn", idIn, true);
+		param += addQueryParameter(param, "firstResult", firstResult, true);
+		param += addQueryParameter(param, "maxResults", maxResults, true);
+		param += addQueryParameter(param, "sortBy", sortBy, true);
+		param += addQueryParameter(param, "sortOrder", sortOrder, true);
 
 		url += param;
 
@@ -305,21 +305,21 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 		if (nameLike.isPresent()) {
 			try {
 				String eDecoded = URLDecoder.decode(nameLike.get(), "UTF-8");
-				param += addQueryParameter(param, "nameLike", Optional.of(eDecoded.replace("*", wcard)));
+				param += addQueryParameter(param, "nameLike", Optional.of(eDecoded.replace("*", wcard)), true);
 			} catch (UnsupportedEncodingException e) {
 				throw new SystemException(e);
 			}
 		}
 
-		param += addQueryParameter(param, "id", id);
-		param += addQueryParameter(param, "name", name);
-		param += addQueryParameter(param, "type", type);
-		param += addQueryParameter(param, "member", member);
-		param += addQueryParameter(param, "memberOfTenant", memberOfTenant);
-		param += addQueryParameter(param, "sortBy", sortBy);
-		param += addQueryParameter(param, "sortOrder", sortOrder);
-		param += addQueryParameter(param, "firstResult", firstResult);
-		param += addQueryParameter(param, "maxResults", maxResults);
+		param += addQueryParameter(param, "id", id, true);
+		param += addQueryParameter(param, "name", name, true);
+		param += addQueryParameter(param, "type", type, true);
+		param += addQueryParameter(param, "member", member, true);
+		param += addQueryParameter(param, "memberOfTenant", memberOfTenant, true);
+		param += addQueryParameter(param, "sortBy", sortBy, true);
+		param += addQueryParameter(param, "sortOrder", sortOrder, true);
+		param += addQueryParameter(param, "firstResult", firstResult, true);
+		param += addQueryParameter(param, "maxResults", maxResults, true);
 		
 		url += param;
 		
@@ -366,16 +366,16 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 		String url = camundaUrl + "/engine-rest/authorization";
 		
 		String param = "";
-		param += addQueryParameter(param, "id", id);
-		param += addQueryParameter(param, "type", type);
-		param += addQueryParameter(param, "userIdIn", userIdIn);
-		param += addQueryParameter(param, "groupIdIn", groupIdIn);
-		param += addQueryParameter(param, "resourceType", resourceType);
-		param += addQueryParameter(param, "resourceId", resourceId);
-		param += addQueryParameter(param, "sortBy", sortBy);
-		param += addQueryParameter(param, "sortOrder", sortOrder);
-		param += addQueryParameter(param, "firstResult", firstResult);
-		param += addQueryParameter(param, "maxResults", maxResults);
+		param += addQueryParameter(param, "id", id, true);
+		param += addQueryParameter(param, "type", type, true);
+		param += addQueryParameter(param, "userIdIn", userIdIn, true);
+		param += addQueryParameter(param, "groupIdIn", groupIdIn, true);
+		param += addQueryParameter(param, "resourceType", resourceType, true);
+		param += addQueryParameter(param, "resourceId", resourceId, true);
+		param += addQueryParameter(param, "sortBy", sortBy, true);
+		param += addQueryParameter(param, "sortOrder", sortOrder, true);
+		param += addQueryParameter(param, "firstResult", firstResult, true);
+		param += addQueryParameter(param, "maxResults", maxResults, true);
 		
 		url += param;
 		

@@ -46,7 +46,7 @@ export default {
     },
     methods: {
         loadSelectedInstanceVariables: function() {
-            if (this.selectedInstance !== null) {
+            if (this.selectedInstance) {
                 if (this.selectedInstance.state === 'ACTIVE') {
                     this.fetchInstanceVariables('ProcessService', 'fetchProcessInstanceVariables')
                 } else {

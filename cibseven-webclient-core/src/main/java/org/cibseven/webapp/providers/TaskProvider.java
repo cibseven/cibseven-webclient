@@ -57,10 +57,10 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 		String url = camundaUrl + "/engine-rest/task/count";
 		
 		String param = "";
-		param += addQueryParameter(param, "name", name);
-		param += addQueryParameter(param, "nameLike", nameLike);
-		param += addQueryParameter(param, "taskDefinitionKey", taskDefinitionKey);
-		param += addQueryParameter(param, "taskDefinitionKeyIn", taskDefinitionKeyIn);
+		param += addQueryParameter(param, "name", name, true);
+		param += addQueryParameter(param, "nameLike", nameLike, true);
+		param += addQueryParameter(param, "taskDefinitionKey", taskDefinitionKey, true);
+		param += addQueryParameter(param, "taskDefinitionKeyIn", taskDefinitionKeyIn, true);
 		
 		url += param;
 				
@@ -198,7 +198,7 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 		String url = camundaUrl + "/engine-rest/task/" + taskId	+ "/identity-links";
 		
 		String param = "";
-		param += addQueryParameter(param, "type", type);
+		param += addQueryParameter(param, "type", type, true);
 		
 		url += param;
 		

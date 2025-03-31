@@ -317,16 +317,16 @@ public abstract class SevenProviderBase {
 		return wrapperException;
 	}
 	
-	protected String addQueryParameter(String param, String name, Optional<String> value) {
+	protected String addQueryParameter(String param, String name, Optional<String> value, boolean encode) {
 		if (value.isPresent()) {
 			try {
-				String val = URLEncoder.encode(value.get(), "UTF-8");
+				String val = encode ? URLEncoder.encode(value.get(), "UTF-8") : value.get();
 				return (param.isEmpty() ? "?" : "&") + name + "=" + val;
 			} catch (UnsupportedEncodingException e) {
 				throw new SystemException(e);
 			}
 		}
-		
 		return "";
 	}
+
 }

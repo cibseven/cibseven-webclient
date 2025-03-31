@@ -326,6 +326,9 @@ var IncidentService = {
     return axios.put(appConfig.servicesBasePath + "/incident/job/" + id + "/retries", {
         retries: 1
     })
+  },
+  findIncidents: function(processDefinitionId) {
+    return axios.get(appConfig.servicesBasePath + "/incident?processDefinitionId=" + processDefinitionId)
   }
 }
 
