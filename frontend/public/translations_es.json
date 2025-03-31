@@ -1,4 +1,9 @@
+
 {
+	"commons": {
+		"edit": "Editar",
+		"save": "Guardar"
+	},
 	"login": {
 		"productName": "CIB seven",
 		"productSlogan": "Plataforma para la gestión de procesos",
@@ -121,8 +126,8 @@
 		"active": "Activo",
 		"history": "Historial",
 		"download": "Descargar",
-		"edit": "Editar",
-		"save": "Guardar",
+		"edit": "@:commons:edit",
+		"save": "@:commons:save",
 		"upload": "Subir archivo",
 		"selectFile": "Seleccione archivo",
 		"details": {
@@ -521,7 +526,7 @@
 			"selectedCriteria": "Criterios seleccionados",
 			"deleteCriteria": "Eliminar criterio",
 			"no-filters": "No se encontraron filtros",
-			"edit": "Editar",
+			"edit": "@:commons:edit",
 			"delete": "Eliminar",
 			"pin": "Adjuntar",
 			"includeAssigned": "Incluir las tareas asignadas",
@@ -951,7 +956,7 @@
 		}
 	},
 	"decision-instance": {
-		"edit": "Bearbeiten",
-		"save": "Speichern"
+		"edit": "@:commons:edit",
+		"save": "@:commons:save"
 	}
 }

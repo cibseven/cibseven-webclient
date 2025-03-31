@@ -1,4 +1,8 @@
 {
+	"commons": {
+		"edit": "Bearbeiten",
+		"save": "Speichern"
+	},
 	"login": {
 		"productName": "CIB seven",
 		"productSlogan": "Prozess Management Plattform",
@@ -122,8 +126,8 @@
 		"active": "Aktiv",
 		"history": "Historie",
 		"download": "Herunterladen",
-		"edit": "Bearbeiten",
-		"save": "Speichern",
+		"edit": "@:commons.edit",
+		"save": "@:commons.save",
 		"upload": "Datei hochladen",
 		"selectFile": "Datei aussuchen",
 		"details": {
@@ -522,7 +526,7 @@
 			"selectedCriteria": "Ausgewählte Kriterien",
 			"deleteCriteria": "Kriterium Löschen",
 			"no-filters": "Keine Filter gefunden",
-			"edit": "Bearbeiten",
+			"edit": "@:commons.edit",
 			"delete": "Löschen",
 			"pin": "Anfügen",
 			"includeAssigned": "Zugewiesene Aufgaben einbeziehen",
@@ -954,7 +958,7 @@
 		}
 	},
 	"decision-instance": {
-		"edit": "Bearbeiten",
-		"save": "Speichern"
+		"edit": "@:commons.edit",
+		"save": "@:commons.save"
 	}
 }

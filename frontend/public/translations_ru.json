@@ -1,4 +1,8 @@
 {	
+	"commons": {
+		"edit": "Редактировать",
+		"save": "Сохранить"
+	},
 	"login": {
 		"productName": "CIB seven",
 		"productSlogan": "Платформа для управления процессами",
@@ -953,7 +957,7 @@
 		}
 	},
 	"decision-instance": {
-		"edit": "Bearbeiten",
-		"save": "Speichern"
+		"edit": "@:commons:edit",
+		"save": "@:commons:save"
 	}
 }
