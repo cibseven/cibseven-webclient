@@ -21,11 +21,11 @@
 <script>
 import platform from 'platform'
 import CIBForm from '@/components/common-components/CIBForm.vue'
-import Clipboard from '@/components/common-components/Clipboard.vue'
+import Clipboard from '@/components/modals/Clipboard.vue'
 import { axios } from '@/globals.js'
 
 export default {
-  name: 'ProblemReport',
+  name: 'FeedbackModal',
   components: { CIBForm, Clipboard },
   props: { url: String, email: String },
   data: function() { return { problem: '', email2: null, clip: null } },

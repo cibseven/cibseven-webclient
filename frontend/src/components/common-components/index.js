@@ -1,10 +1,10 @@
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import ErrorDialog from '@/components/common-components/ErrorDialog.vue'
 import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
-import ProblemReport from '@/components/common-components/ProblemReport.vue'
+import FeedbackModal from '@/components/modals/FeedbackModal.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import TaskPopper from '@/components/common-components/TaskPopper.vue'
-import Clipboard from '@/components/common-components/Clipboard.vue'
+import Clipboard from '@/components/modals/Clipboard.vue'
 import TaskList from '@/components/common-components/TaskList.vue'
 import CIBHeaderFlow from '@/components/common-components/CIBHeaderFlow.vue'
 import Sidebars from '@/components/common-components/Sidebars.vue'
@@ -80,7 +80,7 @@ import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { debounce } from '@/utils/debounce.js'
 
 export {
-    FlowTable, ErrorDialog, ConfirmDialog, ProblemReport,
+    FlowTable, ErrorDialog, ConfirmDialog, FeedbackModal,
     SuccessAlert, TaskPopper, Clipboard, TaskList, CIBHeaderFlow,
     Sidebars, ResetDialog, OtpDialog, HoverStyle, CIBForm,
     SecureInput, FilterableSelect, SmartSearch, SidebarsFlow,

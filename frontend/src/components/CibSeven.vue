@@ -105,7 +105,7 @@
       </template>
     </b-modal>
 
-    <ProblemReport ref="report" url="feedback" :email="$root.user && $root.user.email" @report="$refs.down.$emit('report', $event)"></ProblemReport>
+    <FeedbackModal ref="report" url="feedback" :email="$root.user && $root.user.email" @report="$refs.down.$emit('report', $event)"></FeedbackModal>
 
     <GlobalEvents v-if="permissionsTaskList" @keydown.ctrl.left.prevent="$router.push('/seven/auth/start-process')"></GlobalEvents>
     <GlobalEvents v-if="permissionsCockpit" @keydown.ctrl.right.prevent="$router.push('/seven/auth/processes/list')"></GlobalEvents>
@@ -120,12 +120,12 @@ import { permissionsMixin } from '@/permissions.js'
 import { InfoService } from '@/services.js'
 import SupportModal from '@/components/common-components/SupportModal.vue'
 import CIBHeaderFlow from '@/components/common-components/CIBHeaderFlow.vue'
-import ProblemReport from '@/components/common-components/ProblemReport.vue'
+import FeedbackModal from '@/components/modals/FeedbackModal.vue'
 import { updateAppTitle } from '@/utils/init'
 
 export default {
   name: 'CibSeven',
-  components: { SupportModal, CIBHeaderFlow, ProblemReport },
+  components: { SupportModal, CIBHeaderFlow, FeedbackModal },
   mixins: [permissionsMixin],
   inject: ['isMobile'],
   data: function() { return { rememberNotShow: false, version: '' } },
