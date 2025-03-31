@@ -52,7 +52,7 @@ import JobsTable from '@/components/process/tables/JobsTable.vue'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
 
 export default {
-  name: 'ProcessVariablesTable',
+  name: 'ProcessInstanceView',
   components: { VariablesTable, IncidentsTable, UserTasksTable, BpmnViewer, JobsTable },
   mixins: [procesessVariablesMixin, resizerMixin],
   props: {
