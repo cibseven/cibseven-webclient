@@ -667,8 +667,8 @@
 		"properties": "Properties",
 		"resources": "Ressourcen",
 		"adminProcesses": "Prozesses",
-		"adminDecisions": "Decisions",
-		"adminHumanTasks": "Human Tasks"
+		"adminDecisions": "Entscheidungen",
+		"adminHumanTasks": "Aufgaben"
 	},
 	"errors": {		
 		"invalid": "Es fehlt eine gültige Eingabe",
