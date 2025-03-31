@@ -60,7 +60,7 @@ import IncidentsTable from '@/components/process/tables/IncidentsTable.vue'
 import UserTasksTable from '@/components/process/tables/UserTasksTable.vue'
 import RenderTemplate from '@/components/render-template/RenderTemplate.vue'
 import AdvancedSearchModal from '@/components/task/AdvancedSearchModal.vue'
-import Task from '@/components/task/Task.vue'
+import TaskContent from '@/components/task/TaskContent.vue'
 import TaskView from '@/components/task/TaskView.vue'
 import TasksContent from '@/components/task/TasksContent.vue'
 import TasksNavBar from '@/components/task/TasksNavBar.vue'
@@ -127,7 +127,7 @@ const registerComponents = function(app) {
   app.component('user-tasks-table', UserTasksTable)
   app.component('render-template', RenderTemplate)
   app.component('advanced-search-modal', AdvancedSearchModal)
-  app.component('task', Task)
+  app.component('task-content', TaskContent)
   app.component('task-view', TaskView)
   app.component('Tasks-content', TasksContent)
   app.component('tasks-nav-bar', TasksNavBar)
@@ -203,7 +203,7 @@ export {
   UserTasksTable,
   RenderTemplate,
   AdvancedSearchModal,
-  Task,
+  TaskContent,
   TaskView,
   TasksContent,
   TasksNavBar,

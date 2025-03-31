@@ -74,7 +74,7 @@ import FilterableSelect from '@/components/task/filter/FilterableSelect.vue'
 import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
 
 export default {
-  name: 'Task',
+  name: 'TaskContent',
   components: { RenderTemplate, FilterableSelect, ConfirmDialog },
   mixins: [usersMixin],
   inject: ['isMobile'],

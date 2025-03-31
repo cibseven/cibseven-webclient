@@ -1,18 +1,18 @@
 <template>
-  <Task ref="task"
+  <TaskContent ref="task"
     :task="task"
     @complete-task="$emit('complete-task', $event)"
     @update-assignee="$emit('update-assignee', $event)"
     @update-task="$emit('update-task', $event)"
-  ></Task>
+  ></TaskContent>
 </template>
 
 <script>
-import Task from '@/components/task/Task.vue'
+import TaskContent from '@/components/task/TaskContent.vue'
 
 export default {
   name: 'TaskView',
-  components: { Task },
+  components: { TaskContent },
   props: { task: Object }
 }
 </script>
