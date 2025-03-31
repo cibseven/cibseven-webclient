@@ -25,6 +25,7 @@ import org.cibseven.webapp.rest.model.EventSubscription;
 import org.cibseven.webapp.rest.model.Filter;
 import org.cibseven.webapp.rest.model.IdentityLink;
 import org.cibseven.webapp.rest.model.Incident;
+import org.cibseven.webapp.rest.model.JobDefinition;
 import org.cibseven.webapp.rest.model.Job;
 import org.cibseven.webapp.rest.model.Message;
 import org.cibseven.webapp.rest.model.NewUser;
@@ -65,6 +66,7 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
     @Autowired private IFilterProvider filterProvider;
     @Autowired private IUtilsProvider utilsProvider;
     @Autowired private IIncidentProvider incidentProvider;
+    @Autowired private IJobDefinitionProvider jobDefinitionProvider;
     @Autowired private IUserProvider userProvider;
     @Autowired private IDecisionProvider decisionProvider;
     @Autowired private IJobProvider jobProvider;
@@ -621,7 +623,6 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 		return incidentProvider.fetchIncidents(processDefinitionKey, user);
 	}
 
-
 	/*
 	
 	██    ██  █████  ██████  ██  █████  ██████  ██      ███████ ███████     ██████  ██████   ██████  ██    ██ ██ ██████  ███████ ██████  
@@ -856,6 +857,21 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	 █████   ██████  ██████      ██      ██   ██  ██████    ████   ██ ██████  ███████ ██   ██ 
 	                                                                                          
 	*/
+	
+	@Override
+	public Collection<JobDefinition> findJobDefinitions(String params, CIBUser user) {
+		return jobDefinitionProvider.findJobDefinitions(params, user);
+	}
+	
+	@Override
+	public void suspendJobDefinition(String jobDefinitionId, String params, CIBUser user) {
+		jobDefinitionProvider.suspendJobDefinition(jobDefinitionId, params, user);
+	}
+	
+	@Override
+	public void overrideJobDefinitionPriority(String jobDefinitionId, String params, CIBUser user) {
+		jobDefinitionProvider.overrideJobDefinitionPriority(jobDefinitionId, params, user);
+	}
 	
 	@Override
 	public Collection<Job> getJobs(Map<String, Object> params, CIBUser user) {
