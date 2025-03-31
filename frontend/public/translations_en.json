@@ -231,7 +231,13 @@
 			"title": "Guide",
 			"completedTask": "Completed task",
 			"currentTask": "Current task",
-			"selectedTask": "@:task.selectedTask"
+			"selectedTask": "@:task.selectedTask",
+			"runingInstances": "Running activity instances",
+			"openIncidents": "Open incidents",
+			"suspendedJobDefinition": "Suspended job definition",
+			"activitiesHistory": "Executed activity instances",			
+			"openSubprocess": "Show called process definition",
+			"disabledSubprocess": "Called process definition will be resolved at runtime"
 		}
 	},
 	"task": {

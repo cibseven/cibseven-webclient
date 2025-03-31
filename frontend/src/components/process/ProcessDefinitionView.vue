@@ -34,7 +34,6 @@
           @instance-deleted="onInstanceDeleted()"
           @task-selected="setSelectedTask($event)"
           @filter-instances="filterInstances($event)"
-          @open-subprocess="openSubprocess($event)"
           @update-items="updateItems"
         ></Process>
       </transition>
@@ -43,7 +42,6 @@
           :process="process"
           :activity-instance="activityInstance"
           :activity-instance-history="activityInstanceHistory"
-          @open-subprocess="openSubprocess($event)"
           :selected-instance="selectedInstance"
           @task-selected="setSelectedTask($event)"></ProcessVariablesTable>
       </transition>
@@ -396,15 +394,6 @@ export default {
           return 'mdi-close-circle-outline'
       }
       return 'mdi-flag-triangle'
-    },
-    openSubprocess: function(event) {
-      this.activityId = ''
-      this.setSelectedInstance({ selectedInstance: null })
-      this.loadProcessVersion(event)
-      nextTick(function() {
-        this.$refs.navbar.getVersions()
-      }.bind(this))
-      this.$router.push('/seven/auth/process/' + event.key)
     },
     exportCSV: function() {
       var headers = [

@@ -231,7 +231,13 @@
 			"title": "Легенда",
 			"completedTask": "Завершённая задача",
 			"currentTask": "Текущая задача",			
-			"selectedTask": "@:task.selectedTask"
+			"selectedTask": "@:task.selectedTask",
+			"runingInstances": "Выполняющиеся экземпляры заданий",
+			"openIncidents": "Открытые инциденты",
+			"suspendedJobDefinition": "Приостановленное определение задания",
+			"activitiesHistory": "Выполненные экземпляры заданий",
+			"openSubprocess": "Показать вызываемое определение процесса",
+  			"disabledSubprocess": "Определение процесса будет получено во время выполнения"
 		}
 	},	
 	"task": {

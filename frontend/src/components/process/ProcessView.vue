@@ -17,7 +17,15 @@ export default {
     processKey: { type: String, required: true },
     versionIndex: { type: String, default: '' },
     instanceId: { type: String, default: '' }
-   },
+  },
+  watch: {
+    processKey: {
+      immediate: true,
+      handler() {
+        this.loadProcess()
+      }
+    }
+  },
   data: function() {
     return {
       process: null,
@@ -44,21 +52,25 @@ export default {
       return this.versionIndex ? this.instanceId : '';
     }
   },
+  methods: {
+    loadProcess: function() {
+      if (this.$route.query.processId) {
+        this.loading = true
+        this.$store.dispatch('getProcessById', { id: this.$route.query.processId }).then(process => {
+          this.process = process
+          this.loading = false
+        })
+      } else if (!this.versionIndex) {
+        this.loading = true
+        this.$store.dispatch('getProcessByDefinitionKey', { key: this.processKey }).then(process => {
+          this.process = process
+          this.loading = false
+        })
+      }
+    }
+  },
   created: function() {
-    if (this.$route.query.processId) {
-      this.loading = true
-      this.$store.dispatch('getProcessById', { id: this.$route.query.processId }).then(process => {
-        this.process = process
-        this.loading = false
-      })
-    }
-    else if (!this.versionIndex) {
-      this.loading = true
-      this.$store.dispatch('getProcessByDefinitionKey', { key: this.processKey }).then(process => {
-        this.process = process
-        this.loading = false
-      })
-    }
+    this.loadProcess()
   },
   beforeUpdate: function() {
     if (this.process != null && this.process.version !== this.computedVersionIndex) {
