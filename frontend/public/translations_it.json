@@ -537,9 +537,9 @@
 		"modeler": "Modellatore di processo",
 		"easyForm": "Easy Form",
 		"adminPanel": "Users Management",
-		"adminProcesses": "Prozesses",
-		"adminDecisions": "Decisions",
-		"adminHumanTasks": "Human Tasks"
+		"adminProcesses": "Processi",
+		"adminDecisions": "Decisioni",
+		"adminHumanTasks": "Attività"
 	},
 	"errors": {
 		"invalid": "Inserisci un indirizzo valido",
