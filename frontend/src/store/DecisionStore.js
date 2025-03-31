@@ -3,22 +3,68 @@ import { DecisionService } from '@/services.js'
 const DecisionStore = {
   state: {
     list: [],
-    historicInstances: [],
-    historicInstance: null,
-    historicCount: 0
+    selectedDecisionVersion: null
   },
   mutations: {
     setDecisions: function (state, params) {
       state.list = params.decisions
     },
-    setHistoricInstances: function (state, instances) {
-      state.historicInstances = instances
+    setHistoricInstancesForKey: function (state, { key, version, instances }) {
+      const decision = state.list.find(decision => decision.key === key)
+      if (decision) {
+        const targetVersion = decision.versions.find(v => String(v.version) === String(version))
+        if (targetVersion) {
+          targetVersion.historicInstances = instances
+        }
+      }
     },
-    setHistoricInstance: function (state, instance) {
-      state.historicInstance = instance
+    setDecisionVersions(state, { key, versions }) {
+      const decision = state.list.find(decision => decision.key === key)
+      if (decision) decision.versions = versions
     },
-    setHistoricCount: function (state, count) {
-      state.historicCount = count
+    setSelectedDecisionVersion(state, { key, version }) {
+      const decision = state.list.find(decision => decision.key === key)
+      if (decision && decision.versions) {
+        const targetVersion = decision.versions.find(v => String(v.version) === String(version))
+        if (targetVersion) {
+          state.selectedDecisionVersion = targetVersion
+        }
+      }
+    }
+  },
+  getters: {
+    getFilteredDecisions: (state) => (filter) => {
+      if (!state.list) return []
+      const filterUpper = filter.toUpperCase()
+      const decisions = state.list.filter(decision => {
+        return (
+          decision.key.toUpperCase().includes(filterUpper) ||
+          (decision.name && decision.name.toUpperCase().includes(filterUpper))
+        )
+      })
+      decisions.sort((objA, objB) => {
+        const nameA = objA.name ? objA.name.toUpperCase() : ''
+        const nameB = objB.name ? objB.name.toUpperCase() : ''
+        return nameA.localeCompare(nameB)
+      })
+      return decisions
+    },
+    getDecisionByKey: (state) => (key) => {
+      return state.list.find(d => d.key === key)
+    },
+    getDecisionInstances: (state) => (key, version) => {
+      const decision = state.list.find(d => d.key === key)
+      if (decision) {
+        const targetVersion = decision.versions.find(v => String(v.version) === String(version))
+        return targetVersion?.historicInstances || []
+      }
+    },
+    getDecisionVersions: (state) => (key) => {
+      const decision = state.list.find(d => d.key === key)
+      return decision?.versions || []
+    },
+    getSelectedDecisionVersion: (state) => () => {
+      return state.selectedDecisionVersion
     }
   },
   actions: {
@@ -27,18 +73,23 @@ const DecisionStore = {
     //  Definitions
     // ────────────────────────────────────────────────────────────────
 
-    async getDecisionList({ commit }, params) {
-      const decisions = await DecisionService.getDecisionList(params)
-      commit('setDecisions', { decisions })
-      return decisions
+    async getDecisionList({ state, commit }, params) {
+      if (state.list.length < 1) {
+        const decisions = await DecisionService.getDecisionList(params)
+        const reduced = decisions.map(d => ({ key: d.key, id: d.id, name: d.name, latestVersion: d.version }))
+        commit('setDecisions', { decisions: reduced })
+        return reduced
+      } else {
+        return state.list
+      }
     },
 
-    async getDecisionByKey({ state, dispatch }, params) {
+    async getDecisionByKey({ state }, params) {
       if (state.list && state.list.length > 0) {
         const found = state.list.find(decision => decision.key === params.key)
         if (found) return found
       }
-      const newList = await dispatch("getDecisionList")
+      const newList = await DecisionService.getDecisionList(params)
       const foundAfterReload = newList.find(decision => decision.key === params.key)
       if (foundAfterReload) return foundAfterReload
       return DecisionService.getDecisionByKey(params.key)
@@ -46,6 +97,19 @@ const DecisionStore = {
 
     async getDecisionByKeyAndTenant(_, { key, tenant }) {
       return DecisionService.getDecisionByKeyAndTenant(key, tenant)
+    },
+
+    async getDecisionVersionsByKey({ commit }, { key, lazyLoadHistory }) {
+      const result = await DecisionService.getDecisionVersionsByKey(key, lazyLoadHistory)
+      if (lazyLoadHistory) {
+        result.forEach(v => {
+          v.runningInstances = '-'
+          v.allInstances = '-'
+          v.completedInstances = '-'
+        })
+      }
+      commit('setDecisionVersions', { key, versions: result })
+      return result
     },
 
     // ────────────────────────────────────────────────────────────────
@@ -112,9 +176,9 @@ const DecisionStore = {
     //  Historic Decision Instances
     // ────────────────────────────────────────────────────────────────
 
-    async getHistoricDecisionInstances({ commit }, params) {
+    async getHistoricDecisionInstances({ commit }, { key, version, params }) {
       const result = await DecisionService.getHistoricDecisionInstances(params)
-      commit('setHistoricInstances', result)
+      commit('setHistoricInstancesForKey', { key, version, instances: result })
       return result
     },
 

@@ -6,7 +6,7 @@
     { label: 'callingProcess', key: 'processDefinitionKey', class: 'col-3', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0' },
     { label: 'callingInstanceId', key: 'processInstanceId', class: 'col-3', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0' },
     { label: 'activityId', key: 'activityId', class: 'col-2', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0' }]"
-    @click="selectInstance($event)">
+    @click="goToInstance($event)">
     <template v-slot:cell(id)="table">
       <div :title="table.item.id" class="text-truncate w-100" :class="focusedCell === table.item.id ? 'pe-4': ''" @mouseenter="focusedCell = table.item.id" @mouseleave="focusedCell = null">
         {{ table.item.id }}
@@ -19,7 +19,7 @@
       size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-pause-circle-outline" :title="$t('decision..suspendInstance')"></b-button>
       <b-button v-if="table.item.state === 'SUSPENDED'" @click.stop="showConfirm({ ok: activateInstance, instance: table.item  })"
       size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-play-circle-outline" :title="$t('decision..activateInstance')"></b-button>
-      <b-button @click="selectInstance(table.item, true); viewDecision()" size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-eye-outline" :title="$t('decision.showInstance')"></b-button>
+      <b-button @click="goToInstance(table.item)" size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-eye-outline" :title="$t('decision.showInstance')"></b-button>
       <b-button v-if="['ACTIVE', 'SUSPENDED'].includes(table.item.state) && decisionByPermissions($root.config.permissions.deleteDecisionInstance, table.item)"
       @click.stop="showConfirm({ ok: deleteInstance, instance: table.item  })"
       size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-delete-outline" :title="$t('decision.deleteInstance')"></b-button>
@@ -36,61 +36,63 @@
 </template>
 
 <script>
-
 import { permissionsMixin } from '@/permissions.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
-
-/* 
-  TODO: Refactor this class.
-  TODO[ivan]: could we reuse this class from Process? i dont think, has to be checked after process refactor.
-  TODO[ivan]: implement deleteInstance
-  TODO[ivan]: implement deleteHistoryInstance
-*/
+import { mapGetters, mapActions } from 'vuex'
 
 export default {
   name: 'InstancesTable',
   components: { FlowTable, SuccessAlert, ConfirmDialog },
-  emits: ['select-instance', 'view-decision', 'instance-deleted'],
   mixins: [copyToClipboardMixin, permissionsMixin],
   props: { instances: Array, sortDesc: Boolean, sortByDefaultKey: String },
-  data: function() {
+  computed: {
+    ...mapGetters(['decisionInstances', 'selectedInstance']),
+  },
+  methods: {
+    ...mapActions(['setSelectedInstance']),
+
+    goToInstance(instance) {
+      const decisionList = this.decisionInstances(instance.decisionDefinitionKey) || []
+      const found = decisionList.find(d => d.id === instance.decisionDefinitionId)
+      const version = found?.version || 'latest'
+
+      this.setSelectedInstance(instance)
+
+      this.$router.push({
+        name: 'decision-instance',
+        params: {
+          decisionKey: instance.decisionDefinitionKey,
+          versionIndex: version,
+          instanceId: instance.id
+        }
+      })
+    },
+
+    showConfirm(type) { this.$refs.confirm.show(type) },
+
+    getIconState(state) {
+      switch (state) {
+        case 'ACTIVE': return 'mdi-chevron-triple-right text-success'
+        case 'SUSPENDED': return 'mdi-close-circle-outline'
+        default: return 'mdi-flag-triangle'
+      }
+    },
+
+    getIconTitle(state) {
+      switch (state) {
+        case 'ACTIVE': return this.$t('decision.instanceRunning')
+        case 'SUSPENDED': return this.$t('decision.instanceIncidents')
+        default: return this.$t('decision.instanceFinished')
+      }
+    }
+  },
+  data() {
     return {
       focusedCell: null
     }
-  },
-  methods: {
-    selectInstance: function(instance, reload) {
-      this.$emit('select-instance', { instance, reload })
-    },
-    viewDecision: function() {
-      this.$emit('view-decision')
-    },
-    showConfirm: function(type) { this.$refs.confirm.show(type) },
-    deleteInstance: function(instance) {
-    },
-    deleteHistoryInstance: function(instance) {
-    },
-    getIconState: function(state) {
-      switch(state) {
-        case 'ACTIVE':
-          return 'mdi-chevron-triple-right text-success'
-        case 'SUSPENDED':
-          return 'mdi-close-circle-outline'
-      }
-      return 'mdi-flag-triangle'
-    },
-    getIconTitle: function(state) {
-      switch(state) {
-        case 'ACTIVE':
-          return this.$t('decision.instanceRunning')
-        case 'SUSPENDED':
-          return this.$t('decision.instanceIncidents')
-      }
-      return this.$t('decision.instanceFinished')
-    },
   }
 }
 </script>

@@ -1,218 +1,96 @@
 <template>
   <div class="d-flex flex-column">
     <div class="d-flex ps-3 py-2">
-      <b-button :title="$t('start.admin')" variant="outline-secondary" href="#/seven/auth/decisions/list" class="mdi mdi-18px mdi-arrow-left border-0"></b-button>
+      <b-button :title="$t('start.admin')" variant="outline-secondary" :to="{ name: 'decision-list' }" class="mdi mdi-18px mdi-arrow-left border-0"></b-button>
       <h4 class="ps-1 m-0 align-items-center d-flex" style="border-width: 3px !important">{{ decisionName }}</h4>
     </div>
     <SidebarsFlow ref="sidebars" class="border-top overflow-auto" v-model:left-open="leftOpen" :left-caption="shortendLeftCaption">
       <template v-slot:left>
-        <DecisionDetailsSidebar ref="navbar" v-if="instances" :decision="decision" :selected-instance="selectedInstance"
-          @load-version-decision="loadVersionDecision($event)" @load-instances="loadInstances()"
-          :instances="instances"></DecisionDetailsSidebar>
+        <DecisionDetailsSidebar v-if="versions" ref="navbar" :versions="versions"></DecisionDetailsSidebar>
       </template>
-      <transition name="slide-in" mode="out-in">
-        <Decision ref="decision" v-if="instances && !selectedInstance" :activity-id="activityId" :loading="loading" :decision="decision" :instances="instances" :first-result="firstResult" :max-results="maxResults" @show-more="showMore()"
-        @instance-deleted="clearInstance()" @instance-selected="setSelectedInstance($event)"
-        @update-items="updateItems"
-        ></Decision>
-      </transition>
-      <transition name="slide-in" mode="out-in">
-      </transition>
+      <router-view
+        v-if="decision"
+        :key="$route.fullPath"
+        :loading="loading"
+        :first-result="firstResult"
+        :max-results="maxResults"
+        @show-more="showMore"
+        @instance-deleted="deleteInstance"
+      />
     </SidebarsFlow>
   </div>
 </template>
 
 <script>
-import { nextTick } from 'vue'
-import { DecisionService } from '@/services.js'
-import Decision from '@/components/decision/Decision.vue'
 import DecisionDetailsSidebar from '@/components/decision/DecisionDetailsSidebar.vue'
 import SidebarsFlow from '@/components/common-components/SidebarsFlow.vue'
-
-/* 
-  TODO: Refactor this class.
-  TODO[ivan]: Establish same arquitecture than Process, to navigate easily via URL
-  TODO[ivan]: Implement incomplete methods - check if they are needed and remove them. This can be done after refactor.
-*/
+import { mapGetters, mapActions, mapMutations } from 'vuex'
 
 export default {
   name: 'DecisionView',
-  components: { Decision, DecisionDetailsSidebar, SidebarsFlow },
+  components: { DecisionDetailsSidebar, SidebarsFlow },
   props: {
     decisionKey: String,
     versionIndex: { type: String, default: '' }
-   },
-  data: function() {
+  },
+  data() {
     return {
       leftOpen: true,
       rightOpen: false,
-      decision: null,
-      instances: null,
-      decisionDefinitions: null,
-      selectedInstance: null,
       firstResult: 0,
       maxResults: this.$root.config.maxProcessesResults,
       filter: '',
       loading: false
     }
   },
+  watch: {
+    '$route.params.versionIndex': {
+      immediate: true,
+      handler(versionIndex) {
+        if (versionIndex && this.$store.state.decision.list.length > 0) {
+          this.setSelectedDecisionVersion({ key: this.decisionKey, version: this.versionIndex})
+        }
+      }
+    }
+  },
   computed: {
-    shortendLeftCaption: function() {
+    ...mapGetters(['getSelectedDecisionVersion', 'getDecisionVersions']),
+
+    shortendLeftCaption() {
       return this.$t('decision.details.historyVersions')
     },
-    decisionName: function() {
+    decision() {
+      return this.getSelectedDecisionVersion()
+    },
+    versions() {
+      return this.getDecisionVersions(this.decisionKey)
+    },
+    decisionName() {
       if (!this.decision) return this.$t('decision.decision')
       return this.decision.name ? this.decision.name : this.decision.key
     }
   },
-  created: function() {
-      this.loadDecisionByKey(this.decisionKey, this.versionIndex)
+  async mounted() {
+    await this.loadDecisionVersionsByKey(this.decisionKey, this.versionIndex)
   },
   methods: {
-    updateItems: function(sortedItems) {
-      this.instances = sortedItems
-    },
-    loadDecisionByKey: function(decisionKey, versionIndex) {
-      if (!versionIndex) {
-        this.$store.dispatch('getDecisionByKey', { key: decisionKey }).then(decision => {
-          this.loadDecisionVersion(decision)
-        })
-      }
-      else {
-        DecisionService.getDecisionVersionsByKey(decisionKey).then(decisionDefinitions => {
-          this.decisionDefinitions = decisionDefinitions
-          let requestedDefinition = decisionDefinitions.find(decisionDefinition => decisionDefinition.version === this.versionIndex)
-          if (requestedDefinition) {
-              this.loadDecisionVersion(requestedDefinition)
-          }
-          else {
-            // definition is no longer available
-            // let's redirect to the latest one
-            this.loadDecisionByKey(decisionKey, undefined)
-            this.$router.push('/seven/auth/decision/' + decisionKey)
-          }
-        })
-      }
-    },
-    loadDecisionVersion: function(decision) {
-      if (!this.decision || this.decision.id !== decision.id) {
-        this.firstResult = 0
-        this.decision = decision
-        this.loadInstances()
-      }
-    },
-    loadInstances: function(showMore) {
-      if (this.$root.config.camundaHistoryLevel !== 'none') {
-        this.loading = true
-        
-        this.$store.dispatch('getHistoricDecisionInstances', {
-          decisionDefinitionKey: this.decision.key,
-          includeInputs: true,
-          includeOutputs: true,
-          firstResult: this.firstResult,
-          maxResults: this.maxResults
-        }).then(instances => {
-          this.loading = false
-          if (!showMore) this.instances = instances
-          else this.instances = !this.instances ? instances : this.instances.concat(instances)
-        })
-        
-      }
-      else {
-        DecisionService.getDecisionVersionsByKey(this.decision.key).then(decisionDefinitions => {
-          this.decisionDefinitions = decisionDefinitions
-          var promises = []
-          this.decisionDefinitions.forEach(() => {
-            /*promises.push(HistoryService.findProcessesInstancesHistoryById(this.process.id, this.activityId, this.firstResult,
-              this.maxResults, this.filter))
-            */
-          })
-          Promise.all(promises).then(response => {
-            if (!showMore) this.instances = []
-            var i = 0
-            response.forEach(instances => {
-              instances.forEach(instance => {
-                //instance.processDefinitionId = processDefinitions[i].id
-                //instance.processDefinitionVersion = processDefinitions[i].version
-              })
-              this.instances = this.instances.concat(instances)
-              i++
-            })
-          })
-        })
-      }
-    },
-    clearInstance: function() {
-      this.setSelectedInstance({ selectedInstance: null })
-      this.$refs.decision.clearState()
-      this.firstResult = 0
-      this.loadInstances()
-    },
-    setSelectedInstance: function(evt) {
-      var selectedInstance = evt.selectedInstance
-      if (!selectedInstance) {
-        this.rightOpen = false
-        this.selectedInstance = null
-      } else this.rightOpen = true
-      this.task = null
-      this.activityInstance = null
-      this.activityInstanceHistory = selectedInstance ? this.activityInstanceHistory : null
-      if (selectedInstance) {
-        if (this.selectedInstance && this.selectedInstance.id === selectedInstance.id && !evt.reload) return
-        this.selectedInstance = selectedInstance
-        if (this.selectedInstance.state === 'ACTIVE') {
-          //Management
-          /*
-          ProcessService.findActivityInstance(selectedInstance.id).then(activityInstance => {
-            this.activityInstance = activityInstance
-            HistoryService.findActivitiesInstancesHistory(selectedInstance.id).then(activityInstanceHistory => {
-              this.activityInstanceHistory = activityInstanceHistory
-            })
-          })
-          */
-        } else {
-          //History
-          if (this.$root.config.camundaHistoryLevel !== 'none') {
-            /*
-            HistoryService.findActivitiesInstancesHistory(selectedInstance.id).then(activityInstanceHistory => {
-              this.activityInstanceHistory = activityInstanceHistory
-            })
-            */
-          }
+    ...mapActions(['getDecisionVersionsByKey']),
+    ...mapMutations(['setSelectedDecisionVersion']),
+
+    loadDecisionVersionsByKey(decisionKey, versionIndex) {
+      this.getDecisionVersionsByKey({ key: decisionKey }).then(decisions => {
+        if (!versionIndex) {
+          versionIndex = decisions[0].version
+          this.setSelectedDecisionVersion({key: decisionKey, version: versionIndex })
+          this.$router.push('/seven/auth/decision/' + decisionKey + '/' + versionIndex)
         }
-      }
+        this.setSelectedDecisionVersion({key: decisionKey, version: versionIndex })
+      })
     },
-    filterByActivityId: function(event) {
-      this.activityId = event
-      this.instances = []
-      this.firstResult = 0
-      this.loadInstances()
-    },
-    showMore: function() {
+
+    showMore() {
       this.firstResult += this.$root.config.maxProcessesResults
       this.loadInstances(true)
-    },
-    filterInstances: function(filter) {
-      this.filter = filter
-      this.firstResult = 0
-      this.loadInstances()
-    },
-    getIconState: function(state) {
-      switch(state) {
-        case 'ACTIVE':
-          return 'mdi-chevron-triple-right text-success'
-        case 'SUSPENDED':
-          return 'mdi-close-circle-outline'
-      }
-      return 'mdi-flag-triangle'
-    },
-    loadVersionDecision: function(event) {
-      this.selectedInstance = null
-      nextTick(function() {
-        this.activityId = ''
-        this.$refs.decision.clearState()
-        this.loadVersionDecision(event)
-      }.bind(this))
     }
   }
 }

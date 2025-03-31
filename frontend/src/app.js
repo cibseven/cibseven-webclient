@@ -81,13 +81,15 @@ Promise.all([
                   this.$store.commit('setProcesses', { processes })
               })
           },
-          loadDecisions() {
-            const method = 'getDecisionList'
-            return this.$store.dispatch(method, { latestVersion: true }).then((result) => {
-                const decisions = result
-                decisions.forEach(decision => decision.loading = false)
-                this.$store.commit('setDecisions', { decisions })
-            })
+          async loadDecisions() {
+            if (this.$store.state.decision.list.length < 1) {
+              const decisions = await this.$store.dispatch('getDecisionList', { latestVersion: true })
+              const reduced = decisions.map(d => ({ key: d.key, id: d.id, name: d.name, latestVersion: d.latestVersion }))
+              this.$store.commit('setDecisions', { decisions: reduced })
+              return reduced
+            } else {
+              return this.$store.state.decision.list
+            }
           },
           isMobile: isMobile,
           AuthService: AuthService

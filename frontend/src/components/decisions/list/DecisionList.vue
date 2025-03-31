@@ -13,10 +13,10 @@
       </div>
     </div>
     <div class="container overflow-auto h-100 bg-white shadow g-0">
-      <FlowTable :items="decisionsFiltered" thead-class="sticky-header" striped primary-key="id" prefix="decision." :fields="fields" @click="showDecision($event)" @select="focused = $event[0]" @mouseenter="focused = $event" @mouseleave="focused = null">
+      <FlowTable :items="decisionsFiltered" thead-class="sticky-header" striped primary-key="id" prefix="decision." :fields="fields" @click="goToDecision($event)" @select="focused = $event[0]" @mouseenter="focused = $event" @mouseleave="focused = null">
         <template v-slot:cell(actions)="table">
           <component :is="DecisionDefinitionActions" v-if="DecisionDefinitionActions" :focused="focused" :item="table.item"></component>
-          <b-button :disabled="focused !== table.item" style="opacity: 1" @click.stop="showDecision(table.item)" class="px-2 border-0 shadow-none" :title="$t('decision.showManagement')" variant="link">
+          <b-button :disabled="focused !== table.item" style="opacity: 1" @click.stop="goToDecision(table.item)" class="px-2 border-0 shadow-none" :title="$t('decision.showManagement')" variant="link">
             <span class="mdi mdi-18px mdi-account-tie-outline"></span>
           </b-button>
         </template>
@@ -32,6 +32,7 @@
 <script>
 import { permissionsMixin } from '@/permissions.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
+import { mapActions, mapGetters } from 'vuex'
 
 export default {
   name: 'DecisionList',
@@ -46,26 +47,15 @@ export default {
     }
   },
   computed: {
+    ...mapGetters(['decisionDefinitions', 'getFilteredDecisions']),
+    
     DecisionDefinitionActions: function() {
       return this.$options.components && this.$options.components.DecisionDefinitionActions
         ? this.$options.components.DecisionDefinitionActions
         : null
     },
     decisionsFiltered: function() {
-      if (!this.$store.state.decision.list) return []
-      //console.log(this.$store.state.decision.list)
-      var decisions = this.$store.state.decision.list.filter(decision => {
-        return ((decision.key.toUpperCase().includes(this.filter.toUpperCase()) ||
-            ((decision.name) ? decision.name.toUpperCase().includes(this.filter.toUpperCase()) : false)))
-      })
-      decisions.sort((objA, objB) => {
-        var nameA = objA.name ? objA.name.toUpperCase() : objA.name
-        var nameB = objB.name ? objB.name.toUpperCase() : objB.name
-        var comp = nameA < nameB ? -1 : nameA > nameB ? 1 : 0
-
-        return comp
-      })
-      return decisions
+      return this.getFilteredDecisions(this.filter)
     },
     textEmptyDecisionsList: function() {
       return this.filter === '' ? 'decision.emptyProcessList' : 'decision.emptyProcessListFiltered' // TODO: change the images for decicions
@@ -78,9 +68,18 @@ export default {
       ]
     }
   },
+  async created() {
+    await this.loadDecisions()
+  },
   methods: {
-    showDecision: function(decision) {
-      this.$router.push('/seven/auth/decision/' + decision.key)
+    ...mapActions(['getDecisionList']),
+    
+    loadDecisions() {
+      this.getDecisionList({ latestVersion: true })
+    },
+
+    goToDecision: function(decision) {
+      this.$router.push('/seven/auth/decision/' + decision.key + '/' + decision.latestVersion)
     }
   }
 }

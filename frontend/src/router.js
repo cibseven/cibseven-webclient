@@ -84,7 +84,7 @@ const router = createRouter({
         components: { BWaitingBox }, template: '<BWaitingBox ref="loader" class="d-flex justify-content-center" styling="width:20%">\
           <router-view ref="down" class="w-100 h-100"></router-view></BWaitingBox>',
         mixins: [permissionsMixin],
-        inject: ['loadProcesses', 'loadDecisions'],
+        inject: ['loadProcesses','loadDecisions'],
         mounted: function() {
           this.$refs.loader.done = true
           this.$refs.loader.wait(this.loadProcesses(false))
@@ -132,20 +132,33 @@ const router = createRouter({
             versionIndex: route.params.versionIndex,
           })
         },
+        // decisions
         { path: 'decisions', redirect: '/seven/auth/decisions/list', beforeEnter: permissionsGuard('cockpit') },
-        { path: 'decisions/list', name: 'decisionManagement', beforeEnter: permissionsGuard('cockpit'),
+        { path: 'decisions/list', name: 'decision-list', beforeEnter: permissionsGuard('cockpit'),
           component: DecisionListView
         },
-        { path: 'decision/:decisionKey/:versionIndex?', name: 'decision', beforeEnter: permissionsGuard('cockpit'),
-          component: DecisionView, props: route => ({
-            decisionKey: route.params.decisionKey,
-            versionIndex: route.params.versionIndex,
-          })
+        {
+          path: 'decision/:decisionKey',
+          component: DecisionView,
+          props: true,
+          children: [
+            {
+              path: ':versionIndex',
+              name: 'decision-version',
+              component: () => import('@/components/decision/DecisionDefinitionVersion.vue'),
+              props: true
+            },
+            {
+              path: ':versionIndex/:instanceId',
+              name: 'decision-instance',
+              component: () => import('@/components/decision/DecisionInstance.vue'),
+              props: true
+            }
+          ]
         },
         { path: 'deployments/:deploymentId?', name: 'deployments', beforeEnter: permissionsGuard('cockpit'),
           component: DeploymentsView
         },
-
         // users management
         { path: 'admin',
           component: {

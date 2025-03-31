@@ -128,11 +128,11 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 		
 		if (!lazyLoad.isPresent() || (lazyLoad.isPresent() && !lazyLoad.get())) {
 			for(Decision decision : decisions) {
-				String urlInstances = camundaUrl + "/engine-rest/history/process-instance/count?processDefinitionId=" + decision.getId();
+				String urlInstances = camundaUrl + "/engine-rest/history/decision-instance/count?decisionDefinitionId=" + decision.getId();
 				decision.setAllInstances(((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, null, false)).getBody().get("count").asLong());
-				urlInstances = camundaUrl + "/engine-rest/history/process-instance/count?unfinished=true&processDefinitionId=" + decision.getId();
+				urlInstances = camundaUrl + "/engine-rest/history/decision-instance/count?unfinished=true&decisionDefinitionId=" + decision.getId();
 				decision.setRunningInstances(((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, null, false)).getBody().get("count").asLong());
-				urlInstances = camundaUrl + "/engine-rest/history/process-instance/count?completed=true&processDefinitionId=" + decision.getId();
+				urlInstances = camundaUrl + "/engine-rest/history/decision-instance/count?completed=true&decisionDefinitionId=" + decision.getId();
 				decision.setCompletedInstances(((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, null, false)).getBody().get("count").asLong());
 			}
 		}

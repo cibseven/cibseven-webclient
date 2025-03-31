@@ -2,7 +2,6 @@
   <div v-if="decision" class="h-100">
     <div @mousedown="handleMouseDown" class="v-resizable position-absolute w-100" style="left: 0" :style="'height: ' + bpmnViewerHeight + 'px; ' + toggleTransition">
       <DmnViewer ref="diagram"
-        :process-definition-id="decision.id"
         class="h-100" />
     </div>
 
@@ -30,7 +29,7 @@
           </div>
         </div>
         <div ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 60px; left: 0; bottom: 0" @scroll="handleScrollDecisions">
-          <InstancesTable ref="instancesTable" v-if="!loading && instances && !sorting" :instances="instances" :sortByDefaultKey="sortByDefaultKey" :sortDesc="sortDesc"></InstancesTable>
+          <InstancesTable ref="instancesTable" v-if="!loading && decicionInstances && !sorting" :instances="decicionInstances" :sortByDefaultKey="sortByDefaultKey" :sortDesc="sortDesc"></InstancesTable>
           <div v-else-if="loading" class="py-3 text-center w-100">
             <BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}
           </div>
@@ -48,6 +47,7 @@ import InstancesTable from '@/components/decision/InstancesTable.vue'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
 import { debounce } from '@/utils/debounce.js'
 import { BWaitingBox } from 'cib-common-components'
+import { mapGetters, mapActions, mapMutations } from 'vuex'
 
 /* 
   TODO: Refactor this class.
@@ -55,98 +55,133 @@ import { BWaitingBox } from 'cib-common-components'
 */
 
 export default {
-  name: 'Decision',
+  name: 'DecisionDefinitionVersion',
   components: { DmnViewer, InstancesTable, BWaitingBox },
-  inject: ['loadDecisions'],
   mixins: [permissionsMixin, resizerMixin],
-  props: { instances: Array, decision: Object, firstResult: Number, maxResults: Number,
-    activityInstance: Object, activityInstanceHistory: Array, activityId: String, loading: Boolean },
+  props: {
+    versionIndex: Number,
+    firstResult: Number,
+    maxResults: Number,
+    loading: Boolean,
+    decisionKey: String
+  },
   data: function() {
     return {
-      selectedInstance: null,
-      selectedTask: null,
       topBarHeight: 0,
-      tabs: [
-        { id: 'instances', active: true },
-      ],
+      tabs: [ { id: 'instances', active: true } ],
       activeTab: 'instances',
       sortByDefaultKey: 'startTimeOriginal',
       sorting: false,
-      sortDesc: true
-    }
-  },
-  watch: {
-    'decision.id': function() {
-      this.$store.dispatch('getXmlById', this.decision.id).then(response => {
-        setTimeout(() => {
-          this.$refs.diagram.showDiagram(response.dmnXml, null, null)
-        }, 100)
-      })
-      .catch(error => {
-        console.error("Error loading diagram:", error)
-      })
-    },
-    activeTab: function() {
-
-    }
-  },
-  mounted: function() {
-    if(this.decision) {
-      this.$store.dispatch('getXmlById', this.decision.id)
-      .then(response => {
-        setTimeout(() => {
-          this.$refs.diagram.showDiagram(response.dmnXml, null, null)
-        }, 100)
-      })
-      .catch(error => {
-        console.error("Error loading diagram:", error)
-      })
+      sortDesc: true,
+      decicionInstances: null
     }
   },
   computed: {
-    decisionActions: function() {
-      return this.$options.components && this.$options.components.DecisionActions
-        ? this.$options.components.DecisionActions
-        : null
+    ...mapGetters(['getSelectedDecisionVersion']),
+
+    decision: function() {
+      return this.getSelectedDecisionVersion(this.decisionKey)
     },
+
     decisionName: function() {
       return this.decision.name !== null ? this.decision.name : this.decision.key
+    },
+
+  },
+  watch: {
+    'decision.id': function() {
+      this.loadDiagram()
+    }
+  },
+  mounted: function() {
+
+    if(this.decision) {
+      this.loadDiagram()
+      this.loadInstances()
     }
   },
   methods: {
+    ...mapActions(['getXmlById', 'getHistoricDecisionInstances']),
+    ...mapMutations(['setHistoricInstancesForKey']),
+
     changeTab: function(selectedTab) {
       this.tabs.forEach((tab) => {
         tab.active = tab.id === selectedTab.id
       })
       this.activeTab = selectedTab.id
     },
+
+    loadDiagram() {
+      this.getXmlById(this.decision.id)
+        .then(response => {
+          setTimeout(() => {
+            this.$refs.diagram.showDiagram(response.dmnXml, null, null)
+          }, 100)
+        })
+        .catch(error => {
+          console.error("Error loading diagram:", error)
+        })
+    },
+
     selectInstance: function(event) {
-      this.selectedInstance = event.instance
-      this.$emit('instance-selected', { selectedInstance: event.instance, reload: event.reload })
+      this.setSelectedInstance(event.instance)
     },
-    viewDecision: function() {
-      this.$store.dispatch('getXmlById', this.decision.id)
-      .then(response => {
-        setTimeout(() => {
-          this.$refs.diagram.showDiagram(response.dmnXml, null, null)
-        }, 100)
-      })
-      .catch(error => {
-        console.error("Error loading diagram:", error)
-      })
-    },
+
     clearState: function() {
-      this.selectedInstance = null
-      this.selectedTask = null
-      this.$emit('instance-selected', { selectedInstance: null })
+      this.setSelectedInstance(null)
     },
+
     handleScrollDecisions: function(el) {
       if (this.instances.length < this.firstResult) return
       if (Math.ceil(el.target.scrollTop + el.target.clientHeight) >= el.target.scrollHeight) {
         this.$emit('show-more')
       }
     },
-    onInput: debounce(800, function(evt) { this.$emit('filter-instances', evt) })
+
+    onInput: debounce(800, function(evt) {
+      this.$emit('filter-instances', evt)
+    }),
+
+    loadInstances() {
+      if (this.$root.config.camundaHistoryLevel !== 'none') {
+        this.getHistoricDecisionInstances({
+          key: this.decision.key,
+          version: this.versionIndex,
+          params: {
+            decisionDefinitionKey: this.decision.key,
+            decisionDefinitionId: this.decision.id,
+            includeInputs: true,
+            includeOutputs: true,
+            firstResult: this.firstResult,
+            maxResults: this.maxResults
+          }
+        }).then((response) => {
+          this.decicionInstances = response
+        })
+      } else {
+        this.getDecisionVersionsByKey({ key: this.decision.key }).then(decisionDefinitions => {
+          this.decisionDefinitions = decisionDefinitions
+          const promises = decisionDefinitions.map(() => {
+            return this.getHistoricDecisionInstances({
+              key: this.decision.key,
+              params: {
+                decisionInstanceId: this.decision.id,
+                firstResult: this.firstResult,
+                maxResults: this.maxResults,
+                filter: this.filter
+              }
+            })
+          })
+
+          Promise.all(promises).then(() => {})
+        })
+      }
+    },
+
+    deleteInstance() {
+      this.setSelectedInstance(null)
+      this.loadInstances()
+    }
   }
 }
 </script>
