@@ -23,7 +23,7 @@ import AdminAuthorizations from '@/components/admin/AdminAuthorizations.vue'
 import AdminAuthorizationsTable from '@/components/admin/AdminAuthorizationsTable.vue'
 import DeploymentsView from '@/components/deployment/DeploymentsView.vue'
 import TasksView from '@/components/task/TasksView.vue'
-import TaskContent from '@/components/task/TaskContent.vue'
+import TaskView from '@/components/task/TaskView.vue'
 import LoginView from '@/components/login/LoginView.vue'
 import { BWaitingBox } from 'cib-common-components'
 import DeployedForm from '@/components/forms/DeployedForm.vue'
@@ -117,7 +117,7 @@ const router = createRouter({
         // Tasks in active processes
         { path: 'tasks', beforeEnter: permissionsGuard('tasklist'), component: TasksView,
           children: [
-            { path: ':filterId/:taskId?', name: 'tasklist', component: TaskContent }
+            { path: ':filterId/:taskId?', name: 'tasklist', component: TaskView }
           ]
         },
 
