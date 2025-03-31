@@ -905,10 +905,53 @@
 		"newTasks": "Nuevas tareas",
 		"newTasksTitle": "Tiene nuevas tareas asignadas en CIB flow"
 	},
-	"decision" : {
+	"decision": {
+		"id": "ID",
 		"name": "Nombre",
-		"actions": "Actions",
-		"emptyProcessList": "Actualmente su lista de decisiones está vacía.",
-		"emptyProcessListFiltered": "No existe ninguna decision para el filtro aplicado."
+		"actions": "Acciones",
+		"emptyProcessList": "Tu lista de decisiones está actualmente vacía.",
+		"emptyProcessListFiltered": "No hay decisiones que coincidan con el filtro aplicado.",
+		"decision": "Decisión",
+		"deleteProcessDefinition": "Eliminar definición de decisión",
+		"refreshVersions": "Actualizar versiones históricas",
+		"loadVersions": "Cargar todas las versiones históricas",
+		"days": "días",
+		"instances": "Instancias",
+		"activateProcess": "Activar definición de decisión",
+		"downloadBpmn": "Descargar archivo DMN",
+		"showDeployment": "Ver despliegue",
+		"showInstance": "Ver instancia",
+		"evaluationTime": "Tiempo de evaluación",
+		"callingProcess": "Proceso/Caso de origen",
+		"callingInstanceId": "ID de la instancia de origen",
+		"activityId": "ID de actividad",
+		"copySuccess": "Valor seleccionado copiado",
+		"details": {
+			"titleProcessActions": "Acciones sobre la definición de decisión",
+			"titleInstancesActions": "Acciones sobre la decisión",
+			"firstStart": "Primera ejecución el",
+			"lastStart": "Última ejecución el",
+			"totalInstances": "Número total de instancias",
+			"unfinishedInstances": "Instancias en ejecución",
+			"finishedInstances": "Instancias completadas sin errores",
+			"definitionVersion": "Versión de la definición",
+			"versionTag": "Etiqueta de versión",
+			"definitionId": "ID de la definición",
+			"definitionKey": "Clave de la definición",
+			"definitionName": "Nombre de la definición",
+			"deploymentId": "ID del despliegue",
+			"instancesRunning": "Instancias en ejecución",
+			"currentVersion": "Versión actual",
+			"allVersions": "Todas las versiones",
+			"versionInstances": "Instancias de esta versión",
+			"historyVersions": "Versiones históricas",
+			"variable": "Variables de decisión",
+			"copyValue": "Copiar valor",
+			"historyTimeToLive": "Tiempo de vida del historial"
+		}
+	},
+	"decision-instance": {
+		"edit": "Bearbeiten",
+		"save": "Speichern"
 	}
 }

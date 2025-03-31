@@ -9,7 +9,6 @@ import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.providers.SevenProvider;
 import org.cibseven.webapp.rest.model.Decision;
-import org.cibseven.webapp.rest.model.Process;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

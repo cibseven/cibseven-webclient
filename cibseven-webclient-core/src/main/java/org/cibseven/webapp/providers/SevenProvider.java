@@ -872,13 +872,13 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 	
 	@Override
-	public Object deleteHistoricDecisionInstances(Map<String, Object> body){
-		return decisionProvider.deleteHistoricDecisionInstances(queryParams);
+	public Object deleteHistoricDecisionInstances(Map<String, Object> data){
+		return decisionProvider.deleteHistoricDecisionInstances(data);
 	}
 	
 	@Override
-	public Object setHistoricDecisionInstanceRemovalTime(Map<String, Object> body){
-		return decisionProvider.setHistoricDecisionInstanceRemovalTime(queryParams);
+	public Object setHistoricDecisionInstanceRemovalTime(Map<String, Object> data){
+		return decisionProvider.setHistoricDecisionInstanceRemovalTime(data);
 	}
 	
 	/*

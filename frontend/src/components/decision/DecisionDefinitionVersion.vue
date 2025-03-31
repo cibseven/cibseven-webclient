@@ -29,7 +29,7 @@
           </div>
         </div>
         <div ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 60px; left: 0; bottom: 0" @scroll="handleScrollDecisions">
-          <InstancesTable ref="instancesTable" v-if="!loading && decicionInstances && !sorting" :instances="decicionInstances" :sortByDefaultKey="sortByDefaultKey" :sortDesc="sortDesc"></InstancesTable>
+          <InstancesTable ref="instancesTable" v-if="!loading && decisionInstances && !sorting" :instances="decisionInstances" :sortByDefaultKey="sortByDefaultKey" :sortDesc="sortDesc"></InstancesTable>
           <div v-else-if="loading" class="py-3 text-center w-100">
             <BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}
           </div>
@@ -67,7 +67,7 @@ export default {
       sortByDefaultKey: 'startTimeOriginal',
       sorting: false,
       sortDesc: true,
-      decicionInstances: null
+      decisionInstances: null
     }
   },
   computed: {
@@ -108,7 +108,7 @@ export default {
 
     handleScrollDecisions: function(el) {
       // TODO: Check method
-      if (this.instances.length < this.firstResult) return
+      if (this.decisionInstances.length < this.firstResult) return
       if (Math.ceil(el.target.scrollTop + el.target.clientHeight) >= el.target.scrollHeight) {
         this.$emit('show-more')
       }
@@ -128,7 +128,7 @@ export default {
             maxResults: this.maxResults
           }
         }).then((response) => {
-          this.decicionInstances = response
+          this.decisionInstances = response
         })
       } else {
         // TODO: Implement

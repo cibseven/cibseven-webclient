@@ -6,9 +6,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.providers.SevenProviderBase;
 import org.cibseven.webapp.rest.model.Decision;
-import org.cibseven.webapp.rest.model.Process;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
