@@ -883,4 +883,9 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 		jobProvider.setSuspended(id, params, user);
 	}
 
+	@Override
+	public JobDefinition findJobDefinition(String id, CIBUser user) {
+		return jobDefinitionProvider.findJobDefinition(id, user);
+	}
+
 }
