@@ -4,6 +4,7 @@ import './assets/main.css';
 import CibSeven from '@/components/CibSeven.vue'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import ErrorDialog from '@/components/common-components/ErrorDialog.vue'
+import AboutModal from '@/components/modals/AboutModal.vue'
 import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
 import FeedbackModal from '@/components/modals/FeedbackModal.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
@@ -72,6 +73,7 @@ const registerComponents = function(app) {
   app.component('flow-table', FlowTable)
   app.component('error-dialog', ErrorDialog)
   app.component('confirm-dialog', ConfirmDialog)
+  app.component('about-modal', AboutModal)
   app.component('feedback-modal', FeedbackModal)
   app.component('success-alert', SuccessAlert)
   app.component('task-popper', TaskPopper)
