@@ -1,6 +1,10 @@
 <template>
-  <Task ref="task" :task="task" @complete-task="$emit('complete-task', $event)"
-    @update-assignee="$emit('update-assignee', $event)" @update-task="$emit('update-task', $event)"></Task>
+  <Task ref="task"
+    :task="task"
+    @complete-task="$emit('complete-task', $event)"
+    @update-assignee="$emit('update-assignee', $event)"
+    @update-task="$emit('update-task', $event)"
+  ></Task>
 </template>
 
 <script>
