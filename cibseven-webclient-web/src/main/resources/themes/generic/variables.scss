@@ -1,0 +1,13 @@
+$primary:       #E11E19;
+$secondary:     #4D6278;
+$success:       #68CBC0;
+$info:          #628EC7;
+$warning:       #F5B677;
+$danger:        #F0716F;
+$light:         #F0F4F7;
+$dark:          #0F2133;	
+$white:			   #FFF;
+
+@import "../cib-variables.scss";
+@import "META-INF/resources/webjars/bootstrap/5.3.3/scss/bootstrap.scss";
+@import "../cib-patch.scss";

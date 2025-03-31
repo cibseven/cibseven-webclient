@@ -1,0 +1,132 @@
+
+/* Custom SCSS */
+/* CIB Patch */
+
+$gray: #c1cedd;
+$form-group-margin-bottom: 1rem;
+$dropdown-link-active-color: $dark;
+$dropdown-link-active-bg: $light;
+$list-group-active-color: $dark;
+$list-group-active-bg: $light;
+$list-group-color-light: $dark;
+$text-muted-color: $gray;
+$btn-link-color: $dark;
+$btn-link-hover-color: $secondary;
+$nav-link-padding: 0 1rem;
+$navbar-link-color: $dark;
+$navbar-link-hover-color: $secondary;
+$btn-light-bg: $white;
+$btn-light-hover-bg: $light;
+$alert-bg: $white;
+$navbar-collapse-bg: $white;
+
+.bg-gray {
+  --bs-bg-opacity: 1;
+  background-color: $gray;
+}
+
+.bg-transparent {
+  --bs-bg-opacity: 1;
+  background-color: transparent !important;
+}
+
+.form-group {
+  margin-bottom: $form-group-margin-bottom;
+}
+
+.dropdown-item.active, .dropdown-item:active {
+  color: $dropdown-link-active-color;
+  background-color: $dropdown-link-active-bg;
+}
+
+.list-group-item.active {
+  color: $dark;
+  border-color: $primary !important;
+  background-color: $light;
+}
+
+.list-group-item-light {
+  color: $list-group-color-light;
+}
+
+.text-muted {
+  color: $text-muted-color !important;
+}
+
+.btn-link {
+  color: $btn-link-color;
+}
+
+.btn-link:hover, .btn-link:focus-visible {
+  color: $btn-link-hover-color;
+}
+
+.nav-link {
+  padding: $nav-link-padding;
+}
+
+.navbar-light .navbar-nav .nav-link {
+  color: $navbar-link-color;
+}
+
+.navbar-light .navbar-nav .nav-link:hover, .navbar-light .navbar-nav .nav-link:focus {
+  color: $navbar-link-hover-color;
+}
+
+.custom-select {
+  -moz-appearance: none;
+  -webkit-appearance: none;
+}
+
+.btn-light {
+  background-color: $btn-light-bg;
+}
+
+.btn-light:hover {
+  background-color: $btn-light-hover-bg;
+}
+
+.btn.border-0 {
+  box-shadow: none;
+}
+
+.alert-warning,
+.alert-success,
+.alert-info,
+.alert-danger {
+  background-color: $alert-bg;
+}
+
+.list-group-item + .list-group-item.active {
+  margin-top: 0px;
+}
+
+.navbar-collapse {
+  background-color: $navbar-collapse-bg;
+}
+
+input[type="checkbox"] {
+  background-color: $body-bg;
+  cursor: pointer;
+
+  &:checked {
+    background-color: $primary;
+    border-color: $primary;
+  }
+}
+
+/* CSS custom scrollbar */
+* {
+	scrollbar-color: $gray $white;
+	scrollbar-width: thin;
+}
+::-webkit-scrollbar { 
+	width: 8px; /* width of the entire scrollbar(vertical) */
+	height: 8px; /* height of the entire scrollbar(horizontal) */
+}
+::-webkit-scrollbar-track { background: $white; /* color of the tracking area */}
+::-webkit-scrollbar-thumb {
+	background-color: $gray; /* color of the scroll thumb */
+	border-radius: 20px; /* roundness of the scroll thumb */
+}
+::-webkit-scrollbar-thumb:hover { background: $secondary; }
