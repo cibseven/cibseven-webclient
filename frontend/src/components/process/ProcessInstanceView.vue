@@ -29,7 +29,7 @@
     <div ref="rContent" class="position-absolute w-100" style="bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
 
       <VariablesTable v-if="activeTab === 'variables'" :selected-instance="selectedInstance" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory"></VariablesTable>
-      <IncidentsTable v-else-if="activeTab === 'incidents'" :incidents="selectedInstance.incidents" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" :get-failing-activity="getFailingActivity"></IncidentsTable>
+      <IncidentsTable v-else-if="activeTab === 'incidents'" :incidents="selectedInstance.incidents" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory"></IncidentsTable>
       <UserTasksTable v-else-if="activeTab === 'usertasks'" :selected-instance="selectedInstance"></UserTasksTable>
       <JobsTable v-else-if="activeTab === 'jobs'" :jobs="selectedInstance.jobs"></JobsTable>
 
@@ -52,7 +52,7 @@ import JobsTable from '@/components/process/tables/JobsTable.vue'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
 
 export default {
-  name: 'ProcessVariablesTable',
+  name: 'ProcessInstanceView',
   components: { VariablesTable, IncidentsTable, UserTasksTable, BpmnViewer, JobsTable },
   mixins: [procesessVariablesMixin, resizerMixin],
   props: {
@@ -97,9 +97,6 @@ export default {
         this.activityId = ''
         this.filteredVariables = this.variables
       }
-    },
-    getFailingActivity: function(activityId) {
-      return this.$refs.diagram.viewer.get('elementRegistry').get(activityId).businessObject.name
     }
   }
 }

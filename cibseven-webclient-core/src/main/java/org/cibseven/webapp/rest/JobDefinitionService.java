@@ -9,12 +9,7 @@ import org.cibseven.webapp.providers.SevenProvider;
 import org.cibseven.webapp.rest.model.JobDefinition;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -38,32 +33,40 @@ public class JobDefinitionService extends BaseService implements InitializingBea
 	
 	@Operation(
 			summary = "Get job definition/s",
-			description = "<strong>Return: Collection of job definition/s")
-	@ApiResponse(responseCode= "404", description = "Job definition not found")
-	@RequestMapping(value = "", method = RequestMethod.POST)
+			description = "<strong>Return: Collection of job definition/s</strong>")
+	@PostMapping("")
 	public Collection<JobDefinition> findJobDefinitions(@RequestBody String params, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true, false);
-		return sevenProvider.findJobDefinitions(params, user);
+		return bpmProvider.findJobDefinitions(params, user);
 	}
 	
 	@Operation(
 		    summary = "Suspend job definition",
 		    description = "<strong>Suspends or activates a job definition by ID</strong>")
 	@ApiResponse(responseCode = "404", description = "Job definition not found")
-	@RequestMapping(value = "/{jobDefinitionId}/suspend", method = RequestMethod.PUT)
+	@PutMapping("/{jobDefinitionId}/suspend")
 	public void suspendJobDefinition(@PathVariable String jobDefinitionId, @RequestBody String params, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true, false);
-        sevenProvider.suspendJobDefinition(jobDefinitionId, params, user);
+        bpmProvider.suspendJobDefinition(jobDefinitionId, params, user);
 	}
 	
 	@Operation(
 		    summary = "Override job definition priority",
 		    description = "<strong>Override job definition priority by ID</strong>")
 	@ApiResponse(responseCode = "404", description = "Job definition not found")
-	@RequestMapping(value = "/{jobDefinitionId}/job-priority", method = RequestMethod.PUT)
+	@PutMapping("/{jobDefinitionId}/job-priority")
 	public void overrideJobDefinitionPriority(@PathVariable String jobDefinitionId, @RequestBody String params, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true, false);
-        sevenProvider.overrideJobDefinitionPriority(jobDefinitionId, params, user);
+        bpmProvider.overrideJobDefinitionPriority(jobDefinitionId, params, user);
 	}
 	
+	@Operation(
+		    summary = "Get job definition",
+		    description = "<strong>Return: Job definition from id</strong>")
+	@ApiResponse(responseCode = "404", description = "Job definition not found")
+	@GetMapping("/{id}")
+	public JobDefinition findJobDefinition(@PathVariable String id, HttpServletRequest rq) {
+		CIBUser user = checkAuthorization(rq, true, false);
+        return bpmProvider.findJobDefinition(id, user);
+	}
 }
