@@ -41,7 +41,7 @@ export default {
     })
     .catch(error => {
       console.error("Error loading version:", error)
-      this.version = "Unable to load"
+      this.version = "n/a"
     })
   },
   methods: {
