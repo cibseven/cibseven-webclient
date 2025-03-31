@@ -934,5 +934,7 @@ public interface BpmProvider {
 
 	Collection<Job> getJobs(Map<String, Object> params, CIBUser user);
 	void setSuspended(String id, Map<String, Object> data, CIBUser user);
+
+	Integer findHistoryTaksCount(Map<String, Object> filters, CIBUser user);
 	
 }

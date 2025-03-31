@@ -41,5 +41,6 @@ public interface ITaskProvider {
 	public void handleBpmnError(String taskId, Map<String, Object> data, CIBUser user) throws SystemException;
 	public Collection<TaskHistory> findTasksByTaskIdHistory(String taskId, CIBUser user);
 	public ResponseEntity<byte[]> getDeployedForm(String taskId, CIBUser user);
+	public Integer findHistoryTaksCount(Map<String, Object> filters, CIBUser user);
 	
 }

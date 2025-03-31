@@ -188,6 +188,10 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 		return taskProvider.getDeployedForm(taskId, user);
 	}
 	
+	@Override
+	public Integer findHistoryTaksCount(Map<String, Object> filters, CIBUser user) {
+		return taskProvider.findHistoryTaksCount(filters, user);
+	}
 	
 	/* 
 	
