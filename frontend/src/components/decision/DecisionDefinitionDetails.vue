@@ -85,23 +85,15 @@
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 
-/* 
-  TODO: Refactor this class.
-  TODO[ivan]: Establish same arquitecture than Process, to navigate easily via URL
-  TODO[ivan]: Implement updateHistoryTimeToLive
-*/
-
 export default {
   name: 'DecisionDefinitionDetails',
   components: { SuccessAlert },
   mixins: [ copyToClipboardMixin ],
   props: {
-    instances: Array,
     version: Object
   },
   data: function() {
     return {
-      versions: [],
       historyTimeToLive: '',
       historyTimeToLiveChanged: ''
     }
@@ -115,7 +107,9 @@ export default {
       this.historyTimeToLiveChanged = this.historyTimeToLive
       this.$refs.historyTimeToLive.show()
     },
-    updateHistoryTimeToLive: function() { }
+    updateHistoryTimeToLive: function() { 
+      // TODO: Implement
+    }
   }
 }
 </script>

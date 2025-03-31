@@ -44,7 +44,6 @@
 </template>
 
 <script>
-import { mapActions, mapMutations } from 'vuex'
 import { permissionsMixin } from '@/permissions.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
@@ -52,7 +51,7 @@ import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
 import DecisionDefinitionDetails from '@/components/decision/DecisionDefinitionDetails.vue'
 
 export default {
-  name: 'DecisionDetailsSidebar',
+  name: 'DecisionVersionListSidebar',
   components: { SuccessAlert, ConfirmDialog, DecisionDefinitionDetails },
   mixins: [copyToClipboardMixin, permissionsMixin],
   props: {
@@ -60,7 +59,6 @@ export default {
   },
   data() {
     return {
-      decisionVisible: true,
       loading: false,
       lazyLoadHistory: this.$root.config.lazyLoadHistory
     }
@@ -71,8 +69,6 @@ export default {
     }
   },
   methods: {
-    ...mapActions(['getDecisionVersionsByKey']),
-    ...mapMutations(['setDecisions']),
 
     showConfirm(data) {
       this.$refs.confirm.show(data)

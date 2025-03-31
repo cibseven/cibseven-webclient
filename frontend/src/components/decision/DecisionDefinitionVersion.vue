@@ -45,14 +45,8 @@ import { permissionsMixin } from '@/permissions.js'
 import DmnViewer from '@/components/decision/DmnViewer.vue'
 import InstancesTable from '@/components/decision/InstancesTable.vue'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
-import { debounce } from '@/utils/debounce.js'
 import { BWaitingBox } from 'cib-common-components'
-import { mapGetters, mapActions, mapMutations } from 'vuex'
-
-/* 
-  TODO: Refactor this class.
-  TODO[ivan]: Establish same arquitecture than Process, to navigate easily via URL
-*/
+import { mapGetters, mapActions } from 'vuex'
 
 export default {
   name: 'DecisionDefinitionVersion',
@@ -83,18 +77,8 @@ export default {
       return this.getSelectedDecisionVersion(this.decisionKey)
     },
 
-    decisionName: function() {
-      return this.decision.name !== null ? this.decision.name : this.decision.key
-    },
-
-  },
-  watch: {
-    'decision.id': function() {
-      this.loadDiagram()
-    }
   },
   mounted: function() {
-
     if(this.decision) {
       this.loadDiagram()
       this.loadInstances()
@@ -102,7 +86,6 @@ export default {
   },
   methods: {
     ...mapActions(['getXmlById', 'getHistoricDecisionInstances']),
-    ...mapMutations(['setHistoricInstancesForKey']),
 
     changeTab: function(selectedTab) {
       this.tabs.forEach((tab) => {
@@ -123,24 +106,13 @@ export default {
         })
     },
 
-    selectInstance: function(event) {
-      this.setSelectedInstance(event.instance)
-    },
-
-    clearState: function() {
-      this.setSelectedInstance(null)
-    },
-
     handleScrollDecisions: function(el) {
+      // TODO: Check method
       if (this.instances.length < this.firstResult) return
       if (Math.ceil(el.target.scrollTop + el.target.clientHeight) >= el.target.scrollHeight) {
         this.$emit('show-more')
       }
     },
-
-    onInput: debounce(800, function(evt) {
-      this.$emit('filter-instances', evt)
-    }),
 
     loadInstances() {
       if (this.$root.config.camundaHistoryLevel !== 'none') {
@@ -159,28 +131,9 @@ export default {
           this.decicionInstances = response
         })
       } else {
-        this.getDecisionVersionsByKey({ key: this.decision.key }).then(decisionDefinitions => {
-          this.decisionDefinitions = decisionDefinitions
-          const promises = decisionDefinitions.map(() => {
-            return this.getHistoricDecisionInstances({
-              key: this.decision.key,
-              params: {
-                decisionInstanceId: this.decision.id,
-                firstResult: this.firstResult,
-                maxResults: this.maxResults,
-                filter: this.filter
-              }
-            })
-          })
-
-          Promise.all(promises).then(() => {})
-        })
+        // TODO: Implement
+        console.error("Not implemented for seven history level: none")
       }
-    },
-
-    deleteInstance() {
-      this.setSelectedInstance(null)
-      this.loadInstances()
     }
   }
 }

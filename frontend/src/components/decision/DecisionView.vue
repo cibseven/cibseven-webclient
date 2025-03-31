@@ -6,7 +6,7 @@
     </div>
     <SidebarsFlow ref="sidebars" class="border-top overflow-auto" v-model:left-open="leftOpen" :left-caption="shortendLeftCaption">
       <template v-slot:left>
-        <DecisionDetailsSidebar v-if="versions" ref="navbar" :versions="versions"></DecisionDetailsSidebar>
+        <DecisionVersionListSidebar v-if="versions" ref="navbar" :versions="versions"></DecisionVersionListSidebar>
       </template>
       <router-view
         v-if="decision"
@@ -22,13 +22,13 @@
 </template>
 
 <script>
-import DecisionDetailsSidebar from '@/components/decision/DecisionDetailsSidebar.vue'
+import DecisionVersionListSidebar from '@/components/decision/DecisionVersionListSidebar.vue'
 import SidebarsFlow from '@/components/common-components/SidebarsFlow.vue'
 import { mapGetters, mapActions, mapMutations } from 'vuex'
 
 export default {
   name: 'DecisionView',
-  components: { DecisionDetailsSidebar, SidebarsFlow },
+  components: { DecisionVersionListSidebar, SidebarsFlow },
   props: {
     decisionKey: String,
     versionIndex: { type: String, default: '' }

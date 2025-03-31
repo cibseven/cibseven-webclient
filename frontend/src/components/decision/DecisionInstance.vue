@@ -57,11 +57,9 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex'
 import { permissionsMixin } from '@/permissions.js'
 import DmnViewer from '@/components/decision/DmnViewer.vue'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
-import { debounce } from '@/utils/debounce.js'
 import { BWaitingBox } from 'cib-common-components'
 
 export default {
@@ -82,43 +80,6 @@ export default {
       ],
       activeTab: 'inputs'
     }
-  },
-  watch: {
-    watch: {
-      '$route.params.instanceId': {
-        immediate: true,
-        handler(instanceId) {
-          if (instanceId && this.$store.state.decision.list.length > 0) {
-            this.setSelectedDecisionVersion({ key: this.decisionKey, version: this.versionIndex})
-          }
-        }
-      }
-    },
-    activeTab: function () {}
-  },
-  mounted() {
-
-  },
-  methods: {
-    ...mapActions(['getXmlById']),
-
-    changeTab(selectedTab) {
-      this.tabs.forEach(tab => {
-        tab.active = tab.id === selectedTab.id
-      })
-      this.activeTab = selectedTab.id
-    },
-
-    handleScrollDecisions(el) {
-      if (this.instances.length < this.firstResult) return
-      if (Math.ceil(el.target.scrollTop + el.target.clientHeight) >= el.target.scrollHeight) {
-        this.$emit('show-more')
-      }
-    },
-
-    onInput: debounce(800, function (evt) {
-      this.$emit('filter-instances', evt)
-    })
   }
 }
 </script>
