@@ -151,7 +151,7 @@ export {
   FeedbackModal,
   SuccessAlert,
   TaskPopper,
-  Clipboard,
+  FeedbackScreenshot,
   TaskList,
   CIBHeaderFlow,
   Sidebars,
