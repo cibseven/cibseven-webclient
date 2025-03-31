@@ -1,4 +1,8 @@
 {
+	"commons": {
+		"edit": "Edit",
+		"save": "Save"
+	},
 	"login": {
 		"productName": "CIB seven",
 		"productSlogan": "Process Management Platform",
@@ -121,8 +125,8 @@
 		"active": "Active",
 		"history": "History",
 		"download": "Download",
-		"edit": "Edit",
-		"save": "Save",
+		"edit": "@:commons:edit",
+		"save": "@:commons:save",
 		"upload": "Upload file",
 		"selectFile": "Select file",
 		"details": {
@@ -521,7 +525,7 @@
 			"selectedCriteria": "Selected criteria",
 			"deleteCriteria": "Delete criteria",
 			"no-filters": "No filters found",
-			"edit": "Edit",
+			"edit": "@:commons:edit",
 			"delete": "Delete",
 			"pin": "Pin",
 			"includeAssigned": "Include assigned tasks",
@@ -660,7 +664,10 @@
 		"easyForm": "Easy Form",
 		"adminPanel": "Users Management",
 		"properties": "Properties",
-		"resources": "Resources"
+		"resources": "Resources",
+		"adminProcesses": "Prozesses",
+		"adminDecisions": "Decisions",
+		"adminHumanTasks": "Human Tasks"
 	},
 	"errors": {
 		"invalid": "Please enter some valid information",
@@ -901,5 +908,54 @@
 	"notification": {
 		"newTasks": "New tasks",
 		"newTasksTitle": "You got new tasks assigned on CIB flow"
+	},
+	"decision": {
+		"id": "ID",
+		"name": "Name",
+		"actions": "Actions",
+		"emptyProcessList": "Your decision list is currently empty.",
+		"emptyProcessListFiltered": "There is no decision for the applied filter.",
+		"decision": "Decision",
+		"deleteProcessDefinition": "Delete decision definition",
+		"refreshVersions": "Refresh history versions",
+		"loadVersions": "Load all history versions",
+		"days": "days",
+		"instances": "Instances",
+		"activateProcess": "Activate decision definition",
+		"downloadBpmn": "Download DMN file",
+		"showDeployment": "See deployment",
+		"showInstance": "View instance",
+		"evaluationTime": "Evaluation Time",
+		"callingProcess": "Calling Process/Case",
+		"callingInstanceId": "Calling Instance ID",
+		"activityId": "Activity ID",
+		"copySuccess": "Selected value copied",
+		"details": {
+			"titleProcessActions": "Actions on the decision definition",
+			"titleInstancesActions": "Actions on the decision",
+			"firstStart": "First start on",
+			"lastStart": "Last start on",
+			"totalInstances": "Total number of instances",
+			"unfinishedInstances": "Running instances",
+			"finishedInstances": "Total number of completed instances with no error",
+			"definitionVersion": "Definition version",
+			"versionTag": "Version Tag",
+			"definitionId": "Definition ID",
+			"definitionKey": "Definition Key",
+			"definitionName": "Definition Name",
+			"deploymentId": "Deployment ID",
+			"instancesRunning": "Instances Running",
+			"currentVersion": "Current version",
+			"allVersions": "All versions",
+			"versionInstances": "Instances of this version",
+			"historyVersions": "History versions",
+			"variable": "Decision variables",
+			"copyValue": "Copy value",
+			"historyTimeToLive": "History time to live"
+		}
+	},
+	"decision-instance": {
+		"edit": "@:commons:edit",
+		"save": "@:commons:save"
 	}
 }

@@ -1,4 +1,8 @@
 {
+	"commons": {
+		"edit": "Bearbeiten",
+		"save": "Speichern"
+	},
 	"login": {
 		"productName": "CIB seven",
 		"productSlogan": "Prozess Management Plattform",
@@ -122,8 +126,8 @@
 		"active": "Aktiv",
 		"history": "Historie",
 		"download": "Herunterladen",
-		"edit": "Bearbeiten",
-		"save": "Speichern",
+		"edit": "@:commons.edit",
+		"save": "@:commons.save",
 		"upload": "Datei hochladen",
 		"selectFile": "Datei aussuchen",
 		"details": {
@@ -522,7 +526,7 @@
 			"selectedCriteria": "Ausgewählte Kriterien",
 			"deleteCriteria": "Kriterium Löschen",
 			"no-filters": "Keine Filter gefunden",
-			"edit": "Bearbeiten",
+			"edit": "@:commons.edit",
 			"delete": "Löschen",
 			"pin": "Anfügen",
 			"includeAssigned": "Zugewiesene Aufgaben einbeziehen",
@@ -661,7 +665,10 @@
 		"easyForm": "Easy Form",
 		"adminPanel": "Benutzerverwaltung",
 		"properties": "Properties",
-		"resources": "Ressourcen"
+		"resources": "Ressourcen",
+		"adminProcesses": "Prozesses",
+		"adminDecisions": "Entscheidungen",
+		"adminHumanTasks": "Aufgaben"
 	},
 	"errors": {		
 		"invalid": "Es fehlt eine gültige Eingabe",
@@ -904,5 +911,54 @@
 	"notification": {
 		"newTasks": "Neue Aufgaben",
 		"newTasksTitle": "Ihnen wurden neue Aufgaben in CIB flow zugewiesen."
+	},
+	"decision" : {
+		"id": "ID",
+		"name": "Name",
+		"actions": "Aktionen",
+		"emptyProcessList": "Ihre Entscheidungsliste ist derzeit leer.",
+		"emptyProcessListFiltered": "Es gibt keinen Entscheidung für den angewandten Filter.",
+		"decision": "Entscheidung",
+		"deleteProcessDefinition": "Prozessdefinition löschen",
+		"refreshVersions": "Historische Versionen aktualisieren",
+		"loadVersions": "Alle Versionen der Historie laden",
+		"days": "Tage",
+		"instances": "Instanzen",
+		"activateProcess": "Prozessdefinition aktivieren",
+		"downloadBpmn": "BPMN file herunterladen",
+		"showDeployment": "Deployment ansehen",
+		"showInstance": "Instanz anzeigen",
+		"evaluationTime": "Evaluation Time",
+		"callingProcess": "Calling Process/Case",
+		"callingInstanceId": "Calling Instance ID",
+		"activityId": "Activity ID",
+		"copySuccess": "Ausgewählter Wert kopiert",
+		"details": {
+			"titleProcessActions": "Aktionen zur Prozessdefinition",
+			"titleInstancesActions": "Aktionen zu dem Prozess",
+			"firstStart": "Erster Start am",
+			"lastStart": "Letzter Start am",
+			"totalInstances": "Gesamtanzahl der Instanzen",
+			"unfinishedInstances": "Laufende Instanzen",
+			"finishedInstances": "Abgeschlossene Instanzen ohne Fehler",
+			"definitionVersion": "Definition der Version",
+			"versionTag": "Versionstag",
+			"definitionId": "Definition ID",
+			"definitionKey": "Definitionsschlüssel",
+			"definitionName": "Definition Name",
+			"deploymentId": "Deployment-ID",
+			"instancesRunning": "Laufende Instanzen",
+			"currentVersion": "Aktuelle Version",
+			"allVersions": "Alle Versionen",
+			"versionInstances": "Instanzen dieser Version",
+			"historyVersions": "Historie versionen",
+			"variable": "Prozessvariablen",
+			"copyValue": "Wert kopieren",
+			"historyTimeToLive": "Geschichte Zeit zu leben"
+		}
+	},
+	"decision-instance": {
+		"edit": "@:commons.edit",
+		"save": "@:commons.save"
 	}
 }
