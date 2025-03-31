@@ -661,9 +661,9 @@
 		"adminPanel": "Gestión de Usuarios",
 		"properties": "Propiedades",		
 		"resources": "Recursos",
-		"adminProcesses": "Prozesses",
-		"adminDecisions": "Decisions",
-		"adminHumanTasks": "Human Tasks"
+		"adminProcesses": "Procesos",
+		"adminDecisions": "Decisiones",
+		"adminHumanTasks": "Tareas de Usuario"
 	},
 	"errors": {
 		"invalid": "Por favor, introduce un valor válido",
@@ -951,7 +951,7 @@
 		}
 	},
 	"decision-instance": {
-		"edit": "Bearbeiten",
-		"save": "Speichern"
+		"edit": "Editar",
+		"save": "Guardar"
 	}
 }
