@@ -70,7 +70,8 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
     @Autowired private IUserProvider userProvider;
     @Autowired private IDecisionProvider decisionProvider;
     @Autowired private IJobProvider jobProvider;
-
+    @Autowired private IBatchProvider batchProvider;
+    
     
     /*
 	
@@ -888,4 +889,49 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 		return jobDefinitionProvider.findJobDefinition(id, user);
 	}
 
+	/*
+
+	██████   █████  ████████  ██████ ██   ██     ██████  ██████   ██████  ██    ██ ██ ██████  ███████ ██████  
+	██   ██ ██   ██    ██    ██      ██   ██     ██   ██ ██   ██ ██    ██ ██    ██ ██ ██   ██ ██      ██   ██ 
+	██████  ███████    ██    ██      ███████     ██████  ██████  ██    ██ ██    ██ ██ ██   ██ █████   ██████  
+	██   ██ ██   ██    ██    ██      ██   ██     ██      ██   ██ ██    ██  ██  ██  ██ ██   ██ ██      ██   ██ 
+	██████  ██   ██    ██     ██████ ██   ██     ██      ██   ██  ██████    ████   ██ ██████  ███████ ██   ██ 
+                                                                                                                                                                                              
+	*/
+	
+	@Override
+	public Object getHistoricBatches(Map<String, Object> queryParams) {
+		return batchProvider.getHistoricBatches(queryParams);
+    }
+	
+	@Override
+	public Object getHistoricBatchCount(Map<String, Object> queryParams) {
+		return batchProvider.getHistoricBatchCount(queryParams);
+    }
+    
+	@Override
+	public Object getHistoricBatchById(String id) {
+		return batchProvider.getHistoricBatchById(id);
+    }
+	
+	@Override
+	public void deleteHistoricBatch(String id) {
+		batchProvider.deleteHistoricBatch(id);
+    }
+	
+	@Override
+	public Object setRemovalTime(Map<String, Object> payload) {
+		return batchProvider.setRemovalTime(payload);
+    }
+    
+	@Override
+	public Object getCleanableBatchReport(Map<String, Object> queryParams) {
+		return batchProvider.getCleanableBatchReport(queryParams);
+    }
+    
+	@Override
+	public Object getCleanableBatchReportCount() {
+		return batchProvider.getCleanableBatchReportCount();
+    }
+	
 }

@@ -453,5 +453,35 @@ var JobService = {
   }
 }
 
+var BatchService = {
+  getHistoricBatches(params) {
+    return axios.get('/history/batch', { params })
+  },
+
+  getHistoricBatchCount(params) {
+    return axios.get('/history/batch/count', { params })
+  },
+
+  getHistoricBatchById(id) {
+    return axios.get(`/history/batch/${id}`)
+  },
+
+  deleteHistoricBatch(id) {
+    return axios.delete(`/history/batch/${id}`)
+  },
+
+  setRemovalTime(payload) {
+    return axios.post('/history/batch/set-removal-time', payload)
+  },
+
+  getCleanableBatchReport(params) {
+    return axios.get('/history/batch/cleanable-batch-report', { params })
+  },
+
+  getCleanableBatchReportCount() {
+    return axios.get('/history/batch/cleanable-batch-report/count')
+  }
+}
+
 export { TaskService, FilterService, ProcessService, AdminService, JobService, JobDefinitionService,
-  HistoryService, IncidentService, AuthService, InfoService, FormsService, TemplateService }
+  HistoryService, IncidentService, AuthService, InfoService, FormsService, TemplateService, BatchService }
