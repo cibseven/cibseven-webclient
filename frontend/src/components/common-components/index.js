@@ -4,7 +4,7 @@ import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
 import FeedbackModal from '@/components/modals/FeedbackModal.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import TaskPopper from '@/components/common-components/TaskPopper.vue'
-import Clipboard from '@/components/modals/Clipboard.vue'
+import FeedbackScreenshot from '@/components/modals/FeedbackScreenshot.vue'
 import TaskList from '@/components/common-components/TaskList.vue'
 import CIBHeaderFlow from '@/components/common-components/CIBHeaderFlow.vue'
 import Sidebars from '@/components/common-components/Sidebars.vue'
@@ -81,7 +81,7 @@ import { debounce } from '@/utils/debounce.js'
 
 export {
     FlowTable, ErrorDialog, ConfirmDialog, FeedbackModal,
-    SuccessAlert, TaskPopper, Clipboard, TaskList, CIBHeaderFlow,
+    SuccessAlert, TaskPopper, FeedbackScreenshot, TaskList, CIBHeaderFlow,
     Sidebars, ResetDialog, OtpDialog, HoverStyle, CIBForm,
     SecureInput, FilterableSelect, SmartSearch, SidebarsFlow,
     IconButton, MultisortModal, StartProcess, BpmnViewer,

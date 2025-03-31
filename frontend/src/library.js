@@ -8,7 +8,7 @@ import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
 import FeedbackModal from '@/components/modals/FeedbackModal.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import TaskPopper from '@/components/common-components/TaskPopper.vue'
-import Clipboard from '@/components/modals/Clipboard.vue'
+import FeedbackScreenshot from '@/components/modals/FeedbackScreenshot.vue'
 import TaskList from '@/components/common-components/TaskList.vue'
 import CIBHeaderFlow from '@/components/common-components/CIBHeaderFlow.vue'
 import Sidebars from '@/components/common-components/Sidebars.vue'
@@ -75,7 +75,7 @@ const registerComponents = function(app) {
   app.component('feedback-modal', FeedbackModal)
   app.component('success-alert', SuccessAlert)
   app.component('task-popper', TaskPopper)
-  app.component('clipboard', Clipboard)
+  app.component('feedback-screenshot', FeedbackScreenshot)
   app.component('task-list', TaskList)
   app.component('cib-header-flow', CIBHeaderFlow)
   app.component('sidebars', Sidebars)
