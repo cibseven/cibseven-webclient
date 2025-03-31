@@ -169,7 +169,7 @@
 
 <script>
 import moment from 'moment'
-import { TaskService } from '@/services.js'
+import { TaskService, AdminService } from '@/services.js'
 import { debounce } from '@/utils/debounce.js'
 import StartProcess from '@/components/start-process/StartProcess.vue'
 import AdvancedSearchModal from '@/components/task/AdvancedSearchModal.vue'
@@ -201,7 +201,7 @@ export default {
     '$route.params.taskId': {
       immediate: true,
       handler: function (taskId) {
-        this.checkTaskIdInUrl(taskId) 
+        this.checkTaskIdInUrl(taskId)
       }
     },
     'advancedFilter': {
