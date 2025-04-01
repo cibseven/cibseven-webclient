@@ -125,8 +125,8 @@
 		"active": "Active",
 		"history": "History",
 		"download": "Download",
-		"edit": "@:commons:edit",
-		"save": "@:commons:save",
+		"edit": "@:commons.edit",
+		"save": "@:commons.save",
 		"upload": "Upload file",
 		"selectFile": "Select file",
 		"details": {
@@ -235,7 +235,13 @@
 			"title": "Guide",
 			"completedTask": "Completed task",
 			"currentTask": "Current task",
-			"selectedTask": "@:task.selectedTask"
+			"selectedTask": "@:task.selectedTask",
+			"runingInstances": "Running activity instances",
+			"openIncidents": "Open incidents",
+			"suspendedJobDefinition": "Suspended job definition",
+			"activitiesHistory": "Executed activity instances",			
+			"openSubprocess": "Show called process definition",
+			"disabledSubprocess": "Called process definition will be resolved at runtime"
 		}
 	},
 	"task": {
@@ -525,7 +531,7 @@
 			"selectedCriteria": "Selected criteria",
 			"deleteCriteria": "Delete criteria",
 			"no-filters": "No filters found",
-			"edit": "@:commons:edit",
+			"edit": "@:commons.edit",
 			"delete": "Delete",
 			"pin": "Pin",
 			"includeAssigned": "Include assigned tasks",
@@ -955,7 +961,7 @@
 		}
 	},
 	"decision-instance": {
-		"edit": "@:commons:edit",
-		"save": "@:commons:save"
+		"edit": "@:commons.edit",
+		"save": "@:commons.save"
 	}
 }
