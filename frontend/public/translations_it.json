@@ -114,8 +114,8 @@
 		"active": "Attivo",
 		"history": "Storia",
 		"download": "Scarica",
-		"edit": "@:commons:edit",
-		"save": "@:commons:save",
+		"edit": "@:commons.edit",
+		"save": "@:commons.save",
 		"upload": "Caricare un file",
 		"selectFile": "Seleziona il file",
 		"details": {
@@ -401,7 +401,7 @@
 			"selectedCriteria": "Criteri selezionati",
 			"deleteCriteria": "Cancellare i criteri",
 			"no-filters": "No filters found",
-			"edit": "@:commons:edit",
+			"edit": "@:commons.edit",
 			"delete": "Eliminare",
 			"pin": "Allegare",
 			"includeAssigned": "Includi compiti assegnati",
@@ -774,8 +774,8 @@
 		}
 	},
 	"decision-instance": {
-		"edit": "@:commons:edit",
-		"save": "@:commons:save"
+		"edit": "@:commons.edit",
+		"save": "@:commons.save"
 	},
 	"human-tasks": {
 		"assignmentsByType": "Assegnazioni per tipo",
@@ -789,7 +789,5 @@
 		"noGroups": "senza gruppo",
 		"groupName": "Gruppo",
 		"assignmentsByGroupInfo": "Un'attività può essere assegnata a più gruppi."
-
 	}
-
 }

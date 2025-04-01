@@ -235,7 +235,13 @@
 			"title": "Легенда",
 			"completedTask": "Завершённая задача",
 			"currentTask": "Текущая задача",			
-			"selectedTask": "@:task.selectedTask"
+			"selectedTask": "@:task.selectedTask",
+			"runingInstances": "Выполняющиеся экземпляры заданий",
+			"openIncidents": "Открытые инциденты",
+			"suspendedJobDefinition": "Приостановленное определение задания",
+			"activitiesHistory": "Выполненные экземпляры заданий",
+			"openSubprocess": "Показать вызываемое определение процесса",
+  			"disabledSubprocess": "Определение процесса будет получено во время выполнения"
 		}
 	},	
 	"task": {
@@ -957,8 +963,8 @@
 		}
 	},
 	"decision-instance": {
-		"edit": "@:commons:edit",
-		"save": "@:commons:save"
+		"edit": "@:commons.edit",
+		"save": "@:commons.save"
 	},
 	"human-tasks": {
 		"assignmentsByType": "Назначения по типу",
@@ -973,5 +979,4 @@
 		"groupName": "Группа",
 		"assignmentsByGroupInfo": "Задача может быть назначена нескольким группам."
 	}
-
 }

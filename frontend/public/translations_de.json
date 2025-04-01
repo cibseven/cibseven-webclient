@@ -236,7 +236,13 @@
 			"title": "Legende",
 			"completedTask": "Abgeschlossene Aufgabe",
 			"currentTask": "Aktuelle Aufgabe",
-			"selectedTask": "@:task.selectedTask"
+			"selectedTask": "@:task.selectedTask",
+			"runingInstances": "Laufende Aktivitätsinstanzen",
+			"openIncidents": "Offene Vorfälle",
+			"suspendedJobDefinition": "Ausgesetzte Jobdefinition",
+			"activitiesHistory": "Ausgeführte Aktivitätsinstanzen",
+			"openSubprocess": "Aufgerufene Prozessdefinition anzeigen",
+  			"disabledSubprocess": "Die Prozessdefinition wird zur Laufzeit ermittelt"
 		}
 	},
 	"task": {
@@ -973,6 +979,5 @@
 		"noGroups": "ohne Gruppe",
 		"groupName": "Gruppe",
 		"assignmentsByGroupInfo": "Eine Aufgabe kann mehreren Gruppen zugewiesen sein."
-
 	}
 }

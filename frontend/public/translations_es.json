@@ -126,8 +126,8 @@
 		"active": "Activo",
 		"history": "Historial",
 		"download": "Descargar",
-		"edit": "@:commons:edit",
-		"save": "@:commons:save",
+		"edit": "@:commons.edit",
+		"save": "@:commons.save",
 		"upload": "Subir archivo",
 		"selectFile": "Seleccione archivo",
 		"details": {
@@ -236,7 +236,13 @@
 			"title": "Leyenda",
 			"completedTask": "Tarea finalizada",
 			"currentTask": "Tarea actual",
-			"selectedTask": "@:task.selectedTask"
+			"selectedTask": "@:task.selectedTask",
+			"runingInstances": "Instancias de actividad en ejecución",
+			"openIncidents": "Incidentes abiertos",
+			"suspendedJobDefinition": "Definición de trabajo suspendida",
+			"activitiesHistory": "Instancias de actividad ejecutadas",
+			"openSubprocess": "Mostrar la definición del proceso llamado",
+  			"disabledSubprocess": "La definición del proceso se resolverá en tiempo de ejecución"
 		}
 	},
 	"task": {
@@ -526,7 +532,7 @@
 			"selectedCriteria": "Criterios seleccionados",
 			"deleteCriteria": "Eliminar criterio",
 			"no-filters": "No se encontraron filtros",
-			"edit": "@:commons:edit",
+			"edit": "@:commons.edit",
 			"delete": "Eliminar",
 			"pin": "Adjuntar",
 			"includeAssigned": "Incluir las tareas asignadas",
@@ -956,8 +962,8 @@
 		}
 	},
 	"decision-instance": {
-		"edit": "@:commons:edit",
-		"save": "@:commons:save"
+		"edit": "@:commons.edit",
+		"save": "@:commons.save"
 	},
 	"human-tasks": {
 		"assignmentsByType": "Asignaciones por tipo",
@@ -971,7 +977,5 @@
 		"noGroups": "sin grupo",
 		"groupName": "Grupo",
 		"assignmentsByGroupInfo": "Una tarea puede estar asignada a varios grupos."
-
 	}
-
 }
