@@ -957,5 +957,18 @@
 	"decision-instance": {
 		"edit": "@:commons:edit",
 		"save": "@:commons:save"
+	},
+	"human-tasks": {
+		"assignmentsByType": "Assignments by type",
+		"assignmentsByGroup": "Assignments by group",
+		"user": "assigned to a user",
+		"group": "assigned to 1 or more groups",
+		"unassigned": "unassigned",
+		"total": "Total",
+		"tasks": "Tasks",
+		"types": "Types",
+		"noGroups": "without group",
+		"groupName": "Group",
+		"assignmentsByGroupInfo": "A task may have multiple groups."
 	}
 }

@@ -776,5 +776,20 @@
 	"decision-instance": {
 		"edit": "@:commons:edit",
 		"save": "@:commons:save"
+	},
+	"human-tasks": {
+		"assignmentsByType": "Assegnazioni per tipo",
+		"assignmentsByGroup": "Assegnazioni per gruppo",
+		"user": "assegnate a un utente",
+		"group": "assegnate a uno o più gruppi",
+		"unassigned": "non assegnate",
+		"total": "Totale",
+		"tasks": "Attività",
+		"types": "Tipi",
+		"noGroups": "senza gruppo",
+		"groupName": "Gruppo",
+		"assignmentsByGroupInfo": "Un'attività può essere assegnata a più gruppi."
+
 	}
+
 }

@@ -161,7 +161,7 @@ const router = createRouter({
         { path: 'deployments/:deploymentId?', name: 'deployments', beforeEnter: permissionsGuard('cockpit'),
           component: DeploymentsView
         },
-        { path: 'humanTasks', beforeEnter: permissionsGuard('cockpit'), component: HumanTasksView },
+        { path: 'human-tasks', beforeEnter: permissionsGuard('cockpit'), component: HumanTasksView },
         // users management
         { path: 'admin',
           component: {

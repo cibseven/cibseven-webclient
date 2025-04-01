@@ -960,5 +960,19 @@
 	"decision-instance": {
 		"edit": "@:commons.edit",
 		"save": "@:commons.save"
+	},
+	"human-tasks": {
+		"assignmentsByType": "Zuweisungen nach Typ",
+		"assignmentsByGroup": "Zuweisungen nach Gruppe",
+		"user": "einem Benutzer zugewiesen",
+		"group": "einer oder mehreren Gruppen zugewiesen",
+		"unassigned": "nicht zugewiesen",
+		"total": "Gesamt",
+		"tasks": "Aufgaben",
+		"types": "Typen",
+		"noGroups": "ohne Gruppe",
+		"groupName": "Gruppe",
+		"assignmentsByGroupInfo": "Eine Aufgabe kann mehreren Gruppen zugewiesen sein."
+
 	}
 }

@@ -959,5 +959,19 @@
 	"decision-instance": {
 		"edit": "@:commons:edit",
 		"save": "@:commons:save"
+	},
+	"human-tasks": {
+		"assignmentsByType": "Назначения по типу",
+		"assignmentsByGroup": "Назначения по группе",
+		"user": "назначено пользователю",
+		"group": "назначено одной или нескольким группам",
+		"unassigned": "не назначено",
+		"total": "Всего",
+		"tasks": "Задачи",
+		"types": "Типы",
+		"noGroups": "без группы",
+		"groupName": "Группа",
+		"assignmentsByGroupInfo": "Задача может быть назначена нескольким группам."
 	}
+
 }
