@@ -23,7 +23,7 @@
 
 <script>
 export default {
-  name: 'Clipboard',
+  name: 'FeedbackScreenshot',
   props: { disabled: Boolean, img: String, height: Number },
   data: function() { return { focused: false, imgSrc: null } },
   methods: {
