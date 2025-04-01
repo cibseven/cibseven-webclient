@@ -363,10 +363,8 @@ var IncidentService = {
   fetchIncidentStacktraceByJobId: function(id) {
     return axios.get(appConfig.servicesBasePath + "/incident/" + id + "/stacktrace")
   },
-  retryJobById: function(id) {
-    return axios.put(appConfig.servicesBasePath + "/incident/job/" + id + "/retries", {
-        retries: 1
-    })
+  retryJobById: function(id, params) {
+    return axios.put(appConfig.servicesBasePath + "/incident/job/" + id + "/retries", params)
   },
   findIncidents: function(processDefinitionId) {
     return axios.get(appConfig.servicesBasePath + "/incident?processDefinitionId=" + processDefinitionId)

@@ -156,7 +156,15 @@
 		    "failedActivity": "Failed activity",
 		    "incidentType": "Incident type",
 		    "retryJob": "Increment number of retries of failed job",
-		    "actions": "Actions"
+		    "actions": "Actions",
+			"incrementNumberRetries": "Increment number of retries",
+			"retryMsg": "The number of retries of the corresponding failed job of the selected incident will be incremented.",
+			"dueDateMsg": "The point in time a job is executed is determined by the due date:",
+			"keepDueDate": "Keep due date",
+			"setDueDate": "Set due date",
+			"dueDate": "Due date",
+			"scheduleAt": "Schedule at",
+			"invalidDateError": "You must enter a valid date"
 		},
 		"jobDefinitions": {
 			"state": "State",

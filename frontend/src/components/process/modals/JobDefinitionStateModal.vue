@@ -104,7 +104,7 @@
                 const date = moment(this.scheduledAt.date)
                 const datePart = date.format('YYYY-MM-DD')
                 const timePart = this.scheduledAt.time + ':00.000'
-                return moment.utc(`${datePart}T${timePart}Z`).format('YYYY-MM-DDTHH:mm:ss.SSSZZ')
+                return moment(`${datePart}T${timePart}`).format('YYYY-MM-DDTHH:mm:ss.SSSZZ')
             }
         }
     }
