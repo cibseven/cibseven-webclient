@@ -8,7 +8,7 @@
         <b-form-textarea ref="textArea" v-model="problem" :rows="10" :max-rows="10" required></b-form-textarea>
       </b-form-group>
       <b-form-group>
-        <Clipboard tabindex="-1" @input="clip = $event"></Clipboard>
+        <FeedbackScreenshot tabindex="-1" @input="clip = $event"></FeedbackScreenshot>
       </b-form-group>
     </CIBForm>
     <template v-slot:modal-footer>
@@ -21,12 +21,12 @@
 <script>
 import platform from 'platform'
 import CIBForm from '@/components/common-components/CIBForm.vue'
-import Clipboard from '@/components/common-components/Clipboard.vue'
+import FeedbackScreenshot from '@/components/modals/FeedbackScreenshot.vue'
 import { axios } from '@/globals.js'
 
 export default {
-  name: 'ProblemReport',
-  components: { CIBForm, Clipboard },
+  name: 'FeedbackModal',
+  components: { CIBForm, FeedbackScreenshot },
   props: { url: String, email: String },
   data: function() { return { problem: '', email2: null, clip: null } },
   methods: {

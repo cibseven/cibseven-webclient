@@ -1,10 +1,10 @@
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import ErrorDialog from '@/components/common-components/ErrorDialog.vue'
 import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
-import ProblemReport from '@/components/common-components/ProblemReport.vue'
+import FeedbackModal from '@/components/modals/FeedbackModal.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import TaskPopper from '@/components/common-components/TaskPopper.vue'
-import Clipboard from '@/components/common-components/Clipboard.vue'
+import FeedbackScreenshot from '@/components/modals/FeedbackScreenshot.vue'
 import TaskList from '@/components/common-components/TaskList.vue'
 import CIBHeaderFlow from '@/components/common-components/CIBHeaderFlow.vue'
 import Sidebars from '@/components/common-components/Sidebars.vue'
@@ -19,7 +19,7 @@ import IconButton from '@/components/render-template/IconButton.vue'
 import MultisortModal from '@/components/process/modals/MultisortModal.vue'
 import SidebarsFlow from '@/components/common-components/SidebarsFlow.vue'
 import SmartSearch from '@/components/task/SmartSearch.vue'
-import SupportModal from '@/components/common-components/SupportModal.vue'
+import SupportModal from '@/components/modals/SupportModal.vue'
 
 import AdminAuthorizations from '@/components/admin/AdminAuthorizations.vue'
 import AdminAuthorizationsTable from '@/components/admin/AdminAuthorizationsTable.vue'
@@ -80,8 +80,8 @@ import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { debounce } from '@/utils/debounce.js'
 
 export {
-    FlowTable, ErrorDialog, ConfirmDialog, ProblemReport,
-    SuccessAlert, TaskPopper, Clipboard, TaskList, CIBHeaderFlow,
+    FlowTable, ErrorDialog, ConfirmDialog, FeedbackModal,
+    SuccessAlert, TaskPopper, FeedbackScreenshot, TaskList, CIBHeaderFlow,
     Sidebars, ResetDialog, OtpDialog, HoverStyle, CIBForm,
     SecureInput, FilterableSelect, SmartSearch, SidebarsFlow,
     IconButton, MultisortModal, StartProcess, BpmnViewer,

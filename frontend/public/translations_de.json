@@ -157,7 +157,15 @@
 		    "failedActivity": "Fehlgeschlagene Aktivität",
 		    "incidentType": "Vorfallstyp",
 		    "retryJob": "Anzahl der Wiederholungsversuche eines fehlgeschlagenen Jobs erhöhen",
-		    "actions": "Aktionen"
+		    "actions": "Aktionen",
+			"incrementNumberRetries": "Anzahl der Wiederholungsversuche erhöhen",
+			"retryMsg": "Die Anzahl der Wiederholungsversuche des fehlgeschlagenen Jobs für das ausgewählte Ereignis wird erhöht.",
+			"dueDateMsg": "Der Zeitpunkt der Ausführung eines Jobs wird durch das Fälligkeitsdatum bestimmt:",
+			"keepDueDate": "Fälligkeitsdatum beibehalten",
+			"setDueDate": "Fälligkeitsdatum festlegen",
+			"dueDate": "Fälligkeitsdatum",
+			"scheduleAt": "Planen um",
+			"invalidDateError": "Sie müssen ein gültiges Datum eingeben"
 		},
 		"jobDefinitions": {
 			"state": "Status",
@@ -236,7 +244,13 @@
 			"title": "Legende",
 			"completedTask": "Abgeschlossene Aufgabe",
 			"currentTask": "Aktuelle Aufgabe",
-			"selectedTask": "@:task.selectedTask"
+			"selectedTask": "@:task.selectedTask",
+			"runingInstances": "Laufende Aktivitätsinstanzen",
+			"openIncidents": "Offene Vorfälle",
+			"suspendedJobDefinition": "Ausgesetzte Jobdefinition",
+			"activitiesHistory": "Ausgeführte Aktivitätsinstanzen",
+			"openSubprocess": "Aufgerufene Prozessdefinition anzeigen",
+  			"disabledSubprocess": "Die Prozessdefinition wird zur Laufzeit ermittelt"
 		}
 	},
 	"task": {
@@ -955,10 +969,24 @@
 			"variable": "Prozessvariablen",
 			"copyValue": "Wert kopieren",
 			"historyTimeToLive": "Geschichte Zeit zu leben"
-		}
+		},
+		"showManagement": "@:process.showManagement"
 	},
 	"decision-instance": {
 		"edit": "@:commons.edit",
 		"save": "@:commons.save"
+	},
+	"human-tasks": {
+		"assignmentsByType": "Zuweisungen nach Typ",
+		"assignmentsByGroup": "Zuweisungen nach Gruppe",
+		"user": "einem Benutzer zugewiesen",
+		"group": "einer oder mehreren Gruppen zugewiesen",
+		"unassigned": "nicht zugewiesen",
+		"total": "Gesamt",
+		"tasks": "Aufgaben",
+		"types": "Typen",
+		"noGroups": "ohne Gruppe",
+		"groupName": "Gruppe",
+		"assignmentsByGroupInfo": "Eine Aufgabe kann mehreren Gruppen zugewiesen sein."
 	}
 }

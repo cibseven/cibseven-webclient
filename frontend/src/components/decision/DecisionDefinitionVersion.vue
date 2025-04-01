@@ -24,12 +24,12 @@
               <template #prepend>
                 <b-button :title="$t('searches.search')" aria-hidden="true" size="sm" class="rounded-left" variant="secondary"><span class="mdi mdi-magnify" style="line-height: initial"></span></b-button>
               </template>
-              <b-form-input :title="$t('searches.search')" size="sm" :placeholder="$t('searches.search')" @input="onInput"></b-form-input>
+              <b-form-input :title="$t('searches.search')" size="sm" :placeholder="$t('searches.search')" @input="search"></b-form-input>
             </b-input-group>
           </div>
         </div>
         <div ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 60px; left: 0; bottom: 0" @scroll="handleScrollDecisions">
-          <InstancesTable ref="instancesTable" v-if="!loading && decisionInstances && !sorting" :instances="decisionInstances" :sortByDefaultKey="sortByDefaultKey" :sortDesc="sortDesc"></InstancesTable>
+          <InstancesTable ref="instancesTable" v-if="!loading && decisionInstances.length > 0 && !sorting" :instances="decisionInstances" :sortByDefaultKey="sortByDefaultKey" :sortDesc="sortDesc"></InstancesTable>
           <div v-else-if="loading" class="py-3 text-center w-100">
             <BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}
           </div>
@@ -47,6 +47,7 @@ import InstancesTable from '@/components/decision/InstancesTable.vue'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
 import { BWaitingBox } from 'cib-common-components'
 import { mapGetters, mapActions } from 'vuex'
+import { debounce } from '@/utils/debounce.js'
 
 export default {
   name: 'DecisionDefinitionVersion',
@@ -54,8 +55,6 @@ export default {
   mixins: [permissionsMixin, resizerMixin],
   props: {
     versionIndex: Number,
-    firstResult: Number,
-    maxResults: Number,
     loading: Boolean,
     decisionKey: String
   },
@@ -67,33 +66,31 @@ export default {
       sortByDefaultKey: 'startTimeOriginal',
       sorting: false,
       sortDesc: true,
-      decisionInstances: null
+      decisionInstances: [],
+      firstResult: 0,
+      maxResults: this.$root.config.maxProcessesResults
     }
   },
   computed: {
     ...mapGetters(['getSelectedDecisionVersion']),
-
     decision: function() {
       return this.getSelectedDecisionVersion(this.decisionKey)
-    },
-
+    }
   },
   mounted: function() {
-    if(this.decision) {
+    if (this.decision) {
       this.loadDiagram()
       this.loadInstances()
     }
   },
   methods: {
     ...mapActions(['getXmlById', 'getHistoricDecisionInstances']),
-
     changeTab: function(selectedTab) {
       this.tabs.forEach((tab) => {
         tab.active = tab.id === selectedTab.id
       })
       this.activeTab = selectedTab.id
     },
-
     loadDiagram() {
       this.getXmlById(this.decision.id)
         .then(response => {
@@ -105,18 +102,16 @@ export default {
           console.error("Error loading diagram:", error)
         })
     },
-
     handleScrollDecisions: function(el) {
       // TODO: Check method
       if (this.decisionInstances.length < this.firstResult) return
       if (Math.ceil(el.target.scrollTop + el.target.clientHeight) >= el.target.scrollHeight) {
-        this.$emit('show-more')
+        this.showMore()
       }
     },
-
-    loadInstances() {
+    loadInstances(showMore) {
       if (this.$root.config.camundaHistoryLevel !== 'none') {
-        this.getHistoricDecisionInstances({
+        let data = {
           key: this.decision.key,
           version: this.versionIndex,
           params: {
@@ -127,14 +122,26 @@ export default {
             firstResult: this.firstResult,
             maxResults: this.maxResults
           }
-        }).then((response) => {
-          this.decisionInstances = response
+        }
+        if (this.filter) data.params.decisionInstanceId = this.filter
+        this.getHistoricDecisionInstances(data).then((instances) => {
+          if (!showMore) this.decisionInstances = instances
+          else this.decisionInstances = !this.decisionInstances ? instances : this.decisionInstances.concat(instances)
         })
       } else {
         // TODO: Implement
         console.error("Not implemented for seven history level: none")
       }
-    }
+    },
+    showMore() {
+      this.firstResult += this.$root.config.maxProcessesResults
+      this.loadInstances(true)
+    },
+    search: debounce(800, function(evt) { 
+      this.filter = evt.target.value
+      this.firstResult = 0
+      this.loadInstances()
+    })
   }
 }
 </script>

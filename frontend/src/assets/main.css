@@ -1,13 +1,11 @@
 [v-cloak] { display: none }
 .bjs-powered-by { bottom: 15px!important; right: 60px!important; }
 .selectable { cursor: pointer }
-.highlight .djs-outline {
+.bpmn-highlight {
+  stroke: var(--info) !important;
   stroke-width: 2px !important;
-    stroke: #155cb5 !important;
-    fill: rgba(194,213,237,0.4) !important;
-}
-.djs-overlays {
-   /*pointer-events: none;*/
+  fill-opacity: 0.1 !important;
+  fill: var(--info) !important;
 }
 .list-group-item.active {
     z-index: 2;

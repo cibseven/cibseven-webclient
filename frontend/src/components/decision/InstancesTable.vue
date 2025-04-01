@@ -48,12 +48,16 @@ export default {
   components: { FlowTable, SuccessAlert, ConfirmDialog },
   mixins: [copyToClipboardMixin, permissionsMixin],
   props: { instances: Array, sortDesc: Boolean, sortByDefaultKey: String },
+  data() {
+    return {
+      focusedCell: null
+    }
+  },
   computed: {
     ...mapGetters(['decisionInstances', 'selectedInstance']),
   },
   methods: {
     ...mapActions(['setSelectedInstance']),
-
     goToInstance(instance) {
       const decisionList = this.decisionInstances(instance.decisionDefinitionKey) || []
       const found = decisionList.find(d => d.id === instance.decisionDefinitionId)
@@ -70,9 +74,7 @@ export default {
         }
       })
     },
-
     showConfirm(type) { this.$refs.confirm.show(type) },
-
     getIconState(state) {
       switch (state) {
         case 'ACTIVE': return 'mdi-chevron-triple-right text-success'
@@ -80,18 +82,12 @@ export default {
         default: return 'mdi-flag-triangle'
       }
     },
-
     getIconTitle(state) {
       switch (state) {
         case 'ACTIVE': return this.$t('decision.instanceRunning')
         case 'SUSPENDED': return this.$t('decision.instanceIncidents')
         default: return this.$t('decision.instanceFinished')
       }
-    }
-  },
-  data() {
-    return {
-      focusedCell: null
     }
   }
 }

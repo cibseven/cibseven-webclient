@@ -152,22 +152,21 @@ export default {
       return this.processesFiltered.find(p => { return p.startableInTasklist })
     },
     countStartItems: function () {
-          return this.items.length;
-        },
+      return this.items.length
+    },
     processesFiltered: function() {
       if (!this.$store.state.process.list) return []
       return this.$store.state.process.list.filter(process => {
-      return ((!process.revoked))
+        return ((!process.revoked))
       }).sort((objA, objB) => {
-      var nameA = objA.name ? objA.name.toUpperCase() : objA.name
-      var nameB = objB.name ? objB.name.toUpperCase() : objB.name
-      var comp = nameA < nameB ? -1 : nameA > nameB ? 1 : 0
-
-      if (this.$root.config.subProcessFolder) {
-        if (objA.resource.indexOf(this.$root.config.subProcessFolder) > -1) comp = 1
-        else if (objB.resource.indexOf(this.$root.config.subProcessFolder) > -1) comp = -1
-      }
-      return comp
+        var nameA = objA.name ? objA.name.toUpperCase() : objA.name
+        var nameB = objB.name ? objB.name.toUpperCase() : objB.name
+        var comp = nameA < nameB ? -1 : nameA > nameB ? 1 : 0
+        if (this.$root.config.subProcessFolder) {
+          if (objA.resource.indexOf(this.$root.config.subProcessFolder) > -1) comp = 1
+          else if (objB.resource.indexOf(this.$root.config.subProcessFolder) > -1) comp = -1
+        }
+        return comp
       })
     }
   },

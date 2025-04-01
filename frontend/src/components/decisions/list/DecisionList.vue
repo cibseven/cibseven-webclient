@@ -15,7 +15,7 @@
     <div class="container overflow-auto h-100 bg-white shadow g-0">
       <FlowTable :items="decisionsFiltered" thead-class="sticky-header" striped primary-key="id" prefix="decision." :fields="fields" @click="goToDecision($event)" @select="focused = $event[0]" @mouseenter="focused = $event" @mouseleave="focused = null">
         <template v-slot:cell(actions)="table">
-          <component :is="DecisionDefinitionActions" v-if="DecisionDefinitionActions" :focused="focused" :item="table.item"></component>
+          <component :is="decisionDefinitionActions" v-if="decisionDefinitionActions" :focused="focused" :item="table.item"></component>
           <b-button :disabled="focused !== table.item" style="opacity: 1" @click.stop="goToDecision(table.item)" class="px-2 border-0 shadow-none" :title="$t('decision.showManagement')" variant="link">
             <span class="mdi mdi-18px mdi-account-tie-outline"></span>
           </b-button>
@@ -49,7 +49,7 @@ export default {
   computed: {
     ...mapGetters(['decisionDefinitions', 'getFilteredDecisions']),
     
-    DecisionDefinitionActions: function() {
+    decisionDefinitionActions: function() {
       return this.$options.components && this.$options.components.DecisionDefinitionActions
         ? this.$options.components.DecisionDefinitionActions
         : null

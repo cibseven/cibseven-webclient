@@ -40,7 +40,7 @@ public class IncidentService extends BaseService implements InitializingBean {
 	public void afterPropertiesSet() {
 		if (bpmProvider instanceof SevenProvider)
 			sevenProvider = (SevenProvider) bpmProvider;
-		else throw new SystemException("AdminService expects a BpmProvider");
+		else throw new SystemException("IncidentService expects a BpmProvider");
 	}	
 	
 	@Operation(
