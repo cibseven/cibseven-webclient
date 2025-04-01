@@ -47,6 +47,15 @@ function patchJob(job) {
   return job
 }
 
+function patchDecision(decision) {
+  if (Array.isArray(decision)) decision.forEach(patchDecision)
+  else {
+    decision.evaluationTimeOriginal = decision.evaluationTime
+    if (decision.evaluationTime) decision.evaluationTime = moment(decision.evaluationTime).format('LL HH:mm')
+  }
+  return decision
+}
+
 function filterToUrlParams(filters) {
   var filter = ''
   if (Array.isArray(filters)) {
@@ -503,7 +512,7 @@ var DecisionService = {
     return axios.put(appConfig.servicesBasePath + "/decision/id/" + id + "/history-ttl", data)
   },
   getHistoricDecisionInstances: function (params) {
-    return axios.get(appConfig.servicesBasePath + "/decision/history/instances", { params })
+    return axios.get(appConfig.servicesBasePath + "/decision/history/instances", { params }).then(patchDecision)
   },
   getHistoricDecisionInstanceCount: function (params) {
     return axios.get(appConfig.servicesBasePath + "/decision/history/instances/count", { params })

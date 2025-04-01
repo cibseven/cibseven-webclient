@@ -216,12 +216,12 @@ export default {
         this.$emit('show-more')
       }
     },
-    onInput: debounce(800, function(evt) { this.$emit('filter-instances', evt) }),
+    onInput: debounce(800, function(evt) { this.$emit('filter-instances', evt.target.value) }),
     getJobDefinitions: function() {
       this.$store.dispatch('jobDefinition/getJobDefinitions', {
         processDefinitionId: this.process.id
       })
-    },
+    }
   }
 }
 </script>

@@ -959,7 +959,8 @@
 			"variable": "Variables de decisión",
 			"copyValue": "Copiar valor",
 			"historyTimeToLive": "Tiempo de vida del historial"
-		}
+		},
+		"showManagement": "@:process.showManagement"
 	},
 	"decision-instance": {
 		"edit": "@:commons.edit",

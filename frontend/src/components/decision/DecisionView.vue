@@ -12,8 +12,6 @@
         v-if="decision"
         :key="$route.fullPath"
         :loading="loading"
-        :first-result="firstResult"
-        :max-results="maxResults"
         @show-more="showMore"
         @instance-deleted="deleteInstance"
       />
@@ -37,8 +35,6 @@ export default {
     return {
       leftOpen: true,
       rightOpen: false,
-      firstResult: 0,
-      maxResults: this.$root.config.maxProcessesResults,
       filter: '',
       loading: false
     }
@@ -76,7 +72,6 @@ export default {
   methods: {
     ...mapActions(['getDecisionVersionsByKey']),
     ...mapMutations(['setSelectedDecisionVersion']),
-
     loadDecisionVersionsByKey(decisionKey, versionIndex) {
       this.getDecisionVersionsByKey({ key: decisionKey }).then(decisions => {
         if (!versionIndex) {
@@ -86,11 +81,6 @@ export default {
         }
         this.setSelectedDecisionVersion({key: decisionKey, version: versionIndex })
       })
-    },
-
-    showMore() {
-      this.firstResult += this.$root.config.maxProcessesResults
-      this.loadInstances(true)
     }
   }
 }
