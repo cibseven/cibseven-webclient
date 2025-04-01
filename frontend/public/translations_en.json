@@ -125,8 +125,8 @@
 		"active": "Active",
 		"history": "History",
 		"download": "Download",
-		"edit": "@:commons:edit",
-		"save": "@:commons:save",
+		"edit": "@:commons.edit",
+		"save": "@:commons.save",
 		"upload": "Upload file",
 		"selectFile": "Select file",
 		"details": {
@@ -531,7 +531,7 @@
 			"selectedCriteria": "Selected criteria",
 			"deleteCriteria": "Delete criteria",
 			"no-filters": "No filters found",
-			"edit": "@:commons:edit",
+			"edit": "@:commons.edit",
 			"delete": "Delete",
 			"pin": "Pin",
 			"includeAssigned": "Include assigned tasks",
@@ -961,7 +961,7 @@
 		}
 	},
 	"decision-instance": {
-		"edit": "@:commons:edit",
-		"save": "@:commons:save"
+		"edit": "@:commons.edit",
+		"save": "@:commons.save"
 	}
 }

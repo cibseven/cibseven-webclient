@@ -1,7 +1,6 @@
 <template>
     <ProcessDefinitionView
       v-if="!loading && computedVersionIndex"
-      :key="processKey + '-' + computedVersionIndex + '-' + computedInstanceId"
       :processKey="processKey"
       :versionIndex="computedVersionIndex"
       :instanceId="computedInstanceId"
@@ -20,12 +19,9 @@ export default {
     instanceId: { type: String, default: '' }
   },
   watch: {
-    processKey: {
-      immediate: true,
-      handler() {
-        this.loadProcess()
-      }
-    }
+    processKey: 'loadProcess',    
+    versionIndex: 'loadProcess',
+    instanceId: 'loadProcess'
   },
   data: function() {
     return {

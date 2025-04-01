@@ -126,8 +126,8 @@
 		"active": "Activo",
 		"history": "Historial",
 		"download": "Descargar",
-		"edit": "@:commons:edit",
-		"save": "@:commons:save",
+		"edit": "@:commons.edit",
+		"save": "@:commons.save",
 		"upload": "Subir archivo",
 		"selectFile": "Seleccione archivo",
 		"details": {
@@ -532,7 +532,7 @@
 			"selectedCriteria": "Criterios seleccionados",
 			"deleteCriteria": "Eliminar criterio",
 			"no-filters": "No se encontraron filtros",
-			"edit": "@:commons:edit",
+			"edit": "@:commons.edit",
 			"delete": "Eliminar",
 			"pin": "Adjuntar",
 			"includeAssigned": "Incluir las tareas asignadas",
@@ -962,7 +962,7 @@
 		}
 	},
 	"decision-instance": {
-		"edit": "@:commons:edit",
-		"save": "@:commons:save"
+		"edit": "@:commons.edit",
+		"save": "@:commons.save"
 	}
 }

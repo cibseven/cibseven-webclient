@@ -77,6 +77,9 @@ export default {
     versionIndex: { type: String, required: true },
     instanceId: { type: String, required: true }
   },
+  watch: {
+    processKey: 'loadProcessFromRoute'
+  },
   data: function() {
     return {
       leftOpen: true,
@@ -110,16 +113,7 @@ export default {
     }
   },
   created: function() {
-    return this.loadProcessByDefinitionKey().then((redirected) => {
-      if (!redirected && this.instanceId) {
-        if (this.instances) {
-          const selectedInstance = this.instances.find((instance) => instance.id == this.instanceId)
-          if (selectedInstance) {
-            this.setSelectedInstance({ selectedInstance: selectedInstance })
-          }
-        }
-      }
-    })
+    this.loadProcessFromRoute()
   },
   beforeUpdate: function() {
     if (this.process != null && this.process.version !== this.versionIndex) {
@@ -146,6 +140,14 @@ export default {
     }
   },
   methods: {
+    loadProcessFromRoute: function() {
+      this.loadProcessByDefinitionKey().then((redirected) => {
+        if (!redirected && this.instanceId && this.instances) {
+          const selectedInstance = this.instances.find(i => i.id == this.instanceId)
+          if (selectedInstance) this.setSelectedInstance({ selectedInstance })
+        }
+      })
+    },
     updateItems: function(sortedItems) {
       this.instances = sortedItems
     },
