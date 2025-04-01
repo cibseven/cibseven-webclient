@@ -2,16 +2,12 @@ package org.cibseven.webapp.rest;
 
 import java.util.Collection;
 import java.util.Locale;
+import java.util.Map;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.rest.model.TaskHistory;
 import org.cibseven.webapp.rest.model.VariableHistory;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -29,7 +25,7 @@ public class HistoryTaskService extends BaseService {
 			description = "The variables found belongs to the history, they have other attributes and variables from finished activities are also fetched" + "<br>"
 			+ "<strong>Return: Collection of fetched variables")
 	@ApiResponse(responseCode= "404", description = "Activity instance not found")
-	@RequestMapping(value = "/task-history/{activityInstanceId}/variables", method = RequestMethod.GET)
+	@GetMapping("/task-history/{activityInstanceId}/variables")
 	public Collection<VariableHistory> fetchActivityVariablesHistory(
 			@Parameter(description = "Activity instance Id") @PathVariable String activityInstanceId,
 			Locale loc, CIBUser user) {
@@ -41,7 +37,7 @@ public class HistoryTaskService extends BaseService {
 			description = "The tasks found belongs to the history, they have other attributes and finished tasks are also fetched" + "<br>"
 			+ "<strong>Return: Collection of fetched tasks")
 	@ApiResponse(responseCode= "404", description = "Task/s not found")
-	@RequestMapping(value = "/task-history/by-process-key", method = RequestMethod.GET)
+	@GetMapping("/task-history/by-process-key")
 	public Collection<TaskHistory> findTasksByDefinitionKeyHistory(
 			@Parameter(description = "Restrict to tasks that have the given key") @RequestParam String taskDefinitionKey,
 			@Parameter(description = "Process instance Id") @RequestParam String processInstanceId,
@@ -54,7 +50,7 @@ public class HistoryTaskService extends BaseService {
 			description = "The tasks found belongs to the history, they have other attributes and finished tasks are also fetched" + "<br>"
 			+ "<strong>Return: Collection of fetched tasks")
 	@ApiResponse(responseCode= "404", description = "Task/s not found")
-	@RequestMapping(value = "/task-history/by-process-instance/{processInstanceId}", method = RequestMethod.GET)
+	@GetMapping("/task-history/by-process-instance/{processInstanceId}")
 	public Collection<TaskHistory> findTasksByProcessInstanceHistory(
 			@Parameter(description = "Process instance Id") @PathVariable String processInstanceId,
 			Locale loc, CIBUser user) {
@@ -66,11 +62,20 @@ public class HistoryTaskService extends BaseService {
 			description = "The tasks found belongs to the history, they have other attributes and finished tasks are also fetched" + "<br>"
 			+ "<strong>Return: Collection of fetched tasks")
 	@ApiResponse(responseCode= "404", description = "Task/s not found")
-	@RequestMapping(value = "/task-history/by-task-id/{taskId}", method = RequestMethod.GET)
+	@GetMapping("/task-history/by-task-id/{taskId}")
 	public Collection<TaskHistory> findTasksByTaskIdHistory(
 			@Parameter(description = "Task Id") @PathVariable String taskId,
 			Locale loc, CIBUser user) {
 		return bpmProvider.findTasksByTaskIdHistory(taskId, user);
+	}
+	
+	@Operation(
+			summary = "Get number of tasks based on filters")
+	@PostMapping("/task-history/count")
+	public Integer findHistoryTaksCount(
+			@RequestBody Map<String, Object> filters,
+			Locale loc, CIBUser user) {
+		return bpmProvider.findHistoryTaksCount(filters, user);
 	}
 
 }

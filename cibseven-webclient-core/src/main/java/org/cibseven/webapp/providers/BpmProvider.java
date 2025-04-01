@@ -21,6 +21,7 @@ import org.cibseven.webapp.rest.model.ActivityInstance;
 import org.cibseven.webapp.rest.model.ActivityInstanceHistory;
 import org.cibseven.webapp.rest.model.Authorization;
 import org.cibseven.webapp.rest.model.Authorizations;
+import org.cibseven.webapp.rest.model.CandidateGroupTaskCount;
 import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.DeploymentResource;
 import org.cibseven.webapp.rest.model.EventSubscription;
@@ -942,5 +943,8 @@ public interface BpmProvider {
 	Collection<Job> getJobs(Map<String, Object> params, CIBUser user);
 	void setSuspended(String id, Map<String, Object> data, CIBUser user);
 
+	Integer findHistoryTaksCount(Map<String, Object> filters, CIBUser user);
+
+	Collection<CandidateGroupTaskCount> getTaskCountByCandidateGroup(CIBUser user);
 	
 }

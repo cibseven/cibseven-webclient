@@ -101,6 +101,12 @@ var TaskService = {
   },
   downloadFile: function(processInstanceId, fileVariable) {
     return axios.get(appConfig.servicesBasePath + '/task/' + processInstanceId + '/variable/download/' + fileVariable, { responseType: 'blob' })
+  },
+  findHistoryTaksCount: function(filters) {
+    return axios.post(appConfig.servicesBasePath + '/task-history/count', filters)
+  },
+  getTaskCountByCandidateGroup: function() {
+    return axios.get(appConfig.servicesBasePath + '/task/report/candidate-group-count')
   }
 }
 
