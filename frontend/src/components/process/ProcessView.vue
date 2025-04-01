@@ -1,6 +1,7 @@
 <template>
     <ProcessDefinitionView
       v-if="!loading && computedVersionIndex"
+      :key="processKey + '-' + computedVersionIndex + '-' + computedInstanceId"
       :processKey="processKey"
       :versionIndex="computedVersionIndex"
       :instanceId="computedInstanceId"

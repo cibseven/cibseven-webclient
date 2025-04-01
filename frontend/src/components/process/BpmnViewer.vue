@@ -318,12 +318,22 @@ export default {
       return types.some(type => typeI.includes(type))
     },
     openSubprocess: function(activityId) {
-      ProcessService.findCalledProcessDefinitions(this.processDefinitionId).then(subprocess => {
-        const process = subprocess.find(item => item.calledFromActivityIds.includes(activityId))
-        if (process) {
-          this.$router.push({ name: 'process', params: { processKey: process.key } })
-        }
-      })
+      const childInstance = this.activityInstanceHistory?.find(
+        ai => ai.activityId === activityId && ai.calledProcessInstanceId
+      )
+      if (childInstance && childInstance.calledProcessInstanceId) {
+        ProcessService.findProcessInstance(childInstance.calledProcessInstanceId).then(subprocess => {
+          const [processKey, versionIndex] = subprocess.definitionId.split(':')
+          this.$router.push({ name: 'process', params: { processKey, versionIndex, instanceId: subprocess.id } })
+        })
+      } else {
+        ProcessService.findCalledProcessDefinitions(this.processDefinitionId).then(subprocess => {
+          const process = subprocess.find(item => item.calledFromActivityIds.includes(activityId))
+          if (process) {
+            this.$router.push({ name: 'process', params: { processKey: process.key } })
+          }
+        })
+      }
     },
     drawJobDefinitionBadges: function() {
       const overlays = this.viewer?.get('overlays')
