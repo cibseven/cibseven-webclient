@@ -146,6 +146,7 @@ export default {
         } else {
           if (this.currentHighlight) {
             this.currentHighlight.shape.classList.remove('bpmn-highlight')
+            this.$emit('activity-id', null)
             this.currentHighlight = null
           }
           this.$emit('task-selected', null)
@@ -362,15 +363,3 @@ export default {
   }
 }
 </script>
-<style>
-  .selectable { cursor: pointer }
-  .bpmn-passed {
-    stroke-width: 4px !important;
-  }
-  .bpmn-highlight {
-    stroke: var(--info) !important;
-    stroke-width: 2px !important;
-    fill-opacity: 0.1 !important;
-    fill: var(--info) !important;
-  }
-</style>
