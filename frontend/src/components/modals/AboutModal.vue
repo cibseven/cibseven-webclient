@@ -16,7 +16,7 @@
             </g>
           </svg>
       </div>
-      <div class="col-10 d-flex" style="align-items:center">{{ $t('infoAndHelp.flowModalSupport.version') }}: {{ version }}</div>
+      <div class="col-10 d-flex align-items-center">{{ $t('infoAndHelp.flowModalSupport.version') }}: {{ version }}</div>
     </div>
   </b-modal>
 </template>
@@ -33,13 +33,16 @@ export default {
   },
   methods: {
     show: function() {
-      InfoService.getVersion().then(version => {
-        this.version = version || 'n/a'
-      })
-      .catch(error => {
-        console.error("Error loading version:", error)
-        this.version = "n/a"
-      })
+      if (this.version === '') {
+        this.version = ' '
+        InfoService.getVersion().then(version => {
+          this.version = version || 'n/a'
+        })
+        .catch(error => {
+          console.error("Error loading version:", error)
+          this.version = 'n/a'
+        })
+      }
       this.$refs.about.show()
     }
   }
