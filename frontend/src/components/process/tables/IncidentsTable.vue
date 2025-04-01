@@ -87,8 +87,8 @@ export default {
     },
     incrementNumberRetry: function({ id, params }) {
       IncidentService.retryJobById(id, params).then(() => {          
-          this.incidents.splice(this.incidents.findIndex(obj => obj.configuration === id), 1)
-          this.$refs.incidentRetryModal.hide()
+        this.incidents.splice(this.incidents.findIndex(obj => obj.configuration === id), 1)
+        this.$refs.incidentRetryModal.hide()
       })
     }
   }
