@@ -942,9 +942,15 @@ public interface BpmProvider {
 
 	Collection<Job> getJobs(Map<String, Object> params, CIBUser user);
 	void setSuspended(String id, Map<String, Object> data, CIBUser user);
-
 	Integer findHistoryTaksCount(Map<String, Object> filters, CIBUser user);
 
 	Collection<CandidateGroupTaskCount> getTaskCountByCandidateGroup(CIBUser user);
 	
+	Object getHistoricBatches(Map<String, Object> queryParams);
+	Object getHistoricBatchCount(Map<String, Object> queryParams);
+	Object getHistoricBatchById(String id);
+	void deleteHistoricBatch(String id);
+	Object setRemovalTime(Map<String, Object> payload);
+	Object getCleanableBatchReport(Map<String, Object> queryParams);
+	Object getCleanableBatchReportCount();
 }
