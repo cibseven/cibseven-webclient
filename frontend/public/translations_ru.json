@@ -156,7 +156,15 @@
 		    "failedActivity": "Неудачная активность",
 		    "incidentType": "Тип инцидента",
 		    "retryJob": "Увеличить число повторных попыток выполнения активности при неудачи",
-		    "actions": "Действия"
+		    "actions": "Действия",
+			"incrementNumberRetries": "Увеличить количество повторных попыток",
+			"retryMsg": "Количество повторных попыток для соответствующего сбойного задания выбранного инцидента будет увеличено.",
+			"dueDateMsg": "Момент выполнения задания определяется сроком исполнения:",
+			"keepDueDate": "Сохранить дату исполнения",
+			"setDueDate": "Установить дату исполнения",
+			"dueDate": "Дата исполнения",
+			"scheduleAt": "Запланировать на",
+			"invalidDateError": "Вы должны ввести корректную дату"
 		},
 		"jobDefinitions": {
 			"state": "Состояние",
@@ -235,7 +243,13 @@
 			"title": "Легенда",
 			"completedTask": "Завершённая задача",
 			"currentTask": "Текущая задача",			
-			"selectedTask": "@:task.selectedTask"
+			"selectedTask": "@:task.selectedTask",
+			"runingInstances": "Выполняющиеся экземпляры заданий",
+			"openIncidents": "Открытые инциденты",
+			"suspendedJobDefinition": "Приостановленное определение задания",
+			"activitiesHistory": "Выполненные экземпляры заданий",
+			"openSubprocess": "Показать вызываемое определение процесса",
+  			"disabledSubprocess": "Определение процесса будет получено во время выполнения"
 		}
 	},	
 	"task": {
@@ -954,10 +968,24 @@
 			"variable": "Переменные решения",
 			"copyValue": "Копировать значение",
 			"historyTimeToLive": "Время хранения истории"
-		}
+		},
+		"showManagement": "@:process.showManagement"
 	},
 	"decision-instance": {
-		"edit": "@:commons:edit",
-		"save": "@:commons:save"
+		"edit": "@:commons.edit",
+		"save": "@:commons.save"
+	},
+	"human-tasks": {
+		"assignmentsByType": "Назначения по типу",
+		"assignmentsByGroup": "Назначения по группе",
+		"user": "назначено пользователю",
+		"group": "назначено одной или нескольким группам",
+		"unassigned": "не назначено",
+		"total": "Всего",
+		"tasks": "Задачи",
+		"types": "Типы",
+		"noGroups": "без группы",
+		"groupName": "Группа",
+		"assignmentsByGroupInfo": "Задача может быть назначена нескольким группам."
 	}
 }

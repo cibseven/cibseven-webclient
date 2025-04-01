@@ -8,10 +8,9 @@ export default {
             filterHeight: 60,
             mousePosition: null,
             toggleIcon: 'mdi-chevron-down',
-            toggleButtonHeight: 40,
+            toggleButtonHeight: 38,
             toggleTransition: '',
             transitionTime: 0.4
-
         }
     },
     computed: {

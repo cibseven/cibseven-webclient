@@ -125,8 +125,8 @@
 		"active": "Active",
 		"history": "History",
 		"download": "Download",
-		"edit": "@:commons:edit",
-		"save": "@:commons:save",
+		"edit": "@:commons.edit",
+		"save": "@:commons.save",
 		"upload": "Upload file",
 		"selectFile": "Select file",
 		"details": {
@@ -156,7 +156,15 @@
 		    "failedActivity": "Failed activity",
 		    "incidentType": "Incident type",
 		    "retryJob": "Increment number of retries of failed job",
-		    "actions": "Actions"
+		    "actions": "Actions",
+			"incrementNumberRetries": "Increment number of retries",
+			"retryMsg": "The number of retries of the corresponding failed job of the selected incident will be incremented.",
+			"dueDateMsg": "The point in time a job is executed is determined by the due date:",
+			"keepDueDate": "Keep due date",
+			"setDueDate": "Set due date",
+			"dueDate": "Due date",
+			"scheduleAt": "Schedule at",
+			"invalidDateError": "You must enter a valid date"
 		},
 		"jobDefinitions": {
 			"state": "State",
@@ -235,7 +243,13 @@
 			"title": "Guide",
 			"completedTask": "Completed task",
 			"currentTask": "Current task",
-			"selectedTask": "@:task.selectedTask"
+			"selectedTask": "@:task.selectedTask",
+			"runingInstances": "Running activity instances",
+			"openIncidents": "Open incidents",
+			"suspendedJobDefinition": "Suspended job definition",
+			"activitiesHistory": "Executed activity instances",			
+			"openSubprocess": "Show called process definition",
+			"disabledSubprocess": "Called process definition will be resolved at runtime"
 		}
 	},
 	"task": {
@@ -525,7 +539,7 @@
 			"selectedCriteria": "Selected criteria",
 			"deleteCriteria": "Delete criteria",
 			"no-filters": "No filters found",
-			"edit": "@:commons:edit",
+			"edit": "@:commons.edit",
 			"delete": "Delete",
 			"pin": "Pin",
 			"includeAssigned": "Include assigned tasks",
@@ -665,7 +679,7 @@
 		"adminPanel": "Users Management",
 		"properties": "Properties",
 		"resources": "Resources",
-		"adminProcesses": "Prozesses",
+		"adminProcesses": "Processes",
 		"adminDecisions": "Decisions",
 		"adminHumanTasks": "Human Tasks"
 	},
@@ -952,10 +966,24 @@
 			"variable": "Decision variables",
 			"copyValue": "Copy value",
 			"historyTimeToLive": "History time to live"
-		}
+		},
+		"showManagement": "@:process.showManagement"
 	},
 	"decision-instance": {
-		"edit": "@:commons:edit",
-		"save": "@:commons:save"
+		"edit": "@:commons.edit",
+		"save": "@:commons.save"
+	},
+	"human-tasks": {
+		"assignmentsByType": "Assignments by type",
+		"assignmentsByGroup": "Assignments by group",
+		"user": "assigned to a user",
+		"group": "assigned to 1 or more groups",
+		"unassigned": "unassigned",
+		"total": "Total",
+		"tasks": "Tasks",
+		"types": "Types",
+		"noGroups": "without group",
+		"groupName": "Group",
+		"assignmentsByGroupInfo": "A task may have multiple groups."
 	}
 }

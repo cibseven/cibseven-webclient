@@ -22,6 +22,7 @@ import CreateGroup from '@/components/admin/CreateGroup.vue'
 import AdminAuthorizations from '@/components/admin/AdminAuthorizations.vue'
 import AdminAuthorizationsTable from '@/components/admin/AdminAuthorizationsTable.vue'
 import DeploymentsView from '@/components/deployment/DeploymentsView.vue'
+import HumanTasksView from '@/components/task/HumanTasksView.vue'
 import TasksView from '@/components/task/TasksView.vue'
 import TaskView from '@/components/task/TaskView.vue'
 import LoginView from '@/components/login/LoginView.vue'
@@ -160,6 +161,7 @@ const router = createRouter({
         { path: 'deployments/:deploymentId?', name: 'deployments', beforeEnter: permissionsGuard('cockpit'),
           component: DeploymentsView
         },
+        { path: 'human-tasks', beforeEnter: permissionsGuard('cockpit'), component: HumanTasksView },
         // users management
         { path: 'admin',
           component: {

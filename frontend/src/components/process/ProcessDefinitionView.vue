@@ -34,7 +34,6 @@
           @instance-deleted="onInstanceDeleted()"
           @task-selected="setSelectedTask($event)"
           @filter-instances="filterInstances($event)"
-          @open-subprocess="openSubprocess($event)"
           @update-items="updateItems"
         ></ProcessInstancesView>
       </transition>
@@ -43,7 +42,6 @@
           :process="process"
           :activity-instance="activityInstance"
           :activity-instance-history="activityInstanceHistory"
-          @open-subprocess="openSubprocess($event)"
           :selected-instance="selectedInstance"
           @task-selected="setSelectedTask($event)"></ProcessInstanceView>
       </transition>
@@ -79,6 +77,9 @@ export default {
     versionIndex: { type: String, required: true },
     instanceId: { type: String, required: true }
   },
+  watch: {
+    processKey: 'loadProcessFromRoute'
+  },
   data: function() {
     return {
       leftOpen: true,
@@ -112,16 +113,7 @@ export default {
     }
   },
   created: function() {
-    return this.loadProcessByDefinitionKey().then((redirected) => {
-      if (!redirected && this.instanceId) {
-        if (this.instances) {
-          const selectedInstance = this.instances.find((instance) => instance.id == this.instanceId)
-          if (selectedInstance) {
-            this.setSelectedInstance({ selectedInstance: selectedInstance })
-          }
-        }
-      }
-    })
+    this.loadProcessFromRoute()
   },
   beforeUpdate: function() {
     if (this.process != null && this.process.version !== this.versionIndex) {
@@ -148,6 +140,14 @@ export default {
     }
   },
   methods: {
+    loadProcessFromRoute: function() {
+      this.loadProcessByDefinitionKey().then((redirected) => {
+        if (!redirected && this.instanceId && this.instances) {
+          const selectedInstance = this.instances.find(i => i.id == this.instanceId)
+          if (selectedInstance) this.setSelectedInstance({ selectedInstance })
+        }
+      })
+    },
     updateItems: function(sortedItems) {
       this.instances = sortedItems
     },
@@ -284,7 +284,6 @@ export default {
       else {
         return ProcessService.findProcessVersionsByDefinitionKey(this.process.key).then(versions => {
           this.processDefinitions = versions
-
           var promises = []
           this.processDefinitions.forEach(() => {
             promises.push(HistoryService.findProcessesInstancesHistoryById(this.process.id, this.activityId, this.firstResult,
@@ -397,15 +396,6 @@ export default {
           return 'mdi-close-circle-outline'
       }
       return 'mdi-flag-triangle'
-    },
-    openSubprocess: function(event) {
-      this.activityId = ''
-      this.setSelectedInstance({ selectedInstance: null })
-      this.loadProcessVersion(event)
-      nextTick(function() {
-        this.$refs.navbar.getVersions()
-      }.bind(this))
-      this.$router.push('/seven/auth/process/' + event.key)
     },
     exportCSV: function() {
       var headers = [

@@ -42,8 +42,8 @@
 
 <script>
 import FlowTable from '@/components/common-components/FlowTable.vue'
-import JobDefinitionStateModal from '@/components/process/JobDefinitionStateModal.vue'
-import JobDefinitionPriorityModal from '@/components/process/JobDefinitionPriorityModal.vue'
+import JobDefinitionStateModal from '@/components/process/modals/JobDefinitionStateModal.vue'
+import JobDefinitionPriorityModal from '@/components/process/modals/JobDefinitionPriorityModal.vue'
 
 export default {
   name: 'JobsDefinitionsTable',
