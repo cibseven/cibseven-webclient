@@ -19,6 +19,7 @@ import org.cibseven.webapp.rest.model.ActivityInstance;
 import org.cibseven.webapp.rest.model.ActivityInstanceHistory;
 import org.cibseven.webapp.rest.model.Authorization;
 import org.cibseven.webapp.rest.model.Authorizations;
+import org.cibseven.webapp.rest.model.CandidateGroupTaskCount;
 import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.DeploymentResource;
 import org.cibseven.webapp.rest.model.EventSubscription;
@@ -191,6 +192,11 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	@Override
 	public Integer findHistoryTaksCount(Map<String, Object> filters, CIBUser user) {
 		return taskProvider.findHistoryTaksCount(filters, user);
+	}
+
+	@Override
+	public Collection<CandidateGroupTaskCount> getTaskCountByCandidateGroup(CIBUser user) {
+		return taskProvider.getTaskCountByCandidateGroup(user);
 	}
 	
 	/* 

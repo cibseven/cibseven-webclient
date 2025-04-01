@@ -11,6 +11,7 @@ import java.util.Optional;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.webapp.rest.model.CandidateGroupTaskCount;
 import org.cibseven.webapp.rest.model.IdentityLink;
 import org.cibseven.webapp.rest.model.ProcessStart;
 import org.cibseven.webapp.rest.model.ProcessVariables;
@@ -254,5 +255,11 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 	public Integer findHistoryTaksCount(Map<String, Object> filters, CIBUser user) {
 		String url = camundaUrl + "/engine-rest/history/task/count";
 		return ((ResponseEntity<JsonNode>) doPost(url, filters, JsonNode.class, user)).getBody().get("count").asInt();
+	}
+
+	@Override
+	public Collection<CandidateGroupTaskCount> getTaskCountByCandidateGroup(CIBUser user) {
+		String url = camundaUrl + "/engine-rest/task/report/candidate-group-count";
+		return Arrays.asList(((ResponseEntity<CandidateGroupTaskCount[]>) doGet(url, CandidateGroupTaskCount[].class, user, false)).getBody());
 	}
 }

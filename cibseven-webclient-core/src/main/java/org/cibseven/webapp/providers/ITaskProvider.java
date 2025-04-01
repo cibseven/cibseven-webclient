@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.webapp.rest.model.CandidateGroupTaskCount;
 import org.cibseven.webapp.rest.model.IdentityLink;
 import org.cibseven.webapp.rest.model.Task;
 import org.cibseven.webapp.rest.model.TaskCount;
@@ -42,5 +43,6 @@ public interface ITaskProvider {
 	public Collection<TaskHistory> findTasksByTaskIdHistory(String taskId, CIBUser user);
 	public ResponseEntity<byte[]> getDeployedForm(String taskId, CIBUser user);
 	public Integer findHistoryTaksCount(Map<String, Object> filters, CIBUser user);
+	public Collection<CandidateGroupTaskCount> getTaskCountByCandidateGroup(CIBUser user);
 	
 }
