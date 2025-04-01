@@ -961,7 +961,8 @@
 			"variable": "Prozessvariablen",
 			"copyValue": "Wert kopieren",
 			"historyTimeToLive": "Geschichte Zeit zu leben"
-		}
+		},
+		"showManagement": "@:process.showManagement"
 	},
 	"decision-instance": {
 		"edit": "@:commons.edit",

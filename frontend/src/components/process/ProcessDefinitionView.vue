@@ -284,7 +284,6 @@ export default {
       else {
         return ProcessService.findProcessVersionsByDefinitionKey(this.process.key).then(versions => {
           this.processDefinitions = versions
-
           var promises = []
           this.processDefinitions.forEach(() => {
             promises.push(HistoryService.findProcessesInstancesHistoryById(this.process.id, this.activityId, this.firstResult,

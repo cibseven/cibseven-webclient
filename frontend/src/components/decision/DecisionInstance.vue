@@ -67,8 +67,6 @@ export default {
   components: { DmnViewer, BWaitingBox },
   mixins: [permissionsMixin, resizerMixin],
   props: {
-    firstResult: Number,
-    maxResults: Number,
     instanceId: String,
     loading: Boolean
   },

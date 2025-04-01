@@ -771,7 +771,8 @@
 			"variable": "Variabili della decisione",
 			"copyValue": "Copia valore",
 			"historyTimeToLive": "Tempo di conservazione della cronologia"
-		}
+		},
+		"showManagement": "@:process.showManagement"
 	},
 	"decision-instance": {
 		"edit": "@:commons.edit",

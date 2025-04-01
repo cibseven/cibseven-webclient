@@ -960,7 +960,8 @@
 			"variable": "Переменные решения",
 			"copyValue": "Копировать значение",
 			"historyTimeToLive": "Время хранения истории"
-		}
+		},
+		"showManagement": "@:process.showManagement"
 	},
 	"decision-instance": {
 		"edit": "@:commons.edit",

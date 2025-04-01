@@ -671,7 +671,7 @@
 		"adminPanel": "Users Management",
 		"properties": "Properties",
 		"resources": "Resources",
-		"adminProcesses": "Prozesses",
+		"adminProcesses": "Processes",
 		"adminDecisions": "Decisions",
 		"adminHumanTasks": "Human Tasks"
 	},
@@ -958,7 +958,8 @@
 			"variable": "Decision variables",
 			"copyValue": "Copy value",
 			"historyTimeToLive": "History time to live"
-		}
+		},
+		"showManagement": "@:process.showManagement"
 	},
 	"decision-instance": {
 		"edit": "@:commons.edit",
