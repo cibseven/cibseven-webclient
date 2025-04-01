@@ -44,7 +44,7 @@
         </div>
       </template>
       <template v-slot:right>
-        <component :is="TasksRightSidebar" v-if="TasksRightSidebar" 
+        <component :is="TasksRightSidebar" v-if="TasksRightSidebar"
           :task="task" :processInstanceHistory="processInstanceHistory" @update-assignee="updateAssignee($event, 'taskList')">
         </component>
       </template>
@@ -75,7 +75,7 @@ import { BWaitingBox } from 'cib-common-components'
 import { updateAppTitle } from '@/utils/init'
 
 export default {
-  name: 'Tasks',
+  name: 'TasksContent',
   components: { TasksNavBar, FilterNavBar, FilterNavCollapsed, SidebarsFlow, SuccessAlert, BWaitingBox },
   inject: ['isMobile', 'AuthService'],
   mixins: [permissionsMixin],

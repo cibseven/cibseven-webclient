@@ -1,13 +1,13 @@
 <template>
-  <Tasks ref="tasks"></Tasks>
+  <TasksContent ref="tasks"></TasksContent>
 </template>
 
 <script>
-import Tasks from '@/components/task/Tasks.vue'
+import TasksContent from '@/components/task/TasksContent.vue'
 
 export default {
   name: 'TasksView',
-  components: { Tasks },
+  components: { TasksContent },
   watch: {
     '$route.query.filtername': function(filtername) {
       if (filtername) {

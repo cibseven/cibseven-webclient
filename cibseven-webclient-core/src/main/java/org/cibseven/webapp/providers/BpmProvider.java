@@ -909,10 +909,9 @@ public interface BpmProvider {
 			CIBUser user);
 	
 	Collection<JobDefinition> findJobDefinitions(String params, CIBUser user);
-
 	void suspendJobDefinition(String jobDefinitionId, String params, CIBUser user);
-	
 	void overrideJobDefinitionPriority(String jobDefinitionId, String params, CIBUser user);
+	JobDefinition findJobDefinition(String id, CIBUser user);
 	
 	Collection<Decision> getDecisionDefinitionList(Map<String, Object> queryParams);
 	Object getDecisionDefinitionListCount(Map<String, Object> queryParams);
@@ -932,7 +931,16 @@ public interface BpmProvider {
 	Object updateHistoryTTLById(String id);
 	Object getXmlById(String id);
 
+	Collection<Decision> getDecisionVersionsByKey(String key, Optional<Boolean> lazyLoad);
+	
+	Object getHistoricDecisionInstances(Map<String, Object> queryParams);
+	Object getHistoricDecisionInstanceCount(Map<String, Object> queryParams);
+	Object getHistoricDecisionInstanceById(String id, Map<String, Object> queryParams);
+	Object deleteHistoricDecisionInstances(Map<String, Object> body);
+	Object setHistoricDecisionInstanceRemovalTime(Map<String, Object> body);
+
 	Collection<Job> getJobs(Map<String, Object> params, CIBUser user);
 	void setSuspended(String id, Map<String, Object> data, CIBUser user);
+
 	
 }

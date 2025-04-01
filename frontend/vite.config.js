@@ -40,10 +40,10 @@ export default defineConfig({
             console.log('proxy error', err)
           })
           proxy.on('proxyReq', (proxyReq, req, _res) => {
-            // console.log('Sending Request to the Target:', req.method, backendUrl + req.url)
+            //console.log('Sending Request to the Target:', req.method, backendUrl + req.url)
           })
           proxy.on('proxyRes', (proxyRes, req, _res) => {
-            // console.log('Received Response from the Target:', proxyRes.statusCode, backendUrl + req.url)
+            //console.log('Received Response from the Target:', proxyRes.statusCode, backendUrl + req.url)
           })
         },
       },
@@ -70,5 +70,12 @@ export default defineConfig({
         cssCodeSplit: true, // Ensure CSS is extracted into a separate file
         outDir: 'dist', // The output directory
       }
-    : {}
+    : {
+      rollupOptions: {
+        input: {
+          main: path.resolve(__dirname, 'index.html'),
+          ssoLogin: path.resolve(__dirname, 'sso-login.html')
+        }
+      }
+    }
 })

@@ -65,13 +65,13 @@
           </div>
         </div>
       </div>
-      <div v-if="activeTab === 'incidents' || activeTab === 'jobDefinitions'" 
+      <div v-if="['incidents', 'jobDefinitions'].includes(activeTab)" 
           ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 0px; left: 0; bottom: 0">
         <IncidentsTable v-if="activeTab === 'incidents' && !loading"
           :incidents="incidents" :activity-instance="activityInstance"
-          :activity-instance-history="process.activitiesHistory" :get-failing-activity="getFailingActivity" />
+          :activity-instance-history="process.activitiesHistory"/>
         <JobDefinitionsTable v-else-if="activeTab === 'jobDefinitions'"
-          :processId="process.id" :activityMap="activityMap" @highlight-activity="highlightActivity" />
+          :process-id="process.id" @highlight-activity="highlightActivity" />
       </div>
     </div>
     <ConfirmDialog ref="confirm" @ok="$event.ok($event.instance)">
@@ -88,10 +88,10 @@ import appConfig from '@/appConfig.js'
 import { ProcessService } from '@/services.js'
 import { permissionsMixin } from '@/permissions.js'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
-import InstancesTable from '@/components/process/InstancesTable.vue'
+import InstancesTable from '@/components/process/tables/InstancesTable.vue'
 import JobDefinitionsTable from '@/components/process/tables/JobDefinitionsTable.vue'
 import IncidentsTable from '@/components/process/tables/IncidentsTable.vue'
-import MultisortModal from '@/components/process/MultisortModal.vue'
+import MultisortModal from '@/components/process/modals/MultisortModal.vue'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { debounce } from '@/utils/debounce.js'
@@ -100,9 +100,8 @@ import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
 import { BWaitingBox } from 'cib-common-components'
 
 export default {
-  name: 'Process',
+  name: 'ProcessInstancesView',
   components: { InstancesTable, JobDefinitionsTable, BpmnViewer, MultisortModal,
-     //FlowTable,
      SuccessAlert, ConfirmDialog, BWaitingBox, IncidentsTable },
   inject: ['loadProcesses'],
   mixins: [permissionsMixin, resizerMixin, copyToClipboardMixin],
@@ -126,8 +125,7 @@ export default {
       usages: [],
       sortByDefaultKey: 'startTimeOriginal',
       sorting: false,
-      sortDesc: true,
-      activityMap: {}
+      sortDesc: true
     }
   },
   watch: {
@@ -219,11 +217,6 @@ export default {
       }
     },
     onInput: debounce(800, function(evt) { this.$emit('filter-instances', evt) }),
-    getFailingActivity: function(activityId) {
-      let element = this.$refs.diagram.viewer.get('elementRegistry').get(activityId)
-      if (element) return element.businessObject.name
-      return ''
-    },    
     getJobDefinitions: function() {
       this.$store.dispatch('jobDefinition/getJobDefinitions', {
         processDefinitionId: this.process.id

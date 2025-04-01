@@ -16,7 +16,7 @@ import SecureInput from '@/components/login/SecureInput.vue'
 
 import FilterableSelect from '@/components/task/filter/FilterableSelect.vue'
 import IconButton from '@/components/render-template/IconButton.vue'
-import MultisortModal from '@/components/process/MultisortModal.vue'
+import MultisortModal from '@/components/process/modals/MultisortModal.vue'
 import SidebarsFlow from '@/components/common-components/SidebarsFlow.vue'
 import SmartSearch from '@/components/task/SmartSearch.vue'
 import SupportModal from '@/components/common-components/SupportModal.vue'
@@ -45,10 +45,10 @@ import ProcessView from '@/components/process/ProcessView.vue'
 import processesVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
 import processesMixin from '@/components/process/mixins/processesMixin.js'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
-import AddVariableModal from '@/components/process/AddVariableModal.vue'
+import AddVariableModal from '@/components/process/modals/AddVariableModal.vue'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
-import InstancesTable from '@/components/process/InstancesTable.vue'
-import Process from '@/components/process/Process.vue'
+import InstancesTable from '@/components/process/tables/InstancesTable.vue'
+import ProcessInstancesView from '@/components/process/ProcessInstancesView.vue'
 import ProcessAdvanced from '@/components/process/ProcessAdvanced.vue'
 import ProcessCard from '@/components/process/ProcessCard.vue'
 import ProcessDetailsSidebar from '@/components/process/ProcessDetailsSidebar.vue'
@@ -57,10 +57,10 @@ import StartProcessView from '@/components/start-process/StartProcessView.vue'
 import ProcessList from '@/components/processes/list/ProcessList.vue'
 import ProcessListView from '@/components/processes/list/ProcessListView.vue'
 import ProcessTable from '@/components/start-process/ProcessTable.vue'
-import ProcessVariablesTable from '@/components/process/ProcessVariablesTable.vue'
+import ProcessInstanceView from '@/components/process/ProcessInstanceView.vue'
 import ProcessDefinitionView from '@/components/process/ProcessDefinitionView.vue'
 import StartProcess from '@/components/start-process/StartProcess.vue'
-import TaskAssignationModal from '@/components/process/TaskAssignationModal.vue'
+import TaskAssignationModal from '@/components/process/modals/TaskAssignationModal.vue'
 import VariablesTable from '@/components/process/tables/VariablesTable.vue'
 import IncidentsTable from '@/components/process/tables/IncidentsTable.vue'
 import UserTasksTable from '@/components/process/tables/UserTasksTable.vue'
@@ -69,9 +69,9 @@ import UserTasksTable from '@/components/process/tables/UserTasksTable.vue'
 import RenderTemplate from '@/components/render-template/RenderTemplate.vue'
 
 import AdvancedSearchModal from '@/components/task/AdvancedSearchModal.vue'
-import Task from '@/components/task/Task.vue'
 import TaskContent from '@/components/task/TaskContent.vue'
-import Tasks from '@/components/task/Tasks.vue'
+import TaskView from '@/components/task/TaskView.vue'
+import TasksContent from '@/components/task/TasksContent.vue'
 import TasksNavBar from '@/components/task/TasksNavBar.vue'
 import TasksView from '@/components/task/TasksView.vue'
 
@@ -85,17 +85,17 @@ export {
     Sidebars, ResetDialog, OtpDialog, HoverStyle, CIBForm,
     SecureInput, FilterableSelect, SmartSearch, SidebarsFlow,
     IconButton, MultisortModal, StartProcess, BpmnViewer,
-    ProcessList, Process, InstancesTable, StartProcessList,
+    ProcessList, ProcessInstancesView, InstancesTable, StartProcessList,
     ProcessDetailsSidebar, ProcessCard, ProcessAdvanced,
     ProcessTable, VariablesTable, IncidentsTable, UserTasksTable, TaskAssignationModal,
     AddVariableModal, ProcessView, DeploymentsView, ResourcesNavBar,
-    DeploymentList, Tasks, TasksNavBar, Task, AdvancedSearchModal,
+    DeploymentList, TasksContent, TasksNavBar, TaskContent, AdvancedSearchModal,
     FilterModal, FilterNavBar, FilterNavCollapsed,
     RenderTemplate, AdminUsers, AdminGroups, AdminAuthorizations,
     AdminAuthorizationsTable, AuthorizationsNavBar, CreateUser,
     CreateGroup, ProfileUser, ProfileGroup, SupportModal,
     UsersManagement, processesVariablesMixin, processesMixin,
     resizerMixin, StartProcessView, ProcessListView,
-    ProcessVariablesTable, ProcessDefinitionView, TaskContent, TasksView,
+    ProcessInstanceView, ProcessDefinitionView, TaskView, TasksView,
     usersMixin, copyToClipboardMixin, debounce
 }

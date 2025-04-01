@@ -81,6 +81,16 @@ Promise.all([
                   this.$store.commit('setProcesses', { processes })
               })
           },
+          async loadDecisions() {
+            if (this.$store.state.decision.list.length < 1) {
+              const decisions = await this.$store.dispatch('getDecisionList', { latestVersion: true })
+              const reduced = decisions.map(d => ({ key: d.key, id: d.id, name: d.name, latestVersion: d.latestVersion }))
+              this.$store.commit('setDecisions', { decisions: reduced })
+              return reduced
+            } else {
+              return this.$store.state.decision.list
+            }
+          },
           isMobile: isMobile,
           AuthService: AuthService
         }

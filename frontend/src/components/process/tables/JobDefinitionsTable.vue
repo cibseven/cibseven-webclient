@@ -15,8 +15,8 @@
         </div>
       </template>
       <template v-slot:cell(activityId)="table">
-        <div :title="activityMap[table.item.activityId]" class="text-truncate">
-          {{ activityMap[table.item.activityId] }}
+        <div :title="table.item.activityId" class="text-truncate">
+          {{ $store.state.activity.processActivities[table.item.activityId] }}
         </div>
       </template>
       <template v-slot:cell(actions)="table">
@@ -44,14 +44,12 @@
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import JobDefinitionStateModal from '@/components/process/JobDefinitionStateModal.vue'
 import JobDefinitionPriorityModal from '@/components/process/JobDefinitionPriorityModal.vue'
-import { JobDefinitionService } from '@/services.js'
 
 export default {
   name: 'JobsDefinitionsTable',
   components: { FlowTable, JobDefinitionStateModal, JobDefinitionPriorityModal },
   props: {
-    processId: String,
-    activityMap: Object
+    processId: String
   },
   emits: ['highlight-activity'],
   computed: {

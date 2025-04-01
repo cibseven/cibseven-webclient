@@ -87,7 +87,7 @@ import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
 import { BWaitingBox } from 'cib-common-components'
 
 import { TaskPool } from "@/taskpool.js"
-import { TaskService, AdminService } from '@/services.js'
+import { TaskService } from '@/services.js'
 
 const MIN_TASKNUMBER_INTERVAL = 10000
 

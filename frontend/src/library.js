@@ -18,7 +18,7 @@ import CIBForm from '@/components/common-components/CIBForm.vue'
 import SecureInput from '@/components/login/SecureInput.vue'
 import FilterableSelect from '@/components/task/filter/FilterableSelect.vue'
 import IconButton from '@/components/render-template/IconButton.vue'
-import MultisortModal from '@/components/process/MultisortModal.vue'
+import MultisortModal from '@/components/process/modals/MultisortModal.vue'
 import SidebarsFlow from '@/components/common-components/SidebarsFlow.vue'
 import SmartSearch from '@/components/task/SmartSearch.vue'
 import SupportModal from '@/components/common-components/SupportModal.vue'
@@ -39,10 +39,10 @@ import FilterModal from '@/components/task/filter/FilterModal.vue'
 import FilterNavBar from '@/components/task/filter/FilterNavBar.vue'
 import FilterNavCollapsed from '@/components/task/filter/FilterNavCollapsed.vue'
 import ProcessView from '@/components/process/ProcessView.vue'
-import AddVariableModal from '@/components/process/AddVariableModal.vue'
+import AddVariableModal from '@/components/process/modals/AddVariableModal.vue'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
 import InstancesTable from '@/components/process/InstancesTable.vue'
-import Process from '@/components/process/Process.vue'
+import ProcessInstancesView from '@/components/process/ProcessInstancesView.vue'
 import ProcessAdvanced from '@/components/process/ProcessAdvanced.vue'
 import ProcessCard from '@/components/process/ProcessCard.vue'
 import ProcessDetailsSidebar from '@/components/process/ProcessDetailsSidebar.vue'
@@ -51,18 +51,18 @@ import StartProcessView from '@/components/start-process/StartProcessView.vue'
 import ProcessList from '@/components/processes/list/ProcessList.vue'
 import ProcessListView from '@/components/processes/list/ProcessListView.vue'
 import ProcessTable from '@/components/start-process/ProcessTable.vue'
-import ProcessVariablesTable from '@/components/process/ProcessVariablesTable.vue'
+import ProcessInstanceView from '@/components/process/ProcessInstanceView.vue'
 import ProcessDefinitionView from '@/components/process/ProcessDefinitionView.vue'
 import StartProcess from '@/components/start-process/StartProcess.vue'
-import TaskAssignationModal from '@/components/process/TaskAssignationModal.vue'
+import TaskAssignationModal from '@/components/process/modals/TaskAssignationModal.vue'
 import VariablesTable from '@/components/process/tables/VariablesTable.vue'
 import IncidentsTable from '@/components/process/tables/IncidentsTable.vue'
 import UserTasksTable from '@/components/process/tables/UserTasksTable.vue'
 import RenderTemplate from '@/components/render-template/RenderTemplate.vue'
 import AdvancedSearchModal from '@/components/task/AdvancedSearchModal.vue'
-import Task from '@/components/task/Task.vue'
 import TaskContent from '@/components/task/TaskContent.vue'
-import Tasks from '@/components/task/Tasks.vue'
+import TaskView from '@/components/task/TaskView.vue'
+import TasksContent from '@/components/task/TasksContent.vue'
 import TasksNavBar from '@/components/task/TasksNavBar.vue'
 import TasksView from '@/components/task/TasksView.vue'
 import HighlightedText from '@/components/common-components/HighlightedText.vue'
@@ -109,7 +109,7 @@ const registerComponents = function(app) {
   app.component('add-variable-modal', AddVariableModal)
   app.component('bpmn-viewer', BpmnViewer)
   app.component('instances-table', InstancesTable)
-  app.component('process', Process)
+  app.component('process-instances-view', ProcessInstancesView)
   app.component('process-advanced', ProcessAdvanced)
   app.component('process-card', ProcessCard)
   app.component('process-details-sidebar', ProcessDetailsSidebar)
@@ -118,7 +118,7 @@ const registerComponents = function(app) {
   app.component('process-list', ProcessList)
   app.component('process-list-view', ProcessListView)
   app.component('process-table', ProcessTable)
-  app.component('process-variables-table', ProcessVariablesTable)
+  app.component('process-instance-view', ProcessInstanceView)
   app.component('process-definition-view', ProcessDefinitionView)
   app.component('start-process', StartProcess)
   app.component('task-assignation-modal', TaskAssignationModal)
@@ -127,9 +127,9 @@ const registerComponents = function(app) {
   app.component('user-tasks-table', UserTasksTable)
   app.component('render-template', RenderTemplate)
   app.component('advanced-search-modal', AdvancedSearchModal)
-  app.component('task', Task)
   app.component('task-content', TaskContent)
-  app.component('tasks', Tasks)
+  app.component('task-view', TaskView)
+  app.component('tasks-content', TasksContent)
   app.component('tasks-nav-bar', TasksNavBar)
   app.component('tasks-view', TasksView)
   app.component('highlighted-text', HighlightedText)
@@ -185,7 +185,7 @@ export {
   AddVariableModal,
   BpmnViewer,
   InstancesTable,
-  Process,
+  ProcessInstancesView,
   ProcessAdvanced,
   ProcessCard,
   ProcessDetailsSidebar,
@@ -194,7 +194,7 @@ export {
   ProcessList,
   ProcessListView,
   ProcessTable,
-  ProcessVariablesTable,
+  ProcessInstanceView,
   ProcessDefinitionView,
   StartProcess,
   TaskAssignationModal,
@@ -203,9 +203,9 @@ export {
   UserTasksTable,
   RenderTemplate,
   AdvancedSearchModal,
-  Task,
   TaskContent,
-  Tasks,
+  TaskView,
+  TasksContent,
   TasksNavBar,
   TasksView,
   HighlightedText

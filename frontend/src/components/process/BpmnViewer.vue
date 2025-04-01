@@ -268,7 +268,7 @@ export default {
           activityMap[bo.id] = bo.name
         }
       })
-      this.$emit('activity-map-ready', activityMap)
+      this.$store.commit('setProcessActivities', activityMap)
     },
     setSelectableOnAllowedElements: function() {
       const elementRegistry = this.viewer.get('elementRegistry')

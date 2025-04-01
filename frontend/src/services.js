@@ -338,6 +338,9 @@ var JobDefinitionService = {
   },
   overrideJobDefinitionPriority: function(jobDefinitionId, params) {
     return axios.put(appConfig.servicesBasePath + "/job-definition/" + jobDefinitionId + "/job-priority", params)
+  },
+  findJobDefinition: function(id) {
+    return axios.get(appConfig.servicesBasePath + "/job-definition/" + id)
   }
 }
 
@@ -441,6 +444,75 @@ var TemplateService = {
   }
 }
 
+var DecisionService = {
+  getDecisionList: function(params) {
+    return axios.get(appConfig.servicesBasePath + "/decision", { params })
+  },
+  getDecisionVersionsByKey: function(key, lazyLoad = false) {
+    return axios.get(appConfig.servicesBasePath + "/decision/key/" + key + "/versions" + '?lazyLoad=' + lazyLoad)
+  },
+  getDecisionDefinitionById: function(id, extraInfo = false) {
+    return axios.get(appConfig.servicesBasePath + "/decision/id/" + id + '?extraInfo=' + extraInfo)
+  },
+  getDecisionByKey: function(key) {
+    return axios.get(appConfig.servicesBasePath + "/decision/key/" + key)
+  },
+  getDecisionByKeyAndTenant: function (key, tenant) {
+    return axios.get(appConfig.servicesBasePath + "/decision/key/" + key + "/tenant/" + tenant)
+  },
+  getDiagramByKey: function (key) {
+    return axios.get(appConfig.servicesBasePath + "/decision/key/" + key + "/diagram")
+  },
+  getDiagramById: function (id) {
+    return axios.get(appConfig.servicesBasePath + "/decision/id/" + id + "/diagram")
+  },
+  getDiagramByKeyAndTenant: function (key, tenant) {
+    return axios.get(appConfig.servicesBasePath + "/decision/key/" + key + "/tenant/" + tenant + "/diagram")
+  },
+  getXmlByKey: function (key) {
+    return axios.get(appConfig.servicesBasePath + "/decision/key/" + key + "/xml")
+  },
+  getXmlByKeyAndTenant: function (key, tenant) {
+    return axios.get(appConfig.servicesBasePath + "/decision/key/" + key + "/tenant/" + tenant + "/xml")
+  },
+  getXmlById: function (id) {
+    return axios.get(appConfig.servicesBasePath + "/decision/id/" + id + "/xml")
+  },
+  evaluateByKey: function (key, data) {
+    return axios.post(appConfig.servicesBasePath + "/decision/key/" + key + "/evaluate", data)
+  },
+  evaluateByKeyAndTenant: function (key, tenant, data) {
+    return axios.post(appConfig.servicesBasePath + "/decision/key/" + key + "/tenant/" + tenant + "/evaluate", data)
+  },
+  evaluateById: function (id, data) {
+    return axios.post(appConfig.servicesBasePath + "/decision/id/" + id + "/evaluate", data)
+  },
+  updateHistoryTTLByKey: function (key, data) {
+    return axios.put(appConfig.servicesBasePath + "/decision/key/" + key + "/history-ttl", data)
+  },
+  updateHistoryTTLByKeyAndTenant: function (key, tenant, data) {
+    return axios.put(appConfig.servicesBasePath + "/decision/key/" + key + "/tenant/" + tenant + "/history-ttl", data)
+  },
+  updateHistoryTTLById: function (id, data) {
+    return axios.put(appConfig.servicesBasePath + "/decision/id/" + id + "/history-ttl", data)
+  },
+  getHistoricDecisionInstances: function (params) {
+    return axios.get(appConfig.servicesBasePath + "/decision/history/instances", { params })
+  },
+  getHistoricDecisionInstanceCount: function (params) {
+    return axios.get(appConfig.servicesBasePath + "/decision/history/instances/count", { params })
+  },
+  getHistoricDecisionInstanceById: function (id, params) {
+    return axios.get(appConfig.servicesBasePath + "/decision/history/instances/" + id, { params })
+  },
+  deleteHistoricDecisionInstances: function (payload) {
+    return axios.post(appConfig.servicesBasePath + "/decision/history/instances/delete", payload)
+  },
+  setHistoricDecisionInstanceRemovalTime: function (payload) {
+    return axios.post(appConfig.servicesBasePath + "/decision/history/instances/set-removal-time", payload)
+  }
+}
+
 var JobService = {
   getJobs(params) {
     return axios.post(appConfig.servicesBasePath + '/job', params).then(patchJob)
@@ -451,4 +523,4 @@ var JobService = {
 }
 
 export { TaskService, FilterService, ProcessService, AdminService, JobService, JobDefinitionService,
-  HistoryService, IncidentService, AuthService, InfoService, FormsService, TemplateService }
+  HistoryService, IncidentService, AuthService, InfoService, FormsService, TemplateService, DecisionService }
