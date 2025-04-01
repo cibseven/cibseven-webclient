@@ -6,7 +6,7 @@
       { label: 'timestamp', key: 'incidentTimestamp', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
       { label: 'activity', key: 'activityId', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
       { label: 'failedActivity', key: 'failedActivityId', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
-      { label: 'incidentType', key: 'incidentType', class: 'col-2', tdClass: 'py-1 border-top-0' },
+      { label: 'incidentType', key: 'incidentType', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
       { label: 'actions', key: 'actions', class: 'col-1', sortable: false, tdClass: 'py-1 border-top-0' }]">
       <template v-slot:cell(incidentMessage)="table">
         <div :title="table.item.incidentMessage" class="text-truncate" @click="showIncidentMessage(table.item.configuration)">{{ table.item.incidentMessage }}</div>
