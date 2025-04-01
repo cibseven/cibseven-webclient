@@ -1,0 +1,209 @@
+import { DecisionService } from '@/services.js'
+
+const DecisionStore = {
+  state: {
+    list: [],
+    selectedDecisionVersion: null
+  },
+  mutations: {
+    setDecisions: function (state, params) {
+      state.list = params.decisions
+    },
+    setHistoricInstancesForKey: function (state, { key, version, instances }) {
+      const decision = state.list.find(decision => decision.key === key)
+      if (decision) {
+        const targetVersion = decision.versions.find(v => String(v.version) === String(version))
+        if (targetVersion) {
+          targetVersion.historicInstances = instances
+        }
+      }
+    },
+    setDecisionVersions(state, { key, versions }) {
+      const decision = state.list.find(decision => decision.key === key)
+      if (decision) decision.versions = versions
+    },
+    setSelectedDecisionVersion(state, { key, version }) {
+      const decision = state.list.find(decision => decision.key === key)
+      if (decision && decision.versions) {
+        const targetVersion = decision.versions.find(v => String(v.version) === String(version))
+        if (targetVersion) {
+          state.selectedDecisionVersion = targetVersion
+        }
+      }
+    }
+  },
+  getters: {
+    getFilteredDecisions: (state) => (filter) => {
+      if (!state.list) return []
+      const filterUpper = filter.toUpperCase()
+      const decisions = state.list.filter(decision => {
+        return (
+          decision.key.toUpperCase().includes(filterUpper) ||
+          (decision.name && decision.name.toUpperCase().includes(filterUpper))
+        )
+      })
+      decisions.sort((objA, objB) => {
+        const nameA = objA.name ? objA.name.toUpperCase() : ''
+        const nameB = objB.name ? objB.name.toUpperCase() : ''
+        return nameA.localeCompare(nameB)
+      })
+      return decisions
+    },
+    getDecisionByKey: (state) => (key) => {
+      return state.list.find(d => d.key === key)
+    },
+    getDecisionInstances: (state) => (key, version) => {
+      const decision = state.list.find(d => d.key === key)
+      if (decision) {
+        const targetVersion = decision.versions.find(v => String(v.version) === String(version))
+        return targetVersion?.historicInstances || []
+      }
+    },
+    getDecisionVersions: (state) => (key) => {
+      const decision = state.list.find(d => d.key === key)
+      return decision?.versions || []
+    },
+    getSelectedDecisionVersion: (state) => () => {
+      return state.selectedDecisionVersion
+    }
+  },
+  actions: {
+
+    // ────────────────────────────────────────────────────────────────
+    //  Definitions
+    // ────────────────────────────────────────────────────────────────
+
+    async getDecisionList({ state, commit }, params) {
+      if (state.list.length < 1) {
+        const decisions = await DecisionService.getDecisionList(params)
+        const reduced = decisions.map(d => ({ key: d.key, id: d.id, name: d.name, latestVersion: d.version }))
+        commit('setDecisions', { decisions: reduced })
+        return reduced
+      } else {
+        return state.list
+      }
+    },
+
+    async getDecisionByKey({ state }, params) {
+      if (state.list && state.list.length > 0) {
+        const found = state.list.find(decision => decision.key === params.key)
+        if (found) return found
+      }
+      const newList = await DecisionService.getDecisionList(params)
+      const foundAfterReload = newList.find(decision => decision.key === params.key)
+      if (foundAfterReload) return foundAfterReload
+      return DecisionService.getDecisionByKey(params.key)
+    },
+
+    async getDecisionByKeyAndTenant(_, { key, tenant }) {
+      return DecisionService.getDecisionByKeyAndTenant(key, tenant)
+    },
+
+    async getDecisionVersionsByKey({ commit }, { key, lazyLoadHistory }) {
+      const result = await DecisionService.getDecisionVersionsByKey(key, lazyLoadHistory)
+      if (lazyLoadHistory) {
+        result.forEach(v => {
+          v.runningInstances = '-'
+          v.allInstances = '-'
+          v.completedInstances = '-'
+        })
+      }
+      commit('setDecisionVersions', { key, versions: result })
+      return result
+    },
+
+    // ────────────────────────────────────────────────────────────────
+    //  Evaluation
+    // ────────────────────────────────────────────────────────────────
+
+    async evaluateByKey(_, { key, data }) {
+      return DecisionService.evaluateByKey(key, data)
+    },
+
+    async evaluateByKeyAndTenant(_, { key, tenant, data }) {
+      return DecisionService.evaluateByKeyAndTenant(key, tenant, data)
+    },
+
+    async evaluateById(_, { id, data }) {
+      return DecisionService.evaluateById(id, data)
+    },
+
+    // ────────────────────────────────────────────────────────────────
+    //  XML & Diagram
+    // ────────────────────────────────────────────────────────────────
+
+    async getDiagramByKey(_, key) {
+      return DecisionService.getDiagramByKey(key)
+    },
+
+    async getDiagramById(_, id) {
+      return DecisionService.getDiagramById(id)
+    },
+
+    async getDiagramByKeyAndTenant(_, { key, tenant }) {
+      return DecisionService.getDiagramByKeyAndTenant(key, tenant)
+    },
+
+    async getXmlByKey(_, key) {
+      return DecisionService.getXmlByKey(key)
+    },
+
+    async getXmlByKeyAndTenant(_, { key, tenant }) {
+      return DecisionService.getXmlByKeyAndTenant(key, tenant)
+    },
+
+    async getXmlById(_, id) {
+      return DecisionService.getXmlById(id)
+    },
+
+    // ────────────────────────────────────────────────────────────────
+    //  History Time To Live (TTL)
+    // ────────────────────────────────────────────────────────────────
+
+    async updateHistoryTTLByKey(_, { key, data }) {
+      return DecisionService.updateHistoryTTLByKey(key, data)
+    },
+
+    async updateHistoryTTLByKeyAndTenant(_, { key, tenant, data }) {
+      return DecisionService.updateHistoryTTLByKeyAndTenant(key, tenant, data)
+    },
+
+    async updateHistoryTTLById(_, { id, data }) {
+      return DecisionService.updateHistoryTTLById(id, data)
+    },
+
+    // ────────────────────────────────────────────────────────────────
+    //  Historic Decision Instances
+    // ────────────────────────────────────────────────────────────────
+
+    async getHistoricDecisionInstances({ commit }, { key, version, params }) {
+      const result = await DecisionService.getHistoricDecisionInstances(params)
+      commit('setHistoricInstancesForKey', { key, version, instances: result })
+      return result
+    },
+
+    async getHistoricDecisionInstanceCount({ commit }, params) {
+      const result = await DecisionService.getHistoricDecisionInstanceCount(params)
+      if (result?.count != null) {
+        commit('setHistoricCount', result.count)
+      }
+      return result
+    },
+
+    async getHistoricDecisionInstanceById({ commit }, { id, params }) {
+      const result = await DecisionService.getHistoricDecisionInstanceById(id, params)
+      commit('setHistoricInstance', result)
+      return result
+    },
+
+    async deleteHistoricDecisionInstances(_, payload) {
+      return DecisionService.deleteHistoricDecisionInstances(payload)
+    },
+
+    async setHistoricDecisionInstanceRemovalTime(_, payload) {
+      return DecisionService.setHistoricDecisionInstanceRemovalTime(payload)
+    }
+  }
+}
+
+export default DecisionStore

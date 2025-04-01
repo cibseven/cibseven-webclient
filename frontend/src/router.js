@@ -10,6 +10,8 @@ import StartView from '@/components/start/StartView.vue'
 import StartProcessView from '@/components/start-process/StartProcessView.vue'
 import ProcessView from '@/components/process/ProcessView.vue'
 import ProcessListView from '@/components/processes/list/ProcessListView.vue'
+import DecisionView from '@/components/decision/DecisionView.vue'
+import DecisionListView from '@/components/decisions/list/DecisionListView.vue'
 import UsersManagement from '@/components/admin/UsersManagement.vue'
 import AdminUsers from '@/components/admin/AdminUsers.vue'
 import CreateUser from '@/components/admin/CreateUser.vue'
@@ -22,7 +24,7 @@ import AdminAuthorizationsTable from '@/components/admin/AdminAuthorizationsTabl
 import DeploymentsView from '@/components/deployment/DeploymentsView.vue'
 import HumanTasksView from '@/components/task/HumanTasksView.vue'
 import TasksView from '@/components/task/TasksView.vue'
-import TaskContent from '@/components/task/TaskContent.vue'
+import TaskView from '@/components/task/TaskView.vue'
 import LoginView from '@/components/login/LoginView.vue'
 import { BWaitingBox } from 'cib-common-components'
 import DeployedForm from '@/components/forms/DeployedForm.vue'
@@ -83,10 +85,11 @@ const router = createRouter({
         components: { BWaitingBox }, template: '<BWaitingBox ref="loader" class="d-flex justify-content-center" styling="width:20%">\
           <router-view ref="down" class="w-100 h-100"></router-view></BWaitingBox>',
         mixins: [permissionsMixin],
-        inject: ['loadProcesses'],
+        inject: ['loadProcesses','loadDecisions'],
         mounted: function() {
           this.$refs.loader.done = true
           this.$refs.loader.wait(this.loadProcesses(false))
+          this.$refs.loader.wait(this.loadDecisions())
           // Preload the filters to have them in the admin view.
           this.$store.dispatch('findFilters').then(response => {
             this.$store.commit('setFilters',
@@ -115,7 +118,7 @@ const router = createRouter({
         // Tasks in active processes
         { path: 'tasks', beforeEnter: permissionsGuard('tasklist'), component: TasksView,
           children: [
-            { path: ':filterId/:taskId?', name: 'tasklist', component: TaskContent }
+            { path: ':filterId/:taskId?', name: 'tasklist', component: TaskView }
           ]
         },
 
@@ -130,6 +133,30 @@ const router = createRouter({
             versionIndex: route.params.versionIndex,
             instanceId: route.params.instanceId,
           })
+        },
+        // decisions
+        { path: 'decisions', redirect: '/seven/auth/decisions/list', beforeEnter: permissionsGuard('cockpit') },
+        { path: 'decisions/list', name: 'decision-list', beforeEnter: permissionsGuard('cockpit'),
+          component: DecisionListView
+        },
+        {
+          path: 'decision/:decisionKey',
+          component: DecisionView,
+          props: true,
+          children: [
+            {
+              path: ':versionIndex',
+              name: 'decision-version',
+              component: () => import('@/components/decision/DecisionDefinitionVersion.vue'),
+              props: true
+            },
+            {
+              path: ':versionIndex/:instanceId',
+              name: 'decision-instance',
+              component: () => import('@/components/decision/DecisionInstance.vue'),
+              props: true
+            }
+          ]
         },
         { path: 'deployments/:deploymentId?', name: 'deployments', beforeEnter: permissionsGuard('cockpit'),
           component: DeploymentsView

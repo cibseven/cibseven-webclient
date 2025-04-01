@@ -3,6 +3,7 @@ package org.cibseven.webapp.rest;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.SystemException;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
@@ -125,6 +127,45 @@ public class DecisionService extends BaseService implements InitializingBean {
 	@GetMapping("/id/{id}/xml")
 	public Object getXmlById(@PathVariable String id) {
 		return bpmProvider.getXmlById(id);
+	}
+	
+	@GetMapping("/key/{key}/versions")
+	public Collection<Decision> getDecisionVersionsByKey(
+			@Parameter(description = "Decision definition key") @PathVariable String key,
+			@RequestParam Optional<Boolean> lazyLoad, Locale loc) {
+		return bpmProvider.getDecisionVersionsByKey(key, lazyLoad);
+	}
+	
+	@Operation(summary = "Get a list of historic decision instances")
+	@GetMapping("/history/instances")
+	public Object getHistoricDecisionInstances(@RequestParam Map<String, Object> queryParams) {
+	    return bpmProvider.getHistoricDecisionInstances(queryParams);
+	}
+	
+	@Operation(summary = "Get the count of historic decision instances")
+	@GetMapping("/history/instances/count")
+	public Object getHistoricDecisionInstanceCount(@RequestParam Map<String, Object> queryParams) {
+	    return bpmProvider.getHistoricDecisionInstanceCount(queryParams);
+	}
+
+	@Operation(summary = "Get a single historic decision instance by ID")
+	@GetMapping("/history/instances/{id}")
+	public Object getHistoricDecisionInstanceById(
+	        @PathVariable String id,
+	        @RequestParam Map<String, Object> queryParams) {
+	    return bpmProvider.getHistoricDecisionInstanceById(id, queryParams);
+	}
+
+	@Operation(summary = "Delete historic decision instances asynchronously")
+	@PostMapping("/history/instances/delete")
+	public Object deleteHistoricDecisionInstances(@RequestBody Map<String, Object> body) {
+	    return bpmProvider.deleteHistoricDecisionInstances(body);
+	}
+
+	@Operation(summary = "Set removal time for historic decision instances asynchronously")
+	@PostMapping("/history/instances/set-removal-time")
+	public Object setHistoricDecisionInstanceRemovalTime(@RequestBody Map<String, Object> body) {
+	    return bpmProvider.setHistoricDecisionInstanceRemovalTime(body);
 	}
 	
 }

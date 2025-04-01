@@ -1,4 +1,9 @@
+
 {
+	"commons": {
+		"edit": "Editar",
+		"save": "Guardar"
+	},
 	"login": {
 		"productName": "CIB seven",
 		"productSlogan": "Plataforma para la gestión de procesos",
@@ -121,8 +126,8 @@
 		"active": "Activo",
 		"history": "Historial",
 		"download": "Descargar",
-		"edit": "Editar",
-		"save": "Guardar",
+		"edit": "@:commons:edit",
+		"save": "@:commons:save",
 		"upload": "Subir archivo",
 		"selectFile": "Seleccione archivo",
 		"details": {
@@ -521,7 +526,7 @@
 			"selectedCriteria": "Criterios seleccionados",
 			"deleteCriteria": "Eliminar criterio",
 			"no-filters": "No se encontraron filtros",
-			"edit": "Editar",
+			"edit": "@:commons:edit",
 			"delete": "Eliminar",
 			"pin": "Adjuntar",
 			"includeAssigned": "Incluir las tareas asignadas",
@@ -660,7 +665,10 @@
 		"easyForm": "Easy Form",
 		"adminPanel": "Gestión de Usuarios",
 		"properties": "Propiedades",		
-		"resources": "Recursos"
+		"resources": "Recursos",
+		"adminProcesses": "Procesos",
+		"adminDecisions": "Decisiones",
+		"adminHumanTasks": "Tareas de Usuario"
 	},
 	"errors": {
 		"invalid": "Por favor, introduce un valor válido",
@@ -901,5 +909,54 @@
 	"notification": {
 		"newTasks": "Nuevas tareas",
 		"newTasksTitle": "Tiene nuevas tareas asignadas en CIB flow"
+	},
+	"decision": {
+		"id": "ID",
+		"name": "Nombre",
+		"actions": "Acciones",
+		"emptyProcessList": "Tu lista de decisiones está actualmente vacía.",
+		"emptyProcessListFiltered": "No hay decisiones que coincidan con el filtro aplicado.",
+		"decision": "Decisión",
+		"deleteProcessDefinition": "Eliminar definición de decisión",
+		"refreshVersions": "Actualizar versiones históricas",
+		"loadVersions": "Cargar todas las versiones históricas",
+		"days": "días",
+		"instances": "Instancias",
+		"activateProcess": "Activar definición de decisión",
+		"downloadBpmn": "Descargar archivo DMN",
+		"showDeployment": "Ver despliegue",
+		"showInstance": "Ver instancia",
+		"evaluationTime": "Tiempo de evaluación",
+		"callingProcess": "Proceso/Caso de origen",
+		"callingInstanceId": "ID de la instancia de origen",
+		"activityId": "ID de actividad",
+		"copySuccess": "Valor seleccionado copiado",
+		"details": {
+			"titleProcessActions": "Acciones sobre la definición de decisión",
+			"titleInstancesActions": "Acciones sobre la decisión",
+			"firstStart": "Primera ejecución el",
+			"lastStart": "Última ejecución el",
+			"totalInstances": "Número total de instancias",
+			"unfinishedInstances": "Instancias en ejecución",
+			"finishedInstances": "Instancias completadas sin errores",
+			"definitionVersion": "Versión de la definición",
+			"versionTag": "Etiqueta de versión",
+			"definitionId": "ID de la definición",
+			"definitionKey": "Clave de la definición",
+			"definitionName": "Nombre de la definición",
+			"deploymentId": "ID del despliegue",
+			"instancesRunning": "Instancias en ejecución",
+			"currentVersion": "Versión actual",
+			"allVersions": "Todas las versiones",
+			"versionInstances": "Instancias de esta versión",
+			"historyVersions": "Versiones históricas",
+			"variable": "Variables de decisión",
+			"copyValue": "Copiar valor",
+			"historyTimeToLive": "Tiempo de vida del historial"
+		}
+	},
+	"decision-instance": {
+		"edit": "@:commons:edit",
+		"save": "@:commons:save"
 	}
 }
