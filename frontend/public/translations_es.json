@@ -157,7 +157,15 @@
 		    "failedActivity": "Actividad fallida",
 		    "incidentType": "Tipo de incidente",
 		    "retryJob": "Incrementar el número de reintentos de trabajo fallido",
-		    "actions": "Acciones"
+		    "actions": "Acciones",
+			"incrementNumberRetries": "Incrementar número de reintentos",
+			"retryMsg": "Se incrementará el número de reintentos del trabajo fallido correspondiente al incidente seleccionado.",
+			"dueDateMsg": "El momento en que se ejecuta un trabajo está determinado por la fecha de vencimiento:",
+			"keepDueDate": "Mantener fecha de vencimiento",
+			"setDueDate": "Establecer fecha de vencimiento",
+			"dueDate": "Fecha de vencimiento",
+			"scheduleAt": "Programar para",
+			"invalidDateError": "Debe insertar una fecha válida"
 		},
 		"jobDefinitions": {
 			"state": "Estado",
