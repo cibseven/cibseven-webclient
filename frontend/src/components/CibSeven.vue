@@ -52,8 +52,8 @@
           <b-dropdown-item v-if="$root.config.flowLinkTerms != ''" :href="$root.config.flowLinkTerms" target="_blank">{{ $t('infoAndHelp.flowLinkTerms') }}</b-dropdown-item>
           <b-dropdown-item v-if="$root.config.flowLinkPrivacy != ''" :href="$root.config.flowLinkPrivacy" target="_blank">{{ $t('infoAndHelp.flowLinkPrivacy') }}</b-dropdown-item>
           <b-dropdown-item v-if="$root.config.flowLinkImprint != ''" :href="$root.config.flowLinkImprint" target="_blank">{{ $t('infoAndHelp.flowLinkImprint') }}</b-dropdown-item>
-          <b-dropdown-item v-if="$root.config.layout.showSupportInfo" @click="$refs.support.show()">{{ $t('infoAndHelp.flowModalSupport.modalText') }}</b-dropdown-item>
-          <b-dropdown-item @click="$refs.about.show()">{{ $t('infoAndHelp.flowModalAbout.modalText') }}</b-dropdown-item>
+          <b-dropdown-item-button v-if="$root.config.layout.showSupportInfo" @click="$refs.support.show()">{{ $t('infoAndHelp.flowModalSupport.modalText') }}</b-dropdown-item-button>
+          <b-dropdown-item-button @click="$refs.about.show()">{{ $t('infoAndHelp.flowModalAbout.modalText') }}</b-dropdown-item-button>
         </b-nav-item-dropdown>
       </b-navbar-nav>
 
