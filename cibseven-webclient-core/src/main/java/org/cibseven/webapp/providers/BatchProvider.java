@@ -5,8 +5,10 @@ import java.util.Map;
 import org.cibseven.webapp.auth.CIBUser;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
+@Component
 public class BatchProvider extends SevenProviderBase implements IBatchProvider {
 
 	@Override
