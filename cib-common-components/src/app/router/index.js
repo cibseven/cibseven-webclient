@@ -48,6 +48,11 @@ const router = createRouter({
       name: 'WaitingBox',
       component: () => import('../components/GroupWaitingBox.vue'),
     },
+    {
+      path: '/forms',
+      name: 'Forms',
+      component: () => import('../components/GroupForm.vue'),
+    },
   ],
 })
 
