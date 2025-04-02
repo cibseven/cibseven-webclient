@@ -32,8 +32,8 @@
       </b-form-group>
     </div>
     <template v-slot:modal-footer>
-      <b-button @click="$refs.addVariable.hide()">{{ $t('confirm.cancel') }}</b-button>
-      <b-button :disabled="!isValid" variant="primary" @click="addVariable()">{{ $t('confirm.ok') }}</b-button>
+      <b-button @click="$refs.addVariable.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
+      <b-button :disabled="!isValid" @click="addVariable()" variant="primary">{{ $t('confirm.ok') }}</b-button>
     </template>
   </b-modal>
 </template>

@@ -52,17 +52,17 @@
   <TaskPopper ref="importPopper"></TaskPopper>
 
   <b-modal ref="uploadFile" :title="$t('process-instance.upload')">
-    <div class="container-fluid">
+    <div>
       <b-form-file placeholder="" :browse-text="$t('process-instance.selectFile')" v-model="file"></b-form-file>
     </div>
     <template v-slot:modal-footer>
-      <b-button @click="$refs.uploadFile.hide(); file = null">{{ $t('confirm.cancel') }}</b-button>
-      <b-button :disabled="!file" variant="primary" @click="uploadFile(); $refs.uploadFile.hide()">{{ $t('process-instance.upload') }}</b-button>
+      <b-button @click="$refs.uploadFile.hide(); file = null" variant="link">{{ $t('confirm.cancel') }}</b-button>
+      <b-button :disabled="!file" @click="uploadFile(); $refs.uploadFile.hide()" variant="primary">{{ $t('process-instance.upload') }}</b-button>
     </template>
   </b-modal>
 
   <b-modal ref="modifyVariable" :title="$t('process-instance.edit')">
-    <div v-if="variableToModify" class="container-fluid">
+    <div v-if="variableToModify">
       <b-form-group :label="$t('process-instance.variables.name')">
         <b-form-input v-model="variableToModify.name" disabled></b-form-input>
       </b-form-group>
@@ -76,8 +76,8 @@
     <template v-slot:modal-footer>
       <b-button v-if="selectedInstance.state === 'COMPLETED'" @click="$refs.modifyVariable.hide()">{{ $t('confirm.close') }}</b-button>
       <template v-else>
-        <b-button @click="$refs.modifyVariable.hide()">{{ $t('confirm.cancel') }}</b-button>
-        <b-button variant="primary" @click="updateVariable">{{ $t('process-instance.save') }}</b-button>
+        <b-button @click="$refs.modifyVariable.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
+        <b-button @click="updateVariable" variant="primary">{{ $t('process-instance.save') }}</b-button>
       </template>
     </template>
   </b-modal>
