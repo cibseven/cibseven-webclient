@@ -12,8 +12,8 @@
       </b-form-group>
     </CIBForm>
     <template v-slot:modal-footer>
-      <button @click="$refs.form.onSubmit()" class="btn btn-primary">{{ $t('problem-report.ok') }}</button>
-      <button type="button" class="btn btn-secondary" @click="$refs.modal.hide()">{{ $t('problem-report.cancel') }}</button>
+      <b-button @click="$refs.modal.hide()" variant="link">{{ $t('problem-report.cancel') }}</b-button>
+      <b-button @click="$refs.form.onSubmit()" variant="primary">{{ $t('problem-report.ok') }}</b-button>
     </template>
   </b-modal>
 </template>
