@@ -10,7 +10,7 @@
     </div>
     <template v-slot:modal-footer>
       <b-button @click="$refs.modal.hide('cancel')" variant="link">{{ $t('confirm.cancel') }}</b-button>
-      <b-button @click="$emit('ok', param); $refs.modal.hide('ok')" variant="primary">{{ $t('confirm.ok') }}</b-button>
+      <b-button @click="$emit('ok', param); $refs.modal.hide('ok')" variant="primary">{{ okTitle || $t('confirm.ok') }}</b-button>
     </template>
   </b-modal>
 </template>
@@ -18,6 +18,9 @@
 <script>
 export default {
   name: 'ConfirmDialog',
+  props: {
+    okTitle: { type: String, default: null },
+  },
   data: function() { return { param: null } },
   methods: {
     show: function(param) {
