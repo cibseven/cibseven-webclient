@@ -105,7 +105,8 @@ $navbar-collapse-bg: $white;
   background-color: $navbar-collapse-bg;
 }
 
-input[type="checkbox"] {
+input[type="checkbox"],
+input[type="radio"] {
   background-color: $body-bg;
   cursor: pointer;
 
