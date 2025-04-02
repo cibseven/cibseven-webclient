@@ -59,7 +59,7 @@ export default {
   props: {
     credentials: Object,
     credentials2: Object,
-    hideForgotten: { type: Boolean, default: false },
+    hideForgotten: Boolean,
     onRegister: Function,
     forgottenType: { type: String, default: 'email' }
   },
