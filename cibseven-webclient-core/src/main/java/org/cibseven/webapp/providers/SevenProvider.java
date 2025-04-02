@@ -766,24 +766,24 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	*/
 	
 	@Override
-	public Collection<Decision> getDecisionDefinitionList(Map<String, Object> queryParams) {
-		return decisionProvider.getDecisionDefinitionList(queryParams);
+	public Collection<Decision> getDecisionDefinitionList(Map<String, Object> queryParams, CIBUser user) {
+		return decisionProvider.getDecisionDefinitionList(queryParams, user);
 	}
 	
 	
 	@Override
-	public Object getDecisionDefinitionListCount(Map<String, Object> queryParams) {
-		return decisionProvider.getDecisionDefinitionListCount(queryParams);
+	public Object getDecisionDefinitionListCount(Map<String, Object> queryParams, CIBUser user) {
+		return decisionProvider.getDecisionDefinitionListCount(queryParams, user);
 	}
 	
 	@Override
-	public Decision getDecisionDefinitionByKey(String key) {
-		return decisionProvider.getDecisionDefinitionByKey(key);
+	public Decision getDecisionDefinitionByKey(String key, CIBUser user) {
+		return decisionProvider.getDecisionDefinitionByKey(key, user);
 	}
 	
 	@Override
-	public Object getDiagramByKey(String key) {
-		return decisionProvider.getDiagramByKey(key);
+	public Object getDiagramByKey(String key, CIBUser user) {
+		return decisionProvider.getDiagramByKey(key, user);
 	}
 
 	@Override
@@ -797,88 +797,88 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 	
 	@Override
-	public Decision getDecisionDefinitionByKeyAndTenant(String key, String tenant) {
-		return decisionProvider.getDecisionDefinitionByKeyAndTenant(key, tenant);
+	public Decision getDecisionDefinitionByKeyAndTenant(String key, String tenant, CIBUser user) {
+		return decisionProvider.getDecisionDefinitionByKeyAndTenant(key, tenant, user);
 	}
 	
 	@Override
-	public Object getDiagramByKeyAndTenant(String key, String tenant) {
-		return decisionProvider.getDiagramByKeyAndTenant(key, tenant);
+	public Object getDiagramByKeyAndTenant(String key, String tenant, CIBUser user) {
+		return decisionProvider.getDiagramByKeyAndTenant(key, tenant, user);
 	}
 	
 	@Override
-	public Object evaluateDecisionDefinitionByKeyAndTenant(String key, String tenant) {
-		return decisionProvider.evaluateDecisionDefinitionByKeyAndTenant(key, tenant);
+	public Object evaluateDecisionDefinitionByKeyAndTenant(String key, String tenant, CIBUser user) {
+		return decisionProvider.evaluateDecisionDefinitionByKeyAndTenant(key, tenant, user);
 	}
 	
 	@Override
-	public Object updateHistoryTTLByKeyAndTenant(String key, String tenant) {
-		return decisionProvider.updateHistoryTTLByKeyAndTenant(key, tenant);
+	public Object updateHistoryTTLByKeyAndTenant(String key, String tenant, CIBUser user) {
+		return decisionProvider.updateHistoryTTLByKeyAndTenant(key, tenant, user);
 	}
 	
 	@Override
-	public Object getXmlByKey(String key) {
-		return decisionProvider.getXmlByKey(key);
+	public Object getXmlByKey(String key, CIBUser user) {
+		return decisionProvider.getXmlByKey(key, user);
 	}
 	
 	@Override
-	public Object getXmlByKeyAndTenant(String key, String tenant) {
-		return decisionProvider.getXmlByKeyAndTenant(key, tenant);
+	public Object getXmlByKeyAndTenant(String key, String tenant, CIBUser user) {
+		return decisionProvider.getXmlByKeyAndTenant(key, tenant, user);
 	}
 	
 	@Override
-	public Decision getDecisionDefinitionById(String id) {
-		return decisionProvider.getDecisionDefinitionById(id);
+	public Decision getDecisionDefinitionById(String id, CIBUser user) {
+		return decisionProvider.getDecisionDefinitionById(id, user);
 	}
 	
 	@Override
-	public Object getDiagramById(String id) {
-		return decisionProvider.getDiagramById(id);
+	public Object getDiagramById(String id, CIBUser user) {
+		return decisionProvider.getDiagramById(id, user);
 	}
 	
 	@Override
-	public Object evaluateDecisionDefinitionById(String id) {
-		return decisionProvider.evaluateDecisionDefinitionById(id);
+	public Object evaluateDecisionDefinitionById(String id, CIBUser user) {
+		return decisionProvider.evaluateDecisionDefinitionById(id, user);
 	}
 	
 	@Override
-	public Object updateHistoryTTLById(String id) {
-		return decisionProvider.updateHistoryTTLById(id);
+	public Object updateHistoryTTLById(String id, CIBUser user) {
+		return decisionProvider.updateHistoryTTLById(id, user);
 	}
 	
 	@Override
-	public Object getXmlById(String id) {
-		return decisionProvider.getXmlById(id);
+	public Object getXmlById(String id, CIBUser user) {
+		return decisionProvider.getXmlById(id, user);
 	}
 
 	@Override
-	public Collection<Decision> getDecisionVersionsByKey(String key, Optional<Boolean> lazyLoad) {
-		return decisionProvider.getDecisionVersionsByKey(key, lazyLoad);
+	public Collection<Decision> getDecisionVersionsByKey(String key, Optional<Boolean> lazyLoad, CIBUser user) {
+		return decisionProvider.getDecisionVersionsByKey(key, lazyLoad, user);
 	}
 	
 	@Override
-	public Object getHistoricDecisionInstances(Map<String, Object> queryParams){
-		return decisionProvider.getHistoricDecisionInstances(queryParams);
+	public Object getHistoricDecisionInstances(Map<String, Object> queryParams, CIBUser user){
+		return decisionProvider.getHistoricDecisionInstances(queryParams, user);
 	}
 	
 	@Override
-	public Object getHistoricDecisionInstanceCount(Map<String, Object> queryParams){
-		return decisionProvider.getHistoricDecisionInstanceCount(queryParams);
+	public Object getHistoricDecisionInstanceCount(Map<String, Object> queryParams, CIBUser user){
+		return decisionProvider.getHistoricDecisionInstanceCount(queryParams, user);
 	}
 	
 	@Override
-	public Object getHistoricDecisionInstanceById(String id, Map<String, Object> queryParams){
-		return decisionProvider.getHistoricDecisionInstanceById(id, queryParams);
+	public Object getHistoricDecisionInstanceById(String id, Map<String, Object> queryParams, CIBUser user){
+		return decisionProvider.getHistoricDecisionInstanceById(id, queryParams, user);
 	}
 	
 	@Override
-	public Object deleteHistoricDecisionInstances(Map<String, Object> data){
-		return decisionProvider.deleteHistoricDecisionInstances(data);
+	public Object deleteHistoricDecisionInstances(Map<String, Object> data, CIBUser user){
+		return decisionProvider.deleteHistoricDecisionInstances(data, user);
 	}
 	
 	@Override
-	public Object setHistoricDecisionInstanceRemovalTime(Map<String, Object> data){
-		return decisionProvider.setHistoricDecisionInstanceRemovalTime(data);
+	public Object setHistoricDecisionInstanceRemovalTime(Map<String, Object> data, CIBUser user){
+		return decisionProvider.setHistoricDecisionInstanceRemovalTime(data, user);
 	}
 	
 	/*

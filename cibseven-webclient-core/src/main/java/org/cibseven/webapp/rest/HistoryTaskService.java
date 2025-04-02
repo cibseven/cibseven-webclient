@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Locale;
 
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.providers.PermissionConstants;
 import org.cibseven.webapp.rest.model.TaskHistory;
 import org.cibseven.webapp.rest.model.VariableHistory;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,6 +17,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
+import static org.cibseven.webapp.auth.SevenAuthorizationUtils.*;
 
 @ApiResponses({
 	@ApiResponse(responseCode= "500", description = "An unexpected system error occured"),
@@ -33,6 +36,7 @@ public class HistoryTaskService extends BaseService {
 	public Collection<VariableHistory> fetchActivityVariablesHistory(
 			@Parameter(description = "Activity instance Id") @PathVariable String activityInstanceId,
 			Locale loc, CIBUser user) {
+        checkPermission(user, HISTORY, PermissionConstants.READ_ALL);
 		return bpmProvider.fetchActivityVariablesHistory(activityInstanceId, user);
 	}
 	
@@ -46,6 +50,7 @@ public class HistoryTaskService extends BaseService {
 			@Parameter(description = "Restrict to tasks that have the given key") @RequestParam String taskDefinitionKey,
 			@Parameter(description = "Process instance Id") @RequestParam String processInstanceId,
 			Locale loc, CIBUser user) {
+		checkPermission(user, TASK, PermissionConstants.READ_ALL);
 		return bpmProvider.findTasksByDefinitionKeyHistory(taskDefinitionKey, processInstanceId, user);
 	}
 
@@ -58,6 +63,7 @@ public class HistoryTaskService extends BaseService {
 	public Collection<TaskHistory> findTasksByProcessInstanceHistory(
 			@Parameter(description = "Process instance Id") @PathVariable String processInstanceId,
 			Locale loc, CIBUser user) {
+		checkPermission(user, TASK, PermissionConstants.READ_ALL);
 		return bpmProvider.findTasksByProcessInstanceHistory(processInstanceId, user);
 	}
 	
@@ -70,6 +76,7 @@ public class HistoryTaskService extends BaseService {
 	public Collection<TaskHistory> findTasksByTaskIdHistory(
 			@Parameter(description = "Task Id") @PathVariable String taskId,
 			Locale loc, CIBUser user) {
+		checkPermission(user, TASK, PermissionConstants.READ_ALL);
 		return bpmProvider.findTasksByTaskIdHistory(taskId, user);
 	}
 
