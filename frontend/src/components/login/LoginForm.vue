@@ -35,7 +35,7 @@
         </b-form-group>
       </CIBForm>
       <template v-slot:modal-footer>
-        <button class="btn btn-primary" @click="$refs.form.onSubmit()">OK</button>
+        <b-button @click="$refs.form.onSubmit()" variant="primary">{{ $t('confirm.ok') }}</b-button>
       </template>
     </b-modal>
 
@@ -59,7 +59,7 @@ export default {
   props: {
     credentials: Object,
     credentials2: Object,
-    hideForgotten: Boolean,
+    hideForgotten: { type: Boolean, default: false },
     onRegister: Function,
     forgottenType: { type: String, default: 'email' }
   },
