@@ -25,7 +25,7 @@ import jakarta.annotation.PostConstruct;
 @RestController
 public class SassCompilerController {
 
-    private static final String THEME_NAME = "generic";
+    private static final String THEME_NAME = "cib";
     private static final String PATH_THEMES_FOLDER = "/themes";
     private static final String VARIABLE_FILE_NAME = "variables.scss";
     private static final String EXTENSION_FILE = ".css";
