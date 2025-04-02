@@ -137,7 +137,7 @@
       </div>
     </div>
 
-    <ConfirmDialog ref="deleteModal" @ok="remove(authorizationSelected)">
+    <ConfirmDialog ref="deleteModal" @ok="remove(authorizationSelected)" :ok-title="$t('confirm.delete')">
       <span v-if="authorizationSelected">
         <i18n-t keypath="admin.authorizations.confirmDelete" tag="span" scope="global"/>
         <br><br>

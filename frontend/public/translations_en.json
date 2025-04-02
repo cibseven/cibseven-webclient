@@ -444,6 +444,7 @@
 		"ok": "Ok",
 		"cancel": "Cancel",
 		"close": "Close",
+		"delete": "Delete",
 		"deleteFilter": "Do you really want to delete the selected filter {name}?",
 		"assignUser": "This task is already assigned to someone else, do you really want to change this assignment?",
 		"performOperation": "Are you sure you want to perform this operation?"

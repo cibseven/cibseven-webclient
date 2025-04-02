@@ -81,7 +81,7 @@
           </div>
           <template v-slot:modal-footer>
             <b-button @click="$refs.deleteModal.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
-            <b-button @click="deleteGroup(); $refs.deleteModal.hide()" variant="primary">{{ $t('confirm.ok') }}</b-button>
+            <b-button @click="deleteGroup(); $refs.deleteModal.hide()" variant="primary">{{ $t('confirm.delete') }}</b-button>
           </template>
         </b-modal>
 

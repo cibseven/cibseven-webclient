@@ -70,7 +70,7 @@
         <span>{{ $t('nav-bar.filters.create') }}</span><span class="mdi mdi-plus"></span>
       </button>
     </div>
-    <ConfirmDialog ref="confirmDeleteFilter" @ok="deleteFilter()" :ok-title="$t('nav-bar.filters.delete')">
+    <ConfirmDialog ref="confirmDeleteFilter" @ok="deleteFilter()" :ok-title="$t('confirm.delete')">
       <i18n-t keypath="confirm.deleteFilter" tag="span" scope="global">
         <template #name>
           <strong>{{ workingFilter.name }}</strong>

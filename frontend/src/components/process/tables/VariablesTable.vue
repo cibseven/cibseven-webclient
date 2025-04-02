@@ -84,7 +84,7 @@
 
   <AddVariableModal ref="addVariableModal" :selected-instance="selectedInstance" @variable-added="loadSelectedInstanceVariables(); $refs.success.show()"></AddVariableModal>
 
-  <ConfirmDialog ref="deleteVariable" @ok="deleteVariable($event)">
+  <ConfirmDialog ref="deleteVariable" @ok="deleteVariable($event)" :ok-title="$t('confirm.delete')">
     {{ $t('confirm.performOperation') }}
   </ConfirmDialog>
 

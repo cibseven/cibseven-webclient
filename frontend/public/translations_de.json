@@ -445,6 +445,7 @@
 		"ok": "Ok",
 		"cancel": "Abbrechen",
 		"close": "Schließen",
+		"delete": "Löschen",
 		"deleteFilter": "Möchten Sie den ausgewählten Filter {name} wirklich löschen?",
 		"assignUser": "Diese Aufgabe ist bereits einer anderen Person zugewiesen. Möchten Sie diese Zuordnung wirklich ändern?",
 		"performOperation": "Sind Sie sicher, dass Sie diese Operation ausführen wollen?"

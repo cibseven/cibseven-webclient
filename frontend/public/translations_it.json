@@ -308,6 +308,7 @@
 		"title": "Si prega di confermare",
 		"ok": "Ok",
 		"cancel": "Cancella",
+		"delete": "Eliminare",
 		"deleteFilter": "Volete davvero eliminare il filtro selezionato {name}?",
 		"assignUser": "Questo compito è già assegnato a qualcun altro, vuoi davvero cambiare questo incarico?",
 		"performOperation": "Sei sicuro di voler effettuare questa operazione?"
