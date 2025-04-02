@@ -6,7 +6,7 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
-const backendUrl = 'http://localhost:8090'
+const backendUrl = 'http://localhost:8080'
 
 // https://vite.dev/config/
 export default defineConfig({
