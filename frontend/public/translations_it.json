@@ -772,7 +772,12 @@
 			"copyValue": "Copia valore",
 			"historyTimeToLive": "Tempo di conservazione della cronologia"
 		},
-		"showManagement": "@:process.showManagement"
+		"showManagement": "@:process.showManagement",
+		"type": "Tipo",
+		"value": "Valore",
+		"inputs": "Input",
+		"outputs": "Output",
+		"decisionInstanceId": "ID dell'istanza della decisione"
 	},
 	"decision-instance": {
 		"edit": "@:commons.edit",

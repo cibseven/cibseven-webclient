@@ -968,7 +968,12 @@
 			"copyValue": "Copiar valor",
 			"historyTimeToLive": "Tiempo de vida del historial"
 		},
-		"showManagement": "@:process.showManagement"
+		"showManagement": "@:process.showManagement",
+		"type": "Tipo",
+		"value": "Valor",
+		"inputs": "Entradas",
+		"outputs": "Salidas",
+		"decisionInstanceId": "ID de instancia de decisión"
 	},
 	"decision-instance": {
 		"edit": "@:commons.edit",

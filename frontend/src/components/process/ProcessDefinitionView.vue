@@ -51,7 +51,6 @@
 </template>
 
 <script>
-import { nextTick } from 'vue'
 import moment from 'moment'
 import { TaskService, ProcessService, HistoryService, 
   IncidentService, JobService, JobDefinitionService } from '@/services.js'

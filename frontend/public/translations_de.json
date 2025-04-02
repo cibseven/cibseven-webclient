@@ -970,7 +970,12 @@
 			"copyValue": "Wert kopieren",
 			"historyTimeToLive": "Geschichte Zeit zu leben"
 		},
-		"showManagement": "@:process.showManagement"
+		"showManagement": "@:process.showManagement",
+		"type": "Typ",
+		"value": "Wert",
+		"inputs": "Eingaben",
+		"outputs": "Ausgaben",
+		"decisionInstanceId": "Entscheidungsinstanz-ID"
 	},
 	"decision-instance": {
 		"edit": "@:commons.edit",

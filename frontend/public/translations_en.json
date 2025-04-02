@@ -967,7 +967,12 @@
 			"copyValue": "Copy value",
 			"historyTimeToLive": "History time to live"
 		},
-		"showManagement": "@:process.showManagement"
+		"showManagement": "@:process.showManagement",
+		"type": "Type",
+		"value": "Value",
+		"inputs": "Inputs",
+		"outputs": "Outputs",
+		"decisionInstanceId": "Decision Instance ID"
 	},
 	"decision-instance": {
 		"edit": "@:commons.edit",

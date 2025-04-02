@@ -54,7 +54,7 @@ export default {
   components: { DmnViewer, InstancesTable, BWaitingBox },
   mixins: [permissionsMixin, resizerMixin],
   props: {
-    versionIndex: Number,
+    versionIndex: String,
     loading: Boolean,
     decisionKey: String
   },

@@ -12,8 +12,6 @@
         v-if="decision"
         :key="$route.fullPath"
         :loading="loading"
-        @show-more="showMore"
-        @instance-deleted="deleteInstance"
       />
     </SidebarsFlow>
   </div>
@@ -76,10 +74,10 @@ export default {
       this.getDecisionVersionsByKey({ key: decisionKey }).then(decisions => {
         if (!versionIndex) {
           versionIndex = decisions[0].version
-          this.setSelectedDecisionVersion({key: decisionKey, version: versionIndex })
+          this.setSelectedDecisionVersion({ key: decisionKey, version: versionIndex })
           this.$router.push('/seven/auth/decision/' + decisionKey + '/' + versionIndex)
         }
-        this.setSelectedDecisionVersion({key: decisionKey, version: versionIndex })
+        this.setSelectedDecisionVersion({ key: decisionKey, version: versionIndex })
       })
     }
   }
