@@ -1,5 +1,3 @@
-/* globals window */
-
 var postMessageMixin = {
 //	created: function() {
 //		window.addEventListener('message', this.callMethodFromMessage)

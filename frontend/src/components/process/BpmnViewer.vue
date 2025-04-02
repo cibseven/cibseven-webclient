@@ -59,13 +59,13 @@ function getActivitiesToMark(treeObj) {
 export default {
   name: 'BpmnViewer',
   components: { BWaitingBox },
-  props: { 
-    activityInstance: Object, 
+  props: {
+    activityInstance: Object,
     activityInstanceHistory: Array,
-    statistics: Array, 
-    activityId: String, 
-    processDefinitionId: String, 
-    activitiesHistory: Array 
+    statistics: Array,
+    activityId: String,
+    processDefinitionId: String,
+    activitiesHistory: Array
   },
   data: function() {
     return {
@@ -104,9 +104,9 @@ export default {
   mounted: function() {
     this.viewer = new NavigatedViewer({ container: this.$refs.diagram })
     this.viewer.on('import.done', event => {
-      if (event.error) { 
-         this.$emit('error', event.error) 
-      } else { 
+      if (event.error) {
+         this.$emit('error', event.error)
+      } else {
          this.$emit('shown', event.warnings)
       }
       this.drawDiagramState()
@@ -234,7 +234,7 @@ export default {
         const shape = elementRegistry.get(ca.id)
         if (shape) {
           const disabled = (ca.nInstances === undefined && this.runningActivities.indexOf(ca.id) === -1)
-          const title = disabled 
+          const title = disabled
             ? this.$t('bpmn-viewer.legend.disabledSubprocess')
             : this.$t('bpmn-viewer.legend.openSubprocess')
           const wrapper = document.createElement('div')
@@ -243,7 +243,7 @@ export default {
           button.type = 'button'
           button.className = 'btn btn-info btn-sm mdi mdi-link-variant px-1 py-0'
           if (disabled) {
-            button.disabled = true            
+            button.disabled = true
             wrapper.style.cursor = 'not-allowed'
           } else {
             button.addEventListener('click', () => {
@@ -256,10 +256,9 @@ export default {
       })
       if (this.jobDefinitions) {
         this.drawJobDefinitionBadges()
-      }      
+      }
       this.setSelectableOnAllowedElements()
       this.buildActivityMap(elementRegistry)
-      
     },
     buildActivityMap: function(elementRegistry) {
       const activityMap = {}
@@ -340,14 +339,14 @@ export default {
       const overlays = this.viewer?.get('overlays')
       const elementRegistry = this.viewer?.get('elementRegistry')
       if (!overlays || !elementRegistry || !Array.isArray(this.jobDefinitions)) return
-      Object.entries(this.suspendedOverlayMap).forEach(([activityId, overlayId]) => {
+      Object.values(this.suspendedOverlayMap).forEach((overlayId) => {
         overlays.remove(overlayId)
       })
       this.suspendedOverlayMap = {}
       this.jobDefinitions.forEach(jobDefinition => {
         const shape = elementRegistry.get(jobDefinition.activityId)
         if (shape && jobDefinition.suspended) {
-          var title = this.$t('bpmn-viewer.legend.suspendedJobDefinition')          
+          var title = this.$t('bpmn-viewer.legend.suspendedJobDefinition')
           const suspendedBadge = `
             <span class="badge bg-warning rounded-pill text-white border border-dark px-2 py-1" title="${title}">
               <span class="mdi mdi-pause"></span>

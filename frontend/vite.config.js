@@ -14,6 +14,10 @@ const backendUrl = 'http://localhost:8080'
 const isLibrary = process.env.BUILD_MODE === 'library'
 /* eslint-enable no-undef */
 
+// https://flaviocopes.com/fix-dirname-not-defined-es-module-scope/
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 console.log('isLibrary', isLibrary)
 
 // https://vite.dev/config/

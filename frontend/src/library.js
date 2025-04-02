@@ -137,15 +137,9 @@ const registerComponents = function(app) {
   app.component('highlighted-text', HighlightedText)
 }
 
-const mergeLocaleMessage = function(i18n, lang) {
-  // This function is now just a placeholder since translations are loaded dynamically
-  // via the fetchTranslation function in i18n.js
-  return Promise.resolve()
-}
-
 export {
   registerComponents,
-  mergeLocaleMessage,
+
   CibSeven,
   FlowTable,
   ErrorDialog,
