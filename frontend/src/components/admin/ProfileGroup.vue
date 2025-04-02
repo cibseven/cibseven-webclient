@@ -64,6 +64,7 @@
             </div>
           </div>
         </div>
+
         <b-modal ref="deleteModal" :title="$t('confirm.title')">
           <div class="container-fluid">
             <div class="row align-items-center">
@@ -79,11 +80,11 @@
             </div>
           </div>
           <template v-slot:modal-footer>
-            <b-button variant="primary"
-              @click="deleteGroup(); $refs.deleteModal.hide()">{{ $t('confirm.ok') }}</b-button>
-            <b-button @click="$refs.deleteModal.hide()">{{ $t('confirm.cancel') }}</b-button>
+            <b-button @click="$refs.deleteModal.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
+            <b-button @click="deleteGroup(); $refs.deleteModal.hide()" variant="primary">{{ $t('confirm.ok') }}</b-button>
           </template>
         </b-modal>
+
       </div>
     </transition>
     <SuccessAlert ref="updateGroup" top="0" style="z-index: 1031">{{ $t('admin.groups.updateGroupMessage', [group.id]) }}</SuccessAlert>
