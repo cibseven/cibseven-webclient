@@ -10,6 +10,7 @@
   <GroupAlerts></GroupAlerts>
   <GroupProgress></GroupProgress>
   <GroupWaitingBox></GroupWaitingBox>
+  <GroupForm></GroupForm>
 </template>
 
 <script setup>
@@ -21,6 +22,7 @@ import GroupAvatars from './GroupAvatars.vue'
 import GroupAlerts from './GroupAlerts.vue'
 import GroupProgress from './GroupProgress.vue'
 import GroupWaitingBox from './GroupWaitingBox.vue'
+import GroupForm from './GroupForm.vue'
 </script>
 
 <style scoped>
