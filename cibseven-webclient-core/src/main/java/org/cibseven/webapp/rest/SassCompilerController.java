@@ -9,10 +9,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.larsgrefer.sass.embedded.CompileSuccess;
@@ -38,29 +34,6 @@ public class SassCompilerController {
             saveCssToFile(css);
         } else {
             System.err.println("[Error][Sass compiler] Failed to generate CSS for theme: " + THEME_NAME);
-        }
-    }
-
-    @GetMapping("/css")
-    public ResponseEntity<String> getCss(@RequestParam(defaultValue = THEME_NAME) String theme, @RequestParam(defaultValue = "true") boolean minify) {
-        try {
-        	  URL resourceUrl = getClass().getClassLoader().getResource(OUTPUT_PATH_FILES + theme + EXTENSION_FILE);
-              if (resourceUrl == null) {
-                  throw new IllegalStateException("Resource folder not found: " + OUTPUT_PATH_FILES);
-            }
-
-            Path assetsPath = Paths.get(resourceUrl.toURI());
-            File cssFile = assetsPath.toFile();
-            if (!cssFile.exists()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("[Error][Sass compiler] CSS file not found");
-            }
-            
-            String css = readFile(cssFile);
-            return ResponseEntity.ok().body(minify ? minifyCss(css) : css);
-
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("[Error][Sass compiler] Error reading CSS file");
         }
     }
       
@@ -125,7 +98,7 @@ public class SassCompilerController {
             return;
         }
 
-        File outputFile = new File(outputDir, themeName + ".css");
+        File outputFile = new File(outputDir, themeName + EXTENSION_FILE);
 
         try (FileWriter writer = new FileWriter(outputFile, false)) { // `false` to overwrite the file
             writer.write(css);
