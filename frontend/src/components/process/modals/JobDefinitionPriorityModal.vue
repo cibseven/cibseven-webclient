@@ -23,7 +23,7 @@
       </div>
       <template v-slot:modal-footer>
         <b-button @click="$refs.overrideJobPriorityModal.hide()" variant="link">{{ $t('confirm.close') }}</b-button>
-        <b-button @click="overrideJobPriority()">{{ $t('confirm.ok') }}</b-button>
+        <b-button @click="overrideJobPriority()" variant="primary">{{ $t('confirm.ok') }}</b-button>
       </template>
     </b-modal>
 </template>
@@ -69,7 +69,7 @@
                     fetchParams: { processDefinitionId: this.selectedJobDefinition.processDefinitionId }
                 })
                 this.$refs.overrideJobPriorityModal.hide()
-            },            
+            },
         }
     }
 </script>
