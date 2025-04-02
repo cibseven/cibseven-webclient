@@ -1,19 +1,17 @@
 <template>
   <b-modal ref='modal' :title="$t('confirm.title')">
-  <div class="container-fluid">
-    <div class="d-flex align-items-start">
-    <div class="col-1">
-      <span class="mdi-36px mdi mdi-alert-outline text-warning"></span>
+    <div class="row">
+      <div class="col-2 d-flex justify-content-center">
+        <span class="mdi-36px mdi mdi-alert-outline text-warning"></span>
+      </div>
+      <div class="col-10 d-flex align-items-center ps-0">
+        <slot :param="param"></slot>
+      </div>
     </div>
-    <div class="container-fluid">
-      <slot :param="param"></slot>
-    </div>
-    </div>
-  </div>
-  <template v-slot:modal-footer>
-    <b-button variant="primary" @click="$emit('ok', param); $refs.modal.hide('ok')">{{ $t('confirm.ok') }}</b-button>
-    <b-button @click="$refs.modal.hide('cancel')">{{ $t('confirm.cancel') }}</b-button>
-  </template>
+    <template v-slot:modal-footer>
+      <b-button @click="$refs.modal.hide('cancel')" variant="link">{{ $t('confirm.cancel') }}</b-button>
+      <b-button @click="$emit('ok', param); $refs.modal.hide('ok')" variant="primary">{{ $t('confirm.ok') }}</b-button>
+    </template>
   </b-modal>
 </template>
 
