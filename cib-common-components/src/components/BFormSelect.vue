@@ -4,10 +4,9 @@
       :id="id"
       :class="['form-select', selectClass]"
       :style="selectStyle"
-      :value="modelValue"
+      v-model="value"
       :disabled="disabled"
       :aria-describedby="ariaDescribedby"
-      @change="$emit('update:modelValue', $event.target.value)"
       @blur="handleBlur"
       @focus="handleFocus">
       <slot name="first"></slot>
@@ -55,6 +54,14 @@ export default {
         else normalizedOption = { text: option, value: option }
         return { options: [normalizedOption] }
       })
+    },
+    value: {
+      set: function (val) {
+        this.$emit('update:modelValue', val)
+      },
+      get: function () {
+        return this.modelValue
+      }
     }
   },
   methods: {
