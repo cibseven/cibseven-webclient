@@ -33,7 +33,7 @@
     </div>
     <template v-slot:modal-footer>
       <b-button @click="$refs.addVariable.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
-      <b-button :disabled="!isValid" @click="addVariable()" variant="primary">{{ $t('confirm.ok') }}</b-button>
+      <b-button :disabled="!isValid" @click="addVariable()" variant="primary">{{ $t('process-instance.addVariable') }}</b-button>
     </template>
   </b-modal>
 </template>
