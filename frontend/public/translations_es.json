@@ -542,7 +542,7 @@
 			"deleteCriteria": "Eliminar criterio",
 			"no-filters": "No se encontraron filtros",
 			"edit": "@:commons.edit",
-			"delete": "Eliminar",
+			"delete": "@:confirm.delete",
 			"pin": "Adjuntar",
 			"includeAssigned": "Incluir las tareas asignadas",
 			"keys": {

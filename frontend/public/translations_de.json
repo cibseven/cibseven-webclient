@@ -212,7 +212,7 @@
 		    "users": "Benutzer",		    			
 		    "assignee": "Bearbeiter",
 		    "add": "Hinzufügen",
-		    "delete": "Löschen",
+		    "delete": "@:confirm.delete",
 		    "actions": "Aktionen",
 		    "exists": "Diese Entität ist bereits zugewiesen"
 		},
@@ -542,7 +542,7 @@
 			"deleteCriteria": "Kriterium Löschen",
 			"no-filters": "Keine Filter gefunden",
 			"edit": "@:commons.edit",
-			"delete": "Löschen",
+			"delete": "@:confirm.delete",
 			"pin": "Anfügen",
 			"includeAssigned": "Zugewiesene Aufgaben einbeziehen",
 			"keys":{

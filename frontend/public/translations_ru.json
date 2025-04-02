@@ -211,7 +211,7 @@
 		    "users": "Пользователи",
 		    "assignee": "Исполнитель",
 		    "add": "Добавить",
-		    "delete": "Удалить",
+		    "delete": "@:confirm.delete",
 		    "actions": "Действия",
 		    "exists": "This entity is already assigned"
 		},
@@ -540,9 +540,9 @@
 			"selectedCriteria": "Выбранный критерий",
 			"deleteCriteria": "Удалить критерий",
 			"no-filters": "Фильтры не найдены",
-			"edit": "Редактировать",
-			"delete": "Удалить",
-			"pin": "Прикреплять",
+			"edit": "Редактировать фильтр",
+			"delete": "Удалить фильтр",
+			"pin": "Прикрепить",
 			"includeAssigned": "Включить назначенные задачи",
 			"keys": {
 				"processInstanceId": "Process instance Id",

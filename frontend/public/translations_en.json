@@ -211,7 +211,7 @@
 		    "users": "Users",
 		    "assignee": "Assignee",
 		    "add": "Add",
-		    "delete": "Delete",
+		    "delete": "@:confirm.delete",
 		    "actions": "Actions",
 		    "exists": "This entity is already assigned"
 		},
@@ -541,7 +541,7 @@
 			"deleteCriteria": "Delete criteria",
 			"no-filters": "No filters found",
 			"edit": "@:commons.edit",
-			"delete": "Delete",
+			"delete": "@:confirm.delete",
 			"pin": "Pin",
 			"includeAssigned": "Include assigned tasks",
 			"keys": {

@@ -403,7 +403,7 @@
 			"deleteCriteria": "Cancellare i criteri",
 			"no-filters": "No filters found",
 			"edit": "@:commons.edit",
-			"delete": "Eliminare",
+			"delete": "@:confirm.delete",
 			"pin": "Allegare",
 			"includeAssigned": "Includi compiti assegnati",
 			"keys":{
