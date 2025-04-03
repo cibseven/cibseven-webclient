@@ -49,7 +49,6 @@ export default {
   },
   computed: {
     ...mapGetters(['getSelectedDecisionVersion', 'getDecisionVersions']),
-
     shortendLeftCaption() {
       return this.$t('decision.details.historyVersions')
     },

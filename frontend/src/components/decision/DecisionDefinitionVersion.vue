@@ -1,8 +1,7 @@
 <template>
   <div v-if="decision" class="h-100">
     <div @mousedown="handleMouseDown" class="v-resizable position-absolute w-100" style="left: 0" :style="'height: ' + bpmnViewerHeight + 'px; ' + toggleTransition">
-      <DmnViewer ref="diagram"
-        class="h-100" />
+      <DmnViewer ref="diagram" class="h-100" />
     </div>
 
     <ul class="nav nav-tabs position-absolute border-0 bg-light" style="left: -1px" :style="'top: ' + (bottomContentPosition - toggleButtonHeight) + 'px; ' + toggleTransition">
@@ -95,7 +94,7 @@ export default {
       this.getXmlById(this.decision.id)
         .then(response => {
           setTimeout(() => {
-            this.$refs.diagram.showDiagram(response.dmnXml, null, null)
+            this.$refs.diagram.showDiagram(response.dmnXml)
           }, 100)
         })
         .catch(error => {
