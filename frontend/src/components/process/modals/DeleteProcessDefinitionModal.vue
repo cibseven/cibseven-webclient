@@ -11,7 +11,6 @@
       </template>
       <template #version>
         <strong>{{ params?.processDefinition?.version }}</strong>
-        <br>
       </template>
     </i18n-t>
 
