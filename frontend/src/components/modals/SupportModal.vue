@@ -1,5 +1,5 @@
 <template>
-  <b-modal ref="support" :title="$t('infoAndHelp.flowModalSupport.title')" okOnly>
+  <b-modal ref="support" :title="$t('infoAndHelp.flowModalSupport.title')" :ok-only="true">
     <div class="container-fluid">
       <div class="row">
         <div class="col-12">

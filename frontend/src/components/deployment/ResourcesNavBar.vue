@@ -20,7 +20,7 @@
       </div>
     </div>
 
-    <b-modal static ref="diagramModal" size="xl" :title="resource.name" dialog-class="h-75" content-class="h-100" okOnly>
+    <b-modal static ref="diagramModal" size="xl" :title="resource.name" dialog-class="h-75" content-class="h-100" :ok-only="true">
       <div class="container-fluid h-100 p-0">
         <BpmnViewer class="h-100" ref="diagram"></BpmnViewer>
       </div>

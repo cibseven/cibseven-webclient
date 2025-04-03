@@ -35,7 +35,7 @@
     </div>
   </div>
 
-  <b-modal ref="stackTraceModal" :title="$t('process-instance.stacktrace')" size="xl" okOnly>
+  <b-modal ref="stackTraceModal" :title="$t('process-instance.stacktrace')" size="xl" :ok-only="true">
     <div v-if="stackTraceMessage" class="container-fluid pt-3">
       <b-form-textarea v-model="stackTraceMessage" rows="20" readonly></b-form-textarea>
       <b-button variant="link" @click="copyValueToClipboard(stackTraceMessage)">{{ $t('process-instance.copyValueToClipboard') }}</b-button>
