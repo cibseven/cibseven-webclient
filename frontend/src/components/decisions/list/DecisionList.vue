@@ -73,11 +73,9 @@ export default {
   },
   methods: {
     ...mapActions(['getDecisionList']),
-    
     loadDecisions() {
       this.getDecisionList({ latestVersion: true })
     },
-
     goToDecision: function(decision) {
       this.$router.push('/seven/auth/decision/' + decision.key + '/' + decision.latestVersion)
     }

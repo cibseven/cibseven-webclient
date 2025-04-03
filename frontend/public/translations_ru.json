@@ -969,7 +969,12 @@
 			"copyValue": "Копировать значение",
 			"historyTimeToLive": "Время хранения истории"
 		},
-		"showManagement": "@:process.showManagement"
+		"showManagement": "@:process.showManagement",
+		"type": "Тип",
+		"value": "Значение",
+		"inputs": "Входные данные",
+		"outputs": "Выходные данные",
+		"decisionInstanceId": "ID экземпляра решения"
 	},
 	"decision-instance": {
 		"edit": "@:commons.edit",
