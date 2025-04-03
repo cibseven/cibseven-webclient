@@ -111,7 +111,14 @@
 		"onlyActive": "Только активные",
 		"exportInstances": "Экспорт экземпляров",
 		"days": "дней",
-		"deleteProcessDefinition": "Удалить определение процесса",
+		"deleteProcessDefinition": {
+			"tooltip": "Удалить определение процесса",
+			"confirm": {
+				"title": "@:confirm.delete",
+				"line1": "Удалить определение процесса?",
+				"line2": "Имя: {name}Версия: {version}"
+			}
+		},
 		"true": "Истина",
 		"false": "Ложь",
 		"jobDefinitions": "Определения заданий",

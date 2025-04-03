@@ -103,7 +103,14 @@
 		"onlyActive": "Solo attivi",
 		"exportInstances": "Esporta istanze",
 		"days": "giorni",
-		"deleteProcessDefinition": "Elimina definizione del processo",
+		"deleteProcessDefinition": {
+			"tooltip": "Elimina definizione del processo",
+			"confirm": {
+				"title": "@:confirm.delete",
+				"line1": "Elimina definizione del processo?",
+				"line2": "Nome: {name}Versione: {version}"
+			}
+		},
 		"true": "Vero",
 		"false": "Falso",
 		"jobs": "Job"

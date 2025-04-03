@@ -112,7 +112,14 @@
 		"onlyActive": "Nur Aktive",
 		"exportInstances": "Instanzen exportieren",
 		"days": "Tage",
-		"deleteProcessDefinition": "Prozessdefinition löschen",
+		"deleteProcessDefinition": {
+			"tooltip": "Prozessdefinition löschen",
+			"confirm": {
+				"title": "@:confirm.delete",
+				"line1": "Löschen Sie die Prozessdefinitionen?",
+				"line2": "Name: {name}Version: {version}"
+			}
+		},
 		"true": "Wahr",
 		"false": "Falsch",
 		"jobDefinitions": "Job-Definitionen",

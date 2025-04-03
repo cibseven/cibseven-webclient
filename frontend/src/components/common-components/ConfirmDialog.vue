@@ -5,7 +5,9 @@
         <span class="mdi-36px mdi mdi-alert-outline text-warning"></span>
       </div>
       <div class="col-10 d-flex align-items-center ps-0">
-        <slot :param="param"></slot>
+        <div>
+          <slot :param="param"></slot>
+        </div>
       </div>
     </div>
     <template v-slot:modal-footer>
