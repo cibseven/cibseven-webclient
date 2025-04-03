@@ -362,7 +362,7 @@
 			"createLabel": "Crear nuevo grupo",
 			"groupCreatedMessage": "El grupo {0} ha sido creado",
 			"actions": "Acciones",
-			"confirmDelete": "¿Realmente quiere eliminar el usuario con los siguientes parámetros?",
+			"confirmDelete": "¿Realmente quiere eliminar el grupo con los siguientes parámetros?",
 			"information": "Información",
 			"editMessage": "Editar grupo ({0})",
 			"users": "Usuarios",
