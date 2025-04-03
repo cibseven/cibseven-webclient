@@ -97,7 +97,7 @@ export default {
     loadDiagram() {
       this.getXmlById(this.instance.decisionDefinitionId).then(response => {
         setTimeout(() => {
-          this.$refs.diagram.showDiagram(response.dmnXml, null, null)
+          this.$refs.diagram.showDiagram(response.dmnXml)
         }, 100)
       })
       .catch(error => {
