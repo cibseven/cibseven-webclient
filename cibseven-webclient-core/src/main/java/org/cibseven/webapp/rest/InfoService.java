@@ -1,8 +1,8 @@
 package org.cibseven.webapp.rest;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -45,18 +45,15 @@ public class InfoService extends BaseService {
 	@Operation(
 			summary = "Get info version",
 			description = "<strong>Return: Info (SNAPSHOT) version")
-	@RequestMapping(method = RequestMethod.GET)
+	@GetMapping
 	public String getImplementationVersion() {
-		String pack = InfoService.class.getPackage().getSpecificationVersion();
-		if (pack != null && pack.endsWith("SNAPSHOT"))
-			pack += " " + InfoService.class.getPackage().getImplementationVersion();
-		return pack;
+		return InfoService.class.getPackage().getImplementationVersion();
 	}
 	
 	@Operation(
 			summary = "Get config JSON",
 			description = "<strong>Return: Config JSON object")
-	@RequestMapping(value = "/properties", method = RequestMethod.GET)
+	@GetMapping("/properties")
 	public ObjectNode getConfig() {
 		ObjectNode configJson = JsonNodeFactory.instance.objectNode();
 		configJson.put("uiElementTemplateUrl", uiElementTemplateUrl);
