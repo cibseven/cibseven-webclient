@@ -116,7 +116,7 @@
 			"tooltip": "Eliminar definición de proceso",
 			"confirm": {
 				"title": "@:confirm.delete",
-				"line1": "Eliminar definición de proceso?",
+				"line1": "¿Eliminar definición de proceso?",
 				"line2": "Nombre: {name}Versión: {version}"
 			}
 		},
@@ -155,7 +155,8 @@
 			"actions": "Acciones",
 			"scope": "Ámbito",
 			"objectTypeName": "Nombre del tipo de objeto",
-			"serializationDataFormat": "Formato de datos de serialización"
+			"serializationDataFormat": "Formato de datos de serialización",
+			"confirmDelete": "¿Desea eliminar la variable?"
 		},
 		"incidents": {
 		    "message": "Mensaje",

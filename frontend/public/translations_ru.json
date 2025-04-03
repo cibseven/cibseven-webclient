@@ -154,7 +154,8 @@
 			"actions": "Действия",
 			"scope": "Область",
 			"objectTypeName": "Имя типа объекта",
-			"serializationDataFormat": "Формат данных сериализации"
+			"serializationDataFormat": "Формат данных сериализации",
+			"confirmDelete": "Вы хотите удалить переменную?"
 		},
 		"incidents": {
 		    "message": "Сообщение",

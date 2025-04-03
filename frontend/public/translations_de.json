@@ -155,7 +155,8 @@
 			"actions": "Aktionen",
 			"scope": "Umfang",
 			"objectTypeName": "Objekttypname",
-			"serializationDataFormat": "Serialisierungsdatenformat"
+			"serializationDataFormat": "Serialisierungsdatenformat",
+			"confirmDelete": "Wollen Sie die Variable löschen?"
 		},
 		"incidents": {
 		    "message": "Nachricht",

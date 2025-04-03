@@ -143,7 +143,8 @@
 			"actions": "Azioni",
 			"scope": "Ambito",
 			"objectTypeName": "Nome tipo oggetto",
-			"serializationDataFormat": "Formato dati serializzazione"
+			"serializationDataFormat": "Formato dati serializzazione",
+			"confirmDelete": "Si vuole cancellare la variabile?"
 		},
 		"addVariable": "Aggiungi variabile",
 		"jobs": {

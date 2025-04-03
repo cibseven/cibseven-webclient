@@ -41,6 +41,7 @@ import FilterNavBar from '@/components/task/filter/FilterNavBar.vue'
 import FilterNavCollapsed from '@/components/task/filter/FilterNavCollapsed.vue'
 import ProcessView from '@/components/process/ProcessView.vue'
 import AddVariableModal from '@/components/process/modals/AddVariableModal.vue'
+import DeleteVariableModal from '@/components/process/modals/DeleteVariableModal.vue'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
 import InstancesTable from '@/components/process/InstancesTable.vue'
 import ProcessInstancesView from '@/components/process/ProcessInstancesView.vue'
@@ -110,6 +111,7 @@ const registerComponents = function(app) {
   app.component('filter-nav-collapsed', FilterNavCollapsed)
   app.component('process-view', ProcessView)
   app.component('add-variable-modal', AddVariableModal)
+  app.component('delete-variable-modal', DeleteVariableModal)
   app.component('bpmn-viewer', BpmnViewer)
   app.component('instances-table', InstancesTable)
   app.component('process-instances-view', ProcessInstancesView)
@@ -181,6 +183,7 @@ export {
   FilterNavCollapsed,
   ProcessView,
   AddVariableModal,
+  DeleteVariableModal,
   BpmnViewer,
   InstancesTable,
   ProcessInstancesView,

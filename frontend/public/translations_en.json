@@ -154,7 +154,8 @@
 			"actions": "Actions",
 			"scope": "Scope",
 			"objectTypeName": "Object type name",
-			"serializationDataFormat": "Serialization data format"
+			"serializationDataFormat": "Serialization data format",
+			"confirmDelete": "Do you want to delete the variable?"
 		},
 		"incidents": {
 		    "message": "Message",
