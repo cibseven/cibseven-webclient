@@ -40,7 +40,7 @@
           :title="$t('process-instance.edit')" size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-square-edit-outline"
           @click="modifyVariable(table.item)">
         </b-button>
-        <b-button v-if="selectedInstance.state !== 'SUSPENDED'" :title="$t('process-instance.edit')" size="sm" variant="outline-secondary"
+        <b-button v-if="selectedInstance.state !== 'SUSPENDED'" :title="$t('confirm.delete')" size="sm" variant="outline-secondary"
           class="border-0 mdi mdi-18px mdi-delete-outline" @click="deleteVariable(table.item)"></b-button>
       </template>
     </FlowTable>
