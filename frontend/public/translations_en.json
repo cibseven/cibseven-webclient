@@ -90,6 +90,7 @@
 		"incidents": "Incidents",		
 		"variables": "Variables",
 		"usertasks": "User tasks",
+		"calledProcessInstances": "Called process instances",
 		"onlyIncidents": "Only with incidents",
 		"runningInstances": "Instances",		
 		"instances": "Instances",
@@ -202,6 +203,12 @@
 		    "delete": "Delete",
 		    "actions": "Actions",
 		    "exists": "This entity is already assigned"
+		},
+		"calledProcesses": {
+			"callingActivity": "calling Activity",
+			"process": "Process",
+			"version": "Version",
+			"id": "Id"
 		},
 		"noResults": "No results",
 		"noIncidents": "No incidents",

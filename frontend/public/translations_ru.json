@@ -88,6 +88,7 @@
 		"back": "Назад",
 		"incidentsCounter": "Инциденты: {0}",
 		"incidents": "Инциденты",
+		"calledProcessInstances": "называемые экземпляры процессов",
 		"variables": "Переменные",
 		"usertasks": "Пользовательские задачи",
 		"onlyIncidents": "Только с инцидентами",
@@ -145,6 +146,13 @@
 			"objectTypeName": "Имя типа объекта",
 			"serializationDataFormat": "Формат данных сериализации"
 		},
+		"calledProcesses": {
+			"callingActivity": "звонковая деятельность",
+			"process": "процесс",
+			"version": "версия",
+			"id": "Id"
+		},
+		
 		"incidents": {
 		    "message": "Сообщение",
 		    "timestamp": "Дата",

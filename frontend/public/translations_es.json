@@ -90,6 +90,7 @@
 		"incidents": "Incidencias",
 		"variables": "Variables",
 		"usertasks": "Tareas de usuario",
+		"calledProcessInstances": "Llamadas instancias de proceso",
 		"onlyIncidents": "Sólo con incidencias",
 		"runningInstances": "Instancias",
 		"instances": "Instancias",
@@ -202,6 +203,12 @@
 			"delete": "Borrar",
 			"actions": "Acciones",
 			"exists": "Esta entidad ya se encuentra asignada"
+		},
+		"calledProcesses": {
+			"callingActivity": "Actividad de llamada",
+			"process": "Proceso",
+			"version": "Versión",
+			"id": "Identificación"
 		},
 		"noResults": "Sin resultados",
 		"noIncidents": "Sin incidencias",

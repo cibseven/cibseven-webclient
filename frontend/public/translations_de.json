@@ -91,6 +91,7 @@
 		"incidents": "Vorfälle",	
 		"variables": "Variablen",		
 		"usertasks": "Benutzeraufgaben",
+		"calledProcessInstances": "Aufgerufene Prozessinstanzen",
 		"onlyIncidents": "Nur bei Vorfällen",
 		"runningInstances": "Instanzen",
 		"instances": "Instanzen",
@@ -204,6 +205,13 @@
 		    "actions": "Aktionen",
 		    "exists": "Diese Entität ist bereits zugewiesen"
 		},
+		"calledProcesses": {
+			"callingActivity": "Aufrufende Aktivität",
+			"process": "Prozess",
+			"version": "Version",
+			"id": "Id"
+		},
+		
 		"noResults": "Keine Ergebnisse",
 		"noIncidents": "Keine Vorfälle",		
 		"noJobDefinitions": "Keine Job-Definitionen",

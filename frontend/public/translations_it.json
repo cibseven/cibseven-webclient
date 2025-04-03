@@ -82,6 +82,7 @@
 		"back": "Indietro",
 		"incidentsCounter": "Incidenti: {0}",
 		"incidents": "Incidenti",
+		"calledProcessInstances": "Chiamato processo Istanze"
 		"onlyIncidents": "Solo con incidenti",
 		"runningInstances": "Istanze",		
 		"instances": "Istanze",
@@ -134,6 +135,13 @@
 			"objectTypeName": "Nome tipo oggetto",
 			"serializationDataFormat": "Formato dati serializzazione"
 		},
+		"calledProcesses": {
+			"callingActivity": "Attività di chiamata",
+			"process": "Processo",
+			"version": "Versione",
+			"id": "Id"
+		},
+		
 		"addVariable": "Aggiungi variabile",
 		"jobs": {
 			"id": "ID",

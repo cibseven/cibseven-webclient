@@ -32,7 +32,7 @@
       <IncidentsTable v-else-if="activeTab === 'incidents'" :incidents="selectedInstance.incidents" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" :get-failing-activity="getFailingActivity"></IncidentsTable>
       <UserTasksTable v-else-if="activeTab === 'usertasks'" :selected-instance="selectedInstance"></UserTasksTable>
       <JobsTable v-else-if="activeTab === 'jobs'" :jobs="selectedInstance.jobs"></JobsTable>
-
+      <CalledProcessInstancesTable v-else-if="activeTab === 'calledProcessInstances'" :selectedInstance="selectedInstance" :activityInstanceHistory="activityInstanceHistory"></CalledProcessInstancesTable>
     </div>
 
   </div>
@@ -48,12 +48,14 @@ import VariablesTable from '@/components/process/tables/VariablesTable.vue'
 import IncidentsTable from '@/components/process/tables/IncidentsTable.vue'
 import UserTasksTable from '@/components/process/tables/UserTasksTable.vue'
 import JobsTable from '@/components/process/tables/JobsTable.vue'
+import CalledProcessInstancesTable from '@/components/process/tables/CalledProcessInstancesTable.vue'
+
 
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
 
 export default {
   name: 'ProcessVariablesTable',
-  components: { VariablesTable, IncidentsTable, UserTasksTable, BpmnViewer, JobsTable },
+  components: { VariablesTable, IncidentsTable, UserTasksTable, BpmnViewer, JobsTable, CalledProcessInstancesTable },
   mixins: [procesessVariablesMixin, resizerMixin],
   props: {
     selectedInstance: Object,
@@ -68,7 +70,8 @@ export default {
         { id: 'variables', active: true },
         { id: 'incidents', active: false },
         { id: 'usertasks', active: false },
-        { id: 'jobs', active: false }
+        { id: 'jobs', active: false },
+        { id: 'calledProcessInstances', active: false }
       ],
       activeTab: 'variables'
     }
