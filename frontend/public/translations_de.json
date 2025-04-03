@@ -112,7 +112,14 @@
 		"onlyActive": "Nur Aktive",
 		"exportInstances": "Instanzen exportieren",
 		"days": "Tage",
-		"deleteProcessDefinition": "Prozessdefinition löschen",
+		"deleteProcessDefinition": {
+			"tooltip": "Prozessdefinition löschen",
+			"confirm": {
+				"title": "@:confirm.delete",
+				"line1": "Löschen Sie die Prozessdefinitionen?",
+				"line2": "Name: {name}Version: {version}"
+			}
+		},
 		"true": "Wahr",
 		"false": "Falsch",
 		"jobDefinitions": "Job-Definitionen",
@@ -212,7 +219,7 @@
 		    "users": "Benutzer",		    			
 		    "assignee": "Bearbeiter",
 		    "add": "Hinzufügen",
-		    "delete": "Löschen",
+		    "delete": "@:confirm.delete",
 		    "actions": "Aktionen",
 		    "exists": "Diese Entität ist bereits zugewiesen"
 		},
@@ -445,6 +452,7 @@
 		"ok": "Ok",
 		"cancel": "Abbrechen",
 		"close": "Schließen",
+		"delete": "Löschen",
 		"deleteFilter": "Möchten Sie den ausgewählten Filter {name} wirklich löschen?",
 		"assignUser": "Diese Aufgabe ist bereits einer anderen Person zugewiesen. Möchten Sie diese Zuordnung wirklich ändern?",
 		"performOperation": "Sind Sie sicher, dass Sie diese Operation ausführen wollen?"
@@ -541,7 +549,7 @@
 			"deleteCriteria": "Kriterium Löschen",
 			"no-filters": "Keine Filter gefunden",
 			"edit": "@:commons.edit",
-			"delete": "Löschen",
+			"delete": "@:confirm.delete",
 			"pin": "Anfügen",
 			"includeAssigned": "Zugewiesene Aufgaben einbeziehen",
 			"keys":{

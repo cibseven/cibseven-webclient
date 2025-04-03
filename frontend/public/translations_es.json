@@ -112,7 +112,14 @@
 		"onlyActive": "Sólo activos",
 		"exportInstances": "Exportar instancias",
 		"days": "días",
-		"deleteProcessDefinition": "Eliminar definición de proceso",
+		"deleteProcessDefinition": {
+			"tooltip": "Eliminar definición de proceso",
+			"confirm": {
+				"title": "@:confirm.delete",
+				"line1": "Eliminar definición de proceso?",
+				"line2": "Nombre: {name}Versión: {version}"
+			}
+		},
 		"true": "Verdadero",
 		"false": "Falso",		
 		"jobDefinitions": "Definiciones de trabajos",
@@ -445,6 +452,7 @@
 		"ok": "Ok",
 		"cancel": "Cancelar",
 		"close": "Cerrar",
+		"delete": "Eliminar",
 		"deleteFilter": "¿Realmente quieres eliminar el filtro seleccionado {name}?",
 		"assignUser": "Esta tarea ya está asignada a otra persona. ¿Confirma que desea modificarla?",
 		"performOperation": "¿Está seguro de que quiere realizar esta operación?"
@@ -541,7 +549,7 @@
 			"deleteCriteria": "Eliminar criterio",
 			"no-filters": "No se encontraron filtros",
 			"edit": "@:commons.edit",
-			"delete": "Eliminar",
+			"delete": "@:confirm.delete",
 			"pin": "Adjuntar",
 			"includeAssigned": "Incluir las tareas asignadas",
 			"keys": {

@@ -47,7 +47,7 @@
       size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-delete-outline" :title="$t('process.deleteHistoryInstance')"></b-button>
     </template>
   </FlowTable>
-  <ConfirmDialog ref="confirm" @ok="$event.ok($event.instance)">
+  <ConfirmDialog ref="confirm" @ok="$event.ok($event.instance)" :ok-title="$t('confirm.delete')">
   {{ $t('confirm.performOperation') }}
   </ConfirmDialog>
   <SuccessAlert top="0" style="z-index: 1031" ref="success"> {{ $t('alert.successOperation') }}</SuccessAlert>

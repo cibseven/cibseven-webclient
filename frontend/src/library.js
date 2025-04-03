@@ -54,6 +54,7 @@ import ProcessListView from '@/components/processes/list/ProcessListView.vue'
 import ProcessTable from '@/components/start-process/ProcessTable.vue'
 import ProcessInstanceView from '@/components/process/ProcessInstanceView.vue'
 import ProcessDefinitionView from '@/components/process/ProcessDefinitionView.vue'
+import DeleteProcessDefinitionModal from '@/components/process/modals/DeleteProcessDefinitionModal.vue'
 import StartProcess from '@/components/start-process/StartProcess.vue'
 import TaskAssignationModal from '@/components/process/modals/TaskAssignationModal.vue'
 import VariablesTable from '@/components/process/tables/VariablesTable.vue'
@@ -122,6 +123,7 @@ const registerComponents = function(app) {
   app.component('process-table', ProcessTable)
   app.component('process-instance-view', ProcessInstanceView)
   app.component('process-definition-view', ProcessDefinitionView)
+  app.component('delete-process-definition-modal', DeleteProcessDefinitionModal)
   app.component('start-process', StartProcess)
   app.component('task-assignation-modal', TaskAssignationModal)
   app.component('variables-table', VariablesTable)
@@ -192,6 +194,7 @@ export {
   ProcessTable,
   ProcessInstanceView,
   ProcessDefinitionView,
+  DeleteProcessDefinitionModal,
   StartProcess,
   TaskAssignationModal,
   VariablesTable,

@@ -38,7 +38,7 @@
                   :disabled="false"
                   variant="link"
                   class="shadow-none p-0 text-danger"
-                  :title="$t('process.deleteProcessDefinition')">
+                  :title="$t('process.deleteProcessDefinition.tooltip')">
                   <span class="mdi mdi-18px mdi-delete-outline"></span>
                 </b-button>
               </div>
@@ -51,9 +51,7 @@
       </div>
     </div>
     <SuccessAlert ref="successOperation"> {{ $t('alert.successOperation') }}</SuccessAlert>
-    <ConfirmDialog ref="confirm" @ok="$event.ok($event.processDefinition)">
-      {{ $t('confirm.performOperation') }}
-    </ConfirmDialog>
+    <DeleteProcessDefinitionModal ref="confirm"></DeleteProcessDefinitionModal>
   </div>
 </template>
 
@@ -61,12 +59,12 @@
 import { permissionsMixin } from '@/permissions.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
-import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
+import DeleteProcessDefinitionModal from '@/components/process/modals/DeleteProcessDefinitionModal.vue'
 import ProcessDefinitionDetails from '@/components/process/ProcessDefinitionDetails.vue'
 
 export default {
   name: 'ProcessDetailsSidebar',
-  components: { SuccessAlert, ConfirmDialog, ProcessDefinitionDetails },
+  components: { SuccessAlert, DeleteProcessDefinitionModal, ProcessDefinitionDetails },
   mixins: [copyToClipboardMixin, permissionsMixin],
   props: {
     processDefinitions: {

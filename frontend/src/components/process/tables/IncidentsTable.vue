@@ -35,14 +35,11 @@
     </div>
   </div>
 
-  <b-modal ref="stackTraceModal" :title="$t('process-instance.stacktrace')" size="xl">
+  <b-modal ref="stackTraceModal" :title="$t('process-instance.stacktrace')" size="xl" okOnly>
     <div v-if="stackTraceMessage" class="container-fluid pt-3">
       <b-form-textarea v-model="stackTraceMessage" rows="20" readonly></b-form-textarea>
       <b-button variant="link" @click="copyValueToClipboard(stackTraceMessage)">{{ $t('process-instance.copyValueToClipboard') }}</b-button>
     </div>
-    <template v-slot:modal-footer>
-      <b-button @click="$refs.stackTraceModal.hide()">{{ $t('confirm.close') }}</b-button>
-    </template>
   </b-modal>
 
   <IncidentRetryModal ref="incidentRetryModal" @increment-number-retry="incrementNumberRetry"></IncidentRetryModal>
@@ -86,7 +83,7 @@ export default {
       return moment(orignalDate).format('DD/MM/YYYY HH:mm:ss')
     },
     incrementNumberRetry: function({ id, params }) {
-      IncidentService.retryJobById(id, params).then(() => {          
+      IncidentService.retryJobById(id, params).then(() => {
         this.incidents.splice(this.incidents.findIndex(obj => obj.configuration === id), 1)
         this.$refs.incidentRetryModal.hide()
       })
