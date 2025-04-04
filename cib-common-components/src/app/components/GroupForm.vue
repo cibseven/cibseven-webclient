@@ -37,11 +37,19 @@
 
       <BFormSelect :options="[9,8,7]" :modelValue="7" />
 
+      <BFormSelect :options="[1,2,3]" :modelValue="0">
+        <template #first>
+          <BFormSelectOption :value="0" disabled>
+            Option 0
+          </BFormSelectOption>
+        </template> 
+      </BFormSelect>
+
       <BFormSelect :options="[1,2,3]" :modelValue="4">
         <BFormSelectOption :value="4" disabled>Option 4</BFormSelectOption>
       </BFormSelect>
 
-      <BFromTag
+      <BFormTag
         id="select1"
         name="select1"
         label="Select 1"
@@ -51,7 +59,7 @@
       <BFormTextarea
         id="textarea1"
         name="textarea1"
-        :modelValue="Hello"
+        :modelValue="'Hello'"
         :placeholder="'Enter text here'"
         :rows="3"
         :resize="'vertical'"
@@ -80,6 +88,8 @@
 
 <script setup>
 import BForm from "@/components/BForm.vue";
+import BFormGroup from "@/components/BFormGroup.vue";
+import BFormTag from "@/components/BFormTag.vue";
 import BFormCheckbox from "@/components/BFormCheckbox.vue";
 import BFormDatepicker from "@/components/BFormDatepicker.vue";
 import BFormFile from "@/components/BFormFile.vue";
