@@ -1,7 +1,7 @@
 {
   "name": "cib-common-components",
   "description": "Common vue components for building different web applications",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "type": "module",
   "license": "Apache-2.0",
   "main": "./src/main.js",
