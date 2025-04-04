@@ -13,6 +13,7 @@ import org.cibseven.webapp.auth.rest.StandardLogin;
 
 import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.auth.SevenAuthorizationUtils;
 import org.cibseven.webapp.exception.AnonUserBlockedException;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.rest.model.Authorizations;
@@ -55,20 +56,27 @@ public class BaseService {
 	
 	public void checkSpecificProcessRights(CIBUser user, String processKey) {
 		Authorizations authorizations = bpmProvider.getUserAuthorization(user.getId(), user);
-		if (!baseUserProvider.hasSpecificProcessRights(authorizations, processKey))
+		if (!SevenAuthorizationUtils.hasSpecificProcessRights(authorizations, processKey))
 			throw new AuthenticationException("You are not authorized to do this");
 	}
 	
 	public void checkCockpitRights(CIBUser user) {
 		Authorizations authorizations = bpmProvider.getUserAuthorization(user.getId(), user);
-		if (!baseUserProvider.hasCockpitRights(authorizations)) {
+		if (!SevenAuthorizationUtils.hasCockpitRights(authorizations)) {
 			throw new AuthenticationException("You are not authorized to do this");
 		}
 	}
 	
+	public void checkPermission(CIBUser user, String type, List<String> permissions) {
+		Authorizations authorizations = bpmProvider.getUserAuthorization(user.getId(), user);
+		if (!SevenAuthorizationUtils.checkPermission(authorizations, type, permissions)) {
+			throw new AuthenticationException("You are not authorized to do this");
+		}
+	}	
+	
 	public void hasAdminManagementPermissions(CIBUser user, String action, String type, List<String> permissions) {
 		Authorizations authorizations = bpmProvider.getUserAuthorization(user.getId(), user);
-		if (!baseUserProvider.hasAdminManagementPermissions(authorizations, action, type, permissions)) {
+		if (!SevenAuthorizationUtils.hasAdminManagementPermissions(authorizations, action, type, permissions)) {
 			throw new AuthenticationException("You are not authorized to do this");
 		}
 	}	
