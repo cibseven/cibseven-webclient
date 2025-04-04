@@ -103,20 +103,29 @@ export default {
       } else if (this.task.id) {
 
         TaskService.formReference(this.task.id).then(formReference => {
+          console.log(('task', this.task))
+          var formFrame = this.$refs['template-frame']
+
+          let baseUrl = window.location.origin + '/webapp/#'
           if (this.task.camundaFormRef) {
             formReference = 'deployed-form'
+            formFrame.src = baseUrl +
+            '/' + formReference +
+							  '/' + this.currentLanguage() +
+							  '/' + this.task.id +
+							  '/' + this.$root.user.authToken
+          }
+          else if(this.task.formKey) {
+            baseUrl = window.location.origin + '/webapp'
+            formReference = 'forms/start-form.html'
+            formFrame.src = baseUrl + '/' + formReference 
           } else if (formReference === 'empty-task') {
             this.loader = false
             this.formFrame = false
             return
           }
-          var formFrame = this.$refs['template-frame']
           //formFrame.src = this.$root.config.uiElementTemplateUrl + '/' + formReference + '?taskId=' + this.task.id +
-          formFrame.src = window.location.origin + '/webapp/#' +
-							  '/' + formReference +
-							  '/' + this.currentLanguage() +
-							  '/' + this.task.id +
-							  '/' + this.$root.user.authToken
+          
 //          '&locale=' + this.currentLanguage() + '&token=' + this.$root.user.authToken +
 //          '&theme=' + themeContext + '&translation=' + translationContext
           this.loader = false
