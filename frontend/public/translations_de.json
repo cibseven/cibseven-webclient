@@ -147,7 +147,13 @@
 			"deletedReason": "Löschungsgrund",
 			"currentTaskAssignee": "Derzeitiger Bearbeiter",
 			"currentTaskCreated": "Aktuelle Aufgabe erstellt am"
-		},				
+		},
+		"confirm": {
+			"suspend": "Wollen Sie wirklich die nächste Instanz des Prozesses aussetzen?",
+			"activate": "Wollen Sie wirklich die nächste Instanz des Prozesses aktivieren?",
+			"deleteInstance": "Wollen Sie wirklich die nächste Instanz des Prozesses löschen?",
+			"deleteHistoryInstance": "Wollen Sie wirklich die nächste historische Instanz des Prozesses löschen?"
+		},
 		"variables": {
 			"name": "Name",
 			"type": "Typ",

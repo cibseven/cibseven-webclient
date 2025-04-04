@@ -136,6 +136,12 @@
 			"currentTaskAssignee": "Attività assegnata a",
 			"currentTaskCreated": "Attività corrente creata su"
 		},
+		"confirm": {
+			"suspend": "Do you really want to suspend the next instance of the process?",
+			"activate": "Do you really want to activate the next instance of the process?",
+			"deleteInstance": "Do you really want to delete the next instance of the process?",
+			"deleteHistoryInstance": "Do you really want to delete the next historical instance of the process?"
+		},
 		"variables": {
 			"name": "Nome",
 			"type": "Tipo",

@@ -147,7 +147,13 @@
 			"deletedReason": "Motivo eliminación",
 			"currentTaskAssignee": "Tarea asignada a",
 			"currentTaskCreated": "Tarea actual creada el"
-		},		
+		},
+		"confirm": {
+			"suspend": "¿Realmente quieres suspender la siguiente instancia del proceso?",
+			"activate": "¿Realmente quieres activar la siguiente instancia del proceso?",
+			"deleteInstance": "¿Realmente quieres borrar la siguiente instancia del proceso?",
+			"deleteHistoryInstance": "¿Realmente quieres borrar la siguiente instancia histórica del proceso?"
+		},
 		"variables": {
 			"name": "Nombre",
 			"type": "Tipo",
