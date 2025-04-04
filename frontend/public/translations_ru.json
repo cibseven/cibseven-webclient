@@ -111,7 +111,14 @@
 		"onlyActive": "Только активные",
 		"exportInstances": "Экспорт экземпляров",
 		"days": "дней",
-		"deleteProcessDefinition": "Удалить определение процесса",
+		"deleteProcessDefinition": {
+			"tooltip": "Удалить определение процесса",
+			"confirm": {
+				"title": "@:confirm.delete",
+				"line1": "Удалить определение процесса?",
+				"line2": "Имя: {name}Версия: {version}"
+			}
+		},
 		"true": "Истина",
 		"false": "Ложь",
 		"jobDefinitions": "Определения заданий",
@@ -211,7 +218,7 @@
 		    "users": "Пользователи",
 		    "assignee": "Исполнитель",
 		    "add": "Добавить",
-		    "delete": "Удалить",
+		    "delete": "@:confirm.delete",
 		    "actions": "Действия",
 		    "exists": "This entity is already assigned"
 		},
@@ -444,6 +451,7 @@
 		"ok": "OK",
 		"cancel": "Отмена",
 		"close": "Закрыть",
+		"delete": "Удалить",
 		"deleteFilter": "Вы действительно хотите удалить выбранный фильтр {name}?",
 		"assignUser": "Данная задача уже назначена на кого-то другого. Вы действительно хотите её переназначить?",
 		"performOperation": "Вы уверены, что хотите выполнить эту операцию?"
@@ -539,9 +547,9 @@
 			"selectedCriteria": "Выбранный критерий",
 			"deleteCriteria": "Удалить критерий",
 			"no-filters": "Фильтры не найдены",
-			"edit": "Редактировать",
-			"delete": "Удалить",
-			"pin": "Прикреплять",
+			"edit": "Редактировать фильтр",
+			"delete": "Удалить фильтр",
+			"pin": "Прикрепить",
 			"includeAssigned": "Включить назначенные задачи",
 			"keys": {
 				"processInstanceId": "Process instance Id",
@@ -969,7 +977,12 @@
 			"copyValue": "Копировать значение",
 			"historyTimeToLive": "Время хранения истории"
 		},
-		"showManagement": "@:process.showManagement"
+		"showManagement": "@:process.showManagement",
+		"type": "Тип",
+		"value": "Значение",
+		"inputs": "Входные данные",
+		"outputs": "Выходные данные",
+		"decisionInstanceId": "ID экземпляра решения"
 	},
 	"decision-instance": {
 		"edit": "@:commons.edit",

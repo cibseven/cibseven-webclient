@@ -20,11 +20,11 @@
 						</b-form-datepicker>
 						<span v-if="invalidDate" class="text-danger">{{ $t('process-instance.incidents.invalidDateError') }}</span>
 					</div>
-					<div class="col-6">              
+					<div class="col-6">
 						<b-form-timepicker v-model="scheduledAt.time" size="sm" input-class="text-start" no-close-button :label-no-time-selected="$t('cib-timepicker.noDate')"
 							reset-button reset-value="23:59:00" class="flex-fill" :label-reset-button="$t('cib-timepicker.reset')" :locale="currentLanguage()">
 							<template v-slot:prepend>
-								<span class="input-group-text" aria-hidden="true"> 
+								<span class="input-group-text" aria-hidden="true">
 									<i class="mdi mdi-clock-outline"></i>
 								</span>
 							</template>
@@ -35,7 +35,7 @@
 		</div>
 		<template v-slot:modal-footer>
 			<b-button @click="$refs.incidentRetryModal.hide()" variant="link">{{ $t('confirm.close') }}</b-button>
-			<b-button @click="incrementNumberRetries()">{{ $t('confirm.ok') }}</b-button>
+			<b-button @click="incrementNumberRetries()" variant="primary">{{ $t('confirm.ok') }}</b-button>
 		</template>
 	</b-modal>
 </template>
@@ -76,7 +76,7 @@
 				const datePart = date.format('YYYY-MM-DD')
 				const timePart = this.scheduledAt.time + ':00.000'
 				return moment(`${datePart}T${timePart}`).format('YYYY-MM-DDTHH:mm:ss.SSSZZ')
-			},            
+			},
 			incrementNumberRetries: function() {
 				this.invalidDate = false
 				var params = { retries: 1 }
@@ -90,7 +90,7 @@
 				this.$emit('increment-number-retry', {
 					id: this.selectedIncident.configuration,
 					params
-				})                
+				})
 			}
 		}
 	}

@@ -103,7 +103,14 @@
 		"onlyActive": "Solo attivi",
 		"exportInstances": "Esporta istanze",
 		"days": "giorni",
-		"deleteProcessDefinition": "Elimina definizione del processo",
+		"deleteProcessDefinition": {
+			"tooltip": "Elimina definizione del processo",
+			"confirm": {
+				"title": "@:confirm.delete",
+				"line1": "Elimina definizione del processo?",
+				"line2": "Nome: {name}Versione: {version}"
+			}
+		},
 		"true": "Vero",
 		"false": "Falso",
 		"jobs": "Job"
@@ -308,6 +315,7 @@
 		"title": "Si prega di confermare",
 		"ok": "Ok",
 		"cancel": "Cancella",
+		"delete": "Eliminare",
 		"deleteFilter": "Volete davvero eliminare il filtro selezionato {name}?",
 		"assignUser": "Questo compito è già assegnato a qualcun altro, vuoi davvero cambiare questo incarico?",
 		"performOperation": "Sei sicuro di voler effettuare questa operazione?"
@@ -402,7 +410,7 @@
 			"deleteCriteria": "Cancellare i criteri",
 			"no-filters": "No filters found",
 			"edit": "@:commons.edit",
-			"delete": "Eliminare",
+			"delete": "@:confirm.delete",
 			"pin": "Allegare",
 			"includeAssigned": "Includi compiti assegnati",
 			"keys":{
@@ -772,7 +780,12 @@
 			"copyValue": "Copia valore",
 			"historyTimeToLive": "Tempo di conservazione della cronologia"
 		},
-		"showManagement": "@:process.showManagement"
+		"showManagement": "@:process.showManagement",
+		"type": "Tipo",
+		"value": "Valore",
+		"inputs": "Input",
+		"outputs": "Output",
+		"decisionInstanceId": "ID dell'istanza della decisione"
 	},
 	"decision-instance": {
 		"edit": "@:commons.edit",

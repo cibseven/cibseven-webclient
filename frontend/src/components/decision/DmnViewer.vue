@@ -10,7 +10,7 @@
       <div class="h-100" ref="diagram"></div>
 
       <!-- Zoom Controls -->
-      <div class="btn-group-vertical position-absolute" style="right:15px; bottom:15px;">
+      <div v-if="isDrdView" class="btn-group-vertical position-absolute" style="right:15px; bottom:15px;">
         <b-button size="sm" class="border" variant="light" title="Zoom In" @click="zoomIn">
           <span class="mdi mdi-18px mdi-plus"></span>
         </b-button>
@@ -50,7 +50,8 @@ export default {
   data() {
     return {
       viewer: null,
-      loader: true
+      loader: true,
+      isDrdView: true
     }
   },
   mounted() {
@@ -62,11 +63,14 @@ export default {
         additionalModules: [zoomScrollModule, moveCanvasModule]
       }
     })
+    this.viewer.on('views.changed', data => {
+      if (data?.activeView?.type === 'drd') this.isDrdView = true
+      else this.isDrdView = false
+    })
   },
   methods: {
     showDiagram(xml) {
       this.loader = true
-
       this.viewer.importXML(xml).then(() => {
         // Open the first decision if available
         const decisions =
@@ -90,7 +94,6 @@ export default {
         this.loader = false
       })
     },
-
     // Zoom controls
     zoomIn() {
       this.viewer.getActiveViewer()?.get('zoomScroll')?.stepZoom(1)

@@ -33,6 +33,7 @@
 <script>
 export default {
   props: {
+    helloWorld: {},
     modelValue: { type: [String, Number], default: null },
     options: {
       type: Array,

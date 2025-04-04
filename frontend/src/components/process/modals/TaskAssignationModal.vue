@@ -1,14 +1,14 @@
 <template>
-  <b-modal ref="assignationModal" :title="selectedIdentity.type === 'assignee' ? $t('process-instance.assignModal.manageAssignee') : $t('process-instance.assignModal.manageUsersGroups')">
-    <div class="container-fluid">
+  <b-modal ref="assignationModal" :title="selectedIdentity.type === 'assignee' ? $t('process-instance.assignModal.manageAssignee') : $t('process-instance.assignModal.manageUsersGroups')" okOnly>
+    <div>
       <ul class="nav nav-tabs mb-4">
         <li class="nav-item" v-for="(identity, idx) in filteredIdentities" :key="idx">
-          <button 
-            class="nav-link py-1" 
+          <button
+            class="nav-link py-1"
             :class="{ active: selectedIdentity === identity }"
             :id="'identityTab-' + idx"
-            data-bs-toggle="tab" 
-            :data-bs-target="'#tabContent-' + idx" 
+            data-bs-toggle="tab"
+            :data-bs-target="'#tabContent-' + idx"
             type="button"
             @click="selectedIdentity = identity">
             {{ $t('process-instance.assignModal.' + identity.text) }}
@@ -16,10 +16,10 @@
         </li>
       </ul>
       <div class="tab-content mt-3">
-        <div 
-          v-for="(identity, idx) in filteredIdentities" 
-          :key="'tabContent-' + idx" 
-          class="tab-pane fade" 
+        <div
+          v-for="(identity, idx) in filteredIdentities"
+          :key="'tabContent-' + idx"
+          class="tab-pane fade"
           :class="{ 'show active': selectedIdentity === identity }"
           :id="'tabContent-' + idx">
           <div v-if="hasIndentityLinks(identity)">
@@ -35,8 +35,8 @@
                   <tr v-if="identityLink[identity.value] && identityLink.type === identity.type">
                     <td class="align-middle py-1">{{ identityLink[identity.value] }}</td>
                     <td class="text-center py-1">
-                      <button 
-                        @click="removeIdentityLink(identityLink, idx)" 
+                      <button
+                        @click="removeIdentityLink(identityLink, idx)"
                         class="btn btn-outline-secondary border-0 mdi mdi-18px mdi-delete"
                         :title="$t('process-instance.assignModal.delete')">
                       </button>
@@ -60,9 +60,6 @@
       </b-input-group>
       <p v-if="identityExists" class="mt-1 text-danger">{{ $t('process-instance.assignModal.exists') }}</p>
     </div>
-    <template v-slot:modal-footer>
-      <b-button @click="$refs.assignationModal.hide()">{{ $t('confirm.close') }}</b-button>
-    </template>
   </b-modal>
 </template>
 

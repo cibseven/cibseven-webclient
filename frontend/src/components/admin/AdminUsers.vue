@@ -75,8 +75,8 @@
         </div>
       </div>
       <template v-slot:modal-footer>
-        <b-button variant="primary" @click="remove(userSelected); $refs.deleteModal.hide()">{{ $t('confirm.ok') }}</b-button>
-        <b-button @click="$refs.deleteModal.hide()">{{ $t('confirm.cancel') }}</b-button>
+        <b-button @click="$refs.deleteModal.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
+        <b-button @click="remove(userSelected); $refs.deleteModal.hide()" variant="primary">{{ $t('confirm.delete') }}</b-button>
       </template>
     </b-modal>
     <TaskPopper ref="importPopper"></TaskPopper>

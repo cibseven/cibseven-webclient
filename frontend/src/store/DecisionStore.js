@@ -3,7 +3,8 @@ import { DecisionService } from '@/services.js'
 const DecisionStore = {
   state: {
     list: [],
-    selectedDecisionVersion: null
+    selectedDecisionVersion: null,
+    selectedInstance: null
   },
   mutations: {
     setDecisions: function (state, params) {
@@ -30,6 +31,9 @@ const DecisionStore = {
           state.selectedDecisionVersion = targetVersion
         }
       }
+    },
+    setSelectedInstance(state, instance) {
+      state.selectedInstance = instance
     }
   },
   getters: {

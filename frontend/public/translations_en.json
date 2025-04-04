@@ -111,7 +111,14 @@
 		"onlyActive": "Only actives",
 		"exportInstances": "Export instances",
 		"days": "days",
-		"deleteProcessDefinition": "Delete process definition",
+		"deleteProcessDefinition": {
+			"tooltip": "Delete process definition",
+			"confirm": {
+				"title": "@:confirm.delete",
+				"line1": "Delete process definition?",
+				"line2": "Name: {name}Version: {version}"
+			}
+		},
 		"true": "True",
 		"false": "False",				
 		"jobDefinitions": "Job definitions",
@@ -211,7 +218,7 @@
 		    "users": "Users",
 		    "assignee": "Assignee",
 		    "add": "Add",
-		    "delete": "Delete",
+		    "delete": "@:confirm.delete",
 		    "actions": "Actions",
 		    "exists": "This entity is already assigned"
 		},
@@ -444,6 +451,7 @@
 		"ok": "Ok",
 		"cancel": "Cancel",
 		"close": "Close",
+		"delete": "Delete",
 		"deleteFilter": "Do you really want to delete the selected filter {name}?",
 		"assignUser": "This task is already assigned to someone else, do you really want to change this assignment?",
 		"performOperation": "Are you sure you want to perform this operation?"
@@ -540,7 +548,7 @@
 			"deleteCriteria": "Delete criteria",
 			"no-filters": "No filters found",
 			"edit": "@:commons.edit",
-			"delete": "Delete",
+			"delete": "@:confirm.delete",
 			"pin": "Pin",
 			"includeAssigned": "Include assigned tasks",
 			"keys": {
@@ -967,7 +975,12 @@
 			"copyValue": "Copy value",
 			"historyTimeToLive": "History time to live"
 		},
-		"showManagement": "@:process.showManagement"
+		"showManagement": "@:process.showManagement",
+		"type": "Type",
+		"value": "Value",
+		"inputs": "Inputs",
+		"outputs": "Outputs",
+		"decisionInstanceId": "Decision Instance ID"
 	},
 	"decision-instance": {
 		"edit": "@:commons.edit",
