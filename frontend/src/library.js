@@ -41,6 +41,7 @@ import FilterNavBar from '@/components/task/filter/FilterNavBar.vue'
 import FilterNavCollapsed from '@/components/task/filter/FilterNavCollapsed.vue'
 import ProcessView from '@/components/process/ProcessView.vue'
 import AddVariableModal from '@/components/process/modals/AddVariableModal.vue'
+import DeleteVariableModal from '@/components/process/modals/DeleteVariableModal.vue'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
 import InstancesTable from '@/components/process/InstancesTable.vue'
 import ProcessInstancesView from '@/components/process/ProcessInstancesView.vue'
@@ -55,6 +56,7 @@ import ProcessTable from '@/components/start-process/ProcessTable.vue'
 import ProcessInstanceView from '@/components/process/ProcessInstanceView.vue'
 import ProcessDefinitionView from '@/components/process/ProcessDefinitionView.vue'
 import DeleteProcessDefinitionModal from '@/components/process/modals/DeleteProcessDefinitionModal.vue'
+import ConfirmActionOnProcessInstanceModal from '@/components/process/modals/ConfirmActionOnProcessInstanceModal.vue'
 import StartProcess from '@/components/start-process/StartProcess.vue'
 import TaskAssignationModal from '@/components/process/modals/TaskAssignationModal.vue'
 import VariablesTable from '@/components/process/tables/VariablesTable.vue'
@@ -110,6 +112,7 @@ const registerComponents = function(app) {
   app.component('filter-nav-collapsed', FilterNavCollapsed)
   app.component('process-view', ProcessView)
   app.component('add-variable-modal', AddVariableModal)
+  app.component('delete-variable-modal', DeleteVariableModal)
   app.component('bpmn-viewer', BpmnViewer)
   app.component('instances-table', InstancesTable)
   app.component('process-instances-view', ProcessInstancesView)
@@ -124,6 +127,7 @@ const registerComponents = function(app) {
   app.component('process-instance-view', ProcessInstanceView)
   app.component('process-definition-view', ProcessDefinitionView)
   app.component('delete-process-definition-modal', DeleteProcessDefinitionModal)
+  app.component('confirm-action-on-process-instance-modal', ConfirmActionOnProcessInstanceModal)
   app.component('start-process', StartProcess)
   app.component('task-assignation-modal', TaskAssignationModal)
   app.component('variables-table', VariablesTable)
@@ -181,6 +185,7 @@ export {
   FilterNavCollapsed,
   ProcessView,
   AddVariableModal,
+  DeleteVariableModal,
   BpmnViewer,
   InstancesTable,
   ProcessInstancesView,
@@ -195,6 +200,7 @@ export {
   ProcessInstanceView,
   ProcessDefinitionView,
   DeleteProcessDefinitionModal,
+  ConfirmActionOnProcessInstanceModal,
   StartProcess,
   TaskAssignationModal,
   VariablesTable,

@@ -119,6 +119,10 @@
 				"line2": "Name: {name}Version: {version}"
 			}
 		},
+		"confirm": {
+			"suspend": "Do you really want to suspend the next process definition with all running process instances?",
+			"activate": "Do you really want to activate the next process definition with all running process instances?"
+		},
 		"true": "True",
 		"false": "False",				
 		"jobDefinitions": "Job definitions",
@@ -146,7 +150,13 @@
 			"deletedReason": "Deleted reason",
 			"currentTaskAssignee": "Current assignee",
 			"currentTaskCreated": "Current task created on"
-		},				
+		},
+		"confirm": {
+			"suspend": "Do you really want to suspend the next instance of the process?",
+			"activate": "Do you really want to activate the next instance of the process?",
+			"deleteInstance": "Do you really want to delete the next instance of the process?",
+			"deleteHistoryInstance": "Do you really want to delete the next historical instance of the process?"
+		},
 		"variables": {
 			"name": "Name",
 			"type": "Type",
@@ -154,7 +164,8 @@
 			"actions": "Actions",
 			"scope": "Scope",
 			"objectTypeName": "Object type name",
-			"serializationDataFormat": "Serialization data format"
+			"serializationDataFormat": "Serialization data format",
+			"confirmDelete": "Do you want to delete the variable?"
 		},
 		"incidents": {
 		    "message": "Message",
@@ -360,7 +371,7 @@
 			"createLabel": "Create new group",
 			"groupCreatedMessage": "Group {0} created",
 			"actions": "Actions",
-			"confirmDelete": "Do you really want to delete the user with the following parameters?",
+			"confirmDelete": "Do you really want to delete the group with the following parameters?",
 			"information": "Information",
 			"editMessage": "Edit group ({0})",
 			"users": "Users",

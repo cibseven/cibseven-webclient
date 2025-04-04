@@ -61,7 +61,7 @@
           <router-link to="/seven/auth/tasks" place="tasks">{{ $t('process.tasks') }}</router-link>
         </span>
       </SuccessAlert>
-      <b-modal static ref="diagramModal" size="xl" :title="$t('process.diagram.title', [processName(selected)])" dialog-class="h-75" content-class="h-100" okOnly>
+      <b-modal static ref="diagramModal" size="xl" :title="$t('process.diagram.title', [processName(selected)])" dialog-class="h-75" content-class="h-100" :ok-only="true">
         <div class="container-fluid h-100 p-0">
           <BpmnViewer class="h-100" ref="diagram"></BpmnViewer>
         </div>

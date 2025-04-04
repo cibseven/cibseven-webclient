@@ -1,5 +1,5 @@
 <template>
-  <b-modal ref="about" :title="$t('infoAndHelp.flowModalAbout.title')" okOnly>
+  <b-modal ref="about" :title="$t('infoAndHelp.flowModalAbout.title')" :ok-only="true">
     <div class="row">
       <div class="col-2">
         <svg id="Ebene_1" data-name="Ebene 1"

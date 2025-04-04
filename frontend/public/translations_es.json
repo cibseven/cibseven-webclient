@@ -116,9 +116,13 @@
 			"tooltip": "Eliminar definición de proceso",
 			"confirm": {
 				"title": "@:confirm.delete",
-				"line1": "Eliminar definición de proceso?",
+				"line1": "¿Eliminar definición de proceso?",
 				"line2": "Nombre: {name}Versión: {version}"
 			}
+		},
+		"confirm": {
+			"suspend": "¿Realmente desea suspender la siguiente definición de proceso con todas las instancias de proceso en ejecución?",
+			"activate": "¿Realmente quieres activar la siguiente definición de proceso con todas las instancias de proceso en ejecución?"
 		},
 		"true": "Verdadero",
 		"false": "Falso",		
@@ -147,7 +151,13 @@
 			"deletedReason": "Motivo eliminación",
 			"currentTaskAssignee": "Tarea asignada a",
 			"currentTaskCreated": "Tarea actual creada el"
-		},		
+		},
+		"confirm": {
+			"suspend": "¿Realmente quieres suspender la siguiente instancia del proceso?",
+			"activate": "¿Realmente quieres activar la siguiente instancia del proceso?",
+			"deleteInstance": "¿Realmente quieres borrar la siguiente instancia del proceso?",
+			"deleteHistoryInstance": "¿Realmente quieres borrar la siguiente instancia histórica del proceso?"
+		},
 		"variables": {
 			"name": "Nombre",
 			"type": "Tipo",
@@ -155,7 +165,8 @@
 			"actions": "Acciones",
 			"scope": "Ámbito",
 			"objectTypeName": "Nombre del tipo de objeto",
-			"serializationDataFormat": "Formato de datos de serialización"
+			"serializationDataFormat": "Formato de datos de serialización",
+			"confirmDelete": "¿Desea eliminar la variable?"
 		},
 		"incidents": {
 		    "message": "Mensaje",
@@ -361,7 +372,7 @@
 			"createLabel": "Crear nuevo grupo",
 			"groupCreatedMessage": "El grupo {0} ha sido creado",
 			"actions": "Acciones",
-			"confirmDelete": "¿Realmente quiere eliminar el usuario con los siguientes parámetros?",
+			"confirmDelete": "¿Realmente quiere eliminar el grupo con los siguientes parámetros?",
 			"information": "Información",
 			"editMessage": "Editar grupo ({0})",
 			"users": "Usuarios",

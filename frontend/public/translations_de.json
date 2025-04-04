@@ -120,6 +120,10 @@
 				"line2": "Name: {name}Version: {version}"
 			}
 		},
+		"confirm": {
+			"suspend": "Wollen Sie wirklich die nächste Prozessdefinition mit allen laufenden Prozessinstanzen aussetzen?",
+			"activate": "Möchten Sie die nächste Prozessdefinition mit allen laufenden Prozessinstanzen wirklich aktivieren?"
+		},
 		"true": "Wahr",
 		"false": "Falsch",
 		"jobDefinitions": "Job-Definitionen",
@@ -147,7 +151,13 @@
 			"deletedReason": "Löschungsgrund",
 			"currentTaskAssignee": "Derzeitiger Bearbeiter",
 			"currentTaskCreated": "Aktuelle Aufgabe erstellt am"
-		},				
+		},
+		"confirm": {
+			"suspend": "Wollen Sie wirklich die nächste Instanz des Prozesses aussetzen?",
+			"activate": "Wollen Sie wirklich die nächste Instanz des Prozesses aktivieren?",
+			"deleteInstance": "Wollen Sie wirklich die nächste Instanz des Prozesses löschen?",
+			"deleteHistoryInstance": "Wollen Sie wirklich die nächste historische Instanz des Prozesses löschen?"
+		},
 		"variables": {
 			"name": "Name",
 			"type": "Typ",
@@ -155,7 +165,8 @@
 			"actions": "Aktionen",
 			"scope": "Umfang",
 			"objectTypeName": "Objekttypname",
-			"serializationDataFormat": "Serialisierungsdatenformat"
+			"serializationDataFormat": "Serialisierungsdatenformat",
+			"confirmDelete": "Wollen Sie die Variable löschen?"
 		},
 		"incidents": {
 		    "message": "Nachricht",

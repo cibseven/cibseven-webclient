@@ -111,6 +111,10 @@
 				"line2": "Nome: {name}Versione: {version}"
 			}
 		},
+		"confirm": {
+			"suspend": "Si vuole davvero sospendere la prossima definizione di processo con tutte le istanze di processo in esecuzione?",
+			"activate": "Si vuole davvero attivare la prossima definizione di processo con tutte le istanze di processo in esecuzione?"
+		},
 		"true": "Vero",
 		"false": "Falso",
 		"jobs": "Job"
@@ -136,6 +140,12 @@
 			"currentTaskAssignee": "Attività assegnata a",
 			"currentTaskCreated": "Attività corrente creata su"
 		},
+		"confirm": {
+			"suspend": "Do you really want to suspend the next instance of the process?",
+			"activate": "Do you really want to activate the next instance of the process?",
+			"deleteInstance": "Do you really want to delete the next instance of the process?",
+			"deleteHistoryInstance": "Do you really want to delete the next historical instance of the process?"
+		},
 		"variables": {
 			"name": "Nome",
 			"type": "Tipo",
@@ -143,7 +153,8 @@
 			"actions": "Azioni",
 			"scope": "Ambito",
 			"objectTypeName": "Nome tipo oggetto",
-			"serializationDataFormat": "Formato dati serializzazione"
+			"serializationDataFormat": "Formato dati serializzazione",
+			"confirmDelete": "Si vuole cancellare la variabile?"
 		},
 		"addVariable": "Aggiungi variabile",
 		"jobs": {
