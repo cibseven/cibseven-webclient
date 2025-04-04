@@ -39,7 +39,7 @@ Promise.all([
     var css = document.createElement('Link')
     css.setAttribute('rel', 'stylesheet')
     css.setAttribute('type', 'text/css')
-    css.setAttribute('href', 'themes/' + getTheme(config) + '/styles.css')
+    css.setAttribute('href', 'bootstrap/' + getTheme(config) + '.css')
 
     var favicon = document.createElement('Link')
     favicon.setAttribute('rel', 'icon')
