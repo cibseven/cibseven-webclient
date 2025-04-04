@@ -95,6 +95,7 @@
 		"incidents": "Incidencias",
 		"variables": "Variables",
 		"usertasks": "Tareas de usuario",
+		"calledProcessInstances": "Llamadas instancias de proceso",
 		"onlyIncidents": "Sólo con incidencias",
 		"runningInstances": "Instancias",
 		"instances": "Instancias",
@@ -209,6 +210,12 @@
 		    "followUp": "Seguimiento",
 		    "taskID": "ID de tarea",
 		    "actions": "Acciones"
+		},
+		"calledProcesses": {
+			"callingActivity": "Actividad de llamada",
+			"process": "Proceso",
+			"version": "Versión",
+			"id": "Identificación"
 		},
 		"assignModal": {
 			"manageUsersGroups": "Administrar usuarios/grupos",

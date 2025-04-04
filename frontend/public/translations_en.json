@@ -94,6 +94,7 @@
 		"incidents": "Incidents",		
 		"variables": "Variables",
 		"usertasks": "User tasks",
+		"calledProcessInstances": "Called process instances",
 		"onlyIncidents": "Only with incidents",
 		"runningInstances": "Instances",		
 		"instances": "Instances",
@@ -208,6 +209,12 @@
 		    "followUp": "Follow-Up",
 		    "taskID": "Task ID",
 		    "actions": "Actions"
+		},
+		"calledProcesses": {
+			"callingActivity": "calling Activity",
+			"process": "Process",
+			"version": "Version",
+			"id": "Id"
 		},
 		"assignModal": {
 		    "manageUsersGroups": "Manage users/groups",

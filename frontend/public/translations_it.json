@@ -89,6 +89,7 @@
 		"onlyIncidents": "Solo con incidenti",
 		"runningInstances": "Istanze",		
 		"instances": "Istanze",
+		"calledProcessInstances": "Chiamato processo Istanze"
 		"statistics": "Statistics",		
 		"suspendInstance": "Sospendi istanza di processo",
 		"deleteInstance": "Elimina l'istanza di processo in esecuzione",
@@ -156,6 +157,12 @@
 			"actions": "Azioni",
 			"suspend": "Sospendere",
 			"resume": "Riprendere"
+		},
+		"calledProcesses": {
+			"callingActivity": "Attività di chiamata",
+			"process": "Processo",
+			"version": "Versione",
+			"id": "Id"
 		}
 	},
 	"bpmn-viewer": {
