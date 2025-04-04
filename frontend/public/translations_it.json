@@ -111,6 +111,10 @@
 				"line2": "Nome: {name}Versione: {version}"
 			}
 		},
+		"confirm": {
+			"suspend": "Si vuole davvero sospendere la prossima definizione di processo con tutte le istanze di processo in esecuzione?",
+			"activate": "Si vuole davvero attivare la prossima definizione di processo con tutte le istanze di processo in esecuzione?"
+		},
 		"true": "Vero",
 		"false": "Falso",
 		"jobs": "Job"

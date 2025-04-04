@@ -120,6 +120,10 @@
 				"line2": "Nombre: {name}Versión: {version}"
 			}
 		},
+		"confirm": {
+			"suspend": "¿Realmente desea suspender la siguiente definición de proceso con todas las instancias de proceso en ejecución?",
+			"activate": "¿Realmente quieres activar la siguiente definición de proceso con todas las instancias de proceso en ejecución?"
+		},
 		"true": "Verdadero",
 		"false": "Falso",		
 		"jobDefinitions": "Definiciones de trabajos",

@@ -119,6 +119,10 @@
 				"line2": "Name: {name}Version: {version}"
 			}
 		},
+		"confirm": {
+			"suspend": "Do you really want to suspend the next process definition with all running process instances?",
+			"activate": "Do you really want to activate the next process definition with all running process instances?"
+		},
 		"true": "True",
 		"false": "False",				
 		"jobDefinitions": "Job definitions",
