@@ -9,11 +9,11 @@
     <SidebarsFlow ref="sidebars" class="border-top overflow-auto" v-model:left-open="leftOpen" :left-caption="shortendLeftCaption">
       <template v-slot:left>
         <ProcessDetailsSidebar ref="navbar" v-if="instances"
-          :processKey="processKey"
-          :processDefinitions="processDefinitions"
-          :versionIndex="versionIndex"
-          @onRefreshProcessDefinitions="onRefreshProcessDefinitions"
-          @onDeleteProcessDefinition="onDeleteProcessDefinition"
+          :process-key="processKey"
+          :process-definitions="processDefinitions"
+          :version-index="versionIndex"
+          @on-refresh-process-definitions="onRefreshProcessDefinitions"
+          @on-delete-process-definition="onDeleteProcessDefinition"
           :instances="instances"></ProcessDetailsSidebar>
       </template>
       <transition name="slide-in" mode="out-in">
@@ -21,8 +21,8 @@
           :activity-id="activityId"
           :loading="loading"
           :process="process"
-          :processKey="processKey"
-          :versionIndex="versionIndex"
+          :process-key="processKey"
+          :version-index="versionIndex"
           :instances="instances"
           :activity-instance="activityInstance"
           :first-result="firstResult"
@@ -77,7 +77,11 @@ export default {
     instanceId: { type: String, required: true }
   },
   watch: {
-    processKey: 'loadProcessFromRoute'
+    processKey: 'loadProcessFromRoute',
+    versionIndex() {
+      const process = this.processDefinitions.find(processDefinition => processDefinition.version === this.versionIndex)
+      this.loadProcessVersion(process)
+    }
   },
   data: function() {
     return {
@@ -86,7 +90,6 @@ export default {
       process: null, // selected process definition
       instances: null,
       processDefinitions: [],
-      lazyLoadHistory: this.$root.config.lazyLoadHistory,
       selectedInstance: null,
       task: null,
       activityInstance: null,
@@ -121,7 +124,6 @@ export default {
       this.activityInstance = null
       this.activityInstanceHistory = null
       this.task = null
-      this.loadProcessByDefinitionKey()
     }
     else if (this.selectedInstance == null && this.instanceId) {
       if (this.instances) {
@@ -153,16 +155,15 @@ export default {
     onDeleteProcessDefinition: function(params) {
       ProcessService.deleteProcessDefinition(params.processDefinition.id, true).then(() => {
         // reload versions
-        ProcessService.findProcessVersionsByDefinitionKey(this.processKey).then(versions => {
+        ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.$root.config.lazyLoadHistory)
+        .then(versions => {
           if (versions.length === 0) {
             // no more process-definitions with such key
             this.$router.replace('/seven/auth/processes')
-          }
-          else if (params.processDefinition.version !== this.versionIndex) {
+          } else if (params.processDefinition.version !== this.versionIndex) {
             // remove deleted process-definition from the list
             this.processDefinitions = versions
-          }
-          else {
+          }  else {
             // Find nearest process-definition to deleted one and select it.
             //
             // 5 4 3 2 1
@@ -177,7 +178,6 @@ export default {
                 nextVersionIndex = version.version
               }
             })
-
             this.$router.replace({
               name: 'process',
               params: {
@@ -185,6 +185,7 @@ export default {
                 versionIndex: nextVersionIndex,
               }
             })
+            this.processDefinitions = versions
           }
         })
       })
@@ -192,25 +193,27 @@ export default {
     // call from:
     // - user have deleted a non-selected process definition (this.process is still valid)
     // - user clicked "refresh process definitions" button
-    onRefreshProcessDefinitions: function(params) {
-      return ProcessService.findProcessVersionsByDefinitionKey(this.processKey).then(versions => {
+    onRefreshProcessDefinitions: function(lazyLoad) {
+      return ProcessService.findProcessVersionsByDefinitionKey(this.processKey, lazyLoad).then(versions => {
         this.processDefinitions = versions
         if (this.processDefinitions.length > 0) {
-          this.calcProcessDefinitionsStats(this.process, params.lazyLoadHistory)
+          this.resetStatsLazyLoad(lazyLoad)
+          this.loadProcessVersion(this.process)
         }
         return versions
       })
     },
     loadProcessByDefinitionKey: function() {
-      return ProcessService.findProcessVersionsByDefinitionKey(this.processKey).then(versions => {
+      return ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.$root.config.lazyLoadHistory)
+      .then(versions => {
         const requestedDefinition = versions.find(processDefinition => processDefinition.version === this.versionIndex)
         if (requestedDefinition) {
           this.processDefinitions = versions
           const needCalcStats = this.process == null
+          if (needCalcStats) {
+            this.resetStatsLazyLoad(this.$root.config.lazyLoadHistory)
+          }
           return this.loadProcessVersion(requestedDefinition).then(() => {
-            if (needCalcStats) {
-              this.calcProcessDefinitionsStats(requestedDefinition, this.lazyLoadHistory)
-            }
             // false - no redirect
             return false
           })
@@ -224,15 +227,19 @@ export default {
         }
       })
     },
-    calcProcessDefinitionsStats: function(selectedProcess, lazyLoadHistory) {
-      if (lazyLoadHistory) {
+    resetStatsLazyLoad: function(lazyLoad) {
+      if (lazyLoad) {
         this.processDefinitions.forEach(v => {
           v.runningInstances = '-'
           v.allInstances = '-'
           v.completedInstances = '-'
         })
-
-        if (selectedProcess) {
+      }
+      // false - no redirect
+      return false
+    },
+    findProcessAndAssignData(selectedProcess) {
+      if (selectedProcess) {
           ProcessService.findProcessById(selectedProcess.id, true).then(process => {
             for (let v of this.processDefinitions) {
               if (v.id === process.id) {
@@ -242,10 +249,6 @@ export default {
             }
           })
         }
-      }
-
-      // false - no redirect
-      return false
     },
     loadProcessActivitiesHistory: function() {
       HistoryService.findActivitiesProcessDefinitionHistory(this.process.id).then(activities => {
@@ -254,20 +257,18 @@ export default {
     },
     loadProcessVersion: function(process) {
       return new Promise((resolve) => {
-        if (!this.process || this.process.id !== process.id) {
-          this.firstResult = 0
-          this.process = process
-          if (!this.process.statistics) this.loadStatistics()
-          if (!this.process.activitiesHistory) this.loadProcessActivitiesHistory()
-          return Promise.all([
-            this.loadInstances(),
-            this.loadIncidents()
-          ]).then(() => {
-            resolve();
-          })
-        }
-        resolve();
-      });
+        this.firstResult = 0
+        this.process = process
+        this.findProcessAndAssignData(process)
+        if (!this.process.statistics) this.loadStatistics()
+        if (!this.process.activitiesHistory) this.loadProcessActivitiesHistory()
+        return Promise.all([
+          this.loadInstances(),
+          this.loadIncidents()
+        ]).then(() => {
+          resolve()
+        })
+      })
     },
     loadInstances: function(showMore) {
       if (this.$root.config.camundaHistoryLevel !== 'none') {
@@ -281,7 +282,8 @@ export default {
         })
       }
       else {
-        return ProcessService.findProcessVersionsByDefinitionKey(this.process.key).then(versions => {
+        return ProcessService.findProcessVersionsByDefinitionKey(this.process.key, this.$root.config.lazyLoadHistory)
+        .then(versions => {
           this.processDefinitions = versions
           var promises = []
           this.processDefinitions.forEach(() => {
@@ -317,7 +319,7 @@ export default {
         this.loadStatistics(),
         this.loadProcessActivitiesHistory()
       ]).then(() => {
-        this.calcProcessDefinitionsStats(this.process, this.lazyLoadHistory)
+        this.findProcessAndAssignData(this.process)
         this.$refs.process.refreshDiagram()
       })
     },
