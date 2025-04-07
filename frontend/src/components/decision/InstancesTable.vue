@@ -30,6 +30,14 @@
           @click.stop="copyValueToClipboard(table.item.processInstanceId)" class="mdi mdi-18px mdi-content-copy px-2 position-absolute end-0 text-secondary lh-sm"></span>
       </button>
     </template>
+    <template v-slot:cell(activityId)="table">
+      <div :title="table.item.activityId" class="text-truncate w-100"
+        @mouseenter="focusedCell = table.item.id + table.item.activityId" @mouseleave="focusedCell = null">
+        {{ table.item.activityId }}
+        <span v-if="table.item.id && focusedCell === (table.item.id + table.item.activityId)"
+          @click.stop="copyValueToClipboard(table.item.activityId)" class="mdi mdi-18px mdi-content-copy px-2 position-absolute end-0 text-secondary lh-sm"></span>
+      </div>
+    </template>
   </FlowTable>
   <ConfirmDialog ref="confirm" @ok="$event.ok($event.instance)">
   {{ $t('confirm.performOperation') }}
