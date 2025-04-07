@@ -27,6 +27,20 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 import static org.cibseven.webapp.auth.SevenAuthorizationUtils.*;
 
+/*
+ * Interface: BpmProvider
+ *
+ * Authorization Permissions Summary:
+ * 
+ * For Decision Definitions (DECISION_DEFINITION):
+ * - READ: Required for retrieving definitions, diagrams, XML and metadata.
+ * - CREATE_INSTANCE: Required for evaluating decisions.
+ * - UPDATE: Required for modifying the decision definition (e.g., history TTL).
+ * - READ_HISTORY: Required for accessing historic decision instances.
+ * - DELETE_HISTORY: Required for deleting historic decision instances.
+ *
+ */
+
 @ApiResponses({
 	@ApiResponse(responseCode = "500", description = "An unexpected system error occured"),
 	@ApiResponse(responseCode = "401", description = "Unauthorized")
@@ -39,7 +53,7 @@ public class DecisionService extends BaseService implements InitializingBean {
 	public void afterPropertiesSet() {
 		if (bpmProvider instanceof SevenProvider)
 			sevenProvider = (SevenProvider) bpmProvider;
-		else throw new SystemException("ProcessService expects a BpmProvider");
+		else throw new SystemException("DecisionService expects a BpmProvider");
 	}
 	
 	@Operation(
@@ -73,6 +87,7 @@ public class DecisionService extends BaseService implements InitializingBean {
 
 	@PostMapping("/key/{key}/evaluate")
 	public Object evaluateDecisionDefinitionByKey(@RequestBody Map<String, Object> data, @PathVariable String key, CIBUser user) {
+		checkPermission(user, DECISION_DEFINITION, PermissionConstants.CREATE_INSTANCE_ALL);
 		return bpmProvider.evaluateDecisionDefinitionByKey(data, key, user);
 	}
 
@@ -96,6 +111,7 @@ public class DecisionService extends BaseService implements InitializingBean {
 
 	@PostMapping("/key/{key}/tenant/{tenant}/evaluate")
 	public Object evaluateDecisionDefinitionByKeyAndTenant(@PathVariable String key, @PathVariable String tenant, CIBUser user) {
+		checkPermission(user, DECISION_DEFINITION, PermissionConstants.CREATE_INSTANCE_ALL);
 		return bpmProvider.evaluateDecisionDefinitionByKeyAndTenant(key, tenant, user);
 	}
 
@@ -130,11 +146,13 @@ public class DecisionService extends BaseService implements InitializingBean {
 
 	@PostMapping("/id/{id}/evaluate")
 	public Object evaluateDecisionDefinitionById(@PathVariable String id, CIBUser user) {
+		checkPermission(user, DECISION_DEFINITION, PermissionConstants.CREATE_INSTANCE_ALL);
 		return bpmProvider.evaluateDecisionDefinitionById(id, user);
 	}
 
 	@PutMapping("/id/{id}/history-ttl")
 	public Object updateHistoryTTLById(@PathVariable String id, CIBUser user) {
+		checkPermission(user, DECISION_DEFINITION, PermissionConstants.UPDATE_ALL);
 		return bpmProvider.updateHistoryTTLById(id, user);
 	}
 
@@ -155,14 +173,14 @@ public class DecisionService extends BaseService implements InitializingBean {
 	@Operation(summary = "Get a list of historic decision instances")
 	@GetMapping("/history/instances")
 	public Object getHistoricDecisionInstances(@RequestParam Map<String, Object> queryParams, CIBUser user) {
-		checkPermission(user, HISTORY, PermissionConstants.READ_ALL);
+		checkPermission(user, HISTORY, PermissionConstants.READ_HISTORY_ALL);
 		return bpmProvider.getHistoricDecisionInstances(queryParams, user);
 	}
 	
 	@Operation(summary = "Get the count of historic decision instances")
 	@GetMapping("/history/instances/count")
 	public Object getHistoricDecisionInstanceCount(@RequestParam Map<String, Object> queryParams, CIBUser user) {
-		checkPermission(user, HISTORY, PermissionConstants.READ_ALL);
+		checkPermission(user, HISTORY, PermissionConstants.READ_HISTORY_ALL);
 		return bpmProvider.getHistoricDecisionInstanceCount(queryParams, user);
 	}
 
@@ -171,14 +189,14 @@ public class DecisionService extends BaseService implements InitializingBean {
 	public Object getHistoricDecisionInstanceById(
 	        @PathVariable String id,
 	        @RequestParam Map<String, Object> queryParams, CIBUser user) {
-		checkPermission(user, HISTORY, PermissionConstants.READ_ALL);
+		checkPermission(user, HISTORY, PermissionConstants.READ_HISTORY_ALL);
 		return bpmProvider.getHistoricDecisionInstanceById(id, queryParams, user);
 	}
 
 	@Operation(summary = "Delete historic decision instances asynchronously")
 	@PostMapping("/history/instances/delete")
 	public Object deleteHistoricDecisionInstances(@RequestBody Map<String, Object> body, CIBUser user) {
-		checkPermission(user, HISTORY, PermissionConstants.DELETE_ALL);
+		checkPermission(user, HISTORY, PermissionConstants.DELETE_HISTORY_ALL);
 		return bpmProvider.deleteHistoricDecisionInstances(body, user);
 	}
 
