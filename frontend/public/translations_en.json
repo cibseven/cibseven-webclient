@@ -182,7 +182,8 @@
 			"setDueDate": "Set due date",
 			"dueDate": "Due date",
 			"scheduleAt": "Schedule at",
-			"invalidDateError": "You must enter a valid date"
+			"invalidDateError": "You must enter a valid date",
+			"retry": "Retry"
 		},
 		"jobDefinitions": {
 			"state": "State",
@@ -208,7 +209,11 @@
 			"overridingMsg": "Change the overriding priority for jobs of the given job definition.",
 			"jobPriority": "Priority",
 			"clear": "Clear overriding job priority",
-			"set": "Set overriding job priority"
+			"set": "Set overriding job priority",
+			"invalidPriorityError": "You must enter an integer value",
+			"overrideAction": "Override",
+			"clearAction": "Clear",
+			"invalidDateError": "You must enter a valid date"
 		},
 		"usertasks": {
 		    "activity": "Activity",

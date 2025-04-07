@@ -21,6 +21,7 @@
                 </span>
               </template>
             </b-form-datepicker>
+            <span v-if="invalidDate" class="text-danger">{{ $t('process-instance.jobDefinitions.invalidDateError') }}</span>
           </div>
           <div class="col-6">
             <b-form-timepicker v-model="scheduledAt.time" size="sm" input-class="text-start" no-close-button :label-no-time-selected="$t('cib-timepicker.noDate')"
@@ -37,7 +38,9 @@
     </div>
     <template v-slot:modal-footer>
       <b-button @click="$refs.changeJobStateModal.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
-      <b-button @click="changeJobDefinitionState()" variant="primary">{{ $t('confirm.ok') }}</b-button>
+      <b-button @click="changeJobDefinitionState()" variant="primary">
+        {{ selectedJobDefinition && selectedJobDefinition.suspended ? $t('process-instance.jobDefinitions.activate') : $t('process-instance.jobDefinitions.suspend') }}
+      </b-button>
     </template>
   </b-modal>
 </template>
@@ -49,16 +52,13 @@ export default {
   name: 'JobDefinitionStateModal',
   inject: ['currentLanguage'],
   data: function() {
-    const now = new Date()
-    now.setMinutes(now.getMinutes() + 5)
-    const hours = now.getHours().toString().padStart(2, '0')
-    const minutes = now.getMinutes().toString().padStart(2, '0')
     return {
       selectedJobDefinition: null,
       includeExistingJob: true,
       executionOption: 'immediately',
       executionOptions: ['immediately','delayed'],
-      scheduledAt: { date: new Date(), time: `${hours}:${minutes}` }
+      scheduledAt: null,
+      invalidDate: false
     }
   },
   computed: {
@@ -71,19 +71,32 @@ export default {
     stateActionKey: function() {
       if (!this.selectedJobDefinition) return null
       return this.selectedJobDefinition.suspended
-        ? this.$t('process-instance.jobDefinitions.suspendJob')
-        : this.$t('process-instance.jobDefinitions.activateJob')
+        ? this.$t('process-instance.jobDefinitions.activateJob')
+        : this.$t('process-instance.jobDefinitions.suspendJob')
     },
 },
 methods: {
     show: function(selectedJobDefinition) {
+      const now = new Date()
+      now.setMinutes(now.getMinutes() + 5)
+      const hours = now.getHours().toString().padStart(2, '0')
+      const minutes = now.getMinutes().toString().padStart(2, '0')
+      this.invalidDate = false
       this.selectedJobDefinition = selectedJobDefinition
+      this.includeExistingJob = true,
+      this.executionOption = 'immediately',
+      this.scheduledAt = { date: new Date(), time: `${hours}:${minutes}` }
       this.$refs.changeJobStateModal.show()
     },
     changeJobDefinitionState: function() {
+      this.invalidDate = false
       var executionDate = null
       if (this.executionOption === 'delayed') {
-        executionDate = this.formatScheduledAt()
+        if (!this.scheduledAt.date) {
+          this.invalidDate = true
+          return
+        }
+        executionDate = this.formatScheduledAt()        
       }
       var data = {
         suspended: !this.selectedJobDefinition.suspended,

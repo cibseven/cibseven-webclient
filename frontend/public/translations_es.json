@@ -183,7 +183,8 @@
 			"setDueDate": "Establecer fecha de vencimiento",
 			"dueDate": "Fecha de vencimiento",
 			"scheduleAt": "Programar para",
-			"invalidDateError": "Debe insertar una fecha válida"
+			"invalidDateError": "Debe insertar una fecha válida",
+			"retry": "Reintentar"
 		},
 		"jobDefinitions": {
 			"state": "Estado",
@@ -209,7 +210,11 @@
 			"overridingMsg": "Cambiar la prioridad sobrescrita para los trabajos de la definición de trabajo indicada.",
 			"jobPriority": "Prioridad",
 			"clear": "Borrar prioridad sobrescrita del trabajo",
-			"set": "Establecer prioridad sobrescrita del trabajo"
+			"set": "Establecer prioridad sobrescrita del trabajo",
+			"invalidPriorityError": "Debe insertar un valor entero",
+			"overrideAction": "Sobreescribir",
+			"clearAction": "Borrar",			
+			"invalidDateError": "Debe insertar una fecha válida"
 		},	
 		"usertasks": {
 			"activity": "Actividad",
