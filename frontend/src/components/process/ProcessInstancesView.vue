@@ -195,11 +195,9 @@ export default {
         '&token=' + this.$root.user.authToken
     },
     refreshDiagram: function() {
-      this.$refs.diagram.clearEvents()
       this.$refs.diagram.cleanDiagramState()
       this.$refs.diagram.drawDiagramState()
     },
-
     // "Suspend process definition" button
     confirmSuspend: function() {
       this.$refs.confirmSuspend.show()
@@ -213,7 +211,6 @@ export default {
         this.$refs.success.show()
       })
     },
-
     // "Activate process definition" button
     confirmActivate: function() {
       this.$refs.confirmActivate.show()
@@ -227,7 +224,6 @@ export default {
         this.$refs.success.show()
       })
     },
-
     highlightActivity: function(jobDefinition) {
       this.$refs.diagram.highlightElement(jobDefinition)
     },
