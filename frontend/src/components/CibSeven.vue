@@ -24,15 +24,15 @@
               <span class="visually-hidden">{{ $t('navigation.menu') }}</span>
               <span class="mdi mdi-24px mdi-menu align-middle"></span>
             </template>
-            <b-dropdown-item v-if="permissionsTaskList && startableProcesses" to="/seven/auth/start-process" :active="$route.path.includes('seven/auth/start-process')">{{ $t('start.startProcesses') }}</b-dropdown-item>
-            <b-dropdown-item v-if="permissionsTaskList" to="/seven/auth/tasks" :active="$route.path.includes('seven/auth/tasks')">{{ $t('start.taskList') }}</b-dropdown-item>
+            <b-dropdown-item v-if="permissionsTaskList && startableProcesses" to="/seven/auth/start-process" :active="$route.path.includes('seven/auth/start-process')" :title="$t('start.startProcesses')">{{ $t('start.startProcesses') }}</b-dropdown-item>
+            <b-dropdown-item v-if="permissionsTaskList" to="/seven/auth/tasks" :active="$route.path.includes('seven/auth/tasks')" :title="$t('start.taskList')">{{ $t('start.taskList') }}</b-dropdown-item>
             <b-dropdown-divider v-if="permissionsTaskList && (permissionsCockpit || permissionsUsers)"></b-dropdown-divider>
-            <b-dropdown-item v-if="permissionsCockpit" to="/seven/auth/processes" :active="$route.path.includes('seven/auth/process')">{{ $t('start.admin') }}</b-dropdown-item>
-            <b-dropdown-item v-if="permissionsCockpit" to="/seven/auth/deployments" :active="$route.path.includes('seven/auth/deployments')">{{ $t('deployment.title') }}</b-dropdown-item>
-            <b-dropdown-item v-if="permissionsCockpit" to="/seven/auth/decisions" :active="$route.path.includes('seven/auth/decisions')">{{ $t('start.adminDecisions') }}</b-dropdown-item>
-            <b-dropdown-item v-if="permissionsCockpit" to="/seven/auth/human-tasks" :active="$route.path.includes('seven/auth/human-tasks')">{{ $t('start.adminHumanTasks') }}</b-dropdown-item>
-            <b-dropdown-item v-if="permissionsUsers" to="/seven/auth/admin/users-management" :active="isUsersManagementActive">{{ $t('start.adminPanel') }}</b-dropdown-item>
-            <b-dropdown-item v-if="permissionsCockpit" :href="$root.config.cockpitUrl" target="_blank">{{ $t('start.cockpit') }}</b-dropdown-item>
+            <b-dropdown-item v-if="permissionsCockpit" to="/seven/auth/processes" :active="$route.path.includes('seven/auth/process')" :title="$t('start.admin')">{{ $t('start.admin') }}</b-dropdown-item>
+            <b-dropdown-item v-if="permissionsCockpit" to="/seven/auth/deployments" :active="$route.path.includes('seven/auth/deployments')" :title="$t('deployment.title')">{{ $t('deployment.title') }}</b-dropdown-item>
+            <b-dropdown-item v-if="permissionsCockpit" to="/seven/auth/decisions" :active="$route.path.includes('seven/auth/decisions')" :title="$t('start.adminDecisions')">{{ $t('start.adminDecisions') }}</b-dropdown-item>
+            <b-dropdown-item v-if="permissionsCockpit" to="/seven/auth/human-tasks" :active="$route.path.includes('seven/auth/human-tasks')" :title="$t('start.adminHumanTasks')">{{ $t('start.adminHumanTasks') }}</b-dropdown-item>
+            <b-dropdown-item v-if="permissionsUsers" to="/seven/auth/admin/users-management" :active="isUsersManagementActive" :title="$t('start.adminPanel')">{{ $t('start.adminPanel') }}</b-dropdown-item>
+            <b-dropdown-item v-if="permissionsCockpit" :href="$root.config.cockpitUrl" :title="$t('start.cockpit')" target="_blank">{{ $t('start.cockpit') }}</b-dropdown-item>
           </b-nav-item-dropdown>
         </b-navbar-nav>
       </b-collapse>
@@ -49,19 +49,19 @@
             <span class="visually-hidden">{{ $t('navigation.infoAndHelp') }}</span>
             <span class="mdi mdi-24px mdi-help-circle align-middle"></span>
           </template>
-          <b-dropdown-item v-if="$root.config.flowLinkHelp != ''" :href="$root.config.flowLinkHelp" target="_blank">{{ $t('infoAndHelp.flowLinkHelp') }}</b-dropdown-item>
-          <b-dropdown-item v-if="$root.config.flowLinkAccessibility != ''" :href="$root.config.flowLinkAccessibility" target="_blank">{{ $t('infoAndHelp.flowLinkAccessibility') }}</b-dropdown-item>
-          <b-dropdown-item v-if="$root.config.flowLinkTerms != ''" :href="$root.config.flowLinkTerms" target="_blank">{{ $t('infoAndHelp.flowLinkTerms') }}</b-dropdown-item>
-          <b-dropdown-item v-if="$root.config.flowLinkPrivacy != ''" :href="$root.config.flowLinkPrivacy" target="_blank">{{ $t('infoAndHelp.flowLinkPrivacy') }}</b-dropdown-item>
-          <b-dropdown-item v-if="$root.config.flowLinkImprint != ''" :href="$root.config.flowLinkImprint" target="_blank">{{ $t('infoAndHelp.flowLinkImprint') }}</b-dropdown-item>
-          <b-dropdown-item-button v-if="$root.config.layout.showSupportInfo" @click="$refs.support.show()">{{ $t('infoAndHelp.flowModalSupport.modalText') }}</b-dropdown-item-button>
-          <b-dropdown-item-button @click="$refs.about.show()">{{ $t('infoAndHelp.flowModalAbout.modalText') }}</b-dropdown-item-button>
+          <b-dropdown-item v-if="$root.config.flowLinkHelp != ''" :href="$root.config.flowLinkHelp" :title="$t('infoAndHelp.flowLinkHelp')" target="_blank">{{ $t('infoAndHelp.flowLinkHelp') }}</b-dropdown-item>
+          <b-dropdown-item v-if="$root.config.flowLinkAccessibility != ''" :href="$root.config.flowLinkAccessibility" :title="$t('infoAndHelp.flowLinkAccessibility')" target="_blank">{{ $t('infoAndHelp.flowLinkAccessibility') }}</b-dropdown-item>
+          <b-dropdown-item v-if="$root.config.flowLinkTerms != ''" :href="$root.config.flowLinkTerms" :title="$t('infoAndHelp.flowLinkTerms')" target="_blank">{{ $t('infoAndHelp.flowLinkTerms') }}</b-dropdown-item>
+          <b-dropdown-item v-if="$root.config.flowLinkPrivacy != ''" :href="$root.config.flowLinkPrivacy" :title="$t('infoAndHelp.flowLinkPrivacy')" target="_blank">{{ $t('infoAndHelp.flowLinkPrivacy') }}</b-dropdown-item>
+          <b-dropdown-item v-if="$root.config.flowLinkImprint != ''" :href="$root.config.flowLinkImprint" :title="$t('infoAndHelp.flowLinkImprint')" target="_blank">{{ $t('infoAndHelp.flowLinkImprint') }}</b-dropdown-item>
+          <b-dropdown-item-button v-if="$root.config.layout.showSupportInfo" :title="$t('infoAndHelp.flowModalSupport.modalText')" @click="$refs.support.show()">{{ $t('infoAndHelp.flowModalSupport.modalText') }}</b-dropdown-item-button>
+          <b-dropdown-item-button @click="$refs.about.show()" :title="$t('infoAndHelp.flowModalAbout.modalText')">{{ $t('infoAndHelp.flowModalAbout.modalText') }}</b-dropdown-item-button>
         </b-nav-item-dropdown>
       </b-navbar-nav>
 
       <template v-slot:userItems>
         <b-dropdown-item v-if="$root.user && $root.config.layout.showUserSettings && !applicationPermissionsDenied($root.config.permissions.userProfile, 'userProfile')"
-          :to="'/seven/auth/account/' + $root.user.id">{{ $t('seven.account') }}</b-dropdown-item>
+          :to="'/seven/auth/account/' + $root.user.id" :title="$t('seven.account')">{{ $t('seven.account') }}</b-dropdown-item>
       </template>
     </CIBHeaderFlow>
 

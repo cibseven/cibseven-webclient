@@ -30,7 +30,7 @@
               <span class="mdi mdi-24px mdi-account align-middle"></span> {{ user.displayName }}
             </template>
             <slot name="userItems"></slot>
-            <b-dropdown-item @click="logout">{{ $t('cib-header.logout') }}</b-dropdown-item>
+            <b-dropdown-item @click="logout" :title="$t('cib-header.logout')">{{ $t('cib-header.logout') }}</b-dropdown-item>
           </b-nav-item-dropdown>
         </b-navbar-nav>
       </b-collapse>
