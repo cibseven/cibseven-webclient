@@ -24,12 +24,12 @@
 
 <script>
 import { ProcessService, HistoryService } from '@/services.js'
-import procesessVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
+import processesVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 export default {
   name: 'CalledProcessInstancesTable',
   components: { FlowTable},
-  mixins: [procesessVariablesMixin],
+  mixins: [processesVariablesMixin],
   data: function() {
     return{
       calledInstanceList: [],
@@ -59,10 +59,10 @@ export default {
 
   methods: {
     openSubprocess: function(event) {
-      this.$router.push('/seven/auth/process/' + event.key + '/' + event.version)
+      this.$router.push({ name: 'process', params: { processKey: event.key, versionIndex: event.version } })
     },
     openInstance: function(event) {
-      this.$router.push('/seven/auth/process/' + event.key + '/' + event.version + '/' + event.id)
+      this.$router.push({ name: 'process', params: { processKey: event.key, versionIndex: event.version, instanceId: event.id } })
     }
   }
 }
