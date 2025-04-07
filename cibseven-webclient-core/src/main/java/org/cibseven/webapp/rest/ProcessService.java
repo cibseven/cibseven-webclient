@@ -231,7 +231,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			@RequestBody Map<String, Object> data,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true, true);
-		checkPermission(user, PROCESS_INSTANCE, PermissionConstants.CREATE_ALL);
+		checkPermission(user, PROCESS_INSTANCE, PermissionConstants.CREATE_INSTANCE_ALL);
 		return bpmProvider.startProcess(key, data, user);
 	}
 	
@@ -286,7 +286,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 					+ "<br>If false, the process will be suspended") @RequestParam Boolean suspend,
 			Locale loc, CIBUser user) {
 		checkCockpitRights(user);
-		checkPermission(user, PROCESS_INSTANCE, PermissionConstants.UPDATE_ALL);
+		checkPermission(user, PROCESS_INSTANCE, PermissionConstants.SUSPEND_INSTANCE_ALL);
 		bpmProvider.suspendProcessInstance(processInstanceId, suspend, user);
 	}
 	
@@ -299,7 +299,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			@Parameter(description = "Process instance Id") @PathVariable String processInstanceId,
 			Locale loc, CIBUser user) {
 		checkCockpitRights(user);
-		checkPermission(user, PROCESS_INSTANCE, List.of("ALL", "DELETE"));
+		checkPermission(user, PROCESS_INSTANCE, PermissionConstants.DELETE_ALL);
 		bpmProvider.deleteProcessInstance(processInstanceId, user);
 	}
 	
@@ -335,7 +335,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 					+ "<br>If null, the suspension state of the given process definition is updated immediately") @RequestParam Optional<String> executionDate,
 			Locale loc, CIBUser user) {
 		checkCockpitRights(user);
-		checkPermission(user, PROCESS_DEFINITION, PermissionConstants.UPDATE_ALL);
+		checkPermission(user, PROCESS_DEFINITION, PermissionConstants.SUSPEND_ALL);
 		bpmProvider.suspendProcessDefinition(processId, suspend, includeProcessInstances, executionDate.orElse(null), user);
 	}
 
@@ -528,7 +528,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			@Parameter(description = "Deserialize value") @RequestParam Optional<Boolean> deserialize,
 			Locale loc, CIBUser user) {
 		checkCockpitRights(user);
-        checkPermission(user, PROCESS_INSTANCE, PermissionConstants.READ_ALL);
+        checkPermission(user, PROCESS_DEFINITION, PermissionConstants.READ_INSTANCE_VARIABLE_ALL);
 		return bpmProvider.fetchProcessInstanceVariables(processInstanceId, user, deserialize);
 	}
 	
@@ -572,7 +572,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true, false);
 		checkCockpitRights(user);
-        checkPermission(user, PROCESS_INSTANCE, PermissionConstants.READ_ALL);
+        checkPermission(user, PROCESS_DEFINITION, PermissionConstants.READ_INSTANCE_VARIABLE_ALL);
 		return sevenProvider.fetchProcessInstanceVariableData(processInstanceId, variableName, user);
 	}
 		
@@ -588,7 +588,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true, false);
 		checkCockpitRights(user);
-		checkPermission(user, PROCESS_INSTANCE, PermissionConstants.READ_ALL);
+		checkPermission(user, PROCESS_DEFINITION, PermissionConstants.READ_INSTANCE_VARIABLE_ALL);
 		return sevenProvider.fetchProcessInstanceVariable(processInstanceId, variableName, deserializeValue, user);
 	}
 	
@@ -603,7 +603,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			@Parameter(description = "Deserialize value") @RequestParam(required = false) String deserialize,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true, false);
-		checkPermission(user, PROCESS_INSTANCE, PermissionConstants.READ_ALL);
+		checkPermission(user, PROCESS_DEFINITION, PermissionConstants.READ_INSTANCE_VARIABLE_ALL);
 		
 		// TODO: Check the permissiosn, but not considered the groups, needs to be checked.
 		// checkSpecificProcessRights(user, processDefinitionKey);
@@ -626,7 +626,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			@Parameter(description = "Deserialize value") @RequestParam(required = false) String deserialize,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true, false);
-		checkPermission(user, PROCESS_INSTANCE, PermissionConstants.READ_ALL);
+		checkPermission(user, PROCESS_DEFINITION, PermissionConstants.READ_INSTANCE_VARIABLE_ALL);
 		// TODO: Check the permissiosn, but not considered the groups, needs to be checked.
 		// checkSpecificProcessRights(user, processDefinitionKey);
 		try {
@@ -643,7 +643,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			@PathVariable String processInstanceId, @RequestParam Optional<String> processDefinitionKey, HttpServletRequest rq) {
 		
 		CIBUser userAuth = (CIBUser) checkAuthorization(rq, true, false);
-        checkPermission(userAuth, PROCESS_INSTANCE, PermissionConstants.UPDATE_ALL);
+        checkPermission(userAuth, PROCESS_DEFINITION, PermissionConstants.UPDATE_INSTANCE_VARIABLE_ALL);
 		bpmProvider.submitVariables(processInstanceId, variables, userAuth, processDefinitionKey.orElse("cib flow"));
 		return new ResponseEntity<>("ok", new HttpHeaders(), HttpStatus.OK);
 		
@@ -695,7 +695,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			@RequestBody Map<String, Object> data,
 			Locale loc, CIBUser user) {
 		checkCockpitRights(user);
-        checkPermission(user, PROCESS_INSTANCE, PermissionConstants.UPDATE_ALL);
+        checkPermission(user, PROCESS_DEFINITION, PermissionConstants.UPDATE_INSTANCE_VARIABLE_ALL);
 		bpmProvider.putLocalExecutionVariable(executionId, varName, data, user);
 	}
 	
@@ -728,7 +728,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 	  public ResponseEntity<String> saveVariable(@PathVariable String processInstanceId, @RequestBody List<Variable> variables, HttpServletRequest rq) {
 	    try {
 	      CIBUser userAuth = (CIBUser) baseUserProvider.authenticateUser(rq);
-	      checkPermission(userAuth, PROCESS_INSTANCE, PermissionConstants.UPDATE_ALL);
+	      checkPermission(userAuth, PROCESS_DEFINITION, PermissionConstants.UPDATE_INSTANCE_VARIABLE_ALL);
 	      bpmProvider.saveVariableInProcessInstanceId(processInstanceId, variables, userAuth);    
 	      return new ResponseEntity<>("ok", new HttpHeaders(), HttpStatus.OK);
 	    } catch (Exception e) {
@@ -742,7 +742,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 	  public ResponseEntity<Variable> fetchVariableByProcessInstanceId(@PathVariable String processInstanceId, @PathVariable String variableName, HttpServletRequest rq) {
 	    try {
 	      CIBUser userAuth = (CIBUser) baseUserProvider.authenticateUser(rq);
-	      checkPermission(userAuth, PROCESS_INSTANCE, PermissionConstants.READ_ALL);
+	      checkPermission(userAuth, PROCESS_DEFINITION, PermissionConstants.UPDATE_INSTANCE_VARIABLE_ALL);
 	      Variable variable = bpmProvider.fetchVariableByProcessInstanceId(processInstanceId, variableName, userAuth);    
 	      return new ResponseEntity<>(variable, new HttpHeaders(), HttpStatus.OK);
 	    } catch (Exception e) {
