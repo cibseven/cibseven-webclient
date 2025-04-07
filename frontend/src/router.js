@@ -171,17 +171,16 @@ const router = createRouter({
             { path: 'users-management', name: 'usersManagement', component: UsersManagement },
             { path: 'users', name:'adminUsers',
               beforeEnter: permissionsGuardUserAdmin('usersManagement', 'user'), component: AdminUsers },
-            { path: 'user/:userId',
-              name:'adminUser',
+            { path: 'user/:userId', name: 'adminUser',
               beforeEnter: permissionsGuardUserAdmin('usersManagement', 'user'), component: ProfileUser,
               props: () => ({ editMode: true })
             },
-            { path: 'groups', name:'adminGroups', beforeEnter: permissionsGuardUserAdmin('groupsManagement', 'group'), component: AdminGroups },
-            { path: 'group/:groupId', name:'adminGroup', beforeEnter: permissionsGuardUserAdmin('groupsManagement', 'group'), component: ProfileGroup },
-            { path: 'authorizations', name:'authorizations',
+            { path: 'groups', name: 'adminGroups', beforeEnter: permissionsGuardUserAdmin('groupsManagement', 'group'), component: AdminGroups },
+            { path: 'group/:groupId', name: 'adminGroup', beforeEnter: permissionsGuardUserAdmin('groupsManagement', 'group'), component: ProfileGroup },
+            { path: 'authorizations', name: 'authorizations',
               beforeEnter: permissionsGuardUserAdmin('authorizationsManagement', 'authorization'), component: AdminAuthorizations,
               children: [
-                { path: ':resourceTypeId/:resourceTypeKey', name:'authorizationType', component: AdminAuthorizationsTable }
+                { path: ':resourceTypeId/:resourceTypeKey', name: 'authorizationType', component: AdminAuthorizationsTable }
               ]
             }
           ]
