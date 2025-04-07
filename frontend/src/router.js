@@ -161,7 +161,7 @@ const router = createRouter({
         { path: 'deployments/:deploymentId?', name: 'deployments', beforeEnter: permissionsGuard('cockpit'),
           component: DeploymentsView
         },
-        { path: 'human-tasks', beforeEnter: permissionsGuard('cockpit'), component: HumanTasksView },
+        { path: 'human-tasks', name: 'human-tasks', beforeEnter: permissionsGuard('cockpit'), component: HumanTasksView },
         // users management
         { path: 'admin',
           component: {
@@ -171,16 +171,16 @@ const router = createRouter({
             { path: 'users-management', name: 'usersManagement', component: UsersManagement },
             { path: 'users', name:'adminUsers',
               beforeEnter: permissionsGuardUserAdmin('usersManagement', 'user'), component: AdminUsers },
-            { path: 'user/:userId',
+            { path: 'user/:userId', name: 'adminUser',
               beforeEnter: permissionsGuardUserAdmin('usersManagement', 'user'), component: ProfileUser,
               props: () => ({ editMode: true })
             },
-            { path: 'groups', name:'adminGroups', beforeEnter: permissionsGuardUserAdmin('groupsManagement', 'group'), component: AdminGroups },
-            { path: 'group/:groupId', beforeEnter: permissionsGuardUserAdmin('groupsManagement', 'group'), component: ProfileGroup },
-            { path: 'authorizations', name:'authorizations',
+            { path: 'groups', name: 'adminGroups', beforeEnter: permissionsGuardUserAdmin('groupsManagement', 'group'), component: AdminGroups },
+            { path: 'group/:groupId', name: 'adminGroup', beforeEnter: permissionsGuardUserAdmin('groupsManagement', 'group'), component: ProfileGroup },
+            { path: 'authorizations', name: 'authorizations',
               beforeEnter: permissionsGuardUserAdmin('authorizationsManagement', 'authorization'), component: AdminAuthorizations,
               children: [
-                { path: ':resourceTypeId/:resourceTypeKey', name:'authorizationType', component: AdminAuthorizationsTable }
+                { path: ':resourceTypeId/:resourceTypeKey', name: 'authorizationType', component: AdminAuthorizationsTable }
               ]
             }
           ]
