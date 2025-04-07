@@ -1,4 +1,8 @@
 {	
+	"commons": {
+		"edit": "Редактировать",
+		"save": "Сохранить"
+	},
 	"login": {
 		"productName": "CIB seven",
 		"productSlogan": "Платформа для управления процессами",
@@ -107,9 +111,21 @@
 		"onlyActive": "Только активные",
 		"exportInstances": "Экспорт экземпляров",
 		"days": "дней",
-		"deleteProcessDefinition": "Удалить определение процесса",
+		"deleteProcessDefinition": {
+			"tooltip": "Удалить определение процесса",
+			"confirm": {
+				"title": "@:confirm.delete",
+				"line1": "Удалить определение процесса?",
+				"line2": "Имя: {name}Версия: {version}"
+			}
+		},
+		"confirm": {
+			"suspend": "Вы действительно хотите приостановить следующее определение процесса со всеми запущенными экземплярами процесса?",
+			"activate": "Вы действительно хотите активировать следующее определение процесса со всеми запущенными экземплярами процесса?"
+		},
 		"true": "Истина",
 		"false": "Ложь",
+		"jobDefinitions": "Определения заданий",
 		"jobs": "Задания"
 	},
 	"process-instance": {
@@ -134,7 +150,13 @@
 			"deletedReason": "Причина удаления",
 			"currentTaskAssignee": "Текущий исполнитель",
 			"currentTaskCreated": "Текущая задача создана"
-		},		
+		},
+		"confirm": {
+			"suspend": "Вы действительно хотите приостановить данный экземпляр процесса?",
+			"activate": "Вы действительно хотите акстивировать данный экземпляр процесса?",
+			"deleteInstance": "Вы действительно хотите удалить данный экземпляр процесса?",
+			"deleteHistoryInstance": "Вы действительно хотите удалить данный завершенный экземпляр процесса?"
+		},
 		"variables": {
 			"name": "Имя",
 			"type": "Тип",
@@ -142,7 +164,8 @@
 			"actions": "Действия",
 			"scope": "Область",
 			"objectTypeName": "Имя типа объекта",
-			"serializationDataFormat": "Формат данных сериализации"
+			"serializationDataFormat": "Формат данных сериализации",
+			"confirmDelete": "Вы хотите удалить переменную?"
 		},
 		"incidents": {
 		    "message": "Сообщение",
@@ -151,7 +174,41 @@
 		    "failedActivity": "Неудачная активность",
 		    "incidentType": "Тип инцидента",
 		    "retryJob": "Увеличить число повторных попыток выполнения активности при неудачи",
-		    "actions": "Действия"
+		    "actions": "Действия",
+			"incrementNumberRetries": "Увеличить количество повторных попыток",
+			"retryMsg": "Количество повторных попыток для соответствующего сбойного задания выбранного инцидента будет увеличено.",
+			"dueDateMsg": "Момент выполнения задания определяется сроком исполнения:",
+			"keepDueDate": "Сохранить дату исполнения",
+			"setDueDate": "Установить дату исполнения",
+			"dueDate": "Дата исполнения",
+			"scheduleAt": "Запланировать на",
+			"invalidDateError": "Вы должны ввести корректную дату"
+		},
+		"jobDefinitions": {
+			"state": "Состояние",
+			"activity": "Активность",
+			"type": "Тип",
+			"configuration": "Конфигурация",
+			"overridingJobPriority": "Переопределённый приоритет задания",
+			"actions": "Действия",
+			"active": "Активно",
+			"suspendJob": "Приостановить определение задания",
+			"activateJob": "Активировать определение задания",
+			"suspended": "Приостановлено",
+			"activateMsg": "Это определение задания будет активировано, поэтому новые задания, основанные на нём, будут изначально активными.",
+			"suspendMsg": "Это определение задания будет приостановлено, поэтому новые задания, основанные на нём, будут изначально приостановлены.",
+			"includeExisting": "Включить существующие задания",
+			"execute": "Выполнить",
+			"immediately": "Немедленно",
+			"delayed": "Отложено",
+			"scheduleAt": "Запланировать на",
+			"suspend": "Приостановить",
+			"activate": "Активировать",
+			"changeJobPriority": "Изменить переопределённый приоритет задания",
+			"overridingMsg": "Изменить переопределённый приоритет для заданий указанного определения задания.",
+			"jobPriority": "Приоритет",
+			"clear": "Очистить переопределённый приоритет задания",
+			"set": "Установить переопределённый приоритет задания"
 		},
 		"usertasks": {
 		    "activity": "Активность",
@@ -172,12 +229,13 @@
 		    "users": "Пользователи",
 		    "assignee": "Исполнитель",
 		    "add": "Добавить",
-		    "delete": "Удалить",
+		    "delete": "@:confirm.delete",
 		    "actions": "Действия",
 		    "exists": "This entity is already assigned"
 		},
 		"noResults": "Ничего не найдено",
 		"noIncidents": "Нет инцидентов",
+		"noJobDefinitions": "Нет определений заданий",
 		"stacktrace": "Стектрайс",	
 		"copyValueToClipboard": "Скопировать значение в буфер обмена",
 		"confirmRetryJob": "Вы действительно хотите увеличить число повторных попыток выполнения активности при неудачи?",
@@ -203,7 +261,13 @@
 			"title": "Легенда",
 			"completedTask": "Завершённая задача",
 			"currentTask": "Текущая задача",			
-			"selectedTask": "@:task.selectedTask"
+			"selectedTask": "@:task.selectedTask",
+			"runingInstances": "Выполняющиеся экземпляры заданий",
+			"openIncidents": "Открытые инциденты",
+			"suspendedJobDefinition": "Приостановленное определение задания",
+			"activitiesHistory": "Выполненные экземпляры заданий",
+			"openSubprocess": "Показать вызываемое определение процесса",
+  			"disabledSubprocess": "Определение процесса будет получено во время выполнения"
 		}
 	},	
 	"task": {
@@ -307,7 +371,7 @@
 			"createLabel": "Создать новую группу",
 			"groupCreatedMessage": "Создана группа {0}"	,
 			"actions": "Действия",
-			"confirmDelete": "Вы действительно хотите удалить пользователя со следующими параметрами?",
+			"confirmDelete": "Вы действительно хотите удалить группу со следующими параметрами?",
 			"information": "Информация",
 			"editMessage": "Редактировать группу ({0})",
 			"users": "Пользователи",
@@ -398,6 +462,7 @@
 		"ok": "OK",
 		"cancel": "Отмена",
 		"close": "Закрыть",
+		"delete": "Удалить",
 		"deleteFilter": "Вы действительно хотите удалить выбранный фильтр {name}?",
 		"assignUser": "Данная задача уже назначена на кого-то другого. Вы действительно хотите её переназначить?",
 		"performOperation": "Вы уверены, что хотите выполнить эту операцию?"
@@ -493,9 +558,9 @@
 			"selectedCriteria": "Выбранный критерий",
 			"deleteCriteria": "Удалить критерий",
 			"no-filters": "Фильтры не найдены",
-			"edit": "Редактировать",
-			"delete": "Удалить",
-			"pin": "Прикреплять",
+			"edit": "Редактировать фильтр",
+			"delete": "Удалить фильтр",
+			"pin": "Прикрепить",
 			"includeAssigned": "Включить назначенные задачи",
 			"keys": {
 				"processInstanceId": "Process instance Id",
@@ -632,7 +697,10 @@
 		"easyForm": "Easy Form",
 		"adminPanel": "Управление пользователями",
 		"properties": "Properties",
-		"resources": "Ресурсы"
+		"resources": "Ресурсы",
+		"adminProcesses": "Prozesses",
+		"adminDecisions": "Decisions",
+		"adminHumanTasks": "Human Tasks"
 	},
 	"errors": {
 		"invalid": "Пожалуйста, введите достоверную информацию",
@@ -875,5 +943,73 @@
 	"notification": {
 		"newTasks": "Новые задачи",
 		"newTasksTitle": "Вы получили новые задачи, назначенные на CIB flow"
+	},
+	"decision": {
+		"id": "ID",
+		"name": "Название",
+		"actions": "Действия",
+		"emptyProcessList": "Список решений в настоящее время пуст.",
+		"emptyProcessListFiltered": "Нет решений, соответствующих применённому фильтру.",
+		"decision": "Решение",
+		"deleteProcessDefinition": "Удалить определение решения",
+		"refreshVersions": "Обновить историю версий",
+		"loadVersions": "Загрузить все версии истории",
+		"days": "дней",
+		"instances": "Экземпляры",
+		"activateProcess": "Активировать определение решения",
+		"downloadBpmn": "Скачать файл DMN",
+		"showDeployment": "Просмотреть развёртывание",
+		"showInstance": "Просмотреть экземпляр",
+		"evaluationTime": "Время оценки",
+		"callingProcess": "Вызывающий процесс/кейс",
+		"callingInstanceId": "ID вызывающего экземпляра",
+		"activityId": "ID активности",
+		"copySuccess": "Выбранное значение скопировано",
+		"details": {
+			"titleProcessActions": "Действия над определением решения",
+			"titleInstancesActions": "Действия над решением",
+			"firstStart": "Первый запуск",
+			"lastStart": "Последний запуск",
+			"totalInstances": "Общее количество экземпляров",
+			"unfinishedInstances": "Выполняющиеся экземпляры",
+			"finishedInstances": "Экземпляры, завершённые без ошибок",
+			"definitionVersion": "Версия определения",
+			"versionTag": "Тег версии",
+			"definitionId": "ID определения",
+			"definitionKey": "Ключ определения",
+			"definitionName": "Имя определения",
+			"deploymentId": "ID развёртывания",
+			"instancesRunning": "Выполняющиеся экземпляры",
+			"currentVersion": "Текущая версия",
+			"allVersions": "Все версии",
+			"versionInstances": "Экземпляры данной версии",
+			"historyVersions": "История версий",
+			"variable": "Переменные решения",
+			"copyValue": "Копировать значение",
+			"historyTimeToLive": "Время хранения истории"
+		},
+		"showManagement": "@:process.showManagement",
+		"type": "Тип",
+		"value": "Значение",
+		"inputs": "Входные данные",
+		"outputs": "Выходные данные",
+		"decisionInstanceId": "ID экземпляра решения"
+	},
+	"decision-instance": {
+		"edit": "@:commons.edit",
+		"save": "@:commons.save"
+	},
+	"human-tasks": {
+		"assignmentsByType": "Назначения по типу",
+		"assignmentsByGroup": "Назначения по группе",
+		"user": "назначено пользователю",
+		"group": "назначено одной или нескольким группам",
+		"unassigned": "не назначено",
+		"total": "Всего",
+		"tasks": "Задачи",
+		"types": "Типы",
+		"noGroups": "без группы",
+		"groupName": "Группа",
+		"assignmentsByGroupInfo": "Задача может быть назначена нескольким группам."
 	}
 }

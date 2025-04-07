@@ -1,5 +1,5 @@
 <template>
-  <b-modal ref="support" :title="$t('infoAndHelp.flowModalSupport.title')">
+  <b-modal ref="support" :title="$t('infoAndHelp.flowModalSupport.title')" :ok-only="true">
     <div class="container-fluid">
       <div class="row">
         <div class="col-12">
@@ -28,9 +28,6 @@
         </div>
       </div>
     </div>
-    <template v-slot:modal-footer>
-      <b-button variant="primary" @click="$emit('ok'); $refs.support.hide()">{{ $t('confirm.ok') }}</b-button>
-    </template>
   </b-modal>
 </template>
 

@@ -6,7 +6,7 @@
       { label: 'timestamp', key: 'incidentTimestamp', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
       { label: 'activity', key: 'activityId', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
       { label: 'failedActivity', key: 'failedActivityId', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
-      { label: 'incidentType', key: 'incidentType', class: 'col-2', tdClass: 'py-1 border-top-0' },
+      { label: 'incidentType', key: 'incidentType', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
       { label: 'actions', key: 'actions', class: 'col-1', sortable: false, tdClass: 'py-1 border-top-0' }]">
       <template v-slot:cell(incidentMessage)="table">
         <div :title="table.item.incidentMessage" class="text-truncate" @click="showIncidentMessage(table.item.configuration)">{{ table.item.incidentMessage }}</div>
@@ -15,10 +15,10 @@
         <div :title="table.item.incidentTimestamp" class="text-truncate">{{ showPrettyTimestamp(table.item.incidentTimestamp) }}</div>
       </template>
       <template v-slot:cell(activityId)="table">
-        <div :title="table.item.activityId" class="text-truncate">{{ getActivityName(table.item.activityId) }}</div>
+        <div :title="table.item.activityId" class="text-truncate">{{ $store.state.activity.processActivities[table.item.activityId] }}</div>
       </template>
       <template v-slot:cell(failedActivityId)="table">
-        <div :title="table.item.failedActivityId" class="text-truncate">{{ getFailingActivity(table.item.failedActivityId) }}</div>
+        <div :title="table.item.failedActivityId" class="text-truncate">{{ $store.state.activity.processActivities[table.item.failedActivityId] }}</div>
       </template>
       <template v-slot:cell(incidentType)="table">
         <div :title="table.item.incidentType" class="text-truncate">{{ table.item.incidentType }}</div>
@@ -26,7 +26,7 @@
       <template v-slot:cell(actions)="table">
         <b-button :title="$t('process-instance.incidents.retryJob')"
           size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-reload"
-          @click="$refs.confirmRetryJob.show(table.item.configuration)">
+          @click="$refs.incidentRetryModal.show(table.item)">
         </b-button>
       </template>
     </FlowTable>
@@ -35,22 +35,15 @@
     </div>
   </div>
 
-  <b-modal ref="stackTraceModal" :title="$t('process-instance.stacktrace')" size="xl">
+  <b-modal ref="stackTraceModal" :title="$t('process-instance.stacktrace')" size="xl" :ok-only="true">
     <div v-if="stackTraceMessage" class="container-fluid pt-3">
       <b-form-textarea v-model="stackTraceMessage" rows="20" readonly></b-form-textarea>
       <b-button variant="link" @click="copyValueToClipboard(stackTraceMessage)">{{ $t('process-instance.copyValueToClipboard') }}</b-button>
     </div>
-    <template v-slot:modal-footer>
-      <b-button @click="$refs.stackTraceModal.hide()">{{ $t('confirm.close') }}</b-button>
-    </template>
   </b-modal>
 
+  <IncidentRetryModal ref="incidentRetryModal" @increment-number-retry="incrementNumberRetry"></IncidentRetryModal>
   <SuccessAlert ref="messageCopy" style="z-index: 9999">{{ $t('process.copySuccess') }}</SuccessAlert>
-
-  <ConfirmDialog ref="confirmRetryJob" @ok="retryJob($event)">
-    {{ $t('process-instance.confirmRetryJob') }}
-  </ConfirmDialog>
-
   <SuccessAlert ref="successRetryJob">{{ $t('process-instance.successRetryJob') }}</SuccessAlert>
 
 </template>
@@ -62,11 +55,11 @@ import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { IncidentService } from '@/services.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
-import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
+import IncidentRetryModal from '@/components/process/modals/IncidentRetryModal.vue'
 
 export default {
   name: 'IncidentsTable',
-  components: { FlowTable, SuccessAlert, ConfirmDialog },
+  components: { FlowTable, SuccessAlert, IncidentRetryModal },
   mixins: [procesessVariablesMixin, copyToClipboardMixin],
   data: function() {
     return {
@@ -74,29 +67,11 @@ export default {
     }
   },
   props: {
-    getFailingActivity: Function,
     incidents: Array,
-	  activityInstance: Object,
+    activityInstance: Object,
     activityInstanceHistory: Object
   },
   methods: {
-    getActivityName: function(activityId) {
-      var result = null
-      if (this.activityInstance && this.activityInstance.childTransitionInstances) {
-        result = this.activityInstance.childTransitionInstances.find(activity => {
-          return activity.activityId === activityId
-        })
-        if (result) return result.activityName
-      }
-      // original code
-      if (this.activityInstanceHistory) {
-        result = this.activityInstanceHistory.find(activity => {
-          return activity.activityId === activityId
-        })
-      }
-      if (result)  return result.activityName
-      else return 'N/A'
-    },
     showIncidentMessage: function(jobDefinitionId) {
       this.stackTraceMessage = ''
       IncidentService.fetchIncidentStacktraceByJobId(jobDefinitionId).then(res => {
@@ -107,10 +82,10 @@ export default {
     showPrettyTimestamp: function(orignalDate) {
       return moment(orignalDate).format('DD/MM/YYYY HH:mm:ss')
     },
-    retryJob: function(jobDefinitionId) {
-      IncidentService.retryJobById(jobDefinitionId).then(() => {
-        this.incidents.splice(this.incidents.findIndex(obj => obj.configuration === jobDefinitionId), 1)
-        this.$refs.successRetryJob.show()
+    incrementNumberRetry: function({ id, params }) {
+      IncidentService.retryJobById(id, params).then(() => {
+        this.incidents.splice(this.incidents.findIndex(obj => obj.configuration === id), 1)
+        this.$refs.incidentRetryModal.hide()
       })
     }
   }

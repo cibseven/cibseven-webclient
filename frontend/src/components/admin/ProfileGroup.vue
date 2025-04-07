@@ -64,26 +64,18 @@
             </div>
           </div>
         </div>
-        <b-modal ref="deleteModal" :title="$t('confirm.title')">
-          <div class="container-fluid">
-            <div class="row align-items-center">
-              <div class="col-2">
-                <span class="mdi-36px mdi mdi-alert-outline text-warning me-3"></span>
-              </div>
-              <div class="col-10">
-                <p>{{ $t('admin.groups.confirmDelete') }}</p>
-                <strong>{{ $t('admin.groups.id') }}:</strong> {{ group.id }} <br>
-                <strong>{{ $t('admin.groups.name') }}:</strong> {{ group.name }}<br>
-                <strong>{{ $t('admin.groups.type') }}:</strong> {{ group.type }}<br>
-              </div>
-            </div>
+
+        <ConfirmDialog ref="deleteModal" @ok="deleteGroup()" :ok-title="$t('confirm.delete')">
+          <div>
+            <p>{{ $t('admin.groups.confirmDelete') }}</p>
+            <p>
+              <strong>{{ $t('admin.groups.id') }}:</strong> {{ group.id }} <br>
+              <strong>{{ $t('admin.groups.name') }}:</strong> {{ group.name }}<br>
+              <strong>{{ $t('admin.groups.type') }}:</strong> {{ group.type }}
+            </p>
           </div>
-          <template v-slot:modal-footer>
-            <b-button variant="primary"
-              @click="deleteGroup(); $refs.deleteModal.hide()">{{ $t('confirm.ok') }}</b-button>
-            <b-button @click="$refs.deleteModal.hide()">{{ $t('confirm.cancel') }}</b-button>
-          </template>
-        </b-modal>
+        </ConfirmDialog>
+
       </div>
     </transition>
     <SuccessAlert ref="updateGroup" top="0" style="z-index: 1031">{{ $t('admin.groups.updateGroupMessage', [group.id]) }}</SuccessAlert>
@@ -98,10 +90,11 @@ import Sidebars from '@/components/common-components/Sidebars.vue'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import CIBForm from '@/components/common-components/CIBForm.vue'
+import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
 
 export default {
   name: 'ProfileGroup',
-  components: { Sidebars, FlowTable, SuccessAlert, CIBForm },
+  components: { Sidebars, FlowTable, SuccessAlert, CIBForm, ConfirmDialog },
   data: function() {
     return {
       leftOpen: true,

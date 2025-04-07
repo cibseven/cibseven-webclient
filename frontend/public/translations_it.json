@@ -1,4 +1,8 @@
 {	
+	"commons": {
+		"edit": "Modificare",
+		"save": "Salva"
+	},
 	"login": {
 		"productName": "CIB seven",
 		"productSlogan": "Process Management Platform",
@@ -99,7 +103,18 @@
 		"onlyActive": "Solo attivi",
 		"exportInstances": "Esporta istanze",
 		"days": "giorni",
-		"deleteProcessDefinition": "Elimina definizione del processo",
+		"deleteProcessDefinition": {
+			"tooltip": "Elimina definizione del processo",
+			"confirm": {
+				"title": "@:confirm.delete",
+				"line1": "Elimina definizione del processo?",
+				"line2": "Nome: {name}Versione: {version}"
+			}
+		},
+		"confirm": {
+			"suspend": "Si vuole davvero sospendere la prossima definizione di processo con tutte le istanze di processo in esecuzione?",
+			"activate": "Si vuole davvero attivare la prossima definizione di processo con tutte le istanze di processo in esecuzione?"
+		},
 		"true": "Vero",
 		"false": "Falso",
 		"jobs": "Job"
@@ -110,8 +125,8 @@
 		"active": "Attivo",
 		"history": "Storia",
 		"download": "Scarica",
-		"edit": "Modificare",
-		"save": "Salva",
+		"edit": "@:commons.edit",
+		"save": "@:commons.save",
 		"upload": "Caricare un file",
 		"selectFile": "Seleziona il file",
 		"details": {
@@ -125,6 +140,12 @@
 			"currentTaskAssignee": "Attività assegnata a",
 			"currentTaskCreated": "Attività corrente creata su"
 		},
+		"confirm": {
+			"suspend": "Do you really want to suspend the next instance of the process?",
+			"activate": "Do you really want to activate the next instance of the process?",
+			"deleteInstance": "Do you really want to delete the next instance of the process?",
+			"deleteHistoryInstance": "Do you really want to delete the next historical instance of the process?"
+		},
 		"variables": {
 			"name": "Nome",
 			"type": "Tipo",
@@ -132,7 +153,8 @@
 			"actions": "Azioni",
 			"scope": "Ambito",
 			"objectTypeName": "Nome tipo oggetto",
-			"serializationDataFormat": "Formato dati serializzazione"
+			"serializationDataFormat": "Formato dati serializzazione",
+			"confirmDelete": "Si vuole cancellare la variabile?"
 		},
 		"addVariable": "Aggiungi variabile",
 		"jobs": {
@@ -304,6 +326,7 @@
 		"title": "Si prega di confermare",
 		"ok": "Ok",
 		"cancel": "Cancella",
+		"delete": "Eliminare",
 		"deleteFilter": "Volete davvero eliminare il filtro selezionato {name}?",
 		"assignUser": "Questo compito è già assegnato a qualcun altro, vuoi davvero cambiare questo incarico?",
 		"performOperation": "Sei sicuro di voler effettuare questa operazione?"
@@ -397,8 +420,8 @@
 			"selectedCriteria": "Criteri selezionati",
 			"deleteCriteria": "Cancellare i criteri",
 			"no-filters": "No filters found",
-			"edit": "Modificare",
-			"delete": "Eliminare",
+			"edit": "@:commons.edit",
+			"delete": "@:confirm.delete",
 			"pin": "Allegare",
 			"includeAssigned": "Includi compiti assegnati",
 			"keys":{
@@ -532,7 +555,10 @@
 		"userAdmin": "Gestione utenti",
 		"modeler": "Modellatore di processo",
 		"easyForm": "Easy Form",
-		"adminPanel": "Users Management"
+		"adminPanel": "Users Management",
+		"adminProcesses": "Processi",
+		"adminDecisions": "Decisioni",
+		"adminHumanTasks": "Attività"
 	},
 	"errors": {
 		"invalid": "Inserisci un indirizzo valido",
@@ -720,5 +746,73 @@
 	"notification": {
 		"newTasks": "Nuove attività",
 		"newTasksTitle": "Hai ricevuto nuove attività assegnate su CIB flow"
+	},
+	"decision": {
+		"id": "ID",
+		"name": "Nome",
+		"actions": "Azioni",
+		"emptyProcessList": "La tua lista di decisioni è attualmente vuota.",
+		"emptyProcessListFiltered": "Non ci sono decisioni che corrispondono al filtro applicato.",
+		"decision": "Decisione",
+		"deleteProcessDefinition": "Elimina definizione della decisione",
+		"refreshVersions": "Aggiorna versioni storiche",
+		"loadVersions": "Carica tutte le versioni storiche",
+		"days": "giorni",
+		"instances": "Istanze",
+		"activateProcess": "Attiva definizione della decisione",
+		"downloadBpmn": "Scarica file DMN",
+		"showDeployment": "Visualizza deployment",
+		"showInstance": "Visualizza istanza",
+		"evaluationTime": "Tempo di valutazione",
+		"callingProcess": "Processo/Caso chiamante",
+		"callingInstanceId": "ID dell'istanza chiamante",
+		"activityId": "ID attività",
+		"copySuccess": "Valore selezionato copiato",
+		"details": {
+			"titleProcessActions": "Azioni sulla definizione della decisione",
+			"titleInstancesActions": "Azioni sulla decisione",
+			"firstStart": "Prima esecuzione il",
+			"lastStart": "Ultima esecuzione il",
+			"totalInstances": "Numero totale di istanze",
+			"unfinishedInstances": "Istanze in esecuzione",
+			"finishedInstances": "Istanze completate senza errori",
+			"definitionVersion": "Versione della definizione",
+			"versionTag": "Tag versione",
+			"definitionId": "ID definizione",
+			"definitionKey": "Chiave definizione",
+			"definitionName": "Nome definizione",
+			"deploymentId": "ID deployment",
+			"instancesRunning": "Istanze in esecuzione",
+			"currentVersion": "Versione attuale",
+			"allVersions": "Tutte le versioni",
+			"versionInstances": "Istanze di questa versione",
+			"historyVersions": "Versioni storiche",
+			"variable": "Variabili della decisione",
+			"copyValue": "Copia valore",
+			"historyTimeToLive": "Tempo di conservazione della cronologia"
+		},
+		"showManagement": "@:process.showManagement",
+		"type": "Tipo",
+		"value": "Valore",
+		"inputs": "Input",
+		"outputs": "Output",
+		"decisionInstanceId": "ID dell'istanza della decisione"
+	},
+	"decision-instance": {
+		"edit": "@:commons.edit",
+		"save": "@:commons.save"
+	},
+	"human-tasks": {
+		"assignmentsByType": "Assegnazioni per tipo",
+		"assignmentsByGroup": "Assegnazioni per gruppo",
+		"user": "assegnate a un utente",
+		"group": "assegnate a uno o più gruppi",
+		"unassigned": "non assegnate",
+		"total": "Totale",
+		"tasks": "Attività",
+		"types": "Tipi",
+		"noGroups": "senza gruppo",
+		"groupName": "Gruppo",
+		"assignmentsByGroupInfo": "Un'attività può essere assegnata a più gruppi."
 	}
 }

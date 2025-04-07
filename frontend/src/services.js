@@ -47,6 +47,15 @@ function patchJob(job) {
   return job
 }
 
+function patchDecision(decision) {
+  if (Array.isArray(decision)) decision.forEach(patchDecision)
+  else {
+    decision.evaluationTimeOriginal = decision.evaluationTime
+    if (decision.evaluationTime) decision.evaluationTime = moment(decision.evaluationTime).format('LL HH:mm')
+  }
+  return decision
+}
+
 function filterToUrlParams(filters) {
   var filter = ''
   if (Array.isArray(filters)) {
@@ -101,6 +110,12 @@ var TaskService = {
   },
   downloadFile: function(processInstanceId, fileVariable) {
     return axios.get(appConfig.servicesBasePath + '/task/' + processInstanceId + '/variable/download/' + fileVariable, { responseType: 'blob' })
+  },
+  findHistoryTaksCount: function(filters) {
+    return axios.post(appConfig.servicesBasePath + '/task-history/count', filters)
+  },
+  getTaskCountByCandidateGroup: function() {
+    return axios.get(appConfig.servicesBasePath + '/task/report/candidate-group-count')
   }
 }
 
@@ -329,14 +344,27 @@ var HistoryService = {
   }
 }
 
+var JobDefinitionService = {
+  findJobDefinitions: function(params) {
+    return axios.post(appConfig.servicesBasePath + "/job-definition", params)
+  },
+  suspendJobDefinition: function(jobDefinitionId, params) {
+    return axios.put(appConfig.servicesBasePath + "/job-definition/" + jobDefinitionId + "/suspend", params)
+  },
+  overrideJobDefinitionPriority: function(jobDefinitionId, params) {
+    return axios.put(appConfig.servicesBasePath + "/job-definition/" + jobDefinitionId + "/job-priority", params)
+  },
+  findJobDefinition: function(id) {
+    return axios.get(appConfig.servicesBasePath + "/job-definition/" + id)
+  }
+}
+
 var IncidentService = {
   fetchIncidentStacktraceByJobId: function(id) {
     return axios.get(appConfig.servicesBasePath + "/incident/" + id + "/stacktrace")
   },
-  retryJobById: function(id) {
-    return axios.put(appConfig.servicesBasePath + "/incident/job/" + id + "/retries", {
-        retries: 1
-    })
+  retryJobById: function(id, params) {
+    return axios.put(appConfig.servicesBasePath + "/incident/job/" + id + "/retries", params)
   },
   findIncidents: function(processDefinitionId) {
     return axios.get(appConfig.servicesBasePath + "/incident?processDefinitionId=" + processDefinitionId)
@@ -429,6 +457,75 @@ var TemplateService = {
   }
 }
 
+var DecisionService = {
+  getDecisionList: function(params) {
+    return axios.get(appConfig.servicesBasePath + "/decision", { params })
+  },
+  getDecisionVersionsByKey: function(key, lazyLoad = false) {
+    return axios.get(appConfig.servicesBasePath + "/decision/key/" + key + "/versions" + '?lazyLoad=' + lazyLoad)
+  },
+  getDecisionDefinitionById: function(id, extraInfo = false) {
+    return axios.get(appConfig.servicesBasePath + "/decision/id/" + id + '?extraInfo=' + extraInfo)
+  },
+  getDecisionByKey: function(key) {
+    return axios.get(appConfig.servicesBasePath + "/decision/key/" + key)
+  },
+  getDecisionByKeyAndTenant: function (key, tenant) {
+    return axios.get(appConfig.servicesBasePath + "/decision/key/" + key + "/tenant/" + tenant)
+  },
+  getDiagramByKey: function (key) {
+    return axios.get(appConfig.servicesBasePath + "/decision/key/" + key + "/diagram")
+  },
+  getDiagramById: function (id) {
+    return axios.get(appConfig.servicesBasePath + "/decision/id/" + id + "/diagram")
+  },
+  getDiagramByKeyAndTenant: function (key, tenant) {
+    return axios.get(appConfig.servicesBasePath + "/decision/key/" + key + "/tenant/" + tenant + "/diagram")
+  },
+  getXmlByKey: function (key) {
+    return axios.get(appConfig.servicesBasePath + "/decision/key/" + key + "/xml")
+  },
+  getXmlByKeyAndTenant: function (key, tenant) {
+    return axios.get(appConfig.servicesBasePath + "/decision/key/" + key + "/tenant/" + tenant + "/xml")
+  },
+  getXmlById: function (id) {
+    return axios.get(appConfig.servicesBasePath + "/decision/id/" + id + "/xml")
+  },
+  evaluateByKey: function (key, data) {
+    return axios.post(appConfig.servicesBasePath + "/decision/key/" + key + "/evaluate", data)
+  },
+  evaluateByKeyAndTenant: function (key, tenant, data) {
+    return axios.post(appConfig.servicesBasePath + "/decision/key/" + key + "/tenant/" + tenant + "/evaluate", data)
+  },
+  evaluateById: function (id, data) {
+    return axios.post(appConfig.servicesBasePath + "/decision/id/" + id + "/evaluate", data)
+  },
+  updateHistoryTTLByKey: function (key, data) {
+    return axios.put(appConfig.servicesBasePath + "/decision/key/" + key + "/history-ttl", data)
+  },
+  updateHistoryTTLByKeyAndTenant: function (key, tenant, data) {
+    return axios.put(appConfig.servicesBasePath + "/decision/key/" + key + "/tenant/" + tenant + "/history-ttl", data)
+  },
+  updateHistoryTTLById: function (id, data) {
+    return axios.put(appConfig.servicesBasePath + "/decision/id/" + id + "/history-ttl", data)
+  },
+  getHistoricDecisionInstances: function (params) {
+    return axios.get(appConfig.servicesBasePath + "/decision/history/instances", { params }).then(patchDecision)
+  },
+  getHistoricDecisionInstanceCount: function (params) {
+    return axios.get(appConfig.servicesBasePath + "/decision/history/instances/count", { params })
+  },
+  getHistoricDecisionInstanceById: function (id, params) {
+    return axios.get(appConfig.servicesBasePath + "/decision/history/instances/" + id, { params })
+  },
+  deleteHistoricDecisionInstances: function (payload) {
+    return axios.post(appConfig.servicesBasePath + "/decision/history/instances/delete", payload)
+  },
+  setHistoricDecisionInstanceRemovalTime: function (payload) {
+    return axios.post(appConfig.servicesBasePath + "/decision/history/instances/set-removal-time", payload)
+  }
+}
+
 var JobService = {
   getJobs(params) {
     return axios.post(appConfig.servicesBasePath + '/job', params).then(patchJob)
@@ -438,5 +535,35 @@ var JobService = {
   }
 }
 
-export { TaskService, FilterService, ProcessService, AdminService, JobService,
-  HistoryService, IncidentService, AuthService, InfoService, FormsService, TemplateService }
+var BatchService = {
+  getHistoricBatches(params) {
+    return axios.get('/history/batch', { params })
+  },
+
+  getHistoricBatchCount(params) {
+    return axios.get('/history/batch/count', { params })
+  },
+
+  getHistoricBatchById(id) {
+    return axios.get(`/history/batch/${id}`)
+  },
+
+  deleteHistoricBatch(id) {
+    return axios.delete(`/history/batch/${id}`)
+  },
+
+  setRemovalTime(payload) {
+    return axios.post('/history/batch/set-removal-time', payload)
+  },
+
+  getCleanableBatchReport(params) {
+    return axios.get('/history/batch/cleanable-batch-report', { params })
+  },
+
+  getCleanableBatchReportCount() {
+    return axios.get('/history/batch/cleanable-batch-report/count')
+  }
+}
+
+export { TaskService, FilterService, ProcessService, AdminService, JobService, JobDefinitionService,
+  HistoryService, IncidentService, AuthService, InfoService, FormsService, TemplateService, DecisionService, BatchService }

@@ -1,5 +1,6 @@
 package org.cibseven.webapp.providers;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -19,18 +20,21 @@ import org.cibseven.webapp.rest.model.ActivityInstance;
 import org.cibseven.webapp.rest.model.ActivityInstanceHistory;
 import org.cibseven.webapp.rest.model.Authorization;
 import org.cibseven.webapp.rest.model.Authorizations;
+import org.cibseven.webapp.rest.model.CandidateGroupTaskCount;
 import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.DeploymentResource;
 import org.cibseven.webapp.rest.model.EventSubscription;
 import org.cibseven.webapp.rest.model.Filter;
 import org.cibseven.webapp.rest.model.IdentityLink;
 import org.cibseven.webapp.rest.model.Incident;
+import org.cibseven.webapp.rest.model.JobDefinition;
 import org.cibseven.webapp.rest.model.Job;
 import org.cibseven.webapp.rest.model.Message;
 import org.cibseven.webapp.rest.model.NewUser;
 import org.cibseven.webapp.rest.model.Process;
 import org.cibseven.webapp.rest.model.ProcessDiagram;
 import org.cibseven.webapp.rest.model.ProcessInstance;
+import org.cibseven.webapp.rest.model.HistoryProcessInstance;
 import org.cibseven.webapp.rest.model.ProcessStart;
 import org.cibseven.webapp.rest.model.ProcessStatistics;
 import org.cibseven.webapp.rest.model.SevenUser;
@@ -51,6 +55,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import jakarta.servlet.http.HttpServletRequest;
 
 @Component
@@ -64,10 +70,12 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
     @Autowired private IFilterProvider filterProvider;
     @Autowired private IUtilsProvider utilsProvider;
     @Autowired private IIncidentProvider incidentProvider;
+    @Autowired private IJobDefinitionProvider jobDefinitionProvider;
     @Autowired private IUserProvider userProvider;
     @Autowired private IDecisionProvider decisionProvider;
     @Autowired private IJobProvider jobProvider;
-
+    @Autowired private IBatchProvider batchProvider;
+    
     
     /*
 	
@@ -185,6 +193,15 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 		return taskProvider.getDeployedForm(taskId, user);
 	}
 	
+	@Override
+	public Integer findHistoryTaksCount(Map<String, Object> filters, CIBUser user) {
+		return taskProvider.findHistoryTaksCount(filters, user);
+	}
+
+	@Override
+	public Collection<CandidateGroupTaskCount> getTaskCountByCandidateGroup(CIBUser user) {
+		return taskProvider.getTaskCountByCandidateGroup(user);
+	}
 	
 	/* 
 	
@@ -277,13 +294,13 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 	
 	@Override
-	public Collection<ProcessInstance> findProcessesInstancesHistory(String key, Optional<Boolean> active, 
+	public Collection<HistoryProcessInstance> findProcessesInstancesHistory(String key, Optional<Boolean> active, 
 			Integer firstResult, Integer maxResults, CIBUser user) {
 		return processProvider.findProcessesInstancesHistory(key, active, firstResult, maxResults, user);
 	}
 	
 	@Override
-	public Collection<ProcessInstance> findProcessesInstancesHistoryById(String id, Optional<String> activityId, Optional<Boolean> active, 
+	public Collection<HistoryProcessInstance> findProcessesInstancesHistoryById(String id, Optional<String> activityId, Optional<Boolean> active, 
 			Integer firstResult, Integer maxResults, String text, CIBUser user) {
 		return processProvider.findProcessesInstancesHistoryById(id, activityId, active, firstResult, maxResults, text, user);
 	}	
@@ -299,7 +316,7 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}	
 	
 	@Override
-	public ProcessInstance findHistoryProcessInstanceHistory(String processInstanceId, CIBUser user) {
+	public HistoryProcessInstance findHistoryProcessInstanceHistory(String processInstanceId, CIBUser user) {
 		return processProvider.findHistoryProcessInstanceHistory(processInstanceId, user);
 	}
 	
@@ -620,7 +637,6 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 		return incidentProvider.fetchIncidents(processDefinitionKey, user);
 	}
 
-
 	/*
 	
 	██    ██  █████  ██████  ██  █████  ██████  ██      ███████ ███████     ██████  ██████   ██████  ██    ██ ██ ██████  ███████ ██████  
@@ -846,6 +862,36 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 		return decisionProvider.getXmlById(id);
 	}
 
+	@Override
+	public Collection<Decision> getDecisionVersionsByKey(String key, Optional<Boolean> lazyLoad) {
+		return decisionProvider.getDecisionVersionsByKey(key, lazyLoad);
+	}
+	
+	@Override
+	public Object getHistoricDecisionInstances(Map<String, Object> queryParams){
+		return decisionProvider.getHistoricDecisionInstances(queryParams);
+	}
+	
+	@Override
+	public Object getHistoricDecisionInstanceCount(Map<String, Object> queryParams){
+		return decisionProvider.getHistoricDecisionInstanceCount(queryParams);
+	}
+	
+	@Override
+	public Object getHistoricDecisionInstanceById(String id, Map<String, Object> queryParams){
+		return decisionProvider.getHistoricDecisionInstanceById(id, queryParams);
+	}
+	
+	@Override
+	public Object deleteHistoricDecisionInstances(Map<String, Object> data){
+		return decisionProvider.deleteHistoricDecisionInstances(data);
+	}
+	
+	@Override
+	public Object setHistoricDecisionInstanceRemovalTime(Map<String, Object> data){
+		return decisionProvider.setHistoricDecisionInstanceRemovalTime(data);
+	}
+	
 	/*
 	
 	     ██  ██████  ██████      ██████  ██████   ██████  ██    ██ ██ ██████  ███████ ██████  
@@ -857,6 +903,21 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	*/
 	
 	@Override
+	public Collection<JobDefinition> findJobDefinitions(String params, CIBUser user) {
+		return jobDefinitionProvider.findJobDefinitions(params, user);
+	}
+	
+	@Override
+	public void suspendJobDefinition(String jobDefinitionId, String params, CIBUser user) {
+		jobDefinitionProvider.suspendJobDefinition(jobDefinitionId, params, user);
+	}
+	
+	@Override
+	public void overrideJobDefinitionPriority(String jobDefinitionId, String params, CIBUser user) {
+		jobDefinitionProvider.overrideJobDefinitionPriority(jobDefinitionId, params, user);
+	}
+	
+	@Override
 	public Collection<Job> getJobs(Map<String, Object> params, CIBUser user) {
 		return jobProvider.getJobs(params, user);
 	}
@@ -866,4 +927,54 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 		jobProvider.setSuspended(id, params, user);
 	}
 
+	@Override
+	public JobDefinition findJobDefinition(String id, CIBUser user) {
+		return jobDefinitionProvider.findJobDefinition(id, user);
+	}
+
+	/*
+
+	██████   █████  ████████  ██████ ██   ██     ██████  ██████   ██████  ██    ██ ██ ██████  ███████ ██████  
+	██   ██ ██   ██    ██    ██      ██   ██     ██   ██ ██   ██ ██    ██ ██    ██ ██ ██   ██ ██      ██   ██ 
+	██████  ███████    ██    ██      ███████     ██████  ██████  ██    ██ ██    ██ ██ ██   ██ █████   ██████  
+	██   ██ ██   ██    ██    ██      ██   ██     ██      ██   ██ ██    ██  ██  ██  ██ ██   ██ ██      ██   ██ 
+	██████  ██   ██    ██     ██████ ██   ██     ██      ██   ██  ██████    ████   ██ ██████  ███████ ██   ██ 
+                                                                                                                                                                                              
+	*/
+	
+	@Override
+	public Object getHistoricBatches(Map<String, Object> queryParams) {
+		return batchProvider.getHistoricBatches(queryParams);
+    }
+	
+	@Override
+	public Object getHistoricBatchCount(Map<String, Object> queryParams) {
+		return batchProvider.getHistoricBatchCount(queryParams);
+    }
+    
+	@Override
+	public Object getHistoricBatchById(String id) {
+		return batchProvider.getHistoricBatchById(id);
+    }
+	
+	@Override
+	public void deleteHistoricBatch(String id) {
+		batchProvider.deleteHistoricBatch(id);
+    }
+	
+	@Override
+	public Object setRemovalTime(Map<String, Object> payload) {
+		return batchProvider.setRemovalTime(payload);
+    }
+    
+	@Override
+	public Object getCleanableBatchReport(Map<String, Object> queryParams) {
+		return batchProvider.getCleanableBatchReport(queryParams);
+    }
+    
+	@Override
+	public Object getCleanableBatchReportCount() {
+		return batchProvider.getCleanableBatchReportCount();
+    }
+	
 }

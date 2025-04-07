@@ -15,7 +15,7 @@
       :leftSize="getTasksNavbarSize" :left-caption="leftCaptionTask" :right-caption="TasksRightSidebar ? rightCaptionTask : null">
       <template v-slot:left>
         <TasksNavBar @filter-alert="showFilterAlert($event)" ref="navbar" :tasks="tasks" @selected-task="selectedTask($event)"
-          @update-assignee="updateAssignee($event, 'task')" @set-filter="filter = $event;listTasksWithFilter()"
+          @update-assignee="updateAssignee($event, 'task')" @set-filter="filter = $event; listTasksWithFilter()"
           @open-sidebar-date="rightOpenTask = true" @show-more="showMore()" :taskResultsIndex="taskResultsIndex"
           @process-started="listTasksWithFilter();$refs.processStarted.show(10); checkAndOpenTask($event, true)" @display-popover="displayPopover($event)"
           @search-filter="search = $event" @refresh-tasks="listTasksWithFilter()"></TasksNavBar>
@@ -34,10 +34,9 @@
       </transition>
       <template v-slot:leftIcon>
         <div>
-          <b-button style="top: 3px; right: 0" :title="tasksNavbarSize !== 2 ? $t('task.expand') : $t('task.collapse')"
-          class="border-0 position-absolute" size="sm" variant="link" @click.stop="manageNavbarSize()">
-            <span v-if="tasksNavbarSize !== 2" class="mdi mdi-18px mdi-chevron-right"></span>
-            <span v-else class="mdi mdi-18px mdi-chevron-left"></span>
+          <b-button v-if="tasksNavbarSize !== 2" style="top: 3px; right: 0" :title="$t('task.expand')"
+          class="border-0 position-absolute" size="sm" variant="link" @click.stop="tasksNavbarSize++">
+            <span class="mdi mdi-18px mdi-chevron-right"></span>
           </b-button>
           <b-button style="top: 3px; right: 60px" class="border-0 position-absolute" variant="link" size="sm" :title="$t('task.collapse')" @click.stop="collapseNavbar()">
             <span class="mdi mdi-18px mdi-chevron-left"></span>
@@ -45,7 +44,7 @@
         </div>
       </template>
       <template v-slot:right>
-        <component :is="TasksRightSidebar" v-if="TasksRightSidebar" 
+        <component :is="TasksRightSidebar" v-if="TasksRightSidebar"
           :task="task" :processInstanceHistory="processInstanceHistory" @update-assignee="updateAssignee($event, 'taskList')">
         </component>
       </template>
@@ -76,7 +75,7 @@ import { BWaitingBox } from 'cib-common-components'
 import { updateAppTitle } from '@/utils/init'
 
 export default {
-  name: 'Tasks',
+  name: 'TasksContent',
   components: { TasksNavBar, FilterNavBar, FilterNavCollapsed, SidebarsFlow, SuccessAlert, BWaitingBox },
   inject: ['isMobile', 'AuthService'],
   mixins: [permissionsMixin],
@@ -399,16 +398,9 @@ export default {
       this.tasks = []
       this.cleanSelectedTask()
     },
-    manageNavbarSize: function() {
-      if (this.tasksNavbarSize === 2) {
-        this.leftOpenTask = false
-        this.tasksNavbarSize = 0
-      }
-      else this.tasksNavbarSize++
-    },
     collapseNavbar: function () {
-      this.leftOpenTask = false
-      this.tasksNavbarSize = 0
+      if (this.tasksNavbarSize === 0) this.leftOpenTask = false
+      else this.tasksNavbarSize--
     },
     showMore: function() {
       this.listTasksWithFilterAuto(true)

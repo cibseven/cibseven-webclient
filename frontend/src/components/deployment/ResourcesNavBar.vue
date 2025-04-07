@@ -19,12 +19,13 @@
         </div>
       </div>
     </div>
-    <b-modal static ref="diagramModal" size="xl" :title="resource.name" dialog-class="h-75" content-class="h-100">
+
+    <b-modal static ref="diagramModal" size="xl" :title="resource.name" dialog-class="h-75" content-class="h-100" :ok-only="true">
       <div class="container-fluid h-100 p-0">
         <BpmnViewer class="h-100" ref="diagram"></BpmnViewer>
       </div>
-      <template v-slot:modal-footer><b-button variant="secondary" @click="$refs.diagramModal.hide()">{{ $t('start.close') }}</b-button></template>
     </b-modal>
+
   </div>
 </template>
 

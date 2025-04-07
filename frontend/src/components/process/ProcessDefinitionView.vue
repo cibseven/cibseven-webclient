@@ -17,7 +17,7 @@
           :instances="instances"></ProcessDetailsSidebar>
       </template>
       <transition name="slide-in" mode="out-in">
-        <Process ref="process" v-if="process && instances && !selectedInstance"
+        <ProcessInstancesView ref="process" v-if="process && instances && !selectedInstance && !instanceId"
           :activity-id="activityId"
           :loading="loading"
           :process="process"
@@ -31,17 +31,19 @@
           :incidents="incidents"
           @show-more="showMore()"
           @activity-id="filterByActivityId($event)"
-          @instance-deleted="clearInstance()"
-          @instance-selected="setSelectedInstance($event)"
+          @instance-deleted="onInstanceDeleted()"
           @task-selected="setSelectedTask($event)"
           @filter-instances="filterInstances($event)"
-          @open-subprocess="openSubprocess($event)"
           @update-items="updateItems"
-        ></Process>
+        ></ProcessInstancesView>
       </transition>
       <transition name="slide-in" mode="out-in">
-        <ProcessVariablesTable ref="navbar-variables" v-if="process && selectedInstance" :process="process" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" @open-subprocess="openSubprocess($event)"
-        :selected-instance="selectedInstance" @clear-state="setSelectedInstance({ selectedInstance: null })" @task-selected="setSelectedTask($event)" @unselect-instance="selectedInstance = null"></ProcessVariablesTable>
+        <ProcessInstanceView ref="navbar-variables" v-if="process && selectedInstance && instanceId"
+          :process="process"
+          :activity-instance="activityInstance"
+          :activity-instance-history="activityInstanceHistory"
+          :selected-instance="selectedInstance"
+          @task-selected="setSelectedTask($event)"></ProcessInstanceView>
       </transition>
     </SidebarsFlow>
     <TaskPopper ref="importPopper"></TaskPopper>
@@ -49,12 +51,12 @@
 </template>
 
 <script>
-import { nextTick } from 'vue'
 import moment from 'moment'
-import { TaskService, ProcessService, HistoryService, IncidentService, JobService } from '@/services.js'
-import Process from '@/components/process/Process.vue'
+import { TaskService, ProcessService, HistoryService,
+  IncidentService, JobService, JobDefinitionService } from '@/services.js'
+import ProcessInstancesView from '@/components/process/ProcessInstancesView.vue'
 import ProcessDetailsSidebar from '@/components/process/ProcessDetailsSidebar.vue'
-import ProcessVariablesTable from '@/components/process/ProcessVariablesTable.vue'
+import ProcessInstanceView from '@/components/process/ProcessInstanceView.vue'
 import SidebarsFlow from '@/components/common-components/SidebarsFlow.vue'
 import TaskPopper from '@/components/common-components/TaskPopper.vue'
 
@@ -68,10 +70,14 @@ function getStringObjByKeys(keys, obj) {
 
 export default {
   name: 'ProcessDefinitionView',
-  components: { Process, ProcessDetailsSidebar, ProcessVariablesTable, SidebarsFlow, TaskPopper },
+  components: { ProcessInstancesView, ProcessDetailsSidebar, ProcessInstanceView, SidebarsFlow, TaskPopper },
   props: {
     processKey: { type: String, required: true },
-    versionIndex: { type: String, required: true }
+    versionIndex: { type: String, required: true },
+    instanceId: { type: String, required: true }
+  },
+  watch: {
+    processKey: 'loadProcessFromRoute'
   },
   data: function() {
     return {
@@ -90,7 +96,7 @@ export default {
       filter: '',
       activityId: '',
       loading: false,
-	    incidents: []
+      incidents: []
     }
   },
   computed: {
@@ -106,7 +112,7 @@ export default {
     }
   },
   created: function() {
-    this.loadProcessByDefinitionKey()
+    this.loadProcessFromRoute()
   },
   beforeUpdate: function() {
     if (this.process != null && this.process.version !== this.versionIndex) {
@@ -117,8 +123,30 @@ export default {
       this.task = null
       this.loadProcessByDefinitionKey()
     }
+    else if (this.selectedInstance == null && this.instanceId) {
+      if (this.instances) {
+        const selectedInstance = this.instances.find((instance) => instance.id == this.instanceId)
+        if (selectedInstance) {
+          this.setSelectedInstance({ selectedInstance: selectedInstance })
+        }
+      }
+    }
+    else {
+      this.selectedInstance = null
+      this.activityInstance = null
+      this.activityInstanceHistory = null
+      this.task = null
+    }
   },
   methods: {
+    loadProcessFromRoute: function() {
+      this.loadProcessByDefinitionKey().then((redirected) => {
+        if (!redirected && this.instanceId && this.instances) {
+          const selectedInstance = this.instances.find(i => i.id == this.instanceId)
+          if (selectedInstance) this.setSelectedInstance({ selectedInstance })
+        }
+      })
+    },
     updateItems: function(sortedItems) {
       this.instances = sortedItems
     },
@@ -174,20 +202,25 @@ export default {
       })
     },
     loadProcessByDefinitionKey: function() {
-      ProcessService.findProcessVersionsByDefinitionKey(this.processKey).then(versions => {
+      return ProcessService.findProcessVersionsByDefinitionKey(this.processKey).then(versions => {
         const requestedDefinition = versions.find(processDefinition => processDefinition.version === this.versionIndex)
         if (requestedDefinition) {
           this.processDefinitions = versions
           const needCalcStats = this.process == null
-          this.loadProcessVersion(requestedDefinition)
-          if (needCalcStats) {
-            this.calcProcessDefinitionsStats(requestedDefinition, this.lazyLoadHistory)
-          }
+          return this.loadProcessVersion(requestedDefinition).then(() => {
+            if (needCalcStats) {
+              this.calcProcessDefinitionsStats(requestedDefinition, this.lazyLoadHistory)
+            }
+            // false - no redirect
+            return false
+          })
         }
         else {
           // definition is no longer available
           // let's redirect to the latest one
           this.$router.push('/seven/auth/process/' + this.processKey)
+          // true - redirect
+          return true
         }
       })
     },
@@ -210,6 +243,9 @@ export default {
           })
         }
       }
+
+      // false - no redirect
+      return false
     },
     loadProcessActivitiesHistory: function() {
       HistoryService.findActivitiesProcessDefinitionHistory(this.process.id).then(activities => {
@@ -217,19 +253,26 @@ export default {
       })
     },
     loadProcessVersion: function(process) {
-      if (!this.process || this.process.id !== process.id) {
-        this.firstResult = 0
-        this.process = process
-        this.loadInstances()
-        this.loadIncidents()
-        if (!this.process.statistics) this.loadStatistics()
-        if (!this.process.activitiesHistory) this.loadProcessActivitiesHistory()
-      }
+      return new Promise((resolve) => {
+        if (!this.process || this.process.id !== process.id) {
+          this.firstResult = 0
+          this.process = process
+          if (!this.process.statistics) this.loadStatistics()
+          if (!this.process.activitiesHistory) this.loadProcessActivitiesHistory()
+          return Promise.all([
+            this.loadInstances(),
+            this.loadIncidents()
+          ]).then(() => {
+            resolve();
+          })
+        }
+        resolve();
+      });
     },
     loadInstances: function(showMore) {
       if (this.$root.config.camundaHistoryLevel !== 'none') {
         this.loading = true
-        HistoryService.findProcessesInstancesHistoryById(this.process.id, this.activityId,
+        return HistoryService.findProcessesInstancesHistoryById(this.process.id, this.activityId,
           this.firstResult, this.maxResults, this.filter
         ).then(instances => {
           this.loading = false
@@ -238,9 +281,8 @@ export default {
         })
       }
       else {
-        ProcessService.findProcessVersionsByDefinitionKey(this.process.key).then(versions => {
+        return ProcessService.findProcessVersionsByDefinitionKey(this.process.key).then(versions => {
           this.processDefinitions = versions
-
           var promises = []
           this.processDefinitions.forEach(() => {
             promises.push(HistoryService.findProcessesInstancesHistoryById(this.process.id, this.activityId, this.firstResult,
@@ -266,11 +308,18 @@ export default {
         this.$store.dispatch('setStatistics', { process: this.process, statistics: statistics })
       })
     },
-    clearInstance: function() {
+    onInstanceDeleted: function() {
       this.setSelectedInstance({ selectedInstance: null })
-      this.$refs.process.clearState()
       this.firstResult = 0
-      this.loadInstances()
+      return Promise.all([
+        this.loadInstances(),
+        this.loadIncidents(),
+        this.loadStatistics(),
+        this.loadProcessActivitiesHistory()
+      ]).then(() => {
+        this.calcProcessDefinitionsStats(this.process, this.lazyLoadHistory)
+        this.$refs.process.refreshDiagram()
+      })
     },
     setSelectedInstance: function(evt) {
       var selectedInstance = evt.selectedInstance
@@ -282,7 +331,8 @@ export default {
       this.activityInstance = null
       this.activityInstanceHistory = selectedInstance ? this.activityInstanceHistory : null
       if (selectedInstance) {
-        if (this.selectedInstance && this.selectedInstance.id === selectedInstance.id && !evt.reload) return
+        // do not load the same data once again
+        if (this.selectedInstance && this.selectedInstance.id === selectedInstance.id) return
         this.selectedInstance = selectedInstance
         if (this.selectedInstance.state === 'ACTIVE') {
           //Management
@@ -346,15 +396,6 @@ export default {
       }
       return 'mdi-flag-triangle'
     },
-    openSubprocess: function(event) {
-      this.activityId = ''
-      this.setSelectedInstance({ selectedInstance: null })
-      this.loadProcessVersion(event)
-      nextTick(function() {
-        this.$refs.navbar.getVersions()
-      }.bind(this))
-      this.$router.push('/seven/auth/process/' + event.key)
-    },
     exportCSV: function() {
       var headers = [
         { text: 'state', key: 'state' },
@@ -381,6 +422,11 @@ export default {
     },
     async setJobs() {
       this.selectedInstance.jobs = await JobService.getJobs({ processInstanceId: this.selectedInstance.id })
+      this.selectedInstance.jobs.forEach(j => {
+        JobDefinitionService.findJobDefinition(j.jobDefinitionId).then(jd => {
+          j.activityId = jd.activityId
+        })
+      })
     }
   }
 }

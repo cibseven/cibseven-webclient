@@ -45,11 +45,14 @@
       <template v-slot:right>
         <ResourcesNavBar :resources="resources" :deployment="deployment"></ResourcesNavBar>
       </template>
-      <DeploymentList v-if="deploymentsFiltered.length > 0" :deployments="deploymentsFiltered" :deployment="deployment" :sorting="sorting"
+      <DeploymentList v-if="!loading && deploymentsFiltered.length > 0" :deployments="deploymentsFiltered" :deployment="deployment" :sorting="sorting"
         @select-deployment="selectDeployment($event)"></DeploymentList>
-      <div v-else class="text-center text-secondary">
+      <div v-else-if="!loading && deploymentsFiltered.length === 0" class="text-center text-secondary">
         <img src="/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mt-5 mb-3" style="width: 200px">
         <div class="h5 text-secondary text-center">{{ $t('deployment.noDeployments') }}</div>
+      </div>
+      <div v-else-if="loading" class="h-100 d-flex justify-content-center align-items-center">
+        <b-waiting-box styling="width: 55%"></b-waiting-box>
       </div>
     </SidebarsFlow>
     <b-modal ref="deleteModal" :title="$t('confirm.title')">
@@ -65,8 +68,8 @@
         </div>
       </div>
       <template v-slot:modal-footer>
-        <b-button variant="primary" @click="deleteDeployments(); $refs.deleteModal.hide()">{{ $t('confirm.ok') }}</b-button>
-        <b-button @click="$refs.deleteModal.hide()">{{ $t('confirm.cancel') }}</b-button>
+        <b-button @click="$refs.deleteModal.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
+        <b-button @click="deleteDeployments(); $refs.deleteModal.hide()" variant="primary">{{ $t('confirm.ok') }}</b-button>
       </template>
     </b-modal>
     <SuccessAlert top="0" style="z-index: 1031" ref="deploymentsDeleted"> {{ $t('deployment.deploymentsDeleted', [deploymentsDelData.deleted, deploymentsDelData.total]) }}</SuccessAlert>
@@ -135,6 +138,7 @@ export default {
         d.isSelected = false
       })
       this.deployments = deployments
+      this.loading = false
     })
   },
   methods: {

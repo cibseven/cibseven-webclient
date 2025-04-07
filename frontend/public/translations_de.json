@@ -1,4 +1,8 @@
 {
+	"commons": {
+		"edit": "Bearbeiten",
+		"save": "Speichern"
+	},
 	"login": {
 		"productName": "CIB seven",
 		"productSlogan": "Prozess Management Plattform",
@@ -108,9 +112,21 @@
 		"onlyActive": "Nur Aktive",
 		"exportInstances": "Instanzen exportieren",
 		"days": "Tage",
-		"deleteProcessDefinition": "Prozessdefinition löschen",
+		"deleteProcessDefinition": {
+			"tooltip": "Prozessdefinition löschen",
+			"confirm": {
+				"title": "@:confirm.delete",
+				"line1": "Löschen Sie die Prozessdefinitionen?",
+				"line2": "Name: {name}Version: {version}"
+			}
+		},
+		"confirm": {
+			"suspend": "Wollen Sie wirklich die nächste Prozessdefinition mit allen laufenden Prozessinstanzen aussetzen?",
+			"activate": "Möchten Sie die nächste Prozessdefinition mit allen laufenden Prozessinstanzen wirklich aktivieren?"
+		},
 		"true": "Wahr",
 		"false": "Falsch",
+		"jobDefinitions": "Job-Definitionen",
 		"jobs": "Jobs"
 	},
 	"process-instance": {
@@ -121,8 +137,8 @@
 		"active": "Aktiv",
 		"history": "Historie",
 		"download": "Herunterladen",
-		"edit": "Bearbeiten",
-		"save": "Speichern",
+		"edit": "@:commons.edit",
+		"save": "@:commons.save",
 		"upload": "Datei hochladen",
 		"selectFile": "Datei aussuchen",
 		"details": {
@@ -135,7 +151,13 @@
 			"deletedReason": "Löschungsgrund",
 			"currentTaskAssignee": "Derzeitiger Bearbeiter",
 			"currentTaskCreated": "Aktuelle Aufgabe erstellt am"
-		},				
+		},
+		"confirm": {
+			"suspend": "Wollen Sie wirklich die nächste Instanz des Prozesses aussetzen?",
+			"activate": "Wollen Sie wirklich die nächste Instanz des Prozesses aktivieren?",
+			"deleteInstance": "Wollen Sie wirklich die nächste Instanz des Prozesses löschen?",
+			"deleteHistoryInstance": "Wollen Sie wirklich die nächste historische Instanz des Prozesses löschen?"
+		},
 		"variables": {
 			"name": "Name",
 			"type": "Typ",
@@ -143,7 +165,8 @@
 			"actions": "Aktionen",
 			"scope": "Umfang",
 			"objectTypeName": "Objekttypname",
-			"serializationDataFormat": "Serialisierungsdatenformat"
+			"serializationDataFormat": "Serialisierungsdatenformat",
+			"confirmDelete": "Wollen Sie die Variable löschen?"
 		},
 		"incidents": {
 		    "message": "Nachricht",
@@ -152,7 +175,41 @@
 		    "failedActivity": "Fehlgeschlagene Aktivität",
 		    "incidentType": "Vorfallstyp",
 		    "retryJob": "Anzahl der Wiederholungsversuche eines fehlgeschlagenen Jobs erhöhen",
-		    "actions": "Aktionen"
+		    "actions": "Aktionen",
+			"incrementNumberRetries": "Anzahl der Wiederholungsversuche erhöhen",
+			"retryMsg": "Die Anzahl der Wiederholungsversuche des fehlgeschlagenen Jobs für das ausgewählte Ereignis wird erhöht.",
+			"dueDateMsg": "Der Zeitpunkt der Ausführung eines Jobs wird durch das Fälligkeitsdatum bestimmt:",
+			"keepDueDate": "Fälligkeitsdatum beibehalten",
+			"setDueDate": "Fälligkeitsdatum festlegen",
+			"dueDate": "Fälligkeitsdatum",
+			"scheduleAt": "Planen um",
+			"invalidDateError": "Sie müssen ein gültiges Datum eingeben"
+		},
+		"jobDefinitions": {
+			"state": "Status",
+			"activity": "Aktivität",
+			"type": "Typ",
+			"configuration": "Konfiguration",
+			"overridingJobPriority": "Überschriebene Job-Priorität",
+			"actions": "Aktionen",
+			"active": "Aktiv",
+			"suspendJob": "Job-Definition aussetzen",
+			"activateJob": "Job-Definition aktivieren",
+			"suspended": "Ausgesetzt",
+			"activateMsg": "Diese Job-Definition wird aktiviert, sodass neue Jobs basierend auf dieser Definition standardmäßig aktiv sind.",
+			"suspendMsg": "Diese Job-Definition wird ausgesetzt, sodass neue Jobs basierend auf dieser Definition standardmäßig ausgesetzt sind.",
+			"includeExisting": "Vorhandene Jobs einbeziehen",
+			"execute": "Ausführen",
+			"immediately": "Sofort",
+			"delayed": "Verzögert",
+			"scheduleAt": "Planen um",
+			"suspend": "Aussetzen",
+			"activate": "Aktivieren",
+			"changeJobPriority": "Überschriebene Job-Priorität ändern",
+			"overridingMsg": "Die überschriebene Priorität für Jobs der angegebenen Job-Definition ändern.",
+			"jobPriority": "Priorität",
+			"clear": "Überschriebene Job-Priorität löschen",
+			"set": "Überschriebene Job-Priorität festlegen"
 		},
 		"usertasks": {
 		    "activity": "Aktivität",
@@ -173,12 +230,13 @@
 		    "users": "Benutzer",		    			
 		    "assignee": "Bearbeiter",
 		    "add": "Hinzufügen",
-		    "delete": "Löschen",
+		    "delete": "@:confirm.delete",
 		    "actions": "Aktionen",
 		    "exists": "Diese Entität ist bereits zugewiesen"
 		},
 		"noResults": "Keine Ergebnisse",
-		"noIncidents": "Keine Vorfälle",
+		"noIncidents": "Keine Vorfälle",		
+		"noJobDefinitions": "Keine Job-Definitionen",
 		"stacktrace": "Stacktrace",
 		"copyValueToClipboard": "Wert in die Zwischenablage kopieren",
 		"confirmRetryJob": "Sind Sie sicher, die Anzahl der Wiederholungsversuche zu erhöhen?",
@@ -204,7 +262,13 @@
 			"title": "Legende",
 			"completedTask": "Abgeschlossene Aufgabe",
 			"currentTask": "Aktuelle Aufgabe",
-			"selectedTask": "@:task.selectedTask"
+			"selectedTask": "@:task.selectedTask",
+			"runingInstances": "Laufende Aktivitätsinstanzen",
+			"openIncidents": "Offene Vorfälle",
+			"suspendedJobDefinition": "Ausgesetzte Jobdefinition",
+			"activitiesHistory": "Ausgeführte Aktivitätsinstanzen",
+			"openSubprocess": "Aufgerufene Prozessdefinition anzeigen",
+  			"disabledSubprocess": "Die Prozessdefinition wird zur Laufzeit ermittelt"
 		}
 	},
 	"task": {
@@ -399,6 +463,7 @@
 		"ok": "Ok",
 		"cancel": "Abbrechen",
 		"close": "Schließen",
+		"delete": "Löschen",
 		"deleteFilter": "Möchten Sie den ausgewählten Filter {name} wirklich löschen?",
 		"assignUser": "Diese Aufgabe ist bereits einer anderen Person zugewiesen. Möchten Sie diese Zuordnung wirklich ändern?",
 		"performOperation": "Sind Sie sicher, dass Sie diese Operation ausführen wollen?"
@@ -494,8 +559,8 @@
 			"selectedCriteria": "Ausgewählte Kriterien",
 			"deleteCriteria": "Kriterium Löschen",
 			"no-filters": "Keine Filter gefunden",
-			"edit": "Bearbeiten",
-			"delete": "Löschen",
+			"edit": "@:commons.edit",
+			"delete": "@:confirm.delete",
 			"pin": "Anfügen",
 			"includeAssigned": "Zugewiesene Aufgaben einbeziehen",
 			"keys":{
@@ -633,7 +698,10 @@
 		"easyForm": "Easy Form",
 		"adminPanel": "Benutzerverwaltung",
 		"properties": "Properties",
-		"resources": "Ressourcen"
+		"resources": "Ressourcen",
+		"adminProcesses": "Prozesses",
+		"adminDecisions": "Entscheidungen",
+		"adminHumanTasks": "Aufgaben"
 	},
 	"errors": {		
 		"invalid": "Es fehlt eine gültige Eingabe",
@@ -876,5 +944,73 @@
 	"notification": {
 		"newTasks": "Neue Aufgaben",
 		"newTasksTitle": "Ihnen wurden neue Aufgaben in CIB flow zugewiesen."
+	},
+	"decision" : {
+		"id": "ID",
+		"name": "Name",
+		"actions": "Aktionen",
+		"emptyProcessList": "Ihre Entscheidungsliste ist derzeit leer.",
+		"emptyProcessListFiltered": "Es gibt keinen Entscheidung für den angewandten Filter.",
+		"decision": "Entscheidung",
+		"deleteProcessDefinition": "Prozessdefinition löschen",
+		"refreshVersions": "Historische Versionen aktualisieren",
+		"loadVersions": "Alle Versionen der Historie laden",
+		"days": "Tage",
+		"instances": "Instanzen",
+		"activateProcess": "Prozessdefinition aktivieren",
+		"downloadBpmn": "BPMN file herunterladen",
+		"showDeployment": "Deployment ansehen",
+		"showInstance": "Instanz anzeigen",
+		"evaluationTime": "Evaluation Time",
+		"callingProcess": "Calling Process/Case",
+		"callingInstanceId": "Calling Instance ID",
+		"activityId": "Activity ID",
+		"copySuccess": "Ausgewählter Wert kopiert",
+		"details": {
+			"titleProcessActions": "Aktionen zur Prozessdefinition",
+			"titleInstancesActions": "Aktionen zu dem Prozess",
+			"firstStart": "Erster Start am",
+			"lastStart": "Letzter Start am",
+			"totalInstances": "Gesamtanzahl der Instanzen",
+			"unfinishedInstances": "Laufende Instanzen",
+			"finishedInstances": "Abgeschlossene Instanzen ohne Fehler",
+			"definitionVersion": "Definition der Version",
+			"versionTag": "Versionstag",
+			"definitionId": "Definition ID",
+			"definitionKey": "Definitionsschlüssel",
+			"definitionName": "Definition Name",
+			"deploymentId": "Deployment-ID",
+			"instancesRunning": "Laufende Instanzen",
+			"currentVersion": "Aktuelle Version",
+			"allVersions": "Alle Versionen",
+			"versionInstances": "Instanzen dieser Version",
+			"historyVersions": "Historie versionen",
+			"variable": "Prozessvariablen",
+			"copyValue": "Wert kopieren",
+			"historyTimeToLive": "Geschichte Zeit zu leben"
+		},
+		"showManagement": "@:process.showManagement",
+		"type": "Typ",
+		"value": "Wert",
+		"inputs": "Eingaben",
+		"outputs": "Ausgaben",
+		"decisionInstanceId": "Entscheidungsinstanz-ID"
+	},
+	"decision-instance": {
+		"edit": "@:commons.edit",
+		"save": "@:commons.save"
+	},
+	"human-tasks": {
+		"assignmentsByType": "Zuweisungen nach Typ",
+		"assignmentsByGroup": "Zuweisungen nach Gruppe",
+		"user": "einem Benutzer zugewiesen",
+		"group": "einer oder mehreren Gruppen zugewiesen",
+		"unassigned": "nicht zugewiesen",
+		"total": "Gesamt",
+		"tasks": "Aufgaben",
+		"types": "Typen",
+		"noGroups": "ohne Gruppe",
+		"groupName": "Gruppe",
+		"assignmentsByGroupInfo": "Eine Aufgabe kann mehreren Gruppen zugewiesen sein."
 	}
 }

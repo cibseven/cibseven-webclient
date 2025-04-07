@@ -3,14 +3,16 @@ package org.cibseven.webapp.providers;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 
 import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.providers.SevenProviderBase;
 import org.cibseven.webapp.rest.model.Decision;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 @Component
 public class DecisionProvider extends SevenProviderBase implements IDecisionProvider{
@@ -115,6 +117,54 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 	public Object getXmlById(String id) {
 		String url = camundaUrl + "/engine-rest/decision-definition/" + id + "/xml";
 		return ((ResponseEntity<Object>) doGet(url, Object.class, null, false)).getBody();
+	}
+	
+	@Override
+	public Collection<Decision> getDecisionVersionsByKey(String key, Optional<Boolean> lazyLoad) {
+		String url = camundaUrl + "/engine-rest/decision-definition?key=" + key + "&sortBy=version&sortOrder=desc";
+		Collection<Decision> decisions = Arrays.asList(((ResponseEntity<Decision[]>) doGet(url, Decision[].class, null, false)).getBody());		
+		
+		if (!lazyLoad.isPresent() || (lazyLoad.isPresent() && !lazyLoad.get())) {
+			for(Decision decision : decisions) {
+				String urlInstances = camundaUrl + "/engine-rest/history/decision-instance/count?decisionDefinitionId=" + decision.getId();
+				decision.setAllInstances(((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, null, false)).getBody().get("count").asLong());
+				urlInstances = camundaUrl + "/engine-rest/history/decision-instance/count?unfinished=true&decisionDefinitionId=" + decision.getId();
+				decision.setRunningInstances(((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, null, false)).getBody().get("count").asLong());
+				urlInstances = camundaUrl + "/engine-rest/history/decision-instance/count?completed=true&decisionDefinitionId=" + decision.getId();
+				decision.setCompletedInstances(((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, null, false)).getBody().get("count").asLong());
+			}
+		}
+		return decisions;
+	}
+	
+	@Override
+	public Object getHistoricDecisionInstances(Map<String, Object> queryParams){
+		String url = buildUrlWithParams(camundaUrl + "/engine-rest/history/decision-instance", queryParams);
+		return ((ResponseEntity<Object>) doGet(url, Object.class, null, false)).getBody();
+	}
+	
+	@Override
+	public Object getHistoricDecisionInstanceCount(Map<String, Object> queryParams){
+		String url = buildUrlWithParams(camundaUrl + "/engine-rest/history/decision-instance/count", queryParams);
+		return ((ResponseEntity<Object>) doGet(url, Object.class, null, false)).getBody();
+	}
+	
+	@Override
+	public Object getHistoricDecisionInstanceById(String id, Map<String, Object> queryParams){
+		String url = buildUrlWithParams(camundaUrl + "/engine-rest/history/decision-instance/" + id, queryParams);
+		return ((ResponseEntity<Object>) doGet(url, Object.class, null, false)).getBody();
+	}
+	
+	@Override
+	public Object deleteHistoricDecisionInstances(Map<String, Object> body){
+		String url = camundaUrl + "/engine-rest/history/decision-instance/delete";
+		return ((ResponseEntity<Object>) doPost(url, body, null, null)).getBody();
+	}
+	
+	@Override
+	public Object setHistoricDecisionInstanceRemovalTime(Map<String, Object> body){
+		String url = camundaUrl + "/engine-rest/history/decision-instance/set-removal-time";
+		return ((ResponseEntity<Object>) doPost(url, body, null, null)).getBody();
 	}
 	
 	@Override

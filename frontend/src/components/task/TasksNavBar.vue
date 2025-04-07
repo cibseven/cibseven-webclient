@@ -3,7 +3,7 @@
     <div class="h-100 d-flex flex-column border border-end-0 border-top-0 bg-light">
 
       <b-button style="top: 3px; right: 30px" class="border-0 position-absolute" v-if="$root.config.layout.showTaskListManualRefresh"
-        variant="btn-outline-primary" size="sm" :disabled="pauseRefreshButton" :title="$t('nav-bar.refresh')" @click="$emit('refresh-tasks'); pauseButton()">
+        variant="btn-outline-primary" size="sm" :title="$t('nav-bar.refresh')" @click="refreshTasks()" :style="pauseRefreshButton ? 'opacity: 0.5' : ''">
         <span class="visually-hidden">{{ $t('nav-bar.refresh') }}</span>
         <span class="mdi mdi-18px mdi-refresh"></span>
       </b-button>
@@ -113,7 +113,7 @@
                   </div>
                 </b-calendar>
                 <template v-slot:modal-footer>
-                  <b-button @click="$refs['followUp' + task.id][0].hide()" class="text-secondary" variant="link">{{ $t('confirm.cancel') }}</b-button>
+                  <b-button @click="$refs['followUp' + task.id][0].hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
                   <b-button @click="setDate(task, 'followUp')" variant="primary">{{ $t('task.setReminder') }}</b-button>
                 </template>
               </b-modal>
@@ -134,7 +134,7 @@
                 <b-form-timepicker v-model="selectedDateT.dueTime" @input="setTime($event, 'due')" no-close-button :label-no-time-selected="$t('cib-timepicker.noDate')"
                   reset-button class="flex-fill" reset-value="23:59:00" :label-reset-button="$t('cib-timepicker.reset')" :locale="currentLanguage()"></b-form-timepicker>
                 <template v-slot:modal-footer>
-                  <b-button :title="$t('confirm.cancel')" @click="$refs['due' + task.id][0].hide()" class="text-secondary" variant="link">{{ $t('confirm.cancel') }}</b-button>
+                  <b-button :title="$t('confirm.cancel')" @click="$refs['due' + task.id][0].hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
                   <b-button :title="$t('task.setDeadline')" @click="setDate(task, 'due')" variant="primary">{{ $t('task.setDeadline') }}</b-button>
                 </template>
               </b-modal>
@@ -169,7 +169,7 @@
 
 <script>
 import moment from 'moment'
-import { TaskService } from '@/services.js'
+import { TaskService, AdminService } from '@/services.js'
 import { debounce } from '@/utils/debounce.js'
 import StartProcess from '@/components/start-process/StartProcess.vue'
 import AdvancedSearchModal from '@/components/task/AdvancedSearchModal.vue'
@@ -201,7 +201,7 @@ export default {
     '$route.params.taskId': {
       immediate: true,
       handler: function (taskId) {
-        this.checkTaskIdInUrl(taskId) 
+        this.checkTaskIdInUrl(taskId)
       }
     },
     'advancedFilter': {
@@ -451,6 +451,12 @@ export default {
         return this.$root.config.layout.showFilterDueDate
       } else {
         return true
+      }
+    },
+    refreshTasks() {
+      if (!this.pauseRefreshButton) {
+        this.$emit('refresh-tasks')
+        this.pauseButton()
       }
     }
   }

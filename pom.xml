@@ -51,7 +51,7 @@
             <id>normal-build</id>
             <activation>
                 <property>
-                    <name>!release-common-components</name>
+                    <name>!release-npm-library</name>
                 </property>
             </activation>
             <modules>
@@ -139,10 +139,10 @@
 			</build>
         </profile>
 		<profile>
-		    <id>release-common-components</id>
+		    <id>release-npm-library</id>
             <activation>
                 <property>
-                    <name>release-common-components</name>
+                    <name>release-npm-library</name>
                 </property>
             </activation>
 			<build>
@@ -155,7 +155,7 @@
 						<configuration>
 							<nodeVersion>v${version.nodejs}</nodeVersion>
 							<npmVersion>${version.npm}</npmVersion>
-							<workingDirectory>cib-common-components</workingDirectory>
+							<workingDirectory>${release-npm-library}</workingDirectory>
 							<outputdir>${project.build.directory}/webapp</outputdir>
 							<skip>${skip.frontend.build}</skip>
 						</configuration>
@@ -174,6 +174,18 @@
 								<phase>generate-resources</phase>
 								<configuration>
 									<arguments>ci --no-audit --no-fund</arguments>
+								</configuration>
+							</execution>
+							<execution>
+								<id>npm version</id>
+								<goals>
+									<goal>npm</goal>
+								</goals>
+								<phase>generate-resources</phase>
+								<configuration>
+									<arguments>version --allow-same-version
+										--no-git-tag-version ${project.version}</arguments>
+									<skip>${skip.npm.version.update}</skip>
 								</configuration>
 							</execution>
 							<execution>

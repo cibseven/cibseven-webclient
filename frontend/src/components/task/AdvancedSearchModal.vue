@@ -61,8 +61,8 @@
 
     </form>
     <template #modal-footer>
-      <b-button variant="primary" @click="handleSubmit" :title="$t('advanced-search.apply')">{{ $t('advanced-search.apply') }}</b-button>
-      <b-button variant="link" @click="$refs.advancedSearchModal.hide()" :title="$t('advanced-search.cancel')">{{ $t('advanced-search.cancel') }}</b-button>
+      <b-button @click="$refs.advancedSearchModal.hide()" variant="link">{{ $t('advanced-search.cancel') }}</b-button>
+      <b-button @click="handleSubmit" variant="primary">{{ $t('advanced-search.apply') }}</b-button>
     </template>
   </b-modal>
 </template>

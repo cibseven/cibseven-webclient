@@ -70,7 +70,7 @@
         <span>{{ $t('nav-bar.filters.create') }}</span><span class="mdi mdi-plus"></span>
       </button>
     </div>
-    <ConfirmDialog ref="confirmDeleteFilter" @ok="deleteFilter()">
+    <ConfirmDialog ref="confirmDeleteFilter" @ok="deleteFilter()" :ok-title="$t('confirm.delete')">
       <i18n-t keypath="confirm.deleteFilter" tag="span" scope="global">
         <template #name>
           <strong>{{ workingFilter.name }}</strong>
@@ -87,7 +87,7 @@ import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
 import { BWaitingBox } from 'cib-common-components'
 
 import { TaskPool } from "@/taskpool.js"
-import { TaskService, AdminService } from '@/services.js'
+import { TaskService } from '@/services.js'
 
 const MIN_TASKNUMBER_INTERVAL = 10000
 

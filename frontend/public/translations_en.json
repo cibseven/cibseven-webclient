@@ -1,4 +1,8 @@
 {
+	"commons": {
+		"edit": "Edit",
+		"save": "Save"
+	},
 	"login": {
 		"productName": "CIB seven",
 		"productSlogan": "Process Management Platform",
@@ -107,9 +111,21 @@
 		"onlyActive": "Only actives",
 		"exportInstances": "Export instances",
 		"days": "days",
-		"deleteProcessDefinition": "Delete process definition",
+		"deleteProcessDefinition": {
+			"tooltip": "Delete process definition",
+			"confirm": {
+				"title": "@:confirm.delete",
+				"line1": "Delete process definition?",
+				"line2": "Name: {name}Version: {version}"
+			}
+		},
+		"confirm": {
+			"suspend": "Do you really want to suspend the next process definition with all running process instances?",
+			"activate": "Do you really want to activate the next process definition with all running process instances?"
+		},
 		"true": "True",
-		"false": "False",
+		"false": "False",				
+		"jobDefinitions": "Job definitions",
 		"jobs": "Jobs"
 	},
 	"process-instance": {
@@ -120,8 +136,8 @@
 		"active": "Active",
 		"history": "History",
 		"download": "Download",
-		"edit": "Edit",
-		"save": "Save",
+		"edit": "@:commons.edit",
+		"save": "@:commons.save",
 		"upload": "Upload file",
 		"selectFile": "Select file",
 		"details": {
@@ -134,7 +150,13 @@
 			"deletedReason": "Deleted reason",
 			"currentTaskAssignee": "Current assignee",
 			"currentTaskCreated": "Current task created on"
-		},				
+		},
+		"confirm": {
+			"suspend": "Do you really want to suspend the next instance of the process?",
+			"activate": "Do you really want to activate the next instance of the process?",
+			"deleteInstance": "Do you really want to delete the next instance of the process?",
+			"deleteHistoryInstance": "Do you really want to delete the next historical instance of the process?"
+		},
 		"variables": {
 			"name": "Name",
 			"type": "Type",
@@ -142,7 +164,8 @@
 			"actions": "Actions",
 			"scope": "Scope",
 			"objectTypeName": "Object type name",
-			"serializationDataFormat": "Serialization data format"
+			"serializationDataFormat": "Serialization data format",
+			"confirmDelete": "Do you want to delete the variable?"
 		},
 		"incidents": {
 		    "message": "Message",
@@ -151,7 +174,41 @@
 		    "failedActivity": "Failed activity",
 		    "incidentType": "Incident type",
 		    "retryJob": "Increment number of retries of failed job",
-		    "actions": "Actions"
+		    "actions": "Actions",
+			"incrementNumberRetries": "Increment number of retries",
+			"retryMsg": "The number of retries of the corresponding failed job of the selected incident will be incremented.",
+			"dueDateMsg": "The point in time a job is executed is determined by the due date:",
+			"keepDueDate": "Keep due date",
+			"setDueDate": "Set due date",
+			"dueDate": "Due date",
+			"scheduleAt": "Schedule at",
+			"invalidDateError": "You must enter a valid date"
+		},
+		"jobDefinitions": {
+			"state": "State",
+			"activity": "Activity",
+			"type": "Type",
+			"configuration": "Configuration",
+			"overridingJobPriority": "Overriding job priority",
+			"actions": "Actions",
+			"active": "Active",
+			"suspendJob": "Suspend job definition",
+			"activateJob": "Activate job definition",
+  			"suspended": "Suspended",
+			"activateMsg": "This job definition will be activated, so that new jobs based on this job definition are initially active.",
+			"suspendMsg": "This job definition will be suspended, so that new jobs based on this job definition are initially suspended.",
+			"includeExisting": "Include existing job",
+			"execute": "Execute",
+			"immediately": "Inmediatamente",
+			"delayed": "Delayed",
+			"scheduleAt": "Schedule at",
+			"suspend": "Suspend",
+			"activate": "Activate",
+			"changeJobPriority": "Change overriding job priority",
+			"overridingMsg": "Change the overriding priority for jobs of the given job definition.",
+			"jobPriority": "Priority",
+			"clear": "Clear overriding job priority",
+			"set": "Set overriding job priority"
 		},
 		"usertasks": {
 		    "activity": "Activity",
@@ -172,12 +229,13 @@
 		    "users": "Users",
 		    "assignee": "Assignee",
 		    "add": "Add",
-		    "delete": "Delete",
+		    "delete": "@:confirm.delete",
 		    "actions": "Actions",
 		    "exists": "This entity is already assigned"
 		},
 		"noResults": "No results",
 		"noIncidents": "No incidents",
+		"noJobDefinitions": "No job definitions",
 		"stacktrace": "Stacktrace",	
 		"copyValueToClipboard": "Copy value to clipboard",
 		"confirmRetryJob": "Are you sure to increment the number of retries?",
@@ -203,7 +261,13 @@
 			"title": "Guide",
 			"completedTask": "Completed task",
 			"currentTask": "Current task",
-			"selectedTask": "@:task.selectedTask"
+			"selectedTask": "@:task.selectedTask",
+			"runingInstances": "Running activity instances",
+			"openIncidents": "Open incidents",
+			"suspendedJobDefinition": "Suspended job definition",
+			"activitiesHistory": "Executed activity instances",			
+			"openSubprocess": "Show called process definition",
+			"disabledSubprocess": "Called process definition will be resolved at runtime"
 		}
 	},
 	"task": {
@@ -307,7 +371,7 @@
 			"createLabel": "Create new group",
 			"groupCreatedMessage": "Group {0} created",
 			"actions": "Actions",
-			"confirmDelete": "Do you really want to delete the user with the following parameters?",
+			"confirmDelete": "Do you really want to delete the group with the following parameters?",
 			"information": "Information",
 			"editMessage": "Edit group ({0})",
 			"users": "Users",
@@ -398,6 +462,7 @@
 		"ok": "Ok",
 		"cancel": "Cancel",
 		"close": "Close",
+		"delete": "Delete",
 		"deleteFilter": "Do you really want to delete the selected filter {name}?",
 		"assignUser": "This task is already assigned to someone else, do you really want to change this assignment?",
 		"performOperation": "Are you sure you want to perform this operation?"
@@ -493,8 +558,8 @@
 			"selectedCriteria": "Selected criteria",
 			"deleteCriteria": "Delete criteria",
 			"no-filters": "No filters found",
-			"edit": "Edit",
-			"delete": "Delete",
+			"edit": "@:commons.edit",
+			"delete": "@:confirm.delete",
 			"pin": "Pin",
 			"includeAssigned": "Include assigned tasks",
 			"keys": {
@@ -632,7 +697,10 @@
 		"easyForm": "Easy Form",
 		"adminPanel": "Users Management",
 		"properties": "Properties",
-		"resources": "Resources"
+		"resources": "Resources",
+		"adminProcesses": "Processes",
+		"adminDecisions": "Decisions",
+		"adminHumanTasks": "Human Tasks"
 	},
 	"errors": {
 		"invalid": "Please enter some valid information",
@@ -873,5 +941,73 @@
 	"notification": {
 		"newTasks": "New tasks",
 		"newTasksTitle": "You got new tasks assigned on CIB flow"
+	},
+	"decision": {
+		"id": "ID",
+		"name": "Name",
+		"actions": "Actions",
+		"emptyProcessList": "Your decision list is currently empty.",
+		"emptyProcessListFiltered": "There is no decision for the applied filter.",
+		"decision": "Decision",
+		"deleteProcessDefinition": "Delete decision definition",
+		"refreshVersions": "Refresh history versions",
+		"loadVersions": "Load all history versions",
+		"days": "days",
+		"instances": "Instances",
+		"activateProcess": "Activate decision definition",
+		"downloadBpmn": "Download DMN file",
+		"showDeployment": "See deployment",
+		"showInstance": "View instance",
+		"evaluationTime": "Evaluation Time",
+		"callingProcess": "Calling Process/Case",
+		"callingInstanceId": "Calling Instance ID",
+		"activityId": "Activity ID",
+		"copySuccess": "Selected value copied",
+		"details": {
+			"titleProcessActions": "Actions on the decision definition",
+			"titleInstancesActions": "Actions on the decision",
+			"firstStart": "First start on",
+			"lastStart": "Last start on",
+			"totalInstances": "Total number of instances",
+			"unfinishedInstances": "Running instances",
+			"finishedInstances": "Total number of completed instances with no error",
+			"definitionVersion": "Definition version",
+			"versionTag": "Version Tag",
+			"definitionId": "Definition ID",
+			"definitionKey": "Definition Key",
+			"definitionName": "Definition Name",
+			"deploymentId": "Deployment ID",
+			"instancesRunning": "Instances Running",
+			"currentVersion": "Current version",
+			"allVersions": "All versions",
+			"versionInstances": "Instances of this version",
+			"historyVersions": "History versions",
+			"variable": "Decision variables",
+			"copyValue": "Copy value",
+			"historyTimeToLive": "History time to live"
+		},
+		"showManagement": "@:process.showManagement",
+		"type": "Type",
+		"value": "Value",
+		"inputs": "Inputs",
+		"outputs": "Outputs",
+		"decisionInstanceId": "Decision Instance ID"
+	},
+	"decision-instance": {
+		"edit": "@:commons.edit",
+		"save": "@:commons.save"
+	},
+	"human-tasks": {
+		"assignmentsByType": "Assignments by type",
+		"assignmentsByGroup": "Assignments by group",
+		"user": "assigned to a user",
+		"group": "assigned to 1 or more groups",
+		"unassigned": "unassigned",
+		"total": "Total",
+		"tasks": "Tasks",
+		"types": "Types",
+		"noGroups": "without group",
+		"groupName": "Group",
+		"assignmentsByGroupInfo": "A task may have multiple groups."
 	}
 }

@@ -1,8 +1,9 @@
 <template>
     <ProcessDefinitionView
-      v-if="!loading && computedVersionIndex !== ''"
+      v-if="!loading && computedVersionIndex"
       :processKey="processKey"
       :versionIndex="computedVersionIndex"
+      :instanceId="computedInstanceId"
     ></ProcessDefinitionView>
 </template>
 
@@ -14,8 +15,14 @@ export default {
   components: { ProcessDefinitionView },
   props: {
     processKey: { type: String, required: true },
-    versionIndex: { type: String, default: '' }
-   },
+    versionIndex: { type: String, default: '' },
+    instanceId: { type: String, default: '' }
+  },
+  watch: {
+    processKey: 'loadProcess',    
+    versionIndex: 'loadProcess',
+    instanceId: 'loadProcess'
+  },
   data: function() {
     return {
       process: null,
@@ -27,7 +34,7 @@ export default {
       if (this.loading) {
         return ''
       }
-      else if (this.versionIndex !== '') {
+      else if (this.versionIndex) {
         return this.versionIndex
       }
       else if (this.process !== null) {
@@ -36,23 +43,31 @@ export default {
       else {
         return ''
       }
+    },
+    computedInstanceId: function() {
+      // only valid with proper "versionIndex"
+      return this.versionIndex ? this.instanceId : '';
+    }
+  },
+  methods: {
+    loadProcess: function() {
+      if (this.$route.query.processId) {
+        this.loading = true
+        this.$store.dispatch('getProcessById', { id: this.$route.query.processId }).then(process => {
+          this.process = process
+          this.loading = false
+        })
+      } else if (!this.versionIndex) {
+        this.loading = true
+        this.$store.dispatch('getProcessByDefinitionKey', { key: this.processKey }).then(process => {
+          this.process = process
+          this.loading = false
+        })
+      }
     }
   },
   created: function() {
-    if (this.$route.query.processId) {
-      this.loading = true
-      this.$store.dispatch('getProcessById', { id: this.$route.query.processId }).then(process => {
-        this.process = process
-        this.loading = false
-      })
-    }
-    else if (this.versionIndex == '') {
-      this.loading = true
-      this.$store.dispatch('getProcessByDefinitionKey', { key: this.processKey }).then(process => {
-        this.process = process
-        this.loading = false
-      })
-    }
+    this.loadProcess()
   },
   beforeUpdate: function() {
     if (this.process != null && this.process.version !== this.computedVersionIndex) {

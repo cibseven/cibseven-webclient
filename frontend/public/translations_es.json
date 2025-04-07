@@ -1,4 +1,9 @@
+
 {
+	"commons": {
+		"edit": "Editar",
+		"save": "Guardar"
+	},
 	"login": {
 		"productName": "CIB seven",
 		"productSlogan": "Plataforma para la gestión de procesos",
@@ -107,9 +112,21 @@
 		"onlyActive": "Sólo activos",
 		"exportInstances": "Exportar instancias",
 		"days": "días",
-		"deleteProcessDefinition": "Eliminar definición de proceso",
+		"deleteProcessDefinition": {
+			"tooltip": "Eliminar definición de proceso",
+			"confirm": {
+				"title": "@:confirm.delete",
+				"line1": "¿Eliminar definición de proceso?",
+				"line2": "Nombre: {name}Versión: {version}"
+			}
+		},
+		"confirm": {
+			"suspend": "¿Realmente desea suspender la siguiente definición de proceso con todas las instancias de proceso en ejecución?",
+			"activate": "¿Realmente quieres activar la siguiente definición de proceso con todas las instancias de proceso en ejecución?"
+		},
 		"true": "Verdadero",
-		"false": "Falso",
+		"false": "Falso",		
+		"jobDefinitions": "Definiciones de trabajos",
 		"jobs": "Trabajos"
 	},
 	"process-instance": {
@@ -120,8 +137,8 @@
 		"active": "Activo",
 		"history": "Historial",
 		"download": "Descargar",
-		"edit": "Editar",
-		"save": "Guardar",
+		"edit": "@:commons.edit",
+		"save": "@:commons.save",
 		"upload": "Subir archivo",
 		"selectFile": "Seleccione archivo",
 		"details": {
@@ -134,7 +151,13 @@
 			"deletedReason": "Motivo eliminación",
 			"currentTaskAssignee": "Tarea asignada a",
 			"currentTaskCreated": "Tarea actual creada el"
-		},		
+		},
+		"confirm": {
+			"suspend": "¿Realmente quieres suspender la siguiente instancia del proceso?",
+			"activate": "¿Realmente quieres activar la siguiente instancia del proceso?",
+			"deleteInstance": "¿Realmente quieres borrar la siguiente instancia del proceso?",
+			"deleteHistoryInstance": "¿Realmente quieres borrar la siguiente instancia histórica del proceso?"
+		},
 		"variables": {
 			"name": "Nombre",
 			"type": "Tipo",
@@ -142,7 +165,8 @@
 			"actions": "Acciones",
 			"scope": "Ámbito",
 			"objectTypeName": "Nombre del tipo de objeto",
-			"serializationDataFormat": "Formato de datos de serialización"
+			"serializationDataFormat": "Formato de datos de serialización",
+			"confirmDelete": "¿Desea eliminar la variable?"
 		},
 		"incidents": {
 		    "message": "Mensaje",
@@ -151,8 +175,42 @@
 		    "failedActivity": "Actividad fallida",
 		    "incidentType": "Tipo de incidente",
 		    "retryJob": "Incrementar el número de reintentos de trabajo fallido",
-		    "actions": "Acciones"
-		},		
+		    "actions": "Acciones",
+			"incrementNumberRetries": "Incrementar número de reintentos",
+			"retryMsg": "Se incrementará el número de reintentos del trabajo fallido correspondiente al incidente seleccionado.",
+			"dueDateMsg": "El momento en que se ejecuta un trabajo está determinado por la fecha de vencimiento:",
+			"keepDueDate": "Mantener fecha de vencimiento",
+			"setDueDate": "Establecer fecha de vencimiento",
+			"dueDate": "Fecha de vencimiento",
+			"scheduleAt": "Programar para",
+			"invalidDateError": "Debe insertar una fecha válida"
+		},
+		"jobDefinitions": {
+			"state": "Estado",
+			"activity": "Actividad",
+			"type": "Tipo",
+			"configuration": "Configuración",
+			"overridingJobPriority": "Prioridad sobrescrita",
+			"actions": "Acciones",
+			"active": "Activo",
+			"suspended": "Suspendido",
+			"activateJob": "Activar definición de trabajo",
+			"suspendJob": "Suspender definición de trabajo",
+			"activateMsg": "Esta definición de trabajo será activada, por lo que los nuevos trabajos basados en esta definición estarán activos inicialmente.",
+			"suspendMsg": "Esta definición de trabajo será suspendida, por lo que los nuevos trabajos basados en esta definición estarán suspendidos inicialmente.",
+			"includeExisting": "Incluir trabajos existentes",
+			"execute": "Ejecutar",
+			"immediately": "Inmediatamente",
+			"delayed": "Programado",
+			"scheduleAt": "Programar para",
+			"suspend": "Suspender",
+			"activate": "Activar",
+			"changeJobPriority": "Cambiar la prioridad sobrescrita del trabajo",
+			"overridingMsg": "Cambiar la prioridad sobrescrita para los trabajos de la definición de trabajo indicada.",
+			"jobPriority": "Prioridad",
+			"clear": "Borrar prioridad sobrescrita del trabajo",
+			"set": "Establecer prioridad sobrescrita del trabajo"
+		},	
 		"usertasks": {
 			"activity": "Actividad",
 		    "assignee": "Asignado a",
@@ -178,6 +236,7 @@
 		},
 		"noResults": "Sin resultados",
 		"noIncidents": "Sin incidencias",
+		"noJobDefinitions": "Sin definiciones de trabajos",
 		"stacktrace": "Traza de pila",	
 		"copyValueToClipboard": "Copiar valor al portapapeles",
 		"confirmRetryJob": "¿Desea incrementar el número de reintentos?",
@@ -203,7 +262,13 @@
 			"title": "Leyenda",
 			"completedTask": "Tarea finalizada",
 			"currentTask": "Tarea actual",
-			"selectedTask": "@:task.selectedTask"
+			"selectedTask": "@:task.selectedTask",
+			"runingInstances": "Instancias de actividad en ejecución",
+			"openIncidents": "Incidentes abiertos",
+			"suspendedJobDefinition": "Definición de trabajo suspendida",
+			"activitiesHistory": "Instancias de actividad ejecutadas",
+			"openSubprocess": "Mostrar la definición del proceso llamado",
+  			"disabledSubprocess": "La definición del proceso se resolverá en tiempo de ejecución"
 		}
 	},
 	"task": {
@@ -307,7 +372,7 @@
 			"createLabel": "Crear nuevo grupo",
 			"groupCreatedMessage": "El grupo {0} ha sido creado",
 			"actions": "Acciones",
-			"confirmDelete": "¿Realmente quiere eliminar el usuario con los siguientes parámetros?",
+			"confirmDelete": "¿Realmente quiere eliminar el grupo con los siguientes parámetros?",
 			"information": "Información",
 			"editMessage": "Editar grupo ({0})",
 			"users": "Usuarios",
@@ -398,6 +463,7 @@
 		"ok": "Ok",
 		"cancel": "Cancelar",
 		"close": "Cerrar",
+		"delete": "Eliminar",
 		"deleteFilter": "¿Realmente quieres eliminar el filtro seleccionado {name}?",
 		"assignUser": "Esta tarea ya está asignada a otra persona. ¿Confirma que desea modificarla?",
 		"performOperation": "¿Está seguro de que quiere realizar esta operación?"
@@ -493,8 +559,8 @@
 			"selectedCriteria": "Criterios seleccionados",
 			"deleteCriteria": "Eliminar criterio",
 			"no-filters": "No se encontraron filtros",
-			"edit": "Editar",
-			"delete": "Eliminar",
+			"edit": "@:commons.edit",
+			"delete": "@:confirm.delete",
 			"pin": "Adjuntar",
 			"includeAssigned": "Incluir las tareas asignadas",
 			"keys": {
@@ -632,7 +698,10 @@
 		"easyForm": "Easy Form",
 		"adminPanel": "Gestión de Usuarios",
 		"properties": "Propiedades",		
-		"resources": "Recursos"
+		"resources": "Recursos",
+		"adminProcesses": "Procesos",
+		"adminDecisions": "Decisiones",
+		"adminHumanTasks": "Tareas de Usuario"
 	},
 	"errors": {
 		"invalid": "Por favor, introduce un valor válido",
@@ -873,5 +942,73 @@
 	"notification": {
 		"newTasks": "Nuevas tareas",
 		"newTasksTitle": "Tiene nuevas tareas asignadas en CIB flow"
+	},
+	"decision": {
+		"id": "ID",
+		"name": "Nombre",
+		"actions": "Acciones",
+		"emptyProcessList": "Tu lista de decisiones está actualmente vacía.",
+		"emptyProcessListFiltered": "No hay decisiones que coincidan con el filtro aplicado.",
+		"decision": "Decisión",
+		"deleteProcessDefinition": "Eliminar definición de decisión",
+		"refreshVersions": "Actualizar versiones históricas",
+		"loadVersions": "Cargar todas las versiones históricas",
+		"days": "días",
+		"instances": "Instancias",
+		"activateProcess": "Activar definición de decisión",
+		"downloadBpmn": "Descargar archivo DMN",
+		"showDeployment": "Ver despliegue",
+		"showInstance": "Ver instancia",
+		"evaluationTime": "Tiempo de evaluación",
+		"callingProcess": "Proceso/Caso de origen",
+		"callingInstanceId": "ID de la instancia de origen",
+		"activityId": "ID de actividad",
+		"copySuccess": "Valor seleccionado copiado",
+		"details": {
+			"titleProcessActions": "Acciones sobre la definición de decisión",
+			"titleInstancesActions": "Acciones sobre la decisión",
+			"firstStart": "Primera ejecución el",
+			"lastStart": "Última ejecución el",
+			"totalInstances": "Número total de instancias",
+			"unfinishedInstances": "Instancias en ejecución",
+			"finishedInstances": "Instancias completadas sin errores",
+			"definitionVersion": "Versión de la definición",
+			"versionTag": "Etiqueta de versión",
+			"definitionId": "ID de la definición",
+			"definitionKey": "Clave de la definición",
+			"definitionName": "Nombre de la definición",
+			"deploymentId": "ID del despliegue",
+			"instancesRunning": "Instancias en ejecución",
+			"currentVersion": "Versión actual",
+			"allVersions": "Todas las versiones",
+			"versionInstances": "Instancias de esta versión",
+			"historyVersions": "Versiones históricas",
+			"variable": "Variables de decisión",
+			"copyValue": "Copiar valor",
+			"historyTimeToLive": "Tiempo de vida del historial"
+		},
+		"showManagement": "@:process.showManagement",
+		"type": "Tipo",
+		"value": "Valor",
+		"inputs": "Entradas",
+		"outputs": "Salidas",
+		"decisionInstanceId": "ID de instancia de decisión"
+	},
+	"decision-instance": {
+		"edit": "@:commons.edit",
+		"save": "@:commons.save"
+	},
+	"human-tasks": {
+		"assignmentsByType": "Asignaciones por tipo",
+		"assignmentsByGroup": "Asignaciones por grupo",
+		"user": "asignadas a un usuario",
+		"group": "asignadas a uno o más grupos",
+		"unassigned": "no asignadas",
+		"total": "Total",
+		"tasks": "Tareas",
+		"types": "Tipos",
+		"noGroups": "sin grupo",
+		"groupName": "Grupo",
+		"assignmentsByGroupInfo": "Una tarea puede estar asignada a varios grupos."
 	}
 }
