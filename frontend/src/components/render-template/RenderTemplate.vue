@@ -116,9 +116,17 @@ export default {
 							  '/' + this.$root.user.authToken
           }
           else if(this.task.formKey) {
-            baseUrl = window.location.origin + '/webapp'
+            /*baseUrl = window.location.origin + '/webapp'
             formReference = 'forms/start-form.html'
-            formFrame.src = baseUrl + '/' + formReference 
+            formFrame.src = baseUrl + '/' + formReference */
+            formReference = 'custom-form'
+            formFrame.src = baseUrl +
+            '/' + formReference +
+							  '/' + this.currentLanguage() +
+							  '/' + this.task.id +
+							  '/' + this.$root.user.authToken
+           
+
           } else if (formReference === 'empty-task') {
             this.loader = false
             this.formFrame = false
