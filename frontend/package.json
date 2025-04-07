@@ -37,7 +37,7 @@
     "axios": "^1.7.9",
     "bootstrap": "^5.3.3",
     "bpmn-js": "^18.2.0",
-    "cib-common-components": "^1.0.14",
+    "cib-common-components": "^1.0.18",
     "dmn-js": "^17.2.0",
     "js-sha256": "^0.11.0",
     "moment": "^2.30.1",
