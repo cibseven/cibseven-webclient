@@ -29,6 +29,8 @@
             <b-dropdown-divider v-if="permissionsTaskList && (permissionsCockpit || permissionsUsers)"></b-dropdown-divider>
             <b-dropdown-item v-if="permissionsCockpit" to="/seven/auth/processes" :active="$route.path.includes('seven/auth/process')" :title="$t('start.admin')">{{ $t('start.admin') }}</b-dropdown-item>
             <b-dropdown-item v-if="permissionsCockpit" to="/seven/auth/deployments" :active="$route.path.includes('seven/auth/deployments')" :title="$t('deployment.title')">{{ $t('deployment.title') }}</b-dropdown-item>
+            <b-dropdown-item v-if="permissionsCockpit" to="/seven/auth/decisions" :active="$route.path.includes('seven/auth/decisions')" :title="$t('start.adminDecisions')">{{ $t('start.adminDecisions') }}</b-dropdown-item>
+            <b-dropdown-item v-if="permissionsCockpit" to="/seven/auth/human-tasks" :active="$route.path.includes('seven/auth/human-tasks')" :title="$t('start.adminHumanTasks')">{{ $t('start.adminHumanTasks') }}</b-dropdown-item>
             <b-dropdown-item v-if="permissionsUsers" to="/seven/auth/admin/users-management" :active="isUsersManagementActive" :title="$t('start.adminPanel')">{{ $t('start.adminPanel') }}</b-dropdown-item>
             <b-dropdown-item v-if="permissionsCockpit" :href="$root.config.cockpitUrl" :title="$t('start.cockpit')" target="_blank">{{ $t('start.cockpit') }}</b-dropdown-item>
           </b-nav-item-dropdown>
@@ -110,24 +112,10 @@ export default {
     }
   },
   watch: {
+    // when the title of the view inside top toolbar is changed
+    // => let's change title of the whole web-page in browser
     pageTitle: function(title) {
-      switch (this.$route.name) {
-        case 'adminUsers':
-        case 'adminGroups':
-        case 'authorizations':
-          updateAppTitle(
-            this.$root.config.productNamePageTitle,
-            this.$t('start.adminPanel'),
-            title
-          )
-          break
-        default:
-          updateAppTitle(
-            this.$root.config.productNamePageTitle,
-            title
-          )
-          break
-      }
+      this.refreshAppTitle(title)
     }
   },
   computed: {
@@ -150,6 +138,7 @@ export default {
         return comp
       })
     },
+    // when route is changed => let's change title of the view inside top toolbar
     pageTitle: function() {
       switch (this.$route.name) {
         case 'login': return this.$t('login.login')
@@ -158,10 +147,16 @@ export default {
         case 'start-process': return this.$t('start.startProcesses')
         case 'processManagement':
         case 'process': return this.$t('start.admin')
+        case 'decision-version':
+        case 'decision-instance':
+        case 'decision-list': return this.$t('start.adminDecisions')
+        case 'human-tasks': return this.$t('start.adminHumanTasks')
         case 'usersManagement': return this.$t('start.adminPanel')
+        case 'adminUser':
         case 'adminUsers':
         case 'createUser':
           return this.$t('admin.users.title')
+        case 'adminGroup':
         case 'adminGroups':
         case 'createGroup':
           return this.$t('admin.groups.title')
@@ -191,10 +186,7 @@ export default {
       var isNotifiedUser = localStorage.getItem('ienotify')
       if (!isNotifiedUser) this.$refs.ieNotification.show() //must notify the user
     }
-    updateAppTitle(
-        this.$root.config.productNamePageTitle,
-        this.pageTitle
-    )
+    this.refreshAppTitle(this.pageTitle)
   },
   methods: {
     logout: function() {
@@ -211,6 +203,31 @@ export default {
       this.$eventBus.emit('openStartProcess')
     },
     doNotShowIeNotification: function() { if (this.rememberNotShow) localStorage.setItem('ienotify', true) },
+    // change title of the whole web-page in browser
+    refreshAppTitle: function (title) {
+      switch (this.$route.name) {
+        case 'adminUser':
+        case 'adminUsers':
+        case 'adminGroup':
+        case 'adminGroups':
+        case 'authorizations':
+        case 'authorizationType':
+          // "CIB seven | Users Management | <view>"
+          updateAppTitle(
+            this.$root.config.productNamePageTitle,
+            this.$t('start.adminPanel'),
+            title
+          )
+          break
+        default:
+          // "CIB seven | <view>"
+          updateAppTitle(
+            this.$root.config.productNamePageTitle,
+            title
+          )
+          break
+      }
+    }
   }
 }
 </script>
