@@ -28,6 +28,8 @@ import TaskView from '@/components/task/TaskView.vue'
 import LoginView from '@/components/login/LoginView.vue'
 import { BWaitingBox } from 'cib-common-components'
 import DeployedForm from '@/components/forms/DeployedForm.vue'
+import CustomForm from '@/components/forms/CustomForm.vue'
+
 import StartDeployedForm from '@/components/forms/StartDeployedForm.vue'
 
 const router = createRouter({
@@ -194,6 +196,12 @@ const router = createRouter({
       beforeEnter: combineGuards(authGuard(false), permissionsGuard('tasklist')),
       props: true,
       component: DeployedForm
+    },
+    {
+      path: '/custom-form/:locale/:processDefinitionId/:token?/:theme?/:translation?',
+      beforeEnter: combineGuards(authGuard(false), permissionsGuard('tasklist')),
+      props: true,
+      component: CustomForm
     },
     {
       path: '/start-deployed-form/:locale/:processDefinitionId/:token?/:theme?/:translation?',
