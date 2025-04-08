@@ -470,8 +470,7 @@
 		"close": "Cerrar",
 		"delete": "Eliminar",
 		"deleteFilter": "¿Realmente quieres eliminar el filtro seleccionado {name}?",
-		"assignUser": "Esta tarea ya está asignada a otra persona. ¿Confirma que desea modificarla?",
-		"performOperation": "¿Está seguro de que quiere realizar esta operación?"
+		"assignUser": "Esta tarea ya está asignada a otra persona. ¿Confirma que desea modificarla?"
 	},
 	"alert": {
 		"successSaveTask": "La tarea se ha guardado correctamente. Por favor no olvide cerrarla para terminar su trabajo.",

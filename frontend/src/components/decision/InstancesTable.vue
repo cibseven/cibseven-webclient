@@ -39,9 +39,6 @@
       </div>
     </template>
   </FlowTable>
-  <ConfirmDialog ref="confirm" @ok="$event.ok($event.instance)">
-  {{ $t('confirm.performOperation') }}
-  </ConfirmDialog>
   <SuccessAlert top="0" style="z-index: 1031" ref="success"> {{ $t('alert.successOperation') }}</SuccessAlert>
   <SuccessAlert ref="messageCopy"> {{ $t('decision.copySuccess') }} </SuccessAlert>
 </template>
@@ -51,12 +48,11 @@ import { permissionsMixin } from '@/permissions.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
-import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
 import { mapMutations, mapGetters } from 'vuex'
 
 export default {
   name: 'InstancesTable',
-  components: { FlowTable, SuccessAlert, ConfirmDialog },
+  components: { FlowTable, SuccessAlert },
   mixins: [copyToClipboardMixin, permissionsMixin],
   props: { instances: Array, sortDesc: Boolean, sortByDefaultKey: String },
   data() {
@@ -79,7 +75,6 @@ export default {
         }
       })
     },
-    showConfirm(type) { this.$refs.confirm.show(type) },
     getIconState(state) {
       switch (state) {
         case 'ACTIVE': return 'mdi-chevron-triple-right text-success'

@@ -21,7 +21,7 @@ public interface IDecisionProvider {
 	public Object updateHistoryTTLByKeyAndTenant(String key, String tenant);
 	public Object getXmlByKey(String key);
 	public Object getXmlByKeyAndTenant(String key, String tenant);
-	public Decision getDecisionDefinitionById(String id);
+	public Decision getDecisionDefinitionById(String id, Optional<Boolean> extraInfo);
 	public Object getDiagramById(String id);
 	public Object evaluateDecisionDefinitionById(String id);
 	public Object updateHistoryTTLById(String id);

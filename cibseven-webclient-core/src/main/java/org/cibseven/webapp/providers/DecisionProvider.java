@@ -90,9 +90,14 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 	}
 
 	@Override
-	public Decision getDecisionDefinitionById(String id) {
+	public Decision getDecisionDefinitionById(String id, Optional<Boolean> extraInfo) {
 		String url = camundaUrl + "/engine-rest/decision-definition/" + id;
-		return ((ResponseEntity<Decision>) doGet(url, Decision.class, null, false)).getBody();
+		Decision decision = ((ResponseEntity<Decision>) doGet(url, Decision.class, null, false)).getBody();
+		if (extraInfo.isPresent() && extraInfo.get()) {
+			String urlCount = camundaUrl + "/engine-rest/history/decision-instance/count?decisionDefinitionId=" + decision.getId();
+			decision.setAllInstances(((ResponseEntity<JsonNode>) doGet(urlCount, JsonNode.class, null, false)).getBody().get("count").asLong());
+		}
+		return decision;
 	}
 
 	@Override
@@ -126,12 +131,8 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 		
 		if (!lazyLoad.isPresent() || (lazyLoad.isPresent() && !lazyLoad.get())) {
 			for(Decision decision : decisions) {
-				String urlInstances = camundaUrl + "/engine-rest/history/decision-instance/count?decisionDefinitionId=" + decision.getId();
-				decision.setAllInstances(((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, null, false)).getBody().get("count").asLong());
-				urlInstances = camundaUrl + "/engine-rest/history/decision-instance/count?unfinished=true&decisionDefinitionId=" + decision.getId();
-				decision.setRunningInstances(((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, null, false)).getBody().get("count").asLong());
-				urlInstances = camundaUrl + "/engine-rest/history/decision-instance/count?completed=true&decisionDefinitionId=" + decision.getId();
-				decision.setCompletedInstances(((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, null, false)).getBody().get("count").asLong());
+				String urlCount = camundaUrl + "/engine-rest/history/decision-instance/count?decisionDefinitionId=" + decision.getId();
+				decision.setAllInstances(((ResponseEntity<JsonNode>) doGet(urlCount, JsonNode.class, null, false)).getBody().get("count").asLong());
 			}
 		}
 		return decisions;

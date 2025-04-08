@@ -926,7 +926,7 @@ public interface BpmProvider {
 	Object updateHistoryTTLByKeyAndTenant(String key, String tenant);
 	Object getXmlByKey(String key);
 	Object getXmlByKeyAndTenant(String key, String tenant);
-	Decision getDecisionDefinitionById(String id);
+	Decision getDecisionDefinitionById(String id, Optional<Boolean> extraInfo);
 	Object getDiagramById(String id);
 	Object evaluateDecisionDefinitionById(String id);
 	Object updateHistoryTTLById(String id);
