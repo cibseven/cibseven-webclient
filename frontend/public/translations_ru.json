@@ -267,7 +267,7 @@
 			"completedTask": "Завершённая задача",
 			"currentTask": "Текущая задача",			
 			"selectedTask": "@:task.selectedTask",
-			"runingInstances": "Выполняющиеся экземпляры заданий",
+			"runningInstances": "Выполняющиеся экземпляры заданий",
 			"openIncidents": "Открытые инциденты",
 			"suspendedJobDefinition": "Приостановленное определение задания",
 			"activitiesHistory": "Выполненные экземпляры заданий",

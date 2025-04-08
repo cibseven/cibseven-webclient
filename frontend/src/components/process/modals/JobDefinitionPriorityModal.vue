@@ -40,7 +40,8 @@ export default {
       includeExistingJob: false,
       priority: null,
       overridingOption: 'set',
-      overridingOptions: ['clear','set']
+      overridingOptions: ['clear','set'],
+      priorityError: false
     }
   },
   computed: {
@@ -53,14 +54,13 @@ export default {
     canOverride: function() {
       if (this.overridingOption === 'clear') return true
       if (this.overridingOption === 'set') {
-        return Number.isInteger(this.priority)
+        if (!this.priority) {
+          return false
+        }
+        const parsed = Number(this.priority)
+        return !isNaN(parsed) && Number.isInteger(parsed)
       }
       return false
-    },
-    priorityError: function() {
-      if (this.overridingOption !== 'set') return false
-      const parsed = Number(this.priority)
-      return this.priority !== null && !Number.isInteger(parsed)
     }
   },
   methods: {
@@ -69,13 +69,16 @@ export default {
       this.overridingOption = 'set'
       this.priority = selectedJobDefinition.overridingJobPriority
       this.includeExistingJob = false
+      this.priorityError = false
       this.$refs.overrideJobPriorityModal.show()
     },
     overrideJobPriority: function() {
       let data = {}
+      this.priorityError = false
       if (this.overridingOption !== 'clear') {
         if (!this.canOverride) {
-          return null
+          this.priorityError = true
+          return
         }
         data = {
           includeJobs: this.includeExistingJob,

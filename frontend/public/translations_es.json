@@ -268,7 +268,7 @@
 			"completedTask": "Tarea finalizada",
 			"currentTask": "Tarea actual",
 			"selectedTask": "@:task.selectedTask",
-			"runingInstances": "Instancias de actividad en ejecución",
+			"runningInstances": "Instancias de actividad en ejecución",
 			"openIncidents": "Incidentes abiertos",
 			"suspendedJobDefinition": "Definición de trabajo suspendida",
 			"activitiesHistory": "Instancias de actividad ejecutadas",
