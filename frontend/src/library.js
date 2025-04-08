@@ -1,6 +1,17 @@
 // Import the CSS to ensure it is bundled with the package
 import './assets/main.css';
 
+import { axios } from '@/globals.js'
+import appConfig from '@/appConfig.js'
+import { permissionsMixin } from '@/permissions.js'
+import processesVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
+import processesMixin from '@/components/process/mixins/processesMixin.js'
+import resizerMixin from '@/components/process/mixins/resizerMixin.js'
+import store from '@/store'
+import usersMixin from '@/mixins/usersMixin.js'
+import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
+import { debounce } from '@/utils/debounce.js'
+import { HoverStyle } from '@/components/common-components/directives.js'
 import CibSeven from '@/components/CibSeven.vue'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import ErrorDialog from '@/components/common-components/ErrorDialog.vue'
@@ -43,7 +54,7 @@ import ProcessView from '@/components/process/ProcessView.vue'
 import AddVariableModal from '@/components/process/modals/AddVariableModal.vue'
 import DeleteVariableModal from '@/components/process/modals/DeleteVariableModal.vue'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
-import InstancesTable from '@/components/process/InstancesTable.vue'
+import InstancesTable from '@/components/process/tables/InstancesTable.vue'
 import ProcessInstancesView from '@/components/process/ProcessInstancesView.vue'
 import ProcessAdvanced from '@/components/process/ProcessAdvanced.vue'
 import ProcessCard from '@/components/process/ProcessCard.vue'
@@ -70,6 +81,11 @@ import TasksContent from '@/components/task/TasksContent.vue'
 import TasksNavBar from '@/components/task/TasksNavBar.vue'
 import TasksView from '@/components/task/TasksView.vue'
 import HighlightedText from '@/components/common-components/HighlightedText.vue'
+import TenantsView from '@/components/tenants/TenantsView.vue'
+import BatchesView from '@/components/batches/BatchesView.vue'
+import SystemView from '@/components/system/SystemView.vue'
+import { TaskService, HistoryService, ProcessService } from '@/services.js';
+
 
 const registerComponents = function(app) {
   app.component('cib-seven', CibSeven)
@@ -141,11 +157,28 @@ const registerComponents = function(app) {
   app.component('tasks-nav-bar', TasksNavBar)
   app.component('tasks-view', TasksView)
   app.component('highlighted-text', HighlightedText)
+  app.component('tenants-view', TenantsView)
+  app.component('batches-view', BatchesView)
+  app.component('system-view', SystemView)
 }
 
 export {
   registerComponents,
 
+  TenantsView,
+  BatchesView,
+  SystemView,
+  axios,
+  appConfig,
+  permissionsMixin,
+  store,
+  usersMixin,
+  processesVariablesMixin,
+  processesMixin,
+  resizerMixin,
+  copyToClipboardMixin,
+  debounce,
+  HoverStyle,
   CibSeven,
   FlowTable,
   ErrorDialog,
@@ -213,5 +246,8 @@ export {
   TasksContent,
   TasksNavBar,
   TasksView,
-  HighlightedText
+  HighlightedText,
+  TaskService,
+  HistoryService,
+  ProcessService
 }

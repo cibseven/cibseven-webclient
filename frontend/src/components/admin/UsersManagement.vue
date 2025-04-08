@@ -1,7 +1,7 @@
 <template>
   <div :style="{ 'height': 'calc(100% - 55px)' }" class="d-flex flex-column">
     <div class="h-100 container-fluid overflow-auto bg-light">
-      <div class="row justify-content-center my-5">
+      <div class="row justify-content-center">
         <div v-if="adminManagementPermissions($root.config.permissions.usersManagement, 'user')"
           class="col-4 mt-5 mx-3 bg-white" style="max-width:330px; height:250px">
           <div class="row border rounded shadow-sm h-100">
