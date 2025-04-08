@@ -41,10 +41,12 @@
 <script>
 export default {
   name: 'SupportModal',
-  data: function() {
-    return {
-      phone: this.isTextProperty('phone-number') ? this.getTextFromProperty('phone-number') : this.$t('infoAndHelp.flowModalSupport.phoneNumber'),
-      email: this.isTextProperty('email') ? this.getTextFromProperty('email') : this.$t('infoAndHelp.flowModalSupport.email'),
+  computed: {
+    phone: function() {
+      return this.isTextProperty('phone-number') ? this.getTextFromProperty('phone-number') : this.$t('infoAndHelp.flowModalSupport.phoneNumber')
+    },
+    email: function() {
+      return this.isTextProperty('email') ? this.getTextFromProperty('email') : this.$t('infoAndHelp.flowModalSupport.email')
     }
   },
   methods: {
