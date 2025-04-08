@@ -28,9 +28,6 @@
     "lint": "eslint . --fix",
     "format": "prettier --write src/"
   },
-  "comment-fields-with-todos-to-check": {
-    "@bpmn-io/form-js": "1.8.7"
-  },
   "dependencies": {
     "@bpmn-io/form-js": "^1.15.0",
     "@mdi/font": "^7.4.47",
