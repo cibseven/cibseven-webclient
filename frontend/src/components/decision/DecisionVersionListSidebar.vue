@@ -23,7 +23,6 @@
             </div>
           </div>
           <div class="mb-1">
-            <div class="mb-1">{{ $t('decision.details.unfinishedInstances') + ': ' + version.runningInstances }}</div>
             <div>{{ $t('decision.details.totalInstances') + ': ' + version.allInstances }}</div>
           </div>
           <b-popover :target="version.id" triggers="hover" placement="right" boundary="viewport" max-width="350px">
@@ -50,8 +49,7 @@ export default {
   },
   data() {
     return {
-      loading: false,
-      lazyLoadHistory: this.$root.config.lazyLoadHistory
+      loading: false
     }
   },
   computed: {

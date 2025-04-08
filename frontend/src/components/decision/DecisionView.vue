@@ -18,6 +18,8 @@
 </template>
 
 <script>
+
+import { DecisionService } from '@/services.js'
 import DecisionVersionListSidebar from '@/components/decision/DecisionVersionListSidebar.vue'
 import SidebarsFlow from '@/components/common-components/SidebarsFlow.vue'
 import { mapGetters, mapActions, mapMutations } from 'vuex'
@@ -39,16 +41,19 @@ export default {
   },
   watch: {
     '$route.params.versionIndex': {
-      immediate: true,
       handler(versionIndex) {
         if (versionIndex && this.$store.state.decision.list.length > 0) {
-          this.setSelectedDecisionVersion({ key: this.decisionKey, version: this.versionIndex})
+          const version = this.getDecisionVersion({ key: this.decisionKey, version: this.versionIndex })
+          DecisionService.getDecisionDefinitionById(version.id, true).then(result => {
+            if (result) this.updateVersion({ key: this.decisionKey, newVersion: result })
+          })
+          this.setSelectedDecisionVersion({ key: this.decisionKey, version: this.versionIndex })
         }
       }
     }
   },
   computed: {
-    ...mapGetters(['getSelectedDecisionVersion', 'getDecisionVersions']),
+    ...mapGetters(['getSelectedDecisionVersion', 'getDecisionVersions', 'getDecisionVersion']),
     shortendLeftCaption() {
       return this.$t('decision.details.historyVersions')
     },
@@ -68,14 +73,20 @@ export default {
   },
   methods: {
     ...mapActions(['getDecisionVersionsByKey']),
-    ...mapMutations(['setSelectedDecisionVersion']),
+    ...mapMutations(['setSelectedDecisionVersion', 'updateVersion']),
     loadDecisionVersionsByKey(decisionKey, versionIndex) {
-      this.getDecisionVersionsByKey({ key: decisionKey }).then(decisions => {
+      this.getDecisionVersionsByKey({ key: decisionKey, lazyLoad: this.$root.config.lazyLoadHistory })
+      .then(versions => {
+        let version = versions[0]
         if (!versionIndex) {
-          versionIndex = decisions[0].version
-          this.setSelectedDecisionVersion({ key: decisionKey, version: versionIndex })
-          this.$router.push('/seven/auth/decision/' + decisionKey + '/' + versionIndex)
+          versionIndex = version.version
+          this.$router.push(`/seven/auth/decision/${decisionKey}/${versionIndex}`)
+        } else {
+          version = this.getDecisionVersion({ key: decisionKey, version: versionIndex })
         }
+        DecisionService.getDecisionDefinitionById(version.id, true).then(result => {
+          if (result) this.updateVersion({ key: decisionKey, newVersion: result })
+        })
         this.setSelectedDecisionVersion({ key: decisionKey, version: versionIndex })
       })
     }

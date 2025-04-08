@@ -52,18 +52,8 @@
   </div>
   <hr class="my-2">
   <div class="row align-items-center">
-    <span class="text-secondary font-weight-bold col-8 pe-0">{{ $t('decision.details.unfinishedInstances') }}</span>
-    <span class="col-4 text-end">{{ version.runningInstances }}</span>
-  </div>
-  <hr class="my-2">
-  <div class="row align-items-center">
     <span class="text-secondary font-weight-bold col-8 pe-0">{{ $t('decision.details.totalInstances') }}</span>
     <span class="col-4 text-end">{{ version.allInstances }}</span>
-  </div>
-  <hr class="my-2">
-  <div class="row align-items-center">
-    <span class="text-secondary font-weight-bold col-8 pe-0">{{ $t('decision.details.finishedInstances') }}</span>
-    <span class="col-4 text-end">{{ version.completedInstances }}</span>
   </div>
 
   <b-modal ref="historyTimeToLive" :title="$t('decision.details.historyTimeToLive')">

@@ -465,8 +465,7 @@
 		"close": "Schließen",
 		"delete": "Löschen",
 		"deleteFilter": "Möchten Sie den ausgewählten Filter {name} wirklich löschen?",
-		"assignUser": "Diese Aufgabe ist bereits einer anderen Person zugewiesen. Möchten Sie diese Zuordnung wirklich ändern?",
-		"performOperation": "Sind Sie sicher, dass Sie diese Operation ausführen wollen?"
+		"assignUser": "Diese Aufgabe ist bereits einer anderen Person zugewiesen. Möchten Sie diese Zuordnung wirklich ändern?"
 	},
 	"alert": {
 		"successSaveTask": "Die Aufgabe wurde erfolgreich gespeichert. Bitte denken Sie daran, dass Sie die Aufgabe abschließen müssen, um Ihre Arbeit zu beenden.",

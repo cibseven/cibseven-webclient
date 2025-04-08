@@ -105,8 +105,8 @@ public class DecisionService extends BaseService implements InitializingBean {
 	}
 
 	@GetMapping("/id/{id}")
-	public Decision getDecisionDefinitionById(@PathVariable String id) {
-		return bpmProvider.getDecisionDefinitionById(id);
+	public Decision getDecisionDefinitionById(@PathVariable String id, @RequestParam Optional<Boolean> extraInfo) {
+		return bpmProvider.getDecisionDefinitionById(id, extraInfo);
 	}
 
 	@GetMapping("/id/{id}/diagram")

@@ -54,7 +54,7 @@
           </div>
         </div>
         <div ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 60px; left: 0; bottom: 0" @scroll="handleScrollProcesses">
-          <InstancesTable ref="instancesTable" v-if="!loading && instances && !sorting"
+          <InstancesTable ref="instancesTable" v-if="!loading && instances.length > 0 && !sorting"
             :instances="instances"
             :sortByDefaultKey="sortByDefaultKey"
             :sortDesc="sortDesc"
@@ -62,6 +62,9 @@
           ></InstancesTable>
           <div v-else-if="loading" class="py-3 text-center w-100">
             <BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}
+          </div>
+          <div v-else>
+            <p class="text-center p-4">{{ $t('process-instance.noResults') }}</p>
           </div>
         </div>
       </div>
