@@ -38,7 +38,7 @@ import NavigatedViewer from 'bpmn-js/lib/NavigatedViewer'
 import { ProcessService } from '@/services.js'
 import { BWaitingBox } from 'cib-common-components'
 
-const interactionTypes = ['bpmn:UserTask', 'bpmn:CallActivity']
+const interactionTypes = ['bpmn:UserTask', 'bpmn:CallActivity', 'bpmn:ScriptTask']
 const drawedTypes = ['userTask', 'serviceTask', 'scriptTask', 'callActivity', 'exclusiveGateway', 'endEvent', 'startEvent']
 
 function getActivitiesToMark(treeObj) {
@@ -146,8 +146,8 @@ export default {
         } else {
           if (this.currentHighlight) {
             this.currentHighlight.shape.classList.remove('bpmn-highlight')
-            this.$emit('activity-id', null)
             this.currentHighlight = null
+            this.$emit('activity-id', null)
           }
           this.$emit('task-selected', null)
         }
@@ -166,6 +166,18 @@ export default {
           }, { once: true })
         }
       })
+      const overlaysContainers = document.querySelectorAll('.djs-overlays')
+      if (overlaysContainers.length) {
+        overlaysContainers.forEach((container) => {
+          container.addEventListener('click', (event) => {
+            const bubble = event.target.closest('.bubble')
+            if (bubble && bubble.dataset.activityId) {
+              this.highlightElement(bubble.dataset.activityId)
+              this.$emit('activity-id', bubble.dataset.activityId)
+            }
+          })
+        })
+      }
     },
     highlightElement: function(item) {
       let activityId = ''
@@ -215,10 +227,10 @@ export default {
           this.statistics.forEach(item => {
             const shape = elementRegistry.get(item.id)
             if (shape) {
-              const htmlTemplate = this.getBadgeOverlayHtml(item.instances, 'bg-info', 'runingInstances')
+              const htmlTemplate = this.getBadgeOverlayHtml(item.instances, 'bg-info', 'runingInstances', item.id)
               this.setHtmlOnDiagram(overlays, item.id, htmlTemplate, { bottom: 15, left: -7 })
               if (item.failedJobs > 0) {
-                const failedHtml = this.getBadgeOverlayHtml(item.failedJobs, 'bg-danger', 'openIncidents')
+                const failedHtml = this.getBadgeOverlayHtml(item.failedJobs, 'bg-danger', 'openIncidents', item.id)
                 this.setHtmlOnDiagram(overlays, item.id, failedHtml, { top: -7, right: 15 })
               }
               shape.nInstances = item.instances
@@ -291,15 +303,19 @@ export default {
       Object.keys(filledActivities).forEach(key => {
         const shape = elementRegistry.get(key)
         if (shape) {
-          this.setHtmlOnDiagram(overlays, key, this.getBadgeOverlayHtml(filledActivities[key], 'bg-gray', 'activitiesHistory'),
+          this.setHtmlOnDiagram(overlays, key, this.getBadgeOverlayHtml(filledActivities[key], 'bg-gray', 'activitiesHistory', null),
             { bottom: 15, right: 13 })
         }
       })
     },
-    getBadgeOverlayHtml: function(number, classes, type) {
+    getBadgeOverlayHtml: function(number, classes, type, activityId) {
       var title = this.$t('bpmn-viewer.legend.' + type)
+      var styleStr = "width: max-content;"
+      if (activityId) {
+        styleStr += " cursor: pointer;"
+      }
       var overlayHtml = `
-        <span class="position-absolute" style="width: max-content" title="${title}">
+        <span data-activity-id="${activityId || ''}" class="bubble position-absolute" style="${styleStr}" title="${title}">
           <span class="badge rounded-pill border border-dark px-2 py-1 me-1 ${classes}">${number}</span>
         </span>
       `

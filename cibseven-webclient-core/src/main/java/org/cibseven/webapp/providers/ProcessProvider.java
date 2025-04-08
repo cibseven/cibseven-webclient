@@ -4,10 +4,13 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.cibseven.webapp.Data;
 import org.cibseven.webapp.auth.CIBUser;
@@ -18,6 +21,7 @@ import org.cibseven.webapp.rest.model.Process;
 import org.cibseven.webapp.rest.model.ProcessDiagram;
 import org.cibseven.webapp.rest.model.ProcessInstance;
 import org.cibseven.webapp.rest.model.HistoryProcessInstance;
+import org.cibseven.webapp.rest.model.Incident;
 import org.cibseven.webapp.rest.model.ProcessStart;
 import org.cibseven.webapp.rest.model.ProcessStatistics;
 import org.cibseven.webapp.rest.model.StartForm;
@@ -257,9 +261,40 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		}
 		//findIncident
 		Collection<HistoryProcessInstance> processes = Arrays.asList(((ResponseEntity<HistoryProcessInstance[]>) doPost(url, body, HistoryProcessInstance[].class, user)).getBody());
-		processes.forEach(p -> {
-			p.setIncidents(incidentProvider.findIncidentByInstanceId(p.getId(), user));
-		});
+		
+		if ((processes == null || processes.isEmpty()) && activityId.isPresent() && !activityId.get().isEmpty()) {
+			Collection<Incident> incidents = incidentProvider.fetchIncidentsByInstanceAndActivityId(id, activityId.get(), user);
+		    if (incidents != null && !incidents.isEmpty()) {
+		        Map<String, List<Incident>> incidentsByProcessInstance = incidents.stream()
+		            .collect(Collectors.groupingBy(Incident::getProcessInstanceId));
+		        
+		        Set<String> processInstanceIds = incidentsByProcessInstance.keySet();
+		        
+		        Map<String, Object> dataIdIn = new HashMap<>();
+		        dataIdIn.put("processInstanceIdIn", processInstanceIds);
+		        dataIdIn.put("processDefinitionId", id);
+		        dataIdIn.put("firstResult", firstResult);
+		        dataIdIn.put("maxResults", maxResults);
+		        dataIdIn.put("sorting", sorting);
+		        
+		        String bodyIdIn = "";
+		        try {
+		        	bodyIdIn = objectMapper.writeValueAsString(dataIdIn);
+		        } catch (JsonProcessingException e) {
+		            throw new SystemException(e);
+		        }
+		        
+		        processes = Arrays.asList(
+		            ((ResponseEntity<HistoryProcessInstance[]>) doPost(url, bodyIdIn, HistoryProcessInstance[].class, user)).getBody()
+		        );
+		        processes.forEach(p -> p.setIncidents(incidentsByProcessInstance.getOrDefault(p.getId(), Collections.emptyList())));
+		    }
+		} else {		
+			processes.forEach(p -> {
+				p.setIncidents(incidentProvider.findIncidentByInstanceId(p.getId(), user));
+			});
+		}
+			
 		return processes;
 	}
 	

@@ -42,4 +42,5 @@ public interface IIncidentProvider {
 			CIBUser user);
 	public List<Incident> findIncidentByInstanceId(String processInstanceId, CIBUser user);
 	public Collection<Incident> fetchIncidents(String processDefinitionKey, CIBUser user);	
+	public Collection<Incident> fetchIncidentsByInstanceAndActivityId(String processDefinitionKey, String activityId, CIBUser user);	
 }

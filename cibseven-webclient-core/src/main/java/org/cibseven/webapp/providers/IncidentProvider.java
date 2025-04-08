@@ -92,6 +92,12 @@ public class IncidentProvider extends SevenProviderBase implements IIncidentProv
 	}	
 	
 	@Override
+	public Collection<Incident> fetchIncidentsByInstanceAndActivityId(String processDefinitionId, String activityId, CIBUser user) {
+	    String url = camundaUrl + "/engine-rest/incident?processDefinitionId=" + processDefinitionId + "&activityId=" + activityId;
+	    return Arrays.asList(((ResponseEntity<Incident[]>) doGet(url, Incident[].class, user, false)).getBody());
+	}	
+	
+	@Override
 	protected HttpHeaders addAuthHeader(HttpHeaders headers, CIBUser user) {
 		if (user != null) headers.add("Authorization", user.getAuthToken());
 		return headers;
