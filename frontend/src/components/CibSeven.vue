@@ -29,7 +29,7 @@
 
             <b-dropdown-divider v-if="permissionsTaskList && permissionsCockpit"></b-dropdown-divider>
             <b-dropdown-group v-if="permissionsCockpit" header="{{ $t('start.groupOperations') }}">
-              <b-dropdown-item to="/seven/auth/processes" :active="$route.path.includes('seven/auth/process')" :title="$t('process.title')">{{ $t('process.title') }}</b-dropdown-item>
+              <b-dropdown-item to="/seven/auth/processes" :active="$route.path.includes('seven/auth/process')" :title="$t('start.admin')">{{ $t('process.title') }}</b-dropdown-item>
               <b-dropdown-item to="/seven/auth/decisions" :active="$route.path.includes('seven/auth/decisions')" :title="$t('start.adminDecisions')">{{ $t('start.adminDecisions') }}</b-dropdown-item>
               <b-dropdown-item to="/seven/auth/human-tasks" :active="$route.path.includes('seven/auth/human-tasks')" :title="$t('start.adminHumanTasks')">{{ $t('start.adminHumanTasks') }}</b-dropdown-item>
               <b-dropdown-item to="/seven/auth/deployments" :active="$route.path.includes('seven/auth/deployments')" :title="$t('deployment.title')">{{ $t('deployment.title') }}</b-dropdown-item>
@@ -166,7 +166,7 @@ export default {
         case 'decision-instance':
         case 'decision-list': return this.$t('start.adminDecisions')
         case 'human-tasks': return this.$t('start.adminHumanTasks')
-        case 'usersManagement': return this.$t('start.adminPanel')
+        case 'usersManagement': return this.$t('start.groupAdministration')
         case 'adminUser':
         case 'adminUsers':
         case 'createUser':
