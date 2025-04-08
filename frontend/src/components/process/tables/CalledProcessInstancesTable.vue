@@ -1,5 +1,5 @@
 <template>
-  <div class="overflow-auto bg-white container-fluid g-0" style="top: 0; bottom: 0">
+  <div class="overflow-auto bg-white position-absolute container-fluid g-0" style="top: 0; bottom: 0">
     <flow-table v-if="!loading && matchedCalledList.length > 0" striped thead-class="sticky-header" :items="matchedCalledList" primary-key="id" prefix="process-instance.calledProcesses."
       sort-by="label" :sort-desc="true" :fields="[
       { label: 'id', key: 'id', class: 'col-4', tdClass: 'py-1 border-end border-top-0' },

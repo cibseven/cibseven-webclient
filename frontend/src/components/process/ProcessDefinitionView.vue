@@ -60,7 +60,6 @@ import ProcessInstanceView from '@/components/process/ProcessInstanceView.vue'
 import SidebarsFlow from '@/components/common-components/SidebarsFlow.vue'
 import TaskPopper from '@/components/common-components/TaskPopper.vue'
 
-
 function getStringObjByKeys(keys, obj) {
   var result = ''
   keys.forEach(key => {
