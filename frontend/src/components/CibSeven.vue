@@ -161,6 +161,7 @@ export default {
         case 'start-process': return this.$t('start.startProcesses')
         case 'processManagement':
         case 'process': return this.$t('start.admin')
+        case 'batches': return this.$t('batches.title')
         case 'decision-version':
         case 'decision-instance':
         case 'decision-list': return this.$t('start.adminDecisions')
@@ -177,6 +178,8 @@ export default {
         case 'authorizations':
         case 'authorizationType':
           return this.$t('admin.authorizations.title')
+        case 'adminTenants': return this.$t('admin.tenants.title')
+        case 'adminSystem': return this.$t('admin.system.title')
         default: return ''
       }
     },
