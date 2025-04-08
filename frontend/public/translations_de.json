@@ -183,7 +183,8 @@
 			"setDueDate": "Fälligkeitsdatum festlegen",
 			"dueDate": "Fälligkeitsdatum",
 			"scheduleAt": "Planen um",
-			"invalidDateError": "Sie müssen ein gültiges Datum eingeben"
+			"invalidDateError": "Sie müssen ein gültiges Datum eingeben",
+			"retry": "Wiederholen"
 		},
 		"jobDefinitions": {
 			"state": "Status",
@@ -209,7 +210,11 @@
 			"overridingMsg": "Die überschriebene Priorität für Jobs der angegebenen Job-Definition ändern.",
 			"jobPriority": "Priorität",
 			"clear": "Überschriebene Job-Priorität löschen",
-			"set": "Überschriebene Job-Priorität festlegen"
+			"set": "Überschriebene Job-Priorität festlegen",
+			"invalidPriorityError": "Sie müssen einen ganzzahligen Wert eingeben",
+			"overrideAction": "Überschreiben",
+			"clearAction": "Löschen",			
+			"invalidDateError": "Sie müssen ein gültiges Datum eingeben"
 		},
 		"usertasks": {
 		    "activity": "Aktivität",
@@ -263,7 +268,7 @@
 			"completedTask": "Abgeschlossene Aufgabe",
 			"currentTask": "Aktuelle Aufgabe",
 			"selectedTask": "@:task.selectedTask",
-			"runingInstances": "Laufende Aktivitätsinstanzen",
+			"runningInstances": "Laufende Aktivitätsinstanzen",
 			"openIncidents": "Offene Vorfälle",
 			"suspendedJobDefinition": "Ausgesetzte Jobdefinition",
 			"activitiesHistory": "Ausgeführte Aktivitätsinstanzen",

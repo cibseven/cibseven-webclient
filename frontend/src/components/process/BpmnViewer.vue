@@ -215,7 +215,7 @@ export default {
           this.statistics.forEach(item => {
             const shape = elementRegistry.get(item.id)
             if (shape) {
-              const htmlTemplate = this.getBadgeOverlayHtml(item.instances, 'bg-info', 'runingInstances')
+              const htmlTemplate = this.getBadgeOverlayHtml(item.instances, 'bg-info', 'runningInstances')
               this.setHtmlOnDiagram(overlays, item.id, htmlTemplate, { bottom: 15, left: -7 })
               if (item.failedJobs > 0) {
                 const failedHtml = this.getBadgeOverlayHtml(item.failedJobs, 'bg-danger', 'openIncidents')
