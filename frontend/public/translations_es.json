@@ -495,7 +495,7 @@
 		"email": "@:account-form.email"
 	},
 	"cib-header": {
-		"productName": "CIB flow",
+		"productName": "CIB seven",
 		"languages": "Idioma",
 		"help": "Información & Ayuda",
 		"user": "Cuenta",
@@ -700,14 +700,14 @@
 	},
 	"ienotify": {
 		"remember": "No volver a mostrar este mensaje",
-		"text": "CIB flow no es totalmente soportado por Internet Explorer. Para poder disfrutar al máximo, desde CIB flow te sugerimos que utilices otro navegador."
+		"text": "CIB seven no es totalmente soportado por Internet Explorer. Para poder disfrutar al máximo, desde CIB seven te sugerimos que utilices otro navegador."
 	},
 	"start": {
 		"close": "Cerrar",
 		"taskList": "Tareas",
 		"startProcesses": "@:process.startProcess",
 		"cockpit": "Visión general",
-		"emptyStart": "Actualmente no tiene permisos para realizar tareas aquí. Por favor contacte con el administrador de CIB flow para que le asigne permisos.",
+		"emptyStart": "Actualmente no tiene permisos para realizar tareas aquí. Por favor contacte con el administrador de CIB seven para que le asigne permisos.",
 		"groupOperations": "Operations",
 		"groupAdministration": "Administration",
 		"admin": "Administración",
@@ -864,7 +864,7 @@
 		},
 		"flowModalAbout": {
 			"modalText": "Versión",
-			"title": "CIB flow"
+			"title": "CIB seven"
 		}
 	},
 	"multisort": {
@@ -959,7 +959,7 @@
 	},
 	"notification": {
 		"newTasks": "Nuevas tareas",
-		"newTasksTitle": "Tiene nuevas tareas asignadas en CIB flow"
+		"newTasksTitle": "Tiene nuevas tareas asignadas en CIB seven"
 	},
 	"decision": {
 		"id": "ID",
