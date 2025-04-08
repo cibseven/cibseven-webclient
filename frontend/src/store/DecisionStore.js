@@ -81,7 +81,7 @@ const DecisionStore = {
     },
     getDecisionVersion: (state) => ({ key, version }) => {
       const decision = state.list.find(d => d.key === key)
-      return decision?.versions?.find(v => String(v.version) === String(version)) || null
+      return decision?.versions?.find(v => String(v.version) === String(version)) || []
     }
   },
   actions: {
