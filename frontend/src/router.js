@@ -168,7 +168,7 @@ const router = createRouter({
             template: '<router-view></router-view>'
           },
           children: [
-            { path: 'users-management', name: 'usersManagement', component: UsersManagement },
+            { path: '', name: 'usersManagement', component: UsersManagement },
             { path: 'users', name:'adminUsers',
               beforeEnter: permissionsGuardUserAdmin('usersManagement', 'user'), component: AdminUsers },
             { path: 'user/:userId', name: 'adminUser',

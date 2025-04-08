@@ -90,7 +90,7 @@
           <div class="row border rounded shadow-sm h-100">
             <div class="align-top" style="flex:auto">
               <div class="text-truncate ps-1"></div>
-              <router-link to="/seven/auth/admin/users-management" class="h-100 text-decoration-none text-reset" tabindex="-1">
+              <router-link to="/seven/auth/admin" class="h-100 text-decoration-none text-reset" tabindex="-1">
                 <div class="container">
                   <div class="row ps-3" style="height:55px">
                     <div class="col-12 align-items-center d-flex">
