@@ -318,6 +318,10 @@
 		"assignedUserTitle": "Удаление назначенного пользователя",
 		"usersFound": "Результаты найдены: поисковый фильтр выявил пользователей, соответствующих вашим критериям",
 		"userAssigned": "Пользователь {0} успешно назначен"
+	},
+	"batches": {
+		"title": "Batches",
+		"tooltip": "Batch operations"
 	},	
 	"admin": {
 		"loading": "Загрузка...",
@@ -390,6 +394,10 @@
 				"title": "Пользователи группы"
 			}
 		},
+		"tenants": {
+			"title": "Tenants",
+			"tooltip": "Tenants management"
+		},
 		"authorizations": {
 			"title": "Авторизации",
 			"type": "Тип",
@@ -439,6 +447,10 @@
 			},
 			"add": "Добавить авторизацию",
 			"noAuthSelected": "Тип авторизации не выбран"
+		},
+		"system": {
+			"title": "Система",
+			"tooltip": "Системные настройки и диагностика"
 		}
 	},
 	"account-form": {
@@ -695,6 +707,8 @@
 		"startProcesses": "@:process.startProcess",
 		"cockpit": "Кокпит",
 		"emptyStart": "В данный момент у Вас нет прав, чтобы выполнить какие-либо задачи. Пожалуйста, свяжитесь с администратором CIB flow для того, чтобы получить права.",
+		"groupOperations": "Операции",
+		"groupAdministration": "Администрирование",
 		"admin": "Управление процессами",
 		"userAdmin": "Управление пользователями",
 		"modeler": "Разработчик моделей процессов",

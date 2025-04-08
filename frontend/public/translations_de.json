@@ -320,6 +320,10 @@
 		"usersFound": "Gefundene Ergebnisse: Der Suchfilter hat Benutzer identifiziert, die Ihren Kriterien entsprechen",
 		"userAssigned": "Der Benutzer {0} wurde erfolgreich zugewiesen"
 	},
+	"batches": {
+		"title": "Batches",
+		"tooltip": "Batch operations"
+	},
 	"admin": {
 		"loading": "Wird geladen...",
 		"noResults": "Keine Ergebnisse",
@@ -391,6 +395,10 @@
 				"title": "Benutzer der Gruppe"
 			}
 		},
+		"tenants": {
+			"title": "Tenants",
+			"tooltip": "Tenants management"
+		},
 		"authorizations": {
 			"title": "Berechtigungen",
 			"type": "Typ",
@@ -440,6 +448,10 @@
 			},
 			"add": "Berechtigung hinzufügen",
 			"noAuthSelected": "Kein Berechtigungstyp ausgewählt"
+		},
+		"system": {
+			"title": "System",
+			"tooltip": "System Settings and Diagnostics"
 		}
 	},
 	"account-form": {
@@ -696,6 +708,8 @@
 		"startProcesses": "@:process.startProcess",
 		"cockpit": "Cockpit",
 		"emptyStart": "Derzeit haben Sie keine Berechtigung, hier Aufgaben auszuführen. Bitte wenden Sie sich an den CIB flow Administrator, um Berechtigungen zu erhalten.",
+		"groupOperations": "Operations",
+		"groupAdministration": "Administration",
 		"admin": "Verwaltung",
 		"userAdmin": "Benutzerverwaltung",
 		"modeler": "Prozess modellieren",

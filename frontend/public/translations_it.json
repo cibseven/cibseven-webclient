@@ -223,6 +223,10 @@
 		"usersFound": "Risultati trovati: il filtro di ricerca ha identificato gli utenti che corrispondono ai tuoi criteri",
 		"userAssigned": "L'utente {0} è stato assegnato con successo"
 	},
+	"batches": {
+		"title": "Batches",
+		"tooltip": "Batch operations"
+	},
 	"admin": {
 		"loading": "Caricare...",
 		"exportCsv": "Esporta tutto",
@@ -250,6 +254,10 @@
 			"name": "Nome",
 			"type": "Tipo",
 			"search": "Cerca"			
+		},
+		"tenants": {
+			"title": "Tenants",
+			"tooltip": "Tenants management"
 		},
 		"authorizations": {
 			"title": "Autorizzazioni",
@@ -299,6 +307,10 @@
 			},
 			"add": "Aggiungi autorizzazione",
 			"noAuthSelected": "Nessun tipo di autorizzazione selezionato"
+		},
+		"system": {
+			"title": "System",
+			"tooltip": "System Settings and Diagnostics"
 		}
 	},
 	"account-form": {
@@ -550,6 +562,8 @@
 		"startProcesses": "@:process.startProcess",
 		"cockpit": "Cockpit",
 		"emptyStart": "Currently you do not have permission to perform any task here. Please contact the CIB flow administrator to get permissions.",
+		"groupOperations": "Operations",
+		"groupAdministration": "Administration",
 		"admin": "Gestione",
 		"userAdmin": "Gestione utenti",
 		"modeler": "Modellatore di processo",
