@@ -16,6 +16,7 @@ import org.cibseven.webapp.rest.model.Incident;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -120,6 +121,20 @@ public class IncidentService extends BaseService implements InitializingBean {
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true, false);
 		sevenProvider.retryJobById(jobId, data, user);
+	}
+	
+	@Operation(
+	    summary = "Set annotation for incident by id",
+	    description = "<strong>Return: void"
+	)
+	@ApiResponse(responseCode = "404", description = "Incident not found")
+	@PutMapping("/{incidentId}/annotation")
+	public void setIncidentAnnotation(
+	        @Parameter(description = "Incident Id") @PathVariable String incidentId,
+	        @RequestBody Map<String, Object> data,
+	        Locale locale, HttpServletRequest request) {	
+	    CIBUser user = checkAuthorization(request, true, false);
+	    bpmProvider.setIncidentAnnotation(incidentId, data, user);
 	}
 	
 }

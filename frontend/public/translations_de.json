@@ -175,6 +175,7 @@
 		    "failedActivity": "Fehlgeschlagene Aktivität",
 		    "incidentType": "Vorfallstyp",
 		    "retryJob": "Anzahl der Wiederholungsversuche eines fehlgeschlagenen Jobs erhöhen",
+			"annotation": "Anmerkung",
 		    "actions": "Aktionen",
 			"incrementNumberRetries": "Anzahl der Wiederholungsversuche erhöhen",
 			"retryMsg": "Die Anzahl der Wiederholungsversuche des fehlgeschlagenen Jobs für das ausgewählte Ereignis wird erhöht.",
@@ -184,7 +185,8 @@
 			"dueDate": "Fälligkeitsdatum",
 			"scheduleAt": "Planen um",
 			"invalidDateError": "Sie müssen ein gültiges Datum eingeben",
-			"retry": "Wiederholen"
+			"retry": "Wiederholen",
+			"editAnnotation": "Anmerkung bearbeiten"
 		},
 		"jobDefinitions": {
 			"state": "Status",

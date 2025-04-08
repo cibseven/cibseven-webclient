@@ -636,6 +636,11 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	public Collection<Incident> fetchIncidents(String processDefinitionKey, CIBUser user) {
 		return incidentProvider.fetchIncidents(processDefinitionKey, user);
 	}
+	
+	@Override
+	public void setIncidentAnnotation(String incidentId, Map<String, Object> data, CIBUser user) {
+		incidentProvider.setIncidentAnnotation(incidentId, data, user);
+	}
 
 	/*
 	

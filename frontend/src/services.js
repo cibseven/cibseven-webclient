@@ -368,6 +368,9 @@ var IncidentService = {
   },
   findIncidents: function(processDefinitionId) {
     return axios.get(appConfig.servicesBasePath + "/incident?processDefinitionId=" + processDefinitionId)
+  },
+  setIncidentAnnotation: function(id, params) {
+    return axios.put(appConfig.servicesBasePath + "/incident/" + id + "/annotation", params)
   }
 }
 

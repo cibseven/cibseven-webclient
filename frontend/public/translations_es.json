@@ -175,6 +175,7 @@
 		    "failedActivity": "Actividad fallida",
 		    "incidentType": "Tipo de incidente",
 		    "retryJob": "Incrementar el número de reintentos de trabajo fallido",
+			"annotation": "Anotación",
 		    "actions": "Acciones",
 			"incrementNumberRetries": "Incrementar número de reintentos",
 			"retryMsg": "Se incrementará el número de reintentos del trabajo fallido correspondiente al incidente seleccionado.",
@@ -184,7 +185,8 @@
 			"dueDate": "Fecha de vencimiento",
 			"scheduleAt": "Programar para",
 			"invalidDateError": "Debe insertar una fecha válida",
-			"retry": "Reintentar"
+			"retry": "Reintentar",
+			"editAnnotation": "Editar anotación"
 		},
 		"jobDefinitions": {
 			"state": "Estado",
