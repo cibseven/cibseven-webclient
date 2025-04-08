@@ -1,6 +1,17 @@
 // Import the CSS to ensure it is bundled with the package
 import './assets/main.css';
 
+import { axios } from '@/globals.js'
+import appConfig from '@/appConfig.js'
+import { permissionsMixin } from '@/permissions.js'
+import processesVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
+import processesMixin from '@/components/process/mixins/processesMixin.js'
+import resizerMixin from '@/components/process/mixins/resizerMixin.js'
+import store from '@/store'
+import usersMixin from '@/mixins/usersMixin.js'
+import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
+import { debounce } from '@/utils/debounce.js'
+import { HoverStyle } from '@/components/common-components/directives.js'
 import CibSeven from '@/components/CibSeven.vue'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import ErrorDialog from '@/components/common-components/ErrorDialog.vue'
@@ -73,6 +84,8 @@ import HighlightedText from '@/components/common-components/HighlightedText.vue'
 import TenantsView from '@/components/tenants/TenantsView.vue'
 import BatchesView from '@/components/batches/BatchesView.vue'
 import SystemView from './components/system/SystemView.vue'
+import { TaskService, HistoryService, ProcessService } from '@/services.js';
+
 
 const registerComponents = function(app) {
   app.component('cib-seven', CibSeven)
@@ -155,6 +168,17 @@ export {
   TenantsView,
   BatchesView,
   SystemView,
+  axios,
+  appConfig,
+  permissionsMixin,
+  store,
+  usersMixin,
+  processesVariablesMixin,
+  processesMixin,
+  resizerMixin,
+  copyToClipboardMixin,
+  debounce,
+  HoverStyle,
   CibSeven,
   FlowTable,
   ErrorDialog,
@@ -222,5 +246,8 @@ export {
   TasksContent,
   TasksNavBar,
   TasksView,
-  HighlightedText
+  HighlightedText,
+  TaskService,
+  HistoryService,
+  ProcessService
 }
