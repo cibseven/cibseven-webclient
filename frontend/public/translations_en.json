@@ -211,7 +211,7 @@
 		    "actions": "Actions"
 		},
 		"calledProcesses": {
-			"callingActivity": "calling Activity",
+			"callingActivity": "Calling Activity",
 			"process": "Process",
 			"version": "Version",
 			"id": "Id"
