@@ -81,6 +81,9 @@ import TasksContent from '@/components/task/TasksContent.vue'
 import TasksNavBar from '@/components/task/TasksNavBar.vue'
 import TasksView from '@/components/task/TasksView.vue'
 import HighlightedText from '@/components/common-components/HighlightedText.vue'
+import TenantsView from '@/components/tenants/TenantsView.vue'
+import BatchesView from '@/components/batches/BatchesView.vue'
+import SystemView from '@/components/system/SystemView.vue'
 import { TaskService, HistoryService, ProcessService } from '@/services.js';
 
 
@@ -154,10 +157,17 @@ const registerComponents = function(app) {
   app.component('tasks-nav-bar', TasksNavBar)
   app.component('tasks-view', TasksView)
   app.component('highlighted-text', HighlightedText)
+  app.component('tenants-view', TenantsView)
+  app.component('batches-view', BatchesView)
+  app.component('system-view', SystemView)
 }
 
 export {
   registerComponents,
+
+  TenantsView,
+  BatchesView,
+  SystemView,
   axios,
   appConfig,
   permissionsMixin,

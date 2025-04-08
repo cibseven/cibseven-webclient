@@ -320,6 +320,10 @@
 		"usersFound": "Resultados encontrados: el filtro de búsqueda ha identificado usuarios que coinciden con sus criterios",
 		"userAssigned": "El usuario {0} fue asignado con éxito"
 	},
+	"batches": {
+		"title": "Batches",
+		"tooltip": "Batch operations"
+	},
 	"admin": {
 		"loading": "Cargando...",
 		"noResults": "Sin resultados",
@@ -391,6 +395,10 @@
 				"title": "Usuarios del grupo"
 			}
 		},
+		"tenants": {
+			"title": "Tenants",
+			"tooltip": "Tenants management"
+		},
 		"authorizations": {
 			"title": "Autorizaciones",
 			"type": "Tipo",
@@ -440,6 +448,10 @@
 			},
 			"add": "Añadir autorización",
 			"noAuthSelected": "Ningún tipo de autorización seleccionada"
+		},
+		"system": {
+			"title": "System",
+			"tooltip": "System Settings and Diagnostics"
 		}
 	},
 	"account-form": {
@@ -696,6 +708,8 @@
 		"startProcesses": "@:process.startProcess",
 		"cockpit": "Visión general",
 		"emptyStart": "Actualmente no tiene permisos para realizar tareas aquí. Por favor contacte con el administrador de CIB flow para que le asigne permisos.",
+		"groupOperations": "Operations",
+		"groupAdministration": "Administration",
 		"admin": "Administración",
 		"userAdmin": "Gestión de usuarios",
 		"modeler": "Modelador de procesos",
