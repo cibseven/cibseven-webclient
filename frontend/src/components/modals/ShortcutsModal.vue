@@ -1,10 +1,10 @@
 <template>
-  <b-modal ref="shortcuts" :title="$t('infoAndHelp.shortcuts.title')" :ok-only="true">
+  <b-modal ref="shortcuts" :title="$t('infoAndHelp.shortcuts.title')" :ok-only="true" class="modal-lg">
     <div class="row">
-      <div class="col-2">
+      <div class="col-2 d-flex justify-content-center">
         <span class="mdi mdi-48px mdi-keyboard-outline pe-1 text-info"></span>
       </div>
-      <div class="col-10 bg-white ps-0">
+      <div class="col-10 ps-0">
         <h5>{{ $t('infoAndHelp.flowModalAbout.title') }}</h5>
         <ShortcutsTable :items="itemsGlobal"></ShortcutsTable>
         <h5>{{ $t('start.taskList') }}</h5>
@@ -23,13 +23,13 @@ export default {
   data: function() {
     return {
       itemsGlobal: [{
-          buttons: ["Ctrl", "+", "Left"],
+          buttons: ["Ctrl", "+", "🠄"],
           description: 'infoAndHelp.shortcuts.shortcuts.ctrlLeft',
         }, {
-          buttons: ["Ctrl", "+", "Down"],
+          buttons: ["Ctrl", "+", "🠇"],
           description: 'infoAndHelp.shortcuts.shortcuts.ctrlDown',
         }, {
-          buttons: ["Ctrl", "+", "Right"],
+          buttons: ["Ctrl", "+", "🠆"],
           description: 'infoAndHelp.shortcuts.shortcuts.ctrlRight',
         }
       ],

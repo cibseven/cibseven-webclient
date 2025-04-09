@@ -5,12 +5,12 @@
     sort-by=""
     :fields="[
       { label: 'infoAndHelp.shortcuts.columnShortcut', key: 'buttons', class: 'col-4 justify-content-center', tdClass: 'py-1 border-top-0', sortable: false },
-      { label: 'infoAndHelp.shortcuts.columnDescription', key: 'description', class: 'col-8', tdClass: 'py-1 border-top-0', sortable: false },
+      { label: 'infoAndHelp.shortcuts.columnDescription', key: 'description', class: 'col-8 ps-0', tdClass: 'py-1 border-top-0', sortable: false },
     ]">
     <template v-slot:cell(buttons)="table">
       <span v-for="(button, index) in table.item.buttons" :key="index"
-        :class="button === '+'? 'text-body-secondary': 'btn btn-outline-secondary btn-sm'">
-        {{ button === "+"? "&nbsp;+&nbsp;": button }}
+        :class="button === '+'? 'text-body-secondary': 'btn btn-outline-secondary py-0 px-2 m-1'">
+        {{ button === "+"? "+": button }}
       </span>
     </template>
     <template v-slot:cell(description)="table">
