@@ -32,7 +32,7 @@
       <template v-slot:cell(actions)="table">
         <b-button :title="$t('process-instance.incidents.editAnnotation')"
           size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-note-edit-outline"
-          @click="$refs.annotationModal.show(table.item)">
+          @click="$refs.annotationModal.show(table.item.id, table.item.annotation)">
         </b-button>
         <b-button :title="$t('process-instance.incidents.retryJob')"
           size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-reload"
