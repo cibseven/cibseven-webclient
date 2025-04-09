@@ -37,6 +37,9 @@ export default {
           buttons: ["Ctrl", "+", "P"],
           description: 'infoAndHelp.shortcuts.shortcuts.ctrlP',
         }, {
+          buttons: ["Ctrl", "+", "Alt", "+", "C"],
+          description: 'infoAndHelp.shortcuts.shortcuts.ctrlAltC',
+        }, {
           buttons: ["Alt", "+", "1"],
           description: 'infoAndHelp.shortcuts.shortcuts.alt1',
         }, {
