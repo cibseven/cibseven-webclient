@@ -929,7 +929,7 @@ public interface BpmProvider {
 	Decision getDecisionDefinitionById(String id, Optional<Boolean> extraInfo);
 	Object getDiagramById(String id);
 	Object evaluateDecisionDefinitionById(String id);
-	Object updateHistoryTTLById(String id);
+	void updateHistoryTTLById(String id, Map<String, Object> data, CIBUser user);
 	Object getXmlById(String id);
 
 	Collection<Decision> getDecisionVersionsByKey(String key, Optional<Boolean> lazyLoad);

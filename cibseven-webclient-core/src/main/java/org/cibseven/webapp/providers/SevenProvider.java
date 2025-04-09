@@ -853,8 +853,8 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 	
 	@Override
-	public Object updateHistoryTTLById(String id) {
-		return decisionProvider.updateHistoryTTLById(id);
+	public void updateHistoryTTLById(String id, Map<String, Object> data, CIBUser user) {
+		decisionProvider.updateHistoryTTLById(id, data, user);
 	}
 	
 	@Override

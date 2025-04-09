@@ -24,7 +24,7 @@ public interface IDecisionProvider {
 	public Decision getDecisionDefinitionById(String id, Optional<Boolean> extraInfo);
 	public Object getDiagramById(String id);
 	public Object evaluateDecisionDefinitionById(String id);
-	public Object updateHistoryTTLById(String id);
+	public void updateHistoryTTLById(String id, Map<String, Object> data, CIBUser user);
 	public Object getXmlById(String id);
 	public Collection<Decision> getDecisionVersionsByKey(String key, Optional<Boolean> lazyLoad);
 	public Object getHistoricDecisionInstances(Map<String, Object> queryParams);

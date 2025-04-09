@@ -6,7 +6,8 @@
     </div>
     <SidebarsFlow ref="sidebars" class="border-top overflow-auto" v-model:left-open="leftOpen" :left-caption="shortendLeftCaption">
       <template v-slot:left>
-        <DecisionVersionListSidebar v-if="versions" ref="navbar" :versions="versions"></DecisionVersionListSidebar>
+        <DecisionVersionListSidebar v-if="versions.length > 0" ref="navbar" 
+          :versions="versions" @refresh-decision-versions="loadDecisionVersionsByKey(decisionKey, versionIndex, $event)"></DecisionVersionListSidebar>
       </template>
       <router-view
         v-if="decision"
@@ -68,14 +69,14 @@ export default {
       return this.decision.name ? this.decision.name : this.decision.key
     }
   },
-  async mounted() {
-    await this.loadDecisionVersionsByKey(this.decisionKey, this.versionIndex)
+  mounted() {
+    this.loadDecisionVersionsByKey(this.decisionKey, this.versionIndex, this.$root.config.lazyLoadHistory)
   },
   methods: {
     ...mapActions(['getDecisionVersionsByKey']),
     ...mapMutations(['setSelectedDecisionVersion', 'updateVersion']),
-    loadDecisionVersionsByKey(decisionKey, versionIndex) {
-      this.getDecisionVersionsByKey({ key: decisionKey, lazyLoad: this.$root.config.lazyLoadHistory })
+    loadDecisionVersionsByKey(decisionKey, versionIndex, lazyLoad) {
+      this.getDecisionVersionsByKey({ key: decisionKey, lazyLoad: lazyLoad })
       .then(versions => {
         let version = versions[0]
         if (!versionIndex) {
