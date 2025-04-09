@@ -94,6 +94,7 @@
 		"incidents": "Инциденты",
 		"variables": "Переменные",
 		"usertasks": "Пользовательские задачи",
+		"calledProcessInstances": "называемые экземпляры процессов",
 		"onlyIncidents": "Только с инцидентами",
 		"runningInstances": "Экземпляры",
 		"instances": "Экземпляры процессов",
@@ -224,6 +225,12 @@
 		    "followUp": "Follow-Up",
 		    "taskID": "ID задачи",
 		    "actions": "Действия"
+		},
+		"calledProcesses": {
+			"callingActivity": "звонковая деятельность",
+			"process": "процесс",
+			"version": "версия",
+			"id": "Id"
 		},
 		"assignModal": {
 		    "manageUsersGroups": "Manage users/groups",
