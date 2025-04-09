@@ -914,32 +914,33 @@ public interface BpmProvider {
 	void overrideJobDefinitionPriority(String jobDefinitionId, String params, CIBUser user);
 	JobDefinition findJobDefinition(String id, CIBUser user);
 	
-	Collection<Decision> getDecisionDefinitionList(Map<String, Object> queryParams);
-	Object getDecisionDefinitionListCount(Map<String, Object> queryParams);
-	Decision getDecisionDefinitionByKey(String key);
-	Object getDiagramByKey(String key);
+	Collection<Decision> getDecisionDefinitionList(Map<String, Object> queryParams, CIBUser user);
+	Object getDecisionDefinitionListCount(Map<String, Object> queryParams, CIBUser user);
+	Decision getDecisionDefinitionByKey(String key, CIBUser user);
+	Object getDiagramByKey(String key, CIBUser user);
 	Object evaluateDecisionDefinitionByKey(Map<String, Object> data, String key, CIBUser user);
 	void updateHistoryTTLByKey(Map<String, Object> data, String key, CIBUser user);
-	Decision getDecisionDefinitionByKeyAndTenant(String key, String tenant);
-	Object getDiagramByKeyAndTenant(String key, String tenant);
-	Object evaluateDecisionDefinitionByKeyAndTenant(String key, String tenant);
-	Object updateHistoryTTLByKeyAndTenant(String key, String tenant);
-	Object getXmlByKey(String key);
-	Object getXmlByKeyAndTenant(String key, String tenant);
-	Decision getDecisionDefinitionById(String id, Optional<Boolean> extraInfo);
-	Object getDiagramById(String id);
-	Object evaluateDecisionDefinitionById(String id);
+
+	Decision getDecisionDefinitionByKeyAndTenant(String key, String tenant, CIBUser user);
+	Object getDiagramByKeyAndTenant(String key, String tenant, CIBUser user);
+	Object evaluateDecisionDefinitionByKeyAndTenant(String key, String tenant, CIBUser user);
+	Object updateHistoryTTLByKeyAndTenant(String key, String tenant, CIBUser user);
+	Object getXmlByKey(String key, CIBUser user);
+	Object getXmlByKeyAndTenant(String key, String tenant, CIBUser user);
+	Decision getDecisionDefinitionById(String id, Optional<Boolean> extraInfo, CIBUser user);
+	Object getDiagramById(String id, CIBUser user);
+	Object evaluateDecisionDefinitionById(String id, CIBUser user);
 	void updateHistoryTTLById(String id, Map<String, Object> data, CIBUser user);
-	Object getXmlById(String id);
+	Object getXmlById(String id, CIBUser user);
 
-	Collection<Decision> getDecisionVersionsByKey(String key, Optional<Boolean> lazyLoad);
+	Collection<Decision> getDecisionVersionsByKey(String key, Optional<Boolean> lazyLoad, CIBUser user);
 	
-	Object getHistoricDecisionInstances(Map<String, Object> queryParams);
-	Object getHistoricDecisionInstanceCount(Map<String, Object> queryParams);
-	Object getHistoricDecisionInstanceById(String id, Map<String, Object> queryParams);
-	Object deleteHistoricDecisionInstances(Map<String, Object> body);
-	Object setHistoricDecisionInstanceRemovalTime(Map<String, Object> body);
-
+	Object getHistoricDecisionInstances(Map<String, Object> queryParams, CIBUser user);
+	Object getHistoricDecisionInstanceCount(Map<String, Object> queryParams, CIBUser user);
+	Object getHistoricDecisionInstanceById(String id, Map<String, Object> queryParams, CIBUser user);
+	Object deleteHistoricDecisionInstances(Map<String, Object> body, CIBUser user);
+	Object setHistoricDecisionInstanceRemovalTime(Map<String, Object> body, CIBUser user);
+  
 	Collection<Job> getJobs(Map<String, Object> params, CIBUser user);
 	void setSuspended(String id, Map<String, Object> data, CIBUser user);
 	Integer findHistoryTaksCount(Map<String, Object> filters, CIBUser user);
