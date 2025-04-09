@@ -124,7 +124,6 @@ export default {
       this.activityInstance = null
       this.activityInstanceHistory = null
       this.task = null
-      this.loadProcessByDefinitionKey()
     }
     else if (this.selectedInstance == null && this.instanceId) {
       if (this.instances) {
