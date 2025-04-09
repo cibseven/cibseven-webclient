@@ -319,6 +319,10 @@
 		"usersFound": "Results Found: The search filter has identified users matching your criteria",
 		"userAssigned": "The user {0} was successfully assigned"
 	},
+	"batches": {
+		"title": "Batches",
+		"tooltip": "Batch operations"
+	},
 	"admin": {
 		"loading": "Loading...",
 		"noResults": "No results",
@@ -390,6 +394,10 @@
 				"title": "Group users"
 			}
 		},
+		"tenants": {
+			"title": "Tenants",
+			"tooltip": "Tenants management"
+		},
 		"authorizations": {
 			"title": "Authorizations",
 			"type": "Type",
@@ -439,6 +447,10 @@
 			},
 			"add": "Add authorization",
 			"noAuthSelected": "No Authorization type selected"
+		},
+		"system": {
+			"title": "System",
+			"tooltip": "System Settings and Diagnostics"
 		}
 	},
 	"account-form": {
@@ -482,7 +494,7 @@
 		"email": "@:account-form.email"
 	},
 	"cib-header": {
-		"productName": "CIB flow",
+		"productName": "CIB seven",
 		"languages": "Language",
 		"help": "Info & Help",
 		"logout": "Logout",
@@ -687,14 +699,16 @@
 	},
 	"ienotify": {
 		"remember": "Do not show this message again",
-		"text": "CIB flow is not fully supported by Internet Explorer. In order to enjoy CIB flow we suggest you use another browser."
+		"text": "CIB seven is not fully supported by Internet Explorer. In order to enjoy CIB seven we suggest you use another browser."
 	},
 	"start": {
 		"close": "Close",
 		"taskList": "Tasks",
 		"startProcesses": "@:process.startProcess",
 		"cockpit": "Cockpit",
-		"emptyStart": "Currently you do not have permission to perform any task here. Please contact the CIB flow administrator to get permissions.",
+		"emptyStart": "Currently you do not have permission to perform any task here. Please contact the CIB seven administrator to get permissions.",
+		"groupOperations": "Operations",
+		"groupAdministration": "Administration",
 		"admin": "Process Management",
 		"userAdmin": "User administration",
 		"modeler": "Process modeler",
@@ -850,7 +864,7 @@
 		},
 		"flowModalAbout": {
 			"modalText": "About",
-			"title": "CIB flow"
+			"title": "CIB seven"
 		}
 	},
 	"multisort": {
@@ -944,7 +958,7 @@
     },
 	"notification": {
 		"newTasks": "New tasks",
-		"newTasksTitle": "You got new tasks assigned on CIB flow"
+		"newTasksTitle": "You got new tasks assigned on CIB seven"
 	},
 	"decision": {
 		"id": "ID",

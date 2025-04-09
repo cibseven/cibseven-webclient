@@ -320,6 +320,10 @@
 		"usersFound": "Gefundene Ergebnisse: Der Suchfilter hat Benutzer identifiziert, die Ihren Kriterien entsprechen",
 		"userAssigned": "Der Benutzer {0} wurde erfolgreich zugewiesen"
 	},
+	"batches": {
+		"title": "Batches",
+		"tooltip": "Batch operations"
+	},
 	"admin": {
 		"loading": "Wird geladen...",
 		"noResults": "Keine Ergebnisse",
@@ -391,6 +395,10 @@
 				"title": "Benutzer der Gruppe"
 			}
 		},
+		"tenants": {
+			"title": "Tenants",
+			"tooltip": "Tenants management"
+		},
 		"authorizations": {
 			"title": "Berechtigungen",
 			"type": "Typ",
@@ -440,6 +448,10 @@
 			},
 			"add": "Berechtigung hinzufügen",
 			"noAuthSelected": "Kein Berechtigungstyp ausgewählt"
+		},
+		"system": {
+			"title": "System",
+			"tooltip": "System Settings and Diagnostics"
 		}
 	},
 	"account-form": {
@@ -483,7 +495,7 @@
 		"email": "@:account-form.email"
 	},
 	"cib-header": {
-		"productName": "CIB flow",
+		"productName": "CIB seven",
 		"languages": "Sprache",
 		"help": "Info & Hilfe",
 		"user": "Konto",
@@ -688,14 +700,16 @@
 	},
     "ienotify": { 
 		"remember": "Diese Meldung nicht mehr anzeigen",
-        "text": "CIB flow wird nicht vollständig vom Internet Explorer unterstützt. Um CIB flow in vollem Umfang nutzen zu können, empfehlen wir, einen anderen Browser zu verwenden."
+        "text": "CIB seven wird nicht vollständig vom Internet Explorer unterstützt. Um CIB seven in vollem Umfang nutzen zu können, empfehlen wir, einen anderen Browser zu verwenden."
     },
 	"start": { 
 		"close": "Schließen",
 		"taskList": "Aufgaben bearbeiten",
 		"startProcesses": "@:process.startProcess",
 		"cockpit": "Cockpit",
-		"emptyStart": "Derzeit haben Sie keine Berechtigung, hier Aufgaben auszuführen. Bitte wenden Sie sich an den CIB flow Administrator, um Berechtigungen zu erhalten.",
+		"emptyStart": "Derzeit haben Sie keine Berechtigung, hier Aufgaben auszuführen. Bitte wenden Sie sich an den CIB seven Administrator, um Berechtigungen zu erhalten.",
+		"groupOperations": "Operations",
+		"groupAdministration": "Administration",
 		"admin": "Verwaltung",
 		"userAdmin": "Benutzerverwaltung",
 		"modeler": "Prozess modellieren",
@@ -853,7 +867,7 @@
 		},
 		"flowModalAbout": {
 			"modalText": "Über",
-			"title": "CIB flow"
+			"title": "CIB seven"
 		}
 	},
 	"multisort": {
@@ -947,7 +961,7 @@
 	},
 	"notification": {
 		"newTasks": "Neue Aufgaben",
-		"newTasksTitle": "Ihnen wurden neue Aufgaben in CIB flow zugewiesen."
+		"newTasksTitle": "Ihnen wurden neue Aufgaben in CIB seven zugewiesen."
 	},
 	"decision" : {
 		"id": "ID",

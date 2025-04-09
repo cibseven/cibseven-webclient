@@ -66,12 +66,12 @@
       <b-button @click="updateHistoryTimeToLive()" variant="primary">{{ $t('decision-instance.save') }}</b-button>
     </template>
   </b-modal>
-
   <SuccessAlert ref="messageCopy"> {{ $t('decision.copySuccess') }} </SuccessAlert>
 </template>
 
 <script>
 
+import { DecisionService } from '@/services.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 
@@ -82,23 +82,28 @@ export default {
   props: {
     version: Object
   },
-  data: function() {
+  emits: ['updated-history-ttl'],
+  data() {
     return {
       historyTimeToLive: '',
       historyTimeToLiveChanged: ''
     }
   },
-  emits: ['onUpdateHistoryTimeToLive'],
-  mounted: function() {
+  mounted() {
     this.historyTimeToLive = this.version.historyTimeToLive
   },
   methods: {
-    editHistoryTimeToLive: function() {
+    editHistoryTimeToLive() {
       this.historyTimeToLiveChanged = this.historyTimeToLive
       this.$refs.historyTimeToLive.show()
     },
-    updateHistoryTimeToLive: function() {
-      // TODO: Implement
+    updateHistoryTimeToLive() {
+      DecisionService.updateHistoryTTLById(this.version.id, 
+      { historyTimeToLive: this.historyTimeToLiveChanged }).then(() => {
+        this.historyTimeToLive = this.version.historyTimeToLive = this.historyTimeToLiveChanged
+        this.$emit('updated-history-ttl')
+        this.$refs.historyTimeToLive.hide()
+      })
     }
   }
 }

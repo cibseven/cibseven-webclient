@@ -120,8 +120,9 @@ public class DecisionService extends BaseService implements InitializingBean {
 	}
 
 	@PutMapping("/id/{id}/history-ttl")
-	public Object updateHistoryTTLById(@PathVariable String id) {
-		return bpmProvider.updateHistoryTTLById(id);
+	public void updateHistoryTTLById(@PathVariable String id, 
+			@RequestBody Map<String, Object> data, CIBUser user) {
+		bpmProvider.updateHistoryTTLById(id, data, user);
 	}
 
 	@GetMapping("/id/{id}/xml")

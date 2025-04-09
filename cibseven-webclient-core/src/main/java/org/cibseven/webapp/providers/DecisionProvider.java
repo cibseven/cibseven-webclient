@@ -113,9 +113,9 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 	}
 
 	@Override
-	public Object updateHistoryTTLById(String id) {
-		// TODO Auto-generated method stub
-		return null;
+	public void updateHistoryTTLById(String id, Map<String, Object> data, CIBUser user) {
+		String url = camundaUrl + "/engine-rest/decision-definition/" + id + "/history-time-to-live";
+		doPut(url, data, user);
 	}
 
 	@Override

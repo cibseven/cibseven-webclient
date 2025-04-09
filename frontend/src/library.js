@@ -86,6 +86,9 @@ import DecisionView from '@/components/decision/DecisionView.vue'
 import DecisionList from '@/components/decisions/list/DecisionList.vue'
 import DecisionListView from '@/components/decisions/list/DecisionListView.vue'
 import DecisionDefinitionVersion from '@/components/decision/DecisionDefinitionVersion.vue'
+import TenantsView from '@/components/tenants/TenantsView.vue'
+import BatchesView from '@/components/batches/BatchesView.vue'
+import SystemView from '@/components/system/SystemView.vue'
 import { TaskService, HistoryService, ProcessService } from '@/services.js';
 
 
@@ -164,10 +167,17 @@ const registerComponents = function(app) {
   app.component('decision-list', DecisionList)
   app.component('decision-list-view', DecisionListView)
   app.component('decision-', DecisionDefinitionVersion)
+  app.component('tenants-view', TenantsView)
+  app.component('batches-view', BatchesView)
+  app.component('system-view', SystemView)
 }
 
 export {
   registerComponents,
+  
+  TenantsView,
+  BatchesView,
+  SystemView,
   axios,
   appConfig,
   permissionsMixin,
@@ -254,5 +264,6 @@ export {
   DecisionView,
   DecisionList,
   DecisionListView,
-  DecisionDefinitionVersion
+  DecisionDefinitionVersion,
+  ProcessService
 }

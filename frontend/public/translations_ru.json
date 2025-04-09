@@ -318,6 +318,10 @@
 		"assignedUserTitle": "Удаление назначенного пользователя",
 		"usersFound": "Результаты найдены: поисковый фильтр выявил пользователей, соответствующих вашим критериям",
 		"userAssigned": "Пользователь {0} успешно назначен"
+	},
+	"batches": {
+		"title": "Batches",
+		"tooltip": "Batch operations"
 	},	
 	"admin": {
 		"loading": "Загрузка...",
@@ -390,6 +394,10 @@
 				"title": "Пользователи группы"
 			}
 		},
+		"tenants": {
+			"title": "Tenants",
+			"tooltip": "Tenants management"
+		},
 		"authorizations": {
 			"title": "Авторизации",
 			"type": "Тип",
@@ -439,6 +447,10 @@
 			},
 			"add": "Добавить авторизацию",
 			"noAuthSelected": "Тип авторизации не выбран"
+		},
+		"system": {
+			"title": "Система",
+			"tooltip": "Системные настройки и диагностика"
 		}
 	},
 	"account-form": {
@@ -482,7 +494,7 @@
 		"email": "@:account-form.email"
 	},
 	"cib-header": {
-		"productName": "CIB flow",
+		"productName": "CIB seven",
 		"languages": "Язык",
 		"help": "Информация и помощь",
 		"logout": "Выход",
@@ -687,14 +699,16 @@
 	},
     "ienotify": { 
 		"remember": "Больше не показывать это сообщение",
-        "text": "Internet Explorer не полностью поддерживается CIB flow. Для того, чтобы использовать все возможности CIB flow, мы рекомендуем Вам использовать другой интернет-браузер."
+        "text": "Internet Explorer не полностью поддерживается CIB seven. Для того, чтобы использовать все возможности CIB seven, мы рекомендуем Вам использовать другой интернет-браузер."
     },
 	"start": { 
 		"close": "Закрыть",
 		"taskList": "Мои задачи",
 		"startProcesses": "@:process.startProcess",
 		"cockpit": "Кокпит",
-		"emptyStart": "В данный момент у Вас нет прав, чтобы выполнить какие-либо задачи. Пожалуйста, свяжитесь с администратором CIB flow для того, чтобы получить права.",
+		"emptyStart": "В данный момент у Вас нет прав, чтобы выполнить какие-либо задачи. Пожалуйста, свяжитесь с администратором CIB seven для того, чтобы получить права.",
+		"groupOperations": "Операции",
+		"groupAdministration": "Администрирование",
 		"admin": "Управление процессами",
 		"userAdmin": "Управление пользователями",
 		"modeler": "Разработчик моделей процессов",
@@ -849,7 +863,7 @@
 		},
 		"flowModalAbout": {
 			"modalText": "О сайте",
-			"title": "CIB flow"
+			"title": "CIB seven"
 		}
 	},
 	"multisort": {
@@ -946,7 +960,7 @@
     },
 	"notification": {
 		"newTasks": "Новые задачи",
-		"newTasksTitle": "Вы получили новые задачи, назначенные на CIB flow"
+		"newTasksTitle": "Вы получили новые задачи, назначенные на CIB seven"
 	},
 	"decision": {
 		"id": "ID",
