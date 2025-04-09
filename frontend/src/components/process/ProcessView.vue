@@ -51,13 +51,7 @@ export default {
   },
   methods: {
     loadProcess: function() {
-      if (this.$route.query.processId) {
-        this.loading = true
-        this.$store.dispatch('getProcessById', { id: this.$route.query.processId }).then(process => {
-          this.process = process
-          this.loading = false
-        })
-      } else if (!this.versionIndex) {
+      if (!this.versionIndex) {
         this.loading = true
         this.$store.dispatch('getProcessByDefinitionKey', { key: this.processKey }).then(process => {
           this.process = process

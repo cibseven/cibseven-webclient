@@ -1,6 +1,6 @@
 <template>
   <div class="overflow-auto bg-white position-absolute container-fluid g-0" style="top: 0; bottom: 0">
-    <FlowTable v-if="incidents.length > 0" striped thead-class="sticky-header" :items="incidents" primary-key="id" prefix="process-instance.incidents."
+    <FlowTable v-if="localIncidents.length > 0" striped thead-class="sticky-header" :items="localIncidents" primary-key="id" prefix="process-instance.incidents."
       sort-by="label" :sort-desc="true" :fields="[
       { label: 'message', key: 'incidentMessage', class: 'col-3', tdClass: 'py-1 border-end border-top-0' },
       { label: 'timestamp', key: 'incidentTimestamp', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
@@ -35,7 +35,7 @@
     </div>
   </div>
 
-  <b-modal ref="stackTraceModal" :title="$t('process-instance.stacktrace')" size="xl" okOnly>
+  <b-modal ref="stackTraceModal" :title="$t('process-instance.stacktrace')" size="xl" :ok-only="true">
     <div v-if="stackTraceMessage" class="container-fluid pt-3">
       <b-form-textarea v-model="stackTraceMessage" rows="20" readonly></b-form-textarea>
       <b-button variant="link" @click="copyValueToClipboard(stackTraceMessage)">{{ $t('process-instance.copyValueToClipboard') }}</b-button>
@@ -63,8 +63,12 @@ export default {
   mixins: [procesessVariablesMixin, copyToClipboardMixin],
   data: function() {
     return {
-      stackTraceMessage: ''
+      stackTraceMessage: '',
+      localIncidents: []
     }
+  },
+  created: function() {
+    this.localIncidents = [...this.incidents]
   },
   props: {
     incidents: Array,
@@ -84,7 +88,7 @@ export default {
     },
     incrementNumberRetry: function({ id, params }) {
       IncidentService.retryJobById(id, params).then(() => {
-        this.incidents.splice(this.incidents.findIndex(obj => obj.configuration === id), 1)
+        this.localIncidents.splice(this.localIncidents.findIndex(obj => obj.configuration === id), 1)
         this.$refs.incidentRetryModal.hide()
       })
     }

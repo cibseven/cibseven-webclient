@@ -1,5 +1,5 @@
 <template>
-  <b-modal ref="assignationModal" :title="selectedIdentity.type === 'assignee' ? $t('process-instance.assignModal.manageAssignee') : $t('process-instance.assignModal.manageUsersGroups')" okOnly>
+  <b-modal ref="assignationModal" :title="selectedIdentity.type === 'assignee' ? $t('process-instance.assignModal.manageAssignee') : $t('process-instance.assignModal.manageUsersGroups')" :ok-only="true">
     <div>
       <ul class="nav nav-tabs mb-4">
         <li class="nav-item" v-for="(identity, idx) in filteredIdentities" :key="idx">

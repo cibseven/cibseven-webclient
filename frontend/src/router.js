@@ -29,6 +29,9 @@ import LoginView from '@/components/login/LoginView.vue'
 import { BWaitingBox } from 'cib-common-components'
 import DeployedForm from '@/components/forms/DeployedForm.vue'
 import StartDeployedForm from '@/components/forms/StartDeployedForm.vue'
+import TenantsView from '@/components/tenants/TenantsView.vue'
+import BatchesView from '@/components/batches/BatchesView.vue'
+import SystemView from './components/system/SystemView.vue'
 
 const router = createRouter({
   history: createWebHashHistory(),
@@ -122,6 +125,11 @@ const router = createRouter({
           ]
         },
 
+        // Batches
+        { path: 'batches', name: 'batches', beforeEnter: permissionsGuard('cockpit'),
+          component: BatchesView
+        },
+
         // Process management (power-user)
         { path: 'processes', redirect: '/seven/auth/processes/list', beforeEnter: permissionsGuard('cockpit') },
         { path: 'processes/list', name: 'processManagement', beforeEnter: permissionsGuard('cockpit'),
@@ -161,26 +169,31 @@ const router = createRouter({
         { path: 'deployments/:deploymentId?', name: 'deployments', beforeEnter: permissionsGuard('cockpit'),
           component: DeploymentsView
         },
-        { path: 'human-tasks', beforeEnter: permissionsGuard('cockpit'), component: HumanTasksView },
+        { path: 'human-tasks', name: 'human-tasks', beforeEnter: permissionsGuard('cockpit'), component: HumanTasksView },
         // users management
         { path: 'admin',
           component: {
             template: '<router-view></router-view>'
           },
           children: [
-            { path: 'users-management', name: 'usersManagement', component: UsersManagement },
+            { path: '', name: 'usersManagement', component: UsersManagement },
             { path: 'users', name:'adminUsers',
               beforeEnter: permissionsGuardUserAdmin('usersManagement', 'user'), component: AdminUsers },
-            { path: 'user/:userId',
+            { path: 'user/:userId', name: 'adminUser',
               beforeEnter: permissionsGuardUserAdmin('usersManagement', 'user'), component: ProfileUser,
               props: () => ({ editMode: true })
             },
-            { path: 'groups', name:'adminGroups', beforeEnter: permissionsGuardUserAdmin('groupsManagement', 'group'), component: AdminGroups },
-            { path: 'group/:groupId', beforeEnter: permissionsGuardUserAdmin('groupsManagement', 'group'), component: ProfileGroup },
-            { path: 'authorizations', name:'authorizations',
+            { path: 'groups', name: 'adminGroups', beforeEnter: permissionsGuardUserAdmin('groupsManagement', 'group'), component: AdminGroups },
+            { path: 'group/:groupId', name: 'adminGroup', beforeEnter: permissionsGuardUserAdmin('groupsManagement', 'group'), component: ProfileGroup },
+            // Tenants
+            { path: 'tenants', name:'adminTenants', component: TenantsView },
+            // System
+            { path: 'system', name: 'adminSystem', component: SystemView },
+            // Authorizations
+            { path: 'authorizations', name: 'authorizations',
               beforeEnter: permissionsGuardUserAdmin('authorizationsManagement', 'authorization'), component: AdminAuthorizations,
               children: [
-                { path: ':resourceTypeId/:resourceTypeKey', name:'authorizationType', component: AdminAuthorizationsTable }
+                { path: ':resourceTypeId/:resourceTypeKey', name: 'authorizationType', component: AdminAuthorizationsTable }
               ]
             }
           ]

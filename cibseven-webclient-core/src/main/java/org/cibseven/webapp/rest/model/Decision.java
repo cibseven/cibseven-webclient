@@ -19,7 +19,5 @@ public class Decision {
 	private String tenantId;
 	private String versionTag;
 	private Integer historyTimeToLive;
-	long runningInstances;
 	long allInstances;
-	long completedInstances;
 }

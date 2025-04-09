@@ -1,8 +1,7 @@
 <template>
   <div v-if="decision" class="h-100">
     <div @mousedown="handleMouseDown" class="v-resizable position-absolute w-100" style="left: 0" :style="'height: ' + bpmnViewerHeight + 'px; ' + toggleTransition">
-      <DmnViewer ref="diagram"
-        class="h-100" />
+      <DmnViewer ref="diagram" class="h-100" />
     </div>
 
     <ul class="nav nav-tabs position-absolute border-0 bg-light" style="left: -1px" :style="'top: ' + (bottomContentPosition - toggleButtonHeight) + 'px; ' + toggleTransition">
@@ -32,6 +31,9 @@
           <InstancesTable ref="instancesTable" v-if="!loading && decisionInstances.length > 0 && !sorting" :instances="decisionInstances" :sortByDefaultKey="sortByDefaultKey" :sortDesc="sortDesc"></InstancesTable>
           <div v-else-if="loading" class="py-3 text-center w-100">
             <BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}
+          </div>
+          <div v-else>
+            <p class="text-center p-4">{{ $t('process-instance.noResults') }}</p>
           </div>
         </div>
       </div>
@@ -95,7 +97,7 @@ export default {
       this.getXmlById(this.decision.id)
         .then(response => {
           setTimeout(() => {
-            this.$refs.diagram.showDiagram(response.dmnXml, null, null)
+            this.$refs.diagram.showDiagram(response.dmnXml)
           }, 100)
         })
         .catch(error => {

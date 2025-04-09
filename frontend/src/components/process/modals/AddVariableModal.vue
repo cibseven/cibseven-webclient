@@ -1,9 +1,9 @@
 <template>
-  <b-modal ref="addVariable" :title="$t('process-instance.addVariable')" @hide="reset()">
+  <b-modal ref="addVariable" :title="$t('process-instance.addVariable')" @hide="reset()" @shown="$refs.variableName.focus()">
     <div>
       <b-form-group>
         <template #label>{{ $t('process-instance.variables.name') }}*</template>
-        <b-form-input v-model="variable.name"></b-form-input>
+        <b-form-input ref="variableName" v-model="variable.name" autofocus></b-form-input>
       </b-form-group>
       <b-form-group :label="$t('process-instance.variables.type')">
         <b-form-select v-model="variable.type" :options="types"></b-form-select>

@@ -21,7 +21,7 @@
 export default {
   name: 'ConfirmDialog',
   props: {
-    okTitle: { type: String, default: null },
+    okTitle: String
   },
   data: function() { return { param: null } },
   methods: {

@@ -121,6 +121,10 @@
 				"line2": "Name: {name}Version: {version}"
 			}
 		},
+		"confirm": {
+			"suspend": "Wollen Sie wirklich die nächste Prozessdefinition mit allen laufenden Prozessinstanzen aussetzen?",
+			"activate": "Möchten Sie die nächste Prozessdefinition mit allen laufenden Prozessinstanzen wirklich aktivieren?"
+		},
 		"true": "Wahr",
 		"false": "Falsch",
 		"jobDefinitions": "Job-Definitionen",
@@ -148,7 +152,13 @@
 			"deletedReason": "Löschungsgrund",
 			"currentTaskAssignee": "Derzeitiger Bearbeiter",
 			"currentTaskCreated": "Aktuelle Aufgabe erstellt am"
-		},				
+		},
+		"confirm": {
+			"suspend": "Wollen Sie wirklich die nächste Instanz des Prozesses aussetzen?",
+			"activate": "Wollen Sie wirklich die nächste Instanz des Prozesses aktivieren?",
+			"deleteInstance": "Wollen Sie wirklich die nächste Instanz des Prozesses löschen?",
+			"deleteHistoryInstance": "Wollen Sie wirklich die nächste historische Instanz des Prozesses löschen?"
+		},
 		"variables": {
 			"name": "Name",
 			"type": "Typ",
@@ -156,7 +166,8 @@
 			"actions": "Aktionen",
 			"scope": "Umfang",
 			"objectTypeName": "Objekttypname",
-			"serializationDataFormat": "Serialisierungsdatenformat"
+			"serializationDataFormat": "Serialisierungsdatenformat",
+			"confirmDelete": "Wollen Sie die Variable löschen?"
 		},
 		"incidents": {
 		    "message": "Nachricht",
@@ -173,7 +184,8 @@
 			"setDueDate": "Fälligkeitsdatum festlegen",
 			"dueDate": "Fälligkeitsdatum",
 			"scheduleAt": "Planen um",
-			"invalidDateError": "Sie müssen ein gültiges Datum eingeben"
+			"invalidDateError": "Sie müssen ein gültiges Datum eingeben",
+			"retry": "Wiederholen"
 		},
 		"jobDefinitions": {
 			"state": "Status",
@@ -199,7 +211,11 @@
 			"overridingMsg": "Die überschriebene Priorität für Jobs der angegebenen Job-Definition ändern.",
 			"jobPriority": "Priorität",
 			"clear": "Überschriebene Job-Priorität löschen",
-			"set": "Überschriebene Job-Priorität festlegen"
+			"set": "Überschriebene Job-Priorität festlegen",
+			"invalidPriorityError": "Sie müssen einen ganzzahligen Wert eingeben",
+			"overrideAction": "Überschreiben",
+			"clearAction": "Löschen",			
+			"invalidDateError": "Sie müssen ein gültiges Datum eingeben"
 		},
 		"usertasks": {
 		    "activity": "Aktivität",
@@ -259,7 +275,7 @@
 			"completedTask": "Abgeschlossene Aufgabe",
 			"currentTask": "Aktuelle Aufgabe",
 			"selectedTask": "@:task.selectedTask",
-			"runingInstances": "Laufende Aktivitätsinstanzen",
+			"runningInstances": "Laufende Aktivitätsinstanzen",
 			"openIncidents": "Offene Vorfälle",
 			"suspendedJobDefinition": "Ausgesetzte Jobdefinition",
 			"activitiesHistory": "Ausgeführte Aktivitätsinstanzen",
@@ -310,6 +326,10 @@
 		"assignedUserTitle": "Zuweisung an Benutzer löschen",
 		"usersFound": "Gefundene Ergebnisse: Der Suchfilter hat Benutzer identifiziert, die Ihren Kriterien entsprechen",
 		"userAssigned": "Der Benutzer {0} wurde erfolgreich zugewiesen"
+	},
+	"batches": {
+		"title": "Batches",
+		"tooltip": "Batch operations"
 	},
 	"admin": {
 		"loading": "Wird geladen...",
@@ -382,6 +402,10 @@
 				"title": "Benutzer der Gruppe"
 			}
 		},
+		"tenants": {
+			"title": "Tenants",
+			"tooltip": "Tenants management"
+		},
 		"authorizations": {
 			"title": "Berechtigungen",
 			"type": "Typ",
@@ -431,6 +455,10 @@
 			},
 			"add": "Berechtigung hinzufügen",
 			"noAuthSelected": "Kein Berechtigungstyp ausgewählt"
+		},
+		"system": {
+			"title": "System",
+			"tooltip": "System Settings and Diagnostics"
 		}
 	},
 	"account-form": {
@@ -461,8 +489,7 @@
 		"close": "Schließen",
 		"delete": "Löschen",
 		"deleteFilter": "Möchten Sie den ausgewählten Filter {name} wirklich löschen?",
-		"assignUser": "Diese Aufgabe ist bereits einer anderen Person zugewiesen. Möchten Sie diese Zuordnung wirklich ändern?",
-		"performOperation": "Sind Sie sicher, dass Sie diese Operation ausführen wollen?"
+		"assignUser": "Diese Aufgabe ist bereits einer anderen Person zugewiesen. Möchten Sie diese Zuordnung wirklich ändern?"
 	},
 	"alert": {
 		"successSaveTask": "Die Aufgabe wurde erfolgreich gespeichert. Bitte denken Sie daran, dass Sie die Aufgabe abschließen müssen, um Ihre Arbeit zu beenden.",
@@ -475,7 +502,7 @@
 		"email": "@:account-form.email"
 	},
 	"cib-header": {
-		"productName": "CIB flow",
+		"productName": "CIB seven",
 		"languages": "Sprache",
 		"help": "Info & Hilfe",
 		"user": "Konto",
@@ -680,14 +707,16 @@
 	},
     "ienotify": { 
 		"remember": "Diese Meldung nicht mehr anzeigen",
-        "text": "CIB flow wird nicht vollständig vom Internet Explorer unterstützt. Um CIB flow in vollem Umfang nutzen zu können, empfehlen wir, einen anderen Browser zu verwenden."
+        "text": "CIB seven wird nicht vollständig vom Internet Explorer unterstützt. Um CIB seven in vollem Umfang nutzen zu können, empfehlen wir, einen anderen Browser zu verwenden."
     },
 	"start": { 
 		"close": "Schließen",
 		"taskList": "Aufgaben bearbeiten",
 		"startProcesses": "@:process.startProcess",
 		"cockpit": "Cockpit",
-		"emptyStart": "Derzeit haben Sie keine Berechtigung, hier Aufgaben auszuführen. Bitte wenden Sie sich an den CIB flow Administrator, um Berechtigungen zu erhalten.",
+		"emptyStart": "Derzeit haben Sie keine Berechtigung, hier Aufgaben auszuführen. Bitte wenden Sie sich an den CIB seven Administrator, um Berechtigungen zu erhalten.",
+		"groupOperations": "Operations",
+		"groupAdministration": "Administration",
 		"admin": "Verwaltung",
 		"userAdmin": "Benutzerverwaltung",
 		"modeler": "Prozess modellieren",
@@ -830,7 +859,7 @@
 		"flowLinkPrivacy": "Datenschutzerklärung",
 		"flowLinkImprint": "Impressum",
 		"flowLinkAccessibility": "Erklärung zur Barrierefreiheit",
-		"flowLinkHelp": "Hilfe",			
+		"flowLinkHelp": "Erste Schritte",			
 		"flowModalSupport": {
 			"modalText": "Support",
 			"title": "Informationen",
@@ -845,7 +874,7 @@
 		},
 		"flowModalAbout": {
 			"modalText": "Über",
-			"title": "CIB flow"
+			"title": "CIB seven"
 		}
 	},
 	"multisort": {
@@ -939,7 +968,7 @@
 	},
 	"notification": {
 		"newTasks": "Neue Aufgaben",
-		"newTasksTitle": "Ihnen wurden neue Aufgaben in CIB flow zugewiesen."
+		"newTasksTitle": "Ihnen wurden neue Aufgaben in CIB seven zugewiesen."
 	},
 	"decision" : {
 		"id": "ID",
