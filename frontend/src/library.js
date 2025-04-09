@@ -270,6 +270,5 @@ export {
   DecisionView,
   DecisionList,
   DecisionListView,
-  DecisionDefinitionVersion,
-  ProcessService
+  DecisionDefinitionVersion
 }

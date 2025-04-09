@@ -135,7 +135,7 @@ public class DecisionService extends BaseService implements InitializingBean {
 	@GetMapping("/id/{id}")
 	public Decision getDecisionDefinitionById(@PathVariable String id, @RequestParam Optional<Boolean> extraInfo, CIBUser user) {
   	checkPermission(user, DECISION_DEFINITION, PermissionConstants.READ_ALL);
-		return bpmProvider.getDecisionDefinitionById(id, extraInfo);
+		return bpmProvider.getDecisionDefinitionById(id, extraInfo, user);
 	}
 
 	@GetMapping("/id/{id}/diagram")

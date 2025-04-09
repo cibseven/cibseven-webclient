@@ -839,7 +839,7 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public Decision getDecisionDefinitionById(String id, Optional<Boolean> extraInfo, CIBUser user) {
-		return decisionProvider.getDecisionDefinitionById(id, extraInfo);
+		return decisionProvider.getDecisionDefinitionById(id, extraInfo, user);
 	}
 	
 	@Override
