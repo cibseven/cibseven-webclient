@@ -22,7 +22,7 @@ public interface IDecisionProvider {
 	public Object updateHistoryTTLByKeyAndTenant(String key, String tenant, CIBUser user);
 	public Object getXmlByKey(String key, CIBUser user);
 	public Object getXmlByKeyAndTenant(String key, String tenant, CIBUser user);
-	public Decision getDecisionDefinitionById(String id, Optional<Boolean> extraInfo);
+	public Decision getDecisionDefinitionById(String id, Optional<Boolean> extraInfo, CIBUser user);
 	public Object getDiagramById(String id, CIBUser user);
 	public Object evaluateDecisionDefinitionById(String id, CIBUser user);
 	public void updateHistoryTTLById(String id, Map<String, Object> data, CIBUser user);
