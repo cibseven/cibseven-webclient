@@ -32,7 +32,8 @@ import StartDeployedForm from '@/components/forms/StartDeployedForm.vue'
 import TenantsView from '@/components/tenants/TenantsView.vue'
 import BatchesView from '@/components/batches/BatchesView.vue'
 import SystemView from './components/system/SystemView.vue'
-import SystemSetting from './components/system/SystemSetting.vue'
+import Diagnostics from './components/system/Diagnostics.vue'
+import ExecutionMetrics from './components/system/ExecutionMetrics.vue'
 
 const router = createRouter({
   history: createWebHashHistory(),
@@ -191,7 +192,8 @@ const router = createRouter({
             // System
             { path: 'system', redirect: '/seven/auth/admin/system/diagnostics', name: 'adminSystem', component: SystemView,
               children: [
-                { path: ':setting', name: 'systemSetting', component: SystemSetting, props: true }
+                { path: 'diagnostics', name: 'diagnostics', component: Diagnostics },
+                { path: 'execution-metrics', name: 'execution-metrics', component: ExecutionMetrics }
               ]
             },
             // Authorizations

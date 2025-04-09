@@ -179,7 +179,10 @@ export default {
         case 'authorizationType':
           return this.$t('admin.authorizations.title')
         case 'adminTenants': return this.$t('admin.tenants.title')
-        case 'adminSystem': return this.$t('admin.system.title')
+        case 'adminSystem':
+        case 'diagnostics':
+        case 'execution-metrics':
+          return this.$t('admin.system.title')
         default: return ''
       }
     },

@@ -52,6 +52,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import jakarta.servlet.http.HttpServletRequest;
 
 public interface BpmProvider {
@@ -953,4 +955,6 @@ public interface BpmProvider {
 	Object setRemovalTime(Map<String, Object> payload);
 	Object getCleanableBatchReport(Map<String, Object> queryParams);
 	Object getCleanableBatchReportCount();
+
+	JsonNode getTelemetryData(CIBUser user);
 }

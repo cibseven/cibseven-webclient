@@ -75,6 +75,7 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
     @Autowired private IDecisionProvider decisionProvider;
     @Autowired private IJobProvider jobProvider;
     @Autowired private IBatchProvider batchProvider;
+    @Autowired private ISystemProvider systemProvider;
     
     
     /*
@@ -976,5 +977,20 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	public Object getCleanableBatchReportCount() {
 		return batchProvider.getCleanableBatchReportCount();
     }
+	
+	/*
+
+	███████ ██    ██ ███████ ████████ ███████ ███    ███     ██████  ██████   ██████  ██    ██ ██ ██████  ███████ ██████  
+	██       ██  ██  ██         ██    ██      ████  ████     ██   ██ ██   ██ ██    ██ ██    ██ ██ ██   ██ ██      ██   ██ 
+	███████   ████   ███████    ██    █████   ██ ████ ██     ██████  ██████  ██    ██ ██    ██ ██ ██   ██ █████   ██████  
+	     ██    ██         ██    ██    ██      ██  ██  ██     ██      ██   ██ ██    ██  ██  ██  ██ ██   ██ ██      ██   ██ 
+	███████    ██    ███████    ██    ███████ ██      ██     ██      ██   ██  ██████    ████   ██ ██████  ███████ ██   ██ 
+
+	*/                                                                                                                      
+
+	@Override
+	public JsonNode getTelemetryData(CIBUser user) {
+		return systemProvider.getTelemetryData(user);
+	}
 	
 }

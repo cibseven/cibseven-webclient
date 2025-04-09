@@ -13,10 +13,7 @@
           </b-list-group-item>
         </b-list-group>
       </template>
-      <router-view
-        :key="$route.fullPath"
-        :loading="loading"
-      />
+      <router-view/>
     </SidebarsFlow>
   </div>
 </template>
@@ -28,10 +25,6 @@ import SidebarsFlow from '@/components/common-components/SidebarsFlow.vue'
 export default {
   name: 'SystemView',
   components: { SidebarsFlow },
-  props: {
-    decisionKey: String,
-    versionIndex: { type: String, default: '' }
-  },
   data() {
     return {
       leftOpen: true
@@ -44,10 +37,6 @@ export default {
     systemSettings() {
       return ['diagnostics', 'execution-metrics']
     }
-  },
-  mounted() {
-  },
-  methods: {
   }
 }
 </script>
