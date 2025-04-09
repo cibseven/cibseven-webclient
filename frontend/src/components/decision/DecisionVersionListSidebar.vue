@@ -48,6 +48,7 @@ export default {
   props: {
     versions: Array
   },
+  emits: ['refresh-decision-versions'],
   data() {
     return {
       loading: false
