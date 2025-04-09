@@ -849,7 +849,22 @@
 		"flowLinkPrivacy": "Declaración de privacidad",
 		"flowLinkImprint": "Imprimir",
 		"flowLinkAccessibility": "Declaración de accesibilidad",
-		"flowLinkHelp": "Ayuda",			
+		"flowLinkHelp": "Ayuda",
+		"shortcuts": {
+			"title": "Atajos",
+			"tooltip": "Mostrar atajos disponibles",
+			"columnShortcut": "Atajo",
+			"columnDescription": "Descripción",
+			"shortcuts": {
+				"ctrlLeft": "Ir a la vista 'Iniciar proceso'",
+				"ctrlDown": "Ir a la vista 'Tareas'",
+				"ctrlRight": "Ir a la vista 'Procesos'",
+				"ctrlP": "Abrir la ventana emergente 'Iniciar proceso'",
+				"alt1": "Establecer el foco en los filtros",
+				"alt2": "Establecer el foco en la lista de tareas filtradas",
+				"alt3": "Establecer el foco en la tarea seleccionada"
+			}
+		},
 		"flowModalSupport": {
 			"modalText": "Soporte",
 			"title": "Información",

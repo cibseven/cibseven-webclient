@@ -1,0 +1,58 @@
+<template>
+  <b-modal ref="shortcuts" :title="$t('infoAndHelp.shortcuts.title')" :ok-only="true">
+    <div class="row">
+      <div class="col-2">
+        <span class="mdi mdi-48px mdi-keyboard-outline pe-1 text-info"></span>
+      </div>
+      <div class="col-10 bg-white ps-0">
+        <h5>{{ $t('infoAndHelp.flowModalAbout.title') }}</h5>
+        <ShortcutsTable :items="itemsGlobal"></ShortcutsTable>
+        <h5>{{ $t('start.taskList') }}</h5>
+        <ShortcutsTable :items="itemsTasks"></ShortcutsTable>
+      </div>
+    </div>
+  </b-modal>
+</template>
+
+<script>
+import ShortcutsTable from '@/components/modals/ShortcutsTable.vue'
+
+export default {
+  name: 'ShortcutsModal',
+  components: { ShortcutsTable },
+  data: function() {
+    return {
+      itemsGlobal: [{
+          buttons: ["Ctrl", "+", "Left"],
+          description: 'infoAndHelp.shortcuts.shortcuts.ctrlLeft',
+        }, {
+          buttons: ["Ctrl", "+", "Down"],
+          description: 'infoAndHelp.shortcuts.shortcuts.ctrlDown',
+        }, {
+          buttons: ["Ctrl", "+", "Right"],
+          description: 'infoAndHelp.shortcuts.shortcuts.ctrlRight',
+        }
+      ],
+      itemsTasks: [{
+          buttons: ["Ctrl", "+", "P"],
+          description: 'infoAndHelp.shortcuts.shortcuts.ctrlP',
+        }, {
+          buttons: ["Alt", "+", "1"],
+          description: 'infoAndHelp.shortcuts.shortcuts.alt1',
+        }, {
+          buttons: ["Alt", "+", "2"],
+          description: 'infoAndHelp.shortcuts.shortcuts.alt2',
+        }, {
+          buttons: ["Alt", "+", "3"],
+          description: 'infoAndHelp.shortcuts.shortcuts.alt3',
+        }
+      ]
+    }
+  },
+  methods: {
+    show: function() {
+      this.$refs.shortcuts.show()
+    }
+  }
+}
+</script>

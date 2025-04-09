@@ -693,7 +693,22 @@
 		"flowLinkPrivacy": "Informativa sulla privacy",
 		"flowLinkImprint": "Impronta",
 		"flowLinkAccessibility": "Accessibility declaration",		
-		"flowLinkHelp": "Aiuto",			
+		"flowLinkHelp": "Aiuto",
+		"shortcuts": {
+			"title": "Scorciatoie",
+			"tooltip": "Mostra le scorciatoie disponibili",
+			"columnShortcut": "Scorciatoia",
+			"columnDescription": "Descrizione",
+			"shortcuts": {
+				"ctrlLeft": "Vai alla vista 'Avvia processo'",
+				"ctrlDown": "Vai alla vista 'Compiti'",
+				"ctrlRight": "Vai alla vista 'Processi'",
+				"ctrlP": "Apri la finestra pop-up 'Avvia processo'",
+				"alt1": "Imposta il focus sui filtri",
+				"alt2": "Imposta il focus sulla lista dei compiti filtrati",
+				"alt3": "Imposta il focus sul compito selezionato"
+			}
+		},
 		"flowModalSupport": {
 			"modalText": "Supporto",
 			"title": "Informazioni",

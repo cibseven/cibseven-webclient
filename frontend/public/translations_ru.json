@@ -848,7 +848,22 @@
 		"flowLinkPrivacy": "Заявление о конфиденциальности",
 		"flowLinkImprint": "Импринт",
 		"flowLinkAccessibility": "Accessibility declaration",			
-		"flowLinkHelp": "Помощь",			
+		"flowLinkHelp": "Помощь",
+		"shortcuts": {
+			"title": "Горячие клавиши",
+			"tooltip": "Просмотр горячих клавиш",
+			"columnShortcut": "Комбинация",
+			"columnDescription": "Действие",
+			"shortcuts": {
+				"ctrlLeft": "Перейти в раздел \"Начать процесс\"",
+				"ctrlDown": "Перейти в раздел \"Мои Задачи\"",
+				"ctrlRight": "Перейти в раздел \"Процессы\"",
+				"ctrlP": "Открыть всплывающее окно \"Начать процес\"",
+				"alt1": "Установить фокус на фильтрах",
+				"alt2": "Установить фокус на список отфильтрованных задач",
+				"alt3": "Установить фокус на выбранной задаче"
+			}
+		},
 		"flowModalSupport": {
 			"modalText": "Поддержка",
 			"title": "Информация",

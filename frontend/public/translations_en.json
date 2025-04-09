@@ -849,7 +849,22 @@
 		"flowLinkPrivacy": "Privacy statement",
 		"flowLinkImprint": "Imprint",
 		"flowLinkAccessibility": "Accessibility declaration",	
-		"flowLinkHelp": "Help",				
+		"flowLinkHelp": "Help",
+		"shortcuts": {
+			"title": "Shortcuts",
+			"tooltip": "View avaiable shortcuts",
+			"columnShortcut": "Shortcut",
+			"columnDescription": "Description",
+			"shortcuts": {
+				"ctrlLeft": "Jump to \"Start process\" view",
+				"ctrlDown": "Jump to \"Tasks\" view",
+				"ctrlRight": "Jump to \"Processes\" view",
+				"ctrlP": "Open \"Start process\" pop-up window",
+				"alt1": "Set focus on filters",
+				"alt2": "Set focus on the list of filtered tasks",
+				"alt3": "Set focus on the selected task"
+			}
+		},
 		"flowModalSupport": {
 			"modalText": "Support",
 			"title": "Information",
