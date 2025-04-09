@@ -859,7 +859,24 @@
 		"flowLinkPrivacy": "Datenschutzerklärung",
 		"flowLinkImprint": "Impressum",
 		"flowLinkAccessibility": "Erklärung zur Barrierefreiheit",
-		"flowLinkHelp": "Erste Schritte",			
+		"flowLinkHelp": "Erste Schritte",
+		"shortcuts": {
+			"title": "Tastenkürzel",
+			"tooltip": "Verfügbare Tastenkürzel anzeigen",
+			"columnShortcut": "Tastenkürzel",
+			"columnDescription": "Beschreibung",
+			"buttonCtrl": "Strg",
+			"shortcuts": {
+				"ctrlLeft": "Zur Ansicht 'Startprozess' springen",
+				"ctrlDown": "Zur Ansicht 'Aufgaben' springen",
+				"ctrlRight": "Zur Ansicht 'Prozesse' springen",
+				"ctrlP": "Das Pop-up-Fenster 'Startprozess' öffnen",
+				"ctrlAltC": "Übernehme die derzeit ausgewählte Aufgabe",
+				"alt1": "Fokus auf Filter setzen",
+				"alt2": "Fokus auf die Liste der gefilterten Aufgaben setzen",
+				"alt3": "Fokus auf die ausgewählte Aufgabe setzen"
+			}
+		},
 		"flowModalSupport": {
 			"modalText": "Support",
 			"title": "Informationen",
