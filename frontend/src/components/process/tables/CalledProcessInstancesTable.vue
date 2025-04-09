@@ -67,9 +67,6 @@ export default {
             return processSPL
           }
         })
-        if (!foundProcess){
-          foundProcess = {name: key}
-        }
 				return ({
           id: processPL.id,
           callingActivity: foundInst,
