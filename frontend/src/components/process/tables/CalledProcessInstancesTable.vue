@@ -1,5 +1,5 @@
 <template>
-  <div class="overflow-auto bg-white container-fluid g-0" style="height: 100%" >
+  <div class="overflow-auto bg-white container-fluid g-0 h-100" >
     <flow-table v-if="!loading && matchedCalledList.length > 0" striped thead-class="sticky-header" :items="matchedCalledList" primary-key="id" prefix="process-instance.calledProcesses."
       sort-by="label" :sort-desc="true" :fields="[
       { label: 'id', key: 'id', class: 'col-4', tdClass: 'py-1 border-end border-top-0' },
@@ -52,7 +52,9 @@ export default {
   created: function(){
 		ProcessService.findCurrentProcessesInstances({"superProcessInstance": this.selectedInstance.id}).then(response => {
 			this.calledInstanceList = response
+      let key = null
       this.matchedCalledList = this.calledInstanceList.map(processPL => {
+        key = processPL.definitionId.match(/^[^:]+/).at(0)
         let foundInst = this.activityInstanceHistory.find(processAIH => {
 					if (processAIH.activityType === "callActivity"){
 						if (processAIH.calledProcessInstanceId === processPL.id){
@@ -61,12 +63,20 @@ export default {
 					}
 				})
         let foundProcess = this.$store.state.process.list.find(processSPL => {
-          if (processPL.definitionId.match(/^[^:]+/).toString() === processSPL.key){
+          if (key === processSPL.key){
             return processSPL
           }
-
         })
-				return ({id: processPL.id, callingActivity: foundInst, key: processPL.definitionId.match(/^[^:]+/).toString(), version: processPL.definitionId.match(/(?!:)\d(?=:)/).toString(), name: foundProcess.name})
+        if (!foundProcess){
+          foundProcess = {name: key}
+        }
+				return ({
+          id: processPL.id,
+          callingActivity: foundInst,
+          key: key,
+          version: processPL.definitionId.match(/(?!:)\d(?=:)/).at(0),
+          name: foundProcess ? foundProcess.name : key
+        })
 			})
       this.loading = false
     })
