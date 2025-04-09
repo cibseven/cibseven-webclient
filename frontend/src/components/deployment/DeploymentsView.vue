@@ -68,8 +68,8 @@
         </div>
       </div>
       <template v-slot:modal-footer>
-        <b-button variant="primary" @click="deleteDeployments(); $refs.deleteModal.hide()">{{ $t('confirm.ok') }}</b-button>
-        <b-button @click="$refs.deleteModal.hide()">{{ $t('confirm.cancel') }}</b-button>
+        <b-button @click="$refs.deleteModal.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
+        <b-button @click="deleteDeployments(); $refs.deleteModal.hide()" variant="primary">{{ $t('confirm.ok') }}</b-button>
       </template>
     </b-modal>
     <SuccessAlert top="0" style="z-index: 1031" ref="deploymentsDeleted"> {{ $t('deployment.deploymentsDeleted', [deploymentsDelData.deleted, deploymentsDelData.total]) }}</SuccessAlert>

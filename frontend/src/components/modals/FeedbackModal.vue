@@ -8,12 +8,12 @@
         <b-form-textarea ref="textArea" v-model="problem" :rows="10" :max-rows="10" required></b-form-textarea>
       </b-form-group>
       <b-form-group>
-        <Clipboard tabindex="-1" @input="clip = $event"></Clipboard>
+        <FeedbackScreenshot tabindex="-1" @input="clip = $event"></FeedbackScreenshot>
       </b-form-group>
     </CIBForm>
     <template v-slot:modal-footer>
-      <button @click="$refs.form.onSubmit()" class="btn btn-primary">{{ $t('problem-report.ok') }}</button>
-      <button type="button" class="btn btn-secondary" @click="$refs.modal.hide()">{{ $t('problem-report.cancel') }}</button>
+      <b-button @click="$refs.modal.hide()" variant="link">{{ $t('problem-report.cancel') }}</b-button>
+      <b-button @click="$refs.form.onSubmit()" variant="primary">{{ $t('problem-report.ok') }}</b-button>
     </template>
   </b-modal>
 </template>
@@ -21,12 +21,12 @@
 <script>
 import platform from 'platform'
 import CIBForm from '@/components/common-components/CIBForm.vue'
-import Clipboard from '@/components/common-components/Clipboard.vue'
+import FeedbackScreenshot from '@/components/modals/FeedbackScreenshot.vue'
 import { axios } from '@/globals.js'
 
 export default {
-  name: 'ProblemReport',
-  components: { CIBForm, Clipboard },
+  name: 'FeedbackModal',
+  components: { CIBForm, FeedbackScreenshot },
   props: { url: String, email: String },
   data: function() { return { problem: '', email2: null, clip: null } },
   methods: {

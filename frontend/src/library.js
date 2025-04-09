@@ -1,14 +1,26 @@
 // Import the CSS to ensure it is bundled with the package
 import './assets/main.css';
 
+import { axios } from '@/globals.js'
+import appConfig from '@/appConfig.js'
+import { permissionsMixin } from '@/permissions.js'
+import processesVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
+import processesMixin from '@/components/process/mixins/processesMixin.js'
+import resizerMixin from '@/components/process/mixins/resizerMixin.js'
+import store from '@/store'
+import usersMixin from '@/mixins/usersMixin.js'
+import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
+import { debounce } from '@/utils/debounce.js'
+import { HoverStyle } from '@/components/common-components/directives.js'
 import CibSeven from '@/components/CibSeven.vue'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import ErrorDialog from '@/components/common-components/ErrorDialog.vue'
+import AboutModal from '@/components/modals/AboutModal.vue'
 import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
-import ProblemReport from '@/components/common-components/ProblemReport.vue'
+import FeedbackModal from '@/components/modals/FeedbackModal.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import TaskPopper from '@/components/common-components/TaskPopper.vue'
-import Clipboard from '@/components/common-components/Clipboard.vue'
+import FeedbackScreenshot from '@/components/modals/FeedbackScreenshot.vue'
 import TaskList from '@/components/common-components/TaskList.vue'
 import CIBHeaderFlow from '@/components/common-components/CIBHeaderFlow.vue'
 import Sidebars from '@/components/common-components/Sidebars.vue'
@@ -21,7 +33,7 @@ import IconButton from '@/components/render-template/IconButton.vue'
 import MultisortModal from '@/components/process/modals/MultisortModal.vue'
 import SidebarsFlow from '@/components/common-components/SidebarsFlow.vue'
 import SmartSearch from '@/components/task/SmartSearch.vue'
-import SupportModal from '@/components/common-components/SupportModal.vue'
+import SupportModal from '@/components/modals/SupportModal.vue'
 import AdminAuthorizations from '@/components/admin/AdminAuthorizations.vue'
 import AdminAuthorizationsTable from '@/components/admin/AdminAuthorizationsTable.vue'
 import AdminGroups from '@/components/admin/AdminGroups.vue'
@@ -40,8 +52,9 @@ import FilterNavBar from '@/components/task/filter/FilterNavBar.vue'
 import FilterNavCollapsed from '@/components/task/filter/FilterNavCollapsed.vue'
 import ProcessView from '@/components/process/ProcessView.vue'
 import AddVariableModal from '@/components/process/modals/AddVariableModal.vue'
+import DeleteVariableModal from '@/components/process/modals/DeleteVariableModal.vue'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
-import InstancesTable from '@/components/process/InstancesTable.vue'
+import InstancesTable from '@/components/process/tables/InstancesTable.vue'
 import ProcessInstancesView from '@/components/process/ProcessInstancesView.vue'
 import ProcessAdvanced from '@/components/process/ProcessAdvanced.vue'
 import ProcessCard from '@/components/process/ProcessCard.vue'
@@ -53,6 +66,8 @@ import ProcessListView from '@/components/processes/list/ProcessListView.vue'
 import ProcessTable from '@/components/start-process/ProcessTable.vue'
 import ProcessInstanceView from '@/components/process/ProcessInstanceView.vue'
 import ProcessDefinitionView from '@/components/process/ProcessDefinitionView.vue'
+import DeleteProcessDefinitionModal from '@/components/process/modals/DeleteProcessDefinitionModal.vue'
+import ConfirmActionOnProcessInstanceModal from '@/components/process/modals/ConfirmActionOnProcessInstanceModal.vue'
 import StartProcess from '@/components/start-process/StartProcess.vue'
 import TaskAssignationModal from '@/components/process/modals/TaskAssignationModal.vue'
 import VariablesTable from '@/components/process/tables/VariablesTable.vue'
@@ -66,16 +81,27 @@ import TasksContent from '@/components/task/TasksContent.vue'
 import TasksNavBar from '@/components/task/TasksNavBar.vue'
 import TasksView from '@/components/task/TasksView.vue'
 import HighlightedText from '@/components/common-components/HighlightedText.vue'
+import HumanTasksView from '@/components/task/HumanTasksView.vue'
+import DecisionView from '@/components/decision/DecisionView.vue'
+import DecisionList from '@/components/decisions/list/DecisionList.vue'
+import DecisionListView from '@/components/decisions/list/DecisionListView.vue'
+import DecisionDefinitionVersion from '@/components/decision/DecisionDefinitionVersion.vue'
+import TenantsView from '@/components/tenants/TenantsView.vue'
+import BatchesView from '@/components/batches/BatchesView.vue'
+import SystemView from '@/components/system/SystemView.vue'
+import { TaskService, HistoryService, ProcessService } from '@/services.js';
+
 
 const registerComponents = function(app) {
   app.component('cib-seven', CibSeven)
   app.component('flow-table', FlowTable)
   app.component('error-dialog', ErrorDialog)
   app.component('confirm-dialog', ConfirmDialog)
-  app.component('problem-report', ProblemReport)
+  app.component('about-modal', AboutModal)
+  app.component('feedback-modal', FeedbackModal)
   app.component('success-alert', SuccessAlert)
   app.component('task-popper', TaskPopper)
-  app.component('clipboard', Clipboard)
+  app.component('feedback-screenshot', FeedbackScreenshot)
   app.component('task-list', TaskList)
   app.component('cib-header-flow', CIBHeaderFlow)
   app.component('sidebars', Sidebars)
@@ -107,6 +133,7 @@ const registerComponents = function(app) {
   app.component('filter-nav-collapsed', FilterNavCollapsed)
   app.component('process-view', ProcessView)
   app.component('add-variable-modal', AddVariableModal)
+  app.component('delete-variable-modal', DeleteVariableModal)
   app.component('bpmn-viewer', BpmnViewer)
   app.component('instances-table', InstancesTable)
   app.component('process-instances-view', ProcessInstancesView)
@@ -120,6 +147,8 @@ const registerComponents = function(app) {
   app.component('process-table', ProcessTable)
   app.component('process-instance-view', ProcessInstanceView)
   app.component('process-definition-view', ProcessDefinitionView)
+  app.component('delete-process-definition-modal', DeleteProcessDefinitionModal)
+  app.component('confirm-action-on-process-instance-modal', ConfirmActionOnProcessInstanceModal)
   app.component('start-process', StartProcess)
   app.component('task-assignation-modal', TaskAssignationModal)
   app.component('variables-table', VariablesTable)
@@ -133,25 +162,41 @@ const registerComponents = function(app) {
   app.component('tasks-nav-bar', TasksNavBar)
   app.component('tasks-view', TasksView)
   app.component('highlighted-text', HighlightedText)
-}
-
-const mergeLocaleMessage = function(i18n, lang) {
-  // This function is now just a placeholder since translations are loaded dynamically
-  // via the fetchTranslation function in i18n.js
-  return Promise.resolve()
+  app.component('human-tasks', HumanTasksView)
+  app.component('decision-view', DecisionView)
+  app.component('decision-list', DecisionList)
+  app.component('decision-list-view', DecisionListView)
+  app.component('decision-', DecisionDefinitionVersion)
+  app.component('tenants-view', TenantsView)
+  app.component('batches-view', BatchesView)
+  app.component('system-view', SystemView)
 }
 
 export {
   registerComponents,
-  mergeLocaleMessage,
+  
+  TenantsView,
+  BatchesView,
+  SystemView,
+  axios,
+  appConfig,
+  permissionsMixin,
+  store,
+  usersMixin,
+  processesVariablesMixin,
+  processesMixin,
+  resizerMixin,
+  copyToClipboardMixin,
+  debounce,
+  HoverStyle,
   CibSeven,
   FlowTable,
   ErrorDialog,
   ConfirmDialog,
-  ProblemReport,
+  FeedbackModal,
   SuccessAlert,
   TaskPopper,
-  Clipboard,
+  FeedbackScreenshot,
   TaskList,
   CIBHeaderFlow,
   Sidebars,
@@ -183,6 +228,7 @@ export {
   FilterNavCollapsed,
   ProcessView,
   AddVariableModal,
+  DeleteVariableModal,
   BpmnViewer,
   InstancesTable,
   ProcessInstancesView,
@@ -196,6 +242,8 @@ export {
   ProcessTable,
   ProcessInstanceView,
   ProcessDefinitionView,
+  DeleteProcessDefinitionModal,
+  ConfirmActionOnProcessInstanceModal,
   StartProcess,
   TaskAssignationModal,
   VariablesTable,
@@ -208,5 +256,14 @@ export {
   TasksContent,
   TasksNavBar,
   TasksView,
-  HighlightedText
+  HighlightedText,
+  TaskService,
+  HistoryService,
+  ProcessService,
+  HumanTasksView,
+  DecisionView,
+  DecisionList,
+  DecisionListView,
+  DecisionDefinitionVersion,
+  ProcessService
 }

@@ -133,9 +133,9 @@ public class DecisionService extends BaseService implements InitializingBean {
 	}
 
 	@GetMapping("/id/{id}")
-	public Decision getDecisionDefinitionById(@PathVariable String id, CIBUser user) {
-		checkPermission(user, DECISION_DEFINITION, PermissionConstants.READ_ALL);
-		return bpmProvider.getDecisionDefinitionById(id, user);
+	public Decision getDecisionDefinitionById(@PathVariable String id, @RequestParam Optional<Boolean> extraInfo, CIBUser user) {
+  	checkPermission(user, DECISION_DEFINITION, PermissionConstants.READ_ALL);
+		return bpmProvider.getDecisionDefinitionById(id, extraInfo);
 	}
 
 	@GetMapping("/id/{id}/diagram")
@@ -151,9 +151,10 @@ public class DecisionService extends BaseService implements InitializingBean {
 	}
 
 	@PutMapping("/id/{id}/history-ttl")
-	public Object updateHistoryTTLById(@PathVariable String id, CIBUser user) {
-		checkPermission(user, DECISION_DEFINITION, PermissionConstants.UPDATE_ALL);
-		return bpmProvider.updateHistoryTTLById(id, user);
+	public void updateHistoryTTLById(@PathVariable String id, 
+			@RequestBody Map<String, Object> data, CIBUser user) {
+  	checkPermission(user, DECISION_DEFINITION, PermissionConstants.UPDATE_ALL);
+		bpmProvider.updateHistoryTTLById(id, data, user);
 	}
 
 	@GetMapping("/id/{id}/xml")

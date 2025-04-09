@@ -182,6 +182,7 @@
             </div>
           </div>
         </div>
+
         <!-- Assign Groups Modal -->
         <b-modal v-if="editMode" ref="assignGroupsModal" :title="$t('admin.users.group.add')" size="lg">
           <div v-if="unAssignedGroups.length > 0" class="container g-0">
@@ -199,10 +200,11 @@
             {{ $t('admin.users.group.noResults') }}
           </div>
           <template v-slot:modal-footer>
-            <b-button variant="link" @click="$refs.assignGroupsModal.hide()">{{ $t('confirm.cancel') }}</b-button>
-            <b-button variant="primary" @click="assignGroups(); $refs.assignGroupsModal.hide()">{{ $t('confirm.ok') }}</b-button>
+            <b-button @click="$refs.assignGroupsModal.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
+            <b-button @click="assignGroups(); $refs.assignGroupsModal.hide()" variant="primary">{{ $t('confirm.ok') }}</b-button>
           </template>
         </b-modal>
+
         <b-modal v-if="editMode" ref="deleteModal" :title="$t('confirm.title')">
           <div class="container-fluid">
             <div class="row align-items-center">
@@ -219,10 +221,11 @@
             </div>
           </div>
           <template v-slot:modal-footer>
-            <b-button variant="primary" @click="deleteUser(); $refs.deleteModal.hide()">{{ $t('confirm.ok') }}</b-button>
-            <b-button @click="$refs.deleteModal.hide()">{{ $t('confirm.cancel') }}</b-button>
+            <b-button @click="$refs.deleteModal.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
+            <b-button @click="deleteUser(); $refs.deleteModal.hide()" variant="primary">{{ $t('confirm.ok') }}</b-button>
           </template>
         </b-modal>
+
       </div>
     </transition>
     <b-popover :target="() => $refs.passwordHelper" triggers="hover">

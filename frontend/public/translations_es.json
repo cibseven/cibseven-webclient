@@ -112,7 +112,18 @@
 		"onlyActive": "Sólo activos",
 		"exportInstances": "Exportar instancias",
 		"days": "días",
-		"deleteProcessDefinition": "Eliminar definición de proceso",
+		"deleteProcessDefinition": {
+			"tooltip": "Eliminar definición de proceso",
+			"confirm": {
+				"title": "@:confirm.delete",
+				"line1": "¿Eliminar definición de proceso?",
+				"line2": "Nombre: {name}Versión: {version}"
+			}
+		},
+		"confirm": {
+			"suspend": "¿Realmente desea suspender la siguiente definición de proceso con todas las instancias de proceso en ejecución?",
+			"activate": "¿Realmente quieres activar la siguiente definición de proceso con todas las instancias de proceso en ejecución?"
+		},
 		"true": "Verdadero",
 		"false": "Falso",		
 		"jobDefinitions": "Definiciones de trabajos",
@@ -126,8 +137,8 @@
 		"active": "Activo",
 		"history": "Historial",
 		"download": "Descargar",
-		"edit": "@:commons:edit",
-		"save": "@:commons:save",
+		"edit": "@:commons.edit",
+		"save": "@:commons.save",
 		"upload": "Subir archivo",
 		"selectFile": "Seleccione archivo",
 		"details": {
@@ -140,7 +151,13 @@
 			"deletedReason": "Motivo eliminación",
 			"currentTaskAssignee": "Tarea asignada a",
 			"currentTaskCreated": "Tarea actual creada el"
-		},		
+		},
+		"confirm": {
+			"suspend": "¿Realmente quieres suspender la siguiente instancia del proceso?",
+			"activate": "¿Realmente quieres activar la siguiente instancia del proceso?",
+			"deleteInstance": "¿Realmente quieres borrar la siguiente instancia del proceso?",
+			"deleteHistoryInstance": "¿Realmente quieres borrar la siguiente instancia histórica del proceso?"
+		},
 		"variables": {
 			"name": "Nombre",
 			"type": "Tipo",
@@ -148,7 +165,8 @@
 			"actions": "Acciones",
 			"scope": "Ámbito",
 			"objectTypeName": "Nombre del tipo de objeto",
-			"serializationDataFormat": "Formato de datos de serialización"
+			"serializationDataFormat": "Formato de datos de serialización",
+			"confirmDelete": "¿Desea eliminar la variable?"
 		},
 		"incidents": {
 		    "message": "Mensaje",
@@ -157,7 +175,16 @@
 		    "failedActivity": "Actividad fallida",
 		    "incidentType": "Tipo de incidente",
 		    "retryJob": "Incrementar el número de reintentos de trabajo fallido",
-		    "actions": "Acciones"
+		    "actions": "Acciones",
+			"incrementNumberRetries": "Incrementar número de reintentos",
+			"retryMsg": "Se incrementará el número de reintentos del trabajo fallido correspondiente al incidente seleccionado.",
+			"dueDateMsg": "El momento en que se ejecuta un trabajo está determinado por la fecha de vencimiento:",
+			"keepDueDate": "Mantener fecha de vencimiento",
+			"setDueDate": "Establecer fecha de vencimiento",
+			"dueDate": "Fecha de vencimiento",
+			"scheduleAt": "Programar para",
+			"invalidDateError": "Debe insertar una fecha válida",
+			"retry": "Reintentar"
 		},
 		"jobDefinitions": {
 			"state": "Estado",
@@ -183,7 +210,11 @@
 			"overridingMsg": "Cambiar la prioridad sobrescrita para los trabajos de la definición de trabajo indicada.",
 			"jobPriority": "Prioridad",
 			"clear": "Borrar prioridad sobrescrita del trabajo",
-			"set": "Establecer prioridad sobrescrita del trabajo"
+			"set": "Establecer prioridad sobrescrita del trabajo",
+			"invalidPriorityError": "Debe insertar un valor entero",
+			"overrideAction": "Sobreescribir",
+			"clearAction": "Borrar",			
+			"invalidDateError": "Debe insertar una fecha válida"
 		},	
 		"usertasks": {
 			"activity": "Actividad",
@@ -236,7 +267,13 @@
 			"title": "Leyenda",
 			"completedTask": "Tarea finalizada",
 			"currentTask": "Tarea actual",
-			"selectedTask": "@:task.selectedTask"
+			"selectedTask": "@:task.selectedTask",
+			"runningInstances": "Instancias de actividad en ejecución",
+			"openIncidents": "Incidentes abiertos",
+			"suspendedJobDefinition": "Definición de trabajo suspendida",
+			"activitiesHistory": "Instancias de actividad ejecutadas",
+			"openSubprocess": "Mostrar la definición del proceso llamado",
+  			"disabledSubprocess": "La definición del proceso se resolverá en tiempo de ejecución"
 		}
 	},
 	"task": {
@@ -282,6 +319,10 @@
 		"assignedUserTitle": "Eliminar usuario asignado",
 		"usersFound": "Resultados encontrados: el filtro de búsqueda ha identificado usuarios que coinciden con sus criterios",
 		"userAssigned": "El usuario {0} fue asignado con éxito"
+	},
+	"batches": {
+		"title": "Batches",
+		"tooltip": "Batch operations"
 	},
 	"admin": {
 		"loading": "Cargando...",
@@ -340,7 +381,7 @@
 			"createLabel": "Crear nuevo grupo",
 			"groupCreatedMessage": "El grupo {0} ha sido creado",
 			"actions": "Acciones",
-			"confirmDelete": "¿Realmente quiere eliminar el usuario con los siguientes parámetros?",
+			"confirmDelete": "¿Realmente quiere eliminar el grupo con los siguientes parámetros?",
 			"information": "Información",
 			"editMessage": "Editar grupo ({0})",
 			"users": "Usuarios",
@@ -353,6 +394,10 @@
 			"user": {
 				"title": "Usuarios del grupo"
 			}
+		},
+		"tenants": {
+			"title": "Tenants",
+			"tooltip": "Tenants management"
 		},
 		"authorizations": {
 			"title": "Autorizaciones",
@@ -403,6 +448,10 @@
 			},
 			"add": "Añadir autorización",
 			"noAuthSelected": "Ningún tipo de autorización seleccionada"
+		},
+		"system": {
+			"title": "System",
+			"tooltip": "System Settings and Diagnostics"
 		}
 	},
 	"account-form": {
@@ -431,9 +480,9 @@
 		"ok": "Ok",
 		"cancel": "Cancelar",
 		"close": "Cerrar",
+		"delete": "Eliminar",
 		"deleteFilter": "¿Realmente quieres eliminar el filtro seleccionado {name}?",
-		"assignUser": "Esta tarea ya está asignada a otra persona. ¿Confirma que desea modificarla?",
-		"performOperation": "¿Está seguro de que quiere realizar esta operación?"
+		"assignUser": "Esta tarea ya está asignada a otra persona. ¿Confirma que desea modificarla?"
 	},
 	"alert": {
 		"successSaveTask": "La tarea se ha guardado correctamente. Por favor no olvide cerrarla para terminar su trabajo.",
@@ -446,7 +495,7 @@
 		"email": "@:account-form.email"
 	},
 	"cib-header": {
-		"productName": "CIB flow",
+		"productName": "CIB seven",
 		"languages": "Idioma",
 		"help": "Información & Ayuda",
 		"user": "Cuenta",
@@ -526,8 +575,8 @@
 			"selectedCriteria": "Criterios seleccionados",
 			"deleteCriteria": "Eliminar criterio",
 			"no-filters": "No se encontraron filtros",
-			"edit": "@:commons:edit",
-			"delete": "Eliminar",
+			"edit": "@:commons.edit",
+			"delete": "@:confirm.delete",
 			"pin": "Adjuntar",
 			"includeAssigned": "Incluir las tareas asignadas",
 			"keys": {
@@ -651,14 +700,16 @@
 	},
 	"ienotify": {
 		"remember": "No volver a mostrar este mensaje",
-		"text": "CIB flow no es totalmente soportado por Internet Explorer. Para poder disfrutar al máximo, desde CIB flow te sugerimos que utilices otro navegador."
+		"text": "CIB seven no es totalmente soportado por Internet Explorer. Para poder disfrutar al máximo, desde CIB seven te sugerimos que utilices otro navegador."
 	},
 	"start": {
 		"close": "Cerrar",
 		"taskList": "Tareas",
 		"startProcesses": "@:process.startProcess",
 		"cockpit": "Visión general",
-		"emptyStart": "Actualmente no tiene permisos para realizar tareas aquí. Por favor contacte con el administrador de CIB flow para que le asigne permisos.",
+		"emptyStart": "Actualmente no tiene permisos para realizar tareas aquí. Por favor contacte con el administrador de CIB seven para que le asigne permisos.",
+		"groupOperations": "Operations",
+		"groupAdministration": "Administration",
 		"admin": "Administración",
 		"userAdmin": "Gestión de usuarios",
 		"modeler": "Modelador de procesos",
@@ -813,7 +864,7 @@
 		},
 		"flowModalAbout": {
 			"modalText": "Versión",
-			"title": "CIB flow"
+			"title": "CIB seven"
 		}
 	},
 	"multisort": {
@@ -908,7 +959,7 @@
 	},
 	"notification": {
 		"newTasks": "Nuevas tareas",
-		"newTasksTitle": "Tiene nuevas tareas asignadas en CIB flow"
+		"newTasksTitle": "Tiene nuevas tareas asignadas en CIB seven"
 	},
 	"decision": {
 		"id": "ID",
@@ -953,10 +1004,29 @@
 			"variable": "Variables de decisión",
 			"copyValue": "Copiar valor",
 			"historyTimeToLive": "Tiempo de vida del historial"
-		}
+		},
+		"showManagement": "@:process.showManagement",
+		"type": "Tipo",
+		"value": "Valor",
+		"inputs": "Entradas",
+		"outputs": "Salidas",
+		"decisionInstanceId": "ID de instancia de decisión"
 	},
 	"decision-instance": {
-		"edit": "@:commons:edit",
-		"save": "@:commons:save"
+		"edit": "@:commons.edit",
+		"save": "@:commons.save"
+	},
+	"human-tasks": {
+		"assignmentsByType": "Asignaciones por tipo",
+		"assignmentsByGroup": "Asignaciones por grupo",
+		"user": "asignadas a un usuario",
+		"group": "asignadas a uno o más grupos",
+		"unassigned": "no asignadas",
+		"total": "Total",
+		"tasks": "Tareas",
+		"types": "Tipos",
+		"noGroups": "sin grupo",
+		"groupName": "Grupo",
+		"assignmentsByGroupInfo": "Una tarea puede estar asignada a varios grupos."
 	}
 }

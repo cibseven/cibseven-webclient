@@ -21,6 +21,7 @@ import org.cibseven.webapp.rest.model.ActivityInstance;
 import org.cibseven.webapp.rest.model.ActivityInstanceHistory;
 import org.cibseven.webapp.rest.model.Authorization;
 import org.cibseven.webapp.rest.model.Authorizations;
+import org.cibseven.webapp.rest.model.CandidateGroupTaskCount;
 import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.DeploymentResource;
 import org.cibseven.webapp.rest.model.EventSubscription;
@@ -919,16 +920,17 @@ public interface BpmProvider {
 	Object getDiagramByKey(String key, CIBUser user);
 	Object evaluateDecisionDefinitionByKey(Map<String, Object> data, String key, CIBUser user);
 	void updateHistoryTTLByKey(Map<String, Object> data, String key, CIBUser user);
+
 	Decision getDecisionDefinitionByKeyAndTenant(String key, String tenant, CIBUser user);
 	Object getDiagramByKeyAndTenant(String key, String tenant, CIBUser user);
 	Object evaluateDecisionDefinitionByKeyAndTenant(String key, String tenant, CIBUser user);
 	Object updateHistoryTTLByKeyAndTenant(String key, String tenant, CIBUser user);
 	Object getXmlByKey(String key, CIBUser user);
 	Object getXmlByKeyAndTenant(String key, String tenant, CIBUser user);
-	Decision getDecisionDefinitionById(String id, CIBUser user);
+	Decision getDecisionDefinitionById(String id, Optional<Boolean> extraInfo, CIBUser user);
 	Object getDiagramById(String id, CIBUser user);
 	Object evaluateDecisionDefinitionById(String id, CIBUser user);
-	Object updateHistoryTTLById(String id, CIBUser user);
+	void updateHistoryTTLById(String id, Map<String, Object> data, CIBUser user);
 	Object getXmlById(String id, CIBUser user);
 
 	Collection<Decision> getDecisionVersionsByKey(String key, Optional<Boolean> lazyLoad, CIBUser user);
@@ -938,9 +940,18 @@ public interface BpmProvider {
 	Object getHistoricDecisionInstanceById(String id, Map<String, Object> queryParams, CIBUser user);
 	Object deleteHistoricDecisionInstances(Map<String, Object> body, CIBUser user);
 	Object setHistoricDecisionInstanceRemovalTime(Map<String, Object> body, CIBUser user);
-
+  
 	Collection<Job> getJobs(Map<String, Object> params, CIBUser user);
 	void setSuspended(String id, Map<String, Object> data, CIBUser user);
+	Integer findHistoryTaksCount(Map<String, Object> filters, CIBUser user);
 
+	Collection<CandidateGroupTaskCount> getTaskCountByCandidateGroup(CIBUser user);
 	
+	Object getHistoricBatches(Map<String, Object> queryParams);
+	Object getHistoricBatchCount(Map<String, Object> queryParams);
+	Object getHistoricBatchById(String id);
+	void deleteHistoricBatch(String id);
+	Object setRemovalTime(Map<String, Object> payload);
+	Object getCleanableBatchReport(Map<String, Object> queryParams);
+	Object getCleanableBatchReportCount();
 }

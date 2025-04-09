@@ -78,7 +78,7 @@ export default {
   },
   computed: {
     computedTableStyles() {
-      return this.resizable ? { tableLayout: 'fixed', width: '100%' } : {}
+      return { tableLayout: 'fixed', width: '100%' }
     },
     computedTableClass() {
       return [

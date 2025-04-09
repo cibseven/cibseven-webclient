@@ -1,7 +1,7 @@
 <template>
   <div :style="{ 'height': 'calc(100% - 55px)' }" class="d-flex flex-column bg-light overflow-auto">
     <div class="h-100 container" :style="countStartItems === 4 ? 'max-width: 960px' : ''">
-      <div ref="startContainer" class="row justify-content-center py-5">
+      <div ref="startContainer" class="row justify-content-center">
         <div v-if="applicationPermissions($root.config.permissions.tasklist, 'tasklist') && startableProcesses"
           class="col-4 mt-5 mx-2 mx-md-3 bg-white rounded" style="max-width: 330px; min-width: 250px; height:250px">
           <div class="row border rounded shadow-sm h-100">
@@ -59,7 +59,7 @@
                   <div class="row ps-3" style="height:55px">
                     <div class="col-12 align-items-center d-flex">
                       <span class="border-start h-100 me-3 border-primary" style="border-width: 3px !important"></span>
-                      <h4 class="m-0">{{ $t('start.admin') }}</h4>
+                      <h4 class="m-0">{{ $t('start.groupOperations') }}</h4>
                     </div>
                   </div>
                   <div class="row text-center">
@@ -79,6 +79,10 @@
                     <span class="mdi mdi-18px mdi-wall-sconce-flat-outline pe-1"></span>{{ $t('start.adminDecisions') }}</b-list-group-item>
                   <b-list-group-item to="/seven/auth/human-tasks" class="py-1 px-3 border-0 h6 fw-normal mb-0" :title="$t('start.adminHumanTasks')">
                     <span class="mdi mdi-18px mdi-account-file-text-outline pe-1"></span>{{ $t('start.adminHumanTasks') }}</b-list-group-item>
+                  <b-list-group-item to="/seven/auth/deployments" class="py-1 px-3 border-0 h6 fw-normal mb-0" :title="$t('deployment.title')">
+                    <span class="mdi mdi-18px mdi-upload-box-outline pe-1"></span>{{ $t('deployment.title') }}</b-list-group-item>
+                  <b-list-group-item to="/seven/auth/batches" class="py-1 px-3 border-0 h6 fw-normal mb-0" :title="$t('batches.tooltip')">
+                    <span class="mdi mdi-18px mdi-repeat pe-1"> </span>{{ $t('batches.title') }}</b-list-group-item>
                 </b-list-group>
               </template>
             </b-overlay>
@@ -90,12 +94,12 @@
           <div class="row border rounded shadow-sm h-100">
             <div class="align-top" style="flex:auto">
               <div class="text-truncate ps-1"></div>
-              <router-link to="/seven/auth/admin/users-management" class="h-100 text-decoration-none text-reset" tabindex="-1">
+              <router-link to="/seven/auth/admin" class="h-100 text-decoration-none text-reset" tabindex="-1">
                 <div class="container">
                   <div class="row ps-3" style="height:55px">
                     <div class="col-12 align-items-center d-flex">
                       <span class="border-start h-100 me-3 border-primary" style="border-width: 3px !important"></span>
-                      <h4 class="m-0">{{ $t('start.adminPanel') }}</h4>
+                      <h4 class="m-0">{{ $t('start.groupAdministration') }}</h4>
                     </div>
                   </div>
                   <div class="row text-center">
@@ -115,9 +119,15 @@
                   <b-list-group-item v-if="adminManagementPermissions($root.config.permissions.groupsManagement, 'group')"
                     to="/seven/auth/admin/groups" class="py-1 px-3 border-start-0 border-top-0 border-end-0 h6 fw-normal mb-0" :title="$t('admin.groups.title')">
                     <span class="mdi mdi-18px mdi-account-group-outline pe-1"></span>{{ $t('admin.groups.title') }}</b-list-group-item>
+                  <b-list-group-item v-if="adminManagementPermissions($root.config.permissions.groupsManagement, 'group')"
+                    to="/seven/auth/admin/tenants" class="py-1 px-3 border-start-0 border-top-0 border-end-0 h6 fw-normal mb-0" :title="$t('admin.tenants.tooltip')">
+                    <span class="mdi mdi-18px mdi-domain pe-1"></span>{{ $t('admin.tenants.title') }}</b-list-group-item>
                   <b-list-group-item v-if="adminManagementPermissions($root.config.permissions.authorizationsManagement, 'authorization')"
                     to="/seven/auth/admin/authorizations" class="py-1 px-3 border-0 h6 fw-normal mb-0" :title="$t('admin.authorizations.title')">
                     <span class="mdi mdi-18px mdi-account-key-outline pe-1"></span>{{ $t('admin.authorizations.title') }}</b-list-group-item>
+                  <b-list-group-item v-if="adminManagementPermissions($root.config.permissions.authorizationsManagement, 'authorization')"
+                    to="/seven/auth/admin/system" class="py-1 px-3 border-0 h6 fw-normal mb-0" :title="$t('admin.system.tooltip')">
+                    <span class="mdi mdi-18px mdi-cog-outline pe-1"></span>{{ $t('admin.system.title') }}</b-list-group-item>
                 </b-list-group>
               </template>
             </b-overlay>
@@ -152,22 +162,21 @@ export default {
       return this.processesFiltered.find(p => { return p.startableInTasklist })
     },
     countStartItems: function () {
-          return this.items.length;
-        },
+      return this.items.length
+    },
     processesFiltered: function() {
       if (!this.$store.state.process.list) return []
       return this.$store.state.process.list.filter(process => {
-      return ((!process.revoked))
+        return ((!process.revoked))
       }).sort((objA, objB) => {
-      var nameA = objA.name ? objA.name.toUpperCase() : objA.name
-      var nameB = objB.name ? objB.name.toUpperCase() : objB.name
-      var comp = nameA < nameB ? -1 : nameA > nameB ? 1 : 0
-
-      if (this.$root.config.subProcessFolder) {
-        if (objA.resource.indexOf(this.$root.config.subProcessFolder) > -1) comp = 1
-        else if (objB.resource.indexOf(this.$root.config.subProcessFolder) > -1) comp = -1
-      }
-      return comp
+        var nameA = objA.name ? objA.name.toUpperCase() : objA.name
+        var nameB = objB.name ? objB.name.toUpperCase() : objB.name
+        var comp = nameA < nameB ? -1 : nameA > nameB ? 1 : 0
+        if (this.$root.config.subProcessFolder) {
+          if (objA.resource.indexOf(this.$root.config.subProcessFolder) > -1) comp = 1
+          else if (objB.resource.indexOf(this.$root.config.subProcessFolder) > -1) comp = -1
+        }
+        return comp
       })
     }
   },

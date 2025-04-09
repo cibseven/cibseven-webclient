@@ -9,8 +9,11 @@
           <BpmnViewer v-if="templateMetaData" :activityInstance="templateMetaData.activityInstances"
           :activityInstanceHistory="templateMetaData.activityInstanceHistory" class="h-100" ref="diagram"></BpmnViewer>
         </div>
-        <template v-slot:modal-footer><b-button variant="secondary" @click="$refs.process.hide()">{{ $t('bpmn-viewer.accept') }}</b-button></template>
+        <template v-slot:modal-footer>
+          <b-button variant="secondary" @click="$refs.process.hide()">{{ $t('bpmn-viewer.accept') }}</b-button>
+        </template>
       </b-modal>
+
     </div>
     <div v-show="!loader" class="flex-grow-1" style="min-height: 1px">
       <slot></slot>

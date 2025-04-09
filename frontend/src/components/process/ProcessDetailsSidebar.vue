@@ -8,7 +8,7 @@
       </b-button>
       <b-button style="top: 2px; right: 30px" class="border-0 position-absolute"
         variant="btn-outline-primary" size="sm" :title="$t('process.refreshVersions')"
-        @click="onRefreshProcessDefinitions(true)">
+        @click="onRefreshProcessDefinitions($root.config.lazyLoadHistory)">
         <span class="mdi mdi-18px mdi-refresh"></span>
       </b-button>
       <div class="list-group mx-3 mb-3" role="list">
@@ -38,7 +38,7 @@
                   :disabled="false"
                   variant="link"
                   class="shadow-none p-0 text-danger"
-                  :title="$t('process.deleteProcessDefinition')">
+                  :title="$t('process.deleteProcessDefinition.tooltip')">
                   <span class="mdi mdi-18px mdi-delete-outline"></span>
                 </b-button>
               </div>
@@ -51,9 +51,7 @@
       </div>
     </div>
     <SuccessAlert ref="successOperation"> {{ $t('alert.successOperation') }}</SuccessAlert>
-    <ConfirmDialog ref="confirm" @ok="$event.ok($event.processDefinition)">
-      {{ $t('confirm.performOperation') }}
-    </ConfirmDialog>
+    <DeleteProcessDefinitionModal ref="confirm"></DeleteProcessDefinitionModal>
   </div>
 </template>
 
@@ -61,12 +59,12 @@
 import { permissionsMixin } from '@/permissions.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
-import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
+import DeleteProcessDefinitionModal from '@/components/process/modals/DeleteProcessDefinitionModal.vue'
 import ProcessDefinitionDetails from '@/components/process/ProcessDefinitionDetails.vue'
 
 export default {
   name: 'ProcessDetailsSidebar',
-  components: { SuccessAlert, ConfirmDialog, ProcessDefinitionDetails },
+  components: { SuccessAlert, DeleteProcessDefinitionModal, ProcessDefinitionDetails },
   mixins: [copyToClipboardMixin, permissionsMixin],
   props: {
     processDefinitions: {
@@ -79,7 +77,7 @@ export default {
   },
   methods: {
     onRefreshProcessDefinitions: function(lazyLoadHistory) {
-      this.$emit('onRefreshProcessDefinitions', { lazyLoadHistory: lazyLoadHistory })
+      this.$emit('onRefreshProcessDefinitions', lazyLoadHistory)
     },
     onDeleteClicked: function(processDefinition) {
       this.$refs.confirm.show({ ok: this.deleteProcessDefinition, processDefinition: processDefinition })

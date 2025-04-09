@@ -20,6 +20,7 @@ import org.cibseven.webapp.rest.model.ActivityInstance;
 import org.cibseven.webapp.rest.model.ActivityInstanceHistory;
 import org.cibseven.webapp.rest.model.Authorization;
 import org.cibseven.webapp.rest.model.Authorizations;
+import org.cibseven.webapp.rest.model.CandidateGroupTaskCount;
 import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.DeploymentResource;
 import org.cibseven.webapp.rest.model.EventSubscription;
@@ -73,7 +74,8 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
     @Autowired private IUserProvider userProvider;
     @Autowired private IDecisionProvider decisionProvider;
     @Autowired private IJobProvider jobProvider;
-
+    @Autowired private IBatchProvider batchProvider;
+    
     
     /*
 	
@@ -191,6 +193,15 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 		return taskProvider.getDeployedForm(taskId, user);
 	}
 	
+	@Override
+	public Integer findHistoryTaksCount(Map<String, Object> filters, CIBUser user) {
+		return taskProvider.findHistoryTaksCount(filters, user);
+	}
+
+	@Override
+	public Collection<CandidateGroupTaskCount> getTaskCountByCandidateGroup(CIBUser user) {
+		return taskProvider.getTaskCountByCandidateGroup(user);
+	}
 	
 	/* 
 	
@@ -827,8 +838,8 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 	
 	@Override
-	public Decision getDecisionDefinitionById(String id, CIBUser user) {
-		return decisionProvider.getDecisionDefinitionById(id, user);
+	public Decision getDecisionDefinitionById(String id, Optional<Boolean> extraInfo, CIBUser user) {
+		return decisionProvider.getDecisionDefinitionById(id, extraInfo);
 	}
 	
 	@Override
@@ -842,8 +853,8 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 	
 	@Override
-	public Object updateHistoryTTLById(String id, CIBUser user) {
-		return decisionProvider.updateHistoryTTLById(id, user);
+	public void updateHistoryTTLById(String id, Map<String, Object> data, CIBUser user) {
+		decisionProvider.updateHistoryTTLById(id, data, user);
 	}
 	
 	@Override
@@ -921,4 +932,49 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 		return jobDefinitionProvider.findJobDefinition(id, user);
 	}
 
+	/*
+
+	██████   █████  ████████  ██████ ██   ██     ██████  ██████   ██████  ██    ██ ██ ██████  ███████ ██████  
+	██   ██ ██   ██    ██    ██      ██   ██     ██   ██ ██   ██ ██    ██ ██    ██ ██ ██   ██ ██      ██   ██ 
+	██████  ███████    ██    ██      ███████     ██████  ██████  ██    ██ ██    ██ ██ ██   ██ █████   ██████  
+	██   ██ ██   ██    ██    ██      ██   ██     ██      ██   ██ ██    ██  ██  ██  ██ ██   ██ ██      ██   ██ 
+	██████  ██   ██    ██     ██████ ██   ██     ██      ██   ██  ██████    ████   ██ ██████  ███████ ██   ██ 
+                                                                                                                                                                                              
+	*/
+	
+	@Override
+	public Object getHistoricBatches(Map<String, Object> queryParams) {
+		return batchProvider.getHistoricBatches(queryParams);
+    }
+	
+	@Override
+	public Object getHistoricBatchCount(Map<String, Object> queryParams) {
+		return batchProvider.getHistoricBatchCount(queryParams);
+    }
+    
+	@Override
+	public Object getHistoricBatchById(String id) {
+		return batchProvider.getHistoricBatchById(id);
+    }
+	
+	@Override
+	public void deleteHistoricBatch(String id) {
+		batchProvider.deleteHistoricBatch(id);
+    }
+	
+	@Override
+	public Object setRemovalTime(Map<String, Object> payload) {
+		return batchProvider.setRemovalTime(payload);
+    }
+    
+	@Override
+	public Object getCleanableBatchReport(Map<String, Object> queryParams) {
+		return batchProvider.getCleanableBatchReport(queryParams);
+    }
+    
+	@Override
+	public Object getCleanableBatchReportCount() {
+		return batchProvider.getCleanableBatchReportCount();
+    }
+	
 }

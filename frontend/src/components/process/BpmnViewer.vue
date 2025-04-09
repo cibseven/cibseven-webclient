@@ -5,13 +5,12 @@
       <div class="h-100" ref="diagram"></div>
     </div>
     <div class="d-none d-md-block position-absolute" style="right:30px; top:15px">
-      <div v-if="activityInstanceHistory" class="row border rounded ms-1">
+      <div v-if="activityInstanceHistory" class="row g-0 border rounded ms-1">
         <div class="h-100">
           <div class="bg-white border-light rounded-top text-center" style="opacity:0.8">
             <span>{{ $t('bpmn-viewer.legend.title') }}</span>
           </div>
           <div class="bg-light border-light rounded-bottom" style="opacity:0.8">
-            <span class="ps-2"><span class="mdi mdi-card mdi-24px text-secondary align-middle me-1"></span>{{ $t('bpmn-viewer.legend.completedTask') }}</span>
             <span class="px-2"><span class="mdi mdi-arrow-right-drop-circle mdi-24px text-success align-middle me-1"></span>{{ $t('bpmn-viewer.legend.currentTask') }}</span>
             <span class="pe-2"><span class="mdi mdi-card-outline mdi-24px text-info align-middle me-1"></span>{{ $t('bpmn-viewer.legend.selectedTask') }}</span>
           </div>
@@ -41,14 +40,12 @@ import { BWaitingBox } from 'cib-common-components'
 
 const interactionTypes = ['bpmn:UserTask', 'bpmn:CallActivity']
 const drawedTypes = ['userTask', 'serviceTask', 'scriptTask', 'callActivity', 'exclusiveGateway', 'endEvent', 'startEvent']
-const events = ['element.click', 'element.hover', 'element.out']
 
 function getActivitiesToMark(treeObj) {
-  var result = []
-  if ((treeObj.childTransitionInstances.length === 0 && treeObj.childActivityInstances.length === 0)) {
+  let result = []
+  if (!treeObj.childTransitionInstances.length && !treeObj.childActivityInstances.length) {
     result.push(treeObj.activityId)
-  }
-  else {
+  } else {
     treeObj.childTransitionInstances.forEach(transitionInstance => {
       result.push(transitionInstance.activityId)
     })
@@ -62,12 +59,18 @@ function getActivitiesToMark(treeObj) {
 export default {
   name: 'BpmnViewer',
   components: { BWaitingBox },
-  props: { activityInstance: Object, activityInstanceHistory: Array,
-    statistics: Array, activityId: String, processDefinitionId: String, activitiesHistory: Array },
+  props: {
+    activityInstance: Object,
+    activityInstanceHistory: Array,
+    statistics: Array,
+    activityId: String,
+    processDefinitionId: String,
+    activitiesHistory: Array
+  },
   data: function() {
     return {
       viewer: null,
-      currentElement: null,
+      currentHighlight: null,
       overlayList: [],
       loader: true,
       runningActivities: [],
@@ -75,7 +78,7 @@ export default {
     }
   },
   computed: {
-    jobDefinitions() {
+    jobDefinitions: function() {
       return this.$store.getters['jobDefinition/getJobDefinitions']
     }
   },
@@ -83,8 +86,8 @@ export default {
     activityInstanceHistory: function() {
       setTimeout(() => {
         this.drawDiagramState()
-        if (this.currentElement) this.currentElement.gfx.classList.remove('selectable', 'highlight')
-        this.currentElement = null
+        if (this.currentHighlight) this.currentHighlight.shape.classList.remove('bpmn-highlight')
+        this.currentHighlight = null
         this.$emit('task-selected', null)
       }, 100)
     },
@@ -101,12 +104,14 @@ export default {
   mounted: function() {
     this.viewer = new NavigatedViewer({ container: this.$refs.diagram })
     this.viewer.on('import.done', event => {
-      var error = event.error;
-      var warnings = event.warnings;
-      if (error) { this.$emit('error', error) }
-      else { this.$emit('shown', warnings) }
-        this.drawDiagramState()
-      })
+      if (event.error) {
+         this.$emit('error', event.error)
+      } else {
+         this.$emit('shown', event.warnings)
+      }
+      this.drawDiagramState()
+      this.attachEventListeners()
+    })
   },
   methods: {
     showDiagram: function(xml) {
@@ -127,41 +132,77 @@ export default {
     resetZoom: function() {
       this.viewer.get('zoomScroll').reset()
     },
-    setEvents: function() {
-      var eventBus = this.viewer.get('eventBus')
-      events.forEach(event => {
-        eventBus.on(event, function(e) {
-          this.setDiagramInteraction(event, e)
-        })
+    attachEventListeners: function() {
+      const eventBus = this.viewer.get('eventBus')
+      eventBus.on('element.click', (event) => {
+        if (this.getTypeAllowed(event.element.type, interactionTypes)) {
+          this.highlightElement(event.element.id)
+          if (this.activityInstance) {
+            const childActivity = this.activityInstance.childActivityInstances.find(obj => obj.activityId === event.element.id)
+            this.$emit('child-activity', childActivity || event.element)
+          } else {
+            this.$emit('activity-id', event.element.id)
+          }
+        } else {
+          if (this.currentHighlight) {
+            this.currentHighlight.shape.classList.remove('bpmn-highlight')
+            this.$emit('activity-id', null)
+            this.currentHighlight = null
+          }
+          this.$emit('task-selected', null)
+        }
+      })
+      eventBus.on('element.hover', (event) => {
+        if (this.getTypeAllowed(event.element.type, interactionTypes)) {
+          const gfx = event.gfx
+          const shape = gfx.querySelector('rect, path') || gfx
+          if (!this.currentHighlight || this.currentHighlight.id !== event.element.id) {
+            shape.classList.add('bpmn-highlight')
+          }
+          gfx.addEventListener('mouseleave', () => {
+            if (!this.currentHighlight || this.currentHighlight.id !== event.element.id) {
+              shape.classList.remove('bpmn-highlight')
+            }
+          }, { once: true })
+        }
       })
     },
-    setDiagramInteraction: function(evt, e) {
-      var element = e.element
-      if (this.getTypeAllowed(element.type, interactionTypes)) {
-        if (evt === 'element.hover') {
-          e.gfx.classList.add('selectable', 'highlight')
-        }
-        if (evt === 'element.out') {
-          if (!this.currentElement || this.currentElement.element.id !== element.id)
-            e.gfx.classList.remove('selectable', 'highlight')
-        }
-        if (evt === 'element.click') {
-          if (this.currentElement) this.currentElement.gfx.classList.remove('selectable', 'highlight')
-          this.currentElement = e
-          e.gfx.classList.add('selectable', 'highlight')
-          this.$emit('task-selected', element)
-        }
+    highlightElement: function(item) {
+      let activityId = ''
+      if (typeof item === 'string') {
+        activityId = item
+      } else if (item && item.activityId) {
+        activityId = item.activityId
+      } else {
+        return
       }
+      const elementRegistry = this.viewer.get('elementRegistry')
+      const canvas = this.viewer.get('canvas')
+      const element = elementRegistry.get(activityId)
+      if (!element) return
+
+      if (this.currentHighlight && this.currentHighlight.id !== activityId) {
+        this.currentHighlight.shape.classList.remove('bpmn-highlight')
+      }
+
+      const gfx = elementRegistry.getGraphics(element)
+      if (!gfx) return
+
+      let shape = gfx.querySelector('rect, path')
+      if (!shape) {
+        shape = gfx
+      }
+      shape.classList.add('bpmn-highlight')
+      this.currentHighlight = { id: activityId, shape }
+      canvas.scrollToElement(activityId)
     },
     drawDiagramState: function() {
-      var overlays = this.viewer.get('overlays')
-      var elementRegistry = this.viewer.get('elementRegistry')
-      var self = this
+      const overlays = this.viewer.get('overlays')
+      const elementRegistry = this.viewer.get('elementRegistry')
       this.cleanDiagramState()
-
       if (this.activityInstance != null) {
         getActivitiesToMark(this.activityInstance).forEach(activityId => {
-          var htmlTemplate = '<div><i class="mdi mdi-arrow-right-drop-circle mdi-24px text-success"/></div>'
+          const htmlTemplate = '<div><i class="mdi mdi-arrow-right-drop-circle mdi-24px text-success"/></div>'
           this.setHtmlOnDiagram(overlays, activityId, htmlTemplate, { top: -5, right: 25 })
           this.runningActivities.push(activityId)
         })
@@ -172,13 +213,13 @@ export default {
       if (!this.activityInstance && !this.activityInstanceHistory) {
         if (this.statistics) {
           this.statistics.forEach(item => {
-            var shape = elementRegistry.get(item.id)
+            const shape = elementRegistry.get(item.id)
             if (shape) {
-              var htmlTemplate = this.getBadgeOverlayHtml(item.instances, 'bg-info')
+              const htmlTemplate = this.getBadgeOverlayHtml(item.instances, 'bg-info', 'runningInstances')
               this.setHtmlOnDiagram(overlays, item.id, htmlTemplate, { bottom: 15, left: -7 })
               if (item.failedJobs > 0) {
-                var htmlTemplate = this.getBadgeOverlayHtml(item.failedJobs, 'bg-danger')
-                this.setHtmlOnDiagram(overlays, item.id, htmlTemplate, { top: -7, right: 15 })
+                const failedHtml = this.getBadgeOverlayHtml(item.failedJobs, 'bg-danger', 'openIncidents')
+                this.setHtmlOnDiagram(overlays, item.id, failedHtml, { top: -7, right: 15 })
               }
               shape.nInstances = item.instances
             }
@@ -187,60 +228,39 @@ export default {
         if (this.activitiesHistory) {
           this.drawActivitiesHistory(this.activitiesHistory, elementRegistry, overlays)
         }
-      }      
-
-      var callActivitiesList = elementRegistry.getAll().filter(function(element) {
-        return element.type === 'bpmn:CallActivity'
-      })
-
-      if (callActivitiesList.length > 0) {
-        callActivitiesList.forEach(ca => {
-          var shape = elementRegistry.get(ca.id)
-          if (shape) {
-            var disabled = (ca.nInstances === undefined && this.runningActivities.indexOf(ca.id) === -1)
-            var htmlTemplate = '<button type="button" class="btn btn-info btn-sm mdi mdi-link-variant px-1 py-0" '
-            htmlTemplate += (disabled ? 'disabled' : '') + '></button>'
-            var tempDiv = document.createElement('div')
-            tempDiv.innerHTML = htmlTemplate
-            var button = tempDiv.firstChild
+      }
+      const callActivitiesList = elementRegistry.getAll().filter(element => element.type === 'bpmn:CallActivity')
+      callActivitiesList.forEach(ca => {
+        const shape = elementRegistry.get(ca.id)
+        if (shape) {
+          const disabled = (ca.nInstances === undefined && this.runningActivities.indexOf(ca.id) === -1)
+          const title = disabled
+            ? this.$t('bpmn-viewer.legend.disabledSubprocess')
+            : this.$t('bpmn-viewer.legend.openSubprocess')
+          const wrapper = document.createElement('div')
+          wrapper.title = title
+          const button = document.createElement('button')
+          button.type = 'button'
+          button.className = 'btn btn-info btn-sm mdi mdi-link-variant px-1 py-0'
+          if (disabled) {
+            button.disabled = true
+            wrapper.style.cursor = 'not-allowed'
+          } else {
             button.addEventListener('click', () => {
               this.openSubprocess(ca.id)
             })
-            this.setHtmlOnDiagram(overlays, ca.id, button, { bottom: -7, right: 15 })
           }
-        })
-      }
-
-      this.viewer.on('element.click', function(event) {
-        if (self.currentElement) self.currentElement.gfx.classList.remove('selectable', 'highlight')
-        if (self.getTypeAllowed(event.element.type, interactionTypes) &&
-          self.statistics.some(obj => obj.id === event.element.id) &&
-          event.element.id !== self.activityId) {
-          self.currentElement = event
-          event.gfx.classList.add('selectable', 'highlight')
-          if (self.activityInstance) {
-            var childActivity = self.activityInstance.childActivityInstances.find(obj => obj.activityId === event.element.id)
-            self.$emit('child-activity', childActivity)
-          } else self.$emit('activity-id', event.element.id)
-        } else if(event.element.id !== self.activityId && self.activityId !== '') {
-          if (self.activityInstance) self.$emit('child-activity', null)
-          else self.$emit('activity-id', '')
+          wrapper.appendChild(button)
+          this.setHtmlOnDiagram(overlays, ca.id, wrapper, { bottom: -7, right: 15 })
         }
       })
-
-      this.viewer.on('element.hover', function(event) {
-        if (self.getTypeAllowed(event.element.type, interactionTypes) && self.statistics &&
-          self.statistics.some(obj => obj.id === event.element.id))
-          event.gfx.classList.add('selectable', 'highlight')
-
-        event.gfx.addEventListener('mouseleave', function() {
-          if (!self.currentElement || self.currentElement.element.id !== event.element.id)
-            event.gfx.classList.remove('selectable', 'highlight')
-        })
-      })
-
-      if (this.jobDefinitions) this.drawJobDefinitionBadges()
-      
+      if (this.jobDefinitions) {
+        this.drawJobDefinitionBadges()
+      }
+      this.setSelectableOnAllowedElements()
+      this.buildActivityMap(elementRegistry)
+    },
+    buildActivityMap: function(elementRegistry) {
       const activityMap = {}
       elementRegistry.getAll().forEach(el => {
         const bo = el.businessObject
@@ -250,74 +270,85 @@ export default {
       })
       this.$store.commit('setProcessActivities', activityMap)
     },
+    setSelectableOnAllowedElements: function() {
+      const elementRegistry = this.viewer.get('elementRegistry')
+      elementRegistry.getAll().forEach(el => {
+        if (this.getTypeAllowed(el.type, interactionTypes)) {
+          const gfx = elementRegistry.getGraphics(el)
+          if (gfx && !gfx.classList.contains('selectable')) {
+            gfx.classList.add('selectable')
+          }
+        }
+      })
+    },
     drawActivitiesHistory: function(activities, elementRegistry, overlays) {
-      var filledActivities = {}
+      const filledActivities = {}
       activities.forEach(item => {
-        var typeAllowed = this.getTypeAllowed(item.activityType, drawedTypes)
+        const typeAllowed = this.getTypeAllowed(item.activityType, drawedTypes)
         if (!typeAllowed || !item.endTime) return
-        if (!filledActivities[item.activityId]) filledActivities[item.activityId] = 1
-        else filledActivities[item.activityId]++
+        filledActivities[item.activityId] = (filledActivities[item.activityId] || 0) + 1
       })
       Object.keys(filledActivities).forEach(key => {
-        var shape = elementRegistry.get(key)
+        const shape = elementRegistry.get(key)
         if (shape) {
-          this.setHtmlOnDiagram(overlays, key, this.getBadgeOverlayHtml(filledActivities[key], 'bg-gray'),
+          this.setHtmlOnDiagram(overlays, key, this.getBadgeOverlayHtml(filledActivities[key], 'bg-gray', 'activitiesHistory'),
             { bottom: 15, right: 13 })
         }
       })
     },
-    getBadgeOverlayHtml: function(number, classes) {
-      var overlayHtml = `<span class="position-absolute" style="width: max-content">
-        <span class="badge rounded-pill border border-dark px-2 py-1 me-1 ${classes}">${number}</span>`
+    getBadgeOverlayHtml: function(number, classes, type) {
+      var title = this.$t('bpmn-viewer.legend.' + type)
+      var overlayHtml = `
+        <span class="position-absolute" style="width: max-content" title="${title}">
+          <span class="badge rounded-pill border border-dark px-2 py-1 me-1 ${classes}">${number}</span>
+        </span>
+      `
       return overlayHtml
     },
     cleanDiagramState: function() {
-      var overlays = this.viewer.get('overlays')
-      if (this.overlayList.length > 0) {
-        this.overlayList.forEach(overlayId => {
-          overlays.remove(overlayId)
-        })
-        this.overlayList = []
-      }
-    },
-    clearEvents: function() {
-      var eventBus = this.viewer.get('eventBus')
-      events.forEach(event => {
-        eventBus.off(event)
-      })
+      const overlays = this.viewer.get('overlays')
+      this.overlayList.forEach(overlayId => overlays.remove(overlayId))
+      this.overlayList = []
     },
     setHtmlOnDiagram: function(overlays, id, html, position) {
-      var overlayId = overlays.add(id, {
-        position: position, html: html
-      })
+      const overlayId = overlays.add(id, { position, html })
       this.overlayList.push(overlayId)
     },
     getTypeAllowed: function(typeI, types) {
-      return types.some(type => {
-        return typeI.indexOf(type) !== -1
-      })
+      return types.some(type => typeI.includes(type))
     },
     openSubprocess: function(activityId) {
-      ProcessService.findCalledProcessDefinitions(this.processDefinitionId).then(subprocess => {
-        var process = subprocess.find(item => item.calledFromActivityIds.includes(activityId))
-        if (process) {
-          this.$emit('open-subprocess', process)
-        }
-      })
+      const childInstance = this.activityInstanceHistory?.find(
+        ai => ai.activityId === activityId && ai.calledProcessInstanceId
+      )
+      if (childInstance && childInstance.calledProcessInstanceId) {
+        ProcessService.findProcessInstance(childInstance.calledProcessInstanceId).then(subprocess => {
+          const [processKey, versionIndex] = subprocess.definitionId.split(':')
+          this.$router.push({ name: 'process', params: { processKey, versionIndex, instanceId: subprocess.id } })
+        })
+      } else {
+        ProcessService.findCalledProcessDefinitions(this.processDefinitionId).then(subprocess => {
+          const process = subprocess.find(item => item.calledFromActivityIds.includes(activityId))
+          if (process) {
+            this.$router.push({ name: 'process', params: { processKey: process.key } })
+          }
+        })
+      }
     },
     drawJobDefinitionBadges: function() {
       const overlays = this.viewer?.get('overlays')
       const elementRegistry = this.viewer?.get('elementRegistry')
       if (!overlays || !elementRegistry || !Array.isArray(this.jobDefinitions)) return
-      Object.entries(this.suspendedOverlayMap).forEach(([activityId, overlayId]) => {
+      Object.values(this.suspendedOverlayMap).forEach((overlayId) => {
         overlays.remove(overlayId)
       })
       this.suspendedOverlayMap = {}
       this.jobDefinitions.forEach(jobDefinition => {
         const shape = elementRegistry.get(jobDefinition.activityId)
         if (shape && jobDefinition.suspended) {
+          var title = this.$t('bpmn-viewer.legend.suspendedJobDefinition')
           const suspendedBadge = `
-            <span class="badge bg-warning rounded-pill text-white border border-dark px-2 py-1">
+            <span class="badge bg-warning rounded-pill text-white border border-dark px-2 py-1" title="${title}">
               <span class="mdi mdi-pause"></span>
             </span>`
           const overlayId = overlays.add(jobDefinition.activityId, {
@@ -327,32 +358,7 @@ export default {
           this.suspendedOverlayMap[jobDefinition.activityId] = overlayId
         }
       })
-    },
-    highlightElement: function(jobDefinition) {
-      const elementRegistry = this.viewer.get('elementRegistry')
-      const canvas = this.viewer.get('canvas')
-      const element = elementRegistry.get(jobDefinition.activityId)
-      if (!element) return
-      if (this.currentHighlight) {
-        this.currentHighlight.classList.remove('bpmn-highlight')
-      }
-
-      const gfx = elementRegistry.getGraphics(element)
-      const shape = gfx.querySelector('rect, path')
-      if (shape) {
-        shape.classList.add('bpmn-highlight')
-        this.currentHighlight = shape
-      }
-      canvas.scrollToElement(jobDefinition.activityId)
     }
   }
 }
 </script>
-<style>
-  .bpmn-highlight {
-    stroke: var(--info) !important;
-    stroke-width: 2px !important;
-    fill-opacity: 0.1 !important;
-    fill: var(--info) !important;
-  }
-</style>

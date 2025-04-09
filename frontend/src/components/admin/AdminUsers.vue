@@ -57,28 +57,18 @@
       </div>
     </div>
 
-    <b-modal ref="deleteModal" :title="$t('confirm.title')">
-      <div class="container-fluid">
-        <div class="row align-items-center">
-          <div class="col-2">
-            <span class="mdi-36px mdi mdi-alert-outline text-warning me-3"></span>
-          </div>
-          <div class="col-10">
-            <span v-if="userSelected">
-              <p>{{ $t('admin.users.confirmDelete') }}</p>
-              <strong>{{ $t('admin.users.userId') }}:</strong> {{ userSelected.id }} <br>
-              <strong>{{ $t('admin.users.firstName') }}:</strong> {{ userSelected.firstName }}<br>
-              <strong>{{ $t('admin.users.lastName') }}:</strong> {{ userSelected.lastName }}<br>
-              <strong>{{ $t('admin.users.email') }}:</strong> {{ userSelected.email }}
-            </span>
-          </div>
-        </div>
-      </div>
-      <template v-slot:modal-footer>
-        <b-button variant="primary" @click="remove(userSelected); $refs.deleteModal.hide()">{{ $t('confirm.ok') }}</b-button>
-        <b-button @click="$refs.deleteModal.hide()">{{ $t('confirm.cancel') }}</b-button>
-      </template>
-    </b-modal>
+    <ConfirmDialog ref="deleteModal" @ok="remove(userSelected)" :ok-title="$t('confirm.delete')">
+      <span v-if="userSelected">
+        <p>{{ $t('admin.users.confirmDelete') }}</p>
+        <p>
+          <strong>{{ $t('admin.users.userId') }}:</strong> {{ userSelected.id }} <br>
+          <strong>{{ $t('admin.users.firstName') }}:</strong> {{ userSelected.firstName }}<br>
+          <strong>{{ $t('admin.users.lastName') }}:</strong> {{ userSelected.lastName }}<br>
+          <strong>{{ $t('admin.users.email') }}:</strong> {{ userSelected.email }}
+        </p>
+      </span>
+    </ConfirmDialog>
+
     <TaskPopper ref="importPopper"></TaskPopper>
   </div>
 </template>
@@ -91,10 +81,11 @@ import { getStringObjByKeys } from '@/components/admin/utils.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import TaskPopper from '@/components/common-components/TaskPopper.vue'
 import { BWaitingBox } from 'cib-common-components'
+import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
 
 export default {
   name: 'AdminUsers',
-  components: { FlowTable, TaskPopper, BWaitingBox },
+  components: { FlowTable, TaskPopper, BWaitingBox, ConfirmDialog },
   data: function () {
     return {
       selected: null,

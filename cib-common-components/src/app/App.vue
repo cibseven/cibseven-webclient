@@ -10,6 +10,7 @@
       <RouterLink to="/alerts">Alerts</RouterLink>
       <RouterLink to="/progress">Progress</RouterLink>
       <RouterLink to="/waiting-box">Waiting Box</RouterLink>
+      <RouterLink to="/forms">Forms</RouterLink>
     </nav>
   </header>
 

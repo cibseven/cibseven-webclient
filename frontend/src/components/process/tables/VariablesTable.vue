@@ -40,8 +40,8 @@
           :title="$t('process-instance.edit')" size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-square-edit-outline"
           @click="modifyVariable(table.item)">
         </b-button>
-        <b-button v-if="selectedInstance.state !== 'SUSPENDED'" :title="$t('process-instance.edit')" size="sm" variant="outline-secondary"
-          class="border-0 mdi mdi-18px mdi-delete-outline" @click="$refs.deleteVariable.show(table.item)"></b-button>
+        <b-button v-if="selectedInstance.state !== 'SUSPENDED'" :title="$t('confirm.delete')" size="sm" variant="outline-secondary"
+          class="border-0 mdi mdi-18px mdi-delete-outline" @click="deleteVariable(table.item)"></b-button>
       </template>
     </FlowTable>
     <div v-else>
@@ -52,17 +52,17 @@
   <TaskPopper ref="importPopper"></TaskPopper>
 
   <b-modal ref="uploadFile" :title="$t('process-instance.upload')">
-    <div class="container-fluid">
+    <div>
       <b-form-file placeholder="" :browse-text="$t('process-instance.selectFile')" v-model="file"></b-form-file>
     </div>
     <template v-slot:modal-footer>
-      <b-button @click="$refs.uploadFile.hide(); file = null">{{ $t('confirm.cancel') }}</b-button>
-      <b-button :disabled="!file" variant="primary" @click="uploadFile(); $refs.uploadFile.hide()">{{ $t('process-instance.upload') }}</b-button>
+      <b-button @click="$refs.uploadFile.hide(); file = null" variant="link">{{ $t('confirm.cancel') }}</b-button>
+      <b-button :disabled="!file" @click="uploadFile(); $refs.uploadFile.hide()" variant="primary">{{ $t('process-instance.upload') }}</b-button>
     </template>
   </b-modal>
 
   <b-modal ref="modifyVariable" :title="$t('process-instance.edit')">
-    <div v-if="variableToModify" class="container-fluid">
+    <div v-if="variableToModify">
       <b-form-group :label="$t('process-instance.variables.name')">
         <b-form-input v-model="variableToModify.name" disabled></b-form-input>
       </b-form-group>
@@ -76,17 +76,15 @@
     <template v-slot:modal-footer>
       <b-button v-if="selectedInstance.state === 'COMPLETED'" @click="$refs.modifyVariable.hide()">{{ $t('confirm.close') }}</b-button>
       <template v-else>
-        <b-button @click="$refs.modifyVariable.hide()">{{ $t('confirm.cancel') }}</b-button>
-        <b-button variant="primary" @click="updateVariable">{{ $t('process-instance.save') }}</b-button>
+        <b-button @click="$refs.modifyVariable.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
+        <b-button @click="updateVariable" variant="primary">{{ $t('process-instance.save') }}</b-button>
       </template>
     </template>
   </b-modal>
 
   <AddVariableModal ref="addVariableModal" :selected-instance="selectedInstance" @variable-added="loadSelectedInstanceVariables(); $refs.success.show()"></AddVariableModal>
 
-  <ConfirmDialog ref="deleteVariable" @ok="deleteVariable($event)">
-    {{ $t('confirm.performOperation') }}
-  </ConfirmDialog>
+  <DeleteVariableModal ref="deleteVariableModal"></DeleteVariableModal>
 
   <SuccessAlert top="0" style="z-index: 1031" ref="success">{{ $t('alert.successOperation') }}</SuccessAlert>
 
@@ -98,13 +96,13 @@ import { ProcessService, HistoryService } from '@/services.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import TaskPopper from '@/components/common-components/TaskPopper.vue'
 import AddVariableModal from '@/components/process/modals/AddVariableModal.vue'
-import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
+import DeleteVariableModal from '@/components/process/modals/DeleteVariableModal.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import { BWaitingBox } from 'cib-common-components'
 
 export default {
   name: 'VariablesTable',
-  components: { FlowTable, TaskPopper, AddVariableModal, ConfirmDialog, SuccessAlert, BWaitingBox },
+  components: { FlowTable, TaskPopper, AddVariableModal, DeleteVariableModal, SuccessAlert, BWaitingBox },
   mixins: [procesessVariablesMixin],
   data: function() {
     return {
@@ -157,6 +155,12 @@ export default {
       this.$refs.modifyVariable.show()
     },
     deleteVariable: function(variable) {
+      this.$refs.deleteVariableModal.show({
+        ok: this.deleteVariableConfirmed,
+        variable: variable
+      })
+    },
+    deleteVariableConfirmed: function(variable) {
       if (this.selectedInstance.state === 'ACTIVE') {
         ProcessService.deleteVariableByExecutionId(variable.executionId, variable.name).then(() => {
           this.loadSelectedInstanceVariables()

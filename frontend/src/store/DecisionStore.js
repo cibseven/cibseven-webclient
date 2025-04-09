@@ -3,7 +3,8 @@ import { DecisionService } from '@/services.js'
 const DecisionStore = {
   state: {
     list: [],
-    selectedDecisionVersion: null
+    selectedDecisionVersion: null,
+    selectedInstance: null
   },
   mutations: {
     setDecisions: function (state, params) {
@@ -28,6 +29,18 @@ const DecisionStore = {
         const targetVersion = decision.versions.find(v => String(v.version) === String(version))
         if (targetVersion) {
           state.selectedDecisionVersion = targetVersion
+        }
+      }
+    },
+    setSelectedInstance(state, instance) {
+      state.selectedInstance = instance
+    },
+    updateVersion(state, { key, newVersion }) {
+      const decision = state.list.find(d => d.key === key)
+      if (decision) {
+        const index = decision.versions.findIndex(v => v.id === newVersion.id)
+        if (index !== -1) {
+          decision.versions.splice(index, 1, newVersion)
         }
       }
     }
@@ -65,6 +78,10 @@ const DecisionStore = {
     },
     getSelectedDecisionVersion: (state) => () => {
       return state.selectedDecisionVersion
+    },
+    getDecisionVersion: (state) => ({ key, version }) => {
+      const decision = state.list.find(d => d.key === key)
+      return decision?.versions?.find(v => String(v.version) === String(version)) || null
     }
   },
   actions: {
@@ -83,7 +100,6 @@ const DecisionStore = {
         return state.list
       }
     },
-
     async getDecisionByKey({ state }, params) {
       if (state.list && state.list.length > 0) {
         const found = state.list.find(decision => decision.key === params.key)
@@ -94,18 +110,14 @@ const DecisionStore = {
       if (foundAfterReload) return foundAfterReload
       return DecisionService.getDecisionByKey(params.key)
     },
-
     async getDecisionByKeyAndTenant(_, { key, tenant }) {
       return DecisionService.getDecisionByKeyAndTenant(key, tenant)
     },
-
-    async getDecisionVersionsByKey({ commit }, { key, lazyLoadHistory }) {
-      const result = await DecisionService.getDecisionVersionsByKey(key, lazyLoadHistory)
-      if (lazyLoadHistory) {
+    async getDecisionVersionsByKey({ commit }, { key, lazyLoad }) {
+      const result = await DecisionService.getDecisionVersionsByKey(key, lazyLoad)
+      if (lazyLoad) {
         result.forEach(v => {
-          v.runningInstances = '-'
           v.allInstances = '-'
-          v.completedInstances = '-'
         })
       }
       commit('setDecisionVersions', { key, versions: result })

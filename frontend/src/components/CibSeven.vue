@@ -24,13 +24,29 @@
               <span class="visually-hidden">{{ $t('navigation.menu') }}</span>
               <span class="mdi mdi-24px mdi-menu align-middle"></span>
             </template>
-            <b-dropdown-item v-if="permissionsTaskList && startableProcesses" to="/seven/auth/start-process" :active="$route.path.includes('seven/auth/start-process')">{{ $t('start.startProcesses') }}</b-dropdown-item>
-            <b-dropdown-item v-if="permissionsTaskList" to="/seven/auth/tasks" :active="$route.path.includes('seven/auth/tasks')">{{ $t('start.taskList') }}</b-dropdown-item>
-            <b-dropdown-divider v-if="permissionsTaskList && (permissionsCockpit || permissionsUsers)"></b-dropdown-divider>
-            <b-dropdown-item v-if="permissionsCockpit" to="/seven/auth/processes" :active="$route.path.includes('seven/auth/process')">{{ $t('start.admin') }}</b-dropdown-item>
-            <b-dropdown-item v-if="permissionsCockpit" to="/seven/auth/deployments" :active="$route.path.includes('seven/auth/deployments')">{{ $t('deployment.title') }}</b-dropdown-item>
-            <b-dropdown-item v-if="permissionsUsers" to="/seven/auth/admin/users-management" :active="isUsersManagementActive">{{ $t('start.adminPanel') }}</b-dropdown-item>
-            <b-dropdown-item v-if="permissionsCockpit" :href="$root.config.cockpitUrl" target="_blank">{{ $t('start.cockpit') }}</b-dropdown-item>
+            <b-dropdown-item v-if="permissionsTaskList && startableProcesses" to="/seven/auth/start-process" :active="$route.path.includes('seven/auth/start-process')" :title="$t('start.startProcesses')">{{ $t('start.startProcesses') }}</b-dropdown-item>
+            <b-dropdown-item v-if="permissionsTaskList" to="/seven/auth/tasks" :active="$route.path.includes('seven/auth/tasks')" :title="$t('start.taskList')">{{ $t('start.taskList') }}</b-dropdown-item>
+
+            <b-dropdown-divider v-if="permissionsTaskList && permissionsCockpit"></b-dropdown-divider>
+            <b-dropdown-group v-if="permissionsCockpit" header="{{ $t('start.groupOperations') }}">
+              <b-dropdown-item to="/seven/auth/processes" :active="$route.path.includes('seven/auth/process')" :title="$t('start.admin')">{{ $t('process.title') }}</b-dropdown-item>
+              <b-dropdown-item to="/seven/auth/decisions" :active="$route.path.includes('seven/auth/decisions')" :title="$t('start.adminDecisions')">{{ $t('start.adminDecisions') }}</b-dropdown-item>
+              <b-dropdown-item to="/seven/auth/human-tasks" :active="$route.path.includes('seven/auth/human-tasks')" :title="$t('start.adminHumanTasks')">{{ $t('start.adminHumanTasks') }}</b-dropdown-item>
+              <b-dropdown-item to="/seven/auth/deployments" :active="$route.path.includes('seven/auth/deployments')" :title="$t('deployment.title')">{{ $t('deployment.title') }}</b-dropdown-item>
+              <b-dropdown-item to="/seven/auth/batches" :active="$route.path.includes('seven/auth/batches')" :title="$t('batches.tooltip')">{{ $t('batches.title') }}</b-dropdown-item>
+            </b-dropdown-group>
+
+            <b-dropdown-divider v-if="permissionsUsers && (permissionsTaskList || permissionsCockpit)"></b-dropdown-divider>
+            <b-dropdown-group v-if="permissionsUsers" header="{{ $t('start.groupAdministration') }}">
+              <b-dropdown-item to="/seven/auth/admin/users" :active="$route.path.includes('seven/auth/admin/users')" :title="$t('admin.users.title')">{{ $t('admin.users.title') }}</b-dropdown-item>
+              <b-dropdown-item to="/seven/auth/admin/groups" :active="$route.path.includes('seven/auth/admin/groups')" :title="$t('admin.groups.title')">{{ $t('admin.groups.title') }}</b-dropdown-item>
+              <b-dropdown-item to="/seven/auth/admin/tenants" :active="$route.path.includes('seven/auth/admin/tenants')" :title="$t('admin.tenants.tooltip')">{{ $t('admin.tenants.title') }}</b-dropdown-item>
+              <b-dropdown-item to="/seven/auth/admin/authorizations" :active="$route.path.includes('seven/auth/admin/authorizations')" :title="$t('admin.authorizations.title')">{{ $t('admin.authorizations.title') }}</b-dropdown-item>
+              <b-dropdown-item to="/seven/auth/admin/system" :active="$route.path.includes('seven/auth/admin/system')" :title="$t('admin.system.tooltip')">{{ $t('admin.system.title') }}</b-dropdown-item>
+            </b-dropdown-group>
+
+            <b-dropdown-divider v-if="permissionsCockpit"></b-dropdown-divider>
+            <b-dropdown-item v-if="permissionsCockpit" :href="$root.config.cockpitUrl" :title="$t('start.cockpit')" target="_blank">{{ $t('start.cockpit') }}</b-dropdown-item>
           </b-nav-item-dropdown>
         </b-navbar-nav>
       </b-collapse>
@@ -47,47 +63,21 @@
             <span class="visually-hidden">{{ $t('navigation.infoAndHelp') }}</span>
             <span class="mdi mdi-24px mdi-help-circle align-middle"></span>
           </template>
-          <b-dropdown-item v-if="$root.config.flowLinkHelp != ''" :href="$root.config.flowLinkHelp" target="_blank">{{ $t('infoAndHelp.flowLinkHelp') }}</b-dropdown-item>
-          <b-dropdown-item v-if="$root.config.flowLinkAccessibility != ''" :href="$root.config.flowLinkAccessibility" target="_blank">{{ $t('infoAndHelp.flowLinkAccessibility') }}</b-dropdown-item>
-          <b-dropdown-item v-if="$root.config.flowLinkTerms != ''" :href="$root.config.flowLinkTerms" target="_blank">{{ $t('infoAndHelp.flowLinkTerms') }}</b-dropdown-item>
-          <b-dropdown-item v-if="$root.config.flowLinkPrivacy != ''" :href="$root.config.flowLinkPrivacy" target="_blank">{{ $t('infoAndHelp.flowLinkPrivacy') }}</b-dropdown-item>
-          <b-dropdown-item v-if="$root.config.flowLinkImprint != ''" :href="$root.config.flowLinkImprint" target="_blank">{{ $t('infoAndHelp.flowLinkImprint') }}</b-dropdown-item>
-          <b-dropdown-item v-if="$root.config.layout.showSupportInfo" @click="$refs.support.show()">{{ $t('infoAndHelp.flowModalSupport.modalText') }}</b-dropdown-item>
-          <b-dropdown-item @click="$refs.about.show()">{{ $t('infoAndHelp.flowModalAbout.modalText') }}</b-dropdown-item>
+          <b-dropdown-item v-if="$root.config.flowLinkHelp != ''" :href="$root.config.flowLinkHelp" :title="$t('infoAndHelp.flowLinkHelp')" target="_blank">{{ $t('infoAndHelp.flowLinkHelp') }}</b-dropdown-item>
+          <b-dropdown-item v-if="$root.config.flowLinkAccessibility != ''" :href="$root.config.flowLinkAccessibility" :title="$t('infoAndHelp.flowLinkAccessibility')" target="_blank">{{ $t('infoAndHelp.flowLinkAccessibility') }}</b-dropdown-item>
+          <b-dropdown-item v-if="$root.config.flowLinkTerms != ''" :href="$root.config.flowLinkTerms" :title="$t('infoAndHelp.flowLinkTerms')" target="_blank">{{ $t('infoAndHelp.flowLinkTerms') }}</b-dropdown-item>
+          <b-dropdown-item v-if="$root.config.flowLinkPrivacy != ''" :href="$root.config.flowLinkPrivacy" :title="$t('infoAndHelp.flowLinkPrivacy')" target="_blank">{{ $t('infoAndHelp.flowLinkPrivacy') }}</b-dropdown-item>
+          <b-dropdown-item v-if="$root.config.flowLinkImprint != ''" :href="$root.config.flowLinkImprint" :title="$t('infoAndHelp.flowLinkImprint')" target="_blank">{{ $t('infoAndHelp.flowLinkImprint') }}</b-dropdown-item>
+          <b-dropdown-item-button v-if="$root.config.layout.showSupportInfo" :title="$t('infoAndHelp.flowModalSupport.modalText')" @click="$refs.support.show()">{{ $t('infoAndHelp.flowModalSupport.modalText') }}</b-dropdown-item-button>
+          <b-dropdown-item-button @click="$refs.about.show()" :title="$t('infoAndHelp.flowModalAbout.modalText')">{{ $t('infoAndHelp.flowModalAbout.modalText') }}</b-dropdown-item-button>
         </b-nav-item-dropdown>
       </b-navbar-nav>
 
       <template v-slot:userItems>
         <b-dropdown-item v-if="$root.user && $root.config.layout.showUserSettings && !applicationPermissionsDenied($root.config.permissions.userProfile, 'userProfile')"
-          :to="'/seven/auth/account/' + $root.user.id">{{ $t('seven.account') }}</b-dropdown-item>
+          :to="'/seven/auth/account/' + $root.user.id" :title="$t('seven.account')">{{ $t('seven.account') }}</b-dropdown-item>
       </template>
     </CIBHeaderFlow>
-
-    <SupportModal ref="support" v-if="$root.config.layout.showSupportInfo"></SupportModal>
-
-    <b-modal ref="about" :title="$t('infoAndHelp.flowModalAbout.title')">
-      <div class="row">
-        <div class="col-2">
-          <svg id="Ebene_1" data-name="Ebene 1"
-            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-              <path
-              d="M12,2A10,10,0,1,1,2,12,10,10,0,0,1,12,2m0-2A12,12,0,1,0,24,12,12,12,0,0,0,12,0Z"
-              fill="var(--info)" />
-              <g>
-                <path
-              d="M13.11,9.93s-.1,6.9,0,7a5.81,5.81,0,0,0,1.33.24,2.13,2.13,0,0,1,1.08.3,1.05,1.05,0,0,1,0,1.51,1.58,1.58,0,0,1-1.08.3H9.57A1.58,1.58,0,0,1,8.49,19a1,1,0,0,1-.32-.76.93.93,0,0,1,.32-.75,2.43,2.43,0,0,1,1.08-.3c.27,0,1.42,0,1.42-.33s0-4.18,0-4.53S10.44,12,10,12a1.67,1.67,0,0,1-1-.25,1,1,0,0,1,0-1.52,1.61,1.61,0,0,1,1.08-.29Z"
-              fill="var(--info)" />
-                <path d="M13,7.43a1.5,1.5,0,1,1-1.5-1.5A1.5,1.5,0,0,1,13,7.43Z"
-              fill="var(--info)" />
-              </g>
-            </svg>
-        </div>
-        <div class="col-10 d-flex" style="align-items:center">{{ $t('infoAndHelp.flowModalSupport.version') }}: {{ version }}</div>
-      </div>
-      <template v-slot:modal-footer>
-        <b-button variant="primary" @click="$emit('ok'); $refs.about.hide()">{{ $t('confirm.ok') }}</b-button>
-      </template>
-    </b-modal>
 
     <router-view class="flex-grow-1 overflow-hidden" ref="down"></router-view>
 
@@ -105,7 +95,9 @@
       </template>
     </b-modal>
 
-    <ProblemReport ref="report" url="feedback" :email="$root.user && $root.user.email" @report="$refs.down.$emit('report', $event)"></ProblemReport>
+    <SupportModal ref="support" v-if="$root.config.layout.showSupportInfo"></SupportModal>
+    <AboutModal ref="about"></AboutModal>
+    <FeedbackModal ref="report" url="feedback" :email="$root.user && $root.user.email" @report="$refs.down.$emit('report', $event)"></FeedbackModal>
 
     <GlobalEvents v-if="permissionsTaskList" @keydown.ctrl.left.prevent="$router.push('/seven/auth/start-process')"></GlobalEvents>
     <GlobalEvents v-if="permissionsCockpit" @keydown.ctrl.right.prevent="$router.push('/seven/auth/processes/list')"></GlobalEvents>
@@ -117,42 +109,27 @@
 <script>
 import platform from 'platform'
 import { permissionsMixin } from '@/permissions.js'
-import { InfoService } from '@/services.js'
-import SupportModal from '@/components/common-components/SupportModal.vue'
+import AboutModal from '@/components/modals/AboutModal.vue'
+import SupportModal from '@/components/modals/SupportModal.vue'
 import CIBHeaderFlow from '@/components/common-components/CIBHeaderFlow.vue'
-import ProblemReport from '@/components/common-components/ProblemReport.vue'
+import FeedbackModal from '@/components/modals/FeedbackModal.vue'
 import { updateAppTitle } from '@/utils/init'
 
 export default {
   name: 'CibSeven',
-  components: { SupportModal, CIBHeaderFlow, ProblemReport },
+  components: { AboutModal, SupportModal, CIBHeaderFlow, FeedbackModal },
   mixins: [permissionsMixin],
   inject: ['isMobile'],
-  data: function() { return { rememberNotShow: false, version: '' } },
-  created: function() {
-    InfoService.getVersion().then(version => {
-      this.version = version
-    })
+  data: function() {
+    return {
+       rememberNotShow: false
+    }
   },
   watch: {
+    // when the title of the view inside top toolbar is changed
+    // => let's change title of the whole web-page in browser
     pageTitle: function(title) {
-      switch (this.$route.name) {
-        case 'adminUsers':
-        case 'adminGroups':
-        case 'authorizations':
-          updateAppTitle(
-            this.$root.config.productNamePageTitle,
-            this.$t('start.adminPanel'),
-            title
-          )
-          break
-        default:
-          updateAppTitle(
-            this.$root.config.productNamePageTitle,
-            title
-          )
-          break
-      }
+      this.refreshAppTitle(title)
     }
   },
   computed: {
@@ -175,6 +152,7 @@ export default {
         return comp
       })
     },
+    // when route is changed => let's change title of the view inside top toolbar
     pageTitle: function() {
       switch (this.$route.name) {
         case 'login': return this.$t('login.login')
@@ -183,16 +161,25 @@ export default {
         case 'start-process': return this.$t('start.startProcesses')
         case 'processManagement':
         case 'process': return this.$t('start.admin')
-        case 'usersManagement': return this.$t('start.adminPanel')
+        case 'batches': return this.$t('batches.title')
+        case 'decision-version':
+        case 'decision-instance':
+        case 'decision-list': return this.$t('start.adminDecisions')
+        case 'human-tasks': return this.$t('start.adminHumanTasks')
+        case 'usersManagement': return this.$t('start.groupAdministration')
+        case 'adminUser':
         case 'adminUsers':
         case 'createUser':
           return this.$t('admin.users.title')
+        case 'adminGroup':
         case 'adminGroups':
         case 'createGroup':
           return this.$t('admin.groups.title')
         case 'authorizations':
         case 'authorizationType':
           return this.$t('admin.authorizations.title')
+        case 'adminTenants': return this.$t('admin.tenants.title')
+        case 'adminSystem': return this.$t('admin.system.title')
         default: return ''
       }
     },
@@ -216,10 +203,7 @@ export default {
       var isNotifiedUser = localStorage.getItem('ienotify')
       if (!isNotifiedUser) this.$refs.ieNotification.show() //must notify the user
     }
-    updateAppTitle(
-        this.$root.config.productNamePageTitle,
-        this.pageTitle
-    )
+    this.refreshAppTitle(this.pageTitle)
   },
   methods: {
     logout: function() {
@@ -236,6 +220,31 @@ export default {
       this.$eventBus.emit('openStartProcess')
     },
     doNotShowIeNotification: function() { if (this.rememberNotShow) localStorage.setItem('ienotify', true) },
+    // change title of the whole web-page in browser
+    refreshAppTitle: function (title) {
+      switch (this.$route.name) {
+        case 'adminUser':
+        case 'adminUsers':
+        case 'adminGroup':
+        case 'adminGroups':
+        case 'authorizations':
+        case 'authorizationType':
+          // "CIB seven | Users Management | <view>"
+          updateAppTitle(
+            this.$root.config.productNamePageTitle,
+            this.$t('start.adminPanel'),
+            title
+          )
+          break
+        default:
+          // "CIB seven | <view>"
+          updateAppTitle(
+            this.$root.config.productNamePageTitle,
+            title
+          )
+          break
+      }
+    }
   }
 }
 </script>
