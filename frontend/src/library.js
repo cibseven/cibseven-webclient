@@ -81,6 +81,11 @@ import TasksContent from '@/components/task/TasksContent.vue'
 import TasksNavBar from '@/components/task/TasksNavBar.vue'
 import TasksView from '@/components/task/TasksView.vue'
 import HighlightedText from '@/components/common-components/HighlightedText.vue'
+import HumanTasksView from '@/components/task/HumanTasksView.vue'
+import DecisionView from '@/components/decision/DecisionView.vue'
+import DecisionList from '@/components/decisions/list/DecisionList.vue'
+import DecisionListView from '@/components/decisions/list/DecisionListView.vue'
+import DecisionDefinitionVersion from '@/components/decision/DecisionDefinitionVersion.vue'
 import TenantsView from '@/components/tenants/TenantsView.vue'
 import BatchesView from '@/components/batches/BatchesView.vue'
 import SystemView from '@/components/system/SystemView.vue'
@@ -157,6 +162,11 @@ const registerComponents = function(app) {
   app.component('tasks-nav-bar', TasksNavBar)
   app.component('tasks-view', TasksView)
   app.component('highlighted-text', HighlightedText)
+  app.component('human-tasks', HumanTasksView)
+  app.component('decision-view', DecisionView)
+  app.component('decision-list', DecisionList)
+  app.component('decision-list-view', DecisionListView)
+  app.component('decision-', DecisionDefinitionVersion)
   app.component('tenants-view', TenantsView)
   app.component('batches-view', BatchesView)
   app.component('system-view', SystemView)
@@ -164,7 +174,7 @@ const registerComponents = function(app) {
 
 export {
   registerComponents,
-
+  
   TenantsView,
   BatchesView,
   SystemView,
@@ -249,5 +259,11 @@ export {
   HighlightedText,
   TaskService,
   HistoryService,
+  ProcessService,
+  HumanTasksView,
+  DecisionView,
+  DecisionList,
+  DecisionListView,
+  DecisionDefinitionVersion,
   ProcessService
 }
