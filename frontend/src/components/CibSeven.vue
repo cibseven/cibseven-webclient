@@ -15,7 +15,6 @@
 
       <b-button v-if="$root.user && startableProcesses && $route.name === 'tasklist'" class="d-none d-sm-block py-0 me-3" variant="outline-secondary" :title="$t('start.startProcesses')" @click="openStartProcess()">
         <span class="mdi mdi-18px mdi-rocket"><span class="d-none d-lg-inline">{{ $t('start.startProcesses') }}</span></span>
-        <GlobalEvents @keydown.ctrl.alt.p.prevent="openStartProcess()"></GlobalEvents>
       </b-button>
 
       <b-collapse v-if="(permissionsTaskList && startableProcesses) || permissionsCockpit" is-nav id="nav_collapse" class="flex-grow-0 d-none d-md-flex">
