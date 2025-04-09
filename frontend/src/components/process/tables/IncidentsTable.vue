@@ -7,7 +7,7 @@
       { label: 'activity', key: 'activityId', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
       { label: 'failedActivity', key: 'failedActivityId', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
       { label: 'incidentType', key: 'incidentType', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
-      { label: 'annotation', key: 'annotation', class: 'col-1', tdClass: 'position-relative py-1 border-end border-top-0' },
+      { label: 'annotation', key: 'annotation', class: 'col-1', tdClass: 'py-1 border-end border-top-0' },
       { label: 'actions', key: 'actions', class: 'col-1', sortable: false, tdClass: 'py-1 border-top-0' }]">
       <template v-slot:cell(incidentMessage)="table">
         <div :title="table.item.incidentMessage" class="text-truncate" @click="showIncidentMessage(table.item.configuration)">{{ table.item.incidentMessage }}</div>
@@ -25,16 +25,14 @@
         <div :title="table.item.incidentType" class="text-truncate">{{ table.item.incidentType }}</div>
       </template>
       <template v-slot:cell(annotation)="table">
-        <div :title="table.item.annotation" class="text-truncate w-100" @mouseenter="focusedCell = table.item" @mouseleave="focusedCell = null">
+        <div :title="table.item.annotation" class="text-truncate w-100" @click="copyValueToClipboard(table.item.annotation)">
           {{ table.item.annotation }}
-          <span v-if="table.item && focusedCell === table.item" @click.stop="copyValueToClipboard(table.item.annotation)"
-            class="mdi mdi-18px mdi-content-copy px-2 position-absolute end-0 text-secondary lh-sm"></span>
         </div>
       </template>
       <template v-slot:cell(actions)="table">
         <b-button :title="$t('process-instance.incidents.editAnnotation')"
           size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-note-edit-outline"
-          @click="showAnnotationModal(table.item)">
+          @click="$refs.annotationModal.show(table.item)">
         </b-button>
         <b-button :title="$t('process-instance.incidents.retryJob')"
           size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-reload"
@@ -54,20 +52,7 @@
     </div>
   </b-modal>
 
-  <b-modal ref="annotationModal" :title="$t('process-instance.incidents.editAnnotation')">
-    <div v-if="selectedIncident">
-      <b-form-group>
-        <template #label>{{ $t('process-instance.incidents.annotation') }}</template>
-        <b-form-textarea v-model="selectedIncident.annotation" :maxlength="annotationMaxLength" class="mb-1"></b-form-textarea>
-        <div class="small float-end" :class="{ 'text-danger': invalidAnnotation }">{{ annotationLengthInfo }}</div>
-      </b-form-group>
-    </div>
-    <template v-slot:modal-footer>
-      <b-button @click="$refs.annotationModal.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
-      <b-button @click="saveAnnotation()" :disabled="invalidAnnotation" variant="primary">{{ $t('commons.save') }}</b-button>
-    </template>
-  </b-modal>
-
+  <AnnotationModal ref="annotationModal" @set-incident-annotation="setIncidentAnnotation"></AnnotationModal>
   <IncidentRetryModal ref="incidentRetryModal" @increment-number-retry="incrementNumberRetry"></IncidentRetryModal>
   <SuccessAlert ref="messageCopy" style="z-index: 9999">{{ $t('process.copySuccess') }}</SuccessAlert>
   <SuccessAlert ref="successRetryJob">{{ $t('process-instance.successRetryJob') }}</SuccessAlert>
@@ -82,18 +67,16 @@ import { IncidentService } from '@/services.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import IncidentRetryModal from '@/components/process/modals/IncidentRetryModal.vue'
+import AnnotationModal from '@/components/process/modals/AnnotationModal.vue'
 
 export default {
   name: 'IncidentsTable',
-  components: { FlowTable, SuccessAlert, IncidentRetryModal },
+  components: { FlowTable, SuccessAlert, IncidentRetryModal, AnnotationModal },
   mixins: [procesessVariablesMixin, copyToClipboardMixin],
   data: function() {
     return {
       stackTraceMessage: '',
-      localIncidents: [],
-      selectedIncident: null,
-      focusedCell: null,
-      annotationMaxLength: 4000
+      localIncidents: []
     }
   },
   created: function() {
@@ -103,17 +86,6 @@ export default {
     incidents: Array,
     activityInstance: Object,
     activityInstanceHistory: Object
-  },
-  computed: {
-    invalidAnnotation: function() {
-      if (!this.selectedIncident) return true
-      else if (!this.selectedIncident.annotation) return false
-      return this.selectedIncident.annotation.length > this.annotationMaxLength
-    },
-    annotationLengthInfo: function() {
-      const length = this.selectedIncident?.annotation?.length || 0
-      return `${length} / ${this.annotationMaxLength}`
-    }
   },
   methods: {
     showIncidentMessage: function(jobDefinitionId) {
@@ -132,18 +104,10 @@ export default {
         this.$refs.incidentRetryModal.hide()
       })
     },
-    showAnnotationModal: function(incident) {
-      this.selectedIncident = { ...incident }
-      this.$refs.annotationModal.show()
-    },
-    saveAnnotation: function() {
-      if (this.invalidAnnotation) return
-      var params = { annotation: this.selectedIncident.annotation }
-      IncidentService.setIncidentAnnotation(this.selectedIncident.id, params).then(() => {
-        const incident = this.localIncidents.find(i => i.id === this.selectedIncident.id)
-        if (incident) {
-          incident.annotation = this.selectedIncident.annotation
-        }
+    setIncidentAnnotation: function({ id, params }) {
+      IncidentService.setIncidentAnnotation(id, params).then(() => {
+        const incident = this.localIncidents.find(i => i.id === id)
+        if (incident) incident.annotation = params.annotation
         this.$refs.annotationModal.hide()
       })
     }
