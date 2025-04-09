@@ -854,6 +854,7 @@
 			"tooltip": "Просмотр горячих клавиш",
 			"columnShortcut": "Комбинация",
 			"columnDescription": "Действие",
+			"buttonCtrl": "Ctrl",
 			"shortcuts": {
 				"ctrlLeft": "Перейти в раздел \"Начать процесс\"",
 				"ctrlDown": "Перейти в раздел \"Мои Задачи\"",

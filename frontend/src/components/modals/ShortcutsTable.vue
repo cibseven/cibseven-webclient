@@ -10,7 +10,7 @@
     <template v-slot:cell(buttons)="table">
       <span v-for="(button, index) in table.item.buttons" :key="index"
         :class="button === '+'? 'text-body-secondary': 'btn btn-outline-secondary py-0 px-2 m-1'">
-        {{ button === "+"? "+": button }}
+        {{ button === "+" ? "+": (button === "Ctrl" ? $t('infoAndHelp.shortcuts.buttonCtrl') : button) }}
       </span>
     </template>
     <template v-slot:cell(description)="table">

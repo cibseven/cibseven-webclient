@@ -855,6 +855,7 @@
 			"tooltip": "Mostrar atajos disponibles",
 			"columnShortcut": "Atajo",
 			"columnDescription": "Descripción",
+			"buttonCtrl": "Ctrl",
 			"shortcuts": {
 				"ctrlLeft": "Ir a la vista 'Iniciar proceso'",
 				"ctrlDown": "Ir a la vista 'Tareas'",

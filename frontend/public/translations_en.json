@@ -855,6 +855,7 @@
 			"tooltip": "View avaiable shortcuts",
 			"columnShortcut": "Shortcut",
 			"columnDescription": "Description",
+			"buttonCtrl": "Ctrl",
 			"shortcuts": {
 				"ctrlLeft": "Jump to \"Start process\" view",
 				"ctrlDown": "Jump to \"Tasks\" view",

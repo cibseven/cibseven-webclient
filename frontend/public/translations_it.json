@@ -699,6 +699,7 @@
 			"tooltip": "Mostra le scorciatoie disponibili",
 			"columnShortcut": "Scorciatoia",
 			"columnDescription": "Descrizione",
+			"buttonCtrl": "Ctrl",
 			"shortcuts": {
 				"ctrlLeft": "Vai alla vista 'Avvia processo'",
 				"ctrlDown": "Vai alla vista 'Compiti'",

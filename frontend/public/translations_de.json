@@ -858,6 +858,7 @@
 			"tooltip": "Verfügbare Tastenkürzel anzeigen",
 			"columnShortcut": "Tastenkürzel",
 			"columnDescription": "Beschreibung",
+			"buttonCtrl": "Strg",
 			"shortcuts": {
 				"ctrlLeft": "Zur Ansicht 'Startprozess' springen",
 				"ctrlDown": "Zur Ansicht 'Aufgaben' springen",
