@@ -74,12 +74,4 @@ public class BaseService {
 			throw new AuthenticationException("You are not authorized to do this");
 		}
 	}	
-	
-	public void hasAdminManagementPermissions(CIBUser user, SevenResourceType type, List<String> permissions) {
-		Authorizations authorizations = bpmProvider.getUserAuthorization(user.getId(), user);
-		if (!SevenAuthorizationUtils.hasAdminManagementPermissions(authorizations, type, permissions)) {
-			throw new AuthenticationException("You are not authorized to do this");
-		}
-	}	
-	
 }
