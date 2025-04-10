@@ -73,8 +73,8 @@
       <div v-if="criteriasToAdd.length < 1">
         <img src="/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mb-3" style="width: 200px">
         <div class="h5 text-secondary text-center">{{ $t('nav-bar.filters.noCriterias') }}</div>
+        <hr>
       </div>
-      <hr v-if="criteriasToAdd.length < 1">
       <b-form-checkbox v-if="existCandidateSelected" class="mb-3" v-model="includeAssigned" switch>
         <span>{{ $t('nav-bar.filters.includeAssigned') }}</span>
       </b-form-checkbox>

@@ -578,7 +578,7 @@
 			"filterPriorityLabel": "Priorität",
 			"selectProperty": "Schlüssel auswählen",
 			"insertValue": "Wert eingeben",
-			"insertVariableKey": "Schlüssel einfügen",
+			"insertVariableKey": "Variablennamen eingeben",
 			"addCriteria": "Kriterium hinzufügen",
 			"filterExists": "Dieser Filter existiert bereits",
 			"selectedCriteria": "Ausgewählte Kriterien",

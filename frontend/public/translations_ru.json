@@ -577,7 +577,7 @@
 			"filterPriorityLabel": "Приоритет",
 			"selectProperty": "Выбрать свойство",
 			"insertValue": "Введите значение",
-			"insertVariableKey": "вставить ключ",
+			"insertVariableKey": "Введите имя переменной",
 			"addCriteria": "Добавить критерий",
 			"filterExists": "Данный фильтр уже существует",
 			"selectedCriteria": "Выбранный критерий",

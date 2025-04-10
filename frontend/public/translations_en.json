@@ -577,7 +577,7 @@
 			"filterPriorityLabel": "Priority",
 			"selectProperty": "Select key",
 			"insertValue": "Enter value",
-			"insertVariableKey": "Enter key",
+			"insertVariableKey": "Enter variable name",
 			"addCriteria": "Add criteria",
 			"filterExists": "This filter already exists",
 			"selectedCriteria": "Selected criteria",
