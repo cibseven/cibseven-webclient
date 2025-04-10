@@ -11,8 +11,7 @@ import org.cibseven.webapp.rest.model.Authorizations;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-public class SevenAuthorizationUtils {
-	
+public class SevenAuthorizationUtils{ 
 	@Getter @AllArgsConstructor
 	private enum SevenAuthorizationType {
 		AUTH_TYPE_GLOBAL(0),
@@ -21,26 +20,23 @@ public class SevenAuthorizationUtils {
 		
 		private final int type;
 	}
-
-	public static final String AUTH_TYPE_GLOBAL = SevenAuthorizationUtils.SevenAuthorizationType.AUTH_TYPE_GLOBAL.name();
-	public static final String AUTH_TYPE_GRANT = SevenAuthorizationUtils.SevenAuthorizationType.AUTH_TYPE_GRANT.name();
-	public static final String AUTH_TYPE_REVOKE = SevenAuthorizationUtils.SevenAuthorizationType.AUTH_TYPE_REVOKE.name();
 	
+
 	public static int resourceType(SevenResourceType type) {
 	    return type.getType();
 	}
 	
-	public static int authorizationType(String name) {
-	    return SevenAuthorizationType.valueOf(name).getType();
+	public static int authorizationType(SevenAuthorizationType type) {
+	    return type.getType();
 	}
 	
     public static boolean hasCockpitRights(Authorizations authorizations) {
         return authorizations.getApplication().stream().anyMatch(auth -> {
-            if (auth.getType() == authorizationType(AUTH_TYPE_GRANT) && auth.getPermissions().length > 0 &&
+            if (auth.getType() == authorizationType(SevenAuthorizationType.AUTH_TYPE_GRANT) && auth.getPermissions().length > 0 &&
                     ("ALL".equals(auth.getPermissions()[0]) || "ACCESS".equals(auth.getPermissions()[0])) &&
                     ("cockpit".equals(auth.getResourceId()) || "*".equals(auth.getResourceId()))) {
                 return true;
-            } else if (auth.getType() == authorizationType(AUTH_TYPE_GLOBAL) && Arrays.asList(auth.getPermissions()).contains("ALL") &&
+            } else if (auth.getType() == authorizationType(SevenAuthorizationType.AUTH_TYPE_GLOBAL) && Arrays.asList(auth.getPermissions()).contains("ALL") &&
                     "*".equals(auth.getResourceId())) {
                 return true;
             }
@@ -87,21 +83,21 @@ public class SevenAuthorizationUtils {
         }
 
         boolean hasDeny = authList.stream().anyMatch(auth ->
-                auth.getType() == authorizationType(AUTH_TYPE_REVOKE) && auth.getPermissions().length > 0 &&
+                auth.getType() == authorizationType(SevenAuthorizationType.AUTH_TYPE_REVOKE) && auth.getPermissions().length > 0 &&
                         permissions.contains(auth.getPermissions()[0])
         );
 
         if (hasDeny) return false;
 
         return authList.stream().anyMatch(auth ->
-                (auth.getType() == authorizationType(AUTH_TYPE_GRANT) || auth.getType() == authorizationType(AUTH_TYPE_GLOBAL)) &&
+                (auth.getType() == authorizationType(SevenAuthorizationType.AUTH_TYPE_GRANT) || auth.getType() == authorizationType(SevenAuthorizationType.AUTH_TYPE_GLOBAL)) &&
                         auth.getPermissions().length > 0 && permissions.contains(auth.getPermissions()[0])
         );
     }
 
     public static boolean hasSpecificProcessRights(Authorizations authorizations, String processKey) {
         return authorizations.getProcessDefinition().stream().anyMatch(auth ->
-                auth.getType() == authorizationType(AUTH_TYPE_GRANT) && auth.getPermissions().length > 0 &&
+                auth.getType() == authorizationType(SevenAuthorizationType.AUTH_TYPE_GRANT) && auth.getPermissions().length > 0 &&
                         ("ALL".equals(auth.getPermissions()[0]) || "CREATE_INSTANCE".equals(auth.getPermissions()[0])) &&
                         (processKey.equals(auth.getResourceId()))
         );
