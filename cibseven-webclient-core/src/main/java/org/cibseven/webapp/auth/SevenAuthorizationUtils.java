@@ -12,39 +12,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 public class SevenAuthorizationUtils {
-
-	@Getter @AllArgsConstructor
-	private enum SevenResourceType {
-		USER(1),
-		GROUP(2),
-		AUTHORIZATION(4),
-		PROCESS_DEFINITION(6),
-		PROCESS_INSTANCE(8),
-		DECISION_DEFINITION(10),
-		DECISION_REQUIREMENTS_DEFINITION(14),
-		TASK(7),
-		FILTER(5),
-		HISTORY(12),
-		DEPLOYMENT(9),
-		CASE_DEFINITION(14),
-		CASE_INSTANCE(15),
-		APPLICATION(0),
-	    JOB_DEFINITION(17),
-	    BATCH(13),
-	    GROUP_MEMBERSHIP(3),
-	    HISTORIC_TASK(19),
-	    HISTORIC_PROCESS_INSTANCE(20),
-	    TENANT(11),
-	    TENANT_MEMBERSHIP(12),
-	    REPORT(15),
-	    DASHBOARD(17),
-	    USER_OPERATION_LOG_CATEGORY(17),
-	    SYSTEM(21),
-	    MESSAGE(22),
-	    EVENT_SUBSCRIPTION(23);
-		
-		private final int type;
-	}
 	
 	@Getter @AllArgsConstructor
 	private enum SevenAuthorizationType {
@@ -55,10 +22,10 @@ public class SevenAuthorizationUtils {
 		private final int type;
 	}
 	
-	public static final String USER = SevenAuthorizationUtils.SevenResourceType.USER.name();
-	public static final String GROUP = SevenAuthorizationUtils.SevenResourceType.GROUP.name();
-	public static final String AUTHORIZATION = SevenAuthorizationUtils.SevenResourceType.AUTHORIZATION.name();
-	public static final String PROCESS_DEFINITION = SevenAuthorizationUtils.SevenResourceType.PROCESS_DEFINITION.name();
+	/*public static final String USER = SevenResourceType.USER.name();
+	public static final String GROUP = SevenResourceType.GROUP.name();
+	public static final String AUTHORIZATION = SevenResourceType.AUTHORIZATION.name();
+	public static final String PROCESS_DEFINITION = SevenResourceType.PROCESS_DEFINITION.name();
 	public static final String PROCESS_INSTANCE = SevenAuthorizationUtils.SevenResourceType.PROCESS_INSTANCE.name();
 	public static final String DECISION_DEFINITION = SevenAuthorizationUtils.SevenResourceType.DECISION_DEFINITION.name();
 	public static final String DECISION_REQUIREMENTS_DEFINITION = SevenAuthorizationUtils.SevenResourceType.DECISION_REQUIREMENTS_DEFINITION.name();
@@ -82,13 +49,13 @@ public class SevenAuthorizationUtils {
 	public static final String SYSTEM = SevenAuthorizationUtils.SevenResourceType.SYSTEM.name();
 	public static final String MESSAGE = SevenAuthorizationUtils.SevenResourceType.MESSAGE.name();
 	public static final String EVENT_SUBSCRIPTION = SevenAuthorizationUtils.SevenResourceType.EVENT_SUBSCRIPTION.name();
-	
+	*/
 	public static final String AUTH_TYPE_GLOBAL = SevenAuthorizationUtils.SevenAuthorizationType.AUTH_TYPE_GLOBAL.name();
 	public static final String AUTH_TYPE_GRANT = SevenAuthorizationUtils.SevenAuthorizationType.AUTH_TYPE_GRANT.name();
 	public static final String AUTH_TYPE_REVOKE = SevenAuthorizationUtils.SevenAuthorizationType.AUTH_TYPE_REVOKE.name();
 	
-	public static int resourceType(String name) {
-	    return SevenResourceType.valueOf(name).getType();
+	public static int resourceType(SevenResourceType type) {
+	    return type.getType();
 	}
 	
 	public static int authorizationType(String name) {
@@ -109,40 +76,40 @@ public class SevenAuthorizationUtils {
         });
     }
 
-    public static boolean hasAdminManagementPermissions(Authorizations authorizations, String action, String type, List<String> permissions) {
+    public static boolean hasAdminManagementPermissions(Authorizations authorizations, String action, SevenResourceType type, List<String> permissions) {
         return checkPermission(authorizations, type, permissions);
     }
 
-    public static boolean checkPermission(Authorizations authorizations, String type, List<String> permissions) {
+    public static boolean checkPermission(Authorizations authorizations, SevenResourceType type, List<String> permissions) {
         Collection<Authorization> authList;
         switch (type) {
-            case "USER": authList = authorizations.getUser(); break;
-            case "GROUP": authList = authorizations.getGroup(); break;
-            case "AUTHORIZATION": authList = authorizations.getAuthorization(); break;
-            case "PROCESS_DEFINITION": authList = authorizations.getProcessDefinition(); break;
-            case "PROCESS_INSTANCE": authList = authorizations.getProcessInstance(); break;
-            case "DECISION_DEFINITION": authList = authorizations.getDecisionDefinition(); break;
-            case "DECISION_REQUIREMENTS_DEFINITION": authList = authorizations.getDecisionRequirementsDefinition(); break;
-            case "TASK": authList = authorizations.getTask(); break;
-            case "FILTER": authList = authorizations.getFilter(); break;
-            case "HISTORY": authList = authorizations.getHistory(); break;
-            case "DEPLOYMENT": authList = authorizations.getDeployment(); break;
-            case "CASE_DEFINITION": authList = authorizations.getCaseDefinition(); break;
-            case "CASE_INSTANCE": authList = authorizations.getCaseInstance(); break;
-            case "APPLICATION": authList = authorizations.getApplication(); break;
-            case "JOB_DEFINITION": authList = authorizations.getJobDefinition(); break;
-            case "BATCH": authList = authorizations.getBatch(); break;
-            case "GROUP_MEMBERSHIP": authList = authorizations.getGroupMembership(); break;
-            case "HISTORIC_TASK": authList = authorizations.getHistoricTask(); break;
-            case "HISTORIC_PROCESS_INSTANCE": authList = authorizations.getHistoricProcessInstance(); break;
-            case "TENANT": authList = authorizations.getTenant(); break;
-            case "TENANT_MEMBERSHIP": authList = authorizations.getTenantMembership(); break;
-            case "REPORT": authList = authorizations.getReport(); break;
-            case "DASHBOARD": authList = authorizations.getDashboard(); break;
-            case "USER_OPERATION_LOG_CATEGORY": authList = authorizations.getUserOperationLogCategory(); break;
-            case "SYSTEM": authList = authorizations.getSystem(); break;
-            case "MESSAGE": authList = authorizations.getMessage(); break;
-            case "EVENT_SUBSCRIPTION": authList = authorizations.getEventSubscription(); break;
+            case USER: authList = authorizations.getUser(); break;
+            case GROUP: authList = authorizations.getGroup(); break;
+            case AUTHORIZATION: authList = authorizations.getAuthorization(); break;
+            case PROCESS_DEFINITION: authList = authorizations.getProcessDefinition(); break;
+            case PROCESS_INSTANCE: authList = authorizations.getProcessInstance(); break;
+            case DECISION_DEFINITION: authList = authorizations.getDecisionDefinition(); break;
+            case DECISION_REQUIREMENTS_DEFINITION: authList = authorizations.getDecisionRequirementsDefinition(); break;
+            case TASK: authList = authorizations.getTask(); break;
+            case FILTER: authList = authorizations.getFilter(); break;
+            case HISTORY: authList = authorizations.getHistory(); break;
+            case DEPLOYMENT: authList = authorizations.getDeployment(); break;
+            case CASE_DEFINITION: authList = authorizations.getCaseDefinition(); break;
+            case CASE_INSTANCE: authList = authorizations.getCaseInstance(); break;
+            case APPLICATION: authList = authorizations.getApplication(); break;
+            case JOB_DEFINITION: authList = authorizations.getJobDefinition(); break;
+            case BATCH: authList = authorizations.getBatch(); break;
+            case GROUP_MEMBERSHIP: authList = authorizations.getGroupMembership(); break;
+            case HISTORIC_TASK: authList = authorizations.getHistoricTask(); break;
+            case HISTORIC_PROCESS_INSTANCE: authList = authorizations.getHistoricProcessInstance(); break;
+            case TENANT: authList = authorizations.getTenant(); break;
+            case TENANT_MEMBERSHIP: authList = authorizations.getTenantMembership(); break;
+            case REPORT: authList = authorizations.getReport(); break;
+            case DASHBOARD: authList = authorizations.getDashboard(); break;
+            case USER_OPERATION_LOG_CATEGORY: authList = authorizations.getUserOperationLogCategory(); break;
+            case SYSTEM: authList = authorizations.getSystem(); break;
+            case MESSAGE: authList = authorizations.getMessage(); break;
+            case EVENT_SUBSCRIPTION: authList = authorizations.getEventSubscription(); break;
             default:
                 throw new AuthenticationException("You are not authorized to do this");
         }

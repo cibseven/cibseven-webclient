@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.cibseven.webapp.auth.exception.AuthenticationException;
+import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.auth.rest.StandardLogin;
 
 import org.cibseven.webapp.auth.BaseUserProvider;
@@ -67,14 +68,14 @@ public class BaseService {
 		}
 	}
 	
-	public void checkPermission(CIBUser user, String type, List<String> permissions) {
+	public void checkPermission(CIBUser user, SevenResourceType type, List<String> permissions) {
 		Authorizations authorizations = bpmProvider.getUserAuthorization(user.getId(), user);
 		if (!SevenAuthorizationUtils.checkPermission(authorizations, type, permissions)) {
 			throw new AuthenticationException("You are not authorized to do this");
 		}
 	}	
 	
-	public void hasAdminManagementPermissions(CIBUser user, String action, String type, List<String> permissions) {
+	public void hasAdminManagementPermissions(CIBUser user, String action, SevenResourceType type, List<String> permissions) {
 		Authorizations authorizations = bpmProvider.getUserAuthorization(user.getId(), user);
 		if (!SevenAuthorizationUtils.hasAdminManagementPermissions(authorizations, action, type, permissions)) {
 			throw new AuthenticationException("You are not authorized to do this");

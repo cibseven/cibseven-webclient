@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.providers.SevenProvider;
@@ -71,7 +72,7 @@ public class AdminService extends BaseService implements InitializingBean {
 	@Parameter(description = "Specifies the field to sort by") @RequestParam Optional<String> sortBy,
 	@Parameter(description = "Specifies the order of the sorting") @RequestParam Optional<String> sortOrder,
 			Locale loc, CIBUser user) {
-		hasAdminManagementPermissions(user, "read", "user", List.of("ALL", "READ"));
+		hasAdminManagementPermissions(user, "read", SevenResourceType.USER, List.of("ALL", "READ"));
 		return bpmProvider.findUsers(id, firstName, firstNameLike, lastName, lastNameLike, 
 				email, emailLike, memberOfGroup, memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder, user);
 	}
@@ -92,7 +93,7 @@ public class AdminService extends BaseService implements InitializingBean {
 	public void createUser(
 			@RequestBody NewUser user,
 			Locale loc, CIBUser flowUser) {
-		hasAdminManagementPermissions(flowUser, "create", "user", List.of("ALL", "CREATE"));
+		hasAdminManagementPermissions(flowUser, "create", SevenResourceType.USER, List.of("ALL", "CREATE"));
 		bpmProvider.createUser(user, flowUser);
 	}
 
@@ -115,7 +116,7 @@ public class AdminService extends BaseService implements InitializingBean {
 			@Parameter(description = "User Id") @PathVariable String userId, 
 			@RequestBody User user, 
 			Locale loc, CIBUser flowUser) {
-		hasAdminManagementPermissions(flowUser, "update", "user", List.of("ALL", "UPDATE"));
+		hasAdminManagementPermissions(flowUser, "update", SevenResourceType.USER, List.of("ALL", "UPDATE"));
 		bpmProvider.updateUserProfile(userId, user, flowUser);
 	}
 	
@@ -138,7 +139,7 @@ public class AdminService extends BaseService implements InitializingBean {
 			@Parameter(description = "Group Id") @PathVariable String groupId, 
 			@Parameter(description = "User Id") @PathVariable String userId, 
 			Locale loc, CIBUser flowUser) {
-		hasAdminManagementPermissions(flowUser, "delete", "group", List.of("ALL", "DELETE"));
+		hasAdminManagementPermissions(flowUser, "delete", SevenResourceType.GROUP, List.of("ALL", "DELETE"));
 		bpmProvider.addMemberToGroup(groupId, userId, flowUser);
 	}
 	
@@ -161,7 +162,7 @@ public class AdminService extends BaseService implements InitializingBean {
 			@Parameter(description = "Group Id") @PathVariable String groupId, 
 			@Parameter(description = "User Id") @PathVariable String userId, 
 			Locale loc, CIBUser flowUser) {
-		hasAdminManagementPermissions(flowUser, "delete", "group", List.of("ALL", "DELETE"));
+		hasAdminManagementPermissions(flowUser, "delete", SevenResourceType.GROUP, List.of("ALL", "DELETE"));
 		bpmProvider.deleteMemberFromGroup(groupId, userId, flowUser);
 	}
 	
@@ -186,7 +187,7 @@ public class AdminService extends BaseService implements InitializingBean {
 			@Parameter(description = "User Id") @PathVariable String userId, 
 			@RequestBody Map<String, Object> data, 
 			Locale loc, CIBUser user) {
-		hasAdminManagementPermissions(user, "update", "user", List.of("ALL", "UPDATE"));
+		hasAdminManagementPermissions(user, "update", SevenResourceType.USER, List.of("ALL", "UPDATE"));
 		bpmProvider.updateUserCredentials(userId, data, user);
 	}
 
@@ -205,7 +206,7 @@ public class AdminService extends BaseService implements InitializingBean {
 	public void deleteUser(
 			@Parameter(description = "User Id") @PathVariable String userId, 
 			Locale loc, CIBUser user) {
-		hasAdminManagementPermissions(user, "delete", "user", List.of("ALL", "DELETE"));
+		hasAdminManagementPermissions(user, "delete", SevenResourceType.USER, List.of("ALL", "DELETE"));
 		bpmProvider.deleteUser(userId, user);
 	}
 
@@ -231,7 +232,7 @@ public class AdminService extends BaseService implements InitializingBean {
 			@Parameter(description = "Specifies the maximum number of results to return"
 					+ "<br>Will return less results if there are no more results left") @RequestParam Optional<String> maxResults,		
 			Locale loc, CIBUser user) {
-		hasAdminManagementPermissions(user, "read", "group", List.of("ALL", "READ"));
+		hasAdminManagementPermissions(user, "read", SevenResourceType.GROUP, List.of("ALL", "READ"));
 		String decodedMember = member.map(value -> {
 			try {
 				return URLDecoder.decode(value, StandardCharsets.UTF_8.toString());
@@ -280,7 +281,7 @@ public class AdminService extends BaseService implements InitializingBean {
 	public void createGroup(
 			@RequestBody UserGroup group,
 			Locale loc, CIBUser user) {
-		hasAdminManagementPermissions(user, "create", "group", List.of("ALL", "CREATE"));
+		hasAdminManagementPermissions(user, "create", SevenResourceType.GROUP, List.of("ALL", "CREATE"));
 		bpmProvider.createGroup(group, user);
 	}
 
@@ -303,7 +304,7 @@ public class AdminService extends BaseService implements InitializingBean {
 			@Parameter(description = "Group Id") @PathVariable String groupId, 
 			@RequestBody UserGroup group, 
 			Locale loc, CIBUser user) {
-		hasAdminManagementPermissions(user, "update" ,"group", List.of("ALL", "UPDATE"));
+		hasAdminManagementPermissions(user, "update", SevenResourceType.GROUP, List.of("ALL", "UPDATE"));
 		bpmProvider.updateGroup(groupId, group, user);
 	}
 
@@ -322,7 +323,7 @@ public class AdminService extends BaseService implements InitializingBean {
 	public void deleteGroup(
 			@Parameter(description = "Group Id") @PathVariable String groupId, 
 			Locale loc, CIBUser user) {
-		hasAdminManagementPermissions(user, "delete", "group", List.of("ALL", "DELETE"));
+		hasAdminManagementPermissions(user, "delete", SevenResourceType.GROUP, List.of("ALL", "DELETE"));
 		bpmProvider.deleteGroup(groupId, user);
 	}
 	
@@ -350,7 +351,7 @@ public class AdminService extends BaseService implements InitializingBean {
 			@Parameter(description = "Maximum number of results to return"
 					+ "<br>Will return less results if there are no more results left") @RequestParam Optional<String> maxResults,
 			Locale loc, CIBUser user) {
-		hasAdminManagementPermissions(user, "read", "authorization", List.of("ALL", "READ"));
+		hasAdminManagementPermissions(user, "read", SevenResourceType.AUTHORIZATION, List.of("ALL", "READ"));
 		return bpmProvider.findAuthorization(id, type, userIdIn, groupIdIn, resourceType, resourceId,
 				sortBy, sortOrder, firstResult, maxResults, user);
 	}
@@ -378,7 +379,7 @@ public class AdminService extends BaseService implements InitializingBean {
 	public ResponseEntity<Authorization> createAuthorization(
 			@RequestBody Authorization authorization,
 			Locale loc, CIBUser user) {
-		hasAdminManagementPermissions(user, "create", "authorization", List.of("ALL", "CREATE"));
+		hasAdminManagementPermissions(user, "create", SevenResourceType.AUTHORIZATION, List.of("ALL", "CREATE"));
 		return bpmProvider.createAuthorization(authorization, user);
 	}
 
@@ -407,7 +408,7 @@ public class AdminService extends BaseService implements InitializingBean {
 			@Parameter(description = "Authorization Id") @PathVariable String authorizationId, 
 			@RequestBody Map<String, Object> data, 
 			Locale loc, CIBUser user) {
-		hasAdminManagementPermissions(user, "update", "authorization", List.of("ALL", "UPDATE"));
+		hasAdminManagementPermissions(user, "update", SevenResourceType.AUTHORIZATION, List.of("ALL", "UPDATE"));
 		bpmProvider.updateAuthorization(authorizationId, data, user);
 	}
 
@@ -426,7 +427,7 @@ public class AdminService extends BaseService implements InitializingBean {
 	public void deleteAuthorization(
 			@Parameter(description = "Authorization Id") @PathVariable String authorizationId, 
 			Locale loc, CIBUser user) {
-		hasAdminManagementPermissions(user, "delete", "authorization", List.of("ALL", "DELETE"));
+		hasAdminManagementPermissions(user, "delete", SevenResourceType.AUTHORIZATION, List.of("ALL", "DELETE"));
 		bpmProvider.deleteAuthorization(authorizationId, user);
 	}
 
