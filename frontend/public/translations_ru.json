@@ -658,7 +658,7 @@
 				"taskGroup": "Task",
 				"datesGroup": "Dates"
 			},
-			"noCriterias": "Критерий не выбран",
+			"noCriterias": "Список критериев фильтра пуст",
 			"criteria": {
 				"key": "Ключ критерия",
 				"value": "Значение критерия"

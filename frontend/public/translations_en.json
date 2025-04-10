@@ -658,7 +658,7 @@
 				"taskGroup": "Task",
 				"datesGroup": "Dates"
 			},
-			"noCriterias": "None criteria selected",
+			"noCriterias": "The list of filter criteria is empty",
 			"criteria": {
 				"key": "Criteria key",
 				"value": "Criteria value"
