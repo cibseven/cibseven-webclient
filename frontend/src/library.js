@@ -92,6 +92,8 @@ import SystemView from '@/components/system/SystemView.vue'
 import ShortcutsModal from '@/components/modals/ShortcutsModal.vue'
 import ShortcutsTable from '@/components/modals/ShortcutsTable.vue'
 import { TaskService, HistoryService, ProcessService } from '@/services.js';
+import DeployedForm from '@/components/forms/DeployedForm.vue'
+import StartDeployedForm from '@/components/forms/StartDeployedForm.vue'
 
 
 const registerComponents = function(app) {
@@ -174,6 +176,8 @@ const registerComponents = function(app) {
   app.component('tenants-view', TenantsView)
   app.component('batches-view', BatchesView)
   app.component('system-view', SystemView)
+  app.component('deployed-form', DeployedForm)
+  app.component('start-deployed-form', StartDeployedForm)
 }
 
 export {
@@ -270,5 +274,7 @@ export {
   DecisionView,
   DecisionList,
   DecisionListView,
-  DecisionDefinitionVersion
+  DecisionDefinitionVersion,
+  StartDeployedForm,
+  DeployedForm
 }
