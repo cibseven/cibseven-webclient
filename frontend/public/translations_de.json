@@ -176,6 +176,7 @@
 		    "failedActivity": "Fehlgeschlagene Aktivität",
 		    "incidentType": "Vorfallstyp",
 		    "retryJob": "Anzahl der Wiederholungsversuche eines fehlgeschlagenen Jobs erhöhen",
+			"annotation": "Anmerkung",
 		    "actions": "Aktionen",
 			"incrementNumberRetries": "Anzahl der Wiederholungsversuche erhöhen",
 			"retryMsg": "Die Anzahl der Wiederholungsversuche des fehlgeschlagenen Jobs für das ausgewählte Ereignis wird erhöht.",
@@ -185,7 +186,8 @@
 			"dueDate": "Fälligkeitsdatum",
 			"scheduleAt": "Planen um",
 			"invalidDateError": "Sie müssen ein gültiges Datum eingeben",
-			"retry": "Wiederholen"
+			"retry": "Wiederholen",
+			"editAnnotation": "Anmerkung bearbeiten"
 		},
 		"jobDefinitions": {
 			"state": "Status",
@@ -870,7 +872,7 @@
 				"ctrlLeft": "Zur Ansicht 'Startprozess' springen",
 				"ctrlDown": "Zur Ansicht 'Aufgaben' springen",
 				"ctrlRight": "Zur Ansicht 'Prozesse' springen",
-				"ctrlP": "Das Pop-up-Fenster 'Startprozess' öffnen",
+				"ctrlAltP": "Das Pop-up-Fenster 'Startprozess' öffnen",
 				"ctrlAltC": "Übernehme die derzeit ausgewählte Aufgabe",
 				"alt1": "Fokus auf Filter setzen",
 				"alt2": "Fokus auf die Liste der gefilterten Aufgaben setzen",

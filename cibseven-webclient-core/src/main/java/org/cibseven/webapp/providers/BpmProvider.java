@@ -811,6 +811,8 @@ public interface BpmProvider {
 
 	void retryJobById(String jobId, Map<String, Object> data, CIBUser user);
 	
+	void setIncidentAnnotation(String incidentId, Map<String, Object> data, CIBUser user);
+	
 	/**
 	 * Submit task with saving variables
      * @throws SubmitDeniedException when trying to submit a non-existing task.

@@ -20,4 +20,5 @@ public class Incident {
 	private String incidentMessage;
 	private String jobDefinitionId;
 	private String failedActivityId;
+	private String annotation;
 }

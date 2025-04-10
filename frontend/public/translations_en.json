@@ -175,6 +175,7 @@
 		    "failedActivity": "Failed activity",
 		    "incidentType": "Incident type",
 		    "retryJob": "Increment number of retries of failed job",
+			"annotation": "Annotation",
 		    "actions": "Actions",
 			"incrementNumberRetries": "Increment number of retries",
 			"retryMsg": "The number of retries of the corresponding failed job of the selected incident will be incremented.",
@@ -184,7 +185,8 @@
 			"dueDate": "Due date",
 			"scheduleAt": "Schedule at",
 			"invalidDateError": "You must enter a valid date",
-			"retry": "Retry"
+			"retry": "Retry",			
+			"editAnnotation": "Edit annotation"
 		},
 		"jobDefinitions": {
 			"state": "State",
@@ -867,7 +869,7 @@
 				"ctrlLeft": "Jump to \"Start process\" view",
 				"ctrlDown": "Jump to \"Tasks\" view",
 				"ctrlRight": "Jump to \"Processes\" view",
-				"ctrlP": "Open \"Start process\" pop-up window",
+				"ctrlAltP": "Open \"Start process\" pop-up window",
 				"ctrlAltC": "Claim the currently selected task",
 				"alt1": "Set focus on filters",
 				"alt2": "Set focus on the list of filtered tasks",
