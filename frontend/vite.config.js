@@ -7,7 +7,7 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
-const backendUrl = 'http://localhost:8080'
+const backendUrl = 'http://localhost:8080/webapp'
 
 // Detect build mode
 /* eslint-disable no-undef */
@@ -22,7 +22,7 @@ console.log('isLibrary', isLibrary)
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/webapp/',
+  base: './',
   plugins: [
     vue(),
     vueDevTools()
@@ -35,7 +35,7 @@ export default defineConfig({
   },
   server: {
     proxy: {
-		  '/webapp/services': {
+		  '/services': {
         target: backendUrl,
         changeOrigin: true,
         secure: false,
