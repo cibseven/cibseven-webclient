@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Locale;
 
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.providers.PermissionConstants;
 import org.cibseven.webapp.rest.model.Filter;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,8 +17,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-
-import static org.cibseven.webapp.auth.SevenAuthorizationUtils.*;
 
 @ApiResponses({
 	@ApiResponse(responseCode = "500", description = "An unexpected system error occured"),
@@ -33,7 +32,7 @@ public class FilterService extends BaseService{
 	@RequestMapping(method = RequestMethod.GET)
 	public Collection<Filter> findFilter(
 			Locale loc, CIBUser user) {
-		checkPermission(user, FILTER, PermissionConstants.READ_ALL);
+		checkPermission(user, SevenResourceType.FILTER, PermissionConstants.READ_ALL);
 		return bpmProvider.findFilters(user);
 	}
 	
@@ -45,7 +44,7 @@ public class FilterService extends BaseService{
 	public Filter createFilter(
 			@RequestBody Filter filter,
 			Locale loc, CIBUser user) {
-		checkPermission(user, FILTER, PermissionConstants.CREATE_ALL);
+		checkPermission(user, SevenResourceType.FILTER, PermissionConstants.CREATE_ALL);
 		return bpmProvider.createFilter(filter, user);
 	}
 	
@@ -57,7 +56,7 @@ public class FilterService extends BaseService{
 	public void updateFilter(
 			@RequestBody Filter filter,
 			Locale loc, CIBUser user) {
-		checkPermission(user, FILTER, PermissionConstants.UPDATE_ALL);
+		checkPermission(user, SevenResourceType.FILTER, PermissionConstants.UPDATE_ALL);
 		bpmProvider.updateFilter(filter, user);
 	}
 	
@@ -69,7 +68,7 @@ public class FilterService extends BaseService{
 	public void deleteFilter(
 			@Parameter(description = "Filter Id") @PathVariable String filterId,
 			Locale loc, CIBUser user) {
-		checkPermission(user, FILTER, PermissionConstants.DELETE_ALL);
+		checkPermission(user, SevenResourceType.FILTER, PermissionConstants.DELETE_ALL);
 		bpmProvider.deleteFilter(filterId, user);
 	}
 	
