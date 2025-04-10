@@ -711,7 +711,7 @@
 				"ctrlLeft": "Vai alla vista 'Avvia processo'",
 				"ctrlDown": "Vai alla vista 'Compiti'",
 				"ctrlRight": "Vai alla vista 'Processi'",
-				"ctrlP": "Apri la finestra pop-up 'Avvia processo'",
+				"ctrlAltP": "Apri la finestra pop-up 'Avvia processo'",
 				"ctrlAltC": "Reclama il compito attualmente selezionato",
 				"alt1": "Imposta il focus sui filtri",
 				"alt2": "Imposta il focus sulla lista dei compiti filtrati",

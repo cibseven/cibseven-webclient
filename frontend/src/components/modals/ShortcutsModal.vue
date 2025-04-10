@@ -1,5 +1,5 @@
 <template>
-  <b-modal ref="shortcuts" :title="$t('infoAndHelp.shortcuts.title')" :ok-only="true" class="modal-lg">
+  <b-modal ref="shortcuts" :title="$t('infoAndHelp.shortcuts.title')" :ok-only="true" size="lg">
     <div class="row">
       <div class="col-2 d-flex justify-content-center">
         <span class="mdi mdi-48px mdi-keyboard-outline pe-1 text-info"></span>
@@ -34,11 +34,11 @@ export default {
         }
       ],
       itemsTasks: [{
-          buttons: ["Ctrl", "+", "P"],
-          description: 'infoAndHelp.shortcuts.shortcuts.ctrlP',
-        }, {
           buttons: ["Ctrl", "+", "Alt", "+", "C"],
           description: 'infoAndHelp.shortcuts.shortcuts.ctrlAltC',
+        }, {
+          buttons: ["Ctrl", "+", "Alt", "+", "P"],
+          description: 'infoAndHelp.shortcuts.shortcuts.ctrlAltP',
         }, {
           buttons: ["Alt", "+", "1"],
           description: 'infoAndHelp.shortcuts.shortcuts.alt1',

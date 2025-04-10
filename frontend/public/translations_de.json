@@ -872,7 +872,7 @@
 				"ctrlLeft": "Zur Ansicht 'Startprozess' springen",
 				"ctrlDown": "Zur Ansicht 'Aufgaben' springen",
 				"ctrlRight": "Zur Ansicht 'Prozesse' springen",
-				"ctrlP": "Das Pop-up-Fenster 'Startprozess' öffnen",
+				"ctrlAltP": "Das Pop-up-Fenster 'Startprozess' öffnen",
 				"ctrlAltC": "Übernehme die derzeit ausgewählte Aufgabe",
 				"alt1": "Fokus auf Filter setzen",
 				"alt2": "Fokus auf die Liste der gefilterten Aufgaben setzen",
