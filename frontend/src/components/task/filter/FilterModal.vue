@@ -1,5 +1,5 @@
 <template>
-  <b-modal size="lg" scrollable ref="filterHandler" :title="$t('nav-bar.filters.addFilter')" @shown="$emit('display-popover', false)" @hidden="$emit('display-popover', true)">
+  <b-modal size="lg" scrollable ref="filterHandler" :title="$t(dialogTitle)" @shown="$emit('display-popover', false)" @hidden="$emit('display-popover', true)">
     <div class="row">
       <div class="col-md-8">
         <b-form-group label-size="sm" :label-cols="4" :label="$t('nav-bar.filters.filterNameLabel')" :invalid-feedback="$t('nav-bar.filters.filterExists')">
@@ -136,6 +136,9 @@ export default {
     }
   },
   computed: {
+    dialogTitle: function() {
+      return this.mode === 'edit' ? 'nav-bar.filters.edit' : 'nav-bar.filters.create'
+    },
     existFilter: function() {
       var checkNotSelected = this.mode === 'edit' ? this.$store.state.filter.selected.name !== this.selectedFilterName : true
       var checkExists = this.$store.state.filter.list.find(row => { return row.name === this.selectedFilterName })
