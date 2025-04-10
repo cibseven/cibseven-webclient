@@ -21,35 +21,7 @@ public class SevenAuthorizationUtils {
 		
 		private final int type;
 	}
-	
-	/*public static final String USER = SevenResourceType.USER.name();
-	public static final String GROUP = SevenResourceType.GROUP.name();
-	public static final String AUTHORIZATION = SevenResourceType.AUTHORIZATION.name();
-	public static final String PROCESS_DEFINITION = SevenResourceType.PROCESS_DEFINITION.name();
-	public static final String PROCESS_INSTANCE = SevenAuthorizationUtils.SevenResourceType.PROCESS_INSTANCE.name();
-	public static final String DECISION_DEFINITION = SevenAuthorizationUtils.SevenResourceType.DECISION_DEFINITION.name();
-	public static final String DECISION_REQUIREMENTS_DEFINITION = SevenAuthorizationUtils.SevenResourceType.DECISION_REQUIREMENTS_DEFINITION.name();
-	public static final String TASK = SevenAuthorizationUtils.SevenResourceType.TASK.name();
-	public static final String FILTER = SevenAuthorizationUtils.SevenResourceType.FILTER.name();
-	public static final String HISTORY = SevenAuthorizationUtils.SevenResourceType.HISTORY.name();
-	public static final String DEPLOYMENT = SevenAuthorizationUtils.SevenResourceType.DEPLOYMENT.name();
-	public static final String CASE_DEFINITION = SevenAuthorizationUtils.SevenResourceType.CASE_DEFINITION.name();
-	public static final String CASE_INSTANCE = SevenAuthorizationUtils.SevenResourceType.CASE_INSTANCE.name();
-	public static final String APPLICATION = SevenAuthorizationUtils.SevenResourceType.APPLICATION.name();
-	public static final String JOB_DEFINITION = SevenAuthorizationUtils.SevenResourceType.JOB_DEFINITION.name();
-	public static final String BATCH = SevenAuthorizationUtils.SevenResourceType.BATCH.name();
-	public static final String GROUP_MEMBERSHIP = SevenAuthorizationUtils.SevenResourceType.GROUP_MEMBERSHIP.name();
-	public static final String HISTORIC_TASK = SevenAuthorizationUtils.SevenResourceType.HISTORIC_TASK.name();
-	public static final String HISTORIC_PROCESS_INSTANCE = SevenAuthorizationUtils.SevenResourceType.HISTORIC_PROCESS_INSTANCE.name();
-	public static final String TENANT = SevenAuthorizationUtils.SevenResourceType.TENANT.name();
-	public static final String TENANT_MEMBERSHIP = SevenAuthorizationUtils.SevenResourceType.TENANT_MEMBERSHIP.name();
-	public static final String REPORT = SevenAuthorizationUtils.SevenResourceType.REPORT.name();
-	public static final String DASHBOARD = SevenAuthorizationUtils.SevenResourceType.DASHBOARD.name();
-	public static final String USER_OPERATION_LOG_CATEGORY = SevenAuthorizationUtils.SevenResourceType.USER_OPERATION_LOG_CATEGORY.name();
-	public static final String SYSTEM = SevenAuthorizationUtils.SevenResourceType.SYSTEM.name();
-	public static final String MESSAGE = SevenAuthorizationUtils.SevenResourceType.MESSAGE.name();
-	public static final String EVENT_SUBSCRIPTION = SevenAuthorizationUtils.SevenResourceType.EVENT_SUBSCRIPTION.name();
-	*/
+
 	public static final String AUTH_TYPE_GLOBAL = SevenAuthorizationUtils.SevenAuthorizationType.AUTH_TYPE_GLOBAL.name();
 	public static final String AUTH_TYPE_GRANT = SevenAuthorizationUtils.SevenAuthorizationType.AUTH_TYPE_GRANT.name();
 	public static final String AUTH_TYPE_REVOKE = SevenAuthorizationUtils.SevenAuthorizationType.AUTH_TYPE_REVOKE.name();
