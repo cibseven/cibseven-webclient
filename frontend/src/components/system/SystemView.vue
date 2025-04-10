@@ -1,6 +1,6 @@
 <template>
   <div class="d-flex flex-column">
-    <SidebarsFlow ref="sidebars" class="border-top overflow-auto" v-model:left-open="leftOpen" :left-caption="shortendLeftCaption">
+    <SidebarsFlow ref="sidebars" class="border-top overflow-auto" v-model:left-open="leftOpen" :left-caption="leftCaption">
       <template v-slot:left>
         <b-list-group>
           <b-list-group-item 
@@ -9,7 +9,7 @@
             class="border-0 px-3 py-2"
             action 
             :to="`/seven/auth/admin/system/${setting}`">
-            <span> {{ $t(`admin.system.${setting}`) }}</span>
+            <span> {{ $t(`admin.system.${setting}.title`) }}</span>
           </b-list-group-item>
         </b-list-group>
       </template>
@@ -31,11 +31,11 @@ export default {
     }
   },
   computed: {
-    shortendLeftCaption() {
+    leftCaption() {
       return this.$t('admin.system.settings')
     },
     systemSettings() {
-      return ['diagnostics', 'execution-metrics']
+      return ['system-diagnostics', 'execution-metrics']
     }
   }
 }

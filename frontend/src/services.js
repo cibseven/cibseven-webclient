@@ -568,6 +568,9 @@ var BatchService = {
 var SystemService = {
   getTelemetryData() {
     return axios.get(appConfig.servicesBasePath + '/system/telemetry/data')
+  },
+  getMetrics() {
+    return axios.get(appConfig.servicesBasePath + '/system/metrics')
   }
 }
 

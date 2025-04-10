@@ -6,8 +6,18 @@
   
 <script>
   
-  export default {
-    name: 'ExecutionMetrics'
-  }
+import { SystemService } from '@/services.js'
+
+export default {
+	name: 'ExecutionMetrics',
+	data() {
+		return {
+			metrics: null
+		}
+	},
+	async mounted() {
+		this.metrics = await SystemService.getMetrics()
+	}
+}
 
 </script>

@@ -313,10 +313,14 @@
 			"title": "System",
 			"tooltip": "System Settings and Diagnostics",
 			"settings": "Impostazioni",
-			"diagnostics": "Diagnostica",
-			"diagnosticHelp": "I dati diagnostici consentono di comprendere l’ambiente per facilitare la diagnosi dei problemi.",
-			"diagnosticData": "Dati diagnostici",
-			"execution-metrics": "Metriche di esecuzione"
+			"system-diagnostics": {
+				"title": "Diagnostica",
+				"diagnosticHelp": "I dati diagnostici consentono di comprendere l’ambiente per facilitare la diagnosi dei problemi.",
+				"diagnosticData": "Dati diagnostici"
+			},
+			"execution-metrics": {
+				"title": "Metriche di esecuzione"
+			}
 		}
 	},
 	"account-form": {

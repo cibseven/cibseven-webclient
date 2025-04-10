@@ -1,6 +1,11 @@
 package org.cibseven.webapp.providers;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.rest.model.Metric;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -24,6 +29,12 @@ public class SystemProvider extends SevenProviderBase implements ISystemProvider
 	public JsonNode getTelemetryData(CIBUser user) {
 		String url = camundaUrl + "/engine-rest/telemetry/data";
 		return ((ResponseEntity<JsonNode>) doGet(url, JsonNode.class, user, false)).getBody();
+	}
+
+	@Override
+	public Collection<Metric> getMetrics(Map<String, Object> queryParams, CIBUser user) {
+		// TODO Auto-generated method stub
+		return Collections.emptyList();
 	}	
 	
 }

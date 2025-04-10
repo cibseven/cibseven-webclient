@@ -180,7 +180,7 @@ export default {
           return this.$t('admin.authorizations.title')
         case 'adminTenants': return this.$t('admin.tenants.title')
         case 'adminSystem':
-        case 'diagnostics':
+        case 'system-diagnostics':
         case 'execution-metrics':
           return this.$t('admin.system.title')
         default: return ''

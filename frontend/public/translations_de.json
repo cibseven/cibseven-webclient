@@ -454,10 +454,14 @@
 			"title": "System",
 			"tooltip": "System Settings and Diagnostics",
 			"settings": "Einstellungen",
-			"diagnostics": "Diagnostik",
-			"diagnosticHelp": "Die Diagnosedaten ermöglichen es, die Umgebung zu verstehen und helfen bei der Problemanalyse.",
-			"diagnosticData": "Diagnosedaten",
-			"execution-metrics": "Ausführungsmetriken"
+			"system-diagnostics": {
+				"title": "Diagnostik",
+				"diagnosticHelp": "Die Diagnosedaten ermöglichen es, die Umgebung zu verstehen und helfen bei der Problemanalyse.",
+				"diagnosticData": "Diagnosedaten"
+			},
+			"execution-metrics": {
+				"title": "Ausführungsmetriken"
+			}
 		}
 	},
 	"account-form": {

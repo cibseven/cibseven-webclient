@@ -1,13 +1,18 @@
 package org.cibseven.webapp.rest;
 
+import java.util.Collection;
+import java.util.Map;
+
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.providers.SevenProvider;
+import org.cibseven.webapp.rest.model.Metric;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -36,5 +41,9 @@ public class SystemService extends BaseService implements InitializingBean {
 		return bpmProvider.getTelemetryData(user);
 	}
 
-	
+	@GetMapping("/metrics")
+		public Collection<Metric> getMetrics(@RequestParam Map<String, Object> queryParams, CIBUser user) {
+			return bpmProvider.getMetrics(queryParams, user);
+	}
+
 }

@@ -31,6 +31,7 @@ import org.cibseven.webapp.rest.model.Incident;
 import org.cibseven.webapp.rest.model.JobDefinition;
 import org.cibseven.webapp.rest.model.Job;
 import org.cibseven.webapp.rest.model.Message;
+import org.cibseven.webapp.rest.model.Metric;
 import org.cibseven.webapp.rest.model.NewUser;
 import org.cibseven.webapp.rest.model.Process;
 import org.cibseven.webapp.rest.model.ProcessDiagram;
@@ -957,4 +958,5 @@ public interface BpmProvider {
 	Object getCleanableBatchReportCount();
 
 	JsonNode getTelemetryData(CIBUser user);
+	Collection<Metric> getMetrics(Map<String, Object> queryParams, CIBUser user);
 }
