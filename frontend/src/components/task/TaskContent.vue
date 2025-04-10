@@ -11,7 +11,7 @@
             <FilterableSelect v-model:loading="loadingUsers" @enter="findUsers($event)"
               @clean-elements="resetUsers($event)" v-model="assignee" :elements="$store.state.user.searchUsers" :placeholder="$t('task.assign')" noInvalidValues/>
           </b-input-group>
-          <b-input-group v-if="task.assignee != null">
+          <b-input-group v-else>
             <b-form-tag variant="secondary" @remove="assignee = null; update()" :key="task.id" :title="getCompleteName" :remove-label="$t('task.assignedUserTitle')" class="mdi mdi-18px mdi-account">
               {{ '  ' + getCompleteName }}
             </b-form-tag>
@@ -31,7 +31,10 @@
                 </b-form-tag>
                 <!-- <span class="mdi mdi-18px mdi-account mdi-dark"></span><span class="p-1" style="line-height: initial">{{ getCompleteName }}</span> -->
               </span>
-              <span v-if="task.assignee == null"><b-button ref="assignToMeButton" variant="link" class="p-0 text-dark me-2" @click="assignee = $root.user.id"><span class="mdi mdi-18px mdi-account-question mdi-dark"></span> {{ $t('task.assignToMe') }}</b-button></span>
+              <span v-else>
+                <GlobalEvents @keydown.ctrl.alt.c.prevent="assignee = $root.user.id"></GlobalEvents>
+                <b-button ref="assignToMeButton" variant="link" class="p-0 text-dark me-2" @click="assignee = $root.user.id" :title="$t('infoAndHelp.shortcuts.shortcuts.ctrlAltC')"><span class="mdi mdi-18px mdi-account-question mdi-dark"></span> {{ $t('task.assignToMe') }}</b-button>
+              </span>
               <FilterableSelect v-if="task.assignee == null" v-model:loading="loadingUsers" @enter="findUsers($event)"
               @clean-elements="resetUsers($event)" class="w-25" v-model="assignee" :elements="$store.state.user.searchUsers" :placeholder="$t('task.assign')" noInvalidValues/>
             </div>

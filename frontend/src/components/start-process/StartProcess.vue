@@ -1,5 +1,5 @@
 <template>
-  <GlobalEvents v-if="!hideProcessSelection" @keydown.ctrl.x.prevent="$refs.startProcess.show()"></GlobalEvents>
+  <GlobalEvents v-if="!hideProcessSelection" @keydown.ctrl.alt.p.prevent="$refs.startProcess.show()"></GlobalEvents>
   <b-modal body-class="pt-0" size="lg" scrollable ref="startProcess" :hide-footer="!(startParamUrl && !hideProcessSelection)"
     :title="!hideProcessSelection ? $t('start.startProcesses') : processName" @shown="$emit('display-popover', false)" no-close-on-backdrop
     @hidden="$emit('display-popover', true); startParamUrl = ''" :footer-class="{ 'justify-content-between': startParamUrl && !hideProcessSelection }"
@@ -86,7 +86,7 @@ export default {
         ProcessService.startForm(processLatest.id).then(url => {
 
           if (!url.key && !url.camundaFormRef) {
-            
+
             ProcessService.startProcess(processLatest.key, this.currentLanguage()).then(task => {
               this.$refs.startProcess.hide()
               task.processInstanceId = task.id
