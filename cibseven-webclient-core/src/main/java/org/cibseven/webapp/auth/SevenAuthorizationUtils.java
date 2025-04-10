@@ -44,7 +44,7 @@ public class SevenAuthorizationUtils{
         });
     }
 
-    public static boolean hasAdminManagementPermissions(Authorizations authorizations, String action, SevenResourceType type, List<String> permissions) {
+    public static boolean hasAdminManagementPermissions(Authorizations authorizations, SevenResourceType type, List<String> permissions) {
         return checkPermission(authorizations, type, permissions);
     }
 
