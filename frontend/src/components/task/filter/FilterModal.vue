@@ -12,7 +12,7 @@
         </b-form-group>
       </div>
     </div>
-    <hr>
+    <hr class="my-0">
     <b-form-group :label-cols="12" label-class="mb-3" label-size="sm" :label="$t('nav-bar.filters.selectedCriteria')">
       <div class="container">
         <div class="row text-center px-3">
@@ -66,15 +66,15 @@
           <span v-else> {{ formatCriteria(row.item.value) }} </span>
         </template>
         <template v-slot:cell(buttons)="row">
-          <b-button class="p-0 border-0 mdi mdi-24px mdi-delete-outline mx-2" variant="outline-secondary" @click="deleteCriteria(row.index)"></b-button>
-          <b-button variant="outline-secondary" class="mdi mdi-18px mdi-pencil border-0 p-0 mx-2" @click="editCriteria(row.index)"></b-button>
+          <b-button class="mdi mdi-18px mdi-pencil border-0" size="sm" variant="outline-secondary" @click="editCriteria(row.index)" :title="$t('commons.edit')"></b-button>
+          <b-button class="mdi mdi-18px mdi-delete-outline border-0" size="sm" variant="outline-secondary" @click="deleteCriteria(row.index)" :title="$t('confirm.delete')"></b-button>
         </template>
       </FlowTable>
       <div v-if="criteriasToAdd.length < 1">
         <img src="/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mb-3" style="width: 200px">
         <div class="h5 text-secondary text-center">{{ $t('nav-bar.filters.noCriterias') }}</div>
       </div>
-      <hr>
+      <hr v-if="criteriasToAdd.length < 1">
       <b-form-checkbox v-if="existCandidateSelected" class="mb-3" v-model="includeAssigned" switch>
         <span>{{ $t('nav-bar.filters.includeAssigned') }}</span>
       </b-form-checkbox>
