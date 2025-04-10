@@ -175,6 +175,7 @@
 		    "failedActivity": "Failed activity",
 		    "incidentType": "Incident type",
 		    "retryJob": "Increment number of retries of failed job",
+			"annotation": "Annotation",
 		    "actions": "Actions",
 			"incrementNumberRetries": "Increment number of retries",
 			"retryMsg": "The number of retries of the corresponding failed job of the selected incident will be incremented.",
@@ -184,7 +185,8 @@
 			"dueDate": "Due date",
 			"scheduleAt": "Schedule at",
 			"invalidDateError": "You must enter a valid date",
-			"retry": "Retry"
+			"retry": "Retry",			
+			"editAnnotation": "Edit annotation"
 		},
 		"jobDefinitions": {
 			"state": "State",
