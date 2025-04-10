@@ -869,7 +869,7 @@
 				"ctrlLeft": "Jump to \"Start process\" view",
 				"ctrlDown": "Jump to \"Tasks\" view",
 				"ctrlRight": "Jump to \"Processes\" view",
-				"ctrlP": "Open \"Start process\" pop-up window",
+				"ctrlAltP": "Open \"Start process\" pop-up window",
 				"ctrlAltC": "Claim the currently selected task",
 				"alt1": "Set focus on filters",
 				"alt2": "Set focus on the list of filtered tasks",
