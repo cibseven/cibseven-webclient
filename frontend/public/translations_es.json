@@ -659,7 +659,7 @@
 				"taskGroup": "Task",
 				"datesGroup": "Dates"
 			},
-			"noCriterias": "La lista de criterios de filtro está vacía",
+			"noCriterias": "Aún no has establecido ningún criterio de filtro",
 			"criteria": {
 				"key": "Key del criterio",
 				"value": "Valor del criterio"

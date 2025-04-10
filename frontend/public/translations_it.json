@@ -513,7 +513,7 @@
 				"taskGroup": "Task",
 				"datesGroup": "Dates"
 			},
-			"noCriterias": "L'elenco dei criteri di filtro è vuoto",
+			"noCriterias": "Non hai ancora impostato alcun criterio di filtro",
 			"criteria": {
 				"key": "Criteri chiave",
 				"value": "Criteri di valore"
