@@ -3,7 +3,7 @@
     <div class="row">
       <div class="col-md-8">
         <b-form-group label-size="sm" :label-cols="4" :label="$t('nav-bar.filters.filterNameLabel')" :invalid-feedback="$t('nav-bar.filters.filterExists')">
-          <b-form-input size="sm" v-model="selectedFilterName" :placeholder="$t('nav-bar.filters.filterNamePlaceholder')" :state="existFilter ? false : null"></b-form-input>
+          <b-form-input size="sm" v-model="selectedFilterName" :placeholder="$t('nav-bar.filters.filterNamePlaceholder')" :state="isNameInvalid ? false : null"></b-form-input>
         </b-form-group>
       </div>
       <div class="col-md-4">
@@ -87,7 +87,7 @@
 
     <template v-slot:modal-footer>
       <b-button @click="$refs.filterHandler.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
-      <b-button @click="createFilter" :disabled="checkValidity" variant="primary">{{ mode === 'create' ? $t('nav-bar.filters.addFilter') : $t('nav-bar.filters.updateFilter') }}</b-button>
+      <b-button @click="createFilter" :disabled="isFormInvalid" variant="primary">{{ mode === 'create' ? $t('nav-bar.filters.addFilter') : $t('nav-bar.filters.updateFilter') }}</b-button>
     </template>
   </b-modal>
 </template>
@@ -105,6 +105,13 @@ export default {
   components: { FilterableSelect, FlowTable },
   props: { tasks: Array, processes: Array, layout2: Boolean },
   mixins: [permissionsMixin],
+  emits: [
+    'filter-alert',
+    'set-filter',
+    'filter-updated',
+    'display-popover',
+    'select-filter'
+  ],
   data: function () {
     return {
       mode: 'create',
@@ -139,14 +146,15 @@ export default {
     dialogTitle: function() {
       return this.mode === 'edit' ? 'nav-bar.filters.edit' : 'nav-bar.filters.create'
     },
-    existFilter: function() {
-      var checkNotSelected = this.mode === 'edit' ? this.$store.state.filter.selected.name !== this.selectedFilterName : true
-      var checkExists = this.$store.state.filter.list.find(row => { return row.name === this.selectedFilterName })
-      return checkExists && checkNotSelected
+    isNameInvalid: function() {
+      const checkNotSelected = this.mode === 'edit' ? this.$store.state.filter.selected.name !== this.selectedFilterName : true
+      const checkExists = this.$store.state.filter.list.find(row => { return row.name === this.selectedFilterName })
+      const emptyFilterName = this.selectedFilterName.length === 0
+      return (checkExists && checkNotSelected) || emptyFilterName
     },
-    checkValidity: function() {
-      var invalidFilter = this.criteriasToAdd.find(row => { return row.key === null })
-      return !!this.existFilter || !!invalidFilter || this.selectedFilterName.length === 0
+    isFormInvalid: function() {
+      const invalidFilter = this.criteriasToAdd.find(row => { return row.key === null })
+      return !!this.isNameInvalid || !!invalidFilter || this.selectedFilterName.length === 0
     },
     variableOperators: function() {
       return  [
