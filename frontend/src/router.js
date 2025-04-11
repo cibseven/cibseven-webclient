@@ -10,6 +10,7 @@ import StartView from '@/components/start/StartView.vue'
 import StartProcessView from '@/components/start-process/StartProcessView.vue'
 import ProcessView from '@/components/process/ProcessView.vue'
 import ProcessListView from '@/components/processes/list/ProcessListView.vue'
+import ProcessesDashboardView from '@/components/processes/dashboard/ProcessesDashboardView.vue'
 import DecisionView from '@/components/decision/DecisionView.vue'
 import DecisionListView from '@/components/decisions/list/DecisionListView.vue'
 import UsersManagement from '@/components/admin/UsersManagement.vue'
@@ -133,7 +134,10 @@ const router = createRouter({
         },
 
         // Process management (power-user)
-        { path: 'processes', redirect: '/seven/auth/processes/list', beforeEnter: permissionsGuard('cockpit') },
+        { path: 'processes', redirect: '/seven/auth/processes/dashboard', beforeEnter: permissionsGuard('cockpit') },
+        { path: 'processes/dashboard', name: 'processesDashboard', beforeEnter: permissionsGuard('cockpit'),
+          component: ProcessesDashboardView
+        },
         { path: 'processes/list', name: 'processManagement', beforeEnter: permissionsGuard('cockpit'),
           component: ProcessListView
         },
