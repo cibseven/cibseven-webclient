@@ -44,6 +44,7 @@
 </template>
 
 <script>
+import { AnalyticsService } from '@/services.js'
 import PieChart from '@/components/processes/dashboard/PieChart.vue'
 import DeploymentItem from '@/components/processes/dashboard/DeploymentItem.vue'
 
@@ -56,13 +57,41 @@ export default {
       openIncidents: [],
       openHumanTasks: [],
       deploymentItems: [
-        { titlePrefx: 'processes-dashboard.items.processes', count: 10, link: '/seven/auth/processes/list' },
-        { titlePrefx: 'processes-dashboard.items.decisions', count: 20, link: '/seven/auth/decisions' },
-        { titlePrefx: 'processes-dashboard.items.deployments', count: 30, link: '/seven/auth/deployments' },
-        { titlePrefx: 'processes-dashboard.items.batches', count: 40, link: '/seven/auth/batches' },
+        { titlePrefx: 'processes-dashboard.items.processes', count: null, link: '/seven/auth/processes/list' },
+        { titlePrefx: 'processes-dashboard.items.decisions', count: null, link: '/seven/auth/decisions' },
+        { titlePrefx: 'processes-dashboard.items.deployments', count: null, link: '/seven/auth/deployments' },
+        { titlePrefx: 'processes-dashboard.items.batches', count: null, link: '/seven/auth/batches' },
       ]
     }
   },
+  mounted() {
+    this.loadAnalytics()
+  },
+  methods: {
+    async loadAnalytics() {
+      try {
+        const analytics = await AnalyticsService.getAnalytics()
+        console.log(analytics)
+        this.runningInstances = analytics.runningInstances
+        this.openIncidents = analytics.openIncidents
+        this.openHumanTasks = analytics.openHumanTasks
+        this.deploymentItems[0].count = analytics.deploymentItems.processes
+        this.deploymentItems[1].count = analytics.deploymentItems.decisions
+        this.deploymentItems[2].count = analytics.deploymentItems.deployments
+        this.deploymentItems[3].count = analytics.deploymentItems.batches
+      } catch (error) {
+        console.error('Error loading analytics:', error)
+
+        this.runningInstances = []
+        this.openIncidents = []
+        this.openHumanTasks = []
+        this.deploymentItems[0].count = 'x'
+        this.deploymentItems[1].count = 'x'
+        this.deploymentItems[2].count = 'x'
+        this.deploymentItems[3].count = 'x'
+      }
+    }
+  }
 }
 </script>
 
