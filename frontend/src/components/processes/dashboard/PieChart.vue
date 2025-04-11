@@ -1,31 +1,176 @@
 <template>
   <div>
-    <div class="bg-light py-3 text-center">
+    <div class="py-3 text-center">
       <h5>
         <router-link :to="link" :title="$t(tooltip)" class="text-decoration-none">
           <span class="link-dark">{{ $t(title) }}</span>
         </router-link>
       </h5>
+
+      <div class="donut-chart-container">
+        <svg :width="size" :height="size" viewBox="0 0 100 100" class="donut-chart-svg">
+          <g :clip-path="'url(#clip-circle)'">
+            <path
+              v-for="(item, index) in chartData"
+              :key="index"
+              :d="getSlicePath(item, index)"
+              :fill="item.color"
+              :transform="item.transform"
+              :title="item.title"
+              @click="handleClick(index)"
+              @mouseover="hoveredIndex = index"
+              @mouseleave="hoveredIndex = null"
+              class="donut-chart-slice"
+            />
+          </g>
+        </svg>
+        <div class="donut-chart-center">
+          <h4 class="link-dark">
+            <span v-if="loading"><BWaitingBox class="d-inline" styling="width: 19px"></BWaitingBox></span>
+            <span v-else>{{ total }}</span>
+          </h4>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
+import { BWaitingBox } from 'cib-common-components'
+
 export default {
   name: 'PieChart',
-  components: {  },
+  components: { BWaitingBox },
   props: {
+    size: { type: Number, default: 250 },
+    innerRadius: { type: Number, default: 20 }, // Inner radius for the donut hole
+    outerRadius: { type: Number, default: 40 }, // Outer radius of the donut
     titlePrefix: String,
-    count: Number,
-    link: String
+    link: String,
+    items: {
+      type: Array,
+      default: () => []
+    }
+  },
+  data() {
+    return {
+      hoveredIndex: null, // Tracks the hovered slice index
+    }
   },
   computed: {
-    title: function() {
+    loading: function() {
+      return this.items === null
+    },
+    title: function () {
       return this.titlePrefix + '.title'
     },
-    tooltip: function() {
+    tooltip: function () {
       return this.titlePrefix + '.tooltip'
     },
+    total: function () {
+      return this.items.reduce((sum, item) => sum + item.value, 0)
+    },
+    chartData: function() {
+      let offsetAngle = -90 // Start at 12 o'clock
+
+      if (this.items === null) {
+        return [{
+          value: 0,
+          color: '#eeeeee',
+          startAngle: offsetAngle,
+          endAngle: offsetAngle + 359
+        }]
+      }
+      else if (this.items.length === 0) {
+        return [{
+          value: 0,
+          color: '#eeeeee',
+          startAngle: offsetAngle,
+          endAngle: offsetAngle + 359
+        }]
+      }
+
+      return this.items.map((item) => {
+        const percentage = item.value / this.total
+        const startAngle = offsetAngle
+        const endAngle = offsetAngle + percentage * 360
+        offsetAngle += percentage * 360
+
+        return {
+          ...item,
+          startAngle,
+          endAngle,
+        }
+      })
+    }
+  },
+  methods: {
+    handleClick(index) {
+      this.$emit('sliceClick', this.items[index])
+    },
+    // This function returns the 'd' attribute value for the SVG path element
+    getSlicePath(item, index) {
+      const startAngle = this.chartData[index].startAngle
+      const endAngle = this.chartData[index].endAngle
+
+      // Enlarge radius on hover
+      const outerRadius = this.hoveredIndex === index ? this.outerRadius + 1 : this.outerRadius
+      const innerRadius = this.hoveredIndex === index ? this.innerRadius - 1 : this.innerRadius
+
+      // Convert angles from degrees to radians
+      const startAngleRad = (Math.PI / 180) * startAngle
+      const endAngleRad = (Math.PI / 180) * endAngle
+
+      // Calculate the starting and ending points for the path (outer and inner radii)
+      const x1Outer = 50 + outerRadius * Math.cos(startAngleRad)
+      const y1Outer = 50 + outerRadius * Math.sin(startAngleRad)
+      const x2Outer = 50 + outerRadius * Math.cos(endAngleRad)
+      const y2Outer = 50 + outerRadius * Math.sin(endAngleRad)
+
+      const x1Inner = 50 + innerRadius * Math.cos(startAngleRad)
+      const y1Inner = 50 + innerRadius * Math.sin(startAngleRad)
+      const x2Inner = 50 + innerRadius * Math.cos(endAngleRad)
+      const y2Inner = 50 + innerRadius * Math.sin(endAngleRad)
+
+      // Create the path for the slice (arc with inner and outer radius)
+      const largeArcFlag = endAngle - startAngle > 180 ? 1 : 0
+
+      const pathData = [
+        `M ${x1Outer} ${y1Outer}`, // Move to the outer starting point
+        `A ${outerRadius} ${outerRadius} 0 ${largeArcFlag} 1 ${x2Outer} ${y2Outer}`, // Outer arc
+        `L ${x2Inner} ${y2Inner}`, // Line to the inner arc
+        `A ${innerRadius} ${innerRadius} 0 ${largeArcFlag} 0 ${x1Inner} ${y1Inner}`, // Inner arc
+        'Z', // Close the path
+      ].join(' ')
+
+      return pathData
+    }
   }
 }
 </script>
+
+<style scoped>
+.donut-chart-container {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  margin: auto;
+}
+
+.donut-chart-svg {
+  display: block;
+  width: 100%;
+}
+
+.donut-chart-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.donut-chart-slice {
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+</style>

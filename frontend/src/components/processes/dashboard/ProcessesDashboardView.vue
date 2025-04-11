@@ -61,7 +61,7 @@ export default {
         { titlePrefx: 'processes-dashboard.items.decisions', count: null, link: '/seven/auth/decisions' },
         { titlePrefx: 'processes-dashboard.items.deployments', count: null, link: '/seven/auth/deployments' },
         { titlePrefx: 'processes-dashboard.items.batches', count: null, link: '/seven/auth/batches' },
-      ]
+      ],
     }
   },
   mounted() {
@@ -69,7 +69,7 @@ export default {
   },
   methods: {
     async loadAnalytics() {
-      try {
+      /*try {
         const analytics = await AnalyticsService.getAnalytics()
         console.log(analytics)
         this.runningInstances = analytics.runningInstances
@@ -81,15 +81,20 @@ export default {
         this.deploymentItems[3].count = analytics.deploymentItems.batches
       } catch (error) {
         console.error('Error loading analytics:', error)
-
-        this.runningInstances = []
+*/
+        this.runningInstances = [
+          { value: 10, title: "ten", color: '#28a745'},
+          { value: 5, title: "five", color: '#59799B'},
+          { value: 1, title: "one", color: '#ffc107'},
+          { value: 2, title: "two", color: '#007bff'},
+        ]
         this.openIncidents = []
-        this.openHumanTasks = []
+        this.openHumanTasks = null
         this.deploymentItems[0].count = 'x'
         this.deploymentItems[1].count = 'x'
         this.deploymentItems[2].count = 'x'
         this.deploymentItems[3].count = 'x'
-      }
+  //    }
     }
   }
 }
