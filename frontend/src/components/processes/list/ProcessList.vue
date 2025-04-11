@@ -43,7 +43,7 @@
         <template v-slot:cell(runningInstances)="table">
           <span v-if="loadingInstances"><b-spinner small></b-spinner></span>
           <div v-else-if="table.item.runningInstances > 0">
-            <span :title="$t('process.instanceRunning')" class="mdi mdi-18px mdi-chevron-triple-right text-success"></span><span>{{ table.item.runningInstances }}</span>
+            <span :title="$t('process.details.totalInstances') + ': ' + table.item.runningInstances" class="mdi mdi-18px mdi-chevron-triple-right text-success"></span><span class="ms-1">{{ table.item.runningInstances }}</span>
           </div>
           <span v-else>___</span>
         </template>
@@ -129,7 +129,7 @@ export default {
     fields: function() {
       return [
         { label: 'status', key: 'incidents', thClass:'py-0', tdClass:'py-0 ps-0 border-end border-top-0', class: 'col-2 d-flex align-items-center justify-content-center' },
-        { label: 'runningInstances', key: 'runningInstances', class: 'col-2 justify-content-center', tdClass: 'border-end py-1 border-top-0' },
+        { label: 'runningInstances', key: 'runningInstances', class: 'col-2 d-flex justify-content-center', tdClass: 'border-end py-1 border-top-0' },
         { label: 'key', key: 'key', class: 'col-3', tdClass: 'border-end py-1 border-top-0' },
         { label: 'name', key: 'name', class: 'col-3', tdClass: 'border-end py-1 border-top-0' },
         { label: 'actions', key: 'actions', sortable: false, class: 'col-2 d-flex justify-content-center', tdClass: 'border-end py-0 border-top-0' },
