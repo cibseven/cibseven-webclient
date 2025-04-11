@@ -15,7 +15,7 @@
 		"forgotten": "Password forgotten?"
 	},
 	"processes-dashboard": {
-		"headerActive": "Operations dashboard",
+		"headerActive": "Operations Dashboard",
 		"headerDeployed": "Deployed",
 		"items": {
 			"running-instances": {
