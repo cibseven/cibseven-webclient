@@ -587,7 +587,7 @@
 			"filterPriorityLabel": "Приоритет",
 			"selectProperty": "Выбрать свойство",
 			"insertValue": "Введите значение",
-			"insertVariableKey": "вставить ключ",
+			"insertVariableKey": "Введите имя переменной",
 			"addCriteria": "Добавить критерий",
 			"filterExists": "Данный фильтр уже существует",
 			"selectedCriteria": "Выбранный критерий",
@@ -668,19 +668,19 @@
 				"taskGroup": "Task",
 				"datesGroup": "Dates"
 			},
-			"noCriterias": "Критерий не выбран",
+			"noCriterias": "Вы ещё не задали ни одного критерия фильтрации",
 			"criteria": {
 				"key": "Ключ критерия",
 				"value": "Значение критерия"
 			},
 			"matchAnyCriteria": "Соответствует какому-либо из критериев",
 			"matchAllCriteria": "Соответствует всем критериям",
-			"msgFilterCreated": "Фильтр {name} создан",
-			"msgFilterUpdated": "Фильтр {name} обновлён",
-			"msgFilterDeleted": "Фильтр {name} удалён",
+			"msgFilterCreated": "Фильтр \"{name}\" создан",
+			"msgFilterUpdated": "Фильтр \"{name}\" обновлён",
+			"msgFilterDeleted": "Фильтр \"{name}\" удалён",
 			"legendExpression": "Свойства с окончанием \"*\" в качестве значения могут иметь выражения, например, '&#36;&#123; currentUser&#40;&#41; &#125;' или '&#36;&#123; currentUserGroups&#40;&#41; &#125;'",
 			"legendMultiple": "Свойства с окончанием \"in\" могут иметь несколько значений, например, список значений, разделённый запятыми, например, `keyC, keyA, keyB`",
-			"create": "создать фильтр",
+			"create": "Создать фильтр",
 			"operators": {
 				"eq": "=",
 				"neq": "≠",
