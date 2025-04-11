@@ -2,7 +2,8 @@
 {
 	"commons": {
 		"edit": "Editar",
-		"save": "Guardar"
+		"save": "Guardar",
+		"copyValue": "Copiar valor"
 	},
 	"login": {
 		"productName": "CIB seven",
@@ -460,7 +461,16 @@
 		},
 		"system": {
 			"title": "System",
-			"tooltip": "System Settings and Diagnostics"
+			"tooltip": "System Settings and Diagnostics",
+			"settings": "Configuración",
+			"system-diagnostics": {
+				"title": "Diagnósticos",
+				"diagnosticHelp": "Los datos de diagnóstico permiten comprender el entorno para ayudar en el diagnóstico de problemas.",
+				"diagnosticData": "Datos de diagnóstico"
+			},
+			"execution-metrics": {
+				"title": "Métricas de ejecución"
+			}
 		}
 	},
 	"account-form": {

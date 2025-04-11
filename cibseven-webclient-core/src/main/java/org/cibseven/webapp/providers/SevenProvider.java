@@ -30,6 +30,7 @@ import org.cibseven.webapp.rest.model.Incident;
 import org.cibseven.webapp.rest.model.JobDefinition;
 import org.cibseven.webapp.rest.model.Job;
 import org.cibseven.webapp.rest.model.Message;
+import org.cibseven.webapp.rest.model.Metric;
 import org.cibseven.webapp.rest.model.NewUser;
 import org.cibseven.webapp.rest.model.Process;
 import org.cibseven.webapp.rest.model.ProcessDiagram;
@@ -75,6 +76,7 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
     @Autowired private IDecisionProvider decisionProvider;
     @Autowired private IJobProvider jobProvider;
     @Autowired private IBatchProvider batchProvider;
+    @Autowired private ISystemProvider systemProvider;
     
     
     /*
@@ -981,5 +983,25 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	public Object getCleanableBatchReportCount() {
 		return batchProvider.getCleanableBatchReportCount();
     }
+	
+	/*
+
+	███████ ██    ██ ███████ ████████ ███████ ███    ███     ██████  ██████   ██████  ██    ██ ██ ██████  ███████ ██████  
+	██       ██  ██  ██         ██    ██      ████  ████     ██   ██ ██   ██ ██    ██ ██    ██ ██ ██   ██ ██      ██   ██ 
+	███████   ████   ███████    ██    █████   ██ ████ ██     ██████  ██████  ██    ██ ██    ██ ██ ██   ██ █████   ██████  
+	     ██    ██         ██    ██    ██      ██  ██  ██     ██      ██   ██ ██    ██  ██  ██  ██ ██   ██ ██      ██   ██ 
+	███████    ██    ███████    ██    ███████ ██      ██     ██      ██   ██  ██████    ████   ██ ██████  ███████ ██   ██ 
+
+	*/                                                                                                                      
+
+	@Override
+	public JsonNode getTelemetryData(CIBUser user) {
+		return systemProvider.getTelemetryData(user);
+	}
+	
+	@Override
+	public Collection<Metric> getMetrics(Map<String, Object> queryParams, CIBUser user) {
+		return systemProvider.getMetrics(queryParams, user);
+	}
 	
 }

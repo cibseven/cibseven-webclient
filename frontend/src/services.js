@@ -568,5 +568,14 @@ var BatchService = {
   }
 }
 
-export { TaskService, FilterService, ProcessService, AdminService, JobService, JobDefinitionService,
+var SystemService = {
+  getTelemetryData() {
+    return axios.get(appConfig.servicesBasePath + '/system/telemetry/data')
+  },
+  getMetrics() {
+    return axios.get(appConfig.servicesBasePath + '/system/metrics')
+  }
+}
+
+export { TaskService, FilterService, ProcessService, AdminService, JobService, JobDefinitionService, SystemService,
   HistoryService, IncidentService, AuthService, InfoService, FormsService, TemplateService, DecisionService, BatchService }
