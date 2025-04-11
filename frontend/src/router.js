@@ -31,9 +31,9 @@ import DeployedForm from '@/components/forms/DeployedForm.vue'
 import StartDeployedForm from '@/components/forms/StartDeployedForm.vue'
 import TenantsView from '@/components/tenants/TenantsView.vue'
 import BatchesView from '@/components/batches/BatchesView.vue'
-import SystemView from './components/system/SystemView.vue'
-import SystemDiagnostics from './components/system/SystemDiagnostics.vue'
-import ExecutionMetrics from './components/system/ExecutionMetrics.vue'
+import SystemView from '@/components/system/SystemView.vue'
+import SystemDiagnostics from '@/components/system/SystemDiagnostics.vue'
+import ExecutionMetrics from '@/components/system/ExecutionMetrics.vue'
 
 const router = createRouter({
   history: createWebHashHistory(),
