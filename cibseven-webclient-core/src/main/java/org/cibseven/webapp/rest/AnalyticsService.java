@@ -21,6 +21,7 @@ import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.Incident;
 import org.cibseven.webapp.rest.model.Process;
 import org.cibseven.webapp.rest.model.ProcessStatistics;
+import org.cibseven.webapp.rest.model.Task;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -54,6 +55,7 @@ public class AnalyticsService extends BaseService implements InitializingBean {
     Collection<ProcessStatistics> processStatistics = sevenProvider.getProcessStatistics(user);
     
     Collection<Process> processes = sevenProvider.findProcesses(user);
+    
     // Convert processes to a HashMap with key -> name of the latest version
     Map<String, Process> latestProcessNames = new HashMap<>();
 
@@ -156,10 +158,35 @@ public class AnalyticsService extends BaseService implements InitializingBean {
     // Set the open incidents in the analytics object
     analytics.setOpenIncidents(openIncidents);
     
-//    ToDo:
-//    analytics.setOpenIncidents(sevenProvider.getOpenIncidents(user));
-//    analytics.setOpenTasks(sevenProvider.getOpenTasks(user));
+    Collection<Task> tasks = sevenProvider.findTasks(null, user);
     
+    // Group tasks by process key and count the number of tasks for each process
+    Map<String, Long> groupedTasks = tasks.stream()
+        .collect(Collectors.groupingBy(
+            task -> task.getProcessDefinitionId().split(":")[0], // Group by the first part of the processDefinitionId
+            Collectors.counting() // Count the number of tasks
+        ));
+
+    // Convert the grouped results into AnalyticsInfo objects
+    List<AnalyticsInfo> openTasks = groupedTasks.entrySet().stream()
+        .map(entry -> {
+            AnalyticsInfo taskInfo = new AnalyticsInfo();
+            taskInfo.setId(entry.getKey());
+            Process process = latestProcessNames.get(entry.getKey());
+            if (process != null) {
+                taskInfo.setTitle(process.getName());
+            } else {
+                taskInfo.setTitle("Unknown Process");
+            }
+            taskInfo.setValue(entry.getValue());
+            return taskInfo;
+        })
+        .collect(Collectors.toList());
+
+    // Set the open tasks in the analytics object
+    analytics.setOpenHumanTasks(openTasks);
+    
+
     analytics.setProcessDefinitionsCount(runningInstances.size());
     
     Collection<Decision> decisionDefinitionList = sevenProvider.getDecisionDefinitionList(new HashMap<>(), user);

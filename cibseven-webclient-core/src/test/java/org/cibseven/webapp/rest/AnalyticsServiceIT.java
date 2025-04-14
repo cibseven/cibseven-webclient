@@ -66,6 +66,9 @@ public class AnalyticsServiceIT {
     
     int expectedRunningInstances = 7;
     int expectedOpenIncidents = 2;
+    int expectedOpenHumanTasks = 4;
+    int expectedNumberOfInvoiceReceiptHumanTasks = 37;
+    
     int expectedDecisionsCount = 3;
     int expectedDeploymentsCount = 24;
     
@@ -92,18 +95,35 @@ public class AnalyticsServiceIT {
     assertThat(invoiceInstance).isNotNull();
     assertThat(invoiceInstance.getTitle()).isEqualTo("Invoice Receipt");
     
+    
+    
     List<AnalyticsInfo> openIncidents = analytics.getOpenIncidents();
     
     assertThat(openIncidents).isNotNull().isNotEmpty();
     assertThat(openIncidents.size()).isEqualTo(expectedOpenIncidents);
     
-    // Check that runningInstances contains AnalyticsInfo with id "invoice" and title "Invoice Receipt"
+    // Check that first openIncident title is "Second Incident Task Script"
     AnalyticsInfo openIncident = openIncidents.stream()
         .findFirst()
         .orElse(null);
     
     assertThat(openIncident).isNotNull();
     assertThat(openIncident.getTitle()).isEqualTo("Second Incident Task Script");
+    
+    
+    List<AnalyticsInfo> openHumanTasks = analytics.getOpenHumanTasks();
+    
+    assertThat(openHumanTasks).isNotNull().isNotEmpty();
+    assertThat(openHumanTasks.size()).isEqualTo(expectedOpenHumanTasks);
+    
+    // Assert that the number of openHumanTasks with the name "Invoice Receipt" is 37
+    AnalyticsInfo invoiceReceiptProcess = openHumanTasks.stream()
+        .filter(process -> "Invoice Receipt".equals(process.getTitle()))
+        .findFirst()
+        .orElse(null);
+
+    assertThat(invoiceReceiptProcess.getValue()).isEqualTo(expectedNumberOfInvoiceReceiptHumanTasks);
+    
 
     long decisionDefinitionsCount = analytics.getDecisionDefinitionsCount();
     
