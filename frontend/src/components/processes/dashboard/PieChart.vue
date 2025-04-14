@@ -32,7 +32,7 @@
           <h4 class="link-dark">
             <span v-if="loading"><BWaitingBox class="d-inline" styling="width: 19px" :title="$t('admin.loading')"></BWaitingBox></span>
             <router-link v-else :to="link" :title="$t(tooltip)" class="text-decoration-none">
-              <span class="link-dark p-1">{{ totalWithZero }}</span>
+              <span class="link-dark p-1" :class="totalZero !== '0' ? 'text-success' : ''">{{ totalWithZero }}</span>
             </router-link>
           </h4>
         </div>
