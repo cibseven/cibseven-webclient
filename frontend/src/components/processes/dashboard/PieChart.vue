@@ -1,41 +1,39 @@
 <template>
-  <div>
-    <div class="py-3 text-center">
-      <h5 v-if="title">
-        <router-link :to="link" :title="tooltip" class="text-decoration-none">
-          <span class="link-dark">{{ title }}</span>
-        </router-link>
-      </h5>
+  <div class="text-center">
+    <h5 v-if="title">
+      <router-link :to="link" :title="tooltip" class="text-decoration-none">
+        <span class="link-dark">{{ title }}</span>
+      </router-link>
+    </h5>
 
-      <div class="donut-chart-container">
-        <svg :width="size" :height="size" viewBox="0 0 100 100" class="donut-chart-svg">
-          <g v-for="(item, index) in chartData" :key="index">
-            <path v-if="item.value === 0"
+    <div class="donut-chart-container">
+      <svg :width="size" :height="size" viewBox="0 0 100 100" class="donut-chart-svg">
+        <g v-for="(item, index) in chartData" :key="index">
+          <path v-if="item.value === 0"
+            :d="getSlicePath(item, index)"
+            fill="#eeeeee"
+            :transform="item.transform"
+          />
+          <router-link v-else :to="item.link ? item.link : link">
+            <path
               :d="getSlicePath(item, index)"
-              fill="#eeeeee"
+              :fill="hoveredIndex === index ? shadeColor(sliceColor(item, index), 10) : sliceColor(item, index)"
               :transform="item.transform"
+              @mouseover="hoveredIndex = index"
+              @mouseleave="hoveredIndex = null"
+              class="donut-chart-slice"
+              v-b-popover.hover.right="sliceTitle(item)"
             />
-            <router-link v-else :to="item.link ? item.link : link">
-              <path
-                :d="getSlicePath(item, index)"
-                :fill="hoveredIndex === index ? shadeColor(sliceColor(item, index), 10) : sliceColor(item, index)"
-                :transform="item.transform"
-                @mouseover="hoveredIndex = index"
-                @mouseleave="hoveredIndex = null"
-                class="donut-chart-slice"
-                v-b-popover.hover.right="sliceTitle(item)"
-              />
-            </router-link>
-          </g>
-        </svg>
-        <div class="donut-chart-center">
-          <h4 class="link-dark">
-            <span v-if="loading"><BWaitingBox class="d-inline" styling="width: 19px" :title="$t('admin.loading')"></BWaitingBox></span>
-            <router-link v-else :to="link" :title="tooltip" class="text-decoration-none">
-              <span class="link-dark p-1" :class="totalZero !== '0' ? 'text-success' : ''">{{ totalWithZero }}</span>
-            </router-link>
-          </h4>
-        </div>
+          </router-link>
+        </g>
+      </svg>
+      <div class="donut-chart-center">
+        <h4 class="link-dark">
+          <span v-if="loading"><BWaitingBox class="d-inline" styling="width: 19px" :title="$t('admin.loading')"></BWaitingBox></span>
+          <router-link v-else :to="link" :title="tooltip" class="text-decoration-none">
+            <span class="link-dark p-1" :class="totalZero !== '0' ? 'text-success' : ''">{{ totalWithZero }}</span>
+          </router-link>
+        </h4>
       </div>
     </div>
   </div>
