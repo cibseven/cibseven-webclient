@@ -1,8 +1,5 @@
 <template>
   <div class="bg-white shadow p-3 mb-4">
-    <b-button @click="createInstances" variant="success">Create Instances</b-button>
-    <b-button @click="deleteInstancesInBatch" class="ms-2">Delete Instances</b-button>
-    <div class="mb-2"></div>
     <h4>{{ $t('batches.inProgressBatches') }}</h4>
     <hr>
     <div class="overflow-auto" style="max-height: 35vh">
@@ -110,41 +107,6 @@
       },
       batchIsSelected: function(id) {
         return this.$route.query.id === id && this.$route.query.type === 'runtime'
-      },
-
-      // DEMO
-      async createInstances () {
-        const processKey = 'called-process'
-        const total = 5000
-        const batchSize = 200
-
-        for (let i = 0; i < total; i += batchSize) {
-          const batch = []
-          for (let j = 0; j < batchSize && i + j < total; j++) {
-            batch.push(ProcessService.startProcess(processKey, this.currentLanguage()))
-          }
-          await Promise.all(batch) // espera a que se completen las del lote
-        }
-
-        alert('Instancias creadas por lotes')
-      },
-      deleteInstancesInBatch: function() {
-        const processKey = 'called-process'
-        ProcessService.findProcessesInstances(processKey).then(res => {
-          const ids = res.map(pi => pi.id)
-          if (ids.length === 0) return alert('No hay instancias para borrar')
-          var params = {
-            deleteReason: 'testing batch',
-            processInstanceIds: ids,
-            skipCustomListeners: true,
-            skipSubprocesses: true,
-            failIfNotExists: true,
-            async: true
-          }
-          ProcessService.deleteProcessInstance(params).then(() => {
-            this.loadBatches()
-          })
-        })
       }
     }
   }
