@@ -5,7 +5,7 @@
         <h5 class="link-dark">{{ $t(title) }}</h5>
         <h4 class="link-dark">
           <span v-if="count !== null">{{ count }}</span>
-          <span v-else><BWaitingBox class="d-inline" styling="width: 19px"></BWaitingBox></span>
+          <span v-else><BWaitingBox class="d-inline" styling="width: 19px" :title="$t('admin.loading')"></BWaitingBox></span>
         </h4>
       </div>
     </router-link>

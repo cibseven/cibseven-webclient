@@ -9,25 +9,28 @@
 
       <div class="donut-chart-container">
         <svg :width="size" :height="size" viewBox="0 0 100 100" class="donut-chart-svg">
-          <g :clip-path="'url(#clip-circle)'">
+          <g>
             <path
               v-for="(item, index) in chartData"
               :key="index"
               :d="getSlicePath(item, index)"
               :fill="item.color"
               :transform="item.transform"
-              :title="item.title"
-              @click="handleClick(index)"
-              @mouseover="hoveredIndex = index"
+              @click="item.link ? sliceClick(item) : null"
+              @mouseover="item.value > 0 ? hoveredIndex = index : hoveredIndex = null"
               @mouseleave="hoveredIndex = null"
-              class="donut-chart-slice"
-            />
+              :class="item.value > 0 ? 'donut-chart-slice' : null"
+              v-b-popover.hover.right="sliceTitle(item)"
+            >
+            </path>
           </g>
         </svg>
         <div class="donut-chart-center">
           <h4 class="link-dark">
-            <span v-if="loading"><BWaitingBox class="d-inline" styling="width: 19px"></BWaitingBox></span>
-            <span v-else>{{ total }}</span>
+            <span v-if="loading"><BWaitingBox class="d-inline" styling="width: 19px" :title="$t('admin.loading')"></BWaitingBox></span>
+            <router-link v-else :to="link" :title="$t(tooltip)" class="text-decoration-none">
+              <span class="link-dark p-1">{{ total }}</span>
+            </router-link>
           </h4>
         </div>
       </div>
@@ -81,7 +84,7 @@ export default {
           endAngle: offsetAngle + 359
         }]
       }
-      else if (this.items.length === 0) {
+      else if (this.items.length === 0 || this.total === 0) {
         return [{
           value: 0,
           color: '#eeeeee',
@@ -90,7 +93,10 @@ export default {
         }]
       }
 
-      return this.items.map((item) => {
+      const itemsSorted = [...this.items]
+      itemsSorted.sort((a, b) => b.value - a.value)
+
+      return itemsSorted.map((item) => {
         const percentage = item.value / this.total
         const startAngle = offsetAngle
         const endAngle = offsetAngle + percentage * 360
@@ -105,9 +111,6 @@ export default {
     }
   },
   methods: {
-    handleClick(index) {
-      this.$emit('sliceClick', this.items[index])
-    },
     // This function returns the 'd' attribute value for the SVG path element
     getSlicePath(item, index) {
       const startAngle = this.chartData[index].startAngle
@@ -144,6 +147,15 @@ export default {
       ].join(' ')
 
       return pathData
+    },
+    sliceClick(item) {
+      this.$emit('sliceClick', item)
+    },
+    sliceTitle: function(item) {
+      if (item.value == 0) {
+        return ''
+      }
+      return item.title + ' (' + item.value + ')'
     }
   }
 }
@@ -171,6 +183,6 @@ export default {
 
 .donut-chart-slice {
   cursor: pointer;
-  transition: transform 0.3s ease;
+  transition: transform 0.5s ease;
 }
 </style>
