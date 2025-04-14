@@ -56,9 +56,9 @@ export default {
   data() {
     return {
       errorLoading: false,
-      runningInstances: [],
-      openIncidents: [],
-      openHumanTasks: [],
+      runningInstances: null,
+      openIncidents: null,
+      openHumanTasks: null,
       deploymentItems: [
         { title: 'processes-dashboard.items.processes.title',
         tooltip: 'processes-dashboard.items.processes.tooltip', count: null, link: '/seven/auth/processes/list' },
