@@ -80,7 +80,12 @@ export default {
         this.errorLoading = false
         const analytics = await AnalyticsService.getAnalytics()
         console.debug(analytics)
-        this.runningInstances = analytics.runningInstances
+        this.runningInstances = Array.from(analytics.runningInstances).map(item => {
+          return {
+            ...item,
+            link: '/seven/auth/process/' + item.id
+          }
+        })
         this.openIncidents = analytics.openIncidents
         this.openHumanTasks = analytics.openHumanTasks
         this.deploymentItems[0].count = analytics.processDefinitionsCount
