@@ -536,30 +536,36 @@ var JobService = {
 }
 
 var BatchService = {
-  getHistoricBatches(params) {
-    return axios.get('/history/batch', { params })
+  getBatches: function(params) {
+    return axios.get(appConfig.servicesBasePath + '/batch', { params })
   },
-
+  getBatchStatistics: function(params) {
+    return axios.get(appConfig.servicesBasePath + '/batch/statistics', { params })
+  },
+  setBatchSuspensionState: function(id, params) {
+    return axios.put(appConfig.servicesBasePath + '/batch/' + id + '/suspended', params)
+  },
+  deleteBatch: function(id, params) {
+    return axios.delete(appConfig.servicesBasePath + '/batch/' + id, params)
+  },
+  getHistoricBatches: function(params) {
+    return axios.get(appConfig.servicesBasePath + '/history/batch', { params })
+  },
   getHistoricBatchCount(params) {
     return axios.get('/history/batch/count', { params })
   },
-
-  getHistoricBatchById(id) {
-    return axios.get(`/history/batch/${id}`)
+  getHistoricBatchById: function(id) {
+    return axios.get(appConfig.servicesBasePath + '/history/batch/' + id)
   },
-
-  deleteHistoricBatch(id) {
-    return axios.delete(`/history/batch/${id}`)
+  deleteHistoricBatch: function(id) {
+    return axios.delete(appConfig.servicesBasePath + '/history/batch/' + id)
   },
-
   setRemovalTime(payload) {
     return axios.post('/history/batch/set-removal-time', payload)
   },
-
   getCleanableBatchReport(params) {
     return axios.get('/history/batch/cleanable-batch-report', { params })
   },
-
   getCleanableBatchReportCount() {
     return axios.get('/history/batch/cleanable-batch-report/count')
   }

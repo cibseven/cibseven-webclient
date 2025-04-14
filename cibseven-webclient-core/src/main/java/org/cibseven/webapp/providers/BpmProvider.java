@@ -21,11 +21,13 @@ import org.cibseven.webapp.rest.model.ActivityInstance;
 import org.cibseven.webapp.rest.model.ActivityInstanceHistory;
 import org.cibseven.webapp.rest.model.Authorization;
 import org.cibseven.webapp.rest.model.Authorizations;
+import org.cibseven.webapp.rest.model.Batch;
 import org.cibseven.webapp.rest.model.CandidateGroupTaskCount;
 import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.DeploymentResource;
 import org.cibseven.webapp.rest.model.EventSubscription;
 import org.cibseven.webapp.rest.model.Filter;
+import org.cibseven.webapp.rest.model.HistoryBatch;
 import org.cibseven.webapp.rest.model.IdentityLink;
 import org.cibseven.webapp.rest.model.Incident;
 import org.cibseven.webapp.rest.model.JobDefinition;
@@ -947,10 +949,14 @@ public interface BpmProvider {
 
 	Collection<CandidateGroupTaskCount> getTaskCountByCandidateGroup(CIBUser user);
 	
-	Object getHistoricBatches(Map<String, Object> queryParams);
+	Collection<Batch> getBatches(Map<String, Object> params, CIBUser user);
+	Collection<Batch> getBatchStatistics(Map<String, Object> params, CIBUser user);
+	void deleteBatch(String id, Map<String, Object> params, CIBUser user);
+	void setBatchSuspensionState(String id, Map<String, Object> params, CIBUser user);
+	Collection<HistoryBatch> getHistoricBatches(Map<String, Object> params, CIBUser user);
 	Object getHistoricBatchCount(Map<String, Object> queryParams);
-	Object getHistoricBatchById(String id);
-	void deleteHistoricBatch(String id);
+	HistoryBatch getHistoricBatchById(String id, CIBUser user);
+	void deleteHistoricBatch(String id, CIBUser user);
 	Object setRemovalTime(Map<String, Object> payload);
 	Object getCleanableBatchReport(Map<String, Object> queryParams);
 	Object getCleanableBatchReportCount();
