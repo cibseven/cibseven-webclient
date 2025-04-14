@@ -14,6 +14,41 @@
 		"login": "Anmelden",
 		"forgotten": "Passwort zurücksetzen?"
 	},
+	"processes-dashboard": {
+		"headerActive": "Operationsübersicht",
+		"headerDeployed": "Bereitgestellt",
+		"items": {
+			"running-instances": {
+				"title": "Laufende Prozessinstanzen",
+				"tooltip": "Alle aktiven Prozessinstanzen anzeigen"
+			},
+			"open-incidents": {
+				"title": "Offene Vorfälle",
+				"tooltip": "Alle derzeit offenen Vorfälle überprüfen",
+				"none": "Keine Vorfälle!"
+			},
+			"open-human-tasks": {
+				"title": "Offene manuelle Aufgaben",
+				"tooltip": "Alle ausstehenden manuellen Aufgaben anzeigen"
+			},
+			"processes": {
+				"title": "Prozessdefinitionen",
+				"tooltip": "Verfügbare Prozessdefinitionen durchsuchen"
+			},
+			"decisions": {
+				"title": "Entscheidungsdefinitionen",
+				"tooltip": "Verfügbare Entscheidungsdefinitionen durchsuchen"
+			},
+			"deployments": {
+				"title": "Bereitstellungen",
+				"tooltip": "Alle bereitgestellten Prozessressourcen anzeigen"
+			},
+			"batches": {
+				"title": "Stapel",
+				"tooltip": "Stapeloperationen verwalten und anzeigen"
+			}
+		}
+	},
 	"process" : {
 		"instanceRunning": "Instanz läuft",
 		"instanceIncidents": "Instanz mit Vorfällen",
