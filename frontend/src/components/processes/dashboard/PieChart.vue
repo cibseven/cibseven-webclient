@@ -9,20 +9,23 @@
 
       <div class="donut-chart-container">
         <svg :width="size" :height="size" viewBox="0 0 100 100" class="donut-chart-svg">
-          <g>
-            <path
-              v-for="(item, index) in chartData"
-              :key="index"
+          <g v-for="(item, index) in chartData" :key="index">
+            <path v-if="item.value === 0"
               :d="getSlicePath(item, index)"
-              :fill="item.color"
+              fill="#eeeeee"
               :transform="item.transform"
-              @click="item.link ? sliceClick(item) : null"
-              @mouseover="item.value > 0 ? hoveredIndex = index : hoveredIndex = null"
-              @mouseleave="hoveredIndex = null"
-              :class="item.value > 0 ? 'donut-chart-slice' : null"
-              v-b-popover.hover.right="sliceTitle(item)"
-            >
-            </path>
+            />
+            <router-link v-else :to="item.link">
+              <path
+                :d="getSlicePath(item, index)"
+                :fill="item.color"
+                :transform="item.transform"
+                @mouseover="hoveredIndex = index"
+                @mouseleave="hoveredIndex = null"
+                class="donut-chart-slice"
+                v-b-popover.hover.right="sliceTitle(item)"
+              />
+            </router-link>
           </g>
         </svg>
         <div class="donut-chart-center">
@@ -79,7 +82,6 @@ export default {
       if (this.items === null) {
         return [{
           value: 0,
-          color: '#eeeeee',
           startAngle: offsetAngle,
           endAngle: offsetAngle + 359
         }]
@@ -87,7 +89,6 @@ export default {
       else if (this.items.length === 0 || this.total === 0) {
         return [{
           value: 0,
-          color: '#eeeeee',
           startAngle: offsetAngle,
           endAngle: offsetAngle + 359
         }]
@@ -148,13 +149,7 @@ export default {
 
       return pathData
     },
-    sliceClick(item) {
-      this.$emit('sliceClick', item)
-    },
     sliceTitle: function(item) {
-      if (item.value == 0) {
-        return ''
-      }
       return item.title + ' (' + item.value + ')'
     }
   }
