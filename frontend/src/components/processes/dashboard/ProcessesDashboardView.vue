@@ -10,7 +10,7 @@
             :title="$t('processes-dashboard.items.running-instances.title')"
             :tooltip="$t('processes-dashboard.items.running-instances.tooltip')"
             link="/seven/auth/processes/list"
-            :total-zero="errorLoading ? 'x': null"
+            :total-zero="errorLoading ? 'x': undefined"
           ></PieChart>
           <PieChart class="col-12 col-md-4 px-0 m-0" :items="openIncidents"
             :title="$t('processes-dashboard.items.open-incidents.title')"
@@ -22,7 +22,7 @@
             :title="$t('processes-dashboard.items.open-human-tasks.title')"
             :tooltip="$t('processes-dashboard.items.open-human-tasks.tooltip')"
             link="/seven/auth/human-tasks"
-            :total-zero="errorLoading ? 'x': null"
+            :total-zero="errorLoading ? 'x': undefined"
           ></PieChart>
         </div>
       </div>

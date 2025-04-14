@@ -105,7 +105,7 @@ export default {
       if (this.totalWithZero === 'x') {
         return 'text-warning'
       }
-      return this.total !== '0' ? 'text-success' : ''
+      return this.totalZero !== '0' ? 'text-success' : ''
     },
     chartData: function() {
       let offsetAngle = -90 // Start at 12 o'clock
