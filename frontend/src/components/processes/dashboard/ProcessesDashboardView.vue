@@ -2,40 +2,35 @@
   <div class="container-fluid bg-light pt-3 overflow-auto">
     <div class="row justify-content-around">
 
-      <div class="bg-white col-md-11 col-12 shadow p-3 mt-3 mb-3">
+      <div class="col-12 col-md-11 p-3 my-3 bg-white border rounded shadow-sm">
         <h3>{{ $t('processes-dashboard.headerActive') }}</h3>
         <hr>
-        <div class="row g-0">
-          <div class="col-4 px-0">
-            <PieChart :items="runningInstances"
-              :title="$t('processes-dashboard.items.running-instances.title')"
-              :tooltip="$t('processes-dashboard.items.running-instances.tooltip')"
-              link="/seven/auth/processes/list"
-            ></PieChart>
-          </div>
-          <div class="col-4 px-0">
-            <PieChart :items="openIncidents"
-              :title="$t('processes-dashboard.items.open-incidents.title')"
-              :tooltip="$t('processes-dashboard.items.open-incidents.tooltip')"
-              link="/seven/auth/processes/list"
-              :total-zero="$t('processes-dashboard.items.open-incidents.none')"
-            ></PieChart>
-          </div>
-          <div class="col-4 px-0 m-0">
-            <PieChart :items="openHumanTasks"
-              :title="$t('processes-dashboard.items.open-human-tasks.title')"
-              :tooltip="$t('processes-dashboard.items.open-human-tasks.tooltip')"
-              link="/seven/auth/human-tasks"
-            ></PieChart>
-          </div>
+        <div class="row">
+          <PieChart class="col-12 col-md-4 px-0 m-0" :items="runningInstances"
+            :title="$t('processes-dashboard.items.running-instances.title')"
+            :tooltip="$t('processes-dashboard.items.running-instances.tooltip')"
+            link="/seven/auth/processes/list"
+          ></PieChart>
+          <PieChart class="col-12 col-md-4 px-0 m-0" :items="openIncidents"
+            :title="$t('processes-dashboard.items.open-incidents.title')"
+            :tooltip="$t('processes-dashboard.items.open-incidents.tooltip')"
+            link="/seven/auth/processes/list"
+            :total-zero="$t('processes-dashboard.items.open-incidents.none')"
+          ></PieChart>
+          <PieChart class="col-12 col-md-4 px-0 m-0" :items="openHumanTasks"
+            :title="$t('processes-dashboard.items.open-human-tasks.title')"
+            :tooltip="$t('processes-dashboard.items.open-human-tasks.tooltip')"
+            link="/seven/auth/human-tasks"
+          ></PieChart>
         </div>
       </div>
 
-      <div class="bg-white col-md-11 col-12 shadow p-3 mt-3">
+      <div class="col-12 col-md-11 p-3 my-3 bg-white border rounded shadow-sm">
         <h3>{{ $t('processes-dashboard.headerDeployed') }}</h3>
         <hr>
-        <div class="row g-0">
+        <div class="row">
           <DeploymentItem v-for="(item, index) in deploymentItems" :key="index"
+            class="col-12 col-md-3"
             :title-prefix="item.titlePrefx"
             :count="item.count"
             :link="item.link"
