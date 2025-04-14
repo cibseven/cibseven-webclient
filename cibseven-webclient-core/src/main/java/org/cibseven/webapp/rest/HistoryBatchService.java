@@ -5,6 +5,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.providers.PermissionConstants;
@@ -16,8 +17,6 @@ import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.servlet.http.HttpServletRequest;
-
-import static org.cibseven.webapp.auth.SevenAuthorizationUtils.*;
 
 @RestController @RequestMapping("${services.basePath:/services/v1}" + "/history/batch")
 public class HistoryBatchService extends BaseService implements InitializingBean {
@@ -36,7 +35,7 @@ public class HistoryBatchService extends BaseService implements InitializingBean
 			@RequestParam Map<String, Object> params,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true, false);
-		checkPermission(user, BATCH, PermissionConstants.READ_HISTORY_ALL);
+		checkPermission(user, SevenResourceType.BATCH, PermissionConstants.READ_HISTORY_ALL);
 		return bpmProvider.getHistoricBatches(params, user);
 	}
     
@@ -44,7 +43,7 @@ public class HistoryBatchService extends BaseService implements InitializingBean
    	public HistoryBatch getHistoricBatchById(
    			@Parameter(description = "Batch id") @PathVariable String id, HttpServletRequest rq) {
    		CIBUser user = checkAuthorization(rq, true, false);
-   		checkPermission(user, BATCH, PermissionConstants.READ_HISTORY_ALL);
+   		checkPermission(user, SevenResourceType.BATCH, PermissionConstants.READ_HISTORY_ALL);
    		return bpmProvider.getHistoricBatchById(id, user);
    	}
     
@@ -52,7 +51,7 @@ public class HistoryBatchService extends BaseService implements InitializingBean
    	public void deleteHistoricBatch(
    			@Parameter(description = "Batch id") @PathVariable String id, HttpServletRequest rq) {
    		CIBUser user = checkAuthorization(rq, true, false);
-   		checkPermission(user, BATCH, PermissionConstants.DELETE_HISTORY_ALL);
+   		checkPermission(user, SevenResourceType.BATCH, PermissionConstants.DELETE_HISTORY_ALL);
    		bpmProvider.deleteHistoricBatch(id, user);
    	}
 
