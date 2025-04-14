@@ -68,32 +68,26 @@ export default {
   },
   methods: {
     async loadAnalytics() {
-      /*try {
+      try {
         const analytics = await AnalyticsService.getAnalytics()
         console.log(analytics)
         this.runningInstances = analytics.runningInstances
         this.openIncidents = analytics.openIncidents
         this.openHumanTasks = analytics.openHumanTasks
-        this.deploymentItems[0].count = analytics.deploymentItems.processes
-        this.deploymentItems[1].count = analytics.deploymentItems.decisions
-        this.deploymentItems[2].count = analytics.deploymentItems.deployments
-        this.deploymentItems[3].count = analytics.deploymentItems.batches
+        this.deploymentItems[0].count = analytics.processDefinitionsCount
+        this.deploymentItems[1].count = analytics.decisionDefinitionsCount
+        this.deploymentItems[2].count = analytics.deploymentsCount
+        this.deploymentItems[3].count = analytics.batchesCount
       } catch (error) {
         console.error('Error loading analytics:', error)
-*/
-        this.runningInstances = [
-          { value: 1, title: "one", link: '/seven/auth/processes/list'},
-          { value: 5, title: "five"},
-          { value: 10, title: "ten"},
-          { value: 2, title: "two"},
-        ]
+        this.runningInstances = []
         this.openIncidents = []
         this.openHumanTasks = null
         this.deploymentItems[0].count = 'x'
         this.deploymentItems[1].count = 'x'
         this.deploymentItems[2].count = 'x'
         this.deploymentItems[3].count = 'x'
-  //    }
+      }
     }
   }
 }

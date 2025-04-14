@@ -1,6 +1,5 @@
 package org.cibseven.webapp.providers;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -294,6 +293,11 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	public Collection<ProcessStatistics> findProcessStatistics(String processId, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
 		return processProvider.findProcessStatistics(processId, user);
 	}
+
+  @Override
+  public Collection<ProcessStatistics> getProcessStatistics(CIBUser user) {
+    return processProvider.getProcessStatistics(user);
+  }
 	
 	@Override
 	public Collection<HistoryProcessInstance> findProcessesInstancesHistory(String key, Optional<Boolean> active, 

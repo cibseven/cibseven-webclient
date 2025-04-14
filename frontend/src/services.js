@@ -570,7 +570,7 @@ var BatchService = {
 
 var AnalyticsService = {
   async getAnalytics() {
-    return axios.get(appConfig.servicesBasePath + '/analytics/dashboard')
+    return axios.get(appConfig.servicesBasePath + '/analytics')
   }
 }
 
