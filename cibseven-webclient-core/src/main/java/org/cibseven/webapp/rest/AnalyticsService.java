@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.cibseven.webapp.auth.CIBUser;
@@ -17,6 +18,7 @@ import org.cibseven.webapp.rest.model.Analytics;
 import org.cibseven.webapp.rest.model.AnalyticsInfo;
 import org.cibseven.webapp.rest.model.Decision;
 import org.cibseven.webapp.rest.model.Deployment;
+import org.cibseven.webapp.rest.model.Incident;
 import org.cibseven.webapp.rest.model.Process;
 import org.cibseven.webapp.rest.model.ProcessStatistics;
 import org.springframework.beans.factory.InitializingBean;
@@ -111,6 +113,48 @@ public class AnalyticsService extends BaseService implements InitializingBean {
     }
 
     analytics.setRunningInstances(runningInstances);
+    
+    Collection<Incident> incidents = sevenProvider.findIncident(
+        Optional.empty(),
+        Optional.empty(),
+        Optional.empty(),
+        Optional.empty(),
+        Optional.empty(),
+        Optional.empty(),
+        Optional.empty(),
+        Optional.empty(),
+        Optional.empty(),
+        Optional.empty(),
+        Optional.empty(),
+        Optional.empty(),
+        Optional.empty(),
+        user);
+    
+    // Group incidents by process key and count the number of incidents for each process
+    Map<String, Long> groupedIncidents = incidents.stream()
+        .collect(Collectors.groupingBy(
+            incident -> incident.getProcessDefinitionId().split(":")[0], // Group by the first part of the processDefinitionId
+            Collectors.counting() // Count the number of incidents
+        ));
+
+    // Convert the grouped results into AnalyticsInfo objects
+    List<AnalyticsInfo> openIncidents = groupedIncidents.entrySet().stream()
+        .map(entry -> {
+            AnalyticsInfo incidentInfo = new AnalyticsInfo();
+            incidentInfo.setId(entry.getKey());
+            Process process = latestProcessNames.get(entry.getKey());
+            if (process != null) {
+                incidentInfo.setTitle(process.getName());
+            } else {
+                incidentInfo.setTitle("Unknown Process");
+            }
+            incidentInfo.setValue(entry.getValue());
+            return incidentInfo;
+        })
+        .collect(Collectors.toList());
+
+    // Set the open incidents in the analytics object
+    analytics.setOpenIncidents(openIncidents);
     
 //    ToDo:
 //    analytics.setOpenIncidents(sevenProvider.getOpenIncidents(user));

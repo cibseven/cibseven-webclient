@@ -64,7 +64,10 @@ public class AnalyticsServiceIT {
   @Test
   public void testAnalytics() {
     
-    int expectedRunningInstances = 6;
+    int expectedRunningInstances = 7;
+    int expectedOpenIncidents = 2;
+    int expectedDecisionsCount = 3;
+    int expectedDeploymentsCount = 24;
     
     StandardLogin login = new StandardLogin("demo", "demo");
     
@@ -89,14 +92,26 @@ public class AnalyticsServiceIT {
     assertThat(invoiceInstance).isNotNull();
     assertThat(invoiceInstance.getTitle()).isEqualTo("Invoice Receipt");
     
+    List<AnalyticsInfo> openIncidents = analytics.getOpenIncidents();
     
+    assertThat(openIncidents).isNotNull().isNotEmpty();
+    assertThat(openIncidents.size()).isEqualTo(expectedOpenIncidents);
+    
+    // Check that runningInstances contains AnalyticsInfo with id "invoice" and title "Invoice Receipt"
+    AnalyticsInfo openIncident = openIncidents.stream()
+        .findFirst()
+        .orElse(null);
+    
+    assertThat(openIncident).isNotNull();
+    assertThat(openIncident.getTitle()).isEqualTo("Second Incident Task Script");
+
     long decisionDefinitionsCount = analytics.getDecisionDefinitionsCount();
     
-    assertThat(decisionDefinitionsCount).isEqualTo(3);
+    assertThat(decisionDefinitionsCount).isEqualTo(expectedDecisionsCount);
     
     long deploymentsCount = analytics.getDeploymentsCount();
     
-    assertThat(deploymentsCount).isEqualTo(23);
+    assertThat(deploymentsCount).isEqualTo(expectedDeploymentsCount);
     
   }
 
