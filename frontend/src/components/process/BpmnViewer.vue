@@ -58,7 +58,7 @@ function getActivitiesToMark(treeObj) {
 
 export default {
   name: 'BpmnViewer',
-  emits: ['activity-id'],
+  emits: ['activity-id', 'task-selected', 'child-activity', 'shown', 'error'],
   components: { BWaitingBox },
   props: {
     activityInstance: Object,
@@ -228,7 +228,7 @@ export default {
           this.statistics.forEach(item => {
             const shape = elementRegistry.get(item.id)
             if (shape) {
-              const htmlTemplate = this.getBadgeOverlayHtml(item.instances, 'bg-info', 'runingInstances', item.id)
+              const htmlTemplate = this.getBadgeOverlayHtml(item.instances, 'bg-info', 'runningInstances', item.id)
               this.setHtmlOnDiagram(overlays, item.id, htmlTemplate, { bottom: 15, left: -7 })
               if (item.failedJobs > 0) {
                 const failedHtml = this.getBadgeOverlayHtml(item.failedJobs, 'bg-danger', 'openIncidents', item.id)
