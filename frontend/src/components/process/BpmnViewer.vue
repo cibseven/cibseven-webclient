@@ -58,6 +58,7 @@ function getActivitiesToMark(treeObj) {
 
 export default {
   name: 'BpmnViewer',
+  emits: ['activity-id'],
   components: { BWaitingBox },
   props: {
     activityInstance: Object,
