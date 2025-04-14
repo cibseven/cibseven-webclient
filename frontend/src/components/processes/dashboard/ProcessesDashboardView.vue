@@ -10,17 +10,19 @@
             :title="$t('processes-dashboard.items.running-instances.title')"
             :tooltip="$t('processes-dashboard.items.running-instances.tooltip')"
             link="/seven/auth/processes/list"
+            :total-zero="errorLoading ? 'x': null"
           ></PieChart>
           <PieChart class="col-12 col-md-4 px-0 m-0" :items="openIncidents"
             :title="$t('processes-dashboard.items.open-incidents.title')"
             :tooltip="$t('processes-dashboard.items.open-incidents.tooltip')"
             link="/seven/auth/processes/list"
-            :total-zero="$t('processes-dashboard.items.open-incidents.none')"
+            :total-zero="errorLoading ? 'x': $t('processes-dashboard.items.open-incidents.none')"
           ></PieChart>
           <PieChart class="col-12 col-md-4 px-0 m-0" :items="openHumanTasks"
             :title="$t('processes-dashboard.items.open-human-tasks.title')"
             :tooltip="$t('processes-dashboard.items.open-human-tasks.tooltip')"
             link="/seven/auth/human-tasks"
+            :total-zero="errorLoading ? 'x': null"
           ></PieChart>
         </div>
       </div>
@@ -31,7 +33,8 @@
         <div class="row">
           <DeploymentItem v-for="(item, index) in deploymentItems" :key="index"
             class="col-12 col-md-3"
-            :title-prefix="item.titlePrefx"
+            :title="$t(item.title)"
+            :tooltip="$t(item.tooltip)"
             :count="item.count"
             :link="item.link"
           ></DeploymentItem>
@@ -52,14 +55,19 @@ export default {
   components: { PieChart, DeploymentItem },
   data() {
     return {
+      errorLoading: false,
       runningInstances: [],
       openIncidents: [],
       openHumanTasks: [],
       deploymentItems: [
-        { titlePrefx: 'processes-dashboard.items.processes', count: null, link: '/seven/auth/processes/list' },
-        { titlePrefx: 'processes-dashboard.items.decisions', count: null, link: '/seven/auth/decisions' },
-        { titlePrefx: 'processes-dashboard.items.deployments', count: null, link: '/seven/auth/deployments' },
-        { titlePrefx: 'processes-dashboard.items.batches', count: null, link: '/seven/auth/batches' },
+        { title: 'processes-dashboard.items.processes.title',
+        tooltip: 'processes-dashboard.items.processes.tooltip', count: null, link: '/seven/auth/processes/list' },
+        { title: 'processes-dashboard.items.decisions.title',
+        tooltip: 'processes-dashboard.items.decisions.tooltip', count: null, link: '/seven/auth/decisions' },
+        { title: 'processes-dashboard.items.deployments.title',
+        tooltip: 'processes-dashboard.items.deployments.tooltip', count: null, link: '/seven/auth/deployments' },
+        { title: 'processes-dashboard.items.batches.title',
+        tooltip: 'processes-dashboard.items.batches.tooltip', count: null, link: '/seven/auth/batches' },
       ],
     }
   },
@@ -69,8 +77,9 @@ export default {
   methods: {
     async loadAnalytics() {
       try {
+        this.errorLoading = false
         const analytics = await AnalyticsService.getAnalytics()
-        console.log(analytics)
+        console.debug(analytics)
         this.runningInstances = analytics.runningInstances
         this.openIncidents = analytics.openIncidents
         this.openHumanTasks = analytics.openHumanTasks
@@ -80,9 +89,10 @@ export default {
         this.deploymentItems[3].count = analytics.batchesCount
       } catch (error) {
         console.error('Error loading analytics:', error)
+        this.errorLoading = true
         this.runningInstances = []
         this.openIncidents = []
-        this.openHumanTasks = null
+        this.openHumanTasks = []
         this.deploymentItems[0].count = 'x'
         this.deploymentItems[1].count = 'x'
         this.deploymentItems[2].count = 'x'
@@ -92,6 +102,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-</style>

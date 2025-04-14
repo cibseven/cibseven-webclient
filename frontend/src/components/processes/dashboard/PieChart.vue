@@ -31,7 +31,7 @@
         <h4 class="link-dark">
           <span v-if="loading"><BWaitingBox class="d-inline" styling="width: 19px" :title="$t('admin.loading')"></BWaitingBox></span>
           <router-link v-else :to="link" :title="tooltip" class="text-decoration-none">
-            <span class="link-dark p-1" :class="totalZero !== '0' ? 'text-success' : ''">{{ totalWithZero }}</span>
+            <span class="link-dark p-1" :class="totalClass">{{ totalWithZero }}</span>
           </router-link>
         </h4>
       </div>
@@ -100,6 +100,12 @@ export default {
     },
     totalWithZero: function () {
       return this.total === 0 ? this.totalZero : this.total
+    },
+    totalClass: function() {
+      if (this.totalWithZero === 'x') {
+        return 'text-warning'
+      }
+      return this.total !== '0' ? 'text-success' : ''
     },
     chartData: function() {
       let offsetAngle = -90 // Start at 12 o'clock
