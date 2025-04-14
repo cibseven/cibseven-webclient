@@ -8,20 +8,23 @@
         <div class="row g-0">
           <div class="col-4 px-0">
             <PieChart :items="runningInstances"
-              title-prefix="processes-dashboard.items.running-instances"
+              :title="$t('processes-dashboard.items.running-instances.title')"
+              :tooltip="$t('processes-dashboard.items.running-instances.tooltip')"
               link="/seven/auth/processes/list"
             ></PieChart>
           </div>
           <div class="col-4 px-0">
             <PieChart :items="openIncidents"
-              title-prefix="processes-dashboard.items.open-incidents"
+              :title="$t('processes-dashboard.items.open-incidents.title')"
+              :tooltip="$t('processes-dashboard.items.open-incidents.tooltip')"
               link="/seven/auth/processes/list"
               :total-zero="$t('processes-dashboard.items.open-incidents.none')"
             ></PieChart>
           </div>
           <div class="col-4 px-0 m-0">
             <PieChart :items="openHumanTasks"
-              title-prefix="processes-dashboard.items.open-human-tasks"
+              :title="$t('processes-dashboard.items.open-human-tasks.title')"
+              :tooltip="$t('processes-dashboard.items.open-human-tasks.tooltip')"
               link="/seven/auth/human-tasks"
             ></PieChart>
           </div>

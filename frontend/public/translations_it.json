@@ -125,7 +125,7 @@
 		"onlyIncidents": "Solo con incidenti",
 		"runningInstances": "Istanze",		
 		"instances": "Istanze",
-		"calledProcessInstances": "Chiamato processo Istanze"
+		"calledProcessInstances": "Chiamato processo Istanze",
 		"statistics": "Statistics",		
 		"suspendInstance": "Sospendi istanza di processo",
 		"deleteInstance": "Elimina l'istanza di processo in esecuzione",

@@ -1,9 +1,9 @@
 <template>
   <div>
     <div class="py-3 text-center">
-      <h5>
-        <router-link :to="link" :title="$t(tooltip)" class="text-decoration-none">
-          <span class="link-dark">{{ $t(title) }}</span>
+      <h5 v-if="title">
+        <router-link :to="link" :title="tooltip" class="text-decoration-none">
+          <span class="link-dark">{{ title }}</span>
         </router-link>
       </h5>
 
@@ -31,7 +31,7 @@
         <div class="donut-chart-center">
           <h4 class="link-dark">
             <span v-if="loading"><BWaitingBox class="d-inline" styling="width: 19px" :title="$t('admin.loading')"></BWaitingBox></span>
-            <router-link v-else :to="link" :title="$t(tooltip)" class="text-decoration-none">
+            <router-link v-else :to="link" :title="tooltip" class="text-decoration-none">
               <span class="link-dark p-1" :class="totalZero !== '0' ? 'text-success' : ''">{{ totalWithZero }}</span>
             </router-link>
           </h4>
@@ -51,7 +51,8 @@ export default {
     size: { type: Number, default: 250 },
     innerRadius: { type: Number, default: 20 }, // Inner radius for the donut hole
     outerRadius: { type: Number, default: 40 }, // Outer radius of the donut
-    titlePrefix: String,
+    title: String,
+    tooltip: String,
     link: String,
     items: {
       type: Array,
@@ -95,12 +96,6 @@ export default {
   computed: {
     loading: function() {
       return this.items === null
-    },
-    title: function () {
-      return this.titlePrefix + '.title'
-    },
-    tooltip: function () {
-      return this.titlePrefix + '.tooltip'
     },
     total: function () {
       return this.items.reduce((sum, item) => sum + item.value, 0)
