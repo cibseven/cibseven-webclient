@@ -83,10 +83,10 @@ export default {
         console.error('Error loading analytics:', error)
 */
         this.runningInstances = [
-          { value: 1, title: "one", color: '#ffc107', link: '/seven/auth/processes/list'},
-          { value: 5, title: "five", color: '#59799B'},
-          { value: 10, title: "ten", color: '#28a745'},
-          { value: 2, title: "two", color: '#007bff'},
+          { value: 1, title: "one", link: '/seven/auth/processes/list'},
+          { value: 5, title: "five"},
+          { value: 10, title: "ten"},
+          { value: 2, title: "two"},
         ]
         this.openIncidents = []
         this.openHumanTasks = null

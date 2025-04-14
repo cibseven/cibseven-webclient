@@ -15,10 +15,10 @@
               fill="#eeeeee"
               :transform="item.transform"
             />
-            <router-link v-else :to="item.link">
+            <router-link v-else :to="item.link ? item.link : link">
               <path
                 :d="getSlicePath(item, index)"
-                :fill="item.color"
+                :fill="hoveredIndex === index ? shadeColor(sliceColor(item, index), 10) : sliceColor(item, index)"
                 :transform="item.transform"
                 @mouseover="hoveredIndex = index"
                 @mouseleave="hoveredIndex = null"
@@ -56,6 +56,31 @@ export default {
     items: {
       type: Array,
       default: () => []
+    },
+    palette: {
+      type: Array,
+      default: () => [
+        '#59799B',
+        '#84B6E5',
+        '#C1CEDD',
+        '#628EC7',
+        '#4D6278',
+        '#869CB3',
+        '#295E98',
+        '#68CBC0',
+        '#04859C',
+        '#66AAEB',
+        '#367DC9',
+        '#33485E',
+        '#9EAAB7',
+        '#418A9E',
+        '#97BFCA',
+        '#B3E5DF',
+        '#91CDFF',
+        '#B2D8F8',
+        '#A8C0DE',
+        '#E0E6EE',
+      ]
     }
   },
   data() {
@@ -151,6 +176,16 @@ export default {
     },
     sliceTitle: function(item) {
       return item.title + ' (' + item.value + ')'
+    },
+    sliceColor: function(item, index) {
+      return item.color ? item.color : this.palette[index]
+    },
+    shadeColor: function(color, percent) {
+      return '#' + color
+        .replace(/^#/, '')
+        .replace(/../g,
+          color => (0+Math.min(255, Math.max(0, Math.ceil(parseInt(color, 16) * (100 + percent) / 100))).toString(16)).substr(-2)
+        )
     }
   }
 }
