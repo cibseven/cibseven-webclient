@@ -15,6 +15,8 @@ import org.cibseven.webapp.providers.PermissionConstants;
 import org.cibseven.webapp.providers.SevenProvider;
 import org.cibseven.webapp.rest.model.Analytics;
 import org.cibseven.webapp.rest.model.AnalyticsInfo;
+import org.cibseven.webapp.rest.model.Decision;
+import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.Process;
 import org.cibseven.webapp.rest.model.ProcessStatistics;
 import org.springframework.beans.factory.InitializingBean;
@@ -109,9 +111,36 @@ public class AnalyticsService extends BaseService implements InitializingBean {
     }
 
     analytics.setRunningInstances(runningInstances);
+    
+//    ToDo:
+//    analytics.setOpenIncidents(sevenProvider.getOpenIncidents(user));
+//    analytics.setOpenTasks(sevenProvider.getOpenTasks(user));
+    
+    analytics.setProcessDefinitionsCount(runningInstances.size());
+    
+    Collection<Decision> decisionDefinitionList = sevenProvider.getDecisionDefinitionList(new HashMap<>(), user);
+    if (decisionDefinitionList == null) {
+      analytics.setDecisionDefinitionsCount(-1);
+    } else {
+      // Count the number of distinct keys
+      long distinctKeyCount = decisionDefinitionList.stream()
+          .map(Decision::getKey)
+          .distinct()
+          .count();
 
-    // ToDo: Business Logic here
-
+      analytics.setDecisionDefinitionsCount(distinctKeyCount);
+    }
+    
+    Collection<Deployment> deployments = sevenProvider.findDeployments(user);
+    if (deployments == null) {
+      analytics.setDeploymentsCount(-1);
+    } else {
+      analytics.setDeploymentsCount(deployments.size());
+    }
+    
+//    ToDo:
+//    analytics.setBatchesCount(0);
+    
     return analytics;
   }
 }

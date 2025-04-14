@@ -89,6 +89,15 @@ public class AnalyticsServiceIT {
     assertThat(invoiceInstance).isNotNull();
     assertThat(invoiceInstance.getTitle()).isEqualTo("Invoice Receipt");
     
+    
+    long decisionDefinitionsCount = analytics.getDecisionDefinitionsCount();
+    
+    assertThat(decisionDefinitionsCount).isEqualTo(3);
+    
+    long deploymentsCount = analytics.getDeploymentsCount();
+    
+    assertThat(deploymentsCount).isEqualTo(23);
+    
   }
 
 }
