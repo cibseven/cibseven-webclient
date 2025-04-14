@@ -368,6 +368,9 @@ var IncidentService = {
   },
   findIncidents: function(processDefinitionId) {
     return axios.get(appConfig.servicesBasePath + "/incident?processDefinitionId=" + processDefinitionId)
+  },
+  setIncidentAnnotation: function(id, params) {
+    return axios.put(appConfig.servicesBasePath + "/incident/" + id + "/annotation", params)
   }
 }
 
@@ -571,5 +574,14 @@ var BatchService = {
   }
 }
 
-export { TaskService, FilterService, ProcessService, AdminService, JobService, JobDefinitionService,
+var SystemService = {
+  getTelemetryData() {
+    return axios.get(appConfig.servicesBasePath + '/system/telemetry/data')
+  },
+  getMetrics() {
+    return axios.get(appConfig.servicesBasePath + '/system/metrics')
+  }
+}
+
+export { TaskService, FilterService, ProcessService, AdminService, JobService, JobDefinitionService, SystemService,
   HistoryService, IncidentService, AuthService, InfoService, FormsService, TemplateService, DecisionService, BatchService }

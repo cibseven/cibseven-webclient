@@ -67,7 +67,7 @@
       <button v-if="filterByPermissions($root.config.permissions.createFilter, null, true)"
         class="btn btn-outline-secondary btn-sm border-light p-2" type="button"
         @click="showFilterDialog('create')">
-        <span>{{ $t('nav-bar.filters.create') }}</span><span class="mdi mdi-plus"></span>
+        <span class="mdi mdi-18px mdi-filter-plus-outline"></span><span class="ms-2">{{ $t('nav-bar.filters.create') }}</span>
       </button>
     </div>
     <ConfirmDialog ref="confirmDeleteFilter" @ok="deleteFilter()" :ok-title="$t('confirm.delete')">

@@ -1,7 +1,8 @@
 {
 	"commons": {
 		"edit": "Edit",
-		"save": "Save"
+		"save": "Save",
+		"copyValue": "Copy value"
 	},
 	"login": {
 		"productName": "CIB seven",
@@ -175,6 +176,7 @@
 		    "failedActivity": "Failed activity",
 		    "incidentType": "Incident type",
 		    "retryJob": "Increment number of retries of failed job",
+			"annotation": "Annotation",
 		    "actions": "Actions",
 			"incrementNumberRetries": "Increment number of retries",
 			"retryMsg": "The number of retries of the corresponding failed job of the selected incident will be incremented.",
@@ -184,7 +186,8 @@
 			"dueDate": "Due date",
 			"scheduleAt": "Schedule at",
 			"invalidDateError": "You must enter a valid date",
-			"retry": "Retry"
+			"retry": "Retry",			
+			"editAnnotation": "Edit annotation"
 		},
 		"jobDefinitions": {
 			"state": "State",
@@ -475,7 +478,16 @@
 		},
 		"system": {
 			"title": "System",
-			"tooltip": "System Settings and Diagnostics"
+			"tooltip": "System Settings and Diagnostics",
+			"settings": "Settings",
+			"system-diagnostics": {
+				"title": "Diagnostics",
+				"diagnosticHelp": "The diagnostics data allows to understand the environment to aid problem diagnosis.",
+				"diagnosticData": "Diagnostics Data"
+			},
+			"execution-metrics": {
+				"title": "Execution Metrics"
+			}
 		}
 	},
 	"account-form": {
@@ -593,7 +605,7 @@
 			"filterPriorityLabel": "Priority",
 			"selectProperty": "Select key",
 			"insertValue": "Enter value",
-			"insertVariableKey": "Enter key",
+			"insertVariableKey": "Enter variable name",
 			"addCriteria": "Add criteria",
 			"filterExists": "This filter already exists",
 			"selectedCriteria": "Selected criteria",
@@ -674,16 +686,16 @@
 				"taskGroup": "Task",
 				"datesGroup": "Dates"
 			},
-			"noCriterias": "None criteria selected",
+			"noCriterias": "You haven't set any filter criteria yet",
 			"criteria": {
 				"key": "Criteria key",
 				"value": "Criteria value"
 			},
 			"matchAnyCriteria": "Any of the criteria are met",
 			"matchAllCriteria": "All of the criteria are met",
-			"msgFilterCreated": "Filter {name} created",
-			"msgFilterUpdated": "Filter {name} updated",
-			"msgFilterDeleted": "Filter {name} deleted",
+			"msgFilterCreated": "Filter \"{name}\" has been created",
+			"msgFilterUpdated": "Filter \"{name}\" has been changed successfully",
+			"msgFilterDeleted": "Filter \"{name}\" has been deleted",
 			"legendExpression": "Keys ending with \"*\" accept expressions as value. E.g.: '&#36;&#123; currentUser&#40;&#41; &#125;' or '&#36;&#123; currentUserGroups&#40;&#41; &#125;'",
 			"legendMultiple": "Keys ending with \"in\" accept multiple values separated by comma. E.g.: `keyC, keyA, keyB`",
 			"create": "Create filter",
@@ -874,7 +886,24 @@
 		"flowLinkPrivacy": "Privacy statement",
 		"flowLinkImprint": "Imprint",
 		"flowLinkAccessibility": "Accessibility declaration",	
-		"flowLinkHelp": "Help",				
+		"flowLinkHelp": "Help",
+		"shortcuts": {
+			"title": "Shortcuts",
+			"tooltip": "View avaiable shortcuts",
+			"columnShortcut": "Shortcut",
+			"columnDescription": "Description",
+			"buttonCtrl": "Ctrl",
+			"shortcuts": {
+				"ctrlLeft": "Jump to \"Start process\" view",
+				"ctrlDown": "Jump to \"Tasks\" view",
+				"ctrlRight": "Jump to \"Processes\" view",
+				"ctrlAltP": "Open \"Start process\" pop-up window",
+				"ctrlAltC": "Claim the currently selected task",
+				"alt1": "Set focus on filters",
+				"alt2": "Set focus on the list of filtered tasks",
+				"alt3": "Set focus on the selected task"
+			}
+		},
 		"flowModalSupport": {
 			"modalText": "Support",
 			"title": "Information",

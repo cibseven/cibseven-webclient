@@ -2,7 +2,8 @@
 {
 	"commons": {
 		"edit": "Editar",
-		"save": "Guardar"
+		"save": "Guardar",
+		"copyValue": "Copiar valor"
 	},
 	"login": {
 		"productName": "CIB seven",
@@ -176,6 +177,7 @@
 		    "failedActivity": "Actividad fallida",
 		    "incidentType": "Tipo de incidente",
 		    "retryJob": "Incrementar el número de reintentos de trabajo fallido",
+			"annotation": "Anotación",
 		    "actions": "Acciones",
 			"incrementNumberRetries": "Incrementar número de reintentos",
 			"retryMsg": "Se incrementará el número de reintentos del trabajo fallido correspondiente al incidente seleccionado.",
@@ -185,7 +187,8 @@
 			"dueDate": "Fecha de vencimiento",
 			"scheduleAt": "Programar para",
 			"invalidDateError": "Debe insertar una fecha válida",
-			"retry": "Reintentar"
+			"retry": "Reintentar",
+			"editAnnotation": "Editar anotación"
 		},
 		"jobDefinitions": {
 			"state": "Estado",
@@ -476,7 +479,16 @@
 		},
 		"system": {
 			"title": "System",
-			"tooltip": "System Settings and Diagnostics"
+			"tooltip": "System Settings and Diagnostics",
+			"settings": "Configuración",
+			"system-diagnostics": {
+				"title": "Diagnósticos",
+				"diagnosticHelp": "Los datos de diagnóstico permiten comprender el entorno para ayudar en el diagnóstico de problemas.",
+				"diagnosticData": "Datos de diagnóstico"
+			},
+			"execution-metrics": {
+				"title": "Métricas de ejecución"
+			}
 		}
 	},
 	"account-form": {
@@ -594,7 +606,7 @@
 			"filterPriorityLabel": "Prioridad",
 			"selectProperty": "Seleccionar propiedad",
 			"insertValue": "Insertar valor",
-			"insertVariableKey": "Insertar clave",
+			"insertVariableKey": "Ingresa el nombre de la variable",
 			"addCriteria": "Añadir criterio",
 			"filterExists": "Este filtro ya existe",
 			"selectedCriteria": "Criterios seleccionados",
@@ -675,16 +687,16 @@
 				"taskGroup": "Task",
 				"datesGroup": "Dates"
 			},
-			"noCriterias": "Ningún criterio seleccionado",
+			"noCriterias": "Aún no has establecido ningún criterio de filtro",
 			"criteria": {
 				"key": "Key del criterio",
 				"value": "Valor del criterio"
 			},
 			"matchAnyCriteria": "Se cumplen algunos de los criterios",
 			"matchAllCriteria": "Se cumplen todos los criterios",
-			"msgFilterCreated": "Filtro {name} creado",
-			"msgFilterUpdated": "Filtro {name} actualizado",
-			"msgFilterDeleted": "Filtro {name} eliminado",
+			"msgFilterCreated": "Filtro \"{name}\" creado",
+			"msgFilterUpdated": "Filtro \"{name}\" actualizado",
+			"msgFilterDeleted": "Filtro \"{name}\" eliminado",
 			"legendExpression": "Las claves que terminan en \"*\" aceptan expresiones como valor. Por ejemplo: '&#36;&#123; currentUser&#40;&#41; &#125;' o '&#36;&#123; currentUserGroups&#40;&#41; &#125;'",
 			"legendMultiple": "Las claves que terminan en \"in\" aceptan múltiples valores separados por coma. Por ejemplo: `claveC, claveA, claveB`",
 			"create": "Crear filtro",
@@ -874,7 +886,24 @@
 		"flowLinkPrivacy": "Declaración de privacidad",
 		"flowLinkImprint": "Imprimir",
 		"flowLinkAccessibility": "Declaración de accesibilidad",
-		"flowLinkHelp": "Ayuda",			
+		"flowLinkHelp": "Ayuda",
+		"shortcuts": {
+			"title": "Atajos",
+			"tooltip": "Mostrar atajos disponibles",
+			"columnShortcut": "Atajo",
+			"columnDescription": "Descripción",
+			"buttonCtrl": "Ctrl",
+			"shortcuts": {
+				"ctrlLeft": "Ir a la vista 'Iniciar proceso'",
+				"ctrlDown": "Ir a la vista 'Tareas'",
+				"ctrlRight": "Ir a la vista 'Procesos'",
+				"ctrlAltP": "Abrir la ventana emergente 'Iniciar proceso'",
+				"ctrlAltC": "Reclamar la tarea actualmente seleccionada",
+				"alt1": "Establecer el foco en los filtros",
+				"alt2": "Establecer el foco en la lista de tareas filtradas",
+				"alt3": "Establecer el foco en la tarea seleccionada"
+			}
+		},
 		"flowModalSupport": {
 			"modalText": "Soporte",
 			"title": "Información",

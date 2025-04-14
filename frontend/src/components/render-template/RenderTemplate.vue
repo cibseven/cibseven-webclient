@@ -94,11 +94,8 @@ export default {
       if (this.task.url) {
         var formFrame = this.$refs['template-frame']
         console.log('this.task.url', this.task.url)
-        formFrame.src = this.task.url
-        /*
-         + '&locale=' + this.currentLanguage() + '&token=' + this.$root.user.authToken +
+        formFrame.src = this.task.url + '&locale=' + this.currentLanguage() + '&token=' + this.$root.user.authToken + 
         '&theme=' + themeContext + '&translation=' + translationContext
-        */
         this.loader = false
       } else if (this.task.id) {
 
@@ -111,14 +108,9 @@ export default {
             return
           }
           var formFrame = this.$refs['template-frame']
-          //formFrame.src = this.$root.config.uiElementTemplateUrl + '/' + formReference + '?taskId=' + this.task.id +
-          formFrame.src = window.location.origin + '/webapp/#' +
-							  '/' + formReference +
-							  '/' + this.currentLanguage() +
-							  '/' + this.task.id +
-							  '/' + this.$root.user.authToken
-//          '&locale=' + this.currentLanguage() + '&token=' + this.$root.user.authToken +
-//          '&theme=' + themeContext + '&translation=' + translationContext
+          formFrame.src = this.$root.config.uiElementTemplateUrl + '/' + formReference + '?taskId=' + this.task.id +
+          '&locale=' + this.currentLanguage() + '&token=' + this.$root.user.authToken +
+          '&theme=' + themeContext + '&translation=' + translationContext
           this.loader = false
         }, () => {
           // Not needed but just in case something changes in the backend method

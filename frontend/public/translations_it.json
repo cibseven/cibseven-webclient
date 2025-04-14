@@ -1,7 +1,8 @@
 {	
 	"commons": {
 		"edit": "Modificare",
-		"save": "Salva"
+		"save": "Salva",
+		"copyValue": "Copia valore"
 	},
 	"login": {
 		"productName": "CIB seven",
@@ -317,7 +318,16 @@
 		},
 		"system": {
 			"title": "System",
-			"tooltip": "System Settings and Diagnostics"
+			"tooltip": "System Settings and Diagnostics",
+			"settings": "Impostazioni",
+			"system-diagnostics": {
+				"title": "Diagnostica",
+				"diagnosticHelp": "I dati diagnostici consentono di comprendere l’ambiente per facilitare la diagnosi dei problemi.",
+				"diagnosticData": "Dati diagnostici"
+			},
+			"execution-metrics": {
+				"title": "Metriche di esecuzione"
+			}
 		}
 	},
 	"account-form": {
@@ -432,7 +442,7 @@
 			"filterNamePlaceholder": "ad es. i miei compiti",
 			"selectProperty": "Selezionare Key",
 			"insertValue": "Inserire il valore",
-			"insertVariableKey": "Inserire la chiave",
+			"insertVariableKey": "Inserisci il nome della variabile",
 			"addCriteria": "Aggiungere criteri",
 			"filterExists": "Questo filtro esiste già",
 			"selectedCriteria": "Criteri selezionati",
@@ -513,16 +523,16 @@
 				"taskGroup": "Task",
 				"datesGroup": "Dates"
 			},
-			"noCriterias": "Nessun criterio selezionato",
+			"noCriterias": "Non hai ancora impostato alcun criterio di filtro",
 			"criteria": {
 				"key": "Criteri chiave",
 				"value": "Criteri di valore"
 			},
 			"matchAnyCriteria": "Alcuni dei criteri sono soddisfatti",
 			"matchAllCriteria": "Tutti i criteri sono soddisfatti",
-			"msgFilterCreated": "Filtro {name} creato",
-			"msgFilterUpdated": "Filtro {name} aggiornato",
-			"msgFilterDeleted": "Filtro {name} cancellato",
+			"msgFilterCreated": "Filtro \"{name}\" creato",
+			"msgFilterUpdated": "Filtro \"{name}\" aggiornato",
+			"msgFilterDeleted": "Filtro \"{name}\" cancellato",
 			"legendExpression": "Le chiavi che terminano con \"*\" accettano espressioni come valori. Ad esempio: '&#36;&#123; currentUser&#40;&#41; &#125;' o '&#36;&#123; currentUserGroups&#40;&#41; &#125;'",
 			"legendMultiple": "Le chiavi che terminano con \"in\" accettano più valori separati da virgole. Ad esempio: `keyC, keyA, keyB`",
 			"create": "Create filter",
@@ -700,7 +710,24 @@
 		"flowLinkPrivacy": "Informativa sulla privacy",
 		"flowLinkImprint": "Impronta",
 		"flowLinkAccessibility": "Accessibility declaration",		
-		"flowLinkHelp": "Aiuto",			
+		"flowLinkHelp": "Aiuto",
+		"shortcuts": {
+			"title": "Scorciatoie",
+			"tooltip": "Mostra le scorciatoie disponibili",
+			"columnShortcut": "Scorciatoia",
+			"columnDescription": "Descrizione",
+			"buttonCtrl": "Ctrl",
+			"shortcuts": {
+				"ctrlLeft": "Vai alla vista 'Avvia processo'",
+				"ctrlDown": "Vai alla vista 'Compiti'",
+				"ctrlRight": "Vai alla vista 'Processi'",
+				"ctrlAltP": "Apri la finestra pop-up 'Avvia processo'",
+				"ctrlAltC": "Reclama il compito attualmente selezionato",
+				"alt1": "Imposta il focus sui filtri",
+				"alt2": "Imposta il focus sulla lista dei compiti filtrati",
+				"alt3": "Imposta il focus sul compito selezionato"
+			}
+		},
 		"flowModalSupport": {
 			"modalText": "Supporto",
 			"title": "Informazioni",

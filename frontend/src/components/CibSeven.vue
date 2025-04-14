@@ -68,6 +68,7 @@
           <b-dropdown-item v-if="$root.config.flowLinkTerms != ''" :href="$root.config.flowLinkTerms" :title="$t('infoAndHelp.flowLinkTerms')" target="_blank">{{ $t('infoAndHelp.flowLinkTerms') }}</b-dropdown-item>
           <b-dropdown-item v-if="$root.config.flowLinkPrivacy != ''" :href="$root.config.flowLinkPrivacy" :title="$t('infoAndHelp.flowLinkPrivacy')" target="_blank">{{ $t('infoAndHelp.flowLinkPrivacy') }}</b-dropdown-item>
           <b-dropdown-item v-if="$root.config.flowLinkImprint != ''" :href="$root.config.flowLinkImprint" :title="$t('infoAndHelp.flowLinkImprint')" target="_blank">{{ $t('infoAndHelp.flowLinkImprint') }}</b-dropdown-item>
+          <b-dropdown-item-button :title="$t('infoAndHelp.shortcuts.tooltip')" @click="$refs.shortcuts.show()">{{ $t('infoAndHelp.shortcuts.title') }}</b-dropdown-item-button>
           <b-dropdown-item-button v-if="$root.config.layout.showSupportInfo" :title="$t('infoAndHelp.flowModalSupport.modalText')" @click="$refs.support.show()">{{ $t('infoAndHelp.flowModalSupport.modalText') }}</b-dropdown-item-button>
           <b-dropdown-item-button @click="$refs.about.show()" :title="$t('infoAndHelp.flowModalAbout.modalText')">{{ $t('infoAndHelp.flowModalAbout.modalText') }}</b-dropdown-item-button>
         </b-nav-item-dropdown>
@@ -95,6 +96,7 @@
       </template>
     </b-modal>
 
+    <ShortcutsModal ref="shortcuts"></ShortcutsModal>
     <SupportModal ref="support" v-if="$root.config.layout.showSupportInfo"></SupportModal>
     <AboutModal ref="about"></AboutModal>
     <FeedbackModal ref="report" url="feedback" :email="$root.user && $root.user.email" @report="$refs.down.$emit('report', $event)"></FeedbackModal>
@@ -109,6 +111,7 @@
 <script>
 import platform from 'platform'
 import { permissionsMixin } from '@/permissions.js'
+import ShortcutsModal from '@/components/modals/ShortcutsModal.vue'
 import AboutModal from '@/components/modals/AboutModal.vue'
 import SupportModal from '@/components/modals/SupportModal.vue'
 import CIBHeaderFlow from '@/components/common-components/CIBHeaderFlow.vue'
@@ -117,7 +120,7 @@ import { updateAppTitle } from '@/utils/init'
 
 export default {
   name: 'CibSeven',
-  components: { AboutModal, SupportModal, CIBHeaderFlow, FeedbackModal },
+  components: { ShortcutsModal, AboutModal, SupportModal, CIBHeaderFlow, FeedbackModal },
   mixins: [permissionsMixin],
   inject: ['isMobile'],
   data: function() {
@@ -179,7 +182,10 @@ export default {
         case 'authorizationType':
           return this.$t('admin.authorizations.title')
         case 'adminTenants': return this.$t('admin.tenants.title')
-        case 'adminSystem': return this.$t('admin.system.title')
+        case 'adminSystem':
+        case 'system-diagnostics':
+        case 'execution-metrics':
+          return this.$t('admin.system.title')
         default: return ''
       }
     },

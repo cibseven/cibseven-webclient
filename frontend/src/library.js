@@ -89,7 +89,11 @@ import DecisionDefinitionVersion from '@/components/decision/DecisionDefinitionV
 import TenantsView from '@/components/tenants/TenantsView.vue'
 import BatchesView from '@/components/batches/BatchesView.vue'
 import SystemView from '@/components/system/SystemView.vue'
+import ShortcutsModal from '@/components/modals/ShortcutsModal.vue'
+import ShortcutsTable from '@/components/modals/ShortcutsTable.vue'
 import { TaskService, HistoryService, ProcessService } from '@/services.js';
+import DeployedForm from '@/components/forms/DeployedForm.vue'
+import StartDeployedForm from '@/components/forms/StartDeployedForm.vue'
 
 
 const registerComponents = function(app) {
@@ -99,6 +103,8 @@ const registerComponents = function(app) {
   app.component('confirm-dialog', ConfirmDialog)
   app.component('about-modal', AboutModal)
   app.component('feedback-modal', FeedbackModal)
+  app.component('shortcuts-modal', ShortcutsModal)
+  app.component('shortcuts-table', ShortcutsTable)
   app.component('success-alert', SuccessAlert)
   app.component('task-popper', TaskPopper)
   app.component('feedback-screenshot', FeedbackScreenshot)
@@ -170,11 +176,13 @@ const registerComponents = function(app) {
   app.component('tenants-view', TenantsView)
   app.component('batches-view', BatchesView)
   app.component('system-view', SystemView)
+  app.component('deployed-form', DeployedForm)
+  app.component('start-deployed-form', StartDeployedForm)
 }
 
 export {
   registerComponents,
-  
+
   TenantsView,
   BatchesView,
   SystemView,
@@ -194,6 +202,8 @@ export {
   ErrorDialog,
   ConfirmDialog,
   FeedbackModal,
+  ShortcutsModal,
+  ShortcutsTable,
   SuccessAlert,
   TaskPopper,
   FeedbackScreenshot,
@@ -264,5 +274,7 @@ export {
   DecisionView,
   DecisionList,
   DecisionListView,
-  DecisionDefinitionVersion
+  DecisionDefinitionVersion,
+  StartDeployedForm,
+  DeployedForm
 }

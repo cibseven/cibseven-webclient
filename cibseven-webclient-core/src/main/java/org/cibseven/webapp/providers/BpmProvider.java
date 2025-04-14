@@ -33,6 +33,7 @@ import org.cibseven.webapp.rest.model.Incident;
 import org.cibseven.webapp.rest.model.JobDefinition;
 import org.cibseven.webapp.rest.model.Job;
 import org.cibseven.webapp.rest.model.Message;
+import org.cibseven.webapp.rest.model.Metric;
 import org.cibseven.webapp.rest.model.NewUser;
 import org.cibseven.webapp.rest.model.Process;
 import org.cibseven.webapp.rest.model.ProcessDiagram;
@@ -53,6 +54,8 @@ import org.cibseven.webapp.rest.model.VariableHistory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.multipart.MultipartFile;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -813,6 +816,8 @@ public interface BpmProvider {
 
 	void retryJobById(String jobId, Map<String, Object> data, CIBUser user);
 	
+	void setIncidentAnnotation(String incidentId, Map<String, Object> data, CIBUser user);
+	
 	/**
 	 * Submit task with saving variables
      * @throws SubmitDeniedException when trying to submit a non-existing task.
@@ -960,4 +965,7 @@ public interface BpmProvider {
 	Object setRemovalTime(Map<String, Object> payload);
 	Object getCleanableBatchReport(Map<String, Object> queryParams);
 	Object getCleanableBatchReportCount();
+
+	JsonNode getTelemetryData(CIBUser user);
+	Collection<Metric> getMetrics(Map<String, Object> queryParams, CIBUser user);
 }

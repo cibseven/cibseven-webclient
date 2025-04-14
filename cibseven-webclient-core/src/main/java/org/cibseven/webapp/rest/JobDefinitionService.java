@@ -3,6 +3,7 @@ package org.cibseven.webapp.rest;
 import java.util.Collection;
 
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.providers.PermissionConstants;
@@ -15,8 +16,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletRequest;
-
-import static org.cibseven.webapp.auth.SevenAuthorizationUtils.*;
 
 @ApiResponses({
 	@ApiResponse(responseCode= "500", description = "An unexpected system error occured"),
@@ -40,7 +39,7 @@ public class JobDefinitionService extends BaseService implements InitializingBea
 	@PostMapping("")
 	public Collection<JobDefinition> findJobDefinitions(@RequestBody String params, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true, false);
-		checkPermission(user, JOB_DEFINITION, PermissionConstants.READ_ALL);
+		checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.READ_ALL);
 		return bpmProvider.findJobDefinitions(params, user);
 	}
 	
@@ -51,7 +50,7 @@ public class JobDefinitionService extends BaseService implements InitializingBea
 	@PutMapping("/{jobDefinitionId}/suspend")
 	public void suspendJobDefinition(@PathVariable String jobDefinitionId, @RequestBody String params, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true, false);
-		checkPermission(user, JOB_DEFINITION, PermissionConstants.UPDATE_ALL);
+		checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.UPDATE_ALL);
         bpmProvider.suspendJobDefinition(jobDefinitionId, params, user);
 	}
 	
@@ -62,7 +61,7 @@ public class JobDefinitionService extends BaseService implements InitializingBea
 	@PutMapping("/{jobDefinitionId}/job-priority")
 	public void overrideJobDefinitionPriority(@PathVariable String jobDefinitionId, @RequestBody String params, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true, false);
-		checkPermission(user, JOB_DEFINITION, PermissionConstants.UPDATE_ALL);
+		checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.UPDATE_ALL);
         bpmProvider.overrideJobDefinitionPriority(jobDefinitionId, params, user);
 	}
 	
@@ -73,7 +72,7 @@ public class JobDefinitionService extends BaseService implements InitializingBea
 	@GetMapping("/{id}")
 	public JobDefinition findJobDefinition(@PathVariable String id, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true, false);
-		checkPermission(user, JOB_DEFINITION, PermissionConstants.READ_ALL);
+		checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.READ_ALL);
         return bpmProvider.findJobDefinition(id, user);
 	}
 }

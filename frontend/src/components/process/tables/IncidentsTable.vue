@@ -3,10 +3,11 @@
     <FlowTable v-if="localIncidents.length > 0" striped thead-class="sticky-header" :items="localIncidents" primary-key="id" prefix="process-instance.incidents."
       sort-by="label" :sort-desc="true" :fields="[
       { label: 'message', key: 'incidentMessage', class: 'col-3', tdClass: 'py-1 border-end border-top-0' },
-      { label: 'timestamp', key: 'incidentTimestamp', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
+      { label: 'timestamp', key: 'incidentTimestamp', class: 'col-1', tdClass: 'py-1 border-end border-top-0' },
       { label: 'activity', key: 'activityId', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
       { label: 'failedActivity', key: 'failedActivityId', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
       { label: 'incidentType', key: 'incidentType', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
+      { label: 'annotation', key: 'annotation', class: 'col-1', tdClass: 'py-1 border-end border-top-0' },
       { label: 'actions', key: 'actions', class: 'col-1', sortable: false, tdClass: 'py-1 border-top-0' }]">
       <template v-slot:cell(incidentMessage)="table">
         <div :title="table.item.incidentMessage" class="text-truncate" @click="showIncidentMessage(table.item.configuration)">{{ table.item.incidentMessage }}</div>
@@ -23,7 +24,16 @@
       <template v-slot:cell(incidentType)="table">
         <div :title="table.item.incidentType" class="text-truncate">{{ table.item.incidentType }}</div>
       </template>
+      <template v-slot:cell(annotation)="table">
+        <div :title="table.item.annotation" class="text-truncate w-100" @click="copyValueToClipboard(table.item.annotation)">
+          {{ table.item.annotation }}
+        </div>
+      </template>
       <template v-slot:cell(actions)="table">
+        <b-button :title="$t('process-instance.incidents.editAnnotation')"
+          size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-note-edit-outline"
+          @click="$refs.annotationModal.show(table.item.id, table.item.annotation)">
+        </b-button>
         <b-button :title="$t('process-instance.incidents.retryJob')"
           size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-reload"
           @click="$refs.incidentRetryModal.show(table.item)">
@@ -42,6 +52,7 @@
     </div>
   </b-modal>
 
+  <AnnotationModal ref="annotationModal" @set-incident-annotation="setIncidentAnnotation"></AnnotationModal>
   <IncidentRetryModal ref="incidentRetryModal" @increment-number-retry="incrementNumberRetry"></IncidentRetryModal>
   <SuccessAlert ref="messageCopy" style="z-index: 9999">{{ $t('process.copySuccess') }}</SuccessAlert>
   <SuccessAlert ref="successRetryJob">{{ $t('process-instance.successRetryJob') }}</SuccessAlert>
@@ -56,10 +67,11 @@ import { IncidentService } from '@/services.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import IncidentRetryModal from '@/components/process/modals/IncidentRetryModal.vue'
+import AnnotationModal from '@/components/process/modals/AnnotationModal.vue'
 
 export default {
   name: 'IncidentsTable',
-  components: { FlowTable, SuccessAlert, IncidentRetryModal },
+  components: { FlowTable, SuccessAlert, IncidentRetryModal, AnnotationModal },
   mixins: [procesessVariablesMixin, copyToClipboardMixin],
   data: function() {
     return {
@@ -90,6 +102,13 @@ export default {
       IncidentService.retryJobById(id, params).then(() => {
         this.localIncidents.splice(this.localIncidents.findIndex(obj => obj.configuration === id), 1)
         this.$refs.incidentRetryModal.hide()
+      })
+    },
+    setIncidentAnnotation: function({ id, params }) {
+      IncidentService.setIncidentAnnotation(id, params).then(() => {
+        const incident = this.localIncidents.find(i => i.id === id)
+        if (incident) incident.annotation = params.annotation
+        this.$refs.annotationModal.hide()
       })
     }
   }

@@ -1,7 +1,8 @@
 {	
 	"commons": {
 		"edit": "Редактировать",
-		"save": "Сохранить"
+		"save": "Сохранить",
+		"copyValue": "Копировать значение"
 	},
 	"login": {
 		"productName": "CIB seven",
@@ -18,7 +19,7 @@
 		"instanceIncidents": "Экзепляр с инцидентами",
 		"instanceFinished": "Завершеный экземпляр",
 		"name": "Имя",
-		"key": "Key процесса",	
+		"key": "Ключ определения",	
 		"state": "Статус",
 		"id": "ID",
 		"processId": "Идентификатор процесса",
@@ -43,7 +44,7 @@
 		"showManagement": "Управление процессами",
 		"showHistory": "История изменений",
 		"showDeployment": "Просмотреть развёртывание процесса",
-		"organizeDeployment": "Oрганизовывать развертывания",
+		"organizeDeployment": "Oрганизовать развертывания",
 		"tasks": "Задачи",
 		"processCheck": "Процесс начат – Проверьте Ваши {tasks}",
 		"processStarted": "Процесс начат",
@@ -53,7 +54,7 @@
 		"description": "Описание",
 		"favorite": "Любимый",
 		"actions": "Действия",
-		"status": "Положение дел",
+		"status": "Состояние",
 		"details": {
 			"titleProcessActions": "действия по определению процесса",
 			"titleInstancesActions": "Действия для процесса",		
@@ -175,6 +176,7 @@
 		    "failedActivity": "Неудачная активность",
 		    "incidentType": "Тип инцидента",
 		    "retryJob": "Увеличить число повторных попыток выполнения активности при неудачи",
+			"annotation": "Аннотация",
 		    "actions": "Действия",
 			"incrementNumberRetries": "Увеличить количество повторных попыток",
 			"retryMsg": "Количество повторных попыток для соответствующего сбойного задания выбранного инцидента будет увеличено.",
@@ -184,7 +186,8 @@
 			"dueDate": "Дата исполнения",
 			"scheduleAt": "Запланировать на",
 			"invalidDateError": "Вы должны ввести корректную дату",
-			"retry": "Повторить попытку"
+			"retry": "Повторить попытку",
+			"editAnnotation": "Редактировать аннотацию"
 		},
 		"jobDefinitions": {
 			"state": "Состояние",
@@ -475,7 +478,16 @@
 		},
 		"system": {
 			"title": "Система",
-			"tooltip": "Системные настройки и диагностика"
+			"tooltip": "Системные настройки и диагностика",
+			"settings": "Настройки",
+			"system-diagnostics": {
+				"title": "Диагностика",
+				"diagnosticHelp": "Данные диагностики позволяют понять среду, чтобы помочь в выявлении проблем.",
+				"diagnosticData": "Данные диагностики"
+			},
+			"execution-metrics": {
+				"title": "Метрики выполнения"
+			}
 		}
 	},
 	"account-form": {
@@ -593,7 +605,7 @@
 			"filterPriorityLabel": "Приоритет",
 			"selectProperty": "Выбрать свойство",
 			"insertValue": "Введите значение",
-			"insertVariableKey": "вставить ключ",
+			"insertVariableKey": "Введите имя переменной",
 			"addCriteria": "Добавить критерий",
 			"filterExists": "Данный фильтр уже существует",
 			"selectedCriteria": "Выбранный критерий",
@@ -674,19 +686,19 @@
 				"taskGroup": "Task",
 				"datesGroup": "Dates"
 			},
-			"noCriterias": "Критерий не выбран",
+			"noCriterias": "Вы ещё не задали ни одного критерия фильтрации",
 			"criteria": {
 				"key": "Ключ критерия",
 				"value": "Значение критерия"
 			},
 			"matchAnyCriteria": "Соответствует какому-либо из критериев",
 			"matchAllCriteria": "Соответствует всем критериям",
-			"msgFilterCreated": "Фильтр {name} создан",
-			"msgFilterUpdated": "Фильтр {name} обновлён",
-			"msgFilterDeleted": "Фильтр {name} удалён",
+			"msgFilterCreated": "Фильтр \"{name}\" создан",
+			"msgFilterUpdated": "Фильтр \"{name}\" обновлён",
+			"msgFilterDeleted": "Фильтр \"{name}\" удалён",
 			"legendExpression": "Свойства с окончанием \"*\" в качестве значения могут иметь выражения, например, '&#36;&#123; currentUser&#40;&#41; &#125;' или '&#36;&#123; currentUserGroups&#40;&#41; &#125;'",
 			"legendMultiple": "Свойства с окончанием \"in\" могут иметь несколько значений, например, список значений, разделённый запятыми, например, `keyC, keyA, keyB`",
-			"create": "создать фильтр",
+			"create": "Создать фильтр",
 			"operators": {
 				"eq": "=",
 				"neq": "≠",
@@ -873,7 +885,24 @@
 		"flowLinkPrivacy": "Заявление о конфиденциальности",
 		"flowLinkImprint": "Импринт",
 		"flowLinkAccessibility": "Accessibility declaration",			
-		"flowLinkHelp": "Помощь",			
+		"flowLinkHelp": "Помощь",
+		"shortcuts": {
+			"title": "Горячие клавиши",
+			"tooltip": "Просмотр горячих клавиш",
+			"columnShortcut": "Комбинация",
+			"columnDescription": "Действие",
+			"buttonCtrl": "Ctrl",
+			"shortcuts": {
+				"ctrlLeft": "Перейти в раздел \"Начать процесс\"",
+				"ctrlDown": "Перейти в раздел \"Мои Задачи\"",
+				"ctrlRight": "Перейти в раздел \"Процессы\"",
+				"ctrlAltP": "Открыть всплывающее окно \"Начать процесс\"",
+				"ctrlAltC": "Принять текущую выбранную задачу",
+				"alt1": "Установить фокус на фильтрах",
+				"alt2": "Установить фокус на список отфильтрованных задач",
+				"alt3": "Установить фокус на выбранной задаче"
+			}
+		},
 		"flowModalSupport": {
 			"modalText": "Поддержка",
 			"title": "Информация",
