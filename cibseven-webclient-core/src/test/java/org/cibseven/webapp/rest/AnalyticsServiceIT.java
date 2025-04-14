@@ -64,13 +64,6 @@ public class AnalyticsServiceIT {
   @Test
   public void testAnalytics() {
     
-    /*
-    log.debug("This is a debug message");
-    log.info("This is an info message");
-    log.warn("This is a warning message");
-    log.error("This is an error message");
-    */
-    
     int expectedRunningInstances = 6;
     
     StandardLogin login = new StandardLogin("demo", "demo");
@@ -86,6 +79,15 @@ public class AnalyticsServiceIT {
     
     assertThat(runningInstances).isNotNull().isNotEmpty();
     assertThat(runningInstances.size()).isEqualTo(expectedRunningInstances);
+    
+    // Check that runningInstances contains AnalyticsInfo with id "invoice" and title "Invoice Receipt"
+    AnalyticsInfo invoiceInstance = runningInstances.stream()
+        .filter(instance -> "invoice".equals(instance.getId()))
+        .findFirst()
+        .orElse(null);
+    
+    assertThat(invoiceInstance).isNotNull();
+    assertThat(invoiceInstance.getTitle()).isEqualTo("Invoice Receipt");
     
   }
 

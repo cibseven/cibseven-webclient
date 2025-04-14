@@ -6,6 +6,7 @@ import lombok.Data;
 
 @Data @JsonIgnoreProperties(ignoreUnknown = true) 
 public class AnalyticsInfo {
-	private String title;
-	private long value;
+  private String id;
+  private String title;
+  private long value;
 }
