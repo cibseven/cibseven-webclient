@@ -32,7 +32,7 @@
           <h4 class="link-dark">
             <span v-if="loading"><BWaitingBox class="d-inline" styling="width: 19px" :title="$t('admin.loading')"></BWaitingBox></span>
             <router-link v-else :to="link" :title="$t(tooltip)" class="text-decoration-none">
-              <span class="link-dark p-1">{{ total }}</span>
+              <span class="link-dark p-1">{{ totalWithZero }}</span>
             </router-link>
           </h4>
         </div>
@@ -56,6 +56,10 @@ export default {
     items: {
       type: Array,
       default: () => []
+    },
+    totalZero: {
+      type: String,
+      default: '0'
     },
     palette: {
       type: Array,
@@ -100,6 +104,9 @@ export default {
     },
     total: function () {
       return this.items.reduce((sum, item) => sum + item.value, 0)
+    },
+    totalWithZero: function () {
+      return this.total === 0 ? this.totalZero : this.total
     },
     chartData: function() {
       let offsetAngle = -90 // Start at 12 o'clock

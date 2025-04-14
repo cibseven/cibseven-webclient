@@ -24,7 +24,8 @@
 			},
 			"open-incidents": {
 				"title": "Open Incidents",
-				"tooltip": "Review all currently open incidents"
+				"tooltip": "Review all currently open incidents",
+				"none": "No incidents!"
 			},
 			"open-human-tasks": {
 				"title": "Open Human Tasks",

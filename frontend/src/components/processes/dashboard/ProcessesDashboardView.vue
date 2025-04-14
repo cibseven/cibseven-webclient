@@ -16,6 +16,7 @@
             <PieChart :items="openIncidents"
               title-prefix="processes-dashboard.items.open-incidents"
               link="/seven/auth/processes/list"
+              :total-zero="$t('processes-dashboard.items.open-incidents.none')"
             ></PieChart>
           </div>
           <div class="col-4 px-0 m-0">
