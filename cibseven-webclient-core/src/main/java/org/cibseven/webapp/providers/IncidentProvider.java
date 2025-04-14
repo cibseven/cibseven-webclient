@@ -3,6 +3,7 @@ package org.cibseven.webapp.providers;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.cibseven.webapp.auth.CIBUser;
@@ -90,6 +91,12 @@ public class IncidentProvider extends SevenProviderBase implements IIncidentProv
 		String url = camundaUrl + "/engine-rest/incident?processDefinitionKeyIn=" + processDefinitionKey;
 		return Arrays.asList(((ResponseEntity<Incident[]>) doGet(url, Incident[].class, user, false)).getBody());
 	}	
+
+	@Override
+	public void setIncidentAnnotation(String incidentId, Map<String, Object> data, CIBUser user) {
+		String url = camundaUrl + "/engine-rest/incident/" + incidentId + "/annotation";
+		doPut(url, data, user);
+	}	
 	
 	@Override
 	public Collection<Incident> fetchIncidentsByInstanceAndActivityId(String processDefinitionId, String activityId, CIBUser user) {
@@ -101,6 +108,6 @@ public class IncidentProvider extends SevenProviderBase implements IIncidentProv
 	protected HttpHeaders addAuthHeader(HttpHeaders headers, CIBUser user) {
 		if (user != null) headers.add("Authorization", user.getAuthToken());
 		return headers;
-	}	
+	}
 
 }

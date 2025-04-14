@@ -32,6 +32,9 @@
           <div v-else-if="loading" class="py-3 text-center w-100">
             <BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}
           </div>
+          <div v-else>
+            <p class="text-center p-4">{{ $t('process-instance.noResults') }}</p>
+          </div>
         </div>
       </div>
     </div>

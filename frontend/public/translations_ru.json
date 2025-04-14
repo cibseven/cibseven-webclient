@@ -1,7 +1,8 @@
 {	
 	"commons": {
 		"edit": "Редактировать",
-		"save": "Сохранить"
+		"save": "Сохранить",
+		"copyValue": "Копировать значение"
 	},
 	"login": {
 		"productName": "CIB seven",
@@ -18,7 +19,7 @@
 		"instanceIncidents": "Экзепляр с инцидентами",
 		"instanceFinished": "Завершеный экземпляр",
 		"name": "Имя",
-		"key": "Key процесса",	
+		"key": "Ключ определения",	
 		"state": "Статус",
 		"id": "ID",
 		"processId": "Идентификатор процесса",
@@ -43,7 +44,7 @@
 		"showManagement": "Управление процессами",
 		"showHistory": "История изменений",
 		"showDeployment": "Просмотреть развёртывание процесса",
-		"organizeDeployment": "Oрганизовывать развертывания",
+		"organizeDeployment": "Oрганизовать развертывания",
 		"tasks": "Задачи",
 		"processCheck": "Процесс начат – Проверьте Ваши {tasks}",
 		"processStarted": "Процесс начат",
@@ -53,7 +54,7 @@
 		"description": "Описание",
 		"favorite": "Любимый",
 		"actions": "Действия",
-		"status": "Положение дел",
+		"status": "Состояние",
 		"details": {
 			"titleProcessActions": "действия по определению процесса",
 			"titleInstancesActions": "Действия для процесса",		
@@ -94,6 +95,7 @@
 		"incidents": "Инциденты",
 		"variables": "Переменные",
 		"usertasks": "Пользовательские задачи",
+		"calledProcessInstances": "называемые экземпляры процессов",
 		"onlyIncidents": "Только с инцидентами",
 		"runningInstances": "Экземпляры",
 		"instances": "Экземпляры процессов",
@@ -174,6 +176,7 @@
 		    "failedActivity": "Неудачная активность",
 		    "incidentType": "Тип инцидента",
 		    "retryJob": "Увеличить число повторных попыток выполнения активности при неудачи",
+			"annotation": "Аннотация",
 		    "actions": "Действия",
 			"incrementNumberRetries": "Увеличить количество повторных попыток",
 			"retryMsg": "Количество повторных попыток для соответствующего сбойного задания выбранного инцидента будет увеличено.",
@@ -182,7 +185,9 @@
 			"setDueDate": "Установить дату исполнения",
 			"dueDate": "Дата исполнения",
 			"scheduleAt": "Запланировать на",
-			"invalidDateError": "Вы должны ввести корректную дату"
+			"invalidDateError": "Вы должны ввести корректную дату",
+			"retry": "Повторить попытку",
+			"editAnnotation": "Редактировать аннотацию"
 		},
 		"jobDefinitions": {
 			"state": "Состояние",
@@ -208,7 +213,11 @@
 			"overridingMsg": "Изменить переопределённый приоритет для заданий указанного определения задания.",
 			"jobPriority": "Приоритет",
 			"clear": "Очистить переопределённый приоритет задания",
-			"set": "Установить переопределённый приоритет задания"
+			"set": "Установить переопределённый приоритет задания",
+			"invalidPriorityError": "Необходимо ввести целое число",
+			"overrideAction": "Переопределить",
+			"clearAction": "Очистить",			
+			"invalidDateError": "Вы должны ввести корректную дату"
 		},
 		"usertasks": {
 		    "activity": "Активность",
@@ -219,6 +228,12 @@
 		    "followUp": "Follow-Up",
 		    "taskID": "ID задачи",
 		    "actions": "Действия"
+		},
+		"calledProcesses": {
+			"callingActivity": "звонковая деятельность",
+			"process": "процесс",
+			"version": "версия",
+			"id": "Id"
 		},
 		"assignModal": {
 		    "manageUsersGroups": "Manage users/groups",
@@ -262,7 +277,7 @@
 			"completedTask": "Завершённая задача",
 			"currentTask": "Текущая задача",			
 			"selectedTask": "@:task.selectedTask",
-			"runingInstances": "Выполняющиеся экземпляры заданий",
+			"runningInstances": "Выполняющиеся экземпляры заданий",
 			"openIncidents": "Открытые инциденты",
 			"suspendedJobDefinition": "Приостановленное определение задания",
 			"activitiesHistory": "Выполненные экземпляры заданий",
@@ -313,6 +328,10 @@
 		"assignedUserTitle": "Удаление назначенного пользователя",
 		"usersFound": "Результаты найдены: поисковый фильтр выявил пользователей, соответствующих вашим критериям",
 		"userAssigned": "Пользователь {0} успешно назначен"
+	},
+	"batches": {
+		"title": "Batches",
+		"tooltip": "Batch operations"
 	},	
 	"admin": {
 		"loading": "Загрузка...",
@@ -385,6 +404,10 @@
 				"title": "Пользователи группы"
 			}
 		},
+		"tenants": {
+			"title": "Tenants",
+			"tooltip": "Tenants management"
+		},
 		"authorizations": {
 			"title": "Авторизации",
 			"type": "Тип",
@@ -434,6 +457,19 @@
 			},
 			"add": "Добавить авторизацию",
 			"noAuthSelected": "Тип авторизации не выбран"
+		},
+		"system": {
+			"title": "Система",
+			"tooltip": "Системные настройки и диагностика",
+			"settings": "Настройки",
+			"system-diagnostics": {
+				"title": "Диагностика",
+				"diagnosticHelp": "Данные диагностики позволяют понять среду, чтобы помочь в выявлении проблем.",
+				"diagnosticData": "Данные диагностики"
+			},
+			"execution-metrics": {
+				"title": "Метрики выполнения"
+			}
 		}
 	},
 	"account-form": {
@@ -464,8 +500,7 @@
 		"close": "Закрыть",
 		"delete": "Удалить",
 		"deleteFilter": "Вы действительно хотите удалить выбранный фильтр {name}?",
-		"assignUser": "Данная задача уже назначена на кого-то другого. Вы действительно хотите её переназначить?",
-		"performOperation": "Вы уверены, что хотите выполнить эту операцию?"
+		"assignUser": "Данная задача уже назначена на кого-то другого. Вы действительно хотите её переназначить?"
 	},
 	"alert": {
 		"successSaveTask": "Задача успешно сохранена. Пожалуйста, помните, что вы должны закрыть задание, чтобы закончить работу.",
@@ -478,7 +513,7 @@
 		"email": "@:account-form.email"
 	},
 	"cib-header": {
-		"productName": "CIB flow",
+		"productName": "CIB seven",
 		"languages": "Язык",
 		"help": "Информация и помощь",
 		"logout": "Выход",
@@ -552,7 +587,7 @@
 			"filterPriorityLabel": "Приоритет",
 			"selectProperty": "Выбрать свойство",
 			"insertValue": "Введите значение",
-			"insertVariableKey": "вставить ключ",
+			"insertVariableKey": "Введите имя переменной",
 			"addCriteria": "Добавить критерий",
 			"filterExists": "Данный фильтр уже существует",
 			"selectedCriteria": "Выбранный критерий",
@@ -633,19 +668,19 @@
 				"taskGroup": "Task",
 				"datesGroup": "Dates"
 			},
-			"noCriterias": "Критерий не выбран",
+			"noCriterias": "Вы ещё не задали ни одного критерия фильтрации",
 			"criteria": {
 				"key": "Ключ критерия",
 				"value": "Значение критерия"
 			},
 			"matchAnyCriteria": "Соответствует какому-либо из критериев",
 			"matchAllCriteria": "Соответствует всем критериям",
-			"msgFilterCreated": "Фильтр {name} создан",
-			"msgFilterUpdated": "Фильтр {name} обновлён",
-			"msgFilterDeleted": "Фильтр {name} удалён",
+			"msgFilterCreated": "Фильтр \"{name}\" создан",
+			"msgFilterUpdated": "Фильтр \"{name}\" обновлён",
+			"msgFilterDeleted": "Фильтр \"{name}\" удалён",
 			"legendExpression": "Свойства с окончанием \"*\" в качестве значения могут иметь выражения, например, '&#36;&#123; currentUser&#40;&#41; &#125;' или '&#36;&#123; currentUserGroups&#40;&#41; &#125;'",
 			"legendMultiple": "Свойства с окончанием \"in\" могут иметь несколько значений, например, список значений, разделённый запятыми, например, `keyC, keyA, keyB`",
-			"create": "создать фильтр",
+			"create": "Создать фильтр",
 			"operators": {
 				"eq": "=",
 				"neq": "≠",
@@ -683,14 +718,16 @@
 	},
     "ienotify": { 
 		"remember": "Больше не показывать это сообщение",
-        "text": "Internet Explorer не полностью поддерживается CIB flow. Для того, чтобы использовать все возможности CIB flow, мы рекомендуем Вам использовать другой интернет-браузер."
+        "text": "Internet Explorer не полностью поддерживается CIB seven. Для того, чтобы использовать все возможности CIB seven, мы рекомендуем Вам использовать другой интернет-браузер."
     },
 	"start": { 
 		"close": "Закрыть",
 		"taskList": "Мои задачи",
 		"startProcesses": "@:process.startProcess",
 		"cockpit": "Кокпит",
-		"emptyStart": "В данный момент у Вас нет прав, чтобы выполнить какие-либо задачи. Пожалуйста, свяжитесь с администратором CIB flow для того, чтобы получить права.",
+		"emptyStart": "В данный момент у Вас нет прав, чтобы выполнить какие-либо задачи. Пожалуйста, свяжитесь с администратором CIB seven для того, чтобы получить права.",
+		"groupOperations": "Операции",
+		"groupAdministration": "Администрирование",
 		"admin": "Управление процессами",
 		"userAdmin": "Управление пользователями",
 		"modeler": "Разработчик моделей процессов",
@@ -830,7 +867,24 @@
 		"flowLinkPrivacy": "Заявление о конфиденциальности",
 		"flowLinkImprint": "Импринт",
 		"flowLinkAccessibility": "Accessibility declaration",			
-		"flowLinkHelp": "Помощь",			
+		"flowLinkHelp": "Помощь",
+		"shortcuts": {
+			"title": "Горячие клавиши",
+			"tooltip": "Просмотр горячих клавиш",
+			"columnShortcut": "Комбинация",
+			"columnDescription": "Действие",
+			"buttonCtrl": "Ctrl",
+			"shortcuts": {
+				"ctrlLeft": "Перейти в раздел \"Начать процесс\"",
+				"ctrlDown": "Перейти в раздел \"Мои Задачи\"",
+				"ctrlRight": "Перейти в раздел \"Процессы\"",
+				"ctrlAltP": "Открыть всплывающее окно \"Начать процесс\"",
+				"ctrlAltC": "Принять текущую выбранную задачу",
+				"alt1": "Установить фокус на фильтрах",
+				"alt2": "Установить фокус на список отфильтрованных задач",
+				"alt3": "Установить фокус на выбранной задаче"
+			}
+		},
 		"flowModalSupport": {
 			"modalText": "Поддержка",
 			"title": "Информация",
@@ -845,7 +899,7 @@
 		},
 		"flowModalAbout": {
 			"modalText": "О сайте",
-			"title": "CIB flow"
+			"title": "CIB seven"
 		}
 	},
 	"multisort": {
@@ -942,7 +996,7 @@
     },
 	"notification": {
 		"newTasks": "Новые задачи",
-		"newTasksTitle": "Вы получили новые задачи, назначенные на CIB flow"
+		"newTasksTitle": "Вы получили новые задачи, назначенные на CIB seven"
 	},
 	"decision": {
 		"id": "ID",

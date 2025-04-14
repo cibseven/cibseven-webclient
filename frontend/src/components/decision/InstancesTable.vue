@@ -30,10 +30,15 @@
           @click.stop="copyValueToClipboard(table.item.processInstanceId)" class="mdi mdi-18px mdi-content-copy px-2 position-absolute end-0 text-secondary lh-sm"></span>
       </button>
     </template>
+    <template v-slot:cell(activityId)="table">
+      <div :title="table.item.activityId" class="text-truncate w-100"
+        @mouseenter="focusedCell = table.item.id + table.item.activityId" @mouseleave="focusedCell = null">
+        {{ table.item.activityId }}
+        <span v-if="table.item.id && focusedCell === (table.item.id + table.item.activityId)"
+          @click.stop="copyValueToClipboard(table.item.activityId)" class="mdi mdi-18px mdi-content-copy px-2 position-absolute end-0 text-secondary lh-sm"></span>
+      </div>
+    </template>
   </FlowTable>
-  <ConfirmDialog ref="confirm" @ok="$event.ok($event.instance)">
-  {{ $t('confirm.performOperation') }}
-  </ConfirmDialog>
   <SuccessAlert top="0" style="z-index: 1031" ref="success"> {{ $t('alert.successOperation') }}</SuccessAlert>
   <SuccessAlert ref="messageCopy"> {{ $t('decision.copySuccess') }} </SuccessAlert>
 </template>
@@ -43,12 +48,11 @@ import { permissionsMixin } from '@/permissions.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
-import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
 import { mapMutations, mapGetters } from 'vuex'
 
 export default {
   name: 'InstancesTable',
-  components: { FlowTable, SuccessAlert, ConfirmDialog },
+  components: { FlowTable, SuccessAlert },
   mixins: [copyToClipboardMixin, permissionsMixin],
   props: { instances: Array, sortDesc: Boolean, sortByDefaultKey: String },
   data() {
@@ -71,7 +75,6 @@ export default {
         }
       })
     },
-    showConfirm(type) { this.$refs.confirm.show(type) },
     getIconState(state) {
       switch (state) {
         case 'ACTIVE': return 'mdi-chevron-triple-right text-success'

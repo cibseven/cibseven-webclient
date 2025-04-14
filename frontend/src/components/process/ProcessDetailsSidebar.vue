@@ -8,7 +8,7 @@
       </b-button>
       <b-button style="top: 2px; right: 30px" class="border-0 position-absolute"
         variant="btn-outline-primary" size="sm" :title="$t('process.refreshVersions')"
-        @click="onRefreshProcessDefinitions(true)">
+        @click="onRefreshProcessDefinitions($root.config.lazyLoadHistory)">
         <span class="mdi mdi-18px mdi-refresh"></span>
       </b-button>
       <div class="list-group mx-3 mb-3" role="list">
@@ -77,7 +77,7 @@ export default {
   },
   methods: {
     onRefreshProcessDefinitions: function(lazyLoadHistory) {
-      this.$emit('onRefreshProcessDefinitions', { lazyLoadHistory: lazyLoadHistory })
+      this.$emit('onRefreshProcessDefinitions', lazyLoadHistory)
     },
     onDeleteClicked: function(processDefinition) {
       this.$refs.confirm.show({ ok: this.deleteProcessDefinition, processDefinition: processDefinition })

@@ -1,9 +1,9 @@
 <template>
-  <b-modal size="lg" scrollable ref="filterHandler" :title="$t('nav-bar.filters.addFilter')" @shown="$emit('display-popover', false)" @hidden="$emit('display-popover', true)">
+  <b-modal size="lg" scrollable ref="filterHandler" :title="$t(dialogTitle)" @shown="$emit('display-popover', false)" @hidden="$emit('display-popover', true)">
     <div class="row">
       <div class="col-md-8">
         <b-form-group label-size="sm" :label-cols="4" :label="$t('nav-bar.filters.filterNameLabel')" :invalid-feedback="$t('nav-bar.filters.filterExists')">
-          <b-form-input size="sm" v-model="selectedFilterName" :placeholder="$t('nav-bar.filters.filterNamePlaceholder')" :state="existFilter ? false : null"></b-form-input>
+          <b-form-input size="sm" v-model="selectedFilterName" :placeholder="$t('nav-bar.filters.filterNamePlaceholder')" :state="isNameInvalid ? false : null"></b-form-input>
         </b-form-group>
       </div>
       <div class="col-md-4">
@@ -12,7 +12,7 @@
         </b-form-group>
       </div>
     </div>
-    <hr>
+    <hr class="my-0">
     <b-form-group :label-cols="12" label-class="mb-3" label-size="sm" :label="$t('nav-bar.filters.selectedCriteria')">
       <div class="container">
         <div class="row text-center px-3">
@@ -39,11 +39,13 @@
         <div class="row mt-2"><small class="col-12" style="color: var(--gray)" v-html="$t('nav-bar.filters.legendExpression')"></small></div>
         <div class="row"><small class="col-12" style="color: var(--gray)">{{ $t('nav-bar.filters.legendMultiple') }}</small></div>
         <div v-if="selectedCriteriaType === 'variable'" class="mt-4">
-          <div v-for="(criteria, index) of selectedCriteriaVariable" class="col-12 input-group px-0 pb-3" :key="index">
+          <div v-for="(criteria, index) of selectedCriteriaVariable" class="col-12 input-group px-0 pb-2 d-flex align-items-center" :key="index">
             <b-form-input class="rounded me-2" size="sm" :placeholder="$t('nav-bar.filters.insertVariableKey')" v-model="criteria.name"></b-form-input>
-            <b-form-select class="rounded me-2" :options="variableOperators" size="sm" v-model="criteria.operator"></b-form-select>
+            <b-form-select class="rounded me-2 mb-0" :options="variableOperators" size="sm" v-model="criteria.operator"></b-form-select>
             <b-form-input class="rounded me-2" size="sm" :placeholder="$t('nav-bar.filters.insertValue')" v-model="criteria.value"></b-form-input>
-            <b-button :class="index > 0 ? '': 'invisible'" variant="outline-secondary" class="mdi mdi-18px mdi-delete-outline border-0 p-0" @click="deleteProcessVariable(index)"></b-button>
+            <span>
+              <b-button :class="index > 0 ? '': 'invisible'" size="sm"  variant="outline-secondary" class="mdi mdi-18px mdi-delete-outline border-0" @click="deleteProcessVariable(index)" :title="$t('confirm.delete')"></b-button>
+            </span>
           </div>
           <b-button size="sm" variant="outline-secondary" class="mdi mdi-18px mdi-plus-circle-outline border-0" @click="addProcessVariable()"></b-button>
         </div>
@@ -66,15 +68,15 @@
           <span v-else> {{ formatCriteria(row.item.value) }} </span>
         </template>
         <template v-slot:cell(buttons)="row">
-          <b-button class="p-0 border-0 mdi mdi-24px mdi-delete-outline mx-2" variant="outline-secondary" @click="deleteCriteria(row.index)"></b-button>
-          <b-button variant="outline-secondary" class="mdi mdi-18px mdi-pencil border-0 p-0 mx-2" @click="editCriteria(row.index)"></b-button>
+          <b-button class="mdi mdi-18px mdi-pencil border-0" size="sm" variant="outline-secondary" @click="editCriteria(row.index)" :title="$t('commons.edit')"></b-button>
+          <b-button class="mdi mdi-18px mdi-delete-outline border-0" size="sm" variant="outline-secondary" @click="deleteCriteria(row.index)" :title="$t('confirm.delete')"></b-button>
         </template>
       </FlowTable>
       <div v-if="criteriasToAdd.length < 1">
         <img src="/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mb-3" style="width: 200px">
         <div class="h5 text-secondary text-center">{{ $t('nav-bar.filters.noCriterias') }}</div>
+        <hr>
       </div>
-      <hr>
       <b-form-checkbox v-if="existCandidateSelected" class="mb-3" v-model="includeAssigned" switch>
         <span>{{ $t('nav-bar.filters.includeAssigned') }}</span>
       </b-form-checkbox>
@@ -87,7 +89,7 @@
 
     <template v-slot:modal-footer>
       <b-button @click="$refs.filterHandler.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
-      <b-button @click="createFilter" :disabled="checkValidity" variant="primary">{{ mode === 'create' ? $t('nav-bar.filters.addFilter') : $t('nav-bar.filters.updateFilter') }}</b-button>
+      <b-button @click="createFilter" :disabled="isFormInvalid" variant="primary">{{ mode === 'create' ? $t('nav-bar.filters.addFilter') : $t('nav-bar.filters.updateFilter') }}</b-button>
     </template>
   </b-modal>
 </template>
@@ -105,6 +107,13 @@ export default {
   components: { FilterableSelect, FlowTable },
   props: { tasks: Array, processes: Array, layout2: Boolean },
   mixins: [permissionsMixin],
+  emits: [
+    'filter-alert',
+    'set-filter',
+    'filter-updated',
+    'display-popover',
+    'select-filter'
+  ],
   data: function () {
     return {
       mode: 'create',
@@ -136,14 +145,18 @@ export default {
     }
   },
   computed: {
-    existFilter: function() {
-      var checkNotSelected = this.mode === 'edit' ? this.$store.state.filter.selected.name !== this.selectedFilterName : true
-      var checkExists = this.$store.state.filter.list.find(row => { return row.name === this.selectedFilterName })
-      return checkExists && checkNotSelected
+    dialogTitle: function() {
+      return this.mode === 'edit' ? 'nav-bar.filters.edit' : 'nav-bar.filters.create'
     },
-    checkValidity: function() {
-      var invalidFilter = this.criteriasToAdd.find(row => { return row.key === null })
-      return !!this.existFilter || !!invalidFilter || this.selectedFilterName.length === 0
+    isNameInvalid: function() {
+      const checkNotSelected = this.mode === 'edit' ? this.$store.state.filter.selected.name !== this.selectedFilterName : true
+      const checkExists = this.$store.state.filter.list.find(row => { return row.name === this.selectedFilterName })
+      const emptyFilterName = this.selectedFilterName.length === 0
+      return (checkExists && checkNotSelected) || emptyFilterName
+    },
+    isFormInvalid: function() {
+      const invalidFilter = this.criteriasToAdd.find(row => { return row.key === null })
+      return !!this.isNameInvalid || !!invalidFilter || this.selectedFilterName.length === 0
     },
     variableOperators: function() {
       return  [

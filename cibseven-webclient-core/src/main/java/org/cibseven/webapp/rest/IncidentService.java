@@ -8,14 +8,17 @@ import java.util.Optional;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.auth.SevenUserProvider;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.providers.BpmProvider;
+import org.cibseven.webapp.providers.PermissionConstants;
 import org.cibseven.webapp.providers.SevenProvider;
 import org.cibseven.webapp.rest.model.Incident;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -66,6 +69,7 @@ public class IncidentService extends BaseService implements InitializingBean {
 			@Parameter(description = "Incidents that have one of the given name") @RequestParam Optional<String> name,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true, false);
+		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.READ_ALL);
 		return sevenProvider.countIncident(incidentId, incidentType, incidentMessage, processDefinitionId, processDefinitionKeyIn, processInstanceId, executionId, activityId,
 				causeIncidentId, rootCauseIncidentId, configuration, tenantIdIn, jobDefinitionIdIn, name, user);
 	}
@@ -93,6 +97,7 @@ public class IncidentService extends BaseService implements InitializingBean {
 			Locale loc, HttpServletRequest rq) 
 	{
 		CIBUser user = checkAuthorization(rq, true, false);
+		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.READ_ALL);
 		return sevenProvider.findIncident(incidentId, incidentType, incidentMessage, processDefinitionId, processDefinitionKeyIn, processInstanceId, executionId, activityId,
 				causeIncidentId, rootCauseIncidentId, configuration, tenantIdIn, jobDefinitionIdIn, user);
 	}
@@ -106,6 +111,8 @@ public class IncidentService extends BaseService implements InitializingBean {
 			@Parameter(description = "Job Id") @PathVariable String jobId, 
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true, false);
+		checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.READ_ALL);
+
 		return sevenProvider.findStacktrace(jobId, user);
 	}
 	
@@ -119,7 +126,22 @@ public class IncidentService extends BaseService implements InitializingBean {
 			@RequestBody Map<String, Object> data, 
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true, false);
+		checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.UPDATE_ALL);
 		sevenProvider.retryJobById(jobId, data, user);
+	}
+	
+	@Operation(
+	    summary = "Set annotation for incident by id",
+	    description = "<strong>Return: void"
+	)
+	@ApiResponse(responseCode = "404", description = "Incident not found")
+	@PutMapping("/{incidentId}/annotation")
+	public void setIncidentAnnotation(
+	        @Parameter(description = "Incident Id") @PathVariable String incidentId,
+	        @RequestBody Map<String, Object> data,
+	        Locale locale, HttpServletRequest request) {	
+	    CIBUser user = checkAuthorization(request, true, false);
+	    bpmProvider.setIncidentAnnotation(incidentId, data, user);
 	}
 	
 }

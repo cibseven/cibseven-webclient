@@ -34,8 +34,8 @@
 			</b-form-group>
 		</div>
 		<template v-slot:modal-footer>
-			<b-button @click="$refs.incidentRetryModal.hide()" variant="link">{{ $t('confirm.close') }}</b-button>
-			<b-button @click="incrementNumberRetries()" variant="primary">{{ $t('confirm.ok') }}</b-button>
+			<b-button @click="$refs.incidentRetryModal.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
+			<b-button @click="incrementNumberRetries()" variant="primary">{{ $t('process-instance.incidents.retry') }}</b-button>
 		</template>
 	</b-modal>
 </template>
@@ -47,22 +47,24 @@
 		name: 'IncidentRetryModal',
 		inject: ['currentLanguage'],
 		data: function() {
-			const now = new Date()
-			now.setMinutes(now.getMinutes() + 1)
-			const hours = now.getHours().toString().padStart(2, '0')
-			const minutes = now.getMinutes().toString().padStart(2, '0')
 			return {
 				selectedIncident: null,
 				executionOption: 'keepDueDate',
 				executionOptions: ['keepDueDate','setDueDate'],
-				scheduledAt: { date: new Date(), time: `${hours}:${minutes}` },
+				scheduledAt: null,
 				invalidDate: false
 			}
 		},
 		methods: {
 			show: function(selectedIncident) {
+				const now = new Date()
+				now.setMinutes(now.getMinutes() + 1)
+				const hours = now.getHours().toString().padStart(2, '0')
+				const minutes = now.getMinutes().toString().padStart(2, '0')				
 				this.invalidDate = false
 				this.selectedIncident = selectedIncident
+				this.executionOption = 'keepDueDate'
+				this.scheduledAt = { date: new Date(), time: `${hours}:${minutes}` },
 				this.$refs.incidentRetryModal.show()
 			},
 			hide: function() {

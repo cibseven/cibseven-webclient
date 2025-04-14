@@ -2,7 +2,8 @@
 {
 	"commons": {
 		"edit": "Editar",
-		"save": "Guardar"
+		"save": "Guardar",
+		"copyValue": "Copiar valor"
 	},
 	"login": {
 		"productName": "CIB seven",
@@ -95,6 +96,7 @@
 		"incidents": "Incidencias",
 		"variables": "Variables",
 		"usertasks": "Tareas de usuario",
+		"calledProcessInstances": "Llamadas instancias de proceso",
 		"onlyIncidents": "Sólo con incidencias",
 		"runningInstances": "Instancias",
 		"instances": "Instancias",
@@ -175,6 +177,7 @@
 		    "failedActivity": "Actividad fallida",
 		    "incidentType": "Tipo de incidente",
 		    "retryJob": "Incrementar el número de reintentos de trabajo fallido",
+			"annotation": "Anotación",
 		    "actions": "Acciones",
 			"incrementNumberRetries": "Incrementar número de reintentos",
 			"retryMsg": "Se incrementará el número de reintentos del trabajo fallido correspondiente al incidente seleccionado.",
@@ -183,7 +186,9 @@
 			"setDueDate": "Establecer fecha de vencimiento",
 			"dueDate": "Fecha de vencimiento",
 			"scheduleAt": "Programar para",
-			"invalidDateError": "Debe insertar una fecha válida"
+			"invalidDateError": "Debe insertar una fecha válida",
+			"retry": "Reintentar",
+			"editAnnotation": "Editar anotación"
 		},
 		"jobDefinitions": {
 			"state": "Estado",
@@ -209,7 +214,11 @@
 			"overridingMsg": "Cambiar la prioridad sobrescrita para los trabajos de la definición de trabajo indicada.",
 			"jobPriority": "Prioridad",
 			"clear": "Borrar prioridad sobrescrita del trabajo",
-			"set": "Establecer prioridad sobrescrita del trabajo"
+			"set": "Establecer prioridad sobrescrita del trabajo",
+			"invalidPriorityError": "Debe insertar un valor entero",
+			"overrideAction": "Sobreescribir",
+			"clearAction": "Borrar",			
+			"invalidDateError": "Debe insertar una fecha válida"
 		},	
 		"usertasks": {
 			"activity": "Actividad",
@@ -220,6 +229,12 @@
 		    "followUp": "Seguimiento",
 		    "taskID": "ID de tarea",
 		    "actions": "Acciones"
+		},
+		"calledProcesses": {
+			"callingActivity": "Actividad de llamada",
+			"process": "Proceso",
+			"version": "Versión",
+			"id": "Identificación"
 		},
 		"assignModal": {
 			"manageUsersGroups": "Administrar usuarios/grupos",
@@ -263,7 +278,7 @@
 			"completedTask": "Tarea finalizada",
 			"currentTask": "Tarea actual",
 			"selectedTask": "@:task.selectedTask",
-			"runingInstances": "Instancias de actividad en ejecución",
+			"runningInstances": "Instancias de actividad en ejecución",
 			"openIncidents": "Incidentes abiertos",
 			"suspendedJobDefinition": "Definición de trabajo suspendida",
 			"activitiesHistory": "Instancias de actividad ejecutadas",
@@ -314,6 +329,10 @@
 		"assignedUserTitle": "Eliminar usuario asignado",
 		"usersFound": "Resultados encontrados: el filtro de búsqueda ha identificado usuarios que coinciden con sus criterios",
 		"userAssigned": "El usuario {0} fue asignado con éxito"
+	},
+	"batches": {
+		"title": "Batches",
+		"tooltip": "Batch operations"
 	},
 	"admin": {
 		"loading": "Cargando...",
@@ -386,6 +405,10 @@
 				"title": "Usuarios del grupo"
 			}
 		},
+		"tenants": {
+			"title": "Tenants",
+			"tooltip": "Tenants management"
+		},
 		"authorizations": {
 			"title": "Autorizaciones",
 			"type": "Tipo",
@@ -435,6 +458,19 @@
 			},
 			"add": "Añadir autorización",
 			"noAuthSelected": "Ningún tipo de autorización seleccionada"
+		},
+		"system": {
+			"title": "System",
+			"tooltip": "System Settings and Diagnostics",
+			"settings": "Configuración",
+			"system-diagnostics": {
+				"title": "Diagnósticos",
+				"diagnosticHelp": "Los datos de diagnóstico permiten comprender el entorno para ayudar en el diagnóstico de problemas.",
+				"diagnosticData": "Datos de diagnóstico"
+			},
+			"execution-metrics": {
+				"title": "Métricas de ejecución"
+			}
 		}
 	},
 	"account-form": {
@@ -465,8 +501,7 @@
 		"close": "Cerrar",
 		"delete": "Eliminar",
 		"deleteFilter": "¿Realmente quieres eliminar el filtro seleccionado {name}?",
-		"assignUser": "Esta tarea ya está asignada a otra persona. ¿Confirma que desea modificarla?",
-		"performOperation": "¿Está seguro de que quiere realizar esta operación?"
+		"assignUser": "Esta tarea ya está asignada a otra persona. ¿Confirma que desea modificarla?"
 	},
 	"alert": {
 		"successSaveTask": "La tarea se ha guardado correctamente. Por favor no olvide cerrarla para terminar su trabajo.",
@@ -479,7 +514,7 @@
 		"email": "@:account-form.email"
 	},
 	"cib-header": {
-		"productName": "CIB flow",
+		"productName": "CIB seven",
 		"languages": "Idioma",
 		"help": "Información & Ayuda",
 		"user": "Cuenta",
@@ -553,7 +588,7 @@
 			"filterPriorityLabel": "Prioridad",
 			"selectProperty": "Seleccionar propiedad",
 			"insertValue": "Insertar valor",
-			"insertVariableKey": "Insertar clave",
+			"insertVariableKey": "Ingresa el nombre de la variable",
 			"addCriteria": "Añadir criterio",
 			"filterExists": "Este filtro ya existe",
 			"selectedCriteria": "Criterios seleccionados",
@@ -634,16 +669,16 @@
 				"taskGroup": "Task",
 				"datesGroup": "Dates"
 			},
-			"noCriterias": "Ningún criterio seleccionado",
+			"noCriterias": "Aún no has establecido ningún criterio de filtro",
 			"criteria": {
 				"key": "Key del criterio",
 				"value": "Valor del criterio"
 			},
 			"matchAnyCriteria": "Se cumplen algunos de los criterios",
 			"matchAllCriteria": "Se cumplen todos los criterios",
-			"msgFilterCreated": "Filtro {name} creado",
-			"msgFilterUpdated": "Filtro {name} actualizado",
-			"msgFilterDeleted": "Filtro {name} eliminado",
+			"msgFilterCreated": "Filtro \"{name}\" creado",
+			"msgFilterUpdated": "Filtro \"{name}\" actualizado",
+			"msgFilterDeleted": "Filtro \"{name}\" eliminado",
 			"legendExpression": "Las claves que terminan en \"*\" aceptan expresiones como valor. Por ejemplo: '&#36;&#123; currentUser&#40;&#41; &#125;' o '&#36;&#123; currentUserGroups&#40;&#41; &#125;'",
 			"legendMultiple": "Las claves que terminan en \"in\" aceptan múltiples valores separados por coma. Por ejemplo: `claveC, claveA, claveB`",
 			"create": "Crear filtro",
@@ -684,14 +719,16 @@
 	},
 	"ienotify": {
 		"remember": "No volver a mostrar este mensaje",
-		"text": "CIB flow no es totalmente soportado por Internet Explorer. Para poder disfrutar al máximo, desde CIB flow te sugerimos que utilices otro navegador."
+		"text": "CIB seven no es totalmente soportado por Internet Explorer. Para poder disfrutar al máximo, desde CIB seven te sugerimos que utilices otro navegador."
 	},
 	"start": {
 		"close": "Cerrar",
 		"taskList": "Tareas",
 		"startProcesses": "@:process.startProcess",
 		"cockpit": "Visión general",
-		"emptyStart": "Actualmente no tiene permisos para realizar tareas aquí. Por favor contacte con el administrador de CIB flow para que le asigne permisos.",
+		"emptyStart": "Actualmente no tiene permisos para realizar tareas aquí. Por favor contacte con el administrador de CIB seven para que le asigne permisos.",
+		"groupOperations": "Operations",
+		"groupAdministration": "Administration",
 		"admin": "Administración",
 		"userAdmin": "Gestión de usuarios",
 		"modeler": "Modelador de procesos",
@@ -831,7 +868,24 @@
 		"flowLinkPrivacy": "Declaración de privacidad",
 		"flowLinkImprint": "Imprimir",
 		"flowLinkAccessibility": "Declaración de accesibilidad",
-		"flowLinkHelp": "Ayuda",			
+		"flowLinkHelp": "Ayuda",
+		"shortcuts": {
+			"title": "Atajos",
+			"tooltip": "Mostrar atajos disponibles",
+			"columnShortcut": "Atajo",
+			"columnDescription": "Descripción",
+			"buttonCtrl": "Ctrl",
+			"shortcuts": {
+				"ctrlLeft": "Ir a la vista 'Iniciar proceso'",
+				"ctrlDown": "Ir a la vista 'Tareas'",
+				"ctrlRight": "Ir a la vista 'Procesos'",
+				"ctrlAltP": "Abrir la ventana emergente 'Iniciar proceso'",
+				"ctrlAltC": "Reclamar la tarea actualmente seleccionada",
+				"alt1": "Establecer el foco en los filtros",
+				"alt2": "Establecer el foco en la lista de tareas filtradas",
+				"alt3": "Establecer el foco en la tarea seleccionada"
+			}
+		},
 		"flowModalSupport": {
 			"modalText": "Soporte",
 			"title": "Información",
@@ -846,7 +900,7 @@
 		},
 		"flowModalAbout": {
 			"modalText": "Versión",
-			"title": "CIB flow"
+			"title": "CIB seven"
 		}
 	},
 	"multisort": {
@@ -941,7 +995,7 @@
 	},
 	"notification": {
 		"newTasks": "Nuevas tareas",
-		"newTasksTitle": "Tiene nuevas tareas asignadas en CIB flow"
+		"newTasksTitle": "Tiene nuevas tareas asignadas en CIB seven"
 	},
 	"decision": {
 		"id": "ID",

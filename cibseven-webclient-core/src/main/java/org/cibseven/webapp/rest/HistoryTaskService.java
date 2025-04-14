@@ -5,6 +5,8 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.auth.SevenResourceType;
+import org.cibseven.webapp.providers.PermissionConstants;
 import org.cibseven.webapp.rest.model.TaskHistory;
 import org.cibseven.webapp.rest.model.VariableHistory;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +31,7 @@ public class HistoryTaskService extends BaseService {
 	public Collection<VariableHistory> fetchActivityVariablesHistory(
 			@Parameter(description = "Activity instance Id") @PathVariable String activityInstanceId,
 			Locale loc, CIBUser user) {
+        checkPermission(user, SevenResourceType.HISTORY, PermissionConstants.READ_ALL);
 		return bpmProvider.fetchActivityVariablesHistory(activityInstanceId, user);
 	}
 	
@@ -42,6 +45,7 @@ public class HistoryTaskService extends BaseService {
 			@Parameter(description = "Restrict to tasks that have the given key") @RequestParam String taskDefinitionKey,
 			@Parameter(description = "Process instance Id") @RequestParam String processInstanceId,
 			Locale loc, CIBUser user) {
+		checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
 		return bpmProvider.findTasksByDefinitionKeyHistory(taskDefinitionKey, processInstanceId, user);
 	}
 
@@ -54,6 +58,7 @@ public class HistoryTaskService extends BaseService {
 	public Collection<TaskHistory> findTasksByProcessInstanceHistory(
 			@Parameter(description = "Process instance Id") @PathVariable String processInstanceId,
 			Locale loc, CIBUser user) {
+		checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
 		return bpmProvider.findTasksByProcessInstanceHistory(processInstanceId, user);
 	}
 	
@@ -66,6 +71,7 @@ public class HistoryTaskService extends BaseService {
 	public Collection<TaskHistory> findTasksByTaskIdHistory(
 			@Parameter(description = "Task Id") @PathVariable String taskId,
 			Locale loc, CIBUser user) {
+		checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
 		return bpmProvider.findTasksByTaskIdHistory(taskId, user);
 	}
 	

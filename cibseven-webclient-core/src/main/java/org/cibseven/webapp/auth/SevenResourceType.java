@@ -1,0 +1,37 @@
+package org.cibseven.webapp.auth;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter @AllArgsConstructor
+public enum SevenResourceType {
+	USER(1),
+	GROUP(2),
+	AUTHORIZATION(4),
+	PROCESS_DEFINITION(6),
+	PROCESS_INSTANCE(8),
+	DECISION_DEFINITION(10),
+	DECISION_REQUIREMENTS_DEFINITION(14),
+	TASK(7),
+	FILTER(5),
+	HISTORY(12),
+	DEPLOYMENT(9),
+	CASE_DEFINITION(14),
+	CASE_INSTANCE(15),
+	APPLICATION(0),
+    JOB_DEFINITION(17),
+    BATCH(13),
+    GROUP_MEMBERSHIP(3),
+    HISTORIC_TASK(19),
+    HISTORIC_PROCESS_INSTANCE(20),
+    TENANT(11),
+    TENANT_MEMBERSHIP(12),
+    REPORT(15),
+    DASHBOARD(17),
+    USER_OPERATION_LOG_CATEGORY(17),
+    SYSTEM(21),
+    MESSAGE(22),
+    EVENT_SUBSCRIPTION(23);
+	
+	private final int type;
+}

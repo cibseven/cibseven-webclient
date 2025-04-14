@@ -5,8 +5,10 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.providers.BpmProvider;
+import org.cibseven.webapp.providers.PermissionConstants;
 import org.cibseven.webapp.providers.SevenProvider;
 import org.cibseven.webapp.rest.model.Job;
 import org.springframework.beans.factory.InitializingBean;
@@ -31,6 +33,7 @@ public class JobService extends BaseService implements InitializingBean {
 			@RequestBody Map<String, Object> params,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true, false);
+		checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.READ_ALL);
 		return bpmProvider.getJobs(params, user);
 	}
 
@@ -40,6 +43,7 @@ public class JobService extends BaseService implements InitializingBean {
 			@RequestBody Map<String, Object> data,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true, false);
+		checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.UPDATE_ALL);
 		bpmProvider.setSuspended(id, data, user);
 	}
 

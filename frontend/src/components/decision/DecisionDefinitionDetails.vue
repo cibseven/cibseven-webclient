@@ -52,18 +52,8 @@
   </div>
   <hr class="my-2">
   <div class="row align-items-center">
-    <span class="text-secondary font-weight-bold col-8 pe-0">{{ $t('decision.details.unfinishedInstances') }}</span>
-    <span class="col-4 text-end">{{ version.runningInstances }}</span>
-  </div>
-  <hr class="my-2">
-  <div class="row align-items-center">
     <span class="text-secondary font-weight-bold col-8 pe-0">{{ $t('decision.details.totalInstances') }}</span>
     <span class="col-4 text-end">{{ version.allInstances }}</span>
-  </div>
-  <hr class="my-2">
-  <div class="row align-items-center">
-    <span class="text-secondary font-weight-bold col-8 pe-0">{{ $t('decision.details.finishedInstances') }}</span>
-    <span class="col-4 text-end">{{ version.completedInstances }}</span>
   </div>
 
   <b-modal ref="historyTimeToLive" :title="$t('decision.details.historyTimeToLive')">
@@ -76,12 +66,12 @@
       <b-button @click="updateHistoryTimeToLive()" variant="primary">{{ $t('decision-instance.save') }}</b-button>
     </template>
   </b-modal>
-
   <SuccessAlert ref="messageCopy"> {{ $t('decision.copySuccess') }} </SuccessAlert>
 </template>
 
 <script>
 
+import { DecisionService } from '@/services.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 
@@ -92,23 +82,28 @@ export default {
   props: {
     version: Object
   },
-  data: function() {
+  emits: ['updated-history-ttl'],
+  data() {
     return {
       historyTimeToLive: '',
       historyTimeToLiveChanged: ''
     }
   },
-  emits: ['onUpdateHistoryTimeToLive'],
-  mounted: function() {
+  mounted() {
     this.historyTimeToLive = this.version.historyTimeToLive
   },
   methods: {
-    editHistoryTimeToLive: function() {
+    editHistoryTimeToLive() {
       this.historyTimeToLiveChanged = this.historyTimeToLive
       this.$refs.historyTimeToLive.show()
     },
-    updateHistoryTimeToLive: function() {
-      // TODO: Implement
+    updateHistoryTimeToLive() {
+      DecisionService.updateHistoryTTLById(this.version.id, 
+      { historyTimeToLive: this.historyTimeToLiveChanged }).then(() => {
+        this.historyTimeToLive = this.version.historyTimeToLive = this.historyTimeToLiveChanged
+        this.$emit('updated-history-ttl')
+        this.$refs.historyTimeToLive.hide()
+      })
     }
   }
 }

@@ -11,8 +11,10 @@
               <span class="mdi mdi-24px mdi-web align-middle"></span>
             </template>
             <b-dropdown-item v-for="lang in languages" :key="lang" :active="lang === currentLanguage()" @click="currentLanguage(lang)">
-              <span class="text-uppercase text-dark bg-light rounded px-1">{{ lang }}</span>
-              {{ $t('cib-header.' + lang) }}
+              <div class="row">
+                <span class="text-uppercase text-dark bg-body-secondary rounded col-3 ms-2">{{ lang }}</span>
+                <span class="col-8 ps-2">{{ $t('cib-header.' + lang) }}</span>
+              </div>
             </b-dropdown-item>
           </b-nav-item-dropdown>
 
@@ -30,7 +32,7 @@
               <span class="mdi mdi-24px mdi-account align-middle"></span> {{ user.displayName }}
             </template>
             <slot name="userItems"></slot>
-            <b-dropdown-item @click="logout">{{ $t('cib-header.logout') }}</b-dropdown-item>
+            <b-dropdown-item @click="logout" :title="$t('cib-header.logout')">{{ $t('cib-header.logout') }}</b-dropdown-item>
           </b-nav-item-dropdown>
         </b-navbar-nav>
       </b-collapse>
