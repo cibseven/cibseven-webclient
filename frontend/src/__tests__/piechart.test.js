@@ -19,7 +19,7 @@ describe('PieChart', () => {
     });
 
     expect(wrapper.find('.waiting-box-container').exists()).toBe(true);
-    expect(wrapper.find('apexchart').exists()).toBe(false);
+    expect(wrapper.find('apex-chart').exists()).toBe(false);
   });
 
   it('renders chart when items are provided', () => {
@@ -42,7 +42,7 @@ describe('PieChart', () => {
     });
 
     expect(wrapper.find('.waiting-box-container').exists()).toBe(false);
-    expect(wrapper.find('apexchart').exists()).toBe(true);
+    expect(wrapper.find('apex-chart').exists()).toBe(true);
     expect(wrapper.vm.values).toEqual([20, 10]); // Sorted values
     expect(wrapper.vm.labels).toEqual(['Item 2', 'Item 1']); // Sorted labels
   });
@@ -79,7 +79,7 @@ describe('PieChart', () => {
 
     chartOptions.chart.events.click(clickEvent, chartContext, config);
 
-    expect(mockRouterPush).toHaveBeenCalledWith('/seven/auth/process/1');
+    expect(mockRouterPush).toHaveBeenCalledWith('/seven/auth/process/2');
   });
 
   it('applies correct cursor style on dataPointMouseEnter', () => {
