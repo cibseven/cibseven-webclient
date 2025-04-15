@@ -113,7 +113,7 @@ export default {
       return this.totalWithZero === 'x' ? 'text-warning' : ''
     },
     isSpecialZeroOutput: function() {
-      return this.total === 0 && (this.totalZero !== 'x' && this.totalZero !== '0')
+      return (!this.loading) && this.total === 0 && (this.totalZero !== 'x' && this.totalZero !== '0')
     },
     chartData: function() {
       let offsetAngle = -90 // Start at 12 o'clock
