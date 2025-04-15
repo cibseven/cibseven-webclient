@@ -31,13 +31,6 @@
         optional: false
       }
     },
-    methods: {
-        onTitleClick() {
-            if (this.link) {
-                this.$router.push(this.link)
-            }
-        }
-    },
     computed: {
         loading: function() {
             return !this.items
