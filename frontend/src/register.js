@@ -35,7 +35,6 @@ const registerOwnComponents = function(app) {
 
   app.component('GlobalEvents', GlobalEvents)
 
-  app.use(VueApexCharts)
   app.component('apexchart', VueApexCharts)
 }
 
