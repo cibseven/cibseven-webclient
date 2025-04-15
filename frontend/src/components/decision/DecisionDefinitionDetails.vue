@@ -98,8 +98,9 @@ export default {
       this.$refs.historyTimeToLive.show()
     },
     updateHistoryTimeToLive() {
-      DecisionService.updateHistoryTTLById(this.version.id, 
+      DecisionService.updateHistoryTTLById(this.version.id,
       { historyTimeToLive: this.historyTimeToLiveChanged }).then(() => {
+        // eslint-disable-next-line vue/no-mutating-props
         this.historyTimeToLive = this.version.historyTimeToLive = this.historyTimeToLiveChanged
         this.$emit('updated-history-ttl')
         this.$refs.historyTimeToLive.hide()

@@ -124,6 +124,17 @@
 								</configuration>
 							</execution>
 							<execution>
+								<id>Lint</id>
+								<goals>
+									<goal>npm</goal>
+								</goals>
+								<phase>generate-resources</phase>
+								<configuration>
+									<arguments>run lint</arguments>
+									<skip>${skipTests}</skip>
+								</configuration>
+							</execution>
+							<execution>
 								<id>Build</id>
 								<goals>
 									<goal>npm</goal>

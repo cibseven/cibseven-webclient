@@ -157,6 +157,7 @@ export default {
     update: function() {
       this.$refs.ariaLiveText.textContent = ''
       TaskService.setAssignee(this.task.id, this.assignee).then(() => {
+        // eslint-disable-next-line vue/no-mutating-props
         this.task.assignee = this.assignee
         this.assignee = null
         this.$emit('update-assignee', this.task.assignee)

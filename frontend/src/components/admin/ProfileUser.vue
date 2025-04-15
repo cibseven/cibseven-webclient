@@ -1,5 +1,5 @@
 <template>
-  <Sidebars ref="sidebars" header-margin="55px" v-model:left-open="leftOpen"
+  <SidebarsFlow ref="sidebars" header-margin="55px" v-model:left-open="leftOpen"
     :left-caption="$t('admin.users.title') + ' - ' + user.id" :left-size="[12, 6, 4, 3, 2]">
     <template v-slot:left>
       <b-list-group>
@@ -240,20 +240,20 @@
     <SuccessAlert ref="updatePassword" top="0" style="z-index: 1031">{{ $t('admin.users.updatePasswordMessage', [user.id]) }}</SuccessAlert>
     <SuccessAlert ref="deleteUser" top="0" style="z-index: 1031">{{ $t('admin.users.userDeletedMessage', [user.id]) }}</SuccessAlert>
     <SuccessAlert ref="unassignGroup" top="0" style="z-index: 1031">{{ $t('admin.users.unassignGroupMessage', [user.id],) }}</SuccessAlert>
-  </Sidebars>
+  </SidebarsFlow>
 </template>
 
 <script>
 import { AdminService } from '@/services.js'
 import { notEmpty, same } from '@/components/admin/utils.js'
-import Sidebars from '@/components/common-components/Sidebars.vue'
+import SidebarsFlow from '@/components/common-components/SidebarsFlow.vue'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import CIBForm from '@/components/common-components/CIBForm.vue'
 
 export default {
   name: 'ProfileUser',
-  components: { Sidebars, FlowTable, SuccessAlert, CIBForm },
+  components: { SidebarsFlow, FlowTable, SuccessAlert, CIBForm },
   inject: ['AuthService'],
   props: {
     editMode: {

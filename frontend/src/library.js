@@ -23,7 +23,6 @@ import TaskPopper from '@/components/common-components/TaskPopper.vue'
 import FeedbackScreenshot from '@/components/modals/FeedbackScreenshot.vue'
 import TaskList from '@/components/common-components/TaskList.vue'
 import CIBHeaderFlow from '@/components/common-components/CIBHeaderFlow.vue'
-import Sidebars from '@/components/common-components/Sidebars.vue'
 import ResetDialog from '@/components/login/ResetDialog.vue'
 import OtpDialog from '@/components/login/OtpDialog.vue'
 import CIBForm from '@/components/common-components/CIBForm.vue'
@@ -110,7 +109,6 @@ const registerComponents = function(app) {
   app.component('feedback-screenshot', FeedbackScreenshot)
   app.component('task-list', TaskList)
   app.component('cib-header-flow', CIBHeaderFlow)
-  app.component('sidebars', Sidebars)
   app.component('reset-dialog', ResetDialog)
   app.component('otp-dialog', OtpDialog)
   app.component('cib-form', CIBForm)
@@ -209,7 +207,6 @@ export {
   FeedbackScreenshot,
   TaskList,
   CIBHeaderFlow,
-  Sidebars,
   ResetDialog,
   OtpDialog,
   CIBForm,
