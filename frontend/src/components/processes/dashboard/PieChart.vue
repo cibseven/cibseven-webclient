@@ -1,5 +1,13 @@
 <template>
     <div>
+        <!-- Custom title with tooltip and click event -->
+        <h5
+                class="chart-title"
+                :title="tooltip"
+                @click="onTitleClick"
+            >
+                {{ title }}
+            </h5>
         <b-waiting-box v-if="loading" />
         <apexchart v-else
                 type="donut"
@@ -21,18 +29,24 @@
       link: String,
       items: {
         type: Array,
-        default: () => [],
-      },
-      totalZero: {
-        type: String,
-        default: '0'
-      },
+        optional: false
+      }
+    },
+    methods: {
+        onTitleClick() {
+            if (this.link) {
+                this.$router.push(this.link)
+            }
+        }
     },
     computed: {
         loading: function() {
-            return !this.items || this.items.length === 0
+            return !this.items
         },
         values: function() {
+            if (this.items.length === 0) {
+                return [0]
+            }
             return this.items.sort((a, b) => b.value - a.value).map(item => item.value)
         },
         labels: function() {
@@ -43,37 +57,31 @@
                 chart: {
                     type: 'donut',
                     events: {
-                        dataPointSelection: (event, chartContext, config) => {
+                        click: (event, chartContext, config) => {
                             const item = this.items[config.dataPointIndex]
                             const link = '/seven/auth/process/' + item.id
                             this.$router.push(link)
+                        },
+                        dataPointMouseEnter: (event) => {
+                            event.target.style.cursor = 'pointer'
                         }
-                    }
-                },
-                title: {
-                    text: this.title,
-                    align: 'center',
-                    style: {
-                        fontFamily: 'Segoe UI, Arial',
-                        fontSize: '20px',
-                        color: '#4D6278'
                     }
                 },
                 labels: this.labels,
                 plotOptions: {
                     pie: {
                         donut: {
-                        size: '40%',
-                        labels: {
-                            show: true,
-                            total: {
+                            size: '40%',
+                            labels: {
                                 show: true,
-                                label: '',
-                                formatter: (w) => {
-                                    return w.globals.seriesTotals.reduce((a, b) => a + b, 0)
-                                }
+                                total: {
+                                    show: true,
+                                    // label: '',
+                                    formatter: (w) => {
+                                        return w.globals.seriesTotals.reduce((a, b) => a + b, 0)
+                                    }
+                                },
                             },
-                        },
                         },
                     },
                 },
@@ -120,3 +128,14 @@
     }
 }
 </script>
+
+<style scoped>
+.chart-title {
+    text-align: center;
+    font-size: 20px;
+    color: #4D6278;
+    cursor: pointer;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+</style>
