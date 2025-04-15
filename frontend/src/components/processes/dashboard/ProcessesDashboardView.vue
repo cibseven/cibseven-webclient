@@ -114,6 +114,10 @@ export default {
         },
         legend: {
           position: 'bottom',
+          show: false,
+        },
+        stroke: {
+          show: false, // Entfernt die Linien zwischen den Segmenten
         },
         tooltip: {
           y: {
