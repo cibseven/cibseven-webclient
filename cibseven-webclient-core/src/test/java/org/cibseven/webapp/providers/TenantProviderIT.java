@@ -29,9 +29,9 @@ public class TenantProviderIT {
     @Autowired
     private TenantProvider tenantProvider;    
     
-    // TODO: Rename or split it in other tests
+    // TODO: Create other tests
     @Test
-    public void testGeneral() {
+    public void testMultiTenancy() {
     	// Arrange
         CIBUser user = new CIBUser();
         user.setAuthToken("Bearer token");

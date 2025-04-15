@@ -26,6 +26,11 @@ public class TenantProvider extends SevenProviderBase implements ITenantProvider
 	public Collection<SevenTenant> fetchTenants(CIBUser user) throws SystemException {
 		String url = camundaUrl + "/engine-rest/tenant";
 		return Arrays.asList(((ResponseEntity<SevenTenant[]>) doGet(url, SevenTenant[].class, user, false)).getBody());	
+	}	
+
+	public SevenTenant fetchTenant(String tenantId, CIBUser user) throws SystemException {
+		String url = camundaUrl + "/engine-rest/tenant/" + tenantId;
+		return ((ResponseEntity<SevenTenant>) doGet(url, SevenTenant.class, user, false)).getBody();
 	}
 
 	@Override
@@ -38,10 +43,9 @@ public class TenantProvider extends SevenProviderBase implements ITenantProvider
 			//	id 	    String 	id (String)
 			//	name 	String 	name (String) 
 			
-			String body = newTenant.json();
-		
+			String body = newTenant.json();		
 			doPost(url, body , null, user);
-
+			
 		} catch (JsonProcessingException e) {
 			SystemException se = new SystemException(e);
 			log.info("Exception in createUser(...):", se);
@@ -53,6 +57,27 @@ public class TenantProvider extends SevenProviderBase implements ITenantProvider
 	public void deleteTenant(String tenantId, CIBUser user) {
 		String url = camundaUrl + "/engine-rest/tenant/" + tenantId;
 		doDelete(url, user);
+	}
+
+	@Override
+	public void udpateTenant(SevenTenant tenant, CIBUser user)
+	{		
+		String url = camundaUrl + "/engine-rest/tenant/" + tenant.getId();
+
+		try {
+			//	A JSON object with the following properties:
+			//	Name 	Type 	Description
+			//	id 	    String 	id (String)
+			//	name 	String 	name (String) 
+			
+			String body = tenant.json();		
+			doPut(url, body , user);
+
+		} catch (JsonProcessingException e) {
+			SystemException se = new SystemException(e);
+			log.info("Exception in createUser(...):", se);
+			throw se;
+		}
 	}
 	
 	@Override
@@ -84,17 +109,4 @@ public class TenantProvider extends SevenProviderBase implements ITenantProvider
 		if (user != null) headers.add("Authorization", user.getAuthToken());
 		return headers;
 	}
-	
-	/*
-	private String getWildcard () {
-		String wcard = "";
-		if (!wildcard.equals("")) wcard = wildcard;
-		else {
-			if (userProvider.equals("org.cibseven.webapp.auth.LdapUserProvider") || userProvider.equals("org.cibseven.webapp.auth.AdfsUserProvider")) {
-				wcard = "*";				
-			} else wcard = "%";
-		}
-		return wcard;
-	}
-	*/
 }
