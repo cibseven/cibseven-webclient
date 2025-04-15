@@ -15,8 +15,8 @@
 		"forgotten": "Passwort zurücksetzen?"
 	},
 	"processes-dashboard": {
-		"headerActive": "Operationsübersicht",
-		"headerDeployed": "Bereitgestellt",
+		"headerActive": "Operatives Dashboard",
+		"headerDeployed": "Deployed",
 		"items": {
 			"running-instances": {
 				"title": "Laufende Prozessinstanzen",
@@ -28,8 +28,8 @@
 				"none": "Keine Vorfälle!"
 			},
 			"open-human-tasks": {
-				"title": "Offene manuelle Aufgaben",
-				"tooltip": "Alle ausstehenden manuellen Aufgaben anzeigen"
+				"title": "Offene Aufgaben",
+				"tooltip": "Alle ausstehenden Aufgaben anzeigen"
 			},
 			"processes": {
 				"title": "Prozessdefinitionen",
@@ -40,12 +40,12 @@
 				"tooltip": "Verfügbare Entscheidungsdefinitionen durchsuchen"
 			},
 			"deployments": {
-				"title": "Bereitstellungen",
-				"tooltip": "Alle bereitgestellten Prozessressourcen anzeigen"
+				"title": "Deployments",
+				"tooltip": "Alle Deployments anzeigen"
 			},
 			"batches": {
-				"title": "Stapel",
-				"tooltip": "Stapeloperationen verwalten und anzeigen"
+				"title": "Batches",
+				"tooltip": "Batch-Operationen verwalten und anzeigen"
 			}
 		}
 	},
