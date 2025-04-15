@@ -76,7 +76,42 @@ export default {
         chart: {
           type: 'donut',
         },
-        labels: [],
+        title: {
+          text: 'Chart Title',
+          align: 'center', // or 'left', 'right'
+          style: {
+            fontSize: '20px',
+            color: '#333'
+          }
+        },
+        lables: [],
+        plotOptions: {
+          pie: {
+            donut: {
+              labels: {
+                show: true,
+                name: {
+                  show: true,
+                },
+                value: {
+                  show: true,
+                },
+                total: {
+                  show: true,
+                  label: '',
+                  formatter: (w) => {
+                    // Use the series data from the chart context
+                    return w.globals.seriesTotals.reduce((a, b) => a + b, 0);
+                  },
+                },
+              },
+            },
+          },
+        },
+        dataLabels: {
+          enabled: true,
+          formatter: (val) => "", // not showing percentage
+        },
         legend: {
           position: 'bottom',
         },
@@ -106,16 +141,23 @@ export default {
         this.openIncidents = analytics.openIncidents
         this.openHumanTasks = analytics.openHumanTasks
 
-        this.runningInstancesSeries = this.runningInstances.map(item => item.value)
-        this.openIncidentsSeries = this.openIncidents.map(item => item.value)
-        this.openHumanTasksSeries = this.openHumanTasks.map(item => item.value)
+        this.runningInstancesSeries = this.runningInstances.map(item => item.value).sort((a, b) => b - a);
+        this.openIncidentsSeries = this.openIncidents.map(item => item.value).sort((a, b) => b - a);
+        this.openHumanTasksSeries = this.openHumanTasks.map(item => item.value).sort((a, b) => b - a);
 
-        this.chartOptions.labels = this.runningInstances.map(item => item.title)
+        // Update chart options with reactivity
+        this.chartOptions = {
+          ...this.chartOptions,
+          labels: this.runningInstances.map(item => item.title),
+        }
+        
         this.deploymentItems[0].count = analytics.processDefinitionsCount
         this.deploymentItems[1].count = analytics.decisionDefinitionsCount
         this.deploymentItems[2].count = analytics.deploymentsCount
         this.deploymentItems[3].count = analytics.batchesCount
+
       } catch (error) {
+
         console.error('Error loading analytics:', error)
         this.errorLoading = true
         this.runningInstancesSeries = []
