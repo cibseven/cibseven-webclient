@@ -1,9 +1,9 @@
 <template>
-  <div class="container-fluid bg-light pt-3 overflow-auto">
-    <div class="row justify-content-around">
+  <div class="d-flex flex-column bg-light overflow-auto">
+    <div class="container bg-light pt-3 px-0">
 
-      <div class="col-12 col-md-11 p-3 my-3 bg-white border rounded shadow-sm">
-        <h5>{{ $t('processes-dashboard.headerActive') }}</h5>
+      <div class="col-12 p-0 my-3 bg-white border rounded shadow-sm">
+        <h5 class="ps-3 pt-3">{{ $t('processes-dashboard.headerActive') }}</h5>
         <hr>
         <div class="row">
           <PieChart class="col-12 col-md-4 px-0 m-0" :items="runningInstances"
@@ -27,10 +27,10 @@
         </div>
       </div>
 
-      <div class="col-12 col-md-11 p-3 my-3 bg-white border rounded shadow-sm">
-        <h5>{{ $t('processes-dashboard.headerDeployed') }}</h5>
-        <hr>
-        <div class="row">
+      <div class="col-12 p-0 my-3 bg-white border rounded shadow-sm">
+        <h5 class="ps-3 pt-3">{{ $t('processes-dashboard.headerDeployed') }}</h5>
+        <hr class="mb-0">
+        <div class="row p-3">
           <DeploymentItem v-for="(item, index) in deploymentItems" :key="index"
             class="col-12 col-md-3"
             :title="$t(item.title)"
