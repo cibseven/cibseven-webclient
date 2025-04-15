@@ -1,5 +1,5 @@
 <template>
-  <Sidebars ref="sidebars" header-margin="55px" v-model:left-open="leftOpen"
+  <SidebarsFlow ref="sidebars" header-margin="55px" v-model:left-open="leftOpen"
     :left-caption="$t('admin.groups.title') + ' - ' + group.id" :left-size="[12, 6, 4, 3, 2]">
     <template v-slot:left>
       <b-list-group>
@@ -80,13 +80,13 @@
     </transition>
     <SuccessAlert ref="updateGroup" top="0" style="z-index: 1031">{{ $t('admin.groups.updateGroupMessage', [group.id]) }}</SuccessAlert>
     <SuccessAlert ref="deleteGroup" top="0" style="z-index: 1031">{{ $t('admin.groups.deleteGroupMessage', [group.id]) }}</SuccessAlert>
-  </Sidebars>
+  </SidebarsFlow>
 </template>
 
 <script>
 import { AdminService } from '@/services.js'
 import { notEmpty } from '@/components/admin/utils.js'
-import Sidebars from '@/components/common-components/Sidebars.vue'
+import SidebarsFlow from '@/components/common-components/SidebarsFlow.vue'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import CIBForm from '@/components/common-components/CIBForm.vue'
@@ -94,7 +94,7 @@ import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
 
 export default {
   name: 'ProfileGroup',
-  components: { Sidebars, FlowTable, SuccessAlert, CIBForm, ConfirmDialog },
+  components: { SidebarsFlow, FlowTable, SuccessAlert, CIBForm, ConfirmDialog },
   data: function() {
     return {
       leftOpen: true,

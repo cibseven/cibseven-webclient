@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/no-mutating-props -->
 <template>
   <b-modal ref="otpDialog" v-if="credentials2" :title="$t('login.2fa')" @shown="$refs.otp.focus()">
     <CIBForm ref="form2" @submitted="onLogin2">
@@ -12,6 +13,7 @@
   </b-modal>
 </template>
 
+<!-- eslint-disable vue/no-mutating-props -->
 <script>
 import AuthService from '@/components/login/authService.js'
 import CIBForm from '@/components/common-components/CIBForm.vue'
