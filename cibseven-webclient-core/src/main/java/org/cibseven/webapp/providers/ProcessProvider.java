@@ -213,6 +213,12 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		String url = camundaUrl + "/engine-rest/process-definition/" + processId + "/statistics?failedJobs=true";
 		return Arrays.asList(((ResponseEntity<ProcessStatistics[]>) doGet(url, ProcessStatistics[].class, user, false)).getBody());
 	}
+
+  @Override
+  public Collection<ProcessStatistics> getProcessStatistics(CIBUser user) {
+    String url = camundaUrl + "/engine-rest/process-definition/statistics?failedJobs=true";
+    return Arrays.asList(((ResponseEntity<ProcessStatistics[]>) doGet(url, ProcessStatistics[].class, user, false)).getBody());
+  }
 	
 	@Override
 	public HistoryProcessInstance findHistoryProcessInstanceHistory(String processInstanceId, CIBUser user) {
@@ -360,6 +366,5 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		if (user != null) headers.add("Authorization", user.getAuthToken());
 		return headers;
 	}
-	
 	
 }

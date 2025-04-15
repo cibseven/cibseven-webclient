@@ -1,0 +1,8 @@
+logging:
+  level:
+    root: DEBUG
+    org.cibseven: DEBUG
+
+# Token generation
+authentication:
+  jwtSecret: X2juIHYcym5ztMnJ86lt5vsk9TPj8y81wJk6OCwZILOqxC3BKCopont9lCC2mKOiVQTSBciVuBXwoqJRFS08VfoP8zsKiLTtF5lZigFB5ykkWsNIFdY9938V0UuUx2hPfeIZwLvftsYVcpAGDXTMVJssENq

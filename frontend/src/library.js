@@ -65,6 +65,9 @@ import ProcessListView from '@/components/processes/list/ProcessListView.vue'
 import ProcessTable from '@/components/start-process/ProcessTable.vue'
 import ProcessInstanceView from '@/components/process/ProcessInstanceView.vue'
 import ProcessDefinitionView from '@/components/process/ProcessDefinitionView.vue'
+import ProcessesDashboardView from '@/components/processes/dashboard/ProcessesDashboardView.vue'
+import PieChart from '@/components/processes/dashboard/PieChart.vue'
+import DeploymentItem from '@/components/processes/dashboard/DeploymentItem.vue'
 import DeleteProcessDefinitionModal from '@/components/process/modals/DeleteProcessDefinitionModal.vue'
 import ConfirmActionOnProcessInstanceModal from '@/components/process/modals/ConfirmActionOnProcessInstanceModal.vue'
 import StartProcess from '@/components/start-process/StartProcess.vue'
@@ -153,6 +156,9 @@ const registerComponents = function(app) {
   app.component('process-definition-view', ProcessDefinitionView)
   app.component('delete-process-definition-modal', DeleteProcessDefinitionModal)
   app.component('confirm-action-on-process-instance-modal', ConfirmActionOnProcessInstanceModal)
+  app.component('processes-dashboard-view', ProcessesDashboardView)
+  app.component('pie-chart', PieChart)
+  app.component('deployment-item', DeploymentItem)
   app.component('start-process', StartProcess)
   app.component('task-assignation-modal', TaskAssignationModal)
   app.component('variables-table', VariablesTable)
@@ -251,6 +257,9 @@ export {
   ProcessDefinitionView,
   DeleteProcessDefinitionModal,
   ConfirmActionOnProcessInstanceModal,
+  ProcessesDashboardView,
+  PieChart,
+  DeploymentItem,
   StartProcess,
   TaskAssignationModal,
   VariablesTable,

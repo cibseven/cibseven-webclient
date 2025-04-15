@@ -15,6 +15,41 @@
 		"login": "Iniciar sesión",
 		"forgotten": "¿Olvidaste tu contraseña?"
 	},
+	"processes-dashboard": {
+		"headerActive": "Panel de Operaciones",
+		"headerDeployed": "Desplegados",
+		"items": {
+			"running-instances": {
+				"title": "Instancias de proceso en ejecución",
+				"tooltip": "Explora todas las instancias de proceso activas"
+			},
+			"open-incidents": {
+				"title": "Incidentes abiertos",
+				"tooltip": "Revisa todos los incidentes abiertos actualmente",
+				"none": "¡Sin incidentes!"
+			},
+			"open-human-tasks": {
+				"title": "Tareas humanas abiertas",
+				"tooltip": "Ver todas las tareas humanas pendientes"
+			},
+			"processes": {
+				"title": "Definiciones de procesos",
+				"tooltip": "Explora las definiciones de procesos disponibles"
+			},
+			"decisions": {
+				"title": "Definiciones de decisiones",
+				"tooltip": "Explora las definiciones de decisiones disponibles"
+			},
+			"deployments": {
+				"title": "Despliegues",
+				"tooltip": "Ver todos los recursos de procesos desplegados"
+			},
+			"batches": {
+				"title": "Lotes",
+				"tooltip": "Gestiona y visualiza operaciones por lotes"
+			}
+		}
+	},
 	"process": {
 		"instanceRunning": "Instancia en ejecución",
 		"instanceIncidents": "Instancia con incidentes",

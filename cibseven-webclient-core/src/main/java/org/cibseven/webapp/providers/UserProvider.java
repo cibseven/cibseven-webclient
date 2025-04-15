@@ -123,7 +123,7 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 			Optional<String> lastNameLike, Optional<String> email, Optional<String> emailLike, Optional<String> memberOfGroup, Optional<String> memberOfTenant,
 			Optional<String> idIn, Optional<String> firstResult, Optional<String> maxResults, Optional<String> sortBy, Optional<String> sortOrder, CIBUser user) {
 		
-		if (!userProvider.equals("de.cib.cibflow.auth.SevenUserProvider")) {
+		if (!userProvider.equals("org.cibseven.webapp.auth.SevenUserProvider")) {
 			String url = createFindUserCaseInsensitiveUrl(id, firstName, firstNameLike, lastName, lastNameLike, email, emailLike, memberOfGroup, memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder); 
 			return Arrays.asList(((ResponseEntity<User[]>) doGet(url, User[].class, user, true)).getBody());
 		}

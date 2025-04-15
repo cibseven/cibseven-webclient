@@ -14,6 +14,41 @@
 		"login": "Anmelden",
 		"forgotten": "Passwort zurücksetzen?"
 	},
+	"processes-dashboard": {
+		"headerActive": "Operatives Dashboard",
+		"headerDeployed": "Deployed",
+		"items": {
+			"running-instances": {
+				"title": "Laufende Prozessinstanzen",
+				"tooltip": "Alle aktiven Prozessinstanzen anzeigen"
+			},
+			"open-incidents": {
+				"title": "Offene Vorfälle",
+				"tooltip": "Alle derzeit offenen Vorfälle überprüfen",
+				"none": "Keine Vorfälle!"
+			},
+			"open-human-tasks": {
+				"title": "Offene Aufgaben",
+				"tooltip": "Alle ausstehenden Aufgaben anzeigen"
+			},
+			"processes": {
+				"title": "Prozessdefinitionen",
+				"tooltip": "Verfügbare Prozessdefinitionen durchsuchen"
+			},
+			"decisions": {
+				"title": "Entscheidungsdefinitionen",
+				"tooltip": "Verfügbare Entscheidungsdefinitionen durchsuchen"
+			},
+			"deployments": {
+				"title": "Deployments",
+				"tooltip": "Alle Deployments anzeigen"
+			},
+			"batches": {
+				"title": "Batches",
+				"tooltip": "Batch-Operationen verwalten und anzeigen"
+			}
+		}
+	},
 	"process" : {
 		"instanceRunning": "Instanz läuft",
 		"instanceIncidents": "Instanz mit Vorfällen",
