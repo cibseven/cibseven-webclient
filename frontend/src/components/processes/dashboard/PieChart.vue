@@ -8,7 +8,9 @@
             >
                 {{ title }}
             </h5>
-        <b-waiting-box v-if="loading" />
+        <div class="waiting-box-container" v-if="loading">
+            <b-waiting-box class="d-inline" styling="width: 84%" :title="$t('admin.loading')" />
+        </div>
         <apexchart v-else
                 type="donut"
                 :options="chartOptions"
@@ -137,5 +139,8 @@
     cursor: pointer;
     margin-bottom: 10px;
     font-weight: bold;
+}
+.waiting-box-container {
+    text-align: center;
 }
 </style>

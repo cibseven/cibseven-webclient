@@ -73,13 +73,13 @@ export default {
   },
   computed: {
     runningInstancesSeries() {
-      return this.runningInstances ? this.runningInstances : []
+      return this.runningInstances
     },
     openIncidentsSeries() {
-      return this.openIncidents ? this.openIncidents : []
+      return this.openIncidents
     },
     openHumanTasksSeries() {
-      return this.openHumanTasks ? this.openHumanTasks : []
+      return this.openHumanTasks
     },
   },
   methods: {
@@ -87,6 +87,8 @@ export default {
       try {
         this.errorLoading = false
         const analytics = await AnalyticsService.getAnalytics()
+        
+        // await new Promise(resolve => setTimeout(resolve, 2000))
 
         // Prepare data for charts
         this.runningInstances = analytics.runningInstances
