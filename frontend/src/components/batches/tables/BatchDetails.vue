@@ -1,11 +1,11 @@
 <template>
-  <div class="bg-white shadow p-3" v-if="batchId && type">
+  <div class="bg-white shadow p-3" v-if="batchId && batchType">
     <div v-if="batchDetails && batchDetails.length > 0 && !loading">
-      <h4 class="d-inline">{{ $t('batches.' + type + 'Details') }}</h4>
+      <h4 class="d-inline">{{ $t('batches.' + batchType + 'Details') }}</h4>
       <b-button class="border float-end" size="sm" variant="light" @click="$refs.confirmRemove.show()" :title="$t('batches.remove')">
         <span class="mdi mdi-delete-outline me-1"></span>{{ $t('batches.remove') }}
       </b-button>
-      <b-button v-if="type === 'runtime'" class="border float-end me-1" size="sm" variant="light" 
+      <b-button v-if="batchType === 'runtime'" class="border float-end me-1" size="sm" variant="light" 
         @click="setBatchSuspensionState" :title="$t('batches.suspend')">
         <span class="mdi me-1" :class="batch.suspended ? 'mdi-play' : 'mdi-pause'"></span>
         {{ batch.suspended ? $t('batches.activate') : $t('batches.suspend') }}
@@ -38,11 +38,11 @@
   import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
   import { BWaitingBox } from 'cib-common-components'
   import { BatchService } from '@/services.js'
+  import { mapActions, mapGetters } from 'vuex'
 
   export default {
     name: 'BatchDetails',
-    emits: ['batch-deleted'],
-    components: { FlowTable, BWaitingBox, ConfirmDialog },
+    components: { FlowTable, BWaitingBox, ConfirmDialog },    
     watch: {
       '$route.query': {
         handler() {
@@ -51,15 +51,20 @@
         immediate: true
       }
     },
-    data: function () {
+    data: function() {
       return {
         batch: null,
-        batchId: null,
-        type: null,
         loading: false
       }
     },
     computed: {
+      ...mapGetters(['selectedHistoricBatch']),
+      batchId: function() {
+        return this.$route.query.id
+      },
+      batchType: function() {
+        return this.$route.query.type
+      },
       batchDetails: function() {
         if (!this.batch) return []
         return Object.entries(this.batch)
@@ -74,45 +79,38 @@
               value: formattedValue
             }
           })
-      },
+      }
     },
     methods: {
-      loadBatchDetails: function() {
-        this.batchId = this.$route.query.id
-        this.type = this.$route.query.type
-        if (!this.batchId || !this.type) return
-        this.batch = null  
+      ...mapActions(['deleteHistoricBatch', 'deleteRuntimeBatch', 'getHistoricBatch']),
+      async loadBatchDetails() {
+        if (!this.batchId || !this.batchType) return
+        this.batch = null
         this.loading = true
-        if (this.type === 'history') {
-          BatchService.getHistoricBatchById(this.batchId).then(res => {
-            this.batch = res
-          }).finally(() => {
-            this.loading = false
-          })
-        } else if (this.type === 'runtime') {
-          BatchService.getBatchStatistics({ batchId: this.batchId }).then(res => {
+
+        try {
+          if (this.batchType === 'history') {
+            this.batch = await this.getHistoricBatch(this.batchId)
+          } else if (this.batchType === 'runtime') {
+            const res = await BatchService.getBatchStatistics({ batchId: this.batchId })
             this.batch = res[0]
-          }).finally(() => {
-            this.loading = false
-          })
+          }
+        } finally {
+          this.loading = false
         }
       },
-      setBatchSuspensionState: function() {
-        var params = { suspended: !this.batch.suspended }
-        BatchService.setBatchSuspensionState(this.batchId, params).then(() => {
-          this.batch.suspended = !this.batch.suspended
-        })
+      async setBatchSuspensionState() {
+        const params = { suspended: !this.batch.suspended }
+        await BatchService.setBatchSuspensionState(this.batchId, params)
+        this.batch.suspended = !this.batch.suspended
       },
       removeBatch: function() {
-        if (this.type === 'history') {
-          BatchService.deleteHistoricBatch(this.batchId).then(() => {
-            this.$emit('batch-deleted', { id: this.batchId, type: this.type })
+        if (this.batchType === 'history') {
+          this.deleteHistoricBatch(this.batchId).then(() => {
             this.$router.replace({ query: {} })
           })
-        } else if (this.type === 'runtime') {
-          var params = { cascade: true }
-          BatchService.deleteBatch(this.batchId, params).then(() => {
-            this.$emit('batch-deleted', { id: this.batchId, type: this.type })
+        } else if (this.batchType === 'runtime') {
+          this.deleteRuntimeBatch(this.batchId).then(() => {
             this.$router.replace({ query: {} })
           })
         }

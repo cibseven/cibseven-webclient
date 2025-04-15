@@ -36,7 +36,7 @@
 <script>
   import moment from 'moment'
   import FlowTable from '@/components/common-components/FlowTable.vue'
-  import { BatchService } from '@/services.js'
+  import { mapGetters, mapActions } from 'vuex'
   import { debounce } from '@/utils/debounce.js'
   import { BWaitingBox } from 'cib-common-components'
 
@@ -44,20 +44,23 @@
     name: 'HistoricBatches',
     components: { FlowTable, BWaitingBox },
     inject: ['currentLanguage'],
-    data: function () {
+    data() {
       return {
         loading: false,
-        historicBatches: [],
         firstResult: 0,
         maxResults: 40,
+        hasMore: true
       }
     },
     mounted: function() {
-      this.loading = true
-      this.loadHistoricBatches()
+      this.fetchHistoricBatches()
+    },
+    computed: {
+      ...mapGetters(['historicBatches'])
     },
     methods: {
-      loadHistoricBatches: debounce(800, function (showMore = false) {
+      ...mapActions(['loadHistoricBatches']),
+      fetchHistoricBatches: debounce(500, function (showMore = false) {
         this.loading = true
         const params = {
           finished: true,
@@ -66,42 +69,30 @@
           firstResult: this.firstResult,
           maxResults: this.maxResults
         }
-        BatchService.getHistoricBatches(params).then(res => {
-          const historicBatches = res.filter(batch => batch.endTime != null)
-          if (!showMore) this.historicBatches = historicBatches
-          else this.historicBatches = this.historicBatches.concat(historicBatches)
+        this.loadHistoricBatches({ query: params, append: showMore }).then(res => {
+          this.firstResult += res.length
+          this.hasMore = res.length === this.maxResults
           this.loading = false
         })
       }),
       showMore: function(el) {
-        if (this.firstResult <= this.historicBatches.length && !this.loading) {
-          if ((el.target.offsetHeight + el.target.scrollTop + 1) >= el.target.scrollHeight) {
-            this.firstResult += this.maxResults
-            this.loading = true
-            this.loadHistoricBatches(true)
-          }
+        if (this.loading || !this.hasMore) return
+        const nearBottom = el.target.scrollTop + el.target.offsetHeight >= el.target.scrollHeight - 1
+        if (nearBottom) {
+          this.fetchHistoricBatches(true)
         }
       },
       loadBatchDetails: function(batch) {
         this.$router.replace({ 
-          query: { 
-            id: batch.id,
-            type: 'history'
-          } 
+          query: { id: batch.id, type: 'history' }
         })
-      },
-      removeBatch: function(id) {
-        const index = this.historicBatches.findIndex(b => b.id === id)
-        if (index !== -1) {
-          this.historicBatches.splice(index, 1)
-        }
       },
       formatDate: function(date) {
         return moment(date).format('DD/MM/YYYY HH:mm:ss')
       },
       batchIsSelected: function(id) {
         return this.$route.query.id === id && this.$route.query.type === 'history'
-      },
+      }
     }
   }
 </script>

@@ -40,7 +40,7 @@
 <script>
   import moment from 'moment'
   import FlowTable from '@/components/common-components/FlowTable.vue'
-  import { BatchService, ProcessService } from '@/services.js'
+  import { mapGetters, mapActions } from 'vuex'
   import { BWaitingBox } from 'cib-common-components'
 
   export default {
@@ -50,7 +50,6 @@
     data: function () {
       return {
         loading: false,
-        batches: [],
         intervalMs: 5000,
         batchesInterval: null
       }
@@ -59,24 +58,27 @@
       this.loading = true
       this.loadBatches()
     },
+    computed: {
+      ...mapGetters(['runtimeBatches']),
+      batches: function() {
+        return this.runtimeBatches.map(batch => {
+          const total = batch.totalJobs || 0
+          const remaining = batch.remainingJobs || 0
+          const completed = total - remaining
+          return { ...batch, completed }
+        })
+      }
+    },
     methods: {
+      ...mapActions(['getRuntimeBatches']),
       loadBatches: function() {
-        const params = {}
-        BatchService.getBatches(params).then(res => {
-          this.batches = res.map(batch => {
-            const total = batch.totalJobs || 0
-            const remaining = batch.remainingJobs || 0
-            const completed = total - remaining
-            return { ...batch, completed }
-          })
-
-          if (this.batches.length > 0 && !this.batchesInterval) {
+        this.getRuntimeBatches().then(() => {
+          if (this.runtimeBatches.length > 0 && !this.batchesInterval) {
             this.batchesInterval = setInterval(() => {
               this.loadBatches()
             }, this.intervalMs)
           }
-
-          if (this.batches.length === 0 && this.batchesInterval) {
+          if (this.runtimeBatches.length === 0 && this.batchesInterval) {
             clearInterval(this.batchesInterval)
             this.batchesInterval = null
           }
@@ -98,12 +100,6 @@
       },
       formatDate: function(date) {
         return moment(date).format('DD/MM/YYYY HH:mm:ss')
-      },
-      removeBatch: function(id) {
-        const index = this.batches.findIndex(b => b.id === id)
-        if (index !== -1) {
-          this.batches.splice(index, 1)
-        }
       },
       batchIsSelected: function(id) {
         return this.$route.query.id === id && this.$route.query.type === 'runtime'
