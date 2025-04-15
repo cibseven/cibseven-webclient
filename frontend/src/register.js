@@ -35,7 +35,7 @@ const registerOwnComponents = function(app) {
 
   app.component('GlobalEvents', GlobalEvents)
 
-  app.component('apexchart', VueApexCharts)
+  app.component('apex-chart', VueApexCharts)
 }
 
 export default registerOwnComponents

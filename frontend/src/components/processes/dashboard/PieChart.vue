@@ -8,7 +8,7 @@
         <div class="waiting-box-container" v-if="loading">
             <b-waiting-box class="d-inline" styling="width: 84%" :title="$t('admin.loading')" />
         </div>
-        <apexchart v-else
+        <apex-chart v-else
                 type="donut"
                 :options="chartOptions"
                 :series="values"
@@ -42,14 +42,17 @@
         loading: function() {
             return !this.items
         },
+        sortedItems() {
+            return [...this.items].sort((a, b) => b.value - a.value)
+        },
         values: function() {
             if (this.items.length === 0) {
                 return [0]
             }
-            return this.items.sort((a, b) => b.value - a.value).map(item => item.value)
+            return this.sortedItems.map(item => item.value)
         },
         labels: function() {
-            return this.items.sort((a, b) => b.value - a.value).map(item => item.title)
+            return this.sortedItems.map(item => item.title)
         },
         chartOptions: function() {
             return {
