@@ -6,24 +6,27 @@
         <h5 class="ps-3 pt-3">{{ $t('processes-dashboard.headerActive') }}</h5>
         <hr>
         <div class="row">
-          <PieChart class="col-12 col-md-4 px-0 m-0" :items="runningInstances"
-            :title="$t('processes-dashboard.items.running-instances.title')"
-            :tooltip="$t('processes-dashboard.items.running-instances.tooltip')"
-            link="/seven/auth/processes/list"
-            :total-zero="errorLoading ? 'x': undefined"
-          ></PieChart>
-          <PieChart class="col-12 col-md-4 px-0 m-0" :items="openIncidents"
-            :title="$t('processes-dashboard.items.open-incidents.title')"
-            :tooltip="$t('processes-dashboard.items.open-incidents.tooltip')"
-            link="/seven/auth/processes/list"
-            :total-zero="errorLoading ? 'x': $t('processes-dashboard.items.open-incidents.none')"
-          ></PieChart>
-          <PieChart class="col-12 col-md-4 px-0 m-0" :items="openHumanTasks"
-            :title="$t('processes-dashboard.items.open-human-tasks.title')"
-            :tooltip="$t('processes-dashboard.items.open-human-tasks.tooltip')"
-            link="/seven/auth/human-tasks"
-            :total-zero="errorLoading ? 'x': undefined"
-          ></PieChart>
+          <div class="col-12 col-md-4 px-0 m-0">
+            <apexchart
+              type="donut"
+              :options="chartOptions"
+              :series="runningInstancesSeries"
+            ></apexchart>
+          </div>
+          <div class="col-12 col-md-4 px-0 m-0">
+            <apexchart
+              type="donut"
+              :options="chartOptions"
+              :series="openIncidentsSeries"
+            ></apexchart>
+          </div>
+          <div class="col-12 col-md-4 px-0 m-0">
+            <apexchart
+              type="donut"
+              :options="chartOptions"
+              :series="openHumanTasksSeries"
+            ></apexchart>
+          </div>
         </div>
       </div>
 
@@ -47,12 +50,12 @@
 
 <script>
 import { AnalyticsService } from '@/services.js'
-import PieChart from '@/components/processes/dashboard/PieChart.vue'
 import DeploymentItem from '@/components/processes/dashboard/DeploymentItem.vue'
+import VueApexCharts from "vue3-apexcharts"
 
 export default {
   name: 'ProcessesDashboardView',
-  components: { PieChart, DeploymentItem },
+  components: { DeploymentItem, apexchart: VueApexCharts },
   data() {
     return {
       errorLoading: false,
@@ -69,6 +72,23 @@ export default {
         { title: 'processes-dashboard.items.batches.title',
         tooltip: 'processes-dashboard.items.batches.tooltip', count: null, link: '/seven/auth/batches' },
       ],
+      chartOptions: {
+        chart: {
+          type: 'donut',
+        },
+        labels: [],
+        legend: {
+          position: 'bottom',
+        },
+        tooltip: {
+          y: {
+            formatter: (val) => val,
+          },
+        },
+      },
+      runningInstancesSeries: [],
+      openIncidentsSeries: [],
+      openHumanTasksSeries: [],
     }
   },
   mounted() {
@@ -80,14 +100,17 @@ export default {
         this.errorLoading = false
         const analytics = await AnalyticsService.getAnalytics()
         console.debug(analytics)
-        this.runningInstances = Array.from(analytics.runningInstances).map(item => {
-          return {
-            ...item,
-            link: '/seven/auth/process/' + item.id
-          }
-        })
+
+        // Prepare data for charts
+        this.runningInstances = analytics.runningInstances
         this.openIncidents = analytics.openIncidents
         this.openHumanTasks = analytics.openHumanTasks
+
+        this.runningInstancesSeries = this.runningInstances.map(item => item.value)
+        this.openIncidentsSeries = this.openIncidents.map(item => item.value)
+        this.openHumanTasksSeries = this.openHumanTasks.map(item => item.value)
+
+        this.chartOptions.labels = this.runningInstances.map(item => item.title)
         this.deploymentItems[0].count = analytics.processDefinitionsCount
         this.deploymentItems[1].count = analytics.decisionDefinitionsCount
         this.deploymentItems[2].count = analytics.deploymentsCount
@@ -95,9 +118,9 @@ export default {
       } catch (error) {
         console.error('Error loading analytics:', error)
         this.errorLoading = true
-        this.runningInstances = []
-        this.openIncidents = []
-        this.openHumanTasks = []
+        this.runningInstancesSeries = []
+        this.openIncidentsSeries = []
+        this.openHumanTasksSeries = []
         this.deploymentItems[0].count = 'x'
         this.deploymentItems[1].count = 'x'
         this.deploymentItems[2].count = 'x'
