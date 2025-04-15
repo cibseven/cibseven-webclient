@@ -21,7 +21,7 @@
     "build": "vite build",
     "build:library": "cross-env BUILD_MODE=library vite build",
     "preview": "vite preview",
-    "test:report": "vitest run --reporter=junit --outputFile=reports/junit.xml",
+    "test:report": "vitest run --reporter=junit --outputFile=target/vitest-reports/TEST-front-end.xml",
     "test:unit": "vitest",
     "prepare": "cypress install",
     "test:e2e": "start-server-and-test preview http://localhost:4173 'cypress run --e2e'",
