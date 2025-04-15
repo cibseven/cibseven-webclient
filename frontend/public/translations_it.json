@@ -326,7 +326,16 @@
 				"diagnosticData": "Dati diagnostici"
 			},
 			"execution-metrics": {
-				"title": "Metriche di esecuzione"
+				"title": "Metriche di esecuzione",
+				"metricsHelp": "Numero registrato di Istanze di Processo (PI) e Istanze di Decisione (DI) elaborate dal motore, e Utenti di Attività (TU) assegnati a un'attività utente nell'intervallo di tempo selezionato.",
+				"startDateContract": "Data di inizio del contratto",
+				"process-instances": "Istanze di decisione",
+				"decision-instances": "Istanze di processo",
+				"task-users": "Utenti di attività",
+				"usageLast12MonthsByMonth": "Utilizzo negli ultimi 12 mesi per mese",
+				"annualUsageBySubscriptionTerm": "Metriche di utilizzo annuali per periodo di abbonamento",
+				"fromUpToToday": "{from} fino ad oggi",
+				"fromTo": "da {from} a {to}"
 			}
 		}
 	},

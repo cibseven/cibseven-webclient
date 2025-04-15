@@ -89,6 +89,8 @@ import DecisionDefinitionVersion from '@/components/decision/DecisionDefinitionV
 import TenantsView from '@/components/tenants/TenantsView.vue'
 import BatchesView from '@/components/batches/BatchesView.vue'
 import SystemView from '@/components/system/SystemView.vue'
+import SystemDiagnostics from '@/components/system/SystemDiagnostics.vue'
+import ExecutionMetrics from '@/components/system/ExecutionMetrics.vue'
 import ShortcutsModal from '@/components/modals/ShortcutsModal.vue'
 import ShortcutsTable from '@/components/modals/ShortcutsTable.vue'
 import { TaskService, HistoryService, ProcessService } from '@/services.js';
@@ -178,11 +180,12 @@ const registerComponents = function(app) {
   app.component('system-view', SystemView)
   app.component('deployed-form', DeployedForm)
   app.component('start-deployed-form', StartDeployedForm)
+  app.component('system-diagnostics', SystemDiagnostics)
+  app.component('execution-metrics', ExecutionMetrics)
 }
 
 export {
   registerComponents,
-
   TenantsView,
   BatchesView,
   SystemView,
@@ -276,5 +279,7 @@ export {
   DecisionListView,
   DecisionDefinitionVersion,
   StartDeployedForm,
-  DeployedForm
+  DeployedForm,
+  SystemDiagnostics,
+  ExecutionMetrics
 }

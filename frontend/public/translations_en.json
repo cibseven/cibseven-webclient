@@ -468,7 +468,16 @@
 				"diagnosticData": "Diagnostics Data"
 			},
 			"execution-metrics": {
-				"title": "Execution Metrics"
+				"title": "Execution Metrics",
+				"metricsHelp": "Recorded number of Process Instances (PI) and Decision Instances (DI) processed by the engine and Task Users (TU) that were assigned to a user task in the selected time range.",
+				"startDateContract": "Contract start date",
+				"process-instances": "Process instances",
+				"decision-instances": "Decision instances",
+				"task-users": "Task users",
+				"usageLast12MonthsByMonth": "Usage last 12 months by month",
+				"annualUsageBySubscriptionTerm": "Annual usage metrics by subscription term",
+				"fromUpToToday": "{from} up to today",
+				"fromTo": "{from} to {to}"
 			}
 		}
 	},

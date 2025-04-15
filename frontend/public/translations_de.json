@@ -469,7 +469,16 @@
 				"diagnosticData": "Diagnosedaten"
 			},
 			"execution-metrics": {
-				"title": "Ausführungsmetriken"
+				"title": "Ausführungsmetriken",
+				"metricsHelp": "Erfasste Anzahl von Prozessinstanzen (PI) und Entscheidungsinstanzen (DI), die von der Engine verarbeitet wurden, sowie Task-Nutzer (TU), die im ausgewählten Zeitraum einer Benutzeraufgabe zugewiesen wurden.",
+				"startDateContract": "Vertragsbeginn",
+				"process-instances": "Entscheidungsinstanzen",
+				"decision-instances": "Prozessinstanzen",
+				"task-users": "Aufgabenbenutzer",
+				"usageLast12MonthsByMonth": "Nutzung der letzten 12 Monate nach Monat",
+				"annualUsageBySubscriptionTerm": "Jährliche Nutzungsmetriken nach Abonnementlaufzeit",
+				"fromUpToToday": "{from} bis heute",
+				"fromTo": "{from} bis {to}"
 			}
 		}
 	},
