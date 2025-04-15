@@ -837,6 +837,8 @@ public interface BpmProvider {
 			CIBUser user);
 
 	List<Incident> findIncidentByInstanceId(String processInstanceId, CIBUser user);
+	
+	Collection<Incident> fetchIncidentsByInstanceAndActivityId(String processDefinitionKey, String activityId, CIBUser user);
 
 	String findStacktrace(String jobId, CIBUser user);
 

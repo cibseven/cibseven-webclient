@@ -42,6 +42,7 @@ public interface IIncidentProvider {
 			Optional<String> jobDefinitionIdIn, // Restricts to incidents that have one of the given comma-separated job definition ids.			
 			CIBUser user);
 	public List<Incident> findIncidentByInstanceId(String processInstanceId, CIBUser user);
-	public Collection<Incident> fetchIncidents(String processDefinitionKey, CIBUser user);
-	public void setIncidentAnnotation(String incidentId, Map<String, Object> data, CIBUser user);	
+	public Collection<Incident> fetchIncidents(String processDefinitionKey, CIBUser user);	
+	public Collection<Incident> fetchIncidentsByInstanceAndActivityId(String processDefinitionKey, String activityId, CIBUser user);
+	public void setIncidentAnnotation(String incidentId, Map<String, Object> data, CIBUser user);
 }
