@@ -1,13 +1,10 @@
 <template>
     <div>
-        <!-- Custom title with tooltip and click event -->
-        <h5
-                class="chart-title"
-                :title="tooltip"
-                @click="onTitleClick"
-            >
-                {{ title }}
-            </h5>
+        <h5 v-if="title" class="chart-title">
+            <router-link :to="link" :title="tooltip" class="text-decoration-none">
+                <span class="chart-title">{{ title }}</span>
+            </router-link>
+        </h5>
         <div class="waiting-box-container" v-if="loading">
             <b-waiting-box class="d-inline" styling="width: 84%" :title="$t('admin.loading')" />
         </div>
