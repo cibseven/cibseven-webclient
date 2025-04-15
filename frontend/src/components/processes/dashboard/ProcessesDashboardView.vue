@@ -88,6 +88,7 @@ export default {
         plotOptions: {
           pie: {
             donut: {
+              size: '40%',
               labels: {
                 show: true,
                 name: {
@@ -109,15 +110,13 @@ export default {
           },
         },
         dataLabels: {
-          enabled: true,
-          formatter: (val) => "", // not showing percentage
+          enabled: false
         },
         legend: {
-          position: 'bottom',
           show: false,
         },
         stroke: {
-          show: false, // Entfernt die Linien zwischen den Segmenten
+          show: false,
         },
         tooltip: {
           y: {
