@@ -3,10 +3,10 @@
     <router-link :to="link" :title="tooltip" class="text-decoration-none">
       <div class="bg-light py-3 m-2 text-center">
         <h5 class="link-dark">{{ title }}</h5>
-        <h4 class="link-dark">
+        <h2 class="link-dark">
           <span v-if="count !== null" :class="computedValueClass">{{ count }}</span>
-          <span v-else><BWaitingBox class="d-inline" styling="width: 19px" :title="$t('admin.loading')"></BWaitingBox></span>
-        </h4>
+          <span v-else><BWaitingBox class="d-inline" styling="width: 24px" :title="$t('admin.loading')"></BWaitingBox></span>
+        </h2>
       </div>
     </router-link>
   </div>

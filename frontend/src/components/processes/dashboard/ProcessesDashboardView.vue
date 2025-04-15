@@ -3,7 +3,7 @@
     <div class="row justify-content-around">
 
       <div class="col-12 col-md-11 p-3 my-3 bg-white border rounded shadow-sm">
-        <h3>{{ $t('processes-dashboard.headerActive') }}</h3>
+        <h5>{{ $t('processes-dashboard.headerActive') }}</h5>
         <hr>
         <div class="row">
           <PieChart class="col-12 col-md-4 px-0 m-0" :items="runningInstances"
@@ -28,7 +28,7 @@
       </div>
 
       <div class="col-12 col-md-11 p-3 my-3 bg-white border rounded shadow-sm">
-        <h3>{{ $t('processes-dashboard.headerDeployed') }}</h3>
+        <h5>{{ $t('processes-dashboard.headerDeployed') }}</h5>
         <hr>
         <div class="row">
           <DeploymentItem v-for="(item, index) in deploymentItems" :key="index"

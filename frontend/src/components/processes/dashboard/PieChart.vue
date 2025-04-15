@@ -11,7 +11,7 @@
         <g v-for="(item, index) in chartData" :key="index">
           <path v-if="item.value === 0"
             :d="getSlicePath(item, index)"
-            fill="#eeeeee"
+            fill="#C1CEDD"
             :transform="item.transform"
           />
           <router-link v-else :to="item.link ? item.link : link">
@@ -28,12 +28,17 @@
         </g>
       </svg>
       <div class="donut-chart-center">
-        <h4 class="link-dark">
-          <span v-if="loading"><BWaitingBox class="d-inline" styling="width: 19px" :title="$t('admin.loading')"></BWaitingBox></span>
+        <h5 v-if="isSpecialZeroOutput" class="link-dark">
+          <router-link :to="link" :title="tooltip" class="text-decoration-none">
+            <span class="link-dark p-1" :class="totalClass">{{ totalZero }}</span>
+          </router-link>
+        </h5>
+        <h2 v-else class="link-dark">
+          <span v-if="loading"><BWaitingBox class="d-inline" styling="width: 24px" :title="$t('admin.loading')"></BWaitingBox></span>
           <router-link v-else :to="link" :title="tooltip" class="text-decoration-none">
             <span class="link-dark p-1" :class="totalClass">{{ totalWithZero }}</span>
           </router-link>
-        </h4>
+        </h2>
       </div>
     </div>
   </div>
@@ -47,7 +52,7 @@ export default {
   components: { BWaitingBox },
   props: {
     size: { type: Number, default: 250 },
-    innerRadius: { type: Number, default: 20 }, // Inner radius for the donut hole
+    innerRadius: { type: Number, default: 23 }, // Inner radius for the donut hole
     outerRadius: { type: Number, default: 40 }, // Outer radius of the donut
     title: String,
     tooltip: String,
@@ -96,16 +101,19 @@ export default {
       return this.items === null
     },
     total: function () {
+      if (this.items === null) {
+        return 0
+      }
       return this.items.reduce((sum, item) => sum + item.value, 0)
     },
     totalWithZero: function () {
       return this.total === 0 ? this.totalZero : this.total
     },
     totalClass: function() {
-      if (this.totalWithZero === 'x') {
-        return 'text-warning'
-      }
-      return this.totalZero !== '0' ? 'text-success' : ''
+      return this.totalWithZero === 'x' ? 'text-warning' : ''
+    },
+    isSpecialZeroOutput: function() {
+      return this.total === 0 && (this.totalZero !== 'x' && this.totalZero !== '0')
     },
     chartData: function() {
       let offsetAngle = -90 // Start at 12 o'clock
