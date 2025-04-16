@@ -205,7 +205,7 @@ pipeline {
                             def dynamicVersion = "${baseVersion}-${BUILD_NUMBER}-SNAPSHOT"
 
                             sh """
-                                echo "Copying .npmrc file to frontend directory..."
+                                echo "Copy the .npmrc file to the frontend directory..."
                                 cp ${NPMRC_FILE} ./frontend/.npmrc
 
                                 echo "Setting dynamic version to ${dynamicVersion}..."
