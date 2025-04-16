@@ -9,9 +9,9 @@
         <b-collapse class="me-3" :id="key" v-model="group.visible">
           <div class="row">
             <div v-for="d of group.data" :key="d.id" class="col-md-6 col-lg-3 col-12 my-3">
-              <b-button @click="setDeployment(d)" variant="link" class="text-decoration-none p-0 w-100">
-                <b-card :class="d === deployment ? 'border-start border-primary' : ''" :style="d === deployment ? 'border-width: 4px !important;' : ''" style="min-height: 120px; border: 0">
-                  <b-card-body>
+              <b-button @click="setDeployment(d)" variant="link" class="text-decoration-none p-0 w-100 shadow-sm">
+                <b-card style="min-height: 120px;">
+                  <b-card-body :class="d === deployment ? 'border-start border-primary border-4' : ''">
                     <b-card-text>
                       <span @click.stop class="d-flex justify-content-start">
                         <b-form-checkbox size="sm" v-model="d.isSelected">
