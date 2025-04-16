@@ -228,6 +228,12 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	}
 	
 	@Override
+	public Collection<HistoryProcessInstance> findProcessesInstanceHistory(Map<String, Object> queryParams, CIBUser user){
+		String url = buildUrlWithParams(camundaUrl + "/engine-rest/history/process-instance" , queryParams);
+		return Arrays.asList(((ResponseEntity<HistoryProcessInstance[]>) doGet(url, HistoryProcessInstance[].class, user, false)).getBody());
+	}
+	
+	@Override
 	public Collection<HistoryProcessInstance> findProcessesInstancesHistoryById(String id, Optional<String> activityId, Optional<Boolean> active, 
 			Integer firstResult, Integer maxResults, String text, CIBUser user) {
 		String url = camundaUrl + "/engine-rest/history/process-instance?processDefinitionId=" + id;
@@ -324,7 +330,15 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	protected HttpHeaders addAuthHeader(HttpHeaders headers, CIBUser user) {
 		if (user != null) headers.add("Authorization", user.getAuthToken());
 		return headers;
+	}	
+
+	private String buildUrlWithParams(String baseUrl, Map<String, Object> queryParams) {
+	    UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(baseUrl);
+	    queryParams.forEach((key, value) -> {
+	        if (value != null) {
+	            builder.queryParam(key, value);
+	        }
+	    });
+	    return builder.toUriString();
 	}
-	
-	
 }

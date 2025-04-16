@@ -244,6 +244,15 @@ public interface BpmProvider {
      * @throws SystemException in case of an error.
      */
 	Collection<HistoryProcessInstance> findProcessesInstancesHistory(String key, Optional<Boolean> active, Integer firstResult, Integer maxResults, CIBUser user) throws SystemException;
+
+	/**
+	 * Search processes instances with a specific process key (in the history).
+	 * @param active true means that unfinished processes will be fetched 
+	 * and false, only finished processes will be fetched. Parameters firstResult and maxResults are used for pagination.
+     * @return Fetched processes instances.
+     * @throws SystemException in case of an error.
+     */
+	Collection<HistoryProcessInstance> findProcessesInstancesHistory(Map<String, Object> queryParams, CIBUser user) throws SystemException;
 	
 	/**
 	 * Search processes instances with a specific process key.

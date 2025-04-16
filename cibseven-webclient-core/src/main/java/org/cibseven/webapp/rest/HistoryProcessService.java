@@ -3,6 +3,7 @@ package org.cibseven.webapp.rest;
 import java.util.Collection;
 
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -70,6 +71,19 @@ public class HistoryProcessService extends BaseService {
 		checkPermission(user, SevenResourceType.HISTORY, PermissionConstants.READ_ALL);
 		return bpmProvider.findProcessesInstancesHistoryById(id, activityId, active, firstResult, maxResults, text, user);
 	}
+	
+	@Operation(
+			summary = "Queries for process instances (in the history) that fulfill given parameters."
+					+ "Parameters may be the properties of decision definitions, such as the name, key or version.",
+			description =  "<strong>Return: Collection of process instances (in the history)")
+	@ApiResponse(responseCode = "404", description = "Process not found")
+	@RequestMapping(value = "/process-history/instance/by-process-id/{id}", method = RequestMethod.GET)
+	public Collection<HistoryProcessInstance> findProcessesInstancesHistoryById(@RequestParam Map<String, Object> queryParams,
+			Locale loc, CIBUser user) {
+		checkPermission(user, SevenResourceType.HISTORY, PermissionConstants.READ_ALL);
+		return bpmProvider.findProcessesInstancesHistory(queryParams, user);
+	}
+
 	
 	@Operation(
 			summary = "Get activities instances that belong to a process instance",
