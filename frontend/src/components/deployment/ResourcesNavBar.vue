@@ -1,5 +1,5 @@
 <template>
-  <div class="overlflow-auto h-100">
+  <div class="overflow-auto h-100">
     <div class="h-100 d-flex flex-column">
       <div class="overflow-auto flex-fill">
         <b-list-group v-if="resources && resources.length > 0">
@@ -14,8 +14,12 @@
             </div>
           </b-list-group-item>
         </b-list-group>
-        <div v-else>
+        <div v-else-if="resources">
           <img src="/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mt-5 mb-3" style="width: 200px">
+        </div>
+        <div v-else class="h-100 d-flex flex-column justify-content-center align-items-center text-center">
+          <span class="mdi mdi-48px mdi-file-cancel-outline pe-1 text-warning"></span>
+          <span>{{ $t('deployment.errorLoading') }}</span>
         </div>
       </div>
     </div>

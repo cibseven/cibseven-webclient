@@ -42,7 +42,8 @@
     </div>
     <SidebarsFlow ref="sidebars" class="border-top overflow-auto" v-model:right-open="rightOpen" :right-caption="$t('deployment.resourcesCaption')" :rightSize="[12, 4, 3, 3, 3]">
       <template v-slot:right>
-        <ResourcesNavBar :resources="resources" :deployment="deployment"></ResourcesNavBar>
+        <ResourcesNavBar v-if="!resourcesLoading" :resources="resources" :deployment="deployment"></ResourcesNavBar>
+        <b-waiting-box v-else styling="width: 35px" class="h-100 d-flex justify-content-center"></b-waiting-box>
       </template>
       <DeploymentList v-if="!loading && deploymentsFiltered.length > 0" :deployments="deploymentsFiltered" :deployment="deployment" :sorting="sorting"
         @select-deployment="selectDeployment($event)"></DeploymentList>
@@ -100,6 +101,7 @@ export default {
       sorting: {},
       cascadeDelete: true,
       resources: [],
+      resourcesLoading: false,
       deploymentsDelData: { total: 0, deleted: 0 }
     }
   },
@@ -185,8 +187,14 @@ export default {
       this.findDeploymentResources(d.id)
     },
     findDeploymentResources: function(deploymentId) {
+      this.resourcesLoading = true
+      this.resources = null
       ProcessService.findDeploymentResources(deploymentId).then(resources => {
         this.resources = resources
+        this.resourcesLoading = false
+      }).catch(() => {
+        this.resources = null
+        this.resourcesLoading = false
       })
     },
     changeSortingOrder: function() {
