@@ -366,8 +366,26 @@
 		"userAssigned": "El usuario {0} fue asignado con éxito"
 	},
 	"batches": {
-		"title": "Batches",
-		"tooltip": "Batch operations"
+		"title": "Lotes",
+		"tooltip": "Operaciones por lotes",
+		"inProgressBatches": "Lotes en curso",
+		"historicBatches": "Lotes finalizados",
+		"runtimeDetails": "Detalles del lote en curso",
+		"historyDetails": "Detalles del lote finalizado",
+		"id": "ID",
+		"type": "Tipo",
+		"startTime": "Inicio",
+		"endTime": "Finalización",
+		"user": "Usuario",
+		"failedJobs": "Trabajos fallidos",
+		"progress": "Progreso",
+		"loading": "Cargando...",
+		"property": "Propiedad",
+		"value": "Valor",
+		"suspend": "Suspender lote",
+		"activate": "Activar lote",
+		"remove": "Eliminar lote",
+		"confirmRemove": "¿Realmente desea eliminar este lote y todos los trabajos y definiciones de trabajos relacionados?"
 	},
 	"admin": {
 		"loading": "Cargando...",

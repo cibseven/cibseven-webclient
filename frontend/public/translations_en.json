@@ -366,7 +366,25 @@
 	},
 	"batches": {
 		"title": "Batches",
-		"tooltip": "Batch operations"
+		"tooltip": "Batch operations",
+		"inProgressBatches": "In progress batches",
+		"historicBatches": "Ended batches",
+		"runtimeDetails": "In progress batch details",
+		"historyDetails": "Completed batch details",
+		"id": "ID",
+		"type": "Type",
+		"startTime": "Started",
+		"endTime": "Ended",
+		"user": "User",
+		"failedJobs": "Failed jobs",
+		"progress": "Progress",
+		"loading": "Cargando...",
+		"property": "Property",
+		"value": "Value",
+		"suspend": "Suspend batch",
+		"activate": "Activate batch",
+		"remove": "Remove batch",
+		"confirmRemove": "Do you really want to delete this batch and all related jobs and job definitions?"
 	},
 	"admin": {
 		"loading": "Loading...",

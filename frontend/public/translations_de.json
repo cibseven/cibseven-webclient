@@ -366,8 +366,26 @@
 		"userAssigned": "Der Benutzer {0} wurde erfolgreich zugewiesen"
 	},
 	"batches": {
-		"title": "Batches",
-		"tooltip": "Batch operations"
+		"title": "Stapel",
+		"tooltip": "Stapeloperationen",
+		"inProgressBatches": "Laufende Stapel",
+		"historicBatches": "Abgeschlossene Stapel",
+		"runtimeDetails": "Details zum laufenden Stapel",
+		"historyDetails": "Details zum abgeschlossenen Stapel",
+		"id": "ID",
+		"type": "Typ",
+		"startTime": "Gestartet",
+		"endTime": "Beendet",
+		"user": "Benutzer",
+		"failedJobs": "Fehlgeschlagene Jobs",
+		"progress": "Fortschritt",
+		"loading": "Wird geladen...",
+		"property": "Eigenschaft",
+		"value": "Wert",
+		"suspend": "Stapel pausieren",
+		"activate": "Stapel aktivieren",
+		"remove": "Stapel entfernen",
+		"confirmRemove": "Möchten Sie diesen Stapel und alle zugehörigen Jobs und Jobdefinitionen wirklich löschen?"
 	},
 	"admin": {
 		"loading": "Wird geladen...",

@@ -90,6 +90,9 @@ import DecisionListView from '@/components/decisions/list/DecisionListView.vue'
 import DecisionDefinitionVersion from '@/components/decision/DecisionDefinitionVersion.vue'
 import TenantsView from '@/components/tenants/TenantsView.vue'
 import BatchesView from '@/components/batches/BatchesView.vue'
+import RuntimeBatches from '@/components/batches/tables/RuntimeBatches.vue'
+import HistoricBatches from '@/components/batches/tables/HistoricBatches.vue'
+import BatchDetails from '@/components/batches/tables/BatchDetails.vue'
 import SystemView from '@/components/system/SystemView.vue'
 import ShortcutsModal from '@/components/modals/ShortcutsModal.vue'
 import ShortcutsTable from '@/components/modals/ShortcutsTable.vue'
@@ -282,5 +285,8 @@ export {
   DecisionListView,
   DecisionDefinitionVersion,
   StartDeployedForm,
-  DeployedForm
+  DeployedForm,
+  RuntimeBatches,
+  HistoricBatches,
+  BatchDetails
 }
