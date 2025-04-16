@@ -730,6 +730,7 @@
 		"selectAll": "Seleziona tutto",
 		"deleteDeployments": "Elimina distribuzioni",
 		"showModel": "Mostra modello",
+		"errorLoading": "Impossibile caricare la risorsa per la distribuzione selezionata",
 		"deploymentsDeleted": "{0} distribuzioni su {1} sono state eliminate con successo"
 	},
 	"cib-table2": {

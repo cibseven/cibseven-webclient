@@ -20,9 +20,16 @@
       </div>
     </div>
 
-    <b-modal static ref="diagramModal" size="xl" :title="resource.name" dialog-class="h-75" content-class="h-100" :ok-only="true">
+    <b-modal static ref="diagramModal" :size="error ? '' : 'xl'" :title="resource.name" dialog-class="h-75" content-class="h-100" :ok-only="true">
       <div class="container-fluid h-100 p-0">
-        <BpmnViewer class="h-100" ref="diagram"></BpmnViewer>
+        <div v-if="diagramLoading" class="text-center">
+          <b-waiting-box styling="width: 35px"></b-waiting-box>
+        </div>
+        <div v-else-if="error" class="d-flex align-items-center">
+          <span class="mdi mdi-48px mdi-file-cancel-outline pe-1 text-warning"></span>
+          <span>{{ $t('deployment.errorLoading') }}</span>
+        </div>
+        <BpmnViewer v-show="!diagramLoading && error === false" class="h-100" ref="diagram"></BpmnViewer>
       </div>
     </b-modal>
 
@@ -38,22 +45,42 @@ export default {
   components: { BpmnViewer },
   props: { resources: Array, deployment: Object },
   data: function() {
-    return { resource: {} }
+    return {
+      resource: {},
+      diagramLoading: false,
+      error: false
+    }
   },
   methods: {
     showResource: function(resource) {
+      this.error = false
+      this.diagramLoading = true
+      this.$refs.diagram.cleanDiagramState()
+      this.$refs.diagram.drawDiagramState()
+      this.$refs.diagramModal.show()
+
       this.resource = resource
       ProcessService.findProcessesWithFilters('deploymentId=' + this.deployment.id + '&resourceName=' + resource.name)
       .then(processesDefinition => {
         if (processesDefinition.length > 0 ) {
-          this.$refs.diagramModal.show()
           var processDefinition = processesDefinition[0]
           ProcessService.fetchDiagram(processDefinition.id).then(response => {
             setTimeout(() => {
+              this.diagramLoading = false
               this.$refs.diagram.showDiagram(response.bpmn20Xml, null, null)
             }, 500)
+          }).catch(() => {
+            this.diagramLoading = false
+            this.error = true
           })
         }
+        else {
+          this.diagramLoading = false
+          this.error = true
+        }
+      }).catch(() => {
+        this.diagramLoading = false
+        this.error = true
       })
     }
   }

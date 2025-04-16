@@ -906,6 +906,7 @@
 		"selectAll": "Select all",
 		"deleteDeployments": "Delete deployments",
 		"showModel": "Show model",
+		"errorLoading": "Unable to load resource for the selected deployment",
 		"deploymentsDeleted": "{0} out of {1} deployments have been successfully deleted"
 	},
 	"cib-table2": {
