@@ -3,6 +3,7 @@ package org.cibseven.webapp.rest;
 import java.util.Collection;
 
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -38,6 +39,16 @@ public class HistoryProcessService extends BaseService {
 		return bpmProvider.findHistoryProcessInstanceHistory(processInstanceId, user);
 	}
 	*/
+
+	@Operation(
+			summary = "Queries for historic process instances that fulfill the given parameters",
+			description = "Params as map")
+	@ApiResponse(responseCode = "404", description = "Process not found")
+	@RequestMapping(value = "/process-history/instance", method = RequestMethod.GET)
+	public Collection<HistoryProcessInstance> findProcessesInstancesHistory(@RequestParam Map<String, Object> queryParams, CIBUser user) {
+		checkPermission(user, SevenResourceType.HISTORY, PermissionConstants.READ_ALL);
+		return bpmProvider.findProcessesInstancesHistory(queryParams, user);
+	}
 	
 	@Operation(
 			summary = "Get processes instances with a specific process key (in the history)",
