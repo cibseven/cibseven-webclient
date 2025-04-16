@@ -187,8 +187,6 @@ const registerComponents = function(app) {
   app.component('system-view', SystemView)
   app.component('deployed-form', DeployedForm)
   app.component('start-deployed-form', StartDeployedForm)
-  app.component('system-diagnostics', SystemDiagnostics)
-  app.component('execution-metrics', ExecutionMetrics)
 }
 
 export {
