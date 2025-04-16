@@ -4,7 +4,6 @@
       <div class="d-flex align-items-center py-2 container-fluid">
         <div class="col-3">
           <b-input-group>
-  <!-- 					<b-button :title="$t('start.admin')" variant="outline-secondary" href="#/seven/auth/processes" class="mdi mdi-18px mdi-arrow-left border-0"></b-button> -->
             <b-input-group-prepend>
               <b-button :title="$t('searches.search')" aria-hidden="true" size="sm" class="rounded-left" variant="secondary"><span class="mdi mdi-magnify" style="line-height: initial"></span></b-button>
             </b-input-group-prepend>
@@ -51,7 +50,7 @@
         <img src="/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mt-5 mb-3" style="width: 200px">
         <div class="h5 text-secondary text-center">{{ $t('deployment.noDeployments') }}</div>
       </div>
-      <div v-else-if="loading" class="h-100 d-flex justify-content-center align-items-center">
+      <div v-else class="h-100 d-flex justify-content-center align-items-center">
         <b-waiting-box styling="width: 55%"></b-waiting-box>
       </div>
     </SidebarsFlow>
