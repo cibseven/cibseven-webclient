@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/no-mutating-props -->
 <template>
   <b-modal ref="resetDialog" v-if="credentials2" hide-footer no-close-on-backdrop :title="$t('login.2fa')" @shown="$refs.otp2.focus()">
     <div class="mb-3">{{ $t('login.needOtp') }}</div>
@@ -21,6 +22,7 @@
   </b-modal>
 </template>
 
+<!-- eslint-disable vue/no-mutating-props -->
 <script>
 import AuthService from '@/components/login/authService.js'
 import SecureInput from '@/components/login/SecureInput.vue'

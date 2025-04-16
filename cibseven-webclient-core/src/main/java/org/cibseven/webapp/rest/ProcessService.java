@@ -545,6 +545,15 @@ public class ProcessService extends BaseService implements InitializingBean {
 		return bpmProvider.findProcessStatistics(processId, user);
 	}
 	
+	@Operation(
+      summary = "Get statistics for all processes ",
+      description = "<strong>Return: Collection of all processes statistics")
+  @RequestMapping(value = "/process-definition/statistics", method = RequestMethod.GET)
+  public Collection<ProcessStatistics> getProcessStatistics(Locale loc, CIBUser user) {
+    checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_ALL);
+    return bpmProvider.getProcessStatistics(user);
+  }
+	
 	//Requested by OFDKA
 	@Operation(
 			summary = "Get process instance with a specific process instance id",

@@ -1,6 +1,6 @@
 import { axios } from './globals.js'
 import { sha256 } from 'js-sha256'
-			
+
 axios.interceptors.response.use(function(res) { return res.data; }, handler)
 const BASE_URL = import.meta.env.BASE_URL
 import { InfoService } from '@/services.js'
@@ -20,12 +20,13 @@ function handler(error) {
 
 InfoService.getProperties().then(function(config) {
     // Debug point will be left here because it is hard to debug when it is redirected all the time
+    // eslint-disable-next-line no-debugger
     debugger
     var ssoCallback = parseParams(location.hash.substr(1))
     var callbackState = JSON.parse(sessionStorage.getItem('callbackState') || '{}')
     var queryParams = parseParams(location.search.substr(1))
     var redirectTo = callbackState.redirectTo || BASE_URL + './#' + (queryParams.nextUrl || '').replace(/^(.*\/\/.*?\/|\/)/, '')
-    
+
     if (!(callbackState.state && ssoCallback.state === callbackState.state)) {
         ssoLogin(callbackState, redirectTo)
     } else {
@@ -41,7 +42,7 @@ InfoService.getProperties().then(function(config) {
             location.href = redirectTo
         })
     }
-    
+
     function ssoLogin(callbackState, redirectTo) {
         var queryParams = parseParams(location.search.substr(1))
         var state = createUUID()

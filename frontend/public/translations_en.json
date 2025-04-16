@@ -14,6 +14,41 @@
 		"login": "Login",
 		"forgotten": "Password forgotten?"
 	},
+	"processes-dashboard": {
+		"headerActive": "Operations Dashboard",
+		"headerDeployed": "Deployed",
+		"items": {
+			"running-instances": {
+				"title": "Running Process Instances",
+				"tooltip": "Browse all active process instances"
+			},
+			"open-incidents": {
+				"title": "Open Incidents",
+				"tooltip": "Review all currently open incidents",
+				"none": "No incidents!"
+			},
+			"open-human-tasks": {
+				"title": "Open Human Tasks",
+				"tooltip": "View all pending human tasks"
+			},
+			"processes": {
+				"title": "Process Definitions",
+				"tooltip": "Explore available process definitions"
+			},
+			"decisions": {
+				"title": "Decision Definitions",
+				"tooltip": "Explore available decision definitions"
+			},
+			"deployments": {
+				"title": "Deployments",
+				"tooltip": "View all deployed process resources"
+			},
+			"batches": {
+				"title": "Batches",
+				"tooltip": "Manage and view batch operations"
+			}
+		}
+	},
 	"process": {
 		"instanceRunning": "Instance running",
 		"instanceIncidents": "Instance with incidents",
@@ -331,7 +366,25 @@
 	},
 	"batches": {
 		"title": "Batches",
-		"tooltip": "Batch operations"
+		"tooltip": "Batch operations",
+		"inProgressBatches": "In progress batches",
+		"historicBatches": "Ended batches",
+		"runtimeDetails": "In progress batch details",
+		"historyDetails": "Completed batch details",
+		"id": "ID",
+		"type": "Type",
+		"startTime": "Started",
+		"endTime": "Ended",
+		"user": "User",
+		"failedJobs": "Failed jobs",
+		"progress": "Progress",
+		"loading": "Cargando...",
+		"property": "Property",
+		"value": "Value",
+		"suspend": "Suspend batch",
+		"activate": "Activate batch",
+		"remove": "Remove batch",
+		"confirmRemove": "Do you really want to delete this batch and all related jobs and job definitions?"
 	},
 	"admin": {
 		"loading": "Loading...",

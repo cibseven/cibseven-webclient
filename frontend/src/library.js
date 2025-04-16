@@ -23,7 +23,6 @@ import TaskPopper from '@/components/common-components/TaskPopper.vue'
 import FeedbackScreenshot from '@/components/modals/FeedbackScreenshot.vue'
 import TaskList from '@/components/common-components/TaskList.vue'
 import CIBHeaderFlow from '@/components/common-components/CIBHeaderFlow.vue'
-import Sidebars from '@/components/common-components/Sidebars.vue'
 import ResetDialog from '@/components/login/ResetDialog.vue'
 import OtpDialog from '@/components/login/OtpDialog.vue'
 import CIBForm from '@/components/common-components/CIBForm.vue'
@@ -66,6 +65,9 @@ import ProcessListView from '@/components/processes/list/ProcessListView.vue'
 import ProcessTable from '@/components/start-process/ProcessTable.vue'
 import ProcessInstanceView from '@/components/process/ProcessInstanceView.vue'
 import ProcessDefinitionView from '@/components/process/ProcessDefinitionView.vue'
+import ProcessesDashboardView from '@/components/processes/dashboard/ProcessesDashboardView.vue'
+import PieChart from '@/components/processes/dashboard/PieChart.vue'
+import DeploymentItem from '@/components/processes/dashboard/DeploymentItem.vue'
 import DeleteProcessDefinitionModal from '@/components/process/modals/DeleteProcessDefinitionModal.vue'
 import ConfirmActionOnProcessInstanceModal from '@/components/process/modals/ConfirmActionOnProcessInstanceModal.vue'
 import StartProcess from '@/components/start-process/StartProcess.vue'
@@ -88,6 +90,9 @@ import DecisionListView from '@/components/decisions/list/DecisionListView.vue'
 import DecisionDefinitionVersion from '@/components/decision/DecisionDefinitionVersion.vue'
 import TenantsView from '@/components/tenants/TenantsView.vue'
 import BatchesView from '@/components/batches/BatchesView.vue'
+import RuntimeBatches from '@/components/batches/tables/RuntimeBatches.vue'
+import HistoricBatches from '@/components/batches/tables/HistoricBatches.vue'
+import BatchDetails from '@/components/batches/tables/BatchDetails.vue'
 import SystemView from '@/components/system/SystemView.vue'
 import SystemDiagnostics from '@/components/system/SystemDiagnostics.vue'
 import ExecutionMetrics from '@/components/system/ExecutionMetrics.vue'
@@ -112,7 +117,6 @@ const registerComponents = function(app) {
   app.component('feedback-screenshot', FeedbackScreenshot)
   app.component('task-list', TaskList)
   app.component('cib-header-flow', CIBHeaderFlow)
-  app.component('sidebars', Sidebars)
   app.component('reset-dialog', ResetDialog)
   app.component('otp-dialog', OtpDialog)
   app.component('cib-form', CIBForm)
@@ -157,6 +161,9 @@ const registerComponents = function(app) {
   app.component('process-definition-view', ProcessDefinitionView)
   app.component('delete-process-definition-modal', DeleteProcessDefinitionModal)
   app.component('confirm-action-on-process-instance-modal', ConfirmActionOnProcessInstanceModal)
+  app.component('processes-dashboard-view', ProcessesDashboardView)
+  app.component('pie-chart', PieChart)
+  app.component('deployment-item', DeploymentItem)
   app.component('start-process', StartProcess)
   app.component('task-assignation-modal', TaskAssignationModal)
   app.component('variables-table', VariablesTable)
@@ -212,7 +219,6 @@ export {
   FeedbackScreenshot,
   TaskList,
   CIBHeaderFlow,
-  Sidebars,
   ResetDialog,
   OtpDialog,
   CIBForm,
@@ -257,6 +263,9 @@ export {
   ProcessDefinitionView,
   DeleteProcessDefinitionModal,
   ConfirmActionOnProcessInstanceModal,
+  ProcessesDashboardView,
+  PieChart,
+  DeploymentItem,
   StartProcess,
   TaskAssignationModal,
   VariablesTable,
@@ -282,4 +291,7 @@ export {
   DeployedForm,
   SystemDiagnostics,
   ExecutionMetrics
+  RuntimeBatches,
+  HistoricBatches,
+  BatchDetails
 }

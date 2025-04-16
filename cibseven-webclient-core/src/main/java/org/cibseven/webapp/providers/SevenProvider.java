@@ -1,6 +1,5 @@
 package org.cibseven.webapp.providers;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -20,11 +19,13 @@ import org.cibseven.webapp.rest.model.ActivityInstance;
 import org.cibseven.webapp.rest.model.ActivityInstanceHistory;
 import org.cibseven.webapp.rest.model.Authorization;
 import org.cibseven.webapp.rest.model.Authorizations;
+import org.cibseven.webapp.rest.model.Batch;
 import org.cibseven.webapp.rest.model.CandidateGroupTaskCount;
 import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.DeploymentResource;
 import org.cibseven.webapp.rest.model.EventSubscription;
 import org.cibseven.webapp.rest.model.Filter;
+import org.cibseven.webapp.rest.model.HistoryBatch;
 import org.cibseven.webapp.rest.model.IdentityLink;
 import org.cibseven.webapp.rest.model.Incident;
 import org.cibseven.webapp.rest.model.JobDefinition;
@@ -294,6 +295,11 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	public Collection<ProcessStatistics> findProcessStatistics(String processId, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
 		return processProvider.findProcessStatistics(processId, user);
 	}
+
+  @Override
+  public Collection<ProcessStatistics> getProcessStatistics(CIBUser user) {
+    return processProvider.getProcessStatistics(user);
+  }
 	
 	@Override
 	public Collection<HistoryProcessInstance> findProcessesInstancesHistory(String key, Optional<Boolean> active, 
@@ -640,6 +646,11 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 	
 	@Override
+	public Collection<Incident> fetchIncidentsByInstanceAndActivityId(String processDefinitionKey, String activityId, CIBUser user) {
+		return incidentProvider.fetchIncidentsByInstanceAndActivityId(processDefinitionKey, activityId, user);
+	}
+	
+	@Override
 	public void setIncidentAnnotation(String incidentId, Map<String, Object> data, CIBUser user) {
 		incidentProvider.setIncidentAnnotation(incidentId, data, user);
 	}
@@ -950,8 +961,28 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	*/
 	
 	@Override
-	public Object getHistoricBatches(Map<String, Object> queryParams) {
-		return batchProvider.getHistoricBatches(queryParams);
+	public Collection<Batch> getBatches(Map<String, Object> params, CIBUser user) {
+		return batchProvider.getBatches(params, user);
+    }
+
+	@Override
+	public Collection<Batch> getBatchStatistics(Map<String, Object> params, CIBUser user) {
+		return batchProvider.getBatchStatistics(params, user);
+	}
+
+	@Override
+	public void deleteBatch(String id, Map<String, Object> params, CIBUser user) {
+		batchProvider.deleteBatch(id, params, user);		
+	}
+	
+	@Override
+	public void setBatchSuspensionState(String id, Map<String, Object> params, CIBUser user) {
+		batchProvider.setBatchSuspensionState(id, params, user);		
+	}
+	
+	@Override
+	public Collection<HistoryBatch> getHistoricBatches(Map<String, Object> params, CIBUser user) {
+		return batchProvider.getHistoricBatches(params, user);
     }
 	
 	@Override
@@ -960,13 +991,13 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
     }
     
 	@Override
-	public Object getHistoricBatchById(String id) {
-		return batchProvider.getHistoricBatchById(id);
+	public HistoryBatch getHistoricBatchById(String id, CIBUser user) {
+		return batchProvider.getHistoricBatchById(id, user);
     }
 	
 	@Override
-	public void deleteHistoricBatch(String id) {
-		batchProvider.deleteHistoricBatch(id);
+	public void deleteHistoricBatch(String id, CIBUser user) {
+		batchProvider.deleteHistoricBatch(id, user);
     }
 	
 	@Override

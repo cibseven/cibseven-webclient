@@ -29,7 +29,7 @@
 </template>
 
 <script>
-import { ProcessService, HistoryService } from '@/services.js'
+import { ProcessService } from '@/services.js'
 import processesVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import { BWaitingBox } from 'cib-common-components'

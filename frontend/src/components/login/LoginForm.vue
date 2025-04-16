@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/no-mutating-props -->
 <template>
   <div>
     <CIBForm @submitted="onLogin">
@@ -45,7 +46,8 @@
   </div>
 </template>
 
-<script>
+<!-- eslint-disable vue/no-mutating-props -->
+ <script>
 import AuthService from '@/components/login/authService.js'
 import OptDialog from '@/components/login/OtpDialog.vue'
 import ResetDialog from '@/components/login/ResetDialog.vue'

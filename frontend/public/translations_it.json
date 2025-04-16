@@ -14,6 +14,41 @@
 		"login": "Accedi",
 		"forgotten": "Password forgotten?"
 	},
+	"processes-dashboard": {
+		"headerActive": "Dashboard delle operazioni",
+		"headerDeployed": "Distribuiti",
+		"items": {
+			"running-instances": {
+				"title": "Istanza di processo in esecuzione",
+				"tooltip": "Visualizza tutte le istanze di processo attive"
+			},
+			"open-incidents": {
+				"title": "Incidenti aperti",
+				"tooltip": "Esamina tutti gli incidenti attualmente aperti",
+				"none": "Nessun incidente!"
+			},
+			"open-human-tasks": {
+				"title": "Attività umane aperte",
+				"tooltip": "Visualizza tutte le attività umane in sospeso"
+			},
+			"processes": {
+				"title": "Definizioni di processo",
+				"tooltip": "Esplora le definizioni di processo disponibili"
+			},
+			"decisions": {
+				"title": "Definizioni di decisione",
+				"tooltip": "Esplora le definizioni di decisione disponibili"
+			},
+			"deployments": {
+				"title": "Distribuzioni",
+				"tooltip": "Visualizza tutte le risorse di processo distribuite"
+			},
+			"batches": {
+				"title": "Batch",
+				"tooltip": "Gestisci e visualizza le operazioni batch"
+			}
+		}
+	},
 	"process" : {
 		"name": "Nome",
 		"key": "Key di processo",	
@@ -90,7 +125,7 @@
 		"onlyIncidents": "Solo con incidenti",
 		"runningInstances": "Istanze",		
 		"instances": "Istanze",
-		"calledProcessInstances": "Chiamato processo Istanze"
+		"calledProcessInstances": "Chiamato processo Istanze",
 		"statistics": "Statistics",		
 		"suspendInstance": "Sospendi istanza di processo",
 		"deleteInstance": "Elimina l'istanza di processo in esecuzione",

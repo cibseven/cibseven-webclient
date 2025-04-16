@@ -206,6 +206,7 @@ export default {
         if (advCriterias.length > 0) {
           if (this.$store.state.advancedSearch.matchAllCriteria === true) {
             for (var key in this.$store.getters.formatedCriteriaData) {
+              // eslint-disable-next-line no-prototype-builtins
               if (this.$store.getters.formatedCriteriaData.hasOwnProperty(key)) {
                 filters[key] = this.$store.getters.formatedCriteriaData[key]
               }

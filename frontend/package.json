@@ -21,6 +21,7 @@
     "build": "vite build",
     "build:library": "cross-env BUILD_MODE=library vite build",
     "preview": "vite preview",
+    "test:report": "vitest run --reporter=junit --outputFile=target/vitest-reports/TEST-front-end.xml",
     "test:unit": "vitest",
     "prepare": "cypress install",
     "test:e2e": "start-server-and-test preview http://localhost:4173 'cypress run --e2e'",
@@ -61,7 +62,7 @@
     "jsdom": "^26.0.0",
     "prettier": "^3.4.2",
     "start-server-and-test": "^2.0.10",
-    "vite": "^6.2.5",
+    "vite": "^6.2.6",
     "vite-plugin-vue-devtools": "^7.7.1",
     "vitest": "^3.0.5"
   },

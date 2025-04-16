@@ -15,6 +15,41 @@
 		"login": "Iniciar sesión",
 		"forgotten": "¿Olvidaste tu contraseña?"
 	},
+	"processes-dashboard": {
+		"headerActive": "Panel de Operaciones",
+		"headerDeployed": "Desplegados",
+		"items": {
+			"running-instances": {
+				"title": "Instancias de proceso en ejecución",
+				"tooltip": "Explora todas las instancias de proceso activas"
+			},
+			"open-incidents": {
+				"title": "Incidentes abiertos",
+				"tooltip": "Revisa todos los incidentes abiertos actualmente",
+				"none": "¡Sin incidentes!"
+			},
+			"open-human-tasks": {
+				"title": "Tareas humanas abiertas",
+				"tooltip": "Ver todas las tareas humanas pendientes"
+			},
+			"processes": {
+				"title": "Definiciones de procesos",
+				"tooltip": "Explora las definiciones de procesos disponibles"
+			},
+			"decisions": {
+				"title": "Definiciones de decisiones",
+				"tooltip": "Explora las definiciones de decisiones disponibles"
+			},
+			"deployments": {
+				"title": "Despliegues",
+				"tooltip": "Ver todos los recursos de procesos desplegados"
+			},
+			"batches": {
+				"title": "Lotes",
+				"tooltip": "Gestiona y visualiza operaciones por lotes"
+			}
+		}
+	},
 	"process": {
 		"instanceRunning": "Instancia en ejecución",
 		"instanceIncidents": "Instancia con incidentes",
@@ -331,8 +366,26 @@
 		"userAssigned": "El usuario {0} fue asignado con éxito"
 	},
 	"batches": {
-		"title": "Batches",
-		"tooltip": "Batch operations"
+		"title": "Lotes",
+		"tooltip": "Operaciones por lotes",
+		"inProgressBatches": "Lotes en curso",
+		"historicBatches": "Lotes finalizados",
+		"runtimeDetails": "Detalles del lote en curso",
+		"historyDetails": "Detalles del lote finalizado",
+		"id": "ID",
+		"type": "Tipo",
+		"startTime": "Inicio",
+		"endTime": "Finalización",
+		"user": "Usuario",
+		"failedJobs": "Trabajos fallidos",
+		"progress": "Progreso",
+		"loading": "Cargando...",
+		"property": "Propiedad",
+		"value": "Valor",
+		"suspend": "Suspender lote",
+		"activate": "Activar lote",
+		"remove": "Eliminar lote",
+		"confirmRemove": "¿Realmente desea eliminar este lote y todos los trabajos y definiciones de trabajos relacionados?"
 	},
 	"admin": {
 		"loading": "Cargando...",
