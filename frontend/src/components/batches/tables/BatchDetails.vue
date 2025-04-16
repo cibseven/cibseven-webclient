@@ -68,7 +68,7 @@
       batchDetails: function() {
         if (!this.batch) return []
         return Object.entries(this.batch)
-          .filter(([_, value]) => value !== null && value !== undefined)
+          .filter(([, value]) => value !== null && value !== undefined)
           .map(([key, value]) => {
             let formattedValue = value
             if (key.toLowerCase().includes('time') && typeof value === 'string') {
