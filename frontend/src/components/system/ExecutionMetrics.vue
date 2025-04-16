@@ -2,120 +2,105 @@
   <div class="container-fluid pt-4 d-flex flex-column h-100">
     <h4>{{ $t('admin.system.execution-metrics.title') }}</h4>
     <div class="alert alert-info">{{ $t('admin.system.execution-metrics.metricsHelp') }}</div>
-    <div class="mb-3">
-      <label class="form-label fw-bold">{{
-        $t('admin.system.execution-metrics.startDateContract') + ':'
-      }}</label>
-      <b-form-datepicker
-        class="col-4"
-        v-model="subsDate"
-        :date-disabled-fn="shouldDisableDate"
-        today-button
-      >
-        <template v-slot:prepend>
-          <span class="input-group-text" aria-hidden="true">
-            <i class="mdi mdi-calendar-outline"></i>
-          </span>
-        </template>
-      </b-form-datepicker>
-    </div>
-    <div v-if="!loading">
-      <h5>{{ $t('admin.system.execution-metrics.usageLast12MonthsByMonth') }}</h5>
-      <apexchart height="380" :options="options" :series="series"></apexchart>
-      <div class="pb-3">
-        <FlowTable
-          striped
-          resizable
-          thead-class="sticky-header"
-          :items="monthlyItems"
-          primary-key="index"
-          prefix="admin.system.execution-metrics."
-          :fields="[
-            {
-              label: '',
-              key: 'month',
-              class: 'col-6',
-              sortable: false,
-              thClass: 'border-end',
-              tdClass: 'border-end py-1 border-top-0',
-            },
-            {
-              label: 'process-instances',
-              key: 'process-instances',
-              sortable: false,
-              class: 'col-2',
-              thClass: 'border-end',
-              tdClass: 'border-end py-1 border-top-0',
-            },
-            {
-              label: 'decision-instances',
-              key: 'decision-instances',
-              sortable: false,
-              class: 'col-2',
-              thClass: 'border-end',
-              tdClass: 'border-end py-1 border-top-0',
-            },
-            {
-              label: 'task-users',
-              key: 'task-users',
-              class: 'col-2',
-              sortable: false,
-              tdClass: 'py-1 border-top-0',
-            },
-          ]"
-        >
-        </FlowTable>
-      </div>
-      <div class="pb-3">
-        <h5>{{ $t('admin.system.execution-metrics.annualUsageBySubscriptionTerm') }}</h5>
-        <FlowTable
-          striped
-          resizable
-          thead-class="sticky-header"
-          :items="yearlyItems"
-          primary-key="index"
-          prefix="admin.system.execution-metrics."
-          :fields="[
-            {
-              label: '',
-              key: 'year',
-              class: 'col-6',
-              sortable: false,
-              thClass: 'border-end',
-              tdClass: 'border-end py-1 border-top-0',
-            },
-            {
-              label: 'process-instances',
-              key: 'process-instances',
-              sortable: false,
-              class: 'col-2',
-              thClass: 'border-end',
-              tdClass: 'border-end py-1 border-top-0',
-            },
-            {
-              label: 'decision-instances',
-              key: 'decision-instances',
-              sortable: false,
-              class: 'col-2',
-              thClass: 'border-end',
-              tdClass: 'border-end py-1 border-top-0',
-            },
-            {
-              label: 'task-users',
-              key: 'task-users',
-              class: 'col-2',
-              sortable: false,
-              tdClass: 'py-1 border-top-0',
-            },
-          ]"
-        >
-        </FlowTable>
-      </div>
-    </div>
-    <div v-else class="py-3 text-center w-100">
-      <BWaitingBox class="d-inline me-2" styling="width: 50px"></BWaitingBox>
-      {{ $t('admin.loading') }}
-    </div>
+		<div class="flex-fill overflow-auto">
+			<div v-if="!loading">
+				<h5>{{ $t('admin.system.execution-metrics.usageLast12MonthsByMonth') }}</h5>
+				<apexchart height="380" :options="options" :series="series"></apexchart>
+				<div class="pb-3">
+					<FlowTable
+						striped
+						resizable
+						thead-class="sticky-header"
+						:items="monthlyItems"
+						primary-key="index"
+						prefix="admin.system.execution-metrics."
+						:fields="[
+							{
+								label: '',
+								key: 'month',
+								class: 'col-6',
+								sortable: false,
+								thClass: 'border-end',
+								tdClass: 'border-end py-1 border-top-0',
+							},
+							{
+								label: 'process-instances',
+								key: 'process-instances',
+								sortable: false,
+								class: 'col-2',
+								thClass: 'border-end',
+								tdClass: 'border-end py-1 border-top-0',
+							},
+							{
+								label: 'decision-instances',
+								key: 'decision-instances',
+								sortable: false,
+								class: 'col-2',
+								thClass: 'border-end',
+								tdClass: 'border-end py-1 border-top-0',
+							},
+							{
+								label: 'task-users',
+								key: 'task-users',
+								class: 'col-2',
+								sortable: false,
+								tdClass: 'py-1 border-top-0',
+							}
+						]"
+					>
+					</FlowTable>
+				</div>
+				<div class="pb-3">
+					<h5>{{ $t('admin.system.execution-metrics.annualUsageBySubscriptionTerm') }}</h5>
+					<FlowTable
+						striped
+						resizable
+						thead-class="sticky-header"
+						:items="yearlyItems"
+						primary-key="index"
+						prefix="admin.system.execution-metrics."
+						:fields="[
+							{
+								label: '',
+								key: 'year',
+								class: 'col-6',
+								sortable: false,
+								thClass: 'border-end',
+								tdClass: 'border-end py-1 border-top-0',
+							},
+							{
+								label: 'process-instances',
+								key: 'process-instances',
+								sortable: false,
+								class: 'col-2',
+								thClass: 'border-end',
+								tdClass: 'border-end py-1 border-top-0',
+							},
+							{
+								label: 'decision-instances',
+								key: 'decision-instances',
+								sortable: false,
+								class: 'col-2',
+								thClass: 'border-end',
+								tdClass: 'border-end py-1 border-top-0',
+							},
+							{
+								label: 'task-users',
+								key: 'task-users',
+								class: 'col-2',
+								sortable: false,
+								tdClass: 'py-1 border-top-0',
+							}
+						]"
+					>
+					</FlowTable>
+				</div>
+			</div>
+			<div v-else class="py-3 text-center w-100">
+				<BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox>
+				{{ $t('admin.loading') }}
+			</div>
+		</div>
   </div>
 </template>
 
@@ -142,7 +127,6 @@ export default {
   },
   watch: {
     subsDate() {
-      this.subsDate = this.subsDate || moment()
       this.loading = true
       Promise.all([this.loadAnnualMetrics(), this.loadMonthlyMetrics()]).then(
         () => (this.loading = false)
@@ -268,7 +252,7 @@ export default {
         const subsDate = moment(this.subsDate).format('L')
         const prevDate = moment(this.subsDate).subtract(1, 'years').format('L')
         sortedGroup[0].year = this.$t('admin.system.execution-metrics.fromUpToToday', {
-          from: subsDate,
+          from: subsDate
         })
         sortedGroup[1].year = this.$t('admin.system.execution-metrics.fromTo', {
           from: prevDate,

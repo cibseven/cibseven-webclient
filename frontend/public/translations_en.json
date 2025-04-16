@@ -522,7 +522,7 @@
 			},
 			"execution-metrics": {
 				"title": "Execution Metrics",
-				"metricsHelp": "Recorded number of Process Instances (PI) and Decision Instances (DI) processed by the engine and Task Users (TU) that were assigned to a user task in the selected time range.",
+				"metricsHelp": "Recorded number of Process Instances and Decision Instances processed by the engine and Task Users that were assigned to a user task.",
 				"startDateContract": "Contract start date",
 				"process-instances": "Process instances",
 				"decision-instances": "Decision instances",

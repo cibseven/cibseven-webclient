@@ -362,7 +362,7 @@
 			},
 			"execution-metrics": {
 				"title": "Metriche di esecuzione",
-				"metricsHelp": "Numero registrato di Istanze di Processo (PI) e Istanze di Decisione (DI) elaborate dal motore, e Utenti di Attività (TU) assegnati a un'attività utente nell'intervallo di tempo selezionato.",
+				"metricsHelp": "Numero registrato di istanze di processo e istanze decisionali elaborate dal motore e utenti di task assegnati a un'attività utente.",
 				"startDateContract": "Data di inizio del contratto",
 				"process-instances": "Istanze di decisione",
 				"decision-instances": "Istanze di processo",

@@ -523,7 +523,7 @@
 			},
 			"execution-metrics": {
 				"title": "Ausführungsmetriken",
-				"metricsHelp": "Erfasste Anzahl von Prozessinstanzen (PI) und Entscheidungsinstanzen (DI), die von der Engine verarbeitet wurden, sowie Task-Nutzer (TU), die im ausgewählten Zeitraum einer Benutzeraufgabe zugewiesen wurden.",
+				"metricsHelp": "Erfasste Anzahl von Prozessinstanzen und Entscheidungsinstanzen, die von der Engine verarbeitet wurden, sowie Task-Benutzern, die einer Benutzeraufgabe zugewiesen wurden.",
 				"startDateContract": "Vertragsbeginn",
 				"process-instances": "Entscheidungsinstanzen",
 				"decision-instances": "Prozessinstanzen",

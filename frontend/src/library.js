@@ -290,7 +290,7 @@ export {
   StartDeployedForm,
   DeployedForm,
   SystemDiagnostics,
-  ExecutionMetrics
+  ExecutionMetrics,
   RuntimeBatches,
   HistoricBatches,
   BatchDetails
