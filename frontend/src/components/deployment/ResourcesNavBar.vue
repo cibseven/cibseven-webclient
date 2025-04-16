@@ -4,13 +4,17 @@
       <div class="overflow-auto flex-fill">
         <b-list-group v-if="resources && resources.length > 0">
           <b-list-group-item v-for="resource of resources" :key="resource.id" action class="border-0 rounded-0 p-2" @click="showResource(resource)">
-            <div class="row no-gutters align-items-center">
-              <div class="col-10 text-truncate pe-0">
+            <div class="d-flex align-items-center justify-content-between">
+              <div class="text-truncate me-0" style="flex: 1">
                 <span :title="$t('deployment.showModel')">{{ resource.name }}</span>
               </div>
-              <div class="col-2">
-                <b-button @click="showResource(resource)" size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-eye-outline" :title="$t('deployment.showModel')"></b-button>
-              </div>
+              <b-button
+                @click="showResource(resource)"
+                size="sm"
+                variant="outline-secondary"
+                class="border-0 mdi mdi-18px mdi-eye-outline"
+                :title="$t('deployment.showModel')"
+              ></b-button>
             </div>
           </b-list-group-item>
         </b-list-group>
