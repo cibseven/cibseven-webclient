@@ -200,19 +200,24 @@ pipeline {
                 script {
                     withCredentials([file(credentialsId: 'credential-cibseven-artifacts-npmrc', variable: 'NPMRC_FILE')]) {
                         withMaven() {
+                            def dynamicVersion = "1.0.0-${BUILD_NUMBER}-SNAPSHOT"
+
                             sh """
-                                # Copy the .npmrc file to the frontend directory
+                                echo "Copying .npmrc file to frontend directory..."
                                 cp ${NPMRC_FILE} ./frontend/.npmrc
 
-                                # Dynamically change the version of package.json
-                                VERSION_WITH_BUILD=\$(jq -r '.version' frontend/package.json | sed "s/-SNAPSHOT/-${BUILD_NUMBER}-SNAPSHOT/")
-                                jq ".version = \\"\${VERSION_WITH_BUILD}\\"" frontend/package.json > frontend/tmp.package.json
-                                mv frontend/tmp.package.json frontend/package.json
-                                echo "Updated package.json version:"
-                                cat frontend/package.json
+                                echo "Setting dynamic version to ${dynamicVersion}..."
+                                sed -i 's/__CI_VERSION__/${dynamicVersion}/' frontend/package.json
 
-                                # Run Maven with the required profile
-                                mvn -T4 -Dbuild.number=${BUILD_NUMBER} clean generate-resources -Drelease-npm-library=frontend
+                                echo "Final package.json version:"
+                                grep '"version"' frontend/package.json
+
+                                echo "Running Maven to release the npm package..."
+                                mvn -T4 \
+                                    -Dbuild.number=${BUILD_NUMBER} \
+                                    -Drelease-npm-library=frontend \
+                                    -Dskip.npm.version.update=true \
+                                    clean generate-resources
                             """
                         }
                     }
