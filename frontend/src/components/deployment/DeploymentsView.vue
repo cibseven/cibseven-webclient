@@ -29,7 +29,7 @@
         </div>
         <div class="col-6">
           <b-input-group size="sm" class="align-items-center justify-content-end">
-            <b-form-checkbox class="me-3" size="sm" @change="changeSelected">
+            <b-form-checkbox class="me-3" size="sm" v-model="isAllChecked">
               <span>{{ $t('deployment.selectAll') }}</span>
             </b-form-checkbox>
             <b-button class="border-secondary" size="sm" :disabled="!deploymentsSelected.length > 0 || deleteLoader" variant="light" @click="$refs.deleteModal.show()" :title="$t('deployment.deleteDeployments')">
@@ -127,6 +127,14 @@ export default {
       return this.deploymentsFiltered.filter(d => {
         return d.isSelected
       })
+    },
+    isAllChecked: {
+      get: function() {
+        return this.deploymentsFiltered.length > 0 && this.deploymentsFiltered.reduce((allSelected, d) => (allSelected && d.isSelected), true)
+      },
+      set: function(checked) {
+        this.deploymentsFiltered.forEach(d => { d.isSelected = checked })
+      }
     }
   },
   created: function () {
@@ -170,9 +178,6 @@ export default {
           }, 1000)
         })
       }
-    },
-    changeSelected: function(evt) {
-      this.deploymentsFiltered.forEach(d => { d.isSelected = evt })
     },
     selectDeployment: function(d) {
       this.deployment = d

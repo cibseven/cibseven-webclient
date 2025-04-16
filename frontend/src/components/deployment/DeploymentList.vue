@@ -42,6 +42,7 @@ import { sortDeployments } from '@/components/deployment/utils.js'
 
 export default {
   name: 'DeploymentList',
+  emits: [ 'select-deployment' ],
   props: { deployments: Array, deployment: Object, sorting: Object },
   data: function() {
     return { deploymentsGrouped: {} }
