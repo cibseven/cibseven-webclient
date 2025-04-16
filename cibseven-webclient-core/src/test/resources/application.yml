@@ -2,6 +2,7 @@ logging:
   level:
     root: DEBUG
     org.cibseven: DEBUG
+    org.springframework.beans.factory: DEBUG
 
 # Token generation
 authentication:

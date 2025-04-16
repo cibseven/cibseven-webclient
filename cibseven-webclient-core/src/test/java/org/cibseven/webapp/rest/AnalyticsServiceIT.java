@@ -18,6 +18,7 @@ import org.cibseven.webapp.providers.JobDefinitionProvider;
 import org.cibseven.webapp.providers.JobProvider;
 import org.cibseven.webapp.providers.ProcessProvider;
 import org.cibseven.webapp.providers.SevenProvider;
+import org.cibseven.webapp.providers.SevenProviderBase;
 import org.cibseven.webapp.providers.SystemProvider;
 import org.cibseven.webapp.providers.TaskProvider;
 import org.cibseven.webapp.providers.UserProvider;
@@ -28,6 +29,7 @@ import org.cibseven.webapp.rest.model.AnalyticsInfo;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 
 import lombok.extern.slf4j.Slf4j;
@@ -60,6 +62,9 @@ public class AnalyticsServiceIT {
   
   @Autowired
   private AnalyticsService analyticsService;
+  
+//  @MockBean
+//  private SevenProviderBase sevenProviderBase;
   
   @Test
   public void testAnalytics() {

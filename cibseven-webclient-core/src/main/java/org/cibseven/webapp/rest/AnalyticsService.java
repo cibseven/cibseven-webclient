@@ -134,6 +134,7 @@ public class AnalyticsService extends BaseService implements InitializingBean {
     
     // Group incidents by process key and count the number of incidents for each process
     Map<String, Long> groupedIncidents = incidents.stream()
+        .filter(incident -> incident.getProcessDefinitionId() != null) // Filter out null processDefinitionId
         .collect(Collectors.groupingBy(
             incident -> incident.getProcessDefinitionId().split(":")[0], // Group by the first part of the processDefinitionId
             Collectors.counting() // Count the number of incidents

@@ -570,6 +570,7 @@ var BatchService = {
 
 var AnalyticsService = {
   async getAnalytics() {
+    axios.get(appConfig.servicesBasePath + "/process/process-definition/statistics")
     return axios.get(appConfig.servicesBasePath + '/analytics')
   }
 }
