@@ -89,6 +89,7 @@
 									<arguments>ci --no-audit --no-fund</arguments>
 								</configuration>
 							</execution>
+							<!--
 							<execution>
 								<id>npm version</id>
 								<goals>
@@ -100,6 +101,7 @@
 										--no-git-tag-version ${project.version}</arguments>
 								</configuration>
 							</execution>
+							-->
 							<!--
 							<execution>
 								<id>License check</id>

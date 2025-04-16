@@ -1,6 +1,6 @@
 {
   "name": "cibseven-components",
-  "version": "0.0.0",
+  "version": "1.0.0-SNAPSHOT.1",
   "type": "module",
   "license": "",
   "main": "./src/main.js",
@@ -35,6 +35,7 @@
     "bootstrap": "^5.3.3",
     "bpmn-js": "^18.2.0",
     "cib-common-components": "^1.0.18",
+    "cibseven-components": "file:",
     "dmn-js": "^17.2.0",
     "js-sha256": "^0.11.0",
     "moment": "^2.30.1",
