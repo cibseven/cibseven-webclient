@@ -91,19 +91,6 @@
 							</execution>
 							<!--
 							<execution>
-								<id>npm version</id>
-								<goals>
-									<goal>npm</goal>
-								</goals>
-								<phase>generate-resources</phase>
-								<configuration>
-									<arguments>version --allow-same-version
-										--no-git-tag-version ${project.version}</arguments>
-								</configuration>
-							</execution>
-							-->
-							<!--
-							<execution>
 								<id>License check</id>
 								<goals>
 									<goal>npm</goal>
