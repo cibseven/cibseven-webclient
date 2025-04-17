@@ -10,6 +10,10 @@
           { label: 'tasks', key: 'tasks', class: 'col-3', tdClass: 'py-1 border-top-0 fw-bold justify-content-center',
             thClass: 'd-flex justify-content-center', sortable: false },
           { label: 'types', key: 'types', class: 'col-9', tdClass: 'py-1 border-top-0', sortable: false }]">
+          <template v-slot:cell(tasks)="table">
+            <div v-if="table.item.tasks !== null">{{ table.item.tasks }}</div>
+            <span v-else><b-spinner small></b-spinner></span>
+          </template>
           <template v-slot:cell(types)="table">
             <div :class="table.item.id === 3 ? 'fw-bold' : ''">{{ table.item.types }}</div>
           </template>
@@ -18,7 +22,7 @@
       <div class="col-12 col-md-5 p-3 my-3 bg-white border rounded shadow-sm">
         <h5>{{ $t('human-tasks.assignmentsByGroup') }} <span v-b-popover.hover.right="$t('human-tasks.assignmentsByGroupInfo')" class="mdi mdi-18px mdi-information-outline text-info"></span></h5>
         <hr>
-        <FlowTable striped resizable thead-class="sticky-header" :items="taskCountByCandidateGroup"
+        <FlowTable striped resizable thead-class="sticky-header" :items="taskCountByCandidateGroup ? taskCountByCandidateGroup : []"
           primary-key="id" prefix="human-tasks."
           sort-by="label" :fields="[
           { label: 'tasks', key: 'taskCount', class: 'col-3', tdClass: 'py-1 border-top-0 justify-content-center',
@@ -28,6 +32,9 @@
             <div>{{ table.item.groupName ? table.item.groupName : $t('human-tasks.noGroups') }}</div>
           </template>
         </FlowTable>
+        <div v-if="taskCountByCandidateGroup == null" class="d-flex justify-content-center align-items-center">
+          <b-waiting-box class="d-inline me-2" styling="width: 35px"></b-waiting-box> {{ $t('admin.loading') }}
+        </div>
       </div>
     </div>
   </div>
@@ -43,12 +50,12 @@ export default {
   data: function() {
     return {
       countsByType: [
-        { tasks: 0, types: this.$t('human-tasks.user'), id: 0 },
-        { tasks: 0, types: this.$t('human-tasks.group'), id: 1 },
-        { tasks: 0, types: this.$t('human-tasks.unassigned'), id: 2 },
-        { tasks: 0, types: this.$t('human-tasks.total'), id: 3 }
+        { tasks: null, types: this.$t('human-tasks.user'), id: 0 },
+        { tasks: null, types: this.$t('human-tasks.group'), id: 1 },
+        { tasks: null, types: this.$t('human-tasks.unassigned'), id: 2 },
+        { tasks: null, types: this.$t('human-tasks.total'), id: 3 }
       ],
-      taskCountByCandidateGroup: []
+      taskCountByCandidateGroup: null
     }
   },
   mounted() {
