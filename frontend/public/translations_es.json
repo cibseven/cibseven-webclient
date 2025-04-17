@@ -906,6 +906,7 @@
 		"selectAll": "Seleccionar todo",
 		"deleteDeployments": "Eliminar despliegues",
 		"showModel": "Mostrar modelo",
+		"errorLoading": "No se puede cargar el recurso para la implementación seleccionada",
 		"deploymentsDeleted": "{0} de {1} despliegues se han eliminado correctamente"
 	},
 	"cib-table2": {
