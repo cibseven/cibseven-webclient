@@ -207,11 +207,26 @@ pipeline {
                 script {
                     withCredentials([file(credentialsId: 'credential-cibseven-artifacts-npmrc', variable: 'NPMRC_FILE')]) {
                         withMaven() {
+                            def pom = readMavenPom file: 'pom.xml'
+                            def baseVersion = pom.version.replace("-SNAPSHOT", "")
+                            def dynamicVersion = "${baseVersion}-${BUILD_NUMBER}-SNAPSHOT"
+
                             sh """
-                                # Copy the .npmrc file to the frontend directory
+                                echo "Copy the .npmrc file to the frontend directory..."
                                 cp ${NPMRC_FILE} ./frontend/.npmrc
-                                # Run Maven with the required profile
-                                mvn -T4 -Dbuild.number=${BUILD_NUMBER} clean generate-resources -Drelease-npm-library=frontend
+
+                                echo "Setting dynamic version to ${dynamicVersion}..."
+                                sed -i 's/__CI_VERSION__/${dynamicVersion}/' frontend/package.json
+
+                                echo "Final package.json version:"
+                                grep '"version"' frontend/package.json
+
+                                echo "Running Maven to release the npm package..."
+                                mvn -T4 \
+                                    -Dbuild.number=${BUILD_NUMBER} \
+                                    -Drelease-npm-library=frontend \
+                                    -Dskip.npm.version.update=true \
+                                    clean generate-resources
                             """
                         }
                     }
