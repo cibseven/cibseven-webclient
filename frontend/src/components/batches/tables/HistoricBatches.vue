@@ -3,7 +3,7 @@
     <h4>{{ $t('batches.historicBatches') }}</h4>
     <hr>
     <div class="overflow-auto" style="max-height: 35vh" @scroll="showMore">
-      <FlowTable striped thead-class="sticky-header" :items="historicBatches" primary-key="id" prefix="batches." 
+      <FlowTable striped thead-class="sticky-header" :items="historicBatches" primary-key="id" prefix="batches."
         :fields="[
           { label: 'id', key: 'id', class: 'col-5', tdClass: 'border-end p-0' },
           { label: 'type', key: 'type', class: 'col-3', tdClass: 'border-end p-1' },
@@ -11,7 +11,7 @@
           { label: 'endTime', key: 'endTime', class: 'col-2', tdClass: 'p-1' },
         ]"
         @click="loadBatchDetails($event)">
-        <template v-slot:cell(id)="table">          
+        <template v-slot:cell(id)="table">
           <div class="p-1 text-truncate" :class="batchIsSelected(table.item.id) ? 'border-start border-4 border-primary' : ''">
             {{ table.item.id }}
           </div>
@@ -46,7 +46,7 @@
     inject: ['currentLanguage'],
     data() {
       return {
-        loading: false,
+        loading: true,
         firstResult: 0,
         maxResults: 40,
         hasMore: true
@@ -83,7 +83,7 @@
         }
       },
       loadBatchDetails: function(batch) {
-        this.$router.replace({ 
+        this.$router.replace({
           query: { id: batch.id, type: 'history' }
         })
       },
