@@ -12,7 +12,7 @@
         </div>
       </div>
     </div>
-    <div class="container overflow-auto h-100 bg-white shadow g-0">
+    <div class="container overflow-auto h-100 bg-white shadow-sm border rounded g-0">
       <FlowTable :items="decisionsFiltered" thead-class="sticky-header" striped primary-key="id" prefix="decision." :fields="fields" @click="goToDecision($event)" @select="focused = $event[0]" @mouseenter="focused = $event" @mouseleave="focused = null">
         <template v-slot:cell(actions)="table">
           <component :is="decisionDefinitionActions" v-if="decisionDefinitionActions" :focused="focused" :item="table.item"></component>
@@ -48,7 +48,7 @@ export default {
   },
   computed: {
     ...mapGetters(['decisionDefinitions', 'getFilteredDecisions']),
-    
+
     decisionDefinitionActions: function() {
       return this.$options.components && this.$options.components.DecisionDefinitionActions
         ? this.$options.components.DecisionDefinitionActions

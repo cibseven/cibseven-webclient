@@ -52,7 +52,7 @@
         <div class="h5 text-secondary text-center">{{ $t('deployment.noDeployments') }}</div>
       </div>
       <div v-else-if="loading" class="h-100 d-flex justify-content-center align-items-center">
-        <b-waiting-box styling="width: 55%"></b-waiting-box>
+        <b-waiting-box class="d-inline me-2" styling="width: 35px"></b-waiting-box> {{ $t('admin.loading') }}
       </div>
     </SidebarsFlow>
     <b-modal ref="deleteModal" :title="$t('confirm.title')">

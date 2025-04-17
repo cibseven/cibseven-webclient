@@ -1,5 +1,5 @@
 <template>
-  <div class="container overflow-auto h-100 bg-white shadow">
+  <div class="container overflow-auto h-100 bg-white shadow-sm border rounded">
     <FlowTable striped :items="processes" primary-key="id" prefix="process." :fields="fields" @select="focused = $event[0]" @mouseenter="focused = $event" @mouseleave="focused = null">
       <template v-slot:cell(favorite)="table">
         <b-button :title="$t('process.favorite')" tabindex="-1" @click="$emit('favorite', table.item)" variant="link" class="mdi mdi-24px" :class="table.item.favorite ? 'mdi-star text-primary' : 'mdi-star-outline text-secondary'"></b-button>

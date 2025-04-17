@@ -28,8 +28,8 @@
         <div class="container-fluid overflow-auto">
           <div v-if="$route.query.tab === 'profile'" class="row">
             <div class="col-sm-12 col-md-12 col-lg-8 col-xl-6 p-4">
-              <b-card class="border-0 p-5 shadow" :title="$t('admin.users.editMessage', [user.firstName + ' ' + user.lastName])">
-                <b-card-text class="border-top border-top pt-4 mt-3">
+              <b-card class="p-5 shadow-sm border rounded" :title="$t('admin.users.editMessage', [user.firstName + ' ' + user.lastName])">
+                <b-card-text class="border-top pt-4 mt-3">
                   <CIBForm @submitted="update()">
                     <b-form-group :label="$t('admin.users.firstName') + '*'" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4"
                       :invalid-feedback="$t('errors.invalid')">
@@ -55,7 +55,7 @@
           </div>
           <div v-if="$route.query.tab === 'account' && !readOnlyUser" class="row">
             <div class="col-sm-12 col-md-12 col-lg-8 col-xl-6 p-4">
-              <b-card class="border-0 p-5 shadow" :title="$t('admin.users.editMessage', [user.firstName + ' ' + user.lastName])">
+              <b-card class="p-5 shadow-sm border rounded" :title="$t('admin.users.editMessage', [user.firstName + ' ' + user.lastName])">
                 <h6 class="mt-4">{{ $t('password.recover.changePassword') }}</h6>
                 <b-form-group labels-cols-lg="2" label-size="lg" label-class="font-weight-bold pt-0 pb-4" class="m-0">
                   <b-form-group :label="$t('password.recover.id') + '*'" label-cols-sm="2"
@@ -143,16 +143,16 @@
                     </div>
                   </div>
                 </div>
-                <div v-if="groups" class="container-fluid overflow-auto bg-white shadow g-0">
+                <div v-if="groups" class="container-fluid overflow-auto bg-white shadow-sm border rounded g-0">
                   <FlowTable v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider' && editMode" striped :items="groups" primary-key="id"
                     prefix="admin.groups." :fields="[{label: 'id', key: 'id', class: 'col-md-4 col-sm-4', tdClass: 'border-end py-1' },
                         {label: 'name', key: 'name', class: 'col-md-4 col-sm-4', tdClass: 'border-end py-1' },
                         {label: 'type', key: 'type', class: 'col-md-2 col-sm-2', tdClass: 'border-end py-1' },
-                        {label: 'actions', key: 'actions', class: 'col-md-2 col-sm-2', sortable: false, thClass: 'justify-content-center', tdClass: 'justify-content-center py-0' }]"
+                        {label: 'actions', key: 'actions', class: 'col-md-2 col-sm-2 text-center', sortable: false, thClass: 'justify-content-center', tdClass: 'justify-content-center py-0' }]"
                     @contextmenu="focusedGroup = $event" @mouseenter="focusedGroup = $event" @mouseleave="focusedGroup = null">
                     <template v-slot:cell(actions)="row">
                       <div>
-                        <b-button :disabled="focusedGroup !== row.item" style="opacity: 1" @click="unassignGroup(row.item)" class="px-2 border-0 shadow-none" variant="link">
+                        <b-button :disabled="focusedGroup !== row.item" style="opacity: 1" @click="unassignGroup(row.item)" class="px-2 border-0 shadow-none" :title="$t('admin.groups.deleteGroup')" variant="link">
                           <span class="mdi mdi-18px mdi-delete-outline"></span>
                         </b-button>
                       </div>
@@ -185,7 +185,7 @@
 
         <!-- Assign Groups Modal -->
         <b-modal v-if="editMode" ref="assignGroupsModal" :title="$t('admin.users.group.add')" size="lg">
-          <div v-if="unAssignedGroups.length > 0" class="container g-0">
+          <div class="container g-0">
             <FlowTable :items="unAssignedGroups" primary-key="id" prefix="admin.groups." striped
               :fields="[{ label: '', key: 'selected', class: 'col-sm-1', sortable: false, thClass: 'text-center, border-top-0', tdClass: 'text-center' },
               { label: 'id', key: 'id', class: 'col-sm-3', thClass: 'border-top-0' },
@@ -196,8 +196,11 @@
               </template>
             </FlowTable>
           </div>
-          <div v-else>
+          <div v-if="!unAssignedGroupsLoading && !unAssignedGroups.length" class="text-center">
             {{ $t('admin.users.group.noResults') }}
+          </div>
+          <div v-else-if="unAssignedGroupsLoading" class="d-flex justify-content-center align-items-center">
+            <b-waiting-box class="d-inline me-2" styling="width: 35px"></b-waiting-box> {{ $t('admin.loading') }}
           </div>
           <template v-slot:modal-footer>
             <b-button @click="$refs.assignGroupsModal.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
@@ -270,6 +273,7 @@ export default {
       passwordRepeat: null,
       groups: null,
       unAssignedGroups: [],
+      unAssignedGroupsLoading: false,
       selectedGroup: null,
       focusedGroup: null,
       passwordPolicyError: false,
@@ -358,6 +362,7 @@ export default {
       })
     },
     loadUnassignedGroups: function() {
+      this.unAssignedGroupsLoading = true
       var userGroups = JSON.parse(JSON.stringify(this.groups))
       this.unAssignedGroups = []
       AdminService.findGroups().then(allGroups => {
@@ -371,6 +376,7 @@ export default {
             this.unAssignedGroups.push(group)
           }
         })
+        this.unAssignedGroupsLoading = false
       })
     },
     openAssignGroupModal: function() {

@@ -15,7 +15,7 @@
         </div>
       </div>
     </div>
-    <footer class="fixed-bottom text-center text-muted">CIB Seven &copy; CIB, {{ new Date().getFullYear() }}</footer>
+    <footer class="fixed-bottom text-center text-muted">CIB seven &copy; CIB, {{ new Date().getFullYear() }}</footer>
   </div>
 </template>
 

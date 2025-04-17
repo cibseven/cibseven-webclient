@@ -22,7 +22,7 @@
         </div>
       </div>
     </div>
-    <div class="container overflow-auto bg-white shadow g-0" @scroll="showMore">
+    <div class="container overflow-auto bg-white shadow-sm border rounded g-0" @scroll="showMore">
       <FlowTable thead-class="sticky-header" striped :items="groups" primary-key="id"
         prefix="admin.groups." :fields="[{label: 'id', key: 'id', class: 'col-md-4 col-sm-4', tdClass: 'border-end py-1' },
             {label: 'name', key: 'name', class: 'col-md-4 col-sm-4', tdClass: 'border-end py-1' },
