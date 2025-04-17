@@ -3,11 +3,13 @@ package org.cibseven.webapp.providers;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.ActivityInstance;
 import org.cibseven.webapp.rest.model.ActivityInstanceHistory;
+import org.cibseven.webapp.providers.utils.URLUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -22,9 +24,21 @@ public class ActivityProvider extends SevenProviderBase implements IActivityProv
 	}
 
 	@Override
+	public List<ActivityInstanceHistory> findActivitiesInstancesHistory(Map<String, Object> queryParams, CIBUser user) {
+		String url = URLUtils.buildUrlWithParams(camundaUrl + "/engine-rest/history/activity-instance", queryParams);
+		return Arrays.asList(((ResponseEntity<ActivityInstanceHistory[]>) doGet(url, ActivityInstanceHistory[].class, user, false)).getBody());	
+	}
+
+	@Override
 	public List<ActivityInstanceHistory> findActivitiesInstancesHistory(String processInstanceId, CIBUser user) {
 		String url = camundaUrl + "/engine-rest/history/activity-instance?processInstanceId=" + processInstanceId;
 		return Arrays.asList(((ResponseEntity<ActivityInstanceHistory[]>) doGet(url, ActivityInstanceHistory[].class, user, false)).getBody());	
+	}
+	
+	@Override
+	public List<ActivityInstanceHistory> findActivityInstanceHistory(String processInstanceId, CIBUser user) throws SystemException {
+		String url = camundaUrl + "/engine-rest/history/activity-instance?processInstanceId=" + processInstanceId;
+		return Arrays.asList(doGet(url, ActivityInstanceHistory[].class, user, false).getBody());
 	}
 	
 	@Override
@@ -33,12 +47,6 @@ public class ActivityProvider extends SevenProviderBase implements IActivityProv
 		return doGet(url, ActivityInstance.class, user, false).getBody();
 	}
 	
-	@Override
-	public List<ActivityInstanceHistory> findActivityInstanceHistory(String processInstanceId, CIBUser user) throws SystemException {
-		String url = camundaUrl + "/engine-rest/history/activity-instance?processInstanceId=" + processInstanceId;
-		return Arrays.asList(doGet(url, ActivityInstanceHistory[].class, user, false).getBody());
-	}
-
 	@Override
 	public void deleteVariableByExecutionId(String executionId, String variableName, CIBUser user) {
 		String url = camundaUrl + "/engine-rest/execution/" + executionId + "/localVariables/" + variableName;

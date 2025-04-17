@@ -124,6 +124,16 @@ public interface BpmProvider {
 	ActivityInstance findActivityInstance(String processInstanceId, CIBUser user) throws SystemException, NoObjectFoundException;
 	
 	/**
+     * Queries for historic activity instances that fulfill the given parameters.
+	 * The activities found belongs to the history.
+     * @param Filter
+     * @return Fetched Historic Activity Instance.
+     * @throws InvalidAttributeValueException when the tenant of a task could not be changed or when the delegation state of a task should be changed to an invalid value.
+     * @throws SystemException in case of any other error.
+     */	
+	Collection<ActivityInstanceHistory> findActivitiesInstancesHistory(Map<String, Object> queryParams, CIBUser user);
+
+	/**
      * Search activities instances that belong to a process instance. The activities found belongs
      * to the history, they have other attributes and activities from finished processes are also fetched.
      * @param processInstanceId filter by process instance id.

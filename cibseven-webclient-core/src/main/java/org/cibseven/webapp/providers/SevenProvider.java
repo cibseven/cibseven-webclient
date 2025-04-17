@@ -438,7 +438,11 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	public ActivityInstance findActivityInstance(String processInstanceId, CIBUser user) {
 		return activityProvider.findActivityInstance(processInstanceId, user);
 	}
-		
+	
+	@Override
+	public List<ActivityInstanceHistory> findActivitiesInstancesHistory(Map<String, Object> queryParams, CIBUser user) {
+		return activityProvider.findActivitiesInstancesHistory(queryParams, user);
+	}
 	
 	@Override
 	public List<ActivityInstanceHistory> findActivitiesInstancesHistory(String processInstanceId, CIBUser user) {
