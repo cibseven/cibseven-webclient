@@ -185,7 +185,7 @@
 
         <!-- Assign Groups Modal -->
         <b-modal v-if="editMode" ref="assignGroupsModal" :title="$t('admin.users.group.add')" size="lg">
-          <div v-if="unAssignedGroups.length > 0" class="container g-0">
+          <div class="container g-0">
             <FlowTable :items="unAssignedGroups" primary-key="id" prefix="admin.groups." striped
               :fields="[{ label: '', key: 'selected', class: 'col-sm-1', sortable: false, thClass: 'text-center, border-top-0', tdClass: 'text-center' },
               { label: 'id', key: 'id', class: 'col-sm-3', thClass: 'border-top-0' },
@@ -196,8 +196,11 @@
               </template>
             </FlowTable>
           </div>
-          <div v-else>
+          <div v-if="!unAssignedGroupsLoading && !unAssignedGroups.length" class="text-center">
             {{ $t('admin.users.group.noResults') }}
+          </div>
+          <div v-else-if="unAssignedGroupsLoading" class="d-flex justify-content-center align-items-center">
+            <b-waiting-box class="d-inline me-2" styling="width: 35px"></b-waiting-box> {{ $t('admin.loading') }}
           </div>
           <template v-slot:modal-footer>
             <b-button @click="$refs.assignGroupsModal.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
@@ -270,6 +273,7 @@ export default {
       passwordRepeat: null,
       groups: null,
       unAssignedGroups: [],
+      unAssignedGroupsLoading: false,
       selectedGroup: null,
       focusedGroup: null,
       passwordPolicyError: false,
@@ -358,6 +362,7 @@ export default {
       })
     },
     loadUnassignedGroups: function() {
+      this.unAssignedGroupsLoading = true
       var userGroups = JSON.parse(JSON.stringify(this.groups))
       this.unAssignedGroups = []
       AdminService.findGroups().then(allGroups => {
@@ -371,6 +376,7 @@ export default {
             this.unAssignedGroups.push(group)
           }
         })
+        this.unAssignedGroupsLoading = false
       })
     },
     openAssignGroupModal: function() {
