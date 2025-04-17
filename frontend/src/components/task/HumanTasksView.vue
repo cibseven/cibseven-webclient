@@ -11,8 +11,10 @@
             thClass: 'd-flex justify-content-center', sortable: false },
           { label: 'types', key: 'types', class: 'col-9', tdClass: 'py-1 border-top-0', sortable: false }]">
           <template v-slot:cell(tasks)="table">
-            <div v-if="table.item.tasks !== null">{{ table.item.tasks }}</div>
-            <span v-else><b-spinner small></b-spinner></span>
+            <transition name="fade" mode="out-in">
+              <span v-if="table.item.tasks !== null">{{ table.item.tasks }}</span>
+              <span v-else><b-spinner small></b-spinner></span>
+            </transition>
           </template>
           <template v-slot:cell(types)="table">
             <div :class="table.item.id === 3 ? 'fw-bold' : ''">{{ table.item.types }}</div>
