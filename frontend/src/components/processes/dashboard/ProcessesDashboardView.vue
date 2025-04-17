@@ -6,23 +6,20 @@
         <h5 class="ps-3 pt-3">{{ $t('processes-dashboard.headerActive') }}</h5>
         <hr>
         <div class="row">
-          <PieChart class="col-12 col-md-4 px-0 m-0" :items="runningInstances"
+          <PieChart class="col-12 col-md-4 px-0 m-0" :items="runningInstancesSeries"
             :title="$t('processes-dashboard.items.running-instances.title')"
             :tooltip="$t('processes-dashboard.items.running-instances.tooltip')"
             link="/seven/auth/processes/list"
-            :total-zero="errorLoading ? 'x': undefined"
           ></PieChart>
-          <PieChart class="col-12 col-md-4 px-0 m-0" :items="openIncidents"
+          <PieChart class="col-12 col-md-4 px-0 m-0" :items="openIncidentsSeries"
             :title="$t('processes-dashboard.items.open-incidents.title')"
             :tooltip="$t('processes-dashboard.items.open-incidents.tooltip')"
             link="/seven/auth/processes/list"
-            :total-zero="errorLoading ? 'x': $t('processes-dashboard.items.open-incidents.none')"
           ></PieChart>
-          <PieChart class="col-12 col-md-4 px-0 m-0" :items="openHumanTasks"
+          <PieChart class="col-12 col-md-4 px-0 m-0" :items="openHumanTasksSeries"
             :title="$t('processes-dashboard.items.open-human-tasks.title')"
             :tooltip="$t('processes-dashboard.items.open-human-tasks.tooltip')"
             link="/seven/auth/human-tasks"
-            :total-zero="errorLoading ? 'x': undefined"
           ></PieChart>
         </div>
       </div>
@@ -47,12 +44,12 @@
 
 <script>
 import { AnalyticsService } from '@/services.js'
-import PieChart from '@/components/processes/dashboard/PieChart.vue'
 import DeploymentItem from '@/components/processes/dashboard/DeploymentItem.vue'
+import PieChart from './PieChart.vue'
 
 export default {
   name: 'ProcessesDashboardView',
-  components: { PieChart, DeploymentItem },
+  components: { DeploymentItem, PieChart },
   data() {
     return {
       errorLoading: false,
@@ -71,33 +68,42 @@ export default {
       ],
     }
   },
-  mounted() {
+  created() {
     this.loadAnalytics()
+  },
+  computed: {
+    runningInstancesSeries() {
+      return this.runningInstances
+    },
+    openIncidentsSeries() {
+      return this.openIncidents
+    },
+    openHumanTasksSeries() {
+      return this.openHumanTasks
+    },
   },
   methods: {
     async loadAnalytics() {
       try {
         this.errorLoading = false
         const analytics = await AnalyticsService.getAnalytics()
-        console.debug(analytics)
-        this.runningInstances = Array.from(analytics.runningInstances).map(item => {
-          return {
-            ...item,
-            link: '/seven/auth/process/' + item.id
-          }
-        })
+        
+        // await new Promise(resolve => setTimeout(resolve, 2000))
+
+        // Prepare data for charts
+        this.runningInstances = analytics.runningInstances
         this.openIncidents = analytics.openIncidents
         this.openHumanTasks = analytics.openHumanTasks
+
         this.deploymentItems[0].count = analytics.processDefinitionsCount
         this.deploymentItems[1].count = analytics.decisionDefinitionsCount
         this.deploymentItems[2].count = analytics.deploymentsCount
         this.deploymentItems[3].count = analytics.batchesCount
+
       } catch (error) {
+
         console.error('Error loading analytics:', error)
         this.errorLoading = true
-        this.runningInstances = []
-        this.openIncidents = []
-        this.openHumanTasks = []
         this.deploymentItems[0].count = 'x'
         this.deploymentItems[1].count = 'x'
         this.deploymentItems[2].count = 'x'
