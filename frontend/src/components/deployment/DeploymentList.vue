@@ -13,11 +13,10 @@
                 <b-card style="min-height: 120px;">
                   <b-card-body :class="d === deployment ? 'border-start border-primary border-4' : ''">
                     <b-card-text>
-                      <span @click.stop class="d-flex justify-content-start">
-                        <b-form-checkbox size="sm" v-model="d.isSelected">
-                          <span class="fw-bold" style="word-break: break-word">{{ d.name }}</span>
-                        </b-form-checkbox>
-                      </span>
+                      <label @click.stop class="d-flex align-items-start m-0 hover-highlight">
+                        <b-form-checkbox size="sm" v-model="d.isSelected" @click.stop></b-form-checkbox>
+                        <span class="fw-bold text-break">{{ d.name }}</span>
+                      </label>
                       <div class="d-flex align-items-center pt-2">
                         <span>{{ d.deploymentTime }}</span>
                       </div>
@@ -106,3 +105,15 @@ export default {
   }
 }
 </script>
+
+<style>
+.hover-highlight {
+  transition: border 0.2s ease;
+  border: 1px solid white;
+  border-radius: 4px;
+}
+
+.hover-highlight:hover {
+  border: 1px solid #ced4da; /* Bootstrap gray border, bs-gray-400 */
+}
+</style>
