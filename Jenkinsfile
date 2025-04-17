@@ -55,6 +55,11 @@ pipeline {
             defaultValue: false,
             description: 'Deploy artifacts to Maven Central'
         )
+        booleanParam(
+			name: 'DEPLOY_ANY_BRANCH_TO_HARBOR',
+			defaultValue: false,
+			description: 'Deploy any branch to harbor'
+		)
     }
 
     options {
@@ -211,6 +216,30 @@ pipeline {
                 }
             }
         }
+        
+        stage('Deploy Helm Charts to Harbor') {
+	        when {
+                anyOf {
+                    branch 'main'
+                    expression { params.DEPLOY_ANY_BRANCH_TO_HARBOR }
+                }
+	        }
+	        steps {
+	            script {
+	                helmChartPaths.each { path ->
+	                    HelmChartInformation helmChartInformation = readHelmChart(path: path)
+	                    helmChartInformation.setUploadVersion(mavenProjectInformation.version)
+	                    helmChartInformation.setUploadAppVersion(mavenProjectInformation.version)
+	                    deployHelmChart(
+	                        helmChartInformation: helmChartInformation,
+	                        updateDependencies: true,
+	                        runChecks: true,
+	                        dryRun: false
+	                    )
+	                }
+	            }
+	        }
+	    }
     }
 
     post {
