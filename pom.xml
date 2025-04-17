@@ -38,7 +38,7 @@
 		<image.tomcat-10-base>harbor.cib.de/dev/tomcat-10-base:1.1.0</image.tomcat-10-base>
 		<jib-maven-plugin.version>3.4.4</jib-maven-plugin.version>
 		<jib.from.image>${image.tomcat-10-base}</jib.from.image>
-		<jib.to.image>harbor.cib.de/dev/seven-webclient:${project.version}</jib.to.image>
+		<jib.to.image>harbor.cib.de/dev/cibseven-webclient:${project.version}</jib.to.image>
 		
 		<version.eirslett.frontend.maven.plugin>1.12.1</version.eirslett.frontend.maven.plugin>
     	<version.nodejs>22.14.0</version.nodejs>

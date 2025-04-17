@@ -227,17 +227,15 @@ pipeline {
 	        }
 	        steps {
 	            script {
-	                helmChartPaths.each { path ->
-	                    HelmChartInformation helmChartInformation = readHelmChart(path: path)
-	                    helmChartInformation.setUploadVersion(mavenProjectInformation.version)
-	                    helmChartInformation.setUploadAppVersion(mavenProjectInformation.version)
-	                    deployHelmChart(
-	                        helmChartInformation: helmChartInformation,
-	                        updateDependencies: true,
-	                        runChecks: true,
-	                        dryRun: false
-	                    )
-	                }
+                    HelmChartInformation helmChartInformation = readHelmChart(path: 'helm/cibseven-webclient')
+                    helmChartInformation.setUploadVersion(mavenProjectInformation.version)
+                    helmChartInformation.setUploadAppVersion(mavenProjectInformation.version)
+                    deployHelmChart(
+                        helmChartInformation: helmChartInformation,
+                        updateDependencies: true,
+                        runChecks: true,
+                        dryRun: false
+                    )
 	            }
 	        }
 	    }
