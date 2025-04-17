@@ -7,6 +7,7 @@ import de.cib.pipeline.library.kubernetes.BuildPodCreator
 import de.cib.pipeline.library.logging.Logger
 import de.cib.pipeline.library.ConstantsInternal
 import de.cib.pipeline.library.MavenProjectInformation
+import de.cib.pipeline.library.helm.HelmChartInformation
 import groovy.transform.Field
 
 @Field Logger log = new Logger(this)
@@ -23,6 +24,7 @@ pipeline {
         kubernetes {
             yaml BuildPodCreator.cibStandardPod()
                     .withContainerFromName(pipelineParams.mvnContainerName)
+                    .withHelm3Container()
                     .asYaml()
             defaultContainer pipelineParams.mvnContainerName
         }
@@ -55,6 +57,11 @@ pipeline {
             defaultValue: false,
             description: 'Deploy artifacts to Maven Central'
         )
+        booleanParam(
+			name: 'DEPLOY_ANY_BRANCH_TO_HARBOR',
+			defaultValue: false,
+			description: 'Deploy any branch to harbor'
+		)
     }
 
     options {
@@ -211,6 +218,88 @@ pipeline {
                 }
             }
         }
+        
+        stage('Create & Push Docker Image') {
+            when {
+                anyOf {
+                    branch 'main'
+                    expression { params.DEPLOY_ANY_BRANCH_TO_HARBOR == true }
+                }
+            }
+            steps {
+                script {
+                    withMaven() {
+                        // "package" before jib:build is needed to support maven multi module projects
+                        // see https://github.com/GoogleContainerTools/jib/tree/master/examples/multi-module
+                        sh """
+                            mvn -f ./pom.xml \
+                                package \
+                                jib:build \
+                                -Dmaven.test.skip \
+                                -DskipTests \
+                                -Dlicense.skipDownloadLicenses=true \
+                                -T4 \
+                                -Dbuild.number=${BUILD_NUMBER}
+                        """
+                    }
+                    //TODO SBOM needed?
+//                    if (params.RELEASE_BUILD) {
+//                        log.info 'Generating and uploading SBOM for image due to release build'
+//                        container(Constants.SYFT_CONTAINER) {
+//                            withCredentials([string(credentialsId: Constants.DEPENDENCY_TRACK_CREDENTIALS_ID, variable: 'API_KEY')]) {
+//                                def files = findFiles(glob: '**/target/jib-image.json')
+//                                files.each { file ->
+//                                    String image = readJSON(file: file.path).image
+//                                    sh "syft ${image} -o cyclonedx-xml=syft-bom.xml -v"
+//                                    String[] imageSplit = image.split(':')
+//                                    String imageName = imageSplit[0].split('/')[-1]
+//                                    String imageVersion = imageSplit[-1]
+//                                    dependencyTrackPublisher(
+//                                        artifact: 'syft-bom.xml',
+//                                        // Add suffix '-image' so previously uploaded bom for java artifact is not
+//                                        // overwritten in dependency-track
+//                                        projectName: imageName + '-image',
+//                                        projectVersion: imageVersion,
+//                                        projectProperties: [
+//                                            description: mavenProjectInformation.description,
+//                                            group: mavenProjectInformation.groupId,
+//                                            tags: ['jib']
+//                                        ],
+//                                        synchronous: false,
+//                                        dependencyTrackApiKey: API_KEY
+//                                    )
+//                                    sh 'rm -f syft-bom.xml'
+//                                }
+//                            }
+//                        }
+//                    } else {
+//                        log.info 'Skipping SBOM generation and upload for image'
+//                    }
+                }
+            }
+        }
+        
+        stage('Deploy Helm Charts to Harbor') {
+	        when {
+                anyOf {
+                    branch 'main'
+                    expression { params.DEPLOY_ANY_BRANCH_TO_HARBOR }
+                }
+	        }
+	        steps {
+	            script {
+                    HelmChartInformation helmChartInformation = readHelmChart(path: 'helm/cibseven-webclient')
+                    helmChartInformation.setUploadVersion(mavenProjectInformation.version)
+                    helmChartInformation.setUploadAppVersion(mavenProjectInformation.version)
+                    deployHelmChart(
+                        helmChartInformation: helmChartInformation,
+                        updateDependencies: true,
+                        runChecks: true,
+                        dryRun: false
+                    )
+	            }
+	        }
+	    }
     }
 
     post {
