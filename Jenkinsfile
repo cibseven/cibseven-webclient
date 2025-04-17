@@ -24,6 +24,7 @@ pipeline {
         kubernetes {
             yaml BuildPodCreator.cibStandardPod()
                     .withContainerFromName(pipelineParams.mvnContainerName)
+                    .withHelm3Container()
                     .asYaml()
             defaultContainer pipelineParams.mvnContainerName
         }
