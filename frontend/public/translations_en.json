@@ -521,7 +521,16 @@
 				"diagnosticData": "Diagnostics Data"
 			},
 			"execution-metrics": {
-				"title": "Execution Metrics"
+				"title": "Execution Metrics",
+				"metricsHelp": "Recorded number of Process Instances and Decision Instances processed by the engine and Task Users that were assigned to a user task.",
+				"startDateContract": "Contract start date",
+				"process-instances": "Process instances",
+				"decision-instances": "Decision instances",
+				"task-users": "Task users",
+				"usageLast12MonthsByMonth": "Usage last 12 months by month",
+				"annualUsageBySubscriptionTerm": "Annual usage metrics by subscription term",
+				"fromUpToToday": "{from} up to today",
+				"fromTo": "{from} to {to}"
 			}
 		}
 	},

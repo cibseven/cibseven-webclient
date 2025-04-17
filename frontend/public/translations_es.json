@@ -522,7 +522,16 @@
 				"diagnosticData": "Datos de diagnóstico"
 			},
 			"execution-metrics": {
-				"title": "Métricas de ejecución"
+				"title": "Métricas de ejecución",
+				"metricsHelp": "Número registrado de instancias de proceso e instancias de decisión procesadas por el motor y usuarios de tareas asignados a una tarea de usuario.",
+				"startDateContract": "Fecha de inicio del contrato",
+				"process-instances": "Instancias de decisión",
+				"decision-instances": "Instancias de proceso",
+				"task-users": "Usuarios de tareas",
+				"usageLast12MonthsByMonth": "Uso en los últimos 12 meses por mes",
+				"annualUsageBySubscriptionTerm": "Métricas de uso anual por período de suscripción",
+				"fromUpToToday": "{from} hasta hoy",
+				"fromTo": "de {from} a {to}"
 			}
 		}
 	},
