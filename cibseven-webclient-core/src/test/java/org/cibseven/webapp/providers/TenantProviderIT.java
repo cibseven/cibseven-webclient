@@ -8,184 +8,87 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 
 import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.rest.model.SevenUser;
-import org.cibseven.webapp.rest.model.NewUser;
-import org.cibseven.webapp.rest.model.User;
-import org.cibseven.webapp.rest.model.Credentials;
-import org.cibseven.webapp.rest.model.SevenTenant;
-
-import java.util.Collection;
-import java.util.Optional;
 
 @SpringBootTest(properties = {
 	    "camunda.engineRest.url=http://localhost:8080"
 	})
-@ContextConfiguration(classes = {UserProvider.class, TenantProvider.class})
+@ContextConfiguration(classes = {
+		BaseUsersTestHelper.class,
+		UserProvider.class,
+		BaseTenantsTestHelper.class,
+		TenantProvider.class})
 public class TenantProviderIT {
-
-    @Autowired
-    private UserProvider userProvider;
+	
+	@Autowired
+	private BaseUsersTestHelper baseUsersTestHelper;
+	
+	@Autowired
+	private BaseTenantsTestHelper baseTenantsTestHelper;
     
-    @Autowired
-    private TenantProvider tenantProvider;    
-    
-    // TODO: Create other tests
     @Test
-    public void testMultiTenancy() {
+    public void testTenantCreation() {
+    	// Arrange
+        CIBUser user = new CIBUser();
+        user.setAuthToken("Bearer token");
+        
+    	baseTenantsTestHelper.createTenant("tenantDemo1", "tenantDemo1", user);
+    	assertThat(baseTenantsTestHelper.verifyTenant("tenantDemo1", user)).isNotNull();
+    	
+    	baseTenantsTestHelper.createTenant("tenantDemo2", "tenantDemo2", user);
+    	assertThat(baseTenantsTestHelper.verifyTenant("tenantDemo2", user)).isNotNull();
+    	
+    	baseTenantsTestHelper.deleteTenant("tenantDemo1", user);
+    	assertThat(baseTenantsTestHelper.verifyTenant("tenantDemo1", user)).isNull();
+    	
+    	baseTenantsTestHelper.deleteTenant("tenantDemo2", user);
+    	assertThat(baseTenantsTestHelper.verifyTenant("tenantDemo2", user)).isNull();
+    }   
+    
+    @Test
+    public void testTenantUpdate() {
+    	// Arrange
+        CIBUser user = new CIBUser();
+        user.setAuthToken("Bearer token");
+        
+    	baseTenantsTestHelper.createTenant("tenantDemo1", "tenantDemo1", user);
+    	assertThat(baseTenantsTestHelper.verifyTenant("tenantDemo1", user)).isNotNull();
+    	
+    	baseTenantsTestHelper.updateTenant("tenantDemo1", "tenantDemoUpdated", user);
+    	assertThat(baseTenantsTestHelper.verifyTenant("tenantDemo1", user).getName()).isEqualTo("tenantDemoUpdated");
+    	
+    	baseTenantsTestHelper.deleteTenant("tenantDemo1", user);
+    	assertThat(baseTenantsTestHelper.verifyTenant("tenantDemo1", user)).isNull();
+    }
+    
+    @Test
+    public void testUserMembershipToTenant() {
     	// Arrange
         CIBUser user = new CIBUser();
         user.setAuthToken("Bearer token");
 
-        // FetchUsers        
-        Collection<SevenUser> users = userProvider.fetchUsers(user);        
-        assertThat(users).isNotNull();
-
         // Create demo1 user
-        if (users.stream().noneMatch(u -> "demo1".equals(u.getId())))
-        {
-            int usersSize = users.size();
-            User user1 = new User("demo1", "demo1", "demo1", null);
-            Credentials credentials = new Credentials();        
-            NewUser newUser = new NewUser(user1, credentials);
-            userProvider.createUser(newUser, user);
+        baseUsersTestHelper.createUser("demo1", "demo1", "demo1", "", user);
+        assertThat(baseUsersTestHelper.verifyUser("demo1", "", user)).isNotNull();
+        
+        // Create tenant        
+        baseTenantsTestHelper.createTenant("tenantDemo1", "tenantDemo1", user);
+    	assertThat(baseTenantsTestHelper.verifyTenant("tenantDemo1", user)).isNotNull();
+    	
+    	// Add demo1 user to tenant
+    	baseTenantsTestHelper.addMemberToTenant("tenantDemo1", "demo1", user);
+    	assertThat(baseTenantsTestHelper.verifyUserMembershipToTenant("tenantDemo1", "demo1", user)).isNull();
 
-            // Check user creation
-            users = userProvider.fetchUsers(user);        
-            assertThat(users).isNotNull();
-            assertThat(users).hasSize(usersSize + 1);
-        }
-        
-        // Create demo2 user
-        if (users.stream().noneMatch(u -> "demo2".equals(u.getId())))
-        {
-            int usersSize = users.size();
-            User user2 = new User("demo2", "demo2", "demo2", null);
-            Credentials credentials = new Credentials();        
-            NewUser newUser = new NewUser(user2, credentials);
-            userProvider.createUser(newUser, user);
-
-            // Check user creation
-            users = userProvider.fetchUsers(user);        
-            assertThat(users).isNotNull();
-            assertThat(users).hasSize(usersSize + 1);
-        }        
-        
-        // Fetch tenants   
-        Collection<SevenTenant> tenants = tenantProvider.fetchTenants(user);        
-        assertThat(tenants).isNotNull();
-        
-    	// Create tenant1
-        if (tenants.stream().noneMatch(u -> "tenant1".equals(u.getId())))
-        {
-            int tenantsSize = tenants.size();
-            SevenTenant tenant = new SevenTenant("tenant1", "tenant1");
-            tenantProvider.createTenant(tenant, user);
-
-            // Check tenant creation
-            tenants =  tenantProvider.fetchTenants(user);
-            assertThat(tenants).isNotNull();
-            assertThat(tenants).hasSize(tenantsSize + 1);
-        }     
-        
-        // Create tenant2
-        if (tenants.stream().noneMatch(u -> "tenant2".equals(u.getId())))
-        {
-            int tenantsSize = tenants.size();
-            SevenTenant tenant = new SevenTenant("tenant2", "tenant2");
-            tenantProvider.createTenant(tenant, user);
-
-            // Check tenant creation
-            tenants =  tenantProvider.fetchTenants(user);
-            assertThat(tenants).isNotNull();
-            assertThat(tenants).hasSize(tenantsSize + 1);
-        }
-        
-        Collection<User> usersOfTenant1 = userProvider.findUsers(
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.of("tenant1"),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                user
-        );               
-        assertThat(usersOfTenant1).isNotNull();        
-        if (usersOfTenant1.stream().noneMatch(u -> "demo1".equals(u.getId())))
-        {
-	        // Add demo to tenant1        
-	        tenantProvider.addMemberToTenant("tenant1", "demo1", user);                
-	        // Check membership
-	        usersOfTenant1 = userProvider.findUsers(
-	                Optional.empty(),
-	                Optional.empty(),
-	                Optional.empty(),
-	                Optional.empty(),
-	                Optional.empty(),
-	                Optional.empty(),
-	                Optional.empty(),
-	                Optional.empty(),
-	                Optional.of("tenant1"),
-	                Optional.empty(),
-	                Optional.empty(),
-	                Optional.empty(),
-	                Optional.empty(),
-	                Optional.empty(),
-	                user
-	        );               
-	        assertThat(usersOfTenant1).isNotNull();
-	        assertThat(usersOfTenant1).anySatisfy(u -> assertThat(u.getId()).isEqualTo("demo1"));
-        }
-        
-        Collection<User> usersOfTenant2 = userProvider.findUsers(
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.of("tenant1"),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                user
-        );               
-        assertThat(usersOfTenant2).isNotNull();        
-        if (usersOfTenant2.stream().noneMatch(u -> "demo2".equals(u.getId())))
-        {
-	        // Add demo to tenant1        
-	        tenantProvider.addMemberToTenant("tenant2", "demo2", user);                
-	        // Check membership
-	        usersOfTenant2 = userProvider.findUsers(
-	                Optional.empty(),
-	                Optional.empty(),
-	                Optional.empty(),
-	                Optional.empty(),
-	                Optional.empty(),
-	                Optional.empty(),
-	                Optional.empty(),
-	                Optional.empty(),
-	                Optional.of("tenant2"),
-	                Optional.empty(),
-	                Optional.empty(),
-	                Optional.empty(),
-	                Optional.empty(),
-	                Optional.of("asc"),
-	                user
-	        );               
-	        assertThat(usersOfTenant2).isNotNull();
-	        assertThat(usersOfTenant2).anySatisfy(u -> assertThat(u.getId()).isEqualTo("demo2"));
-        }
+		// Remove demo1 user from tenant
+    	baseTenantsTestHelper.deleteMemberFromTenant("tenantDemo1", "demo1", user);
+    	assertThat(baseTenantsTestHelper.verifyUserMembershipToTenant("tenantDemo1", "demo1", user)).isNull();
+    	
+    	// Remove tenant
+    	baseTenantsTestHelper.deleteTenant("tenantDemo1", user);
+    	assertThat(baseTenantsTestHelper.verifyTenant("tenantDemo1", user)).isNull();
+    }
+    
+    @Test
+    public void testGroupMembershipToTenant() {
+    	// TODO
     }
 }
