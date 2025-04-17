@@ -7,6 +7,7 @@ import de.cib.pipeline.library.kubernetes.BuildPodCreator
 import de.cib.pipeline.library.logging.Logger
 import de.cib.pipeline.library.ConstantsInternal
 import de.cib.pipeline.library.MavenProjectInformation
+import de.cib.pipeline.library.helm.HelmChartInformation
 import groovy.transform.Field
 
 @Field Logger log = new Logger(this)
