@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white shadow p-3 mb-4">
+  <div class="bg-white shadow-sm border rounded p-3 mb-4">
     <h4>{{ $t('batches.inProgressBatches') }}</h4>
     <hr>
     <div class="overflow-auto" style="max-height: 35vh">

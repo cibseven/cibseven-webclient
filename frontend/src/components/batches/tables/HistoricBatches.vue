@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white shadow p-3">
+  <div class="bg-white shadow-sm p-3 border rounded">
     <h4>{{ $t('batches.historicBatches') }}</h4>
     <hr>
     <div class="overflow-auto" style="max-height: 35vh" @scroll="showMore">
