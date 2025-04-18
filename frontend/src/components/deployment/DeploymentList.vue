@@ -15,7 +15,7 @@
                     <b-card-text>
                       <span @click.stop class="d-flex justify-content-start">
                         <b-form-checkbox size="sm" v-model="d.isSelected">
-                          <span class="fw-bold" style="word-break: break-word">{{ d.name }}</span>
+                          <span class="fw-bold" style="word-break: break-word">{{ d.name || d.id }}</span>
                         </b-form-checkbox>
                       </span>
                       <div class="d-flex align-items-center pt-2">

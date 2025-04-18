@@ -114,9 +114,10 @@ export default {
   },
   computed: {
     deploymentsFiltered: function() {
-      return this.deployments.filter(d => {
-        return (d.name ? d.name.toUpperCase().includes(this.filter.toUpperCase()) : false)
-      }).sort((a, b) => sortDeployments(a, b, this.sorting.key, this.sorting.order))
+      const filterUpper = this.filter.toUpperCase()
+      return this.deployments
+        .filter(d => this.isDeploymentFiltered(d, filterUpper))
+        .sort((a, b) => sortDeployments(a, b, this.sorting.key, this.sorting.order))
     },
     sortingFields: function() {
       return [
@@ -179,6 +180,15 @@ export default {
       this.deployment = d
       this.rightOpen = true
       this.findDeploymentResources(d.id)
+    },
+    // @return {flag} show this deployment in the list or not
+    isDeploymentFiltered: function(d, filterUpper) {
+      if (!filterUpper) {
+        // no filter => show all
+        return true
+      }
+      const value = (d.name || d.id).toUpperCase()
+      return value.includes(filterUpper)
     },
     findDeploymentResources: function(deploymentId) {
       ProcessService.findDeploymentResources(deploymentId).then(resources => {
