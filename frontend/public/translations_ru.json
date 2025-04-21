@@ -463,7 +463,13 @@
 			"tooltip": "Tenants management",
 			"id": "ID",
 			"name": "Имя",
-			"actions": "Действия"
+			"actions": "Действия",
+			"add": "Добавить тенанта",
+			"create": "Создать нового тенанта",
+			"cancel": "Отмена",
+			"tenantCreatedMessage": "Тенант {0} создан",
+			"confirmDelete": "Вы действительно хотите удалить тенанта со следующими параметрами?",
+			"tenantDeletedMessage": "Тенант {0} удалён"
 		},
 		"authorizations": {
 			"title": "Авторизации",

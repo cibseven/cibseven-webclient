@@ -463,7 +463,13 @@
 			"tooltip": "Tenants management",
 			"id": "ID",
 			"name": "Name",
-			"actions": "Aktionen"
+			"actions": "Aktionen",
+			"add": "Tenant hinzufügen",
+			"create": "Neuen Tenant erstellen",
+			"cancel": "Abbrechen",
+			"tenantCreatedMessage": "Tenant {0} wurde erstellt",
+			"confirmDelete": "Möchten Sie den Tenant mit den folgenden Parametern wirklich löschen?",
+			"tenantDeletedMessage": "Tenant {0} wurde gelöscht"
 		},
 		"authorizations": {
 			"title": "Berechtigungen",

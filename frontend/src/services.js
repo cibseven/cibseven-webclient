@@ -577,6 +577,9 @@ var BatchService = {
 var TenantService = {  
   getTenants: function() {
     return axios.get(appConfig.servicesBasePath + "/tenant")
+  },
+  createTenant: function (tenant) {
+    return axios.post(appConfig.servicesBasePath + "/tenant", tenant)
   }
 }
 

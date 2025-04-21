@@ -10,10 +10,15 @@
             <b-form-input :title="$t('searches.search')" :placeholder="$t('searches.search')" v-model="filter"></b-form-input>
           </b-input-group>
         </div>
+        <div class="col-8 text-end">
+          <b-button class="border me-1" size="sm" variant="light" v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'" @click="add()">
+            <span class="mdi mdi-plus"> {{ $t('admin.tenants.add') }} </span>
+          </b-button>
+        </div>
       </div>
     </div>
     <div class="container overflow-auto bg-white shadow g-0">
-      <FlowTable striped :items="filteredTenants" :fields="tenantFields" primary-key="id" table-class="table-striped" prefix="admin.tenants."></FlowTable>
+      <FlowTable striped :items="filteredTenants" :fields="tenantFields" primary-key="id" prefix="admin.tenants."></FlowTable>
       <div class="mb-3 text-center w-100" v-if="loading">
         <BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}
       </div>
@@ -66,7 +71,10 @@
         this.fetchTenants().finally(() => {
           this.loading = false
         })
-      }
+      },
+      add: function () {
+        this.$router.push('/seven/auth/admin/create-tenant')
+      },
     }
   }
 </script>

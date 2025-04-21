@@ -14,6 +14,9 @@ const TenantStore = {
       const tenants = await TenantService.getTenants()
       commit('setTenants', tenants)
       return tenants
+    },
+    async createTenant(_, tenant) {
+      await TenantService.createTenant(tenant)
     }
   },
   getters: {

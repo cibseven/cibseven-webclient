@@ -31,6 +31,7 @@ import { BWaitingBox } from 'cib-common-components'
 import DeployedForm from '@/components/forms/DeployedForm.vue'
 import StartDeployedForm from '@/components/forms/StartDeployedForm.vue'
 import TenantsView from '@/components/tenants/TenantsView.vue'
+import CreateTenant from '@/components/tenants/CreateTenant.vue'
 import BatchesView from '@/components/batches/BatchesView.vue'
 import SystemView from '@/components/system/SystemView.vue'
 import SystemDiagnostics from '@/components/system/SystemDiagnostics.vue'
@@ -210,7 +211,8 @@ const router = createRouter({
           ]
         },
         { path: 'admin/create-user', name: 'createUser', component: CreateUser },
-        { path: 'admin/create-group', name: 'createGroup', beforeEnter: permissionsGuard('cockpit'), component: CreateGroup }
+        { path: 'admin/create-group', name: 'createGroup', beforeEnter: permissionsGuard('cockpit'), component: CreateGroup },
+        { path: 'admin/create-tenant', name: 'createTenant', component: CreateTenant },
       ]}
     ]},
     {
