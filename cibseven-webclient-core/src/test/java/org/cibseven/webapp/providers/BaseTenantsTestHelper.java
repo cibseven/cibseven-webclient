@@ -70,7 +70,7 @@ public class BaseTenantsTestHelper {
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty(),
-                Optional.of("tenantId"),
+                Optional.of(tenantId),
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty(),
