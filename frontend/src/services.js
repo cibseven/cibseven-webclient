@@ -574,24 +574,6 @@ var BatchService = {
   }
 }
 
-var TenantService = {  
-  getTenants: function() {
-    return axios.get(appConfig.servicesBasePath + '/tenant')
-  },
-  getTenantById: function (tenantId) {
-    return axios.get(appConfig.servicesBasePath + '/tenant/' + tenantId)
-  },
-  createTenant: function (tenant) {
-    return axios.post(appConfig.servicesBasePath + '/tenant', tenant)
-  },
-  updateTenant: function (tenant) {
-    return axios.put(appConfig.servicesBasePath + '/tenant/' + tenant.id, tenant)
-  },
-  deleteTenant: function (tenantId) {
-    return axios.delete(appConfig.servicesBasePath + '/tenant/' + tenantId)
-  }
-}
-
 var AnalyticsService = {
   async getAnalytics() {
     return axios.get(appConfig.servicesBasePath + '/analytics')
@@ -607,5 +589,30 @@ var SystemService = {
   }
 }
 
-export { TaskService, FilterService, ProcessService, AdminService, JobService, JobDefinitionService, SystemService, TenantService,
-  HistoryService, IncidentService, AuthService, InfoService, FormsService, TemplateService, DecisionService, AnalyticsService, BatchService }
+var TenantService = {  
+  getTenants(params) {
+    return axios.get(appConfig.servicesBasePath + '/tenant', { params })
+  },
+  getTenantById: function (tenantId) {
+    return axios.get(appConfig.servicesBasePath + '/tenant/' + tenantId)
+  },
+  createTenant: function (tenant) {
+    return axios.post(appConfig.servicesBasePath + '/tenant', tenant)
+  },
+  updateTenant: function (tenant) {
+    return axios.put(appConfig.servicesBasePath + '/tenant/' + tenant.id, tenant)
+  },
+  deleteTenant: function (tenantId) {
+    return axios.delete(appConfig.servicesBasePath + '/tenant/' + tenantId)
+  },
+  removeUserFromTenant(tenantId, userId) {
+    return axios.delete(`${appConfig.servicesBasePath}/tenant/${tenantId}/users/${userId}`)
+  },
+  addUserToTenant(tenantId, userId) {
+    return axios.post(`${appConfig.servicesBasePath}/tenant/${tenantId}/users/${userId}`)
+  }
+}
+
+export { TaskService, FilterService, ProcessService, AdminService, JobService, JobDefinitionService, SystemService,
+  HistoryService, IncidentService, AuthService, InfoService, FormsService, TemplateService, DecisionService, 
+  AnalyticsService, BatchService, TenantService }

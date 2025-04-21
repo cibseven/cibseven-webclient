@@ -1048,8 +1048,8 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	*/
 	
 	@Override
-	public Collection<Tenant> fetchTenants(CIBUser user) {
-		return tenantProvider.fetchTenants(user);
+	public Collection<Tenant> fetchTenants(Map<String, Object> queryParams, CIBUser user) {
+		return tenantProvider.fetchTenants(queryParams, user);
 	}
 
 	@Override
