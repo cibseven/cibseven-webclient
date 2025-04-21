@@ -20,9 +20,6 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class TenantProvider extends SevenProviderBase implements ITenantProvider {
 	
-	@Value("${user.provider}") String userProvider;
-	@Value("${users.search.wildcard:}") String wildcard;
-	
 	public Collection<SevenTenant> fetchTenants(CIBUser user) throws SystemException {
 		String url = camundaUrl + "/engine-rest/tenant";
 		return Arrays.asList(((ResponseEntity<SevenTenant[]>) doGet(url, SevenTenant[].class, user, false)).getBody());	
@@ -38,17 +35,14 @@ public class TenantProvider extends SevenProviderBase implements ITenantProvider
 		String url = camundaUrl + "/engine-rest/tenant/create";
 
 		try {
-			//	A JSON object with the following properties:
-			//	Name 	Type 	Description
-			//	id 	    String 	id (String)
-			//	name 	String 	name (String) 
+			// TODO: Review this, json may not needed
 			
 			String body = newTenant.json();		
 			doPost(url, body , null, user);
 			
 		} catch (JsonProcessingException e) {
 			SystemException se = new SystemException(e);
-			log.info("Exception in createUser(...):", se);
+			log.error("Exception in createTenant(...):", se);
 			throw se;
 		}
 	}
@@ -63,19 +57,14 @@ public class TenantProvider extends SevenProviderBase implements ITenantProvider
 	public void udpateTenant(SevenTenant tenant, CIBUser user)
 	{		
 		String url = camundaUrl + "/engine-rest/tenant/" + tenant.getId();
-
-		try {
-			//	A JSON object with the following properties:
-			//	Name 	Type 	Description
-			//	id 	    String 	id (String)
-			//	name 	String 	name (String) 
-			
+		// TODO: Review this, json may not needed
+		try {		
 			String body = tenant.json();		
 			doPut(url, body , user);
 
 		} catch (JsonProcessingException e) {
 			SystemException se = new SystemException(e);
-			log.info("Exception in updateTenant(...):", se);
+			log.error("Exception in updateTenant(...):", se);
 			throw se;
 		}
 	}
@@ -95,6 +84,7 @@ public class TenantProvider extends SevenProviderBase implements ITenantProvider
 	@Override
 	public void addGroupToTenant(String tenantId, String groupId, CIBUser user) {
 		String url = camundaUrl + "/engine-rest/tenant/" + tenantId + "/group-members/" + groupId;
+		// TODO:  emtpy string?
 		doPut(url, "", user);
 	}	
 	
