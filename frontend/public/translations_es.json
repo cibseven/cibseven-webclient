@@ -461,7 +461,27 @@
 		},
 		"tenants": {
 			"title": "Tenants",
-			"tooltip": "Tenants management"
+			"tooltip": "Tenants management",
+			"id": "ID",
+			"name": "Nombre",
+			"actions": "Acciones",
+			"add": "Añadir tenant",
+			"create": "Crear nuevo tenant",
+			"cancel": "Cancelar",
+			"tenantCreatedMessage": "Tenant {0} creado",
+			"confirmDelete": "¿Realmente deseas eliminar el tenant con los siguientes parámetros?",
+			"tenantDeletedMessage": "Tenant {0} eliminado",
+			"deleteTenant": "Eliminar tenant",
+			"editTenant": "Editar tenant",
+			"information": "Información",
+			"users": "Usuarios",
+			"groups": "Grupos",
+			"editMessage": "Editar tenant ({0})",
+			"update": "Actualizar tenant",
+			"updateTenantMessage": "El tenant {0} ha sido actualizado",
+			"deleteTenantMessage": "El tenant {0} ha sido eliminado",
+			"tenantUsers": "Usuarios del tenant",
+			"tenantGroups": "Grupos del tenant"
 		},
 		"authorizations": {
 			"title": "Autorizaciones",

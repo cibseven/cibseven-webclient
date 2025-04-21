@@ -460,7 +460,27 @@
 		},
 		"tenants": {
 			"title": "Tenants",
-			"tooltip": "Tenants management"
+			"tooltip": "Tenants management",
+			"id": "ID",
+			"name": "Name",
+			"actions": "Aktionen",
+			"add": "Tenant hinzufügen",
+			"create": "Neuen Tenant erstellen",
+			"cancel": "Abbrechen",
+			"tenantCreatedMessage": "Tenant {0} wurde erstellt",
+			"confirmDelete": "Möchten Sie den Tenant mit den folgenden Parametern wirklich löschen?",
+			"tenantDeletedMessage": "Tenant {0} wurde gelöscht",
+			"deleteTenant": "Tenant löschen",
+			"editTenant": "Tenant bearbeiten",
+			"information": "Informationen",
+			"users": "Benutzer",
+			"groups": "Gruppen",
+			"editMessage": "Mandanten bearbeiten ({0})",
+			"update": "Mandant aktualisieren",
+			"updateTenantMessage": "Mandant {0} wurde aktualisiert",
+			"deleteTenantMessage": "Mandant {0} wurde entfernt",
+			"tenantUsers": "Mandantenbenutzer",
+			"tenantGroups": "Mandantengruppen"
 		},
 		"authorizations": {
 			"title": "Berechtigungen",
