@@ -124,8 +124,8 @@
                     </div>
                   </div>
                 </div>
-                <div v-if="tenants.length > 0" class="container-fluid overflow-auto bg-white shadow g-0">
-                  <FlowTable striped :items="tenants" primary-key="id" prefix="admin.tenants." :fields="tenantFields"
+                <div v-if="userTenants.length > 0" class="container-fluid overflow-auto bg-white shadow g-0">
+                  <FlowTable striped :items="userTenants" primary-key="id" prefix="admin.tenants." :fields="tenantFields"
                     @contextmenu="focusedTenant = $event" @mouseenter="focusedTenant = $event" @mouseleave="focusedTenant = null">
                     <template v-slot:cell(actions)="row">
                       <div>
@@ -159,8 +159,8 @@
           <div v-if="unAssignedGroups.length > 0" class="container g-0">
             <FlowTable :items="unAssignedGroups" primary-key="id" prefix="admin.groups." striped
               :fields="[{ label: '', key: 'selected', class: 'col-sm-1', sortable: false, thClass: 'text-center, border-top-0', tdClass: 'text-center' },
-              { label: 'fullId', key: 'id', class: 'col-sm-3', thClass: 'border-top-0' },
-              { label: 'fullName', key: 'name', class: 'col-sm-5', thClass: 'border-top-0' },
+              { label: 'id', key: 'id', class: 'col-sm-3', thClass: 'border-top-0' },
+              { label: 'name', key: 'name', class: 'col-sm-5', thClass: 'border-top-0' },
               { label: 'type', key: 'type', class: 'col-sm-3', thClass: 'border-top-0' }]">
               <template v-slot:cell(selected)="row">
                 <b-form-checkbox v-model="row.item.selected"></b-form-checkbox>
@@ -180,8 +180,8 @@
           <div v-if="unassignedTenants.length > 0" class="container g-0">
             <FlowTable :items="unassignedTenants" primary-key="id" prefix="admin.tenants." striped
               :fields="[{ label: '', key: 'selected', class: 'col-sm-1', sortable: false, thClass: 'text-center, border-top-0', tdClass: 'text-center' },
-              { label: 'id', key: 'id', class: 'col-6', thClass: 'border-top-0' },
-              { label: 'name', key: 'name', class: 'col-5', thClass: 'border-top-0' }]">
+              { label: 'fullId', key: 'id', class: 'col-6', thClass: 'border-top-0' },
+              { label: 'fullName', key: 'name', class: 'col-5', thClass: 'border-top-0' }]">
               <template v-slot:cell(selected)="row">
                 <b-form-checkbox v-model="row.item.selected"></b-form-checkbox>
               </template>
@@ -231,17 +231,19 @@
     <SuccessAlert ref="updatePassword" top="0" style="z-index: 1031">{{ $t('admin.users.updatePasswordMessage', [user.id]) }}</SuccessAlert>
     <SuccessAlert ref="deleteUser" top="0" style="z-index: 1031">{{ $t('admin.users.userDeletedMessage', [user.id]) }}</SuccessAlert>
     <SuccessAlert ref="unassignGroup" top="0" style="z-index: 1031">{{ $t('admin.users.unassignGroupMessage', [user.id]) }}</SuccessAlert>
-    <SuccessAlert ref="unassignTenant" top="0" style="z-index: 1031">{{ $t('admin.tenants.unassignMessage', [user.id]) }}</SuccessAlert>
+    <SuccessAlert ref="unassignTenant" top="0" style="z-index: 1031">{{ $t('admin.tenants.unassignUserMessage', [user.id]) }}</SuccessAlert>
   </SidebarsFlow>
 </template>
 
 <script>
-import { AdminService, TenantService } from '@/services.js'
+import { AdminService } from '@/services.js'
 import { notEmpty, same } from '@/components/admin/utils.js'
 import SidebarsFlow from '@/components/common-components/SidebarsFlow.vue'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import CIBForm from '@/components/common-components/CIBForm.vue'
+import { mapActions, mapGetters } from 'vuex'
+import FilterableSelectVue from '../task/filter/FilterableSelect.vue'
 
 export default {
   name: 'ProfileUser',
@@ -251,7 +253,7 @@ export default {
     editMode: {
       type: Boolean,
       default: false
-    },
+    }
   },
   data: function () {
     return {
@@ -267,8 +269,8 @@ export default {
       focusedTenant: null,
       passwordPolicyError: false,
       passwordVisibility: { current: false, new: false, repeat: false },
-      sendingEmail: false,
-      tenants: []
+      sendingEmail: FilterableSelectVue,
+      userTenants: []
     }
   },
   watch: {
@@ -282,10 +284,11 @@ export default {
     },
     '$route.query.tab': function() {
       if (this.$route.query.tab === 'groups') this.loadGroups(this.$route.params.userId)
-      if (this.$route.query.tab === 'tenants') this.loadTenants(this.$route.params.userId)
+      else if (this.$route.query.tab === 'tenants') this.loadTenants(this.$route.params.userId)
     }
   },
   computed: {
+    ...mapGetters(['tenants']),
     readOnlyUser: function() {
       return (this.$root.config.userProvider !== 'org.cibseven.webapp.auth.SevenUserProvider')
     },
@@ -365,9 +368,10 @@ export default {
   created: function () {
     if (this.$route.params.userId) this.loadUser(this.$route.params.userId)
     if (this.$route.query.tab === 'groups') this.loadGroups(this.$route.params.userId)
-    if (this.$route.query.tab === 'tenants') this.loadTenants(this.$route.params.userId)
+    else if (this.$route.query.tab === 'tenants') this.loadTenants(this.$route.params.userId)
   },
   methods: {
+    ...mapActions(['fetchTenants', 'getTenantsByUser', 'removeUserFromTenant', 'addUserToTenant']),
     loadUser: function(userId) {
       AdminService.findUsers({ id: userId }).then(response => {
         this.user = response[0]
@@ -378,10 +382,8 @@ export default {
         this.groups = response
       })
     },
-    loadTenants: function(userId) {
-      TenantService.getTenants({ userMember: userId }).then(response => {
-        this.tenants = response
-      })
+    async loadTenants(userId) {
+      this.userTenants = await this.getTenantsByUser(userId)
     },
     update: function() {
       AdminService.updateUserProfile(this.user.id, this.user).then(() => {
@@ -469,33 +471,32 @@ export default {
       this.loadUnassignedTenants()
       this.$refs.assignTenantsModal.show()
     },
-    loadUnassignedTenants: function() {
-      const userTenants = JSON.parse(JSON.stringify(this.tenants))
+    async loadUnassignedTenants() {
+      await this.fetchTenants()
+      const userTenants = JSON.parse(JSON.stringify(this.userTenants))
       this.unassignedTenants = []
-      TenantService.getTenants().then(allTenants => {
-        allTenants.forEach(tenant => {
-          var isAssigned = false
-          userTenants.forEach(userTenant => {
-            if (tenant.id === userTenant.id) isAssigned = true
-          })
-          if (!isAssigned){
-            tenant.selected = false
-            this.unassignedTenants.push(tenant)
-          }
+      this.tenants.forEach(tenant => {
+        var isAssigned = false
+        userTenants.forEach(userTenant => {
+          if (tenant.id === userTenant.id) isAssigned = true
         })
+        if (!isAssigned){
+          tenant.selected = false
+          this.unassignedTenants.push(tenant)
+        }
       })
     },
     assignTenants() {
       this.unassignedTenants.forEach(tenant => {
         if (tenant.selected) {
-          TenantService.addUserToTenant(tenant.id, this.user.id).then(() => {
-            this.tenants.push(tenant)
+          this.addUserToTenant({ tenantId: tenant.id, userId: this.user.id }).then(() => {
+            this.userTenants.push(tenant)
           })
         }
       })
     },
     unassignTenant(tenant) {
-      TenantService.removeUserFromTenant(tenant.id, this.user.id).then(() => {
+      this.removeUserFromTenant({ tenantId: tenant.id, userId: this.user.id }).then(() => {
         this.$refs.unassignTenant.show(2)
         this.loadTenants(this.user.id)
       })
