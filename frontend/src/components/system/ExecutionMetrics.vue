@@ -14,7 +14,7 @@
 						:items="monthlyItems"
 						primary-key="index"
 						prefix="admin.system.execution-metrics."
-						:fields="monthlyTableFields"
+						:fields="monthlyFields"
 					>
 					</FlowTable>
 				</div>
@@ -27,7 +27,7 @@
 						:items="yearlyItems"
 						primary-key="index"
 						prefix="admin.system.execution-metrics."
-						:fields="yearlyTableItems"
+						:fields="yearlyFields"
 					>
 					</FlowTable>
 				</div>
@@ -197,7 +197,7 @@ export default {
       }
       return sortedGroup
     },
-    monthlyTableFields() {
+    monthlyFields() {
       return [
         {
           label: '',
@@ -232,7 +232,7 @@ export default {
         }
       ]
     },
-    yearlyTableItems() {
+    yearlyFields() {
       return [
         {
           label: '',
