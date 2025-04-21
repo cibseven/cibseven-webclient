@@ -2,6 +2,7 @@ package org.cibseven.webapp.providers;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.InvalidUserIdException;
@@ -10,6 +11,7 @@ import org.cibseven.webapp.rest.model.Tenant;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -19,17 +21,29 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class TenantProvider extends SevenProviderBase implements ITenantProvider {
 	
+	private String buildUrlWithParams(String path, Map<String, Object> queryParams) {
+	    UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(camundaUrl + "/engine-rest" + path);
+	    queryParams.forEach((key, value) -> {
+	        if (value != null) {
+	            builder.queryParam(key, value);
+	        }
+	    });
+	    return builder.toUriString();
+	}
+	
 	@Override
 	protected HttpHeaders addAuthHeader(HttpHeaders headers, CIBUser user) {
 		if (user != null) headers.add("Authorization", user.getAuthToken());
 		return headers;
 	}
 	
-	public Collection<Tenant> fetchTenants(CIBUser user) throws SystemException {
-		String url = camundaUrl + "/engine-rest/tenant";
+	@Override
+	public Collection<Tenant> fetchTenants(Map<String, Object> queryParams, CIBUser user) throws SystemException {
+		String url = buildUrlWithParams("/tenant", queryParams);
 		return Arrays.asList(((ResponseEntity<Tenant[]>) doGet(url, Tenant[].class, user, false)).getBody());	
 	}	
 
+	@Override
 	public Tenant fetchTenant(String tenantId, CIBUser user) throws SystemException {
 		String url = camundaUrl + "/engine-rest/tenant/" + tenantId;
 		return ((ResponseEntity<Tenant>) doGet(url, Tenant.class, user, false)).getBody();

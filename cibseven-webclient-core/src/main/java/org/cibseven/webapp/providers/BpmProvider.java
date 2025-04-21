@@ -979,7 +979,7 @@ public interface BpmProvider {
 	JsonNode getTelemetryData(CIBUser user);
 	Collection<Metric> getMetrics(Map<String, Object> queryParams, CIBUser user);
 
-	Collection<Tenant> fetchTenants(CIBUser user);
+	Collection<Tenant> fetchTenants(Map<String, Object> queryParams, CIBUser user);
 	Tenant fetchTenant(String tenantId, CIBUser user);
 	void createTenant(Tenant tenant, CIBUser user);
 	void udpateTenant(Tenant tenant, CIBUser user);
