@@ -90,7 +90,7 @@
 		"favorite": "Favorit",
 		"actions": "Aktionen",
 		"status": "Status",
-		"returnToLastPage": "Zurück zur letzten Seite",
+		"tenant": "Mandant",
 		"details": {
 			"titleProcessActions": "Aktionen zur Prozessdefinition",
 			"titleInstancesActions": "Aktionen zu dem Prozess",

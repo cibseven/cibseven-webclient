@@ -6,8 +6,7 @@ import java.util.Collection;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.InvalidUserIdException;
 import org.cibseven.webapp.exception.SystemException;
-import org.cibseven.webapp.rest.model.SevenTenant;
-import org.springframework.beans.factory.annotation.Value;
+import org.cibseven.webapp.rest.model.Tenant;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -20,26 +19,27 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class TenantProvider extends SevenProviderBase implements ITenantProvider {
 	
-	public Collection<SevenTenant> fetchTenants(CIBUser user) throws SystemException {
+	@Override
+	protected HttpHeaders addAuthHeader(HttpHeaders headers, CIBUser user) {
+		if (user != null) headers.add("Authorization", user.getAuthToken());
+		return headers;
+	}
+	
+	public Collection<Tenant> fetchTenants(CIBUser user) throws SystemException {
 		String url = camundaUrl + "/engine-rest/tenant";
-		return Arrays.asList(((ResponseEntity<SevenTenant[]>) doGet(url, SevenTenant[].class, user, false)).getBody());	
+		return Arrays.asList(((ResponseEntity<Tenant[]>) doGet(url, Tenant[].class, user, false)).getBody());	
 	}	
 
-	public SevenTenant fetchTenant(String tenantId, CIBUser user) throws SystemException {
+	public Tenant fetchTenant(String tenantId, CIBUser user) throws SystemException {
 		String url = camundaUrl + "/engine-rest/tenant/" + tenantId;
-		return ((ResponseEntity<SevenTenant>) doGet(url, SevenTenant.class, user, false)).getBody();
+		return ((ResponseEntity<Tenant>) doGet(url, Tenant.class, user, false)).getBody();
 	}
 
 	@Override
-	public void createTenant(SevenTenant newTenant, CIBUser user) throws InvalidUserIdException {
+	public void createTenant(Tenant newTenant, CIBUser user) throws InvalidUserIdException {
 		String url = camundaUrl + "/engine-rest/tenant/create";
-
 		try {
-			// TODO: Review this, json may not needed
-			
-			String body = newTenant.json();		
-			doPost(url, body , null, user);
-			
+			doPost(url, newTenant.json(), null, user);
 		} catch (JsonProcessingException e) {
 			SystemException se = new SystemException(e);
 			log.error("Exception in createTenant(...):", se);
@@ -54,14 +54,10 @@ public class TenantProvider extends SevenProviderBase implements ITenantProvider
 	}
 
 	@Override
-	public void udpateTenant(SevenTenant tenant, CIBUser user)
-	{		
+	public void udpateTenant(Tenant tenant, CIBUser user) {		
 		String url = camundaUrl + "/engine-rest/tenant/" + tenant.getId();
-		// TODO: Review this, json may not needed
 		try {		
-			String body = tenant.json();		
-			doPut(url, body , user);
-
+			doPut(url, tenant.json() , user);
 		} catch (JsonProcessingException e) {
 			SystemException se = new SystemException(e);
 			log.error("Exception in updateTenant(...):", se);
@@ -84,7 +80,6 @@ public class TenantProvider extends SevenProviderBase implements ITenantProvider
 	@Override
 	public void addGroupToTenant(String tenantId, String groupId, CIBUser user) {
 		String url = camundaUrl + "/engine-rest/tenant/" + tenantId + "/group-members/" + groupId;
-		// TODO:  emtpy string?
 		doPut(url, "", user);
 	}	
 	
@@ -94,9 +89,4 @@ public class TenantProvider extends SevenProviderBase implements ITenantProvider
 		doDelete(url, user);
 	}
 
-	@Override
-	protected HttpHeaders addAuthHeader(HttpHeaders headers, CIBUser user) {
-		if (user != null) headers.add("Authorization", user.getAuthToken());
-		return headers;
-	}
 }
