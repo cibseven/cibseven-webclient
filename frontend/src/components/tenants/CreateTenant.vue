@@ -1,6 +1,6 @@
 <template>
   <div class="d-flex flex-column bg-light" :style="{ height: 'calc(100% - 55px)' }">
-    <div class="container overflow-auto bg-white shadow" style="margin-top: 24px">
+    <div class="container overflow-auto bg-white shadow mt-3">
       <div class="row">
         <div class="col-12 p-0">
           <b-card class="border-0 p-5" :title="$t('admin.tenants.create')">
@@ -13,7 +13,7 @@
                     <b-form-input v-model="tenant.name" :state="notEmpty(tenant.name)" required></b-form-input>
                   </b-form-group>
                   <div class="float-end mt-4">
-                    <b-button type="reset" @click="onReset()" variant="link">{{ $t('admin.tenants.cancel') }}</b-button>
+                    <b-button @click="cancel()" variant="link">{{ $t('admin.tenants.cancel') }}</b-button>
                     <b-button type="submit" variant="secondary">{{ $t('admin.tenants.create') }}</b-button>
                   </div>
               </form>
@@ -58,7 +58,7 @@
           }
         }
       },
-      onReset: function() {
+      cancel: function() {
         this.$router.push('/seven/auth/admin/tenants')
       },
       notEmpty: function(value) {
