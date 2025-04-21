@@ -79,7 +79,7 @@ public class BaseTenantsTestHelper {
                 user
         );               
         return usersOfTenant1.stream()
-        		.filter(u -> userId.equals(userId))
+        		.filter(u -> userId.equals(u.getId()))
 				.findFirst()
 				.orElse(null);
 	}
