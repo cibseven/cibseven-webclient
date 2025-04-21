@@ -20,6 +20,12 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class TenantProvider extends SevenProviderBase implements ITenantProvider {
 	
+	@Override
+	protected HttpHeaders addAuthHeader(HttpHeaders headers, CIBUser user) {
+		if (user != null) headers.add("Authorization", user.getAuthToken());
+		return headers;
+	}
+	
 	public Collection<Tenant> fetchTenants(CIBUser user) throws SystemException {
 		String url = camundaUrl + "/engine-rest/tenant";
 		return Arrays.asList(((ResponseEntity<Tenant[]>) doGet(url, Tenant[].class, user, false)).getBody());	
@@ -33,13 +39,8 @@ public class TenantProvider extends SevenProviderBase implements ITenantProvider
 	@Override
 	public void createTenant(Tenant newTenant, CIBUser user) throws InvalidUserIdException {
 		String url = camundaUrl + "/engine-rest/tenant/create";
-
 		try {
-			// TODO: Review this, json may not needed
-			
-			String body = newTenant.json();		
-			doPost(url, body , null, user);
-			
+			doPost(url, newTenant.json(), null, user);
 		} catch (JsonProcessingException e) {
 			SystemException se = new SystemException(e);
 			log.error("Exception in createTenant(...):", se);
@@ -54,14 +55,10 @@ public class TenantProvider extends SevenProviderBase implements ITenantProvider
 	}
 
 	@Override
-	public void udpateTenant(Tenant tenant, CIBUser user)
-	{		
+	public void udpateTenant(Tenant tenant, CIBUser user) {		
 		String url = camundaUrl + "/engine-rest/tenant/" + tenant.getId();
-		// TODO: Review this, json may not needed
 		try {		
-			String body = tenant.json();		
-			doPut(url, body , user);
-
+			doPut(url, tenant.json() , user);
 		} catch (JsonProcessingException e) {
 			SystemException se = new SystemException(e);
 			log.error("Exception in updateTenant(...):", se);
@@ -84,7 +81,6 @@ public class TenantProvider extends SevenProviderBase implements ITenantProvider
 	@Override
 	public void addGroupToTenant(String tenantId, String groupId, CIBUser user) {
 		String url = camundaUrl + "/engine-rest/tenant/" + tenantId + "/group-members/" + groupId;
-		// TODO:  emtpy string?
 		doPut(url, "", user);
 	}	
 	
@@ -94,9 +90,4 @@ public class TenantProvider extends SevenProviderBase implements ITenantProvider
 		doDelete(url, user);
 	}
 
-	@Override
-	protected HttpHeaders addAuthHeader(HttpHeaders headers, CIBUser user) {
-		if (user != null) headers.add("Authorization", user.getAuthToken());
-		return headers;
-	}
 }

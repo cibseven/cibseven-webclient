@@ -39,7 +39,7 @@ public class TenantService extends BaseService implements InitializingBean {
 	public void afterPropertiesSet() {
 		if (bpmProvider instanceof SevenProvider)
 			sevenProvider = (SevenProvider) bpmProvider;
-		else throw new SystemException("SystemService expects a BpmProvider");
+		else throw new SystemException("TenantService expects a BpmProvider");
 	}
 
 	@GetMapping
@@ -59,7 +59,7 @@ public class TenantService extends BaseService implements InitializingBean {
 
     @PutMapping("/{tenantId}")
     public void updateTenant(@PathVariable String tenantId, @RequestBody Tenant tenant, CIBUser user) {
-        tenant.setId(tenantId); // ensure consistency
+        tenant.setId(tenantId);
         bpmProvider.udpateTenant(tenant, user);
     }
 
