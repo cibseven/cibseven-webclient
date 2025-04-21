@@ -109,6 +109,9 @@
 		"authorizationsManagement": {
 			"authorization": ["ALL"]
 		},
+		"tenantsManagement": {
+			"tenant": ["ALL"]
+		},
 		"userProfile": {
 			"application": ["ALL"]
 		},

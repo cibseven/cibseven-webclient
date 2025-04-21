@@ -32,6 +32,7 @@ import DeployedForm from '@/components/forms/DeployedForm.vue'
 import StartDeployedForm from '@/components/forms/StartDeployedForm.vue'
 import TenantsView from '@/components/tenants/TenantsView.vue'
 import CreateTenant from '@/components/tenants/CreateTenant.vue'
+import EditTenant from '@/components/tenants/EditTenant.vue'
 import BatchesView from '@/components/batches/BatchesView.vue'
 import SystemView from '@/components/system/SystemView.vue'
 import SystemDiagnostics from '@/components/system/SystemDiagnostics.vue'
@@ -194,6 +195,7 @@ const router = createRouter({
             { path: 'group/:groupId', name: 'adminGroup', beforeEnter: permissionsGuardUserAdmin('groupsManagement', 'group'), component: ProfileGroup },
             // Tenants
             { path: 'tenants', name:'adminTenants', component: TenantsView },
+            { path: 'tenant/:tenantId', name: 'adminTenant', beforeEnter: permissionsGuardUserAdmin('tenantsManagement', 'tenant'), component: EditTenant },
             // System
             { path: 'system', redirect: '/seven/auth/admin/system/system-diagnostics', name: 'adminSystem', component: SystemView,
               children: [
