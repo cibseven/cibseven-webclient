@@ -75,7 +75,7 @@ public class TenantProvider extends SevenProviderBase implements ITenantProvider
 
 		} catch (JsonProcessingException e) {
 			SystemException se = new SystemException(e);
-			log.info("Exception in createUser(...):", se);
+			log.info("Exception in updateTenant(...):", se);
 			throw se;
 		}
 	}
