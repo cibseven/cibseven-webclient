@@ -425,8 +425,7 @@
 			"actions": "Aktionen",
 			"group": {
 				"title": "{0} Gruppen",
-				"add": "Zu einer Gruppe hinzufügen",
-				"noResults": "Keine Ergebnisse"
+				"add": "Zu einer Gruppe hinzufügen"
 			},
 			"preferences": {
 				"title": "Einstellungen",
@@ -459,8 +458,14 @@
 			}
 		},
 		"tenants": {
-			"title": "Tenants",
-			"tooltip": "Tenants management"
+			"title": "Mandanten",
+			"tooltip": "Mandantenverwaltung",
+			"associationTitle": "{0} Mandanten",
+			"id": "Mandanten-ID",
+			"name": "Mandantenname",
+			"actions": "Aktionen",
+			"unassignMessage": "Benutzer {0} wurde vom Mandanten entfernt",
+			"addTo": "Zum Mandanten hinzufügen"
 		},
 		"authorizations": {
 			"title": "Berechtigungen",

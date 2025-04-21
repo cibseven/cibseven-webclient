@@ -426,8 +426,7 @@
 			"actions": "Acciones",
 			"group": {
 				"title": "Grupos del usuario {0}",
-				"add": "Añadir a un grupo",
-				"noResults": "Sin resultados"
+				"add": "Añadir a un grupo"
 			},
 			"preferences": {
 				"title": "Preferencias",
@@ -460,8 +459,14 @@
 			}
 		},
 		"tenants": {
-			"title": "Tenants",
-			"tooltip": "Tenants management"
+			"title": "Arrendatarios",
+			"tooltip": "Gestión de arrendatarios",
+			"associationTitle": "Arrendatarios del usuario {0}",
+			"id": "ID del arrendatario",
+			"name": "Nombre del arrendatario",
+			"actions": "Acciones",
+			"unassignMessage": "El usuario {0} ha sido eliminado del arrendatario",
+			"addTo": "Agregar a un arrendatario"
 		},
 		"authorizations": {
 			"title": "Autorizaciones",

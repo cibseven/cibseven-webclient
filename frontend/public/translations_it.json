@@ -300,8 +300,14 @@
 			"search": "Cerca"			
 		},
 		"tenants": {
-			"title": "Tenants",
-			"tooltip": "Tenants management"
+			"title": "Tenant",
+			"tooltip": "Gestione dei tenant",
+			"associationTitle": "{0} Tenant",
+			"id": "ID del tenant",
+			"name": "Nome del tenant",
+			"actions": "Azioni",
+			"unassignMessage": "L'utente {0} è stato rimosso dal tenant",
+			"addTo": "Aggiungi a un tenant"
 		},
 		"authorizations": {
 			"title": "Autorizzazioni",

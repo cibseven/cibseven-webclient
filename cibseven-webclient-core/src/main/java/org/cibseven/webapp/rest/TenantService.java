@@ -1,6 +1,8 @@
 package org.cibseven.webapp.rest;
 
 import java.util.Collection;
+import java.util.Map;
+
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.providers.BpmProvider;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -37,8 +40,8 @@ public class TenantService extends BaseService implements InitializingBean {
 	}
 
 	@GetMapping
-    public Collection<Tenant> getAllTenants(CIBUser user) {
-        return bpmProvider.fetchTenants(user);
+    public Collection<Tenant> getTenants(@RequestParam Map<String, Object> queryParams, CIBUser user) {
+        return bpmProvider.fetchTenants(queryParams, user);
     }
 
     @GetMapping("/{tenantId}")

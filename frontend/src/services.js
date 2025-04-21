@@ -589,5 +589,21 @@ var SystemService = {
   }
 }
 
+var TenantService = {  
+  getTenants(params) {
+    return axios.get(appConfig.servicesBasePath + '/tenant', { params })
+  },
+  createTenant(tenant) {
+    return axios.post(appConfig.servicesBasePath + '/tenant', tenant)
+  },
+  removeUserFromTenant(tenantId, userId) {
+    return axios.delete(`${appConfig.servicesBasePath}/tenant/${tenantId}/users/${userId}`)
+  },
+  addUserToTenant(tenantId, userId) {
+    return axios.post(`${appConfig.servicesBasePath}/tenant/${tenantId}/users/${userId}`)
+  }
+}
+
 export { TaskService, FilterService, ProcessService, AdminService, JobService, JobDefinitionService, SystemService,
-  HistoryService, IncidentService, AuthService, InfoService, FormsService, TemplateService, DecisionService, AnalyticsService, BatchService }
+  HistoryService, IncidentService, AuthService, InfoService, FormsService, TemplateService, DecisionService, 
+  AnalyticsService, BatchService, TenantService }

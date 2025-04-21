@@ -425,8 +425,7 @@
 			"actions": "Действия",
 			"group": {
 				"title": "Группы {0}",
-				"add": "Добавить в группу",
-				"noResults": "Ничего не найдено"
+				"add": "Добавить в группу"
 			},
 			"preferences": {
 				"title": "Предпочтения",
@@ -459,8 +458,14 @@
 			}
 		},
 		"tenants": {
-			"title": "Tenants",
-			"tooltip": "Tenants management"
+			"title": "Тенанты",
+			"tooltip": "Управление тенантами",
+			"associationTitle": "Тенанты {0}",
+			"id": "Идентификатор арендатора",
+			"name": "Имя арендатора",
+			"actions": "Действия",
+			"unassignMessage": "Пользователь {0} был удалён из арендатора",
+			"addTo": "Добавить в арендатора"
 		},
 		"authorizations": {
 			"title": "Авторизации",

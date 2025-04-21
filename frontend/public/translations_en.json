@@ -425,8 +425,7 @@
 			"actions": "Actions",
 			"group": {
 				"title": "{0}'s Groups",
-				"add": "Add to a group",
-				"noResults": "No results"
+				"add": "Add to a group"
 			},
 			"preferences": {
 				"title": "Preferences",
@@ -460,7 +459,13 @@
 		},
 		"tenants": {
 			"title": "Tenants",
-			"tooltip": "Tenants management"
+			"tooltip": "Tenants management",
+			"associationTitle": "{0}'s Tenants",
+			"id": "Tenant ID",
+			"name": "Tenant Name",
+			"actions": "Actions",
+			"unassignMessage": "User {0} removed from tenant",
+			"addTo": "Add to a tenant"
 		},
 		"authorizations": {
 			"title": "Authorizations",
