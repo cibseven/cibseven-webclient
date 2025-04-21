@@ -522,7 +522,16 @@
 				"diagnosticData": "Diagnosedaten"
 			},
 			"execution-metrics": {
-				"title": "Ausführungsmetriken"
+				"title": "Ausführungsmetriken",
+				"metricsHelp": "Erfasste Anzahl von Prozessinstanzen und Entscheidungsinstanzen, die von der Engine verarbeitet wurden, sowie Task-Benutzern, die einer Benutzeraufgabe zugewiesen wurden.",
+				"startDateContract": "Vertragsbeginn",
+				"process-instances": "Entscheidungsinstanzen",
+				"decision-instances": "Prozessinstanzen",
+				"task-users": "Aufgabenbenutzer",
+				"usageLast12MonthsByMonth": "Nutzung der letzten 12 Monate nach Monat",
+				"annualUsageBySubscriptionTerm": "Jährliche Nutzungsmetriken nach Abonnementlaufzeit",
+				"fromUpToToday": "{from} bis heute",
+				"fromTo": "{from} bis {to}"
 			}
 		}
 	},
