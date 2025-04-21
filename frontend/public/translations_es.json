@@ -91,6 +91,7 @@
 		"favorite": "Favorito",
 		"actions": "Acciones",
 		"status": "Estado",
+		"tenant": "Arrendatario",
 		"details": {
 			"titleProcessActions": "Acciones sobre la definición del proceso",
 			"titleInstancesActions": "Acciones sobre el proceso",

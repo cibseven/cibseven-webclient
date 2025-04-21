@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.rest.model.User;
-import org.cibseven.webapp.rest.model.SevenTenant;
+import org.cibseven.webapp.rest.model.Tenant;
 import org.cibseven.webapp.exception.SystemException;
 
 import java.util.Collection;
@@ -21,7 +21,7 @@ public class BaseTenantsTestHelper {
     
 	public void createTenant(String tenantId, String tenantName, CIBUser user) {
 		if (verifyTenant(tenantId, user) == null) {
-			SevenTenant newTenant = new SevenTenant(tenantId, tenantName);
+			Tenant newTenant = new Tenant(tenantId, tenantName);
 			tenantProvider.createTenant(newTenant, user);			
 		}
 	}
@@ -32,7 +32,7 @@ public class BaseTenantsTestHelper {
 		}
 	}
 	
-	public SevenTenant verifyTenant(String tenantId, CIBUser user) {
+	public Tenant verifyTenant(String tenantId, CIBUser user) {
 		try {
 			return tenantProvider.fetchTenant(tenantId, user);
 		}
@@ -43,7 +43,7 @@ public class BaseTenantsTestHelper {
 	
 	public void updateTenant(String tenantId, String tenantName, CIBUser user) {
 		if (verifyTenant(tenantId, user) != null) {
-			SevenTenant newTenant = new SevenTenant(tenantId, tenantName);
+			Tenant newTenant = new Tenant(tenantId, tenantName);
 			tenantProvider.udpateTenant(newTenant, user);			
 		}
 	}

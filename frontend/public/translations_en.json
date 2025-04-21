@@ -90,6 +90,7 @@
 		"favorite": "Favorite",
 		"actions": "Actions",
 		"status": "Status",
+		"tenant": "Tenant",
 		"details": {
 			"titleProcessActions": "Actions on the process definition",
 			"titleInstancesActions": "Actions on the process",

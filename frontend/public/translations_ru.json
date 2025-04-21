@@ -90,6 +90,7 @@
 		"favorite": "Любимый",
 		"actions": "Действия",
 		"status": "Состояние",
+		"tenant": "Тенант",
 		"details": {
 			"titleProcessActions": "действия по определению процесса",
 			"titleInstancesActions": "Действия для процесса",		

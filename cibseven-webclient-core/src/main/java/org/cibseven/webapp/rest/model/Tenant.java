@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Data;
 
 @Data @NoArgsConstructor @AllArgsConstructor @JsonIgnoreProperties(ignoreUnknown = true) 
-public class SevenTenant {
+public class Tenant {
 	private String id;
 	private String name;
 

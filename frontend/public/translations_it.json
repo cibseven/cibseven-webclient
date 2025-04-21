@@ -85,6 +85,7 @@
 		"favorite": "Preferito",
 		"actions": "Azioni",
 		"status": "Stato",
+		"tenant": "Tenant",
 		"details": {
 			"titleProcessActions": "Azioni sulla definizione del processo",
 			"titleInstancesActions": "Azioni per il processo",

@@ -6,7 +6,7 @@ import java.util.Collection;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.InvalidUserIdException;
 import org.cibseven.webapp.exception.SystemException;
-import org.cibseven.webapp.rest.model.SevenTenant;
+import org.cibseven.webapp.rest.model.Tenant;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -20,18 +20,18 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class TenantProvider extends SevenProviderBase implements ITenantProvider {
 	
-	public Collection<SevenTenant> fetchTenants(CIBUser user) throws SystemException {
+	public Collection<Tenant> fetchTenants(CIBUser user) throws SystemException {
 		String url = camundaUrl + "/engine-rest/tenant";
-		return Arrays.asList(((ResponseEntity<SevenTenant[]>) doGet(url, SevenTenant[].class, user, false)).getBody());	
+		return Arrays.asList(((ResponseEntity<Tenant[]>) doGet(url, Tenant[].class, user, false)).getBody());	
 	}	
 
-	public SevenTenant fetchTenant(String tenantId, CIBUser user) throws SystemException {
+	public Tenant fetchTenant(String tenantId, CIBUser user) throws SystemException {
 		String url = camundaUrl + "/engine-rest/tenant/" + tenantId;
-		return ((ResponseEntity<SevenTenant>) doGet(url, SevenTenant.class, user, false)).getBody();
+		return ((ResponseEntity<Tenant>) doGet(url, Tenant.class, user, false)).getBody();
 	}
 
 	@Override
-	public void createTenant(SevenTenant newTenant, CIBUser user) throws InvalidUserIdException {
+	public void createTenant(Tenant newTenant, CIBUser user) throws InvalidUserIdException {
 		String url = camundaUrl + "/engine-rest/tenant/create";
 
 		try {
@@ -54,7 +54,7 @@ public class TenantProvider extends SevenProviderBase implements ITenantProvider
 	}
 
 	@Override
-	public void udpateTenant(SevenTenant tenant, CIBUser user)
+	public void udpateTenant(Tenant tenant, CIBUser user)
 	{		
 		String url = camundaUrl + "/engine-rest/tenant/" + tenant.getId();
 		// TODO: Review this, json may not needed
