@@ -460,7 +460,10 @@
 		},
 		"tenants": {
 			"title": "Tenants",
-			"tooltip": "Tenants management"
+			"tooltip": "Tenants management",
+			"id": "ID",
+			"name": "Имя",
+			"actions": "Действия"
 		},
 		"authorizations": {
 			"title": "Авторизации",

@@ -461,7 +461,10 @@
 		},
 		"tenants": {
 			"title": "Tenants",
-			"tooltip": "Tenants management"
+			"tooltip": "Tenants management",
+			"id": "ID",
+			"name": "Nombre",
+			"actions": "Acciones"
 		},
 		"authorizations": {
 			"title": "Autorizaciones",

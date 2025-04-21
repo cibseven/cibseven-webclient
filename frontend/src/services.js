@@ -574,6 +574,12 @@ var BatchService = {
   }
 }
 
+var TenantService = {  
+  getTenants: function() {
+    return axios.get(appConfig.servicesBasePath + "/tenant")
+  }
+}
+
 var AnalyticsService = {
   async getAnalytics() {
     return axios.get(appConfig.servicesBasePath + '/analytics')
@@ -589,5 +595,5 @@ var SystemService = {
   }
 }
 
-export { TaskService, FilterService, ProcessService, AdminService, JobService, JobDefinitionService, SystemService,
+export { TaskService, FilterService, ProcessService, AdminService, JobService, JobDefinitionService, SystemService, TenantService,
   HistoryService, IncidentService, AuthService, InfoService, FormsService, TemplateService, DecisionService, AnalyticsService, BatchService }
