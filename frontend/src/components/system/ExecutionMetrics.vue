@@ -14,39 +14,7 @@
 						:items="monthlyItems"
 						primary-key="index"
 						prefix="admin.system.execution-metrics."
-						:fields="[
-							{
-								label: '',
-								key: 'month',
-								class: 'col-6',
-								sortable: false,
-								thClass: 'border-end',
-								tdClass: 'border-end py-1 border-top-0',
-							},
-							{
-								label: 'process-instances',
-								key: 'process-instances',
-								sortable: false,
-								class: 'col-2',
-								thClass: 'border-end',
-								tdClass: 'border-end py-1 border-top-0',
-							},
-							{
-								label: 'decision-instances',
-								key: 'decision-instances',
-								sortable: false,
-								class: 'col-2',
-								thClass: 'border-end',
-								tdClass: 'border-end py-1 border-top-0',
-							},
-							{
-								label: 'task-users',
-								key: 'task-users',
-								class: 'col-2',
-								sortable: false,
-								tdClass: 'py-1 border-top-0',
-							}
-						]"
+						:fields="monthlyTableFields"
 					>
 					</FlowTable>
 				</div>
@@ -59,39 +27,7 @@
 						:items="yearlyItems"
 						primary-key="index"
 						prefix="admin.system.execution-metrics."
-						:fields="[
-							{
-								label: '',
-								key: 'year',
-								class: 'col-6',
-								sortable: false,
-								thClass: 'border-end',
-								tdClass: 'border-end py-1 border-top-0',
-							},
-							{
-								label: 'process-instances',
-								key: 'process-instances',
-								sortable: false,
-								class: 'col-2',
-								thClass: 'border-end',
-								tdClass: 'border-end py-1 border-top-0',
-							},
-							{
-								label: 'decision-instances',
-								key: 'decision-instances',
-								sortable: false,
-								class: 'col-2',
-								thClass: 'border-end',
-								tdClass: 'border-end py-1 border-top-0',
-							},
-							{
-								label: 'task-users',
-								key: 'task-users',
-								class: 'col-2',
-								sortable: false,
-								tdClass: 'py-1 border-top-0',
-							}
-						]"
+						:fields="yearlyTableItems"
 					>
 					</FlowTable>
 				</div>
@@ -260,6 +196,76 @@ export default {
         })
       }
       return sortedGroup
+    },
+    monthlyTableFields() {
+      return [
+        {
+          label: '',
+          key: 'month',
+          class: 'col-6',
+          sortable: false,
+          thClass: 'border-end',
+          tdClass: 'border-end py-1 border-top-0',
+        },
+        {
+          label: 'process-instances',
+          key: 'process-instances',
+          sortable: false,
+          class: 'col-2',
+          thClass: 'border-end',
+          tdClass: 'border-end py-1 border-top-0',
+        },
+        {
+          label: 'decision-instances',
+          key: 'decision-instances',
+          sortable: false,
+          class: 'col-2',
+          thClass: 'border-end',
+          tdClass: 'border-end py-1 border-top-0',
+        },
+        {
+          label: 'task-users',
+          key: 'task-users',
+          class: 'col-2',
+          sortable: false,
+          tdClass: 'py-1 border-top-0',
+        }
+      ]
+    },
+    yearlyTableItems() {
+      return [
+        {
+          label: '',
+          key: 'year',
+          class: 'col-6',
+          sortable: false,
+          thClass: 'border-end',
+          tdClass: 'border-end py-1 border-top-0',
+        },
+        {
+          label: 'process-instances',
+          key: 'process-instances',
+          sortable: false,
+          class: 'col-2',
+          thClass: 'border-end',
+          tdClass: 'border-end py-1 border-top-0',
+        },
+        {
+          label: 'decision-instances',
+          key: 'decision-instances',
+          sortable: false,
+          class: 'col-2',
+          thClass: 'border-end',
+          tdClass: 'border-end py-1 border-top-0',
+        },
+        {
+          label: 'task-users',
+          key: 'task-users',
+          class: 'col-2',
+          sortable: false,
+          tdClass: 'py-1 border-top-0',
+        }
+      ]
     }
   },
   mounted() {
