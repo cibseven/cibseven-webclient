@@ -159,8 +159,8 @@
           <div v-if="unAssignedGroups.length > 0" class="container g-0">
             <FlowTable :items="unAssignedGroups" primary-key="id" prefix="admin.groups." striped
               :fields="[{ label: '', key: 'selected', class: 'col-sm-1', sortable: false, thClass: 'text-center, border-top-0', tdClass: 'text-center' },
-              { label: 'id', key: 'id', class: 'col-sm-3', thClass: 'border-top-0' },
-              { label: 'name', key: 'name', class: 'col-sm-5', thClass: 'border-top-0' },
+              { label: 'fullId', key: 'id', class: 'col-sm-3', thClass: 'border-top-0' },
+              { label: 'fullName', key: 'name', class: 'col-sm-5', thClass: 'border-top-0' },
               { label: 'type', key: 'type', class: 'col-sm-3', thClass: 'border-top-0' }]">
               <template v-slot:cell(selected)="row">
                 <b-form-checkbox v-model="row.item.selected"></b-form-checkbox>
@@ -337,13 +337,13 @@ export default {
       const isEditable = this.editMode && isSevenUser
       const fields = [
         {
-          label: 'id',
+          label: 'fullId',
           key: 'id',
           class: isEditable ? 'col-md-4 col-sm-4' : 'col-md-6 col-sm-6',
           ...(isEditable && { tdClass: 'border-end py-1' })
         },
         {
-          label: 'name',
+          label: 'fullName',
           key: 'name',
           class: isEditable ? 'col-md-4 col-sm-4' : 'col-md-6 col-sm-6',
           ...(isEditable && { tdClass: 'border-end py-1' })
