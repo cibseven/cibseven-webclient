@@ -148,6 +148,7 @@ const router = createRouter({
             processKey: route.params.processKey,
             versionIndex: route.params.versionIndex,
             instanceId: route.params.instanceId,
+            tenantId: route.query.tenantId
           })
         },
         // decisions

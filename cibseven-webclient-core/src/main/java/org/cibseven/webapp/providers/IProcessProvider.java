@@ -24,8 +24,8 @@ public interface IProcessProvider {
 	public Collection<Process> findProcesses(CIBUser user);
 	public Collection<Process> findProcessesWithInfo(CIBUser user);
 	public Collection<Process> findProcessesWithFilters(String filters, CIBUser user);
-	public Process findProcessByDefinitionKey(String key, CIBUser user);
-	public Collection<Process> findProcessVersionsByDefinitionKey(String key, Optional<Boolean> lazyLoad, CIBUser user);
+	public Process findProcessByDefinitionKey(String key, String tenantId, CIBUser user);
+	public Collection<Process> findProcessVersionsByDefinitionKey(String key, String tenantId, Optional<Boolean> lazyLoad, CIBUser user);
 	public Process findProcessById(String id, Optional<Boolean> extraInfo, CIBUser user) throws SystemException;
 	public Collection<ProcessInstance> findProcessesInstances(String key, CIBUser user);
 	public Collection<ProcessInstance> findCurrentProcessesInstances(Map<String, Object> data, CIBUser user);
@@ -35,7 +35,7 @@ public interface IProcessProvider {
 	public void suspendProcessInstance(String processInstanceId, Boolean suspend, CIBUser user);
 	public void deleteProcessInstance(String processInstanceId, CIBUser user);
 	public void suspendProcessDefinition(String processDefinitionId, Boolean suspend, Boolean includeProcessInstances, String executionDate, CIBUser user);
-	public ProcessStart startProcess(String processDefinitionKey, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException;
+	public ProcessStart startProcess(String processDefinitionKey, String tenantId, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException;
 	public ProcessStart submitForm(String processDefinitionKey, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException;
 	public Collection<ProcessStatistics> findProcessStatistics(String processId, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException;
 	public Collection<ProcessStatistics> getProcessStatistics(CIBUser user);

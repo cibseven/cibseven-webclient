@@ -4,6 +4,7 @@
       :processKey="processKey"
       :versionIndex="computedVersionIndex"
       :instanceId="computedInstanceId"
+      :tenantId="tenantId"
     ></ProcessDefinitionView>
 </template>
 
@@ -16,11 +17,13 @@ export default {
   props: {
     processKey: { type: String, required: true },
     versionIndex: { type: String, default: '' },
-    instanceId: { type: String, default: '' }
+    instanceId: { type: String, default: '' },
+    tenantId: { type: String, default: null }
   },
   watch: {
     processKey: 'loadProcess',    
     versionIndex: 'loadProcess',
+    tenantId: 'loadProcess',
     instanceId: 'loadProcess'
   },
   data: function() {
@@ -33,14 +36,11 @@ export default {
     computedVersionIndex: function() {
       if (this.loading) {
         return ''
-      }
-      else if (this.versionIndex) {
+      } else if (this.versionIndex) {
         return this.versionIndex
-      }
-      else if (this.process !== null) {
+      } else if (this.process !== null) {
         return this.process.version
-      }
-      else {
+      } else {
         return ''
       }
     },
@@ -53,7 +53,8 @@ export default {
     loadProcess: function() {
       if (!this.versionIndex) {
         this.loading = true
-        this.$store.dispatch('getProcessByDefinitionKey', { key: this.processKey }).then(process => {
+        this.$store.dispatch('getProcessByDefinitionKey', { key: this.processKey, tenantId: this.tenantId })
+		.then(process => {
           this.process = process
           this.loading = false
         })

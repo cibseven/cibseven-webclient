@@ -81,36 +81,30 @@ export default {
     startProcess: function(process) {
       this.isStartingProcess = true
       process.loading = true
-      ProcessService.findProcessByDefinitionKey(process.key).then(processLatest => {
+      ProcessService.findProcessByDefinitionKey(process.key, process.tenantId).then(processLatest => {
         this.selectedProcess = processLatest
         ProcessService.startForm(processLatest.id).then(url => {
-
           if (!url.key && !url.camundaFormRef) {
-
-            ProcessService.startProcess(processLatest.key, this.currentLanguage()).then(task => {
+            ProcessService.startProcess(processLatest.key, processLatest.tenantId, 
+			this.currentLanguage()).then(task => {
               this.$refs.startProcess.hide()
               task.processInstanceId = task.id
               this.$emit('process-started', task)
               process.loading = false
               this.isStartingProcess = false
             })
-
           } else {
-
             var templateType
-
             if (url.camundaFormRef) {
               templateType = 'start-deployed-form'
             } else {
               templateType = url.key.split('?template=')[1]
             }
-
             this.startParamUrl = window.location.origin + '/webapp/#' +
               '/' + templateType +
               '/' + this.currentLanguage() +
               '/' + processLatest.id +
               '/' + this.$root.user.authToken
-
             if (this.hideProcessSelection) this.$refs.startProcess.show()
             process.loading = false
             this.isStartingProcess = false
