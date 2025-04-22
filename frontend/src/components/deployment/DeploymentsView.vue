@@ -181,10 +181,8 @@ export default {
       this.rightOpen = true
       this.findDeploymentResources(d.id)
     },
-    // @return {flag} show this deployment in the list or not
     isDeploymentFiltered: function(d, filterUpper) {
       if (!filterUpper) {
-        // no filter => show all
         return true
       }
       const value = (d.name || d.id).toUpperCase()
