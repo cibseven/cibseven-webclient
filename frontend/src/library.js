@@ -14,6 +14,7 @@ import { debounce } from '@/utils/debounce.js'
 import { HoverStyle } from '@/components/common-components/directives.js'
 import CibSeven from '@/components/CibSeven.vue'
 import FlowTable from '@/components/common-components/FlowTable.vue'
+import ContentBlock from '@/components/common-components/ContentBlock.vue'
 import ErrorDialog from '@/components/common-components/ErrorDialog.vue'
 import AboutModal from '@/components/modals/AboutModal.vue'
 import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
@@ -106,6 +107,7 @@ import StartDeployedForm from '@/components/forms/StartDeployedForm.vue'
 const registerComponents = function(app) {
   app.component('cib-seven', CibSeven)
   app.component('flow-table', FlowTable)
+  app.component('content-block', ContentBlock)
   app.component('error-dialog', ErrorDialog)
   app.component('confirm-dialog', ConfirmDialog)
   app.component('about-modal', AboutModal)
@@ -207,6 +209,7 @@ export {
   HoverStyle,
   CibSeven,
   FlowTable,
+  ContentBlock,
   ErrorDialog,
   ConfirmDialog,
   FeedbackModal,

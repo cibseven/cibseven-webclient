@@ -1,7 +1,5 @@
 <template>
-  <div class="bg-white shadow-sm p-3 border rounded">
-    <h5>{{ $t('batches.historicBatches') }}</h5>
-    <hr>
+  <ContentBlock :title="$t('batches.historicBatches')">
     <div class="overflow-auto" style="max-height: 35vh" @scroll="showMore">
       <FlowTable striped thead-class="sticky-header" :items="historicBatches" primary-key="id" prefix="batches."
         :fields="[
@@ -30,69 +28,70 @@
         {{ $t('admin.noResults') }}
       </div>
     </div>
-  </div>
+  </ContentBlock>
 </template>
 
 <script>
-  import moment from 'moment'
-  import FlowTable from '@/components/common-components/FlowTable.vue'
-  import { mapGetters, mapActions } from 'vuex'
-  import { debounce } from '@/utils/debounce.js'
-  import { BWaitingBox } from 'cib-common-components'
+import moment from 'moment'
+import FlowTable from '@/components/common-components/FlowTable.vue'
+import { mapGetters, mapActions } from 'vuex'
+import { debounce } from '@/utils/debounce.js'
+import { BWaitingBox } from 'cib-common-components'
+import ContentBlock from '@/components/common-components/ContentBlock.vue'
 
-  export default {
-    name: 'HistoricBatches',
-    components: { FlowTable, BWaitingBox },
-    inject: ['currentLanguage'],
-    data() {
-      return {
-        loading: true,
-        firstResult: 0,
-        maxResults: 40,
-        hasMore: true
+export default {
+  name: 'HistoricBatches',
+  components: { FlowTable, BWaitingBox, ContentBlock },
+  inject: ['currentLanguage'],
+  data() {
+    return {
+      loading: true,
+      firstResult: 0,
+      maxResults: 40,
+      hasMore: true
+    }
+  },
+  mounted: function() {
+    this.fetchHistoricBatches()
+  },
+  computed: {
+    ...mapGetters(['historicBatches'])
+  },
+  methods: {
+    ...mapActions(['loadHistoricBatches']),
+    fetchHistoricBatches: debounce(500, function (showMore = false) {
+      this.loading = true
+      const params = {
+        finished: true,
+        sortBy: 'endTime',
+        sortOrder: 'desc',
+        firstResult: this.firstResult,
+        maxResults: this.maxResults
+      }
+      this.loadHistoricBatches({ query: params, append: showMore }).then(res => {
+        this.firstResult += res.length
+        this.hasMore = res.length === this.maxResults
+        this.loading = false
+      })
+    }),
+    showMore: function(el) {
+      if (this.loading || !this.hasMore) return
+      const nearBottom = el.target.scrollTop + el.target.offsetHeight >= el.target.scrollHeight - 1
+      if (nearBottom) {
+        this.fetchHistoricBatches(true)
       }
     },
-    mounted: function() {
-      this.fetchHistoricBatches()
+    loadBatchDetails: function(batch) {
+      this.$router.replace({
+        query: { id: batch.id, type: 'history' }
+      })
     },
-    computed: {
-      ...mapGetters(['historicBatches'])
+    formatDate: function(date) {
+      return moment(date).format('DD/MM/YYYY HH:mm:ss')
     },
-    methods: {
-      ...mapActions(['loadHistoricBatches']),
-      fetchHistoricBatches: debounce(500, function (showMore = false) {
-        this.loading = true
-        const params = {
-          finished: true,
-          sortBy: 'endTime',
-          sortOrder: 'desc',
-          firstResult: this.firstResult,
-          maxResults: this.maxResults
-        }
-        this.loadHistoricBatches({ query: params, append: showMore }).then(res => {
-          this.firstResult += res.length
-          this.hasMore = res.length === this.maxResults
-          this.loading = false
-        })
-      }),
-      showMore: function(el) {
-        if (this.loading || !this.hasMore) return
-        const nearBottom = el.target.scrollTop + el.target.offsetHeight >= el.target.scrollHeight - 1
-        if (nearBottom) {
-          this.fetchHistoricBatches(true)
-        }
-      },
-      loadBatchDetails: function(batch) {
-        this.$router.replace({
-          query: { id: batch.id, type: 'history' }
-        })
-      },
-      formatDate: function(date) {
-        return moment(date).format('DD/MM/YYYY HH:mm:ss')
-      },
-      batchIsSelected: function(id) {
-        return this.$route.query.id === id && this.$route.query.type === 'history'
-      }
+    batchIsSelected: function(id) {
+      return this.$route.query.id === id && this.$route.query.type === 'history'
     }
   }
+}
 </script>
