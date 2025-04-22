@@ -610,6 +610,12 @@ var TenantService = {
   },
   addUserToTenant(tenantId, userId) {
     return axios.post(`${appConfig.servicesBasePath}/tenant/${tenantId}/users/${userId}`)
+  },
+  removeGroupFromTenant(tenantId, groupId) {
+    return axios.delete(`${appConfig.servicesBasePath}/tenant/${tenantId}/groups/${groupId}`)
+  },
+  addGroupToTenant(tenantId, groupId) {
+    return axios.post(`${appConfig.servicesBasePath}/tenant/${tenantId}/groups/${groupId}`)
   }
 }
 
