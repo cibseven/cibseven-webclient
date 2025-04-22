@@ -112,7 +112,8 @@
 			"historyVersions": "Версии истории",
 			"variable": "Переменная процесса",
 			"copyValue": "Копировать значение",
-			"historyTimeToLive": "История время жить"
+			"historyTimeToLive": "История время жить",
+			"tenantId": "ID клиента"
 		},
 		"sections": {
 			"all": "Все",
@@ -940,8 +941,9 @@
 		"selectAll": "Выбрать все",
 		"deleteDeployments": "Удалить развертывания",
 		"showModel": "Показать модель",
-		"errorLoading": "Не удалось загрузить ресурс для выбранного развертывания",
-		"deploymentsDeleted": "{0} из {1} развертываний успешно удалены"
+		"deploymentsDeleted": "{0} из {1} развертываний успешно удалены",
+		"tenant": "Тенант",
+		"errorLoading": "Не удалось загрузить ресурс для выбранного развертывания"
 	},
 	"cib-table2": {
 		"filter": "Фильтр"

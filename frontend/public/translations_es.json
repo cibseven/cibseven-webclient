@@ -91,7 +91,7 @@
 		"favorite": "Favorito",
 		"actions": "Acciones",
 		"status": "Estado",
-		"tenant": "Arrendatario",
+		"tenant": "Tenant",
 		"details": {
 			"titleProcessActions": "Acciones sobre la definición del proceso",
 			"titleInstancesActions": "Acciones sobre el proceso",
@@ -113,7 +113,8 @@
 			"historyVersions": "Historial de versiones",
 			"variable": "Variables del proceso",
 			"copyValue": "Copiar valor",
-			"historyTimeToLive": "Tiempo de vida del histórico"
+			"historyTimeToLive": "Tiempo de vida del histórico",			
+			"tenantId": "ID del tenant"
 		},
 		"sections": {
 			"all": "Todos",
@@ -459,34 +460,34 @@
 			}
 		},
 		"tenants": {
-			"title": "Arrendatarios",
-			"tooltip": "Gestión de arrendatarios",
-			"associationTitle": "Arrendatarios del usuario {0}",
-			"fullId": "ID del arrendatario",
-			"fullName": "Nombre del arrendatario",
+			"title": "Tenants",
+			"tooltip": "Gestión de tenants",
+			"associationTitle": "Tenants del usuario {0}",
+			"fullId": "ID del tenant",
+			"fullName": "Nombre del tenant",
 			"actions": "Acciones",
-			"unassignUserMessage": "El usuario {0} ha sido eliminado del arrendatario",
-			"unassignGroupMessage": "Grupo {0} eliminado del arrendatario",
-			"addTo": "Agregar a un arrendatario",
+			"unassignUserMessage": "El usuario {0} ha sido eliminado del tenant",
+			"unassignGroupMessage": "Grupo {0} eliminado del tenant",
+			"addTo": "Agregar a un tenant",
 			"id": "ID",
 			"name": "Nombre",
-			"add": "Añadir arrendatario",
-			"create": "Crear nuevo arrendatario",
+			"add": "Añadir tenant",
+			"create": "Crear nuevo tenant",
 			"cancel": "Cancelar",
-			"tenantCreatedMessage": "Arrendatario {0} creado",
-			"confirmDelete": "¿Realmente deseas eliminar el arrendatario con los siguientes parámetros?",
-			"tenantDeletedMessage": "Arrendatario {0} eliminado",
-			"deleteTenant": "Eliminar arrendatario",
-			"editTenant": "Editar arrendatario",
+			"tenantCreatedMessage": "Tenant {0} creado",
+			"confirmDelete": "¿Realmente deseas eliminar el tenant con los siguientes parámetros?",
+			"tenantDeletedMessage": "Tenant {0} eliminado",
+			"deleteTenant": "Eliminar tenant",
+			"editTenant": "Editar tenant",
 			"information": "Información",
 			"users": "Usuarios",
 			"groups": "Grupos",
-			"editMessage": "Editar arrendatario ({0})",
-			"update": "Actualizar arrendatario",
-			"updateTenantMessage": "El arrendatario {0} ha sido actualizado",
-			"deleteTenantMessage": "El arrendatario {0} ha sido eliminado",
-			"tenantUsers": "Usuarios del arrendatario",
-			"tenantGroups": "Grupos del arrendatario"
+			"editMessage": "Editar tenant ({0})",
+			"update": "Actualizar tenant",
+			"updateTenantMessage": "El tenant {0} ha sido actualizado",
+			"deleteTenantMessage": "El tenant {0} ha sido eliminado",
+			"tenantUsers": "Usuarios del tenant",
+			"tenantGroups": "Grupos del tenant"
 		},
 		"authorizations": {
 			"title": "Autorizaciones",
@@ -941,8 +942,9 @@
 		"selectAll": "Seleccionar todo",
 		"deleteDeployments": "Eliminar despliegues",
 		"showModel": "Mostrar modelo",
-		"errorLoading": "No se puede cargar el recurso para la implementación seleccionada",
-		"deploymentsDeleted": "{0} de {1} despliegues se han eliminado correctamente"
+		"deploymentsDeleted": "{0} de {1} despliegues se han eliminado correctamente",
+		"tenant": "Tenant",
+		"errorLoading": "No se puede cargar el recurso para la implementación seleccionada"
 	},
 	"cib-table2": {
 		"filter": "Filtrar"

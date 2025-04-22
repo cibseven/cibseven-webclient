@@ -42,6 +42,15 @@
   <hr class="my-2">
   <div class="row">
     <span class="text-secondary font-weight-bold col-12">
+      {{ $t('process.details.tenantId') }}
+      <button v-if="version.tenantId" @click="copyValueToClipboard(version.tenantId)" class="btn btn-sm mdi mdi-content-copy float-end"
+        :title="$t('process.details.copyValue')"></button>
+    </span>
+    <span class="col-12">{{ version.tenantId ? version.tenantId : '-' }}</span>
+  </div>
+  <hr class="my-2">
+  <div class="row">
+    <span class="text-secondary font-weight-bold col-12">
       {{ $t('process.details.historyTimeToLive') }}
       <button @click="copyValueToClipboard(historyTimeToLive)" class="btn btn-sm mdi mdi-content-copy float-end"
         :title="$t('process.details.copyValue')"></button>
