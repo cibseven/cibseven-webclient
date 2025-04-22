@@ -380,7 +380,7 @@
 		"user": "User",
 		"failedJobs": "Failed jobs",
 		"progress": "Progress",
-		"loading": "Cargando...",
+		"loading": "Loading...",
 		"property": "Property",
 		"value": "Value",
 		"suspend": "Suspend batch",

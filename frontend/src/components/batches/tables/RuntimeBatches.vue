@@ -1,9 +1,9 @@
 <template>
-  <div class="bg-white shadow p-3 mb-4">
+  <div class="bg-white shadow-sm border rounded p-3 mb-4">
     <h4>{{ $t('batches.inProgressBatches') }}</h4>
     <hr>
     <div class="overflow-auto" style="max-height: 35vh">
-        <FlowTable v-if="batches && batches.length > 0 && !loading" striped thead-class="sticky-header" :items="batches" primary-key="id" prefix="batches." 
+        <FlowTable v-if="batches && batches.length > 0 && !loading" striped thead-class="sticky-header" :items="batches" primary-key="id" prefix="batches."
           :fields="[
               { label: 'id', key: 'id', class: 'col-2', tdClass: 'border-end p-0' },
               { label: 'type', key: 'type', class: 'col-2', tdClass: 'border-end p-1' },
@@ -49,7 +49,7 @@
     inject: ['currentLanguage'],
     data: function () {
       return {
-        loading: false,
+        loading: true,
         intervalMs: 5000,
         batchesInterval: null
       }
@@ -86,11 +86,11 @@
         })
       },
       loadBatchDetails: function(batch) {
-        this.$router.replace({ 
-          query: { 
+        this.$router.replace({
+          query: {
             id: batch.id,
             type: 'runtime'
-          } 
+          }
         })
       },
       getBatchVariant: function(batch) {
