@@ -2,10 +2,11 @@
   <div class="h-100 d-flex flex-column bg-light">
     <div class="h-100 container-fluid overflow-auto">
       <div v-for="(group, key) of deploymentsGrouped" :key="key">
-        <p role="heading" aria-level="4" class="mdi mdi-18px border-black border-bottom text-end pt-3" :class="group.visible ? 'mdi-minus' : 'mdi-plus'"
+        <p role="heading" aria-level="4" class="mdi mdi-18px text-end pt-3 mb-1" :class="group.visible ? 'mdi-minus' : 'mdi-plus'"
           @click="$eventBus.emit('bv::toggle::collapse', key)" style="cursor: pointer">
           <span class="float-start h5">{{ title(key) }}</span>
         </p>
+        <hr class="mt-0 mb-0">
         <b-collapse class="me-3" :id="key" v-model="group.visible">
           <div class="row">
             <div v-for="d of group.data" :key="d.id" class="col-md-6 col-lg-3 col-12 my-3">
@@ -19,7 +20,7 @@
                       </label>
                       <div class="d-flex align-items-center pt-2">
                         <span>{{ d.deploymentTime }}</span>
-                      </div>                      
+                      </div>
                       <div class="d-flex align-items-center pt-2">
                         <small>{{ $t('deployment.tenant') }}: {{ d.tenantId ? d.tenantId : '-' }}</small>
                       </div>
