@@ -943,7 +943,8 @@
 		"deleteDeployments": "Delete deployments",
 		"showModel": "Show model",
 		"deploymentsDeleted": "{0} out of {1} deployments have been successfully deleted",
-		"tenant": "Tenant"
+		"tenant": "Tenant",
+		"errorLoading": "Unable to load resource for the selected deployment"
 	},
 	"cib-table2": {
 		"filter": "Filter"

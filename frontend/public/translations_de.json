@@ -944,7 +944,8 @@
 		"deleteDeployments": "Deployments löschen",
 		"showModel": "Modell anzeigen",
 		"deploymentsDeleted": "{0} von {1} Deployments wurden erfolgreich gelöscht",
-		"tenant": "Mandant"
+		"tenant": "Mandant",
+		"errorLoading": "Ressource für die ausgewählte Bereitstellung konnte nicht geladen werden"
 	},
 	"cib-table2": {
 		"filter": "Filter"

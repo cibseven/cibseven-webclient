@@ -943,7 +943,8 @@
 		"deleteDeployments": "Eliminar despliegues",
 		"showModel": "Mostrar modelo",
 		"deploymentsDeleted": "{0} de {1} despliegues se han eliminado correctamente",
-		"tenant": "Tenant"
+		"tenant": "Tenant",
+		"errorLoading": "No se puede cargar el recurso para la implementación seleccionada"
 	},
 	"cib-table2": {
 		"filter": "Filtrar"
