@@ -6,18 +6,11 @@ import java.util.Map;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.rest.model.Job;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 @Component
 public class JobProvider extends SevenProviderBase implements IJobProvider {
-
-	@Override
-	protected HttpHeaders addAuthHeader(HttpHeaders headers, CIBUser user) {
-		if (user != null) headers.add("Authorization", user.getAuthToken());
-		return headers;
-	}
 
 	@Override
 	public Collection<Job> getJobs(Map<String, Object> params, CIBUser user) {

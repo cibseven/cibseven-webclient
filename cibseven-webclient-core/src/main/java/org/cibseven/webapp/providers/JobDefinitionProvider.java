@@ -5,19 +5,12 @@ import java.util.Collection;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.rest.model.JobDefinition;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 @Component
 public class JobDefinitionProvider extends SevenProviderBase implements IJobDefinitionProvider {	
 
-	@Override
-	protected HttpHeaders addAuthHeader(HttpHeaders headers, CIBUser user) {
-		if (user != null) headers.add("Authorization", user.getAuthToken());
-		return headers;
-	}
-	
 	@Override
 	public Collection<JobDefinition> findJobDefinitions(String params, CIBUser user) {
 		String url = camundaUrl + "/engine-rest/job-definition";

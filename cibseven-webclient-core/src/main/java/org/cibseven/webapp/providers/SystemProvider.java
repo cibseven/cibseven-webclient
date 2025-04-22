@@ -6,7 +6,6 @@ import java.util.Map;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.rest.model.Metric;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
@@ -17,13 +16,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component
 public class SystemProvider extends SevenProviderBase implements ISystemProvider {
-
-
-	@Override
-	protected HttpHeaders addAuthHeader(HttpHeaders headers, CIBUser user) {
-		if (user != null) headers.add("Authorization", user.getAuthToken());
-		return headers;
-	}
 
 	@Override
 	public JsonNode getTelemetryData(CIBUser user) {

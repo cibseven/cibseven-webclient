@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.cibseven.webapp.rest.model.Decision;
 import org.cibseven.webapp.Data;
 import org.cibseven.webapp.NamedByteArrayDataSource;
 import org.cibseven.webapp.auth.CIBUser;
@@ -21,22 +20,23 @@ import org.cibseven.webapp.rest.model.Authorization;
 import org.cibseven.webapp.rest.model.Authorizations;
 import org.cibseven.webapp.rest.model.Batch;
 import org.cibseven.webapp.rest.model.CandidateGroupTaskCount;
+import org.cibseven.webapp.rest.model.Decision;
 import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.DeploymentResource;
 import org.cibseven.webapp.rest.model.EventSubscription;
 import org.cibseven.webapp.rest.model.Filter;
 import org.cibseven.webapp.rest.model.HistoryBatch;
+import org.cibseven.webapp.rest.model.HistoryProcessInstance;
 import org.cibseven.webapp.rest.model.IdentityLink;
 import org.cibseven.webapp.rest.model.Incident;
-import org.cibseven.webapp.rest.model.JobDefinition;
 import org.cibseven.webapp.rest.model.Job;
+import org.cibseven.webapp.rest.model.JobDefinition;
 import org.cibseven.webapp.rest.model.Message;
 import org.cibseven.webapp.rest.model.Metric;
 import org.cibseven.webapp.rest.model.NewUser;
 import org.cibseven.webapp.rest.model.Process;
 import org.cibseven.webapp.rest.model.ProcessDiagram;
 import org.cibseven.webapp.rest.model.ProcessInstance;
-import org.cibseven.webapp.rest.model.HistoryProcessInstance;
 import org.cibseven.webapp.rest.model.ProcessStart;
 import org.cibseven.webapp.rest.model.ProcessStatistics;
 import org.cibseven.webapp.rest.model.SevenUser;
@@ -51,7 +51,6 @@ import org.cibseven.webapp.rest.model.UserGroup;
 import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
@@ -767,12 +766,6 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 		return variableProvider.fetchProcessFormVariablesById(id, user);
 	}
 	
-	@Override
-	protected HttpHeaders addAuthHeader(HttpHeaders headers, CIBUser user) {
-		if (user != null) headers.add("Authorization", user.getAuthToken());
-		return headers;
-	}
-
 	@Override
 	public void putLocalExecutionVariable(String executionId, String varName, Map<String, Object> data, CIBUser user) {
 		variableProvider.putLocalExecutionVariable(executionId, varName, data, user);
