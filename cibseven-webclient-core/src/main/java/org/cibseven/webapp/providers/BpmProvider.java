@@ -462,13 +462,14 @@ public interface BpmProvider {
 	 * Submit form with variables
 	 * @param user who start the process.
 	 * @param processDefinitionKey of the process to be started.
+	 * @param tenantId 
 	 * @param data variables to submit.
 	 * @return information about the process started.
      * @throws UnsupportedTypeException when a process instance cannot be created because of an unsupported value type or an invalid expression used in the process definition.
      * @throws ExpressionEvaluationException when .
      * @throws SystemException in case of any other error.
 	 */
-	 ProcessStart submitForm(String processDefinitionKey, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException;
+	 ProcessStart submitForm(String processDefinitionKey, String tenantId, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException;
 
 	/**
 	 * Modify a variable in the Process Instance.

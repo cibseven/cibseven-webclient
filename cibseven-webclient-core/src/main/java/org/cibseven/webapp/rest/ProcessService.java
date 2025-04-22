@@ -458,11 +458,12 @@ public class ProcessService extends BaseService implements InitializingBean {
 	@RequestMapping(value = "/{key}/submit-form", method = RequestMethod.POST)
 	public ProcessStart submitForm(
 			@Parameter(description = "Process to be started") @PathVariable String key,
+			@Parameter(description = "Tenant id") @RequestParam(required = false) String tenantId,
 			@RequestBody Map<String, Object> data,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true, false);
 	    checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.CREATE_ALL);
-		return bpmProvider.submitForm(key, data, user);
+		return bpmProvider.submitForm(key, tenantId, data, user);
 	}
 	
 	@Operation(

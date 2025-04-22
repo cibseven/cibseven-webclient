@@ -426,9 +426,9 @@ var FormsService = {
       }
     })
   },
-  submitStartFormVariables: function(processDefinitionKey, formResult, locale) {
+  submitStartFormVariables: function(processDefinitionId, formResult, locale) {
     formResult.push({ name: '_locale', type: 'String', value: locale })
-    return axios.post(appConfig.servicesBasePath + '/process/' + processDefinitionKey + '/submit-startform-variables', formResult)
+    return axios.post(appConfig.servicesBasePath + '/process/' + processDefinitionId + '/submit-startform-variables', formResult)
   },
   downloadFiles: function(processInstanceId, documentsList) {
     return axios.post(appConfig.servicesBasePath + '/task/' + processInstanceId + '/download', documentsList, { responseType: 'blob' } )
