@@ -8,7 +8,6 @@ import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.ActivityInstance;
 import org.cibseven.webapp.rest.model.ActivityInstanceHistory;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
@@ -49,12 +48,6 @@ public class ActivityProvider extends SevenProviderBase implements IActivityProv
 	public void deleteVariableHistoryInstance(String id, CIBUser user) {
 		String url = camundaUrl + "/engine-rest/history/variable-instance/" + id;
 		doDelete(url, user);
-	}
-
-	@Override
-	protected HttpHeaders addAuthHeader(HttpHeaders headers, CIBUser user) {
-		if (user != null) headers.add("Authorization", user.getAuthToken());
-		return headers;
 	}
 
 	@Override

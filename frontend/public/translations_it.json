@@ -85,6 +85,7 @@
 		"favorite": "Preferito",
 		"actions": "Azioni",
 		"status": "Stato",
+		"tenant": "Tenant",
 		"details": {
 			"titleProcessActions": "Azioni sulla definizione del processo",
 			"titleInstancesActions": "Azioni per il processo",
@@ -299,8 +300,34 @@
 			"search": "Cerca"			
 		},
 		"tenants": {
-			"title": "Tenants",
-			"tooltip": "Tenants management"
+			"title": "Tenant",
+			"tooltip": "Gestione dei tenant",
+			"associationTitle": "{0} Tenant",
+			"fullId": "ID del tenant",
+			"fullName": "Nome del tenant",
+			"actions": "Azioni",
+			"unassignUserMessage": "L'utente {0} è stato rimosso dal tenant",
+			"unassignGroupMessage": "Gruppo {0} rimosso dal tenant",
+			"addTo": "Aggiungi a un tenant",
+			"id": "ID",
+			"name": "Nome",
+			"add": "Aggiungi tenant",
+			"create": "Crea un nuovo tenant",
+			"cancel": "Annulla",
+			"tenantCreatedMessage": "Tenant {0} creato",
+			"confirmDelete": "Vuoi davvero eliminare il tenant con i seguenti parametri?",
+			"tenantDeletedMessage": "Tenant {0} eliminato",
+			"deleteTenant": "Elimina tenant",
+			"editTenant": "Modifica tenant",
+			"information": "Informazioni",
+			"users": "Utenti",
+			"groups": "Gruppi",
+			"editMessage": "Modifica tenant ({0})",
+			"update": "Aggiorna tenant",
+			"updateTenantMessage": "Tenant {0} è stato aggiornato",
+			"deleteTenantMessage": "Tenant {0} è stato rimosso",
+			"tenantUsers": "Utenti del tenant",
+			"tenantGroups": "Gruppi del tenant"
 		},
 		"authorizations": {
 			"title": "Autorizzazioni",
@@ -361,7 +388,16 @@
 				"diagnosticData": "Dati diagnostici"
 			},
 			"execution-metrics": {
-				"title": "Metriche di esecuzione"
+				"title": "Metriche di esecuzione",
+				"metricsHelp": "Numero registrato di istanze di processo e istanze decisionali elaborate dal motore e utenti di task assegnati a un'attività utente.",
+				"startDateContract": "Data di inizio del contratto",
+				"process-instances": "Istanze di decisione",
+				"decision-instances": "Istanze di processo",
+				"task-users": "Utenti di attività",
+				"usageLast12MonthsByMonth": "Utilizzo negli ultimi 12 mesi per mese",
+				"annualUsageBySubscriptionTerm": "Metriche di utilizzo annuali per periodo di abbonamento",
+				"fromUpToToday": "{from} fino ad oggi",
+				"fromTo": "da {from} a {to}"
 			}
 		}
 	},

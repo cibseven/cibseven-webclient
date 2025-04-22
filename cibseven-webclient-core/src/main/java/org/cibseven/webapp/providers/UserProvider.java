@@ -1,5 +1,7 @@
 package org.cibseven.webapp.providers;
 
+import static org.cibseven.webapp.auth.SevenAuthorizationUtils.resourceType;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -22,7 +24,6 @@ import org.cibseven.webapp.rest.model.SevenVerifyUser;
 import org.cibseven.webapp.rest.model.User;
 import org.cibseven.webapp.rest.model.UserGroup;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -30,8 +31,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import lombok.extern.slf4j.Slf4j;
-
-import static org.cibseven.webapp.auth.SevenAuthorizationUtils.*;
 
 @Slf4j
 @Component
@@ -304,7 +303,7 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 	public SevenUser getUserProfile(String userId, CIBUser user) {
 		String url = camundaUrl + "/engine-rest/user/" + userId + "/profile";
 
-		return doGet(url, SevenUser.class, null, false).getBody();
+		return doGet(url, SevenUser.class, user, false).getBody();
 	}
 
 	@Override
@@ -422,12 +421,6 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 		doDelete(url, user);
 	}
 
-	@Override
-	protected HttpHeaders addAuthHeader(HttpHeaders headers, CIBUser user) {
-		if (user != null) headers.add("Authorization", user.getAuthToken());
-		return headers;
-	}
-	
 	private String getWildcard () {
 		String wcard = "";
 		if (!wildcard.equals("")) wcard = wildcard;

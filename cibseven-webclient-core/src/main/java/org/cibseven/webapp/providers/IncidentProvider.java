@@ -8,7 +8,6 @@ import java.util.Optional;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.rest.model.Incident;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
@@ -104,10 +103,4 @@ public class IncidentProvider extends SevenProviderBase implements IIncidentProv
 	    return Arrays.asList(((ResponseEntity<Incident[]>) doGet(url, Incident[].class, user, false)).getBody());
 	}	
 	
-	@Override
-	protected HttpHeaders addAuthHeader(HttpHeaders headers, CIBUser user) {
-		if (user != null) headers.add("Authorization", user.getAuthToken());
-		return headers;
-	}
-
 }

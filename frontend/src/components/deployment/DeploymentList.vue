@@ -15,7 +15,7 @@
                     <b-card-text>
                       <label @click.stop class="d-flex align-items-start m-0 hover-highlight">
                         <b-form-checkbox size="sm" v-model="d.isSelected" @click.stop></b-form-checkbox>
-                        <span class="fw-bold text-break">{{ d.name }}</span>
+                        <span class="fw-bold text-break">{{ d.name || d.id }}</span>
                       </label>
                       <div class="d-flex align-items-center pt-2">
                         <span>{{ d.deploymentTime }}</span>

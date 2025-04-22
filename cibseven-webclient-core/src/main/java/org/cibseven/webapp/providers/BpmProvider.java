@@ -47,6 +47,7 @@ import org.cibseven.webapp.rest.model.Task;
 import org.cibseven.webapp.rest.model.TaskCount;
 import org.cibseven.webapp.rest.model.TaskFiltering;
 import org.cibseven.webapp.rest.model.TaskHistory;
+import org.cibseven.webapp.rest.model.Tenant;
 import org.cibseven.webapp.rest.model.User;
 import org.cibseven.webapp.rest.model.UserGroup;
 import org.cibseven.webapp.rest.model.Variable;
@@ -977,4 +978,14 @@ public interface BpmProvider {
 
 	JsonNode getTelemetryData(CIBUser user);
 	Collection<Metric> getMetrics(Map<String, Object> queryParams, CIBUser user);
+
+	Collection<Tenant> fetchTenants(Map<String, Object> queryParams, CIBUser user);
+	Tenant fetchTenant(String tenantId, CIBUser user);
+	void createTenant(Tenant tenant, CIBUser user);
+	void udpateTenant(Tenant tenant, CIBUser user);
+	void deleteTenant(String tenantId, CIBUser user);
+	void addMemberToTenant(String tenantId, String userId, CIBUser user);
+	void deleteMemberFromTenant(String tenantId, String userId, CIBUser user);
+	void addGroupToTenant(String tenantId, String groupId, CIBUser user);
+	void deleteGroupFromTenant(String tenantId, String groupId, CIBUser user);
 }

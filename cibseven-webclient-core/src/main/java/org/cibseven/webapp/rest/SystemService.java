@@ -41,7 +41,7 @@ public class SystemService extends BaseService implements InitializingBean {
 		return bpmProvider.getTelemetryData(user);
 	}
 
-	@GetMapping("/metrics")
+	@GetMapping("/metrics/data")
 		public Collection<Metric> getMetrics(@RequestParam Map<String, Object> queryParams, CIBUser user) {
 			return bpmProvider.getMetrics(queryParams, user);
 	}
