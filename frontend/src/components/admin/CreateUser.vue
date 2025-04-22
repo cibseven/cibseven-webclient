@@ -51,7 +51,7 @@
                   </b-form-group>
                   <div class="float-end mt-4">
                     <b-button type="reset" @click="onReset()" variant="link">{{ $t('admin.users.cancel') }}</b-button>
-                    <b-button type="submit" variant="secondary">{{ $t('admin.users.create') }}</b-button>
+                    <b-button type="submit" variant="primary">{{ $t('admin.users.create') }}</b-button>
                   </div>
                 </b-form-group>
               </form>

@@ -36,7 +36,7 @@
                     </b-form-group>
                     <div class="d-flex justify-content-between" v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'">
                       <b-button variant="warning" @click="$refs.deleteModal.show()">{{ $t('admin.groups.deleteGroup') }}</b-button>
-                      <b-button type="submit" variant="secondary" :disabled="!dirty" >{{ $t('admin.groups.update') }}</b-button>
+                      <b-button type="submit" variant="primary" :disabled="!dirty" >{{ $t('admin.groups.update') }}</b-button>
                     </div>
                   </CIBForm>
                 </b-card-text>

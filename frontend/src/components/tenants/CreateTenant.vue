@@ -14,7 +14,7 @@
                   </b-form-group>
                   <div class="float-end mt-4">
                     <b-button @click="cancel()" variant="link">{{ $t('admin.tenants.cancel') }}</b-button>
-                    <b-button type="submit" variant="secondary">{{ $t('admin.tenants.create') }}</b-button>
+                    <b-button type="submit" variant="primary">{{ $t('admin.tenants.create') }}</b-button>
                   </div>
               </form>
             </b-card-text>

@@ -49,7 +49,7 @@
                       <b-form-input v-model="user.email" type="email" autocomplete="email"  @update:modelValue="dirty = true" :readonly="readOnlyUser || !editMode"></b-form-input>
                     </b-form-group>
                     <div class="float-end" v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'">
-                      <b-button type="submit" variant="secondary" :disabled="!dirty" >{{ $t('admin.users.update') }}</b-button>
+                      <b-button type="submit" variant="primary" :disabled="!dirty" >{{ $t('admin.users.update') }}</b-button>
                     </div>
                   </CIBForm>
                 </b-card-text>
@@ -67,7 +67,7 @@
                   </b-form-group>
                   <div class="float-end d-flex align-items-center">
                     <b-spinner variant="primary" class="mx-2" v-if="sendingEmail"></b-spinner>
-                    <b-button type="submit" variant="secondary" :disabled="sendingEmail" @click="onSendEmail()">{{ $t('password.recover.sendEmail') }}</b-button>
+                    <b-button type="submit" variant="primary" :disabled="sendingEmail" @click="onSendEmail()">{{ $t('password.recover.sendEmail') }}</b-button>
                   </div>
                 </b-form-group>
               </b-card>

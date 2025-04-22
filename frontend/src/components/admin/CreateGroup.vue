@@ -20,7 +20,7 @@
                   </b-form-group>
                   <div class="float-end">
                     <b-button type="reset" @click="onReset()" variant="link">{{ $t('admin.groups.cancel') }}</b-button>
-                    <b-button type="submit" variant="secondary">{{ $t('admin.groups.createLabel') }}</b-button>
+                    <b-button type="submit" variant="primary">{{ $t('admin.groups.createLabel') }}</b-button>
                   </div>
                 </b-form-group>
               </CIBForm>
