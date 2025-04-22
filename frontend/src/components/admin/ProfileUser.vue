@@ -333,7 +333,7 @@ export default {
           key: 'actions',
           class: 'col-md-2 col-sm-2',
           sortable: false,
-          thClass: 'justify-content-center',
+          thClass: 'justify-content-center text-center',
           tdClass: 'justify-content-center py-0'
         })
       }
@@ -362,7 +362,7 @@ export default {
           key: 'actions',
           class: 'col-md-4 col-sm-4',
           sortable: false,
-          thClass: 'justify-content-center',
+          thClass: 'justify-content-center text-center',
           tdClass: 'justify-content-center py-0'
         })
       }
