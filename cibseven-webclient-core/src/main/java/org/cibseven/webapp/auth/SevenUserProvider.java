@@ -56,9 +56,12 @@ public class SevenUserProvider extends BaseUserProvider<StandardLogin> implement
 			SevenVerifyUser sevenVerifyUser = sevenProvider.verifyUser(user.getId(), login.getPassword(), user);
 			
 			if (sevenVerifyUser.isAuthenticated()) {
+			  // Token is needed for the next request (/user/xxx/profile)
 			  user.setAuthToken(createToken(getSettings(), true, false, user));
 				SevenUser cUser = sevenProvider.getUserProfile(user.getId(), user);
 				user.setDisplayName(cUser.getFirstName() + " " + cUser.getLastName());
+				// Token is created for the second time to include the display name
+				user.setAuthToken(createToken(getSettings(), true, false, user));
 				return user;	
 			}
 			else {
