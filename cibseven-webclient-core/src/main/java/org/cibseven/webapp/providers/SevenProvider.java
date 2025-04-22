@@ -303,6 +303,12 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
   }
 	
 	@Override
+	public Collection<HistoryProcessInstance> findProcessesInstancesHistory(Map<String, Object> filters,
+			Optional<Integer> firstResult, Optional<Integer> maxResults, CIBUser user) {
+		return processProvider.findProcessesInstancesHistory(filters, firstResult, maxResults, user);
+	}
+	
+	@Override
 	public Collection<HistoryProcessInstance> findProcessesInstancesHistory(String key, Optional<Boolean> active, 
 			Integer firstResult, Integer maxResults, CIBUser user) {
 		return processProvider.findProcessesInstancesHistory(key, active, firstResult, maxResults, user);

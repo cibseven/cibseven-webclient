@@ -4,6 +4,7 @@ import java.util.Collection;
 
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Map;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,6 +40,20 @@ public class HistoryProcessService extends BaseService {
 		return bpmProvider.findHistoryProcessInstanceHistory(processInstanceId, user);
 	}
 	*/
+	
+	@Operation(
+			summary = "Queries for historic process instances that fulfill the given parameters",
+			description = "Parameters firstResult and maxResults are used for pagination")
+	@ApiResponse(responseCode = "400", description = "There is at least one invalid parameter value")
+	@RequestMapping(value = "/process-history/instance", method = RequestMethod.POST)
+	public Collection<HistoryProcessInstance> findProcessesInstancesHistory(
+			@Parameter(description = "Parameters to filter query") @RequestBody Map<String, Object> filters,
+			@Parameter(description = "Index of the first result to return") @RequestParam Optional<Integer> firstResult,
+			@Parameter(description = "Maximum number of results to return") @RequestParam Optional<Integer> maxResults,
+			CIBUser user) {
+		checkPermission(user, SevenResourceType.HISTORY, PermissionConstants.READ_ALL);
+		return bpmProvider.findProcessesInstancesHistory(filters, firstResult, maxResults, user);
+	}
 	
 	@Operation(
 			summary = "Get processes instances with a specific process key (in the history)",

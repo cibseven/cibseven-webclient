@@ -17,6 +17,7 @@ import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.ExpressionEvaluationException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.exception.UnsupportedTypeException;
+import org.cibseven.webapp.providers.utils.URLUtils;
 import org.cibseven.webapp.rest.model.HistoryProcessInstance;
 import org.cibseven.webapp.rest.model.Incident;
 import org.cibseven.webapp.rest.model.Process;
@@ -213,17 +214,27 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		String url = camundaUrl + "/engine-rest/process-definition/" + processId + "/statistics?failedJobs=true";
 		return Arrays.asList(((ResponseEntity<ProcessStatistics[]>) doGet(url, ProcessStatistics[].class, user, false)).getBody());
 	}
-
-  @Override
-  public Collection<ProcessStatistics> getProcessStatistics(CIBUser user) {
-    String url = camundaUrl + "/engine-rest/process-definition/statistics?failedJobs=true";
-    return Arrays.asList(((ResponseEntity<ProcessStatistics[]>) doGet(url, ProcessStatistics[].class, user, false)).getBody());
-  }
+	
+	@Override
+	public Collection<ProcessStatistics> getProcessStatistics(CIBUser user) {
+		String url = camundaUrl + "/engine-rest/process-definition/statistics?failedJobs=true";
+		return Arrays.asList(((ResponseEntity<ProcessStatistics[]>) doGet(url, ProcessStatistics[].class, user, false)).getBody());
+	}
 	
 	@Override
 	public HistoryProcessInstance findHistoryProcessInstanceHistory(String processInstanceId, CIBUser user) {
 		String url = camundaUrl + "/engine-rest/history/process-instance/" + processInstanceId;
 		return ((ResponseEntity<HistoryProcessInstance>) doGet(url, HistoryProcessInstance.class, user, false)).getBody();
+	}
+	
+	@Override
+	public Collection<HistoryProcessInstance> findProcessesInstancesHistory(Map<String, Object> data,
+			Optional<Integer> firstResult, Optional<Integer> maxResults, CIBUser user) {
+		Map<String, Object> queryParams = new HashMap<String, Object>();
+		if (firstResult.isPresent()) queryParams.put("firstResult", firstResult.get());
+		if (maxResults.isPresent()) queryParams.put("maxResults", maxResults.get());
+		String url = URLUtils.buildUrlWithParams(camundaUrl + "/engine-rest/history/process-instance", queryParams);
+		return Arrays.asList(((ResponseEntity<HistoryProcessInstance[]>) doPost(url, data, HistoryProcessInstance[].class, user)).getBody());
 	}
 	
 	@Override
