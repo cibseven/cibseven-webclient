@@ -70,12 +70,12 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		for (Process process : processes) {
 			if (fetchInstances) {
 				String urlInstances = camundaUrl + "/engine-rest/process-instance/count?processDefinitionKey=" + process.getKey();
-				urlInstances += process.getTenantId() != null ? "&tenantIdIn=" + process.getTenantId() : "";
+				urlInstances += process.getTenantId() != null ? "&tenantIdIn=" + process.getTenantId() : "&withoutTenantId=true";
 				process.setRunningInstances(((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody().get("count").asLong());	
 			}
 			if (fetchIncidents) {
 				String urlIncidents = camundaUrl + "/engine-rest/incident/count?processDefinitionKeyIn=" + process.getKey() + "&tenantIdIn=" + process.getTenantId();
-				urlIncidents += process.getTenantId() != null ? "&tenantIdIn=" + process.getTenantId() : "";
+				urlIncidents += process.getTenantId() != null ? "&tenantIdIn=" + process.getTenantId() : "&withoutTenantId=true";
 				process.setIncidents(((ResponseEntity<JsonNode>) doGet(urlIncidents, JsonNode.class, user, false)).getBody().get("count").asLong());	
 			}
 		}
@@ -198,8 +198,8 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 
 	@Override
 	public ProcessStart startProcess(String processDefinitionKey, String tenantId, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
-		String url = camundaUrl + "/engine-rest/process-definition/key/" + processDefinitionKey + "/start";
-		url += tenantId != null ? ("/tenant-id/" + tenantId) : "";
+		String url = camundaUrl + "/engine-rest/process-definition/key/" + processDefinitionKey;
+		url += (tenantId != null ? ("/tenant-id/" + tenantId) : "") + "/start";
 		return ((ResponseEntity<ProcessStart>) doPost(url, data, ProcessStart.class, user)).getBody();
 	}
 	

@@ -216,7 +216,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 	// Legacy
 	@RequestMapping(value = "/{key}/start-v", method = RequestMethod.POST)
 	public ProcessStart startProcessLegacy(@PathVariable String key, @RequestBody Map<String, Object> data, Locale loc, HttpServletRequest rq) {
-		return startProcess(key, data, loc, rq);
+		return startProcess(key, null, data, loc, rq);
 	}	
 	
 	@Operation(
