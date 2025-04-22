@@ -142,7 +142,7 @@
           <div v-else-if="$route.query.tab === 'preferences'" class="row">
             <div class="col-sm-12 col-md-12 col-lg-8 col-xl-6 p-4">
               <b-card class="p-5 shadow-sm border rounded" :title="$t('admin.users.editMessage', [user.firstName + ' ' + user.lastName])">
-                <b-card-text class="border-top border-top pt-4 mt-3">
+                <b-card-text class="border-top pt-4 mt-3">
                   <b-form-group>
                     <b-form-checkbox v-model="tasksCheckNotificationsDisabled">
                       {{ $t('admin.users.preferences.notifications') }}
