@@ -84,7 +84,7 @@
                     </div>
                   </div>
                 </div>
-                <div v-if="groupTenants.length > 0" class="container-fluid overflow-auto bg-white shadow g-0">
+                <div v-if="groupTenants.length > 0" class="container-fluid overflow-auto bg-white shadow-sm border rounded g-0">
                   <FlowTable :items="groupTenants" primary-key="id" striped
                     prefix="admin.tenants." :fields="[{ label: 'fullId', key: 'id', class: 'col-5', tdClass: 'border-end py-2' },
                       { label: 'fullName', key: 'name', class: 'col-5', tdClass: 'border-end py-2' },

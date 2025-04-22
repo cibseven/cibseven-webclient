@@ -17,7 +17,7 @@
         </div>
       </div>
     </div>
-    <div class="container overflow-auto bg-white shadow g-0">
+    <div class="container overflow-auto bg-white shadow-sm border rounded g-0">
       <FlowTable striped :items="filteredTenants" :fields="tenantFields" primary-key="id" prefix="admin.tenants."
         @contextmenu="focused = $event" @mouseenter="focused = $event" @mouseleave="focused = null">
         <template v-slot:cell(actions)="row">
