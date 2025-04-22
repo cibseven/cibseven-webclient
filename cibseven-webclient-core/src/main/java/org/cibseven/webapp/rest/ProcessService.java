@@ -109,28 +109,30 @@ public class ProcessService extends BaseService implements InitializingBean {
 	}
 	
 	@Operation(
-			summary = "Get process with a specific key",
+			summary = "Get process with a specific key and tenant",
 			description = "<strong>Return: Process")
 	@ApiResponse(responseCode = "404", description = "Process not found")
 	@RequestMapping(value = "/{key}", method = RequestMethod.GET)
 	public Process findProcessByDefinitionKey(
 			@Parameter(description = "Process definition key") @PathVariable String key,
+			@Parameter(description = "Tenant id") @RequestParam(required = false) String tenantId,
 			Locale loc, HttpServletRequest request) {
 		CIBUser user = checkAuthorization(request, false, true);
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_ALL);
-		return bpmProvider.findProcessByDefinitionKey(key, user);
+		return bpmProvider.findProcessByDefinitionKey(key, tenantId, user);
 	}
 	
 	@Operation(
-			summary = "Get processes versions with a specific key",
+			summary = "Get processes versions with a specific key and tenant",
 			description = "<strong>Return: Collections of processes")
 	@ApiResponse(responseCode = "404", description = "Process not found")
 	@RequestMapping(value = "process-definition/versions/{key}", method = RequestMethod.GET)
 	public Collection<Process> findProcessVersionsByDefinitionKey(
 			@Parameter(description = "Process definition key") @PathVariable String key,
+			@Parameter(description = "Tenant id") @RequestParam(required = false) String tenantId,
 			@RequestParam Optional<Boolean> lazyLoad, Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_ALL);
-		return bpmProvider.findProcessVersionsByDefinitionKey(key, lazyLoad, user);
+		return bpmProvider.findProcessVersionsByDefinitionKey(key, tenantId, lazyLoad, user);
 	}
 	
 	@Operation(
@@ -214,7 +216,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 	// Legacy
 	@RequestMapping(value = "/{key}/start-v", method = RequestMethod.POST)
 	public ProcessStart startProcessLegacy(@PathVariable String key, @RequestBody Map<String, Object> data, Locale loc, HttpServletRequest rq) {
-		return startProcess(key, data, loc, rq);
+		return startProcess(key, null, data, loc, rq);
 	}	
 	
 	@Operation(
@@ -229,11 +231,12 @@ public class ProcessService extends BaseService implements InitializingBean {
 	@RequestMapping(value = "/{key}/start", method = RequestMethod.POST)
 	public ProcessStart startProcess(
 			@Parameter(description = "Process to be started") @PathVariable String key,
+			@Parameter(description = "Tenant id") @RequestParam(required = false) String tenantId,
 			@RequestBody Map<String, Object> data,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true, true);
 		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.CREATE_INSTANCE_ALL);
-		return bpmProvider.startProcess(key, data, user);
+		return bpmProvider.startProcess(key, tenantId, data, user);
 	}
 	
 	@Operation(
@@ -455,11 +458,12 @@ public class ProcessService extends BaseService implements InitializingBean {
 	@RequestMapping(value = "/{key}/submit-form", method = RequestMethod.POST)
 	public ProcessStart submitForm(
 			@Parameter(description = "Process to be started") @PathVariable String key,
+			@Parameter(description = "Tenant id") @RequestParam(required = false) String tenantId,
 			@RequestBody Map<String, Object> data,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true, false);
 	    checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.CREATE_ALL);
-		return bpmProvider.submitForm(key, data, user);
+		return bpmProvider.submitForm(key, tenantId, data, user);
 	}
 	
 	@Operation(

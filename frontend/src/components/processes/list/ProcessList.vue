@@ -150,7 +150,9 @@ export default {
       window.open(this.$root.config.cockpitUrl + '#/process-definition/' + process.id, '_blank')
     },
     goToShowProcessHistory: function(process) {
-      this.$router.push('/seven/auth/process/' + process.key)
+      let url = '/seven/auth/process/' + process.key
+      url += process.tenantId ? ('?tenantId=' + process.tenantId) : ''
+      this.$router.push(url)
     }
   }
 }
