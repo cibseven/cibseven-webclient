@@ -1,6 +1,6 @@
 <template>
   <div class="bg-white shadow-sm border rounded p-3 mb-4">
-    <h4>{{ $t('batches.inProgressBatches') }}</h4>
+    <h5>{{ $t('batches.inProgressBatches') }}</h5>
     <hr>
     <div class="overflow-auto" style="max-height: 35vh">
         <FlowTable v-if="batches && batches.length > 0 && !loading" striped thead-class="sticky-header" :items="batches" primary-key="id" prefix="batches."

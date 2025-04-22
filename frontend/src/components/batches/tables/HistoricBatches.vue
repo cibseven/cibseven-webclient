@@ -1,6 +1,6 @@
 <template>
   <div class="bg-white shadow-sm p-3 border rounded">
-    <h4>{{ $t('batches.historicBatches') }}</h4>
+    <h5>{{ $t('batches.historicBatches') }}</h5>
     <hr>
     <div class="overflow-auto" style="max-height: 35vh" @scroll="showMore">
       <FlowTable striped thead-class="sticky-header" :items="historicBatches" primary-key="id" prefix="batches."

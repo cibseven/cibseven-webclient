@@ -1,7 +1,7 @@
 <template>
   <div class="bg-white shadow-sm p-3 border rounded" v-if="batchId && batchType">
     <div v-if="batchDetails && batchDetails.length > 0 && !loading">
-      <h4 class="d-inline">{{ $t('batches.' + batchType + 'Details') }}</h4>
+      <h5 class="d-inline">{{ $t('batches.' + batchType + 'Details') }}</h5>
       <b-button class="border float-end" size="sm" variant="light" @click="$refs.confirmRemove.show()" :title="$t('batches.remove')">
         <span class="mdi mdi-delete-outline me-1"></span>{{ $t('batches.remove') }}
       </b-button>
