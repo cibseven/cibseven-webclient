@@ -100,10 +100,4 @@ public class DeploymentProvider extends SevenProviderBase implements IDeployment
 		doDelete(url, user);
 	}
 
-	@Override
-	protected HttpHeaders addAuthHeader(HttpHeaders headers, CIBUser user) {
-		if (user != null) headers.add("Authorization", user.getAuthToken());
-		return headers;
-	}
-	
 }

@@ -51,22 +51,17 @@ public abstract class SevenProviderBase {
 	@Value("#{'${camunda.engineRest.url:${camunda.url:}}'}") protected String camundaUrl;
 	
 	/**
-	 * Creates new Http headers and adds User token
-	 * @param user
-	 * @return
-	 */
-	protected HttpHeaders createAuthHeader(CIBUser user) {
-		HttpHeaders headers =  new HttpHeaders();
-		return addAuthHeader(headers, user);
-	}
-	
-	/**
-	 * Add Authorization: token to header
-	 * @param headers
+	 * Creates new Http headers and adds Authorization User token
 	 * @param user user with authorization to add if null No authorization is added
 	 * @return
 	 */
-	protected abstract HttpHeaders addAuthHeader(HttpHeaders headers, CIBUser user);
+	private HttpHeaders createAuthHeader(CIBUser user) {
+		HttpHeaders headers =  new HttpHeaders();
+		if (user != null) {
+		  headers.add("Authorization", user.getAuthToken());
+		}
+		return headers;
+	}
 	
 	protected <T> ResponseEntity<T> doGet(String url, Class<T> neededClass, CIBUser user, Boolean encoded) {
 		try {
