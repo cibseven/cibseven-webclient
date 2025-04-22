@@ -68,6 +68,6 @@ export default {
     if (this.process != null && this.process.version !== this.computedVersionIndex) {
       this.process = null
     }
-  },
+  }
 }
 </script>

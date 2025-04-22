@@ -184,7 +184,8 @@ export default {
               params: {
                 processKey: params.processDefinition.key,
                 versionIndex: nextVersionIndex,
-              }
+              },
+              query: this.$route.query
             })
             this.processDefinitions = versions
           }
