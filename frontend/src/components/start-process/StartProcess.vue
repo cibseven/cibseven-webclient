@@ -19,11 +19,12 @@
         </div>
       </div>
       <b-list-group v-if="startableProcesses.length > 0" >
-        <b-list-group-item v-for="process of startableProcesses" :key="process.key" class="p-1 d-flex align-items-center justify-content-between">
+        <b-list-group-item v-for="process of startableProcesses" :key="process.key" class="p-1 d-flex align-items-center">
           <b-button :disabled="isStartingProcess" variant="link" @click="startProcess(process)">
             <HighlightedText :text="process.name ? process.name : process.key" :keyword="processesFilter"></HighlightedText>
-          </b-button>
-          <BWaitingBox v-if="isStartingProcess && process.loading" class="d-inline ms-auto me-1" styling="width: 24px"></BWaitingBox>
+          </b-button>          
+          <span v-if="process.tenantId" class="fst-italic">{{ process.tenantId }}</span>
+          <BWaitingBox v-if="isStartingProcess && process.loading" class="d-inline ms-auto me-1 float-end" styling="width: 24px"></BWaitingBox>
         </b-list-group-item>
       </b-list-group>
       <div v-else class="container">

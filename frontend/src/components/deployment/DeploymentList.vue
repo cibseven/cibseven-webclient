@@ -20,6 +20,9 @@
                       </span>
                       <div class="d-flex align-items-center pt-2">
                         <span>{{ d.deploymentTime }}</span>
+                      </div>                      
+                      <div class="d-flex align-items-center pt-2">
+                        <small>{{ $t('deployment.tenant') }}: {{ d.tenantId ? d.tenantId : '-' }}</small>
                       </div>
                       <div class="d-flex align-items-center pt-2">
                         <small>{{ $t('deployment.source') }}: {{ d.source }}</small>

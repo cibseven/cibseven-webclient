@@ -112,7 +112,8 @@
 			"historyVersions": "History versions",
 			"variable": "Process variables",
 			"copyValue": "Copy value",
-			"historyTimeToLive": "History time to live"
+			"historyTimeToLive": "History time to live",
+			"tenantId": "Tenant ID"
 		},
 		"sections": {
 			"all": "All",
@@ -941,7 +942,8 @@
 		"selectAll": "Select all",
 		"deleteDeployments": "Delete deployments",
 		"showModel": "Show model",
-		"deploymentsDeleted": "{0} out of {1} deployments have been successfully deleted"
+		"deploymentsDeleted": "{0} out of {1} deployments have been successfully deleted",
+		"tenant": "Tenant"
 	},
 	"cib-table2": {
 		"filter": "Filter"

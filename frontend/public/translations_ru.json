@@ -112,7 +112,8 @@
 			"historyVersions": "Версии истории",
 			"variable": "Переменная процесса",
 			"copyValue": "Копировать значение",
-			"historyTimeToLive": "История время жить"
+			"historyTimeToLive": "История время жить",
+			"tenantId": "ID клиента"
 		},
 		"sections": {
 			"all": "Все",
@@ -940,7 +941,8 @@
 		"selectAll": "Выбрать все",
 		"deleteDeployments": "Удалить развертывания",
 		"showModel": "Показать модель",
-		"deploymentsDeleted": "{0} из {1} развертываний успешно удалены"
+		"deploymentsDeleted": "{0} из {1} развертываний успешно удалены",
+		"tenant": "Тенант"
 	},
 	"cib-table2": {
 		"filter": "Фильтр"

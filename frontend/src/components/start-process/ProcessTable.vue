@@ -36,7 +36,8 @@ export default {
         class: 'col-1 d-flex align-items-center justify-content-center'},
           { label: 'name', key: 'name', class: 'col-3' },
           { label: 'key', key: 'key', class: 'col-2' },
-          { label: 'description', key: 'description', sortable: false, class: 'col-4' },
+          { label: 'tenant', key: 'tenantId', class: 'col-2' },
+          { label: 'description', key: 'description', sortable: false, class: 'col-2' },
           { label: 'actions', key: 'actions', sortable: false, tdClass: 'py-0', class: 'col-2 d-flex justify-content-center' },
         ]
     }
