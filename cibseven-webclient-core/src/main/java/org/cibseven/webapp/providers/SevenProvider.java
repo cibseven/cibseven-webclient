@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.cibseven.webapp.rest.model.Decision;
 import org.cibseven.webapp.Data;
 import org.cibseven.webapp.NamedByteArrayDataSource;
 import org.cibseven.webapp.auth.CIBUser;
@@ -21,22 +20,23 @@ import org.cibseven.webapp.rest.model.Authorization;
 import org.cibseven.webapp.rest.model.Authorizations;
 import org.cibseven.webapp.rest.model.Batch;
 import org.cibseven.webapp.rest.model.CandidateGroupTaskCount;
+import org.cibseven.webapp.rest.model.Decision;
 import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.DeploymentResource;
 import org.cibseven.webapp.rest.model.EventSubscription;
 import org.cibseven.webapp.rest.model.Filter;
 import org.cibseven.webapp.rest.model.HistoryBatch;
+import org.cibseven.webapp.rest.model.HistoryProcessInstance;
 import org.cibseven.webapp.rest.model.IdentityLink;
 import org.cibseven.webapp.rest.model.Incident;
-import org.cibseven.webapp.rest.model.JobDefinition;
 import org.cibseven.webapp.rest.model.Job;
+import org.cibseven.webapp.rest.model.JobDefinition;
 import org.cibseven.webapp.rest.model.Message;
 import org.cibseven.webapp.rest.model.Metric;
 import org.cibseven.webapp.rest.model.NewUser;
 import org.cibseven.webapp.rest.model.Process;
 import org.cibseven.webapp.rest.model.ProcessDiagram;
 import org.cibseven.webapp.rest.model.ProcessInstance;
-import org.cibseven.webapp.rest.model.HistoryProcessInstance;
 import org.cibseven.webapp.rest.model.ProcessStart;
 import org.cibseven.webapp.rest.model.ProcessStatistics;
 import org.cibseven.webapp.rest.model.SevenUser;
@@ -46,12 +46,12 @@ import org.cibseven.webapp.rest.model.Task;
 import org.cibseven.webapp.rest.model.TaskCount;
 import org.cibseven.webapp.rest.model.TaskFiltering;
 import org.cibseven.webapp.rest.model.TaskHistory;
+import org.cibseven.webapp.rest.model.Tenant;
 import org.cibseven.webapp.rest.model.User;
 import org.cibseven.webapp.rest.model.UserGroup;
 import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
@@ -78,6 +78,7 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
     @Autowired private IJobProvider jobProvider;
     @Autowired private IBatchProvider batchProvider;
     @Autowired private ISystemProvider systemProvider;
+    @Autowired private ITenantProvider tenantProvider;
     
     
     /*
@@ -768,12 +769,6 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 	
 	@Override
-	protected HttpHeaders addAuthHeader(HttpHeaders headers, CIBUser user) {
-		if (user != null) headers.add("Authorization", user.getAuthToken());
-		return headers;
-	}
-
-	@Override
 	public void putLocalExecutionVariable(String executionId, String varName, Map<String, Object> data, CIBUser user) {
 		variableProvider.putLocalExecutionVariable(executionId, varName, data, user);
 	}
@@ -1034,5 +1029,59 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	public Collection<Metric> getMetrics(Map<String, Object> queryParams, CIBUser user) {
 		return systemProvider.getMetrics(queryParams, user);
 	}
+
+	/*
+		  
+	████████ ███████ ███    ██  █████  ███    ██ ████████     ██████  ██████   ██████  ██    ██ ██ ██████  ███████ ██████  
+	   ██    ██      ████   ██ ██   ██ ████   ██    ██        ██   ██ ██   ██ ██    ██ ██    ██ ██ ██   ██ ██      ██   ██ 
+	   ██    █████   ██ ██  ██ ███████ ██ ██  ██    ██        ██████  ██████  ██    ██ ██    ██ ██ ██   ██ █████   ██████  
+	   ██    ██      ██  ██ ██ ██   ██ ██  ██ ██    ██        ██      ██   ██ ██    ██  ██  ██  ██ ██   ██ ██      ██   ██ 
+	   ██    ███████ ██   ████ ██   ██ ██   ████    ██        ██      ██   ██  ██████    ████   ██ ██████  ███████ ██   ██ 
+                                                                                                                       
+	*/
 	
+	@Override
+	public Collection<Tenant> fetchTenants(Map<String, Object> queryParams, CIBUser user) {
+		return tenantProvider.fetchTenants(queryParams, user);
+	}
+
+	@Override
+	public Tenant fetchTenant(String tenantId, CIBUser user) {
+		return tenantProvider.fetchTenant(tenantId, user);
+	}
+
+	@Override
+	public void createTenant(Tenant tenant, CIBUser user) {
+		tenantProvider.createTenant(tenant, user);
+	}
+
+	@Override
+	public void udpateTenant(Tenant tenant, CIBUser user) {
+		tenantProvider.udpateTenant(tenant, user);
+	}
+
+	@Override
+	public void deleteTenant(String tenantId, CIBUser user) {
+		tenantProvider.deleteTenant(tenantId, user);
+	}
+
+	@Override
+	public void addMemberToTenant(String tenantId, String userId, CIBUser user) {
+		tenantProvider.addMemberToTenant(tenantId, userId, user);
+	}
+
+	@Override
+	public void deleteMemberFromTenant(String tenantId, String userId, CIBUser user) {
+		tenantProvider.deleteMemberFromTenant(tenantId, userId, user);
+	}
+
+	@Override
+	public void addGroupToTenant(String tenantId, String groupId, CIBUser user) {
+		tenantProvider.addGroupToTenant(tenantId, groupId, user);
+	}
+
+	@Override
+	public void deleteGroupFromTenant(String tenantId, String groupId, CIBUser user) {
+		tenantProvider.deleteGroupFromTenant(tenantId, groupId, user);
+	}
 }

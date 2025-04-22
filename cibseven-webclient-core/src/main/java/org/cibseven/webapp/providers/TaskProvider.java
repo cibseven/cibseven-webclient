@@ -13,7 +13,6 @@ import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.CandidateGroupTaskCount;
 import org.cibseven.webapp.rest.model.IdentityLink;
-import org.cibseven.webapp.rest.model.ProcessStart;
 import org.cibseven.webapp.rest.model.ProcessVariables;
 import org.cibseven.webapp.rest.model.Task;
 import org.cibseven.webapp.rest.model.TaskCount;
@@ -245,12 +244,6 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 		return response;
 	}
 	
-	@Override
-	protected HttpHeaders addAuthHeader(HttpHeaders headers, CIBUser user) {
-		if (user != null) headers.add("Authorization", user.getAuthToken());
-		return headers;
-	}
-
 	@Override
 	public Integer findHistoryTaksCount(Map<String, Object> filters, CIBUser user) {
 		String url = camundaUrl + "/engine-rest/history/task/count";

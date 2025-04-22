@@ -1,5 +1,5 @@
 apiVersion: v2
-name: seven-webclient
+name: cibseven-webclient
 description: Base Helm chart for the webclient component of CIB seven
 home: https://github.com/cibseven/cibseven-webclient
 sources:
@@ -22,5 +22,5 @@ appVersion: 0.0.0-MANAGED-BY-JENKINS
 
 dependencies:
   - name: common-tpl-lib
-    version: 2.5.0
+    version: 2.6.1
     repository: oci://harbor.cib.de/charts
