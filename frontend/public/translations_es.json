@@ -91,6 +91,7 @@
 		"favorite": "Favorito",
 		"actions": "Acciones",
 		"status": "Estado",
+		"tenant": "Arrendatario",
 		"details": {
 			"titleProcessActions": "Acciones sobre la definición del proceso",
 			"titleInstancesActions": "Acciones sobre el proceso",
@@ -425,8 +426,7 @@
 			"actions": "Acciones",
 			"group": {
 				"title": "Grupos del usuario {0}",
-				"add": "Añadir a un grupo",
-				"noResults": "Sin resultados"
+				"add": "Añadir a un grupo"
 			},
 			"preferences": {
 				"title": "Preferencias",
@@ -459,8 +459,33 @@
 			}
 		},
 		"tenants": {
-			"title": "Tenants",
-			"tooltip": "Tenants management"
+			"title": "Arrendatarios",
+			"tooltip": "Gestión de arrendatarios",
+			"associationTitle": "Arrendatarios del usuario {0}",
+			"fullId": "ID del arrendatario",
+			"fullName": "Nombre del arrendatario",
+			"actions": "Acciones",
+			"unassignMessage": "El usuario {0} ha sido eliminado del arrendatario",
+			"addTo": "Agregar a un arrendatario",
+			"id": "ID",
+			"name": "Nombre",
+			"add": "Añadir arrendatario",
+			"create": "Crear nuevo arrendatario",
+			"cancel": "Cancelar",
+			"tenantCreatedMessage": "Arrendatario {0} creado",
+			"confirmDelete": "¿Realmente deseas eliminar el arrendatario con los siguientes parámetros?",
+			"tenantDeletedMessage": "Arrendatario {0} eliminado",
+			"deleteTenant": "Eliminar arrendatario",
+			"editTenant": "Editar arrendatario",
+			"information": "Información",
+			"users": "Usuarios",
+			"groups": "Grupos",
+			"editMessage": "Editar arrendatario ({0})",
+			"update": "Actualizar arrendatario",
+			"updateTenantMessage": "El arrendatario {0} ha sido actualizado",
+			"deleteTenantMessage": "El arrendatario {0} ha sido eliminado",
+			"tenantUsers": "Usuarios del arrendatario",
+			"tenantGroups": "Grupos del arrendatario"
 		},
 		"authorizations": {
 			"title": "Autorizaciones",
@@ -522,7 +547,16 @@
 				"diagnosticData": "Datos de diagnóstico"
 			},
 			"execution-metrics": {
-				"title": "Métricas de ejecución"
+				"title": "Métricas de ejecución",
+				"metricsHelp": "Número registrado de instancias de proceso e instancias de decisión procesadas por el motor y usuarios de tareas asignados a una tarea de usuario.",
+				"startDateContract": "Fecha de inicio del contrato",
+				"process-instances": "Instancias de decisión",
+				"decision-instances": "Instancias de proceso",
+				"task-users": "Usuarios de tareas",
+				"usageLast12MonthsByMonth": "Uso en los últimos 12 meses por mes",
+				"annualUsageBySubscriptionTerm": "Métricas de uso anual por período de suscripción",
+				"fromUpToToday": "{from} hasta hoy",
+				"fromTo": "de {from} a {to}"
 			}
 		}
 	},

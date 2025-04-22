@@ -46,6 +46,7 @@ import org.cibseven.webapp.rest.model.Task;
 import org.cibseven.webapp.rest.model.TaskCount;
 import org.cibseven.webapp.rest.model.TaskFiltering;
 import org.cibseven.webapp.rest.model.TaskHistory;
+import org.cibseven.webapp.rest.model.Tenant;
 import org.cibseven.webapp.rest.model.User;
 import org.cibseven.webapp.rest.model.UserGroup;
 import org.cibseven.webapp.rest.model.Variable;
@@ -77,6 +78,7 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
     @Autowired private IJobProvider jobProvider;
     @Autowired private IBatchProvider batchProvider;
     @Autowired private ISystemProvider systemProvider;
+    @Autowired private ITenantProvider tenantProvider;
     
     
     /*
@@ -1027,5 +1029,59 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	public Collection<Metric> getMetrics(Map<String, Object> queryParams, CIBUser user) {
 		return systemProvider.getMetrics(queryParams, user);
 	}
+
+	/*
+		  
+	████████ ███████ ███    ██  █████  ███    ██ ████████     ██████  ██████   ██████  ██    ██ ██ ██████  ███████ ██████  
+	   ██    ██      ████   ██ ██   ██ ████   ██    ██        ██   ██ ██   ██ ██    ██ ██    ██ ██ ██   ██ ██      ██   ██ 
+	   ██    █████   ██ ██  ██ ███████ ██ ██  ██    ██        ██████  ██████  ██    ██ ██    ██ ██ ██   ██ █████   ██████  
+	   ██    ██      ██  ██ ██ ██   ██ ██  ██ ██    ██        ██      ██   ██ ██    ██  ██  ██  ██ ██   ██ ██      ██   ██ 
+	   ██    ███████ ██   ████ ██   ██ ██   ████    ██        ██      ██   ██  ██████    ████   ██ ██████  ███████ ██   ██ 
+                                                                                                                       
+	*/
 	
+	@Override
+	public Collection<Tenant> fetchTenants(Map<String, Object> queryParams, CIBUser user) {
+		return tenantProvider.fetchTenants(queryParams, user);
+	}
+
+	@Override
+	public Tenant fetchTenant(String tenantId, CIBUser user) {
+		return tenantProvider.fetchTenant(tenantId, user);
+	}
+
+	@Override
+	public void createTenant(Tenant tenant, CIBUser user) {
+		tenantProvider.createTenant(tenant, user);
+	}
+
+	@Override
+	public void udpateTenant(Tenant tenant, CIBUser user) {
+		tenantProvider.udpateTenant(tenant, user);
+	}
+
+	@Override
+	public void deleteTenant(String tenantId, CIBUser user) {
+		tenantProvider.deleteTenant(tenantId, user);
+	}
+
+	@Override
+	public void addMemberToTenant(String tenantId, String userId, CIBUser user) {
+		tenantProvider.addMemberToTenant(tenantId, userId, user);
+	}
+
+	@Override
+	public void deleteMemberFromTenant(String tenantId, String userId, CIBUser user) {
+		tenantProvider.deleteMemberFromTenant(tenantId, userId, user);
+	}
+
+	@Override
+	public void addGroupToTenant(String tenantId, String groupId, CIBUser user) {
+		tenantProvider.addGroupToTenant(tenantId, groupId, user);
+	}
+
+	@Override
+	public void deleteGroupFromTenant(String tenantId, String groupId, CIBUser user) {
+		tenantProvider.deleteGroupFromTenant(tenantId, groupId, user);
+	}
 }

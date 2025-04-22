@@ -90,6 +90,7 @@
 		"favorite": "Favorite",
 		"actions": "Actions",
 		"status": "Status",
+		"tenant": "Tenant",
 		"details": {
 			"titleProcessActions": "Actions on the process definition",
 			"titleInstancesActions": "Actions on the process",
@@ -424,8 +425,7 @@
 			"actions": "Actions",
 			"group": {
 				"title": "{0}'s Groups",
-				"add": "Add to a group",
-				"noResults": "No results"
+				"add": "Add to a group"
 			},
 			"preferences": {
 				"title": "Preferences",
@@ -459,7 +459,32 @@
 		},
 		"tenants": {
 			"title": "Tenants",
-			"tooltip": "Tenants management"
+			"tooltip": "Tenants management",
+			"associationTitle": "{0}'s Tenants",
+			"fullId": "Tenant ID",
+			"fullName": "Tenant Name",
+			"actions": "Actions",
+			"unassignMessage": "User {0} removed from tenant",
+			"addTo": "Add to a tenant",
+			"id": "ID",
+			"name": "Name",
+			"add": "Add tenant",
+			"create": "Create new tenant",
+			"cancel": "Cancel",
+			"tenantCreatedMessage": "Tenant {0} created",
+			"confirmDelete": "Do you really want to delete the tenant with the following parameters?",
+			"tenantDeletedMessage": "Tenant {0} deleted",
+			"deleteTenant": "Delete tenant",
+			"editTenant": "Edit tenant",
+			"information": "Information",
+			"users": "Users",
+			"groups": "Groups",
+			"editMessage": "Edit tenant ({0})",
+			"update": "Update tenant",
+			"updateTenantMessage": "Tenant {0} has been updated",
+			"deleteTenantMessage": "Tenant {0} has been removed",
+			"tenantUsers": "Tenant users",
+			"tenantGroups": "Tenant groups"
 		},
 		"authorizations": {
 			"title": "Authorizations",
@@ -521,7 +546,16 @@
 				"diagnosticData": "Diagnostics Data"
 			},
 			"execution-metrics": {
-				"title": "Execution Metrics"
+				"title": "Execution Metrics",
+				"metricsHelp": "Recorded number of Process Instances and Decision Instances processed by the engine and Task Users that were assigned to a user task.",
+				"startDateContract": "Contract start date",
+				"process-instances": "Process instances",
+				"decision-instances": "Decision instances",
+				"task-users": "Task users",
+				"usageLast12MonthsByMonth": "Usage last 12 months by month",
+				"annualUsageBySubscriptionTerm": "Annual usage metrics by subscription term",
+				"fromUpToToday": "{from} up to today",
+				"fromTo": "{from} to {to}"
 			}
 		}
 	},

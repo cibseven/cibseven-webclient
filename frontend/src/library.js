@@ -94,6 +94,8 @@ import RuntimeBatches from '@/components/batches/tables/RuntimeBatches.vue'
 import HistoricBatches from '@/components/batches/tables/HistoricBatches.vue'
 import BatchDetails from '@/components/batches/tables/BatchDetails.vue'
 import SystemView from '@/components/system/SystemView.vue'
+import SystemDiagnostics from '@/components/system/SystemDiagnostics.vue'
+import ExecutionMetrics from '@/components/system/ExecutionMetrics.vue'
 import ShortcutsModal from '@/components/modals/ShortcutsModal.vue'
 import ShortcutsTable from '@/components/modals/ShortcutsTable.vue'
 import { TaskService, HistoryService, ProcessService } from '@/services.js';
@@ -189,7 +191,6 @@ const registerComponents = function(app) {
 
 export {
   registerComponents,
-
   TenantsView,
   BatchesView,
   SystemView,
@@ -286,6 +287,8 @@ export {
   DecisionDefinitionVersion,
   StartDeployedForm,
   DeployedForm,
+  SystemDiagnostics,
+  ExecutionMetrics,
   RuntimeBatches,
   HistoricBatches,
   BatchDetails

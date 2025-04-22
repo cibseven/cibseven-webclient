@@ -90,6 +90,7 @@
 		"favorite": "Любимый",
 		"actions": "Действия",
 		"status": "Состояние",
+		"tenant": "Тенант",
 		"details": {
 			"titleProcessActions": "действия по определению процесса",
 			"titleInstancesActions": "Действия для процесса",		
@@ -424,8 +425,7 @@
 			"actions": "Действия",
 			"group": {
 				"title": "Группы {0}",
-				"add": "Добавить в группу",
-				"noResults": "Ничего не найдено"
+				"add": "Добавить в группу"
 			},
 			"preferences": {
 				"title": "Предпочтения",
@@ -458,8 +458,33 @@
 			}
 		},
 		"tenants": {
-			"title": "Tenants",
-			"tooltip": "Tenants management"
+			"title": "Тенанты",
+			"tooltip": "Управление тенантами",
+			"associationTitle": "Тенанты {0}",
+			"fullId": "Идентификатор арендатора",
+			"fullName": "Имя арендатора",
+			"actions": "Действия",
+			"unassignMessage": "Пользователь {0} был удалён из арендатора",
+			"addTo": "Добавить в арендатора",
+			"id": "ID",
+			"name": "Имя",
+			"add": "Добавить тенанта",
+			"create": "Создать нового тенанта",
+			"cancel": "Отмена",
+			"tenantCreatedMessage": "Тенант {0} создан",
+			"confirmDelete": "Вы действительно хотите удалить тенанта со следующими параметрами?",
+			"tenantDeletedMessage": "Тенант {0} удалён",
+			"deleteTenant": "Удалить тенанта",
+			"editTenant": "Редактировать тенанта",
+			"information": "Информация",
+			"users": "Пользователи",
+			"groups": "Группы",
+			"editMessage": "Редактировать арендатора ({0})",
+			"update": "Обновить арендатора",
+			"updateTenantMessage": "Арендатор {0} был обновлён",
+			"deleteTenantMessage": "Арендатор {0} был удалён",
+			"tenantUsers": "Пользователи арендатора",
+			"tenantGroups": "Группы арендатора"
 		},
 		"authorizations": {
 			"title": "Авторизации",
@@ -521,7 +546,16 @@
 				"diagnosticData": "Данные диагностики"
 			},
 			"execution-metrics": {
-				"title": "Метрики выполнения"
+				"title": "Метрики выполнения",
+				"metricsHelp": "Зарегистрированное количество экземпляров процессов и решений, обработанных движком, и пользователей задач, назначенных на пользовательскую задачу.",
+				"startDateContract": "Дата начала контракта",
+				"process-instances": "Экземпляры решений",
+				"decision-instances": "Экземпляры процессов",
+				"task-users": "Пользователи задач",
+				"usageLast12MonthsByMonth": "Использование по месяцам за последние 12 месяцев",
+				"annualUsageBySubscriptionTerm": "Годовые метрики использования по сроку подписки",
+				"fromUpToToday": "с {from} по сегодня",
+				"fromTo": "с {from} по {to}"
 			}
 		}
 	},
