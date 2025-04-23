@@ -930,6 +930,7 @@ public interface BpmProvider {
 	void suspendJobDefinition(String jobDefinitionId, String params, CIBUser user);
 	void overrideJobDefinitionPriority(String jobDefinitionId, String params, CIBUser user);
 	JobDefinition findJobDefinition(String id, CIBUser user);
+	void retryJobDefinitionById(String id, Map<String, Object> params, CIBUser user);
 	
 	Collection<Decision> getDecisionDefinitionList(Map<String, Object> queryParams, CIBUser user);
 	Object getDecisionDefinitionListCount(Map<String, Object> queryParams, CIBUser user);
@@ -960,6 +961,9 @@ public interface BpmProvider {
   
 	Collection<Job> getJobs(Map<String, Object> params, CIBUser user);
 	void setSuspended(String id, Map<String, Object> data, CIBUser user);
+	void deleteJob(String id, CIBUser user);
+	Collection<Object> getHistoryJobLog(Map<String, Object> params, CIBUser user);
+	String getHistoryJobLogStacktrace(String id, CIBUser user);
 	Integer findHistoryTaksCount(Map<String, Object> filters, CIBUser user);
 
 	Collection<CandidateGroupTaskCount> getTaskCountByCandidateGroup(CIBUser user);
@@ -988,4 +992,5 @@ public interface BpmProvider {
 	void deleteMemberFromTenant(String tenantId, String userId, CIBUser user);
 	void addGroupToTenant(String tenantId, String groupId, CIBUser user);
 	void deleteGroupFromTenant(String tenantId, String groupId, CIBUser user);
+
 }

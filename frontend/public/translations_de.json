@@ -386,7 +386,28 @@
 		"suspend": "Stapel pausieren",
 		"activate": "Stapel aktivieren",
 		"remove": "Stapel entfernen",
-		"confirmRemove": "Möchten Sie diesen Stapel und alle zugehörigen Jobs und Jobdefinitionen wirklich löschen?"
+		"confirmRemove": "Möchten Sie diesen Stapel und alle zugehörigen Jobs und Jobdefinitionen wirklich löschen?",
+		"exception": "Ausnahme",
+		"actions": "Aktionen",
+		"retryJob": "Job erneut ausführen",
+		"deleteJob": "Job löschen",
+		"seeFullLog": "Vollständiges Protokoll anzeigen",
+		"jobLog": {
+			"modalTitle": "Jobprotokoll",
+			"state": "Status",
+			"message": "Nachricht",
+			"timestamp": "Zeitstempel",
+			"jobId": "Job-ID",
+			"type": "Typ",
+			"configuration": "Konfiguration",
+			"retries": "Wiederholungen",
+			"hostname": "Hostname",
+			"priority": "Priorität",
+			"created": "Erstellt",
+			"failed": "Fehlgeschlagen",
+			"successful": "Erfolgreich",
+			"unknown": "Unbekannt"
+		}
 	},
 	"admin": {
 		"loading": "Wird geladen...",

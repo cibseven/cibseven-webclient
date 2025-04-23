@@ -386,7 +386,29 @@
 		"suspend": "Suspend batch",
 		"activate": "Activate batch",
 		"remove": "Remove batch",
-		"confirmRemove": "Do you really want to delete this batch and all related jobs and job definitions?"
+		"confirmRemove": "Do you really want to delete this batch and all related jobs and job definitions?",
+		"exception": "Exception",
+		"actions": "Actions",
+		"retryJob": "Retry job",
+		"deleteJob": "Delete job",
+		"seeFullLog": "See full log",
+		"retryFailedJobs": "Retry failed jobs",
+		"jobLog": {
+			"modalTitle": "Job log",
+			"state": "State",
+			"message": "Message",
+			"timestamp": "Timestamp",
+			"jobId": "Job ID",
+			"type": "Type",
+			"configuration": "Configuration",
+			"retries": "Retries",
+			"hostname": "Hostname",
+			"priority": "Priority",
+			"created": "Created",
+			"failed": "Failed",
+			"successful": "Successful",
+			"unknown": "Unknown"
+		}
 	},
 	"admin": {
 		"loading": "Loading...",

@@ -58,6 +58,12 @@
       this.loading = true
       this.loadBatches()
     },
+    unmounted: function() {
+      if (this.batchesInterval) {
+        clearInterval(this.batchesInterval)
+        this.batchesInterval = null
+      }
+    },
     computed: {
       ...mapGetters(['runtimeBatches']),
       batches: function() {
