@@ -1,7 +1,7 @@
 <template>
     <div class="container-fluid bg-light pt-3 overflow-auto">
       <div class="row justify-content-around">
-        <div class=" col-md-7 col-12 p-3">
+        <div class="col-md-7 col-12">
           <RuntimeBatches></RuntimeBatches>
           <HistoricBatches></HistoricBatches>
         </div>

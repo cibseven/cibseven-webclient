@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.rest.model.User;
+import org.cibseven.webapp.rest.model.UserGroup;
 import org.cibseven.webapp.rest.model.Tenant;
 import org.cibseven.webapp.exception.SystemException;
 
@@ -20,6 +21,7 @@ public class BaseTenantsTestHelper {
     private TenantProvider tenantProvider;  
     
 	public void createTenant(String tenantId, String tenantName, CIBUser user) {
+		// ExistingTenantRequestException not implemented
 		if (verifyTenant(tenantId, user) == null) {
 			Tenant newTenant = new Tenant(tenantId, tenantName);
 			tenantProvider.createTenant(newTenant, user);			
@@ -27,9 +29,8 @@ public class BaseTenantsTestHelper {
 	}
 	
 	public void deleteTenant(String tenantId, CIBUser user) {
-		if (verifyTenant(tenantId, user) != null) {
-			tenantProvider.deleteTenant(tenantId, user);
-		}
+		// deleteTenant does not throw exception if tenant does not exist
+		tenantProvider.deleteTenant(tenantId, user);
 	}
 	
 	public Tenant verifyTenant(String tenantId, CIBUser user) {
@@ -84,7 +85,7 @@ public class BaseTenantsTestHelper {
 				.orElse(null);
 	}
 	
-	/*public void addGroupToTenant(String tenantId, String groupId, CIBUser user) {
+	public void addGroupToTenant(String tenantId, String groupId, CIBUser user) {
 		if (verifyGroupMembershipToTenant(tenantId, groupId, user) == null) {
 			tenantProvider.addGroupToTenant(tenantId, groupId, user);        	
 		}
@@ -96,8 +97,22 @@ public class BaseTenantsTestHelper {
 		}
 	}
 	
-	public User verifyGroupMembershipToTenant(String tenantId, String groupId, CIBUser user) {
-		
-	}
-	*/
+	public UserGroup verifyGroupMembershipToTenant(String tenantId, String groupId, CIBUser user) {
+		Collection<UserGroup> groupsOfTenant = userProvider.findGroups(
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),				
+                Optional.empty(),
+                Optional.empty(),
+                Optional.of(tenantId),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(), 
+                Optional.empty(), 
+				user);        
+		return groupsOfTenant.stream()
+	 		.filter(g -> groupId.equals(g.getId()))
+				.findFirst()
+				.orElse(null);	
+	}	
 }

@@ -1,7 +1,7 @@
 <template>
   <div class="col-3">
     <router-link :to="link" :title="tooltip" class="text-decoration-none">
-      <div class="bg-light py-3 m-2 text-center">
+      <div class="bg-light py-3 text-center">
         <h5 class="link-dark">{{ title }}</h5>
         <h2 class="link-dark">
           <span v-if="count !== null" :class="computedValueClass">{{ count }}</span>

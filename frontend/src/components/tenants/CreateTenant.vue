@@ -1,6 +1,6 @@
 <template>
   <div class="d-flex flex-column bg-light" :style="{ height: 'calc(100% - 55px)' }">
-    <div class="container overflow-auto bg-white shadow mt-3">
+    <div class="container overflow-auto bg-white shadow-sm border rounded mt-3">
       <div class="row">
         <div class="col-12 p-0">
           <b-card class="border-0 p-5" :title="$t('admin.tenants.create')">
