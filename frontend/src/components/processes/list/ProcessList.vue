@@ -31,7 +31,7 @@
         </div>
       </div>
     </div>
-    <div class="container overflow-auto h-100 bg-white shadow g-0">
+    <div class="container overflow-auto h-100 bg-white shadow-sm border rounded g-0">
       <FlowTable :items="processesFiltered" thead-class="sticky-header" striped primary-key="id" prefix="process." :fields="fields" @click="goToShowProcessHistory($event)" @select="focused = $event[0]" @mouseenter="focused = $event" @mouseleave="focused = null">
         <template v-slot:cell(incidents)="table">
           <span v-if="loadingInstances"><b-spinner small></b-spinner></span>
