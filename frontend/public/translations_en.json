@@ -29,23 +29,23 @@
 			},
 			"open-human-tasks": {
 				"title": "Open Human Tasks",
-				"tooltip": "View all pending human tasks"
+				"tooltip": "@:start.cockpit.humanTasks.tooltip"
 			},
 			"processes": {
 				"title": "Process Definitions",
-				"tooltip": "Explore available process definitions"
+				"tooltip": "@:start.cockpit.processes.tooltip"
 			},
 			"decisions": {
 				"title": "Decision Definitions",
-				"tooltip": "Explore available decision definitions"
+				"tooltip": "@:start.cockpit.decisions.tooltip"
 			},
 			"deployments": {
-				"title": "Deployments",
-				"tooltip": "View all deployed process resources"
+				"title": "@:start.cockpit.deployments.title",
+				"tooltip": "@:start.cockpit.deployments.tooltip"
 			},
 			"batches": {
-				"title": "Batches",
-				"tooltip": "Manage and view batch operations"
+				"title": "@:start.cockpit.batches.title",
+				"tooltip": "@:start.cockpit.batches.tooltip"
 			}
 		}
 	},
@@ -846,15 +846,23 @@
 			"tooltip": "Open Cockpit",
 			"processes": {
 				"title": "Processes",
-				"tooltip": "Open Processes"
+				"tooltip": "Explore available process definitions"
 			},
 			"decisions": {
 				"title": "Decisions",
-				"tooltip": "Open Decisions"
+				"tooltip": "Explore available decision definitions"
 			},
 			"humanTasks": {
 				"title": "Human Tasks",
-				"tooltip": "Open Human Tasks"
+				"tooltip": "View all pending human tasks"
+			},
+			"deployments": {
+				"title": "Deployments",
+				"tooltip": "View all deployed process resources"
+			},
+			"batches": {
+				"title": "Batches",
+				"tooltip": "Manage and view batch operations"
 			}
 		},
 		"admin": {

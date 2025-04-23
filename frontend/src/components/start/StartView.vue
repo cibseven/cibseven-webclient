@@ -79,10 +79,10 @@
                     <span class="mdi mdi-18px mdi-wall-sconce-flat-outline pe-1"></span>{{ $t('start.cockpit.decisions.title') }}</b-list-group-item>
                   <b-list-group-item to="/seven/auth/human-tasks" class="py-1 px-3 border-0 h6 fw-normal mb-0" :title="$t('start.cockpit.humanTasks.tooltip')">
                     <span class="mdi mdi-18px mdi-account-file-text-outline pe-1"></span>{{ $t('start.cockpit.humanTasks.title') }}</b-list-group-item>
-                  <b-list-group-item to="/seven/auth/deployments" class="py-1 px-3 border-0 h6 fw-normal mb-0" :title="$t('deployment.title')">
-                    <span class="mdi mdi-18px mdi-upload-box-outline pe-1"></span>{{ $t('deployment.title') }}</b-list-group-item>
-                  <b-list-group-item to="/seven/auth/batches" class="py-1 px-3 border-0 h6 fw-normal mb-0" :title="$t('batches.tooltip')">
-                    <span class="mdi mdi-18px mdi-repeat pe-1"> </span>{{ $t('batches.title') }}</b-list-group-item>
+                  <b-list-group-item to="/seven/auth/deployments" class="py-1 px-3 border-0 h6 fw-normal mb-0" :title="$t('start.cockpit.deployments.tooltip')">
+                    <span class="mdi mdi-18px mdi-upload-box-outline pe-1"></span>{{ $t('start.cockpit.deployments.title') }}</b-list-group-item>
+                  <b-list-group-item to="/seven/auth/batches" class="py-1 px-3 border-0 h6 fw-normal mb-0" :title="$t('start.cockpit.batches.tooltip')">
+                    <span class="mdi mdi-18px mdi-repeat pe-1"> </span>{{ $t('start.cockpit.batches.title') }}</b-list-group-item>
                 </b-list-group>
               </template>
             </b-overlay>

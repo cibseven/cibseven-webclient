@@ -29,23 +29,23 @@
 			},
 			"open-human-tasks": {
 				"title": "Attività umane aperte",
-				"tooltip": "Visualizza tutte le attività umane in sospeso"
+				"tooltip": "@:start.cockpit.humanTasks.tooltip"
 			},
 			"processes": {
 				"title": "Definizioni di processo",
-				"tooltip": "Esplora le definizioni di processo disponibili"
+				"tooltip": "@:start.cockpit.processes.tooltip"
 			},
 			"decisions": {
 				"title": "Definizioni di decisione",
-				"tooltip": "Esplora le definizioni di decisione disponibili"
+				"tooltip": "@:start.cockpit.decisions.tooltip"
 			},
 			"deployments": {
-				"title": "Distribuzioni",
-				"tooltip": "Visualizza tutte le risorse di processo distribuite"
+				"title": "@:start.cockpit.deployments.title",
+				"tooltip": "@:start.cockpit.deployments.tooltip"
 			},
 			"batches": {
-				"title": "Batch",
-				"tooltip": "Gestisci e visualizza le operazioni batch"
+				"title": "@:start.cockpit.batches.title",
+				"tooltip": "@:start.cockpit.batches.tooltip"
 			}
 		}
 	},
@@ -656,18 +656,26 @@
 		},
 		"cockpit": {
 			"title": "Cockpit",
-			"tooltip": "Open Cockpit",
+			"tooltip": "Apri Cockpit",
 			"processes": {
 				"title": "Processi",
-				"tooltip": "Open Processes"
+				"tooltip": "Esplora le definizioni di processo disponibili"
 			},
 			"decisions": {
 				"title": "Decisioni",
-				"tooltip": "Open Decisions"
+				"tooltip": "Esplora le definizioni di decisione disponibili"
 			},
 			"humanTasks": {
 				"title": "Attività",
-				"tooltip": "Open Human Tasks"
+				"tooltip": "Visualizza tutte le attività umane in sospeso"
+			},
+			"deployments": {
+				"title": "Distribuzioni",
+				"tooltip": "Visualizza tutte le risorse di processo distribuite"
+			},
+			"batches": {
+				"title": "Batch",
+				"tooltip": "Gestisci e visualizza le operazioni batch"
 			}
 		},
 		"admin": {

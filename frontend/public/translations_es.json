@@ -30,23 +30,23 @@
 			},
 			"open-human-tasks": {
 				"title": "Tareas humanas abiertas",
-				"tooltip": "Ver todas las tareas humanas pendientes"
+				"tooltip": "@:start.cockpit.humanTasks.tooltip"
 			},
 			"processes": {
 				"title": "Definiciones de procesos",
-				"tooltip": "Explora las definiciones de procesos disponibles"
+				"tooltip": "@:start.cockpit.processes.tooltip"
 			},
 			"decisions": {
 				"title": "Definiciones de decisiones",
-				"tooltip": "Explora las definiciones de decisiones disponibles"
+				"tooltip": "@:start.cockpit.decisions.tooltip"
 			},
 			"deployments": {
-				"title": "Despliegues",
-				"tooltip": "Ver todos los recursos de procesos desplegados"
+				"title": "@:start.cockpit.deployments.title",
+				"tooltip": "@:start.cockpit.deployments.tooltip"
 			},
 			"batches": {
-				"title": "Lotes",
-				"tooltip": "Gestiona y visualiza operaciones por lotes"
+				"title": "@:start.cockpit.batches.title",
+				"tooltip": "@:start.cockpit.batches.tooltip"
 			}
 		}
 	},
@@ -843,18 +843,26 @@
 		},
 		"cockpit": {
 			"title": "Cockpit",
-			"tooltip": "Open Cockpit",
+			"tooltip": "Abrir Cockpit",
 			"processes": {
 				"title": "Procesos",
-				"tooltip": "Open Processes"
+				"tooltip": "Explora las definiciones de procesos disponibles"
 			},
 			"decisions": {
 				"title": "Decisiones",
-				"tooltip": "Open Decisions"
+				"tooltip": "Explora las definiciones de decisiones disponibles"
 			},
 			"humanTasks": {
 				"title": "Tareas de Usuario",
-				"tooltip": "Open Human Tasks"
+				"tooltip": "Ver todas las tareas humanas pendientes"
+			},
+			"deployments": {
+				"title": "Despliegues",
+				"tooltip": "Ver todos los recursos de procesos desplegados"
+			},
+			"batches": {
+				"title": "Lotes",
+				"tooltip": "Gestiona y visualiza operaciones por lotes"
 			}
 		},
 		"admin": {

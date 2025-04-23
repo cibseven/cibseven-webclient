@@ -29,23 +29,23 @@
 			},
 			"open-human-tasks": {
 				"title": "Открытые задачи пользователей",
-				"tooltip": "Просмотреть все ожидающие задачи пользователей"
+				"tooltip": "@:start.cockpit.humanTasks.tooltip"
 			},
 			"processes": {
 				"title": "Определения процессов",
-				"tooltip": "Просмотреть доступные определения процессов"
+				"tooltip": "@:start.cockpit.processes.tooltip"
 			},
 			"decisions": {
 				"title": "Определения решений",
-				"tooltip": "Просмотреть доступные определения решений"
+				"tooltip": "@:start.cockpit.decisions.tooltip"
 			},
 			"deployments": {
-				"title": "Развёртывания",
-				"tooltip": "Просмотреть все доступные ресурсы для развернутых процессов"
+				"title": "@:start.cockpit.deployments.title",
+				"tooltip": "@:start.cockpit.deployments.tooltip"
 			},
 			"batches": {
-				"title": "Пакетная обработка",
-				"tooltip": "Управление и просмотр пакетных операций"
+				"title": "@:start.cockpit.batches.title",
+				"tooltip": "@:start.cockpit.batches.tooltip"
 			}
 		}
 	},
@@ -842,18 +842,26 @@
 		},
 		"cockpit": {
 			"title": "Cockpit",
-			"tooltip": "Open Cockpit",
+			"tooltip": "Открыть Cockpit",
 			"processes": {
 				"title": "Процессы",
-				"tooltip": "Open Processes"
+				"tooltip": "Просмотреть доступные определения процессов"
 			},
 			"decisions": {
-				"title": "Decisions",
-				"tooltip": "Open Decisions"
+				"title": "Решения",
+				"tooltip": "Просмотреть доступные определения решений"
 			},
 			"humanTasks": {
-				"title": "Human Tasks",
-				"tooltip": "Open Human Tasks"
+				"title": "Задачи пользователей",
+				"tooltip": "Просмотреть все задачи ожидающие пользователей"
+			},
+			"deployments": {
+				"title": "Развёртывания",
+				"tooltip": "Просмотреть все доступные ресурсы для развернутых процессов"
+			},
+			"batches": {
+				"title": "Пакетная обработка",
+				"tooltip": "Управление и просмотр пакетных операций"
 			}
 		},
 		"admin": {
