@@ -15,8 +15,8 @@
         </b-button>
       </div>
     </template>
-    <div v-if="batchDetails && batchDetails.length > 0 && !loading">
-      <div class="overflow-auto p-0">
+    <div v-if="batchDetails && batchDetails.length > 0 && !loading" class="p-0">
+      <div class="overflow-auto">
         <FlowTable v-if="batchDetails" striped thead-class="sticky-header" :items="batchDetails" primary-key="id" prefix="batches."
           :fields="[
             { label: 'property', key: 'property', class: 'col-6', tdClass: 'border-end p-1' },

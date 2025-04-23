@@ -10,7 +10,7 @@
       </div>
     </div>
     <hr class="mb-0">
-    <div class="m-3">
+    <div class="row m-3">
       <slot></slot>
     </div>
   </div>
