@@ -33,7 +33,6 @@ const registerOwnComponents = function(app) {
   })
 
   app.component('GlobalEvents', GlobalEvents)
-
 }
 
 export default registerOwnComponents

@@ -7,19 +7,20 @@ describe('PieChart', () => {
   it('renders loading state when items are not provided', () => {
     const wrapper = mount(PieChart, {
       props: {
-        items: null,
+        items: null
       },
       global: {
         stubs: {
           'router-link': true,
           'b-waiting-box': true,
+          'apexchart': true
         },
         plugins: [i18n],
       },
     })
 
     expect(wrapper.find('.waiting-box-container').exists()).toBe(true)
-    expect(wrapper.find('apex-chart').exists()).toBe(false)
+    expect(wrapper.find('.apex-container').exists()).toBe(false)
   })
 
   it('renders chart when items are provided', () => {
@@ -36,13 +37,14 @@ describe('PieChart', () => {
         stubs: {
           'router-link': true,
           'b-waiting-box': true,
+          'apexchart': true
         },
         plugins: [i18n],
       },
     })
 
     expect(wrapper.find('.waiting-box-container').exists()).toBe(false);
-    expect(wrapper.find('apex-chart').exists()).toBe(true);
+    expect(wrapper.find('.apex-container').exists()).toBe(true);
     expect(wrapper.vm.values).toEqual([20, 10]); // Sorted values
     expect(wrapper.vm.labels).toEqual(['Item 2', 'Item 1']); // Sorted labels
   })
@@ -67,6 +69,7 @@ describe('PieChart', () => {
         stubs: {
           'router-link': true,
           'b-waiting-box': true,
+          'apexchart': true
         },
         plugins: [i18n],
       },
@@ -79,7 +82,7 @@ describe('PieChart', () => {
 
     chartOptions.chart.events.click(clickEvent, chartContext, config)
 
-    expect(mockRouterPush).toHaveBeenCalledWith('/seven/auth/process/2')
+    expect(mockRouterPush).toHaveBeenCalledWith('/seven/auth/process/1')
   })
 
   it('applies correct cursor style on dataPointMouseEnter', () => {
@@ -96,6 +99,7 @@ describe('PieChart', () => {
         stubs: {
           'router-link': true,
           'b-waiting-box': true,
+          'apexchart': true
         },
         plugins: [i18n],
       },

@@ -3,10 +3,10 @@
     <router-link v-if="title" :to="link" :title="tooltip" class="text-decoration-none">
       <h5 class="link-dark text-center">{{ title }}</h5>
     </router-link>
-    <div class="text-center" v-if="loading">
+    <div class="text-center waiting-box-container" v-if="loading">
       <b-waiting-box class="d-inline" styling="width: 84%" :title="$t('admin.loading')" />
     </div>
-    <div v-else class="container">
+    <div v-else class="container apex-container">
       <apexchart type="donut" :options="chartOptions" :series="values" />
     </div>
   </div>
@@ -24,7 +24,7 @@ export default {
     tooltip: String,
     link: String,
     items: Array,
-    type: String
+    type: String,
   },
   computed: {
     loading() {
