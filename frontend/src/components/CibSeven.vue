@@ -28,7 +28,7 @@
             <b-dropdown-item v-if="permissionsTaskList" to="/seven/auth/tasks" :active="$route.path.includes('seven/auth/tasks')" :title="$t('start.taskList.tooltip')">{{ $t('start.taskList.title') }}</b-dropdown-item>
 
             <b-dropdown-divider v-if="permissionsTaskList && permissionsCockpit"></b-dropdown-divider>
-            <b-dropdown-group v-if="permissionsCockpit" header="{{ $t('start.groupOperations') }}">
+            <b-dropdown-group v-if="permissionsCockpit" header="{{ $t('start.cockpit.title') }}">
               <b-dropdown-item to="/seven/auth/processes" :active="$route.path.includes('seven/auth/process')" :title="$t('start.adminProcesses')">{{ $t('start.adminProcesses') }}</b-dropdown-item>
               <b-dropdown-item to="/seven/auth/decisions" :active="$route.path.includes('seven/auth/decision')" :title="$t('start.adminDecisions')">{{ $t('start.adminDecisions') }}</b-dropdown-item>
               <b-dropdown-item to="/seven/auth/human-tasks" :active="$route.path.includes('seven/auth/human-tasks')" :title="$t('start.adminHumanTasks')">{{ $t('start.adminHumanTasks') }}</b-dropdown-item>

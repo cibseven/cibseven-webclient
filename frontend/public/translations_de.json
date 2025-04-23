@@ -840,12 +840,15 @@
 			"title": "TaskList",
 			"tooltip": "TaskList öffnen"
 		},
+		"cockpit": {
+			"title": "Cockpit",
+			"tooltip": "Open Cockpit"
+		},
 		"oldCockpit": {
 			"title": "Old Cockpit",
 			"tooltip": "Open old Cockpit"
 		},
 		"emptyStart": "Derzeit haben Sie keine Berechtigung, hier Aufgaben auszuführen. Bitte wenden Sie sich an den CIB seven Administrator, um Berechtigungen zu erhalten.",
-		"groupOperations": "Cockpit",
 		"groupAdministration": "Admin",
 		"userAdmin": "Benutzerverwaltung",
 		"modeler": "Prozess modellieren",

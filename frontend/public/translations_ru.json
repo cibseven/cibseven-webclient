@@ -840,12 +840,15 @@
 			"title": "TaskList",
 			"tooltip": "Открыть TaskList"
 		},
+		"cockpit": {
+			"title": "Cockpit",
+			"tooltip": "Open Cockpit"
+		},
 		"oldCockpit": {
 			"title": "Old Cockpit",
 			"tooltip": "Open old Cockpit"
 		},
 		"emptyStart": "В данный момент у Вас нет прав, чтобы выполнить какие-либо задачи. Пожалуйста, свяжитесь с администратором CIB seven для того, чтобы получить права.",
-		"groupOperations": "Cockpit",
 		"groupAdministration": "Admin",
 		"userAdmin": "Управление пользователями",
 		"modeler": "Разработчик моделей процессов",

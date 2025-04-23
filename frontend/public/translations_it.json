@@ -654,12 +654,15 @@
 			"title": "TaskList",
 			"tooltip": "Apri TaskList"
 		},
+		"cockpit": {
+			"title": "Cockpit",
+			"tooltip": "Open Cockpit"
+		},
 		"oldCockpit": {
 			"title": "Old Cockpit",
 			"tooltip": "Open old Cockpit"
 		},
 		"emptyStart": "Currently you do not have permission to perform any task here. Please contact the CIB seven administrator to get permissions.",
-		"groupOperations": "Cockpit",
 		"groupAdministration": "Admin",
 		"userAdmin": "Gestione utenti",
 		"modeler": "Modellatore di processo",
