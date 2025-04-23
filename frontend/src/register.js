@@ -3,7 +3,6 @@ import { GlobalEvents } from 'vue-global-events'
 import { HoverStyle } from '@/components/common-components/directives.js'
 import ErrorDialog from '@/components/common-components/ErrorDialog.vue'
 import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
-import VueApexCharts from "vue3-apexcharts"
 
 const registerOwnComponents = function(app) {
 
@@ -35,7 +34,6 @@ const registerOwnComponents = function(app) {
 
   app.component('GlobalEvents', GlobalEvents)
 
-  app.component('apex-chart', VueApexCharts)
 }
 
 export default registerOwnComponents

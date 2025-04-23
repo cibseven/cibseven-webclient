@@ -87,9 +87,6 @@ export default {
       try {
         this.errorLoading = false
         const analytics = await AnalyticsService.getAnalytics()
-        
-        // await new Promise(resolve => setTimeout(resolve, 2000))
-
         // Prepare data for charts
         this.runningInstances = analytics.runningInstances
         this.openIncidents = analytics.openIncidents
@@ -99,9 +96,7 @@ export default {
         this.deploymentItems[1].count = analytics.decisionDefinitionsCount
         this.deploymentItems[2].count = analytics.deploymentsCount
         this.deploymentItems[3].count = analytics.batchesCount
-
       } catch (error) {
-
         console.error('Error loading analytics:', error)
         this.errorLoading = true
         this.deploymentItems[0].count = 'x'

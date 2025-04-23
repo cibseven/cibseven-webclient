@@ -60,37 +60,11 @@ public class AnalyticsService extends BaseService implements InitializingBean {
     Map<String, Process> latestProcessNames = new HashMap<>();
 
     for (Process process : processes) {
-      
         String processKey = process.getKey();
-        
         Process currentLatestProcess = latestProcessNames.get(processKey);
-        
         if (currentLatestProcess == null) {
-            
             latestProcessNames.put(processKey, process);
-            
-        } else {
-          
-            // Compare versions and keep the latest one
-            int currentLatestVersion = 0;
-            try {
-                currentLatestVersion = Integer.parseInt(currentLatestProcess.getVersion());
-            } catch (NumberFormatException e) {
-                currentLatestVersion = -1;
-            }
-          
-            int processVersion = 0;
-            try {
-                processVersion = Integer.parseInt(process.getVersion());
-            } catch (NumberFormatException e) {
-                processVersion = -1;
-            }
-            
-            if (processVersion >= 0 && processVersion > currentLatestVersion) {
-                latestProcessNames.put(processKey, process);
-            }
         }
-        
     }
     
     Analytics analytics = new Analytics();
