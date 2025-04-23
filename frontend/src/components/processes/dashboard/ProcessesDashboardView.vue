@@ -22,6 +22,7 @@
           :title="$t('processes-dashboard.items.open-human-tasks.title')"
           :tooltip="$t('processes-dashboard.items.open-human-tasks.tooltip')"
           link="/seven/auth/human-tasks"
+          type="humanTasks"
         ></PieChart>
       </ContentBlock>
 
