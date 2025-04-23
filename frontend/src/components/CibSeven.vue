@@ -162,7 +162,7 @@ export default {
         case 'tasklist': return this.$t('start.taskList.title')
         case 'deployments': return this.$t('deployment.title')
         case 'start-process': return this.$t('start.startProcess.title')
-        case 'processesDashboard': return this.$t('processes-dashboard.headerActive')
+        case 'processesDashboard': return this.$t('start.cockpit.title')
         case 'processManagement':
         case 'process': return this.$t('start.adminProcesses')
         case 'batches': return this.$t('batches.title')
