@@ -77,9 +77,9 @@
                     <span class="mdi mdi-18px mdi-map-legend pe-1"></span>{{ $t('start.cockpit.processes.title') }}</b-list-group-item>
                   <b-list-group-item to="/seven/auth/decisions" class="py-1 px-3 border-start-0 border-top-0 border-end-0 h6 fw-normal mb-0" :title="$t('start.cockpit.decisions.tooltip')">
                     <span class="mdi mdi-18px mdi-wall-sconce-flat-outline pe-1"></span>{{ $t('start.cockpit.decisions.title') }}</b-list-group-item>
-                  <b-list-group-item to="/seven/auth/human-tasks" class="py-1 px-3 border-0 h6 fw-normal mb-0" :title="$t('start.cockpit.humanTasks.tooltip')">
+                  <b-list-group-item to="/seven/auth/human-tasks" class="py-1 px-3 border-start-0 border-top-0 border-end-0 h6 fw-normal mb-0" :title="$t('start.cockpit.humanTasks.tooltip')">
                     <span class="mdi mdi-18px mdi-account-file-text-outline pe-1"></span>{{ $t('start.cockpit.humanTasks.title') }}</b-list-group-item>
-                  <b-list-group-item to="/seven/auth/deployments" class="py-1 px-3 border-0 h6 fw-normal mb-0" :title="$t('start.cockpit.deployments.tooltip')">
+                  <b-list-group-item to="/seven/auth/deployments" class="py-1 px-3 border-start-0 border-top-0 border-end-0 h6 fw-normal mb-0" :title="$t('start.cockpit.deployments.tooltip')">
                     <span class="mdi mdi-18px mdi-upload-box-outline pe-1"></span>{{ $t('start.cockpit.deployments.title') }}</b-list-group-item>
                   <b-list-group-item to="/seven/auth/batches" class="py-1 px-3 border-0 h6 fw-normal mb-0" :title="$t('start.cockpit.batches.tooltip')">
                     <span class="mdi mdi-18px mdi-repeat pe-1"> </span>{{ $t('start.cockpit.batches.title') }}</b-list-group-item>
@@ -123,7 +123,7 @@
                     to="/seven/auth/admin/tenants" class="py-1 px-3 border-start-0 border-top-0 border-end-0 h6 fw-normal mb-0" :title="$t('admin.tenants.tooltip')">
                     <span class="mdi mdi-18px mdi-domain pe-1"></span>{{ $t('admin.tenants.title') }}</b-list-group-item>
                   <b-list-group-item v-if="adminManagementPermissions($root.config.permissions.authorizationsManagement, 'authorization')"
-                    to="/seven/auth/admin/authorizations" class="py-1 px-3 border-0 h6 fw-normal mb-0" :title="$t('admin.authorizations.title')">
+                    to="/seven/auth/admin/authorizations" class="py-1 px-3 border-start-0 border-top-0 border-end-0 h6 fw-normal mb-0" :title="$t('admin.authorizations.title')">
                     <span class="mdi mdi-18px mdi-account-key-outline pe-1"></span>{{ $t('admin.authorizations.title') }}</b-list-group-item>
                   <b-list-group-item v-if="adminManagementPermissions($root.config.permissions.authorizationsManagement, 'authorization')"
                     to="/seven/auth/admin/system" class="py-1 px-3 border-0 h6 fw-normal mb-0" :title="$t('admin.system.tooltip')">
