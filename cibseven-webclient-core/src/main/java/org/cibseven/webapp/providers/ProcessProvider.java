@@ -57,10 +57,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	@Override
 	public Collection<Process> findProcesses(CIBUser user) {
 		String url = camundaUrl + "/engine-rest/process-definition?latestVersion=true&sortBy=name&sortOrder=desc";
-		
-		// [BPM4CIBWEB-189]
 		Collection<Process> processes = Arrays.asList(((ResponseEntity<Process[]>) doGet(url, Process[].class, user, false)).getBody());
-		
 		return processes;
 	}
 
@@ -70,13 +67,15 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		Collection<Process> processes = findProcesses(user);
 		
 		/* The following code slow down the OFDKA system.*/
-		for(Process process : processes) {
-			if(fetchInstances) {
+		for (Process process : processes) {
+			if (fetchInstances) {
 				String urlInstances = camundaUrl + "/engine-rest/process-instance/count?processDefinitionKey=" + process.getKey();
+				urlInstances += process.getTenantId() != null ? "&tenantIdIn=" + process.getTenantId() : "&withoutTenantId=true";
 				process.setRunningInstances(((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody().get("count").asLong());	
 			}
-			if(fetchIncidents) {
-				String urlIncidents = camundaUrl + "/engine-rest/incident/count?processDefinitionKeyIn=" + process.getKey();
+			if (fetchIncidents) {
+				String urlIncidents = camundaUrl + "/engine-rest/incident/count?processDefinitionKeyIn=" + process.getKey() + "&tenantIdIn=" + process.getTenantId();
+				urlIncidents += process.getTenantId() != null ? "&tenantIdIn=" + process.getTenantId() : "&withoutTenantId=true";
 				process.setIncidents(((ResponseEntity<JsonNode>) doGet(urlIncidents, JsonNode.class, user, false)).getBody().get("count").asLong());	
 			}
 		}
@@ -102,14 +101,16 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	}	
 	
 	@Override
-	public Process findProcessByDefinitionKey(String key, CIBUser user) {
+	public Process findProcessByDefinitionKey(String key, String tenantId, CIBUser user) {
 		String url = camundaUrl + "/engine-rest/process-definition/key/" + key;
+		url += tenantId != null ? ("/tenant-id/" + tenantId) : "";
 		return ((ResponseEntity<Process>) doGet(url, Process.class, user, false)).getBody();		
 	}
 	
 	@Override
-	public Collection<Process> findProcessVersionsByDefinitionKey(String key, Optional<Boolean> lazyLoad, CIBUser user) {
+	public Collection<Process> findProcessVersionsByDefinitionKey(String key, String tenantId, Optional<Boolean> lazyLoad, CIBUser user) {
 		String url = camundaUrl + "/engine-rest/process-definition?key=" + key + "&sortBy=version&sortOrder=desc";
+		url += tenantId != null ? ("&tenantIdIn=" + tenantId) : "&withoutTenantId=true";
 		Collection<Process> processes = Arrays.asList(((ResponseEntity<Process[]>) doGet(url, Process[].class, user, false)).getBody());		
 		
 		if (!lazyLoad.isPresent() || (lazyLoad.isPresent() && !lazyLoad.get())) {
@@ -196,15 +197,17 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	}	
 
 	@Override
-	public ProcessStart startProcess(String processDefinitionKey, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
-		String url = camundaUrl + "/engine-rest/process-definition/key/" + processDefinitionKey + "/start";
+	public ProcessStart startProcess(String processDefinitionKey, String tenantId, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
+		String url = camundaUrl + "/engine-rest/process-definition/key/" + processDefinitionKey;
+		url += (tenantId != null ? ("/tenant-id/" + tenantId) : "") + "/start";
 		return ((ResponseEntity<ProcessStart>) doPost(url, data, ProcessStart.class, user)).getBody();
 	}
 	
 	@Override
-	public ProcessStart submitForm(String processDefinitionKey, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
+	public ProcessStart submitForm(String processDefinitionKey, String tenantId, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
 		// Used by Webdesk
-		String url = camundaUrl + "/engine-rest/process-definition/key/" + processDefinitionKey + "/submit-form";
+		String url = camundaUrl + "/engine-rest/process-definition/key/" + processDefinitionKey;
+		url += (tenantId != null ? ("/tenant-id/" + tenantId) : "") + "/submit-form";
 		return ((ResponseEntity<ProcessStart>) doPost(url, data, ProcessStart.class, user)).getBody();
 	}
 	

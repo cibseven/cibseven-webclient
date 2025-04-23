@@ -112,7 +112,8 @@
 			"historyVersions": "Historie versionen",
 			"variable": "Prozessvariablen",
 			"copyValue": "Wert kopieren",
-			"historyTimeToLive": "Geschichte Zeit zu leben"
+			"historyTimeToLive": "Geschichte Zeit zu leben",			
+			"tenantId": "Mandanten-ID"
 		},
 		"sections": {
 			"all": "Alle",
@@ -942,7 +943,9 @@
 		"selectAll": "Alle auswählen",
 		"deleteDeployments": "Deployments löschen",
 		"showModel": "Modell anzeigen",
-		"deploymentsDeleted": "{0} von {1} Deployments wurden erfolgreich gelöscht"
+		"deploymentsDeleted": "{0} von {1} Deployments wurden erfolgreich gelöscht",
+		"tenant": "Mandant",
+		"errorLoading": "Ressource für die ausgewählte Bereitstellung konnte nicht geladen werden"
 	},
 	"cib-table2": {
 		"filter": "Filter"

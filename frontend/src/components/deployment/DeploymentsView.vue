@@ -4,7 +4,6 @@
       <div class="d-flex align-items-center py-2 container-fluid">
         <div class="col-3">
           <b-input-group>
-  <!-- 					<b-button :title="$t('start.admin')" variant="outline-secondary" href="#/seven/auth/processes" class="mdi mdi-18px mdi-arrow-left border-0"></b-button> -->
             <b-input-group-prepend>
               <b-button :title="$t('searches.search')" aria-hidden="true" size="sm" class="rounded-left" variant="secondary"><span class="mdi mdi-magnify" style="line-height: initial"></span></b-button>
             </b-input-group-prepend>
@@ -30,7 +29,7 @@
         </div>
         <div class="col-6">
           <b-input-group size="sm" class="align-items-center justify-content-end">
-            <b-form-checkbox class="me-3" size="sm" @change="changeSelected">
+            <b-form-checkbox class="me-3" size="sm" v-model="isAllChecked">
               <span>{{ $t('deployment.selectAll') }}</span>
             </b-form-checkbox>
             <b-button class="border-secondary" size="sm" :disabled="!deploymentsSelected.length > 0 || deleteLoader" variant="light" @click="$refs.deleteModal.show()" :title="$t('deployment.deleteDeployments')">
@@ -43,7 +42,8 @@
     </div>
     <SidebarsFlow ref="sidebars" class="border-top overflow-auto" v-model:right-open="rightOpen" :right-caption="$t('deployment.resourcesCaption')" :rightSize="[12, 4, 3, 3, 3]">
       <template v-slot:right>
-        <ResourcesNavBar :resources="resources" :deployment="deployment"></ResourcesNavBar>
+        <ResourcesNavBar v-if="!resourcesLoading" :resources="resources" :deployment="deployment"></ResourcesNavBar>
+        <b-waiting-box v-else styling="width: 35px" class="h-100 d-flex justify-content-center"></b-waiting-box>
       </template>
       <DeploymentList v-if="!loading && deploymentsFiltered.length > 0" :deployments="deploymentsFiltered" :deployment="deployment" :sorting="sorting"
         @select-deployment="selectDeployment($event)"></DeploymentList>
@@ -51,8 +51,8 @@
         <img src="/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mt-5 mb-3" style="width: 200px">
         <div class="h5 text-secondary text-center">{{ $t('deployment.noDeployments') }}</div>
       </div>
-      <div v-else-if="loading" class="h-100 d-flex justify-content-center align-items-center">
-        <b-waiting-box styling="width: 55%"></b-waiting-box>
+      <div v-else class="h-100 d-flex justify-content-center align-items-center">
+        <b-waiting-box class="d-inline me-2" styling="width: 35px"></b-waiting-box> {{ $t('admin.loading') }}
       </div>
     </SidebarsFlow>
     <b-modal ref="deleteModal" :title="$t('confirm.title')">
@@ -69,7 +69,7 @@
       </div>
       <template v-slot:modal-footer>
         <b-button @click="$refs.deleteModal.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
-        <b-button @click="deleteDeployments(); $refs.deleteModal.hide()" variant="primary">{{ $t('confirm.ok') }}</b-button>
+        <b-button @click="deleteDeployments(); $refs.deleteModal.hide()" variant="primary">{{ $t('confirm.delete') }}</b-button>
       </template>
     </b-modal>
     <SuccessAlert top="0" style="z-index: 1031" ref="deploymentsDeleted"> {{ $t('deployment.deploymentsDeleted', [deploymentsDelData.deleted, deploymentsDelData.total]) }}</SuccessAlert>
@@ -101,6 +101,7 @@ export default {
       sorting: {},
       cascadeDelete: true,
       resources: [],
+      resourcesLoading: false,
       deploymentsDelData: { total: 0, deleted: 0 }
     }
   },
@@ -129,6 +130,14 @@ export default {
       return this.deploymentsFiltered.filter(d => {
         return d.isSelected
       })
+    },
+    isAllChecked: {
+      get: function() {
+        return this.deploymentsFiltered.length > 0 && this.deploymentsFiltered.reduce((allSelected, d) => (allSelected && d.isSelected), true)
+      },
+      set: function(checked) {
+        this.deploymentsFiltered.forEach(d => { d.isSelected = checked })
+      }
     }
   },
   created: function () {
@@ -173,9 +182,6 @@ export default {
         })
       }
     },
-    changeSelected: function(evt) {
-      this.deploymentsFiltered.forEach(d => { d.isSelected = evt })
-    },
     selectDeployment: function(d) {
       this.deployment = d
       this.rightOpen = true
@@ -189,8 +195,14 @@ export default {
       return value.includes(filterUpper)
     },
     findDeploymentResources: function(deploymentId) {
+      this.resourcesLoading = true
+      this.resources = null
       ProcessService.findDeploymentResources(deploymentId).then(resources => {
         this.resources = resources
+        this.resourcesLoading = false
+      }).catch(() => {
+        this.resources = null
+        this.resourcesLoading = false
       })
     },
     changeSortingOrder: function() {
