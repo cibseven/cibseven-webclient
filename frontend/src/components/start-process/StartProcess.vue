@@ -1,7 +1,7 @@
 <template>
   <GlobalEvents v-if="!hideProcessSelection" @keydown.ctrl.alt.p.prevent="$refs.startProcess.show()"></GlobalEvents>
   <b-modal body-class="pt-0" size="lg" scrollable ref="startProcess" :hide-footer="!(startParamUrl && !hideProcessSelection)"
-    :title="!hideProcessSelection ? $t('start.startProcesses') : processName" @shown="$emit('display-popover', false)" no-close-on-backdrop
+    :title="!hideProcessSelection ? $t('start.startProcess.title') : processName" @shown="$emit('display-popover', false)" no-close-on-backdrop
     @hidden="$emit('display-popover', true); startParamUrl = ''" :footer-class="{ 'justify-content-between': startParamUrl && !hideProcessSelection }"
     dialog-class="h-100">
     <div v-if="startParamUrl" class="mh-100 h-100" style="height: 70vh">
@@ -22,7 +22,7 @@
         <b-list-group-item v-for="process of startableProcesses" :key="process.key" class="p-1 d-flex align-items-center">
           <b-button :disabled="isStartingProcess" variant="link" @click="startProcess(process)">
             <HighlightedText :text="process.name ? process.name : process.key" :keyword="processesFilter"></HighlightedText>
-          </b-button>          
+          </b-button>
           <span v-if="process.tenantId" class="fst-italic">{{ process.tenantId }}</span>
           <BWaitingBox v-if="isStartingProcess && process.loading" class="d-inline ms-auto me-1 float-end" styling="width: 24px"></BWaitingBox>
         </b-list-group-item>
@@ -86,7 +86,7 @@ export default {
         this.selectedProcess = processLatest
         ProcessService.startForm(processLatest.id).then(url => {
           if (!url.key && !url.camundaFormRef) {
-            ProcessService.startProcess(processLatest.key, processLatest.tenantId, 
+            ProcessService.startProcess(processLatest.key, processLatest.tenantId,
 			this.currentLanguage()).then(task => {
               this.$refs.startProcess.hide()
               task.processInstanceId = task.id

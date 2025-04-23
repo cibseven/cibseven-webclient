@@ -12,12 +12,12 @@
                   <div class="row ps-3" style="height:55px">
                     <div class="col-12 align-items-center d-flex">
                       <span class="border-start h-100 me-3 border-primary" style="border-width: 3px !important"></span>
-                      <h4 class="m-0">{{ $t('start.startProcesses') }}</h4>
+                      <h4 class="m-0">{{ $t('start.startProcess.title') }}</h4>
                     </div>
                   </div>
                   <div class="row text-center">
                     <div class="col-12 p-0 pt-1">
-                      <img :alt="$t('start.startProcesses')" src="/assets/images/start/process.svg" style="height:180px; max-width:225px">
+                      <img :alt="$t('start.startProcess.title')" src="/assets/images/start/process.svg" style="height:180px; max-width:225px">
                     </div>
                   </div>
                 </div>

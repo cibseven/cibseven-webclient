@@ -646,11 +646,14 @@
     },
 	"start": { 
 		"close": "Chiudere",
+		"startProcess": {
+			"title": "@:process.startProcess",
+			"tooltip": "Open Start Process"
+		},
 		"taskList": {
 			"title": "TaskList",
 			"tooltip": "Apri TaskList"
 		},
-		"startProcesses": "@:process.startProcess",
 		"cockpit": "Cockpit",
 		"emptyStart": "Currently you do not have permission to perform any task here. Please contact the CIB seven administrator to get permissions.",
 		"groupOperations": "Cockpit",

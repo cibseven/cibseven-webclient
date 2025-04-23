@@ -832,11 +832,14 @@
     },
 	"start": { 
 		"close": "Закрыть",
+		"startProcess": {
+			"title": "@:process.startProcess",
+			"tooltip": "Open Start Process"
+		},
 		"taskList": {
 			"title": "TaskList",
 			"tooltip": "Открыть TaskList"
 		},
-		"startProcesses": "@:process.startProcess",
 		"cockpit": "Cockpit",
 		"emptyStart": "В данный момент у Вас нет прав, чтобы выполнить какие-либо задачи. Пожалуйста, свяжитесь с администратором CIB seven для того, чтобы получить права.",
 		"groupOperations": "Cockpit",
