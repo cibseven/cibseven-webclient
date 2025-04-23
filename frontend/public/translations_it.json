@@ -660,6 +660,10 @@
 			"processes": {
 				"title": "Processi",
 				"tooltip": "Open Processes"
+			},
+			"decisions": {
+				"title": "Decisioni",
+				"tooltip": "Open Decisions"
 			}
 		},
 		"admin": {
@@ -677,7 +681,6 @@
 		"adminPanel": "Users Management",
 		"properties": "Properties",
 		"resources": "Resources",
-		"adminDecisions": "Decisioni",
 		"adminHumanTasks": "Attività"
 	},
 	"errors": {

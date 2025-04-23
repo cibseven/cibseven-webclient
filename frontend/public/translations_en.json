@@ -847,6 +847,10 @@
 			"processes": {
 				"title": "Processes",
 				"tooltip": "Open Processes"
+			},
+			"decisions": {
+				"title": "Decisions",
+				"tooltip": "Open Decisions"
 			}
 		},
 		"admin": {
@@ -864,7 +868,6 @@
 		"adminPanel": "Users Management",
 		"properties": "Properties",
 		"resources": "Resources",
-		"adminDecisions": "Decisions",
 		"adminHumanTasks": "Human Tasks"
 	},
 	"errors": {
