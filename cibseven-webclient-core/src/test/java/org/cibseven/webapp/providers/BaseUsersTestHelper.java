@@ -8,7 +8,6 @@ import org.cibseven.webapp.rest.model.User;
 import org.cibseven.webapp.rest.model.NewUser;
 import org.cibseven.webapp.rest.model.SevenVerifyUser;
 import org.cibseven.webapp.exception.ExistingUserRequestException;
-import org.cibseven.webapp.exception.SystemException;
 
 @Component
 public class BaseUsersTestHelper {
@@ -25,12 +24,12 @@ public class BaseUsersTestHelper {
 		} catch (ExistingUserRequestException e) { /* noop */}
 	}
 	
+	public void deleteUser(String id, CIBUser user) {
+		// deleteUser does not throw exception if user does not exist
+        userProvider.deleteUser(id, user);
+	}
+	
 	public SevenVerifyUser verifyUser(String id, String password, CIBUser user) {
-		try {
-			return userProvider.verifyUser(id, password, user);
-		}
-		catch (SystemException e) {
-			return null;
-		}
-	}	
+		return userProvider.verifyUser(id, password, user);
+	}
 }

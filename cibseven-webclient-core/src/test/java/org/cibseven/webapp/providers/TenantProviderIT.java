@@ -16,11 +16,15 @@ import org.cibseven.webapp.auth.CIBUser;
 		BaseUsersTestHelper.class,
 		UserProvider.class,
 		BaseTenantsTestHelper.class,
-		TenantProvider.class})
+		TenantProvider.class,
+		BaseGroupsTestHelper.class})
 public class TenantProviderIT {
 	
 	@Autowired
 	private BaseUsersTestHelper baseUsersTestHelper;
+	
+	@Autowired
+	private BaseGroupsTestHelper baseGroupsTestHelper;
 	
 	@Autowired
 	private BaseTenantsTestHelper baseTenantsTestHelper;
@@ -68,7 +72,7 @@ public class TenantProviderIT {
 
         // Create demo1 user
         baseUsersTestHelper.createUser("demo1", "demo1", "demo1", "", user);
-        assertThat(baseUsersTestHelper.verifyUser("demo1", "", user)).isNotNull();
+        assertThat(baseUsersTestHelper.verifyUser("demo1", "", user).isAuthenticated()).isTrue();
         
         // Create tenant        
         baseTenantsTestHelper.createTenant("tenantDemo1", "tenantDemo1", user);
@@ -76,7 +80,7 @@ public class TenantProviderIT {
     	
     	// Add demo1 user to tenant
     	baseTenantsTestHelper.addMemberToTenant("tenantDemo1", "demo1", user);
-    	assertThat(baseTenantsTestHelper.verifyUserMembershipToTenant("tenantDemo1", "demo1", user)).isNull();
+    	assertThat(baseTenantsTestHelper.verifyUserMembershipToTenant("tenantDemo1", "demo1", user)).isNotNull();
 
 		// Remove demo1 user from tenant
     	baseTenantsTestHelper.deleteMemberFromTenant("tenantDemo1", "demo1", user);
@@ -85,10 +89,40 @@ public class TenantProviderIT {
     	// Remove tenant
     	baseTenantsTestHelper.deleteTenant("tenantDemo1", user);
     	assertThat(baseTenantsTestHelper.verifyTenant("tenantDemo1", user)).isNull();
+    	
+    	// Remove demo1 user
+    	baseUsersTestHelper.deleteUser("demo1", user);
+        assertThat(baseUsersTestHelper.verifyUser("demo1", "", user).isAuthenticated()).isFalse();
     }
     
     @Test
     public void testGroupMembershipToTenant() {
-    	// TODO
+    	// Arrange
+        CIBUser user = new CIBUser();
+        user.setAuthToken("Bearer token");
+        
+        // Create group
+        baseGroupsTestHelper.createGroup("groupDemo1", "groupDemo1", "WORKFLOW", user);
+        assertThat(baseGroupsTestHelper.verifyGroup("groupDemo1", user)).isNotNull();
+        
+        // Create tenant        
+        baseTenantsTestHelper.createTenant("tenantDemo1", "tenantDemo1", user);
+    	assertThat(baseTenantsTestHelper.verifyTenant("tenantDemo1", user)).isNotNull();
+    	
+    	// Add groupDemo1 to tenant
+    	baseTenantsTestHelper.addGroupToTenant("tenantDemo1", "groupDemo1", user);
+    	assertThat(baseTenantsTestHelper.verifyGroupMembershipToTenant("tenantDemo1", "groupDemo1", user)).isNotNull();
+
+		// Remove demo1 user from tenant
+    	baseTenantsTestHelper.deleteGroupFromTenant("tenantDemo1", "groupDemo1", user);
+    	assertThat(baseTenantsTestHelper.verifyGroupMembershipToTenant("tenantDemo1", "groupDemo1", user)).isNull();
+    	
+    	// Remove tenant
+    	baseTenantsTestHelper.deleteTenant("tenantDemo1", user);
+    	assertThat(baseTenantsTestHelper.verifyTenant("tenantDemo1", user)).isNull();
+    	
+    	// Remove group
+    	baseGroupsTestHelper.deleteGroup("groupDemo1", user);
+        assertThat(baseGroupsTestHelper.verifyGroup("groupDemo1", user)).isNull();
     }
 }
