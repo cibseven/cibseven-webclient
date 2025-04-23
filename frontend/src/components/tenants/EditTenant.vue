@@ -24,8 +24,8 @@
         <div class="container-fluid overflow-auto">
           <div v-if="$route.query.tab === 'information'" class="row">
             <div class="col-sm-12 col-md-12 col-lg-8 col-xl-6 p-4">
-              <b-card class="border-0 p-5 shadow" :title="$t('admin.tenants.editMessage', [tenant.name])">
-                <b-card-text class="border-top border-top pt-4 mt-3">
+              <b-card class="p-5 shadow-sm border rounded" :title="$t('admin.tenants.editMessage', [tenant.name])">
+                <b-card-text class="border-top pt-4 mt-3">
                   <CIBForm @submitted="update()">
                     <b-form-group :label="$t('admin.tenants.name') + '*'" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4"
                       :invalid-feedback="$t('errors.invalid')">
@@ -51,7 +51,7 @@
                     <h5>{{ $t('admin.tenants.tenantUsers') }}</h5>
                   </div>
                 </div>
-                <div v-if="users" class="container-fluid overflow-auto bg-white shadow g-0">
+                <div v-if="users" class="container-fluid overflow-auto bg-white shadow-sm border rounded g-0">
                   <FlowTable :items="users" primary-key="id" striped
                     prefix="admin.users." :fields="[{label: 'id', key: 'id', class: 'col-md-3 col-sm-3', tdClass: 'border-end py-2' },
                       {label: 'firstName', key: 'firstName', class: 'col-md-3 col-sm-3', tdClass: 'border-end py-2' },
@@ -73,7 +73,7 @@
                     <h5>{{ $t('admin.tenants.tenantGroups') }}</h5>
                   </div>
                 </div>
-                <div v-if="groups" class="container-fluid overflow-auto bg-white shadow g-0">
+                <div v-if="groups" class="container-fluid overflow-auto bg-white shadow-sm border rounded g-0">
                   <FlowTable :items="groups" primary-key="id" striped
                     prefix="admin.groups." :fields="[
                       { label: 'id', key: 'id', class: 'col-4', tdClass: 'border-end py-2' },
@@ -101,7 +101,7 @@
     <SuccessAlert ref="deleteTenant" top="0" style="z-index: 1031">{{ $t('admin.tenants.deleteTenantMessage', [tenant.id]) }}</SuccessAlert>
   </SidebarsFlow>
 </template>
-  
+
 <script>
   import { AdminService } from '@/services.js'
   import { notEmpty } from '@/components/admin/utils.js'
@@ -111,7 +111,7 @@
   import CIBForm from '@/components/common-components/CIBForm.vue'
   import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
   import { mapActions } from 'vuex'
-  
+
   export default {
     name: 'EditTenant',
     components: { SidebarsFlow, FlowTable, SuccessAlert, CIBForm, ConfirmDialog },

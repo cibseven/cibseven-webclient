@@ -84,11 +84,11 @@
                     </div>
                   </div>
                 </div>
-                <div v-if="groupTenants.length > 0" class="container-fluid overflow-auto bg-white shadow g-0">
+                <div v-if="groupTenants.length > 0" class="container-fluid overflow-auto bg-white shadow-sm border rounded g-0">
                   <FlowTable :items="groupTenants" primary-key="id" striped
                     prefix="admin.tenants." :fields="[{ label: 'fullId', key: 'id', class: 'col-5', tdClass: 'border-end py-2' },
                       { label: 'fullName', key: 'name', class: 'col-5', tdClass: 'border-end py-2' },
-                      { label: 'actions', key: 'actions', class: 'col-2', tdClass: 'py-2' }]"
+                      { label: 'actions', key: 'actions', class: 'col-2', tdClass: 'justify-content-center py-2', thClass: 'justify-content-center text-center', sortable: false }]"
                     @contextmenu="focusedTenant = $event" @mouseenter="focusedTenant = $event" @mouseleave="focusedTenant = null">
                     <template v-slot:cell(actions)="row">
                       <div>

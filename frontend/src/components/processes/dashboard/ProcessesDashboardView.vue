@@ -2,44 +2,36 @@
   <div class="d-flex flex-column bg-light overflow-auto">
     <div class="container bg-light pt-3 px-0">
 
-      <div class="col-12 p-0 my-3 bg-white border rounded shadow-sm">
-        <h5 class="ps-3 pt-3">{{ $t('processes-dashboard.headerActive') }}</h5>
-        <hr>
-        <div class="row">
-          <PieChart class="col-12 col-md-4 px-0 m-0" :items="runningInstances"
-            :title="$t('processes-dashboard.items.running-instances.title')"
-            :tooltip="$t('processes-dashboard.items.running-instances.tooltip')"
-            link="/seven/auth/processes/list"
-            :total-zero="errorLoading ? 'x': undefined"
-          ></PieChart>
-          <PieChart class="col-12 col-md-4 px-0 m-0" :items="openIncidents"
-            :title="$t('processes-dashboard.items.open-incidents.title')"
-            :tooltip="$t('processes-dashboard.items.open-incidents.tooltip')"
-            link="/seven/auth/processes/list"
-            :total-zero="errorLoading ? 'x': $t('processes-dashboard.items.open-incidents.none')"
-          ></PieChart>
-          <PieChart class="col-12 col-md-4 px-0 m-0" :items="openHumanTasks"
-            :title="$t('processes-dashboard.items.open-human-tasks.title')"
-            :tooltip="$t('processes-dashboard.items.open-human-tasks.tooltip')"
-            link="/seven/auth/human-tasks"
-            :total-zero="errorLoading ? 'x': undefined"
-          ></PieChart>
-        </div>
-      </div>
+      <ContentBlock :title="$t('processes-dashboard.headerActive')">
+        <PieChart class="col-12 col-md-4 px-0 m-0" :items="runningInstances"
+          :title="$t('processes-dashboard.items.running-instances.title')"
+          :tooltip="$t('processes-dashboard.items.running-instances.tooltip')"
+          link="/seven/auth/processes/list"
+          :total-zero="errorLoading ? 'x': undefined"
+        ></PieChart>
+        <PieChart class="col-12 col-md-4 px-0 m-0" :items="openIncidents"
+          :title="$t('processes-dashboard.items.open-incidents.title')"
+          :tooltip="$t('processes-dashboard.items.open-incidents.tooltip')"
+          link="/seven/auth/processes/list"
+          :total-zero="errorLoading ? 'x': $t('processes-dashboard.items.open-incidents.none')"
+        ></PieChart>
+        <PieChart class="col-12 col-md-4 px-0 m-0" :items="openHumanTasks"
+          :title="$t('processes-dashboard.items.open-human-tasks.title')"
+          :tooltip="$t('processes-dashboard.items.open-human-tasks.tooltip')"
+          link="/seven/auth/human-tasks"
+          :total-zero="errorLoading ? 'x': undefined"
+        ></PieChart>
+      </ContentBlock>
 
-      <div class="col-12 p-0 my-3 bg-white border rounded shadow-sm">
-        <h5 class="ps-3 pt-3">{{ $t('processes-dashboard.headerDeployed') }}</h5>
-        <hr class="mb-0">
-        <div class="row p-3">
-          <DeploymentItem v-for="(item, index) in deploymentItems" :key="index"
-            class="col-12 col-md-3"
-            :title="$t(item.title)"
-            :tooltip="$t(item.tooltip)"
-            :count="item.count"
-            :link="item.link"
-          ></DeploymentItem>
-        </div>
-      </div>
+      <ContentBlock :title="$t('processes-dashboard.headerDeployed')">
+        <DeploymentItem v-for="(item, index) in deploymentItems" :key="index"
+          class="col-12 col-md-3"
+          :title="$t(item.title)"
+          :tooltip="$t(item.tooltip)"
+          :count="item.count"
+          :link="item.link"
+        ></DeploymentItem>
+      </ContentBlock>
 
     </div>
   </div>
@@ -49,10 +41,11 @@
 import { AnalyticsService } from '@/services.js'
 import PieChart from '@/components/processes/dashboard/PieChart.vue'
 import DeploymentItem from '@/components/processes/dashboard/DeploymentItem.vue'
+import ContentBlock from '@/components/common-components/ContentBlock.vue'
 
 export default {
   name: 'ProcessesDashboardView',
-  components: { PieChart, DeploymentItem },
+  components: { PieChart, DeploymentItem, ContentBlock },
   data() {
     return {
       errorLoading: false,
