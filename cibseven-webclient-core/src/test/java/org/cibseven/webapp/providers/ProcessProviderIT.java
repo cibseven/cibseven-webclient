@@ -115,7 +115,7 @@ public class ProcessProviderIT {
                 .addHeader("Content-Type", "application/json"));
 
         // Act
-        Process process = processProvider.findProcessByDefinitionKey(processKey, user);
+        Process process = processProvider.findProcessByDefinitionKey(processKey, null, user);
 
         // Assert
         assertThat(process).isNotNull();
@@ -186,7 +186,7 @@ public class ProcessProviderIT {
                 .addHeader("Content-Type", "application/json"));
 
         // Act
-        ProcessStart processStart = processProvider.startProcess(processDefinitionKey, null, user);
+        ProcessStart processStart = processProvider.startProcess(processDefinitionKey, null, null, user);
 
         // Assert
         assertThat(processStart).isNotNull();

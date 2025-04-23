@@ -9,6 +9,9 @@
         <b-list-group-item class="border-0 px-3 py-2" :active="$route.query.tab === 'users'" exact :to="'?tab=users'">
           <span> {{ $t('admin.groups.users') }}</span>
         </b-list-group-item>
+        <b-list-group-item class="border-0 px-3 py-2" :active="$route.query.tab === 'tenants'" exact :to="'?tab=tenants'">
+          <span> {{ $t('admin.tenants.title') }}</span>
+        </b-list-group-item>
       </b-list-group>
     </template>
 
@@ -21,8 +24,8 @@
         <div class="container-fluid overflow-auto">
           <div v-if="$route.query.tab === 'information'" class="row">
             <div class="col-sm-12 col-md-12 col-lg-8 col-xl-6 p-4">
-              <b-card class="border-0 p-5 shadow" :title="$t('admin.groups.editMessage', [group.name])">
-                <b-card-text class="border-top border-top pt-4 mt-3">
+              <b-card class="p-5 shadow-sm border rounded" :title="$t('admin.groups.editMessage', [group.name])">
+                <b-card-text class="border-top pt-4 mt-3">
                   <CIBForm @submitted="update()">
                     <b-form-group :label="$t('admin.groups.name') + '*'" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4"
                       :invalid-feedback="$t('errors.invalid')">
@@ -40,7 +43,7 @@
               </b-card>
             </div>
           </div>
-          <div v-if="$route.query.tab === 'users'" class="row">
+          <div v-else-if="$route.query.tab === 'users'" class="row">
             <div class="col-12">
               <div class="p-3">
                 <b-form-group labels-cols-lg="2" label-size="lg" label-class="fw-bold pt-0"
@@ -51,19 +54,75 @@
                     <h5>{{ $t('admin.groups.user.title') }}</h5>
                   </div>
                 </div>
-                <div v-if="users" class="container-fluid overflow-auto bg-white shadow g-0">
+                <div v-if="users" class="container-fluid overflow-auto bg-white shadow-sm border rounded g-0">
                   <FlowTable :items="users" primary-key="id" striped
                     prefix="admin.users." :fields="[{label: 'id', key: 'id', class: 'col-md-3 col-sm-3', tdClass: 'border-end py-2' },
-                      {label: 'firstName', key: 'firstName', class: 'col-md-3 col-sm-3', tdClass: 'border-end py-2' },
-                      {label: 'lastName', key: 'lastName', class: 'col-md-3 col-sm-3', tdClass: 'border-end py-2' },
-                      {label: 'email', key: 'email', class: 'col-md-3 col-sm-3', tdClass: 'py-2' }]"
+                      { label: 'firstName', key: 'firstName', class: 'col-md-3 col-sm-3', tdClass: 'border-end py-2' },
+                      { label: 'lastName', key: 'lastName', class: 'col-md-3 col-sm-3', tdClass: 'border-end py-2' },
+                      { label: 'email', key: 'email', class: 'col-md-3 col-sm-3', tdClass: 'py-2' }]"
                     @contextmenu="focusedUser = $event" @mouseenter="focusedUser = $event" @mouseleave="focusedUser = null">
                   </FlowTable>
                 </div>
               </div>
             </div>
           </div>
+          <div v-else-if="$route.query.tab === 'tenants'" class="row">
+            <div class="col-12">
+              <div class="p-3">
+                <b-form-group labels-cols-lg="2" label-size="lg" label-class="fw-bold pt-0"
+                  :label="$t('admin.groups.editMessage', [group.name])">
+                </b-form-group>
+                <div class="row py-3">
+                  <div class="col-9">
+                    <h5>{{ $t('admin.tenants.associationTitle', [group.id]) }}</h5>
+                  </div>
+                  <div class="col-3 pb-3">
+                    <div class="float-end">
+                      <b-button class="border" size="sm" variant="light" v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'" @click="openAssignTenantModal">
+                        <span class="mdi mdi-plus"> {{ $t('admin.tenants.addTo') }} </span>
+                      </b-button>
+                    </div>
+                  </div>
+                </div>
+                <div v-if="groupTenants.length > 0" class="container-fluid overflow-auto bg-white shadow-sm border rounded g-0">
+                  <FlowTable :items="groupTenants" primary-key="id" striped
+                    prefix="admin.tenants." :fields="[{ label: 'fullId', key: 'id', class: 'col-5', tdClass: 'border-end py-2' },
+                      { label: 'fullName', key: 'name', class: 'col-5', tdClass: 'border-end py-2' },
+                      { label: 'actions', key: 'actions', class: 'col-2', tdClass: 'justify-content-center py-2', thClass: 'justify-content-center text-center', sortable: false }]"
+                    @contextmenu="focusedTenant = $event" @mouseenter="focusedTenant = $event" @mouseleave="focusedTenant = null">
+                    <template v-slot:cell(actions)="row">
+                      <div>
+                        <b-button :disabled="focusedTenant !== row.item" style="opacity: 1" @click="unassignTenant(row.item)" class="px-2 border-0 shadow-none" variant="link">
+                          <span class="mdi mdi-18px mdi-delete-outline"></span>
+                        </b-button>
+                      </div>
+                    </template>
+                  </FlowTable>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+
+        <b-modal ref="assignTenantsModal" :title="$t('admin.tenants.addTo')" size="lg">
+          <div v-if="unassignedTenants.length > 0" class="container g-0">
+            <FlowTable :items="unassignedTenants" primary-key="id" prefix="admin.tenants." striped
+              :fields="[{ label: '', key: 'selected', class: 'col-sm-1', sortable: false, thClass: 'text-center, border-top-0', tdClass: 'text-center' },
+              { label: 'fullId', key: 'id', class: 'col-6', thClass: 'border-top-0' },
+              { label: 'fullName', key: 'name', class: 'col-5', thClass: 'border-top-0' }]">
+              <template v-slot:cell(selected)="row">
+                <b-form-checkbox v-model="row.item.selected"></b-form-checkbox>
+              </template>
+            </FlowTable>
+          </div>
+          <div v-else>
+            {{ $t('admin.noResults') }}
+          </div>
+          <template v-slot:modal-footer>
+            <b-button @click="$refs.assignTenantsModal.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
+            <b-button @click="assignTenants(); $refs.assignTenantsModal.hide()" variant="primary">{{ $t('confirm.ok') }}</b-button>
+          </template>
+        </b-modal>
 
         <ConfirmDialog ref="deleteModal" @ok="deleteGroup()" :ok-title="$t('confirm.delete')">
           <div>
@@ -80,6 +139,7 @@
     </transition>
     <SuccessAlert ref="updateGroup" top="0" style="z-index: 1031">{{ $t('admin.groups.updateGroupMessage', [group.id]) }}</SuccessAlert>
     <SuccessAlert ref="deleteGroup" top="0" style="z-index: 1031">{{ $t('admin.groups.deleteGroupMessage', [group.id]) }}</SuccessAlert>
+    <SuccessAlert ref="unassignTenant" top="0" style="z-index: 1031">{{ $t('admin.tenants.unassignGroupMessage', [group.id]) }}</SuccessAlert>
   </SidebarsFlow>
 </template>
 
@@ -91,6 +151,7 @@ import FlowTable from '@/components/common-components/FlowTable.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import CIBForm from '@/components/common-components/CIBForm.vue'
 import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
+import { mapActions, mapGetters } from 'vuex'
 
 export default {
   name: 'ProfileGroup',
@@ -103,8 +164,11 @@ export default {
       users: null,
       selectedUser: null,
       focusedUser: null,
+      focusedTenant: null,
       perPage: 15,
-      page: 1
+      page: 1,
+      groupTenants: [],
+      unassignedTenants: []
     }
   },
   watch: {
@@ -114,13 +178,19 @@ export default {
     },
     '$route.query.tab': function() {
       if (this.$route.query.tab === 'users') this.loadUsers(this.$route.params.groupId)
+      else if (this.$route.query.tab === 'tenants') this.loadTenants(this.$route.params.groupId)
     }
+  },
+  computed: {
+    ...mapGetters(['tenants'])
   },
   created: function() {
     if (this.$route.params.groupId) this.loadGroup(this.$route.params.groupId)
     if (this.$route.query.tab === 'users') this.loadUsers(this.$route.params.groupId)
+    else if (this.$route.query.tab === 'tenants') this.loadTenants(this.$route.params.groupId)
   },
   methods: {
+    ...mapActions(['fetchTenants', 'getTenantsByGroup', 'removeGroupFromTenant', 'addGroupToTenant']),
     loadGroup: function(groupId) {
       AdminService.findGroups({ id: groupId }).then(response => {
         this.group = response[0]
@@ -130,6 +200,9 @@ export default {
       AdminService.findUsers({ memberOfGroup: groupId }).then(response => {
         this.users = response
       })
+    },
+    async loadTenants(groupId) {
+      this.groupTenants = await this.getTenantsByGroup(groupId)
     },
     update: function() {
       AdminService.updateGroup(this.group.id, this.group).then(() => {
@@ -148,6 +221,40 @@ export default {
     clean: function () {
       this.dirty = false
       this.users = null
+    },
+    unassignTenant(tenant) {
+      this.removeGroupFromTenant({ tenantId: tenant.id, groupId: this.group.id }).then(() => {
+        this.$refs.unassignTenant.show(2)
+        this.loadTenants(this.group.id)
+      })
+    },
+    openAssignTenantModal: function() {
+      this.loadUnassignedTenants()
+      this.$refs.assignTenantsModal.show()
+    },
+    async loadUnassignedTenants() {
+      await this.fetchTenants()
+      const groupTenants = JSON.parse(JSON.stringify(this.groupTenants))
+      this.unassignedTenants = []
+      this.tenants.forEach(tenant => {
+        var isAssigned = false
+        groupTenants.forEach(groupTenant => {
+          if (tenant.id === groupTenant.id) isAssigned = true
+        })
+        if (!isAssigned){
+          tenant.selected = false
+          this.unassignedTenants.push(tenant)
+        }
+      })
+    },
+    assignTenants() {
+      this.unassignedTenants.forEach(tenant => {
+        if (tenant.selected) {
+          this.addGroupToTenant({ tenantId: tenant.id, groupId: this.group.id }).then(() => {
+            this.groupTenants.push(tenant)
+          })
+        }
+      })
     }
   }
 }

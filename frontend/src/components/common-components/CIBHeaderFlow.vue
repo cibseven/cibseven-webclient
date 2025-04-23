@@ -10,10 +10,14 @@
               <span class="visually-hidden">{{ $t('cib-header.languages') }}</span>
               <span class="mdi mdi-24px mdi-web align-middle"></span>
             </template>
-            <b-dropdown-item v-for="lang in languages" :key="lang" :active="lang === currentLanguage()" @click="currentLanguage(lang)">
-              <div class="row">
-                <span class="text-uppercase text-dark bg-body-secondary rounded col-3 ms-2">{{ lang }}</span>
-                <span class="col-8 ps-2">{{ $t('cib-header.' + lang) }}</span>
+            <b-dropdown-item v-for="lang in languages" :key="lang" :active="lang === currentLanguage()" @click="currentLanguage(lang)" :title="$t('cib-header.languages') + ': ' + $t('cib-header.' + lang)">
+              <div class="d-flex align-items-baseline">
+                <span class="lang-label text-center text-uppercase text-dark bg-body-secondary rounded me-2">
+                  {{ lang }}
+                </span>
+                <span class="flex-grow-1">
+                  {{ $t('cib-header.' + lang) }}
+                </span>
               </div>
             </b-dropdown-item>
           </b-nav-item-dropdown>
@@ -53,3 +57,10 @@ export default {
   }
 }
 </script>
+
+<style>
+.lang-label {
+  min-width: 36px; /* adjust as needed */
+  display: inline-block;
+}
+</style>

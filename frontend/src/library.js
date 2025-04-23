@@ -14,6 +14,7 @@ import { debounce } from '@/utils/debounce.js'
 import { HoverStyle } from '@/components/common-components/directives.js'
 import CibSeven from '@/components/CibSeven.vue'
 import FlowTable from '@/components/common-components/FlowTable.vue'
+import ContentBlock from '@/components/common-components/ContentBlock.vue'
 import ErrorDialog from '@/components/common-components/ErrorDialog.vue'
 import AboutModal from '@/components/modals/AboutModal.vue'
 import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
@@ -90,7 +91,12 @@ import DecisionListView from '@/components/decisions/list/DecisionListView.vue'
 import DecisionDefinitionVersion from '@/components/decision/DecisionDefinitionVersion.vue'
 import TenantsView from '@/components/tenants/TenantsView.vue'
 import BatchesView from '@/components/batches/BatchesView.vue'
+import RuntimeBatches from '@/components/batches/tables/RuntimeBatches.vue'
+import HistoricBatches from '@/components/batches/tables/HistoricBatches.vue'
+import BatchDetails from '@/components/batches/tables/BatchDetails.vue'
 import SystemView from '@/components/system/SystemView.vue'
+import SystemDiagnostics from '@/components/system/SystemDiagnostics.vue'
+import ExecutionMetrics from '@/components/system/ExecutionMetrics.vue'
 import ShortcutsModal from '@/components/modals/ShortcutsModal.vue'
 import ShortcutsTable from '@/components/modals/ShortcutsTable.vue'
 import { TaskService, HistoryService, ProcessService } from '@/services.js';
@@ -101,6 +107,7 @@ import StartDeployedForm from '@/components/forms/StartDeployedForm.vue'
 const registerComponents = function(app) {
   app.component('cib-seven', CibSeven)
   app.component('flow-table', FlowTable)
+  app.component('content-block', ContentBlock)
   app.component('error-dialog', ErrorDialog)
   app.component('confirm-dialog', ConfirmDialog)
   app.component('about-modal', AboutModal)
@@ -186,7 +193,6 @@ const registerComponents = function(app) {
 
 export {
   registerComponents,
-
   TenantsView,
   BatchesView,
   SystemView,
@@ -203,6 +209,7 @@ export {
   HoverStyle,
   CibSeven,
   FlowTable,
+  ContentBlock,
   ErrorDialog,
   ConfirmDialog,
   FeedbackModal,
@@ -282,5 +289,10 @@ export {
   DecisionListView,
   DecisionDefinitionVersion,
   StartDeployedForm,
-  DeployedForm
+  DeployedForm,
+  SystemDiagnostics,
+  ExecutionMetrics,
+  RuntimeBatches,
+  HistoricBatches,
+  BatchDetails
 }

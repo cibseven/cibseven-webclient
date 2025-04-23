@@ -31,6 +31,8 @@ import { BWaitingBox } from 'cib-common-components'
 import DeployedForm from '@/components/forms/DeployedForm.vue'
 import StartDeployedForm from '@/components/forms/StartDeployedForm.vue'
 import TenantsView from '@/components/tenants/TenantsView.vue'
+import CreateTenant from '@/components/tenants/CreateTenant.vue'
+import EditTenant from '@/components/tenants/EditTenant.vue'
 import BatchesView from '@/components/batches/BatchesView.vue'
 import SystemView from '@/components/system/SystemView.vue'
 import SystemDiagnostics from '@/components/system/SystemDiagnostics.vue'
@@ -146,6 +148,7 @@ const router = createRouter({
             processKey: route.params.processKey,
             versionIndex: route.params.versionIndex,
             instanceId: route.params.instanceId,
+            tenantId: route.query.tenantId
           })
         },
         // decisions
@@ -193,6 +196,7 @@ const router = createRouter({
             { path: 'group/:groupId', name: 'adminGroup', beforeEnter: permissionsGuardUserAdmin('groupsManagement', 'group'), component: ProfileGroup },
             // Tenants
             { path: 'tenants', name:'adminTenants', component: TenantsView },
+            { path: 'tenant/:tenantId', name: 'adminTenant', beforeEnter: permissionsGuardUserAdmin('tenantsManagement', 'tenant'), component: EditTenant },
             // System
             { path: 'system', redirect: '/seven/auth/admin/system/system-diagnostics', name: 'adminSystem', component: SystemView,
               children: [
@@ -210,7 +214,8 @@ const router = createRouter({
           ]
         },
         { path: 'admin/create-user', name: 'createUser', component: CreateUser },
-        { path: 'admin/create-group', name: 'createGroup', beforeEnter: permissionsGuard('cockpit'), component: CreateGroup }
+        { path: 'admin/create-group', name: 'createGroup', beforeEnter: permissionsGuard('cockpit'), component: CreateGroup },
+        { path: 'admin/create-tenant', name: 'createTenant', component: CreateTenant },
       ]}
     ]},
     {

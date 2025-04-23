@@ -1,4 +1,4 @@
-# Default values for seven-webclient.
+# Default values for cibseven-webclient.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
@@ -160,7 +160,7 @@ application:
   #}
 
   services:
-    basePath: /services/v1
+    basePath: services/v1
 
 
 ui:
@@ -226,7 +226,7 @@ rootContext:
 
 configmaps:
   env:
-    OTEL_SERVICE_NAME: "{{ .Release.Name }}-seven-webclient"
+    OTEL_SERVICE_NAME: "{{ .Release.Name }}-cibseven-webclient"
     OTEL_METRICS_EXPORTER: "{{ .Values.global.otel.metricsExporter }}"
     OTEL_TRACES_EXPORTER: "{{ .Values.global.otel.tracesExporter }}"
     OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: "{{ .Values.global.otel.otlpTracesEndpoint }}"
@@ -495,7 +495,7 @@ secrets:
   env: { }
   files:
     application.yaml:
-      path: /opt/cib/conf/seven-webclient.yaml
+      path: /opt/cib/conf/cibseven-webclient.yaml
       value: |-
         {{ .Values.application | toYaml | toString }}
     template-config.properties:
@@ -510,7 +510,7 @@ replicaCount: 1
 
 image:
   repository: "{{ .Values.global.image.repository }}"
-  name: seven-webclient
+  name: cibseven-webclient
   pullPolicy: "{{ .Values.global.image.pullPolicy }}"
   tag: ""
 

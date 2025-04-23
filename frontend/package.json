@@ -1,6 +1,6 @@
 {
   "name": "cibseven-components",
-  "version": "0.0.0",
+  "version": "__CI_VERSION__",
   "type": "module",
   "license": "",
   "main": "./src/main.js",
@@ -62,7 +62,7 @@
     "jsdom": "^26.0.0",
     "prettier": "^3.4.2",
     "start-server-and-test": "^2.0.10",
-    "vite": "^6.2.5",
+    "vite": "^6.2.6",
     "vite-plugin-vue-devtools": "^7.7.1",
     "vitest": "^3.0.5"
   },

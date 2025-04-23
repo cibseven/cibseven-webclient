@@ -74,7 +74,8 @@ export default {
   props: {
     processKey: { type: String, required: true },
     versionIndex: { type: String, required: true },
-    instanceId: { type: String, required: true }
+    instanceId: { type: String, required: true },
+    tenantId: { type: String }
   },
   watch: {
     processKey: 'loadProcessFromRoute',
@@ -133,7 +134,7 @@ export default {
         }
       }
     }
-    else {
+    else if (!this.instanceId) {
       this.selectedInstance = null
       this.activityInstance = null
       this.activityInstanceHistory = null
@@ -155,7 +156,7 @@ export default {
     onDeleteProcessDefinition: function(params) {
       ProcessService.deleteProcessDefinition(params.processDefinition.id, true).then(() => {
         // reload versions
-        ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.$root.config.lazyLoadHistory)
+        ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.tenantId, this.$root.config.lazyLoadHistory)
         .then(versions => {
           if (versions.length === 0) {
             // no more process-definitions with such key
@@ -183,7 +184,8 @@ export default {
               params: {
                 processKey: params.processDefinition.key,
                 versionIndex: nextVersionIndex,
-              }
+              },
+              query: this.$route.query
             })
             this.processDefinitions = versions
           }
@@ -194,7 +196,7 @@ export default {
     // - user have deleted a non-selected process definition (this.process is still valid)
     // - user clicked "refresh process definitions" button
     onRefreshProcessDefinitions: function(lazyLoad) {
-      return ProcessService.findProcessVersionsByDefinitionKey(this.processKey, lazyLoad).then(versions => {
+      return ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.tenantId, lazyLoad).then(versions => {
         this.processDefinitions = versions
         if (this.processDefinitions.length > 0) {
           this.resetStatsLazyLoad(lazyLoad)
@@ -204,7 +206,7 @@ export default {
       })
     },
     loadProcessByDefinitionKey: function() {
-      return ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.$root.config.lazyLoadHistory)
+      return ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.tenantId, this.$root.config.lazyLoadHistory)
       .then(versions => {
         const requestedDefinition = versions.find(processDefinition => processDefinition.version === this.versionIndex)
         if (requestedDefinition) {
@@ -282,7 +284,7 @@ export default {
         })
       }
       else {
-        return ProcessService.findProcessVersionsByDefinitionKey(this.process.key, this.$root.config.lazyLoadHistory)
+        return ProcessService.findProcessVersionsByDefinitionKey(this.process.key, this.tenantId, this.$root.config.lazyLoadHistory)
         .then(versions => {
           this.processDefinitions = versions
           var promises = []

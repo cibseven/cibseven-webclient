@@ -486,12 +486,6 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		doPut(url, data, user);
 	}
 	
-	@Override
-	protected HttpHeaders addAuthHeader(HttpHeaders headers, CIBUser user) {
-		if (user != null) headers.add("Authorization", user.getAuthToken());
-		return headers;
-	}
-	
 	protected ResponseEntity<byte[]> generateFileResponse(byte[] content) throws IOException {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setCacheControl(CacheControl.noCache().getHeaderValue());

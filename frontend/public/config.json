@@ -109,6 +109,9 @@
 		"authorizationsManagement": {
 			"authorization": ["ALL"]
 		},
+		"tenantsManagement": {
+			"tenant": ["ALL"]
+		},
 		"userProfile": {
 			"application": ["ALL"]
 		},
@@ -155,11 +158,11 @@
 		"showTaskDetailsSidebar": true,
 		"showFilterDueDate": true,
 		"showFilterReminderDate": true,
-		"showFeedbackButton": true,
+		"showFeedbackButton": false,
 		"showTaskListManualRefresh": true,
 		"disableCandidateUsers": false,
 		"showProcessName": true,
-		"showSupportInfo": true,
+		"showSupportInfo": false,
 		"showInfoAndHelp": true,
 		"showChat": true,		
 		"showUserSettings": true,

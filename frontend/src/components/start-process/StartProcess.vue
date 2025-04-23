@@ -19,11 +19,12 @@
         </div>
       </div>
       <b-list-group v-if="startableProcesses.length > 0" >
-        <b-list-group-item v-for="process of startableProcesses" :key="process.key" class="p-1 d-flex align-items-center justify-content-between">
+        <b-list-group-item v-for="process of startableProcesses" :key="process.key" class="p-1 d-flex align-items-center">
           <b-button :disabled="isStartingProcess" variant="link" @click="startProcess(process)">
             <HighlightedText :text="process.name ? process.name : process.key" :keyword="processesFilter"></HighlightedText>
-          </b-button>
-          <BWaitingBox v-if="isStartingProcess && process.loading" class="d-inline ms-auto me-1" styling="width: 24px"></BWaitingBox>
+          </b-button>          
+          <span v-if="process.tenantId" class="fst-italic">{{ process.tenantId }}</span>
+          <BWaitingBox v-if="isStartingProcess && process.loading" class="d-inline ms-auto me-1 float-end" styling="width: 24px"></BWaitingBox>
         </b-list-group-item>
       </b-list-group>
       <div v-else class="container">
@@ -81,36 +82,30 @@ export default {
     startProcess: function(process) {
       this.isStartingProcess = true
       process.loading = true
-      ProcessService.findProcessByDefinitionKey(process.key).then(processLatest => {
+      ProcessService.findProcessByDefinitionKey(process.key, process.tenantId).then(processLatest => {
         this.selectedProcess = processLatest
         ProcessService.startForm(processLatest.id).then(url => {
-
           if (!url.key && !url.camundaFormRef) {
-
-            ProcessService.startProcess(processLatest.key, this.currentLanguage()).then(task => {
+            ProcessService.startProcess(processLatest.key, processLatest.tenantId, 
+			this.currentLanguage()).then(task => {
               this.$refs.startProcess.hide()
               task.processInstanceId = task.id
               this.$emit('process-started', task)
               process.loading = false
               this.isStartingProcess = false
             })
-
           } else {
-
             var templateType
-
             if (url.camundaFormRef) {
               templateType = 'start-deployed-form'
             } else {
               templateType = url.key.split('?template=')[1]
             }
-
             this.startParamUrl = window.location.origin + '/webapp/#' +
               '/' + templateType +
               '/' + this.currentLanguage() +
               '/' + processLatest.id +
               '/' + this.$root.user.authToken
-
             if (this.hideProcessSelection) this.$refs.startProcess.show()
             process.loading = false
             this.isStartingProcess = false

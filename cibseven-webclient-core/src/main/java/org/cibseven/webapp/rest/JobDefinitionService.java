@@ -1,6 +1,7 @@
 package org.cibseven.webapp.rest;
 
 import java.util.Collection;
+import java.util.Map;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenResourceType;
@@ -74,5 +75,16 @@ public class JobDefinitionService extends BaseService implements InitializingBea
 		CIBUser user = checkAuthorization(rq, true, false);
 		checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.READ_ALL);
         return bpmProvider.findJobDefinition(id, user);
+	}
+	
+	@Operation(
+	    summary = "Retry job by ID",
+	    description = "<strong>Retries a job by setting the number of retries for the job with the given ID</strong>")
+	@ApiResponse(responseCode = "404", description = "Job not found")
+	@PutMapping("/{id}/retries")
+	public void retryJobDefinitionById(@PathVariable String id, @RequestBody Map<String, Object> data, HttpServletRequest rq) {
+	    CIBUser user = checkAuthorization(rq, true, false);
+	    checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.UPDATE_ALL);
+	    bpmProvider.retryJobDefinitionById(id, data, user);
 	}
 }

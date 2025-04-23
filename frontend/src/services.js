@@ -130,9 +130,15 @@ var ProcessService = {
   findProcesses: function() { return axios.get(appConfig.servicesBasePath + "/process").then(patchProcess) },
   findProcessesWithInfo: function() { return axios.get(appConfig.servicesBasePath + "/process/extra-info").then(patchProcess) },
   findProcessesWithFilters: function(filters) { return axios.post(appConfig.servicesBasePath + "/process", filters).then(patchProcess) },
-  findProcessByDefinitionKey: function(key) { return axios.get(appConfig.servicesBasePath + "/process/" + key).then(patchProcess) },
-  findProcessVersionsByDefinitionKey: function(key, lazyLoad = false) {
-    return axios.get(appConfig.servicesBasePath + "/process/process-definition/versions/" + key + '?lazyLoad=' + lazyLoad).then(patchProcess)
+  findProcessByDefinitionKey: function(key, tenantId) {
+    let url = `${appConfig.servicesBasePath}/process/${key}`
+    if (tenantId) url += `?tenantId=${tenantId}`
+    return axios.get(url).then(patchProcess)
+  },
+  findProcessVersionsByDefinitionKey: function(key, tenantId, lazyLoad = false) {
+    let url = `${appConfig.servicesBasePath}/process/process-definition/versions/${key}?lazyLoad=${lazyLoad}`
+    if (tenantId) url += `&tenantId=${tenantId}`
+    return axios.get(url).then(patchProcess)
   },
   findProcessById: function(id, extraInfo = false) {
     return axios.get(appConfig.servicesBasePath + "/process/process-definition-id/" + id + '?extraInfo=' + extraInfo).then(patchProcess)
@@ -153,9 +159,13 @@ var ProcessService = {
     return axios.get(appConfig.servicesBasePath + "/process/called-process-definitions/" + processDefinitionId)
   },
   fetchDiagram: function(processId) { return axios.get(appConfig.servicesBasePath + "/process/" + processId + "/diagram") },
-  startProcess: function(key, locale) {
-    return axios.post(appConfig.servicesBasePath + "/process/" + key + "/start", {
-      variables: { _locale: { value: locale, type: String } /*initiator: { value: userId, type: String }*/
+  startProcess: function(key, tenantId, locale) {
+    let url = `${appConfig.servicesBasePath}/process/${key}/start`
+    if (tenantId)  url += `?tenantId=${tenantId}`
+    return axios.post(url, {
+      variables: {
+        _locale: { value: locale, type: String }
+        // initiator: { value: userId, type: String }
       }
     })
   },
@@ -356,6 +366,9 @@ var JobDefinitionService = {
   },
   findJobDefinition: function(id) {
     return axios.get(appConfig.servicesBasePath + "/job-definition/" + id)
+  },
+  retryJobDefinitionById: function(id, params) {
+    return axios.put(appConfig.servicesBasePath + "/job-definition/" + id + '/retries', params)
   }
 }
 
@@ -416,9 +429,9 @@ var FormsService = {
       }
     })
   },
-  submitStartFormVariables: function(processDefinitionKey, formResult, locale) {
+  submitStartFormVariables: function(processDefinitionId, formResult, locale) {
     formResult.push({ name: '_locale', type: 'String', value: locale })
-    return axios.post(appConfig.servicesBasePath + '/process/' + processDefinitionKey + '/submit-startform-variables', formResult)
+    return axios.post(appConfig.servicesBasePath + '/process/' + processDefinitionId + '/submit-startform-variables', formResult)
   },
   downloadFiles: function(processInstanceId, documentsList) {
     return axios.post(appConfig.servicesBasePath + '/task/' + processInstanceId + '/download', documentsList, { responseType: 'blob' } )
@@ -530,39 +543,54 @@ var DecisionService = {
 }
 
 var JobService = {
-  getJobs(params) {
+  getJobs: function(params) {
     return axios.post(appConfig.servicesBasePath + '/job', params).then(patchJob)
   },
-  setSuspended(id, data) {
+  setSuspended: function(id, data) {
     return axios.put(appConfig.servicesBasePath + '/job/' + id + '/suspended', data)
+  },
+  deleteJob: function(id) {
+    return axios.delete(appConfig.servicesBasePath + '/job/' + id)
+  },
+  getHistoryJobLog: function(params) {
+    return axios.get(appConfig.servicesBasePath + '/job/history/job-log', { params })
+  },
+  getHistoryJobLogStacktrace: function(id) {
+    return axios.get(appConfig.servicesBasePath + '/job/history/job-log/' + id + '/stacktrace')
   }
 }
 
 var BatchService = {
-  getHistoricBatches(params) {
-    return axios.get('/history/batch', { params })
+  getBatches: function(params) {
+    return axios.get(appConfig.servicesBasePath + '/batch', { params })
   },
-
+  getBatchStatistics: function(params) {
+    return axios.get(appConfig.servicesBasePath + '/batch/statistics', { params })
+  },
+  setBatchSuspensionState: function(id, params) {
+    return axios.put(appConfig.servicesBasePath + '/batch/' + id + '/suspended', params)
+  },
+  deleteBatch: function(id, params) {
+    return axios.delete(appConfig.servicesBasePath + '/batch/' + id, params)
+  },
+  getHistoricBatches: function(params) {
+    return axios.get(appConfig.servicesBasePath + '/history/batch', { params })
+  },
   getHistoricBatchCount(params) {
     return axios.get('/history/batch/count', { params })
   },
-
-  getHistoricBatchById(id) {
-    return axios.get(`/history/batch/${id}`)
+  getHistoricBatchById: function(id) {
+    return axios.get(appConfig.servicesBasePath + '/history/batch/' + id)
   },
-
-  deleteHistoricBatch(id) {
-    return axios.delete(`/history/batch/${id}`)
+  deleteHistoricBatch: function(id) {
+    return axios.delete(appConfig.servicesBasePath + '/history/batch/' + id)
   },
-
   setRemovalTime(payload) {
     return axios.post('/history/batch/set-removal-time', payload)
   },
-
   getCleanableBatchReport(params) {
     return axios.get('/history/batch/cleanable-batch-report', { params })
   },
-
   getCleanableBatchReportCount() {
     return axios.get('/history/batch/cleanable-batch-report/count')
   }
@@ -578,10 +606,41 @@ var SystemService = {
   getTelemetryData() {
     return axios.get(appConfig.servicesBasePath + '/system/telemetry/data')
   },
-  getMetrics() {
-    return axios.get(appConfig.servicesBasePath + '/system/metrics')
+  getMetricsData(params) {
+    return axios.get(appConfig.servicesBasePath + '/system/metrics/data', { params })
+  }
+}
+
+var TenantService = {  
+  getTenants(params) {
+    return axios.get(appConfig.servicesBasePath + '/tenant', { params })
+  },
+  getTenantById: function (tenantId) {
+    return axios.get(appConfig.servicesBasePath + '/tenant/' + tenantId)
+  },
+  createTenant: function (tenant) {
+    return axios.post(appConfig.servicesBasePath + '/tenant', tenant)
+  },
+  updateTenant: function (tenant) {
+    return axios.put(appConfig.servicesBasePath + '/tenant/' + tenant.id, tenant)
+  },
+  deleteTenant: function (tenantId) {
+    return axios.delete(appConfig.servicesBasePath + '/tenant/' + tenantId)
+  },
+  removeUserFromTenant(tenantId, userId) {
+    return axios.delete(`${appConfig.servicesBasePath}/tenant/${tenantId}/users/${userId}`)
+  },
+  addUserToTenant(tenantId, userId) {
+    return axios.post(`${appConfig.servicesBasePath}/tenant/${tenantId}/users/${userId}`)
+  },
+  removeGroupFromTenant(tenantId, groupId) {
+    return axios.delete(`${appConfig.servicesBasePath}/tenant/${tenantId}/groups/${groupId}`)
+  },
+  addGroupToTenant(tenantId, groupId) {
+    return axios.post(`${appConfig.servicesBasePath}/tenant/${tenantId}/groups/${groupId}`)
   }
 }
 
 export { TaskService, FilterService, ProcessService, AdminService, JobService, JobDefinitionService, SystemService,
-  HistoryService, IncidentService, AuthService, InfoService, FormsService, TemplateService, DecisionService, AnalyticsService, BatchService }
+  HistoryService, IncidentService, AuthService, InfoService, FormsService, TemplateService, DecisionService, 
+  AnalyticsService, BatchService, TenantService }

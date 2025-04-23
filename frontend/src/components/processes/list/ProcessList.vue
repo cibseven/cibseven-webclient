@@ -31,7 +31,7 @@
         </div>
       </div>
     </div>
-    <div class="container overflow-auto h-100 bg-white shadow g-0">
+    <div class="container overflow-auto h-100 bg-white shadow-sm border rounded g-0">
       <FlowTable :items="processesFiltered" thead-class="sticky-header" striped primary-key="id" prefix="process." :fields="fields" @click="goToShowProcessHistory($event)" @select="focused = $event[0]" @mouseenter="focused = $event" @mouseleave="focused = null">
         <template v-slot:cell(incidents)="table">
           <span v-if="loadingInstances"><b-spinner small></b-spinner></span>
@@ -128,10 +128,11 @@ export default {
     },
     fields: function() {
       return [
-        { label: 'status', key: 'incidents', thClass:'py-0', tdClass:'py-0 ps-0 border-end border-top-0', class: 'col-2 d-flex align-items-center justify-content-center' },
-        { label: 'runningInstances', key: 'runningInstances', class: 'col-2 d-flex justify-content-center', tdClass: 'border-end py-1 border-top-0' },
+        { label: 'status', key: 'incidents', thClass:'py-0', tdClass:'py-0 ps-0 border-end border-top-0', class: 'col-1 d-flex align-items-center justify-content-center' },
+        { label: 'runningInstances', key: 'runningInstances', class: 'col-1 d-flex justify-content-center', tdClass: 'border-end py-1 border-top-0' },
         { label: 'key', key: 'key', class: 'col-3', tdClass: 'border-end py-1 border-top-0' },
         { label: 'name', key: 'name', class: 'col-3', tdClass: 'border-end py-1 border-top-0' },
+        { label: 'tenant', key: 'tenantId', class: 'col-2', tdClass: 'border-end py-1 border-top-0' },
         { label: 'actions', key: 'actions', sortable: false, class: 'col-2 d-flex justify-content-center', tdClass: 'border-end py-0 border-top-0' },
       ]
     }
@@ -149,7 +150,9 @@ export default {
       window.open(this.$root.config.cockpitUrl + '#/process-definition/' + process.id, '_blank')
     },
     goToShowProcessHistory: function(process) {
-      this.$router.push('/seven/auth/process/' + process.key)
+      let url = '/seven/auth/process/' + process.key
+      url += process.tenantId ? ('?tenantId=' + process.tenantId) : ''
+      this.$router.push(url)
     }
   }
 }

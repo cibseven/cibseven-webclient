@@ -90,7 +90,7 @@
 		"favorite": "Favorit",
 		"actions": "Aktionen",
 		"status": "Status",
-		"returnToLastPage": "Zurück zur letzten Seite",
+		"tenant": "Mandant",
 		"details": {
 			"titleProcessActions": "Aktionen zur Prozessdefinition",
 			"titleInstancesActions": "Aktionen zu dem Prozess",
@@ -112,7 +112,8 @@
 			"historyVersions": "Historie versionen",
 			"variable": "Prozessvariablen",
 			"copyValue": "Wert kopieren",
-			"historyTimeToLive": "Geschichte Zeit zu leben"
+			"historyTimeToLive": "Geschichte Zeit zu leben",			
+			"tenantId": "Mandanten-ID"
 		},
 		"sections": {
 			"all": "Alle",
@@ -366,8 +367,47 @@
 		"userAssigned": "Der Benutzer {0} wurde erfolgreich zugewiesen"
 	},
 	"batches": {
-		"title": "Batches",
-		"tooltip": "Batch operations"
+		"title": "Stapel",
+		"tooltip": "Stapeloperationen",
+		"inProgressBatches": "Laufende Stapel",
+		"historicBatches": "Abgeschlossene Stapel",
+		"runtimeDetails": "Details zum laufenden Stapel",
+		"historyDetails": "Details zum abgeschlossenen Stapel",
+		"id": "ID",
+		"type": "Typ",
+		"startTime": "Gestartet",
+		"endTime": "Beendet",
+		"user": "Benutzer",
+		"failedJobs": "Fehlgeschlagene Jobs",
+		"progress": "Fortschritt",
+		"loading": "Wird geladen...",
+		"property": "Eigenschaft",
+		"value": "Wert",
+		"suspend": "Stapel pausieren",
+		"activate": "Stapel aktivieren",
+		"remove": "Stapel entfernen",
+		"confirmRemove": "Möchten Sie diesen Stapel und alle zugehörigen Jobs und Jobdefinitionen wirklich löschen?",
+		"exception": "Ausnahme",
+		"actions": "Aktionen",
+		"retryJob": "Job erneut ausführen",
+		"deleteJob": "Job löschen",
+		"seeFullLog": "Vollständiges Protokoll anzeigen",
+		"jobLog": {
+			"modalTitle": "Jobprotokoll",
+			"state": "Status",
+			"message": "Nachricht",
+			"timestamp": "Zeitstempel",
+			"jobId": "Job-ID",
+			"type": "Typ",
+			"configuration": "Konfiguration",
+			"retries": "Wiederholungen",
+			"hostname": "Hostname",
+			"priority": "Priorität",
+			"created": "Erstellt",
+			"failed": "Fehlgeschlagen",
+			"successful": "Erfolgreich",
+			"unknown": "Unbekannt"
+		}
 	},
 	"admin": {
 		"loading": "Wird geladen...",
@@ -407,8 +447,7 @@
 			"actions": "Aktionen",
 			"group": {
 				"title": "{0} Gruppen",
-				"add": "Zu einer Gruppe hinzufügen",
-				"noResults": "Keine Ergebnisse"
+				"add": "Zu einer Gruppe hinzufügen"
 			},
 			"preferences": {
 				"title": "Einstellungen",
@@ -441,8 +480,34 @@
 			}
 		},
 		"tenants": {
-			"title": "Tenants",
-			"tooltip": "Tenants management"
+			"title": "Mandanten",
+			"tooltip": "Mandantenverwaltung",
+			"associationTitle": "{0} Mandanten",
+			"fullId": "Mandanten-ID",
+			"fullName": "Mandantenname",
+			"actions": "Aktionen",
+			"unassignUserMessage": "Benutzer {0} wurde vom Mandanten entfernt",
+			"unassignGroupMessage": "Gruppe {0} wurde vom Mandanten entfernt",
+			"addTo": "Zum Mandanten hinzufügen",
+			"id": "ID",
+			"name": "Name",
+			"add": "Mandanten hinzufügen",
+			"create": "Neuen Mandanten erstellen",
+			"cancel": "Abbrechen",
+			"tenantCreatedMessage": "Mandant {0} wurde erstellt",
+			"confirmDelete": "Möchten Sie den Mandanten mit den folgenden Parametern wirklich löschen?",
+			"tenantDeletedMessage": "Mandant {0} wurde gelöscht",
+			"deleteTenant": "Mandanten löschen",
+			"editTenant": "Mandanten bearbeiten",
+			"information": "Informationen",
+			"users": "Benutzer",
+			"groups": "Gruppen",
+			"editMessage": "Mandanten bearbeiten ({0})",
+			"update": "Mandanten aktualisieren",
+			"updateTenantMessage": "Mandant {0} wurde aktualisiert",
+			"deleteTenantMessage": "Mandant {0} wurde entfernt",
+			"tenantUsers": "Mandantenbenutzer",
+			"tenantGroups": "Mandantengruppen"
 		},
 		"authorizations": {
 			"title": "Berechtigungen",
@@ -504,7 +569,16 @@
 				"diagnosticData": "Diagnosedaten"
 			},
 			"execution-metrics": {
-				"title": "Ausführungsmetriken"
+				"title": "Ausführungsmetriken",
+				"metricsHelp": "Erfasste Anzahl von Prozessinstanzen und Entscheidungsinstanzen, die von der Engine verarbeitet wurden, sowie Task-Benutzern, die einer Benutzeraufgabe zugewiesen wurden.",
+				"startDateContract": "Vertragsbeginn",
+				"process-instances": "Entscheidungsinstanzen",
+				"decision-instances": "Prozessinstanzen",
+				"task-users": "Aufgabenbenutzer",
+				"usageLast12MonthsByMonth": "Nutzung der letzten 12 Monate nach Monat",
+				"annualUsageBySubscriptionTerm": "Jährliche Nutzungsmetriken nach Abonnementlaufzeit",
+				"fromUpToToday": "{from} bis heute",
+				"fromTo": "{from} bis {to}"
 			}
 		}
 	},
@@ -890,7 +964,9 @@
 		"selectAll": "Alle auswählen",
 		"deleteDeployments": "Deployments löschen",
 		"showModel": "Modell anzeigen",
-		"deploymentsDeleted": "{0} von {1} Deployments wurden erfolgreich gelöscht"
+		"deploymentsDeleted": "{0} von {1} Deployments wurden erfolgreich gelöscht",
+		"tenant": "Mandant",
+		"errorLoading": "Ressource für die ausgewählte Bereitstellung konnte nicht geladen werden"
 	},
 	"cib-table2": {
 		"filter": "Filter"
