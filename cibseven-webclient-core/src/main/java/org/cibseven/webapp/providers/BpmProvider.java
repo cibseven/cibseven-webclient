@@ -248,11 +248,11 @@ public interface BpmProvider {
 	
 	/**
 	 * Queries for historic process instances that fulfill the given parameters.
-	 * @param Filter
-	 * @return Fetched historic processes instances.
+	 * @param filters is a map of parameters to filter query. Parameters firstResult and maxResults are used for pagination.
+     * @return Fetched processes instances.
      * @throws SystemException in case of an error.
      */
-	Collection<HistoryProcessInstance> findProcessesInstancesHistory(Map<String, Object> queryParams, CIBUser user);
+	Collection<HistoryProcessInstance> findProcessesInstancesHistory(Map<String, Object> filters, Optional<Integer> firstResult, Optional<Integer> maxResults, CIBUser user) throws SystemException;
 
 	/**
 	 * Search processes instances with a specific process key (in the history).
@@ -768,10 +768,8 @@ public interface BpmProvider {
 	void deleteAuthorization(String authorizationId, CIBUser user);
 
 	/**
-	 * Search processes instances with a specific process id (in the history).
-	 * @param active true means that unfinished processes will be fetched 
-	 * and false, only finished processes will be fetched. Parameters firstResult and maxResults are used for pagination.
-	 * Parameter text and activityId are used for filtering.
+	 * Queries for historic process instances that fulfill the given parameters.
+	 * @param filters is a map of parameters to filter query. Parameters firstResult and maxResults are used for pagination.
      * @return Fetched processes instances.
      * @throws SystemException in case of an error.
      */

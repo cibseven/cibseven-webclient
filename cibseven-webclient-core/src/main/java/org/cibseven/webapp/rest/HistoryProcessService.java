@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -42,12 +43,16 @@ public class HistoryProcessService extends BaseService {
 
 	@Operation(
 			summary = "Queries for historic process instances that fulfill the given parameters",
-			description = "The process instances found belongs to the history")
-	@ApiResponse(responseCode = "400", description = "Invalid attribute value exception")
-	@RequestMapping(value = "/process-history/instance", method = RequestMethod.GET)
-	public Collection<HistoryProcessInstance> findProcessesInstancesHistory(@RequestParam Map<String, Object> queryParams, CIBUser user) {
+			description = "Parameters firstResult and maxResults are used for pagination")
+	@ApiResponse(responseCode = "400", description = "There is at least one invalid parameter value")
+	@RequestMapping(value = "/process-history/instance", method = RequestMethod.POST)
+	public Collection<HistoryProcessInstance> findProcessesInstancesHistory(
+			@Parameter(description = "Parameters to filter query") @RequestBody Map<String, Object> filters,
+			@Parameter(description = "Index of the first result to return") @RequestParam Optional<Integer> firstResult,
+			@Parameter(description = "Maximum number of results to return") @RequestParam Optional<Integer> maxResults,
+			CIBUser user) {
 		checkPermission(user, SevenResourceType.HISTORY, PermissionConstants.READ_ALL);
-		return bpmProvider.findProcessesInstancesHistory(queryParams, user);
+		return bpmProvider.findProcessesInstancesHistory(filters, firstResult, maxResults, user);
 	}
 	
 	@Operation(

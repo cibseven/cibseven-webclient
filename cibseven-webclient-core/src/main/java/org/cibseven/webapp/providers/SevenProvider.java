@@ -296,8 +296,9 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 	
 	@Override
-	public Collection<HistoryProcessInstance> findProcessesInstancesHistory(Map<String, Object> queryParams, CIBUser user) {
-		return processProvider.findProcessesInstancesHistory(queryParams, user);
+	public Collection<HistoryProcessInstance> findProcessesInstancesHistory(Map<String, Object> filters,
+			Optional<Integer> firstResult, Optional<Integer> maxResults, CIBUser user) {
+		return processProvider.findProcessesInstancesHistory(filters, firstResult, maxResults, user);
 	}
 	
 	@Override

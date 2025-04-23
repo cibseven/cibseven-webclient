@@ -218,9 +218,13 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	}
 	
 	@Override
-	public Collection<HistoryProcessInstance> findProcessesInstancesHistory(Map<String, Object> queryParams, CIBUser user) {
+	public Collection<HistoryProcessInstance> findProcessesInstancesHistory(Map<String, Object> data,
+			Optional<Integer> firstResult, Optional<Integer> maxResults, CIBUser user) {
+		Map<String, Object> queryParams = new HashMap<String, Object>();
+		if (firstResult.isPresent()) queryParams.put("firstResult", firstResult.get());
+		if (maxResults.isPresent()) queryParams.put("maxResults", maxResults.get());
 		String url = URLUtils.buildUrlWithParams(camundaUrl + "/engine-rest/history/process-instance", queryParams);
-		return Arrays.asList(((ResponseEntity<HistoryProcessInstance[]>) doGet(url, HistoryProcessInstance[].class, user, false)).getBody());
+		return Arrays.asList(((ResponseEntity<HistoryProcessInstance[]>) doPost(url, data, HistoryProcessInstance[].class, user)).getBody());
 	}
 	
 	@Override
