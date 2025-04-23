@@ -1,7 +1,7 @@
 <template>
   <div class="d-flex flex-column">
     <div class="d-flex ps-3 py-2">
-      <b-button :title="$t('start.adminProcesses')" variant="outline-secondary" href="#/seven/auth/processes/list" class="mdi mdi-18px mdi-arrow-left border-0"></b-button>
+      <b-button :title="$t('start.cockpit.processes.title')" variant="outline-secondary" href="#/seven/auth/processes/list" class="mdi mdi-18px mdi-arrow-left border-0"></b-button>
       <h4 class="ps-1 m-0 align-items-center d-flex" style="border-width: 3px !important">{{ processName }}</h4>
       <b-button :disabled="!instances || instances.length === 0" :title="$t('process.exportInstances')" variant="outline-secondary" @click="exportCSV()"
         class="ms-auto me-3 mdi mdi-18px mdi-download-outline border-0"></b-button>

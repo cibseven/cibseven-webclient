@@ -29,7 +29,7 @@
 
             <b-dropdown-divider v-if="permissionsTaskList && permissionsCockpit"></b-dropdown-divider>
             <b-dropdown-group v-if="permissionsCockpit" header="{{ $t('start.cockpit.title') }}">
-              <b-dropdown-item to="/seven/auth/processes" :active="$route.path.includes('seven/auth/process')" :title="$t('start.adminProcesses')">{{ $t('start.adminProcesses') }}</b-dropdown-item>
+              <b-dropdown-item to="/seven/auth/processes" :active="$route.path.includes('seven/auth/process')" :title="$t('start.cockpit.processes.tooltip')">{{ $t('start.cockpit.processes.title') }}</b-dropdown-item>
               <b-dropdown-item to="/seven/auth/decisions" :active="$route.path.includes('seven/auth/decision')" :title="$t('start.adminDecisions')">{{ $t('start.adminDecisions') }}</b-dropdown-item>
               <b-dropdown-item to="/seven/auth/human-tasks" :active="$route.path.includes('seven/auth/human-tasks')" :title="$t('start.adminHumanTasks')">{{ $t('start.adminHumanTasks') }}</b-dropdown-item>
               <b-dropdown-item to="/seven/auth/deployments" :active="$route.path.includes('seven/auth/deployments')" :title="$t('deployment.title')">{{ $t('deployment.title') }}</b-dropdown-item>
@@ -164,7 +164,7 @@ export default {
         case 'start-process': return this.$t('start.startProcess.title')
         case 'processesDashboard': return this.$t('start.cockpit.title')
         case 'processManagement':
-        case 'process': return this.$t('start.adminProcesses')
+        case 'process': return this.$t('start.cockpit.processes.title')
         case 'batches': return this.$t('batches.title')
         case 'decision-version':
         case 'decision-instance':

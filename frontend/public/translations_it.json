@@ -656,7 +656,11 @@
 		},
 		"cockpit": {
 			"title": "Cockpit",
-			"tooltip": "Open Cockpit"
+			"tooltip": "Open Cockpit",
+			"processes": {
+				"title": "Processi",
+				"tooltip": "Open Processes"
+			}
 		},
 		"admin": {
 			"title": "Admin",
@@ -673,7 +677,6 @@
 		"adminPanel": "Users Management",
 		"properties": "Properties",
 		"resources": "Resources",
-		"adminProcesses": "Processi",
 		"adminDecisions": "Decisioni",
 		"adminHumanTasks": "Attività"
 	},
