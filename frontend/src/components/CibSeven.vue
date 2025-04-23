@@ -38,9 +38,9 @@
 
             <b-dropdown-divider v-if="permissionsUsers && (permissionsTaskList || permissionsCockpit)"></b-dropdown-divider>
             <b-dropdown-group v-if="permissionsUsers" header="{{ $t('start.groupAdministration') }}">
-              <b-dropdown-item to="/seven/auth/admin/users" :active="$route.path.includes('seven/auth/admin/user')" :title="$t('admin.users.title')">{{ $t('admin.users.title') }}</b-dropdown-item>
-              <b-dropdown-item to="/seven/auth/admin/groups" :active="$route.path.includes('seven/auth/admin/group')" :title="$t('admin.groups.title')">{{ $t('admin.groups.title') }}</b-dropdown-item>
-              <b-dropdown-item to="/seven/auth/admin/tenants" :active="$route.path.includes('seven/auth/admin/tenants')" :title="$t('admin.tenants.tooltip')">{{ $t('admin.tenants.title') }}</b-dropdown-item>
+              <b-dropdown-item to="/seven/auth/admin/users" :active="$route.path.includes('seven/auth/admin/user') || $route.path.includes('seven/auth/admin/create-user')" :title="$t('admin.users.title')">{{ $t('admin.users.title') }}</b-dropdown-item>
+              <b-dropdown-item to="/seven/auth/admin/groups" :active="$route.path.includes('seven/auth/admin/group') || $route.path.includes('seven/auth/admin/create-group')" :title="$t('admin.groups.title')">{{ $t('admin.groups.title') }}</b-dropdown-item>
+              <b-dropdown-item to="/seven/auth/admin/tenants" :active="$route.path.includes('seven/auth/admin/tenant') || $route.path.includes('seven/auth/admin/create-tenant')" :title="$t('admin.tenants.tooltip')">{{ $t('admin.tenants.title') }}</b-dropdown-item>
               <b-dropdown-item to="/seven/auth/admin/authorizations" :active="$route.path.includes('seven/auth/admin/authorizations')" :title="$t('admin.authorizations.title')">{{ $t('admin.authorizations.title') }}</b-dropdown-item>
               <b-dropdown-item to="/seven/auth/admin/system" :active="$route.path.includes('seven/auth/admin/system')" :title="$t('admin.system.tooltip')">{{ $t('admin.system.title') }}</b-dropdown-item>
             </b-dropdown-group>
@@ -182,6 +182,8 @@ export default {
         case 'authorizations':
         case 'authorizationType':
           return this.$t('admin.authorizations.title')
+        case 'createTenant':
+        case 'adminTenant':
         case 'adminTenants': return this.$t('admin.tenants.title')
         case 'adminSystem':
         case 'system-diagnostics':
