@@ -22,7 +22,7 @@
                 <template #button-content>
                   <i v-hover-style="{ classes: ['text-primary'] }" class="mdi mdi-18px mdi-filter-variant"></i><span class="visually-hidden">{{ $t('sorting.sortBy') }}</span>
                 </template>
-                <b-dd-item-btn v-for="item in filteredFields" :key="item" @click="taskSorting.sortBy = item; setSorting('key')" :class="taskSorting.sortBy === item ? 'active' : ''">
+                <b-dd-item-btn v-for="item in filteredFields" :key="item" @click="taskSorting.sortBy = item; setSorting('key'); $refs.sortingList.hide()" :class="taskSorting.sortBy === item ? 'active' : ''">
                   {{ $t('sorting.' + item) }}
                 </b-dd-item-btn>
               </b-dropdown>

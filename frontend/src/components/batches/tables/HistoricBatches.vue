@@ -1,6 +1,6 @@
 <template>
   <ContentBlock :title="$t('batches.historicBatches')">
-    <div class="overflow-auto" style="max-height: 35vh" @scroll="showMore">
+    <div class="overflow-auto p-0" style="max-height: 35vh" @scroll="showMore">
       <FlowTable striped thead-class="sticky-header" :items="historicBatches" primary-key="id" prefix="batches."
         :fields="[
           { label: 'id', key: 'id', class: 'col-5', tdClass: 'border-end p-0' },

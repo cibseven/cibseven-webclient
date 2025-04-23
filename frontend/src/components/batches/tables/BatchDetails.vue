@@ -1,19 +1,21 @@
 <template>
-  <div class="bg-white shadow-sm p-3 border rounded" v-if="batchId && batchType">
-    <div v-if="batchDetails && batchDetails.length > 0 && !loading">
-      <h5 class="d-inline">{{ $t('batches.' + batchType + 'Details') }}</h5>
-      <b-button class="border float-end" size="sm" variant="light" @click="$refs.confirmRemove.show()" :title="$t('batches.remove')">
-        <span class="mdi mdi-delete-outline"></span>
-      </b-button>
-      <b-button v-if="batchType === 'runtime' && batch.failedJobs > 0" class="border float-end me-1" size="sm" variant="light"
-        @click="retryJobs" :title="$t('batches.retryFailedJobs')">
-        <span class="mdi mdi-reload"></span>
-      </b-button>
-      <b-button v-if="batchType === 'runtime'" class="border float-end me-1" size="sm" variant="light"
-        @click="setBatchSuspension" :title="batch.suspended ? $t('batches.activate') : $t('batches.suspend')">
-        <span class="mdi" :class="batch.suspended ? 'mdi-play' : 'mdi-pause'"></span>
-      </b-button>
-      <hr>
+  <ContentBlock :title="$t('batches.' + batchType + 'Details')" v-if="batchId && batchType">
+    <template #actions>
+      <div v-if="batchDetails && batchDetails.length > 0 && !loading">
+        <b-button v-if="batchType === 'runtime'" class="border me-1" size="sm" variant="light"
+          @click="setBatchSuspension" :title="batch.suspended ? $t('batches.activate') : $t('batches.suspend')">
+          <span class="mdi" :class="batch.suspended ? 'mdi-play' : 'mdi-pause'"></span>
+        </b-button>
+        <b-button v-if="batchType === 'runtime' && batch.failedJobs > 0" class="border me-1" size="sm" variant="light"
+          @click="retryJobs" :title="$t('batches.retryFailedJobs')">
+          <span class="mdi mdi-reload"></span>
+        </b-button>
+        <b-button class="border" size="sm" variant="light" @click="$refs.confirmRemove.show()" :title="$t('batches.remove')">
+          <span class="mdi mdi-delete-outline"></span>
+        </b-button>
+      </div>
+    </template>
+    <div v-if="batchDetails && batchDetails.length > 0 && !loading" class="p-0">
       <div class="overflow-auto">
         <FlowTable v-if="batchDetails" striped thead-class="sticky-header" :items="batchDetails" primary-key="id" prefix="batches."
           :fields="[
@@ -32,7 +34,7 @@
     <div class="text-center w-100" v-else-if="!loading && batchDetails.length === 0">
       {{ $t('admin.noResults') }}
     </div>
-  </div>  
+  </ContentBlock> 
   <FailedJobs v-if="batchType === 'runtime'" :batch="batch"></FailedJobs>
 </template>
 
@@ -43,10 +45,11 @@
   import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
   import { BWaitingBox } from 'cib-common-components'
   import { mapActions, mapGetters } from 'vuex'
+  import ContentBlock from '@/components/common-components/ContentBlock.vue'
 
   export default {
     name: 'BatchDetails',
-    components: { FailedJobs, FlowTable, BWaitingBox, ConfirmDialog },
+    components: { FailedJobs, FlowTable, BWaitingBox, ConfirmDialog, ContentBlock },
     watch: {
       '$route.query': {
         handler() {
