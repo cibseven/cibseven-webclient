@@ -25,7 +25,7 @@
               <span class="mdi mdi-24px mdi-menu align-middle"></span>
             </template>
             <b-dropdown-item v-if="permissionsTaskList && startableProcesses" to="/seven/auth/start-process" :active="$route.path.includes('seven/auth/start-process')" :title="$t('start.startProcesses')">{{ $t('start.startProcesses') }}</b-dropdown-item>
-            <b-dropdown-item v-if="permissionsTaskList" to="/seven/auth/tasks" :active="$route.path.includes('seven/auth/tasks')" :title="$t('start.taskList')">{{ $t('start.taskList') }}</b-dropdown-item>
+            <b-dropdown-item v-if="permissionsTaskList" to="/seven/auth/tasks" :active="$route.path.includes('seven/auth/tasks')" :title="$t('start.taskList.tooltip')">{{ $t('start.taskList.title') }}</b-dropdown-item>
 
             <b-dropdown-divider v-if="permissionsTaskList && permissionsCockpit"></b-dropdown-divider>
             <b-dropdown-group v-if="permissionsCockpit" header="{{ $t('start.groupOperations') }}">
@@ -159,7 +159,7 @@ export default {
     pageTitle: function() {
       switch (this.$route.name) {
         case 'login': return this.$t('login.login')
-        case 'tasklist': return this.$t('start.taskList')
+        case 'tasklist': return this.$t('start.taskList.title')
         case 'deployments': return this.$t('deployment.title')
         case 'start-process': return this.$t('start.startProcesses')
         case 'processesDashboard': return this.$t('processes-dashboard.headerActive')

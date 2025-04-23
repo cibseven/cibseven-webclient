@@ -832,7 +832,10 @@
     },
 	"start": { 
 		"close": "Schließen",
-		"taskList": "Tasklist",
+		"taskList": {
+			"title": "TaskList",
+			"tooltip": "TaskList öffnen"
+		},
 		"startProcesses": "@:process.startProcess",
 		"cockpit": "Cockpit",
 		"emptyStart": "Derzeit haben Sie keine Berechtigung, hier Aufgaben auszuführen. Bitte wenden Sie sich an den CIB seven Administrator, um Berechtigungen zu erhalten.",
