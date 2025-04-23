@@ -387,7 +387,28 @@
 		"suspend": "Suspender lote",
 		"activate": "Activar lote",
 		"remove": "Eliminar lote",
-		"confirmRemove": "¿Realmente desea eliminar este lote y todos los trabajos y definiciones de trabajos relacionados?"
+		"confirmRemove": "¿Realmente desea eliminar este lote y todos los trabajos y definiciones de trabajos relacionados?",
+		"exception": "Excepción",
+		"actions": "Acciones",
+		"retryJob": "Reintentar trabajo",
+		"deleteJob": "Eliminar trabajo",
+		"seeFullLog": "Ver registro completo",
+		"jobLog": {
+			"modalTitle": "Registro del trabajo",
+			"state": "Estado",
+			"message": "Mensaje",
+			"timestamp": "Marca de tiempo",
+			"jobId": "ID del trabajo",
+			"type": "Tipo",
+			"configuration": "Configuración",
+			"retries": "Reintentos",
+			"hostname": "Nombre del host",
+			"priority": "Prioridad",
+			"created": "Creado",
+			"failed": "Fallido",
+			"successful": "Exitoso",
+			"unknown": "Desconocido"
+		}
 	},
 	"admin": {
 		"loading": "Cargando...",

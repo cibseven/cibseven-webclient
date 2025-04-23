@@ -366,6 +366,9 @@ var JobDefinitionService = {
   },
   findJobDefinition: function(id) {
     return axios.get(appConfig.servicesBasePath + "/job-definition/" + id)
+  },
+  retryJobDefinitionById: function(id, params) {
+    return axios.put(appConfig.servicesBasePath + "/job-definition/" + id + '/retries', params)
   }
 }
 
@@ -540,11 +543,20 @@ var DecisionService = {
 }
 
 var JobService = {
-  getJobs(params) {
+  getJobs: function(params) {
     return axios.post(appConfig.servicesBasePath + '/job', params).then(patchJob)
   },
-  setSuspended(id, data) {
+  setSuspended: function(id, data) {
     return axios.put(appConfig.servicesBasePath + '/job/' + id + '/suspended', data)
+  },
+  deleteJob: function(id) {
+    return axios.delete(appConfig.servicesBasePath + '/job/' + id)
+  },
+  getHistoryJobLog: function(params) {
+    return axios.get(appConfig.servicesBasePath + '/job/history/job-log', { params })
+  },
+  getHistoryJobLogStacktrace: function(id) {
+    return axios.get(appConfig.servicesBasePath + '/job/history/job-log/' + id + '/stacktrace')
   }
 }
 

@@ -67,6 +67,12 @@ const BatchStore = {
         commit('setSelectedHistoricBatch', result)
         return result
     },
+    async getBatchStatistics(_, query) {
+      return BatchService.getBatchStatistics(query)
+    },  
+    async setBatchSuspensionState(_, { id, params }) {
+      return BatchService.setBatchSuspensionState(id, params)
+    },
     async getHistoricBatchCount({ commit }, query) {
         const result = await BatchService.getHistoricBatchCount(query)
         commit('setHistoricBatchCount', result.count)

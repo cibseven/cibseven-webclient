@@ -929,6 +929,11 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	public void overrideJobDefinitionPriority(String jobDefinitionId, String params, CIBUser user) {
 		jobDefinitionProvider.overrideJobDefinitionPriority(jobDefinitionId, params, user);
 	}
+
+	@Override
+	public void retryJobDefinitionById(String id, Map<String, Object> params, CIBUser user) {
+		jobDefinitionProvider.retryJobDefinitionById(id, params, user);
+	}
 	
 	@Override
 	public Collection<Job> getJobs(Map<String, Object> params, CIBUser user) {
@@ -941,8 +946,23 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 
 	@Override
+	public void deleteJob(String id, CIBUser user) {
+		jobProvider.deleteJob(id, user);
+	}
+
+	@Override
 	public JobDefinition findJobDefinition(String id, CIBUser user) {
 		return jobDefinitionProvider.findJobDefinition(id, user);
+	}	
+
+	@Override
+	public Collection<Object> getHistoryJobLog(Map<String, Object> params, CIBUser user) {
+		return jobProvider.getHistoryJobLog(params, user);
+	}
+	
+	@Override
+	public String getHistoryJobLogStacktrace(String id, CIBUser user) {
+		return jobProvider.getHistoryJobLogStacktrace(id, user);
 	}
 
 	/*
@@ -1084,4 +1104,5 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	public void deleteGroupFromTenant(String tenantId, String groupId, CIBUser user) {
 		tenantProvider.deleteGroupFromTenant(tenantId, groupId, user);
 	}
+
 }

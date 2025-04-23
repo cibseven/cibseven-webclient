@@ -97,6 +97,23 @@ export default {
       if (batch.completed >= batch.totalJobs) return 'success'
       return ''
     },
+    unmounted: function() {
+      if (this.batchesInterval) {
+        clearInterval(this.batchesInterval)
+        this.batchesInterval = null
+      }
+    },
+    computed: {
+      ...mapGetters(['runtimeBatches']),
+      batches: function() {
+        return this.runtimeBatches.map(batch => {
+          const total = batch.totalJobs || 0
+          const remaining = batch.remainingJobs || 0
+          const completed = total - remaining
+          return { ...batch, completed }
+        })
+      }
+    },
     formatDate: function(date) {
       return moment(date).format('DD/MM/YYYY HH:mm:ss')
     },
