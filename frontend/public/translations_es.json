@@ -845,12 +845,15 @@
 			"title": "Cockpit",
 			"tooltip": "Open Cockpit"
 		},
+		"admin": {
+			"title": "Admin",
+			"tooltip": "Open Admin"
+		},
 		"oldCockpit": {
 			"title": "Old Cockpit",
 			"tooltip": "Open old Cockpit"
 		},
 		"emptyStart": "Actualmente no tiene permisos para realizar tareas aquí. Por favor contacte con el administrador de CIB seven para que le asigne permisos.",
-		"groupAdministration": "Admin",
 		"userAdmin": "Gestión de usuarios",
 		"modeler": "Modelador de procesos",
 		"easyForm": "Easy Form",

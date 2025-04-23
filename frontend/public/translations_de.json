@@ -844,12 +844,15 @@
 			"title": "Cockpit",
 			"tooltip": "Open Cockpit"
 		},
+		"admin": {
+			"title": "Admin",
+			"tooltip": "Open Admin"
+		},
 		"oldCockpit": {
 			"title": "Old Cockpit",
 			"tooltip": "Open old Cockpit"
 		},
 		"emptyStart": "Derzeit haben Sie keine Berechtigung, hier Aufgaben auszuführen. Bitte wenden Sie sich an den CIB seven Administrator, um Berechtigungen zu erhalten.",
-		"groupAdministration": "Admin",
 		"userAdmin": "Benutzerverwaltung",
 		"modeler": "Prozess modellieren",
 		"easyForm": "Easy Form",
