@@ -1,14 +1,12 @@
 <template>
     <div>
-        <h5 v-if="title" class="chart-title">
-            <router-link :to="link" :title="tooltip" class="text-decoration-none">
-                <span class="chart-title">{{ title }}</span>
-            </router-link>
-        </h5>
-        <div class="waiting-box-container" v-if="loading">
+        <router-link v-if="title"  :to="link" :title="tooltip" class="text-decoration-none">
+            <h5 class="link-dark text-center">{{ title }}</h5>
+        </router-link>
+        <div class="text-center" v-if="loading">
             <b-waiting-box class="d-inline" styling="width: 84%" :title="$t('admin.loading')" />
         </div>
-        <apex-chart v-else
+        <apexchart v-else
                 type="donut"
                 :options="chartOptions"
                 :series="values"
@@ -18,10 +16,11 @@
   
 <script>
   import { BWaitingBox } from 'cib-common-components'
+  import VueApexCharts from "vue3-apexcharts"
   
   export default {
     name: 'PieChart',
-    components: { BWaitingBox },
+    components: { apexchart: VueApexCharts, BWaitingBox },
     props: {
       title: String,
       tooltip: String,
@@ -123,17 +122,3 @@
     }
 }
 </script>
-
-<style scoped>
-.chart-title {
-    text-align: center;
-    font-size: 20px;
-    color: #4D6278;
-    cursor: pointer;
-    margin-bottom: 10px;
-    font-weight: bold;
-}
-.waiting-box-container {
-    text-align: center;
-}
-</style>
