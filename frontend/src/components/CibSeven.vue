@@ -46,7 +46,7 @@
             </b-dropdown-group>
 
             <b-dropdown-divider v-if="permissionsCockpit"></b-dropdown-divider>
-            <b-dropdown-item v-if="permissionsCockpit" :href="$root.config.cockpitUrl" :title="$t('start.cockpit')" target="_blank">{{ $t('start.cockpit') }}</b-dropdown-item>
+            <b-dropdown-item v-if="permissionsCockpit" :href="$root.config.cockpitUrl" :title="$t('start.oldCockpit.tooltip')" target="_blank">{{ $t('start.oldCockpit.title') }}</b-dropdown-item>
           </b-nav-item-dropdown>
         </b-navbar-nav>
       </b-collapse>

@@ -840,7 +840,10 @@
 			"title": "TaskList",
 			"tooltip": "Открыть TaskList"
 		},
-		"cockpit": "Cockpit",
+		"oldCockpit": {
+			"title": "Old Cockpit",
+			"tooltip": "Open old Cockpit"
+		},
 		"emptyStart": "В данный момент у Вас нет прав, чтобы выполнить какие-либо задачи. Пожалуйста, свяжитесь с администратором CIB seven для того, чтобы получить права.",
 		"groupOperations": "Cockpit",
 		"groupAdministration": "Admin",
