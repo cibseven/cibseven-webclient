@@ -4,25 +4,28 @@
       <ContentBlock :title="$t('processes-dashboard.headerActive')">
         <PieChart
           class="col-12 col-md-4 px-0 m-0"
-          :items="runningInstancesSeries"
+          :items="runningInstances"
           :title="$t('processes-dashboard.items.running-instances.title')"
           :tooltip="$t('processes-dashboard.items.running-instances.tooltip')"
           link="/seven/auth/processes/list"
+          :loading="loading"
         ></PieChart>
         <PieChart
           class="col-12 col-md-4 px-0 m-0"
-          :items="openIncidentsSeries"
+          :items="openIncidents"
           :title="$t('processes-dashboard.items.open-incidents.title')"
           :tooltip="$t('processes-dashboard.items.open-incidents.tooltip')"
           link="/seven/auth/processes/list"
+          :loading="loading"
         ></PieChart>
         <PieChart
           class="col-12 col-md-4 px-0 m-0"
-          :items="openHumanTasksSeries"
+          :items="openHumanTasks"
           :title="$t('processes-dashboard.items.open-human-tasks.title')"
           :tooltip="$t('processes-dashboard.items.open-human-tasks.tooltip')"
           link="/seven/auth/human-tasks"
           type="humanTasks"
+          :loading="loading"
         ></PieChart>
       </ContentBlock>
 
@@ -53,9 +56,10 @@ export default {
   data() {
     return {
       errorLoading: false,
-      runningInstances: null,
-      openIncidents: null,
-      openHumanTasks: null,
+      loading: true,
+      runningInstances: [],
+      openIncidents: [],
+      openHumanTasks: [],
       deploymentItems: [
         {
           title: 'processes-dashboard.items.processes.title',
@@ -87,17 +91,6 @@ export default {
   created() {
     this.loadAnalytics()
   },
-  computed: {
-    runningInstancesSeries() {
-      return this.runningInstances
-    },
-    openIncidentsSeries() {
-      return this.openIncidents
-    },
-    openHumanTasksSeries() {
-      return this.openHumanTasks
-    },
-  },
   methods: {
     async loadAnalytics() {
       try {
@@ -107,7 +100,7 @@ export default {
         this.runningInstances = analytics.runningInstances
         this.openIncidents = analytics.openIncidents
         this.openHumanTasks = analytics.openHumanTasks
-
+        this.loading = false
         this.deploymentItems[0].count = analytics.processDefinitionsCount
         this.deploymentItems[1].count = analytics.decisionDefinitionsCount
         this.deploymentItems[2].count = analytics.deploymentsCount
@@ -115,6 +108,7 @@ export default {
       } catch (error) {
         console.error('Error loading analytics:', error)
         this.errorLoading = true
+        this.loading = false
         this.deploymentItems[0].count = 'x'
         this.deploymentItems[1].count = 'x'
         this.deploymentItems[2].count = 'x'
