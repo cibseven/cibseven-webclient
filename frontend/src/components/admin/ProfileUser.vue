@@ -124,7 +124,7 @@
                     </div>
                   </div>
                 </div>
-                <div v-if="userTenants.length > 0" class="container-fluid overflow-auto bg-white shadow g-0">
+                <div v-if="userTenants.length > 0" class="container-fluid overflow-auto bg-white shadow-sm border rounded g-0">
                   <FlowTable striped :items="userTenants" primary-key="id" prefix="admin.tenants." :fields="tenantFields"
                     @contextmenu="focusedTenant = $event" @mouseenter="focusedTenant = $event" @mouseleave="focusedTenant = null">
                     <template v-slot:cell(actions)="row">
@@ -141,8 +141,8 @@
           </div>
           <div v-else-if="$route.query.tab === 'preferences'" class="row">
             <div class="col-sm-12 col-md-12 col-lg-8 col-xl-6 p-4">
-              <b-card class="border-0 p-5 shadow" :title="$t('admin.users.editMessage', [user.firstName + ' ' + user.lastName])">
-                <b-card-text class="border-top border-top pt-4 mt-3">
+              <b-card class="p-5 shadow-sm border rounded" :title="$t('admin.users.editMessage', [user.firstName + ' ' + user.lastName])">
+                <b-card-text class="border-top pt-4 mt-3">
                   <b-form-group>
                     <b-form-checkbox v-model="tasksCheckNotificationsDisabled">
                       {{ $t('admin.users.preferences.notifications') }}
@@ -333,7 +333,7 @@ export default {
           key: 'actions',
           class: 'col-md-2 col-sm-2',
           sortable: false,
-          thClass: 'justify-content-center',
+          thClass: 'justify-content-center text-center',
           tdClass: 'justify-content-center py-0'
         })
       }
@@ -362,7 +362,7 @@ export default {
           key: 'actions',
           class: 'col-md-4 col-sm-4',
           sortable: false,
-          thClass: 'justify-content-center',
+          thClass: 'justify-content-center text-center',
           tdClass: 'justify-content-center py-0'
         })
       }

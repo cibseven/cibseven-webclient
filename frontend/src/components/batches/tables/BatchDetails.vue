@@ -1,14 +1,17 @@
 <template>
   <div class="bg-white shadow-sm p-3 border rounded" v-if="batchId && batchType">
     <div v-if="batchDetails && batchDetails.length > 0 && !loading">
-      <h4 class="d-inline">{{ $t('batches.' + batchType + 'Details') }}</h4>
+      <h5 class="d-inline">{{ $t('batches.' + batchType + 'Details') }}</h5>
       <b-button class="border float-end" size="sm" variant="light" @click="$refs.confirmRemove.show()" :title="$t('batches.remove')">
-        <span class="mdi mdi-delete-outline me-1"></span>{{ $t('batches.remove') }}
+        <span class="mdi mdi-delete-outline"></span>
+      </b-button>
+      <b-button v-if="batchType === 'runtime' && batch.failedJobs > 0" class="border float-end me-1" size="sm" variant="light"
+        @click="retryJobs" :title="$t('batches.retryFailedJobs')">
+        <span class="mdi mdi-reload"></span>
       </b-button>
       <b-button v-if="batchType === 'runtime'" class="border float-end me-1" size="sm" variant="light"
-        @click="setBatchSuspensionState" :title="$t('batches.suspend')">
-        <span class="mdi me-1" :class="batch.suspended ? 'mdi-play' : 'mdi-pause'"></span>
-        {{ batch.suspended ? $t('batches.activate') : $t('batches.suspend') }}
+        @click="setBatchSuspension" :title="batch.suspended ? $t('batches.activate') : $t('batches.suspend')">
+        <span class="mdi" :class="batch.suspended ? 'mdi-play' : 'mdi-pause'"></span>
       </b-button>
       <hr>
       <div class="overflow-auto">
@@ -29,20 +32,21 @@
     <div class="text-center w-100" v-else-if="!loading && batchDetails.length === 0">
       {{ $t('admin.noResults') }}
     </div>
-  </div>
+  </div>  
+  <FailedJobs v-if="batchType === 'runtime'" :batch="batch"></FailedJobs>
 </template>
 
 <script>
   import moment from 'moment'
+  import FailedJobs from './FailedJobs.vue'
   import FlowTable from '@/components/common-components/FlowTable.vue'
   import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
   import { BWaitingBox } from 'cib-common-components'
-  import { BatchService } from '@/services.js'
   import { mapActions, mapGetters } from 'vuex'
 
   export default {
     name: 'BatchDetails',
-    components: { FlowTable, BWaitingBox, ConfirmDialog },
+    components: { FailedJobs, FlowTable, BWaitingBox, ConfirmDialog },
     watch: {
       '$route.query': {
         handler() {
@@ -85,7 +89,16 @@
       }
     },
     methods: {
-      ...mapActions(['deleteHistoricBatch', 'deleteRuntimeBatch', 'getHistoricBatch']),
+      ...mapActions([
+        'deleteHistoricBatch', 
+        'deleteRuntimeBatch', 
+        'getHistoricBatch',
+        'getBatchStatistics',
+        'setBatchSuspensionState'
+      ]),
+      ...mapActions('jobDefinition', [
+        'retryJobDefinitionById'
+      ]),
       async loadBatchDetails() {
         if (!this.batchId || !this.batchType) return
         this.batch = null
@@ -95,16 +108,16 @@
           if (this.batchType === 'history') {
             this.batch = await this.getHistoricBatch(this.batchId)
           } else if (this.batchType === 'runtime') {
-            const res = await BatchService.getBatchStatistics({ batchId: this.batchId })
+            const res = await this.getBatchStatistics({ batchId: this.batchId })
             this.batch = res[0]
           }
         } finally {
           this.loading = false
         }
       },
-      async setBatchSuspensionState() {
+      async setBatchSuspension() {
         const params = { suspended: !this.batch.suspended }
-        await BatchService.setBatchSuspensionState(this.batchId, params)
+        await this.setBatchSuspensionState({ id: this.batchId, params })
         this.batch.suspended = !this.batch.suspended
       },
       removeBatch: function() {
@@ -117,6 +130,14 @@
             this.$router.replace({ query: {} })
           })
         }
+      },
+      async retryJobs() {
+        const params = {
+          id: this.batch.batchJobDefinitionId,
+          retries: 1
+        }
+        await this.retryJobDefinitionById({ id: this.batch.batchJobDefinitionId, params })
+        this.loadBatchDetails()
       },
       formatDate: function(date) {
         return moment(date).format('DD/MM/YYYY HH:mm:ss')

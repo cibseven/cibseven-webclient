@@ -46,5 +46,29 @@ public class JobService extends BaseService implements InitializingBean {
 		checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.UPDATE_ALL);
 		bpmProvider.setSuspended(id, data, user);
 	}
+    
+    @DeleteMapping("/{id}")
+	public void deleteJob(
+			@PathVariable String id, HttpServletRequest rq) {
+		CIBUser user = checkAuthorization(rq, true, false);
+		checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.DELETE_ALL);
+		bpmProvider.deleteJob(id, user);
+	}
+    
+    @GetMapping("/history/job-log")
+	public Collection<Object> getHistoryJobLog(
+			@RequestParam Map<String, Object> params, HttpServletRequest rq) {
+		CIBUser user = checkAuthorization(rq, true, false);
+		checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.READ_ALL);
+		return bpmProvider.getHistoryJobLog(params, user);
+	}
+    
+    @GetMapping("/history/job-log/{id}/stacktrace")
+	public String getHistoryJobLogStacktrace(
+			@PathVariable String id, HttpServletRequest rq) {
+		CIBUser user = checkAuthorization(rq, true, false);
+		checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.READ_ALL);
+		return bpmProvider.getHistoryJobLogStacktrace(id, user);
+	}
 
 }
