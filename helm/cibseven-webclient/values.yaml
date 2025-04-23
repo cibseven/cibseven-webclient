@@ -160,7 +160,7 @@ application:
   #}
 
   services:
-    basePath: /services/v1
+    basePath: services/v1
 
 
 ui:
