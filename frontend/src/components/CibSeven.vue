@@ -234,14 +234,19 @@ export default {
       switch (this.$route.name) {
         case 'adminUser':
         case 'adminUsers':
+        case 'createUser':
         case 'adminGroup':
         case 'adminGroups':
+        case 'createGroup':
         case 'authorizations':
         case 'authorizationType':
-          // "CIB seven | Users Management | <view>"
+        case 'createTenant':
+        case 'adminTenant':
+        case 'adminTenants':
+          // "CIB seven | Admin | <view>"
           updateAppTitle(
             this.$root.config.productNamePageTitle,
-            this.$t('start.adminPanel'),
+            this.$t('start.admin.title'),
             title
           )
           break

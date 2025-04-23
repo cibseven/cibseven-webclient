@@ -104,7 +104,7 @@
                   </div>
                   <div class="row text-center">
                     <div class="col-12 p-0 pt-1">
-                      <img :alt="$t('start.adminPanel')" src="/assets/images/start/admin.svg" style="height:180px; max-width:225px">
+                      <img :alt="$t('start.admin.title')" src="/assets/images/start/admin.svg" style="height:180px; max-width:225px">
                     </div>
                   </div>
                 </div>

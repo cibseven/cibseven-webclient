@@ -873,13 +873,7 @@
 			"title": "Old Cockpit",
 			"tooltip": "Open old Cockpit"
 		},
-		"emptyStart": "Actualmente no tiene permisos para realizar tareas aquí. Por favor contacte con el administrador de CIB seven para que le asigne permisos.",
-		"userAdmin": "Gestión de usuarios",
-		"modeler": "Modelador de procesos",
-		"easyForm": "Easy Form",
-		"adminPanel": "Gestión de Usuarios",
-		"properties": "Propiedades",		
-		"resources": "Recursos"
+		"emptyStart": "Actualmente no tiene permisos para realizar tareas aquí. Por favor contacte con el administrador de CIB seven para que le asigne permisos."
 	},
 	"errors": {
 		"invalid": "Por favor, introduce un valor válido",

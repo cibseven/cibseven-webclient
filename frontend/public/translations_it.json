@@ -686,13 +686,7 @@
 			"title": "Old Cockpit",
 			"tooltip": "Open old Cockpit"
 		},
-		"emptyStart": "Currently you do not have permission to perform any task here. Please contact the CIB seven administrator to get permissions.",
-		"userAdmin": "Gestione utenti",
-		"modeler": "Modellatore di processo",
-		"easyForm": "Easy Form",
-		"adminPanel": "Users Management",
-		"properties": "Properties",
-		"resources": "Resources"
+		"emptyStart": "Currently you do not have permission to perform any task here. Please contact the CIB seven administrator to get permissions."
 	},
 	"errors": {
 		"invalid": "Inserisci un indirizzo valido",
