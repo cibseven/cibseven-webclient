@@ -69,8 +69,6 @@ export default {
                 total: {
                   show: true,
                   label: '',
-									fontWeight: 600,
-                  fontSize: '36px',
                   formatter: () => this.isEmptyChart ? '0' : this.values.reduce((a, b) => a + b, 0)
                 },
                 value: {
