@@ -64,7 +64,7 @@
                   </div>
                   <div class="row text-center">
                     <div class="col-12 p-0 pt-1">
-                      <img :alt="$t('start.admin')" src="/assets/images/start/management.svg" style="height:180px; max-width:225px">
+                      <img :alt="$t('start.groupOperations')" src="/assets/images/start/management.svg" style="height:180px; max-width:225px">
                     </div>
                   </div>
                 </div>
