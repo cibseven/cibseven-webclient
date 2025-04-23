@@ -145,6 +145,7 @@
 
 <script>
 import { permissionsMixin } from '@/permissions.js'
+import { nextTick } from 'vue'
 
 export default {
   name: "StartView",
@@ -181,7 +182,9 @@ export default {
     }
   },
   mounted() {
-    this.items = this.$refs.startContainer.children
+    nextTick(() => {
+      this.items = Array.from(this.$refs.startContainer.children).filter(el => el.offsetParent !== null)
+    })
   },
   methods: {
     startProcess: function () {
