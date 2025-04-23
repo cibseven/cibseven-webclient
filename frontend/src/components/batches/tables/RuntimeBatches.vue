@@ -1,6 +1,6 @@
 <template>
   <ContentBlock :title="$t('batches.inProgressBatches')">
-    <div class="overflow-auto" style="max-height: 35vh">
+    <div class="overflow-auto p-0" style="max-height: 35vh">
       <FlowTable v-if="batches && batches.length > 0 && !loading" striped thead-class="sticky-header" :items="batches" primary-key="id" prefix="batches."
         :fields="[
             { label: 'id', key: 'id', class: 'col-2', tdClass: 'border-end p-0' },
@@ -56,6 +56,12 @@ export default {
   mounted: function() {
     this.loading = true
     this.loadBatches()
+  },  
+  unmounted: function() {
+    if (this.batchesInterval) {
+      clearInterval(this.batchesInterval)
+      this.batchesInterval = null
+    }
   },
   computed: {
     ...mapGetters(['runtimeBatches']),
@@ -96,29 +102,6 @@ export default {
       if (batch.suspended) return 'warning'
       if (batch.completed >= batch.totalJobs) return 'success'
       return ''
-    },
-    unmounted: function() {
-      if (this.batchesInterval) {
-        clearInterval(this.batchesInterval)
-        this.batchesInterval = null
-      }
-    },
-    unmounted: function() {
-      if (this.batchesInterval) {
-        clearInterval(this.batchesInterval)
-        this.batchesInterval = null
-      }
-    },
-    computed: {
-      ...mapGetters(['runtimeBatches']),
-      batches: function() {
-        return this.runtimeBatches.map(batch => {
-          const total = batch.totalJobs || 0
-          const remaining = batch.remainingJobs || 0
-          const completed = total - remaining
-          return { ...batch, completed }
-        })
-      }
     },
     formatDate: function(date) {
       return moment(date).format('DD/MM/YYYY HH:mm:ss')

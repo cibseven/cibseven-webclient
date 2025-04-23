@@ -5,7 +5,7 @@
           <RuntimeBatches></RuntimeBatches>
           <HistoricBatches></HistoricBatches>
         </div>
-        <div class="col-md-5 col-12 p-3">
+        <div class="col-md-5 col-12 mb-3">
           <BatchDetails></BatchDetails>
         </div>
       </div>
