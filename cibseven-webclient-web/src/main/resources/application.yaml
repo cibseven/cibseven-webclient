@@ -8,6 +8,7 @@ spring:
   config:
     import:
       - optional:classpath:cibseven-webclient.yaml
+      - optional:classpath:cibseven-plugins.properties
   servlet:
     multipart:
       # Configures the maximum size for each individual file upload.
