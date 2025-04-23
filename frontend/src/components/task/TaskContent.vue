@@ -55,7 +55,7 @@
         </div>
       </div>
     </div>
-    <b-popover v-if="$root.config.layout.showPopoverHowToAssign" :target="function() { return $refs.titleTask }" :show="displayPopover && !isMobile()" placement="bottom" triggers="manual" max-width="300px">
+    <b-popover ref="howToAssignPopover" v-if="$root.config.layout.showPopoverHowToAssign" :target="function() { return $refs.titleTask }" :show="displayPopover && !isMobile()" placement="bottom" triggers="manual" max-width="300px">
       <b>{{ $t('task.assignPopoverTitle') }}</b>
       <p>{{ $t('task.assignPopoverContent') }}</p>
       <p>{{ $t('task.assignPopoverContent2') }}</p>
@@ -82,9 +82,14 @@ export default {
   mixins: [usersMixin],
   inject: ['isMobile'],
   props: { task: Object },
+  setup() {
+    const POPOVER_DELAY = 1200 // 1.2 seconds
+    return { POPOVER_DELAY }
+  },
   data: function() {
     return {
       displayPopover: false,
+      timer: null,
       assignee: null,
       loadingUsers: false,
       candidateUsers: []
@@ -92,8 +97,7 @@ export default {
   },
   watch: {
     'task.assignee': function(val) {
-      this.displayPopover = localStorage.getItem('showPopoverHowToAssign') === 'false' ? false :
-        val === null || this.task.assignee !== this.$root.user.id
+      this.showPopoverWithDelay(val) // when assignee is changed
     },
     assignee: function() {
       if (this.assignee != null) this.checkAssignee()
@@ -103,6 +107,7 @@ export default {
       this.$store.commit('setSearchUsers', [])
       this.loadIdentityLinks(taskId)
       this.$refs.titleTask.focus()
+      this.showPopoverWithDelay(this.task.assignee) // when opened task is changed
     }
   },
   computed: {
@@ -119,12 +124,13 @@ export default {
   mounted: function() {
     this.$store.commit('setCandidateUsers', [])
     this.$store.commit('setSearchUsers', [])
-    if (this.task.assignee === null || this.task.assignee !== this.$root.user.id) {
-      setTimeout(() => {
-        this.displayPopover = localStorage.getItem('showPopoverHowToAssign') === 'false' ? false : true
-      }, 1200)
-    }
     this.loadIdentityLinks(this.task.id)
+    this.showPopoverWithDelay(this.task.assignee) // when first task is opened
+    document.addEventListener("click", this.handleClickOutsidePopover) // to hide a popover when clicking outside
+  },
+  beforeUnmount() {
+    document.removeEventListener("click", this.handleClickOutsidePopover)
+    this.removeTimeout() // stop timeout for showPopoverWithDelay()
   },
   methods: {
     loadIdentityLinks: function(taskId) {
@@ -150,9 +156,25 @@ export default {
         })
       })
     },
+    showPopoverWithDelay: function(assignee) {
+      this.removeTimeout()
+      this.timer = setTimeout(() => {
+        if (assignee === null || assignee !== this.$root.user.id) {
+          this.displayPopover = localStorage.getItem('showPopoverHowToAssign') === 'false' ? false : true
+        }
+      }, this.POPOVER_DELAY)
+    },
+    removeTimeout() {
+      clearTimeout(this.timer)
+    },
     disablePopover: function() {
       localStorage.setItem('showPopoverHowToAssign', false)
       this.displayPopover = false
+    },
+    handleClickOutsidePopover(event) {
+      if (this.$refs.howToAssignPopover && !this.$refs.howToAssignPopover.$el.contains(event.target)) {
+        this.displayPopover = false
+      }
     },
     update: function() {
       this.$refs.ariaLiveText.textContent = ''
