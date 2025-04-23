@@ -851,6 +851,10 @@
 			"decisions": {
 				"title": "Decisiones",
 				"tooltip": "Open Decisions"
+			},
+			"humanTasks": {
+				"title": "Tareas de Usuario",
+				"tooltip": "Open Human Tasks"
 			}
 		},
 		"admin": {
@@ -867,8 +871,7 @@
 		"easyForm": "Easy Form",
 		"adminPanel": "Gestión de Usuarios",
 		"properties": "Propiedades",		
-		"resources": "Recursos",
-		"adminHumanTasks": "Tareas de Usuario"
+		"resources": "Recursos"
 	},
 	"errors": {
 		"invalid": "Por favor, introduce un valor válido",

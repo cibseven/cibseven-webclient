@@ -664,6 +664,10 @@
 			"decisions": {
 				"title": "Decisioni",
 				"tooltip": "Open Decisions"
+			},
+			"humanTasks": {
+				"title": "Attività",
+				"tooltip": "Open Human Tasks"
 			}
 		},
 		"admin": {
@@ -680,8 +684,7 @@
 		"easyForm": "Easy Form",
 		"adminPanel": "Users Management",
 		"properties": "Properties",
-		"resources": "Resources",
-		"adminHumanTasks": "Attività"
+		"resources": "Resources"
 	},
 	"errors": {
 		"invalid": "Inserisci un indirizzo valido",

@@ -31,7 +31,7 @@
             <b-dropdown-group v-if="permissionsCockpit" header="{{ $t('start.cockpit.title') }}">
               <b-dropdown-item to="/seven/auth/processes" :active="$route.path.includes('seven/auth/process')" :title="$t('start.cockpit.processes.tooltip')">{{ $t('start.cockpit.processes.title') }}</b-dropdown-item>
               <b-dropdown-item to="/seven/auth/decisions" :active="$route.path.includes('seven/auth/decision')" :title="$t('start.cockpit.decisions.tooltip')">{{ $t('start.cockpit.decisions.title') }}</b-dropdown-item>
-              <b-dropdown-item to="/seven/auth/human-tasks" :active="$route.path.includes('seven/auth/human-tasks')" :title="$t('start.adminHumanTasks')">{{ $t('start.adminHumanTasks') }}</b-dropdown-item>
+              <b-dropdown-item to="/seven/auth/human-tasks" :active="$route.path.includes('seven/auth/human-tasks')" :title="$t('start.cockpit.humanTasks.tooltip')">{{ $t('start.cockpit.humanTasks.title') }}</b-dropdown-item>
               <b-dropdown-item to="/seven/auth/deployments" :active="$route.path.includes('seven/auth/deployments')" :title="$t('deployment.title')">{{ $t('deployment.title') }}</b-dropdown-item>
               <b-dropdown-item to="/seven/auth/batches" :active="$route.path.includes('seven/auth/batches')" :title="$t('batches.tooltip')">{{ $t('batches.title') }}</b-dropdown-item>
             </b-dropdown-group>
@@ -169,7 +169,7 @@ export default {
         case 'decision-version':
         case 'decision-instance':
         case 'decision-list': return this.$t('start.cockpit.decisions.title')
-        case 'human-tasks': return this.$t('start.adminHumanTasks')
+        case 'human-tasks': return this.$t('start.cockpit.humanTasks.title')
         case 'usersManagement': return this.$t('start.admin.title')
         case 'adminUser':
         case 'adminUsers':

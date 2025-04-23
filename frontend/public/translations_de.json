@@ -850,6 +850,10 @@
 			"decisions": {
 				"title": "Entscheidungen",
 				"tooltip": "Open Decisions"
+			},
+			"humanTasks": {
+				"title": "Aufgaben",
+				"tooltip": "Open Human Tasks"
 			}
 		},
 		"admin": {
@@ -866,8 +870,7 @@
 		"easyForm": "Easy Form",
 		"adminPanel": "Benutzerverwaltung",
 		"properties": "Properties",
-		"resources": "Ressourcen",
-		"adminHumanTasks": "Aufgaben"
+		"resources": "Ressourcen"
 	},
 	"errors": {		
 		"invalid": "Es fehlt eine gültige Eingabe",
