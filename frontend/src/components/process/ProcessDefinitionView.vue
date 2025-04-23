@@ -134,7 +134,7 @@ export default {
         }
       }
     }
-    else {
+    else if (!this.instanceId){
       this.selectedInstance = null
       this.activityInstance = null
       this.activityInstanceHistory = null
