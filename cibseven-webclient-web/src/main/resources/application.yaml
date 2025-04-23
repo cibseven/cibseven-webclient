@@ -7,6 +7,7 @@ spring:
     location: classpath:banner.txt
   config:
     import:
+      - optional:classpath:cibseven-webclient.properties
       - optional:classpath:cibseven-webclient.yaml
   servlet:
     multipart:
