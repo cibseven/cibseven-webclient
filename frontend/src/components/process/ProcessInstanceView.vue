@@ -2,7 +2,10 @@
   <div v-if="selectedInstance" class="h-100">
     <router-link
       class="btn btn-light rounded-0 border-bottom text-start w-100 align-middle d-flex align-items-center"
-      :to="'/seven/auth/process/' + process.key + '/' + process.version">
+      :to="{
+        path: `/seven/auth/process/${process.key}/${process.version}`,
+        query: $route.query
+      }">
       <span class="mdi mdi-18px mdi-arrow-left me-2 float-start"></span>
       <h5 class="m-0">
         {{ $t('process-instance.processInstanceId') }}: {{ selectedInstance.id }}

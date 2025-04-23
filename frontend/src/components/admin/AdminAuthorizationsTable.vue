@@ -26,6 +26,7 @@
       <div class="px-4 mb-5">
         <FlowTable striped thead-class="sticky-header light" :items="authorizations" primary-key="id"
           prefix="admin.authorizations." :fields="authorizationFields"
+          class="shadow-sm border rounded"
           @contextmenu="focused = $event" @mouseenter="focused = $event" @mouseleave="focused = null">
           <template v-slot:cell(type)="row">
             <div class="w-100 d-flex align-items-center" v-if="edit === row.item.id && edit === '0'">

@@ -90,6 +90,7 @@
 		"favorite": "Любимый",
 		"actions": "Действия",
 		"status": "Состояние",
+		"tenant": "Тенант",
 		"details": {
 			"titleProcessActions": "действия по определению процесса",
 			"titleInstancesActions": "Действия для процесса",		
@@ -111,7 +112,8 @@
 			"historyVersions": "Версии истории",
 			"variable": "Переменная процесса",
 			"copyValue": "Копировать значение",
-			"historyTimeToLive": "История время жить"
+			"historyTimeToLive": "История время жить",
+			"tenantId": "ID клиента"
 		},
 		"sections": {
 			"all": "Все",
@@ -365,9 +367,48 @@
 		"userAssigned": "Пользователь {0} успешно назначен"
 	},
 	"batches": {
-		"title": "Batches",
-		"tooltip": "Batch operations"
-	},	
+		"title": "Пакеты",
+		"tooltip": "Операции с пакетами",
+		"inProgressBatches": "Текущие пакеты",
+		"historicBatches": "Завершённые пакеты",
+		"runtimeDetails": "Детали текущего пакета",
+		"historyDetails": "Детали завершённого пакета",
+		"id": "ID",
+		"type": "Тип",
+		"startTime": "Начало",
+		"endTime": "Окончание",
+		"user": "Пользователь",
+		"failedJobs": "Неудачные задания",
+		"progress": "Прогресс",
+		"loading": "Загрузка...",
+		"property": "Свойство",
+		"value": "Значение",
+		"suspend": "Приостановить пакет",
+		"activate": "Активировать пакет",
+		"remove": "Удалить пакет",
+		"confirmRemove": "Вы действительно хотите удалить этот пакет и все связанные задания и определения заданий?",
+		"exception": "Исключение",
+		"actions": "Действия",
+		"retryJob": "Повторить задание",
+		"deleteJob": "Удалить задание",
+		"seeFullLog": "Просмотреть полный лог",
+		"jobLog": {
+			"modalTitle": "Журнал заданий",
+			"state": "Состояние",
+			"message": "Сообщение",
+			"timestamp": "Временная метка",
+			"jobId": "ID задания",
+			"type": "Тип",
+			"configuration": "Конфигурация",
+			"retries": "Попытки",
+			"hostname": "Имя хоста",
+			"priority": "Приоритет",
+			"created": "Создано",
+			"failed": "Ошибка",
+			"successful": "Успешно",
+			"unknown": "Неизвестно"
+		}
+	},
 	"admin": {
 		"loading": "Загрузка...",
 		"noResults": "Ничего не найдено",
@@ -406,8 +447,7 @@
 			"actions": "Действия",
 			"group": {
 				"title": "Группы {0}",
-				"add": "Добавить в группу",
-				"noResults": "Ничего не найдено"
+				"add": "Добавить в группу"
 			},
 			"preferences": {
 				"title": "Предпочтения",
@@ -440,8 +480,34 @@
 			}
 		},
 		"tenants": {
-			"title": "Tenants",
-			"tooltip": "Tenants management"
+			"title": "Тенанты",
+			"tooltip": "Управление тенантами",
+			"associationTitle": "Тенанты {0}",
+			"fullId": "Идентификатор арендатора",
+			"fullName": "Имя арендатора",
+			"actions": "Действия",
+			"unassignUserMessage": "Пользователь {0} был удалён из арендатора",
+			"unassignGroupMessage": "Группа {0} была удалена из арендатора",
+			"addTo": "Добавить в арендатора",
+			"id": "ID",
+			"name": "Имя",
+			"add": "Добавить тенанта",
+			"create": "Создать нового тенанта",
+			"cancel": "Отмена",
+			"tenantCreatedMessage": "Тенант {0} создан",
+			"confirmDelete": "Вы действительно хотите удалить тенанта со следующими параметрами?",
+			"tenantDeletedMessage": "Тенант {0} удалён",
+			"deleteTenant": "Удалить тенанта",
+			"editTenant": "Редактировать тенанта",
+			"information": "Информация",
+			"users": "Пользователи",
+			"groups": "Группы",
+			"editMessage": "Редактировать арендатора ({0})",
+			"update": "Обновить арендатора",
+			"updateTenantMessage": "Арендатор {0} был обновлён",
+			"deleteTenantMessage": "Арендатор {0} был удалён",
+			"tenantUsers": "Пользователи арендатора",
+			"tenantGroups": "Группы арендатора"
 		},
 		"authorizations": {
 			"title": "Авторизации",
@@ -503,7 +569,16 @@
 				"diagnosticData": "Данные диагностики"
 			},
 			"execution-metrics": {
-				"title": "Метрики выполнения"
+				"title": "Метрики выполнения",
+				"metricsHelp": "Зарегистрированное количество экземпляров процессов и решений, обработанных движком, и пользователей задач, назначенных на пользовательскую задачу.",
+				"startDateContract": "Дата начала контракта",
+				"process-instances": "Экземпляры решений",
+				"decision-instances": "Экземпляры процессов",
+				"task-users": "Пользователи задач",
+				"usageLast12MonthsByMonth": "Использование по месяцам за последние 12 месяцев",
+				"annualUsageBySubscriptionTerm": "Годовые метрики использования по сроку подписки",
+				"fromUpToToday": "с {from} по сегодня",
+				"fromTo": "с {from} по {to}"
 			}
 		}
 	},
@@ -887,7 +962,9 @@
 		"selectAll": "Выбрать все",
 		"deleteDeployments": "Удалить развертывания",
 		"showModel": "Показать модель",
-		"deploymentsDeleted": "{0} из {1} развертываний успешно удалены"
+		"deploymentsDeleted": "{0} из {1} развертываний успешно удалены",
+		"tenant": "Тенант",
+		"errorLoading": "Не удалось загрузить ресурс для выбранного развертывания"
 	},
 	"cib-table2": {
 		"filter": "Фильтр"

@@ -21,11 +21,13 @@ import org.cibseven.webapp.rest.model.ActivityInstance;
 import org.cibseven.webapp.rest.model.ActivityInstanceHistory;
 import org.cibseven.webapp.rest.model.Authorization;
 import org.cibseven.webapp.rest.model.Authorizations;
+import org.cibseven.webapp.rest.model.Batch;
 import org.cibseven.webapp.rest.model.CandidateGroupTaskCount;
 import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.DeploymentResource;
 import org.cibseven.webapp.rest.model.EventSubscription;
 import org.cibseven.webapp.rest.model.Filter;
+import org.cibseven.webapp.rest.model.HistoryBatch;
 import org.cibseven.webapp.rest.model.IdentityLink;
 import org.cibseven.webapp.rest.model.Incident;
 import org.cibseven.webapp.rest.model.JobDefinition;
@@ -45,6 +47,7 @@ import org.cibseven.webapp.rest.model.Task;
 import org.cibseven.webapp.rest.model.TaskCount;
 import org.cibseven.webapp.rest.model.TaskFiltering;
 import org.cibseven.webapp.rest.model.TaskHistory;
+import org.cibseven.webapp.rest.model.Tenant;
 import org.cibseven.webapp.rest.model.User;
 import org.cibseven.webapp.rest.model.UserGroup;
 import org.cibseven.webapp.rest.model.Variable;
@@ -210,21 +213,23 @@ public interface BpmProvider {
 	/**
      * Search process with a specific Key.
      * @param processKey filter by process definition key.
+	 * @param tenantId 
      * @param user since this call is secured we need the user to authenticate.
      * @return Fetched process.
      * @throws SystemException in case of an error.
      */	
-	Process findProcessByDefinitionKey(String processKey, CIBUser user) throws SystemException;
+	Process findProcessByDefinitionKey(String processKey, String tenantId, CIBUser user) throws SystemException;
 	
 	/**
      * Search processes (diferents versions) with a specific Key.
      * @param processKey filter by process definition key.
+	 * @param tenantId 
      * @param lazyLoad parameter to decide if load all the data or the minimum necessary.
      * @param user since this call is secured we need the user to authenticate.
      * @return Fetched process.
      * @throws SystemException in case of an error.
      */	
-	Collection<Process> findProcessVersionsByDefinitionKey(String processKey, Optional<Boolean> lazyLoad, CIBUser user) throws SystemException;
+	Collection<Process> findProcessVersionsByDefinitionKey(String processKey, String tenantId, Optional<Boolean> lazyLoad, CIBUser user) throws SystemException;
 	
 	/**
      * Search process with a specific Id.
@@ -435,13 +440,14 @@ public interface BpmProvider {
 	 * Start process
 	 * @param user who start the process.
 	 * @param processDefinitionKey of the process to be started.
+	 * @param tenantId 
 	 * @param data variables to start process.
 	 * @return information about the process started.
      * @throws UnsupportedTypeException when a process instance cannot be created because of an unsupported value type or an invalid expression used in the process definition.
      * @throws ExpressionEvaluationException when .
      * @throws SystemException in case of any other error.
 	 */
-	 ProcessStart startProcess(String processDefinitionKey, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException;
+	 ProcessStart startProcess(String processDefinitionKey, String tenantId, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException;
 
 	/**
 	 * Correlates a message to the process engine to either trigger a message start event or an intermediate message catching event
@@ -456,13 +462,14 @@ public interface BpmProvider {
 	 * Submit form with variables
 	 * @param user who start the process.
 	 * @param processDefinitionKey of the process to be started.
+	 * @param tenantId 
 	 * @param data variables to submit.
 	 * @return information about the process started.
      * @throws UnsupportedTypeException when a process instance cannot be created because of an unsupported value type or an invalid expression used in the process definition.
      * @throws ExpressionEvaluationException when .
      * @throws SystemException in case of any other error.
 	 */
-	 ProcessStart submitForm(String processDefinitionKey, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException;
+	 ProcessStart submitForm(String processDefinitionKey, String tenantId, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException;
 
 	/**
 	 * Modify a variable in the Process Instance.
@@ -927,6 +934,7 @@ public interface BpmProvider {
 	void suspendJobDefinition(String jobDefinitionId, String params, CIBUser user);
 	void overrideJobDefinitionPriority(String jobDefinitionId, String params, CIBUser user);
 	JobDefinition findJobDefinition(String id, CIBUser user);
+	void retryJobDefinitionById(String id, Map<String, Object> params, CIBUser user);
 	
 	Collection<Decision> getDecisionDefinitionList(Map<String, Object> queryParams, CIBUser user);
 	Object getDecisionDefinitionListCount(Map<String, Object> queryParams, CIBUser user);
@@ -957,18 +965,36 @@ public interface BpmProvider {
   
 	Collection<Job> getJobs(Map<String, Object> params, CIBUser user);
 	void setSuspended(String id, Map<String, Object> data, CIBUser user);
+	void deleteJob(String id, CIBUser user);
+	Collection<Object> getHistoryJobLog(Map<String, Object> params, CIBUser user);
+	String getHistoryJobLogStacktrace(String id, CIBUser user);
 	Integer findHistoryTaksCount(Map<String, Object> filters, CIBUser user);
 
 	Collection<CandidateGroupTaskCount> getTaskCountByCandidateGroup(CIBUser user);
 	
-	Object getHistoricBatches(Map<String, Object> queryParams);
+	Collection<Batch> getBatches(Map<String, Object> params, CIBUser user);
+	Collection<Batch> getBatchStatistics(Map<String, Object> params, CIBUser user);
+	void deleteBatch(String id, Map<String, Object> params, CIBUser user);
+	void setBatchSuspensionState(String id, Map<String, Object> params, CIBUser user);
+	Collection<HistoryBatch> getHistoricBatches(Map<String, Object> params, CIBUser user);
 	Object getHistoricBatchCount(Map<String, Object> queryParams);
-	Object getHistoricBatchById(String id);
-	void deleteHistoricBatch(String id);
+	HistoryBatch getHistoricBatchById(String id, CIBUser user);
+	void deleteHistoricBatch(String id, CIBUser user);
 	Object setRemovalTime(Map<String, Object> payload);
 	Object getCleanableBatchReport(Map<String, Object> queryParams);
 	Object getCleanableBatchReportCount();
 
 	JsonNode getTelemetryData(CIBUser user);
 	Collection<Metric> getMetrics(Map<String, Object> queryParams, CIBUser user);
+
+	Collection<Tenant> fetchTenants(Map<String, Object> queryParams, CIBUser user);
+	Tenant fetchTenant(String tenantId, CIBUser user);
+	void createTenant(Tenant tenant, CIBUser user);
+	void udpateTenant(Tenant tenant, CIBUser user);
+	void deleteTenant(String tenantId, CIBUser user);
+	void addMemberToTenant(String tenantId, String userId, CIBUser user);
+	void deleteMemberFromTenant(String tenantId, String userId, CIBUser user);
+	void addGroupToTenant(String tenantId, String groupId, CIBUser user);
+	void deleteGroupFromTenant(String tenantId, String groupId, CIBUser user);
+
 }

@@ -25,9 +25,11 @@ const ProcessStore = {
       return ProcessService.findProcessesWithInfo()
     },
     getProcessByDefinitionKey: function (ctx, params) {
-      var process = ctx.state.list.find(process => { return process.key === params.key })
+      var process = ctx.state.list.find(process => { 
+        return process.key === params.key && process.tenantId === params.tenantId 
+      })
       if (process) return Promise.resolve(process)
-      else return ProcessService.findProcessByDefinitionKey(params.key)
+      else return ProcessService.findProcessByDefinitionKey(params.key, params.tenantId)
     },
     getProcessById: function (ctx, params) {
       var process = ctx.state.list.find(process => { return process.id === params.id })

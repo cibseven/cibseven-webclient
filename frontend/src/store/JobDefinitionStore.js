@@ -22,7 +22,10 @@ const JobDefinitionStore = {
         async overridePriority({ dispatch }, { jobDefinitionId, params, fetchParams }) {
             await JobDefinitionService.overrideJobDefinitionPriority(jobDefinitionId, params)
             await dispatch('getJobDefinitions', fetchParams)
-        }
+        },
+        async retryJobDefinitionById(_, { id, params }) {
+            return JobDefinitionService.retryJobDefinitionById(id, params)
+        },
     },
     getters: {
         getJobDefinitions: (state) => state.list

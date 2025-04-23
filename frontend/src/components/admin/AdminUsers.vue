@@ -22,7 +22,7 @@
         </div>
       </div>
     </div>
-    <div class="container overflow-auto bg-white shadow g-0" @scroll="showMore">
+    <div class="container overflow-auto bg-white shadow-sm border rounded g-0" @scroll="showMore">
       <FlowTable striped v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'" thead-class="sticky-header" :items="users" primary-key="id"
         prefix="admin.users." :fields="[{label: 'id', key: 'id', class: 'col-md-2 col-sm-2', tdClass: 'border-end py-1' },
             {label: 'firstName', key: 'firstName', class: 'col-md-3 col-sm-3', tdClass: 'border-end py-1' },

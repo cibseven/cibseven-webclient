@@ -91,6 +91,7 @@
 		"favorite": "Favorito",
 		"actions": "Acciones",
 		"status": "Estado",
+		"tenant": "Tenant",
 		"details": {
 			"titleProcessActions": "Acciones sobre la definición del proceso",
 			"titleInstancesActions": "Acciones sobre el proceso",
@@ -112,7 +113,8 @@
 			"historyVersions": "Historial de versiones",
 			"variable": "Variables del proceso",
 			"copyValue": "Copiar valor",
-			"historyTimeToLive": "Tiempo de vida del histórico"
+			"historyTimeToLive": "Tiempo de vida del histórico",			
+			"tenantId": "ID del tenant"
 		},
 		"sections": {
 			"all": "Todos",
@@ -366,8 +368,47 @@
 		"userAssigned": "El usuario {0} fue asignado con éxito"
 	},
 	"batches": {
-		"title": "Batches",
-		"tooltip": "Batch operations"
+		"title": "Lotes",
+		"tooltip": "Operaciones por lotes",
+		"inProgressBatches": "Lotes en curso",
+		"historicBatches": "Lotes finalizados",
+		"runtimeDetails": "Detalles del lote en curso",
+		"historyDetails": "Detalles del lote finalizado",
+		"id": "ID",
+		"type": "Tipo",
+		"startTime": "Inicio",
+		"endTime": "Finalización",
+		"user": "Usuario",
+		"failedJobs": "Trabajos fallidos",
+		"progress": "Progreso",
+		"loading": "Cargando...",
+		"property": "Propiedad",
+		"value": "Valor",
+		"suspend": "Suspender lote",
+		"activate": "Activar lote",
+		"remove": "Eliminar lote",
+		"confirmRemove": "¿Realmente desea eliminar este lote y todos los trabajos y definiciones de trabajos relacionados?",
+		"exception": "Excepción",
+		"actions": "Acciones",
+		"retryJob": "Reintentar trabajo",
+		"deleteJob": "Eliminar trabajo",
+		"seeFullLog": "Ver registro completo",
+		"jobLog": {
+			"modalTitle": "Registro del trabajo",
+			"state": "Estado",
+			"message": "Mensaje",
+			"timestamp": "Marca de tiempo",
+			"jobId": "ID del trabajo",
+			"type": "Tipo",
+			"configuration": "Configuración",
+			"retries": "Reintentos",
+			"hostname": "Nombre del host",
+			"priority": "Prioridad",
+			"created": "Creado",
+			"failed": "Fallido",
+			"successful": "Exitoso",
+			"unknown": "Desconocido"
+		}
 	},
 	"admin": {
 		"loading": "Cargando...",
@@ -407,8 +448,7 @@
 			"actions": "Acciones",
 			"group": {
 				"title": "Grupos del usuario {0}",
-				"add": "Añadir a un grupo",
-				"noResults": "Sin resultados"
+				"add": "Añadir a un grupo"
 			},
 			"preferences": {
 				"title": "Preferencias",
@@ -442,7 +482,33 @@
 		},
 		"tenants": {
 			"title": "Tenants",
-			"tooltip": "Tenants management"
+			"tooltip": "Gestión de tenants",
+			"associationTitle": "Tenants del usuario {0}",
+			"fullId": "ID del tenant",
+			"fullName": "Nombre del tenant",
+			"actions": "Acciones",
+			"unassignUserMessage": "El usuario {0} ha sido eliminado del tenant",
+			"unassignGroupMessage": "Grupo {0} eliminado del tenant",
+			"addTo": "Agregar a un tenant",
+			"id": "ID",
+			"name": "Nombre",
+			"add": "Añadir tenant",
+			"create": "Crear nuevo tenant",
+			"cancel": "Cancelar",
+			"tenantCreatedMessage": "Tenant {0} creado",
+			"confirmDelete": "¿Realmente deseas eliminar el tenant con los siguientes parámetros?",
+			"tenantDeletedMessage": "Tenant {0} eliminado",
+			"deleteTenant": "Eliminar tenant",
+			"editTenant": "Editar tenant",
+			"information": "Información",
+			"users": "Usuarios",
+			"groups": "Grupos",
+			"editMessage": "Editar tenant ({0})",
+			"update": "Actualizar tenant",
+			"updateTenantMessage": "El tenant {0} ha sido actualizado",
+			"deleteTenantMessage": "El tenant {0} ha sido eliminado",
+			"tenantUsers": "Usuarios del tenant",
+			"tenantGroups": "Grupos del tenant"
 		},
 		"authorizations": {
 			"title": "Autorizaciones",
@@ -504,7 +570,16 @@
 				"diagnosticData": "Datos de diagnóstico"
 			},
 			"execution-metrics": {
-				"title": "Métricas de ejecución"
+				"title": "Métricas de ejecución",
+				"metricsHelp": "Número registrado de instancias de proceso e instancias de decisión procesadas por el motor y usuarios de tareas asignados a una tarea de usuario.",
+				"startDateContract": "Fecha de inicio del contrato",
+				"process-instances": "Instancias de decisión",
+				"decision-instances": "Instancias de proceso",
+				"task-users": "Usuarios de tareas",
+				"usageLast12MonthsByMonth": "Uso en los últimos 12 meses por mes",
+				"annualUsageBySubscriptionTerm": "Métricas de uso anual por período de suscripción",
+				"fromUpToToday": "{from} hasta hoy",
+				"fromTo": "de {from} a {to}"
 			}
 		}
 	},
@@ -888,7 +963,9 @@
 		"selectAll": "Seleccionar todo",
 		"deleteDeployments": "Eliminar despliegues",
 		"showModel": "Mostrar modelo",
-		"deploymentsDeleted": "{0} de {1} despliegues se han eliminado correctamente"
+		"deploymentsDeleted": "{0} de {1} despliegues se han eliminado correctamente",
+		"tenant": "Tenant",
+		"errorLoading": "No se puede cargar el recurso para la implementación seleccionada"
 	},
 	"cib-table2": {
 		"filter": "Filtrar"

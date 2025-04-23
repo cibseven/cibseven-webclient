@@ -51,7 +51,9 @@ computed: {
     }
   },
   textHtml: function() {
+    const tenantHtml = this.process.tenantId ? '<div class="fst-italic mb-2">' + this.process.tenantId + '</div>' : ''
     return '<h5 :title="' + this.processName + '">' + this.processName + '</h5>' +
+      tenantHtml +
       '<div>' + this.showDescription(this.process.key) + '</div>'
   }
 }
