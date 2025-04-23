@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white shadow p-3 mt-4">
+  <div class="bg-white shadow-sm p-3 border rounded mt-4">
     <div>
       <h4 class="d-inline">{{ $t('batches.failedJobs') }}</h4>
       <hr>
