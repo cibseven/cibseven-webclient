@@ -213,21 +213,23 @@ public interface BpmProvider {
 	/**
      * Search process with a specific Key.
      * @param processKey filter by process definition key.
+	 * @param tenantId 
      * @param user since this call is secured we need the user to authenticate.
      * @return Fetched process.
      * @throws SystemException in case of an error.
      */	
-	Process findProcessByDefinitionKey(String processKey, CIBUser user) throws SystemException;
+	Process findProcessByDefinitionKey(String processKey, String tenantId, CIBUser user) throws SystemException;
 	
 	/**
      * Search processes (diferents versions) with a specific Key.
      * @param processKey filter by process definition key.
+	 * @param tenantId 
      * @param lazyLoad parameter to decide if load all the data or the minimum necessary.
      * @param user since this call is secured we need the user to authenticate.
      * @return Fetched process.
      * @throws SystemException in case of an error.
      */	
-	Collection<Process> findProcessVersionsByDefinitionKey(String processKey, Optional<Boolean> lazyLoad, CIBUser user) throws SystemException;
+	Collection<Process> findProcessVersionsByDefinitionKey(String processKey, String tenantId, Optional<Boolean> lazyLoad, CIBUser user) throws SystemException;
 	
 	/**
      * Search process with a specific Id.
@@ -438,13 +440,14 @@ public interface BpmProvider {
 	 * Start process
 	 * @param user who start the process.
 	 * @param processDefinitionKey of the process to be started.
+	 * @param tenantId 
 	 * @param data variables to start process.
 	 * @return information about the process started.
      * @throws UnsupportedTypeException when a process instance cannot be created because of an unsupported value type or an invalid expression used in the process definition.
      * @throws ExpressionEvaluationException when .
      * @throws SystemException in case of any other error.
 	 */
-	 ProcessStart startProcess(String processDefinitionKey, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException;
+	 ProcessStart startProcess(String processDefinitionKey, String tenantId, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException;
 
 	/**
 	 * Correlates a message to the process engine to either trigger a message start event or an intermediate message catching event
@@ -459,13 +462,14 @@ public interface BpmProvider {
 	 * Submit form with variables
 	 * @param user who start the process.
 	 * @param processDefinitionKey of the process to be started.
+	 * @param tenantId 
 	 * @param data variables to submit.
 	 * @return information about the process started.
      * @throws UnsupportedTypeException when a process instance cannot be created because of an unsupported value type or an invalid expression used in the process definition.
      * @throws ExpressionEvaluationException when .
      * @throws SystemException in case of any other error.
 	 */
-	 ProcessStart submitForm(String processDefinitionKey, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException;
+	 ProcessStart submitForm(String processDefinitionKey, String tenantId, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException;
 
 	/**
 	 * Modify a variable in the Process Instance.

@@ -130,9 +130,15 @@ var ProcessService = {
   findProcesses: function() { return axios.get(appConfig.servicesBasePath + "/process").then(patchProcess) },
   findProcessesWithInfo: function() { return axios.get(appConfig.servicesBasePath + "/process/extra-info").then(patchProcess) },
   findProcessesWithFilters: function(filters) { return axios.post(appConfig.servicesBasePath + "/process", filters).then(patchProcess) },
-  findProcessByDefinitionKey: function(key) { return axios.get(appConfig.servicesBasePath + "/process/" + key).then(patchProcess) },
-  findProcessVersionsByDefinitionKey: function(key, lazyLoad = false) {
-    return axios.get(appConfig.servicesBasePath + "/process/process-definition/versions/" + key + '?lazyLoad=' + lazyLoad).then(patchProcess)
+  findProcessByDefinitionKey: function(key, tenantId) {
+    let url = `${appConfig.servicesBasePath}/process/${key}`
+    if (tenantId) url += `?tenantId=${tenantId}`
+    return axios.get(url).then(patchProcess)
+  },
+  findProcessVersionsByDefinitionKey: function(key, tenantId, lazyLoad = false) {
+    let url = `${appConfig.servicesBasePath}/process/process-definition/versions/${key}?lazyLoad=${lazyLoad}`
+    if (tenantId) url += `&tenantId=${tenantId}`
+    return axios.get(url).then(patchProcess)
   },
   findProcessById: function(id, extraInfo = false) {
     return axios.get(appConfig.servicesBasePath + "/process/process-definition-id/" + id + '?extraInfo=' + extraInfo).then(patchProcess)
@@ -153,9 +159,13 @@ var ProcessService = {
     return axios.get(appConfig.servicesBasePath + "/process/called-process-definitions/" + processDefinitionId)
   },
   fetchDiagram: function(processId) { return axios.get(appConfig.servicesBasePath + "/process/" + processId + "/diagram") },
-  startProcess: function(key, locale) {
-    return axios.post(appConfig.servicesBasePath + "/process/" + key + "/start", {
-      variables: { _locale: { value: locale, type: String } /*initiator: { value: userId, type: String }*/
+  startProcess: function(key, tenantId, locale) {
+    let url = `${appConfig.servicesBasePath}/process/${key}/start`
+    if (tenantId)  url += `?tenantId=${tenantId}`
+    return axios.post(url, {
+      variables: {
+        _locale: { value: locale, type: String }
+        // initiator: { value: userId, type: String }
       }
     })
   },
@@ -419,9 +429,9 @@ var FormsService = {
       }
     })
   },
-  submitStartFormVariables: function(processDefinitionKey, formResult, locale) {
+  submitStartFormVariables: function(processDefinitionId, formResult, locale) {
     formResult.push({ name: '_locale', type: 'String', value: locale })
-    return axios.post(appConfig.servicesBasePath + '/process/' + processDefinitionKey + '/submit-startform-variables', formResult)
+    return axios.post(appConfig.servicesBasePath + '/process/' + processDefinitionId + '/submit-startform-variables', formResult)
   },
   downloadFiles: function(processInstanceId, documentsList) {
     return axios.post(appConfig.servicesBasePath + '/task/' + processInstanceId + '/download', documentsList, { responseType: 'blob' } )

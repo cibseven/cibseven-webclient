@@ -79,10 +79,10 @@ export default {
           processKey: instance.processDefinitionKey,
           versionIndex: instance.processDefinitionVersion,
           instanceId: instance.id,
-        }
+        },
+        query: this.$route.query
       })
     },
-
     // "Delete Instance" button
     confirmDeleteInstance: function(instance) {
       this.$refs.confirm.show({
@@ -98,7 +98,6 @@ export default {
         this.$refs.success.show()
       })
     },
-
     // "Delete History Instance" button
     confirmDeleteHistoryInstance: function(instance) {
       this.$refs.confirm.show({
@@ -114,7 +113,6 @@ export default {
         this.$refs.success.show()
       })
     },
-
     // "Suspend" button
     confirmSuspend: function(instance) {
       this.$refs.confirm.show({
@@ -130,7 +128,6 @@ export default {
         this.$refs.success.show()
       })
     },
-
     // "Activate" button
     confirmActivate: function(instance) {
       this.$refs.confirm.show({
@@ -146,7 +143,6 @@ export default {
         this.$refs.success.show()
       })
     },
-
     getIconState: function(state) {
       switch(state) {
         case 'ACTIVE':
@@ -164,7 +160,7 @@ export default {
           return this.$t('process.instanceIncidents')
       }
       return this.$t('process.instanceFinished')
-    },
+    }
   }
 }
 </script>

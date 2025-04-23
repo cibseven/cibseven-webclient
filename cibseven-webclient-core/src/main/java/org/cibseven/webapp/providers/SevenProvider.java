@@ -233,13 +233,13 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}	
 	
 	@Override
-	public Process findProcessByDefinitionKey(String key, CIBUser user) {
-		return processProvider.findProcessByDefinitionKey(key, user);
+	public Process findProcessByDefinitionKey(String key, String tenantId, CIBUser user) {
+		return processProvider.findProcessByDefinitionKey(key, tenantId, user);
 	}
 	
 	@Override
-	public Collection<Process> findProcessVersionsByDefinitionKey(String key, Optional<Boolean> lazyLoad, CIBUser user) {
-		return processProvider.findProcessVersionsByDefinitionKey(key, lazyLoad, user);
+	public Collection<Process> findProcessVersionsByDefinitionKey(String key, String tenantId, Optional<Boolean> lazyLoad, CIBUser user) {
+		return processProvider.findProcessVersionsByDefinitionKey(key, tenantId, lazyLoad, user);
 	}
 
 	@Override
@@ -283,13 +283,13 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 	
 	@Override
-	public ProcessStart startProcess(String processDefinitionKey, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
-		return processProvider.startProcess(processDefinitionKey, data, user);
+	public ProcessStart startProcess(String processDefinitionKey, String tenantId, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
+		return processProvider.startProcess(processDefinitionKey, tenantId, data, user);
 	}
 	
 	@Override
-	public ProcessStart submitForm(String processDefinitionKey, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
-		return processProvider.submitForm(processDefinitionKey, data, user);
+	public ProcessStart submitForm(String processDefinitionKey, String tenantId, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
+		return processProvider.submitForm(processDefinitionKey, tenantId, data, user);
 	}
 	
 	@Override
