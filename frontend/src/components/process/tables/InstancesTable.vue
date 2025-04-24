@@ -34,22 +34,20 @@
       <span :title="table.item.endTime" class="text-truncate d-block">{{ table.item.endTime }}</span>
     </template>
     <template v-slot:cell(actions)="table">
-      <b-button v-if="table.item.state === 'ACTIVE'" @click.stop="showConfirm({ ok: suspendInstance, instance: table.item })"
+      <b-button v-if="table.item.state === 'ACTIVE'" @click.stop="confirmSuspend(table.item)"
       size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-pause-circle-outline" :title="$t('process.suspendInstance')"></b-button>
-      <b-button v-if="table.item.state === 'SUSPENDED'" @click.stop="showConfirm({ ok: activateInstance, instance: table.item  })"
+      <b-button v-else-if="table.item.state === 'SUSPENDED'" @click.stop="confirmActivate(table.item)"
       size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-play-circle-outline" :title="$t('process.activateInstance')"></b-button>
       <b-button @click="selectInstance(table.item)" size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-eye-outline" :title="$t('process.showInstance')"></b-button>
       <b-button v-if="['ACTIVE', 'SUSPENDED'].includes(table.item.state) && processByPermissions($root.config.permissions.deleteProcessInstance, table.item)"
-      @click.stop="showConfirm({ ok: deleteInstance, instance: table.item  })"
+      @click.stop="confirmDeleteInstance(table.item)"
       size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-delete-outline" :title="$t('process.deleteInstance')"></b-button>
-      <b-button v-if="['COMPLETED', 'EXTERNALLY_TERMINATED'].includes(table.item.state) && processByPermissions($root.config.permissions.deleteProcessInstance, table.item)"
-      @click.stop="showConfirm({ ok: deleteHistoryInstance, instance: table.item })"
+      <b-button v-else-if="['COMPLETED', 'EXTERNALLY_TERMINATED'].includes(table.item.state) && processByPermissions($root.config.permissions.deleteProcessInstance, table.item)"
+      @click.stop="confirmDeleteHistoryInstance(table.item)"
       size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-delete-outline" :title="$t('process.deleteHistoryInstance')"></b-button>
     </template>
   </FlowTable>
-  <ConfirmDialog ref="confirm" @ok="$event.ok($event.instance)" :ok-title="$t('confirm.delete')">
-  {{ $t('confirm.performOperation') }}
-  </ConfirmDialog>
+  <ConfirmActionOnProcessInstanceModal ref="confirm"></ConfirmActionOnProcessInstanceModal>
   <SuccessAlert top="0" style="z-index: 1031" ref="success"> {{ $t('alert.successOperation') }}</SuccessAlert>
   <SuccessAlert ref="messageCopy"> {{ $t('process.copySuccess') }} </SuccessAlert>
 </template>
@@ -60,11 +58,11 @@ import { permissionsMixin } from '@/permissions.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
-import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
+import ConfirmActionOnProcessInstanceModal from '@/components/process/modals/ConfirmActionOnProcessInstanceModal.vue'
 
 export default {
   name: 'InstancesTable',
-  components: { FlowTable, SuccessAlert, ConfirmDialog },
+  components: { FlowTable, SuccessAlert, ConfirmActionOnProcessInstanceModal },
   emits: ['instance-deleted'],
   mixins: [copyToClipboardMixin, permissionsMixin],
   props: { instances: Array, sortDesc: Boolean, sortByDefaultKey: String },
@@ -84,11 +82,30 @@ export default {
         }
       })
     },
-    showConfirm: function(type) { this.$refs.confirm.show(type) },
+
+    // "Delete Instance" button
+    confirmDeleteInstance: function(instance) {
+      this.$refs.confirm.show({
+        ok: this.deleteInstance,
+        instance: instance,
+        message: this.$t('process-instance.confirm.deleteInstance'),
+        okTitle: this.$t('confirm.delete'),
+      })
+    },
     deleteInstance: function(instance) {
       ProcessService.deleteInstance(instance.id).then(() => {
         this.$emit('instance-deleted')
         this.$refs.success.show()
+      })
+    },
+
+    // "Delete History Instance" button
+    confirmDeleteHistoryInstance: function(instance) {
+      this.$refs.confirm.show({
+        ok: this.deleteHistoryInstance,
+        instance: instance,
+        message: this.$t('process-instance.confirm.deleteHistoryInstance'),
+        okTitle: this.$t('confirm.delete'),
       })
     },
     deleteHistoryInstance: function(instance) {
@@ -97,10 +114,30 @@ export default {
         this.$refs.success.show()
       })
     },
+
+    // "Suspend" button
+    confirmSuspend: function(instance) {
+      this.$refs.confirm.show({
+        ok: this.suspendInstance,
+        instance: instance,
+        message: this.$t('process-instance.confirm.suspend'),
+        okTitle: this.$t('process-instance.jobDefinitions.suspend'),
+      })
+    },
     suspendInstance: function(instance) {
       ProcessService.suspendInstance(instance.id, true).then(() => {
         instance.state = 'SUSPENDED'
         this.$refs.success.show()
+      })
+    },
+
+    // "Activate" button
+    confirmActivate: function(instance) {
+      this.$refs.confirm.show({
+        ok: this.activateInstance,
+        instance:instance,
+        message: this.$t('process-instance.confirm.activate'),
+        okTitle: this.$t('process-instance.jobDefinitions.activate'),
       })
     },
     activateInstance: function(instance) {
@@ -109,6 +146,7 @@ export default {
         this.$refs.success.show()
       })
     },
+
     getIconState: function(state) {
       switch(state) {
         case 'ACTIVE':

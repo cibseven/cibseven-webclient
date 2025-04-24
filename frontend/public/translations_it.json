@@ -1,7 +1,8 @@
 {	
 	"commons": {
 		"edit": "Modificare",
-		"save": "Salva"
+		"save": "Salva",
+		"copyValue": "Copia valore"
 	},
 	"login": {
 		"productName": "CIB seven",
@@ -89,6 +90,7 @@
 		"onlyIncidents": "Solo con incidenti",
 		"runningInstances": "Istanze",		
 		"instances": "Istanze",
+		"calledProcessInstances": "Chiamato processo Istanze"
 		"statistics": "Statistics",		
 		"suspendInstance": "Sospendi istanza di processo",
 		"deleteInstance": "Elimina l'istanza di processo in esecuzione",
@@ -110,6 +112,10 @@
 				"line1": "Elimina definizione del processo?",
 				"line2": "Nome: {name}Versione: {version}"
 			}
+		},
+		"confirm": {
+			"suspend": "Si vuole davvero sospendere la prossima definizione di processo con tutte le istanze di processo in esecuzione?",
+			"activate": "Si vuole davvero attivare la prossima definizione di processo con tutte le istanze di processo in esecuzione?"
 		},
 		"true": "Vero",
 		"false": "Falso",
@@ -136,6 +142,12 @@
 			"currentTaskAssignee": "Attività assegnata a",
 			"currentTaskCreated": "Attività corrente creata su"
 		},
+		"confirm": {
+			"suspend": "Do you really want to suspend the next instance of the process?",
+			"activate": "Do you really want to activate the next instance of the process?",
+			"deleteInstance": "Do you really want to delete the next instance of the process?",
+			"deleteHistoryInstance": "Do you really want to delete the next historical instance of the process?"
+		},
 		"variables": {
 			"name": "Nome",
 			"type": "Tipo",
@@ -143,7 +155,8 @@
 			"actions": "Azioni",
 			"scope": "Ambito",
 			"objectTypeName": "Nome tipo oggetto",
-			"serializationDataFormat": "Formato dati serializzazione"
+			"serializationDataFormat": "Formato dati serializzazione",
+			"confirmDelete": "Si vuole cancellare la variabile?"
 		},
 		"addVariable": "Aggiungi variabile",
 		"jobs": {
@@ -156,6 +169,12 @@
 			"actions": "Azioni",
 			"suspend": "Sospendere",
 			"resume": "Riprendere"
+		},
+		"calledProcesses": {
+			"callingActivity": "Attività di chiamata",
+			"process": "Processo",
+			"version": "Versione",
+			"id": "Id"
 		}
 	},
 	"bpmn-viewer": {
@@ -212,6 +231,10 @@
 		"usersFound": "Risultati trovati: il filtro di ricerca ha identificato gli utenti che corrispondono ai tuoi criteri",
 		"userAssigned": "L'utente {0} è stato assegnato con successo"
 	},
+	"batches": {
+		"title": "Batches",
+		"tooltip": "Batch operations"
+	},
 	"admin": {
 		"loading": "Caricare...",
 		"exportCsv": "Esporta tutto",
@@ -239,6 +262,10 @@
 			"name": "Nome",
 			"type": "Tipo",
 			"search": "Cerca"			
+		},
+		"tenants": {
+			"title": "Tenants",
+			"tooltip": "Tenants management"
 		},
 		"authorizations": {
 			"title": "Autorizzazioni",
@@ -288,6 +315,19 @@
 			},
 			"add": "Aggiungi autorizzazione",
 			"noAuthSelected": "Nessun tipo di autorizzazione selezionato"
+		},
+		"system": {
+			"title": "System",
+			"tooltip": "System Settings and Diagnostics",
+			"settings": "Impostazioni",
+			"system-diagnostics": {
+				"title": "Diagnostica",
+				"diagnosticHelp": "I dati diagnostici consentono di comprendere l’ambiente per facilitare la diagnosi dei problemi.",
+				"diagnosticData": "Dati diagnostici"
+			},
+			"execution-metrics": {
+				"title": "Metriche di esecuzione"
+			}
 		}
 	},
 	"account-form": {
@@ -317,8 +357,7 @@
 		"cancel": "Cancella",
 		"delete": "Eliminare",
 		"deleteFilter": "Volete davvero eliminare il filtro selezionato {name}?",
-		"assignUser": "Questo compito è già assegnato a qualcun altro, vuoi davvero cambiare questo incarico?",
-		"performOperation": "Sei sicuro di voler effettuare questa operazione?"
+		"assignUser": "Questo compito è già assegnato a qualcun altro, vuoi davvero cambiare questo incarico?"
 	},
 	"alert": {
 		"successSaveTask": "L'attività è stata salvata con successo. Ricordate che dovete chiudere l'attività per finire il vostro lavoro.",
@@ -331,7 +370,7 @@
 		"email": "@:account-form.email"
 	},
 	"cib-header": {
-		"productName": "CIB flow",
+		"productName": "CIB seven",
 		"languages": "Lingua",
 		"help": "Informazioni e Aiuto",
 		"user": "Conto",
@@ -403,7 +442,7 @@
 			"filterNamePlaceholder": "ad es. i miei compiti",
 			"selectProperty": "Selezionare Key",
 			"insertValue": "Inserire il valore",
-			"insertVariableKey": "Inserire la chiave",
+			"insertVariableKey": "Inserisci il nome della variabile",
 			"addCriteria": "Aggiungere criteri",
 			"filterExists": "Questo filtro esiste già",
 			"selectedCriteria": "Criteri selezionati",
@@ -484,16 +523,16 @@
 				"taskGroup": "Task",
 				"datesGroup": "Dates"
 			},
-			"noCriterias": "Nessun criterio selezionato",
+			"noCriterias": "Non hai ancora impostato alcun criterio di filtro",
 			"criteria": {
 				"key": "Criteri chiave",
 				"value": "Criteri di valore"
 			},
 			"matchAnyCriteria": "Alcuni dei criteri sono soddisfatti",
 			"matchAllCriteria": "Tutti i criteri sono soddisfatti",
-			"msgFilterCreated": "Filtro {name} creato",
-			"msgFilterUpdated": "Filtro {name} aggiornato",
-			"msgFilterDeleted": "Filtro {name} cancellato",
+			"msgFilterCreated": "Filtro \"{name}\" creato",
+			"msgFilterUpdated": "Filtro \"{name}\" aggiornato",
+			"msgFilterDeleted": "Filtro \"{name}\" cancellato",
 			"legendExpression": "Le chiavi che terminano con \"*\" accettano espressioni come valori. Ad esempio: '&#36;&#123; currentUser&#40;&#41; &#125;' o '&#36;&#123; currentUserGroups&#40;&#41; &#125;'",
 			"legendMultiple": "Le chiavi che terminano con \"in\" accettano più valori separati da virgole. Ad esempio: `keyC, keyA, keyB`",
 			"create": "Create filter",
@@ -532,14 +571,16 @@
 	},
     "ienotify": { 
 		"remember": "Non mostrare più questo messaggio",
-        "text": "CIB flow non è completamente supportato da Internet Explorer. Per usufruire al meglio delle funzionalità di CIB flow ti consigliamo di utilizzare un altro browser."
+        "text": "CIB seven non è completamente supportato da Internet Explorer. Per usufruire al meglio delle funzionalità di CIB seven ti consigliamo di utilizzare un altro browser."
     },
 	"start": { 
 		"close": "Chiudere",
 		"taskList": "I miei compiti",
 		"startProcesses": "@:process.startProcess",
 		"cockpit": "Cockpit",
-		"emptyStart": "Currently you do not have permission to perform any task here. Please contact the CIB flow administrator to get permissions.",
+		"emptyStart": "Currently you do not have permission to perform any task here. Please contact the CIB seven administrator to get permissions.",
+		"groupOperations": "Operations",
+		"groupAdministration": "Administration",
 		"admin": "Gestione",
 		"userAdmin": "Gestione utenti",
 		"modeler": "Modellatore di processo",
@@ -669,7 +710,24 @@
 		"flowLinkPrivacy": "Informativa sulla privacy",
 		"flowLinkImprint": "Impronta",
 		"flowLinkAccessibility": "Accessibility declaration",		
-		"flowLinkHelp": "Aiuto",			
+		"flowLinkHelp": "Aiuto",
+		"shortcuts": {
+			"title": "Scorciatoie",
+			"tooltip": "Mostra le scorciatoie disponibili",
+			"columnShortcut": "Scorciatoia",
+			"columnDescription": "Descrizione",
+			"buttonCtrl": "Ctrl",
+			"shortcuts": {
+				"ctrlLeft": "Vai alla vista 'Avvia processo'",
+				"ctrlDown": "Vai alla vista 'Compiti'",
+				"ctrlRight": "Vai alla vista 'Processi'",
+				"ctrlAltP": "Apri la finestra pop-up 'Avvia processo'",
+				"ctrlAltC": "Reclama il compito attualmente selezionato",
+				"alt1": "Imposta il focus sui filtri",
+				"alt2": "Imposta il focus sulla lista dei compiti filtrati",
+				"alt3": "Imposta il focus sul compito selezionato"
+			}
+		},
 		"flowModalSupport": {
 			"modalText": "Supporto",
 			"title": "Informazioni",
@@ -684,7 +742,7 @@
 		},
 		"flowModalAbout": {
 			"modalText": "Informazioni su",
-			"title": "CIB flow"
+			"title": "CIB seven"
 		}
 	},
 	"password": {
@@ -734,7 +792,7 @@
     },
 	"notification": {
 		"newTasks": "Nuove attività",
-		"newTasksTitle": "Hai ricevuto nuove attività assegnate su CIB flow"
+		"newTasksTitle": "Hai ricevuto nuove attività assegnate su CIB seven"
 	},
 	"decision": {
 		"id": "ID",

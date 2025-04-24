@@ -1,7 +1,8 @@
 {
 	"commons": {
 		"edit": "Edit",
-		"save": "Save"
+		"save": "Save",
+		"copyValue": "Copy value"
 	},
 	"login": {
 		"productName": "CIB seven",
@@ -94,6 +95,7 @@
 		"incidents": "Incidents",		
 		"variables": "Variables",
 		"usertasks": "User tasks",
+		"calledProcessInstances": "Called process instances",
 		"onlyIncidents": "Only with incidents",
 		"runningInstances": "Instances",		
 		"instances": "Instances",
@@ -118,6 +120,10 @@
 				"line1": "Delete process definition?",
 				"line2": "Name: {name}Version: {version}"
 			}
+		},
+		"confirm": {
+			"suspend": "Do you really want to suspend the next process definition with all running process instances?",
+			"activate": "Do you really want to activate the next process definition with all running process instances?"
 		},
 		"true": "True",
 		"false": "False",				
@@ -146,7 +152,13 @@
 			"deletedReason": "Deleted reason",
 			"currentTaskAssignee": "Current assignee",
 			"currentTaskCreated": "Current task created on"
-		},				
+		},
+		"confirm": {
+			"suspend": "Do you really want to suspend the next instance of the process?",
+			"activate": "Do you really want to activate the next instance of the process?",
+			"deleteInstance": "Do you really want to delete the next instance of the process?",
+			"deleteHistoryInstance": "Do you really want to delete the next historical instance of the process?"
+		},
 		"variables": {
 			"name": "Name",
 			"type": "Type",
@@ -154,7 +166,8 @@
 			"actions": "Actions",
 			"scope": "Scope",
 			"objectTypeName": "Object type name",
-			"serializationDataFormat": "Serialization data format"
+			"serializationDataFormat": "Serialization data format",
+			"confirmDelete": "Do you want to delete the variable?"
 		},
 		"incidents": {
 		    "message": "Message",
@@ -163,6 +176,7 @@
 		    "failedActivity": "Failed activity",
 		    "incidentType": "Incident type",
 		    "retryJob": "Increment number of retries of failed job",
+			"annotation": "Annotation",
 		    "actions": "Actions",
 			"incrementNumberRetries": "Increment number of retries",
 			"retryMsg": "The number of retries of the corresponding failed job of the selected incident will be incremented.",
@@ -171,7 +185,9 @@
 			"setDueDate": "Set due date",
 			"dueDate": "Due date",
 			"scheduleAt": "Schedule at",
-			"invalidDateError": "You must enter a valid date"
+			"invalidDateError": "You must enter a valid date",
+			"retry": "Retry",			
+			"editAnnotation": "Edit annotation"
 		},
 		"jobDefinitions": {
 			"state": "State",
@@ -188,7 +204,7 @@
 			"suspendMsg": "This job definition will be suspended, so that new jobs based on this job definition are initially suspended.",
 			"includeExisting": "Include existing job",
 			"execute": "Execute",
-			"immediately": "Inmediatamente",
+			"immediately": "Immediately",
 			"delayed": "Delayed",
 			"scheduleAt": "Schedule at",
 			"suspend": "Suspend",
@@ -197,7 +213,11 @@
 			"overridingMsg": "Change the overriding priority for jobs of the given job definition.",
 			"jobPriority": "Priority",
 			"clear": "Clear overriding job priority",
-			"set": "Set overriding job priority"
+			"set": "Set overriding job priority",
+			"invalidPriorityError": "You must enter an integer value",
+			"overrideAction": "Override",
+			"clearAction": "Clear",
+			"invalidDateError": "You must enter a valid date"
 		},
 		"usertasks": {
 		    "activity": "Activity",
@@ -208,6 +228,12 @@
 		    "followUp": "Follow-Up",
 		    "taskID": "Task ID",
 		    "actions": "Actions"
+		},
+		"calledProcesses": {
+			"callingActivity": "Calling Activity",
+			"process": "Process",
+			"version": "Version",
+			"id": "Id"
 		},
 		"assignModal": {
 		    "manageUsersGroups": "Manage users/groups",
@@ -251,7 +277,7 @@
 			"completedTask": "Completed task",
 			"currentTask": "Current task",
 			"selectedTask": "@:task.selectedTask",
-			"runingInstances": "Running activity instances",
+			"runningInstances": "Running activity instances",
 			"openIncidents": "Open incidents",
 			"suspendedJobDefinition": "Suspended job definition",
 			"activitiesHistory": "Executed activity instances",			
@@ -302,6 +328,10 @@
 		"assignedUserTitle": "Assigned user delete",
 		"usersFound": "Results Found: The search filter has identified users matching your criteria",
 		"userAssigned": "The user {0} was successfully assigned"
+	},
+	"batches": {
+		"title": "Batches",
+		"tooltip": "Batch operations"
 	},
 	"admin": {
 		"loading": "Loading...",
@@ -360,7 +390,7 @@
 			"createLabel": "Create new group",
 			"groupCreatedMessage": "Group {0} created",
 			"actions": "Actions",
-			"confirmDelete": "Do you really want to delete the user with the following parameters?",
+			"confirmDelete": "Do you really want to delete the group with the following parameters?",
 			"information": "Information",
 			"editMessage": "Edit group ({0})",
 			"users": "Users",
@@ -373,6 +403,10 @@
 			"user": {
 				"title": "Group users"
 			}
+		},
+		"tenants": {
+			"title": "Tenants",
+			"tooltip": "Tenants management"
 		},
 		"authorizations": {
 			"title": "Authorizations",
@@ -423,6 +457,19 @@
 			},
 			"add": "Add authorization",
 			"noAuthSelected": "No Authorization type selected"
+		},
+		"system": {
+			"title": "System",
+			"tooltip": "System Settings and Diagnostics",
+			"settings": "Settings",
+			"system-diagnostics": {
+				"title": "Diagnostics",
+				"diagnosticHelp": "The diagnostics data allows to understand the environment to aid problem diagnosis.",
+				"diagnosticData": "Diagnostics Data"
+			},
+			"execution-metrics": {
+				"title": "Execution Metrics"
+			}
 		}
 	},
 	"account-form": {
@@ -453,8 +500,7 @@
 		"close": "Close",
 		"delete": "Delete",
 		"deleteFilter": "Do you really want to delete the selected filter {name}?",
-		"assignUser": "This task is already assigned to someone else, do you really want to change this assignment?",
-		"performOperation": "Are you sure you want to perform this operation?"
+		"assignUser": "This task is already assigned to someone else, do you really want to change this assignment?"
 	},
 	"alert": {
 		"successSaveTask": "The task has been saved successfully. Please remember you have to close it to finish your work.",
@@ -467,7 +513,7 @@
 		"email": "@:account-form.email"
 	},
 	"cib-header": {
-		"productName": "CIB flow",
+		"productName": "CIB seven",
 		"languages": "Language",
 		"help": "Info & Help",
 		"logout": "Logout",
@@ -541,7 +587,7 @@
 			"filterPriorityLabel": "Priority",
 			"selectProperty": "Select key",
 			"insertValue": "Enter value",
-			"insertVariableKey": "Enter key",
+			"insertVariableKey": "Enter variable name",
 			"addCriteria": "Add criteria",
 			"filterExists": "This filter already exists",
 			"selectedCriteria": "Selected criteria",
@@ -622,16 +668,16 @@
 				"taskGroup": "Task",
 				"datesGroup": "Dates"
 			},
-			"noCriterias": "None criteria selected",
+			"noCriterias": "You haven't set any filter criteria yet",
 			"criteria": {
 				"key": "Criteria key",
 				"value": "Criteria value"
 			},
 			"matchAnyCriteria": "Any of the criteria are met",
 			"matchAllCriteria": "All of the criteria are met",
-			"msgFilterCreated": "Filter {name} created",
-			"msgFilterUpdated": "Filter {name} updated",
-			"msgFilterDeleted": "Filter {name} deleted",
+			"msgFilterCreated": "Filter \"{name}\" has been created",
+			"msgFilterUpdated": "Filter \"{name}\" has been changed successfully",
+			"msgFilterDeleted": "Filter \"{name}\" has been deleted",
 			"legendExpression": "Keys ending with \"*\" accept expressions as value. E.g.: '&#36;&#123; currentUser&#40;&#41; &#125;' or '&#36;&#123; currentUserGroups&#40;&#41; &#125;'",
 			"legendMultiple": "Keys ending with \"in\" accept multiple values separated by comma. E.g.: `keyC, keyA, keyB`",
 			"create": "Create filter",
@@ -672,14 +718,16 @@
 	},
 	"ienotify": {
 		"remember": "Do not show this message again",
-		"text": "CIB flow is not fully supported by Internet Explorer. In order to enjoy CIB flow we suggest you use another browser."
+		"text": "CIB seven is not fully supported by Internet Explorer. In order to enjoy CIB seven we suggest you use another browser."
 	},
 	"start": {
 		"close": "Close",
 		"taskList": "Tasks",
 		"startProcesses": "@:process.startProcess",
 		"cockpit": "Cockpit",
-		"emptyStart": "Currently you do not have permission to perform any task here. Please contact the CIB flow administrator to get permissions.",
+		"emptyStart": "Currently you do not have permission to perform any task here. Please contact the CIB seven administrator to get permissions.",
+		"groupOperations": "Operations",
+		"groupAdministration": "Administration",
 		"admin": "Process Management",
 		"userAdmin": "User administration",
 		"modeler": "Process modeler",
@@ -820,7 +868,24 @@
 		"flowLinkPrivacy": "Privacy statement",
 		"flowLinkImprint": "Imprint",
 		"flowLinkAccessibility": "Accessibility declaration",	
-		"flowLinkHelp": "Help",				
+		"flowLinkHelp": "Help",
+		"shortcuts": {
+			"title": "Shortcuts",
+			"tooltip": "View avaiable shortcuts",
+			"columnShortcut": "Shortcut",
+			"columnDescription": "Description",
+			"buttonCtrl": "Ctrl",
+			"shortcuts": {
+				"ctrlLeft": "Jump to \"Start process\" view",
+				"ctrlDown": "Jump to \"Tasks\" view",
+				"ctrlRight": "Jump to \"Processes\" view",
+				"ctrlAltP": "Open \"Start process\" pop-up window",
+				"ctrlAltC": "Claim the currently selected task",
+				"alt1": "Set focus on filters",
+				"alt2": "Set focus on the list of filtered tasks",
+				"alt3": "Set focus on the selected task"
+			}
+		},
 		"flowModalSupport": {
 			"modalText": "Support",
 			"title": "Information",
@@ -835,7 +900,7 @@
 		},
 		"flowModalAbout": {
 			"modalText": "About",
-			"title": "CIB flow"
+			"title": "CIB seven"
 		}
 	},
 	"multisort": {
@@ -929,7 +994,7 @@
     },
 	"notification": {
 		"newTasks": "New tasks",
-		"newTasksTitle": "You got new tasks assigned on CIB flow"
+		"newTasksTitle": "You got new tasks assigned on CIB seven"
 	},
 	"decision": {
 		"id": "ID",

@@ -1,16 +1,12 @@
 package org.cibseven.webapp.auth;
 
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 
 import org.cibseven.webapp.auth.exception.AuthenticationException;
 import org.cibseven.webapp.auth.providers.JwtUserProvider;
 import org.cibseven.webapp.auth.rest.StandardLogin;
 import org.cibseven.webapp.exception.AnonUserBlockedException;
-import org.cibseven.webapp.rest.model.Authorization;
-import org.cibseven.webapp.rest.model.Authorizations;
 import org.springframework.beans.factory.annotation.Value;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -53,62 +49,6 @@ public abstract class BaseUserProvider<R extends StandardLogin> implements JwtUs
 	}
 
 	public abstract R createLoginParams();
-
-	public boolean hasCockpitRights(Authorizations authorizations) {
-		return authorizations.getApplication().stream().anyMatch(auth -> {
-			if (auth.getType() == 1 && auth.getPermissions().length > 0 &&
-	                ("ALL".equals(auth.getPermissions()[0]) || "ACCESS".equals(auth.getPermissions()[0])) &&
-	                ("cockpit".equals(auth.getResourceId()) || "*".equals(auth.getResourceId()))) {
-	            return true;
-	        }
-	        else if (auth.getType() == 0 && Arrays.asList(auth.getPermissions()).contains("ALL") &&
-	                "*".equals(auth.getResourceId())) {
-	            return true;
-	        }
-	        return false;
-		});		
-	}
-	
-	public boolean hasAdminManagementPermissions(Authorizations authorizations, String action, String type, List<String> permissions) {
-		Collection<Authorization> authList;
-        switch (type) {
-            case "user":
-                authList = authorizations.getUser();
-                break;
-            case "group":
-                authList = authorizations.getGroup();
-                break;
-            case "authorization":
-                authList = authorizations.getAuthorization();
-                break;
-            default:
-                return false;
-        }
-        
-        boolean hasDeny = authList.stream().anyMatch(auth -> {
-            if (auth.getType() == 2 && auth.getPermissions().length > 0 && permissions.contains(auth.getPermissions()[0])) {
-                return true;
-            }
-            return false;
-        });
-        
-        if (hasDeny) return false;
-
-        return authList.stream().anyMatch(auth -> {
-            if ((auth.getType() == 1 || auth.getType() == 0) && auth.getPermissions().length > 0 && permissions.contains(auth.getPermissions()[0])) {
-                return true;
-            }
-            return false;
-        });
-	}
-	
-	public boolean hasSpecificProcessRights(Authorizations authorizations, String processKey) {
-		return authorizations.getProcessDefinition().stream().anyMatch(auth -> {
-			return auth.getType() == 1 && auth.getPermissions().length > 0 &&
-					("ALL".equals(auth.getPermissions()[0]) || "CREATE_INSTANCE".equals(auth.getPermissions()[0])) &&
-					(processKey.equals(auth.getResourceId()));
-		});
-	}
 	
 	public String createExternalToken (StandardLogin params) {
 		CIBUser user = new CIBUser(params.getUsername());

@@ -6,7 +6,9 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.webapp.providers.PermissionConstants;
 import org.cibseven.webapp.providers.SevenProvider;
 import org.cibseven.webapp.rest.model.Decision;
 import org.springframework.beans.factory.InitializingBean;
@@ -24,6 +26,20 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
+/*
+ * Interface: BpmProvider
+ *
+ * Authorization Permissions Summary:
+ * 
+ * For Decision Definitions (DECISION_DEFINITION):
+ * - READ: Required for retrieving definitions, diagrams, XML and metadata.
+ * - CREATE_INSTANCE: Required for evaluating decisions.
+ * - UPDATE: Required for modifying the decision definition (e.g., history TTL).
+ * - READ_HISTORY: Required for accessing historic decision instances.
+ * - DELETE_HISTORY: Required for deleting historic decision instances.
+ *
+ */
+
 @ApiResponses({
 	@ApiResponse(responseCode = "500", description = "An unexpected system error occured"),
 	@ApiResponse(responseCode = "401", description = "Unauthorized")
@@ -36,7 +52,7 @@ public class DecisionService extends BaseService implements InitializingBean {
 	public void afterPropertiesSet() {
 		if (bpmProvider instanceof SevenProvider)
 			sevenProvider = (SevenProvider) bpmProvider;
-		else throw new SystemException("ProcessService expects a BpmProvider");
+		else throw new SystemException("DecisionService expects a BpmProvider");
 	}
 	
 	@Operation(
@@ -45,127 +61,150 @@ public class DecisionService extends BaseService implements InitializingBean {
 			description = "<strong>Return: Collection of decisions")
 	@ApiResponse(responseCode = "400", description = "There is at least one invalid parameter value")
 	@GetMapping
-	public Collection<Decision> getList(@RequestParam Map<String, Object> queryParams, Locale loc) {
-		return bpmProvider.getDecisionDefinitionList(queryParams);
+	public Collection<Decision> getList(@RequestParam Map<String, Object> queryParams, Locale loc, CIBUser user) {
+		checkPermission(user, SevenResourceType.DECISION_DEFINITION, PermissionConstants.READ_ALL);
+		return bpmProvider.getDecisionDefinitionList(queryParams, user);
 	}
 	
 	@GetMapping("/count")
-	public Object getDecisionDefinitionListCount(@RequestParam Map<String, Object> queryParams) {
-		return bpmProvider.getDecisionDefinitionListCount(queryParams);
+	public Object getDecisionDefinitionListCount(@RequestParam Map<String, Object> queryParams, CIBUser user) {
+		checkPermission(user, SevenResourceType.DECISION_DEFINITION, PermissionConstants.READ_ALL);
+		return bpmProvider.getDecisionDefinitionListCount(queryParams, user);
 	}
 
 	@GetMapping("/key/{key}")
-	public Decision getDecisionDefinitionByKey(@PathVariable String key) {
-		return bpmProvider.getDecisionDefinitionByKey(key);
+	public Decision getDecisionDefinitionByKey(@PathVariable String key, CIBUser user) {
+		checkPermission(user, SevenResourceType.DECISION_DEFINITION, PermissionConstants.READ_ALL);
+		return bpmProvider.getDecisionDefinitionByKey(key, user);
 	}
 
 	@GetMapping("/key/{key}/diagram")
-	public Object getDiagramByKey(@PathVariable String key) {
-		return bpmProvider.getDiagramByKey(key);
+	public Object getDiagramByKey(@PathVariable String key, CIBUser user) {
+		checkPermission(user, SevenResourceType.DECISION_DEFINITION, PermissionConstants.READ_ALL);
+		return bpmProvider.getDiagramByKey(key, user);
 	}
 
 	@PostMapping("/key/{key}/evaluate")
 	public Object evaluateDecisionDefinitionByKey(@RequestBody Map<String, Object> data, @PathVariable String key, CIBUser user) {
+		checkPermission(user, SevenResourceType.DECISION_DEFINITION, PermissionConstants.CREATE_INSTANCE_ALL);
 		return bpmProvider.evaluateDecisionDefinitionByKey(data, key, user);
 	}
 
 	@PutMapping("/key/{key}/history-ttl")
 	public void updateHistoryTTLByKey(@RequestBody Map<String, Object> data, @PathVariable String key, CIBUser user) {
+		checkPermission(user, SevenResourceType.DECISION_DEFINITION, PermissionConstants.UPDATE_ALL);
 		bpmProvider.updateHistoryTTLByKey(data, key, user);
 	}
 
 	@GetMapping("/key/{key}/tenant/{tenant}")
-	public Decision getDecisionDefinitionByKeyAndTenant(@PathVariable String key, @PathVariable String tenant) {
-		return bpmProvider.getDecisionDefinitionByKeyAndTenant(key, tenant);
+	public Decision getDecisionDefinitionByKeyAndTenant(@PathVariable String key, @PathVariable String tenant, CIBUser user) {
+		checkPermission(user, SevenResourceType.DECISION_DEFINITION, PermissionConstants.READ_ALL);
+		return bpmProvider.getDecisionDefinitionByKeyAndTenant(key, tenant, user);
 	}
 
 	@GetMapping("/key/{key}/tenant/{tenant}/diagram")
-	public Object getDiagramByKeyAndTenant(@PathVariable String key, @PathVariable String tenant) {
-		return bpmProvider.getDiagramByKeyAndTenant(key, tenant);
+	public Object getDiagramByKeyAndTenant(@PathVariable String key, @PathVariable String tenant, CIBUser user) {
+		checkPermission(user, SevenResourceType.DECISION_DEFINITION, PermissionConstants.READ_ALL);
+		return bpmProvider.getDiagramByKeyAndTenant(key, tenant, user);
 	}
 
 	@PostMapping("/key/{key}/tenant/{tenant}/evaluate")
-	public Object evaluateDecisionDefinitionByKeyAndTenant(@PathVariable String key, @PathVariable String tenant) {
-		return bpmProvider.evaluateDecisionDefinitionByKeyAndTenant(key, tenant);
+	public Object evaluateDecisionDefinitionByKeyAndTenant(@PathVariable String key, @PathVariable String tenant, CIBUser user) {
+		checkPermission(user, SevenResourceType.DECISION_DEFINITION, PermissionConstants.CREATE_INSTANCE_ALL);
+		return bpmProvider.evaluateDecisionDefinitionByKeyAndTenant(key, tenant, user);
 	}
 
 	@PutMapping("/key/{key}/tenant/{tenant}/history-ttl")
-	public Object updateHistoryTTLByKeyAndTenant(@PathVariable String key, @PathVariable String tenant) {
-		return bpmProvider.updateHistoryTTLByKeyAndTenant(key, tenant);
+	public Object updateHistoryTTLByKeyAndTenant(@PathVariable String key, @PathVariable String tenant, CIBUser user) {
+		return bpmProvider.updateHistoryTTLByKeyAndTenant(key, tenant, user);
 	}
 
 	@GetMapping("/key/{key}/xml")
-	public Object getXmlByKey(@PathVariable String key) {
-		return bpmProvider.getXmlByKey(key);
+	public Object getXmlByKey(@PathVariable String key, CIBUser user) {
+		checkPermission(user, SevenResourceType.DECISION_DEFINITION, PermissionConstants.READ_ALL);
+		return bpmProvider.getXmlByKey(key, user);
 	}
 
 	@GetMapping("/key/{key}/tenant/{tenant}/xml")
-	public Object getXmlByKeyAndTenant(@PathVariable String key, @PathVariable String tenant) {
-		return bpmProvider.getXmlByKeyAndTenant(key, tenant);
+	public Object getXmlByKeyAndTenant(@PathVariable String key, @PathVariable String tenant, CIBUser user) {
+		checkPermission(user, SevenResourceType.DECISION_DEFINITION, PermissionConstants.READ_ALL);
+		return bpmProvider.getXmlByKeyAndTenant(key, tenant, user);
 	}
 
 	@GetMapping("/id/{id}")
-	public Decision getDecisionDefinitionById(@PathVariable String id) {
-		return bpmProvider.getDecisionDefinitionById(id);
+	public Decision getDecisionDefinitionById(@PathVariable String id, @RequestParam Optional<Boolean> extraInfo, CIBUser user) {
+  	checkPermission(user, SevenResourceType.DECISION_DEFINITION, PermissionConstants.READ_ALL);
+		return bpmProvider.getDecisionDefinitionById(id, extraInfo, user);
 	}
 
 	@GetMapping("/id/{id}/diagram")
-	public Object getDiagramById(@PathVariable String id) {
-		return bpmProvider.getDiagramById(id);
+	public Object getDiagramById(@PathVariable String id, CIBUser user) {
+		checkPermission(user, SevenResourceType.DECISION_DEFINITION, PermissionConstants.READ_ALL);
+		return bpmProvider.getDiagramById(id, user);
 	}
 
 	@PostMapping("/id/{id}/evaluate")
-	public Object evaluateDecisionDefinitionById(@PathVariable String id) {
-		return bpmProvider.evaluateDecisionDefinitionById(id);
+	public Object evaluateDecisionDefinitionById(@PathVariable String id, CIBUser user) {
+		checkPermission(user, SevenResourceType.DECISION_DEFINITION, PermissionConstants.CREATE_INSTANCE_ALL);
+		return bpmProvider.evaluateDecisionDefinitionById(id, user);
 	}
 
 	@PutMapping("/id/{id}/history-ttl")
-	public Object updateHistoryTTLById(@PathVariable String id) {
-		return bpmProvider.updateHistoryTTLById(id);
+	public void updateHistoryTTLById(@PathVariable String id, 
+			@RequestBody Map<String, Object> data, CIBUser user) {
+  	checkPermission(user, SevenResourceType.DECISION_DEFINITION, PermissionConstants.UPDATE_ALL);
+		bpmProvider.updateHistoryTTLById(id, data, user);
 	}
 
 	@GetMapping("/id/{id}/xml")
-	public Object getXmlById(@PathVariable String id) {
-		return bpmProvider.getXmlById(id);
+	public Object getXmlById(@PathVariable String id, CIBUser user) {
+		checkPermission(user, SevenResourceType.DECISION_DEFINITION, PermissionConstants.READ_ALL);
+		return bpmProvider.getXmlById(id, user);
 	}
 	
 	@GetMapping("/key/{key}/versions")
 	public Collection<Decision> getDecisionVersionsByKey(
 			@Parameter(description = "Decision definition key") @PathVariable String key,
-			@RequestParam Optional<Boolean> lazyLoad, Locale loc) {
-		return bpmProvider.getDecisionVersionsByKey(key, lazyLoad);
+			@RequestParam Optional<Boolean> lazyLoad, Locale loc, CIBUser user) {
+		checkPermission(user, SevenResourceType.DECISION_DEFINITION, PermissionConstants.READ_ALL);
+		return bpmProvider.getDecisionVersionsByKey(key, lazyLoad, user);
 	}
 	
 	@Operation(summary = "Get a list of historic decision instances")
 	@GetMapping("/history/instances")
-	public Object getHistoricDecisionInstances(@RequestParam Map<String, Object> queryParams) {
-	    return bpmProvider.getHistoricDecisionInstances(queryParams);
+	public Object getHistoricDecisionInstances(@RequestParam Map<String, Object> queryParams, CIBUser user) {
+		checkPermission(user, SevenResourceType.HISTORY, PermissionConstants.READ_HISTORY_ALL);
+		return bpmProvider.getHistoricDecisionInstances(queryParams, user);
 	}
 	
 	@Operation(summary = "Get the count of historic decision instances")
 	@GetMapping("/history/instances/count")
-	public Object getHistoricDecisionInstanceCount(@RequestParam Map<String, Object> queryParams) {
-	    return bpmProvider.getHistoricDecisionInstanceCount(queryParams);
+	public Object getHistoricDecisionInstanceCount(@RequestParam Map<String, Object> queryParams, CIBUser user) {
+		checkPermission(user, SevenResourceType.HISTORY, PermissionConstants.READ_HISTORY_ALL);
+		return bpmProvider.getHistoricDecisionInstanceCount(queryParams, user);
 	}
 
 	@Operation(summary = "Get a single historic decision instance by ID")
 	@GetMapping("/history/instances/{id}")
 	public Object getHistoricDecisionInstanceById(
 	        @PathVariable String id,
-	        @RequestParam Map<String, Object> queryParams) {
-	    return bpmProvider.getHistoricDecisionInstanceById(id, queryParams);
+	        @RequestParam Map<String, Object> queryParams, CIBUser user) {
+		checkPermission(user, SevenResourceType.HISTORY, PermissionConstants.READ_HISTORY_ALL);
+		return bpmProvider.getHistoricDecisionInstanceById(id, queryParams, user);
 	}
 
 	@Operation(summary = "Delete historic decision instances asynchronously")
 	@PostMapping("/history/instances/delete")
-	public Object deleteHistoricDecisionInstances(@RequestBody Map<String, Object> body) {
-	    return bpmProvider.deleteHistoricDecisionInstances(body);
+	public Object deleteHistoricDecisionInstances(@RequestBody Map<String, Object> body, CIBUser user) {
+		checkPermission(user, SevenResourceType.HISTORY, PermissionConstants.DELETE_HISTORY_ALL);
+		return bpmProvider.deleteHistoricDecisionInstances(body, user);
 	}
 
 	@Operation(summary = "Set removal time for historic decision instances asynchronously")
 	@PostMapping("/history/instances/set-removal-time")
-	public Object setHistoricDecisionInstanceRemovalTime(@RequestBody Map<String, Object> body) {
-	    return bpmProvider.setHistoricDecisionInstanceRemovalTime(body);
+	public Object setHistoricDecisionInstanceRemovalTime(@RequestBody Map<String, Object> body, CIBUser user) {
+		checkPermission(user, SevenResourceType.HISTORY, PermissionConstants.UPDATE_ALL);
+		return bpmProvider.setHistoricDecisionInstanceRemovalTime(body, user);
 	}
 	
 }

@@ -2,6 +2,7 @@ package org.cibseven.webapp.providers;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.cibseven.webapp.auth.CIBUser;
@@ -41,5 +42,6 @@ public interface IIncidentProvider {
 			Optional<String> jobDefinitionIdIn, // Restricts to incidents that have one of the given comma-separated job definition ids.			
 			CIBUser user);
 	public List<Incident> findIncidentByInstanceId(String processInstanceId, CIBUser user);
-	public Collection<Incident> fetchIncidents(String processDefinitionKey, CIBUser user);	
+	public Collection<Incident> fetchIncidents(String processDefinitionKey, CIBUser user);
+	public void setIncidentAnnotation(String incidentId, Map<String, Object> data, CIBUser user);	
 }

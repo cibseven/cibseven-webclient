@@ -31,6 +31,7 @@ import org.cibseven.webapp.rest.model.Incident;
 import org.cibseven.webapp.rest.model.JobDefinition;
 import org.cibseven.webapp.rest.model.Job;
 import org.cibseven.webapp.rest.model.Message;
+import org.cibseven.webapp.rest.model.Metric;
 import org.cibseven.webapp.rest.model.NewUser;
 import org.cibseven.webapp.rest.model.Process;
 import org.cibseven.webapp.rest.model.ProcessDiagram;
@@ -51,6 +52,8 @@ import org.cibseven.webapp.rest.model.VariableHistory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.multipart.MultipartFile;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -120,6 +123,16 @@ public interface BpmProvider {
      */
 	ActivityInstance findActivityInstance(String processInstanceId, CIBUser user) throws SystemException, NoObjectFoundException;
 	
+	/**
+     * Queries for historic activity instances that fulfill the given parameters.
+	 * The activities found belongs to the history.
+     * @param Filter
+     * @return Fetched Historic Activity Instance.
+     * @throws InvalidAttributeValueException when the tenant of a task could not be changed or when the delegation state of a task should be changed to an invalid value.
+     * @throws SystemException in case of any other error.
+     */	
+	Collection<ActivityInstanceHistory> findActivitiesInstancesHistory(Map<String, Object> queryParams, CIBUser user);
+
 	/**
      * Search activities instances that belong to a process instance. The activities found belongs
      * to the history, they have other attributes and activities from finished processes are also fetched.
@@ -233,6 +246,14 @@ public interface BpmProvider {
      */	
 	Process findProcessById(String id, Optional<Boolean> extraInfo, CIBUser user) throws SystemException;
 	
+	/**
+	 * Queries for historic process instances that fulfill the given parameters.
+	 * @param filters is a map of parameters to filter query. Parameters firstResult and maxResults are used for pagination.
+     * @return Fetched processes instances.
+     * @throws SystemException in case of an error.
+     */
+	Collection<HistoryProcessInstance> findProcessesInstancesHistory(Map<String, Object> filters, Optional<Integer> firstResult, Optional<Integer> maxResults, CIBUser user) throws SystemException;
+
 	/**
 	 * Search processes instances with a specific process key (in the history).
 	 * @param active true means that unfinished processes will be fetched 
@@ -747,10 +768,8 @@ public interface BpmProvider {
 	void deleteAuthorization(String authorizationId, CIBUser user);
 
 	/**
-	 * Search processes instances with a specific process id (in the history).
-	 * @param active true means that unfinished processes will be fetched 
-	 * and false, only finished processes will be fetched. Parameters firstResult and maxResults are used for pagination.
-	 * Parameter text and activityId are used for filtering.
+	 * Queries for historic process instances that fulfill the given parameters.
+	 * @param filters is a map of parameters to filter query. Parameters firstResult and maxResults are used for pagination.
      * @return Fetched processes instances.
      * @throws SystemException in case of an error.
      */
@@ -810,6 +829,8 @@ public interface BpmProvider {
 	Map<String, Variable> fetchProcessFormVariablesById(String id, CIBUser user) throws SystemException;
 
 	void retryJobById(String jobId, Map<String, Object> data, CIBUser user);
+	
+	void setIncidentAnnotation(String incidentId, Map<String, Object> data, CIBUser user);
 	
 	/**
 	 * Submit task with saving variables
@@ -914,32 +935,33 @@ public interface BpmProvider {
 	void overrideJobDefinitionPriority(String jobDefinitionId, String params, CIBUser user);
 	JobDefinition findJobDefinition(String id, CIBUser user);
 	
-	Collection<Decision> getDecisionDefinitionList(Map<String, Object> queryParams);
-	Object getDecisionDefinitionListCount(Map<String, Object> queryParams);
-	Decision getDecisionDefinitionByKey(String key);
-	Object getDiagramByKey(String key);
+	Collection<Decision> getDecisionDefinitionList(Map<String, Object> queryParams, CIBUser user);
+	Object getDecisionDefinitionListCount(Map<String, Object> queryParams, CIBUser user);
+	Decision getDecisionDefinitionByKey(String key, CIBUser user);
+	Object getDiagramByKey(String key, CIBUser user);
 	Object evaluateDecisionDefinitionByKey(Map<String, Object> data, String key, CIBUser user);
 	void updateHistoryTTLByKey(Map<String, Object> data, String key, CIBUser user);
-	Decision getDecisionDefinitionByKeyAndTenant(String key, String tenant);
-	Object getDiagramByKeyAndTenant(String key, String tenant);
-	Object evaluateDecisionDefinitionByKeyAndTenant(String key, String tenant);
-	Object updateHistoryTTLByKeyAndTenant(String key, String tenant);
-	Object getXmlByKey(String key);
-	Object getXmlByKeyAndTenant(String key, String tenant);
-	Decision getDecisionDefinitionById(String id);
-	Object getDiagramById(String id);
-	Object evaluateDecisionDefinitionById(String id);
-	Object updateHistoryTTLById(String id);
-	Object getXmlById(String id);
 
-	Collection<Decision> getDecisionVersionsByKey(String key, Optional<Boolean> lazyLoad);
+	Decision getDecisionDefinitionByKeyAndTenant(String key, String tenant, CIBUser user);
+	Object getDiagramByKeyAndTenant(String key, String tenant, CIBUser user);
+	Object evaluateDecisionDefinitionByKeyAndTenant(String key, String tenant, CIBUser user);
+	Object updateHistoryTTLByKeyAndTenant(String key, String tenant, CIBUser user);
+	Object getXmlByKey(String key, CIBUser user);
+	Object getXmlByKeyAndTenant(String key, String tenant, CIBUser user);
+	Decision getDecisionDefinitionById(String id, Optional<Boolean> extraInfo, CIBUser user);
+	Object getDiagramById(String id, CIBUser user);
+	Object evaluateDecisionDefinitionById(String id, CIBUser user);
+	void updateHistoryTTLById(String id, Map<String, Object> data, CIBUser user);
+	Object getXmlById(String id, CIBUser user);
+
+	Collection<Decision> getDecisionVersionsByKey(String key, Optional<Boolean> lazyLoad, CIBUser user);
 	
-	Object getHistoricDecisionInstances(Map<String, Object> queryParams);
-	Object getHistoricDecisionInstanceCount(Map<String, Object> queryParams);
-	Object getHistoricDecisionInstanceById(String id, Map<String, Object> queryParams);
-	Object deleteHistoricDecisionInstances(Map<String, Object> body);
-	Object setHistoricDecisionInstanceRemovalTime(Map<String, Object> body);
-
+	Object getHistoricDecisionInstances(Map<String, Object> queryParams, CIBUser user);
+	Object getHistoricDecisionInstanceCount(Map<String, Object> queryParams, CIBUser user);
+	Object getHistoricDecisionInstanceById(String id, Map<String, Object> queryParams, CIBUser user);
+	Object deleteHistoricDecisionInstances(Map<String, Object> body, CIBUser user);
+	Object setHistoricDecisionInstanceRemovalTime(Map<String, Object> body, CIBUser user);
+  
 	Collection<Job> getJobs(Map<String, Object> params, CIBUser user);
 	void setSuspended(String id, Map<String, Object> data, CIBUser user);
 	Integer findHistoryTaksCount(Map<String, Object> filters, CIBUser user);
@@ -953,4 +975,7 @@ public interface BpmProvider {
 	Object setRemovalTime(Map<String, Object> payload);
 	Object getCleanableBatchReport(Map<String, Object> queryParams);
 	Object getCleanableBatchReportCount();
+
+	JsonNode getTelemetryData(CIBUser user);
+	Collection<Metric> getMetrics(Map<String, Object> queryParams, CIBUser user);
 }

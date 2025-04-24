@@ -37,10 +37,10 @@
           </div>
           <div class="col-8 p-3 text-end">
             <div>
-              <b-button v-if="process.suspended === 'false'" class="border" size="sm" variant="light" @click="showConfirm({ ok: suspendProcess })" :title="$t('process.suspendProcess')">
+              <b-button v-if="process.suspended === 'false'" class="border" size="sm" variant="light" @click="confirmSuspend" :title="$t('process.suspendProcess')">
                 <span class="mdi mdi-pause-circle-outline"></span> {{ $t('process.suspendProcess') }}
               </b-button>
-              <b-button v-else class="border" size="sm" variant="light" @click="showConfirm({ ok: activateProcess })" :title="$t('process.activateProcess')">
+              <b-button v-else class="border" size="sm" variant="light" @click="confirmActivate" :title="$t('process.activateProcess')">
                 <span class="mdi mdi-play-circle-outline"></span> {{ $t('process.activateProcess') }}
               </b-button>
               <b-button class="border" size="sm" variant="light" @click="downloadBpmn()" :title="$t('process.downloadBpmn')">
@@ -54,7 +54,7 @@
           </div>
         </div>
         <div ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 60px; left: 0; bottom: 0" @scroll="handleScrollProcesses">
-          <InstancesTable ref="instancesTable" v-if="!loading && instances && !sorting"
+          <InstancesTable ref="instancesTable" v-if="!loading && instances.length > 0 && !sorting"
             :instances="instances"
             :sortByDefaultKey="sortByDefaultKey"
             :sortDesc="sortDesc"
@@ -62,6 +62,9 @@
           ></InstancesTable>
           <div v-else-if="loading" class="py-3 text-center w-100">
             <BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}
+          </div>
+          <div v-else>
+            <p class="text-center p-4">{{ $t('process-instance.noResults') }}</p>
           </div>
         </div>
       </div>
@@ -76,9 +79,20 @@
           :process="process" :instances="instances" :calledProcesses="calledProcesses"/>
       </div>
     </div>
-    <ConfirmDialog ref="confirm" @ok="$event.ok($event.instance)">
-      {{ $t('confirm.performOperation') }}
+
+    <ConfirmDialog ref="confirmActivate" @ok="activateProcess" :ok-title="$t('process-instance.jobDefinitions.activate')">
+      <p>{{ $t('process.confirm.activate') }}</p>
+      <p>{{ $t('process.name') }}: <strong>{{ process?.name }}</strong><br>
+        {{ $t('process-instance.details.version') }}: <strong>{{ process?.version }}</strong>
+      </p>
     </ConfirmDialog>
+    <ConfirmDialog ref="confirmSuspend" @ok="suspendProcess" :ok-title="$t('process-instance.jobDefinitions.suspend')">
+      <p>{{ $t('process.confirm.suspend') }}</p>
+      <p>{{ $t('process.name') }}: <strong>{{ process?.name }}</strong><br>
+        {{ $t('process-instance.details.version') }}: <strong>{{ process?.version }}</strong>
+      </p>
+    </ConfirmDialog>
+
     <SuccessAlert ref="messageCopy"> {{ $t('process.copySuccess') }} </SuccessAlert>
     <SuccessAlert top="0" style="z-index: 1031" ref="success"> {{ $t('alert.successOperation') }}</SuccessAlert>
     <MultisortModal ref="sortModal" :items="instances" :sortKeys="['state', 'businessKey', 'startTimeOriginal', 'endTimeOriginal', 'id', 'startUserId', 'incidents']" :prefix="'process.'" @apply-sorting="applySorting"></MultisortModal>
@@ -136,7 +150,7 @@ export default {
     'process.id': function() {
       ProcessService.fetchDiagram(this.process.id).then(response => {
         this.$refs.diagram.showDiagram(response.bpmn20Xml, null, null)
-      }),    
+      }),
       this.getJobDefinitions()
     }
   },
@@ -188,11 +202,13 @@ export default {
         '&token=' + this.$root.user.authToken
     },
     refreshDiagram: function() {
-      this.$refs.diagram.clearEvents()
       this.$refs.diagram.cleanDiagramState()
       this.$refs.diagram.drawDiagramState()
     },
-    showConfirm: function(type) { this.$refs.confirm.show(type) },
+    // "Suspend process definition" button
+    confirmSuspend: function() {
+      this.$refs.confirmSuspend.show()
+    },
     suspendProcess: function() {
       ProcessService.suspendProcess(this.process.id, true, true).then(() => {
         this.$store.dispatch('setSuspended', { process: this.process, suspended: 'true' })
@@ -201,6 +217,10 @@ export default {
         })
         this.$refs.success.show()
       })
+    },
+    // "Activate process definition" button
+    confirmActivate: function() {
+      this.$refs.confirmActivate.show()
     },
     activateProcess: function() {
       ProcessService.suspendProcess(this.process.id, false, true).then(() => {

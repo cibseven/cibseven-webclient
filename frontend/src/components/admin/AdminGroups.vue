@@ -54,27 +54,17 @@
       </div>
     </div>
 
-    <b-modal ref="deleteModal" :title="$t('confirm.title')">
-      <div class="container-fluid">
-        <div class="row align-items-center">
-          <div class="col-2">
-            <span class="mdi-36px mdi mdi-alert-outline text-warning me-3"></span>
-          </div>
-          <div class="col-10">
-            <span v-if="groupSelected">
-              <p>{{ $t('admin.groups.confirmDelete') }}</p>
-              <strong>{{ $t('admin.groups.id') }}:</strong> {{ groupSelected.id }} <br>
-              <strong>{{ $t('admin.groups.name') }}:</strong> {{ groupSelected.name }}<br>
-              <strong>{{ $t('admin.groups.type') }}:</strong> {{ groupSelected.type }}<br>
-            </span>
-          </div>
-        </div>
+    <ConfirmDialog ref="deleteModal" @ok="remove(groupSelected)" :ok-title="$t('confirm.delete')">
+      <div v-if="groupSelected">
+        <p>{{ $t('admin.groups.confirmDelete') }}</p>
+        <p>
+          <strong>{{ $t('admin.groups.id') }}:</strong> {{ groupSelected.id }} <br>
+          <strong>{{ $t('admin.groups.name') }}:</strong> {{ groupSelected.name }}<br>
+          <strong>{{ $t('admin.groups.type') }}:</strong> {{ groupSelected.type }}
+        </p>
       </div>
-      <template v-slot:modal-footer>
-        <b-button @click="$refs.deleteModal.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
-        <b-button @click="remove(groupSelected); $refs.deleteModal.hide()" variant="primary">{{ $t('confirm.delete') }}</b-button>
-      </template>
-    </b-modal>
+    </ConfirmDialog>
+
     <TaskPopper ref="importPopper"></TaskPopper>
   </div>
 </template>
@@ -87,10 +77,11 @@ import { getStringObjByKeys } from '@/components/admin/utils.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import TaskPopper from '@/components/common-components/TaskPopper.vue'
 import { BWaitingBox } from 'cib-common-components'
+import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
 
 export default {
   name: 'AdminGroup',
-  components: { FlowTable, TaskPopper, BWaitingBox },
+  components: { FlowTable, TaskPopper, BWaitingBox, ConfirmDialog },
   data: function () {
     return {
       selected: null,

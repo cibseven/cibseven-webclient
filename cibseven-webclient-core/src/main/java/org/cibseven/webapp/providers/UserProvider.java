@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.exception.InvalidUserIdException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.Authorization;
@@ -30,18 +31,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 import lombok.extern.slf4j.Slf4j;
 
+import static org.cibseven.webapp.auth.SevenAuthorizationUtils.*;
+
 @Slf4j
 @Component
 public class UserProvider extends SevenProviderBase implements IUserProvider {
-
-	private final int APPLICATION = 0;
-	private final int FILTER = 5;
-	private final int PROCESS_DEFINITION = 6;
-	private final int TASK = 7;
-	private final int PROCESS_INSTANCE = 8;
-	private final int AUTHORIZATION = 4;
-	private final int USER = 1;
-	private final int GROUP = 2;
 	
 	@Value("${user.provider}") String userProvider;
 	@Value("${users.search.wildcard:}") String wildcard;
@@ -73,19 +67,39 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 				Collection<Authorization> groupsAuthorizations = Arrays.asList(((ResponseEntity<Authorization[]>) doGet(builder, Authorization[].class, user)).getBody());
 				userAuthorizations.addAll(groupsAuthorizations);
 			}
-		
+
 			builder = UriComponentsBuilder.fromHttpUrl(urlUsers).queryParam("type", 0);
 			Collection<Authorization> globalAuthorizations = Arrays.asList(((ResponseEntity<Authorization[]>) doGet(builder, Authorization[].class, user)).getBody());
 			userAuthorizations.addAll(globalAuthorizations);
 
-			auths.setApplication(filterResources(userAuthorizations, APPLICATION));
-			auths.setFilter(filterResources(userAuthorizations, FILTER));
-			auths.setProcessDefinition(filterResources(userAuthorizations, PROCESS_DEFINITION));
-			auths.setProcessInstance(filterResources(userAuthorizations, PROCESS_INSTANCE));
-			auths.setTask(filterResources(userAuthorizations, TASK));
-			auths.setAuthorization(filterResources(userAuthorizations, AUTHORIZATION));
-			auths.setUser(filterResources(userAuthorizations, USER));
-			auths.setGroup(filterResources(userAuthorizations, GROUP));
+			auths.setApplication(filterResources(userAuthorizations, resourceType(SevenResourceType.APPLICATION)));
+			auths.setFilter(filterResources(userAuthorizations, resourceType(SevenResourceType.FILTER)));
+			auths.setProcessDefinition(filterResources(userAuthorizations, resourceType(SevenResourceType.PROCESS_DEFINITION)));
+			auths.setProcessInstance(filterResources(userAuthorizations, resourceType(SevenResourceType.PROCESS_INSTANCE)));
+			auths.setTask(filterResources(userAuthorizations, resourceType(SevenResourceType.TASK)));
+			auths.setAuthorization(filterResources(userAuthorizations, resourceType(SevenResourceType.AUTHORIZATION)));
+			auths.setUser(filterResources(userAuthorizations, resourceType(SevenResourceType.USER)));
+			auths.setGroup(filterResources(userAuthorizations, resourceType(SevenResourceType.GROUP)));
+			auths.setDecisionDefinition(filterResources(userAuthorizations, resourceType(SevenResourceType.DECISION_DEFINITION)));
+			auths.setDecisionRequirementsDefinition(filterResources(userAuthorizations, resourceType(SevenResourceType.DECISION_REQUIREMENTS_DEFINITION)));
+			auths.setHistory(filterResources(userAuthorizations, resourceType(SevenResourceType.HISTORY)));
+			auths.setDeployment(filterResources(userAuthorizations, resourceType(SevenResourceType.DEPLOYMENT)));
+			auths.setCaseDefinition(filterResources(userAuthorizations, resourceType(SevenResourceType.CASE_DEFINITION)));
+			auths.setCaseInstance(filterResources(userAuthorizations, resourceType(SevenResourceType.CASE_INSTANCE)));
+			auths.setJobDefinition(filterResources(userAuthorizations, resourceType(SevenResourceType.JOB_DEFINITION)));
+			auths.setBatch(filterResources(userAuthorizations, resourceType(SevenResourceType.BATCH)));
+			auths.setGroupMembership(filterResources(userAuthorizations, resourceType(SevenResourceType.GROUP_MEMBERSHIP)));
+			auths.setHistoricTask(filterResources(userAuthorizations, resourceType(SevenResourceType.HISTORIC_TASK)));
+			auths.setHistoricProcessInstance(filterResources(userAuthorizations, resourceType(SevenResourceType.HISTORIC_PROCESS_INSTANCE)));
+			auths.setTenant(filterResources(userAuthorizations, resourceType(SevenResourceType.TENANT)));
+			auths.setTenantMembership(filterResources(userAuthorizations, resourceType(SevenResourceType.TENANT_MEMBERSHIP)));
+			auths.setReport(filterResources(userAuthorizations, resourceType(SevenResourceType.REPORT)));
+			auths.setDashboard(filterResources(userAuthorizations, resourceType(SevenResourceType.DASHBOARD)));
+			auths.setUserOperationLogCategory(filterResources(userAuthorizations, resourceType(SevenResourceType.USER_OPERATION_LOG_CATEGORY)));
+			auths.setSystem(filterResources(userAuthorizations, resourceType(SevenResourceType.SYSTEM)));
+			auths.setMessage(filterResources(userAuthorizations, resourceType(SevenResourceType.MESSAGE)));
+			auths.setEventSubscription(filterResources(userAuthorizations, resourceType(SevenResourceType.EVENT_SUBSCRIPTION)));
+			
 		} catch (UnsupportedEncodingException e) {
 			throw new SystemException(e);
 		}

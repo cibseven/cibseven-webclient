@@ -1,6 +1,5 @@
 package org.cibseven.webapp.rest;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
@@ -9,11 +8,13 @@ import java.util.Optional;
 
 import org.cibseven.webapp.NamedByteArrayDataSource;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.auth.exception.TokenExpiredException;
 import org.cibseven.webapp.exception.AccessDeniedException;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.logger.TaskLogger;
+import org.cibseven.webapp.providers.PermissionConstants;
 import org.cibseven.webapp.providers.SevenProvider;
 import org.cibseven.webapp.rest.model.CandidateGroupTaskCount;
 import org.cibseven.webapp.rest.model.IdentityLink;
@@ -69,12 +70,14 @@ public class TaskService extends BaseService implements InitializingBean {
 			@Parameter(description = "Task definition key in") @RequestParam Optional<String> taskDefinitionKeyIn,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true, false);
+		checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
 		return sevenProvider.findTasksCount(name, nameLike, taskDefinitionKey, taskDefinitionKeyIn, user);
 	}
 	 
 	//Not used
 	@RequestMapping(value = "/task/by-process-instance/{processInstanceId}", method = RequestMethod.GET)
 	public Collection<Task> findTasksByProcessInstance(@PathVariable String processInstanceId, Locale loc, CIBUser user) {
+		checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
 		return bpmProvider.findTasksByProcessInstance(processInstanceId, user);
 	}
 
@@ -98,6 +101,7 @@ public class TaskService extends BaseService implements InitializingBean {
 	public Task findTaskById(
 			@Parameter(description = "Task Id") @PathVariable String taskId,
 			Locale loc, CIBUser user) {
+		checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
 		return bpmProvider.findTaskById(taskId, user);
 	}
 	
@@ -113,6 +117,7 @@ public class TaskService extends BaseService implements InitializingBean {
 			@Parameter(description = "Index of the first result to return") @RequestParam Integer firstResult,
 			@Parameter(description = "Maximum number of results to return") @RequestParam Integer maxResults,
 			Locale loc, CIBUser user) {
+		checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
 		return bpmProvider.findTasksByFilter(filters, filterId, user, firstResult, maxResults);
 	}
 	
@@ -126,6 +131,7 @@ public class TaskService extends BaseService implements InitializingBean {
 			@Parameter(description = "Filter Id") @PathVariable String filterId,
 			@RequestBody TaskFiltering filters,
 			Locale loc, CIBUser user) {
+		checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
 		return bpmProvider.findTasksCountByFilter(filterId, user, filters);
 	}
 	
@@ -138,6 +144,7 @@ public class TaskService extends BaseService implements InitializingBean {
 	public void submit(
 			@Parameter(description = "Task Id") @PathVariable String taskId,
 			Locale loc, CIBUser user) {
+		checkPermission(user, SevenResourceType.TASK, PermissionConstants.UPDATE_ALL);
 		bpmProvider.submit(taskId, user);
 	}
 	
@@ -149,6 +156,7 @@ public class TaskService extends BaseService implements InitializingBean {
 	public Object formReference(
 			@Parameter(description = "Task Id") @PathVariable String taskId,
 			Locale loc, CIBUser user) {
+		checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
 		return bpmProvider.formReference(taskId, user);
 	}
 	
@@ -161,6 +169,7 @@ public class TaskService extends BaseService implements InitializingBean {
 			@Parameter(description = "Task Id") @PathVariable String taskId,
 			@Parameter(description = "User to be set as assignee") @PathVariable String userId,
 			Locale loc, CIBUser user) {
+		checkPermission(user, SevenResourceType.TASK, PermissionConstants.UPDATE_ALL);
 		bpmProvider.setAssignee(taskId, userId, user);
 	}
 	
@@ -172,6 +181,7 @@ public class TaskService extends BaseService implements InitializingBean {
 	public void update(
 			@RequestBody Task task,
 			Locale loc, CIBUser user) {
+		checkPermission(user, SevenResourceType.TASK, PermissionConstants.UPDATE_ALL);
 		bpmProvider.update(task, user);
 	}
 
@@ -187,6 +197,7 @@ public class TaskService extends BaseService implements InitializingBean {
 			@RequestBody Map<String, Object> data,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true, false);
+		checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
 		return sevenProvider.findTasksPost(data, user);
 	}
 
@@ -199,6 +210,7 @@ public class TaskService extends BaseService implements InitializingBean {
 			@Parameter(description = "Task Id") @PathVariable String taskId,
 			@Parameter(description = "Type of links to include e.g. 'candidate'") @RequestParam Optional<String> type,
 			Locale loc, CIBUser user) {
+		checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
 		return bpmProvider.findIdentityLink(taskId, type, user);
 	}
 	
@@ -210,6 +222,7 @@ public class TaskService extends BaseService implements InitializingBean {
 			@Parameter(description = "Task Id") @PathVariable String taskId,
 			@RequestBody Map<String, Object> data,
 			Locale loc, CIBUser user) {
+		checkPermission(user, SevenResourceType.TASK, PermissionConstants.UPDATE_ALL);
 		bpmProvider.createIdentityLink(taskId, data, user);
 	}
 	
@@ -221,6 +234,7 @@ public class TaskService extends BaseService implements InitializingBean {
 			@Parameter(description = "Task Id") @PathVariable String taskId,
 			@RequestBody Map<String, Object> data,
 			Locale loc, CIBUser user) {
+		checkPermission(user, SevenResourceType.TASK, PermissionConstants.DELETE_ALL);
 		bpmProvider.deleteIdentityLink(taskId, data, user);
 	}
 	
@@ -233,6 +247,7 @@ public class TaskService extends BaseService implements InitializingBean {
 			@Parameter(description = "Activity instance Id") @PathVariable String activityInstanceId,
 			Locale loc, CIBUser user) {
 		checkCockpitRights(user);
+        checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.READ_ALL);
 		return bpmProvider.fetchActivityVariables(activityInstanceId, user);
 	}
 	
@@ -242,6 +257,7 @@ public class TaskService extends BaseService implements InitializingBean {
 	@ApiResponse(responseCode = "404", description= "Variable name not found")
 	@RequestMapping(value = "/task/{processInstanceId}/variable/download/{variableName}", method = RequestMethod.GET)
 	public ResponseEntity<byte[]> downloadFiles(@PathVariable String processInstanceId, @PathVariable String variableName, CIBUser user) {
+        checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.READ_ALL);
 		return bpmProvider.fetchProcessInstanceVariableData(processInstanceId, variableName, user);
 	}
 	
@@ -254,6 +270,7 @@ public class TaskService extends BaseService implements InitializingBean {
 	    TaskLogger logger = new TaskLogger(processDefinitionId, processInstanceId, taskName, taskId);
 	    try {
 	      CIBUser userAuth = (CIBUser) baseUserProvider.authenticateUser(rq);
+          checkPermission(userAuth, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.UPDATE_ALL);
 	      logger.info("[INFO] Submit variables in task with name=" + taskName + " and ID=" + taskId + " (" + getClass().getSimpleName() + ")");
 	      Task task = bpmProvider.findTaskById(taskId, userAuth);
 	      if (!task.getAssignee().equals(userAuth.getUserID())) {
@@ -286,6 +303,7 @@ public class TaskService extends BaseService implements InitializingBean {
 	  public Variable fetchVariable(@PathVariable String taskId, @PathVariable String variableName, 
 	      @RequestParam Optional<Boolean> deserialize, HttpServletRequest rq) {
 	    CIBUser userAuth = (CIBUser) baseUserProvider.authenticateUser(rq);
+        checkPermission(userAuth, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.READ_ALL);
 	    return bpmProvider.fetchVariable(taskId, variableName, deserialize, userAuth);
 	  }
 	  
@@ -293,6 +311,7 @@ public class TaskService extends BaseService implements InitializingBean {
 	  public byte[] fetchVariableFileData(@PathVariable String taskId, @PathVariable String variableName, 
 	      @RequestParam Optional<Boolean> deserialize, HttpServletRequest rq) {
 	    CIBUser userAuth = (CIBUser) baseUserProvider.authenticateUser(rq);
+        checkPermission(userAuth, SevenResourceType.TASK, PermissionConstants.READ_ALL);
 	    NamedByteArrayDataSource res = bpmProvider.fetchVariableFileData(taskId, variableName, userAuth);
 	    return res.getContent();
 	  }
@@ -301,18 +320,21 @@ public class TaskService extends BaseService implements InitializingBean {
 	  public Map<String, Variable> fetchVariables(@PathVariable String taskId, 
 	      @RequestParam Optional<Boolean> deserialize, 
 	      @RequestParam Optional<String> locale, CIBUser user) throws Exception {
+        checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
 	    return bpmProvider.fetchFormVariables(taskId, deserialize.orElse(false), user);
 	  }
 
 	  @RequestMapping(value = "/task/{taskId}/variable/{variableName}", method = RequestMethod.DELETE)
 	  public void deleteVariable(@PathVariable String taskId, @PathVariable String variableName, HttpServletRequest rq) {
 	    CIBUser userAuth = (CIBUser) baseUserProvider.authenticateUser(rq);
+        checkPermission(userAuth, SevenResourceType.TASK, PermissionConstants.DELETE_ALL);
 	    bpmProvider.deleteVariable(taskId, variableName, userAuth);
 	  }
 	  
 	  @RequestMapping(value = "/task/{taskId}/bpmnError", method = RequestMethod.POST)
 	  public void handleBpmnError(@PathVariable String taskId, @RequestBody Map<String, Object> data, 
 	      @RequestParam Optional<String> locale, CIBUser user) throws Exception {
+		checkPermission(user, SevenResourceType.TASK, PermissionConstants.UPDATE_ALL);
 	    bpmProvider.handleBpmnError(taskId, data, user);
 	  }
 
