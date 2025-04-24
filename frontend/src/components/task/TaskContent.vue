@@ -183,7 +183,10 @@ export default {
       }
     },
     resetTimer: function() {
-      clearTimeout(this.timer)
+      if (this.timer != null) {
+        clearTimeout(this.timer)
+        this.timer = null
+      }
     },
     disablePopover: function() {
       localStorage.setItem('showPopoverHowToAssign', false)
