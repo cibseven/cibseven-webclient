@@ -12,4 +12,5 @@ public class ProcessStatistics {
 	private long instances;
 	private long failedJobs;
 	private List<IncidentInfo> incidents;
+	ProcessDefinitionInfo definition;
 }

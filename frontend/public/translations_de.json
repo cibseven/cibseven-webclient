@@ -29,7 +29,10 @@
 			},
 			"open-human-tasks": {
 				"title": "Offene Aufgaben",
-				"tooltip": "@:start.cockpit.humanTasks.tooltip"
+				"tooltip": "@:start.cockpit.humanTasks.tooltip",
+				"assigned": "Einem Benutzer zugewiesen",
+				"unassigned": "Nicht zugewiesen",
+				"assignedGroups": "Einer oder mehreren Gruppen zugewiesen"
 			},
 			"processes": {
 				"title": "Prozessdefinitionen",
@@ -47,7 +50,8 @@
 				"title": "@:start.cockpit.batches.title",
 				"tooltip": "@:start.cockpit.batches.tooltip"
 			}
-		}
+		},
+		"others": "Andere"
 	},
 	"process" : {
 		"instanceRunning": "Instanz läuft",

@@ -29,7 +29,10 @@
 			},
 			"open-human-tasks": {
 				"title": "Open Human Tasks",
-				"tooltip": "@:start.cockpit.humanTasks.tooltip"
+				"tooltip": "@:start.cockpit.humanTasks.tooltip",
+				"assigned": "Assigned to a user",
+				"unassigned": "Unassigned",
+				"assignedGroups": "Assigned to 1 or more groups"
 			},
 			"processes": {
 				"title": "Process Definitions",
@@ -47,7 +50,8 @@
 				"title": "@:start.cockpit.batches.title",
 				"tooltip": "@:start.cockpit.batches.tooltip"
 			}
-		}
+		},
+		"others": "Others"
 	},
 	"process": {
 		"instanceRunning": "Instance running",

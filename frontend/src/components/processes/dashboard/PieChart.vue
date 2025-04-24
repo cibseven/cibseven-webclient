@@ -48,7 +48,8 @@ export default {
           events: {
             click: (event, chartContext, config) => {
               const item = this.sortedItems[config.dataPointIndex]
-              if (!item || this.type === 'humanTasks') this.$router.push(this.link)
+              if (!item || this.type === 'humanTasks' || !item?.id)
+								this.$router.push(this.link)
               else {
                 let link = '/seven/auth/process/' + item.id
                 this.$router.push(link)

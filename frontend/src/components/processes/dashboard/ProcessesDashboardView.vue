@@ -97,8 +97,19 @@ export default {
         this.errorLoading = false
         const analytics = await AnalyticsService.getAnalytics()
         // Prepare data for charts
+        analytics.runningInstances.forEach(data => {
+          if (data.title === 'others' && !data.id) data.title = this.$t('processes-dashboard.others')
+        })
         this.runningInstances = analytics.runningInstances
+        
+        analytics.openIncidents.forEach(data => {
+          if (data.title === 'others' && !data.id) data.title = this.$t('processes-dashboard.others')
+        })
         this.openIncidents = analytics.openIncidents
+
+        analytics.openHumanTasks.forEach(data => {
+          data.title = this.$t('processes-dashboard.items.open-human-tasks.' + data.title)
+        })
         this.openHumanTasks = analytics.openHumanTasks
         this.loading = false
         this.deploymentItems[0].count = analytics.processDefinitionsCount

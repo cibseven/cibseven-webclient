@@ -7,5 +7,5 @@ import lombok.Data;
 @Data @JsonIgnoreProperties(ignoreUnknown = true) 
 public class IncidentInfo {
 	private String incidentType;
-	private long incidentCount;
+	private Long incidentCount;
 }
