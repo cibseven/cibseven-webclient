@@ -126,11 +126,10 @@ export default {
     this.$store.commit('setSearchUsers', [])
     this.loadIdentityLinks(this.task.id)
     this.showPopoverWithDelay(this.task.assignee) // when first task is opened
-    document.addEventListener("click", this.handleClickOutsidePopover) // to hide a popover when clicking outside
   },
   beforeUnmount() {
-    document.removeEventListener("click", this.handleClickOutsidePopover)
-    this.removeTimeout() // stop timeout for showPopoverWithDelay()
+    this.resetTimer() // stop timeout for showPopoverWithDelay()
+    this.stopListeningTouchEvents()
   },
   methods: {
     loadIdentityLinks: function(taskId) {
@@ -157,24 +156,38 @@ export default {
       })
     },
     showPopoverWithDelay: function(assignee) {
-      this.removeTimeout()
+      this.resetTimer()
       this.timer = setTimeout(() => {
         if (assignee === null || assignee !== this.$root.user.id) {
           this.displayPopover = localStorage.getItem('showPopoverHowToAssign') === 'false' ? false : true
+          // To hide popover when clicking outside of it
+          if (this.displayPopover) {
+            this.startListeningTouchEvents()
+          }
         }
       }, this.POPOVER_DELAY)
     },
-    removeTimeout() {
+    startListeningTouchEvents() {
+      document.addEventListener("click", this.handleTouchEvent)
+      document.addEventListener("focusin", this.handleTouchEvent)
+    },
+    stopListeningTouchEvents() {
+      document.removeEventListener("click", this.handleTouchEvent)
+      document.removeEventListener("focusin", this.handleTouchEvent)
+    },
+    handleTouchEvent(event) {
+      // Hide popover when clicking outside of it
+      if (this.$refs.howToAssignPopover && !this.$refs.howToAssignPopover.$el.contains(event.target)) {
+        this.displayPopover = false
+        this.stopListeningTouchEvents()
+      }
+    },
+    resetTimer() {
       clearTimeout(this.timer)
     },
     disablePopover: function() {
       localStorage.setItem('showPopoverHowToAssign', false)
       this.displayPopover = false
-    },
-    handleClickOutsidePopover(event) {
-      if (this.$refs.howToAssignPopover && !this.$refs.howToAssignPopover.$el.contains(event.target)) {
-        this.displayPopover = false
-      }
     },
     update: function() {
       this.$refs.ariaLiveText.textContent = ''
