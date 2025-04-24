@@ -1,5 +1,5 @@
 <template>
-  <b-modal ref="about" :title="$t('infoAndHelp.flowModalAbout.title')" :ok-only="true">
+  <b-modal ref="about" :title="$t('infoAndHelp.flowModalAbout.title')">
     <div class="row">
       <div class="col-2">
         <svg id="Ebene_1" data-name="Ebene 1"
@@ -18,17 +18,34 @@
       </div>
       <div class="col-10 d-flex align-items-center">{{ $t('infoAndHelp.flowModalSupport.version') }}: {{ version }}</div>
     </div>
+    <template v-slot:modal-footer>
+      <div class="row w-100 me-0">
+        <div class="col-6 p-0">
+          <b-button v-if="permissionsAdmin" variant="light" @click="$refs.about.hide()" href="#/seven/auth/admin/system/system-diagnostics">{{ $t('admin.system.system-diagnostics.diagnosticData') }}</b-button>
+        </div>
+        <div class="col-6 p-0">
+          <b-button variant="primary" @click="$refs.about.hide()" class="float-end">{{ $t('confirm.ok') }}</b-button>
+        </div>
+      </div>
+    </template>
   </b-modal>
 </template>
 
 <script>
 import { InfoService } from '@/services.js'
+import { permissionsMixin } from '@/permissions.js'
 
 export default {
   name: 'AboutModal',
+  mixins: [permissionsMixin],
   data: function() {
     return {
       version: ''
+    }
+  },
+  computed: {
+    permissionsAdmin: function() {
+      return this.$root.user && this.hasAdminManagementPermissions(this.$root.config.permissions)
     }
   },
   methods: {
