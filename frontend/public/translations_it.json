@@ -123,7 +123,14 @@
 		"back": "Indietro",
 		"incidentsCounter": "Incidenti: {0}",
 		"incidents": "Incidenti",
-		"onlyIncidents": "Solo con incidenti",
+		"onlyIncidents": {
+			"title": "Solo con incidenti",
+			"tooltip": "Mostra solo i processi che hanno incidenti"
+		},
+		"onlyActive": {
+			"title": "Solo attivi",
+			"tooltip": "Mostra solo i processi con definizioni non sospese"
+		},
 		"runningInstances": "Istanze",		
 		"instances": "Istanze",
 		"calledProcessInstances": "Chiamato processo Istanze",
@@ -138,7 +145,6 @@
 		"refreshVersions": "Aggiorna le versioni della cronologia",
 		"loadVersions": "Carica tutte le versioni della cronologia",
 		"externalProcessStarted": "Process successfully started",
-		"onlyActive": "Solo attivi",
 		"exportInstances": "Esporta istanze",
 		"days": "giorni",
 		"deleteProcessDefinition": {

@@ -13,13 +13,13 @@
         <div class="col-5">
           <div class="d-flex row">
             <div class="d-inline-block align-content-start" style="width: 210px">
-              <b-form-checkbox v-model="onlyIncidents" switch>
-                {{ $t('process.onlyIncidents') }}
+              <b-form-checkbox v-model="onlyIncidents" switch :title="$t('process.onlyIncidents.tooltip')">
+                {{ $t('process.onlyIncidents.title') }}
               </b-form-checkbox>
             </div>
             <div class="d-inline-block align-content-start" style="width: 210px">
-              <b-form-checkbox v-model="onlyActive" switch>
-                {{ $t('process.onlyActive') }}
+              <b-form-checkbox v-model="onlyActive" switch :title="$t('process.onlyActive.tooltip')">
+                {{ $t('process.onlyActive.title') }}
               </b-form-checkbox>
             </div>
           </div>
