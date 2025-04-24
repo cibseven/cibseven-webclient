@@ -29,23 +29,23 @@
 			},
 			"open-human-tasks": {
 				"title": "Offene Aufgaben",
-				"tooltip": "Alle ausstehenden Aufgaben anzeigen"
+				"tooltip": "@:start.cockpit.humanTasks.tooltip"
 			},
 			"processes": {
 				"title": "Prozessdefinitionen",
-				"tooltip": "Verfügbare Prozessdefinitionen durchsuchen"
+				"tooltip": "@:start.cockpit.processes.tooltip"
 			},
 			"decisions": {
 				"title": "Entscheidungsdefinitionen",
-				"tooltip": "Verfügbare Entscheidungsdefinitionen durchsuchen"
+				"tooltip": "@:start.cockpit.decisions.tooltip"
 			},
 			"deployments": {
-				"title": "Deployments",
-				"tooltip": "Alle Deployments anzeigen"
+				"title": "@:start.cockpit.deployments.title",
+				"tooltip": "@:start.cockpit.deployments.tooltip"
 			},
 			"batches": {
-				"title": "Batches",
-				"tooltip": "Batch-Operationen verwalten und anzeigen"
+				"title": "@:start.cockpit.batches.title",
+				"tooltip": "@:start.cockpit.batches.tooltip"
 			}
 		}
 	},
@@ -832,22 +832,47 @@
     },
 	"start": { 
 		"close": "Schließen",
-		"taskList": "Aufgaben bearbeiten",
-		"startProcesses": "@:process.startProcess",
-		"cockpit": "Cockpit",
-		"emptyStart": "Derzeit haben Sie keine Berechtigung, hier Aufgaben auszuführen. Bitte wenden Sie sich an den CIB seven Administrator, um Berechtigungen zu erhalten.",
-		"groupOperations": "Operations",
-		"groupAdministration": "Administration",
-		"admin": "Verwaltung",
-		"userAdmin": "Benutzerverwaltung",
-		"modeler": "Prozess modellieren",
-		"easyForm": "Easy Form",
-		"adminPanel": "Benutzerverwaltung",
-		"properties": "Properties",
-		"resources": "Ressourcen",
-		"adminProcesses": "Prozesses",
-		"adminDecisions": "Entscheidungen",
-		"adminHumanTasks": "Aufgaben"
+		"startProcess": {
+			"title": "@:process.startProcess",
+			"tooltip": "Open Start Process"
+		},
+		"taskList": {
+			"title": "Tasklist",
+			"tooltip": "Tasklist öffnen"
+		},
+		"cockpit": {
+			"title": "Cockpit",
+			"tooltip": "Cockpit öffnen",
+			"processes": {
+				"title": "Prozesses",
+				"tooltip": "Verfügbare Prozessdefinitionen durchsuchen"
+			},
+			"decisions": {
+				"title": "Entscheidungen",
+				"tooltip": "Verfügbare Entscheidungsdefinitionen durchsuchen"
+			},
+			"humanTasks": {
+				"title": "Aufgaben",
+				"tooltip": "Alle ausstehenden Aufgaben anzeigen"
+			},
+			"deployments": {
+				"title": "Deployments",
+				"tooltip": "Alle Deployments anzeigen"
+			},
+			"batches": {
+				"title": "Batches",
+				"tooltip": "Batch-Operationen verwalten und anzeigen"
+			}
+		},
+		"admin": {
+			"title": "Admin",
+			"tooltip": "Open Admin"
+		},
+		"oldCockpit": {
+			"title": "Old Cockpit",
+			"tooltip": "Open old Cockpit"
+		},
+		"emptyStart": "Derzeit haben Sie keine Berechtigung, hier Aufgaben auszuführen. Bitte wenden Sie sich an den CIB seven Administrator, um Berechtigungen zu erhalten."
 	},
 	"errors": {		
 		"invalid": "Es fehlt eine gültige Eingabe",

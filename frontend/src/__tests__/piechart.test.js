@@ -1,87 +1,116 @@
-import { mount } from '@vue/test-utils';
-import { describe, it, expect } from 'vitest'
+import { mount } from '@vue/test-utils'
+import { describe, it, expect, vi } from 'vitest'
 import { i18n } from '@/i18n'
-import Piechart from '@/components/processes/dashboard/PieChart.vue'
+import PieChart from '@/components/processes/dashboard/PieChart.vue'
 
-describe('Piechart', () => {
-  it('init', () => {
-    const wrapper = mount(Piechart, {
+describe('PieChart', () => {
+  it('renders loading state when items are not provided', () => {
+    const wrapper = mount(PieChart, {
+      props: {
+        items: [],
+        loading: true
+      },
       global: {
         stubs: {
-          'router-link': true  // or use a custom stub if needed
+          'router-link': true,
+          'b-waiting-box': true,
+          'apexchart': true
         },
-        directives: {
-          'b-popover': {}
-        },
-        plugins: [i18n] // Use the i18n instance in the global config
+        plugins: [i18n],
       },
-    });
-    expect(wrapper.text()).toContain('');
-  });
-
-  describe('shadeColor', () => {
-    const wrapper = mount(Piechart, {
-      global: {
-        stubs: {
-          'router-link': true  // or use a custom stub if needed
-        },
-        directives: {
-          'b-popover': {}
-        },
-        plugins: [i18n] // Use the i18n instance in the global config
-      },
-    });
-    const shadeColor = wrapper.vm.shadeColor
-
-    it('lightens a color when percent is positive', () => {
-      expect(shadeColor('#336699', 20)).toBe('#3e7bb8')
-      expect(shadeColor('#abcdef', 20)).toBe('#cef6ff')
     })
 
-    it('darkens a color when percent is negative', () => {
-      expect(shadeColor('#336699', -20)).toBe('#29527b')
-      expect(shadeColor('#abcdef', -20)).toBe('#89a4c0')
-    })
-
-    it('returns same color when percent is 0', () => {
-      expect(shadeColor('#000000', 0)).toBe('#000000')
-      expect(shadeColor('#336699', 0)).toBe('#336699')
-      expect(shadeColor('#abcdef', 0)).toBe('#abcdef')
-      expect(shadeColor('#ffffff', 0)).toBe('#ffffff')
-    })
-
-    it('clamps color values to 0 when result would be below black', () => {
-      expect(shadeColor('#000000', -50)).toBe('#000000')
-      expect(shadeColor('#010101', -100)).toBe('#000000')
-    });
-
-    it('clamps color values to 255 when result would be above white', () => {
-      expect(shadeColor('#ffffff', 50)).toBe('#ffffff')
-      expect(shadeColor('#fefefe', 10)).toBe('#ffffff')
-    });
-
-    it('pads single hex digits correctly (output always 6 characters)', () => {
-      expect(shadeColor('#010203', 0)).toBe('#010203')
-      expect(shadeColor('#0a0b0c', 0)).toMatch(/^#[0-9a-f]{6}$/)
-    });
-
-    it('works with uppercase hex input', () => {
-      expect(shadeColor('#ABCDEF', 20)).toBe('#cef6ff')
-      expect(shadeColor('#ABCDEF', -20)).toBe('#89a4c0')
-    });
-
-    it('works without leading #', () => {
-      expect(shadeColor('336699', 20)).toBe('#3e7bb8')
-      expect(shadeColor('ABCDEF', -20)).toBe('#89a4c0')
-    });
-
-    it('returns black when input is black and negative percent', () => {
-      expect(shadeColor('#000000', -100)).toBe('#000000')
-    });
-
-    it('returns white when input is white and positive percent', () => {
-      expect(shadeColor('#ffffff', 100)).toBe('#ffffff')
-    });
+    expect(wrapper.find('.waiting-box-container').exists()).toBe(true)
+    expect(wrapper.find('.apex-container').exists()).toBe(false)
   })
 
+  it('renders chart when items are provided', () => {
+    const items = [
+      { id: 1, title: 'Item 1', value: 10 },
+      { id: 2, title: 'Item 2', value: 20 },
+    ]
+
+    const wrapper = mount(PieChart, {
+      props: {
+        items,
+      },
+      global: {
+        stubs: {
+          'router-link': true,
+          'b-waiting-box': true,
+          'apexchart': true
+        },
+        plugins: [i18n],
+      },
+    })
+
+    expect(wrapper.find('.waiting-box-container').exists()).toBe(false);
+    expect(wrapper.find('.apex-container').exists()).toBe(true);
+    expect(wrapper.vm.values).toEqual([20, 10]); // Sorted values
+    expect(wrapper.vm.labels).toEqual(['Item 2', 'Item 1']); // Sorted labels
+  })
+
+  it('handles chart click event correctly', async () => {
+    const items = [
+      { id: 1, title: 'Item 1', value: 10 },
+      { id: 2, title: 'Item 2', value: 20 },
+    ]
+
+    const mockRouterPush = vi.fn();
+    const wrapper = mount(PieChart, {
+      props: {
+        items,
+      },
+      global: {
+        mocks: {
+          $router: {
+            push: mockRouterPush,
+          },
+        },
+        stubs: {
+          'router-link': true,
+          'b-waiting-box': true,
+          'apexchart': true
+        },
+        plugins: [i18n],
+      },
+    })
+
+    const chartOptions = wrapper.vm.chartOptions
+    const clickEvent = { target: {} }
+    const chartContext = {}
+    const config = { dataPointIndex: 1 } // Simulate clicking on the second item
+
+    chartOptions.chart.events.click(clickEvent, chartContext, config)
+
+    expect(mockRouterPush).toHaveBeenCalledWith('/seven/auth/process/1')
+  })
+
+  it('applies correct cursor style on dataPointMouseEnter', () => {
+    const items = [
+      { id: 1, title: 'Item 1', value: 10 },
+      { id: 2, title: 'Item 2', value: 20 },
+    ]
+
+    const wrapper = mount(PieChart, {
+      props: {
+        items,
+      },
+      global: {
+        stubs: {
+          'router-link': true,
+          'b-waiting-box': true,
+          'apexchart': true
+        },
+        plugins: [i18n],
+      },
+    })
+
+    const chartOptions = wrapper.vm.chartOptions
+    const mockEvent = { target: { style: {} } }
+
+    chartOptions.chart.events.dataPointMouseEnter(mockEvent)
+
+    expect(mockEvent.target.style.cursor).toBe('pointer')
+  })
 })

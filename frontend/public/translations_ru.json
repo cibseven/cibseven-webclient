@@ -29,23 +29,23 @@
 			},
 			"open-human-tasks": {
 				"title": "Открытые задачи пользователей",
-				"tooltip": "Просмотреть все ожидающие задачи пользователей"
+				"tooltip": "@:start.cockpit.humanTasks.tooltip"
 			},
 			"processes": {
 				"title": "Определения процессов",
-				"tooltip": "Просмотреть доступные определения процессов"
+				"tooltip": "@:start.cockpit.processes.tooltip"
 			},
 			"decisions": {
 				"title": "Определения решений",
-				"tooltip": "Просмотреть доступные определения решений"
+				"tooltip": "@:start.cockpit.decisions.tooltip"
 			},
 			"deployments": {
-				"title": "Развёртывания",
-				"tooltip": "Просмотреть все доступные ресурсы для развернутых процессов"
+				"title": "@:start.cockpit.deployments.title",
+				"tooltip": "@:start.cockpit.deployments.tooltip"
 			},
 			"batches": {
-				"title": "Пакетная обработка",
-				"tooltip": "Управление и просмотр пакетных операций"
+				"title": "@:start.cockpit.batches.title",
+				"tooltip": "@:start.cockpit.batches.tooltip"
 			}
 		}
 	},
@@ -73,7 +73,7 @@
 		"start": "Начать",
 		"showProcess": "Показать процесс",
 		"showInstance": "показать экземпляр",
-		"showCockpit": "Панель управления",		
+		"showCockpit": "Cockpit",		
 		"downloadBpmn": "Скачать файл BPMN",
 		"openModeler": "Открыть BPMN файл в Modeler",
 		"showManagement": "Управление процессами",
@@ -832,22 +832,47 @@
     },
 	"start": { 
 		"close": "Закрыть",
-		"taskList": "Мои задачи",
-		"startProcesses": "@:process.startProcess",
-		"cockpit": "Кокпит",
-		"emptyStart": "В данный момент у Вас нет прав, чтобы выполнить какие-либо задачи. Пожалуйста, свяжитесь с администратором CIB seven для того, чтобы получить права.",
-		"groupOperations": "Операции",
-		"groupAdministration": "Администрирование",
-		"admin": "Управление процессами",
-		"userAdmin": "Управление пользователями",
-		"modeler": "Разработчик моделей процессов",
-		"easyForm": "Easy Form",
-		"adminPanel": "Управление пользователями",
-		"properties": "Properties",
-		"resources": "Ресурсы",
-		"adminProcesses": "Prozesses",
-		"adminDecisions": "Decisions",
-		"adminHumanTasks": "Human Tasks"
+		"startProcess": {
+			"title": "@:process.startProcess",
+			"tooltip": "Open Start Process"
+		},
+		"taskList": {
+			"title": "Tasklist",
+			"tooltip": "Открыть Tasklist"
+		},
+		"cockpit": {
+			"title": "Cockpit",
+			"tooltip": "Открыть Cockpit",
+			"processes": {
+				"title": "Процессы",
+				"tooltip": "Просмотреть доступные определения процессов"
+			},
+			"decisions": {
+				"title": "Решения",
+				"tooltip": "Просмотреть доступные определения решений"
+			},
+			"humanTasks": {
+				"title": "Задачи пользователей",
+				"tooltip": "Просмотреть все задачи ожидающие пользователей"
+			},
+			"deployments": {
+				"title": "Развёртывания",
+				"tooltip": "Просмотреть все доступные ресурсы для развернутых процессов"
+			},
+			"batches": {
+				"title": "Пакетная обработка",
+				"tooltip": "Управление и просмотр пакетных операций"
+			}
+		},
+		"admin": {
+			"title": "Admin",
+			"tooltip": "Open Admin"
+		},
+		"oldCockpit": {
+			"title": "Old Cockpit",
+			"tooltip": "Open old Cockpit"
+		},
+		"emptyStart": "В данный момент у Вас нет прав, чтобы выполнить какие-либо задачи. Пожалуйста, свяжитесь с администратором CIB seven для того, чтобы получить права."
 	},
 	"errors": {
 		"invalid": "Пожалуйста, введите достоверную информацию",

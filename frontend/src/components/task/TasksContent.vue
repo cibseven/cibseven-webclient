@@ -314,7 +314,7 @@ export default {
       this.task = task
       updateAppTitle(
         this.$root.config.productNamePageTitle,
-        this.$t('start.taskList'),
+        this.$t('start.taskList.title'),
         task.name
       )
       if (this.isMobile()) {
