@@ -183,11 +183,11 @@ ui:
     showTaskDetailsSidebar: true
     showFilterDueDate: true
     showFilterReminderDate: true
-    showFeedbackButton: true
+    showFeedbackButton: false
     showTaskListManualRefresh: true
     disableCandidateUsers: false
     showProcessName: true
-    showSupportInfo: true
+    showSupportInfo: false
     showInfoAndHelp: true
     showChat: false
     showUserSettings: true
@@ -201,8 +201,8 @@ ui:
   maxTaskResults: "20"
   maxProcessesResults: "50"
   maxUsersResults: "10"
-  modelerEnabled: true
-  easyFormEnabled: true
+  modelerEnabled: false
+  easyFormEnabled: false
   notAssignedTaskLayer: true
   automaticallyOpenTask: false
   pauseButtonTime: "5000"
