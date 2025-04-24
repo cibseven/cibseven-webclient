@@ -7,7 +7,7 @@
       <div class="col-10 ps-0">
         <h5>{{ $t('infoAndHelp.flowModalAbout.title') }}</h5>
         <ShortcutsTable :items="itemsGlobal"></ShortcutsTable>
-        <h5>{{ $t('start.taskList') }}</h5>
+        <h5>{{ $t('start.taskList.title') }}</h5>
         <ShortcutsTable :items="itemsTasks"></ShortcutsTable>
       </div>
     </div>

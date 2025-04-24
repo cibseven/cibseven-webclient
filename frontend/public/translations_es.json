@@ -30,23 +30,23 @@
 			},
 			"open-human-tasks": {
 				"title": "Tareas humanas abiertas",
-				"tooltip": "Ver todas las tareas humanas pendientes"
+				"tooltip": "@:start.cockpit.humanTasks.tooltip"
 			},
 			"processes": {
 				"title": "Definiciones de procesos",
-				"tooltip": "Explora las definiciones de procesos disponibles"
+				"tooltip": "@:start.cockpit.processes.tooltip"
 			},
 			"decisions": {
 				"title": "Definiciones de decisiones",
-				"tooltip": "Explora las definiciones de decisiones disponibles"
+				"tooltip": "@:start.cockpit.decisions.tooltip"
 			},
 			"deployments": {
-				"title": "Despliegues",
-				"tooltip": "Ver todos los recursos de procesos desplegados"
+				"title": "@:start.cockpit.deployments.title",
+				"tooltip": "@:start.cockpit.deployments.tooltip"
 			},
 			"batches": {
-				"title": "Lotes",
-				"tooltip": "Gestiona y visualiza operaciones por lotes"
+				"title": "@:start.cockpit.batches.title",
+				"tooltip": "@:start.cockpit.batches.tooltip"
 			}
 		}
 	},
@@ -833,22 +833,47 @@
 	},
 	"start": {
 		"close": "Cerrar",
-		"taskList": "Tareas",
-		"startProcesses": "@:process.startProcess",
-		"cockpit": "Visión general",
-		"emptyStart": "Actualmente no tiene permisos para realizar tareas aquí. Por favor contacte con el administrador de CIB seven para que le asigne permisos.",
-		"groupOperations": "Operations",
-		"groupAdministration": "Administration",
-		"admin": "Administración",
-		"userAdmin": "Gestión de usuarios",
-		"modeler": "Modelador de procesos",
-		"easyForm": "Easy Form",
-		"adminPanel": "Gestión de Usuarios",
-		"properties": "Propiedades",		
-		"resources": "Recursos",
-		"adminProcesses": "Procesos",
-		"adminDecisions": "Decisiones",
-		"adminHumanTasks": "Tareas de Usuario"
+		"startProcess": {
+			"title": "@:process.startProcess",
+			"tooltip": "Open Start Process"
+		},
+		"taskList": {
+			"title": "Tasklist",
+			"tooltip": "Abrir Tasklist"
+		},
+		"cockpit": {
+			"title": "Cockpit",
+			"tooltip": "Abrir Cockpit",
+			"processes": {
+				"title": "Procesos",
+				"tooltip": "Explora las definiciones de procesos disponibles"
+			},
+			"decisions": {
+				"title": "Decisiones",
+				"tooltip": "Explora las definiciones de decisiones disponibles"
+			},
+			"humanTasks": {
+				"title": "Tareas de Usuario",
+				"tooltip": "Ver todas las tareas humanas pendientes"
+			},
+			"deployments": {
+				"title": "Despliegues",
+				"tooltip": "Ver todos los recursos de procesos desplegados"
+			},
+			"batches": {
+				"title": "Lotes",
+				"tooltip": "Gestiona y visualiza operaciones por lotes"
+			}
+		},
+		"admin": {
+			"title": "Admin",
+			"tooltip": "Open Admin"
+		},
+		"oldCockpit": {
+			"title": "Old Cockpit",
+			"tooltip": "Open old Cockpit"
+		},
+		"emptyStart": "Actualmente no tiene permisos para realizar tareas aquí. Por favor contacte con el administrador de CIB seven para que le asigne permisos."
 	},
 	"errors": {
 		"invalid": "Por favor, introduce un valor válido",

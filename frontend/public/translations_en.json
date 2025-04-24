@@ -29,23 +29,23 @@
 			},
 			"open-human-tasks": {
 				"title": "Open Human Tasks",
-				"tooltip": "View all pending human tasks"
+				"tooltip": "@:start.cockpit.humanTasks.tooltip"
 			},
 			"processes": {
 				"title": "Process Definitions",
-				"tooltip": "Explore available process definitions"
+				"tooltip": "@:start.cockpit.processes.tooltip"
 			},
 			"decisions": {
 				"title": "Decision Definitions",
-				"tooltip": "Explore available decision definitions"
+				"tooltip": "@:start.cockpit.decisions.tooltip"
 			},
 			"deployments": {
-				"title": "Deployments",
-				"tooltip": "View all deployed process resources"
+				"title": "@:start.cockpit.deployments.title",
+				"tooltip": "@:start.cockpit.deployments.tooltip"
 			},
 			"batches": {
-				"title": "Batches",
-				"tooltip": "Manage and view batch operations"
+				"title": "@:start.cockpit.batches.title",
+				"tooltip": "@:start.cockpit.batches.tooltip"
 			}
 		}
 	},
@@ -833,22 +833,47 @@
 	},
 	"start": {
 		"close": "Close",
-		"taskList": "Tasks",
-		"startProcesses": "@:process.startProcess",
-		"cockpit": "Cockpit",
-		"emptyStart": "Currently you do not have permission to perform any task here. Please contact the CIB seven administrator to get permissions.",
-		"groupOperations": "Operations",
-		"groupAdministration": "Administration",
-		"admin": "Process Management",
-		"userAdmin": "User administration",
-		"modeler": "Process modeler",
-		"easyForm": "Easy Form",
-		"adminPanel": "Users Management",
-		"properties": "Properties",
-		"resources": "Resources",
-		"adminProcesses": "Processes",
-		"adminDecisions": "Decisions",
-		"adminHumanTasks": "Human Tasks"
+		"startProcess": {
+			"title": "@:process.startProcess",
+			"tooltip": "Open Start Process"
+		},
+		"taskList": {
+			"title": "Tasklist",
+			"tooltip": "Open Tasklist"
+		},
+		"cockpit": {
+			"title": "Cockpit",
+			"tooltip": "Open Cockpit",
+			"processes": {
+				"title": "Processes",
+				"tooltip": "Explore available process definitions"
+			},
+			"decisions": {
+				"title": "Decisions",
+				"tooltip": "Explore available decision definitions"
+			},
+			"humanTasks": {
+				"title": "Human Tasks",
+				"tooltip": "View all pending human tasks"
+			},
+			"deployments": {
+				"title": "Deployments",
+				"tooltip": "View all deployed process resources"
+			},
+			"batches": {
+				"title": "Batches",
+				"tooltip": "Manage and view batch operations"
+			}
+		},
+		"admin": {
+			"title": "Admin",
+			"tooltip": "Open Admin"
+		},
+		"oldCockpit": {
+			"title": "Old Cockpit",
+			"tooltip": "Open old Cockpit"
+		},
+		"emptyStart": "Currently you do not have permission to perform any task here. Please contact the CIB seven administrator to get permissions."
 	},
 	"errors": {
 		"invalid": "Please enter some valid information",

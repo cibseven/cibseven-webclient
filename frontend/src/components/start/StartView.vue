@@ -12,12 +12,12 @@
                   <div class="row ps-3" style="height:55px">
                     <div class="col-12 align-items-center d-flex">
                       <span class="border-start h-100 me-3 border-primary" style="border-width: 3px !important"></span>
-                      <h4 class="m-0">{{ $t('start.startProcesses') }}</h4>
+                      <h4 class="m-0">{{ $t('start.startProcess.title') }}</h4>
                     </div>
                   </div>
                   <div class="row text-center">
                     <div class="col-12 p-0 pt-1">
-                      <img :alt="$t('start.startProcesses')" src="/assets/images/start/process.svg" style="height:180px; max-width:225px">
+                      <img :alt="$t('start.startProcess.title')" src="/assets/images/start/process.svg" style="height:180px; max-width:225px">
                     </div>
                   </div>
                 </div>
@@ -35,12 +35,12 @@
                   <div class="row ps-3" style="height:55px">
                     <div class="col-12 align-items-center d-flex">
                       <span class="border-start h-100 me-3 border-primary" style="border-width: 3px !important"></span>
-                      <h4 class="m-0">{{ $t('start.taskList') }}</h4>
+                      <h4 class="m-0">{{ $t('start.taskList.title') }}</h4>
                     </div>
                   </div>
                   <div class="row text-center">
                     <div class="col-12 p-0 pt-1">
-                      <img :alt="$t('start.taskList')" src="/assets/images/start/task.svg" style="height:180px; max-width:225px">
+                      <img :alt="$t('start.taskList.title')" src="/assets/images/start/task.svg" style="height:180px; max-width:225px">
                     </div>
                   </div>
                 </div>
@@ -59,12 +59,12 @@
                   <div class="row ps-3" style="height:55px">
                     <div class="col-12 align-items-center d-flex">
                       <span class="border-start h-100 me-3 border-primary" style="border-width: 3px !important"></span>
-                      <h4 class="m-0">{{ $t('start.groupOperations') }}</h4>
+                      <h4 class="m-0">{{ $t('start.cockpit.title') }}</h4>
                     </div>
                   </div>
                   <div class="row text-center">
                     <div class="col-12 p-0 pt-1">
-                      <img :alt="$t('start.admin')" src="/assets/images/start/management.svg" style="height:180px; max-width:225px">
+                      <img :alt="$t('start.cockpit.title')" src="/assets/images/start/management.svg" style="height:180px; max-width:225px">
                     </div>
                   </div>
                 </div>
@@ -73,16 +73,16 @@
             <b-overlay :show="showCockpitOptions" :opacity="0" no-center no-wrap>
               <template #overlay>
                 <b-list-group class="py-2 bg-white rounded-bottom" style="opacity: .9; position: absolute; bottom: 1px; width: calc(100% - 2px); margin-left: 1px">
-                  <b-list-group-item to="/seven/auth/processes" class="py-1 px-3 border-start-0 border-top-0 border-end-0 h6 fw-normal mb-0" :title="$t('start.adminProcesses')">
-                    <span class="mdi mdi-18px mdi-map-legend pe-1"></span>{{ $t('start.adminProcesses') }}</b-list-group-item>
-                  <b-list-group-item to="/seven/auth/decisions" class="py-1 px-3 border-start-0 border-top-0 border-end-0 h6 fw-normal mb-0" :title="$t('start.adminDecisions')">
-                    <span class="mdi mdi-18px mdi-wall-sconce-flat-outline pe-1"></span>{{ $t('start.adminDecisions') }}</b-list-group-item>
-                  <b-list-group-item to="/seven/auth/human-tasks" class="py-1 px-3 border-0 h6 fw-normal mb-0" :title="$t('start.adminHumanTasks')">
-                    <span class="mdi mdi-18px mdi-account-file-text-outline pe-1"></span>{{ $t('start.adminHumanTasks') }}</b-list-group-item>
-                  <b-list-group-item to="/seven/auth/deployments" class="py-1 px-3 border-0 h6 fw-normal mb-0" :title="$t('deployment.title')">
-                    <span class="mdi mdi-18px mdi-upload-box-outline pe-1"></span>{{ $t('deployment.title') }}</b-list-group-item>
-                  <b-list-group-item to="/seven/auth/batches" class="py-1 px-3 border-0 h6 fw-normal mb-0" :title="$t('batches.tooltip')">
-                    <span class="mdi mdi-18px mdi-repeat pe-1"> </span>{{ $t('batches.title') }}</b-list-group-item>
+                  <b-list-group-item to="/seven/auth/processes/list" class="py-1 px-3 border-start-0 border-top-0 border-end-0 h6 fw-normal mb-0" :title="$t('start.cockpit.processes.tooltip')">
+                    <span class="mdi mdi-18px mdi-map-legend pe-1"></span>{{ $t('start.cockpit.processes.title') }}</b-list-group-item>
+                  <b-list-group-item to="/seven/auth/decisions" class="py-1 px-3 border-start-0 border-top-0 border-end-0 h6 fw-normal mb-0" :title="$t('start.cockpit.decisions.tooltip')">
+                    <span class="mdi mdi-18px mdi-wall-sconce-flat-outline pe-1"></span>{{ $t('start.cockpit.decisions.title') }}</b-list-group-item>
+                  <b-list-group-item to="/seven/auth/human-tasks" class="py-1 px-3 border-start-0 border-top-0 border-end-0 h6 fw-normal mb-0" :title="$t('start.cockpit.humanTasks.tooltip')">
+                    <span class="mdi mdi-18px mdi-account-file-text-outline pe-1"></span>{{ $t('start.cockpit.humanTasks.title') }}</b-list-group-item>
+                  <b-list-group-item to="/seven/auth/deployments" class="py-1 px-3 border-start-0 border-top-0 border-end-0 h6 fw-normal mb-0" :title="$t('start.cockpit.deployments.tooltip')">
+                    <span class="mdi mdi-18px mdi-upload-box-outline pe-1"></span>{{ $t('start.cockpit.deployments.title') }}</b-list-group-item>
+                  <b-list-group-item to="/seven/auth/batches" class="py-1 px-3 border-0 h6 fw-normal mb-0" :title="$t('start.cockpit.batches.tooltip')">
+                    <span class="mdi mdi-18px mdi-repeat pe-1"> </span>{{ $t('start.cockpit.batches.title') }}</b-list-group-item>
                 </b-list-group>
               </template>
             </b-overlay>
@@ -99,12 +99,12 @@
                   <div class="row ps-3" style="height:55px">
                     <div class="col-12 align-items-center d-flex">
                       <span class="border-start h-100 me-3 border-primary" style="border-width: 3px !important"></span>
-                      <h4 class="m-0">{{ $t('start.groupAdministration') }}</h4>
+                      <h4 class="m-0">{{ $t('start.admin.title') }}</h4>
                     </div>
                   </div>
                   <div class="row text-center">
                     <div class="col-12 p-0 pt-1">
-                      <img :alt="$t('start.adminPanel')" src="/assets/images/start/admin.svg" style="height:180px; max-width:225px">
+                      <img :alt="$t('start.admin.title')" src="/assets/images/start/admin.svg" style="height:180px; max-width:225px">
                     </div>
                   </div>
                 </div>
@@ -123,7 +123,7 @@
                     to="/seven/auth/admin/tenants" class="py-1 px-3 border-start-0 border-top-0 border-end-0 h6 fw-normal mb-0" :title="$t('admin.tenants.tooltip')">
                     <span class="mdi mdi-18px mdi-domain pe-1"></span>{{ $t('admin.tenants.title') }}</b-list-group-item>
                   <b-list-group-item v-if="adminManagementPermissions($root.config.permissions.authorizationsManagement, 'authorization')"
-                    to="/seven/auth/admin/authorizations" class="py-1 px-3 border-0 h6 fw-normal mb-0" :title="$t('admin.authorizations.title')">
+                    to="/seven/auth/admin/authorizations" class="py-1 px-3 border-start-0 border-top-0 border-end-0 h6 fw-normal mb-0" :title="$t('admin.authorizations.title')">
                     <span class="mdi mdi-18px mdi-account-key-outline pe-1"></span>{{ $t('admin.authorizations.title') }}</b-list-group-item>
                   <b-list-group-item v-if="adminManagementPermissions($root.config.permissions.authorizationsManagement, 'authorization')"
                     to="/seven/auth/admin/system" class="py-1 px-3 border-0 h6 fw-normal mb-0" :title="$t('admin.system.tooltip')">

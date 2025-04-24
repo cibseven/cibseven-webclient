@@ -13,8 +13,8 @@
         </div>
       </div>
 
-      <b-button v-if="$root.user && startableProcesses && $route.name === 'tasklist'" class="d-none d-sm-block py-0 me-3" variant="outline-secondary" :title="$t('start.startProcesses')" @click="openStartProcess()">
-        <span class="mdi mdi-18px mdi-rocket"><span class="d-none d-lg-inline">{{ $t('start.startProcesses') }}</span></span>
+      <b-button v-if="$root.user && startableProcesses && $route.name === 'tasklist'" class="d-none d-sm-block py-0 me-3" variant="outline-secondary" :title="$t('start.startProcess.title')" @click="openStartProcess()">
+        <span class="mdi mdi-18px mdi-rocket"><span class="d-none d-lg-inline">{{ $t('start.startProcess.title') }}</span></span>
       </b-button>
 
       <b-collapse v-if="(permissionsTaskList && startableProcesses) || permissionsCockpit" is-nav id="nav_collapse" class="flex-grow-0 d-none d-md-flex">
@@ -24,20 +24,22 @@
               <span class="visually-hidden">{{ $t('navigation.menu') }}</span>
               <span class="mdi mdi-24px mdi-menu align-middle"></span>
             </template>
-            <b-dropdown-item v-if="permissionsTaskList && startableProcesses" to="/seven/auth/start-process" :active="$route.path.includes('seven/auth/start-process')" :title="$t('start.startProcesses')">{{ $t('start.startProcesses') }}</b-dropdown-item>
-            <b-dropdown-item v-if="permissionsTaskList" to="/seven/auth/tasks" :active="$route.path.includes('seven/auth/tasks')" :title="$t('start.taskList')">{{ $t('start.taskList') }}</b-dropdown-item>
+            <b-dropdown-item v-if="permissionsTaskList && startableProcesses" to="/seven/auth/start-process" :active="$route.path.includes('seven/auth/start-process')" :title="$t('start.startProcess.tooltip')">{{ $t('start.startProcess.title') }}</b-dropdown-item>
+            <b-dropdown-item v-if="permissionsTaskList" to="/seven/auth/tasks" :active="$route.path.includes('seven/auth/tasks')" :title="$t('start.taskList.tooltip')">{{ $t('start.taskList.title') }}</b-dropdown-item>
 
             <b-dropdown-divider v-if="permissionsTaskList && permissionsCockpit"></b-dropdown-divider>
-            <b-dropdown-group v-if="permissionsCockpit" header="{{ $t('start.groupOperations') }}">
-              <b-dropdown-item to="/seven/auth/processes" :active="$route.path.includes('seven/auth/process')" :title="$t('start.admin')">{{ $t('process.title') }}</b-dropdown-item>
-              <b-dropdown-item to="/seven/auth/decisions" :active="$route.path.includes('seven/auth/decision')" :title="$t('start.adminDecisions')">{{ $t('start.adminDecisions') }}</b-dropdown-item>
-              <b-dropdown-item to="/seven/auth/human-tasks" :active="$route.path.includes('seven/auth/human-tasks')" :title="$t('start.adminHumanTasks')">{{ $t('start.adminHumanTasks') }}</b-dropdown-item>
-              <b-dropdown-item to="/seven/auth/deployments" :active="$route.path.includes('seven/auth/deployments')" :title="$t('deployment.title')">{{ $t('deployment.title') }}</b-dropdown-item>
-              <b-dropdown-item to="/seven/auth/batches" :active="$route.path.includes('seven/auth/batches')" :title="$t('batches.tooltip')">{{ $t('batches.title') }}</b-dropdown-item>
+            <b-dropdown-group v-if="permissionsCockpit" header="{{ $t('start.cockpit.title') }}">
+              <b-dropdown-item to="/seven/auth/processes" :active="$route.path.includes('seven/auth/processes/dashboard')" :title="$t('start.cockpit.tooltip')"><span class="fw-semibold font-monospace small">{{ $t('start.cockpit.title') }}</span></b-dropdown-item>
+              <b-dropdown-item to="/seven/auth/processes/list" :active="$route.path.includes('seven/auth/process/') || $route.path.includes('seven/auth/processes/list')" :title="$t('start.cockpit.processes.tooltip')">{{ $t('start.cockpit.processes.title') }}</b-dropdown-item>
+              <b-dropdown-item to="/seven/auth/decisions" :active="$route.path.includes('seven/auth/decision')" :title="$t('start.cockpit.decisions.tooltip')">{{ $t('start.cockpit.decisions.title') }}</b-dropdown-item>
+              <b-dropdown-item to="/seven/auth/human-tasks" :active="$route.path.includes('seven/auth/human-tasks')" :title="$t('start.cockpit.humanTasks.tooltip')">{{ $t('start.cockpit.humanTasks.title') }}</b-dropdown-item>
+              <b-dropdown-item to="/seven/auth/deployments" :active="$route.path.includes('seven/auth/deployments')" :title="$t('start.cockpit.deployments.tooltip')">{{ $t('start.cockpit.deployments.title') }}</b-dropdown-item>
+              <b-dropdown-item to="/seven/auth/batches" :active="$route.path.includes('seven/auth/batches')" :title="$t('start.cockpit.batches.tooltip')">{{ $t('start.cockpit.batches.title') }}</b-dropdown-item>
             </b-dropdown-group>
 
             <b-dropdown-divider v-if="permissionsUsers && (permissionsTaskList || permissionsCockpit)"></b-dropdown-divider>
-            <b-dropdown-group v-if="permissionsUsers" header="{{ $t('start.groupAdministration') }}">
+            <b-dropdown-group v-if="permissionsUsers" header="{{ $t('start.admin.title') }}">
+              <b-dropdown-item to="/seven/auth/admin" :active="$route.path.includes('seven/auth/admin') && !$route.path.includes('seven/auth/admin/')" :title="$t('start.admin.tooltip')"><span class="fw-semibold font-monospace small">{{ $t('start.admin.title') }}</span></b-dropdown-item>
               <b-dropdown-item to="/seven/auth/admin/users" :active="$route.path.includes('seven/auth/admin/user') || $route.path.includes('seven/auth/admin/create-user')" :title="$t('admin.users.title')">{{ $t('admin.users.title') }}</b-dropdown-item>
               <b-dropdown-item to="/seven/auth/admin/groups" :active="$route.path.includes('seven/auth/admin/group') || $route.path.includes('seven/auth/admin/create-group')" :title="$t('admin.groups.title')">{{ $t('admin.groups.title') }}</b-dropdown-item>
               <b-dropdown-item to="/seven/auth/admin/tenants" :active="$route.path.includes('seven/auth/admin/tenant') || $route.path.includes('seven/auth/admin/create-tenant')" :title="$t('admin.tenants.tooltip')">{{ $t('admin.tenants.title') }}</b-dropdown-item>
@@ -46,7 +48,7 @@
             </b-dropdown-group>
 
             <b-dropdown-divider v-if="permissionsCockpit"></b-dropdown-divider>
-            <b-dropdown-item v-if="permissionsCockpit" :href="$root.config.cockpitUrl" :title="$t('start.cockpit')" target="_blank">{{ $t('start.cockpit') }}</b-dropdown-item>
+            <b-dropdown-item v-if="permissionsCockpit" :href="$root.config.cockpitUrl" :title="$t('start.oldCockpit.tooltip')" target="_blank">{{ $t('start.oldCockpit.title') }}</b-dropdown-item>
           </b-nav-item-dropdown>
         </b-navbar-nav>
       </b-collapse>
@@ -159,18 +161,18 @@ export default {
     pageTitle: function() {
       switch (this.$route.name) {
         case 'login': return this.$t('login.login')
-        case 'tasklist': return this.$t('start.taskList')
+        case 'tasklist': return this.$t('start.taskList.title')
         case 'deployments': return this.$t('deployment.title')
-        case 'start-process': return this.$t('start.startProcesses')
-        case 'processesDashboard': return this.$t('processes-dashboard.headerActive')
+        case 'start-process': return this.$t('start.startProcess.title')
+        case 'processesDashboard': return this.$t('start.cockpit.title')
         case 'processManagement':
-        case 'process': return this.$t('start.admin')
+        case 'process': return this.$t('start.cockpit.processes.title')
         case 'batches': return this.$t('batches.title')
         case 'decision-version':
         case 'decision-instance':
-        case 'decision-list': return this.$t('start.adminDecisions')
-        case 'human-tasks': return this.$t('start.adminHumanTasks')
-        case 'usersManagement': return this.$t('start.groupAdministration')
+        case 'decision-list': return this.$t('start.cockpit.decisions.title')
+        case 'human-tasks': return this.$t('start.cockpit.humanTasks.title')
+        case 'usersManagement': return this.$t('start.admin.title')
         case 'adminUser':
         case 'adminUsers':
         case 'createUser':
@@ -234,14 +236,19 @@ export default {
       switch (this.$route.name) {
         case 'adminUser':
         case 'adminUsers':
+        case 'createUser':
         case 'adminGroup':
         case 'adminGroups':
+        case 'createGroup':
         case 'authorizations':
         case 'authorizationType':
-          // "CIB seven | Users Management | <view>"
+        case 'createTenant':
+        case 'adminTenant':
+        case 'adminTenants':
+          // "CIB seven | Admin | <view>"
           updateAppTitle(
             this.$root.config.productNamePageTitle,
-            this.$t('start.adminPanel'),
+            this.$t('start.admin.title'),
             title
           )
           break
