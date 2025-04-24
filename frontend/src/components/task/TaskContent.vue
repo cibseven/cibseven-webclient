@@ -167,22 +167,22 @@ export default {
         }
       }, this.POPOVER_DELAY)
     },
-    startListeningTouchEvents() {
+    startListeningTouchEvents: function() {
       document.addEventListener("click", this.handleTouchEvent)
       document.addEventListener("focusin", this.handleTouchEvent)
     },
-    stopListeningTouchEvents() {
+    stopListeningTouchEvents: function() {
       document.removeEventListener("click", this.handleTouchEvent)
       document.removeEventListener("focusin", this.handleTouchEvent)
     },
-    handleTouchEvent(event) {
+    handleTouchEvent: function(event) {
       // Hide popover when clicking outside of it
       if (this.$refs.howToAssignPopover && !this.$refs.howToAssignPopover.$el.contains(event.target)) {
         this.displayPopover = false
         this.stopListeningTouchEvents()
       }
     },
-    resetTimer() {
+    resetTimer: function() {
       clearTimeout(this.timer)
     },
     disablePopover: function() {
