@@ -29,7 +29,10 @@
 			},
 			"open-human-tasks": {
 				"title": "Открытые задачи пользователей",
-				"tooltip": "@:start.cockpit.humanTasks.tooltip"
+				"tooltip": "@:start.cockpit.humanTasks.tooltip",
+				"assigned": "Назначено пользователю",
+				"unassigned": "Не назначено",
+				"assignedGroups": "Назначено одной или нескольким группам"
 			},
 			"processes": {
 				"title": "Определения процессов",
@@ -47,7 +50,8 @@
 				"title": "@:start.cockpit.batches.title",
 				"tooltip": "@:start.cockpit.batches.tooltip"
 			}
-		}
+		},
+		"others": "Другие"
 	},
 	"process" : {
 		"instanceRunning": "Запущеный экземпляр",

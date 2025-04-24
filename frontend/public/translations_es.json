@@ -30,7 +30,10 @@
 			},
 			"open-human-tasks": {
 				"title": "Tareas humanas abiertas",
-				"tooltip": "@:start.cockpit.humanTasks.tooltip"
+				"tooltip": "@:start.cockpit.humanTasks.tooltip",
+				"assigned": "Asignado a un usuario",
+				"unassigned": "Sin asignar",
+				"assignedGroups": "Asignado a uno o más grupos"
 			},
 			"processes": {
 				"title": "Definiciones de procesos",
@@ -48,7 +51,8 @@
 				"title": "@:start.cockpit.batches.title",
 				"tooltip": "@:start.cockpit.batches.tooltip"
 			}
-		}
+		},
+		"others": "Otros"
 	},
 	"process": {
 		"instanceRunning": "Instancia en ejecución",
