@@ -838,8 +838,8 @@
 			"tooltip": "Open Start Process"
 		},
 		"taskList": {
-			"title": "TaskList",
-			"tooltip": "Open TaskList"
+			"title": "Tasklist",
+			"tooltip": "Open Tasklist"
 		},
 		"cockpit": {
 			"title": "Cockpit",

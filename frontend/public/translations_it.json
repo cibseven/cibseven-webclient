@@ -651,8 +651,8 @@
 			"tooltip": "Open Start Process"
 		},
 		"taskList": {
-			"title": "TaskList",
-			"tooltip": "Apri TaskList"
+			"title": "Tasklist",
+			"tooltip": "Apri Tasklist"
 		},
 		"cockpit": {
 			"title": "Cockpit",
