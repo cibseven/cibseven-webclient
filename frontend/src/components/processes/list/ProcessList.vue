@@ -88,12 +88,26 @@ export default {
       selected: null,
       filter: '',
       focused: null,
-      onlyIncidents: false,
-      loadingInstances: true,
-      onlyActive: true
+      loadingInstances: true
     }
   },
   computed: {
+    onlyIncidents: {
+      get: function() {
+        return this.$route.query.onlyIncidents === 'true'
+      },
+      set: function(value) {
+        this.$router.push({ query: { ...this.$route.query, onlyIncidents: value } })
+      }
+    },
+    onlyActive: {
+      get: function() {
+        return this.$route.query.onlyActive === undefined || this.$route.query.onlyActive === 'true'
+      },
+      set: function(value) {
+        this.$router.push({ query: { ...this.$route.query, onlyActive: value } })
+      }
+    },
     ProcessDefinitionActions: function() {
       return this.$options.components && this.$options.components.ProcessDefinitionActions
         ? this.$options.components.ProcessDefinitionActions

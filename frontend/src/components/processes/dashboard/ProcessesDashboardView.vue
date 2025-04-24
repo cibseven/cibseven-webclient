@@ -15,7 +15,7 @@
           :items="openIncidents"
           :title="$t('processes-dashboard.items.open-incidents.title')"
           :tooltip="$t('processes-dashboard.items.open-incidents.tooltip')"
-          link="/seven/auth/processes/list"
+          link="/seven/auth/processes/list?onlyIncidents=true"
           :loading="loading"
         ></PieChart>
         <PieChart
