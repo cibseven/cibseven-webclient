@@ -82,7 +82,7 @@ export default {
   mixins: [usersMixin],
   inject: ['isMobile'],
   props: { task: Object },
-  setup() {
+  setup: function() {
     const POPOVER_DELAY = 1200 // 1.2 seconds
     return { POPOVER_DELAY }
   },
@@ -127,7 +127,7 @@ export default {
     this.loadIdentityLinks(this.task.id)
     this.showPopoverWithDelay(this.task.assignee) // when first task is opened
   },
-  beforeUnmount() {
+  beforeUnmount: function() {
     this.resetTimer() // stop timeout for showPopoverWithDelay()
     this.stopListeningTouchEvents()
   },
