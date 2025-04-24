@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 
 @ApiResponses({ @ApiResponse(responseCode= "500", description = "An unexpected system error occured") })
-@RestController @RequestMapping("${services.basePath:/services/v1}" + "/info") @Slf4j
+@RestController @RequestMapping("/info") @Slf4j
 public class InfoService extends BaseService {	
 	
 	@Value("${ui.element.template.url:}") private String uiElementTemplateUrl;
