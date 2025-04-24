@@ -82,8 +82,12 @@ public class AnalyticsService extends BaseService implements InitializingBean {
     for (Map.Entry<String, Long> entry : groupedInstances.entrySet()) {
         AnalyticsInfo incidentInfo = new AnalyticsInfo();
         incidentInfo.setId(entry.getKey());
-        String processName = latestProcessNames.get(entry.getKey()).getName();
-        incidentInfo.setTitle(processName);
+        Process process = latestProcessNames.get(entry.getKey());
+        if (process != null) {
+            incidentInfo.setTitle(process.getName());
+        } else {
+            incidentInfo.setTitle("Unknown Process");
+        }
         incidentInfo.setValue(entry.getValue());
         runningInstances.add(incidentInfo);
     }
