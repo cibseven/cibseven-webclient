@@ -42,12 +42,14 @@ import { ProcessService } from '@/services.js'
 import RenderTemplate from '@/components/render-template/RenderTemplate.vue'
 import { BWaitingBox } from 'cib-common-components'
 import HighlightedText from '@/components/common-components/HighlightedText.vue'
+import { permissionsMixin } from '@/permissions.js'
 
 export default {
   components: { RenderTemplate, BWaitingBox, HighlightedText },
-  inject: ['currentLanguage'],
+  inject: ['loadProcesses', 'currentLanguage'],
   emits: ['process-started', 'display-popover'],
   props: { hideProcessSelection: Boolean },
+  mixins: [permissionsMixin],
   data: function() {
     return {
       isStartingProcess: false,
@@ -76,7 +78,8 @@ export default {
     this.$eventBus.on('openStartProcess', this.show)
   },
   methods: {
-    show: function() {
+    show: function() {      
+      this.loadProcesses(false)
       this.$refs.startProcess.show()
     },
     startProcess: function(process) {

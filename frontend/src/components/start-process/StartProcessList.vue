@@ -83,7 +83,7 @@ import { ProcessService } from '@/services.js'
 export default {
   name: 'StartProcessList',
   components: { ProcessTable, ProcessAdvanced, ProcessCard, StartProcess, BpmnViewer, SuccessAlert },
-  inject: ['isMobile'],
+  inject: ['loadProcesses', 'isMobile'],
   mixins: [permissionsMixin],
   data: function () {
     return {
@@ -99,7 +99,8 @@ export default {
       this.checkProcessInUrl(key)
     }
   },
-  created: function() {
+  created: function() {    
+    this.loadProcesses(false)
     this.view = this.isMobile() ? 'image-outline' : localStorage.getItem('viewMode') || 'image-outline'
   },
   computed: {
