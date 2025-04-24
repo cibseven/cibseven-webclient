@@ -25,18 +25,17 @@ export default {
     link: String,
     items: Array,
     type: String,
+    loading: Boolean,
   },
   computed: {
-    loading() {
-      return !this.items
+    isEmptyChart() {
+      return this.items.length === 0
     },
     sortedItems() {
       return [...this.items].sort((a, b) => b.value - a.value)
     },
     values() {
-      if (this.items.length === 0) {
-        return [0]
-      }
+      if (this.isEmptyChart) return [1]
       return this.sortedItems.map((item) => item.value)
     },
     labels() {
@@ -52,7 +51,6 @@ export default {
               if (!item || this.type === 'humanTasks') this.$router.push(this.link)
               else {
                 let link = '/seven/auth/process/' + item.id
-                // link += item.tenantId ? '?tenantId=' + item.tenantId : ''
                 this.$router.push(link)
               }
             },
@@ -71,9 +69,7 @@ export default {
                 total: {
                   show: true,
                   label: '',
-                  formatter: (w) => {
-                    return w.globals.seriesTotals.reduce((a, b) => a + b, 0)
-                  },
+                  formatter: () => this.isEmptyChart ? '0' : this.values.reduce((a, b) => a + b, 0)
                 },
                 value: {
                   show: true,
@@ -94,6 +90,7 @@ export default {
           show: false,
         },
         tooltip: {
+					enabled: !this.isEmptyChart,
           y: {
             title: {
               formatter: (seriesName) => `${seriesName}`,

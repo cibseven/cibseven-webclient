@@ -7,7 +7,8 @@ describe('PieChart', () => {
   it('renders loading state when items are not provided', () => {
     const wrapper = mount(PieChart, {
       props: {
-        items: null
+        items: [],
+        loading: true
       },
       global: {
         stubs: {
