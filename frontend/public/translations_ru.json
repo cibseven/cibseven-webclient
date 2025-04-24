@@ -133,7 +133,14 @@
 		"variables": "Переменные",
 		"usertasks": "Пользовательские задачи",
 		"calledProcessInstances": "называемые экземпляры процессов",
-		"onlyIncidents": "Только с инцидентами",
+		"onlyIncidents": {
+			"title": "Только с инцидентами",
+			"tooltip": "Показать только процессы с инцидентами"
+		},
+		"onlyActive": {
+			"title": "Только активные",
+			"tooltip": "Показать только процессы с не приостановленными определениями процессов"
+		},
 		"runningInstances": "Экземпляры",
 		"instances": "Экземпляры процессов",
 		"statistics": "Статистика",
@@ -147,7 +154,6 @@
 		"refreshVersions": "Обновить версии истории",
 		"loadVersions": "Загрузить все версии истории",
 		"externalProcessStarted": "Процесс успешно запущен",
-		"onlyActive": "Только активные",
 		"exportInstances": "Экспорт экземпляров",
 		"days": "дней",
 		"deleteProcessDefinition": {

@@ -134,7 +134,14 @@
 		"variables": "Variables",
 		"usertasks": "Tareas de usuario",
 		"calledProcessInstances": "Llamadas instancias de proceso",
-		"onlyIncidents": "Sólo con incidencias",
+		"onlyIncidents": {
+			"title": "Solo con incidentes",
+			"tooltip": "Mostrar solo los procesos que tienen incidentes"
+		},
+		"onlyActive": {
+			"title": "Solo activos",
+			"tooltip": "Mostrar solo las definiciones de proceso no suspendidas"
+		},
 		"runningInstances": "Instancias",
 		"instances": "Instancias",
 		"statistics": "Estadísticas",		
@@ -148,7 +155,6 @@
 		"refreshVersions": "Actualizar el historial de versions",
 		"loadVersions": "Cargar todo el historial de versiones",
 		"externalProcessStarted": "Proceso iniciado con éxito",
-		"onlyActive": "Sólo activos",
 		"exportInstances": "Exportar instancias",
 		"days": "días",
 		"deleteProcessDefinition": {
