@@ -7,7 +7,7 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
-const backendUrl = 'http://localhost:8080/webapp'
+const backendUrl = 'http://localhost:8088/webapp'
 
 // Detect build mode
 /* eslint-disable no-undef */
@@ -51,6 +51,22 @@ export default defineConfig({
           })
         },
       },
+      '/info': {
+        target: backendUrl,
+        changeOrigin: true,
+        secure: false,
+        configure: (proxy, _options) => {
+          proxy.on('error', (err, _req, _res) => {
+            console.log('proxy error', err)
+          })
+          proxy.on('proxyReq', (proxyReq, req, _res) => {
+            console.log('Sending Request to the Target:', req.method, backendUrl + req.url)
+          })
+          proxy.on('proxyRes', (proxyRes, req, _res) => {
+            console.log('Received Response from the Target:', proxyRes.statusCode, backendUrl + req.url)
+          })
+        },
+      },      
     },
   },
   build: isLibrary
