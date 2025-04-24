@@ -13,13 +13,13 @@
         <div class="col-5">
           <div class="d-flex row">
             <div class="d-inline-block align-content-start" style="width: 210px">
-              <b-form-checkbox v-model="onlyIncidents" switch>
-                {{ $t('process.onlyIncidents') }}
+              <b-form-checkbox v-model="onlyIncidents" switch :title="$t('process.onlyIncidents.tooltip')">
+                {{ $t('process.onlyIncidents.title') }}
               </b-form-checkbox>
             </div>
             <div class="d-inline-block align-content-start" style="width: 210px">
-              <b-form-checkbox v-model="onlyActive" switch>
-                {{ $t('process.onlyActive') }}
+              <b-form-checkbox v-model="onlyActive" switch :title="$t('process.onlyActive.tooltip')">
+                {{ $t('process.onlyActive.title') }}
               </b-form-checkbox>
             </div>
           </div>
@@ -88,12 +88,26 @@ export default {
       selected: null,
       filter: '',
       focused: null,
-      onlyIncidents: false,
-      loadingInstances: true,
-      onlyActive: true
+      loadingInstances: true
     }
   },
   computed: {
+    onlyIncidents: {
+      get: function() {
+        return this.$route.query.onlyIncidents === 'true'
+      },
+      set: function(value) {
+        this.$router.push({ query: { ...this.$route.query, onlyIncidents: value } })
+      }
+    },
+    onlyActive: {
+      get: function() {
+        return this.$route.query.onlyActive === undefined || this.$route.query.onlyActive === 'true'
+      },
+      set: function(value) {
+        this.$router.push({ query: { ...this.$route.query, onlyActive: value } })
+      }
+    },
     ProcessDefinitionActions: function() {
       return this.$options.components && this.$options.components.ProcessDefinitionActions
         ? this.$options.components.ProcessDefinitionActions
