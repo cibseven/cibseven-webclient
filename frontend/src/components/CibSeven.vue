@@ -29,7 +29,8 @@
 
             <b-dropdown-divider v-if="permissionsTaskList && permissionsCockpit"></b-dropdown-divider>
             <b-dropdown-group v-if="permissionsCockpit" header="{{ $t('start.cockpit.title') }}">
-              <b-dropdown-item to="/seven/auth/processes" :active="$route.path.includes('seven/auth/process')" :title="$t('start.cockpit.processes.tooltip')">{{ $t('start.cockpit.processes.title') }}</b-dropdown-item>
+              <b-dropdown-item to="/seven/auth/processes" :active="$route.path.includes('seven/auth/processes/dashboard')" :title="$t('start.cockpit.tooltip')"><span class="fw-semibold font-monospace small">{{ $t('start.cockpit.title') }}</span></b-dropdown-item>
+              <b-dropdown-item to="/seven/auth/processes/list" :active="$route.path.includes('seven/auth/process/') || $route.path.includes('seven/auth/processes/list')" :title="$t('start.cockpit.processes.tooltip')">{{ $t('start.cockpit.processes.title') }}</b-dropdown-item>
               <b-dropdown-item to="/seven/auth/decisions" :active="$route.path.includes('seven/auth/decision')" :title="$t('start.cockpit.decisions.tooltip')">{{ $t('start.cockpit.decisions.title') }}</b-dropdown-item>
               <b-dropdown-item to="/seven/auth/human-tasks" :active="$route.path.includes('seven/auth/human-tasks')" :title="$t('start.cockpit.humanTasks.tooltip')">{{ $t('start.cockpit.humanTasks.title') }}</b-dropdown-item>
               <b-dropdown-item to="/seven/auth/deployments" :active="$route.path.includes('seven/auth/deployments')" :title="$t('start.cockpit.deployments.tooltip')">{{ $t('start.cockpit.deployments.title') }}</b-dropdown-item>
@@ -38,6 +39,7 @@
 
             <b-dropdown-divider v-if="permissionsUsers && (permissionsTaskList || permissionsCockpit)"></b-dropdown-divider>
             <b-dropdown-group v-if="permissionsUsers" header="{{ $t('start.admin.title') }}">
+              <b-dropdown-item to="/seven/auth/admin" :active="$route.path.includes('seven/auth/admin') && !$route.path.includes('seven/auth/admin/')" :title="$t('start.admin.tooltip')"><span class="fw-semibold font-monospace small">{{ $t('start.admin.title') }}</span></b-dropdown-item>
               <b-dropdown-item to="/seven/auth/admin/users" :active="$route.path.includes('seven/auth/admin/user') || $route.path.includes('seven/auth/admin/create-user')" :title="$t('admin.users.title')">{{ $t('admin.users.title') }}</b-dropdown-item>
               <b-dropdown-item to="/seven/auth/admin/groups" :active="$route.path.includes('seven/auth/admin/group') || $route.path.includes('seven/auth/admin/create-group')" :title="$t('admin.groups.title')">{{ $t('admin.groups.title') }}</b-dropdown-item>
               <b-dropdown-item to="/seven/auth/admin/tenants" :active="$route.path.includes('seven/auth/admin/tenant') || $route.path.includes('seven/auth/admin/create-tenant')" :title="$t('admin.tenants.tooltip')">{{ $t('admin.tenants.title') }}</b-dropdown-item>

@@ -73,7 +73,7 @@
             <b-overlay :show="showCockpitOptions" :opacity="0" no-center no-wrap>
               <template #overlay>
                 <b-list-group class="py-2 bg-white rounded-bottom" style="opacity: .9; position: absolute; bottom: 1px; width: calc(100% - 2px); margin-left: 1px">
-                  <b-list-group-item to="/seven/auth/processes" class="py-1 px-3 border-start-0 border-top-0 border-end-0 h6 fw-normal mb-0" :title="$t('start.cockpit.processes.tooltip')">
+                  <b-list-group-item to="/seven/auth/processes/list" class="py-1 px-3 border-start-0 border-top-0 border-end-0 h6 fw-normal mb-0" :title="$t('start.cockpit.processes.tooltip')">
                     <span class="mdi mdi-18px mdi-map-legend pe-1"></span>{{ $t('start.cockpit.processes.title') }}</b-list-group-item>
                   <b-list-group-item to="/seven/auth/decisions" class="py-1 px-3 border-start-0 border-top-0 border-end-0 h6 fw-normal mb-0" :title="$t('start.cockpit.decisions.tooltip')">
                     <span class="mdi mdi-18px mdi-wall-sconce-flat-outline pe-1"></span>{{ $t('start.cockpit.decisions.title') }}</b-list-group-item>
