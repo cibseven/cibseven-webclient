@@ -93,7 +93,6 @@ export default {
       }
       if (this.task.url) {
         var formFrame = this.$refs['template-frame']
-        console.log('this.task.url', this.task.url)
         formFrame.src = this.task.url + '&locale=' + this.currentLanguage() + '&token=' + this.$root.user.authToken + 
         '&theme=' + themeContext + '&translation=' + translationContext
         this.loader = false
