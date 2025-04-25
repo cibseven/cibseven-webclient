@@ -34,7 +34,7 @@ mvn clean install
 
 ### Documentation
 
-- [CIB seven Manual](https://docs.cibseven.de/manual/1.0/)
+- [CIB seven Manual](https://docs.cibseven.org/manual/latest/)
 - [Migration Guide](https://github.com/cibseven/cibseven-migration)
 - [Docker Setup](https://github.com/cibseven/cibseven-docker)
 
@@ -60,7 +60,7 @@ This project is licensed under the Apache 2.0 License – see the [LICENSE](LICE
 
 ## Authors
 
-Developed and maintained by the [CIB software group](https://www.cib.de).
+Developed and maintained by the [CIB software GmbH](https://www.cib.de).
 
 ## Related Repositories
 
