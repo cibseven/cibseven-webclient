@@ -15,7 +15,7 @@
             <label class="btn border-end-0 border-light" style="cursor: default"><span class="mdi mdi-magnify"
               style="line-height: initial"></span></label>
           </div>
-          <input class="form-control border-start-0 border-light ps-0" type="text" :placeholder="$t('searches.search')" v-model="processesFilter" :disabled="isStartingProcess">
+          <input class="form-control border-start-0 border-light ps-0" type="text" :placeholder="$t('searches.search')" v-model.trim="processesFilter" :disabled="isStartingProcess">
         </div>
       </div>
       <b-list-group v-if="startableProcesses.length > 0" >
@@ -78,7 +78,7 @@ export default {
     this.$eventBus.on('openStartProcess', this.show)
   },
   methods: {
-    show: function() {      
+    show: function() {
       this.loadProcesses(false)
       this.$refs.startProcess.show()
     },
@@ -107,7 +107,7 @@ export default {
 
             this.startParamUrl = '#/' + templateType + '/' + this.currentLanguage() + '/' +
             processLatest.id + '/' + this.$root.user.authToken // + '/' + themeContext + '/' + translationContext
-            
+
             if (this.hideProcessSelection) this.$refs.startProcess.show()
             process.loading = false
             this.isStartingProcess = false

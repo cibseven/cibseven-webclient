@@ -10,7 +10,7 @@
             <b-input-group-text class="py-0 border-light"><span class="mdi mdi-18px mdi-magnify"
             style="line-height: initial"></span></b-input-group-text>
           </template>
-          <b-form-input :title="$t('searches.searchByFilterName')" size="sm" ref="input" type="search" v-model="filter"
+          <b-form-input :title="$t('searches.searchByFilterName')" size="sm" ref="input" type="search" v-model.trim="filter"
           class="form-control border-start-0 ps-0 form-control border-light shadow-none" :placeholder="$t('searches.searchByFilterName')"/>
           <template #append>
             <b-button size="sm" v-hover-style="{ classes: ['text-primary'] }" variant="secondary-outline"
