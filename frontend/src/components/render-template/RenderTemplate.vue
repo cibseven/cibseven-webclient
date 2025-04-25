@@ -107,9 +107,10 @@ export default {
             return
           }
           var formFrame = this.$refs['template-frame']
-          formFrame.src = this.$root.config.uiElementTemplateUrl + '/' + formReference + '?taskId=' + this.task.id +
-          '&locale=' + this.currentLanguage() + '&token=' + this.$root.user.authToken +
-          '&theme=' + themeContext + '&translation=' + translationContext
+          
+          formFrame.src = '#/' + formReference + '/' + this.currentLanguage() + '/' +
+          this.task.id + '/' + this.$root.user.authToken + '/' + themeContext + '/' + translationContext
+
           this.loader = false
         }, () => {
           // Not needed but just in case something changes in the backend method
