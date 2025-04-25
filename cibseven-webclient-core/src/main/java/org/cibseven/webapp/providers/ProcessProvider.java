@@ -219,7 +219,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 
   @Override
   public Collection<ProcessStatistics> getProcessStatistics(CIBUser user) {
-    String url = camundaUrl + "/engine-rest/process-definition/statistics?failedJobs=true";
+    String url = camundaUrl + "/engine-rest/process-definition/statistics?failedJobs=true&rootIncidents=true";
     return Arrays.asList(((ResponseEntity<ProcessStatistics[]>) doGet(url, ProcessStatistics[].class, user, false)).getBody());
   }
 	
