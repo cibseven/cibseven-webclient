@@ -21,7 +21,7 @@
     <template v-slot:modal-footer>
       <div class="row w-100 me-0">
         <div class="col-6 p-0">
-          <b-button v-if="permissionsAdmin" variant="light" @click="$refs.about.hide()" href="#/seven/auth/admin/system/system-diagnostics">{{ $t('admin.system.system-diagnostics.diagnosticData') }}</b-button>
+          <b-button v-if="permissionsAdmin" variant="light" @click="onDiagnosticData">{{ $t('admin.system.system-diagnostics.diagnosticData') }}</b-button>
         </div>
         <div class="col-6 p-0">
           <b-button variant="primary" @click="$refs.about.hide()" class="float-end">{{ $t('confirm.ok') }}</b-button>
@@ -61,6 +61,10 @@ export default {
         })
       }
       this.$refs.about.show()
+    },
+    onDiagnosticData: function() {
+      this.$refs.about.hide()
+      this.$router.push('/seven/auth/admin/system/system-diagnostics')
     }
   }
 }
