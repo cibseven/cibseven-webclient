@@ -93,8 +93,9 @@ export default {
       }
       if (this.task.url) {
         var formFrame = this.$refs['template-frame']
-        formFrame.src = this.task.url + '&locale=' + this.currentLanguage() + '&token=' + this.$root.user.authToken + 
-        '&theme=' + themeContext + '&translation=' + translationContext
+
+        formFrame.src = this.task.url + '/' + themeContext + '/' + translationContext
+
         this.loader = false
       } else if (this.task.id) {
 
