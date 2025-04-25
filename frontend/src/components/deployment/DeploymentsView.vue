@@ -8,7 +8,7 @@
               <b-button :title="$t('searches.search')" aria-hidden="true" size="sm" class="rounded-left" variant="secondary"><span class="mdi mdi-magnify" style="line-height: initial"></span></b-button>
             </b-input-group-prepend>
             <b-input-group-append>
-              <b-form-input :title="$t('searches.search')" size="sm" :placeholder="$t('searches.search')" v-model="filter"></b-form-input>
+              <b-form-input :title="$t('searches.search')" size="sm" :placeholder="$t('searches.search')" v-model.trim="filter"></b-form-input>
             </b-input-group-append>
           </b-input-group>
         </div>
