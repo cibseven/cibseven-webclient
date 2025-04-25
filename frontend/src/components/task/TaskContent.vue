@@ -183,7 +183,7 @@ export default {
       }
     },
     resetTimer: function() {
-      if (this.timer != null) {
+      if (this.timer) {
         clearTimeout(this.timer)
         this.timer = null
       }
