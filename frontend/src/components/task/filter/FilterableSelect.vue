@@ -9,7 +9,7 @@
             style="cursor: auto" :placeholder="placeholder" @keydown.prevent ></b-form-input>
         </b-input-group>
       </template>
-      <b-dd-form form-class="p-2"><b-form-input class="w-100" ref="filter" v-model="filter" @input="onInput"></b-form-input></b-dd-form>
+      <b-dd-form form-class="p-2"><b-form-input class="w-100" ref="filter" v-model.trim="filter" @input="onInput"></b-form-input></b-dd-form>
       <div v-if="loading" class="w-100 text-center"><b-spinner></b-spinner></div>
       <b-dropdown-group v-if="elements && !loading" style="max-height:150px" class="overflow-auto">
         <b-dd-item-btn button-class="p-1 d-flex" v-for="(label, value, index) in filteredElements"
