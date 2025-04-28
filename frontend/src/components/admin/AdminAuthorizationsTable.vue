@@ -25,7 +25,7 @@
             <template #prepend>
               <b-button class="rounded-left" variant="secondary"><span class="mdi mdi-magnify" style="line-height: initial"></span></b-button>
             </template>
-            <b-form-input :placeholder="$t('searches.search')" @keyup="searchAuthorizations" v-model="filter"></b-form-input>
+            <b-form-input :placeholder="$t('searches.search')" @keyup="searchAuthorizations" v-model.trim="filter"></b-form-input>
           </b-input-group>
         </div>
         <div class="col-8 text-end">

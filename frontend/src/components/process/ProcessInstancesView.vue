@@ -44,7 +44,7 @@
               <template #prepend>
                 <b-button :title="$t('searches.search')" aria-hidden="true" size="sm" class="rounded-left" variant="secondary"><span class="mdi mdi-magnify" style="line-height: initial"></span></b-button>
               </template>
-              <b-form-input :title="$t('searches.search')" size="sm" :placeholder="$t('searches.search')" @input="onInput"></b-form-input>
+              <b-form-input :title="$t('searches.search')" size="sm" :placeholder="$t('searches.search')" @input="(evt) => onInput(evt.target.value.trim())"></b-form-input>
               <b-button size="sm" variant="light" @click="$refs.sortModal.show()" class="ms-1 border"><span class="mdi mdi-sort" style="line-height: initial"></span></b-button>
             </b-input-group>
           </div>
@@ -254,7 +254,7 @@ export default {
         this.$emit('show-more')
       }
     },
-    onInput: debounce(800, function(evt) { this.$emit('filter-instances', evt.target.value) }),
+    onInput: debounce(800, function(filter) { this.$emit('filter-instances', filter) }),
     getJobDefinitions: function() {
       this.$store.dispatch('jobDefinition/getJobDefinitions', {
         processDefinitionId: this.process.id
