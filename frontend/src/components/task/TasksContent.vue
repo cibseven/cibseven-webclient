@@ -206,14 +206,23 @@ export default {
       if (taskSorting[0].sortBy !== 'created') taskSorting.push({ sortBy: 'created', sortOrder: 'desc' })
       var filters = { sorting: taskSorting }
       if (this.search) {
-        filters.orQueries = [
-          {
-            nameLike: '%' + this.search + '%',
-            assigneeLike: '%' + this.search + '%',
-            processDefinitionId: this.search,
-            processInstanceBusinessKeyLike: '%' + this.search + '%'
-          }
-        ]
+        var searchQueries
+        // Checks if a search query is wrapped with single or double quotes
+        if (/^(['"]).*\1$/.test(this.search)) {
+          // Processes the search query by treating it as an exact phrase, ensuring more precise search results
+          searchQueries = [this.search.replace(/^['"]|['"]$/g, '')] // removes quotes
+        } else {
+          // Handles search query by treating each word separately.
+          // Example: Searching for "Prepare bank" will retrieve results containing either "Prepare" or "bank,"
+          // potentially leading to less precise results
+          searchQueries = this.search.split(/\s+/)
+        }
+        filters.orQueries = searchQueries.map((searchQuery) => ({
+            nameLike: '%' + searchQuery + '%',
+            assigneeLike: '%' + searchQuery + '%',
+            processDefinitionId: searchQuery,
+            processInstanceBusinessKeyLike: '%' + searchQuery + '%'
+          }))
       }
       if (this.$root.config.taskFilter.advancedSearch.filterEnabled) {
         this.$store.dispatch('loadAdvancedSearchData')
