@@ -18,9 +18,9 @@
 -->
 <template>
   <div :style="{ 'height': 'calc(100% - 55px)' }" class="d-flex flex-column bg-light overflow-auto">
-    <div class="h-100 container" :style="countStartItems === 4 ? 'max-width: 960px' : ''">
+    <div class="h-100 container" :style="tiles.length === 4 ? 'max-width: 960px' : ''">
       <div ref="startContainer" class="row justify-content-center">
-        <div v-if="applicationPermissions($root.config.permissions.tasklist, 'tasklist') && startableProcesses"
+        <div v-if="tiles.includes('startProcess')"
           class="col-4 mt-5 mx-2 mx-md-3 bg-white rounded" style="max-width: 330px; min-width: 250px; height:250px">
           <div class="row border rounded shadow-sm h-100">
             <div class="align-top" style="flex:auto">
@@ -43,7 +43,7 @@
             </div>
           </div>
         </div>
-        <div v-if="applicationPermissions($root.config.permissions.tasklist, 'tasklist')"
+        <div v-if="tiles.includes('tasklist')"
           class="col-4 mt-5 mx-2 mx-md-3 bg-white rounded" style="max-width: 330px; min-width: 250px; height:250px">
           <div class="row border rounded shadow-sm h-100">
             <div class="align-top" style="flex:auto">
@@ -66,7 +66,7 @@
             </div>
           </div>
         </div>
-        <div v-if="applicationPermissions($root.config.permissions.cockpit, 'cockpit')"
+        <div v-if="tiles.includes('cockpit')"
           class="col-4 mt-5 mx-2 mx-md-3 bg-white rounded" style="max-width: 330px; min-width: 250px; height:250px" tabindex="0"
           @focus="showCockpitOptions = true" @blur="showCockpitOptions = true" @click="showCockpitOptions = true" @mouseover="showCockpitOptions = true" @mouseleave="showCockpitOptions = false">
           <div class="row border rounded shadow-sm h-100">
@@ -106,7 +106,7 @@
             </b-overlay>
           </div>
         </div>
-        <div v-if="hasAdminManagementPermissions($root.config.permissions)"
+        <div v-if="tiles.includes('admin')"
         class="col-4 mt-5 mx-2 mx-md-3 bg-white rounded" style="max-width: 330px; min-width: 250px; height:250px" tabindex="0"
         @focus="showAdminOptions = true" @blur="showAdminOptions = true" @click="showAdminOptions = true" @mouseover="showAdminOptions = true" @mouseleave="showAdminOptions = false">
           <div class="row border rounded shadow-sm h-100">
@@ -163,7 +163,6 @@
 
 <script>
 import { permissionsMixin } from '@/permissions.js'
-import { nextTick } from 'vue'
 
 export default {
   name: "StartView",
@@ -172,16 +171,28 @@ export default {
   data: function() {
     return {
       showAdminOptions: false,
-      showCockpitOptions: false,
-      items: []
+      showCockpitOptions: false
     }
-  },
+  },  
   computed: {
+    tiles() {
+      const tiles = []
+      if (this.applicationPermissions(this.$root.config.permissions.tasklist, 'tasklist') && this.startableProcesses) {
+        tiles.push('startProcess')
+      }
+      if (this.applicationPermissions(this.$root.config.permissions.tasklist, 'tasklist')) {
+        tiles.push('tasklist')
+      }
+      if (this.applicationPermissions(this.$root.config.permissions.cockpit, 'cockpit')) {
+        tiles.push('cockpit')
+      }
+      if (this.hasAdminManagementPermissions(this.$root.config.permissions)) {
+        tiles.push('admin')
+      }
+      return tiles
+    },
     startableProcesses: function() {
       return this.processesFiltered.find(p => { return p.startableInTasklist })
-    },
-    countStartItems: function () {
-      return this.items.length
     },
     processesFiltered: function() {
       if (!this.$store.state.process.list) return []
@@ -198,11 +209,6 @@ export default {
         return comp
       })
     }
-  },
-  mounted() {
-    nextTick(() => {
-      this.items = Array.from(this.$refs.startContainer.children).filter(el => el.offsetParent !== null)
-    })
   },
   methods: {
     startProcess: function () {
