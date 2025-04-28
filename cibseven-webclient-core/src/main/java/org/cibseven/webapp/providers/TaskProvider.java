@@ -31,7 +31,6 @@ import org.cibseven.webapp.rest.model.CandidateGroupTaskCount;
 import org.cibseven.webapp.rest.model.IdentityLink;
 import org.cibseven.webapp.rest.model.ProcessVariables;
 import org.cibseven.webapp.rest.model.Task;
-import org.cibseven.webapp.rest.model.TaskCount;
 import org.cibseven.webapp.rest.model.TaskFiltering;
 import org.cibseven.webapp.rest.model.TaskHistory;
 import org.cibseven.webapp.rest.model.Variable;
@@ -64,24 +63,9 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 	}
 
 	@Override
-	public TaskCount findTasksCount(
-			Optional<String> name, 
-			Optional<String> nameLike,
-			Optional<String> taskDefinitionKey,
-			Optional<String> taskDefinitionKeyIn,
-			CIBUser user) {
-		
+	public Integer findTasksCount(Map<String, Object> filters, CIBUser user) {
 		String url = camundaUrl + "/engine-rest/task/count";
-		
-		String param = "";
-		param += addQueryParameter(param, "name", name, true);
-		param += addQueryParameter(param, "nameLike", nameLike, true);
-		param += addQueryParameter(param, "taskDefinitionKey", taskDefinitionKey, true);
-		param += addQueryParameter(param, "taskDefinitionKeyIn", taskDefinitionKeyIn, true);
-		
-		url += param;
-				
-		return ((ResponseEntity<TaskCount>) doGet(url, TaskCount.class, user, false)).getBody();
+		return ((ResponseEntity<JsonNode>) doPost(url, filters, JsonNode.class, user)).getBody().get("count").asInt();		
 	}
 	
 	@Override
@@ -261,7 +245,7 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 	}
 	
 	@Override
-	public Integer findHistoryTaksCount(Map<String, Object> filters, CIBUser user) {
+	public Integer findHistoryTasksCount(Map<String, Object> filters, CIBUser user) {
 		String url = camundaUrl + "/engine-rest/history/task/count";
 		return ((ResponseEntity<JsonNode>) doPost(url, filters, JsonNode.class, user)).getBody().get("count").asInt();
 	}

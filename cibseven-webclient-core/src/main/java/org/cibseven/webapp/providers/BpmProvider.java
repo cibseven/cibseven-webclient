@@ -60,7 +60,6 @@ import org.cibseven.webapp.rest.model.ProcessStatistics;
 import org.cibseven.webapp.rest.model.SevenUser;
 import org.cibseven.webapp.rest.model.StartForm;
 import org.cibseven.webapp.rest.model.Task;
-import org.cibseven.webapp.rest.model.TaskCount;
 import org.cibseven.webapp.rest.model.TaskFiltering;
 import org.cibseven.webapp.rest.model.TaskHistory;
 import org.cibseven.webapp.rest.model.Tenant;
@@ -913,8 +912,7 @@ public interface BpmProvider {
 			Optional<String> eventName, CIBUser user);
 	
 	
-	TaskCount findTasksCount(Optional<String> name, Optional<String> nameLike, Optional<String> taskDefinitionKey,
-			Optional<String> taskDefinitionKeyIn, CIBUser user);
+	Integer findTasksCount(Map<String, Object> filters, CIBUser user);
 	
 	/**
 	 * Reports a business error in the context of a running task by id. The error code must be specified to identify the BPMN error handler.
@@ -984,7 +982,7 @@ public interface BpmProvider {
 	void deleteJob(String id, CIBUser user);
 	Collection<Object> getHistoryJobLog(Map<String, Object> params, CIBUser user);
 	String getHistoryJobLogStacktrace(String id, CIBUser user);
-	Integer findHistoryTaksCount(Map<String, Object> filters, CIBUser user);
+	Integer findHistoryTasksCount(Map<String, Object> filters, CIBUser user);
 
 	Collection<CandidateGroupTaskCount> getTaskCountByCandidateGroup(CIBUser user);
 	

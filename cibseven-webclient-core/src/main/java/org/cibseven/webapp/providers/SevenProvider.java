@@ -59,7 +59,6 @@ import org.cibseven.webapp.rest.model.SevenUser;
 import org.cibseven.webapp.rest.model.SevenVerifyUser;
 import org.cibseven.webapp.rest.model.StartForm;
 import org.cibseven.webapp.rest.model.Task;
-import org.cibseven.webapp.rest.model.TaskCount;
 import org.cibseven.webapp.rest.model.TaskFiltering;
 import org.cibseven.webapp.rest.model.TaskHistory;
 import org.cibseven.webapp.rest.model.Tenant;
@@ -71,6 +70,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -113,8 +113,8 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 
 	@Override
-	public TaskCount findTasksCount(Optional<String> name, Optional<String> nameLike, Optional<String> taskDefinitionKey, Optional<String> taskDefinitionKeyIn, CIBUser user) {
-		return taskProvider.findTasksCount(name, nameLike, taskDefinitionKey, taskDefinitionKeyIn, user);
+	public Integer findTasksCount(@RequestBody Map<String, Object> filters, CIBUser user) {
+		return taskProvider.findTasksCount(filters, user);
 	}
 	
 	@Override
@@ -214,8 +214,8 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 	
 	@Override
-	public Integer findHistoryTaksCount(Map<String, Object> filters, CIBUser user) {
-		return taskProvider.findHistoryTaksCount(filters, user);
+	public Integer findHistoryTasksCount(Map<String, Object> filters, CIBUser user) {
+		return taskProvider.findHistoryTasksCount(filters, user);
 	}
 
 	@Override

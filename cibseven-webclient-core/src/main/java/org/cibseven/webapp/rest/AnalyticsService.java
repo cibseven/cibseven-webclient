@@ -125,11 +125,11 @@ public class AnalyticsService extends BaseService implements InitializingBean {
 		analytics.setOpenIncidents(groupAnalyticsWithOthers(openIncidents));
 
 		Map<String, Object> params = Map.of("unfinished", true, "assigned", true);
-		Integer assignedTasks = bpmProvider.findHistoryTaksCount(params, user);
+		Integer assignedTasks = bpmProvider.findTasksCount(params, user);
 		params = Map.of("unfinished", true, "unassigned", true, "withCandidateGroups", true);
-		Integer assignedGroups = bpmProvider.findHistoryTaksCount(params, user);
+		Integer assignedGroups = bpmProvider.findTasksCount(params, user);
 		params = Map.of("unfinished", true, "unassigned", true, "withoutCandidateGroups", true);
-		Integer unassignedTasks = bpmProvider.findHistoryTaksCount(params, user);
+		Integer unassignedTasks = bpmProvider.findTasksCount(params, user);
 
 		analytics.setOpenHumanTasks(List.of(new AnalyticsInfo("1", "assigned", assignedTasks),
 				new AnalyticsInfo("2", "assignedGroups", assignedGroups),
@@ -175,7 +175,7 @@ public class AnalyticsService extends BaseService implements InitializingBean {
 					.mapToLong(AnalyticsInfo::getValue).sum();
 
 			AnalyticsInfo othersGroup = new AnalyticsInfo();
-			othersGroup.setId(null);
+			othersGroup.setId("");
 			othersGroup.setTitle("others");
 			othersGroup.setValue(othersSum);
 
