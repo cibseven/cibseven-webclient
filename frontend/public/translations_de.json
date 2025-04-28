@@ -131,7 +131,6 @@
 		"jobDefinitions": "Job-Definitionen",
 		"jobs": "Jobs",
 		"calledProcessDefinitions": "Aufgerufene Prozessdefinitionen"
-			
 		}
 	},
 	"process-instance": {

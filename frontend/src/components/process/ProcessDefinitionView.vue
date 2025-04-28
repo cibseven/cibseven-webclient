@@ -324,7 +324,7 @@ export default {
         return set
       }, new Set())]
       if (instancesIdList.length > 0) {
-        HistoryService.findProcessesInstancesHistoryWithFilter({"processInstanceIds": instancesIdList}, this.firstResult, this.maxResults).then(response => {
+        HistoryService.findProcessesInstancesHistory({"processInstanceIds": instancesIdList}, this.firstResult, this.maxResults).then(response => {
           response.forEach(instance => {
             activityList.forEach(activity => {
               if (instance.id === activity.calledProcessInstanceId) {

@@ -294,16 +294,7 @@ var HistoryService = {
   fetchActivityVariablesHistory: function(activityInstanceId) {
     return axios.get(appConfig.servicesBasePath + "/task-history/" + activityInstanceId + "/variables")
   },
-  findProcessesInstancesHistory: function(key, firstResult, maxResults, active) {
-    return axios.get(appConfig.servicesBasePath + "/process-history/instance/by-process-key/" + key, {
-      params: {
-        active: active,
-        firstResult: firstResult,
-        maxResults: maxResults
-      }
-    }).then(patchProcess)
-  },
-  findProcessesInstancesHistoryWithFilter: function(filters, firstResult, maxResults) {
+  findProcessesInstancesHistory: function(filters, firstResult, maxResults) {
   return axios.post(appConfig.servicesBasePath + "/process-history/instance", {
 	params: {
 		filters: filters,

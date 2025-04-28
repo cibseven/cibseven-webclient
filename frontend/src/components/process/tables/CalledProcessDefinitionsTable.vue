@@ -35,21 +35,11 @@ export default {
   name: 'CalledProcessDefinitionsTable',
   components: {FlowTable, BWaitingBox  },
   mixins: [procesessVariablesMixin],
-  data: function() {
-    return {
-      test: null,
-
-    }
-  },
   props: { 
     process: Object,
     instances: Array,
     calledProcesses: Array
    },
-  created: function(){
-    
-    
-  },
   methods: {
     openProcessDefinition: function(event){
       this.$emit('changeTabToInstances')
