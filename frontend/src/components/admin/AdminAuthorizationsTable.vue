@@ -211,7 +211,7 @@ export default {
       this.loading = true
       this.loadAuthorizations(resourceTypeId)
     },
-    filter : function() {
+    filter: function() {
       this.searchAuthorizations()
     }
   },
