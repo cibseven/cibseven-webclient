@@ -114,7 +114,7 @@ export default {
     }
   },
   watch: {
-    filter: function () {
+    filter: function() {
       this.searchGroups()
     }
   },
