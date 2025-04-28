@@ -26,7 +26,6 @@ import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.CandidateGroupTaskCount;
 import org.cibseven.webapp.rest.model.IdentityLink;
 import org.cibseven.webapp.rest.model.Task;
-import org.cibseven.webapp.rest.model.TaskCount;
 import org.cibseven.webapp.rest.model.TaskFiltering;
 import org.cibseven.webapp.rest.model.TaskHistory;
 import org.cibseven.webapp.rest.model.Variable;
@@ -38,7 +37,7 @@ import org.springframework.http.ResponseEntity;
 public interface ITaskProvider {
 	
 	public Collection<Task> findTasks(String filter, CIBUser user);
-	public TaskCount findTasksCount(Optional<String> name, Optional<String> nameLike, Optional<String> taskDefinitionKey, Optional<String> taskDefinitionKeyIn, CIBUser user);
+	public Integer findTasksCount(Map<String, Object> filters, CIBUser user);
 	public Collection<Task> findTasksByProcessInstance(String processInstanceId, CIBUser user);
 	public Collection<Task> findTasksByProcessInstanceAsignee(Optional<String> processInstanceId, Optional<String> createdAfter, CIBUser user);
 	public Task findTaskById(String id, CIBUser user);
@@ -58,7 +57,7 @@ public interface ITaskProvider {
 	public void handleBpmnError(String taskId, Map<String, Object> data, CIBUser user) throws SystemException;
 	public Collection<TaskHistory> findTasksByTaskIdHistory(String taskId, CIBUser user);
 	public ResponseEntity<byte[]> getDeployedForm(String taskId, CIBUser user);
-	public Integer findHistoryTaksCount(Map<String, Object> filters, CIBUser user);
+	public Integer findHistoryTasksCount(Map<String, Object> filters, CIBUser user);
 	public Collection<CandidateGroupTaskCount> getTaskCountByCandidateGroup(CIBUser user);
 	
 }

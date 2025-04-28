@@ -35,7 +35,6 @@ import org.cibseven.webapp.providers.SevenProvider;
 import org.cibseven.webapp.rest.model.CandidateGroupTaskCount;
 import org.cibseven.webapp.rest.model.IdentityLink;
 import org.cibseven.webapp.rest.model.Task;
-import org.cibseven.webapp.rest.model.TaskCount;
 import org.cibseven.webapp.rest.model.TaskFiltering;
 import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
@@ -75,19 +74,15 @@ public class TaskService extends BaseService implements InitializingBean {
 	*/
 	
 	@Operation(
-			summary = "Get number of tasks based on request params",
+			summary = "Get number of tasks based on filters",
 			description = "<strong>Return: Number of tasks")
 	@ApiResponse(responseCode = "404", description= "Task not found")
-	@RequestMapping(value = "/task/count", method = RequestMethod.GET)
-	public TaskCount findTasksCount(
-			@Parameter(description = "Name of the task") @RequestParam Optional<String> name, 
-			@Parameter(description = "Task name like ...") @RequestParam Optional<String> nameLike,
-			@Parameter(description = "Task definition key") @RequestParam Optional<String> taskDefinitionKey,
-			@Parameter(description = "Task definition key in") @RequestParam Optional<String> taskDefinitionKeyIn,
-			Locale loc, HttpServletRequest rq) {
-		CIBUser user = checkAuthorization(rq, true, false);
+	@PostMapping("/task/count")
+	public Integer findTasksCount(
+			@RequestBody Map<String, Object> filters,
+			Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
-		return sevenProvider.findTasksCount(name, nameLike, taskDefinitionKey, taskDefinitionKeyIn, user);
+		return sevenProvider.findTasksCount(filters, user);
 	}
 	 
 	//Not used

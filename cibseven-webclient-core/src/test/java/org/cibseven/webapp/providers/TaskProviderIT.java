@@ -23,8 +23,7 @@ import static org.mockito.Mockito.mock;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collection;
-import java.util.Optional;
-
+import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,11 +33,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.providers.IVariableProvider;
-import org.cibseven.webapp.providers.TaskProvider;
 import org.cibseven.webapp.rest.model.Task;
-import org.cibseven.webapp.rest.model.TaskCount;
-
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 
@@ -132,13 +127,14 @@ public class TaskProviderIT {
         mockWebServer.enqueue(new MockResponse()
                 .setBody(mockResponseBody)
                 .addHeader("Content-Type", "application/json"));
-
+        
+        Map<String, Object> params = Map.of();
         // Act
-        TaskCount taskCount = taskProvider.findTasksCount(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), user);
+        Integer taskCount = taskProvider.findTasksCount(params, user);
 
         // Assert
         assertThat(taskCount).isNotNull();
-        assertThat(taskCount.getCount()).isEqualTo(42);
+        assertThat(taskCount).isEqualTo(42);
     }
 
     @Test

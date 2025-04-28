@@ -94,10 +94,10 @@ public class HistoryTaskService extends BaseService {
 	@Operation(
 			summary = "Get number of tasks based on filters")
 	@PostMapping("/task-history/count")
-	public Integer findHistoryTaksCount(
+	public Integer findHistoryTasksCount(
 			@RequestBody Map<String, Object> filters,
 			Locale loc, CIBUser user) {
-		return bpmProvider.findHistoryTaksCount(filters, user);
+		return bpmProvider.findHistoryTasksCount(filters, user);
 	}
 
 }
