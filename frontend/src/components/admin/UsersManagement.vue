@@ -68,25 +68,25 @@ export default {
         },
         {
           title: 'admin.groups.title',
-          image: 'assets/images/admin/groups_admin.svg',
+          image: './assets/images/admin/groups_admin.svg',
           link: '/seven/auth/admin/groups',
           hasAccess: this.adminManagementPermissions(this.$root.config.permissions.groupsManagement, 'group')
         },
         {
           title: 'admin.tenants.title',
-          image: 'assets/images/start/admin.svg',
+          image: './assets/images/start/admin.svg',
           link: '/seven/auth/admin/tenants',
           hasAccess: this.adminManagementPermissions(this.$root.config.permissions.tenantsManagement, 'tenant')
         },
         {
           title: 'admin.authorizations.title',
-          image: 'assets/images/admin/authorizations_admin.svg',
+          image: './assets/images/admin/authorizations_admin.svg',
           link: '/seven/auth/admin/authorizations',
           hasAccess: this.adminManagementPermissions(this.$root.config.permissions.authorizationsManagement, 'authorization')
         },
         {
           title: 'admin.system.title',
-          image: 'assets/images/start/admin.svg',
+          image: './assets/images/start/admin.svg',
           link: '/seven/auth/admin/system',
           hasAccess: this.adminManagementPermissions(this.$root.config.permissions.systemManagement, 'system')
         },
