@@ -215,6 +215,7 @@ const router = createRouter({
             { path: 'tenant/:tenantId', name: 'adminTenant', beforeEnter: permissionsGuardUserAdmin('tenantsManagement', 'tenant'), component: EditTenant },
             // System
             { path: 'system', redirect: '/seven/auth/admin/system/system-diagnostics', name: 'adminSystem', component: SystemView,
+              beforeEnter: permissionsGuardUserAdmin('systemManagement', 'system'),
               children: [
                 { path: 'system-diagnostics', name: 'system-diagnostics', component: SystemDiagnostics },
                 { path: 'execution-metrics', name: 'execution-metrics', component: ExecutionMetrics }

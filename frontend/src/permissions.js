@@ -20,7 +20,8 @@ var permissionsMixin = {
 			return (this.adminManagementPermissions(permissions.usersManagement, 'user') ||
 			this.adminManagementPermissions(permissions.groupsManagement, 'group') ||
 			this.adminManagementPermissions(permissions.authorizationsManagement, 'authorization') ||
-			this.adminManagementPermissions(permissions.tenantsManagement, 'tenant'))
+			this.adminManagementPermissions(permissions.tenantsManagement, 'tenant') ||
+			this.adminManagementPermissions(permissions.systemManagement, 'system'))
 		},
 		applicationPermissions: function(permissionsRequired, access) {
 			var permissionsCheck = this.$_permissionsMixin_setAllPermissionsObject(permissionsRequired)

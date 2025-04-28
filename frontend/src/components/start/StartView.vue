@@ -143,7 +143,7 @@
                   <b-list-group-item v-if="adminManagementPermissions($root.config.permissions.authorizationsManagement, 'authorization')"
                     to="/seven/auth/admin/authorizations" class="py-1 px-3 border-start-0 border-top-0 border-end-0 h6 fw-normal mb-0" :title="$t('admin.authorizations.title')">
                     <span class="mdi mdi-18px mdi-account-key-outline pe-1"></span>{{ $t('admin.authorizations.title') }}</b-list-group-item>
-                  <b-list-group-item v-if="adminManagementPermissions($root.config.permissions.authorizationsManagement, 'authorization')"
+                  <b-list-group-item v-if="adminManagementPermissions($root.config.permissions.systemManagement, 'system')"
                     to="/seven/auth/admin/system" class="py-1 px-3 border-0 h6 fw-normal mb-0" :title="$t('admin.system.tooltip')">
                     <span class="mdi mdi-18px mdi-cog-outline pe-1"></span>{{ $t('admin.system.title') }}</b-list-group-item>
                 </b-list-group>
