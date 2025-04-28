@@ -303,6 +303,16 @@ var HistoryService = {
       }
     }).then(patchProcess)
   },
+  findProcessesInstancesHistoryWithFilter: function(filters, firstResult, maxResults) {
+  return axios.post(appConfig.servicesBasePath + "/process-history/instance", {
+	params: {
+		filters: filters,
+		firstResult: firstResult,
+		maxResults: maxResults
+	}
+  })
+  },
+  
   findProcessesInstancesHistoryById: function(id, activityId, firstResult, maxResults, text, active) {
     return axios.get(appConfig.servicesBasePath + "/process-history/instance/by-process-id/" + id, {
       params: {

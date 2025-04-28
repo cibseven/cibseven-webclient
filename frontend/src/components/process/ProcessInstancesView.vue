@@ -76,7 +76,7 @@
         <JobDefinitionsTable v-else-if="activeTab === 'jobDefinitions'"
           :process-id="process.id" @highlight-activity="highlightActivity" />
         <CalledProcessDefinitionsTable v-else-if="activeTab === 'calledProcessDefinitions' && !loading"
-          :process="process" :instances="instances" :calledProcesses="calledProcesses"/>
+          :process="process" :instances="instances" :calledProcesses="calledProcesses" @changeTabToInstances="changeTab({id: 'instances'})"/>
       </div>
     </div>
 

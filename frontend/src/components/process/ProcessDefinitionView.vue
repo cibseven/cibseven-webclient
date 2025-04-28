@@ -323,27 +323,26 @@ export default {
         set.add(activity.calledProcessInstanceId)
         return set
       }, new Set())]
-
       if (instancesIdList.length > 0) {
-        ProcessService.findCurrentProcessesInstances({ "processInstanceIds": instancesIdList }).then(response => {
+        HistoryService.findProcessesInstancesHistoryWithFilter({"processInstanceIds": instancesIdList}, this.firstResult, this.maxResults).then(response => {
           response.forEach(instance => {
             activityList.forEach(activity => {
               if (instance.id === activity.calledProcessInstanceId) {
                 let foundMatch = this.calledProcesses.find(item => {
-                  return (item.instance.definitionId === instance.definitionId)
+                  return (item.instance.processDefinitionId === instance.processDefinitionId)
                 })
                 if (foundMatch) {
                   if (!foundMatch.activities.some(act => act.activityId === activity.activityId)) {
                     foundMatch.activities.push(activity)
                   }
                 } else {
-                  let key = instance.definitionId.match(/^[^:]+/).at(0)
+                  let key = instance.processDefinitionId.match(/^[^:]+/).at(0)
                   let foundProcess = this.$store.state.process.list.find(processSPL => {
                     if (key === processSPL.key) {
                       return processSPL
                     }
                   })
-                  this.calledProcesses.push({instance: instance, activities: [activity], key: key, version: instance.definitionId.match(/(?!:)\d(?=:)/).at(0), process: foundProcess })
+                  this.calledProcesses.push({instance: instance, activities: [activity], key: key, version: instance.processDefinitionId.match(/(?!:)\d(?=:)/).at(0), process: foundProcess })
                 }
               }
             })
@@ -352,7 +351,6 @@ export default {
         this.loading = false
       } 
       else{
-     
         ProcessService.findCalledProcessDefinitions(this.process.id).then(response => {
           this.loading = false
           const calledProcessList = response

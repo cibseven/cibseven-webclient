@@ -128,7 +128,8 @@
 		"true": "True",
 		"false": "False",				
 		"jobDefinitions": "Job definitions",
-		"jobs": "Jobs"
+		"jobs": "Jobs",
+		"calledProcessDefinitions": "Called process definitions"
 	},
 	"process-instance": {
 		"processInstanceId": "Processs Instance ID",
@@ -142,6 +143,11 @@
 		"save": "@:commons.save",
 		"upload": "Upload file",
 		"selectFile": "Select file",
+		"calledProcessDefinitions": {
+			"process": "Process",
+			"version": "Version",
+			"activities": "Calling activities"
+		},
 		"details": {
 			"startUser": "Start user",
 			"start": "Started on",

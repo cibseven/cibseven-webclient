@@ -1,6 +1,6 @@
 <template>
   <div class="overflow-auto bg-white container-fluid g-0">
-    <FlowTable v-if="calledProcesses.length > 0" resizable striped thead-class="sticky-header" :items="calledProcesses" primary-key="id" prefix="process-instance.jobs."
+    <FlowTable v-if="calledProcesses.length > 0" resizable striped thead-class="sticky-header" :items="calledProcesses" primary-key="id" prefix="process-instance.calledProcessDefinitions."
       sort-by="label" :sort-desc="true" :fields="[
       { label: 'process', key: 'process', class: 'col-2', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' },
       { label: 'version', key: 'version', class: 'col-4', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' },
@@ -52,7 +52,7 @@ export default {
   },
   methods: {
     openProcessDefinition: function(event){
-
+      this.$emit('changeTabToInstances')
       this.$router.push({ name: 'process', params: { processKey: event.key, versionIndex: event.version } })
     }
   }
