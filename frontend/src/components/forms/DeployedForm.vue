@@ -36,6 +36,7 @@ import { FormsService, TemplateService } from '@/services.js'
 import IconButton from '@/components/forms/IconButton.vue'
 
 import { Form } from '@bpmn-io/form-js'
+import '@bpmn-io/form-js/dist/assets/form-js.css'
 
 export default {
   name: "DeployedForm",
