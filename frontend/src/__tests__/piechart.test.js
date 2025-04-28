@@ -99,7 +99,9 @@ describe('PieChart', () => {
 
     chartOptions.chart.events.click(clickEvent, chartContext, config)
 
-    expect(mockRouterPush).toHaveBeenCalledWith('/seven/auth/process/1')
+    expect(wrapper.emitted('click')).toBeTruthy()
+    const emittedArgs = wrapper.emitted('click')[0][0]
+    expect(emittedArgs.item.id).toBe(1)
   })
 
   it('applies correct cursor style on dataPointMouseEnter', () => {

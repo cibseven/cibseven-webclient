@@ -18,7 +18,7 @@
 -->
 <template>
   <div>
-    <router-link v-if="title" :to="link" :title="tooltip" class="text-decoration-none">
+    <router-link v-if="title" :to="link" @click.stop :title="tooltip" class="text-decoration-none">
       <h5 class="link-dark text-center">{{ title }}</h5>
     </router-link>
     <div class="text-center waiting-box-container" v-if="loading">
@@ -42,7 +42,6 @@ export default {
     tooltip: String,
     link: String,
     items: Array,
-    type: String,
     loading: Boolean,
   },
   computed: {
@@ -65,13 +64,7 @@ export default {
           type: 'donut',
           events: {
             click: (event, chartContext, config) => {
-              const item = this.sortedItems[config.dataPointIndex]
-              if (!item || this.type === 'humanTasks' || !item?.id)
-								this.$router.push(this.link)
-              else {
-                let link = '/seven/auth/process/' + item.id
-                this.$router.push(link)
-              }
+              this.$emit('click', { item: this.sortedItems[config.dataPointIndex], link: this.link })
             },
             dataPointMouseEnter: (event) => {
               event.target.style.cursor = 'pointer'

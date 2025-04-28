@@ -105,7 +105,7 @@ public class AnalyticsService extends BaseService implements InitializingBean {
 		groupedStats.forEach(stats -> {
 			String key = stats.getDefinition().getKey();
 			String title = stats.getDefinition().getName();
-
+			
 			AnalyticsInfo instancesInfo = new AnalyticsInfo();
 			instancesInfo.setId(key);
 			instancesInfo.setTitle(title);
@@ -175,7 +175,7 @@ public class AnalyticsService extends BaseService implements InitializingBean {
 					.mapToLong(AnalyticsInfo::getValue).sum();
 
 			AnalyticsInfo othersGroup = new AnalyticsInfo();
-			othersGroup.setId("");
+			othersGroup.setId(null);
 			othersGroup.setTitle("others");
 			othersGroup.setValue(othersSum);
 

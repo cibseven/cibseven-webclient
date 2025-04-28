@@ -25,6 +25,7 @@
           :items="runningInstances"
           :title="$t('processes-dashboard.items.running-instances.title')"
           :tooltip="$t('processes-dashboard.items.running-instances.tooltip')"
+          @click="navigateToProcess($event)"
           link="/seven/auth/processes/list"
           :loading="loading"
         ></PieChart>
@@ -33,6 +34,7 @@
           :items="openIncidents"
           :title="$t('processes-dashboard.items.open-incidents.title')"
           :tooltip="$t('processes-dashboard.items.open-incidents.tooltip')"
+          @click="navigateToProcess($event)"
           link="/seven/auth/processes/list?onlyIncidents=true"
           :loading="loading"
         ></PieChart>
@@ -42,7 +44,7 @@
           :title="$t('processes-dashboard.items.open-human-tasks.title')"
           :tooltip="$t('processes-dashboard.items.open-human-tasks.tooltip')"
           link="/seven/auth/human-tasks"
-          type="humanTasks"
+          @click="navigateToHumanTasks($event)"
           :loading="loading"
         ></PieChart>
       </ContentBlock>
@@ -115,17 +117,17 @@ export default {
         this.errorLoading = false
         const analytics = await AnalyticsService.getAnalytics()
         // Prepare data for charts
-        analytics.runningInstances.forEach(data => {
-          if (data.title === 'others' && !data.id) data.title = this.$t('processes-dashboard.others')
+        analytics.runningInstances.forEach((data) => {
+          this.normalizeTitle(data)
         })
         this.runningInstances = analytics.runningInstances
-        
-        analytics.openIncidents.forEach(data => {
-          if (data.title === 'others' && !data.id) data.title = this.$t('processes-dashboard.others')
+
+        analytics.openIncidents.forEach((data) => {
+          this.normalizeTitle(data)
         })
         this.openIncidents = analytics.openIncidents
 
-        analytics.openHumanTasks.forEach(data => {
+        analytics.openHumanTasks.forEach((data) => {
           data.title = this.$t('processes-dashboard.items.open-human-tasks.' + data.title)
         })
         this.openHumanTasks = analytics.openHumanTasks
@@ -144,6 +146,21 @@ export default {
         this.deploymentItems[3].count = 'x'
       }
     },
+    normalizeTitle(data) {
+      data.title = data.title || this.$t('processes-dashboard.unnamedProcess')
+      if (data.title === 'others' && !data.id)
+        data.title = this.$t('processes-dashboard.others')
+    },
+    navigateToProcess(data) {
+      if (!data.item || !data.item?.id)
+        this.$router.push(data.link)
+      else {
+        this.$router.push('/seven/auth/process/' + data.item.id)
+      }
+    },
+    navigateToHumanTasks(data) {
+      this.$router.push(data.link)
+    }
   },
 }
 </script>

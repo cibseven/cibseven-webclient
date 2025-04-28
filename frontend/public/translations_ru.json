@@ -51,7 +51,8 @@
 				"tooltip": "@:start.cockpit.batches.tooltip"
 			}
 		},
-		"others": "Другие"
+		"others": "Другие",
+		"unnamedProcess": "Безымянный процесс"
 	},
 	"process" : {
 		"instanceRunning": "Запущеный экземпляр",
