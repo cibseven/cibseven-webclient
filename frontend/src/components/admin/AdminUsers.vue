@@ -25,7 +25,7 @@
             <template #prepend>
               <b-button :title="$t('searches.search')" aria-hidden="true" class="rounded-left" variant="secondary"><span class="mdi mdi-magnify" style="line-height: initial"></span></b-button>
             </template>
-            <b-form-input :title="$t('searches.search')" :placeholder="$t('searches.search')" @keyup="searchUsers" v-model.trim="filter"></b-form-input>
+            <b-form-input :title="$t('searches.search')" :placeholder="$t('searches.search')" v-model.trim="filter"></b-form-input>
           </b-input-group>
         </div>
         <div class="col-8 text-end">
@@ -115,6 +115,11 @@ export default {
       maxResults: 40,
       loading: false,
       exporting: false
+    }
+  },
+  watch: {
+    filter: function () {
+      this.searchUsers()
     }
   },
   created: function() {
