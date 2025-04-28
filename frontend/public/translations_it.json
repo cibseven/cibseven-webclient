@@ -51,7 +51,8 @@
 				"tooltip": "@:start.cockpit.batches.tooltip"
 			}
 		},
-		"others": "Altri"
+		"others": "Altri",
+		"unnamedProcess": "Processo senza nome"
 	},
 	"process" : {
 		"name": "Nome",

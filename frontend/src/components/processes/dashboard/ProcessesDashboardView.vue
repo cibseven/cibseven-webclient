@@ -115,17 +115,17 @@ export default {
         this.errorLoading = false
         const analytics = await AnalyticsService.getAnalytics()
         // Prepare data for charts
-        analytics.runningInstances.forEach(data => {
-          if (data.title === 'others' && !data.id) data.title = this.$t('processes-dashboard.others')
+        analytics.runningInstances.forEach((data) => {
+          this.normalizeTitle(data)
         })
         this.runningInstances = analytics.runningInstances
-        
-        analytics.openIncidents.forEach(data => {
-          if (data.title === 'others' && !data.id) data.title = this.$t('processes-dashboard.others')
+
+        analytics.openIncidents.forEach((data) => {
+          this.normalizeTitle(data)
         })
         this.openIncidents = analytics.openIncidents
 
-        analytics.openHumanTasks.forEach(data => {
+        analytics.openHumanTasks.forEach((data) => {
           data.title = this.$t('processes-dashboard.items.open-human-tasks.' + data.title)
         })
         this.openHumanTasks = analytics.openHumanTasks
@@ -143,6 +143,11 @@ export default {
         this.deploymentItems[2].count = 'x'
         this.deploymentItems[3].count = 'x'
       }
+    },
+    normalizeTitle(data) {
+      data.title = data.title || this.$t('processes-dashboard.unnamedProcess')
+      if (data.title === 'others' && !data.id)
+        data.title = this.$t('processes-dashboard.others')
     },
   },
 }

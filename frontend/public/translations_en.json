@@ -51,7 +51,8 @@
 				"tooltip": "@:start.cockpit.batches.tooltip"
 			}
 		},
-		"others": "Others"
+		"others": "Others",
+		"unnamedProcess": "Unnamed Process"
 	},
 	"process": {
 		"instanceRunning": "Instance running",
