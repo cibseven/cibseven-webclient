@@ -367,7 +367,8 @@
 		},
 		"actions": {
 			"title": "Acciones de la tarea",
-			"submit": "Cerrar"
+			"submit": "Cerrar",
+			"save": "Guardar"
 		},
 		"emptyTask": "Tarea vacía",
 		"showMore": "Mostrar más...",

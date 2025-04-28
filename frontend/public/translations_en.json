@@ -366,7 +366,8 @@
 		},
 		"actions": {
 			"title": "Task actions",
-			"submit": "Complete"
+			"submit": "Complete",
+			"save": "Save"
 		},
 		"emptyTask": "Empty task",
 		"showMore": "Show more...",

@@ -366,7 +366,8 @@
 		},
 		"actions": {
 			"title": "Aktionen zur Aufgabe",
-			"submit": "Abschließen"
+			"submit": "Abschließen",
+			"save": "Speichern"
 		},
 		"emptyTask": "Leere Aufgabe",
 		"showMore": "Mehr anzeigen...",

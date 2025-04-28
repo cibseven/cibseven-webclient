@@ -20,8 +20,15 @@
   <div>
     <BWaitingBox v-if="loader" class="h-100 d-flex justify-content-center" ref="loader" styling="width:20%"></BWaitingBox>
     <div v-show="!loader" class="h-100">
-      <iframe v-show="!submitForm && formFrame" class="h-100" ref="template-frame" frameBorder="0"
+      <iframe v-show="!submitForm && formFrame && !isEmbeddedForm" class="h-100" ref="template-frame" frameBorder="0"
         src="" width="100%" height="100%" :style="fullModeStyles"></iframe>
+      <div v-if="formFrame && isEmbeddedForm" class="h-100 d-flex flex-column">
+        <div v-once ref="embedded-form"></div>
+        <div>
+          <IconButton v-if="!task.startForm" icon="check" @click="completeEmbeddedForm()" variant="outline-secondary" :text="$t('task.actions.save')" class="me-2"></IconButton>
+          <IconButton icon="check" @click="saveEmbeddedForm()" variant="secondary" :text="$t('task.actions.submit')"></IconButton>
+        </div>
+      </div>
       <div class="pt-2" v-if="!formFrame">
         <span class="small-text d-none d-sm-inline" style="vertical-align: middle">
           <strong>{{ $t('task.emptyTask') }}</strong> |
@@ -40,6 +47,8 @@ import { TaskService } from '@/services.js'
 import IconButton from '@/components/render-template/IconButton.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import { BWaitingBox } from 'cib-common-components'
+import { Form, Client } from 'camunda-bpm-sdk-js/lib/index-browser'
+import { nextTick } from 'vue'
 
 export default {
   name: 'RenderTemplate',
@@ -51,11 +60,13 @@ export default {
     return {
       userInstruction: null,
       formReference: null,
+      isEmbeddedForm: false,
       height: 0,
       submitForm: false,
       formFrame: true,
-      loader: false
-      }
+      loader: false,
+      embeddedForm: null
+    }
   },
   watch: {
     task: {
@@ -116,26 +127,47 @@ export default {
 
         this.loader = false
       } else if (this.task.id) {
-
-        TaskService.formReference(this.task.id).then(formReference => {
-          if (this.task.camundaFormRef) {
-            formReference = 'deployed-form'
-          } else if (formReference === 'empty-task') {
+        
+        //Embedded start form if not "standard" ui-element-templates
+        if (this.task.startForm && this.task.startForm.key.startsWith('embedded:') && !this.task.startForm.key.startsWith('embedded:/camunda/app/tasklist/ui-element-templates/startform/template.html')) {
+          this.isEmbeddedForm = true
+          this.formFrame = true
+          this.callEmbeddedForm(this.task).then(() => {
             this.loader = false
-            this.formFrame = false
-            return
-          }
-          var formFrame = this.$refs['template-frame']
-          
-          formFrame.src = '#/' + formReference + '/' + this.currentLanguage() + '/' +
-          this.task.id + '/' + this.$root.user.authToken + '/' + themeContext + '/' + translationContext
+          })
+        } else {
+          TaskService.formReference(this.task.id).then(formReference => {
+            //Camunda Forms
+            if (this.task.camundaFormRef) {
+              formReference = 'deployed-form'
+            //Embedded forms if not "standard" ui-element-templates
+            } else if (this.task.formKey && this.task.formKey.startsWith('embedded:') && this.task.formKey !== 'embedded:/camunda/app/tasklist/ui-element-templates/template.html') {
+              //TODO Call in iframe
+              this.isEmbeddedForm = true
+              this.formFrame = true
+              this.callEmbeddedForm(this.task, formReference).then(() => {
+                this.loader = false
+              })
+              return
+            //Empty Tasks
+            } else if (formReference === 'empty-task') {
+              this.loader = false
+              this.formFrame = false
+              return
+            }
+            //Ui-element-templates
+            var formFrame = this.$refs['template-frame']
+            
+            formFrame.src = '#/' + formReference + '/' + this.currentLanguage() + '/' +
+            this.task.id + '/' + this.$root.user.authToken + '/' + themeContext + '/' + translationContext
 
-          this.loader = false
-        }, () => {
-          // Not needed but just in case something changes in the backend method
-          this.formFrame = false
-          this.loader = false
-        })
+            this.loader = false
+          }, () => {
+            // Not needed but just in case something changes in the backend method
+            this.formFrame = false
+            this.loader = false
+          })
+        }
       }
     },
     getVariables: function() {
@@ -163,6 +195,30 @@ export default {
         this.$router.push('/seven/auth/tasks/' + this.$route.params.filterId)
         this.submitForm = false
       }
+    },
+    completeEmbeddedForm: function() {
+      this.loader = true
+      this.embeddedForm.submit(error => {
+        this.loader = false
+        if (error) {
+          console.error(error)
+          this.displayErrorMessage(error)
+        } else {
+          this.completeTask()
+        }
+      })
+    },
+    saveEmbeddedForm: function() {
+      this.loader = true
+      this.embeddedForm.save(error => {
+        this.loader = false
+        if (error) {
+          console.error(error)
+          this.displayErrorMessage(error)
+        } else {
+          this.completeTask()
+        }
+      })
     },
     displayErrorMessage: function(params) {
       var type = ''
@@ -226,6 +282,41 @@ export default {
 //						}, '*');
 //					}
       }
+    },
+    callEmbeddedForm: function(task) {
+      var client = new Client({
+        mock: false,
+        apiUri: '/engine-rest'
+      })
+      var taskService = client.resource('task')
+      return new Promise(async (resolve) => {
+        let formInfoProm
+        if (task.startForm) {
+          let formInfo = task.startForm
+          formInfoProm = nextTick().then(() => formInfo)
+        } else {
+          // loads the task form using the task ID provided
+          formInfoProm = new Promise((resolve, reject) => taskService.form(task.id, (err, taskFormInfo) => {
+            if (err) reject(err)
+            else resolve(taskFormInfo)
+          }))
+        }
+        formInfoProm.then((formInfo) => {
+          var url = formInfo.key.replace('embedded:', '').replace('app:', (formInfo.contextPath || '') + '/')
+
+          this.embeddedForm = new Form({
+            client: client,
+            formUrl: url,
+            taskId: task.startForm ? undefined : task.id,
+            processDefinitionId: task.processDefinitionId,
+            containerElement: this.$refs['embedded-form'],
+            // continue the logic with the callback
+            done: resolve
+          })
+        })
+      }).then(err => {
+        console.log(err)
+      })
     },
     onBeforeUnload: function() {
       var formFrame = this.$refs['template-frame']
