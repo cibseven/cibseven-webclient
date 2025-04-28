@@ -29,7 +29,7 @@
     </div>
   </div>
 </template>
-  
+
 <script>
 import { BWaitingBox } from 'cib-common-components'
 import VueApexCharts from 'vue3-apexcharts'
@@ -82,7 +82,7 @@ export default {
         plotOptions: {
           pie: {
             donut: {
-              size: '65%',
+              size: '59%', // ratio is 1.7
               labels: {
                 show: true,
                 total: {
@@ -92,7 +92,7 @@ export default {
                 },
                 value: {
                   show: true,
-                  fontWeight: 600,
+                  fontWeight: 500,
                   fontSize: '36px',
                 },
               },
