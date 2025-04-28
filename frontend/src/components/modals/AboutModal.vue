@@ -63,7 +63,7 @@ export default {
   },
   computed: {
     permissionsAdmin: function() {
-      return this.$root.user && this.hasAdminManagementPermissions(this.$root.config.permissions)
+      return this.$root.user && this.adminManagementPermissions(this.$root.config.permissions.systemManagement, 'system')
     }
   },
   methods: {

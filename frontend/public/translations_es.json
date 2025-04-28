@@ -540,6 +540,7 @@
 				"group": "Group",
 				"groupMembership": "Group Membership",
 				"authorization": "Authorization",
+				"system": "System",
 				"filter": "Filter",
 				"processDefinition": "Process Definition",
 				"task": "Task",
