@@ -1,7 +1,7 @@
 # CIB seven webclient
 
 [![License](https://img.shields.io/github/license/cibseven/cibseven-webclient?color=blue&logo=apache)](https://github.com/cibseven/cibseven-webclient/blob/master/LICENSE)
-[![Build](https://img.shields.io/github/actions/workflow/status/cibseven/cibseven-webclient/maven.yml?branch=main)](https://github.com/cibseven/cibseven-webclient/actions)
+![Build Status](https://img.shields.io/badge/build-internal-lightgrey)
 [![Version](https://img.shields.io/github/v/release/cibseven/cibseven-webclient)](https://github.com/cibseven/cibseven-webclient/releases)
 
 The **CIB seven webclient** is the official web application interface for the [CIB seven](https://github.com/cibseven) process automation platform. It includes the **Cockpit**, **Tasklist**, and **Admin** applications for process monitoring, user task management, and administrative controls.
@@ -57,6 +57,8 @@ Check out the [Releases](https://github.com/cibseven/cibseven-webclient/releases
 ## License
 
 This project is licensed under the Apache 2.0 License – see the [LICENSE](LICENSE) file for details.
+
+CIB seven uses and includes third-party dependencies published under various licenses. By downloading and using CIB seven artifacts, you agree to their terms and conditions. Refer to https://docs.cibseven.org/manual/latest/introduction/third-party-libraries/ for an overview of third-party libraries and particularly important third-party licenses we want to make you aware of.
 
 ## Authors
 
