@@ -148,19 +148,19 @@ export default {
     },
     normalizeTitle(data) {
       data.title = data.title || this.$t('processes-dashboard.unnamedProcess')
-      if (data.title === 'others' && !data.id)
-        data.title = this.$t('processes-dashboard.others')
+      if (data.title === 'others' && !data.id) data.title = this.$t('processes-dashboard.others')
     },
     navigateToProcess(data) {
-      if (!data.item || !data.item?.id)
-        this.$router.push(data.link)
+      if (!data.item || !data.item?.id) this.$router.push(data.link)
       else {
-        this.$router.push('/seven/auth/process/' + data.item.id)
+        const [key, tenantId] = data.item.id.split(':')
+        const tenantQuery = tenantId ? '?tenantId=' + tenantId : ''
+        this.$router.push('/seven/auth/process/' + key + tenantQuery)
       }
     },
     navigateToHumanTasks(data) {
       this.$router.push(data.link)
-    }
+    },
   },
 }
 </script>
