@@ -59,46 +59,6 @@ const router = createRouter({
   linkActiveClass: 'active',
   routes: [
     { path: '/', redirect: '/seven/auth/start' },
-    { path: '/start-process', name: 'start-process', component: () => {
-      return axios.get('webjars/seven/components/process/external-start-process.html').then(function(html) {
-        return {
-          template: html,
-          data: function() {
-            return {
-              startParamUrl: '',
-              selectedProcess: {},
-              started: false
-            }
-          },
-          mounted: function() {
-            AuthService.createAnonUserToken().then(user => {
-              this.$root.user = user
-              axios.defaults.headers.common.authorization = user.authToken
-              if (this.$route.query.processKey) {
-                  ProcessService.findProcessByDefinitionKey(this.$route.query.processKey).then(processLatest => {
-                  this.selectedProcess = processLatest
-                  ProcessService.startForm(processLatest.id).then(url => {
-                    if (url.key) {
-                      this.startParamUrl = this.$root.config.uiElementTemplateUrl + '/startform/' +
-                        url.key.split('?template=')[1] + '?processDefinitionId=' + processLatest.id +
-                        '&processDefinitionKey=' + processLatest.key
-                    }
-                  })
-                })
-              }
-            })
-          },
-          methods: {
-            taskCompleted: function() {
-              this.started = true
-            },
-            navigateBack: function() {
-              history.back()
-            }
-          }
-        }
-      })
-    }},
     { path: '/seven', component: CibSeven, children: [
       { path: 'login', name: 'login', beforeEnter: function(to, from, next) {
           if (router.root.config.ssoActive) //If SSO go to other login

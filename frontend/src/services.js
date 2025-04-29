@@ -405,7 +405,6 @@ var IncidentService = {
 
 var AuthService = {
   fetchAuths: function() {return axios.get(appConfig.servicesBasePath + "/auth/authorizations") },
-  createAnonUserToken: function() { return axios.get(appConfig.servicesBasePath + "/auth/anon-user") },
   passwordRecover: function(data) { return axios.post(appConfig.servicesBasePath + "/auth/password-recover", data) },
   passwordRecoverCheck: function(recoverToken) { return axios.get(appConfig.servicesBasePath + "/auth/password-recover-check",
     { headers: { authorization: recoverToken } }

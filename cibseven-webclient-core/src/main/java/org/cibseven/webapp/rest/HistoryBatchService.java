@@ -50,7 +50,7 @@ public class HistoryBatchService extends BaseService implements InitializingBean
 	public Collection<HistoryBatch> getBatches(
 			@RequestParam Map<String, Object> params,
 			Locale loc, HttpServletRequest rq) {
-		CIBUser user = checkAuthorization(rq, true, false);
+		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.BATCH, PermissionConstants.READ_HISTORY_ALL);
 		return bpmProvider.getHistoricBatches(params, user);
 	}
@@ -58,7 +58,7 @@ public class HistoryBatchService extends BaseService implements InitializingBean
     @GetMapping("/{id}")
    	public HistoryBatch getHistoricBatchById(
    			@Parameter(description = "Batch id") @PathVariable String id, HttpServletRequest rq) {
-   		CIBUser user = checkAuthorization(rq, true, false);
+   		CIBUser user = checkAuthorization(rq, true);
    		checkPermission(user, SevenResourceType.BATCH, PermissionConstants.READ_HISTORY_ALL);
    		return bpmProvider.getHistoricBatchById(id, user);
    	}
@@ -66,7 +66,7 @@ public class HistoryBatchService extends BaseService implements InitializingBean
     @DeleteMapping("/{id}")
    	public void deleteHistoricBatch(
    			@Parameter(description = "Batch id") @PathVariable String id, HttpServletRequest rq) {
-   		CIBUser user = checkAuthorization(rq, true, false);
+   		CIBUser user = checkAuthorization(rq, true);
    		checkPermission(user, SevenResourceType.BATCH, PermissionConstants.DELETE_HISTORY_ALL);
    		bpmProvider.deleteHistoricBatch(id, user);
    	}
