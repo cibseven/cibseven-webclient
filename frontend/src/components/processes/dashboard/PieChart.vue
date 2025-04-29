@@ -17,12 +17,12 @@
 
 -->
 <template>
-  <div>
+  <div class="my-2">
     <router-link v-if="title" :to="link" @click.stop :title="tooltip" class="text-decoration-none">
       <h5 class="link-dark text-center">{{ title }}</h5>
     </router-link>
     <div class="text-center waiting-box-container" v-if="loading">
-      <b-waiting-box class="d-inline" styling="width: 84%" :title="$t('admin.loading')" />
+      <b-waiting-box class="d-inline" styling="width: 150px" :title="$t('admin.loading')" />
     </div>
     <div v-else class="container apex-container">
       <apexchart type="donut" :options="chartOptions" :series="values" />
@@ -81,16 +81,33 @@ export default {
                 total: {
                   show: true,
                   label: '',
+                  fontFamily: '-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, sans-serif',
+                  fontWeight: 500,
+                  color: '#0C1A29',
+                  fontSize: '28.6px',
+                  offsetY: 16,
                   formatter: () => this.isEmptyChart ? '0' : this.values.reduce((a, b) => a + b, 0)
                 },
                 value: {
                   show: true,
+                  fontFamily: '-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, sans-serif',
                   fontWeight: 500,
-                  fontSize: '36px',
+                  color: '#0C1A29',
+                  fontSize: '28.6px',
+                  offsetY: 16,
                 },
               },
             },
           },
+        },
+        states: {
+          hover: {
+            filter: {
+              // Disable Hover Effect on Donut Chart
+              type: this.isEmptyChart ? 'none' : 'lighten', // or 'darken'
+              value: 0.15 // lighten by 15%
+            }
+          }
         },
         dataLabels: {
           enabled: false,
@@ -109,7 +126,7 @@ export default {
             },
           },
         },
-        colors: [
+        colors: this.isEmptyChart ? ['#C1CEDD'] : [
           '#59799B',
           '#84B6E5',
           '#C1CEDD',
