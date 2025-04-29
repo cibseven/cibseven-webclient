@@ -109,11 +109,16 @@ export default {
         translationContext = 'themes/' + theme + '/uiet-translations_'
         themeContext = 'themes/' + theme + '/bootstrap_4.5.0.min.css'
       }
-      
+
       let formFrame = this.$refs['template-frame']
+      //Startforms
       if (this.task.url) {
         formFrame.src = this.task.url + '/' + themeContext + '/' + translationContext
 
+        this.loader = false
+      } else if (this.task.isEmbedded && this.task.processDefinitionId) {
+        formFrame.src = `embedded-forms.html?processDefinitionId=${this.task.processDefinitionId}&lang=${this.currentLanguage()}&authToken=${this.$root.user.authToken}`
+        
         this.loader = false
       } else if (this.task.id) {
         

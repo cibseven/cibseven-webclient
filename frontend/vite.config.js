@@ -23,9 +23,9 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
-const backendUrl = 'http://localhost:9000/webapp'
+const backendUrl = 'http://localhost:8080/webapp'
 //Needed for Embedded forms
-const engineRestUrl = 'http://localhost:8086/'
+const engineRestUrl = 'http://localhost:8080/'
 
 // Detect build mode
 /* eslint-disable no-undef */
