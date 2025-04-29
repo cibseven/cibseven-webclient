@@ -22,6 +22,7 @@ import java.util.List;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import org.cibseven.webapp.exception.AccessDeniedException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.cibseven.webapp.auth.exception.AuthenticationException;
@@ -65,20 +66,20 @@ public class BaseService {
 	public void checkSpecificProcessRights(CIBUser user, String processKey) {
 		Authorizations authorizations = bpmProvider.getUserAuthorization(user.getId(), user);
 		if (!SevenAuthorizationUtils.hasSpecificProcessRights(authorizations, processKey))
-			throw new AuthenticationException("You are not authorized to do this");
+			throw new AccessDeniedException("You are not authorized to do this");
 	}
 	
 	public void checkCockpitRights(CIBUser user) {
 		Authorizations authorizations = bpmProvider.getUserAuthorization(user.getId(), user);
 		if (!SevenAuthorizationUtils.hasCockpitRights(authorizations)) {
-			throw new AuthenticationException("You are not authorized to do this");
+			throw new AccessDeniedException("You are not authorized to do this");
 		}
 	}
 	
 	public void checkPermission(CIBUser user, SevenResourceType type, List<String> permissions) {
 		Authorizations authorizations = bpmProvider.getUserAuthorization(user.getId(), user);
 		if (!SevenAuthorizationUtils.checkPermission(authorizations, type, permissions)) {
-			throw new AuthenticationException("You are not authorized to do this");
+			throw new AccessDeniedException("You are not authorized to do this");
 		}
 	}	
 }
