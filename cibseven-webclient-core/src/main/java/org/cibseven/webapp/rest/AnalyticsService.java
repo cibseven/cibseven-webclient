@@ -37,11 +37,12 @@ import org.cibseven.webapp.rest.model.AnalyticsInfo;
 import org.cibseven.webapp.rest.model.Decision;
 import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.IncidentInfo;
+import org.cibseven.webapp.rest.model.KeyTenant;
 import org.cibseven.webapp.rest.model.ProcessStatistics;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -68,11 +69,11 @@ public class AnalyticsService extends BaseService implements InitializingBean {
 	}
 
 	@Operation(summary = "Get analytics for processes, decisions and human Tasks", description = "<strong>Return: Analytics")
-	@RequestMapping(value = "", method = RequestMethod.GET)
+	@GetMapping("")
 	public Analytics getAnalytics(Locale loc, CIBUser user) {
 
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_ALL);
-
+		
 		Collection<ProcessStatistics> processStatistics = bpmProvider.getProcessStatistics(user);
 
 		Analytics analytics = new Analytics();
@@ -82,32 +83,43 @@ public class AnalyticsService extends BaseService implements InitializingBean {
 
 		// Group by the key and summarize instances and incidents
 		List<ProcessStatistics> groupedStats = processStatistics.stream()
-				.collect(Collectors.groupingBy(stat -> stat.getDefinition().getKey())).values().stream().map(group -> {
-					ProcessStatistics result = new ProcessStatistics();
-					result.setDefinition(group.get(0).getDefinition());
-					result.setId(group.get(0).getId());
+			    .collect(Collectors.groupingBy(
+			        stat -> new KeyTenant(stat.getDefinition().getKey(), stat.getDefinition().getTenantId())
+			    ))
+			    .values()
+			    .stream()
+			    .map(group -> {
+			        ProcessStatistics result = new ProcessStatistics();
+			        result.setDefinition(group.get(0).getDefinition());
+			        result.setId(group.get(0).getId());
 
-					result.setInstances(group.stream().mapToLong(ProcessStatistics::getInstances).sum());
-					result.setFailedJobs(group.stream().mapToLong(ProcessStatistics::getFailedJobs).sum());
+			        result.setInstances(group.stream().mapToLong(ProcessStatistics::getInstances).sum());
+			        result.setFailedJobs(group.stream().mapToLong(ProcessStatistics::getFailedJobs).sum());
 
-					long totalIncidentCount = group.stream().flatMap(stat -> stat.getIncidents().stream())
-							.mapToLong(IncidentInfo::getIncidentCount).sum();
+			        long totalIncidentCount = group.stream()
+			            .flatMap(stat -> stat.getIncidents().stream())
+			            .mapToLong(IncidentInfo::getIncidentCount)
+			            .sum();
 
-					IncidentInfo totalIncident = new IncidentInfo();
-					totalIncident.setIncidentType("all");
-					totalIncident.setIncidentCount(totalIncidentCount);
+			        IncidentInfo totalIncident = new IncidentInfo();
+			        totalIncident.setIncidentType("all");
+			        totalIncident.setIncidentCount(totalIncidentCount);
 
-					result.setIncidents(Collections.singletonList(totalIncident));
+			        result.setIncidents(Collections.singletonList(totalIncident));
 
-					return result;
-				}).collect(Collectors.toList());
+			        return result;
+			    })
+			    .collect(Collectors.toList());
+
 
 		groupedStats.forEach(stats -> {
 			String key = stats.getDefinition().getKey();
 			String title = stats.getDefinition().getName();
+			String tenantId = stats.getDefinition().getTenantId();
+			String combinedId = key + (tenantId != null ? ":" + tenantId : "");
 			
 			AnalyticsInfo instancesInfo = new AnalyticsInfo();
-			instancesInfo.setId(key);
+			instancesInfo.setId(combinedId);
 			instancesInfo.setTitle(title);
 			instancesInfo.setValue(stats.getInstances());
 			runningInstances.add(instancesInfo);
@@ -115,7 +127,7 @@ public class AnalyticsService extends BaseService implements InitializingBean {
 			if (stats.getIncidents() != null && !stats.getIncidents().isEmpty()
 					&& stats.getIncidents().get(0).getIncidentCount() != 0) {
 				AnalyticsInfo incidentsInfo = new AnalyticsInfo();
-				incidentsInfo.setId(key);
+				incidentsInfo.setId(combinedId);
 				incidentsInfo.setTitle(title);
 				incidentsInfo.setValue(stats.getIncidents().get(0).getIncidentCount());
 				openIncidents.add(incidentsInfo);
