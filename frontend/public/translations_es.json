@@ -367,7 +367,9 @@
 		},
 		"actions": {
 			"title": "Acciones de la tarea",
-			"submit": "Cerrar"
+			"submit": "Cerrar",
+			"save": "Guardar",
+			"saveError": "Se produjo un error al guardar la tarea: {0}"
 		},
 		"emptyTask": "Tarea vacía",
 		"showMore": "Mostrar más...",

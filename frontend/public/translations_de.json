@@ -366,7 +366,9 @@
 		},
 		"actions": {
 			"title": "Aktionen zur Aufgabe",
-			"submit": "Abschließen"
+			"submit": "Abschließen",
+			"save": "Speichern",
+			"saveError": "Beim Speichern der Aufgabe ist ein Fehler aufgetreten: {0}"
 		},
 		"emptyTask": "Leere Aufgabe",
 		"showMore": "Mehr anzeigen...",

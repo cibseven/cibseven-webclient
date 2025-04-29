@@ -55,7 +55,7 @@ export default {
       submitForm: false,
       formFrame: true,
       loader: false
-      }
+    }
   },
   watch: {
     task: {
@@ -109,33 +109,51 @@ export default {
         translationContext = 'themes/' + theme + '/uiet-translations_'
         themeContext = 'themes/' + theme + '/bootstrap_4.5.0.min.css'
       }
-      if (this.task.url) {
-        var formFrame = this.$refs['template-frame']
 
+      let formFrame = this.$refs['template-frame']
+      //Startforms
+      if (this.task.url) {
         formFrame.src = this.task.url + '/' + themeContext + '/' + translationContext
 
         this.loader = false
+      } else if (this.task.isEmbedded && this.task.processDefinitionId) {
+        formFrame.src = `embedded-forms.html?processDefinitionId=${this.task.processDefinitionId}&lang=${this.currentLanguage()}&authorization=${this.$root.user.authToken}`
+        
+        this.loader = false
       } else if (this.task.id) {
-
-        TaskService.formReference(this.task.id).then(formReference => {
+        
+        //Embedded forms if not "standard" ui-element-templates
+        if (this.task.formKey && this.task.formKey.startsWith('embedded:') && this.task.formKey !== 'embedded:/camunda/app/tasklist/ui-element-templates/template.html') {
+          this.formFrame = true
+          formFrame.src = `embedded-forms.html?taskId=${this.task.id}&lang=${this.currentLanguage()}&authorization=${this.$root.user.authToken}`
+          this.loader = false
+        } else {
+          let formReferencePromise
+          //Camunda Forms
           if (this.task.camundaFormRef) {
-            formReference = 'deployed-form'
-          } else if (formReference === 'empty-task') {
-            this.loader = false
-            this.formFrame = false
-            return
+            formReferencePromise = Promise.resolve('deployed-form')
+          } else {
+            formReferencePromise = TaskService.formReference(this.task.id)
           }
-          var formFrame = this.$refs['template-frame']
-          
-          formFrame.src = '#/' + formReference + '/' + this.currentLanguage() + '/' +
-          this.task.id + '/' + this.$root.user.authToken + '/' + themeContext + '/' + translationContext
+          formReferencePromise.then(formReference => {
+            //Empty Tasks
+            if (formReference === 'empty-task') {
+              this.loader = false
+              this.formFrame = false
+              return
+            }
+            //Ui-element-templates
+            
+            formFrame.src = '#/' + formReference + '/' + this.currentLanguage() + '/' +
+            this.task.id + '/' + this.$root.user.authToken + '/' + themeContext + '/' + translationContext
 
-          this.loader = false
-        }, () => {
-          // Not needed but just in case something changes in the backend method
-          this.formFrame = false
-          this.loader = false
-        })
+            this.loader = false
+          }, () => {
+            // Not needed but just in case something changes in the backend method
+            this.formFrame = false
+            this.loader = false
+          })
+        }
       }
     },
     getVariables: function() {
