@@ -1,6 +1,5 @@
 import { InfoService } from "@/services"
 import { switchLanguage, i18n } from "@/i18n"
-import { Client, Form } from "camunda-bpm-sdk-js/lib/index-browser"
 import { getTheme } from "@/utils/init"
 
 InfoService.getProperties().then(config => {
@@ -29,6 +28,7 @@ InfoService.getProperties().then(config => {
         const saveButton = document.getElementById('saveButton')
         const loaderDiv = document.getElementById('loader')
         const contentDiv = document.getElementById('content')
+        const errorDiv = document.getElementById('embeddedFormError')
 
         const isStartForm = !!processDefinitionId
         let embeddedForm
@@ -42,7 +42,8 @@ InfoService.getProperties().then(config => {
             blockButtons(submitButton, saveButton)
             embeddedForm.submit(err => {
                 if (err) {
-                    services.displayErrorMessage(err)
+                    errorDiv.style.display = 'block'
+                    errorDiv.innerHTML = i18n.global.t('task.actions.saveError', [err])
                 } else {
                     services.completeTask()
                 }
@@ -58,7 +59,8 @@ InfoService.getProperties().then(config => {
             blockButtons(submitButton, saveButton)
             embeddedForm.store(err => {
                 if (err) {
-                    services.displayErrorMessage(err)
+                    errorDiv.style.display = 'block'
+                    errorDiv.innerHTML = i18n.global.t('task.actions.saveError', [err])
                 } else {
                     services.displaySuccessMessage()
                 }
@@ -117,7 +119,7 @@ function unblockButtons(...buttons) {
 }
 
 function loadEmbeddedForm(isStartForm, referenceId, container, authorization) {
-    var client = new Client({
+    var client = new window.CamSDK.Client({
         mock: false,
         apiUri: '/engine-rest',
         headers: {
@@ -161,7 +163,7 @@ function loadEmbeddedForm(isStartForm, referenceId, container, authorization) {
             } else {
                 config.taskId = referenceId
             }
-            embeddedForm = new Form(config)
+            embeddedForm = new window.CamSDK.Form(config)
         }
     })
 }

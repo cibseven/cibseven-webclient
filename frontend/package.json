@@ -36,7 +36,6 @@
     "axios": "^1.7.9",
     "bootstrap": "^5.3.3",
     "bpmn-js": "^18.2.0",
-    "camunda-bpm-sdk-js": "^7.7.4-SNAPSHOT",
     "cib-common-components": "^1.0.18",
     "dmn-js": "^17.2.0",
     "jquery": "^3.7.1",
