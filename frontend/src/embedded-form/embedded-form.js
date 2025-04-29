@@ -125,10 +125,9 @@ function loadEmbeddedForm(isStartForm, referenceId, container, authentication) {
         }
     })
     return new Promise((resolve, reject) => {
-        let formInfoProm
         if (isStartForm) {
             let processService = client.resource('process-definition')
-            formInfoProm = processService.startForm({ id: referenceId }, (err, taskFormInfo) => {
+            processService.startForm({ id: referenceId }, (err, taskFormInfo) => {
                 if (err) reject(err)
                 else loadForm(taskFormInfo)
             })
