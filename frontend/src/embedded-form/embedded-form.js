@@ -135,7 +135,7 @@ function loadEmbeddedForm(isStartForm, referenceId, container, authentication) {
         } else {
             let taskService = client.resource('task')
             // loads the task form using the task ID provided
-            formInfoProm = taskService.form(referenceId, (err, taskFormInfo) => {
+            taskService.form(referenceId, (err, taskFormInfo) => {
                 if (err) reject(err)
                 else loadForm(taskFormInfo)
             })

@@ -109,9 +109,9 @@ export default {
         translationContext = 'themes/' + theme + '/uiet-translations_'
         themeContext = 'themes/' + theme + '/bootstrap_4.5.0.min.css'
       }
+      
+      let formFrame = this.$refs['template-frame']
       if (this.task.url) {
-        var formFrame = this.$refs['template-frame']
-
         formFrame.src = this.task.url + '/' + themeContext + '/' + translationContext
 
         this.loader = false
@@ -120,7 +120,6 @@ export default {
         //Embedded forms if not "standard" ui-element-templates
         if (this.task.formKey && this.task.formKey.startsWith('embedded:') && this.task.formKey !== 'embedded:/camunda/app/tasklist/ui-element-templates/template.html') {
           this.formFrame = true
-          var formFrame = this.$refs['template-frame']
           formFrame.src = `embedded-forms.html?taskId=${this.task.id}&lang=${this.currentLanguage()}&authToken=${this.$root.user.authToken}`
           this.loader = false
         } else {
@@ -139,7 +138,6 @@ export default {
               return
             }
             //Ui-element-templates
-            var formFrame = this.$refs['template-frame']
             
             formFrame.src = '#/' + formReference + '/' + this.currentLanguage() + '/' +
             this.task.id + '/' + this.$root.user.authToken + '/' + themeContext + '/' + translationContext
