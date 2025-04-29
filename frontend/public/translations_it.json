@@ -287,8 +287,7 @@
 		"exportCsv": "Esporta tutto",
 		"users": {
 			"title": "Utenti",
-			"id": "ID",
-			"userId": "User ID",
+			"id": "User ID",
 			"firstName": "Nome",
 			"lastName": "Cognome",
 			"email": "Email",
@@ -863,7 +862,7 @@
 			"emailDescription": "Email associated with the account you want to recover",
 			"cancel": "Cancel",
 			"sendEmail": "Send recovery email",
-			"id": "User ID",
+			"id": "@:admin.users.id",
 			"changePassword": "Change password",
 			"emailSent": "The e-mail with the link to recover your password has been sent."
 		},
