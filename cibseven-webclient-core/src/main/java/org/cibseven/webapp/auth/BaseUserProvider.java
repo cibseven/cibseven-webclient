@@ -19,10 +19,8 @@ package org.cibseven.webapp.auth;
 import java.util.Collection;
 import java.util.Optional;
 
-import org.cibseven.webapp.auth.exception.AuthenticationException;
 import org.cibseven.webapp.auth.providers.JwtUserProvider;
 import org.cibseven.webapp.auth.rest.StandardLogin;
-import org.cibseven.webapp.exception.AnonUserBlockedException;
 import org.springframework.beans.factory.annotation.Value;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -55,15 +53,6 @@ public abstract class BaseUserProvider<R extends StandardLogin> implements JwtUs
 		@JsonIgnore abstract String getCallingSystem();
 	}
 	
-	@Override
-	public User authenticate(HttpServletRequest rq) {
-		User user = JwtUserProvider.super.authenticate(rq);
-		if (user instanceof CIBUser && ((CIBUser) user).isAnonUser()) {
-			throw new AnonUserBlockedException(user);
-		}
-		return user;
-	}
-
 	public abstract R createLoginParams();
 	
 	public String createExternalToken (StandardLogin params) {
@@ -71,13 +60,4 @@ public abstract class BaseUserProvider<R extends StandardLogin> implements JwtUs
 		return createToken(getSettings(), true, false, user);
 	}
 
-	public User createAnonToken () {
-		if (anonUserId == null || anonUserId.isEmpty()) {
-			throw new AuthenticationException("Anon user is not configured");
-		}
-		CIBUser user = new CIBUser(anonUserId);
-		user.setAnonUser(true);
-		user.setAuthToken(createToken(getSettings(), true, false, user));
-		return user;
-	}
 }
