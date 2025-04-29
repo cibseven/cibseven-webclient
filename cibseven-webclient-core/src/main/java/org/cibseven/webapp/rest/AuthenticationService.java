@@ -82,10 +82,5 @@ public class AuthenticationService {
 		return bpmProvider.getUserAuthorization(user.getId(), user);
 	}
 
-	@RequestMapping(value = "/anon-user", method = RequestMethod.GET)
-	public User getAnonymousUser() {
-		return provider.createAnonToken();
-	}
-
 }
 

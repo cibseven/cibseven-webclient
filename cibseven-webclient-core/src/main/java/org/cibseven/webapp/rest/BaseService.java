@@ -32,7 +32,6 @@ import org.cibseven.webapp.auth.rest.StandardLogin;
 import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenAuthorizationUtils;
-import org.cibseven.webapp.exception.AnonUserBlockedException;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.rest.model.Authorizations;
 
@@ -43,7 +42,7 @@ public class BaseService {
 	@Autowired
 	protected BaseUserProvider baseUserProvider;
 	
-	protected CIBUser checkAuthorization(HttpServletRequest rq, boolean basicAuthAllowed, boolean anonUserAllowed) {
+	protected CIBUser checkAuthorization(HttpServletRequest rq, boolean basicAuthAllowed) {
 		CIBUser user = null;
 		String authorization = rq.getHeader("Authorization");
 		if (basicAuthAllowed && authorization != null && authorization.toLowerCase().startsWith("basic")) {
@@ -59,15 +58,7 @@ public class BaseService {
 		    user = (CIBUser) baseUserProvider.login(login, rq);
 		} 
 		else {
-			try {
 				user = (CIBUser) baseUserProvider.authenticateUser(rq);
-			} catch (AnonUserBlockedException e) {
-				if (anonUserAllowed) {
-					user = (CIBUser) e.getUser();
-				} else {
-					throw e;
-				}
-			}
 		}
 		return user;
 	}

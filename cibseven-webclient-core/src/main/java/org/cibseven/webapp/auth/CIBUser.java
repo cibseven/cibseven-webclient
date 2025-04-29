@@ -28,7 +28,6 @@ public class CIBUser implements User {
 	@Getter @Setter String authToken;
 	@Getter @Setter protected String userID;
 	@Setter String displayName;
-	@Getter @Setter boolean isAnonUser;
 	
 	public CIBUser(String userId) {
 		this.userID = userId;
