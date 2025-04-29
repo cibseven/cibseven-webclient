@@ -19,6 +19,7 @@ package org.cibseven.webapp.config;
 import java.util.Arrays;
 
 import org.cibseven.webapp.auth.exception.AuthenticationException;
+import org.cibseven.webapp.exception.AccessDeniedException;
 import org.cibseven.webapp.exception.ApplicationException;
 import org.cibseven.webapp.exception.ErrorMessage;
 import org.cibseven.webapp.exception.NoObjectFoundException;
@@ -38,6 +39,12 @@ public class ExceptionConverter {
 	public ErrorMessage authentication(AuthenticationException x) {
 		log.debug("Authentication error occured " + Arrays.toString(x.getData()), x);
 		return new ErrorMessage(x.getClass().getSimpleName(), x.getData());
+	}
+
+	@ExceptionHandler @ResponseStatus(HttpStatus.FORBIDDEN)
+	public ErrorMessage authentication(AccessDeniedException x) {
+		log.error("Access denied", x);
+		return new ErrorMessage(x.getClass().getSimpleName(), new Object[] { x.getMessage() });
 	}
 	
 	@ExceptionHandler @ResponseStatus(HttpStatus.BAD_REQUEST) 
