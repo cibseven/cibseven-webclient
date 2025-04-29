@@ -79,7 +79,7 @@
       <span v-if="userSelected">
         <p>{{ $t('admin.users.confirmDelete') }}</p>
         <p>
-          <strong>{{ $t('admin.users.userId') }}:</strong> {{ userSelected.id }} <br>
+          <strong>{{ $t('admin.users.id') }}:</strong> {{ userSelected.id }} <br>
           <strong>{{ $t('admin.users.firstName') }}:</strong> {{ userSelected.firstName }}<br>
           <strong>{{ $t('admin.users.lastName') }}:</strong> {{ userSelected.lastName }}<br>
           <strong>{{ $t('admin.users.email') }}:</strong> {{ userSelected.email }}

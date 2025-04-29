@@ -288,7 +288,7 @@
 			"manageUsersGroups": "Administrar usuarios/grupos",
 			"manageAssignee": "Administrar usuario asignado",
 			"groupId": "ID de grupo",
-			"userId": "ID de usuario",
+			"userId": "@:admin.users.id",
 			"groups": "Grupos",
 			"users": "Usuarios",			
 		    "assignee": "Usuario asignado",
@@ -427,8 +427,7 @@
 		"exportCsv": "Exportar todo",
 		"users": {
 			"title": "Usuarios",
-			"id": "ID",
-			"userId": "ID Usuario",
+			"id": "ID Usuario",
 			"firstName": "Nombre",
 			"lastName": "Apellidos",
 			"email": "Email",
@@ -1074,7 +1073,7 @@
 			"emailDescription": "Email asociado a la cuenta que quiere recuperar",
 			"cancel": "Cancelar",
 			"sendEmail": "Enviar email de recuperacion",
-			"id": "ID de usuario",
+			"id": "@:admin.users.id",
 			"changePassword": "Cambiar contraseña",
 			"emailSent": "El correo electrónico con el enlace para recuperar su contraseña ha sido enviado."
 		},
