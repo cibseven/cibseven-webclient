@@ -366,7 +366,9 @@
 		},
 		"actions": {
 			"title": "Task actions",
-			"submit": "Complete"
+			"submit": "Complete",
+			"save": "Save",
+			"saveError": "An error occurred while saving the task: {0}"
 		},
 		"emptyTask": "Empty task",
 		"showMore": "Show more...",
