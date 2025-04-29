@@ -19,7 +19,7 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 
 import { axios } from './globals.js'
 
-import { AuthService, ProcessService } from '@/services.js'
+import { AuthService } from '@/services.js'
 import { permissionsMixin } from '@/permissions.js'
 import CibSeven from '@/components/CibSeven.vue'
 import StartView from '@/components/start/StartView.vue'
