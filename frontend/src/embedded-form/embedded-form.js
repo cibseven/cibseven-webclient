@@ -17,7 +17,7 @@ InfoService.getProperties().then(config => {
     loadTheme()
 
     const searchParams = new URLSearchParams(location.search)
-    const authentication = searchParams.get('authentication')
+    const authorization = searchParams.get('authorization')
     const lang = searchParams.get('lang')
     const processDefinitionId = searchParams.get('processDefinitionId')
     const taskId = searchParams.get('taskId')
@@ -66,7 +66,7 @@ InfoService.getProperties().then(config => {
             })
         })
         
-        loadEmbeddedForm(isStartForm, processDefinitionId || taskId, embeddedFormRoot, authentication).then(form => {
+        loadEmbeddedForm(isStartForm, processDefinitionId || taskId, embeddedFormRoot, authorization).then(form => {
             embeddedForm = form
             loaderDiv.style.display = 'none'
             contentDiv.style.display = 'flex'
@@ -116,12 +116,12 @@ function unblockButtons(...buttons) {
     })
 }
 
-function loadEmbeddedForm(isStartForm, referenceId, container, authentication) {
+function loadEmbeddedForm(isStartForm, referenceId, container, authorization) {
     var client = new Client({
         mock: false,
         apiUri: '/engine-rest',
         headers: {
-            'Authentication': authentication
+            'authorization': authorization
         }
     })
     return new Promise((resolve, reject) => {

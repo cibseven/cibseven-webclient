@@ -117,7 +117,7 @@ export default {
 
         this.loader = false
       } else if (this.task.isEmbedded && this.task.processDefinitionId) {
-        formFrame.src = `embedded-forms.html?processDefinitionId=${this.task.processDefinitionId}&lang=${this.currentLanguage()}&authentication=${this.$root.user.authToken}`
+        formFrame.src = `embedded-forms.html?processDefinitionId=${this.task.processDefinitionId}&lang=${this.currentLanguage()}&authorization=${this.$root.user.authToken}`
         
         this.loader = false
       } else if (this.task.id) {
@@ -125,7 +125,7 @@ export default {
         //Embedded forms if not "standard" ui-element-templates
         if (this.task.formKey && this.task.formKey.startsWith('embedded:') && this.task.formKey !== 'embedded:/camunda/app/tasklist/ui-element-templates/template.html') {
           this.formFrame = true
-          formFrame.src = `embedded-forms.html?taskId=${this.task.id}&lang=${this.currentLanguage()}&authentication=${this.$root.user.authToken}`
+          formFrame.src = `embedded-forms.html?taskId=${this.task.id}&lang=${this.currentLanguage()}&authorization=${this.$root.user.authToken}`
           this.loader = false
         } else {
           let formReferencePromise
