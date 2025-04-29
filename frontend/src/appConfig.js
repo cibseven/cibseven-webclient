@@ -14,9 +14,6 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-//TODO Remove with embedded forms
-import jQuery from 'jquery'
-window.jQuery = window.$ = jQuery
 export default {
   servicesBasePath: 'services/v1' // set via properties fetched from backend.
 }

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html class="h-100">
+<head>
+    <style>
+        #loader {
+            height: 100%;
+            display: flex;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body class="h-100">
+    <div id="loader">
+        <img src="src/embedded-form/waitImage.svg" style="width:20%">
+    </div>
+    <div class="h-100 flex-column" style="display: none" id="content">
+        <div id="embeddedFormRoot" class="flex-grow-1"></div>
+        <div class="border-top pb-2 pt-3 shadow text-center bg-white">
+            <button id="saveButton" class="btn btn-outline-secondary">Save</button>
+            <button id="submitButton" class="btn btn-secondary">Submit</button>
+        </div>
+    </div>
+    <script type="module">
+        import jQuery from "jquery"
+
+        //Set jquery globally for camunda-bpm-sdk
+        window.jQuery = window.$ = jQuery
+    </script>
+    <script type="module" src="src/embedded-form/embedded-form.js"></script>
+</body>
+</html>

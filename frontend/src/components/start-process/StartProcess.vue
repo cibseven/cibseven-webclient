@@ -18,12 +18,12 @@
 -->
 <template>
   <GlobalEvents v-if="!hideProcessSelection" @keydown.ctrl.alt.p.prevent="$refs.startProcess.show()"></GlobalEvents>
-  <b-modal body-class="pt-0" size="lg" scrollable ref="startProcess" :hide-footer="!(startParams && !hideProcessSelection)"
+  <b-modal body-class="pt-0" size="lg" scrollable ref="startProcess" :hide-footer="!(startParamUrl && !hideProcessSelection)"
     :title="!hideProcessSelection ? $t('start.startProcess.title') : processName" @shown="$emit('display-popover', false)" no-close-on-backdrop
-    @hidden="$emit('display-popover', true); startParams = null" :footer-class="{ 'justify-content-between': startParams && !hideProcessSelection }"
+    @hidden="$emit('display-popover', true); startParamUrl = ''" :footer-class="{ 'justify-content-between': startParamUrl && !hideProcessSelection }"
     dialog-class="h-100">
-    <div v-if="startParams" class="mh-100 h-100" style="height: 70vh">
-      <RenderTemplate class="h-100" :task="definitionStartTask"
+    <div v-if="startParamUrl" class="mh-100 h-100" style="height: 70vh">
+      <RenderTemplate class="h-100" :task="{ url: startParamUrl, assignee: $root.user, id: selectedProcess.id, processInstanceId: selectedProcess.processInstanceId }"
       @complete-task="$refs.startProcess.hide(); $emit('process-started', $event)"></RenderTemplate>
     </div>
     <div v-else-if="!hideProcessSelection">
@@ -50,7 +50,7 @@
       </div>
     </div>
     <template v-slot:modal-footer>
-      <b-button v-if="startParams && !hideProcessSelection" @click="startParams = null" class="text-secondary" variant="link">{{ $t('process.back') }}</b-button>
+      <b-button v-if="startParamUrl && !hideProcessSelection" @click="startParamUrl = ''" class="text-secondary" variant="link">{{ $t('process.back') }}</b-button>
     </template>
   </b-modal>
 </template>
@@ -72,7 +72,7 @@ export default {
     return {
       isStartingProcess: false,
       processesFilter: '',
-      startParams: null,
+      startParamUrl: '',
       selectedProcess: {}
     }
   },
@@ -90,16 +90,6 @@ export default {
     },
     processName: function() {
       return this.selectedProcess.name !== null ? this.selectedProcess.name : this.selectedProcess.key
-    },
-    definitionStartTask: function() {
-      return {
-        url: this.startParams.url,
-        assignee: this.$root.user,
-        id: this.selectedProcess.id,
-        processInstanceId: this.selectedProcess.processInstanceId,
-        processDefinitionId: this.startParams.processDefinitionId,
-        startForm: this.startParams.startForm
-      }
     }
   },
   mounted: function() {
@@ -126,11 +116,9 @@ export default {
               this.isStartingProcess = false
             })
           } else {
-            this.startParams = {}
             //Embedded forms
-            if (!url.key.startsWith("embedded:/camunda/app/tasklist/ui-element-templates/template.html")) {
-              this.startParams.startForm = url
-              this.startParams.processDefinitionId = processLatest.id
+            if (url.key && !url.key.startsWith("embedded:/camunda/app/tasklist/ui-element-templates/template.html")) {
+              this.startParamUrl = `embedded-forms.html?processDefinitionId=${processLatest.id}&lang=${this.currentLanguage()}&authToken=${this.$root.user.authToken}`
             } else {
               var templateType
               //Camunda form
@@ -141,8 +129,8 @@ export default {
                 templateType = url.key.split('?template=')[1]
               }
 
-              this.startParams.url = '#/' + templateType + '/' + this.currentLanguage() + '/' +
-              processLatest.id + '/' + this.$root.user.authToken // + '/' + themeContext + '/' + translationContext
+              this.startParamUrl = '#/' + templateType + '/' + this.currentLanguage() + '/' +
+                processLatest.id + '/' + this.$root.user.authToken // + '/' + themeContext + '/' + translationContext
             }
             if (this.hideProcessSelection) this.$refs.startProcess.show()
             process.loading = false

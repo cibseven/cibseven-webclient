@@ -86,22 +86,22 @@ export default defineConfig({
         },
       },
 	  //Add embedded form root urls
-//      '/camunda-invoice': {
-//        target: engineRestUrl,
-//        changeOrigin: true,
-//        secure: false,
-//        configure: (proxy, _options) => {
-//          proxy.on('error', (err, _req, _res) => {
-//            console.log('proxy error', err)
-//          })
-//          proxy.on('proxyReq', (proxyReq, req, _res) => {
-//            //console.log('Sending Request to the Target:', req.method, backendUrl + req.url)
-//          })
-//          proxy.on('proxyRes', (proxyRes, req, _res) => {
-//            //console.log('Received Response from the Target:', proxyRes.statusCode, backendUrl + req.url)
-//          })
-//        },
-//      }
+    //  '/camunda-invoice': {
+    //    target: engineRestUrl,
+    //    changeOrigin: true,
+    //    secure: false,
+    //    configure: (proxy, _options) => {
+    //      proxy.on('error', (err, _req, _res) => {
+    //        console.log('proxy error', err)
+    //      })
+    //      proxy.on('proxyReq', (proxyReq, req, _res) => {
+    //        //console.log('Sending Request to the Target:', req.method, backendUrl + req.url)
+    //      })
+    //      proxy.on('proxyRes', (proxyRes, req, _res) => {
+    //        //console.log('Received Response from the Target:', proxyRes.statusCode, backendUrl + req.url)
+    //      })
+    //    },
+    //  }
     },
   },
   build: isLibrary
@@ -129,7 +129,8 @@ export default defineConfig({
       rollupOptions: {
         input: {
           main: path.resolve(__dirname, 'index.html'),
-          ssoLogin: path.resolve(__dirname, 'sso-login.html')
+          ssoLogin: path.resolve(__dirname, 'sso-login.html'),
+          embeddedForms: path.resolve(__dirname, 'embedded-forms.html')
         }
       }
     }
