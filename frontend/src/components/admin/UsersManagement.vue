@@ -62,7 +62,7 @@ export default {
       const rawItems = [
         {
           title: 'admin.users.title',
-          image: 'assets/images/admin/users_admin.svg',
+          image: './assets/images/admin/users_admin.svg',
           link: '/seven/auth/admin/users',
           hasAccess: this.adminManagementPermissions(this.$root.config.permissions.usersManagement, 'user')
         },
