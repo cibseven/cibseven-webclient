@@ -1,28 +1,45 @@
+/*
+ * Copyright CIB software GmbH and/or licensed to CIB software GmbH
+ * under one or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information regarding copyright
+ * ownership. CIB software licenses this file to you under the Apache License,
+ * Version 2.0; you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package org.cibseven.webapp.rest;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.providers.PermissionConstants;
 import org.cibseven.webapp.providers.SevenProvider;
 import org.cibseven.webapp.rest.model.Analytics;
 import org.cibseven.webapp.rest.model.AnalyticsInfo;
 import org.cibseven.webapp.rest.model.Decision;
 import org.cibseven.webapp.rest.model.Deployment;
-import org.cibseven.webapp.rest.model.Incident;
-import org.cibseven.webapp.rest.model.Process;
+import org.cibseven.webapp.rest.model.IncidentInfo;
 import org.cibseven.webapp.rest.model.ProcessStatistics;
-import org.cibseven.webapp.rest.model.Task;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,164 +49,139 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 @ApiResponses({ @ApiResponse(responseCode = "500", description = "An unexpected system error occured"),
-    @ApiResponse(responseCode = "401", description = "Unauthorized") })
+		@ApiResponse(responseCode = "401", description = "Unauthorized") })
 @RestController
 @RequestMapping("${services.basePath:/services/v1}" + "/analytics")
 public class AnalyticsService extends BaseService implements InitializingBean {
 
-  SevenProvider sevenProvider;
+	public static final int MAX_ANALYTICS_GROUPS = 20;
 
-  public void afterPropertiesSet() {
-    if (bpmProvider instanceof SevenProvider)
-      sevenProvider = (SevenProvider) bpmProvider;
-    else
-      throw new SystemException("ProcessService expects a BpmProvider");
-  }
+	@Autowired
+	BpmProvider bpmProvider;
+	SevenProvider sevenProvider;
 
-  @Operation(summary = "Get analytics for processes, decisions and human Tasks", description = "<strong>Return: Analytics")
-  @RequestMapping(value = "", method = RequestMethod.GET)
-  public Analytics getAnalytics(Locale loc, CIBUser user) {
-    
-    checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_ALL);
-    
-    Collection<ProcessStatistics> processStatistics = sevenProvider.getProcessStatistics(user);
-    
-    Collection<Process> processes = sevenProvider.findProcesses(user);
-    
-    // Convert processes to a HashMap with key -> name of the latest version
-    Map<String, Process> latestProcessNames = new HashMap<>();
+	public void afterPropertiesSet() {
+		if (bpmProvider instanceof SevenProvider)
+			sevenProvider = (SevenProvider) bpmProvider;
+		else
+			throw new SystemException("AnalyticsService expects a BpmProvider");
+	}
 
-    for (Process process : processes) {
-        String processKey = process.getKey();
-        Process currentLatestProcess = latestProcessNames.get(processKey);
-        if (currentLatestProcess == null) {
-            latestProcessNames.put(processKey, process);
-        }
-    }
-    
-    Analytics analytics = new Analytics();
+	@Operation(summary = "Get analytics for processes, decisions and human Tasks", description = "<strong>Return: Analytics")
+	@RequestMapping(value = "", method = RequestMethod.GET)
+	public Analytics getAnalytics(Locale loc, CIBUser user) {
 
-    List<AnalyticsInfo> runningInstances = new ArrayList<>();
-    
-    // Group by the first part of the processInstanceId and summarize instances
-    Map<String, Long> groupedInstances = processStatistics.stream()
-        .collect(Collectors.groupingBy(
-            stats -> stats.getId().split(":")[0], // Group by the first part of the ID
-            Collectors.summingLong(ProcessStatistics::getInstances) // Summarize instances
-        ));
+		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_ALL);
 
-    // Convert the grouped results into IncidentInfo objects and add to runningInstances
-    for (Map.Entry<String, Long> entry : groupedInstances.entrySet()) {
-        AnalyticsInfo incidentInfo = new AnalyticsInfo();
-        incidentInfo.setId(entry.getKey());
-        Process process = latestProcessNames.get(entry.getKey());
-        if (process != null) {
-            incidentInfo.setTitle(process.getName());
-        } else {
-            incidentInfo.setTitle("Unknown Process");
-        }
-        incidentInfo.setValue(entry.getValue());
-        runningInstances.add(incidentInfo);
-    }
+		Collection<ProcessStatistics> processStatistics = bpmProvider.getProcessStatistics(user);
 
-    analytics.setRunningInstances(runningInstances);
-    
-    Collection<Incident> incidents = sevenProvider.findIncident(
-        Optional.empty(),
-        Optional.empty(),
-        Optional.empty(),
-        Optional.empty(),
-        Optional.empty(),
-        Optional.empty(),
-        Optional.empty(),
-        Optional.empty(),
-        Optional.empty(),
-        Optional.empty(),
-        Optional.empty(),
-        Optional.empty(),
-        Optional.empty(),
-        user);
-    
-    // Group incidents by process key and count the number of incidents for each process
-    Map<String, Long> groupedIncidents = incidents.stream()
-        .collect(Collectors.groupingBy(
-            incident -> incident.getProcessDefinitionId().split(":")[0], // Group by the first part of the processDefinitionId
-            Collectors.counting() // Count the number of incidents
-        ));
+		Analytics analytics = new Analytics();
 
-    // Convert the grouped results into AnalyticsInfo objects
-    List<AnalyticsInfo> openIncidents = groupedIncidents.entrySet().stream()
-        .map(entry -> {
-            AnalyticsInfo incidentInfo = new AnalyticsInfo();
-            incidentInfo.setId(entry.getKey());
-            Process process = latestProcessNames.get(entry.getKey());
-            if (process != null) {
-                incidentInfo.setTitle(process.getName());
-            } else {
-                incidentInfo.setTitle("Unknown Process");
-            }
-            incidentInfo.setValue(entry.getValue());
-            return incidentInfo;
-        })
-        .collect(Collectors.toList());
+		List<AnalyticsInfo> runningInstances = new ArrayList<>();
+		List<AnalyticsInfo> openIncidents = new ArrayList<>();
 
-    // Set the open incidents in the analytics object
-    analytics.setOpenIncidents(openIncidents);
-    
-    Collection<Task> tasks = sevenProvider.findTasks(null, user);
-    
-    // Group tasks by process key and count the number of tasks for each process
-    Map<String, Long> groupedTasks = tasks.stream()
-        .collect(Collectors.groupingBy(
-            task -> task.getProcessDefinitionId().split(":")[0], // Group by the first part of the processDefinitionId
-            Collectors.counting() // Count the number of tasks
-        ));
+		// Group by the key and summarize instances and incidents
+		List<ProcessStatistics> groupedStats = processStatistics.stream()
+				.collect(Collectors.groupingBy(stat -> stat.getDefinition().getKey())).values().stream().map(group -> {
+					ProcessStatistics result = new ProcessStatistics();
+					result.setDefinition(group.get(0).getDefinition());
+					result.setId(group.get(0).getId());
 
-    // Convert the grouped results into AnalyticsInfo objects
-    List<AnalyticsInfo> openTasks = groupedTasks.entrySet().stream()
-        .map(entry -> {
-            AnalyticsInfo taskInfo = new AnalyticsInfo();
-            taskInfo.setId(entry.getKey());
-            Process process = latestProcessNames.get(entry.getKey());
-            if (process != null) {
-                taskInfo.setTitle(process.getName());
-            } else {
-                taskInfo.setTitle("Unknown Process");
-            }
-            taskInfo.setValue(entry.getValue());
-            return taskInfo;
-        })
-        .collect(Collectors.toList());
+					result.setInstances(group.stream().mapToLong(ProcessStatistics::getInstances).sum());
+					result.setFailedJobs(group.stream().mapToLong(ProcessStatistics::getFailedJobs).sum());
 
-    // Set the open tasks in the analytics object
-    analytics.setOpenHumanTasks(openTasks);
-    
+					long totalIncidentCount = group.stream().flatMap(stat -> stat.getIncidents().stream())
+							.mapToLong(IncidentInfo::getIncidentCount).sum();
 
-    analytics.setProcessDefinitionsCount(runningInstances.size());
-    
-    Collection<Decision> decisionDefinitionList = sevenProvider.getDecisionDefinitionList(new HashMap<>(), user);
-    if (decisionDefinitionList == null) {
-      analytics.setDecisionDefinitionsCount(-1);
-    } else {
-      // Count the number of distinct keys
-      long distinctKeyCount = decisionDefinitionList.stream()
-          .map(Decision::getKey)
-          .distinct()
-          .count();
+					IncidentInfo totalIncident = new IncidentInfo();
+					totalIncident.setIncidentType("all");
+					totalIncident.setIncidentCount(totalIncidentCount);
 
-      analytics.setDecisionDefinitionsCount(distinctKeyCount);
-    }
-    
-    Collection<Deployment> deployments = sevenProvider.findDeployments(user);
-    if (deployments == null) {
-      analytics.setDeploymentsCount(-1);
-    } else {
-      analytics.setDeploymentsCount(deployments.size());
-    }
-    
+					result.setIncidents(Collections.singletonList(totalIncident));
+
+					return result;
+				}).collect(Collectors.toList());
+
+		groupedStats.forEach(stats -> {
+			String key = stats.getDefinition().getKey();
+			String title = stats.getDefinition().getName();
+			
+			AnalyticsInfo instancesInfo = new AnalyticsInfo();
+			instancesInfo.setId(key);
+			instancesInfo.setTitle(title);
+			instancesInfo.setValue(stats.getInstances());
+			runningInstances.add(instancesInfo);
+
+			if (stats.getIncidents() != null && !stats.getIncidents().isEmpty()
+					&& stats.getIncidents().get(0).getIncidentCount() != 0) {
+				AnalyticsInfo incidentsInfo = new AnalyticsInfo();
+				incidentsInfo.setId(key);
+				incidentsInfo.setTitle(title);
+				incidentsInfo.setValue(stats.getIncidents().get(0).getIncidentCount());
+				openIncidents.add(incidentsInfo);
+			}
+		});
+		analytics.setRunningInstances(groupAnalyticsWithOthers(runningInstances));
+		analytics.setOpenIncidents(groupAnalyticsWithOthers(openIncidents));
+
+		Map<String, Object> params = Map.of("unfinished", true, "assigned", true);
+		Integer assignedTasks = bpmProvider.findTasksCount(params, user);
+		params = Map.of("unfinished", true, "unassigned", true, "withCandidateGroups", true);
+		Integer assignedGroups = bpmProvider.findTasksCount(params, user);
+		params = Map.of("unfinished", true, "unassigned", true, "withoutCandidateGroups", true);
+		Integer unassignedTasks = bpmProvider.findTasksCount(params, user);
+
+		analytics.setOpenHumanTasks(List.of(new AnalyticsInfo("1", "assigned", assignedTasks),
+				new AnalyticsInfo("2", "assignedGroups", assignedGroups),
+				new AnalyticsInfo("3", "unassigned", unassignedTasks)));
+
+		analytics.setProcessDefinitionsCount(runningInstances.size());
+		Collection<Decision> decisionDefinitionList = bpmProvider.getDecisionDefinitionList(new HashMap<>(), user);
+		if (decisionDefinitionList == null) {
+			analytics.setDecisionDefinitionsCount(-1);
+		} else {
+			// Count the number of distinct keys
+			long distinctKeyCount = decisionDefinitionList.stream().map(Decision::getKey).distinct().count();
+
+			analytics.setDecisionDefinitionsCount(distinctKeyCount);
+		}
+
+		Collection<Deployment> deployments = bpmProvider.findDeployments(user);
+		if (deployments == null) {
+			analytics.setDeploymentsCount(-1);
+		} else {
+			analytics.setDeploymentsCount(deployments.size());
+		}
+
 //    ToDo:
 //    analytics.setBatchesCount(0);
-    
-    return analytics;
-  }
+
+		return analytics;
+	}
+
+	private List<AnalyticsInfo> groupAnalyticsWithOthers(List<AnalyticsInfo> analytics) {
+		List<AnalyticsInfo> groupedList = new ArrayList<>();
+		if (analytics == null || analytics.isEmpty()) {
+			return groupedList;
+		}
+		
+		analytics.sort(Comparator.comparingLong(AnalyticsInfo::getValue).reversed());
+		
+		if (analytics.size() <= MAX_ANALYTICS_GROUPS) {
+			groupedList.addAll(analytics);
+		} else {
+			groupedList.addAll(analytics.subList(0, MAX_ANALYTICS_GROUPS - 1));
+			long othersSum = analytics.subList(MAX_ANALYTICS_GROUPS - 1, analytics.size()).stream()
+					.mapToLong(AnalyticsInfo::getValue).sum();
+
+			AnalyticsInfo othersGroup = new AnalyticsInfo();
+			othersGroup.setId(null);
+			othersGroup.setTitle("others");
+			othersGroup.setValue(othersSum);
+
+			groupedList.add(othersGroup);
+		}
+		return groupedList;
+	}
+
 }

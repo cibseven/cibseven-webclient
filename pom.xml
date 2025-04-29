@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.cibseven</groupId>
 		<artifactId>release-parent</artifactId>
-		<version>1.1.0</version>
+		<version>1.2.0</version>
 	</parent>
 	
 	<groupId>org.cibseven.webapp</groupId>
@@ -43,6 +43,22 @@
 		<version.eirslett.frontend.maven.plugin>1.12.1</version.eirslett.frontend.maven.plugin>
     	<version.nodejs>22.14.0</version.nodejs>
 	    <version.npm>10.9.2</version.npm>
+		
+		<!-- REWRITE COPYRIGHT PARAMEMER FROM SUPER POM (CAMUNDA COPYRIGHT) -->
+		<license.inlineHeader>Copyright CIB software GmbH and/or licensed to CIB software GmbH
+under one or more contributor license agreements. See the NOTICE file
+distributed with this work for additional information regarding copyright
+ownership. CIB software licenses this file to you under the Apache License,
+Version 2.0; you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.</license.inlineHeader>
 	    
 	</properties>
 
@@ -213,6 +229,33 @@
 				</plugins>
 			</build>
 		</profile>
+			<profile>
+				<id>add-missing-copyright</id>
+				<build>
+					<plugins>
+						<plugin>
+							<groupId>com.mycila</groupId>
+							<artifactId>license-maven-plugin</artifactId>
+							<version>5.0.0</version>
+							<configuration>
+								<mapping>
+									<vue>XML_STYLE</vue>
+								</mapping>
+								<licenseSets>
+									<licenseSet>
+										<inlineHeader>${license.inlineHeader}</inlineHeader>
+										<includes>
+											<include>**/*.java</include>
+											<include>**/*.js</include> 
+											<include>**/*.vue</include>
+										</includes>
+									</licenseSet>
+								</licenseSets>
+							</configuration>
+						</plugin>
+					</plugins>
+				</build>
+			</profile>
 	</profiles>
 
 	<dependencyManagement>
@@ -296,6 +339,29 @@
 			</plugins>
 		</pluginManagement>
 	</build>
+	
+	<repositories>
+	    <repository>
+	      <id>maven-central</id>
+	      <name>Maven Central</name>
+	      <url>https://repo1.maven.org/maven2</url>
+	      <snapshots>
+	        <enabled>false</enabled>
+	      </snapshots>
+	    </repository>
+	    <repository>
+	      <!-- Required for local builds by community users on master branch -->
+	      <id>mvn-cibseven-public</id>
+	      <name>CIB seven Public Repository</name>
+	      <url>https://artifacts.cibseven.org/repository/public</url>
+	    </repository>
+	    <repository>
+	      <!-- Required for local builds by developers on maintainance branches -->
+	      <id>mvn-cibseven-snapshots</id>
+	      <name>CIB seven Snapshots repository</name>
+	      <url>https://artifacts.cibseven.org/repository/snapshots</url>
+	    </repository>
+	</repositories>
 
 	<scm>
 		<connection>scm:git:${project.git.url}</connection>

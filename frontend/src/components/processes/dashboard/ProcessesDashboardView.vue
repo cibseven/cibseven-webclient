@@ -1,3 +1,21 @@
+<!--
+
+    Copyright CIB software GmbH and/or licensed to CIB software GmbH
+    under one or more contributor license agreements. See the NOTICE file
+    distributed with this work for additional information regarding copyright
+    ownership. CIB software licenses this file to you under the Apache License,
+    Version 2.0; you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+
+-->
 <template>
   <div class="d-flex flex-column bg-light overflow-auto">
     <div class="container bg-light pt-3 px-0">
@@ -7,6 +25,7 @@
           :items="runningInstances"
           :title="$t('processes-dashboard.items.running-instances.title')"
           :tooltip="$t('processes-dashboard.items.running-instances.tooltip')"
+          @click="navigateToProcess($event)"
           link="/seven/auth/processes/list"
           :loading="loading"
         ></PieChart>
@@ -15,7 +34,8 @@
           :items="openIncidents"
           :title="$t('processes-dashboard.items.open-incidents.title')"
           :tooltip="$t('processes-dashboard.items.open-incidents.tooltip')"
-          link="/seven/auth/processes/list"
+          @click="navigateToProcess($event)"
+          link="/seven/auth/processes/list?onlyIncidents=true"
           :loading="loading"
         ></PieChart>
         <PieChart
@@ -24,7 +44,7 @@
           :title="$t('processes-dashboard.items.open-human-tasks.title')"
           :tooltip="$t('processes-dashboard.items.open-human-tasks.tooltip')"
           link="/seven/auth/human-tasks"
-          type="humanTasks"
+          @click="navigateToHumanTasks($event)"
           :loading="loading"
         ></PieChart>
       </ContentBlock>
@@ -97,8 +117,19 @@ export default {
         this.errorLoading = false
         const analytics = await AnalyticsService.getAnalytics()
         // Prepare data for charts
+        analytics.runningInstances.forEach((data) => {
+          this.normalizeTitle(data)
+        })
         this.runningInstances = analytics.runningInstances
+
+        analytics.openIncidents.forEach((data) => {
+          this.normalizeTitle(data)
+        })
         this.openIncidents = analytics.openIncidents
+
+        analytics.openHumanTasks.forEach((data) => {
+          data.title = this.$t('processes-dashboard.items.open-human-tasks.' + data.title)
+        })
         this.openHumanTasks = analytics.openHumanTasks
         this.loading = false
         this.deploymentItems[0].count = analytics.processDefinitionsCount
@@ -115,6 +146,21 @@ export default {
         this.deploymentItems[3].count = 'x'
       }
     },
+    normalizeTitle(data) {
+      data.title = data.title || this.$t('processes-dashboard.unnamedProcess')
+      if (data.title === 'others' && !data.id)
+        data.title = this.$t('processes-dashboard.others')
+    },
+    navigateToProcess(data) {
+      if (!data.item || !data.item?.id)
+        this.$router.push(data.link)
+      else {
+        this.$router.push('/seven/auth/process/' + data.item.id)
+      }
+    },
+    navigateToHumanTasks(data) {
+      this.$router.push(data.link)
+    }
   },
 }
 </script>

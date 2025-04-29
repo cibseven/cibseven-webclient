@@ -1,3 +1,21 @@
+<!--
+
+    Copyright CIB software GmbH and/or licensed to CIB software GmbH
+    under one or more contributor license agreements. See the NOTICE file
+    distributed with this work for additional information regarding copyright
+    ownership. CIB software licenses this file to you under the Apache License,
+    Version 2.0; you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+
+-->
 <template>
   <GlobalEvents v-if="!hideProcessSelection" @keydown.ctrl.alt.p.prevent="$refs.startProcess.show()"></GlobalEvents>
   <b-modal body-class="pt-0" size="lg" scrollable ref="startProcess" :hide-footer="!(startParamUrl && !hideProcessSelection)"
@@ -15,7 +33,7 @@
             <label class="btn border-end-0 border-light" style="cursor: default"><span class="mdi mdi-magnify"
               style="line-height: initial"></span></label>
           </div>
-          <input class="form-control border-start-0 border-light ps-0" type="text" :placeholder="$t('searches.search')" v-model="processesFilter" :disabled="isStartingProcess">
+          <input class="form-control border-start-0 border-light ps-0" type="text" :placeholder="$t('searches.search')" v-model.trim="processesFilter" :disabled="isStartingProcess">
         </div>
       </div>
       <b-list-group v-if="startableProcesses.length > 0" >
@@ -42,12 +60,14 @@ import { ProcessService } from '@/services.js'
 import RenderTemplate from '@/components/render-template/RenderTemplate.vue'
 import { BWaitingBox } from 'cib-common-components'
 import HighlightedText from '@/components/common-components/HighlightedText.vue'
+import { permissionsMixin } from '@/permissions.js'
 
 export default {
   components: { RenderTemplate, BWaitingBox, HighlightedText },
-  inject: ['currentLanguage'],
+  inject: ['loadProcesses', 'currentLanguage'],
   emits: ['process-started', 'display-popover'],
   props: { hideProcessSelection: Boolean },
+  mixins: [permissionsMixin],
   data: function() {
     return {
       isStartingProcess: false,
@@ -76,7 +96,8 @@ export default {
     this.$eventBus.on('openStartProcess', this.show)
   },
   methods: {
-    show: function() {
+    show: function() {      
+      this.loadProcesses(false)
       this.$refs.startProcess.show()
     },
     startProcess: function(process) {
@@ -87,7 +108,7 @@ export default {
         ProcessService.startForm(processLatest.id).then(url => {
           if (!url.key && !url.camundaFormRef) {
             ProcessService.startProcess(processLatest.key, processLatest.tenantId,
-			this.currentLanguage()).then(task => {
+            this.currentLanguage()).then(task => {
               this.$refs.startProcess.hide()
               task.processInstanceId = task.id
               this.$emit('process-started', task)
@@ -101,11 +122,10 @@ export default {
             } else {
               templateType = url.key.split('?template=')[1]
             }
-            this.startParamUrl = window.location.origin + '/webapp/#' +
-              '/' + templateType +
-              '/' + this.currentLanguage() +
-              '/' + processLatest.id +
-              '/' + this.$root.user.authToken
+
+            this.startParamUrl = '#/' + templateType + '/' + this.currentLanguage() + '/' +
+            processLatest.id + '/' + this.$root.user.authToken // + '/' + themeContext + '/' + translationContext
+            
             if (this.hideProcessSelection) this.$refs.startProcess.show()
             process.loading = false
             this.isStartingProcess = false

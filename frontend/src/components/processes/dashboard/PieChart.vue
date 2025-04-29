@@ -1,6 +1,24 @@
+<!--
+
+    Copyright CIB software GmbH and/or licensed to CIB software GmbH
+    under one or more contributor license agreements. See the NOTICE file
+    distributed with this work for additional information regarding copyright
+    ownership. CIB software licenses this file to you under the Apache License,
+    Version 2.0; you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+
+-->
 <template>
   <div>
-    <router-link v-if="title" :to="link" :title="tooltip" class="text-decoration-none">
+    <router-link v-if="title" :to="link" @click.stop :title="tooltip" class="text-decoration-none">
       <h5 class="link-dark text-center">{{ title }}</h5>
     </router-link>
     <div class="text-center waiting-box-container" v-if="loading">
@@ -11,7 +29,7 @@
     </div>
   </div>
 </template>
-  
+
 <script>
 import { BWaitingBox } from 'cib-common-components'
 import VueApexCharts from 'vue3-apexcharts'
@@ -24,7 +42,6 @@ export default {
     tooltip: String,
     link: String,
     items: Array,
-    type: String,
     loading: Boolean,
   },
   computed: {
@@ -47,12 +64,7 @@ export default {
           type: 'donut',
           events: {
             click: (event, chartContext, config) => {
-              const item = this.sortedItems[config.dataPointIndex]
-              if (!item || this.type === 'humanTasks') this.$router.push(this.link)
-              else {
-                let link = '/seven/auth/process/' + item.id
-                this.$router.push(link)
-              }
+              this.$emit('click', { item: this.sortedItems[config.dataPointIndex], link: this.link })
             },
             dataPointMouseEnter: (event) => {
               event.target.style.cursor = 'pointer'
@@ -63,7 +75,7 @@ export default {
         plotOptions: {
           pie: {
             donut: {
-              size: '65%',
+              size: '59%', // ratio is 1.7
               labels: {
                 show: true,
                 total: {
@@ -73,7 +85,7 @@ export default {
                 },
                 value: {
                   show: true,
-                  fontWeight: 600,
+                  fontWeight: 500,
                   fontSize: '36px',
                 },
               },

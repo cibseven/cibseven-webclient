@@ -30,7 +30,10 @@
 			},
 			"open-human-tasks": {
 				"title": "Tareas humanas abiertas",
-				"tooltip": "@:start.cockpit.humanTasks.tooltip"
+				"tooltip": "@:start.cockpit.humanTasks.tooltip",
+				"assigned": "Asignado a un usuario",
+				"unassigned": "Sin asignar",
+				"assignedGroups": "Asignado a uno o más grupos"
 			},
 			"processes": {
 				"title": "Definiciones de procesos",
@@ -48,7 +51,9 @@
 				"title": "@:start.cockpit.batches.title",
 				"tooltip": "@:start.cockpit.batches.tooltip"
 			}
-		}
+		},
+		"others": "Otros",
+		"unnamedProcess": "Proceso sin nombre"
 	},
 	"process": {
 		"instanceRunning": "Instancia en ejecución",
@@ -134,7 +139,14 @@
 		"variables": "Variables",
 		"usertasks": "Tareas de usuario",
 		"calledProcessInstances": "Llamadas instancias de proceso",
-		"onlyIncidents": "Sólo con incidencias",
+		"onlyIncidents": {
+			"title": "Solo con incidentes",
+			"tooltip": "Mostrar solo los procesos que tienen incidentes"
+		},
+		"onlyActive": {
+			"title": "Solo activos",
+			"tooltip": "Mostrar solo las definiciones de proceso no suspendidas"
+		},
 		"runningInstances": "Instancias",
 		"instances": "Instancias",
 		"statistics": "Estadísticas",		
@@ -148,7 +160,6 @@
 		"refreshVersions": "Actualizar el historial de versions",
 		"loadVersions": "Cargar todo el historial de versiones",
 		"externalProcessStarted": "Proceso iniciado con éxito",
-		"onlyActive": "Sólo activos",
 		"exportInstances": "Exportar instancias",
 		"days": "días",
 		"deleteProcessDefinition": {
@@ -530,6 +541,7 @@
 				"group": "Group",
 				"groupMembership": "Group Membership",
 				"authorization": "Authorization",
+				"system": "System",
 				"filter": "Filter",
 				"processDefinition": "Process Definition",
 				"task": "Task",

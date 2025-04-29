@@ -1,3 +1,21 @@
+<!--
+
+    Copyright CIB software GmbH and/or licensed to CIB software GmbH
+    under one or more contributor license agreements. See the NOTICE file
+    distributed with this work for additional information regarding copyright
+    ownership. CIB software licenses this file to you under the Apache License,
+    Version 2.0; you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+
+-->
 <template>
   <div class="d-flex flex-column bg-light" :style="{ height: 'calc(100% - 55px)' }">
     <div class="container pt-4">
@@ -7,19 +25,19 @@
             <template #prepend>
               <b-button :title="$t('searches.search')" aria-hidden="true" class="rounded-left" variant="secondary"><span class="mdi mdi-magnify" style="line-height: initial"></span></b-button>
             </template>
-            <b-form-input :title="$t('searches.search')" :placeholder="$t('searches.search')" v-model="filter"></b-form-input>
+            <b-form-input :title="$t('searches.search')" :placeholder="$t('searches.search')" v-model.trim="filter"></b-form-input>
           </b-input-group>
         </div>
         <div class="col-5">
           <div class="d-flex row">
             <div class="d-inline-block align-content-start" style="width: 210px">
-              <b-form-checkbox v-model="onlyIncidents" switch>
-                {{ $t('process.onlyIncidents') }}
+              <b-form-checkbox v-model="onlyIncidents" switch :title="$t('process.onlyIncidents.tooltip')">
+                {{ $t('process.onlyIncidents.title') }}
               </b-form-checkbox>
             </div>
             <div class="d-inline-block align-content-start" style="width: 210px">
-              <b-form-checkbox v-model="onlyActive" switch>
-                {{ $t('process.onlyActive') }}
+              <b-form-checkbox v-model="onlyActive" switch :title="$t('process.onlyActive.tooltip')">
+                {{ $t('process.onlyActive.title') }}
               </b-form-checkbox>
             </div>
           </div>
@@ -88,12 +106,26 @@ export default {
       selected: null,
       filter: '',
       focused: null,
-      onlyIncidents: false,
-      loadingInstances: true,
-      onlyActive: true
+      loadingInstances: true
     }
   },
   computed: {
+    onlyIncidents: {
+      get: function() {
+        return this.$route.query.onlyIncidents === 'true'
+      },
+      set: function(value) {
+        this.$router.push({ query: { ...this.$route.query, onlyIncidents: value } })
+      }
+    },
+    onlyActive: {
+      get: function() {
+        return this.$route.query.onlyActive === undefined || this.$route.query.onlyActive === 'true'
+      },
+      set: function(value) {
+        this.$router.push({ query: { ...this.$route.query, onlyActive: value } })
+      }
+    },
     ProcessDefinitionActions: function() {
       return this.$options.components && this.$options.components.ProcessDefinitionActions
         ? this.$options.components.ProcessDefinitionActions

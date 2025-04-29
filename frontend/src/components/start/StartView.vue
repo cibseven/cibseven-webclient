@@ -1,8 +1,26 @@
+<!--
+
+    Copyright CIB software GmbH and/or licensed to CIB software GmbH
+    under one or more contributor license agreements. See the NOTICE file
+    distributed with this work for additional information regarding copyright
+    ownership. CIB software licenses this file to you under the Apache License,
+    Version 2.0; you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+
+-->
 <template>
   <div :style="{ 'height': 'calc(100% - 55px)' }" class="d-flex flex-column bg-light overflow-auto">
-    <div class="h-100 container" :style="countStartItems === 4 ? 'max-width: 960px' : ''">
+    <div class="h-100 container" :style="tiles.length === 4 ? 'max-width: 960px' : ''">
       <div ref="startContainer" class="row justify-content-center">
-        <div v-if="applicationPermissions($root.config.permissions.tasklist, 'tasklist') && startableProcesses"
+        <div v-if="tiles.includes('startProcess')"
           class="col-4 mt-5 mx-2 mx-md-3 bg-white rounded" style="max-width: 330px; min-width: 250px; height:250px">
           <div class="row border rounded shadow-sm h-100">
             <div class="align-top" style="flex:auto">
@@ -25,7 +43,7 @@
             </div>
           </div>
         </div>
-        <div v-if="applicationPermissions($root.config.permissions.tasklist, 'tasklist')"
+        <div v-if="tiles.includes('tasklist')"
           class="col-4 mt-5 mx-2 mx-md-3 bg-white rounded" style="max-width: 330px; min-width: 250px; height:250px">
           <div class="row border rounded shadow-sm h-100">
             <div class="align-top" style="flex:auto">
@@ -48,7 +66,7 @@
             </div>
           </div>
         </div>
-        <div v-if="applicationPermissions($root.config.permissions.cockpit, 'cockpit')"
+        <div v-if="tiles.includes('cockpit')"
           class="col-4 mt-5 mx-2 mx-md-3 bg-white rounded" style="max-width: 330px; min-width: 250px; height:250px" tabindex="0"
           @focus="showCockpitOptions = true" @blur="showCockpitOptions = true" @click="showCockpitOptions = true" @mouseover="showCockpitOptions = true" @mouseleave="showCockpitOptions = false">
           <div class="row border rounded shadow-sm h-100">
@@ -88,7 +106,7 @@
             </b-overlay>
           </div>
         </div>
-        <div v-if="hasAdminManagementPermissions($root.config.permissions)"
+        <div v-if="tiles.includes('admin')"
         class="col-4 mt-5 mx-2 mx-md-3 bg-white rounded" style="max-width: 330px; min-width: 250px; height:250px" tabindex="0"
         @focus="showAdminOptions = true" @blur="showAdminOptions = true" @click="showAdminOptions = true" @mouseover="showAdminOptions = true" @mouseleave="showAdminOptions = false">
           <div class="row border rounded shadow-sm h-100">
@@ -125,7 +143,7 @@
                   <b-list-group-item v-if="adminManagementPermissions($root.config.permissions.authorizationsManagement, 'authorization')"
                     to="/seven/auth/admin/authorizations" class="py-1 px-3 border-start-0 border-top-0 border-end-0 h6 fw-normal mb-0" :title="$t('admin.authorizations.title')">
                     <span class="mdi mdi-18px mdi-account-key-outline pe-1"></span>{{ $t('admin.authorizations.title') }}</b-list-group-item>
-                  <b-list-group-item v-if="adminManagementPermissions($root.config.permissions.authorizationsManagement, 'authorization')"
+                  <b-list-group-item v-if="adminManagementPermissions($root.config.permissions.systemManagement, 'system')"
                     to="/seven/auth/admin/system" class="py-1 px-3 border-0 h6 fw-normal mb-0" :title="$t('admin.system.tooltip')">
                     <span class="mdi mdi-18px mdi-cog-outline pe-1"></span>{{ $t('admin.system.title') }}</b-list-group-item>
                 </b-list-group>
@@ -145,7 +163,6 @@
 
 <script>
 import { permissionsMixin } from '@/permissions.js'
-import { nextTick } from 'vue'
 
 export default {
   name: "StartView",
@@ -154,16 +171,28 @@ export default {
   data: function() {
     return {
       showAdminOptions: false,
-      showCockpitOptions: false,
-      items: []
+      showCockpitOptions: false
     }
-  },
+  },  
   computed: {
+    tiles() {
+      const tiles = []
+      if (this.applicationPermissions(this.$root.config.permissions.tasklist, 'tasklist') && this.startableProcesses) {
+        tiles.push('startProcess')
+      }
+      if (this.applicationPermissions(this.$root.config.permissions.tasklist, 'tasklist')) {
+        tiles.push('tasklist')
+      }
+      if (this.applicationPermissions(this.$root.config.permissions.cockpit, 'cockpit')) {
+        tiles.push('cockpit')
+      }
+      if (this.hasAdminManagementPermissions(this.$root.config.permissions)) {
+        tiles.push('admin')
+      }
+      return tiles
+    },
     startableProcesses: function() {
       return this.processesFiltered.find(p => { return p.startableInTasklist })
-    },
-    countStartItems: function () {
-      return this.items.length
     },
     processesFiltered: function() {
       if (!this.$store.state.process.list) return []
@@ -180,11 +209,6 @@ export default {
         return comp
       })
     }
-  },
-  mounted() {
-    nextTick(() => {
-      this.items = Array.from(this.$refs.startContainer.children).filter(el => el.offsetParent !== null)
-    })
   },
   methods: {
     startProcess: function () {

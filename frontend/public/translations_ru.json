@@ -29,7 +29,10 @@
 			},
 			"open-human-tasks": {
 				"title": "Открытые задачи пользователей",
-				"tooltip": "@:start.cockpit.humanTasks.tooltip"
+				"tooltip": "@:start.cockpit.humanTasks.tooltip",
+				"assigned": "Назначено пользователю",
+				"unassigned": "Не назначено",
+				"assignedGroups": "Назначено одной или нескольким группам"
 			},
 			"processes": {
 				"title": "Определения процессов",
@@ -47,7 +50,9 @@
 				"title": "@:start.cockpit.batches.title",
 				"tooltip": "@:start.cockpit.batches.tooltip"
 			}
-		}
+		},
+		"others": "Другие",
+		"unnamedProcess": "Безымянный процесс"
 	},
 	"process" : {
 		"instanceRunning": "Запущеный экземпляр",
@@ -133,7 +138,14 @@
 		"variables": "Переменные",
 		"usertasks": "Пользовательские задачи",
 		"calledProcessInstances": "называемые экземпляры процессов",
-		"onlyIncidents": "Только с инцидентами",
+		"onlyIncidents": {
+			"title": "Только с инцидентами",
+			"tooltip": "Показать только процессы с инцидентами"
+		},
+		"onlyActive": {
+			"title": "Только активные",
+			"tooltip": "Показать только процессы с не приостановленными определениями процессов"
+		},
 		"runningInstances": "Экземпляры",
 		"instances": "Экземпляры процессов",
 		"statistics": "Статистика",
@@ -147,7 +159,6 @@
 		"refreshVersions": "Обновить версии истории",
 		"loadVersions": "Загрузить все версии истории",
 		"externalProcessStarted": "Процесс успешно запущен",
-		"onlyActive": "Только активные",
 		"exportInstances": "Экспорт экземпляров",
 		"days": "дней",
 		"deleteProcessDefinition": {
@@ -529,6 +540,7 @@
 				"group": "Group",
 				"groupMembership": "Group Membership",
 				"authorization": "Authorization",
+				"system": "System",
 				"filter": "Filter",
 				"processDefinition": "Process Definition",
 				"task": "Task",
