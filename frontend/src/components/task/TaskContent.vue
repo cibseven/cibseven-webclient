@@ -1,3 +1,21 @@
+<!--
+
+    Copyright CIB software GmbH and/or licensed to CIB software GmbH
+    under one or more contributor license agreements. See the NOTICE file
+    distributed with this work for additional information regarding copyright
+    ownership. CIB software licenses this file to you under the Apache License,
+    Version 2.0; you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+
+-->
 <template>
   <div class="h-100 d-flex flex-column">
     <div class="visually-hidden" ref="ariaLiveText" aria-live="polite"></div>
@@ -55,7 +73,7 @@
         </div>
       </div>
     </div>
-    <b-popover v-if="$root.config.layout.showPopoverHowToAssign" :target="function() { return $refs.titleTask }" :show="displayPopover && !isMobile()" placement="bottom" triggers="manual" max-width="300px">
+    <b-popover ref="howToAssignPopover" v-if="$root.config.layout.showPopoverHowToAssign" :target="function() { return $refs.titleTask }" :show="displayPopover && !isMobile()" placement="bottom" triggers="manual" max-width="300px">
       <b>{{ $t('task.assignPopoverTitle') }}</b>
       <p>{{ $t('task.assignPopoverContent') }}</p>
       <p>{{ $t('task.assignPopoverContent2') }}</p>
@@ -82,9 +100,14 @@ export default {
   mixins: [usersMixin],
   inject: ['isMobile'],
   props: { task: Object },
+  setup: function() {
+    const POPOVER_DELAY = 1200 // 1.2 seconds
+    return { POPOVER_DELAY }
+  },
   data: function() {
     return {
       displayPopover: false,
+      timer: null,
       assignee: null,
       loadingUsers: false,
       candidateUsers: []
@@ -92,8 +115,7 @@ export default {
   },
   watch: {
     'task.assignee': function(val) {
-      this.displayPopover = localStorage.getItem('showPopoverHowToAssign') === 'false' ? false :
-        val === null || this.task.assignee !== this.$root.user.id
+      this.showPopoverWithDelay(val) // when assignee is changed
     },
     assignee: function() {
       if (this.assignee != null) this.checkAssignee()
@@ -103,6 +125,7 @@ export default {
       this.$store.commit('setSearchUsers', [])
       this.loadIdentityLinks(taskId)
       this.$refs.titleTask.focus()
+      this.showPopoverWithDelay(this.task.assignee) // when opened task is changed
     }
   },
   computed: {
@@ -119,12 +142,12 @@ export default {
   mounted: function() {
     this.$store.commit('setCandidateUsers', [])
     this.$store.commit('setSearchUsers', [])
-    if (this.task.assignee === null || this.task.assignee !== this.$root.user.id) {
-      setTimeout(() => {
-        this.displayPopover = localStorage.getItem('showPopoverHowToAssign') === 'false' ? false : true
-      }, 1200)
-    }
     this.loadIdentityLinks(this.task.id)
+    this.showPopoverWithDelay(this.task.assignee) // when first task is opened
+  },
+  beforeUnmount: function() {
+    this.resetTimer() // stop timeout for showPopoverWithDelay()
+    this.stopListeningTouchEvents()
   },
   methods: {
     loadIdentityLinks: function(taskId) {
@@ -150,6 +173,39 @@ export default {
         })
       })
     },
+    showPopoverWithDelay: function(assignee) {
+      this.resetTimer()
+      this.timer = setTimeout(() => {
+        if (assignee === null || assignee !== this.$root.user.id) {
+          this.displayPopover = localStorage.getItem('showPopoverHowToAssign') === 'false' ? false : true
+          // To hide popover when clicking outside of it
+          if (this.displayPopover) {
+            this.startListeningTouchEvents()
+          }
+        }
+      }, this.POPOVER_DELAY)
+    },
+    startListeningTouchEvents: function() {
+      document.addEventListener("click", this.handleTouchEvent)
+      document.addEventListener("focusin", this.handleTouchEvent)
+    },
+    stopListeningTouchEvents: function() {
+      document.removeEventListener("click", this.handleTouchEvent)
+      document.removeEventListener("focusin", this.handleTouchEvent)
+    },
+    handleTouchEvent: function(event) {
+      // Hide popover when clicking outside of it
+      if (this.$refs.howToAssignPopover && !this.$refs.howToAssignPopover.$el.contains(event.target)) {
+        this.displayPopover = false
+        this.stopListeningTouchEvents()
+      }
+    },
+    resetTimer: function() {
+      if (this.timer) {
+        clearTimeout(this.timer)
+        this.timer = null
+      }
+    },
     disablePopover: function() {
       localStorage.setItem('showPopoverHowToAssign', false)
       this.displayPopover = false
@@ -157,6 +213,7 @@ export default {
     update: function() {
       this.$refs.ariaLiveText.textContent = ''
       TaskService.setAssignee(this.task.id, this.assignee).then(() => {
+        // eslint-disable-next-line vue/no-mutating-props
         this.task.assignee = this.assignee
         this.assignee = null
         this.$emit('update-assignee', this.task.assignee)

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="WARN" monitorInterval="30">
 	<Properties>
-		<Property name="defaultFormat">%5p %d{dd.MM.yy HH:mm:ss} [%t] [%c] [seven-webclient] %m%n
+		<Property name="defaultFormat">%5p %d{dd.MM.yy HH:mm:ss} [%t] [%c] [cibseven-webclient] %m%n
 		</Property>
 	</Properties>
 	<Appenders>

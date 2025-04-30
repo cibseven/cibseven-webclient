@@ -14,6 +14,46 @@
 		"login": "Login",
 		"forgotten": "Password forgotten?"
 	},
+	"processes-dashboard": {
+		"headerActive": "Operations Dashboard",
+		"headerDeployed": "Deployed",
+		"items": {
+			"running-instances": {
+				"title": "Running Process Instances",
+				"tooltip": "Browse all active process instances"
+			},
+			"open-incidents": {
+				"title": "Open Incidents",
+				"tooltip": "Review all currently open incidents",
+				"none": "No incidents!"
+			},
+			"open-human-tasks": {
+				"title": "Open Human Tasks",
+				"tooltip": "@:start.cockpit.humanTasks.tooltip",
+				"assigned": "Assigned to a user",
+				"unassigned": "Unassigned",
+				"assignedGroups": "Assigned to 1 or more groups"
+			},
+			"processes": {
+				"title": "Process Definitions",
+				"tooltip": "@:start.cockpit.processes.tooltip"
+			},
+			"decisions": {
+				"title": "Decision Definitions",
+				"tooltip": "@:start.cockpit.decisions.tooltip"
+			},
+			"deployments": {
+				"title": "@:start.cockpit.deployments.title",
+				"tooltip": "@:start.cockpit.deployments.tooltip"
+			},
+			"batches": {
+				"title": "@:start.cockpit.batches.title",
+				"tooltip": "@:start.cockpit.batches.tooltip"
+			}
+		},
+		"others": "Others",
+		"unnamedProcess": "Unnamed Process"
+	},
 	"process": {
 		"instanceRunning": "Instance running",
 		"instanceIncidents": "Instance with incidents",
@@ -38,7 +78,7 @@
 		"start": "Start",
 		"showProcess": "View process",
 		"showInstance": "View instance",
-		"showCockpit": "Cockpit",
+		"showCockpit": "Open in the old Cockpit",
 		"downloadBpmn": "Download BPMN file",
 		"openModeler": "Open BPMN file in Modeler",
 		"showManagement": "Management",
@@ -55,6 +95,7 @@
 		"favorite": "Favorite",
 		"actions": "Actions",
 		"status": "Status",
+		"tenant": "Tenant",
 		"details": {
 			"titleProcessActions": "Actions on the process definition",
 			"titleInstancesActions": "Actions on the process",
@@ -76,7 +117,8 @@
 			"historyVersions": "History versions",
 			"variable": "Process variables",
 			"copyValue": "Copy value",
-			"historyTimeToLive": "History time to live"
+			"historyTimeToLive": "History time to live",
+			"tenantId": "Tenant ID"
 		},
 		"sections": {
 			"all": "All",
@@ -96,7 +138,14 @@
 		"variables": "Variables",
 		"usertasks": "User tasks",
 		"calledProcessInstances": "Called process instances",
-		"onlyIncidents": "Only with incidents",
+		"onlyIncidents": {
+			"title": "Only with Incidents",
+			"tooltip": "Show only processes that have incidents"
+		},
+		"onlyActive": {
+			"title": "Only Active",
+			"tooltip": "Show only processes with non-suspended process definitions"
+		},
 		"runningInstances": "Instances",		
 		"instances": "Instances",
 		"statistics": "Statistics",
@@ -110,7 +159,6 @@
 		"refreshVersions": "Refresh history versions",
 		"loadVersions": "Load all history versions",
 		"externalProcessStarted": "Process successfully started",
-		"onlyActive": "Only actives",
 		"exportInstances": "Export instances",
 		"days": "days",
 		"deleteProcessDefinition": {
@@ -245,7 +293,7 @@
 		    "manageUsersGroups": "Manage users/groups",
 			"manageAssignee": "Manage assigned user",
 		    "groupId": "Group ID",
-		    "userId": "User ID",
+		    "userId": "@:admin.users.id",
 		    "groups": "Groups",
 		    "users": "Users",
 		    "assignee": "Assignee",
@@ -324,7 +372,9 @@
 		},
 		"actions": {
 			"title": "Task actions",
-			"submit": "Complete"
+			"submit": "Complete",
+			"save": "Save",
+			"saveError": "An error occurred while saving the task: {0}"
 		},
 		"emptyTask": "Empty task",
 		"showMore": "Show more...",
@@ -337,7 +387,47 @@
 	},
 	"batches": {
 		"title": "Batches",
-		"tooltip": "Batch operations"
+		"tooltip": "Batch operations",
+		"inProgressBatches": "In progress batches",
+		"historicBatches": "Ended batches",
+		"runtimeDetails": "In progress batch details",
+		"historyDetails": "Completed batch details",
+		"id": "ID",
+		"type": "Type",
+		"startTime": "Started",
+		"endTime": "Ended",
+		"user": "User",
+		"failedJobs": "Failed jobs",
+		"progress": "Progress",
+		"loading": "Loading...",
+		"property": "Property",
+		"value": "Value",
+		"suspend": "Suspend batch",
+		"activate": "Activate batch",
+		"remove": "Remove batch",
+		"confirmRemove": "Do you really want to delete this batch and all related jobs and job definitions?",
+		"exception": "Exception",
+		"actions": "Actions",
+		"retryJob": "Retry job",
+		"deleteJob": "Delete job",
+		"seeFullLog": "See full log",
+		"retryFailedJobs": "Retry failed jobs",
+		"jobLog": {
+			"modalTitle": "Job log",
+			"state": "State",
+			"message": "Message",
+			"timestamp": "Timestamp",
+			"jobId": "Job ID",
+			"type": "Type",
+			"configuration": "Configuration",
+			"retries": "Retries",
+			"hostname": "Hostname",
+			"priority": "Priority",
+			"created": "Created",
+			"failed": "Failed",
+			"successful": "Successful",
+			"unknown": "Unknown"
+		}
 	},
 	"admin": {
 		"loading": "Loading...",
@@ -345,8 +435,7 @@
 		"exportCsv": "Export all",
 		"users": {
 			"title": "Users",
-			"id": "ID",
-			"userId": "User ID",
+			"id": "User ID",
 			"firstName": "First name",
 			"lastName": "Last name",
 			"email": "Email",
@@ -377,8 +466,7 @@
 			"actions": "Actions",
 			"group": {
 				"title": "{0}'s Groups",
-				"add": "Add to a group",
-				"noResults": "No results"
+				"add": "Add to a group"
 			},
 			"preferences": {
 				"title": "Preferences",
@@ -412,7 +500,33 @@
 		},
 		"tenants": {
 			"title": "Tenants",
-			"tooltip": "Tenants management"
+			"tooltip": "Tenants management",
+			"associationTitle": "{0}'s Tenants",
+			"fullId": "Tenant ID",
+			"fullName": "Tenant Name",
+			"actions": "Actions",
+			"unassignUserMessage": "User {0} removed from tenant",
+			"unassignGroupMessage": "Group {0} removed from tenant",
+			"addTo": "Add to a tenant",
+			"id": "ID",
+			"name": "Name",
+			"add": "Add tenant",
+			"create": "Create new tenant",
+			"cancel": "Cancel",
+			"tenantCreatedMessage": "Tenant {0} created",
+			"confirmDelete": "Do you really want to delete the tenant with the following parameters?",
+			"tenantDeletedMessage": "Tenant {0} deleted",
+			"deleteTenant": "Delete tenant",
+			"editTenant": "Edit tenant",
+			"information": "Information",
+			"users": "Users",
+			"groups": "Groups",
+			"editMessage": "Edit tenant ({0})",
+			"update": "Update tenant",
+			"updateTenantMessage": "Tenant {0} has been updated",
+			"deleteTenantMessage": "Tenant {0} has been removed",
+			"tenantUsers": "Tenant users",
+			"tenantGroups": "Tenant groups"
 		},
 		"authorizations": {
 			"title": "Authorizations",
@@ -434,6 +548,7 @@
 				"group": "Group",
 				"groupMembership": "Group Membership",
 				"authorization": "Authorization",
+				"system": "System",
 				"filter": "Filter",
 				"processDefinition": "Process Definition",
 				"task": "Task",
@@ -474,7 +589,16 @@
 				"diagnosticData": "Diagnostics Data"
 			},
 			"execution-metrics": {
-				"title": "Execution Metrics"
+				"title": "Execution Metrics",
+				"metricsHelp": "Recorded number of Process Instances and Decision Instances processed by the engine and Task Users that were assigned to a user task.",
+				"startDateContract": "Contract start date",
+				"process-instances": "Process instances",
+				"decision-instances": "Decision instances",
+				"task-users": "Task users",
+				"usageLast12MonthsByMonth": "Usage last 12 months by month",
+				"annualUsageBySubscriptionTerm": "Annual usage metrics by subscription term",
+				"fromUpToToday": "{from} up to today",
+				"fromTo": "{from} to {to}"
 			}
 		}
 	},
@@ -728,22 +852,47 @@
 	},
 	"start": {
 		"close": "Close",
-		"taskList": "Tasks",
-		"startProcesses": "@:process.startProcess",
-		"cockpit": "Cockpit",
-		"emptyStart": "Currently you do not have permission to perform any task here. Please contact the CIB seven administrator to get permissions.",
-		"groupOperations": "Operations",
-		"groupAdministration": "Administration",
-		"admin": "Process Management",
-		"userAdmin": "User administration",
-		"modeler": "Process modeler",
-		"easyForm": "Easy Form",
-		"adminPanel": "Users Management",
-		"properties": "Properties",
-		"resources": "Resources",
-		"adminProcesses": "Processes",
-		"adminDecisions": "Decisions",
-		"adminHumanTasks": "Human Tasks"
+		"startProcess": {
+			"title": "@:process.startProcess",
+			"tooltip": "Open Start Process"
+		},
+		"taskList": {
+			"title": "Tasklist",
+			"tooltip": "Open Tasklist"
+		},
+		"cockpit": {
+			"title": "Cockpit",
+			"tooltip": "Open Cockpit",
+			"processes": {
+				"title": "Processes",
+				"tooltip": "Explore available process definitions"
+			},
+			"decisions": {
+				"title": "Decisions",
+				"tooltip": "Explore available decision definitions"
+			},
+			"humanTasks": {
+				"title": "Human Tasks",
+				"tooltip": "View all pending human tasks"
+			},
+			"deployments": {
+				"title": "Deployments",
+				"tooltip": "View all deployed process resources"
+			},
+			"batches": {
+				"title": "Batches",
+				"tooltip": "Manage and view batch operations"
+			}
+		},
+		"admin": {
+			"title": "Admin",
+			"tooltip": "Open Admin"
+		},
+		"oldCockpit": {
+			"title": "Old Cockpit",
+			"tooltip": "Open old Cockpit"
+		},
+		"emptyStart": "Currently you do not have permission to perform any task here. Please contact the CIB seven administrator to get permissions."
 	},
 	"errors": {
 		"invalid": "Please enter some valid information",
@@ -859,7 +1008,9 @@
 		"selectAll": "Select all",
 		"deleteDeployments": "Delete deployments",
 		"showModel": "Show model",
-		"deploymentsDeleted": "{0} out of {1} deployments have been successfully deleted"
+		"deploymentsDeleted": "{0} out of {1} deployments have been successfully deleted",
+		"tenant": "Tenant",
+		"errorLoading": "Unable to load resource for the selected deployment"
 	},
 	"cib-table2": {
 		"filter": "Filter"
@@ -931,7 +1082,7 @@
 			"emailDescription": "Email associated with the account you want to recover",
 			"cancel": "Cancel",
 			"sendEmail": "Send recovery email",
-			"id": "User ID",
+			"id": "@:admin.users.id",
 			"changePassword": "Change password",
 			"emailSent": "The e-mail with the link to recover your password has been sent."
 		},

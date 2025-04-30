@@ -1,12 +1,26 @@
+/*
+ * Copyright CIB software GmbH and/or licensed to CIB software GmbH
+ * under one or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information regarding copyright
+ * ownership. CIB software licenses this file to you under the Apache License,
+ * Version 2.0; you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package org.cibseven.webapp.providers;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.cibseven.webapp.rest.model.Decision;
 import org.cibseven.webapp.Data;
 import org.cibseven.webapp.NamedByteArrayDataSource;
 import org.cibseven.webapp.auth.CIBUser;
@@ -20,40 +34,43 @@ import org.cibseven.webapp.rest.model.ActivityInstance;
 import org.cibseven.webapp.rest.model.ActivityInstanceHistory;
 import org.cibseven.webapp.rest.model.Authorization;
 import org.cibseven.webapp.rest.model.Authorizations;
+import org.cibseven.webapp.rest.model.Batch;
 import org.cibseven.webapp.rest.model.CandidateGroupTaskCount;
+import org.cibseven.webapp.rest.model.Decision;
 import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.DeploymentResource;
 import org.cibseven.webapp.rest.model.EventSubscription;
 import org.cibseven.webapp.rest.model.Filter;
+import org.cibseven.webapp.rest.model.HistoryBatch;
+import org.cibseven.webapp.rest.model.HistoryProcessInstance;
 import org.cibseven.webapp.rest.model.IdentityLink;
 import org.cibseven.webapp.rest.model.Incident;
-import org.cibseven.webapp.rest.model.JobDefinition;
 import org.cibseven.webapp.rest.model.Job;
+import org.cibseven.webapp.rest.model.JobDefinition;
 import org.cibseven.webapp.rest.model.Message;
 import org.cibseven.webapp.rest.model.Metric;
 import org.cibseven.webapp.rest.model.NewUser;
 import org.cibseven.webapp.rest.model.Process;
 import org.cibseven.webapp.rest.model.ProcessDiagram;
 import org.cibseven.webapp.rest.model.ProcessInstance;
-import org.cibseven.webapp.rest.model.HistoryProcessInstance;
 import org.cibseven.webapp.rest.model.ProcessStart;
 import org.cibseven.webapp.rest.model.ProcessStatistics;
 import org.cibseven.webapp.rest.model.SevenUser;
 import org.cibseven.webapp.rest.model.SevenVerifyUser;
 import org.cibseven.webapp.rest.model.StartForm;
 import org.cibseven.webapp.rest.model.Task;
-import org.cibseven.webapp.rest.model.TaskCount;
 import org.cibseven.webapp.rest.model.TaskFiltering;
 import org.cibseven.webapp.rest.model.TaskHistory;
+import org.cibseven.webapp.rest.model.Tenant;
 import org.cibseven.webapp.rest.model.User;
 import org.cibseven.webapp.rest.model.UserGroup;
 import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -77,6 +94,7 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
     @Autowired private IJobProvider jobProvider;
     @Autowired private IBatchProvider batchProvider;
     @Autowired private ISystemProvider systemProvider;
+    @Autowired private ITenantProvider tenantProvider;
     
     
     /*
@@ -95,8 +113,8 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 
 	@Override
-	public TaskCount findTasksCount(Optional<String> name, Optional<String> nameLike, Optional<String> taskDefinitionKey, Optional<String> taskDefinitionKeyIn, CIBUser user) {
-		return taskProvider.findTasksCount(name, nameLike, taskDefinitionKey, taskDefinitionKeyIn, user);
+	public Integer findTasksCount(@RequestBody Map<String, Object> filters, CIBUser user) {
+		return taskProvider.findTasksCount(filters, user);
 	}
 	
 	@Override
@@ -196,8 +214,8 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 	
 	@Override
-	public Integer findHistoryTaksCount(Map<String, Object> filters, CIBUser user) {
-		return taskProvider.findHistoryTaksCount(filters, user);
+	public Integer findHistoryTasksCount(Map<String, Object> filters, CIBUser user) {
+		return taskProvider.findHistoryTasksCount(filters, user);
 	}
 
 	@Override
@@ -231,13 +249,13 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}	
 	
 	@Override
-	public Process findProcessByDefinitionKey(String key, CIBUser user) {
-		return processProvider.findProcessByDefinitionKey(key, user);
+	public Process findProcessByDefinitionKey(String key, String tenantId, CIBUser user) {
+		return processProvider.findProcessByDefinitionKey(key, tenantId, user);
 	}
 	
 	@Override
-	public Collection<Process> findProcessVersionsByDefinitionKey(String key, Optional<Boolean> lazyLoad, CIBUser user) {
-		return processProvider.findProcessVersionsByDefinitionKey(key, lazyLoad, user);
+	public Collection<Process> findProcessVersionsByDefinitionKey(String key, String tenantId, Optional<Boolean> lazyLoad, CIBUser user) {
+		return processProvider.findProcessVersionsByDefinitionKey(key, tenantId, lazyLoad, user);
 	}
 
 	@Override
@@ -281,19 +299,24 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 	
 	@Override
-	public ProcessStart startProcess(String processDefinitionKey, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
-		return processProvider.startProcess(processDefinitionKey, data, user);
+	public ProcessStart startProcess(String processDefinitionKey, String tenantId, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
+		return processProvider.startProcess(processDefinitionKey, tenantId, data, user);
 	}
 	
 	@Override
-	public ProcessStart submitForm(String processDefinitionKey, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
-		return processProvider.submitForm(processDefinitionKey, data, user);
+	public ProcessStart submitForm(String processDefinitionKey, String tenantId, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
+		return processProvider.submitForm(processDefinitionKey, tenantId, data, user);
 	}
 	
 	@Override
 	public Collection<ProcessStatistics> findProcessStatistics(String processId, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
 		return processProvider.findProcessStatistics(processId, user);
 	}
+
+  @Override
+  public Collection<ProcessStatistics> getProcessStatistics(CIBUser user) {
+    return processProvider.getProcessStatistics(user);
+  }
 	
 	@Override
 	public Collection<HistoryProcessInstance> findProcessesInstancesHistory(Map<String, Object> filters,
@@ -650,6 +673,11 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 	
 	@Override
+	public Collection<Incident> fetchIncidentsByInstanceAndActivityId(String processDefinitionKey, String activityId, CIBUser user) {
+		return incidentProvider.fetchIncidentsByInstanceAndActivityId(processDefinitionKey, activityId, user);
+	}
+	
+	@Override
 	public void setIncidentAnnotation(String incidentId, Map<String, Object> data, CIBUser user) {
 		incidentProvider.setIncidentAnnotation(incidentId, data, user);
 	}
@@ -766,12 +794,6 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 		return variableProvider.fetchProcessFormVariablesById(id, user);
 	}
 	
-	@Override
-	protected HttpHeaders addAuthHeader(HttpHeaders headers, CIBUser user) {
-		if (user != null) headers.add("Authorization", user.getAuthToken());
-		return headers;
-	}
-
 	@Override
 	public void putLocalExecutionVariable(String executionId, String varName, Map<String, Object> data, CIBUser user) {
 		variableProvider.putLocalExecutionVariable(executionId, varName, data, user);
@@ -933,6 +955,11 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	public void overrideJobDefinitionPriority(String jobDefinitionId, String params, CIBUser user) {
 		jobDefinitionProvider.overrideJobDefinitionPriority(jobDefinitionId, params, user);
 	}
+
+	@Override
+	public void retryJobDefinitionById(String id, Map<String, Object> params, CIBUser user) {
+		jobDefinitionProvider.retryJobDefinitionById(id, params, user);
+	}
 	
 	@Override
 	public Collection<Job> getJobs(Map<String, Object> params, CIBUser user) {
@@ -945,8 +972,23 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 
 	@Override
+	public void deleteJob(String id, CIBUser user) {
+		jobProvider.deleteJob(id, user);
+	}
+
+	@Override
 	public JobDefinition findJobDefinition(String id, CIBUser user) {
 		return jobDefinitionProvider.findJobDefinition(id, user);
+	}	
+
+	@Override
+	public Collection<Object> getHistoryJobLog(Map<String, Object> params, CIBUser user) {
+		return jobProvider.getHistoryJobLog(params, user);
+	}
+	
+	@Override
+	public String getHistoryJobLogStacktrace(String id, CIBUser user) {
+		return jobProvider.getHistoryJobLogStacktrace(id, user);
 	}
 
 	/*
@@ -960,8 +1002,28 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	*/
 	
 	@Override
-	public Object getHistoricBatches(Map<String, Object> queryParams) {
-		return batchProvider.getHistoricBatches(queryParams);
+	public Collection<Batch> getBatches(Map<String, Object> params, CIBUser user) {
+		return batchProvider.getBatches(params, user);
+    }
+
+	@Override
+	public Collection<Batch> getBatchStatistics(Map<String, Object> params, CIBUser user) {
+		return batchProvider.getBatchStatistics(params, user);
+	}
+
+	@Override
+	public void deleteBatch(String id, Map<String, Object> params, CIBUser user) {
+		batchProvider.deleteBatch(id, params, user);		
+	}
+	
+	@Override
+	public void setBatchSuspensionState(String id, Map<String, Object> params, CIBUser user) {
+		batchProvider.setBatchSuspensionState(id, params, user);		
+	}
+	
+	@Override
+	public Collection<HistoryBatch> getHistoricBatches(Map<String, Object> params, CIBUser user) {
+		return batchProvider.getHistoricBatches(params, user);
     }
 	
 	@Override
@@ -970,13 +1032,13 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
     }
     
 	@Override
-	public Object getHistoricBatchById(String id) {
-		return batchProvider.getHistoricBatchById(id);
+	public HistoryBatch getHistoricBatchById(String id, CIBUser user) {
+		return batchProvider.getHistoricBatchById(id, user);
     }
 	
 	@Override
-	public void deleteHistoricBatch(String id) {
-		batchProvider.deleteHistoricBatch(id);
+	public void deleteHistoricBatch(String id, CIBUser user) {
+		batchProvider.deleteHistoricBatch(id, user);
     }
 	
 	@Override
@@ -1013,5 +1075,60 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	public Collection<Metric> getMetrics(Map<String, Object> queryParams, CIBUser user) {
 		return systemProvider.getMetrics(queryParams, user);
 	}
+
+	/*
+		  
+	████████ ███████ ███    ██  █████  ███    ██ ████████     ██████  ██████   ██████  ██    ██ ██ ██████  ███████ ██████  
+	   ██    ██      ████   ██ ██   ██ ████   ██    ██        ██   ██ ██   ██ ██    ██ ██    ██ ██ ██   ██ ██      ██   ██ 
+	   ██    █████   ██ ██  ██ ███████ ██ ██  ██    ██        ██████  ██████  ██    ██ ██    ██ ██ ██   ██ █████   ██████  
+	   ██    ██      ██  ██ ██ ██   ██ ██  ██ ██    ██        ██      ██   ██ ██    ██  ██  ██  ██ ██   ██ ██      ██   ██ 
+	   ██    ███████ ██   ████ ██   ██ ██   ████    ██        ██      ██   ██  ██████    ████   ██ ██████  ███████ ██   ██ 
+                                                                                                                       
+	*/
 	
+	@Override
+	public Collection<Tenant> fetchTenants(Map<String, Object> queryParams, CIBUser user) {
+		return tenantProvider.fetchTenants(queryParams, user);
+	}
+
+	@Override
+	public Tenant fetchTenant(String tenantId, CIBUser user) {
+		return tenantProvider.fetchTenant(tenantId, user);
+	}
+
+	@Override
+	public void createTenant(Tenant tenant, CIBUser user) {
+		tenantProvider.createTenant(tenant, user);
+	}
+
+	@Override
+	public void udpateTenant(Tenant tenant, CIBUser user) {
+		tenantProvider.udpateTenant(tenant, user);
+	}
+
+	@Override
+	public void deleteTenant(String tenantId, CIBUser user) {
+		tenantProvider.deleteTenant(tenantId, user);
+	}
+
+	@Override
+	public void addMemberToTenant(String tenantId, String userId, CIBUser user) {
+		tenantProvider.addMemberToTenant(tenantId, userId, user);
+	}
+
+	@Override
+	public void deleteMemberFromTenant(String tenantId, String userId, CIBUser user) {
+		tenantProvider.deleteMemberFromTenant(tenantId, userId, user);
+	}
+
+	@Override
+	public void addGroupToTenant(String tenantId, String groupId, CIBUser user) {
+		tenantProvider.addGroupToTenant(tenantId, groupId, user);
+	}
+
+	@Override
+	public void deleteGroupFromTenant(String tenantId, String groupId, CIBUser user) {
+		tenantProvider.deleteGroupFromTenant(tenantId, groupId, user);
+	}
+
 }

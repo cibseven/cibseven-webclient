@@ -14,6 +14,46 @@
 		"login": "Anmelden",
 		"forgotten": "Passwort zurücksetzen?"
 	},
+	"processes-dashboard": {
+		"headerActive": "Operatives Dashboard",
+		"headerDeployed": "Deployed",
+		"items": {
+			"running-instances": {
+				"title": "Laufende Prozessinstanzen",
+				"tooltip": "Alle aktiven Prozessinstanzen anzeigen"
+			},
+			"open-incidents": {
+				"title": "Offene Vorfälle",
+				"tooltip": "Alle derzeit offenen Vorfälle überprüfen",
+				"none": "Keine Vorfälle!"
+			},
+			"open-human-tasks": {
+				"title": "Offene Aufgaben",
+				"tooltip": "@:start.cockpit.humanTasks.tooltip",
+				"assigned": "Einem Benutzer zugewiesen",
+				"unassigned": "Nicht zugewiesen",
+				"assignedGroups": "Einer oder mehreren Gruppen zugewiesen"
+			},
+			"processes": {
+				"title": "Prozessdefinitionen",
+				"tooltip": "@:start.cockpit.processes.tooltip"
+			},
+			"decisions": {
+				"title": "Entscheidungsdefinitionen",
+				"tooltip": "@:start.cockpit.decisions.tooltip"
+			},
+			"deployments": {
+				"title": "@:start.cockpit.deployments.title",
+				"tooltip": "@:start.cockpit.deployments.tooltip"
+			},
+			"batches": {
+				"title": "@:start.cockpit.batches.title",
+				"tooltip": "@:start.cockpit.batches.tooltip"
+			}
+		},
+		"others": "Andere",
+		"unnamedProcess": "Unbenannter Prozess"
+	},
 	"process" : {
 		"instanceRunning": "Instanz läuft",
 		"instanceIncidents": "Instanz mit Vorfällen",
@@ -38,7 +78,7 @@
 		"start": "Starten",
 		"showProcess": "Prozess anzeigen",
 		"showInstance": "Instanz anzeigen",
-		"showCockpit": "Cockpit",
+		"showCockpit": "Im alten Cockpit öffnen",
 		"downloadBpmn": "BPMN file herunterladen",
 		"openModeler": "BPMN-Datei im Modeler öffnen",
 		"showManagement": "Verwaltung",
@@ -55,7 +95,7 @@
 		"favorite": "Favorit",
 		"actions": "Aktionen",
 		"status": "Status",
-		"returnToLastPage": "Zurück zur letzten Seite",
+		"tenant": "Mandant",
 		"details": {
 			"titleProcessActions": "Aktionen zur Prozessdefinition",
 			"titleInstancesActions": "Aktionen zu dem Prozess",
@@ -77,7 +117,8 @@
 			"historyVersions": "Historie versionen",
 			"variable": "Prozessvariablen",
 			"copyValue": "Wert kopieren",
-			"historyTimeToLive": "Geschichte Zeit zu leben"
+			"historyTimeToLive": "Geschichte Zeit zu leben",			
+			"tenantId": "Mandanten-ID"
 		},
 		"sections": {
 			"all": "Alle",
@@ -97,7 +138,14 @@
 		"variables": "Variablen",		
 		"usertasks": "Benutzeraufgaben",
 		"calledProcessInstances": "Aufgerufene Prozessinstanzen",
-		"onlyIncidents": "Nur bei Vorfällen",
+		"onlyIncidents": {
+			"title": "Nur mit Vorfällen",
+			"tooltip": "Nur Prozesse mit Vorfällen anzeigen"
+		},
+		"onlyActive": {
+			"title": "Nur aktive",
+			"tooltip": "Nur Prozesse mit nicht ausgesetzten Prozessdefinitionen anzeigen"
+		},
 		"runningInstances": "Instanzen",
 		"instances": "Instanzen",
 		"statistics": "Statistik",
@@ -111,7 +159,6 @@
 		"refreshVersions": "Historische Versionen aktualisieren",
 		"loadVersions": "Alle Versionen der Historie laden",
 		"externalProcessStarted": "Prozess erfolgreich gestarted",
-		"onlyActive": "Nur Aktive",
 		"exportInstances": "Instanzen exportieren",
 		"days": "Tage",
 		"deleteProcessDefinition": {
@@ -247,7 +294,7 @@
 		    "manageUsersGroups": "Benutzer/Gruppen verwalten",
 			"manageAssignee": "Zugewiesenen Benutzer verwalten",
 		    "groupId": "Gruppen-ID",
-		    "userId": "Benutzer-ID",
+		    "userId": "@:admin.users.id",
 		    "groups": "Gruppen",
 		    "users": "Benutzer",		    			
 		    "assignee": "Bearbeiter",
@@ -326,7 +373,9 @@
 		},
 		"actions": {
 			"title": "Aktionen zur Aufgabe",
-			"submit": "Abschließen"
+			"submit": "Abschließen",
+			"save": "Speichern",
+			"saveError": "Beim Speichern der Aufgabe ist ein Fehler aufgetreten: {0}"
 		},
 		"emptyTask": "Leere Aufgabe",
 		"showMore": "Mehr anzeigen...",
@@ -338,8 +387,47 @@
 		"userAssigned": "Der Benutzer {0} wurde erfolgreich zugewiesen"
 	},
 	"batches": {
-		"title": "Batches",
-		"tooltip": "Batch operations"
+		"title": "Stapel",
+		"tooltip": "Stapeloperationen",
+		"inProgressBatches": "Laufende Stapel",
+		"historicBatches": "Abgeschlossene Stapel",
+		"runtimeDetails": "Details zum laufenden Stapel",
+		"historyDetails": "Details zum abgeschlossenen Stapel",
+		"id": "ID",
+		"type": "Typ",
+		"startTime": "Gestartet",
+		"endTime": "Beendet",
+		"user": "Benutzer",
+		"failedJobs": "Fehlgeschlagene Jobs",
+		"progress": "Fortschritt",
+		"loading": "Wird geladen...",
+		"property": "Eigenschaft",
+		"value": "Wert",
+		"suspend": "Stapel pausieren",
+		"activate": "Stapel aktivieren",
+		"remove": "Stapel entfernen",
+		"confirmRemove": "Möchten Sie diesen Stapel und alle zugehörigen Jobs und Jobdefinitionen wirklich löschen?",
+		"exception": "Ausnahme",
+		"actions": "Aktionen",
+		"retryJob": "Job erneut ausführen",
+		"deleteJob": "Job löschen",
+		"seeFullLog": "Vollständiges Protokoll anzeigen",
+		"jobLog": {
+			"modalTitle": "Jobprotokoll",
+			"state": "Status",
+			"message": "Nachricht",
+			"timestamp": "Zeitstempel",
+			"jobId": "Job-ID",
+			"type": "Typ",
+			"configuration": "Konfiguration",
+			"retries": "Wiederholungen",
+			"hostname": "Hostname",
+			"priority": "Priorität",
+			"created": "Erstellt",
+			"failed": "Fehlgeschlagen",
+			"successful": "Erfolgreich",
+			"unknown": "Unbekannt"
+		}
 	},
 	"admin": {
 		"loading": "Wird geladen...",
@@ -347,8 +435,7 @@
 		"exportCsv": "Alle exportieren",
 		"users": {
 			"title": "Benutzer",
-			"id": "Benutzer-ID",
-			"userId": "Benutzer-ID",
+			"id": "Benutzername",
 			"firstName": "Vornamen",
 			"lastName": "Nachname",
 			"email": "E-Mail",
@@ -379,8 +466,7 @@
 			"actions": "Aktionen",
 			"group": {
 				"title": "{0} Gruppen",
-				"add": "Zu einer Gruppe hinzufügen",
-				"noResults": "Keine Ergebnisse"
+				"add": "Zu einer Gruppe hinzufügen"
 			},
 			"preferences": {
 				"title": "Einstellungen",
@@ -413,8 +499,34 @@
 			}
 		},
 		"tenants": {
-			"title": "Tenants",
-			"tooltip": "Tenants management"
+			"title": "Mandanten",
+			"tooltip": "Mandantenverwaltung",
+			"associationTitle": "{0} Mandanten",
+			"fullId": "Mandanten-ID",
+			"fullName": "Mandantenname",
+			"actions": "Aktionen",
+			"unassignUserMessage": "Benutzer {0} wurde vom Mandanten entfernt",
+			"unassignGroupMessage": "Gruppe {0} wurde vom Mandanten entfernt",
+			"addTo": "Zum Mandanten hinzufügen",
+			"id": "ID",
+			"name": "Name",
+			"add": "Mandanten hinzufügen",
+			"create": "Neuen Mandanten erstellen",
+			"cancel": "Abbrechen",
+			"tenantCreatedMessage": "Mandant {0} wurde erstellt",
+			"confirmDelete": "Möchten Sie den Mandanten mit den folgenden Parametern wirklich löschen?",
+			"tenantDeletedMessage": "Mandant {0} wurde gelöscht",
+			"deleteTenant": "Mandanten löschen",
+			"editTenant": "Mandanten bearbeiten",
+			"information": "Informationen",
+			"users": "Benutzer",
+			"groups": "Gruppen",
+			"editMessage": "Mandanten bearbeiten ({0})",
+			"update": "Mandanten aktualisieren",
+			"updateTenantMessage": "Mandant {0} wurde aktualisiert",
+			"deleteTenantMessage": "Mandant {0} wurde entfernt",
+			"tenantUsers": "Mandantenbenutzer",
+			"tenantGroups": "Mandantengruppen"
 		},
 		"authorizations": {
 			"title": "Berechtigungen",
@@ -436,6 +548,7 @@
 				"group": "Group",
 				"groupMembership": "Group Membership",
 				"authorization": "Authorization",
+				"system": "System",
 				"filter": "Filter",
 				"processDefinition": "Process Definition",
 				"task": "Task",
@@ -476,7 +589,16 @@
 				"diagnosticData": "Diagnosedaten"
 			},
 			"execution-metrics": {
-				"title": "Ausführungsmetriken"
+				"title": "Ausführungsmetriken",
+				"metricsHelp": "Erfasste Anzahl von Prozessinstanzen und Entscheidungsinstanzen, die von der Engine verarbeitet wurden, sowie Task-Benutzern, die einer Benutzeraufgabe zugewiesen wurden.",
+				"startDateContract": "Vertragsbeginn",
+				"process-instances": "Entscheidungsinstanzen",
+				"decision-instances": "Prozessinstanzen",
+				"task-users": "Aufgabenbenutzer",
+				"usageLast12MonthsByMonth": "Nutzung der letzten 12 Monate nach Monat",
+				"annualUsageBySubscriptionTerm": "Jährliche Nutzungsmetriken nach Abonnementlaufzeit",
+				"fromUpToToday": "{from} bis heute",
+				"fromTo": "{from} bis {to}"
 			}
 		}
 	},
@@ -730,22 +852,47 @@
     },
 	"start": { 
 		"close": "Schließen",
-		"taskList": "Aufgaben bearbeiten",
-		"startProcesses": "@:process.startProcess",
-		"cockpit": "Cockpit",
-		"emptyStart": "Derzeit haben Sie keine Berechtigung, hier Aufgaben auszuführen. Bitte wenden Sie sich an den CIB seven Administrator, um Berechtigungen zu erhalten.",
-		"groupOperations": "Operations",
-		"groupAdministration": "Administration",
-		"admin": "Verwaltung",
-		"userAdmin": "Benutzerverwaltung",
-		"modeler": "Prozess modellieren",
-		"easyForm": "Easy Form",
-		"adminPanel": "Benutzerverwaltung",
-		"properties": "Properties",
-		"resources": "Ressourcen",
-		"adminProcesses": "Prozesses",
-		"adminDecisions": "Entscheidungen",
-		"adminHumanTasks": "Aufgaben"
+		"startProcess": {
+			"title": "@:process.startProcess",
+			"tooltip": "Open Start Process"
+		},
+		"taskList": {
+			"title": "Tasklist",
+			"tooltip": "Tasklist öffnen"
+		},
+		"cockpit": {
+			"title": "Cockpit",
+			"tooltip": "Cockpit öffnen",
+			"processes": {
+				"title": "Prozesse",
+				"tooltip": "Verfügbare Prozessdefinitionen durchsuchen"
+			},
+			"decisions": {
+				"title": "Entscheidungen",
+				"tooltip": "Verfügbare Entscheidungsdefinitionen durchsuchen"
+			},
+			"humanTasks": {
+				"title": "Aufgaben",
+				"tooltip": "Alle ausstehenden Aufgaben anzeigen"
+			},
+			"deployments": {
+				"title": "Deployments",
+				"tooltip": "Alle Deployments anzeigen"
+			},
+			"batches": {
+				"title": "Batches",
+				"tooltip": "Batch-Operationen verwalten und anzeigen"
+			}
+		},
+		"admin": {
+			"title": "Admin",
+			"tooltip": "Open Admin"
+		},
+		"oldCockpit": {
+			"title": "Old Cockpit",
+			"tooltip": "Open old Cockpit"
+		},
+		"emptyStart": "Derzeit haben Sie keine Berechtigung, hier Aufgaben auszuführen. Bitte wenden Sie sich an den CIB seven Administrator, um Berechtigungen zu erhalten."
 	},
 	"errors": {		
 		"invalid": "Es fehlt eine gültige Eingabe",
@@ -862,7 +1009,9 @@
 		"selectAll": "Alle auswählen",
 		"deleteDeployments": "Deployments löschen",
 		"showModel": "Modell anzeigen",
-		"deploymentsDeleted": "{0} von {1} Deployments wurden erfolgreich gelöscht"
+		"deploymentsDeleted": "{0} von {1} Deployments wurden erfolgreich gelöscht",
+		"tenant": "Mandant",
+		"errorLoading": "Ressource für die ausgewählte Bereitstellung konnte nicht geladen werden"
 	},
 	"cib-table2": {
 		"filter": "Filter"
@@ -947,7 +1096,7 @@
 			"emailDescription": "E-Mail, die dem Konto zugeordnet ist, das Sie wiederherstellen möchten",
 			"cancel": "Abbrechen",
 			"sendEmail": "Wiederherstellungs-E-Mail senden",
-			"id": "Benutzer-ID",
+			"id": "@:admin.users.id",
 			"changePassword": "Passwort ändern",
 			"emailSent": "Die E-Mail mit dem Link zur Wiederherstellung Ihres Passworts wurde versandt."
 		},

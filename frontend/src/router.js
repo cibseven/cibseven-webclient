@@ -1,15 +1,32 @@
+/*
+ * Copyright CIB software GmbH and/or licensed to CIB software GmbH
+ * under one or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information regarding copyright
+ * ownership. CIB software licenses this file to you under the Apache License,
+ * Version 2.0; you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 
 import { createRouter, createWebHashHistory } from 'vue-router'
 
 import { axios } from './globals.js'
 
-import { AuthService, ProcessService } from '@/services.js'
+import { AuthService } from '@/services.js'
 import { permissionsMixin } from '@/permissions.js'
 import CibSeven from '@/components/CibSeven.vue'
 import StartView from '@/components/start/StartView.vue'
 import StartProcessView from '@/components/start-process/StartProcessView.vue'
 import ProcessView from '@/components/process/ProcessView.vue'
 import ProcessListView from '@/components/processes/list/ProcessListView.vue'
+import ProcessesDashboardView from '@/components/processes/dashboard/ProcessesDashboardView.vue'
 import DecisionView from '@/components/decision/DecisionView.vue'
 import DecisionListView from '@/components/decisions/list/DecisionListView.vue'
 import UsersManagement from '@/components/admin/UsersManagement.vue'
@@ -30,6 +47,8 @@ import { BWaitingBox } from 'cib-common-components'
 import DeployedForm from '@/components/forms/DeployedForm.vue'
 import StartDeployedForm from '@/components/forms/StartDeployedForm.vue'
 import TenantsView from '@/components/tenants/TenantsView.vue'
+import CreateTenant from '@/components/tenants/CreateTenant.vue'
+import EditTenant from '@/components/tenants/EditTenant.vue'
 import BatchesView from '@/components/batches/BatchesView.vue'
 import SystemView from '@/components/system/SystemView.vue'
 import SystemDiagnostics from '@/components/system/SystemDiagnostics.vue'
@@ -40,46 +59,6 @@ const router = createRouter({
   linkActiveClass: 'active',
   routes: [
     { path: '/', redirect: '/seven/auth/start' },
-    { path: '/start-process', name: 'start-process', component: () => {
-      return axios.get('webjars/seven/components/process/external-start-process.html').then(function(html) {
-        return {
-          template: html,
-          data: function() {
-            return {
-              startParamUrl: '',
-              selectedProcess: {},
-              started: false
-            }
-          },
-          mounted: function() {
-            AuthService.createAnonUserToken().then(user => {
-              this.$root.user = user
-              axios.defaults.headers.common.authorization = user.authToken
-              if (this.$route.query.processKey) {
-                  ProcessService.findProcessByDefinitionKey(this.$route.query.processKey).then(processLatest => {
-                  this.selectedProcess = processLatest
-                  ProcessService.startForm(processLatest.id).then(url => {
-                    if (url.key) {
-                      this.startParamUrl = this.$root.config.uiElementTemplateUrl + '/startform/' +
-                        url.key.split('?template=')[1] + '?processDefinitionId=' + processLatest.id +
-                        '&processDefinitionKey=' + processLatest.key
-                    }
-                  })
-                })
-              }
-            })
-          },
-          methods: {
-            taskCompleted: function() {
-              this.started = true
-            },
-            navigateBack: function() {
-              history.back()
-            }
-          }
-        }
-      })
-    }},
     { path: '/seven', component: CibSeven, children: [
       { path: 'login', name: 'login', beforeEnter: function(to, from, next) {
           if (router.root.config.ssoActive) //If SSO go to other login
@@ -133,7 +112,10 @@ const router = createRouter({
         },
 
         // Process management (power-user)
-        { path: 'processes', redirect: '/seven/auth/processes/list', beforeEnter: permissionsGuard('cockpit') },
+        { path: 'processes', redirect: '/seven/auth/processes/dashboard', beforeEnter: permissionsGuard('cockpit') },
+        { path: 'processes/dashboard', name: 'processesDashboard', beforeEnter: permissionsGuard('cockpit'),
+          component: ProcessesDashboardView
+        },
         { path: 'processes/list', name: 'processManagement', beforeEnter: permissionsGuard('cockpit'),
           component: ProcessListView
         },
@@ -142,6 +124,7 @@ const router = createRouter({
             processKey: route.params.processKey,
             versionIndex: route.params.versionIndex,
             instanceId: route.params.instanceId,
+            tenantId: route.query.tenantId
           })
         },
         // decisions
@@ -189,8 +172,10 @@ const router = createRouter({
             { path: 'group/:groupId', name: 'adminGroup', beforeEnter: permissionsGuardUserAdmin('groupsManagement', 'group'), component: ProfileGroup },
             // Tenants
             { path: 'tenants', name:'adminTenants', component: TenantsView },
+            { path: 'tenant/:tenantId', name: 'adminTenant', beforeEnter: permissionsGuardUserAdmin('tenantsManagement', 'tenant'), component: EditTenant },
             // System
             { path: 'system', redirect: '/seven/auth/admin/system/system-diagnostics', name: 'adminSystem', component: SystemView,
+              beforeEnter: permissionsGuardUserAdmin('systemManagement', 'system'),
               children: [
                 { path: 'system-diagnostics', name: 'system-diagnostics', component: SystemDiagnostics },
                 { path: 'execution-metrics', name: 'execution-metrics', component: ExecutionMetrics }
@@ -206,7 +191,8 @@ const router = createRouter({
           ]
         },
         { path: 'admin/create-user', name: 'createUser', component: CreateUser },
-        { path: 'admin/create-group', name: 'createGroup', beforeEnter: permissionsGuard('cockpit'), component: CreateGroup }
+        { path: 'admin/create-group', name: 'createGroup', beforeEnter: permissionsGuard('cockpit'), component: CreateGroup },
+        { path: 'admin/create-tenant', name: 'createTenant', component: CreateTenant },
       ]}
     ]},
     {

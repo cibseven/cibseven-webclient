@@ -1,6 +1,23 @@
+/*
+ * Copyright CIB software GmbH and/or licensed to CIB software GmbH
+ * under one or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information regarding copyright
+ * ownership. CIB software licenses this file to you under the Apache License,
+ * Version 2.0; you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package org.cibseven.webapp.rest;
 
 import java.util.Collection;
+import java.util.Map;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenResourceType;
@@ -38,7 +55,7 @@ public class JobDefinitionService extends BaseService implements InitializingBea
 			description = "<strong>Return: Collection of job definition/s</strong>")
 	@PostMapping("")
 	public Collection<JobDefinition> findJobDefinitions(@RequestBody String params, HttpServletRequest rq) {
-		CIBUser user = checkAuthorization(rq, true, false);
+		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.READ_ALL);
 		return bpmProvider.findJobDefinitions(params, user);
 	}
@@ -49,7 +66,7 @@ public class JobDefinitionService extends BaseService implements InitializingBea
 	@ApiResponse(responseCode = "404", description = "Job definition not found")
 	@PutMapping("/{jobDefinitionId}/suspend")
 	public void suspendJobDefinition(@PathVariable String jobDefinitionId, @RequestBody String params, HttpServletRequest rq) {
-		CIBUser user = checkAuthorization(rq, true, false);
+		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.UPDATE_ALL);
         bpmProvider.suspendJobDefinition(jobDefinitionId, params, user);
 	}
@@ -60,7 +77,7 @@ public class JobDefinitionService extends BaseService implements InitializingBea
 	@ApiResponse(responseCode = "404", description = "Job definition not found")
 	@PutMapping("/{jobDefinitionId}/job-priority")
 	public void overrideJobDefinitionPriority(@PathVariable String jobDefinitionId, @RequestBody String params, HttpServletRequest rq) {
-		CIBUser user = checkAuthorization(rq, true, false);
+		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.UPDATE_ALL);
         bpmProvider.overrideJobDefinitionPriority(jobDefinitionId, params, user);
 	}
@@ -71,8 +88,19 @@ public class JobDefinitionService extends BaseService implements InitializingBea
 	@ApiResponse(responseCode = "404", description = "Job definition not found")
 	@GetMapping("/{id}")
 	public JobDefinition findJobDefinition(@PathVariable String id, HttpServletRequest rq) {
-		CIBUser user = checkAuthorization(rq, true, false);
+		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.READ_ALL);
         return bpmProvider.findJobDefinition(id, user);
+	}
+	
+	@Operation(
+	    summary = "Retry job by ID",
+	    description = "<strong>Retries a job by setting the number of retries for the job with the given ID</strong>")
+	@ApiResponse(responseCode = "404", description = "Job not found")
+	@PutMapping("/{id}/retries")
+	public void retryJobDefinitionById(@PathVariable String id, @RequestBody Map<String, Object> data, HttpServletRequest rq) {
+	    CIBUser user = checkAuthorization(rq, true);
+	    checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.UPDATE_ALL);
+	    bpmProvider.retryJobDefinitionById(id, data, user);
 	}
 }

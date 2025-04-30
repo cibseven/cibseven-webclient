@@ -1,23 +1,43 @@
+/*
+ * Copyright CIB software GmbH and/or licensed to CIB software GmbH
+ * under one or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information regarding copyright
+ * ownership. CIB software licenses this file to you under the Apache License,
+ * Version 2.0; you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package org.cibseven.webapp.providers;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.cibseven.webapp.Data;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.ExpressionEvaluationException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.exception.UnsupportedTypeException;
+import org.cibseven.webapp.rest.model.HistoryProcessInstance;
+import org.cibseven.webapp.rest.model.Incident;
 import org.cibseven.webapp.rest.model.Process;
 import org.cibseven.webapp.rest.model.ProcessDiagram;
 import org.cibseven.webapp.rest.model.ProcessInstance;
-import org.cibseven.webapp.rest.model.HistoryProcessInstance;
 import org.cibseven.webapp.rest.model.ProcessStart;
 import org.cibseven.webapp.rest.model.ProcessStatistics;
 import org.cibseven.webapp.rest.model.StartForm;
@@ -54,10 +74,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	@Override
 	public Collection<Process> findProcesses(CIBUser user) {
 		String url = camundaUrl + "/engine-rest/process-definition?latestVersion=true&sortBy=name&sortOrder=desc";
-		
-		// [BPM4CIBWEB-189]
 		Collection<Process> processes = Arrays.asList(((ResponseEntity<Process[]>) doGet(url, Process[].class, user, false)).getBody());
-		
 		return processes;
 	}
 
@@ -67,13 +84,15 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		Collection<Process> processes = findProcesses(user);
 		
 		/* The following code slow down the OFDKA system.*/
-		for(Process process : processes) {
-			if(fetchInstances) {
+		for (Process process : processes) {
+			if (fetchInstances) {
 				String urlInstances = camundaUrl + "/engine-rest/process-instance/count?processDefinitionKey=" + process.getKey();
+				urlInstances += process.getTenantId() != null ? "&tenantIdIn=" + process.getTenantId() : "&withoutTenantId=true";
 				process.setRunningInstances(((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody().get("count").asLong());	
 			}
-			if(fetchIncidents) {
-				String urlIncidents = camundaUrl + "/engine-rest/incident/count?processDefinitionKeyIn=" + process.getKey();
+			if (fetchIncidents) {
+				String urlIncidents = camundaUrl + "/engine-rest/incident/count?processDefinitionKeyIn=" + process.getKey() + "&tenantIdIn=" + process.getTenantId();
+				urlIncidents += process.getTenantId() != null ? "&tenantIdIn=" + process.getTenantId() : "&withoutTenantId=true";
 				process.setIncidents(((ResponseEntity<JsonNode>) doGet(urlIncidents, JsonNode.class, user, false)).getBody().get("count").asLong());	
 			}
 		}
@@ -99,14 +118,16 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	}	
 	
 	@Override
-	public Process findProcessByDefinitionKey(String key, CIBUser user) {
+	public Process findProcessByDefinitionKey(String key, String tenantId, CIBUser user) {
 		String url = camundaUrl + "/engine-rest/process-definition/key/" + key;
+		url += tenantId != null ? ("/tenant-id/" + tenantId) : "";
 		return ((ResponseEntity<Process>) doGet(url, Process.class, user, false)).getBody();		
 	}
 	
 	@Override
-	public Collection<Process> findProcessVersionsByDefinitionKey(String key, Optional<Boolean> lazyLoad, CIBUser user) {
+	public Collection<Process> findProcessVersionsByDefinitionKey(String key, String tenantId, Optional<Boolean> lazyLoad, CIBUser user) {
 		String url = camundaUrl + "/engine-rest/process-definition?key=" + key + "&sortBy=version&sortOrder=desc";
+		url += tenantId != null ? ("&tenantIdIn=" + tenantId) : "&withoutTenantId=true";
 		Collection<Process> processes = Arrays.asList(((ResponseEntity<Process[]>) doGet(url, Process[].class, user, false)).getBody());		
 		
 		if (!lazyLoad.isPresent() || (lazyLoad.isPresent() && !lazyLoad.get())) {
@@ -193,15 +214,17 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	}	
 
 	@Override
-	public ProcessStart startProcess(String processDefinitionKey, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
-		String url = camundaUrl + "/engine-rest/process-definition/key/" + processDefinitionKey + "/start";
+	public ProcessStart startProcess(String processDefinitionKey, String tenantId, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
+		String url = camundaUrl + "/engine-rest/process-definition/key/" + processDefinitionKey;
+		url += (tenantId != null ? ("/tenant-id/" + tenantId) : "") + "/start";
 		return ((ResponseEntity<ProcessStart>) doPost(url, data, ProcessStart.class, user)).getBody();
 	}
 	
 	@Override
-	public ProcessStart submitForm(String processDefinitionKey, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
+	public ProcessStart submitForm(String processDefinitionKey, String tenantId, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
 		// Used by Webdesk
-		String url = camundaUrl + "/engine-rest/process-definition/key/" + processDefinitionKey + "/submit-form";
+		String url = camundaUrl + "/engine-rest/process-definition/key/" + processDefinitionKey;
+		url += (tenantId != null ? ("/tenant-id/" + tenantId) : "") + "/submit-form";
 		return ((ResponseEntity<ProcessStart>) doPost(url, data, ProcessStart.class, user)).getBody();
 	}
 	
@@ -210,6 +233,12 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		String url = camundaUrl + "/engine-rest/process-definition/" + processId + "/statistics?failedJobs=true";
 		return Arrays.asList(((ResponseEntity<ProcessStatistics[]>) doGet(url, ProcessStatistics[].class, user, false)).getBody());
 	}
+
+  @Override
+  public Collection<ProcessStatistics> getProcessStatistics(CIBUser user) {
+    String url = camundaUrl + "/engine-rest/process-definition/statistics?failedJobs=true&rootIncidents=true";
+    return Arrays.asList(((ResponseEntity<ProcessStatistics[]>) doGet(url, ProcessStatistics[].class, user, false)).getBody());
+  }
 	
 	@Override
 	public HistoryProcessInstance findHistoryProcessInstanceHistory(String processInstanceId, CIBUser user) {
@@ -268,9 +297,40 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		}
 		//findIncident
 		Collection<HistoryProcessInstance> processes = Arrays.asList(((ResponseEntity<HistoryProcessInstance[]>) doPost(url, body, HistoryProcessInstance[].class, user)).getBody());
-		processes.forEach(p -> {
-			p.setIncidents(incidentProvider.findIncidentByInstanceId(p.getId(), user));
-		});
+		
+		if ((processes == null || processes.isEmpty()) && activityId.isPresent() && !activityId.get().isEmpty()) {
+			Collection<Incident> incidents = incidentProvider.fetchIncidentsByInstanceAndActivityId(id, activityId.get(), user);
+		    if (incidents != null && !incidents.isEmpty()) {
+		        Map<String, List<Incident>> incidentsByProcessInstance = incidents.stream()
+		            .collect(Collectors.groupingBy(Incident::getProcessInstanceId));
+		        
+		        Set<String> processInstanceIds = incidentsByProcessInstance.keySet();
+		        
+		        Map<String, Object> dataIdIn = new HashMap<>();
+		        dataIdIn.put("processInstanceIdIn", processInstanceIds);
+		        dataIdIn.put("processDefinitionId", id);
+		        dataIdIn.put("firstResult", firstResult);
+		        dataIdIn.put("maxResults", maxResults);
+		        dataIdIn.put("sorting", sorting);
+		        
+		        String bodyIdIn = "";
+		        try {
+		        	bodyIdIn = objectMapper.writeValueAsString(dataIdIn);
+		        } catch (JsonProcessingException e) {
+		            throw new SystemException(e);
+		        }
+		        
+		        processes = Arrays.asList(
+		            ((ResponseEntity<HistoryProcessInstance[]>) doPost(url, bodyIdIn, HistoryProcessInstance[].class, user)).getBody()
+		        );
+		        processes.forEach(p -> p.setIncidents(incidentsByProcessInstance.getOrDefault(p.getId(), Collections.emptyList())));
+		    }
+		} else {		
+			processes.forEach(p -> {
+				p.setIncidents(incidentProvider.findIncidentByInstanceId(p.getId(), user));
+			});
+		}
+			
 		return processes;
 	}
 	
@@ -331,11 +391,4 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		doDelete(url, user);
 	}
 
-	@Override
-	protected HttpHeaders addAuthHeader(HttpHeaders headers, CIBUser user) {
-		if (user != null) headers.add("Authorization", user.getAuthToken());
-		return headers;
-	}
-	
-	
 }

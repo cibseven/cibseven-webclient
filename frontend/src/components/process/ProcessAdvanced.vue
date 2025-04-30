@@ -1,3 +1,21 @@
+<!--
+
+    Copyright CIB software GmbH and/or licensed to CIB software GmbH
+    under one or more contributor license agreements. See the NOTICE file
+    distributed with this work for additional information regarding copyright
+    ownership. CIB software licenses this file to you under the Apache License,
+    Version 2.0; you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+
+-->
 <template>
   <div tabindex="0" @focus="focused = process" style="flex: auto; margin: 10px" class="row border rounded-lg shadow-sm bg-white" :style="viewStyles[view].cardSize"
     v-b-popover.hover.top="showDescription(process.key)">
@@ -19,6 +37,7 @@
           :class="process.favorite ? 'mdi-star text-primary' : 'mdi-star-outline text-secondary'"></b-button>
         </div>
       </div>
+      <div v-if="process.tenantId" class="mt-1 position-absolute fst-italic">{{ process.tenantId }}</div>
       <div class="row text-center pt-2" :style="viewStyles[view].imgBlock">
         <div class="w-100">
           <img :alt="processName" :style="viewStyles[view].imgSize" @error="onImageLoadFailure($event)" :src="'assets/images/process/' + process.key + '.svg'">

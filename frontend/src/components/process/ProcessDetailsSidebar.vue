@@ -1,3 +1,21 @@
+<!--
+
+    Copyright CIB software GmbH and/or licensed to CIB software GmbH
+    under one or more contributor license agreements. See the NOTICE file
+    distributed with this work for additional information regarding copyright
+    ownership. CIB software licenses this file to you under the Apache License,
+    Version 2.0; you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+
+-->
 <template>
   <div class="h-100 d-flex flex-column bg-light">
     <div class="overflow-auto h-100">
@@ -13,8 +31,10 @@
       </b-button>
       <div class="list-group mx-3 mb-3" role="list">
         <router-link v-for="version of processDefinitions" :key="version.id"
-          :to="`/seven/auth/process/${version.key}/${version.version}`"
-          class="btn border-0">
+          :to="{
+            path: `/seven/auth/process/${version.key}/${version.version}`,
+            query: $route.query
+          }" class="btn border-0">
           <div
             class="rounded-0 mt-3 p-2 bg-white border-0 list-group-item-action btn active"
             :class="version.version === versionIndex ? 'list-group-item shadow' : ''"

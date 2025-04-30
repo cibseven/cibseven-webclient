@@ -14,6 +14,46 @@
 		"login": "Войти",
 		"forgotten": "Забыли пароль?"
 	},
+	"processes-dashboard": {
+		"headerActive": "Панель операций",
+		"headerDeployed": "Доступные развёртывания",
+		"items": {
+			"running-instances": {
+				"title": "Активные экземпляры процессов",
+				"tooltip": "Просмотреть все активные экземпляры процессов"
+			},
+			"open-incidents": {
+				"title": "Открытые инциденты",
+				"tooltip": "Просмотреть все текущие открытые инциденты",
+				"none": "Нет инцидентов!"
+			},
+			"open-human-tasks": {
+				"title": "Открытые задачи пользователей",
+				"tooltip": "@:start.cockpit.humanTasks.tooltip",
+				"assigned": "Назначено пользователю",
+				"unassigned": "Не назначено",
+				"assignedGroups": "Назначено одной или нескольким группам"
+			},
+			"processes": {
+				"title": "Определения процессов",
+				"tooltip": "@:start.cockpit.processes.tooltip"
+			},
+			"decisions": {
+				"title": "Определения решений",
+				"tooltip": "@:start.cockpit.decisions.tooltip"
+			},
+			"deployments": {
+				"title": "@:start.cockpit.deployments.title",
+				"tooltip": "@:start.cockpit.deployments.tooltip"
+			},
+			"batches": {
+				"title": "@:start.cockpit.batches.title",
+				"tooltip": "@:start.cockpit.batches.tooltip"
+			}
+		},
+		"others": "Другие",
+		"unnamedProcess": "Безымянный процесс"
+	},
 	"process" : {
 		"instanceRunning": "Запущеный экземпляр",
 		"instanceIncidents": "Экзепляр с инцидентами",
@@ -38,7 +78,7 @@
 		"start": "Начать",
 		"showProcess": "Показать процесс",
 		"showInstance": "показать экземпляр",
-		"showCockpit": "Панель управления",		
+		"showCockpit": "Открыть в старом Cockpit",
 		"downloadBpmn": "Скачать файл BPMN",
 		"openModeler": "Открыть BPMN файл в Modeler",
 		"showManagement": "Управление процессами",
@@ -55,6 +95,7 @@
 		"favorite": "Любимый",
 		"actions": "Действия",
 		"status": "Состояние",
+		"tenant": "Тенант",
 		"details": {
 			"titleProcessActions": "действия по определению процесса",
 			"titleInstancesActions": "Действия для процесса",		
@@ -76,7 +117,8 @@
 			"historyVersions": "Версии истории",
 			"variable": "Переменная процесса",
 			"copyValue": "Копировать значение",
-			"historyTimeToLive": "История время жить"
+			"historyTimeToLive": "История время жить",
+			"tenantId": "ID клиента"
 		},
 		"sections": {
 			"all": "Все",
@@ -96,7 +138,14 @@
 		"variables": "Переменные",
 		"usertasks": "Пользовательские задачи",
 		"calledProcessInstances": "называемые экземпляры процессов",
-		"onlyIncidents": "Только с инцидентами",
+		"onlyIncidents": {
+			"title": "Только с инцидентами",
+			"tooltip": "Показать только процессы с инцидентами"
+		},
+		"onlyActive": {
+			"title": "Только активные",
+			"tooltip": "Показать только процессы с не приостановленными определениями процессов"
+		},
 		"runningInstances": "Экземпляры",
 		"instances": "Экземпляры процессов",
 		"statistics": "Статистика",
@@ -110,7 +159,6 @@
 		"refreshVersions": "Обновить версии истории",
 		"loadVersions": "Загрузить все версии истории",
 		"externalProcessStarted": "Процесс успешно запущен",
-		"onlyActive": "Только активные",
 		"exportInstances": "Экспорт экземпляров",
 		"days": "дней",
 		"deleteProcessDefinition": {
@@ -245,7 +293,7 @@
 		    "manageUsersGroups": "Manage users/groups",
 			"manageAssignee": "Manage assigned user",
 		    "groupId": "ID группы",
-		    "userId": "ID пользователя",
+		    "userId": "@:admin.users.id",
 		    "groups": "Группы",
 		    "users": "Пользователи",
 		    "assignee": "Исполнитель",
@@ -324,7 +372,9 @@
 		},
 		"actions": {
 			"title": "Действия для задачи",
-			"submit": "Завершить"
+			"submit": "Завершить",
+			"save": "Сохранить",
+			"saveError": "Произошла ошибка при сохранении задачи: {0}"
 		},
 		"emptyTask": "Пустая задача",
 		"showMore": "Показать больше...",
@@ -336,17 +386,55 @@
 		"userAssigned": "Пользователь {0} успешно назначен"
 	},
 	"batches": {
-		"title": "Batches",
-		"tooltip": "Batch operations"
-	},	
+		"title": "Пакеты",
+		"tooltip": "Операции с пакетами",
+		"inProgressBatches": "Текущие пакеты",
+		"historicBatches": "Завершённые пакеты",
+		"runtimeDetails": "Детали текущего пакета",
+		"historyDetails": "Детали завершённого пакета",
+		"id": "ID",
+		"type": "Тип",
+		"startTime": "Начало",
+		"endTime": "Окончание",
+		"user": "Пользователь",
+		"failedJobs": "Неудачные задания",
+		"progress": "Прогресс",
+		"loading": "Загрузка...",
+		"property": "Свойство",
+		"value": "Значение",
+		"suspend": "Приостановить пакет",
+		"activate": "Активировать пакет",
+		"remove": "Удалить пакет",
+		"confirmRemove": "Вы действительно хотите удалить этот пакет и все связанные задания и определения заданий?",
+		"exception": "Исключение",
+		"actions": "Действия",
+		"retryJob": "Повторить задание",
+		"deleteJob": "Удалить задание",
+		"seeFullLog": "Просмотреть полный лог",
+		"jobLog": {
+			"modalTitle": "Журнал заданий",
+			"state": "Состояние",
+			"message": "Сообщение",
+			"timestamp": "Временная метка",
+			"jobId": "ID задания",
+			"type": "Тип",
+			"configuration": "Конфигурация",
+			"retries": "Попытки",
+			"hostname": "Имя хоста",
+			"priority": "Приоритет",
+			"created": "Создано",
+			"failed": "Ошибка",
+			"successful": "Успешно",
+			"unknown": "Неизвестно"
+		}
+	},
 	"admin": {
 		"loading": "Загрузка...",
 		"noResults": "Ничего не найдено",
 		"exportCsv": "Экспортировать все",
 		"users": {
 			"title": "Пользователи",
-			"id": "ID",
-			"userId": "ID пользователя",
+			"id": "Пользователь",
 			"firstName": "Имя",
 			"lastName": "Фамилия",
 			"email": "Электронная почта",
@@ -377,8 +465,7 @@
 			"actions": "Действия",
 			"group": {
 				"title": "Группы {0}",
-				"add": "Добавить в группу",
-				"noResults": "Ничего не найдено"
+				"add": "Добавить в группу"
 			},
 			"preferences": {
 				"title": "Предпочтения",
@@ -411,8 +498,34 @@
 			}
 		},
 		"tenants": {
-			"title": "Tenants",
-			"tooltip": "Tenants management"
+			"title": "Тенанты",
+			"tooltip": "Управление тенантами",
+			"associationTitle": "Тенанты {0}",
+			"fullId": "Идентификатор арендатора",
+			"fullName": "Имя арендатора",
+			"actions": "Действия",
+			"unassignUserMessage": "Пользователь {0} был удалён из арендатора",
+			"unassignGroupMessage": "Группа {0} была удалена из арендатора",
+			"addTo": "Добавить в арендатора",
+			"id": "ID",
+			"name": "Имя",
+			"add": "Добавить тенанта",
+			"create": "Создать нового тенанта",
+			"cancel": "Отмена",
+			"tenantCreatedMessage": "Тенант {0} создан",
+			"confirmDelete": "Вы действительно хотите удалить тенанта со следующими параметрами?",
+			"tenantDeletedMessage": "Тенант {0} удалён",
+			"deleteTenant": "Удалить тенанта",
+			"editTenant": "Редактировать тенанта",
+			"information": "Информация",
+			"users": "Пользователи",
+			"groups": "Группы",
+			"editMessage": "Редактировать арендатора ({0})",
+			"update": "Обновить арендатора",
+			"updateTenantMessage": "Арендатор {0} был обновлён",
+			"deleteTenantMessage": "Арендатор {0} был удалён",
+			"tenantUsers": "Пользователи арендатора",
+			"tenantGroups": "Группы арендатора"
 		},
 		"authorizations": {
 			"title": "Авторизации",
@@ -434,6 +547,7 @@
 				"group": "Group",
 				"groupMembership": "Group Membership",
 				"authorization": "Authorization",
+				"system": "System",
 				"filter": "Filter",
 				"processDefinition": "Process Definition",
 				"task": "Task",
@@ -474,7 +588,16 @@
 				"diagnosticData": "Данные диагностики"
 			},
 			"execution-metrics": {
-				"title": "Метрики выполнения"
+				"title": "Метрики выполнения",
+				"metricsHelp": "Зарегистрированное количество экземпляров процессов и решений, обработанных движком, и пользователей задач, назначенных на пользовательскую задачу.",
+				"startDateContract": "Дата начала контракта",
+				"process-instances": "Экземпляры решений",
+				"decision-instances": "Экземпляры процессов",
+				"task-users": "Пользователи задач",
+				"usageLast12MonthsByMonth": "Использование по месяцам за последние 12 месяцев",
+				"annualUsageBySubscriptionTerm": "Годовые метрики использования по сроку подписки",
+				"fromUpToToday": "с {from} по сегодня",
+				"fromTo": "с {from} по {to}"
 			}
 		}
 	},
@@ -728,22 +851,47 @@
     },
 	"start": { 
 		"close": "Закрыть",
-		"taskList": "Мои задачи",
-		"startProcesses": "@:process.startProcess",
-		"cockpit": "Кокпит",
-		"emptyStart": "В данный момент у Вас нет прав, чтобы выполнить какие-либо задачи. Пожалуйста, свяжитесь с администратором CIB seven для того, чтобы получить права.",
-		"groupOperations": "Операции",
-		"groupAdministration": "Администрирование",
-		"admin": "Управление процессами",
-		"userAdmin": "Управление пользователями",
-		"modeler": "Разработчик моделей процессов",
-		"easyForm": "Easy Form",
-		"adminPanel": "Управление пользователями",
-		"properties": "Properties",
-		"resources": "Ресурсы",
-		"adminProcesses": "Prozesses",
-		"adminDecisions": "Decisions",
-		"adminHumanTasks": "Human Tasks"
+		"startProcess": {
+			"title": "@:process.startProcess",
+			"tooltip": "Open Start Process"
+		},
+		"taskList": {
+			"title": "Tasklist",
+			"tooltip": "Открыть Tasklist"
+		},
+		"cockpit": {
+			"title": "Cockpit",
+			"tooltip": "Открыть Cockpit",
+			"processes": {
+				"title": "Процессы",
+				"tooltip": "Просмотреть доступные определения процессов"
+			},
+			"decisions": {
+				"title": "Решения",
+				"tooltip": "Просмотреть доступные определения решений"
+			},
+			"humanTasks": {
+				"title": "Задачи пользователей",
+				"tooltip": "Просмотреть все задачи ожидающие пользователей"
+			},
+			"deployments": {
+				"title": "Развёртывания",
+				"tooltip": "Просмотреть все доступные ресурсы для развернутых процессов"
+			},
+			"batches": {
+				"title": "Пакетная обработка",
+				"tooltip": "Управление и просмотр пакетных операций"
+			}
+		},
+		"admin": {
+			"title": "Admin",
+			"tooltip": "Open Admin"
+		},
+		"oldCockpit": {
+			"title": "Old Cockpit",
+			"tooltip": "Open old Cockpit"
+		},
+		"emptyStart": "В данный момент у Вас нет прав, чтобы выполнить какие-либо задачи. Пожалуйста, свяжитесь с администратором CIB seven для того, чтобы получить права."
 	},
 	"errors": {
 		"invalid": "Пожалуйста, введите достоверную информацию",
@@ -858,7 +1006,9 @@
 		"selectAll": "Выбрать все",
 		"deleteDeployments": "Удалить развертывания",
 		"showModel": "Показать модель",
-		"deploymentsDeleted": "{0} из {1} развертываний успешно удалены"
+		"deploymentsDeleted": "{0} из {1} развертываний успешно удалены",
+		"tenant": "Тенант",
+		"errorLoading": "Не удалось загрузить ресурс для выбранного развертывания"
 	},
 	"cib-table2": {
 		"filter": "Фильтр"
@@ -930,7 +1080,7 @@
 			"emailDescription": "Электронная почта, связанная с учетной записью, которую вы хотите восстановить",
 			"cancel": "Отмена",
 			"sendEmail": "Выслать письмо по смене пароля",
-			"id": "ID пользователя",
+			"id": "@:admin.users.id",
 			"changePassword": "Изменить пароль",
 			"emailSent": "Письмо со ссылкой для восстановления пароля было отправлено."
 		},

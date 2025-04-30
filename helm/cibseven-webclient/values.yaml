@@ -1,4 +1,4 @@
-# Default values for seven-webclient.
+# Default values for cibseven-webclient.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
@@ -160,7 +160,7 @@ application:
   #}
 
   services:
-    basePath: /services/v1
+    basePath: services/v1
 
 
 ui:
@@ -183,11 +183,11 @@ ui:
     showTaskDetailsSidebar: true
     showFilterDueDate: true
     showFilterReminderDate: true
-    showFeedbackButton: true
+    showFeedbackButton: false
     showTaskListManualRefresh: true
     disableCandidateUsers: false
     showProcessName: true
-    showSupportInfo: true
+    showSupportInfo: false
     showInfoAndHelp: true
     showChat: false
     showUserSettings: true
@@ -201,8 +201,8 @@ ui:
   maxTaskResults: "20"
   maxProcessesResults: "50"
   maxUsersResults: "10"
-  modelerEnabled: true
-  easyFormEnabled: true
+  modelerEnabled: false
+  easyFormEnabled: false
   notAssignedTaskLayer: true
   automaticallyOpenTask: false
   pauseButtonTime: "5000"
@@ -226,7 +226,7 @@ rootContext:
 
 configmaps:
   env:
-    OTEL_SERVICE_NAME: "{{ .Release.Name }}-seven-webclient"
+    OTEL_SERVICE_NAME: "{{ .Release.Name }}-cibseven-webclient"
     OTEL_METRICS_EXPORTER: "{{ .Values.global.otel.metricsExporter }}"
     OTEL_TRACES_EXPORTER: "{{ .Values.global.otel.tracesExporter }}"
     OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: "{{ .Values.global.otel.otlpTracesEndpoint }}"
@@ -414,6 +414,12 @@ configmaps:
             "authorizationsManagement": {
               "authorization": ["ALL"]
             },
+            "systemManagement": {
+              "system": ["ALL"]
+            },
+            "tenantsManagement": {
+              "tenant": ["ALL"]
+            },
             "userProfile": {
               "application": ["ALL"]
             },
@@ -471,6 +477,7 @@ configmaps:
               "7": { "id": "7", "key": "task", "permissions": ["CREATE","READ","UPDATE","DELETE","TASK_ASSIGN","TASK_WORK","UPDATE_VARIABLE","READ_VARIABLE"] },
               "11": { "id": "11", "key": "tenant", "permissions": ["READ","UPDATE","CREATE","DELETE"] },
               "12": { "id": "12", "key": "tenantMembership", "permissions": ["CREATE","DELETE"] },
+              "21": { "id": "21", "key": "system", "permissions": ["READ"] },
               "1": { "id": "1", "key": "user", "permissions": ["READ","UPDATE","CREATE","DELETE"] }
             },
             "types": {
@@ -495,7 +502,7 @@ secrets:
   env: { }
   files:
     application.yaml:
-      path: /opt/cib/conf/seven-webclient.yaml
+      path: /opt/cib/conf/cibseven-webclient.yaml
       value: |-
         {{ .Values.application | toYaml | toString }}
     template-config.properties:
@@ -510,7 +517,7 @@ replicaCount: 1
 
 image:
   repository: "{{ .Values.global.image.repository }}"
-  name: seven-webclient
+  name: cibseven-webclient
   pullPolicy: "{{ .Values.global.image.pullPolicy }}"
   tag: ""
 

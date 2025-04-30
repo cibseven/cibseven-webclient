@@ -1,3 +1,21 @@
+<!--
+
+    Copyright CIB software GmbH and/or licensed to CIB software GmbH
+    under one or more contributor license agreements. See the NOTICE file
+    distributed with this work for additional information regarding copyright
+    ownership. CIB software licenses this file to you under the Apache License,
+    Version 2.0; you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+
+-->
 <template>
   <div style="height: 55px"> <!-- Empty container with height of navbar -->
     <b-navbar toggleable="md" fixed="top" type="light" class="border-bottom bg-white px-3">
@@ -10,10 +28,14 @@
               <span class="visually-hidden">{{ $t('cib-header.languages') }}</span>
               <span class="mdi mdi-24px mdi-web align-middle"></span>
             </template>
-            <b-dropdown-item v-for="lang in languages" :key="lang" :active="lang === currentLanguage()" @click="currentLanguage(lang)">
-              <div class="row">
-                <span class="text-uppercase text-dark bg-body-secondary rounded col-3 ms-2">{{ lang }}</span>
-                <span class="col-8 ps-2">{{ $t('cib-header.' + lang) }}</span>
+            <b-dropdown-item v-for="lang in languages" :key="lang" :active="lang === currentLanguage()" @click="currentLanguage(lang)" :title="$t('cib-header.languages') + ': ' + $t('cib-header.' + lang)">
+              <div class="d-flex align-items-baseline">
+                <span class="lang-label text-center text-uppercase text-dark bg-body-secondary rounded me-2">
+                  {{ lang }}
+                </span>
+                <span class="flex-grow-1">
+                  {{ $t('cib-header.' + lang) }}
+                </span>
               </div>
             </b-dropdown-item>
           </b-nav-item-dropdown>
@@ -53,3 +75,10 @@ export default {
   }
 }
 </script>
+
+<style>
+.lang-label {
+  min-width: 36px; /* adjust as needed */
+  display: inline-block;
+}
+</style>

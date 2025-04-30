@@ -1,4 +1,22 @@
+/*
+ * Copyright CIB software GmbH and/or licensed to CIB software GmbH
+ * under one or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information regarding copyright
+ * ownership. CIB software licenses this file to you under the Apache License,
+ * Version 2.0; you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package org.cibseven.webapp.providers;
+
+import static org.cibseven.webapp.auth.SevenAuthorizationUtils.resourceType;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -22,7 +40,6 @@ import org.cibseven.webapp.rest.model.SevenVerifyUser;
 import org.cibseven.webapp.rest.model.User;
 import org.cibseven.webapp.rest.model.UserGroup;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -30,8 +47,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import lombok.extern.slf4j.Slf4j;
-
-import static org.cibseven.webapp.auth.SevenAuthorizationUtils.*;
 
 @Slf4j
 @Component
@@ -123,7 +138,7 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 			Optional<String> lastNameLike, Optional<String> email, Optional<String> emailLike, Optional<String> memberOfGroup, Optional<String> memberOfTenant,
 			Optional<String> idIn, Optional<String> firstResult, Optional<String> maxResults, Optional<String> sortBy, Optional<String> sortOrder, CIBUser user) {
 		
-		if (!userProvider.equals("de.cib.cibflow.auth.SevenUserProvider")) {
+		if (!userProvider.equals("org.cibseven.webapp.auth.SevenUserProvider")) {
 			String url = createFindUserCaseInsensitiveUrl(id, firstName, firstNameLike, lastName, lastNameLike, email, emailLike, memberOfGroup, memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder); 
 			return Arrays.asList(((ResponseEntity<User[]>) doGet(url, User[].class, user, true)).getBody());
 		}
@@ -304,7 +319,7 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 	public SevenUser getUserProfile(String userId, CIBUser user) {
 		String url = camundaUrl + "/engine-rest/user/" + userId + "/profile";
 
-		return doGet(url, SevenUser.class, null, false).getBody();
+		return doGet(url, SevenUser.class, user, false).getBody();
 	}
 
 	@Override
@@ -422,12 +437,6 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 		doDelete(url, user);
 	}
 
-	@Override
-	protected HttpHeaders addAuthHeader(HttpHeaders headers, CIBUser user) {
-		if (user != null) headers.add("Authorization", user.getAuthToken());
-		return headers;
-	}
-	
 	private String getWildcard () {
 		String wcard = "";
 		if (!wildcard.equals("")) wcard = wildcard;

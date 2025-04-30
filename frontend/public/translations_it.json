@@ -14,6 +14,46 @@
 		"login": "Accedi",
 		"forgotten": "Password forgotten?"
 	},
+	"processes-dashboard": {
+		"headerActive": "Dashboard delle operazioni",
+		"headerDeployed": "Distribuiti",
+		"items": {
+			"running-instances": {
+				"title": "Istanza di processo in esecuzione",
+				"tooltip": "Visualizza tutte le istanze di processo attive"
+			},
+			"open-incidents": {
+				"title": "Incidenti aperti",
+				"tooltip": "Esamina tutti gli incidenti attualmente aperti",
+				"none": "Nessun incidente!"
+			},
+			"open-human-tasks": {
+				"title": "Attività umane aperte",
+				"tooltip": "@:start.cockpit.humanTasks.tooltip",
+				"assigned": "Assegnato a un utente",
+				"unassigned": "Non assegnato",
+				"assignedGroups": "Assegnato a uno o più gruppi"
+			},
+			"processes": {
+				"title": "Definizioni di processo",
+				"tooltip": "@:start.cockpit.processes.tooltip"
+			},
+			"decisions": {
+				"title": "Definizioni di decisione",
+				"tooltip": "@:start.cockpit.decisions.tooltip"
+			},
+			"deployments": {
+				"title": "@:start.cockpit.deployments.title",
+				"tooltip": "@:start.cockpit.deployments.tooltip"
+			},
+			"batches": {
+				"title": "@:start.cockpit.batches.title",
+				"tooltip": "@:start.cockpit.batches.tooltip"
+			}
+		},
+		"others": "Altri",
+		"unnamedProcess": "Processo senza nome"
+	},
 	"process" : {
 		"name": "Nome",
 		"key": "Key di processo",	
@@ -33,7 +73,7 @@
 		"start": "Inizia",
 		"showProcess": "Visualizza il processo",
 		"showInstance": "Visualizza istanza",
-		"showCockpit": "Cockpit",		
+		"showCockpit": "Apri nel vecchio Cockpit",
 		"downloadBpmn": "Scarica il file BPMN",
 		"openModeler": "Open BPMN file in Modeler",		
 		"showManagement": "Gestione dei processi",
@@ -50,6 +90,7 @@
 		"favorite": "Preferito",
 		"actions": "Azioni",
 		"status": "Stato",
+		"tenant": "Tenant",
 		"details": {
 			"titleProcessActions": "Azioni sulla definizione del processo",
 			"titleInstancesActions": "Azioni per il processo",
@@ -87,10 +128,17 @@
 		"back": "Indietro",
 		"incidentsCounter": "Incidenti: {0}",
 		"incidents": "Incidenti",
-		"onlyIncidents": "Solo con incidenti",
+		"onlyIncidents": {
+			"title": "Solo con incidenti",
+			"tooltip": "Mostra solo i processi che hanno incidenti"
+		},
+		"onlyActive": {
+			"title": "Solo attivi",
+			"tooltip": "Mostra solo i processi con definizioni non sospese"
+		},
 		"runningInstances": "Istanze",		
 		"instances": "Istanze",
-		"calledProcessInstances": "Chiamato processo Istanze"
+		"calledProcessInstances": "Chiamato processo Istanze",
 		"statistics": "Statistics",		
 		"suspendInstance": "Sospendi istanza di processo",
 		"deleteInstance": "Elimina l'istanza di processo in esecuzione",
@@ -102,7 +150,6 @@
 		"refreshVersions": "Aggiorna le versioni della cronologia",
 		"loadVersions": "Carica tutte le versioni della cronologia",
 		"externalProcessStarted": "Process successfully started",
-		"onlyActive": "Solo attivi",
 		"exportInstances": "Esporta istanze",
 		"days": "giorni",
 		"deleteProcessDefinition": {
@@ -246,8 +293,7 @@
 		"exportCsv": "Esporta tutto",
 		"users": {
 			"title": "Utenti",
-			"id": "ID",
-			"userId": "User ID",
+			"id": "User ID",
 			"firstName": "Nome",
 			"lastName": "Cognome",
 			"email": "Email",
@@ -270,8 +316,34 @@
 			"search": "Cerca"			
 		},
 		"tenants": {
-			"title": "Tenants",
-			"tooltip": "Tenants management"
+			"title": "Tenant",
+			"tooltip": "Gestione dei tenant",
+			"associationTitle": "{0} Tenant",
+			"fullId": "ID del tenant",
+			"fullName": "Nome del tenant",
+			"actions": "Azioni",
+			"unassignUserMessage": "L'utente {0} è stato rimosso dal tenant",
+			"unassignGroupMessage": "Gruppo {0} rimosso dal tenant",
+			"addTo": "Aggiungi a un tenant",
+			"id": "ID",
+			"name": "Nome",
+			"add": "Aggiungi tenant",
+			"create": "Crea un nuovo tenant",
+			"cancel": "Annulla",
+			"tenantCreatedMessage": "Tenant {0} creato",
+			"confirmDelete": "Vuoi davvero eliminare il tenant con i seguenti parametri?",
+			"tenantDeletedMessage": "Tenant {0} eliminato",
+			"deleteTenant": "Elimina tenant",
+			"editTenant": "Modifica tenant",
+			"information": "Informazioni",
+			"users": "Utenti",
+			"groups": "Gruppi",
+			"editMessage": "Modifica tenant ({0})",
+			"update": "Aggiorna tenant",
+			"updateTenantMessage": "Tenant {0} è stato aggiornato",
+			"deleteTenantMessage": "Tenant {0} è stato rimosso",
+			"tenantUsers": "Utenti del tenant",
+			"tenantGroups": "Gruppi del tenant"
 		},
 		"authorizations": {
 			"title": "Autorizzazioni",
@@ -292,6 +364,7 @@
 				"group": "Group",
 				"groupMembership": "Group Membership",
 				"authorization": "Authorization",
+				"system": "System",
 				"filter": "Filter",
 				"processDefinition": "Process Definition",
 				"task": "Task",
@@ -332,7 +405,16 @@
 				"diagnosticData": "Dati diagnostici"
 			},
 			"execution-metrics": {
-				"title": "Metriche di esecuzione"
+				"title": "Metriche di esecuzione",
+				"metricsHelp": "Numero registrato di istanze di processo e istanze decisionali elaborate dal motore e utenti di task assegnati a un'attività utente.",
+				"startDateContract": "Data di inizio del contratto",
+				"process-instances": "Istanze di decisione",
+				"decision-instances": "Istanze di processo",
+				"task-users": "Utenti di attività",
+				"usageLast12MonthsByMonth": "Utilizzo negli ultimi 12 mesi per mese",
+				"annualUsageBySubscriptionTerm": "Metriche di utilizzo annuali per periodo di abbonamento",
+				"fromUpToToday": "{from} fino ad oggi",
+				"fromTo": "da {from} a {to}"
 			}
 		}
 	},
@@ -581,20 +663,47 @@
     },
 	"start": { 
 		"close": "Chiudere",
-		"taskList": "I miei compiti",
-		"startProcesses": "@:process.startProcess",
-		"cockpit": "Cockpit",
-		"emptyStart": "Currently you do not have permission to perform any task here. Please contact the CIB seven administrator to get permissions.",
-		"groupOperations": "Operations",
-		"groupAdministration": "Administration",
-		"admin": "Gestione",
-		"userAdmin": "Gestione utenti",
-		"modeler": "Modellatore di processo",
-		"easyForm": "Easy Form",
-		"adminPanel": "Users Management",
-		"adminProcesses": "Processi",
-		"adminDecisions": "Decisioni",
-		"adminHumanTasks": "Attività"
+		"startProcess": {
+			"title": "@:process.startProcess",
+			"tooltip": "Open Start Process"
+		},
+		"taskList": {
+			"title": "Tasklist",
+			"tooltip": "Apri Tasklist"
+		},
+		"cockpit": {
+			"title": "Cockpit",
+			"tooltip": "Apri Cockpit",
+			"processes": {
+				"title": "Processi",
+				"tooltip": "Esplora le definizioni di processo disponibili"
+			},
+			"decisions": {
+				"title": "Decisioni",
+				"tooltip": "Esplora le definizioni di decisione disponibili"
+			},
+			"humanTasks": {
+				"title": "Attività",
+				"tooltip": "Visualizza tutte le attività umane in sospeso"
+			},
+			"deployments": {
+				"title": "Distribuzioni",
+				"tooltip": "Visualizza tutte le risorse di processo distribuite"
+			},
+			"batches": {
+				"title": "Batch",
+				"tooltip": "Gestisci e visualizza le operazioni batch"
+			}
+		},
+		"admin": {
+			"title": "Admin",
+			"tooltip": "Open Admin"
+		},
+		"oldCockpit": {
+			"title": "Old Cockpit",
+			"tooltip": "Open old Cockpit"
+		},
+		"emptyStart": "Currently you do not have permission to perform any task here. Please contact the CIB seven administrator to get permissions."
 	},
 	"errors": {
 		"invalid": "Inserisci un indirizzo valido",
@@ -701,6 +810,7 @@
 		"selectAll": "Seleziona tutto",
 		"deleteDeployments": "Elimina distribuzioni",
 		"showModel": "Mostra modello",
+		"errorLoading": "Impossibile caricare la risorsa per la distribuzione selezionata",
 		"deploymentsDeleted": "{0} distribuzioni su {1} sono state eliminate con successo"
 	},
 	"cib-table2": {
@@ -758,7 +868,7 @@
 			"emailDescription": "Email associated with the account you want to recover",
 			"cancel": "Cancel",
 			"sendEmail": "Send recovery email",
-			"id": "User ID",
+			"id": "@:admin.users.id",
 			"changePassword": "Change password",
 			"emailSent": "The e-mail with the link to recover your password has been sent."
 		},

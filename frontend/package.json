@@ -1,6 +1,6 @@
 {
   "name": "cibseven-components",
-  "version": "0.0.0",
+  "version": "__CI_VERSION__",
   "type": "module",
   "license": "",
   "main": "./src/main.js",
@@ -21,6 +21,7 @@
     "build": "vite build",
     "build:library": "cross-env BUILD_MODE=library vite build",
     "preview": "vite preview",
+    "test:report": "vitest run --reporter=junit --outputFile=target/vitest-reports/TEST-front-end.xml",
     "test:unit": "vitest",
     "prepare": "cypress install",
     "test:e2e": "start-server-and-test preview http://localhost:4173 'cypress run --e2e'",
@@ -31,11 +32,13 @@
   "dependencies": {
     "@bpmn-io/form-js": "^1.15.0",
     "@mdi/font": "^7.4.47",
+    "apexcharts": "^4.5.0",
     "axios": "^1.7.9",
     "bootstrap": "^5.3.3",
     "bpmn-js": "^18.2.0",
     "cib-common-components": "^1.0.18",
     "dmn-js": "^17.2.0",
+    "jquery": "^3.7.1",
     "js-sha256": "^0.11.0",
     "moment": "^2.30.1",
     "platform": "^1.3.6",
@@ -43,6 +46,7 @@
     "vue-global-events": "^3.0.1",
     "vue-i18n": "^11.0.0-rc.1",
     "vue-router": "^4.0.13",
+    "vue3-apexcharts": "^1.8.0",
     "vuex": "^4.0.2"
   },
   "devDependencies": {
@@ -59,7 +63,7 @@
     "jsdom": "^26.0.0",
     "prettier": "^3.4.2",
     "start-server-and-test": "^2.0.10",
-    "vite": "^6.2.5",
+    "vite": "^6.2.6",
     "vite-plugin-vue-devtools": "^7.7.1",
     "vitest": "^3.0.5"
   },

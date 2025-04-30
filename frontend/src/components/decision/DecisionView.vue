@@ -1,12 +1,30 @@
+<!--
+
+    Copyright CIB software GmbH and/or licensed to CIB software GmbH
+    under one or more contributor license agreements. See the NOTICE file
+    distributed with this work for additional information regarding copyright
+    ownership. CIB software licenses this file to you under the Apache License,
+    Version 2.0; you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+
+-->
 <template>
   <div class="d-flex flex-column">
     <div class="d-flex ps-3 py-2">
-      <b-button :title="$t('start.admin')" variant="outline-secondary" :to="{ name: 'decision-list' }" class="mdi mdi-18px mdi-arrow-left border-0"></b-button>
+      <b-button :title="$t('start.cockpit.decisions.title')" variant="outline-secondary" :to="{ name: 'decision-list' }" class="mdi mdi-18px mdi-arrow-left border-0"></b-button>
       <h4 class="ps-1 m-0 align-items-center d-flex" style="border-width: 3px !important">{{ decisionName }}</h4>
     </div>
     <SidebarsFlow ref="sidebars" class="border-top overflow-auto" v-model:left-open="leftOpen" :left-caption="shortendLeftCaption">
       <template v-slot:left>
-        <DecisionVersionListSidebar v-if="versions.length > 0" ref="navbar" 
+        <DecisionVersionListSidebar v-if="versions.length > 0" ref="navbar"
           :versions="versions" @refresh-decision-versions="loadDecisionVersionsByKey(decisionKey, versionIndex, $event)"></DecisionVersionListSidebar>
       </template>
       <router-view

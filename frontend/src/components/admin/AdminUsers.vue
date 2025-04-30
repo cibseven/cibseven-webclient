@@ -1,3 +1,21 @@
+<!--
+
+    Copyright CIB software GmbH and/or licensed to CIB software GmbH
+    under one or more contributor license agreements. See the NOTICE file
+    distributed with this work for additional information regarding copyright
+    ownership. CIB software licenses this file to you under the Apache License,
+    Version 2.0; you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+
+-->
 <template>
   <div class="d-flex flex-column bg-light" :style="{ height: 'calc(100% - 55px)' }">
     <div class="container pt-4">
@@ -7,7 +25,7 @@
             <template #prepend>
               <b-button :title="$t('searches.search')" aria-hidden="true" class="rounded-left" variant="secondary"><span class="mdi mdi-magnify" style="line-height: initial"></span></b-button>
             </template>
-            <b-form-input :title="$t('searches.search')" :placeholder="$t('searches.search')" @keyup="searchUsers" v-model="filter"></b-form-input>
+            <b-form-input :title="$t('searches.search')" :placeholder="$t('searches.search')" v-model.trim="filter"></b-form-input>
           </b-input-group>
         </div>
         <div class="col-8 text-end">
@@ -22,7 +40,7 @@
         </div>
       </div>
     </div>
-    <div class="container overflow-auto bg-white shadow g-0" @scroll="showMore">
+    <div class="container overflow-auto bg-white shadow-sm border rounded g-0" @scroll="showMore">
       <FlowTable striped v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'" thead-class="sticky-header" :items="users" primary-key="id"
         prefix="admin.users." :fields="[{label: 'id', key: 'id', class: 'col-md-2 col-sm-2', tdClass: 'border-end py-1' },
             {label: 'firstName', key: 'firstName', class: 'col-md-3 col-sm-3', tdClass: 'border-end py-1' },
@@ -61,7 +79,7 @@
       <span v-if="userSelected">
         <p>{{ $t('admin.users.confirmDelete') }}</p>
         <p>
-          <strong>{{ $t('admin.users.userId') }}:</strong> {{ userSelected.id }} <br>
+          <strong>{{ $t('admin.users.id') }}:</strong> {{ userSelected.id }} <br>
           <strong>{{ $t('admin.users.firstName') }}:</strong> {{ userSelected.firstName }}<br>
           <strong>{{ $t('admin.users.lastName') }}:</strong> {{ userSelected.lastName }}<br>
           <strong>{{ $t('admin.users.email') }}:</strong> {{ userSelected.email }}
@@ -97,6 +115,11 @@ export default {
       maxResults: 40,
       loading: false,
       exporting: false
+    }
+  },
+  watch: {
+    filter: function() {
+      this.searchUsers()
     }
   },
   created: function() {

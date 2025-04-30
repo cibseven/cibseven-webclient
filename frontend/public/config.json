@@ -109,6 +109,12 @@
 		"authorizationsManagement": {
 			"authorization": ["ALL"]
 		},
+		"systemManagement": {
+			"system": ["ALL"]
+		},
+		"tenantsManagement": {
+			"tenant": ["ALL"]
+		},
 		"userProfile": {
 			"application": ["ALL"]
 		},
@@ -155,11 +161,11 @@
 		"showTaskDetailsSidebar": true,
 		"showFilterDueDate": true,
 		"showFilterReminderDate": true,
-		"showFeedbackButton": true,
+		"showFeedbackButton": false,
 		"showTaskListManualRefresh": true,
 		"disableCandidateUsers": false,
 		"showProcessName": true,
-		"showSupportInfo": true,
+		"showSupportInfo": false,
 		"showInfoAndHelp": true,
 		"showChat": true,		
 		"showUserSettings": true,
@@ -195,6 +201,7 @@
 			"7": { "id": "7", "key": "task", "permissions": ["CREATE","READ","UPDATE","DELETE","TASK_ASSIGN","TASK_WORK","UPDATE_VARIABLE","READ_VARIABLE"] },
 			"11": { "id": "11", "key": "tenant", "permissions": ["READ","UPDATE","CREATE","DELETE"] },
 			"12": { "id": "12", "key": "tenantMembership", "permissions": ["CREATE","DELETE"] },
+			"21": { "id": "21", "key": "system", "permissions": ["READ"] },
 			"1": { "id": "1", "key": "user", "permissions": ["READ","UPDATE","CREATE","DELETE"] }
 		},
 		"types": {

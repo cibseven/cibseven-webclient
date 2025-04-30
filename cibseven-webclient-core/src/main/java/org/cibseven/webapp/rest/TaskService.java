@@ -1,3 +1,19 @@
+/*
+ * Copyright CIB software GmbH and/or licensed to CIB software GmbH
+ * under one or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information regarding copyright
+ * ownership. CIB software licenses this file to you under the Apache License,
+ * Version 2.0; you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package org.cibseven.webapp.rest;
 
 import java.util.Collection;
@@ -19,7 +35,6 @@ import org.cibseven.webapp.providers.SevenProvider;
 import org.cibseven.webapp.rest.model.CandidateGroupTaskCount;
 import org.cibseven.webapp.rest.model.IdentityLink;
 import org.cibseven.webapp.rest.model.Task;
-import org.cibseven.webapp.rest.model.TaskCount;
 import org.cibseven.webapp.rest.model.TaskFiltering;
 import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
@@ -59,19 +74,15 @@ public class TaskService extends BaseService implements InitializingBean {
 	*/
 	
 	@Operation(
-			summary = "Get number of tasks based on request params",
+			summary = "Get number of tasks based on filters",
 			description = "<strong>Return: Number of tasks")
 	@ApiResponse(responseCode = "404", description= "Task not found")
-	@RequestMapping(value = "/task/count", method = RequestMethod.GET)
-	public TaskCount findTasksCount(
-			@Parameter(description = "Name of the task") @RequestParam Optional<String> name, 
-			@Parameter(description = "Task name like ...") @RequestParam Optional<String> nameLike,
-			@Parameter(description = "Task definition key") @RequestParam Optional<String> taskDefinitionKey,
-			@Parameter(description = "Task definition key in") @RequestParam Optional<String> taskDefinitionKeyIn,
-			Locale loc, HttpServletRequest rq) {
-		CIBUser user = checkAuthorization(rq, true, false);
+	@PostMapping("/task/count")
+	public Integer findTasksCount(
+			@RequestBody Map<String, Object> filters,
+			Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
-		return sevenProvider.findTasksCount(name, nameLike, taskDefinitionKey, taskDefinitionKeyIn, user);
+		return sevenProvider.findTasksCount(filters, user);
 	}
 	 
 	//Not used
@@ -196,7 +207,7 @@ public class TaskService extends BaseService implements InitializingBean {
 	public Collection<Task> findTasksPost(
 			@RequestBody Map<String, Object> data,
 			Locale loc, HttpServletRequest rq) {
-		CIBUser user = checkAuthorization(rq, true, false);
+		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
 		return sevenProvider.findTasksPost(data, user);
 	}

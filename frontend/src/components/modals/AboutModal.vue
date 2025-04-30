@@ -1,5 +1,23 @@
+<!--
+
+    Copyright CIB software GmbH and/or licensed to CIB software GmbH
+    under one or more contributor license agreements. See the NOTICE file
+    distributed with this work for additional information regarding copyright
+    ownership. CIB software licenses this file to you under the Apache License,
+    Version 2.0; you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+
+-->
 <template>
-  <b-modal ref="about" :title="$t('infoAndHelp.flowModalAbout.title')" :ok-only="true">
+  <b-modal ref="about" :title="$t('infoAndHelp.flowModalAbout.title')">
     <div class="row">
       <div class="col-2">
         <svg id="Ebene_1" data-name="Ebene 1"
@@ -18,17 +36,34 @@
       </div>
       <div class="col-10 d-flex align-items-center">{{ $t('infoAndHelp.flowModalSupport.version') }}: {{ version }}</div>
     </div>
+    <template v-slot:modal-footer>
+      <div class="row w-100 me-0">
+        <div class="col-6 p-0">
+          <b-button v-if="permissionsAdmin" variant="light" @click="onDiagnosticData">{{ $t('admin.system.system-diagnostics.diagnosticData') }}</b-button>
+        </div>
+        <div class="col-6 p-0">
+          <b-button variant="primary" @click="$refs.about.hide()" class="float-end">{{ $t('confirm.ok') }}</b-button>
+        </div>
+      </div>
+    </template>
   </b-modal>
 </template>
 
 <script>
 import { InfoService } from '@/services.js'
+import { permissionsMixin } from '@/permissions.js'
 
 export default {
   name: 'AboutModal',
+  mixins: [permissionsMixin],
   data: function() {
     return {
       version: ''
+    }
+  },
+  computed: {
+    permissionsAdmin: function() {
+      return this.$root.user && this.adminManagementPermissions(this.$root.config.permissions.systemManagement, 'system')
     }
   },
   methods: {
@@ -44,6 +79,10 @@ export default {
         })
       }
       this.$refs.about.show()
+    },
+    onDiagnosticData: function() {
+      this.$refs.about.hide()
+      this.$router.push('/seven/auth/admin/system/system-diagnostics')
     }
   }
 }

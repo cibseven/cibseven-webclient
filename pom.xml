@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.cibseven</groupId>
 		<artifactId>release-parent</artifactId>
-		<version>1.1.0</version>
+		<version>1.2.0</version>
 	</parent>
 	
 	<groupId>org.cibseven.webapp</groupId>
@@ -35,14 +35,30 @@
 		<common-auth.version>1.0.0-SNAPSHOT</common-auth.version>
 		<version.spring.boot>3.4.2</version.spring.boot>
 		<version.openapi-starter-webmvc-ui>2.8.4</version.openapi-starter-webmvc-ui>
-		<image.tomcat-10-base>harbor.cib.de/dev/tomcat-10-base:1.1.0</image.tomcat-10-base>
+		<image.tomcat-10-base>harbor.cib.de/dev/tomcat-10-base:2.0.0</image.tomcat-10-base>
 		<jib-maven-plugin.version>3.4.4</jib-maven-plugin.version>
 		<jib.from.image>${image.tomcat-10-base}</jib.from.image>
-		<jib.to.image>harbor.cib.de/dev/seven-webclient:${project.version}</jib.to.image>
+		<jib.to.image>harbor.cib.de/dev/cibseven-webclient:${project.version}</jib.to.image>
 		
 		<version.eirslett.frontend.maven.plugin>1.12.1</version.eirslett.frontend.maven.plugin>
     	<version.nodejs>22.14.0</version.nodejs>
 	    <version.npm>10.9.2</version.npm>
+		
+		<!-- REWRITE COPYRIGHT PARAMEMER FROM SUPER POM (CAMUNDA COPYRIGHT) -->
+		<license.inlineHeader>Copyright CIB software GmbH and/or licensed to CIB software GmbH
+under one or more contributor license agreements. See the NOTICE file
+distributed with this work for additional information regarding copyright
+ownership. CIB software licenses this file to you under the Apache License,
+Version 2.0; you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.</license.inlineHeader>
 	    
 	</properties>
 
@@ -89,17 +105,6 @@
 									<arguments>ci --no-audit --no-fund</arguments>
 								</configuration>
 							</execution>
-							<execution>
-								<id>npm version</id>
-								<goals>
-									<goal>npm</goal>
-								</goals>
-								<phase>generate-resources</phase>
-								<configuration>
-									<arguments>version --allow-same-version
-										--no-git-tag-version ${project.version}</arguments>
-								</configuration>
-							</execution>
 							<!--
 							<execution>
 								<id>License check</id>
@@ -113,6 +118,28 @@
 							</execution>
 							-->
 							<execution>
+								<id>Test</id>
+								<goals>
+									<goal>npm</goal>
+								</goals>
+								<phase>generate-resources</phase>
+								<configuration>
+									<arguments>run test:report</arguments>
+									<skip>${skipTests}</skip>
+								</configuration>
+							</execution>
+							<execution>
+								<id>Lint</id>
+								<goals>
+									<goal>npm</goal>
+								</goals>
+								<phase>generate-resources</phase>
+								<configuration>
+									<arguments>run lint</arguments>
+									<skip>${skipTests}</skip>
+								</configuration>
+							</execution>
+							<execution>
 								<id>Build</id>
 								<goals>
 									<goal>npm</goal>
@@ -120,17 +147,6 @@
 								<phase>generate-resources</phase>
 								<configuration>
 									<arguments>run build</arguments>
-								</configuration>
-							</execution>
-							<execution>
-								<id>npm version back</id>
-								<goals>
-									<goal>npm</goal>
-								</goals>
-								<phase>generate-resources</phase>
-								<configuration>
-									<arguments>version --allow-same-version
-										--no-git-tag-version 0.0.0</arguments>
 								</configuration>
 							</execution>
 						</executions>
@@ -213,6 +229,33 @@
 				</plugins>
 			</build>
 		</profile>
+			<profile>
+				<id>add-missing-copyright</id>
+				<build>
+					<plugins>
+						<plugin>
+							<groupId>com.mycila</groupId>
+							<artifactId>license-maven-plugin</artifactId>
+							<version>5.0.0</version>
+							<configuration>
+								<mapping>
+									<vue>XML_STYLE</vue>
+								</mapping>
+								<licenseSets>
+									<licenseSet>
+										<inlineHeader>${license.inlineHeader}</inlineHeader>
+										<includes>
+											<include>**/*.java</include>
+											<include>**/*.js</include> 
+											<include>**/*.vue</include>
+										</includes>
+									</licenseSet>
+								</licenseSets>
+							</configuration>
+						</plugin>
+					</plugins>
+				</build>
+			</profile>
 	</profiles>
 
 	<dependencyManagement>
@@ -296,6 +339,29 @@
 			</plugins>
 		</pluginManagement>
 	</build>
+	
+	<repositories>
+	    <repository>
+	      <id>maven-central</id>
+	      <name>Maven Central</name>
+	      <url>https://repo1.maven.org/maven2</url>
+	      <snapshots>
+	        <enabled>false</enabled>
+	      </snapshots>
+	    </repository>
+	    <repository>
+	      <!-- Required for local builds by community users on master branch -->
+	      <id>mvn-cibseven-public</id>
+	      <name>CIB seven Public Repository</name>
+	      <url>https://artifacts.cibseven.org/repository/public</url>
+	    </repository>
+	    <repository>
+	      <!-- Required for local builds by developers on maintainance branches -->
+	      <id>mvn-cibseven-snapshots</id>
+	      <name>CIB seven Snapshots repository</name>
+	      <url>https://artifacts.cibseven.org/repository/snapshots</url>
+	    </repository>
+	</repositories>
 
 	<scm>
 		<connection>scm:git:${project.git.url}</connection>
