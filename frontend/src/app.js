@@ -95,6 +95,11 @@ Promise.all([
                       process.loading = false
                   })
                   this.$store.commit('setProcesses', { processes })
+                  
+                  // Sync favorites from local storage with process store
+                  if (localStorage.getItem('favorites')) {
+                    this.$store.dispatch('setFavorites', { favorites: JSON.parse(localStorage.getItem('favorites')) })
+                  }
               })
           },
           async loadDecisions() {
