@@ -118,7 +118,7 @@ export default {
     }
   },
   created: function() {    
-    this.loadProcesses(false)
+    this.loadProcesses(false) // the method takes localStorage.getItem('favorites') into account
     this.view = this.isMobile() ? 'image-outline' : localStorage.getItem('viewMode') || 'image-outline'
   },
   computed: {
@@ -148,9 +148,6 @@ export default {
     }
   },
   mounted: function() {
-    if (localStorage.getItem('favorites')) {
-      this.$store.dispatch('setFavorites', { favorites: JSON.parse(localStorage.getItem('favorites')) })
-    }
     if (this.$route.query.key) {
       setTimeout(() => { this.checkProcessInUrl(this.$route.query.key) }, 1000)
     }
