@@ -320,15 +320,16 @@ var HistoryService = {
   fetchActivityVariablesHistory: function(activityInstanceId) {
     return axios.get(appConfig.servicesBasePath + "/task-history/" + activityInstanceId + "/variables")
   },
-  findProcessesInstancesHistory: function(key, firstResult, maxResults, active) {
-    return axios.get(appConfig.servicesBasePath + "/process-history/instance/by-process-key/" + key, {
-      params: {
-        active: active,
-        firstResult: firstResult,
-        maxResults: maxResults
-      }
-    }).then(patchProcess)
+  findProcessesInstancesHistory: function(filters, firstResult, maxResults) {
+  return axios.post(appConfig.servicesBasePath + "/process-history/instance", {
+	params: {
+		filters: filters,
+		firstResult: firstResult,
+		maxResults: maxResults
+	}
+  })
   },
+  
   findProcessesInstancesHistoryById: function(id, activityId, firstResult, maxResults, text, active) {
     return axios.get(appConfig.servicesBasePath + "/process-history/instance/by-process-id/" + id, {
       params: {
@@ -345,6 +346,9 @@ var HistoryService = {
   },
   findActivitiesProcessDefinitionHistory: function(processDefinitionId) {
     return axios.get(appConfig.servicesBasePath + "/process-history/activity/by-process-definition/" + processDefinitionId)
+  },
+  findActivitiesInstancesHistoryWithFilter(filter){
+	return axios.get(appConfig.servicesBasePath + "/process-history/activity", 	{ params: filter })
   },
   fetchProcessInstanceVariablesHistory: function(processInstanceId, deserialize) {
     return axios.get(appConfig.servicesBasePath + "/process-history/instance/by-process-instance/" + processInstanceId + "/variables",

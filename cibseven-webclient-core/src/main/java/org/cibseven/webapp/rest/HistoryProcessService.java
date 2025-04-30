@@ -19,6 +19,7 @@ package org.cibseven.webapp.rest;
 import java.util.Collection;
 
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,6 +35,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -54,6 +56,20 @@ public class HistoryProcessService extends BaseService {
 		return bpmProvider.findHistoryProcessInstanceHistory(processInstanceId, user);
 	}
 	*/
+
+	@Operation(
+			summary = "Queries for historic process instances that fulfill the given parameters",
+			description = "Parameters firstResult and maxResults are used for pagination")
+	@ApiResponse(responseCode = "400", description = "There is at least one invalid parameter value")
+	@RequestMapping(value = "/process-history/instance", method = RequestMethod.POST)
+	public Collection<HistoryProcessInstance> findProcessesInstancesHistory(
+			@Parameter(description = "Parameters to filter query") @RequestBody Map<String, Object> filters,
+			@Parameter(description = "Index of the first result to return") @RequestParam Optional<Integer> firstResult,
+			@Parameter(description = "Maximum number of results to return") @RequestParam Optional<Integer> maxResults,
+			CIBUser user) {
+		checkPermission(user, SevenResourceType.HISTORY, PermissionConstants.READ_ALL);
+		return bpmProvider.findProcessesInstancesHistory(filters, firstResult, maxResults, user);
+	}
 	
 	@Operation(
 			summary = "Get processes instances with a specific process key (in the history)",
@@ -85,23 +101,7 @@ public class HistoryProcessService extends BaseService {
 			Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.HISTORY, PermissionConstants.READ_ALL);
 		return bpmProvider.findProcessesInstancesHistoryById(id, activityId, active, firstResult, maxResults, text, user);
-	}
-	
-	@Operation(
-			summary = "Get activities instances that belong to a process instance",
-			description = "The activities found belongs to the history, they have other attributes and activities from finished processes are also fetched")
-	@ApiResponses({
-		@ApiResponse(responseCode = "400", description = "Invalid attribute value exception"),
-		@ApiResponse(responseCode = "404", description = "Process instance not found")
-	})
-	@RequestMapping(value = "/process-history/activity/by-process-instance/{processInstanceId}", method = RequestMethod.GET)
-	public Collection<ActivityInstanceHistory> findActivitiesInstancesHistory(
-			@Parameter(description = "Filter by process instance Id") @PathVariable String processInstanceId,
-			Locale loc, CIBUser user) {
-		checkPermission(user, SevenResourceType.HISTORY, PermissionConstants.READ_ALL);
-		return bpmProvider.findActivitiesInstancesHistory(processInstanceId, user);
-	}
-	
+	}	
 	
 	@Operation(
 			summary = "Get variables from a specific process instance",
@@ -114,33 +114,6 @@ public class HistoryProcessService extends BaseService {
 			Locale loc, CIBUser user) {
         checkPermission(user, SevenResourceType.HISTORY, PermissionConstants.READ_ALL);
 		return bpmProvider.fetchProcessInstanceVariablesHistory(processInstanceId, user, deserialize);
-	}
-	
-	
-	@Operation(
-			summary = "Get activities instances that belong to a process definition",
-			description = "The activities found belongs to the history, they have other attributes and activities from finished processes are also fetched")
-	@ApiResponses({
-		@ApiResponse(responseCode = "400", description = "Invalid attribute value exception"),
-		@ApiResponse(responseCode = "404", description = "Process definition not found")
-	})
-	@RequestMapping(value = "/process-history/activity/by-process-definition/{processDefinitionId}", method = RequestMethod.GET)
-	public Collection<ActivityInstanceHistory> findActivitiesProcessDefinitionHistory(
-			@Parameter(description = "Filter by process definition Id") @PathVariable String processDefinitionId,
-			Locale loc, CIBUser user) {
-		checkPermission(user, SevenResourceType.HISTORY, PermissionConstants.READ_ALL);
-		return bpmProvider.findActivitiesProcessDefinitionHistory(processDefinitionId, user);
-	}
-	
-	
-	@Operation(summary = "Get a variable data from the process history")
-	@ApiResponse(responseCode = "404", description = "Variable not found")
-	@RequestMapping(value = "/process-history/variable/{id}/data", method = RequestMethod.GET)
-	public ResponseEntity<byte[]> fetchHistoryVariableDataById(
-			@Parameter(description = "Id of the variable") @PathVariable String id,
-			Locale loc, CIBUser user) {
-        checkPermission(user, SevenResourceType.HISTORY, PermissionConstants.READ_ALL);
-		return bpmProvider.fetchHistoryVariableDataById(id, user);
 	}
 	
 	// Used for chat-comments, to find parent of a process instanceId
@@ -173,5 +146,57 @@ public class HistoryProcessService extends BaseService {
 		checkCockpitRights(user);
 		checkPermission(user, SevenResourceType.HISTORY, PermissionConstants.DELETE_ALL);
 		bpmProvider.deleteVariableHistoryInstance(id, user);
+	}
+	
+	@Operation(
+			summary = "Queries for historic activity instances that fulfill the given parameters",
+			description = "The activities found belongs to the history")
+	@ApiResponses({
+		@ApiResponse(responseCode = "400", description = "Invalid attribute value exception")
+	})
+	@RequestMapping(value = "/process-history/activity", method = RequestMethod.GET)
+	public Collection<ActivityInstanceHistory> findActivitiesInstancesHistory(@RequestParam Map<String, Object> queryParams, CIBUser user) {
+		checkPermission(user, SevenResourceType.HISTORY, PermissionConstants.READ_ALL);
+		return bpmProvider.findActivitiesInstancesHistory(queryParams, user);
+	}	
+	
+	@Operation(
+			summary = "Get activities instances that belong to a process instance",
+			description = "The activities found belongs to the history, they have other attributes and activities from finished processes are also fetched")
+	@ApiResponses({
+		@ApiResponse(responseCode = "400", description = "Invalid attribute value exception"),
+		@ApiResponse(responseCode = "404", description = "Process instance not found")
+	})
+	@RequestMapping(value = "/process-history/activity/by-process-instance/{processInstanceId}", method = RequestMethod.GET)
+	public Collection<ActivityInstanceHistory> findActivitiesInstancesHistory(
+			@Parameter(description = "Filter by process instance Id") @PathVariable String processInstanceId,
+			Locale loc, CIBUser user) {
+		checkPermission(user, SevenResourceType.HISTORY, PermissionConstants.READ_ALL);
+		return bpmProvider.findActivitiesInstancesHistory(processInstanceId, user);
+	}	
+	
+	@Operation(
+			summary = "Get activities instances that belong to a process definition",
+			description = "The activities found belongs to the history, they have other attributes and activities from finished processes are also fetched")
+	@ApiResponses({
+		@ApiResponse(responseCode = "400", description = "Invalid attribute value exception"),
+		@ApiResponse(responseCode = "404", description = "Process definition not found")
+	})
+	@RequestMapping(value = "/process-history/activity/by-process-definition/{processDefinitionId}", method = RequestMethod.GET)
+	public Collection<ActivityInstanceHistory> findActivitiesProcessDefinitionHistory(
+			@Parameter(description = "Filter by process definition Id") @PathVariable String processDefinitionId,
+			Locale loc, CIBUser user) {
+		checkPermission(user, SevenResourceType.HISTORY, PermissionConstants.READ_ALL);
+		return bpmProvider.findActivitiesProcessDefinitionHistory(processDefinitionId, user);
+	}	
+	
+	@Operation(summary = "Get a variable data from the process history")
+	@ApiResponse(responseCode = "404", description = "Variable not found")
+	@RequestMapping(value = "/process-history/variable/{id}/data", method = RequestMethod.GET)
+	public ResponseEntity<byte[]> fetchHistoryVariableDataById(
+			@Parameter(description = "Id of the variable") @PathVariable String id,
+			Locale loc, CIBUser user) {
+        checkPermission(user, SevenResourceType.HISTORY, PermissionConstants.READ_ALL);
+		return bpmProvider.fetchHistoryVariableDataById(id, user);
 	}
 }

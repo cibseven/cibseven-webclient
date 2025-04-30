@@ -319,6 +319,12 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
   }
 	
 	@Override
+	public Collection<HistoryProcessInstance> findProcessesInstancesHistory(Map<String, Object> filters,
+			Optional<Integer> firstResult, Optional<Integer> maxResults, CIBUser user) {
+		return processProvider.findProcessesInstancesHistory(filters, firstResult, maxResults, user);
+	}
+	
+	@Override
 	public Collection<HistoryProcessInstance> findProcessesInstancesHistory(String key, Optional<Boolean> active, 
 			Integer firstResult, Integer maxResults, CIBUser user) {
 		return processProvider.findProcessesInstancesHistory(key, active, firstResult, maxResults, user);
@@ -338,7 +344,7 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	@Override
 	public Variable fetchProcessInstanceVariable(String processInstanceId, String variableName, String deserializeValue, CIBUser user) throws SystemException  {
 		return processProvider.fetchProcessInstanceVariable(processInstanceId, variableName, deserializeValue, user);
-	}	
+	}
 	
 	@Override
 	public HistoryProcessInstance findHistoryProcessInstanceHistory(String processInstanceId, CIBUser user) {
@@ -456,7 +462,11 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	public ActivityInstance findActivityInstance(String processInstanceId, CIBUser user) {
 		return activityProvider.findActivityInstance(processInstanceId, user);
 	}
-		
+	
+	@Override
+	public List<ActivityInstanceHistory> findActivitiesInstancesHistory(Map<String, Object> queryParams, CIBUser user) {
+		return activityProvider.findActivitiesInstancesHistory(queryParams, user);
+	}
 	
 	@Override
 	public List<ActivityInstanceHistory> findActivitiesInstancesHistory(String processInstanceId, CIBUser user) {
