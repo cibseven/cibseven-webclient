@@ -315,10 +315,8 @@ export default {
     },
     loadCalledProcesses: function() {
       this.calledProcesses = []
-      HistoryService.findActivitiesProcessDefinitionHistory(this.process.id).then(response => {
-      const activityList = response.filter(activity => {
-        return activity.activityType === "callActivity"
-      })
+      HistoryService.findActivitiesInstancesHistoryWithFilter({'processDefinitionId': this.process.id, 'activityType': 'callActivity'}).then(response =>{
+      const activityList = response
       const instancesIdList = [...activityList.reduce((set, activity) => {
         set.add(activity.calledProcessInstanceId)
         return set

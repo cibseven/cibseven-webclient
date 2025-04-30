@@ -321,6 +321,9 @@ var HistoryService = {
   findActivitiesProcessDefinitionHistory: function(processDefinitionId) {
     return axios.get(appConfig.servicesBasePath + "/process-history/activity/by-process-definition/" + processDefinitionId)
   },
+  findActivitiesInstancesHistoryWithFilter(filter){
+	return axios.get(appConfig.servicesBasePath + "/process-history/activity", 	{ params: filter })
+  },
   fetchProcessInstanceVariablesHistory: function(processInstanceId, deserialize) {
     return axios.get(appConfig.servicesBasePath + "/process-history/instance/by-process-instance/" + processInstanceId + "/variables",
       { params: {
