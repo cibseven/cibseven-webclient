@@ -873,7 +873,7 @@
 				"tooltip": "Alle Deployments anzeigen"
 			},
 			"batches": {
-				"title": "Batches",
+				"title": "Stapel",
 				"tooltip": "Batch-Operationen verwalten und anzeigen"
 			}
 		},
