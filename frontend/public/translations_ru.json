@@ -176,7 +176,8 @@
 		"true": "Истина",
 		"false": "Ложь",
 		"jobDefinitions": "Определения заданий",
-		"jobs": "Задания"
+		"jobs": "Задания",
+		"calledProcessDefinitions": "Вызываемые определения процессов"
 	},
 	"process-instance": {
 		"processInstanceId": "Processs Instance ID",
@@ -190,6 +191,11 @@
 		"save": "Сохранить",
 		"upload": "Загрузить файл",
 		"selectFile": "Выбрать файл",
+		"calledProcessDefinitions": {
+			"process": "процесс",
+			"version": "версия",
+			"activities": "Вызывающие мероприятия"
+		},
 		"details": {
 			"startUser": "Начальный пользователь",
 			"start": "Начато",

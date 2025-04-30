@@ -86,13 +86,15 @@
           </div>
         </div>
       </div>
-      <div v-if="['incidents', 'jobDefinitions'].includes(activeTab)"
+      <div v-if="['incidents', 'jobDefinitions', 'calledProcessDefinitions'].includes(activeTab)" 
           ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 0px; left: 0; bottom: 0">
         <IncidentsTable v-if="activeTab === 'incidents' && !loading"
           :incidents="incidents" :activity-instance="activityInstance"
           :activity-instance-history="process.activitiesHistory"/>
         <JobDefinitionsTable v-else-if="activeTab === 'jobDefinitions'"
           :process-id="process.id" @highlight-activity="highlightActivity" />
+        <CalledProcessDefinitionsTable v-else-if="activeTab === 'calledProcessDefinitions' && !loading"
+          :process="process" :instances="instances" :calledProcesses="calledProcesses" @changeTabToInstances="changeTab({id: 'instances'})"/>
       </div>
     </div>
 
@@ -124,6 +126,7 @@ import InstancesTable from '@/components/process/tables/InstancesTable.vue'
 import JobDefinitionsTable from '@/components/process/tables/JobDefinitionsTable.vue'
 import IncidentsTable from '@/components/process/tables/IncidentsTable.vue'
 import MultisortModal from '@/components/process/modals/MultisortModal.vue'
+import CalledProcessDefinitionsTable from '@/components/process/tables/CalledProcessDefinitionsTable.vue'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { debounce } from '@/utils/debounce.js'
@@ -134,12 +137,12 @@ import { BWaitingBox } from 'cib-common-components'
 export default {
   name: 'ProcessInstancesView',
   components: { InstancesTable, JobDefinitionsTable, BpmnViewer, MultisortModal,
-     SuccessAlert, ConfirmDialog, BWaitingBox, IncidentsTable },
+     SuccessAlert, ConfirmDialog, BWaitingBox, IncidentsTable, CalledProcessDefinitionsTable },
   inject: ['loadProcesses'],
   mixins: [permissionsMixin, resizerMixin, copyToClipboardMixin],
   props: { instances: Array, process: Object, firstResult: Number, maxResults: Number, incidents: Array,
     activityInstance: Object, activityInstanceHistory: Array, activityId: String, loading: Boolean,
-    processKey: String,
+    processKey: String, calledProcesses: Array,
     versionIndex: { type: String, default: '' }
   },
   data: function() {
@@ -150,7 +153,8 @@ export default {
       tabs: [
         { id: 'instances', active: true },
         { id: 'jobDefinitions', active: false },
-        { id: 'incidents', active: false }
+        { id: 'incidents', active: false },
+        { id: 'calledProcessDefinitions', active: false }
       ],
       activeTab: 'instances',
       events: {},

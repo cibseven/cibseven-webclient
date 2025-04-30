@@ -167,6 +167,7 @@
 		"true": "Vero",
 		"false": "Falso",
 		"jobs": "Job"
+		"calledProcessDefinitions": "chiamato Definizioni di processo"
 	},
 	"process-instance": {
 		"info": "Dettagli del processo",
@@ -178,6 +179,11 @@
 		"save": "@:commons.save",
 		"upload": "Caricare un file",
 		"selectFile": "Seleziona il file",
+		"calledProcessDefinitions": {
+			"process": "Processo",
+			"version": "Versione",
+			"activities": "Attività di chiamata"
+		},
 		"details": {
 			"startUser": "Avvio utente",
 			"start": "Inizia su",

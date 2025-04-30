@@ -177,7 +177,8 @@
 		"true": "Verdadero",
 		"false": "Falso",		
 		"jobDefinitions": "Definiciones de trabajos",
-		"jobs": "Trabajos"
+		"jobs": "Trabajos",
+		"calledProcessDefinitions": "Llamada Definiciones de proceso"
 	},
 	"process-instance": {
 		"processInstanceId": "ID de la instancia del proceso",
@@ -191,6 +192,11 @@
 		"save": "@:commons.save",
 		"upload": "Subir archivo",
 		"selectFile": "Seleccione archivo",
+		"calledProcessDefinitions": {
+			"process": "Proceso",
+			"version": "Versión",
+			"activities": "Actividades de convocatoria"
+		},
 		"details": {
 			"startUser": "Usuario inicial",
 			"start": "Iniciado el",
