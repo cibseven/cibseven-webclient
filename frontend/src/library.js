@@ -106,6 +106,8 @@ import DecisionList from '@/components/decisions/list/DecisionList.vue'
 import DecisionListView from '@/components/decisions/list/DecisionListView.vue'
 import DecisionDefinitionVersion from '@/components/decision/DecisionDefinitionVersion.vue'
 import TenantsView from '@/components/tenants/TenantsView.vue'
+import EditTenant from './components/tenants/EditTenant.vue';
+import CreateTenant from './components/tenants/CreateTenant.vue';
 import BatchesView from '@/components/batches/BatchesView.vue'
 import RuntimeBatches from '@/components/batches/tables/RuntimeBatches.vue'
 import HistoricBatches from '@/components/batches/tables/HistoricBatches.vue'
@@ -201,6 +203,8 @@ const registerComponents = function(app) {
   app.component('decision-list-view', DecisionListView)
   app.component('decision-', DecisionDefinitionVersion)
   app.component('tenants-view', TenantsView)
+  app.component('edit-tenant', EditTenant)
+  app.component('create-tenant', CreateTenant)
   app.component('batches-view', BatchesView)
   app.component('system-view', SystemView)
   app.component('deployed-form', DeployedForm)
@@ -210,6 +214,8 @@ const registerComponents = function(app) {
 export {
   registerComponents,
   TenantsView,
+  CreateTenant,
+  EditTenant,
   BatchesView,
   SystemView,
   axios,
