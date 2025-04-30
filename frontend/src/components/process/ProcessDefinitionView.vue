@@ -19,7 +19,7 @@
 <template>
   <div class="d-flex flex-column">
     <div class="d-flex ps-3 py-2">
-      <b-button :title="$t('start.cockpit.processes.title')" variant="outline-secondary" href="#/seven/auth/processes/list" class="mdi mdi-18px mdi-arrow-left border-0"></b-button>
+      <b-button :title="$t('start.admin')" variant="outline-secondary" href="#/seven/auth/processes/list" class="mdi mdi-18px mdi-arrow-left border-0"></b-button>
       <h4 class="ps-1 m-0 align-items-center d-flex" style="border-width: 3px !important">{{ processName }}</h4>
       <b-button :disabled="!instances || instances.length === 0" :title="$t('process.exportInstances')" variant="outline-secondary" @click="exportCSV()"
         class="ms-auto me-3 mdi mdi-18px mdi-download-outline border-0"></b-button>
@@ -93,8 +93,7 @@ export default {
   props: {
     processKey: { type: String, required: true },
     versionIndex: { type: String, required: true },
-    instanceId: { type: String, required: true },
-    tenantId: { type: String }
+    instanceId: { type: String, required: true }
   },
   watch: {
     processKey: 'loadProcessFromRoute',
@@ -154,7 +153,7 @@ export default {
         }
       }
     }
-    else if (!this.instanceId) {
+    else {
       this.selectedInstance = null
       this.activityInstance = null
       this.activityInstanceHistory = null
@@ -176,7 +175,7 @@ export default {
     onDeleteProcessDefinition: function(params) {
       ProcessService.deleteProcessDefinition(params.processDefinition.id, true).then(() => {
         // reload versions
-        ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.tenantId, this.$root.config.lazyLoadHistory)
+        ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.$root.config.lazyLoadHistory)
         .then(versions => {
           if (versions.length === 0) {
             // no more process-definitions with such key
@@ -204,8 +203,7 @@ export default {
               params: {
                 processKey: params.processDefinition.key,
                 versionIndex: nextVersionIndex,
-              },
-              query: this.$route.query
+              }
             })
             this.processDefinitions = versions
           }
@@ -216,7 +214,7 @@ export default {
     // - user have deleted a non-selected process definition (this.process is still valid)
     // - user clicked "refresh process definitions" button
     onRefreshProcessDefinitions: function(lazyLoad) {
-      return ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.tenantId, lazyLoad).then(versions => {
+      return ProcessService.findProcessVersionsByDefinitionKey(this.processKey, lazyLoad).then(versions => {
         this.processDefinitions = versions
         if (this.processDefinitions.length > 0) {
           this.resetStatsLazyLoad(lazyLoad)
@@ -226,7 +224,7 @@ export default {
       })
     },
     loadProcessByDefinitionKey: function() {
-      return ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.tenantId, this.$root.config.lazyLoadHistory)
+      return ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.$root.config.lazyLoadHistory)
       .then(versions => {
         const requestedDefinition = versions.find(processDefinition => processDefinition.version === this.versionIndex)
         if (requestedDefinition) {
@@ -305,7 +303,7 @@ export default {
         })
       }
       else {
-        return ProcessService.findProcessVersionsByDefinitionKey(this.process.key, this.tenantId, this.$root.config.lazyLoadHistory)
+        return ProcessService.findProcessVersionsByDefinitionKey(this.process.key, this.$root.config.lazyLoadHistory)
         .then(versions => {
           this.processDefinitions = versions
           var promises = []
@@ -343,25 +341,37 @@ export default {
       }, new Set())]
       if (instancesIdList.length > 0) {
         HistoryService.findProcessesInstancesHistory({"processInstanceIds": instancesIdList}, this.firstResult, this.maxResults).then(response => {
+          const activityMap = activityList.reduce((map, activity) => {
+            if (!map[activity.calledProcessInstanceId]) {
+              map[activity.calledProcessInstanceId] = []
+            }
+            map[activity.calledProcessInstanceId].push(activity)
+            return map
+          }, {})
           response.forEach(instance => {
-            activityList.forEach(activity => {
-              if (instance.id === activity.calledProcessInstanceId) {
-                let foundMatch = this.calledProcesses.find(item => {
-                  return (item.instance.processDefinitionId === instance.processDefinitionId)
-                })
-                if (foundMatch) {
-                  if (!foundMatch.activities.some(act => act.activityId === activity.activityId)) {
-                    foundMatch.activities.push(activity)
-                  }
-                } else {
-                  let key = instance.processDefinitionId.match(/^[^:]+/).at(0)
-                  let foundProcess = this.$store.state.process.list.find(processSPL => {
-                    if (key === processSPL.key) {
-                      return processSPL
-                    }
-                  })
-                  this.calledProcesses.push({instance: instance, activities: [activity], key: key, version: instance.processDefinitionId.match(/(?!:)\d(?=:)/).at(0), process: foundProcess })
+            const activities = activityMap[instance.id] || []
+            activities.forEach(activity => {
+              let foundMatch = this.calledProcesses.find(item => {
+                return (item.instance.processDefinitionId === instance.processDefinitionId)
+              });
+              if (foundMatch) {
+                if (!foundMatch.activities.some(act => act.activityId === activity.activityId)) {
+                  foundMatch.activities.push(activity)
                 }
+              } else {
+                let key = instance.processDefinitionId.match(/^[^:]+/).at(0);
+                let foundProcess = this.$store.state.process.list.find(processSPL => {
+                  if (key === processSPL.key) {
+                    return processSPL
+                  }
+                });
+                this.calledProcesses.push({
+                  instance: instance,
+                  activities: [activity],
+                  key: key,
+                  version: instance.processDefinitionId.match(/(?!:)\d(?=:)/).at(0),
+                  process: foundProcess
+                })
               }
             })
           })

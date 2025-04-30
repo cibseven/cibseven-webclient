@@ -43,15 +43,13 @@
 </template>
 
 <script>
-import { ProcessService, HistoryService } from '@/services.js'
-import procesessVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
+import processesVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
-import { callWithAsyncErrorHandling } from 'vue'
 
 export default {
   name: 'CalledProcessDefinitionsTable',
-  components: { FlowTable },
-  mixins: [procesessVariablesMixin],
+  components: {FlowTable},
+  mixins: [processesVariablesMixin],
   props: { 
     process: Object,
     instances: Array,
