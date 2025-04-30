@@ -46,12 +46,11 @@
 import { ProcessService, HistoryService } from '@/services.js'
 import procesessVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
-import { BWaitingBox } from 'cib-common-components'
 import { callWithAsyncErrorHandling } from 'vue'
 
 export default {
   name: 'CalledProcessDefinitionsTable',
-  components: {FlowTable, BWaitingBox  },
+  components: { FlowTable },
   mixins: [procesessVariablesMixin],
   props: { 
     process: Object,
