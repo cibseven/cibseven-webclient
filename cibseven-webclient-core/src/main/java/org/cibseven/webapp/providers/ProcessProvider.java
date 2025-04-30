@@ -90,8 +90,8 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 				process.setRunningInstances(((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody().get("count").asLong());	
 			}
 			if (fetchIncidents) {
-				String urlIncidents = camundaUrl + "/engine-rest/incident/count?processDefinitionKeyIn=" + process.getKey() + "&tenantIdIn=" + process.getTenantId();
-				urlIncidents += process.getTenantId() != null ? "&tenantIdIn=" + process.getTenantId() : "&withoutTenantId=true";
+				String urlIncidents = camundaUrl + "/engine-rest/incident/count?processDefinitionKeyIn=" + process.getKey();
+				urlIncidents += process.getTenantId() != null ? "&tenantIdIn=" + process.getTenantId() : "";
 				process.setIncidents(((ResponseEntity<JsonNode>) doGet(urlIncidents, JsonNode.class, user, false)).getBody().get("count").asLong());	
 			}
 		}
