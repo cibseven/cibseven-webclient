@@ -857,7 +857,7 @@
 			"title": "Cockpit",
 			"tooltip": "Cockpit öffnen",
 			"processes": {
-				"title": "Prozesses",
+				"title": "Prozesse",
 				"tooltip": "Verfügbare Prozessdefinitionen durchsuchen"
 			},
 			"decisions": {
