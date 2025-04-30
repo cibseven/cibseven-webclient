@@ -287,7 +287,7 @@
 		    "manageUsersGroups": "Benutzer/Gruppen verwalten",
 			"manageAssignee": "Zugewiesenen Benutzer verwalten",
 		    "groupId": "Gruppen-ID",
-		    "userId": "Benutzer-ID",
+		    "userId": "@:admin.users.id",
 		    "groups": "Gruppen",
 		    "users": "Benutzer",		    			
 		    "assignee": "Bearbeiter",
@@ -366,7 +366,9 @@
 		},
 		"actions": {
 			"title": "Aktionen zur Aufgabe",
-			"submit": "Abschließen"
+			"submit": "Abschließen",
+			"save": "Speichern",
+			"saveError": "Beim Speichern der Aufgabe ist ein Fehler aufgetreten: {0}"
 		},
 		"emptyTask": "Leere Aufgabe",
 		"showMore": "Mehr anzeigen...",
@@ -426,8 +428,7 @@
 		"exportCsv": "Alle exportieren",
 		"users": {
 			"title": "Benutzer",
-			"id": "Benutzer-ID",
-			"userId": "Benutzer-ID",
+			"id": "Benutzername",
 			"firstName": "Vornamen",
 			"lastName": "Nachname",
 			"email": "E-Mail",
@@ -856,7 +857,7 @@
 			"title": "Cockpit",
 			"tooltip": "Cockpit öffnen",
 			"processes": {
-				"title": "Prozesses",
+				"title": "Prozesse",
 				"tooltip": "Verfügbare Prozessdefinitionen durchsuchen"
 			},
 			"decisions": {
@@ -1088,7 +1089,7 @@
 			"emailDescription": "E-Mail, die dem Konto zugeordnet ist, das Sie wiederherstellen möchten",
 			"cancel": "Abbrechen",
 			"sendEmail": "Wiederherstellungs-E-Mail senden",
-			"id": "Benutzer-ID",
+			"id": "@:admin.users.id",
 			"changePassword": "Passwort ändern",
 			"emailSent": "Die E-Mail mit dem Link zur Wiederherstellung Ihres Passworts wurde versandt."
 		},

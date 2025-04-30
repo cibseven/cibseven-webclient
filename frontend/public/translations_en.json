@@ -287,7 +287,7 @@
 		    "manageUsersGroups": "Manage users/groups",
 			"manageAssignee": "Manage assigned user",
 		    "groupId": "Group ID",
-		    "userId": "User ID",
+		    "userId": "@:admin.users.id",
 		    "groups": "Groups",
 		    "users": "Users",
 		    "assignee": "Assignee",
@@ -366,7 +366,9 @@
 		},
 		"actions": {
 			"title": "Task actions",
-			"submit": "Complete"
+			"submit": "Complete",
+			"save": "Save",
+			"saveError": "An error occurred while saving the task: {0}"
 		},
 		"emptyTask": "Empty task",
 		"showMore": "Show more...",
@@ -427,8 +429,7 @@
 		"exportCsv": "Export all",
 		"users": {
 			"title": "Users",
-			"id": "ID",
-			"userId": "User ID",
+			"id": "User ID",
 			"firstName": "First name",
 			"lastName": "Last name",
 			"email": "Email",
@@ -1075,7 +1076,7 @@
 			"emailDescription": "Email associated with the account you want to recover",
 			"cancel": "Cancel",
 			"sendEmail": "Send recovery email",
-			"id": "User ID",
+			"id": "@:admin.users.id",
 			"changePassword": "Change password",
 			"emailSent": "The e-mail with the link to recover your password has been sent."
 		},

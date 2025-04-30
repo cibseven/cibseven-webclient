@@ -207,7 +207,7 @@ public class TaskService extends BaseService implements InitializingBean {
 	public Collection<Task> findTasksPost(
 			@RequestBody Map<String, Object> data,
 			Locale loc, HttpServletRequest rq) {
-		CIBUser user = checkAuthorization(rq, true, false);
+		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
 		return sevenProvider.findTasksPost(data, user);
 	}

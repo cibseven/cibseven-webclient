@@ -149,7 +149,7 @@ public class HistoryProcessService extends BaseService {
 	public HistoryProcessInstance findProcessInstance(
 			@Parameter(description = "Process instance Id") @PathVariable String processInstanceId,
 			Locale loc, HttpServletRequest rq) {
-		CIBUser user = checkAuthorization(rq, true, false);
+		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.HISTORY, PermissionConstants.READ_ALL);
 		return bpmProvider.findHistoryProcessInstanceHistory(processInstanceId, user);
 	}
@@ -159,7 +159,7 @@ public class HistoryProcessService extends BaseService {
 	public void deleteProcessInstanceFromHistory(
 			@Parameter(description = "Process instance Id") @PathVariable String id,
 			Locale loc, HttpServletRequest rq) {
-		CIBUser user = checkAuthorization(rq, true, false);
+		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.HISTORY, PermissionConstants.DELETE_ALL);
 		bpmProvider.deleteProcessInstanceFromHistory(id, user);
 	}

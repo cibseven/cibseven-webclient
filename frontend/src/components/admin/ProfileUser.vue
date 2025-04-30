@@ -186,7 +186,7 @@
             </FlowTable>
           </div>
           <div v-if="!unAssignedGroupsLoading && !unAssignedGroups.length" class="text-center">
-            {{ $t('admin.users.group.noResults') }}
+            {{ $t('admin.noResults') }}
           </div>
           <div v-else-if="unAssignedGroupsLoading" class="d-flex justify-content-center align-items-center">
             <b-waiting-box class="d-inline me-2" styling="width: 35px"></b-waiting-box> {{ $t('admin.loading') }}
@@ -225,7 +225,7 @@
               </div>
               <div class="col-10">
                 <p>{{ $t('admin.users.confirmDelete') }}</p>
-                <strong>{{ $t('admin.users.userId') }}:</strong> {{ user.id }} <br>
+                <strong>{{ $t('admin.users.id') }}:</strong> {{ user.id }} <br>
                 <strong>{{ $t('admin.users.firstName') }}:</strong> {{ user.firstName }}<br>
                 <strong>{{ $t('admin.users.lastName') }}:</strong> {{ user.lastName }}<br>
                 <strong>{{ $t('admin.users.email') }}:</strong> {{ user.email }}

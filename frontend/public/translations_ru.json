@@ -287,7 +287,7 @@
 		    "manageUsersGroups": "Manage users/groups",
 			"manageAssignee": "Manage assigned user",
 		    "groupId": "ID группы",
-		    "userId": "ID пользователя",
+		    "userId": "@:admin.users.id",
 		    "groups": "Группы",
 		    "users": "Пользователи",
 		    "assignee": "Исполнитель",
@@ -366,7 +366,9 @@
 		},
 		"actions": {
 			"title": "Действия для задачи",
-			"submit": "Завершить"
+			"submit": "Завершить",
+			"save": "Сохранить",
+			"saveError": "Произошла ошибка при сохранении задачи: {0}"
 		},
 		"emptyTask": "Пустая задача",
 		"showMore": "Показать больше...",
@@ -426,8 +428,7 @@
 		"exportCsv": "Экспортировать все",
 		"users": {
 			"title": "Пользователи",
-			"id": "ID",
-			"userId": "ID пользователя",
+			"id": "Пользователь",
 			"firstName": "Имя",
 			"lastName": "Фамилия",
 			"email": "Электронная почта",
@@ -1073,7 +1074,7 @@
 			"emailDescription": "Электронная почта, связанная с учетной записью, которую вы хотите восстановить",
 			"cancel": "Отмена",
 			"sendEmail": "Выслать письмо по смене пароля",
-			"id": "ID пользователя",
+			"id": "@:admin.users.id",
 			"changePassword": "Изменить пароль",
 			"emailSent": "Письмо со ссылкой для восстановления пароля было отправлено."
 		},

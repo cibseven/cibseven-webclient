@@ -21,13 +21,15 @@ import java.util.Collection;
 import java.util.List;
 
 import org.cibseven.webapp.auth.exception.AuthenticationException;
+import org.cibseven.webapp.exception.AccessDeniedException;
 import org.cibseven.webapp.rest.model.Authorization;
 import org.cibseven.webapp.rest.model.Authorizations;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-public class SevenAuthorizationUtils{ 
+public class SevenAuthorizationUtils{ 
+
 	@Getter @AllArgsConstructor
 	private enum SevenAuthorizationType {
 		AUTH_TYPE_GLOBAL(0),
@@ -95,7 +97,7 @@ public class SevenAuthorizationUtils{
             case MESSAGE: authList = authorizations.getMessage(); break;
             case EVENT_SUBSCRIPTION: authList = authorizations.getEventSubscription(); break;
             default:
-                throw new AuthenticationException("You are not authorized to do this");
+                throw new AccessDeniedException("You are not authorized to do this");
         }
 
         boolean hasDeny = authList.stream().anyMatch(auth ->
