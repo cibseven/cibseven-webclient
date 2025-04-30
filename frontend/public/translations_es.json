@@ -79,7 +79,7 @@
 		"start": "Iniciar",
 		"showProcess": "Mostrar proceso",
 		"showInstance": "Mostrar instancia",
-		"showCockpit": "Cockpit",
+		"showCockpit": "Abrir en el Cockpit antiguo",
 		"downloadBpmn": "Descargar fichero BPMN",
 		"openModeler": "Abrir fichero BPMN en el Modeler",
 		"showManagement": "Gestión del proceso",
