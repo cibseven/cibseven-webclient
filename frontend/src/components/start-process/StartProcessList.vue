@@ -118,7 +118,7 @@ export default {
     }
   },
   created: function() {    
-    this.loadProcesses(false)
+    this.loadProcesses(false) // the method takes localStorage.getItem('favorites') into account
     this.view = this.isMobile() ? 'image-outline' : localStorage.getItem('viewMode') || 'image-outline'
   },
   computed: {
