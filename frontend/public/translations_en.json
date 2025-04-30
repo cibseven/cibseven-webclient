@@ -78,7 +78,7 @@
 		"start": "Start",
 		"showProcess": "View process",
 		"showInstance": "View instance",
-		"showCockpit": "Cockpit",
+		"showCockpit": "Open in the old Cockpit",
 		"downloadBpmn": "Download BPMN file",
 		"openModeler": "Open BPMN file in Modeler",
 		"showManagement": "Management",

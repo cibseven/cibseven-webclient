@@ -78,7 +78,7 @@
 		"start": "Начать",
 		"showProcess": "Показать процесс",
 		"showInstance": "показать экземпляр",
-		"showCockpit": "Cockpit",		
+		"showCockpit": "Открыть в старом Cockpit",
 		"downloadBpmn": "Скачать файл BPMN",
 		"openModeler": "Открыть BPMN файл в Modeler",
 		"showManagement": "Управление процессами",
