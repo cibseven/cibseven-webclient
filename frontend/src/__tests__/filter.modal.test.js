@@ -117,20 +117,17 @@ describe('FilterModal', () => {
   })
 
   // Round-trip tests: unfixLike(fixLike(...)) === original
-  it.each([
-    ['prop', 'val'],                            // round-trip with non-LIKE key
-    ['prop', '%'],
-    ['prop', '%val%'],
+  describe('FilterModal', () => {
+    const keys = ['prop', 'like', 'LIKE', 'Like']
+    const values = ['', '   ', 'val', '%', '%val%', '0', '100', 'your name']
 
-    ['like', 'val'],
-    ['LIKE', 'val'],
-
-    ['Like', 'val'],                            // LIKE key, should wrap and unwrap
-    ['Like', '0'],
-    ['Like', '100'],
-    ['Like', 'your name'],                      // multi-word input
-  ])('unfixLike("%s", fixLike("%s"))', (key, value) => {
-    const wrapper = getWrapper()
-    expect(wrapper.vm.unfixLike(key, wrapper.vm.fixLike(key, value))).toBe(value)
+    describe.each(keys)('Round-trip fixLike/unfixLike for key: "%s"', (key) => {
+      it.each(values)('value: "%s"', (value) => {
+        const wrapper = getWrapper()
+        const fixed = wrapper.vm.fixLike(key, value)
+        const unfixed = wrapper.vm.unfixLike(key, fixed)
+        expect(unfixed).toBe(value)
+      })
+    })
   })
 })
