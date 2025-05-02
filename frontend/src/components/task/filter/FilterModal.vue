@@ -150,6 +150,7 @@ export default {
       includeAssigned: false,
       isEditing: false,
       criteriaEdited: { key: null, rowIndex: null},
+      likeExp: /Like$/, // Matches any string ending with the word "Like"
     }
   },
   watch: {
@@ -210,14 +211,16 @@ export default {
       var query = {}
       if (this.matchAllCriteria) {
         this.criteriasToAdd.forEach(criteria => {
-          query[criteria.key] = criteria.value
+          // if key == '...Like' -> value = '%' + value + '%'
+          query[criteria.key] = this.fixLike(criteria.key, criteria.value)
         })
         if (this.existCandidateSelected) query.includeAssignedTasks = this.includeAssigned
       } else {
         query.orQueries = []
         query.orQueries.push({})
         this.criteriasToAdd.forEach(criteria => {
-          query.orQueries[0][criteria.key] = criteria.value
+          // if key == '...Like' -> value = '%' + value + '%'
+          query.orQueries[0][criteria.key] = this.fixLike(criteria.key, criteria.value)
         })
         if (this.existCandidateSelected) query.orQueries[0].includeAssignedTasks = this.includeAssigned
       }
@@ -405,7 +408,9 @@ export default {
               this.criteriasToAdd.push({
                 key: key,
                 name: this.$t('nav-bar.filters.keys.' + key),
-                value: filterVal
+                // Exclude percentage values when opening the filter model view
+                // to prevent them from being displayed to the user
+                value: this.unfixLike(key, filterVal) // if key == '...Like' -> '%' + value + '%' = value
               })
             }
           })
@@ -422,7 +427,9 @@ export default {
               this.criteriasToAdd.push({
                 key: key,
                 name: this.$t('nav-bar.filters.keys.' + key),
-                value: filterVal
+                // Exclude percentage values when opening the filter model view
+                // to prevent '%' from being displayed to the user
+                value: this.unfixLike(key, filterVal) // if key == '...Like' -> '%' + value + '%' = value
               })
             }
           })
@@ -432,6 +439,31 @@ export default {
     },
     formatCriteria: function(value) {
       return Array.isArray(value) ? value.join(', ') : value
+    },
+    fixLike: function(key, value) {
+      if (this.likeExp.test(key)) {
+        if (value[0] !== '%') {
+          value = '%' + value;
+        }
+
+        let length = value.length - 1;
+        if (value[length] !== '%') {
+          value = value + '%';
+        }
+      }
+      return value;
+    },
+    unfixLike: function(key, value) {
+      if (this.likeExp.test(key)) {
+        if (value[0] === '%') {
+          value = value.slice(1, value.length);
+        }
+
+        if (value.slice(-1) === '%') {
+          value = value.slice(0, -1);
+        }
+      }
+      return value;
     }
   }
 }
