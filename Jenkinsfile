@@ -124,7 +124,7 @@ pipeline {
 
                         // Show coverage in Jenkins UI
                         recordCoverage(
-                            tools: [[parser: 'COBERTURA', pattern: 'frontend/coverage/lcov.info']],
+                            tools: [[parser: 'LCOV', pattern: 'frontend/coverage/lcov.info']],
                             sourceCodeRetention: 'LAST_BUILD',
                             sourceDirectories: [[path: 'frontend/src']]
                         )
