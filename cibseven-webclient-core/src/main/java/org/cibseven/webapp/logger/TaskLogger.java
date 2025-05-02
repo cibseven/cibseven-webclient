@@ -16,7 +16,7 @@
  */
 package org.cibseven.webapp.logger;
 
-import org.apache.logging.log4j.ThreadContext;
+//import org.apache.logging.log4j.ThreadContext;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -37,17 +37,17 @@ public class TaskLogger {
   private String taskId;
   
   private void prepareLogging() {
-    ThreadContext.put(PROCESS_KEY_TC, processKey.split(":")[0]); 
-    ThreadContext.put(PROCESS_ID_TC, processId);
-    ThreadContext.put(TASK_NAME_TC, taskName);
-    ThreadContext.put(TASK_ID_TC, taskId);  
+//    ThreadContext.put(PROCESS_KEY_TC, processKey.split(":")[0]); 
+//    ThreadContext.put(PROCESS_ID_TC, processId);
+//    ThreadContext.put(TASK_NAME_TC, taskName);
+//    ThreadContext.put(TASK_ID_TC, taskId);  
   }
 
   private void tearDownLogging() {  
-    ThreadContext.remove(PROCESS_KEY_TC);
-    ThreadContext.remove(PROCESS_ID_TC);
-    ThreadContext.remove(TASK_NAME_TC);
-    ThreadContext.remove(TASK_ID_TC);
+//    ThreadContext.remove(PROCESS_KEY_TC);
+//    ThreadContext.remove(PROCESS_ID_TC);
+//    ThreadContext.remove(TASK_NAME_TC);
+//    ThreadContext.remove(TASK_ID_TC);
   }
   
   public void info(String message) {

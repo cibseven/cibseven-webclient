@@ -28,8 +28,6 @@ import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.template.StartFormTemplate;
 import org.cibseven.webapp.template.Template;
 import org.cibseven.webapp.template.TemplateTask;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,8 +42,6 @@ import jakarta.servlet.http.HttpServletRequest;
 @Service
 @RestController @RequestMapping("${services.basePath:/services/v1}" + "/template")
 public class TemplateService extends BaseService implements InitializingBean {
-  
-  private static final Logger logger = LoggerFactory.getLogger(TemplateService.class);
 	
 	@Autowired
 	BaseUserProvider<?> provider;
