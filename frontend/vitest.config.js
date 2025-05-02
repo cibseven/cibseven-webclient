@@ -25,6 +25,11 @@ export default mergeConfig(
       environment: 'jsdom',
       exclude: [...configDefaults.exclude, 'e2e/**'],
       root: fileURLToPath(new URL('./', import.meta.url)),
+      coverage: {
+        provider: 'istanbul',
+        reporter: ['text', 'lcov'], // 'text', 'html', 'lcov', 'cobertura'
+        reportsDirectory: './coverage',
+      },
     },
   }),
 )
