@@ -35,6 +35,7 @@ import org.cibseven.webapp.auth.sso.SSOUser;
 import org.cibseven.webapp.auth.sso.SsoHelper;
 import org.cibseven.webapp.auth.sso.TokenResponse;
 import org.cibseven.webapp.exception.SystemException;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -87,6 +88,7 @@ public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
 	
 	@PostConstruct
 	public void init() {
+		String secret = ConfigProvider.getConfig().getValue("MP_JWT_SECRET", String.class);
 		settings = new JwtTokenSettings(secret, validMinutes, prolongMinutes);
 		ssoHelper = new SsoHelper(tokenEndpoint, clientId, clientSecret, certEndpoint, userEndpoint);
 		SecretKey key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(settings.getSecret()));

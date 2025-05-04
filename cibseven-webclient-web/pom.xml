@@ -9,7 +9,6 @@
 	<packaging>war</packaging>
 
 	<dependencies>
-	    
 	    <dependency>
 			<groupId>org.cibseven.webapp</groupId>
 			<artifactId>cibseven-webclient-core</artifactId>
@@ -32,6 +31,10 @@
 				<exclusion>
             		<groupId>ch.qos.logback</groupId>
             		<artifactId>logback-classic</artifactId>
+        		</exclusion>
+        		<exclusion>
+            		<groupId>org.springframework.boot</groupId>
+            		<artifactId>spring-boot-starter-tomcat</artifactId>
         		</exclusion>
 			</exclusions>
 		</dependency>	
@@ -56,6 +59,7 @@
 					<include>*.txt</include>
 					<!-- <include>*.xml</include> -->
 					<include>*.txt</include>
+					<include>META-INF/**</include>
 				</includes>
 			</resource>
 		</resources>

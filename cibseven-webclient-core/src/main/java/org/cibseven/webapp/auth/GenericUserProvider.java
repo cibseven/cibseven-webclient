@@ -33,6 +33,7 @@ import org.cibseven.webapp.auth.providers.JwtUserProvider;
 import org.cibseven.webapp.auth.rest.StandardLogin;
 import org.cibseven.webapp.exception.ErrorMessage;
 import org.cibseven.webapp.exception.SystemException;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -66,6 +67,7 @@ public class GenericUserProvider extends BaseUserProvider<StandardLogin> impleme
 	@Value("${camunda.admin.url:}") String camundaAdminUrl;
 	@Value("#{'${flow.webclient.serviceUrl:${flow.webclient.url:}}'}") String flowWebclientUrl;
 	public void afterPropertiesSet() {
+		String secret = ConfigProvider.getConfig().getValue("MP_JWT_SECRET", String.class);
 		settings = new JwtTokenSettings(secret, validMinutes, prolongMinutes);
 	}
 

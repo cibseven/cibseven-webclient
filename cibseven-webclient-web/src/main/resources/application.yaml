@@ -164,3 +164,7 @@ management:
   #      "email": "cibsupport@cib.de"
   #    } 
   #  }
+
+logging:
+  level:
+    root: INFO

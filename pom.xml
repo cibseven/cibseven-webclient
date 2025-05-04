@@ -336,6 +336,11 @@ You may obtain a copy of the License at
 						</container>
 					</configuration>
 				</plugin>
+				<plugin>
+                	<groupId>org.wildfly.plugins</groupId>
+                	<artifactId>wildfly-maven-plugin</artifactId>
+                	<version>4.0.0.Final</version>
+            </plugin>
 			</plugins>
 		</pluginManagement>
 	</build>
