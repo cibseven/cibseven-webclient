@@ -104,13 +104,22 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 
 	@Override // http://www.webjars.org/documentation
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {
-	    registry.addResourceHandler("/webjars/**").addResourceLocations("classpath:/META-INF/resources/webjars/");		
-		registry.addResourceHandler("**").addResourceLocations("/").setCacheControl(CacheControl.noCache());
+	  
+	  // registry.addResourceHandler("/webjars/**").addResourceLocations("classpath:/META-INF/resources/webjars/");		
+	  // registry.addResourceHandler("**").addResourceLocations("/").setCacheControl(CacheControl.noCache());
+	  
+	  // ToDo: this will not work for tomcat
+	  registry.addResourceHandler("/webapp/**").addResourceLocations("classpath:/META-INF/resources/webjars/webapp/");
 	}
 
 	@Override
 	public void addViewControllers(ViewControllerRegistry registry) {
-		registry.addViewController("/").setViewName("forward:/index.html");
+	  
+	  //registry.addViewController("/").setViewName("forward:/index.html");
+	  
+	  // ToDo: add property to differentiate between old and new webapp
+	  registry.addRedirectViewController("/", "/webapp/");
+	  registry.addViewController("/webapp/").setViewName("forward:/webapp/index.html");
 	}
 	
 	@Override

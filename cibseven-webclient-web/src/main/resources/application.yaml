@@ -62,13 +62,10 @@ camunda:
     url: http://localhost:8080
   historyLevel: full
 
-# Error report
-errorReportUrl: https://doxiview.cib.de/report/error
-
 flow:
   webclient:
     task:
-      url: http://localhost:8080/client/#/flow/auth/tasks/*/
+      url: http://localhost:8080/webapp/#/seven/auth/tasks/*/
   # If this params is set to false, the number of instances and incidents wont be taken.
   fetchInstances: true
   fetchIncidents: true
@@ -81,12 +78,6 @@ flow:
   datasource:
     fileValue:
       enabled: false
-
-# CIB flow ui-element-templates URL
-ui:
-  element:
-    template:
-      url: http://localhost:8090/ui-element-templates
 
 # Camunda Cockpit URL
 cockpit:
@@ -105,20 +96,20 @@ springdoc:
     tagsSorter: alpha
     doc-expansion: none 
   # webclient server url for the swagger-ui. Only needs to be set if the automatic detection is wrong.
-  flowWebclient:
+  cibsevenWebclient:
     serverUrl: ""
 
 api:
   common:
-    title: "CIB Flow webclient API"
-    description: "This API exposes the functionality of CIB Flow webclient as a REST service."
+    title: "CIB Seven webclient API"
+    description: "This API exposes the functionality of CIB Seven webclient as a REST service."
     termsOfService: "https://www.cib.de"
     license: "Proprietary License of CIB software GmbH"
     licenseUrl: "https://www.cib.de"
     contact:
       name: "CIB software GmbH"
       url: "https://www.cib.de"
-      email: "support@cib.de"
+      email: "info@cibseven.org"
 
 #custom:
 #  spring:
@@ -148,19 +139,3 @@ management:
       mode: full # Use full mode for git information
     java:
       enabled: true # Enable Java information (ensure your setup supports this)
-
-  #Used to set the title of the page
-  #productNamePageTitle: L Bank flow
-
-  #support-dialog: |
-  #  {
-  #    "de": {
-  #      "support-hotline": "Support-Hotline",
-  #      "opening-hours": "Öffnungszeiten",
-  #      "opening-hours-info": "Mo - Fr, 08.00 - 19.00 Uhr",
-  #      "phone": "Telefon", 
-  #      "phone-number": "+49 89 14360 111",
-  #      "email-address": "E-Mail-Adresse",
-  #      "email": "cibsupport@cib.de"
-  #    } 
-  #  }
