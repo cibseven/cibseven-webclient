@@ -33,8 +33,8 @@
 		<swagger-annotations.version>2.2.27</swagger-annotations.version>
 		<commons-io.version>2.18.0</commons-io.version>
 		<common-auth.version>1.0.0-SNAPSHOT</common-auth.version>
-		<version.spring.boot>3.4.2</version.spring.boot>
-		<version.openapi-starter-webmvc-ui>2.8.4</version.openapi-starter-webmvc-ui>
+		<version.spring.boot>3.3.6</version.spring.boot>
+		<version.openapi-starter-webmvc-ui>2.6.0</version.openapi-starter-webmvc-ui>
 		<image.tomcat-10-base>harbor.cib.de/dev/tomcat-10-base:2.0.0</image.tomcat-10-base>
 		<jib-maven-plugin.version>3.4.4</jib-maven-plugin.version>
 		<jib.from.image>${image.tomcat-10-base}</jib.from.image>
