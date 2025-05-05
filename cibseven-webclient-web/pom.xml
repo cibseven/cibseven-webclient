@@ -55,7 +55,6 @@
 					<include>*.txt</include>
 					<!-- <include>*.xml</include> -->
 					<include>*.txt</include>
-					<include>META-INF/**</include>
 				</includes>
 			</resource>
 		</resources>
