@@ -41,6 +41,12 @@
             <outputDirectory>WEB-INF/lib</outputDirectory>
             <useProjectArtifact>true</useProjectArtifact>
             <unpack>false</unpack>
+            <excludes>
+                <exclude>org.apache.tomcat.embed:tomcat-embed-el</exclude>
+                <exclude>org.apache.tomcat.embed:tomcat-embed-core</exclude>
+                <exclude>org.apache.tomcat.embed:tomcat-embed-websocket</exclude>
+                <exclude>org.jboss.logging:jboss-logging</exclude>
+            </excludes>
         </dependencySet>
     </dependencySets>
 </assembly>
