@@ -142,7 +142,7 @@ function loadEmbeddedForm(isStartForm, referenceId, container, authorization) {
             })
         }
         function loadForm(formInfo) {
-            var url = formInfo.key.replace('embedded:', '').replace('app:', (formInfo.contextPath || '') + '/')
+            var url = formInfo.key.replace('embedded:', '').replace('app:', formInfo.contextPath || '').replace(/^(\/+|([^/]))/, '/$2')
 
             let embeddedForm
             let config = {
