@@ -44,8 +44,8 @@ import jakarta.servlet.http.HttpServletRequest;
 @Service
 @RestController @RequestMapping("${services.basePath:/services/v1}" + "/template")
 public class TemplateService extends BaseService implements InitializingBean {
-	
-	private static final Logger logger = LoggerFactory.getLogger(TemplateService.class);
+  
+  private static final Logger logger = LoggerFactory.getLogger(TemplateService.class);
 	
 	@Autowired
 	BaseUserProvider<?> provider;

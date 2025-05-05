@@ -9,6 +9,7 @@
 	<packaging>war</packaging>
 
 	<dependencies>
+	    
 	    <dependency>
 			<groupId>org.cibseven.webapp</groupId>
 			<artifactId>cibseven-webclient-core</artifactId>

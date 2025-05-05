@@ -47,10 +47,9 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
 
-
 public class SevenUserProvider extends BaseUserProvider<StandardLogin> implements InitializingBean {
 	
-	@Value("${authentication.jwtSecret:sekret}") String secret; 
+	@Value("${authentication.jwtSecret:sekret}") String secret;	
 	@Value("${authentication.tokenValidMinutes:60}") long validMinutes;	
 	@Value("${authentication.tokenProlongMinutes:1440}") long prolongMinutes;
 	
