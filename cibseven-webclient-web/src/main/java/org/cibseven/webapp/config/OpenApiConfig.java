@@ -36,7 +36,7 @@ import io.swagger.v3.oas.models.servers.Server;
 @Configuration
 public class OpenApiConfig {
 
-	@Value("${springdoc.flowWebclient.serverUrl:}")
+	@Value("${springdoc.cibsevenWebclient.serverUrl:}")
 	String serverUrl;
 	@Value("${api.common.title:}")
 	String apiTitle;

@@ -57,7 +57,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 @Configuration
 @ComponentScan({ "org.cibseven.webapp.providers", "org.cibseven.webapp.auth", "org.cibseven.webapp.rest", "org.cibseven.template", "org.cibseven.webapp.config" })
-public class Context implements WebMvcConfigurer, HandlerMethodArgumentResolver {
+public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArgumentResolver {
 
 	BaseUserProvider provider;
 
@@ -101,17 +101,6 @@ public class Context implements WebMvcConfigurer, HandlerMethodArgumentResolver 
     public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
         configurer.favorPathExtension(false);
     }
-
-	@Override // http://www.webjars.org/documentation
-	public void addResourceHandlers(ResourceHandlerRegistry registry) {
-	    registry.addResourceHandler("/webjars/**").addResourceLocations("classpath:/META-INF/resources/webjars/");		
-		registry.addResourceHandler("**").addResourceLocations("/").setCacheControl(CacheControl.noCache());
-	}
-
-	@Override
-	public void addViewControllers(ViewControllerRegistry registry) {
-		registry.addViewController("/").setViewName("forward:/index.html");
-	}
 	
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {

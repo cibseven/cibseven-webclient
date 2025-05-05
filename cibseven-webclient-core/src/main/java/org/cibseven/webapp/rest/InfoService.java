@@ -36,7 +36,6 @@ import lombok.extern.slf4j.Slf4j;
 @RestController @RequestMapping("${services.basePath:/services/v1}" + "/info") @Slf4j
 public class InfoService extends BaseService {	
 	
-	@Value("${ui.element.template.url:}") private String uiElementTemplateUrl;
 	@Value("${cockpit.url:}") private String cockpitUrl;
 	@Value("${theme:}") private String theme;
 	@Value("${sso.active:false}") private boolean ssoActive;
@@ -72,7 +71,6 @@ public class InfoService extends BaseService {
 	@GetMapping("/properties")
 	public ObjectNode getConfig() {
 		ObjectNode configJson = JsonNodeFactory.instance.objectNode();
-		configJson.put("uiElementTemplateUrl", uiElementTemplateUrl);
 		configJson.put("cockpitUrl", cockpitUrl);
 		configJson.put("theme", theme);
 		configJson.put("ssoActive", ssoActive);
