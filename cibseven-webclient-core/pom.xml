@@ -6,11 +6,6 @@
 		<version>1.0.0-SNAPSHOT</version>
 	</parent>
 	<artifactId>cibseven-webclient-core</artifactId>  
-	
-	<dependencyManagement>
-  		<dependencies>
-  		</dependencies>
-	</dependencyManagement>
 
 	<dependencies>
 		
