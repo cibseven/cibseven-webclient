@@ -47,8 +47,6 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
 
-import org.eclipse.microprofile.config.ConfigProvider;
-
 
 public class SevenUserProvider extends BaseUserProvider<StandardLogin> implements InitializingBean {
 	
@@ -62,7 +60,6 @@ public class SevenUserProvider extends BaseUserProvider<StandardLogin> implement
 	SevenProvider sevenProvider;
 	
 	public void afterPropertiesSet() {
-		String secret = ConfigProvider.getConfig().getValue("MP_JWT_SECRET", String.class);
 		settings = new JwtTokenSettings(secret, validMinutes, prolongMinutes);
 		if (provider instanceof SevenProvider)
 			sevenProvider = (SevenProvider) provider;

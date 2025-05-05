@@ -7,44 +7,12 @@
 	</parent>
 	<artifactId>cibseven-webclient-core</artifactId>  
 	
-	<properties>
-		<version.com.nimbusds.jose.jwt>9.24.4.redhat-00001</version.com.nimbusds.jose.jwt>
-		<version.glassfish.json>1.1.6</version.glassfish.json>
-		<version.bom.expansion>36.0.0.Final</version.bom.expansion>
-		<version.bom.ee>36.0.0.Final</version.bom.ee>
-	</properties>
-	
 	<dependencyManagement>
   		<dependencies>
-    		<dependency>
-      			<groupId>org.wildfly.bom</groupId>
-      			<artifactId>wildfly-ee-with-tools</artifactId>
-      			<version>${version.bom.ee}</version>
-      			<type>pom</type>
-      			<scope>import</scope>
-    		</dependency>
-		    <dependency>
-      			<groupId>org.wildfly.bom</groupId>
-      			<artifactId>wildfly-expansion</artifactId>
-			    <version>${version.bom.expansion}</version>
-      			<type>pom</type>
-      			<scope>import</scope>
-    		</dependency>
   		</dependencies>
 	</dependencyManagement>
 
 	<dependencies>
-		<dependency>
-  			<groupId>org.eclipse.microprofile.jwt</groupId>
-  			<artifactId>microprofile-jwt-auth-api</artifactId>
-  			<scope>provided</scope>
-		</dependency>
-		
-		<dependency>
-    		<groupId>org.eclipse.microprofile.config</groupId>
-    		<artifactId>microprofile-config-api</artifactId>
-    		<scope>provided</scope>
-		</dependency>
 		
 		<dependency>
     		<groupId>jakarta.servlet</groupId>
@@ -68,10 +36,6 @@
                 	<groupId>org.springframework.boot</groupId>
                 	<artifactId>spring-boot-starter-tomcat</artifactId>
             	</exclusion>
-            	<exclusion>
-            		<groupId>org.springframework.boot</groupId>
-            		<artifactId>spring-boot-starter-tomcat</artifactId>
-        		</exclusion>
 			</exclusions>
 		</dependency>
 		
@@ -79,6 +43,11 @@
     		<groupId>org.slf4j</groupId>
 		    <artifactId>slf4j-api</artifactId>
 		</dependency>
+		
+		<dependency>
+	        <groupId>org.apache.logging.log4j</groupId>
+	        <artifactId>log4j-slf4j-impl</artifactId>
+	    </dependency>
 
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -150,6 +119,12 @@
 		    <version>4.12.0</version>
 		    <scope>test</scope>
 		</dependency>
+		
+		<dependency>
+	        <groupId>ch.qos.logback</groupId>
+	        <artifactId>logback-classic</artifactId>
+	        <scope>test</scope>
+	    </dependency>
 
 	</dependencies>
 

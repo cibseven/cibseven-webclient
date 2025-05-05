@@ -41,7 +41,6 @@ import org.cibseven.webapp.auth.exception.TokenExpiredException;
 import org.cibseven.webapp.auth.providers.JwtUserProvider;
 import org.cibseven.webapp.auth.rest.StandardLogin;
 import org.cibseven.webapp.exception.SystemException;
-import org.eclipse.microprofile.config.ConfigProvider;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -77,7 +76,6 @@ public class LdapUserProvider extends BaseUserProvider<StandardLogin> implements
 	@Value("${authentication.tokenProlongMinutes:1440}") long prolongMinutes;
 		
 	public void afterPropertiesSet() {
-		String secret = ConfigProvider.getConfig().getValue("MP_JWT_SECRET", String.class);
 		settings = new JwtTokenSettings(secret, validMinutes, prolongMinutes);		
 	}
 
