@@ -43,7 +43,7 @@ public class InfoService extends BaseService {
 	@Value("${sso.clientId:}") private String clientId;
 	@Value("${sso.scopes:}") private String scopes;
 	@Value("${camunda.historyLevel:}") private String camundaHistoryLevel;
-	@Value("${user.provider:}") private String userProvider;
+	@Value("${user.provider:org.cibseven.webapp.auth.SevenUserProvider}") private String userProvider;
 	
 	@Value("${flow.link.terms:}") private String flowLinkTerms;
 	@Value("${flow.link.privacy:}") private String flowLinkPrivacy;
