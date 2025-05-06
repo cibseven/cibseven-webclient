@@ -54,7 +54,7 @@
 		"others": "Andere",
 		"unnamedProcess": "Unbenannter Prozess"
 	},
-	"process" : {
+	"process": {
 		"instanceRunning": "Instanz läuft",
 		"instanceIncidents": "Instanz mit Vorfällen",
 		"instanceFinished": "Instanz abgeschlossen",
@@ -178,7 +178,6 @@
 		"jobDefinitions": "Job-Definitionen",
 		"jobs": "Jobs",
 		"calledProcessDefinitions": "Aufgerufene Prozessdefinitionen"
-		}
 	},
 	"process-instance": {
 		"processInstanceId": "Prozessinstanz Id",
