@@ -42,7 +42,7 @@ public class InfoService extends BaseService {
 	@Value("${cibseven.webclient.sso.endpoints.authorization:}") private String authorizationEndpoint;
 	@Value("${cibseven.webclient.sso.clientId:}") private String clientId;
 	@Value("${cibseven.webclient.sso.scopes:}") private String scopes;
-	@Value("${cibseven.historyLevel:}") private String camundaHistoryLevel;
+	@Value("${cibseven.webclient.historyLevel:full}") private String camundaHistoryLevel;
 	@Value("${cibseven.webclient.user.provider:org.cibseven.webapp.auth.SevenUserProvider}") private String userProvider;
 	
 	@Value("${cibseven.webclient.productNamePageTitle:CIB seven}") private String productNamePageTitle;
