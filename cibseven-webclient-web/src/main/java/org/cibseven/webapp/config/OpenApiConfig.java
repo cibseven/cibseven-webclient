@@ -36,7 +36,7 @@ import io.swagger.v3.oas.models.servers.Server;
 @Configuration
 public class OpenApiConfig {
 
-	@Value("${cibseven.webclient.api.common.url}")
+	@Value("${cibseven.webclient.api.common.url:}")
 	String serverUrl;
 	@Value("${cibseven.webclient.api.common.title:CIB seven webclient API}")
 	String apiTitle;
