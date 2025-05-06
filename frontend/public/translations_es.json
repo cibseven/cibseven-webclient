@@ -58,6 +58,7 @@
 	"process": {
 		"instanceRunning": "Instancia en ejecución",
 		"instanceIncidents": "Instancia con incidentes",
+		"instanceWithoutIncidents": "Instancia sin incidencias",
 		"instanceFinished": "Instancia finalizada",
 		"name": "Nombre",
 		"key": "Key del proceso",
