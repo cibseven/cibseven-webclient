@@ -126,14 +126,14 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 	}
 
 	@Bean @Primary
-	public BpmProvider bpmProvider(@Value("${bpm.provider}") Class<BpmProvider> providerClass)
+	public BpmProvider bpmProvider(@Value("${bpm.provider:org.cibseven.webapp.providers.SevenProvider}") Class<BpmProvider> providerClass)
 			throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException,
 			NoSuchMethodException, SecurityException {
 		return (BpmProvider) providerClass.getConstructor().newInstance();
 	}
 
 	@Bean @Primary
-	public BaseUserProvider baseUserProvider(@Value("${user.provider}") Class<BaseUserProvider> providerClass)
+	public BaseUserProvider baseUserProvider(@Value("${user.provider:org.cibseven.webapp.auth.SevenUserProvider}") Class<BaseUserProvider> providerClass)
 			throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException,
 			NoSuchMethodException, SecurityException {
 		this.provider = (BaseUserProvider) providerClass.getConstructor().newInstance();
