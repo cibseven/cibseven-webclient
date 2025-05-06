@@ -22,10 +22,6 @@ spring:
       static-locations: 
         - "classpath:/webapps/"
 
-logging:
-  level:
-    root: DEBUG
-
 cibseven:
   webclient:
     # Engine rest
@@ -78,28 +74,32 @@ cibseven:
         enabled: false
     cockpit:
       url: /camunda/app/cockpit/default/
+    theme: cib
+
+    services:
+      basePath: services/v1
+  
+  api:
+    common:
+      title: "CIB seven webclient API"
+      description: "This API exposes the functionality of CIB seven webclient as a REST service under the Apache License 2.0."
+      termsOfService: "https://www.apache.org/licenses/LICENSE-2.0"
+      license: "Apache 2.0"
+      licenseUrl: "https://www.apache.org/licenses/LICENSE-2.0"
+      contact:
+        name: "CIB seven"
+        url: "https://cibseven.org"
+        email: "info@cibseven.org"
+      # webclient server url for the swagger-ui. Only needs to be set if the automatic detection is wrong.
+      url: "http://localhost:8080"
 
 springdoc:
   swagger-ui:
-    path: /swagger-ui
+    path: /webapp/swagger-ui
     operationsSorter: alpha
     tagsSorter: alpha
     doc-expansion: none 
-  # webclient server url for the swagger-ui. Only needs to be set if the automatic detection is wrong.
-  cibsevenWebclient:
-    serverUrl: ""
 
-api:
-  common:
-    title: "CIB seven webclient API"
-    description: "This API exposes the functionality of CIB seven webclient as a REST service under the Apache License 2.0."
-    termsOfService: "https://www.apache.org/licenses/LICENSE-2.0"
-    license: "Apache 2.0"
-    licenseUrl: "https://www.apache.org/licenses/LICENSE-2.0"
-    contact:
-      name: "CIB seven"
-      url: "https://cibseven.org"
-      email: "info@cibseven.org"
 
 #custom:
 #  spring:
