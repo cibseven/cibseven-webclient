@@ -28,7 +28,14 @@
 		<dependency>
 		    <groupId>org.springframework.boot</groupId>
 		    <artifactId>spring-boot-starter-validation</artifactId>
-		</dependency>		
+		</dependency>	
+		
+		<dependency>
+    		<groupId>jakarta.servlet</groupId>
+    		<artifactId>jakarta.servlet-api</artifactId>
+    		<scope>provided</scope>
+		</dependency>
+		
 	</dependencies>
 
 	<build>
@@ -164,7 +171,28 @@
 						<appRoot>/opt/bitnami/tomcat/webapps/seven</appRoot>
 					</container>
 				</configuration>
-			</plugin>				
+			</plugin>
+			<plugin>
+    			<groupId>org.apache.maven.plugins</groupId>
+        		<artifactId>maven-assembly-plugin</artifactId>
+        		<executions>
+          			<execution>
+            			<id>wildfly</id>
+            			<phase>package</phase>
+            			<goals>
+              				<goal>single</goal>
+            			</goals>
+            			<configuration>
+              				<descriptors>
+	                			<descriptor>assembly-war-wildfly.xml</descriptor>
+    	          			</descriptors>
+    	          			<classifier>wildfly</classifier>
+            	  			<attach>true</attach>
+              				<outputDirectory>target/</outputDirectory>
+            			</configuration>
+          			</execution>
+    			</executions>
+			</plugin>
 		</plugins>
 		
 	</build>
