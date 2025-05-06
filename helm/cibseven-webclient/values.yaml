@@ -91,22 +91,13 @@ application:
       #wildcard: "*" # use this only when LDAP user provider is used!
       wildcard: ""
 
-  userAnon:
-    id: demo
-
   # Engine rest
-  camunda:
+  cibseven:
     engineRest:
       url: http://{{ .Release.Name }}-{{ .Values.global.flow.bpmnEngine.name }}:8080
     historyLevel: "{{ .Values.global.camunda.historyLevel }}"
     #redundant with engine Rest
     url: http://{{ .Release.Name }}-{{ .Values.global.flow.bpmnEngine.name }}:8080
-
-  # Error report
-  errorReportUrl: ""
-
-  # CIB flow task URL
-  flow:
     webclient:
       task:
         url: https://{{ .Values.global.host }}/seven/#/seven/auth/tasks/*/

@@ -22,72 +22,62 @@ spring:
       static-locations: 
         - "classpath:/webapps/"
 
-# LDAP
-ldap:
-  url: ldap://ldap.cibseven.org
-  folder: DC=cibseven,DC=org
-  userNameAttribute: samAccountName
-  userDisplayNameAttribute: name
-  modifiedDateFormat: yyyyMMddHHmmss.SX
-  followReferrals: follow
+logging:
+  level:
+    root: DEBUG
 
-# Token generation
-authentication:
-  jwtSecret: 
-  tokenValidMinutes: 60
-  tokenProlongMinutes: 1440
-  
-# BPM Provider
-bpm:
-  provider: org.cibseven.webapp.providers.SevenProvider
-
-# User providers
-user:
-  provider: org.cibseven.webapp.auth.SevenUserProvider
-  # provider: org.cibseven.webapp.auth.LdapUserProvider
-  # provider: org.cibseven.webapp.auth.KeycloakUserProvider
-  # provider: org.cibseven.webapp.auth.AdfsUserProvider
-
-# Set the wild card is gonna be used for the users search. By default is "*".
-users:
-  search:
-    wildcard:
-
-userAnon:
-  id: demo
-
-# Engine rest
-camunda:
-  engineRest:
-    url: http://localhost:8080
-  historyLevel: full
-
-flow:
+cibseven:
   webclient:
+    # Engine rest
+    engineRest:
+      url: http://192.168.96.236:8080
+#      url: http://localhost:8070
+    historyLevel: full
+    # Token generation
+    authentication:
+      jwtSecret: yY0uGgBnMhK2CCrRE8g5rLSBwwgI07j3tFIb4bqOqU55oHWiUYkSXh5qMTeVGD65xokrlLGfR2ekwkG7ZQUFzh75mfmmg6g0QcCHmn4tWU9HiOYr9MR7a2UP3QQdKAd4gmcgsQXb7RpJhSizF8HVKzaAgqR
+      tokenValidMinutes: 60
+      tokenProlongMinutes: 1440
+    # LDAP
+    ldap:
+      url: ldap://ldap.cibseven.org
+      folder: DC=cibseven,DC=org
+      userNameAttribute: samAccountName
+      userDisplayNameAttribute: name
+      modifiedDateFormat: yyyyMMddHHmmss.SX
+      followReferrals: follow
+
+    # BPM Provider
+    bpm:
+      provider: org.cibseven.webapp.providers.SevenProvider
+
+    # User providers
+    user:
+      provider: org.cibseven.webapp.auth.SevenUserProvider
+      # provider: org.cibseven.webapp.auth.LdapUserProvider
+      # provider: org.cibseven.webapp.auth.KeycloakUserProvider
+      # provider: org.cibseven.webapp.auth.AdfsUserProvider
+
+    # Set the wild card is gonna be used for the users search. By default is "*".
+    users:
+      search:
+        wildcard:
     task:
       url: /webapp/#/seven/auth/tasks/*/
-  # If this params is set to false, the number of instances and incidents wont be taken.
-  fetchInstances: true
-  fetchIncidents: true
-  # External token user creation
-  token:
-    secret: 
-    deny:
-      external:
-        ip: true
-  datasource:
-    fileValue:
-      enabled: false
-
-# Camunda Cockpit URL
-cockpit:
-  url: /camunda/app/cockpit/default/
-
-# Used to set a theme (Bootstrap)
-theme: cib
-
-services:
-  basePath: services/v1
+      # If this params is set to false, the number of instances and incidents wont be taken.
+    fetchInstances: true
+    fetchIncidents: true
+    # External token user creation
+    token:
+      secret: 
+      deny:
+        external:
+          ip: true
+    datasource:
+      fileValue:
+        enabled: false
+    cockpit:
+      url: /camunda/app/cockpit/default/
 
 springdoc:
   swagger-ui:

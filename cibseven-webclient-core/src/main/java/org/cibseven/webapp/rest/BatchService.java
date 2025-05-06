@@ -32,7 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletRequest;
 
-@RestController @RequestMapping("${services.basePath:/services/v1}" + "/batch")
+@RestController @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/batch")
 public class BatchService extends BaseService implements InitializingBean {
 
     @Autowired BpmProvider bpmProvider;

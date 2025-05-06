@@ -34,49 +34,49 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 	
 	@Override
 	public Collection<Decision> getDecisionDefinitionList(Map<String, Object> queryParams, CIBUser user) {
-		String url = buildUrlWithParams(camundaUrl + "/engine-rest/decision-definition", queryParams);
+		String url = buildUrlWithParams(cibsevenUrl + "/engine-rest/decision-definition", queryParams);
 		return Arrays.asList(((ResponseEntity<Decision[]>) doGet(url, Decision[].class, user, false)).getBody());
 	}
 
 	@Override
 	public Object getDecisionDefinitionListCount(Map<String, Object> queryParams, CIBUser user) {
-		String url = buildUrlWithParams(camundaUrl + "/engine-rest/decision-definition/count", queryParams);    
+		String url = buildUrlWithParams(cibsevenUrl + "/engine-rest/decision-definition/count", queryParams);    
 		return ((ResponseEntity<Object>) doGet(url, Object.class, user, false)).getBody();
 	}
 	
 	@Override
 	public Decision getDecisionDefinitionByKey(String key, CIBUser user) {
-		String url = camundaUrl + "/engine-rest/decision-definition/key/" + key;
+		String url = cibsevenUrl + "/engine-rest/decision-definition/key/" + key;
 		return ((ResponseEntity<Decision>) doGet(url, Decision.class, user, false)).getBody();
 	}
 
 	@Override
 	public Object getDiagramByKey(String key, CIBUser user) {
-		String url = camundaUrl + "/engine-rest/decision-definition/key/" + key + "/diagram";
+		String url = cibsevenUrl + "/engine-rest/decision-definition/key/" + key + "/diagram";
 		return ((ResponseEntity<Object>) doGet(url, Object.class, user, false)).getBody();
 	}
 
 	@Override
 	public Object evaluateDecisionDefinitionByKey(Map<String, Object> data, String key, CIBUser user) {
-		String url = camundaUrl + "/engine-rest/decision-definition/key/" + key + "/evaluate";
+		String url = cibsevenUrl + "/engine-rest/decision-definition/key/" + key + "/evaluate";
 		return ((ResponseEntity<Object>) doPost(url, data, null, user)).getBody();
 	}
 
 	@Override
 	public void updateHistoryTTLByKey(Map<String, Object> data, String key, CIBUser user) {
-		String url = camundaUrl + "/engine-rest/decision-definition/key/" + key + "/history-time-to-live";
+		String url = cibsevenUrl + "/engine-rest/decision-definition/key/" + key + "/history-time-to-live";
 		doPut(url, data, user);
 	}
 
 	@Override
 	public Decision getDecisionDefinitionByKeyAndTenant(String key, String tenant, CIBUser user) {
-		String url = camundaUrl + "/engine-rest/decision-definition/key/" + key + "/tenant-id/" + tenant;
+		String url = cibsevenUrl + "/engine-rest/decision-definition/key/" + key + "/tenant-id/" + tenant;
 		return ((ResponseEntity<Decision>) doGet(url, Decision.class, user, false)).getBody();
 	}
 
 	@Override
 	public Object getDiagramByKeyAndTenant(String key, String tenant, CIBUser user) {
-		String url = camundaUrl + "/engine-rest/decision-definition/key/" + key + "/tenant-id/" + tenant + "/diagram";
+		String url = cibsevenUrl + "/engine-rest/decision-definition/key/" + key + "/tenant-id/" + tenant + "/diagram";
 		return ((ResponseEntity<Decision>) doGet(url, Decision.class, user, false)).getBody();
 	}
 
@@ -94,22 +94,22 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 
 	@Override
 	public Object getXmlByKey(String key, CIBUser user) {
-		String url = camundaUrl + "/engine-rest/decision-definition/key/" + key + "/xml";
+		String url = cibsevenUrl + "/engine-rest/decision-definition/key/" + key + "/xml";
 		return ((ResponseEntity<Decision>) doGet(url, Decision.class, user, false)).getBody();
 	}
 
 	@Override
 	public Object getXmlByKeyAndTenant(String key, String tenant, CIBUser user) {
-		String url = camundaUrl + "/engine-rest/decision-definition/key/" + key + "/tenant-id/" + tenant + "/xml";
+		String url = cibsevenUrl + "/engine-rest/decision-definition/key/" + key + "/tenant-id/" + tenant + "/xml";
 		return ((ResponseEntity<Decision>) doGet(url, Decision.class, user, false)).getBody();
 	}
 
 	@Override
 	public Decision getDecisionDefinitionById(String id, Optional<Boolean> extraInfo, CIBUser user) {
-		String url = camundaUrl + "/engine-rest/decision-definition/" + id;
+		String url = cibsevenUrl + "/engine-rest/decision-definition/" + id;
 		Decision decision = ((ResponseEntity<Decision>) doGet(url, Decision.class, user, false)).getBody();
 		if (extraInfo.isPresent() && extraInfo.get()) {
-			String urlCount = camundaUrl + "/engine-rest/history/decision-instance/count?decisionDefinitionId=" + decision.getId();
+			String urlCount = cibsevenUrl + "/engine-rest/history/decision-instance/count?decisionDefinitionId=" + decision.getId();
 			decision.setAllInstances(((ResponseEntity<JsonNode>) doGet(urlCount, JsonNode.class, user, false)).getBody().get("count").asLong());
 		}
 		return decision;
@@ -117,7 +117,7 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 
 	@Override
 	public Object getDiagramById(String id, CIBUser user) {
-		String url = camundaUrl + "/engine-rest/decision-definition/" + id + "/diagram";
+		String url = cibsevenUrl + "/engine-rest/decision-definition/" + id + "/diagram";
 		return ((ResponseEntity<Decision>) doGet(url, Decision.class, user, false)).getBody();
 	}
 
@@ -129,24 +129,24 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 
 	@Override
 	public void updateHistoryTTLById(String id, Map<String, Object> data, CIBUser user) {
-		String url = camundaUrl + "/engine-rest/decision-definition/" + id + "/history-time-to-live";
+		String url = cibsevenUrl + "/engine-rest/decision-definition/" + id + "/history-time-to-live";
 		doPut(url, data, user);
 	}
 
 	@Override
 	public Object getXmlById(String id, CIBUser user) {
-		String url = camundaUrl + "/engine-rest/decision-definition/" + id + "/xml";
+		String url = cibsevenUrl + "/engine-rest/decision-definition/" + id + "/xml";
 		return ((ResponseEntity<Object>) doGet(url, Object.class, user, false)).getBody();
 	}
 	
 	@Override
 	public Collection<Decision> getDecisionVersionsByKey(String key, Optional<Boolean> lazyLoad, CIBUser user) {
-		String url = camundaUrl + "/engine-rest/decision-definition?key=" + key + "&sortBy=version&sortOrder=desc";
+		String url = cibsevenUrl + "/engine-rest/decision-definition?key=" + key + "&sortBy=version&sortOrder=desc";
 		Collection<Decision> decisions = Arrays.asList(((ResponseEntity<Decision[]>) doGet(url, Decision[].class, user, false)).getBody());		
 		
 		if (!lazyLoad.isPresent() || (lazyLoad.isPresent() && !lazyLoad.get())) {
 			for(Decision decision : decisions) {
-				String urlCount = camundaUrl + "/engine-rest/history/decision-instance/count?decisionDefinitionId=" + decision.getId();
+				String urlCount = cibsevenUrl + "/engine-rest/history/decision-instance/count?decisionDefinitionId=" + decision.getId();
 				decision.setAllInstances(((ResponseEntity<JsonNode>) doGet(urlCount, JsonNode.class, user, false)).getBody().get("count").asLong());
 			}
 		}
@@ -155,31 +155,31 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 	
 	@Override
 	public Object getHistoricDecisionInstances(Map<String, Object> queryParams, CIBUser user){
-		String url = buildUrlWithParams(camundaUrl + "/engine-rest/history/decision-instance", queryParams);
+		String url = buildUrlWithParams(cibsevenUrl + "/engine-rest/history/decision-instance", queryParams);
 		return ((ResponseEntity<Object>) doGet(url, Object.class, user, false)).getBody();
 	}
 	
 	@Override
 	public Object getHistoricDecisionInstanceCount(Map<String, Object> queryParams, CIBUser user){
-		String url = buildUrlWithParams(camundaUrl + "/engine-rest/history/decision-instance/count", queryParams);
+		String url = buildUrlWithParams(cibsevenUrl + "/engine-rest/history/decision-instance/count", queryParams);
 		return ((ResponseEntity<Object>) doGet(url, Object.class, user, false)).getBody();
 	}
 	
 	@Override
 	public Object getHistoricDecisionInstanceById(String id, Map<String, Object> queryParams, CIBUser user){
-		String url = buildUrlWithParams(camundaUrl + "/engine-rest/history/decision-instance/" + id, queryParams);
+		String url = buildUrlWithParams(cibsevenUrl + "/engine-rest/history/decision-instance/" + id, queryParams);
 		return ((ResponseEntity<Object>) doGet(url, Object.class, user, false)).getBody();
 	}
 	
 	@Override
 	public Object deleteHistoricDecisionInstances(Map<String, Object> body, CIBUser user){
-		String url = camundaUrl + "/engine-rest/history/decision-instance/delete";
+		String url = cibsevenUrl + "/engine-rest/history/decision-instance/delete";
 		return ((ResponseEntity<Object>) doPost(url, body, null, user)).getBody();
 	}
 	
 	@Override
 	public Object setHistoricDecisionInstanceRemovalTime(Map<String, Object> body, CIBUser user){
-		String url = camundaUrl + "/engine-rest/history/decision-instance/set-removal-time";
+		String url = cibsevenUrl + "/engine-rest/history/decision-instance/set-removal-time";
 		return ((ResponseEntity<Object>) doPost(url, body, null, null)).getBody();
 	}
 	
