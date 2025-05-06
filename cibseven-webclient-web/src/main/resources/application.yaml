@@ -26,12 +26,11 @@ cibseven:
   webclient:
     # Engine rest
     engineRest:
-      url: http://192.168.96.236:8080
-#      url: http://localhost:8070
+      url: http://localhost:8080
     historyLevel: full
     # Token generation
     authentication:
-      jwtSecret: yY0uGgBnMhK2CCrRE8g5rLSBwwgI07j3tFIb4bqOqU55oHWiUYkSXh5qMTeVGD65xokrlLGfR2ekwkG7ZQUFzh75mfmmg6g0QcCHmn4tWU9HiOYr9MR7a2UP3QQdKAd4gmcgsQXb7RpJhSizF8HVKzaAgqR
+      jwtSecret:
       tokenValidMinutes: 60
       tokenProlongMinutes: 1440
     # LDAP
@@ -58,11 +57,11 @@ cibseven:
     users:
       search:
         wildcard:
-    task:
-      url: /webapp/#/seven/auth/tasks/*/
-      # If this params is set to false, the number of instances and incidents wont be taken.
+
+    # If this params is set to false, the number of instances and incidents wont be taken.
     fetchInstances: true
     fetchIncidents: true
+
     # External token user creation
     token:
       secret: 
@@ -79,33 +78,32 @@ cibseven:
     services:
       basePath: services/v1
   
-  api:
-    common:
-      title: "CIB seven webclient API"
-      description: "This API exposes the functionality of CIB seven webclient as a REST service under the Apache License 2.0."
-      termsOfService: "https://www.apache.org/licenses/LICENSE-2.0"
-      license: "Apache 2.0"
-      licenseUrl: "https://www.apache.org/licenses/LICENSE-2.0"
-      contact:
-        name: "CIB seven"
-        url: "https://cibseven.org"
-        email: "info@cibseven.org"
-      # webclient server url for the swagger-ui. Only needs to be set if the automatic detection is wrong.
-      url: "http://localhost:8080"
+    api:
+      common:
+        title: "CIB seven webclient API"
+        description: "This API exposes the functionality of CIB seven webclient as a REST service under the Apache License 2.0."
+        termsOfService: "https://www.apache.org/licenses/LICENSE-2.0"
+        license: "Apache 2.0"
+        licenseUrl: "https://www.apache.org/licenses/LICENSE-2.0"
+        contact:
+          name: "CIB seven"
+          url: "https://cibseven.org"
+          email: "info@cibseven.org"
+        # webclient server url for the swagger-ui. Only needs to be set if the automatic detection is wrong.
+        url:
+
+#    custom:
+#      spring:
+#        jackson:
+#          parser:
+#            max-size: 25000000
 
 springdoc:
   swagger-ui:
-    path: /webapp/swagger-ui
+    path: /swagger-ui
     operationsSorter: alpha
     tagsSorter: alpha
-    doc-expansion: none 
-
-
-#custom:
-#  spring:
-#    jackson:
-#      parser:
-#        max-size: 25000000
+    doc-expansion: none
 
 # Activate "/actuator/info" and "/actuator/health" endpoints
 management:

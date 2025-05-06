@@ -46,8 +46,6 @@ import org.springframework.web.servlet.config.annotation.ContentNegotiationConfi
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.mvc.WebContentInterceptor;
 
@@ -61,7 +59,7 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 
 	BaseUserProvider provider;
 
-	@Value("${custom.spring.jackson.parser.max-size:20000000}")
+	@Value("${cibseven.webclient.custom.spring.jackson.parser.max-size:20000000}")
 	int jacksonParserMaxSize;
 	
     @Bean

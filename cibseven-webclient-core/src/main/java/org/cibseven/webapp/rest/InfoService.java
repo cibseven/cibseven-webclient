@@ -36,25 +36,25 @@ import lombok.extern.slf4j.Slf4j;
 @RestController @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/info") @Slf4j
 public class InfoService extends BaseService {	
 	
-	@Value("${cibseven.webclient.cockpit.url:}") private String cockpitUrl;
-	@Value("${cibseven.webclient.theme:}") private String theme;
+	@Value("${cibseven.webclient.cockpit.url:./camunda/app/cockpit/default/}") private String cockpitUrl;
+	@Value("${cibseven.webclient.theme:cib}") private String theme;
 	@Value("${cibseven.webclient.sso.active:false}") private boolean ssoActive;
 	@Value("${cibseven.webclient.sso.endpoints.authorization:}") private String authorizationEndpoint;
 	@Value("${cibseven.webclient.sso.clientId:}") private String clientId;
 	@Value("${cibseven.webclient.sso.scopes:}") private String scopes;
 	@Value("${cibseven.historyLevel:}") private String camundaHistoryLevel;
-	@Value("${cibseven.webclient.user.provider: org.cibseven.webapp.auth.SevenUserProvider}") private String userProvider;
+	@Value("${cibseven.webclient.user.provider:org.cibseven.webapp.auth.SevenUserProvider}") private String userProvider;
 	
 	@Value("${cibseven.webclient.productNamePageTitle:CIB seven}") private String productNamePageTitle;
 	
 	@Value("${cibseven.webclient.services.basePath:services/v1}") private String servicesBasePath;
 	
-	@Value("${flow.link.terms:}") private String flowLinkTerms;
-	@Value("${flow.link.privacy:}") private String flowLinkPrivacy;
-	@Value("${flow.link.imprint:}") private String flowLinkImprint;
-	@Value("${flow.link.accessibility:}") private String flowLinkAccessibility;
-	@Value("${flow.link.help:}") private String flowLinkHelp;
-	@Value("${flow.support-dialog:}") private String supportDialog;
+	@Value("${cibseven.webclient.link.terms:}") private String flowLinkTerms;
+	@Value("${cibseven.webclient.link.privacy:}") private String flowLinkPrivacy;
+	@Value("${cibseven.webclient.link.imprint:}") private String flowLinkImprint;
+	@Value("${cibseven.webclient.link.accessibility:}") private String flowLinkAccessibility;
+	@Value("${cibseven.webclient.link.help:}") private String flowLinkHelp;
+	@Value("${cibseven.webclient.support-dialog:}") private String supportDialog;
 	
 	
 	@Operation(
