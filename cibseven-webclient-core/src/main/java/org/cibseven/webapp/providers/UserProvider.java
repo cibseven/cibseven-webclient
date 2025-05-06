@@ -52,7 +52,7 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class UserProvider extends SevenProviderBase implements IUserProvider {
 	
-	@Value("${user.provider}") String userProvider;
+	@Value("${user.provider:org.cibseven.webapp.auth.SevenUserProvider}") String userProvider;
 	@Value("${users.search.wildcard:}") String wildcard;
 	
 	@Override
