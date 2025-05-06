@@ -166,7 +166,7 @@
 		},
 		"true": "Vero",
 		"false": "Falso",
-		"jobs": "Job"
+		"jobs": "Job",
 		"calledProcessDefinitions": "chiamato Definizioni di processo"
 	},
 	"process-instance": {
