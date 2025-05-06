@@ -1,7 +1,3 @@
-server:
-  servlet:
-    context-path: /webapp
-
 spring:
   banner:
     location: classpath:banner.txt
@@ -15,12 +11,6 @@ spring:
       max-file-size: 10MB
       # Configures the maximum size allowed for the entire request, including all files and form data.
       max-request-size: 1GB
-  mvc:
-    static-path-pattern: "/webapps/**"
-  web:
-    resources:
-      static-locations: 
-        - "classpath:/webapps/"
 
 cibseven:
   webclient:
