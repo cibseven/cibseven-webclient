@@ -53,7 +53,7 @@ public class SevenUserProvider extends BaseUserProvider<StandardLogin> implement
 	@Value("${authentication.tokenValidMinutes:60}") long validMinutes;	
 	@Value("${authentication.tokenProlongMinutes:1440}") long prolongMinutes;
 	
-	@Value("${camunda.engineRest.url}") String camundaUrl;
+	@Value("${camunda.engineRest.url:./}") String camundaUrl;
 	
 	@Autowired BpmProvider provider;
 	SevenProvider sevenProvider;
