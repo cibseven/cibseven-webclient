@@ -91,6 +91,7 @@ import SidebarsFlow from '@/components/common-components/SidebarsFlow.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import { BWaitingBox } from 'cib-common-components'
 import { updateAppTitle } from '@/utils/init'
+import { splitToWords } from '@/utils/search'
 
 export default {
   name: 'TasksContent',
@@ -206,18 +207,7 @@ export default {
       if (taskSorting[0].sortBy !== 'created') taskSorting.push({ sortBy: 'created', sortOrder: 'desc' })
       var filters = { sorting: taskSorting }
       if (this.search) {
-        var searchQueries
-        // Checks if a search query is wrapped with single or double quotes
-        if (/^(['"]).*\1$/.test(this.search)) {
-          // Processes the search query by treating it as an exact phrase, ensuring more precise search results
-          searchQueries = [this.search.replace(/^['"]|['"]$/g, '')] // removes quotes
-        } else {
-          // Handles search query by treating each word separately.
-          // Example: Searching for "Prepare bank" will retrieve results containing either "Prepare" or "bank,"
-          // potentially leading to less precise results
-          searchQueries = this.search.split(/\s+/)
-        }
-        filters.orQueries = searchQueries.map((searchQuery) => ({
+        filters.orQueries = splitToWords(this.search).map((searchQuery) => ({
             nameLike: '%' + searchQuery + '%',
             assigneeLike: '%' + searchQuery + '%',
             processDefinitionId: searchQuery,
