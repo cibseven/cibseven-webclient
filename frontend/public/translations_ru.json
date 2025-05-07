@@ -57,6 +57,7 @@
 	"process" : {
 		"instanceRunning": "Запущеный экземпляр",
 		"instanceIncidents": "Экзепляр с инцидентами",
+		"instanceWithoutIncidents": "Экземпляр без инцидентов",
 		"instanceFinished": "Завершеный экземпляр",
 		"name": "Имя",
 		"key": "Ключ определения",	

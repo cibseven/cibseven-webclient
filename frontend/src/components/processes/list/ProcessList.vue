@@ -56,7 +56,7 @@
           <div v-else-if="table.item.incidents > 0">
             <span :title="$t('process.instanceIncidents')" class="mdi mdi-18px mdi-alert-outline text-warning"></span><span>{{ table.item.incidents }}</span>
           </div>
-          <span :title="$t('process.instanceFinished')" v-else class="mdi mdi-18px mdi-check-circle-outline text-success"></span>
+          <span :title="$t('process.instanceWithoutIncidents')" v-else class="mdi mdi-18px mdi-check-circle-outline text-success"></span>
         </template>
         <template v-slot:cell(runningInstances)="table">
           <span v-if="loadingInstances"><b-spinner small></b-spinner></span>
