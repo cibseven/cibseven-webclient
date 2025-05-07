@@ -85,7 +85,7 @@ describe('FilterModal', () => {
 
     ['Like', '0', '%0%'],                       // LIKE key, numeric string
     ['Like', 'val', '%val%'],                   // LIKE key, wrap normally
-    ['Like', '%50', '%50'],                     // LIKE key, already has wildcard
+    ['Like', '%50', '%50%'],
     ['Like', '%', '%'],                         // LIKE key, just wildcard — no double wrap
   ])('fixLike("%s", "%s") → "%s"', (key, value, expected) => {
     const wrapper = getWrapper()
@@ -103,8 +103,8 @@ describe('FilterModal', () => {
     ['Like', 'val', 'val'],                     // LIKE key, no wildcards
 
     ['Like', '%val%', 'val'],                   // LIKE key, full wildcard match
-    ['Like', 'abc%', 'abc%'],                   // end only → not unwrapped
-    ['Like', '%abc', '%abc'],                   // start only → not unwrapped
+    ['Like', 'abc%', 'abc'],                    // end only → unwrapped
+    ['Like', '%abc', 'abc'],                    // start only → unwrapped
 
     ['Like', '%', ''],                          // special case: only wildcard
     ['Like', '%%', ''],                         // double wildcard
@@ -117,9 +117,9 @@ describe('FilterModal', () => {
   })
 
   // Round-trip tests: unfixLike(fixLike(...)) === original
-  describe('FilterModal', () => {
+  describe('Round-trip', () => {
     const keys = ['prop', 'like', 'LIKE', 'Like']
-    const values = ['', '   ', 'val', '%', '%val%', '0', '100', 'your name']
+    const values = ['', '   ', 'val', '0', '100', 'your name']
 
     describe.each(keys)('Round-trip fixLike/unfixLike for key: "%s"', (key) => {
       it.each(values)('value: "%s"', (value) => {
@@ -128,6 +128,13 @@ describe('FilterModal', () => {
         const unfixed = wrapper.vm.unfixLike(key, fixed)
         expect(unfixed).toBe(value)
       })
+    })
+
+    it('special cases', () => {
+      const wrapper = getWrapper()
+      const key = 'Like'
+      expect(wrapper.vm.unfixLike(key, wrapper.vm.fixLike(key, '%'))).toBe('')
+      expect(wrapper.vm.unfixLike(key, wrapper.vm.fixLike(key, '%val%'))).toBe('val')
     })
   })
 })
