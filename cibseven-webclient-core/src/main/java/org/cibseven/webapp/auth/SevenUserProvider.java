@@ -49,11 +49,11 @@ import jakarta.servlet.http.HttpServletRequest;
 
 public class SevenUserProvider extends BaseUserProvider<StandardLogin> implements InitializingBean {
 	
-	@Value("${authentication.jwtSecret:sekret}") String secret;	
-	@Value("${authentication.tokenValidMinutes:60}") long validMinutes;	
-	@Value("${authentication.tokenProlongMinutes:1440}") long prolongMinutes;
+	@Value("${cibseven.webclient.authentication.jwtSecret:}") String secret;	
+	@Value("${cibseven.webclient.authentication.tokenValidMinutes:60}") long validMinutes;	
+	@Value("${cibseven.webclient.authentication.tokenProlongMinutes:1440}") long prolongMinutes;
 	
-	@Value("${camunda.engineRest.url:./}") String camundaUrl;
+	@Value("${cibseven.webclient.engineRest.url:./}") String cibsevenUrl;
 	
 	@Autowired BpmProvider provider;
 	SevenProvider sevenProvider;

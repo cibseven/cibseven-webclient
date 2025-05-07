@@ -48,7 +48,7 @@ public class DeploymentProvider extends SevenProviderBase implements IDeployment
 
     @Override
 	public Deployment deployBpmn(MultiValueMap<String, Object> data, MultiValueMap<String, MultipartFile> file, CIBUser user) throws SystemException {
-		String url = camundaUrl + "/engine-rest/deployment/create";
+		String url = cibsevenUrl + "/engine-rest/deployment/create";
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
@@ -76,19 +76,19 @@ public class DeploymentProvider extends SevenProviderBase implements IDeployment
 
     @Override
 	public Collection<Deployment> findDeployments(CIBUser user) {
-		String url = camundaUrl + "/engine-rest/deployment?sortBy=deploymentTime&sortOrder=desc";
+		String url = cibsevenUrl + "/engine-rest/deployment?sortBy=deploymentTime&sortOrder=desc";
 		return Arrays.asList(((ResponseEntity<Deployment[]>) doGet(url, Deployment[].class, user, false)).getBody());
 	}
 
 	@Override
 	public Collection<DeploymentResource> findDeploymentResources(String deploymentId, CIBUser user) {
-		String url = camundaUrl + "/engine-rest/deployment/" + deploymentId + "/resources";
+		String url = cibsevenUrl + "/engine-rest/deployment/" + deploymentId + "/resources";
 		return Arrays.asList(((ResponseEntity<DeploymentResource[]>) doGet(url, DeploymentResource[].class, user, false)).getBody());
 	}
    
 	@Override
 	public Data fetchDataFromDeploymentResource(HttpServletRequest rq, String deploymentId, String resourceId, String fileName) {
-		String url = camundaUrl + "/engine-rest/deployment/" + deploymentId + "/resources/" + resourceId + "/data";
+		String url = cibsevenUrl + "/engine-rest/deployment/" + deploymentId + "/resources/" + resourceId + "/data";
 		try {
 			RestTemplate restTemplate = new RestTemplate();
 		    restTemplate.getMessageConverters().add(new ByteArrayHttpMessageConverter());
@@ -111,7 +111,7 @@ public class DeploymentProvider extends SevenProviderBase implements IDeployment
 	
 	@Override
 	public void deleteDeployment(String deploymentId, Boolean cascade, CIBUser user) throws SystemException {
-		String url = camundaUrl + "/engine-rest/deployment/" + deploymentId;
+		String url = cibsevenUrl + "/engine-rest/deployment/" + deploymentId;
 		if(cascade) url += "?cascade=true";
 		doDelete(url, user);
 	}

@@ -63,8 +63,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public abstract class SevenProviderBase {
 	
-	@Value("${custom.spring.jackson.parser.max-size:20000000}") int jacksonParserMaxSize;
-	@Value("${camunda.engineRest.url:./}") protected String camundaUrl;
+	@Value("${cibseven.webclient.custom.spring.jackson.parser.max-size:20000000}") int jacksonParserMaxSize;
+	@Value("${cibseven.webclient.engineRest.url:./}") protected String cibsevenUrl;
 	
 	/**
 	 * Creates new Http headers and adds Authorization User token

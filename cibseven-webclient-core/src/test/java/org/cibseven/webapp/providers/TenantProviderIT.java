@@ -26,7 +26,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.cibseven.webapp.auth.CIBUser;
 
 @SpringBootTest(properties = {
-	    "camunda.engineRest.url=http://localhost:8080"
+	    "cibseven.webclient.engineRest.url=http://localhost:8080"
 	})
 @ContextConfiguration(classes = {
 		BaseUsersTestHelper.class,
