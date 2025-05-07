@@ -4,20 +4,12 @@
 
 # Configuration shared by multiple cib (seven) charts
 global:
+  
   authentication:
     jwtSecret: ""
     tokenValidMinutes: "60"
     tokenProlongMinutes: "1440"
-
-  flowDatasourceFileValueEnabled: true
-
-  camunda:
-    historyLevel: full
-
-  flow:
-    bpmnEngine:
-      name: "flow-cibseven" 
-
+  
   host: ""
 
   image:
@@ -47,112 +39,85 @@ application:
   server:
     servlet:
       context-path: /seven
-               
-  # LDAP
-  ldap:
-    url: ""
-    folder: ""
-    userNameAttribute: ""
-    userDisplayNameAttribute: ""
-    modifiedDateFormat: ""
-    followReferrals: ""
-    user: ""
-    password: ""
 
-  # Keycloak / ADFS (see src/main/resources for more info)
-  #sso: {}
-
-  # Token generation
-  authentication:
-    jwtSecret: "{{ .Values.global.authentication.jwtSecret }}"
-    tokenValidMinutes: "{{ .Values.global.authentication.tokenValidMinutes }}"
-    tokenProlongMinutes: "{{ .Values.global.authentication.tokenProlongMinutes }}"
-    # Token generated for recover password
-    recover:
-      jwtSecret: "{{ .Values.global.authentication.jwtSecret }}"
-      tokenValidMinutes: "{{ .Values.global.authentication.tokenValidMinutes }}"
-      tokenProlongMinutes: "{{ .Values.global.authentication.tokenProlongMinutes }}"
-
-  # BPM Provider
-  bpm:
-    provider: org.cibseven.webapp.providers.SevenProvider
-
-  # User providers
-  user:
-    #provider: org.cibseven.webapp.auth.LdapUserProvider
-    provider: org.cibseven.webapp.auth.SevenUserProvider
-    #provider: org.cibseven.webapp.auth.Camunda8UserProvider
-    #provider: org.cibseven.webapp.auth.KeycloakUserProvider
-    #provider: org.cibseven.webapp.auth.AdfsUserProvider
-
-  # Set the wild card is gonna be used for the users search.
-  users:
-    search:
-      #wildcard: "*" # use this only when LDAP user provider is used!
-      wildcard: ""
-
-  # Engine rest
   cibseven:
-    engineRest:
-      url: http://{{ .Release.Name }}-{{ .Values.global.flow.bpmnEngine.name }}:8080
-    historyLevel: "{{ .Values.global.camunda.historyLevel }}"
-    #redundant with engine Rest
-    url: http://{{ .Release.Name }}-{{ .Values.global.flow.bpmnEngine.name }}:8080
     webclient:
-      task:
-        url: https://{{ .Values.global.host }}/seven/#/seven/auth/tasks/*/
-    link:
-      terms: ""
-      privacy: ""
-      imprint: ""
-      accessibility: ""
-    # If this params is set to false, the number of instances and incidents wont be taken.
-    fetchInstances: "true"
-    fetchIncidents: "true"
-    # External token user creation
-    token:
-      secret: "{{ .Values.application.authentication.jwtSecret }}"
-      deny:
-        external:
-          ip: "true"
-    # This defines if the camunda File Value or the cib File Value should be used for files
-    datasource:
-      fileValue:
-        enabled: "{{ .Values.global.flowDatasourceFileValueEnabled }}"
+      # LDAP
+      ldap:
+        url: ""
+        folder: ""
+        userNameAttribute: ""
+        userDisplayNameAttribute: ""
+        modifiedDateFormat: ""
+        followReferrals: ""
+        user: ""
+        password: ""
 
-  # CIB flow webclient properties used in client side.
-  # CIB flow ui-element-templates URL
-  ui:
-    element:
-      template:
-        url: https://{{ .Values.global.host }}/ui-element-templates-base/#
+      # Keycloak / ADFS (see src/main/resources for more info)
+      #sso: {}
 
-  # Camunda Cockpit URL
-  cockpit:
-    url: https://{{ .Values.global.host }}/camunda/app/cockpit/default/
+      # Token generation
+      authentication:
+        jwtSecret: "{{ .Values.global.authentication.jwtSecret }}"
+        tokenValidMinutes: "{{ .Values.global.authentication.tokenValidMinutes }}"
+        tokenProlongMinutes: "{{ .Values.global.authentication.tokenProlongMinutes }}"
+        # Token generated for recover password
+        recover:
+          jwtSecret: "{{ .Values.global.authentication.jwtSecret }}"
+          tokenValidMinutes: "{{ .Values.global.authentication.tokenValidMinutes }}"
+          tokenProlongMinutes: "{{ .Values.global.authentication.tokenProlongMinutes }}"
 
-  # Used to set a theme (Bootstrap)
-  theme: cib
+      # BPM Provider
+      bpm:
+        provider: org.cibseven.webapp.providers.SevenProvider
 
-  productNamePageTitle: CIB seven
+      # User providers
+      user:
+        provider: org.cibseven.webapp.auth.SevenUserProvider
+        #provider: org.cibseven.webapp.auth.LdapUserProvider
+        #provider: org.cibseven.webapp.auth.KeycloakUserProvider
+        #provider: org.cibseven.webapp.auth.AdfsUserProvider
 
-  # Following property can be used to change from external property the content of the support dialog in flow-webclient
-  #support-dialog: |
-  #{
-  #  "de": {
-  #    "support-hotline": "Support-Hotline",
-  #    "opening-hours": "Öffnungszeiten",
-  #    "opening-hours-info": "Mo - Fr, 08.00 - 19.00 Uhr",
-  #    "phone": "Telefon",
-  #    "phone-number": "+49 89 14360 111",
-  #    "email-address": "E-Mail-Adresse",
-  #    "email": "cibsupport@cib.de"
-  #  }
-  #}
+      # Set the wild card is gonna be used for the users search.
+      users:
+        search:
+          #wildcard: "*" # use this only when LDAP user provider is used!
+          wildcard: ""
 
-  services:
-    basePath: services/v1
+      # Engine rest
+      engineRest:
+        url: ./
+      
+      historyLevel: "full"
+      
+      link:
+        terms: ""
+        privacy: ""
+        imprint: ""
+        accessibility: ""
+      
+      # If this params is set to false, the number of instances and incidents wont be taken.
+      fetchInstances: "true"
+      fetchIncidents: "true"
+      
+      # External token user creation
+      token:
+        secret: "{{ .Values.application.authentication.jwtSecret }}"
+        deny:
+          external:
+            ip: "true"
 
+      # Old Cockpit URL
+      cockpit:
+        url: /camunda/app/cockpit/default/
+
+      # Used to set a theme (Bootstrap)
+      theme: cib
+
+      productNamePageTitle: CIB seven
+
+      services:
+        basePath: services/v1
 
 ui:
   supportedLanguages: ["de", "en", "es", "ru"]
@@ -212,8 +177,6 @@ rootContext:
   # Set this to true, if you want the webclient to be reachable under context / in
   # addition to /seven. Note that you also need to update your ingress
   enabled: false
-
-
 
 configmaps:
   env:
