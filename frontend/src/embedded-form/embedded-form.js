@@ -17,7 +17,6 @@ InfoService.getProperties().then(config => {
 
     const searchParams = new URLSearchParams(location.search)
     const authorization = searchParams.get('authorization')
-    const userId = searchParams.get('userId')
     const lang = searchParams.get('lang')
     const processDefinitionId = searchParams.get('processDefinitionId')
     const taskId = searchParams.get('taskId')
@@ -33,7 +32,7 @@ InfoService.getProperties().then(config => {
 
         const isStartForm = !!processDefinitionId
         let embeddedForm
-
+        
         if (isStartForm) {
             submitButton.innerHTML = i18n.global.t('process.start')
         } else {
@@ -51,7 +50,7 @@ InfoService.getProperties().then(config => {
                 unblockButtons(submitButton, saveButton)
             })
         })
-
+        
         if (isStartForm) {
             saveButton.style.display = 'none'
         }
@@ -68,8 +67,8 @@ InfoService.getProperties().then(config => {
                 unblockButtons(submitButton, saveButton)
             })
         })
-
-        loadEmbeddedForm(isStartForm, processDefinitionId || taskId, embeddedFormRoot, authorization, userId).then(form => {
+        
+        loadEmbeddedForm(isStartForm, processDefinitionId || taskId, embeddedFormRoot, authorization).then(form => {
             embeddedForm = form
             loaderDiv.style.display = 'none'
             contentDiv.style.display = 'flex'
@@ -119,13 +118,12 @@ function unblockButtons(...buttons) {
     })
 }
 
-function loadEmbeddedForm(isStartForm, referenceId, container, authorization, userId) {
+function loadEmbeddedForm(isStartForm, referenceId, container, authorization) {
     var client = new window.CamSDK.Client({
         mock: false,
         apiUri: '/engine-rest',
         headers: {
-            'authorization': authorization,
-            'Context-User-ID': userId
+            'authorization': authorization
         }
     })
     return new Promise((resolve, reject) => {
