@@ -73,7 +73,7 @@ import jakarta.ws.rs.core.MediaType;
 	@ApiResponse(responseCode = "500", description = "An unexpected system error occured"),
 	@ApiResponse(responseCode = "401", description = "Unauthorized")
 })
-@RestController @RequestMapping("${services.basePath:/services/v1}" + "/process")
+@RestController @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/process")
 public class ProcessService extends BaseService implements InitializingBean {
 	
 	SevenProvider sevenProvider;

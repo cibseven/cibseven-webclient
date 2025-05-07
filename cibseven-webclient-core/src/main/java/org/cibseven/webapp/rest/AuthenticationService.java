@@ -42,7 +42,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.NotNull;
 
 @ApiResponses({ @ApiResponse(responseCode  = "500", description = "An unexpected system error occured") })
-@RestController @RequestMapping("${services.basePath:/services/v1}" + "/auth")
+@RestController @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/auth")
 public class AuthenticationService {
 	
 	@Autowired BaseUserProvider provider;

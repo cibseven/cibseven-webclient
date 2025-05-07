@@ -56,35 +56,33 @@ import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import jakarta.annotation.PostConstruct;
-import jakarta.servlet.http.HttpServletRequest;
 
 @Slf4j
 public class AdfsUserProvider extends BaseUserProvider<SSOLogin> {
 	
-	@Value("${sso.endpoints.token}") String tokenEndpoint;
-	@Value("${sso.endpoints.jwks}") String certEndpoint;
-	@Value("${sso.domain:}") String domain;
-	@Value("${sso.clientId}") String clientId;
-	@Value("${sso.clientSecret}") String clientSecret;
-	@Value("${sso.userIdProperty}") String userIdProperty;
-	@Value("${sso.userNameProperty}") String userNameProperty;
-	@Value("${sso.infoInIdToken: false}") boolean infoInIdToken;
-	@Value("${sso.technicalUserId}") String technicalUserId;
+	@Value("${cibseven.webclient.sso.endpoints.token}") String tokenEndpoint;
+	@Value("${cibseven.webclient.sso.endpoints.jwks}") String certEndpoint;
+	@Value("${cibseven.webclient.sso.domain:}") String domain;
+	@Value("${cibseven.webclient.sso.clientId}") String clientId;
+	@Value("${cibseven.webclient.sso.clientSecret}") String clientSecret;
+	@Value("${cibseven.webclient.sso.userIdProperty}") String userIdProperty;
+	@Value("${cibseven.webclient.sso.userNameProperty}") String userNameProperty;
+	@Value("${cibseven.webclient.sso.infoInIdToken: false}") boolean infoInIdToken;
+	@Value("${cibseven.webclient.sso.technicalUserId}") String technicalUserId;
 	
-	@Value("${authentication.jwtSecret}") String secret;
-	@Value("${authentication.tokenValidMinutes}") long validMinutes;
-	@Value("${authentication.tokenProlongMinutes}") long prolongMinutes;
+	@Value("${cibseven.webclient.authentication.jwtSecret}") String secret;
+	@Value("${cibseven.webclient.authentication.tokenValidMinutes}") long validMinutes;
+	@Value("${cibseven.webclient.authentication.tokenProlongMinutes}") long prolongMinutes;
 	
-	@Value("${ldap.url}") String serverURL;
-	@Value("${ldap.user}") String ldapUser;
-	@Value("${ldap.password}") String ldapPassword;
-	@Value("${ldap.folder}") String ldapFolder;
-	@Value("${ldap.countLimit:400}") int ldapCountLimit;
-	@Value("#{'${ldap.attributes.filters:samAccountName;name}'.split(';\\s*')}") List<String> ldapAttributesFilters;
-	@Value("${ldap.userNameAttribute}") String ldapNameAttribute;
-	@Value("${ldap.userDisplayNameAttribute}") String ldapDisplayNameAttribute;
-	@Value("${ldap.followReferrals}") String ldapFollowReferrals;
+	@Value("${cibseven.webclient.ldap.url}") String serverURL;
+	@Value("${cibseven.webclient.ldap.user}") String ldapUser;
+	@Value("${cibseven.webclient.ldap.password}") String ldapPassword;
+	@Value("${cibseven.webclient.ldap.folder}") String ldapFolder;
+	@Value("${cibseven.webclient.ldap.countLimit:400}") int ldapCountLimit;
+	@Value("#{'${cibseven.webclient.ldap.attributes.filters:samAccountName;name}'.split(';\\s*')}") List<String> ldapAttributesFilters;
+	@Value("${cibseven.webclient.ldap.userNameAttribute}") String ldapNameAttribute;
+	@Value("${cibseven.webclient.ldap.userDisplayNameAttribute}") String ldapDisplayNameAttribute;
+	@Value("${cibseven.webclient.ldap.followReferrals}") String ldapFollowReferrals;
 	
 	@Getter JwtTokenSettings settings;
 	SsoHelper ssoHelper;

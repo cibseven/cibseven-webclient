@@ -55,7 +55,7 @@ import jakarta.ws.rs.core.MediaType;
 	@ApiResponse(responseCode = "500", description = "An unexpected system error occured"),
 	@ApiResponse(responseCode = "401", description = "Unauthorized")
 })
-@RestController("WebclientTaskService") @RequestMapping("${services.basePath:/services/v1}")
+@RestController("WebclientTaskService") @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}")
 public class TaskService extends BaseService implements InitializingBean {
 	
 	SevenProvider sevenProvider;
