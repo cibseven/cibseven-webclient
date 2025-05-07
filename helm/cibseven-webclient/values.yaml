@@ -102,7 +102,7 @@ application:
       
       # External token user creation
       token:
-        secret: "{{ .Values.application.authentication.jwtSecret }}"
+        secret: "{{ .Values.global.authentication.jwtSecret }}"
         deny:
           external:
             ip: "true"
