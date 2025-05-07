@@ -175,7 +175,7 @@
           </div>
         </BWaitingBox>
       </div>
-      <StartProcess ref="startProcess" @display-popover="$emit('display-popover', $event)"
+      <StartProcess ref="startProcess"
         @process-started="$emit('process-started', $event)"></StartProcess>
       <AdvancedSearchModal v-if="$root.config.taskFilter.advancedSearch.modalEnabled" ref="advancedSearchModal" @refresh-tasks="$emit('refresh-tasks')"></AdvancedSearchModal>
     </div>
