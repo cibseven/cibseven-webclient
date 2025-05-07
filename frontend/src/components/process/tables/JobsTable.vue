@@ -17,7 +17,7 @@
 
 -->
 <template>
-  <div class="overflow-auto bg-white position-absolute container-fluid g-0" style="top: 0; bottom: 0">
+  <div class="overflow-auto bg-white container-fluid g-0 h-100">
     <FlowTable v-if="jobs && jobs.length > 0" resizable striped thead-class="sticky-header" :items="jobs" primary-key="id" prefix="process-instance.jobs."
       sort-by="label" :sort-desc="true" :fields="[
       { label: 'id', key: 'id', class: 'col-2', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' },
@@ -51,7 +51,7 @@
       <p class="text-center p-4">{{ $t('process-instance.noResults') }}</p>
     </div>
     <SuccessAlert ref="success"> {{ $t('alert.successOperation') }}</SuccessAlert>
-    <SuccessAlert ref="messageCopy" style="z-index: 9999"> {{ $t('process.copySuccess') }} </SuccessAlert>
+    <SuccessAlert ref="messageCopy"> {{ $t('process.copySuccess') }} </SuccessAlert>
   </div>
 </template>
 

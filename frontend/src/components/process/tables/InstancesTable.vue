@@ -66,7 +66,7 @@
     </template>
   </FlowTable>
   <ConfirmActionOnProcessInstanceModal ref="confirm"></ConfirmActionOnProcessInstanceModal>
-  <SuccessAlert top="0" style="z-index: 1031" ref="success"> {{ $t('alert.successOperation') }}</SuccessAlert>
+  <SuccessAlert top="0"  ref="success"> {{ $t('alert.successOperation') }}</SuccessAlert>
   <SuccessAlert ref="messageCopy"> {{ $t('process.copySuccess') }} </SuccessAlert>
 </template>
 

@@ -17,14 +17,15 @@
 
 -->
 <template>
-  <div v-if="selectedInstance.state === 'ACTIVE'" class="bg-light d-flex position-absolute w-100">
+  <div class="d-flex flex-column h-100">
+  <div v-if="selectedInstance.state === 'ACTIVE'" class="bg-light d-flex w-100">
     <div class="py-2 px-2">
       <b-button class="border" size="sm" variant="light" @click="$refs.addVariableModal.show()" :title="$t('process-instance.addVariable')">
         <span class="mdi mdi-plus"></span> {{ $t('process-instance.addVariable') }}
       </b-button>
     </div>
   </div>
-  <div class="overflow-auto bg-white position-absolute container-fluid g-0" style="bottom: 0" :style="('top: ' + (selectedInstance.state === 'ACTIVE' ? '45px' : '0'))">
+  <div class="overflow-auto bg-white container-fluid g-0 h-100">
     <FlowTable v-if="!loading" striped resizable thead-class="sticky-header" :items="filteredVariables" primary-key="id" prefix="process-instance.variables."
       sort-by="label" :sort-desc="true" :fields="[
       { label: 'name', key: 'name', class: 'col-3', tdClass: 'py-1 border-end border-top-0' },
@@ -66,7 +67,7 @@
       <p class="text-center p-4"><BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}</p>
     </div>
   </div>
-
+</div> 
   <TaskPopper ref="importPopper"></TaskPopper>
 
   <b-modal ref="uploadFile" :title="$t('process-instance.upload')">
@@ -104,7 +105,7 @@
 
   <DeleteVariableModal ref="deleteVariableModal"></DeleteVariableModal>
 
-  <SuccessAlert top="0" style="z-index: 1031" ref="success">{{ $t('alert.successOperation') }}</SuccessAlert>
+  <SuccessAlert top="0" ref="success">{{ $t('alert.successOperation') }}</SuccessAlert>
 
 </template>
 
