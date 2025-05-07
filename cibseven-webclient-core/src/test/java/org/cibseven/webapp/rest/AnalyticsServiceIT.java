@@ -49,7 +49,7 @@ import org.springframework.test.context.ContextConfiguration;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@SpringBootTest(properties = {"camunda.engineRest.url=http://192.168.96.236:8080"})
+@SpringBootTest(properties = {"cibseven.webclient.engineRest.url=http://192.168.96.236:8080"})
 @ContextConfiguration(classes = {
     AnalyticsService.class,
     SevenProvider.class,
