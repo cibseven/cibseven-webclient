@@ -20,7 +20,7 @@
   <div v-show="showFilters" class="overflow-auto h-100">
     <div class="h-100 d-flex flex-column">
 
-      <FilterModal ref="filterModal" @select-filter="selectFilter($event)" @display-popover="$emit('display-popover', $event)" @filter-alert="$emit('filter-alert', $event)" @set-filter="$emit('set-filter', $event)"></FilterModal>
+      <FilterModal ref="filterModal" @select-filter="selectFilter($event)" @filter-alert="$emit('filter-alert', $event)" @set-filter="$emit('set-filter', $event)"></FilterModal>
 
       <div v-if="$root.config.filtersSearch" class="p-2" style="background-color: rgb(98, 142, 199, 0.3)">
         <b-input-group>

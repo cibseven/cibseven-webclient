@@ -121,6 +121,16 @@ pipeline {
                     }
                     if (!params.DEPLOY_TO_ARTIFACTS && !params.DEPLOY_TO_MAVEN_CENTRAL) {
                         junit allowEmptyResults: true, testResults: ConstantsInternal.MAVEN_TEST_RESULTS
+
+                        // Show coverage in Jenkins UI
+                        recordCoverage(
+                            tools: [[parser: 'COBERTURA', pattern: 'frontend/coverage/cobertura-coverage.xml']],
+                            sourceCodeRetention: 'LAST_BUILD',
+                            sourceDirectories: [[path: 'frontend/src']]
+                        )
+
+                        // This archives the whole HTML coverage report so you can download or view it from Jenkins
+                        archiveArtifacts artifacts: 'frontend/coverage/lcov-report/**', allowEmptyArchive: false
                     }
                 }
             }

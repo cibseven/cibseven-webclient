@@ -25,6 +25,12 @@ export default mergeConfig(
       environment: 'jsdom',
       exclude: [...configDefaults.exclude, 'e2e/**'],
       root: fileURLToPath(new URL('./', import.meta.url)),
+      coverage: {
+        provider: 'istanbul',
+        reporter: ['text', 'lcov', 'cobertura'], // 'text', 'html', 'lcov', 'cobertura'
+        reportsDirectory: './coverage',
+        exclude: ['**/camunda-bpm-sdk.min.js'], // Exclude minified JS file from coverage report
+      },
     },
   }),
 )

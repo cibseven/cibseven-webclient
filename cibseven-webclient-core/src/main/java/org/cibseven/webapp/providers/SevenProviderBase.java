@@ -62,6 +62,8 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public abstract class SevenProviderBase {
+  
+  protected static final String USER_ID_HEADER = "Context-User-ID";
 	
 	@Value("${cibseven.webclient.custom.spring.jackson.parser.max-size:20000000}") int jacksonParserMaxSize;
 	@Value("${cibseven.webclient.engineRest.url:./}") protected String cibsevenUrl;
@@ -74,7 +76,8 @@ public abstract class SevenProviderBase {
 	private HttpHeaders createAuthHeader(CIBUser user) {
 		HttpHeaders headers =  new HttpHeaders();
 		if (user != null) {
-		  headers.add("Authorization", user.getAuthToken());
+		  headers.add(HttpHeaders.AUTHORIZATION, user.getAuthToken());
+		  headers.add(USER_ID_HEADER, user.getId());
 		}
 		return headers;
 	}
