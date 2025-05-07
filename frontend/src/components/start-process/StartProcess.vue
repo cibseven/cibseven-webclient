@@ -19,8 +19,8 @@
 <template>
   <GlobalEvents v-if="!hideProcessSelection" @keydown.ctrl.alt.p.prevent="$refs.startProcess.show()"></GlobalEvents>
   <b-modal body-class="pt-0" size="lg" scrollable ref="startProcess" :hide-footer="!(startParams && !hideProcessSelection)"
-    :title="!hideProcessSelection ? $t('start.startProcess.title') : processName" @shown="$emit('display-popover', false)" no-close-on-backdrop
-    @hidden="$emit('display-popover', true); startParams = null" :footer-class="{ 'justify-content-between': startParams && !hideProcessSelection }"
+    :title="!hideProcessSelection ? $t('start.startProcess.title') : processName" no-close-on-backdrop
+    @hidden="startParams = null" :footer-class="{ 'justify-content-between': startParams && !hideProcessSelection }"
     dialog-class="h-100">
     <div v-if="startParams" class="mh-100 h-100" style="height: 70vh">
       <RenderTemplate class="h-100" :task="definitionStartTask"
@@ -65,7 +65,7 @@ import { permissionsMixin } from '@/permissions.js'
 export default {
   components: { RenderTemplate, BWaitingBox, HighlightedText },
   inject: ['loadProcesses', 'currentLanguage'],
-  emits: ['process-started', 'display-popover'],
+  emits: ['process-started'],
   props: { hideProcessSelection: Boolean },
   mixins: [permissionsMixin],
   data: function() {

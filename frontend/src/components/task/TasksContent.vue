@@ -24,7 +24,7 @@
     <template v-slot:left>
       <FilterNavBar ref="filterNavbar" @filter-alert="showFilterAlert($event)"
         @selected-filter="selectedFilter()" @set-filter="filter = $event;listTasksWithFilter()" @selected-task="selectedTask($event)"
-        @display-popover="displayPopover($event)" @refresh-tasks="listTasksWithFilter()" @n-filters-shown="nFiltersShown = $event" class="border-0 bg-white"></FilterNavBar>
+        @refresh-tasks="listTasksWithFilter()" @n-filters-shown="nFiltersShown = $event" class="border-0 bg-white"></FilterNavBar>
     </template>
     <template v-slot:filter>
       <FilterNavCollapsed v-if="!leftOpenFilter && leftCaptionFilter" v-model:left-open="leftOpenFilter"></FilterNavCollapsed>
@@ -35,13 +35,13 @@
         <TasksNavBar @filter-alert="showFilterAlert($event)" ref="navbar" :tasks="tasks" @selected-task="selectedTask($event)"
           @update-assignee="updateAssignee($event, 'task')" @set-filter="filter = $event; listTasksWithFilter()"
           @open-sidebar-date="rightOpenTask = true" @show-more="showMore()" :taskResultsIndex="taskResultsIndex"
-          @process-started="listTasksWithFilter();$refs.processStarted.show(10); checkAndOpenTask($event, true)" @display-popover="displayPopover($event)"
+          @process-started="listTasksWithFilter();$refs.processStarted.show(10); checkAndOpenTask($event, true)"
           @search-filter="search = $event" @refresh-tasks="listTasksWithFilter()"></TasksNavBar>
       </template>
 
       <transition name="slide-in" mode="out-in">
         <router-view v-if="task !== null" role="region" :aria-label="$t('task.selectedTask')" ref="down" class="h-100" style="overflow-y: auto" v-slot="{ Component }">
-          <component :is="Component" ref="taskComponent" @display-popover="displayPopover($event)" @update-task="updateTask($event)"
+          <component :is="Component" ref="taskComponent" @update-task="updateTask($event)"
             @update-assignee="updateAssignee($event, 'taskList')" :task="task" @complete-task="completedTask($event)" />
         </router-view>
         <BWaitingBox v-else-if="task === null && $route.query.externalMode !== undefined" class="h-100 d-flex justify-content-center" styling="width:20%"></BWaitingBox>
@@ -360,10 +360,6 @@ export default {
     },
     selectedFilter: function() {
       this.listTasksWithFilter()
-    },
-    displayPopover: function(evt) {
-      if (this.$refs.taskComponent)
-        this.$refs.taskComponent.$refs.task.displayPopover = localStorage.getItem('showPopoverHowToAssign') === 'false' ? false : evt
     },
     showFilterAlert: function(evt) {
       this.filterMessage = evt.message
