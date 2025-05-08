@@ -412,6 +412,7 @@
 		"retryJob": "Повторить задание",
 		"deleteJob": "Удалить задание",
 		"seeFullLog": "Просмотреть полный лог",
+		"retryFailedJobs": "Повторить неудачные задания",
 		"jobLog": {
 			"modalTitle": "Журнал заданий",
 			"state": "Состояние",
@@ -1106,9 +1107,6 @@
 			"sendMail": "Resend email",
 			"support": "If the email still does not arrive, please contact support.",
 			"supportLink": "Contact support"		
-		},
-		"onboard-user": {
-			"completeAccount": "Завершить создание учетной записи"
 		}
 	},
 	"status-progress": {

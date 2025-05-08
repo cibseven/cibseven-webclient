@@ -413,6 +413,7 @@
 		"retryJob": "Reintentar trabajo",
 		"deleteJob": "Eliminar trabajo",
 		"seeFullLog": "Ver registro completo",
+		"retryFailedJobs": "Reintentar trabajos fallidos",
 		"jobLog": {
 			"modalTitle": "Registro del trabajo",
 			"state": "Estado",
@@ -1135,7 +1136,6 @@
 	    	"processVariables": "Variable de proceso"
 	    },
 	    "table": {	    	
-		    "processVariables": "Variable de proceso",
 		    "key": "Clave",
 		    "value": "Valor"
 	    },	    
