@@ -19,9 +19,7 @@ package org.cibseven.webapp.rest;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
@@ -140,12 +138,10 @@ public class AdminService extends BaseService implements InitializingBean {
 	/**
 	 * Add user to a group
 	 * 
-	 * @param groupId
-	 * @param userId
-	 * @param user A JSON object containing variable key-value pairs. The object contains the following properties: id (String), firstName (String), lastName (String) and email (String). 
-	 * 				e.g:  {"id": "jonny1", "firstName":"John", "lastName":"Doe", "email":"aNewEmailAddress"}   
-	 * @param loc
-	 * @param flowUser
+	 * @param groupId The ID of the group
+	 * @param userId The ID of the user
+	 * @param loc The locale
+	 * @param flowUser The authenticated user performing the action
 	 */
 	@Operation(
 			summary = "Add user to a group",
@@ -165,10 +161,9 @@ public class AdminService extends BaseService implements InitializingBean {
 	 * 
 	 * @param groupId
 	 * @param userId
-	 * @param user A JSON object containing variable key-value pairs. The object contains the following properties: id (String), firstName (String), lastName (String) and email (String). 
-	 * 				e.g:  {"id": "jonny1", "firstName":"John", "lastName":"Doe", "email":"aNewEmailAddress"}   
 	 * @param loc
-	 * @param flowUser
+	 * @param flowUser A JSON object containing variable key-value pairs. The object contains the following properties: id (String), firstName (String), lastName (String) and email (String). 
+	 * 				e.g:  {"id": "jonny1", "firstName":"John", "lastName":"Doe", "email":"aNewEmailAddress"}   
 	 */
 	@Operation(
 			summary = "Delete user from a group",
@@ -377,16 +372,16 @@ public class AdminService extends BaseService implements InitializingBean {
 	 * Create authorization
 	 * 
 	 * @param authorization A JSON object with the following properties:
-	 *		Name 	Value 	Description
-	 *		type 	Integer 	The type of the authorization. (0=global, 1=grant, 2=revoke). See the User Guide for more information about authorization types.
-	 *		permissions 	String 	An array of Strings holding the permissions provided by this authorization.
-	 *		userId 	String 	The id of the user this authorization has been created for. The value "*" represents a global authorization ranging over all users.
-	 *		groupId 	String 	The id of the group this authorization has been created for.
-	 *		resourceType 	Integer 	An integer representing the resource type. See the User Guide for a list of integer representations of resource types.
-	 *		resourceId 	String 	The resource Id. The value "*" represents an authorization ranging over all instances of a resource.
-	 * @param loc
-	 * @param user
-	 * @return 
+	 *        Name          Value       Description
+	 *        type          Integer     The type of the authorization. (0=global, 1=grant, 2=revoke). See the User Guide for more information about authorization types.
+	 *        permissions   String      An array of Strings holding the permissions provided by this authorization.
+	 *        userId        String      The id of the user this authorization has been created for. The value "*" represents a global authorization ranging over all users.
+	 *        groupId       String      The id of the group this authorization has been created for.
+	 *        resourceType  Integer     An integer representing the resource type. See the User Guide for a list of integer representations of resource types.
+	 *        resourceId    String      The resource Id. The value "*" represents an authorization ranging over all instances of a resource.
+	 * @param loc The locale
+	 * @param user The authenticated user performing the action
+	 * @return ResponseEntity containing the created Authorization
 	 */
 	@Operation(
 			summary = "Create authorization",
@@ -404,14 +399,6 @@ public class AdminService extends BaseService implements InitializingBean {
 	 * update authorization
 	 * 
 	 * @param authorizationId
-	 * @param authorization A JSON object with the following properties:
-	 *		Name 	Value 	Description
-	 *		permissions 	Integer 	An integer holding the permissions provided by this authorization.
-	 *		userId 	String 	The id of the user this authorization has been created for. The value "*" represents a global authorization ranging over all users.
-	 *		groupId 	String 	The id of the group this authorization has been created for.
-	 *		resourceType 	Integer 	An integer representing the resource type. See the User Guide for a list of integer representations of resource types.
-	 *		resourceId 	String 	The resource Id. The value "*" represents an authorization ranging over all instances of a resource
-	 *    
 	 * @param loc
 	 * @param user
 	 */
