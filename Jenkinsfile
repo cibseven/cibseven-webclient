@@ -217,9 +217,10 @@ pipeline {
                 script {
                     withCredentials([file(credentialsId: 'credential-cibseven-artifacts-npmrc', variable: 'NPMRC_FILE')]) {
                         withMaven() {
-                            def pom = readMavenPom file: 'pom.xml'
-                            def baseVersion = pom.version.replace("-SNAPSHOT", "")
-                            def dynamicVersion = "${baseVersion}-${BUILD_NUMBER}-SNAPSHOT"
+
+                            def baseVersion = mavenProjectInformation.version.replace("-SNAPSHOT", "")
+                            def dynamicVersion = mavenProjectInformation.version.contains('-SNAPSHOT') ?
+                                "${baseVersion}-${BUILD_NUMBER}-SNAPSHOT" : mavenProjectInformation.version
 
                             sh """
                                 echo "Copy the .npmrc file to the frontend directory..."
