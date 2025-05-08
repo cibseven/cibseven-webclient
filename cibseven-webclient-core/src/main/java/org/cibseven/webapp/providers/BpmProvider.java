@@ -839,7 +839,12 @@ public interface BpmProvider {
 
 	/**
 	 * Queries for historic process instances that fulfill the given parameters.
-	 * @param filters a map of parameters to filter the query. Parameters firstResult and maxResults are used for pagination.
+	 * @param id the ID of the process instance.
+	 * @param activityId optional activity ID to filter the query.
+	 * @param active optional flag to filter active or inactive instances.
+	 * @param firstResult index of the first result to return.
+	 * @param maxResults maximum number of results to return.
+	 * @param text additional text filter for the query.
 	 * @param user the user performing the query.
      * @return Fetched process instances.
      * @throws SystemException in case of an error.
