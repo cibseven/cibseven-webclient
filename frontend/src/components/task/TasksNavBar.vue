@@ -199,7 +199,7 @@ export default {
   name: 'TasksNavBar',
   components: { StartProcess, AdvancedSearchModal, SmartSearch, ConfirmDialog, BWaitingBox },
   props: { tasks: Array, taskResultsIndex: Number },
-  inject: ['currentLanguage'],
+  inject: ['currentLanguage','isMobile'],
   data: function () {
     return {
       currentSorting: {},
@@ -362,13 +362,13 @@ export default {
       if (!task.due) classes.push('text-muted')
       else if (moment(task.due).isBefore(moment())) classes.push('text-danger')
       else if (moment().add(this.$root.config.warnOnDueExpirationIn, 'hours').isAfter(moment(task.due))) classes.push('text-warning')
-      if (task !== this.focused && task.id !== this.selectedDateT.id && !task.due) classes.push('invisible')
+      if (!this.isMobile() && task !== this.focused && task.id !== this.selectedDateT.id && !task.due) classes.push('invisible')
       return classes
     },
     getReminderClasses: function(task) {
       var classes = []
       if (!task.followUp) classes.push('text-muted')
-      if (task !== this.focused && task.id !== this.selectedDateT.id && !task.followUp) classes.push('invisible')
+      if (!this.isMobile() && task !== this.focused && task.id !== this.selectedDateT.id && !task.followUp) classes.push('invisible')
       return classes
     },
     claim: function(task) {
