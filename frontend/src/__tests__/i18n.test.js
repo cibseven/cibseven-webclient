@@ -18,16 +18,63 @@ import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'fs'
 import { resolve } from 'path'
 
-describe('translations', () => {
-  const languages = ['de', 'en', 'it', 'ru', 'es']
+function getTranslation(lang) {
+  // eslint-disable-next-line no-undef
+  const filePath = resolve(__dirname, `../../public/translations_${lang}.json`)
+  const translation = JSON.parse(readFileSync(filePath, 'utf-8'))
+  return translation
+}
 
-  languages.forEach(lang => {
-    it(`loadable_${lang}`, () => {
-      // eslint-disable-next-line no-undef
-      const filePath = resolve(__dirname, `../../public/translations_${lang}.json`)
-      const translations = JSON.parse(readFileSync(filePath, 'utf-8'))
-      expect(translations).toBeDefined()
+function haveSameProperties(objBase, objTest, path) {
+  // Check if both are objects and not null
+  expect(objBase).not.toBeNull()
+  expect(objTest).not.toBeNull()
+
+  if (typeof objBase === 'string' && typeof objTest === 'string') {
+    // nothing to check
+  }
+  else {
+    expect(objBase).toBeTypeOf('object')
+    expect(objTest).toBeTypeOf('object')
+
+    const keysBase = Object.keys(objBase)
+    const keysTest = Object.keys(objTest)
+
+    // Compare key sets
+    const keysBaseSorted = keysBase.sort().join(',')
+    const keysTestSorted = keysTest.sort().join(',')
+    expect(keysBaseSorted, `Missing/extra key for "${path}" path`).toBe(keysTestSorted)
+
+    // Recurse into nested objects
+    for (const key of keysBase) {
+      if (!haveSameProperties(objBase[key], objTest[key], path + '.' + key)) {
+        return false
+      }
+    }
+  }
+
+  return true
+}
+
+describe('translations', () => {
+  const languages = ['de', 'en', 'ru', 'es']
+
+  describe('loadable', () => {
+    languages.forEach(lang => {
+      it(`${lang}`, () => {
+        const translations = getTranslation(lang)
+        expect(translations).toBeDefined()
+      })
+    })
+  })
+
+  describe('compare en with', () => {
+    const translationEn = getTranslation('en')
+    languages.filter(lang => lang !== 'en').forEach(lang => {
+      it(`${lang}`, () => {
+        const translationLang = getTranslation(lang)
+        expect(haveSameProperties(translationEn, translationLang, lang)).toBeTruthy()
+      })
     })
   })
 })
- 
