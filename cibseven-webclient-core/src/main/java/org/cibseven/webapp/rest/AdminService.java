@@ -140,12 +140,10 @@ public class AdminService extends BaseService implements InitializingBean {
 	/**
 	 * Add user to a group
 	 * 
-	 * @param groupId
-	 * @param userId
-	 * @param user A JSON object containing variable key-value pairs. The object contains the following properties: id (String), firstName (String), lastName (String) and email (String). 
-	 * 				e.g:  {"id": "jonny1", "firstName":"John", "lastName":"Doe", "email":"aNewEmailAddress"}   
-	 * @param loc
-	 * @param flowUser
+	 * @param groupId The ID of the group
+	 * @param userId The ID of the user
+	 * @param loc The locale
+	 * @param flowUser The authenticated user performing the action
 	 */
 	@Operation(
 			summary = "Add user to a group",
