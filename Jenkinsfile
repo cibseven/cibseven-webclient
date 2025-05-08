@@ -164,7 +164,7 @@ pipeline {
             steps {
                 script {
                     withMaven(options: []) {
-                        withCredentials([file(credentialsId: 'credential-cibseven-community-gpg-private-key', variable: 'GPG_KEY_FILE'), string(credentialsId: 'credential-cibseven-community-gpg-passphrase', variable: 'GPG_KEY_PASS')]) {
+                        withCredentials([file(credentialsId: 'credential-cibseven-gpg-private-key', variable: 'GPG_KEY_FILE'), string(credentialsId: 'credential-cibseven-gpg-passphrase', variable: 'GPG_KEY_PASS')]) {
                             sh "gpg --batch --import ${GPG_KEY_FILE}"
     
                             def GPG_KEYNAME = sh(script: "gpg --list-keys --with-colons | grep pub | cut -d: -f5", returnStdout: true).trim()
