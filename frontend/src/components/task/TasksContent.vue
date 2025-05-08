@@ -257,8 +257,10 @@ export default {
       this.listTasksWithFilterAuto()
     },
     updateAssignee: function(assignee, target) {
-      if (this.processInstanceHistory) this.processInstanceHistory.tasksHistory[0].assignee = assignee
-      this.selectedTask(this.processInstanceHistory.tasksHistory[0])
+      if (this.processInstanceHistory) {
+        this.processInstanceHistory.tasksHistory[0].assignee = assignee
+        this.selectedTask(this.processInstanceHistory.tasksHistory[0])
+      }
       if (target === 'taskList') {
         var currentTaskIndex = this.tasks.findIndex(task => {
           return task.id === this.task.id
