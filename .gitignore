@@ -2,9 +2,16 @@
 /.project
 .vscode/
 
+# IntelliJ
+.idea/
+*.iml
+
 **/Chart.lock
 **/charts/
 *.tgz
 .factorypath
 
 cib-common-components/.npmrc
+
+# MacOS
+.DS_Store
