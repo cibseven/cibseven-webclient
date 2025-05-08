@@ -247,7 +247,10 @@ pipeline {
         stage('Create & Push Docker Image') {
             when {
                 anyOf {
-                    branch 'main'
+                    allOf {
+                      branch 'main'
+                      expression { mavenProjectInformation.version.endsWith("-SNAPSHOT") == true }
+                    }
                     expression { params.DEPLOY_ANY_BRANCH_TO_HARBOR == true }
                 }
             }
@@ -307,7 +310,10 @@ pipeline {
         stage('Deploy Helm Charts to Harbor') {
 	        when {
                 anyOf {
-                    branch 'main'
+                    allOf {
+                      branch 'main'
+                      expression { mavenProjectInformation.version.endsWith("-SNAPSHOT") == true }
+                    }
                     expression { params.DEPLOY_ANY_BRANCH_TO_HARBOR }
                 }
 	        }
