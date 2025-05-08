@@ -6,6 +6,7 @@ spring:
       - optional:classpath:cibseven-webclient.properties
       - optional:classpath:cibseven-webclient.yaml
   servlet:
+    register-default-servlet: true
     multipart:
       # Configures the maximum size for each individual file upload.
       max-file-size: 10MB
