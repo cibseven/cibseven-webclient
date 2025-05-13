@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.cibseven.webapp.providers;
+package org.cibseven.webapp.rest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -24,6 +24,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.providers.BaseGroupsTestHelper;
+import org.cibseven.webapp.providers.BaseHelper;
+import org.cibseven.webapp.providers.BaseUsersTestHelper;
+import org.cibseven.webapp.providers.TenantProvider;
+import org.cibseven.webapp.providers.UserProvider;
 
 @SpringBootTest(properties = {
 	    "cibseven.webclient.engineRest.url=http://localhost:8080"
