@@ -26,7 +26,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.providers.BaseGroupsTestHelper;
 import org.cibseven.webapp.providers.BaseHelper;
-import org.cibseven.webapp.providers.BaseUsersTestHelper;
 import org.cibseven.webapp.providers.TenantProvider;
 import org.cibseven.webapp.providers.UserProvider;
 

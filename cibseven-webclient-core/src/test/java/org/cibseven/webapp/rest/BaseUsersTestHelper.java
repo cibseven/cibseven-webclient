@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.cibseven.webapp.providers;
+package org.cibseven.webapp.rest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -24,6 +24,7 @@ import org.cibseven.webapp.rest.model.User;
 import org.cibseven.webapp.rest.model.NewUser;
 import org.cibseven.webapp.rest.model.SevenVerifyUser;
 import org.cibseven.webapp.exception.ExistingUserRequestException;
+import org.cibseven.webapp.providers.UserProvider;
 
 @Component
 public class BaseUsersTestHelper {
