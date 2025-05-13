@@ -197,6 +197,14 @@ export default {
         this.variableToModify.value = JSON.stringify(JSON.parse(this.variableToModify.value))
       }
       data.modifications[this.variableToModify.name] = { value: this.variableToModify.value, type: this.variableToModify.type }
+      //Handle saving case for StringBuilder object
+      if (this.variableToModify.type === 'Object') {
+        let objectTypeName = this.variableToModify.valueInfo && this.variableToModify.valueInfo.objectTypeName
+        if (objectTypeName === 'java.lang.StringBuilder') {
+          data.modifications[this.variableToModify.name].value = JSON.stringify(this.variableToModify.value)
+          data.modifications[this.variableToModify.name].valueInfo = this.variableToModify.valueInfo
+        }
+      }
       ProcessService.modifyVariableByExecutionId(this.variableToModify.executionId, data).then(() => {
         this.selectedVariable.value = this.variableToModify.value
         this.$refs.modifyVariable.hide()
