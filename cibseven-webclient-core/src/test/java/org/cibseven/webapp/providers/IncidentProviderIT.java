@@ -57,7 +57,7 @@ public class IncidentProviderIT {
         mockWebServer.start();
 
         String mockBaseUrl = mockWebServer.url("/").toString();
-        ReflectionTestUtils.setField(incidentProvider, "camundaUrl", mockBaseUrl);
+        ReflectionTestUtils.setField(incidentProvider, "cibsevenUrl", mockBaseUrl);
     }
 
     @AfterEach

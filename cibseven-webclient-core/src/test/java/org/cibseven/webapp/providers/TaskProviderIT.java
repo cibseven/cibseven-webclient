@@ -72,7 +72,7 @@ public class TaskProviderIT {
         
         // Configure the base URL for the TaskProvider to point to the MockWebServer
         String mockBaseUrl = mockWebServer.url("/").toString();
-        ReflectionTestUtils.setField(taskProvider, "camundaUrl", mockBaseUrl);
+        ReflectionTestUtils.setField(taskProvider, "cibsevenUrl", mockBaseUrl);
     }
 
     private String eq(Object object) {

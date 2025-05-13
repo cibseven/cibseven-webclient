@@ -59,7 +59,7 @@ public class ActivityProviderIT {
 
         // Configure the base URL for the ActivityProvider to point to the MockWebServer
         String mockBaseUrl = mockWebServer.url("/").toString();
-        ReflectionTestUtils.setField(activityProvider, "camundaUrl", mockBaseUrl);
+        ReflectionTestUtils.setField(activityProvider, "cibsevenUrl", mockBaseUrl);
     }
     
     @AfterEach

@@ -63,7 +63,7 @@ public class VariableProviderIT {
         mockWebServer.start();
 
         String mockBaseUrl = mockWebServer.url("/").toString();
-        ReflectionTestUtils.setField(variableProvider, "camundaUrl", mockBaseUrl);
+        ReflectionTestUtils.setField(variableProvider, "cibsevenUrl", mockBaseUrl);
     }
     
     @AfterEach

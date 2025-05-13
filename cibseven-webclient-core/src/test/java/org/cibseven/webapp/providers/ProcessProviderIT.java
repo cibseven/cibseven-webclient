@@ -76,7 +76,7 @@ public class ProcessProviderIT {
         
         // Configure the base URL for the ProcessProvider to point to the MockWebServer
         String mockBaseUrl = mockWebServer.url("/").toString();
-        ReflectionTestUtils.setField(processProvider, "camundaUrl", mockBaseUrl);
+        ReflectionTestUtils.setField(processProvider, "cibsevenUrl", mockBaseUrl);
     }
 
     @AfterEach

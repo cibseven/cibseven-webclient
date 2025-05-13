@@ -57,7 +57,7 @@ public class DeploymentProviderIT {
 
         // Configure the base URL for the DeploymentProvider to point to the MockWebServer
         String mockBaseUrl = mockWebServer.url("/").toString();
-        ReflectionTestUtils.setField(deploymentProvider, "camundaUrl", mockBaseUrl);
+        ReflectionTestUtils.setField(deploymentProvider, "cibsevenUrl", mockBaseUrl);
     }
 
     @AfterEach

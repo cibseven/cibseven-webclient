@@ -57,7 +57,7 @@ public class FilterProviderIT {
 
         // Configure the base URL for the FilterProvider to point to the MockWebServer
         String mockBaseUrl = mockWebServer.url("/").toString();
-        ReflectionTestUtils.setField(filterProvider, "camundaUrl", mockBaseUrl);
+        ReflectionTestUtils.setField(filterProvider, "cibsevenUrl", mockBaseUrl);
     }
 
     @AfterEach

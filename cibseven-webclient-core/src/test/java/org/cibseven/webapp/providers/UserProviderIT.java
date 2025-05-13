@@ -58,7 +58,7 @@ public class UserProviderIT {
         mockWebServer.start();
 
         String mockBaseUrl = mockWebServer.url("/").toString();
-        ReflectionTestUtils.setField(userProvider, "camundaUrl", mockBaseUrl);
+        ReflectionTestUtils.setField(userProvider, "cibsevenUrl", mockBaseUrl);
     }
 
     @AfterEach
