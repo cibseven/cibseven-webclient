@@ -130,6 +130,12 @@
 					</goals>
 					</execution>
 				</executions>
+				<configuration>
+					<includes>
+						<!-- Include only integration tests from the providers package -->
+						<include>org/cibseven/webapp/providers/**/*IT.java</include>
+					</includes>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
