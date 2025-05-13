@@ -18,9 +18,6 @@ package org.cibseven.webapp.providers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,7 +26,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.providers.FilterProvider;
 import org.cibseven.webapp.rest.model.Filter;
 import org.cibseven.webapp.rest.model.FilterCriterias;
 import org.cibseven.webapp.rest.model.FilterProperties;
@@ -39,7 +35,7 @@ import okhttp3.mockwebserver.MockWebServer;
 
 @SpringBootTest
 @ContextConfiguration(classes = {FilterProvider.class})
-public class FilterProviderIT {
+public class FilterProviderIT extends BaseHelper {
 
     static {
         System.setProperty("spring.banner.location", "classpath:fca-banner.txt");
@@ -66,17 +62,10 @@ public class FilterProviderIT {
         mockWebServer.shutdown();
     }
 
-    // Utility method to load mock responses from JSON files
-    private String loadMockResponse(String filePath) throws Exception {
-        return new String(Files.readAllBytes(Paths.get(getClass().getClassLoader().getResource(filePath).toURI())));
-    }
-    
     @Test
     void testFindFilters() throws Exception {
         // Arrange
-        CIBUser user = new CIBUser();
-        user.setAuthToken("Bearer token");
-
+        CIBUser user = getCibUser();
 
         // Load the mock response from a file
         String mockResponseBody = loadMockResponse("mocks/filter_mock.json");
@@ -102,8 +91,7 @@ public class FilterProviderIT {
     @Test
     void testCreateFilter() throws Exception {
         // Arrange
-        CIBUser user = new CIBUser();
-        user.setAuthToken("Bearer token");
+        CIBUser user = getCibUser();
 
         Filter filter = new Filter(
             "filter-1",
@@ -134,8 +122,7 @@ public class FilterProviderIT {
     @Test
     void testUpdateFilter() throws Exception {
         // Arrange
-        CIBUser user = new CIBUser();
-        user.setAuthToken("Bearer token");
+        CIBUser user = getCibUser();
 
         Filter filter = new Filter(
             "filter-1",
@@ -161,8 +148,7 @@ public class FilterProviderIT {
     void testDeleteFilter() throws Exception {
         // Arrange
         String filterId = "filter-1";
-        CIBUser user = new CIBUser();
-        user.setAuthToken("Bearer token");
+        CIBUser user = getCibUser();
 
         mockWebServer.enqueue(new MockResponse().setResponseCode(204));
 

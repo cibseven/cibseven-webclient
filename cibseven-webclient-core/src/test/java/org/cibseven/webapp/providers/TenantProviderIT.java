@@ -34,7 +34,7 @@ import org.cibseven.webapp.auth.CIBUser;
 		BaseTenantsTestHelper.class,
 		TenantProvider.class,
 		BaseGroupsTestHelper.class})
-public class TenantProviderIT {
+public class TenantProviderIT extends BaseHelper {
 	
 	@Autowired
 	private BaseUsersTestHelper baseUsersTestHelper;
@@ -48,8 +48,7 @@ public class TenantProviderIT {
     @Test
     public void testTenantCreation() {
     	// Arrange
-        CIBUser user = new CIBUser();
-        user.setAuthToken("Bearer token");
+        CIBUser user = getCibUser();
         
     	baseTenantsTestHelper.createTenant("tenantDemo1", "tenantDemo1", user);
     	assertThat(baseTenantsTestHelper.verifyTenant("tenantDemo1", user)).isNotNull();
@@ -67,8 +66,7 @@ public class TenantProviderIT {
     @Test
     public void testTenantUpdate() {
     	// Arrange
-        CIBUser user = new CIBUser();
-        user.setAuthToken("Bearer token");
+        CIBUser user = getCibUser();
         
     	baseTenantsTestHelper.createTenant("tenantDemo1", "tenantDemo1", user);
     	assertThat(baseTenantsTestHelper.verifyTenant("tenantDemo1", user)).isNotNull();
@@ -83,8 +81,7 @@ public class TenantProviderIT {
     @Test
     public void testUserMembershipToTenant() {
     	// Arrange
-        CIBUser user = new CIBUser();
-        user.setAuthToken("Bearer token");
+        CIBUser user = getCibUser();
 
         // Create demo1 user
         baseUsersTestHelper.createUser("demo1", "demo1", "demo1", "", user);
@@ -114,8 +111,7 @@ public class TenantProviderIT {
     @Test
     public void testGroupMembershipToTenant() {
     	// Arrange
-        CIBUser user = new CIBUser();
-        user.setAuthToken("Bearer token");
+        CIBUser user = getCibUser();
         
         // Create group
         baseGroupsTestHelper.createGroup("groupDemo1", "groupDemo1", "WORKFLOW", user);

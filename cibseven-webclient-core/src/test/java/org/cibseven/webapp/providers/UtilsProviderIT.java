@@ -18,8 +18,6 @@ package org.cibseven.webapp.providers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
@@ -33,7 +31,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.providers.UtilsProvider;
 import org.cibseven.webapp.rest.model.EventSubscription;
 import org.cibseven.webapp.rest.model.Message;
 
@@ -42,7 +39,7 @@ import okhttp3.mockwebserver.MockWebServer;
 
 @SpringBootTest
 @ContextConfiguration(classes = {UtilsProvider.class})
-public class UtilsProviderIT {
+public class UtilsProviderIT extends BaseHelper {
 
     static {
         System.setProperty("spring.banner.location", "classpath:fca-banner.txt");
@@ -67,15 +64,10 @@ public class UtilsProviderIT {
         mockWebServer.shutdown();
     }
 
-    private String loadMockResponse(String filePath) throws Exception {
-        return new String(Files.readAllBytes(Paths.get(getClass().getClassLoader().getResource(filePath).toURI())));
-    }
-
     @Test
     void testCorrelateMessage() throws Exception {
         // Arrange
-        CIBUser user = new CIBUser();
-        user.setAuthToken("Bearer token");
+        CIBUser user = getCibUser();
 
         String mockResponseBody = loadMockResponse("mocks/message_mock.json");
 
@@ -99,8 +91,7 @@ public class UtilsProviderIT {
     @Test
     void testFindStacktrace() throws Exception {
         // Arrange
-        CIBUser user = new CIBUser();
-        user.setAuthToken("Bearer token");
+        CIBUser user = getCibUser();
 
         String stacktrace = "Sample stacktrace content";
 
@@ -119,8 +110,7 @@ public class UtilsProviderIT {
     @Test
     void testRetryJobById() throws Exception {
         // Arrange
-        CIBUser user = new CIBUser();
-        user.setAuthToken("Bearer token");
+        CIBUser user = getCibUser();
 
         mockWebServer.enqueue(new MockResponse()
                 .setResponseCode(204));
@@ -134,8 +124,7 @@ public class UtilsProviderIT {
     @Test
     void testGetEventSubscriptions() throws Exception {
         // Arrange
-        CIBUser user = new CIBUser();
-        user.setAuthToken("Bearer token");
+        CIBUser user = getCibUser();
 
         String mockResponseBody = loadMockResponse("mocks/event_subscriptions_mock.json");
 

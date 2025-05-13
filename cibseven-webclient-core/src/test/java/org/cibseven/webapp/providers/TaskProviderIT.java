@@ -20,8 +20,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
@@ -39,7 +37,7 @@ import okhttp3.mockwebserver.MockWebServer;
 
 @SpringBootTest
 @ContextConfiguration(classes = {TaskProvider.class})
-public class TaskProviderIT {
+public class TaskProviderIT extends BaseHelper {
 
     static {
         System.setProperty("spring.banner.location", "classpath:fca-banner.txt");
@@ -75,26 +73,15 @@ public class TaskProviderIT {
         ReflectionTestUtils.setField(taskProvider, "cibsevenUrl", mockBaseUrl);
     }
 
-    private String eq(Object object) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 	@AfterEach
     void tearDown() throws Exception {
         mockWebServer.shutdown();
     }
 
-    // Utility method to load mock responses from JSON files
-    private String loadMockResponse(String filePath) throws Exception {
-        return new String(Files.readAllBytes(Paths.get(getClass().getClassLoader().getResource(filePath).toURI())));
-    }
-
     @Test
     void testFindTasks() throws Exception {
         // Arrange
-        CIBUser user = new CIBUser();
-        user.setAuthToken("Bearer token");
+        CIBUser user = getCibUser();
 
         // Load the mock response from a file
         String mockResponseBody = loadMockResponse("mocks/tasks_mock.json");
@@ -118,8 +105,7 @@ public class TaskProviderIT {
     @Test
     void testFindTasksCount() throws Exception {
         // Arrange
-        CIBUser user = new CIBUser();
-        user.setAuthToken("Bearer token");
+        CIBUser user = getCibUser();
 
         // Load the mock response from a file
         String mockResponseBody = loadMockResponse("mocks/task_count_mock.json");
@@ -141,8 +127,7 @@ public class TaskProviderIT {
     void testFindTasksByProcessInstance() throws Exception {
         // Arrange
         String processInstanceId = "process-1";
-        CIBUser user = new CIBUser();
-        user.setAuthToken("Bearer token");
+        CIBUser user = getCibUser();
 
         // Load the mock response from a file
         String mockResponseBody = loadMockResponse("mocks/tasks_mock.json");
@@ -163,8 +148,7 @@ public class TaskProviderIT {
     void testFindTaskById() throws Exception {
         // Arrange
         String taskId = "task-1";
-        CIBUser user = new CIBUser();
-        user.setAuthToken("Bearer token");
+        CIBUser user = getCibUser();
 
         // Load the mock response from a file
         String mockResponseBody = loadMockResponse("mocks/task_mock.json");

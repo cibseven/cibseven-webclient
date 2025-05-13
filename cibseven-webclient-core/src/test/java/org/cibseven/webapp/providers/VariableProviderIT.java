@@ -19,14 +19,11 @@ package org.cibseven.webapp.providers;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.providers.VariableProvider;
 import org.cibseven.webapp.rest.model.ProcessStart;
 import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
@@ -46,7 +43,7 @@ import okhttp3.mockwebserver.MockWebServer;
 
 @SpringBootTest
 @ContextConfiguration(classes = {VariableProvider.class})
-public class VariableProviderIT {
+public class VariableProviderIT extends BaseHelper {
 
     static {
         System.setProperty("spring.banner.location", "classpath:fca-banner.txt");
@@ -71,15 +68,10 @@ public class VariableProviderIT {
         mockWebServer.shutdown();
     }
 
-    private String loadMockResponse(String filePath) throws Exception {
-        return new String(Files.readAllBytes(Paths.get(getClass().getClassLoader().getResource(filePath).toURI())));
-    }
-
     @Test
     void testFetchProcessInstanceVariables() throws Exception {
         String processInstanceId = "process-instance-1";
-        CIBUser user = new CIBUser();
-        user.setAuthToken("Bearer token");
+        CIBUser user = getCibUser();
 
         String mockResponseBody = loadMockResponse("mocks/variable_mock.json");
 
@@ -97,8 +89,7 @@ public class VariableProviderIT {
     @Test
     void testFetchActivityVariablesHistory() throws Exception {
         String activityInstanceId = "activity-1";
-        CIBUser user = new CIBUser();
-        user.setAuthToken("Bearer token");
+        CIBUser user = getCibUser();
 
         String mockResponseBody = loadMockResponse("mocks/variable_history_mock.json");
         mockWebServer.enqueue(new MockResponse()
@@ -118,8 +109,7 @@ public class VariableProviderIT {
     @Test
     void testSubmitStartFormVariables() throws Exception {
         String processDefinitionId = "definition-1";
-        CIBUser user = new CIBUser();
-        user.setAuthToken("Bearer token");
+        CIBUser user = getCibUser();
         
         ObjectMapper mapper = new ObjectMapper();
         

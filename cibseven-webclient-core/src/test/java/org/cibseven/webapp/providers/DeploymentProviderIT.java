@@ -26,20 +26,17 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.providers.DeploymentProvider;
 import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.DeploymentResource;
 
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 
 @SpringBootTest
 @ContextConfiguration(classes = {DeploymentProvider.class})
-public class DeploymentProviderIT {
+public class DeploymentProviderIT extends BaseHelper {
 
     static {
         System.setProperty("spring.banner.location", "classpath:fca-banner.txt");
@@ -66,16 +63,10 @@ public class DeploymentProviderIT {
         mockWebServer.shutdown();
     }
 
-    // Utility method to load mock responses from JSON files
-    private String loadMockResponse(String filePath) throws Exception {
-        return new String(Files.readAllBytes(Paths.get(getClass().getClassLoader().getResource(filePath).toURI())));
-    }
-    
     @Test
     void testFindDeployments() throws Exception {
         // Arrange
-        CIBUser user = new CIBUser();
-        user.setAuthToken("Bearer token");
+        CIBUser user = getCibUser();
 
         // Load the mock response from a file
         String mockResponseBody = loadMockResponse("mocks/deployment_mock.json");
@@ -108,8 +99,7 @@ public class DeploymentProviderIT {
     void testFindDeploymentResources() throws Exception {
         // Arrange
         String deploymentId = "deployment-1";
-        CIBUser user = new CIBUser();
-        user.setAuthToken("Bearer token");
+        CIBUser user = getCibUser();
 
         // Load the mock response from a file
         String mockResponseBody = loadMockResponse("mocks/deployment_resource_mock.json");
@@ -141,8 +131,7 @@ public class DeploymentProviderIT {
         // Arrange
         String deploymentId = "deployment-1";
         boolean cascade = true;
-        CIBUser user = new CIBUser();
-        user.setAuthToken("Bearer token");
+        CIBUser user = getCibUser();
 
         mockWebServer.enqueue(new MockResponse().setResponseCode(204));
 
