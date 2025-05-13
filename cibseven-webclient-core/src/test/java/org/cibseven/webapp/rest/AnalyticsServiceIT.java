@@ -39,6 +39,8 @@ import org.cibseven.webapp.providers.TaskProvider;
 import org.cibseven.webapp.providers.UserProvider;
 import org.cibseven.webapp.providers.UtilsProvider;
 import org.cibseven.webapp.providers.VariableProvider;
+import org.cibseven.webapp.providers.TenantProvider;
+
 import org.cibseven.webapp.rest.model.Analytics;
 import org.cibseven.webapp.rest.model.AnalyticsInfo;
 import org.junit.jupiter.api.Test;
@@ -68,6 +70,7 @@ import lombok.extern.slf4j.Slf4j;
     BatchProvider.class,
     SystemProvider.class,
     SevenUserProvider.class,
+    TenantProvider.class,
     })
 public class AnalyticsServiceIT {
   
