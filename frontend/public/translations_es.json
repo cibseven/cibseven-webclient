@@ -582,8 +582,8 @@
 			"noAuthSelected": "Ningún tipo de autorización seleccionada"
 		},
 		"system": {
-			"title": "System",
-			"tooltip": "System Settings and Diagnostics",
+			"title": "Sistema",
+			"tooltip": "Configuración y diagnóstico del sistema",
 			"settings": "Configuración",
 			"system-diagnostics": {
 				"title": "Diagnósticos",
@@ -855,7 +855,7 @@
 		"close": "Cerrar",
 		"startProcess": {
 			"title": "@:process.startProcess",
-			"tooltip": "Open Start Process"
+			"tooltip": "Abrir vista de inicio del proceso con opción de búsqueda"
 		},
 		"taskList": {
 			"title": "Tasklist",
@@ -887,11 +887,11 @@
 		},
 		"admin": {
 			"title": "Admin",
-			"tooltip": "Open Admin"
+			"tooltip": "Abrir Admin"
 		},
 		"oldCockpit": {
-			"title": "Old Cockpit",
-			"tooltip": "Open old Cockpit"
+			"title":"Cockpit antiguo",
+			"tooltip": "Abrir Cockpit antiguo"
 		},
 		"emptyStart": "Actualmente no tiene permisos para realizar tareas aquí. Por favor contacte con el administrador de CIB seven para que le asigne permisos."
 	},

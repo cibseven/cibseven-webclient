@@ -582,7 +582,7 @@
 		},
 		"system": {
 			"title": "System",
-			"tooltip": "System Settings and Diagnostics",
+			"tooltip": "Systemeinstellungen und Diagnosen",
 			"settings": "Einstellungen",
 			"system-diagnostics": {
 				"title": "Diagnostik",
@@ -854,7 +854,7 @@
 		"close": "Schließen",
 		"startProcess": {
 			"title": "@:process.startProcess",
-			"tooltip": "Open Start Process"
+			"tooltip": "Startprozess-Ansicht mit Suchfunktion öffnen"
 		},
 		"taskList": {
 			"title": "Tasklist",
@@ -886,11 +886,11 @@
 		},
 		"admin": {
 			"title": "Admin",
-			"tooltip": "Open Admin"
+			"tooltip": "Admin öffnen"
 		},
 		"oldCockpit": {
-			"title": "Old Cockpit",
-			"tooltip": "Open old Cockpit"
+			"title": "Altes Cockpit",
+			"tooltip": "Altes Cockpit öffnen"
 		},
 		"emptyStart": "Derzeit haben Sie keine Berechtigung, hier Aufgaben auszuführen. Bitte wenden Sie sich an den CIB seven Administrator, um Berechtigungen zu erhalten."
 	},

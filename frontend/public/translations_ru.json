@@ -854,7 +854,7 @@
 		"close": "Закрыть",
 		"startProcess": {
 			"title": "@:process.startProcess",
-			"tooltip": "Open Start Process"
+			"tooltip": "Открыть страницу запуска процесса с возможностью поиска"
 		},
 		"taskList": {
 			"title": "Tasklist",
@@ -886,11 +886,11 @@
 		},
 		"admin": {
 			"title": "Admin",
-			"tooltip": "Open Admin"
+			"tooltip": "Открыть Admin"
 		},
 		"oldCockpit": {
-			"title": "Old Cockpit",
-			"tooltip": "Open old Cockpit"
+			"title": "Старый Cockpit",
+			"tooltip": "Открыть старый Cockpit"
 		},
 		"emptyStart": "В данный момент у Вас нет прав, чтобы выполнить какие-либо задачи. Пожалуйста, свяжитесь с администратором CIB seven для того, чтобы получить права."
 	},
@@ -1023,7 +1023,7 @@
 		"flowLinkTerms": "Условия использования",
 		"flowLinkPrivacy": "Заявление о конфиденциальности",
 		"flowLinkImprint": "Импринт",
-		"flowLinkAccessibility": "Accessibility declaration",			
+		"flowLinkAccessibility": "Декларация о требованиях доступности",
 		"flowLinkHelp": "Помощь",
 		"shortcuts": {
 			"title": "Горячие клавиши",
@@ -1098,14 +1098,14 @@
 			]
 		},
 		"emailInfo": {
-			"title": "An email has been sent",
-			"header": "To reset your password, please confirm the link in the email.",
-			"body": "This page will automatically close as soon as the email is opened and will redirect to the password reset.",
-			"footerTitle": "Didn't receive the email?",
-			"footerBody": "Check your spam folder or click on 'Resend email' again.",
-			"sendMail": "Resend email",
-			"support": "If the email still does not arrive, please contact support.",
-			"supportLink": "Contact support"		
+			"title": "Письмо было отправлено",
+			"header": "Чтобы сбросить пароль, подтвердите ссылку в письме.",
+			"body": "Эта страница автоматически закроется после открытия письма и произойдёт перенаправление на сброс пароля.",
+			"footerTitle": "Не получили письмо?",
+			"footerBody": "Проверьте папку со спамом или нажмите «Отправить письмо повторно».",
+			"sendMail": "Отправить письмо повторно",
+			"support": "Если письмо так и не пришло, свяжитесь со службой поддержки.",
+			"supportLink": "Связаться с поддержкой"
 		}
 	},
 	"status-progress": {
@@ -1118,9 +1118,9 @@
 	},
 	"advanced-search": {
 	    "title": "Расширенный поиск",
-	    "criteriaKey": "Criteria key",
-	    "selectProperty": "Select property",
-	    "property": "Property name",
+	    "criteriaKey": "Критерий поиска",
+	    "selectProperty": "Выберите критерий",
+	    "property": "Имя",
 	    "value": "Значение",
 	    "add": "Добавить критерий",
 	    "remove": "Удалить критерий",
@@ -1131,11 +1131,11 @@
 	    "any": "Любой",
 	    "all": "Все",
 	    "criteriaKeys": {    	
-	        "processVariables": "Process variable"
+	        "processVariables": "Переменная процесса"
 	    },
 	    "table": {
-	        "key": "Key",
-	        "value": "Value"
+	        "key": "Ключ",
+	        "value": "Значение"
 	    },	    
 	    "operators": {
 	        "eq": "=",
