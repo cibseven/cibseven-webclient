@@ -68,7 +68,9 @@ function skipValue(value) {
     '',
     'cib seven', 'ok', 'id',
     'email',
-    'ctrl',
+    'ctrl', // en = ru
+    'chat', // en = de = es
+    'tenant', // en = es
     'tasklist',
     'cockpit',
     'admin'
