@@ -75,9 +75,7 @@ export default {
 		fetchInstanceVariables: async function (service, method) {
 			this.loading = true
 			const variablesToSerialize = []
-
 			let variables = await serviceMap[service][method](this.selectedInstance.id, false)
-
 			variables.forEach(variable => {
 				try {
 					variable.value = variable.type === 'Object' ? JSON.parse(variable.value) : variable.value
@@ -86,7 +84,6 @@ export default {
 				}
 				variable.modify = false
 			})
-
 			if (variablesToSerialize.length > 0) {
 				const dVariables = await serviceMap[service][method](this.selectedInstance.id, true)
 				dVariables.forEach(dVariable => {
@@ -96,17 +93,15 @@ export default {
 					}
 				})
 			}
-
 			variables.forEach(v => {
 				v.scope = this.activityInstancesGrouped[v.activityInstanceId]
 			})
-
 			variables.sort((a, b) => a.name.localeCompare(b.name))
 			this.variables = variables
 			this.filteredVariables = [...variables]
 			this.loading = false
 		},
-		downloadFile: function (variable) {
+		downloadFile: function(variable) {
 			if (variable.type === 'Object') {
 				if (variable.value.objectTypeName.includes('FileValueDataFlowSource')) {
 					TaskService.downloadFile(variable.processInstanceId, variable.name).then(data => {
