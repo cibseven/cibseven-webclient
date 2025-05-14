@@ -56,6 +56,89 @@ function haveSameProperties(objBase, objTest, path) {
   return true
 }
 
+function skipPath(path) {
+  return path.includes('.operators.') || path.includes('.cib-header.')
+    || path.includes('.flowModalSupport.phoneNumber')
+    || path.includes('.flowModalSupport.email')
+}
+
+function skipValue(value) {
+  const lower = value.toLowerCase()
+  return [
+    '',
+    'cib seven', 'ok', 'id',
+    'email',
+    'ctrl',
+    'tasklist',
+    'cockpit',
+    'admin'
+  ].includes(lower) || value.startsWith('@')
+}
+
+function reportSameValues(objBase, objTest, path) {
+    // Check if both are objects and not null
+  expect(objBase).not.toBeNull()
+  expect(objTest).not.toBeNull()
+
+  if (typeof objBase === 'string' && typeof objTest === 'string') {
+    if (!skipPath(path)) {
+      if (objBase === objTest && ! skipValue(objBase)) {
+        console.log(`"${path}" = "${objBase}"`)
+      }
+    }
+  }
+  else {
+    expect(objBase).toBeTypeOf('object')
+    const keysBase = Object.keys(objBase)
+
+    // Recurse into nested objects
+    for (const key of keysBase) {
+      if (!reportSameValues(objBase[key], objTest[key], path + '.' + key)) {
+        return false
+      }
+    }
+  }
+
+  return true
+}
+
+var hasHeader = false
+function reportSameValuesTable(objBase, objTest, languages, path) {
+  // Check if both are objects and not null
+  expect(objBase).not.toBeNull()
+  expect(objTest).not.toBeNull()
+
+  if (typeof objBase === 'string') {
+    if (!skipPath(path) && ! skipValue(objBase)) {
+
+      const hasSameValues = objTest.map(v => objBase === v).find(v => v)
+      if (hasSameValues) {
+
+        if (!hasHeader) {
+          console.log(`Next strings are the same comparing to EN`)
+          hasHeader = true
+        }
+
+        const v = objTest.map((v, index) => objBase === v ? languages[index] : '  ').join(' | ')
+        console.log(`| en | ${v} | ${path} |`)
+      }
+    }
+  }
+  else {
+    expect(objBase).toBeTypeOf('object')
+    const keysBase = Object.keys(objBase)
+
+    // Recurse into nested objects
+    for (const key of keysBase) {
+      if (!reportSameValuesTable(objBase[key], objTest.map(k => k[key]), languages, path + '.' + key)) {
+        return false
+      }
+    }
+  }
+
+  return true
+}
+
 describe('translations', () => {
   const languages = ['de', 'en', 'ru', 'es']
 
@@ -75,6 +158,19 @@ describe('translations', () => {
         const translationLang = getTranslation(lang)
         expect(haveSameProperties(translationEn, translationLang, lang)).toBeTruthy()
       })
+    })
+
+    languages.filter(lang => lang !== 'en').forEach(lang => {
+      it(`${lang}, report same values`, () => {
+        const translationLang = getTranslation(lang)
+        expect(reportSameValues(translationEn, translationLang, lang)).toBeTruthy()
+      })
+    })
+
+    it(`same values as table`, () => {
+      const filteredLanguages = languages.filter(lang => lang !== 'en')
+      const translations = filteredLanguages.map(lang => getTranslation(lang))
+      expect(reportSameValuesTable(translationEn, translations, filteredLanguages, '')).toBeTruthy()
     })
   })
 })
