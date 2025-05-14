@@ -62,30 +62,74 @@ function skipPath(path) {
     || path.includes('.flowModalSupport.email')
 }
 
-function skipValue(value) {
+function skipValue(value, lang) {
+  const ignoreWords = {
+    '': [
+      '',
+      'cib seven', 'ok', 'id',
+      'email',
+
+      'ctrl', // en = ru
+      'chat', // en = de = es
+
+      // module names
+      'tasklist',
+      'cockpit',
+      'admin',
+
+      // authorizations.types:
+      'allow',
+      'deny',
+      'global',
+    ],
+    'de': [
+      'system',
+      'version',
+      'name',
+      'deployed',
+      'information',
+      'business key',
+      'support',
+      'batches',
+      'deployments',
+      'jobs',
+      'stacktrace',
+      'hostname',
+      'filter',
+      'dashboard',
+      'filter',
+      'status',
+      'name: {name}version: {version}'
+    ],
+    'es': [
+      'tenant',
+      'tenants',
+      'error',
+      'timestamp',
+      'business key',
+      'variables',
+      'total',
+    ],
+    'ru': [
+    ]
+  }
+
   const lower = value.toLowerCase()
-  return [
-    '',
-    'cib seven', 'ok', 'id',
-    'email',
-    'ctrl', // en = ru
-    'chat', // en = de = es
-    'tenant', // en = es
-    'tasklist',
-    'cockpit',
-    'admin'
-  ].includes(lower) || value.startsWith('@')
+  return ignoreWords[''].includes(lower) || ignoreWords[lang].includes(lower) || value.startsWith('@')
 }
 
-function reportSameValues(objBase, objTest, path) {
-    // Check if both are objects and not null
+function reportSameValues(objBase, objTest, path, lang) {
+  var status = true
+
+  // Check if both are objects and not null
   expect(objBase).not.toBeNull()
   expect(objTest).not.toBeNull()
 
   if (typeof objBase === 'string' && typeof objTest === 'string') {
     if (!skipPath(path)) {
-      if (objBase === objTest && ! skipValue(objBase)) {
-        console.log(`"${path}" = "${objBase}"`)
+      if (objBase === objTest && ! skipValue(objBase, lang)) {
+        console.log(`Error: Not translated: "${path}" = "${objBase}"`)
+        status = false
       }
     }
   }
@@ -95,13 +139,13 @@ function reportSameValues(objBase, objTest, path) {
 
     // Recurse into nested objects
     for (const key of keysBase) {
-      if (!reportSameValues(objBase[key], objTest[key], path + '.' + key)) {
-        return false
+      if (!reportSameValues(objBase[key], objTest[key], path + '.' + key, lang)) {
+        status = false
       }
     }
   }
 
-  return true
+  return status
 }
 
 var hasHeader = false
@@ -111,17 +155,21 @@ function reportSameValuesTable(objBase, objTest, languages, path) {
   expect(objTest).not.toBeNull()
 
   if (typeof objBase === 'string') {
-    if (!skipPath(path) && ! skipValue(objBase)) {
+    if (!skipPath(path)) {
 
-      const hasSameValues = objTest.map(v => objBase === v).find(v => v)
+      const hasSameValues = objTest.map(
+        (v, index) => objBase === v && !skipValue(objBase, languages[index])
+      ).find(v => v)
       if (hasSameValues) {
 
         if (!hasHeader) {
-          console.log(`Next strings are the same comparing to EN`)
+          console.log(`Error: Next strings have the same values comparing to EN`)
           hasHeader = true
         }
 
-        const v = objTest.map((v, index) => objBase === v ? languages[index] : '  ').join(' | ')
+        const v = objTest.map(
+          (v, index) => (objBase === v && !skipValue(objBase, languages[index])) ? languages[index] : '  '
+        ).join(' | ')
         console.log(`| en | ${v} | ${path} |`)
       }
     }
@@ -165,7 +213,7 @@ describe('translations', () => {
     languages.filter(lang => lang !== 'en').forEach(lang => {
       it(`${lang}, report same values`, () => {
         const translationLang = getTranslation(lang)
-        expect(reportSameValues(translationEn, translationLang, lang)).toBeTruthy()
+        expect(reportSameValues(translationEn, translationLang, lang, lang)).toBeTruthy()
       })
     })
 
