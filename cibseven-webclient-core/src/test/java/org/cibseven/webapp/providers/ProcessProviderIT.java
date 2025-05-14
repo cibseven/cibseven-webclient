@@ -20,8 +20,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -34,8 +32,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.providers.IIncidentProvider;
-import org.cibseven.webapp.providers.ProcessProvider;
 import org.cibseven.webapp.rest.model.Process;
 import org.cibseven.webapp.rest.model.ProcessDiagram;
 import org.cibseven.webapp.rest.model.ProcessStart;
@@ -46,7 +42,7 @@ import okhttp3.mockwebserver.MockWebServer;
 
 @SpringBootTest
 @ContextConfiguration(classes = {ProcessProvider.class})
-public class ProcessProviderIT {
+public class ProcessProviderIT extends BaseHelper {
 	
     static {
         System.setProperty("spring.banner.location", "classpath:fca-banner.txt");
@@ -76,7 +72,7 @@ public class ProcessProviderIT {
         
         // Configure the base URL for the ProcessProvider to point to the MockWebServer
         String mockBaseUrl = mockWebServer.url("/").toString();
-        ReflectionTestUtils.setField(processProvider, "camundaUrl", mockBaseUrl);
+        ReflectionTestUtils.setField(processProvider, "cibsevenUrl", mockBaseUrl);
     }
 
     @AfterEach
@@ -84,17 +80,11 @@ public class ProcessProviderIT {
         // Shutdown the MockWebServer after each test
         mockWebServer.shutdown();
     }
-    
-    // Utility method to load mock responses from JSON files
-    private String loadMockResponse(String filePath) throws Exception {
-        return new String(Files.readAllBytes(Paths.get(getClass().getClassLoader().getResource(filePath).toURI())));
-    }
 
     @Test
     void testFindProcesses() throws Exception {
         // Arrange
-        CIBUser user = new CIBUser();
-        user.setAuthToken("Bearer token");
+        CIBUser user = getCibUser();
 
         // Load the mock response from a file
         String mockResponseBody = loadMockResponse("mocks/processes_mock.json");
@@ -120,8 +110,7 @@ public class ProcessProviderIT {
     void testFindProcessByDefinitionKey() throws Exception {
         // Arrange
         String processKey = "processKey1";
-        CIBUser user = new CIBUser();
-        user.setAuthToken("Bearer token");
+        CIBUser user = getCibUser();
         
         // Load the mock response from a file
         String mockResponseBody = loadMockResponse("mocks/process_mock.json");
@@ -144,8 +133,7 @@ public class ProcessProviderIT {
     void testFetchDiagram() throws Exception {
         // Arrange
         String processDefinitionId = "process-1";
-        CIBUser user = new CIBUser();
-        user.setAuthToken("Bearer token");
+        CIBUser user = getCibUser();
 
         // Load the mock response from a file
         String mockResponseBody = loadMockResponse("mocks/process_diagram_mock.json");
@@ -167,8 +155,7 @@ public class ProcessProviderIT {
     void testFetchStartForm() throws Exception {
         // Arrange
         String processDefinitionId = "process-1";
-        CIBUser user = new CIBUser();
-        user.setAuthToken("Bearer token");
+        CIBUser user = getCibUser();
 
         // Load the mock response from a file
         String mockResponseBody = loadMockResponse("mocks/process_start_form_mock.json");
@@ -191,8 +178,7 @@ public class ProcessProviderIT {
     void testStartProcess() throws Exception {
         // Arrange
         String processDefinitionKey = "processKey1";
-        CIBUser user = new CIBUser();
-        user.setAuthToken("Bearer token");
+        CIBUser user = getCibUser();
 
         // Load the mock response from a file
         String mockResponseBody = loadMockResponse("mocks/process_instance_mock.json");
