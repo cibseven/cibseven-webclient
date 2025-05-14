@@ -129,7 +129,6 @@ export default {
       fileObjects: ['de.cib.cibflow.api.files.FileValueDataFlowSource', 'de.cib.cibflow.api.files.FileValueDataSource']
     }
   },
-
   computed: {
     formattedJsonValue: {
       get: function() {
@@ -145,9 +144,7 @@ export default {
       }
     }
   },
-
   methods: {
-
     isFileValueDataSource: function(item) {
       if (item.type === 'Object') {
         if (item.value && item.value.objectTypeName) {
@@ -166,7 +163,6 @@ export default {
       if (item.type === 'File') return true
       else return this.isFileValueDataSource(item)
     },
-
     modifyVariable: function(variable) {
       this.selectedVariable = variable
       this.variableToModify = JSON.parse(JSON.stringify(variable))
