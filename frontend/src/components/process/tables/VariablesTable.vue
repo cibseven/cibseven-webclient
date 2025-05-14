@@ -40,10 +40,10 @@
       </template>
       <template v-slot:cell(value)="table">
         <div v-if="table.item.type === 'File'" class="text-truncate">{{ table.item.valueInfo.filename }}</div>
-        <div v-if="isFileValueDataSource(table.item)" class="text-truncate">
+        <div v-if="isFileValueDataSource(table.item)" :title="displayObjectNameValue(table.item)" class="text-truncate">
           {{ displayObjectNameValue(table.item) }}
         </div>
-        <div v-else :title="table.item.value" class="text-truncate">{{ table.item.value }}</div>
+        <div v-else :title="displayObjectTitle(table.item)" class="text-truncate">{{ table.item.value }}</div>
       </template>
       <template v-slot:cell(actions)="table">
         <b-button v-if="isFile(table.item)" :title="$t('process-instance.download')"
@@ -135,12 +135,14 @@ export default {
         if (this.variableToModify) {
           if (this.variableToModify.type === 'Json') {
             return JSON.stringify(JSON.parse(this.variableToModify.value), null, 2)
+          } else if (this.variableToModify.type === 'Object') {
+            return JSON.stringify(this.variableToModify.value, null, 2)
           } else return this.variableToModify.value
         }
         return ''
       },
       set: function(val) {
-        this.variableToModify.value = val
+        this.variableToModify.value = this.variableToModify.type === 'Object' ? JSON.parse(val) : val
       }
     }
   },
@@ -158,6 +160,9 @@ export default {
         return item.value.name
       }
       return item.value
+    },
+    displayObjectTitle(item) {
+      return item.type === 'Object' ? JSON.stringify(item.value) : item.value
     },
     isFile: function(item) {
       if (item.type === 'File') return true
@@ -188,24 +193,36 @@ export default {
       }
     },
     updateVariable: function() {
-      var data = { modifications: {} }
-      if (this.variableToModify.type === 'Json') {
-        this.variableToModify.value = JSON.stringify(JSON.parse(this.variableToModify.value))
-      }
-      data.modifications[this.variableToModify.name] = { value: this.variableToModify.value, type: this.variableToModify.type }
-      //Handle saving case for StringBuilder object
-      if (this.variableToModify.type === 'Object') {
-        let objectTypeName = this.variableToModify.valueInfo && this.variableToModify.valueInfo.objectTypeName
-        if (objectTypeName === 'java.lang.StringBuilder') {
-          data.modifications[this.variableToModify.name].value = JSON.stringify(this.variableToModify.value)
-          data.modifications[this.variableToModify.name].valueInfo = this.variableToModify.valueInfo
+      const original = this.variableToModify
+      const data = { modifications: {} }
+      // Clone the original value
+      let value = original.value
+      if (original.type === 'Json') {
+        try {
+          value = JSON.stringify(JSON.parse(value))
+        } catch (e) {
+          console.error('Invalid JSON input:', e)
+          return
+        }
+      } else if (original.type === 'Object') {
+        if (typeof value !== 'string') {
+          value = JSON.stringify(value)
         }
       }
-      ProcessService.modifyVariableByExecutionId(this.variableToModify.executionId, data).then(() => {
-        this.selectedVariable.value = this.variableToModify.value
+      const mod = { value, type: original.type }
+      // Handle StringBuilder special case
+      const objectTypeName = original.valueInfo?.objectTypeName
+      if (original.type === 'Object' && objectTypeName === 'java.lang.StringBuilder') {
+        mod.value = JSON.stringify(value)
+        mod.valueInfo = original.valueInfo
+      }
+      data.modifications[original.name] = mod
+      ProcessService.modifyVariableByExecutionId(original.executionId, data).then(() => {
+        this.selectedVariable.value = value
         this.$refs.modifyVariable.hide()
       })
-    },
+    }
+
   }
 }
 </script>
