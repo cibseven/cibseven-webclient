@@ -17,42 +17,44 @@
 
 -->
 <template>
-  <GlobalEvents v-if="!hideProcessSelection" @keydown.ctrl.alt.p.prevent="$refs.startProcess.show()"></GlobalEvents>
-  <b-modal body-class="pt-0" size="lg" scrollable ref="startProcess" :hide-footer="!(startParams && !hideProcessSelection)"
-    :title="!hideProcessSelection ? $t('start.startProcess.title') : processName" no-close-on-backdrop
-    @hidden="startParams = null" :footer-class="{ 'justify-content-between': startParams && !hideProcessSelection }"
-    dialog-class="h-100">
-    <div v-if="startParams" class="mh-100 h-100" style="height: 70vh">
-      <RenderTemplate class="h-100" :task="definitionStartTask"
-      @complete-task="$refs.startProcess.hide(); $emit('process-started', $event)"></RenderTemplate>
-    </div>
-    <div v-else-if="!hideProcessSelection">
-      <div class="form-group mt-3">
-        <div class="input-group">
-          <div class="input-group-append">
-            <label class="btn border-end-0 border-light" style="cursor: default"><span class="mdi mdi-magnify"
-              style="line-height: initial"></span></label>
+  <div>
+    <GlobalEvents v-if="!hideProcessSelection" @keydown.ctrl.alt.p.prevent="$refs.startProcess.show()"></GlobalEvents>
+    <b-modal body-class="pt-0" size="lg" scrollable ref="startProcess" :hide-footer="!(startParams && !hideProcessSelection)"
+      :title="!hideProcessSelection ? $t('start.startProcess.title') : processName" no-close-on-backdrop
+      @hidden="startParams = null" :footer-class="{ 'justify-content-between': startParams && !hideProcessSelection }"
+      dialog-class="h-100">
+      <div v-if="startParams" class="mh-100 h-100" style="height: 70vh">
+        <RenderTemplate class="h-100" :task="definitionStartTask"
+        @complete-task="$refs.startProcess.hide(); $emit('process-started', $event)"></RenderTemplate>
+      </div>
+      <div v-else-if="!hideProcessSelection">
+        <div class="form-group mt-3">
+          <div class="input-group">
+            <div class="input-group-append">
+              <label class="btn border-end-0 border-light" style="cursor: default"><span class="mdi mdi-magnify"
+                style="line-height: initial"></span></label>
+            </div>
+            <input class="form-control border-start-0 border-light" type="text" :placeholder="$t('searches.search')" v-model.trim="processesFilter" :disabled="isStartingProcess">
           </div>
-          <input class="form-control border-start-0 border-light ps-0" type="text" :placeholder="$t('searches.search')" v-model.trim="processesFilter" :disabled="isStartingProcess">
+        </div>
+        <b-list-group v-if="startableProcesses.length > 0" >
+          <b-list-group-item v-for="process of startableProcesses" :key="process.key" class="p-1 d-flex align-items-center">
+            <b-button :disabled="isStartingProcess" variant="link" @click="startProcess(process)">
+              <HighlightedText :text="process.name ? process.name : process.key" :keyword="processesFilter"></HighlightedText>
+            </b-button>
+            <span v-if="process.tenantId" class="fst-italic">{{ process.tenantId }}</span>
+            <BWaitingBox v-if="isStartingProcess && process.loading" class="d-inline ms-auto me-1 float-end" styling="width: 24px"></BWaitingBox>
+          </b-list-group-item>
+        </b-list-group>
+        <div v-else class="container">
+          <h5 class="text-secondary text-center">{{ $t(this.textEmptyProcessesList()) }}</h5>
         </div>
       </div>
-      <b-list-group v-if="startableProcesses.length > 0" >
-        <b-list-group-item v-for="process of startableProcesses" :key="process.key" class="p-1 d-flex align-items-center">
-          <b-button :disabled="isStartingProcess" variant="link" @click="startProcess(process)">
-            <HighlightedText :text="process.name ? process.name : process.key" :keyword="processesFilter"></HighlightedText>
-          </b-button>
-          <span v-if="process.tenantId" class="fst-italic">{{ process.tenantId }}</span>
-          <BWaitingBox v-if="isStartingProcess && process.loading" class="d-inline ms-auto me-1 float-end" styling="width: 24px"></BWaitingBox>
-        </b-list-group-item>
-      </b-list-group>
-      <div v-else class="container">
-        <h5 class="text-secondary text-center">{{ $t(this.textEmptyProcessesList()) }}</h5>
-      </div>
-    </div>
-    <template v-slot:modal-footer>
-      <b-button v-if="startParams && !hideProcessSelection" @click="startParams = null" class="text-secondary" variant="link">{{ $t('process.back') }}</b-button>
-    </template>
-  </b-modal>
+      <template v-slot:modal-footer>
+        <b-button v-if="startParams && !hideProcessSelection" @click="startParams = null" class="text-secondary" variant="link">{{ $t('process.back') }}</b-button>
+      </template>
+    </b-modal>
+  </div>
 </template>
 
 <script>
@@ -123,7 +125,7 @@ export default {
               this.$emit('process-started', task)
               process.loading = false
               this.isStartingProcess = false
-            })
+            }, () => this.isStartingProcess = false)
           } else {
             this.startParams = {}
             //Embedded forms
@@ -147,7 +149,7 @@ export default {
             process.loading = false
             this.isStartingProcess = false
           }
-        })
+        }, () => this.isStartingProcess = false)
       })
     },
     textEmptyProcessesList: function() {

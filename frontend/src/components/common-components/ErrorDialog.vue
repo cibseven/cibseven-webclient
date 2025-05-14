@@ -17,7 +17,7 @@
 
 -->
 <template>
-  <b-modal ref="modal" :title="$t('error.title')" :ok-title="$t('error.ok')" :ok-only="true">
+  <b-modal ref="modal" :title="$t('error.title')" :ok-title="$t('error.ok')" :ok-only="true" style="z-index: 1056">
     <div class="container-fluid">
       <div class="d-flex align-items-center">
         <div class="me-4">
