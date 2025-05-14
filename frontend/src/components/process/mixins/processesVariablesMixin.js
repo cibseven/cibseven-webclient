@@ -81,7 +81,7 @@ export default {
 			variables.forEach(variable => {
 				try {
 					variable.value = variable.type === 'Object' ? JSON.parse(variable.value) : variable.value
-				} catch () {
+				} catch (_) {
 					variablesToSerialize.push(variable.id)
 				}
 				variable.modify = false
