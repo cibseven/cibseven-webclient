@@ -88,7 +88,6 @@ function skipValue(value, lang) {
       'name',
       'deployed',
       'information',
-      'business key',
       'support',
       'batches',
       'deployments',
