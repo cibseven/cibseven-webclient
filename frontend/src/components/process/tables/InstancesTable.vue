@@ -101,7 +101,7 @@ export default {
         query: this.$route.query
       })
     },
-    // "Delete Instance" button
+    // "Stop Instance" button
     confirmStopInstance: function(instance) {
       this.$refs.confirm.show({
         ok: this.stopInstance,
