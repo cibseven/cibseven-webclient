@@ -58,8 +58,8 @@
       size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-play-circle-outline" :title="$t('process.activateInstance')"></b-button>
       <b-button @click="selectInstance(table.item)" size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-eye-outline" :title="$t('process.showInstance')"></b-button>
       <b-button v-if="['ACTIVE', 'SUSPENDED'].includes(table.item.state) && processByPermissions($root.config.permissions.deleteProcessInstance, table.item)"
-      @click.stop="confirmDeleteInstance(table.item)"
-      size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-delete-outline" :title="$t('process.deleteInstance')"></b-button>
+      @click.stop="confirmStopInstance(table.item)"
+      size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-stop-circle-outline" :title="$t('process.stopInstance')"></b-button>
       <b-button v-else-if="['COMPLETED', 'EXTERNALLY_TERMINATED'].includes(table.item.state) && processByPermissions($root.config.permissions.deleteProcessInstance, table.item)"
       @click.stop="confirmDeleteHistoryInstance(table.item)"
       size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-delete-outline" :title="$t('process.deleteHistoryInstance')"></b-button>
@@ -102,16 +102,15 @@ export default {
       })
     },
     // "Delete Instance" button
-    confirmDeleteInstance: function(instance) {
+    confirmStopInstance: function(instance) {
       this.$refs.confirm.show({
-        ok: this.deleteInstance,
+        ok: this.stopInstance,
         instance: instance,
-        message: this.$t('process-instance.confirm.deleteInstance'),
-        okTitle: this.$t('confirm.delete'),
+        message: this.$t('process-instance.confirm.stopInstance')
       })
     },
-    deleteInstance: function(instance) {
-      ProcessService.deleteInstance(instance.id).then(() => {
+    stopInstance: function(instance) {
+      ProcessService.stopInstance(instance.id).then(() => {
         this.$emit('instance-deleted')
         this.$refs.success.show()
       })
