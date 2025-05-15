@@ -524,8 +524,8 @@
 			"groups": "Группы",
 			"editMessage": "Редактировать тенант ({0})",
 			"update": "Обновить тенант",
-			"updateTenantMessage": "Tенант {0} был обновлён",
-			"deleteTenantMessage": "Tенант {0} был удалён",
+			"updateTenantMessage": "Тенант {0} был обновлён",
+			"deleteTenantMessage": "Тенант {0} был удалён",
 			"tenantUsers": "Пользователи тенанта",
 			"tenantGroups": "Группы тенанта"
 		},
