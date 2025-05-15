@@ -150,8 +150,8 @@
 		"runningInstances": "Instanzen",
 		"instances": "Instanzen",
 		"statistics": "Statistik",
-		"suspendInstance": "Prozessausführung aussetzen",
-		"deleteInstance": "Laufende Prozessausführung löschen",
+		"suspendInstance": "Prozessinstanz anhalten",
+		"stopInstance": "Prozessinstanz stoppen",
 		"deleteHistoryInstance": "Historische Prozessinstanz löschen",
 		"suspendProcess": "Prozessdefinition aussetzen",
 		"activateProcess": "Prozessdefinition aktivieren",
@@ -211,7 +211,7 @@
 		"confirm": {
 			"suspend": "Wollen Sie wirklich die nächste Instanz des Prozesses aussetzen?",
 			"activate": "Wollen Sie wirklich die nächste Instanz des Prozesses aktivieren?",
-			"deleteInstance": "Wollen Sie wirklich die nächste Instanz des Prozesses löschen?",
+			"stopInstance": "Wollen Sie wirklich die nächste Instanz des Prozesses stoppen?",
 			"deleteHistoryInstance": "Wollen Sie wirklich die nächste historische Instanz des Prozesses löschen?"
 		},
 		"variables": {

@@ -152,7 +152,7 @@
 		"instances": "Instancias",
 		"statistics": "Estadísticas",		
 		"suspendInstance": "Detener la instancia del proceso",
-		"deleteInstance": "Eliminar la instancia activa",
+		"stopInstance": "Detener instancia del proceso",
 		"deleteHistoryInstance": "Eliminar instancia del histórico",
 		"suspendProcess": "Detener el proceso",
 		"activateProcess": "Activar el proceso",
@@ -212,7 +212,7 @@
 		"confirm": {
 			"suspend": "¿Realmente quieres suspender la siguiente instancia del proceso?",
 			"activate": "¿Realmente quieres activar la siguiente instancia del proceso?",
-			"deleteInstance": "¿Realmente quieres borrar la siguiente instancia del proceso?",
+			"stopInstance": "¿Realmente quieres detener la siguiente instancia del proceso?",
 			"deleteHistoryInstance": "¿Realmente quieres borrar la siguiente instancia histórica del proceso?"
 		},
 		"variables": {

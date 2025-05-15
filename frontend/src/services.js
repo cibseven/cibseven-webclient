@@ -198,7 +198,7 @@ var ProcessService = {
       }
     })
   },
-  deleteInstance: function(processInstanceId) {
+  stopInstance: function(processInstanceId) {
     return axios.delete(appConfig.servicesBasePath + "/process/instance/" + processInstanceId + "/delete")
   },
   findDeployments: function() {
