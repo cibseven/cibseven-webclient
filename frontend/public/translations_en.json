@@ -151,7 +151,7 @@
 		"instances": "Instances",
 		"statistics": "Statistics",
 		"suspendInstance": "Suspend process instance",
-		"deleteInstance": "Delete running process instance",
+		"stopInstance": "Stop process instance",
 		"deleteHistoryInstance": "Delete history process instance",
 		"suspendProcess": "Suspend process definition",
 		"activateProcess": "Activate process definition",
@@ -211,7 +211,7 @@
 		"confirm": {
 			"suspend": "Do you really want to suspend the next instance of the process?",
 			"activate": "Do you really want to activate the next instance of the process?",
-			"deleteInstance": "Do you really want to delete the next instance of the process?",
+			"stopInstance": "Do you really want to stop the next instance of the process?",
 			"deleteHistoryInstance": "Do you really want to delete the next historical instance of the process?"
 		},
 		"variables": {
