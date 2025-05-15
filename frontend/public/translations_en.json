@@ -854,7 +854,7 @@
 		"close": "Close",
 		"startProcess": {
 			"title": "@:process.startProcess",
-			"tooltip": "Open Start Process"
+			"tooltip": "Open Start Process view with search possibility"
 		},
 		"taskList": {
 			"title": "Tasklist",
