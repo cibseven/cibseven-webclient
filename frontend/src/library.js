@@ -120,7 +120,13 @@ import ShortcutsTable from '@/components/modals/ShortcutsTable.vue'
 import { TaskService, HistoryService, ProcessService } from '@/services.js';
 import DeployedForm from '@/components/forms/DeployedForm.vue'
 import StartDeployedForm from '@/components/forms/StartDeployedForm.vue'
-
+import DecisionDefinitionDetails from '@/components/decision/DecisionDefinitionDetails.vue'
+import DecisionInstance from '@/components/decision/DecisionInstance.vue'
+import DecisionVersionListSidebar from '@/components/decision/DecisionVersionListSidebar.vue'
+import DmnViewer from '@/components/decision/DmnViewer.vue'
+import TemplateBase from '@/components/forms/TemplateBase.vue'
+import StartView from '@/components/start/StartView.vue'
+import LoginView from '@/components/login/LoginView.vue'
 
 const registerComponents = function(app) {
   app.component('cib-seven', CibSeven)
@@ -208,7 +214,13 @@ const registerComponents = function(app) {
   app.component('batches-view', BatchesView)
   app.component('system-view', SystemView)
   app.component('deployed-form', DeployedForm)
-  app.component('start-deployed-form', StartDeployedForm)
+  app.component('decision-definition-details', DecisionDefinitionDetails)
+  app.component('decision-instance', DecisionInstance)
+  app.component('decision-version-list-sidebar', DecisionVersionListSidebar)
+  app.component('dmn-viewer', DmnViewer)
+  app.component('template-base', TemplateBase)
+  app.component('start-view', StartView)
+  app.component('login-view', LoginView)
 }
 
 export {
@@ -316,5 +328,13 @@ export {
   ExecutionMetrics,
   RuntimeBatches,
   HistoricBatches,
-  BatchDetails
+  BatchDetails,
+  DecisionDefinitionDetails,
+  DecisionInstance,
+  DecisionVersionListSidebar,
+  DmnViewer,
+  AboutModal,
+  TemplateBase,
+  StartView,
+  LoginView
 }
