@@ -22,7 +22,7 @@ import { axios } from './globals.js'
 import { createApp } from 'vue'
 
 import store from './store'
-import router from './router.js'
+import { router } from './router.js'
 import registerOwnComponents from './register.js'
 import { permissionsMixin }  from './permissions.js'
 
@@ -95,7 +95,7 @@ Promise.all([
                       process.loading = false
                   })
                   this.$store.commit('setProcesses', { processes })
-                  
+
                   // Sync favorites from local storage with the process store
                   if (localStorage.getItem('favorites')) {
                     this.$store.dispatch('setFavorites', { favorites: JSON.parse(localStorage.getItem('favorites')) })
