@@ -30,6 +30,7 @@ import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { debounce } from '@/utils/debounce.js'
 import { HoverStyle } from '@/components/common-components/directives.js'
 import { InfoService, AuthService } from './services.js'
+import { i18n, switchLanguage } from './i18n'
 import CibSeven from '@/components/CibSeven.vue'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import ContentBlock from '@/components/common-components/ContentBlock.vue'
@@ -341,5 +342,7 @@ export {
   StartView,
   LoginView,
   InfoService,
-  AuthService
+  AuthService,
+  i18n,
+  switchLanguage
 }
