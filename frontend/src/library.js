@@ -29,6 +29,7 @@ import usersMixin from '@/mixins/usersMixin.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { debounce } from '@/utils/debounce.js'
 import { HoverStyle } from '@/components/common-components/directives.js'
+import { InfoService, AuthService } from './services.js'
 import CibSeven from '@/components/CibSeven.vue'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import ContentBlock from '@/components/common-components/ContentBlock.vue'
@@ -338,5 +339,7 @@ export {
   AboutModal,
   TemplateBase,
   StartView,
-  LoginView
+  LoginView,
+  InfoService,
+  AuthService
 }
