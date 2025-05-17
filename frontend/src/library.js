@@ -20,6 +20,7 @@ import './assets/main.css';
 import { axios } from '@/globals.js'
 import appConfig from '@/appConfig.js'
 import { permissionsMixin } from '@/permissions.js'
+import registerOwnComponents from './register.js'
 import processesVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
 import processesMixin from '@/components/process/mixins/processesMixin.js'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
@@ -233,6 +234,7 @@ export {
   axios,
   appConfig,
   permissionsMixin,
+  registerOwnComponents,
   store,
   usersMixin,
   processesVariablesMixin,
