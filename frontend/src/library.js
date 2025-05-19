@@ -33,6 +33,7 @@ import { InfoService, AuthService } from './services.js'
 import { i18n, switchLanguage } from './i18n'
 import { router, publicRoutes } from './router.js'
 import { updateAppTitle, checkExternalReturn, isMobile, hasHeader, getTheme } from './utils/init.js'
+import { applyTheme, handleAxiosError, fetchAndStoreProcesses, fetchDecisionsIfEmpty, setupTaskNotifications } from './utils/init'
 import CibSeven from '@/components/CibSeven.vue'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import ContentBlock from '@/components/common-components/ContentBlock.vue'
@@ -109,7 +110,6 @@ import HumanTasksView from '@/components/task/HumanTasksView.vue'
 import DecisionView from '@/components/decision/DecisionView.vue'
 import DecisionList from '@/components/decisions/list/DecisionList.vue'
 import DecisionListView from '@/components/decisions/list/DecisionListView.vue'
-import DecisionDefinitionVersion from '@/components/decision/DecisionDefinitionVersion.vue'
 import TenantsView from '@/components/tenants/TenantsView.vue'
 import EditTenant from './components/tenants/EditTenant.vue';
 import CreateTenant from './components/tenants/CreateTenant.vue';
@@ -126,7 +126,6 @@ import { TaskService, HistoryService, ProcessService } from '@/services.js';
 import DeployedForm from '@/components/forms/DeployedForm.vue'
 import StartDeployedForm from '@/components/forms/StartDeployedForm.vue'
 import DecisionDefinitionDetails from '@/components/decision/DecisionDefinitionDetails.vue'
-import DecisionInstance from '@/components/decision/DecisionInstance.vue'
 import DecisionVersionListSidebar from '@/components/decision/DecisionVersionListSidebar.vue'
 import DmnViewer from '@/components/decision/DmnViewer.vue'
 import TemplateBase from '@/components/forms/TemplateBase.vue'
@@ -212,7 +211,6 @@ const registerComponents = function(app) {
   app.component('decision-view', DecisionView)
   app.component('decision-list', DecisionList)
   app.component('decision-list-view', DecisionListView)
-  app.component('decision-', DecisionDefinitionVersion)
   app.component('tenants-view', TenantsView)
   app.component('edit-tenant', EditTenant)
   app.component('create-tenant', CreateTenant)
@@ -220,7 +218,6 @@ const registerComponents = function(app) {
   app.component('system-view', SystemView)
   app.component('deployed-form', DeployedForm)
   app.component('decision-definition-details', DecisionDefinitionDetails)
-  app.component('decision-instance', DecisionInstance)
   app.component('decision-version-list-sidebar', DecisionVersionListSidebar)
   app.component('dmn-viewer', DmnViewer)
   app.component('template-base', TemplateBase)
@@ -327,7 +324,6 @@ export {
   DecisionView,
   DecisionList,
   DecisionListView,
-  DecisionDefinitionVersion,
   StartDeployedForm,
   DeployedForm,
   SystemDiagnostics,
@@ -336,7 +332,6 @@ export {
   HistoricBatches,
   BatchDetails,
   DecisionDefinitionDetails,
-  DecisionInstance,
   DecisionVersionListSidebar,
   DmnViewer,
   AboutModal,
@@ -353,5 +348,10 @@ export {
   checkExternalReturn,
   isMobile,
   hasHeader,
-  getTheme
+  getTheme,
+  applyTheme,
+  handleAxiosError,
+  fetchAndStoreProcesses,
+  fetchDecisionsIfEmpty,
+  setupTaskNotifications
 }
