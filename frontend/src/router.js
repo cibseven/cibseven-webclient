@@ -54,10 +54,7 @@ import SystemView from '@/components/system/SystemView.vue'
 import SystemDiagnostics from '@/components/system/SystemDiagnostics.vue'
 import ExecutionMetrics from '@/components/system/ExecutionMetrics.vue'
 
-const router = createRouter({
-  history: createWebHashHistory(),
-  linkActiveClass: 'active',
-  routes: [
+const publicRoutes = [
     { path: '/', redirect: '/seven/auth/start' },
     { path: '/seven', component: CibSeven, children: [
       { path: 'login', name: 'login', beforeEnter: function(to, from, next) {
@@ -207,7 +204,12 @@ const router = createRouter({
       props: true,
       component: StartDeployedForm
     },
-  ]
+  ];
+
+const router = createRouter({
+    history: createWebHashHistory(),
+    linkActiveClass: 'active',
+    routes: publicRoutes
 })
 
 function authGuard(strict) {
@@ -298,4 +300,4 @@ router.setRoot = function(value) {
   this.root = value
 }
 
-export default router
+export { router, publicRoutes }
