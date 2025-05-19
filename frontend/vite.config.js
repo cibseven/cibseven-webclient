@@ -116,20 +116,7 @@ export default defineConfig({
           external: ['vue', /^\/assets\/images\//],
           output: {
             globals: {
-              vue: 'Vue',
-              // No name was provided for external module "/assets/images/start/process.svg" in "output.globals" – guessing "_imports_0".
-              "/assets/images/start/process.svg": "ProcessImage",
-              "/assets/images/start/task.svg": "TaskImage",
-              "/assets/images/start/management.svg": "ManagementImage",
-              "/assets/images/start/admin.svg": "AdminImage",
-              "/assets/images/start/empty_start_page.svg": "EmptyStartImage",
-              "/assets/images/process/empty_processes_list_dark_background.svg": "EmptyProcessesDark",
-              "/assets/images/process/empty_processes_list.svg": "EmptyProcesses",
-              "/assets/images/decision/empty_processes_list.svg": "EmptyDecisionProcesses",
-              "/assets/images/task/no_tasks_pending.svg": "NoTasksPending",
-              "/assets/images/task/no_tasks.svg": "NoTasks",
-              "/assets/images/task/tasklist_empty.svg": "TasklistEmpty",
-              "/assets/images/task/asign_task.svg": "AssignTask"
+              vue: 'Vue'
             },
             // Ensure CSS is extracted and placed in the dist folder
             assetFileNames: 'cibseven-components.[ext]',
