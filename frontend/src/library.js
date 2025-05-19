@@ -110,6 +110,8 @@ import HumanTasksView from '@/components/task/HumanTasksView.vue'
 import DecisionView from '@/components/decision/DecisionView.vue'
 import DecisionList from '@/components/decisions/list/DecisionList.vue'
 import DecisionListView from '@/components/decisions/list/DecisionListView.vue'
+import DecisionInstance from './components/decision/DecisionInstance.vue';
+import DecisionDefinitionVersion from '@/components/decision/DecisionDefinitionVersion.vue'
 import TenantsView from '@/components/tenants/TenantsView.vue'
 import EditTenant from './components/tenants/EditTenant.vue';
 import CreateTenant from './components/tenants/CreateTenant.vue';
@@ -324,6 +326,8 @@ export {
   DecisionView,
   DecisionList,
   DecisionListView,
+  DecisionInstance,
+  DecisionDefinitionVersion,
   StartDeployedForm,
   DeployedForm,
   SystemDiagnostics,

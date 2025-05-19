@@ -29,6 +29,8 @@ import ProcessListView from '@/components/processes/list/ProcessListView.vue'
 import ProcessesDashboardView from '@/components/processes/dashboard/ProcessesDashboardView.vue'
 import DecisionView from '@/components/decision/DecisionView.vue'
 import DecisionListView from '@/components/decisions/list/DecisionListView.vue'
+import DecisionInstance from '@/components/decision/DecisionInstance.vue'
+import DecisionDefinitionVersion from '@/components/decision/DecisionDefinitionVersion.vue'
 import UsersManagement from '@/components/admin/UsersManagement.vue'
 import AdminUsers from '@/components/admin/AdminUsers.vue'
 import CreateUser from '@/components/admin/CreateUser.vue'
@@ -137,13 +139,13 @@ const publicRoutes = [
             {
               path: ':versionIndex',
               name: 'decision-version',
-              component: () => import('@/components/decision/DecisionDefinitionVersion.vue'),
+              component: DecisionDefinitionVersion,
               props: true
             },
             {
               path: ':versionIndex/:instanceId',
               name: 'decision-instance',
-              component: () => import('@/components/decision/DecisionInstance.vue'),
+              component: DecisionInstance,
               props: true
             }
           ]
