@@ -17,6 +17,8 @@
 /*
  * @return subfolder for the active theme
  */
+import { axios } from '@/globals.js'
+
 export function getTheme(config) {
   return config.theme || "generic"
 }
