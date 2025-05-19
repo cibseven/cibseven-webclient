@@ -116,7 +116,7 @@ export default defineConfig({
           external: ['vue', /^\/assets\/images\//],
           output: {
             globals: {
-              vue: 'Vue'
+              vue: 'Vue',
             },
             // Ensure CSS is extracted and placed in the dist folder
             assetFileNames: 'cibseven-components.[ext]',
