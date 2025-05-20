@@ -91,7 +91,7 @@
         </template>
       </FlowTable>
       <div v-if="criteriasToAdd.length < 1">
-        <img src="/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mb-3" style="width: 200px">
+        <img src="@/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mb-3" style="width: 200px">
         <div class="h5 text-secondary text-center">{{ $t('nav-bar.filters.noCriterias') }}</div>
         <hr>
       </div>

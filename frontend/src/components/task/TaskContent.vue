@@ -78,7 +78,7 @@
       <p>{{ $t('task.assignPopoverContent') }}</p>
       <p>{{ $t('task.assignPopoverContent2') }}</p>
       <b-form-checkbox @input="disablePopover()">{{ $t('task.disablePopover') }}</b-form-checkbox>
-      <img :alt="$t('task.assign')" src="/assets/images/task/asign_task.svg">
+      <img :alt="$t('task.assign')" src="@/assets/images/task/asign_task.svg">
     </b-popover>
     <ConfirmDialog ref="confirmTaskAssign" @ok="update()" @cancel="assignee = null">
       <span>{{ $t('confirm.assignUser') }}</span>
