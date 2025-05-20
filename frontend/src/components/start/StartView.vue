@@ -35,7 +35,7 @@
                   </div>
                   <div class="row text-center">
                     <div class="col-12 p-0 pt-1">
-                      <img :alt="$t('start.startProcess.title')" src="/src/assets/images/start/process.svg" style="height:180px; max-width:225px">
+                      <img :alt="$t('start.startProcess.title')" src="@/assets/images/start/process.svg" style="height:180px; max-width:225px">
                     </div>
                   </div>
                 </div>
@@ -58,7 +58,7 @@
                   </div>
                   <div class="row text-center">
                     <div class="col-12 p-0 pt-1">
-                      <img :alt="$t('start.taskList.title')" src="/src/assets/images/start/task.svg" style="height:180px; max-width:225px">
+                      <img :alt="$t('start.taskList.title')" src="@/assets/images/start/task.svg" style="height:180px; max-width:225px">
                     </div>
                   </div>
                 </div>
@@ -82,7 +82,7 @@
                   </div>
                   <div class="row text-center">
                     <div class="col-12 p-0 pt-1">
-                      <img :alt="$t('start.cockpit.title')" src="/src/assets/images/start/management.svg" style="height:180px; max-width:225px">
+                      <img :alt="$t('start.cockpit.title')" src="@/assets/images/start/management.svg" style="height:180px; max-width:225px">
                     </div>
                   </div>
                 </div>
@@ -122,7 +122,7 @@
                   </div>
                   <div class="row text-center">
                     <div class="col-12 p-0 pt-1">
-                      <img :alt="$t('start.admin.title')" src="/src/assets/images/start/admin.svg" style="height:180px; max-width:225px">
+                      <img :alt="$t('start.admin.title')" src="@/assets/images/start/admin.svg" style="height:180px; max-width:225px">
                     </div>
                   </div>
                 </div>
@@ -154,7 +154,7 @@
       </div>
       <div v-if="!applicationPermissions($root.config.permissions.tasklist, 'tasklist') &&
         !applicationPermissions($root.config.permissions.cockpit, 'cockpit') && !hasAdminManagementPermissions($root.config.permissions)">
-        <img :alt="$t('start.emptyStart')" src="/src/assets/images/start/empty_start_page.svg" class="d-block mx-auto mt-5 mb-3" style="max-width: 250px">
+        <img :alt="$t('start.emptyStart')" src="@/assets/images/start/empty_start_page.svg" class="d-block mx-auto mt-5 mb-3" style="max-width: 250px">
         <div class="h5 text-secondary text-center">{{ $t('start.emptyStart') }}</div>
       </div>
     </div>
