@@ -18,12 +18,13 @@ export default {
   props: { view: String, processName: String },
   data: function() {
     return {
-      focused: null
+      focused: null,
+      imageLoadFailed: false
     }
   },
   methods: {
-    onImageLoadFailure: function(event) {
-      event.target.src = '/src/assets/images/process/default.svg'
+    onImageLoadFailure: function() {
+      this.imageLoadFailed = true
     },
     showDescription: function(key) {
       if (this.$te('process-descriptions.' + key)) return this.$t('process-descriptions.' + key)

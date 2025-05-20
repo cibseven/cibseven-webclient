@@ -30,7 +30,8 @@
       </transition>
       <div class="row text-center pt-2 pe-3" :style="viewStyles[view].imgBlock">
         <div class="col-11 p-0 d-flex align-items-center">
-          <img :alt="processName" v-b-popover.hover.top="showDescription(process.key)" :style="viewStyles[view].imgSize" @error="onImageLoadFailure($event)" :src="'/src/assets/images/process/' + process.key + '.svg'">
+          <img v-if="!imageLoadFailed" :alt="processName" v-b-popover.hover.top="showDescription(process.key)" :style="viewStyles[view].imgSize" @error="onImageLoadFailure()" :src="'src/assets/images/process/' + process.key + '.svg'">
+          <img v-else :alt="processName" v-b-popover.hover.top="showDescription(process.key)" :style="viewStyles[view].imgSize" src="@/assets/images/process/default.svg">
         </div>
         <div class="col-1 p-0 text-end">
           <b-button :title="$t('process.favorite')" tabindex="-1" @click="$emit('favorite', process)" variant="link" class="mdi mdi-24px text-primary p-0" style="z-index: 1"
