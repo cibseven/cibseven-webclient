@@ -29,7 +29,7 @@
       {{ $t('snapshot.titleAbove') }}
     </div>
 
-    <img :src="img || 'assets/images/common-layout/files/screenshot.svg'" style="display: block; margin-left: auto; margin-right: auto"
+    <img :src="img || '/src/assets/images/common-layout/files/screenshot.svg'" style="display: block; margin-left: auto; margin-right: auto"
       :style="{ visibility: imgSrc && 'hidden', height: (height || 43) + 'px' }">
 
     <div style="text-align: center"

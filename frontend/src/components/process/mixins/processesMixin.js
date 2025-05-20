@@ -23,7 +23,7 @@ export default {
   },
   methods: {
     onImageLoadFailure: function(event) {
-      event.target.src = 'assets/images/process/default.svg'
+      event.target.src = '/src/assets/images/process/default.svg'
     },
     showDescription: function(key) {
       if (this.$te('process-descriptions.' + key)) return this.$t('process-descriptions.' + key)

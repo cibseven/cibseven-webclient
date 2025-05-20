@@ -46,7 +46,7 @@
         </router-view>
         <BWaitingBox v-else-if="task === null && $route.query.externalMode !== undefined" class="h-100 d-flex justify-content-center" styling="width:20%"></BWaitingBox>
         <div v-else class="text-secondary text-center">
-          <img :alt="$t('seven.selectTask')" src="/assets/images/task/tasklist_empty.svg" class="mt-5" style="max-width: 250px">
+          <img :alt="$t('seven.selectTask')" src="/src/assets/images/task/tasklist_empty.svg" class="mt-5" style="max-width: 250px">
           <h5>{{ $t('seven.selectTask') }}</h5>
         </div>
       </transition>

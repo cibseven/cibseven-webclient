@@ -66,7 +66,7 @@
       <DeploymentList v-if="!loading && deploymentsFiltered.length > 0" :deployments="deploymentsFiltered" :deployment="deployment" :sorting="sorting"
         @select-deployment="selectDeployment($event)"></DeploymentList>
       <div v-else-if="!loading && deploymentsFiltered.length === 0" class="text-center text-secondary">
-        <img src="/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mt-5 mb-3" style="width: 200px">
+        <img src="/src/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mt-5 mb-3" style="width: 200px">
         <div class="h5 text-secondary text-center">{{ $t('deployment.noDeployments') }}</div>
       </div>
       <div v-else class="h-100 d-flex justify-content-center align-items-center">

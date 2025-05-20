@@ -69,7 +69,7 @@
         </div>
       </div>
       <div v-if="!processesByOptions.length">
-        <img :alt="$t(textEmptyProcessesList)" src="/assets/images/process/empty_processes_list_dark_background.svg" class="d-block mx-auto mt-5 mb-3" style="max-width: 250px">
+        <img :alt="$t(textEmptyProcessesList)" src="/src/assets/images/process/empty_processes_list_dark_background.svg" class="d-block mx-auto mt-5 mb-3" style="max-width: 250px">
         <div class="h5 text-secondary text-center">{{ $t(textEmptyProcessesList) }}</div>
       </div>
       <StartProcess ref="processStart" @process-started="$refs.processStarted.show(10)" hideProcessSelection></StartProcess>
