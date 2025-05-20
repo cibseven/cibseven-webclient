@@ -29,7 +29,7 @@
       {{ $t('snapshot.titleAbove') }}
     </div>
 
-    <img :src="img || '@/assets/images/common-layout/files/screenshot.svg'" style="display: block; margin-left: auto; margin-right: auto"
+    <img :src="img || screenshotImage" style="display: block; margin-left: auto; margin-right: auto"
       :style="{ visibility: imgSrc && 'hidden', height: (height || 43) + 'px' }">
 
     <div style="text-align: center"
@@ -40,6 +40,10 @@
 </template>
 
 <script>
+
+// Import the image to ensure it is bundled with the package
+import screenshotImage from '@/assets/images/common-layout/files/screenshot.svg'
+
 export default {
   name: 'FeedbackScreenshot',
   props: { disabled: Boolean, img: String, height: Number },
