@@ -29,7 +29,7 @@
       {{ $t('snapshot.titleAbove') }}
     </div>
 
-    <img :src="img || screenshotImage" style="display: block; margin-left: auto; margin-right: auto"
+    <img :src="img || screenshotImageSrc" style="display: block; margin-left: auto; margin-right: auto"
       :style="{ visibility: imgSrc && 'hidden', height: (height || 43) + 'px' }">
 
     <div style="text-align: center"
@@ -47,7 +47,13 @@ import screenshotImage from '@/assets/images/common-layout/files/screenshot.svg'
 export default {
   name: 'FeedbackScreenshot',
   props: { disabled: Boolean, img: String, height: Number },
-  data: function() { return { focused: false, imgSrc: null } },
+  data: function() {
+    return {
+      focused: false,
+      imgSrc: null,
+      screenshotImageSrc: screenshotImage
+    }
+  },
   methods: {
     screenShoot: function(evt) {
       var reader = new FileReader()
