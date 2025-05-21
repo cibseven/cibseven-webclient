@@ -42,7 +42,7 @@ function getWrapper() {
 
   const translations = JSON.parse(
     // eslint-disable-next-line no-undef
-    readFileSync(resolve(__dirname, '../../public/translations_en.json'), 'utf-8')
+    readFileSync(resolve(__dirname, '../assets/translations_en.json'), 'utf-8')
   )
 
   i18n.global.locale = 'en'

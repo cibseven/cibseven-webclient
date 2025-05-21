@@ -20,7 +20,7 @@ import { resolve } from 'path'
 
 function getTranslation(lang) {
   // eslint-disable-next-line no-undef
-  const filePath = resolve(__dirname, `../../public/translations_${lang}.json`)
+  const filePath = resolve(__dirname, `../assets/translations_${lang}.json`)
   const translation = JSON.parse(readFileSync(filePath, 'utf-8'))
   return translation
 }
