@@ -264,7 +264,6 @@ import FlowTable from '@/components/common-components/FlowTable.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import CIBForm from '@/components/common-components/CIBForm.vue'
 import { mapActions, mapGetters } from 'vuex'
-import FilterableSelectVue from '../task/filter/FilterableSelect.vue'
 
 export default {
   name: 'ProfileUser',
@@ -291,7 +290,7 @@ export default {
       focusedTenant: null,
       passwordPolicyError: false,
       passwordVisibility: { current: false, new: false, repeat: false },
-      sendingEmail: FilterableSelectVue,
+      sendingEmail: false,
       userTenants: []
     }
   },
