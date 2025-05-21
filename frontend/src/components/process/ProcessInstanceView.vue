@@ -57,6 +57,9 @@
 
     </div>
 
+    <slot name="additional-content"></slot>
+    <component v-for="(component, index) in additionalComponents" :is="component" :key="index"></component>
+
   </div>
 </template>
 
@@ -94,13 +97,17 @@ export default {
         { id: 'jobs', active: false },
         { id: 'calledProcessInstances', active: false }
       ],
-      activeTab: 'variables'
+      activeTab: 'variables',
+      additionalComponents: []
     }
   },
   mounted: function() {
     ProcessService.fetchDiagram(this.process.id).then(response => {
       this.$refs.diagram.showDiagram(response.bpmn20Xml, null, null)
     })
+    this.$root.$on('register-component', (component) => {
+      this.additionalComponents.push(component);
+    });
   },
   methods: {
     changeTab: function(selectedTab) {

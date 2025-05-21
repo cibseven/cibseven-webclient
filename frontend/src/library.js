@@ -227,6 +227,14 @@ const registerComponents = function(app) {
   app.component('login-view', LoginView)
 }
 
+const Plugin = {
+  install(Vue) {
+    Vue.prototype.$registerComponent = function(component) {
+      this.$root.$emit('register-component', component);
+    };
+  }
+};
+
 export {
   registerComponents,
   TenantsView,
@@ -357,5 +365,6 @@ export {
   handleAxiosError,
   fetchAndStoreProcesses,
   fetchDecisionsIfEmpty,
-  setupTaskNotifications
+  setupTaskNotifications,
+  Plugin
 }

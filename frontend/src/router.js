@@ -206,6 +206,11 @@ const publicRoutes = [
       props: true,
       component: StartDeployedForm
     },
+    {
+      path: '/external-extension',
+      name: 'external-extension',
+      component: () => import('@/components/ExternalExtension.vue')
+    }
   ];
 
 const router = createRouter({
