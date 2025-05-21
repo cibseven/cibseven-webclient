@@ -55,3 +55,113 @@ npm run test:e2e
 ```sh
 npm run lint
 ```
+
+### Using the `ExtensionPoint` Component
+
+The `ExtensionPoint` component allows you to create flexible extension points in your Vue application. This is particularly useful for adding new tables or other dynamic content in specific parts of your application.
+
+#### Example Usage
+
+To use the `ExtensionPoint` component, follow these steps:
+
+1. Import the `ExtensionPoint` component in your Vue file:
+
+```javascript
+import ExtensionPoint from '@/components/common-components/ExtensionPoint.vue';
+```
+
+2. Add the `ExtensionPoint` component to your template where you want the extension point to be:
+
+```html
+<template>
+  <div>
+    <!-- Other content -->
+    <ExtensionPoint>
+      <!-- Dynamic content goes here -->
+    </ExtensionPoint>
+  </div>
+</template>
+```
+
+3. Pass any necessary props to the `ExtensionPoint` component:
+
+```html
+<template>
+  <div>
+    <!-- Other content -->
+    <ExtensionPoint :some-prop="someValue">
+      <!-- Dynamic content goes here -->
+    </ExtensionPoint>
+  </div>
+</template>
+```
+
+#### Adding New Tables Using the `ExtensionPoint`
+
+You can add new tables dynamically using the `ExtensionPoint` component. Here's an example:
+
+1. Create a new table component, e.g., `NewTable.vue`:
+
+```html
+<template>
+  <table>
+    <thead>
+      <tr>
+        <th>Column 1</th>
+        <th>Column 2</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr v-for="item in items" :key="item.id">
+        <td>{{ item.column1 }}</td>
+        <td>{{ item.column2 }}</td>
+      </tr>
+    </tbody>
+  </table>
+</template>
+
+<script>
+export default {
+  name: 'NewTable',
+  props: {
+    items: {
+      type: Array,
+      required: true
+    }
+  }
+};
+</script>
+```
+
+2. Use the `NewTable` component within the `ExtensionPoint`:
+
+```html
+<template>
+  <div>
+    <!-- Other content -->
+    <ExtensionPoint>
+      <NewTable :items="tableData" />
+    </ExtensionPoint>
+  </div>
+</template>
+
+<script>
+import ExtensionPoint from '@/components/common-components/ExtensionPoint.vue';
+import NewTable from '@/components/tables/NewTable.vue';
+
+export default {
+  components: {
+    ExtensionPoint,
+    NewTable
+  },
+  data() {
+    return {
+      tableData: [
+        { id: 1, column1: 'Data 1', column2: 'Data 2' },
+        { id: 2, column1: 'Data 3', column2: 'Data 4' }
+      ]
+    };
+  }
+};
+</script>
+```

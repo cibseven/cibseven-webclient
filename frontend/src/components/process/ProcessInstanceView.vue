@@ -54,6 +54,7 @@
       <UserTasksTable v-else-if="activeTab === 'usertasks'" :selected-instance="selectedInstance"></UserTasksTable>
       <JobsTable v-else-if="activeTab === 'jobs'" :jobs="selectedInstance.jobs"></JobsTable>
       <CalledProcessInstancesTable v-else-if="activeTab === 'calledProcessInstances'" :selectedInstance="selectedInstance" :activityInstanceHistory="activityInstanceHistory" :activity-instance="activityInstance"></CalledProcessInstancesTable>
+      <ExtensionPoint v-else :selected-instance="selectedInstance" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory"></ExtensionPoint>
 
     </div>
 
@@ -73,10 +74,11 @@ import JobsTable from '@/components/process/tables/JobsTable.vue'
 import CalledProcessInstancesTable from '@/components/process/tables/CalledProcessInstancesTable.vue'
 
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
+import ExtensionPoint from '@/components/common-components/ExtensionPoint.vue'
 
 export default {
   name: 'ProcessInstanceView',
-  components: { VariablesTable, IncidentsTable, UserTasksTable, BpmnViewer, JobsTable, CalledProcessInstancesTable},
+  components: { VariablesTable, IncidentsTable, UserTasksTable, BpmnViewer, JobsTable, CalledProcessInstancesTable, ExtensionPoint },
   mixins: [procesessVariablesMixin, resizerMixin],
   props: {
     selectedInstance: Object,

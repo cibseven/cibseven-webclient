@@ -84,7 +84,8 @@ export default {
     resizable: { type: Boolean, default: false },
     striped : { type: Boolean, default: false },
     sortBy: { type: String, default: null },
-    sortDesc: { type: Boolean, default: false }
+    sortDesc: { type: Boolean, default: false },
+    dynamicColumns: { type: Boolean, default: false }
   },
   data() {
     return {
