@@ -75,6 +75,7 @@ public class SevenUserProvider extends BaseUserProvider<StandardLogin> implement
 			  // Token is needed for the next request (/user/xxx/profile)
 			  user.setAuthToken(createToken(getSettings(), true, false, user));
 				SevenUser cUser = sevenProvider.getUserProfile(user.getId(), user);
+				user.setUserID(cUser.getId());
 				user.setDisplayName(cUser.getFirstName() + " " + cUser.getLastName());
 				// Token is created for the second time to include the display name
 				user.setAuthToken(createToken(getSettings(), true, false, user));
