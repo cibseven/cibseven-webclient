@@ -100,7 +100,7 @@ export default {
     processKey: 'loadProcessFromRoute',
     versionIndex() {
       const process = this.processDefinitions.find(processDefinition => processDefinition.version === this.versionIndex)
-      this.loadProcessVersion(process)
+      if (process) this.loadProcessVersion(process)
     }
   },
   data: function() {
