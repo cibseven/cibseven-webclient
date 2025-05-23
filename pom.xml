@@ -77,6 +77,23 @@ You may obtain a copy of the License at
 			<build>
 				<plugins>
 					<plugin>
+						<artifactId>maven-clean-plugin</artifactId>
+						<inherited>false</inherited>
+						<configuration>
+							<filesets>
+								<fileset>
+									<directory>./frontend/target</directory>
+								</fileset>
+								<fileset>
+									<directory>${project.build.directory}/webapp</directory>
+									<excludes>
+										<exclude>README.md</exclude>
+									</excludes>
+								</fileset>
+							</filesets>
+						</configuration>
+					</plugin>
+					<plugin>
 						<groupId>com.github.eirslett</groupId>
 						<artifactId>frontend-maven-plugin</artifactId>
 						<version>${version.eirslett.frontend.maven.plugin}</version>
