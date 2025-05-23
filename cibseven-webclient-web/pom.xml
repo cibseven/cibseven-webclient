@@ -46,7 +46,6 @@
 				<filtering>false</filtering>
 				<includes>
 					<include>application.yaml</include>
-					<include>cibseven-webclient.yaml</include>
 					<include>*.jpg</include>
 					<include>*.txt</include>
 					<!-- <include>*.xml</include> -->
