@@ -56,7 +56,7 @@ import SystemView from '@/components/system/SystemView.vue'
 import SystemDiagnostics from '@/components/system/SystemDiagnostics.vue'
 import ExecutionMetrics from '@/components/system/ExecutionMetrics.vue'
 
-const publicRoutes = [
+const appRoutes = [
     { path: '/', redirect: '/seven/auth/start' },
     { path: '/seven', component: CibSeven, children: [
       { path: 'login', name: 'login', beforeEnter: function(to, from, next) {
@@ -208,11 +208,7 @@ const publicRoutes = [
     },
   ];
 
-const router = createRouter({
-    history: createWebHashHistory(),
-    linkActiveClass: 'active',
-    routes: publicRoutes
-})
+var router = null
 
 function authGuard(strict) {
   return function(to, from, next) {
@@ -298,8 +294,79 @@ function combineGuards(...guards) {
   };
 }
 
-router.setRoot = function(value) {
-  this.root = value
+/**
+ * Recursively searches through the given routes array to find a route by its `name` property.
+ * When the route with the matching name is found, its `component` property is replaced with the provided `newComponentValue`.
+ * Returns a new routes array with the updated component, preserving the original structure.
+ *
+ * @param {Array} routes - The array of route objects to search through.
+ * @param {string} targetName - The `name` property of the route to update.
+ * @param {Object} newComponentValue - The new Vue component to assign to the matched route.
+ * @returns {Array} The updated routes array.
+ */
+function updateRouterComponentByName(routes, targetName, newComponentValue) {
+  if (routes === undefined || routes.length === 0) {
+    return undefined
+  }
+  var updated = false
+  return routes.map(obj => {
+    if (updated) {
+      return obj
+    }
+    else if (obj.name === targetName) {
+      updated = true
+      return {
+        ...obj,
+        component: newComponentValue
+      }
+    }
+    else if (obj.children !== undefined) {
+      return {
+        ...obj,
+        children: updateRouterComponentByName(obj.children, targetName, newComponentValue)
+      }
+    }
+    else {
+      return obj
+    }
+  })
 }
 
-export { router, publicRoutes }
+/**
+ * Creates and configures the main Vue Router instance for the application.
+ * Sets up hash-based navigation, active link class, and assigns the provided routes.
+ * Also adds a `setRoot` method to the router instance for storing a reference to the root Vue component.
+ *
+ * @param {Array} routes - The array of route objects to use for the router.
+ * @returns {Router} The configured Vue Router instance.
+ */
+function createAppRouter(routes) {
+
+  // this method is required to set the root component
+  // in order to access the config and user object
+  // in the router guards
+
+  router = createRouter({
+    history: createWebHashHistory(),
+    linkActiveClass: 'active',
+    routes: routes
+  })
+
+  router.setRoot = function(value) {
+    this.root = value
+  }
+
+  return router
+}
+
+export {
+  appRoutes,
+
+  updateRouterComponentByName,
+  createAppRouter,
+
+  authGuard,
+  permissionsGuard,
+  permissionsDeniedGuard,
+  permissionsGuardUserAdmin
+}
