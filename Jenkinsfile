@@ -117,7 +117,7 @@ pipeline {
             steps {
                 script {
                     withMaven(options: [junitPublisher(disabled: false), jacocoPublisher(disabled: false)]) {
-                        sh "mvn -T4 -Dbuild.number=${BUILD_NUMBER} install"
+                        sh "mvn -T4 -Dbuild.number=${BUILD_NUMBER} clean install"
                     }
                     if (!params.DEPLOY_TO_ARTIFACTS && !params.DEPLOY_TO_MAVEN_CENTRAL) {
                         junit allowEmptyResults: true, testResults: ConstantsInternal.MAVEN_TEST_RESULTS
@@ -146,7 +146,8 @@ pipeline {
             steps {
                 script {
                     withMaven(options: []) {
-                        sh "mvn -T4 -U clean deploy"
+                        def skipTestsFlag = params.INSTALL ? "-DskipTests" : ""
+                        sh "mvn -T4 -U clean deploy ${skipTestsFlag}"
                     }
                   
                     junit allowEmptyResults: true, testResults: ConstantsInternal.MAVEN_TEST_RESULTS
