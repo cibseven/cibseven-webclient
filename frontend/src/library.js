@@ -31,7 +31,13 @@ import { debounce } from '@/utils/debounce.js'
 import { HoverStyle } from '@/components/common-components/directives.js'
 import { InfoService, AuthService } from './services.js'
 import { i18n, switchLanguage } from './i18n'
-import { router, publicRoutes } from './router.js'
+import { appRoutes,
+  updateRouterComponentByName,
+  createAppRouter,
+  authGuard,
+  permissionsGuard,
+  permissionsDeniedGuard,
+  permissionsGuardUserAdmin } from './router.js'
 import { updateAppTitle, checkExternalReturn, isMobile, hasHeader, getTheme } from './utils/init.js'
 import { applyTheme, handleAxiosError, fetchAndStoreProcesses, fetchDecisionsIfEmpty, setupTaskNotifications } from './utils/init'
 import CibSeven from '@/components/CibSeven.vue'
@@ -346,8 +352,16 @@ export {
   AuthService,
   i18n,
   switchLanguage,
-  publicRoutes,
-  router,
+
+  // router
+  appRoutes,
+  updateRouterComponentByName,
+  createAppRouter,
+  authGuard,
+  permissionsGuard,
+  permissionsDeniedGuard,
+  permissionsGuardUserAdmin,
+
   updateAppTitle,
   checkExternalReturn,
   isMobile,

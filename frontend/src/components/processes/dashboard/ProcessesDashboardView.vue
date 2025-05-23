@@ -49,7 +49,7 @@
         ></PieChart>
       </ContentBlock>
 
-      <ContentBlock :title="$t('processes-dashboard.headerDeployed')">
+      <ContentBlock :title="$t('processes-dashboard.headerDeployed')" class="mb-3">
         <DeploymentItem
           v-for="(item, index) in deploymentItems"
           :key="index"
