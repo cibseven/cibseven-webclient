@@ -119,7 +119,7 @@ pipeline {
                     withMaven(options: [junitPublisher(disabled: false), jacocoPublisher(disabled: false)]) {
                         sh "mvn -T4 -Dbuild.number=${BUILD_NUMBER} clean install"
                     }
-                    if (!params.DEPLOY_TO_ARTIFACTS && !params.DEPLOY_TO_MAVEN_CENTRAL) {
+                    if (!params.DEPLOY_TO_MAVEN_CENTRAL) {
                         junit allowEmptyResults: true, testResults: ConstantsInternal.MAVEN_TEST_RESULTS
 
                         // Show coverage in Jenkins UI
@@ -149,8 +149,20 @@ pipeline {
                         def skipTestsFlag = params.INSTALL ? "-DskipTests" : ""
                         sh "mvn -T4 -U clean deploy ${skipTestsFlag}"
                     }
-                  
-                    junit allowEmptyResults: true, testResults: ConstantsInternal.MAVEN_TEST_RESULTS
+
+                    if (!params.INSTALL) {
+                        junit allowEmptyResults: true, testResults: ConstantsInternal.MAVEN_TEST_RESULTS
+
+                        // Show coverage in Jenkins UI
+                        recordCoverage(
+                            tools: [[parser: 'COBERTURA', pattern: 'frontend/coverage/cobertura-coverage.xml']],
+                            sourceCodeRetention: 'LAST_BUILD',
+                            sourceDirectories: [[path: 'frontend/src']]
+                        )
+
+                        // This archives the whole HTML coverage report so you can download or view it from Jenkins
+                        archiveArtifacts artifacts: 'frontend/coverage/lcov-report/**', allowEmptyArchive: false
+                    }
                 }
             }
         }
