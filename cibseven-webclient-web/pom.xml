@@ -122,6 +122,27 @@
 			                </resources>
 			            </configuration>
 			        </execution>
+					<execution>
+						<id>copy-cibseven-webclient-npm-resources</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/classes/public</outputDirectory>
+							<overwrite>true</overwrite>
+							<resources>
+								<resource>
+									<directory>
+										${project.parent.basedir}/frontend/dist</directory>
+									<includes>
+										<include>**/*</include>
+									</includes>
+									<targetPath>.</targetPath>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 			
