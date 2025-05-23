@@ -306,7 +306,7 @@ function combineGuards(...guards) {
  */
 function updateRouterComponentByName(routes, targetName, newComponentValue) {
   if (routes === undefined || routes.length === 0) {
-    return undefined
+    return routes
   }
   var updated = false
   return routes.map(obj => {
