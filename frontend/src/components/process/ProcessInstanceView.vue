@@ -97,6 +97,13 @@ export default {
       activeTab: 'variables'
     }
   },
+  watch: {
+    'process.id': function() {
+      ProcessService.fetchDiagram(this.process.id).then(response => {
+        this.$refs.diagram.showDiagram(response.bpmn20Xml, null, null)
+      })
+    }
+  },
   mounted: function() {
     ProcessService.fetchDiagram(this.process.id).then(response => {
       this.$refs.diagram.showDiagram(response.bpmn20Xml, null, null)

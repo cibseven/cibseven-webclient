@@ -19,12 +19,12 @@ export default {
         return {
             bpmnViewerOriginalHeight: 400,
             bpmnViewerHeight: 400,
-            topBarHeight: 40,
+            topBarHeight: 41,
             dragSelectorHeight: 10,
             filterHeight: 60,
             mousePosition: null,
             toggleIcon: 'mdi-chevron-down',
-            toggleButtonHeight: 38,
+            toggleButtonHeight: 39,
             toggleTransition: '',
             transitionTime: 0.4
         }
