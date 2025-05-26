@@ -29,7 +29,6 @@ export default {
     GenericTabs,
   },
   emits: ['change-tab'],
-  props: { tabs: Array },
   data: function () {
     return {
       tabs: [
