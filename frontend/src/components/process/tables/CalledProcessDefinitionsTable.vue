@@ -25,10 +25,10 @@
       { label: 'activities', key: 'activities', class: 'col-6', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' }
 ]">
       <template v-slot:cell(process)="table">
-        <span :title="table.item.process.name" class="text-truncate" @click="openProcessDefinition(table.item)">{{ table.item.process.name }}</span>
+        <a :title="table.item.process.name" class="text-truncate" :href="'#/seven/auth/process/' + table.item.key + '/' + table.item.version + '/'" @click="openProcessDefinition(table.item)">{{ table.item.process.name }}</a>
       </template>
       <template v-slot:cell(version)="table">
-        <span :title="table.item.version" class="text-truncate" @click="openProcessDefinition(table.item)">{{ table.item.version }}</span>
+        <a :title="table.item.version" class="text-truncate" :href="'#/seven/auth/process/' + table.item.key + '/' + table.item.version + '/'" @click="openProcessDefinition(table.item)">{{ table.item.version }}</a>
       </template>
       <template v-slot:cell(activities)="table">
         <div class="d-flex flex-column">
@@ -58,7 +58,6 @@ export default {
   methods: {
     openProcessDefinition: function(event){
       this.$emit('changeTabToInstances')
-      this.$router.push({ name: 'process', params: { processKey: event.key, versionIndex: event.version } })
     }
   }
 }

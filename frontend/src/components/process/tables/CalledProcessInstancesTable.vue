@@ -25,13 +25,13 @@
       { label: 'version', key: 'version', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
       { label: 'callingActivity', key: 'callingActivity', class: 'col-4', tdClass: 'py-1 border-end border-top-0' }]">
       <template v-slot:cell(process)="table">
-        <button :title="table.item.name" class="text-truncate btn btn-link"  @click="openSubprocess(table.item)">{{ table.item.name }}</button>
+        <a :title="table.item.name" class="text-truncate"  :href="'#/seven/auth/process/' + table.item.key + '/' + table.item.version + '/'">{{ table.item.name }}</a>
       </template>
       <template v-slot:cell(version)="table">
         <div :title="table.item.version" class="text-truncate" >{{ table.item.version }}</div>
       </template>
       <template v-slot:cell(id)="table">
-        <button :title="table.item.id" class="text-truncate btn btn-link" @click="openInstance(table.item)">{{ table.item.id }}</button>
+        <a :title="table.item.id" class="text-truncate" :href="'#/seven/auth/process/' + table.item.key + '/' + table.item.version + '/' + table.item.id">{{ table.item.id }}</a>
       </template>
       <template v-slot:cell(callingActivity)="table">
         <div :title="table.item.callingActivity.activityName" class="text-truncate">{{ table.item.callingActivity.activityName }}</div>
@@ -62,18 +62,28 @@ export default {
       loading: true
     }
   },
+  watch: {
+    activityInstanceHistory: 'loadCalledProcesses'
+  },
 
   props:{
     selectedInstance: Object
   },
 
   created: function(){
-		ProcessService.findCurrentProcessesInstances({"superProcessInstance": this.selectedInstance.id}).then(response => {
+    if (this.activityInstanceHistory){
+      this.loadCalledProcesses()
+    }
+  },
+
+  methods: {
+    loadCalledProcesses: function(){
+      ProcessService.findCurrentProcessesInstances({"superProcessInstance": this.selectedInstance.id}).then(response => {
 			this.calledInstanceList = response
       let key = null
       this.matchedCalledList = this.calledInstanceList.map(processPL => {
-        key = processPL.definitionId.match(/^[^:]+/).at(0)
-        let foundInst = this.activityInstanceHistory.find(processAIH => {
+        key = processPL.definitionId.match(/^[^:]+/).at(0)                    
+        let foundInst = this.activityInstanceHistory.find(processAIH => {         //abfrage ob ActivityInstanceHistory schon geladen ist dann wtcher auf activityInstanceHistory dass der nochmal startet wenn vorhanden
 					if (processAIH.activityType === "callActivity"){
 						if (processAIH.calledProcessInstanceId === processPL.id){
 							return processAIH
@@ -95,15 +105,9 @@ export default {
 			})
       this.loading = false
     })
-  },
-
-  methods: {
-    openSubprocess: function(event) {
-      this.$router.push({ name: 'process', params: { processKey: event.key, versionIndex: event.version } })
-    },
-    openInstance: function(event) {
-      this.$router.push({ name: 'process', params: { processKey: event.key, versionIndex: event.version, instanceId: event.id } })
     }
-  }
+
+  
+}
 }
 </script>

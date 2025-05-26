@@ -41,10 +41,12 @@ export default {
                 this.selectedVariable = null
                 this.loadSelectedInstanceVariables()
             }
-        }
+        },
+        activityInstancesGrouped: 'loadSelectedInstanceVariables'
     },
     computed: {
         activityInstancesGrouped: function() {
+            if (this.activityInstanceHistory){
             var res = []
             if (this.activityInstance) {
                 res[this.activityInstance.id] = this.activityInstance.name
@@ -59,10 +61,11 @@ export default {
             }
             return res
         }
+    }
     },
     methods: {
         loadSelectedInstanceVariables: function() {
-            if (this.selectedInstance) {
+            if (this.selectedInstance && this.activityInstancesGrouped) {
                 if (this.selectedInstance.state === 'ACTIVE') {
                     this.fetchInstanceVariables('ProcessService', 'fetchProcessInstanceVariables')
                 } else {
