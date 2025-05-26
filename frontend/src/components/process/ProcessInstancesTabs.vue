@@ -32,10 +32,10 @@ export default {
   data: function () {
     return {
       tabs: [
-        { id: 'instances', active: true },
-        { id: 'jobDefinitions', active: false },
-        { id: 'incidents', active: false },
-        { id: 'calledProcessDefinitions', active: false },
+        { id: 'instances', active: true, text: 'process.instances' },
+        { id: 'jobDefinitions', active: false, text: 'process.jobDefinitions'  },
+        { id: 'incidents', active: false, text: 'process.incidents'  },
+        { id: 'calledProcessDefinitions', active: false, text: 'process.calledProcessDefinitions'  },
       ]
     }
   }

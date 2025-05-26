@@ -31,7 +31,7 @@
         'bg-light border border-bottom-0': !tab.active
       }"
     >
-      {{ $t('process.' + tab.id) }}
+      {{ $t(tab.text) }}
     </a>
   </li>
 </template>
