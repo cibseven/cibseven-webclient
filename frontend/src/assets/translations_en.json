@@ -178,7 +178,13 @@
 		"false": "False",				
 		"jobDefinitions": "Job definitions",
 		"jobs": "Jobs",
-		"calledProcessDefinitions": "Called process definitions"
+		"calledProcessDefinitions": "Called process definitions",
+		"jobLog": "Job log",
+		"userOperations": "User operations",
+		"externalTasksLog": "External tasks log",
+		"modify": "Modify",
+		"restart": "Restart",
+		"documentation": "Documentation"
 	},
 	"process-instance": {
 		"processInstanceId": "Processs Instance ID",
