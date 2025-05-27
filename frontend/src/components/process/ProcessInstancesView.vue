@@ -29,7 +29,8 @@
       <span role="button" size="sm" variant="light" class="border-bottom-0 bg-white rounded-top border py-1 px-2 me-1" @click="toggleContent">
         <span class="mdi mdi-18px" :class="toggleIcon"></span>
       </span>
-      <ProcessInstancesTabs @change-tab="changeTab($event)"></ProcessInstancesTabs>
+      <component :is="ProcessInstancesTabsPlugin" v-if="ProcessInstancesTabsPlugin" @change-tab="changeTab($event)"></component>
+      <ProcessInstancesTabs v-else @change-tab="changeTab($event)"></ProcessInstancesTabs>
     </ul>
 
     <div class="position-absolute w-100" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
@@ -90,7 +91,7 @@
           :process-id="process.id" @highlight-activity="highlightActivity" />
         <CalledProcessDefinitionsTable v-else-if="activeTab === 'calledProcessDefinitions' && !loading"
           :process="process" :instances="instances" :calledProcesses="calledProcesses" @changeTabToInstances="changeTab({ id: 'instances' })"/>
-        <component :is="ProcessInstancesTabsContentEE" v-if="ProcessInstancesTabsContentEE" :process="process" :active-tab="activeTab"></component>
+        <component :is="ProcessInstancesTabsContentPlugin" v-if="ProcessInstancesTabsContentPlugin" :process="process" :active-tab="activeTab"></component>
       </div>
     </div>
 
@@ -177,9 +178,14 @@ export default {
         ? this.$options.components.ProcessActions
         : null
     },
-    ProcessInstancesTabsContentEE: function() {
-      return this.$options.components && this.$options.components.ProcessInstancesTabsContentEE
-        ? this.$options.components.ProcessInstancesTabsContentEE
+    ProcessInstancesTabsContentPlugin: function() {
+      return this.$options.components && this.$options.components.ProcessInstancesTabsContentPlugin
+        ? this.$options.components.ProcessInstancesTabsContentPlugin
+        : null
+    },
+    ProcessInstancesTabsPlugin: function() {
+      return this.$options.components && this.$options.components.ProcessInstancesTabsPlugin
+        ? this.$options.components.ProcessInstancesTabsPlugin
         : null
     },
     processName: function() {
