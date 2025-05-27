@@ -1,4 +1,3 @@
-
 {
 	"commons": {
 		"edit": "Editar",
@@ -179,7 +178,13 @@
 		"false": "Falso",		
 		"jobDefinitions": "Definiciones de trabajos",
 		"jobs": "Trabajos",
-		"calledProcessDefinitions": "Llamada Definiciones de proceso"
+		"calledProcessDefinitions": "Llamada Definiciones de proceso",
+		"jobLog": "Registro de trabajos",
+		"userOperations": "Operaciones de usuario",
+		"externalTasksLog": "Registro de tareas externas",
+		"modify": "Modificar",
+		"restart": "Reiniciar",
+		"documentation": "Documentación"
 	},
 	"process-instance": {
 		"processInstanceId": "ID de la instancia del proceso",

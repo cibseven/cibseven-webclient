@@ -178,7 +178,13 @@
 		"false": "Ложь",
 		"jobDefinitions": "Определения заданий",
 		"jobs": "Задания",
-		"calledProcessDefinitions": "Вызываемые определения процессов"
+		"calledProcessDefinitions": "Вызываемые определения процессов",
+		"jobLog": "Журнал заданий",
+		"userOperations": "Операции пользователя",
+		"externalTasksLog": "Журнал внешних задач",
+		"modify": "Изменить",
+		"restart": "Перезапустить",
+		"documentation": "Документация"
 	},
 	"process-instance": {
 		"processInstanceId": "ID экземпляра процесса",

@@ -178,7 +178,13 @@
 		"false": "Falsch",
 		"jobDefinitions": "Job-Definitionen",
 		"jobs": "Jobs",
-		"calledProcessDefinitions": "Aufgerufene Prozessdefinitionen"
+		"calledProcessDefinitions": "Aufgerufene Prozessdefinitionen",
+		"jobLog": "Jobprotokoll",
+		"userOperations": "Benutzeraktionen",
+		"externalTasksLog": "Externe Aufgabenprotokolle",
+		"modify": "Modifizieren",
+		"restart": "Neustarten",
+		"documentation": "Dokumentation"
 	},
 	"process-instance": {
 		"processInstanceId": "Prozessinstanz Id",
@@ -982,7 +988,7 @@
 		"spain_demo4-configurar_vehiculo": "Konfigurieren Sie ein Fahrzeug, indem Sie Modell, Farbe und Zubehör auswählen. Ein Dokument mit den Details wird erstellt.",
 		"spain_demo5-certificado_empadronamiento": "Nach dem Ausfüllen eines Formulars wird eine Meldebescheinigung erstellt. Demo auf Spanisch.",
 		"spain_demo6-anonimizacion": "Dokumentenanonymisierung mit doXiview. Demo auf Spanisch.",
-		"spain_demo7-justicia_extracion_datos": "Data von juristischen Dokumenten extrahieren und anonymizieren. Demo auf Spanisch.",
+		"spain_demo7-justicia_extracion_datos": "Data von juristischen Dokumenten extrahieren und anonymisieren. Demo auf Spanisch.",
 		"spain_demo8-rellenar_expedientes": "Demo auf Spanisch\nSchritt 1: Formular ausfüllen.\nSchritt 2: CIBREC-Felder von erzeugten Dokument A editieren..\nSchritt 3: Das mit den Daten von Dokument A erzeugte Dokument B überprüfen.",
 		"spain_demo9-extract_invoice_data": "Dank der KI werden die Daten von einer Rechnung extrahiert. Demo auf Spanisch.",
 		"spain_demo10-clasificacion_documentos": "Dokumentklassifizierung.",
