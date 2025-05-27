@@ -99,8 +99,10 @@ export default {
   watch: {
     processKey: 'loadProcessFromRoute',
     versionIndex() {
+     if (this.process.key === this.processKey){
       const process = this.processDefinitions.find(processDefinition => processDefinition.version === this.versionIndex)
       this.loadProcessVersion(process)
+     }
     }
   },
   data: function() {
