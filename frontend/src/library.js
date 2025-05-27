@@ -32,7 +32,6 @@ import { HoverStyle } from '@/components/common-components/directives.js'
 import { InfoService, AuthService } from './services.js'
 import { i18n, switchLanguage } from './i18n'
 import { appRoutes,
-  updateRouterComponentByName,
   createAppRouter,
   authGuard,
   permissionsGuard,
@@ -355,7 +354,6 @@ export {
 
   // router
   appRoutes,
-  updateRouterComponentByName,
   createAppRouter,
   authGuard,
   permissionsGuard,

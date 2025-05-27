@@ -295,44 +295,6 @@ function combineGuards(...guards) {
 }
 
 /**
- * Recursively searches through the given routes array to find a route by its `name` property.
- * When the route with the matching name is found, its `component` property is replaced with the provided `newComponentValue`.
- * Returns a new routes array with the updated component, preserving the original structure.
- *
- * @param {Array} routes - The array of route objects to search through.
- * @param {string} targetName - The `name` property of the route to update.
- * @param {Object} newComponentValue - The new Vue component to assign to the matched route.
- * @returns {Array} The updated routes array.
- */
-function updateRouterComponentByName(routes, targetName, newComponentValue) {
-  if (routes === undefined || routes.length === 0) {
-    return routes
-  }
-  var updated = false
-  return routes.map(obj => {
-    if (updated) {
-      return obj
-    }
-    else if (obj.name === targetName) {
-      updated = true
-      return {
-        ...obj,
-        component: newComponentValue
-      }
-    }
-    else if (obj.children !== undefined) {
-      return {
-        ...obj,
-        children: updateRouterComponentByName(obj.children, targetName, newComponentValue)
-      }
-    }
-    else {
-      return obj
-    }
-  })
-}
-
-/**
  * Creates and configures the main Vue Router instance for the application.
  * Sets up hash-based navigation, active link class, and assigns the provided routes.
  * Also adds a `setRoot` method to the router instance for storing a reference to the root Vue component.
@@ -362,7 +324,6 @@ function createAppRouter(routes) {
 export {
   appRoutes,
 
-  updateRouterComponentByName,
   createAppRouter,
 
   authGuard,
