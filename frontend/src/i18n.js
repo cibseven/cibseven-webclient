@@ -38,6 +38,10 @@ import de from '@/assets/translations_de.json'
 import es from '@/assets/translations_es.json'
 import ru from '@/assets/translations_ru.json'
 
+import 'moment/dist/locale/de'
+import 'moment/dist/locale/es'
+import 'moment/dist/locale/ru'
+
 export const languages = {
   en: en,
   de: de,
