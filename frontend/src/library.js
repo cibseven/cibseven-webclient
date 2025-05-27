@@ -138,6 +138,7 @@ import DmnViewer from '@/components/decision/DmnViewer.vue'
 import TemplateBase from '@/components/forms/TemplateBase.vue'
 import StartView from '@/components/start/StartView.vue'
 import LoginView from '@/components/login/LoginView.vue'
+import GenericTabs from '@/components/common-components/GenericTabs.vue'
 
 const registerComponents = function(app) {
   app.component('cib-seven', CibSeven)
@@ -369,5 +370,6 @@ export {
   handleAxiosError,
   fetchAndStoreProcesses,
   fetchDecisionsIfEmpty,
-  setupTaskNotifications
+  setupTaskNotifications,
+  GenericTabs
 }
