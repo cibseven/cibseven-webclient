@@ -38,7 +38,7 @@ import jakarta.servlet.http.HttpServletRequest;
 	@ApiResponse(responseCode= "500", description = "An unexpected system error occured"),
 	@ApiResponse(responseCode= "401", description = "Unauthorized")
 })
-@RestController @RequestMapping("${services.basePath:/services/v1}" + "/job-definition")
+@RestController @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/job-definition")
 public class JobDefinitionService extends BaseService implements InitializingBean {
 
 	@Autowired BpmProvider bpmProvider;

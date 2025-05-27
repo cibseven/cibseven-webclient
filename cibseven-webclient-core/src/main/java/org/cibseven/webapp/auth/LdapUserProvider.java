@@ -60,20 +60,20 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class LdapUserProvider extends BaseUserProvider<StandardLogin> implements InitializingBean {
 	
-	@Value("${ldap.url:}") String serverURL;
-	@Value("${ldap.user:}") String ldapUser;
-	@Value("${ldap.password:}") String ldapPassword;
-	@Value("${ldap.folder:}") String ldapFolder;
-	@Value("${ldap.userNameAttribute:}") String ldapNameAttribute;
-	@Value("${ldap.userDisplayNameAttribute:}") String ldapDisplayNameAttribute;
-	@Value("#{'${ldap.attributes.filters:samAccountName;name}'.split(';\\s*')}") List<String> ldapAttributesFilters;
-	@Value("${ldap.modifiedDateFormat:}") String ldapModifiedDateFormat;
-	@Value("${ldap.countLimit:400}") int ldapCountLimit;
-	@Value("${ldap.followReferrals:}") String ldapFollowReferrals;
+	@Value("${cibseven.webclient.ldap.url:}") String serverURL;
+	@Value("${cibseven.webclient.ldap.user:}") String ldapUser;
+	@Value("${cibseven.webclient.ldap.password:}") String ldapPassword;
+	@Value("${cibseven.webclient.ldap.folder:}") String ldapFolder;
+	@Value("${cibseven.webclient.ldap.userNameAttribute:}") String ldapNameAttribute;
+	@Value("${cibseven.webclient.ldap.userDisplayNameAttribute:}") String ldapDisplayNameAttribute;
+	@Value("#{'${cibseven.webclient.ldap.attributes.filters:samAccountName;name}'.split(';\\s*')}") List<String> ldapAttributesFilters;
+	@Value("${cibseven.webclient.ldap.modifiedDateFormat:}") String ldapModifiedDateFormat;
+	@Value("${cibseven.webclient.ldap.countLimit:400}") int ldapCountLimit;
+	@Value("${cibseven.webclient.ldap.followReferrals:}") String ldapFollowReferrals;
 	
-	@Value("${authentication.jwtSecret:sekret}") String secret;	
-	@Value("${authentication.tokenValidMinutes:60}") long validMinutes;	
-	@Value("${authentication.tokenProlongMinutes:1440}") long prolongMinutes;
+	@Value("${cibseven.webclient.authentication.jwtSecret:}") String secret;
+	@Value("${cibseven.webclient.authentication.tokenValidMinutes:60}") long validMinutes;
+	@Value("${cibseven.webclient.authentication.tokenProlongMinutes:1440}") long prolongMinutes;
 		
 	public void afterPropertiesSet() {
 		settings = new JwtTokenSettings(secret, validMinutes, prolongMinutes);		

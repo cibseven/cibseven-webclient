@@ -39,6 +39,8 @@ import org.cibseven.webapp.providers.TaskProvider;
 import org.cibseven.webapp.providers.UserProvider;
 import org.cibseven.webapp.providers.UtilsProvider;
 import org.cibseven.webapp.providers.VariableProvider;
+import org.cibseven.webapp.providers.TenantProvider;
+
 import org.cibseven.webapp.rest.model.Analytics;
 import org.cibseven.webapp.rest.model.AnalyticsInfo;
 import org.junit.jupiter.api.Test;
@@ -49,7 +51,7 @@ import org.springframework.test.context.ContextConfiguration;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@SpringBootTest(properties = {"camunda.engineRest.url=http://192.168.96.236:8080"})
+@SpringBootTest(properties = {"cibseven.webclient.engineRest.url=http://localhost:8080"})
 @ContextConfiguration(classes = {
     AnalyticsService.class,
     SevenProvider.class,
@@ -68,6 +70,7 @@ import lombok.extern.slf4j.Slf4j;
     BatchProvider.class,
     SystemProvider.class,
     SevenUserProvider.class,
+    TenantProvider.class,
     })
 public class AnalyticsServiceIT {
   

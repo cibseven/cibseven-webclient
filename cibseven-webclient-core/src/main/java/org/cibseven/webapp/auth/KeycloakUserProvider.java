@@ -66,16 +66,16 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
 	
-	@Value("${sso.endpoints.token}") String tokenEndpoint;
-	@Value("${sso.endpoints.jwks}") String certEndpoint;
-	@Value("${sso.endpoints.user}") String userEndpoint;
-	@Value("${sso.clientId}") String clientId;
-	@Value("${sso.clientSecret}") String clientSecret;
-	@Value("${sso.userIdProperty}") String userIdProperty;
-	@Value("${sso.userNameProperty}") String userNameProperty;
-	@Value("${authentication.jwtSecret}") String secret;
-	@Value("${authentication.tokenValidMinutes}") long validMinutes;
-	@Value("${authentication.tokenProlongMinutes}") long prolongMinutes;
+	@Value("${cibseven.webclient.sso.endpoints.token}") String tokenEndpoint;
+	@Value("${cibseven.webclient.sso.endpoints.jwks}") String certEndpoint;
+	@Value("${cibseven.webclient.sso.endpoints.user}") String userEndpoint;
+	@Value("${cibseven.webclient.sso.clientId}") String clientId;
+	@Value("${cibseven.webclient.sso.clientSecret}") String clientSecret;
+	@Value("${cibseven.webclient.sso.userIdProperty}") String userIdProperty;
+	@Value("${cibseven.webclient.sso.userNameProperty}") String userNameProperty;
+	@Value("${cibseven.webclient.authentication.jwtSecret}") String secret;
+	@Value("${cibseven.webclient.authentication.tokenValidMinutes}") long validMinutes;
+	@Value("${cibseven.webclient.authentication.tokenProlongMinutes}") long prolongMinutes;
 	
 	@Getter private SsoHelper ssoHelper;
 	@Getter private JwtTokenSettings settings;

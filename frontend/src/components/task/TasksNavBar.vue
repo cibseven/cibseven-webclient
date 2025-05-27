@@ -166,16 +166,16 @@
         </div>
         <BWaitingBox v-show="tasksFiltered.length < 1" ref="taskLoader" class="d-flex justify-content-center pt-4" styling="width:30%">
           <div v-if="tasksFiltered.length < 1 && $store.state.filter.selected.name === 'default'">
-            <img :alt="$t('nav-bar.no-tasks-pending')" src="/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mt-3 mb-2" style="width: 200px">
+            <img :alt="$t('nav-bar.no-tasks-pending')" src="@/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mt-3 mb-2" style="width: 200px">
             <div class="h5 text-secondary text-center">{{ $t('nav-bar.no-tasks-pending') }}</div>
           </div>
           <div v-if="tasksFiltered.length < 1 && $store.state.filter.selected.name !== 'default'">
-            <img :alt="$t('nav-bar.no-tasks')" src="/assets/images/task/no_tasks.svg" class="d-block mx-auto mt-3 mb-2" style="width: 200px">
+            <img :alt="$t('nav-bar.no-tasks')" src="@/assets/images/task/no_tasks.svg" class="d-block mx-auto mt-3 mb-2" style="width: 200px">
             <div class="h5 text-secondary text-center">{{ $t('nav-bar.no-tasks') }}</div>
           </div>
         </BWaitingBox>
       </div>
-      <StartProcess ref="startProcess" @display-popover="$emit('display-popover', $event)"
+      <StartProcess ref="startProcess"
         @process-started="$emit('process-started', $event)"></StartProcess>
       <AdvancedSearchModal v-if="$root.config.taskFilter.advancedSearch.modalEnabled" ref="advancedSearchModal" @refresh-tasks="$emit('refresh-tasks')"></AdvancedSearchModal>
     </div>
@@ -199,7 +199,7 @@ export default {
   name: 'TasksNavBar',
   components: { StartProcess, AdvancedSearchModal, SmartSearch, ConfirmDialog, BWaitingBox },
   props: { tasks: Array, taskResultsIndex: Number },
-  inject: ['currentLanguage'],
+  inject: ['currentLanguage','isMobile'],
   data: function () {
     return {
       currentSorting: {},
@@ -362,13 +362,13 @@ export default {
       if (!task.due) classes.push('text-muted')
       else if (moment(task.due).isBefore(moment())) classes.push('text-danger')
       else if (moment().add(this.$root.config.warnOnDueExpirationIn, 'hours').isAfter(moment(task.due))) classes.push('text-warning')
-      if (task !== this.focused && task.id !== this.selectedDateT.id && !task.due) classes.push('invisible')
+      if (!this.isMobile() && task !== this.focused && task.id !== this.selectedDateT.id && !task.due) classes.push('invisible')
       return classes
     },
     getReminderClasses: function(task) {
       var classes = []
       if (!task.followUp) classes.push('text-muted')
-      if (task !== this.focused && task.id !== this.selectedDateT.id && !task.followUp) classes.push('invisible')
+      if (!this.isMobile() && task !== this.focused && task.id !== this.selectedDateT.id && !task.followUp) classes.push('invisible')
       return classes
     },
     claim: function(task) {

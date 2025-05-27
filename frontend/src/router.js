@@ -29,6 +29,8 @@ import ProcessListView from '@/components/processes/list/ProcessListView.vue'
 import ProcessesDashboardView from '@/components/processes/dashboard/ProcessesDashboardView.vue'
 import DecisionView from '@/components/decision/DecisionView.vue'
 import DecisionListView from '@/components/decisions/list/DecisionListView.vue'
+import DecisionInstance from '@/components/decision/DecisionInstance.vue'
+import DecisionDefinitionVersion from '@/components/decision/DecisionDefinitionVersion.vue'
 import UsersManagement from '@/components/admin/UsersManagement.vue'
 import AdminUsers from '@/components/admin/AdminUsers.vue'
 import CreateUser from '@/components/admin/CreateUser.vue'
@@ -54,10 +56,7 @@ import SystemView from '@/components/system/SystemView.vue'
 import SystemDiagnostics from '@/components/system/SystemDiagnostics.vue'
 import ExecutionMetrics from '@/components/system/ExecutionMetrics.vue'
 
-const router = createRouter({
-  history: createWebHashHistory(),
-  linkActiveClass: 'active',
-  routes: [
+const publicRoutes = [
     { path: '/', redirect: '/seven/auth/start' },
     { path: '/seven', component: CibSeven, children: [
       { path: 'login', name: 'login', beforeEnter: function(to, from, next) {
@@ -140,13 +139,13 @@ const router = createRouter({
             {
               path: ':versionIndex',
               name: 'decision-version',
-              component: () => import('@/components/decision/DecisionDefinitionVersion.vue'),
+              component: DecisionDefinitionVersion,
               props: true
             },
             {
               path: ':versionIndex/:instanceId',
               name: 'decision-instance',
-              component: () => import('@/components/decision/DecisionInstance.vue'),
+              component: DecisionInstance,
               props: true
             }
           ]
@@ -207,7 +206,12 @@ const router = createRouter({
       props: true,
       component: StartDeployedForm
     },
-  ]
+  ];
+
+const router = createRouter({
+    history: createWebHashHistory(),
+    linkActiveClass: 'active',
+    routes: publicRoutes
 })
 
 function authGuard(strict) {
@@ -298,4 +302,4 @@ router.setRoot = function(value) {
   this.root = value
 }
 
-export default router
+export { router, publicRoutes }

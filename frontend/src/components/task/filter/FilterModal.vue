@@ -17,7 +17,7 @@
 
 -->
 <template>
-  <b-modal size="lg" scrollable ref="filterHandler" :title="$t(dialogTitle)" @shown="$emit('display-popover', false)" @hidden="$emit('display-popover', true)">
+  <b-modal size="lg" scrollable ref="filterHandler" :title="$t(dialogTitle)">
     <div class="row">
       <div class="col-md-8">
         <b-form-group label-size="sm" :label-cols="4" :label="$t('nav-bar.filters.filterNameLabel')" :invalid-feedback="$t('nav-bar.filters.filterExists')">
@@ -91,7 +91,7 @@
         </template>
       </FlowTable>
       <div v-if="criteriasToAdd.length < 1">
-        <img src="/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mb-3" style="width: 200px">
+        <img src="@/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mb-3" style="width: 200px">
         <div class="h5 text-secondary text-center">{{ $t('nav-bar.filters.noCriterias') }}</div>
         <hr>
       </div>
@@ -129,7 +129,6 @@ export default {
     'filter-alert',
     'set-filter',
     'filter-updated',
-    'display-popover',
     'select-filter'
   ],
   data: function () {

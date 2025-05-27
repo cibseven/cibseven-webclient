@@ -30,18 +30,15 @@ import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 
 import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.providers.ActivityProvider;
 import org.cibseven.webapp.rest.model.ActivityInstance;
 import org.cibseven.webapp.rest.model.ActivityInstanceHistory;
 import org.cibseven.webapp.rest.model.TransitionInstance;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 
 @SpringBootTest
 @ContextConfiguration(classes = {ActivityProvider.class})
-public class ActivityProviderIT {
+public class ActivityProviderIT extends BaseHelper {
 
     static {
         System.setProperty("spring.banner.location", "classpath:fca-banner.txt");
@@ -59,26 +56,20 @@ public class ActivityProviderIT {
 
         // Configure the base URL for the ActivityProvider to point to the MockWebServer
         String mockBaseUrl = mockWebServer.url("/").toString();
-        ReflectionTestUtils.setField(activityProvider, "camundaUrl", mockBaseUrl);
+        ReflectionTestUtils.setField(activityProvider, "cibsevenUrl", mockBaseUrl);
     }
     
     @AfterEach
     void tearDown() throws Exception {
     	// Shutdown the MockWebServer after each test
         mockWebServer.shutdown();
-    }    
-
-    // Utility method to load mock responses from JSON files
-    private String loadMockResponse(String filePath) throws Exception {
-        return new String(Files.readAllBytes(Paths.get(getClass().getClassLoader().getResource(filePath).toURI())));
     }
-    
+
     @Test
     void testFindActivityInstance() throws Exception {
     	// Arrange: Prepare inputs and configure the MockWebServer
         String processInstanceId = "12345";
-        CIBUser user = new CIBUser();
-        user.setAuthToken("Bearer token");
+        CIBUser user = getCibUser();
 
         // Load the mock response from a file
         String mockResponseBody = loadMockResponse("mocks/activity_instance_mock.json");
@@ -137,8 +128,7 @@ public class ActivityProviderIT {
     void testFindActivitiesInstancesHistory() throws Exception {
         // Arrange
         String processInstanceId = "12345";
-        CIBUser user = new CIBUser();
-        user.setAuthToken("Bearer token");
+        CIBUser user = getCibUser();
 
         // Load the mock response from a file
         String mockResponseBody = loadMockResponse("mocks/activity_instances_history_mock.json");
@@ -178,8 +168,7 @@ public class ActivityProviderIT {
         // Arrange
         String executionId = "execution-123";
         String variableName = "variable-1";
-        CIBUser user = new CIBUser();
-        user.setAuthToken("Bearer token");
+        CIBUser user = getCibUser();
 
         // Enqueue a mock response for the MockWebServer
         mockWebServer.enqueue(new MockResponse().setResponseCode(204));
@@ -197,8 +186,7 @@ public class ActivityProviderIT {
     void testDeleteVariableHistoryInstance() throws Exception {
         // Arrange
         String variableId = "variable-history-123";
-        CIBUser user = new CIBUser();
-        user.setAuthToken("Bearer token");
+        CIBUser user = getCibUser();
 
         // Enqueue a mock response for the MockWebServer
         mockWebServer.enqueue(new MockResponse().setResponseCode(204));

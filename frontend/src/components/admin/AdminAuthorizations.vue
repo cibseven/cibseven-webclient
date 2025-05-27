@@ -29,7 +29,7 @@
           <component v-if="$route.params.resourceTypeId !== undefined" :is="Component" class="h-100" style="overflow-y: auto" />
           <div v-else>
             <div class="text-center text-secondary">
-              <img src="/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mt-5 mb-3" style="width: 200px">
+              <img src="@/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mt-5 mb-3" style="width: 200px">
               <h5>{{ $t('admin.authorizations.noAuthSelected') }}</h5>
             </div>
           </div>

@@ -21,7 +21,6 @@ import java.util.Optional;
 
 import org.cibseven.webapp.auth.providers.JwtUserProvider;
 import org.cibseven.webapp.auth.rest.StandardLogin;
-import org.springframework.beans.factory.annotation.Value;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -38,9 +37,6 @@ public abstract class BaseUserProvider<R extends StandardLogin> implements JwtUs
 	public abstract Collection<CIBUser> getUsers(@NotNull User user, Optional<String> filter);
 	public abstract Object authenticateUser(HttpServletRequest request);
 	
-	@Value("${user.anon.id:}")
-	String anonUserId;
-
 	@Getter
 	protected JwtTokenSettings settings;
 	

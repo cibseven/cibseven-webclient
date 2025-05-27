@@ -56,7 +56,7 @@
           <div v-else-if="table.item.incidents > 0">
             <span :title="$t('process.instanceIncidents')" class="mdi mdi-18px mdi-alert-outline text-warning"></span><span>{{ table.item.incidents }}</span>
           </div>
-          <span :title="$t('process.instanceFinished')" v-else class="mdi mdi-18px mdi-check-circle-outline text-success"></span>
+          <span :title="$t('process.instanceWithoutIncidents')" v-else class="mdi mdi-18px mdi-check-circle-outline text-success"></span>
         </template>
         <template v-slot:cell(runningInstances)="table">
           <span v-if="loadingInstances"><b-spinner small></b-spinner></span>
@@ -85,7 +85,7 @@
         </template>
       </FlowTable>
       <div v-if="!processesFiltered.length">
-        <img :alt="$t(textEmptyProcessesList)" src="/assets/images/process/empty_processes_list.svg" class="d-block mx-auto mt-5 mb-3" style="max-width: 250px">
+        <img :alt="$t(textEmptyProcessesList)" src="@/assets/images/process/empty_processes_list.svg" class="d-block mx-auto mt-5 mb-3" style="max-width: 250px">
         <div class="h5 text-secondary text-center">{{ $t(textEmptyProcessesList) }}</div>
       </div>
     </div>

@@ -18,8 +18,6 @@ package org.cibseven.webapp.providers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Optional;
 
@@ -31,7 +29,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.providers.UserProvider;
 import org.cibseven.webapp.rest.model.SevenUser;
 import org.cibseven.webapp.rest.model.SevenVerifyUser;
 import org.cibseven.webapp.rest.model.User;
@@ -41,7 +38,7 @@ import okhttp3.mockwebserver.MockWebServer;
 
 @SpringBootTest
 @ContextConfiguration(classes = {UserProvider.class})
-public class UserProviderIT {
+public class UserProviderIT extends BaseHelper {
 
     static {
         System.setProperty("spring.banner.location", "classpath:fca-banner.txt");
@@ -58,7 +55,7 @@ public class UserProviderIT {
         mockWebServer.start();
 
         String mockBaseUrl = mockWebServer.url("/").toString();
-        ReflectionTestUtils.setField(userProvider, "camundaUrl", mockBaseUrl);
+        ReflectionTestUtils.setField(userProvider, "cibsevenUrl", mockBaseUrl);
     }
 
     @AfterEach
@@ -66,15 +63,10 @@ public class UserProviderIT {
         mockWebServer.shutdown();
     }
 
-    private String loadMockResponse(String filePath) throws Exception {
-        return new String(Files.readAllBytes(Paths.get(getClass().getClassLoader().getResource(filePath).toURI())));
-    }
-    
     @Test
     void testFetchUsers() throws Exception {
         // Arrange
-        CIBUser user = new CIBUser();
-        user.setAuthToken("Bearer token");
+        CIBUser user = getCibUser();
 
         String mockResponseBody = loadMockResponse("mocks/users_mock.json");
 
@@ -97,8 +89,7 @@ public class UserProviderIT {
     @Test
     void testFindUsers() throws Exception {
         // Arrange
-        CIBUser user = new CIBUser();
-        user.setAuthToken("Bearer token");
+        CIBUser user = getCibUser();
 
         String mockResponseBody = loadMockResponse("mocks/users_mock.json");
 
@@ -139,8 +130,8 @@ public class UserProviderIT {
         // Arrange
         String username = "john";
         String password = "password123";
-        CIBUser cibUser = new CIBUser();
-        cibUser.setAuthToken("Bearer token");
+        CIBUser user = getCibUser();
+
         String mockResponseBody = loadMockResponse("mocks/verify_user_mock.json");
 
         mockWebServer.enqueue(new MockResponse()
@@ -148,7 +139,7 @@ public class UserProviderIT {
                 .addHeader("Content-Type", "application/json"));
 
         // Act
-        SevenVerifyUser result = userProvider.verifyUser(username, password, cibUser);
+        SevenVerifyUser result = userProvider.verifyUser(username, password, user);
 
         // Assert
         assertThat(result).isNotNull();

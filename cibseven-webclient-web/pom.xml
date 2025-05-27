@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.cibseven.webapp</groupId>
 		<artifactId>cibseven-webclient</artifactId>
-		<version>1.0.0-SNAPSHOT</version>
+		<version>2.1.0-SNAPSHOT</version>
 	</parent>
 	<artifactId>cibseven-webclient-web</artifactId>
 	<packaging>war</packaging>
@@ -28,7 +28,14 @@
 		<dependency>
 		    <groupId>org.springframework.boot</groupId>
 		    <artifactId>spring-boot-starter-validation</artifactId>
-		</dependency>		
+		</dependency>	
+		
+		<dependency>
+    		<groupId>jakarta.servlet</groupId>
+    		<artifactId>jakarta.servlet-api</artifactId>
+    		<scope>provided</scope>
+		</dependency>
+		
 	</dependencies>
 
 	<build>
@@ -48,6 +55,23 @@
 		</resources>
 			
 		<plugins>
+			<plugin>
+	          <groupId>org.apache.maven.plugins</groupId>
+	          <artifactId>maven-jar-plugin</artifactId>
+	          <executions>
+	            <execution>
+	              <id>create-jar</id>
+	              <goals>
+	                <goal>jar</goal>
+	              </goals>
+	              <phase>package</phase>
+	              <configuration>
+	                <classifier>classes</classifier>
+	              </configuration>
+	            </execution>
+	          </executions>
+	        </plugin>
+		    
 			<!-- Index.html contain projectVersion variable which needs to be
 			replace by the current version of the project -->
 			<plugin>
@@ -98,6 +122,27 @@
 			                </resources>
 			            </configuration>
 			        </execution>
+					<execution>
+						<id>copy-cibseven-webclient-npm-resources</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/classes/public</outputDirectory>
+							<overwrite>true</overwrite>
+							<resources>
+								<resource>
+									<directory>
+										${project.parent.basedir}/frontend/dist</directory>
+									<includes>
+										<include>**/*</include>
+									</includes>
+									<targetPath>.</targetPath>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 			
@@ -147,7 +192,29 @@
 						<appRoot>/opt/bitnami/tomcat/webapps/seven</appRoot>
 					</container>
 				</configuration>
-			</plugin>				
+			</plugin>
+			<plugin>
+    			<groupId>org.apache.maven.plugins</groupId>
+        		<artifactId>maven-assembly-plugin</artifactId>
+        		<executions>
+          			<execution>
+            			<id>wildfly</id>
+            			<phase>package</phase>
+            			<goals>
+              				<goal>single</goal>
+            			</goals>
+            			<configuration>
+              				<descriptors>
+	                			<descriptor>assembly-war-wildfly.xml</descriptor>
+    	          			</descriptors>
+    	          			<classifier>wildfly</classifier>
+            	  			<attach>true</attach>
+              				<outputDirectory>target/</outputDirectory>
+            			</configuration>
+          			</execution>
+    			</executions>
+			</plugin>
 		</plugins>
+		
 	</build>
 </project>

@@ -118,7 +118,7 @@ public class BatchProvider extends SevenProviderBase implements IBatchProvider {
     }
 	
     private String buildUrlWithParams(String path, Map<String, Object> queryParams) {
-	    UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(camundaUrl + "/engine-rest" + path);
+	    UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(cibsevenUrl + "/engine-rest" + path);
 	    queryParams.forEach((key, value) -> {
 	        if (value != null) {
 	            builder.queryParam(key, value);

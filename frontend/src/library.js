@@ -20,6 +20,7 @@ import './assets/main.css';
 import { axios } from '@/globals.js'
 import appConfig from '@/appConfig.js'
 import { permissionsMixin } from '@/permissions.js'
+import registerOwnComponents from './register.js'
 import processesVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
 import processesMixin from '@/components/process/mixins/processesMixin.js'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
@@ -28,6 +29,11 @@ import usersMixin from '@/mixins/usersMixin.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { debounce } from '@/utils/debounce.js'
 import { HoverStyle } from '@/components/common-components/directives.js'
+import { InfoService, AuthService } from './services.js'
+import { i18n, switchLanguage } from './i18n'
+import { router, publicRoutes } from './router.js'
+import { updateAppTitle, checkExternalReturn, isMobile, hasHeader, getTheme } from './utils/init.js'
+import { applyTheme, handleAxiosError, fetchAndStoreProcesses, fetchDecisionsIfEmpty, setupTaskNotifications } from './utils/init'
 import CibSeven from '@/components/CibSeven.vue'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import ContentBlock from '@/components/common-components/ContentBlock.vue'
@@ -104,6 +110,7 @@ import HumanTasksView from '@/components/task/HumanTasksView.vue'
 import DecisionView from '@/components/decision/DecisionView.vue'
 import DecisionList from '@/components/decisions/list/DecisionList.vue'
 import DecisionListView from '@/components/decisions/list/DecisionListView.vue'
+import DecisionInstance from './components/decision/DecisionInstance.vue';
 import DecisionDefinitionVersion from '@/components/decision/DecisionDefinitionVersion.vue'
 import TenantsView from '@/components/tenants/TenantsView.vue'
 import EditTenant from './components/tenants/EditTenant.vue';
@@ -120,7 +127,12 @@ import ShortcutsTable from '@/components/modals/ShortcutsTable.vue'
 import { TaskService, HistoryService, ProcessService } from '@/services.js';
 import DeployedForm from '@/components/forms/DeployedForm.vue'
 import StartDeployedForm from '@/components/forms/StartDeployedForm.vue'
-
+import DecisionDefinitionDetails from '@/components/decision/DecisionDefinitionDetails.vue'
+import DecisionVersionListSidebar from '@/components/decision/DecisionVersionListSidebar.vue'
+import DmnViewer from '@/components/decision/DmnViewer.vue'
+import TemplateBase from '@/components/forms/TemplateBase.vue'
+import StartView from '@/components/start/StartView.vue'
+import LoginView from '@/components/login/LoginView.vue'
 
 const registerComponents = function(app) {
   app.component('cib-seven', CibSeven)
@@ -201,14 +213,18 @@ const registerComponents = function(app) {
   app.component('decision-view', DecisionView)
   app.component('decision-list', DecisionList)
   app.component('decision-list-view', DecisionListView)
-  app.component('decision-', DecisionDefinitionVersion)
   app.component('tenants-view', TenantsView)
   app.component('edit-tenant', EditTenant)
   app.component('create-tenant', CreateTenant)
   app.component('batches-view', BatchesView)
   app.component('system-view', SystemView)
   app.component('deployed-form', DeployedForm)
-  app.component('start-deployed-form', StartDeployedForm)
+  app.component('decision-definition-details', DecisionDefinitionDetails)
+  app.component('decision-version-list-sidebar', DecisionVersionListSidebar)
+  app.component('dmn-viewer', DmnViewer)
+  app.component('template-base', TemplateBase)
+  app.component('start-view', StartView)
+  app.component('login-view', LoginView)
 }
 
 export {
@@ -221,6 +237,7 @@ export {
   axios,
   appConfig,
   permissionsMixin,
+  registerOwnComponents,
   store,
   usersMixin,
   processesVariablesMixin,
@@ -309,6 +326,7 @@ export {
   DecisionView,
   DecisionList,
   DecisionListView,
+  DecisionInstance,
   DecisionDefinitionVersion,
   StartDeployedForm,
   DeployedForm,
@@ -316,5 +334,28 @@ export {
   ExecutionMetrics,
   RuntimeBatches,
   HistoricBatches,
-  BatchDetails
+  BatchDetails,
+  DecisionDefinitionDetails,
+  DecisionVersionListSidebar,
+  DmnViewer,
+  AboutModal,
+  TemplateBase,
+  StartView,
+  LoginView,
+  InfoService,
+  AuthService,
+  i18n,
+  switchLanguage,
+  publicRoutes,
+  router,
+  updateAppTitle,
+  checkExternalReturn,
+  isMobile,
+  hasHeader,
+  getTheme,
+  applyTheme,
+  handleAxiosError,
+  fetchAndStoreProcesses,
+  fetchDecisionsIfEmpty,
+  setupTaskNotifications
 }

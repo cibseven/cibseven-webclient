@@ -80,6 +80,7 @@ public interface BpmProvider {
 	/**
      * Search tasks, which contains specified filter.
      * @param filter applied in the search
+     * @param user the user performing the search
      * @return Collection tasks fetched in the search.
      * @throws SystemException in case of an error.
      */
@@ -88,6 +89,7 @@ public interface BpmProvider {
 	/**
      * Search tasks which belongs to a specific process instance.
      * @param processInstanceId filter by process instance id.
+     * @param user the user performing the search
      * @return Fetched tasks.
      * @throws SystemException in case of an error.
      */	
@@ -97,6 +99,7 @@ public interface BpmProvider {
      * Search tasks which belongs to a specific process instance and a user.
      * @param processInstanceId filter by process instance id.
      * @param createdAfter filter by creation date.
+     * @param user the user performing the search
      * @return Fetched tasks.
      * @throws SystemException in case of an error.
      */	
@@ -107,6 +110,7 @@ public interface BpmProvider {
 	 * The tasks found belongs to the history, they have other attributes and finished tasks
 	 * are also fetched.
 	 * @param processInstanceId filter by process instance id.
+	 * @param user the user performing the search
 	 * @return Fetched tasks.
      * @throws SystemException in case of an error.
 	 */
@@ -118,6 +122,7 @@ public interface BpmProvider {
 	 * are also fetched.
 	 * @param processInstanceId filter by process instance id.
 	 * @param taskDefinitionKey restrict to tasks that have the given key.
+	 * @param user the user performing the search
 	 * @return Fetched tasks.
      * @throws SystemException in case of an error.
 	 */
@@ -126,6 +131,7 @@ public interface BpmProvider {
 	/**
      * Search task with a specific Id.
      * @param taskId filter by task id.
+     * @param user the user performing the search
      * @return Fetched task.
      * @throws NoObjectFoundException when the task searched for could not be found.
      * @throws SystemException in case of any other error.
@@ -135,6 +141,7 @@ public interface BpmProvider {
 	/**
      * Search activity that belong to a process instance.
      * @param processInstanceId filter by process instance id.
+     * @param user the user performing the search
      * @return Fetched activity.
      * @throws NoObjectFoundException when the searched process instance could not be found.
      * @throws SystemException in case of any other error.
@@ -143,18 +150,20 @@ public interface BpmProvider {
 	
 	/**
      * Queries for historic activity instances that fulfill the given parameters.
-	 * The activities found belongs to the history.
-     * @param Filter
-     * @return Fetched Historic Activity Instance.
+	 * The activities found belong to the history.
+     * @param queryParams a map of parameters to filter the query.
+     * @param user the user performing the query.
+     * @return Fetched Historic Activity Instances.
      * @throws InvalidAttributeValueException when the tenant of a task could not be changed or when the delegation state of a task should be changed to an invalid value.
      * @throws SystemException in case of any other error.
      */	
-	Collection<ActivityInstanceHistory> findActivitiesInstancesHistory(Map<String, Object> queryParams, CIBUser user);
+	Collection<ActivityInstanceHistory> findActivitiesInstancesHistory(Map<String, Object> queryParams, CIBUser user) throws SystemException, InvalidAttributeValueException;
 
 	/**
      * Search activities instances that belong to a process instance. The activities found belongs
      * to the history, they have other attributes and activities from finished processes are also fetched.
      * @param processInstanceId filter by process instance id.
+     * @param user the user performing the search
      * @return Fetched Activity Instance.
      * @throws InvalidAttributeValueException when the tenant of a task could not be changed or when the delegation state of a task should be changed to an invalid value.
      * @throws SystemException in case of any other error.
@@ -166,6 +175,7 @@ public interface BpmProvider {
 	 * The variables found belongs to the history, they have other attributes 
 	 * and variables from finished activities are also fetched.
      * @param activityInstanceId filter by activity instance id.
+     * @param user the user performing the search
      * @return Fetched variables.
      * @throws SystemException in case of an error.
      */
@@ -174,6 +184,7 @@ public interface BpmProvider {
 	/**
 	 * Fetch variables from a specific activity.
      * @param activityInstanceId filter by activity instance id.
+     * @param user the user performing the search
      * @return Fetched variables.
      * @throws SystemException in case of an error.
      */
@@ -182,6 +193,7 @@ public interface BpmProvider {
 	/**
      * Update task.
      * @param task to be updated with the desired values already modified.
+     * @param user the user performing the update
      * @throws SystemException in case of an error.
      */
 	void update(Task task, CIBUser user) throws SystemException;
@@ -190,12 +202,15 @@ public interface BpmProvider {
      * Set assignee to an specific task.
      * @param taskId filter by task id.
      * @param assignee to be set as assignee.
+     * @param user the user performing the update
      * @throws SystemException in case of an error.
      */	
 	void setAssignee(String taskId, String assignee, CIBUser user) throws SystemException;
 
 	/**
 	 * Submit task without saving any variables, because that is done by the ui-element-template (in ours).
+     * @param taskId the ID of the task to be submitted.
+     * @param user the user performing the submission.
      * @throws SubmitDeniedException when trying to submit a non-existing task.
      * @throws SystemException in case of any other error.
 	 */
@@ -204,6 +219,7 @@ public interface BpmProvider {
 	/**
 	 * Fetch form-reference variable from task.
 	 * @param taskId filter by task id.
+	 * @param user the user performing the search
 	 * @return form-reference
      * @throws NoObjectFoundException when the searched task could not be found.
      * @throws SystemException in case of any other error.
@@ -212,6 +228,7 @@ public interface BpmProvider {
 	
 	/**
 	 * Search processes.
+     * @param user the user performing the search
      * @return Fetched processes.
      * @throws InvalidAttributeValueException when searching for processes with at least one invalid parameter value.
      * @throws SystemException in case of any other error.
@@ -220,6 +237,7 @@ public interface BpmProvider {
 
 	/**
 	 * Search processes with number of process instances and incidents.
+     * @param user the user performing the search
      * @return Fetched processes.
      * @throws InvalidAttributeValueException when searching for processes with at least one invalid parameter value.
      * @throws SystemException in case of any other error.
@@ -229,6 +247,7 @@ public interface BpmProvider {
 	/**
 	 * Search processes.
 	 * @param filters filters to be applied.
+	 * @param user the user performing the search
      * @return Fetched processes.
      * @throws InvalidAttributeValueException when searching for processes with at least one invalid parameter value.
      * @throws SystemException in case of any other error.
@@ -258,9 +277,9 @@ public interface BpmProvider {
 	
 	/**
      * Search process with a specific Id.
-     * @param processId filter by process definition id.
-     * @param extraInfo parameter to specify if more data will be load.
-     * @param user since this call is secured we need the user to authenticate.
+     * @param id filter by process definition id.
+     * @param extraInfo parameter to specify if more data will be loaded.
+     * @param user the user performing the query.
      * @return Fetched process.
      * @throws SystemException in case of an error.
      */	
@@ -269,6 +288,7 @@ public interface BpmProvider {
 	/**
 	 * Queries for historic process instances that fulfill the given parameters.
 	 * @param filters is a map of parameters to filter query. Parameters firstResult and maxResults are used for pagination.
+	 * @param user the user performing the query.
      * @return Fetched processes instances.
      * @throws SystemException in case of an error.
      */
@@ -276,17 +296,20 @@ public interface BpmProvider {
 
 	/**
 	 * Search processes instances with a specific process key (in the history).
-	 * @param active true means that unfinished processes will be fetched 
-	 * and false, only finished processes will be fetched. Parameters firstResult and maxResults are used for pagination.
-     * @return Fetched processes instances.
+	 * @param key the process key to filter by.
+	 * @param active true means that unfinished processes will be fetched, false means only finished processes will be fetched.
+	 * @param firstResult index of the first result to return.
+	 * @param maxResults maximum number of results to return.
+	 * @param user the user performing the query.
+     * @return Fetched process instances.
      * @throws SystemException in case of an error.
      */
 	Collection<HistoryProcessInstance> findProcessesInstancesHistory(String key, Optional<Boolean> active, Integer firstResult, Integer maxResults, CIBUser user) throws SystemException;
 	
 	/**
 	 * Search processes instances with a specific process key.
-	 * @param active true means that unfinished processes will be fetched 
-	 * and false, only finished processes will be fetched.
+	 * @param key the process key to filter by.
+	 * @param user the user performing the search
      * @return Fetched processes instances.
      * @throws SystemException in case of an error.
      */
@@ -295,6 +318,7 @@ public interface BpmProvider {
 	/**
 	 * Search statistics from a process.
 	 * @param id filter by process id.
+	 * @param user the user performing the search
 	 * @return Fetched processes instances.
 	 * @throws SystemException in case of an error.
 	 */
@@ -302,6 +326,7 @@ public interface BpmProvider {
 	
 	/**
    * Search statistics for all processes.
+   * @param user the user performing the search
    * @return Fetched processes instances.
    * @throws SystemException in case of an error.
    */
@@ -309,7 +334,8 @@ public interface BpmProvider {
 
 	/**
 	 * Search processes instances by filter.
-	 * @param filter
+	 * @param data a map of parameters to filter the query.
+	 * @param user the user performing the query.
      * @return Fetched processes instances.
      * @throws SystemException in case of an error.
      */
@@ -318,6 +344,7 @@ public interface BpmProvider {
 	/**
      * Search process instance with a specific process instance id.
      * @param processInstanceId filter by process instance id.
+     * @param user the user performing the search
      * @return Fetched process instance.
      * @throws NoObjectFoundException when the process instance searched for could not be found.
      * @throws SystemException in case of any other error.
@@ -349,6 +376,7 @@ public interface BpmProvider {
 	/**
 	 * Fetch process diagram, a xml that contains the specification to render the diagram.
 	 * @param processDefinitionId filter by process definition id.
+	 * @param user the user performing the search
 	 * @return process diagram xml that contains diagram to be render.
      * @throws NoObjectFoundException when the process definition searched for could not be found.
      * @throws SystemException in case of any other error.
@@ -357,10 +385,10 @@ public interface BpmProvider {
 	
 	/**
 	 * Fetch variables from a specific process instance.
-	 * The variables found belongs to the history, they have other attributes 
-	 * and variables from finished process instances are also fetched.
+	 * The variables found belong to the history, they have other attributes, and variables from finished process instances are also fetched.
      * @param processInstanceId filter by process instance id.
-	 * @param deserialize 
+	 * @param deserializeValue whether to deserialize the variable values.
+	 * @param user the user performing the search
      * @return Fetched variables.
      * @throws SystemException in case of an error.
      */
@@ -370,6 +398,7 @@ public interface BpmProvider {
 	/**
 	 * Fetch start-form to start a process
 	 * @param processDefinitionId of the process to be started.
+	 * @param user the user performing the search
 	 * @return Startform variables and formReference.
      * @throws NoObjectFoundException when trying to find start form data of a non-existing process definition.
      * @throws SystemException in case of any other error.
@@ -380,6 +409,7 @@ public interface BpmProvider {
 	 * Download bpmn from a process definition id.
 	 * @param processDefinitionId filter by process definition id.
 	 * @param fileName name of the file content the bpmn.
+	 * @param user the user performing the download
 	 * @return Fetched bpmn
      * @throws SystemException in case of an error.
 	 */
@@ -388,37 +418,41 @@ public interface BpmProvider {
 	/**
 	 * Get authorizations, filtered by userId and groups in which user belongs.
 	 * @param userId filter user identification (username).
+	 * @param user the user performing the search
 	 * @return Fetched bpmn
      * @throws SystemException in case of an error.
 	 */	
 	Authorizations getUserAuthorization(String userId, CIBUser user) throws SystemException;
 	
 	/**
-     * Search filters
-     * @param filter applied in the search
-     * @return Collection Filters fetched in the search.
+     * Search filters.
+     * @param user the user performing the query.
+     * @return Collection of Filters fetched in the search.
      * @throws SystemException in case of an error.
      */
 	Collection<Filter> findFilters(CIBUser user) throws SystemException;
 	
 	/**
-     * Create filter
-     * @param filter to be created
+     * Create filter.
+     * @param filter to be created.
+     * @param user the user performing the creation.
      * @throws SystemException in case of an error.
      */
 	Filter createFilter(Filter filter, CIBUser user) throws SystemException;
 	
 	/**
-     * Update filter
-     * @param filter to be updated
+     * Update filter.
+     * @param filter to be updated.
+     * @param user the user performing the update.
      * @throws NoObjectFoundException when the filter to be changed could not be found.
      * @throws SystemException in case of any other error.
      */
 	void updateFilter(Filter filter, CIBUser user) throws SystemException, NoObjectFoundException;
 	
 	/**
-     * Delete filter
-     * @param filter to be deleted
+     * Delete filter.
+     * @param filterId the ID of the filter to be deleted.
+     * @param user the user performing the deletion.
      * @throws SystemException in case of an error.
      */
 	void deleteFilter(String filterId, CIBUser user) throws SystemException;
@@ -427,6 +461,7 @@ public interface BpmProvider {
      * Activate/Suspend process instance by ID.
      * @param processInstanceId instance id to be suspended or activated.
      * @param suspend if true, the process instance will be activated if false process will be suspended.
+     * @param user the user performing the operation.
      * @throws SystemException in case of other error.
      */
 	void suspendProcessInstance(String processInstanceId, Boolean suspend, CIBUser user) throws SystemException;
@@ -438,6 +473,7 @@ public interface BpmProvider {
      * @param includeProcessInstances indicates whether to activate or suspend also all process instances of the given process definition
      * @param executionDate The date on which the given process definition will be activated or suspended ej. 2013-01-23T14:42:45. yyyy-MM-dd'T'HH:mm:ss,
      *  If null, the suspension state of the given process definition is updated immediately.
+     * @param user the user performing the operation.
      * @throws SystemException in case of other error.
 	 * @throws UnsupportedTypeException when a process instance cannot be created because of an unsupported value type or an invalid expression used in the process definition.
 	 * @throws NoObjectFoundException when the filter to be changed could not be found.
@@ -447,6 +483,7 @@ public interface BpmProvider {
 	/**
      * Delete process instance by ID.
      * @param processInstanceId instance id to be deleted.
+     * @param user the user performing the deletion.
      * @throws NoObjectFoundException when the filter to be changed could not be found.
      * @throws SystemException in case of any other error.
      */
@@ -455,26 +492,28 @@ public interface BpmProvider {
 	/**
      * Fetch incidents for an specific process.
 	 * @param processDefinitionKey of the process to fetch incidents.
+	 * @param user the user performing the search.
 	 * @throws UnsupportedTypeException when a process instance cannot be created because of an unsupported value type or an invalid expression used in the process definition.
      * @throws SystemException in case of any other error.
      */
 	 Collection<Incident> fetchIncidents(String processDefinitionKey, CIBUser user) throws SystemException, UnsupportedTypeException;
 
 	/**
-     * Deploy process-bpmn
+     * Deploy process-bpmn.
 	 * @param data metadata of the diagram to be deployed (deployment-name, deployment-source, deploy-changed-only).
 	 * @param file of the diagram to be deployed.
-	 * @return 
+	 * @param user the user performing the deployment.
+	 * @return Deployment information.
      * @throws SystemException in case of any other error.
      */
 	 Deployment deployBpmn(MultiValueMap<String, Object> data, MultiValueMap<String, MultipartFile> file, CIBUser user) throws SystemException;
 	
 	/**
-	 * Start process
-	 * @param user who start the process.
+	 * Start process.
 	 * @param processDefinitionKey of the process to be started.
-	 * @param tenantId 
+	 * @param tenantId the tenant ID.
 	 * @param data variables to start process.
+	 * @param user the user starting the process.
 	 * @return information about the process started.
      * @throws UnsupportedTypeException when a process instance cannot be created because of an unsupported value type or an invalid expression used in the process definition.
      * @throws ExpressionEvaluationException when .
@@ -483,20 +522,20 @@ public interface BpmProvider {
 	 ProcessStart startProcess(String processDefinitionKey, String tenantId, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException;
 
 	/**
-	 * Correlates a message to the process engine to either trigger a message start event or an intermediate message catching event
-	 * @param user who start the process.
+	 * Correlates a message to the process engine to either trigger a message start event or an intermediate message catching event.
 	 * @param data variables to start process.
-	 * @return 
+	 * @param user the user performing the correlation.
+	 * @return Collection of correlated messages.
      * @throws SystemException in case of any other error.
 	 */
 	 Collection<Message> correlateMessage(Map<String, Object> data, CIBUser user) throws SystemException;
 	 
 	/**
-	 * Submit form with variables
-	 * @param user who start the process.
+	 * Submit form with variables.
 	 * @param processDefinitionKey of the process to be started.
-	 * @param tenantId 
+	 * @param tenantId the tenant ID.
 	 * @param data variables to submit.
+	 * @param user the user submitting the form.
 	 * @return information about the process started.
      * @throws UnsupportedTypeException when a process instance cannot be created because of an unsupported value type or an invalid expression used in the process definition.
      * @throws ExpressionEvaluationException when .
@@ -508,18 +547,17 @@ public interface BpmProvider {
 	 * Modify a variable in the Process Instance.
 	 * @param executionId Id of the execution.
 	 * @param data to be updated.
-	 * @param user User who is modifing the variable.
+	 * @param user User who is modifying the variable.
      * @throws SystemException in case of any other error.
 	 */
 	 void modifyVariableByExecutionId(String executionId, Map<String, Object> data, CIBUser user) throws SystemException; 
 
 	/**
 	 * Modify a variable data in the Process Instance.
-	 * @param executionId Id of the execution.
-	 * @param variableName Name of the variable.
-	 * @param data to be updated 
-	 * @param user User who is modifing the variable.
-	 * @return Variable modified.
+	 * @param executionId the ID of the execution.
+	 * @param variableName the name of the variable.
+	 * @param file the file containing the data to be updated.
+	 * @param user the user modifying the variable.
      * @throws SystemException in case of any other error.
 	 */ 
 	 void modifyVariableDataByExecutionId(String executionId, String variableName, MultipartFile file, CIBUser user) throws SystemException;
@@ -548,7 +586,7 @@ public interface BpmProvider {
 	 /**
 	 * Fetch a variable data in from the process history.
 	 * @param id Id of the variable.
-	 * @param user User who is modifing the variable.
+	 * @param user User who is modifying the variable.
 	 * @return Data.
      * @throws SystemException in case of any other error.
 	 */ 
@@ -556,66 +594,70 @@ public interface BpmProvider {
 	 
 	/**
 	 * Retrieves all deployments of a given deployment.
-	 * @param user who start the process.
-	 * @return Fetched deployments
+	 * @param user the user performing the search.
+	 * @return Fetched deployments.
      * @throws SystemException in case of any other error.
 	 */
 	Collection<Deployment> findDeployments(CIBUser user) throws SystemException;
 
 	/**
 	 * Retrieves all deployment resources of a given deployment.
-	 * @param user who start the process.
-	 * @param deploymentId
-	 * @return Fetched deployment resources 
+	 * @param deploymentId the ID of the deployment.
+	 * @param user the user performing the query.
+	 * @return Fetched deployment resources.
      * @throws SystemException in case of any other error.
 	 */
 	Collection<DeploymentResource> findDeploymentResources(String deploymentId, CIBUser user) throws SystemException;
 
 	/**
 	 * Retrieves the binary content of a deployment resource for the given deployment by id.
-	 * @return resource data
+	 * @param rq the HTTP request.
+	 * @param deploymentId the ID of the deployment.
+	 * @param resourceId the ID of the resource.
+	 * @param fileName the name of the file.
+	 * @return resource data.
      * @throws SystemException in case of any other error.
 	 */
 	Data fetchDataFromDeploymentResource(HttpServletRequest rq, String deploymentId, String resourceId, String fileName) throws SystemException;
 
 	/**
 	 * Delete deployment by an Id.
-	 * @param deploymentId
-	 * @param user who start the process.
-	 * @return Fetched deployment resources 
+	 * @param deploymentId the ID of the deployment.
+	 * @param cascade whether to cascade the deletion.
+	 * @param user the user performing the deletion.
      * @throws SystemException in case of any other error.
 	 */
 	void deleteDeployment(String deploymentId, Boolean cascade, CIBUser user) throws SystemException;
 
 	/**
-	 *  Identity links, e.g. to get the candidates user or groups of a task
+	 *  Identity links, e.g. to get the candidates user or groups of a task.
 	 *  
-	 * @param taskId
-	 * @param type   Filter by the type of links to include. e.g. "candidate"
-	 * @param user
-	 * @return
+	 * @param taskId the ID of the task.
+	 * @param type Filter by the type of links to include. e.g. "candidate".
+	 * @param user the user performing the query.
+	 * @return Collection of Identity Links.
 	 */
 	Collection<IdentityLink> findIdentityLink(String taskId, Optional<String> type, CIBUser user);
 	
 	/**
-	 *  Create identity links, e.g. to set the candidates user or groups of a task
+	 *  Create identity links, e.g., to set the candidates user or groups of a task.
 	 *  
-	 * @param taskId
-	 * @param data variables to set type of the identity link and group or user id.
-	 * @param user
-	 * @return
+	 * @param taskId the ID of the task.
+	 * @param type a map containing the type of the identity link and group or user ID.
+	 * @param user the user performing the operation.
+	 * @throws SystemException in case of any other error.
 	 */
-	void createIdentityLink(String taskId, Map<String, Object> type, CIBUser user);
+	void createIdentityLink(String taskId, Map<String, Object> type, CIBUser user) throws SystemException;
 	
 	/**
-	 *  Delete identity links, e.g. to remove the candidates user or groups of a task
+	 *  Delete identity links, e.g., to remove the candidates user or groups of a task.
 	 *  
-	 * @param taskId
-	 * @param data variables to remove the identity link.
-	 * @param user
-	 * @return
+	 * @param taskId the ID of the task.
+	 * @param type a map containing the type of the identity link to be removed.
+	 * @param user the user performing the operation.
+	 * @throws SystemException in case of any other error.
 	 */
-	void deleteIdentityLink(String taskId, Map<String, Object> type, CIBUser user);
+	void deleteIdentityLink(String taskId, Map<String, Object> type, CIBUser user) throws SystemException;
 	
 	/**
 	 *  The following methods related to the Admin Section. 
@@ -638,7 +680,7 @@ public interface BpmProvider {
 	 * @param memberOfTenant , //	Filter for users which are members of the given tenant.			
 	 * 
 	 * @param user CIBSevenUser
-	 * @return
+	 * @return Collection of Users.
 	 */
 	Collection<User> findUsers(Optional<String> id, Optional<String> firstName, Optional<String> firstNameLike, Optional<String> lastName,
 			Optional<String> lastNameLike, Optional<String> email, Optional<String> emailLike, Optional<String> memberOfGroup, Optional<String> memberOfTenant, 
@@ -648,50 +690,49 @@ public interface BpmProvider {
 	/**
 	 * Create a new user.
 	 * 
-	 * @param user
-	 * @param flowUser
+	 * @param user the new user to be created.
+	 * @param flowUser the user performing the creation.
+	 * @throws InvalidUserIdException when the user ID is invalid.
 	 */
 	void createUser(NewUser user, CIBUser flowUser) throws InvalidUserIdException;	
 	
 	/**
 	 * Updates a user’s profile.
 	 * 
-	 * @param userId
-	 * @param user the user to Update 
-	 * @param flowUser
+	 * @param userId the ID of the user to be updated.
+	 * @param user the user to Update.
+	 * @param flowUser the user performing the update.
 	 */
 	void updateUserProfile(String userId, User user, CIBUser flowUser);	
 	
 	/**
 	 * Add user to a group.
 	 * 
-	 * @param groupId
-	 * @param userId
-	 * @param user the user to Update 
-	 * @param flowUser
+	 * @param groupId the ID of the group.
+	 * @param userId the ID of the user to be added.
+	 * @param flowUser the user performing the operation.
 	 */
 	void addMemberToGroup(String groupId, String userId, CIBUser flowUser);
 	
 	/**
 	 * Delete user from a group.
 	 * 
-	 * @param groupId
-	 * @param userId
-	 * @param user the user to Update 
-	 * @param flowUser
+	 * @param groupId the ID of the group.
+	 * @param userId the ID of the user to be removed.
+	 * @param flowUser the user performing the operation.
 	 */	
 	void deleteMemberFromGroup(String groupId, String userId, CIBUser flowUser);
 
 	/**
 	 * Updates a user’s credentials (password).
 	 * 
-	 * @param userId
+	 * @param userId the ID of the user to be updated.
 	 * @param data Request Body
 	 * 		A JSON object with the following properties:
 	 * 		Name 	Type 	Description
 	 * 		password 	String 	The user's new password.
-	 * 		authenticatedUserPassword 	String 	The password of the authenticated user who changes the password of the user (i.e., the user with passed id as path parameter).	 * 
-	 * @param user
+	 * 		authenticatedUserPassword 	String 	The password of the authenticated user who changes the password of the user (i.e., the user with passed id as path parameter).	 
+	 * @param user the user performing the update.
 	 */
 	void updateUserCredentials(String userId, Map<String, Object> data, CIBUser user);
 
@@ -699,15 +740,14 @@ public interface BpmProvider {
 	/**
 	 * Deletes a user by id.
 	 * 
-	 * @param userId
-	 * @param user
+	 * @param userId the ID of the user to be deleted.
+	 * @param user the user performing the deletion.
 	 */
 	void deleteUser(String userId, CIBUser user);
 
 	/**
 	 * Get groups by id, ....
 	 * 
-	 * @param id
 	 * @param id, // Filter by the id of the group.
 	 * @param name, // Filter by the name of the group.
 	 * @param nameLike, // Filter by the name that the parameter is a substring of.
@@ -719,35 +759,35 @@ public interface BpmProvider {
 	 * @param firstResult, // Pagination of results. Specifies the index of the first result to return.
 	 * @param maxResults, // Pagination of results. Specifies the maximum number of results to return. Will return less results if there are no more results left.			
 	 * 
-	 * @param user
-	 * @return
+	 * @param user the user performing the search.
+	 * @return Collection of User Groups.
 	 */
 	Collection<UserGroup> findGroups(Optional<String> id, Optional<String> name, Optional<String> nameLike, Optional<String> type, Optional<String> member,
 			Optional<String> memberOfTenant, Optional<String> sortBy, Optional<String> sortOrder, Optional<String> firstResult, Optional<String> maxResults,
 			CIBUser user);
 
 	/**
-	 * Create a group
+	 * Create a group.
 	 * 
-	 * @param group
-	 * @param user
+	 * @param group the group to be created.
+	 * @param user the user performing the creation.
 	 */
 	void createGroup(UserGroup group, CIBUser user);
 
 	/**
 	 * Updates a group.
 	 * 
-	 * @param groupId
-	 * @param group
-	 * @param user
+	 * @param groupId the ID of the group to be updated.
+	 * @param group the group to be updated.
+	 * @param user the user performing the update.
 	 */
 	void updateGroup(String groupId, UserGroup group, CIBUser user);
 
 	/**
 	 * Deletes a group by id.
 	 * 
-	 * @param groupId
-	 * @param user
+	 * @param groupId the ID of the group to be deleted.
+	 * @param user the user performing the deletion.
 	 */
 	void deleteGroup(String groupId, CIBUser user);
 
@@ -764,52 +804,59 @@ public interface BpmProvider {
 	 * @param sortOrder, // Sort the results in a given order. Values may be asc for ascending order or desc for descending order. Must be used in conjunction with the sortBy parameter.
 	 * @param firstResult, // Pagination of results. Specifies the index of the first result to return.
 	 * @param maxResults, // Pagination of results. Specifies the maximum number of results to return. Will return less results if there are no more results left.			
-	 * @param user
-	 * @return
+	 * @param user the user performing the search.
+	 * @return Collection of Authorizations.
 	 */
 	Collection<Authorization> findAuthorization(Optional<String> id, Optional<String> type, Optional<String> userIdIn,Optional<String> groupIdIn, 
 			Optional<String> resourceType, Optional<String> resourceId, Optional<String> sortBy, Optional<String> sortOrder, Optional<String> firstResult,Optional<String> maxResults, 
 			CIBUser user);
 
 	/**
-	 * 	 create a group 
+	 * Create an authorization.
 	 * 
-	 * @param authorization
-	 * @param user
+	 * @param authorization the authorization to be created.
+	 * @param user the user performing the creation.
+	 * @return ResponseEntity containing the created authorization.
 	 */
 	ResponseEntity<Authorization> createAuthorization(Authorization authorization, CIBUser user);
 
 	/**
-	 * Update a group by id.
+	 * Update an authorization by id.
 	 * 
-	 * @param authorizationId
-	 * @param data
-	 * @param user
+	 * @param authorizationId the ID of the authorization to be updated.
+	 * @param data the data to update.
+	 * @param user the user performing the update.
 	 */
 	void updateAuthorization(String authorizationId, Map<String, Object> data, CIBUser user);
 
 	/**
-	 * Deletes a group by id.
+	 * Deletes an authorization by id.
 	 * 
-	 * @param authorizationId
-	 * @param user
+	 * @param authorizationId the ID of the authorization to be deleted.
+	 * @param user the user performing the deletion.
 	 */
 	void deleteAuthorization(String authorizationId, CIBUser user);
 
 	/**
 	 * Queries for historic process instances that fulfill the given parameters.
-	 * @param filters is a map of parameters to filter query. Parameters firstResult and maxResults are used for pagination.
-     * @return Fetched processes instances.
+	 * @param id the ID of the process instance.
+	 * @param activityId optional activity ID to filter the query.
+	 * @param active optional flag to filter active or inactive instances.
+	 * @param firstResult index of the first result to return.
+	 * @param maxResults maximum number of results to return.
+	 * @param text additional text filter for the query.
+	 * @param user the user performing the query.
+     * @return Fetched process instances.
      * @throws SystemException in case of an error.
      */
-	Collection<HistoryProcessInstance> findProcessesInstancesHistoryById(String id, Optional<String> activityId, Optional<Boolean> active,
-			Integer firstResult, Integer maxResults, String text, CIBUser user);
+	Collection<HistoryProcessInstance> findProcessesInstancesHistoryById(String id, Optional<String> activityId, Optional<Boolean> active, Integer firstResult, Integer maxResults, String text, CIBUser user) throws SystemException;
 	
 	/**
 	 * Get user by id.
 	 * 
-	 * @param userId
-	 * @param user
+	 * @param userId the ID of the user to be fetched.
+	 * @param user the user performing the search.
+	 * @return SevenUser object containing user profile information.
 	 */
 	SevenUser getUserProfile(String userId, CIBUser user);
 	
@@ -862,7 +909,10 @@ public interface BpmProvider {
 	void setIncidentAnnotation(String incidentId, Map<String, Object> data, CIBUser user);
 	
 	/**
-	 * Submit task with saving variables
+	 * Submit task with saving variables.
+	 * @param task the task to be submitted.
+	 * @param formResult the variables to be saved.
+	 * @param user the user performing the submission.
      * @throws SubmitDeniedException when trying to submit a non-existing task.
      * @throws SystemException in case of any other error.
 	 */
@@ -892,6 +942,7 @@ public interface BpmProvider {
 	 * Queries for tasks that fulfill a given filter. This method is slightly more powerful than the Get Tasks method because it allows
 	 * filtering by multiple process or task variables of types String, Number or Boolean.
 	 * @param data variables to apply search.
+	 * @param user the user performing the search.
 	 * @return Collection tasks fetched in the search.
 	 * @throws SystemException in case of an error.
 	 */
@@ -901,6 +952,7 @@ public interface BpmProvider {
 	 * Required by OFDKA
 	 * Search process instance with a specific process instance id.
 	 * @param processInstanceId filter by process instance id.
+	 * @param user the user performing the search.
 	 * @return Fetched process instance.
 	 * @throws NoObjectFoundException when the process instance searched for could not be found.
 	 * @throws SystemException in case of any other error.
@@ -912,7 +964,10 @@ public interface BpmProvider {
 	 * Retrieves a variable of a given process instance by id.
 	 * @param processInstanceId filter by process instance id.
 	 * @param variableName variable name.
+	 * @param deserializeValue whether to deserialize the variable value.
+	 * @param user the user performing the search.
 	 * @return Fetched variables.
+	 * @throws SystemException in case of an error.
 	 */
 	Variable fetchProcessInstanceVariable(String processInstanceId, String variableName, String deserializeValue,
 			CIBUser user) throws SystemException;
@@ -922,6 +977,10 @@ public interface BpmProvider {
 	 * Required by OFDKA
 	 * Queries for event subscriptions that fulfill given parameters. 
 	 * The size of the result set can be retrieved by using the Get Event Subscriptions count method.
+	 * @param processInstanceId filter by process instance id.
+	 * @param eventType filter by event type.
+	 * @param eventName filter by event name.
+	 * @param user the user performing the search.
 	 * @return Collection event subscriptions fetched in the search.
 	 */
 	Collection<EventSubscription> getEventSubscriptions(Optional<String> processInstanceId, Optional<String> eventType, 
@@ -934,8 +993,8 @@ public interface BpmProvider {
 	 * Reports a business error in the context of a running task by id. The error code must be specified to identify the BPMN error handler.
 	 * @param taskId filter by task id.
 	 * @param data variables for the BPMN error reporting.
-	 * @return 
-     * @throws SystemException in case of any other error.
+	 * @param user the user performing the operation.
+	 * @throws SystemException in case of any other error.
 	 */
 	 void handleBpmnError(String taskId, Map<String, Object> data, CIBUser user) throws SystemException;
 

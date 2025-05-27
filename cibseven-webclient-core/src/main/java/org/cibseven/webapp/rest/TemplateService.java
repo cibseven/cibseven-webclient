@@ -42,7 +42,7 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.servlet.http.HttpServletRequest;
 
 @Service
-@RestController @RequestMapping("${services.basePath:/services/v1}" + "/template")
+@RestController @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/template")
 public class TemplateService extends BaseService implements InitializingBean {
   
   private static final Logger logger = LoggerFactory.getLogger(TemplateService.class);

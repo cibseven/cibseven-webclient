@@ -66,6 +66,7 @@ import { permissionsMixin } from '@/permissions.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
+import { HistoryService } from '@/services.js'
 import { mapMutations, mapGetters } from 'vuex'
 
 export default {
@@ -107,23 +108,23 @@ export default {
         default: return this.$t('decision.instanceFinished')
       }
     },
-    goToProcess(instance) {
-      let processData = instance.processDefinitionId.split(':')
+    async goToProcess(instance) {
+      let processData = await HistoryService.findProcessInstance(instance.processInstanceId)
       this.$router.push({
         name: 'process',
         params: {
-          processKey: processData[0],
-          versionIndex: processData[1]
+          processKey: processData.processDefinitionKey,
+          versionIndex: processData.processDefinitionVersion
         }
       })
     },
-    goToProcessInstance(instance) {
-      let processData = instance.processDefinitionId.split(':')
+    async goToProcessInstance(instance) {
+      let processData = await HistoryService.findProcessInstance(instance.processInstanceId)
       this.$router.push({
         name: 'process',
         params: {
-          processKey: processData[0],
-          versionIndex: processData[1],
+          processKey: processData.processDefinitionKey,
+          versionIndex: processData.processDefinitionVersion,
           instanceId: instance.processInstanceId
         }
       })

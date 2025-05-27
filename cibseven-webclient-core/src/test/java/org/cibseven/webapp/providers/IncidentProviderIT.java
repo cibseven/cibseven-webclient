@@ -18,8 +18,6 @@ package org.cibseven.webapp.providers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -32,7 +30,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.providers.IncidentProvider;
 import org.cibseven.webapp.rest.model.Incident;
 
 import okhttp3.mockwebserver.MockResponse;
@@ -40,7 +37,7 @@ import okhttp3.mockwebserver.MockWebServer;
 
 @SpringBootTest
 @ContextConfiguration(classes = {IncidentProvider.class})
-public class IncidentProviderIT {
+public class IncidentProviderIT extends BaseHelper {
 
     static {
         System.setProperty("spring.banner.location", "classpath:fca-banner.txt");
@@ -57,7 +54,7 @@ public class IncidentProviderIT {
         mockWebServer.start();
 
         String mockBaseUrl = mockWebServer.url("/").toString();
-        ReflectionTestUtils.setField(incidentProvider, "camundaUrl", mockBaseUrl);
+        ReflectionTestUtils.setField(incidentProvider, "cibsevenUrl", mockBaseUrl);
     }
 
     @AfterEach
@@ -65,15 +62,10 @@ public class IncidentProviderIT {
         mockWebServer.shutdown();
     }
 
-    private String loadMockResponse(String filePath) throws Exception {
-        return new String(Files.readAllBytes(Paths.get(getClass().getClassLoader().getResource(filePath).toURI())));
-    }
-
     @Test
     void testCountIncident() throws Exception {
         // Arrange
-        CIBUser user = new CIBUser();
-        user.setAuthToken("Bearer token");
+        CIBUser user = getCibUser();
 
         String mockResponseBody = "{\"count\": 5}";
 
@@ -96,8 +88,7 @@ public class IncidentProviderIT {
     @Test
     void testFindIncident() throws Exception {
         // Arrange
-        CIBUser user = new CIBUser();
-        user.setAuthToken("Bearer token");
+        CIBUser user = getCibUser();
 
         String mockResponseBody = loadMockResponse("mocks/incidents_mock.json");
 
@@ -124,8 +115,7 @@ public class IncidentProviderIT {
     @Test
     void testFindIncidentByInstanceId() throws Exception {
         // Arrange
-        CIBUser user = new CIBUser();
-        user.setAuthToken("Bearer token");
+        CIBUser user = getCibUser();
 
         String mockResponseBody = loadMockResponse("mocks/incidents_mock.json");
 
@@ -147,8 +137,7 @@ public class IncidentProviderIT {
     @Test
     void testFetchIncidents() throws Exception {
         // Arrange
-        CIBUser user = new CIBUser();
-        user.setAuthToken("Bearer token");
+        CIBUser user = getCibUser();
 
         String mockResponseBody = loadMockResponse("mocks/incidents_mock.json");
 
