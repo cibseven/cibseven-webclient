@@ -56,7 +56,7 @@ import SystemView from '@/components/system/SystemView.vue'
 import SystemDiagnostics from '@/components/system/SystemDiagnostics.vue'
 import ExecutionMetrics from '@/components/system/ExecutionMetrics.vue'
 
-const publicRoutes = [
+const appRoutes = [
     { path: '/', redirect: '/seven/auth/start' },
     { path: '/seven', component: CibSeven, children: [
       { path: 'login', name: 'login', beforeEnter: function(to, from, next) {
@@ -208,11 +208,7 @@ const publicRoutes = [
     },
   ];
 
-const router = createRouter({
-    history: createWebHashHistory(),
-    linkActiveClass: 'active',
-    routes: publicRoutes
-})
+var router = null
 
 function authGuard(strict) {
   return function(to, from, next) {
@@ -298,8 +294,40 @@ function combineGuards(...guards) {
   };
 }
 
-router.setRoot = function(value) {
-  this.root = value
+/**
+ * Creates and configures the main Vue Router instance for the application.
+ * Sets up hash-based navigation, active link class, and assigns the provided routes.
+ * Also adds a `setRoot` method to the router instance for storing a reference to the root Vue component.
+ *
+ * @param {Array} routes - The array of route objects to use for the router.
+ * @returns {Router} The configured Vue Router instance.
+ */
+function createAppRouter(routes) {
+
+  // this method is required to set the root component
+  // in order to access the config and user object
+  // in the router guards
+
+  router = createRouter({
+    history: createWebHashHistory(),
+    linkActiveClass: 'active',
+    routes: routes
+  })
+
+  router.setRoot = function(value) {
+    this.root = value
+  }
+
+  return router
 }
 
-export { router, publicRoutes }
+export {
+  appRoutes,
+
+  createAppRouter,
+
+  authGuard,
+  permissionsGuard,
+  permissionsDeniedGuard,
+  permissionsGuardUserAdmin
+}
