@@ -17,7 +17,7 @@
 // Import the CSS to ensure it is bundled with the package
 import './assets/main.css';
 
-import { axios } from '@/globals.js'
+import { axios, moment } from '@/globals.js'
 import appConfig from '@/appConfig.js'
 import { permissionsMixin } from '@/permissions.js'
 import registerOwnComponents from './register.js'
@@ -241,6 +241,7 @@ export {
   BatchesView,
   SystemView,
   axios,
+  moment,
   appConfig,
   permissionsMixin,
   registerOwnComponents,

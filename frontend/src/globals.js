@@ -15,4 +15,5 @@
  *  limitations under the License.
  */
 import axios from 'axios'
-export { axios }
+import moment from 'moment'
+export { axios, moment }
