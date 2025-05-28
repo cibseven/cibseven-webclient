@@ -76,7 +76,7 @@
 </template>
 
 <script>  
-  import moment from 'moment'
+  import { moment } from '@/globals.js'
   import { BWaitingBox } from 'cib-common-components'
   import { mapActions, mapGetters } from 'vuex'
   import FlowTable from '@/components/common-components/FlowTable.vue'

@@ -93,7 +93,7 @@
 
 <script>
 import { AdminService } from '@/services.js'
-import moment from 'moment'
+import { moment } from '@/globals.js'
 import { debounce } from '@/utils/debounce.js'
 import { getStringObjByKeys } from '@/components/admin/utils.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
