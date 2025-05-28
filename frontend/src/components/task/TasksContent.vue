@@ -80,7 +80,7 @@
 </template>
 
 <script>
-import moment from 'moment'
+import { moment } from '@/globals.js'
 import { permissionsMixin } from '@/permissions.js'
 import { TaskService, ProcessService, HistoryService } from '@/services.js'
 import { debounce } from '@/utils/debounce.js'

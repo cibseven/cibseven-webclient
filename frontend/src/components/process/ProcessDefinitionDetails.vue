@@ -118,7 +118,7 @@
 </template>
 
 <script>
-import moment from 'moment'
+import { moment } from '@/globals.js'
 import { ProcessService } from '@/services.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'

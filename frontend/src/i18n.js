@@ -16,8 +16,7 @@
  */
 import { createI18n } from 'vue-i18n'
 import { mergeLocaleMessage } from 'cib-common-components'
-import moment from 'moment'
-import { axios } from './globals.js'
+import { axios, moment } from './globals.js'
 import { getTheme } from './utils/init'
 
 function getDefaultLanguage() {

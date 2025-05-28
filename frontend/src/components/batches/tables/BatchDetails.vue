@@ -57,7 +57,7 @@
 </template>
 
 <script>
-  import moment from 'moment'
+  import { moment } from '@/globals.js'
   import FailedJobs from './FailedJobs.vue'
   import FlowTable from '@/components/common-components/FlowTable.vue'
   import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
