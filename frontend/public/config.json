@@ -1,5 +1,5 @@
 {
-	"supportedLanguages": ["de", "en", "es", "ru"],
+	"supportedLanguages": ["de", "en", "es", "ua", "ru"],
 	"filters": [
 		{ "key": "processInstanceId", "text": "processInstanceId", "type": "text", "group": "processInstanceGroup" },
 		{ "key": "processInstanceBusinessKey", "text": "processInstanceBusinessKey", "type": "text", "group": "processInstanceGroup"  },

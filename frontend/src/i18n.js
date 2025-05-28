@@ -35,16 +35,19 @@ const i18n = createI18n({
 import en from '@/assets/translations_en.json'
 import de from '@/assets/translations_de.json'
 import es from '@/assets/translations_es.json'
+import ua from '@/assets/translations_ua.json'
 import ru from '@/assets/translations_ru.json'
 
 import 'moment/dist/locale/de'
 import 'moment/dist/locale/es'
+import 'moment/dist/locale/uk'
 import 'moment/dist/locale/ru'
 
 export const languages = {
   en: en,
   de: de,
   es: es,
+  ua: ua,
   ru: ru
 }
 
