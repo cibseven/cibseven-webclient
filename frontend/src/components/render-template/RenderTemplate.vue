@@ -18,11 +18,12 @@
 -->
 <template>
   <div>
-    <BWaitingBox v-if="loader" class="h-100 d-flex justify-content-center" ref="loader" styling="width:20%"></BWaitingBox>
-    <div v-show="!loader" class="h-100">
-      <iframe v-show="!submitForm && formFrame" class="h-100" ref="template-frame" frameBorder="0"
-        src="" width="100%" height="100%" :style="fullModeStyles" :title="task?.name"></iframe>
-      <div class="pt-2" v-if="!formFrame">
+    <RenderIframe v-if="['camundaForm', 'embedded'].includes(taskType)" :task="task" @complete-task="completeTask" @saved="$refs.messageSaved.show(10)" @generic-success="$refs.messageSuccess.show(10)" @error="displayErrorMessage"
+      @cancel="cancelTask" @filter-update="updateFilters"></RenderIframe>
+    <RenderEuit v-else-if="taskType === 'euit'" :task="task" @complete-task="completeTask" @error="displayErrorMessage"
+      @cancel="cancelTask"></RenderEuit>
+    <div v-else class="h-100">
+      <div class="pt-2">
         <span class="small-text d-none d-sm-inline" style="vertical-align: middle">
           <strong>{{ $t('task.emptyTask') }}</strong> |
         </span>
@@ -55,143 +56,27 @@
 <script>
 import { permissionsMixin } from '@/permissions.js'
 import { TaskService } from '@/services.js'
-import IconButton from '@/components/forms/IconButton.vue'
-import { SuccessAlert, BWaitingBox } from '@cib/common-frontend'
-import { ENGINE_STORAGE_KEY } from '@/constants.js'
+import IconButton from '@/components/render-template/IconButton.vue'
+import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
+import RenderIframe from '@/components/render-template/RenderIframe.vue'
+import RenderEuit from '@/components/render-template/RenderEuit.vue'
 
 export default {
   name: 'RenderTemplate',
-  components: { IconButton, SuccessAlert, BWaitingBox },
+  components: { IconButton, SuccessAlert, RenderIframe, RenderEuit },
   props: ['task'],
   mixins: [permissionsMixin],
   inject: ['currentLanguage', 'AuthService'],
-  emits: ['complete-task'],
-  data: function() {
-    return {
-      userInstruction: null,
-      formReference: null,
-      height: 0,
-      submitForm: false,
-      formFrame: true,
-      loader: false,
-      datePickerValue: null,
-      datePickerRequest: null
-    }
-  },
-  watch: {
-    task: {
-      handler(newVal, oldVal) {
-        if (newVal && oldVal && newVal.id !== oldVal.id) {
-          this.onBeforeUnload()
-        }
-      },
-      immediate: true
-    }
-  },
   computed: {
-    fullModeStyles: function() {
-      if (this.$route.query.fullMode === 'true') {
-        return 'position: fixed; top: 0; left: 0; z-index: 1030'
-      }
-      return ''
+    taskType: function() {
+      if (!this.task.formKey) return 'empty'
+      if (this.task.formKey.startsWith('euit:')) return 'euit'
+      if (this.task.formKey.startsWith('embedded:')) return 'embedded'
+      if (this.task.camundaFormRef) return 'camundaForm'
+      return 'empty'
     }
-  },
-  mounted: function() {
-    this.loadIframe()
-    const formFrame = this.$refs['template-frame']
-    window.addEventListener('message', this.processMessage)
-
-    formFrame.setAttribute('allowfullscreen', true)
-    formFrame.setAttribute('webkitallowfullscreen', true)
-    formFrame.setAttribute('mozallowfullscreen', true)
-    formFrame.setAttribute('oallowfullscreen', true)
-    formFrame.setAttribute('msallowfullscreen', true)
-
-    //window.addEventListener('beforeunload', this.processMessage)
-    window.onbeforeunload = function() {
-      this.onBeforeUnload()
-    }.bind(this)
-  },
-  unmounted: function() {
-    this.onBeforeUnload()
   },
   methods: {
-    loadIframe: async function() {
-      this.loader = true
-      this.submitForm = false
-      this.formFrame = true
-      const theme = localStorage.getItem('theme') || this.$root.theme
-      let themeContext = ''
-      let translationContext = ''
-      if (['cib'].includes(theme) || !theme) {
-        themeContext = encodeURIComponent('bootstrap/bootstrap_4.5.0.min.css?v=1.14.0')
-      }
-      else {
-        translationContext = 'themes/' + theme + '/uiet-translations_'
-        themeContext = 'themes/' + theme + '/bootstrap_4.5.0.min.css'
-      }
-
-      const formFrame = this.$refs['template-frame']
-      //Startforms
-      if (this.task.url) {
-        formFrame.src = this.task.url + '/' + themeContext + '/' + translationContext
-
-        this.loader = false
-      } else if (this.task.isEmbedded && this.task.processDefinitionId) {
-        formFrame.src = `embedded-forms.html?processDefinitionId=${this.task.processDefinitionId}&lang=${this.currentLanguage()}`
-        this.loader = false
-      } else if (this.task.isGenerated && this.task.processDefinitionId) {
-        formFrame.src = `embedded-forms.html?generated=true&processDefinitionId=${this.task.processDefinitionId}&lang=${this.currentLanguage()}`
-        this.loader = false
-      } else if (this.task.id) {
-        const form = this.task.formKey || await TaskService.form(this.task.id)
-        if (form.key && form.key.includes('/rendered-form')) {
-          // Generated forms
-          this.formFrame = true
-          formFrame.src = `embedded-forms.html?generated=true&taskId=${this.task.id}&lang=${this.currentLanguage()}`
-          this.loader = false
-        } else  if (this.task.formKey && this.task.formKey.startsWith('embedded:') && this.task.formKey !== 'embedded:/camunda/app/tasklist/ui-element-templates/template.html') {
-          //Embedded forms if not "standard" ui-element-templates
-          this.formFrame = true
-          formFrame.src = `embedded-forms.html?taskId=${this.task.id}&lang=${this.currentLanguage()}`
-          this.loader = false
-        } else {
-          let formReferencePromise
-          //Camunda Forms
-          if (this.task.camundaFormRef || (this.task.formKey && this.task.formKey.startsWith('camunda-forms:'))) {
-            formReferencePromise = Promise.resolve('deployed-form')
-          } else {
-            formReferencePromise = TaskService.formReference(this.task.id)
-          }
-          formReferencePromise.then(formReference => {
-            //Empty Tasks
-            if (formReference === 'empty-task') {
-              this.loader = false
-              this.formFrame = false
-              return
-            }
-            //Ui-element-templates
-
-            formFrame.src = '#/' + formReference + '/' + this.currentLanguage() + '/' +
-            this.task.id + '/' + this.$root.user.authToken + '/' + themeContext + '/' + translationContext
-
-            this.loader = false
-          }, () => {
-            // Not needed but just in case something changes in the backend method
-            this.formFrame = false
-            this.loader = false
-          })
-        }
-      }
-    },
-    getVariables: function() {
-      return {
-        data: {
-          userInstruction: this.userInstruction,
-          assignee: this.task.assignee
-        }
-      }
-    },
     completeEmptyTask: function() {
       TaskService.submit(this.task.id).then(() => {
         this.completeTask()
@@ -201,7 +86,7 @@ export default {
       this.submitForm = true
       const data = JSON.parse(JSON.stringify(this.task))
       if (task) data.processInstanceId = task.id
-      if (this.task.url) {
+      if (this.task.isStartform) {
         this.$emit('complete-task', data)
         this.submitForm = false
       } else {
@@ -210,17 +95,10 @@ export default {
         this.submitForm = false
       }
     },
-    displayErrorMessage: function(data) {
-      // Show custom error messages when no HTTP status is provided
-      if (!data.status) {
-        this.$root.$refs.error.show(data)
-        return
-      }
-
-      // Process HTTP error responses and display corresponding error messages
-      let type = ''
-      const errorParams = []
-      switch (data.status) {
+    displayErrorMessage: function(params) {
+      var type = ''
+      var errorParams = []
+      switch (params && params.status) {
         case 404:
           if (data.type !== 'generic') {
             type = 'taskSelectedNotExist'
@@ -229,6 +107,9 @@ export default {
         case 400:
           type = 'AccessDeniedException'
           errorParams.push(this.task.id)
+          break
+        case 500:
+          type = 'EUiTNotFoundException'
           break
         default:
           type = 'errorSaveTask'
@@ -261,115 +142,7 @@ export default {
           (this.$route.params.taskId ? '/' + this.$route.params.taskId : '')
         if (this.$route.path !== path) this.$router.replace(path)
       }
-    },
-    processMessage: function(e) {
-      const formFrame = this.$refs['template-frame']
-      if (e.source === formFrame.contentWindow && e.data.method) {
-        if (e.data.method === 'completeTask') this.completeTask(e.data.task)
-        else if (e.data.method === 'displaySuccessMessage') this.$refs.messageSaved.show(10)
-        else if (e.data.method === 'displayGenericSuccessMessage') this.$refs.messageSuccess.show(10)
-        else if (e.data.method === 'displayErrorMessage') this.displayErrorMessage(e.data.data)
-        else if (e.data.method === 'cancelTask') this.cancelTask()
-        else if (e.data.method === 'updateFilters') this.updateFilters(e.data)
-        else if (e.data.method === 'requestConfig') {
-          // Securely provide config (auth token + engine) to iframe via postMessage
-          const engineId = localStorage.getItem(ENGINE_STORAGE_KEY)
-          const config = {
-            authToken: this.$root.user.authToken,
-            engineRestUrl: this.$root.config.engineRestUrl,
-            engineRestPath: this.$root.config.engineRestPath
-          }
-          if (engineId) {
-            // Engine ID can be either:
-            // - Simple string (default engine) -> use relative path
-            // - "url|path|engineName" format (additional engine) -> parse and use absolute URL
-            config.engineId = engineId
-          }
-          const response = {
-            method: 'configResponse',
-            config: config
-          }
-          formFrame.contentWindow.postMessage(response, '*')
-        }
-      else if (e.data.method === 'openDatePicker') {
-          // Handle date picking request from the iframe
-          const data = e.data;
-          this.datePickerRequest = {
-            fieldName: data.data.fieldName,
-            value: data.data.value
-          }
-          // Parse date from dd/mm/yyyy format
-          const date = e.data.data.value;
-          if (typeof date === 'string') {
-            const dateRegex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
-            const match = date.match(dateRegex);
-            if (match) {
-              const [, day, month, year] = match;
-              const dateObject = new Date(year, month - 1, day);
-              if (Number.isNaN(dateObject.getTime())) {
-                this.datePickerValue = null;
-              } else {
-                this.datePickerValue = dateObject;
-              }
-            } else {
-              this.datePickerValue = null;
-            }
-          }
-
-          // Show the date picker modal
-          this.$refs.datePickerModal.show();
-        }
-      }
-    },
-    /**
-     * Handles the date picker confirmation.
-     * Formats the selected date as dd/mm/yyyy and sends it back to the iframe.
-     */
-    onDatePickerConfirm: function() {
-      let result = null
-      if (this.datePickerValue) {
-        const d = new Date(this.datePickerValue)
-        // Format as dd/mm/yyyy
-        const day = String(d.getDate()).padStart(2, '0')
-        const month = String(d.getMonth() + 1).padStart(2, '0')
-        const year = d.getFullYear()
-        result = `${day}/${month}/${year}`
-      }
-
-      // Send result back to iframe
-      if (this.datePickerRequest && this.datePickerRequest.fieldName) {
-        const response = {
-          method: 'datePickerResult',
-          fieldName: this.datePickerRequest.fieldName,
-          value: result
-        }
-
-        // Post message to the iframe
-        const formFrame = this.$refs['template-frame']
-        if (formFrame && formFrame.contentWindow) {
-          formFrame.contentWindow.postMessage(response, '*')
-        }
-      }
-
-      // Hide the date picker modal
-      if (this.$refs.datePickerModal) {
-        this.$refs.datePickerModal.hide()
-      }
-
-      // Reset date picker state
-      this.datePickerValue = null
-      this.datePickerRequest = null
-    },
-    onBeforeUnload: function() {
-      const formFrame = this.$refs['template-frame']
-      if (formFrame) {
-        formFrame.contentWindow.postMessage({ type: 'contextChanged' }, '*');
-        this.loadIframe()
-      }
     }
-  },
-  beforeUnmount: function() {
-    window.removeEventListener('message', this.processMessage)
   }
 }
 </script>

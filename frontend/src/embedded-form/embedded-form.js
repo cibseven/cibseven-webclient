@@ -428,7 +428,6 @@ function loadEmbeddedForm(
 }
 
 function loadDeployedForm(client, isStartForm, referenceId) {
-function loadDeployedForm(client, isStartForm, referenceId) {
     return new Promise((resolve, reject) => {
         if (isStartForm) {
             client.http.get(`process/${referenceId}/deployed-start-form`, {

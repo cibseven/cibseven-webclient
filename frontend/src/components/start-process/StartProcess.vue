@@ -91,11 +91,12 @@ export default {
       return {
         url: this.startParams.url,
         processDefinitionId: this.startParams.processDefinitionId,
-        isEmbedded: this.startParams.isEmbedded,
-        isGenerated: this.startParams.isGenerated,
+        isStartform: true,
         assignee: this.$root.user,
         id: this.selectedProcess.id,
-        processInstanceId: this.selectedProcess.processInstanceId }
+        processInstanceId: this.selectedProcess.processInstanceId,
+        formKey: this.startParams.formKey
+      }
     }
   },
   mounted: function() {
@@ -123,24 +124,19 @@ export default {
             }, () => this.isStartingProcess = false)
           } else {
             this.startParams = {}
-            if (url.key && url.key.includes('/rendered-form')) {
-              // Generated forms
-              this.startParams.processDefinitionId = processLatest.id
-              this.startParams.isGenerated = true
-            } else if (url.key && url.key.startsWith('embedded:') && !url.key.startsWith('embedded:/camunda/app/tasklist/ui-element-templates/template.html')) {
-              //Embedded forms
-              this.startParams.processDefinitionId = processLatest.id
-              this.startParams.isEmbedded = true
-            } else {
-              let templateType
-              //Camunda form
-              if (url.camundaFormRef || url.key && url.key.startsWith('camunda-forms:')) {
-                templateType = 'start-deployed-form'
-              //Ui-element-templates
-              } else {
-                templateType = url.key.split('?template=')[1]
-              }
+            // EUiT and embedded form support
+            this.startParams.processDefinitionId = processLatest.id
+            this.startParams.formKey = url.key
 
+            var templateType
+            //Camunda form
+            if (url.camundaFormRef) {
+              templateType = 'start-deployed-form'
+            //Ui-element-templates
+            } else if (url.key.split('?template=').length > 1) {
+              templateType = url.key.split('?template=')[1]
+            }
+            if (templateType) {
               this.startParams.url = '#/' + templateType + '/' + this.currentLanguage() + '/' +
                 processLatest.id + '/' + this.$root.user.authToken // + '/' + themeContext + '/' + translationContext
             }
