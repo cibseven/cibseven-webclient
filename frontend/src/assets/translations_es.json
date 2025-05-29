@@ -1095,7 +1095,7 @@
 			"title": "Política de contraseñas",
 			"header": "Su contraseña debe cumplir los siguientes criterios: ",
 			"items": [
-				"no debe contener datos de usuario (p.ej., id de usuario, nombre, apellidos, correo electrónico)",
+				"no debe contener datos de usuario (p.ej., ID de usuario, nombre, apellidos, correo electrónico)",
 				"10 caracteres como mínimo",
 				"al menos un carácter mayúsculo",
 				"al menos un carácter minúsculo",

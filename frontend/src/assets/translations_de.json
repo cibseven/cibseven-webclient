@@ -294,7 +294,7 @@
 			"callingActivity": "Aufrufende Aktivität",
 			"process": "Prozess",
 			"version": "Version",
-			"id": "Id"
+			"id": "ID"
 		},
 		"assignModal": {
 		    "manageUsersGroups": "Benutzer/Gruppen verwalten",
