@@ -123,7 +123,7 @@ export default {
   },
   mounted: function() {
     this.viewer = new NavigatedViewer({ container: this.$refs.diagram })
-    this.viewer.on('import.done', event => {
+    this.viewer.on('import.done', () => {
       this.drawDiagramState()
       this.attachEventListeners()
       this.$emit('diagram-imported')
