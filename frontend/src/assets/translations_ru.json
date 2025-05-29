@@ -119,7 +119,7 @@
 			"variable": "Переменная процесса",
 			"copyValue": "Копировать значение",
 			"historyTimeToLive": "История время жить",
-			"tenantId": "ID клиента"
+			"tenantId": "ID тенанта"
 		},
 		"sections": {
 			"all": "Все",
@@ -199,8 +199,8 @@
 		"upload": "Загрузить файл",
 		"selectFile": "Выбрать файл",
 		"calledProcessDefinitions": {
-			"process": "процесс",
-			"version": "версия",
+			"process": "Процесс",
+			"version": "Версия",
 			"activities": "Вызывающие мероприятия"
 		},
 		"details": {
@@ -294,7 +294,7 @@
 			"callingActivity": "звонковая деятельность",
 			"process": "процесс",
 			"version": "версия",
-			"id": "Id"
+			"id": "ID"
 		},
 		"assignModal": {
 		    "manageUsersGroups": "Управление пользователями/группами",
