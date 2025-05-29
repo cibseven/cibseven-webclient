@@ -17,7 +17,7 @@
 
 -->
 <template>
-  <FlowTable striped resizable thead-class="sticky-header" :items="instances" primary-key="id" prefix="process."
+  <FlowTable v-if="!loading && instances.length > 0 && !sorting" striped resizable thead-class="sticky-header" :items="instances" primary-key="id" prefix="process."
     :sort-by="sortByDefaultKey" :sort-desc="sortDesc" :fields="[
     { label: 'state', key: 'state', class: 'col-1', thClass: 'border-end', tdClass: 'justify-content-center text-center py-0 border-end border-top-0' },
     { label: 'businessKey', key: 'businessKey', class: 'col-2', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0 position-relative' },
@@ -65,6 +65,12 @@
       size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-delete-outline" :title="$t('process.deleteHistoryInstance')"></b-button>
     </template>
   </FlowTable>
+  <div v-else-if="loading" class="py-3 text-center w-100">
+    <BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}
+  </div>
+  <div v-else>
+    <p class="text-center p-4">{{ $t('process-instance.noResults') }}</p>
+  </div>
   <ConfirmActionOnProcessInstanceModal ref="confirm"></ConfirmActionOnProcessInstanceModal>
   <SuccessAlert top="0" style="z-index: 1031" ref="success"> {{ $t('alert.successOperation') }}</SuccessAlert>
   <SuccessAlert ref="messageCopy"> {{ $t('process.copySuccess') }} </SuccessAlert>
@@ -77,13 +83,14 @@ import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import ConfirmActionOnProcessInstanceModal from '@/components/process/modals/ConfirmActionOnProcessInstanceModal.vue'
+import { BWaitingBox } from 'cib-common-components'
 
 export default {
   name: 'InstancesTable',
-  components: { FlowTable, SuccessAlert, ConfirmActionOnProcessInstanceModal },
+  components: { FlowTable, SuccessAlert, ConfirmActionOnProcessInstanceModal, BWaitingBox },
   emits: ['instance-deleted'],
   mixins: [copyToClipboardMixin, permissionsMixin],
-  props: { instances: Array, sortDesc: Boolean, sortByDefaultKey: String },
+  props: { instances: Array, sortDesc: Boolean, sortByDefaultKey: String, loading: Boolean, sorting: Boolean },
   data: function() {
     return {
       focusedCell: null
