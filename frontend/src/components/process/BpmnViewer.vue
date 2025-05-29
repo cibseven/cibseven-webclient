@@ -350,9 +350,11 @@ export default {
     },
     cleanDiagramState: function(overlayList) {
       const overlays = this.viewer.get('overlays')
-      overlayList = overlayList || this.overlayList
-      overlayList.forEach(overlayId => overlays.remove(overlayId))
-      overlayList = []
+      const list = overlayList || this.overlayList
+
+      list.forEach(overlayId => overlays.remove(overlayId))
+
+      list.splice(0, list.length)
     },
     setHtmlOnDiagram: function(id, html, position) {
       let overlays = this.viewer.get('overlays')
