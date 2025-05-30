@@ -191,7 +191,7 @@ function reportSameValuesTable(objBase, objTest, languages, path) {
 }
 
 describe('translations', () => {
-  const languages = ['de', 'en', 'ru', 'es']
+  const languages = ['de', 'en', 'es', 'ru', 'ua']
 
   describe('loadable', () => {
     languages.forEach(lang => {
