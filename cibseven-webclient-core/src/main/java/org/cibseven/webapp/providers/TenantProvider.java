@@ -37,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 public class TenantProvider extends SevenProviderBase implements ITenantProvider {
 	
 	private String buildUrlWithParams(String path, Map<String, Object> queryParams) {
-	    UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(cibsevenUrl + "/engine-rest" + path);
+	    UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(getEngineRestUrl() + path);
 	    queryParams.forEach((key, value) -> {
 	        if (value != null) {
 	            builder.queryParam(key, value);
@@ -54,13 +54,13 @@ public class TenantProvider extends SevenProviderBase implements ITenantProvider
 
 	@Override
 	public Tenant fetchTenant(String tenantId, CIBUser user) throws SystemException {
-		String url = cibsevenUrl + "/engine-rest/tenant/" + tenantId;
+		String url = getEngineRestUrl() + "/tenant/" + tenantId;
 		return ((ResponseEntity<Tenant>) doGet(url, Tenant.class, user, false)).getBody();
 	}
 
 	@Override
 	public void createTenant(Tenant newTenant, CIBUser user) throws InvalidUserIdException {
-		String url = cibsevenUrl + "/engine-rest/tenant/create";
+		String url = getEngineRestUrl() + "/tenant/create";
 		try {
 			doPost(url, newTenant.json(), null, user);
 		} catch (JsonProcessingException e) {
@@ -72,13 +72,13 @@ public class TenantProvider extends SevenProviderBase implements ITenantProvider
 	
 	@Override
 	public void deleteTenant(String tenantId, CIBUser user) {
-		String url = cibsevenUrl + "/engine-rest/tenant/" + tenantId;
+		String url = getEngineRestUrl() + "/tenant/" + tenantId;
 		doDelete(url, user);
 	}
 
 	@Override
 	public void udpateTenant(Tenant tenant, CIBUser user) {		
-		String url = cibsevenUrl + "/engine-rest/tenant/" + tenant.getId();
+		String url = getEngineRestUrl() + "/tenant/" + tenant.getId();
 		try {		
 			doPut(url, tenant.json() , user);
 		} catch (JsonProcessingException e) {
@@ -90,25 +90,25 @@ public class TenantProvider extends SevenProviderBase implements ITenantProvider
 	
 	@Override
 	public void addMemberToTenant(String tenantId, String userId, CIBUser user) {
-		String url = cibsevenUrl + "/engine-rest/tenant/" + tenantId + "/user-members/" + userId;
+		String url = getEngineRestUrl() + "/tenant/" + tenantId + "/user-members/" + userId;
 		doPut(url, "", user);
 	}	
 	
 	@Override
 	public void deleteMemberFromTenant(String tenantId, String userId, CIBUser user) {
-		String url = cibsevenUrl + "/engine-rest/tenant/" + tenantId + "/user-members/" + userId;
+		String url = getEngineRestUrl() + "/tenant/" + tenantId + "/user-members/" + userId;
 		doDelete(url, user);
 	}
 
 	@Override
 	public void addGroupToTenant(String tenantId, String groupId, CIBUser user) {
-		String url = cibsevenUrl + "/engine-rest/tenant/" + tenantId + "/group-members/" + groupId;
+		String url = getEngineRestUrl() + "/tenant/" + tenantId + "/group-members/" + groupId;
 		doPut(url, "", user);
 	}	
 	
 	@Override
 	public void deleteGroupFromTenant(String tenantId, String groupId, CIBUser user) {
-		String url = cibsevenUrl + "/engine-rest/tenant/" + tenantId + "/group-members/" + groupId;
+		String url = getEngineRestUrl() + "/tenant/" + tenantId + "/group-members/" + groupId;
 		doDelete(url, user);
 	}
 

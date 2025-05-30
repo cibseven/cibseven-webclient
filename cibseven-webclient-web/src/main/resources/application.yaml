@@ -18,6 +18,10 @@ cibseven:
     # Engine rest
     engineRest:
       url: http://localhost:8080
+      # Configurable path for the engine REST API (default: /engine-rest)
+      # This allows customization for different Jersey application paths
+      # Example: path: /different-path
+      path: /engine-rest
     historyLevel: full
     # Token generation
     authentication:

@@ -33,19 +33,19 @@ public class JobProvider extends SevenProviderBase implements IJobProvider {
 
 	@Override
 	public Collection<Job> getJobs(Map<String, Object> params, CIBUser user) {
-		String url = cibsevenUrl + "/engine-rest/job";
+		String url = getEngineRestUrl() + "/job";
 		return Arrays.asList(((ResponseEntity<Job[]>) doPost(url, params, Job[].class, user)).getBody());
 	}
 
 	@Override
 	public void setSuspended(String id, Map<String, Object> data, CIBUser user) {
-		String url = cibsevenUrl + "/engine-rest/job/" + id + "/suspended";
+		String url = getEngineRestUrl() + "/job/" + id + "/suspended";
 		doPut(url, data, user);
 	}
 
 	@Override
 	public void deleteJob(String id, CIBUser user) {
-		String url = cibsevenUrl + "/engine-rest/job/" + id;
+		String url = getEngineRestUrl() + "/job/" + id;
 		doDelete(url, user);
 	}
 
@@ -65,7 +65,7 @@ public class JobProvider extends SevenProviderBase implements IJobProvider {
 	}
 	
 	private String buildUrlWithParams(String path, Map<String, Object> queryParams) {
-	    UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(cibsevenUrl + "/engine-rest" + path);
+	    UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(getEngineRestUrl() + path);
 	    queryParams.forEach((key, value) -> {
 	        if (value != null) {
 	            builder.queryParam(key, value);

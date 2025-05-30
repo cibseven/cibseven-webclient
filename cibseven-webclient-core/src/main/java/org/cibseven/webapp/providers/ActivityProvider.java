@@ -35,50 +35,50 @@ public class ActivityProvider extends SevenProviderBase implements IActivityProv
 
 	@Override
 	public ActivityInstance findActivityInstance(String processInstanceId, CIBUser user) {
-		String url = cibsevenUrl+ "/engine-rest/process-instance/" + processInstanceId + "/activity-instances";
+		String url = getEngineRestUrl() + "/process-instance/" + processInstanceId + "/activity-instances";
 		return ((ResponseEntity<ActivityInstance>) doGet(url, ActivityInstance.class, user, false)).getBody();		
 	}
 
 	@Override
 	public List<ActivityInstanceHistory> findActivitiesInstancesHistory(Map<String, Object> queryParams, CIBUser user) {
-		String url = URLUtils.buildUrlWithParams(cibsevenUrl + "/engine-rest/history/activity-instance", queryParams);
+		String url = URLUtils.buildUrlWithParams(getEngineRestUrl() + "/history/activity-instance", queryParams);
 		return Arrays.asList(((ResponseEntity<ActivityInstanceHistory[]>) doGet(url, ActivityInstanceHistory[].class, user, false)).getBody());	
 	}
 
 	@Override
 	public List<ActivityInstanceHistory> findActivitiesInstancesHistory(String processInstanceId, CIBUser user) {
-		String url = cibsevenUrl + "/engine-rest/history/activity-instance?processInstanceId=" + processInstanceId;
+		String url = getEngineRestUrl() + "/history/activity-instance?processInstanceId=" + processInstanceId;
 		return Arrays.asList(((ResponseEntity<ActivityInstanceHistory[]>) doGet(url, ActivityInstanceHistory[].class, user, false)).getBody());	
 	}
 	
 	@Override
 	public List<ActivityInstanceHistory> findActivityInstanceHistory(String processInstanceId, CIBUser user) throws SystemException {
-		String url = cibsevenUrl + "/engine-rest/history/activity-instance?processInstanceId=" + processInstanceId;
+		String url = getEngineRestUrl() + "/history/activity-instance?processInstanceId=" + processInstanceId;
 		return Arrays.asList(doGet(url, ActivityInstanceHistory[].class, user, false).getBody());
 	}
 	
 	@Override
 	public ActivityInstance findActivityInstances(String processInstanceId, CIBUser user) throws SystemException {
-		String url = cibsevenUrl+ "/engine-rest/process-instance/" + processInstanceId + "/activity-instances";
+		String url = getEngineRestUrl() + "/process-instance/" + processInstanceId + "/activity-instances";
 		return doGet(url, ActivityInstance.class, user, false).getBody();
 	}
 	
 	@Override
 	public void deleteVariableByExecutionId(String executionId, String variableName, CIBUser user) {
-		String url = cibsevenUrl + "/engine-rest/execution/" + executionId + "/localVariables/" + variableName;
+		String url = getEngineRestUrl() + "/execution/" + executionId + "/localVariables/" + variableName;
 		doDelete(url, user);
 	}
 
 	@Override
 	public void deleteVariableHistoryInstance(String id, CIBUser user) {
-		String url = cibsevenUrl + "/engine-rest/history/variable-instance/" + id;
+		String url = getEngineRestUrl() + "/history/variable-instance/" + id;
 		doDelete(url, user);
 	}
 
 	@Override
 	public Collection<ActivityInstanceHistory> findActivitiesProcessDefinitionHistory(String processDefinitionId,
 			CIBUser user) {
-		String url = cibsevenUrl + "/engine-rest/history/activity-instance?processDefinitionId=" + processDefinitionId;
+		String url = getEngineRestUrl() + "/history/activity-instance?processDefinitionId=" + processDefinitionId;
 		return Arrays.asList(((ResponseEntity<ActivityInstanceHistory[]>) doGet(url, ActivityInstanceHistory[].class, user, false)).getBody());
 	}
 	
