@@ -40,7 +40,7 @@
 <script>
 import SidebarsFlow from '@/components/common-components/SidebarsFlow.vue'
 
-export const DEFAULT_SYSTEM_VIEW_SIDEBAR_ITEMS = ['system-diagnostics', 'execution-metrics']
+export const SystemSidebarItems = ['system-diagnostics', 'execution-metrics']
 
 export default {
   name: 'SystemView',
@@ -48,7 +48,7 @@ export default {
   props: {
     systemSettings: {
       type: Array,
-      default: () => DEFAULT_SYSTEM_VIEW_SIDEBAR_ITEMS
+      default: () => SystemSidebarItems
     }
   },
   data() {

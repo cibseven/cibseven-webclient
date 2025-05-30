@@ -125,7 +125,7 @@ import RuntimeBatches from '@/components/batches/tables/RuntimeBatches.vue'
 import HistoricBatches from '@/components/batches/tables/HistoricBatches.vue'
 import BatchDetails from '@/components/batches/tables/BatchDetails.vue'
 import SystemView from '@/components/system/SystemView.vue'
-import { DEFAULT_SYSTEM_VIEW_SIDEBAR_ITEMS } from '@/components/system/SystemView.vue'
+import { SystemSidebarItems } from '@/components/system/SystemView.vue'
 import SystemDiagnostics from '@/components/system/SystemDiagnostics.vue'
 import ExecutionMetrics from '@/components/system/ExecutionMetrics.vue'
 import ShortcutsModal from '@/components/modals/ShortcutsModal.vue'
@@ -241,7 +241,7 @@ export {
   EditTenant,
   BatchesView,
   SystemView,
-  DEFAULT_SYSTEM_VIEW_SIDEBAR_ITEMS,
+  SystemSidebarItems,
   axios,
   moment,
   appConfig,
