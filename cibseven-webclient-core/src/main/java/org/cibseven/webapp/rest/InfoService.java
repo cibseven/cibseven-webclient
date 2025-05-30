@@ -55,6 +55,7 @@ public class InfoService extends BaseService {
 	@Value("${cibseven.webclient.link.accessibility:}") private String flowLinkAccessibility;
 	@Value("${cibseven.webclient.link.help:}") private String flowLinkHelp;
 	@Value("${cibseven.webclient.support-dialog:}") private String supportDialog;
+	@Value("${cibseven.webclient.engineRest.path:/engine-rest}") private String engineRestPath;
 	
 	
 	@Operation(
@@ -83,6 +84,7 @@ public class InfoService extends BaseService {
 		configJson.put("flowLinkHelp", flowLinkHelp);
 		configJson.put("productNamePageTitle", productNamePageTitle);
 		configJson.put("servicesBasePath", servicesBasePath);
+		configJson.put("engineRestPath", engineRestPath);
 		
         try {
             ObjectMapper mapper = new ObjectMapper();

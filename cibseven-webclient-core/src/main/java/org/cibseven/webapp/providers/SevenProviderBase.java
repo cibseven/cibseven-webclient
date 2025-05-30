@@ -67,6 +67,17 @@ public abstract class SevenProviderBase {
 	
 	@Value("${cibseven.webclient.custom.spring.jackson.parser.max-size:20000000}") int jacksonParserMaxSize;
 	@Value("${cibseven.webclient.engineRest.url:./}") protected String cibsevenUrl;
+	@Value("${cibseven.webclient.engineRest.path:/engine-rest}") protected String engineRestPath;
+	
+	/**
+	 * Constructs the full engine REST base URL by combining the base URL with the configurable path
+	 * @return the complete engine REST URL
+	 */
+	protected String getEngineRestUrl() {
+		String baseUrl = cibsevenUrl.endsWith("/") ? cibsevenUrl.substring(0, cibsevenUrl.length() - 1) : cibsevenUrl;
+		String restPath = engineRestPath.startsWith("/") ? engineRestPath : "/" + engineRestPath;
+		return baseUrl + restPath;
+	}
 	
 	/**
 	 * Creates new Http headers and adds Authorization User token
