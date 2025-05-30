@@ -2,7 +2,8 @@ import { InfoService } from "@/services"
 import { switchLanguage, i18n } from "@/i18n"
 import { getTheme } from "@/utils/init"
 
-InfoService.getProperties().then(config => {
+InfoService.getProperties().then(response => {
+    const config = response.data
     function loadTheme() {
 
         var css = document.createElement('Link')
