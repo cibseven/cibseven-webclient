@@ -19,9 +19,13 @@
 <template>
   <div v-if="process" class="h-100">
     <div @mousedown="handleMouseDown" class="v-resizable position-absolute w-100" style="left: 0" :style="'height: ' + bpmnViewerHeight + 'px; ' + toggleTransition">
-      <BpmnViewer ref="diagram" @activity-id="$emit('activity-id', $event)" @task-selected="selectTask($event)" @activity-map-ready="activityMap = $event"
+      <component :is="BpmnViewerPlugin" v-if="BpmnViewerPlugin" ref="diagram" @activity-id="$emit('activity-id', $event)" @task-selected="selectTask($event)" @activity-map-ready="activityMap = $event"
         :process-definition-id="process.id" :activity-id="activityId" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" :statistics="process.statistics"
-        :activities-history="process.activitiesHistory" class="h-100">
+        :activities-history="process.activitiesHistory" :active-tab="activeTab" class="h-100">
+      </component>
+      <BpmnViewer v-else ref="diagram" @activity-id="$emit('activity-id', $event)" @task-selected="selectTask($event)" @activity-map-ready="activityMap = $event"
+        :process-definition-id="process.id" :activity-id="activityId" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" :statistics="process.statistics"
+        :activities-history="process.activitiesHistory" :active-tab="activeTab" class="h-100">
       </BpmnViewer>
     </div>
 
@@ -34,62 +38,54 @@
     </ul>
 
     <div class="position-absolute w-100" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
-      <div v-if="activeTab === 'instances'">
-        <div ref="filterTable" class="bg-light d-flex position-absolute w-100">
-          <div class="col-3 p-3">
-            <b-input-group size="sm">
-              <template #prepend>
-                <b-button :title="$t('searches.search')" aria-hidden="true" size="sm" class="rounded-left" variant="secondary"><span class="mdi mdi-magnify" style="line-height: initial"></span></b-button>
-              </template>
-              <b-form-input :title="$t('searches.search')" size="sm" :placeholder="$t('searches.search')" @input="(evt) => onInput(evt.target.value.trim())"></b-form-input>
-              <b-button size="sm" variant="light" @click="$refs.sortModal.show()" class="ms-1 border"><span class="mdi mdi-sort" style="line-height: initial"></span></b-button>
-            </b-input-group>
-          </div>
-          <div class="col-1 p-3">
-            <span v-if="activityId" class="badge bg-info rounded-pill p-2 pe-3" style="font-weight: 500; font-size: 0.75rem">
-              <span @click="$emit('activity-id', '')" role="button" class="mdi mdi-close-thick py-2 px-1"></span> {{ activityId }}
-            </span>
-          </div>
-          <div class="col-8 p-3 text-end">
-            <div>
-              <b-button v-if="process.suspended === 'false'" class="border" size="sm" variant="light" @click="confirmSuspend" :title="$t('process.suspendProcess')">
-                <span class="mdi mdi-pause-circle-outline"></span> {{ $t('process.suspendProcess') }}
-              </b-button>
-              <b-button v-else class="border" size="sm" variant="light" @click="confirmActivate" :title="$t('process.activateProcess')">
-                <span class="mdi mdi-play-circle-outline"></span> {{ $t('process.activateProcess') }}
-              </b-button>
-              <b-button class="border" size="sm" variant="light" @click="downloadBpmn()" :title="$t('process.downloadBpmn')">
-                <span class="mdi mdi-download"></span> {{ $t('process.downloadBpmn') }}
-              </b-button>
-              <b-button class="border" size="sm" variant="light" @click="viewDeployment()" :title="$t('process.showDeployment')">
-                <span class="mdi mdi-file-eye-outline"></span> {{ $t('process.showDeployment') }}
-              </b-button>
-              <component :is="ProcessActions" v-if="ProcessActions" :process="process"></component>
-            </div>
-          </div>
+      <div v-if="isInstancesView" ref="filterTable" class="bg-light d-flex position-absolute w-100">
+        <div class="col-3 p-3">
+          <b-input-group size="sm">
+            <template #prepend>
+              <b-button :title="$t('searches.search')" aria-hidden="true" size="sm" class="rounded-left" variant="secondary"><span class="mdi mdi-magnify" style="line-height: initial"></span></b-button>
+            </template>
+            <b-form-input :title="$t('searches.search')" size="sm" :placeholder="$t('searches.search')" @input="(evt) => onInput(evt.target.value.trim())"></b-form-input>
+            <b-button size="sm" variant="light" @click="$refs.sortModal.show()" class="ms-1 border"><span class="mdi mdi-sort" style="line-height: initial"></span></b-button>
+          </b-input-group>
         </div>
-        <div ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 60px; left: 0; bottom: 0" @scroll="handleScrollProcesses">
-          <InstancesTable ref="instancesTable" v-if="!loading && instances.length > 0 && !sorting"
-            :instances="instances"
-            :sortByDefaultKey="sortByDefaultKey"
-            :sortDesc="sortDesc"
-            @instance-deleted="$emit('instance-deleted')"
-          ></InstancesTable>
-          <div v-else-if="loading" class="py-3 text-center w-100">
-            <BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}
-          </div>
-          <div v-else>
-            <p class="text-center p-4">{{ $t('process-instance.noResults') }}</p>
+        <div class="col-1 p-3">
+          <span v-if="activityId" class="badge bg-info rounded-pill p-2 pe-3" style="font-weight: 500; font-size: 0.75rem">
+            <span @click="$emit('activity-id', '')" role="button" class="mdi mdi-close-thick py-2 px-1"></span> {{ activityId }}
+          </span>
+        </div>
+        <div class="col-8 p-3 text-end">
+          <div>
+            <b-button v-if="process.suspended === 'false'" class="border" size="sm" variant="light" @click="confirmSuspend" :title="$t('process.suspendProcess')">
+              <span class="mdi mdi-pause-circle-outline"></span> {{ $t('process.suspendProcess') }}
+            </b-button>
+            <b-button v-else class="border" size="sm" variant="light" @click="confirmActivate" :title="$t('process.activateProcess')">
+              <span class="mdi mdi-play-circle-outline"></span> {{ $t('process.activateProcess') }}
+            </b-button>
+            <b-button class="border" size="sm" variant="light" @click="downloadBpmn()" :title="$t('process.downloadBpmn')">
+              <span class="mdi mdi-download"></span> {{ $t('process.downloadBpmn') }}
+            </b-button>
+            <b-button class="border" size="sm" variant="light" @click="viewDeployment()" :title="$t('process.showDeployment')">
+              <span class="mdi mdi-file-eye-outline"></span> {{ $t('process.showDeployment') }}
+            </b-button>
+            <component :is="ProcessActions" v-if="ProcessActions" :process="process"></component>
           </div>
         </div>
       </div>
-      <div v-if="activeTab !== 'instances'" ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 0px; left: 0; bottom: 0">
-        <IncidentsTable v-if="activeTab === 'incidents' && !loading"
+      <div ref="rContent" class="overflow-auto bg-white position-absolute w-100" :style="isInstancesView ? 'top: 60px' : 'top: 0px'" style="left: 0; bottom: 0" @scroll="isInstancesView ? handleScrollProcesses : null">
+        <InstancesTable v-if="isInstancesView" ref="instancesTable" 
+          :instances="instances"
+          :sortByDefaultKey="sortByDefaultKey"
+          :sortDesc="sortDesc"
+          @instance-deleted="$emit('instance-deleted')"
+          :loading="loading"
+          :sorting="sorting"
+        ></InstancesTable>
+        <IncidentsTable v-else-if="activeTab === 'incidents'"
           :incidents="incidents" :activity-instance="activityInstance"
           :activity-instance-history="process.activitiesHistory"/>
         <JobDefinitionsTable v-else-if="activeTab === 'jobDefinitions'"
           :process-id="process.id" @highlight-activity="highlightActivity" />
-        <CalledProcessDefinitionsTable v-else-if="activeTab === 'calledProcessDefinitions' && !loading"
+        <CalledProcessDefinitionsTable v-else-if="activeTab === 'calledProcessDefinitions'"
           :process="process" :instances="instances" :calledProcesses="calledProcesses" @changeTabToInstances="changeTab({ id: 'instances' })"/>
         <component :is="ProcessInstancesTabsContentPlugin" v-if="ProcessInstancesTabsContentPlugin" :process="process" :active-tab="activeTab"></component>
       </div>
@@ -158,8 +154,9 @@ export default {
   },
   watch: {
     'process.id': function() {
+      //TODO: Refactor to fetch from store
       ProcessService.fetchDiagram(this.process.id).then(response => {
-        this.$refs.diagram.showDiagram(response.bpmn20Xml, null, null)
+        this.$refs.diagram.showDiagram(response.bpmn20Xml)
       }),
       this.getJobDefinitions()
     }
@@ -167,7 +164,7 @@ export default {
   mounted: function() {
     ProcessService.fetchDiagram(this.process.id).then(response => {
       setTimeout(() => {
-        this.$refs.diagram.showDiagram(response.bpmn20Xml, null, null)
+        this.$refs.diagram.showDiagram(response.bpmn20Xml)
       }, 100)
     }),
     this.getJobDefinitions()
@@ -188,9 +185,17 @@ export default {
         ? this.$options.components.ProcessInstancesTabsPlugin
         : null
     },
+    BpmnViewerPlugin: function() {
+      return this.$options.components && this.$options.components.BpmnViewerPlugin
+        ? this.$options.components.BpmnViewerPlugin
+        : null
+    },
     processName: function() {
       return this.process.name !== null ? this.process.name : this.process.key
-    }
+    },
+    isInstancesView: function() {
+      return this.activeTab === 'instances'
+    },
   },
   methods: {
     applySorting: function(sortedItems) {

@@ -76,7 +76,7 @@ function getActivitiesToMark(treeObj) {
 
 export default {
   name: 'BpmnViewer',
-  emits: ['activity-id', 'task-selected', 'child-activity', 'shown', 'error'],
+  emits: ['activity-id', 'task-selected', 'child-activity', 'diagram-imported', 'overlay-click'],
   components: { BWaitingBox },
   props: {
     activityInstance: Object,
@@ -84,7 +84,8 @@ export default {
     statistics: Array,
     activityId: String,
     processDefinitionId: String,
-    activitiesHistory: Array
+    activitiesHistory: Array,
+    activeTab: String
   },
   data: function() {
     return {
@@ -122,14 +123,10 @@ export default {
   },
   mounted: function() {
     this.viewer = new NavigatedViewer({ container: this.$refs.diagram })
-    this.viewer.on('import.done', event => {
-      if (event.error) {
-         this.$emit('error', event.error)
-      } else {
-         this.$emit('shown', event.warnings)
-      }
+    this.viewer.on('import.done', () => {
       this.drawDiagramState()
       this.attachEventListeners()
+      this.$emit('diagram-imported')
     })
   },
   methods: {
@@ -153,6 +150,7 @@ export default {
     },
     attachEventListeners: function() {
       const eventBus = this.viewer.get('eventBus')
+      // BPMN element click
       eventBus.on('element.click', (event) => {
         if (this.getTypeAllowed(event.element.type, interactionTypes)) {
           this.highlightElement(event.element.id)
@@ -171,6 +169,7 @@ export default {
           this.$emit('task-selected', null)
         }
       })
+      // BPMN element hover
       eventBus.on('element.hover', (event) => {
         if (this.getTypeAllowed(event.element.type, interactionTypes)) {
           const gfx = event.gfx
@@ -185,6 +184,7 @@ export default {
           }, { once: true })
         }
       })
+      // Generic overlay click delegation
       const overlaysContainers = document.querySelectorAll('.djs-overlays')
       if (overlaysContainers.length) {
         overlaysContainers.forEach((container) => {
@@ -193,6 +193,15 @@ export default {
             if (bubble && bubble.dataset.activityId) {
               this.highlightElement(bubble.dataset.activityId)
               this.$emit('activity-id', bubble.dataset.activityId)
+            }
+            // Generic: emit overlay-click for any overlay element with a data-overlay-type attribute
+            const overlay = event.target.closest('[data-overlay-type]')
+            if (overlay) {
+              this.$emit('overlay-click', {
+                type: overlay.dataset.overlayType,
+                activityId: overlay.dataset.activityId || null,
+                event
+              })
             }
           })
         })
@@ -228,18 +237,17 @@ export default {
       canvas.scrollToElement(activityId)
     },
     drawDiagramState: function() {
-      const overlays = this.viewer.get('overlays')
       const elementRegistry = this.viewer.get('elementRegistry')
       this.cleanDiagramState()
       if (this.activityInstance != null) {
         getActivitiesToMark(this.activityInstance).forEach(activityId => {
           const htmlTemplate = '<div><i class="mdi mdi-arrow-right-drop-circle mdi-24px text-success"/></div>'
-          this.setHtmlOnDiagram(overlays, activityId, htmlTemplate, { top: -5, right: 25 })
+          this.setHtmlOnDiagram(activityId, htmlTemplate, { top: -5, right: 25 })
           this.runningActivities.push(activityId)
         })
       }
       if (this.activityInstanceHistory != null) {
-        this.drawActivitiesHistory(this.activityInstanceHistory, elementRegistry, overlays)
+        this.drawActivitiesHistory(this.activityInstanceHistory, elementRegistry)
       }
       if (!this.activityInstance && !this.activityInstanceHistory) {
         if (this.statistics) {
@@ -247,17 +255,17 @@ export default {
             const shape = elementRegistry.get(item.id)
             if (shape) {
               const htmlTemplate = this.getBadgeOverlayHtml(item.instances, 'bg-info', 'runningInstances', item.id)
-              this.setHtmlOnDiagram(overlays, item.id, htmlTemplate, { bottom: 15, left: -7 })
+              this.setHtmlOnDiagram(item.id, htmlTemplate, { bottom: 15, left: -7 })
               if (item.failedJobs > 0) {
                 const failedHtml = this.getBadgeOverlayHtml(item.failedJobs, 'bg-danger', 'openIncidents', item.id)
-                this.setHtmlOnDiagram(overlays, item.id, failedHtml, { top: -7, right: 15 })
+                this.setHtmlOnDiagram(item.id, failedHtml, { top: -7, right: 15 })
               }
               shape.nInstances = item.instances
             }
           })
         }
         if (this.activitiesHistory) {
-          this.drawActivitiesHistory(this.activitiesHistory, elementRegistry, overlays)
+          this.drawActivitiesHistory(this.activitiesHistory, elementRegistry)
         }
       }
       const callActivitiesList = elementRegistry.getAll().filter(element => element.type === 'bpmn:CallActivity')
@@ -282,7 +290,7 @@ export default {
             })
           }
           wrapper.appendChild(button)
-          this.setHtmlOnDiagram(overlays, ca.id, wrapper, { bottom: -7, right: 15 })
+          this.setHtmlOnDiagram(ca.id, wrapper, { bottom: -7, right: 15 })
         }
       })
       if (this.jobDefinitions) {
@@ -312,7 +320,7 @@ export default {
         }
       })
     },
-    drawActivitiesHistory: function(activities, elementRegistry, overlays) {
+    drawActivitiesHistory: function(activities, elementRegistry) {
       const filledActivities = {}
       activities.forEach(item => {
         const typeAllowed = this.getTypeAllowed(item.activityType, drawedTypes)
@@ -322,7 +330,7 @@ export default {
       Object.keys(filledActivities).forEach(key => {
         const shape = elementRegistry.get(key)
         if (shape) {
-          this.setHtmlOnDiagram(overlays, key, this.getBadgeOverlayHtml(filledActivities[key], 'bg-gray', 'activitiesHistory', null),
+          this.setHtmlOnDiagram(key, this.getBadgeOverlayHtml(filledActivities[key], 'bg-gray', 'activitiesHistory', null),
             { bottom: 15, right: 13 })
         }
       })
@@ -340,14 +348,19 @@ export default {
       `
       return overlayHtml
     },
-    cleanDiagramState: function() {
+    cleanDiagramState: function(overlayList) {
       const overlays = this.viewer.get('overlays')
-      this.overlayList.forEach(overlayId => overlays.remove(overlayId))
-      this.overlayList = []
+      const list = overlayList || this.overlayList
+
+      list.forEach(overlayId => overlays.remove(overlayId))
+
+      list.splice(0, list.length)
     },
-    setHtmlOnDiagram: function(overlays, id, html, position) {
+    setHtmlOnDiagram: function(id, html, position) {
+      let overlays = this.viewer.get('overlays')
       const overlayId = overlays.add(id, { position, html })
       this.overlayList.push(overlayId)
+      return overlayId
     },
     getTypeAllowed: function(typeI, types) {
       return types.some(type => typeI.includes(type))

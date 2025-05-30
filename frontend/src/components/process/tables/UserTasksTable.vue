@@ -50,7 +50,7 @@
           size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-account"></b-button>
       </template>
     </FlowTable>
-    <div v-else-if="loading === true">
+    <div v-else-if="loading">
       <p class="text-center p-4"><BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}</p>
     </div>
     <div v-else>

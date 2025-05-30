@@ -28,19 +28,21 @@ import BatchStore from './BatchStore.js'
 import TenantStore from './TenantStore.js'
 import JobStore from './JobStore.js'
 
+export const modules = {
+  process: ProcessStore,
+  filter: FilterStore,
+  advancedSearch: AdvancedSearchStore,
+  user: UserStore,
+  decision: DecisionStore,
+  jobDefinition: JobDefinitionStore,
+  activity: ActivityStore,
+  batch: BatchStore,
+  tenant: TenantStore,
+  job: JobStore
+}
+
 const store = createStore({
-  modules: {
-    process: ProcessStore,
-    filter: FilterStore,
-    advancedSearch: AdvancedSearchStore,
-    user: UserStore,
-    decision: DecisionStore,
-    jobDefinition: JobDefinitionStore,
-    activity: ActivityStore,
-    batch: BatchStore,
-    tenant: TenantStore,
-    job: JobStore
-  }
+  modules
 })
 
 export default store

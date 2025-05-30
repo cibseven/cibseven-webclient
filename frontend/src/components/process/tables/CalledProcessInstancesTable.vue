@@ -37,7 +37,7 @@
         <div :title="table.item.callingActivity.activityName" class="text-truncate">{{ table.item.callingActivity.activityName }}</div>
       </template>
     </flow-table>
-    <div v-else-if="loading === true">
+    <div v-else-if="loading">
       <p class="text-center p-4"><BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}</p>
     </div>
     <div v-else>
