@@ -57,6 +57,25 @@ cibseven:
       path: /different-path               # Custom path instead of default /engine-rest
 ```
 
+#### Development Configuration
+
+When developing the frontend, if you are using a custom engine REST path, you should also update the frontend development proxy configuration in `frontend/vite.config.js`:
+
+```javascript
+// Set ENGINE_REST_PATH environment variable to match your backend configuration
+const engineRestPath = process.env.ENGINE_REST_PATH || '/engine-rest'
+```
+
+You can set this environment variable when running the development server:
+
+```bash
+# For custom path
+ENGINE_REST_PATH=/different-path npm run dev
+
+# For default path (no environment variable needed)
+npm run dev
+```
+
 ### Documentation
 
 - [CIB seven Manual](https://docs.cibseven.org/manual/latest/)
