@@ -109,6 +109,8 @@ function skipValue(value, lang) {
       'variables',
       'total',
     ],
+    'ua': [
+    ],
     'ru': [
     ]
   }
