@@ -327,11 +327,6 @@
 			"actions": "Actions",
 			"suspend": "Suspend",
 			"resume": "Resume"
-		},
-		"documentation": {
-			"noDocumentation": "No documentation available",
-			"element": "Element",
-			"documentation": "Documentation"
 		}
 	},
 	"bpmn-viewer": {
