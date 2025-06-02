@@ -327,11 +327,6 @@
 			"actions": "Aktionen",
 			"suspend": "Anhalten",
 			"resume": "Fortsetzen"
-		},
-		"documentation": {
-			"noDocumentation": "Keine Dokumentation vorhanden",
-			"element": "Element",
-			"documentation": "Dokumentation"
 		}
 	},
 	"bpmn-viewer": {
