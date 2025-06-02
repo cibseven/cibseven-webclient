@@ -327,6 +327,11 @@
 			"actions": "Дії",
 			"suspend": "Призупинити",
 			"resume": "Відновити"
+		},
+		"documentation": {
+			"noDocumentation": "Документація недоступна",
+			"element": "Елемент",
+			"documentation": "Документація"
 		}
 	},
 		"bpmn-viewer": {
