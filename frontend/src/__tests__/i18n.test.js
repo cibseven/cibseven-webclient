@@ -98,7 +98,8 @@ function skipValue(value, lang) {
       'dashboard',
       'filter',
       'status',
-      'name: {name}version: {version}'
+      'name: {name}version: {version}',
+      'element'
     ],
     'es': [
       'tenant',
