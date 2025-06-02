@@ -89,7 +89,7 @@
       <div class="overflow-auto flex-fill border-bottom" @scroll="handleScrollTasks">
         <div v-if="tasksFiltered.length > 0">
           <b-list-group class="mx-3">
-            <b-list-group-item @click="selectedTask(task)" v-for="task of tasksFiltered" :key="task.id" @mouseenter="focused = task" @mouseleave="focused = null"
+            <b-list-group-item @click="selectedTask(task)" v-for="task of tasksFiltered" :key="task.id" :ref="'taskItem-' + task.id" @mouseenter="focused = task" @mouseleave="focused = null"
               class="rounded-0 mt-3 p-2 bg-white border-0" :class="task.id === $route.params.taskId ? 'active shadow' : ''" draggable="false"
               tabindex=0 style="cursor: pointer" v-on:keyup.enter="selectedTask(task)" action>
               <div class="d-flex align-items-center">
@@ -212,7 +212,8 @@ export default {
       selectedFilter: '',
       pauseRefreshButton: false,
       advancedFilter: [],
-      advancedFilterAux: null
+      advancedFilterAux: null,
+	  justSelectedFromList: false
     }
   },
   watch: {
@@ -220,7 +221,11 @@ export default {
       immediate: true,
       handler: function (taskId) {
         this.checkTaskIdInUrl(taskId)
-      }
+		if (taskId && !this.justSelectedFromList) {
+		  this.scrollToSelectedTask()	
+		}
+        this.justSelectedFromList = false;
+	  }
     },
     'advancedFilter': {
       deep: true,
@@ -384,6 +389,7 @@ export default {
       })
     },
     selectedTask: function(task) {
+	  this.justSelectedFromList = true;
       var selection = window.getSelection()
       var filterId = this.$store.state.filter.selected ?
         this.$store.state.filter.selected.id : this.$route.params.filterId
@@ -476,7 +482,25 @@ export default {
         this.$emit('refresh-tasks')
         this.pauseButton()
       }
-    }
+    },
+	scrollToSelectedTask() {
+	  const taskId = this.$route.params.taskId;
+	  const ref = this.$refs['taskItem-' + taskId];
+	  let el = null;
+	  if (Array.isArray(ref)) {
+	    el = ref[0]?.$el || ref[0];
+	  } else if (ref && ref.$el) {
+	    el = ref.$el;
+	  } else {
+	    el = ref;
+	  }
+	  if (el && typeof el.scrollIntoView === 'function') {
+	    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+	    this.pendingScrollToTaskId = null;
+	  } else {
+	    setTimeout(() => this.scrollToSelectedTask(), 100);
+	  }
+	}
   }
 }
 </script>
