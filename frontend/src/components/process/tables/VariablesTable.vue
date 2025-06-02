@@ -18,13 +18,13 @@
 -->
 <template>
   <div v-if="selectedInstance.state === 'ACTIVE'" class="bg-light d-flex position-absolute w-100">
-    <div class="py-2 px-2">
+    <div class="p-3">
       <b-button class="border" size="sm" variant="light" @click="$refs.addVariableModal.show()" :title="$t('process-instance.addVariable')">
         <span class="mdi mdi-plus"></span> {{ $t('process-instance.addVariable') }}
       </b-button>
     </div>
   </div>
-  <div class="overflow-auto bg-white position-absolute container-fluid g-0" style="bottom: 0" :style="('top: ' + (selectedInstance.state === 'ACTIVE' ? '45px' : '0'))">
+  <div class="overflow-auto bg-white position-absolute container-fluid g-0" style="bottom: 0" :style="('top: ' + (selectedInstance.state === 'ACTIVE' ? '62px' : '0'))">
     <FlowTable v-if="!loading" striped resizable thead-class="sticky-header" :items="filteredVariables" primary-key="id" prefix="process-instance.variables."
       sort-by="label" :sort-desc="true" :fields="[
       { label: 'name', key: 'name', class: 'col-3', tdClass: 'py-1 border-end border-top-0' },

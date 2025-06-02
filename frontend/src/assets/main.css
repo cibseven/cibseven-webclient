@@ -56,3 +56,9 @@ thead.resizable tr, thead.resizable + tbody tr {
 .bg-task-filter {
         background-color: rgb(98, 142, 199, 0.2);
 }
+.tabs-scroll-container {
+  overflow: hidden;
+}
+.tabs-scroll-container:hover {
+  overflow-x: auto;
+}
