@@ -34,7 +34,7 @@ import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.servlet.http.HttpServletRequest;
 
-@RestController @RequestMapping("${services.basePath:/services/v1}" + "/history/batch")
+@RestController @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/history/batch")
 public class HistoryBatchService extends BaseService implements InitializingBean {
 
     @Autowired BpmProvider bpmProvider;

@@ -41,7 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 public class SystemProvider extends SevenProviderBase implements ISystemProvider {
 
 	private int getSum(String metric, Map<String, Object> queryParams, CIBUser user) {
-		String url = camundaUrl + "/engine-rest/metrics/" + metric + "/sum";
+		String url = getEngineRestUrl() + "/metrics/" + metric + "/sum";
 		String params = "";
 		for (Map.Entry<String, Object> entry : queryParams.entrySet()) {
 			Optional<String> value = Optional.ofNullable(entry.getValue()).map(Object::toString);
@@ -61,7 +61,7 @@ public class SystemProvider extends SevenProviderBase implements ISystemProvider
 
 	@Override
 	public JsonNode getTelemetryData(CIBUser user) {
-		String url = camundaUrl + "/engine-rest/telemetry/data";
+		String url = getEngineRestUrl() + "/telemetry/data";
 		return ((ResponseEntity<JsonNode>) doGet(url, JsonNode.class, user, false)).getBody();
 	}
 

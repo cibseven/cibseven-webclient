@@ -16,8 +16,7 @@
  */
 import { createI18n } from 'vue-i18n'
 import { mergeLocaleMessage } from 'cib-common-components'
-import moment from 'moment'
-import { axios } from './globals.js'
+import { axios, moment } from './globals.js'
 import { getTheme } from './utils/init'
 
 function getDefaultLanguage() {
@@ -33,19 +32,43 @@ const i18n = createI18n({
   locale: getDefaultLanguage()
 })
 
+import en from '@/assets/translations_en.json'
+import de from '@/assets/translations_de.json'
+import es from '@/assets/translations_es.json'
+import ua from '@/assets/translations_ua.json'
+import ru from '@/assets/translations_ru.json'
+
+import 'moment/dist/locale/de'
+import 'moment/dist/locale/es'
+import 'moment/dist/locale/uk'
+import 'moment/dist/locale/ru'
+
+export const languages = {
+  en: en,
+  de: de,
+  es: es,
+  ua: ua,
+  ru: ru
+}
+
 var loadedLanguages = []
 function fetchTranslation(config, lang) {
   // http://kazupon.github.io/vue-i18n/guide/lazy-loading.html
-  return loadedLanguages.includes(lang) ? Promise.resolve() : axios.create().get('translations_' + lang + '.json').then(res => {
-    i18n.global.setLocaleMessage(lang, res.data)
+  if (loadedLanguages.includes(lang)) {
+    return Promise.resolve()
+  }
+
+  if (languages[lang]) {
+    i18n.global.setLocaleMessage(lang, languages[lang])
     mergeLocaleMessage(i18n, lang)
-    // Load custom translations files
-    axios.create().get('themes/' + getTheme(config) + '/translations_' + lang + '.json').then(res => {
-      i18n.global.mergeLocaleMessage(lang, res.data)
-      loadedLanguages.push(lang)
-    }).catch(() => {
-      loadedLanguages.push(lang)
-    })
+  }
+
+  // Load custom translations files
+  return axios.create().get('themes/' + getTheme(config) + '/translations_' + lang + '.json').then(res => {
+    i18n.global.mergeLocaleMessage(lang, res.data)
+    loadedLanguages.push(lang)
+  }).catch(() => {
+    loadedLanguages.push(lang)
   })
 }
 

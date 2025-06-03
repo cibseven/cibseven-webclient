@@ -1,0 +1,67 @@
+{
+	"confirm": {
+		"title": "Потрібне підтвердження",
+		"ok": "OK",
+		"cancel": "Скасувати",
+		"close": "Закрити"
+	},
+	"bcomponents": {
+		"ariaSortAsc": "За зростанням",
+		"ariaSortDes": "За спаданням",
+		"ariaSortNone": "Без сортування",
+		"ariaLabelClose": "Закрити",
+		"ariaLabelDropdownGroup": "Група випадаючих елементів",
+		"calendar": {
+			"selectedDate": "Вибрана дата",
+			"noDate": "Немає дати",
+			"prevYear": "Попередній рік",
+			"prevMonth": "Попередній місяць",
+			"nextMonth": "Наступний місяць",
+			"nextYear": "Наступний рік",
+			"daysOfWeek": "Пн,Вт,Ср,Чт,Пт,Сб,Нд",
+			"dayOfWeek": "День тижня",
+			"today": "Сьогодні",
+			"clearSelection": "Очистити вибір"
+		},
+		"avatar": {
+			"avatarFor": "Аватар {name}",
+			"defaultAvatar": "Аватар"
+		},
+		"formTag": {
+			"remove": "Видалити тег"
+		},
+		"timepicker": {
+			"label": "Вибір часу",
+			"selectedTime": "Вибраний час",
+			"incrementHour": "Збільшити на годину",
+			"decrementHour": "Зменшити на годину",
+			"incrementMinute": "Збільшити на хвилину",
+			"decrementMinute": "Зменшити на хвилину",
+			"hour": "Година",
+			"minute": "Хвилина",
+			"clearSelection": "Очистити вибір",
+			"noTimeSelected": "Час не обрано"
+		},
+		"datepicker": {
+			"label": "Вибір дати",
+			"selectedDate": "Вибрана дата",
+			"noDate": "Немає дати",
+			"prevMonth": "Попередній місяць",
+			"nextMonth": "Наступний місяць",
+			"daysOfWeek": "Пн,Вт,Ср,Чт,Пт,Сб,Нд",
+			"selectToday": "Сьогодні",
+			"clearSelection": "Очистити вибір"
+		},
+		"navbar": {
+			"mainNavigation": "Головна навігація",
+			"toggleNavigation": "Перемкнути навігацію",
+			"brand": "Бренд",
+			"toggleDropdown": "Перемкнути"
+		},
+		"pagination": {
+			"label": "Посторінкова навігація",
+			"prevPage": "Попередня сторінка",
+			"nextPage": "Наступна сторінка"
+		}
+	}
+}

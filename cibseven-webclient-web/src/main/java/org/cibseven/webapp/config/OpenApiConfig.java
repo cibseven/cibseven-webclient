@@ -36,25 +36,25 @@ import io.swagger.v3.oas.models.servers.Server;
 @Configuration
 public class OpenApiConfig {
 
-	@Value("${springdoc.flowWebclient.serverUrl:}")
+	@Value("${cibseven.webclient.api.common.url:}")
 	String serverUrl;
-	@Value("${api.common.title:}")
+	@Value("${cibseven.webclient.api.common.title:CIB seven webclient API}")
 	String apiTitle;
-	@Value("${api.common.description:}")
+	@Value("${cibseven.webclient.api.common.description:This API exposes the functionality of CIB seven webclient as a REST service under the Apache License 2.0.}")
 	String apiDescription;
-	@Value("${api.common.termsOfService:}")
+	@Value("${cibseven.webclient.api.common.termsOfService:https://www.apache.org/licenses/LICENSE-2.0}")
 	String apiTermsOfService;
-	@Value("${api.common.license:}")
+	@Value("${cibseven.webclient.api.common.license:Apache 2.0}")
 	String apiLicense;
-	@Value("${api.common.licenseUrl:}")
+	@Value("${cibseven.webclient.api.common.licenseUrl:https://www.apache.org/licenses/LICENSE-2.0}")
 	String apiLicenseUrl;
-	@Value("${api.common.contact.name:}")
+	@Value("${cibseven.webclient.api.common.contact.name:CIB seven}")
 	String apiContactName;
-	@Value("${api.common.contact.url:}")
+	@Value("${cibseven.webclient.api.common.contact.url:https://cibseven.org}")
 	String apiContactUrl;
-	@Value("${api.common.contact.email:}")
+	@Value("${cibseven.webclient.api.common.contact.email:info@cibseven.org}")
 	String apiContactEmail;
-
+	
 	@Bean
 	OpenAPI getOpenApiDocumentation() {
 		OpenAPI openAPI = new OpenAPI();

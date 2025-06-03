@@ -101,7 +101,7 @@ public class BatchProvider extends SevenProviderBase implements IBatchProvider {
 	
 	@Override
 	public Object setRemovalTime(Map<String, Object> payload) {
-        String url = "/history/batch/set-removal-time";
+        String url = getEngineRestUrl() + "/history/batch/set-removal-time";
         return ((ResponseEntity<Object>) doPost(url, payload, null, null)).getBody();
     }
     
@@ -113,12 +113,12 @@ public class BatchProvider extends SevenProviderBase implements IBatchProvider {
     
 	@Override
 	public Object getCleanableBatchReportCount() {
-        String url = "/history/batch/cleanable-batch-report/count";
+        String url = getEngineRestUrl() + "/history/batch/cleanable-batch-report/count";
         return ((ResponseEntity<Object>) doGet(url, Object.class, null, false)).getBody();
     }
 	
     private String buildUrlWithParams(String path, Map<String, Object> queryParams) {
-	    UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(camundaUrl + "/engine-rest" + path);
+	    UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(getEngineRestUrl() + path);
 	    queryParams.forEach((key, value) -> {
 	        if (value != null) {
 	            builder.queryParam(key, value);

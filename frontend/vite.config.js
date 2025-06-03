@@ -26,6 +26,11 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 const backendUrl = 'http://localhost:8080/webapp'
 //Needed for Embedded forms
 const engineRestUrl = 'http://localhost:8080/'
+//Engine REST API path - customize this if using a custom Jersey application path
+//Should match the cibseven.webclient.engineRest.path property in application.yml
+/* eslint-disable no-undef */
+const engineRestPath = process.env.ENGINE_REST_PATH || '/engine-rest'
+/* eslint-enable no-undef */
 
 // Detect build mode
 /* eslint-disable no-undef */
@@ -69,7 +74,7 @@ export default defineConfig({
           })
         },
       },
-      '/engine-rest': {
+      [engineRestPath]: {
         target: engineRestUrl,
         changeOrigin: true,
         secure: false,

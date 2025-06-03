@@ -14,19 +14,26 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+const DEFAULT_BPMN_VIEWER_HEIGHT = 400
+const TOP_BAR_HEIGHT = 41
+const DRAG_SELECTOR_HEIGHT = 10
+const FILTER_HEIGHT = 60
+const TOGGLE_BUTTON_HEIGHT = 39
+const DEFAULT_TRANSITION_TIME = 0.4
+
 export default {
     data: function() {
         return {
-            bpmnViewerOriginalHeight: 400,
-            bpmnViewerHeight: 400,
-            topBarHeight: 40,
-            dragSelectorHeight: 10,
-            filterHeight: 60,
+            bpmnViewerOriginalHeight: DEFAULT_BPMN_VIEWER_HEIGHT,
+            bpmnViewerHeight: DEFAULT_BPMN_VIEWER_HEIGHT,
+            topBarHeight: TOP_BAR_HEIGHT,
+            dragSelectorHeight: DRAG_SELECTOR_HEIGHT,
+            filterHeight: FILTER_HEIGHT,
             mousePosition: null,
             toggleIcon: 'mdi-chevron-down',
-            toggleButtonHeight: 38,
+            toggleButtonHeight: TOGGLE_BUTTON_HEIGHT,
             toggleTransition: '',
-            transitionTime: 0.4
+            transitionTime: DEFAULT_TRANSITION_TIME
         }
     },
     computed: {

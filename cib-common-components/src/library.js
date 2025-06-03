@@ -138,7 +138,6 @@ const registerComponents = function(app) {
 import en from '@/assets/translations_en.json'
 import de from '@/assets/translations_de.json'
 import es from '@/assets/translations_es.json'
-import it from '@/assets/translations_it.json'
 import ru from '@/assets/translations_ru.json'
 
 const mergeLocaleMessage = function(i18n, lang) {
@@ -150,9 +149,6 @@ const mergeLocaleMessage = function(i18n, lang) {
   }
   else if (lang === 'es') {
     i18n.global.mergeLocaleMessage(lang, es)
-  }
-  else if (lang === 'it') {
-    i18n.global.mergeLocaleMessage(lang, it)
   }
   else if (lang === 'ru') {
     i18n.global.mergeLocaleMessage(lang, ru)

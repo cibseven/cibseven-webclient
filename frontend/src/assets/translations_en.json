@@ -57,12 +57,13 @@
 	"process": {
 		"instanceRunning": "Instance running",
 		"instanceIncidents": "Instance with incidents",
+		"instanceWithoutIncidents": "Instance without incidents",
 		"instanceFinished": "Instance finished",		
 		"name": "Name",
 		"key": "Process key",
 		"state": "State",
 		"id": "ID",
-		"processId": "Process Id",
+		"processId": "Process ID",
 		"startUserId": "User",
 		"startTime": "Start time",		
 		"startTimeOriginal": "Start time",
@@ -150,7 +151,7 @@
 		"instances": "Instances",
 		"statistics": "Statistics",
 		"suspendInstance": "Suspend process instance",
-		"deleteInstance": "Delete running process instance",
+		"stopInstance": "Stop process instance",
 		"deleteHistoryInstance": "Delete history process instance",
 		"suspendProcess": "Suspend process definition",
 		"activateProcess": "Activate process definition",
@@ -177,7 +178,13 @@
 		"false": "False",				
 		"jobDefinitions": "Job definitions",
 		"jobs": "Jobs",
-		"calledProcessDefinitions": "Called process definitions"
+		"calledProcessDefinitions": "Called process definitions",
+		"jobLog": "Job log",
+		"userOperations": "User operations",
+		"externalTasksLog": "External tasks log",
+		"modify": "Modify",
+		"restart": "Restart",
+		"documentation": "Documentation"
 	},
 	"process-instance": {
 		"processInstanceId": "Processs Instance ID",
@@ -210,7 +217,7 @@
 		"confirm": {
 			"suspend": "Do you really want to suspend the next instance of the process?",
 			"activate": "Do you really want to activate the next instance of the process?",
-			"deleteInstance": "Do you really want to delete the next instance of the process?",
+			"stopInstance": "Do you really want to stop the next instance of the process?",
 			"deleteHistoryInstance": "Do you really want to delete the next historical instance of the process?"
 		},
 		"variables": {
@@ -287,7 +294,7 @@
 			"callingActivity": "Calling Activity",
 			"process": "Process",
 			"version": "Version",
-			"id": "Id"
+			"id": "ID"
 		},
 		"assignModal": {
 		    "manageUsersGroups": "Manage users/groups",
@@ -347,7 +354,7 @@
 		"reminder": "Reminder date",
 		"priority": "Priority",
 		"variablesInfo": "Task variables",
-		"taskId": "Task Id",
+		"taskId": "Task ID",
 		"assign": "Assign to someone",
 		"assignToMe": "Assign to me",
 		"assignPopoverTitle": "Task is not assigned to you",
@@ -651,8 +658,8 @@
 		"en": "English",
 		"de": "Deutsch",
 		"es": "Español",
-		"ru": "Русский",
-		"it": "Italiano"
+		"ua": "Українська",
+		"ru": "Русский"
 	},
 	"cib-datepicker": {
 		"months": "January_February_March_April_May_June_July_August_September_October_November_December",
@@ -728,25 +735,25 @@
 			"pin": "Pin",
 			"includeAssigned": "Include assigned tasks",
 			"keys": {
-				"processInstanceId": "Process instance Id",
+				"processInstanceId": "Process instance ID",
 				"processInstanceBusinessKey": "Process instance business Key",
 				"processInstanceBusinessKeyExpression": "Process instance business Key *",
 				"processInstanceBusinessKeyLike": "Process instance business Key like",
 				"processInstanceBusinessKeyLikeExpression": "Process instance business Key like *",
-				"processDefinitionId": "Process definition Id",
+				"processDefinitionId": "Process definition ID",
 				"processDefinitionKey": "Process definition Key",
 				"processDefinitionKeyIn": "Process definition Key in",
 				"processDefinitionName": "Process definition name",
 				"processDefinitionNameLike": "Process definition name like",
-				"caseInstanceId": "Case instance Id",
+				"caseInstanceId": "Case instance ID",
 				"caseInstanceBusinessKey": "Case instance business Key",
 				"caseInstanceBusinessKeyLike": "Case instance business Key like",
-				"caseDefinitionId": "Case definition Id",
+				"caseDefinitionId": "Case definition ID",
 				"caseDefinitionKey": "Case definition Key",
 				"caseDefinitionName": "Case definition name",
 				"caseDefinitionNameLike": "Case definition name like",
-				"executionId": "Execution Id",
-				"activityInstanceIdIn": "Activity instance Id in",
+				"executionId": "Execution ID",
+				"activityInstanceIdIn": "Activity instance ID in",
 				"active": "Active",
 				"assignee": "Assignee",
 				"assigneeExpression": "Assignee *",
@@ -774,8 +781,8 @@
 				"priority": "Priority",
 				"maxPriority": "Max priority",
 				"minPriority": "Min priority",
-				"tenantIdIn": "Tenant Id in",
-				"withoutTenantId": "Without tenant Id",
+				"tenantIdIn": "Tenant ID in",
+				"withoutTenantId": "Without tenant ID",
 				"createdBefore": "Created before",
 				"createdBeforeExpression": "Created before *",
 				"dueBefore": "Due before",
@@ -854,7 +861,7 @@
 		"close": "Close",
 		"startProcess": {
 			"title": "@:process.startProcess",
-			"tooltip": "Open Start Process"
+			"tooltip": "Open Start Process view with search possibility"
 		},
 		"taskList": {
 			"title": "Tasklist",
@@ -1090,7 +1097,7 @@
 			"title": "Password Policy",
 			"header": "Your password must fulfil the following criteria: ",
 			"items": [
-				"must not contain user data (i.e., user id, first name, last name, email)",
+				"must not contain user data (i.e., user ID, first name, last name, email)",
 				"minimum length of 10 characters",
 				"at least one upper case character",
 				"at least one lower case character",

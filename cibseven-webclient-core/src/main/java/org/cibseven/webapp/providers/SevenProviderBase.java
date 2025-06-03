@@ -62,9 +62,22 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public abstract class SevenProviderBase {
+  
+  protected static final String USER_ID_HEADER = "Context-User-ID";
 	
-	@Value("${custom.spring.jackson.parser.max-size:20000000}") int jacksonParserMaxSize;
-	@Value("#{'${camunda.engineRest.url:${camunda.url:}}'}") protected String camundaUrl;
+	@Value("${cibseven.webclient.custom.spring.jackson.parser.max-size:20000000}") int jacksonParserMaxSize;
+	@Value("${cibseven.webclient.engineRest.url:./}") protected String cibsevenUrl;
+	@Value("${cibseven.webclient.engineRest.path:/engine-rest}") protected String engineRestPath;
+	
+	/**
+	 * Constructs the full engine REST base URL by combining the base URL with the configurable path
+	 * @return the complete engine REST URL
+	 */
+	protected String getEngineRestUrl() {
+		String baseUrl = cibsevenUrl.endsWith("/") ? cibsevenUrl.substring(0, cibsevenUrl.length() - 1) : cibsevenUrl;
+		String restPath = engineRestPath.startsWith("/") ? engineRestPath : "/" + engineRestPath;
+		return baseUrl + restPath;
+	}
 	
 	/**
 	 * Creates new Http headers and adds Authorization User token
@@ -74,7 +87,8 @@ public abstract class SevenProviderBase {
 	private HttpHeaders createAuthHeader(CIBUser user) {
 		HttpHeaders headers =  new HttpHeaders();
 		if (user != null) {
-		  headers.add("Authorization", user.getAuthToken());
+		  headers.add(HttpHeaders.AUTHORIZATION, user.getAuthToken());
+		  headers.add(USER_ID_HEADER, user.getId());
 		}
 		return headers;
 	}

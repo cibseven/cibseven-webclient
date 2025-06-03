@@ -37,7 +37,7 @@
           </b-list-group-item>
         </b-list-group>
         <div v-else-if="resources">
-          <img src="/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mt-5 mb-3" style="width: 200px">
+          <img src="@/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mt-5 mb-3" style="width: 200px">
         </div>
         <div v-else class="h-100 d-flex flex-column justify-content-center align-items-center text-center">
           <span class="mdi mdi-48px mdi-file-cancel-outline pe-1 text-warning"></span>

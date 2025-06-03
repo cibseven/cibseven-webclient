@@ -16,7 +16,7 @@
  */
 /* jshint worker: true */
 
-import moment from 'moment'
+import moment from './globals.js'
 import appConfig from './appConfig.js'
 
 var authToken = ''

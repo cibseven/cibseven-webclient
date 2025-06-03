@@ -78,7 +78,7 @@
 </template>
 
 <script>
-import moment from 'moment'
+import { moment } from '@/globals.js'
 import procesessVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { IncidentService } from '@/services.js'

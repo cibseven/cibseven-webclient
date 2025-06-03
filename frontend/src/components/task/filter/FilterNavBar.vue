@@ -20,7 +20,7 @@
   <div v-show="showFilters" class="overflow-auto h-100">
     <div class="h-100 d-flex flex-column">
 
-      <FilterModal ref="filterModal" @select-filter="selectFilter($event)" @display-popover="$emit('display-popover', $event)" @filter-alert="$emit('filter-alert', $event)" @set-filter="$emit('set-filter', $event)"></FilterModal>
+      <FilterModal ref="filterModal" @select-filter="selectFilter($event)" @filter-alert="$emit('filter-alert', $event)" @set-filter="$emit('set-filter', $event)"></FilterModal>
 
       <div v-if="$root.config.filtersSearch" class="p-2" style="background-color: rgb(98, 142, 199, 0.3)">
         <b-input-group>
@@ -78,7 +78,7 @@
       </div>
       <BWaitingBox ref="filterLoader" class="d-flex flex-fill justify-content-center pt-4" styling="width:30%">
         <div v-if="filtersFiltered.length < 1">
-          <img src="/assets/images/task/no_tasks.svg" class="d-block mx-auto mt-3 mb-2" style="width: 200px">
+          <img src="@/assets/images/task/no_tasks.svg" class="d-block mx-auto mt-3 mb-2" style="width: 200px">
           <div class="h5 text-secondary text-center">{{ $t('nav-bar.filters.no-filters') }}</div>
         </div>
       </BWaitingBox>

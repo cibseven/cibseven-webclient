@@ -60,7 +60,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 	@ApiResponse(responseCode = "500", description = "An unexpected system error occured"),
 	@ApiResponse(responseCode = "401", description = "Unauthorized")
 })
-@RestController @RequestMapping("${services.basePath:/services/v1}" + "/decision")
+@RestController("WebclientDecisionService") @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/decision")
 public class DecisionService extends BaseService implements InitializingBean {
 	
 	SevenProvider sevenProvider;

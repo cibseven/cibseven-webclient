@@ -2,7 +2,8 @@ import { InfoService } from "@/services"
 import { switchLanguage, i18n } from "@/i18n"
 import { getTheme } from "@/utils/init"
 
-InfoService.getProperties().then(config => {
+InfoService.getProperties().then(response => {
+    const config = response.data
     function loadTheme() {
 
         var css = document.createElement('Link')
@@ -32,7 +33,7 @@ InfoService.getProperties().then(config => {
 
         const isStartForm = !!processDefinitionId
         let embeddedForm
-        
+
         if (isStartForm) {
             submitButton.innerHTML = i18n.global.t('process.start')
         } else {
@@ -50,7 +51,7 @@ InfoService.getProperties().then(config => {
                 unblockButtons(submitButton, saveButton)
             })
         })
-        
+
         if (isStartForm) {
             saveButton.style.display = 'none'
         }
@@ -67,8 +68,8 @@ InfoService.getProperties().then(config => {
                 unblockButtons(submitButton, saveButton)
             })
         })
-        
-        loadEmbeddedForm(isStartForm, processDefinitionId || taskId, embeddedFormRoot, authorization).then(form => {
+
+        loadEmbeddedForm(isStartForm, processDefinitionId || taskId, embeddedFormRoot, authorization, config).then(form => {
             embeddedForm = form
             loaderDiv.style.display = 'none'
             contentDiv.style.display = 'flex'
@@ -118,10 +119,10 @@ function unblockButtons(...buttons) {
     })
 }
 
-function loadEmbeddedForm(isStartForm, referenceId, container, authorization) {
+function loadEmbeddedForm(isStartForm, referenceId, container, authorization, config) {
     var client = new window.CamSDK.Client({
         mock: false,
-        apiUri: '/engine-rest',
+        apiUri: config.engineRestPath || '/engine-rest',
         headers: {
             'authorization': authorization
         }
@@ -143,6 +144,8 @@ function loadEmbeddedForm(isStartForm, referenceId, container, authorization) {
         }
         function loadForm(formInfo) {
             var url = formInfo.key.replace('embedded:', '').replace('app:', (formInfo.contextPath || '') + '/')
+            //Start with a relative url and replace doubled slashes if necessary
+                .replace(/^(\/+|([^/]))/, '/$2').replace(/\/\/+/, '/')
 
             let embeddedForm
             let config = {

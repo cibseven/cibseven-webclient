@@ -45,7 +45,7 @@
         </div>
       </div>
       <div v-else>
-        <img src="/assets/images/start/empty_start_page.svg" class="d-block mx-auto mt-5 mb-3" style="max-width: 250px">
+        <img src="@/assets/images/start/empty_start_page.svg" class="d-block mx-auto mt-5 mb-3" style="max-width: 250px">
         <div class="h5 text-secondary text-center">{{ $t('start.emptyStart') }}</div>
       </div>
     </div>
@@ -54,6 +54,14 @@
 
 <script>
 import { permissionsMixin } from '@/permissions.js'
+
+// Import the images to ensure it is bundled with the package
+import adminUsersImage from '@/assets/images/admin/users_admin.svg'
+import groupsAdminImage from '@/assets/images/admin/groups_admin.svg'
+import tenantsAdminImage from '@/assets/images/admin/tenants_admin.svg'
+import authorizationsAdminImage from '@/assets/images/admin/authorizations_admin.svg'
+import systemAdminImage from '@/assets/images/admin/system_admin.svg'
+
 export default {
   name: 'UsersManagement',
   mixins: [permissionsMixin],
@@ -62,31 +70,31 @@ export default {
       const rawItems = [
         {
           title: 'admin.users.title',
-          image: './assets/images/admin/users_admin.svg',
+          image: adminUsersImage,
           link: '/seven/auth/admin/users',
           hasAccess: this.adminManagementPermissions(this.$root.config.permissions.usersManagement, 'user')
         },
         {
           title: 'admin.groups.title',
-          image: './assets/images/admin/groups_admin.svg',
+          image: groupsAdminImage,
           link: '/seven/auth/admin/groups',
           hasAccess: this.adminManagementPermissions(this.$root.config.permissions.groupsManagement, 'group')
         },
         {
           title: 'admin.tenants.title',
-          image: './assets/images/admin/tenants_admin.svg',
+          image: tenantsAdminImage,
           link: '/seven/auth/admin/tenants',
           hasAccess: this.adminManagementPermissions(this.$root.config.permissions.tenantsManagement, 'tenant')
         },
         {
           title: 'admin.authorizations.title',
-          image: './assets/images/admin/authorizations_admin.svg',
+          image: authorizationsAdminImage,
           link: '/seven/auth/admin/authorizations',
           hasAccess: this.adminManagementPermissions(this.$root.config.permissions.authorizationsManagement, 'authorization')
         },
         {
           title: 'admin.system.title',
-          image: './assets/images/admin/system_admin.svg',
+          image: systemAdminImage,
           link: '/seven/auth/admin/system',
           hasAccess: this.adminManagementPermissions(this.$root.config.permissions.systemManagement, 'system')
         },

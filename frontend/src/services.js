@@ -15,8 +15,7 @@
  *  limitations under the License.
  */
 import appConfig from './appConfig.js'
-import moment from 'moment'
-import { axios } from './globals.js'
+import { axios, moment } from './globals.js'
 
 function patchProcess(process) {
   if (Array.isArray(process)) process.forEach(patchProcess)
@@ -198,7 +197,7 @@ var ProcessService = {
       }
     })
   },
-  deleteInstance: function(processInstanceId) {
+  stopInstance: function(processInstanceId) {
     return axios.delete(appConfig.servicesBasePath + "/process/instance/" + processInstanceId + "/delete")
   },
   findDeployments: function() {

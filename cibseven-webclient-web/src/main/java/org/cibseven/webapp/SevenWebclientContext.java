@@ -46,8 +46,6 @@ import org.springframework.web.servlet.config.annotation.ContentNegotiationConfi
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.mvc.WebContentInterceptor;
 
@@ -56,12 +54,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 @Configuration
-@ComponentScan({ "org.cibseven.webapp.providers", "org.cibseven.webapp.auth", "org.cibseven.webapp.rest", "org.cibseven.template", "org.cibseven.webapp.config" })
-public class Context implements WebMvcConfigurer, HandlerMethodArgumentResolver {
+@ComponentScan({ "org.cibseven.webapp.providers", "org.cibseven.webapp.auth", "org.cibseven.webapp.rest", "org.cibseven.webapp.template", "org.cibseven.webapp.config" })
+public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArgumentResolver {
 
 	BaseUserProvider provider;
 
-	@Value("${custom.spring.jackson.parser.max-size:20000000}")
+	@Value("${cibseven.webclient.custom.spring.jackson.parser.max-size:20000000}")
 	int jacksonParserMaxSize;
 	
     @Bean
@@ -101,17 +99,6 @@ public class Context implements WebMvcConfigurer, HandlerMethodArgumentResolver 
     public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
         configurer.favorPathExtension(false);
     }
-
-	@Override // http://www.webjars.org/documentation
-	public void addResourceHandlers(ResourceHandlerRegistry registry) {
-	    registry.addResourceHandler("/webjars/**").addResourceLocations("classpath:/META-INF/resources/webjars/");		
-		registry.addResourceHandler("**").addResourceLocations("/").setCacheControl(CacheControl.noCache());
-	}
-
-	@Override
-	public void addViewControllers(ViewControllerRegistry registry) {
-		registry.addViewController("/").setViewName("forward:/index.html");
-	}
 	
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
@@ -137,14 +124,14 @@ public class Context implements WebMvcConfigurer, HandlerMethodArgumentResolver 
 	}
 
 	@Bean @Primary
-	public BpmProvider bpmProvider(@Value("${bpm.provider}") Class<BpmProvider> providerClass)
+	public BpmProvider bpmProvider(@Value("${cibseven.webclient.bpm.provider:org.cibseven.webapp.providers.SevenProvider}") Class<BpmProvider> providerClass)
 			throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException,
 			NoSuchMethodException, SecurityException {
 		return (BpmProvider) providerClass.getConstructor().newInstance();
 	}
 
 	@Bean @Primary
-	public BaseUserProvider baseUserProvider(@Value("${user.provider}") Class<BaseUserProvider> providerClass)
+	public BaseUserProvider baseUserProvider(@Value("${cibseven.webclient.user.provider:org.cibseven.webapp.auth.SevenUserProvider}") Class<BaseUserProvider> providerClass)
 			throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException,
 			NoSuchMethodException, SecurityException {
 		this.provider = (BaseUserProvider) providerClass.getConstructor().newInstance();

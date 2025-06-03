@@ -32,6 +32,50 @@ cd cibseven-webclient
 mvn clean install
 ```
 
+### Configuration
+
+The webclient can be configured using Spring Boot properties. Key configuration options include:
+
+#### Engine REST API Configuration
+
+```yaml
+cibseven:
+  webclient:
+    engineRest:
+      url: http://localhost:8080          # Base URL of the CIB seven engine
+      path: /engine-rest                  # Configurable REST API path (default: /engine-rest)
+```
+
+The `path` property allows you to customize the engine REST API path to support different Jersey application configurations. For example, if your Spring Boot application defines a custom Jersey path:
+
+```yaml
+# Custom Jersey path example
+cibseven:
+  webclient:
+    engineRest:
+      url: http://localhost:8080
+      path: /different-path               # Custom path instead of default /engine-rest
+```
+
+#### Development Configuration
+
+When developing the frontend, if you are using a custom engine REST path, you should also update the frontend development proxy configuration in `frontend/vite.config.js`:
+
+```javascript
+// Set ENGINE_REST_PATH environment variable to match your backend configuration
+const engineRestPath = process.env.ENGINE_REST_PATH || '/engine-rest'
+```
+
+You can set this environment variable when running the development server:
+
+```bash
+# For custom path
+ENGINE_REST_PATH=/different-path npm run dev
+
+# For default path (no environment variable needed)
+npm run dev
+```
+
 ### Documentation
 
 - [CIB seven Manual](https://docs.cibseven.org/manual/latest/)

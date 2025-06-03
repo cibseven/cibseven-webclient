@@ -40,7 +40,8 @@
       <div v-if="process.tenantId" class="mt-1 position-absolute fst-italic">{{ process.tenantId }}</div>
       <div class="row text-center pt-2" :style="viewStyles[view].imgBlock">
         <div class="w-100">
-          <img :alt="processName" :style="viewStyles[view].imgSize" @error="onImageLoadFailure($event)" :src="'assets/images/process/' + process.key + '.svg'">
+          <img v-if="!imageLoadFailed" :alt="processName" :style="viewStyles[view].imgSize" @error="onImageLoadFailure()" :src="'assets/images/process/' + process.key + '.svg'">
+          <img v-else :alt="processName" :style="viewStyles[view].imgSize" src="@/assets/images/process/default.svg">
         </div>
       </div>
     </div>

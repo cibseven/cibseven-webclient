@@ -60,7 +60,7 @@
 
 <script>
 import { SystemService } from '@/services.js'
-import moment from 'moment'
+import { moment } from '@/globals.js'
 import VueApexCharts from 'vue3-apexcharts'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import { BWaitingBox } from 'cib-common-components'

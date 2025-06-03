@@ -117,10 +117,20 @@ pipeline {
             steps {
                 script {
                     withMaven(options: [junitPublisher(disabled: false), jacocoPublisher(disabled: false)]) {
-                        sh "mvn -T4 -Dbuild.number=${BUILD_NUMBER} install"
+                        sh "mvn -T4 -Dbuild.number=${BUILD_NUMBER} clean install"
                     }
-                    if (!params.DEPLOY_TO_ARTIFACTS && !params.DEPLOY_TO_MAVEN_CENTRAL) {
+                    if (!params.DEPLOY_TO_MAVEN_CENTRAL) {
                         junit allowEmptyResults: true, testResults: ConstantsInternal.MAVEN_TEST_RESULTS
+
+                        // Show coverage in Jenkins UI
+                        recordCoverage(
+                            tools: [[parser: 'COBERTURA', pattern: 'frontend/coverage/cobertura-coverage.xml']],
+                            sourceCodeRetention: 'LAST_BUILD',
+                            sourceDirectories: [[path: 'frontend/src']]
+                        )
+
+                        // This archives the whole HTML coverage report so you can download or view it from Jenkins
+                        archiveArtifacts artifacts: 'frontend/coverage/lcov-report/**', allowEmptyArchive: false
                     }
                 }
             }
@@ -136,10 +146,23 @@ pipeline {
             steps {
                 script {
                     withMaven(options: []) {
-                        sh "mvn -T4 -U clean deploy"
+                        def skipTestsFlag = params.INSTALL ? "-DskipTests" : ""
+                        sh "mvn -T4 -U clean deploy ${skipTestsFlag}"
                     }
-                  
-                    junit allowEmptyResults: true, testResults: ConstantsInternal.MAVEN_TEST_RESULTS
+
+                    if (!params.INSTALL) {
+                        junit allowEmptyResults: true, testResults: ConstantsInternal.MAVEN_TEST_RESULTS
+
+                        // Show coverage in Jenkins UI
+                        recordCoverage(
+                            tools: [[parser: 'COBERTURA', pattern: 'frontend/coverage/cobertura-coverage.xml']],
+                            sourceCodeRetention: 'LAST_BUILD',
+                            sourceDirectories: [[path: 'frontend/src']]
+                        )
+
+                        // This archives the whole HTML coverage report so you can download or view it from Jenkins
+                        archiveArtifacts artifacts: 'frontend/coverage/lcov-report/**', allowEmptyArchive: false
+                    }
                 }
             }
         }
@@ -154,7 +177,7 @@ pipeline {
             steps {
                 script {
                     withMaven(options: []) {
-                        withCredentials([file(credentialsId: 'credential-cibseven-community-gpg-private-key', variable: 'GPG_KEY_FILE'), string(credentialsId: 'credential-cibseven-community-gpg-passphrase', variable: 'GPG_KEY_PASS')]) {
+                        withCredentials([file(credentialsId: 'credential-cibseven-gpg-private-key', variable: 'GPG_KEY_FILE'), string(credentialsId: 'credential-cibseven-gpg-passphrase', variable: 'GPG_KEY_PASS')]) {
                             sh "gpg --batch --import ${GPG_KEY_FILE}"
     
                             def GPG_KEYNAME = sh(script: "gpg --list-keys --with-colons | grep pub | cut -d: -f5", returnStdout: true).trim()
@@ -207,9 +230,10 @@ pipeline {
                 script {
                     withCredentials([file(credentialsId: 'credential-cibseven-artifacts-npmrc', variable: 'NPMRC_FILE')]) {
                         withMaven() {
-                            def pom = readMavenPom file: 'pom.xml'
-                            def baseVersion = pom.version.replace("-SNAPSHOT", "")
-                            def dynamicVersion = "${baseVersion}-${BUILD_NUMBER}-SNAPSHOT"
+
+                            def baseVersion = mavenProjectInformation.version.replace("-SNAPSHOT", "")
+                            def dynamicVersion = mavenProjectInformation.version.contains('-SNAPSHOT') ?
+                                "${baseVersion}-${BUILD_NUMBER}-SNAPSHOT" : mavenProjectInformation.version
 
                             sh """
                                 echo "Copy the .npmrc file to the frontend directory..."
@@ -237,7 +261,10 @@ pipeline {
         stage('Create & Push Docker Image') {
             when {
                 anyOf {
-                    branch 'main'
+                    allOf {
+                      branch 'main'
+                      expression { mavenProjectInformation.version.endsWith("-SNAPSHOT") == true }
+                    }
                     expression { params.DEPLOY_ANY_BRANCH_TO_HARBOR == true }
                 }
             }
@@ -297,7 +324,10 @@ pipeline {
         stage('Deploy Helm Charts to Harbor') {
 	        when {
                 anyOf {
-                    branch 'main'
+                    allOf {
+                      branch 'main'
+                      expression { mavenProjectInformation.version.endsWith("-SNAPSHOT") == true }
+                    }
                     expression { params.DEPLOY_ANY_BRANCH_TO_HARBOR }
                 }
 	        }

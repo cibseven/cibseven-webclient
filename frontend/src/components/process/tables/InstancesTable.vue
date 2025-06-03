@@ -17,7 +17,7 @@
 
 -->
 <template>
-  <FlowTable striped resizable thead-class="sticky-header" :items="instances" primary-key="id" prefix="process."
+  <FlowTable v-if="!loading && instances.length > 0 && !sorting" striped resizable thead-class="sticky-header" :items="instances" primary-key="id" prefix="process."
     :sort-by="sortByDefaultKey" :sort-desc="sortDesc" :fields="[
     { label: 'state', key: 'state', class: 'col-1', thClass: 'border-end', tdClass: 'justify-content-center text-center py-0 border-end border-top-0' },
     { label: 'businessKey', key: 'businessKey', class: 'col-2', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0 position-relative' },
@@ -58,13 +58,19 @@
       size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-play-circle-outline" :title="$t('process.activateInstance')"></b-button>
       <b-button @click="selectInstance(table.item)" size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-eye-outline" :title="$t('process.showInstance')"></b-button>
       <b-button v-if="['ACTIVE', 'SUSPENDED'].includes(table.item.state) && processByPermissions($root.config.permissions.deleteProcessInstance, table.item)"
-      @click.stop="confirmDeleteInstance(table.item)"
-      size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-delete-outline" :title="$t('process.deleteInstance')"></b-button>
+      @click.stop="confirmStopInstance(table.item)"
+      size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-stop-circle-outline" :title="$t('process.stopInstance')"></b-button>
       <b-button v-else-if="['COMPLETED', 'EXTERNALLY_TERMINATED'].includes(table.item.state) && processByPermissions($root.config.permissions.deleteProcessInstance, table.item)"
       @click.stop="confirmDeleteHistoryInstance(table.item)"
       size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-delete-outline" :title="$t('process.deleteHistoryInstance')"></b-button>
     </template>
   </FlowTable>
+  <div v-else-if="loading" class="py-3 text-center w-100">
+    <BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}
+  </div>
+  <div v-else>
+    <p class="text-center p-4">{{ $t('process-instance.noResults') }}</p>
+  </div>
   <ConfirmActionOnProcessInstanceModal ref="confirm"></ConfirmActionOnProcessInstanceModal>
   <SuccessAlert top="0"  ref="success"> {{ $t('alert.successOperation') }}</SuccessAlert>
   <SuccessAlert ref="messageCopy"> {{ $t('process.copySuccess') }} </SuccessAlert>
@@ -77,13 +83,14 @@ import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import ConfirmActionOnProcessInstanceModal from '@/components/process/modals/ConfirmActionOnProcessInstanceModal.vue'
+import { BWaitingBox } from 'cib-common-components'
 
 export default {
   name: 'InstancesTable',
-  components: { FlowTable, SuccessAlert, ConfirmActionOnProcessInstanceModal },
+  components: { FlowTable, SuccessAlert, ConfirmActionOnProcessInstanceModal, BWaitingBox },
   emits: ['instance-deleted'],
   mixins: [copyToClipboardMixin, permissionsMixin],
-  props: { instances: Array, sortDesc: Boolean, sortByDefaultKey: String },
+  props: { instances: Array, sortDesc: Boolean, sortByDefaultKey: String, loading: Boolean, sorting: Boolean },
   data: function() {
     return {
       focusedCell: null
@@ -101,17 +108,16 @@ export default {
         query: this.$route.query
       })
     },
-    // "Delete Instance" button
-    confirmDeleteInstance: function(instance) {
+    // "Stop Instance" button
+    confirmStopInstance: function(instance) {
       this.$refs.confirm.show({
-        ok: this.deleteInstance,
+        ok: this.stopInstance,
         instance: instance,
-        message: this.$t('process-instance.confirm.deleteInstance'),
-        okTitle: this.$t('confirm.delete'),
+        message: this.$t('process-instance.confirm.stopInstance')
       })
     },
-    deleteInstance: function(instance) {
-      ProcessService.deleteInstance(instance.id).then(() => {
+    stopInstance: function(instance) {
+      ProcessService.stopInstance(instance.id).then(() => {
         this.$emit('instance-deleted')
         this.$refs.success.show()
       })

@@ -70,7 +70,7 @@
 </template>
 
 <script>
-import moment from 'moment'
+import { moment } from '@/globals.js'
 import { TaskService, ProcessService, HistoryService,
   IncidentService, JobService, JobDefinitionService } from '@/services.js'
 import ProcessInstancesView from '@/components/process/ProcessInstancesView.vue'
@@ -100,7 +100,7 @@ export default {
     processKey: 'loadProcessFromRoute',
     versionIndex() {
       const process = this.processDefinitions.find(processDefinition => processDefinition.version === this.versionIndex)
-      this.loadProcessVersion(process)
+      if (process) this.loadProcessVersion(process)
     }
   },
   data: function() {

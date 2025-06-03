@@ -38,7 +38,7 @@ public class IncidentProvider extends SevenProviderBase implements IIncidentProv
 			Optional<String> processInstanceId, Optional<String> executionId, Optional<String> activityId, Optional<String> causeIncidentId, Optional<String> rootCauseIncidentId, 
 			Optional<String> configuration, Optional<String> tenantIdIn, Optional<String> jobDefinitionIdIn, Optional<String> name, CIBUser user) {
 		
-		String url = camundaUrl + "/engine-rest/incident/count";
+		String url = getEngineRestUrl() + "/incident/count";
 		
 		String param = "";
 		param += addQueryParameter(param, "incidentId", incidentId, true);
@@ -67,7 +67,7 @@ public class IncidentProvider extends SevenProviderBase implements IIncidentProv
 			Optional<String> processInstanceId, Optional<String> executionId, Optional<String> activityId, Optional<String> causeIncidentId, Optional<String> rootCauseIncidentId, 
 			Optional<String> configuration, Optional<String> tenantIdIn, Optional<String> jobDefinitionIdIn, CIBUser user) {
 		
-		String url = camundaUrl + "/engine-rest/incident";
+		String url = getEngineRestUrl() + "/incident";
 		
 		String param = "";
 		param += addQueryParameter(param, "incidentId", incidentId, true);
@@ -91,7 +91,7 @@ public class IncidentProvider extends SevenProviderBase implements IIncidentProv
 	
 	@Override
 	public List<Incident> findIncidentByInstanceId(String processInstanceId, CIBUser user) {
-		String url = camundaUrl + "/engine-rest/incident";
+		String url = getEngineRestUrl() + "/incident";
 		
 		String param = "";
 		param += addQueryParameter(param, "processInstanceId", Optional.of(processInstanceId), true);
@@ -103,19 +103,19 @@ public class IncidentProvider extends SevenProviderBase implements IIncidentProv
 
 	@Override
 	public Collection<Incident> fetchIncidents(String processDefinitionKey, CIBUser user) {
-		String url = camundaUrl + "/engine-rest/incident?processDefinitionKeyIn=" + processDefinitionKey;
+		String url = getEngineRestUrl() + "/incident?processDefinitionKeyIn=" + processDefinitionKey;
 		return Arrays.asList(((ResponseEntity<Incident[]>) doGet(url, Incident[].class, user, false)).getBody());
 	}	
 
 	@Override
 	public void setIncidentAnnotation(String incidentId, Map<String, Object> data, CIBUser user) {
-		String url = camundaUrl + "/engine-rest/incident/" + incidentId + "/annotation";
+		String url = getEngineRestUrl() + "/incident/" + incidentId + "/annotation";
 		doPut(url, data, user);
 	}	
 	
 	@Override
 	public Collection<Incident> fetchIncidentsByInstanceAndActivityId(String processDefinitionId, String activityId, CIBUser user) {
-	    String url = camundaUrl + "/engine-rest/incident?processDefinitionId=" + processDefinitionId + "&activityId=" + activityId;
+	    String url = getEngineRestUrl() + "/incident?processDefinitionId=" + processDefinitionId + "&activityId=" + activityId;
 	    return Arrays.asList(((ResponseEntity<Incident[]>) doGet(url, Incident[].class, user, false)).getBody());
 	}	
 	

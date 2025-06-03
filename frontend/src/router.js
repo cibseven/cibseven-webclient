@@ -29,6 +29,8 @@ import ProcessListView from '@/components/processes/list/ProcessListView.vue'
 import ProcessesDashboardView from '@/components/processes/dashboard/ProcessesDashboardView.vue'
 import DecisionView from '@/components/decision/DecisionView.vue'
 import DecisionListView from '@/components/decisions/list/DecisionListView.vue'
+import DecisionInstance from '@/components/decision/DecisionInstance.vue'
+import DecisionDefinitionVersion from '@/components/decision/DecisionDefinitionVersion.vue'
 import UsersManagement from '@/components/admin/UsersManagement.vue'
 import AdminUsers from '@/components/admin/AdminUsers.vue'
 import CreateUser from '@/components/admin/CreateUser.vue'
@@ -54,10 +56,7 @@ import SystemView from '@/components/system/SystemView.vue'
 import SystemDiagnostics from '@/components/system/SystemDiagnostics.vue'
 import ExecutionMetrics from '@/components/system/ExecutionMetrics.vue'
 
-const router = createRouter({
-  history: createWebHashHistory(),
-  linkActiveClass: 'active',
-  routes: [
+const appRoutes = [
     { path: '/', redirect: '/seven/auth/start' },
     { path: '/seven', component: CibSeven, children: [
       { path: 'login', name: 'login', beforeEnter: function(to, from, next) {
@@ -134,19 +133,20 @@ const router = createRouter({
         },
         {
           path: 'decision/:decisionKey',
+          beforeEnter: permissionsGuard('cockpit'),
           component: DecisionView,
           props: true,
           children: [
             {
               path: ':versionIndex',
               name: 'decision-version',
-              component: () => import('@/components/decision/DecisionDefinitionVersion.vue'),
+              component: DecisionDefinitionVersion,
               props: true
             },
             {
               path: ':versionIndex/:instanceId',
               name: 'decision-instance',
-              component: () => import('@/components/decision/DecisionInstance.vue'),
+              component: DecisionInstance,
               props: true
             }
           ]
@@ -171,7 +171,7 @@ const router = createRouter({
             { path: 'groups', name: 'adminGroups', beforeEnter: permissionsGuardUserAdmin('groupsManagement', 'group'), component: AdminGroups },
             { path: 'group/:groupId', name: 'adminGroup', beforeEnter: permissionsGuardUserAdmin('groupsManagement', 'group'), component: ProfileGroup },
             // Tenants
-            { path: 'tenants', name:'adminTenants', component: TenantsView },
+            { path: 'tenants', name:'adminTenants', beforeEnter: permissionsGuardUserAdmin('tenantsManagement', 'tenant'), component: TenantsView },
             { path: 'tenant/:tenantId', name: 'adminTenant', beforeEnter: permissionsGuardUserAdmin('tenantsManagement', 'tenant'), component: EditTenant },
             // System
             { path: 'system', redirect: '/seven/auth/admin/system/system-diagnostics', name: 'adminSystem', component: SystemView,
@@ -190,9 +190,9 @@ const router = createRouter({
             }
           ]
         },
-        { path: 'admin/create-user', name: 'createUser', component: CreateUser },
-        { path: 'admin/create-group', name: 'createGroup', beforeEnter: permissionsGuard('cockpit'), component: CreateGroup },
-        { path: 'admin/create-tenant', name: 'createTenant', component: CreateTenant },
+        { path: 'admin/create-user', name: 'createUser', beforeEnter: permissionsGuardUserAdmin('usersManagement', 'user'), component: CreateUser },
+        { path: 'admin/create-group', name: 'createGroup', beforeEnter: permissionsGuardUserAdmin('groupsManagement', 'group'), component: CreateGroup },
+        { path: 'admin/create-tenant', name: 'createTenant', beforeEnter: permissionsGuardUserAdmin('tenantsManagement', 'tenant'), component: CreateTenant },
       ]}
     ]},
     {
@@ -207,8 +207,9 @@ const router = createRouter({
       props: true,
       component: StartDeployedForm
     },
-  ]
-})
+  ];
+
+var router = null
 
 function authGuard(strict) {
   return function(to, from, next) {
@@ -294,8 +295,40 @@ function combineGuards(...guards) {
   };
 }
 
-router.setRoot = function(value) {
-  this.root = value
+/**
+ * Creates and configures the main Vue Router instance for the application.
+ * Sets up hash-based navigation, active link class, and assigns the provided routes.
+ * Also adds a `setRoot` method to the router instance for storing a reference to the root Vue component.
+ *
+ * @param {Array} routes - The array of route objects to use for the router.
+ * @returns {Router} The configured Vue Router instance.
+ */
+function createAppRouter(routes) {
+
+  // this method is required to set the root component
+  // in order to access the config and user object
+  // in the router guards
+
+  router = createRouter({
+    history: createWebHashHistory(),
+    linkActiveClass: 'active',
+    routes: routes
+  })
+
+  router.setRoot = function(value) {
+    this.root = value
+  }
+
+  return router
 }
 
-export default router
+export {
+  appRoutes,
+
+  createAppRouter,
+
+  authGuard,
+  permissionsGuard,
+  permissionsDeniedGuard,
+  permissionsGuardUserAdmin
+}
