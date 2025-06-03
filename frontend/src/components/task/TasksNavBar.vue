@@ -186,7 +186,7 @@
 </template>
 
 <script>
-import moment from 'moment'
+import { moment } from '@/globals.js'
 import { TaskService, AdminService } from '@/services.js'
 import { debounce } from '@/utils/debounce.js'
 import StartProcess from '@/components/start-process/StartProcess.vue'

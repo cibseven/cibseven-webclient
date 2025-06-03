@@ -15,8 +15,7 @@
  *  limitations under the License.
  */
 import appConfig from './appConfig.js'
-import moment from 'moment'
-import { axios } from './globals.js'
+import { axios, moment } from './globals.js'
 
 function patchProcess(process) {
   if (Array.isArray(process)) process.forEach(patchProcess)

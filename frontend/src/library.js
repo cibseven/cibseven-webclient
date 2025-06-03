@@ -17,23 +17,29 @@
 // Import the CSS to ensure it is bundled with the package
 import './assets/main.css';
 
-import { axios } from '@/globals.js'
+import { axios, moment } from '@/globals.js'
 import appConfig from '@/appConfig.js'
 import { permissionsMixin } from '@/permissions.js'
 import registerOwnComponents from './register.js'
 import processesVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
 import processesMixin from '@/components/process/mixins/processesMixin.js'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
-import store from '@/store'
+import store, { modules } from '@/store'
 import usersMixin from '@/mixins/usersMixin.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { debounce } from '@/utils/debounce.js'
 import { HoverStyle } from '@/components/common-components/directives.js'
 import { InfoService, AuthService } from './services.js'
 import { i18n, switchLanguage } from './i18n'
-import { router, publicRoutes } from './router.js'
+import { appRoutes,
+  createAppRouter,
+  authGuard,
+  permissionsGuard,
+  permissionsDeniedGuard,
+  permissionsGuardUserAdmin } from './router.js'
 import { updateAppTitle, checkExternalReturn, isMobile, hasHeader, getTheme } from './utils/init.js'
 import { applyTheme, handleAxiosError, fetchAndStoreProcesses, fetchDecisionsIfEmpty, setupTaskNotifications } from './utils/init'
+import { parseXMLDocumentation } from './utils/parser.js'
 import CibSeven from '@/components/CibSeven.vue'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import ContentBlock from '@/components/common-components/ContentBlock.vue'
@@ -133,6 +139,7 @@ import DmnViewer from '@/components/decision/DmnViewer.vue'
 import TemplateBase from '@/components/forms/TemplateBase.vue'
 import StartView from '@/components/start/StartView.vue'
 import LoginView from '@/components/login/LoginView.vue'
+import GenericTabs from '@/components/common-components/GenericTabs.vue'
 
 const registerComponents = function(app) {
   app.component('cib-seven', CibSeven)
@@ -235,10 +242,12 @@ export {
   BatchesView,
   SystemView,
   axios,
+  moment,
   appConfig,
   permissionsMixin,
   registerOwnComponents,
   store,
+  modules as storeModules,
   usersMixin,
   processesVariablesMixin,
   processesMixin,
@@ -342,12 +351,20 @@ export {
   TemplateBase,
   StartView,
   LoginView,
+  GenericTabs,
   InfoService,
   AuthService,
   i18n,
   switchLanguage,
-  publicRoutes,
-  router,
+
+  // router
+  appRoutes,
+  createAppRouter,
+  authGuard,
+  permissionsGuard,
+  permissionsDeniedGuard,
+  permissionsGuardUserAdmin,
+
   updateAppTitle,
   checkExternalReturn,
   isMobile,
@@ -357,5 +374,6 @@ export {
   handleAxiosError,
   fetchAndStoreProcesses,
   fetchDecisionsIfEmpty,
-  setupTaskNotifications
+  setupTaskNotifications,
+  parseXMLDocumentation
 }

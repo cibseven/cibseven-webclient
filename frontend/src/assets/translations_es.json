@@ -1,4 +1,3 @@
-
 {
 	"commons": {
 		"edit": "Editar",
@@ -179,7 +178,13 @@
 		"false": "Falso",		
 		"jobDefinitions": "Definiciones de trabajos",
 		"jobs": "Trabajos",
-		"calledProcessDefinitions": "Llamada Definiciones de proceso"
+		"calledProcessDefinitions": "Llamada Definiciones de proceso",
+		"jobLog": "Registro de trabajos",
+		"userOperations": "Operaciones de usuario",
+		"externalTasksLog": "Registro de tareas externas",
+		"modify": "Modificar",
+		"restart": "Reiniciar",
+		"documentation": "Documentación"
 	},
 	"process-instance": {
 		"processInstanceId": "ID de la instancia del proceso",
@@ -653,6 +658,7 @@
 		"en": "English",
 		"de": "Deutsch",
 		"es": "Español",
+		"ua": "Українська",
 		"ru": "Русский"
 	},
 	"cib-datepicker": {
@@ -1090,7 +1096,7 @@
 			"title": "Política de contraseñas",
 			"header": "Su contraseña debe cumplir los siguientes criterios: ",
 			"items": [
-				"no debe contener datos de usuario (p.ej., id de usuario, nombre, apellidos, correo electrónico)",
+				"no debe contener datos de usuario (p.ej., ID de usuario, nombre, apellidos, correo electrónico)",
 				"10 caracteres como mínimo",
 				"al menos un carácter mayúsculo",
 				"al menos un carácter minúsculo",

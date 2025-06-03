@@ -120,7 +120,7 @@ application:
         basePath: services/v1
 
 ui:
-  supportedLanguages: ["de", "en", "es", "ru"]
+  supportedLanguages: ["de", "en", "es", "ua", "ru"]
   taskListTime: "30000"
   taskFilter:
     smartSearch:

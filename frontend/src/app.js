@@ -22,7 +22,7 @@ import { axios } from './globals.js'
 import { createApp } from 'vue'
 
 import store from './store'
-import { router } from './router.js'
+import { createAppRouter, appRoutes } from './router.js'
 import registerOwnComponents from './register.js'
 import { permissionsMixin }  from './permissions.js'
 
@@ -50,7 +50,7 @@ Promise.all([
   // Load personalized-css
   var theme = getTheme(config)
   applyTheme(theme)
-  
+
   switchLanguage(config, i18n.global.locale).then(() => {
 
     const app = createApp({ /*jshint nonew:false */
@@ -110,6 +110,7 @@ Promise.all([
 
     registerOwnComponents(app)
 
+    const router = createAppRouter(appRoutes)
     app.use(router)
     app.use(store)
     app.use(i18n)
@@ -117,11 +118,12 @@ Promise.all([
     router.setRoot(root)
 
     axios.interceptors.response.use(
-          res => res.data,
-          error => {
-            return handleAxiosError(router, root, error)
-          }
-        );
+      res => res.data,
+      error => {
+        return handleAxiosError(router, root, error)
+      }
+    )
+
     return config
   })
-});
+})
