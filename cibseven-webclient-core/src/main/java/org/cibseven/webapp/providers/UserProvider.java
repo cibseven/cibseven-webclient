@@ -59,14 +59,14 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 	public Authorizations getUserAuthorization(String userId, CIBUser user) {
 		Authorizations auths = new Authorizations();
 		try {
-			String urlUsers = cibsevenUrl + "/engine-rest/authorization";
+			String urlUsers = getEngineRestUrl() + "/authorization";
 			UriComponentsBuilder builder;
 			
 			builder = UriComponentsBuilder.fromHttpUrl(urlUsers).queryParam("userIdIn", URLEncoder.encode(userId, StandardCharsets.UTF_8.toString()));
 	
 			Collection<Authorization> userAuthorizations = new ArrayList<Authorization>(Arrays.asList(((ResponseEntity<Authorization[]>) doGet(builder, Authorization[].class, user)).getBody()));
 			
-			String urlGroup = cibsevenUrl + "/engine-rest/group";
+			String urlGroup = getEngineRestUrl() + "/group";
 			builder = UriComponentsBuilder.fromHttpUrl(urlGroup).queryParam("member", URLEncoder.encode(userId, StandardCharsets.UTF_8.toString()));
 			Collection<UserGroup> userGroups = Arrays.asList(((ResponseEntity<UserGroup[]>) doGet(builder, UserGroup[].class, user)).getBody());
 			
@@ -77,7 +77,7 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 			}
 			
 			if (userGroups.size() > 0) {
-				String urlGroupAuthorizations = cibsevenUrl + "/engine-rest/authorization";
+				String urlGroupAuthorizations = getEngineRestUrl() + "/authorization";
 				builder = UriComponentsBuilder.fromHttpUrl(urlGroupAuthorizations).queryParam("groupIdIn", URLEncoder.encode(listGroups, StandardCharsets.UTF_8.toString()));
 				Collection<Authorization> groupsAuthorizations = Arrays.asList(((ResponseEntity<Authorization[]>) doGet(builder, Authorization[].class, user)).getBody());
 				userAuthorizations.addAll(groupsAuthorizations);
@@ -123,12 +123,12 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 	}
 	
 	public Collection<SevenUser> fetchUsers(CIBUser user) throws SystemException {
-		String url = cibsevenUrl + "/engine-rest/user";
+		String url = getEngineRestUrl() + "/user";
 		return Arrays.asList(((ResponseEntity<SevenUser[]>) doGet(url, SevenUser[].class, user, false)).getBody());	
 	}
 	
 	public SevenVerifyUser verifyUser(String username, String password, CIBUser user) throws SystemException {
-		String url = cibsevenUrl + "/engine-rest/identity/verify";
+		String url = getEngineRestUrl() + "/identity/verify";
 		String body = "{\"username\": \"" + username + "\", \"password\": \"" + password + "\"}";
 		return ((ResponseEntity<SevenVerifyUser>) doPost(url, body, SevenVerifyUser.class, user)).getBody();	
 	}	
@@ -192,7 +192,7 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 			Optional<String> lastNameLike, Optional<String> email, Optional<String> emailLike, Optional<String> memberOfGroup, Optional<String> memberOfTenant,
 			Optional<String> idIn, Optional<String> firstResult, Optional<String> maxResults, Optional<String> sortBy, Optional<String> sortOrder) {
 		
-		String url = cibsevenUrl + "/engine-rest/user";
+		String url = getEngineRestUrl() + "/user";
 		
 		String param = "";
 		
@@ -249,7 +249,7 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 	
 	@Override
 	public void createUser(NewUser user, CIBUser flowUser) throws InvalidUserIdException {
-		String url = cibsevenUrl + "/engine-rest/user/create";
+		String url = getEngineRestUrl() + "/user/create";
 
 		try {
 			//	A JSON object with the following properties:
@@ -275,7 +275,7 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 	@Override
 	public void updateUserProfile(String userId, User user, CIBUser flowUser) 
 	{
-		String url = cibsevenUrl + "/engine-rest/user/" + userId + "/profile";
+		String url = getEngineRestUrl() + "/user/" + userId + "/profile";
 
 		try 
 		{
@@ -291,33 +291,33 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 
 	@Override
 	public void updateUserCredentials(String userId, Map<String, Object> data, CIBUser user) {
-		String url = cibsevenUrl + "/engine-rest/user/" + userId + "/credentials";
+		String url = getEngineRestUrl() + "/user/" + userId + "/credentials";
 
 		doPut(url, data, user);
 	}
 	
 	@Override
 	public void addMemberToGroup(String groupId, String userId, CIBUser user) {
-		String url = cibsevenUrl + "/engine-rest/group/" + groupId + "/members/" + userId;
+		String url = getEngineRestUrl() + "/group/" + groupId + "/members/" + userId;
 		doPut(url, "", user);
 	}
 	
 	@Override
 	public void deleteMemberFromGroup(String groupId, String userId, CIBUser user) {
-		String url = cibsevenUrl + "/engine-rest/group/" + groupId + "/members/" + userId;
+		String url = getEngineRestUrl() + "/group/" + groupId + "/members/" + userId;
 		doDelete(url, user);
 	}
 
 	@Override
 	public void deleteUser(String userId, CIBUser user) {
-		String url = cibsevenUrl + "/engine-rest/user/" + userId;
+		String url = getEngineRestUrl() + "/user/" + userId;
 
 		doDelete(url, user);
 	}
 	
 	@Override
 	public SevenUser getUserProfile(String userId, CIBUser user) {
-		String url = cibsevenUrl + "/engine-rest/user/" + userId + "/profile";
+		String url = getEngineRestUrl() + "/user/" + userId + "/profile";
 
 		return doGet(url, SevenUser.class, user, false).getBody();
 	}
@@ -326,7 +326,7 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 	public Collection<UserGroup> findGroups(Optional<String> id, Optional<String> name, Optional<String> nameLike, Optional<String> type, 
 			Optional<String> member, Optional<String> memberOfTenant, Optional<String> sortBy, Optional<String> sortOrder, Optional<String> firstResult,
 			Optional<String> maxResults, CIBUser user) {
-		String url = cibsevenUrl + "/engine-rest/group";
+		String url = getEngineRestUrl() + "/group";
 		
 		String param = "";
 		String wcard = getWildcard();
@@ -357,7 +357,7 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 
 	@Override
 	public void createGroup(UserGroup group, CIBUser user) {
-		String url = cibsevenUrl + "/engine-rest/group/create";
+		String url = getEngineRestUrl() + "/group/create";
 
 		try {
 			doPost(url, group.json() , null, user);
@@ -371,7 +371,7 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 
 	@Override
 	public void updateGroup(String groupId, UserGroup group, CIBUser user) {
-		String url = cibsevenUrl + "/engine-rest/group/" + groupId;
+		String url = getEngineRestUrl() + "/group/" + groupId;
 		try {
 			doPut(url, group.json(), user);
 		} 
@@ -384,7 +384,7 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 
 	@Override
 	public void deleteGroup(String groupId, CIBUser user) {
-		String url = cibsevenUrl + "/engine-rest/group/" + groupId;
+		String url = getEngineRestUrl() + "/group/" + groupId;
 		doDelete(url, user);
 	}
 
@@ -392,7 +392,7 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 	public Collection<Authorization> findAuthorization(Optional<String> id, Optional<String> type, Optional<String> userIdIn, Optional<String> groupIdIn, 
 			Optional<String> resourceType, Optional<String> resourceId, Optional<String> sortBy, Optional<String> sortOrder, Optional<String> firstResult,
 			Optional<String> maxResults, CIBUser user) {
-		String url = cibsevenUrl + "/engine-rest/authorization";
+		String url = getEngineRestUrl() + "/authorization";
 		
 		String param = "";
 		param += addQueryParameter(param, "id", id, true);
@@ -413,7 +413,7 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 
 	@Override
 	public ResponseEntity<Authorization> createAuthorization(Authorization authorization, CIBUser user) {
-		String url = cibsevenUrl + "/engine-rest/authorization/create";
+		String url = getEngineRestUrl() + "/authorization/create";
 
 		try {
 			return doPost(url, authorization.json(), Authorization.class, user);
@@ -427,13 +427,13 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 
 	@Override
 	public void updateAuthorization(String authorizationId, Map<String, Object> data, CIBUser user) {
-		String url = cibsevenUrl + "/engine-rest/authorization/" + authorizationId;
+		String url = getEngineRestUrl() + "/authorization/" + authorizationId;
 		doPut(url, data, user);
 	}
 
 	@Override
 	public void deleteAuthorization(String authorizationId, CIBUser user) {
-		String url = cibsevenUrl + "/engine-rest/authorization/" + authorizationId;
+		String url = getEngineRestUrl() + "/authorization/" + authorizationId;
 		doDelete(url, user);
 	}
 

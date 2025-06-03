@@ -98,7 +98,8 @@ function skipValue(value, lang) {
       'dashboard',
       'filter',
       'status',
-      'name: {name}version: {version}'
+      'name: {name}version: {version}',
+      'element'
     ],
     'es': [
       'tenant',
@@ -108,6 +109,8 @@ function skipValue(value, lang) {
       'business key',
       'variables',
       'total',
+    ],
+    'ua': [
     ],
     'ru': [
     ]
@@ -189,7 +192,7 @@ function reportSameValuesTable(objBase, objTest, languages, path) {
 }
 
 describe('translations', () => {
-  const languages = ['de', 'en', 'ru', 'es']
+  const languages = ['de', 'en', 'es', 'ru', 'ua']
 
   describe('loadable', () => {
     languages.forEach(lang => {

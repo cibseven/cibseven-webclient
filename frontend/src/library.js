@@ -24,7 +24,7 @@ import registerOwnComponents from './register.js'
 import processesVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
 import processesMixin from '@/components/process/mixins/processesMixin.js'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
-import store from '@/store'
+import store, { modules } from '@/store'
 import usersMixin from '@/mixins/usersMixin.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { debounce } from '@/utils/debounce.js'
@@ -39,6 +39,7 @@ import { appRoutes,
   permissionsGuardUserAdmin } from './router.js'
 import { updateAppTitle, checkExternalReturn, isMobile, hasHeader, getTheme } from './utils/init.js'
 import { applyTheme, handleAxiosError, fetchAndStoreProcesses, fetchDecisionsIfEmpty, setupTaskNotifications } from './utils/init'
+import { parseXMLDocumentation } from './utils/parser.js'
 import CibSeven from '@/components/CibSeven.vue'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import ContentBlock from '@/components/common-components/ContentBlock.vue'
@@ -248,6 +249,7 @@ export {
   permissionsMixin,
   registerOwnComponents,
   store,
+  modules as storeModules,
   usersMixin,
   processesVariablesMixin,
   processesMixin,
@@ -351,6 +353,7 @@ export {
   TemplateBase,
   StartView,
   LoginView,
+  GenericTabs,
   InfoService,
   AuthService,
   SystemService,
@@ -375,5 +378,5 @@ export {
   fetchAndStoreProcesses,
   fetchDecisionsIfEmpty,
   setupTaskNotifications,
-  GenericTabs
+  parseXMLDocumentation
 }

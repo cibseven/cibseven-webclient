@@ -35,7 +35,7 @@ public class UtilsProvider extends SevenProviderBase implements IUtilsProvider {
 	@Override
 	public Collection<Message> correlateMessage(Map<String, Object> data, CIBUser user) throws SystemException {
 		//LHM overlay (webdesk)
-		String url = cibsevenUrl + "/engine-rest/message";
+		String url = getEngineRestUrl() + "/message";
 		ResponseEntity<Message[]> response = doPost(url, data, Message[].class, user);
 		if (response.hasBody()) {
 			return Arrays.asList(response.getBody());			
@@ -47,21 +47,21 @@ public class UtilsProvider extends SevenProviderBase implements IUtilsProvider {
 	
 	@Override
 	public String findStacktrace(String jobId, CIBUser user) {
-		String url = cibsevenUrl + "/engine-rest/job/" + jobId	+ "/stacktrace";
+		String url = getEngineRestUrl() + "/job/" + jobId	+ "/stacktrace";
 		
 		return doGetWithHeader(url, String.class, user, false, MediaType.ALL).getBody();
 	}
 	
 	@Override
 	public void retryJobById(String jobId, Map<String, Object> data, CIBUser user) {
-		String url = cibsevenUrl + "/engine-rest/job/" + jobId + "/retries";
+		String url = getEngineRestUrl() + "/job/" + jobId + "/retries";
 		doPut(url, data, user);
 	}
 	
 	@Override
 	public Collection<EventSubscription> getEventSubscriptions(Optional<String> processInstanceId,
 			Optional<String> eventType, Optional<String> eventName, CIBUser user) {
-		String url = cibsevenUrl + "/engine-rest/event-subscription";
+		String url = getEngineRestUrl() + "/event-subscription";
 		String param = "";
 		param += addQueryParameter(param, "processInstanceId", processInstanceId, true);
 		param += addQueryParameter(param, "eventType", eventType, true);
