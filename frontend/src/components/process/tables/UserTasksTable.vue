@@ -17,7 +17,7 @@
 
 -->
 <template>
-  <div class="overflow-auto bg-white position-absolute container-fluid g-0" style="top: 0; bottom: 0">
+  <div class="overflow-auto bg-white container-fluid g-0 h-100">
     <FlowTable v-if="!loading && userTasks.length > 0" resizable striped thead-class="sticky-header" :items="userTasks" primary-key="id" prefix="process-instance.usertasks."
       sort-by="label" :sort-desc="true" :fields="[
       { label: 'activity', key: 'name', class: 'col-2', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' },
@@ -58,7 +58,7 @@
     </div>
 
     <TaskAssignationModal ref="taskAssignationModal" @change-assignee="changeAssignee"></TaskAssignationModal>
-    <SuccessAlert ref="messageCopy" style="z-index: 9999"> {{ $t('process.copySuccess') }} </SuccessAlert>
+    <SuccessAlert ref="messageCopy"> {{ $t('process.copySuccess') }} </SuccessAlert>
   </div>
 </template>
 

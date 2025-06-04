@@ -17,7 +17,7 @@
 
 -->
 <template>
-  <div class="overflow-auto bg-white position-absolute container-fluid g-0" style="top: 0; bottom: 0">
+  <div class="overflow-auto bg-white container-fluid g-0 h-100">
     <FlowTable v-if="localIncidents.length > 0" striped thead-class="sticky-header" :items="localIncidents" primary-key="id" prefix="process-instance.incidents."
       sort-by="label" :sort-desc="true" :fields="[
       { label: 'message', key: 'incidentMessage', class: 'col-3', tdClass: 'py-1 border-end border-top-0' },
@@ -72,7 +72,7 @@
 
   <AnnotationModal ref="annotationModal" @set-incident-annotation="setIncidentAnnotation"></AnnotationModal>
   <IncidentRetryModal ref="incidentRetryModal" @increment-number-retry="incrementNumberRetry"></IncidentRetryModal>
-  <SuccessAlert ref="messageCopy" style="z-index: 9999">{{ $t('process.copySuccess') }}</SuccessAlert>
+  <SuccessAlert ref="messageCopy">{{ $t('process.copySuccess') }}</SuccessAlert>
   <SuccessAlert ref="successRetryJob">{{ $t('process-instance.successRetryJob') }}</SuccessAlert>
 
 </template>
