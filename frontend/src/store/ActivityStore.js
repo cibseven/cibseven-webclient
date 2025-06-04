@@ -16,10 +16,40 @@
  */
 
 const ActivityStore = {
-  state: { processActivities: [] },
+  state: { 
+    processActivities: [],
+    selectedActivityId: '',
+    highlightedElement: null
+  },
   mutations: {
     setProcessActivities: function (state, activities) {
       state.processActivities = activities
+    },
+    setSelectedActivityId: function (state, activityId) {
+      state.selectedActivityId = activityId
+    },
+    setHighlightedElement: function (state, element) {
+      state.highlightedElement = element
+    },
+    clearActivitySelection: function (state) {
+      state.selectedActivityId = ''
+      state.highlightedElement = null
+    }
+  },
+  getters: {
+    selectedActivityId: (state) => state.selectedActivityId,
+    highlightedElement: (state) => state.highlightedElement,
+    getProcessActivities: (state) => state.processActivities
+  },
+  actions: {
+    selectActivity: function ({ commit }, activityId) {
+      commit('setSelectedActivityId', activityId)
+    },
+    setHighlightedElement: function ({ commit }, element) {
+      commit('setHighlightedElement', element)
+    },
+    clearActivitySelection: function ({ commit }) {
+      commit('clearActivitySelection')
     }
   }
 }
