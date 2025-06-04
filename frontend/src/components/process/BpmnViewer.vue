@@ -51,6 +51,10 @@
   </div>
 </template>
 
+<style>
+@import "@/assets/bpmn-viewer.css"
+</style>
+
 <script>
 import NavigatedViewer from 'bpmn-js/lib/NavigatedViewer'
 import { ProcessService } from '@/services.js'
