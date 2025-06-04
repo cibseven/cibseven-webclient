@@ -19,7 +19,7 @@
 <template>
   <table class="table" :class="computedTableClass" :style="computedTableStyles" role="table" ref="table">
     <thead :class="theadClass" role="rowgroup">
-      <tr class="d-flex" role="row">
+      <tr :class="nativeLayout ? '' : 'd-flex'" role="row">
         <th v-for="(field, index) in fields"
           :key="index"
           :class="[field.class, field.thClass, getSortClass(field)]"
@@ -27,7 +27,7 @@
           :aria-sort="getAriaSort(field)"
           @click.stop="handleColumnClick(field)"
           :style="{
-            ...resizable ? { width: columnWidths[index], position: 'relative' } : {},
+            ...resizable && !nativeLayout ? { width: columnWidths[index], position: 'relative' } : {},
             cursor: field.sortable !== false ? 'pointer' : 'default'
           }">
 
@@ -42,7 +42,7 @@
           <span v-if="field.label">{{ $t(prefix + field.label) }}</span>
 
           <span
-            v-if="resizable"
+            v-if="resizable && !nativeLayout"
             :style="resizeHandleStyle"
             @mousedown.stop="startResize(index, $event)">
           </span>
@@ -50,7 +50,8 @@
       </tr>
     </thead>
     <tbody role="rowgroup">
-      <tr v-for="(item, index) in sortedItems" :key="index" class="d-flex" :class="getRowClass(item)"
+      <tr v-for="(item, index) in sortedItems" :key="index" 
+        :class="[getRowClass(item), nativeLayout ? '' : 'd-flex']"
         @mouseenter="$emit('mouseenter', item)"
         @mouseleave="$emit('mouseleave', item)"
         @click.stop="$emit('click', item)"
@@ -58,9 +59,12 @@
         role="row">
         <td v-for="(field, colIndex) in fields"
           :key="field.key"
-          class="d-flex align-items-center"
-          :class="[field.class, field.tdClass]"
-          :style="resizable ? { width: columnWidths[colIndex] } : {}"
+          :class="[
+            field.class, 
+            field.tdClass,
+            nativeLayout ? '' : 'd-flex align-items-center'
+          ]"
+          :style="resizable && !nativeLayout ? { width: columnWidths[colIndex] } : {}"
           role="cell">
           <slot :name="'cell(' + field.key +')'" :item="item" :value="item[field.key]" :index="index">
             {{ item[field.key] }}
@@ -77,6 +81,7 @@ export default {
   props: {
     items: { type: Array, default: () => [] },
     fields: { type: Array, default: () => [] },
+    nativeLayout: { type: Boolean, default: false },
     tbodyTrClass: { type: [String, Function], default: '' },
     prefix: { type: String, default: '' },
     theadClass: { type: String, default: '' },
