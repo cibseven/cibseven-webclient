@@ -25,7 +25,7 @@
       </b-button>
     </div>
   </div>
-  <div class="overflow-auto bg-white container-fluid g-0 h-100">
+  <div class="overflow-auto bg-white container-fluid g-0 flex-grow-1">
     <FlowTable v-if="!loading" striped resizable thead-class="sticky-header" :items="filteredVariables" primary-key="id" prefix="process-instance.variables."
       sort-by="label" :sort-desc="true" :fields="[
       { label: 'name', key: 'name', class: 'col-3', tdClass: 'py-1 border-end border-top-0' },

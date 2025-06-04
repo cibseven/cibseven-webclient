@@ -29,7 +29,7 @@
           </b-input-group>
         </div>
         <div class="col-5">
-          <div class="d-flex row">
+          <div class="d-flex">
             <div class="d-inline-block align-content-start col-5">
               <b-form-checkbox v-model="onlyIncidents" switch :title="$t('process.onlyIncidents.tooltip')">
                 {{ $t('process.onlyIncidents.title') }}
