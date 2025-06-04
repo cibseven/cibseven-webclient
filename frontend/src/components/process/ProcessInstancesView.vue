@@ -27,17 +27,23 @@
         :process-definition-id="process.id" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" :statistics="process.statistics"
         :activities-history="process.activitiesHistory" :active-tab="activeTab" class="h-100">
       </BpmnViewer>
-    </div>
-
-    <ul class="nav nav-tabs position-absolute border-0 bg-light" style="left: -1px" :style="'top: ' + (bottomContentPosition - toggleButtonHeight) + 'px; ' + toggleTransition">
-      <span role="button" size="sm" variant="light" class="border-bottom-0 bg-white rounded-top border py-1 px-2 me-1" @click="toggleContent">
+      <span role="button" size="sm" variant="light" class="bg-white px-2 py-1 me-1 position-absolute border rounded" style="bottom: 15px; left: 15px;" @click="toggleContent">
         <span class="mdi mdi-18px" :class="toggleIcon"></span>
       </span>
-      <component :is="ProcessInstancesTabsPlugin" v-if="ProcessInstancesTabsPlugin" @change-tab="changeTab($event)"></component>
-      <ProcessInstancesTabs v-else @change-tab="changeTab($event)"></ProcessInstancesTabs>
-    </ul>
+    </div>
 
-    <div class="position-absolute w-100" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
+    <div class="position-absolute w-100 bg-light border-bottom" style="z-index: 1" :style="'top: ' + (bottomContentPosition - tabsAreaHeight) + 'px; ' + toggleTransition">
+      <div class="d-flex align-items-end">
+        <div class="tabs-scroll-container flex-grow-1" style="white-space: nowrap;">
+          <ul class="nav nav-tabs m-0 border-0 flex-nowrap" style="display: inline-flex; overflow-y: hidden">
+            <component :is="ProcessInstancesTabsPlugin" v-if="ProcessInstancesTabsPlugin" @change-tab="changeTab($event)" />
+            <ProcessInstancesTabs v-else @change-tab="changeTab($event)" />
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="position-absolute w-100 overflow-hidden" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
       <div v-if="isInstancesView" ref="filterTable" class="bg-light d-flex position-absolute w-100">
         <div class="col-3 p-3">
           <b-input-group size="sm">
