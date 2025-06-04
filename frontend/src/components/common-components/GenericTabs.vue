@@ -18,14 +18,14 @@
 -->
 <template>
   <li
-    class="nav-item m-0"
+    class="nav-item m-0 flex-shrink-0 border-0"
     v-for="(tab, index) in tabs"
     :key="index"
   >
     <a
       role="button"
       @click="changeTab(tab)"
-      class="nav-link py-2"
+      class="nav-link py-2 border-0 rounded-0"
       :class="{
         active: tab.active,
         'bg-light border border-bottom-0': !tab.active

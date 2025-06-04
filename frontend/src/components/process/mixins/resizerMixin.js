@@ -18,8 +18,8 @@ const DEFAULT_BPMN_VIEWER_HEIGHT = 400
 const TOP_BAR_HEIGHT = 41
 const DRAG_SELECTOR_HEIGHT = 10
 const FILTER_HEIGHT = 60
-const TOGGLE_BUTTON_HEIGHT = 39
 const DEFAULT_TRANSITION_TIME = 0.4
+const TABS_AREA_HEIGHT = 38
 
 export default {
     data: function() {
@@ -31,14 +31,14 @@ export default {
             filterHeight: FILTER_HEIGHT,
             mousePosition: null,
             toggleIcon: 'mdi-chevron-down',
-            toggleButtonHeight: TOGGLE_BUTTON_HEIGHT,
             toggleTransition: '',
-            transitionTime: DEFAULT_TRANSITION_TIME
+            transitionTime: DEFAULT_TRANSITION_TIME,
+            tabsAreaHeight: TABS_AREA_HEIGHT
         }
     },
     computed: {
         bottomContentPosition: function() {
-            return this.bpmnViewerHeight + this.topBarHeight
+            return this.bpmnViewerHeight + this.topBarHeight + this.tabsAreaHeight
         }
     },
     methods: {

@@ -34,24 +34,30 @@
     <div @mousedown="handleMouseDown" class="v-resizable position-absolute w-100" style="left: 0" :style="'height: ' + bpmnViewerHeight + 'px; ' + toggleTransition">
       <BpmnViewer @child-activity="filterByChildActivity($event)" @task-selected="selectTask($event)" :activityId="activityId" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" :statistics="process.statistics"
         :process-definition-id="process.id" ref="diagram" class="h-100" :activities-history="process.activitiesHistory"></BpmnViewer>
-    </div>
-
-    <ul class="nav nav-tabs position-absolute border-0" style="left: -1px" :style="'top: ' + (bottomContentPosition - toggleButtonHeight) + 'px; ' + toggleTransition">
-      <span role="button" size="sm" variant="light" class="border-bottom-0 bg-white rounded-top border py-1 px-2 me-1" @click="toggleContent">
+      <span role="button" size="sm" variant="light" class="bg-white px-2 py-1 me-1 position-absolute border rounded" style="bottom: 15px; left: 15px;" @click="toggleContent">
         <span class="mdi mdi-18px" :class="toggleIcon"></span>
       </span>
-      <component :is="ProcessInstanceTabsPlugin" v-if="ProcessInstanceTabsPlugin" @change-tab="changeTab($event)"></component>
-      <ProcessInstanceTabs v-else @change-tab="changeTab($event)"></ProcessInstanceTabs>
-    </ul>
+    </div>
 
-    <div ref="rContent" class="position-absolute w-100" style="bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
+    <div class="position-absolute w-100 bg-light border-bottom" style="z-index: 1" :style="'top: ' + (bottomContentPosition - tabsAreaHeight) + 'px; ' + toggleTransition">
+      <div class="d-flex align-items-end">
+        <div class="tabs-scroll-container flex-grow-1" style="white-space: nowrap;">
+          <ul class="nav nav-tabs m-0 border-0 flex-nowrap" style="display: inline-flex; overflow-y: hidden">
+            <component :is="ProcessInstanceTabsPlugin" v-if="ProcessInstanceTabsPlugin" @change-tab="changeTab($event)"></component>
+            <ProcessInstanceTabs v-else @change-tab="changeTab($event)"></ProcessInstanceTabs>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div ref="rContent" class="position-absolute w-100 overflow-hidden" style="bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
 
       <VariablesTable v-if="activeTab === 'variables'" :selected-instance="selectedInstance" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory"></VariablesTable>
       <IncidentsTable v-else-if="activeTab === 'incidents'" :incidents="selectedInstance.incidents" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory"></IncidentsTable>
       <UserTasksTable v-else-if="activeTab === 'usertasks'" :selected-instance="selectedInstance"></UserTasksTable>
       <JobsTable v-else-if="activeTab === 'jobs'" :jobs="selectedInstance.jobs"></JobsTable>
       <CalledProcessInstancesTable v-else-if="activeTab === 'calledProcessInstances'" :selectedInstance="selectedInstance" :activityInstanceHistory="activityInstanceHistory" :activity-instance="activityInstance"></CalledProcessInstancesTable>
-
+      <component :is="ProcessInstanceTabsContentPlugin" v-if="ProcessInstanceTabsContentPlugin" :instance="selectedInstance" :active-tab="activeTab"></component>
     </div>
 
   </div>
@@ -100,6 +106,11 @@ export default {
     ProcessInstanceTabsPlugin() {
       return this.$options.components && this.$options.components.ProcessInstanceTabsPlugin
         ? this.$options.components.ProcessInstanceTabsPlugin
+        : null
+    },
+    ProcessInstanceTabsContentPlugin: function() {
+      return this.$options.components && this.$options.components.ProcessInstanceTabsContentPlugin
+        ? this.$options.components.ProcessInstanceTabsContentPlugin
         : null
     }
   },
