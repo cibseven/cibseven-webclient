@@ -327,11 +327,6 @@
 			"actions": "Действия",
 			"suspend": "Приостановить",
 			"resume": "Возобновить"
-		},
-		"documentation": {
-			"noDocumentation": "Документация отсутствует",
-			"element": "Элемент",
-			"documentation": "Документация"
 		}
 	},
 	"bpmn-viewer": {
