@@ -213,7 +213,7 @@ export default {
       pauseRefreshButton: false,
       advancedFilter: [],
       advancedFilterAux: null,
-	  justSelectedFromList: false
+	    justSelectedFromList: false
     }
   },
   watch: {
@@ -221,11 +221,11 @@ export default {
       immediate: true,
       handler: function (taskId) {
         this.checkTaskIdInUrl(taskId)
-		if (taskId && !this.justSelectedFromList) {
-		  this.scrollToSelectedTask()	
-		}
+		    if (taskId && !this.justSelectedFromList) {
+		      this.scrollToSelectedTask()	
+		    }
         this.justSelectedFromList = false;
-	  }
+	    }
     },
     'advancedFilter': {
       deep: true,
@@ -389,7 +389,7 @@ export default {
       })
     },
     selectedTask: function(task) {
-	  this.justSelectedFromList = true;
+	    this.justSelectedFromList = true;
       var selection = window.getSelection()
       var filterId = this.$store.state.filter.selected ?
         this.$store.state.filter.selected.id : this.$route.params.filterId
@@ -483,24 +483,27 @@ export default {
         this.pauseButton()
       }
     },
-	scrollToSelectedTask() {
-	  const taskId = this.$route.params.taskId;
-	  const ref = this.$refs['taskItem-' + taskId];
-	  let el = null;
-	  if (Array.isArray(ref)) {
-	    el = ref[0]?.$el || ref[0];
-	  } else if (ref && ref.$el) {
-	    el = ref.$el;
-	  } else {
-	    el = ref;
+	  scrollToSelectedTask(retryCount = 0) {
+      const MAX_SCROLL_RETRIES = 5;
+	    const taskId = this.$route.params.taskId;
+	    const ref = this.$refs['taskItem-' + taskId];
+	    let el = null;
+	    if (Array.isArray(ref)) {
+	      el = ref[0]?.$el || ref[0];
+	    } else if (ref && ref.$el) {
+	      el = ref.$el;
+	    } else {
+	      el = ref;
+	    }
+	    if (el && typeof el.scrollIntoView === 'function') {
+	      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+	      this.pendingScrollToTaskId = null;
+	    } else if (retry < MAX_SCROLL_RETRIES){
+	      setTimeout(() => this.scrollToSelectedTask(retryCount + 1), 100);
+	    } else {
+	      console.warn(`scrollToSelectedTask: Element not found after ${MAX_SCROLL_RETRIES} retries.`);
+      }
 	  }
-	  if (el && typeof el.scrollIntoView === 'function') {
-	    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-	    this.pendingScrollToTaskId = null;
-	  } else {
-	    setTimeout(() => this.scrollToSelectedTask(), 100);
-	  }
-	}
   }
 }
 </script>
