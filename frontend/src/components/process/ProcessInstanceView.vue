@@ -40,11 +40,8 @@
       <span role="button" size="sm" variant="light" class="border-bottom-0 bg-white rounded-top border py-1 px-2 me-1" @click="toggleContent">
         <span class="mdi mdi-18px" :class="toggleIcon"></span>
       </span>
-      <li class="nav-item m-0" v-for="tab in tabs" :key="tab.id">
-        <a role="button" @click="changeTab(tab)" class="nav-link py-2" :class="{ 'active': tab.active, 'bg-light border border-bottom-0': !tab.active }">
-          {{ $t('process.' + tab.id) }}
-        </a>
-      </li>
+      <component :is="ProcessInstanceTabsPlugin" v-if="ProcessInstanceTabsPlugin" @change-tab="changeTab($event)"></component>
+      <ProcessInstanceTabs v-else @change-tab="changeTab($event)"></ProcessInstanceTabs>
     </ul>
 
     <div ref="rContent" class="position-absolute w-100" style="bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
@@ -71,12 +68,14 @@ import IncidentsTable from '@/components/process/tables/IncidentsTable.vue'
 import UserTasksTable from '@/components/process/tables/UserTasksTable.vue'
 import JobsTable from '@/components/process/tables/JobsTable.vue'
 import CalledProcessInstancesTable from '@/components/process/tables/CalledProcessInstancesTable.vue'
+import ProcessInstanceTabs from '@/components/process/ProcessInstanceTabs.vue'
 
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
 
 export default {
   name: 'ProcessInstanceView',
-  components: { VariablesTable, IncidentsTable, UserTasksTable, BpmnViewer, JobsTable, CalledProcessInstancesTable},
+  components: { VariablesTable, IncidentsTable, UserTasksTable, BpmnViewer, 
+    JobsTable, CalledProcessInstancesTable, ProcessInstanceTabs },
   mixins: [procesessVariablesMixin, resizerMixin],
   props: {
     selectedInstance: Object,
@@ -87,13 +86,6 @@ export default {
     return {
       filterHeight: 0,
       activityId: '',
-      tabs: [
-        { id: 'variables', active: true },
-        { id: 'incidents', active: false },
-        { id: 'usertasks', active: false },
-        { id: 'jobs', active: false },
-        { id: 'calledProcessInstances', active: false }
-      ],
       activeTab: 'variables'
     }
   },
@@ -104,6 +96,13 @@ export default {
       })
     }
   },
+  computed: {
+    ProcessInstanceTabsPlugin() {
+      return this.$options.components && this.$options.components.ProcessInstanceTabsPlugin
+        ? this.$options.components.ProcessInstanceTabsPlugin
+        : null
+    }
+  },
   mounted: function() {
     ProcessService.fetchDiagram(this.process.id).then(response => {
       this.$refs.diagram.showDiagram(response.bpmn20Xml, null, null)
@@ -111,9 +110,6 @@ export default {
   },
   methods: {
     changeTab: function(selectedTab) {
-      this.tabs.forEach((tab) => {
-        tab.active = tab.id === selectedTab.id
-      })
       this.activeTab = selectedTab.id
     },
     selectTask: function(event) {
