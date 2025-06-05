@@ -60,6 +60,7 @@
 import NavigatedViewer from 'bpmn-js/lib/NavigatedViewer'
 import { ProcessService } from '@/services.js'
 import { BWaitingBox } from 'cib-common-components'
+import { mapActions, mapGetters } from 'vuex'
 
 const interactionTypes = ['bpmn:UserTask', 'bpmn:CallActivity', 'bpmn:ScriptTask']
 const drawedTypes = ['userTask', 'serviceTask', 'scriptTask', 'callActivity', 'exclusiveGateway', 'endEvent', 'startEvent']
@@ -81,13 +82,12 @@ function getActivitiesToMark(treeObj) {
 
 export default {
   name: 'BpmnViewer',
-  emits: ['activity-id', 'task-selected', 'child-activity', 'diagram-imported', 'overlay-click'],
+  emits: ['task-selected', 'child-activity', 'diagram-imported', 'overlay-click'],
   components: { BWaitingBox },
   props: {
     activityInstance: Object,
     activityInstanceHistory: Array,
     statistics: Array,
-    activityId: String,
     processDefinitionId: String,
     activitiesHistory: Array,
     activeTab: String
@@ -103,6 +103,7 @@ export default {
     }
   },
   computed: {
+    ...mapGetters(['highlightedElement']),
     jobDefinitions: function() {
       return this.$store.getters['jobDefinition/getJobDefinitions']
     }
@@ -124,7 +125,10 @@ export default {
       },
       immediate: true,
       deep: true
-    }
+    },
+    highlightedElement: function(newVal) {
+      this.highlightElement(newVal)
+    },
   },
   mounted: function() {
     this.viewer = new NavigatedViewer({ container: this.$refs.diagram })
@@ -135,6 +139,7 @@ export default {
     })
   },
   methods: {
+    ...mapActions(['selectActivity', 'clearActivitySelection', 'setHighlightedElement']),
     showDiagram: function(xml) {
       this.loader = true
       this.viewer.importXML(xml).then(() => {
@@ -158,18 +163,18 @@ export default {
       // BPMN element click
       eventBus.on('element.click', (event) => {
         if (this.getTypeAllowed(event.element.type, interactionTypes)) {
-          this.highlightElement(event.element.id)
+          this.setHighlightedElement(event.element.id)
           if (this.activityInstance) {
             const childActivity = this.activityInstance.childActivityInstances.find(obj => obj.activityId === event.element.id)
             this.$emit('child-activity', childActivity || event.element)
           } else {
-            this.$emit('activity-id', event.element.id)
+            this.selectActivity(event.element.id)
           }
         } else {
           if (this.currentHighlight) {
             this.currentHighlight.shape.classList.remove('bpmn-highlight')
             this.currentHighlight = null
-            this.$emit('activity-id', null)
+            this.clearActivitySelection()
           }
           this.$emit('task-selected', null)
         }
@@ -196,8 +201,8 @@ export default {
           container.addEventListener('click', (event) => {
             const bubble = event.target.closest('.bubble')
             if (bubble && bubble.dataset.activityId) {
-              this.highlightElement(bubble.dataset.activityId)
-              this.$emit('activity-id', bubble.dataset.activityId)
+              this.setHighlightedElement(bubble.dataset.activityId)
+              this.selectActivity(bubble.dataset.activityId)
             }
             // Generic: emit overlay-click for any overlay element with a data-overlay-type attribute
             const overlay = event.target.closest('[data-overlay-type]')

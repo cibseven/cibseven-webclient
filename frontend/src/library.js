@@ -29,7 +29,7 @@ import usersMixin from '@/mixins/usersMixin.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { debounce } from '@/utils/debounce.js'
 import { HoverStyle } from '@/components/common-components/directives.js'
-import { InfoService, AuthService } from './services.js'
+import { InfoService, AuthService, SystemService } from './services.js'
 import { i18n, switchLanguage } from './i18n'
 import { appRoutes,
   createAppRouter,
@@ -126,6 +126,7 @@ import RuntimeBatches from '@/components/batches/tables/RuntimeBatches.vue'
 import HistoricBatches from '@/components/batches/tables/HistoricBatches.vue'
 import BatchDetails from '@/components/batches/tables/BatchDetails.vue'
 import SystemView from '@/components/system/SystemView.vue'
+import { SystemSidebarItems } from '@/components/system/SystemView.vue'
 import SystemDiagnostics from '@/components/system/SystemDiagnostics.vue'
 import ExecutionMetrics from '@/components/system/ExecutionMetrics.vue'
 import ShortcutsModal from '@/components/modals/ShortcutsModal.vue'
@@ -241,6 +242,7 @@ export {
   EditTenant,
   BatchesView,
   SystemView,
+  SystemSidebarItems,
   axios,
   moment,
   appConfig,
@@ -354,6 +356,7 @@ export {
   GenericTabs,
   InfoService,
   AuthService,
+  SystemService,
   i18n,
   switchLanguage,
 
