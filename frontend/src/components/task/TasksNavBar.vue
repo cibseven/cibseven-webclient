@@ -498,7 +498,7 @@ export default {
 	    if (el && typeof el.scrollIntoView === 'function') {
 	      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
 	      this.pendingScrollToTaskId = null;
-	    } else if (retry < MAX_SCROLL_RETRIES){
+	    } else if (retryCount < MAX_SCROLL_RETRIES){
 	      setTimeout(() => this.scrollToSelectedTask(retryCount + 1), 100);
 	    } else {
 	      console.warn(`scrollToSelectedTask: Element not found after ${MAX_SCROLL_RETRIES} retries.`);
