@@ -43,11 +43,8 @@
       <div class="d-flex align-items-end">
         <div class="tabs-scroll-container flex-grow-1" style="white-space: nowrap;">
           <ul class="nav nav-tabs m-0 border-0 flex-nowrap" style="display: inline-flex; overflow-y: hidden">
-            <li class="nav-item m-0 flex-shrink-0 border-0" v-for="tab in tabs" :key="tab.id">
-              <a role="button" @click="changeTab(tab)" class="nav-link py-2 border-0 rounded-0" :class="{ 'active': tab.active, 'bg-light border border-bottom-0': !tab.active }">
-                {{ $t('process.' + tab.id) }}
-              </a>
-            </li>
+            <component :is="ProcessInstanceTabsPlugin" v-if="ProcessInstanceTabsPlugin" @change-tab="changeTab($event)"></component>
+            <ProcessInstanceTabs v-else @change-tab="changeTab($event)"></ProcessInstanceTabs>
           </ul>
         </div>
       </div>
@@ -60,7 +57,7 @@
       <UserTasksTable v-else-if="activeTab === 'usertasks'" :selected-instance="selectedInstance"></UserTasksTable>
       <JobsTable v-else-if="activeTab === 'jobs'" :jobs="selectedInstance.jobs"></JobsTable>
       <CalledProcessInstancesTable v-else-if="activeTab === 'calledProcessInstances'" :selectedInstance="selectedInstance" :activityInstanceHistory="activityInstanceHistory" :activity-instance="activityInstance"></CalledProcessInstancesTable>
-
+      <component :is="ProcessInstanceTabsContentPlugin" v-if="ProcessInstanceTabsContentPlugin" :instance="selectedInstance" :active-tab="activeTab" :process="process"></component>
     </div>
 
   </div>
@@ -77,12 +74,14 @@ import IncidentsTable from '@/components/process/tables/IncidentsTable.vue'
 import UserTasksTable from '@/components/process/tables/UserTasksTable.vue'
 import JobsTable from '@/components/process/tables/JobsTable.vue'
 import CalledProcessInstancesTable from '@/components/process/tables/CalledProcessInstancesTable.vue'
+import ProcessInstanceTabs from '@/components/process/ProcessInstanceTabs.vue'
 
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
 
 export default {
   name: 'ProcessInstanceView',
-  components: { VariablesTable, IncidentsTable, UserTasksTable, BpmnViewer, JobsTable, CalledProcessInstancesTable},
+  components: { VariablesTable, IncidentsTable, UserTasksTable, BpmnViewer, 
+    JobsTable, CalledProcessInstancesTable, ProcessInstanceTabs },
   mixins: [procesessVariablesMixin, resizerMixin],
   props: {
     selectedInstance: Object,
@@ -93,13 +92,6 @@ export default {
     return {
       filterHeight: 0,
       activityId: '',
-      tabs: [
-        { id: 'variables', active: true },
-        { id: 'incidents', active: false },
-        { id: 'usertasks', active: false },
-        { id: 'jobs', active: false },
-        { id: 'calledProcessInstances', active: false }
-      ],
       activeTab: 'variables'
     }
   },
@@ -110,6 +102,18 @@ export default {
       })
     }
   },
+  computed: {
+    ProcessInstanceTabsPlugin() {
+      return this.$options.components && this.$options.components.ProcessInstanceTabsPlugin
+        ? this.$options.components.ProcessInstanceTabsPlugin
+        : null
+    },
+    ProcessInstanceTabsContentPlugin: function() {
+      return this.$options.components && this.$options.components.ProcessInstanceTabsContentPlugin
+        ? this.$options.components.ProcessInstanceTabsContentPlugin
+        : null
+    }
+  },
   mounted: function() {
     ProcessService.fetchDiagram(this.process.id).then(response => {
       this.$refs.diagram.showDiagram(response.bpmn20Xml, null, null)
@@ -117,9 +121,6 @@ export default {
   },
   methods: {
     changeTab: function(selectedTab) {
-      this.tabs.forEach((tab) => {
-        tab.active = tab.id === selectedTab.id
-      })
       this.activeTab = selectedTab.id
     },
     selectTask: function(event) {
