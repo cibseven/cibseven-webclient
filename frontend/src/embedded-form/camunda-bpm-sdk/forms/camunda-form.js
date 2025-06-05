@@ -391,7 +391,7 @@ CamundaForm.prototype.isRestorable = function() {
   var stored = localStorage.getItem('camForm:' + formId);
   try {
     stored = JSON.parse(stored);
-  } catch (error) {
+  } catch {
     return false;
   }
 

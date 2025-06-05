@@ -34,7 +34,8 @@ var isValidJSON = function(value) {
   try {
     JSON.parse(value);
     return true;
-  } catch (e) {
+  } catch {
+    // Invalid JSON, return false
     return false;
   }
 };

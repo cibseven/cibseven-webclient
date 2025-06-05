@@ -120,22 +120,12 @@ HttpClient.prototype.post = function(path, options) {
   headers.Accept = headers.Accept || this.config.headers.Accept;
 
   var isFieldOrAttach = false;
-  // Buffer object is only available in node.js environement
-  if (typeof Buffer !== 'undefined') {
-    Object.keys(options.fields || {}).forEach(function(field) {
-      req.field(field, options.fields[field]);
-      isFieldOrAttach = true;
-    });
-    (options.attachments || []).forEach(function(file, idx) {
-      req.attach('data_' + idx, new Buffer(file.content), file.name);
-      isFieldOrAttach = true;
-    });
-  } else if (!!options.fields || !!options.attachments) {
+  if (!!options.fields || !!options.attachments) {
     var err = new Error(
       'Multipart request is only supported in node.js environement.'
     );
     done(err);
-    return deferred.reject(err);
+    return Promise.reject(err);
   }
 
   if (!isFieldOrAttach) {
