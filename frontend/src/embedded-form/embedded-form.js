@@ -1,17 +1,19 @@
+import $ from 'jquery';
 import { InfoService } from "@/services"
 import { switchLanguage, i18n } from "@/i18n"
 import { getTheme } from "@/utils/init"
+import CamSDK from "./camunda-bpm-sdk/index-browser.js"
 
 InfoService.getProperties().then(response => {
     const config = response.data
     function loadTheme() {
 
-        var css = document.createElement('Link')
-        css.setAttribute('rel', 'stylesheet')
-        css.setAttribute('type', 'text/css')
-        css.setAttribute('href', 'themes/' + getTheme(config) + '/styles.css')
-
-        document.head.appendChild(css)
+        var css = $('<link>', {
+            rel: 'stylesheet',
+            type: 'text/css',
+            href: 'themes/' + getTheme(config) + '/styles.css'
+        });
+        $('head').append(css);
     }
 
     loadTheme()
@@ -24,58 +26,58 @@ InfoService.getProperties().then(response => {
     config.supportedLanguages = [lang]
 
     switchLanguage(config, lang).then(() => {
-        const embeddedFormRoot = document.getElementById('embeddedFormRoot')
-        const submitButton = document.getElementById('submitButton')
-        const saveButton = document.getElementById('saveButton')
-        const loaderDiv = document.getElementById('loader')
-        const contentDiv = document.getElementById('content')
-        const errorDiv = document.getElementById('embeddedFormError')
+        const $submitButton = $('#submitButton');
+        const $saveButton = $('#saveButton');
+        const $loaderDiv = $('#loader');
+        const $contentDiv = $('#content');
+        const $errorDiv = $('#embeddedFormError');
+        const $embeddedContainer = $('#embeddedRoot');
+        const $formContainer = $('#embeddedFormRoot');
 
         const isStartForm = !!processDefinitionId
         let embeddedForm
 
         if (isStartForm) {
-            submitButton.innerHTML = i18n.global.t('process.start')
+            $submitButton.html(i18n.global.t('process.start'));
         } else {
-            submitButton.innerHTML = i18n.global.t('task.actions.submit')
+            $submitButton.html(i18n.global.t('task.actions.submit'));
         }
-        submitButton.addEventListener('click', () => {
-            blockButtons(submitButton, saveButton)
+        $submitButton.on('click', function () {
+            blockButtons($submitButton, $saveButton);
             embeddedForm.submit(err => {
                 if (err) {
-                    errorDiv.style.display = 'block'
-                    errorDiv.innerHTML = i18n.global.t('task.actions.saveError', [err])
+                    $errorDiv.show().html(i18n.global.t('task.actions.saveError', [err]));
                 } else {
-                    services.completeTask()
+                    services.completeTask();
                 }
-                unblockButtons(submitButton, saveButton)
-            })
-        })
-
+                unblockButtons($submitButton, $saveButton);
+            });
+        });
+        
         if (isStartForm) {
-            saveButton.style.display = 'none'
+            $saveButton.hide();
         }
-        saveButton.innerHTML = i18n.global.t('task.actions.save')
-        saveButton.addEventListener('click', () => {
-            blockButtons(submitButton, saveButton)
+        $saveButton.html(i18n.global.t('task.actions.save'));
+        $saveButton.on('click', function () {
+            blockButtons($submitButton, $saveButton);
             embeddedForm.store(err => {
                 if (err) {
-                    errorDiv.style.display = 'block'
-                    errorDiv.innerHTML = i18n.global.t('task.actions.saveError', [err])
+                    $errorDiv.show().html(i18n.global.t('task.actions.saveError', [err]));
                 } else {
-                    services.displaySuccessMessage()
+                    services.displaySuccessMessage();
                 }
-                unblockButtons(submitButton, saveButton)
-            })
-        })
-
-        loadEmbeddedForm(isStartForm, processDefinitionId || taskId, embeddedFormRoot, authorization, config).then(form => {
-            embeddedForm = form
-            loaderDiv.style.display = 'none'
-            contentDiv.style.display = 'flex'
+                unblockButtons($submitButton, $saveButton);
+            });
+        });
+        
+        loadEmbeddedForm(isStartForm, processDefinitionId || taskId, $embeddedContainer, $formContainer, authorization, config).then(form => {
+            embeddedForm = form;
+            $loaderDiv.hide();
+            $contentDiv.css('display', 'flex');
         }, err => {
-            services.displayErrorMessage(err)
-        })
+            console.error(err);
+            services.displayErrorMessage(err);
+        });
     })
 })
 
@@ -109,64 +111,92 @@ function callParent(method, data) {
 
 function blockButtons(...buttons) {
     buttons.forEach(button => {
-        button.disabled = true
-    })
+        $(button).prop('disabled', true);
+    });
 }
 
 function unblockButtons(...buttons) {
     buttons.forEach(button => {
-        button.disabled = false
-    })
+        $(button).prop('disabled', false);
+    });
 }
 
-function loadEmbeddedForm(isStartForm, referenceId, container, authorization, config) {
-    var client = new window.CamSDK.Client({
+function loadEmbeddedForm(isStartForm, referenceId, embeddedContainer, formContainer, authorization, config) {
+    var client = new CamSDK.Client({
         mock: false,
         apiUri: config.engineRestPath || '/engine-rest',
         headers: {
             'authorization': authorization
         }
-    })
+    });
     return new Promise((resolve, reject) => {
         if (isStartForm) {
-            let processService = client.resource('process-definition')
+            let processService = client.resource('process-definition');
             processService.startForm({ id: referenceId }, (err, taskFormInfo) => {
-                if (err) reject(err)
-                else loadForm(taskFormInfo)
-            })
+                if (err) reject(err);
+                else loadForm(taskFormInfo);
+            });
         } else {
-            let taskService = client.resource('task')
+            let taskService = client.resource('task');
             // loads the task form using the task ID provided
             taskService.form(referenceId, (err, taskFormInfo) => {
-                if (err) reject(err)
-                else loadForm(taskFormInfo)
-            })
+                if (err) reject(err);
+                else loadForm(taskFormInfo);
+            });
         }
-        function loadForm(formInfo) {
-            var url = formInfo.key.replace('embedded:', '').replace('app:', (formInfo.contextPath || '') + '/')
-            //Start with a relative url and replace doubled slashes if necessary
-                .replace(/^(\/+|([^/]))/, '/$2').replace(/\/\/+/, '/')
-
-            let embeddedForm
+        async function loadForm(formInfo) {
+            let embeddedForm;
             let config = {
                 client: client,
-                formUrl: url,
-                containerElement: container,
                 // continue the logic with the callback
                 done: (err) => {
                     if (err) {
-                        reject(err)
+                        reject(err);
                     } else {
-                        resolve(embeddedForm)
+                        resolve(embeddedForm);
                     }
                 }
+            };
+            if (formInfo.key.includes('deployment:')) {
+                let resource = await loadDeploymentResource(client, isStartForm, referenceId, formInfo.key.replace(/.*deployment:/, ''));
+                formContainer.html(resource);
+                config.formElement = formContainer;
+                embeddedContainer.hide()
+            } else {
+                // Start with a relative url and replace doubled slashes if necessary
+                var url = formInfo.key.replace('embedded:', '').replace('app:', (formInfo.contextPath || '') + '/')
+                    .replace(/^(\/+|([^/]))/, '/$2').replace(/\/\/+/, '/')
+                config.formUrl = url
+                config.containerElement = embeddedContainer
+                formContainer.hide()
             }
+
             if (isStartForm) {
                 config.processDefinitionId = referenceId
             } else {
                 config.taskId = referenceId
             }
-            embeddedForm = new window.CamSDK.Form(config)
+            embeddedForm = new CamSDK.Form(config)
+        }
+    })
+}
+
+function loadDeploymentResource(client, isStartForm, referenceId, resource) {
+    return new Promise((resolve, reject) => {
+        if (isStartForm) {
+            client.resource('process-definition').deployedForm({ id: referenceId }, (err, resource) => {
+                if (err) reject(err)
+                else {
+                    resolve(resource)
+                }
+            })
+        } else {
+            client.resource('task').deployedForm(referenceId, (err, resource) => {
+                if (err) reject(err)
+                else {
+                    resolve(resource)
+                }
+            })
         }
     })
 }
