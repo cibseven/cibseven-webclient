@@ -19,7 +19,7 @@
 <template>
   <table class="table" :class="computedTableClass" :style="computedTableStyles" role="table" ref="table">
     <thead :class="theadClass" role="rowgroup">
-      <tr :class="nativeLayout ? '' : 'd-flex'" role="row">
+      <tr :class="[ !nativeLayout && 'd-flex' ]" role="row">
         <th v-for="(field, index) in fields"
           :key="index"
           :class="[field.class, field.thClass, getSortClass(field)]"
@@ -27,7 +27,7 @@
           :aria-sort="getAriaSort(field)"
           @click.stop="handleColumnClick(field)"
           :style="{
-            ...resizable && !nativeLayout ? { width: columnWidths[index], position: 'relative' } : {},
+            ...(isResizableFlex ? { width: columnWidths[index], position: 'relative' } : {}),
             cursor: field.sortable !== false ? 'pointer' : 'default'
           }">
 
@@ -42,7 +42,7 @@
           <span v-if="field.label">{{ $t(prefix + field.label) }}</span>
 
           <span
-            v-if="resizable && !nativeLayout"
+            v-if="isResizableFlex"
             :style="resizeHandleStyle"
             @mousedown.stop="startResize(index, $event)">
           </span>
@@ -64,7 +64,7 @@
             field.tdClass,
             nativeLayout ? '' : 'd-flex align-items-center'
           ]"
-          :style="resizable && !nativeLayout ? { width: columnWidths[colIndex] } : {}"
+          :style="isResizableFlex ? { width: columnWidths[colIndex] } : {}"
           role="cell">
           <slot :name="'cell(' + field.key +')'" :item="item" :value="item[field.key]" :index="index">
             {{ item[field.key] }}
@@ -128,6 +128,9 @@ export default {
         zIndex: '10',
         background: 'transparent'
       }
+    },
+    isResizableFlex() {
+      return this.resizable && !this.nativeLayout
     }
   },
   methods: {
