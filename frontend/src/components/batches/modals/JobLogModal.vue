@@ -75,8 +75,8 @@
   <SuccessAlert ref="messageCopy" style="z-index: 9999">{{ $t('process.copySuccess') }}</SuccessAlert>
 </template>
 
-<script>  
-  import { moment } from '@/globals.js'
+<script>
+  import { formatDate } from '@/utils/dates.js'
   import { BWaitingBox } from 'cib-common-components'
   import { mapActions, mapGetters } from 'vuex'
   import FlowTable from '@/components/common-components/FlowTable.vue'
@@ -113,6 +113,7 @@
     },
     methods: {
       ...mapActions(['getHistoryJobLog', 'getHistoryJobLogStacktrace']),
+      formatDate,
       show: function() {
         this.selectedJobLog = null
         this.$refs.jobLogModal.show()
@@ -122,9 +123,6 @@
         if (log.failureLog) return this.$t('batches.jobLog.failed')
         if (log.successLog) return this.$t('batches.jobLog.successful')
         return this.$t('batches.jobLog.unknown')
-      },
-      formatDate: function(date) {
-        return moment(date).format('DD/MM/YYYY HH:mm:ss')
       },
       async showJobLogDetails(job) {
         this.selectedJobLog = null

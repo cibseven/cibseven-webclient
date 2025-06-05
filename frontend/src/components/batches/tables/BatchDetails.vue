@@ -57,7 +57,7 @@
 </template>
 
 <script>
-  import { moment } from '@/globals.js'
+  import { formatDate } from '@/utils/dates.js'
   import FailedJobs from './FailedJobs.vue'
   import FlowTable from '@/components/common-components/FlowTable.vue'
   import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
@@ -120,6 +120,7 @@
       ...mapActions('jobDefinition', [
         'retryJobDefinitionById'
       ]),
+      formatDate,
       async loadBatchDetails() {
         if (!this.batchId || !this.batchType) return
         this.batch = null
@@ -159,9 +160,6 @@
         }
         await this.retryJobDefinitionById({ id: this.batch.batchJobDefinitionId, params })
         this.loadBatchDetails()
-      },
-      formatDate: function(date) {
-        return moment(date).format('DD/MM/YYYY HH:mm:ss')
       }
     }
   }

@@ -54,7 +54,7 @@
 </template>
 
 <script>
-import { moment } from '@/globals.js'
+import { formatDate } from '@/utils/dates.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import { mapGetters, mapActions } from 'vuex'
 import { BWaitingBox } from 'cib-common-components'
@@ -94,6 +94,7 @@ export default {
   },
   methods: {
     ...mapActions(['getRuntimeBatches']),
+    formatDate,
     loadBatches: function() {
       this.getRuntimeBatches().then(() => {
         if (this.runtimeBatches.length > 0 && !this.batchesInterval) {
@@ -120,9 +121,6 @@ export default {
       if (batch.suspended) return 'warning'
       if (batch.completed >= batch.totalJobs) return 'success'
       return ''
-    },
-    formatDate: function(date) {
-      return moment(date).format('DD/MM/YYYY HH:mm:ss')
     },
     batchIsSelected: function(id) {
       return this.$route.query.id === id && this.$route.query.type === 'runtime'
