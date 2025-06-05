@@ -1,11 +1,5 @@
 /*
- * Copyright CIB   state: { 
-    processActivities: [],
-    selectedActivityId: '',
-    highlightedElement: null,
-    // Activity instances history for a specific process instance
-    activitiesInstanceHistory: []
-  },e GmbH and/or licensed to CIB software GmbH
+ * Copyright CIB software GmbH and/or licensed to CIB software GmbH
  * under one or more contributor license agreements. See the NOTICE file
  * distributed with this work for additional information regarding copyright
  * ownership. CIB software licenses this file to you under the Apache License,
