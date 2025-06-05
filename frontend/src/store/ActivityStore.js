@@ -15,11 +15,14 @@
  *  limitations under the License.
  */
 
+import { HistoryService } from '@/services.js'
+
 const ActivityStore = {
   state: { 
     processActivities: [],
     selectedActivityId: '',
-    highlightedElement: null
+    highlightedElement: null,
+    activitiesInstanceHistory: []
   },
   mutations: {
     setProcessActivities: function (state, activities) {
@@ -34,12 +37,16 @@ const ActivityStore = {
     clearActivitySelection: function (state) {
       state.selectedActivityId = ''
       state.highlightedElement = null
+    },
+    setActivitiesInstanceHistory: function (state, activitiesInstace) {
+      state.activitiesInstanceHistory = activitiesInstace
     }
   },
   getters: {
     selectedActivityId: (state) => state.selectedActivityId,
     highlightedElement: (state) => state.highlightedElement,
-    getProcessActivities: (state) => state.processActivities
+    getProcessActivities: (state) => state.processActivities,
+    activitiesInstanceHistory: (state) => state.activitiesInstanceHistory
   },
   actions: {
     selectActivity: function ({ commit }, activityId) {
@@ -50,6 +57,10 @@ const ActivityStore = {
     },
     clearActivitySelection: function ({ commit }) {
       commit('clearActivitySelection')
+    },
+    async loadActivitiesInstanceHistory({ commit }, processInstanceId) {
+      const activitiesInstace = await HistoryService.findActivitiesInstancesHistory(processInstanceId)
+      commit('setActivitiesInstanceHistory', activitiesInstace)
     }
   }
 }
