@@ -158,7 +158,7 @@ function loadEmbeddedForm(isStartForm, referenceId, embeddedContainer, formConta
                 }
             };
             if (formInfo.key.includes('deployment:')) {
-                let resource = await loadDeploymentResource(client, isStartForm, referenceId, formInfo.key.replace(/.*deployment:/, ''));
+                let resource = await loadDeployedForm(client, isStartForm, referenceId);
                 formContainer.html(resource);
                 config.formElement = formContainer;
                 embeddedContainer.hide()
@@ -181,7 +181,7 @@ function loadEmbeddedForm(isStartForm, referenceId, embeddedContainer, formConta
     })
 }
 
-function loadDeploymentResource(client, isStartForm, referenceId, resource) {
+function loadDeployedForm(client, isStartForm, referenceId) {
     return new Promise((resolve, reject) => {
         if (isStartForm) {
             client.resource('process-definition').deployedForm({ id: referenceId }, (err, resource) => {
