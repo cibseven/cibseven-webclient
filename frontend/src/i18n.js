@@ -42,25 +42,11 @@ import es from '@/assets/translations_es.json'
 import ua from '@/assets/translations_ua.json'
 import ru from '@/assets/translations_ru.json'
 
+const translations = { en, de, es, ua, ru }
+
 const loadTranslationsFromSevenComponents = function(i18n, lang) {
-  if (lang === 'en') {
-    i18n.global.mergeLocaleMessage(lang, en)
-  }
-  else if (lang === 'de') {
-    i18n.global.mergeLocaleMessage(lang, de)
-  }
-  else if (lang === 'es') {
-    i18n.global.mergeLocaleMessage(lang, es)
-  }
-  else if (lang === 'ua') {
-    i18n.global.mergeLocaleMessage(lang, ua)
-  }
-  else if (lang === 'ru') {
-    i18n.global.mergeLocaleMessage(lang, ru)
-  }
-  else {
-    i18n.global.mergeLocaleMessage(lang, en)
-  }
+  const translation = translations[lang] || translations.en
+  i18n.global.mergeLocaleMessage(lang, translation)
 }
 
 const loadTranslationsFromPublic = async function(lang) {
