@@ -112,7 +112,7 @@
 
     <SuccessAlert ref="messageCopy"> {{ $t('process.copySuccess') }} </SuccessAlert>
     <SuccessAlert top="0" style="z-index: 1031" ref="success"> {{ $t('alert.successOperation') }}</SuccessAlert>
-    <MultisortModal ref="sortModal" :items="instances" :sortKeys="['state', 'businessKey', 'startTimeOriginal', 'endTimeOriginal', 'id', 'startUserId', 'incidents']" :prefix="'process.'" @apply-sorting="applySorting"></MultisortModal>
+    <MultisortModal ref="sortModal" :items="instances" :sortKeys="['state', 'businessKey', 'startTime', 'endTime', 'id', 'startUserId', 'incidents']" :prefix="'process.'" @apply-sorting="applySorting"></MultisortModal>
   </div>
 </template>
 
@@ -154,7 +154,7 @@ export default {
       activeTab: 'instances',
       events: {},
       usages: [],
-      sortByDefaultKey: 'startTimeOriginal',
+      sortByDefaultKey: 'startTime',
       sorting: false,
       sortDesc: true
     }

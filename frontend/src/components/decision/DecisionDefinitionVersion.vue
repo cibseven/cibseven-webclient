@@ -89,7 +89,7 @@ export default {
       topBarHeight: 0,
       tabs: [ { id: 'instances', active: true } ],
       activeTab: 'instances',
-      sortByDefaultKey: 'startTimeOriginal',
+      sortByDefaultKey: 'evaluationTime',
       sorting: false,
       sortDesc: true,
       decisionInstances: [],

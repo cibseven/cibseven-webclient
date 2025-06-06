@@ -140,7 +140,7 @@ export default {
     },
     sortingFields: function() {
       return [
-        { text: this.$t('sorting.deployments.deploymentTime'), value: 'originalTime' },
+        { text: this.$t('sorting.deployments.deploymentTime'), value: 'deploymentTime' },
         { text: this.$t('sorting.deployments.name'), value: 'name' }
       ]
     },
@@ -160,7 +160,7 @@ export default {
   },
   created: function () {
     this.sorting = localStorage.getItem('deploymentSorting') ? JSON.parse(localStorage.getItem('deploymentSorting')) :
-      { key: 'originalTime', order: 'asc' }
+      { key: 'deploymentTime', order: 'asc' }
     ProcessService.findDeployments().then(deployments => {
       deployments.forEach(d => {
         d.isSelected = false

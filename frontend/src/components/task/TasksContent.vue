@@ -300,7 +300,7 @@ export default {
       })
     },
     openTask: function(resOrin, intervalId) {
-      var createdAfter = resOrin.endTimeOriginal || resOrin.startTimeOriginal
+      var createdAfter = resOrin.endTime || resOrin.startTime
       if (createdAfter) createdAfter = moment(createdAfter).subtract(5, 'seconds').format('YYYY-MM-DDTHH:mm:ss.SSSZZ')
       TaskService.findTasksByProcessInstanceAsignee(null, createdAfter).then(tasks => {
         if (tasks.length > 0) {
