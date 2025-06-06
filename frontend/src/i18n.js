@@ -15,9 +15,13 @@
  *  limitations under the License.
  */
 import { createI18n } from 'vue-i18n'
-import { mergeLocaleMessage } from 'cib-common-components'
+import { mergeLocaleMessage as loadTranslationsFromCommonComponents } from 'cib-common-components'
 import { axios, moment } from './globals.js'
 import { getTheme } from './utils/init'
+import 'moment/dist/locale/de'
+import 'moment/dist/locale/es'
+import 'moment/dist/locale/uk'
+import 'moment/dist/locale/ru'
 
 function getDefaultLanguage() {
   let language = localStorage.getItem('language')
@@ -38,56 +42,100 @@ import es from '@/assets/translations_es.json'
 import ua from '@/assets/translations_ua.json'
 import ru from '@/assets/translations_ru.json'
 
-import 'moment/dist/locale/de'
-import 'moment/dist/locale/es'
-import 'moment/dist/locale/uk'
-import 'moment/dist/locale/ru'
+const translations = { en, de, es, ua, ru }
 
-export const languages = {
-  en: en,
-  de: de,
-  es: es,
-  ua: ua,
-  ru: ru
+const loadTranslationsFromSevenComponents = function(i18n, lang) {
+  const translation = translations[lang] || translations.en
+  i18n.global.mergeLocaleMessage(lang, translation)
+}
+
+const loadTranslationsFromPublic = async function(lang) {
+  // Load translations from public/translations_*.json
+  try {
+    const res = await axios.create().get('translations_' + lang + '.json')
+    i18n.global.mergeLocaleMessage(lang, res.data)
+  } catch {
+    console.debug('Optional translations file not found:', 'translations_' + lang + '.json')
+  }
+}
+
+const loadTranslationsFromThemes = async function(config, lang) {
+  // Load translations from public/themes/translations_*.json
+  try {
+    const res = await axios.create().get('themes/' + getTheme(config) + '/translations_' + lang + '.json')
+    i18n.global.mergeLocaleMessage(lang, res.data)
+  } catch {
+    console.debug('Optional theme translations file not found:', 'themes/' + getTheme(config) + '/translations_' + lang + '.json')
+  }
+}
+
+// Available translation sources
+const translationSources = {
+  commonComponents: 'commonComponents',
+  sevenComponents: 'sevenComponents',
+  public: 'public',
+  themes: 'themes'
+}
+
+const defaultTranslationSources = [
+  translationSources.commonComponents,
+  translationSources.sevenComponents,
+  translationSources.public,
+  translationSources.themes
+]
+
+const loadTranslations = async function(config, lang, sources = defaultTranslationSources) {
+  if (sources.includes(translationSources.commonComponents)) {
+    // Add translations from cib-common-components/src/assets/translations_*.json
+    loadTranslationsFromCommonComponents(i18n, lang)
+  }
+
+  if (sources.includes(translationSources.sevenComponents)) {
+    // Add translations from src/assets/translations_*.json
+    loadTranslationsFromSevenComponents(i18n, lang)
+  }
+
+  if (sources.includes(translationSources.public)) {
+    // Add translations from public/translations_*.json
+    await loadTranslationsFromPublic(lang)
+  }
+
+  if (sources.includes(translationSources.themes)) {
+    // Add translations from public/themes/translations_*.json
+    await loadTranslationsFromThemes(config, lang)
+  }
+}
+
+const setLanguage = function(language) {
+  i18n.global.locale = language
+  axios.defaults.headers.common['Accept-Language'] = language
+  localStorage.setItem('language', language)
+  document.documentElement.setAttribute('lang', language)
+  moment.locale(language)
 }
 
 var loadedLanguages = []
-function fetchTranslation(config, lang) {
-  // http://kazupon.github.io/vue-i18n/guide/lazy-loading.html
-  if (loadedLanguages.includes(lang)) {
-    return Promise.resolve()
-  }
-
-  if (languages[lang]) {
-    i18n.global.setLocaleMessage(lang, languages[lang])
-    mergeLocaleMessage(i18n, lang)
-  }
-
-  // Load custom translations files
-  return axios.create().get('themes/' + getTheme(config) + '/translations_' + lang + '.json').then(res => {
-    i18n.global.mergeLocaleMessage(lang, res.data)
-    loadedLanguages.push(lang)
-  }).catch(() => {
-    loadedLanguages.push(lang)
-  })
-}
-
-const switchLanguage = function(config, lang) {
+const switchLanguage = async function(config, lang) {
   var language = config.supportedLanguages.includes(lang) ? lang : config.supportedLanguages[0]
 
-  // load localzation before switching language
-  return fetchTranslation(config, language).then(() => {
-    i18n.global.locale = language
-    axios.defaults.headers.common['Accept-Language'] = language
-    localStorage.setItem('language', language)
-    document.documentElement.setAttribute('lang', language)
-    moment.locale(language)
+  if (loadedLanguages.includes(language)) {
+    setLanguage(language)
+    return Promise.resolve(language)
+  }
 
-    return language
-  })
+  // Load translations before switching language
+  await loadTranslations(config, language)
+
+  loadedLanguages.push(language)
+  setLanguage(language)
+
+  return Promise.resolve(language)
 }
 
 export {
   i18n,
-  switchLanguage
+  switchLanguage,
+  loadTranslations,
+  setLanguage,
+  translationSources
 }

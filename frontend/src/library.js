@@ -31,7 +31,7 @@ import { debounce } from '@/utils/debounce.js'
 import { formatDate } from '@/utils/dates.js'
 import { HoverStyle } from '@/components/common-components/directives.js'
 import { InfoService, AuthService, SystemService } from './services.js'
-import { i18n, switchLanguage } from './i18n'
+import { i18n, setLanguage, loadTranslations, translationSources } from './i18n'
 import { appRoutes,
   createAppRouter,
   authGuard,
@@ -360,7 +360,9 @@ export {
   AuthService,
   SystemService,
   i18n,
-  switchLanguage,
+  setLanguage,
+  loadTranslations,
+  translationSources,
 
   // router
   appRoutes,
