@@ -27,7 +27,7 @@
           :aria-sort="getAriaSort(field)"
           @click.stop="handleColumnClick(field)"
           :style="{
-            ...(isResizableFlex ? { width: columnWidths[index], position: 'relative' } : {}),
+            ...(resizable ? { width: columnWidths[index], position: 'relative' } : {}),
             cursor: field.sortable !== false ? 'pointer' : 'default'
           }">
 
@@ -42,7 +42,7 @@
           <span v-if="field.label">{{ $t(prefix + field.label) }}</span>
 
           <span
-            v-if="isResizableFlex"
+            v-if="resizable"
             :style="resizeHandleStyle"
             @mousedown.stop="startResize(index, $event)">
           </span>
