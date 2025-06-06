@@ -77,6 +77,7 @@ import ProcessInstanceView from '@/components/process/ProcessInstanceView.vue'
 import SidebarsFlow from '@/components/common-components/SidebarsFlow.vue'
 import TaskPopper from '@/components/common-components/TaskPopper.vue'
 import { mapGetters, mapActions } from 'vuex'
+import { formatDate } from '@/utils/dates.js'
 
 function getStringObjByKeys(keys, obj) {
   var result = ''
@@ -170,6 +171,7 @@ export default {
   },
   methods: {
     ...mapActions(['clearActivitySelection']),
+    formatDate,
     loadProcessFromRoute: function() {
       this.loadProcessByDefinitionKey().then((redirected) => {
         if (!redirected && this.instanceId && this.instances) {
@@ -491,7 +493,12 @@ export default {
       var csvContent = headers.map(h => h.text).join(';') + '\n'
       var keys = headers.map(h => h.key)
       this.instances.forEach(v => {
-        csvContent += getStringObjByKeys(keys, v) + '\n'
+        const formattedValues = { 
+          ...v, 
+          startTime: this.formatDate(v.startTime), 
+          endTime: this.formatDate(v.endTime) 
+        }
+        csvContent += getStringObjByKeys(keys, formattedValues) + '\n'
       })
       var csvBlob = new Blob([csvContent], { type: 'text/csv' })
       var filename = 'Management_Instances_' + moment().format('YYYYMMDD_HHmm') + '.csv'

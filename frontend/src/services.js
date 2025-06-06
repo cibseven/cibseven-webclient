@@ -15,61 +15,7 @@
  *  limitations under the License.
  */
 import appConfig from './appConfig.js'
-import { axios, moment } from './globals.js'
-
-function patchProcess(process) {
-  if (Array.isArray(process)) process.forEach(patchProcess)
-  else {
-    process.startTimeOriginal = process.startTime
-    process.endTimeOriginal = process.endTime
-    if (process.startTime) process.startTime = moment(process.startTime).format('LL HH:mm')
-    if (process.endTime) process.endTime = moment(process.endTime).format('LL HH:mm')
-    if (process.removalTime) process.removalTime = moment(process.removalTime).format('LL HH:mm')
-  }
-  return process
-}
-
-function patchTask(task) {
-  if (Array.isArray(task)) task.forEach(patchTask)
-  else {
-    task.createdOriginal = task.created
-    if (task.created) task.created = moment(task.created).format('LL HH:mm')
-    if (task.startTime) task.startTime = moment(task.startTime).format('LL HH:mm')
-    if (task.endTime) task.endTime = moment(task.endTime).format('LL HH:mm')
-  }
-  return task
-}
-
-function patchDeployment(deployment) {
-  if (Array.isArray(deployment)) deployment.forEach(patchDeployment)
-  else {
-    deployment.originalTime = deployment.deploymentTime
-    if (deployment.deploymentTime) {
-      deployment.deploymentTime = moment(deployment.deploymentTime).utc().format('LL HH:mm')
-    }
-  }
-  return deployment
-}
-
-function patchJob(job) {
-  if (Array.isArray(job)) job.forEach(patchJob)
-  else {
-    job.createTimeOriginal = job.createTime
-    job.dueDateOriginal = job.dueDate
-    if (job.createTime) job.createTime = moment(job.createTime).format('LL HH:mm')
-    if (job.dueDate) job.dueDate = moment(job.dueDate).format('LL HH:mm')
-  }
-  return job
-}
-
-function patchDecision(decision) {
-  if (Array.isArray(decision)) decision.forEach(patchDecision)
-  else {
-    decision.evaluationTimeOriginal = decision.evaluationTime
-    if (decision.evaluationTime) decision.evaluationTime = moment(decision.evaluationTime).format('LL HH:mm')
-  }
-  return decision
-}
+import { axios } from './globals.js'
 
 function filterToUrlParams(filters) {
   var filter = ''
@@ -92,13 +38,13 @@ var TaskService = {
     return axios.post(appConfig.servicesBasePath + '/task/' + taskId + '/identity-links/delete', data)
   },
   findTasks: function(filters) {
-    return axios.get(appConfig.servicesBasePath + '/task', { params: { filter: filterToUrlParams(filters) } }).then(patchTask)
+    return axios.get(appConfig.servicesBasePath + '/task', { params: { filter: filterToUrlParams(filters) } })
   },
   findTasksPost: function(filters) {
-    return axios.post(appConfig.servicesBasePath + '/task', filters).then(patchTask)
+    return axios.post(appConfig.servicesBasePath + '/task', filters)
   },
   findTasksByProcessInstance: function(processInstanceId) {
-    return axios.get(appConfig.servicesBasePath + "/task/by-process-instance/" + processInstanceId).then(patchTask)
+    return axios.get(appConfig.servicesBasePath + "/task/by-process-instance/" + processInstanceId)
   },
   findTasksByProcessInstanceAsignee: function(processInstanceId, createdAfter) {
     const url = appConfig.servicesBasePath + "/task/by-process-instance-asignee"
@@ -110,7 +56,7 @@ var TaskService = {
   findTaskById: function(taskId) { return axios.get(appConfig.servicesBasePath + "/task/" + taskId) },
   findTasksByFilter: function(filterId, filters, pagination) {
     var queryPagination = '?firstResult=' + pagination.firstResult + '&maxResults=' + pagination.maxResults
-    return axios.post(appConfig.servicesBasePath + "/task/by-filter/" + filterId + queryPagination, filters).then(patchTask)
+    return axios.post(appConfig.servicesBasePath + "/task/by-filter/" + filterId + queryPagination, filters)
   },
   submit: function(taskId) { return axios.post(appConfig.servicesBasePath + "/task/submit/" + taskId) },
   formReference: function(taskId) { return axios.get(appConfig.servicesBasePath + "/task/" + taskId + "/form-reference") },
@@ -142,30 +88,30 @@ var FilterService = {
 }
 
 var ProcessService = {
-  findProcesses: function() { return axios.get(appConfig.servicesBasePath + "/process").then(patchProcess) },
-  findProcessesWithInfo: function() { return axios.get(appConfig.servicesBasePath + "/process/extra-info").then(patchProcess) },
-  findProcessesWithFilters: function(filters) { return axios.post(appConfig.servicesBasePath + "/process", filters).then(patchProcess) },
+  findProcesses: function() { return axios.get(appConfig.servicesBasePath + "/process") },
+  findProcessesWithInfo: function() { return axios.get(appConfig.servicesBasePath + "/process/extra-info") },
+  findProcessesWithFilters: function(filters) { return axios.post(appConfig.servicesBasePath + "/process", filters) },
   findProcessByDefinitionKey: function(key, tenantId) {
     let url = `${appConfig.servicesBasePath}/process/${key}`
     if (tenantId) url += `?tenantId=${tenantId}`
-    return axios.get(url).then(patchProcess)
+    return axios.get(url)
   },
   findProcessVersionsByDefinitionKey: function(key, tenantId, lazyLoad = false) {
     let url = `${appConfig.servicesBasePath}/process/process-definition/versions/${key}?lazyLoad=${lazyLoad}`
     if (tenantId) url += `&tenantId=${tenantId}`
-    return axios.get(url).then(patchProcess)
+    return axios.get(url)
   },
   findProcessById: function(id, extraInfo = false) {
-    return axios.get(appConfig.servicesBasePath + "/process/process-definition-id/" + id + '?extraInfo=' + extraInfo).then(patchProcess)
+    return axios.get(appConfig.servicesBasePath + "/process/process-definition-id/" + id + '?extraInfo=' + extraInfo)
   },
   findProcessesInstances: function(key) {
-    return axios.get(appConfig.servicesBasePath + "/process/instances/by-process-key/" + key).then(patchProcess)
+    return axios.get(appConfig.servicesBasePath + "/process/instances/by-process-key/" + key)
   },
   findProcessInstance: function(processInstanceId) {
-    return axios.get(appConfig.servicesBasePath + "/process/process-instance/" + processInstanceId).then(patchProcess)
+    return axios.get(appConfig.servicesBasePath + "/process/process-instance/" + processInstanceId)
   },
   findCurrentProcessesInstances: function(filter) {
-    return axios.post(appConfig.servicesBasePath + "/process/instances", filter).then(patchProcess)
+    return axios.post(appConfig.servicesBasePath + "/process/instances", filter)
   },
   findActivityInstance: function(processInstanceId) {
     return axios.get(appConfig.servicesBasePath + "/process/activity/by-process-instance/" + processInstanceId)
@@ -201,7 +147,7 @@ var ProcessService = {
     return axios.delete(appConfig.servicesBasePath + "/process/instance/" + processInstanceId + "/delete")
   },
   findDeployments: function() {
-    return axios.get(appConfig.servicesBasePath + "/process/deployments").then(patchDeployment)
+    return axios.get(appConfig.servicesBasePath + "/process/deployments")
   },
   findDeploymentResources: function(deploymentId) {
     return axios.get(appConfig.servicesBasePath + "/process/deployments/" + deploymentId + "/resources")
@@ -311,10 +257,10 @@ var HistoryService = {
         taskDefinitionKey: taskDefinitionKey,
         processInstanceId: processInstanceId
       }
-    }).then(patchTask)
+    })
   },
   findTasksByProcessInstanceHistory: function(processInstanceId) {
-    return axios.get(appConfig.servicesBasePath + "/task-history/by-process-instance/" + processInstanceId).then(patchTask)
+    return axios.get(appConfig.servicesBasePath + "/task-history/by-process-instance/" + processInstanceId)
   },
   fetchActivityVariablesHistory: function(activityInstanceId) {
     return axios.get(appConfig.servicesBasePath + "/task-history/" + activityInstanceId + "/variables")
@@ -338,7 +284,7 @@ var HistoryService = {
         maxResults: maxResults,
         text: text
       }
-    }).then(patchProcess)
+    })
   },
   findActivitiesInstancesHistory: function(processInstanceId) {
     return axios.get(appConfig.servicesBasePath + "/process-history/activity/by-process-instance/" + processInstanceId)
@@ -360,10 +306,10 @@ var HistoryService = {
     return axios.get(appConfig.servicesBasePath + "/process-history/variable/" + id + "/data", { responseType: "blob" })
   },
   findProcessInstance: function(id) {
-    return axios.get(appConfig.servicesBasePath + "/process-history/instance/" + id).then(patchProcess)
+    return axios.get(appConfig.servicesBasePath + "/process-history/instance/" + id)
   },
   findTasksByTaskIdHistory: function(taskId) {
-    return axios.get(appConfig.servicesBasePath + "/task-history/by-task-id/" + taskId).then(patchProcess)
+    return axios.get(appConfig.servicesBasePath + "/task-history/by-task-id/" + taskId)
   },
   deleteProcessInstanceFromHistory: function(id) {
     return axios.delete(appConfig.servicesBasePath + "/process-history/instance/" + id)
@@ -544,7 +490,7 @@ var DecisionService = {
     return axios.put(appConfig.servicesBasePath + "/decision/id/" + id + "/history-ttl", data)
   },
   getHistoricDecisionInstances: function (params) {
-    return axios.get(appConfig.servicesBasePath + "/decision/history/instances", { params }).then(patchDecision)
+    return axios.get(appConfig.servicesBasePath + "/decision/history/instances", { params })
   },
   getHistoricDecisionInstanceCount: function (params) {
     return axios.get(appConfig.servicesBasePath + "/decision/history/instances/count", { params })
@@ -562,7 +508,7 @@ var DecisionService = {
 
 var JobService = {
   getJobs: function(params) {
-    return axios.post(appConfig.servicesBasePath + '/job', params).then(patchJob)
+    return axios.post(appConfig.servicesBasePath + '/job', params)
   },
   setSuspended: function(id, data) {
     return axios.put(appConfig.servicesBasePath + '/job/' + id + '/suspended', data)
