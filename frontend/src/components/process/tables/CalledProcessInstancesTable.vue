@@ -30,7 +30,7 @@
       <span :title="getIconTitle(table.item)" class="mdi mdi-18px" :class="getIconState(table.item)"></span>
     </template>
      <template v-slot:cell(calledProcessInstance)="table">
-       <button :title="table.item.calledProcessInstance" class="btn btn-link text-truncate p-0 text-info text-start" @click="openInstance(table.item)">{{ table.item.calledProcessInstace }}</button>
+       <button :title="table.item.calledProcessInstance" class="btn btn-link text-truncate p-0 text-info text-start" @click="openInstance(table.item)">{{ table.item.calledProcessInstance }}</button>
      </template>
      <template v-slot:cell(process)="table">
         <button :title="table.item.name" class="btn btn-link text-truncate p-0 text-info text-start" @click="openSubprocess(table.item)">{{ table.item.name }}</button>
