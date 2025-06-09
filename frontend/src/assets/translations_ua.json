@@ -291,10 +291,12 @@
 			"actions": "Дії"
 		},
 		"calledProcesses": {
-			"callingActivity": "Викликаюча активність",
-			"process": "Процес",
-			"version": "Версія",
-			"id": "ID"
+			"callingActivity": "Активність",
+			"process": "Визначення процесу",
+			"calledProcessInstace": "Викликані екземпляри процесу",
+			"state": "Стан",
+			"startTime": "Час початку",
+			"endTime": "Час завершення"
 		},
 		"assignModal": {
 			"manageUsersGroups": "Управління користувачами/групами",
