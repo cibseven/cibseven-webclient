@@ -102,7 +102,8 @@ const DecisionStore = {
     getDecisionVersion: (state) => ({ key, version }) => {
       const decision = state.list.find(d => d.key === key)
       return decision?.versions?.find(v => String(v.version) === String(version)) || null
-    }
+    },
+    decisionInstances: (state) => state.instances
   },
   actions: {
 
@@ -236,9 +237,6 @@ const DecisionStore = {
     async setHistoricDecisionInstanceRemovalTime(_, payload) {
       return DecisionService.setHistoricDecisionInstanceRemovalTime(payload)
     }
-  },
-  getters: {
-    decisionInstances: (state) => state.instances
   }
 }
 
