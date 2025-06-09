@@ -37,7 +37,7 @@
                         <span class="fw-bold text-break">{{ d.name || d.id }}</span>
                       </label>
                       <div class="d-flex align-items-center pt-2">
-                        <span>{{ d.deploymentTime }}</span>
+                        <span>{{ formatDate(d.deploymentTime) }}</span>
                       </div>
                       <div class="d-flex align-items-center pt-2">
                         <small>{{ $t('deployment.tenant') }}: {{ d.tenantId ? d.tenantId : '-' }}</small>
@@ -60,6 +60,7 @@
 <script>
 import { moment } from '@/globals.js'
 import { sortDeployments } from '@/components/deployment/utils.js'
+import { formatDate } from '@/utils/dates.js'
 
 export default {
   name: 'DeploymentList',
@@ -77,13 +78,14 @@ export default {
     },
     deployments: {
       handler: function() {
-        if (this.sorting.key === 'originalTime') this.deploymentsGrouped = this.groupByDate(this.deployments)
+        if (this.sorting.key === 'deploymentTime') this.deploymentsGrouped = this.groupByDate(this.deployments)
         if (this.sorting.key === 'name') this.deploymentsGrouped = this.groupByName(this.deployments)
       },
       immediate: true
     }
   },
   methods: {
+    formatDate,
     setDeployment: function(d) {
       this.$router.push('/seven/auth/deployments/' + d.id)
     },
@@ -104,14 +106,14 @@ export default {
         deploymentsGrouped[d.name[0]].data.push(d)
       })
       Object.keys(deploymentsGrouped).forEach(key => {
-        deploymentsGrouped[key].data.sort((a, b) => sortDeployments(a, b, 'originalTime', this.sorting.key))
+        deploymentsGrouped[key].data.sort((a, b) => sortDeployments(a, b, 'deploymentTime', this.sorting.key))
       })
       return deploymentsGrouped
     },
     groupByDate: function(deployments) {
       var deploymentsGrouped = {}
       deployments.forEach(d => {
-        var date = moment(d.originalTime).format('YYYY-MM-DD')
+        var date = moment(d.deploymentTime).format('YYYY-MM-DD')
         if (!deploymentsGrouped[date]) {
           deploymentsGrouped[date] = { visible: true, data: [] }
         }
@@ -120,7 +122,7 @@ export default {
       return deploymentsGrouped
     },
     title: function(key) {
-      if (this.sorting.key === 'originalTime') {
+      if (this.sorting.key === 'deploymentTime') {
         return moment(key).format('LL')
       } else return key
     }

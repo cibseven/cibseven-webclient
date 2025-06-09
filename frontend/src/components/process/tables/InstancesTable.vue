@@ -21,8 +21,8 @@
     :sort-by="sortByDefaultKey" :sort-desc="sortDesc" :fields="[
     { label: 'state', key: 'state', class: 'col-1', thClass: 'border-end', tdClass: 'justify-content-center text-center py-0 border-end border-top-0' },
     { label: 'businessKey', key: 'businessKey', class: 'col-2', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0 position-relative' },
-    { label: 'startTime', key: 'startTimeOriginal', class: 'col-2', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0' },
-    { label: 'endTime', key: 'endTimeOriginal', class: 'col-2', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0' },
+    { label: 'startTime', key: 'startTime', class: 'col-2', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0' },
+    { label: 'endTime', key: 'endTime', class: 'col-2', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0' },
     { label: 'id', key: 'id', class: 'col-2', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0 position-relative' },
     { label: 'startUserId', key: 'startUserId', class: 'col-1', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0' },
     { label: 'actions', key: 'actions', class: 'col-2', sortable: false, tdClass: 'py-0 border-top-0' }]"
@@ -45,11 +45,11 @@
           class="mdi mdi-18px mdi-content-copy px-2 float-end text-secondary lh-sm" style="right: 4px; top: 4px;"></span>
       </div>
     </template>
-    <template v-slot:cell(startTimeOriginal)="table">
-      <span :title="table.item.startTime" class="text-truncate d-block">{{ table.item.startTime }}</span>
+    <template v-slot:cell(startTime)="table">
+      <span :title="formatDate(table.item.startTime)" class="text-truncate d-block">{{ formatDate(table.item.startTime) }}</span>
     </template>
-    <template v-slot:cell(endTimeOriginal)="table">
-      <span :title="table.item.endTime" class="text-truncate d-block">{{ table.item.endTime }}</span>
+    <template v-slot:cell(endTime)="table">
+      <span :title="formatDate(table.item.endTime)" class="text-truncate d-block">{{ formatDate(table.item.endTime) }}</span>
     </template>
     <template v-slot:cell(actions)="table">
       <b-button v-if="table.item.state === 'ACTIVE'" @click.stop="confirmSuspend(table.item)"
@@ -80,6 +80,7 @@
 import { ProcessService, HistoryService } from '@/services.js'
 import { permissionsMixin } from '@/permissions.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
+import { formatDate } from '@/utils/dates.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import ConfirmActionOnProcessInstanceModal from '@/components/process/modals/ConfirmActionOnProcessInstanceModal.vue'
@@ -97,6 +98,7 @@ export default {
     }
   },
   methods: {
+    formatDate,
     selectInstance: function(instance) {
       this.$router.push({
         name: 'process',
