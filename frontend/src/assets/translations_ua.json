@@ -293,7 +293,7 @@
 		"calledProcesses": {
 			"callingActivity": "Активність",
 			"process": "Визначення процесу",
-			"calledProcessInstace": "Викликані екземпляри процесу",
+			"calledProcessInstance": "Викликані екземпляри процесу",
 			"state": "Стан",
 			"startTime": "Час початку",
 			"endTime": "Час завершення"

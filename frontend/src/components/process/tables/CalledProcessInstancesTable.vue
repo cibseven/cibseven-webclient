@@ -21,7 +21,7 @@
     <flow-table v-if="!loading && matchedCalledList.length > 0" striped thead-class="sticky-header" :items="matchedCalledList" primary-key="id" prefix="process-instance.calledProcesses."
       sort-by="label" :sort-desc="true" :fields="[
       { label: 'state', key: 'state', class: 'col-1', tdClass: 'py-1 border-end border-top-0 justify-content-center' },
-      { label: 'calledProcessInstace', key: 'calledProcessInstace', class: 'col-3', tdClass: 'py-1 border-end border-top-0' },
+      { label: 'calledProcessInstance', key: 'calledProcessInstance', class: 'col-3', tdClass: 'py-1 border-end border-top-0' },
       { label: 'process', key: 'process', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
       { label: 'callingActivity', key: 'callingActivity', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
       { label: 'startTime', key: 'startTime', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
@@ -29,8 +29,8 @@
      <template v-slot:cell(state)="table">
       <span :title="getIconTitle(table.item)" class="mdi mdi-18px" :class="getIconState(table.item)"></span>
     </template>
-     <template v-slot:cell(calledProcessInstace)="table">
-       <button :title="table.item.calledProcessInstace" class="btn btn-link text-truncate p-0 text-info text-start" @click="openInstance(table.item)">{{ table.item.calledProcessInstace }}</button>
+     <template v-slot:cell(calledProcessInstance)="table">
+       <button :title="table.item.calledProcessInstance" class="btn btn-link text-truncate p-0 text-info text-start" @click="openInstance(table.item)">{{ table.item.calledProcessInstace }}</button>
      </template>
      <template v-slot:cell(process)="table">
         <button :title="table.item.name" class="btn btn-link text-truncate p-0 text-info text-start" @click="openSubprocess(table.item)">{{ table.item.name }}</button>
@@ -108,7 +108,7 @@ export default {
             }
           })
           return ({
-            calledProcessInstace: processPL.id,
+            calledProcessInstance: processPL.id,
             callingActivity: foundInst,
             key: key,
             version: processPL.definitionId.match(/(?!:)\d(?=:)/).at(0),

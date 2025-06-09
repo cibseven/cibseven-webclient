@@ -293,7 +293,7 @@
 		"calledProcesses": {
 			"callingActivity": "Активность",
 			"process": "Определение процесса",
-			"calledProcessInstace": "Вызванные экземпляры процесса",
+			"calledProcessInstance": "Вызванные экземпляры процесса",
 			"state": "Состояние",
 			"startTime": "Время начала",
 			"endTime": "Время окончания"

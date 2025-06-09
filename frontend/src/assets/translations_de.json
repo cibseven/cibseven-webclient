@@ -293,7 +293,7 @@
 		"calledProcesses": {
 			"callingActivity": "Aktivität",
 			"process": "Prozessdefinition",
-			"calledProcessInstace": "Aufgerufene Prozessinstanzen",
+			"calledProcessInstance": "Aufgerufene Prozessinstanzen",
 			"state": "Status",
 			"startTime": "Startdatum",
 			"endTime": "Enddatum"
