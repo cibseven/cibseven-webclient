@@ -291,10 +291,12 @@
 		    "actions": "Действия"
 		},
 		"calledProcesses": {
-			"callingActivity": "звонковая деятельность",
-			"process": "процесс",
-			"version": "версия",
-			"id": "ID"
+			"callingActivity": "Активность",
+			"process": "Определение процесса",
+			"calledProcessInstance": "Вызванные экземпляры процесса",
+			"state": "Состояние",
+			"startTime": "Время начала",
+			"endTime": "Время окончания"
 		},
 		"assignModal": {
 		    "manageUsersGroups": "Управление пользователями/группами",
