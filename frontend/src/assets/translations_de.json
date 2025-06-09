@@ -291,10 +291,12 @@
 		    "actions": "Aktionen"
 		},
 		"calledProcesses": {
-			"callingActivity": "Aufrufende Aktivität",
-			"process": "Prozess",
-			"version": "Version",
-			"id": "ID"
+			"callingActivity": "Aktivität",
+			"process": "Prozessdefinition",
+			"calledProcessInstance": "Aufgerufene Prozessinstanzen",
+			"state": "Status",
+			"startTime": "Startdatum",
+			"endTime": "Enddatum"
 		},
 		"assignModal": {
 		    "manageUsersGroups": "Benutzer/Gruppen verwalten",
