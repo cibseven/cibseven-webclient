@@ -134,8 +134,13 @@ export default {
     /**
      * Whether to show column selection (API-2).
      * If true, columns can be selected/deselected.
+     * Added for backward compatibility: use API-2 but without column selection.
      */
     columnSelection: { type: Boolean, default: true },
+    useCase: {
+      type: String,
+      default: 'FlowTable'
+    },
     nativeLayout: { type: Boolean, default: false },
     tbodyTrClass: { type: [String, Function], default: '' },
     prefix: { type: String, default: '' },
@@ -156,8 +161,15 @@ export default {
     }
   },
   computed: {
+    api2() {
+      // Check if both columns and columnDefinitions are provided
+      return this.columns.length > 0 && this.columnDefinitions.length > 0
+    },
+    localStorageKey() {
+      return `table:columnVisibility:${this.useCase}:${this.columnDefinitions.length}`
+    },
     computedColumns() {
-      if (this.columns.length > 0 && this.columnDefinitions.length > 0) {
+      if (this.api2) {
         // API-2: Use columnDefinitions to get full field definitions
         return this.columnDefinitions.filter(def => {
           if (def.disableToggle === true) {
@@ -181,7 +193,7 @@ export default {
       return this.columnDefinitions.filter(col => !col.disableToggle)
     },
     computedColumnSelection() {
-      return this.columnSelection && this.columns.length > 0 && this.columnDefinitions.length > 0
+      return this.columnSelection && this.api2
     },
     computedTableStyles() {
       return { tableLayout: 'fixed', width: '100%' }
@@ -302,12 +314,27 @@ export default {
     toggleColumn(column) {
       const visible = this.computedColumns.some(col => col.key === column.key)
       this.columnVisibility[column.key] = !visible
+      localStorage.setItem(this.localStorageKey, JSON.stringify(this.columnVisibility))
       this.$nextTick(() => {
         this.restartColumnWidths()
       })
     }
   },
   mounted() {
+    if (this.api2) {
+      // Load columnVisibility from localStorage if available
+      const storedVisibility = localStorage.getItem(this.localStorageKey)
+      if (storedVisibility) {
+        try {
+          const obj = JSON.parse(storedVisibility)
+          if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+            this.columnVisibility = obj
+          }
+        } catch {
+          // Ignore parse errors, fallback to empty object
+        }
+      }
+    }
     if (this.resizable) {
       this.$nextTick(() => {
         const ths = this.$refs.table.querySelectorAll('th');
