@@ -79,7 +79,6 @@
 
 <script>
 import { moment } from '@/globals.js'
-import procesessVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { IncidentService } from '@/services.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
@@ -90,7 +89,7 @@ import AnnotationModal from '@/components/process/modals/AnnotationModal.vue'
 export default {
   name: 'IncidentsTable',
   components: { FlowTable, SuccessAlert, IncidentRetryModal, AnnotationModal },
-  mixins: [procesessVariablesMixin, copyToClipboardMixin],
+  mixins: [copyToClipboardMixin],
   data: function() {
     return {
       stackTraceMessage: '',
@@ -101,9 +100,7 @@ export default {
     this.localIncidents = [...this.incidents]
   },
   props: {
-    incidents: Array,
-    activityInstance: Object,
-    activityInstanceHistory: Object
+    incidents: Array
   },
   methods: {
     showIncidentMessage: function(jobDefinitionId) {

@@ -46,7 +46,7 @@ export default {
 	},
 	computed: {
 		activityInstancesGrouped: function () {
-			if (this.activityInstanceHistory){
+			if (this.activityInstanceHistory) {
 				var res = []
 				if (this.activityInstance) {
 					res[this.activityInstance.id] = this.activityInstance.name

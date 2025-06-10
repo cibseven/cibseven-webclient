@@ -34,7 +34,7 @@
         <span class="mdi mdi-18px" :class="toggleIcon"></span>
       </span>
       <component :is="ProcessInstancesTabsPlugin" v-if="ProcessInstancesTabsPlugin" @change-tab="changeTab($event)"></component>
-      <ProcessInstancesTabs v-else @change-tab="changeTab($event)"></ProcessInstancesTabs>
+      <ProcessInstancesTabs v-else v-model="activeTab" ></ProcessInstancesTabs>
     </ul>
 
     <div class="position-absolute w-100" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
@@ -86,7 +86,7 @@
         <JobDefinitionsTable v-else-if="activeTab === 'jobDefinitions'"
           :process-id="process.id" @highlight-activity="highlightActivity" />
         <CalledProcessDefinitionsTable v-else-if="activeTab === 'calledProcessDefinitions'"
-          :process="process" :instances="instances" :calledProcesses="calledProcesses" @changeTabToInstances="changeTab({ id: 'instances' })"/>
+          :process="process" :instances="instances" :calledProcesses="calledProcesses"/>
         <component :is="ProcessInstancesTabsContentPlugin" v-if="ProcessInstancesTabsContentPlugin" :process="process" :active-tab="activeTab"></component>
       </div>
     </div>
@@ -131,7 +131,8 @@ import ProcessInstancesTabs from '@/components/process/ProcessInstancesTabs.vue'
 export default {
   name: 'ProcessInstancesView',
   components: { InstancesTable, JobDefinitionsTable, BpmnViewer, MultisortModal,
-     SuccessAlert, ConfirmDialog, BWaitingBox, IncidentsTable, CalledProcessDefinitionsTable, ProcessInstancesTabs },
+     SuccessAlert, ConfirmDialog, BWaitingBox, IncidentsTable, CalledProcessDefinitionsTable, 
+     ProcessInstancesTabs },
   inject: ['loadProcesses'],
   mixins: [permissionsMixin, resizerMixin, copyToClipboardMixin],
   props: { instances: Array, process: Object, firstResult: Number, maxResults: Number, incidents: Array,
@@ -159,6 +160,7 @@ export default {
         this.$refs.diagram.showDiagram(response.bpmn20Xml)
       }),
       this.getJobDefinitions()
+      this.changeTab({ id: 'instances' })
     }
   },
   mounted: function() {
