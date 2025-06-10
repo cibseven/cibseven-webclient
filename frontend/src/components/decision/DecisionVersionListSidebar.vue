@@ -34,7 +34,7 @@
         class="rounded-0 mt-3 p-2 bg-white border-0" :class="markSelectedVersion(version.version) ? 'active shadow' : ''" style="cursor: pointer">
           <div class="d-flex align-items-center">
             <h6 style="font-size: 1rem">
-              <span class="font-weight-bold">{{ $t('decision.details.definitionVersion') + ': ' + version.version }}</span>
+              <span class="fw-bold">{{ $t('decision.details.definitionVersion') + ': ' + version.version }}</span>
             </h6>
             <div class="d-flex ms-auto" :id="version.id">
               <span class="mdi mdi-18px mdi-information-outline text-info"></span>
