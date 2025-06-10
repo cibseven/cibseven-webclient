@@ -100,7 +100,9 @@ export default {
     this.localIncidents = [...this.incidents]
   },
   props: {
-    incidents: Array
+    incidents: Array,
+    activityInstance: Object,
+    activityInstanceHistory: Object
   },
   methods: {
     showIncidentMessage: function(jobDefinitionId) {
