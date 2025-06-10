@@ -50,7 +50,7 @@
                 <span class="mdi mdi-24px mdi-plus-box align-middle"></span>
             </button>
             <ul class="dropdown-menu dropdown-menu-end" role="menu">
-              <div v-for="column in toggleColumns" :key="column.key">
+              <template v-for="column in toggleColumns" :key="column.key">
                 <li v-if="column.groupSeparator === true"
                   class="dropdown-divider">
                 </li>
@@ -60,7 +60,7 @@
                     @change.stop="toggleColumn(column)">
                   <label :for="column.key" class="ps-2">{{ $t(column.label) }}</label>
                 </li>
-              </div>
+              </template>
             </ul>
           </span>
 
