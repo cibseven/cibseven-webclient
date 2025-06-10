@@ -43,12 +43,12 @@
 
           <span v-if="computedColumnSelection && index === computedColumns.length - 1">
             &nbsp;
-            <a class="dropdown-toggle" href="javascript:void(0)" role="button" data-bs-toggle="dropdown"
+            <button class="dropdown-toggle btn btn-link btn-sm p-0" type="button" data-bs-toggle="dropdown"
               aria-expanded="false" aria-haspopup="true" :aria-label="$t('table.selectColumns')"
               :title="$t('table.selectColumns')">
                 <span class="visually-hidden">{{ $t('table.selectColumns') }}</span>
                 <span class="mdi mdi-24px mdi-plus-box align-middle"></span>
-            </a>
+            </button>
             <ul class="dropdown-menu dropdown-menu-end" role="menu">
               <div v-for="column in toggleColumns" :key="column.key">
                 <li v-if="column.groupSeparator === true"
