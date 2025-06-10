@@ -39,7 +39,11 @@
             <i v-else class="mdi mdi-unfold-more-horizontal"></i>
           </span>
 
-          <span v-if="field.label">{{ $t(prefix + field.label) }}</span>
+          <span v-if="field.label">
+            <slot :name="'header(' + field.key +')'" :field="field">
+              {{ $t(prefix + field.label) }}
+            </slot>
+          </span>
 
           <span
             v-if="resizable"
