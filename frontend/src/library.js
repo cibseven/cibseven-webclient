@@ -28,7 +28,7 @@ import store, { modules } from '@/store'
 import usersMixin from '@/mixins/usersMixin.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { debounce } from '@/utils/debounce.js'
-import { formatDate } from '@/utils/dates.js'
+import { formatDate, formatDuration } from '@/utils/dates.js'
 import { HoverStyle } from '@/components/common-components/directives.js'
 import { InfoService, AuthService, SystemService } from './services.js'
 import { i18n, setLanguage, loadTranslations, translationSources } from './i18n'
@@ -258,6 +258,7 @@ export {
   copyToClipboardMixin,
   debounce,
   formatDate,
+  formatDuration,
   HoverStyle,
   CibSeven,
   FlowTable,

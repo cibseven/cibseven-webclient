@@ -24,7 +24,13 @@ function formatDate(date, format = DATE_FORMAT) {
   const d = moment(date)
   return d.isValid() ? d.format(format) : ''
 }
-  
+
+function formatDuration(value) {
+  if (!value) return ''
+  return moment.duration(value).toISOString()
+}
+
 export {
-    formatDate
+    formatDate,
+    formatDuration
 }
