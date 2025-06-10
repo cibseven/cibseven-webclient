@@ -54,14 +54,11 @@
                 <li v-if="column.groupSeparator === true"
                   class="dropdown-divider">
                 </li>
-                <li @click.stop="toggleColumn(column)"
-                  :title="$t('table.toggleColumn', { column: $t(column.label) })">
-                  <button class="dropdown-item" type="button" role="menuitem">
-                    <input type="checkbox" :id="column.key" :checked="computedColumns.some(col => col.key === column.key)"
-                      :aria-label="$t('table.toggleColumn', { column: $t(column.label) })"
-                      @change.stop="toggleColumn(column)">
-                    {{ $t(column.label) }}
-                  </button>
+                <li :title="$t('table.toggleColumn', { column: $t(column.label) })" class="dropdown-item" role="menuitem">
+                  <input type="checkbox" :id="column.key" :checked="computedColumns.some(col => col.key === column.key)"
+                    :aria-label="$t('table.toggleColumn', { column: $t(column.label) })"
+                    @change.stop="toggleColumn(column)">
+                  <label :for="column.key" class="ps-2">{{ $t(column.label) }}</label>
                 </li>
               </div>
             </ul>
