@@ -96,19 +96,19 @@ export default {
   },
 
   created: function(){
-    if (this.activityInstanceHistory){
+    if (this.activityInstanceHistory) {
       this.loadCalledProcesses()
     }
   },
 
   methods: {
-    loadCalledProcesses: function(){
+    loadCalledProcesses: function() {
       ProcessService.findCurrentProcessesInstances({"superProcessInstance": this.selectedInstance.id}).then(response => {
 			this.calledInstanceList = response
       let key = null
       this.matchedCalledList = this.calledInstanceList.map(processPL => {
         key = processPL.definitionId.match(/^[^:]+/).at(0)                    
-        let foundInst = this.activityInstanceHistory.find(processAIH => {         //abfrage ob ActivityInstanceHistory schon geladen ist dann wtcher auf activityInstanceHistory dass der nochmal startet wenn vorhanden
+        let foundInst = this.activityInstanceHistory.find(processAIH => {
 					if (processAIH.activityType === "callActivity"){
 						if (processAIH.calledProcessInstanceId === processPL.id){
 							return processAIH
