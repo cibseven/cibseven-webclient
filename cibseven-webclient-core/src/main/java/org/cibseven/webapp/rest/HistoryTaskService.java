@@ -47,7 +47,7 @@ public class HistoryTaskService extends BaseService {
 	public Collection<VariableHistory> fetchActivityVariablesHistory(
 			@Parameter(description = "Activity instance Id") @PathVariable String activityInstanceId,
 			Locale loc, CIBUser user) {
-        checkPermission(user, SevenResourceType.HISTORY, PermissionConstants.READ_ALL);
+        checkPermission(user, SevenResourceType.HISTORIC_TASK, PermissionConstants.READ_ALL);
 		return bpmProvider.fetchActivityVariablesHistory(activityInstanceId, user);
 	}
 	

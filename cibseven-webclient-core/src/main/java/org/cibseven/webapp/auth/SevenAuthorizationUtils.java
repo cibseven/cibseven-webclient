@@ -78,7 +78,6 @@ public class SevenAuthorizationUtils{
             case DECISION_REQUIREMENTS_DEFINITION: authList = authorizations.getDecisionRequirementsDefinition(); break;
             case TASK: authList = authorizations.getTask(); break;
             case FILTER: authList = authorizations.getFilter(); break;
-            case HISTORY: authList = authorizations.getHistory(); break;
             case DEPLOYMENT: authList = authorizations.getDeployment(); break;
             case CASE_DEFINITION: authList = authorizations.getCaseDefinition(); break;
             case CASE_INSTANCE: authList = authorizations.getCaseInstance(); break;

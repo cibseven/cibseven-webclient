@@ -67,7 +67,7 @@ public class HistoryProcessService extends BaseService {
 			@Parameter(description = "Index of the first result to return") @RequestParam Optional<Integer> firstResult,
 			@Parameter(description = "Maximum number of results to return") @RequestParam Optional<Integer> maxResults,
 			CIBUser user) {
-		checkPermission(user, SevenResourceType.HISTORY, PermissionConstants.READ_ALL);
+		checkPermission(user, SevenResourceType.HISTORIC_PROCESS_INSTANCE, PermissionConstants.READ_ALL);
 		return bpmProvider.findProcessesInstancesHistory(filters, firstResult, maxResults, user);
 	}
 	
@@ -82,7 +82,7 @@ public class HistoryProcessService extends BaseService {
 			@Parameter(description = "Index of the first result to return") @RequestParam Integer firstResult,
 			@Parameter(description = "Maximum number of results to return") @RequestParam Integer maxResults,
 			Locale loc, CIBUser user) {
-		checkPermission(user, SevenResourceType.HISTORY, PermissionConstants.READ_ALL);
+		checkPermission(user, SevenResourceType.HISTORIC_PROCESS_INSTANCE, PermissionConstants.READ_ALL);
 		return bpmProvider.findProcessesInstancesHistory(key, active, firstResult, maxResults, user);
 	}
 	
@@ -99,7 +99,7 @@ public class HistoryProcessService extends BaseService {
 			@Parameter(description = "Maximum number of results to return") @RequestParam Integer maxResults,
 			@Parameter(description = "Filter by text") @RequestParam String text,
 			Locale loc, CIBUser user) {
-		checkPermission(user, SevenResourceType.HISTORY, PermissionConstants.READ_ALL);
+		checkPermission(user, SevenResourceType.HISTORIC_PROCESS_INSTANCE, PermissionConstants.READ_ALL);
 		return bpmProvider.findProcessesInstancesHistoryById(id, activityId, active, firstResult, maxResults, text, user);
 	}	
 	
@@ -112,7 +112,7 @@ public class HistoryProcessService extends BaseService {
 			@Parameter(description = "Filter by process instance Id") @PathVariable String processInstanceId,
 			@Parameter(description = "Deserialize value") @RequestParam Optional<Boolean> deserialize,
 			Locale loc, CIBUser user) {
-        checkPermission(user, SevenResourceType.HISTORY, PermissionConstants.READ_ALL);
+        checkPermission(user, SevenResourceType.HISTORIC_PROCESS_INSTANCE, PermissionConstants.READ_ALL);
 		return bpmProvider.fetchProcessInstanceVariablesHistory(processInstanceId, user, deserialize);
 	}
 	
@@ -123,7 +123,7 @@ public class HistoryProcessService extends BaseService {
 			@Parameter(description = "Process instance Id") @PathVariable String processInstanceId,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		checkPermission(user, SevenResourceType.HISTORY, PermissionConstants.READ_ALL);
+		checkPermission(user, SevenResourceType.HISTORIC_PROCESS_INSTANCE, PermissionConstants.READ_ALL);
 		return bpmProvider.findHistoryProcessInstanceHistory(processInstanceId, user);
 	}
 	
@@ -133,7 +133,7 @@ public class HistoryProcessService extends BaseService {
 			@Parameter(description = "Process instance Id") @PathVariable String id,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		checkPermission(user, SevenResourceType.HISTORY, PermissionConstants.DELETE_ALL);
+		checkPermission(user, SevenResourceType.HISTORIC_PROCESS_INSTANCE, PermissionConstants.DELETE_ALL);
 		bpmProvider.deleteProcessInstanceFromHistory(id, user);
 	}
 	
@@ -144,7 +144,7 @@ public class HistoryProcessService extends BaseService {
 			@Parameter(description = "Id of the variable") @PathVariable String id,
 			Locale loc, CIBUser user) {
 		checkCockpitRights(user);
-		checkPermission(user, SevenResourceType.HISTORY, PermissionConstants.DELETE_ALL);
+		checkPermission(user, SevenResourceType.HISTORIC_PROCESS_INSTANCE, PermissionConstants.DELETE_ALL);
 		bpmProvider.deleteVariableHistoryInstance(id, user);
 	}
 	
@@ -156,7 +156,7 @@ public class HistoryProcessService extends BaseService {
 	})
 	@RequestMapping(value = "/process-history/activity", method = RequestMethod.GET)
 	public Collection<ActivityInstanceHistory> findActivitiesInstancesHistory(@RequestParam Map<String, Object> queryParams, CIBUser user) {
-		checkPermission(user, SevenResourceType.HISTORY, PermissionConstants.READ_ALL);
+		checkPermission(user, SevenResourceType.HISTORIC_PROCESS_INSTANCE, PermissionConstants.READ_ALL);
 		return bpmProvider.findActivitiesInstancesHistory(queryParams, user);
 	}	
 	
@@ -171,7 +171,7 @@ public class HistoryProcessService extends BaseService {
 	public Collection<ActivityInstanceHistory> findActivitiesInstancesHistory(
 			@Parameter(description = "Filter by process instance Id") @PathVariable String processInstanceId,
 			Locale loc, CIBUser user) {
-		checkPermission(user, SevenResourceType.HISTORY, PermissionConstants.READ_ALL);
+		checkPermission(user, SevenResourceType.HISTORIC_PROCESS_INSTANCE, PermissionConstants.READ_ALL);
 		return bpmProvider.findActivitiesInstancesHistory(processInstanceId, user);
 	}	
 	
@@ -186,7 +186,7 @@ public class HistoryProcessService extends BaseService {
 	public Collection<ActivityInstanceHistory> findActivitiesProcessDefinitionHistory(
 			@Parameter(description = "Filter by process definition Id") @PathVariable String processDefinitionId,
 			Locale loc, CIBUser user) {
-		checkPermission(user, SevenResourceType.HISTORY, PermissionConstants.READ_ALL);
+		checkPermission(user, SevenResourceType.HISTORIC_PROCESS_INSTANCE, PermissionConstants.READ_ALL);
 		return bpmProvider.findActivitiesProcessDefinitionHistory(processDefinitionId, user);
 	}	
 	
@@ -196,7 +196,7 @@ public class HistoryProcessService extends BaseService {
 	public ResponseEntity<byte[]> fetchHistoryVariableDataById(
 			@Parameter(description = "Id of the variable") @PathVariable String id,
 			Locale loc, CIBUser user) {
-        checkPermission(user, SevenResourceType.HISTORY, PermissionConstants.READ_ALL);
+        checkPermission(user, SevenResourceType.HISTORIC_PROCESS_INSTANCE, PermissionConstants.READ_ALL);
 		return bpmProvider.fetchHistoryVariableDataById(id, user);
 	}
 }
