@@ -144,7 +144,14 @@ const DecisionStore = {
       commit('setDecisionVersions', { key, versions: result })
       return result
     },
-
+    async getDecisionById(_, id) {
+      const decisions = await DecisionService.getDecisionList({ decisionDefinitionId: id })
+      if (decisions && decisions.length > 0) {
+        return decisions[0]
+      } else {
+        return null
+      }
+    },
     // ────────────────────────────────────────────────────────────────
     //  Evaluation
     // ────────────────────────────────────────────────────────────────
