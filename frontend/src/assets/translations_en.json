@@ -1027,6 +1027,10 @@
 	"cib-table2": {
 		"filter": "Filter"
 	},
+	"table": {
+		"selectColumns": "Select columns",
+		"toggleColumn": "Toggle {column} column"
+	},
 	"navigation": {
 		"home": "Home",
 		"menu": "Navigation menu",

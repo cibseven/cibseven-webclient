@@ -1026,6 +1026,10 @@
 	"cib-table2": {
 		"filter": "Filter"
 	},
+	"table": {
+		"selectColumns": "Spalten auswählen",
+		"toggleColumn": "{column} Spalte umschalten"
+	},
 	"navigation": {
 		"home": "Startseite",
 		"menu": "Navigationsmenü",

@@ -1026,6 +1026,10 @@
 	"cib-table2": {
 		"filter": "Фільтр"
 	},
+	"table": {
+		"selectColumns": "Виберіть стовпці",
+		"toggleColumn": "Перемкнути стовпець \"{column}\""
+	},
 	"navigation": {
 		"home": "Головна сторінка",
 		"menu": "Навігаційне меню",

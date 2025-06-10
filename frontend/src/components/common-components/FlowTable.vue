@@ -20,7 +20,7 @@
   <table class="table" :class="computedTableClass" :style="computedTableStyles" role="table" ref="table">
     <thead :class="theadClass" role="rowgroup">
       <tr :class="[ !nativeLayout && 'd-flex' ]" role="row">
-        <th v-for="(field, index) in fields"
+        <th v-for="(field, index) in computedColumns"
           :key="index"
           :class="[field.class, field.thClass, getSortClass(field)]"
           role="columnheader"
@@ -41,8 +41,34 @@
 
           <span v-if="field.label">{{ $t(prefix + field.label) }}</span>
 
+          <span v-if="computedColumnSelection && index === computedColumns.length - 1">
+            &nbsp;
+            <a class="dropdown-toggle" href="javascript:void(0)" role="button" data-bs-toggle="dropdown"
+              aria-expanded="false" aria-haspopup="true" :aria-label="$t('table.selectColumns')"
+              :title="$t('table.selectColumns')">
+                <span class="visually-hidden">{{ $t('table.selectColumns') }}</span>
+                <span class="mdi mdi-24px mdi-plus-box align-middle"></span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" role="menu">
+              <div v-for="column in toggleColumns" :key="column.key">
+                <li v-if="column.groupSeparator === true"
+                  class="dropdown-divider">
+                </li>
+                <li @click.stop="toggleColumn(column)"
+                  :title="$t('table.toggleColumn', { column: $t(column.label) })">
+                  <button class="dropdown-item" type="button" role="menuitem">
+                    <input type="checkbox" :id="column.key" :checked="computedColumns.some(col => col.key === column.key)"
+                      :aria-label="$t('table.toggleColumn', { column: $t(column.label) })"
+                      @change.stop="toggleColumn(column)">
+                    {{ $t(column.label) }}
+                  </button>
+                </li>
+              </div>
+            </ul>
+          </span>
+
           <span
-            v-if="resizable"
+            v-if="resizable && index !== computedColumns.length - 1"
             :style="resizeHandleStyle"
             @mousedown.stop="startResize(index, $event)">
           </span>
@@ -50,17 +76,17 @@
       </tr>
     </thead>
     <tbody role="rowgroup">
-      <tr v-for="(item, index) in sortedItems" :key="index" 
+      <tr v-for="(item, index) in sortedItems" :key="index"
         :class="[getRowClass(item), nativeLayout ? '' : 'd-flex']"
         @mouseenter="$emit('mouseenter', item)"
         @mouseleave="$emit('mouseleave', item)"
         @click.stop="$emit('click', item)"
         style="cursor: pointer"
         role="row">
-        <td v-for="(field, colIndex) in fields"
+        <td v-for="(field, colIndex) in computedColumns"
           :key="field.key"
           :class="[
-            field.class, 
+            field.class,
             field.tdClass,
             nativeLayout ? '' : 'd-flex align-items-center'
           ]"
@@ -80,7 +106,36 @@ export default {
   name: 'FlowTable',
   props: {
     items: { type: Array, default: () => [] },
+
+    /**
+     * Complete columns definitions to be displayed (API-1).
+     * Each object should have at least 'key' and 'label' properties.
+     */
     fields: { type: Array, default: () => [] },
+
+    /**
+     * Keys of columns to be displayed (API-2).
+     *
+     * API-2: Both 'columns' and 'columnDefinitions' should be non-empty arrays.
+     */
+    columns: {
+      type: Array,
+      default: () => []
+    },
+    /**
+     * Complete column definitions (API-2).
+     *
+     * API-2: Both 'columns' and 'columnDefinitions' should be non-empty arrays.
+     */
+    columnDefinitions: {
+      type: Array,
+      default: () => []
+    },
+    /**
+     * Whether to show column selection (API-2).
+     * If true, columns can be selected/deselected.
+     */
+    columnSelection: { type: Boolean, default: true },
     nativeLayout: { type: Boolean, default: false },
     tbodyTrClass: { type: [String, Function], default: '' },
     prefix: { type: String, default: '' },
@@ -93,6 +148,7 @@ export default {
   },
   data() {
     return {
+      columnVisibility: {},
       sortKey: this.sortBy,
       sortOrder: this.sortDesc ? -1 : 1,
       columnWidths: [],
@@ -100,6 +156,33 @@ export default {
     }
   },
   computed: {
+    computedColumns() {
+      if (this.columns.length > 0 && this.columnDefinitions.length > 0) {
+        // API-2: Use columnDefinitions to get full field definitions
+        return this.columnDefinitions.filter(def => {
+          if (def.disableToggle === true) {
+            // If column is disabled for toggling, always include it regardless of `columnVisibility` visibility
+            return this.columns.includes(def.key)
+          }
+          else if (this.columnVisibility[def.key] === undefined) {
+            // User has never changed visibility => let's check whether this column is visible by default
+            return this.columns.includes(def.key)
+          }
+          else {
+            // User has changed visibility => use the stored value
+            return this.columnVisibility[def.key]
+          }
+        })
+      }
+      // default, API-1
+      return this.fields
+    },
+    toggleColumns() {
+      return this.columnDefinitions.filter(col => !col.disableToggle)
+    },
+    computedColumnSelection() {
+      return this.columnSelection && this.columns.length > 0 && this.columnDefinitions.length > 0
+    },
     computedTableStyles() {
       return { tableLayout: 'fixed', width: '100%' }
     },
@@ -215,6 +298,13 @@ export default {
         }
         this.columnWidths = Array.from(ths).map(th => `${th.offsetWidth}px`)
       }
+    },
+    toggleColumn(column) {
+      const visible = this.computedColumns.some(col => col.key === column.key)
+      this.columnVisibility[column.key] = !visible
+      this.$nextTick(() => {
+        this.restartColumnWidths()
+      })
     }
   },
   mounted() {

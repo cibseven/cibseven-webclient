@@ -103,7 +103,7 @@
 			"totalInstances": "Всего экземпляров",
 			"unfinishedInstances": "Запущенных экземпляров",
 			"finishedInstances": "Всего оконченных экземпляров без ошибок",
-			"definitionVersion": "Определение версии",
+			"definitionVersion": "Версия определения",
 			"versionTag": "День версии",
 			"definitionId": "ID определения",
 			"definitionKey": "Ключ определения",
@@ -1025,6 +1025,10 @@
 	},
 	"cib-table2": {
 		"filter": "Фильтр"
+	},
+	"table": {
+		"selectColumns": "Выбор колонок",
+		"toggleColumn": "Переключить колонку \"{column}\""
 	},
 	"navigation": {
 		"home": "Домашняя страница",
