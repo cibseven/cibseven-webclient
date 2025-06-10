@@ -20,7 +20,8 @@ const DecisionStore = {
   state: {
     list: [],
     selectedDecisionVersion: null,
-    selectedInstance: null
+    selectedInstance: null,
+    instances: []
   },
   mutations: {
     setDecisions: function (state, params) {
@@ -34,6 +35,9 @@ const DecisionStore = {
           targetVersion.historicInstances = instances
         }
       }
+    },
+    setHistoricInstances(state, instances) {
+      state.instances = instances
     },
     setDecisionVersions(state, { key, versions }) {
       const decision = state.list.find(decision => decision.key === key)
@@ -98,7 +102,8 @@ const DecisionStore = {
     getDecisionVersion: (state) => ({ key, version }) => {
       const decision = state.list.find(d => d.key === key)
       return decision?.versions?.find(v => String(v.version) === String(version)) || null
-    }
+    },
+    decisionInstances: (state) => state.instances
   },
   actions: {
 
@@ -207,6 +212,7 @@ const DecisionStore = {
     async getHistoricDecisionInstances({ commit }, { key, version, params }) {
       const result = await DecisionService.getHistoricDecisionInstances(params)
       commit('setHistoricInstancesForKey', { key, version, instances: result })
+      commit('setHistoricInstances', result)
       return result
     },
 
