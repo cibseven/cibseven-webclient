@@ -17,7 +17,7 @@
 
 -->
 <template>
-  <div class="d-flex flex-column bg-light" :style="{ height: 'calc(100% - 55px)' }">
+  <div class="d-flex flex-column bg-light">
     <div class="container pt-4">
       <div class="row align-items-center pb-2">
         <div class="col-4">
@@ -29,13 +29,13 @@
           </b-input-group>
         </div>
         <div class="col-5">
-          <div class="d-flex row">
-            <div class="d-inline-block align-content-start" style="width: 210px">
+          <div class="row">
+            <div class="d-inline-block align-content-start col-12 col-md-6 mb-2">
               <b-form-checkbox v-model="onlyIncidents" switch :title="$t('process.onlyIncidents.tooltip')">
                 {{ $t('process.onlyIncidents.title') }}
               </b-form-checkbox>
             </div>
-            <div class="d-inline-block align-content-start" style="width: 210px">
+            <div class="d-inline-block align-content-start col-12 col-md-6 mb-2">
               <b-form-checkbox v-model="onlyActive" switch :title="$t('process.onlyActive.tooltip')">
                 {{ $t('process.onlyActive.title') }}
               </b-form-checkbox>
