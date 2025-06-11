@@ -99,7 +99,8 @@ export default {
       overlayList: [],
       loader: true,
       runningActivities: [],
-      suspendedOverlayMap: {}
+      suspendedOverlayMap: {},
+      overlayClickHandler: null
     }
   },
   computed: {
@@ -159,6 +160,11 @@ export default {
       this.viewer.get('zoomScroll').reset()
     },
     attachEventListeners: function() {
+      // Remove existing overlay click handler if it exists
+      if (this.overlayClickHandler) {
+        document.removeEventListener('click', this.overlayClickHandler)
+      }
+
       const eventBus = this.viewer.get('eventBus')
       // BPMN element click
       eventBus.on('element.click', (event) => {
@@ -194,9 +200,10 @@ export default {
           }, { once: true })
         }
       })
+      
       // Generic overlay click delegation - using event delegation on document
-      // This ensures we catch clicks on dynamically added overlays
-      document.addEventListener('click', (event) => {
+      // Store the handler reference so we can remove it later
+      this.overlayClickHandler = (event) => {
         // Only handle clicks within BPMN overlay containers
         if (!event.target.closest('.djs-overlays')) return
         
@@ -215,7 +222,9 @@ export default {
             event
           })
         }
-      })
+      }
+      
+      document.addEventListener('click', this.overlayClickHandler)
     },
     highlightElement: function(item) {
       let activityId = ''
@@ -416,6 +425,17 @@ export default {
           this.suspendedOverlayMap[jobDefinition.activityId] = overlayId
         }
       })
+    }
+  },
+  beforeUnmount: function() {
+    // Clean up document event listener to prevent memory leaks
+    if (this.overlayClickHandler) {
+      document.removeEventListener('click', this.overlayClickHandler)
+      this.overlayClickHandler = null
+    }
+    // Clean up viewer if it exists
+    if (this.viewer) {
+      this.viewer.destroy()
     }
   }
 }
