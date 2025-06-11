@@ -40,9 +40,17 @@
 <script>
 import SidebarsFlow from '@/components/common-components/SidebarsFlow.vue'
 
+export const SystemSidebarItems = ['system-diagnostics', 'execution-metrics']
+
 export default {
   name: 'SystemView',
   components: { SidebarsFlow },
+  props: {
+    systemSettings: {
+      type: Array,
+      default: () => SystemSidebarItems
+    }
+  },
   data() {
     return {
       leftOpen: true
@@ -51,9 +59,6 @@ export default {
   computed: {
     leftCaption() {
       return this.$t('admin.system.settings')
-    },
-    systemSettings() {
-      return ['system-diagnostics', 'execution-metrics']
     }
   }
 }

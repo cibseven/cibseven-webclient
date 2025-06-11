@@ -62,6 +62,7 @@
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import JobDefinitionStateModal from '@/components/process/modals/JobDefinitionStateModal.vue'
 import JobDefinitionPriorityModal from '@/components/process/modals/JobDefinitionPriorityModal.vue'
+import { mapActions } from 'vuex'
 
 export default {
   name: 'JobsDefinitionsTable',
@@ -69,15 +70,15 @@ export default {
   props: {
     processId: String
   },
-  emits: ['highlight-activity'],
   computed: {
     jobDefinitions: function() {
       return this.$store.getters['jobDefinition/getJobDefinitions']
     }
   },
   methods: {
+    ...mapActions(['setHighlightedElement']),
     showJobDefinition: function(jobDefinition) {
-      this.$emit('highlight-activity', jobDefinition)
+      this.setHighlightedElement(jobDefinition)
     },
     getStateLabel: function(item) {
       return item.suspended

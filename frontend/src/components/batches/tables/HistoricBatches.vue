@@ -50,7 +50,7 @@
 </template>
 
 <script>
-import { moment } from '@/globals.js'
+import { formatDate } from '@/utils/dates.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import { mapGetters, mapActions } from 'vuex'
 import { debounce } from '@/utils/debounce.js'
@@ -77,6 +77,7 @@ export default {
   },
   methods: {
     ...mapActions(['loadHistoricBatches']),
+    formatDate,
     fetchHistoricBatches: debounce(500, function (showMore = false) {
       this.loading = true
       const params = {
@@ -103,9 +104,6 @@ export default {
       this.$router.replace({
         query: { id: batch.id, type: 'history' }
       })
-    },
-    formatDate: function(date) {
-      return moment(date).format('DD/MM/YYYY HH:mm:ss')
     },
     batchIsSelected: function(id) {
       return this.$route.query.id === id && this.$route.query.type === 'history'

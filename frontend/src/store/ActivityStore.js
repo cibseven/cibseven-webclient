@@ -15,11 +15,52 @@
  *  limitations under the License.
  */
 
+import { HistoryService } from '@/services.js'
+
 const ActivityStore = {
-  state: { processActivities: [] },
+  state: { 
+    processActivities: [],
+    selectedActivityId: '',
+    highlightedElement: null,
+    activitiesInstanceHistory: []
+  },
   mutations: {
     setProcessActivities: function (state, activities) {
       state.processActivities = activities
+    },
+    setSelectedActivityId: function (state, activityId) {
+      state.selectedActivityId = activityId
+    },
+    setHighlightedElement: function (state, element) {
+      state.highlightedElement = element
+    },
+    clearActivitySelection: function (state) {
+      state.selectedActivityId = ''
+      state.highlightedElement = null
+    },
+    setActivitiesInstanceHistory: function (state, activitiesInstace) {
+      state.activitiesInstanceHistory = activitiesInstace
+    }
+  },
+  getters: {
+    selectedActivityId: (state) => state.selectedActivityId,
+    highlightedElement: (state) => state.highlightedElement,
+    getProcessActivities: (state) => state.processActivities,
+    activitiesInstanceHistory: (state) => state.activitiesInstanceHistory
+  },
+  actions: {
+    selectActivity: function ({ commit }, activityId) {
+      commit('setSelectedActivityId', activityId)
+    },
+    setHighlightedElement: function ({ commit }, element) {
+      commit('setHighlightedElement', element)
+    },
+    clearActivitySelection: function ({ commit }) {
+      commit('clearActivitySelection')
+    },
+    async loadActivitiesInstanceHistory({ commit }, processInstanceId) {
+      const activitiesInstace = await HistoryService.findActivitiesInstancesHistory(processInstanceId)
+      commit('setActivitiesInstanceHistory', activitiesInstace)
     }
   }
 }

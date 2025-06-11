@@ -20,20 +20,26 @@
   <div v-if="decision" class="h-100">
     <div @mousedown="handleMouseDown" class="v-resizable position-absolute w-100" style="left: 0" :style="'height: ' + bpmnViewerHeight + 'px; ' + toggleTransition">
       <DmnViewer ref="diagram" class="h-100" />
-    </div>
-
-    <ul class="nav nav-tabs position-absolute border-0 bg-light" style="left: -1px" :style="'top: ' + (bottomContentPosition - toggleButtonHeight) + 'px; ' + toggleTransition">
-      <span role="button" size="sm" variant="light" class="border-bottom-0 bg-white rounded-top border py-1 px-2 me-1" @click="toggleContent">
+      <span role="button" size="sm" variant="light" class="bg-white px-2 py-1 me-1 position-absolute border rounded" style="bottom: 15px; left: 15px;" @click="toggleContent">
         <span class="mdi mdi-18px" :class="toggleIcon"></span>
       </span>
-      <li class="nav-item m-0" v-for="(tab, index) in tabs" :key="index">
-        <a role="button" @click="changeTab(tab)" class="nav-link py-2" :class="{ 'active': tab.active, 'bg-light border border-bottom-0': !tab.active }">
-          {{ $t('decision.' + tab.id) }}
-        </a>
-      </li>
-    </ul>
+    </div>
+    
+    <div class="position-absolute w-100 bg-light border-bottom" style="z-index: 1" :style="'top: ' + (bottomContentPosition - tabsAreaHeight) + 'px; ' + toggleTransition">
+      <div class="d-flex align-items-end">
+        <div class="tabs-scroll-container flex-grow-1" style="white-space: nowrap;">
+          <ul class="nav nav-tabs m-0 border-0 flex-nowrap" style="display: inline-flex; overflow-y: hidden">
+            <li class="nav-item m-0 flex-shrink-0 border-0" v-for="(tab, index) in tabs" :key="index">
+              <a role="button" @click="changeTab(tab)" class="nav-link py-2 border-0 rounded-0" :class="{ 'active': tab.active, 'bg-light border border-bottom-0': !tab.active }">
+                {{ $t('decision.' + tab.id) }}
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
 
-    <div class="position-absolute w-100" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
+    <div class="position-absolute w-100 overflow-hidden" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
       <div v-if="activeTab === 'instances'">
         <div ref="filterTable" class="bg-light d-flex position-absolute w-100">
           <div class="col-3 p-3">
@@ -83,7 +89,7 @@ export default {
       topBarHeight: 0,
       tabs: [ { id: 'instances', active: true } ],
       activeTab: 'instances',
-      sortByDefaultKey: 'startTimeOriginal',
+      sortByDefaultKey: 'evaluationTime',
       sorting: false,
       sortDesc: true,
       decisionInstances: [],

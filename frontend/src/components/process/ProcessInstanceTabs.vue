@@ -17,30 +17,28 @@
 
 -->
 <template>
-  <li
-    class="nav-item m-0 flex-shrink-0 border-0"
-    v-for="(tab, index) in tabs"
-    :key="index"
-  >
-    <a
-      role="button"
-      @click="$emit('update:modelValue', tab.id)"
-      class="nav-link py-2 border-0 rounded-0"
-      :class="{
-        active: tab.id === modelValue,
-        'bg-light border border-bottom-0': tab.id != modelValue
-      }"
-    >
-      {{ $t(tab.text) }}
-    </a>
-  </li>
+  <GenericTabs :tabs="tabs" @change-tab="$emit('change-tab', $event)"></GenericTabs>
 </template>
 
 <script>
-export default {
-  name: 'GenericTabs',
-  emits: ['update:modelValue'],
-  props: { tabs: Array, modelValue: String },
+import GenericTabs from '@/components/common-components/GenericTabs.vue'
 
+export default {
+  name: 'ProcessInstanceTabs',
+  components: {
+    GenericTabs,
+  },
+  emits: ['change-tab'],
+  data: function () {
+    return {
+      tabs: [
+        { id: 'variables', active: true, text: 'process.variables' },
+        { id: 'incidents', active: false, text: 'process.incidents' },
+        { id: 'usertasks', active: false, text: 'process.usertasks' },
+        { id: 'jobs', active: false, text: 'process.jobs' },
+        { id: 'calledProcessInstances', active: false, text: 'process.calledProcessInstances' }
+      ]
+    }
+  }
 }
 </script>

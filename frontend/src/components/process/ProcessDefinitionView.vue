@@ -36,7 +36,6 @@
       </template>
       <transition name="slide-in" mode="out-in">
         <ProcessInstancesView ref="process" v-if="process && instances && !selectedInstance && !instanceId"
-          :activity-id="activityId"
           :loading="loading"
           :process="process"
           :process-key="processKey"
@@ -49,7 +48,6 @@
           :incidents="incidents"
           :calledProcesses="calledProcesses"
           @show-more="showMore()"
-          @activity-id="filterByActivityId($event)"
           @instance-deleted="onInstanceDeleted()"
           @task-selected="setSelectedTask($event)"
           @filter-instances="filterInstances($event)"
@@ -78,6 +76,8 @@ import ProcessDetailsSidebar from '@/components/process/ProcessDetailsSidebar.vu
 import ProcessInstanceView from '@/components/process/ProcessInstanceView.vue'
 import SidebarsFlow from '@/components/common-components/SidebarsFlow.vue'
 import TaskPopper from '@/components/common-components/TaskPopper.vue'
+import { mapGetters, mapActions } from 'vuex'
+import { formatDate } from '@/utils/dates.js'
 
 function getStringObjByKeys(keys, obj) {
   var result = ''
@@ -102,7 +102,12 @@ export default {
      if (this.process.key === this.processKey){
       const process = this.processDefinitions.find(processDefinition => processDefinition.version === this.versionIndex)
       if (process) this.loadProcessVersion(process)
-	 }
+     }
+    },
+    selectedActivityId() {
+      if (this.componentReady && this.process) {
+        this.filterByActivityId()
+      }
     }
   },
   data: function() {
@@ -119,13 +124,14 @@ export default {
       firstResult: 0,
       maxResults: this.$root.config.maxProcessesResults,
       filter: '',
-      activityId: '',
       loading: false,
       incidents: [],
-      calledProcesses: []
+      calledProcesses: [],
+      componentReady: false
     }
   },
   computed: {
+    ...mapGetters(['selectedActivityId']),
     shortendLeftCaption: function() {
       return this.$t('process.details.historyVersions')
     },
@@ -135,10 +141,12 @@ export default {
     processName: function() {
       if (!this.process) return ''
       return this.process.name ? this.process.name : this.process.key
-    }
+    },    
   },
   created: function() {
+    this.clearActivitySelection()
     this.loadProcessFromRoute()
+    this.componentReady = true
   },
   beforeUpdate: function() {
     if (this.process != null && this.process.version !== this.versionIndex) {
@@ -164,6 +172,8 @@ export default {
     }
   },
   methods: {
+    ...mapActions(['clearActivitySelection']),
+    formatDate,
     loadProcessFromRoute: function() {
       this.loadProcessByDefinitionKey().then((redirected) => {
         if (!redirected && this.instanceId && this.instances) {
@@ -298,7 +308,7 @@ export default {
     loadInstances: function(showMore) {
       if (this.$root.config.camundaHistoryLevel !== 'none') {
         this.loading = true
-        return HistoryService.findProcessesInstancesHistoryById(this.process.id, this.activityId,
+        return HistoryService.findProcessesInstancesHistoryById(this.process.id, this.selectedActivityId,
           this.firstResult, this.maxResults, this.filter
         ).then(instances => {
           this.loading = false
@@ -312,7 +322,7 @@ export default {
           this.processDefinitions = versions
           var promises = []
           this.processDefinitions.forEach(() => {
-            promises.push(HistoryService.findProcessesInstancesHistoryById(this.process.id, this.activityId, this.firstResult,
+            promises.push(HistoryService.findProcessesInstancesHistoryById(this.process.id, this.selectedActivityId, this.firstResult,
               this.maxResults, this.filter))
           })
           Promise.all(promises).then(response => {
@@ -447,8 +457,7 @@ export default {
         })
       }
     },
-    filterByActivityId: function(event) {
-      this.activityId = event
+    filterByActivityId: function() {
       this.instances = []
       this.firstResult = 0
       this.loadInstances()
@@ -486,7 +495,12 @@ export default {
       var csvContent = headers.map(h => h.text).join(';') + '\n'
       var keys = headers.map(h => h.key)
       this.instances.forEach(v => {
-        csvContent += getStringObjByKeys(keys, v) + '\n'
+        const formattedValues = { 
+          ...v, 
+          startTime: this.formatDate(v.startTime), 
+          endTime: this.formatDate(v.endTime) 
+        }
+        csvContent += getStringObjByKeys(keys, formattedValues) + '\n'
       })
       var csvBlob = new Blob([csvContent], { type: 'text/csv' })
       var filename = 'Management_Instances_' + moment().format('YYYYMMDD_HHmm') + '.csv'

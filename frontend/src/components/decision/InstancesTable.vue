@@ -32,6 +32,9 @@
           class="mdi mdi-18px mdi-content-copy px-2 position-absolute end-0 text-secondary lh-sm"></span>
       </button>
     </template>
+    <template v-slot:cell(evaluationTime)="table">
+        <span :title="formatDate(table.item.evaluationTime)">{{ formatDate(table.item.evaluationTime) }}</span>
+      </template>
     <template v-slot:cell(processDefinitionKey)="table">
       <button :title="table.item.processDefinitionKey" class="text-truncate w-100 btn btn-link text-start" @click="goToProcess(table.item)"
         @mouseenter="focusedCell = table.item.id + table.item.processDefinitionKey" @mouseleave="focusedCell = null">
@@ -63,6 +66,7 @@
 
 <script>
 import { permissionsMixin } from '@/permissions.js'
+import { formatDate } from '@/utils/dates.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
@@ -84,6 +88,7 @@ export default {
   },
   methods: {
     ...mapMutations(['setSelectedInstance']),
+    formatDate,
     goToInstance(instance) {
       this.setSelectedInstance(instance)
       this.$router.push({
