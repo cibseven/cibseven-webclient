@@ -99,7 +99,8 @@ export default {
       overlayList: [],
       loader: true,
       runningActivities: [],
-      suspendedOverlayMap: {}
+      suspendedOverlayMap: {},
+      overlayClickHandler: null
     }
   },
   computed: {
@@ -159,6 +160,11 @@ export default {
       this.viewer.get('zoomScroll').reset()
     },
     attachEventListeners: function() {
+      // Remove existing overlay click handler if it exists
+      if (this.overlayClickHandler) {
+        document.removeEventListener('click', this.overlayClickHandler)
+      }
+
       const eventBus = this.viewer.get('eventBus')
       // BPMN element click
       eventBus.on('element.click', (event) => {
@@ -194,28 +200,31 @@ export default {
           }, { once: true })
         }
       })
-      // Generic overlay click delegation
-      const overlaysContainers = document.querySelectorAll('.djs-overlays')
-      if (overlaysContainers.length) {
-        overlaysContainers.forEach((container) => {
-          container.addEventListener('click', (event) => {
-            const bubble = event.target.closest('.bubble')
-            if (bubble && bubble.dataset.activityId) {
-              this.setHighlightedElement(bubble.dataset.activityId)
-              this.selectActivity(bubble.dataset.activityId)
-            }
-            // Generic: emit overlay-click for any overlay element with a data-overlay-type attribute
-            const overlay = event.target.closest('[data-overlay-type]')
-            if (overlay) {
-              this.$emit('overlay-click', {
-                type: overlay.dataset.overlayType,
-                activityId: overlay.dataset.activityId || null,
-                event
-              })
-            }
+      
+      // Generic overlay click delegation - using event delegation on document
+      // Store the handler reference so we can remove it later
+      this.overlayClickHandler = (event) => {
+        // Only handle clicks within BPMN overlay containers
+        if (!event.target.closest('.djs-overlays')) return
+        
+        const bubble = event.target.closest('.bubble')
+        if (bubble && bubble.dataset.activityId) {
+          this.setHighlightedElement(bubble.dataset.activityId)
+          this.selectActivity(bubble.dataset.activityId)
+        }
+        
+        // Generic: emit overlay-click for any overlay element with a data-overlay-type attribute
+        const overlay = event.target.closest('[data-overlay-type]')
+        if (overlay) {
+          this.$emit('overlay-click', {
+            type: overlay.dataset.overlayType,
+            activityId: overlay.dataset.activityId || null,
+            event
           })
-        })
+        }
       }
+      
+      document.addEventListener('click', this.overlayClickHandler)
     },
     highlightElement: function(item) {
       let activityId = ''
@@ -416,6 +425,17 @@ export default {
           this.suspendedOverlayMap[jobDefinition.activityId] = overlayId
         }
       })
+    }
+  },
+  beforeUnmount: function() {
+    // Clean up document event listener to prevent memory leaks
+    if (this.overlayClickHandler) {
+      document.removeEventListener('click', this.overlayClickHandler)
+      this.overlayClickHandler = null
+    }
+    // Clean up viewer if it exists
+    if (this.viewer) {
+      this.viewer.destroy()
     }
   }
 }
