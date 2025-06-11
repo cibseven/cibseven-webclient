@@ -77,7 +77,7 @@ describe('parseXMLDocumentation', () => {
     })
   })
 
-  it('should handle tasks without names (use tagName as element)', () => {
+  it('should handle tasks without names (fallback to id)', () => {
     const bpmnXml = `<?xml version="1.0" encoding="UTF-8"?>
       <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL">
         <bpmn:scriptTask id="script1">
@@ -89,7 +89,7 @@ describe('parseXMLDocumentation', () => {
     expect(result).toHaveLength(1)
     expect(result[0]).toEqual({
       id: 'script1',
-      element: 'bpmn:scriptTask',
+      element: 'script1',
       documentation: 'Script task without name'
     })
   })
