@@ -103,7 +103,7 @@
 			"totalInstances": "Всего экземпляров",
 			"unfinishedInstances": "Запущенных экземпляров",
 			"finishedInstances": "Всего оконченных экземпляров без ошибок",
-			"definitionVersion": "Определение версии",
+			"definitionVersion": "Версия определения",
 			"versionTag": "День версии",
 			"definitionId": "ID определения",
 			"definitionKey": "Ключ определения",
@@ -205,6 +205,11 @@
 			"startUser": "Начальный пользователь",
 			"start": "Начато",
 			"finish": "Закончено",
+			"duration": "Продолжительность",
+			"superProcessInstanceId": "ID суперэкземпляра процесса",
+			"superCaseInstanceId": "ID суперэкземпляра дела",
+			"caseInstanceId": "ID экземпляра дела",
+			"startActivityId": "ID начальной активности",
 			"version": "Версия",
 			"state": "Статус",
 			"deleted": "Удалено",
@@ -745,7 +750,7 @@
 				"processDefinitionKeyIn": "Ключ определения процесса в",
 				"processDefinitionName": "Имя определения процесса",
 				"processDefinitionNameLike": "Имя определения процесса как",
-				"caseInstanceId": "ID экземпляра дела",
+				"caseInstanceId": "@:process-instance.details.caseInstanceId",
 				"caseInstanceBusinessKey": "Бизнес-ключ экземпляра дела",
 				"caseInstanceBusinessKeyLike": "Бизнес-ключ экземпляра дела как",
 				"caseDefinitionId": "ID определения дела",
@@ -1020,6 +1025,10 @@
 	},
 	"cib-table2": {
 		"filter": "Фильтр"
+	},
+	"table": {
+		"selectColumns": "Выбор колонок",
+		"toggleColumn": "Переключить колонку \"{column}\""
 	},
 	"navigation": {
 		"home": "Домашняя страница",
