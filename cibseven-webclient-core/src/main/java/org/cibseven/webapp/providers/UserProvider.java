@@ -97,7 +97,6 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 			auths.setGroup(filterResources(userAuthorizations, resourceType(SevenResourceType.GROUP)));
 			auths.setDecisionDefinition(filterResources(userAuthorizations, resourceType(SevenResourceType.DECISION_DEFINITION)));
 			auths.setDecisionRequirementsDefinition(filterResources(userAuthorizations, resourceType(SevenResourceType.DECISION_REQUIREMENTS_DEFINITION)));
-			auths.setHistory(filterResources(userAuthorizations, resourceType(SevenResourceType.HISTORY)));
 			auths.setDeployment(filterResources(userAuthorizations, resourceType(SevenResourceType.DEPLOYMENT)));
 			auths.setCaseDefinition(filterResources(userAuthorizations, resourceType(SevenResourceType.CASE_DEFINITION)));
 			auths.setCaseInstance(filterResources(userAuthorizations, resourceType(SevenResourceType.CASE_INSTANCE)));
