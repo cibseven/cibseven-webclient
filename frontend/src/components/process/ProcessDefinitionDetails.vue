@@ -119,6 +119,7 @@
 
 <script>
 import { moment } from '@/globals.js'
+import { formatDate } from '@/utils/dates.js'
 import { ProcessService } from '@/services.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
@@ -147,7 +148,7 @@ export default {
       const timestamps = this.instances.filter(i => i.processDefinitionVersion === this.version.version).map(i => moment(i.startTime).valueOf())
       if (timestamps.length === 0) return '-'
       const date = type === 'min' ? Math.min(...timestamps) : Math.max(...timestamps)
-      return moment(date).format('LL HH:mm')
+      return formatDate(date)
     },
     editHistoryTimeToLive: function() {
       this.historyTimeToLiveChanged = this.historyTimeToLive
