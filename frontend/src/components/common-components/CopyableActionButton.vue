@@ -9,7 +9,7 @@
   >
     {{ displayValue }}
     <span
-      v-if="copyValue && isHovered"
+      v-if="valueToCopy && isHovered"
       @click.stop="handleCopy"
       :title="$t('commons.copyValue')"
       class="mdi mdi-18px mdi-content-copy px-2 position-absolute end-0 text-secondary lh-sm"
