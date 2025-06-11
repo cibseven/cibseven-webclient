@@ -20,7 +20,7 @@
   <table class="table" :class="computedTableClass" :style="computedTableStyles" role="table" ref="table">
     <thead :class="theadClass" role="rowgroup">
       <tr :class="[ !nativeLayout && 'd-flex' ]" role="row">
-        <th v-for="(field, index) in fields"
+        <th v-for="(field, index) in computedColumns"
           :key="index"
           :class="[field.class, field.thClass, getSortClass(field)]"
           role="columnheader"
@@ -41,8 +41,31 @@
 
           <span v-if="field.label">{{ $t(prefix + field.label) }}</span>
 
+          <span v-if="computedColumnSelection && index === computedColumns.length - 1">
+            &nbsp;
+            <button class="dropdown-toggle btn btn-link btn-sm p-0" type="button" data-bs-toggle="dropdown"
+              aria-expanded="false" aria-haspopup="true" :aria-label="$t('table.selectColumns')"
+              :title="$t('table.selectColumns')">
+                <span class="visually-hidden">{{ $t('table.selectColumns') }}</span>
+                <span class="mdi mdi-24px mdi-plus-box align-middle"></span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" role="menu">
+              <template v-for="column in toggleableColumns" :key="column.key">
+                <li v-if="column.groupSeparator === true"
+                  class="dropdown-divider">
+                </li>
+                <li :title="$t('table.toggleColumn', { column: $t(column.label) })" class="dropdown-item" role="menuitem">
+                  <input type="checkbox" :id="column.key" :checked="computedColumns.some(col => col.key === column.key)"
+                    :aria-label="$t('table.toggleColumn', { column: $t(column.label) })"
+                    @change.stop="toggleColumn(column)">
+                  <label :for="column.key" class="ps-2">{{ $t(column.label) }}</label>
+                </li>
+              </template>
+            </ul>
+          </span>
+
           <span
-            v-if="resizable"
+            v-if="resizable && index !== computedColumns.length - 1"
             :style="resizeHandleStyle"
             @mousedown.stop="startResize(index, $event)">
           </span>
@@ -50,17 +73,17 @@
       </tr>
     </thead>
     <tbody role="rowgroup">
-      <tr v-for="(item, index) in sortedItems" :key="index" 
+      <tr v-for="(item, index) in sortedItems" :key="index"
         :class="[getRowClass(item), nativeLayout ? '' : 'd-flex']"
         @mouseenter="$emit('mouseenter', item)"
         @mouseleave="$emit('mouseleave', item)"
         @click.stop="$emit('click', item)"
         style="cursor: pointer"
         role="row">
-        <td v-for="(field, colIndex) in fields"
+        <td v-for="(field, colIndex) in computedColumns"
           :key="field.key"
           :class="[
-            field.class, 
+            field.class,
             field.tdClass,
             nativeLayout ? '' : 'd-flex align-items-center'
           ]"
@@ -80,7 +103,48 @@ export default {
   name: 'FlowTable',
   props: {
     items: { type: Array, default: () => [] },
+
+    /**
+     * Complete columns definitions to be displayed (API-1).
+     * Each object should have at least 'key' and 'label' properties.
+     */
     fields: { type: Array, default: () => [] },
+
+    /**
+     * Keys of columns to be displayed (API-2).
+     *
+     * API-2: Both 'columns' and 'columnDefinitions' should be non-empty arrays.
+     */
+    columns: {
+      type: Array,
+      default: () => []
+    },
+    /**
+     * Complete column definitions (API-2).
+     *
+     * API-2: Both 'columns' and 'columnDefinitions' should be non-empty arrays.
+     */
+    columnDefinitions: {
+      type: Array,
+      default: () => []
+    },
+    /**
+     * Whether to show column selection (API-2).
+     * If true, columns can be selected/deselected.
+     * Added for backward compatibility: use API-2 but without column selection.
+     */
+    columnSelection: { type: Boolean, default: true },
+    /**
+     * Use case for the table instance, used as key for localStorage to store column visibility settings.
+     *
+     * Example: USERS table can show different columns,
+     * but you would like to have one visibility set of columns
+     * for "tenant users" and another for "all users" table.
+     */
+    useCase: {
+      type: String,
+      default: 'FlowTable'
+    },
     nativeLayout: { type: Boolean, default: false },
     tbodyTrClass: { type: [String, Function], default: '' },
     prefix: { type: String, default: '' },
@@ -93,6 +157,7 @@ export default {
   },
   data() {
     return {
+      columnVisibility: {},
       sortKey: this.sortBy,
       sortOrder: this.sortDesc ? -1 : 1,
       columnWidths: [],
@@ -100,6 +165,40 @@ export default {
     }
   },
   computed: {
+    api2() {
+      // Check if both columns and columnDefinitions are provided
+      return this.columns.length > 0 && this.columnDefinitions.length > 0
+    },
+    localStorageKey() {
+      return `cibseven:table:columnVisibility:${this.useCase}:${this.columnDefinitions.length}`
+    },
+    computedColumns() {
+      if (this.api2) {
+        // API-2: Use columnDefinitions to get full field definitions
+        return this.columnDefinitions.filter(def => {
+          if (def.disableToggle === true) {
+            // If column is disabled for toggling, always include it regardless of `columnVisibility` visibility
+            return this.columns.includes(def.key)
+          }
+          else if (this.columnVisibility[def.key] === undefined) {
+            // User has never changed visibility => let's check whether this column is visible by default
+            return this.columns.includes(def.key)
+          }
+          else {
+            // User has changed visibility => use the stored value
+            return this.columnVisibility[def.key]
+          }
+        })
+      }
+      // default, API-1
+      return this.fields
+    },
+    toggleableColumns() {
+      return this.columnDefinitions.filter(col => !col.disableToggle)
+    },
+    computedColumnSelection() {
+      return this.columnSelection && this.api2
+    },
     computedTableStyles() {
       return { tableLayout: 'fixed', width: '100%' }
     },
@@ -215,9 +314,31 @@ export default {
         }
         this.columnWidths = Array.from(ths).map(th => `${th.offsetWidth}px`)
       }
+    },
+    toggleColumn(column) {
+      const visible = this.computedColumns.some(col => col.key === column.key)
+      this.columnVisibility[column.key] = !visible
+      localStorage.setItem(this.localStorageKey, JSON.stringify(this.columnVisibility))
+      this.$nextTick(() => {
+        this.restartColumnWidths()
+      })
     }
   },
   mounted() {
+    if (this.api2) {
+      // Load columnVisibility from localStorage if available
+      const storedVisibility = localStorage.getItem(this.localStorageKey)
+      if (storedVisibility) {
+        try {
+          const obj = JSON.parse(storedVisibility)
+          if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+            this.columnVisibility = obj
+          }
+        } catch {
+          // Ignore parse errors, fallback to empty object
+        }
+      }
+    }
     if (this.resizable) {
       this.$nextTick(() => {
         const ths = this.$refs.table.querySelectorAll('th');

@@ -205,6 +205,11 @@
 			"startUser": "Start user",
 			"start": "Started on",
 			"finish": "Completed on",
+			"duration": "Duration",
+			"superProcessInstanceId": "Super process instance ID",
+			"superCaseInstanceId": "Super case instance ID",
+			"caseInstanceId": "Case instance ID",
+			"startActivityId": "Start activity ID",
 			"version": "Version",
 			"state": "State",
 			"deleted": "Deleted on",
@@ -745,7 +750,7 @@
 				"processDefinitionKeyIn": "Process definition Key in",
 				"processDefinitionName": "Process definition name",
 				"processDefinitionNameLike": "Process definition name like",
-				"caseInstanceId": "Case instance ID",
+				"caseInstanceId": "@:process-instance.details.caseInstanceId",
 				"caseInstanceBusinessKey": "Case instance business Key",
 				"caseInstanceBusinessKeyLike": "Case instance business Key like",
 				"caseDefinitionId": "Case definition ID",
@@ -1021,6 +1026,10 @@
 	},
 	"cib-table2": {
 		"filter": "Filter"
+	},
+	"table": {
+		"selectColumns": "Select columns",
+		"toggleColumn": "Toggle {column} column"
 	},
 	"navigation": {
 		"home": "Home",
