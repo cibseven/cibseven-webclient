@@ -482,6 +482,7 @@ export default {
     refreshTasks() {
       if (!this.pauseRefreshButton) {
         this.$emit('refresh-tasks')
+        this.$emit('refresh-tasks-number')
         this.pauseButton()
       }
     },
