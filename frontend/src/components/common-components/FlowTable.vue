@@ -50,7 +50,7 @@
                 <span class="mdi mdi-24px mdi-plus-box align-middle"></span>
             </button>
             <ul class="dropdown-menu dropdown-menu-end" role="menu">
-              <template v-for="column in toggleColumns" :key="column.key">
+              <template v-for="column in toggleableColumns" :key="column.key">
                 <li v-if="column.groupSeparator === true"
                   class="dropdown-divider">
                 </li>
@@ -193,7 +193,7 @@ export default {
       // default, API-1
       return this.fields
     },
-    toggleColumns() {
+    toggleableColumns() {
       return this.columnDefinitions.filter(col => !col.disableToggle)
     },
     computedColumnSelection() {
