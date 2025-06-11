@@ -134,6 +134,13 @@ export default {
      * Added for backward compatibility: use API-2 but without column selection.
      */
     columnSelection: { type: Boolean, default: true },
+    /**
+     * Use case for the table instance, used as key for localStorage to store column visibility settings.
+     *
+     * Example: USERS table can show different columns,
+     * but you would like to have one visibility set of columns
+     * for "tenant users" and another for "all users" table.
+     */
     useCase: {
       type: String,
       default: 'FlowTable'
