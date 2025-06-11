@@ -170,7 +170,7 @@ export default {
       return this.columns.length > 0 && this.columnDefinitions.length > 0
     },
     localStorageKey() {
-      return `table:columnVisibility:${this.useCase}:${this.columnDefinitions.length}`
+      return `cibseven:table:columnVisibility:${this.useCase}:${this.columnDefinitions.length}`
     },
     computedColumns() {
       if (this.api2) {
