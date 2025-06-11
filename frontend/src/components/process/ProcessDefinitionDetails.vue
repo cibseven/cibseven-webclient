@@ -144,10 +144,9 @@ export default {
   },
   methods: {
     getDate: function(type) {
-      if (this.instances.length === 0) return null
-      var date = type === 'min' ?
-          Math.min.apply(Math, this.instances.map(i => { return moment(i.startTime) })) :
-          Math.max.apply(Math, this.instances.map(i => { return moment(i.startTime) }))
+      const timestamps = this.instances.filter(i => i.processDefinitionVersion === this.version.version).map(i => moment(i.startTime).valueOf())
+      if (timestamps.length === 0) return '-'
+      const date = type === 'min' ? Math.min(...timestamps) : Math.max(...timestamps)
       return moment(date).format('LL HH:mm')
     },
     editHistoryTimeToLive: function() {
