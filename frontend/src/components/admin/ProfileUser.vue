@@ -78,7 +78,7 @@
             <div class="col-sm-12 col-md-12 col-lg-8 col-xl-6 p-4">
               <b-card class="p-5 shadow-sm border rounded" :title="$t('admin.users.editMessage', [user.firstName + ' ' + user.lastName])">
                 <h6 class="mt-4">{{ $t('password.recover.changePassword') }}</h6>
-                <b-form-group labels-cols-lg="2" label-size="lg" label-class="font-weight-bold pt-0 pb-4" class="m-0">
+                <b-form-group labels-cols-lg="2" label-size="lg" label-class="fw-bold pt-0 pb-4" class="m-0">
                   <b-form-group :label="$t('password.recover.id') + '*'" label-cols-sm="2"
                     label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
                     <b-form-input v-model="user.id" :state="notEmpty(user.id)" required readonly></b-form-input>

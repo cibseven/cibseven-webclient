@@ -66,9 +66,7 @@
 		"processId": "Ідентифікатор процесу",
 		"startUserId": "Користувач",
 		"startTime": "Початкова дата",
-		"startTimeOriginal": "Початкова дата",
 		"endTime": "Кінцева дата",
-		"endTimeOriginal": "Кінцева дата",
 		"businessKey": "Бізнес-ключ",
 		"title": "Процеси",
 		"view-comfy": "Маленькі",
@@ -207,6 +205,11 @@
 			"startUser": "Користувач, що запустив",
 			"start": "Почато",
 			"finish": "Завершено",
+			"duration": "Тривалість",
+			"superProcessInstanceId": "ID надпроцесу",
+			"superCaseInstanceId": "ID надсправи",
+			"caseInstanceId": "ID екземпляра кейсу",
+			"startActivityId": "ID початкової активності",
 			"version": "Версія",
 			"state": "Статус",
 			"deleted": "Видалено",
@@ -291,10 +294,12 @@
 			"actions": "Дії"
 		},
 		"calledProcesses": {
-			"callingActivity": "Викликаюча активність",
-			"process": "Процес",
-			"version": "Версія",
-			"id": "ID"
+			"callingActivity": "Активність",
+			"process": "Визначення процесу",
+			"calledProcessInstance": "Викликані екземпляри процесу",
+			"state": "Стан",
+			"startTime": "Час початку",
+			"endTime": "Час завершення"
 		},
 		"assignModal": {
 			"manageUsersGroups": "Управління користувачами/групами",
@@ -745,7 +750,7 @@
 					"processDefinitionKeyIn": "Ключ визначення процесу в",
 					"processDefinitionName": "Назва визначення процесу",
 					"processDefinitionNameLike": "Назва визначення процесу як",
-					"caseInstanceId": "ID екземпляра кейсу",
+					"caseInstanceId": "@:process-instance.details.caseInstanceId",
 					"caseInstanceBusinessKey": "Бізнес-ключ екземпляра кейсу",
 					"caseInstanceBusinessKeyLike": "Бізнес-ключ екземпляра кейсу як",
 					"caseDefinitionId": "ID визначення кейсу",
@@ -1020,6 +1025,10 @@
 	},
 	"cib-table2": {
 		"filter": "Фільтр"
+	},
+	"table": {
+		"selectColumns": "Виберіть стовпці",
+		"toggleColumn": "Перемкнути стовпець \"{column}\""
 	},
 	"navigation": {
 		"home": "Головна сторінка",

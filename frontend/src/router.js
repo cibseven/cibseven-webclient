@@ -64,7 +64,7 @@ const appRoutes = [
             location.href = './sso-login.html?nextUrl=' + encodeURIComponent(to.query.nextUrl ? to.query.nextUrl : '')
           else next()
         }, component: LoginView },
-      { path: 'auth', beforeEnter: authGuard(true), component: {
+      { path: 'auth', name: 'auth', beforeEnter: authGuard(true), component: {
         components: { BWaitingBox }, template: '<BWaitingBox ref="loader" class="d-flex justify-content-center" styling="width:20%">\
           <router-view ref="down" class="w-100 h-100"></router-view></BWaitingBox>',
         mixins: [permissionsMixin],
@@ -156,7 +156,7 @@ const appRoutes = [
         },
         { path: 'human-tasks', name: 'human-tasks', beforeEnter: permissionsGuard('cockpit'), component: HumanTasksView },
         // users management
-        { path: 'admin',
+        { path: 'admin', name: 'admin',
           component: {
             template: '<router-view></router-view>'
           },

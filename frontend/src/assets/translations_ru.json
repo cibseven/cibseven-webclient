@@ -66,9 +66,7 @@
 		"processId": "Идентификатор процесса",
 		"startUserId": "Пользователь",
 		"startTime": "Начальная дата",
-		"startTimeOriginal": "Начальная дата",
 		"endTime": "Конечная дата",
-		"endTimeOriginal": "Конечная дата",
 		"businessKey": "Бизнес-ключ",
 		"title": "Процессы",
 		"view-comfy": "Маленькие",
@@ -78,7 +76,7 @@
 		"startProcess": "Начать процесс",
 		"start": "Начать",
 		"showProcess": "Показать процесс",
-		"showInstance": "показать экземпляр",
+		"showInstance": "Показать экземпляр",
 		"showCockpit": "Открыть в старом Cockpit",
 		"downloadBpmn": "Скачать файл BPMN",
 		"openModeler": "Открыть BPMN файл в Modeler",
@@ -105,7 +103,7 @@
 			"totalInstances": "Всего экземпляров",
 			"unfinishedInstances": "Запущенных экземпляров",
 			"finishedInstances": "Всего оконченных экземпляров без ошибок",
-			"definitionVersion": "Определение версии",
+			"definitionVersion": "Версия определения",
 			"versionTag": "День версии",
 			"definitionId": "ID определения",
 			"definitionKey": "Ключ определения",
@@ -207,6 +205,11 @@
 			"startUser": "Начальный пользователь",
 			"start": "Начато",
 			"finish": "Закончено",
+			"duration": "Продолжительность",
+			"superProcessInstanceId": "ID суперэкземпляра процесса",
+			"superCaseInstanceId": "ID суперэкземпляра дела",
+			"caseInstanceId": "ID экземпляра дела",
+			"startActivityId": "ID начальной активности",
 			"version": "Версия",
 			"state": "Статус",
 			"deleted": "Удалено",
@@ -291,10 +294,12 @@
 		    "actions": "Действия"
 		},
 		"calledProcesses": {
-			"callingActivity": "звонковая деятельность",
-			"process": "процесс",
-			"version": "версия",
-			"id": "ID"
+			"callingActivity": "Активность",
+			"process": "Определение процесса",
+			"calledProcessInstance": "Вызванные экземпляры процесса",
+			"state": "Состояние",
+			"startTime": "Время начала",
+			"endTime": "Время окончания"
 		},
 		"assignModal": {
 		    "manageUsersGroups": "Управление пользователями/группами",
@@ -745,7 +750,7 @@
 				"processDefinitionKeyIn": "Ключ определения процесса в",
 				"processDefinitionName": "Имя определения процесса",
 				"processDefinitionNameLike": "Имя определения процесса как",
-				"caseInstanceId": "ID экземпляра дела",
+				"caseInstanceId": "@:process-instance.details.caseInstanceId",
 				"caseInstanceBusinessKey": "Бизнес-ключ экземпляра дела",
 				"caseInstanceBusinessKeyLike": "Бизнес-ключ экземпляра дела как",
 				"caseDefinitionId": "ID определения дела",
@@ -1020,6 +1025,10 @@
 	},
 	"cib-table2": {
 		"filter": "Фильтр"
+	},
+	"table": {
+		"selectColumns": "Выбор колонок",
+		"toggleColumn": "Переключить колонку \"{column}\""
 	},
 	"navigation": {
 		"home": "Домашняя страница",

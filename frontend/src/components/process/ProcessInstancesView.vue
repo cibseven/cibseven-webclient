@@ -19,25 +19,31 @@
 <template>
   <div v-if="process" class="h-100">
     <div @mousedown="handleMouseDown" class="v-resizable position-absolute w-100" style="left: 0" :style="'height: ' + bpmnViewerHeight + 'px; ' + toggleTransition">
-      <component :is="BpmnViewerPlugin" v-if="BpmnViewerPlugin" ref="diagram" @activity-id="$emit('activity-id', $event)" @task-selected="selectTask($event)" @activity-map-ready="activityMap = $event"
-        :process-definition-id="process.id" :activity-id="activityId" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" :statistics="process.statistics"
+      <component :is="BpmnViewerPlugin" v-if="BpmnViewerPlugin" ref="diagram" @task-selected="selectTask($event)" @activity-map-ready="activityMap = $event"
+        :process-definition-id="process.id" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" :statistics="process.statistics"
         :activities-history="process.activitiesHistory" :active-tab="activeTab" class="h-100">
       </component>
-      <BpmnViewer v-else ref="diagram" @activity-id="$emit('activity-id', $event)" @task-selected="selectTask($event)" @activity-map-ready="activityMap = $event"
-        :process-definition-id="process.id" :activity-id="activityId" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" :statistics="process.statistics"
+      <BpmnViewer v-else ref="diagram" @task-selected="selectTask($event)" @activity-map-ready="activityMap = $event"
+        :process-definition-id="process.id" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" :statistics="process.statistics"
         :activities-history="process.activitiesHistory" :active-tab="activeTab" class="h-100">
       </BpmnViewer>
-    </div>
-
-    <ul class="nav nav-tabs position-absolute border-0 bg-light" style="left: -1px" :style="'top: ' + (bottomContentPosition - toggleButtonHeight) + 'px; ' + toggleTransition">
-      <span role="button" size="sm" variant="light" class="border-bottom-0 bg-white rounded-top border py-1 px-2 me-1" @click="toggleContent">
+      <span role="button" size="sm" variant="light" class="bg-white px-2 py-1 me-1 position-absolute border rounded" style="bottom: 15px; left: 15px;" @click="toggleContent">
         <span class="mdi mdi-18px" :class="toggleIcon"></span>
       </span>
-      <component :is="ProcessInstancesTabsPlugin" v-if="ProcessInstancesTabsPlugin" @change-tab="changeTab($event)"></component>
-      <ProcessInstancesTabs v-else @change-tab="changeTab($event)"></ProcessInstancesTabs>
-    </ul>
+    </div>
 
-    <div class="position-absolute w-100" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
+    <div class="position-absolute w-100 bg-light border-bottom" style="z-index: 2" :style="'top: ' + (bottomContentPosition - tabsAreaHeight) + 'px; ' + toggleTransition">
+      <div class="d-flex align-items-end">
+        <div class="tabs-scroll-container flex-grow-1" style="white-space: nowrap;">
+          <ul class="nav nav-tabs m-0 border-0 flex-nowrap" style="display: inline-flex; overflow-y: hidden">
+            <component :is="ProcessInstancesTabsPlugin" v-if="ProcessInstancesTabsPlugin" @change-tab="changeTab($event)" />
+            <ProcessInstancesTabs v-else @change-tab="changeTab($event)" />
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="position-absolute w-100 overflow-hidden" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
       <div v-if="isInstancesView" ref="filterTable" class="bg-light d-flex position-absolute w-100">
         <div class="col-3 p-3">
           <b-input-group size="sm">
@@ -49,8 +55,8 @@
           </b-input-group>
         </div>
         <div class="col-1 p-3">
-          <span v-if="activityId" class="badge bg-info rounded-pill p-2 pe-3" style="font-weight: 500; font-size: 0.75rem">
-            <span @click="$emit('activity-id', '')" role="button" class="mdi mdi-close-thick py-2 px-1"></span> {{ activityId }}
+          <span v-if="selectedActivityId" class="badge bg-info rounded-pill p-2 pe-3" style="font-weight: 500; font-size: 0.75rem">
+            <span @click="clearActivitySelection" role="button" class="mdi mdi-close-thick py-2 px-1"></span> {{ selectedActivityId }}
           </span>
         </div>
         <div class="col-8 p-3 text-end">
@@ -84,7 +90,7 @@
           :incidents="incidents" :activity-instance="activityInstance"
           :activity-instance-history="process.activitiesHistory"/>
         <JobDefinitionsTable v-else-if="activeTab === 'jobDefinitions'"
-          :process-id="process.id" @highlight-activity="highlightActivity" />
+          :process-id="process.id" />
         <CalledProcessDefinitionsTable v-else-if="activeTab === 'calledProcessDefinitions'"
           :process="process" :instances="instances" :calledProcesses="calledProcesses" @changeTabToInstances="changeTab({ id: 'instances' })"/>
         <component :is="ProcessInstancesTabsContentPlugin" v-if="ProcessInstancesTabsContentPlugin" :process="process" :active-tab="activeTab"></component>
@@ -106,7 +112,7 @@
 
     <SuccessAlert ref="messageCopy"> {{ $t('process.copySuccess') }} </SuccessAlert>
     <SuccessAlert top="0" style="z-index: 1031" ref="success"> {{ $t('alert.successOperation') }}</SuccessAlert>
-    <MultisortModal ref="sortModal" :items="instances" :sortKeys="['state', 'businessKey', 'startTimeOriginal', 'endTimeOriginal', 'id', 'startUserId', 'incidents']" :prefix="'process.'" @apply-sorting="applySorting"></MultisortModal>
+    <MultisortModal ref="sortModal" :items="instances" :sortKeys="['state', 'businessKey', 'startTime', 'endTime', 'id', 'startUserId', 'incidents']" :prefix="'process.'" @apply-sorting="applySorting"></MultisortModal>
   </div>
 </template>
 
@@ -127,6 +133,7 @@ import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
 import { BWaitingBox } from 'cib-common-components'
 import ProcessInstancesTabs from '@/components/process/ProcessInstancesTabs.vue'
+import { mapGetters, mapActions } from 'vuex'
 
 export default {
   name: 'ProcessInstancesView',
@@ -135,7 +142,7 @@ export default {
   inject: ['loadProcesses'],
   mixins: [permissionsMixin, resizerMixin, copyToClipboardMixin],
   props: { instances: Array, process: Object, firstResult: Number, maxResults: Number, incidents: Array,
-    activityInstance: Object, activityInstanceHistory: Array, activityId: String, loading: Boolean,
+    activityInstance: Object, activityInstanceHistory: Array, loading: Boolean,
     processKey: String, calledProcesses: Array,
     versionIndex: { type: String, default: '' }
   },
@@ -147,7 +154,7 @@ export default {
       activeTab: 'instances',
       events: {},
       usages: [],
-      sortByDefaultKey: 'startTimeOriginal',
+      sortByDefaultKey: 'startTime',
       sorting: false,
       sortDesc: true
     }
@@ -158,6 +165,7 @@ export default {
       ProcessService.fetchDiagram(this.process.id).then(response => {
         this.$refs.diagram.showDiagram(response.bpmn20Xml)
       }),
+      this.clearActivitySelection()
       this.getJobDefinitions()
     }
   },
@@ -196,8 +204,10 @@ export default {
     isInstancesView: function() {
       return this.activeTab === 'instances'
     },
+    ...mapGetters(['selectedActivityId']),
   },
-  methods: {
+  methods: {    
+    ...mapActions(['clearActivitySelection']),
     applySorting: function(sortedItems) {
       this.sorting = true
       this.sortDesc = null
@@ -252,9 +262,6 @@ export default {
         })
         this.$refs.success.show()
       })
-    },
-    highlightActivity: function(jobDefinition) {
-      this.$refs.diagram.highlightElement(jobDefinition)
     },
     handleScrollProcesses: function(el) {
       if (this.instances.length < this.firstResult) return

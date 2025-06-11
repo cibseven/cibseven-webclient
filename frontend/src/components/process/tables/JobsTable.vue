@@ -31,10 +31,10 @@
         <span :title="table.item.id" class="text-truncate">{{ table.item.id }}</span>
       </template>
       <template v-slot:cell(dueDate)="table">
-        <span :title="table.item.dueDate" class="text-truncate">{{ table.item.dueDate }}</span>
+        <span :title="formatDate(table.item.dueDate)" class="text-truncate">{{ formatDate(table.item.dueDate) }}</span>
       </template>
       <template v-slot:cell(createTime)="table">
-        <span :title="table.item.createTime" class="text-truncate">{{ table.item.createTime }}</span>
+        <span :title="formatDate(table.item.createTime)" class="text-truncate">{{ formatDate(table.item.createTime) }}</span>
       </template>
       <template v-slot:cell(activityId)="table">
         <span :title="table.item.activityId" class="text-truncate">{{ $store.state.activity.processActivities[table.item.activityId] }}</span>
@@ -57,6 +57,7 @@
 
 <script>
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
+import { formatDate } from '@/utils/dates.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import { JobService } from '@/services.js'
@@ -67,6 +68,7 @@ export default {
   mixins: [copyToClipboardMixin],
   props: { jobs: Array },
   methods: {
+    formatDate,
     setSuspended(job, suspended) {
       JobService.setSuspended(job.id, { suspended: suspended }).then(() => {
         job.suspended = suspended

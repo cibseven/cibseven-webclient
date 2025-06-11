@@ -65,10 +65,8 @@
 		"id": "ID",
 		"processId": "Prozess-ID",
 		"startUserId": "Benutzer",
-		"startTime": "Startdatum",		
-		"startTimeOriginal": "Startdatum",
+		"startTime": "Startdatum",
 		"endTime": "Enddatum",
-		"endTimeOriginal": "Enddatum",
 		"businessKey": "Fachlicher Schlüssel",
 		"title": "Prozesse",
 		"view-comfy": "Klein",
@@ -207,6 +205,11 @@
 			"startUser": "Startnutzer",
 			"start": "Gestartet am",
 			"finish": "Abgeschlossen am",
+			"duration": "Dauer",
+			"superProcessInstanceId": "Super Prozessinstanz-ID",
+			"superCaseInstanceId": "Super Fallinstanz-ID",
+			"caseInstanceId": "Fallinstanz-ID",
+			"startActivityId": "Startaktivitäts-ID",
 			"version": "Version",
 			"state": "Status",
 			"deleted": "Gelöscht am",
@@ -291,10 +294,12 @@
 		    "actions": "Aktionen"
 		},
 		"calledProcesses": {
-			"callingActivity": "Aufrufende Aktivität",
-			"process": "Prozess",
-			"version": "Version",
-			"id": "ID"
+			"callingActivity": "Aktivität",
+			"process": "Prozessdefinition",
+			"calledProcessInstance": "Aufgerufene Prozessinstanzen",
+			"state": "Status",
+			"startTime": "Startdatum",
+			"endTime": "Enddatum"
 		},
 		"assignModal": {
 		    "manageUsersGroups": "Benutzer/Gruppen verwalten",
@@ -745,7 +750,7 @@
 				"processDefinitionKeyIn": "Prozessdefinitionsschlüssel in",
 				"processDefinitionName": "Name der Prozessdefinition",
 				"processDefinitionNameLike": "Name der Prozessdefinition ähnlich",
-				"caseInstanceId": "Fallinstanz-ID",
+				"caseInstanceId": "@:process-instance.details.caseInstanceId",
 				"caseInstanceBusinessKey": "Fachlicher Schlüssel der Fallinstanz",
 				"caseInstanceBusinessKeyLike": "Fachlicher Schlüssel der Fallinstanz ähnlich",
 				"caseDefinitionId": "Falldefinitions-ID",
@@ -1020,6 +1025,10 @@
 	},
 	"cib-table2": {
 		"filter": "Filter"
+	},
+	"table": {
+		"selectColumns": "Spalten auswählen",
+		"toggleColumn": "{column} Spalte umschalten"
 	},
 	"navigation": {
 		"home": "Startseite",

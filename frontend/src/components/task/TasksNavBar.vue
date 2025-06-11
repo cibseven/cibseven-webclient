@@ -89,7 +89,7 @@
       <div class="overflow-auto flex-fill border-bottom" @scroll="handleScrollTasks">
         <div v-if="tasksFiltered.length > 0">
           <b-list-group class="mx-3">
-            <b-list-group-item @click="selectedTask(task)" v-for="task of tasksFiltered" :key="task.id" @mouseenter="focused = task" @mouseleave="focused = null"
+            <b-list-group-item @click="selectedTask(task)" v-for="task of tasksFiltered" :key="task.id" :ref="'taskItem-' + task.id" @mouseenter="focused = task" @mouseleave="focused = null"
               class="rounded-0 mt-3 p-2 bg-white border-0" :class="task.id === $route.params.taskId ? 'active shadow' : ''" draggable="false"
               tabindex=0 style="cursor: pointer" v-on:keyup.enter="selectedTask(task)" action>
               <div class="d-flex align-items-center">
@@ -109,7 +109,7 @@
               </div>
               <div class="d-flex align-items-center">
     <!-- 						<span class="mdi mdi-18px mdi-calendar-month mdi-dark"></span> -->
-                <div class="h6 fw-normal m-0" :title="getDateFormatted(task.createdOriginal, 'L LTS')">{{ getDateFormatted(task.createdOriginal) }}</div><br>
+                <div class="h6 fw-normal m-0" :title="formatDate(task.created, 'L LTS')">{{ formatDate(task.created) }}</div><br>
                 <div class="d-flex ms-auto">
                   <div class="h6 text-end p-0 fw-normal m-0" v-if="task.assignee != null"><span class="mdi mdi-18px mdi-account text-secondary"></span><span class="p-1">{{ getCompleteName(task) }}</span></div>
                   <div class="h6 text-end p-0 fw-normal n-0" v-if="task.assignee == null">
@@ -189,6 +189,7 @@
 import { moment } from '@/globals.js'
 import { TaskService, AdminService } from '@/services.js'
 import { debounce } from '@/utils/debounce.js'
+import { formatDate } from '@/utils/dates.js'
 import StartProcess from '@/components/start-process/StartProcess.vue'
 import AdvancedSearchModal from '@/components/task/AdvancedSearchModal.vue'
 import SmartSearch from '@/components/task/SmartSearch.vue'
@@ -212,7 +213,8 @@ export default {
       selectedFilter: '',
       pauseRefreshButton: false,
       advancedFilter: [],
-      advancedFilterAux: null
+      advancedFilterAux: null,
+	    justSelectedFromList: false
     }
   },
   watch: {
@@ -220,7 +222,11 @@ export default {
       immediate: true,
       handler: function (taskId) {
         this.checkTaskIdInUrl(taskId)
-      }
+		    if (taskId && !this.justSelectedFromList) {
+		      this.scrollToSelectedTask()	
+		    }
+        this.justSelectedFromList = false;
+	    }
     },
     'advancedFilter': {
       deep: true,
@@ -257,6 +263,7 @@ export default {
     }
   },
   methods: {
+    formatDate,
     loadAdvancedFilters: function() {
       this.advancedFilter = []
       this.$root.config.taskFilter.advancedSearch.processVariables.forEach(pv => {
@@ -384,6 +391,7 @@ export default {
       })
     },
     selectedTask: function(task) {
+	    this.justSelectedFromList = true;
       var selection = window.getSelection()
       var filterId = this.$store.state.filter.selected ?
         this.$store.state.filter.selected.id : this.$route.params.filterId
@@ -476,7 +484,28 @@ export default {
         this.$emit('refresh-tasks')
         this.pauseButton()
       }
-    }
+    },
+	  scrollToSelectedTask(retryCount = 0) {
+      const MAX_SCROLL_RETRIES = 5;
+	    const taskId = this.$route.params.taskId;
+	    const ref = this.$refs['taskItem-' + taskId];
+	    let el = null;
+	    if (Array.isArray(ref)) {
+	      el = ref[0]?.$el || ref[0];
+	    } else if (ref && ref.$el) {
+	      el = ref.$el;
+	    } else {
+	      el = ref;
+	    }
+	    if (el && typeof el.scrollIntoView === 'function') {
+	      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+	      this.pendingScrollToTaskId = null;
+	    } else if (retryCount < MAX_SCROLL_RETRIES){
+	      setTimeout(() => this.scrollToSelectedTask(retryCount + 1), 100);
+	    } else {
+	      console.warn(`scrollToSelectedTask: Element not found after ${MAX_SCROLL_RETRIES} retries.`);
+      }
+	  }
   }
 }
 </script>

@@ -35,8 +35,8 @@
             class="mdi mdi-18px mdi-pencil-outline px-2 position-absolute end-0 text-secondary lh-sm"></span>
         </div>
       </template>
-      <template v-slot:cell(startTime)="table">
-        <span :title="table.item.startTime" class="text-truncate d-block">{{ table.item.startTime }}</span>
+      <template v-slot:cell(created)="table">
+        <span :title="formatDate(table.item.created)" class="text-truncate d-block">{{ formatDate(table.item.created) }}</span>
       </template>
       <template v-slot:cell(id)="table">
         <div :title="table.item.id" class="text-truncate w-100" :class="focusedCell === table.item.id ? 'pe-4': ''" @mouseenter="focusedCell = table.item.id" @mouseleave="focusedCell = null">
@@ -65,6 +65,7 @@
 <script>
 import { TaskService } from '@/services.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
+import { formatDate } from '@/utils/dates.js'
 import TaskAssignationModal from '@/components/process/modals/TaskAssignationModal.vue'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
@@ -92,6 +93,7 @@ export default {
     })
   },
   methods: {
+    formatDate,
     changeAssignee: function(event) {
       var userTask = this.userTasks.find(task => task.id === event.taskId)
       userTask.assignee = event.assignee

@@ -18,12 +18,12 @@
 -->
 <template>
   <div class="row">
-    <span class="text-secondary font-weight-bold col-8 pe-0">{{ $t('process.details.versionTag') }}</span>
+    <span class="text-secondary fw-bold col-8 pe-0">{{ $t('process.details.versionTag') }}</span>
     <span class="col-4 text-end">{{ version.versionTag }}</span>
   </div>
   <hr class="my-2">
   <div class="row">
-    <span class="text-secondary font-weight-bold col-12">
+    <span class="text-secondary fw-bold col-12">
       {{ $t('process.details.definitionId') }}
       <button @click="copyValueToClipboard(version.id)" class="btn btn-sm mdi mdi-content-copy float-end"
         :title="$t('process.details.copyValue')"></button>
@@ -32,74 +32,74 @@
   </div>
   <hr class="my-2">
   <div class="row">
-    <span class="text-secondary font-weight-bold col-12">
+    <span class="text-secondary fw-bold col-12">
       {{ $t('process.details.definitionKey') }}
-      <button @click="copyValueToClipboard(version.key)" class="btn btn-sm mdi mdi-content-copy float-end"
+      <button @click="copyValueToClipboard(version.key)" class="btn btn-sm mdi mdi-content-copy float-end border-0"
         :title="$t('process.details.copyValue')"></button>
     </span>
     <span class="col-12">{{ version.key }}</span>
   </div>
   <hr class="my-2">
   <div class="row">
-    <span class="text-secondary font-weight-bold col-12">
+    <span class="text-secondary fw-bold col-12">
       {{ $t('process.details.definitionName') }}
-      <button @click="copyValueToClipboard(version.name)" class="btn btn-sm mdi mdi-content-copy float-end"
+      <button @click="copyValueToClipboard(version.name)" class="btn btn-sm mdi mdi-content-copy float-end border-0"
         :title="$t('process.details.copyValue')"></button>
     </span>
     <span class="col-12">{{ version.name }}</span>
   </div>
   <hr class="my-2">
   <div class="row">
-    <span class="text-secondary font-weight-bold col-12">
+    <span class="text-secondary fw-bold col-12">
       {{ $t('process.details.deploymentId') }}
-      <button @click="copyValueToClipboard(version.deploymentId)" class="btn btn-sm mdi mdi-content-copy float-end"
+      <button @click="copyValueToClipboard(version.deploymentId)" class="btn btn-sm mdi mdi-content-copy float-end border-0"
         :title="$t('process.details.copyValue')"></button>
     </span>
     <router-link class="col-12" :to="'/seven/auth/deployments/' + version.deploymentId">{{ version.deploymentId }}</router-link>
   </div>
   <hr class="my-2">
   <div class="row">
-    <span class="text-secondary font-weight-bold col-12">
+    <span class="text-secondary fw-bold col-12">
       {{ $t('process.details.tenantId') }}
-      <button v-if="version.tenantId" @click="copyValueToClipboard(version.tenantId)" class="btn btn-sm mdi mdi-content-copy float-end"
+      <button v-if="version.tenantId" @click="copyValueToClipboard(version.tenantId)" class="btn btn-sm mdi mdi-content-copy float-end border-0"
         :title="$t('process.details.copyValue')"></button>
     </span>
     <span class="col-12">{{ version.tenantId ? version.tenantId : '-' }}</span>
   </div>
   <hr class="my-2">
   <div class="row">
-    <span class="text-secondary font-weight-bold col-12">
+    <span class="text-secondary fw-bold col-12">
       {{ $t('process.details.historyTimeToLive') }}
-      <button @click="copyValueToClipboard(historyTimeToLive)" class="btn btn-sm mdi mdi-content-copy float-end"
+      <button @click="copyValueToClipboard(historyTimeToLive)" class="btn btn-sm mdi mdi-content-copy float-end border-0"
         :title="$t('process.details.copyValue')"></button>
-      <button @click="editHistoryTimeToLive()" class="btn btn-sm mdi mdi-pencil float-end"
+      <button @click="editHistoryTimeToLive()" class="btn btn-sm mdi mdi-pencil float-end border-0"
         :title="$t('process-instance.edit')"></button>
     </span>
     <span class="col-12">{{ historyTimeToLive + ' ' + $t('process.days') }}</span>
   </div>
   <hr class="my-2">
   <div class="row">
-    <span class="text-secondary font-weight-bold col-5 pe-0">{{ $t('process.details.firstStart') }}</span>
+    <span class="text-secondary fw-bold col-5 pe-0">{{ $t('process.details.firstStart') }}</span>
     <span class="col-7 text-end">{{ getDate('min') }}</span>
   </div>
   <hr class="my-2">
   <div class="row">
-    <span class="text-secondary font-weight-bold col-5 pe-0">{{ $t('process.details.lastStart') }}</span>
+    <span class="text-secondary fw-bold col-5 pe-0">{{ $t('process.details.lastStart') }}</span>
     <span class="col-7 text-end">{{ getDate('max') }}</span>
   </div>
   <hr class="my-2">
   <div class="row align-items-center">
-    <span class="text-secondary font-weight-bold col-8 pe-0">{{ $t('process.details.unfinishedInstances') }}</span>
+    <span class="text-secondary fw-bold col-8 pe-0">{{ $t('process.details.unfinishedInstances') }}</span>
     <span class="col-4 text-end">{{ version.runningInstances }}</span>
   </div>
   <hr class="my-2">
   <div class="row align-items-center">
-    <span class="text-secondary font-weight-bold col-8 pe-0">{{ $t('process.details.totalInstances') }}</span>
+    <span class="text-secondary fw-bold col-8 pe-0">{{ $t('process.details.totalInstances') }}</span>
     <span class="col-4 text-end">{{ version.allInstances }}</span>
   </div>
   <hr class="my-2">
   <div class="row align-items-center">
-    <span class="text-secondary font-weight-bold col-8 pe-0">{{ $t('process.details.finishedInstances') }}</span>
+    <span class="text-secondary fw-bold col-8 pe-0">{{ $t('process.details.finishedInstances') }}</span>
     <span class="col-4 text-end">{{ version.completedInstances }}</span>
   </div>
 
@@ -146,8 +146,8 @@ export default {
     getDate: function(type) {
       if (this.instances.length === 0) return null
       var date = type === 'min' ?
-          Math.min.apply(Math, this.instances.map(i => { return moment(i.startTimeOriginal) })) :
-          Math.max.apply(Math, this.instances.map(i => { return moment(i.startTimeOriginal) }))
+          Math.min.apply(Math, this.instances.map(i => { return moment(i.startTime) })) :
+          Math.max.apply(Math, this.instances.map(i => { return moment(i.startTime) }))
       return moment(date).format('LL HH:mm')
     },
     editHistoryTimeToLive: function() {
