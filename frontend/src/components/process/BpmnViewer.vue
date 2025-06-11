@@ -194,28 +194,28 @@ export default {
           }, { once: true })
         }
       })
-      // Generic overlay click delegation
-      const overlaysContainers = document.querySelectorAll('.djs-overlays')
-      if (overlaysContainers.length) {
-        overlaysContainers.forEach((container) => {
-          container.addEventListener('click', (event) => {
-            const bubble = event.target.closest('.bubble')
-            if (bubble && bubble.dataset.activityId) {
-              this.setHighlightedElement(bubble.dataset.activityId)
-              this.selectActivity(bubble.dataset.activityId)
-            }
-            // Generic: emit overlay-click for any overlay element with a data-overlay-type attribute
-            const overlay = event.target.closest('[data-overlay-type]')
-            if (overlay) {
-              this.$emit('overlay-click', {
-                type: overlay.dataset.overlayType,
-                activityId: overlay.dataset.activityId || null,
-                event
-              })
-            }
+      // Generic overlay click delegation - using event delegation on document
+      // This ensures we catch clicks on dynamically added overlays
+      document.addEventListener('click', (event) => {
+        // Only handle clicks within BPMN overlay containers
+        if (!event.target.closest('.djs-overlays')) return
+        
+        const bubble = event.target.closest('.bubble')
+        if (bubble && bubble.dataset.activityId) {
+          this.setHighlightedElement(bubble.dataset.activityId)
+          this.selectActivity(bubble.dataset.activityId)
+        }
+        
+        // Generic: emit overlay-click for any overlay element with a data-overlay-type attribute
+        const overlay = event.target.closest('[data-overlay-type]')
+        if (overlay) {
+          this.$emit('overlay-click', {
+            type: overlay.dataset.overlayType,
+            activityId: overlay.dataset.activityId || null,
+            event
           })
-        })
-      }
+        }
+      })
     },
     highlightElement: function(item) {
       let activityId = ''
