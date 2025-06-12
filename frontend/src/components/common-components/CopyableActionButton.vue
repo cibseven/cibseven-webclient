@@ -1,8 +1,26 @@
+<!--
+
+    Copyright CIB software GmbH and/or licensed to CIB software GmbH
+    under one or more contributor license agreements. See the NOTICE file
+    distributed with this work for additional information regarding copyright
+    ownership. CIB software licenses this file to you under the Apache License,
+    Version 2.0; you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+
+-->
 <template>
-  <button
+  <component
+    :is="clickable ? 'button' : 'div'"
+    :class="containerClasses"
     :title="title || displayValue"
-    class="btn btn-link text-truncate p-0 text-info text-start"
-    :class="isHovered ? 'pe-4' : ''"
     @mouseenter="isHovered = true"
     @mouseleave="isHovered = false"
     @click="handleClick"
@@ -11,10 +29,10 @@
     <span
       v-if="valueToCopy && isHovered"
       @click.stop="handleCopy"
-      :title="$t('commons.copyValue')"
-      class="mdi mdi-18px mdi-content-copy px-2 position-absolute end-0 text-secondary lh-sm"
+      :title="$t('commons.copyValue') + ':\n' + valueToCopy"
+      class="mdi mdi-18px mdi-content-copy position-absolute end-0 text-secondary lh-sm"
     ></span>
-  </button>
+  </component>
 </template>
 
 <script>
@@ -42,6 +60,13 @@ export default {
       type: String,
       default: null,
     },
+    /**
+     * Whether the component should be clickable (button) or just text with copy
+     */
+    clickable: {
+      type: Boolean,
+      default: true,
+    },
   },
   emits: ['click', 'copy'],
   data() {
@@ -53,10 +78,34 @@ export default {
     valueToCopy() {
       return this.copyValue || this.displayValue
     },
+    containerClasses() {
+      const baseClasses = {
+        'text-truncate': true,
+        'pe-4': this.isHovered,
+        'position-relative': true,
+      }
+      if (this.clickable) {
+        return {
+          ...baseClasses,
+          btn: true,
+          'btn-link': true,
+          'p-0': true,
+          'text-info': true,
+          'text-start': true,
+        }
+      } else {
+        return {
+          ...baseClasses,
+          'w-100': true,
+        }
+      }
+    },
   },
   methods: {
     handleClick() {
-      this.$emit('click')
+      if (this.clickable) {
+        this.$emit('click')
+      }
     },
     handleCopy() {
       this.$emit('copy', this.valueToCopy)
