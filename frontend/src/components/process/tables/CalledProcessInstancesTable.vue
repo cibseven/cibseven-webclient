@@ -30,10 +30,35 @@
       <span :title="getIconTitle(table.item)" class="mdi mdi-18px" :class="getIconState(table.item)"></span>
     </template>
      <template v-slot:cell(calledProcessInstance)="table">
-       <button :title="table.item.calledProcessInstance" class="btn btn-link text-truncate p-0 text-info text-start" @click="openInstance(table.item)">{{ table.item.calledProcessInstance }}</button>
+       <router-link
+          :to="{
+            name: 'process', 
+            params: {
+              processKey: table.item.key,
+              versionIndex: table.item.version,
+              instanceId: table.item.calledProcessInstance
+            }
+          }"
+          :title="table.item.name"
+          class="text-truncate"
+        >
+        {{ table.item.calledProcessInstance }}
+        </router-link>
      </template>
      <template v-slot:cell(process)="table">
-        <button :title="table.item.name" class="btn btn-link text-truncate p-0 text-info text-start" @click="openSubprocess(table.item)">{{ table.item.name }}</button>
+        <router-link
+          :to="{
+            name: 'process', 
+            params: {
+              processKey: table.item.key,
+              versionIndex: table.item.version
+            }
+          }"
+          :title="table.item.name"
+          class="text-truncate"
+        >
+        {{ table.item.name }}
+        </router-link>
       </template>
       <template v-slot:cell(callingActivity)="table">
         <div :title="table.item.callingActivity.activityName" class="text-truncate">{{ table.item.callingActivity.activityName }}</div>
@@ -78,10 +103,13 @@ export default {
   watch: {
     'selectedInstance.id': function() {
       this.loadCalledProcessInstances()
-    }
+    },
+    activityInstanceHistory: 'loadCalledProcessInstances'
   },
   created: function() {
-    this.loadCalledProcessInstances()
+    if (this.activityInstanceHistory) {
+      this.loadCalledProcessInstances()
+    }
   },
   methods: {
     loadCalledProcessInstances: function() {

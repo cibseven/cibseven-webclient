@@ -37,7 +37,7 @@
         <div class="tabs-scroll-container flex-grow-1" style="white-space: nowrap;">
           <ul class="nav nav-tabs m-0 border-0 flex-nowrap" style="display: inline-flex; overflow-y: hidden">
             <component :is="ProcessInstancesTabsPlugin" v-if="ProcessInstancesTabsPlugin" @change-tab="changeTab($event)" />
-            <ProcessInstancesTabs v-else @change-tab="changeTab($event)" />
+            <ProcessInstancesTabs v-else v-model="activeTab" />
           </ul>
         </div>
       </div>
@@ -92,7 +92,7 @@
         <JobDefinitionsTable v-else-if="activeTab === 'jobDefinitions'"
           :process-id="process.id" />
         <CalledProcessDefinitionsTable v-else-if="activeTab === 'calledProcessDefinitions'"
-          :process="process" :instances="instances" :calledProcesses="calledProcesses" @changeTabToInstances="changeTab({ id: 'instances' })"/>
+          :process="process" :instances="instances" :calledProcesses="calledProcesses"/>
         <component :is="ProcessInstancesTabsContentPlugin" v-if="ProcessInstancesTabsContentPlugin" :process="process" :active-tab="activeTab"></component>
       </div>
     </div>
@@ -138,7 +138,8 @@ import { mapGetters, mapActions } from 'vuex'
 export default {
   name: 'ProcessInstancesView',
   components: { InstancesTable, JobDefinitionsTable, BpmnViewer, MultisortModal,
-     SuccessAlert, ConfirmDialog, BWaitingBox, IncidentsTable, CalledProcessDefinitionsTable, ProcessInstancesTabs },
+     SuccessAlert, ConfirmDialog, BWaitingBox, IncidentsTable, CalledProcessDefinitionsTable, 
+     ProcessInstancesTabs },
   inject: ['loadProcesses'],
   mixins: [permissionsMixin, resizerMixin, copyToClipboardMixin],
   props: { instances: Array, process: Object, firstResult: Number, maxResults: Number, incidents: Array,
@@ -167,6 +168,7 @@ export default {
       }),
       this.clearActivitySelection()
       this.getJobDefinitions()
+      this.changeTab({ id: 'instances' })
     }
   },
   mounted: function() {

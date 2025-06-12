@@ -17,7 +17,7 @@
 
 -->
 <template>
-  <GenericTabs :tabs="tabs" @change-tab="$emit('change-tab', $event)"></GenericTabs>
+  <GenericTabs :tabs="tabs" :modelValue="modelValue" @update:modelValue="$emit('update:modelValue', $event)"></GenericTabs>
 </template>
 
 <script>
@@ -28,14 +28,15 @@ export default {
   components: {
     GenericTabs,
   },
-  emits: ['change-tab'],
+  props: { modelValue: String },
+  emits: ['update:modelValue'],
   data: function () {
     return {
       tabs: [
-        { id: 'instances', active: true, text: 'process.instances' },
-        { id: 'jobDefinitions', active: false, text: 'process.jobDefinitions'  },
-        { id: 'incidents', active: false, text: 'process.incidents'  },
-        { id: 'calledProcessDefinitions', active: false, text: 'process.calledProcessDefinitions'  },
+        { id: 'instances', text: 'process.instances' },
+        { id: 'jobDefinitions', text: 'process.jobDefinitions'  },
+        { id: 'incidents', text: 'process.incidents'  },
+        { id: 'calledProcessDefinitions', text: 'process.calledProcessDefinitions'  },
       ]
     }
   }
