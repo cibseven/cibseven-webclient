@@ -142,6 +142,7 @@ import TemplateBase from '@/components/forms/TemplateBase.vue'
 import StartView from '@/components/start/StartView.vue'
 import LoginView from '@/components/login/LoginView.vue'
 import GenericTabs from '@/components/common-components/GenericTabs.vue'
+import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
 
 const registerComponents = function(app) {
   app.component('cib-seven', CibSeven)
@@ -357,6 +358,7 @@ export {
   StartView,
   LoginView,
   GenericTabs,
+  CopyableActionButton,
   InfoService,
   AuthService,
   SystemService,

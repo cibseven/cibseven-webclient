@@ -39,11 +39,12 @@
         <span :title="formatDate(table.item.created)" class="text-truncate d-block">{{ formatDate(table.item.created) }}</span>
       </template>
       <template v-slot:cell(id)="table">
-        <div :title="table.item.id" class="text-truncate w-100" :class="focusedCell === table.item.id ? 'pe-4': ''" @mouseenter="focusedCell = table.item.id" @mouseleave="focusedCell = null">
-          {{ table.item.id }}
-          <span v-if="table.item.id && focusedCell === table.item.id" @click.stop="copyValueToClipboard(table.item.id)"
-            class="mdi mdi-18px mdi-content-copy px-2 position-absolute end-0 text-secondary lh-sm"></span>
-        </div>
+        <CopyableActionButton
+          :display-value="table.item.id"
+          :title="table.item.id"
+          :clickable="false"
+          @copy="copyValueToClipboard"
+        />
       </template>
       <template v-slot:cell(actions)="table">
         <b-button :title="$t('process-instance.assignModal.manageUsersGroups')" @click="$refs.taskAssignationModal.show(table.item.id, false)"
@@ -69,11 +70,12 @@ import { formatDate } from '@/utils/dates.js'
 import TaskAssignationModal from '@/components/process/modals/TaskAssignationModal.vue'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
+import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
 import { BWaitingBox } from 'cib-common-components'
 
 export default {
   name: 'UserTasksTable',
-  components: { TaskAssignationModal, FlowTable, SuccessAlert, BWaitingBox },
+  components: { TaskAssignationModal, FlowTable, SuccessAlert, CopyableActionButton, BWaitingBox },
   mixins: [copyToClipboardMixin],
   props: { selectedInstance: Object },
   data: function() {
