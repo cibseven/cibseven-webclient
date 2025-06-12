@@ -43,7 +43,7 @@
       <div class="d-flex align-items-end">
         <div class="tabs-scroll-container flex-grow-1" style="white-space: nowrap;">
           <ul class="nav nav-tabs m-0 border-0 flex-nowrap" style="display: inline-flex; overflow-y: hidden">
-            <component :is="ProcessInstanceTabsPlugin" v-if="ProcessInstanceTabsPlugin" @change-tab="changeTab($event)"></component>
+            <component :is="ProcessInstanceTabsPlugin" v-if="ProcessInstanceTabsPlugin" v-model="activeTab"></component>
             <ProcessInstanceTabs v-else v-model="activeTab"></ProcessInstanceTabs>
           </ul>
         </div>
