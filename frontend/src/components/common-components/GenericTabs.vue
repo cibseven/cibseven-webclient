@@ -24,11 +24,11 @@
   >
     <a
       role="button"
-      @click="changeTab(tab)"
+      @click="$emit('update:modelValue', tab.id)"
       class="nav-link py-2 border-0 rounded-0"
       :class="{
-        active: tab.active,
-        'bg-light border border-bottom-0': !tab.active
+        active: tab.id === modelValue,
+        'bg-light border border-bottom-0': tab.id != modelValue
       }"
     >
       {{ $t(tab.text) }}
@@ -39,13 +39,8 @@
 <script>
 export default {
   name: 'GenericTabs',
-  emits: ['change-tab'],
-  props: { tabs: Array },
-  methods: {
-    changeTab(tab) {
-      this.tabs.forEach((t) => (t.active = t.id === tab.id))
-      this.$emit('change-tab', tab)
-    },
-  },
+  emits: ['update:modelValue'],
+  props: { tabs: Array, modelValue: String },
+
 }
 </script>
