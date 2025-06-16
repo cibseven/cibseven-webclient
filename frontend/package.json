@@ -41,7 +41,6 @@
     "camunda-bpm-sdk": "file:../camunda-bpm-sdk",
     "cib-common-components": "^2.0.0",
     "dmn-js": "^17.2.0",
-    "jquery": "^3.7.1",
     "js-sha256": "^0.11.0",
     "moment": "^2.30.1",
     "platform": "^1.3.6",

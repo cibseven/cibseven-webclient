@@ -1,132 +1,149 @@
-import $ from 'jquery';
-import { InfoService } from "@/services"
-import { switchLanguage, i18n } from "@/i18n"
-import { getTheme } from "@/utils/init"
-import CamSDK from "./camunda-bpm-sdk/index-browser.js"
+import { InfoService } from "@/services";
+import { switchLanguage, i18n } from "@/i18n";
+import { getTheme } from "@/utils/init";
+import CamSDK from "camunda-bpm-sdk";
 
 InfoService.getProperties().then(response => {
-    const config = response.data
-    function loadTheme() {
+    const config = response.data;
 
-        var css = $('<link>', {
-            rel: 'stylesheet',
-            type: 'text/css',
-            href: 'themes/' + getTheme(config) + '/styles.css'
-        });
-        $('head').append(css);
+    function loadTheme() {
+        const css = document.createElement('link');
+        css.rel = 'stylesheet';
+        css.type = 'text/css';
+        css.href = 'themes/' + getTheme(config) + '/styles.css';
+        document.head.appendChild(css);
     }
 
-    loadTheme()
+    loadTheme();
 
-    const searchParams = new URLSearchParams(location.search)
-    const authorization = searchParams.get('authorization')
-    const lang = searchParams.get('lang')
-    const processDefinitionId = searchParams.get('processDefinitionId')
-    const taskId = searchParams.get('taskId')
-    config.supportedLanguages = [lang]
+    const searchParams = new URLSearchParams(window.location.search);
+    const authorization = searchParams.get('authorization');
+    const lang = searchParams.get('lang');
+    const processDefinitionId = searchParams.get('processDefinitionId');
+    const taskId = searchParams.get('taskId');
+    config.supportedLanguages = [lang];
 
     switchLanguage(config, lang).then(() => {
-        const $submitButton = $('#submitButton');
-        const $saveButton = $('#saveButton');
-        const $loaderDiv = $('#loader');
-        const $contentDiv = $('#content');
-        const $errorDiv = $('#embeddedFormError');
-        const $embeddedContainer = $('#embeddedRoot');
-        const $formContainer = $('#embeddedFormRoot');
+        const submitButton = document.getElementById('submitButton');
+        const saveButton = document.getElementById('saveButton');
+        const loaderDiv = document.getElementById('loader');
+        const contentDiv = document.getElementById('content');
+        const errorDiv = document.getElementById('embeddedFormError');
+        const embeddedContainer = document.getElementById('embeddedRoot');
+        const formContainer = document.getElementById('embeddedFormRoot');
 
-        const isStartForm = !!processDefinitionId
-        let embeddedForm
+        const isStartForm = !!processDefinitionId;
+        let embeddedForm;
 
         if (isStartForm) {
-            $submitButton.html(i18n.global.t('process.start'));
+            submitButton.innerHTML = i18n.global.t('process.start');
         } else {
-            $submitButton.html(i18n.global.t('task.actions.submit'));
+            submitButton.innerHTML = i18n.global.t('task.actions.submit');
         }
-        $submitButton.on('click', function () {
-            blockButtons($submitButton, $saveButton);
+        submitButton.addEventListener('click', () => {
+            blockButtons(submitButton, saveButton);
             embeddedForm.submit(err => {
                 if (err) {
-                    $errorDiv.show().html(i18n.global.t('task.actions.saveError', [err]));
+                    errorDiv.style.display = '';
+                    errorDiv.innerHTML = i18n.global.t('task.actions.saveError', [err]);
                 } else {
                     services.completeTask();
                 }
-                unblockButtons($submitButton, $saveButton);
+                unblockButtons(submitButton, saveButton);
             });
         });
-        
+
         if (isStartForm) {
-            $saveButton.hide();
+            saveButton.style.display = 'none';
         }
-        $saveButton.html(i18n.global.t('task.actions.save'));
-        $saveButton.on('click', function () {
-            blockButtons($submitButton, $saveButton);
+        saveButton.innerHTML = i18n.global.t('task.actions.save');
+        saveButton.addEventListener('click', () => {
+            blockButtons(submitButton, saveButton);
             embeddedForm.store(err => {
                 if (err) {
-                    $errorDiv.show().html(i18n.global.t('task.actions.saveError', [err]));
+                    errorDiv.style.display = '';
+                    errorDiv.innerHTML = i18n.global.t('task.actions.saveError', [err]);
                 } else {
                     services.displaySuccessMessage();
                 }
-                unblockButtons($submitButton, $saveButton);
+                unblockButtons(submitButton, saveButton);
             });
         });
-        
-        loadEmbeddedForm(isStartForm, processDefinitionId || taskId, $embeddedContainer, $formContainer, authorization, config).then(form => {
-            embeddedForm = form;
-            $loaderDiv.hide();
-            $contentDiv.css('display', 'flex');
-        }, err => {
-            console.error(err);
-            services.displayErrorMessage(err);
-        });
-    })
-})
+
+        loadEmbeddedForm(
+            isStartForm,
+            processDefinitionId || taskId,
+            embeddedContainer,
+            formContainer,
+            authorization,
+            config
+        ).then(
+            form => {
+                embeddedForm = form;
+                loaderDiv.style.display = 'none';
+                contentDiv.style.display = 'flex';
+            },
+            err => {
+                console.error(err);
+                services.displayErrorMessage(err);
+            }
+        );
+    });
+});
 
 const services = {
     completeTask() {
-        callParent('completeTask')
+        callParent('completeTask');
     },
     displaySuccessMessage() {
-        callParent('displaySuccessMessage')
+        callParent('displaySuccessMessage');
     },
     displayGenericSuccessMessage() {
-        callParent('displayGenericSuccessMessage')
+        callParent('displayGenericSuccessMessage');
     },
     displayErrorMessage(data) {
-        callParent('displayErrorMessage', data)
+        callParent('displayErrorMessage', data);
     },
     cancelTask() {
-        callParent('cancelTask')
+        callParent('cancelTask');
     },
     updateFilters(data) {
-        callParent('updateFilters', data)
+        callParent('updateFilters', data);
     }
-}
+};
 
 function callParent(method, data) {
     window.parent.postMessage({
         method,
         data
-    })
+    });
 }
 
 function blockButtons(...buttons) {
     buttons.forEach(button => {
-        $(button).prop('disabled', true);
+        if (button) button.disabled = true;
     });
 }
 
 function unblockButtons(...buttons) {
     buttons.forEach(button => {
-        $(button).prop('disabled', false);
+        if (button) button.disabled = false;
     });
 }
 
-function loadEmbeddedForm(isStartForm, referenceId, embeddedContainer, formContainer, authorization, config) {
+function loadEmbeddedForm(
+    isStartForm,
+    referenceId,
+    embeddedContainer,
+    formContainer,
+    authorization,
+    config
+) {
     var client = new CamSDK.Client({
         mock: false,
         apiUri: config.engineRestPath || '/engine-rest',
         headers: {
-            'authorization': authorization
+            authorization: authorization
         }
     });
     return new Promise((resolve, reject) => {
@@ -146,10 +163,9 @@ function loadEmbeddedForm(isStartForm, referenceId, embeddedContainer, formConta
         }
         async function loadForm(formInfo) {
             let embeddedForm;
-            let config = {
+            let formConfig = {
                 client: client,
-                // continue the logic with the callback
-                done: (err) => {
+                done: err => {
                     if (err) {
                         reject(err);
                     } else {
@@ -159,44 +175,50 @@ function loadEmbeddedForm(isStartForm, referenceId, embeddedContainer, formConta
             };
             if (formInfo.key.includes('deployment:')) {
                 let resource = await loadDeployedForm(client, isStartForm, referenceId);
-                formContainer.html(resource);
-                config.formElement = formContainer;
-                embeddedContainer.hide()
+                formContainer.innerHTML = resource;
+                formConfig.formElement = formContainer;
+                if (embeddedContainer) embeddedContainer.style.display = 'none';
             } else {
                 // Start with a relative url and replace doubled slashes if necessary
-                var url = formInfo.key.replace('embedded:', '').replace('app:', (formInfo.contextPath || '') + '/')
-                    .replace(/^(\/+|([^/]))/, '/$2').replace(/\/\/+/, '/')
-                config.formUrl = url
-                config.containerElement = embeddedContainer
-                formContainer.hide()
+                var url = formInfo.key
+                    .replace('embedded:', '')
+                    .replace('app:', (formInfo.contextPath || '') + '/')
+                    .replace(/^(\/+|([^/]))/, '/$2')
+                    .replace(/\/\/+/, '/');
+                formConfig.formUrl = url;
+                formConfig.containerElement = embeddedContainer;
+                if (formContainer) formContainer.style.display = 'none';
             }
 
             if (isStartForm) {
-                config.processDefinitionId = referenceId
+                formConfig.processDefinitionId = referenceId;
             } else {
-                config.taskId = referenceId
+                formConfig.taskId = referenceId;
             }
-            embeddedForm = new CamSDK.Form(config)
+            embeddedForm = new CamSDK.Form(formConfig);
         }
-    })
+    });
 }
 
 function loadDeployedForm(client, isStartForm, referenceId) {
     return new Promise((resolve, reject) => {
         if (isStartForm) {
-            client.resource('process-definition').deployedForm({ id: referenceId }, (err, resource) => {
-                if (err) reject(err)
-                else {
-                    resolve(resource)
+            client.resource('process-definition').deployedForm(
+                { id: referenceId },
+                (err, resource) => {
+                    if (err) reject(err);
+                    else {
+                        resolve(resource);
+                    }
                 }
-            })
+            );
         } else {
             client.resource('task').deployedForm(referenceId, (err, resource) => {
-                if (err) reject(err)
+                if (err) reject(err);
                 else {
-                    resolve(resource)
+                    resolve(resource);
                 }
-            })
+            });
         }
-    })
+    });
 }
