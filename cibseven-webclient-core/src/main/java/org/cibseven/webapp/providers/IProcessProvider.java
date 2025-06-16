@@ -69,5 +69,6 @@ public interface IProcessProvider {
 	public void updateHistoryTimeToLive(String id, Map<String, Object> data, CIBUser user);
 	public void deleteProcessInstanceFromHistory(String id, CIBUser user);
 	public void deleteProcessDefinition(String id, Optional<Boolean> cascade, CIBUser user);
+	public Long countProcessesInstancesHistory(Map<String, Object> filters, CIBUser user);
 	
 }
