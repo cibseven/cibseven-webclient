@@ -18,6 +18,7 @@
 -->
 <template>
   <component
+    v-if="valueToCopy"
     :is="componentType"
     :to="routerTo"
     :class="containerClasses"
@@ -28,7 +29,7 @@
   >
     {{ displayValue }}
     <span
-      v-if="valueToCopy && isHovered"
+      v-if="isHovered"
       @click.stop.prevent="handleCopy"
       :title="$t('commons.copyValue') + ':\n' + valueToCopy"
       class="mdi mdi-18px mdi-content-copy position-absolute end-0 text-secondary lh-sm"
