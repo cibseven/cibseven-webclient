@@ -25,7 +25,7 @@
   <div class="row">
     <span class="text-secondary fw-bold col-12">
       {{ $t('process.details.definitionId') }}
-      <button @click="copyValueToClipboard(version.id)" class="btn btn-sm mdi mdi-content-copy float-end"
+      <button @click="copyValueToClipboard(version.id)" class="btn btn-sm mdi mdi-content-copy float-end border-0"
         :title="$t('process.details.copyValue')"></button>
     </span>
     <span class="col-12">{{ version.id }}</span>

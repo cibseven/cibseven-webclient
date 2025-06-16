@@ -36,6 +36,7 @@
         :displayValue="table.item.id"
         :title="$t('process.showInstance') + ':\n' + table.item.id"
         :to="`/seven/auth/process/${table.item.processDefinitionKey}/${table.item.processDefinitionVersion}/${table.item.id}`"
+        @copy="copyValueToClipboard"
       ></CopyableActionButton>
     </template>
     <template v-slot:cell(businessKey)="table">
