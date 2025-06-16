@@ -18,7 +18,8 @@
 -->
 <template>
   <component
-    :is="clickable ? 'button' : 'div'"
+    :is="componentType"
+    :to="routerTo"
     :class="containerClasses"
     :title="title || displayValue"
     @mouseenter="isHovered = true"
@@ -28,7 +29,7 @@
     {{ displayValue }}
     <span
       v-if="valueToCopy && isHovered"
-      @click.stop="handleCopy"
+      @click.stop.prevent="handleCopy"
       :title="$t('commons.copyValue') + ':\n' + valueToCopy"
       class="mdi mdi-18px mdi-content-copy position-absolute end-0 text-secondary lh-sm"
     ></span>
@@ -67,6 +68,13 @@ export default {
       type: Boolean,
       default: true,
     },
+    /**
+     * Router link destination - can be string, object, or route location
+     */
+    to: {
+      type: [String, Object],
+      default: null,
+    },
   },
   emits: ['click', 'copy'],
   data() {
@@ -75,6 +83,15 @@ export default {
     }
   },
   computed: {
+    componentType() {
+      if (this.to) {
+        return 'router-link'
+      }
+      return this.clickable ? 'button' : 'div'
+    },
+    routerTo() {
+      return this.to || undefined
+    },
     valueToCopy() {
       return this.copyValue || this.displayValue
     },
@@ -83,8 +100,17 @@ export default {
         'text-truncate': true,
         'pe-4': this.isHovered,
         'position-relative': true,
+        'w-100': true,
       }
-      if (this.clickable) {
+      if (this.to) {
+        // Router link styling
+        return {
+          ...baseClasses,
+          'text-info': true,
+          'd-block': true,
+        }
+      } else if (this.clickable) {
+        // Button styling
         return {
           ...baseClasses,
           btn: true,
@@ -92,18 +118,21 @@ export default {
           'p-0': true,
           'text-info': true,
           'text-start': true,
+          'd-block': true,
         }
       } else {
+        // Non-clickable div styling
         return {
           ...baseClasses,
-          'w-100': true,
         }
       }
     },
   },
   methods: {
     handleClick() {
-      if (this.clickable) {
+      // For router links, the navigation is handled automatically by Vue Router
+      // Only emit click event for buttons or non-router links
+      if (!this.to && this.clickable) {
         this.$emit('click')
       }
     },
