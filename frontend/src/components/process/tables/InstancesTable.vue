@@ -32,11 +32,11 @@
       <span :title="$t('process.instanceIncidents')" v-if="table.item.incidents.length > 0" class="mdi mdi-18px mdi-alert-outline text-warning"></span>
     </template>
     <template v-slot:cell(id)="table">
-      <div :title="table.item.id" class="text-truncate w-100" :class="focusedCell === table.item.id ? 'pe-4': ''" @mouseenter="focusedCell = table.item.id" @mouseleave="focusedCell = null">
-        {{ table.item.id }}
-        <span v-if="table.item.id && focusedCell === table.item.id" @click.stop="copyValueToClipboard(table.item.id)"
-          class="mdi mdi-18px mdi-content-copy px-2 position-absolute end-0 text-secondary lh-sm"></span>
-      </div>
+      <CopyableActionButton
+        :displayValue="table.item.id"
+        :title="$t('process.showInstance') + ':\n' + table.item.id"
+        :to="`/seven/auth/process/${table.item.processDefinitionKey}/${table.item.processDefinitionVersion}/${table.item.id}`"
+      ></CopyableActionButton>
     </template>
     <template v-slot:cell(businessKey)="table">
       <div :title="table.item.businessKey" class="text-truncate w-100" :class="focusedCell === table.item.businessKey ? 'pe-4': ''" @mouseenter="focusedCell = table.item.businessKey" @mouseleave="focusedCell = null">
@@ -80,6 +80,7 @@
 import { ProcessService, HistoryService } from '@/services.js'
 import { permissionsMixin } from '@/permissions.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
+import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
 import { formatDate } from '@/utils/dates.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
@@ -88,7 +89,7 @@ import { BWaitingBox } from 'cib-common-components'
 
 export default {
   name: 'InstancesTable',
-  components: { FlowTable, SuccessAlert, ConfirmActionOnProcessInstanceModal, BWaitingBox },
+  components: { FlowTable, SuccessAlert, ConfirmActionOnProcessInstanceModal, BWaitingBox, CopyableActionButton },
   emits: ['instance-deleted'],
   mixins: [copyToClipboardMixin, permissionsMixin],
   props: { instances: Array, sortDesc: Boolean, sortByDefaultKey: String, loading: Boolean, sorting: Boolean },
