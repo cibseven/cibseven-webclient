@@ -14,6 +14,4 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-export default {
-  servicesBasePath: 'services/v1' // set via properties fetched from backend.
-}
+export default {}

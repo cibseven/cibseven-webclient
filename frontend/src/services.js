@@ -374,7 +374,7 @@ var AuthService = {
 
 var InfoService = {
   getProperties: function() {
-    return axios.get(appConfig.servicesBasePath + '/info/properties')
+    return axios.get('info/properties')
   },
   getVersion: function() {
     return axios.get(appConfig.servicesBasePath + '/info')
