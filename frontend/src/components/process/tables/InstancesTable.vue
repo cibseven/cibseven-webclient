@@ -37,14 +37,14 @@
         :title="$t('process.showInstance') + ':\n' + table.item.id"
         :to="`/seven/auth/process/${table.item.processDefinitionKey}/${table.item.processDefinitionVersion}/${table.item.id}`"
         @copy="copyValueToClipboard"
-      ></CopyableActionButton>
+      />
     </template>
     <template v-slot:cell(businessKey)="table">
-      <div :title="table.item.businessKey" class="text-truncate w-100" :class="focusedCell === table.item.businessKey ? 'pe-4': ''" @mouseenter="focusedCell = table.item.businessKey" @mouseleave="focusedCell = null">
-        {{ table.item.businessKey }}
-        <span v-if="table.item.businessKey && focusedCell === table.item.businessKey" @click.stop="copyValueToClipboard(table.item.businessKey)"
-          class="mdi mdi-18px mdi-content-copy px-2 float-end text-secondary lh-sm" style="right: 4px; top: 4px;"></span>
-      </div>
+      <CopyableActionButton
+        :display-value="table.item.businessKey"
+        :clickable="false"
+        @copy="copyValueToClipboard"
+      />
     </template>
     <template v-slot:cell(startTime)="table">
       <span :title="formatDate(table.item.startTime)" class="text-truncate d-block">{{ formatDate(table.item.startTime) }}</span>
@@ -94,11 +94,6 @@ export default {
   emits: ['instance-deleted'],
   mixins: [copyToClipboardMixin, permissionsMixin],
   props: { instances: Array, sortDesc: Boolean, sortByDefaultKey: String, loading: Boolean, sorting: Boolean },
-  data: function() {
-    return {
-      focusedCell: null
-    }
-  },
   methods: {
     formatDate,
     selectInstance: function(instance) {
