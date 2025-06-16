@@ -72,6 +72,19 @@ public class HistoryProcessService extends BaseService {
 	}
 	
 	@Operation(
+	    summary = "Count historic process instances that fulfill the given parameters",
+	    description = "Returns the total number of matching historic process instances"
+	)
+	@ApiResponse(responseCode = "400", description = "There is at least one invalid parameter value")
+	@RequestMapping(value = "/process-history/instance/count", method = RequestMethod.POST)
+	public Long countProcessesInstancesHistory(
+	        @Parameter(description = "Parameters to filter query") @RequestBody Map<String, Object> filters,
+	        CIBUser user) {
+	    checkPermission(user, SevenResourceType.HISTORIC_PROCESS_INSTANCE, PermissionConstants.READ_ALL);
+	    return bpmProvider.countProcessesInstancesHistory(filters, user);
+	}	
+	
+	@Operation(
 			summary = "Get processes instances with a specific process key (in the history)",
 			description = "Parameters firstResult and maxResults are used for pagination")
 	@ApiResponse(responseCode = "404", description = "Process not found")
