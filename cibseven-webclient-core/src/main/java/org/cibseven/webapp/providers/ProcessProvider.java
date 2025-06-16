@@ -333,6 +333,12 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 			
 		return processes;
 	}
+
+	@Override
+	public Long countProcessesInstancesHistory(Map<String, Object> filters, CIBUser user) {
+		String url = getEngineRestUrl() + "/history/process-instance/count";
+		return ((ResponseEntity<JsonNode>) doPost(url, filters, JsonNode.class, user)).getBody().get("count").asLong();
+	}
 	
 	@Override
 	public ProcessInstance findProcessInstance(String processInstanceId, CIBUser user) {

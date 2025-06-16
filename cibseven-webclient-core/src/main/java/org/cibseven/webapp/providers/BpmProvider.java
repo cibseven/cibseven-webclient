@@ -851,6 +851,8 @@ public interface BpmProvider {
      */
 	Collection<HistoryProcessInstance> findProcessesInstancesHistoryById(String id, Optional<String> activityId, Optional<Boolean> active, Integer firstResult, Integer maxResults, String text, CIBUser user) throws SystemException;
 	
+	Long countProcessesInstancesHistory(Map<String, Object> filters, CIBUser user);	
+	
 	/**
 	 * Get user by id.
 	 * 

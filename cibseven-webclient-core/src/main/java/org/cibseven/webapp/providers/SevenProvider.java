@@ -334,7 +334,12 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	public Collection<HistoryProcessInstance> findProcessesInstancesHistoryById(String id, Optional<String> activityId, Optional<Boolean> active, 
 			Integer firstResult, Integer maxResults, String text, CIBUser user) {
 		return processProvider.findProcessesInstancesHistoryById(id, activityId, active, firstResult, maxResults, text, user);
-	}	
+	}
+	
+	@Override
+	public Long countProcessesInstancesHistory(Map<String, Object> filters, CIBUser user) {
+		return processProvider.countProcessesInstancesHistory(filters, user);
+	}
 	
 	@Override
 	public ProcessInstance findProcessInstance(String processInstanceId, CIBUser user) {
@@ -1129,6 +1134,6 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	@Override
 	public void deleteGroupFromTenant(String tenantId, String groupId, CIBUser user) {
 		tenantProvider.deleteGroupFromTenant(tenantId, groupId, user);
-	}
+	}	
 
 }
