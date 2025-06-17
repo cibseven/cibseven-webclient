@@ -184,7 +184,7 @@ export default {
       if (item.type === 'File') return true
       else return this.isFileValueDataSource(item)
     },
-    modifyVariable: async function(variable) {
+    modifyVariable(variable) {
       this.selectedVariable = variable
       this.variableToModify = JSON.parse(JSON.stringify(variable))
       this.getVariableInstance({ id: variable.id, deserializeValue: false })
