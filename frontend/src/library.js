@@ -18,7 +18,6 @@
 import './assets/main.css';
 
 import { axios, moment } from '@/globals.js'
-import appConfig from '@/appConfig.js'
 import { permissionsMixin } from '@/permissions.js'
 import registerOwnComponents from './register.js'
 import processesVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
@@ -132,7 +131,7 @@ import SystemDiagnostics from '@/components/system/SystemDiagnostics.vue'
 import ExecutionMetrics from '@/components/system/ExecutionMetrics.vue'
 import ShortcutsModal from '@/components/modals/ShortcutsModal.vue'
 import ShortcutsTable from '@/components/modals/ShortcutsTable.vue'
-import { TaskService, HistoryService, ProcessService } from '@/services.js';
+import { TaskService, HistoryService, ProcessService, getServicesBasePath, setServicesBasePath } from '@/services.js';
 import DeployedForm from '@/components/forms/DeployedForm.vue'
 import StartDeployedForm from '@/components/forms/StartDeployedForm.vue'
 import DecisionDefinitionDetails from '@/components/decision/DecisionDefinitionDetails.vue'
@@ -337,6 +336,8 @@ export {
   TaskService,
   HistoryService,
   ProcessService,
+  getServicesBasePath,
+  setServicesBasePath,
   HumanTasksView,
   DecisionView,
   DecisionList,
