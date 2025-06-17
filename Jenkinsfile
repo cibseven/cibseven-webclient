@@ -235,11 +235,26 @@ pipeline {
                 script {
                     withCredentials([file(credentialsId: 'credential-cibseven-artifacts-npmrc', variable: 'NPMRC_FILE')]) {
                         withMaven() {
+                            def baseVersion = mavenProjectInformation.version.replace("-SNAPSHOT", "")
+                            def dynamicVersion = mavenProjectInformation.version.contains('-SNAPSHOT') ?
+                                "${baseVersion}-${BUILD_NUMBER}-SNAPSHOT" : mavenProjectInformation.version
+
                             sh """
-                                # Copy the .npmrc file to the frontend directory
+                                echo "Copy the .npmrc file to the frontend directory..."
                                 cp ${NPMRC_FILE} ./bpm-sdk/.npmrc
-                                # Run Maven with the required profile
-                                mvn -T4 -Dbuild.number=${BUILD_NUMBER} clean generate-resources -Drelease-npm-library=bpm-sdk -Dskip.npm.version.update=true
+
+                                echo "Setting dynamic version to ${dynamicVersion}..."
+                                sed -i 's/__CI_VERSION__/${dynamicVersion}/' bpm-sdk/package.json
+
+                                echo "Final package.json version:"
+                                grep '"version"' bpm-sdk/package.json
+
+                                echo "Running Maven to release the npm package..."
+                                mvn -T4 \
+                                    -Dbuild.number=${BUILD_NUMBER} \
+                                    -Drelease-npm-library=bpm-sdk \
+                                    -Dskip.npm.version.update=true \
+                                    clean generate-resources
                             """
                         }
                     }
