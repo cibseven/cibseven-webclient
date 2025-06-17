@@ -5,13 +5,23 @@
   "main": "dist/bpm-sdk.umd.js",
   "module": "dist/bpm-sdk.es.js",
   "type": "module",
+  "license": "Apache-2.0",
+  "files": [
+    "dist/bpm-sdk.es.js",
+    "dist/bpm-sdk.umd.js"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/bpm-sdk.es.js",
+      "require": "./dist/bpm-sdk.umd.js"
+    }
+  },
   "scripts": {
     "build": "vite build",
+    "build:library": "cross-env BUILD_MODE=library vite build",
     "dev": "vite",
     "test": "vitest run"
   },
-  "author": "",
-  "license": "MIT",
   "dependencies": {
     "fast-xml-parser": "^5.2.5",
     "jquery": "^3.7.1",
@@ -20,6 +30,10 @@
   },
   "devDependencies": {
     "vite": "^5.0.0",
-    "vitest": "^3.2.3"
+    "vitest": "^3.2.3",
+    "cross-env": "^7.0.3"
+  },
+  "publishConfig": {
+    "registry": "https://artifacts.cibseven.org/repository/npm-hosted/"
   }
 }
