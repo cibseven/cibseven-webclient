@@ -117,8 +117,7 @@
 </template>
 
 <script>
-import appConfig from '@/appConfig.js'
-import { ProcessService } from '@/services.js'
+import { ProcessService, getServicesBasePath } from '@/services.js'
 import { permissionsMixin } from '@/permissions.js'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
 import InstancesTable from '@/components/process/tables/InstancesTable.vue'
@@ -232,7 +231,7 @@ export default {
     },
     downloadBpmn: function() {
       var filename = this.process.resource.substr(this.process.resource.lastIndexOf('/') + 1, this.process.resource.lenght)
-      window.location.href = appConfig.servicesBasePath + '/process/' + this.process.id + '/data?filename=' + filename +
+      window.location.href = getServicesBasePath() + '/process/' + this.process.id + '/data?filename=' + filename +
         '&token=' + this.$root.user.authToken
     },
     refreshDiagram: function() {
