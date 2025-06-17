@@ -197,9 +197,14 @@
 		"upload": "Загрузить файл",
 		"selectFile": "Выбрать файл",
 		"calledProcessDefinitions": {
+			"calledProcessDefinition": "Вызываемое определение процесса",
 			"process": "Процесс",
 			"version": "Версия",
-			"activities": "Вызывающие мероприятия"
+			"activities": "Вызывающие действия",
+			"activity": "Действие",
+			"state": "Состояние",
+			"referenced": "Ссылается",
+			"runningAndReferenced": "Запущен и ссылается"
 		},
 		"details": {
 			"startUser": "Начальный пользователь",

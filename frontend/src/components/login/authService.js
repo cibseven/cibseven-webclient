@@ -14,12 +14,12 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import appConfig from '@/appConfig.js'
+import { getServicesBasePath } from '@/services.js'
 import { axios } from '@/globals.js'
 
 export default {
     login: function(params, remember) {
-        return axios.create().post(appConfig.servicesBasePath + '/auth/login', params, { params: { source: 'WEBSITE' } }).then(function(user) {
+        return axios.create().post(getServicesBasePath() + '/auth/login', params, { params: { source: 'WEBSITE' } }).then(function(user) {
             axios.defaults.headers.common.authorization = user.data.authToken
             ;(remember ? localStorage : sessionStorage).setItem('token', user.data.authToken)
             return user.data
@@ -27,7 +27,7 @@ export default {
     },
 
        update: function(params) {
-        return axios.patch(appConfig.servicesBasePath + '/auth/user', params, { params: { source: 'WEBSITE' } }).then(function(user) {
+        return axios.patch(getServicesBasePath() + '/auth/user', params, { params: { source: 'WEBSITE' } }).then(function(user) {
             axios.defaults.headers.common.authorization = user.authToken
             if (sessionStorage.getItem('token') || !localStorage.getItem('token')) sessionStorage.setItem('token', user.authToken)
             else localStorage.setItem('token', user.authToken)
@@ -35,12 +35,12 @@ export default {
         })
     },
 
-    'delete': function(id) { return axios['delete'](appConfig.servicesBasePath + '/auth/user/' + id + '?source=WEBSITE') },
+    'delete': function(id) { return axios['delete'](getServicesBasePath() + '/auth/user/' + id + '?source=WEBSITE') },
 
     requestPasswordReset: function(params) {
         params.source = 'WEBSITE'
-        return axios.create().post(appConfig.servicesBasePath + '/auth/reset', null, { params: params })
+        return axios.create().post(getServicesBasePath() + '/auth/reset', null, { params: params })
     },
 
-    poll4otp: function(userId) { return axios.get(appConfig.servicesBasePath + '/auth/otp/' + userId + '?source=WEBSITE') },
+    poll4otp: function(userId) { return axios.get(getServicesBasePath() + '/auth/otp/' + userId + '?source=WEBSITE') },
 }

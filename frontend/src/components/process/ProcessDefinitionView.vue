@@ -347,51 +347,16 @@ export default {
     },
     loadCalledProcesses: function() {
       this.calledProcesses = []
-      HistoryService.findActivitiesInstancesHistoryWithFilter({'processDefinitionId': this.process.id, 'activityType': 'callActivity'}).then(response =>{
-      const activityList = response
-      const instancesIdList = [...activityList.reduce((set, activity) => {
-        set.add(activity.calledProcessInstanceId)
-        return set
-      }, new Set())]
-      if (instancesIdList.length > 0) {
-        HistoryService.findProcessesInstancesHistory({"processInstanceIds": instancesIdList}, this.firstResult, this.maxResults).then(response => {
-          response.forEach(instance => {
-            activityList.forEach(activity => {
-              if (instance.id === activity.calledProcessInstanceId) {
-                let foundMatch = this.calledProcesses.find(item => {
-                  return (item.instance.processDefinitionId === instance.processDefinitionId)
-                })
-                if (foundMatch) {
-                  if (!foundMatch.activities.some(act => act.activityId === activity.activityId)) {
-                    foundMatch.activities.push(activity)
-                  }
-                } else {
-                  let key = instance.processDefinitionId.match(/^[^:]+/).at(0)
-                  let foundProcess = this.$store.state.process.list.find(processSPL => {
-                    if (key === processSPL.key) {
-                      return processSPL
-                    }
-                  })
-                  this.calledProcesses.push({instance: instance, activities: [activity], key: key, version: instance.processDefinitionId.match(/(?!:)\d(?=:)/).at(0), process: foundProcess })
-                }
-              }
-            })
+      ProcessService.findCalledProcessDefinitions(this.process.id).then(response => {
+        this.calledProcesses = response
+        this.calledProcesses.forEach(process => {
+          ProcessService.findCurrentProcessesInstances({
+            processDefinitionId: process.id
+          }).then(instances => {
+            process.currentInstances = instances
           })
         })
-        this.loading = false
-      } 
-      else{
-        ProcessService.findCalledProcessDefinitions(this.process.id).then(response => {
-          this.loading = false
-          const calledProcessList = response
-          calledProcessList.forEach(process => {
-            process.calledFromActivityIds.forEach(activityId => {
-              this.calledProcesses.push({process: process, activities: [{activityName: activityId}], version: process.version, key: process.key})
-            })
-          })
-        })
-      }
-    })
+      })
     },
     onInstanceDeleted: function() {
       this.setSelectedInstance({ selectedInstance: null })

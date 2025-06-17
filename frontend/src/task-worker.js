@@ -17,7 +17,7 @@
 /* jshint worker: true */
 
 import moment from './globals.js'
-import appConfig from './appConfig.js'
+import { getServicesBasePath } from './services.js'
 
 var authToken = ''
 var createdAfter = ''
@@ -27,7 +27,7 @@ var userId = ''
 var Services = {
 	findTasksPost: function(body) {
 		'use strict';
-		const url = appConfig.servicesBasePath + '/task'
+		const url = getServicesBasePath() + '/task'
 		return fetch(url, {
       method: 'POST',
       headers: {

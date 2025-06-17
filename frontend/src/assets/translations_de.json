@@ -197,9 +197,14 @@
 		"upload": "Datei hochladen",
 		"selectFile": "Datei aussuchen",
 		"calledProcessDefinitions": {
+			"calledProcessDefinition": "Aufgerufene Prozessdefinition",
 			"process": "Prozess",
-			"version":	"Version",
-			"activities": "Aufrufende Aktivitäten"
+			"version": "Version",
+			"activities": "Aufrufende Aktivitäten",
+			"activity": "Aktivität",
+			"state": "Status",
+			"referenced": "Referenziert",
+			"runningAndReferenced": "Laufend und referenziert"
 		},
 		"details": {
 			"startUser": "Startnutzer",
