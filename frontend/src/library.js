@@ -246,7 +246,6 @@ export {
   SystemSidebarItems,
   axios,
   moment,
-  appConfig,
   permissionsMixin,
   registerOwnComponents,
   store,
