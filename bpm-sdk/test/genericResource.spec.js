@@ -1,4 +1,3 @@
-// Adapted from legacy camunda-bpm-sdk-js/test/client/genericResourceSpec.js for ES modules and Vitest
 import { describe, it, expect } from 'vitest';
 import AbstractClientResource from '../api-client/abstract-client-resource.js';
 

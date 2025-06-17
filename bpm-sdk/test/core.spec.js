@@ -1,5 +1,3 @@
-// Adapted from legacy camunda-bpm-sdk-js/test/client/coreSpec.js
-// Updated for ES module imports and modern test runner (e.g. Vitest)
 import { describe, it, expect, beforeEach } from 'vitest';
 import CamSDK from '../index-browser.js';
 

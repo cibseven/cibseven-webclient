@@ -1,4 +1,3 @@
-// Adapted from legacy camunda-bpm-sdk-js/test/client/eventsSpec.js for ES modules and Vitest
 import { describe, it, expect, beforeEach } from 'vitest';
 import Events from '../events.js';
 

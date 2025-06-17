@@ -1,4 +1,3 @@
-// Adapted from legacy camunda-bpm-sdk-js/test/client/typeUtilSpec.js for ES modules and Vitest
 import { describe, it, expect } from 'vitest';
 import typeUtil from '../forms/type-util.js';
 const { convertToType, isType, dateToString } = typeUtil;

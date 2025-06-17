@@ -28,8 +28,7 @@ export default mergeConfig(
       coverage: {
         provider: 'istanbul',
         reporter: ['text', 'lcov', 'cobertura'], // 'text', 'html', 'lcov', 'cobertura'
-        reportsDirectory: './coverage',
-        exclude: ['**/camunda-bpm-sdk.min.js'], // Exclude minified JS file from coverage report
+        reportsDirectory: './coverage'/ Exclude minified JS file from coverage report
       },
     },
   }),

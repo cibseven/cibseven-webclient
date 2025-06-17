@@ -5,8 +5,8 @@ export default defineConfig({
   build: {
     lib: {
       entry: path.resolve(__dirname, 'index.js'),
-      name: 'CamundaBpmSdk',
-      fileName: (format) => `camunda-bpm-sdk.${format}.js`,
+      name: 'BpmSdk',
+      fileName: (format) => `bpm-sdk.${format}.js`,
     },
     outDir: 'dist',
     emptyOutDir: true,

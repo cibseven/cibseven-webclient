@@ -43,6 +43,11 @@ pipeline {
             description: 'Build and deploy cib-common-components to artifacts.cibseven.org'
         )
         booleanParam(
+            name: 'RELEASE_BPM_SDK',
+            defaultValue: false,
+            description: 'Build and deploy bpm-sdk to artifacts.cibseven.org'
+        )
+        booleanParam(
             name: 'RELEASE_CIBSEVEN_COMPONENTS',
             defaultValue: false,
             description: 'Build and deploy cibseven-components to artifacts.cibseven.org'
@@ -213,6 +218,28 @@ pipeline {
                                 cp ${NPMRC_FILE} ./cib-common-components/.npmrc
                                 # Run Maven with the required profile
                                 mvn -T4 -Dbuild.number=${BUILD_NUMBER} clean generate-resources -Drelease-npm-library=cib-common-components -Dskip.npm.version.update=true
+                            """
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Release bpm-sdk') {
+            when {
+                allOf {
+                    expression { params.RELEASE_BPM_SDK }
+                }
+            }
+            steps {
+                script {
+                    withCredentials([file(credentialsId: 'credential-cibseven-artifacts-npmrc', variable: 'NPMRC_FILE')]) {
+                        withMaven() {
+                            sh """
+                                # Copy the .npmrc file to the frontend directory
+                                cp ${NPMRC_FILE} ./bpm-sdk/.npmrc
+                                # Run Maven with the required profile
+                                mvn -T4 -Dbuild.number=${BUILD_NUMBER} clean generate-resources -Drelease-npm-library=bpm-sdk -Dskip.npm.version.update=true
                             """
                         }
                     }

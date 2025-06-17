@@ -1,9 +1,9 @@
 {
-  "name": "camunda-bpm-sdk",
+  "name": "bpm-sdk",
   "version": "2.1.0",
   "description": "Camunda BPM SDK extracted as a standalone library.",
-  "main": "dist/camunda-bpm-sdk.umd.js",
-  "module": "dist/camunda-bpm-sdk.es.js",
+  "main": "dist/bpm-sdk.umd.js",
+  "module": "dist/bpm-sdk.es.js",
   "type": "module",
   "scripts": {
     "build": "vite build",

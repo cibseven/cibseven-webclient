@@ -1,7 +1,7 @@
 import { InfoService } from "@/services";
 import { switchLanguage, i18n } from "@/i18n";
 import { getTheme } from "@/utils/init";
-import CamSDK from "camunda-bpm-sdk";
+import CamSDK from "bpm-sdk";
 
 InfoService.getProperties().then(response => {
     const config = response.data;
