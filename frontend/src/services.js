@@ -222,7 +222,7 @@ var ProcessService = {
 
 var VariableInstanceService = {
   getVariableInstance: function(id, deserializeValue) {
-    let url = `${appConfig.servicesBasePath}/variable-instance/${id}`
+    let url = `${getServicesBasePath()}/variable-instance/${id}`
     if (deserializeValue !== null && deserializeValue !== undefined) {
       url += `?deserializeValue=${deserializeValue}`
     }
