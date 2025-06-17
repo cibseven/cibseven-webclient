@@ -36,12 +36,12 @@ import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.rest.model.Authorizations;
 
 public class BaseService {
-	
+
 	@Autowired
 	protected BpmProvider bpmProvider;
 	@Autowired
 	protected BaseUserProvider baseUserProvider;
-	
+
 	protected CIBUser checkAuthorization(HttpServletRequest rq, boolean basicAuthAllowed) {
 		CIBUser user = null;
 		String authorization = rq.getHeader("Authorization");
@@ -62,24 +62,22 @@ public class BaseService {
 		}
 		return user;
 	}
-	
+
 	public void checkSpecificProcessRights(CIBUser user, String processKey) {
 		Authorizations authorizations = bpmProvider.getUserAuthorization(user.getId(), user);
-		if (!SevenAuthorizationUtils.hasSpecificProcessRights(authorizations, processKey))
-			throw new AccessDeniedException("You are not authorized to do this");
+		// hasSpecificProcessRights now throws detailed AccessDeniedException when permission check fails
+		SevenAuthorizationUtils.hasSpecificProcessRights(authorizations, processKey);
 	}
-	
+
 	public void checkCockpitRights(CIBUser user) {
 		Authorizations authorizations = bpmProvider.getUserAuthorization(user.getId(), user);
-		if (!SevenAuthorizationUtils.hasCockpitRights(authorizations)) {
-			throw new AccessDeniedException("You are not authorized to do this");
-		}
+		// hasCockpitRights now throws detailed AccessDeniedException when permission check fails
+		SevenAuthorizationUtils.hasCockpitRights(authorizations);
 	}
-	
+
 	public void checkPermission(CIBUser user, SevenResourceType type, List<String> permissions) {
 		Authorizations authorizations = bpmProvider.getUserAuthorization(user.getId(), user);
-		if (!SevenAuthorizationUtils.checkPermission(authorizations, type, permissions)) {
-			throw new AccessDeniedException("You are not authorized to do this");
-		}
-	}	
+		// SevenAuthorizationUtils.checkPermission now throws detailed AccessDeniedException when permission check fails
+		SevenAuthorizationUtils.checkPermission(authorizations, type, permissions);
+	}
 }
