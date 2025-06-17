@@ -197,9 +197,14 @@
 		"upload": "Завантажити файл",
 		"selectFile": "Вибрати файл",
 		"calledProcessDefinitions": {
-			"process": "процес",
-			"version": "версія",
-			"activities": "Викликаючі дії"
+			"calledProcessDefinition": "Викликане визначення процесу",
+			"process": "Процес",
+			"version": "Версія",
+			"activities": "Дії, що викликають",
+			"activity": "Дія",
+			"state": "Стан",
+			"referenced": "Посилається",
+			"runningAndReferenced": "Запущено i посилається"
 		},
 		"details": {
 			"startUser": "Користувач, що запустив",
