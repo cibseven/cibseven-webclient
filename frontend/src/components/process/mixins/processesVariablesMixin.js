@@ -42,7 +42,7 @@ export default {
 				this.loadSelectedInstanceVariables()
 			}
 		},
-        activityInstancesGrouped: 'loadSelectedInstanceVariables'
+		activityInstancesGrouped: 'loadSelectedInstanceVariables'
 	},
 	computed: {
 		activityInstancesGrouped: function () {

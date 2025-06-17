@@ -66,6 +66,7 @@ import org.cibseven.webapp.rest.model.User;
 import org.cibseven.webapp.rest.model.UserGroup;
 import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
+import org.cibseven.webapp.rest.model.VariableInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -82,6 +83,7 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
     @Autowired private IDeploymentProvider deploymentProvider;
     @Autowired private IVariableProvider variableProvider;
+    @Autowired private IVariableInstanceProvider variableInstanceProvider;
     @Autowired private ITaskProvider taskProvider;
     @Autowired private IProcessProvider processProvider;
     @Autowired private IActivityProvider activityProvider;
@@ -1110,7 +1112,6 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	public void udpateTenant(Tenant tenant, CIBUser user) {
 		tenantProvider.udpateTenant(tenant, user);
 	}
-
 	@Override
 	public void deleteTenant(String tenantId, CIBUser user) {
 		tenantProvider.deleteTenant(tenantId, user);
@@ -1130,10 +1131,25 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	public void addGroupToTenant(String tenantId, String groupId, CIBUser user) {
 		tenantProvider.addGroupToTenant(tenantId, groupId, user);
 	}
-
+	
 	@Override
 	public void deleteGroupFromTenant(String tenantId, String groupId, CIBUser user) {
 		tenantProvider.deleteGroupFromTenant(tenantId, groupId, user);
-	}	
+	}
+
+	/*
+		
+  ██    ██  █████  ██████  ██  █████  ██████  ██      ███████     ██ ███    ██ ███████ ████████  █████  ███    ██  ██████ ███████     ██████  ██████   ██████  ██    ██ ██ ██████  ███████ ██████  
+  ██    ██ ██   ██ ██   ██ ██ ██   ██ ██   ██ ██      ██          ██ ████   ██ ██         ██    ██   ██ ████   ██ ██      ██          ██   ██ ██   ██ ██    ██ ██    ██ ██ ██   ██ ██      ██   ██ 
+  ██    ██ ███████ ██████  ██ ███████ ██████  ██      █████       ██ ██ ██  ██ ███████    ██    ███████ ██ ██  ██ ██      █████       ██████  ██████  ██    ██ ██    ██ ██ ██   ██ █████   ██████  
+   ██  ██  ██   ██ ██   ██ ██ ██   ██ ██   ██ ██      ██          ██ ██  ██ ██      ██    ██    ██   ██ ██  ██ ██ ██      ██          ██      ██   ██ ██    ██  ██  ██  ██ ██   ██ ██      ██   ██ 
+    ████   ██   ██ ██   ██ ██ ██   ██ ██████  ███████ ███████     ██ ██   ████ ███████    ██    ██   ██ ██   ████  ██████ ███████     ██      ██   ██  ██████    ████   ██ ██████  ███████ ██   ██ 
+                                                                                                                                                                                                 
+	*/
+
+	@Override
+	public VariableInstance getVariableInstance(String id, Boolean deserializeValue, CIBUser user) throws SystemException, NoObjectFoundException {
+		return variableInstanceProvider.getVariableInstance(id, deserializeValue, user);
+	}
 
 }

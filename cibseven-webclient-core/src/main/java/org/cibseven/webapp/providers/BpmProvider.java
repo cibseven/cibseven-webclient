@@ -67,6 +67,7 @@ import org.cibseven.webapp.rest.model.User;
 import org.cibseven.webapp.rest.model.UserGroup;
 import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
+import org.cibseven.webapp.rest.model.VariableInstance;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.multipart.MultipartFile;
@@ -1087,5 +1088,17 @@ public interface BpmProvider {
 	void deleteMemberFromTenant(String tenantId, String userId, CIBUser user);
 	void addGroupToTenant(String tenantId, String groupId, CIBUser user);
 	void deleteGroupFromTenant(String tenantId, String groupId, CIBUser user);
+
+	// Variable Instance method
+	/**
+	 * Retrieves a variable instance by its ID.
+	 * @param id The ID of the variable instance
+	 * @param deserializeValue Whether to deserialize the variable value or not
+	 * @param user the user performing the search
+	 * @return Variable instance details
+	 * @throws SystemException in case of an error
+	 * @throws NoObjectFoundException when the variable instance could not be found
+	 */
+	VariableInstance getVariableInstance(String id, Boolean deserializeValue, CIBUser user) throws SystemException, NoObjectFoundException;
 
 }

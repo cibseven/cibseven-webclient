@@ -231,7 +231,8 @@
 			"scope": "Umfang",
 			"objectTypeName": "Objekttypname",
 			"serializationDataFormat": "Serialisierungsdatenformat",
-			"confirmDelete": "Wollen Sie die Variable löschen?"
+			"confirmDelete": "Wollen Sie die Variable löschen?",
+			"enterValue": "Wert eingeben"
 		},
 		"incidents": {
 		    "message": "Nachricht",

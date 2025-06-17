@@ -27,6 +27,7 @@ import ActivityStore from './ActivityStore.js'
 import BatchStore from './BatchStore.js'
 import TenantStore from './TenantStore.js'
 import JobStore from './JobStore.js'
+import VariableInstanceStore from './VariableInstanceStore.js'
 
 export const modules = {
   process: ProcessStore,
@@ -38,7 +39,8 @@ export const modules = {
   activity: ActivityStore,
   batch: BatchStore,
   tenant: TenantStore,
-  job: JobStore
+  job: JobStore,
+  variableInstance: VariableInstanceStore
 }
 
 const store = createStore({
