@@ -20,11 +20,11 @@
   <div class="overflow-auto bg-white container-fluid g-0">
     <FlowTable v-if="calledProcesses.length > 0" resizable striped thead-class="sticky-header" :items="calledProcesses" primary-key="id" prefix="process-instance.calledProcessDefinitions."
       sort-by="label" :sort-desc="true" :fields="[
-      { label: 'process', key: 'process', class: 'col-2', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' },
-      { label: 'version', key: 'version', class: 'col-4', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' },
-      { label: 'activities', key: 'activities', class: 'col-6', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' }
-]">
-      <template v-slot:cell(process)="table">
+        { label: 'calledProcessDefinition', key: 'name', class: 'col-4', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' },
+        { label: 'state', key: 'state', class: 'col-4', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' },
+        { label: 'activity', key: 'activity', class: 'col-4', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' }
+      ]">
+      <template v-slot:cell(name)="table">
         <router-link
           :to="{
             name: 'process', 
@@ -35,29 +35,20 @@
           }"
           :title="table.item.name"
           class="text-truncate"
-      >
-      {{ table.item.process.name }}
-</router-link>
+        >
+          {{ table.item.name }}
+        </router-link>
       </template>
-      <template v-slot:cell(version)="table">
-        <router-link
-          :to="{
-            name: 'process', 
-            params: {
-              processKey: table.item.key,
-              versionIndex: table.item.version
-            }
-          }"
-          :title="table.item.name"
-          class="text-truncate"
-      >
-      {{ table.item.process.name }}
-      </router-link>
+      <template v-slot:cell(state)="table">
+        <span :title="getCalledProcessState(table.item)" class="text-truncate">
+          {{ getCalledProcessState(table.item) }}
+        </span>
       </template>
-      <template v-slot:cell(activities)="table">
-        <div class="d-flex flex-column">
-        <span v-for="(act, index) in table.item.activities" :key="index" :title="act.activityName" class="d-block">{{ act.activityName }}</span>
-      </div>
+      <template v-slot:cell(activity)="table">
+        <button class="btn btn-link text-truncate p-0" :title="table.item.calledFromActivityIds[0]" 
+          @click="setHighlightedElement(table.item.calledFromActivityIds[0])">
+          {{ $store.state.activity.processActivities[table.item.calledFromActivityIds[0]] }}
+      </button>
       </template>
     </FlowTable>
     <div v-else>
@@ -67,17 +58,23 @@
 </template>
 
 <script>
-import processesVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
+import { mapActions } from 'vuex'
 
 export default {
   name: 'CalledProcessDefinitionsTable',
-  components: {FlowTable},
-  mixins: [processesVariablesMixin],
-  props: { 
-    process: Object,
-    instances: Array,
+  components: { FlowTable },
+  props: {
     calledProcesses: Array
-  }
+  },
+  methods: {
+    ...mapActions(['setHighlightedElement']),
+    getCalledProcessState(item) {
+      const instances = item.currentInstances || []
+      return instances.length > 0 
+        ? this.$t('process-instance.calledProcessDefinitions.runningAndReferenced')
+        : this.$t('process-instance.calledProcessDefinitions.referenced')
+    }
+  },
 }
 </script>
