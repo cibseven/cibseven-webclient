@@ -220,6 +220,16 @@ var ProcessService = {
   }
 }
 
+var VariableInstanceService = {
+  getVariableInstance: function(id, deserializeValue) {
+    let url = `${getServicesBasePath()}/variable-instance/${id}`
+    if (deserializeValue !== null && deserializeValue !== undefined) {
+      url += `?deserializeValue=${deserializeValue}`
+    }
+    return axios.get(url)
+  }
+}
+
 var AdminService = {
   findUsers: function(filter) {
     // id, firstName, firstNameLike, lastName, lastNameLike, email, emailLike, memberOfGroup, memberOfTenant, idIn, firstResult, maxResults
@@ -282,7 +292,7 @@ var HistoryService = {
         firstResult: firstResult,
         maxResults: maxResults
       }
-  })
+    })
   },
   
   findProcessesInstancesHistoryById: function(id, activityId, firstResult, maxResults, text, active) {
@@ -615,6 +625,6 @@ var TenantService = {
   }
 }
 
-export { TaskService, FilterService, ProcessService, AdminService, JobService, JobDefinitionService, SystemService,
+export { TaskService, FilterService, ProcessService, VariableInstanceService, AdminService, JobService, JobDefinitionService, SystemService,
   HistoryService, IncidentService, AuthService, InfoService, FormsService, TemplateService, DecisionService, 
   AnalyticsService, BatchService, TenantService, getServicesBasePath, setServicesBasePath }

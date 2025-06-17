@@ -236,7 +236,8 @@
 			"scope": "Ámbito",
 			"objectTypeName": "Nombre del tipo de objeto",
 			"serializationDataFormat": "Formato de datos de serialización",
-			"confirmDelete": "¿Desea eliminar la variable?"
+			"confirmDelete": "¿Desea eliminar la variable?",
+			"enterValue": "Introducir valor"
 		},
 		"incidents": {
 		    "message": "Mensaje",
