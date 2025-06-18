@@ -28,7 +28,7 @@ export default mergeConfig(
       coverage: {
         provider: 'istanbul',
         reporter: ['text', 'lcov', 'cobertura'], // 'text', 'html', 'lcov', 'cobertura'
-        reportsDirectory: './coverage'/ Exclude minified JS file from coverage report
+        reportsDirectory: './coverage'
       },
     },
   }),
