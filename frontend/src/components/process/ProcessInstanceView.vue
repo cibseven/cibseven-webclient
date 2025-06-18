@@ -39,7 +39,7 @@
       </span>
     </div>
 
-    <div class="position-absolute w-100 bg-light border-bottom" style="z-index: 2" :style="'top: ' + (bottomContentPosition - tabsAreaHeight) + 'px; ' + toggleTransition">
+    <div class="position-absolute w-100 bg-light border-bottom" style="z-index: 2; left: 0;" :style="'top: ' + (bottomContentPosition - tabsAreaHeight) + 'px; ' + toggleTransition">
       <div class="d-flex align-items-end">
         <div class="tabs-scroll-container flex-grow-1" style="white-space: nowrap;">
           <ul class="nav nav-tabs m-0 border-0 flex-nowrap" style="display: inline-flex; overflow-y: hidden">
@@ -50,7 +50,7 @@
       </div>
     </div>
 
-    <div ref="rContent" class="position-absolute w-100 overflow-hidden" style="bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
+    <div ref="rContent" class="position-absolute w-100 overflow-hidden" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
 
       <VariablesTable v-if="activeTab === 'variables'" :selected-instance="selectedInstance" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory"></VariablesTable>
       <IncidentsTable v-else-if="activeTab === 'incidents'" :incidents="selectedInstance.incidents" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory"></IncidentsTable>

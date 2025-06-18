@@ -165,7 +165,8 @@ export default {
       sortKey: this.sortBy,
       sortOrder: this.sortDesc ? -1 : 1,
       columnWidths: [],
-      skipClick: false
+      skipClick: false,
+      resizeObserver: null
     }
   },
   computed: {
@@ -311,12 +312,25 @@ export default {
     restartColumnWidths: function() {
       if (this.resizable && this.$refs.table) {
         const ths = this.$refs.table.querySelectorAll('th')
-        if (ths) {
+        if (ths && ths.length > 0) {
+          // Clean existing widths
           ths.forEach(th => {
             th.style.removeProperty('width')
-          })
+          })          
+          // Get the container width
+          const tableContainer = this.$refs.table.parentElement
+          const containerWidth = tableContainer ? tableContainer.clientWidth : this.$refs.table.clientWidth          
+          // Calculate natural widths of the columns
+          const naturalWidths = Array.from(ths).map(th => th.offsetWidth)
+          const totalNaturalWidth = naturalWidths.reduce((sum, width) => sum + width, 0)          
+          // If total natural width exceeds container width, scale down
+          if (totalNaturalWidth > containerWidth) {
+            const scale = containerWidth / totalNaturalWidth
+            this.columnWidths = naturalWidths.map(width => `${Math.floor(width * scale)}px`)
+          } else {
+            this.columnWidths = naturalWidths.map(width => `${width}px`)
+          }
         }
-        this.columnWidths = Array.from(ths).map(th => `${th.offsetWidth}px`)
       }
     },
     toggleColumn(column) {
@@ -347,12 +361,25 @@ export default {
       this.$nextTick(() => {
         const ths = this.$refs.table.querySelectorAll('th');
         this.columnWidths = Array.from(ths).map(th => `${th.offsetWidth}px`)
+        if (window.ResizeObserver) {
+          this.resizeObserver = new ResizeObserver(() => {
+            this.restartColumnWidths()
+          })
+          const tableContainer = this.$refs.table.parentElement
+          if (tableContainer) {
+            this.resizeObserver.observe(tableContainer)
+          }
+        }
       })
     }
     window.addEventListener("resize", this.restartColumnWidths)
   },
   beforeUnmount() {
     window.removeEventListener("resize", this.restartColumnWidths)
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect()
+      this.resizeObserver = null
+    }
   }
 }
 </script>
