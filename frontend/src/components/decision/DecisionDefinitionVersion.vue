@@ -25,7 +25,7 @@
       </span>
     </div>
     
-    <div class="position-absolute w-100 bg-light border-bottom" style="left:0; z-index: 1" :style="'top: ' + (bottomContentPosition - tabsAreaHeight) + 'px; ' + toggleTransition">
+    <div class="position-absolute w-100 bg-light border-bottom" style="left: 0; z-index: 1" :style="'top: ' + (bottomContentPosition - tabsAreaHeight) + 'px; ' + toggleTransition">
       <div class="d-flex align-items-end">
         <div class="tabs-scroll-container flex-grow-1" style="white-space: nowrap;">
           <ul class="nav nav-tabs m-0 border-0 flex-nowrap" style="display: inline-flex; overflow-y: hidden">
