@@ -158,6 +158,11 @@ export default {
     striped : { type: Boolean, default: false },
     sortBy: { type: String, default: null },
     sortDesc: { type: Boolean, default: false },
+    /**
+     * If true, sorting is handled externally.
+     * Emits 'external-sort' event with { sortBy, sortDesc } parameters.
+     * If false, component sorts items locally using sortKey and sortOrder.
+     */
     externalSort: { type: Boolean, default: false },
   },
   data() {
@@ -243,6 +248,11 @@ export default {
     }
   },
   methods: {
+    /**
+     * Handle column header click for sorting.
+     * If externalSort is enabled, it emits an event with new sort parameters.
+     * Otherwise, it sorts rows using local sortKey and sortOrder.
+     */
     handleColumnClick(field) {
       if (this.skipClick) {
         this.skipClick = false
@@ -267,6 +277,11 @@ export default {
         }
       }
     },
+    /**
+     * Check if the field is currently sorted by.
+     * If externalSort is enabled, it checks against sortBy.
+     * Otherwise, it checks against sortKey.
+     */
     isSortedByField(field) {
       if (!field.key || field.sortable === false) return false
       if (this.externalSort) {
@@ -276,6 +291,11 @@ export default {
         return field.key === this.sortKey
       }
     },
+    /**
+     * Check if the field is sorted by in ascending order.
+     * If externalSort is enabled, it checks against sortDesc.
+     * Otherwise, it checks against sortOrder.
+     */
     isSortedByFieldAscending(field) {
       if (! this.isSortedByField(field)) return false
       if (this.externalSort) {
