@@ -297,7 +297,7 @@ export default {
      * Otherwise, it checks against sortOrder.
      */
     isSortedByFieldAscending(field) {
-      if (! this.isSortedByField(field)) return false
+      if (!this.isSortedByField(field)) return false
       if (this.externalSort) {
         return !this.sortDesc
       }
