@@ -38,7 +38,7 @@
     "axios": "^1.9.0",
     "bootstrap": "^5.3.6",
     "bpmn-js": "^18.3.2",
-    "bpm-sdk": "2.1.0-10-SNAPSHOT",
+    "bpm-sdk": "2.1.0-2-SNAPSHOT",
     "cib-common-components": "^2.0.0",
     "dmn-js": "^17.2.0",
     "js-sha256": "^0.11.0",
