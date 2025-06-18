@@ -77,7 +77,7 @@
           </div>
         </div>
       </div>
-      <div ref="rContent" class="overflow-auto bg-white position-absolute w-100" :style="isInstancesView ? 'top: 60px' : 'top: 0px'" style="left: 0; bottom: 0" @scroll="isInstancesView ? handleScrollProcesses : null">
+      <div ref="rContent" class="overflow-auto bg-white position-absolute w-100" :style="isInstancesView ? 'top: 60px' : 'top: 0px'" style="left: 0; bottom: 0" @scroll="handleScroll">
         <InstancesTable v-if="isInstancesView" ref="instancesTable" 
           :instances="instances"
           :sortByDefaultKey="sortByDefaultKey"
@@ -262,6 +262,9 @@ export default {
         })
         this.$refs.success.show()
       })
+    },
+    handleScroll: function(el) {
+      if (this.isInstancesView) this.handleScrollProcesses(el)
     },
     handleScrollProcesses: function(el) {
       if (this.instances.length < this.firstResult) return
