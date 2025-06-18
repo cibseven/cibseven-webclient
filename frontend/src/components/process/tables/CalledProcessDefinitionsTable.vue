@@ -33,10 +33,10 @@
               versionIndex: table.item.version
             }
           }"
-          :title="table.item.name"
+          :title="table.item.name ? table.item.name : table.item.id"
           class="text-truncate"
         >
-          {{ table.item.name }}
+          {{ table.item.name ? table.item.name : table.item.id }}
         </router-link>
       </template>
       <template v-slot:cell(state)="table">
