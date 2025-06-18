@@ -23,7 +23,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "fast-xml-parser": "^5.2.5",
+    "fast-xml-parser": "^5.2.3",
     "jquery": "^3.7.1",
     "moment": "^2.30.1",
     "superagent": "^10.2.1"
