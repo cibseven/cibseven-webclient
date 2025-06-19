@@ -197,7 +197,7 @@ export default {
       this.variableToModify = JSON.parse(JSON.stringify(variable))
       
       // Use regular variable instance for active processes, historic for all others
-      if (this.selectedInstance.state === 'ACTIVE') {
+      if (this.selectedInstance?.state === 'ACTIVE') {
         this.getVariableInstance({ id: variable.id, deserializeValue: false })
       } else {
         this.getHistoricVariableInstance({ id: variable.id, deserializeValue: false })
