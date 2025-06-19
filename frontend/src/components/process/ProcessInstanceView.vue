@@ -53,9 +53,9 @@
     <div ref="rContent" class="position-absolute w-100 overflow-hidden" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
 
       <VariablesTable v-if="activeTab === 'variables'" :selected-instance="selectedInstance" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory"></VariablesTable>
-      <IncidentsTable v-else-if="activeTab === 'incidents'" :incidents="selectedInstance.incidents" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory"></IncidentsTable>
+      <IncidentsTable v-else-if="activeTab === 'incidents'" :instance="selectedInstance" :process="process" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory"></IncidentsTable>
       <UserTasksTable v-else-if="activeTab === 'usertasks'" :selected-instance="selectedInstance"></UserTasksTable>
-      <JobsTable v-else-if="activeTab === 'jobs'" :jobs="selectedInstance.jobs"></JobsTable>
+      <JobsTable v-else-if="activeTab === 'jobs'" :instance="selectedInstance" :process="process"></JobsTable>
       <CalledProcessInstancesTable v-else-if="activeTab === 'calledProcessInstances'" :selectedInstance="selectedInstance" :activityInstanceHistory="activityInstanceHistory" :activity-instance="activityInstance"></CalledProcessInstancesTable>
       <component :is="ProcessInstanceTabsContentPlugin" v-if="ProcessInstanceTabsContentPlugin" :instance="selectedInstance" :active-tab="activeTab" :process="process"></component>
     </div>

@@ -14,13 +14,15 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { JobService, IncidentService } from "@/services.js"
+import { JobService, IncidentService, JobDefinitionService } from "@/services.js"
 
 const JobStore = {
-  state: {
+  namespaced: true,
+  state: () => ({
     jobs: [],
-    jobLogs: []
-  },
+    jobLogs: [],
+    jobDefinitions: []
+  }),
   mutations: {
     setJobs(state, jobs) {
       state.jobs = jobs
@@ -28,11 +30,62 @@ const JobStore = {
     setJobLogs(state, logs) {
       state.jobLogs = logs
     },
+    setJobDefinitions(state, jobDefinitions) {
+      state.jobDefinitions = jobDefinitions
+    },
     removeJob(state, id) {
       state.jobs = state.jobs.filter(job => job.id !== id)
+    },
+    updateJobSuspended(state, { jobId, suspended }) {
+      const job = state.jobs.find(job => job.id === jobId)
+      if (job) {
+        job.suspended = suspended
+      }
+    },
+    updateJobDefinitionSuspended(state, { jobDefinitionId, suspended }) {
+      const jobDefinition = state.jobDefinitions.find(jd => jd.id === jobDefinitionId)
+      if (jobDefinition) {
+        jobDefinition.suspended = suspended
+      }
+    },
+    updateJobDefinitionPriority(state, { jobDefinitionId, priority }) {
+      const jobDefinition = state.jobDefinitions.find(jd => jd.id === jobDefinitionId)
+      if (jobDefinition) {
+        jobDefinition.overridingJobPriority = priority
+      }
     }
   },
   actions: {
+    async loadJobs({ commit }, query) {
+      const result = await JobService.getJobs(query)
+      commit('setJobs', result)
+      return result
+    },
+    async loadJobsByProcessInstance({ dispatch }, processInstanceId) {
+      return dispatch('loadJobs', { processInstanceId })
+    },
+    async loadJobsByProcessDefinition({ dispatch }, processDefinitionId) {
+      return dispatch('loadJobs', { processDefinitionId })
+    },
+    async loadJobDefinitions({ commit }, query) {
+      const result = await JobDefinitionService.findJobDefinitions(query)
+      commit('setJobDefinitions', result)
+      return result
+    },
+    async loadJobDefinitionsByProcessDefinition({ dispatch }, processDefinitionId) {
+      return dispatch('loadJobDefinitions', { processDefinitionId })
+    },
+    async suspendJobDefinition({ commit }, { jobDefinitionId, params }) {
+      await JobDefinitionService.suspendJobDefinition(jobDefinitionId, params)
+      // Update the suspended state based on the params
+      commit('updateJobDefinitionSuspended', { jobDefinitionId, suspended: params.suspended })
+    },
+    async overrideJobDefinitionPriority({ commit }, { jobDefinitionId, params }) {
+      await JobDefinitionService.overrideJobDefinitionPriority(jobDefinitionId, params)
+      // Update the priority - null if clearing, otherwise the priority value
+      const priority = params.priority || null
+      commit('updateJobDefinitionPriority', { jobDefinitionId, priority })
+    },
     async getJobs({ commit }, query) {
       const result = await JobService.getJobs(query)
       commit('setJobs', result)
@@ -47,6 +100,10 @@ const JobStore = {
       const params = { retries }
       return IncidentService.retryJobById(id, params)
     },
+    async setSuspended({ commit }, { jobId, suspended }) {
+      await JobService.setSuspended(jobId, { suspended })
+      commit('updateJobSuspended', { jobId, suspended })
+    },
     async getHistoryJobLogStacktrace(_, id) {
       return JobService.getHistoryJobLogStacktrace(id)
     },
@@ -57,7 +114,8 @@ const JobStore = {
   },
   getters: {
     jobs: state => state.jobs,
-    jobLogs: state => state.jobLogs
+    jobLogs: state => state.jobLogs,
+    jobDefinitions: state => state.jobDefinitions
   }
 }
 

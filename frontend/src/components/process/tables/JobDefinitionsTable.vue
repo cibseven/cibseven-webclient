@@ -17,7 +17,11 @@
 
 -->
 <template>
-    <FlowTable v-if="jobDefinitions.length" striped thead-class="sticky-header" @click="showJobDefinition($event)" 
+  <div class="overflow-auto bg-white container-fluid g-0 h-100">
+    <div v-if="loading">
+      <p class="text-center p-4"><BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}</p>
+    </div>
+    <FlowTable v-else-if="jobDefinitions.length > 0" striped thead-class="sticky-header" @click="showJobDefinition($event)" 
       :items="jobDefinitions" primary-key="id" prefix="process-instance.jobDefinitions." sort-by="label" 
       :sort-desc="true" :fields="[
       { label: 'state', key: 'suspended', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
@@ -49,34 +53,59 @@
         </b-button>
       </template>      
     </FlowTable>
-    <div v-else>
+    <div v-else-if="!loading">
       <p class="text-center p-4">{{ $t('process-instance.noJobDefinitions') }}</p>
     </div>
 
     <JobDefinitionStateModal ref="changeJobStateModal"></JobDefinitionStateModal>
     <JobDefinitionPriorityModal ref="overrideJobPriorityModal"></JobDefinitionPriorityModal>
-    
+  </div>
 </template>
 
 <script>
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import JobDefinitionStateModal from '@/components/process/modals/JobDefinitionStateModal.vue'
 import JobDefinitionPriorityModal from '@/components/process/modals/JobDefinitionPriorityModal.vue'
-import { mapActions } from 'vuex'
+import { BWaitingBox } from 'cib-common-components'
+import { mapActions, mapGetters } from 'vuex'
 
 export default {
   name: 'JobsDefinitionsTable',
-  components: { FlowTable, JobDefinitionStateModal, JobDefinitionPriorityModal },
+  components: { FlowTable, JobDefinitionStateModal, JobDefinitionPriorityModal, BWaitingBox },
   props: {
     processId: String
   },
   computed: {
-    jobDefinitions: function() {
-      return this.$store.getters['jobDefinition/getJobDefinitions']
+    ...mapGetters('job', ['jobDefinitions'])
+  },
+  data() {
+    return {
+      loading: true
+    }
+  },
+  watch: {
+    processId: {
+      handler(id) {
+        if (id) {
+          this.loadJobDefinitionsData(id)
+        }
+      },
+      immediate: true
     }
   },
   methods: {
     ...mapActions(['setHighlightedElement']),
+    ...mapActions('job', ['loadJobDefinitionsByProcessDefinition']),
+    
+    async loadJobDefinitionsData(processId) {
+      this.loading = true
+      try {
+        await this.loadJobDefinitionsByProcessDefinition(processId)
+      } finally {
+        this.loading = false
+      }
+    },
+    
     showJobDefinition: function(jobDefinition) {
       this.setHighlightedElement(jobDefinition)
     },

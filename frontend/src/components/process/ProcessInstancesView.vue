@@ -79,19 +79,23 @@
       </div>
       <div ref="rContent" class="overflow-auto bg-white position-absolute w-100" :style="isInstancesView ? 'top: 60px' : 'top: 0px'" style="left: 0; bottom: 0" @scroll="handleScroll">
         <InstancesTable v-if="isInstancesView" ref="instancesTable" 
-          :instances="instances"
+          :process="process"
+          :activity-instance="activityInstance"
           :sortByDefaultKey="sortByDefaultKey"
           :sortDesc="sortDesc"
-          @instance-deleted="$emit('instance-deleted')"
-          :loading="loading"
           :sorting="sorting"
+          :tenant-id="tenantId"
+          :filter="filter"
+          @instance-deleted="$emit('instance-deleted')"
+          @show-more="$emit('show-more')"
+          @filter-instances="$emit('filter-instances', $event)"
         ></InstancesTable>
         <IncidentsTable v-else-if="activeTab === 'incidents'"
-          :incidents="incidents" :activity-instance="activityInstance"
+          :process="process" :activity-instance="activityInstance"
           :activity-instance-history="process.activitiesHistory"/>
         <JobDefinitionsTable v-else-if="activeTab === 'jobDefinitions'"
           :process-id="process.id" />
-        <CalledProcessDefinitionsTable v-else-if="activeTab === 'calledProcessDefinitions'" :calledProcesses="calledProcesses"/>
+        <CalledProcessDefinitionsTable v-else-if="activeTab === 'calledProcessDefinitions'" :process="process"/>
         <component :is="ProcessInstancesTabsContentPlugin" v-if="ProcessInstancesTabsContentPlugin" :process="process" :active-tab="activeTab"></component>
       </div>
     </div>
@@ -111,7 +115,7 @@
 
     <SuccessAlert ref="messageCopy"> {{ $t('process.copySuccess') }} </SuccessAlert>
     <SuccessAlert top="0" style="z-index: 1031" ref="success"> {{ $t('alert.successOperation') }}</SuccessAlert>
-    <MultisortModal ref="sortModal" :items="instances" :sortKeys="['state', 'businessKey', 'startTime', 'endTime', 'id', 'startUserId', 'incidents']" :prefix="'process.'" @apply-sorting="applySorting"></MultisortModal>
+    <MultisortModal ref="sortModal" :items="$refs.instancesTable?.instances || []" :sortKeys="['state', 'businessKey', 'startTime', 'endTime', 'id', 'startUserId', 'incidents']" :prefix="'process.'" @apply-sorting="applySorting"></MultisortModal>
   </div>
 </template>
 
@@ -140,10 +144,12 @@ export default {
      ProcessInstancesTabs },
   inject: ['loadProcesses'],
   mixins: [permissionsMixin, resizerMixin, copyToClipboardMixin],
-  props: { instances: Array, process: Object, firstResult: Number, maxResults: Number, incidents: Array,
+  props: { process: Object,
     activityInstance: Object, activityInstanceHistory: Array, loading: Boolean,
-    processKey: String, calledProcesses: Array,
-    versionIndex: { type: String, default: '' }
+    processKey: String,
+    versionIndex: { type: String, default: '' },
+    tenantId: String,
+    filter: String
   },
   data: function() {
     return {
@@ -165,7 +171,6 @@ export default {
         this.$refs.diagram.showDiagram(response.bpmn20Xml)
       }),
       this.clearActivitySelection()
-      this.getJobDefinitions()
       this.changeTab({ id: 'instances' })
     }
   },
@@ -174,8 +179,7 @@ export default {
       setTimeout(() => {
         this.$refs.diagram.showDiagram(response.bpmn20Xml)
       }, 100)
-    }),
-    this.getJobDefinitions()
+    })
   },
   computed: {
     ProcessActions: function() {
@@ -212,7 +216,12 @@ export default {
       this.sorting = true
       this.sortDesc = null
       this.sortByDefaultKey = ''
-      this.$emit('update-items', sortedItems)
+      
+      // Directly update the InstancesTable with sorted items
+      if (this.$refs.instancesTable) {
+        this.$refs.instancesTable.updateItems(sortedItems)
+      }
+      
       this.$nextTick(() => {
         this.sorting = false
         this.sortDesc = true
@@ -244,9 +253,10 @@ export default {
     suspendProcess: function() {
       ProcessService.suspendProcess(this.process.id, true, true).then(() => {
         this.$store.dispatch('setSuspended', { process: this.process, suspended: 'true' })
-        this.instances.forEach(instance => {
-          if (instance.state === 'ACTIVE') instance.state = 'SUSPENDED'
-        })
+        // Refresh instances table to reflect the state change
+        if (this.$refs.instancesTable) {
+          this.$refs.instancesTable.loadInstances()
+        }
         this.$refs.success.show()
       })
     },
@@ -257,9 +267,10 @@ export default {
     activateProcess: function() {
       ProcessService.suspendProcess(this.process.id, false, true).then(() => {
         this.$store.dispatch('setSuspended', { process: this.process, suspended: 'false' })
-        this.instances.forEach(instance => {
-          if (instance.state === 'SUSPENDED') instance.state = 'ACTIVE'
-        })
+        // Refresh instances table to reflect the state change
+        if (this.$refs.instancesTable) {
+          this.$refs.instancesTable.loadInstances()
+        }
         this.$refs.success.show()
       })
     },
@@ -267,17 +278,16 @@ export default {
       if (this.isInstancesView) this.handleScrollProcesses(el)
     },
     handleScrollProcesses: function(el) {
-      if (this.instances.length < this.firstResult) return
-      if (Math.ceil(el.target.scrollTop + el.target.clientHeight) >= el.target.scrollHeight) {
-        this.$emit('show-more')
+      // Check if we're near the bottom and can load more data
+      const scrollThreshold = 100 // Load more when within 100px of bottom
+      const nearBottom = (el.target.scrollTop + el.target.clientHeight + scrollThreshold) >= el.target.scrollHeight
+      
+      if (nearBottom && this.$refs.instancesTable) {
+        // Let InstancesTable handle the logic of whether to load more
+        this.$refs.instancesTable.showMore()
       }
     },
-    onInput: debounce(800, function(filter) { this.$emit('filter-instances', filter) }),
-    getJobDefinitions: function() {
-      this.$store.dispatch('jobDefinition/getJobDefinitions', {
-        processDefinitionId: this.process.id
-      })
-    }
+    onInput: debounce(800, function(filter) { this.$emit('filter-instances', filter) })
   }
 }
 </script>
