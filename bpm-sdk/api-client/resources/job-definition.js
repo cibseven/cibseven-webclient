@@ -14,22 +14,33 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { fileURLToPath } from 'node:url'
-import { mergeConfig, defineConfig, configDefaults } from 'vitest/config'
-import viteConfig from './vite.config'
 
-export default mergeConfig(
-  viteConfig,
-  defineConfig({
-    test: {
-      environment: 'jsdom',
-      exclude: [...configDefaults.exclude, 'e2e/**'],
-      root: fileURLToPath(new URL('./', import.meta.url)),
-      coverage: {
-        provider: 'istanbul',
-        reporter: ['text', 'lcov', 'cobertura'], // 'text', 'html', 'lcov', 'cobertura'
-        reportsDirectory: './coverage'
-      },
-    },
-  }),
-)
+'use strict';
+
+import AbstractClientResource from '../abstract-client-resource.js';
+
+var JobDefinition = AbstractClientResource.extend();
+
+JobDefinition.path = 'job-definition';
+
+JobDefinition.setRetries = function(params, done) {
+  return this.http.put(this.path + '/' + params.id + '/retries', {
+    data: params,
+    done: done
+  });
+};
+
+JobDefinition.list = function(params, done) {
+  return this.http.get(this.path, {
+    data: params,
+    done: done
+  });
+};
+
+JobDefinition.get = function(id, done) {
+  return this.http.get(this.path + '/' + id, {
+    done: done
+  });
+};
+
+export default JobDefinition;
