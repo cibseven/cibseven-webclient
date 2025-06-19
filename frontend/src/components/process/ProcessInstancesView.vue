@@ -115,7 +115,7 @@
 
     <SuccessAlert ref="messageCopy"> {{ $t('process.copySuccess') }} </SuccessAlert>
     <SuccessAlert top="0" style="z-index: 1031" ref="success"> {{ $t('alert.successOperation') }}</SuccessAlert>
-    <MultisortModal ref="sortModal" :items="$refs.instancesTable?.instances || []" :sortKeys="['state', 'businessKey', 'startTime', 'endTime', 'id', 'startUserId', 'incidents']" :prefix="'process.'" @apply-sorting="applySorting"></MultisortModal>
+    <MultisortModal ref="sortModal" :items="instances" :sortKeys="['state', 'businessKey', 'startTime', 'endTime', 'id', 'startUserId', 'incidents']" :prefix="'process.'" @apply-sorting="applySorting"></MultisortModal>
   </div>
 </template>
 
@@ -209,6 +209,7 @@ export default {
       return this.activeTab === 'instances'
     },
     ...mapGetters(['selectedActivityId']),
+    ...mapGetters('instances', ['instances']),
   },
   methods: {    
     ...mapActions(['clearActivitySelection']),
