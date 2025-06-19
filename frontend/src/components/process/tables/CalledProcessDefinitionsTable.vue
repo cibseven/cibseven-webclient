@@ -29,7 +29,7 @@
       ]">
       <template v-slot:cell(name)="table">
         <CopyableActionButton
-            :display-value="table.item.name"
+            :display-value="table.item.name || table.item.key"
             :title="table.item.name"
             @copy="copyValueToClipboard"
             :to="{
@@ -43,7 +43,7 @@
       </template>
       <template v-slot:cell(state)="table">
         <span v-if="table.item.activities.length" class="text-truncate">
-          {{ getCalledProcessState(table.item.activities) }}
+          {{ $t(getCalledProcessState(table.item.activities)) }}
         </span>
       </template>
       <template v-slot:cell(activity)="table">
@@ -69,7 +69,6 @@
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import { BWaitingBox } from 'cib-common-components'
 import { mapActions, mapGetters } from 'vuex'
-import { HistoryService } from '@/services.js'
 import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
@@ -82,19 +81,23 @@ export default {
   props: {
     process: Object
   },
-  computed: {
-    ...mapGetters('calledProcessDefinitions', ['calledProcessDefinitions']),
-    ...mapGetters(['diagramXml', 'selectedActivityId']),
-  },
   data() {
     return {
-      loading: true
+      loading: false
     }
+  },
+  computed: {
+    ...mapGetters('calledProcessDefinitions', [
+      'calledProcessDefinitions', 
+      'allCalledProcessDefinitions', 
+      'getCalledProcessState'
+    ]),
+    ...mapGetters(['diagramXml', 'selectedActivityId']),
   },
   watch: {
     selectedActivityId() {
       this.setHighlightedElement(this.selectedActivityId)
-      this.filterByActivity()
+      this.filterByActivity(this.selectedActivityId)
     },
     'process.id': {
       handler(id) {
@@ -105,129 +108,23 @@ export default {
       immediate: true
     }
   },
-  created() {
-    this.loadCalledProcesses()
-  },
   methods: {
     ...mapActions(['setHighlightedElement', 'selectActivity']),
-    ...mapActions('calledProcessDefinitions', ['loadCalledProcessDefinitions']),
+    ...mapActions('calledProcessDefinitions', [
+      'loadCalledProcessDefinitions', 
+            'filterByActivity'
+    ]),
     async loadCalledProcessDefinitionsData(processId) {
       this.loading = true
       try {
-        await this.loadCalledProcessDefinitions(processId)
+        await this.loadCalledProcessDefinitions({ 
+          processId, 
+          diagramXml: this.diagramXml 
+        })
+      } catch (error) {
+        console.error('Error loading called processes:', error)
       } finally {
         this.loading = false
-      }
-    },
-    loadCalledProcesses: function () {
-      this.calledProcesses = []
-
-      HistoryService.findActivitiesInstancesHistoryWithFilter({
-        processDefinitionId: this.process.id,
-        activityType: 'callActivity'
-      }).then(activities => {
-        if (activities.length === 0) return
-
-        const staticIds = this.getStaticCallActivityIdsFromXml(this.diagramXml)
-        const activityList = this.markStaticOrDynamic(activities, staticIds)
-
-        const filteredActivities = activityList.filter(activity => {
-          return activity.isStatic || (!activity.endTime && activity.canceled !== true && activity.deleted !== true)
-        })
-
-        const instancesIdList = [...new Set(filteredActivities.map(a => a.calledProcessInstanceId))]
-
-        if (instancesIdList.length > 0) {
-          HistoryService.findProcessesInstancesHistory(
-            { processInstanceIds: instancesIdList }
-          ).then(processInstances => {
-            const groupedProcesses = this.groupCalledProcesses(filteredActivities, processInstances)
-            this.calledProcesses = Object.values(groupedProcesses)
-            this.allCalledProcesses = Object.values(groupedProcesses)
-          })
-        }
-      })
-    },
-
-    groupCalledProcesses(activities, processInstances) {
-      const grouped = {}
-      processInstances.forEach(instance => {
-        const relatedActivities = activities.filter(
-          act => act.calledProcessInstanceId === instance.id
-        )
-        const processDefId = instance.processDefinitionId
-        const key = processDefId.split(':')[0]
-        const version = processDefId.split(':')[1]
-        const foundProcess = this.$store.state.process.list.find(p => p.key === key)
-        relatedActivities.forEach(activity => {
-          const groupKey = processDefId
-          if (!grouped[groupKey]) {
-            grouped[groupKey] = {
-              id: groupKey,
-              key,
-              version,
-              name: foundProcess ? foundProcess.name : key,
-              activities: [],
-              instances: []
-            }
-          }
-          if (!grouped[groupKey].activities.some(a => a.activityId === activity.activityId)) {
-            grouped[groupKey].activities.push({
-              ...activity,
-              isStatic: activity.isStatic
-            })
-          }
-          if (!grouped[groupKey].instances.some(i => i.id === instance.id)) {
-            grouped[groupKey].instances.push(instance)
-          }
-        })
-      })
-      return grouped
-    },
-
-    getStaticCallActivityIdsFromXml(xmlString) {
-      const parser = new DOMParser()
-      const xmlDoc = parser.parseFromString(xmlString, 'application/xml')
-      const callActivities = xmlDoc.getElementsByTagName('bpmn:callActivity')
-      const staticIds = []
-      for (let i = 0; i < callActivities.length; i++) {
-        const el = callActivities[i]
-        const calledElement = el.getAttribute('calledElement')
-        const id = el.getAttribute('id')
-        if (calledElement && !calledElement.trim().startsWith('${')) {
-          staticIds.push(id)
-        }
-      }
-      return staticIds
-    },
-    markStaticOrDynamic(activitiesList, staticActivityIds) {
-      return activitiesList.map(activity => ({
-        ...activity,
-        isStatic: staticActivityIds.includes(activity.activityId)
-      }))
-    },
-    getCalledProcessState(activities) {
-      const hasRunning = activities.some(act => act.endTime == null && act.canceled !== true)
-      const hasReferenced = activities.some(act => act.isStatic)
-      if (hasRunning && hasReferenced) return this.$t('process-instance.calledProcessDefinitions.runningAndReferenced')
-      if (hasRunning) return this.$t('process-instance.calledProcessDefinitions.running')
-      if (hasReferenced) return this.$t('process-instance.calledProcessDefinitions.referenced')
-      return null
-    },
-    filterByActivity() {
-      if (this.selectedActivityId) {
-        this.calledProcesses = this.allCalledProcesses
-          .filter(cp => cp.activities.some(act => act.activityId === this.selectedActivityId))
-          .map(cp => this.mapSelectedActivity(cp, this.selectedActivityId))
-      } else {
-        this.calledProcesses = [...this.allCalledProcesses]
-      }
-    },
-    mapSelectedActivity(cp, activityId) {
-      const selectedActivity = cp.activities.find(act => act.activityId === activityId)
-      return {
-        ...cp,
-        activities: [selectedActivity]
       }
     }
   }
