@@ -39,8 +39,8 @@ const ActivityStore = {
       state.selectedActivityId = ''
       state.highlightedElement = null
     },
-    setActivitiesInstanceHistory: function (state, activitiesInstace) {
-      state.activitiesInstanceHistory = activitiesInstace
+    setActivitiesInstanceHistory: function (state, activitiesInstance) {
+      state.activitiesInstanceHistory = activitiesInstance
     },
     setDiagramXml: function (state, diagramXml) {
       state.diagramXml = diagramXml

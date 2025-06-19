@@ -34,6 +34,7 @@ export default {
   actions: {
     async loadCalledProcessDefinitions({ commit, rootState, getters }, { processId, diagramXml }) {
       commit('setCalledProcessDefinitions', [])
+      commit('setAllCalledProcessDefinitions', [])
       
       try {
         const activities = await HistoryService.findActivitiesInstancesHistoryWithFilter({
@@ -73,6 +74,8 @@ export default {
         }
       } catch (error) {
         console.error('Error loading called process definitions:', error)
+        commit('setCalledProcessDefinitions', [])
+        commit('setAllCalledProcessDefinitions', [])
       }
     },
 
