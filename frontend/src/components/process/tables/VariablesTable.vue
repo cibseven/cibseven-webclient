@@ -81,7 +81,7 @@
       </template>
     </b-modal>
 
-    <b-modal ref="modifyVariable" :title="$t('process-instance.edit')" @hidden="clearVariableInstance">
+    <b-modal ref="modifyVariable" :title="$t('process-instance.edit')" @hidden="clearVariableInstances">
       <div v-if="variableToModify">
         <b-form-group :label="$t('process-instance.variables.name')">
           <b-form-input v-model="variableToModify.name" disabled></b-form-input>
@@ -89,14 +89,14 @@
         <b-form-group :label="$t('process-instance.variables.type')">
           <b-form-input v-model="variableToModify.type" disabled></b-form-input>
         </b-form-group>
-        <template v-if="currentVariableInstance?.valueInfo">
-          <div v-if="currentVariableInstance.valueInfo.objectTypeName" class="mb-3">
+        <template v-if="currentInstance?.valueInfo">
+          <div v-if="currentInstance.valueInfo.objectTypeName" class="mb-3">
             <label class="form-label">{{ $t('process-instance.variables.objectTypeName') }}</label>
-            <input type="text" class="form-control" :value="currentVariableInstance.valueInfo.objectTypeName" disabled>
+            <input type="text" class="form-control" :value="currentInstance.valueInfo.objectTypeName" disabled>
           </div>
-          <div v-if="currentVariableInstance.valueInfo.serializationDataFormat" class="mb-3">
+          <div v-if="currentInstance.valueInfo.serializationDataFormat" class="mb-3">
             <label class="form-label">{{ $t('process-instance.variables.serializationDataFormat') }}</label>
-            <input type="text" class="form-control" :value="currentVariableInstance.valueInfo.serializationDataFormat" disabled>
+            <input type="text" class="form-control" :value="currentInstance.valueInfo.serializationDataFormat" disabled>
           </div>
         </template>
         <b-form-group :label="$t('process-instance.variables.value')">
@@ -145,6 +145,13 @@ export default {
   },
   computed: {
     ...mapGetters('variableInstance', ['currentVariableInstance']),
+    ...mapGetters('historicVariableInstance', ['currentHistoricVariableInstance']),
+    currentInstance() {
+      // Use regular variable instance for active processes, historic for all others
+      return this.selectedInstance?.state === 'ACTIVE' 
+        ? this.currentVariableInstance 
+        : this.currentHistoricVariableInstance
+    },
     formattedJsonValue: {
       get: function() {
         if (this.variableToModify) {
@@ -163,6 +170,7 @@ export default {
   },
   methods: {
     ...mapActions('variableInstance', ['clearVariableInstance', 'getVariableInstance']),
+    ...mapActions('historicVariableInstance', ['clearHistoricVariableInstance', 'getHistoricVariableInstance']),
     isFileValueDataSource: function(item) {
       if (item.type === 'Object') {
         if (item.value && item.value.objectTypeName) {
@@ -187,7 +195,14 @@ export default {
     modifyVariable(variable) {
       this.selectedVariable = variable
       this.variableToModify = JSON.parse(JSON.stringify(variable))
-      this.getVariableInstance({ id: variable.id, deserializeValue: false })
+      
+      // Use regular variable instance for active processes, historic for all others
+      if (this.selectedInstance.state === 'ACTIVE') {
+        this.getVariableInstance({ id: variable.id, deserializeValue: false })
+      } else {
+        this.getHistoricVariableInstance({ id: variable.id, deserializeValue: false })
+      }
+      
       this.$refs.modifyVariable.show()
     },
     deleteVariable: function(variable) {
@@ -238,6 +253,10 @@ export default {
         this.selectedVariable.value = value
         this.$refs.modifyVariable.hide()
       })
+    },
+    clearVariableInstances() {
+      this.clearVariableInstance()
+      this.clearHistoricVariableInstance()
     }
 
   }

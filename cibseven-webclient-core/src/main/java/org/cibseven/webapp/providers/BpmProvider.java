@@ -1101,4 +1101,15 @@ public interface BpmProvider {
 	 */
 	VariableInstance getVariableInstance(String id, Boolean deserializeValue, CIBUser user) throws SystemException, NoObjectFoundException;
 
+	/**
+	 * Retrieves a historic variable instance by its ID.
+	 * @param id The ID of the historic variable instance
+	 * @param deserializeValue Whether to deserialize the variable value or not
+	 * @param user the user performing the search
+	 * @return Historic variable instance details
+	 * @throws SystemException in case of an error
+	 * @throws NoObjectFoundException when the historic variable instance could not be found
+	 */
+	VariableHistory getHistoricVariableInstance(String id, Boolean deserializeValue, CIBUser user) throws SystemException, NoObjectFoundException;
+
 }
