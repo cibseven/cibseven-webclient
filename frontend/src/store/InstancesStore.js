@@ -22,7 +22,8 @@ export default {
   state: {
     instances: [],
     sortFunction: null // Store the sort function to reapply after loading
-  },  mutations: {
+  },
+  mutations: {
     setInstances(state, instances) {
       state.instances = instances
       // Reapply sorting if we have a sort function

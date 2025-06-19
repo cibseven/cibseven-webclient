@@ -21,7 +21,7 @@
     <div class="d-flex ps-3 py-2">
       <b-button :title="$t('start.cockpit.processes.title')" variant="outline-secondary" href="#/seven/auth/processes/list" class="mdi mdi-18px mdi-arrow-left border-0"></b-button>
       <h4 class="ps-1 m-0 align-items-center d-flex" style="border-width: 3px !important">{{ processName }}</h4>
-      <b-button :disabled="!getInstances() || getInstances().length === 0" :title="$t('process.exportInstances')" variant="outline-secondary" @click="exportCSV()"
+      <b-button :disabled="!storeInstances || storeInstances.length === 0" :title="$t('process.exportInstances')" variant="outline-secondary" @click="exportCSV()"
         class="ms-auto me-3 mdi mdi-18px mdi-download-outline border-0"></b-button>
     </div>
     <SidebarsFlow ref="sidebars" class="border-top overflow-auto" :left-open="leftOpen" @update:left-open="leftOpen = $event" :left-caption="shortendLeftCaption">
@@ -32,7 +32,7 @@
           :version-index="versionIndex"
           @on-refresh-process-definitions="onRefreshProcessDefinitions"
           @on-delete-process-definition="onDeleteProcessDefinition"
-          :instances="getInstances()"></ProcessDetailsSidebar>
+          :instances="storeInstances"></ProcessDetailsSidebar>
       </template>
       <transition name="slide-in" mode="out-in">
         <ProcessInstancesView ref="process" v-if="process && !selectedInstance && !instanceId"
@@ -44,7 +44,6 @@
           :activity-instance-history="activityInstanceHistory"
           :tenant-id="tenantId"
           :filter="filter"
-          @show-more="showMore()"
           @instance-deleted="onInstanceDeleted()"
           @task-selected="setSelectedTask($event)"
           @filter-instances="filterInstances($event)"
@@ -103,7 +102,6 @@ export default {
   data: function() {
     return {
       leftOpen: true,
-      rightOpen: false,
       process: null, // selected process definition
       processDefinitions: [],
       selectedInstance: null,
@@ -111,8 +109,7 @@ export default {
       activityInstance: null,
       activityInstanceHistory: null,
       filter: '',
-      loading: false,
-      componentReady: false
+      loading: false
     }
   },
   computed: {
@@ -122,9 +119,6 @@ export default {
     shortendLeftCaption: function() {
       return this.$t('process.details.historyVersions')
     },
-    shortendRightCaption: function() {
-      return this.$t('process.details.variable')
-    },
     processName: function() {
       if (!this.process) return ''
       return this.process.name ? this.process.name : this.process.key
@@ -133,7 +127,6 @@ export default {
   created: function() {
     this.clearActivitySelection()
     this.loadProcessFromRoute()
-    this.componentReady = true
   },
   beforeUpdate: function() {
     if (this.process != null && this.process.version !== this.versionIndex) {
@@ -159,9 +152,6 @@ export default {
   methods: {
     ...mapActions(['clearActivitySelection']),
     formatDate,
-    getInstances: function() {
-      return this.storeInstances
-    },
     loadInstanceById: function(instanceId) {
       ProcessService.findProcessInstance(instanceId).then(instance => {
         if (instance) {
@@ -169,7 +159,7 @@ export default {
         }
       }).catch(() => {
         // Fallback to checking store instances
-        const instances = this.getInstances()
+        const instances = this.storeInstances
         if (instances) {
           const selectedInstance = instances.find(i => i.id == instanceId)
           if (selectedInstance) {
@@ -291,7 +281,6 @@ export default {
     },
     loadProcessVersion: function(process) {
       return new Promise(() => {
-        this.firstResult = 0
         this.process = process
         this.findProcessAndAssignData(process)
         if (!this.process.statistics) this.loadStatistics()
@@ -317,9 +306,8 @@ export default {
     setSelectedInstance: function(evt) {
       var selectedInstance = evt.selectedInstance
       if (!selectedInstance) {
-        this.rightOpen = false
         this.selectedInstance = null
-      } else this.rightOpen = true
+      }
       this.task = null
       this.activityInstance = null
       this.activityInstanceHistory = selectedInstance ? this.activityInstanceHistory : null
@@ -364,9 +352,6 @@ export default {
         }.bind(this))
       }
     },
-    showMore: function() {
-      // Pagination is now handled by InstancesTable internally
-    },
     filterInstances: function(filter) {
       this.filter = filter
       // InstancesTable will automatically reload when filter changes
@@ -394,7 +379,7 @@ export default {
       headers.forEach(h => h.text = this.$t('process.' + h.text))
       var csvContent = headers.map(h => h.text).join(';') + '\n'
       var keys = headers.map(h => h.key)
-      const instances = this.getInstances()
+      const instances = this.storeInstances
       instances.forEach(v => {
         const formattedValues = { 
           ...v, 

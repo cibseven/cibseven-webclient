@@ -86,11 +86,6 @@ const JobStore = {
       const priority = params.priority || null
       commit('updateJobDefinitionPriority', { jobDefinitionId, priority })
     },
-    async getJobs({ commit }, query) {
-      const result = await JobService.getJobs(query)
-      commit('setJobs', result)
-      return result
-    },
     async getHistoryJobLog({ commit }, params) {
       const result = await JobService.getHistoryJobLog(params)
       commit('setJobLogs', result)

@@ -94,7 +94,7 @@ import { mapGetters, mapActions } from 'vuex'
 export default {
   name: 'InstancesTable',
   components: { FlowTable, SuccessAlert, ConfirmActionOnProcessInstanceModal, BWaitingBox, CopyableActionButton },
-  emits: ['instance-deleted', 'show-more', 'filter-instances'],
+  emits: ['instance-deleted', 'filter-instances'],
   mixins: [copyToClipboardMixin, permissionsMixin],
   props: { 
     process: Object,
@@ -182,7 +182,6 @@ export default {
       }
       this.firstResult += this.maxResults
       this.loadInstancesData(true)
-      this.$emit('show-more') // Still emit for any parent that might need to know
     },
     filterInstances: function(filter) {
       this.$emit('filter-instances', filter)

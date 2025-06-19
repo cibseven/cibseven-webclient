@@ -87,7 +87,6 @@
           :tenant-id="tenantId"
           :filter="filter"
           @instance-deleted="$emit('instance-deleted')"
-          @show-more="$emit('show-more')"
           @filter-instances="$emit('filter-instances', $event)"
         ></InstancesTable>
         <IncidentsTable v-else-if="activeTab === 'incidents'"
