@@ -20,15 +20,29 @@ import { HistoryService, ProcessService } from '@/services.js'
 export default {
   namespaced: true,
   state: {
-    instances: []
-  },
-  mutations: {
+    instances: [],
+    sortFunction: null // Store the sort function to reapply after loading
+  },  mutations: {
     setInstances(state, instances) {
       state.instances = instances
+      // Reapply sorting if we have a sort function
+      if (state.sortFunction) {
+        state.instances.sort(state.sortFunction)
+      }
     },
     appendInstances(state, instances) {
       state.instances = state.instances.concat(instances)
-    },    removeInstance(state, instanceId) {
+      // Reapply sorting if we have a sort function
+      if (state.sortFunction) {
+        state.instances.sort(state.sortFunction)
+      }
+    },
+    setSortFunction(state, sortFunction) {
+      state.sortFunction = sortFunction
+    },
+    clearSortFunction(state) {
+      state.sortFunction = null
+    },removeInstance(state, instanceId) {
       state.instances = state.instances.filter(instance => instance.id !== instanceId)
     },
     updateInstanceState(state, { instanceId, newState }) {

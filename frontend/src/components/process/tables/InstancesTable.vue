@@ -108,6 +108,9 @@ export default {
   computed: {
     ...mapGetters('instances', ['instances']),
     ...mapGetters(['selectedActivityId']),
+    currentActivityId() {
+      return this.selectedActivityId || this.activityInstance?.id
+    },
     canLoadMore() {
       return this.hasMoreData && !this.loading
     }
@@ -134,18 +137,10 @@ export default {
       this.resetPagination()
       this.loadInstancesData()
     },
-    selectedActivityId() {
+    currentActivityId() {
       if (this.process?.id) {
         this.resetPagination()
         this.loadInstancesData()
-      }
-    },
-    'activityInstance.id': {
-      handler(newId, oldId) {
-        if (this.process?.id) {
-          this.resetPagination()
-          this.loadInstancesData()
-        }
       }
     },
   },
@@ -166,7 +161,7 @@ export default {
       try {
         const instances = await this.loadInstances({
           processId: this.process.id,
-          activityId: this.selectedActivityId || this.activityInstance?.id,
+          activityId: this.currentActivityId,
           filter: this.filter,
           tenantId: this.tenantId,
           camundaHistoryLevel: this.$root.config.camundaHistoryLevel,

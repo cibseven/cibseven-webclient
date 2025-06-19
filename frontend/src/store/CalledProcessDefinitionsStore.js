@@ -36,7 +36,7 @@ export default {
           process.currentInstances = await ProcessService.findCurrentProcessesInstances({
             processDefinitionId: process.id
           })
-        } catch (error) {
+        } catch {
           process.currentInstances = []
         }
       })

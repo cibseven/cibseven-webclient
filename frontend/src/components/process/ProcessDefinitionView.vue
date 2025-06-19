@@ -65,8 +65,7 @@
 
 <script>
 import { moment } from '@/globals.js'
-import { TaskService, ProcessService, HistoryService,
-  JobService, JobDefinitionService } from '@/services.js'
+import { TaskService, ProcessService, HistoryService } from '@/services.js'
 import ProcessInstancesView from '@/components/process/ProcessInstancesView.vue'
 import ProcessDetailsSidebar from '@/components/process/ProcessDetailsSidebar.vue'
 import ProcessInstanceView from '@/components/process/ProcessInstanceView.vue'
@@ -291,7 +290,7 @@ export default {
       })
     },
     loadProcessVersion: function(process) {
-      return new Promise((resolve) => {
+      return new Promise(() => {
         this.firstResult = 0
         this.process = process
         this.findProcessAndAssignData(process)
