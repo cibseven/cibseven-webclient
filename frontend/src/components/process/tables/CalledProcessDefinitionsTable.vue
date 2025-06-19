@@ -25,56 +25,190 @@
         { label: 'activity', key: 'activity', class: 'col-4', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' }
       ]">
       <template v-slot:cell(name)="table">
-        <router-link
-          :to="{
-            name: 'process', 
-            params: {
-              processKey: table.item.key,
-              versionIndex: table.item.version
-            }
-          }"
-          :title="table.item.name"
-          class="text-truncate"
-        >
-          {{ table.item.name }}
-        </router-link>
+        <CopyableActionButton
+            :display-value="table.item.name"
+            :title="table.item.name"
+            @copy="copyValueToClipboard"
+            :to="{
+              name: 'process', 
+              params: {
+                processKey: table.item.key,
+                versionIndex: table.item.version
+              }
+            }"
+          />
       </template>
       <template v-slot:cell(state)="table">
-        <span :title="getCalledProcessState(table.item)" class="text-truncate">
-          {{ getCalledProcessState(table.item) }}
+        <span v-if="table.item.activities.length" class="text-truncate">
+          {{ getCalledProcessState(table.item.activities) }}
         </span>
       </template>
       <template v-slot:cell(activity)="table">
-        <button class="btn btn-link text-truncate p-0" :title="table.item.calledFromActivityIds[0]" 
-          @click="setHighlightedElement(table.item.calledFromActivityIds[0])">
-          {{ $store.state.activity.processActivities[table.item.calledFromActivityIds[0]] }}
-      </button>
+        <div class="w-100">
+          <CopyableActionButton
+            v-for="(act, index) in table.item.activities" :key="index" 
+            :display-value="act.activityName"
+            :title="act.activityName"
+            @click="selectActivity(act.activityId)"
+            @copy="copyValueToClipboard"
+          />
+        </div>
       </template>
     </FlowTable>
     <div v-else>
       <p class="text-center p-4">{{ $t('process-instance.noResults') }}</p>
     </div>
   </div>
+  <SuccessAlert ref="messageCopy" style="z-index: 9999"> {{ $t('process.copySuccess') }} </SuccessAlert>
 </template>
 
 <script>
 import FlowTable from '@/components/common-components/FlowTable.vue'
-import { mapActions } from 'vuex'
+import { mapActions, mapGetters } from 'vuex'
+import { HistoryService } from '@/services.js'
+import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
+import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
+import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 
 export default {
   name: 'CalledProcessDefinitionsTable',
-  components: { FlowTable },
+  components: { FlowTable, CopyableActionButton, SuccessAlert },
+  mixins: [copyToClipboardMixin],
   props: {
-    calledProcesses: Array
+    process: Object,
+    instances: Array
   },
-  methods: {
-    ...mapActions(['setHighlightedElement']),
-    getCalledProcessState(item) {
-      const instances = item.currentInstances || []
-      return instances.length > 0 
-        ? this.$t('process-instance.calledProcessDefinitions.runningAndReferenced')
-        : this.$t('process-instance.calledProcessDefinitions.referenced')
+  watch: {
+    selectedActivityId() {
+      this.setHighlightedElement(this.selectedActivityId)
+      this.filterByActivity()
     }
   },
+  data() {
+    return {
+      calledProcesses: [],
+      allCalledProcesses: []
+    }
+  },
+  computed: {
+    ...mapGetters(['diagramXml', 'selectedActivityId']),
+  },
+  created() {
+    this.loadCalledProcesses()
+  },
+  methods: {
+    ...mapActions(['setHighlightedElement', 'selectActivity']),
+    loadCalledProcesses: function () {
+      this.calledProcesses = []
+
+      HistoryService.findActivitiesInstancesHistoryWithFilter({
+        processDefinitionId: this.process.id,
+        activityType: 'callActivity'
+      }).then(activities => {
+        if (activities.length === 0) return
+
+        const staticIds = this.getStaticCallActivityIdsFromXml(this.diagramXml)
+        const activityList = this.markStaticOrDynamic(activities, staticIds)
+
+        const filteredActivities = activityList.filter(activity => {
+          return activity.isStatic || (!activity.endTime && activity.canceled !== true && activity.deleted !== true)
+        })
+
+        const instancesIdList = [...new Set(filteredActivities.map(a => a.calledProcessInstanceId))]
+
+        if (instancesIdList.length > 0) {
+          HistoryService.findProcessesInstancesHistory(
+            { processInstanceIds: instancesIdList }
+          ).then(processInstances => {
+            const groupedProcesses = this.groupCalledProcesses(filteredActivities, processInstances)
+            this.calledProcesses = Object.values(groupedProcesses)
+            this.allCalledProcesses = Object.values(groupedProcesses)
+          })
+        }
+      })
+    },
+
+    groupCalledProcesses(activities, processInstances) {
+      const grouped = {}
+      processInstances.forEach(instance => {
+        const relatedActivities = activities.filter(
+          act => act.calledProcessInstanceId === instance.id
+        )
+        const processDefId = instance.processDefinitionId
+        const key = processDefId.split(':')[0]
+        const version = processDefId.split(':')[1]
+        const foundProcess = this.$store.state.process.list.find(p => p.key === key)
+        relatedActivities.forEach(activity => {
+          const groupKey = processDefId
+          if (!grouped[groupKey]) {
+            grouped[groupKey] = {
+              id: groupKey,
+              key,
+              version,
+              name: foundProcess ? foundProcess.name : key,
+              activities: [],
+              instances: []
+            }
+          }
+          if (!grouped[groupKey].activities.some(a => a.activityId === activity.activityId)) {
+            grouped[groupKey].activities.push({
+              ...activity,
+              isStatic: activity.isStatic
+            })
+          }
+          if (!grouped[groupKey].instances.some(i => i.id === instance.id)) {
+            grouped[groupKey].instances.push(instance)
+          }
+        })
+      })
+      return grouped
+    },
+
+    getStaticCallActivityIdsFromXml(xmlString) {
+      const parser = new DOMParser()
+      const xmlDoc = parser.parseFromString(xmlString, 'application/xml')
+      const callActivities = xmlDoc.getElementsByTagName('bpmn:callActivity')
+      const staticIds = []
+      for (let i = 0; i < callActivities.length; i++) {
+        const el = callActivities[i]
+        const calledElement = el.getAttribute('calledElement')
+        const id = el.getAttribute('id')
+        if (calledElement && !calledElement.trim().startsWith('${')) {
+          staticIds.push(id)
+        }
+      }
+      return staticIds
+    },
+    markStaticOrDynamic(activitiesList, staticActivityIds) {
+      return activitiesList.map(activity => ({
+        ...activity,
+        isStatic: staticActivityIds.includes(activity.activityId)
+      }))
+    },
+    getCalledProcessState(activities) {
+      const hasRunning = activities.some(act => act.endTime == null && act.canceled !== true)
+      const hasReferenced = activities.some(act => act.isStatic)
+      if (hasRunning && hasReferenced) return this.$t('process-instance.calledProcessDefinitions.runningAndReferenced')
+      if (hasRunning) return this.$t('process-instance.calledProcessDefinitions.running')
+      if (hasReferenced) return this.$t('process-instance.calledProcessDefinitions.referenced')
+      return null
+    },
+    filterByActivity() {
+      if (this.selectedActivityId) {
+        this.calledProcesses = this.allCalledProcesses
+          .filter(cp => cp.activities.some(act => act.activityId === this.selectedActivityId))
+          .map(cp => this.mapSelectedActivity(cp, this.selectedActivityId))
+      } else {
+        this.calledProcesses = [...this.allCalledProcesses]
+      }
+    },
+    mapSelectedActivity(cp, activityId) {
+      const selectedActivity = cp.activities.find(act => act.activityId === activityId)
+      return {
+        ...cp,
+        activities: [selectedActivity]
+      }
+    }
+  }
 }
 </script>

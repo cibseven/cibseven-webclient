@@ -204,6 +204,7 @@
 			"activity": "Дія",
 			"state": "Стан",
 			"referenced": "Посилається",
+			"running": "Виконується",
 			"runningAndReferenced": "Запущено i посилається"
 		},
 		"details": {
@@ -895,7 +896,7 @@
 				},
 				"deployments": {
 					"title": "Розгортання",
-					"tooltip": "Переглянути всі доступні ресурси для розгорнутих процесів"
+					"tooltip": "Переглянути всі доступні ресурси для розгорнуті процесів"
 				},
 				"batches": {
 					"title": "Пакетна обробка",
@@ -936,7 +937,7 @@
 			"urlError": "URL недійсний",
 			"errorSaveTask": "Під час збереження завдання сталася помилка.",
 			"taskSelectedNotExist": "Це завдання більше недоступне, тому не буде показано на центральній панелі",
-			"ExistingUserRequestException": "Користувач уже існує",
+			"ExistingUserRequestException": "Користувач вже існує",
 			"ExistingGroupRequestException": "Група вже існує",
 			"processNotFound": "Процес з ключем \"{0}\" не знайдено",
 			"filterSaveError": "Сталася помилка під час спроби зберегти фільтр, перевірте введені дані.",

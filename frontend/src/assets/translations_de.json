@@ -204,6 +204,7 @@
 			"activity": "Aktivität",
 			"state": "Status",
 			"referenced": "Referenziert",
+			"running": "Laufend",
 			"runningAndReferenced": "Laufend und referenziert"
 		},
 		"details": {

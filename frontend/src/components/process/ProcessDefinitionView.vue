@@ -46,7 +46,6 @@
           :max-results="maxResults"
           :activity-instance-history="activityInstanceHistory"
           :incidents="incidents"
-          :calledProcesses="calledProcesses"
           @show-more="showMore()"
           @instance-deleted="onInstanceDeleted()"
           @task-selected="setSelectedTask($event)"
@@ -126,7 +125,6 @@ export default {
       filter: '',
       loading: false,
       incidents: [],
-      calledProcesses: [],
       componentReady: false
     }
   },
@@ -298,8 +296,7 @@ export default {
         if (!this.process.activitiesHistory) this.loadProcessActivitiesHistory()
         return Promise.all([
           this.loadInstances(),
-          this.loadIncidents(),
-          this.loadCalledProcesses()
+          this.loadIncidents()
         ]).then(() => {
           resolve()
         })
@@ -343,19 +340,6 @@ export default {
     loadStatistics: function() {
       ProcessService.findProcessStatistics(this.process.id).then(statistics => {
         this.$store.dispatch('setStatistics', { process: this.process, statistics: statistics })
-      })
-    },
-    loadCalledProcesses: function() {
-      this.calledProcesses = []
-      ProcessService.findCalledProcessDefinitions(this.process.id).then(response => {
-        this.calledProcesses = response
-        this.calledProcesses.forEach(process => {
-          ProcessService.findCurrentProcessesInstances({
-            processDefinitionId: process.id
-          }).then(instances => {
-            process.currentInstances = instances
-          })
-        })
       })
     },
     onInstanceDeleted: function() {

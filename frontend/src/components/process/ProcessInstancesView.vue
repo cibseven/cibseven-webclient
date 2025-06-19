@@ -91,7 +91,7 @@
           :activity-instance-history="process.activitiesHistory"/>
         <JobDefinitionsTable v-else-if="activeTab === 'jobDefinitions'"
           :process-id="process.id" />
-        <CalledProcessDefinitionsTable v-else-if="activeTab === 'calledProcessDefinitions'" :calledProcesses="calledProcesses"/>
+        <CalledProcessDefinitionsTable v-else-if="activeTab === 'calledProcessDefinitions'" :process="process" :instances="instances" />
         <component :is="ProcessInstancesTabsContentPlugin" v-if="ProcessInstancesTabsContentPlugin" :process="process" :active-tab="activeTab"></component>
       </div>
     </div>
@@ -142,7 +142,7 @@ export default {
   mixins: [permissionsMixin, resizerMixin, copyToClipboardMixin],
   props: { instances: Array, process: Object, firstResult: Number, maxResults: Number, incidents: Array,
     activityInstance: Object, activityInstanceHistory: Array, loading: Boolean,
-    processKey: String, calledProcesses: Array,
+    processKey: String,
     versionIndex: { type: String, default: '' }
   },
   data: function() {
@@ -163,6 +163,7 @@ export default {
       //TODO: Refactor to fetch from store
       ProcessService.fetchDiagram(this.process.id).then(response => {
         this.$refs.diagram.showDiagram(response.bpmn20Xml)
+        this.setDiagramXml(response.bpmn20Xml)
       }),
       this.clearActivitySelection()
       this.getJobDefinitions()
@@ -172,7 +173,8 @@ export default {
   mounted: function() {
     ProcessService.fetchDiagram(this.process.id).then(response => {
       setTimeout(() => {
-        this.$refs.diagram.showDiagram(response.bpmn20Xml)
+        this.$refs.diagram.showDiagram(response.bpmn20Xml)        
+        this.setDiagramXml(response.bpmn20Xml)
       }, 100)
     }),
     this.getJobDefinitions()
@@ -207,7 +209,7 @@ export default {
     ...mapGetters(['selectedActivityId']),
   },
   methods: {    
-    ...mapActions(['clearActivitySelection']),
+    ...mapActions(['clearActivitySelection', 'setDiagramXml']),
     applySorting: function(sortedItems) {
       this.sorting = true
       this.sortDesc = null

@@ -286,13 +286,10 @@ var HistoryService = {
     return axios.get(getServicesBasePath() + "/task-history/" + activityInstanceId + "/variables")
   },
   findProcessesInstancesHistory: function(filters, firstResult, maxResults) {
-    return axios.post(getServicesBasePath() + "/process-history/instance", {
-      params: {
-        filters: filters,
-        firstResult: firstResult,
-        maxResults: maxResults
-      }
-    })
+    const params = {}
+    if (firstResult != null) params.firstResult = firstResult
+    if (maxResults != null) params.maxResults = maxResults
+    return axios.post(getServicesBasePath() + '/process-history/instance', filters, { params })
   },
   
   findProcessesInstancesHistoryById: function(id, activityId, firstResult, maxResults, text, active) {
