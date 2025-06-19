@@ -23,14 +23,14 @@
         </b-button>
       </div>
     </div>
-    <div class="overflow-auto bg-white container-fluid g-0 flex-grow-1">
+    <div class="overflow-y-scroll bg-white container-fluid g-0 flex-grow-1">
       <FlowTable v-if="!loading" striped resizable thead-class="sticky-header" :items="filteredVariables" primary-key="id" prefix="process-instance.variables."
-        sort-by="label" :sort-desc="true" :fields="[
+        sort-by="name" :sort-desc="false" :fields="[
         { label: 'name', key: 'name', class: 'col-3', tdClass: 'py-1 border-end border-top-0' },
         { label: 'type', key: 'type', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
-        { label: 'value', key: 'value', class: 'col-4', tdClass: 'py-1 border-end border-top-0' },
+        { label: 'value', key: 'value', class: 'col-3', tdClass: 'py-1 border-end border-top-0' },
         { label: 'scope', key: 'scope', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
-        { label: 'actions', key: 'actions', class: 'col-1', sortable: false, tdClass: 'py-1 border-top-0' }]">
+        { label: 'actions', key: 'actions', class: 'col-2', sortable: false, tdClass: 'py-1 border-top-0' }]">
         <template v-slot:cell(name)="table">
           <div :title="table.item.name" class="text-truncate">{{ table.item.name }}</div>
         </template>
@@ -65,7 +65,7 @@
         <p class="text-center p-4"><BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}</p>
       </div>
     </div>
-    
+
     <AddVariableModal ref="addVariableModal" :selected-instance="selectedInstance" @variable-added="loadSelectedInstanceVariables(); $refs.success.show()"></AddVariableModal>
     <DeleteVariableModal ref="deleteVariableModal"></DeleteVariableModal>
     <SuccessAlert top="0" ref="success">{{ $t('alert.successOperation') }}</SuccessAlert>
