@@ -168,6 +168,7 @@ export default {
       //TODO: Refactor to fetch from store
       ProcessService.fetchDiagram(this.process.id).then(response => {
         this.$refs.diagram.showDiagram(response.bpmn20Xml)
+        this.setDiagramXml(response.bpmn20Xml)
       }),
       this.clearActivitySelection()
       this.changeTab({ id: 'instances' })
@@ -176,7 +177,8 @@ export default {
   mounted: function() {
     ProcessService.fetchDiagram(this.process.id).then(response => {
       setTimeout(() => {
-        this.$refs.diagram.showDiagram(response.bpmn20Xml)
+        this.$refs.diagram.showDiagram(response.bpmn20Xml)        
+        this.setDiagramXml(response.bpmn20Xml)
       }, 100)
     })
   },
@@ -211,7 +213,7 @@ export default {
     ...mapGetters('instances', ['instances']),
   },
   methods: {    
-    ...mapActions(['clearActivitySelection']),
+    ...mapActions(['clearActivitySelection', 'setDiagramXml']),
     applySorting: function(sortedItems) {
       this.sorting = true
       this.sortDesc = null

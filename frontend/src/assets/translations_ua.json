@@ -204,6 +204,7 @@
 			"activity": "Дія",
 			"state": "Стан",
 			"referenced": "Посилається",
+			"running": "Виконується",
 			"runningAndReferenced": "Запущено i посилається"
 		},
 		"details": {

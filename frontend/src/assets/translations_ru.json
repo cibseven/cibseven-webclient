@@ -204,6 +204,7 @@
 			"activity": "Действие",
 			"state": "Состояние",
 			"referenced": "Ссылается",
+			"running": "Выполняется",
 			"runningAndReferenced": "Запущен и ссылается"
 		},
 		"details": {

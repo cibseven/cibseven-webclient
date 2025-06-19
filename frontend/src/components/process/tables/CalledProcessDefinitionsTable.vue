@@ -28,58 +28,77 @@
         { label: 'activity', key: 'activity', class: 'col-4', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' }
       ]">
       <template v-slot:cell(name)="table">
-        <router-link
-          :to="{
-            name: 'process', 
-            params: {
-              processKey: table.item.key,
-              versionIndex: table.item.version
-            }
-          }"
-          :title="table.item.name || table.item.key"
-          class="text-truncate"
-        >
-          {{ table.item.name || table.item.key }}
-        </router-link>
+        <CopyableActionButton
+            :display-value="table.item.name || table.item.key"
+            :title="table.item.name"
+            @copy="copyValueToClipboard"
+            :to="{
+              name: 'process', 
+              params: {
+                processKey: table.item.key,
+                versionIndex: table.item.version
+              }
+            }"
+          />
       </template>
       <template v-slot:cell(state)="table">
-        <span :title="getCalledProcessState(table.item)" class="text-truncate">
-          {{ getCalledProcessState(table.item) }}
+        <span v-if="table.item.activities.length" class="text-truncate">
+          {{ $t(getCalledProcessState(table.item.activities)) }}
         </span>
       </template>
       <template v-slot:cell(activity)="table">
-        <button class="btn btn-link text-truncate p-0" :title="table.item.calledFromActivityIds[0]" 
-          @click="setHighlightedElement(table.item.calledFromActivityIds[0])">
-          {{ $store.state.activity.processActivities[table.item.calledFromActivityIds[0]] }}
-      </button>
+        <div class="w-100">
+          <CopyableActionButton
+            v-for="(act, index) in table.item.activities" :key="index" 
+            :display-value="act.activityName"
+            :title="act.activityName"
+            @click="selectActivity(act.activityId)"
+            @copy="copyValueToClipboard"
+          />
+        </div>
       </template>
     </FlowTable>
     <div v-else-if="!loading">
       <p class="text-center p-4">{{ $t('process-instance.noResults') }}</p>
     </div>
   </div>
+  <SuccessAlert ref="messageCopy" style="z-index: 9999"> {{ $t('process.copySuccess') }} </SuccessAlert>
 </template>
 
 <script>
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import { BWaitingBox } from 'cib-common-components'
 import { mapActions, mapGetters } from 'vuex'
+import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
+import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
+import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
+
 
 export default {
   name: 'CalledProcessDefinitionsTable',
-  components: { FlowTable, BWaitingBox },
+  components: { FlowTable, CopyableActionButton, SuccessAlert, BWaitingBox },
+  mixins: [copyToClipboardMixin],
   props: {
     process: Object
   },
-  computed: {
-    ...mapGetters('calledProcessDefinitions', ['calledProcessDefinitions'])
-  },
   data() {
     return {
-      loading: true
+      loading: false
     }
   },
+  computed: {
+    ...mapGetters('calledProcessDefinitions', [
+      'calledProcessDefinitions', 
+      'allCalledProcessDefinitions', 
+      'getCalledProcessState'
+    ]),
+    ...mapGetters(['diagramXml', 'selectedActivityId']),
+  },
   watch: {
+    selectedActivityId() {
+      this.setHighlightedElement(this.selectedActivityId)
+      this.filterByActivity(this.selectedActivityId)
+    },
     'process.id': {
       handler(id) {
         if (id) {
@@ -90,22 +109,24 @@ export default {
     }
   },
   methods: {
-    ...mapActions(['setHighlightedElement']),
-    ...mapActions('calledProcessDefinitions', ['loadCalledProcessDefinitions']),
+    ...mapActions(['setHighlightedElement', 'selectActivity']),
+    ...mapActions('calledProcessDefinitions', [
+      'loadCalledProcessDefinitions', 
+            'filterByActivity'
+    ]),
     async loadCalledProcessDefinitionsData(processId) {
       this.loading = true
       try {
-        await this.loadCalledProcessDefinitions(processId)
+        await this.loadCalledProcessDefinitions({ 
+          processId, 
+          diagramXml: this.diagramXml 
+        })
+      } catch (error) {
+        console.error('Error loading called processes:', error)
       } finally {
         this.loading = false
       }
-    },
-    getCalledProcessState(item) {
-      const instances = item.currentInstances || []
-      return instances.length > 0 
-        ? this.$t('process-instance.calledProcessDefinitions.runningAndReferenced')
-        : this.$t('process-instance.calledProcessDefinitions.referenced')
     }
-  },
+  }
 }
 </script>
