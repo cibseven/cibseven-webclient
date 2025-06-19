@@ -32,7 +32,7 @@ export default {
     }
   },
   actions: {
-    async loadCalledProcessDefinitions({ commit, rootState }, { processId, diagramXml }) {
+    async loadCalledProcessDefinitions({ commit, rootState, getters }, { processId, diagramXml }) {
       commit('setCalledProcessDefinitions', [])
       
       try {
@@ -47,8 +47,8 @@ export default {
           return
         }
 
-        const staticIds = this.getters['calledProcessDefinitions/getStaticCallActivityIdsFromXml'](diagramXml)
-        const activityList = this.getters['calledProcessDefinitions/markStaticOrDynamic'](activities, staticIds)
+        const staticIds = getters.getStaticCallActivityIdsFromXml(diagramXml)
+        const activityList = getters.markStaticOrDynamic(activities, staticIds)
 
         const filteredActivities = activityList.filter(activity => {
           return activity.isStatic || (!activity.endTime && activity.canceled !== true && activity.deleted !== true)
@@ -61,7 +61,7 @@ export default {
             processInstanceIds: instancesIdList
           })
           
-          const groupedProcesses = this.getters['calledProcessDefinitions/groupCalledProcesses'](
+          const groupedProcesses = getters.groupCalledProcesses(
             filteredActivities, 
             processInstances, 
             rootState
@@ -76,11 +76,11 @@ export default {
       }
     },
 
-    filterByActivity({ commit, state }, selectedActivityId) {
+    filterByActivity({ commit, state, getters }, selectedActivityId) {
       if (selectedActivityId) {
         const filtered = state.allCalledProcessDefinitions
           .filter(cp => cp.activities.some(act => act.activityId === selectedActivityId))
-          .map(cp => this.getters['calledProcessDefinitions/mapSelectedActivity'](cp, selectedActivityId))
+          .map(cp => getters.mapSelectedActivity(cp, selectedActivityId))
         commit('setCalledProcessDefinitions', filtered)
       } else {
         commit('setCalledProcessDefinitions', [...state.allCalledProcessDefinitions])
