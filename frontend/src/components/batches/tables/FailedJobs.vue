@@ -81,10 +81,10 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['jobs'])
+    ...mapGetters('job', ['jobs'])
   },
   methods: {
-    ...mapActions(['loadJobs', 'retryJobById', 'getHistoryJobLog', 'getHistoryJobLogStacktrace', 'deleteJob']),
+    ...mapActions('job', ['loadJobs', 'retryJobById', 'getHistoryJobLog', 'getHistoryJobLogStacktrace', 'deleteJob']),
     async loadFailedJobs() {
       if (!this.batch?.batchJobDefinitionId) return
       this.loading = true
