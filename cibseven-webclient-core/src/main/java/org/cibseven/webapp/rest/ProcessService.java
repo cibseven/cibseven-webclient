@@ -247,7 +247,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			@RequestBody Map<String, Object> data,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.CREATE_INSTANCE_ALL);
+		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.CREATE_ALL);
 		return bpmProvider.startProcess(key, tenantId, data, user);
 	}
 	
