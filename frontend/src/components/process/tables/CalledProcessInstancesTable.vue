@@ -54,10 +54,10 @@
               versionIndex: table.item.version
             }
           }"
-          :title="table.item.name"
+          :title="table.item.name || table.item.key"
           class="text-truncate"
         >
-        {{ table.item.name }}
+        {{ table.item.name || table.item.key }}
         </router-link>
       </template>
       <template v-slot:cell(callingActivity)="table">

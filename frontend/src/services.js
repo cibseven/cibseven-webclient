@@ -361,8 +361,14 @@ var IncidentService = {
   retryJobById: function(id, params) {
     return axios.put(getServicesBasePath() + "/incident/job/" + id + "/retries", params)
   },
-  findIncidents: function(processDefinitionId) {
-    return axios.get(getServicesBasePath() + "/incident?processDefinitionId=" + processDefinitionId)
+  findIncidents: function(params) {
+    const queryParams = new URLSearchParams()
+    Object.keys(params).forEach(key => {
+      if (params[key] !== undefined && params[key] !== null) {
+        queryParams.append(key, params[key])
+      }
+    })
+    return axios.get(getServicesBasePath() + "/incident?" + queryParams.toString())
   },
   setIncidentAnnotation: function(id, params) {
     return axios.put(getServicesBasePath() + "/incident/" + id + "/annotation", params)

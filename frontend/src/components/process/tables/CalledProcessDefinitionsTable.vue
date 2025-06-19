@@ -18,7 +18,10 @@
 -->
 <template>
   <div class="overflow-auto bg-white container-fluid g-0">
-    <FlowTable v-if="calledProcesses.length > 0" resizable striped thead-class="sticky-header" :items="calledProcesses" primary-key="id" prefix="process-instance.calledProcessDefinitions."
+    <div v-if="loading">
+      <p class="text-center p-4"><BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}</p>
+    </div>
+    <FlowTable v-else-if="calledProcessDefinitions.length > 0" resizable striped thead-class="sticky-header" :items="calledProcessDefinitions" primary-key="id" prefix="process-instance.calledProcessDefinitions."
       sort-by="label" :sort-desc="true" :fields="[
         { label: 'calledProcessDefinition', key: 'name', class: 'col-4', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' },
         { label: 'state', key: 'state', class: 'col-4', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' },
@@ -55,7 +58,7 @@
         </div>
       </template>
     </FlowTable>
-    <div v-else>
+    <div v-else-if="!loading">
       <p class="text-center p-4">{{ $t('process-instance.noResults') }}</p>
     </div>
   </div>
@@ -64,40 +67,58 @@
 
 <script>
 import FlowTable from '@/components/common-components/FlowTable.vue'
+import { BWaitingBox } from 'cib-common-components'
 import { mapActions, mapGetters } from 'vuex'
 import { HistoryService } from '@/services.js'
 import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 
+
 export default {
   name: 'CalledProcessDefinitionsTable',
-  components: { FlowTable, CopyableActionButton, SuccessAlert },
+  components: { FlowTable, CopyableActionButton, SuccessAlert, BWaitingBox },
   mixins: [copyToClipboardMixin],
   props: {
-    process: Object,
-    instances: Array
+    process: Object
+  },
+  computed: {
+    ...mapGetters('calledProcessDefinitions', ['calledProcessDefinitions']),
+    ...mapGetters(['diagramXml', 'selectedActivityId']),
+  },
+  data() {
+    return {
+      loading: true
+    }
   },
   watch: {
     selectedActivityId() {
       this.setHighlightedElement(this.selectedActivityId)
       this.filterByActivity()
+    },
+    'process.id': {
+      handler(id) {
+        if (id) {
+          this.loadCalledProcessDefinitionsData(id)
+        }
+      },
+      immediate: true
     }
-  },
-  data() {
-    return {
-      calledProcesses: [],
-      allCalledProcesses: []
-    }
-  },
-  computed: {
-    ...mapGetters(['diagramXml', 'selectedActivityId']),
   },
   created() {
     this.loadCalledProcesses()
   },
   methods: {
     ...mapActions(['setHighlightedElement', 'selectActivity']),
+    ...mapActions('calledProcessDefinitions', ['loadCalledProcessDefinitions']),
+    async loadCalledProcessDefinitionsData(processId) {
+      this.loading = true
+      try {
+        await this.loadCalledProcessDefinitions(processId)
+      } finally {
+        this.loading = false
+      }
+    },
     loadCalledProcesses: function () {
       this.calledProcesses = []
 
