@@ -122,20 +122,20 @@
 </template>
 
 <script>
-import procesessVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
-import { ProcessService, HistoryService } from '@/services.js'
-import { mapActions, mapGetters } from 'vuex'
+import { BWaitingBox } from 'cib-common-components'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import TaskPopper from '@/components/common-components/TaskPopper.vue'
-import AddVariableModal from '@/components/process/modals/AddVariableModal.vue'
+import { ProcessService, VariableInstanceService } from '@/services.js'
 import DeleteVariableModal from '@/components/process/modals/DeleteVariableModal.vue'
+import AddVariableModal from '@/components/process/modals/AddVariableModal.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
-import { BWaitingBox } from 'cib-common-components'
+import processesVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
+import { mapGetters, mapActions } from 'vuex'
 
 export default {
   name: 'VariablesTable',
   components: { FlowTable, TaskPopper, AddVariableModal, DeleteVariableModal, SuccessAlert, BWaitingBox },
-  mixins: [procesessVariablesMixin],
+  mixins: [processesVariablesMixin],
   data: function() {
     return {
       filteredVariables: [],
@@ -162,7 +162,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions('variableInstance', ['getVariableInstance', 'clearVariableInstance']),
+    ...mapActions('variableInstance', ['clearVariableInstance', 'getVariableInstance']),
     isFileValueDataSource: function(item) {
       if (item.type === 'Object') {
         if (item.value && item.value.objectTypeName) {
@@ -203,7 +203,7 @@ export default {
           this.$refs.success.show()
         })
       } else {
-        HistoryService.deleteVariableHistoryInstance(variable.id).then(() => {
+        VariableInstanceService.deleteVariableHistoryInstance(variable.id).then(() => {
           this.loadSelectedInstanceVariables()
           this.$refs.success.show()
         })
