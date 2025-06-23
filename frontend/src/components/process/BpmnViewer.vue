@@ -90,7 +90,8 @@ export default {
     statistics: Array,
     processDefinitionId: String,
     activitiesHistory: Array,
-    activeTab: String
+    activeTab: String,
+    selectedInstance: Object
   },
   data: function() {
     return {
