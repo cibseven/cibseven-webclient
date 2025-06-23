@@ -1,5 +1,4 @@
 <!--
-
     Copyright CIB software GmbH and/or licensed to CIB software GmbH
     under one or more contributor license agreements. See the NOTICE file
     distributed with this work for additional information regarding copyright
@@ -14,14 +13,13 @@
      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
      See the License for the specific language governing permissions and
      limitations under the License.
-
 -->
 <template>
   <div class="d-flex flex-column">
     <div class="d-flex ps-3 py-2">
       <b-button :title="$t('start.cockpit.processes.title')" variant="outline-secondary" href="#/seven/auth/processes/list" class="mdi mdi-18px mdi-arrow-left border-0"></b-button>
       <h4 class="ps-1 m-0 align-items-center d-flex" style="border-width: 3px !important">{{ processName }}</h4>
-      <b-button :disabled="!storeInstances || storeInstances.length === 0" :title="$t('process.exportInstances')" variant="outline-secondary" @click="exportCSV()"
+      <b-button :disabled="!instances || instances.length === 0" :title="$t('process.exportInstances')" variant="outline-secondary" @click="exportCSV()"
         class="ms-auto me-3 mdi mdi-18px mdi-download-outline border-0"></b-button>
     </div>
     <SidebarsFlow ref="sidebars" class="border-top overflow-auto" :left-open="leftOpen" @update:left-open="leftOpen = $event" :left-caption="shortendLeftCaption">
@@ -32,7 +30,7 @@
           :version-index="versionIndex"
           @on-refresh-process-definitions="onRefreshProcessDefinitions"
           @on-delete-process-definition="onDeleteProcessDefinition"
-          :instances="storeInstances"></ProcessDetailsSidebar>
+          :instances="instances"></ProcessDetailsSidebar>
       </template>
       <transition name="slide-in" mode="out-in">
         <ProcessInstancesView ref="process" v-if="process && !selectedInstance && !instanceId"
@@ -113,9 +111,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters('instances', {
-      storeInstances: 'instances'
-    }),
+    ...mapGetters('instances', ['instances']),
     shortendLeftCaption: function() {
       return this.$t('process.details.historyVersions')
     },
@@ -153,15 +149,15 @@ export default {
     ...mapActions(['clearActivitySelection']),
     formatDate,
     loadInstanceById: function(instanceId) {
-      ProcessService.findProcessInstance(instanceId).then(instance => {
+      // Always use HistoryService for process instance fetching
+      HistoryService.findProcessInstance(instanceId).then(instance => {
         if (instance) {
           this.setSelectedInstance({ selectedInstance: instance })
         }
       }).catch(() => {
         // Fallback to checking store instances
-        const instances = this.storeInstances
-        if (instances) {
-          const selectedInstance = instances.find(i => i.id == instanceId)
+        if (this.instances) {
+          const selectedInstance = this.instances.find(i => i.id == instanceId)
           if (selectedInstance) {
             this.setSelectedInstance({ selectedInstance })
           }
@@ -379,8 +375,7 @@ export default {
       headers.forEach(h => h.text = this.$t('process.' + h.text))
       var csvContent = headers.map(h => h.text).join(';') + '\n'
       var keys = headers.map(h => h.key)
-      const instances = this.storeInstances
-      instances.forEach(v => {
+      this.instances.forEach(v => {
         const formattedValues = { 
           ...v, 
           startTime: this.formatDate(v.startTime), 
