@@ -156,8 +156,8 @@ export default {
         }
       }).catch(() => {
         // Fallback to checking store instances
-        const selectedInstance = this.instances.find(i => i.id == instanceId)
         if (this.instances) {
+          const selectedInstance = this.instances.find(i => i.id == instanceId)
           if (selectedInstance) {
             this.setSelectedInstance({ selectedInstance })
           }
