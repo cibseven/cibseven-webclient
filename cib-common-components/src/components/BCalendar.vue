@@ -54,7 +54,7 @@
         </button>
       </div>
     </div>
-    <div class="calendar-footer mt-3 d-flex">
+    <div v-if="showToday || showReset" class="calendar-footer mt-3 d-flex">
       <BButton v-if="showToday" size="sm" variant="outline-primary" @click="selectToday">{{ $t('bcomponents.calendar.today') }}</BButton>
       <BButton v-if="showReset" size="sm" variant="outline-danger" class="ms-auto" @click="clearSelection">
         {{ $t('bcomponents.calendar.clearSelection') }}
