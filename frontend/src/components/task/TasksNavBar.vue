@@ -121,14 +121,6 @@
                 <b-calendar @input="setTime(null, 'followUp')" v-model="selectedDateT.followUp" value-as-date :start-weekday="1" :locale="currentLanguage()" block
                 :label-no-date-selected="$t('cib-datepicker2.noDate')" :date-format-options="{ year: 'numeric', month: '2-digit', day: '2-digit' }"
                 :label-reset-button="$t('cib-datepicker2.reset')" :label-today-button="$t('cib-datepicker2.today')" :date-disabled-fn="isInThePast" label-help="">
-                  <div class="d-flex">
-                    <b-button size="sm" variant="outline-primary"  @click="selectedDateT.followUp = new Date();">
-                      {{ $t('cib-datepicker2.today') }}
-                    </b-button>
-                    <b-button size="sm" variant="outline-danger" class="ms-auto" @click="selectedDateT.followUp = null">
-                      {{ $t('cib-datepicker2.reset') }}
-                    </b-button>
-                  </div>
                 </b-calendar>
                 <template v-slot:modal-footer>
                   <b-button @click="$refs['followUp' + task.id][0].hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
@@ -139,14 +131,6 @@
                 <b-calendar @input="setTime(selectedDateT.dueTime, 'due')" v-model="selectedDateT.due" value-as-date :start-weekday="1" :locale="currentLanguage()" block
                 :label-no-date-selected="$t('cib-datepicker2.noDate')" :date-format-options="{ year: 'numeric', month: '2-digit', day: '2-digit' }"
                 :label-reset-button="$t('cib-datepicker2.reset')" :label-today-button="$t('cib-datepicker2.today')" label-help="">
-                  <div class="d-flex">
-                    <b-button size="sm" variant="outline-primary" @click="selectedDateT.due = new Date(); setTime(selectedDateT.dueTime, 'due')">
-                      {{ $t('cib-datepicker2.today') }}
-                    </b-button>
-                    <b-button size="sm" variant="outline-danger" class="ms-auto" @click="selectedDateT.due = null">
-                      {{ $t('cib-datepicker2.reset') }}
-                    </b-button>
-                  </div>
                 </b-calendar>
                 <hr>
                 <b-form-timepicker v-model="selectedDateT.dueTime" @input="setTime($event, 'due')" no-close-button :label-no-time-selected="$t('cib-timepicker.noDate')"
@@ -223,7 +207,7 @@ export default {
       handler: function (taskId) {
         this.checkTaskIdInUrl(taskId)
 		    if (taskId && !this.justSelectedFromList) {
-		      this.scrollToSelectedTask()	
+		      this.scrollToSelectedTask()
 		    }
         this.justSelectedFromList = false;
 	    }
