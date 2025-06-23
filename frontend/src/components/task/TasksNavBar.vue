@@ -198,7 +198,8 @@ export default {
       pauseRefreshButton: false,
       advancedFilter: [],
       advancedFilterAux: null,
-	    justSelectedFromList: false
+	    justSelectedFromList: false,
+      pendingScrollToTaskId: null
     }
   },
   watch: {
@@ -207,10 +208,23 @@ export default {
       handler: function (taskId) {
         this.checkTaskIdInUrl(taskId)
 		    if (taskId && !this.justSelectedFromList) {
-		      this.scrollToSelectedTask()
-		    }
+		      this.pendingScrollToTaskId = taskId
+		    } else {
+          this.pendingScrollToTaskId = null
+        }
         this.justSelectedFromList = false;
 	    }
+    },
+    'tasksFiltered': {
+      immediate: false,
+      handler: function () {
+        if (this.pendingScrollToTaskId) {
+          this.$nextTick(() => {
+            this.scrollToSelectedTask()
+            this.pendingScrollToTaskId = null
+          })
+        }
+      }
     },
     'advancedFilter': {
       deep: true,
@@ -470,26 +484,26 @@ export default {
       }
     },
 	  scrollToSelectedTask(retryCount = 0) {
-      const MAX_SCROLL_RETRIES = 5;
-	    const taskId = this.$route.params.taskId;
-	    const ref = this.$refs['taskItem-' + taskId];
-	    let el = null;
+      const MAX_SCROLL_RETRIES = 5
+	    const taskId = this.$route.params.taskId
+	    const ref = this.$refs['taskItem-' + taskId]
+	    let el = null
 	    if (Array.isArray(ref)) {
-	      el = ref[0]?.$el || ref[0];
+	      el = ref[0]?.$el || ref[0]
 	    } else if (ref && ref.$el) {
-	      el = ref.$el;
+	      el = ref.$el
 	    } else {
-	      el = ref;
+	      el = ref
 	    }
 	    if (el && typeof el.scrollIntoView === 'function') {
-	      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-	      this.pendingScrollToTaskId = null;
+	      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+	      this.pendingScrollToTaskId = null
 	    } else if (retryCount < MAX_SCROLL_RETRIES){
-	      setTimeout(() => this.scrollToSelectedTask(retryCount + 1), 100);
+	      setTimeout(() => this.scrollToSelectedTask(retryCount + 1), 100)
 	    } else {
-	      console.warn(`scrollToSelectedTask: Element not found after ${MAX_SCROLL_RETRIES} retries.`);
+	      console.warn(`scrollToSelectedTask: Element not found after ${MAX_SCROLL_RETRIES} retries.`)
       }
-	  }
+    }
   }
 }
 </script>
