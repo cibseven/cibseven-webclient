@@ -32,8 +32,16 @@
     </router-link>
 
     <div @mousedown="handleMouseDown" class="v-resizable position-absolute w-100" style="left: 0" :style="'height: ' + bpmnViewerHeight + 'px; ' + toggleTransition">
-      <BpmnViewer @child-activity="filterByChildActivity($event)" @task-selected="selectTask($event)" :activityId="activityId" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" :statistics="process.statistics"
-        :process-definition-id="process.id" ref="diagram" class="h-100" :activities-history="process.activitiesHistory"></BpmnViewer>
+      <component :is="BpmnViewerPlugin" v-if="BpmnViewerPlugin" ref="diagram" class="h-100"
+        @child-activity="filterByChildActivity($event)" @task-selected="selectTask($event)" @activity-map-ready="activityMap = $event"
+        :activityId="activityId" :activity-instance="activityInstance" :process-definition-id="process.id" :selected-instance="selectedInstance" :activity-instance-history="activityInstanceHistory" 
+        :statistics="process.statistics" :activities-history="process.activitiesHistory" :active-tab="activeTab" >
+      </component>
+      <BpmnViewer v-else ref="diagram" class="h-100"
+        @child-activity="filterByChildActivity($event)" @task-selected="selectTask($event)" :activityId="activityId" 
+        :activity-instance="activityInstance" :selected-instance="selectedInstance" :activity-instance-history="activityInstanceHistory" 
+        :statistics="process.statistics" :process-definition-id="process.id" :activities-history="process.activitiesHistory">
+      </BpmnViewer>
       <span role="button" size="sm" variant="light" class="bg-white px-2 py-1 me-1 position-absolute border rounded" style="bottom: 15px; left: 15px;" @click="toggleContent">
         <span class="mdi mdi-18px" :class="toggleIcon"></span>
       </span>
@@ -112,7 +120,12 @@ export default {
       return this.$options.components && this.$options.components.ProcessInstanceTabsContentPlugin
         ? this.$options.components.ProcessInstanceTabsContentPlugin
         : null
-    }
+    },
+    BpmnViewerPlugin: function() {
+      return this.$options.components && this.$options.components.BpmnViewerPlugin
+        ? this.$options.components.BpmnViewerPlugin
+        : null
+    },
   },
   mounted: function() {
     ProcessService.fetchDiagram(this.process.id).then(response => {
