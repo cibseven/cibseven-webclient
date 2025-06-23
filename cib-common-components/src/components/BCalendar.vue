@@ -55,8 +55,8 @@
       </div>
     </div>
     <div class="calendar-footer mt-3 d-flex">
-      <BButton size="sm" variant="outline-primary" @click="selectToday">{{ $t('bcomponents.calendar.today') }}</BButton>
-      <BButton size="sm" variant="outline-danger" class="ms-auto" @click="clearSelection">
+      <BButton v-if="showToday" size="sm" variant="outline-primary" @click="selectToday">{{ $t('bcomponents.calendar.today') }}</BButton>
+      <BButton v-if="showReset" size="sm" variant="outline-danger" class="ms-auto" @click="clearSelection">
         {{ $t('bcomponents.calendar.clearSelection') }}
       </BButton>
     </div>
@@ -75,7 +75,15 @@ export default {
       type: [Date, String],
       default: () => null
     },
-    dateDisabledFn: { type: Function, default: null }
+    dateDisabledFn: { type: Function, default: null },
+    showReset: {
+      type: Boolean,
+      default: true
+    },
+    showToday: {
+      type: Boolean,
+      default: true
+    }
   },
   data: function () {
     return {
