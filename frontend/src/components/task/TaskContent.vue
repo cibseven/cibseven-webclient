@@ -124,8 +124,12 @@ export default {
       this.$store.commit('setCandidateUsers', [])
       this.$store.commit('setSearchUsers', [])
       this.loadIdentityLinks(taskId)
-      this.$refs.titleTask.focus()
-      this.showPopoverWithDelay(this.task.assignee) // when opened task is changed
+      this.$nextTick(() => {
+        if (this.$refs.titleTask) {
+          this.$refs.titleTask.focus()
+        }
+        this.showPopoverWithDelay(this.task.assignee) // when opened task is changed
+      })
     }
   },
   computed: {
