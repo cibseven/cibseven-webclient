@@ -114,10 +114,10 @@ var ProcessService = {
 	return axios.get(getServicesBasePath() + "/process/process-definition-id/" + id + '?extraInfo=' + extraInfo)
   },
   findProcessesInstances: function(key) {
-	return axios.get(getServicesBasePath() + "/process/instances/by-process-key/" + key)
+	  return axios.get(getServicesBasePath() + "/process/instances/by-process-key/" + key)
   },
   findProcessInstance: function(processInstanceId) {
-	return axios.get(getServicesBasePath() + "/process/process-instance/" + processInstanceId)
+	  return axios.get(getServicesBasePath() + "/process/process-instance/" + processInstanceId)
   },
   findCurrentProcessesInstances: function(filter) {
     return axios.post(getServicesBasePath() + "/process/instances", filter)
@@ -126,7 +126,7 @@ var ProcessService = {
     return axios.get(getServicesBasePath() + "/process/activity/by-process-instance/" + processInstanceId)
   },
   findCalledProcessDefinitions: function(processDefinitionId) {
-	return axios.get(getServicesBasePath() + "/process/called-process-definitions/" + processDefinitionId)
+	  return axios.get(getServicesBasePath() + "/process/called-process-definitions/" + processDefinitionId)
   },
   fetchDiagram: function(processId) { return axios.get(getServicesBasePath() + "/process/" + processId + "/diagram") },
   startProcess: function(key, tenantId, locale) {
