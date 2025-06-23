@@ -80,10 +80,10 @@ import jakarta.servlet.http.HttpServletRequest;
 
 @Component
 public class SevenProvider extends SevenProviderBase implements BpmProvider {
-	
-    @Autowired private IDeploymentProvider deploymentProvider;
+		@Autowired private IDeploymentProvider deploymentProvider;
     @Autowired private IVariableProvider variableProvider;
     @Autowired private IVariableInstanceProvider variableInstanceProvider;
+    @Autowired private IHistoricVariableInstanceProvider historicVariableInstanceProvider;
     @Autowired private ITaskProvider taskProvider;
     @Autowired private IProcessProvider processProvider;
     @Autowired private IActivityProvider activityProvider;
@@ -1144,12 +1144,27 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
   ██    ██ ███████ ██████  ██ ███████ ██████  ██      █████       ██ ██ ██  ██ ███████    ██    ███████ ██ ██  ██ ██      █████       ██████  ██████  ██    ██ ██    ██ ██ ██   ██ █████   ██████  
    ██  ██  ██   ██ ██   ██ ██ ██   ██ ██   ██ ██      ██          ██ ██  ██ ██      ██    ██    ██   ██ ██  ██ ██ ██      ██          ██      ██   ██ ██    ██  ██  ██  ██ ██   ██ ██      ██   ██ 
     ████   ██   ██ ██   ██ ██ ██   ██ ██████  ███████ ███████     ██ ██   ████ ███████    ██    ██   ██ ██   ████  ██████ ███████     ██      ██   ██  ██████    ████   ██ ██████  ███████ ██   ██ 
-                                                                                                                                                                                                 
+	                                                                                                                                                                                                 
 	*/
 
 	@Override
 	public VariableInstance getVariableInstance(String id, Boolean deserializeValue, CIBUser user) throws SystemException, NoObjectFoundException {
 		return variableInstanceProvider.getVariableInstance(id, deserializeValue, user);
+	}
+
+	/*
+	
+	██   ██ ██ ███████ ████████  ██████  ██████  ██  ██████     ██    ██  █████  ██████  ██  █████  ██████  ██      ███████     ██ ███    ██ ███████ ████████  █████  ███    ██  ██████ ███████     ██████  ██████   ██████  ██    ██ ██ ██████  ███████ ██████  
+	██   ██ ██ ██         ██    ██    ██ ██   ██ ██ ██          ██    ██ ██   ██ ██   ██ ██ ██   ██ ██   ██ ██      ██          ██ ████   ██ ██         ██    ██   ██ ████   ██ ██      ██          ██   ██ ██   ██ ██    ██ ██    ██ ██ ██   ██ ██      ██   ██ 
+	███████ ██ ███████    ██    ██    ██ ██████  ██ ██          ██    ██ ███████ ██████  ██ ███████ ██████  ██      █████       ██ ██ ██  ██ ███████    ██    ███████ ██ ██  ██ ██      █████       ██████  ██████  ██    ██ ██    ██ ██ ██   ██ █████   ██████  
+	██   ██ ██      ██    ██    ██    ██ ██   ██ ██ ██           ██  ██  ██   ██ ██   ██ ██ ██   ██ ██   ██ ██      ██          ██ ██  ██ ██      ██    ██    ██   ██ ██  ██ ██ ██      ██          ██      ██   ██ ██    ██  ██  ██  ██ ██   ██ ██      ██   ██ 
+	██   ██ ██ ███████    ██     ██████  ██   ██ ██  ██████       ████   ██   ██ ██   ██ ██ ██   ██ ██████  ███████ ███████     ██ ██   ████ ███████    ██    ██   ██ ██   ████  ██████ ███████     ██      ██   ██  ██████    ████   ██ ██████  ███████ ██   ██ 
+                                                                                                                                                                                                                                                             
+	 */
+
+	@Override
+	public VariableHistory getHistoricVariableInstance(String id, Boolean deserializeValue, CIBUser user) throws SystemException, NoObjectFoundException {
+		return historicVariableInstanceProvider.getHistoricVariableInstance(id, deserializeValue, user);
 	}
 
 }

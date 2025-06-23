@@ -30,6 +30,7 @@ import IncidentsStore from './IncidentsStore.js'
 import InstancesStore from './InstancesStore.js'
 import CalledProcessDefinitionsStore from './CalledProcessDefinitionsStore.js'
 import VariableInstanceStore from './VariableInstanceStore.js'
+import HistoricVariableInstanceStore from './HistoricVariableInstanceStore.js'
 
 export const modules = {
   process: ProcessStore,
@@ -42,6 +43,7 @@ export const modules = {
   tenant: TenantStore,
   job: JobStore,
   variableInstance: VariableInstanceStore,
+  historicVariableInstance: HistoricVariableInstanceStore,
   incidents: IncidentsStore,
   instances: InstancesStore,
   calledProcessDefinitions: CalledProcessDefinitionsStore
