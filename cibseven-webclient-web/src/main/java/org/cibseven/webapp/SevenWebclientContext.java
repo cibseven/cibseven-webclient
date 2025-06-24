@@ -109,12 +109,8 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 		CacheControl noCacheNoStore = CacheControl.noStore().cachePrivate().mustRevalidate();
 		
 		// Specifically disable caching for HTML files (using valid Spring patterns)
-		cacheConfig.addCacheMapping(noCacheNoStore, "*.html");
 		cacheConfig.addCacheMapping(noCacheNoStore, "/index.html");
-		cacheConfig.addCacheMapping(noCacheNoStore, "/embedded-forms.html");
-		cacheConfig.addCacheMapping(noCacheNoStore, "/sso-login.html");
 		cacheConfig.addCacheMapping(noCacheNoStore, "/");
-		cacheConfig.addCacheMapping(noCacheNoStore, "/themes/*/styles.html");
 		
 		registry.addInterceptor(cacheConfig);
 	}
