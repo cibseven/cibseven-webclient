@@ -142,7 +142,6 @@ export default {
         this.loading = false
       }
     },
-    
     showIncidentMessage: function(jobDefinitionId) {
       this.stackTraceMessage = ''
       IncidentService.fetchIncidentStacktraceByJobId(jobDefinitionId).then(res => {
@@ -153,9 +152,18 @@ export default {
     showPrettyTimestamp: function(orignalDate) {
       return moment(orignalDate).format('DD/MM/YYYY HH:mm:ss')
     },
-    incrementNumberRetry: function({ id, params }) {
-      IncidentService.retryJobById(id, params).then(() => {
-        this.removeIncident(id)
+    incrementNumberRetry: function({ incident, params }) {
+      // Choose the appropriate retry method based on incident type
+      let retryPromise
+      if (incident.incidentType === 'failedExternalTask' && incident.configuration) {
+        // For external task incidents, use the external task retry endpoint
+        retryPromise = IncidentService.retryExternalTaskById(incident.configuration, params)
+      } else {
+        // For other incident types, use job retry
+        retryPromise = IncidentService.retryJobById(incident.configuration, params)
+      }
+      retryPromise.then(() => {
+        this.removeIncident(incident.id)
         this.$refs.incidentRetryModal.hide()
       })
     },

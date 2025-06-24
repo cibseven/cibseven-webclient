@@ -371,6 +371,9 @@ var IncidentService = {
   retryJobById: function(id, params) {
     return axios.put(getServicesBasePath() + "/incident/job/" + id + "/retries", params)
   },
+  retryExternalTaskById: function(id, params) {
+    return axios.put(getServicesBasePath() + "/incident/external-task/" + id + "/retries", params)
+  },
   findIncidents: function(params) {
     const queryParams = new URLSearchParams()
     Object.keys(params).forEach(key => {

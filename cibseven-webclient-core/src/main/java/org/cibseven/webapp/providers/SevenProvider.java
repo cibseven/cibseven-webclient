@@ -519,10 +519,14 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	public String findStacktrace(String jobId, CIBUser user) {
 		return utilsProvider.findStacktrace(jobId, user);
 	}
-	
-	@Override
+		@Override
 	public void retryJobById(String jobId, Map<String, Object> data, CIBUser user) {
 		utilsProvider.retryJobById(jobId, data, user);
+	}
+
+	@Override
+	public void retryExternalTask(String externalTaskId, Map<String, Object> data, CIBUser user) {
+		incidentProvider.retryExternalTask(externalTaskId, data, user);
 	}
 
 	@Override
