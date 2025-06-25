@@ -1034,7 +1034,7 @@
 		"filter": "Filter"
 	},
 	"table": {
-		"selectColumns": "Spalten auswählen",
+		"selectColumns": "Spalten anzeigen",
 		"toggleColumn": "{column} Spalte umschalten"
 	},
 	"navigation": {

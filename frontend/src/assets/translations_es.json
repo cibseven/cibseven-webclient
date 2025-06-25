@@ -1034,8 +1034,8 @@
 		"filter": "Filtrar"
 	},
 	"table": {
-		"selectColumns": "Seleccionar columnas",
-		"toggleColumn": "Alternar {column} columna"
+		"selectColumns": "Mostrar columnas",
+		"toggleColumn": "Alternar \"{column}\" columna"
 	},
 	"navigation": {
 		"home": "Inicio",
