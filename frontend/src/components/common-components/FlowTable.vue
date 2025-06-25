@@ -31,19 +31,22 @@
             cursor: field.sortable !== false ? 'pointer' : 'default'
           }">
 
-          <span v-if="field.label">
-            <slot :name="'header(' + field.key +')'" :field="field">
-              {{ $t(prefix + field.label) }}
-            </slot>
-          </span>
+          <div v-if="field.label || field.sortable !== false"
+            class="d-flex align-items-center justify-content-start">
+            <div v-if="field.label">
+              <slot :name="'header(' + field.key +')'" :field="field">
+                {{ $t(prefix + field.label) }}
+              </slot>
+            </div>
 
-          <span v-if="field.sortable !== false" class="sort-icon">
-            <span v-if="isSortedByField(field)">
-              <i v-if="isSortedByFieldAscending(field)" class="mdi mdi-chevron-up"></i>
-              <i v-else class="mdi mdi-chevron-down"></i>
-            </span>
-            <i v-else class="mdi mdi-unfold-more-horizontal"></i>
-          </span>
+            <div v-if="field.sortable !== false" class="sort-icon">
+              <span v-if="isSortedByField(field)">
+                <i v-if="isSortedByFieldAscending(field)" class="mdi mdi-chevron-up"></i>
+                <i v-else class="mdi mdi-chevron-down"></i>
+              </span>
+              <i v-else class="mdi mdi-unfold-more-horizontal"></i>
+            </div>
+          </div>
 
           <span :style="columnSelectionStyle" v-if="computedColumnSelection && index === computedColumns.length - 1">
             &nbsp;
