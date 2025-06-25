@@ -182,7 +182,8 @@
 		"externalTasksLog": "Журнал зовнішніх задач",
 		"modify": "Змінити",
 		"restart": "Перезапустити",
-		"documentation": "Документація"
+		"documentation": "Документація",
+		"externalTasks": "Зовнішні завдання"
 	},
 	"process-instance": {
 		"processInstanceId": "ID екземпляра процесу",
@@ -339,6 +340,16 @@
 			"actions": "Дії",
 			"suspend": "Призупинити",
 			"resume": "Відновити"
+		},
+		"externalTasks": {
+			"id": "ID зовнішнього завдання",
+			"activityId": "Активність",
+			"topicName": "Тема",
+			"workerId": "ID працівника",
+			"lockExpirationTime": "Дата закінчення блокування",
+			"retries": "Повтори",
+			"priority": "Пріоритет",
+			"noExternalTasks": "Зовнішні завдання не знайдено"
 		}
 	},
 		"bpmn-viewer": {

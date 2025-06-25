@@ -644,6 +644,12 @@ var TenantService = {
   }
 }
 
+var ExternalTaskService = {
+  fetchExternalTasks(params) {
+    return axios.get(getServicesBasePath() + '/external-tasks', { params })
+  }
+}
+
 export { TaskService, FilterService, ProcessService, VariableInstanceService, HistoricVariableInstanceService, AdminService, JobService, JobDefinitionService, SystemService,
   HistoryService, IncidentService, AuthService, InfoService, FormsService, TemplateService, DecisionService, 
-  AnalyticsService, BatchService, TenantService, getServicesBasePath, setServicesBasePath }
+  AnalyticsService, BatchService, TenantService, ExternalTaskService, getServicesBasePath, setServicesBasePath }

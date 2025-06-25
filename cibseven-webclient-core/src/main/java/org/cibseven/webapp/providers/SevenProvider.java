@@ -40,6 +40,7 @@ import org.cibseven.webapp.rest.model.Decision;
 import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.DeploymentResource;
 import org.cibseven.webapp.rest.model.EventSubscription;
+import org.cibseven.webapp.rest.model.ExternalTask;
 import org.cibseven.webapp.rest.model.Filter;
 import org.cibseven.webapp.rest.model.HistoryBatch;
 import org.cibseven.webapp.rest.model.HistoryProcessInstance;
@@ -97,6 +98,7 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
     @Autowired private IBatchProvider batchProvider;
     @Autowired private ISystemProvider systemProvider;
     @Autowired private ITenantProvider tenantProvider;
+    @Autowired private IExternalTaskProvider externalTaskProvider;
     
     
     /*
@@ -1171,10 +1173,24 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	██   ██ ██ ███████    ██     ██████  ██   ██ ██  ██████       ████   ██   ██ ██   ██ ██ ██   ██ ██████  ███████ ███████     ██ ██   ████ ███████    ██    ██   ██ ██   ████  ██████ ███████     ██      ██   ██  ██████    ████   ██ ██████  ███████ ██   ██ 
                                                                                                                                                                                                                                                              
 	 */
-
 	@Override
 	public VariableHistory getHistoricVariableInstance(String id, Boolean deserializeValue, CIBUser user) throws SystemException, NoObjectFoundException {
 		return historicVariableInstanceProvider.getHistoricVariableInstance(id, deserializeValue, user);
+	}
+	
+	/*
+
+	███████ ██   ██ ████████ ███████ ██████  ███    ██  █████  ██           ████████  █████  ███████ ██   ██     ██       ██████   ██████  
+	██       ██ ██     ██    ██      ██   ██ ████   ██ ██   ██ ██              ██    ██   ██ ██      ██  ██      ██      ██    ██ ██       
+	█████     ███      ██    █████   ██████  ██ ██  ██ ███████ ██              ██    ███████ ███████ █████       ██      ██    ██ ██   ███ 
+	██       ██ ██     ██    ██      ██   ██ ██  ██ ██ ██   ██ ██              ██    ██   ██      ██ ██  ██      ██      ██    ██ ██    ██ 
+	███████ ██   ██    ██    ███████ ██   ██ ██   ████ ██   ██ ███████         ██    ██   ██ ███████ ██   ██     ███████  ██████   ██████  
+                                                                                                                                              
+	*/
+
+	@Override
+	public Collection<ExternalTask> getExternalTasks(Map<String, Object> queryParams, CIBUser user) throws SystemException {
+		return externalTaskProvider.getExternalTasks(queryParams, user);
 	}
 
 }

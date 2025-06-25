@@ -182,7 +182,8 @@
 		"externalTasksLog": "Журнал внешних задач",
 		"modify": "Изменить",
 		"restart": "Перезапустить",
-		"documentation": "Документация"
+		"documentation": "Документация",
+		"externalTasks": "Внешние задачи"
 	},
 	"process-instance": {
 		"processInstanceId": "ID экземпляра процесса",
@@ -339,6 +340,16 @@
 			"actions": "Действия",
 			"suspend": "Приостановить",
 			"resume": "Возобновить"
+		},
+		"externalTasks": {
+			"id": "ID внешней задачи",
+			"activityId": "Активность",
+			"topicName": "Тема",
+			"workerId": "ID работника",
+			"lockExpirationTime": "Дата истечения блокировки",
+			"retries": "Повторы",
+			"priority": "Приоритет",
+			"noExternalTasks": "Внешние задачи не найдены"
 		}
 	},
 	"bpmn-viewer": {

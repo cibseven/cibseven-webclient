@@ -34,9 +34,9 @@ export default {
     return {
       tabs: [
         { id: 'instances', text: 'process.instances' },
-        { id: 'jobDefinitions', text: 'process.jobDefinitions'  },
-        { id: 'incidents', text: 'process.incidents'  },
-        { id: 'calledProcessDefinitions', text: 'process.calledProcessDefinitions'  },
+        { id: 'jobDefinitions', text: 'process.jobDefinitions' },
+        { id: 'incidents', text: 'process.incidents' },
+        { id: 'calledProcessDefinitions', text: 'process.calledProcessDefinitions' },
       ]
     }
   }
