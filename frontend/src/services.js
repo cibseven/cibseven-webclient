@@ -646,7 +646,7 @@ var TenantService = {
 
 var ExternalTaskService = {
   fetchExternalTasks(params) {
-    return axios.post(getServicesBasePath() + '/external-tasks', params)
+    return axios.get(getServicesBasePath() + '/external-tasks', { params })
   }
 }
 

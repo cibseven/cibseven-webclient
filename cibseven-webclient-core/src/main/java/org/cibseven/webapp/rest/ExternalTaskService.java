@@ -40,10 +40,10 @@ public class ExternalTaskService extends BaseService implements InitializingBean
     else
       throw new SystemException("ExternalTaskService expects a BpmProvider");
   }
-
-  @PostMapping
+  
+  @GetMapping
   public Collection<ExternalTask> getExternalTasks(
-      @RequestBody Map<String, Object> params,
+      @RequestParam Map<String, Object> params,
       Locale loc, HttpServletRequest rq) {
     CIBUser user = checkAuthorization(rq, true);
     return bpmProvider.getExternalTasks(params, user);
