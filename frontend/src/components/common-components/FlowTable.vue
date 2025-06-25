@@ -45,7 +45,7 @@
             </slot>
           </span>
 
-          <span v-if="computedColumnSelection && index === computedColumns.length - 1">
+          <span :style="columnSelectionStyle" v-if="computedColumnSelection && index === computedColumns.length - 1">
             &nbsp;
             <button class="btn btn-link btn-sm p-0" type="button" data-bs-toggle="dropdown"
               aria-expanded="false" aria-haspopup="true" :aria-label="$t('table.selectColumns')"
@@ -230,6 +230,17 @@ export default {
         if (a[this.sortKey] > b[this.sortKey]) return 1 * this.sortOrder
         return 0
       })
+    },
+    columnSelectionStyle() {
+      return {
+        position: 'absolute',
+        top: '0',
+        right: '0',
+        width: '30px',
+        height: '100%',
+        display: 'flex',
+        zIndex: '10',
+      }
     },
     resizeHandleStyle() {
       return {
