@@ -62,4 +62,5 @@ public interface IIncidentProvider {
 	public Collection<Incident> fetchIncidentsByInstanceAndActivityId(String processDefinitionKey, String activityId, CIBUser user);
 	public void setIncidentAnnotation(String incidentId, Map<String, Object> data, CIBUser user);
 	public void retryExternalTask(String externalTaskId, Map<String, Object> data, CIBUser user);
+	public String findExternalTaskErrorDetails(String externalTaskId, CIBUser user);
 }
