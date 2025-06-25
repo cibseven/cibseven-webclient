@@ -902,11 +902,13 @@ public interface BpmProvider {
 	ProcessStart submitStartFormVariables(String processDefinitionId, List<Variable> formResult, CIBUser user)
 			throws SystemException;
 
-	void saveVariableInProcessInstanceId(String processInstanceId, List<Variable> variables, CIBUser user)
-			throws SystemException;
+	void saveVariableInProcessInstanceId(String processInstanceId, List<Variable> variables, CIBUser user) throws SystemException;
+			
 	Map<String, Variable> fetchProcessFormVariablesById(String id, CIBUser user) throws SystemException;
 
 	void retryJobById(String jobId, Map<String, Object> data, CIBUser user);
+	
+	String findExternalTaskErrorDetails(String externalTaskId, CIBUser user);
 	
 	void retryExternalTask(String externalTaskId, Map<String, Object> data, CIBUser user);
 	

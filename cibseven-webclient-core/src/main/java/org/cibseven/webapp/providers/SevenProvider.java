@@ -514,10 +514,15 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	public Collection<Message> correlateMessage(Map<String, Object> data, CIBUser user) throws SystemException {
 		return utilsProvider.correlateMessage(data, user);
 	}
-
+	
 	@Override
 	public String findStacktrace(String jobId, CIBUser user) {
 		return utilsProvider.findStacktrace(jobId, user);
+	}
+	
+	@Override
+	public String findExternalTaskErrorDetails(String externalTaskId, CIBUser user) {
+		return incidentProvider.findExternalTaskErrorDetails(externalTaskId, user);
 	}
 	
 	@Override

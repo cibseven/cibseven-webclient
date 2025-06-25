@@ -26,6 +26,7 @@ import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.rest.model.Incident;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.http.MediaType;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -105,17 +106,24 @@ public class IncidentProvider extends SevenProviderBase implements IIncidentProv
 	public Collection<Incident> fetchIncidents(String processDefinitionKey, CIBUser user) {
 		String url = getEngineRestUrl() + "/incident?processDefinitionKeyIn=" + processDefinitionKey;
 		return Arrays.asList(((ResponseEntity<Incident[]>) doGet(url, Incident[].class, user, false)).getBody());
-	}	
+	}
+
 	@Override
 	public void setIncidentAnnotation(String incidentId, Map<String, Object> data, CIBUser user) {
 		String url = getEngineRestUrl() + "/incident/" + incidentId + "/annotation";
 		doPut(url, data, user);
 	}	
-	
+
 	@Override
 	public void retryExternalTask(String externalTaskId, Map<String, Object> data, CIBUser user) {
 		String url = getEngineRestUrl() + "/external-task/" + externalTaskId + "/retries";
 		doPut(url, data, user);
+	}
+	
+	@Override
+	public String findExternalTaskErrorDetails(String externalTaskId, CIBUser user) {
+		String url = getEngineRestUrl() + "/external-task/" + externalTaskId + "/errorDetails";
+		return doGetWithHeader(url, String.class, user, false, MediaType.ALL).getBody();
 	}
 	
 	@Override
