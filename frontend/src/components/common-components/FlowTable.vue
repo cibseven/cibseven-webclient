@@ -31,18 +31,18 @@
             cursor: field.sortable !== false ? 'pointer' : 'default'
           }">
 
+          <span v-if="field.label">
+            <slot :name="'header(' + field.key +')'" :field="field">
+              {{ $t(prefix + field.label) }}
+            </slot>
+          </span>
+
           <span v-if="field.sortable !== false" class="sort-icon">
             <span v-if="isSortedByField(field)">
               <i v-if="isSortedByFieldAscending(field)" class="mdi mdi-chevron-up"></i>
               <i v-else class="mdi mdi-chevron-down"></i>
             </span>
             <i v-else class="mdi mdi-unfold-more-horizontal"></i>
-          </span>
-
-          <span v-if="field.label">
-            <slot :name="'header(' + field.key +')'" :field="field">
-              {{ $t(prefix + field.label) }}
-            </slot>
           </span>
 
           <span :style="columnSelectionStyle" v-if="computedColumnSelection && index === computedColumns.length - 1">
