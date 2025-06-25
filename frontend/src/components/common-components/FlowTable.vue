@@ -32,7 +32,8 @@
           }">
 
           <div v-if="field.label || field.sortable !== false"
-            class="d-flex align-items-center justify-content-start">
+            class="d-flex align-items-center"
+            :class="field.thClass?.includes('justify-content-center') ? 'justify-content-center' : 'justify-content-start'">
             <div v-if="field.label">
               <slot :name="'header(' + field.key +')'" :field="field">
                 {{ $t(prefix + field.label) }}
