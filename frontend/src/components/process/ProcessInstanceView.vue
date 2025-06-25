@@ -65,6 +65,7 @@
       <UserTasksTable v-else-if="activeTab === 'usertasks'" :selected-instance="selectedInstance"></UserTasksTable>
       <JobsTable v-else-if="activeTab === 'jobs'" :instance="selectedInstance" :process="process"></JobsTable>
       <CalledProcessInstancesTable v-else-if="activeTab === 'calledProcessInstances'" :selectedInstance="selectedInstance" :activityInstanceHistory="activityInstanceHistory" :activity-instance="activityInstance"></CalledProcessInstancesTable>
+      <ExternalTasksTable v-else-if="activeTab === 'externalTasks'" :instance="selectedInstance"></ExternalTasksTable>
       <component :is="ProcessInstanceTabsContentPlugin" v-if="ProcessInstanceTabsContentPlugin" :instance="selectedInstance" :active-tab="activeTab" :process="process"></component>
     </div>
 
@@ -82,6 +83,7 @@ import IncidentsTable from '@/components/process/tables/IncidentsTable.vue'
 import UserTasksTable from '@/components/process/tables/UserTasksTable.vue'
 import JobsTable from '@/components/process/tables/JobsTable.vue'
 import CalledProcessInstancesTable from '@/components/process/tables/CalledProcessInstancesTable.vue'
+import ExternalTasksTable from '@/components/process/tables/ExternalTasksTable.vue'
 import ProcessInstanceTabs from '@/components/process/ProcessInstanceTabs.vue'
 
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
@@ -89,7 +91,7 @@ import BpmnViewer from '@/components/process/BpmnViewer.vue'
 export default {
   name: 'ProcessInstanceView',
   components: { VariablesTable, IncidentsTable, UserTasksTable, BpmnViewer, 
-    JobsTable, CalledProcessInstancesTable, ProcessInstanceTabs },
+    JobsTable, CalledProcessInstancesTable, ExternalTasksTable, ProcessInstanceTabs },
   mixins: [procesessVariablesMixin, resizerMixin],
   props: {
     selectedInstance: Object,

@@ -37,7 +37,8 @@ export default {
         { id: 'incidents', text: 'process.incidents' },
         { id: 'usertasks', text: 'process.usertasks' },
         { id: 'jobs', text: 'process.jobs' },
-        { id: 'calledProcessInstances', text: 'process.calledProcessInstances' }
+        { id: 'calledProcessInstances', text: 'process.calledProcessInstances' },
+        { id: 'externalTasks', text: 'process.externalTasks' }
       ]
     }
   }

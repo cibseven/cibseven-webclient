@@ -95,6 +95,7 @@
         <JobDefinitionsTable v-else-if="activeTab === 'jobDefinitions'"
           :process-id="process.id" />
         <CalledProcessDefinitionsTable v-else-if="activeTab === 'calledProcessDefinitions'" :process="process"/>
+        <ExternalTasksTable v-else-if="activeTab === 'externalTasks'" :process="process"/>
         <component :is="ProcessInstancesTabsContentPlugin" v-if="ProcessInstancesTabsContentPlugin" :process="process" :active-tab="activeTab"></component>
       </div>
     </div>
@@ -125,6 +126,7 @@ import BpmnViewer from '@/components/process/BpmnViewer.vue'
 import InstancesTable from '@/components/process/tables/InstancesTable.vue'
 import JobDefinitionsTable from '@/components/process/tables/JobDefinitionsTable.vue'
 import IncidentsTable from '@/components/process/tables/IncidentsTable.vue'
+import ExternalTasksTable from '@/components/process/tables/ExternalTasksTable.vue'
 import MultisortModal from '@/components/process/modals/MultisortModal.vue'
 import CalledProcessDefinitionsTable from '@/components/process/tables/CalledProcessDefinitionsTable.vue'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
@@ -140,7 +142,7 @@ export default {
   name: 'ProcessInstancesView',
   components: { InstancesTable, JobDefinitionsTable, BpmnViewer, MultisortModal,
      SuccessAlert, ConfirmDialog, BWaitingBox, IncidentsTable, CalledProcessDefinitionsTable, 
-     ProcessInstancesTabs },
+     ExternalTasksTable, ProcessInstancesTabs },
   inject: ['loadProcesses'],
   mixins: [permissionsMixin, resizerMixin, copyToClipboardMixin],
   props: { process: Object,
