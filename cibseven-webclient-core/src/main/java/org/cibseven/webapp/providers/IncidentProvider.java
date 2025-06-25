@@ -106,7 +106,6 @@ public class IncidentProvider extends SevenProviderBase implements IIncidentProv
 		String url = getEngineRestUrl() + "/incident?processDefinitionKeyIn=" + processDefinitionKey;
 		return Arrays.asList(((ResponseEntity<Incident[]>) doGet(url, Incident[].class, user, false)).getBody());
 	}	
-
 	@Override
 	public void setIncidentAnnotation(String incidentId, Map<String, Object> data, CIBUser user) {
 		String url = getEngineRestUrl() + "/incident/" + incidentId + "/annotation";
@@ -114,9 +113,15 @@ public class IncidentProvider extends SevenProviderBase implements IIncidentProv
 	}	
 	
 	@Override
+	public void retryExternalTask(String externalTaskId, Map<String, Object> data, CIBUser user) {
+		String url = getEngineRestUrl() + "/external-task/" + externalTaskId + "/retries";
+		doPut(url, data, user);
+	}
+	
+	@Override
 	public Collection<Incident> fetchIncidentsByInstanceAndActivityId(String processDefinitionId, String activityId, CIBUser user) {
 	    String url = getEngineRestUrl() + "/incident?processDefinitionId=" + processDefinitionId + "&activityId=" + activityId;
 	    return Arrays.asList(((ResponseEntity<Incident[]>) doGet(url, Incident[].class, user, false)).getBody());
-	}	
+	}
 	
 }

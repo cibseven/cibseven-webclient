@@ -904,10 +904,11 @@ public interface BpmProvider {
 
 	void saveVariableInProcessInstanceId(String processInstanceId, List<Variable> variables, CIBUser user)
 			throws SystemException;
-
 	Map<String, Variable> fetchProcessFormVariablesById(String id, CIBUser user) throws SystemException;
 
 	void retryJobById(String jobId, Map<String, Object> data, CIBUser user);
+	
+	void retryExternalTask(String externalTaskId, Map<String, Object> data, CIBUser user);
 	
 	void setIncidentAnnotation(String incidentId, Map<String, Object> data, CIBUser user);
 	

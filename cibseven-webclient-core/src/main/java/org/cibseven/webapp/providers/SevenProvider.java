@@ -526,6 +526,11 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 
 	@Override
+	public void retryExternalTask(String externalTaskId, Map<String, Object> data, CIBUser user) {
+		incidentProvider.retryExternalTask(externalTaskId, data, user);
+	}
+
+	@Override
 	public Collection<EventSubscription> getEventSubscriptions(Optional<String> processInstanceId,
 			Optional<String> eventType, Optional<String> eventName, CIBUser user) {
 		return utilsProvider.getEventSubscriptions(processInstanceId, eventType, eventName, user);

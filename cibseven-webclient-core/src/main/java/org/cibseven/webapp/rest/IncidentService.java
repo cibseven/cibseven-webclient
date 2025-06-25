@@ -131,8 +131,7 @@ public class IncidentService extends BaseService implements InitializingBean {
 
 		return sevenProvider.findStacktrace(jobId, user);
 	}
-	
-	@Operation(
+		@Operation(
 			summary = "Increment job retries by job id",
 			description = "<strong>Return: void")
 	@ApiResponse(responseCode= "404", description = "Job not found")
@@ -144,6 +143,19 @@ public class IncidentService extends BaseService implements InitializingBean {
 		CIBUser user = checkAuthorization(rq, true);
 		//checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.UPDATE_ALL);
 		sevenProvider.retryJobById(jobId, data, user);
+	}
+		@Operation(
+			summary = "Retry external task by setting retries",
+			description = "<strong>Return: void")
+	@ApiResponse(responseCode= "404", description = "External task not found")
+	@RequestMapping(value = "/external-task/{externalTaskId}/retries", method = RequestMethod.PUT)
+	public void retryExternalTask(
+			@Parameter(description = "External Task Id") @PathVariable String externalTaskId, 
+			@RequestBody Map<String, Object> data, 
+			Locale loc, HttpServletRequest rq) {
+		CIBUser user = checkAuthorization(rq, true);
+		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.UPDATE_ALL);
+		sevenProvider.retryExternalTask(externalTaskId, data, user);
 	}
 	
 	@Operation(
