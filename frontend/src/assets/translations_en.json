@@ -186,7 +186,7 @@
 		"externalTasks": "External tasks"
 	},
 	"process-instance": {
-		"processInstanceId": "Processs Instance ID",
+		"processInstanceId": "Process Instance ID",
 		"businessKey": "Business Key",
 		"info": "Process details",
 		"variablesInfo": "Process variables",

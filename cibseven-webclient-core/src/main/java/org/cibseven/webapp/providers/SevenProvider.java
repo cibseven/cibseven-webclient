@@ -94,7 +94,8 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
     @Autowired private IJobDefinitionProvider jobDefinitionProvider;
     @Autowired private IUserProvider userProvider;
     @Autowired private IDecisionProvider decisionProvider;
-    @Autowired private IJobProvider jobProvider;    @Autowired private IBatchProvider batchProvider;
+    @Autowired private IJobProvider jobProvider;
+    @Autowired private IBatchProvider batchProvider;
     @Autowired private ISystemProvider systemProvider;
     @Autowired private ITenantProvider tenantProvider;
     @Autowired private IExternalTaskProvider externalTaskProvider;
