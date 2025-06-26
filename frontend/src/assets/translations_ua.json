@@ -1046,7 +1046,7 @@
 		"filter": "Фільтр"
 	},
 	"table": {
-		"selectColumns": "Виберіть стовпці",
+		"selectColumns": "Показати стовпці",
 		"toggleColumn": "Перемкнути стовпець \"{column}\""
 	},
 	"navigation": {

@@ -1046,7 +1046,7 @@
 		"filter": "Фильтр"
 	},
 	"table": {
-		"selectColumns": "Выбор колонок",
+		"selectColumns": "Показать столбцы",
 		"toggleColumn": "Переключить колонку \"{column}\""
 	},
 	"navigation": {

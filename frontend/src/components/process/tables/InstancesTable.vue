@@ -20,11 +20,11 @@
   <div>
     <FlowTable v-if="instances.length > 0 && !sorting" striped resizable thead-class="sticky-header" :items="instances" primary-key="id" prefix="process."
       :sort-by="currentSortBy" :sort-desc="currentSortDesc" external-sort :fields="[
-      { label: 'state', key: 'state', class: 'col-1', thClass: 'border-end', sortable: false, tdClass: 'justify-content-center text-center py-0 border-end border-top-0' },
-      { label: 'businessKey', key: 'businessKey', class: 'col-2', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0 position-relative' },
+      { label: 'state', key: 'state', class: 'col-1', thClass: 'border-end text-center', sortable: false, tdClass: 'justify-content-center text-center py-0 border-end border-top-0' },
+      { label: 'businessKey', key: 'businessKey', class: 'col-2', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0' },
       { label: 'startTime', key: 'startTime', class: 'col-2', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0' },
       { label: 'endTime', key: 'endTime', class: 'col-2', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0' },
-      { label: 'instanceId', key: 'id', class: 'col-2', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0 position-relative' },
+      { label: 'instanceId', key: 'id', class: 'col-2', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0' },
       { label: 'startUserId', key: 'startUserId', class: 'col-1', sortable: false, thClass: 'border-end', tdClass: 'border-end py-1 border-top-0' },
       { label: 'actions', key: 'actions', class: 'col-2', sortable: false, tdClass: 'py-0 border-top-0' }]"
       @click="selectInstance($event)" @external-sort="handleSortChanged">
@@ -96,11 +96,11 @@ export default {
   components: { FlowTable, SuccessAlert, ConfirmActionOnProcessInstanceModal, BWaitingBox, CopyableActionButton },
   emits: ['instance-deleted', 'filter-instances'],
   mixins: [copyToClipboardMixin, permissionsMixin],
-  props: { 
+  props: {
     process: Object,
     activityInstance: Object,
-    sortDesc: Boolean, 
-    sortByDefaultKey: String, 
+    sortDesc: Boolean,
+    sortByDefaultKey: String,
     sorting: Boolean,
     tenantId: String,
     filter: String

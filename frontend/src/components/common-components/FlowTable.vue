@@ -31,27 +31,31 @@
             cursor: field.sortable !== false ? 'pointer' : 'default'
           }">
 
-          <span v-if="field.sortable !== false" class="sort-icon">
-            <span v-if="isSortedByField(field)">
-              <i v-if="isSortedByFieldAscending(field)" class="mdi mdi-chevron-up"></i>
-              <i v-else class="mdi mdi-chevron-down"></i>
-            </span>
-            <i v-else class="mdi mdi-unfold-more-horizontal"></i>
-          </span>
+          <div v-if="field.label || field.sortable !== false"
+            class="d-flex align-items-center"
+            :class="field.thClass?.includes('justify-content-center') ? 'justify-content-center' : 'justify-content-start'">
+            <div v-if="field.label">
+              <slot :name="'header(' + field.key +')'" :field="field">
+                {{ $t(prefix + field.label) }}
+              </slot>
+            </div>
 
-          <span v-if="field.label">
-            <slot :name="'header(' + field.key +')'" :field="field">
-              {{ $t(prefix + field.label) }}
-            </slot>
-          </span>
+            <div v-if="field.sortable !== false" class="sort-icon">
+              <span v-if="isSortedByField(field)">
+                <i v-if="isSortedByFieldAscending(field)" class="mdi mdi-chevron-up"></i>
+                <i v-else class="mdi mdi-chevron-down"></i>
+              </span>
+              <i v-else class="mdi mdi-unfold-more-horizontal"></i>
+            </div>
+          </div>
 
-          <span v-if="computedColumnSelection && index === computedColumns.length - 1">
+          <span :style="columnSelectionStyle" v-if="computedColumnSelection && index === computedColumns.length - 1">
             &nbsp;
-            <button class="dropdown-toggle btn btn-link btn-sm p-0" type="button" data-bs-toggle="dropdown"
+            <button class="btn btn-link btn-sm p-0" type="button" data-bs-toggle="dropdown"
               aria-expanded="false" aria-haspopup="true" :aria-label="$t('table.selectColumns')"
               :title="$t('table.selectColumns')">
                 <span class="visually-hidden">{{ $t('table.selectColumns') }}</span>
-                <span class="mdi mdi-24px mdi-plus-box align-middle"></span>
+                <span class="mdi mdi-24px mdi-table-plus align-middle"></span>
             </button>
             <ul class="dropdown-menu dropdown-menu-end" role="menu">
               <template v-for="column in toggleableColumns" :key="column.key">
@@ -230,6 +234,17 @@ export default {
         if (a[this.sortKey] > b[this.sortKey]) return 1 * this.sortOrder
         return 0
       })
+    },
+    columnSelectionStyle() {
+      return {
+        position: 'absolute',
+        top: '0',
+        right: '0',
+        width: '30px',
+        height: '100%',
+        display: 'flex',
+        zIndex: '10',
+      }
     },
     resizeHandleStyle() {
       return {
