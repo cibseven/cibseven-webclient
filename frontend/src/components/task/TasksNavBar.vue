@@ -109,7 +109,7 @@
               </div>
               <div class="d-flex align-items-center">
     <!-- 						<span class="mdi mdi-18px mdi-calendar-month mdi-dark"></span> -->
-                <div class="h6 fw-normal m-0" :title="formatDate(task.created, 'L LTS')">{{ formatDate(task.created) }}</div><br>
+                <div class="h6 fw-normal m-0" :title="formatDate(task.created, 'L LTS')">{{ getDateFormatted(task.created) }}</div><br>
                 <div class="d-flex ms-auto">
                   <div class="h6 text-end p-0 fw-normal m-0" v-if="task.assignee != null"><span class="mdi mdi-18px mdi-account text-secondary"></span><span class="p-1">{{ getCompleteName(task) }}</span></div>
                   <div class="h6 text-end p-0 fw-normal n-0" v-if="task.assignee == null">
