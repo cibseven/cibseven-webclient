@@ -195,12 +195,17 @@ export default {
       // Filter prop will be updated by parent, which will trigger a reload
     },
     applySorting: function(sortingCriteria) {
+      // Switching to multi-sort mode - clear FlowTable sort state
+      this.currentSortBy = null
+      this.currentSortDesc = false
+      
       // Store sorting criteria and reload data
       this.sortingCriteria = sortingCriteria
       this.resetPagination()
       this.loadInstancesData()
     },
     handleSortChanged: function(sortEvent) {
+      // Switching to single-column FlowTable sorting
       // Convert FlowTable sort event to backend sorting format
       if (sortEvent && sortEvent.sortBy) {
         // Update local sort state for FlowTable display
