@@ -301,10 +301,14 @@ var HistoryService = {
     if (maxResults != null) params.maxResults = maxResults
     return axios.post(getServicesBasePath() + '/process-history/instance', filters, { params })
   },
-  findProcessesInstancesHistoryById: function(id, activityId, firstResult, maxResults, text, active, sortingCriteria = []) {
+  findProcessesInstancesHistoryById: function(id, activityId, firstResult, maxResults, text, active, sortingCriteria = [], fetchIncidents = false) {
     const requestBody = {
-      processDefinitionId: id,
-      fetchIncidents: true // Enable incident handling for process instance queries
+      processDefinitionId: id
+    }
+    
+    // Add incident fetching if requested
+    if (fetchIncidents) {
+      requestBody.fetchIncidents = true
     }
     
     // Add activity filter

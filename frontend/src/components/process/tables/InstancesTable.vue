@@ -30,7 +30,7 @@
       @click="selectInstance($event)" @external-sort="handleSortChanged">
       <template v-slot:cell(state)="table">
         <span :title="getIconTitle(table.item.state)" class="mdi mdi-18px" :class="getIconState(table.item.state)"></span>
-        <span :title="$t('process.instanceIncidents')" v-if="table.item.incidents && table.item.incidents.length > 0" class="mdi mdi-18px mdi-alert-outline text-warning"></span>
+        <span :title="$t('process.instanceIncidents')" v-if="table.item.incidents.length > 0" class="mdi mdi-18px mdi-alert-outline text-warning"></span>
       </template>
       <template v-slot:cell(id)="table">
         <CopyableActionButton
@@ -70,7 +70,7 @@
     <div v-if="loading" class="py-3 text-center w-100">
       <BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}
     </div>
-    <div v-else-if="instances && instances.length === 0">
+    <div v-else-if="instances.length === 0">
       <p class="text-center p-4">{{ $t('process-instance.noResults') }}</p>
     </div>
     <ConfirmActionOnProcessInstanceModal ref="confirm"></ConfirmActionOnProcessInstanceModal>
@@ -174,6 +174,7 @@ export default {
           firstResult: this.firstResult,
           maxResults: this.maxResults,
           sortingCriteria: this.sortingCriteria, // Pass sorting criteria to backend
+          fetchIncidents: true, // Enable incident fetching for table display
           showMore
         })
         // Check if we got fewer instances than requested (indicates end of data)
