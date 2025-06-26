@@ -114,7 +114,7 @@
 
     <SuccessAlert ref="messageCopy"> {{ $t('process.copySuccess') }} </SuccessAlert>
     <SuccessAlert top="0" style="z-index: 1031" ref="success"> {{ $t('alert.successOperation') }}</SuccessAlert>
-    <MultisortModal ref="sortModal" :items="instances" :sortKeys="['state', 'businessKey', 'startTime', 'endTime', 'id', 'startUserId', 'incidents']" :prefix="'process.'" @apply-sorting="applySorting"></MultisortModal>
+    <MultisortModal ref="sortModal" :sortKeys="['businessKey', 'startTime', 'endTime', 'instanceId']" :prefix="'process.'" @apply-sorting="applySorting"></MultisortModal>
   </div>
 </template>
 
@@ -214,14 +214,14 @@ export default {
   },
   methods: {    
     ...mapActions(['clearActivitySelection', 'setDiagramXml']),
-    applySorting: function(sortedItems) {
+    applySorting: function(sortingCriteria) {
       this.sorting = true
       this.sortDesc = null
       this.sortByDefaultKey = ''
       
-      // Directly update the InstancesTable with sorted items
+      // Apply sorting via backend by reloading data with sorting criteria
       if (this.$refs.instancesTable) {
-        this.$refs.instancesTable.updateItems(sortedItems)
+        this.$refs.instancesTable.applySorting(sortingCriteria)
       }
       
       this.$nextTick(() => {

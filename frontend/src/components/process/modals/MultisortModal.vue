@@ -58,7 +58,7 @@
 <script>
 export default {
   name: 'MultisortModal',
-  props: { prefix: String, sortKeys: Array, items: Array},
+  props: { prefix: String, sortKeys: Array },
   data: function() {
     return {
       selectedIndex: null,
@@ -108,17 +108,15 @@ export default {
       })
     },
     applySorting: function() {
-      var sortedItems = this.items.slice()
-      sortedItems.sort((a, b) => {
-        for (let i = 0; i < this.sortingCriteria.length; i++) {
-          var criteria = this.sortingCriteria[i]
-          var field = criteria.field
-          if (a[field] < b[field]) return -1 * criteria.order
-          if (a[field] > b[field]) return 1 * criteria.order
-        }
-        return 0
-      })
-      this.$emit('apply-sorting', sortedItems)
+      // Convert frontend sorting criteria to backend format
+      const sortingCriteria = this.sortingCriteria
+        .filter(criteria => criteria.field) // Only include criteria with selected fields
+        .map(criteria => ({
+          field: criteria.field,
+          order: criteria.order === 1 ? 'asc' : 'desc'
+        }))
+      
+      this.$emit('apply-sorting', sortingCriteria)
     }
   }
 }

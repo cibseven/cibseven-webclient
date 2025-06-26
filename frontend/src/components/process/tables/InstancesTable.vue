@@ -19,18 +19,18 @@
 <template>
   <div>
     <FlowTable v-if="instances.length > 0 && !sorting" striped resizable thead-class="sticky-header" :items="instances" primary-key="id" prefix="process."
-      :sort-by="sortByDefaultKey" :sort-desc="sortDesc" :fields="[
-      { label: 'state', key: 'state', class: 'col-1', thClass: 'border-end', tdClass: 'justify-content-center text-center py-0 border-end border-top-0' },
+      :sort-by="currentSortBy" :sort-desc="currentSortDesc" external-sort :fields="[
+      { label: 'state', key: 'state', class: 'col-1', thClass: 'border-end', sortable: false, tdClass: 'justify-content-center text-center py-0 border-end border-top-0' },
       { label: 'businessKey', key: 'businessKey', class: 'col-2', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0 position-relative' },
       { label: 'startTime', key: 'startTime', class: 'col-2', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0' },
       { label: 'endTime', key: 'endTime', class: 'col-2', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0' },
-      { label: 'id', key: 'id', class: 'col-2', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0 position-relative' },
-      { label: 'startUserId', key: 'startUserId', class: 'col-1', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0' },
+      { label: 'instanceId', key: 'id', class: 'col-2', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0 position-relative' },
+      { label: 'startUserId', key: 'startUserId', class: 'col-1', sortable: false, thClass: 'border-end', tdClass: 'border-end py-1 border-top-0' },
       { label: 'actions', key: 'actions', class: 'col-2', sortable: false, tdClass: 'py-0 border-top-0' }]"
-      @click="selectInstance($event)">
+      @click="selectInstance($event)" @external-sort="handleSortChanged">
       <template v-slot:cell(state)="table">
         <span :title="getIconTitle(table.item.state)" class="mdi mdi-18px" :class="getIconState(table.item.state)"></span>
-        <span :title="$t('process.instanceIncidents')" v-if="table.item.incidents.length > 0" class="mdi mdi-18px mdi-alert-outline text-warning"></span>
+        <span :title="$t('process.instanceIncidents')" v-if="table.item.incidents && table.item.incidents.length > 0" class="mdi mdi-18px mdi-alert-outline text-warning"></span>
       </template>
       <template v-slot:cell(id)="table">
         <CopyableActionButton
@@ -70,7 +70,7 @@
     <div v-if="loading" class="py-3 text-center w-100">
       <BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}
     </div>
-    <div v-else-if="instances.length === 0">
+    <div v-else-if="instances && instances.length === 0">
       <p class="text-center p-4">{{ $t('process-instance.noResults') }}</p>
     </div>
     <ConfirmActionOnProcessInstanceModal ref="confirm"></ConfirmActionOnProcessInstanceModal>
@@ -120,7 +120,10 @@ export default {
       loading: false,
       firstResult: 0,
       maxResults: this.$root?.config?.maxProcessesResults || 50,
-      hasMoreData: true
+      hasMoreData: true,
+      sortingCriteria: [], // Store the sorting criteria for backend calls
+      currentSortBy: null, // Track current sort field for FlowTable display
+      currentSortDesc: false // Track current sort direction for FlowTable display
     }
   },
   watch: {
@@ -144,8 +147,11 @@ export default {
       }
     },
   },
+  mounted() {
+    this.initializeSortState()
+  },
   methods: {
-    ...mapActions('instances', ['loadInstances', 'resetInstances', 'updateInstancesSort']),
+    ...mapActions('instances', ['loadInstances', 'resetInstances']),
     formatDate,
     resetPagination() {
       this.firstResult = 0
@@ -167,6 +173,7 @@ export default {
           camundaHistoryLevel: this.$root.config.camundaHistoryLevel,
           firstResult: this.firstResult,
           maxResults: this.maxResults,
+          sortingCriteria: this.sortingCriteria, // Pass sorting criteria to backend
           showMore
         })
         // Check if we got fewer instances than requested (indicates end of data)
@@ -187,9 +194,36 @@ export default {
       this.$emit('filter-instances', filter)
       // Filter prop will be updated by parent, which will trigger a reload
     },
-    updateItems: function(sortedItems) {
-      this.updateInstancesSort(sortedItems)
-      // Don't emit here to avoid circular calls - this method is called directly by parent
+    applySorting: function(sortingCriteria) {
+      // Store sorting criteria and reload data
+      this.sortingCriteria = sortingCriteria
+      this.resetPagination()
+      this.loadInstancesData()
+    },
+    handleSortChanged: function(sortEvent) {
+      // Convert FlowTable sort event to backend sorting format
+      if (sortEvent && sortEvent.sortBy) {
+        // Update local sort state for FlowTable display
+        this.currentSortBy = sortEvent.sortBy
+        this.currentSortDesc = sortEvent.sortDesc
+        
+        // Convert frontend column keys to backend field names
+        let sortBy = sortEvent.sortBy
+        if (sortEvent.sortBy === 'id') {
+          sortBy = 'instanceId'
+        }
+        this.sortingCriteria = [{
+          field: sortBy,
+          order: sortEvent.sortDesc ? 'desc' : 'asc'
+        }]
+      } else {
+        // No sorting - use default
+        this.currentSortBy = null
+        this.currentSortDesc = false
+        this.sortingCriteria = []
+      }
+      this.resetPagination()
+      this.loadInstancesData()
     },
     selectInstance: function(instance) {
       this.$router.push({
@@ -283,6 +317,13 @@ export default {
       }
       return this.$t('process.instanceFinished')
     },
+    initializeSortState() {
+      // Initialize sort state from props if provided
+      if (this.sortByDefaultKey) {
+        this.currentSortBy = this.sortByDefaultKey
+        this.currentSortDesc = this.sortDesc || false
+      }
+    }
   }
 }
 </script>

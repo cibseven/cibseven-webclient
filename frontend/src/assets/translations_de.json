@@ -63,6 +63,7 @@
 		"key": "Prozess-Key",
 		"state": "Status",
 		"id": "ID",
+		"instanceId": "ID",
 		"processId": "Prozess-ID",
 		"startUserId": "Benutzer",
 		"startTime": "Startdatum",

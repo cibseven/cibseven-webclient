@@ -63,6 +63,7 @@
 		"key": "Key del proceso",
 		"state": "Estado",
 		"id": "ID",
+		"instanceId": "ID",
 		"processId": "Identificador de proceso",
 		"startUserId": "Usuario",
 		"startTime": "Fecha inicio",

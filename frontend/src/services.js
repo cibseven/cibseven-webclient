@@ -301,17 +301,53 @@ var HistoryService = {
     if (maxResults != null) params.maxResults = maxResults
     return axios.post(getServicesBasePath() + '/process-history/instance', filters, { params })
   },
-  
-  findProcessesInstancesHistoryById: function(id, activityId, firstResult, maxResults, text, active) {
-    return axios.get(getServicesBasePath() + "/process-history/instance/by-process-id/" + id, {
-      params: {
-        activityId: activityId,
-        active: active,
-        firstResult: firstResult,
-        maxResults: maxResults,
-        text: text
+  findProcessesInstancesHistoryById: function(id, activityId, firstResult, maxResults, text, active, sortingCriteria = []) {
+    const requestBody = {
+      processDefinitionId: id,
+      fetchIncidents: true // Enable incident handling for process instance queries
+    }
+    
+    // Add activity filter
+    if (activityId) {
+      requestBody.activeActivityIdIn = [activityId]
+    }
+    
+    // Add text search with OR logic (business key LIKE or exact process instance ID)
+    if (text && text.trim() !== '') {
+      const trimmedText = text.trim()
+      requestBody.orQueries = [
+        {
+          processInstanceBusinessKeyLike: `%${trimmedText}%`,
+          processInstanceId: trimmedText
+        }
+      ]
+    }
+    
+    // Add active/finished filter
+    if (active !== undefined && active !== null) {
+      if (active) {
+        requestBody.unfinished = true
+      } else {
+        requestBody.finished = true
       }
-    })
+    }
+    
+    // Add sorting criteria
+    if (sortingCriteria && sortingCriteria.length > 0) {
+      requestBody.sorting = sortingCriteria.map(criteria => ({
+        sortBy: criteria.field,
+        sortOrder: criteria.order
+      }))
+    } else {
+      // Default sorting by start time descending
+      requestBody.sorting = [{ sortBy: 'startTime', sortOrder: 'desc' }]
+    }
+    
+    const params = {}
+    if (firstResult !== null && firstResult !== undefined) params.firstResult = firstResult
+    if (maxResults !== null && maxResults !== undefined) params.maxResults = maxResults
+    
+    return axios.post(getServicesBasePath() + "/process-history/instance", requestBody, { params })
   },
   findActivitiesInstancesHistory: function(processInstanceId) {
     return axios.get(getServicesBasePath() + "/process-history/activity/by-process-instance/" + processInstanceId)
