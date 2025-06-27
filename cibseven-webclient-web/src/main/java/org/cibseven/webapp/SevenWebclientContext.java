@@ -112,6 +112,8 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 		// Apply strict caching rules
 		cacheConfig.addCacheMapping(strictNoCacheControl, "/index.html");
 		cacheConfig.addCacheMapping(strictNoCacheControl, "/");
+		cacheConfig.addCacheMapping(strictNoCacheControl, "/embedded-forms.html");
+		cacheConfig.addCacheMapping(strictNoCacheControl, "/sso-login.html");
 
 		registry.addInterceptor(cacheConfig);
 	}
