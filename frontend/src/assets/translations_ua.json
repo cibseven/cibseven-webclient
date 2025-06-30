@@ -63,6 +63,7 @@
 		"key": "Ключ визначення",
 		"state": "Статус",
 		"id": "ID",
+		"instanceId": "ID",
 		"processId": "Ідентифікатор процесу",
 		"startUserId": "Користувач",
 		"startTime": "Початкова дата",
