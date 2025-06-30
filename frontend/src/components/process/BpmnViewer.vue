@@ -308,7 +308,7 @@ export default {
             if (shape) {
               const htmlTemplate = this.getBadgeOverlayHtml(item.instances, 'bg-info', 'runningInstances', item.id)
               this.setHtmlOnDiagram(item.id, htmlTemplate, { bottom: 15, left: -7 })
-              if (item.incidents.length > 0) {
+              if ((item.incidents?.length || 0) > 0) {
                 const incidentsCount = item.incidents.reduce((sum, inc) => sum + (inc.incidentCount || 0), 0)
                 const failedHtml = this.getBadgeOverlayHtml(incidentsCount, 'bg-danger', 'openIncidents', item.id)
                 this.setHtmlOnDiagram(item.id, failedHtml, { top: -7, right: 15 })
