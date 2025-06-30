@@ -28,7 +28,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletRequest;
 
-@RestController
+@RestController("WebclientExternalTaskService")
 @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/external-tasks")
 public class ExternalTaskService extends BaseService implements InitializingBean {
 
