@@ -14,6 +14,25 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+import { ExternalTaskService } from '@/services.js'
+
 export default {
-  servicesBasePath: 'services/v1' // set via properties fetched from backend.
+  namespaced: true, 
+  state: () => ({
+    externalTasks: []
+  }),
+  mutations: {
+    setExternalTasks(state, externalTasks) {
+      state.externalTasks = externalTasks
+    }
+  },
+  actions: {
+    async loadExternalTasks({ commit }, params) {
+      const externalTasks = await ExternalTaskService.fetchExternalTasks(params)
+      commit('setExternalTasks', externalTasks)
+    }
+  },
+  getters: {
+    externalTasks: state => state.externalTasks
+  }
 }

@@ -108,7 +108,7 @@
 					params.dueDate = this.formatScheduledAt()
 				}
 				this.$emit('increment-number-retry', {
-					id: this.selectedIncident.configuration,
+					incident: this.selectedIncident,
 					params
 				})
 			}

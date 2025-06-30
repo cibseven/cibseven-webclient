@@ -189,14 +189,14 @@ public class DecisionService extends BaseService implements InitializingBean {
 	@Operation(summary = "Get a list of historic decision instances")
 	@GetMapping("/history/instances")
 	public Object getHistoricDecisionInstances(@RequestParam Map<String, Object> queryParams, CIBUser user) {
-		checkPermission(user, SevenResourceType.HISTORY, PermissionConstants.READ_HISTORY_ALL);
+		checkPermission(user, SevenResourceType.DECISION_DEFINITION, PermissionConstants.READ_HISTORY_ALL);
 		return bpmProvider.getHistoricDecisionInstances(queryParams, user);
 	}
 	
 	@Operation(summary = "Get the count of historic decision instances")
 	@GetMapping("/history/instances/count")
 	public Object getHistoricDecisionInstanceCount(@RequestParam Map<String, Object> queryParams, CIBUser user) {
-		checkPermission(user, SevenResourceType.HISTORY, PermissionConstants.READ_HISTORY_ALL);
+		checkPermission(user, SevenResourceType.DECISION_DEFINITION, PermissionConstants.READ_HISTORY_ALL);
 		return bpmProvider.getHistoricDecisionInstanceCount(queryParams, user);
 	}
 
@@ -205,21 +205,21 @@ public class DecisionService extends BaseService implements InitializingBean {
 	public Object getHistoricDecisionInstanceById(
 	        @PathVariable String id,
 	        @RequestParam Map<String, Object> queryParams, CIBUser user) {
-		checkPermission(user, SevenResourceType.HISTORY, PermissionConstants.READ_HISTORY_ALL);
+		checkPermission(user, SevenResourceType.DECISION_DEFINITION, PermissionConstants.READ_HISTORY_ALL);
 		return bpmProvider.getHistoricDecisionInstanceById(id, queryParams, user);
 	}
 
 	@Operation(summary = "Delete historic decision instances asynchronously")
 	@PostMapping("/history/instances/delete")
 	public Object deleteHistoricDecisionInstances(@RequestBody Map<String, Object> body, CIBUser user) {
-		checkPermission(user, SevenResourceType.HISTORY, PermissionConstants.DELETE_HISTORY_ALL);
+		checkPermission(user, SevenResourceType.DECISION_DEFINITION, PermissionConstants.DELETE_HISTORY_ALL);
 		return bpmProvider.deleteHistoricDecisionInstances(body, user);
 	}
 
 	@Operation(summary = "Set removal time for historic decision instances asynchronously")
 	@PostMapping("/history/instances/set-removal-time")
 	public Object setHistoricDecisionInstanceRemovalTime(@RequestBody Map<String, Object> body, CIBUser user) {
-		checkPermission(user, SevenResourceType.HISTORY, PermissionConstants.UPDATE_ALL);
+		checkPermission(user, SevenResourceType.DECISION_DEFINITION, PermissionConstants.UPDATE_ALL);
 		return bpmProvider.setHistoricDecisionInstanceRemovalTime(body, user);
 	}
 	

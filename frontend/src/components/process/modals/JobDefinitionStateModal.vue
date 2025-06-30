@@ -121,10 +121,9 @@ methods: {
         includeJobs: this.includeExistingJob,
         executionDate: executionDate
       }
-      this.$store.dispatch('jobDefinition/suspendJobDefinition', {
+      this.$store.dispatch('job/suspendJobDefinition', {
         jobDefinitionId: this.selectedJobDefinition.id,
-        params: data,
-        fetchParams: { processDefinitionId: this.selectedJobDefinition.processDefinitionId }
+        params: data
       })
       this.$refs.changeJobStateModal.hide()
     },

@@ -63,12 +63,11 @@
 		"key": "Key del proceso",
 		"state": "Estado",
 		"id": "ID",
+		"instanceId": "ID",
 		"processId": "Identificador de proceso",
 		"startUserId": "Usuario",
 		"startTime": "Fecha inicio",
-		"startTimeOriginal": "Fecha inicio",
-		"endTime": "Fecha fin",		
-		"endTimeOriginal": "Fecha fin",
+		"endTime": "Fecha fin",
 		"businessKey": "Business Key",
 		"title": "Procesos",
 		"view-comfy": "Pequeña",
@@ -184,7 +183,8 @@
 		"externalTasksLog": "Registro de tareas externas",
 		"modify": "Modificar",
 		"restart": "Reiniciar",
-		"documentation": "Documentación"
+		"documentation": "Documentación",
+		"externalTasks": "Tareas externas"
 	},
 	"process-instance": {
 		"processInstanceId": "ID de la instancia del proceso",
@@ -199,14 +199,25 @@
 		"upload": "Subir archivo",
 		"selectFile": "Seleccione archivo",
 		"calledProcessDefinitions": {
+			"calledProcessDefinition": "Definición de proceso llamado",
 			"process": "Proceso",
 			"version": "Versión",
-			"activities": "Actividades de convocatoria"
+			"activities": "Actividades que lo llaman",
+			"activity": "Actividad",
+			"state": "Estado",
+			"referenced": "Referenciado",
+			"running": "En ejecución",
+			"runningAndReferenced": "En ejecución y referenciado"
 		},
 		"details": {
 			"startUser": "Usuario inicial",
 			"start": "Iniciado el",
 			"finish": "Terminado el",
+			"duration": "Duración",
+			"superProcessInstanceId": "ID de instancia de superproceso",
+			"superCaseInstanceId": "ID de instancia de supercaso",
+			"caseInstanceId": "ID de instancia de caso",
+			"startActivityId": "ID de actividad de inicio",
 			"version": "Versión",
 			"state": "Estado",
 			"deleted": "Eliminado el",
@@ -228,7 +239,8 @@
 			"scope": "Ámbito",
 			"objectTypeName": "Nombre del tipo de objeto",
 			"serializationDataFormat": "Formato de datos de serialización",
-			"confirmDelete": "¿Desea eliminar la variable?"
+			"confirmDelete": "¿Desea eliminar la variable?",
+			"enterValue": "Introducir valor"
 		},
 		"incidents": {
 		    "message": "Mensaje",
@@ -291,10 +303,12 @@
 		    "actions": "Acciones"
 		},
 		"calledProcesses": {
-			"callingActivity": "Actividad de llamada",
-			"process": "Proceso",
-			"version": "Versión",
-			"id": "Identificación"
+			"callingActivity": "Actividad",
+			"process": "Definición de proceso",
+			"calledProcessInstance": "Instancias de proceso llamadas",
+			"state": "Estado",
+			"startTime": "Fecha inicio",
+			"endTime": "Fecha fin"
 		},
 		"assignModal": {
 			"manageUsersGroups": "Administrar usuarios/grupos",
@@ -327,6 +341,16 @@
 			"actions": "Acciones",
 			"suspend": "Suspender",
 			"resume": "Reanudar"
+		},
+		"externalTasks": {
+			"id": "ID de tarea externa",
+			"activityId": "Actividad",
+			"topicName": "Tema",
+			"workerId": "ID del trabajador",
+			"lockExpirationTime": "Fecha de expiración del bloqueo",
+			"retries": "Reintentos",
+			"priority": "Prioridad",
+			"noExternalTasks": "No se encontraron tareas externas"
 		}
 	},
 	"bpmn-viewer": {
@@ -745,7 +769,7 @@
 				"processDefinitionKeyIn": "Clave de definición de proceso en",
 				"processDefinitionName": "Nombre de la definición de proceso",
 				"processDefinitionNameLike": "Nombre de la definición de proceso similar",
-				"caseInstanceId": "ID de instancia de caso",
+				"caseInstanceId": "@:process-instance.details.caseInstanceId",
 				"caseInstanceBusinessKey": "Clave de negocio de instancia de caso",
 				"caseInstanceBusinessKeyLike": "Clave de negocio de instancia de caso similar",
 				"caseDefinitionId": "ID de definición de caso",
@@ -1020,6 +1044,10 @@
 	},
 	"cib-table2": {
 		"filter": "Filtrar"
+	},
+	"table": {
+		"selectColumns": "Mostrar columnas",
+		"toggleColumn": "Alternar \"{column}\" columna"
 	},
 	"navigation": {
 		"home": "Inicio",

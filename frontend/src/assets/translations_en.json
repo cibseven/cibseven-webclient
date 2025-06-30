@@ -63,12 +63,11 @@
 		"key": "Process key",
 		"state": "State",
 		"id": "ID",
+		"instanceId": "ID",
 		"processId": "Process ID",
 		"startUserId": "User",
-		"startTime": "Start time",		
-		"startTimeOriginal": "Start time",
+		"startTime": "Start time",
 		"endTime": "End time",
-		"endTimeOriginal": "End time",
 		"businessKey": "Business key",
 		"title": "Processes",
 		"view-comfy": "Small",
@@ -184,10 +183,11 @@
 		"externalTasksLog": "External tasks log",
 		"modify": "Modify",
 		"restart": "Restart",
-		"documentation": "Documentation"
+		"documentation": "Documentation",
+		"externalTasks": "External tasks"
 	},
 	"process-instance": {
-		"processInstanceId": "Processs Instance ID",
+		"processInstanceId": "Process Instance ID",
 		"businessKey": "Business Key",
 		"info": "Process details",
 		"variablesInfo": "Process variables",
@@ -199,14 +199,25 @@
 		"upload": "Upload file",
 		"selectFile": "Select file",
 		"calledProcessDefinitions": {
+			"calledProcessDefinition": "Called process definition",
 			"process": "Process",
 			"version": "Version",
-			"activities": "Calling activities"
+			"activities": "Calling activities",
+			"activity": "Activity",
+			"state": "State",
+			"referenced": "Referenced",
+			"running": "Running",
+			"runningAndReferenced": "Running and referenced"
 		},
 		"details": {
 			"startUser": "Start user",
 			"start": "Started on",
 			"finish": "Completed on",
+			"duration": "Duration",
+			"superProcessInstanceId": "Super process instance ID",
+			"superCaseInstanceId": "Super case instance ID",
+			"caseInstanceId": "Case instance ID",
+			"startActivityId": "Start activity ID",
 			"version": "Version",
 			"state": "State",
 			"deleted": "Deleted on",
@@ -228,7 +239,8 @@
 			"scope": "Scope",
 			"objectTypeName": "Object type name",
 			"serializationDataFormat": "Serialization data format",
-			"confirmDelete": "Do you want to delete the variable?"
+			"confirmDelete": "Do you want to delete the variable?",
+			"enterValue": "Enter value"
 		},
 		"incidents": {
 		    "message": "Message",
@@ -291,10 +303,12 @@
 		    "actions": "Actions"
 		},
 		"calledProcesses": {
-			"callingActivity": "Calling Activity",
-			"process": "Process",
-			"version": "Version",
-			"id": "ID"
+			"callingActivity": "Activity",
+			"process": "Process definition",
+			"calledProcessInstance": "Called process instances",
+			"state": "State",
+			"startTime": "Start time",
+			"endTime": "End time"
 		},
 		"assignModal": {
 		    "manageUsersGroups": "Manage users/groups",
@@ -327,6 +341,16 @@
 			"actions": "Actions",
 			"suspend": "Suspend",
 			"resume": "Resume"
+		},
+		"externalTasks": {
+			"id": "External task ID",
+			"activityId": "Activity",
+			"topicName": "Topic",
+			"workerId": "Worker ID", 
+			"lockExpirationTime": "Lock expiration time",
+			"retries": "Retries",
+			"priority": "Priority",
+			"noExternalTasks": "No external tasks found"
 		}
 	},
 	"bpmn-viewer": {
@@ -745,7 +769,7 @@
 				"processDefinitionKeyIn": "Process definition Key in",
 				"processDefinitionName": "Process definition name",
 				"processDefinitionNameLike": "Process definition name like",
-				"caseInstanceId": "Case instance ID",
+				"caseInstanceId": "@:process-instance.details.caseInstanceId",
 				"caseInstanceBusinessKey": "Case instance business Key",
 				"caseInstanceBusinessKeyLike": "Case instance business Key like",
 				"caseDefinitionId": "Case definition ID",
@@ -1021,6 +1045,10 @@
 	},
 	"cib-table2": {
 		"filter": "Filter"
+	},
+	"table": {
+		"selectColumns": "Display columns",
+		"toggleColumn": "Toggle \"{column}\" column"
 	},
 	"navigation": {
 		"home": "Home",

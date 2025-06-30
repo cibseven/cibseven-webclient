@@ -43,10 +43,7 @@ import jakarta.validation.constraints.NotNull;
 
 @ApiResponses({ @ApiResponse(responseCode  = "500", description = "An unexpected system error occured") })
 @RestController @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/auth")
-public class AuthenticationService {
-	
-	@Autowired BaseUserProvider provider;
-	@Autowired BpmProvider bpmProvider;
+public class AuthenticationService extends BaseService {
 	
 	@Operation(summary  = "Authenticates a user and returns (among other things) a token to be passed with other services")
 	@ApiResponses({@ApiResponse(responseCode = "401", description = "Credentials are wrong") })
@@ -59,22 +56,22 @@ public class AuthenticationService {
 		data.remove("lastname");
 		StandardLogin standardLogin = new ObjectMapper().convertValue(data, StandardLogin.class);
 
-	    return provider.login(standardLogin, rq);
+	    return baseUserProvider.login(standardLogin, rq);
 	}	
 	
 	@RequestMapping(value = "/logout", method = RequestMethod.POST)
 	public void logout(User user) {
-		provider.logout(user);
-	}	
+		baseUserProvider.logout(user);
+	}
 	
 	@RequestMapping(method = RequestMethod.GET)
 	public User getSelfInfo(@NotNull User user, HttpServletRequest rq) {
-		return provider.getUserInfo(user, user.getId());
+		return baseUserProvider.getUserInfo(user, user.getId());
 	}
 
 	@RequestMapping(value = "/users", method = RequestMethod.GET)
 	public Collection<CIBUser> getUsers(@NotNull User user, @RequestParam Optional<String> filter) {
-		return provider.getUsers(user, filter);
+		return baseUserProvider.getUsers(user, filter);
 	}
 	
 	@RequestMapping(value = "/authorizations", method = RequestMethod.GET)

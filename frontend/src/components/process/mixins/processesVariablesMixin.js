@@ -41,28 +41,31 @@ export default {
 				this.selectedVariable = null
 				this.loadSelectedInstanceVariables()
 			}
-		}
+		},
+		activityInstancesGrouped: 'loadSelectedInstanceVariables'
 	},
 	computed: {
 		activityInstancesGrouped: function () {
-			var res = []
-			if (this.activityInstance) {
-				res[this.activityInstance.id] = this.activityInstance.name
-				this.activityInstance.childActivityInstances.forEach(ai => {
-					res[ai.id] = ai.name
-				})
-			} else {
-				res[this.selectedInstance.id] = this.selectedInstance.processDefinitionName
-				this.activityInstanceHistory.forEach(ai => {
-					res[ai.id] = ai.activityName
-				})
+			if (this.activityInstanceHistory) {
+				var res = []
+				if (this.activityInstance) {
+					res[this.activityInstance.id] = this.activityInstance.name
+					this.activityInstance.childActivityInstances.forEach(ai => {
+						res[ai.id] = ai.name
+					})
+				} else {
+					res[this.selectedInstance.id] = this.selectedInstance.processDefinitionName
+					this.activityInstanceHistory.forEach(ai => {
+						res[ai.id] = ai.activityName
+					})
+				}
+				return res
 			}
-			return res
 		}
 	},
 	methods: {
 		loadSelectedInstanceVariables: function () {
-			if (this.selectedInstance) {
+			if (this.selectedInstance && this.activityInstancesGrouped) {
 				if (this.selectedInstance.state === 'ACTIVE') {
 					this.fetchInstanceVariables('ProcessService', 'fetchProcessInstanceVariables')
 				} else {

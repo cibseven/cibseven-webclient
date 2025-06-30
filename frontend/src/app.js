@@ -16,7 +16,6 @@
  */
 import '@mdi/font/css/materialdesignicons.css'
 import './assets/main.css'
-import appConfig from './appConfig.js'
 import { axios } from './globals.js'
 
 import { createApp } from 'vue'
@@ -26,7 +25,7 @@ import { createAppRouter, appRoutes } from './router.js'
 import registerOwnComponents from './register.js'
 import { permissionsMixin }  from './permissions.js'
 
-import { InfoService, AuthService } from './services.js'
+import { InfoService, AuthService, setServicesBasePath } from './services.js'
 import { getTheme, hasHeader, isMobile, checkExternalReturn } from './utils/init'
 import { applyTheme, handleAxiosError, fetchAndStoreProcesses, fetchDecisionsIfEmpty, setupTaskNotifications } from './utils/init'
 import { i18n, switchLanguage } from './i18n'
@@ -42,7 +41,7 @@ Promise.all([
   Object.assign(responses[0].data, responses[1].data)
   var config = responses[0].data
 
-  appConfig.servicesBasePath = config.servicesBasePath
+  setServicesBasePath(config.servicesBasePath)
 
   // (Optional) check if possible
   //axios.defaults.baseURL = appConfig.adminBasePath

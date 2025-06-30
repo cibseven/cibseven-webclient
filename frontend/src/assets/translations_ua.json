@@ -63,12 +63,11 @@
 		"key": "Ключ визначення",
 		"state": "Статус",
 		"id": "ID",
+		"instanceId": "ID",
 		"processId": "Ідентифікатор процесу",
 		"startUserId": "Користувач",
 		"startTime": "Початкова дата",
-		"startTimeOriginal": "Початкова дата",
 		"endTime": "Кінцева дата",
-		"endTimeOriginal": "Кінцева дата",
 		"businessKey": "Бізнес-ключ",
 		"title": "Процеси",
 		"view-comfy": "Маленькі",
@@ -184,7 +183,8 @@
 		"externalTasksLog": "Журнал зовнішніх задач",
 		"modify": "Змінити",
 		"restart": "Перезапустити",
-		"documentation": "Документація"
+		"documentation": "Документація",
+		"externalTasks": "Зовнішні завдання"
 	},
 	"process-instance": {
 		"processInstanceId": "ID екземпляра процесу",
@@ -199,14 +199,25 @@
 		"upload": "Завантажити файл",
 		"selectFile": "Вибрати файл",
 		"calledProcessDefinitions": {
-			"process": "процес",
-			"version": "версія",
-			"activities": "Викликаючі дії"
+			"calledProcessDefinition": "Викликане визначення процесу",
+			"process": "Процес",
+			"version": "Версія",
+			"activities": "Дії, що викликають",
+			"activity": "Дія",
+			"state": "Стан",
+			"referenced": "Посилається",
+			"running": "Виконується",
+			"runningAndReferenced": "Запущено i посилається"
 		},
 		"details": {
 			"startUser": "Користувач, що запустив",
 			"start": "Почато",
 			"finish": "Завершено",
+			"duration": "Тривалість",
+			"superProcessInstanceId": "ID надпроцесу",
+			"superCaseInstanceId": "ID надсправи",
+			"caseInstanceId": "ID екземпляра кейсу",
+			"startActivityId": "ID початкової активності",
 			"version": "Версія",
 			"state": "Статус",
 			"deleted": "Видалено",
@@ -228,7 +239,8 @@
 			"scope": "Область",
 			"objectTypeName": "Назва типу об’єкта",
 			"serializationDataFormat": "Формат серіалізації даних",
-			"confirmDelete": "Бажаєте видалити змінну?"
+			"confirmDelete": "Бажаєте видалити змінну?",
+			"enterValue": "Введіть значення"
 		},
 		"incidents": {
 			"message": "Повідомлення",
@@ -291,10 +303,12 @@
 			"actions": "Дії"
 		},
 		"calledProcesses": {
-			"callingActivity": "Викликаюча активність",
-			"process": "Процес",
-			"version": "Версія",
-			"id": "ID"
+			"callingActivity": "Активність",
+			"process": "Визначення процесу",
+			"calledProcessInstance": "Викликані екземпляри процесу",
+			"state": "Стан",
+			"startTime": "Час початку",
+			"endTime": "Час завершення"
 		},
 		"assignModal": {
 			"manageUsersGroups": "Управління користувачами/групами",
@@ -327,6 +341,16 @@
 			"actions": "Дії",
 			"suspend": "Призупинити",
 			"resume": "Відновити"
+		},
+		"externalTasks": {
+			"id": "ID зовнішнього завдання",
+			"activityId": "Активність",
+			"topicName": "Тема",
+			"workerId": "ID працівника",
+			"lockExpirationTime": "Дата закінчення блокування",
+			"retries": "Повтори",
+			"priority": "Пріоритет",
+			"noExternalTasks": "Зовнішні завдання не знайдено"
 		}
 	},
 		"bpmn-viewer": {
@@ -745,7 +769,7 @@
 					"processDefinitionKeyIn": "Ключ визначення процесу в",
 					"processDefinitionName": "Назва визначення процесу",
 					"processDefinitionNameLike": "Назва визначення процесу як",
-					"caseInstanceId": "ID екземпляра кейсу",
+					"caseInstanceId": "@:process-instance.details.caseInstanceId",
 					"caseInstanceBusinessKey": "Бізнес-ключ екземпляра кейсу",
 					"caseInstanceBusinessKeyLike": "Бізнес-ключ екземпляра кейсу як",
 					"caseDefinitionId": "ID визначення кейсу",
@@ -1020,6 +1044,10 @@
 	},
 	"cib-table2": {
 		"filter": "Фільтр"
+	},
+	"table": {
+		"selectColumns": "Показати стовпці",
+		"toggleColumn": "Перемкнути стовпець \"{column}\""
 	},
 	"navigation": {
 		"home": "Головна сторінка",

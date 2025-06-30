@@ -42,6 +42,7 @@ import org.cibseven.webapp.rest.model.CandidateGroupTaskCount;
 import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.DeploymentResource;
 import org.cibseven.webapp.rest.model.EventSubscription;
+import org.cibseven.webapp.rest.model.ExternalTask;
 import org.cibseven.webapp.rest.model.Filter;
 import org.cibseven.webapp.rest.model.HistoryBatch;
 import org.cibseven.webapp.rest.model.IdentityLink;
@@ -67,6 +68,7 @@ import org.cibseven.webapp.rest.model.User;
 import org.cibseven.webapp.rest.model.UserGroup;
 import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
+import org.cibseven.webapp.rest.model.VariableInstance;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.multipart.MultipartFile;
@@ -851,6 +853,8 @@ public interface BpmProvider {
      */
 	Collection<HistoryProcessInstance> findProcessesInstancesHistoryById(String id, Optional<String> activityId, Optional<Boolean> active, Integer firstResult, Integer maxResults, String text, CIBUser user) throws SystemException;
 	
+	Long countProcessesInstancesHistory(Map<String, Object> filters, CIBUser user);	
+	
 	/**
 	 * Get user by id.
 	 * 
@@ -899,12 +903,15 @@ public interface BpmProvider {
 	ProcessStart submitStartFormVariables(String processDefinitionId, List<Variable> formResult, CIBUser user)
 			throws SystemException;
 
-	void saveVariableInProcessInstanceId(String processInstanceId, List<Variable> variables, CIBUser user)
-			throws SystemException;
-
+	void saveVariableInProcessInstanceId(String processInstanceId, List<Variable> variables, CIBUser user) throws SystemException;
+			
 	Map<String, Variable> fetchProcessFormVariablesById(String id, CIBUser user) throws SystemException;
 
 	void retryJobById(String jobId, Map<String, Object> data, CIBUser user);
+	
+	String findExternalTaskErrorDetails(String externalTaskId, CIBUser user);
+	
+	void retryExternalTask(String externalTaskId, Map<String, Object> data, CIBUser user);
 	
 	void setIncidentAnnotation(String incidentId, Map<String, Object> data, CIBUser user);
 	
@@ -1085,5 +1092,38 @@ public interface BpmProvider {
 	void deleteMemberFromTenant(String tenantId, String userId, CIBUser user);
 	void addGroupToTenant(String tenantId, String groupId, CIBUser user);
 	void deleteGroupFromTenant(String tenantId, String groupId, CIBUser user);
+
+	// Variable Instance method
+	/**
+	 * Retrieves a variable instance by its ID.
+	 * @param id The ID of the variable instance
+	 * @param deserializeValue Whether to deserialize the variable value or not
+	 * @param user the user performing the search
+	 * @return Variable instance details
+	 * @throws SystemException in case of an error
+	 * @throws NoObjectFoundException when the variable instance could not be found
+	 */
+	VariableInstance getVariableInstance(String id, Boolean deserializeValue, CIBUser user) throws SystemException, NoObjectFoundException;
+
+	/**
+	 * Retrieves a historic variable instance by its ID.
+	 * @param id The ID of the historic variable instance
+	 * @param deserializeValue Whether to deserialize the variable value or not
+	 * @param user the user performing the search
+	 * @return Historic variable instance details
+	 * @throws SystemException in case of an error
+	 * @throws NoObjectFoundException when the historic variable instance could not be found
+	 */
+	VariableHistory getHistoricVariableInstance(String id, Boolean deserializeValue, CIBUser user) throws SystemException, NoObjectFoundException;
+
+	/**
+	 * Get external tasks based on query parameters
+	 * 
+	 * @param queryParams Query parameters for filtering external tasks
+	 * @param user the user performing the operation
+	 * @return Collection of external tasks
+	 * @throws SystemException in case of an error
+	 */
+	Collection<ExternalTask> getExternalTasks(Map<String, Object> queryParams, CIBUser user) throws SystemException;
 
 }

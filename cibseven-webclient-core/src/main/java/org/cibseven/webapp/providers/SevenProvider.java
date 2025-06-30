@@ -40,6 +40,7 @@ import org.cibseven.webapp.rest.model.Decision;
 import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.DeploymentResource;
 import org.cibseven.webapp.rest.model.EventSubscription;
+import org.cibseven.webapp.rest.model.ExternalTask;
 import org.cibseven.webapp.rest.model.Filter;
 import org.cibseven.webapp.rest.model.HistoryBatch;
 import org.cibseven.webapp.rest.model.HistoryProcessInstance;
@@ -66,6 +67,7 @@ import org.cibseven.webapp.rest.model.User;
 import org.cibseven.webapp.rest.model.UserGroup;
 import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
+import org.cibseven.webapp.rest.model.VariableInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -79,9 +81,10 @@ import jakarta.servlet.http.HttpServletRequest;
 
 @Component
 public class SevenProvider extends SevenProviderBase implements BpmProvider {
-	
-    @Autowired private IDeploymentProvider deploymentProvider;
+		@Autowired private IDeploymentProvider deploymentProvider;
     @Autowired private IVariableProvider variableProvider;
+    @Autowired private IVariableInstanceProvider variableInstanceProvider;
+    @Autowired private IHistoricVariableInstanceProvider historicVariableInstanceProvider;
     @Autowired private ITaskProvider taskProvider;
     @Autowired private IProcessProvider processProvider;
     @Autowired private IActivityProvider activityProvider;
@@ -95,6 +98,7 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
     @Autowired private IBatchProvider batchProvider;
     @Autowired private ISystemProvider systemProvider;
     @Autowired private ITenantProvider tenantProvider;
+    @Autowired private IExternalTaskProvider externalTaskProvider;
     
     
     /*
@@ -334,7 +338,12 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	public Collection<HistoryProcessInstance> findProcessesInstancesHistoryById(String id, Optional<String> activityId, Optional<Boolean> active, 
 			Integer firstResult, Integer maxResults, String text, CIBUser user) {
 		return processProvider.findProcessesInstancesHistoryById(id, activityId, active, firstResult, maxResults, text, user);
-	}	
+	}
+	
+	@Override
+	public Long countProcessesInstancesHistory(Map<String, Object> filters, CIBUser user) {
+		return processProvider.countProcessesInstancesHistory(filters, user);
+	}
 	
 	@Override
 	public ProcessInstance findProcessInstance(String processInstanceId, CIBUser user) {
@@ -507,15 +516,25 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	public Collection<Message> correlateMessage(Map<String, Object> data, CIBUser user) throws SystemException {
 		return utilsProvider.correlateMessage(data, user);
 	}
-
+	
 	@Override
 	public String findStacktrace(String jobId, CIBUser user) {
 		return utilsProvider.findStacktrace(jobId, user);
 	}
 	
 	@Override
+	public String findExternalTaskErrorDetails(String externalTaskId, CIBUser user) {
+		return incidentProvider.findExternalTaskErrorDetails(externalTaskId, user);
+	}
+	
+	@Override
 	public void retryJobById(String jobId, Map<String, Object> data, CIBUser user) {
 		utilsProvider.retryJobById(jobId, data, user);
+	}
+
+	@Override
+	public void retryExternalTask(String externalTaskId, Map<String, Object> data, CIBUser user) {
+		incidentProvider.retryExternalTask(externalTaskId, data, user);
 	}
 
 	@Override
@@ -1105,7 +1124,6 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	public void udpateTenant(Tenant tenant, CIBUser user) {
 		tenantProvider.udpateTenant(tenant, user);
 	}
-
 	@Override
 	public void deleteTenant(String tenantId, CIBUser user) {
 		tenantProvider.deleteTenant(tenantId, user);
@@ -1125,10 +1143,54 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	public void addGroupToTenant(String tenantId, String groupId, CIBUser user) {
 		tenantProvider.addGroupToTenant(tenantId, groupId, user);
 	}
-
+	
 	@Override
 	public void deleteGroupFromTenant(String tenantId, String groupId, CIBUser user) {
 		tenantProvider.deleteGroupFromTenant(tenantId, groupId, user);
+	}
+
+	/*
+		
+  ██    ██  █████  ██████  ██  █████  ██████  ██      ███████     ██ ███    ██ ███████ ████████  █████  ███    ██  ██████ ███████     ██████  ██████   ██████  ██    ██ ██ ██████  ███████ ██████  
+  ██    ██ ██   ██ ██   ██ ██ ██   ██ ██   ██ ██      ██          ██ ████   ██ ██         ██    ██   ██ ████   ██ ██      ██          ██   ██ ██   ██ ██    ██ ██    ██ ██ ██   ██ ██      ██   ██ 
+  ██    ██ ███████ ██████  ██ ███████ ██████  ██      █████       ██ ██ ██  ██ ███████    ██    ███████ ██ ██  ██ ██      █████       ██████  ██████  ██    ██ ██    ██ ██ ██   ██ █████   ██████  
+   ██  ██  ██   ██ ██   ██ ██ ██   ██ ██   ██ ██      ██          ██ ██  ██ ██      ██    ██    ██   ██ ██  ██ ██ ██      ██          ██      ██   ██ ██    ██  ██  ██  ██ ██   ██ ██      ██   ██ 
+    ████   ██   ██ ██   ██ ██ ██   ██ ██████  ███████ ███████     ██ ██   ████ ███████    ██    ██   ██ ██   ████  ██████ ███████     ██      ██   ██  ██████    ████   ██ ██████  ███████ ██   ██ 
+	                                                                                                                                                                                                 
+	*/
+
+	@Override
+	public VariableInstance getVariableInstance(String id, Boolean deserializeValue, CIBUser user) throws SystemException, NoObjectFoundException {
+		return variableInstanceProvider.getVariableInstance(id, deserializeValue, user);
+	}
+
+	/*
+	
+	██   ██ ██ ███████ ████████  ██████  ██████  ██  ██████     ██    ██  █████  ██████  ██  █████  ██████  ██      ███████     ██ ███    ██ ███████ ████████  █████  ███    ██  ██████ ███████     ██████  ██████   ██████  ██    ██ ██ ██████  ███████ ██████  
+	██   ██ ██ ██         ██    ██    ██ ██   ██ ██ ██          ██    ██ ██   ██ ██   ██ ██ ██   ██ ██   ██ ██      ██          ██ ████   ██ ██         ██    ██   ██ ████   ██ ██      ██          ██   ██ ██   ██ ██    ██ ██    ██ ██ ██   ██ ██      ██   ██ 
+	███████ ██ ███████    ██    ██    ██ ██████  ██ ██          ██    ██ ███████ ██████  ██ ███████ ██████  ██      █████       ██ ██ ██  ██ ███████    ██    ███████ ██ ██  ██ ██      █████       ██████  ██████  ██    ██ ██    ██ ██ ██   ██ █████   ██████  
+	██   ██ ██      ██    ██    ██    ██ ██   ██ ██ ██           ██  ██  ██   ██ ██   ██ ██ ██   ██ ██   ██ ██      ██          ██ ██  ██ ██      ██    ██    ██   ██ ██  ██ ██ ██      ██          ██      ██   ██ ██    ██  ██  ██  ██ ██   ██ ██      ██   ██ 
+	██   ██ ██ ███████    ██     ██████  ██   ██ ██  ██████       ████   ██   ██ ██   ██ ██ ██   ██ ██████  ███████ ███████     ██ ██   ████ ███████    ██    ██   ██ ██   ████  ██████ ███████     ██      ██   ██  ██████    ████   ██ ██████  ███████ ██   ██ 
+                                                                                                                                                                                                                                                             
+	 */
+	@Override
+	public VariableHistory getHistoricVariableInstance(String id, Boolean deserializeValue, CIBUser user) throws SystemException, NoObjectFoundException {
+		return historicVariableInstanceProvider.getHistoricVariableInstance(id, deserializeValue, user);
+	}
+	
+	/*
+
+	███████ ██   ██ ████████ ███████ ██████  ███    ██  █████  ██           ████████  █████  ███████ ██   ██     ██       ██████   ██████  
+	██       ██ ██     ██    ██      ██   ██ ████   ██ ██   ██ ██              ██    ██   ██ ██      ██  ██      ██      ██    ██ ██       
+	█████     ███      ██    █████   ██████  ██ ██  ██ ███████ ██              ██    ███████ ███████ █████       ██      ██    ██ ██   ███ 
+	██       ██ ██     ██    ██      ██   ██ ██  ██ ██ ██   ██ ██              ██    ██   ██      ██ ██  ██      ██      ██    ██ ██    ██ 
+	███████ ██   ██    ██    ███████ ██   ██ ██   ████ ██   ██ ███████         ██    ██   ██ ███████ ██   ██     ███████  ██████   ██████  
+                                                                                                                                              
+	*/
+
+	@Override
+	public Collection<ExternalTask> getExternalTasks(Map<String, Object> queryParams, CIBUser user) throws SystemException {
+		return externalTaskProvider.getExternalTasks(queryParams, user);
 	}
 
 }

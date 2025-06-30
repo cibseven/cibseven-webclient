@@ -17,8 +17,11 @@
 
 -->
 <template>
-  <div class="overflow-auto bg-white position-absolute container-fluid g-0" style="top: 0; bottom: 0">
-    <FlowTable v-if="localIncidents.length > 0" striped thead-class="sticky-header" :items="localIncidents" primary-key="id" prefix="process-instance.incidents."
+  <div class="overflow-auto bg-white container-fluid g-0 h-100">
+    <div v-if="loading">
+      <p class="text-center p-4"><BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}</p>
+    </div>
+    <FlowTable v-else-if="incidents.length > 0" striped thead-class="sticky-header" :items="incidents" primary-key="id" prefix="process-instance.incidents."
       sort-by="label" :sort-desc="true" :fields="[
       { label: 'message', key: 'incidentMessage', class: 'col-3', tdClass: 'py-1 border-end border-top-0' },
       { label: 'timestamp', key: 'incidentTimestamp', class: 'col-1', tdClass: 'py-1 border-end border-top-0' },
@@ -28,7 +31,14 @@
       { label: 'annotation', key: 'annotation', class: 'col-1', tdClass: 'py-1 border-end border-top-0' },
       { label: 'actions', key: 'actions', class: 'col-1', sortable: false, tdClass: 'py-1 border-top-0' }]">
       <template v-slot:cell(incidentMessage)="table">
-        <div :title="table.item.incidentMessage" class="text-truncate" @click="showIncidentMessage(table.item.configuration)">{{ table.item.incidentMessage }}</div>
+        <CopyableActionButton 
+          :display-value="table.item.incidentMessage"
+          :copy-value="table.item.incidentMessage" 
+          :title="table.item.incidentMessage"
+          class="text-truncate w-100"
+          @click="showIncidentMessage(table.item)"
+          @copy="copyValueToClipboard"
+        />
       </template>
       <template v-slot:cell(incidentTimestamp)="table">
         <div :title="table.item.incidentTimestamp" class="text-truncate">{{ showPrettyTimestamp(table.item.incidentTimestamp) }}</div>
@@ -58,74 +68,116 @@
         </b-button>
       </template>
     </FlowTable>
-    <div v-else>
+    <div v-else-if="!loading">
       <p class="text-center p-4">{{ $t('process-instance.noIncidents') }}</p>
     </div>
+
+    <AnnotationModal ref="annotationModal" @set-incident-annotation="setIncidentAnnotation"></AnnotationModal>
+    <IncidentRetryModal ref="incidentRetryModal" @increment-number-retry="incrementNumberRetry"></IncidentRetryModal>
+    <StackTraceModal ref="stackTraceModal"></StackTraceModal>
+    <SuccessAlert ref="messageCopy">{{ $t('process.copySuccess') }}</SuccessAlert>
+    <SuccessAlert ref="successRetryJob">{{ $t('process-instance.successRetryJob') }}</SuccessAlert>
   </div>
-
-  <b-modal ref="stackTraceModal" :title="$t('process-instance.stacktrace')" size="xl" :ok-only="true">
-    <div v-if="stackTraceMessage" class="container-fluid pt-3">
-      <b-form-textarea v-model="stackTraceMessage" rows="20" readonly></b-form-textarea>
-      <b-button variant="link" @click="copyValueToClipboard(stackTraceMessage)">{{ $t('process-instance.copyValueToClipboard') }}</b-button>
-    </div>
-  </b-modal>
-
-  <AnnotationModal ref="annotationModal" @set-incident-annotation="setIncidentAnnotation"></AnnotationModal>
-  <IncidentRetryModal ref="incidentRetryModal" @increment-number-retry="incrementNumberRetry"></IncidentRetryModal>
-  <SuccessAlert ref="messageCopy" style="z-index: 9999">{{ $t('process.copySuccess') }}</SuccessAlert>
-  <SuccessAlert ref="successRetryJob">{{ $t('process-instance.successRetryJob') }}</SuccessAlert>
-
 </template>
 
 <script>
 import { moment } from '@/globals.js'
-import procesessVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { IncidentService } from '@/services.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import IncidentRetryModal from '@/components/process/modals/IncidentRetryModal.vue'
 import AnnotationModal from '@/components/process/modals/AnnotationModal.vue'
+import StackTraceModal from '@/components/process/modals/StackTraceModal.vue'
+import { BWaitingBox } from 'cib-common-components'
+import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
+import { mapGetters, mapActions } from 'vuex'
 
 export default {
   name: 'IncidentsTable',
-  components: { FlowTable, SuccessAlert, IncidentRetryModal, AnnotationModal },
-  mixins: [procesessVariablesMixin, copyToClipboardMixin],
-  data: function() {
-    return {
-      stackTraceMessage: '',
-      localIncidents: []
-    }
-  },
-  created: function() {
-    this.localIncidents = [...this.incidents]
-  },
+  components: { FlowTable, SuccessAlert, IncidentRetryModal, AnnotationModal, StackTraceModal, BWaitingBox, CopyableActionButton },
+  mixins: [copyToClipboardMixin],
   props: {
-    incidents: Array,
+    instance: Object,
+    process: Object,
     activityInstance: Object,
     activityInstanceHistory: Object
   },
+  computed: {
+    ...mapGetters('incidents', ['incidents'])
+  },
+  data: function() {
+    return {
+      loading: true
+    }
+  },
+  watch: {
+    'instance.id': {
+      handler(id) {
+        if (id) {
+          this.loadIncidents(id, true)
+        }
+      },
+      immediate: true
+    },
+    'process.id': {
+      handler(id) {
+        if (id && !this.instance) {
+          this.loadIncidents(id, false)
+        }
+      },
+      immediate: true
+    }
+  },
   methods: {
-    showIncidentMessage: function(jobDefinitionId) {
-      this.stackTraceMessage = ''
-      IncidentService.fetchIncidentStacktraceByJobId(jobDefinitionId).then(res => {
-        this.stackTraceMessage = res
-        this.$refs.stackTraceModal.show()
+    ...mapActions('incidents', ['loadIncidentsByProcessInstance', 'loadIncidentsByProcessDefinition', 'removeIncident', 'updateIncidentAnnotation']),
+    async loadIncidents(id, isInstance = true) {
+      this.loading = true
+      try {
+        if (isInstance) {
+          await this.loadIncidentsByProcessInstance(id)
+        } else {
+          await this.loadIncidentsByProcessDefinition(id)
+        }
+      } finally {
+        this.loading = false
+      }
+    },
+    showIncidentMessage: function(incident) {
+      // Choose the appropriate method based on incident type
+      let stackTracePromise
+      if (incident.incidentType === 'failedExternalTask') {
+        // For external task incidents, use the external task error details endpoint
+        stackTracePromise = IncidentService.fetchIncidentStacktraceByExternalTaskId(incident.configuration)
+      } else {
+        // For other incident types, use job stack trace
+        stackTracePromise = IncidentService.fetchIncidentStacktraceByJobId(incident.configuration)
+      }
+      stackTracePromise.then(res => {
+        this.$refs.stackTraceModal.show(res)
       })
     },
     showPrettyTimestamp: function(orignalDate) {
       return moment(orignalDate).format('DD/MM/YYYY HH:mm:ss')
     },
-    incrementNumberRetry: function({ id, params }) {
-      IncidentService.retryJobById(id, params).then(() => {
-        this.localIncidents.splice(this.localIncidents.findIndex(obj => obj.configuration === id), 1)
+    incrementNumberRetry: function({ incident, params }) {
+      // Choose the appropriate retry method based on incident type
+      let retryPromise
+      if (incident.incidentType === 'failedExternalTask') {
+        // For external task incidents, use the external task retry endpoint
+        retryPromise = IncidentService.retryExternalTaskById(incident.configuration, params)
+      } else {
+        // For other incident types, use job retry
+        retryPromise = IncidentService.retryJobById(incident.configuration, params)
+      }
+      retryPromise.then(() => {
+        this.removeIncident(incident.id)
         this.$refs.incidentRetryModal.hide()
       })
     },
     setIncidentAnnotation: function({ id, params }) {
       IncidentService.setIncidentAnnotation(id, params).then(() => {
-        const incident = this.localIncidents.find(i => i.id === id)
-        if (incident) incident.annotation = params.annotation
+        this.updateIncidentAnnotation({ incidentId: id, annotation: params.annotation })
         this.$refs.annotationModal.hide()
       })
     }

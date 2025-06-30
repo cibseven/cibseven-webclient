@@ -47,25 +47,26 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 @ApiResponses({
-	@ApiResponse(responseCode= "500", description = "An unexpected system error occured"),
-	@ApiResponse(responseCode= "401", description = "Unauthorized")
+		@ApiResponse(responseCode = "500", description = "An unexpected system error occured"),
+		@ApiResponse(responseCode = "401", description = "Unauthorized")
 })
-@RestController @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/incident")
+@RestController
+@RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/incident")
 public class IncidentService extends BaseService implements InitializingBean {
 
-	@Autowired BpmProvider bpmProvider;
+	@Autowired
+	BpmProvider bpmProvider;
 	SevenProvider sevenProvider;
-	
+
 	public void afterPropertiesSet() {
 		if (bpmProvider instanceof SevenProvider)
 			sevenProvider = (SevenProvider) bpmProvider;
-		else throw new SystemException("IncidentService expects a BpmProvider");
-	}	
-	
-	@Operation(
-			summary = "Get number of incidents",
-			description = "<strong>Return: Number of incidents")
-	@ApiResponse(responseCode= "404", description = "Incident not found")
+		else
+			throw new SystemException("IncidentService expects a BpmProvider");
+	}
+
+	@Operation(summary = "Get number of incidents", description = "<strong>Return: Number of incidents")
+	@ApiResponse(responseCode = "404", description = "Incident not found")
 	@RequestMapping(value = "/count", method = RequestMethod.GET)
 	public Long countIncident(
 			@Parameter(description = "Incident Id") @RequestParam Optional<String> incidentId,
@@ -86,14 +87,13 @@ public class IncidentService extends BaseService implements InitializingBean {
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.READ_ALL);
-		return sevenProvider.countIncident(incidentId, incidentType, incidentMessage, processDefinitionId, processDefinitionKeyIn, processInstanceId, executionId, activityId,
+		return sevenProvider.countIncident(incidentId, incidentType, incidentMessage, processDefinitionId,
+				processDefinitionKeyIn, processInstanceId, executionId, activityId,
 				causeIncidentId, rootCauseIncidentId, configuration, tenantIdIn, jobDefinitionIdIn, name, user);
 	}
-	
-	@Operation(
-			summary = "Get incident/s",
-			description = "<strong>Return: Collection of incident/s")
-	@ApiResponse(responseCode= "404", description = "Incident not found")
+
+	@Operation(summary = "Get incident/s", description = "<strong>Return: Collection of incident/s")
+	@ApiResponse(responseCode = "404", description = "Incident not found")
 	@RequestMapping(method = RequestMethod.GET)
 	public Collection<Incident> findIncident(
 			@Parameter(description = "Incident Id") @RequestParam Optional<String> incidentId,
@@ -109,55 +109,72 @@ public class IncidentService extends BaseService implements InitializingBean {
 			@Parameter(description = "Incidents that have the given incident Id as root cause incident") @RequestParam Optional<String> rootCauseIncidentId,
 			@Parameter(description = "Incidents that have the given parameter set as configuration") @RequestParam Optional<String> configuration,
 			@Parameter(description = "Incidents that have one of the given comma-separated tenant Ids") @RequestParam Optional<String> tenantIdIn,
-			@Parameter(description = "Incidents that have one of the given comma-separated job definition Ids") @RequestParam Optional<String> jobDefinitionIdIn,	
-			Locale loc, HttpServletRequest rq) 
-	{
-		CIBUser user = checkAuthorization(rq, true);
-		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.READ_ALL);
-		return sevenProvider.findIncident(incidentId, incidentType, incidentMessage, processDefinitionId, processDefinitionKeyIn, processInstanceId, executionId, activityId,
-				causeIncidentId, rootCauseIncidentId, configuration, tenantIdIn, jobDefinitionIdIn, user);
-	}
-		
-	@Operation(
-			summary = "Get stack trace",
-			description = "<strong>Return: Stacktrace")
-	@ApiResponse(responseCode= "404", description = "Job not found")
-	@RequestMapping(value = "/{jobId}/stacktrace", method = RequestMethod.GET)
-	public String findStacktrace(
-			@Parameter(description = "Job Id") @PathVariable String jobId, 
+			@Parameter(description = "Incidents that have one of the given comma-separated job definition Ids") @RequestParam Optional<String> jobDefinitionIdIn,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.READ_ALL);
+		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.READ_ALL);
+		return sevenProvider.findIncident(incidentId, incidentType, incidentMessage, processDefinitionId,
+				processDefinitionKeyIn, processInstanceId, executionId, activityId,
+				causeIncidentId, rootCauseIncidentId, configuration, tenantIdIn, jobDefinitionIdIn, user);
+	}
+
+	@Operation(summary = "Get stack trace", description = "<strong>Return: Stacktrace")
+	@ApiResponse(responseCode = "404", description = "Job not found")
+	@RequestMapping(value = "/{jobId}/stacktrace", method = RequestMethod.GET)
+	public String findStacktrace(
+			@Parameter(description = "Job Id") @PathVariable String jobId,
+			Locale loc, HttpServletRequest rq) {
+		CIBUser user = checkAuthorization(rq, true);
+		// checkPermission(user, SevenResourceType.JOB_DEFINITION,
+		// PermissionConstants.READ_ALL);
 
 		return sevenProvider.findStacktrace(jobId, user);
 	}
-	
-	@Operation(
-			summary = "Increment job retries by job id",
-			description = "<strong>Return: void")
-	@ApiResponse(responseCode= "404", description = "Job not found")
-	@RequestMapping(value = "/job/{jobId}/retries", method = RequestMethod.PUT)
-	public void retryJobByID(
-			@Parameter(description = "Job Id") @PathVariable String jobId, 
-			@RequestBody Map<String, Object> data, 
+
+	@Operation(summary = "Get external task error details", description = "<strong>Return: Error details")
+	@ApiResponse(responseCode = "404", description = "External task not found")
+	@RequestMapping(value = "/external-task/{externalTaskId}/errorDetails", method = RequestMethod.GET)
+	public String findExternalTaskErrorDetails(
+			@Parameter(description = "External Task Id") @PathVariable String externalTaskId,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.UPDATE_ALL);
+		return sevenProvider.findExternalTaskErrorDetails(externalTaskId, user);
+	}
+
+	@Operation(summary = "Increment job retries by job id", description = "<strong>Return: void")
+	@ApiResponse(responseCode = "404", description = "Job not found")
+	@RequestMapping(value = "/job/{jobId}/retries", method = RequestMethod.PUT)
+	public void retryJobByID(
+			@Parameter(description = "Job Id") @PathVariable String jobId,
+			@RequestBody Map<String, Object> data,
+			Locale loc, HttpServletRequest rq) {
+		CIBUser user = checkAuthorization(rq, true);
+		// checkPermission(user, SevenResourceType.JOB_DEFINITION,
+		// PermissionConstants.UPDATE_ALL);
 		sevenProvider.retryJobById(jobId, data, user);
 	}
-	
-	@Operation(
-	    summary = "Set annotation for incident by id",
-	    description = "<strong>Return: void"
-	)
+
+	@Operation(summary = "Retry external task by setting retries", description = "<strong>Return: void")
+	@ApiResponse(responseCode = "404", description = "External task not found")
+	@RequestMapping(value = "/external-task/{externalTaskId}/retries", method = RequestMethod.PUT)
+	public void retryExternalTask(
+			@Parameter(description = "External Task Id") @PathVariable String externalTaskId,
+			@RequestBody Map<String, Object> data,
+			Locale loc, HttpServletRequest rq) {
+		CIBUser user = checkAuthorization(rq, true);
+		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.UPDATE_ALL);
+		sevenProvider.retryExternalTask(externalTaskId, data, user);
+	}
+
+	@Operation(summary = "Set annotation for incident by id", description = "<strong>Return: void")
 	@ApiResponse(responseCode = "404", description = "Incident not found")
 	@PutMapping("/{incidentId}/annotation")
 	public void setIncidentAnnotation(
-	        @Parameter(description = "Incident Id") @PathVariable String incidentId,
-	        @RequestBody Map<String, Object> data,
-	        Locale locale, HttpServletRequest request) {	
-	    CIBUser user = checkAuthorization(request, true);
-	    bpmProvider.setIncidentAnnotation(incidentId, data, user);
+			@Parameter(description = "Incident Id") @PathVariable String incidentId,
+			@RequestBody Map<String, Object> data,
+			Locale locale, HttpServletRequest request) {
+		CIBUser user = checkAuthorization(request, true);
+		bpmProvider.setIncidentAnnotation(incidentId, data, user);
 	}
-	
+
 }

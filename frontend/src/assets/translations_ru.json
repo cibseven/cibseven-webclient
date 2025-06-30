@@ -63,12 +63,11 @@
 		"key": "Ключ определения",	
 		"state": "Статус",
 		"id": "ID",
+		"instanceId": "ID",
 		"processId": "Идентификатор процесса",
 		"startUserId": "Пользователь",
 		"startTime": "Начальная дата",
-		"startTimeOriginal": "Начальная дата",
 		"endTime": "Конечная дата",
-		"endTimeOriginal": "Конечная дата",
 		"businessKey": "Бизнес-ключ",
 		"title": "Процессы",
 		"view-comfy": "Маленькие",
@@ -105,7 +104,7 @@
 			"totalInstances": "Всего экземпляров",
 			"unfinishedInstances": "Запущенных экземпляров",
 			"finishedInstances": "Всего оконченных экземпляров без ошибок",
-			"definitionVersion": "Определение версии",
+			"definitionVersion": "Версия определения",
 			"versionTag": "День версии",
 			"definitionId": "ID определения",
 			"definitionKey": "Ключ определения",
@@ -184,7 +183,8 @@
 		"externalTasksLog": "Журнал внешних задач",
 		"modify": "Изменить",
 		"restart": "Перезапустить",
-		"documentation": "Документация"
+		"documentation": "Документация",
+		"externalTasks": "Внешние задачи"
 	},
 	"process-instance": {
 		"processInstanceId": "ID экземпляра процесса",
@@ -199,14 +199,25 @@
 		"upload": "Загрузить файл",
 		"selectFile": "Выбрать файл",
 		"calledProcessDefinitions": {
+			"calledProcessDefinition": "Вызываемое определение процесса",
 			"process": "Процесс",
 			"version": "Версия",
-			"activities": "Вызывающие мероприятия"
+			"activities": "Вызывающие действия",
+			"activity": "Действие",
+			"state": "Состояние",
+			"referenced": "Ссылается",
+			"running": "Выполняется",
+			"runningAndReferenced": "Запущен и ссылается"
 		},
 		"details": {
 			"startUser": "Начальный пользователь",
 			"start": "Начато",
 			"finish": "Закончено",
+			"duration": "Продолжительность",
+			"superProcessInstanceId": "ID суперэкземпляра процесса",
+			"superCaseInstanceId": "ID суперэкземпляра дела",
+			"caseInstanceId": "ID экземпляра дела",
+			"startActivityId": "ID начальной активности",
 			"version": "Версия",
 			"state": "Статус",
 			"deleted": "Удалено",
@@ -228,7 +239,8 @@
 			"scope": "Область",
 			"objectTypeName": "Имя типа объекта",
 			"serializationDataFormat": "Формат данных сериализации",
-			"confirmDelete": "Вы хотите удалить переменную?"
+			"confirmDelete": "Вы хотите удалить переменную?",
+			"enterValue": "Введите значение"
 		},
 		"incidents": {
 		    "message": "Сообщение",
@@ -291,10 +303,12 @@
 		    "actions": "Действия"
 		},
 		"calledProcesses": {
-			"callingActivity": "звонковая деятельность",
-			"process": "процесс",
-			"version": "версия",
-			"id": "ID"
+			"callingActivity": "Активность",
+			"process": "Определение процесса",
+			"calledProcessInstance": "Вызванные экземпляры процесса",
+			"state": "Состояние",
+			"startTime": "Время начала",
+			"endTime": "Время окончания"
 		},
 		"assignModal": {
 		    "manageUsersGroups": "Управление пользователями/группами",
@@ -327,6 +341,16 @@
 			"actions": "Действия",
 			"suspend": "Приостановить",
 			"resume": "Возобновить"
+		},
+		"externalTasks": {
+			"id": "ID внешней задачи",
+			"activityId": "Активность",
+			"topicName": "Тема",
+			"workerId": "ID работника",
+			"lockExpirationTime": "Дата истечения блокировки",
+			"retries": "Повторы",
+			"priority": "Приоритет",
+			"noExternalTasks": "Внешние задачи не найдены"
 		}
 	},
 	"bpmn-viewer": {
@@ -745,7 +769,7 @@
 				"processDefinitionKeyIn": "Ключ определения процесса в",
 				"processDefinitionName": "Имя определения процесса",
 				"processDefinitionNameLike": "Имя определения процесса как",
-				"caseInstanceId": "ID экземпляра дела",
+				"caseInstanceId": "@:process-instance.details.caseInstanceId",
 				"caseInstanceBusinessKey": "Бизнес-ключ экземпляра дела",
 				"caseInstanceBusinessKeyLike": "Бизнес-ключ экземпляра дела как",
 				"caseDefinitionId": "ID определения дела",
@@ -1020,6 +1044,10 @@
 	},
 	"cib-table2": {
 		"filter": "Фильтр"
+	},
+	"table": {
+		"selectColumns": "Показать столбцы",
+		"toggleColumn": "Переключить колонку \"{column}\""
 	},
 	"navigation": {
 		"home": "Домашняя страница",

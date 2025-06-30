@@ -63,12 +63,11 @@
 		"key": "Prozess-Key",
 		"state": "Status",
 		"id": "ID",
+		"instanceId": "ID",
 		"processId": "Prozess-ID",
 		"startUserId": "Benutzer",
-		"startTime": "Startdatum",		
-		"startTimeOriginal": "Startdatum",
+		"startTime": "Startdatum",
 		"endTime": "Enddatum",
-		"endTimeOriginal": "Enddatum",
 		"businessKey": "Fachlicher Schlüssel",
 		"title": "Prozesse",
 		"view-comfy": "Klein",
@@ -184,7 +183,8 @@
 		"externalTasksLog": "Externe Aufgabenprotokolle",
 		"modify": "Modifizieren",
 		"restart": "Neustarten",
-		"documentation": "Dokumentation"
+		"documentation": "Dokumentation",
+		"externalTasks": "Externe Aufgaben"
 	},
 	"process-instance": {
 		"processInstanceId": "Prozessinstanz Id",
@@ -199,14 +199,25 @@
 		"upload": "Datei hochladen",
 		"selectFile": "Datei aussuchen",
 		"calledProcessDefinitions": {
+			"calledProcessDefinition": "Aufgerufene Prozessdefinition",
 			"process": "Prozess",
-			"version":	"Version",
-			"activities": "Aufrufende Aktivitäten"
+			"version": "Version",
+			"activities": "Aufrufende Aktivitäten",
+			"activity": "Aktivität",
+			"state": "Status",
+			"referenced": "Referenziert",
+			"running": "Laufend",
+			"runningAndReferenced": "Laufend und referenziert"
 		},
 		"details": {
 			"startUser": "Startnutzer",
 			"start": "Gestartet am",
 			"finish": "Abgeschlossen am",
+			"duration": "Dauer",
+			"superProcessInstanceId": "Super Prozessinstanz-ID",
+			"superCaseInstanceId": "Super Fallinstanz-ID",
+			"caseInstanceId": "Fallinstanz-ID",
+			"startActivityId": "Startaktivitäts-ID",
 			"version": "Version",
 			"state": "Status",
 			"deleted": "Gelöscht am",
@@ -228,7 +239,8 @@
 			"scope": "Umfang",
 			"objectTypeName": "Objekttypname",
 			"serializationDataFormat": "Serialisierungsdatenformat",
-			"confirmDelete": "Wollen Sie die Variable löschen?"
+			"confirmDelete": "Wollen Sie die Variable löschen?",
+			"enterValue": "Wert eingeben"
 		},
 		"incidents": {
 		    "message": "Nachricht",
@@ -291,10 +303,12 @@
 		    "actions": "Aktionen"
 		},
 		"calledProcesses": {
-			"callingActivity": "Aufrufende Aktivität",
-			"process": "Prozess",
-			"version": "Version",
-			"id": "ID"
+			"callingActivity": "Aktivität",
+			"process": "Prozessdefinition",
+			"calledProcessInstance": "Aufgerufene Prozessinstanzen",
+			"state": "Status",
+			"startTime": "Startdatum",
+			"endTime": "Enddatum"
 		},
 		"assignModal": {
 		    "manageUsersGroups": "Benutzer/Gruppen verwalten",
@@ -327,6 +341,16 @@
 			"actions": "Aktionen",
 			"suspend": "Anhalten",
 			"resume": "Fortsetzen"
+		},
+		"externalTasks": {
+			"id": "Externe Aufgaben-ID",
+			"activityId": "Aktivität",
+			"topicName": "Thema",
+			"workerId": "Worker-ID",
+			"lockExpirationTime": "Sperr-Ablaufdatum",
+			"retries": "Wiederholungen",
+			"priority": "Priorität",
+			"noExternalTasks": "Keine externen Aufgaben gefunden"
 		}
 	},
 	"bpmn-viewer": {
@@ -745,7 +769,7 @@
 				"processDefinitionKeyIn": "Prozessdefinitionsschlüssel in",
 				"processDefinitionName": "Name der Prozessdefinition",
 				"processDefinitionNameLike": "Name der Prozessdefinition ähnlich",
-				"caseInstanceId": "Fallinstanz-ID",
+				"caseInstanceId": "@:process-instance.details.caseInstanceId",
 				"caseInstanceBusinessKey": "Fachlicher Schlüssel der Fallinstanz",
 				"caseInstanceBusinessKeyLike": "Fachlicher Schlüssel der Fallinstanz ähnlich",
 				"caseDefinitionId": "Falldefinitions-ID",
@@ -1020,6 +1044,10 @@
 	},
 	"cib-table2": {
 		"filter": "Filter"
+	},
+	"table": {
+		"selectColumns": "Spalten anzeigen",
+		"toggleColumn": "{column} Spalte umschalten"
 	},
 	"navigation": {
 		"home": "Startseite",

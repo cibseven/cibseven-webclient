@@ -18,7 +18,6 @@
 import './assets/main.css';
 
 import { axios, moment } from '@/globals.js'
-import appConfig from '@/appConfig.js'
 import { permissionsMixin } from '@/permissions.js'
 import registerOwnComponents from './register.js'
 import processesVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
@@ -28,9 +27,10 @@ import store, { modules } from '@/store'
 import usersMixin from '@/mixins/usersMixin.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { debounce } from '@/utils/debounce.js'
+import { formatDate, formatDuration } from '@/utils/dates.js'
 import { HoverStyle } from '@/components/common-components/directives.js'
-import { InfoService, AuthService } from './services.js'
-import { i18n, switchLanguage } from './i18n'
+import { InfoService, AuthService, SystemService } from './services.js'
+import { i18n, setLanguage, loadTranslations, translationSources } from './i18n'
 import { appRoutes,
   createAppRouter,
   authGuard,
@@ -104,6 +104,7 @@ import TaskAssignationModal from '@/components/process/modals/TaskAssignationMod
 import VariablesTable from '@/components/process/tables/VariablesTable.vue'
 import IncidentsTable from '@/components/process/tables/IncidentsTable.vue'
 import UserTasksTable from '@/components/process/tables/UserTasksTable.vue'
+import ExternalTasksTable from '@/components/process/tables/ExternalTasksTable.vue'
 import RenderTemplate from '@/components/render-template/RenderTemplate.vue'
 import AdvancedSearchModal from '@/components/task/AdvancedSearchModal.vue'
 import TaskContent from '@/components/task/TaskContent.vue'
@@ -126,11 +127,12 @@ import RuntimeBatches from '@/components/batches/tables/RuntimeBatches.vue'
 import HistoricBatches from '@/components/batches/tables/HistoricBatches.vue'
 import BatchDetails from '@/components/batches/tables/BatchDetails.vue'
 import SystemView from '@/components/system/SystemView.vue'
+import { SystemSidebarItems } from '@/components/system/SystemView.vue'
 import SystemDiagnostics from '@/components/system/SystemDiagnostics.vue'
 import ExecutionMetrics from '@/components/system/ExecutionMetrics.vue'
 import ShortcutsModal from '@/components/modals/ShortcutsModal.vue'
 import ShortcutsTable from '@/components/modals/ShortcutsTable.vue'
-import { TaskService, HistoryService, ProcessService } from '@/services.js';
+import { TaskService, HistoryService, ProcessService, getServicesBasePath, setServicesBasePath } from '@/services.js';
 import DeployedForm from '@/components/forms/DeployedForm.vue'
 import StartDeployedForm from '@/components/forms/StartDeployedForm.vue'
 import DecisionDefinitionDetails from '@/components/decision/DecisionDefinitionDetails.vue'
@@ -140,6 +142,7 @@ import TemplateBase from '@/components/forms/TemplateBase.vue'
 import StartView from '@/components/start/StartView.vue'
 import LoginView from '@/components/login/LoginView.vue'
 import GenericTabs from '@/components/common-components/GenericTabs.vue'
+import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
 
 const registerComponents = function(app) {
   app.component('cib-seven', CibSeven)
@@ -241,9 +244,9 @@ export {
   EditTenant,
   BatchesView,
   SystemView,
+  SystemSidebarItems,
   axios,
   moment,
-  appConfig,
   permissionsMixin,
   registerOwnComponents,
   store,
@@ -254,6 +257,8 @@ export {
   resizerMixin,
   copyToClipboardMixin,
   debounce,
+  formatDate,
+  formatDuration,
   HoverStyle,
   CibSeven,
   FlowTable,
@@ -320,6 +325,7 @@ export {
   VariablesTable,
   IncidentsTable,
   UserTasksTable,
+  ExternalTasksTable,
   RenderTemplate,
   AdvancedSearchModal,
   TaskContent,
@@ -331,6 +337,8 @@ export {
   TaskService,
   HistoryService,
   ProcessService,
+  getServicesBasePath,
+  setServicesBasePath,
   HumanTasksView,
   DecisionView,
   DecisionList,
@@ -352,10 +360,14 @@ export {
   StartView,
   LoginView,
   GenericTabs,
+  CopyableActionButton,
   InfoService,
   AuthService,
+  SystemService,
   i18n,
-  switchLanguage,
+  setLanguage,
+  loadTranslations,
+  translationSources,
 
   // router
   appRoutes,

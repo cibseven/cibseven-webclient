@@ -18,47 +18,114 @@
 -->
 <template>
   <div class="overflow-auto bg-white container-fluid g-0">
-    <FlowTable v-if="calledProcesses.length > 0" resizable striped thead-class="sticky-header" :items="calledProcesses" primary-key="id" prefix="process-instance.calledProcessDefinitions."
+    <div v-if="loading">
+      <p class="text-center p-4"><BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}</p>
+    </div>
+    <FlowTable v-else-if="calledProcessDefinitions.length > 0" resizable striped thead-class="sticky-header" :items="calledProcessDefinitions" primary-key="id" prefix="process-instance.calledProcessDefinitions."
       sort-by="label" :sort-desc="true" :fields="[
-      { label: 'process', key: 'process', class: 'col-2', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' },
-      { label: 'version', key: 'version', class: 'col-4', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' },
-      { label: 'activities', key: 'activities', class: 'col-6', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' }
-]">
-      <template v-slot:cell(process)="table">
-        <span :title="table.item.process.name" class="text-truncate" @click="openProcessDefinition(table.item)">{{ table.item.process.name }}</span>
+        { label: 'calledProcessDefinition', key: 'name', class: 'col-4', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' },
+        { label: 'state', key: 'state', class: 'col-4', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' },
+        { label: 'activity', key: 'activity', class: 'col-4', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' }
+      ]">
+      <template v-slot:cell(name)="table">
+        <CopyableActionButton
+            :display-value="table.item.name || table.item.key"
+            :title="table.item.name"
+            @copy="copyValueToClipboard"
+            :to="{
+              name: 'process', 
+              params: {
+                processKey: table.item.key,
+                versionIndex: table.item.version
+              }
+            }"
+          />
       </template>
-      <template v-slot:cell(version)="table">
-        <span :title="table.item.version" class="text-truncate" @click="openProcessDefinition(table.item)">{{ table.item.version }}</span>
+      <template v-slot:cell(state)="table">
+        <span v-if="table.item.activities.length" class="text-truncate">
+          {{ $t(getCalledProcessState(table.item.activities)) }}
+        </span>
       </template>
-      <template v-slot:cell(activities)="table">
-        <div class="d-flex flex-column">
-        <span v-for="(act, index) in table.item.activities" :key="index" :title="act.activityName" class="d-block">{{ act.activityName }}</span>
-      </div>
+      <template v-slot:cell(activity)="table">
+        <div class="w-100">
+          <CopyableActionButton
+            v-for="(act, index) in table.item.activities" :key="index" 
+            :display-value="act.activityName"
+            :title="act.activityName"
+            @click="selectActivity(act.activityId)"
+            @copy="copyValueToClipboard"
+          />
+        </div>
       </template>
     </FlowTable>
-    <div v-else>
+    <div v-else-if="!loading">
       <p class="text-center p-4">{{ $t('process-instance.noResults') }}</p>
     </div>
   </div>
+  <SuccessAlert ref="messageCopy" style="z-index: 9999"> {{ $t('process.copySuccess') }} </SuccessAlert>
 </template>
 
 <script>
-import processesVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
+import { BWaitingBox } from 'cib-common-components'
+import { mapActions, mapGetters } from 'vuex'
+import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
+import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
+import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
+
 
 export default {
   name: 'CalledProcessDefinitionsTable',
-  components: {FlowTable},
-  mixins: [processesVariablesMixin],
-  props: { 
-    process: Object,
-    instances: Array,
-    calledProcesses: Array
-   },
+  components: { FlowTable, CopyableActionButton, SuccessAlert, BWaitingBox },
+  mixins: [copyToClipboardMixin],
+  props: {
+    process: Object
+  },
+  data() {
+    return {
+      loading: false
+    }
+  },
+  computed: {
+    ...mapGetters('calledProcessDefinitions', [
+      'calledProcessDefinitions', 
+      'allCalledProcessDefinitions', 
+      'getCalledProcessState'
+    ]),
+    ...mapGetters(['diagramXml', 'selectedActivityId']),
+  },
+  watch: {
+    selectedActivityId() {
+      this.setHighlightedElement(this.selectedActivityId)
+      this.filterByActivity(this.selectedActivityId)
+    },
+    'process.id': {
+      handler(id) {
+        if (id) {
+          this.loadCalledProcessDefinitionsData(id)
+        }
+      },
+      immediate: true
+    }
+  },
   methods: {
-    openProcessDefinition: function(event){
-      this.$emit('changeTabToInstances')
-      this.$router.push({ name: 'process', params: { processKey: event.key, versionIndex: event.version } })
+    ...mapActions(['setHighlightedElement', 'selectActivity']),
+    ...mapActions('calledProcessDefinitions', [
+      'loadCalledProcessDefinitions', 
+            'filterByActivity'
+    ]),
+    async loadCalledProcessDefinitionsData(processId) {
+      this.loading = true
+      try {
+        await this.loadCalledProcessDefinitions({ 
+          processId, 
+          diagramXml: this.diagramXml 
+        })
+      } catch (error) {
+        console.error('Error loading called processes:', error)
+      } finally {
+        this.loading = false
+      }
     }
   }
 }

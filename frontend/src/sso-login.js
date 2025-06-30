@@ -20,7 +20,6 @@ import { sha256 } from 'js-sha256'
 axios.interceptors.response.use(function(res) { return res.data; }, handler)
 const BASE_URL = import.meta.env.BASE_URL
 import { InfoService } from '@/services.js'
-import appConfig from './appConfig.js'
 
 function handler(error) {
     if (error.response) {
@@ -47,7 +46,7 @@ InfoService.getProperties().then(function(config) {
         ssoLogin(callbackState, redirectTo)
     } else {
         history.pushState('', document.title, location.pathname + location.search); //Delete hashParams
-        axios.post(appConfig.servicesBasePath + '/auth/login', {
+        axios.post(config.servicesBasePath + '/auth/login', {
             type: 'org.cibseven.webapp.auth.sso.SSOLogin',
             code: ssoCallback.code,
             nonce: callbackState.nonce,

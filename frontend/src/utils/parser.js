@@ -21,8 +21,10 @@ export function parseXMLDocumentation(bpmnXml) {
   const activityTags = [
     'bpmn:task', 'bpmn:userTask', 'bpmn:serviceTask', 'bpmn:scriptTask',
     'bpmn:manualTask', 'bpmn:businessRuleTask', 'bpmn:callActivity',
-    'bpmn:subProcess', 'task', 'userTask', 'serviceTask', 'scriptTask',
-    'manualTask', 'businessRuleTask', 'callActivity', 'subProcess'
+    'bpmn:subProcess', 'bpmn:startEvent', 'bpmn:endEvent',
+    'task', 'userTask', 'serviceTask', 'scriptTask',
+    'manualTask', 'businessRuleTask', 'callActivity', 'subProcess',
+    'startEvent', 'endEvent'
   ]
   const docs = []
   const seen = new Set()
@@ -35,7 +37,7 @@ export function parseXMLDocumentation(bpmnXml) {
       if (docNode && docNode.textContent.trim()) {
         docs.push({
           id: el.getAttribute('id') || null,
-          element: el.getAttribute('name') || el.tagName,
+          element: el.getAttribute('name') || el.getAttribute('id'),
           documentation: docNode.textContent.trim()
         })
       }

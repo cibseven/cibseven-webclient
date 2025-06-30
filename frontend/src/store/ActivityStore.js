@@ -15,11 +15,15 @@
  *  limitations under the License.
  */
 
+import { HistoryService } from '@/services.js'
+
 const ActivityStore = {
   state: { 
     processActivities: [],
     selectedActivityId: '',
-    highlightedElement: null
+    highlightedElement: null,
+    activitiesInstanceHistory: [],
+    diagramXml: null
   },
   mutations: {
     setProcessActivities: function (state, activities) {
@@ -34,12 +38,20 @@ const ActivityStore = {
     clearActivitySelection: function (state) {
       state.selectedActivityId = ''
       state.highlightedElement = null
-    }
+    },
+    setActivitiesInstanceHistory: function (state, activitiesInstance) {
+      state.activitiesInstanceHistory = activitiesInstance
+    },
+    setDiagramXml: function (state, diagramXml) {
+      state.diagramXml = diagramXml
+    },
   },
   getters: {
     selectedActivityId: (state) => state.selectedActivityId,
     highlightedElement: (state) => state.highlightedElement,
-    getProcessActivities: (state) => state.processActivities
+    getProcessActivities: (state) => state.processActivities,
+    activitiesInstanceHistory: (state) => state.activitiesInstanceHistory,
+    diagramXml: (state) => state.diagramXml
   },
   actions: {
     selectActivity: function ({ commit }, activityId) {
@@ -50,6 +62,13 @@ const ActivityStore = {
     },
     clearActivitySelection: function ({ commit }) {
       commit('clearActivitySelection')
+    },
+    async loadActivitiesInstanceHistory({ commit }, processInstanceId) {
+      const activitiesInstace = await HistoryService.findActivitiesInstancesHistory(processInstanceId)
+      commit('setActivitiesInstanceHistory', activitiesInstace)
+    },
+    setDiagramXml: function ({ commit }, diagramXml) {
+      commit('setDiagramXml', diagramXml)
     }
   }
 }

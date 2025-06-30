@@ -1,5 +1,4 @@
 <!--
-
     Copyright CIB software GmbH and/or licensed to CIB software GmbH
     under one or more contributor license agreements. See the NOTICE file
     distributed with this work for additional information regarding copyright
@@ -14,7 +13,6 @@
      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
      See the License for the specific language governing permissions and
      limitations under the License.
-
 -->
 <template>
   <div class="d-flex flex-column">
@@ -24,9 +22,9 @@
       <b-button :disabled="!instances || instances.length === 0" :title="$t('process.exportInstances')" variant="outline-secondary" @click="exportCSV()"
         class="ms-auto me-3 mdi mdi-18px mdi-download-outline border-0"></b-button>
     </div>
-    <SidebarsFlow ref="sidebars" class="border-top overflow-auto" v-model:left-open="leftOpen" :left-caption="shortendLeftCaption">
+    <SidebarsFlow ref="sidebars" class="border-top overflow-auto" :left-open="leftOpen" @update:left-open="leftOpen = $event" :left-caption="shortendLeftCaption">
       <template v-slot:left>
-        <ProcessDetailsSidebar ref="navbar" v-if="instances"
+        <ProcessDetailsSidebar ref="navbar" v-if="process"
           :process-key="processKey"
           :process-definitions="processDefinitions"
           :version-index="versionIndex"
@@ -35,23 +33,18 @@
           :instances="instances"></ProcessDetailsSidebar>
       </template>
       <transition name="slide-in" mode="out-in">
-        <ProcessInstancesView ref="process" v-if="process && instances && !selectedInstance && !instanceId"
+        <ProcessInstancesView ref="process" v-if="process && !selectedInstance && !instanceId"
           :loading="loading"
           :process="process"
           :process-key="processKey"
           :version-index="versionIndex"
-          :instances="instances"
           :activity-instance="activityInstance"
-          :first-result="firstResult"
-          :max-results="maxResults"
           :activity-instance-history="activityInstanceHistory"
-          :incidents="incidents"
-          :calledProcesses="calledProcesses"
-          @show-more="showMore()"
+          :tenant-id="tenantId"
+          :filter="filter"
           @instance-deleted="onInstanceDeleted()"
           @task-selected="setSelectedTask($event)"
           @filter-instances="filterInstances($event)"
-          @update-items="updateItems"
         ></ProcessInstancesView>
       </transition>
       <transition name="slide-in" mode="out-in">
@@ -69,14 +62,14 @@
 
 <script>
 import { moment } from '@/globals.js'
-import { TaskService, ProcessService, HistoryService,
-  IncidentService, JobService, JobDefinitionService } from '@/services.js'
+import { TaskService, ProcessService, HistoryService } from '@/services.js'
 import ProcessInstancesView from '@/components/process/ProcessInstancesView.vue'
 import ProcessDetailsSidebar from '@/components/process/ProcessDetailsSidebar.vue'
 import ProcessInstanceView from '@/components/process/ProcessInstanceView.vue'
 import SidebarsFlow from '@/components/common-components/SidebarsFlow.vue'
 import TaskPopper from '@/components/common-components/TaskPopper.vue'
 import { mapGetters, mapActions } from 'vuex'
+import { formatDate } from '@/utils/dates.js'
 
 function getStringObjByKeys(keys, obj) {
   var result = ''
@@ -98,52 +91,38 @@ export default {
   watch: {
     processKey: 'loadProcessFromRoute',
     versionIndex() {
+     if (this.process.key === this.processKey){
       const process = this.processDefinitions.find(processDefinition => processDefinition.version === this.versionIndex)
       if (process) this.loadProcessVersion(process)
-    },
-    selectedActivityId() {
-      if (this.componentReady && this.process) {
-        this.filterByActivityId()
-      }
+     }
     }
   },
   data: function() {
     return {
       leftOpen: true,
-      rightOpen: false,
       process: null, // selected process definition
-      instances: null,
       processDefinitions: [],
       selectedInstance: null,
       task: null,
       activityInstance: null,
       activityInstanceHistory: null,
-      firstResult: 0,
-      maxResults: this.$root.config.maxProcessesResults,
       filter: '',
-      loading: false,
-      incidents: [],
-      calledProcesses: [],
-      componentReady: false
+      loading: false
     }
   },
   computed: {
-    ...mapGetters(['selectedActivityId']),
+    ...mapGetters('instances', ['instances']),
     shortendLeftCaption: function() {
       return this.$t('process.details.historyVersions')
-    },
-    shortendRightCaption: function() {
-      return this.$t('process.details.variable')
     },
     processName: function() {
       if (!this.process) return ''
       return this.process.name ? this.process.name : this.process.key
-    },    
+    },
   },
   created: function() {
     this.clearActivitySelection()
     this.loadProcessFromRoute()
-    this.componentReady = true
   },
   beforeUpdate: function() {
     if (this.process != null && this.process.version !== this.versionIndex) {
@@ -154,32 +133,43 @@ export default {
       this.task = null
     }
     else if (this.selectedInstance == null && this.instanceId) {
-      if (this.instances) {
-        const selectedInstance = this.instances.find((instance) => instance.id == this.instanceId)
-        if (selectedInstance) {
-          this.setSelectedInstance({ selectedInstance: selectedInstance })
-        }
-      }
+      this.loadInstanceById(this.instanceId)
     }
     else if (!this.instanceId) {
       this.selectedInstance = null
-      this.activityInstance = null
+      // Don't clear activityInstance if it's set for filtering purposes (has only an id)
+      if (this.activityInstance && Object.keys(this.activityInstance).length > 1) {
+        this.activityInstance = null
+      }
       this.activityInstanceHistory = null
       this.task = null
     }
   },
   methods: {
     ...mapActions(['clearActivitySelection']),
-    loadProcessFromRoute: function() {
-      this.loadProcessByDefinitionKey().then((redirected) => {
-        if (!redirected && this.instanceId && this.instances) {
-          const selectedInstance = this.instances.find(i => i.id == this.instanceId)
-          if (selectedInstance) this.setSelectedInstance({ selectedInstance })
+    formatDate,
+    loadInstanceById: function(instanceId) {
+      // Always use HistoryService for process instance fetching
+      HistoryService.findProcessInstance(instanceId).then(instance => {
+        if (instance) {
+          this.setSelectedInstance({ selectedInstance: instance })
+        }
+      }).catch(() => {
+        // Fallback to checking store instances
+        if (this.instances) {
+          const selectedInstance = this.instances.find(i => i.id == instanceId)
+          if (selectedInstance) {
+            this.setSelectedInstance({ selectedInstance })
+          }
         }
       })
     },
-    updateItems: function(sortedItems) {
-      this.instances = sortedItems
+    loadProcessFromRoute: function() {
+      this.loadProcessByDefinitionKey().then((redirected) => {
+        if (!redirected && this.instanceId) {
+          this.loadInstanceById(this.instanceId)
+        }
+      })
     },
     onDeleteProcessDefinition: function(params) {
       ProcessService.deleteProcessDefinition(params.processDefinition.id, true).then(() => {
@@ -286,115 +276,22 @@ export default {
       })
     },
     loadProcessVersion: function(process) {
-      return new Promise((resolve) => {
-        this.firstResult = 0
+      return new Promise(() => {
         this.process = process
         this.findProcessAndAssignData(process)
         if (!this.process.statistics) this.loadStatistics()
         if (!this.process.activitiesHistory) this.loadProcessActivitiesHistory()
-        return Promise.all([
-          this.loadInstances(),
-          this.loadIncidents(),
-          this.loadCalledProcesses()
-        ]).then(() => {
-          resolve()
-        })
+        return Promise.resolve() // Instances are now loaded by InstancesTable
       })
-    },
-    loadInstances: function(showMore) {
-      if (this.$root.config.camundaHistoryLevel !== 'none') {
-        this.loading = true
-        return HistoryService.findProcessesInstancesHistoryById(this.process.id, this.selectedActivityId,
-          this.firstResult, this.maxResults, this.filter
-        ).then(instances => {
-          this.loading = false
-          if (!showMore) this.instances = instances
-          else this.instances = !this.instances ? instances : this.instances.concat(instances)
-        })
-      }
-      else {
-        return ProcessService.findProcessVersionsByDefinitionKey(this.process.key, this.tenantId, this.$root.config.lazyLoadHistory)
-        .then(versions => {
-          this.processDefinitions = versions
-          var promises = []
-          this.processDefinitions.forEach(() => {
-            promises.push(HistoryService.findProcessesInstancesHistoryById(this.process.id, this.selectedActivityId, this.firstResult,
-              this.maxResults, this.filter))
-          })
-          Promise.all(promises).then(response => {
-            if (!showMore) this.instances = []
-            var i = 0
-            response.forEach(instances => {
-              instances.forEach(instance => {
-                instance.processDefinitionId = versions[i].id
-                instance.processDefinitionVersion = versions[i].version
-              })
-              this.instances = this.instances.concat(instances)
-              i++
-            })
-          })
-        })
-      }
     },
     loadStatistics: function() {
       ProcessService.findProcessStatistics(this.process.id).then(statistics => {
         this.$store.dispatch('setStatistics', { process: this.process, statistics: statistics })
       })
     },
-    loadCalledProcesses: function() {
-      this.calledProcesses = []
-      HistoryService.findActivitiesInstancesHistoryWithFilter({'processDefinitionId': this.process.id, 'activityType': 'callActivity'}).then(response =>{
-      const activityList = response
-      const instancesIdList = [...activityList.reduce((set, activity) => {
-        set.add(activity.calledProcessInstanceId)
-        return set
-      }, new Set())]
-      if (instancesIdList.length > 0) {
-        HistoryService.findProcessesInstancesHistory({"processInstanceIds": instancesIdList}, this.firstResult, this.maxResults).then(response => {
-          response.forEach(instance => {
-            activityList.forEach(activity => {
-              if (instance.id === activity.calledProcessInstanceId) {
-                let foundMatch = this.calledProcesses.find(item => {
-                  return (item.instance.processDefinitionId === instance.processDefinitionId)
-                })
-                if (foundMatch) {
-                  if (!foundMatch.activities.some(act => act.activityId === activity.activityId)) {
-                    foundMatch.activities.push(activity)
-                  }
-                } else {
-                  let key = instance.processDefinitionId.match(/^[^:]+/).at(0)
-                  let foundProcess = this.$store.state.process.list.find(processSPL => {
-                    if (key === processSPL.key) {
-                      return processSPL
-                    }
-                  })
-                  this.calledProcesses.push({instance: instance, activities: [activity], key: key, version: instance.processDefinitionId.match(/(?!:)\d(?=:)/).at(0), process: foundProcess })
-                }
-              }
-            })
-          })
-        })
-        this.loading = false
-      } 
-      else{
-        ProcessService.findCalledProcessDefinitions(this.process.id).then(response => {
-          this.loading = false
-          const calledProcessList = response
-          calledProcessList.forEach(process => {
-            process.calledFromActivityIds.forEach(activityId => {
-              this.calledProcesses.push({process: process, activities: [{activityName: activityId}], version: process.version, key: process.key})
-            })
-          })
-        })
-      }
-    })
-    },
     onInstanceDeleted: function() {
       this.setSelectedInstance({ selectedInstance: null })
-      this.firstResult = 0
       return Promise.all([
-        this.loadInstances(),
-        this.loadIncidents(),
         this.loadStatistics(),
         this.loadProcessActivitiesHistory()
       ]).then(() => {
@@ -405,9 +302,8 @@ export default {
     setSelectedInstance: function(evt) {
       var selectedInstance = evt.selectedInstance
       if (!selectedInstance) {
-        this.rightOpen = false
         this.selectedInstance = null
-      } else this.rightOpen = true
+      }
       this.task = null
       this.activityInstance = null
       this.activityInstanceHistory = selectedInstance ? this.activityInstanceHistory : null
@@ -431,7 +327,6 @@ export default {
             })
           }
         }
-        this.setJobs()
       }
     },
     setSelectedTask: function(selectedTask) {
@@ -450,22 +345,12 @@ export default {
             })
             this.task.variables = variables
           })
-        })
+        }.bind(this))
       }
-    },
-    filterByActivityId: function() {
-      this.instances = []
-      this.firstResult = 0
-      this.loadInstances()
-    },
-    showMore: function() {
-      this.firstResult += this.$root.config.maxProcessesResults
-      this.loadInstances(true)
     },
     filterInstances: function(filter) {
       this.filter = filter
-      this.firstResult = 0
-      this.loadInstances()
+      // InstancesTable will automatically reload when filter changes
     },
     getIconState: function(state) {
       switch(state) {
@@ -491,22 +376,16 @@ export default {
       var csvContent = headers.map(h => h.text).join(';') + '\n'
       var keys = headers.map(h => h.key)
       this.instances.forEach(v => {
-        csvContent += getStringObjByKeys(keys, v) + '\n'
+        const formattedValues = { 
+          ...v, 
+          startTime: this.formatDate(v.startTime), 
+          endTime: this.formatDate(v.endTime) 
+        }
+        csvContent += getStringObjByKeys(keys, formattedValues) + '\n'
       })
       var csvBlob = new Blob([csvContent], { type: 'text/csv' })
       var filename = 'Management_Instances_' + moment().format('YYYYMMDD_HHmm') + '.csv'
       this.$refs.importPopper.triggerDownload(csvBlob, filename)
-    },
-    async loadIncidents() {
-      this.incidents = await IncidentService.findIncidents(this.process.id)
-    },
-    async setJobs() {
-      this.selectedInstance.jobs = await JobService.getJobs({ processInstanceId: this.selectedInstance.id })
-      this.selectedInstance.jobs.forEach(j => {
-        JobDefinitionService.findJobDefinition(j.jobDefinitionId).then(jd => {
-          j.activityId = jd.activityId
-        })
-      })
     }
   }
 }
