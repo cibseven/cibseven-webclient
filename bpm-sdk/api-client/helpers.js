@@ -14,22 +14,19 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { fileURLToPath } from 'node:url'
-import { mergeConfig, defineConfig, configDefaults } from 'vitest/config'
-import viteConfig from './vite.config'
 
-export default mergeConfig(
-  viteConfig,
-  defineConfig({
-    test: {
-      environment: 'jsdom',
-      exclude: [...configDefaults.exclude, 'e2e/**'],
-      root: fileURLToPath(new URL('./', import.meta.url)),
-      coverage: {
-        provider: 'istanbul',
-        reporter: ['text', 'lcov', 'cobertura'], // 'text', 'html', 'lcov', 'cobertura'
-        reportsDirectory: './coverage'
-      },
-    },
-  }),
-)
+export function createSimpleGetQueryFunction(urlSuffix) {
+  return function(params, done) {
+    var url = this.path + urlSuffix;
+
+    if (typeof params === 'function') {
+      done = params;
+      params = {};
+    }
+
+    return this.http.get(url, {
+      data: params,
+      done: done
+    });
+  };
+};
