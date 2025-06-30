@@ -230,7 +230,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	
 	@Override
 	public Collection<ProcessStatistics> findProcessStatistics(String processId, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
-		String url = getEngineRestUrl() + "/process-definition/" + processId + "/statistics?failedJobs=true";
+		String url = getEngineRestUrl() + "/process-definition/" + processId + "/statistics?failedJobs=true&incidents=true";
 		return Arrays.asList(((ResponseEntity<ProcessStatistics[]>) doGet(url, ProcessStatistics[].class, user, false)).getBody());
 	}
 
