@@ -22,20 +22,20 @@
       <p class="text-center p-4"><BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}</p>
     </div>
     <FlowTable v-else-if="calledProcessDefinitions.length > 0" resizable striped thead-class="sticky-header" :items="calledProcessDefinitions" primary-key="id" prefix="process-instance.calledProcessDefinitions."
-      sort-by="label" :sort-desc="true" :fields="[
-        { label: 'calledProcessDefinition', key: 'name', class: 'col-4', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' },
+      sort-by="label" sort-asc :fields="[
+        { label: 'calledProcessDefinition', key: 'label', class: 'col-4', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' },
         { label: 'state', key: 'state', class: 'col-4', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' },
         { label: 'activity', key: 'activity', class: 'col-4', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' }
       ]">
-      <template v-slot:cell(name)="table">
+      <template v-slot:cell(label)="table">
         <CopyableActionButton
-            :display-value="table.item.name || table.item.key"
+            :display-value="table.item.label || table.item.key"
             :title="table.item.name"
             @copy="copyValueToClipboard"
             :to="{
               name: 'process', 
               params: {
-                processKey: table.item.key,
+                processKey: table.item.definitionKey,
                 versionIndex: table.item.version
               }
             }"
@@ -43,7 +43,7 @@
       </template>
       <template v-slot:cell(state)="table">
         <span v-if="table.item.activities.length" class="text-truncate">
-          {{ $t(getCalledProcessState(table.item.activities)) }}
+          {{ $t(getCalledProcessState(table.item)) }}
         </span>
       </template>
       <template v-slot:cell(activity)="table">
@@ -79,7 +79,8 @@ export default {
   components: { FlowTable, CopyableActionButton, SuccessAlert, BWaitingBox },
   mixins: [copyToClipboardMixin],
   props: {
-    process: Object
+    process: Object,
+    activitiesHistory: Array
   },
   data() {
     return {
@@ -88,8 +89,7 @@ export default {
   },
   computed: {
     ...mapGetters('calledProcessDefinitions', [
-      'calledProcessDefinitions', 
-      'allCalledProcessDefinitions', 
+      'calledProcessDefinitions',
       'getCalledProcessState'
     ]),
     ...mapGetters(['diagramXml', 'selectedActivityId']),
@@ -102,7 +102,7 @@ export default {
     'process.id': {
       handler(id) {
         if (id) {
-          this.loadCalledProcessDefinitionsData(id)
+          this.loadCalledProcessDefinitionsData()
         }
       },
       immediate: true
@@ -112,14 +112,15 @@ export default {
     ...mapActions(['setHighlightedElement', 'selectActivity']),
     ...mapActions('calledProcessDefinitions', [
       'loadCalledProcessDefinitions', 
-            'filterByActivity'
+      'filterByActivity'
     ]),
-    async loadCalledProcessDefinitionsData(processId) {
+    async loadCalledProcessDefinitionsData() {
       this.loading = true
       try {
         await this.loadCalledProcessDefinitions({ 
-          processId, 
-          diagramXml: this.diagramXml 
+          processId: this.process.id,
+          activitiesHistory: this.activitiesHistory,
+          diagramXml: this.diagramXml
         })
       } catch (error) {
         console.error('Error loading called processes:', error)

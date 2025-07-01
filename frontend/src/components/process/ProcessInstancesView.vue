@@ -94,7 +94,7 @@
           :activity-instance-history="process.activitiesHistory"/>
         <JobDefinitionsTable v-else-if="activeTab === 'jobDefinitions'"
           :process-id="process.id" />
-        <CalledProcessDefinitionsTable v-else-if="activeTab === 'calledProcessDefinitions'" :process="process"/>
+        <CalledProcessDefinitionsTable v-else-if="activeTab === 'calledProcessDefinitions'" :process="process" :activities-history="process.activitiesHistory"/>
         <component :is="ProcessInstancesTabsContentPlugin" v-if="ProcessInstancesTabsContentPlugin" :process="process" :active-tab="activeTab"></component>
       </div>
     </div>

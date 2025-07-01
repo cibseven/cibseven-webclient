@@ -266,6 +266,16 @@ public interface BpmProvider {
 	Process findProcessByDefinitionKey(String processKey, String tenantId, CIBUser user) throws SystemException;
 	
 	/**
+	 * Find process instances that were started by the given super process instance IDs.
+	 * 
+	 * @param superProcessInstanceIds List of super process instance IDs.
+	 * @param user Authenticated user (used for permission checking).
+	 * @return List of process instances started by the specified super instances.
+	 * @throws SystemException in case of an internal error.
+	 */
+	Collection<ProcessInstance> findProcessesInstancesBySuperIds(List<String> superProcessInstanceIds, CIBUser user) throws SystemException;
+	
+	/**
      * Search processes (diferents versions) with a specific Key.
      * @param processKey filter by process definition key.
 	 * @param tenantId 

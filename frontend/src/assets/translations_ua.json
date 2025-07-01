@@ -205,7 +205,8 @@
 			"state": "Стан",
 			"referenced": "Посилається",
 			"running": "Виконується",
-			"runningAndReferenced": "Запущено i посилається"
+			"runningAndReferenced": "Запущено i посилається",
+			"unknown": "Невідомо"
 		},
 		"details": {
 			"startUser": "Користувач, що запустив",

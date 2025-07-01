@@ -205,7 +205,8 @@
 			"state": "Состояние",
 			"referenced": "Ссылается",
 			"running": "Выполняется",
-			"runningAndReferenced": "Запущен и ссылается"
+			"runningAndReferenced": "Запущен и ссылается",
+			"unknown": "Неизвестно"
 		},
 		"details": {
 			"startUser": "Начальный пользователь",

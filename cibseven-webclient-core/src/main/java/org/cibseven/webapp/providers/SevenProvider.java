@@ -264,6 +264,12 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	public Process findProcessById(String id, Optional<Boolean> extraInfo, CIBUser user) throws SystemException {
 		return processProvider.findProcessById(id, extraInfo, user);
 	}
+
+	@Override
+	public Collection<ProcessInstance> findProcessesInstancesBySuperIds(List<String> superProcessInstanceIds,
+			CIBUser user) throws SystemException {
+		return processProvider.findProcessesInstancesBySuperIds(superProcessInstanceIds, user);
+	}
 		
 	@Override
 	public Collection<ProcessInstance> findProcessesInstances(String key, CIBUser user) {

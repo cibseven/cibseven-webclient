@@ -205,7 +205,8 @@
 			"state": "Status",
 			"referenced": "Referenziert",
 			"running": "Laufend",
-			"runningAndReferenced": "Laufend und referenziert"
+			"runningAndReferenced": "Laufend und referenziert",
+			"unknown": "Unbekannt"
 		},
 		"details": {
 			"startUser": "Startnutzer",

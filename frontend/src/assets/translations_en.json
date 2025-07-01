@@ -205,7 +205,8 @@
 			"state": "State",
 			"referenced": "Referenced",
 			"running": "Running",
-			"runningAndReferenced": "Running and referenced"
+			"runningAndReferenced": "Running and referenced",			
+			"unknown": "Unknown"
 		},
 		"details": {
 			"startUser": "Start user",
