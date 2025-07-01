@@ -42,69 +42,107 @@ export default {
       const callActivities = activitiesHistory.filter(a =>
         a.activityType === 'callActivity' && a.calledProcessInstanceId
       )
-    
-      // Group callActivities by processInstanceId to get unique parent process instances
-      const superInstanceIds = [...new Set(callActivities.map(a => a.processInstanceId))]
-    
-      // Get all called process instances by their superInstanceIds
-      // This will return all instances that were called by the callActivities
-      const allCalledInstances = await ProcessService.findCurrentProcessesInstancesBySuperIds(superInstanceIds)
-    
-      // Enrich callActivities with the called process instance details
-      // and mark if the activity is static or dynamic based on the staticIds      
-      const enrichedDefinitions = callActivities.flatMap(activity => {
-        const instance = allCalledInstances.find(i => i.id === activity.calledProcessInstanceId)
-        if (!instance) return []
-    
-        return [{
-          id: instance.id,
-          definitionId: instance.definitionId,
-          definitionKey: instance.definitionId.split(':')[0],
-          version: instance.definitionId.split(':')[1],
-          activityId: activity.activityId,
-          activityName: activity.activityName,
-          processInstanceId: activity.processInstanceId,
-          ended: instance.ended,
-          isStatic: staticIds.includes(activity.activityId)
-        }]
-      })
-    
+
+      // Get unique calledProcessInstanceIds from callActivities
+      const calledProcessIds = [...new Set(callActivities.map(a => a.calledProcessInstanceId))]
+      
       // Group by definitionKey and version
+      // This will hold the grouped process definitions
       const groupedMap = {}
 
-      for (const def of enrichedDefinitions) {
-        const key = `${def.definitionKey}:${def.version}`
-        if (!groupedMap[key]) {
-          groupedMap[key] = {
-            id: def.id,
-            definitionId: def.definitionId,
-            definitionKey: def.definitionKey,
-            version: def.version,
-            activities: [],
-            instances: []
+      const addLabelsToDefinitions = (definitions) => {
+        const versionsByKey = {}
+        for (const item of definitions) {
+          if (!versionsByKey[item.definitionKey]) versionsByKey[item.definitionKey] = new Set()
+          versionsByKey[item.definitionKey].add(item.version)
+        }
+
+        for (const item of definitions) {
+          const versions = versionsByKey[item.definitionKey]
+          item.label = versions.size > 1
+            ? `${item.definitionKey}:${item.version}`
+            : item.definitionKey
+        }
+      }
+
+      // Helper function to update the grouped definitions with labels
+      const updateGroupedWithLabels = () => {
+        const grouped = Object.values(groupedMap)
+        addLabelsToDefinitions(grouped)        
+        commit('setCalledProcessDefinitions', [...grouped])
+      }
+
+      // Process callActivities in chunks to avoid performance issues
+      // and to allow partial updates
+      // This is especially useful if there are many call activities
+      // and we want to avoid blocking the UI for too long
+      const chunkSize = 50
+      for (let i = 0; i < calledProcessIds.length; i += chunkSize) {
+        const chunk = calledProcessIds.slice(i, i + chunkSize)
+        const chunkInstances = await ProcessService.findCurrentProcessesInstances({ processInstanceIds: chunk })
+        const instanceMap = new Map(chunkInstances.map(i => [i.id, i]))
+      
+        // Enrich callActivities with the called process instance details for this chunk
+        // and mark if the activity is static or dynamic based on the staticIds      
+        const enrichedDefinitions = callActivities
+          .filter(activity => chunk.includes(activity.calledProcessInstanceId))
+          .flatMap(activity => {
+            const instance = instanceMap.get(activity.calledProcessInstanceId)
+            if (!instance) return []
+      
+            return [{
+              id: instance.id,
+              definitionId: instance.definitionId,
+              definitionKey: instance.definitionId.split(':')[0],
+              version: instance.definitionId.split(':')[1],
+              activityId: activity.activityId,
+              activityName: activity.activityName,
+              processInstanceId: activity.processInstanceId,
+              ended: instance.ended,
+              isStatic: staticIds.includes(activity.activityId)
+            }]
+          })
+
+        // Add the enriched definitions to the grouped map
+        for (const def of enrichedDefinitions) {
+          const key = `${def.definitionKey}:${def.version}`
+          if (!groupedMap[key]) {
+            groupedMap[key] = {
+              id: def.id,
+              definitionId: def.definitionId,
+              definitionKey: def.definitionKey,
+              version: def.version,
+              activities: [],
+              instances: []
+            }
+          }
+
+          // Add activity details to the grouped map if it doesn't already exist
+          const exists = groupedMap[key].activities.some(a => a.activityId === def.activityId)
+          if (!exists) {
+            groupedMap[key].activities.push({
+              activityId: def.activityId,
+              activityName: def.activityName,
+              isStatic: def.isStatic,
+              processInstanceId: def.processInstanceId,
+              ended: def.ended
+            })
+          }
+
+          if (!groupedMap[key].instances.includes(def.id)) {
+            groupedMap[key].instances.push(def.id)
           }
         }
 
-        // Add activity details to the grouped map if it doesn't already exist
-        const exists = groupedMap[key].activities.some(a => a.activityId === def.activityId)
-        if (!exists) {
-          groupedMap[key].activities.push({
-            activityId: def.activityId,
-            activityName: def.activityName,
-            isStatic: def.isStatic,
-            processInstanceId: def.processInstanceId,
-            ended: def.ended
-          })
-        }
-
-        if (!groupedMap[key].instances.includes(def.id)) {
-          groupedMap[key].instances.push(def.id)
-        }
+        // Update the grouped definitions with labels
+        // This will ensure that the UI is responsive and updates incrementally
+        // instead of waiting for all chunks to be processed
+        updateGroupedWithLabels()
       }
 
       // Add latest called process definitions
       // This will include the latest version of each called process definition
-      const latestCalledProcesses = await ProcessService.findCalledProcessDefinitions(processId);
+      const latestCalledProcesses = await ProcessService.findCalledProcessDefinitions(processId)
 
       for (const def of latestCalledProcesses) {
         const key = `${def.key}:${def.version}`
@@ -130,21 +168,10 @@ export default {
         }
       }      
 
+      // This will be the final list of called process definitions
       const grouped = Object.values(groupedMap)
 
-      // Add labels to each called process definition
-      const versionsByKey = {}
-      for (const item of grouped) {
-        if (!versionsByKey[item.definitionKey]) versionsByKey[item.definitionKey] = new Set()
-        versionsByKey[item.definitionKey].add(item.version)
-      }
-
-      for (const item of grouped) {
-        const versions = versionsByKey[item.definitionKey]
-        item.label = item.name || (versions.size > 1
-          ? `${item.definitionKey}:${item.version}`
-          : item.definitionKey)
-      }
+      addLabelsToDefinitions(grouped)
     
       commit('setCalledProcessDefinitions', grouped)
       commit('setAllCalledProcessDefinitions', grouped)

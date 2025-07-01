@@ -18,7 +18,6 @@ package org.cibseven.webapp.rest;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -188,23 +187,6 @@ public class ProcessService extends BaseService implements InitializingBean {
 		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.READ_ALL);
 		return bpmProvider.findProcessesInstances(key, user);
 	}
-	
-	@Operation(
-	    summary = "Get process instances by multiple super process instance IDs",
-	    description = "<strong>Return:</strong> Collection of process instances that are children of the given super process instance IDs"
-	)
-	@ApiResponse(responseCode = "200", description = "Successful operation")
-	@ApiResponse(responseCode = "400", description = "Invalid input")
-	@RequestMapping(value = "/instances/by-super-ids", method = RequestMethod.POST)
-	public Collection<ProcessInstance> findProcessesInstancesBySuperIds(
-	        @RequestBody List<String> superIds,
-	        Locale loc, CIBUser user) {
-	    checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.READ_ALL);
-	    if (superIds == null || superIds.isEmpty()) {
-	        return Collections.emptyList();
-	    }
-	    return bpmProvider.findProcessesInstancesBySuperIds(superIds, user);
-	}	
 	
 	@Operation(
 			summary = "Get activity that belongs to a process instance",

@@ -122,9 +122,6 @@ var ProcessService = {
   findCurrentProcessesInstances: function(filter) {
     return axios.post(getServicesBasePath() + "/process/instances", filter)
   },
-  findCurrentProcessesInstancesBySuperIds: function(superProcessInstanceIds) {
-    return axios.post(getServicesBasePath() + "/process/instances/by-super-ids", superProcessInstanceIds)
-  },
   findActivityInstance: function(processInstanceId) {
     return axios.get(getServicesBasePath() + "/process/activity/by-process-instance/" + processInstanceId)
   },

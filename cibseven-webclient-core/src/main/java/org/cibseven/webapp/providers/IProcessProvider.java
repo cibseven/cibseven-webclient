@@ -17,7 +17,6 @@
 package org.cibseven.webapp.providers;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -71,7 +70,5 @@ public interface IProcessProvider {
 	public void deleteProcessInstanceFromHistory(String id, CIBUser user);
 	public void deleteProcessDefinition(String id, Optional<Boolean> cascade, CIBUser user);
 	public Long countProcessesInstancesHistory(Map<String, Object> filters, CIBUser user);
-	public Collection<ProcessInstance> findProcessesInstancesBySuperIds(List<String> superProcessInstanceIds,
-			CIBUser user);
 	
 }

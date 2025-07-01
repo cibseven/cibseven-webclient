@@ -172,22 +172,6 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		String url = getEngineRestUrl() + "/process-instance";
 		return Arrays.asList(((ResponseEntity<ProcessInstance[]>) doPost(url, data, ProcessInstance[].class, user)).getBody());
 	}
-
-	@Override
-	public Collection<ProcessInstance> findProcessesInstancesBySuperIds(List<String> superProcessInstanceIds,
-			CIBUser user) {
-		List<ProcessInstance> allInstances = new ArrayList<>();
-		String url = getEngineRestUrl() + "/process-instance";
-		for (String superId : superProcessInstanceIds) {
-			Map<String, Object> data = new HashMap<>();
-			data.put("superProcessInstance", superId);
-			ResponseEntity<ProcessInstance[]> response = doPost(url, data, ProcessInstance[].class, user);
-			if (response.getBody() != null) {
-				allInstances.addAll(Arrays.asList(response.getBody()));
-			}
-		}
-		return allInstances;
-	}
 	
 	@Override
 	public ProcessDiagram fetchDiagram(String id, CIBUser user) {

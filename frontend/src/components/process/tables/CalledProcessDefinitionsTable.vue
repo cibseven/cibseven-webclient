@@ -18,11 +18,11 @@
 -->
 <template>
   <div class="overflow-auto bg-white container-fluid g-0">
-    <div v-if="loading">
+    <div v-if="showSpinner">
       <p class="text-center p-4"><BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}</p>
     </div>
     <FlowTable v-else-if="calledProcessDefinitions.length > 0" resizable striped thead-class="sticky-header" :items="calledProcessDefinitions" primary-key="id" prefix="process-instance.calledProcessDefinitions."
-      sort-by="label" sort-asc :fields="[
+      sort-by="label" :fields="[
         { label: 'calledProcessDefinition', key: 'label', class: 'col-4', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' },
         { label: 'state', key: 'state', class: 'col-4', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' },
         { label: 'activity', key: 'activity', class: 'col-4', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' }
@@ -58,7 +58,10 @@
         </div>
       </template>
     </FlowTable>
-    <div v-else-if="!loading">
+    <div v-if="loading && calledProcessDefinitions.length > 0">
+      <p class="text-center p-4"><BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loadingMoreData') }}</p>
+    </div>
+    <div v-else-if="!initialLoading && calledProcessDefinitions.length === 0">
       <p class="text-center p-4">{{ $t('process-instance.noResults') }}</p>
     </div>
   </div>
@@ -84,7 +87,8 @@ export default {
   },
   data() {
     return {
-      loading: false
+      loading: false,
+      initialLoading: false
     }
   },
   computed: {
@@ -93,6 +97,9 @@ export default {
       'getCalledProcessState'
     ]),
     ...mapGetters(['diagramXml', 'selectedActivityId']),
+    showSpinner() {
+      return this.initialLoading && this.calledProcessDefinitions.length === 0
+    }
   },
   watch: {
     selectedActivityId() {
@@ -115,6 +122,7 @@ export default {
       'filterByActivity'
     ]),
     async loadCalledProcessDefinitionsData() {
+      this.initialLoading = true
       this.loading = true
       try {
         await this.loadCalledProcessDefinitions({ 
@@ -126,6 +134,7 @@ export default {
         console.error('Error loading called processes:', error)
       } finally {
         this.loading = false
+        this.initialLoading = false
       }
     }
   }
