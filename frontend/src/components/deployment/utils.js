@@ -15,8 +15,9 @@
  *  limitations under the License.
  */
 export function sortDeployments(a, b, sorting, order) {
-  if (!a[sorting] && b[sorting]) return -1
-  else if (a[sorting] && !b[sorting]) return 1
+  if (!a[sorting] && !b[sorting]) return 0
+  else if (!a[sorting] && b[sorting]) return (order === 'asc') ? -1 : 1
+  else if (a[sorting] && !b[sorting]) return (order === 'asc') ? 1 : -1
   a = a[sorting].toLowerCase()
   b = b[sorting].toLowerCase()
   if (order === 'asc') return a < b ? -1 : a > b ? 1 : 0
