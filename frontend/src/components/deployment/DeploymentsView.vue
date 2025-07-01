@@ -38,7 +38,7 @@
               </b-input-group-prepend>
               <b-input-group-append class="d-flex align-items-center">
                 <b-form-select size="sm" v-model="sorting.key" :options="sortingFields" class="mb-0"></b-form-select>
-                <b-button size="sm" v-hover-style="{ classes: ['text-primary'] }" variant="secondary-outline" @click="changeSortingOrder()" class="mdi mdi-18px ms-1"
+                <b-button size="sm" v-hover-style="{ classes: ['text-primary'] }" variant="secondary-outline" @click="changeSortingOrder()" class="mdi mdi-18px ms-1 border-0"
                   :class="sorting.order === 'desc' ? 'mdi-arrow-down' : 'mdi-arrow-up'"
                   :title="sorting.order === 'desc' ? $t('sorting.desc') : $t('sorting.asc')"></b-button>
               </b-input-group-append>
