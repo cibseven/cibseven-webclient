@@ -247,7 +247,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	
 	@Override
 	public Collection<ProcessStatistics> findProcessStatistics(String processId, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
-		String url = getEngineRestUrl() + "/process-definition/" + processId + "/statistics?failedJobs=true";
+		String url = getEngineRestUrl() + "/process-definition/" + processId + "/statistics?failedJobs=true&incidents=true";
 		return Arrays.asList(((ResponseEntity<ProcessStatistics[]>) doGet(url, ProcessStatistics[].class, user, false)).getBody());
 	}
 
@@ -270,7 +270,49 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		if (firstResult.isPresent()) queryParams.put("firstResult", firstResult.get());
 		if (maxResults.isPresent()) queryParams.put("maxResults", maxResults.get());
 		String url = URLUtils.buildUrlWithParams(getEngineRestUrl() + "/history/process-instance", queryParams);
-		return Arrays.asList(((ResponseEntity<HistoryProcessInstance[]>) doPost(url, data, HistoryProcessInstance[].class, user)).getBody());
+		Collection<HistoryProcessInstance> processes = Arrays.asList(((ResponseEntity<HistoryProcessInstance[]>) doPost(url, data, HistoryProcessInstance[].class, user)).getBody());
+		
+		// Check if caller wants incident handling
+		Boolean fetchIncidents = (Boolean) data.get("fetchIncidents");
+		if (fetchIncidents != null && fetchIncidents) {
+			String processDefinitionId = (String) data.get("processDefinitionId");
+			if (processDefinitionId != null) {
+				@SuppressWarnings("unchecked")
+				List<String> activityIdIn = (List<String>) data.get("activeActivityIdIn");
+				
+				// Handle case where no processes found with activity filter - fallback to incident-based search
+				if ((processes == null || processes.isEmpty()) && activityIdIn != null && !activityIdIn.isEmpty()) {
+					String activityId = activityIdIn.get(0);
+					Collection<Incident> incidents = incidentProvider.fetchIncidentsByInstanceAndActivityId(processDefinitionId, activityId, user);
+					
+					if (incidents != null && !incidents.isEmpty()) {
+						Map<String, List<Incident>> incidentsByProcessInstance = incidents.stream()
+							.collect(Collectors.groupingBy(Incident::getProcessInstanceId));
+						
+						Set<String> processInstanceIds = incidentsByProcessInstance.keySet();
+						
+						// Create new query for process instances with incidents
+						Map<String, Object> dataIdIn = new HashMap<>(data);
+						dataIdIn.put("processInstanceIdIn", processInstanceIds);
+						dataIdIn.remove("activeActivityIdIn"); // Remove activity filter for fallback search
+						
+						processes = Arrays.asList(
+							((ResponseEntity<HistoryProcessInstance[]>) doPost(url, dataIdIn, HistoryProcessInstance[].class, user)).getBody()
+						);
+						
+						// Associate incidents with process instances
+						processes.forEach(p -> p.setIncidents(incidentsByProcessInstance.getOrDefault(p.getId(), Collections.emptyList())));
+					}
+				} else {
+					// For regular queries, fetch incidents for all returned processes
+					processes.forEach(p -> {
+						p.setIncidents(incidentProvider.findIncidentByInstanceId(p.getId(), user));
+					});
+				}
+			}
+		}
+		
+		return processes;
 	}
 	
 	@Override

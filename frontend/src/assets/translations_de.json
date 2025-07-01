@@ -63,6 +63,7 @@
 		"key": "Prozess-Key",
 		"state": "Status",
 		"id": "ID",
+		"instanceId": "ID",
 		"processId": "Prozess-ID",
 		"startUserId": "Benutzer",
 		"startTime": "Startdatum",
@@ -182,7 +183,8 @@
 		"externalTasksLog": "Externe Aufgabenprotokolle",
 		"modify": "Modifizieren",
 		"restart": "Neustarten",
-		"documentation": "Dokumentation"
+		"documentation": "Dokumentation",
+		"externalTasks": "Externe Aufgaben"
 	},
 	"process-instance": {
 		"processInstanceId": "Prozessinstanz Id",
@@ -340,6 +342,16 @@
 			"actions": "Aktionen",
 			"suspend": "Anhalten",
 			"resume": "Fortsetzen"
+		},
+		"externalTasks": {
+			"id": "Externe Aufgaben-ID",
+			"activityId": "Aktivität",
+			"topicName": "Thema",
+			"workerId": "Worker-ID",
+			"lockExpirationTime": "Sperr-Ablaufdatum",
+			"retries": "Wiederholungen",
+			"priority": "Priorität",
+			"noExternalTasks": "Keine externen Aufgaben gefunden"
 		}
 	},
 	"bpmn-viewer": {
@@ -1035,7 +1047,7 @@
 		"filter": "Filter"
 	},
 	"table": {
-		"selectColumns": "Spalten auswählen",
+		"selectColumns": "Spalten anzeigen",
 		"toggleColumn": "{column} Spalte umschalten"
 	},
 	"navigation": {

@@ -42,6 +42,7 @@ import org.cibseven.webapp.rest.model.CandidateGroupTaskCount;
 import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.DeploymentResource;
 import org.cibseven.webapp.rest.model.EventSubscription;
+import org.cibseven.webapp.rest.model.ExternalTask;
 import org.cibseven.webapp.rest.model.Filter;
 import org.cibseven.webapp.rest.model.HistoryBatch;
 import org.cibseven.webapp.rest.model.IdentityLink;
@@ -1124,5 +1125,15 @@ public interface BpmProvider {
 	 * @throws NoObjectFoundException when the historic variable instance could not be found
 	 */
 	VariableHistory getHistoricVariableInstance(String id, Boolean deserializeValue, CIBUser user) throws SystemException, NoObjectFoundException;
+
+	/**
+	 * Get external tasks based on query parameters
+	 * 
+	 * @param queryParams Query parameters for filtering external tasks
+	 * @param user the user performing the operation
+	 * @return Collection of external tasks
+	 * @throws SystemException in case of an error
+	 */
+	Collection<ExternalTask> getExternalTasks(Map<String, Object> queryParams, CIBUser user) throws SystemException;
 
 }

@@ -43,6 +43,11 @@ pipeline {
             description: 'Build and deploy cib-common-components to artifacts.cibseven.org'
         )
         booleanParam(
+            name: 'RELEASE_BPM_SDK',
+            defaultValue: false,
+            description: 'Build and deploy bpm-sdk to artifacts.cibseven.org'
+        )
+        booleanParam(
             name: 'RELEASE_CIBSEVEN_COMPONENTS',
             defaultValue: false,
             description: 'Build and deploy cibseven-components to artifacts.cibseven.org'
@@ -213,6 +218,43 @@ pipeline {
                                 cp ${NPMRC_FILE} ./cib-common-components/.npmrc
                                 # Run Maven with the required profile
                                 mvn -T4 -Dbuild.number=${BUILD_NUMBER} clean generate-resources -Drelease-npm-library=cib-common-components -Dskip.npm.version.update=true
+                            """
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Release bpm-sdk') {
+            when {
+                allOf {
+                    expression { params.RELEASE_BPM_SDK }
+                }
+            }
+            steps {
+                script {
+                    withCredentials([file(credentialsId: 'credential-cibseven-artifacts-npmrc', variable: 'NPMRC_FILE')]) {
+                        withMaven() {
+                            def baseVersion = mavenProjectInformation.version.replace("-SNAPSHOT", "")
+                            def dynamicVersion = mavenProjectInformation.version.contains('-SNAPSHOT') ?
+                                "${baseVersion}-${BUILD_NUMBER}-SNAPSHOT" : mavenProjectInformation.version
+
+                            sh """
+                                echo "Copy the .npmrc file to the frontend directory..."
+                                cp ${NPMRC_FILE} ./bpm-sdk/.npmrc
+
+                                echo "Setting dynamic version to ${dynamicVersion}..."
+                                sed -i 's/__CI_VERSION__/${dynamicVersion}/' bpm-sdk/package.json
+
+                                echo "Final package.json version:"
+                                grep '"version"' bpm-sdk/package.json
+
+                                echo "Running Maven to release the npm package..."
+                                mvn -T4 \
+                                    -Dbuild.number=${BUILD_NUMBER} \
+                                    -Drelease-npm-library=bpm-sdk \
+                                    -Dskip.npm.version.update=true \
+                                    clean generate-resources
                             """
                         }
                     }

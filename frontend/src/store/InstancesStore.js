@@ -20,30 +20,16 @@ import { HistoryService, ProcessService } from '@/services.js'
 export default {
   namespaced: true,
   state: {
-    instances: [],
-    sortFunction: null // Store the sort function to reapply after loading
+    instances: []
   },
   mutations: {
     setInstances(state, instances) {
       state.instances = instances
-      // Reapply sorting if we have a sort function
-      if (state.sortFunction) {
-        state.instances.sort(state.sortFunction)
-      }
     },
     appendInstances(state, instances) {
       state.instances = state.instances.concat(instances)
-      // Reapply sorting if we have a sort function
-      if (state.sortFunction) {
-        state.instances.sort(state.sortFunction)
-      }
     },
-    setSortFunction(state, sortFunction) {
-      state.sortFunction = sortFunction
-    },
-    clearSortFunction(state) {
-      state.sortFunction = null
-    },removeInstance(state, instanceId) {
+    removeInstance(state, instanceId) {
       state.instances = state.instances.filter(instance => instance.id !== instanceId)
     },
     updateInstanceState(state, { instanceId, newState }) {
@@ -54,14 +40,17 @@ export default {
     }
   },
   actions: {
-    async loadInstances({ commit }, { processId, activityId, filter, showMore = false, tenantId, camundaHistoryLevel, firstResult, maxResults }) {
+    async loadInstances({ commit }, { processId, activityId, filter, showMore = false, tenantId, camundaHistoryLevel, firstResult, maxResults, sortingCriteria = [], fetchIncidents = false }) {
       if (camundaHistoryLevel !== 'none') {
         const instances = await HistoryService.findProcessesInstancesHistoryById(
           processId, 
           activityId,
           firstResult, 
           maxResults, 
-          filter
+          filter,
+          null, // active parameter
+          sortingCriteria, // Pass sorting criteria to service
+          fetchIncidents // Pass fetchIncidents parameter to service
         )
         if (showMore) {
           commit('appendInstances', instances)
@@ -72,7 +61,7 @@ export default {
       } else {
         const versions = await ProcessService.findProcessVersionsByDefinitionKey(processId, tenantId, true)
         const promises = versions.map(() => 
-          HistoryService.findProcessesInstancesHistoryById(processId, activityId, firstResult, maxResults, filter)
+          HistoryService.findProcessesInstancesHistoryById(processId, activityId, firstResult, maxResults, filter, null, sortingCriteria, fetchIncidents)
         )
         const responses = await Promise.all(promises)
         if (!showMore) commit('setInstances', [])
@@ -90,9 +79,6 @@ export default {
     },
     resetInstances({ commit }) {
       commit('setInstances', [])
-    },
-    updateInstancesSort({ commit }, sortedInstances) {
-      commit('setInstances', sortedInstances)
     }
   },
   getters: {

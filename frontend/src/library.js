@@ -104,6 +104,7 @@ import TaskAssignationModal from '@/components/process/modals/TaskAssignationMod
 import VariablesTable from '@/components/process/tables/VariablesTable.vue'
 import IncidentsTable from '@/components/process/tables/IncidentsTable.vue'
 import UserTasksTable from '@/components/process/tables/UserTasksTable.vue'
+import ExternalTasksTable from '@/components/process/tables/ExternalTasksTable.vue'
 import RenderTemplate from '@/components/render-template/RenderTemplate.vue'
 import AdvancedSearchModal from '@/components/task/AdvancedSearchModal.vue'
 import TaskContent from '@/components/task/TaskContent.vue'
@@ -324,6 +325,7 @@ export {
   VariablesTable,
   IncidentsTable,
   UserTasksTable,
+  ExternalTasksTable,
   RenderTemplate,
   AdvancedSearchModal,
   TaskContent,

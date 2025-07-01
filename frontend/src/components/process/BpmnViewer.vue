@@ -62,8 +62,40 @@ import { ProcessService } from '@/services.js'
 import { BWaitingBox } from 'cib-common-components'
 import { mapActions, mapGetters } from 'vuex'
 
-const interactionTypes = ['bpmn:UserTask', 'bpmn:CallActivity', 'bpmn:ScriptTask']
-const drawedTypes = ['userTask', 'serviceTask', 'scriptTask', 'callActivity', 'exclusiveGateway', 'endEvent', 'startEvent']
+const interactionTypes = [
+  // Tasks
+  'bpmn:UserTask', 'bpmn:ServiceTask', 'bpmn:ScriptTask', 'bpmn:SendTask', 
+  'bpmn:ReceiveTask', 'bpmn:ManualTask', 'bpmn:BusinessRuleTask',
+  // Activities
+  'bpmn:CallActivity', 'bpmn:SubProcess', 'bpmn:Transaction',
+  // Gateways
+  'bpmn:ExclusiveGateway', 'bpmn:InclusiveGateway', 'bpmn:ParallelGateway', 
+  'bpmn:EventBasedGateway', 'bpmn:ComplexGateway',
+  // Events
+  'bpmn:StartEvent', 'bpmn:EndEvent', 'bpmn:IntermediateThrowEvent', 
+  'bpmn:IntermediateCatchEvent', 'bpmn:BoundaryEvent'
+]
+const drawedTypes = [
+  // Tasks
+  'userTask', 'serviceTask', 'scriptTask', 'sendTask', 'receiveTask', 'manualTask', 'businessRuleTask',
+  // Activities
+  'callActivity', 'subProcess', 'transaction',
+  // Gateways
+  'exclusiveGateway', 'inclusiveGateway', 'parallelGateway', 'eventBasedGateway', 'complexGateway',
+  // Events
+  'startEvent', 'endEvent', 'noneEndEvent', 'intermediateThrowEvent', 'intermediateCatchEvent', 'boundaryEvent',
+  'intermediateNoneThrowEvent', 'intermediateConditional',
+  // Event definitions (specific types)
+  'messageStartEvent', 'timerStartEvent', 'signalStartEvent', 'conditionalStartEvent', 'errorStartEvent',
+  'escalationStartEvent', 'compensationStartEvent', 'messageEndEvent', 'errorEndEvent', 'escalationEndEvent',
+  'cancelEndEvent', 'compensationEndEvent', 'signalEndEvent', 'terminateEndEvent',
+  'messageIntermediateThrowEvent', 'signalIntermediateThrowEvent', 'compensationIntermediateThrowEvent',
+  'escalationIntermediateThrowEvent', 'linkIntermediateThrowEvent', 'messageIntermediateCatchEvent',
+  'timerIntermediateCatchEvent', 'conditionalIntermediateCatchEvent', 'signalIntermediateCatchEvent',
+  'linkIntermediateCatchEvent', 'messageBoundaryEvent', 'timerBoundaryEvent', 'errorBoundaryEvent',
+  'escalationBoundaryEvent', 'conditionalBoundaryEvent', 'signalBoundaryEvent', 'compensationBoundaryEvent',
+  'cancelBoundaryEvent'
+]
 
 function getActivitiesToMark(treeObj) {
   let result = []
@@ -276,8 +308,9 @@ export default {
             if (shape) {
               const htmlTemplate = this.getBadgeOverlayHtml(item.instances, 'bg-info', 'runningInstances', item.id)
               this.setHtmlOnDiagram(item.id, htmlTemplate, { bottom: 15, left: -7 })
-              if (item.failedJobs > 0) {
-                const failedHtml = this.getBadgeOverlayHtml(item.failedJobs, 'bg-danger', 'openIncidents', item.id)
+              if ((item.incidents?.length || 0) > 0) {
+                const incidentsCount = item.incidents.reduce((sum, inc) => sum + (inc.incidentCount || 0), 0)
+                const failedHtml = this.getBadgeOverlayHtml(incidentsCount, 'bg-danger', 'openIncidents', item.id)
                 this.setHtmlOnDiagram(item.id, failedHtml, { top: -7, right: 15 })
               }
               shape.nInstances = item.instances
