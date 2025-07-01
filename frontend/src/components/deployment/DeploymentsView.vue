@@ -116,7 +116,7 @@ export default {
       loading: true,
       deleteLoader: false,
       filter: this.$route.query.filter || '',
-      sorting: {},
+      sorting: { key: 'deploymentTime', order: 'asc' },
       cascadeDelete: true,
       resources: [],
       resourcesLoading: false,
@@ -126,7 +126,7 @@ export default {
   watch: {
     sorting: {
       handler: function() {
-        localStorage.setItem('deploymentSorting', JSON.stringify(this.sorting))
+        localStorage.setItem('cibseven:deploymentSorting', JSON.stringify(this.sorting))
       },
       deep: true
     }
@@ -159,11 +159,15 @@ export default {
     }
   },
   created: function () {
-    this.sorting = localStorage.getItem('deploymentSorting') ? JSON.parse(localStorage.getItem('deploymentSorting')) :
+    this.sorting = localStorage.getItem('cibseven:deploymentSorting') ? JSON.parse(localStorage.getItem('cibseven:deploymentSorting')) :
       { key: 'deploymentTime', order: 'asc' }
+    this.sorting.key = this.sortingFields.some((field) => field.value === this.sorting.key) ? this.sorting.key : 'deploymentTime'
+    this.sorting.order = ['asc','desc'].includes(this.sorting.order) ? this.sorting.order : 'asc'
+
     ProcessService.findDeployments().then(deployments => {
       deployments.forEach(d => {
         d.isSelected = false
+        d.name = d.name || d.id
       })
       this.deployments = deployments
       this.loading = false
