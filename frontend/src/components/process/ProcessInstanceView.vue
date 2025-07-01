@@ -18,18 +18,36 @@
 -->
 <template>
   <div v-if="selectedInstance" class="h-100">
-    <router-link
-      class="btn btn-light rounded-0 border-bottom text-start w-100 align-middle d-flex align-items-center"
-      :to="{
-        path: `/seven/auth/process/${process.key}/${process.version}`,
-        query: $route.query
-      }">
-      <span class="mdi mdi-18px mdi-arrow-left me-2 float-start"></span>
-      <h5 class="m-0">
-        {{ $t('process-instance.processInstanceId') }}: {{ selectedInstance.id }}
-        <span v-if="selectedInstance.businessKey"> | {{ $t('process-instance.businessKey') }}: {{ selectedInstance.businessKey }}</span>
-      </h5>
-    </router-link>
+    <ol class="breadcrumb m-0 d-flex align-items-center w-100 ps-3" style="min-height: 40px; line-height: 20px;">
+      <!-- Parent process link if exists -->
+      <li v-if="parentProcess" class="breadcrumb-item">
+        <router-link 
+          :to="{
+            path: `/seven/auth/process/${parentProcess.key}/${parentProcess.version}`,
+            query: Object.fromEntries(
+              Object.entries($route.query).filter(([key]) => key !== 'parentProcessDefinitionId')
+            )
+          }"
+          class="text-decoration-none d-flex align-items-center fw-bold text-info">
+          {{ parentProcess.name || parentProcess.key }}
+        </router-link>
+      </li>
+      <!-- Current process link -->
+      <li class="breadcrumb-item d-flex align-items-center">
+        <router-link 
+          :to="{
+            path: `/seven/auth/process/${process.key}/${process.version}`,
+            query: $route.query
+          }"
+          class="text-decoration-none d-flex align-items-center fw-bold text-info">
+          {{ process.name || process.key }}
+        </router-link>
+        <div class="ps-1 fw-bold">
+          | {{ $t('process-instance.processInstanceId') }}: {{ selectedInstance.id }}
+          <span v-if="selectedInstance.businessKey"> | {{ $t('process-instance.businessKey') }}: {{ selectedInstance.businessKey }}</span>
+        </div>
+      </li>
+    </ol>
 
     <div @mousedown="handleMouseDown" class="v-resizable position-absolute w-100" style="left: 0" :style="'height: ' + bpmnViewerHeight + 'px; ' + toggleTransition">
       <component :is="BpmnViewerPlugin" v-if="BpmnViewerPlugin" ref="diagram" class="h-100"
@@ -96,7 +114,8 @@ export default {
   props: {
     selectedInstance: Object,
     activityInstance: Object,
-    activityInstanceHistory: Object
+    activityInstanceHistory: Object,
+    parentProcess: Object
   },
   data: function() {
     return {
