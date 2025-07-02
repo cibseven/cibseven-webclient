@@ -16,11 +16,11 @@
  */
 package org.cibseven.webapp.rest;
 
-import org.springframework.beans.factory.annotation.Value;
+/*import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
+*/
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,36 +32,48 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+//import jakarta.inject.Inject;
+
 @ApiResponses({ @ApiResponse(responseCode= "500", description = "An unexpected system error occured") })
-@RestController @RequestMapping("/info") @Slf4j
+//@RestController @RequestMapping("/info") @Slf4j
+@Path("/")
+@Produces(MediaType.APPLICATION_JSON) @Slf4j
 public class InfoService extends BaseService {	
 	
-	@Value("${cibseven.webclient.cockpit.url:./camunda/app/cockpit/default/}") private String cockpitUrl;
-	@Value("${cibseven.webclient.theme:cib}") private String theme;
-	@Value("${cibseven.webclient.sso.active:false}") private boolean ssoActive;
-	@Value("${cibseven.webclient.sso.endpoints.authorization:}") private String authorizationEndpoint;
-	@Value("${cibseven.webclient.sso.clientId:}") private String clientId;
-	@Value("${cibseven.webclient.sso.scopes:}") private String scopes;
-	@Value("${cibseven.webclient.historyLevel:full}") private String camundaHistoryLevel;
-	@Value("${cibseven.webclient.user.provider:org.cibseven.webapp.auth.SevenUserProvider}") private String userProvider;
+	//@Inject
+   // @CockpitUrl
+   // private String cockpitUrl;
+	/*@Value("${cibseven.webclient.cockpit.url:./camunda/app/cockpit/default/}") */private String cockpitUrl = "./camunda/app/cockpit/default/";
+	/*@Value("${cibseven.webclient.theme:cib}")*/ private String theme = "cib";
+	/*@Value("${cibseven.webclient.sso.active:false}")*/ private boolean ssoActive = false;
+	/*@Value("${cibseven.webclient.sso.endpoints.authorization:}") */private String authorizationEndpoint = "";
+	/*@Value("${cibseven.webclient.sso.clientId:}") */private String clientId = "";
+	/*@Value("${cibseven.webclient.sso.scopes:}") */private String scopes = "";
+	/*@Value("${cibseven.webclient.historyLevel:full}") */private String camundaHistoryLevel = "full";
+	/*@Value("${cibseven.webclient.user.provider:org.cibseven.webapp.auth.SevenUserProvider}") */private String userProvider = "org.cibseven.webapp.auth.SevenUserProvider";
 	
-	@Value("${cibseven.webclient.productNamePageTitle:CIB seven}") private String productNamePageTitle;
+	/*@Value("${cibseven.webclient.productNamePageTitle:CIB seven}") */private String productNamePageTitle = "CIB seven";
 	
-	@Value("${cibseven.webclient.services.basePath:services/v1}") private String servicesBasePath;
+	/*@Value("${cibseven.webclient.services.basePath:services/v1}")*/ private String servicesBasePath = "services/v1";
 	
-	@Value("${cibseven.webclient.link.terms:}") private String flowLinkTerms;
-	@Value("${cibseven.webclient.link.privacy:}") private String flowLinkPrivacy;
-	@Value("${cibseven.webclient.link.imprint:}") private String flowLinkImprint;
-	@Value("${cibseven.webclient.link.accessibility:}") private String flowLinkAccessibility;
-	@Value("${cibseven.webclient.link.help:}") private String flowLinkHelp;
-	@Value("${cibseven.webclient.support-dialog:}") private String supportDialog;
-	@Value("${cibseven.webclient.engineRest.path:/engine-rest}") private String engineRestPath;
+	/*@Value("${cibseven.webclient.link.terms:}")*/ private String flowLinkTerms = "";
+	/*@Value("${cibseven.webclient.link.privacy:}") */private String flowLinkPrivacy = "";
+	/*@Value("${cibseven.webclient.link.imprint:}")*/ private String flowLinkImprint = "";
+	/*@Value("${cibseven.webclient.link.accessibility:}") */private String flowLinkAccessibility = "";
+	/*@Value("${cibseven.webclient.link.help:}")*/ private String flowLinkHelp = "";
+	/*@Value("${cibseven.webclient.support-dialog:}") */private String supportDialog = "";
+	/*@Value("${cibseven.webclient.engineRest.path:/engine-rest}")*/ private String engineRestPath = "/engine-rest";
 	
 	
 	@Operation(
 			summary = "Get info version",
 			description = "<strong>Return: Info version")
-	@GetMapping
+	//@GetMapping
+	@GET
 	public String getImplementationVersion() {
 		return InfoService.class.getPackage().getImplementationVersion();
 	}
@@ -69,7 +81,9 @@ public class InfoService extends BaseService {
 	@Operation(
 			summary = "Get config JSON",
 			description = "<strong>Return: Config JSON object")
-	@GetMapping("/properties")
+	//@GetMapping("/properties")
+	@GET
+	@Path("/properties")
 	public ObjectNode getConfig() {
 		ObjectNode configJson = JsonNodeFactory.instance.objectNode();
 		configJson.put("cockpitUrl", cockpitUrl);

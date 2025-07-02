@@ -17,6 +17,8 @@
 
 # Ignore everything in the webapp folder
 /src/main/webapp/*
+!/src/main/webapp/WEB-INF/
+!/src/main/webapp/WEB-INF/web.xml
 
 # But do not ignore the README file
 !src/main/webapp/README.md

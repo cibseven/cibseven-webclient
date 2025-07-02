@@ -1,0 +1,29 @@
+<web-app xmlns="http://jakarta.ee/xml/ns/jakartaee" version="5.0">
+<display-name>seven-webclient</display-name>
+  <!-- Bootstrap listener 
+  <listener>
+    <listener-class>org.cibseven.webapp.SevenWebclientListener</listener-class>
+  </listener>--> 
+
+  <!-- Jersey REST Servlet -->
+	  <servlet>
+	    <servlet-name>jersey</servlet-name>
+	    <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
+	    <init-param>
+	      <param-name>jakarta.ws.rs.Application</param-name>
+	      <param-value>org.cibseven.webapp.SevenWebclientApplication</param-value>
+	    </init-param>
+	    <load-on-startup>1</load-on-startup>
+	  </servlet>
+
+	<servlet-mapping>
+	  <servlet-name>jersey</servlet-name>
+	  <url-pattern>/services/v1/*</url-pattern>
+	</servlet-mapping>
+	
+	<servlet-mapping>
+	  <servlet-name>jersey</servlet-name>
+	  <url-pattern>/info/*</url-pattern>
+	</servlet-mapping>
+
+</web-app>
