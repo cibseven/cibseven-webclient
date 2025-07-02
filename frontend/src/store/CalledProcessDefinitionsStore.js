@@ -94,7 +94,7 @@ export default {
               id: instance.id,
               definitionId: instance.definitionId,
               definitionKey: instance.definitionId.split(':')[0],
-              version: instance.definitionId.split(':')[1],
+              version: instance.definitionId.split(':')[1] || '',
               activityId: activity.activityId,
               activityName: activity.activityName,
               processInstanceId: activity.processInstanceId,

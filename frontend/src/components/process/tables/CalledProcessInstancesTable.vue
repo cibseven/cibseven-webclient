@@ -117,7 +117,7 @@ export default {
         this.matchedCalledList = this.calledInstanceList.map(processPL => {
           const definitionParts = processPL.definitionId.split(':')
           const key = definitionParts[0]
-          const version = definitionParts[1]
+          const version = definitionParts[1] || ''
           
           let foundInst = this.activityInstanceHistory.find(processAIH => {
             if (processAIH.activityType === "callActivity"){

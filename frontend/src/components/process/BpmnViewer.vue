@@ -436,7 +436,9 @@ export default {
     async navigateToSubprocess(calledProcessInstanceId) {
       try {
         const subprocess = await ProcessService.findProcessInstance(calledProcessInstanceId)
-        const [processKey, versionIndex] = subprocess.definitionId.split(':')        
+        const definitionParts = subprocess.definitionId.split(':')
+        const processKey = definitionParts[0]
+        const versionIndex = definitionParts[1] || ''
         const params = { processKey, versionIndex }
         if (this.activityInstanceHistory) {
           params.instanceId = subprocess.id
