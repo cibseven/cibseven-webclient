@@ -22,19 +22,19 @@
       <p class="text-center p-4"><BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}</p>
     </div>
     <FlowTable v-else-if="incidents.length > 0" striped thead-class="sticky-header" :items="incidents" primary-key="id" prefix="process-instance.incidents."
-      sort-by="label" :sort-desc="true" :fields="[
-      { label: 'message', key: 'incidentMessage', class: 'col-3', tdClass: 'py-1 border-end border-top-0' },
-      { label: 'timestamp', key: 'incidentTimestamp', class: 'col-1', tdClass: 'py-1 border-end border-top-0' },
-      { label: 'activity', key: 'activityId', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
-      { label: 'failedActivity', key: 'failedActivityId', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
-      { label: 'incidentType', key: 'incidentType', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
-      { label: 'annotation', key: 'annotation', class: 'col-1', tdClass: 'py-1 border-end border-top-0' },
-      { label: 'actions', key: 'actions', class: 'col-1', sortable: false, tdClass: 'py-1 border-top-0' }]">
+      sort-by="label" :sort-desc="true" native-layout :fields="[
+      { label: 'message', key: 'incidentMessage', tdClass: 'border-end border-top-0' },
+      { label: 'timestamp', key: 'incidentTimestamp', tdClass: 'border-end border-top-0' },
+      { label: 'activity', key: 'activityId', tdClass: 'border-end border-top-0' },
+      { label: 'failedActivity', key: 'failedActivityId', tdClass: 'border-end border-top-0' },
+      { label: 'incidentType', key: 'incidentType', tdClass: 'border-end border-top-0' },
+      { label: 'annotation', key: 'annotation', tdClass: 'border-end border-top-0' },
+      { label: 'actions', key: 'actions', sortable: false, tdClass: 'py-0 border-top-0' }]">
       <template v-slot:cell(incidentMessage)="table">
         <CopyableActionButton 
-          :display-value="table.item.incidentMessage"
-          :copy-value="table.item.incidentMessage" 
-          :title="table.item.incidentMessage"
+          :display-value="getIncidentMessage(table.item)"
+          :copy-value="getIncidentMessage(table.item)" 
+          :title="getIncidentMessage(table.item)"
           class="text-truncate w-100"
           @click="showIncidentMessage(table.item)"
           @copy="copyValueToClipboard"
@@ -44,10 +44,10 @@
         <div :title="table.item.incidentTimestamp" class="text-truncate">{{ showPrettyTimestamp(table.item.incidentTimestamp) }}</div>
       </template>
       <template v-slot:cell(activityId)="table">
-        <div :title="table.item.activityId" class="text-truncate">{{ $store.state.activity.processActivities[table.item.activityId] }}</div>
+        <div :title="table.item.activityId" class="text-truncate">{{ $store.state.activity.processActivities[table.item.activityId] || table.item.activityId }}</div>
       </template>
       <template v-slot:cell(failedActivityId)="table">
-        <div :title="table.item.failedActivityId" class="text-truncate">{{ $store.state.activity.processActivities[table.item.failedActivityId] }}</div>
+        <div :title="table.item.failedActivityId" class="text-truncate">{{ $store.state.activity.processActivities[table.item.failedActivityId] || table.item.failedActivityId }}</div>
       </template>
       <template v-slot:cell(incidentType)="table">
         <div :title="table.item.incidentType" class="text-truncate">{{ table.item.incidentType }}</div>
@@ -146,12 +146,13 @@ export default {
     showIncidentMessage: function(incident) {
       // Choose the appropriate method based on incident type
       let stackTracePromise
+      const configuration = incident.rootCauseIncidentConfiguration || incident.configuration
       if (incident.incidentType === 'failedExternalTask') {
         // For external task incidents, use the external task error details endpoint
-        stackTracePromise = IncidentService.fetchIncidentStacktraceByExternalTaskId(incident.configuration)
+        stackTracePromise = IncidentService.fetchIncidentStacktraceByExternalTaskId(configuration)
       } else {
         // For other incident types, use job stack trace
-        stackTracePromise = IncidentService.fetchIncidentStacktraceByJobId(incident.configuration)
+        stackTracePromise = IncidentService.fetchIncidentStacktraceByJobId(configuration)
       }
       stackTracePromise.then(res => {
         this.$refs.stackTraceModal.show(res)
@@ -180,6 +181,9 @@ export default {
         this.updateIncidentAnnotation({ incidentId: id, annotation: params.annotation })
         this.$refs.annotationModal.hide()
       })
+    },
+    getIncidentMessage(incident) {
+      return incident.rootCauseIncidentMessage || incident.incidentMessage
     }
   }
 }

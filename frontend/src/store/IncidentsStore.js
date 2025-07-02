@@ -31,7 +31,8 @@ export default {
       state.incidents = state.incidents.filter(incident =>
         incident.id !== incidentId && incident.configuration !== incidentId
       )
-    }, updateIncidentAnnotation(state, { incidentId, annotation }) {
+    },
+    updateIncidentAnnotation(state, { incidentId, annotation }) {
       const incident = state.incidents.find(incident => incident.id === incidentId)
       if (incident) {
         incident.annotation = annotation
@@ -40,9 +41,9 @@ export default {
   },
   actions: {
     async loadIncidents({ commit }, params) {
-      const incidents = await IncidentService.findIncidents(params)
-      commit('setIncidents', incidents)
-      return incidents
+      const response = await IncidentService.findIncidents(params)
+      commit('setIncidents', response)
+      return response
     },
     async loadIncidentsByProcessInstance({ dispatch }, processInstanceId) {
       return dispatch('loadIncidents', { processInstanceId })
@@ -55,10 +56,6 @@ export default {
     },
     updateIncidentAnnotation({ commit }, { incidentId, annotation }) {
       commit('updateIncidentAnnotation', { incidentId, annotation })
-    },
-    async deleteIncident({ commit }, incidentId) {
-      await IncidentService.deleteIncident(incidentId)
-      commit('removeIncident', incidentId)
     }
   },
   getters: {
