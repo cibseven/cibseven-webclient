@@ -169,6 +169,11 @@ export default {
         } else {
           groupedMap[key].latestVersion = true
           groupedMap[key].name = def.name || groupedMap[key].name
+          groupedMap[key].activities.forEach(activity => {
+            if (activity.isStatic === undefined) {
+              activity.isStatic = staticIds.includes(activity.activityId)
+            }
+          })
         }
       }      
 
