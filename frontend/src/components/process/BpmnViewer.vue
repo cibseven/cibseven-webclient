@@ -431,7 +431,9 @@ export default {
         ProcessService.findCalledProcessDefinitions(this.processDefinitionId).then(subprocess => {
           const process = subprocess.find(item => item.calledFromActivityIds.includes(activityId))
           if (process) {
-            this.$router.push({ name: 'process', params: { processKey: process.key, versionIndex: process.version } })
+            this.$router.push({ name: 'process', 
+            params: { processKey: process.key, versionIndex: process.version },
+            query: { parentProcessDefinitionId: this.processDefinitionId } })
           }
         })
       }

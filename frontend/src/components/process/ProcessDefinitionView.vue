@@ -42,6 +42,7 @@
           :activity-instance-history="activityInstanceHistory"
           :tenant-id="tenantId"
           :filter="filter"
+          :parent-process="parentProcess"
           @instance-deleted="onInstanceDeleted()"
           @task-selected="setSelectedTask($event)"
           @filter-instances="filterInstances($event)"
@@ -53,6 +54,7 @@
           :activity-instance="activityInstance"
           :activity-instance-history="activityInstanceHistory"
           :selected-instance="selectedInstance"
+          :parent-process="parentProcess"
           @task-selected="setSelectedTask($event)"></ProcessInstanceView>
       </transition>
     </SidebarsFlow>
@@ -89,12 +91,20 @@ export default {
     tenantId: { type: String }
   },
   watch: {
-    processKey: 'loadProcessFromRoute',
+    processKey: function() {
+      // Reset process state when processKey changes
+      this.process = null
+      this.selectedInstance = null
+      this.activityInstance = null
+      this.activityInstanceHistory = null
+      this.parentProcess = null
+      this.loadProcessFromRoute()
+    },
     versionIndex() {
-     if (this.process.key === this.processKey){
-      const process = this.processDefinitions.find(processDefinition => processDefinition.version === this.versionIndex)
-      if (process) this.loadProcessVersion(process)
-     }
+      if (this.process && this.process.key === this.processKey) {
+        const process = this.processDefinitions.find(processDefinition => processDefinition.version === this.versionIndex)
+        if (process) this.loadProcessVersion(process)
+      }
     }
   },
   data: function() {
@@ -107,7 +117,8 @@ export default {
       activityInstance: null,
       activityInstanceHistory: null,
       filter: '',
-      loading: false
+      loading: false,
+      parentProcess: null
     }
   },
   computed: {
@@ -146,7 +157,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions(['clearActivitySelection']),
+    ...mapActions(['clearActivitySelection', 'getProcessById']),
     formatDate,
     loadInstanceById: function(instanceId) {
       // Always use HistoryService for process instance fetching
@@ -281,6 +292,16 @@ export default {
         this.findProcessAndAssignData(process)
         if (!this.process.statistics) this.loadStatistics()
         if (!this.process.activitiesHistory) this.loadProcessActivitiesHistory()
+        
+        // Load parent process if parentProcessDefinitionId exists in route query
+        if (this.$route.query.parentProcessDefinitionId) {
+          this.getProcessById({ id: this.$route.query.parentProcessDefinitionId }).then(response => {
+            this.parentProcess = response
+          })
+        } else {
+          this.parentProcess = null
+        }
+        
         return Promise.resolve() // Instances are now loaded by InstancesTable
       })
     },

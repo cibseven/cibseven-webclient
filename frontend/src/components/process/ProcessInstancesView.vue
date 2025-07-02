@@ -18,6 +18,25 @@
 -->
 <template>
   <div v-if="process" class="h-100">
+    <!-- Breadcrumb for parent process navigation -->
+    <ol v-if="parentProcess" class="breadcrumb m-0 d-flex align-items-center w-100 ps-3" style="min-height: 40px; line-height: 20px;">
+      <li class="breadcrumb-item">
+        <router-link 
+          :to="{
+            path: `/seven/auth/process/${parentProcess.key}/${parentProcess.version}`,
+            query: Object.fromEntries(
+              Object.entries($route.query).filter(([key]) => key !== 'parentProcessDefinitionId')
+            )
+          }"
+          class="text-decoration-none d-flex align-items-center fw-bold text-info">
+          {{ parentProcess.name || parentProcess.key }}
+        </router-link>
+      </li>
+      <li class="breadcrumb-item active d-flex align-items-center" aria-current="page">
+        <span class="fw-bold">{{ process.name || process.key }}</span>
+      </li>
+    </ol>
+
     <div @mousedown="handleMouseDown" class="v-resizable position-absolute w-100" style="left: 0" :style="'height: ' + bpmnViewerHeight + 'px; ' + toggleTransition">
       <component :is="BpmnViewerPlugin" v-if="BpmnViewerPlugin" ref="diagram" @task-selected="selectTask($event)" @activity-map-ready="activityMap = $event"
         :process-definition-id="process.id" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" :statistics="process.statistics"
@@ -143,12 +162,16 @@ export default {
      ProcessInstancesTabs },
   inject: ['loadProcesses'],
   mixins: [permissionsMixin, resizerMixin, copyToClipboardMixin],
-  props: { process: Object,
-    activityInstance: Object, activityInstanceHistory: Array, loading: Boolean,
+  props: { 
+    process: Object,
+    activityInstance: Object,
+    activityInstanceHistory: Array,
+    loading: Boolean,
     processKey: String,
     versionIndex: { type: String, default: '' },
     tenantId: String,
-    filter: String
+    filter: String,
+    parentProcess: Object
   },
   data: function() {
     return {
@@ -164,14 +187,28 @@ export default {
     }
   },
   watch: {
-    'process.id': function() {
+    'process.id': {
       //TODO: Refactor to fetch from store
-      ProcessService.fetchDiagram(this.process.id).then(response => {
-        this.$refs.diagram.showDiagram(response.bpmn20Xml)
-        this.setDiagramXml(response.bpmn20Xml)
-      }),
-      this.clearActivitySelection()
-      this.changeTab({ id: 'instances' })
+      handler: function(newId, oldId) {
+        if (newId && newId !== oldId) {
+          ProcessService.fetchDiagram(newId).then(response => {
+            this.$refs.diagram.showDiagram(response.bpmn20Xml)
+            this.setDiagramXml(response.bpmn20Xml)
+          })
+        }
+        this.clearActivitySelection()
+        this.changeTab({ id: 'instances' })
+      }
+    },
+    parentProcess: {
+      handler: function(newVal) {
+        if (newVal) {
+          this.topBarHeight = 40
+        } else {
+          this.topBarHeight = 0
+        }
+      },
+      immediate: true
     }
   },
   mounted: function() {
