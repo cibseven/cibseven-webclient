@@ -419,23 +419,36 @@ export default {
       return types.some(type => typeI.includes(type))
     },
     openSubprocess: function(activityId) {
-      const childInstance = this.activityInstanceHistory?.find(
+      const childInstance = this.findChildInstanceByActivityId(activityId)      
+      if (!childInstance?.calledProcessInstanceId) {
+        console.warn('No child process instance found for activityId:', activityId)
+        return
+      }
+      this.navigateToSubprocess(childInstance.calledProcessInstanceId)
+    },
+    findChildInstanceByActivityId: function(activityId) {
+      const searchArray = this.activityInstanceHistory || this.activitiesHistory
+      if (!searchArray) return null      
+      return searchArray.find(
         ai => ai.activityId === activityId && ai.calledProcessInstanceId
       )
-      if (childInstance && childInstance.calledProcessInstanceId) {
-        ProcessService.findProcessInstance(childInstance.calledProcessInstanceId).then(subprocess => {
-          const [processKey, versionIndex] = subprocess.definitionId.split(':')
-          this.$router.push({ name: 'process', params: { processKey, versionIndex, instanceId: subprocess.id } })
-        })
-      } else {
-        ProcessService.findCalledProcessDefinitions(this.processDefinitionId).then(subprocess => {
-          const process = subprocess.find(item => item.calledFromActivityIds.includes(activityId))
-          if (process) {
-            this.$router.push({ name: 'process', 
-            params: { processKey: process.key, versionIndex: process.version },
-            query: { parentProcessDefinitionId: this.processDefinitionId } })
-          }
-        })
+    },
+    async navigateToSubprocess(calledProcessInstanceId) {
+      try {
+        const subprocess = await ProcessService.findProcessInstance(calledProcessInstanceId)
+        const [processKey, versionIndex] = subprocess.definitionId.split(':')        
+        const params = { processKey, versionIndex }
+        if (this.activityInstanceHistory) {
+          params.instanceId = subprocess.id
+        }        
+        const routeConfig = {
+          name: 'process',
+          params,
+          query: { parentProcessDefinitionId: this.processDefinitionId }
+        }        
+        await this.$router.push(routeConfig)
+      } catch (error) {
+        console.error('Failed to navigate to subprocess:', error)
       }
     },
     drawJobDefinitionBadges: function() {
