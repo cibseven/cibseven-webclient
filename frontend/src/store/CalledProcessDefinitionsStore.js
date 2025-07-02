@@ -32,7 +32,7 @@ export default {
     }
   },
   actions: {
-    async loadCalledProcessDefinitions({ commit, getters, rootGetters }, { processId, activitiesHistory, diagramXml }) {
+    async loadCalledProcessDefinitions({ commit, getters, rootGetters }, { processId, activitiesHistory, diagramXml, chunkSize = 50 }) {
       commit('setCalledProcessDefinitions', [])
       commit('setAllCalledProcessDefinitions', [])
 
@@ -76,7 +76,7 @@ export default {
       // and to allow partial updates
       // This is especially useful if there are many call activities
       // and we want to avoid blocking the UI for too long
-      const chunkSize = 50
+      let isFirstChunk = true
       for (let i = 0; i < calledProcessIds.length; i += chunkSize) {
         const chunk = calledProcessIds.slice(i, i + chunkSize)
         const chunkInstances = await ProcessService.findCurrentProcessesInstances({ processInstanceIds: chunk })
@@ -137,7 +137,10 @@ export default {
         // Update the grouped definitions with labels
         // This will ensure that the UI is responsive and updates incrementally
         // instead of waiting for all chunks to be processed
-        updateGroupedWithLabels()
+        if (!isFirstChunk) {
+          updateGroupedWithLabels()
+        }
+        isFirstChunk = false
       }
 
       // Add latest called process definitions
@@ -157,7 +160,8 @@ export default {
               activityId,
               activityName: rootGetters['getProcessActivities'][activityId],
               processInstanceId: null,
-              ended: true
+              ended: true,
+              isStatic: staticIds.includes(activityId)
             })),
             instances: [],
             latestVersion: true
@@ -212,16 +216,19 @@ export default {
       }
     },
     getCalledProcessState: () => (processDefinition) => {
-      const hasRunning = processDefinition.activities.some(act => act.ended === false)
-      const hasReferenced = processDefinition.activities.some(act => act.ended === false && act.processInstanceId == null) || processDefinition.latestVersion
+      // An activity is considered "running" if:
+      // 1. It is not ended (ended === false)
+      const hasRunning = processDefinition.activities.some(act => act.ended === false)  
+      // An activity is considered "referenced" if:
+      // 1. It is not ended and has no processInstanceId (meaning it is still running)
+      // 2. Or if it is the latest version and the activity is static
+      const hasReferenced = processDefinition.activities.some(act => 
+        (act.ended === false && act.processInstanceId == null) ||
+        (processDefinition.latestVersion && act.isStatic)
+      )
 
       if (hasRunning && hasReferenced) return 'process-instance.calledProcessDefinitions.runningAndReferenced'
-      if (hasRunning) {
-        if (processDefinition?.latestVersion) {
-          return 'process-instance.calledProcessDefinitions.runningAndReferenced'
-        }
-        return 'process-instance.calledProcessDefinitions.running'
-      }
+      if (hasRunning) return 'process-instance.calledProcessDefinitions.running'
       if (hasReferenced) return 'process-instance.calledProcessDefinitions.referenced'
       return 'process-instance.calledProcessDefinitions.unknown'
     }

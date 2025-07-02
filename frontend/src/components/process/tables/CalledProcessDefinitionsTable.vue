@@ -128,7 +128,8 @@ export default {
         await this.loadCalledProcessDefinitions({ 
           processId: this.process.id,
           activitiesHistory: this.activitiesHistory,
-          diagramXml: this.diagramXml
+          diagramXml: this.diagramXml,
+          chunkSize: this.$root?.config?.maxProcessesResults || 50
         })
       } catch (error) {
         console.error('Error loading called processes:', error)
