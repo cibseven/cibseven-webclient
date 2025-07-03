@@ -663,22 +663,13 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	 */
 	
 	@Override
-	public Long countIncident(Optional<String> incidentId, Optional<String> incidentType, Optional<String> incidentMessage, Optional<String> processDefinitionId,
-			Optional<String> processDefinitionKeyIn, Optional<String> processInstanceId, Optional<String> executionId, Optional<String> activityId, 
-			Optional<String> causeIncidentId, Optional<String> rootCauseIncidentId, Optional<String> configuration, Optional<String> tenantIdIn, 
-			Optional<String> jobDefinitionIdIn, Optional<String> name, CIBUser user) {
-		return incidentProvider.countIncident(incidentId, incidentType, incidentMessage, 
-				processDefinitionId, processDefinitionKeyIn, processInstanceId, executionId, activityId, 
-				causeIncidentId, rootCauseIncidentId, configuration, tenantIdIn, jobDefinitionIdIn, name, user);
+	public Long countIncident(Map<String, Object> params, CIBUser user) {
+		return incidentProvider.countIncident(params, user);
 	}
 
 	@Override
-	public Collection<Incident> findIncident(Optional<String> incidentId, Optional<String> incidentType, Optional<String> incidentMessage, Optional<String> processDefinitionId, 
-			Optional<String> processDefinitionKeyIn, Optional<String> processInstanceId, Optional<String> executionId, Optional<String> activityId, Optional<String> causeIncidentId,
-			Optional<String> rootCauseIncidentId, Optional<String> configuration, Optional<String> tenantIdIn, Optional<String> jobDefinitionIdIn, CIBUser user) {
-		return incidentProvider.findIncident(incidentId, incidentType, incidentMessage, 
-				processDefinitionId, processDefinitionKeyIn, processInstanceId, executionId, 
-				activityId, causeIncidentId, rootCauseIncidentId, configuration, tenantIdIn, jobDefinitionIdIn, user);
+	public Collection<Incident> findIncident(Map<String, Object> params, CIBUser user) {
+		return incidentProvider.findIncident(params, user);
 	}
 	
 	@Override

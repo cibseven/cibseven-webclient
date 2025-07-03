@@ -925,18 +925,9 @@ public interface BpmProvider {
 	 */
 	void submit(Task task, List<Variable> formResult, CIBUser user) throws SystemException, SubmitDeniedException;
 
-	Long countIncident(Optional<String> incidentId, Optional<String> incidentType, Optional<String> incidentMessage,
-			Optional<String> processDefinitionId, Optional<String> processDefinitionKeyIn,
-			Optional<String> processInstanceId, Optional<String> executionId, Optional<String> activityId,
-			Optional<String> causeIncidentId, Optional<String> rootCauseIncidentId, Optional<String> configuration,
-			Optional<String> tenantIdIn, Optional<String> jobDefinitionIdIn, Optional<String> name, CIBUser user);
+	Long countIncident(Map<String, Object> params, CIBUser user);
 
-	Collection<Incident> findIncident(Optional<String> incidentId, Optional<String> incidentType,
-			Optional<String> incidentMessage, Optional<String> processDefinitionId,
-			Optional<String> processDefinitionKeyIn, Optional<String> processInstanceId, Optional<String> executionId,
-			Optional<String> activityId, Optional<String> causeIncidentId, Optional<String> rootCauseIncidentId,
-			Optional<String> configuration, Optional<String> tenantIdIn, Optional<String> jobDefinitionIdIn,
-			CIBUser user);
+	Collection<Incident> findIncident(Map<String, Object> params, CIBUser user);
 
 	List<Incident> findIncidentByInstanceId(String processInstanceId, CIBUser user);
 	

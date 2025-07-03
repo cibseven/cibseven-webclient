@@ -19,8 +19,9 @@ package org.cibseven.webapp.providers;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -73,12 +74,11 @@ public class IncidentProviderIT extends BaseHelper {
                 .setBody(mockResponseBody)
                 .addHeader("Content-Type", "application/json"));
 
+        Map<String, Object> params = new HashMap<>();
+        params.put("incidentId", "incident-1");
+
         // Act
-        Long count = incidentProvider.countIncident(
-                Optional.of("incident-1"), Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(), user);
+        Long count = incidentProvider.countIncident(params, user);
 
         // Assert
         assertThat(count).isNotNull();
@@ -97,11 +97,10 @@ public class IncidentProviderIT extends BaseHelper {
                 .addHeader("Content-Type", "application/json"));
 
         // Act
-        Collection<Incident> incidents = incidentProvider.findIncident(
-                Optional.of("incident-1"), Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), user);
+        Map<String, Object> params = new HashMap<>();
+        params.put("incidentId", "incident-1");
+        
+        Collection<Incident> incidents = incidentProvider.findIncident(params, user);
 
         // Assert
         assertThat(incidents).isNotNull();

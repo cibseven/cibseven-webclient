@@ -418,13 +418,7 @@ var IncidentService = {
     return axios.put(getServicesBasePath() + "/incident/external-task/" + id + "/retries", params)
   },
   findIncidents: function(params) {
-    const queryParams = new URLSearchParams()
-    Object.keys(params).forEach(key => {
-      if (params[key] !== undefined && params[key] !== null) {
-        queryParams.append(key, params[key])
-      }
-    })
-    return axios.get(getServicesBasePath() + "/incident?" + queryParams.toString())
+    return axios.get(getServicesBasePath() + "/incident", { params })
   },
   setIncidentAnnotation: function(id, params) {
     return axios.put(getServicesBasePath() + "/incident/" + id + "/annotation", params)
