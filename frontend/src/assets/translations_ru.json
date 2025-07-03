@@ -117,7 +117,7 @@
 			"historyVersions": "Версии истории",
 			"variable": "Переменная процесса",
 			"copyValue": "Копировать значение",
-			"historyTimeToLive": "История время жить",
+			"historyTimeToLive": "Время хранения истории",
 			"tenantId": "ID тенанта"
 		},
 		"sections": {
