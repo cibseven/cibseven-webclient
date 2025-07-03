@@ -94,7 +94,7 @@ export default {
               id: instance.id,
               definitionId: instance.definitionId,
               definitionKey: instance.definitionId.split(':')[0],
-              version: instance.definitionId.split(':')[1],
+              version: instance.definitionId.split(':')[1] || '',
               activityId: activity.activityId,
               activityName: activity.activityName,
               processInstanceId: activity.processInstanceId,
@@ -169,6 +169,11 @@ export default {
         } else {
           groupedMap[key].latestVersion = true
           groupedMap[key].name = def.name || groupedMap[key].name
+          groupedMap[key].activities.forEach(activity => {
+            if (activity.isStatic === undefined) {
+              activity.isStatic = staticIds.includes(activity.activityId)
+            }
+          })
         }
       }      
 

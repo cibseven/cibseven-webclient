@@ -37,7 +37,8 @@
               params: {
                 processKey: table.item.definitionKey,
                 versionIndex: table.item.version
-              }
+              },
+              query: { parentProcessDefinitionId: process.id }
             }"
           />
       </template>
