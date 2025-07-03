@@ -257,15 +257,35 @@ export default {
       this.listTasksWithFilterAuto()
     },
     updateAssignee: function(assignee, target) {
-      if (this.processInstanceHistory) {
-        this.processInstanceHistory.tasksHistory[0].assignee = assignee
-        this.selectedTask(this.processInstanceHistory.tasksHistory[0])
+      const ensureProcessInstanceHistory = async () => {
+        if (
+          !this.processInstanceHistory ||
+          !this.processInstanceHistory.tasksHistory?.length
+        ) {
+          if (!this.task || !this.task.processInstanceId)
+            throw new Error('No task selected yet')
+          const instance = await ProcessService.findProcessInstance(this.task.processInstanceId)
+          const tasksHistory = await HistoryService.findTasksByProcessInstanceHistory(this.task.processInstanceId)
+          this.processInstanceHistory = instance
+          this.processInstanceHistory.tasksHistory = tasksHistory
+        }
       }
-      if (target === 'taskList') {
-        var currentTaskIndex = this.tasks.findIndex(task => {
+      ensureProcessInstanceHistory()
+        .then(() => {
+          this.processInstanceHistory.tasksHistory[0].assignee = assignee
+          this.selectedTask(this.processInstanceHistory.tasksHistory[0])
+        })
+        .catch(err => {
+          console.warn('Could not update processInstanceHistory', err)
+        })
+
+      if (target === 'taskList' && this.task) {
+        const currentTaskIndex = this.tasks.findIndex(task => {
           return task.id === this.task.id
         })
-        if (currentTaskIndex !== -1) this.tasks[currentTaskIndex].assignee = assignee
+        if (currentTaskIndex !== -1) {
+          this.tasks[currentTaskIndex].assignee = assignee
+        }
       }
       this.listTasksWithFilterAuto()
     },
