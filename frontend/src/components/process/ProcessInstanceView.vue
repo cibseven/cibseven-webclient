@@ -24,9 +24,12 @@
         <router-link 
           :to="{
             path: `/seven/auth/process/${parentProcess.key}/${parentProcess.version}`,
-            query: Object.fromEntries(
-              Object.entries($route.query).filter(([key]) => key !== 'parentProcessDefinitionId')
-            )
+            query: {
+              ...Object.fromEntries(
+                Object.entries($route.query).filter(([key]) => key !== 'parentProcessDefinitionId')
+              ),
+              tab: 'instances'
+            }
           }"
           class="text-decoration-none d-flex align-items-center fw-bold text-info">
           {{ parentProcess.name || parentProcess.key }}
@@ -37,7 +40,9 @@
         <router-link 
           :to="{
             path: `/seven/auth/process/${process.key}/${process.version}`,
-            query: $route.query
+            query: { ...Object.fromEntries(
+              Object.entries($route.query).filter(([key]) => !['tab'].includes(key))
+            ), tab: 'instances' }
           }"
           class="text-decoration-none d-flex align-items-center fw-bold text-info">
           {{ process.name || process.key }}
@@ -95,6 +100,7 @@ import { ProcessService } from '@/services.js'
 
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
 import procesessVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
+import tabUrlMixin from '@/components/process/mixins/tabUrlMixin.js'
 
 import VariablesTable from '@/components/process/tables/VariablesTable.vue'
 import IncidentsTable from '@/components/process/tables/IncidentsTable.vue'
@@ -110,7 +116,7 @@ export default {
   name: 'ProcessInstanceView',
   components: { VariablesTable, IncidentsTable, UserTasksTable, BpmnViewer, 
     JobsTable, CalledProcessInstancesTable, ExternalTasksTable, ProcessInstanceTabs },
-  mixins: [procesessVariablesMixin, resizerMixin],
+  mixins: [procesessVariablesMixin, resizerMixin, tabUrlMixin],
   props: {
     selectedInstance: Object,
     activityInstance: Object,
@@ -121,7 +127,7 @@ export default {
     return {
       filterHeight: 0,
       activityId: '',
-      activeTab: 'variables'
+      defaultTab: 'variables'
     }
   },
   watch: {
@@ -154,9 +160,6 @@ export default {
     })
   },
   methods: {
-    changeTab: function(selectedTab) {
-      this.activeTab = selectedTab.id
-    },
     selectTask: function(event) {
       this.selectedTask = event
       this.$emit('task-selected', event);

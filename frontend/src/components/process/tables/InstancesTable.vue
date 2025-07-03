@@ -36,7 +36,7 @@
         <CopyableActionButton
           :displayValue="table.item.id"
           :title="$t('process.showInstance') + ':\n' + table.item.id"
-          :to="`/seven/auth/process/${table.item.processDefinitionKey}/${table.item.processDefinitionVersion}/${table.item.id}`"
+          :to="`/seven/auth/process/${table.item.processDefinitionKey}/${table.item.processDefinitionVersion}/${table.item.id}?tab=variables`"
           @copy="copyValueToClipboard"
         />
       </template>
@@ -239,7 +239,7 @@ export default {
           versionIndex: instance.processDefinitionVersion,
           instanceId: instance.id,
         },
-        query: this.$route.query
+        query: { ...this.$route.query, tab: 'variables' } // Set default tab for instance view
       })
     },
     // "Stop Instance" button

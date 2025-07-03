@@ -114,7 +114,7 @@ function getActivitiesToMark(treeObj) {
 
 export default {
   name: 'BpmnViewer',
-  emits: ['task-selected', 'child-activity', 'diagram-imported', 'overlay-click'],
+  emits: ['task-selected', 'child-activity', 'overlay-click'],
   components: { BWaitingBox },
   props: {
     activityInstance: Object,
@@ -169,12 +169,14 @@ export default {
     this.viewer.on('import.done', () => {
       this.drawDiagramState()
       this.attachEventListeners()
-      this.$emit('diagram-imported')
+      this.setDiagramReady(true)
     })
   },
   methods: {
     ...mapActions(['selectActivity', 'clearActivitySelection', 'setHighlightedElement']),
+    ...mapActions('diagram', ['setDiagramReady']),
     showDiagram: function(xml) {
+      this.setDiagramReady(false)
       this.loader = true
       this.viewer.importXML(xml).then(() => {
         setTimeout(() => {
@@ -425,15 +427,24 @@ export default {
       if (childInstance && childInstance.calledProcessInstanceId) {
         ProcessService.findProcessInstance(childInstance.calledProcessInstanceId).then(subprocess => {
           const [processKey, versionIndex] = subprocess.definitionId.split(':')
-          this.$router.push({ name: 'process', params: { processKey, versionIndex, instanceId: subprocess.id } })
+          this.$router.push({ 
+            name: 'process', 
+            params: { processKey, versionIndex, instanceId: subprocess.id },
+            query: { tab: 'variables' } // Set default tab for instance view
+          })
         })
       } else {
         ProcessService.findCalledProcessDefinitions(this.processDefinitionId).then(subprocess => {
           const process = subprocess.find(item => item.calledFromActivityIds.includes(activityId))
           if (process) {
-            this.$router.push({ name: 'process', 
-            params: { processKey: process.key, versionIndex: process.version },
-            query: { parentProcessDefinitionId: this.processDefinitionId } })
+            this.$router.push({ 
+              name: 'process', 
+              params: { processKey: process.key, versionIndex: process.version },
+              query: { 
+                parentProcessDefinitionId: this.processDefinitionId,
+                tab: 'instances' // Set default tab for process definition view
+              } 
+            })
           }
         })
       }
@@ -464,6 +475,7 @@ export default {
     }
   },
   beforeUnmount: function() {
+    this.setDiagramReady(false)
     // Clean up document event listener to prevent memory leaks
     if (this.overlayClickHandler) {
       document.removeEventListener('click', this.overlayClickHandler)
