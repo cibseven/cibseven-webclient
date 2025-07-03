@@ -30,6 +30,9 @@ import org.springframework.http.MediaType;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Component
 public class IncidentProvider extends SevenProviderBase implements IIncidentProvider {
 	
@@ -66,7 +69,12 @@ public class IncidentProvider extends SevenProviderBase implements IIncidentProv
 						incident.setRootCauseIncidentConfiguration(rootCauseIncident.getConfiguration());
 						incident.setRootCauseIncidentMessage(rootCauseIncident.getIncidentMessage());
 					}
-				} catch (Exception e) { /* Continue processing other incidents */}
+				} catch (Exception e) {
+					log.warn("Failed to enrich incident with ID: {} and root cause ID: {}", 
+						incident.getId(), 
+						incident.getRootCauseIncidentId(), 
+						e);
+				}
 			}
 		}
 		
