@@ -21,7 +21,7 @@
     <!-- Breadcrumb for parent process navigation -->
     <ol v-if="parentProcess" class="breadcrumb m-0 d-flex align-items-center w-100 ps-3" style="min-height: 40px; line-height: 20px;">
       <li class="breadcrumb-item">
-        <router-link 
+        <router-link
           :to="{
             path: `/seven/auth/process/${parentProcess.key}/${parentProcess.version}`,
             query: Object.fromEntries(
@@ -162,7 +162,7 @@ export default {
      ProcessInstancesTabs },
   inject: ['loadProcesses'],
   mixins: [permissionsMixin, resizerMixin, copyToClipboardMixin],
-  props: { 
+  props: {
     process: Object,
     activityInstance: Object,
     activityInstanceHistory: Array,
@@ -214,7 +214,7 @@ export default {
   mounted: function() {
     ProcessService.fetchDiagram(this.process.id).then(response => {
       setTimeout(() => {
-        this.$refs.diagram.showDiagram(response.bpmn20Xml)        
+        this.$refs.diagram.showDiagram(response.bpmn20Xml)
         this.setDiagramXml(response.bpmn20Xml)
       }, 100)
     })
@@ -249,7 +249,7 @@ export default {
     ...mapGetters(['selectedActivityId']),
     ...mapGetters('instances', ['instances']),
   },
-  methods: {    
+  methods: {
     ...mapActions(['clearActivitySelection', 'setDiagramXml']),
     applySorting: function(sortingCriteria) {
       this.sorting = true
@@ -320,7 +320,7 @@ export default {
       // Check if we're near the bottom and can load more data
       const scrollThreshold = 100 // Load more when within 100px of bottom
       const nearBottom = (el.target.scrollTop + el.target.clientHeight + scrollThreshold) >= el.target.scrollHeight
-      
+
       if (nearBottom && this.$refs.instancesTable) {
         // Let InstancesTable handle the logic of whether to load more
         this.$refs.instancesTable.showMore()
