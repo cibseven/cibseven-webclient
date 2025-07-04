@@ -63,51 +63,53 @@
     </div>
 
     <div class="position-absolute w-100 overflow-hidden" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
-      <div v-if="isInstancesView" ref="filterTable" class="bg-light d-flex position-absolute w-100">
-        <div class="col-3 p-3">
-          <b-input-group size="sm">
-            <template #prepend>
-              <b-button :title="$t('searches.search')" aria-hidden="true" size="sm" class="rounded-left" variant="secondary"><span class="mdi mdi-magnify" style="line-height: initial"></span></b-button>
-            </template>
-            <b-form-input :title="$t('searches.search')" size="sm" :placeholder="$t('searches.search')" @input="(evt) => onInput(evt.target.value.trim())"></b-form-input>
-            <b-button size="sm" variant="light" @click="$refs.sortModal.show()" class="ms-1 border"><span class="mdi mdi-sort" style="line-height: initial"></span></b-button>
-          </b-input-group>
-        </div>
-        <div class="col-1 p-3">
-          <span v-if="selectedActivityId" class="badge bg-info rounded-pill p-2 pe-3" style="font-weight: 500; font-size: 0.75rem">
-            <span @click="clearActivitySelection" role="button" class="mdi mdi-close-thick py-2 px-1"></span> {{ selectedActivityId }}
-          </span>
-        </div>
-        <div class="col-8 p-3 text-end">
-          <div>
-            <b-button v-if="process.suspended === 'false'" class="border" size="sm" variant="light" @click="confirmSuspend" :title="$t('process.suspendProcess')">
-              <span class="mdi mdi-pause-circle-outline"></span> {{ $t('process.suspendProcess') }}
-            </b-button>
-            <b-button v-else class="border" size="sm" variant="light" @click="confirmActivate" :title="$t('process.activateProcess')">
-              <span class="mdi mdi-play-circle-outline"></span> {{ $t('process.activateProcess') }}
-            </b-button>
-            <b-button class="border" size="sm" variant="light" @click="downloadBpmn()" :title="$t('process.downloadBpmn')">
-              <span class="mdi mdi-download"></span> {{ $t('process.downloadBpmn') }}
-            </b-button>
-            <b-button class="border" size="sm" variant="light" @click="viewDeployment()" :title="$t('process.showDeployment')">
-              <span class="mdi mdi-file-eye-outline"></span> {{ $t('process.showDeployment') }}
-            </b-button>
-            <component :is="ProcessActions" v-if="ProcessActions" :process="process"></component>
+      <div ref="rContent" class="overflow-y-scroll bg-white position-absolute w-100" style="top: 0px; left: 0; bottom: 0" @scroll="handleScroll">
+        <template v-if="isInstancesView">
+          <div ref="filterTable" class="bg-light d-flex w-100">
+            <div class="col-3 p-3">
+              <b-input-group size="sm">
+                <template #prepend>
+                  <b-button :title="$t('searches.search')" aria-hidden="true" size="sm" class="rounded-left" variant="secondary"><span class="mdi mdi-magnify" style="line-height: initial"></span></b-button>
+                </template>
+                <b-form-input :title="$t('searches.search')" size="sm" :placeholder="$t('searches.search')" @input="(evt) => onInput(evt.target.value.trim())"></b-form-input>
+                <b-button size="sm" variant="light" @click="$refs.sortModal.show()" class="ms-1 border"><span class="mdi mdi-sort" style="line-height: initial"></span></b-button>
+              </b-input-group>
+            </div>
+            <div class="col-1 p-3">
+              <span v-if="selectedActivityId" class="badge bg-info rounded-pill p-2 pe-3" style="font-weight: 500; font-size: 0.75rem">
+                <span @click="clearActivitySelection" role="button" class="mdi mdi-close-thick py-2 px-1"></span> {{ selectedActivityId }}
+              </span>
+            </div>
+            <div class="col-8 p-3 text-end">
+              <div>
+                <b-button v-if="process.suspended === 'false'" class="border" size="sm" variant="light" @click="confirmSuspend" :title="$t('process.suspendProcess')">
+                  <span class="mdi mdi-pause-circle-outline"></span> {{ $t('process.suspendProcess') }}
+                </b-button>
+                <b-button v-else class="border" size="sm" variant="light" @click="confirmActivate" :title="$t('process.activateProcess')">
+                  <span class="mdi mdi-play-circle-outline"></span> {{ $t('process.activateProcess') }}
+                </b-button>
+                <b-button class="border" size="sm" variant="light" @click="downloadBpmn()" :title="$t('process.downloadBpmn')">
+                  <span class="mdi mdi-download"></span> {{ $t('process.downloadBpmn') }}
+                </b-button>
+                <b-button class="border" size="sm" variant="light" @click="viewDeployment()" :title="$t('process.showDeployment')">
+                  <span class="mdi mdi-file-eye-outline"></span> {{ $t('process.showDeployment') }}
+                </b-button>
+                <component :is="ProcessActions" v-if="ProcessActions" :process="process"></component>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-      <div ref="rContent" class="overflow-auto bg-white position-absolute w-100" :style="isInstancesView ? 'top: 60px' : 'top: 0px'" style="left: 0; bottom: 0" @scroll="handleScroll">
-        <InstancesTable v-if="isInstancesView" ref="instancesTable" 
-          :process="process"
-          :activity-instance="activityInstance"
-          :sortByDefaultKey="sortByDefaultKey"
-          :sortDesc="sortDesc"
-          :sorting="sorting"
-          :tenant-id="tenantId"
-          :filter="filter"
-          @instance-deleted="$emit('instance-deleted')"
-          @filter-instances="$emit('filter-instances', $event)"
-        ></InstancesTable>
+          <InstancesTable ref="instancesTable"
+            :process="process"
+            :activity-instance="activityInstance"
+            :sortByDefaultKey="sortByDefaultKey"
+            :sortDesc="sortDesc"
+            :sorting="sorting"
+            :tenant-id="tenantId"
+            :filter="filter"
+            @instance-deleted="$emit('instance-deleted')"
+            @filter-instances="$emit('filter-instances', $event)"
+          ></InstancesTable>
+        </template>
         <IncidentsTable v-else-if="activeTab === 'incidents'"
           :process="process" :activity-instance="activityInstance"
           :activity-instance-history="process.activitiesHistory"/>
@@ -158,7 +160,7 @@ import { mapGetters, mapActions } from 'vuex'
 export default {
   name: 'ProcessInstancesView',
   components: { InstancesTable, JobDefinitionsTable, BpmnViewer, MultisortModal,
-     SuccessAlert, ConfirmDialog, BWaitingBox, IncidentsTable, CalledProcessDefinitionsTable, 
+     SuccessAlert, ConfirmDialog, BWaitingBox, IncidentsTable, CalledProcessDefinitionsTable,
      ProcessInstancesTabs },
   inject: ['loadProcesses'],
   mixins: [permissionsMixin, resizerMixin, copyToClipboardMixin],
@@ -255,12 +257,12 @@ export default {
       this.sorting = true
       this.sortDesc = null
       this.sortByDefaultKey = ''
-      
+
       // Apply sorting via backend by reloading data with sorting criteria
       if (this.$refs.instancesTable) {
         this.$refs.instancesTable.applySorting(sortingCriteria)
       }
-      
+
       this.$nextTick(() => {
         this.sorting = false
         this.sortDesc = true
