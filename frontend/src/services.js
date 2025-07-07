@@ -301,22 +301,29 @@ var HistoryService = {
     if (maxResults != null) params.maxResults = maxResults
     return axios.post(getServicesBasePath() + '/process-history/instance', filters, { params })
   },
-  findProcessesInstancesHistoryById: function(id, activityId, firstResult, maxResults, text, active, sortingCriteria = [], fetchIncidents = false) {
+  findProcessesInstancesHistoryById: function(id, activityId, firstResult, maxResults, filter = {}, active, sortingCriteria = [], fetchIncidents = false) {
     const requestBody = {
+      ...(filter || {}),
       processDefinitionId: id
     }
-    
+
     // Add incident fetching if requested
     if (fetchIncidents) {
       requestBody.fetchIncidents = true
     }
-    
+
     // Add activity filter
     if (activityId) {
-      requestBody.activeActivityIdIn = [activityId]
+      requestBody.activeActivityIdIn = [
+        ...(filter?.activityIdIn || []),
+        activityId,
+      ]
+      // remove duplicates
+      requestBody.activeActivityIdIn = [...new Set(requestBody.activeActivityIdIn)]
     }
-    
+
     // Add text search with OR logic (business key LIKE or exact process instance ID)
+    const text = filter?.editField || ''
     if (text && text.trim() !== '') {
       const trimmedText = text.trim()
       requestBody.orQueries = [
@@ -326,7 +333,7 @@ var HistoryService = {
         }
       ]
     }
-    
+
     // Add active/finished filter
     if (active !== undefined && active !== null) {
       if (active) {
@@ -335,7 +342,7 @@ var HistoryService = {
         requestBody.finished = true
       }
     }
-    
+
     // Add sorting criteria
     if (sortingCriteria && sortingCriteria.length > 0) {
       requestBody.sorting = sortingCriteria.map(criteria => ({
@@ -346,11 +353,11 @@ var HistoryService = {
       // Default sorting by start time descending
       requestBody.sorting = [{ sortBy: 'startTime', sortOrder: 'desc' }]
     }
-    
+
     const params = {}
     if (firstResult !== null && firstResult !== undefined) params.firstResult = firstResult
     if (maxResults !== null && maxResults !== undefined) params.maxResults = maxResults
-    
+
     return axios.post(getServicesBasePath() + "/process-history/instance", requestBody, { params })
   },
   findActivitiesInstancesHistory: function(processInstanceId) {
@@ -648,7 +655,7 @@ var SystemService = {
   }
 }
 
-var TenantService = {  
+var TenantService = {
   getTenants(params) {
     return axios.get(getServicesBasePath() + '/tenant', { params })
   },
@@ -685,5 +692,5 @@ var ExternalTaskService = {
 }
 
 export { TaskService, FilterService, ProcessService, VariableInstanceService, HistoricVariableInstanceService, AdminService, JobService, JobDefinitionService, SystemService,
-  HistoryService, IncidentService, AuthService, InfoService, FormsService, TemplateService, DecisionService, 
+  HistoryService, IncidentService, AuthService, InfoService, FormsService, TemplateService, DecisionService,
   AnalyticsService, BatchService, TenantService, ExternalTaskService, getServicesBasePath, setServicesBasePath }
