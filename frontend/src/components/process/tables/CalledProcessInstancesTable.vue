@@ -17,8 +17,8 @@
 
 -->
 <template>
-  <div class="overflow-auto bg-white container-fluid g-0 h-100" >
-    <flow-table v-if="!loading && matchedCalledList.length > 0" striped thead-class="sticky-header" :items="matchedCalledList" primary-key="id" prefix="process-instance.calledProcesses."
+  <div class="overflow-auto bg-white container-fluid g-0 h-100" @scroll="handleScroll">
+    <FlowTable v-if="matchedCalledList.length > 0" striped thead-class="sticky-header" :items="matchedCalledList" primary-key="id" prefix="process-instance.calledProcesses."
       sort-by="label" :sort-desc="true" :fields="[
       { label: 'state', key: 'state', class: 'col-1', tdClass: 'py-1 border-end border-top-0 justify-content-center' },
       { label: 'calledProcessInstance', key: 'calledProcessInstance', class: 'col-4', tdClass: 'py-1 border-end border-top-0' },
@@ -63,11 +63,11 @@
       <template v-slot:cell(callingActivity)="table">
         <div :title="table.item.callingActivity.activityName" class="text-truncate">{{ table.item.callingActivity.activityName }}</div>
       </template>
-    </flow-table>
-    <div v-else-if="loading">
+    </FlowTable>
+    <div v-if="loading">
       <p class="text-center p-4"><BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}</p>
     </div>
-    <div v-else>
+    <div v-else-if="matchedCalledList.length === 0">
       <p class="text-center p-4">{{ $t('process-instance.noResults') }}</p>
     </div>
   </div>
@@ -75,7 +75,7 @@
 
 <script>
 import { formatDate } from '@/utils/dates.js'
-import { ProcessService } from '@/services.js'
+import { HistoryService } from '@/services.js'
 import processesVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import { BWaitingBox } from 'cib-common-components'
@@ -88,7 +88,9 @@ export default {
     return{
       calledInstanceList: [],
       matchedCalledList: [],
-      loading: true
+      loading: true,
+      firstResult: 0,
+      maxResults: this.$root?.config?.maxProcessesResults || 50
     }
   },
   props:{
@@ -96,28 +98,41 @@ export default {
   },
   watch: {
     'selectedInstance.id': function() {
+      this.firstResult = 0
       this.loadCalledProcessInstances()
     },
     activityInstanceHistory: 'loadCalledProcessInstances'
   },
   created: function() {
     if (this.activityInstanceHistory) {
+      this.firstResult = 0
       this.loadCalledProcessInstances()
     }
   },
   methods: {
-    loadCalledProcessInstances: function() {
+    handleScroll: function(el) {
+      if (Math.ceil(el.target.scrollTop + el.target.clientHeight) >= el.target.scrollHeight) {
+        if (this.matchedCalledList.length < this.firstResult || this.loading) return
+        this.loadCalledProcessInstances(true)
+      }
+    },
+    loadCalledProcessInstances (showMore = false) {
       if (!this.selectedInstance || !this.selectedInstance.id) {
         this.loading = false
         return
       }
       this.loading = true
-      ProcessService.findCurrentProcessesInstances({"superProcessInstance": this.selectedInstance.id}).then(response => {
-        this.calledInstanceList = response
+      HistoryService.findProcessesInstancesHistory({"superProcessInstanceId": this.selectedInstance.id}, this.firstResult, this.maxResults).then(response => {
+        this.firstResult += this.maxResults
+        if (!showMore) {
+          this.calledInstanceList = response
+        } else if (response.length > 0) {
+          this.calledInstanceList = this.calledInstanceList.concat(response)
+        }    
+        
         this.matchedCalledList = this.calledInstanceList.map(processPL => {
-          const definitionParts = processPL.definitionId.split(':')
-          const key = definitionParts[0]
-          const version = definitionParts[1] || ''
+          const key = processPL.processDefinitionKey
+          const version = processPL.processDefinitionVersion
           
           let foundInst = this.activityInstanceHistory.find(processAIH => {
             if (processAIH.activityType === "callActivity"){

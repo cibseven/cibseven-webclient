@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-import { ProcessService } from '@/services.js'
+import { ProcessService, HistoryService } from '@/services.js'
 
 export default {
   namespaced: true,
@@ -79,7 +79,7 @@ export default {
       let isFirstChunk = true
       for (let i = 0; i < calledProcessIds.length; i += chunkSize) {
         const chunk = calledProcessIds.slice(i, i + chunkSize)
-        const chunkInstances = await ProcessService.findCurrentProcessesInstances({ processInstanceIds: chunk })
+        const chunkInstances = await HistoryService.findProcessesInstancesHistory({ processInstanceIds: chunk })
         const instanceMap = new Map(chunkInstances.map(i => [i.id, i]))
       
         // Enrich callActivities with the called process instance details for this chunk
@@ -92,13 +92,13 @@ export default {
       
             return [{
               id: instance.id,
-              definitionId: instance.definitionId,
-              definitionKey: instance.definitionId.split(':')[0],
-              version: instance.definitionId.split(':')[1] || '',
+              definitionId: instance.processDefinitionId,
+              definitionKey: instance.processDefinitionKey,
+              version: instance.processDefinitionVersion,
               activityId: activity.activityId,
               activityName: activity.activityName,
               processInstanceId: activity.processInstanceId,
-              ended: instance.ended,
+              ended: instance.endTime !== null,
               isStatic: staticIds.includes(activity.activityId)
             }]
           })
