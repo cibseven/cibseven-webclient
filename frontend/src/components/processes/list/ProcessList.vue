@@ -183,7 +183,7 @@ export default {
     },
     goToShowProcessHistory: function(process) {
       let url = '/seven/auth/process/' + process.key
-      url += process.tenantId ? ('?tenantId=' + process.tenantId) : ''
+      url += process.tenantId ? ('?tenantId=' + process.tenantId + '&tab=instances') : '?tab=instances'
       this.$router.push(url)
     }
   }

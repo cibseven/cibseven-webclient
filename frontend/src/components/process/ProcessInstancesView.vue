@@ -24,9 +24,12 @@
         <router-link 
           :to="{
             path: `/seven/auth/process/${parentProcess.key}/${parentProcess.version}`,
-            query: Object.fromEntries(
-              Object.entries($route.query).filter(([key]) => key !== 'parentProcessDefinitionId')
-            )
+            query: {
+              ...Object.fromEntries(
+                Object.entries($route.query).filter(([key]) => key !== 'parentProcessDefinitionId')
+              ),
+              tab: 'instances'
+            }
           }"
           class="text-decoration-none d-flex align-items-center fw-bold text-info">
           {{ parentProcess.name || parentProcess.key }}
@@ -148,6 +151,7 @@ import MultisortModal from '@/components/process/modals/MultisortModal.vue'
 import CalledProcessDefinitionsTable from '@/components/process/tables/CalledProcessDefinitionsTable.vue'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
+import tabUrlMixin from '@/components/process/mixins/tabUrlMixin.js'
 import { debounce } from '@/utils/debounce.js'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
@@ -161,7 +165,7 @@ export default {
      SuccessAlert, ConfirmDialog, BWaitingBox, IncidentsTable, CalledProcessDefinitionsTable, 
      ProcessInstancesTabs },
   inject: ['loadProcesses'],
-  mixins: [permissionsMixin, resizerMixin, copyToClipboardMixin],
+  mixins: [permissionsMixin, resizerMixin, copyToClipboardMixin, tabUrlMixin],
   props: { 
     process: Object,
     activityInstance: Object,
@@ -178,12 +182,12 @@ export default {
       selectedInstance: null,
       selectedTask: null,
       topBarHeight: 0,
-      activeTab: 'instances',
       events: {},
       usages: [],
       sortByDefaultKey: 'startTime',
       sorting: false,
-      sortDesc: true
+      sortDesc: true,
+      defaultTab: 'instances'
     }
   },
   watch: {
@@ -197,7 +201,7 @@ export default {
           })
         }
         this.clearActivitySelection()
-        this.changeTab({ id: 'instances' })
+        this.changeTab({ id: this.$route.query.tab || this.defaultTab })
       }
     },
     parentProcess: {
@@ -265,9 +269,6 @@ export default {
         this.sorting = false
         this.sortDesc = true
       })
-    },
-    changeTab: function(selectedTab) {
-      this.activeTab = selectedTab.id
     },
     selectTask: function(event) {
       this.selectedTask = event
