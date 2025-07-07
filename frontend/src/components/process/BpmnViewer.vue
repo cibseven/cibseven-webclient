@@ -58,7 +58,7 @@
 
 <script>
 import NavigatedViewer from 'bpmn-js/lib/NavigatedViewer'
-import { ProcessService } from '@/services.js'
+import { HistoryService } from '@/services.js'
 import { BWaitingBox } from 'cib-common-components'
 import { mapActions, mapGetters } from 'vuex'
 
@@ -435,10 +435,9 @@ export default {
     },
     async navigateToSubprocess(calledProcessInstanceId) {
       try {
-        const subprocess = await ProcessService.findProcessInstance(calledProcessInstanceId)
-        const definitionParts = subprocess.definitionId.split(':')
-        const processKey = definitionParts[0]
-        const versionIndex = definitionParts[1] || ''
+        const subprocess = await HistoryService.findProcessInstance(calledProcessInstanceId)
+        const processKey = subprocess.processDefinitionKey
+        const versionIndex = subprocess.processDefinitionVersion
         const params = { processKey, versionIndex }
         if (this.activityInstanceHistory) {
           params.instanceId = subprocess.id
