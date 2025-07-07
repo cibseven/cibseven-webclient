@@ -153,10 +153,18 @@ export default {
     },
     formatDate,
     openSubprocess: function(event) {
-      this.$router.push({ name: 'process', params: { processKey: event.key, versionIndex: event.version } })
+      this.$router.push({ 
+        name: 'process', 
+        params: { processKey: event.key, versionIndex: event.version },
+        query: { tab: 'instances' } // Set default tab for process definition view
+      })
     },
     openInstance: function(event) {
-      this.$router.push({ name: 'process', params: { processKey: event.key, versionIndex: event.version, instanceId: event.calledProcessInstace } })
+      this.$router.push({ 
+        name: 'process', 
+        params: { processKey: event.key, versionIndex: event.version, instanceId: event.calledProcessInstance },
+        query: { tab: 'variables' } // Set default tab for instance view
+      })
     },
     getIconTitle: function(instance) {
       if (instance.endTime) {
