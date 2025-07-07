@@ -301,7 +301,7 @@ var HistoryService = {
     if (maxResults != null) params.maxResults = maxResults
     return axios.post(getServicesBasePath() + '/process-history/instance', filters, { params })
   },
-  findProcessesInstancesHistoryById: function(id, activityId, firstResult, maxResults, filter, active, sortingCriteria = [], fetchIncidents = false) {
+  findProcessesInstancesHistoryById: function(id, activityId, firstResult, maxResults, filter = {}, active, sortingCriteria = [], fetchIncidents = false) {
     const requestBody = {
       ...filter,
       processDefinitionId: id

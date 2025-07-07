@@ -185,7 +185,10 @@ export default {
     processKey: String,
     versionIndex: { type: String, default: '' },
     tenantId: String,
-    filter: {},
+    filter: {
+      type: Object,
+      default: () => ({})
+    },
     parentProcess: Object
   },
   data: function() {

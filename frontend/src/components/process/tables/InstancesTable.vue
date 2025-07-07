@@ -103,7 +103,10 @@ export default {
     sortByDefaultKey: String,
     sorting: Boolean,
     tenantId: String,
-    filter: {}
+    filter: {
+      type: Object,
+      default: () => ({})
+    },
   },
   computed: {
     ...mapGetters('instances', ['instances']),
