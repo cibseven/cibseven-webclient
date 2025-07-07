@@ -67,14 +67,12 @@
         <template v-if="isInstancesView">
           <div ref="filterTable" class="bg-light d-flex w-100">
 
-            <template v-if="ProcessInstancesSearchBoxPlugin">
-              <div class="col-10 p-2">
-                <component :is="ProcessInstancesSearchBoxPlugin"
-                  :query="computedFilter"
-                  @change-query-object="changeFilter"
-                ></component>
-              </div>
-            </template>
+            <div v-if="ProcessInstancesSearchBoxPlugin" class="col-10 p-2">
+              <component :is="ProcessInstancesSearchBoxPlugin"
+                :query="computedFilter"
+                @change-query-object="changeFilter"
+              ></component>
+            </div>
             <template v-else>
               <div class="col-3 p-3">
                 <b-input-group size="sm">
@@ -92,7 +90,7 @@
               </div>
             </template>
 
-            <div :class="ProcessInstancesSearchBoxPlugin ? 'col-2': 'col-8'" class="p-3 text-end">
+            <div :class="[ProcessInstancesSearchBoxPlugin ? 'col-2' : 'col-8', 'p-3', 'text-end']">
               <div>
                 <b-button v-if="process.suspended === 'false'" class="border" size="sm" variant="light" @click="confirmSuspend" :title="$t('process.suspendProcess')">
                   <span class="mdi mdi-pause-circle-outline"></span> {{ collapseButtons ? '': $t('process.suspendProcess') }}
