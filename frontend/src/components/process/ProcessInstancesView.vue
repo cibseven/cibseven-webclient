@@ -275,7 +275,7 @@ export default {
     ...mapGetters(['selectedActivityId']),
     ...mapGetters('instances', ['instances']),
     collapseButtons: function() {
-      return this.ProcessInstancesSearchBoxPlugin || this.selectedActivityId || this.filter && this.filter.trim().length > 0
+      return this.ProcessInstancesSearchBoxPlugin || this.selectedActivityId
     },
   },
   methods: {
