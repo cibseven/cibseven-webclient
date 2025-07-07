@@ -244,10 +244,24 @@ export default {
         : null
     },
     computedFilter() {
-      return {
+      const result = {
         ...this.filter,
-        activityIdIn: this.selectedActivityId ? [this.selectedActivityId] : undefined,
       }
+
+      // append `selectedActivityId` into activityIdIn array
+      if (this.selectedActivityId) {
+        if (!result.activityIdIn || !Array.isArray(result.activityIdIn)) {
+          result.activityIdIn = [this.selectedActivityId]
+        }
+        else if (!result.activityIdIn.includes(this.selectedActivityId)) {
+          result.activityIdIn = [
+            ...result.activityIdIn,
+            this.selectedActivityId
+          ]
+        }
+      }
+
+      return result
     },
     ProcessActions: function() {
       return this.$options.components && this.$options.components.ProcessActions

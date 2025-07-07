@@ -303,7 +303,7 @@ var HistoryService = {
   },
   findProcessesInstancesHistoryById: function(id, activityId, firstResult, maxResults, filter = {}, active, sortingCriteria = [], fetchIncidents = false) {
     const requestBody = {
-      ...filter,
+      ...(filter || {}),
       processDefinitionId: id
     }
 
@@ -315,7 +315,7 @@ var HistoryService = {
     // Add activity filter
     if (activityId) {
       requestBody.activeActivityIdIn = [
-        ...filter?.activityIdIn || [],
+        ...(filter?.activityIdIn || []),
         activityId,
       ]
       // remove duplicates
