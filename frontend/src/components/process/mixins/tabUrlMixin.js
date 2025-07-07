@@ -48,7 +48,7 @@ export default {
       const query = { ...this.$route.query }
       query.tab = tab
       // Use push to add to browser history for tab navigation
-      this.$router.push({ query })
+      this.$router.push({ name: this.$route.name, params: this.$route.params, query })
     },
     /**
      * Changes the active tab and updates URL
