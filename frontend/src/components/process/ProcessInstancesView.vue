@@ -66,35 +66,47 @@
       <div ref="rContent" class="overflow-y-scroll bg-white position-absolute w-100" style="top: 0px; left: 0; bottom: 0" @scroll="handleScroll">
         <template v-if="isInstancesView">
           <div ref="filterTable" class="bg-light d-flex w-100">
-            <div class="col-3 p-3">
-              <b-input-group size="sm">
-                <template #prepend>
-                  <b-button :title="$t('searches.search')" aria-hidden="true" size="sm" class="rounded-left" variant="secondary"><span class="mdi mdi-magnify" style="line-height: initial"></span></b-button>
-                </template>
-                <b-form-input :title="$t('searches.search')" size="sm" :placeholder="$t('searches.search')" @input="(evt) => onInput(evt.target.value.trim())"></b-form-input>
-                <b-button size="sm" variant="light" @click="$refs.sortModal.show()" class="ms-1 border"><span class="mdi mdi-sort" style="line-height: initial"></span></b-button>
-              </b-input-group>
-            </div>
-            <div class="col-1 p-3">
-              <span v-if="selectedActivityId" class="badge bg-info rounded-pill p-2 pe-3" style="font-weight: 500; font-size: 0.75rem">
-                <span @click="clearActivitySelection" role="button" class="mdi mdi-close-thick py-2 px-1"></span> {{ selectedActivityId }}
-              </span>
-            </div>
-            <div class="col-8 p-3 text-end">
+
+            <template v-if="ProcessInstancesSearchBoxPlugin">
+              <div class="col-10 p-2">
+                <component :is="ProcessInstancesSearchBoxPlugin"
+                  :query="computedFilter"
+                  @change-query-object="changeFilter"
+                ></component>
+              </div>
+            </template>
+            <template v-else>
+              <div class="col-3 p-3">
+                <b-input-group size="sm">
+                  <template #prepend>
+                    <b-button :title="$t('searches.search')" aria-hidden="true" size="sm" class="rounded-left" variant="secondary"><span class="mdi mdi-magnify" style="line-height: initial"></span></b-button>
+                  </template>
+                  <b-form-input :title="$t('searches.search')" size="sm" :placeholder="$t('searches.search')" @input="(evt) => onInput(evt.target.value.trim())"></b-form-input>
+                  <b-button size="sm" variant="light" @click="$refs.sortModal.show()" class="ms-1 border"><span class="mdi mdi-sort" style="line-height: initial"></span></b-button>
+                </b-input-group>
+              </div>
+              <div class="col-1 p-3">
+                <span v-if="selectedActivityId" class="badge bg-info rounded-pill p-2 pe-3" style="font-weight: 500; font-size: 0.75rem">
+                  <span @click="clearActivitySelection" role="button" class="mdi mdi-close-thick py-2 px-1"></span> {{ selectedActivityId }}
+                </span>
+              </div>
+            </template>
+
+            <div :class="ProcessInstancesSearchBoxPlugin ? 'col-2': 'col-8'" class="p-3 text-end">
               <div>
                 <b-button v-if="process.suspended === 'false'" class="border" size="sm" variant="light" @click="confirmSuspend" :title="$t('process.suspendProcess')">
-                  <span class="mdi mdi-pause-circle-outline"></span> {{ $t('process.suspendProcess') }}
+                  <span class="mdi mdi-pause-circle-outline"></span> {{ collapseButtons ? '': $t('process.suspendProcess') }}
                 </b-button>
                 <b-button v-else class="border" size="sm" variant="light" @click="confirmActivate" :title="$t('process.activateProcess')">
-                  <span class="mdi mdi-play-circle-outline"></span> {{ $t('process.activateProcess') }}
+                  <span class="mdi mdi-play-circle-outline"></span> {{ collapseButtons  ? '': $t('process.activateProcess') }}
                 </b-button>
                 <b-button class="border" size="sm" variant="light" @click="downloadBpmn()" :title="$t('process.downloadBpmn')">
-                  <span class="mdi mdi-download"></span> {{ $t('process.downloadBpmn') }}
+                  <span class="mdi mdi-download"></span> {{ collapseButtons  ? '': $t('process.downloadBpmn') }}
                 </b-button>
                 <b-button class="border" size="sm" variant="light" @click="viewDeployment()" :title="$t('process.showDeployment')">
-                  <span class="mdi mdi-file-eye-outline"></span> {{ $t('process.showDeployment') }}
+                  <span class="mdi mdi-file-eye-outline"></span> {{ collapseButtons  ? '': $t('process.showDeployment') }}
                 </b-button>
-                <component :is="ProcessActions" v-if="ProcessActions" :process="process"></component>
+                <component :is="ProcessActions" v-if="ProcessActions" :process="process" :collapseButtons="collapseButtons"></component>
               </div>
             </div>
           </div>
@@ -105,7 +117,7 @@
             :sortDesc="sortDesc"
             :sorting="sorting"
             :tenant-id="tenantId"
-            :filter="filter"
+            :filter="computedFilter"
             @instance-deleted="$emit('instance-deleted')"
             @filter-instances="$emit('filter-instances', $event)"
           ></InstancesTable>
@@ -164,6 +176,7 @@ export default {
      ProcessInstancesTabs },
   inject: ['loadProcesses'],
   mixins: [permissionsMixin, resizerMixin, copyToClipboardMixin],
+  emits: ['task-selected', 'filter-instances', 'instance-deleted'],
   props: {
     process: Object,
     activityInstance: Object,
@@ -172,7 +185,7 @@ export default {
     processKey: String,
     versionIndex: { type: String, default: '' },
     tenantId: String,
-    filter: String,
+    filter: {},
     parentProcess: Object
   },
   data: function() {
@@ -222,6 +235,17 @@ export default {
     })
   },
   computed: {
+    ProcessInstancesSearchBoxPlugin: function() {
+      return this.$options.components && this.$options.components.ProcessInstancesSearchBoxPlugin
+        ? this.$options.components.ProcessInstancesSearchBoxPlugin
+        : null
+    },
+    computedFilter() {
+      return {
+        ...this.filter,
+        activityIdIn: this.selectedActivityId ? [this.selectedActivityId] : undefined,
+      }
+    },
     ProcessActions: function() {
       return this.$options.components && this.$options.components.ProcessActions
         ? this.$options.components.ProcessActions
@@ -250,6 +274,9 @@ export default {
     },
     ...mapGetters(['selectedActivityId']),
     ...mapGetters('instances', ['instances']),
+    collapseButtons: function() {
+      return this.ProcessInstancesSearchBoxPlugin || this.selectedActivityId || this.filter && this.filter.trim().length > 0
+    },
   },
   methods: {
     ...mapActions(['clearActivitySelection', 'setDiagramXml']),
@@ -328,7 +355,18 @@ export default {
         this.$refs.instancesTable.showMore()
       }
     },
-    onInput: debounce(800, function(filter) { this.$emit('filter-instances', filter) })
+    changeFilter: function(queryObject) {
+      if (!queryObject.activityIdIn) {
+        this.clearActivitySelection()
+      }
+      this.$emit('filter-instances', queryObject)
+    },
+    onInput: debounce(800, function(freeText) {
+      this.$emit('filter-instances', {
+        ...this.filter,
+        editField: freeText,
+      })
+    })
   }
 }
 </script>

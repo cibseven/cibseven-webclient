@@ -103,7 +103,7 @@ export default {
     sortByDefaultKey: String,
     sorting: Boolean,
     tenantId: String,
-    filter: String
+    filter: {}
   },
   computed: {
     ...mapGetters('instances', ['instances']),
@@ -136,9 +136,12 @@ export default {
       },
       immediate: true
     },
-    filter() {
-      this.resetPagination()
-      this.loadInstancesData()
+    filter: {
+      handler() {
+        this.resetPagination()
+        this.loadInstancesData()
+      },
+      deep: true
     },
     currentActivityId() {
       if (this.process?.id) {
@@ -199,7 +202,7 @@ export default {
       // Switching to multi-sort mode - clear FlowTable sort state
       this.currentSortBy = null
       this.currentSortDesc = false
-      
+
       // Store sorting criteria and reload data
       this.sortingCriteria = sortingCriteria
       this.resetPagination()
@@ -212,7 +215,7 @@ export default {
         // Update local sort state for FlowTable display
         this.currentSortBy = sortEvent.sortBy
         this.currentSortDesc = sortEvent.sortDesc
-        
+
         // Convert frontend column keys to backend field names
         let sortBy = sortEvent.sortBy
         if (sortEvent.sortBy === 'id') {
