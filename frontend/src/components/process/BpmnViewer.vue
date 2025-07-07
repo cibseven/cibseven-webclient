@@ -446,7 +446,7 @@ export default {
           name: 'process',
           params,
           query: { parentProcessDefinitionId: this.processDefinitionId }
-        }        
+        }
         await this.$router.push(routeConfig)
       } catch (error) {
         console.error('Failed to navigate to subprocess:', error)
