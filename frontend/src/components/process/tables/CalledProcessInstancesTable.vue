@@ -162,7 +162,7 @@ export default {
     openInstance: function(event) {
       this.$router.push({ 
         name: 'process', 
-        params: { processKey: event.key, versionIndex: event.version, instanceId: event.calledProcessInstace },
+        params: { processKey: event.key, versionIndex: event.version, instanceId: event.calledProcessInstance },
         query: { tab: 'variables' } // Set default tab for instance view
       })
     },
