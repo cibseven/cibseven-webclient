@@ -169,7 +169,10 @@ export default {
     this.viewer.on('import.done', () => {
       this.drawDiagramState()
       this.attachEventListeners()
-      this.setDiagramReady(true)
+      //Small timer so the diagram is fully rendered before setting it ready
+      setTimeout(() => {
+        this.setDiagramReady(true)
+      }, 500)
     })
   },
   methods: {
