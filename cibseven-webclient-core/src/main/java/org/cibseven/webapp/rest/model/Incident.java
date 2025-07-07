@@ -37,4 +37,14 @@ public class Incident {
 	private String jobDefinitionId;
 	private String failedActivityId;
 	private String annotation;
+	private String causeIncidentProcessInstanceId;
+	private String causeIncidentProcessDefinitionId;
+	private String causeIncidentActivityId;
+	private String causeIncidentFailedActivityId;
+	private String rootCauseIncidentProcessInstanceId;
+	private String rootCauseIncidentProcessDefinitionId;
+	private String rootCauseIncidentActivityId;
+	private String rootCauseIncidentFailedActivityId;
+	private String rootCauseIncidentConfiguration;
+	private String rootCauseIncidentMessage;
 }
