@@ -108,27 +108,43 @@ export default {
     return {
       displayPopover: false,
       timer: null,
-      assignee: null,
       loadingUsers: false,
       candidateUsers: []
     }
   },
   watch: {
-    'task.assignee': function(val) {
-      this.showPopoverWithDelay(val) // when assignee is changed
+    'task.assignee': {
+      handler(val) {
+        this.$store.dispatch('task/setSelectedAssignee', { selectedAssignee: val})
+        this.showPopoverWithDelay(val) // when assignee is changed
+      },
+      immediate: true
+      // this.showPopoverWithDelay(val) // when assignee is changed
     },
-    assignee: function() {
-      if (this.assignee != null) this.checkAssignee()
+    assignee(val) {
+      if (val != null) this.checkAssignee()
     },
-    'task.id': function(taskId) {
-      this.$store.commit('setCandidateUsers', [])
-      this.$store.commit('setSearchUsers', [])
-      this.loadIdentityLinks(taskId)
-      this.$refs.titleTask.focus()
-      this.showPopoverWithDelay(this.task.assignee) // when opened task is changed
+    'task.id': {
+      handler(taskId) {
+        this.$store.dispatch('task/setSelectedAssignee', { selectedAssignee: this.task.assignee })
+        this.$store.commit('setCandidateUsers', [])
+        this.$store.commit('setSearchUsers', [])
+        this.loadIdentityLinks(taskId)
+        this.$refs.titleTask.focus()
+        this.showPopoverWithDelay(this.task.assignee) // when opened task is changed
+      },
+      
     }
   },
   computed: {
+    assignee: {
+      get() {
+        return this.$store.state.task.selectedAssignee
+      },
+      set(value) {
+        this.$store.dispatch('task/setSelectedAssignee', { selectedAssignee: value })
+      }
+    },
     renderTemplateStyles: function() {
       if (this.task) {
         if ((this.task.assignee && this.task.assignee.toLowerCase() !== this.$root.user.id.toLowerCase()) ||
@@ -140,6 +156,7 @@ export default {
     }
   },
   mounted: function() {
+    this.$store.dispatch('task/setSelectedAssignee', { selectedAssignee: this.task.assignee })
     this.$store.commit('setCandidateUsers', [])
     this.$store.commit('setSearchUsers', [])
     this.loadIdentityLinks(this.task.id)
@@ -215,19 +232,30 @@ export default {
       TaskService.setAssignee(this.task.id, this.assignee).then(() => {
         // eslint-disable-next-line vue/no-mutating-props
         this.task.assignee = this.assignee
-        this.assignee = null
-        this.$emit('update-assignee', this.task.assignee)
-        if (this.task.assignee != null)
+        this.$emit('update-assignee', this.assignee)
+        this.$store.dispatch('task/setSelectedAssignee', { selectedAssignee: this.assignee })
+        if (this.task.assignee != null) {
           this.$refs.ariaLiveText.textContent = this.$t('task.userAssigned', [this.getCompleteName])
+        }
         nextTick(() => {
           if (this.$refs.assignToMeButton) this.$refs.assignToMeButton.focus()
         })
       })
     },
-    checkAssignee: function() {
-      TaskService.findTaskById(this.task.id).then(task => {
-        if (task.assignee === null) this.update()
-        else this.$refs.confirmTaskAssign.show()
+    checkAssignee: function () {
+      if (this.task.assignee && this.task.assignee.toLowerCase() === this.assignee.toLowerCase()) {
+        return
+      }
+      TaskService.findTaskById(this.task.id).then(serverTask => {
+        if (serverTask.assignee === null) {
+          this.update()
+        } else if (serverTask.assignee.toLowerCase() === this.$root.user.id.toLowerCase()) {
+          this.task.assignee = serverTask.assignee
+          this.assignee = serverTask.assignee
+          this.$store.dispatch('task/setSelectedAssignee', { selectedAssignee: serverTask.assignee })
+        } else {
+          this.$refs.confirmTaskAssign.show()
+        }
       })
     },
     setAllUsersCandidates: function() {

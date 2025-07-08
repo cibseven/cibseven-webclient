@@ -33,6 +33,7 @@ import VariableInstanceStore from './VariableInstanceStore.js'
 import HistoricVariableInstanceStore from './HistoricVariableInstanceStore.js'
 import ExternalTaskStore from './ExternalTaskStore.js'
 import DiagramStore from './DiagramStore.js'
+import TaskStore from './TaskStore'
 
 export const modules = {
   process: ProcessStore,
@@ -50,7 +51,8 @@ export const modules = {
   instances: InstancesStore,
   calledProcessDefinitions: CalledProcessDefinitionsStore,
   externalTasks: ExternalTaskStore,
-  diagram: DiagramStore
+  diagram: DiagramStore,
+  task: TaskStore
 }
 
 const store = createStore({

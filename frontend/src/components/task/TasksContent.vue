@@ -129,6 +129,14 @@ export default {
         ? this.$options.components.TasksRightSidebar
         : null
     },
+    assignee: {
+      get() {
+        return this.$store.state.task.selectedAssignee
+      },
+      set(value) {
+        this.$store.dispatch('task/setSelectedAssignee', { selectedAssignee: value })
+      }
+    },
     rightCaptionTask: function() {
       if (this.canOpenRightTask())
         return this.$t('task.options')
@@ -143,6 +151,12 @@ export default {
     getTasksNavbarSize: function() { return this.tasksNavbarSizes[this.tasksNavbarSize] }
   },
   watch: {
+    task: {
+      handler(newTask) {
+        this.assignee = newTask ? newTask.assignee : null
+      },
+      immediate: true
+    },
     rightOpenTask: function(newVal) {
       localStorage.setItem('rightOpenTask', newVal)
     },
@@ -257,15 +271,15 @@ export default {
       this.listTasksWithFilterAuto()
     },
     updateAssignee: function(assignee, target) {
+      this.assignee = assignee
       if (this.processInstanceHistory) {
         this.processInstanceHistory.tasksHistory[0].assignee = assignee
+        //TODO: check if the line below is need it
         this.selectedTask(this.processInstanceHistory.tasksHistory[0])
       }
       if (target === 'taskList') {
-        var currentTaskIndex = this.tasks.findIndex(task => {
-          return task.id === this.task.id
-        })
-        if (currentTaskIndex !== -1) this.tasks[currentTaskIndex].assignee = assignee
+        const currentTask = this.tasks.find(task => task.id === this.task.id)
+        if (currentTask) currentTask.assignee = assignee
       }
       this.listTasksWithFilterAuto()
     },
@@ -276,6 +290,7 @@ export default {
       this.listTasksWithFilterAuto()
       this.checkAndOpenTask(JSON.parse(JSON.stringify(this.task)))
       this.task = null
+      this.assignee = null
     },
     checkAndOpenTask: function(task, started) {
       if (this.$root.config.automaticallyOpenTask) this.openTaskAutomatically(task, started)
@@ -332,6 +347,7 @@ export default {
     },
     selectedTask: function(task) {
       this.task = task
+      this.assignee = task.assignee || null
       updateAppTitle(
         this.$root.config.productNamePageTitle,
         this.$t('start.taskList.title'),
