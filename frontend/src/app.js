@@ -18,8 +18,6 @@ import '@mdi/font/css/materialdesignicons.css'
 import './assets/main.css'
 import { axios } from './globals.js'
 
-import 'bootstrap'
-
 import { createApp } from 'vue'
 
 import store from './store'
