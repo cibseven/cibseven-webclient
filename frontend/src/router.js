@@ -18,7 +18,6 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 
 import { axios } from './globals.js'
-import { i18n } from './i18n.js'
 
 import { AuthService } from '@/services.js'
 import { permissionsMixin } from '@/permissions.js'
@@ -56,9 +55,15 @@ import BatchesView from '@/components/batches/BatchesView.vue'
 import SystemView from '@/components/system/SystemView.vue'
 import SystemDiagnostics from '@/components/system/SystemDiagnostics.vue'
 import ExecutionMetrics from '@/components/system/ExecutionMetrics.vue'
+import TranslationsDownload from '@/components/common-components/TranslationsDownload.vue'
 
 const appRoutes = [
     { path: '/', redirect: '/seven/auth/start' },
+    {
+      path: '/api/translations',
+      name: 'translations',
+      component: TranslationsDownload,
+    },
     { path: '/seven', component: CibSeven, children: [
       { path: 'login', name: 'login', beforeEnter: function(to, from, next) {
           if (router.root.config.ssoActive) //If SSO go to other login
@@ -196,39 +201,6 @@ const appRoutes = [
         { path: 'admin/create-tenant', name: 'createTenant', beforeEnter: permissionsGuardUserAdmin('tenantsManagement', 'tenant'), component: CreateTenant },
       ]}
     ]},
-    {
-      path: '/api/translations',
-      name: 'translations',
-      beforeEnter: (to, from, next) => {
-        // Get current locale and messages
-        const currentLocale = i18n.global.locale.value || i18n.global.locale;
-        const messages = i18n.global.getLocaleMessage(currentLocale);
-
-        // Create a JSON response
-        const response = {
-          locale: currentLocale,
-          translations: messages
-        };
-
-        // Create blob URL - better for large files than data URL
-        const blob = new Blob([JSON.stringify(response, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-
-        // Create a link and trigger download
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `translations_${currentLocale}.json`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-
-        // Clean up the URL object
-        URL.revokeObjectURL(url);
-
-        // Prevent actual navigation in Vue Router
-        next(false);
-      }
-    },
     {
       path: '/deployed-form/:locale/:taskId/:token?/:theme?/:translation?',
       beforeEnter: combineGuards(authGuard(false), permissionsGuard('tasklist')),
