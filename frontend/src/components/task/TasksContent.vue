@@ -340,12 +340,15 @@ export default {
       if (this.isMobile()) {
         this.leftOpenTask = false
       }
-      ProcessService.findProcessInstance(task.processInstanceId).then(instance => {
-        HistoryService.findTasksByProcessInstanceHistory(task.processInstanceId).then(tasksHistory => {
-          this.processInstanceHistory = instance
-          this.processInstanceHistory.tasksHistory = tasksHistory
+      // Only needed when the task side detail is load.
+      if (this.$root.config.layout.showTaskDetailsSidebar) {
+        ProcessService.findProcessInstance(task.processInstanceId).then(instance => {
+          HistoryService.findTasksByProcessInstanceHistory(task.processInstanceId).then(tasksHistory => {
+            this.processInstanceHistory = instance
+            this.processInstanceHistory.tasksHistory = tasksHistory
+          })
         })
-      })
+      }
     },
     selectedFilter: function() {
       this.listTasksWithFilter()
