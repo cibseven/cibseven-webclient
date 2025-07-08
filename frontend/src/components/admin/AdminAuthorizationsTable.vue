@@ -343,7 +343,7 @@ export default {
     },
     add: function () {
       // If we are already adding a new element, no more should be allowed.
-      if (this.authorizations[0].id !== "0") {
+      if (this.authorizations.length === 0 || this.authorizations[0].id !== "0") {
         this.authorizations.unshift({
           id: "0",
           type: "1",
