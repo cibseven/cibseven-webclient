@@ -51,10 +51,13 @@ export default defineConfig({
           fileName: (format) => `cib-common-components.${format}.js`,
         },
         rollupOptions: {
-          external: ['vue'],
+          external: ['vue', 'bootstrap', 'vue-i18n', 'vue-router'],
           output: {
             globals: {
               vue: 'Vue',
+              bootstrap: 'bootstrap',
+              'vue-i18n': 'VueI18n',
+              'vue-router': 'VueRouter'
             },
             // Ensure CSS is extracted and placed in the dist folder
             assetFileNames: 'cib-common-components.[ext]',
