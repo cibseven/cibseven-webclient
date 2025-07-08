@@ -42,6 +42,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 console.log('isLibrary', isLibrary)
+const buildDate = new Date().toISOString()
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -55,6 +56,9 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
       vue: 'vue/dist/vue.esm-bundler.js',
     },
+  },
+  define: {
+    __BUILD_DATE__: JSON.stringify(buildDate),
   },
   server: {
     proxy: {

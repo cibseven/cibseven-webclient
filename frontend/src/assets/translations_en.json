@@ -1090,7 +1090,8 @@
 			"phoneNumber": "+49 89 14360 111",
 			"emailAddress": "E-mail address",
 			"email": "cibsupport{'@'}cib.de",
-			"version": "Version"
+			"version": "Version",
+			"buildDate": "Build date"
 		},
 		"flowModalAbout": {
 			"modalText": "About",
