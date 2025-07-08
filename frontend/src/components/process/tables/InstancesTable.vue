@@ -36,7 +36,7 @@
         <CopyableActionButton
           :displayValue="table.item.id"
           :title="$t('process.showInstance') + ':\n' + table.item.id"
-          :to="`/seven/auth/process/${table.item.processDefinitionKey}/${table.item.processDefinitionVersion}/${table.item.id}`"
+          :to="`/seven/auth/process/${table.item.processDefinitionKey}/${table.item.processDefinitionVersion}/${table.item.id}?tab=variables`"
           @copy="copyValueToClipboard"
         />
       </template>
@@ -103,7 +103,10 @@ export default {
     sortByDefaultKey: String,
     sorting: Boolean,
     tenantId: String,
-    filter: String
+    filter: {
+      type: Object,
+      default: () => ({})
+    },
   },
   computed: {
     ...mapGetters('instances', ['instances']),
@@ -136,9 +139,12 @@ export default {
       },
       immediate: true
     },
-    filter() {
-      this.resetPagination()
-      this.loadInstancesData()
+    filter: {
+      handler() {
+        this.resetPagination()
+        this.loadInstancesData()
+      },
+      deep: true
     },
     currentActivityId() {
       if (this.process?.id) {
@@ -199,7 +205,7 @@ export default {
       // Switching to multi-sort mode - clear FlowTable sort state
       this.currentSortBy = null
       this.currentSortDesc = false
-      
+
       // Store sorting criteria and reload data
       this.sortingCriteria = sortingCriteria
       this.resetPagination()
@@ -212,7 +218,7 @@ export default {
         // Update local sort state for FlowTable display
         this.currentSortBy = sortEvent.sortBy
         this.currentSortDesc = sortEvent.sortDesc
-        
+
         // Convert frontend column keys to backend field names
         let sortBy = sortEvent.sortBy
         if (sortEvent.sortBy === 'id') {
@@ -239,7 +245,7 @@ export default {
           versionIndex: instance.processDefinitionVersion,
           instanceId: instance.id,
         },
-        query: this.$route.query
+        query: { ...this.$route.query, tab: 'variables' } // Set default tab for instance view
       })
     },
     // "Stop Instance" button

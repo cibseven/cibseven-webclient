@@ -116,7 +116,7 @@ export default {
       task: null,
       activityInstance: null,
       activityInstanceHistory: null,
-      filter: '',
+      filter: {},
       loading: false,
       parentProcess: null
     }
@@ -292,7 +292,7 @@ export default {
         this.findProcessAndAssignData(process)
         if (!this.process.statistics) this.loadStatistics()
         if (!this.process.activitiesHistory) this.loadProcessActivitiesHistory()
-        
+
         // Load parent process if parentProcessDefinitionId exists in route query
         if (this.$route.query.parentProcessDefinitionId) {
           this.getProcessById({ id: this.$route.query.parentProcessDefinitionId }).then(response => {
@@ -301,7 +301,7 @@ export default {
         } else {
           this.parentProcess = null
         }
-        
+
         return Promise.resolve() // Instances are now loaded by InstancesTable
       })
     },
@@ -397,10 +397,10 @@ export default {
       var csvContent = headers.map(h => h.text).join(';') + '\n'
       var keys = headers.map(h => h.key)
       this.instances.forEach(v => {
-        const formattedValues = { 
-          ...v, 
-          startTime: this.formatDate(v.startTime), 
-          endTime: this.formatDate(v.endTime) 
+        const formattedValues = {
+          ...v,
+          startTime: this.formatDate(v.startTime),
+          endTime: this.formatDate(v.endTime)
         }
         csvContent += getStringObjByKeys(keys, formattedValues) + '\n'
       })

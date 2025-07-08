@@ -143,6 +143,7 @@ import StartView from '@/components/start/StartView.vue'
 import LoginView from '@/components/login/LoginView.vue'
 import GenericTabs from '@/components/common-components/GenericTabs.vue'
 import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
+import TranslationsDownload from '@/components/common-components/TranslationsDownload.vue'
 
 const registerComponents = function(app) {
   app.component('cib-seven', CibSeven)
@@ -368,6 +369,7 @@ export {
   setLanguage,
   loadTranslations,
   translationSources,
+  TranslationsDownload,
 
   // router
   appRoutes,

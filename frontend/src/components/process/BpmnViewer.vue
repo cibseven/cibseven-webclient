@@ -114,7 +114,7 @@ function getActivitiesToMark(treeObj) {
 
 export default {
   name: 'BpmnViewer',
-  emits: ['task-selected', 'child-activity', 'diagram-imported', 'overlay-click'],
+  emits: ['task-selected', 'child-activity', 'overlay-click'],
   components: { BWaitingBox },
   props: {
     activityInstance: Object,
@@ -169,12 +169,17 @@ export default {
     this.viewer.on('import.done', () => {
       this.drawDiagramState()
       this.attachEventListeners()
-      this.$emit('diagram-imported')
+      //Small timer so the diagram is fully rendered before setting it ready
+      setTimeout(() => {
+        this.setDiagramReady(true)
+      }, 500)
     })
   },
   methods: {
     ...mapActions(['selectActivity', 'clearActivitySelection', 'setHighlightedElement']),
+    ...mapActions('diagram', ['setDiagramReady']),
     showDiagram: function(xml) {
+      this.setDiagramReady(false)
       this.loader = true
       this.viewer.importXML(xml).then(() => {
         setTimeout(() => {
@@ -445,7 +450,7 @@ export default {
         const routeConfig = {
           name: 'process',
           params,
-          query: { parentProcessDefinitionId: this.processDefinitionId }
+          query: { parentProcessDefinitionId: this.processDefinitionId, tab: 'instances' }
         }
         await this.$router.push(routeConfig)
       } catch (error) {
@@ -478,6 +483,7 @@ export default {
     }
   },
   beforeUnmount: function() {
+    this.setDiagramReady(false)
     // Clean up document event listener to prevent memory leaks
     if (this.overlayClickHandler) {
       document.removeEventListener('click', this.overlayClickHandler)

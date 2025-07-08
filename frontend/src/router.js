@@ -55,9 +55,15 @@ import BatchesView from '@/components/batches/BatchesView.vue'
 import SystemView from '@/components/system/SystemView.vue'
 import SystemDiagnostics from '@/components/system/SystemDiagnostics.vue'
 import ExecutionMetrics from '@/components/system/ExecutionMetrics.vue'
+import TranslationsDownload from '@/components/common-components/TranslationsDownload.vue'
 
 const appRoutes = [
     { path: '/', redirect: '/seven/auth/start' },
+    {
+      path: '/api/translations',
+      name: 'translations',
+      component: TranslationsDownload,
+    },
     { path: '/seven', component: CibSeven, children: [
       { path: 'login', name: 'login', beforeEnter: function(to, from, next) {
           if (router.root.config.ssoActive) //If SSO go to other login

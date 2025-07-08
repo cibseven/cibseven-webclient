@@ -36,7 +36,7 @@
               versionIndex: table.item.version,
               instanceId: table.item.calledProcessInstance
             },            
-            query: { parentProcessDefinitionId: this.selectedInstance.processDefinitionId }
+            query: { parentProcessDefinitionId: this.selectedInstance.processDefinitionId, tab: 'variables' }
           }"
           :title="table.item.name"
           class="text-truncate"
@@ -52,7 +52,7 @@
               processKey: table.item.key,
               versionIndex: table.item.version
             },
-            query: { parentProcessDefinitionId: this.selectedInstance.processDefinitionId }
+            query: { parentProcessDefinitionId: this.selectedInstance.processDefinitionId, tab: 'instances' }
           }"
           :title="table.item.name || table.item.key"
           class="text-truncate"
@@ -161,12 +161,6 @@ export default {
       })
     },
     formatDate,
-    openSubprocess: function(event) {
-      this.$router.push({ name: 'process', params: { processKey: event.key, versionIndex: event.version } })
-    },
-    openInstance: function(event) {
-      this.$router.push({ name: 'process', params: { processKey: event.key, versionIndex: event.version, instanceId: event.calledProcessInstace } })
-    },
     getIconTitle: function(instance) {
       if (instance.endTime) {
         return this.$t('process.instanceFinished')

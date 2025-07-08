@@ -38,7 +38,7 @@
                 processKey: table.item.definitionKey,
                 versionIndex: table.item.version
               },
-              query: { parentProcessDefinitionId: process.id }
+              query: { parentProcessDefinitionId: process.id, tab: 'instances' }
             }"
           />
       </template>
@@ -65,8 +65,8 @@
     <div v-else-if="!initialLoading && calledProcessDefinitions.length === 0">
       <p class="text-center p-4">{{ $t('process-instance.noResults') }}</p>
     </div>
+    <SuccessAlert ref="messageCopy" style="z-index: 9999"> {{ $t('process.copySuccess') }} </SuccessAlert>
   </div>
-  <SuccessAlert ref="messageCopy" style="z-index: 9999"> {{ $t('process.copySuccess') }} </SuccessAlert>
 </template>
 
 <script>
@@ -114,6 +114,14 @@ export default {
         }
       },
       immediate: true
+    },
+    activitiesHistory: {
+      handler(newActivitiesHistory) {
+        if (newActivitiesHistory && this.process?.id) {
+          this.loadCalledProcessDefinitionsData()
+        }
+      },
+      immediate: false
     }
   },
   methods: {
@@ -123,6 +131,11 @@ export default {
       'filterByActivity'
     ]),
     async loadCalledProcessDefinitionsData() {
+      // Only proceed if we have the required data
+      if (!this.process?.id || !this.activitiesHistory) {
+        return
+      }
+      
       this.initialLoading = true
       this.loading = true
       try {
