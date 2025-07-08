@@ -17,7 +17,7 @@
 
 -->
 <script>
-import { Popover } from 'bootstrap'
+import * as Bootstrap from 'bootstrap'
 
 export default {
   mounted(el, binding) {
@@ -28,7 +28,7 @@ export default {
 
     if (!content) return
 
-    const popover = new Popover(el, {
+    const popover = new Bootstrap.Popover(el, {
       title,
       content,
       placement,

@@ -39,7 +39,7 @@
 </template>
 
 <script>
-import { Modal } from 'bootstrap'
+import * as Bootstrap from 'bootstrap'
 import BButton from './BButton.vue'
 
 export default {
@@ -63,7 +63,7 @@ export default {
     }
   },
   mounted: function () {
-    this.modal = new Modal(this.$refs.modal, {
+    this.modal = new Bootstrap.Modal(this.$refs.modal, {
       backdrop: 'static',
       keyboard: false
     })
