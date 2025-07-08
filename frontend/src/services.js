@@ -457,7 +457,7 @@ var InfoService = {
     return axios.get('info/properties')
   },
   getVersion: function() {
-    return axios.get(getServicesBasePath() + '/info')
+    return axios.get('info')
   }
 }
 
