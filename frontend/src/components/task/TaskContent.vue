@@ -119,7 +119,6 @@ export default {
         this.showPopoverWithDelay(val) // when assignee is changed
       },
       immediate: true
-      // this.showPopoverWithDelay(val) // when assignee is changed
     },
     assignee(val) {
       if (val != null) this.checkAssignee()
@@ -250,9 +249,11 @@ export default {
         if (serverTask.assignee === null) {
           this.update()
         } else if (serverTask.assignee.toLowerCase() === this.$root.user.id.toLowerCase()) {
-          this.task.assignee = serverTask.assignee
           this.assignee = serverTask.assignee
-          this.$store.dispatch('task/setSelectedAssignee', { selectedAssignee: serverTask.assignee })
+          this.$store.dispatch('task/setSelectedAssignee', { 
+            selectedAssignee: serverTask.assignee 
+          })
+           this.$emit('update-assignee', serverTask.assignee)
         } else {
           this.$refs.confirmTaskAssign.show()
         }

@@ -272,9 +272,11 @@ export default {
     },
     updateAssignee: function(assignee, target) {
       this.assignee = assignee
+      if (this.task) {
+        this.task.assignee = assignee
+      }
       if (this.processInstanceHistory) {
         this.processInstanceHistory.tasksHistory[0].assignee = assignee
-        //TODO: check if the line below is need it
         this.selectedTask(this.processInstanceHistory.tasksHistory[0])
       }
       if (target === 'taskList') {
