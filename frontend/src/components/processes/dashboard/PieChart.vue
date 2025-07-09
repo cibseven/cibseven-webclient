@@ -125,6 +125,8 @@ export default {
               formatter: (seriesName) => `${seriesName}`,
             },
           },
+          // set the tooltip background color in ApexCharts from styles
+          fillSeriesColor: false,
         },
         colors: this.isEmptyChart ? ['#C1CEDD'] : [
           '#59799B',
@@ -158,5 +160,12 @@ export default {
 .apexcharts-datalabel-value {
   cursor: pointer !important;
   pointer-events: auto !important;
+}
+
+/* set the tooltip background color in ApexCharts  */
+.apexcharts-tooltip {
+  --bs-bg-opacity: 1;
+  background-color: rgba(var(--bs-dark-rgb),
+      var(--bs-bg-opacity))!important;
 }
 </style>
