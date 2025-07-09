@@ -34,7 +34,6 @@ public abstract class BaseUserProvider<R extends StandardLogin> implements JwtUs
 	public abstract User login(R params, HttpServletRequest rq);
 	public abstract void logout(User user);
 	public abstract User getSelfInfoJSessionId(String userId, String jSessionId, HttpServletRequest rq);
-	public abstract Collection<CIBUser> getUsers(@NotNull User user, Optional<String> filter);
 	public abstract Object authenticateUser(HttpServletRequest request);
 	
 	@Getter

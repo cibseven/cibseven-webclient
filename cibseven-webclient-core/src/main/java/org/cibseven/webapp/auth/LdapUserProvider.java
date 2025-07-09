@@ -136,47 +136,6 @@ public class LdapUserProvider extends BaseUserProvider<StandardLogin> implements
 			throw new LoginException();
 		}
 	}
-	
-	@Override
-	public Collection<CIBUser> getUsers(User user, Optional<String> filter) {
-	   try {
-			Hashtable<String, String> environment = new Hashtable<String, String>();
-	        environment.put(javax.naming.Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-	        environment.put(javax.naming.Context.PROVIDER_URL, serverURL);
-	        environment.put(javax.naming.Context.SECURITY_PRINCIPAL, ldapUser);
-	        environment.put(javax.naming.Context.SECURITY_CREDENTIALS, ldapPassword);
-	        environment.put(javax.naming.Context.REFERRAL, ldapFollowReferrals);
-			InitialDirContext initialDirContext = new InitialDirContext(environment);
-			SearchControls searchControls = new SearchControls();
-			searchControls.setCountLimit(ldapCountLimit);
-			searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-			
-			String initFilter = "(&(|";
-			String filters = "";
-			for (String f : ldapAttributesFilters) {
-				filters += "(" + f + "=" + filter.orElse("") + "*)";
-			}
-			initFilter += filters + ")(objectClass=person))";
-			
-			NamingEnumeration<SearchResult> results = initialDirContext.search(ldapFolder, initFilter, searchControls);
-			if(!results.hasMore()) {
-				throw new SystemException("[ERROR][LdapUserProvider]Users not found in LDAP with the following filter: " + filter.orElse("") + "*");
-			}
-			
-			Collection<CIBUser> users = new ArrayList<>();
-			while (results.hasMore()) {
-			    SearchResult result = results.next();
-			    CIBUser foundUser = new CIBUser(result.getAttributes().get(ldapNameAttribute).get().toString());
-			    foundUser.setDisplayName(result.getAttributes().get(ldapDisplayNameAttribute).get().toString());
-			    users.add(foundUser);
-			}
-	        return users;
-		} catch (NameNotFoundException | javax.naming.AuthenticationException x	) {
-			throw new SystemException(x);
-		} catch (NamingException e) {
-			throw new SystemException(e);
-		}
-	}	
 
 	@Override
 	public User getUserInfo(User user, String userId) {

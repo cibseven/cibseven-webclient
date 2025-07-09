@@ -23,7 +23,8 @@ import lombok.Setter;
 
 @Setter @Getter
 public class SSOLogin extends StandardLogin {
-	String code;
-	String nonce;
-	String redirectUrl;
+	private String code;
+	private String nonce;
+	private String redirectUrl;
+	private String authToken;
 }

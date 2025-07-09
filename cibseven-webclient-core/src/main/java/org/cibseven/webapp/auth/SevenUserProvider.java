@@ -94,20 +94,6 @@ public class SevenUserProvider extends BaseUserProvider<StandardLogin> implement
 	public void logout(User user) { 
 		
 	}
-	
-	@Override
-	public Collection<CIBUser> getUsers(User user, Optional<String> filter) {
-		Collection<SevenUser> sevenUsers = sevenProvider.fetchUsers((CIBUser) user);
-		
-		Collection<CIBUser> users = new ArrayList<>();
-		
-		for (SevenUser sevenUser: sevenUsers) {
-		    CIBUser foundUser = new CIBUser(sevenUser.getId());
-		    foundUser.setDisplayName(sevenUser.getFirstName() + " " + sevenUser.getLastName());
-		    users.add(foundUser);
-		}
-		return users;
-	}	
 
 	@Override
 	public User getUserInfo(User user, String userId) {

@@ -74,16 +74,6 @@ public class AdfsUserProvider extends BaseUserProvider<SSOLogin> {
 	@Value("${cibseven.webclient.authentication.tokenValidMinutes}") long validMinutes;
 	@Value("${cibseven.webclient.authentication.tokenProlongMinutes}") long prolongMinutes;
 	
-	@Value("${cibseven.webclient.ldap.url}") String serverURL;
-	@Value("${cibseven.webclient.ldap.user}") String ldapUser;
-	@Value("${cibseven.webclient.ldap.password}") String ldapPassword;
-	@Value("${cibseven.webclient.ldap.folder}") String ldapFolder;
-	@Value("${cibseven.webclient.ldap.countLimit:400}") int ldapCountLimit;
-	@Value("#{'${cibseven.webclient.ldap.attributes.filters:samAccountName;name}'.split(';\\s*')}") List<String> ldapAttributesFilters;
-	@Value("${cibseven.webclient.ldap.userNameAttribute}") String ldapNameAttribute;
-	@Value("${cibseven.webclient.ldap.userDisplayNameAttribute}") String ldapDisplayNameAttribute;
-	@Value("${cibseven.webclient.ldap.followReferrals}") String ldapFollowReferrals;
-	
 	@Getter JwtTokenSettings settings;
 	SsoHelper ssoHelper;
 	JwtParser flowParser;
@@ -91,7 +81,7 @@ public class AdfsUserProvider extends BaseUserProvider<SSOLogin> {
 	@PostConstruct
 	public void init() {
 		settings = new JwtTokenSettings(secret, validMinutes, prolongMinutes);
-		ssoHelper = new SsoHelper(tokenEndpoint, clientId, clientSecret, certEndpoint, null);
+		ssoHelper = new SsoHelper(tokenEndpoint, clientId, clientSecret, certEndpoint, null, null);
 		SecretKey key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(settings.getSecret()));
 		flowParser = Jwts.parser().verifyWith(key).build();
 	}
@@ -163,56 +153,6 @@ public class AdfsUserProvider extends BaseUserProvider<SSOLogin> {
 
 	@Override
 	public void logout(User user) {	}
-
-	//ADFS doesn't support querying for users
-	@Override
-	public Collection<CIBUser> getUsers(User user, Optional<String> filter) {
-	   try {
-			Hashtable<String, String> environment = new Hashtable<String, String>();
-	        environment.put(javax.naming.Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-	        environment.put(javax.naming.Context.PROVIDER_URL, serverURL);
-	        environment.put(javax.naming.Context.SECURITY_PRINCIPAL, ldapUser);
-	        environment.put(javax.naming.Context.SECURITY_CREDENTIALS, ldapPassword);
-	        environment.put(javax.naming.Context.REFERRAL, ldapFollowReferrals);
-			InitialDirContext initialDirContext = new InitialDirContext(environment);
-			SearchControls searchControls = new SearchControls();
-			searchControls.setCountLimit(ldapCountLimit);
-			searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-			searchControls.setReturningAttributes(new String[] { ldapNameAttribute, ldapDisplayNameAttribute });
-			
-			String initFilter = "(&(|";
-			String filters = "";
-			for (String f : ldapAttributesFilters) {
-				filters += "(" + f + "=" + filter.orElse("") + "*)";
-			}
-			initFilter += filters + ")(objectClass=person))";
-			log.debug(initFilter + " " + ldapFolder);
-			
-			NamingEnumeration<SearchResult> results = initialDirContext.search(ldapFolder, initFilter, searchControls);
-			Collection<CIBUser> users = new ArrayList<>();
-			try {
-				if(!results.hasMore()) {
-					throw new SystemException("[ERROR][AdfsUserProvider]Users not found in LDAP with the following filter: " + filter.orElse("") + "*");
-				}
-				
-				while (results.hasMore()) {
-				    SearchResult result = results.next();
-				    CIBUser foundUser = new CIBUser(result.getAttributes().get(ldapNameAttribute).get().toString());
-				    foundUser.setDisplayName(result.getAttributes().get(ldapDisplayNameAttribute).get().toString());
-				    users.add(foundUser);
-				}
-			} catch (SizeLimitExceededException e) {
-				log.debug("[INFO][AdfsUserProvider] Size limit exceeded");
-			} catch (PartialResultException e) {
-				log.debug("[INFO][AdfsUserProvider] Unprocessed continuation reference");
-				log.info(e.getMessage());
-			}
-	        return users;
-		} catch (NamingException x) {
-			log.error("Failed to search for users", x);
-			throw new SystemException(x);
-		}
-	}
 
 	@Override
 	public Object authenticateUser(HttpServletRequest request) {

@@ -195,11 +195,6 @@ public class GenericUserProvider extends BaseUserProvider<StandardLogin> impleme
 	}
 
 	@Override
-	public Collection<CIBUser> getUsers(@NotNull User arg0, Optional<String> filter) {
-		return null;
-	}
-
-	@Override
 	public User login(StandardLogin login, HttpServletRequest rq) {
 		// This is needed when using security in engine-rest, we need to set the token
 		// into our
