@@ -66,7 +66,7 @@ export default {
   background-color: var(--bs-light);
 }
 .hovered:hover {
- background-color: color-mix(in srgb, var(--bs-light) 80%, #000 20%) !important;
+ background-color: color-mix(in srgb, var(--bs-light) 95%, #000 5%) !important;
 }
 .hovered.clicked {
   box-shadow: inset 0 2px 4px rgba(0,0,0,0.1) !important;

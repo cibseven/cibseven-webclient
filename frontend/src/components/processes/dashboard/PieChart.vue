@@ -104,7 +104,7 @@ export default {
           hover: {
             filter: {
               // Disable Hover Effect on Donut Chart
-              type: this.isEmptyChart ? 'none' : 'lighten', // or 'darken'
+              type: this.isEmptyChart ? 'none' : 'darken', // or 'lighten'
               value: 0.15 // lighten by 15%
             }
           }
