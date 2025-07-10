@@ -165,7 +165,8 @@ export default {
 /* set the tooltip background color in ApexCharts  */
 .apexcharts-tooltip {
   --bs-bg-opacity: 1;
-  background-color: rgba(var(--bs-dark-rgb),
-      var(--bs-bg-opacity))!important;
+  background-color: #fff !important;
+  color: var(--bs-dark) !important;
+  border: 1px solid var(--gray-500) !important;
 }
 </style>
