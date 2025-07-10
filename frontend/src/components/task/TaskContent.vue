@@ -24,14 +24,18 @@
         <div class="col-12">
           <b-input-group v-if="task.assignee == null">
             <b-input-group-prepend>
-              <span><b-button ref="assignToMeButton" variant="link" class="p-0 text-dark me-2" @click="assignee = $root.user.id"><span class="mdi mdi-18px mdi-account-question mdi-dark"></span> {{ $t('task.assignToMe') }}</b-button></span>
+              <span><b-button ref="assignToMeButton" variant="link" class="p-0 text-dark me-2"
+                  @click="assignee = $root.user.id"><span class="mdi mdi-18px mdi-account-question mdi-dark"></span> {{
+                  $t('task.assignToMe') }}</b-button></span>
             </b-input-group-prepend>
             <FilterableSelect v-model:loading="loadingUsers" @enter="findUsers($event)"
-              @clean-elements="resetUsers($event)" v-model="assignee" :elements="$store.state.user.searchUsers" :placeholder="$t('task.assign')" noInvalidValues/>
+              @clean-elements="resetUsers($event)" v-model="assignee" :elements="$store.state.user.searchUsers"
+              :placeholder="$t('task.assign')" noInvalidValues />
           </b-input-group>
           <b-input-group v-else>
-            <b-form-tag variant="secondary" @remove="assignee = null; update()" :key="task.id" :title="getCompleteName" :remove-label="$t('task.assignedUserTitle')" class="mdi mdi-18px mdi-account">
-              {{ '  ' + getCompleteName }}
+            <b-form-tag variant="secondary" @remove="assignee = null; update()" :key="task.id" :title="getCompleteName"
+              :remove-label="$t('task.assignedUserTitle')" class="mdi mdi-18px mdi-account">
+              {{ ' ' + getCompleteName }}
             </b-form-tag>
           </b-input-group>
         </div>
@@ -42,19 +46,25 @@
         <div class="col-12">
           <div class="form-inline">
             <div class="form-group d-flex align-items-center mb-0">
-              <component ref="titleTask" tabindex="0" class="mb-0 me-4 d-inline" :is="isMobile() ? 'h6' : 'h5'">{{ task.name }}</component>
+              <component ref="titleTask" tabindex="0" class="mb-0 me-4 d-inline" :is="isMobile() ? 'h6' : 'h5'">{{
+                task.name }}</component>
               <span v-if="task.assignee != null">
-                <b-form-tag variant="secondary" @remove="assignee = null; update()" :key="task.id" :title="getCompleteName" :remove-label="$t('task.assignedUserTitle')" class="mdi mdi-18px mdi-account">
-                  {{ '  ' + getCompleteName }}
+                <b-form-tag variant="secondary" @remove="assignee = null; update()" :key="task.id"
+                  :title="getCompleteName" :remove-label="$t('task.assignedUserTitle')"
+                  class="mdi mdi-18px mdi-account">
+                  {{ ' ' + getCompleteName }}
                 </b-form-tag>
                 <!-- <span class="mdi mdi-18px mdi-account mdi-dark"></span><span class="p-1" style="line-height: initial">{{ getCompleteName }}</span> -->
               </span>
               <span v-else>
                 <GlobalEvents @keydown.ctrl.alt.c.prevent="assignee = $root.user.id"></GlobalEvents>
-                <b-button ref="assignToMeButton" variant="link" class="p-0 text-dark me-2" @click="assignee = $root.user.id" :title="$t('infoAndHelp.shortcuts.shortcuts.ctrlAltC')"><span class="mdi mdi-18px mdi-account-question mdi-dark"></span> {{ $t('task.assignToMe') }}</b-button>
+                <b-button ref="assignToMeButton" variant="link" class="p-0 text-dark me-2"
+                  @click="assignee = $root.user.id" :title="$t('infoAndHelp.shortcuts.shortcuts.ctrlAltC')"><span
+                    class="mdi mdi-18px mdi-account-question mdi-dark"></span> {{ $t('task.assignToMe') }}</b-button>
               </span>
               <FilterableSelect v-if="task.assignee == null" v-model:loading="loadingUsers" @enter="findUsers($event)"
-              @clean-elements="resetUsers($event)" class="w-25" v-model="assignee" :elements="$store.state.user.searchUsers" :placeholder="$t('task.assign')" noInvalidValues/>
+                @clean-elements="resetUsers($event)" class="w-25" v-model="assignee"
+                :elements="$store.state.user.searchUsers" :placeholder="$t('task.assign')" noInvalidValues />
             </div>
           </div>
         </div>
@@ -65,15 +75,20 @@
       <div class="overflow-auto shadow bg-white" style="margin: 10px; height: calc(100% - 25px)">
         <div class="h-100 p-2">
           <div class="h-100 position-relative" v-if="task">
-            <div v-if="(task.assignee && task.assignee.toLowerCase() !== $root.user.id.toLowerCase()) || this.task.assignee == null"
-              class="col-12 shadow-0" style="top: 0px; left: 0px; bottom: 0px; right: 0px; cursor: not-allowed; position: absolute; z-index: 1; background-color: rgba(238,238,238,0.33)">
+            <div
+              v-if="(task.assignee && task.assignee.toLowerCase() !== $root.user.id.toLowerCase()) || this.task.assignee == null"
+              class="col-12 shadow-0"
+              style="top: 0px; left: 0px; bottom: 0px; right: 0px; cursor: not-allowed; position: absolute; z-index: 1; background-color: rgba(238,238,238,0.33)">
             </div>
-            <RenderTemplate v-if="task" :task="task" @click.prevent class="h-100" @complete-task="$emit('complete-task', $event)" :style="renderTemplateStyles"></RenderTemplate>
+            <RenderTemplate v-if="task" :task="task" @click.prevent class="h-100"
+              @complete-task="$emit('complete-task', $event)" :style="renderTemplateStyles"></RenderTemplate>
           </div>
         </div>
       </div>
     </div>
-    <b-popover ref="howToAssignPopover" v-if="$root.config.layout.showPopoverHowToAssign" :target="function() { return $refs.titleTask }" :show="displayPopover && !isMobile()" placement="bottom" triggers="manual" max-width="300px">
+    <b-popover ref="howToAssignPopover" v-if="$root.config.layout.showPopoverHowToAssign"
+      :target="function() { return $refs.titleTask }" :show="displayPopover && !isMobile()" placement="bottom"
+      triggers="manual" max-width="300px">
       <b>{{ $t('task.assignPopoverTitle') }}</b>
       <p>{{ $t('task.assignPopoverContent') }}</p>
       <p>{{ $t('task.assignPopoverContent2') }}</p>
@@ -88,6 +103,7 @@
 
 <script>
 import { nextTick } from 'vue'
+import { mapActions } from 'vuex'
 import { TaskService, AdminService } from '@/services.js'
 import usersMixin from '@/mixins/usersMixin.js'
 import RenderTemplate from '@/components/render-template/RenderTemplate.vue'
@@ -115,17 +131,21 @@ export default {
   watch: {
     'task.assignee': {
       handler(val) {
-        this.$store.dispatch('task/setSelectedAssignee', { selectedAssignee: val})
-        this.showPopoverWithDelay(val) // when assignee is changed
+        if (this.task && this.$store.state.task.selectedAssignee && this.task.id === this.$store.state.task.selectedAssignee.taskId) {
+          this.setSelectedAssignee({ taskId: this.task.id, assignee: val })
+          this.showPopoverWithDelay(val)
+        }
       },
       immediate: true
     },
     assignee(val) {
-      if (val != null) this.checkAssignee()
+      if (this.task && this.$store.state.task.selectedAssignee && this.task.id === this.$store.state.task.selectedAssignee.taskId && val != null) {
+        this.checkAssignee()
+      }
     },
     'task.id': {
       handler(taskId) {
-        this.$store.dispatch('task/setSelectedAssignee', { selectedAssignee: this.task.assignee })
+        this.setSelectedAssignee({ selectedAssignee: this.task.assignee })
         this.$store.commit('setCandidateUsers', [])
         this.$store.commit('setSearchUsers', [])
         this.loadIdentityLinks(taskId)
@@ -138,10 +158,13 @@ export default {
   computed: {
     assignee: {
       get() {
-        return this.$store.state.task.selectedAssignee
+        const selected = this.$store.state.task.selectedAssignee
+        if (selected && selected.taskId === this.task.id) return selected.assignee
+        if (typeof this.task.assignee === 'string') return this.task.assignee
+        return null
       },
       set(value) {
-        this.$store.dispatch('task/setSelectedAssignee', { selectedAssignee: value })
+        this.setSelectedAssignee({ taskId: this.task.id, assignee: value })
       }
     },
     renderTemplateStyles: function() {
@@ -155,7 +178,7 @@ export default {
     }
   },
   mounted: function() {
-    this.$store.dispatch('task/setSelectedAssignee', { selectedAssignee: this.task.assignee })
+    this.setSelectedAssignee({ taskId: this.task.id, assignee: this.task.assignee })
     this.$store.commit('setCandidateUsers', [])
     this.$store.commit('setSearchUsers', [])
     this.loadIdentityLinks(this.task.id)
@@ -166,6 +189,7 @@ export default {
     this.stopListeningTouchEvents()
   },
   methods: {
+    ...mapActions('task', ['setSelectedAssignee']),
     loadIdentityLinks: function(taskId) {
       this.candidateUsers = []
       var promises = []
@@ -227,12 +251,13 @@ export default {
       this.displayPopover = false
     },
     update: function() {
-      this.$refs.ariaLiveText.textContent = ''
-      TaskService.setAssignee(this.task.id, this.assignee).then(() => {
+        if (!this.task || this.task.id !== this.$store.state.task.selectedAssignee.taskId) return
+        this.$refs.ariaLiveText.textContent = ''
+        TaskService.setAssignee(this.task.id, this.assignee).then(() => {
         // eslint-disable-next-line vue/no-mutating-props
         this.task.assignee = this.assignee
         this.$emit('update-assignee', this.assignee)
-        this.$store.dispatch('task/setSelectedAssignee', { selectedAssignee: this.assignee })
+        this.setSelectedAssignee({ taskId: this.task.id, assignee: this.assignee })
         if (this.task.assignee != null) {
           this.$refs.ariaLiveText.textContent = this.$t('task.userAssigned', [this.getCompleteName])
         }
@@ -242,18 +267,16 @@ export default {
       })
     },
     checkAssignee: function () {
-      if (this.task.assignee && this.task.assignee.toLowerCase() === this.assignee.toLowerCase()) {
+      if (this.task.assignee && this.task.assignee === this.assignee) {
         return
       }
-      TaskService.findTaskById(this.task.id).then(serverTask => {
-        if (serverTask.assignee === null) {
+      TaskService.findTaskById(this.task.id).then(task => {
+        if (task.assignee === null) {
           this.update()
-        } else if (serverTask.assignee.toLowerCase() === this.$root.user.id.toLowerCase()) {
-          this.assignee = serverTask.assignee
-          this.$store.dispatch('task/setSelectedAssignee', { 
-            selectedAssignee: serverTask.assignee 
-          })
-           this.$emit('update-assignee', serverTask.assignee)
+        } else if (task.assignee.toLowerCase() === this.$root.user.id.toLowerCase()) {
+          this.assignee = task.assignee
+          this.setSelectedAssignee({ taskId: task.id, assignee: task.assignee })
+          this.$emit('update-assignee', task.assignee)
         } else {
           this.$refs.confirmTaskAssign.show()
         }

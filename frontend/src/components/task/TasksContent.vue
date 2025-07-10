@@ -92,6 +92,7 @@ import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import { BWaitingBox } from 'cib-common-components'
 import { updateAppTitle } from '@/utils/init'
 import { splitToWords } from '@/utils/search'
+import { mapActions } from 'vuex'
 
 export default {
   name: 'TasksContent',
@@ -131,10 +132,15 @@ export default {
     },
     assignee: {
       get() {
-        return this.$store.state.task.selectedAssignee
+        const selected = this.$store.state.task.selectedAssignee
+        if (selected && selected.taskId === this.task.id) return selected.assignee
+        if (typeof this.task.assignee === 'string') return this.task.assignee
+        return null
       },
       set(value) {
-        this.$store.dispatch('task/setSelectedAssignee', { selectedAssignee: value })
+        if (this.task) {
+          this.setSelectedAssignee({ taskId: this.task.id, name: value })
+        }
       }
     },
     rightCaptionTask: function() {
@@ -182,6 +188,7 @@ export default {
     this.setIntervalTaskList()
   },
   methods: {
+    ...mapActions('task', ['setSelectedAssignee']),
     canOpenRightTask: function() {
       if (!this.TasksRightSidebar) return false
       return (this.$root.config.layout.showTaskDetailsSidebar ||
@@ -271,17 +278,23 @@ export default {
       this.listTasksWithFilterAuto()
     },
     updateAssignee: function(assignee, target) {
-      this.assignee = assignee
-      if (this.task) {
-        this.task.assignee = assignee
+      let assigneeString = assignee
+      let taskId = null
+      if (assignee && typeof assignee === 'object' && 'assignee' in assignee && 'taskId' in assignee) {
+        assigneeString = assignee.assignee
+        taskId = assignee.taskId
       }
-      if (this.processInstanceHistory) {
-        this.processInstanceHistory.tasksHistory[0].assignee = assignee
+      if (this.task && this.task.id === taskId) {
+        this.assignee = assigneeString
+        this.task.assignee = assigneeString
+      }
+      if (this.processInstanceHistory && this.processInstanceHistory.tasksHistory?.[0]?.id === taskId) {
+        this.processInstanceHistory.tasksHistory[0].assignee = assigneeString
         this.selectedTask(this.processInstanceHistory.tasksHistory[0])
       }
-      if (target === 'taskList') {
-        const currentTask = this.tasks.find(task => task.id === this.task.id)
-        if (currentTask) currentTask.assignee = assignee
+      if (target === 'taskList' && taskId) {
+        const currentTask = this.tasks.find(task => task.id === taskId)
+        if (currentTask) currentTask.assignee = assigneeString
       }
       this.listTasksWithFilterAuto()
     },

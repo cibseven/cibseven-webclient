@@ -17,33 +17,48 @@
 const TaskStore = {
   namespaced: true,
   state: {
-    selectedAssignee: null,
+    selectedAssignee: { taskId: null, assignee: null }
   },
   mutations: {
-    setSelectedAssignee(state, assigneeId) {
-      state.selectedAssignee = assigneeId;
+    setSelectedAssignee(state, params) {
+      let assignee = params.assignee
+      if (assignee && typeof assignee === 'object') {
+        assignee = assignee.assignee || assignee.name || assignee.id || null
+      }
+      state.selectedAssignee = { taskId: params.taskId, assignee }
+    },
+    clearSelectedAssignee(state) {
+      state.selectedAssignee = { taskId: null, assignee: null }
     }
   },
   getters: {
     getSelectedAssignee: (state) => state.selectedAssignee,
+    getAssigneeByTaskId: (state) => (taskId) => {
+      if (state.selectedAssignee && state.selectedAssignee.taskId === taskId) {
+        return state.selectedAssignee.assignee
+      }
+      return null
+    }
   },
   actions: {
-    setSelectedAssignee({ commit }, payload) {
-      if (payload && typeof payload === 'object' && 'selectedAssignee' in payload) {
-        commit('setSelectedAssignee', payload.selectedAssignee);
-      } else if (typeof payload === 'string' || payload === null) {
-        commit('setSelectedAssignee', payload);
+    setSelectedAssignee({ commit }, params) {
+      if (
+        params &&
+        typeof params === 'object' &&
+        'taskId' in params &&
+        'assignee' in params
+      ) {
+        commit('setSelectedAssignee', { taskId: params.taskId, assignee: params.assignee })
       } else {
-        console.warn('setSelectedAssignee received an unexpected value:', payload);
-        commit('setSelectedAssignee', null);
+        commit('clearSelectedAssignee')
       }
     },
     clearSelectedAssignee({ commit }) {
-      commit('setSelectedAssignee', null);
+      commit('clearSelectedAssignee')
     }
   }
-};
+}
 
-export default TaskStore;
+export default TaskStore
 
 
