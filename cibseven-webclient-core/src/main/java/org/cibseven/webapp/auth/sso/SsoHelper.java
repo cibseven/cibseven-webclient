@@ -19,6 +19,7 @@ package org.cibseven.webapp.auth.sso;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Date;
 import java.util.Map;
 
 import org.cibseven.webapp.auth.exception.AuthenticationException;
@@ -27,7 +28,9 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientResponseException;
@@ -40,7 +43,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SsoHelper {
 	
-	String tokenEndpoint, clientId, clientSecret, userInfoEndpoint;
+	String tokenEndpoint, clientId, clientSecret, userInfoEndpoint, introspectionEndpoint;
 
 	HttpHeaders formUrlEncodedHeader = new HttpHeaders();
 	{
@@ -50,11 +53,12 @@ public class SsoHelper {
 	@Getter
 	KeyResolver keyResolver;
 	
-	public SsoHelper(String tokenEndpoint, String clientId, String clientSecret, String certEndpoint, String userInfoEndpoint) {
+	public SsoHelper(String tokenEndpoint, String clientId, String clientSecret, String certEndpoint, String userInfoEndpoint, String introspectionEndpoint) {
 		this.tokenEndpoint = tokenEndpoint;
 		this.clientId = clientId;
 		this.clientSecret = clientSecret;
 		this.userInfoEndpoint = userInfoEndpoint;
+		this.introspectionEndpoint = introspectionEndpoint;
 		keyResolver = new KeyResolver(certEndpoint);
 	}
 	
@@ -139,6 +143,46 @@ public class SsoHelper {
 		return tokens;
 	}
 	
+	/**
+	 * Extract the expiration date from a token.
+	 * First tries to parse it as a JWT using KeyResolver.
+	 * If that fails or if the token doesn't have an expiration claim,
+	 * it will try to use the token introspection endpoint if configured.
+	 *
+	 * @param token The token to extract expiration from
+	 * @return The expiration date or null if not available
+	 */
+	public Date getTokenExpiration(String token) {
+		Date expiration = null;
+		
+		// First try to parse as JWT using KeyResolver
+		if (keyResolver.isJwt(token)) {
+			try {
+				Claims claims = keyResolver.checkToken(token);
+				if (claims.getExpiration() != null) {
+					expiration = claims.getExpiration();
+					log.debug("JWT token expiration: {}", expiration);
+					return expiration;
+				}
+			} catch (RuntimeException e) {
+				log.warn("Failed to extract expiration from JWT: {}", e.getMessage());
+			}
+		}
+		
+		// If not a JWT or couldn't extract expiration, try token introspection if configured
+		var introspectionResult = callIntrospection(token);
+		if (introspectionResult != null && introspectionResult.containsKey("exp")) {
+			Object expValue = introspectionResult.get("exp");
+			if (expValue instanceof Number) {
+				long expTimestamp = ((Number) expValue).longValue() * 1000; // Convert seconds to milliseconds
+				expiration = new Date(expTimestamp);
+				log.debug("Token introspection expiration: {}", expiration);
+			}
+		}
+		
+		return expiration;
+	}
+	
 	public Map<String, String> getUserInfo(String accessToken) {
 		
 	    if (userInfoEndpoint == null || userInfoEndpoint.isBlank()) {
@@ -167,9 +211,46 @@ public class SsoHelper {
 	        
 	        return userInfo;
 	    } catch (RestClientResponseException e) {
-	    	log.warn("Error Retrieving User Info", e);
-	        throw new AuthenticationException("Invalid token");
-	    }
+			if (e.getStatusCode() == HttpStatus.FORBIDDEN) {
+				log.info("User info endpoint is forbidden. Most likely a technical user. Using sub as userId and username");
+				return null;
+			} else {
+				log.warn("Error Retrieving User Info", e);
+				throw new AuthenticationException("Invalid token");
+			}
+		}
+	}
+
+	public Map<String, Object> callIntrospection(String token) {
+		if (introspectionEndpoint != null && !introspectionEndpoint.isEmpty()) {
+			try {
+				// Call the token introspection endpoint
+				MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+				formData.add("token", token);
+				formData.add("client_id", clientId);
+				formData.add("client_secret", clientSecret);
+				
+				HttpHeaders headers = new HttpHeaders();
+				headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+				
+				HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(formData, headers);
+				RestTemplate restTemplate = new RestTemplate();
+				
+				ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+					introspectionEndpoint,
+					HttpMethod.POST,
+					request,
+					new ParameterizedTypeReference<Map<String, Object>>() {}
+				);
+				
+				Map<String, Object> introspectionResult = response.getBody();
+				return introspectionResult;
+			} catch (RuntimeException e) {
+				log.error("Failed to introspect token: {}", e.getMessage());
+				return null;
+			}
+		}
+		return null;
 	}
 	
 	private String hashString(String param) { //https://mkyong.com/java/java-sha-hashing-example/

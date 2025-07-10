@@ -17,8 +17,10 @@
 package org.cibseven.webapp.auth;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Collection;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,12 +43,14 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.jsonwebtoken.Claims;
@@ -69,6 +73,7 @@ public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
 	@Value("${cibseven.webclient.sso.endpoints.token}") String tokenEndpoint;
 	@Value("${cibseven.webclient.sso.endpoints.jwks}") String certEndpoint;
 	@Value("${cibseven.webclient.sso.endpoints.user}") String userEndpoint;
+	@Value("${cibseven.webclient.sso.endpoints.introspection:}") String introspectionEndpoint;
 	@Value("${cibseven.webclient.sso.clientId}") String clientId;
 	@Value("${cibseven.webclient.sso.clientSecret}") String clientSecret;
 	@Value("${cibseven.webclient.sso.userIdProperty}") String userIdProperty;
@@ -88,13 +93,33 @@ public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
 	@PostConstruct
 	public void init() {
 		settings = new JwtTokenSettings(secret, validMinutes, prolongMinutes);
-		ssoHelper = new SsoHelper(tokenEndpoint, clientId, clientSecret, certEndpoint, userEndpoint);
+		ssoHelper = new SsoHelper(tokenEndpoint, clientId, clientSecret, certEndpoint, userEndpoint, introspectionEndpoint);
 		SecretKey key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(settings.getSecret()));
 		flowParser = Jwts.parser().verifyWith(key).build();
 	}
 
 	@Override
 	public User login(SSOLogin params, HttpServletRequest rq) {
+		if (params.getAuthToken() != null && !params.getAuthToken().isEmpty()) {
+			// Get the user from the access token
+			SSOUser user = getUserFromAccessToken(params.getAuthToken());
+			
+			// Use SsoHelper to extract token expiration
+			Date expiration = ssoHelper.getTokenExpiration(params.getAuthToken());
+			
+			// Create a new token with the expiration from the third-party token if available
+			JwtTokenSettings tokenSettings = getSettings();
+			if (expiration != null) {
+				// Create a custom token settings with the expiration from the third-party token
+				long validMinutes = (expiration.getTime() - System.currentTimeMillis()) / 60000; // Convert to minutes
+				if (validMinutes > 0) {
+					tokenSettings = new JwtTokenSettings(tokenSettings.getSecret(), validMinutes, 0);
+				}
+			}
+			
+			user.setAuthToken(createToken(tokenSettings, false, false, user));
+			return user;
+		}
 		TokenResponse tokens = ssoHelper.codeExchange(params.getCode(), params.getRedirectUrl(), params.getNonce(), false, true);
 		
 		SSOUser user = new SSOUser(tokens.getIdClaims().get(userIdProperty, String.class));
@@ -153,41 +178,6 @@ public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
 	public void logout(User user) {	}
 
 	@Override
-	public Collection<CIBUser> getUsers(@NotNull User user, Optional<String> str) {
-		
-		MultiValueMap<String, String> rqParams = new LinkedMultiValueMap<>();
-		rqParams.add("client_id", clientId);
-		rqParams.add("client_secret", clientSecret);
-		rqParams.add("grant_type", "client_credentials");
-
-		TokenResponse tokens = null;
-		try {
-			HttpEntity<MultiValueMap<String, String>> tokenRequest = new HttpEntity<>(rqParams, formUrlEncodedHeader);
-			RestTemplate template = new RestTemplate();
-			tokens = template.postForObject(tokenEndpoint, tokenRequest, TokenResponse.class);
-			if (tokens != null) log.debug(tokens.getId_token());
-			if (tokens != null) log.debug(tokens.getAccess_token());
-		} catch (RestClientResponseException e) {
-			throw new SystemException("Couldn't authenticate client user " + e.getResponseBodyAsString());
-		}
-		try {
-			HttpHeaders headers = new HttpHeaders();
-			headers.add("Authorization", "Bearer " + tokens.getAccess_token());
-			HttpEntity tokenRequest = new HttpEntity(headers);
-			RestTemplate template = new RestTemplate();
-			List<LinkedHashMap<String, ?>> users = template.exchange(userEndpoint, HttpMethod.GET, tokenRequest, new ParameterizedTypeReference<List<LinkedHashMap<String, ?>>>() {}).getBody();
-			System.out.println(users.get(0));
-			return users.stream().map(map -> {
-				CIBUser foundUser = new CIBUser(map.get("username").toString());
-				foundUser.setDisplayName(map.get("firstName").toString() + " " + map.get("lastName").toString());
-				return foundUser;
-			}).collect(Collectors.toList());
-		} catch (RestClientResponseException e) {
-			throw new SystemException("Couldn't get users " + e.getResponseBodyAsString());
-		}
-	}
-
-	@Override
 	public Object authenticateUser(HttpServletRequest request) {
 		return authenticate(request);
 	}
@@ -209,17 +199,34 @@ public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
 			}
 			throw new TokenExpiredException();			
 		} catch (IllegalArgumentException | InvalidKeyException | MalformedJwtException e) { //token received from third-party isn't ours, get the userInfo from the defined endpoint on the config file
-			Map<String, String> userInfo = ssoHelper.getUserInfo(token);
-			SSOUser user = new SSOUser();
-			user.setDisplayName(userInfo.get(userNameProperty));
-	        user.setUserID(userInfo.get(userIdProperty));
+			User user = getUserFromAccessToken(token);
 	        
 			return user;
 		} catch (JwtException x) {
 			throw new AuthenticationException(token);
 		}
 	}
-	
+
+	private SSOUser getUserFromAccessToken(String token) {
+		Map<String, String> userInfo = ssoHelper.getUserInfo(token);
+		SSOUser user = new SSOUser();
+		if (userInfo == null) {
+			Map<String, Object> introspectionResult = ssoHelper.callIntrospection(token);
+			//Use subject or username as userId as we get no userInfo
+			if (introspectionResult != null) {
+				user.setDisplayName((String) introspectionResult.getOrDefault("sub", introspectionResult.get("username")));
+				user.setUserID((String) introspectionResult.getOrDefault("sub", introspectionResult.get("username")));
+			}
+		} else {
+			user.setDisplayName(userInfo.get(userNameProperty));
+			user.setUserID(userInfo.get(userIdProperty));
+		}
+		if (user.getUserID() == null || user.getDisplayName() == null) {
+			throw new AuthenticationException("Invalid token");
+		}
+		return user;
+	}
+
 	@Override
 	public SSOLogin createLoginParams() {
 		return new SSOLogin();
