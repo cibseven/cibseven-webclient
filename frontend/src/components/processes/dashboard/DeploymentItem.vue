@@ -19,7 +19,12 @@
 <template>
   <div class="col-3 my-2">
     <router-link :to="link" :title="tooltip" class="text-decoration-none">
-      <div class="bg-light py-3 text-center rounded">
+      <div class="py-3 text-center rounded hovered"
+        :class="{ clicked: isClicked }"
+        @mousedown="isClicked = true"
+        @mouseup="isClicked = false"
+        @mouseleave="isClicked = false"
+      >
         <h5 class="link-dark">{{ title }}</h5>
         <h2 class="link-dark">
           <span v-if="count !== null" :class="computedValueClass">{{ count }}</span>
@@ -42,6 +47,11 @@ export default {
     count: [ Number, String ],
     link: String
   },
+  data() {
+    return {
+      isClicked: false
+    }
+  },
   computed: {
     computedValueClass: function() {
       return this.count === 'x' ? 'text-warning' : ''
@@ -49,3 +59,16 @@ export default {
   }
 }
 </script>
+
+<style lang="css" scoped>
+.hovered {
+  transition: background-color 0.3s ease;
+  background-color: var(--bs-light);
+}
+.hovered:hover {
+ background-color: color-mix(in srgb, var(--bs-light) 80%, #000 20%) !important;
+}
+.hovered.clicked {
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+</style>
