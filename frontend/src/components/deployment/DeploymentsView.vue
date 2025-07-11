@@ -45,11 +45,19 @@
             </b-input-group>
           </b-form-group>
         </div>
-        <div class="col-1 text-secondary flex-nowrap">
-          <span class="">{{ $t('deployment.title') }}:&nbsp;{{ deployments.length }}</span>
-          <span v-if="totalCount !== undefined">&nbsp;/&nbsp;{{ totalCount }}</span>
+        <div class="col-2 text-secondary p-0 m-0">
+          <div class="">
+            <span>{{ $t('deployment.title') }}:&nbsp;</span>
+            <div class="d-inline-block text-nowrap">
+              <span v-if="!loading">{{ deployments.length }}</span>
+              <span v-else>0</span>
+              /
+              <span v-if="totalCount !== undefined">{{ totalCount }}</span>
+              <span v-else>0</span>
+            </div>
+          </div>
         </div>
-        <div class="col-5">
+        <div class="col-4">
           <b-input-group size="sm" class="align-items-center justify-content-end">
             <b-form-checkbox class="me-3" size="sm" v-model="isAllChecked">
               <span>{{ $t('deployment.selectAll') }}</span>
@@ -214,6 +222,7 @@ export default {
   },
   methods: {
     refreshTotalCount() {
+      this.totalCount = undefined
       ProcessService.findDeploymentsCount(this.filter).then(count => {
         this.totalCount = count
       })
