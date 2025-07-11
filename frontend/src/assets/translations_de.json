@@ -2,7 +2,12 @@
 	"commons": {
 		"edit": "Bearbeiten",
 		"save": "Speichern",
-		"copyValue": "Wert kopieren"
+		"copyValue": "Wert kopieren",
+		"noMoreResults": "Keine weiteren Ergebnisse",
+		"loadMore": {
+			"title": "Mehr laden",
+			"tooltip": "Klicken Sie, um die nächsten {chunkSize} Einträge zu laden"
+		}
 	},
 	"login": {
 		"productName": "CIB seven",

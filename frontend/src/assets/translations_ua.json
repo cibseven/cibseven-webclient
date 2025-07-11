@@ -2,7 +2,12 @@
 	"commons": {
 		"edit": "Редагувати",
 		"save": "Зберегти",
-		"copyValue": "Скопіювати значення"
+		"copyValue": "Скопіювати значення",
+		"noMoreResults": "Більше немає результатів",
+		"loadMore": {
+			"title": "Завантажити ще",
+			"tooltip": "Натисніть, щоб завантажити наступні {chunkSize} записів"
+		}
 	},
 	"login": {
 		"productName": "CIB seven",

@@ -73,6 +73,7 @@ import ProfileGroup from '@/components/admin/ProfileGroup.vue'
 import ProfileUser from '@/components/admin/ProfileUser.vue'
 import UsersManagement from '@/components/admin/UsersManagement.vue'
 import DeploymentList from '@/components/deployment/DeploymentList.vue'
+import PagedScrollableContent from '@/components/common-components/PagedScrollableContent.vue'
 import DeploymentsView from '@/components/deployment/DeploymentsView.vue'
 import ResourcesNavBar from '@/components/deployment/ResourcesNavBar.vue'
 import FilterModal from '@/components/task/filter/FilterModal.vue'
@@ -181,6 +182,7 @@ const registerComponents = function(app) {
   app.component('profile-user', ProfileUser)
   app.component('users-management', UsersManagement)
   app.component('deployment-list', DeploymentList)
+  app.component('paged-scrollable-content', PagedScrollableContent)
   app.component('deployments-view', DeploymentsView)
   app.component('resources-nav-bar', ResourcesNavBar)
   app.component('filter-modal', FilterModal)
@@ -295,6 +297,7 @@ export {
   ProfileUser,
   UsersManagement,
   DeploymentList,
+  PagedScrollableContent,
   DeploymentsView,
   ResourcesNavBar,
   FilterModal,

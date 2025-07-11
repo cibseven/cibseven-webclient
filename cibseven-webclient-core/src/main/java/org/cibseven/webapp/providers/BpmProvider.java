@@ -593,14 +593,22 @@ public interface BpmProvider {
      * @throws SystemException in case of any other error.
 	 */ 
 	 ResponseEntity<byte[]> fetchHistoryVariableDataById(String id, CIBUser user) throws NoObjectFoundException, SystemException;
-	 
+
 	/**
-	 * Retrieves all deployments of a given deployment.
+	 * Retrieves number of all deployments with provided query.
 	 * @param user the user performing the search.
 	 * @return Fetched deployments.
-     * @throws SystemException in case of any other error.
+	 * @throws SystemException in case of any other error.
 	 */
-	Collection<Deployment> findDeployments(CIBUser user) throws SystemException;
+	Long countDeployments(CIBUser user, String nameLike) throws SystemException;
+
+	/**
+	 * Retrieves all deployments matched with provided query.
+	 * @param user the user performing the search.
+	 * @return Fetched deployments.
+	 * @throws SystemException in case of any other error.
+	 */
+	Collection<Deployment> findDeployments(CIBUser user, String nameLike, int firstResult, int maxResults, String sortBy, String sortOrder) throws SystemException;
 
 	/**
 	 * Retrieves all deployment resources of a given deployment.

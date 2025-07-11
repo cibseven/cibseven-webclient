@@ -389,12 +389,31 @@ public class ProcessService extends BaseService implements InitializingBean {
 	}
 
 	@Operation(
-			summary = "Get all deployments of a given deployment",
+			summary = "Get count of all deployments for given query",
+			description = "<strong>Return: number of deployments")
+	@RequestMapping(value = "/deployments/count", method = RequestMethod.GET)
+	public Long countDeployments(
+		CIBUser user,
+		@RequestParam(value = "nameLike", required = false, defaultValue = "") String nameLike
+	) {
+		checkPermission(user, SevenResourceType.DEPLOYMENT, PermissionConstants.READ_ALL);
+		return bpmProvider.countDeployments(user, nameLike);
+	}
+
+	@Operation(
+			summary = "Get all deployments for given query",
 			description = "<strong>Return: Collection of deployments")
 	@RequestMapping(value = "/deployments", method = RequestMethod.GET)
-	public Collection<Deployment> findDeployments(CIBUser user) {
-    	checkPermission(user, SevenResourceType.DEPLOYMENT, PermissionConstants.READ_ALL);
-		return bpmProvider.findDeployments(user);
+	public Collection<Deployment> findDeployments(
+		CIBUser user,
+		@RequestParam(value = "nameLike", required = false, defaultValue = "") String nameLike,
+		@RequestParam(value = "firstResult", required = false, defaultValue = "0") int firstResult,
+		@RequestParam(value = "maxResults", required = false, defaultValue = "50") int maxResults,
+		@RequestParam(value = "sortBy", required = false, defaultValue = "deploymentTime") String sortBy,
+		@RequestParam(value = "sortOrder", required = false, defaultValue = "desc") String sortOrder
+	) {
+		checkPermission(user, SevenResourceType.DEPLOYMENT, PermissionConstants.READ_ALL);
+		return bpmProvider.findDeployments(user, nameLike, firstResult, maxResults, sortBy, sortOrder);
 	}
 	
 	@Operation(
