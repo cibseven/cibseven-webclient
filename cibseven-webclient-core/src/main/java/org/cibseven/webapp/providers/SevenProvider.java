@@ -436,10 +436,15 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 		return deploymentProvider.deployBpmn(data, file, user);
 		
 	}
-	
+
 	@Override
-	public Collection<Deployment> findDeployments(CIBUser user) {
-		return deploymentProvider.findDeployments(user);
+	public Long countDeployments(CIBUser user, String nameLike) {
+		return deploymentProvider.countDeployments(user, nameLike);
+	}
+
+	@Override
+	public Collection<Deployment> findDeployments(CIBUser user, String nameLike, int firstResult, int maxResults, String sortBy, String sortOrder) {
+		return deploymentProvider.findDeployments(user, nameLike, firstResult, maxResults, sortBy, sortOrder);
 	}
 
 	@Override

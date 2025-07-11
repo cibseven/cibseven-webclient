@@ -74,9 +74,23 @@ public class DeploymentProvider extends SevenProviderBase implements IDeployment
 		
 	}
 
+	@Override
+	public Long countDeployments(CIBUser user, String nameLike) {
+		String url = UriComponentsBuilder.fromUriString(getEngineRestUrl() + "/deployment/count")
+		.queryParam("nameLike", nameLike)
+		.toUriString();
+		return ((ResponseEntity<Long>) doGet(url, Long.class, user, false)).getBody();
+	}
+
     @Override
-	public Collection<Deployment> findDeployments(CIBUser user) {
-		String url = getEngineRestUrl() + "/deployment?sortBy=deploymentTime&sortOrder=desc";
+	public Collection<Deployment> findDeployments(CIBUser user, String nameLike, int firstResult, int maxResults, String sortBy, String sortOrder) {
+		String url = UriComponentsBuilder.fromUriString(getEngineRestUrl() + "/deployment")
+		.queryParam("sortBy", sortBy)
+		.queryParam("sortOrder", sortOrder)
+		.queryParam("firstResult", firstResult)
+		.queryParam("maxResults", maxResults)
+		.queryParam("nameLike", nameLike)
+		.toUriString();
 		return Arrays.asList(((ResponseEntity<Deployment[]>) doGet(url, Deployment[].class, user, false)).getBody());
 	}
 

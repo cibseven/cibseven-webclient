@@ -64,6 +64,26 @@ public class DeploymentProviderIT extends BaseHelper {
     }
 
     @Test
+    void testCountDeployments() throws Exception {
+        // Arrange
+        CIBUser user = getCibUser();
+
+        // Load the mock response from a file
+        String mockResponseBody = loadMockResponse("mocks/deployment_mock.json");
+        mockWebServer.enqueue(new MockResponse()
+                .setBody(mockResponseBody)
+                .addHeader("Content-Type", "application/json"));
+
+        // Act
+        String nameLike = "";
+        Long deployments = deploymentProvider.countDeployments(user, nameLike);
+
+        // Assert
+        assertThat(deployments).isNotNull();
+        assertThat(deployments).isEqualTo(2);
+    }
+
+    @Test
     void testFindDeployments() throws Exception {
         // Arrange
         CIBUser user = getCibUser();
@@ -75,7 +95,12 @@ public class DeploymentProviderIT extends BaseHelper {
                 .addHeader("Content-Type", "application/json"));
 
         // Act
-        List<Deployment> deployments = (List<Deployment>) deploymentProvider.findDeployments(user);
+        String nameLike = "";
+        int firstResult = 0;
+        int maxResults = 50;
+        String sortBy = "deploymentTime";
+        String sortOrder = "desc";
+        List<Deployment> deployments = (List<Deployment>) deploymentProvider.findDeployments(user, nameLike, firstResult, maxResults, sortBy, sortOrder);
 
         // Assert
         assertThat(deployments).isNotNull();
