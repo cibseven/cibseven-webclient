@@ -34,7 +34,12 @@
             </g>
           </svg>
       </div>
-      <div class="col-10 d-flex align-items-center">{{ $t('infoAndHelp.flowModalSupport.version') }}: {{ version }}</div>
+      <div class="col-10 d-flex align-items-center">
+        <div class="row">
+          <p>{{ $t('infoAndHelp.flowModalSupport.version') }}: <span class="fw-semibold">{{ version }}</span></p>
+          <p v-if="buildDate">{{ $t('infoAndHelp.flowModalSupport.buildDate') }}: <span class="fw-semibold">{{ formatDate(buildDate) }}</span></p>
+        </div>
+      </div>
     </div>
     <template v-slot:modal-footer>
       <div class="row w-100 me-0">
@@ -52,6 +57,7 @@
 <script>
 import { InfoService } from '@/services.js'
 import { permissionsMixin } from '@/permissions.js'
+import { formatDate } from '@/utils/dates.js'
 
 export default {
   name: 'AboutModal',
@@ -64,9 +70,15 @@ export default {
   computed: {
     permissionsAdmin: function() {
       return this.$root.user && this.adminManagementPermissions(this.$root.config.permissions.systemManagement, 'system')
+    },
+    buildDate() {
+      // See, vite.config.js for how this is injected
+      // eslint-disable-next-line no-undef
+      return __BUILD_DATE__
     }
   },
   methods: {
+    formatDate,
     show: function() {
       if (this.version === '') {
         this.version = ' '

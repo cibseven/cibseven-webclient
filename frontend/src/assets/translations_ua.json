@@ -1089,7 +1089,8 @@
 			"phoneNumber": "+49 89 14360 111",
 			"emailAddress": "Адреса електронної пошти",
 			"email": "cibsupport{'@'}cib.de",
-			"version": "Версія"
+			"version": "Версія",
+			"buildDate": "Дата збірки"
 		},
 		"flowModalAbout": {
 			"modalText": "Про сайт",
