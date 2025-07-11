@@ -92,6 +92,7 @@ import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import { BWaitingBox } from 'cib-common-components'
 import { updateAppTitle } from '@/utils/init'
 import { splitToWords } from '@/utils/search'
+import { mapActions } from 'vuex'
 
 export default {
   name: 'TasksContent',
@@ -129,6 +130,19 @@ export default {
         ? this.$options.components.TasksRightSidebar
         : null
     },
+    assignee: {
+      get() {
+        const selected = this.$store.state.task.selectedAssignee
+        if (selected && selected.taskId === this.task.id) return selected.assignee
+        if (typeof this.task.assignee === 'string') return this.task.assignee
+        return null
+      },
+      set(value) {
+        if (this.task) {
+          this.setSelectedAssignee({ taskId: this.task.id, name: value })
+        }
+      }
+    },
     rightCaptionTask: function() {
       if (this.canOpenRightTask())
         return this.$t('task.options')
@@ -143,6 +157,12 @@ export default {
     getTasksNavbarSize: function() { return this.tasksNavbarSizes[this.tasksNavbarSize] }
   },
   watch: {
+    task: {
+      handler(newTask) {
+        this.assignee = newTask ? newTask.assignee : null
+      },
+      immediate: true
+    },
     rightOpenTask: function(newVal) {
       localStorage.setItem('rightOpenTask', newVal)
     },
@@ -168,6 +188,7 @@ export default {
     this.setIntervalTaskList()
   },
   methods: {
+    ...mapActions('task', ['setSelectedAssignee']),
     canOpenRightTask: function() {
       if (!this.TasksRightSidebar) return false
       return (this.$root.config.layout.showTaskDetailsSidebar ||
@@ -257,15 +278,23 @@ export default {
       this.listTasksWithFilterAuto()
     },
     updateAssignee: function(assignee, target) {
-      if (this.processInstanceHistory) {
-        this.processInstanceHistory.tasksHistory[0].assignee = assignee
+      let assigneeString = assignee
+      let taskId = null
+      if (assignee && typeof assignee === 'object' && 'assignee' in assignee && 'taskId' in assignee) {
+        assigneeString = assignee.assignee
+        taskId = assignee.taskId
+      }
+      if (this.task && this.task.id === taskId) {
+        this.assignee = assigneeString
+        this.task.assignee = assigneeString
+      }
+      if (this.processInstanceHistory && this.processInstanceHistory.tasksHistory?.[0]?.id === taskId) {
+        this.processInstanceHistory.tasksHistory[0].assignee = assigneeString
         this.selectedTask(this.processInstanceHistory.tasksHistory[0])
       }
-      if (target === 'taskList') {
-        var currentTaskIndex = this.tasks.findIndex(task => {
-          return task.id === this.task.id
-        })
-        if (currentTaskIndex !== -1) this.tasks[currentTaskIndex].assignee = assignee
+      if (target === 'taskList' && taskId) {
+        const currentTask = this.tasks.find(task => task.id === taskId)
+        if (currentTask) currentTask.assignee = assigneeString
       }
       this.listTasksWithFilterAuto()
     },
@@ -276,6 +305,7 @@ export default {
       this.listTasksWithFilterAuto()
       this.checkAndOpenTask(JSON.parse(JSON.stringify(this.task)))
       this.task = null
+      this.assignee = null
     },
     checkAndOpenTask: function(task, started) {
       if (this.$root.config.automaticallyOpenTask) this.openTaskAutomatically(task, started)
@@ -332,6 +362,7 @@ export default {
     },
     selectedTask: function(task) {
       this.task = task
+      this.assignee = task.assignee || null
       updateAppTitle(
         this.$root.config.productNamePageTitle,
         this.$t('start.taskList.title'),

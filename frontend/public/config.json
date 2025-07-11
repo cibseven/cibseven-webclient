@@ -158,7 +158,7 @@
 	"layout": {
 		"showPopoverHowToAssign": true,
 		"showBusinessKey": true,
-		"showTaskDetailsSidebar": true,
+		"showTaskDetailsSidebar": false,
 		"showFilterDueDate": true,
 		"showFilterReminderDate": true,
 		"showFeedbackButton": false,
