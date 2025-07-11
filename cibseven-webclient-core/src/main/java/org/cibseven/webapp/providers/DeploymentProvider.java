@@ -41,6 +41,8 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import jakarta.servlet.http.HttpServletRequest;
 
 @Component
@@ -79,10 +81,11 @@ public class DeploymentProvider extends SevenProviderBase implements IDeployment
 		String url = UriComponentsBuilder.fromUriString(getEngineRestUrl() + "/deployment/count")
 		.queryParam("nameLike", nameLike)
 		.toUriString();
-		return ((ResponseEntity<Long>) doGet(url, Long.class, user, false)).getBody();
+		JsonNode response = ((ResponseEntity<JsonNode>) doGet(url, JsonNode.class, user, false)).getBody();
+    return response != null ? response.get("count").asLong() : 0L;
 	}
 
-    @Override
+  @Override
 	public Collection<Deployment> findDeployments(CIBUser user, String nameLike, int firstResult, int maxResults, String sortBy, String sortOrder) {
 		String url = UriComponentsBuilder.fromUriString(getEngineRestUrl() + "/deployment")
 		.queryParam("sortBy", sortBy)
