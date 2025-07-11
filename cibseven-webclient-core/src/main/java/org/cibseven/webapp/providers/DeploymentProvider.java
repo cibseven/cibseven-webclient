@@ -78,22 +78,26 @@ public class DeploymentProvider extends SevenProviderBase implements IDeployment
 
 	@Override
 	public Long countDeployments(CIBUser user, String nameLike) {
-		String url = UriComponentsBuilder.fromUriString(getEngineRestUrl() + "/deployment/count")
-		.queryParam("nameLike", nameLike)
-		.toUriString();
+		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(getEngineRestUrl() + "/deployment/count");
+		if (nameLike != null && !nameLike.isEmpty()) {
+			builder.queryParam("nameLike", nameLike);
+		}
+		String url = builder.toUriString();
 		JsonNode response = ((ResponseEntity<JsonNode>) doGet(url, JsonNode.class, user, false)).getBody();
-    return response != null ? response.get("count").asLong() : 0L;
+		return response != null ? response.get("count").asLong() : 0L;
 	}
 
   @Override
 	public Collection<Deployment> findDeployments(CIBUser user, String nameLike, int firstResult, int maxResults, String sortBy, String sortOrder) {
-		String url = UriComponentsBuilder.fromUriString(getEngineRestUrl() + "/deployment")
+		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(getEngineRestUrl() + "/deployment")
 		.queryParam("sortBy", sortBy)
 		.queryParam("sortOrder", sortOrder)
 		.queryParam("firstResult", firstResult)
-		.queryParam("maxResults", maxResults)
-		.queryParam("nameLike", nameLike)
-		.toUriString();
+		.queryParam("maxResults", maxResults);
+		if (nameLike != null && !nameLike.isEmpty()) {
+			builder.queryParam("nameLike", nameLike);
+		}
+		String url = builder.toUriString();
 		return Arrays.asList(((ResponseEntity<Deployment[]>) doGet(url, Deployment[].class, user, false)).getBody());
 	}
 
