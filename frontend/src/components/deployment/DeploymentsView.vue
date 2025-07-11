@@ -201,7 +201,7 @@ export default {
       this.sortBy = 'deploymentTime'
     }
 
-    // load sortOder
+    // load sortOrder
     const newSortOrder = localStorage.getItem('cibseven:deployments.sortOrder')
     if (['asc','desc'].includes(newSortOrder)) {
       this.sortOrder = newSortOrder
