@@ -106,14 +106,15 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 		// Default cache control for most resources
 		cacheConfig.setCacheControl(CacheControl.noCache());
 
-		// Stricter cache control for HTML files to prevent stale content
-		CacheControl strictNoCacheControl = CacheControl.noStore().noCache().mustRevalidate();
-
-		// Apply strict caching rules
-		cacheConfig.addCacheMapping(strictNoCacheControl, "/index.html");
-		cacheConfig.addCacheMapping(strictNoCacheControl, "/");
-		cacheConfig.addCacheMapping(strictNoCacheControl, "/embedded-forms.html");
-		cacheConfig.addCacheMapping(strictNoCacheControl, "/sso-login.html");
+		// Strict cache control: prevents any caching (including private caches)
+		// Used for HTML entry points to ensure fresh content delivery
+		CacheControl strictNoStoreControl = CacheControl.noStore();
+		
+		// Apply strict no-store policy to main application entry points
+		cacheConfig.addCacheMapping(strictNoStoreControl, "/index.html");
+		cacheConfig.addCacheMapping(strictNoStoreControl, "/");
+		cacheConfig.addCacheMapping(strictNoStoreControl, "/embedded-forms.html");
+		cacheConfig.addCacheMapping(strictNoStoreControl, "/sso-login.html");
 
 		registry.addInterceptor(cacheConfig);
 	}
