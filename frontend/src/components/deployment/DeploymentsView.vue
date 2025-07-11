@@ -230,8 +230,7 @@ export default {
       // Perform the search with the current query object and offset
       ProcessService.findDeployments(this.filter, offset, this.maxResults, this.sortBy, this.sortOrder).then(deployments => {
 
-        const newDeployments = deployments.slice(offset, offset + this.maxResults)
-        newDeployments.forEach(d => {
+        deployments.forEach(d => {
           d.isSelected = false
           d.name = d.name || d.id
 
@@ -254,7 +253,7 @@ export default {
           }
         })
 
-        this.deployments.push(...newDeployments)
+        this.deployments.push(...deployments)
         this.loading = false
       }).catch(error => {
         console.error(error)

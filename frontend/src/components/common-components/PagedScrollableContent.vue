@@ -39,7 +39,7 @@ export default {
   props: {
     loading: { type: Boolean, required: true },
     loadedCount: { type: Number, required: true },
-    totalCount: { type: Number, required: true, default: -1 },
+    totalCount: { type: Number },
     chunkSize: { type: Number, default: 20 },
     showLoadingSpinner: { type: Boolean, default: true },
 
@@ -59,7 +59,7 @@ export default {
   },
   computed: {
     allLoaded() {
-      if (this.totalCount === -1) {
+      if (this.totalCount === undefined || this.totalCount === null) {
         // totalCount is not defined, assume we don't know how many items there are
         return false
       }

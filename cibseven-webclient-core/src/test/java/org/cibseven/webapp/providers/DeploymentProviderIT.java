@@ -69,7 +69,7 @@ public class DeploymentProviderIT extends BaseHelper {
         CIBUser user = getCibUser();
 
         // Load the mock response from a file
-        String mockResponseBody = loadMockResponse("mocks/deployment_mock.json");
+        String mockResponseBody = loadMockResponse("mocks/deployment_count_mock");
         mockWebServer.enqueue(new MockResponse()
                 .setBody(mockResponseBody)
                 .addHeader("Content-Type", "application/json"));
