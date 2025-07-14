@@ -34,7 +34,7 @@
           :items="openIncidents"
           :title="$t('processes-dashboard.items.open-incidents.title')"
           :tooltip="$t('processes-dashboard.items.open-incidents.tooltip')"
-          @click="navigateToProcess($event)"
+          @click="navigateToProcess($event, 'incidents')"
           link="/seven/auth/processes/list?onlyIncidents=true"
           :loading="loading"
         ></PieChart>
@@ -150,12 +150,19 @@ export default {
       data.title = data.title || this.$t('processes-dashboard.unnamedProcess')
       if (data.title === 'others' && !data.id) data.title = this.$t('processes-dashboard.others')
     },
-    navigateToProcess(data) {
-      if (!data.item || !data.item?.id) this.$router.push(data.link)
+    navigateToProcess(data, tab) {
+      if (!data.item || !data.item?.id) {
+        this.$router.push(data.link)
+      }
       else {
         const [key, tenantId] = data.item.id.split(':')
-        const tenantQuery = tenantId ? '?tenantId=' + tenantId : ''
-        this.$router.push('/seven/auth/process/' + key + tenantQuery)
+
+        const params = new URLSearchParams()
+        if (tenantId) params.set('tenantId', tenantId)
+        if (tab) params.set('tab', tab)
+
+        const queryString = params.toString() ? `?${params.toString()}` : ''
+        this.$router.push(`/seven/auth/process/${key}${queryString}`)
       }
     },
     navigateToHumanTasks(data) {
