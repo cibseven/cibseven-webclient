@@ -48,7 +48,7 @@ import jakarta.servlet.http.HttpServletRequest;
 @Component
 public class DeploymentProvider extends SevenProviderBase implements IDeploymentProvider {
 
-    @Override
+	@Override
 	public Deployment deployBpmn(MultiValueMap<String, Object> data, MultiValueMap<String, MultipartFile> file, CIBUser user) throws SystemException {
 		String url = getEngineRestUrl() + "/deployment/create";
 
@@ -83,22 +83,22 @@ public class DeploymentProvider extends SevenProviderBase implements IDeployment
 			builder.queryParam("nameLike", nameLike);
 		}
 		String url = builder.toUriString();
-		JsonNode response = ((ResponseEntity<JsonNode>) doGet(url, JsonNode.class, user, false)).getBody();
+		JsonNode response = ((ResponseEntity<JsonNode>) doGet(url, JsonNode.class, user, true)).getBody();
 		return response != null ? response.get("count").asLong() : 0L;
 	}
 
   @Override
 	public Collection<Deployment> findDeployments(CIBUser user, String nameLike, int firstResult, int maxResults, String sortBy, String sortOrder) {
 		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(getEngineRestUrl() + "/deployment")
-		.queryParam("sortBy", sortBy)
-		.queryParam("sortOrder", sortOrder)
-		.queryParam("firstResult", firstResult)
-		.queryParam("maxResults", maxResults);
+			.queryParam("sortBy", sortBy)
+			.queryParam("sortOrder", sortOrder)
+			.queryParam("firstResult", firstResult)
+			.queryParam("maxResults", maxResults);
 		if (nameLike != null && !nameLike.isEmpty()) {
 			builder.queryParam("nameLike", nameLike);
 		}
 		String url = builder.toUriString();
-		return Arrays.asList(((ResponseEntity<Deployment[]>) doGet(url, Deployment[].class, user, false)).getBody());
+		return Arrays.asList(((ResponseEntity<Deployment[]>) doGet(url, Deployment[].class, user, true)).getBody());
 	}
 
 	@Override
@@ -112,15 +112,15 @@ public class DeploymentProvider extends SevenProviderBase implements IDeployment
 		String url = getEngineRestUrl() + "/deployment/" + deploymentId + "/resources/" + resourceId + "/data";
 		try {
 			RestTemplate restTemplate = new RestTemplate();
-		    restTemplate.getMessageConverters().add(new ByteArrayHttpMessageConverter());
-		    HttpHeaders headers = new HttpHeaders();
-		    headers.setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM));
+			restTemplate.getMessageConverters().add(new ByteArrayHttpMessageConverter());
+			HttpHeaders headers = new HttpHeaders();
+			headers.setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM));
 			UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
 			headers.add("Authorization", rq.getHeader("authorization"));
-		    HttpEntity<String> entity = new HttpEntity<String>(headers);
-		    ResponseEntity<byte[]> response = restTemplate.exchange(builder.build().toUriString(), HttpMethod.GET, entity, byte[].class, "1");
+			HttpEntity<String> entity = new HttpEntity<String>(headers);
+			ResponseEntity<byte[]> response = restTemplate.exchange(builder.build().toUriString(), HttpMethod.GET, entity, byte[].class, "1");
 		   
-		    InputStream targetStream = new ByteArrayInputStream(response.getBody());
+			InputStream targetStream = new ByteArrayInputStream(response.getBody());
 			InputStreamSource iso = new InputStreamResource(targetStream);
 			
 			return new Data(fileName, response.getHeaders().getContentType().toString(), iso, response.getBody().length);
