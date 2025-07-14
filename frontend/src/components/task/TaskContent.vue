@@ -109,11 +109,12 @@ import usersMixin from '@/mixins/usersMixin.js'
 import RenderTemplate from '@/components/render-template/RenderTemplate.vue'
 import FilterableSelect from '@/components/task/filter/FilterableSelect.vue'
 import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
+import assigneeMixin from '@/mixins/assigneeMixin.js'
 
 export default {
   name: 'TaskContent',
   components: { RenderTemplate, FilterableSelect, ConfirmDialog },
-  mixins: [usersMixin],
+  mixins: [usersMixin, assigneeMixin],
   inject: ['isMobile'],
   props: { task: Object },
   setup: function() {
@@ -156,17 +157,6 @@ export default {
     }
   },
   computed: {
-    assignee: {
-      get() {
-        const selected = this.$store.state.task.selectedAssignee
-        if (selected && selected.taskId === this.task.id) return selected.assignee
-        if (typeof this.task.assignee === 'string') return this.task.assignee
-        return null
-      },
-      set(value) {
-        this.setSelectedAssignee({ taskId: this.task.id, assignee: value })
-      }
-    },
     renderTemplateStyles: function() {
       if (this.task) {
         if ((this.task.assignee && this.task.assignee.toLowerCase() !== this.$root.user.id.toLowerCase()) ||
@@ -256,8 +246,8 @@ export default {
         TaskService.setAssignee(this.task.id, this.assignee).then(() => {
         // eslint-disable-next-line vue/no-mutating-props
         this.task.assignee = this.assignee
-        this.$emit('update-assignee', this.assignee)
         this.setSelectedAssignee({ taskId: this.task.id, assignee: this.assignee })
+        this.$emit('update-assignee', { taskId: this.task.id, assignee: this.task.assignee })
         if (this.task.assignee != null) {
           this.$refs.ariaLiveText.textContent = this.$t('task.userAssigned', [this.getCompleteName])
         }
@@ -276,7 +266,7 @@ export default {
         } else if (task.assignee.toLowerCase() === this.$root.user.id.toLowerCase()) {
           this.assignee = task.assignee
           this.setSelectedAssignee({ taskId: task.id, assignee: task.assignee })
-          this.$emit('update-assignee', task.assignee)
+          this.$emit('update-assignee', { taskId: task.id, assignee: task.assignee })
         } else {
           this.$refs.confirmTaskAssign.show()
         }

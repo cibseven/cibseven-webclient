@@ -93,12 +93,13 @@ import { BWaitingBox } from 'cib-common-components'
 import { updateAppTitle } from '@/utils/init'
 import { splitToWords } from '@/utils/search'
 import { mapActions } from 'vuex'
+import assigneeMixin from '@/mixins/assigneeMixin.js'
 
 export default {
   name: 'TasksContent',
   components: { TasksNavBar, FilterNavBar, FilterNavCollapsed, SidebarsFlow, SuccessAlert, BWaitingBox },
   inject: ['isMobile', 'AuthService'],
-  mixins: [permissionsMixin],
+  mixins: [permissionsMixin, assigneeMixin],
   data: function () {
     var leftOpenFilter = localStorage.getItem('leftOpenFilter') ?
       localStorage.getItem('leftOpenFilter') === 'true' : true
@@ -129,19 +130,6 @@ export default {
       return this.$options.components && this.$options.components.TasksRightSidebar
         ? this.$options.components.TasksRightSidebar
         : null
-    },
-    assignee: {
-      get() {
-        const selected = this.$store.state.task.selectedAssignee
-        if (selected && selected.taskId === this.task.id) return selected.assignee
-        if (typeof this.task.assignee === 'string') return this.task.assignee
-        return null
-      },
-      set(value) {
-        if (this.task) {
-          this.setSelectedAssignee({ taskId: this.task.id, name: value })
-        }
-      }
     },
     rightCaptionTask: function() {
       if (this.canOpenRightTask())
@@ -277,13 +265,9 @@ export default {
       this.tasks.splice(index, 1, updatedTask)
       this.listTasksWithFilterAuto()
     },
-    updateAssignee: function(assignee, target) {
-      let assigneeString = assignee
-      let taskId = null
-      if (assignee && typeof assignee === 'object' && 'assignee' in assignee && 'taskId' in assignee) {
-        assigneeString = assignee.assignee
-        taskId = assignee.taskId
-      }
+    updateAssignee: function(taskStore, target) {
+      let assigneeString = taskStore?.assignee || null
+      let taskId = taskStore?.taskId || null
       if (this.task && this.task.id === taskId) {
         this.assignee = assigneeString
         this.task.assignee = assigneeString
