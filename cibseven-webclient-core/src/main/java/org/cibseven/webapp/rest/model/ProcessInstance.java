@@ -33,6 +33,7 @@ public class ProcessInstance {
     private String definitionId;
     private String businessKey;
     private String caseInstanceId;
+    private Boolean ended;
     private Boolean suspended;
     private String tenantId;
     private Collection<Object> links;

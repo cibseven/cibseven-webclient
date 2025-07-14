@@ -104,7 +104,7 @@ export default {
           hover: {
             filter: {
               // Disable Hover Effect on Donut Chart
-              type: this.isEmptyChart ? 'none' : 'lighten', // or 'darken'
+              type: this.isEmptyChart ? 'none' : 'darken', // or 'lighten'
               value: 0.15 // lighten by 15%
             }
           }
@@ -125,6 +125,8 @@ export default {
               formatter: (seriesName) => `${seriesName}`,
             },
           },
+          // set the tooltip background color in ApexCharts from styles
+          fillSeriesColor: false,
         },
         colors: this.isEmptyChart ? ['#C1CEDD'] : [
           '#59799B',
@@ -158,5 +160,13 @@ export default {
 .apexcharts-datalabel-value {
   cursor: pointer !important;
   pointer-events: auto !important;
+}
+
+/* set the tooltip background color in ApexCharts  */
+.apexcharts-tooltip {
+  --bs-bg-opacity: 1;
+  background-color: #fff !important;
+  color: var(--bs-dark) !important;
+  border: 1px solid var(--gray-500) !important;
 }
 </style>

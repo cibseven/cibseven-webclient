@@ -2,7 +2,12 @@
 	"commons": {
 		"edit": "Редактировать",
 		"save": "Сохранить",
-		"copyValue": "Копировать значение"
+		"copyValue": "Копировать значение",
+		"noMoreResults": "Больше нет результатов",
+		"loadMore": {
+			"title": "Загрузить ещё",
+			"tooltip": "Нажмите, чтобы загрузить следующие {chunkSize} записей"
+		}
 	},
 	"login": {
 		"productName": "CIB seven",
@@ -63,6 +68,7 @@
 		"key": "Ключ определения",	
 		"state": "Статус",
 		"id": "ID",
+		"instanceId": "ID",
 		"processId": "Идентификатор процесса",
 		"startUserId": "Пользователь",
 		"startTime": "Начальная дата",
@@ -116,7 +122,7 @@
 			"historyVersions": "Версии истории",
 			"variable": "Переменная процесса",
 			"copyValue": "Копировать значение",
-			"historyTimeToLive": "История время жить",
+			"historyTimeToLive": "Время хранения истории",
 			"tenantId": "ID тенанта"
 		},
 		"sections": {
@@ -182,7 +188,8 @@
 		"externalTasksLog": "Журнал внешних задач",
 		"modify": "Изменить",
 		"restart": "Перезапустить",
-		"documentation": "Документация"
+		"documentation": "Документация",
+		"externalTasks": "Внешние задачи"
 	},
 	"process-instance": {
 		"processInstanceId": "ID экземпляра процесса",
@@ -204,7 +211,9 @@
 			"activity": "Действие",
 			"state": "Состояние",
 			"referenced": "Ссылается",
-			"runningAndReferenced": "Запущен и ссылается"
+			"running": "Выполняется",
+			"runningAndReferenced": "Запущен и ссылается",
+			"unknown": "Неизвестно"
 		},
 		"details": {
 			"startUser": "Начальный пользователь",
@@ -338,6 +347,16 @@
 			"actions": "Действия",
 			"suspend": "Приостановить",
 			"resume": "Возобновить"
+		},
+		"externalTasks": {
+			"id": "ID внешней задачи",
+			"activityId": "Активность",
+			"topicName": "Тема",
+			"workerId": "ID работника",
+			"lockExpirationTime": "Дата истечения блокировки",
+			"retries": "Повторы",
+			"priority": "Приоритет",
+			"noExternalTasks": "Внешние задачи не найдены"
 		}
 	},
 	"bpmn-viewer": {
@@ -449,6 +468,7 @@
 	},
 	"admin": {
 		"loading": "Загрузка...",
+		"loadingMoreData": "Загрузка дополнительных данных...",
 		"noResults": "Ничего не найдено",
 		"exportCsv": "Экспортировать все",
 		"users": {
@@ -1033,7 +1053,7 @@
 		"filter": "Фильтр"
 	},
 	"table": {
-		"selectColumns": "Выбор колонок",
+		"selectColumns": "Показать столбцы",
 		"toggleColumn": "Переключить колонку \"{column}\""
 	},
 	"navigation": {

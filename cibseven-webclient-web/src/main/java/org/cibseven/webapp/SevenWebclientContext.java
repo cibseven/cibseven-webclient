@@ -103,7 +103,19 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
 		WebContentInterceptor cacheConfig = new WebContentInterceptor();
+		// Default cache control for most resources
 		cacheConfig.setCacheControl(CacheControl.noCache());
+
+		// Strict cache control: prevents any caching (including private caches)
+		// Used for HTML entry points to ensure fresh content delivery
+		CacheControl strictNoStoreControl = CacheControl.noStore();
+		
+		// Apply strict no-store policy to main application entry points
+		cacheConfig.addCacheMapping(strictNoStoreControl, "/index.html");
+		cacheConfig.addCacheMapping(strictNoStoreControl, "/");
+		cacheConfig.addCacheMapping(strictNoStoreControl, "/embedded-forms.html");
+		cacheConfig.addCacheMapping(strictNoStoreControl, "/sso-login.html");
+
 		registry.addInterceptor(cacheConfig);
 	}
 

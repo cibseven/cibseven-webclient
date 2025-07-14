@@ -18,63 +18,140 @@
 -->
 <template>
   <div class="overflow-auto bg-white container-fluid g-0">
-    <FlowTable v-if="calledProcesses.length > 0" resizable striped thead-class="sticky-header" :items="calledProcesses" primary-key="id" prefix="process-instance.calledProcessDefinitions."
-      sort-by="label" :sort-desc="true" :fields="[
-        { label: 'calledProcessDefinition', key: 'name', class: 'col-4', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' },
+    <div v-if="showSpinner">
+      <p class="text-center p-4"><BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}</p>
+    </div>
+    <FlowTable v-else-if="calledProcessDefinitions.length > 0" resizable striped thead-class="sticky-header" :items="calledProcessDefinitions" primary-key="id" prefix="process-instance.calledProcessDefinitions."
+      sort-by="label" :fields="[
+        { label: 'calledProcessDefinition', key: 'label', class: 'col-4', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' },
         { label: 'state', key: 'state', class: 'col-4', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' },
         { label: 'activity', key: 'activity', class: 'col-4', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' }
       ]">
-      <template v-slot:cell(name)="table">
-        <router-link
-          :to="{
-            name: 'process', 
-            params: {
-              processKey: table.item.key,
-              versionIndex: table.item.version
-            }
-          }"
-          :title="table.item.name"
-          class="text-truncate"
-        >
-          {{ table.item.name }}
-        </router-link>
+      <template v-slot:cell(label)="table">
+        <CopyableActionButton
+            :display-value="table.item.label || table.item.key"
+            :title="table.item.name"
+            @copy="copyValueToClipboard"
+            :to="{
+              name: 'process', 
+              params: {
+                processKey: table.item.definitionKey,
+                versionIndex: table.item.version
+              },
+              query: { parentProcessDefinitionId: process.id, tab: 'instances' }
+            }"
+          />
       </template>
       <template v-slot:cell(state)="table">
-        <span :title="getCalledProcessState(table.item)" class="text-truncate">
-          {{ getCalledProcessState(table.item) }}
+        <span v-if="table.item.activities.length" class="text-truncate">
+          {{ $t(getCalledProcessState(table.item)) }}
         </span>
       </template>
       <template v-slot:cell(activity)="table">
-        <button class="btn btn-link text-truncate p-0" :title="table.item.calledFromActivityIds[0]" 
-          @click="setHighlightedElement(table.item.calledFromActivityIds[0])">
-          {{ $store.state.activity.processActivities[table.item.calledFromActivityIds[0]] }}
-      </button>
+        <div class="w-100">
+          <CopyableActionButton
+            v-for="(act, index) in table.item.activities" :key="index" 
+            :display-value="act.activityName"
+            :title="act.activityName"
+            @click="selectActivity(act.activityId)"
+            @copy="copyValueToClipboard"
+          />
+        </div>
       </template>
     </FlowTable>
-    <div v-else>
+    <div v-if="loading && calledProcessDefinitions.length > 0">
+      <p class="text-center p-4"><BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loadingMoreData') }}</p>
+    </div>
+    <div v-else-if="!initialLoading && calledProcessDefinitions.length === 0">
       <p class="text-center p-4">{{ $t('process-instance.noResults') }}</p>
     </div>
+    <SuccessAlert ref="messageCopy" style="z-index: 9999"> {{ $t('process.copySuccess') }} </SuccessAlert>
   </div>
 </template>
 
 <script>
 import FlowTable from '@/components/common-components/FlowTable.vue'
-import { mapActions } from 'vuex'
+import { BWaitingBox } from 'cib-common-components'
+import { mapActions, mapGetters } from 'vuex'
+import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
+import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
+import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
+
 
 export default {
   name: 'CalledProcessDefinitionsTable',
-  components: { FlowTable },
+  components: { FlowTable, CopyableActionButton, SuccessAlert, BWaitingBox },
+  mixins: [copyToClipboardMixin],
   props: {
-    calledProcesses: Array
+    process: Object,
+    activitiesHistory: Array
   },
-  methods: {
-    ...mapActions(['setHighlightedElement']),
-    getCalledProcessState(item) {
-      const instances = item.currentInstances || []
-      return instances.length > 0 
-        ? this.$t('process-instance.calledProcessDefinitions.runningAndReferenced')
-        : this.$t('process-instance.calledProcessDefinitions.referenced')
+  data() {
+    return {
+      loading: false,
+      initialLoading: false
     }
   },
+  computed: {
+    ...mapGetters('calledProcessDefinitions', [
+      'calledProcessDefinitions',
+      'getCalledProcessState'
+    ]),
+    ...mapGetters(['diagramXml', 'selectedActivityId']),
+    showSpinner() {
+      return this.initialLoading && this.calledProcessDefinitions.length === 0
+    }
+  },
+  watch: {
+    selectedActivityId() {
+      this.setHighlightedElement(this.selectedActivityId)
+      this.filterByActivity(this.selectedActivityId)
+    },
+    'process.id': {
+      handler(id) {
+        if (id) {
+          this.loadCalledProcessDefinitionsData()
+        }
+      },
+      immediate: true
+    },
+    activitiesHistory: {
+      handler(newActivitiesHistory) {
+        if (newActivitiesHistory && this.process?.id) {
+          this.loadCalledProcessDefinitionsData()
+        }
+      },
+      immediate: false
+    }
+  },
+  methods: {
+    ...mapActions(['setHighlightedElement', 'selectActivity']),
+    ...mapActions('calledProcessDefinitions', [
+      'loadCalledProcessDefinitions', 
+      'filterByActivity'
+    ]),
+    async loadCalledProcessDefinitionsData() {
+      // Only proceed if we have the required data
+      if (!this.process?.id || !this.activitiesHistory) {
+        return
+      }
+      
+      this.initialLoading = true
+      this.loading = true
+      try {
+        await this.loadCalledProcessDefinitions({ 
+          processId: this.process.id,
+          activitiesHistory: this.activitiesHistory,
+          diagramXml: this.diagramXml,
+          chunkSize: this.$root?.config?.maxProcessesResults || 50
+        })
+      } catch (error) {
+        console.error('Error loading called processes:', error)
+      } finally {
+        this.loading = false
+        this.initialLoading = false
+      }
+    }
+  }
 }
 </script>

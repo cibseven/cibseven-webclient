@@ -2,7 +2,12 @@
 	"commons": {
 		"edit": "Edit",
 		"save": "Save",
-		"copyValue": "Copy value"
+		"copyValue": "Copy value",
+		"noMoreResults": "No more results",
+		"loadMore": {
+			"title": "Load more",
+			"tooltip": "Click to load next {chunkSize} records"
+		}
 	},
 	"login": {
 		"productName": "CIB seven",
@@ -63,6 +68,7 @@
 		"key": "Process key",
 		"state": "State",
 		"id": "ID",
+		"instanceId": "ID",
 		"processId": "Process ID",
 		"startUserId": "User",
 		"startTime": "Start time",
@@ -182,10 +188,11 @@
 		"externalTasksLog": "External tasks log",
 		"modify": "Modify",
 		"restart": "Restart",
-		"documentation": "Documentation"
+		"documentation": "Documentation",
+		"externalTasks": "External tasks"
 	},
 	"process-instance": {
-		"processInstanceId": "Processs Instance ID",
+		"processInstanceId": "Process Instance ID",
 		"businessKey": "Business Key",
 		"info": "Process details",
 		"variablesInfo": "Process variables",
@@ -204,7 +211,9 @@
 			"activity": "Activity",
 			"state": "State",
 			"referenced": "Referenced",
-			"runningAndReferenced": "Running and referenced"
+			"running": "Running",
+			"runningAndReferenced": "Running and referenced",			
+			"unknown": "Unknown"
 		},
 		"details": {
 			"startUser": "Start user",
@@ -338,6 +347,16 @@
 			"actions": "Actions",
 			"suspend": "Suspend",
 			"resume": "Resume"
+		},
+		"externalTasks": {
+			"id": "External task ID",
+			"activityId": "Activity",
+			"topicName": "Topic",
+			"workerId": "Worker ID", 
+			"lockExpirationTime": "Lock expiration time",
+			"retries": "Retries",
+			"priority": "Priority",
+			"noExternalTasks": "No external tasks found"
 		}
 	},
 	"bpmn-viewer": {
@@ -449,6 +468,7 @@
 	},
 	"admin": {
 		"loading": "Loading...",
+		"loadingMoreData": "Loading more data...",
 		"noResults": "No results",
 		"exportCsv": "Export all",
 		"users": {
@@ -1034,8 +1054,8 @@
 		"filter": "Filter"
 	},
 	"table": {
-		"selectColumns": "Select columns",
-		"toggleColumn": "Toggle {column} column"
+		"selectColumns": "Display columns",
+		"toggleColumn": "Toggle \"{column}\" column"
 	},
 	"navigation": {
 		"home": "Home",

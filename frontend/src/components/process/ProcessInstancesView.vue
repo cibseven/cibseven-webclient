@@ -18,6 +18,28 @@
 -->
 <template>
   <div v-if="process" class="h-100">
+    <!-- Breadcrumb for parent process navigation -->
+    <ol v-if="parentProcess" class="breadcrumb m-0 d-flex align-items-center w-100 ps-3" style="min-height: 40px; line-height: 20px;">
+      <li class="breadcrumb-item">
+        <router-link
+          :to="{
+            path: `/seven/auth/process/${parentProcess.key}/${parentProcess.version}`,
+            query: {
+              ...Object.fromEntries(
+                Object.entries($route.query).filter(([key]) => key !== 'parentProcessDefinitionId')
+              ),
+              tab: 'instances'
+            }
+          }"
+          class="text-decoration-none d-flex align-items-center fw-bold text-info">
+          {{ parentProcess.name || parentProcess.key }}
+        </router-link>
+      </li>
+      <li class="breadcrumb-item active d-flex align-items-center" aria-current="page">
+        <span class="fw-bold">{{ process.name || process.key }}</span>
+      </li>
+    </ol>
+
     <div @mousedown="handleMouseDown" class="v-resizable position-absolute w-100" style="left: 0" :style="'height: ' + bpmnViewerHeight + 'px; ' + toggleTransition">
       <component :is="BpmnViewerPlugin" v-if="BpmnViewerPlugin" ref="diagram" @task-selected="selectTask($event)" @activity-map-ready="activityMap = $event"
         :process-definition-id="process.id" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" :statistics="process.statistics"
@@ -32,7 +54,7 @@
       </span>
     </div>
 
-    <div class="position-absolute w-100 bg-light border-bottom" style="z-index: 2" :style="'top: ' + (bottomContentPosition - tabsAreaHeight) + 'px; ' + toggleTransition">
+    <div class="position-absolute w-100 bg-light border-bottom" style="left: 0; z-index: 2" :style="'top: ' + (bottomContentPosition - tabsAreaHeight) + 'px; ' + toggleTransition">
       <div class="d-flex align-items-end">
         <div class="tabs-scroll-container flex-grow-1" style="white-space: nowrap;">
           <ul class="nav nav-tabs m-0 border-0 flex-nowrap" style="display: inline-flex; overflow-y: hidden">
@@ -44,54 +66,69 @@
     </div>
 
     <div class="position-absolute w-100 overflow-hidden" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
-      <div v-if="isInstancesView" ref="filterTable" class="bg-light d-flex position-absolute w-100">
-        <div class="col-3 p-3">
-          <b-input-group size="sm">
-            <template #prepend>
-              <b-button :title="$t('searches.search')" aria-hidden="true" size="sm" class="rounded-left" variant="secondary"><span class="mdi mdi-magnify" style="line-height: initial"></span></b-button>
+      <div ref="rContent" class="overflow-y-scroll bg-white position-absolute w-100" style="top: 0px; left: 0; bottom: 0" @scroll="handleScroll">
+        <template v-if="isInstancesView">
+          <div ref="filterTable" class="bg-light d-flex w-100">
+
+            <div v-if="ProcessInstancesSearchBoxPlugin" class="col-10 p-2">
+              <component :is="ProcessInstancesSearchBoxPlugin"
+                :query="computedFilter"
+                @change-query-object="changeFilter"
+              ></component>
+            </div>
+            <template v-else>
+              <div class="col-3 p-3">
+                <b-input-group size="sm">
+                  <template #prepend>
+                    <b-button :title="$t('searches.search')" aria-hidden="true" size="sm" class="rounded-left" variant="secondary"><span class="mdi mdi-magnify" style="line-height: initial"></span></b-button>
+                  </template>
+                  <b-form-input :title="$t('searches.search')" size="sm" :placeholder="$t('searches.search')" @input="(evt) => onInput(evt.target.value.trim())"></b-form-input>
+                  <b-button size="sm" variant="light" @click="$refs.sortModal.show()" class="ms-1 border"><span class="mdi mdi-sort" style="line-height: initial"></span></b-button>
+                </b-input-group>
+              </div>
+              <div class="col-1 p-3">
+                <span v-if="selectedActivityId" class="badge bg-info rounded-pill p-2 pe-3" style="font-weight: 500; font-size: 0.75rem">
+                  <span @click="clearActivitySelection" role="button" class="mdi mdi-close-thick py-2 px-1"></span> {{ selectedActivityId }}
+                </span>
+              </div>
             </template>
-            <b-form-input :title="$t('searches.search')" size="sm" :placeholder="$t('searches.search')" @input="(evt) => onInput(evt.target.value.trim())"></b-form-input>
-            <b-button size="sm" variant="light" @click="$refs.sortModal.show()" class="ms-1 border"><span class="mdi mdi-sort" style="line-height: initial"></span></b-button>
-          </b-input-group>
-        </div>
-        <div class="col-1 p-3">
-          <span v-if="selectedActivityId" class="badge bg-info rounded-pill p-2 pe-3" style="font-weight: 500; font-size: 0.75rem">
-            <span @click="clearActivitySelection" role="button" class="mdi mdi-close-thick py-2 px-1"></span> {{ selectedActivityId }}
-          </span>
-        </div>
-        <div class="col-8 p-3 text-end">
-          <div>
-            <b-button v-if="process.suspended === 'false'" class="border" size="sm" variant="light" @click="confirmSuspend" :title="$t('process.suspendProcess')">
-              <span class="mdi mdi-pause-circle-outline"></span> {{ $t('process.suspendProcess') }}
-            </b-button>
-            <b-button v-else class="border" size="sm" variant="light" @click="confirmActivate" :title="$t('process.activateProcess')">
-              <span class="mdi mdi-play-circle-outline"></span> {{ $t('process.activateProcess') }}
-            </b-button>
-            <b-button class="border" size="sm" variant="light" @click="downloadBpmn()" :title="$t('process.downloadBpmn')">
-              <span class="mdi mdi-download"></span> {{ $t('process.downloadBpmn') }}
-            </b-button>
-            <b-button class="border" size="sm" variant="light" @click="viewDeployment()" :title="$t('process.showDeployment')">
-              <span class="mdi mdi-file-eye-outline"></span> {{ $t('process.showDeployment') }}
-            </b-button>
-            <component :is="ProcessActions" v-if="ProcessActions" :process="process"></component>
+
+            <div :class="[ProcessInstancesSearchBoxPlugin ? 'col-2' : 'col-8', 'p-3', 'text-end']">
+              <div>
+                <b-button v-if="process.suspended === 'false'" class="border" size="sm" variant="light" @click="confirmSuspend" :title="$t('process.suspendProcess')">
+                  <span class="mdi mdi-pause-circle-outline"></span> {{ collapseButtons ? '': $t('process.suspendProcess') }}
+                </b-button>
+                <b-button v-else class="border" size="sm" variant="light" @click="confirmActivate" :title="$t('process.activateProcess')">
+                  <span class="mdi mdi-play-circle-outline"></span> {{ collapseButtons  ? '': $t('process.activateProcess') }}
+                </b-button>
+                <b-button class="border" size="sm" variant="light" @click="downloadBpmn()" :title="$t('process.downloadBpmn')">
+                  <span class="mdi mdi-download"></span> {{ collapseButtons  ? '': $t('process.downloadBpmn') }}
+                </b-button>
+                <b-button class="border" size="sm" variant="light" @click="viewDeployment()" :title="$t('process.showDeployment')">
+                  <span class="mdi mdi-file-eye-outline"></span> {{ collapseButtons  ? '': $t('process.showDeployment') }}
+                </b-button>
+                <component :is="ProcessActions" v-if="ProcessActions" :process="process" :collapseButtons="collapseButtons"></component>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-      <div ref="rContent" class="overflow-auto bg-white position-absolute w-100" :style="isInstancesView ? 'top: 60px' : 'top: 0px'" style="left: 0; bottom: 0" @scroll="handleScroll">
-        <InstancesTable v-if="isInstancesView" ref="instancesTable" 
-          :instances="instances"
-          :sortByDefaultKey="sortByDefaultKey"
-          :sortDesc="sortDesc"
-          @instance-deleted="$emit('instance-deleted')"
-          :loading="loading"
-          :sorting="sorting"
-        ></InstancesTable>
+          <InstancesTable ref="instancesTable"
+            :process="process"
+            :activity-instance="activityInstance"
+            :sortByDefaultKey="sortByDefaultKey"
+            :sortDesc="sortDesc"
+            :sorting="sorting"
+            :tenant-id="tenantId"
+            :filter="computedFilter"
+            @instance-deleted="$emit('instance-deleted')"
+            @filter-instances="$emit('filter-instances', $event)"
+          ></InstancesTable>
+        </template>
         <IncidentsTable v-else-if="activeTab === 'incidents'"
-          :incidents="incidents" :activity-instance="activityInstance"
+          :process="process" :activity-instance="activityInstance"
           :activity-instance-history="process.activitiesHistory"/>
         <JobDefinitionsTable v-else-if="activeTab === 'jobDefinitions'"
           :process-id="process.id" />
-        <CalledProcessDefinitionsTable v-else-if="activeTab === 'calledProcessDefinitions'" :calledProcesses="calledProcesses"/>
+        <CalledProcessDefinitionsTable v-else-if="activeTab === 'calledProcessDefinitions'" :process="process" :activities-history="process.activitiesHistory"/>
         <component :is="ProcessInstancesTabsContentPlugin" v-if="ProcessInstancesTabsContentPlugin" :process="process" :active-tab="activeTab"></component>
       </div>
     </div>
@@ -111,7 +148,7 @@
 
     <SuccessAlert ref="messageCopy"> {{ $t('process.copySuccess') }} </SuccessAlert>
     <SuccessAlert top="0" style="z-index: 1031" ref="success"> {{ $t('alert.successOperation') }}</SuccessAlert>
-    <MultisortModal ref="sortModal" :items="instances" :sortKeys="['state', 'businessKey', 'startTime', 'endTime', 'id', 'startUserId', 'incidents']" :prefix="'process.'" @apply-sorting="applySorting"></MultisortModal>
+    <MultisortModal ref="sortModal" :sortKeys="['businessKey', 'startTime', 'endTime', 'instanceId']" :prefix="'process.'" @apply-sorting="applySorting"></MultisortModal>
   </div>
 </template>
 
@@ -126,6 +163,7 @@ import MultisortModal from '@/components/process/modals/MultisortModal.vue'
 import CalledProcessDefinitionsTable from '@/components/process/tables/CalledProcessDefinitionsTable.vue'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
+import tabUrlMixin from '@/components/process/mixins/tabUrlMixin.js'
 import { debounce } from '@/utils/debounce.js'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
@@ -136,48 +174,97 @@ import { mapGetters, mapActions } from 'vuex'
 export default {
   name: 'ProcessInstancesView',
   components: { InstancesTable, JobDefinitionsTable, BpmnViewer, MultisortModal,
-     SuccessAlert, ConfirmDialog, BWaitingBox, IncidentsTable, CalledProcessDefinitionsTable, 
+     SuccessAlert, ConfirmDialog, BWaitingBox, IncidentsTable, CalledProcessDefinitionsTable,
      ProcessInstancesTabs },
   inject: ['loadProcesses'],
-  mixins: [permissionsMixin, resizerMixin, copyToClipboardMixin],
-  props: { instances: Array, process: Object, firstResult: Number, maxResults: Number, incidents: Array,
-    activityInstance: Object, activityInstanceHistory: Array, loading: Boolean,
-    processKey: String, calledProcesses: Array,
-    versionIndex: { type: String, default: '' }
+  mixins: [permissionsMixin, resizerMixin, copyToClipboardMixin, tabUrlMixin],
+  emits: ['task-selected', 'filter-instances', 'instance-deleted'],
+  props: {
+    process: Object,
+    activityInstance: Object,
+    activityInstanceHistory: Array,
+    loading: Boolean,
+    processKey: String,
+    versionIndex: { type: String, default: '' },
+    tenantId: String,
+    filter: {
+      type: Object,
+      default: () => ({})
+    },
+    parentProcess: Object
   },
   data: function() {
     return {
       selectedInstance: null,
       selectedTask: null,
       topBarHeight: 0,
-      activeTab: 'instances',
       events: {},
       usages: [],
       sortByDefaultKey: 'startTime',
       sorting: false,
-      sortDesc: true
+      sortDesc: true,
+      defaultTab: 'instances'
     }
   },
   watch: {
-    'process.id': function() {
+    'process.id': {
       //TODO: Refactor to fetch from store
-      ProcessService.fetchDiagram(this.process.id).then(response => {
-        this.$refs.diagram.showDiagram(response.bpmn20Xml)
-      }),
-      this.clearActivitySelection()
-      this.getJobDefinitions()
-      this.changeTab({ id: 'instances' })
+      handler: function(newId, oldId) {
+        if (newId && newId !== oldId) {
+          ProcessService.fetchDiagram(newId).then(response => {
+            this.$refs.diagram.showDiagram(response.bpmn20Xml)
+            this.setDiagramXml(response.bpmn20Xml)
+          })
+        }
+        this.clearActivitySelection()
+        this.changeTab({ id: this.$route.query.tab || this.defaultTab })
+      }
+    },
+    parentProcess: {
+      handler: function(newVal) {
+        if (newVal) {
+          this.topBarHeight = 40
+        } else {
+          this.topBarHeight = 0
+        }
+      },
+      immediate: true
     }
   },
   mounted: function() {
     ProcessService.fetchDiagram(this.process.id).then(response => {
       setTimeout(() => {
         this.$refs.diagram.showDiagram(response.bpmn20Xml)
+        this.setDiagramXml(response.bpmn20Xml)
       }, 100)
-    }),
-    this.getJobDefinitions()
+    })
   },
   computed: {
+    ProcessInstancesSearchBoxPlugin: function() {
+      return this.$options.components && this.$options.components.ProcessInstancesSearchBoxPlugin
+        ? this.$options.components.ProcessInstancesSearchBoxPlugin
+        : null
+    },
+    computedFilter() {
+      const result = {
+        ...this.filter,
+      }
+
+      // append `selectedActivityId` into activityIdIn array
+      if (this.selectedActivityId) {
+        if (!result.activityIdIn || !Array.isArray(result.activityIdIn)) {
+          result.activityIdIn = [this.selectedActivityId]
+        }
+        else if (!result.activityIdIn.includes(this.selectedActivityId)) {
+          result.activityIdIn = [
+            ...result.activityIdIn,
+            this.selectedActivityId
+          ]
+        }
+      }
+
+      return result
+    },
     ProcessActions: function() {
       return this.$options.components && this.$options.components.ProcessActions
         ? this.$options.components.ProcessActions
@@ -205,21 +292,27 @@ export default {
       return this.activeTab === 'instances'
     },
     ...mapGetters(['selectedActivityId']),
+    ...mapGetters('instances', ['instances']),
+    collapseButtons: function() {
+      return this.ProcessInstancesSearchBoxPlugin || this.selectedActivityId
+    },
   },
-  methods: {    
-    ...mapActions(['clearActivitySelection']),
-    applySorting: function(sortedItems) {
+  methods: {
+    ...mapActions(['clearActivitySelection', 'setDiagramXml']),
+    applySorting: function(sortingCriteria) {
       this.sorting = true
       this.sortDesc = null
       this.sortByDefaultKey = ''
-      this.$emit('update-items', sortedItems)
+
+      // Apply sorting via backend by reloading data with sorting criteria
+      if (this.$refs.instancesTable) {
+        this.$refs.instancesTable.applySorting(sortingCriteria)
+      }
+
       this.$nextTick(() => {
         this.sorting = false
         this.sortDesc = true
       })
-    },
-    changeTab: function(selectedTab) {
-      this.activeTab = selectedTab.id
     },
     selectTask: function(event) {
       this.selectedTask = event
@@ -244,9 +337,10 @@ export default {
     suspendProcess: function() {
       ProcessService.suspendProcess(this.process.id, true, true).then(() => {
         this.$store.dispatch('setSuspended', { process: this.process, suspended: 'true' })
-        this.instances.forEach(instance => {
-          if (instance.state === 'ACTIVE') instance.state = 'SUSPENDED'
-        })
+        // Refresh instances table to reflect the state change
+        if (this.$refs.instancesTable) {
+          this.$refs.instancesTable.loadInstances()
+        }
         this.$refs.success.show()
       })
     },
@@ -257,9 +351,10 @@ export default {
     activateProcess: function() {
       ProcessService.suspendProcess(this.process.id, false, true).then(() => {
         this.$store.dispatch('setSuspended', { process: this.process, suspended: 'false' })
-        this.instances.forEach(instance => {
-          if (instance.state === 'SUSPENDED') instance.state = 'ACTIVE'
-        })
+        // Refresh instances table to reflect the state change
+        if (this.$refs.instancesTable) {
+          this.$refs.instancesTable.loadInstances()
+        }
         this.$refs.success.show()
       })
     },
@@ -267,17 +362,27 @@ export default {
       if (this.isInstancesView) this.handleScrollProcesses(el)
     },
     handleScrollProcesses: function(el) {
-      if (this.instances.length < this.firstResult) return
-      if (Math.ceil(el.target.scrollTop + el.target.clientHeight) >= el.target.scrollHeight) {
-        this.$emit('show-more')
+      // Check if we're near the bottom and can load more data
+      const scrollThreshold = 100 // Load more when within 100px of bottom
+      const nearBottom = (el.target.scrollTop + el.target.clientHeight + scrollThreshold) >= el.target.scrollHeight
+
+      if (nearBottom && this.$refs.instancesTable) {
+        // Let InstancesTable handle the logic of whether to load more
+        this.$refs.instancesTable.showMore()
       }
     },
-    onInput: debounce(800, function(filter) { this.$emit('filter-instances', filter) }),
-    getJobDefinitions: function() {
-      this.$store.dispatch('jobDefinition/getJobDefinitions', {
-        processDefinitionId: this.process.id
+    changeFilter: function(queryObject) {
+      if (!queryObject.activityIdIn) {
+        this.clearActivitySelection()
+      }
+      this.$emit('filter-instances', queryObject)
+    },
+    onInput: debounce(800, function(freeText) {
+      this.$emit('filter-instances', {
+        ...this.filter,
+        editField: freeText,
       })
-    }
+    })
   }
 }
 </script>

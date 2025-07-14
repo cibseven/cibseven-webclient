@@ -22,12 +22,17 @@ import FilterStore from './FilterStore.js'
 import AdvancedSearchStore from './AdvancedSearchStore.js'
 import UserStore from './UserStore.js'
 import DecisionStore from './DecisionStore.js'
-import JobDefinitionStore from './JobDefinitionStore.js'
 import ActivityStore from './ActivityStore.js'
 import BatchStore from './BatchStore.js'
 import TenantStore from './TenantStore.js'
 import JobStore from './JobStore.js'
+import IncidentsStore from './IncidentsStore.js'
+import InstancesStore from './InstancesStore.js'
+import CalledProcessDefinitionsStore from './CalledProcessDefinitionsStore.js'
 import VariableInstanceStore from './VariableInstanceStore.js'
+import HistoricVariableInstanceStore from './HistoricVariableInstanceStore.js'
+import ExternalTaskStore from './ExternalTaskStore.js'
+import DiagramStore from './DiagramStore.js'
 
 export const modules = {
   process: ProcessStore,
@@ -35,12 +40,17 @@ export const modules = {
   advancedSearch: AdvancedSearchStore,
   user: UserStore,
   decision: DecisionStore,
-  jobDefinition: JobDefinitionStore,
   activity: ActivityStore,
   batch: BatchStore,
   tenant: TenantStore,
   job: JobStore,
-  variableInstance: VariableInstanceStore
+  variableInstance: VariableInstanceStore,
+  historicVariableInstance: HistoricVariableInstanceStore,
+  incidents: IncidentsStore,
+  instances: InstancesStore,
+  calledProcessDefinitions: CalledProcessDefinitionsStore,
+  externalTasks: ExternalTaskStore,
+  diagram: DiagramStore
 }
 
 const store = createStore({

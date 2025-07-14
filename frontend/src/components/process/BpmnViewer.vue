@@ -58,12 +58,44 @@
 
 <script>
 import NavigatedViewer from 'bpmn-js/lib/NavigatedViewer'
-import { ProcessService } from '@/services.js'
+import { HistoryService } from '@/services.js'
 import { BWaitingBox } from 'cib-common-components'
 import { mapActions, mapGetters } from 'vuex'
 
-const interactionTypes = ['bpmn:UserTask', 'bpmn:CallActivity', 'bpmn:ScriptTask']
-const drawedTypes = ['userTask', 'serviceTask', 'scriptTask', 'callActivity', 'exclusiveGateway', 'endEvent', 'startEvent']
+const interactionTypes = [
+  // Tasks
+  'bpmn:UserTask', 'bpmn:ServiceTask', 'bpmn:ScriptTask', 'bpmn:SendTask', 
+  'bpmn:ReceiveTask', 'bpmn:ManualTask', 'bpmn:BusinessRuleTask',
+  // Activities
+  'bpmn:CallActivity', 'bpmn:SubProcess', 'bpmn:Transaction',
+  // Gateways
+  'bpmn:ExclusiveGateway', 'bpmn:InclusiveGateway', 'bpmn:ParallelGateway', 
+  'bpmn:EventBasedGateway', 'bpmn:ComplexGateway',
+  // Events
+  'bpmn:StartEvent', 'bpmn:EndEvent', 'bpmn:IntermediateThrowEvent', 
+  'bpmn:IntermediateCatchEvent', 'bpmn:BoundaryEvent'
+]
+const drawedTypes = [
+  // Tasks
+  'userTask', 'serviceTask', 'scriptTask', 'sendTask', 'receiveTask', 'manualTask', 'businessRuleTask',
+  // Activities
+  'callActivity', 'subProcess', 'transaction',
+  // Gateways
+  'exclusiveGateway', 'inclusiveGateway', 'parallelGateway', 'eventBasedGateway', 'complexGateway',
+  // Events
+  'startEvent', 'endEvent', 'noneEndEvent', 'intermediateThrowEvent', 'intermediateCatchEvent', 'boundaryEvent',
+  'intermediateNoneThrowEvent', 'intermediateConditional',
+  // Event definitions (specific types)
+  'messageStartEvent', 'timerStartEvent', 'signalStartEvent', 'conditionalStartEvent', 'errorStartEvent',
+  'escalationStartEvent', 'compensationStartEvent', 'messageEndEvent', 'errorEndEvent', 'escalationEndEvent',
+  'cancelEndEvent', 'compensationEndEvent', 'signalEndEvent', 'terminateEndEvent',
+  'messageIntermediateThrowEvent', 'signalIntermediateThrowEvent', 'compensationIntermediateThrowEvent',
+  'escalationIntermediateThrowEvent', 'linkIntermediateThrowEvent', 'messageIntermediateCatchEvent',
+  'timerIntermediateCatchEvent', 'conditionalIntermediateCatchEvent', 'signalIntermediateCatchEvent',
+  'linkIntermediateCatchEvent', 'messageBoundaryEvent', 'timerBoundaryEvent', 'errorBoundaryEvent',
+  'escalationBoundaryEvent', 'conditionalBoundaryEvent', 'signalBoundaryEvent', 'compensationBoundaryEvent',
+  'cancelBoundaryEvent'
+]
 
 function getActivitiesToMark(treeObj) {
   let result = []
@@ -82,7 +114,7 @@ function getActivitiesToMark(treeObj) {
 
 export default {
   name: 'BpmnViewer',
-  emits: ['task-selected', 'child-activity', 'diagram-imported', 'overlay-click'],
+  emits: ['task-selected', 'child-activity', 'overlay-click'],
   components: { BWaitingBox },
   props: {
     activityInstance: Object,
@@ -90,7 +122,8 @@ export default {
     statistics: Array,
     processDefinitionId: String,
     activitiesHistory: Array,
-    activeTab: String
+    activeTab: String,
+    selectedInstance: Object
   },
   data: function() {
     return {
@@ -136,12 +169,17 @@ export default {
     this.viewer.on('import.done', () => {
       this.drawDiagramState()
       this.attachEventListeners()
-      this.$emit('diagram-imported')
+      //Small timer so the diagram is fully rendered before setting it ready
+      setTimeout(() => {
+        this.setDiagramReady(true)
+      }, 500)
     })
   },
   methods: {
     ...mapActions(['selectActivity', 'clearActivitySelection', 'setHighlightedElement']),
+    ...mapActions('diagram', ['setDiagramReady']),
     showDiagram: function(xml) {
+      this.setDiagramReady(false)
       this.loader = true
       this.viewer.importXML(xml).then(() => {
         setTimeout(() => {
@@ -275,8 +313,9 @@ export default {
             if (shape) {
               const htmlTemplate = this.getBadgeOverlayHtml(item.instances, 'bg-info', 'runningInstances', item.id)
               this.setHtmlOnDiagram(item.id, htmlTemplate, { bottom: 15, left: -7 })
-              if (item.failedJobs > 0) {
-                const failedHtml = this.getBadgeOverlayHtml(item.failedJobs, 'bg-danger', 'openIncidents', item.id)
+              if ((item.incidents?.length || 0) > 0) {
+                const incidentsCount = item.incidents.reduce((sum, inc) => sum + (inc.incidentCount || 0), 0)
+                const failedHtml = this.getBadgeOverlayHtml(incidentsCount, 'bg-danger', 'openIncidents', item.id)
                 this.setHtmlOnDiagram(item.id, failedHtml, { top: -7, right: 15 })
               }
               shape.nInstances = item.instances
@@ -385,21 +424,37 @@ export default {
       return types.some(type => typeI.includes(type))
     },
     openSubprocess: function(activityId) {
-      const childInstance = this.activityInstanceHistory?.find(
+      const childInstance = this.findChildInstanceByActivityId(activityId)      
+      if (!childInstance?.calledProcessInstanceId) {
+        console.warn('No child process instance found for activityId:', activityId)
+        return
+      }
+      this.navigateToSubprocess(childInstance.calledProcessInstanceId)
+    },
+    findChildInstanceByActivityId: function(activityId) {
+      const searchArray = this.activityInstanceHistory || this.activitiesHistory
+      if (!searchArray) return null      
+      return searchArray.find(
         ai => ai.activityId === activityId && ai.calledProcessInstanceId
       )
-      if (childInstance && childInstance.calledProcessInstanceId) {
-        ProcessService.findProcessInstance(childInstance.calledProcessInstanceId).then(subprocess => {
-          const [processKey, versionIndex] = subprocess.definitionId.split(':')
-          this.$router.push({ name: 'process', params: { processKey, versionIndex, instanceId: subprocess.id } })
-        })
-      } else {
-        ProcessService.findCalledProcessDefinitions(this.processDefinitionId).then(subprocess => {
-          const process = subprocess.find(item => item.calledFromActivityIds.includes(activityId))
-          if (process) {
-            this.$router.push({ name: 'process', params: { processKey: process.key, versionIndex: process.version } })
-          }
-        })
+    },
+    async navigateToSubprocess(calledProcessInstanceId) {
+      try {
+        const subprocess = await HistoryService.findProcessInstance(calledProcessInstanceId)
+        const processKey = subprocess.processDefinitionKey
+        const versionIndex = subprocess.processDefinitionVersion
+        const params = { processKey, versionIndex }
+        if (this.activityInstanceHistory) {
+          params.instanceId = subprocess.id
+        }        
+        const routeConfig = {
+          name: 'process',
+          params,
+          query: { parentProcessDefinitionId: this.processDefinitionId, tab: 'instances' }
+        }
+        await this.$router.push(routeConfig)
+      } catch (error) {
+        console.error('Failed to navigate to subprocess:', error)
       }
     },
     drawJobDefinitionBadges: function() {
@@ -428,6 +483,7 @@ export default {
     }
   },
   beforeUnmount: function() {
+    this.setDiagramReady(false)
     // Clean up document event listener to prevent memory leaks
     if (this.overlayClickHandler) {
       document.removeEventListener('click', this.overlayClickHandler)

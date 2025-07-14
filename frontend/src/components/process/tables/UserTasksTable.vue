@@ -18,7 +18,10 @@
 -->
 <template>
   <div class="overflow-auto bg-white container-fluid g-0 h-100">
-    <FlowTable v-if="!loading && userTasks.length > 0" resizable striped thead-class="sticky-header" :items="userTasks" primary-key="id" prefix="process-instance.usertasks."
+    <div v-if="loading">
+      <p class="text-center p-4"><BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}</p>
+    </div>
+    <FlowTable v-else-if="userTasks.length > 0" resizable striped thead-class="sticky-header" :items="userTasks" primary-key="id" prefix="process-instance.usertasks."
       sort-by="label" :sort-desc="true" :fields="[
       { label: 'activity', key: 'name', class: 'col-2', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' },
       { label: 'assignee', key: 'assignee', class: 'col-1', thClass: 'border-end', tdClass: 'position-relative py-1 border-end border-top-0' },
@@ -51,10 +54,7 @@
           size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-account"></b-button>
       </template>
     </FlowTable>
-    <div v-else-if="loading">
-      <p class="text-center p-4"><BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}</p>
-    </div>
-    <div v-else>
+    <div v-else-if="!loading">
       <p class="text-center p-4">{{ $t('process-instance.noResults') }}</p>
     </div>
 

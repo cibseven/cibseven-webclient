@@ -23,14 +23,14 @@
         </b-button>
       </div>
     </div>
-    <div class="overflow-auto bg-white container-fluid g-0 flex-grow-1">
+    <div class="overflow-y-scroll bg-white container-fluid g-0 flex-grow-1">
       <FlowTable v-if="!loading" striped resizable thead-class="sticky-header" :items="filteredVariables" primary-key="id" prefix="process-instance.variables."
-        sort-by="label" :sort-desc="true" :fields="[
+        sort-by="name" :sort-desc="false" :fields="[
         { label: 'name', key: 'name', class: 'col-3', tdClass: 'py-1 border-end border-top-0' },
         { label: 'type', key: 'type', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
-        { label: 'value', key: 'value', class: 'col-4', tdClass: 'py-1 border-end border-top-0' },
+        { label: 'value', key: 'value', class: 'col-3', tdClass: 'py-1 border-end border-top-0' },
         { label: 'scope', key: 'scope', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
-        { label: 'actions', key: 'actions', class: 'col-1', sortable: false, tdClass: 'py-1 border-top-0' }]">
+        { label: 'actions', key: 'actions', class: 'col-2', sortable: false, tdClass: 'py-1 border-top-0' }]">
         <template v-slot:cell(name)="table">
           <div :title="table.item.name" class="text-truncate">{{ table.item.name }}</div>
         </template>
@@ -65,7 +65,7 @@
         <p class="text-center p-4"><BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}</p>
       </div>
     </div>
-    
+
     <AddVariableModal ref="addVariableModal" :selected-instance="selectedInstance" @variable-added="loadSelectedInstanceVariables(); $refs.success.show()"></AddVariableModal>
     <DeleteVariableModal ref="deleteVariableModal"></DeleteVariableModal>
     <SuccessAlert top="0" ref="success">{{ $t('alert.successOperation') }}</SuccessAlert>
@@ -81,7 +81,7 @@
       </template>
     </b-modal>
 
-    <b-modal ref="modifyVariable" :title="$t('process-instance.edit')" @hidden="clearVariableInstance">
+    <b-modal ref="modifyVariable" :title="$t('process-instance.edit')" @hidden="clearVariableInstances">
       <div v-if="variableToModify">
         <b-form-group :label="$t('process-instance.variables.name')">
           <b-form-input v-model="variableToModify.name" disabled></b-form-input>
@@ -89,14 +89,14 @@
         <b-form-group :label="$t('process-instance.variables.type')">
           <b-form-input v-model="variableToModify.type" disabled></b-form-input>
         </b-form-group>
-        <template v-if="currentVariableInstance?.valueInfo">
-          <div v-if="currentVariableInstance.valueInfo.objectTypeName" class="mb-3">
+        <template v-if="currentInstance?.valueInfo">
+          <div v-if="currentInstance.valueInfo.objectTypeName" class="mb-3">
             <label class="form-label">{{ $t('process-instance.variables.objectTypeName') }}</label>
-            <input type="text" class="form-control" :value="currentVariableInstance.valueInfo.objectTypeName" disabled>
+            <input type="text" class="form-control" :value="currentInstance.valueInfo.objectTypeName" disabled>
           </div>
-          <div v-if="currentVariableInstance.valueInfo.serializationDataFormat" class="mb-3">
+          <div v-if="currentInstance.valueInfo.serializationDataFormat" class="mb-3">
             <label class="form-label">{{ $t('process-instance.variables.serializationDataFormat') }}</label>
-            <input type="text" class="form-control" :value="currentVariableInstance.valueInfo.serializationDataFormat" disabled>
+            <input type="text" class="form-control" :value="currentInstance.valueInfo.serializationDataFormat" disabled>
           </div>
         </template>
         <b-form-group :label="$t('process-instance.variables.value')">
@@ -122,20 +122,20 @@
 </template>
 
 <script>
-import procesessVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
-import { ProcessService, HistoryService } from '@/services.js'
-import { mapActions, mapGetters } from 'vuex'
+import { BWaitingBox } from 'cib-common-components'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import TaskPopper from '@/components/common-components/TaskPopper.vue'
-import AddVariableModal from '@/components/process/modals/AddVariableModal.vue'
+import { ProcessService, VariableInstanceService } from '@/services.js'
 import DeleteVariableModal from '@/components/process/modals/DeleteVariableModal.vue'
+import AddVariableModal from '@/components/process/modals/AddVariableModal.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
-import { BWaitingBox } from 'cib-common-components'
+import processesVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
+import { mapGetters, mapActions } from 'vuex'
 
 export default {
   name: 'VariablesTable',
   components: { FlowTable, TaskPopper, AddVariableModal, DeleteVariableModal, SuccessAlert, BWaitingBox },
-  mixins: [procesessVariablesMixin],
+  mixins: [processesVariablesMixin],
   data: function() {
     return {
       filteredVariables: [],
@@ -145,6 +145,13 @@ export default {
   },
   computed: {
     ...mapGetters('variableInstance', ['currentVariableInstance']),
+    ...mapGetters('historicVariableInstance', ['currentHistoricVariableInstance']),
+    currentInstance() {
+      // Use regular variable instance for active processes, historic for all others
+      return this.selectedInstance?.state === 'ACTIVE' 
+        ? this.currentVariableInstance 
+        : this.currentHistoricVariableInstance
+    },
     formattedJsonValue: {
       get: function() {
         if (this.variableToModify) {
@@ -162,7 +169,8 @@ export default {
     }
   },
   methods: {
-    ...mapActions('variableInstance', ['getVariableInstance', 'clearVariableInstance']),
+    ...mapActions('variableInstance', ['clearVariableInstance', 'getVariableInstance']),
+    ...mapActions('historicVariableInstance', ['clearHistoricVariableInstance', 'getHistoricVariableInstance']),
     isFileValueDataSource: function(item) {
       if (item.type === 'Object') {
         if (item.value && item.value.objectTypeName) {
@@ -187,7 +195,14 @@ export default {
     modifyVariable(variable) {
       this.selectedVariable = variable
       this.variableToModify = JSON.parse(JSON.stringify(variable))
-      this.getVariableInstance({ id: variable.id, deserializeValue: false })
+      
+      // Use regular variable instance for active processes, historic for all others
+      if (this.selectedInstance?.state === 'ACTIVE') {
+        this.getVariableInstance({ id: variable.id, deserializeValue: false })
+      } else {
+        this.getHistoricVariableInstance({ id: variable.id, deserializeValue: false })
+      }
+      
       this.$refs.modifyVariable.show()
     },
     deleteVariable: function(variable) {
@@ -203,7 +218,7 @@ export default {
           this.$refs.success.show()
         })
       } else {
-        HistoryService.deleteVariableHistoryInstance(variable.id).then(() => {
+        VariableInstanceService.deleteVariableHistoryInstance(variable.id).then(() => {
           this.loadSelectedInstanceVariables()
           this.$refs.success.show()
         })
@@ -238,6 +253,10 @@ export default {
         this.selectedVariable.value = value
         this.$refs.modifyVariable.hide()
       })
+    },
+    clearVariableInstances() {
+      this.clearVariableInstance()
+      this.clearHistoricVariableInstance()
     }
 
   }

@@ -22,7 +22,8 @@ const ActivityStore = {
     processActivities: [],
     selectedActivityId: '',
     highlightedElement: null,
-    activitiesInstanceHistory: []
+    activitiesInstanceHistory: [],
+    diagramXml: null
   },
   mutations: {
     setProcessActivities: function (state, activities) {
@@ -38,15 +39,19 @@ const ActivityStore = {
       state.selectedActivityId = ''
       state.highlightedElement = null
     },
-    setActivitiesInstanceHistory: function (state, activitiesInstace) {
-      state.activitiesInstanceHistory = activitiesInstace
-    }
+    setActivitiesInstanceHistory: function (state, activitiesInstance) {
+      state.activitiesInstanceHistory = activitiesInstance
+    },
+    setDiagramXml: function (state, diagramXml) {
+      state.diagramXml = diagramXml
+    },
   },
   getters: {
     selectedActivityId: (state) => state.selectedActivityId,
     highlightedElement: (state) => state.highlightedElement,
     getProcessActivities: (state) => state.processActivities,
-    activitiesInstanceHistory: (state) => state.activitiesInstanceHistory
+    activitiesInstanceHistory: (state) => state.activitiesInstanceHistory,
+    diagramXml: (state) => state.diagramXml
   },
   actions: {
     selectActivity: function ({ commit }, activityId) {
@@ -61,6 +66,9 @@ const ActivityStore = {
     async loadActivitiesInstanceHistory({ commit }, processInstanceId) {
       const activitiesInstace = await HistoryService.findActivitiesInstancesHistory(processInstanceId)
       commit('setActivitiesInstanceHistory', activitiesInstace)
+    },
+    setDiagramXml: function ({ commit }, diagramXml) {
+      commit('setDiagramXml', diagramXml)
     }
   }
 }

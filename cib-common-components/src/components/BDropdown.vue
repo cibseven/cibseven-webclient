@@ -29,7 +29,7 @@
 </template>
 
 <script>
-import { Dropdown } from 'bootstrap'
+import * as Bootstrap from 'bootstrap'
 
 export default {
   props: {
@@ -56,7 +56,7 @@ export default {
     }
   },
   mounted: function () {
-    this.dropdownInstance = new Dropdown(this.$refs.toggleButton)
+    this.dropdownInstance = new Bootstrap.Dropdown(this.$refs.toggleButton)
     document.addEventListener('click', this.handleDocumentClick)
   },
   beforeUnmount: function () {

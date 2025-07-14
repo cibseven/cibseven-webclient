@@ -14,11 +14,25 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-export function sortDeployments(a, b, sorting, order) {
-  if (!a[sorting] && b[sorting]) return -1
-  else if (a[sorting] && !b[sorting]) return 1
-  a = a[sorting].toLowerCase()
-  b = b[sorting].toLowerCase()
-  if (order === 'asc') return a < b ? -1 : a > b ? 1 : 0
-  else return a < b ? 1 : a > b ? -1 : 0
+import { ExternalTaskService } from '@/services.js'
+
+export default {
+  namespaced: true, 
+  state: () => ({
+    externalTasks: []
+  }),
+  mutations: {
+    setExternalTasks(state, externalTasks) {
+      state.externalTasks = externalTasks
+    }
+  },
+  actions: {
+    async loadExternalTasks({ commit }, params) {
+      const externalTasks = await ExternalTaskService.fetchExternalTasks(params)
+      commit('setExternalTasks', externalTasks)
+    }
+  },
+  getters: {
+    externalTasks: state => state.externalTasks
+  }
 }

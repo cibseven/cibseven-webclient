@@ -31,27 +31,31 @@
             cursor: field.sortable !== false ? 'pointer' : 'default'
           }">
 
-          <span v-if="field.sortable !== false" class="sort-icon">
-            <span v-if="sortKey === field.key">
-              <i v-if="sortOrder === 1" class="mdi mdi-chevron-up"></i>
-              <i v-else class="mdi mdi-chevron-down"></i>
-            </span>
-            <i v-else class="mdi mdi-unfold-more-horizontal"></i>
-          </span>
+          <div v-if="field.label || field.sortable !== false"
+            class="d-flex align-items-center"
+            :class="field.thClass?.includes('justify-content-center') ? 'justify-content-center' : 'justify-content-start'">
+            <div v-if="field.label">
+              <slot :name="'header(' + field.key +')'" :field="field">
+                {{ $t(prefix + field.label) }}
+              </slot>
+            </div>
 
-          <span v-if="field.label">
-            <slot :name="'header(' + field.key +')'" :field="field">
-              {{ $t(prefix + field.label) }}
-            </slot>
-          </span>
+            <div v-if="field.sortable !== false" class="sort-icon">
+              <span v-if="isSortedByField(field)">
+                <i v-if="isSortedByFieldAscending(field)" class="mdi mdi-chevron-up"></i>
+                <i v-else class="mdi mdi-chevron-down"></i>
+              </span>
+              <i v-else class="mdi mdi-unfold-more-horizontal"></i>
+            </div>
+          </div>
 
-          <span v-if="computedColumnSelection && index === computedColumns.length - 1">
+          <span :style="columnSelectionStyle" v-if="computedColumnSelection && index === computedColumns.length - 1">
             &nbsp;
-            <button class="dropdown-toggle btn btn-link btn-sm p-0" type="button" data-bs-toggle="dropdown"
+            <button class="btn btn-link btn-sm p-0" type="button" data-bs-toggle="dropdown"
               aria-expanded="false" aria-haspopup="true" :aria-label="$t('table.selectColumns')"
               :title="$t('table.selectColumns')">
                 <span class="visually-hidden">{{ $t('table.selectColumns') }}</span>
-                <span class="mdi mdi-24px mdi-plus-box align-middle"></span>
+                <span class="mdi mdi-24px mdi-table-plus align-middle"></span>
             </button>
             <ul class="dropdown-menu dropdown-menu-end" role="menu">
               <template v-for="column in toggleableColumns" :key="column.key">
@@ -157,7 +161,13 @@ export default {
     resizable: { type: Boolean, default: false },
     striped : { type: Boolean, default: false },
     sortBy: { type: String, default: null },
-    sortDesc: { type: Boolean, default: false }
+    sortDesc: { type: Boolean, default: false },
+    /**
+     * If true, sorting is handled externally.
+     * Emits 'external-sort' event with { sortBy, sortDesc } parameters.
+     * If false, component sorts items locally using sortKey and sortOrder.
+     */
+    externalSort: { type: Boolean, default: false },
   },
   data() {
     return {
@@ -165,7 +175,8 @@ export default {
       sortKey: this.sortBy,
       sortOrder: this.sortDesc ? -1 : 1,
       columnWidths: [],
-      skipClick: false
+      skipClick: false,
+      resizeObserver: null
     }
   },
   computed: {
@@ -213,12 +224,27 @@ export default {
       ].filter(Boolean).join(' ')
     },
     sortedItems() {
+      if (this.externalSort) {
+        // If external sort is enabled, return items as is
+        return this.items
+      }
       if (!this.sortKey) return this.items
       return [...this.items].sort((a, b) => {
         if (a[this.sortKey] < b[this.sortKey]) return -1 * this.sortOrder
         if (a[this.sortKey] > b[this.sortKey]) return 1 * this.sortOrder
         return 0
       })
+    },
+    columnSelectionStyle() {
+      return {
+        position: 'absolute',
+        top: '0',
+        right: '0',
+        width: '30px',
+        height: '100%',
+        display: 'flex',
+        zIndex: '10',
+      }
     },
     resizeHandleStyle() {
       return {
@@ -237,35 +263,75 @@ export default {
     }
   },
   methods: {
+    /**
+     * Handle column header click for sorting.
+     * If externalSort is enabled, it emits an event with new sort parameters.
+     * Otherwise, it sorts rows using local sortKey and sortOrder.
+     */
     handleColumnClick(field) {
       if (this.skipClick) {
         this.skipClick = false
         return
       }
       if (!this.resizing) {
-        this.sortColumn(field)
+        if (!field.key || field.sortable === false) return
+        if (this.externalSort) {
+          // by default, each column is sortable
+          this.$emit('external-sort', {
+            sortBy: field.sortBy || field.key,
+            sortDesc: this.sortBy === (field.sortBy || field.key) ? !this.sortDesc : true,
+          })
+        }
+        else {
+          if (this.sortKey === field.key) {
+            this.sortOrder *= -1
+          } else {
+            this.sortKey = field.key
+            this.sortOrder = 1
+          }
+        }
       }
     },
-    sortColumn(field) {
-      if (!field.key || field.sortable === false) return
-
-      if (this.sortKey === field.key) {
-        this.sortOrder *= -1
-      } else {
-        this.sortKey = field.key
-        this.sortOrder = 1
+    /**
+     * Check if the field is currently sorted by.
+     * If externalSort is enabled, it checks against sortBy.
+     * Otherwise, it checks against sortKey.
+     */
+    isSortedByField(field) {
+      if (!field.key || field.sortable === false) return false
+      if (this.externalSort) {
+        return (field.sortBy || field.key) === this.sortBy
+      }
+      else {
+        return field.key === this.sortKey
+      }
+    },
+    /**
+     * Check if the field is sorted by in ascending order.
+     * If externalSort is enabled, it checks against sortDesc.
+     * Otherwise, it checks against sortOrder.
+     */
+    isSortedByFieldAscending(field) {
+      if (!this.isSortedByField(field)) return false
+      if (this.externalSort) {
+        return !this.sortDesc
+      }
+      else {
+        return this.sortOrder === 1
       }
     },
     getSortClass(field) {
       if (field.sortable === false) return ''
-      if (field.key === this.sortKey) {
-        return this.sortOrder === 1 ? 'sorting-asc active' : 'sorting-desc active'
+      if (this.isSortedByField(field)) {
+        return this.isSortedByFieldAscending(field) ? 'sorting-asc active' : 'sorting-desc active'
       }
-      return 'sortable'
+      else {
+        return 'sortable'
+      }
     },
     getAriaSort(field) {
-      if (field.key === this.sortKey) {
-        return this.$t(`bcomponents.${this.sortOrder === 1 ? 'ariaSortAsc' : 'ariaSortDes'}`)
+      if (this.isSortedByField(field)) {
+        return this.$t(`bcomponents.${this.isSortedByFieldAscending(field) ? 'ariaSortAsc' : 'ariaSortDes'}`)
       }
       return this.$t('bcomponents.ariaSortNone')
     },
@@ -311,12 +377,25 @@ export default {
     restartColumnWidths: function() {
       if (this.resizable && this.$refs.table) {
         const ths = this.$refs.table.querySelectorAll('th')
-        if (ths) {
+        if (ths && ths.length > 0) {
+          // Clean existing widths
           ths.forEach(th => {
             th.style.removeProperty('width')
           })
+          // Get the container width
+          const tableContainer = this.$refs.table.parentElement
+          const containerWidth = tableContainer ? tableContainer.clientWidth : this.$refs.table.clientWidth
+          // Calculate natural widths of the columns
+          const naturalWidths = Array.from(ths).map(th => th.offsetWidth)
+          const totalNaturalWidth = naturalWidths.reduce((sum, width) => sum + width, 0)
+          // If total natural width exceeds container width, scale down
+          if (totalNaturalWidth > containerWidth) {
+            const scale = containerWidth / totalNaturalWidth
+            this.columnWidths = naturalWidths.map(width => `${Math.floor(width * scale)}px`)
+          } else {
+            this.columnWidths = naturalWidths.map(width => `${width}px`)
+          }
         }
-        this.columnWidths = Array.from(ths).map(th => `${th.offsetWidth}px`)
       }
     },
     toggleColumn(column) {
@@ -347,12 +426,25 @@ export default {
       this.$nextTick(() => {
         const ths = this.$refs.table.querySelectorAll('th');
         this.columnWidths = Array.from(ths).map(th => `${th.offsetWidth}px`)
+        if (window.ResizeObserver) {
+          this.resizeObserver = new ResizeObserver(() => {
+            this.restartColumnWidths()
+          })
+          const tableContainer = this.$refs.table.parentElement
+          if (tableContainer) {
+            this.resizeObserver.observe(tableContainer)
+          }
+        }
       })
     }
     window.addEventListener("resize", this.restartColumnWidths)
   },
   beforeUnmount() {
     window.removeEventListener("resize", this.restartColumnWidths)
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect()
+      this.resizeObserver = null
+    }
   }
 }
 </script>

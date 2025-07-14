@@ -2,7 +2,12 @@
 	"commons": {
 		"edit": "Editar",
 		"save": "Guardar",
-		"copyValue": "Copiar valor"
+		"copyValue": "Copiar valor",
+		"noMoreResults": "No hay más resultados",
+		"loadMore": {
+			"title": "Cargar más",
+			"tooltip": "Haga clic para cargar los siguientes {chunkSize} registros"
+		}
 	},
 	"login": {
 		"productName": "CIB seven",
@@ -63,6 +68,7 @@
 		"key": "Key del proceso",
 		"state": "Estado",
 		"id": "ID",
+		"instanceId": "ID",
 		"processId": "Identificador de proceso",
 		"startUserId": "Usuario",
 		"startTime": "Fecha inicio",
@@ -182,7 +188,8 @@
 		"externalTasksLog": "Registro de tareas externas",
 		"modify": "Modificar",
 		"restart": "Reiniciar",
-		"documentation": "Documentación"
+		"documentation": "Documentación",
+		"externalTasks": "Tareas externas"
 	},
 	"process-instance": {
 		"processInstanceId": "ID de la instancia del proceso",
@@ -204,7 +211,9 @@
 			"activity": "Actividad",
 			"state": "Estado",
 			"referenced": "Referenciado",
-			"runningAndReferenced": "En ejecución y referenciado"
+			"running": "En ejecución",
+			"runningAndReferenced": "En ejecución y referenciado",			
+			"unknown": "Desconocido"
 		},
 		"details": {
 			"startUser": "Usuario inicial",
@@ -338,6 +347,16 @@
 			"actions": "Acciones",
 			"suspend": "Suspender",
 			"resume": "Reanudar"
+		},
+		"externalTasks": {
+			"id": "ID de tarea externa",
+			"activityId": "Actividad",
+			"topicName": "Tema",
+			"workerId": "ID del trabajador",
+			"lockExpirationTime": "Fecha de expiración del bloqueo",
+			"retries": "Reintentos",
+			"priority": "Prioridad",
+			"noExternalTasks": "No se encontraron tareas externas"
 		}
 	},
 	"bpmn-viewer": {
@@ -449,6 +468,7 @@
 	},
 	"admin": {
 		"loading": "Cargando...",
+		"loadingMoreData": "Cargando más datos...",
 		"noResults": "Sin resultados",
 		"exportCsv": "Exportar todo",
 		"users": {
@@ -1033,8 +1053,8 @@
 		"filter": "Filtrar"
 	},
 	"table": {
-		"selectColumns": "Seleccionar columnas",
-		"toggleColumn": "Alternar {column} columna"
+		"selectColumns": "Mostrar columnas",
+		"toggleColumn": "Alternar \"{column}\" columna"
 	},
 	"navigation": {
 		"home": "Inicio",

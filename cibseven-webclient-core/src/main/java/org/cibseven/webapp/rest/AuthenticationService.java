@@ -20,13 +20,10 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 
-import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.User;
 import org.cibseven.webapp.auth.rest.StandardLogin;
-import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.rest.model.Authorizations;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -67,11 +64,6 @@ public class AuthenticationService extends BaseService {
 	@RequestMapping(method = RequestMethod.GET)
 	public User getSelfInfo(@NotNull User user, HttpServletRequest rq) {
 		return baseUserProvider.getUserInfo(user, user.getId());
-	}
-
-	@RequestMapping(value = "/users", method = RequestMethod.GET)
-	public Collection<CIBUser> getUsers(@NotNull User user, @RequestParam Optional<String> filter) {
-		return baseUserProvider.getUsers(user, filter);
 	}
 	
 	@RequestMapping(value = "/authorizations", method = RequestMethod.GET)

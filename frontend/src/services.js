@@ -114,10 +114,10 @@ var ProcessService = {
 	return axios.get(getServicesBasePath() + "/process/process-definition-id/" + id + '?extraInfo=' + extraInfo)
   },
   findProcessesInstances: function(key) {
-	return axios.get(getServicesBasePath() + "/process/instances/by-process-key/" + key)
+	  return axios.get(getServicesBasePath() + "/process/instances/by-process-key/" + key)
   },
   findProcessInstance: function(processInstanceId) {
-	return axios.get(getServicesBasePath() + "/process/process-instance/" + processInstanceId)
+	  return axios.get(getServicesBasePath() + "/process/process-instance/" + processInstanceId)
   },
   findCurrentProcessesInstances: function(filter) {
     return axios.post(getServicesBasePath() + "/process/instances", filter)
@@ -126,7 +126,7 @@ var ProcessService = {
     return axios.get(getServicesBasePath() + "/process/activity/by-process-instance/" + processInstanceId)
   },
   findCalledProcessDefinitions: function(processDefinitionId) {
-	return axios.get(getServicesBasePath() + "/process/called-process-definitions/" + processDefinitionId)
+	  return axios.get(getServicesBasePath() + "/process/called-process-definitions/" + processDefinitionId)
   },
   fetchDiagram: function(processId) { return axios.get(getServicesBasePath() + "/process/" + processId + "/diagram") },
   startProcess: function(key, tenantId, locale) {
@@ -155,8 +155,23 @@ var ProcessService = {
   stopInstance: function(processInstanceId) {
     return axios.delete(getServicesBasePath() + "/process/instance/" + processInstanceId + "/delete")
   },
-  findDeployments: function() {
-    return axios.get(getServicesBasePath() + "/process/deployments")
+  findDeploymentsCount: function(nameLike = '') {
+    return axios.get(getServicesBasePath() + "/process/deployments/count", {
+      params: {
+        nameLike,
+      }
+    })
+  },
+  findDeployments: function(nameLike = '', firstResult = 0, maxResults = 50, sortBy = 'name', sortOrder = 'asc') {
+    return axios.get(getServicesBasePath() + "/process/deployments", {
+      params: {
+        nameLike,
+        firstResult,
+        maxResults,
+        sortBy,
+        sortOrder,
+      }
+    })
   },
   findDeploymentResources: function(deploymentId) {
     return axios.get(getServicesBasePath() + "/process/deployments/" + deploymentId + "/resources")
@@ -230,6 +245,16 @@ var VariableInstanceService = {
   }
 }
 
+var HistoricVariableInstanceService = {
+  getHistoricVariableInstance: function(id, deserializeValue) {
+    let url = `${getServicesBasePath()}/history/variable-instance/${id}`
+    if (deserializeValue !== null && deserializeValue !== undefined) {
+      url += `?deserializeValue=${deserializeValue}`
+    }
+    return axios.get(url)
+  }
+}
+
 var AdminService = {
   findUsers: function(filter) {
     // id, firstName, firstNameLike, lastName, lastNameLike, email, emailLike, memberOfGroup, memberOfTenant, idIn, firstResult, maxResults
@@ -286,25 +311,69 @@ var HistoryService = {
     return axios.get(getServicesBasePath() + "/task-history/" + activityInstanceId + "/variables")
   },
   findProcessesInstancesHistory: function(filters, firstResult, maxResults) {
-    return axios.post(getServicesBasePath() + "/process-history/instance", {
-      params: {
-        filters: filters,
-        firstResult: firstResult,
-        maxResults: maxResults
-      }
-    })
+    const params = {}
+    if (firstResult != null) params.firstResult = firstResult
+    if (maxResults != null) params.maxResults = maxResults
+    return axios.post(getServicesBasePath() + '/process-history/instance', filters, { params })
   },
-  
-  findProcessesInstancesHistoryById: function(id, activityId, firstResult, maxResults, text, active) {
-    return axios.get(getServicesBasePath() + "/process-history/instance/by-process-id/" + id, {
-      params: {
-        activityId: activityId,
-        active: active,
-        firstResult: firstResult,
-        maxResults: maxResults,
-        text: text
+  findProcessesInstancesHistoryById: function(id, activityId, firstResult, maxResults, filter = {}, active, sortingCriteria = [], fetchIncidents = false) {
+    const requestBody = {
+      ...(filter || {}),
+      processDefinitionId: id
+    }
+
+    // Add incident fetching if requested
+    if (fetchIncidents) {
+      requestBody.fetchIncidents = true
+    }
+
+    // Add activity filter
+    if (activityId) {
+      requestBody.activeActivityIdIn = [
+        ...(filter?.activityIdIn || []),
+        activityId,
+      ]
+      // remove duplicates
+      requestBody.activeActivityIdIn = [...new Set(requestBody.activeActivityIdIn)]
+    }
+
+    // Add text search with OR logic (business key LIKE or exact process instance ID)
+    const text = filter?.editField || ''
+    if (text && text.trim() !== '') {
+      const trimmedText = text.trim()
+      requestBody.orQueries = [
+        {
+          processInstanceBusinessKeyLike: `%${trimmedText}%`,
+          processInstanceId: trimmedText
+        }
+      ]
+    }
+
+    // Add active/finished filter
+    if (active !== undefined && active !== null) {
+      if (active) {
+        requestBody.unfinished = true
+      } else {
+        requestBody.finished = true
       }
-    })
+    }
+
+    // Add sorting criteria
+    if (sortingCriteria && sortingCriteria.length > 0) {
+      requestBody.sorting = sortingCriteria.map(criteria => ({
+        sortBy: criteria.field,
+        sortOrder: criteria.order
+      }))
+    } else {
+      // Default sorting by start time descending
+      requestBody.sorting = [{ sortBy: 'startTime', sortOrder: 'desc' }]
+    }
+
+    const params = {}
+    if (firstResult !== null && firstResult !== undefined) params.firstResult = firstResult
+    if (maxResults !== null && maxResults !== undefined) params.maxResults = maxResults
+
+    return axios.post(getServicesBasePath() + "/process-history/instance", requestBody, { params })
   },
   findActivitiesInstancesHistory: function(processInstanceId) {
     return axios.get(getServicesBasePath() + "/process-history/activity/by-process-instance/" + processInstanceId)
@@ -361,11 +430,17 @@ var IncidentService = {
   fetchIncidentStacktraceByJobId: function(id) {
     return axios.get(getServicesBasePath() + "/incident/" + id + "/stacktrace")
   },
+  fetchIncidentStacktraceByExternalTaskId: function(id) {
+    return axios.get(getServicesBasePath() + "/incident/external-task/" + id + "/errorDetails")
+  },
   retryJobById: function(id, params) {
     return axios.put(getServicesBasePath() + "/incident/job/" + id + "/retries", params)
   },
-  findIncidents: function(processDefinitionId) {
-    return axios.get(getServicesBasePath() + "/incident?processDefinitionId=" + processDefinitionId)
+  retryExternalTaskById: function(id, params) {
+    return axios.put(getServicesBasePath() + "/incident/external-task/" + id + "/retries", params)
+  },
+  findIncidents: function(params) {
+    return axios.get(getServicesBasePath() + "/incident", { params })
   },
   setIncidentAnnotation: function(id, params) {
     return axios.put(getServicesBasePath() + "/incident/" + id + "/annotation", params)
@@ -397,7 +472,7 @@ var InfoService = {
     return axios.get('info/properties')
   },
   getVersion: function() {
-    return axios.get(getServicesBasePath() + '/info')
+    return axios.get('info')
   }
 }
 
@@ -595,7 +670,7 @@ var SystemService = {
   }
 }
 
-var TenantService = {  
+var TenantService = {
   getTenants(params) {
     return axios.get(getServicesBasePath() + '/tenant', { params })
   },
@@ -625,6 +700,12 @@ var TenantService = {
   }
 }
 
-export { TaskService, FilterService, ProcessService, VariableInstanceService, AdminService, JobService, JobDefinitionService, SystemService,
-  HistoryService, IncidentService, AuthService, InfoService, FormsService, TemplateService, DecisionService, 
-  AnalyticsService, BatchService, TenantService, getServicesBasePath, setServicesBasePath }
+var ExternalTaskService = {
+  fetchExternalTasks(params) {
+    return axios.get(getServicesBasePath() + '/external-tasks', { params })
+  }
+}
+
+export { TaskService, FilterService, ProcessService, VariableInstanceService, HistoricVariableInstanceService, AdminService, JobService, JobDefinitionService, SystemService,
+  HistoryService, IncidentService, AuthService, InfoService, FormsService, TemplateService, DecisionService,
+  AnalyticsService, BatchService, TenantService, ExternalTaskService, getServicesBasePath, setServicesBasePath }

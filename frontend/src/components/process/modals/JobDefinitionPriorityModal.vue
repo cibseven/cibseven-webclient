@@ -103,10 +103,9 @@ export default {
           priority: this.priority
         }
       }
-      this.$store.dispatch('jobDefinition/overridePriority', {
+      this.$store.dispatch('job/overrideJobDefinitionPriority', {
         jobDefinitionId: this.selectedJobDefinition.id,
-        params: data,
-        fetchParams: { processDefinitionId: this.selectedJobDefinition.processDefinitionId }
+        params: data
       })
       this.$refs.overrideJobPriorityModal.hide()
     },

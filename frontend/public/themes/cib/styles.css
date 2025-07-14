@@ -3107,8 +3107,8 @@ textarea.form-control-lg {
 }
 
 .form-check-input:checked {
-  background-color: #fff;
-  border-color: #fff;
+  background-color: var(--primary);
+  border-color: var(--primary);
 }
 
 .form-check-input:checked[

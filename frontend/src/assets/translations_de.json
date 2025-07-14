@@ -2,7 +2,12 @@
 	"commons": {
 		"edit": "Bearbeiten",
 		"save": "Speichern",
-		"copyValue": "Wert kopieren"
+		"copyValue": "Wert kopieren",
+		"noMoreResults": "Keine weiteren Ergebnisse",
+		"loadMore": {
+			"title": "Mehr laden",
+			"tooltip": "Klicken Sie, um die nächsten {chunkSize} Einträge zu laden"
+		}
 	},
 	"login": {
 		"productName": "CIB seven",
@@ -63,6 +68,7 @@
 		"key": "Prozess-Key",
 		"state": "Status",
 		"id": "ID",
+		"instanceId": "ID",
 		"processId": "Prozess-ID",
 		"startUserId": "Benutzer",
 		"startTime": "Startdatum",
@@ -103,7 +109,7 @@
 			"totalInstances": "Gesamtanzahl der Instanzen",
 			"unfinishedInstances": "Laufende Instanzen",
 			"finishedInstances": "Abgeschlossene Instanzen ohne Fehler",
-			"definitionVersion": "Definition der Version",
+			"definitionVersion": "Version der Definition",
 			"versionTag": "Versionstag",
 			"definitionId": "Definitions-ID",
 			"definitionKey": "Definitionsschlüssel",
@@ -113,10 +119,10 @@
 			"currentVersion": "Aktuelle Version",
 			"allVersions": "Alle Versionen",
 			"versionInstances": "Instanzen dieser Version",
-			"historyVersions": "Historie versionen",
+			"historyVersions": "Historie der Versionen",
 			"variable": "Prozessvariablen",
 			"copyValue": "Wert kopieren",
-			"historyTimeToLive": "Geschichte Zeit zu leben",			
+			"historyTimeToLive": "Lebensdauer der Historie",
 			"tenantId": "Mandanten-ID"
 		},
 		"sections": {
@@ -182,7 +188,8 @@
 		"externalTasksLog": "Externe Aufgabenprotokolle",
 		"modify": "Modifizieren",
 		"restart": "Neustarten",
-		"documentation": "Dokumentation"
+		"documentation": "Dokumentation",
+		"externalTasks": "Externe Aufgaben"
 	},
 	"process-instance": {
 		"processInstanceId": "Prozessinstanz Id",
@@ -204,7 +211,9 @@
 			"activity": "Aktivität",
 			"state": "Status",
 			"referenced": "Referenziert",
-			"runningAndReferenced": "Laufend und referenziert"
+			"running": "Laufend",
+			"runningAndReferenced": "Laufend und referenziert",
+			"unknown": "Unbekannt"
 		},
 		"details": {
 			"startUser": "Startnutzer",
@@ -338,6 +347,16 @@
 			"actions": "Aktionen",
 			"suspend": "Anhalten",
 			"resume": "Fortsetzen"
+		},
+		"externalTasks": {
+			"id": "Externe Aufgaben-ID",
+			"activityId": "Aktivität",
+			"topicName": "Thema",
+			"workerId": "Worker-ID",
+			"lockExpirationTime": "Sperr-Ablaufdatum",
+			"retries": "Wiederholungen",
+			"priority": "Priorität",
+			"noExternalTasks": "Keine externen Aufgaben gefunden"
 		}
 	},
 	"bpmn-viewer": {
@@ -449,6 +468,7 @@
 	},
 	"admin": {
 		"loading": "Wird geladen...",
+		"loadingMoreData": "Weitere Daten werden geladen...",
 		"noResults": "Keine Ergebnisse",
 		"exportCsv": "Alle exportieren",
 		"users": {
@@ -1033,7 +1053,7 @@
 		"filter": "Filter"
 	},
 	"table": {
-		"selectColumns": "Spalten auswählen",
+		"selectColumns": "Spalten anzeigen",
 		"toggleColumn": "{column} Spalte umschalten"
 	},
 	"navigation": {
@@ -1203,7 +1223,7 @@
 			"totalInstances": "Gesamtanzahl der Instanzen",
 			"unfinishedInstances": "Laufende Instanzen",
 			"finishedInstances": "Abgeschlossene Instanzen ohne Fehler",
-			"definitionVersion": "Definition der Version",
+			"definitionVersion": "Version der Definition",
 			"versionTag": "Versionstag",
 			"definitionId": "Definitions-ID",
 			"definitionKey": "Definitionsschlüssel",
@@ -1213,7 +1233,7 @@
 			"currentVersion": "Aktuelle Version",
 			"allVersions": "Alle Versionen",
 			"versionInstances": "Instanzen dieser Version",
-			"historyVersions": "Historie versionen",
+			"historyVersions": "Historie der Versionen",
 			"variable": "Prozessvariablen",
 			"copyValue": "Wert kopieren",
 			"historyTimeToLive": "Geschichte Zeit zu leben"

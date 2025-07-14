@@ -17,15 +17,14 @@
 
 -->
 <template>
-  <div class="h-100 d-flex flex-column bg-light">
-    <div class="h-100 container-fluid overflow-auto">
-      <div v-for="(group, key) of deploymentsGrouped" :key="key">
+    <div class="container-fluid">
+      <div v-for="group of groups" :key="group.name">
         <p role="heading" aria-level="4" class="mdi mdi-18px text-end pt-3 mb-1" :class="group.visible ? 'mdi-minus' : 'mdi-plus'"
-          @click="$eventBus.emit('bv::toggle::collapse', key)" style="cursor: pointer">
-          <span class="float-start h5">{{ title(key) }}</span>
+          @click="$eventBus.emit('bv::toggle::collapse', group.name)" style="cursor: pointer">
+          <span class="float-start h5">{{ group.name }}</span>
         </p>
         <hr class="mt-0 mb-0">
-        <b-collapse class="me-3" :id="key" v-model="group.visible">
+        <b-collapse class="me-3" :id="group.name" v-model="group.visible">
           <div class="row">
             <div v-for="d of group.data" :key="d.id" class="col-md-6 col-lg-3 col-12 my-3">
               <b-button @click="setDeployment(d)" ref="deploymentCard" variant="link" class="text-decoration-none p-0 w-100 shadow-sm">
@@ -54,20 +53,18 @@
         </b-collapse>
       </div>
     </div>
-  </div>
 </template>
 
 <script>
-import { moment } from '@/globals.js'
-import { sortDeployments } from '@/components/deployment/utils.js'
 import { formatDate } from '@/utils/dates.js'
 
 export default {
   name: 'DeploymentList',
   emits: [ 'select-deployment' ],
-  props: { deployments: Array, deployment: Object, sorting: Object },
-  data: function() {
-    return { deploymentsGrouped: {} }
+  props: {
+    groups: Array,
+    deployments: Array,
+    deployment: Object,
   },
   watch: {
     '$route.params.deploymentId': {
@@ -76,13 +73,6 @@ export default {
       },
       immediate: true
     },
-    deployments: {
-      handler: function() {
-        if (this.sorting.key === 'deploymentTime') this.deploymentsGrouped = this.groupByDate(this.deployments)
-        if (this.sorting.key === 'name') this.deploymentsGrouped = this.groupByName(this.deployments)
-      },
-      immediate: true
-    }
   },
   mounted: function() {
     if (this.deployment) {
@@ -104,35 +94,6 @@ export default {
         })
         if (deployment) this.$emit('select-deployment', deployment)
       }
-    },
-    groupByName: function(deployments) {
-      var deploymentsGrouped = {}
-      deployments.forEach(d => {
-        if (!deploymentsGrouped[d.name[0]]) {
-          deploymentsGrouped[d.name[0]] = { visible: true, data: [] }
-        }
-        deploymentsGrouped[d.name[0]].data.push(d)
-      })
-      Object.keys(deploymentsGrouped).forEach(key => {
-        deploymentsGrouped[key].data.sort((a, b) => sortDeployments(a, b, 'deploymentTime', this.sorting.key))
-      })
-      return deploymentsGrouped
-    },
-    groupByDate: function(deployments) {
-      var deploymentsGrouped = {}
-      deployments.forEach(d => {
-        var date = moment(d.deploymentTime).format('YYYY-MM-DD')
-        if (!deploymentsGrouped[date]) {
-          deploymentsGrouped[date] = { visible: true, data: [] }
-        }
-        deploymentsGrouped[date].data.push(d)
-      })
-      return deploymentsGrouped
-    },
-    title: function(key) {
-      if (this.sorting.key === 'deploymentTime') {
-        return moment(key).format('LL')
-      } else return key
     }
   }
 }

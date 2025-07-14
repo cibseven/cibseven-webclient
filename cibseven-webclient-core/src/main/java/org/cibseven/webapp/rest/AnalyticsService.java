@@ -158,11 +158,11 @@ public class AnalyticsService extends BaseService implements InitializingBean {
 			analytics.setDecisionDefinitionsCount(distinctKeyCount);
 		}
 
-		Collection<Deployment> deployments = bpmProvider.findDeployments(user);
-		if (deployments == null) {
+		Long deploymentsCount = bpmProvider.countDeployments(user, "");
+		if (deploymentsCount == null) {
 			analytics.setDeploymentsCount(-1);
 		} else {
-			analytics.setDeploymentsCount(deployments.size());
+			analytics.setDeploymentsCount(deploymentsCount);
 		}
 
 //    ToDo:
