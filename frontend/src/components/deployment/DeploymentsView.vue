@@ -159,7 +159,8 @@ export default {
       cascadeDelete: true,
       resources: [],
       resourcesLoading: false,
-      deploymentsDelData: { total: 0, deleted: 0 }
+      deploymentsDelData: { total: 0, deleted: 0 },
+      debouncedSearch: null
     }
   },
   watch: {

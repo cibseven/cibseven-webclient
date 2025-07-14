@@ -83,7 +83,7 @@ public class DeploymentProvider extends SevenProviderBase implements IDeployment
 			builder.queryParam("nameLike", nameLike);
 		}
 		String url = builder.toUriString();
-		JsonNode response = ((ResponseEntity<JsonNode>) doGet(url, JsonNode.class, user, false)).getBody();
+		JsonNode response = ((ResponseEntity<JsonNode>) doGet(url, JsonNode.class, user, true)).getBody();
 		return response != null ? response.get("count").asLong() : 0L;
 	}
 
