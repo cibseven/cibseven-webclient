@@ -130,6 +130,7 @@
 import { permissionsMixin } from '@/permissions.js'
 import { ProcessService } from '@/services.js'
 import { moment } from '@/globals.js'
+import { debounce } from '@/utils/debounce.js'
 import DeploymentList from '@/components/deployment/DeploymentList.vue'
 import PagedScrollableContent from '@/components/common-components/PagedScrollableContent.vue'
 import ResourcesNavBar from '@/components/deployment/ResourcesNavBar.vue'
@@ -163,10 +164,7 @@ export default {
   },
   watch: {
     filter: function() {
-      this.groups = []
-      this.deployments = []
-      this.deployment = null
-      this.loadNextPage()
+      this.debouncedSearch()
     },
     sortBy: function(newSortBy) {
       localStorage.setItem('cibseven:deployments.sortBy', newSortBy)
@@ -201,6 +199,8 @@ export default {
     },
   },
   created: function () {
+    this.debouncedSearch = debounce(800, this.performSearch)
+
     // load sortBy
     const newSortBy = localStorage.getItem('cibseven:deployments.sortBy')
     if (this.sortingFields.some((field) => field.value === newSortBy)) {
@@ -221,6 +221,12 @@ export default {
     this.loadNextPage()
   },
   methods: {
+    performSearch: function() {
+      this.groups = []
+      this.deployments = []
+      this.deployment = null
+      this.loadNextPage()
+    },
     refreshTotalCount() {
       this.totalCount = undefined
       ProcessService.findDeploymentsCount(this.filter).then(count => {
