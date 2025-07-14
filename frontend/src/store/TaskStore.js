@@ -20,12 +20,8 @@ const TaskStore = {
     selectedAssignee: { taskId: null, assignee: null }
   },
   mutations: {
-    setSelectedAssignee(state, params) {
-      let assignee = params.assignee
-      if (assignee && typeof assignee === 'object') {
-        assignee = assignee.assignee || assignee.name || assignee.id || null
-      }
-      state.selectedAssignee = { taskId: params.taskId, assignee }
+    setSelectedAssignee(state, { taskId, assignee }) {
+      state.selectedAssignee = { taskId, assignee }
     },
     clearSelectedAssignee(state) {
       state.selectedAssignee = { taskId: null, assignee: null }
@@ -41,14 +37,9 @@ const TaskStore = {
     }
   },
   actions: {
-    setSelectedAssignee({ commit }, params) {
-      if (
-        params &&
-        typeof params === 'object' &&
-        'taskId' in params &&
-        'assignee' in params
-      ) {
-        commit('setSelectedAssignee', { taskId: params.taskId, assignee: params.assignee })
+    setSelectedAssignee({ commit }, { taskId, assignee }) {
+      if (taskId) {
+        commit('setSelectedAssignee', { taskId, assignee })
       } else {
         commit('clearSelectedAssignee')
       }

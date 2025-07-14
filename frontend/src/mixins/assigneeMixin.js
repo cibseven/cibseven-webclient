@@ -18,9 +18,11 @@ export default {
     computed: {
         assignee: {
             get() {
-                const selected = this.$store.state.task.selectedAssignee
-                if (selected && selected.taskId === this.task?.id) return selected.assignee
-                return this.task?.assignee || null
+                if (this.task?.id) {
+                    const assigned = this.$store.getters['task/getAssigneeByTaskId'](this.task.id)
+                    return assigned !== undefined ? assigned : (this.task.assignee ?? null)
+                }
+                return null
             },
             set(value) {
                 if (this.task && typeof this.setSelectedAssignee === 'function') {
