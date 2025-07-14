@@ -41,6 +41,8 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import jakarta.servlet.http.HttpServletRequest;
 
 @Component
@@ -74,9 +76,28 @@ public class DeploymentProvider extends SevenProviderBase implements IDeployment
 		
 	}
 
-    @Override
-	public Collection<Deployment> findDeployments(CIBUser user) {
-		String url = getEngineRestUrl() + "/deployment?sortBy=deploymentTime&sortOrder=desc";
+	@Override
+	public Long countDeployments(CIBUser user, String nameLike) {
+		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(getEngineRestUrl() + "/deployment/count");
+		if (nameLike != null && !nameLike.isEmpty()) {
+			builder.queryParam("nameLike", nameLike);
+		}
+		String url = builder.toUriString();
+		JsonNode response = ((ResponseEntity<JsonNode>) doGet(url, JsonNode.class, user, false)).getBody();
+		return response != null ? response.get("count").asLong() : 0L;
+	}
+
+  @Override
+	public Collection<Deployment> findDeployments(CIBUser user, String nameLike, int firstResult, int maxResults, String sortBy, String sortOrder) {
+		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(getEngineRestUrl() + "/deployment")
+		.queryParam("sortBy", sortBy)
+		.queryParam("sortOrder", sortOrder)
+		.queryParam("firstResult", firstResult)
+		.queryParam("maxResults", maxResults);
+		if (nameLike != null && !nameLike.isEmpty()) {
+			builder.queryParam("nameLike", nameLike);
+		}
+		String url = builder.toUriString();
 		return Arrays.asList(((ResponseEntity<Deployment[]>) doGet(url, Deployment[].class, user, false)).getBody());
 	}
 

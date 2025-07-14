@@ -155,8 +155,23 @@ var ProcessService = {
   stopInstance: function(processInstanceId) {
     return axios.delete(getServicesBasePath() + "/process/instance/" + processInstanceId + "/delete")
   },
-  findDeployments: function() {
-    return axios.get(getServicesBasePath() + "/process/deployments")
+  findDeploymentsCount: function(nameLike = '') {
+    return axios.get(getServicesBasePath() + "/process/deployments/count", {
+      params: {
+        nameLike,
+      }
+    })
+  },
+  findDeployments: function(nameLike = '', firstResult = 0, maxResults = 50, sortBy = 'name', sortOrder = 'asc') {
+    return axios.get(getServicesBasePath() + "/process/deployments", {
+      params: {
+        nameLike,
+        firstResult,
+        maxResults,
+        sortBy,
+        sortOrder,
+      }
+    })
   },
   findDeploymentResources: function(deploymentId) {
     return axios.get(getServicesBasePath() + "/process/deployments/" + deploymentId + "/resources")
