@@ -152,7 +152,7 @@ export default {
       deleteLoader: false,
       filter: this.$route.query.filter || '',
       firstResult: 0,
-      maxResults: 10, // The maximum number of results to fetch per page.
+      maxResults: 50, // The maximum number of results to fetch per page.
       sortBy: 'deploymentTime', // Enum: "id" "name" "deploymentTime" "tenantId"
       sortOrder: 'asc', // Enum: "asc" "desc"
       cascadeDelete: true,
