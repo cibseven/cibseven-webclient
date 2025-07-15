@@ -179,6 +179,7 @@ import AdvancedSearchModal from '@/components/task/AdvancedSearchModal.vue'
 import SmartSearch from '@/components/task/SmartSearch.vue'
 import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
 import { BWaitingBox } from 'cib-common-components'
+import { mapActions } from 'vuex'
 
 export default {
   name: 'TasksNavBar',
@@ -261,6 +262,7 @@ export default {
     }
   },
   methods: {
+    ...mapActions('task', ['setSelectedAssignee']),
     formatDate,
     loadAdvancedFilters: function() {
       this.advancedFilter = []
@@ -379,7 +381,7 @@ export default {
     claim: function(task) {
       TaskService.setAssignee(task.id, this.$root.user.id).then(() => {
         task.assignee = this.$root.user.id
-        this.$emit('update-assignee', task.assignee)
+        this.$emit('update-assignee', { taskId: task.id, assignee: task.assignee })
       })
     },
     checkAssignee: function(task) {
