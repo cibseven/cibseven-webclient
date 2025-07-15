@@ -33,7 +33,9 @@
         <router-link v-for="version of processDefinitions" :key="version.id"
           :to="{
             path: `/seven/auth/process/${version.key}/${version.version}`,
-            query: $route.query
+            query: Object.fromEntries(
+              Object.entries($route.query).filter(([key]) => key !== 'tab')
+            )
           }" class="btn border-0">
           <div
             class="rounded-0 mt-3 p-2 bg-white border-0 list-group-item-action btn active"
