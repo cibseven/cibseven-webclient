@@ -35,38 +35,28 @@
         <span class="mdi mdi-18px mdi-rocket"><span class="d-none d-lg-inline">{{ $t('start.startProcess.title') }}</span></span>
       </b-button>
 
-      <b-collapse v-if="(permissionsTaskList && startableProcesses) || permissionsCockpit" is-nav id="nav_collapse" class="flex-grow-0 d-none d-md-flex">
+      <!-- Main menu -->
+      <b-collapse v-if="computedMenuItems.length > 0" is-nav id="nav_collapse" class="flex-grow-0 d-none d-md-flex">
         <b-navbar-nav>
           <b-nav-item-dropdown extra-toggle-classes="py-1" right :title="$t('navigation.menu')">
             <template v-slot:button-content>
               <span class="visually-hidden">{{ $t('navigation.menu') }}</span>
               <span class="mdi mdi-24px mdi-menu align-middle"></span>
             </template>
-            <b-dropdown-item v-if="permissionsTaskList && startableProcesses" to="/seven/auth/start-process" :active="$route.path.includes('seven/auth/start-process')" :title="$t('start.startProcess.tooltip')">{{ $t('start.startProcess.title') }}</b-dropdown-item>
-            <b-dropdown-item v-if="permissionsTaskList" to="/seven/auth/tasks" :active="$route.path.includes('seven/auth/tasks')" :title="$t('start.taskList.tooltip')">{{ $t('start.taskList.title') }}</b-dropdown-item>
-
-            <b-dropdown-divider v-if="permissionsTaskList && permissionsCockpit"></b-dropdown-divider>
-            <b-dropdown-group v-if="permissionsCockpit" header="{{ $t('start.cockpit.title') }}">
-              <b-dropdown-item to="/seven/auth/processes" :active="$route.path.includes('seven/auth/processes/dashboard')" :title="$t('start.cockpit.tooltip')"><span class="fw-semibold">{{ $t('start.cockpit.title') }}</span></b-dropdown-item>
-              <b-dropdown-item to="/seven/auth/processes/list" :active="$route.path.includes('seven/auth/process/') || $route.path.includes('seven/auth/processes/list')" :title="$t('start.cockpit.processes.tooltip')">{{ $t('start.cockpit.processes.title') }}</b-dropdown-item>
-              <b-dropdown-item to="/seven/auth/decisions" :active="$route.path.includes('seven/auth/decision')" :title="$t('start.cockpit.decisions.tooltip')">{{ $t('start.cockpit.decisions.title') }}</b-dropdown-item>
-              <b-dropdown-item to="/seven/auth/human-tasks" :active="$route.path.includes('seven/auth/human-tasks')" :title="$t('start.cockpit.humanTasks.tooltip')">{{ $t('start.cockpit.humanTasks.title') }}</b-dropdown-item>
-              <b-dropdown-item to="/seven/auth/deployments" :active="$route.path.includes('seven/auth/deployments')" :title="$t('start.cockpit.deployments.tooltip')">{{ $t('start.cockpit.deployments.title') }}</b-dropdown-item>
-              <b-dropdown-item to="/seven/auth/batches" :active="$route.path.includes('seven/auth/batches')" :title="$t('start.cockpit.batches.tooltip')">{{ $t('start.cockpit.batches.title') }}</b-dropdown-item>
-            </b-dropdown-group>
-
-            <b-dropdown-divider v-if="permissionsUsers && (permissionsTaskList || permissionsCockpit)"></b-dropdown-divider>
-            <b-dropdown-group v-if="permissionsUsers" header="{{ $t('start.admin.title') }}">
-              <b-dropdown-item to="/seven/auth/admin" :active="$route.path.includes('seven/auth/admin') && !$route.path.includes('seven/auth/admin/')" :title="$t('start.admin.tooltip')"><span class="fw-semibold">{{ $t('start.admin.title') }}</span></b-dropdown-item>
-              <b-dropdown-item to="/seven/auth/admin/users" :active="$route.path.includes('seven/auth/admin/user') || $route.path.includes('seven/auth/admin/create-user')" :title="$t('admin.users.title')">{{ $t('admin.users.title') }}</b-dropdown-item>
-              <b-dropdown-item to="/seven/auth/admin/groups" :active="$route.path.includes('seven/auth/admin/group') || $route.path.includes('seven/auth/admin/create-group')" :title="$t('admin.groups.title')">{{ $t('admin.groups.title') }}</b-dropdown-item>
-              <b-dropdown-item to="/seven/auth/admin/tenants" :active="$route.path.includes('seven/auth/admin/tenant') || $route.path.includes('seven/auth/admin/create-tenant')" :title="$t('admin.tenants.tooltip')">{{ $t('admin.tenants.title') }}</b-dropdown-item>
-              <b-dropdown-item to="/seven/auth/admin/authorizations" :active="$route.path.includes('seven/auth/admin/authorizations')" :title="$t('admin.authorizations.title')">{{ $t('admin.authorizations.title') }}</b-dropdown-item>
-              <b-dropdown-item to="/seven/auth/admin/system" :active="$route.path.includes('seven/auth/admin/system')" :title="$t('admin.system.tooltip')">{{ $t('admin.system.title') }}</b-dropdown-item>
-            </b-dropdown-group>
-
-            <b-dropdown-divider v-if="permissionsCockpit"></b-dropdown-divider>
-            <b-dropdown-item v-if="permissionsCockpit" :href="$root.config.cockpitUrl" :title="$t('start.oldCockpit.tooltip')" target="_blank">{{ $t('start.oldCockpit.title') }}</b-dropdown-item>
+            <template v-for="(group, gIdx) in computedMenuItems" :key="gIdx">
+              <b-dropdown-divider v-if="group.divider"></b-dropdown-divider>
+              <b-dropdown-group v-else :header="$t(group.groupTitle)">
+                <b-dropdown-item
+                  v-for="(item, idx) in group.items"
+                  :key="'ext-' + idx"
+                  :to="item.to"
+                  :href="item.href"
+                  :title="$t(item.tooltip)"
+                  :active="isMenuItemActive(item)"
+                  :target="item.external ? '_blank' : undefined"
+                ><span :class="item.group ? 'fw-semibold' : ''">{{ $t(item.title) }}</span></b-dropdown-item>
+              </b-dropdown-group>
+            </template>
           </b-nav-item-dropdown>
         </b-navbar-nav>
       </b-collapse>
@@ -156,6 +146,120 @@ export default {
     }
   },
   computed: {
+    menuItems: function() {
+      return [{
+          show: this.permissionsTaskList && this.startableProcesses,
+          groupTitle: 'start.taskList.title',
+          items: [{
+              to: '/seven/auth/start-process',
+              active: ['seven/auth/start-process'],
+              tooltip: 'start.startProcess.tooltip',
+              title: 'start.startProcess.title'
+            }, {
+              to: '/seven/auth/tasks',
+              active: ['seven/auth/tasks'],
+              tooltip: 'start.taskList.tooltip',
+              title: 'start.taskList.title'
+            }
+          ]
+        }, {
+          show: this.permissionsTaskList && this.permissionsCockpit,
+          divider: true,
+        }, {
+          show: this.permissionsCockpit,
+          groupTitle: 'start.cockpit.title',
+          items: [{
+              group: true,
+              to: '/seven/auth/processes',
+              active: ['seven/auth/processes/dashboard'],
+              tooltip: 'start.cockpit.tooltip',
+              title: 'start.cockpit.title'
+            }, {
+              to: '/seven/auth/processes/list',
+              active: ['seven/auth/process/', 'seven/auth/processes/list'],
+              tooltip: 'start.cockpit.processes.tooltip',
+              title: 'start.cockpit.processes.title'
+            }, {
+              to: '/seven/auth/decisions',
+              active: ['seven/auth/decision'],
+              tooltip: 'start.cockpit.decisions.tooltip',
+              title: 'start.cockpit.decisions.title'
+            }, {
+              to: '/seven/auth/human-tasks',
+              active: ['seven/auth/human-tasks'],
+              tooltip: 'start.cockpit.humanTasks.tooltip',
+              title: 'start.cockpit.humanTasks.title'
+            }, {
+              to: '/seven/auth/deployments',
+              active: ['seven/auth/deployments'],
+              tooltip: 'start.cockpit.deployments.tooltip',
+              title: 'start.cockpit.deployments.title'
+            }, {
+              to: '/seven/auth/batches',
+              active: ['seven/auth/batches'],
+              tooltip: 'start.cockpit.batches.tooltip',
+              title: 'start.cockpit.batches.title'
+            }
+          ]
+        }, {
+          show: this.permissionsUsers && (this.permissionsTaskList || this.permissionsCockpit),
+          divider: true,
+        }, {
+          show: this.permissionsUsers,
+          groupTitle: 'start.admin.title',
+          items: [{
+              group: true,
+              to: '/seven/auth/admin',
+              active: ['seven/auth/admin'],
+              activeExact: true,
+              tooltip: 'start.admin.tooltip',
+              title: 'start.admin.title'
+            }, {
+              to: '/seven/auth/admin/users',
+              active: ['seven/auth/admin/user', 'seven/auth/admin/create-user'],
+              tooltip: 'admin.users.title',
+              title: 'admin.users.title'
+            }, {
+              to: '/seven/auth/admin/groups',
+              active: ['seven/auth/admin/group', 'seven/auth/admin/create-group'],
+              tooltip: 'admin.groups.title',
+              title: 'admin.groups.title'
+            }, {
+              to: '/seven/auth/admin/tenants',
+              active: ['seven/auth/admin/tenant', 'seven/auth/admin/create-tenant'],
+              tooltip: 'admin.tenants.tooltip',
+              title: 'admin.tenants.title'
+            }, {
+              to: '/seven/auth/admin/authorizations',
+              active: ['seven/auth/admin/authorizations'],
+              tooltip: 'admin.authorizations.title',
+              title: 'admin.authorizations.title'
+            }, {
+              to: '/seven/auth/admin/system',
+              active: ['seven/auth/admin/system'],
+              tooltip: 'admin.system.tooltip',
+              title: 'admin.system.title'
+            }
+          ]
+        }, {
+          show: this.permissionsCockpit,
+          divider: true,
+        }, {
+          show: this.permissionsCockpit,
+          groupTitle: 'start.oldCockpit.title',
+          items: [{
+              href: this.$root.config.cockpitUrl,
+              tooltip: 'start.oldCockpit.tooltip',
+              title: 'start.oldCockpit.title',
+              external: true
+            }
+          ]
+        }
+      ]
+    },
+    computedMenuItems: function() {
+      return this.getVisibleMenuItems(this.menuItems)
+    },
     startableProcesses: function() {
       return this.processesFiltered.find(p => { return p.startableInTasklist })
     },
@@ -177,40 +281,19 @@ export default {
     },
     // when route is changed => let's change title of the view inside top toolbar
     pageTitle: function() {
-      switch (this.$route.name) {
-        case 'login': return this.$t('login.login')
-        case 'tasklist': return this.$t('start.taskList.title')
-        case 'deployments': return this.$t('deployment.title')
-        case 'start-process': return this.$t('start.startProcess.title')
-        case 'processesDashboard': return this.$t('start.cockpit.title')
-        case 'processManagement':
-        case 'process': return this.$t('start.cockpit.processes.title')
-        case 'batches': return this.$t('batches.title')
-        case 'decision-version':
-        case 'decision-instance':
-        case 'decision-list': return this.$t('start.cockpit.decisions.title')
-        case 'human-tasks': return this.$t('start.cockpit.humanTasks.title')
-        case 'usersManagement': return this.$t('start.admin.title')
-        case 'adminUser':
-        case 'adminUsers':
-        case 'createUser':
-          return this.$t('admin.users.title')
-        case 'adminGroup':
-        case 'adminGroups':
-        case 'createGroup':
-          return this.$t('admin.groups.title')
-        case 'authorizations':
-        case 'authorizationType':
-          return this.$t('admin.authorizations.title')
-        case 'createTenant':
-        case 'adminTenant':
-        case 'adminTenants': return this.$t('admin.tenants.title')
-        case 'adminSystem':
-        case 'system-diagnostics':
-        case 'execution-metrics':
-          return this.$t('admin.system.title')
-        default: return ''
-      }
+      let title = ''
+      this.computedMenuItems.some(group => {
+        if (!group.items) {
+           return false
+        }
+        const item = group.items.find(i => this.isMenuItemActive(i))
+        if (item) {
+          title = this.$t(item.title)
+          return true
+        }
+        return false
+      })
+      return title
     },
     permissionsTaskList: function() {
       return this.$root.user && this.applicationPermissions(this.$root.config.permissions.tasklist, 'tasklist')
@@ -235,6 +318,20 @@ export default {
     this.refreshAppTitle(this.pageTitle)
   },
   methods: {
+    // override this method to add/remove menu items
+    getVisibleMenuItems: function(items) {
+      return items.filter(group => group.show)
+    },
+    isMenuItemActive: function(item) {
+      if (!item.active) {
+        return false
+      }
+      if (item.activeExact) {
+        return item.active.some(a => this.$route.path.endsWith(a))
+      } else {
+        return item.active.some(a => this.$route.path.includes(a))
+      }
+    },
     logout: function() {
       this.$router.push('/')
       location.reload() //refresh to empty vuex and axios defaults

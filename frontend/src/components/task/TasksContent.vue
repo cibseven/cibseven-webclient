@@ -92,12 +92,14 @@ import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import { BWaitingBox } from 'cib-common-components'
 import { updateAppTitle } from '@/utils/init'
 import { splitToWords } from '@/utils/search'
+import { mapActions } from 'vuex'
+import assigneeMixin from '@/mixins/assigneeMixin.js'
 
 export default {
   name: 'TasksContent',
   components: { TasksNavBar, FilterNavBar, FilterNavCollapsed, SidebarsFlow, SuccessAlert, BWaitingBox },
   inject: ['isMobile', 'AuthService'],
-  mixins: [permissionsMixin],
+  mixins: [permissionsMixin, assigneeMixin],
   data: function () {
     var leftOpenFilter = localStorage.getItem('leftOpenFilter') ?
       localStorage.getItem('leftOpenFilter') === 'true' : true
@@ -143,6 +145,12 @@ export default {
     getTasksNavbarSize: function() { return this.tasksNavbarSizes[this.tasksNavbarSize] }
   },
   watch: {
+    task: {
+      handler(newTask) {
+        this.assignee = newTask ? newTask.assignee : null
+      },
+      immediate: true
+    },
     rightOpenTask: function(newVal) {
       localStorage.setItem('rightOpenTask', newVal)
     },
@@ -168,6 +176,7 @@ export default {
     this.setIntervalTaskList()
   },
   methods: {
+    ...mapActions('task', ['setSelectedAssignee']),
     canOpenRightTask: function() {
       if (!this.TasksRightSidebar) return false
       return (this.$root.config.layout.showTaskDetailsSidebar ||
@@ -256,16 +265,20 @@ export default {
       this.tasks.splice(index, 1, updatedTask)
       this.listTasksWithFilterAuto()
     },
-    updateAssignee: function(assignee, target) {
-      if (this.processInstanceHistory) {
-        this.processInstanceHistory.tasksHistory[0].assignee = assignee
+    updateAssignee: function(taskStore, target) {
+      let assigneeString = taskStore?.assignee || null
+      let taskId = taskStore?.taskId || null
+      if (this.task && this.task.id === taskId) {
+        this.assignee = assigneeString
+        this.task.assignee = assigneeString
+      }
+      if (this.processInstanceHistory && this.processInstanceHistory.tasksHistory?.[0]?.id === taskId) {
+        this.processInstanceHistory.tasksHistory[0].assignee = assigneeString
         this.selectedTask(this.processInstanceHistory.tasksHistory[0])
       }
-      if (target === 'taskList') {
-        var currentTaskIndex = this.tasks.findIndex(task => {
-          return task.id === this.task.id
-        })
-        if (currentTaskIndex !== -1) this.tasks[currentTaskIndex].assignee = assignee
+      if (target === 'taskList' && taskId) {
+        const currentTask = this.tasks.find(task => task.id === taskId)
+        if (currentTask) currentTask.assignee = assigneeString
       }
       this.listTasksWithFilterAuto()
     },
@@ -276,6 +289,7 @@ export default {
       this.listTasksWithFilterAuto()
       this.checkAndOpenTask(JSON.parse(JSON.stringify(this.task)))
       this.task = null
+      this.assignee = null
     },
     checkAndOpenTask: function(task, started) {
       if (this.$root.config.automaticallyOpenTask) this.openTaskAutomatically(task, started)
@@ -332,6 +346,7 @@ export default {
     },
     selectedTask: function(task) {
       this.task = task
+      this.assignee = task.assignee || null
       updateAppTitle(
         this.$root.config.productNamePageTitle,
         this.$t('start.taskList.title'),
