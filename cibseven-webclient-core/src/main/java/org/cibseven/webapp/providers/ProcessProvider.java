@@ -36,6 +36,7 @@ import org.cibseven.webapp.exception.UnsupportedTypeException;
 import org.cibseven.webapp.rest.model.HistoryProcessInstance;
 import org.cibseven.webapp.rest.model.Incident;
 import org.cibseven.webapp.rest.model.Process;
+import org.cibseven.webapp.rest.model.ProcessDefinitionInfo;
 import org.cibseven.webapp.rest.model.ProcessDiagram;
 import org.cibseven.webapp.rest.model.ProcessInstance;
 import org.cibseven.webapp.rest.model.ProcessStart;
@@ -81,22 +82,48 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	@Override
 	public Collection<Process> findProcessesWithInfo(CIBUser user) {
 		
-		Collection<Process> processes = findProcesses(user);
+		// Get statistics for all process definitions in one call
+		Collection<ProcessStatistics> statisticsCollection = getProcessStatistics(user);
 		
-		/* The following code slow down the OFDKA system.*/
-		for (Process process : processes) {
-			if (fetchInstances) {
-				String urlInstances = getEngineRestUrl() + "/process-instance/count?processDefinitionKey=" + process.getKey();
-				urlInstances += process.getTenantId() != null ? "&tenantIdIn=" + process.getTenantId() : "&withoutTenantId=true";
-				process.setRunningInstances(((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody().get("count").asLong());	
-			}
-			if (fetchIncidents) {
-				String urlIncidents = getEngineRestUrl() + "/incident/count?processDefinitionKeyIn=" + process.getKey();
-				urlIncidents += process.getTenantId() != null ? "&tenantIdIn=" + process.getTenantId() : "";
-				process.setIncidents(((ResponseEntity<JsonNode>) doGet(urlIncidents, JsonNode.class, user, false)).getBody().get("count").asLong());	
-			}
-		}
-		return processes;
+		// Build Process objects directly from ProcessStatistics
+		return statisticsCollection.stream()
+				.map(stats -> {
+					Process process = new Process();
+					ProcessDefinitionInfo definition = stats.getDefinition();
+					
+					// Copy fields from ProcessDefinitionInfo
+					if (definition != null) {
+						process.setId(definition.getId());
+						process.setKey(definition.getKey());
+						process.setCategory(definition.getCategory());
+						process.setDescription(definition.getDescription());
+						process.setName(definition.getName());
+						process.setVersion(definition.getVersion() != null ? definition.getVersion().toString() : null);
+						process.setResource(definition.getResource());
+						process.setDeploymentId(definition.getDeploymentId());
+						process.setDiagram(definition.getDiagram());
+						process.setSuspended(definition.getSuspended() != null ? definition.getSuspended().toString() : null);
+						process.setTenantId(definition.getTenantId());
+						process.setVersionTag(definition.getVersionTag());
+						process.setHistoryTimeToLive(definition.getHistoryTimeToLive() != null ? definition.getHistoryTimeToLive().toString() : null);
+						process.setStartableInTasklist(definition.getStartableInTasklist());
+					}
+					
+					// Set statistics data
+					process.setRunningInstances(stats.getInstances());
+					// Calculate total incidents from all incident types
+					long totalIncidents = stats.getIncidents() != null 
+						? stats.getIncidents().stream().mapToLong(incident -> incident.getIncidentCount()).sum()
+						: 0L;
+					process.setIncidents(totalIncidents);
+					
+					// Set default values for fields not available in statistics
+					process.setAllInstances(stats.getInstances()); // Same as running instances for now
+					process.setCompletedInstances(0L); // Would need separate call to get completed instances
+					
+					return process;
+				})
+				.collect(Collectors.toList());
 	}	
 
 	@Override
