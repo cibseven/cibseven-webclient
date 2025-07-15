@@ -50,7 +50,7 @@
                   v-for="(item, idx) in group.items"
                   :key="'ext-' + idx"
                   :to="item.to"
-                  :href="item.href"
+                  :href="item.href()"
                   :title="$t(item.tooltip)"
                   :active="isMenuItemActive(item)"
                   :target="item.external ? '_blank' : undefined"
@@ -235,9 +235,9 @@ export default {
           divider: true,
         }, {
           show:  function() { return this.permissionsCockpit },
-          groupTitle: 'start.admin.title',
+          groupTitle: 'start.oldCockpit.title',
           items: [{
-              href: this.$root.config.cockpitUrl,
+              href: function() { return this.$root.config.cockpitUrl },
               tooltip: 'start.oldCockpit.tooltip',
               title: 'start.oldCockpit.title',
               external: true
