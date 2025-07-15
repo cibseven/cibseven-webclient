@@ -50,7 +50,7 @@
                   v-for="(item, idx) in group.items"
                   :key="'ext-' + idx"
                   :to="item.to"
-                  :href="item.href()"
+                  :href="item.href"
                   :title="$t(item.tooltip)"
                   :active="isMenuItemActive(item)"
                   :target="item.external ? '_blank' : undefined"
@@ -135,9 +135,20 @@ export default {
   inject: ['isMobile'],
   data: function() {
     return {
-       rememberNotShow: false,
-       menuItems: [{
-          show: function() { return this.permissionsTaskList && this.startableProcesses },
+       rememberNotShow: false
+    }
+  },
+  watch: {
+    // when the title of the view inside top toolbar is changed
+    // => let's change title of the whole web-page in browser
+    pageTitle: function(title) {
+      this.refreshAppTitle(title)
+    }
+  },
+  computed: {
+    menuItems: function() {
+      return [{
+          show: this.permissionsTaskList && this.startableProcesses,
           groupTitle: 'start.taskList.title',
           items: [{
               to: '/seven/auth/start-process',
@@ -152,10 +163,10 @@ export default {
             }
           ]
         }, {
-          show: function() { return this.permissionsTaskList && this.permissionsCockpit },
+          show: this.permissionsTaskList && this.permissionsCockpit,
           divider: true,
         }, {
-          show: function() { return this.permissionsCockpit },
+          show: this.permissionsCockpit,
           groupTitle: 'start.cockpit.title',
           items: [{
               group: true,
@@ -191,10 +202,10 @@ export default {
             }
           ]
         }, {
-          show:  function() { return this.permissionsUsers && (this.permissionsTaskList || this.permissionsCockpit) },
+          show: this.permissionsUsers && (this.permissionsTaskList || this.permissionsCockpit),
           divider: true,
         }, {
-          show:  function() { return this.permissionsUsers },
+          show: this.permissionsUsers,
           groupTitle: 'start.admin.title',
           items: [{
               group: true,
@@ -231,13 +242,13 @@ export default {
             }
           ]
         }, {
-          show:  function() { return this.permissionsCockpit },
+          show: this.permissionsCockpit,
           divider: true,
         }, {
-          show:  function() { return this.permissionsCockpit },
+          show: this.permissionsCockpit,
           groupTitle: 'start.oldCockpit.title',
           items: [{
-              href: function() { return this.$root.config.cockpitUrl },
+              href: this.$root.config.cockpitUrl,
               tooltip: 'start.oldCockpit.tooltip',
               title: 'start.oldCockpit.title',
               external: true
@@ -245,16 +256,7 @@ export default {
           ]
         }
       ]
-    }
-  },
-  watch: {
-    // when the title of the view inside top toolbar is changed
-    // => let's change title of the whole web-page in browser
-    pageTitle: function(title) {
-      this.refreshAppTitle(title)
-    }
-  },
-  computed: {
+    },
     computedMenuItems: function() {
       return this.getVisibleMenuItems(this.menuItems)
     },
@@ -281,7 +283,10 @@ export default {
     pageTitle: function() {
       let title = ''
       this.computedMenuItems.some(group => {
-        const item = group.items?.find(i => this.isMenuItemActive(i))
+        if (!group.items) {
+           return false
+        }
+        const item = group.items.find(i => this.isMenuItemActive(i))
         if (item) {
           title = this.$t(item.title)
           return true
@@ -315,9 +320,7 @@ export default {
   methods: {
     // override this method to add/remove menu items
     getVisibleMenuItems: function(items) {
-      return items.filter(group => {
-        return group.show ? group.show.call(this) : true
-      })
+      return items.filter(group => group.show)
     },
     isMenuItemActive: function(item) {
       if (!item.active) {
