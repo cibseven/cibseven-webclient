@@ -29,21 +29,30 @@
 
     <div @mousedown="handleMouseDown" class="v-resizable position-absolute w-100" style="left: 0" :style="'height: ' + bpmnViewerHeight + 'px; ' + toggleTransition">
       <DmnViewer ref="diagram" class="h-100" />
-      <span role="button" size="sm" variant="light" class="bg-white px-2 py-1 me-1 position-absolute border rounded" style="bottom: 15px; left: 15px;" @click="toggleContent">
+      <span role="button" size="sm" variant="light" class="bg-white px-2 py-1 me-1 position-absolute border rounded" style="bottom: 90px; right: 11px;" @click="toggleContent">
         <span class="mdi mdi-18px" :class="toggleIcon"></span>
       </span>
     </div>
 
-    <div class="position-absolute w-100 bg-light border-bottom" style="left: 0; z-index: 1" :style="'top: ' + (bottomContentPosition - tabsAreaHeight) + 'px; ' + toggleTransition">
+    <div class="position-absolute w-100 border-bottom" style="left: 0; z-index: 1" :style="'height: '+ tabsAreaHeight +'px; top: ' + (bottomContentPosition - tabsAreaHeight) + 'px; ' + toggleTransition">
       <div class="d-flex align-items-end">
-        <div class="tabs-scroll-container flex-grow-1" style="white-space: nowrap;">
-          <ul class="nav nav-tabs m-0 border-0 flex-nowrap" style="display: inline-flex; overflow-y: hidden">
+        <div class="tabs-scroll-container flex-grow-1">
+          <button v-if="showLeftButton" type="button" @click="scrollLeft" class="scroll-button border border-bottom-0 btn btn-light position-absolute rounded-0" 
+            style="left: 0; box-shadow: 5px 0 5px -5px rgba(0, 0, 0, 0.1);">
+            <span class="mdi mdi-chevron-left"></span>
+          </button>
+          <ul ref="tabsContainer" class="nav nav-tabs m-0 border-0 flex-nowrap" style="display: flex; overflow-y: hidden" @scroll="checkScrollButtons">
             <li class="nav-item m-0 flex-shrink-0 border-0" v-for="(tab, index) in tabs" :key="index">
-              <a role="button" @click="changeTab(tab)" class="nav-link py-2 border-0 rounded-0" :class="{ 'active': tab.active, 'bg-light border border-bottom-0': !tab.active }">
+              <a role="button" @click="changeTab(tab)" class="nav-link py-2" :class="{ 'active': tab.active, 'bg-light border border-bottom-0': !tab.active }"
+                :style="tab.active ? 'border-bottom: 2px solid white' : ''">
                 {{ $t('decision.' + tab.id) }}
               </a>
             </li>
           </ul>
+          <button v-if="showRightButton" type="button" @click="scrollRight" class="scroll-button border border-bottom-0 btn btn-light position-absolute rounded-0" 
+            style="right: 0; box-shadow: -5px 0 5px -5px rgba(0, 0, 0, 0.1)">
+            <span class="mdi mdi-chevron-right"></span>
+          </button>
         </div>
       </div>
     </div>
@@ -76,13 +85,14 @@ import { permissionsMixin } from '@/permissions.js'
 import { DecisionService } from '@/services.js'
 import DmnViewer from '@/components/decision/DmnViewer.vue'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
+import tabScrollButtons from '@/components/process/mixins/tabScrollButtons.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import { mapActions } from 'vuex'
 
 export default {
   name: 'DecisionInstance',
   components: { DmnViewer, FlowTable },
-  mixins: [permissionsMixin, resizerMixin],
+  mixins: [permissionsMixin, resizerMixin, tabScrollButtons],
   props: {
     versionIndex: String,
     instanceId: String,

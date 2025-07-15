@@ -16,7 +16,7 @@
 -->
 <template>
   <div class="d-flex flex-column h-100">
-    <div v-if="selectedInstance.state === 'ACTIVE'" class="bg-light d-flex w-100">
+    <div v-if="selectedInstance.state === 'ACTIVE'" class="bg-white d-flex w-100">
       <div class="p-3">
         <b-button class="border" size="sm" variant="light" @click="$refs.addVariableModal.show()" :title="$t('process-instance.addVariable')">
           <span class="mdi mdi-plus"></span> {{ $t('process-instance.addVariable') }}

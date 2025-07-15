@@ -35,12 +35,12 @@
         </div>
       </div>
     </div>
-    <div class="position-absolute" style="right:15px;bottom:100px;">
+    <div class="position-absolute" style="right:15px;bottom:225px;">
       <b-button size="sm" class="border" variant="light" :title="$t('bpmn-viewer.resetZoom')" @click="resetZoom()">
         <span class="mdi mdi-18px mdi-target"></span>
       </b-button>
     </div>
-    <div class="btn-group-vertical" style="position:absolute;right:15px;bottom:15px;">
+    <div class="btn-group-vertical" style="position:absolute;right:15px;bottom:139px;">
       <b-button size="sm" class="border" variant="light" :title="$t('bpmn-viewer.zoomIn')" @click="zoomIn()">
         <span class="mdi mdi-18px mdi-plus"></span>
       </b-button>

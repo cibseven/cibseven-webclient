@@ -49,26 +49,38 @@
         :process-definition-id="process.id" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" :statistics="process.statistics"
         :activities-history="process.activitiesHistory" :active-tab="activeTab" class="h-100">
       </BpmnViewer>
-      <span role="button" size="sm" variant="light" class="bg-white px-2 py-1 me-1 position-absolute border rounded" style="bottom: 15px; left: 15px;" @click="toggleContent">
+      <span role="button" size="sm" variant="light" class="bg-white px-2 py-1 me-1 position-absolute border rounded" style="bottom: 90px; right: 11px;" @click="toggleContent">
         <span class="mdi mdi-18px" :class="toggleIcon"></span>
       </span>
     </div>
 
-    <div class="position-absolute w-100 bg-light border-bottom" style="left: 0; z-index: 2" :style="'top: ' + (bottomContentPosition - tabsAreaHeight) + 'px; ' + toggleTransition">
+    <div class="position-absolute w-100 border-bottom" style="left: 0; z-index: 2" :style="'height: '+ tabsAreaHeight +'px; top: ' + (bottomContentPosition - tabsAreaHeight) + 'px; ' + toggleTransition">
       <div class="d-flex align-items-end">
-        <div class="tabs-scroll-container flex-grow-1" style="white-space: nowrap;">
-          <ul class="nav nav-tabs m-0 border-0 flex-nowrap" style="display: inline-flex; overflow-y: hidden">
+        <div class="tabs-scroll-container flex-grow-1">
+
+          <button v-if="showLeftButton" type="button" @click="scrollLeft" class="scroll-button border border-bottom-0 btn btn-light position-absolute rounded-0" 
+            style="left: 0; box-shadow: 5px 0 5px -5px rgba(0, 0, 0, 0.1);">
+            <span class="mdi mdi-chevron-left"></span>
+          </button>
+
+          <ul ref="tabsContainer" class="nav nav-tabs m-0 border-0 flex-nowrap tabs-scroll-container" 
+            style="display: flex; overflow-y: hidden" @scroll="checkScrollButtons">
             <component :is="ProcessInstancesTabsPlugin" v-if="ProcessInstancesTabsPlugin" v-model="activeTab" />
             <ProcessInstancesTabs v-else v-model="activeTab" />
           </ul>
+
+          <button v-if="showRightButton" type="button" @click="scrollRight" class="scroll-button border border-bottom-0 btn btn-light position-absolute rounded-0" 
+            style="right: 0; box-shadow: -5px 0 5px -5px rgba(0, 0, 0, 0.1)">
+            <span class="mdi mdi-chevron-right"></span>
+          </button>
         </div>
       </div>
     </div>
 
-    <div class="position-absolute w-100 overflow-hidden" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
-      <div ref="rContent" class="overflow-y-scroll bg-white position-absolute w-100" style="top: 0px; left: 0; bottom: 0" @scroll="handleScroll">
+    <div ref="rContent" class="position-absolute w-100 overflow-hidden" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
+      <div class="overflow-y-scroll bg-white position-absolute w-100" style="top: 0px; left: 0; bottom: 0" @scroll="handleScroll">
         <template v-if="isInstancesView">
-          <div ref="filterTable" class="bg-light d-flex w-100">
+          <div ref="filterTable" class="d-flex w-100">
 
             <div v-if="ProcessInstancesSearchBoxPlugin" class="col-10 p-2">
               <component :is="ProcessInstancesSearchBoxPlugin"
@@ -162,6 +174,7 @@ import IncidentsTable from '@/components/process/tables/IncidentsTable.vue'
 import MultisortModal from '@/components/process/modals/MultisortModal.vue'
 import CalledProcessDefinitionsTable from '@/components/process/tables/CalledProcessDefinitionsTable.vue'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
+import tabScrollButtons from '@/components/process/mixins/tabScrollButtons.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import tabUrlMixin from '@/components/process/mixins/tabUrlMixin.js'
 import { debounce } from '@/utils/debounce.js'
@@ -177,7 +190,7 @@ export default {
      SuccessAlert, ConfirmDialog, BWaitingBox, IncidentsTable, CalledProcessDefinitionsTable,
      ProcessInstancesTabs },
   inject: ['loadProcesses'],
-  mixins: [permissionsMixin, resizerMixin, copyToClipboardMixin, tabUrlMixin],
+  mixins: [permissionsMixin, resizerMixin, copyToClipboardMixin, tabUrlMixin, tabScrollButtons],
   emits: ['task-selected', 'filter-instances', 'instance-deleted'],
   props: {
     process: Object,

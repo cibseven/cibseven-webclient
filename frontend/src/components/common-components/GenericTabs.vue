@@ -25,11 +25,12 @@
     <a
       role="button"
       @click="$emit('update:modelValue', tab.id)"
-      class="nav-link py-2 border-0 rounded-0"
+      class="nav-link py-2"
       :class="{
         active: tab.id === modelValue,
-        'bg-light border border-bottom-0': tab.id != modelValue
+        'bg-light border-bottom-0': tab.id != modelValue
       }"
+      :style="tab.id === modelValue ? 'border-bottom: 2px solid white' : ''"
     >
       {{ $t(tab.text) }}
     </a>
@@ -40,7 +41,6 @@
 export default {
   name: 'GenericTabs',
   emits: ['update:modelValue'],
-  props: { tabs: Array, modelValue: String },
-
+  props: { tabs: Array, modelValue: String }
 }
 </script>

@@ -1,5 +1,5 @@
 [v-cloak] { display: none }
-.bjs-powered-by { bottom: 15px!important; right: 60px!important; }
+.bjs-powered-by { bottom: 55px!important; right: 15px!important; }
 .selectable { cursor: pointer }
 .bpmn-highlight {
   stroke: var(--info) !important;
@@ -38,7 +38,8 @@ thead.resizable tr, thead.resizable + tbody tr {
     width: 100%;
     height: 10px;
     cursor: ns-resize;
-    border-bottom: 1px solid var(--bs-gray);
+    /*border-bottom: 1px solid var(--bs-gray);*/
+    z-index: 5;
 }
 .visually-hidden {
     position: absolute;
@@ -58,9 +59,18 @@ thead.resizable tr, thead.resizable + tbody tr {
 }
 .tabs-scroll-container {
   overflow: hidden;
+  scroll-behavior: smooth;
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 }
-.tabs-scroll-container:hover {
-  overflow-x: auto;
+.tabs-scroll-container::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}
+.scroll-button {
+  top: 0; 
+  bottom: 0; 
+  z-index: 10; 
+  transition: all 0.2s ease;
 }
 
 /* BPMN Viewer - Fix for blue expand process button icon not being centered */
