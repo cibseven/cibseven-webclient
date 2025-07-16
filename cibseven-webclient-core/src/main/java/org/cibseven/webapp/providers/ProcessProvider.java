@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.Comparator;
 
 import org.cibseven.webapp.Data;
 import org.cibseven.webapp.auth.CIBUser;
@@ -488,8 +489,14 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 			.stream()
 			.map(group -> {
 				ProcessStatistics result = new ProcessStatistics();
-				result.setDefinition(group.get(0).getDefinition());
-				result.setId(group.get(0).getId());
+				
+				// Sort by version descending and use the latest version's definition
+				ProcessStatistics latestVersion = group.stream()
+					.max(Comparator.comparing(stat -> stat.getDefinition().getVersion()))
+					.orElse(group.get(0));
+				
+				result.setDefinition(latestVersion.getDefinition());
+				result.setId(latestVersion.getId());
 
 				// Aggregate instances and failed jobs
 				result.setInstances(group.stream().mapToLong(ProcessStatistics::getInstances).sum());
