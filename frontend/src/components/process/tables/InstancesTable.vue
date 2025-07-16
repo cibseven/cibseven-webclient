@@ -98,7 +98,6 @@ export default {
   mixins: [copyToClipboardMixin, permissionsMixin],
   props: {
     process: Object,
-    activityInstance: Object,
     sortDesc: Boolean,
     sortByDefaultKey: String,
     sorting: Boolean,
@@ -110,10 +109,6 @@ export default {
   },
   computed: {
     ...mapGetters('instances', ['instances']),
-    ...mapGetters(['selectedActivityId']),
-    currentActivityId() {
-      return this.selectedActivityId || this.activityInstance?.id
-    },
     canLoadMore() {
       return this.hasMoreData && !this.loading
     }
@@ -146,12 +141,6 @@ export default {
       },
       deep: true
     },
-    currentActivityId() {
-      if (this.process?.id) {
-        this.resetPagination()
-        this.loadInstancesData()
-      }
-    },
   },
   mounted() {
     this.initializeSortState()
@@ -173,7 +162,7 @@ export default {
       try {
         const instances = await this.loadInstances({
           processId: this.process.id,
-          activityId: this.currentActivityId,
+          activityId: null,
           filter: this.filter,
           tenantId: this.tenantId,
           camundaHistoryLevel: this.$root.config.camundaHistoryLevel,

@@ -113,7 +113,6 @@
           </div>
           <InstancesTable ref="instancesTable"
             :process="process"
-            :activity-instance="activityInstance"
             :sortByDefaultKey="sortByDefaultKey"
             :sortDesc="sortDesc"
             :sorting="sorting"
@@ -339,7 +338,7 @@ export default {
         this.$store.dispatch('setSuspended', { process: this.process, suspended: 'true' })
         // Refresh instances table to reflect the state change
         if (this.$refs.instancesTable) {
-          this.$refs.instancesTable.loadInstances()
+          this.$refs.instancesTable.loadInstancesData()
         }
         this.$refs.success.show()
       })
@@ -353,7 +352,7 @@ export default {
         this.$store.dispatch('setSuspended', { process: this.process, suspended: 'false' })
         // Refresh instances table to reflect the state change
         if (this.$refs.instancesTable) {
-          this.$refs.instancesTable.loadInstances()
+          this.$refs.instancesTable.loadInstancesData()
         }
         this.$refs.success.show()
       })
