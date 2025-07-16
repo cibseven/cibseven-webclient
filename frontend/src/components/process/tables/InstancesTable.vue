@@ -135,7 +135,7 @@ export default {
       immediate: true
     },
     filter: {
-      handler(val) {
+      handler() {
         this.resetPagination()
         this.loadInstancesData()
       },
