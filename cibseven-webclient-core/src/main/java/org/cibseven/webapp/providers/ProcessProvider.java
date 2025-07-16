@@ -478,6 +478,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	 * @param processStatistics Collection of ProcessStatistics to group
 	 * @return List of grouped ProcessStatistics with aggregated values
 	 */
+	@Override
 	public List<ProcessStatistics> groupProcessStatisticsByKeyAndTenant(Collection<ProcessStatistics> processStatistics) {
 		return processStatistics.stream()
 			.collect(Collectors.groupingBy(
