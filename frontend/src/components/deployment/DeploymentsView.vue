@@ -155,7 +155,7 @@ export default {
       firstResult: 0,
       maxResults: 50, // The maximum number of results to fetch per page.
       sortBy: 'deploymentTime', // Enum: "id" "name" "deploymentTime" "tenantId"
-      sortOrder: 'asc', // Enum: "asc" "desc"
+      sortOrder: 'desc', // Enum: "asc" "desc"
       cascadeDelete: true,
       resources: [],
       resourcesLoading: false,
@@ -216,7 +216,7 @@ export default {
       this.sortOrder = newSortOrder
     }
     else {
-      this.sortOrder = 'asc'
+      this.sortOrder = this.sortBy === 'deploymentTime' ? 'desc' : 'asc'
     }
 
     this.loadNextPage()
