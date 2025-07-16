@@ -18,26 +18,22 @@ package org.cibseven.webapp.rest;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.providers.BpmProvider;
+import org.cibseven.webapp.providers.IProcessProvider;
 import org.cibseven.webapp.providers.PermissionConstants;
 import org.cibseven.webapp.providers.SevenProvider;
 import org.cibseven.webapp.rest.model.Analytics;
 import org.cibseven.webapp.rest.model.AnalyticsInfo;
 import org.cibseven.webapp.rest.model.Decision;
-import org.cibseven.webapp.rest.model.Deployment;
-import org.cibseven.webapp.rest.model.IncidentInfo;
-import org.cibseven.webapp.rest.model.KeyTenant;
 import org.cibseven.webapp.rest.model.ProcessStatistics;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,6 +55,10 @@ public class AnalyticsService extends BaseService implements InitializingBean {
 
 	@Autowired
 	BpmProvider bpmProvider;
+	
+	@Autowired
+	IProcessProvider processProvider;
+	
 	SevenProvider sevenProvider;
 
 	public void afterPropertiesSet() {
@@ -81,35 +81,8 @@ public class AnalyticsService extends BaseService implements InitializingBean {
 		List<AnalyticsInfo> runningInstances = new ArrayList<>();
 		List<AnalyticsInfo> openIncidents = new ArrayList<>();
 
-		// Group by the key and summarize instances and incidents
-		List<ProcessStatistics> groupedStats = processStatistics.stream()
-			    .collect(Collectors.groupingBy(
-			        stat -> new KeyTenant(stat.getDefinition().getKey(), stat.getDefinition().getTenantId())
-			    ))
-			    .values()
-			    .stream()
-			    .map(group -> {
-			        ProcessStatistics result = new ProcessStatistics();
-			        result.setDefinition(group.get(0).getDefinition());
-			        result.setId(group.get(0).getId());
-
-			        result.setInstances(group.stream().mapToLong(ProcessStatistics::getInstances).sum());
-			        result.setFailedJobs(group.stream().mapToLong(ProcessStatistics::getFailedJobs).sum());
-
-			        long totalIncidentCount = group.stream()
-			            .flatMap(stat -> stat.getIncidents().stream())
-			            .mapToLong(IncidentInfo::getIncidentCount)
-			            .sum();
-
-			        IncidentInfo totalIncident = new IncidentInfo();
-			        totalIncident.setIncidentType("all");
-			        totalIncident.setIncidentCount(totalIncidentCount);
-
-			        result.setIncidents(Collections.singletonList(totalIncident));
-
-			        return result;
-			    })
-			    .collect(Collectors.toList());
+		// Group by the key and tenant ID using the shared utility method
+		List<ProcessStatistics> groupedStats = processProvider.groupProcessStatisticsByKeyAndTenant(processStatistics);
 
 
 		groupedStats.forEach(stats -> {

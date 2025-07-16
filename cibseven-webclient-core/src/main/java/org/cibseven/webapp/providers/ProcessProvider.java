@@ -35,6 +35,8 @@ import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.exception.UnsupportedTypeException;
 import org.cibseven.webapp.rest.model.HistoryProcessInstance;
 import org.cibseven.webapp.rest.model.Incident;
+import org.cibseven.webapp.rest.model.IncidentInfo;
+import org.cibseven.webapp.rest.model.KeyTenant;
 import org.cibseven.webapp.rest.model.Process;
 import org.cibseven.webapp.rest.model.ProcessDefinitionInfo;
 import org.cibseven.webapp.rest.model.ProcessDiagram;
@@ -85,8 +87,11 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		// Get statistics for all process definitions in one call
 		Collection<ProcessStatistics> statisticsCollection = getProcessStatistics(user);
 		
-		// Build Process objects directly from ProcessStatistics
-		return statisticsCollection.stream()
+		// Group by key and tenant ID to consolidate different versions
+		List<ProcessStatistics> groupedStatistics = groupProcessStatisticsByKeyAndTenant(statisticsCollection);
+		
+		// Build Process objects directly from grouped ProcessStatistics
+		return groupedStatistics.stream()
 				.map(stats -> {
 					Process process = new Process();
 					ProcessDefinitionInfo definition = stats.getDefinition();
@@ -109,7 +114,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 						process.setStartableInTasklist(definition.getStartableInTasklist());
 					}
 					
-					// Set statistics data
+					// Set aggregated statistics data
 					process.setRunningInstances(stats.getInstances());
 					// Calculate total incidents from all incident types
 					long totalIncidents = stats.getIncidents() != null 
@@ -466,4 +471,43 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		doDelete(url, user);
 	}
 
+	/**
+	 * Groups ProcessStatistics by key and tenant ID, consolidating different versions
+	 * of the same process definition into a single aggregated statistic.
+	 * 
+	 * @param processStatistics Collection of ProcessStatistics to group
+	 * @return List of grouped ProcessStatistics with aggregated values
+	 */
+	public List<ProcessStatistics> groupProcessStatisticsByKeyAndTenant(Collection<ProcessStatistics> processStatistics) {
+		return processStatistics.stream()
+			.collect(Collectors.groupingBy(
+				stat -> new KeyTenant(stat.getDefinition().getKey(), stat.getDefinition().getTenantId())
+			))
+			.values()
+			.stream()
+			.map(group -> {
+				ProcessStatistics result = new ProcessStatistics();
+				result.setDefinition(group.get(0).getDefinition());
+				result.setId(group.get(0).getId());
+
+				// Aggregate instances and failed jobs
+				result.setInstances(group.stream().mapToLong(ProcessStatistics::getInstances).sum());
+				result.setFailedJobs(group.stream().mapToLong(ProcessStatistics::getFailedJobs).sum());
+
+				// Aggregate incidents
+				long totalIncidentCount = group.stream()
+					.flatMap(stat -> stat.getIncidents().stream())
+					.mapToLong(IncidentInfo::getIncidentCount)
+					.sum();
+
+				IncidentInfo totalIncident = new IncidentInfo();
+				totalIncident.setIncidentType("all");
+				totalIncident.setIncidentCount(totalIncidentCount);
+
+				result.setIncidents(Collections.singletonList(totalIncident));
+
+				return result;
+			})
+			.collect(Collectors.toList());
+	}
 }
