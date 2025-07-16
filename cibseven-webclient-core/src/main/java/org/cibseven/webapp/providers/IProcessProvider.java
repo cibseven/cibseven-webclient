@@ -17,6 +17,7 @@
 package org.cibseven.webapp.providers;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -55,6 +56,7 @@ public interface IProcessProvider {
 	public ProcessStart submitForm(String processDefinitionKey, String tenantId, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException;
 	public Collection<ProcessStatistics> findProcessStatistics(String processId, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException;
 	public Collection<ProcessStatistics> getProcessStatistics(CIBUser user);
+	public List<ProcessStatistics> groupProcessStatisticsByKeyAndTenant(Collection<ProcessStatistics> processStatistics);
 	public HistoryProcessInstance findHistoryProcessInstanceHistory(String processInstanceId, CIBUser user);
 	public Collection<HistoryProcessInstance> findProcessesInstancesHistory(Map<String, Object> filters,
 			Optional<Integer> firstResult, Optional<Integer> maxResults, CIBUser user);
