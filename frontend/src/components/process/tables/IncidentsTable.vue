@@ -27,6 +27,8 @@
       { label: 'timestamp', key: 'incidentTimestamp', tdClass: 'border-end border-top-0' },
       { label: 'activity', key: 'activityId', tdClass: 'border-end border-top-0' },
       { label: 'failedActivity', key: 'failedActivityId', tdClass: 'border-end border-top-0' },
+      { label: 'causeIncidentProcessInstanceId', key: 'causeIncidentProcessInstanceId', tdClass: 'border-end border-top-0' },
+      { label: 'rootCauseIncidentProcessInstanceId', key: 'rootCauseIncidentProcessInstanceId', tdClass: 'border-end border-top-0' },
       { label: 'incidentType', key: 'incidentType', tdClass: 'border-end border-top-0' },
       { label: 'annotation', key: 'annotation', tdClass: 'border-end border-top-0' },
       { label: 'actions', key: 'actions', sortable: false, tdClass: 'py-0 border-top-0' }]">
@@ -48,6 +50,24 @@
       </template>
       <template v-slot:cell(failedActivityId)="table">
         <div :title="table.item.failedActivityId" class="text-truncate">{{ $store.state.activity.processActivities[table.item.failedActivityId] || table.item.failedActivityId }}</div>
+      </template>
+      <template v-slot:cell(causeIncidentProcessInstanceId)="table">
+        <CopyableActionButton 
+          :display-value="table.item.causeIncidentProcessInstanceId"
+          :copy-value="table.item.causeIncidentProcessInstanceId" 
+          :title="table.item.causeIncidentProcessInstanceId"
+          @click="navigateToIncidentProcessInstance(table.item.causeIncidentProcessInstanceId)"
+          @copy="copyValueToClipboard"
+        />
+      </template>
+      <template v-slot:cell(rootCauseIncidentProcessInstanceId)="table">
+        <CopyableActionButton 
+          :display-value="table.item.rootCauseIncidentProcessInstanceId"
+          :copy-value="table.item.rootCauseIncidentProcessInstanceId" 
+          :title="table.item.rootCauseIncidentProcessInstanceId"
+          @click="navigateToIncidentProcessInstance(table.item.rootCauseIncidentProcessInstanceId)"
+          @copy="copyValueToClipboard"
+        />
       </template>
       <template v-slot:cell(incidentType)="table">
         <div :title="table.item.incidentType" class="text-truncate">{{ table.item.incidentType }}</div>
@@ -83,7 +103,7 @@
 <script>
 import { moment } from '@/globals.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
-import { IncidentService } from '@/services.js'
+import { IncidentService, HistoryService } from '@/services.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import IncidentRetryModal from '@/components/process/modals/IncidentRetryModal.vue'
@@ -184,6 +204,29 @@ export default {
     },
     getIncidentMessage(incident) {
       return incident.rootCauseIncidentMessage || incident.incidentMessage
+    },
+    async navigateToIncidentProcessInstance(processInstanceId) {
+      if (!processInstanceId) return
+      
+      try {
+        const processInstance = await HistoryService.findProcessInstance(processInstanceId)
+        const processKey = processInstance.processDefinitionKey
+        const versionIndex = processInstance.processDefinitionVersion
+        const params = { processKey, versionIndex, instanceId: processInstance.id }
+        
+        const routeConfig = {
+          name: 'process',
+          params,
+          query: { 
+            parentProcessDefinitionId: this.process.id,
+            tab: 'incidents'
+          }
+        }
+        
+        await this.$router.push(routeConfig)
+      } catch (error) {
+        console.error('Failed to navigate to incident process instance:', error)
+      }
     }
   }
 }

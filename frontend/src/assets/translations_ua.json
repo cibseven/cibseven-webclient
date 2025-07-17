@@ -266,7 +266,9 @@
 			"scheduleAt": "Запланувати на",
 			"invalidDateError": "Введіть коректну дату",
 			"retry": "Повторити спробу",
-			"editAnnotation": "Редагувати анотацію"
+			"editAnnotation": "Редагувати анотацію",
+			"causeIncidentProcessInstanceId": "Ідентифікатор процесу-джерела інциденту",
+			"rootCauseIncidentProcessInstanceId": "Ідентифікатор кореневого процесу-джерела інциденту"
 		},
 		"jobDefinitions": {
 			"state": "Стан",

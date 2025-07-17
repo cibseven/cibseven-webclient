@@ -249,14 +249,14 @@
 			"enterValue": "Introducir valor"
 		},
 		"incidents": {
-		    "message": "Mensaje",
-		    "timestamp": "Timestamp",
-		    "activity": "Actividad",
-		    "failedActivity": "Actividad fallida",
-		    "incidentType": "Tipo de incidente",
-		    "retryJob": "Incrementar el número de reintentos de trabajo fallido",
+			"message": "Mensaje",
+			"timestamp": "Timestamp",
+			"activity": "Actividad",
+			"failedActivity": "Actividad fallida",
+			"incidentType": "Tipo de incidente",
+			"retryJob": "Incrementar el número de reintentos de trabajo fallido",
 			"annotation": "Anotación",
-		    "actions": "Acciones",
+			"actions": "Acciones",
 			"incrementNumberRetries": "Incrementar número de reintentos",
 			"retryMsg": "Se incrementará el número de reintentos del trabajo fallido correspondiente al incidente seleccionado.",
 			"dueDateMsg": "El momento en que se ejecuta un trabajo está determinado por la fecha de vencimiento:",
@@ -266,7 +266,9 @@
 			"scheduleAt": "Programar para",
 			"invalidDateError": "Debe insertar una fecha válida",
 			"retry": "Reintentar",
-			"editAnnotation": "Editar anotación"
+			"editAnnotation": "Editar anotación",
+			"causeIncidentProcessInstanceId": "ID de instancia de proceso causa",
+			"rootCauseIncidentProcessInstanceId": "ID de instancia de proceso raíz"
 		},
 		"jobDefinitions": {
 			"state": "Estado",
@@ -300,13 +302,13 @@
 		},	
 		"usertasks": {
 			"activity": "Actividad",
-		    "assignee": "Asignado a",
-		    "owner": "Propietario",
-		    "startTime": "Hora de inicio",
-		    "due": "Fecha de vencimiento",
-		    "followUp": "Seguimiento",
-		    "taskID": "ID de tarea",
-		    "actions": "Acciones"
+			"assignee": "Asignado a",
+			"owner": "Propietario",
+			"startTime": "Hora de inicio",
+			"due": "Fecha de vencimiento",
+			"followUp": "Seguimiento",
+			"taskID": "ID de tarea",
+			"actions": "Acciones"
 		},
 		"calledProcesses": {
 			"callingActivity": "Actividad",
@@ -323,7 +325,7 @@
 			"userId": "@:admin.users.id",
 			"groups": "Grupos",
 			"users": "Usuarios",			
-		    "assignee": "Usuario asignado",
+			"assignee": "Usuario asignado",
 			"add": "Añadir",
 			"delete": "Borrar",
 			"actions": "Acciones",
@@ -373,7 +375,7 @@
 			"suspendedJobDefinition": "Definición de trabajo suspendida",
 			"activitiesHistory": "Instancias de actividad ejecutadas",
 			"openSubprocess": "Mostrar la definición del proceso llamado",
-  			"disabledSubprocess": "La definición del proceso se resolverá en tiempo de ejecución"
+			"disabledSubprocess": "La definición del proceso se resolverá en tiempo de ejecución"
 		}
 	},
 	"task": {
@@ -1159,27 +1161,27 @@
 		"noState": "No existe estado para esta tarea"
 	},
 	"advanced-search": {
-	    "title": "Búsqueda avanzada",
-	    "criteriaKey": "Key del criterio",
-	    "selectProperty": "Seleccionar propiedad",	    
-	    "property": "Nombre de la propiedad",
-	    "value": "Valor",
-	    "add": "Añadir criterio",
-	    "remove": "Eliminar criterio",
-	    "type": "Tipo de coincidencia",
-	    "apply": "Aplicar",
-	    "cancel": "Cancelar",
-	    "cleanAll": "Limpiar todos los criterios",
-	    "any": "Cualquiera",
-	    "all": "Todos",
-	    "criteriaKeys": {	    	
-	    	"processVariables": "Variable de proceso"
-	    },
-	    "table": {	    	
-		    "key": "Clave",
-		    "value": "Valor"
-	    },	    
-	    "operators": {
+		"title": "Búsqueda avanzada",
+		"criteriaKey": "Key del criterio",
+		"selectProperty": "Seleccionar propiedad",	    
+		"property": "Nombre de la propiedad",
+		"value": "Valor",
+		"add": "Añadir criterio",
+		"remove": "Eliminar criterio",
+		"type": "Tipo de coincidencia",
+		"apply": "Aplicar",
+		"cancel": "Cancelar",
+		"cleanAll": "Limpiar todos los criterios",
+		"any": "Cualquiera",
+		"all": "Todos",
+		"criteriaKeys": {	    	
+			"processVariables": "Variable de proceso"
+		},
+		"table": {	    	
+			"key": "Clave",
+			"value": "Valor"
+		},	    
+		"operators": {
 			"eq": "=",
 			"neq": "≠",
 			"gt": ">",
