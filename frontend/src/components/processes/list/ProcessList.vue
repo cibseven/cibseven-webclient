@@ -17,39 +17,47 @@
 
 -->
 <template>
-  <div class="d-flex flex-column bg-light">
+  <div class="d-flex flex-column bg-light pt-3">
+    <div class="d-flex flex-column container bg-white border rounded shadow-sm p-0 mt-3 mb-3">
+
     <div class="container pt-4">
-      <div class="row align-items-center pb-2">
-        <div class="col-4">
-          <b-input-group size="sm">
-            <template #prepend>
-              <b-button :title="$t('searches.search')" aria-hidden="true" class="rounded-left" variant="secondary"><span class="mdi mdi-magnify" style="line-height: initial"></span></b-button>
-            </template>
-            <b-form-input :title="$t('searches.search')" :placeholder="$t('searches.search')" v-model.trim="filter"></b-form-input>
-          </b-input-group>
+      <div class="row align-items-center pb-2 ps-2">
+
+        <div class="col-8">
+          <div class="border rounded d-flex flex-fill align-items-center">
+            <b-button @click.stop="refreshSearch"
+              size="sm" class="mdi mdi-magnify mdi-24px text-secondary" variant="link"
+              :title="$t('searches.refreshAndFilter')"></b-button>
+            <div class="flex-grow-1">
+              <input
+                type="text"
+                v-model.trim="filter"
+                :placeholder="$t('searches.filter')"
+                class="form-control-plaintext w-100"
+              />
+            </div>
+            <div class="block text-secondary ms-2 me-3 text-nowrap">{{ statistics }}</div>
+          </div>
         </div>
-        <div class="col-5">
+
+        <div class="col-4">
           <div class="row">
-            <div class="d-inline-block align-content-start col-12 col-md-6 mb-2">
+            <div class="d-inline-block align-content-start col-12 col-md-6">
               <b-form-checkbox v-model="onlyIncidents" switch :title="$t('process.onlyIncidents.tooltip')">
                 {{ $t('process.onlyIncidents.title') }}
               </b-form-checkbox>
             </div>
-            <div class="d-inline-block align-content-start col-12 col-md-6 mb-2">
+            <div class="d-inline-block align-content-start col-12 col-md-6">
               <b-form-checkbox v-model="onlyActive" switch :title="$t('process.onlyActive.tooltip')">
                 {{ $t('process.onlyActive.title') }}
               </b-form-checkbox>
             </div>
           </div>
         </div>
-        <div class="col-3 text-end">
-          <b-button class="border" size="sm" variant="light" to="/seven/auth/deployments/" :title="$t('process.organizeDeployment')">
-            <span class="mdi mdi-file-eye-outline"></span> {{ $t('process.organizeDeployment') }}
-          </b-button>
-        </div>
       </div>
     </div>
-    <div class="container overflow-auto h-100 bg-white shadow-sm border rounded g-0">
+    <div class="container overflow-auto h-100 rounded g-0">
+      <div class="m-3 mb-0">
       <FlowTable :items="processesFiltered" thead-class="sticky-header" striped primary-key="id" prefix="process." :fields="fields" @click="goToShowProcessHistory($event)" @select="focused = $event[0]" @mouseenter="focused = $event" @mouseleave="focused = null">
         <template v-slot:cell(incidents)="table">
           <span v-if="loadingInstances"><b-spinner small></b-spinner></span>
@@ -88,7 +96,9 @@
         <img :alt="$t(textEmptyProcessesList)" src="@/assets/images/process/empty_processes_list.svg" class="d-block mx-auto mt-5 mb-3" style="max-width: 250px">
         <div class="h5 text-secondary text-center">{{ $t(textEmptyProcessesList) }}</div>
       </div>
+      </div>
     </div>
+  </div>
   </div>
 </template>
 
@@ -155,6 +165,14 @@ export default {
       })
       return processes
     },
+    statistics: function() {
+      const total = this.$store.state.process.list.length
+      if (total === 0) {
+        return ''
+      }
+      const filtered = this.processesFiltered.length
+      return filtered === total ? total : `${filtered} / ${total}`
+    },
     textEmptyProcessesList: function() {
       return this.filter === '' ? 'process.emptyProcessList' : 'process.emptyProcessListFiltered'
     },
@@ -165,7 +183,7 @@ export default {
         { label: 'key', key: 'key', class: 'col-3', tdClass: 'border-end py-1 border-top-0' },
         { label: 'name', key: 'name', class: 'col-3', tdClass: 'border-end py-1 border-top-0' },
         { label: 'tenant', key: 'tenantId', class: 'col-2', tdClass: 'border-end py-1 border-top-0' },
-        { label: 'actions', key: 'actions', sortable: false, class: 'col-2 d-flex justify-content-center', tdClass: 'border-end py-0 border-top-0' },
+        { label: 'actions', key: 'actions', sortable: false, class: 'col-2 d-flex justify-content-center', tdClass: 'py-0 border-top-0' },
       ]
     }
   },
@@ -185,6 +203,12 @@ export default {
       let url = '/seven/auth/process/' + process.key
       url += process.tenantId ? ('?tenantId=' + process.tenantId + '&tab=instances') : '?tab=instances'
       this.$router.push(url)
+    },
+    refreshSearch() {
+      this.loadingInstances = true
+      this.loadProcesses(true).then(() => {
+        this.loadingInstances = false
+      })
     }
   }
 }

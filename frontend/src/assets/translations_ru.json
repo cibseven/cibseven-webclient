@@ -967,6 +967,8 @@
 		"InvalidValueHistoryTimeToLive": "Недопустимы нулевые значения для времени жизни истории."		
 	},
 	"searches": {
+		"filter": "Фильтровать",
+		"refreshAndFilter": "Обновить и отфильтровать",
 		"search": "Поиск...",
 		"searchByTaskName": "Поиск по названию задачи...",
 		"searchByDeploymentName": "Поиск по развертыванию...",

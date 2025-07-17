@@ -967,6 +967,8 @@
 			"InvalidValueHistoryTimeToLive": "Недопустимі нульові значення для часу зберігання історії."
 		},
 		"searches": {
+			"filter": "Фільтрувати",
+			"refreshAndFilter": "Оновити та відфільтрувати",
 			"search": "Пошук...",
 			"searchByTaskName": "Пошук за назвою завдання...",
 			"searchByDeploymentName": "Пошук за назвою розгортання...",
