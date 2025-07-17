@@ -267,8 +267,8 @@
 			"invalidDateError": "Вы должны ввести корректную дату",
 			"retry": "Повторить попытку",
 			"editAnnotation": "Редактировать аннотацию",
-			"causeIncidentProcessInstanceId": "Ідентифікатор процесу-джерела інциденту",
-			"rootCauseIncidentProcessInstanceId": "Ідентифікатор кореневого процесу-джерела інциденту"
+			"causeIncidentProcessInstanceId": "ID экземпляра процесса-причины",
+			"rootCauseIncidentProcessInstanceId": "ID экземпляра корневого процесса-причины"
 		},
 		"jobDefinitions": {
 			"state": "Состояние",

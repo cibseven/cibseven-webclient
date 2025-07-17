@@ -267,8 +267,8 @@
 			"invalidDateError": "Введіть коректну дату",
 			"retry": "Повторити спробу",
 			"editAnnotation": "Редагувати анотацію",
-			"causeIncidentProcessInstanceId": "ID процесса-источника инцидента",
-			"rootCauseIncidentProcessInstanceId": "ID корневого процесса-источника инцидента"
+			"causeIncidentProcessInstanceId": "ID екземпляра процесу-джерела",
+			"rootCauseIncidentProcessInstanceId": "ID екземпляра кореневого процесу-джерела"
 		},
 		"jobDefinitions": {
 			"state": "Стан",

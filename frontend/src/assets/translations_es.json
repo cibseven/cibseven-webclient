@@ -267,8 +267,8 @@
 			"invalidDateError": "Debe insertar una fecha válida",
 			"retry": "Reintentar",
 			"editAnnotation": "Editar anotación",
-			"causeIncidentProcessInstanceId": "ID de instancia de proceso causa",
-			"rootCauseIncidentProcessInstanceId": "ID de instancia de proceso raíz"
+			"causeIncidentProcessInstanceId": "ID de instancia del proceso causante",
+			"rootCauseIncidentProcessInstanceId": "ID de instancia del proceso causa raíz"
 		},
 		"jobDefinitions": {
 			"state": "Estado",

@@ -267,8 +267,8 @@
 			"invalidDateError": "Sie müssen ein gültiges Datum eingeben",
 			"retry": "Wiederholen",
 			"editAnnotation": "Anmerkung bearbeiten",
-			"causeIncidentProcessInstanceId": "Ursache Prozessinstanz-ID",
-			"rootCauseIncidentProcessInstanceId": "Wurzelursache Prozessinstanz-ID"
+			"causeIncidentProcessInstanceId": "Ursächliche Prozessinstanz-ID",
+			"rootCauseIncidentProcessInstanceId": "Ursächliche Hauptprozessinstanz-ID"
 		},
 		"jobDefinitions": {
 			"state": "Status",
