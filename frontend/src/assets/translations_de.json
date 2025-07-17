@@ -266,7 +266,9 @@
 			"scheduleAt": "Planen um",
 			"invalidDateError": "Sie müssen ein gültiges Datum eingeben",
 			"retry": "Wiederholen",
-			"editAnnotation": "Anmerkung bearbeiten"
+			"editAnnotation": "Anmerkung bearbeiten",
+			"causeIncidentProcessInstanceId": "Ursache Prozessinstanz-ID",
+			"rootCauseIncidentProcessInstanceId": "Wurzelursache Prozessinstanz-ID"
 		},
 		"jobDefinitions": {
 			"state": "Status",

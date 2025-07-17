@@ -266,7 +266,9 @@
 			"scheduleAt": "Schedule at",
 			"invalidDateError": "You must enter a valid date",
 			"retry": "Retry",			
-			"editAnnotation": "Edit annotation"
+			"editAnnotation": "Edit annotation",
+			"causeIncidentProcessInstanceId": "Cause process instance ID",
+			"rootCauseIncidentProcessInstanceId": "Root cause process instance ID"
 		},
 		"jobDefinitions": {
 			"state": "State",
