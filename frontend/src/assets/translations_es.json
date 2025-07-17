@@ -266,7 +266,9 @@
 			"scheduleAt": "Programar para",
 			"invalidDateError": "Debe insertar una fecha válida",
 			"retry": "Reintentar",
-			"editAnnotation": "Editar anotación"
+			"editAnnotation": "Editar anotación",
+			"causeIncidentProcessInstanceId": "ID de instancia del proceso causante",
+			"rootCauseIncidentProcessInstanceId": "ID de instancia del proceso causa raíz"
 		},
 		"jobDefinitions": {
 			"state": "Estado",
