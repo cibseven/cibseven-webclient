@@ -969,6 +969,8 @@
 		"InvalidValueHistoryTimeToLive": "Nullwerte für die Lebensdauer des Verlaufs sind nicht erlaubt."
 	},
 	"searches": {
+		"filter": "Filtern",
+		"refreshAndFilter": "Aktualisieren und filtern",
 		"search": "Suchen...",
 		"searchByTaskName": "Suche in Aufgaben...",
 		"searchByDeploymentName": "Suche nach Deployment...",

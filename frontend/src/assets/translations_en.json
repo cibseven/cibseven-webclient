@@ -970,6 +970,8 @@
 		
 	},
 	"searches": {
+		"filter": "Filter",
+		"refreshAndFilter": "Refresh and filter",
 		"search": "Search...",
 		"searchByTaskName": "Search by task name...",
 		"searchByDeploymentName": "Search by deployment...",

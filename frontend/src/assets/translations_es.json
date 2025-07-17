@@ -969,6 +969,8 @@
 		"InvalidValueHistoryTimeToLive": "No están permitidos valores nulos para el tiempo de vida del histórico."
 	},
 	"searches": {
+		"filter": "Filtrar",
+		"refreshAndFilter": "Actualizar y filtrar",
 		"search": "Buscar...",
 		"searchByTaskName": "Buscar por nombre de tarea...",
 		"searchByDeploymentName": "Búsqueda por nombre de despliegue...",
