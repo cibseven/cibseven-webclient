@@ -21,7 +21,7 @@
     <div class="d-flex flex-column container bg-white border rounded shadow-sm p-0 mt-3 mb-3">
 
     <div class="container pt-4">
-      <div class="row align-items-center pb-2 ps-2">
+      <div class="row align-items-center pb-2 ps-1">
 
         <div class="col-8">
           <div class="border rounded d-flex flex-fill align-items-center">
