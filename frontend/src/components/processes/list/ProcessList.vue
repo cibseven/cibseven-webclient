@@ -36,7 +36,9 @@
                 class="form-control-plaintext w-100"
               />
             </div>
-            <div class="block text-secondary ms-2 me-3 text-nowrap">{{ statistics }}</div>
+            <div class="block text-secondary ms-2 me-3 text-nowrap"
+              :title="$t('start.cockpit.processes.title') + ': ' + statistics"
+            >{{ statistics }}</div>
           </div>
         </div>
 
