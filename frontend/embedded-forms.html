@@ -30,6 +30,28 @@
             <button id="submitButton" class="btn btn-secondary">Submit</button>
         </div>
     </div>
-    <script type="module" src="/src/embedded-form/embedded-form.js"></script>
+    <script type="module">
+        import { initEmbeddedForm } from '/src/embedded-form/embedded-form.js'
+        
+        // Get all the required DOM elements
+        const submitButton = document.getElementById('submitButton')
+        const saveButton = document.getElementById('saveButton')
+        const loaderDiv = document.getElementById('loader')
+        const contentDiv = document.getElementById('content')
+        const errorDiv = document.getElementById('embeddedFormError')
+        const embeddedContainer = document.getElementById('embeddedRoot')
+        const formContainer = document.getElementById('embeddedFormRoot')
+            
+        // Initialize the embedded form using the imported function
+        initEmbeddedForm({
+            submitButton,
+            saveButton,
+            loaderDiv,
+            contentDiv,
+            errorDiv,
+            embeddedContainer,
+            formContainer
+        })
+    </script>
 </body>
 </html>

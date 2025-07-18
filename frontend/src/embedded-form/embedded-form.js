@@ -3,93 +3,109 @@ import { switchLanguage, i18n } from "@/i18n";
 import { getTheme } from "@/utils/init";
 import CamSDK from "bpm-sdk";
 
-InfoService.getProperties().then(response => {
-    const config = response.data;
+/**
+ * Initialize the embedded form application
+ * @param {Object} options - Configuration options
+ * @param {HTMLElement} options.submitButton - Submit button element
+ * @param {HTMLElement} options.saveButton - Save button element
+ * @param {HTMLElement} options.loaderDiv - Loader div element
+ * @param {HTMLElement} options.contentDiv - Content div element
+ * @param {HTMLElement} options.errorDiv - Error div element
+ * @param {HTMLElement} options.embeddedContainer - Embedded container element
+ * @param {HTMLElement} options.formContainer - Form container element
+ */
+export function initEmbeddedForm(options = {}) {
+    const {
+        submitButton,
+        saveButton,
+        loaderDiv,
+        contentDiv,
+        errorDiv,
+        embeddedContainer,
+        formContainer
+    } = options;
+    
+    return InfoService.getProperties().then(response => {
+        const config = response.data;
 
-    function loadTheme() {
-        const css = document.createElement('link');
-        css.rel = 'stylesheet';
-        css.type = 'text/css';
-        css.href = 'themes/' + getTheme(config) + '/styles.css';
-        document.head.appendChild(css);
-    }
-
-    loadTheme();
-
-    const searchParams = new URLSearchParams(window.location.search);
-    const authorization = searchParams.get('authorization');
-    const lang = searchParams.get('lang');
-    const processDefinitionId = searchParams.get('processDefinitionId');
-    const taskId = searchParams.get('taskId');
-    config.supportedLanguages = [lang];
-
-    switchLanguage(config, lang).then(() => {
-        const submitButton = document.getElementById('submitButton');
-        const saveButton = document.getElementById('saveButton');
-        const loaderDiv = document.getElementById('loader');
-        const contentDiv = document.getElementById('content');
-        const errorDiv = document.getElementById('embeddedFormError');
-        const embeddedContainer = document.getElementById('embeddedRoot');
-        const formContainer = document.getElementById('embeddedFormRoot');
-
-        const isStartForm = !!processDefinitionId;
-        let embeddedForm;
-
-        if (isStartForm) {
-            submitButton.innerHTML = i18n.global.t('process.start');
-        } else {
-            submitButton.innerHTML = i18n.global.t('task.actions.submit');
+        function loadTheme() {
+            const css = document.createElement('link');
+            css.rel = 'stylesheet';
+            css.type = 'text/css';
+            css.href = 'themes/' + getTheme(config) + '/styles.css';
+            document.head.appendChild(css);
         }
-        submitButton.addEventListener('click', () => {
-            blockButtons(submitButton, saveButton);
-            embeddedForm.submit(err => {
-                if (err) {
-                    errorDiv.style.display = '';
-                    errorDiv.innerHTML = i18n.global.t('task.actions.saveError', [err]);
-                } else {
-                    services.completeTask();
-                }
-                unblockButtons(submitButton, saveButton);
-            });
-        });
 
-        if (isStartForm) {
-            saveButton.style.display = 'none';
-        }
-        saveButton.innerHTML = i18n.global.t('task.actions.save');
-        saveButton.addEventListener('click', () => {
-            blockButtons(submitButton, saveButton);
-            embeddedForm.store(err => {
-                if (err) {
-                    errorDiv.style.display = '';
-                    errorDiv.innerHTML = i18n.global.t('task.actions.saveError', [err]);
-                } else {
-                    services.displaySuccessMessage();
-                }
-                unblockButtons(submitButton, saveButton);
-            });
-        });
+        loadTheme();
 
-        loadEmbeddedForm(
-            isStartForm,
-            processDefinitionId || taskId,
-            embeddedContainer,
-            formContainer,
-            authorization,
-            config
-        ).then(
-            form => {
-                embeddedForm = form;
-                loaderDiv.style.display = 'none';
-                contentDiv.style.display = 'flex';
-            },
-            err => {
-                console.error(err);
-                services.displayErrorMessage(err);
+        const searchParams = new URLSearchParams(window.location.search);
+        const authorization = searchParams.get('authorization');
+        const lang = searchParams.get('lang');
+        const processDefinitionId = searchParams.get('processDefinitionId');
+        const taskId = searchParams.get('taskId');
+        config.supportedLanguages = [lang];
+
+        return switchLanguage(config, lang).then(() => {
+            const isStartForm = !!processDefinitionId;
+            let embeddedForm;
+
+            if (isStartForm) {
+                submitButton.innerHTML = i18n.global.t('process.start');
+            } else {
+                submitButton.innerHTML = i18n.global.t('task.actions.submit');
             }
-        );
+            submitButton.addEventListener('click', () => {
+                blockButtons(submitButton, saveButton);
+                embeddedForm.submit(err => {
+                    if (err) {
+                        errorDiv.style.display = '';
+                        errorDiv.innerHTML = i18n.global.t('task.actions.saveError', [err]);
+                    } else {
+                        services.completeTask();
+                    }
+                    unblockButtons(submitButton, saveButton);
+                });
+            });
+
+            if (isStartForm) {
+                saveButton.style.display = 'none';
+            }
+            saveButton.innerHTML = i18n.global.t('task.actions.save');
+            saveButton.addEventListener('click', () => {
+                blockButtons(submitButton, saveButton);
+                embeddedForm.store(err => {
+                    if (err) {
+                        errorDiv.style.display = '';
+                        errorDiv.innerHTML = i18n.global.t('task.actions.saveError', [err]);
+                    } else {
+                        services.displaySuccessMessage();
+                    }
+                    unblockButtons(submitButton, saveButton);
+                });
+            });
+
+            return loadEmbeddedForm(
+                isStartForm,
+                processDefinitionId || taskId,
+                embeddedContainer,
+                formContainer,
+                authorization,
+                config
+            ).then(
+                form => {
+                    embeddedForm = form;
+                    loaderDiv.style.display = 'none';
+                    contentDiv.style.display = 'flex';
+                },
+                err => {
+                    console.error(err);
+                    services.displayErrorMessage(err);
+                    throw err;
+                }
+            );
+        });
     });
-});
+}
 
 const services = {
     completeTask() {
