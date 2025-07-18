@@ -143,9 +143,17 @@ pipeline {
 
         stage('Deploy to artifacts.cibseven.org') {
             when {
-                allOf {
-                    expression { params.DEPLOY_TO_ARTIFACTS }
-                    expression { !params.DEPLOY_TO_MAVEN_CENTRAL }
+                anyOf {
+                    allOf {
+                        // Automatically deploy on main branch if version is SNAPSHOT
+                        expression { branch 'main' }
+                        expression { mavenProjectInformation.version.endsWith("-SNAPSHOT") == true }
+                        expression { !params.DEPLOY_TO_MAVEN_CENTRAL }
+                    }
+                    allOf {
+                        expression { params.DEPLOY_TO_ARTIFACTS }
+                        expression { !params.DEPLOY_TO_MAVEN_CENTRAL }
+                    }
                 }
             }
             steps {
