@@ -74,7 +74,10 @@ public class AnalyticsService extends BaseService implements InitializingBean {
 
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_ALL);
 		
-		Collection<ProcessStatistics> processStatistics = bpmProvider.getProcessStatistics(user);
+		Map<String, Object> queryParams = new HashMap<>();
+		queryParams.put("failedJobs", true);
+		queryParams.put("rootIncidents", true);
+		Collection<ProcessStatistics> processStatistics = bpmProvider.getProcessStatistics(queryParams, user);
 
 		Analytics analytics = new Analytics();
 

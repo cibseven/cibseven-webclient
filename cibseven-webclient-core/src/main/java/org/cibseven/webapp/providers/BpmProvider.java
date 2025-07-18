@@ -325,14 +325,14 @@ public interface BpmProvider {
 	 * @throws SystemException in case of an error.
 	 */
 	Collection<ProcessStatistics> findProcessStatistics(String id, CIBUser user) throws SystemException;
-	
-	/**
+  /**
    * Search statistics for all processes.
+   * @param queryParams query parameters to filter the search
    * @param user the user performing the search
    * @return Fetched processes instances.
    * @throws SystemException in case of an error.
    */
-	public Collection<ProcessStatistics> getProcessStatistics(CIBUser user) throws SystemException;
+	public Collection<ProcessStatistics> getProcessStatistics(Map<String, Object> queryParams, CIBUser user) throws SystemException;
 
 	/**
 	 * Search processes instances by filter.
