@@ -24,7 +24,7 @@
     <template v-slot:left>
       <FilterNavBar ref="filterNavbar" @filter-alert="showFilterAlert($event)"
         @selected-filter="selectedFilter()" @set-filter="filter = $event;listTasksWithFilter()" @selected-task="selectedTask($event)"
-        @refresh-tasks="listTasksWithFilter()" @n-filters-shown="nFiltersShown = $event" class="border-0 bg-white"></FilterNavBar>
+        @refresh-tasks="listTasksWithFilter()" @refresh-tasks-number="onRefreshTasksNumber" @n-filters-shown="nFiltersShown = $event" class="border-0 bg-white"></FilterNavBar>
     </template>
     <template v-slot:filter>
       <FilterNavCollapsed v-if="!leftOpenFilter && leftCaptionFilter" v-model:left-open="leftOpenFilter"></FilterNavCollapsed>
@@ -36,7 +36,7 @@
           @update-assignee="updateAssignee($event, 'task')" @set-filter="filter = $event; listTasksWithFilter()"
           @open-sidebar-date="rightOpenTask = true" @show-more="showMore()" :taskResultsIndex="taskResultsIndex"
           @process-started="listTasksWithFilter();$refs.processStarted.show(10); checkAndOpenTask($event, true)"
-          @search-filter="search = $event" @refresh-tasks="listTasksWithFilter()"></TasksNavBar>
+          @search-filter="search = $event" @refresh-tasks="listTasksWithFilter()" @refresh-tasks-number="onRefreshTasksNumber"></TasksNavBar>
       </template>
 
       <transition name="slide-in" mode="out-in">
@@ -197,6 +197,9 @@ export default {
       this.nTasksShown = 0
       if (this.$refs.navbar.$refs.taskLoader) this.$refs.navbar.$refs.taskLoader.done = false
       this.fetchTasks(0, this.taskResultsIndex)
+    },
+    onRefreshTasksNumber: function() {
+      this.$refs.filterNavbar.setTasksNumber()
     },
     listTasksWithFilterAuto: function(showMore) {
       if (this.$route.params.filterId) {
