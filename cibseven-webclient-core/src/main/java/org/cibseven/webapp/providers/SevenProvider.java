@@ -318,8 +318,8 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 
   @Override
-  public Collection<ProcessStatistics> getProcessStatistics(CIBUser user) {
-    return processProvider.getProcessStatistics(user);
+  public Collection<ProcessStatistics> getProcessStatistics(Map<String, Object> queryParams, CIBUser user) {
+    return processProvider.getProcessStatistics(queryParams, user);
   }
 	
 	@Override

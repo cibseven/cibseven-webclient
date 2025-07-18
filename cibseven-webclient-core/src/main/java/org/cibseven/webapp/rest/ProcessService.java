@@ -582,9 +582,9 @@ public class ProcessService extends BaseService implements InitializingBean {
       summary = "Get statistics for all processes ",
       description = "<strong>Return: Collection of all processes statistics")
   @RequestMapping(value = "/process-definition/statistics", method = RequestMethod.GET)
-  public Collection<ProcessStatistics> getProcessStatistics(Locale loc, CIBUser user) {
+  public Collection<ProcessStatistics> getProcessStatistics(@RequestParam Map<String, Object> queryParams, Locale loc, CIBUser user) {
     checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_ALL);
-    return bpmProvider.getProcessStatistics(user);
+    return bpmProvider.getProcessStatistics(queryParams, user);
   }
 	
 	//Requested by OFDKA

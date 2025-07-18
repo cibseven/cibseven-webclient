@@ -86,7 +86,10 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	public Collection<Process> findProcessesWithInfo(CIBUser user) {
 		
 		// Get statistics for all process definitions in one call
-		Collection<ProcessStatistics> statisticsCollection = getProcessStatistics(user);
+		Map<String, Object> queryParams = new HashMap<>();
+		queryParams.put("failedJobs", true);
+		queryParams.put("incidents", true);
+		Collection<ProcessStatistics> statisticsCollection = getProcessStatistics(queryParams, user);
 		
 		// Group by key and tenant ID to consolidate different versions
 		List<ProcessStatistics> groupedStatistics = groupProcessStatisticsByKeyAndTenant(statisticsCollection);
@@ -268,8 +271,8 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	}
 
   @Override
-  public Collection<ProcessStatistics> getProcessStatistics(CIBUser user) {
-    String url = getEngineRestUrl() + "/process-definition/statistics?failedJobs=true&rootIncidents=true";
+  public Collection<ProcessStatistics> getProcessStatistics(Map<String, Object> queryParams, CIBUser user) {
+    String url = URLUtils.buildUrlWithParams(getEngineRestUrl() + "/process-definition/statistics", queryParams);
     return Arrays.asList(((ResponseEntity<ProcessStatistics[]>) doGet(url, ProcessStatistics[].class, user, false)).getBody());
   }
 	
