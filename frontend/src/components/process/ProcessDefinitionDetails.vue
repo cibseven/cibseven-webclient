@@ -66,6 +66,17 @@
     </span>
     <span class="col-12">{{ version.tenantId ? version.tenantId : '-' }}</span>
   </div>
+  <hr v-if="selectedInstance?.superProcessInstanceId && isVersionSelected" class="my-2">
+  <div v-if="selectedInstance?.superProcessInstanceId && isVersionSelected" class="row">
+    <span class="text-secondary fw-bold col-12">
+      {{ $t('process.details.superProcessInstanceId') }}
+      <button @click="copyValueToClipboard(selectedInstance.superProcessInstanceId)" class="btn btn-sm mdi mdi-content-copy float-end border-0"
+        :title="$t('process.details.copyValue')"></button>
+    </span>
+    <a class="text-decoration-underline" style="cursor:pointer" @click.prevent="navigateToSuperProcessInstance(selectedInstance.superProcessInstanceId)">
+      {{ selectedInstance.superProcessInstanceId }}
+    </a>
+  </div>
   <hr class="my-2">
   <div class="row">
     <span class="text-secondary fw-bold col-12">
@@ -120,7 +131,7 @@
 <script>
 import { moment } from '@/globals.js'
 import { formatDate } from '@/utils/dates.js'
-import { ProcessService } from '@/services.js'
+import { ProcessService, HistoryService } from '@/services.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 
@@ -130,7 +141,9 @@ export default {
   mixins: [ copyToClipboardMixin ],
   props: {
     instances: Array,
-    version: Object
+    version: Object,
+    selectedInstance: { type: Object, default: null },
+    versionIndex: { type: String, default: '' }
   },
   data: function() {
     return {
@@ -140,6 +153,11 @@ export default {
     }
   },
   emits: ['onUpdateHistoryTimeToLive'],
+  computed: {
+    isVersionSelected() {
+      return this.version.version === this.versionIndex
+    }
+  },
   mounted: function() {
     this.historyTimeToLive = this.version.historyTimeToLive
   },
@@ -161,6 +179,26 @@ export default {
         this.$refs.historyTimeToLive.hide()
         this.$emit('onUpdateHistoryTimeToLive', this.version.id, data.historyTimeToLive);
       })
+    },
+    navigateToSuperProcessInstance: async function(superProcessInstanceId) {
+      if (!superProcessInstanceId) return
+      try {
+        const processInstance = await HistoryService.findProcessInstance(superProcessInstanceId)
+        const processKey = processInstance.processDefinitionKey
+        const versionIndex = processInstance.processDefinitionVersion
+        const params = { processKey, versionIndex, instanceId: processInstance.id }
+        
+        const routeConfig = {
+          name: 'process',
+          params,
+          query: { 
+            tab: 'variables'
+          }
+        }
+        await this.$router.push(routeConfig)
+      } catch (error) {
+        console.error('Failed to navigate to super process instance:', error)
+      }
     }
   }
 }

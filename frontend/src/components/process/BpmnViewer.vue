@@ -450,7 +450,7 @@ export default {
         const routeConfig = {
           name: 'process',
           params,
-          query: { parentProcessDefinitionId: this.processDefinitionId, tab: 'instances' }
+          query: { parentProcessDefinitionId: this.processDefinitionId, tab: params.instanceId ? 'variables' : 'instances' }
         }
         await this.$router.push(routeConfig)
       } catch (error) {
