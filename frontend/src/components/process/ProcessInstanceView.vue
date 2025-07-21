@@ -223,26 +223,6 @@ export default {
         this.parentProcess = null
       }
     },
-    navigateToSuperProcessInstance: async function(superProcessInstanceId) {
-      if (!superProcessInstanceId) return
-      try {
-        const processInstance = await HistoryService.findProcessInstance(superProcessInstanceId)
-        const processKey = processInstance.processDefinitionKey
-        const versionIndex = processInstance.processDefinitionVersion
-        const params = { processKey, versionIndex, instanceId: processInstance.id }
-        
-        const routeConfig = {
-          name: 'process',
-          params,
-          query: { 
-            tab: 'variables'
-          }
-        }
-        await this.$router.push(routeConfig)
-      } catch (error) {
-        console.error('Failed to navigate to super process instance:', error)
-      }
-    }
   }
 }
 </script>
