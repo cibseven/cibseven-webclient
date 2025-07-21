@@ -99,17 +99,20 @@ public class AdminService extends BaseService implements InitializingBean {
 	 * 				e.g:  {"id": "jonny1", "firstName":"John", "lastName":"Doe", "email":"aNewEmailAddress"}   
 	 * @param loc
 	 * @param flowUser
+	 * @return ResponseEntity<Void> with status 204 No Content
 	 */
 	@Operation(
 		summary = "Create user",
 		description  = "Request body: User" + "<br>" +
-			"<strong>Return: void")
+			"<strong>Return:</strong> 204 No Content")
 	@RequestMapping(value = "/user/create", method = RequestMethod.POST)
-	public void createUser(
+	public ResponseEntity<Void> createUser(
 			@RequestBody NewUser user,
 			Locale loc, CIBUser flowUser) {
 		checkPermission(flowUser, SevenResourceType.USER, PermissionConstants.CREATE_ALL);
 		bpmProvider.createUser(user, flowUser);
+		// return 204 No Content, no body
+		return ResponseEntity.noContent().build();
 	}
 
 	/**
@@ -120,19 +123,22 @@ public class AdminService extends BaseService implements InitializingBean {
 	 * 				e.g:  {"id": "jonny1", "firstName":"John", "lastName":"Doe", "email":"aNewEmailAddress"}   
 	 * @param loc
 	 * @param flowUser
+	 * @return ResponseEntity<Void> with status 204 No Content
 	 */
 	@Operation(
 			summary = "Update user's profile",
 			description = "Request body: User" + "<br>" +
-			"<strong>Return: void")
+			"<strong>Return:</strong> 204 No Content")
 	@ApiResponse(responseCode = "404", description = "User not found")
 	@RequestMapping(value = "/user/{userId}/profile", method = RequestMethod.PUT)
-	public void updateUserProfile(
+	public ResponseEntity<Void> updateUserProfile(
 			@Parameter(description = "User Id") @PathVariable String userId, 
 			@RequestBody User user, 
 			Locale loc, CIBUser flowUser) {
 		checkPermission(flowUser, SevenResourceType.USER, PermissionConstants.UPDATE_ALL);
 		bpmProvider.updateUserProfile(userId, user, flowUser);
+		// return 204 No Content, no body
+		return ResponseEntity.noContent().build();
 	}
 	
 	/**
@@ -142,18 +148,21 @@ public class AdminService extends BaseService implements InitializingBean {
 	 * @param userId The ID of the user
 	 * @param loc The locale
 	 * @param flowUser The authenticated user performing the action
+	 * @return ResponseEntity<Void> with status 204 No Content
 	 */
 	@Operation(
 			summary = "Add user to a group",
-			description = "<strong>Return: void")
+			description = "<strong>Return:</strong> 204 No Content")
 	@ApiResponse(responseCode = "404", description = "Group or user not found")
 	@RequestMapping(value = "/group/{groupId}/members/{userId}", method = RequestMethod.PUT)
-	public void addMemberToGroup(
+	public ResponseEntity<Void> addMemberToGroup(
 			@Parameter(description = "Group Id") @PathVariable String groupId, 
 			@Parameter(description = "User Id") @PathVariable String userId, 
 			Locale loc, CIBUser flowUser) {
 		checkPermission(flowUser, SevenResourceType.GROUP, PermissionConstants.DELETE_ALL);
 		bpmProvider.addMemberToGroup(groupId, userId, flowUser);
+		// return 204 No Content, no body
+		return ResponseEntity.noContent().build();
 	}
 	
 	/**
@@ -164,18 +173,21 @@ public class AdminService extends BaseService implements InitializingBean {
 	 * @param loc
 	 * @param flowUser A JSON object containing variable key-value pairs. The object contains the following properties: id (String), firstName (String), lastName (String) and email (String). 
 	 * 				e.g:  {"id": "jonny1", "firstName":"John", "lastName":"Doe", "email":"aNewEmailAddress"}   
+	 * @return ResponseEntity<Void> with status 204 No Content
 	 */
 	@Operation(
 			summary = "Delete user from a group",
-			description = "<strong>Return: void")
+			description = "<strong>Return:</strong> 204 No Content")
 	@ApiResponse(responseCode = "404", description = "Group or user not found")
 	@RequestMapping(value = "/group/{groupId}/members/{userId}", method = RequestMethod.DELETE)
-	public void deleteMemberFromGroup(
+	public ResponseEntity<Void> deleteMemberFromGroup(
 			@Parameter(description = "Group Id") @PathVariable String groupId, 
 			@Parameter(description = "User Id") @PathVariable String userId, 
 			Locale loc, CIBUser flowUser) {
 		checkPermission(flowUser, SevenResourceType.GROUP, PermissionConstants.DELETE_ALL);
 		bpmProvider.deleteMemberFromGroup(groupId, userId, flowUser);
+		// return 204 No Content, no body
+		return ResponseEntity.noContent().build();
 	}
 	
 	
@@ -188,19 +200,22 @@ public class AdminService extends BaseService implements InitializingBean {
 	 * 		authenticatedUserPassword 	String 	The password of the authenticated user who changes the password of the user (i.e., the user with passed id as path parameter).	 * 
 	 * @param loc
 	 * @param user
+	 * @return ResponseEntity<Void> with status 204 No Content
 	 */
 	@Operation(
 			summary = "Update user's credentials",
 			description = "Request body: A JSON object with the following properties: password and authenticatedUserPassword" + "<br>" +
-			"<strong>Return: void")
+			"<strong>Return:</strong> 204 No Content")
 	@ApiResponse(responseCode = "404", description  = "User not found")
 	@RequestMapping(value = "/user/{userId}/credentials", method = RequestMethod.PUT)
-	public void updateUserCredentials(
+	public ResponseEntity<Void> updateUserCredentials(
 			@Parameter(description = "User Id") @PathVariable String userId, 
 			@RequestBody Map<String, Object> data, 
 			Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.USER, PermissionConstants.UPDATE_ALL);
 		bpmProvider.updateUserCredentials(userId, data, user);
+		// return 204 No Content, no body
+		return ResponseEntity.noContent().build();
 	}
 
 	/**
@@ -209,17 +224,20 @@ public class AdminService extends BaseService implements InitializingBean {
 	 * @param userId
 	 * @param loc
 	 * @param user
+	 * @return ResponseEntity<Void> with status 204 No Content
 	 */
 	@Operation(
 			summary = "Delete a user by Id",
-			description = "<strong>Return: void")
+			description = "<strong>Return:</strong> 204 No Content")
 	@ApiResponse(responseCode = "404", description = "This user does not exist")
 	@RequestMapping(value = "/user/{userId}", method = RequestMethod.DELETE)
-	public void deleteUser(
+	public ResponseEntity<Void> deleteUser(
 			@Parameter(description = "User Id") @PathVariable String userId, 
 			Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.USER, PermissionConstants.DELETE_ALL);
 		bpmProvider.deleteUser(userId, user);
+		// return 204 No Content, no body
+		return ResponseEntity.noContent().build();
 	}
 
 	@Operation(
@@ -284,17 +302,20 @@ public class AdminService extends BaseService implements InitializingBean {
 	 * 
 	 * @param loc
 	 * @param user
+	 * @return ResponseEntity<Void> with status 204 No Content
 	 */
 	@Operation(
 			summary = "Create group",
 			description = "Request body: A JSON object with the following properties: id, name and type" + "<br>" +
-			"<strong>Return: void")
+			"<strong>Return:</strong> 204 No Content")
 	@RequestMapping(value = "/group/create", method = RequestMethod.POST)
-	public void createGroup(
+	public ResponseEntity<Void> createGroup(
 			@RequestBody UserGroup group,
 			Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.GROUP, PermissionConstants.CREATE_ALL);
 		bpmProvider.createGroup(group, user);
+		// return 204 No Content, no body
+		return ResponseEntity.noContent().build();
 	}
 
 	/**
@@ -305,19 +326,22 @@ public class AdminService extends BaseService implements InitializingBean {
 	 * 				e.g:  {"id": "jonny1", "firstName":"John", "lastName":"Doe", "email":"aNewEmailAddress"}   
 	 * @param loc
 	 * @param user
+	 * @return ResponseEntity<Void> with status 204 No Content
 	 */
 	@Operation(
 			summary = "Update group",
 			description = "Request body: A JSON object with the following properties: id, name and type" + "<br>" +
-			"<strong>Return: void")
+			"<strong>Return:</strong> 204 No Content")
 	@ApiResponse(responseCode = "404", description = "Group not found")
 	@RequestMapping(value = "/group/{groupId}", method = RequestMethod.PUT)
-	public void updateGroup(
+	public ResponseEntity<Void> updateGroup(
 			@Parameter(description = "Group Id") @PathVariable String groupId, 
 			@RequestBody UserGroup group, 
 			Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.GROUP, PermissionConstants.UPDATE_ALL);
 		bpmProvider.updateGroup(groupId, group, user);
+		// return 204 No Content, no body
+		return ResponseEntity.noContent().build();
 	}
 
 	/**
@@ -326,17 +350,20 @@ public class AdminService extends BaseService implements InitializingBean {
 	 * @param groupId
 	 * @param loc
 	 * @param user
+	 * @return ResponseEntity<Void> with status 204 No Content
 	 */
 	@Operation(
 			summary = "Delete a group by Id",
-			description = "<strong>Return: void")
+			description = "<strong>Return:</strong> 204 No Content")
 	@ApiResponse(responseCode = "404", description = "Group not found")
 	@RequestMapping(value = "/group/{groupId}", method = RequestMethod.DELETE)
-	public void deleteGroup(
+	public ResponseEntity<Void> deleteGroup(
 			@Parameter(description = "Group Id") @PathVariable String groupId, 
 			Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.GROUP, PermissionConstants.DELETE_ALL);
 		bpmProvider.deleteGroup(groupId, user);
+		// return 204 No Content, no body
+		return ResponseEntity.noContent().build();
 	}
 	
 	@Operation(
@@ -401,19 +428,22 @@ public class AdminService extends BaseService implements InitializingBean {
 	 * @param authorizationId
 	 * @param loc
 	 * @param user
+	 * @return ResponseEntity<Void> with status 204 No Content
 	 */
 	@Operation(
 			summary = "Update authorization",
 			description = "Request body: A JSON object with the following properties: permissions, userId, groupId, resourceType and resourceId" + "<br>" +
-			"<strong>Return: void")
+			"<strong>Return:</strong> 204 No Content")
 	@ApiResponse(responseCode = "404", description = "Authorization not found")
 	@RequestMapping(value = "/authorization/{authorizationId}", method = RequestMethod.PUT)
-	public void updateAuthorization(
+	public ResponseEntity<Void> updateAuthorization(
 			@Parameter(description = "Authorization Id") @PathVariable String authorizationId, 
 			@RequestBody Map<String, Object> data, 
 			Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.AUTHORIZATION, PermissionConstants.UPDATE_ALL);
 		bpmProvider.updateAuthorization(authorizationId, data, user);
+		// return 204 No Content, no body
+		return ResponseEntity.noContent().build();
 	}
 
 	/**
@@ -422,17 +452,20 @@ public class AdminService extends BaseService implements InitializingBean {
 	 * @param authorizationId
 	 * @param loc
 	 * @param user
+	 * @return ResponseEntity<Void> with status 204 No Content
 	 */
 	@Operation(
 			summary = "Delete authorization by Id",
-			description = "<strong>Return: void")
+			description = "<strong>Return:</strong> 204 No Content")
 	@ApiResponse(responseCode = "404", description = "Authorization not found")
 	@RequestMapping(value = "/authorization/{authorizationId}", method = RequestMethod.DELETE)
-	public void deleteAuthorization(
+	public ResponseEntity<Void> deleteAuthorization(
 			@Parameter(description = "Authorization Id") @PathVariable String authorizationId, 
 			Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.AUTHORIZATION, PermissionConstants.DELETE_ALL);
 		bpmProvider.deleteAuthorization(authorizationId, user);
+		// return 204 No Content, no body
+		return ResponseEntity.noContent().build();
 	}
 
 }
