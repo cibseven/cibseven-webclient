@@ -281,8 +281,18 @@ export default {
       if (this.authorizations[0].id === "0") this.authorizations.shift()
       this.edit = authorization.id
       this.isUserToEdit = (authorization.userId != null) ? true : false
-      this.selected = []
-      this.selected = authorization.permissions
+      if (authorization.permissions.length === 0) {
+        this.selected = []
+      }
+      else if (authorization.permissions.length === 1 && authorization.permissions[0] === 'ALL') {
+        this.selected = [...this.resourcesTypes[this.$route.params.resourceTypeId].permissions]
+      }
+      else if (authorization.permissions.length === 1 && authorization.permissions[0] === 'NONE') {
+        this.selected = []
+      }
+      else {
+        this.selected = [...authorization.permissions]
+      }
       this.authorizationSelected = authorization
     },
     prepareRemove: function (authorization) {
