@@ -30,6 +30,7 @@ import { debounce } from '@/utils/debounce.js'
 import { formatDate, formatDuration } from '@/utils/dates.js'
 import { HoverStyle } from '@/components/common-components/directives.js'
 import { InfoService, AuthService, SystemService } from './services.js'
+import { initEmbeddedForm } from './embedded-form/embedded-form.js'
 import { i18n, setLanguage, loadTranslations, translationSources } from './i18n'
 import { appRoutes,
   createAppRouter,
@@ -392,5 +393,7 @@ export {
   fetchAndStoreProcesses,
   fetchDecisionsIfEmpty,
   setupTaskNotifications,
-  parseXMLDocumentation
+  parseXMLDocumentation,
+  
+  initEmbeddedForm
 }
