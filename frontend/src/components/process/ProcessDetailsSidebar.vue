@@ -69,7 +69,8 @@
               </div>
             </div>
             <b-popover :target="version.id" triggers="hover" placement="right" boundary="viewport" max-width="350px">
-              <ProcessDefinitionDetails :version="version" :instances="instances" @onUpdateHistoryTimeToLive="onUpdateHistoryTimeToLive"></ProcessDefinitionDetails>
+              <ProcessDefinitionDetails :version="version" :instances="instances" :version-index="versionIndex" 
+                :selected-instance="selectedInstance" @onUpdateHistoryTimeToLive="onUpdateHistoryTimeToLive"></ProcessDefinitionDetails>
             </b-popover>
           </div>
         </router-link>
@@ -98,7 +99,8 @@ export default {
     },
     instances: Array,
     processKey: String,
-    versionIndex: { type: String, default: '' }
+    versionIndex: { type: String, default: '' },
+    selectedInstance: { type: Object, default: null }
   },
   methods: {
     onRefreshProcessDefinitions: function(lazyLoadHistory) {

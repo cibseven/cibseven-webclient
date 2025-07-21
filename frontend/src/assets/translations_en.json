@@ -115,6 +115,7 @@
 			"definitionKey": "Definition Key",
 			"definitionName": "Definition Name",
 			"deploymentId": "Deployment ID",
+			"superProcessInstanceId": "Super Process Instance ID",
 			"instancesRunning": "Instances Running",
 			"currentVersion": "Current version",
 			"allVersions": "All versions",
@@ -249,14 +250,14 @@
 			"enterValue": "Enter value"
 		},
 		"incidents": {
-		    "message": "Message",
-		    "timestamp": "Timestamp",
-		    "activity": "Activity",
-		    "failedActivity": "Failed activity",
-		    "incidentType": "Incident type",
-		    "retryJob": "Increment number of retries of failed job",
+			"message": "Message",
+			"timestamp": "Timestamp",
+			"activity": "Activity",
+			"failedActivity": "Failed activity",
+			"incidentType": "Incident type",
+			"retryJob": "Increment number of retries of failed job",
 			"annotation": "Annotation",
-		    "actions": "Actions",
+			"actions": "Actions",
 			"incrementNumberRetries": "Increment number of retries",
 			"retryMsg": "The number of retries of the corresponding failed job of the selected incident will be incremented.",
 			"dueDateMsg": "The point in time a job is executed is determined by the due date:",
@@ -280,7 +281,7 @@
 			"active": "Active",
 			"suspendJob": "Suspend job definition",
 			"activateJob": "Activate job definition",
-  			"suspended": "Suspended",
+			"suspended": "Suspended",
 			"activateMsg": "This job definition will be activated, so that new jobs based on this job definition are initially active.",
 			"suspendMsg": "This job definition will be suspended, so that new jobs based on this job definition are initially suspended.",
 			"includeExisting": "Include existing job",
@@ -301,14 +302,14 @@
 			"invalidDateError": "You must enter a valid date"
 		},
 		"usertasks": {
-		    "activity": "Activity",
-		    "assignee": "Assignee",
-		    "owner": "Owner",
-		    "startTime": "Start Time",
-		    "due": "Due Date",
-		    "followUp": "Follow-Up",
-		    "taskID": "Task ID",
-		    "actions": "Actions"
+			"activity": "Activity",
+			"assignee": "Assignee",
+			"owner": "Owner",
+			"startTime": "Start Time",
+			"due": "Due Date",
+			"followUp": "Follow-Up",
+			"taskID": "Task ID",
+			"actions": "Actions"
 		},
 		"calledProcesses": {
 			"callingActivity": "Activity",
@@ -319,17 +320,17 @@
 			"endTime": "End time"
 		},
 		"assignModal": {
-		    "manageUsersGroups": "Manage users/groups",
+			"manageUsersGroups": "Manage users/groups",
 			"manageAssignee": "Manage assigned user",
-		    "groupId": "Group ID",
-		    "userId": "@:admin.users.id",
-		    "groups": "Groups",
-		    "users": "Users",
-		    "assignee": "Assignee",
-		    "add": "Add",
-		    "delete": "@:confirm.delete",
-		    "actions": "Actions",
-		    "exists": "This entity is already assigned"
+			"groupId": "Group ID",
+			"userId": "@:admin.users.id",
+			"groups": "Groups",
+			"users": "Users",
+			"assignee": "Assignee",
+			"add": "Add",
+			"delete": "@:confirm.delete",
+			"actions": "Actions",
+			"exists": "This entity is already assigned"
 		},
 		"noResults": "No results",
 		"noIncidents": "No incidents",
@@ -1107,19 +1108,19 @@
 		}
 	},
 	"multisort": {
-	    "title": "Sorting Criteria",
-	    "column": "Column",
-	    "order": "Order",
-	    "orderBy": "Order By",
-	    "thenBy": "Then By",
-	    "asc": "Ascending",
-	    "desc": "Descending",
-	    "add": "Add criteria",
-	    "moveUp": "Move Up",
-	    "moveDown": "Move Down",
-	    "remove": "Remove",
-	    "cancel": "Cancel",
-	    "apply": "Apply"
+		"title": "Sorting Criteria",
+		"column": "Column",
+		"order": "Order",
+		"orderBy": "Order By",
+		"thenBy": "Then By",
+		"asc": "Ascending",
+		"desc": "Descending",
+		"add": "Add criteria",
+		"moveUp": "Move Up",
+		"moveDown": "Move Down",
+		"remove": "Remove",
+		"cancel": "Cancel",
+		"apply": "Apply"
 	},
 	"password": {
 		"recover": {
@@ -1164,37 +1165,37 @@
 		"noState": "There is no status for this task"
 	},
 	"advanced-search": {
-	    "title": "Advanced search",
-	    "criteriaKey": "Criteria key",
-	    "selectProperty": "Select property",
-	    "property": "Property name",
-	    "value": "Value",
-	    "add": "Add criteria",
-	    "remove": "Remove criteria",
-	    "type": "Match type",
-	    "apply": "Apply",
-	    "cancel": "Cancel",
-	    "cleanAll": "Clear all criteria",
-	    "any": "Any",
-	    "all": "All",
-	    "criteriaKeys": {    	
-	        "processVariables": "Process variable"
-	    },
-	    "table": {
-	        "key": "Key",
-	        "value": "Value"
-	    },	    
-	    "operators": {
-	        "eq": "=",
-	        "neq": "≠",
-	        "gt": ">",
-	        "gteq": ">=",
-	        "lt": "<",
-	        "lteq": "<=",
-	        "like": "like",
-	        "notLike": "not like"
-	    }
-    },
+		"title": "Advanced search",
+		"criteriaKey": "Criteria key",
+		"selectProperty": "Select property",
+		"property": "Property name",
+		"value": "Value",
+		"add": "Add criteria",
+		"remove": "Remove criteria",
+		"type": "Match type",
+		"apply": "Apply",
+		"cancel": "Cancel",
+		"cleanAll": "Clear all criteria",
+		"any": "Any",
+		"all": "All",
+		"criteriaKeys": {    	
+			"processVariables": "Process variable"
+		},
+		"table": {
+			"key": "Key",
+			"value": "Value"
+		},	    
+		"operators": {
+			"eq": "=",
+			"neq": "≠",
+			"gt": ">",
+			"gteq": ">=",
+			"lt": "<",
+			"lteq": "<=",
+			"like": "like",
+			"notLike": "not like"
+		}
+	},
 	"notification": {
 		"newTasks": "New tasks",
 		"newTasksTitle": "You got new tasks assigned on CIB seven"

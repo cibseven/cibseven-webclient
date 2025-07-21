@@ -30,7 +30,7 @@
           :version-index="versionIndex"
           @on-refresh-process-definitions="onRefreshProcessDefinitions"
           @on-delete-process-definition="onDeleteProcessDefinition"
-          :instances="instances"></ProcessDetailsSidebar>
+          :instances="instances" :selected-instance="selectedInstance"></ProcessDetailsSidebar>
       </template>
       <transition name="slide-in" mode="out-in">
         <ProcessInstancesView ref="process" v-if="process && !selectedInstance && !instanceId"
@@ -54,7 +54,6 @@
           :activity-instance="activityInstance"
           :activity-instance-history="activityInstanceHistory"
           :selected-instance="selectedInstance"
-          :parent-process="parentProcess"
           @task-selected="setSelectedTask($event)"></ProcessInstanceView>
       </transition>
     </SidebarsFlow>

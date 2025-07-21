@@ -115,6 +115,7 @@
 			"definitionKey": "Ключ визначення",
 			"definitionName": "Назва визначення",
 			"deploymentId": "ID розгортання",
+			"superProcessInstanceId": "ID супервиконання процесу",
 			"instancesRunning": "Активні екземпляри",
 			"currentVersion": "Поточна версія",
 			"allVersions": "Усі версії",
