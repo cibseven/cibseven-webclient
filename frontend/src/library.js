@@ -134,7 +134,7 @@ import SystemDiagnostics from '@/components/system/SystemDiagnostics.vue'
 import ExecutionMetrics from '@/components/system/ExecutionMetrics.vue'
 import ShortcutsModal from '@/components/modals/ShortcutsModal.vue'
 import ShortcutsTable from '@/components/modals/ShortcutsTable.vue'
-import { TaskService, HistoryService, ProcessService, getServicesBasePath, setServicesBasePath } from '@/services.js';
+import { TaskService, HistoryService, ProcessService, getServicesBasePath, setServicesBasePath, IncidentService } from '@/services.js';
 import DeployedForm from '@/components/forms/DeployedForm.vue'
 import StartDeployedForm from '@/components/forms/StartDeployedForm.vue'
 import DecisionDefinitionDetails from '@/components/decision/DecisionDefinitionDetails.vue'
@@ -146,6 +146,7 @@ import LoginView from '@/components/login/LoginView.vue'
 import GenericTabs from '@/components/common-components/GenericTabs.vue'
 import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
 import TranslationsDownload from '@/components/common-components/TranslationsDownload.vue'
+import StackTraceModal from '@/components/process/modals/StackTraceModal.vue'
 
 const registerComponents = function(app) {
   app.component('cib-seven', CibSeven)
@@ -344,6 +345,7 @@ export {
   ProcessService,
   getServicesBasePath,
   setServicesBasePath,
+  IncidentService,
   HumanTasksView,
   DecisionView,
   DecisionList,
@@ -374,7 +376,7 @@ export {
   loadTranslations,
   translationSources,
   TranslationsDownload,
-
+  StackTraceModal,
   // router
   appRoutes,
   createAppRouter,
