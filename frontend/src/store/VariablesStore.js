@@ -51,7 +51,8 @@ export default {
         }
       }
       const variablesToSerialize = []
-      let variables = await serviceMap[service][method](instanceId, false)
+      const filter = { deserializeValue: false }
+      let variables = await serviceMap[service][method](instanceId, filter)
       variables.forEach(variable => {
         try {
           variable.value = variable.type === 'Object' ? JSON.parse(variable.value) : variable.value
@@ -61,7 +62,7 @@ export default {
         variable.modify = false
       })
       if (variablesToSerialize.length > 0) {
-        const dVariables = await serviceMap[service][method](instanceId, true)
+        const dVariables = await serviceMap[service][method](instanceId, filter)
         dVariables.forEach(dVariable => {
           const variableToSerialize = variables.find(variable => variable.id === dVariable.id)
           if (variableToSerialize) {

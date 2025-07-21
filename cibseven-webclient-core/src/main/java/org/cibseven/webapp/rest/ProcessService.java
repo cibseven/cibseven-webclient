@@ -559,11 +559,24 @@ public class ProcessService extends BaseService implements InitializingBean {
 	@RequestMapping(value = "/variable-instance/process-instance/{processInstanceId}/variables", method = RequestMethod.GET)
 	public Collection<Variable> fetchProcessInstanceVariables(
 			@Parameter(description = "Process instance Id") @PathVariable String processInstanceId,
+			@Parameter(description = "Variable name") @RequestParam Optional<String> variableName,
+			@Parameter(description = "Variable name like") @RequestParam Optional<String> variableNameLike,
+			@Parameter(description = "Variable values") @RequestParam Optional<String> variableValues,
+			@Parameter(description = "Variable names ignore case") @RequestParam Optional<Boolean> variableNamesIgnoreCase,
+			@Parameter(description = "Variable values ignore case") @RequestParam Optional<Boolean> variableValuesIgnoreCase,
 			@Parameter(description = "Deserialize value") @RequestParam Optional<Boolean> deserialize,
 			Locale loc, CIBUser user) {
 		checkCockpitRights(user);
         checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_INSTANCE_VARIABLE_ALL);
-		return bpmProvider.fetchProcessInstanceVariables(processInstanceId, user, deserialize);
+		final Map<String, Object> data = Map.of(
+			"variableName", variableName.orElse(null),
+			"variableNameLike", variableNameLike.orElse(null),
+			"variableValues", variableValues.orElse(null),
+			"variableNamesIgnoreCase", variableNamesIgnoreCase.orElse(false),
+			"variableValuesIgnoreCase", variableValuesIgnoreCase.orElse(false),
+			"deserializeValue", deserialize.orElse(true)
+		);
+		return bpmProvider.fetchProcessInstanceVariables(processInstanceId, data, user);
 	}
 	
 	@Operation(

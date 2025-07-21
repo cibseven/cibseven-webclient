@@ -123,10 +123,24 @@ public class HistoryProcessService extends BaseService {
 	@RequestMapping(value = "/process-history/instance/by-process-instance/{processInstanceId}/variables", method = RequestMethod.GET)
 	public Collection<VariableHistory> fetchProcessInstanceVariablesHistory(
 			@Parameter(description = "Filter by process instance Id") @PathVariable String processInstanceId,
+			@Parameter(description = "Variable name") @RequestParam Optional<String> variableName,
+			@Parameter(description = "Variable name like") @RequestParam Optional<String> variableNameLike,
+			@Parameter(description = "Variable values") @RequestParam Optional<String> variableValues,
+			@Parameter(description = "Variable names ignore case") @RequestParam Optional<Boolean> variableNamesIgnoreCase,
+			@Parameter(description = "Variable values ignore case") @RequestParam Optional<Boolean> variableValuesIgnoreCase,
 			@Parameter(description = "Deserialize value") @RequestParam Optional<Boolean> deserialize,
 			Locale loc, CIBUser user) {
         checkPermission(user, SevenResourceType.HISTORIC_PROCESS_INSTANCE, PermissionConstants.READ_ALL);
-		return bpmProvider.fetchProcessInstanceVariablesHistory(processInstanceId, user, deserialize);
+		final Map<String, Object> data = Map.of(
+			"variableName", variableName.orElse(null),
+			"variableNameLike", variableNameLike.orElse(null),
+			"variableValues", variableValues.orElse(null),
+			"variableNamesIgnoreCase", variableNamesIgnoreCase.orElse(false),
+			"variableValuesIgnoreCase", variableValuesIgnoreCase.orElse(false),
+			"deserializeValue", deserialize.orElse(true)
+		);
+		// Call the provider method to fetch the variables history
+		return bpmProvider.fetchProcessInstanceVariablesHistory(processInstanceId, data, user);
 	}
 	
 	// Used for chat-comments, to find parent of a process instanceId
