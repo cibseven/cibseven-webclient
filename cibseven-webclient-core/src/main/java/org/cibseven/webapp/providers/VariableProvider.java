@@ -108,7 +108,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		}
 		uriBuilder.queryParam("processInstanceIdIn", processInstanceId);
 
-		String url = uriBuilder.buildAndExpand(processInstanceId).toUriString();
+		String url = uriBuilder.build().toUriString();
 		return Arrays.asList(((ResponseEntity<VariableHistory[]>) doGet(url, VariableHistory[].class, user, false)).getBody());
 	}
 	
@@ -148,9 +148,9 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		}
 		uriBuilder.queryParam("processInstanceIdIn", processInstanceId);
 
-		String url = uriBuilder.buildAndExpand(processInstanceId).toUriString();
+		String url = uriBuilder.build().toUriString();
 		return Arrays.asList(((ResponseEntity<VariableHistory[]>) doGet(url, VariableHistory[].class, user, false)).getBody());
-	}	
+	}
 	
 	@Override
 	public Collection<VariableHistory> fetchActivityVariablesHistory(String activityInstanceId, CIBUser user) {
