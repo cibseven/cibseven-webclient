@@ -199,7 +199,7 @@ export default {
       if (this.selectedInstance?.state === 'ACTIVE') {
         try {
           await this.getVariableInstance({ id: variable.id, deserializeValue: false })
-        } catch (e) {
+        } catch {
           await this.getHistoricVariableInstance({ id: variable.id, deserializeValue: false })
           this.selectedInstance.state = 'COMPLETED'
         }
@@ -217,7 +217,7 @@ export default {
               await ProcessService.deleteVariableByExecutionId(variable.executionId, variable.name)
               this.loadSelectedInstanceVariables()
               this.$refs.success.show()
-            } catch (e) {
+            } catch {
               // Fallback to historic deletion
               await HistoryService.deleteVariableHistoryInstance(variable.id)
               this.selectedInstance.state = 'COMPLETED'
