@@ -93,9 +93,22 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 	}
 	
 	@Override
-	public Collection<Variable> fetchProcessInstanceVariables(String processInstanceId, CIBUser user, Optional<Boolean> deserializeValue) throws SystemException {
-		String url = getEngineRestUrl() + "/variable-instance?processInstanceIdIn=" + processInstanceId;
-		url += deserializeValue.isPresent() ? "&deserializeValues=" + deserializeValue.get() : "";
+	public Collection<Variable> fetchProcessInstanceVariables(String processInstanceId, Map<String, Object> data, CIBUser user) throws SystemException {
+
+		UriComponentsBuilder uriBuilder = UriComponentsBuilder
+			.fromUriString(getEngineRestUrl())
+			.path("/variable-instance");
+
+		if (data != null) {
+			data.forEach((key, value) -> {
+				if (value != null) {
+					uriBuilder.queryParam(key, value);
+				}
+			});
+		}
+		uriBuilder.queryParam("processInstanceIdIn", processInstanceId);
+
+		String url = uriBuilder.build().toUriString();
 		return Arrays.asList(((ResponseEntity<VariableHistory[]>) doGet(url, VariableHistory[].class, user, false)).getBody());
 	}
 	
@@ -120,11 +133,24 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 	}
 	
 	@Override
-	public Collection<VariableHistory> fetchProcessInstanceVariablesHistory(String processInstanceId, CIBUser user, Optional<Boolean> deserializeValue) {
-		String url = getEngineRestUrl() + "/history/variable-instance?processInstanceId=" + processInstanceId;
-		url += deserializeValue.isPresent() ? "&deserializeValues=" + deserializeValue.get() : "";
+	public Collection<VariableHistory> fetchProcessInstanceVariablesHistory(String processInstanceId, Map<String, Object> data, CIBUser user) throws SystemException {
+
+		UriComponentsBuilder uriBuilder = UriComponentsBuilder
+			.fromUriString(getEngineRestUrl())
+			.path("/history/variable-instance");
+
+		if (data != null) {
+			data.forEach((key, value) -> {
+				if (value != null) {
+					uriBuilder.queryParam(key, value);
+				}
+			});
+		}
+		uriBuilder.queryParam("processInstanceIdIn", processInstanceId);
+
+		String url = uriBuilder.build().toUriString();
 		return Arrays.asList(((ResponseEntity<VariableHistory[]>) doGet(url, VariableHistory[].class, user, false)).getBody());
-	}	
+	}
 	
 	@Override
 	public Collection<VariableHistory> fetchActivityVariablesHistory(String activityInstanceId, CIBUser user) {

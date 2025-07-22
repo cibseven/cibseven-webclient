@@ -185,12 +185,9 @@ var ProcessService = {
   findProcessStatistics: function(processId) {
     return axios.get(getServicesBasePath() + "/process/process-definition/" + processId + "/statistics")
   },
-  fetchProcessInstanceVariables: function(processInstanceId, deserialize) {
+  fetchProcessInstanceVariables: function(processInstanceId, filter) {
     return axios.get(getServicesBasePath() + "/process/variable-instance/process-instance/" + processInstanceId + "/variables",
-      { params: {
-        deserialize: deserialize
-      }
-    })
+      { params: filter })
   },
   modifyVariableByExecutionId: function(executionId, data) {
     return axios.post(getServicesBasePath() + "/process/execution/" + executionId + "/localVariables", data)
@@ -384,12 +381,9 @@ var HistoryService = {
   findActivitiesInstancesHistoryWithFilter(filter){
 	return axios.get(getServicesBasePath() + "/process-history/activity", 	{ params: filter })
   },
-  fetchProcessInstanceVariablesHistory: function(processInstanceId, deserialize) {
+  fetchProcessInstanceVariablesHistory: function(processInstanceId, filter) {
     return axios.get(getServicesBasePath() + "/process-history/instance/by-process-instance/" + processInstanceId + "/variables",
-      { params: {
-        deserialize: deserialize
-      }
-    })
+      { params: filter })
   },
   fetchHistoryVariableDataById: function(id) {
     return axios.get(getServicesBasePath() + "/process-history/variable/" + id + "/data", { responseType: "blob" })
