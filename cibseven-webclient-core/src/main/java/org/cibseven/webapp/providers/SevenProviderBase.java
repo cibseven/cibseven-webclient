@@ -320,7 +320,9 @@ public abstract class SevenProviderBase {
 				|| technicalErrorMsg.matches(".*Cannot get start form data for process definition.*")
 				|| technicalErrorMsg.matches(".*Cannot get process instance variable.*execution.*exist.*")
 				|| technicalErrorMsg.matches(".*process instance variable with name.*does not exist.*")
-				|| technicalErrorMsg.matches(".*Filter with id.*does not exist.*")) {
+				|| technicalErrorMsg.matches(".*Filter with id.*does not exist.*")
+				|| technicalErrorMsg.matches(".*Variable instance with Id.*does not exist.*")
+				|| technicalErrorMsg.matches(".*Cannot delete execution variable.*execution.*doesn't exist: execution is null.*")) {
 			wrapperException = new NoObjectFoundException(cause);
 		} else if (technicalErrorMsg.matches(".*OptimisticLockingException.*")) {
 			wrapperException = new OptimisticLockingException(cause);
