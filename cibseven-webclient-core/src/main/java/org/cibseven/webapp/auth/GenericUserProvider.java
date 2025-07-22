@@ -201,8 +201,17 @@ public class GenericUserProvider extends BaseUserProvider<StandardLogin> impleme
 		try {
 			if (login != null) {
 				CIBUser user = new CIBUser(login.getUsername());
-				user.setAuthToken(createToken(getSettings(), true, false, user));
-				return user;
+				String token = createToken(getSettings(), true, false, user);
+				// Verify the token
+				String verifiedToken = verify(token);
+				if (verifiedToken == null) {
+					log.warn("Authentication failed for user: {}", login.getUsername());
+					throw new AuthenticationException(login.getUsername());
+				} else {
+					log.info("User authenticated successfully: {}", user.getId());
+					user.setAuthToken(token);
+					return user;
+				}
 			} else {
 				return null;
 			}
