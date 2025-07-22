@@ -37,8 +37,11 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -162,40 +165,76 @@ public class GenericUserProvider extends BaseUserProvider<StandardLogin> impleme
 
 	public String verify(String token) {
 		log.debug("Verifying token");
-		if (cibsevenWebclientUrl != null && !cibsevenWebclientUrl.isEmpty()) {
-			HttpHeaders headers = new HttpHeaders();
-			headers.add(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token);
-			// The following line fix the autorenew token
-			headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
-			RestTemplate template = new RestTemplate();
-			String url = cibsevenWebclientUrl + "/auth";
-			log.debug("Making request to: {}", url);
-			try {
-				String authToken = template
-						.exchange(url, HttpMethod.GET, new HttpEntity(headers),
-								CIBUser.class)
-						.getBody().getAuthToken();
-				log.debug("Token verified successfully");
-				return authToken;
-			} catch (HttpClientErrorException e) {
-				log.warn("Error verifying token: {}", e.getStatusCode());
-				ObjectMapper mapper = new ObjectMapper();
-				try {
-					ErrorMessage message = mapper.readValue(e.getResponseBodyAsString(), ErrorMessage.class);
-					if (message.getType().equals("TokenExpiredException") && message.getParams().length > 0) {
-						log.info("Token expired, new token provided");
-						return message.getParams()[0].toString();
-					} else {
-						log.warn("Token verification failed: {}", message.getType());
-						return null;
-					}
-				} catch (IOException ex) {
-					log.debug("Flow webclient getSelfInfo response couldn't be parsed", ex);
-					return null;
-				}
+		if (token == null) {
+			log.warn("Cannot verify null token");
+			return null;
+		}
+
+		if (cibsevenWebclientUrl == null || cibsevenWebclientUrl.isEmpty()) {
+			log.warn("Webclient URL is not configured, token verification skipped");
+			return null;
+		}
+
+		String url = cibsevenWebclientUrl + "/auth";
+		log.debug("Making request to: {}", url);
+
+		// Prepare headers
+		HttpHeaders headers = new HttpHeaders();
+		headers.add(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token);
+		// The following line fixes the autorenew token
+		headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+
+		// Configure RestTemplate with timeouts
+		RestTemplate template = new RestTemplate();
+
+		try {
+			// Make the request with proper type parameters
+			ResponseEntity<CIBUser> response = template.exchange(
+					url, 
+					HttpMethod.GET, 
+					new HttpEntity<>(null, headers),
+					CIBUser.class);
+
+			// Check for null response or body
+			if (response == null || response.getBody() == null) {
+				log.warn("Received null response or body from authentication service");
+				return null;
 			}
-		} else {
-			log.warn("Flow webclient URL is not configured, token verification skipped");
+
+			String authToken = response.getBody().getAuthToken();
+			log.debug("Token verified successfully");
+			return authToken;
+
+		} catch (HttpClientErrorException e) {
+			log.warn("Error verifying token: {}", e.getStatusCode());
+			return handleClientVerifyException(e);
+
+		} catch (ResourceAccessException e) {
+			log.error("Network error while verifying token: {}", e.getMessage(), e);
+			return null;
+
+		} catch (Exception e) {
+			log.error("Unexpected error while verifying token", e);
+			return null;
+		}
+	}
+
+	/**
+	 * Handles HttpClientErrorException by parsing the error response
+	 */
+	private String handleClientVerifyException(HttpClientErrorException e) {
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			ErrorMessage message = mapper.readValue(e.getResponseBodyAsString(), ErrorMessage.class);
+			if (message.getType().equals("TokenExpiredException") && message.getParams().length > 0) {
+				log.info("Token expired, new token provided");
+				return message.getParams()[0].toString();
+			} else {
+				log.warn("Token verification failed: {}", message.getType());
+				return null;
+			}
+		} catch (IOException ex) {
+			log.debug("Webclient response couldn't be parsed", ex);
 			return null;
 		}
 	}
