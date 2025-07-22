@@ -718,8 +718,8 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 	
 	@Override
-	public Collection<Variable> fetchProcessInstanceVariables(String processInstanceId, CIBUser user, Optional<Boolean> deserializeValue) throws SystemException {
-		return variableProvider.fetchProcessInstanceVariables(processInstanceId, user, deserializeValue);
+	public Collection<Variable> fetchProcessInstanceVariables(String processInstanceId, Map<String, Object> data, CIBUser user) throws SystemException {
+		return variableProvider.fetchProcessInstanceVariables(processInstanceId, data, user);
 	}
 	
 	@Override
@@ -728,8 +728,8 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}	
 	
 	@Override
-	public Collection<VariableHistory> fetchProcessInstanceVariablesHistory(String processInstanceId, CIBUser user, Optional<Boolean> deserializeValue) {
-		return variableProvider.fetchProcessInstanceVariablesHistory(processInstanceId, user, deserializeValue);
+	public Collection<VariableHistory> fetchProcessInstanceVariablesHistory(String processInstanceId, Map<String, Object> data, CIBUser user) throws SystemException {
+		return variableProvider.fetchProcessInstanceVariablesHistory(processInstanceId, data, user);
 	}
 	
 	@Override

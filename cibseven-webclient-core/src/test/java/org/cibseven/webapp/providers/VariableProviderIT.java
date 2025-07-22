@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.rest.model.ProcessStart;
@@ -79,7 +79,10 @@ public class VariableProviderIT extends BaseHelper {
         		.setBody(mockResponseBody)
         		.addHeader("Content-Type", "application/json"));
 
-        Collection<Variable> variables = variableProvider.fetchProcessInstanceVariables(processInstanceId, user, Optional.of(true));
+        final Map<String, Object> data = Map.of(
+            "deserializeValue", true
+        );
+        Collection<Variable> variables = variableProvider.fetchProcessInstanceVariables(processInstanceId, data, user);
 
         assertThat(variables).isNotNull();
         assertThat(variables).hasSize(1);

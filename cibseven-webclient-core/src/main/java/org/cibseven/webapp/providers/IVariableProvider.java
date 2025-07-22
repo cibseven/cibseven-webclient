@@ -36,9 +36,9 @@ public interface IVariableProvider {
 
 	public void modifyVariableByExecutionId(String executionId, Map<String, Object> data, CIBUser user) throws SystemException;
 	public void modifyVariableDataByExecutionId(String executionId, String variableName, MultipartFile file, CIBUser user) throws SystemException;
-	public Collection<Variable> fetchProcessInstanceVariables(String processInstanceId, CIBUser user, Optional<Boolean> deserializeValue) throws SystemException;
+	public Collection<Variable> fetchProcessInstanceVariables(String processInstanceId, Map<String, Object> data, CIBUser user) throws NoObjectFoundException, SystemException;
 	public ResponseEntity<byte[]> fetchVariableDataByExecutionId(String executionId, String variableName, CIBUser user) throws NoObjectFoundException, SystemException;
-	public Collection<VariableHistory> fetchProcessInstanceVariablesHistory(String processInstanceId, CIBUser user, Optional<Boolean> deserializeValue);
+	public Collection<VariableHistory> fetchProcessInstanceVariablesHistory(String processInstanceId, Map<String, Object> data, CIBUser user) throws SystemException;
 	public Collection<VariableHistory> fetchActivityVariablesHistory(String activityInstanceId, CIBUser user);
 	public Collection<VariableHistory> fetchActivityVariables(String activityInstanceId, CIBUser user);
 	public ResponseEntity<byte[]> fetchHistoryVariableDataById(String id, CIBUser user) throws NoObjectFoundException, SystemException;

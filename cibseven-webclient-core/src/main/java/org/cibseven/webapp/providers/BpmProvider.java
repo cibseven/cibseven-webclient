@@ -389,12 +389,12 @@ public interface BpmProvider {
 	 * Fetch variables from a specific process instance.
 	 * The variables found belong to the history, they have other attributes, and variables from finished process instances are also fetched.
      * @param processInstanceId filter by process instance id.
-	 * @param deserializeValue whether to deserialize the variable values.
+	 * @param data a map of parameters to filter the query.
 	 * @param user the user performing the search
      * @return Fetched variables.
      * @throws SystemException in case of an error.
      */
-	Collection<VariableHistory> fetchProcessInstanceVariablesHistory(String processInstanceId, CIBUser user, Optional<Boolean> deserializeValue) 
+	Collection<VariableHistory> fetchProcessInstanceVariablesHistory(String processInstanceId, Map<String, Object> data, CIBUser user) 
 			throws SystemException;
 
 	/**
@@ -567,12 +567,12 @@ public interface BpmProvider {
 	 /**
 	 * Fetch a variables from a process instance.
 	 * @param processInstanceId Id of the instance.
+	 * @param data a map of parameters to filter the query.
 	 * @param user User who is fetching the variables.
-	 * @param deserializeValue 
 	 * @return Data.
      * @throws SystemException in case of any other error.
 	 */ 
-	 Collection<Variable> fetchProcessInstanceVariables(String processInstanceId, CIBUser user, Optional<Boolean> deserializeValue) 
+	 Collection<Variable> fetchProcessInstanceVariables(String processInstanceId, Map<String, Object> data, CIBUser user) 
 			 throws NoObjectFoundException, SystemException;
 	
 	 /**

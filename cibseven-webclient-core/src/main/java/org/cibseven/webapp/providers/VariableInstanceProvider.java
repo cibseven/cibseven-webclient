@@ -21,6 +21,7 @@ import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.VariableInstance;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * Provider implementation for variable instance operations using Camunda REST API
@@ -30,10 +31,15 @@ public class VariableInstanceProvider extends SevenProviderBase implements IVari
 
 	@Override
 	public VariableInstance getVariableInstance(String id, Boolean deserializeValue, CIBUser user) throws SystemException, NoObjectFoundException {
-		String url = getEngineRestUrl() + "/variable-instance/" + id;
+		UriComponentsBuilder uriBuilder = UriComponentsBuilder
+				.fromUriString(getEngineRestUrl())
+				.path("/variable-instance/{id}");
+
 		if (deserializeValue != null) {
-			url += "?deserializeValue=" + deserializeValue;
+			uriBuilder.queryParam("deserializeValue", deserializeValue);
 		}
+
+		String url = uriBuilder.buildAndExpand(id).toUriString();
 		return doGet(url, VariableInstance.class, user, false).getBody();
 	}
 

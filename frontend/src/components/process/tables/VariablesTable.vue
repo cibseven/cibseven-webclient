@@ -16,8 +16,15 @@
 -->
 <template>
   <div class="d-flex flex-column h-100">
-    <div v-if="selectedInstance.state === 'ACTIVE'" class="bg-light d-flex w-100">
-      <div class="p-3">
+    <div v-if="selectedInstance.state === 'ACTIVE' || ProcessVariablesSearchBoxPlugin" class="bg-light d-flex w-100">
+      <div v-if="ProcessVariablesSearchBoxPlugin" :class="selectedInstance.state === 'ACTIVE' ? 'col-10 p-2' : 'col-12 p-2'">
+        <component :is="ProcessVariablesSearchBoxPlugin"
+          :query="filter"
+          @change-query-object="changeFilter"
+          :total-count="filteredVariables.length"
+        ></component>
+      </div>
+      <div v-if="selectedInstance.state === 'ACTIVE'" :class="ProcessVariablesSearchBoxPlugin ? 'col-2 p-3' : 'p-3'">
         <b-button class="border" size="sm" variant="light" @click="$refs.addVariableModal.show()" :title="$t('process-instance.addVariable')">
           <span class="mdi mdi-plus"></span> {{ $t('process-instance.addVariable') }}
         </b-button>
@@ -148,8 +155,8 @@ export default {
     ...mapGetters('historicVariableInstance', ['currentHistoricVariableInstance']),
     currentInstance() {
       // Use regular variable instance for active processes, historic for all others
-      return this.selectedInstance?.state === 'ACTIVE' 
-        ? this.currentVariableInstance 
+      return this.selectedInstance?.state === 'ACTIVE'
+        ? this.currentVariableInstance
         : this.currentHistoricVariableInstance
     },
     formattedJsonValue: {
@@ -166,7 +173,12 @@ export default {
       set: function(val) {
         this.variableToModify.value = this.variableToModify.type === 'Object' ? JSON.parse(val) : val
       }
-    }
+    },
+    ProcessVariablesSearchBoxPlugin: function() {
+      return this.$options.components && this.$options.components.ProcessVariablesSearchBoxPlugin
+        ? this.$options.components.ProcessVariablesSearchBoxPlugin
+        : null
+    },
   },
   methods: {
     ...mapActions('variableInstance', ['clearVariableInstance', 'getVariableInstance']),
@@ -196,6 +208,7 @@ export default {
       this.selectedVariable = variable
       this.variableToModify = JSON.parse(JSON.stringify(variable))
       // Try active, fallback to historic if error
+      // Use regular variable instance for active processes, historic for all others
       if (this.selectedInstance?.state === 'ACTIVE') {
         try {
           await this.getVariableInstance({ id: variable.id, deserializeValue: false })
@@ -267,7 +280,6 @@ export default {
       this.clearVariableInstance()
       this.clearHistoricVariableInstance()
     }
-
   }
 }
 </script>
