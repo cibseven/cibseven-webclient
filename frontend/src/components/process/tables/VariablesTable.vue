@@ -75,7 +75,7 @@
 
     <AddVariableModal ref="addVariableModal" :selected-instance="selectedInstance" @variable-added="loadSelectedInstanceVariables(); $refs.success.show()"></AddVariableModal>
     <DeleteVariableModal ref="deleteVariableModal"></DeleteVariableModal>
-    <SuccessAlert top="0" ref="success">{{ $t('alert.successOperation') }}</SuccessAlert>
+    <SuccessAlert top="0" ref="success" style="z-index: 9999">{{ $t('alert.successOperation') }}</SuccessAlert>
     <TaskPopper ref="importPopper"></TaskPopper>
 
     <b-modal ref="uploadFile" :title="$t('process-instance.upload')">
@@ -132,7 +132,7 @@
 import { BWaitingBox } from 'cib-common-components'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import TaskPopper from '@/components/common-components/TaskPopper.vue'
-import { ProcessService, VariableInstanceService } from '@/services.js'
+import { ProcessService, HistoryService } from '@/services.js'
 import DeleteVariableModal from '@/components/process/modals/DeleteVariableModal.vue'
 import AddVariableModal from '@/components/process/modals/AddVariableModal.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
@@ -204,37 +204,47 @@ export default {
       if (item.type === 'File') return true
       else return this.isFileValueDataSource(item)
     },
-    modifyVariable(variable) {
+    async modifyVariable(variable) {
       this.selectedVariable = variable
       this.variableToModify = JSON.parse(JSON.stringify(variable))
-
+      // Try active, fallback to historic if error
       // Use regular variable instance for active processes, historic for all others
       if (this.selectedInstance?.state === 'ACTIVE') {
-        this.getVariableInstance({ id: variable.id, deserializeValue: false })
+        try {
+          await this.getVariableInstance({ id: variable.id, deserializeValue: false })
+        } catch {
+          await this.getHistoricVariableInstance({ id: variable.id, deserializeValue: false })
+          this.selectedInstance.state = 'COMPLETED'
+        }
       } else {
-        this.getHistoricVariableInstance({ id: variable.id, deserializeValue: false })
+        await this.getHistoricVariableInstance({ id: variable.id, deserializeValue: false })
       }
-
       this.$refs.modifyVariable.show()
     },
-    deleteVariable: function(variable) {
+    async deleteVariable(variable) {
       this.$refs.deleteVariableModal.show({
-        ok: this.deleteVariableConfirmed,
+        ok: async () => {
+          // Try active, fallback to historic if error
+          if (this.selectedInstance.state === 'ACTIVE') {
+            try {
+              await ProcessService.deleteVariableByExecutionId(variable.executionId, variable.name)
+              this.loadSelectedInstanceVariables()
+              this.$refs.success.show()
+            } catch {
+              // Fallback to historic deletion
+              await HistoryService.deleteVariableHistoryInstance(variable.id)
+              this.selectedInstance.state = 'COMPLETED'
+              this.loadSelectedInstanceVariables()
+              this.$refs.success.show()
+            }
+          } else {
+            await HistoryService.deleteVariableHistoryInstance(variable.id)
+            this.loadSelectedInstanceVariables()
+            this.$refs.success.show()
+          }
+        },
         variable: variable
       })
-    },
-    deleteVariableConfirmed: function(variable) {
-      if (this.selectedInstance.state === 'ACTIVE') {
-        ProcessService.deleteVariableByExecutionId(variable.executionId, variable.name).then(() => {
-          this.loadSelectedInstanceVariables()
-          this.$refs.success.show()
-        })
-      } else {
-        VariableInstanceService.deleteVariableHistoryInstance(variable.id).then(() => {
-          this.loadSelectedInstanceVariables()
-          this.$refs.success.show()
-        })
-      }
     },
     updateVariable: function() {
       const original = this.variableToModify
