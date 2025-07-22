@@ -19,13 +19,10 @@ package org.cibseven.webapp.auth;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.Collection;
-import java.util.Optional;
 
 import javax.crypto.SecretKey;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.constraints.NotNull;
 
 import org.cibseven.webapp.auth.exception.AuthenticationException;
 import org.cibseven.webapp.auth.exception.TokenExpiredException;
@@ -33,11 +30,7 @@ import org.cibseven.webapp.auth.providers.JwtUserProvider;
 import org.cibseven.webapp.auth.rest.StandardLogin;
 import org.cibseven.webapp.exception.ErrorMessage;
 import org.cibseven.webapp.exception.SystemException;
-import org.cibseven.webapp.providers.BpmProvider;
-import org.cibseven.webapp.providers.SevenProvider;
-import org.cibseven.webapp.rest.model.SevenVerifyUser;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
