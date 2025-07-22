@@ -68,7 +68,7 @@
 
     <AddVariableModal ref="addVariableModal" :selected-instance="selectedInstance" @variable-added="loadSelectedInstanceVariables(); $refs.success.show()"></AddVariableModal>
     <DeleteVariableModal ref="deleteVariableModal"></DeleteVariableModal>
-    <SuccessAlert top="0" ref="success">{{ $t('alert.successOperation') }}</SuccessAlert>
+    <SuccessAlert top="0" ref="success" style="z-index: 9999">{{ $t('alert.successOperation') }}</SuccessAlert>
     <TaskPopper ref="importPopper"></TaskPopper>
 
     <b-modal ref="uploadFile" :title="$t('process-instance.upload')">
@@ -216,6 +216,7 @@ export default {
             try {
               await ProcessService.deleteVariableByExecutionId(variable.executionId, variable.name)
               this.loadSelectedInstanceVariables()
+              this.$refs.success.show()
             } catch (e) {
               // Fallback to historic deletion
               await HistoryService.deleteVariableHistoryInstance(variable.id)

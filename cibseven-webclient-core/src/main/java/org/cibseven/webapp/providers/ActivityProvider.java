@@ -76,11 +76,7 @@ public class ActivityProvider extends SevenProviderBase implements IActivityProv
 	@Override
 	public void deleteVariableHistoryInstance(String id, CIBUser user) {
 		String url = getEngineRestUrl() + "/history/variable-instance/" + id;
-		try {
-			doDelete(url, user);
-		} catch (HttpStatusCodeException e) {
-			throw wrapException(e, user);
-		}
+		doDelete(url, user);
 	}
 
 	@Override
