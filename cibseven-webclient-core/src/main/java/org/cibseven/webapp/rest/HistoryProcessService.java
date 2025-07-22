@@ -142,23 +142,27 @@ public class HistoryProcessService extends BaseService {
 	
 	@ApiResponse(responseCode = "404", description = "Process instance not found")
 	@RequestMapping(value = "/process-history/instance/{id}", method = RequestMethod.DELETE)
-	public void deleteProcessInstanceFromHistory(
+	public ResponseEntity<Void> deleteProcessInstanceFromHistory(
 			@Parameter(description = "Process instance Id") @PathVariable String id,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.HISTORIC_PROCESS_INSTANCE, PermissionConstants.DELETE_ALL);
 		bpmProvider.deleteProcessInstanceFromHistory(id, user);
+    // return 204 No Content, no body
+    return ResponseEntity.noContent().build();
 	}
 	
 	@Operation(summary = "Delete a variable in the historic process instance")
 	@ApiResponse(responseCode = "404")
 	@RequestMapping(value = "/process-history/instance/{id}/variables", method = RequestMethod.DELETE)
-	public void deleteVariableHistoryInstance(
+	public ResponseEntity<Void> deleteVariableHistoryInstance(
 			@Parameter(description = "Id of the variable") @PathVariable String id,
 			Locale loc, CIBUser user) {
 		checkCockpitRights(user);
 		checkPermission(user, SevenResourceType.HISTORIC_PROCESS_INSTANCE, PermissionConstants.DELETE_ALL);
 		bpmProvider.deleteVariableHistoryInstance(id, user);
+    // return 204 No Content, no body
+    return ResponseEntity.noContent().build();
 	}
 	
 	@Operation(

@@ -28,6 +28,7 @@ import org.cibseven.webapp.providers.PermissionConstants;
 import org.cibseven.webapp.providers.SevenProvider;
 import org.cibseven.webapp.rest.model.Decision;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -107,9 +108,11 @@ public class DecisionService extends BaseService implements InitializingBean {
 	}
 
 	@PutMapping("/key/{key}/history-ttl")
-	public void updateHistoryTTLByKey(@RequestBody Map<String, Object> data, @PathVariable String key, CIBUser user) {
+	public ResponseEntity<Void> updateHistoryTTLByKey(@RequestBody Map<String, Object> data, @PathVariable String key, CIBUser user) {
 		checkPermission(user, SevenResourceType.DECISION_DEFINITION, PermissionConstants.UPDATE_ALL);
 		bpmProvider.updateHistoryTTLByKey(data, key, user);
+    // return 204 No Content, no body
+    return ResponseEntity.noContent().build();
 	}
 
 	@GetMapping("/key/{key}/tenant/{tenant}")
@@ -166,10 +169,12 @@ public class DecisionService extends BaseService implements InitializingBean {
 	}
 
 	@PutMapping("/id/{id}/history-ttl")
-	public void updateHistoryTTLById(@PathVariable String id, 
+	public ResponseEntity<Void> updateHistoryTTLById(@PathVariable String id, 
 			@RequestBody Map<String, Object> data, CIBUser user) {
   	checkPermission(user, SevenResourceType.DECISION_DEFINITION, PermissionConstants.UPDATE_ALL);
 		bpmProvider.updateHistoryTTLById(id, data, user);
+    // return 204 No Content, no body
+    return ResponseEntity.noContent().build();
 	}
 
 	@GetMapping("/id/{id}/xml")
