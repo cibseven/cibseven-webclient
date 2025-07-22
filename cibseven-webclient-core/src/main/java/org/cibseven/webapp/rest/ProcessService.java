@@ -18,6 +18,7 @@ package org.cibseven.webapp.rest;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -567,15 +568,14 @@ public class ProcessService extends BaseService implements InitializingBean {
 			@Parameter(description = "Deserialize value") @RequestParam Optional<Boolean> deserialize,
 			Locale loc, CIBUser user) {
 		checkCockpitRights(user);
-        checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_INSTANCE_VARIABLE_ALL);
-		final Map<String, Object> data = Map.of(
-			"variableName", variableName.orElse(null),
-			"variableNameLike", variableNameLike.orElse(null),
-			"variableValues", variableValues.orElse(null),
-			"variableNamesIgnoreCase", variableNamesIgnoreCase.orElse(false),
-			"variableValuesIgnoreCase", variableValuesIgnoreCase.orElse(false),
-			"deserializeValue", deserialize.orElse(true)
-		);
+		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_INSTANCE_VARIABLE_ALL);
+		final Map<String, Object> data = new HashMap<>();
+		data.put("variableName", variableName.orElse(null));
+		data.put("variableNameLike", variableNameLike.orElse(null));
+		data.put("variableValues", variableValues.orElse(null));
+		data.put("variableNamesIgnoreCase", variableNamesIgnoreCase.orElse(false));
+		data.put("variableValuesIgnoreCase", variableValuesIgnoreCase.orElse(false));
+		data.put("deserializeValue", deserialize.orElse(true));
 		return bpmProvider.fetchProcessInstanceVariables(processInstanceId, data, user);
 	}
 	
