@@ -18,6 +18,7 @@ package org.cibseven.webapp.providers;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -291,7 +292,11 @@ public abstract class SevenProviderBase {
         objectMapper.getFactory().setStreamReadConstraints(streamReadConstraints);
 
         // Add all converters from the customRestTemplate to the new instance
-        restTemplate.setMessageConverters(customRestTemplate.getMessageConverters());
+        // Create a copy of the converters list to avoid concurrent modification issues
+		// It's important to create a defensive copy of the shared message converters.
+		// This avoids potential ConcurrentModificationExceptions if the shared CustomRestTemplate
+		// is accessed by multiple threads simultaneously.
+        restTemplate.setMessageConverters(new ArrayList<>(customRestTemplate.getMessageConverters()));
 
         // Add the custom message converter to the new RestTemplate instance
         restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter(objectMapper));
