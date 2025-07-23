@@ -372,7 +372,6 @@ public class ProcessService extends BaseService implements InitializingBean {
 			Locale loc, CIBUser user) {
 		checkCockpitRights(user);
 		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.READ_ALL);
-		bpmProvider.fetchIncidents(key, user);
     return bpmProvider.fetchIncidents(key, user);
 	}
 
