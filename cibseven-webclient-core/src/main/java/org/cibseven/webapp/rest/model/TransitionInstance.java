@@ -34,4 +34,5 @@ public class TransitionInstance {
 	private String executionId;
 	private String targetActivityId;
 	private List<String> incidentIds;
+	private List<ActivityInstanceIncident> incidents;
 }

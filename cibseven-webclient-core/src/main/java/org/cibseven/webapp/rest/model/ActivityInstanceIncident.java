@@ -16,25 +16,23 @@
  */
 package org.cibseven.webapp.rest.model;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Data;
 
+/**
+ * DTO for incident information within activity instances.
+ * Contains incident specific properties as defined by Camunda documentation.
+ */
 @Data @JsonIgnoreProperties(ignoreUnknown = true)
-public class ActivityInstance {
-	private String activityId;
-	private String activityName;
-	private String activityType;
-	private List<String> executionIds;
+public class ActivityInstanceIncident {
+	/**
+	 * The id of the incident
+	 */
 	private String id;
-	private String name;
-	private String parentActivityInstanceId;
-	private String processDefinitionId;
-	private String processInstanceId;
-	private List<ActivityInstance> childActivityInstances;
-	private List<TransitionInstance> childTransitionInstances;
-	private List<ActivityInstanceIncident> incidents;
-
+	
+	/**
+	 * The activity id in which the incident occurred
+	 */
+	private String activityId;
 }
