@@ -76,7 +76,7 @@ public class TenantService extends BaseService implements InitializingBean {
     @PutMapping("/{tenantId}")
     public ResponseEntity<Void> updateTenant(@PathVariable String tenantId, @RequestBody Tenant tenant, CIBUser user) {
         tenant.setId(tenantId);
-        bpmProvider.udpateTenant(tenant, user);
+        bpmProvider.updateTenant(tenant, user);
         // return 204 No Content, no body
         return ResponseEntity.noContent().build();
     }

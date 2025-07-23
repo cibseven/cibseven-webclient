@@ -77,7 +77,7 @@ public class TenantProvider extends SevenProviderBase implements ITenantProvider
 	}
 
 	@Override
-	public void udpateTenant(Tenant tenant, CIBUser user) {		
+	public void updateTenant(Tenant tenant, CIBUser user) {
 		String url = getEngineRestUrl() + "/tenant/" + tenant.getId();
 		try {		
 			doPut(url, tenant.json() , user);

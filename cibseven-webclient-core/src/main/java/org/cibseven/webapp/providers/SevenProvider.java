@@ -1117,8 +1117,8 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 
 	@Override
-	public void udpateTenant(Tenant tenant, CIBUser user) {
-		tenantProvider.udpateTenant(tenant, user);
+	public void updateTenant(Tenant tenant, CIBUser user) {
+		tenantProvider.updateTenant(tenant, user);
 	}
 	@Override
 	public void deleteTenant(String tenantId, CIBUser user) {

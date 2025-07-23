@@ -1085,7 +1085,7 @@ public interface BpmProvider {
 	Collection<Tenant> fetchTenants(Map<String, Object> queryParams, CIBUser user);
 	Tenant fetchTenant(String tenantId, CIBUser user);
 	void createTenant(Tenant tenant, CIBUser user);
-	void udpateTenant(Tenant tenant, CIBUser user);
+	void updateTenant(Tenant tenant, CIBUser user);
 	void deleteTenant(String tenantId, CIBUser user);
 	void addMemberToTenant(String tenantId, String userId, CIBUser user);
 	void deleteMemberFromTenant(String tenantId, String userId, CIBUser user);
