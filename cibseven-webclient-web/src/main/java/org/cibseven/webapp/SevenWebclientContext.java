@@ -23,6 +23,7 @@ import java.util.List;
 import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.User;
 import org.cibseven.webapp.providers.BpmProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -159,13 +160,18 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 	}
 
 	/**
-	 * Creates a custom RestTemplate bean with predefined configuration.
+	 * Creates a custom RestTemplate bean with configurable settings.
 	 * This can be injected into services that need to make HTTP requests.
+	 * 
+	 * The bean is configured using properties from application.yaml under
+	 * the cibseven.webclient.rest namespace.
 	 * 
 	 * @return a configured CustomRestTemplate instance
 	 */
 	@Bean
 	public CustomRestTemplate customRestTemplate() {
+		// Create a new CustomRestTemplate instance
+		// It will be configured via @PostConstruct using @Autowired dependencies
 		return new CustomRestTemplate();
 	}
 

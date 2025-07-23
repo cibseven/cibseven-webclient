@@ -66,12 +66,39 @@ cibseven:
 
     cockpit:
       url: /camunda/app/cockpit/default/
-    
+
     theme: cib
+
+    # RestTemplate configuration
+    rest:
+      # Whether the custom RestTemplate is enabled
+      enabled: true
+      # Connection timeout in milliseconds
+      connect-timeout: 5000
+      # Socket read timeout in milliseconds
+      read-timeout: 10000
+      # Maximum number of connections per route
+      max-connections-per-route: 20
+      # Maximum total connections
+      max-total-connections: 100
+      # Connection time to live in milliseconds
+      connection-time-to-live: 30000
+      # Whether to enable connection pooling
+      connection-pooling-enabled: true
+      # Whether to enable connection keep-alive
+      keep-alive-enabled: true
+      # Whether to enable connection reuse
+      connection-reuse-enabled: true
+      # Whether to enable Micrometer metrics
+      metrics-enabled: false
+      # Whether to enable request/response logging
+      request-logging-enabled: false
+      # Whether to follow redirects
+      follow-redirects: true
 
     services:
       basePath: services/v1
-  
+
     api:
       common:
         title: "CIB seven webclient API"
