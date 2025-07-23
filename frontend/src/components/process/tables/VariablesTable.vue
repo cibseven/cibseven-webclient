@@ -109,18 +109,22 @@
         <b-form-group :label="$t('process-instance.variables.value')">
           <textarea
             class="form-control"
+            :class="{ 'is-invalid': isNewValueInvalid }"
             rows="5"
             :placeholder="$t('process-instance.variables.enterValue')"
             v-model="formattedJsonValue"
             :disabled="selectedInstance.state === 'COMPLETED'">
           </textarea>
+          <div v-if="isNewValueInvalid" class="invalid-feedback">
+            {{ valueValidationError }}
+          </div>
         </b-form-group>
       </div>
       <template v-slot:modal-footer>
         <b-button v-if="selectedInstance.state === 'COMPLETED'" @click="$refs.modifyVariable.hide()">{{ $t('confirm.close') }}</b-button>
         <template v-else>
           <b-button @click="$refs.modifyVariable.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
-          <b-button @click="updateVariable" variant="primary">{{ $t('process-instance.save') }}</b-button>
+          <b-button @click="updateVariable" variant="primary" :disabled="isNewValueInvalid">{{ $t('process-instance.save') }}</b-button>
         </template>
       </template>
     </b-modal>
@@ -147,7 +151,8 @@ export default {
     return {
       filteredVariables: [],
       variableToModify: null,
-      fileObjects: ['de.cib.cibflow.api.files.FileValueDataFlowSource', 'de.cib.cibflow.api.files.FileValueDataSource']
+      fileObjects: ['de.cib.cibflow.api.files.FileValueDataFlowSource', 'de.cib.cibflow.api.files.FileValueDataSource'],
+      valueValidationError: null
     }
   },
   computed: {
@@ -171,8 +176,14 @@ export default {
         return ''
       },
       set: function(val) {
-        this.variableToModify.value = this.variableToModify.type === 'Object' ? JSON.parse(val) : val
+        this.validateJson(val)
+        if (!this.valueValidationError) {
+          this.variableToModify.value = this.variableToModify.type === 'Object' ? JSON.parse(val) : val
+        }
       }
+    },
+    isNewValueInvalid() {
+      return this.valueValidationError !== null
     },
     ProcessVariablesSearchBoxPlugin: function() {
       return this.$options.components && this.$options.components.ProcessVariablesSearchBoxPlugin
@@ -207,6 +218,7 @@ export default {
     async modifyVariable(variable) {
       this.selectedVariable = variable
       this.variableToModify = JSON.parse(JSON.stringify(variable))
+      this.valueValidationError = null // Reset validation error
       // Try active, fallback to historic if error
       // Use regular variable instance for active processes, historic for all others
       if (this.selectedInstance?.state === 'ACTIVE') {
@@ -252,12 +264,8 @@ export default {
       // Clone the original value
       let value = original.value
       if (original.type === 'Json') {
-        try {
-          value = JSON.stringify(JSON.parse(value))
-        } catch (e) {
-          console.error('Invalid JSON input:', e)
-          return
-        }
+        // JSON validation already done in setter, no need for try-catch here
+        value = JSON.stringify(JSON.parse(value))
       } else if (original.type === 'Object') {
         if (typeof value !== 'string') {
           value = JSON.stringify(value)
@@ -276,9 +284,28 @@ export default {
         this.$refs.modifyVariable.hide()
       })
     },
+    validateJson(value) {
+      if (!this.variableToModify || (!['Json', 'Object'].includes(this.variableToModify.type))) {
+        this.valueValidationError = null
+        return
+      }
+
+      if (!value || value.trim() === '') {
+        this.valueValidationError = null
+        return
+      }
+
+      try {
+        JSON.parse(value)
+        this.valueValidationError = null
+      } catch (e) {
+        this.valueValidationError = e.message
+      }
+    },
     clearVariableInstances() {
       this.clearVariableInstance()
       this.clearHistoricVariableInstance()
+      this.valueValidationError = null // Reset validation error when closing modal
     }
   }
 }
