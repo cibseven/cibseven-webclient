@@ -167,6 +167,10 @@ export default {
     formattedJsonValue: {
       get: function() {
         if (this.variableToModify) {
+          if (this.variableToModify.rawValue) {
+            return this.variableToModify.rawValue
+          }
+
           if (this.variableToModify.type === 'Json') {
             return JSON.stringify(JSON.parse(this.variableToModify.value), null, 2)
           } else if (this.variableToModify.type === 'Object') {
@@ -178,7 +182,11 @@ export default {
       set: function(val) {
         this.validateJson(val)
         if (!this.valueValidationError) {
+          this.variableToModify.rawValue = undefined
           this.variableToModify.value = this.variableToModify.type === 'Object' ? JSON.parse(val) : val
+        }
+        else {
+          this.variableToModify.rawValue = val
         }
       }
     },
