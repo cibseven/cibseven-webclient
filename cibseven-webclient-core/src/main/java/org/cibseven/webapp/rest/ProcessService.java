@@ -37,6 +37,7 @@ import org.cibseven.webapp.rest.model.ActivityInstance;
 import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.DeploymentResource;
 import org.cibseven.webapp.rest.model.EventSubscription;
+import org.cibseven.webapp.rest.model.Incident;
 import org.cibseven.webapp.rest.model.Message;
 import org.cibseven.webapp.rest.model.Process;
 import org.cibseven.webapp.rest.model.ProcessDiagram;
@@ -366,14 +367,13 @@ public class ProcessService extends BaseService implements InitializingBean {
 			description = "<strong>Return: void")
 	@ApiResponse(responseCode = "404", description = "Process not found")
 	@RequestMapping(value = "/{key}/incidents", method = RequestMethod.GET)
-	public ResponseEntity<Void> fetchIncidents(
+	public Collection<Incident> fetchIncidents(
 			@Parameter(description = "Process key") @PathVariable String key,
 			Locale loc, CIBUser user) {
 		checkCockpitRights(user);
 		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.READ_ALL);
 		bpmProvider.fetchIncidents(key, user);
-    // return 204 No Content, no body
-    return ResponseEntity.noContent().build();
+    return bpmProvider.fetchIncidents(key, user);
 	}
 
 	@Operation(
