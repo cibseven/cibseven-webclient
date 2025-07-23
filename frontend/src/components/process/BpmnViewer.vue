@@ -112,6 +112,29 @@ function getActivitiesToMark(treeObj) {
   return result
 }
 
+function getActivitiesWithIncidentsFromActivityInstance(activityInstance) {
+  if (!activityInstance) return {}
+
+  // Helper to extract incidents from an array of instances
+  const extractIncidents = arr =>
+    arr ? arr.flatMap(inst => inst.incidents || []) : []
+
+  // Gather all incidents from current, children, and transitions
+  const allIncidents = [
+    ...(activityInstance.incidents || []),
+    ...extractIncidents(activityInstance.childActivityInstances),
+    ...extractIncidents(activityInstance.childTransitionInstances)
+  ]
+
+  // Count incidents per activityId
+  return allIncidents.reduce((acc, incident) => {
+    if (incident.activityId) {
+      acc[incident.activityId] = (acc[incident.activityId] || 0) + 1
+    }
+    return acc
+  }, {})
+}
+
 export default {
   name: 'BpmnViewer',
   emits: ['task-selected', 'child-activity', 'overlay-click'],
@@ -297,10 +320,19 @@ export default {
       const elementRegistry = this.viewer.get('elementRegistry')
       this.cleanDiagramState()
       if (this.activityInstance != null) {
+        // Mark running activities
         getActivitiesToMark(this.activityInstance).forEach(activityId => {
           const htmlTemplate = '<div><i class="mdi mdi-arrow-right-drop-circle mdi-24px text-success"/></div>'
-          this.setHtmlOnDiagram(activityId, htmlTemplate, { top: -5, right: 25 })
+          this.setHtmlOnDiagram(activityId, htmlTemplate, { top: 5, right: 25 })
           this.runningActivities.push(activityId)
+        })
+        
+        // Mark activities with incidents from activity instance structure
+        const activitiesWithIncidents = getActivitiesWithIncidentsFromActivityInstance(this.activityInstance)
+        Object.keys(activitiesWithIncidents).forEach(activityId => {
+          const incidentCount = activitiesWithIncidents[activityId]
+          const incidentsHtml = this.getBadgeOverlayHtml(incidentCount, 'bg-danger', 'openIncidents', activityId)
+          this.setHtmlOnDiagram(activityId, incidentsHtml, { top: -7, right: 15 })
         })
       }
       if (this.activityInstanceHistory != null) {
