@@ -24,7 +24,6 @@
   >
     <a
       :href="getTabUrl(tab)"
-      target="_blank"
       @click.prevent="handleTabClick(tab)"
       class="nav-link py-2 border-0 rounded-0"
       :class="{
