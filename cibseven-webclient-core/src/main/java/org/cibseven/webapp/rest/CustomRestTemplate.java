@@ -70,6 +70,9 @@ public class CustomRestTemplate extends RestTemplate {
     private List<ClientHttpRequestInterceptor> interceptors = new ArrayList<>();
     private List<HttpMessageConverter<?>> customConverters = new ArrayList<>();
 
+    // Store a reference to the connection manager for later use
+    private PoolingHttpClientConnectionManager connectionManager;
+
     /**
      * Default constructor that sets up a RestTemplate with default configuration.
      * Configuration will be applied during @PostConstruct.
@@ -245,13 +248,14 @@ public class CustomRestTemplate extends RestTemplate {
      * @return a configured PoolingHttpClientConnectionManager
      */
     private PoolingHttpClientConnectionManager createConnectionManager() {
-        PoolingHttpClientConnectionManager connectionManager = PoolingHttpClientConnectionManagerBuilder.create()
+        // Create the connection manager and store it in the class field for later use
+        this.connectionManager = PoolingHttpClientConnectionManagerBuilder.create()
                 .setMaxConnPerRoute(config.getMaxConnectionsPerRoute())
                 .setMaxConnTotal(config.getMaxTotalConnections())
                 .setConnectionTimeToLive(TimeValue.of(config.getConnectionTimeToLive(), TimeUnit.MILLISECONDS))
                 .build();
 
-        return connectionManager;
+        return this.connectionManager;
     }
 
     /**
@@ -373,30 +377,17 @@ public class CustomRestTemplate extends RestTemplate {
      */
     public String getConnectionPoolStats() {
         try {
-            if (getRequestFactory() instanceof HttpComponentsClientHttpRequestFactory) {
-                HttpComponentsClientHttpRequestFactory factory = 
-                        (HttpComponentsClientHttpRequestFactory) getRequestFactory();
-
-                // Get the connection manager from the HttpClient
-                // This assumes the HttpClient was created with a PoolingHttpClientConnectionManager
-                if (factory.getHttpClient() instanceof CloseableHttpClient) {
-                    // Use reflection to access the connection manager
-                    java.lang.reflect.Field connectionManagerField = 
-                            factory.getHttpClient().getClass().getDeclaredField("connectionManager");
-                    connectionManagerField.setAccessible(true);
-                    PoolingHttpClientConnectionManager manager = 
-                            (PoolingHttpClientConnectionManager) connectionManagerField.get(factory.getHttpClient());
-
-                    // Return the connection pool statistics
-                    return String.format("MaxTotal: %d, DefaultMaxPerRoute: %d, Available: %d, Leased: %d, Pending: %d",
-                            manager.getMaxTotal(),
-                            manager.getDefaultMaxPerRoute(),
-                            manager.getTotalStats().getAvailable(),
-                            manager.getTotalStats().getLeased(),
-                            manager.getTotalStats().getPending());
-                }
+            // Use the stored connection manager reference instead of trying to access it through reflection
+            if (this.connectionManager != null) {
+                // Return the connection pool statistics
+                return String.format("MaxTotal: %d, DefaultMaxPerRoute: %d, Available: %d, Leased: %d, Pending: %d",
+                        connectionManager.getMaxTotal(),
+                        connectionManager.getDefaultMaxPerRoute(),
+                        connectionManager.getTotalStats().getAvailable(),
+                        connectionManager.getTotalStats().getLeased(),
+                        connectionManager.getTotalStats().getPending());
             }
-            return "Connection pool statistics not available";
+            return "Connection pool statistics not available (connection manager not initialized)";
         } catch (Exception e) {
             log.warn("Error getting connection pool statistics", e);
             return "Error getting connection pool statistics: " + e.getMessage();
