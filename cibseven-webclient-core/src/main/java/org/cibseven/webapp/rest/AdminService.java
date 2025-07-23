@@ -111,8 +111,8 @@ public class AdminService extends BaseService implements InitializingBean {
 			Locale loc, CIBUser flowUser) {
 		checkPermission(flowUser, SevenResourceType.USER, PermissionConstants.CREATE_ALL);
 		bpmProvider.createUser(user, flowUser);
-		// return 204 No Content, no body
-		return ResponseEntity.noContent().build();
+    // return 204 No Content, no body
+    return ResponseEntity.noContent().build();
 	}
 
 	/**
@@ -137,8 +137,8 @@ public class AdminService extends BaseService implements InitializingBean {
 			Locale loc, CIBUser flowUser) {
 		checkPermission(flowUser, SevenResourceType.USER, PermissionConstants.UPDATE_ALL);
 		bpmProvider.updateUserProfile(userId, user, flowUser);
-		// return 204 No Content, no body
-		return ResponseEntity.noContent().build();
+    // return 204 No Content, no body
+    return ResponseEntity.noContent().build();
 	}
 	
 	/**
@@ -161,8 +161,8 @@ public class AdminService extends BaseService implements InitializingBean {
 			Locale loc, CIBUser flowUser) {
 		checkPermission(flowUser, SevenResourceType.GROUP, PermissionConstants.DELETE_ALL);
 		bpmProvider.addMemberToGroup(groupId, userId, flowUser);
-		// return 204 No Content, no body
-		return ResponseEntity.noContent().build();
+    // return 204 No Content, no body
+    return ResponseEntity.noContent().build();
 	}
 	
 	/**
@@ -186,8 +186,8 @@ public class AdminService extends BaseService implements InitializingBean {
 			Locale loc, CIBUser flowUser) {
 		checkPermission(flowUser, SevenResourceType.GROUP, PermissionConstants.DELETE_ALL);
 		bpmProvider.deleteMemberFromGroup(groupId, userId, flowUser);
-		// return 204 No Content, no body
-		return ResponseEntity.noContent().build();
+    // return 204 No Content, no body
+    return ResponseEntity.noContent().build();
 	}
 	
 	
@@ -214,8 +214,8 @@ public class AdminService extends BaseService implements InitializingBean {
 			Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.USER, PermissionConstants.UPDATE_ALL);
 		bpmProvider.updateUserCredentials(userId, data, user);
-		// return 204 No Content, no body
-		return ResponseEntity.noContent().build();
+    // return 204 No Content, no body
+    return ResponseEntity.noContent().build();
 	}
 
 	/**
@@ -236,8 +236,8 @@ public class AdminService extends BaseService implements InitializingBean {
 			Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.USER, PermissionConstants.DELETE_ALL);
 		bpmProvider.deleteUser(userId, user);
-		// return 204 No Content, no body
-		return ResponseEntity.noContent().build();
+    // return 204 No Content, no body
+    return ResponseEntity.noContent().build();
 	}
 
 	@Operation(
@@ -314,8 +314,8 @@ public class AdminService extends BaseService implements InitializingBean {
 			Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.GROUP, PermissionConstants.CREATE_ALL);
 		bpmProvider.createGroup(group, user);
-		// return 204 No Content, no body
-		return ResponseEntity.noContent().build();
+    // return 204 No Content, no body
+    return ResponseEntity.noContent().build();
 	}
 
 	/**
@@ -340,8 +340,8 @@ public class AdminService extends BaseService implements InitializingBean {
 			Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.GROUP, PermissionConstants.UPDATE_ALL);
 		bpmProvider.updateGroup(groupId, group, user);
-		// return 204 No Content, no body
-		return ResponseEntity.noContent().build();
+    // return 204 No Content, no body
+    return ResponseEntity.noContent().build();
 	}
 
 	/**
@@ -362,8 +362,8 @@ public class AdminService extends BaseService implements InitializingBean {
 			Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.GROUP, PermissionConstants.DELETE_ALL);
 		bpmProvider.deleteGroup(groupId, user);
-		// return 204 No Content, no body
-		return ResponseEntity.noContent().build();
+    // return 204 No Content, no body
+    return ResponseEntity.noContent().build();
 	}
 	
 	@Operation(
@@ -442,8 +442,8 @@ public class AdminService extends BaseService implements InitializingBean {
 			Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.AUTHORIZATION, PermissionConstants.UPDATE_ALL);
 		bpmProvider.updateAuthorization(authorizationId, data, user);
-		// return 204 No Content, no body
-		return ResponseEntity.noContent().build();
+    // return 204 No Content, no body
+    return ResponseEntity.noContent().build();
 	}
 
 	/**
@@ -464,8 +464,8 @@ public class AdminService extends BaseService implements InitializingBean {
 			Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.AUTHORIZATION, PermissionConstants.DELETE_ALL);
 		bpmProvider.deleteAuthorization(authorizationId, user);
-		// return 204 No Content, no body
-		return ResponseEntity.noContent().build();
+    // return 204 No Content, no body
+    return ResponseEntity.noContent().build();
 	}
 
 }

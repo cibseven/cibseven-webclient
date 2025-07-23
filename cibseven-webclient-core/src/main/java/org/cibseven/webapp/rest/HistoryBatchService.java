@@ -29,6 +29,7 @@ import org.cibseven.webapp.providers.SevenProvider;
 import org.cibseven.webapp.rest.model.HistoryBatch;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.Parameter;
@@ -64,11 +65,13 @@ public class HistoryBatchService extends BaseService implements InitializingBean
    	}
     
     @DeleteMapping("/{id}")
-   	public void deleteHistoricBatch(
+   	public ResponseEntity<Void> deleteHistoricBatch(
    			@Parameter(description = "Batch id") @PathVariable String id, HttpServletRequest rq) {
    		CIBUser user = checkAuthorization(rq, true);
    		checkPermission(user, SevenResourceType.BATCH, PermissionConstants.DELETE_HISTORY_ALL);
    		bpmProvider.deleteHistoricBatch(id, user);
+      // return 204 No Content, no body
+      return ResponseEntity.noContent().build();
    	}
 
 }

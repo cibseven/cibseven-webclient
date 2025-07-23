@@ -31,6 +31,7 @@ import org.cibseven.webapp.providers.SevenProvider;
 import org.cibseven.webapp.rest.model.Incident;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -107,7 +108,7 @@ public class IncidentService extends BaseService implements InitializingBean {
 	@Operation(summary = "Increment job retries by job id", description = "<strong>Return: void")
 	@ApiResponse(responseCode = "404", description = "Job not found")
 	@RequestMapping(value = "/job/{jobId}/retries", method = RequestMethod.PUT)
-	public void retryJobByID(
+	public ResponseEntity<Void> retryJobByID(
 			@Parameter(description = "Job Id") @PathVariable String jobId,
 			@RequestBody Map<String, Object> data,
 			Locale loc, HttpServletRequest rq) {
@@ -115,29 +116,35 @@ public class IncidentService extends BaseService implements InitializingBean {
 		// checkPermission(user, SevenResourceType.JOB_DEFINITION,
 		// PermissionConstants.UPDATE_ALL);
 		sevenProvider.retryJobById(jobId, data, user);
+    // return 204 No Content, no body
+    return ResponseEntity.noContent().build();
 	}
 
 	@Operation(summary = "Retry external task by setting retries", description = "<strong>Return: void")
 	@ApiResponse(responseCode = "404", description = "External task not found")
 	@RequestMapping(value = "/external-task/{externalTaskId}/retries", method = RequestMethod.PUT)
-	public void retryExternalTask(
+	public ResponseEntity<Void> retryExternalTask(
 			@Parameter(description = "External Task Id") @PathVariable String externalTaskId,
 			@RequestBody Map<String, Object> data,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.UPDATE_ALL);
 		sevenProvider.retryExternalTask(externalTaskId, data, user);
+    // return 204 No Content, no body
+    return ResponseEntity.noContent().build();
 	}
 
 	@Operation(summary = "Set annotation for incident by id", description = "<strong>Return: void")
 	@ApiResponse(responseCode = "404", description = "Incident not found")
 	@PutMapping("/{incidentId}/annotation")
-	public void setIncidentAnnotation(
+	public ResponseEntity<Void> setIncidentAnnotation(
 			@Parameter(description = "Incident Id") @PathVariable String incidentId,
 			@RequestBody Map<String, Object> data,
 			Locale locale, HttpServletRequest request) {
 		CIBUser user = checkAuthorization(request, true);
 		bpmProvider.setIncidentAnnotation(incidentId, data, user);
+    // return 204 No Content, no body
+    return ResponseEntity.noContent().build();
 	}
 
 }
