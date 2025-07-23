@@ -365,4 +365,41 @@ public class CustomRestTemplate extends RestTemplate {
             log.warn("Error destroying HttpComponentsClientHttpRequestFactory", e);
         }
     }
+
+    /**
+     * Get the connection pool statistics.
+     * 
+     * @return a string representation of the connection pool statistics
+     */
+    public String getConnectionPoolStats() {
+        try {
+            if (getRequestFactory() instanceof HttpComponentsClientHttpRequestFactory) {
+                HttpComponentsClientHttpRequestFactory factory = 
+                        (HttpComponentsClientHttpRequestFactory) getRequestFactory();
+
+                // Get the connection manager from the HttpClient
+                // This assumes the HttpClient was created with a PoolingHttpClientConnectionManager
+                if (factory.getHttpClient() instanceof CloseableHttpClient) {
+                    // Use reflection to access the connection manager
+                    java.lang.reflect.Field connectionManagerField = 
+                            factory.getHttpClient().getClass().getDeclaredField("connectionManager");
+                    connectionManagerField.setAccessible(true);
+                    PoolingHttpClientConnectionManager manager = 
+                            (PoolingHttpClientConnectionManager) connectionManagerField.get(factory.getHttpClient());
+
+                    // Return the connection pool statistics
+                    return String.format("MaxTotal: %d, DefaultMaxPerRoute: %d, Available: %d, Leased: %d, Pending: %d",
+                            manager.getMaxTotal(),
+                            manager.getDefaultMaxPerRoute(),
+                            manager.getTotalStats().getAvailable(),
+                            manager.getTotalStats().getLeased(),
+                            manager.getTotalStats().getPending());
+                }
+            }
+            return "Connection pool statistics not available";
+        } catch (Exception e) {
+            log.warn("Error getting connection pool statistics", e);
+            return "Error getting connection pool statistics: " + e.getMessage();
+        }
+    }
 }
