@@ -43,16 +43,13 @@ export default {
   props: { tabs: Array, modelValue: String },
   methods: {
     getTabUrl(tab) {
-      // Use vue-router to generate a proper URL for the tab, preserving current route and query params
-      const route = this.$route
-      // Clone current query params and update the tab (or use a custom param if needed)
-      const query = { ...route.query, tab: tab.id }
-      // Use router.resolve to get the full URL
-      const resolved = this.$router.resolve({ name: route.name, params: route.params, query })
+      const resolved = this.$router.resolve({
+        ...this.$route,
+        query: { ...this.$route.query, tab: tab.id }
+      })
       return resolved.href
     },
     handleTabClick(tab) {
-      // Only emit if not a right-click (context menu)
       this.$emit('update:modelValue', tab.id)
     }
   }
