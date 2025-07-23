@@ -174,17 +174,6 @@ export default {
         this.$emit('task-selected', null)
       }, 100)
     },
-    activityInstance: {
-      handler() {
-        if (this.viewer) {
-          setTimeout(() => {
-            this.drawDiagramState()
-          }, 100)
-        }
-      },
-      immediate: false,
-      deep: true
-    },
     jobDefinitions: {
       handler() {
         if (this.viewer) {
