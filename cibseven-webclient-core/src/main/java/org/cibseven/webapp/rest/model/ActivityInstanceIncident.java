@@ -22,7 +22,6 @@ import lombok.Data;
 
 /**
  * DTO for incident information within activity instances.
- * Contains incident specific properties as defined by Camunda documentation.
  */
 @Data @JsonIgnoreProperties(ignoreUnknown = true)
 public class ActivityInstanceIncident {
