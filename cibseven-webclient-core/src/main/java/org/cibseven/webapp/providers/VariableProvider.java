@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.io.IOUtils;
 import org.cibseven.webapp.NamedByteArrayDataSource;
 import org.cibseven.webapp.auth.CIBUser;
@@ -252,14 +253,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		    filename = variable.getFilename();
 		    mimeType = variable.getMimeType();
 
-			RestTemplate restTemplate = new RestTemplate();
-		    restTemplate.getMessageConverters().add(new ByteArrayHttpMessageConverter());
-		    HttpHeaders headers = new HttpHeaders();
-		    headers.setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM));
-			UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
-			if (user != null) headers.add("Authorization", user.getAuthToken());
-		    HttpEntity<String> entity = new HttpEntity<String>(headers);
-		    ResponseEntity<byte[]> response = restTemplate.exchange(builder.build().toUriString(), HttpMethod.GET, entity, byte[].class, "1");
+			ResponseEntity<byte[]> response = doGetWithHeader(url, byte[].class, user, true, MediaType.APPLICATION_OCTET_STREAM);
 		    data = response.getBody();
 
 		    return new NamedByteArrayDataSource(filename, mimeType, data);
@@ -296,14 +290,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 				}
 			}
 
-			RestTemplate restTemplate = new RestTemplate();
-		    restTemplate.getMessageConverters().add(new ByteArrayHttpMessageConverter());
-		    HttpHeaders headers = new HttpHeaders();
-		    headers.setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM));
-			UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
-			if (user != null) headers.add("Authorization", user.getAuthToken());
-		    HttpEntity<String> entity = new HttpEntity<String>(headers);
-		    ResponseEntity<byte[]> response = restTemplate.exchange(builder.build().toUriString(), HttpMethod.GET, entity, byte[].class, "1");
+			ResponseEntity<byte[]> response = doGetWithHeader(url, byte[].class, user, true, MediaType.APPLICATION_OCTET_STREAM);
 		    data = response.getBody();
 			return generateFileResponse(data); //ResponseEntity<>(data, HttpStatus.OK);
 		} catch (HttpStatusCodeException e) {
@@ -311,7 +298,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		} catch (IOException e) {
 			throw new SystemException(e);
 		}
-	}	
+	}
 
 	// TODO: Split it
 	@Override
@@ -358,15 +345,12 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 			}
 
 			modifications.set("variables", variables);
-			HttpHeaders headers = new HttpHeaders();
-			UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
-			if (user != null) headers.add("Authorization", user.getAuthToken());
-			headers.setContentType(MediaType.APPLICATION_JSON);	
-
-			HttpEntity<Object> request;
-			request = new HttpEntity<>(modifications, headers);
-			RestTemplate rest = new RestTemplate();
-			return rest.exchange(builder.build().toUri(), HttpMethod.POST, request, ProcessStart.class).getBody();
+			try {
+				String jsonBody = mapper.writeValueAsString(modifications);
+				return doPost(url, jsonBody, ProcessStart.class, user).getBody();
+			} catch (JsonProcessingException e) {
+				throw new SystemException(e);
+			}
 		} catch (HttpStatusCodeException e) {
 			SystemException se = new SystemException(e.getResponseBodyAsString() + "[VARIABLES] " + variables, e);
 			log.info("Exception in submitStartFormVariables(...):", se);
@@ -399,15 +383,10 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		modifications.set("modifications", variablesF);
 
 		try {
-			HttpHeaders headers = new HttpHeaders();
-			UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
-			if (user != null) headers.add("Authorization", user.getAuthToken());
-			headers.setContentType(MediaType.APPLICATION_JSON);	
-
-			HttpEntity<Object> request;
-			request = new HttpEntity<>(modifications, headers);
-			RestTemplate rest = new RestTemplate();
-			rest.exchange(builder.build().toUri(), HttpMethod.POST, request, String.class);
+			String jsonBody = mapper.writeValueAsString(modifications);
+			doPost(url, jsonBody, String.class, user);
+		} catch (JsonProcessingException e) {
+			throw new SystemException(e);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
 		}
@@ -472,15 +451,10 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		modifications.set("modifications", variables);
 
 		try {
-			HttpHeaders headers = new HttpHeaders();
-			UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
-			if (user != null) headers.add("Authorization", user.getAuthToken());
-			headers.setContentType(MediaType.APPLICATION_JSON);	
-
-			HttpEntity<Object> request;
-			request = new HttpEntity<>(modifications, headers);
-			RestTemplate rest = new RestTemplate();
-			rest.exchange(builder.build().toUri(), HttpMethod.POST, request, String.class);
+			String jsonBody = mapper.writeValueAsString(modifications);
+			doPost(url, jsonBody, String.class, user);
+		} catch (JsonProcessingException e) {
+			throw new SystemException(e);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
 		}
