@@ -54,21 +54,26 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.StreamReadConstraints;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.cibseven.webapp.rest.CustomRestTemplate;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public abstract class SevenProviderBase {
-  
+
   protected static final String USER_ID_HEADER = "Context-User-ID";
-	
-	@Value("${cibseven.webclient.custom.spring.jackson.parser.max-size:20000000}") int jacksonParserMaxSize;
+
+ @Value("${cibseven.webclient.custom.spring.jackson.parser.max-size:20000000}") int jacksonParserMaxSize;
 	@Value("${cibseven.webclient.engineRest.url:./}") protected String cibsevenUrl;
 	@Value("${cibseven.webclient.engineRest.path:/engine-rest}") protected String engineRestPath;
-	
+
+	@Autowired
+	protected CustomRestTemplate customRestTemplate;
+
 	/**
 	 * Constructs the full engine REST base URL by combining the base URL with the configurable path
 	 * @return the complete engine REST URL
@@ -78,7 +83,7 @@ public abstract class SevenProviderBase {
 		String restPath = engineRestPath.startsWith("/") ? engineRestPath : "/" + engineRestPath;
 		return baseUrl + restPath;
 	}
-	
+
 	/**
 	 * Creates new Http headers and adds Authorization User token
 	 * @param user user with authorization to add if null No authorization is added
@@ -92,14 +97,14 @@ public abstract class SevenProviderBase {
 		}
 		return headers;
 	}
-	
+
 	protected <T> ResponseEntity<T> doGet(String url, Class<T> neededClass, CIBUser user, Boolean encoded) {
 		try {
 			HttpHeaders headers = createAuthHeader(user);
 			UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
-			
+
 			RestTemplate rest = createPatchRestTemplate();
-			
+
 			return rest.exchange(builder.build(encoded).toUri(), HttpMethod.GET, new HttpEntity<>(headers),
 					neededClass);
 		} catch (HttpStatusCodeException e) {
@@ -113,37 +118,35 @@ public abstract class SevenProviderBase {
 			HttpHeaders headers = createAuthHeader(user);
 	        headers.setAccept(Collections.singletonList(mediaType));
 			UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
-			
-			RestTemplate rest = new RestTemplate();
-			
-			return rest.exchange(builder.build(encoded).toUri(), HttpMethod.GET, new HttpEntity<>(headers),
+
+			return customRestTemplate.exchange(builder.build(encoded).toUri(), HttpMethod.GET, new HttpEntity<>(headers),
 					neededClass);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
 		}        
 	}
-	
+
 	// TODO: Replace this get method from the one above - Main difference is that
 	// this method handle special characters.
 	protected <T> ResponseEntity<T> doGet(UriComponentsBuilder builder, Class<T> neededClass, CIBUser user) {
 		try {
 			HttpHeaders headers = createAuthHeader(user);
-			
+
 			RestTemplate rest = createPatchRestTemplate();
-			
+
 			return rest.exchange(builder.build(true).toUri(), HttpMethod.GET, new HttpEntity<>(headers), neededClass);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
 		}
 	}
-	
+
 	protected <T> ResponseEntity<T> doGet(String url, ParameterizedTypeReference<T> neededClass, CIBUser user) {
 		try {
 			HttpHeaders headers = createAuthHeader(user);
 			UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
 
 			RestTemplate rest = createPatchRestTemplate();
-			
+
 			return rest.exchange(builder.build().toUri(), HttpMethod.GET, new HttpEntity<>(headers), neededClass);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
@@ -154,29 +157,25 @@ public abstract class SevenProviderBase {
 		HttpHeaders headers = createAuthHeader(user);
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
-		
+
 		HttpEntity<Object> request = new HttpEntity<>(body, headers);
-		
-		RestTemplate rest = new RestTemplate();
-		
+
 		try {
-			return rest.exchange(builder.build().toUri(), HttpMethod.POST, request, neededClass);
+			return customRestTemplate.exchange(builder.build().toUri(), HttpMethod.POST, request, neededClass);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
 		}
 	}
-	
+
 	protected <T> ResponseEntity<T> doPostParameterized(String url, Map<String, Object> body, ParameterizedTypeReference<T> neededClass, CIBUser user) {
 		HttpHeaders headers = createAuthHeader(user);
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
-		
+
 		HttpEntity<Object> request = new HttpEntity<>(body, headers);
-		
-		RestTemplate rest = new RestTemplate();
-		
+
 		try {
-			return rest.exchange(builder.build().toUri(), HttpMethod.POST, request, neededClass);
+			return customRestTemplate.exchange(builder.build().toUri(), HttpMethod.POST, request, neededClass);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
 		}
@@ -188,9 +187,8 @@ public abstract class SevenProviderBase {
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
 
 		HttpEntity<Object> request = new HttpEntity<>(body, headers);
-		RestTemplate rest = new RestTemplate();
 		try {
-			ResponseEntity<T> response = rest.exchange(builder.build().toUri(), HttpMethod.POST, request, neededClass);
+			ResponseEntity<T> response = customRestTemplate.exchange(builder.build().toUri(), HttpMethod.POST, request, neededClass);
 			return response;
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
@@ -202,9 +200,8 @@ public abstract class SevenProviderBase {
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
 		HttpEntity<Object> request = new HttpEntity<>(body, headers);
-		RestTemplate rest = new RestTemplate();
 		try {
-			rest.put(builder.build().toUri(), request);
+			customRestTemplate.put(builder.build().toUri(), request);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
 		}
@@ -215,9 +212,8 @@ public abstract class SevenProviderBase {
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
 		HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
-		RestTemplate rest = new RestTemplate();
 		try {
-			rest.put(builder.build().toUri(), request);
+			customRestTemplate.put(builder.build().toUri(), request);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
 		}
@@ -227,24 +223,23 @@ public abstract class SevenProviderBase {
 		HttpHeaders headers = createAuthHeader(user);
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
 		HttpEntity<String> request = new HttpEntity<>("", headers);
-		RestTemplate rest = new RestTemplate();
 		try {
 			// rest.delete doesn't work
-			rest.exchange(builder.build().toUri(), HttpMethod.DELETE, request, String.class);
+			customRestTemplate.exchange(builder.build().toUri(), HttpMethod.DELETE, request, String.class);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
 		}
 	}
-	
+
 	protected <T> ResponseEntity<T> doPatch(String url, Map<String, Object> body, Class<T> neededClass, CIBUser user) {
 		HttpHeaders headers = createAuthHeader(user);
 		headers.setContentType(MediaType.APPLICATION_JSON);
 
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
 		HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
-		RestTemplate rest = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
 		try {
-			return rest.exchange(builder.build().toUri(), HttpMethod.PATCH, request, neededClass);
+			// Using customRestTemplate which should be configured to support PATCH
+			return customRestTemplate.exchange(builder.build().toUri(), HttpMethod.PATCH, request, neededClass);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
 		}
@@ -256,36 +251,60 @@ public abstract class SevenProviderBase {
 
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
 		HttpEntity<String> request = new HttpEntity<>(body, headers);
-		RestTemplate rest = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
 		try {
-			return rest.exchange(builder.build().toUri(), HttpMethod.PATCH, request, neededClass);
+			// Using customRestTemplate which should be configured to support PATCH
+			return customRestTemplate.exchange(builder.build().toUri(), HttpMethod.PATCH, request, neededClass);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
 		}
 	}
 
+	/**
+	 * Creates a new RestTemplate instance configured for PATCH operations.
+	 * 
+	 * IMPORTANT: This method creates a new RestTemplate instance instead of modifying the shared customRestTemplate.
+	 * Modifying the shared RestTemplate would cause ConcurrentModificationException in multi-threaded environments
+	 * for the following reasons:
+	 * 
+	 * 1. RestTemplate's message converters list is not thread-safe for modifications
+	 * 2. When multiple threads simultaneously call methods that use RestTemplate (like doGet),
+	 *    they can attempt to modify the message converters list at the same time
+	 * 3. This causes java.util.ConcurrentModificationException in ArrayList$ArrayListSpliterator.forEachRemaining
+	 *    when the RestTemplate tries to iterate through its converters while another thread is modifying them
+	 * 
+	 * By creating a new RestTemplate instance for each call, we avoid shared state modification
+	 * while still benefiting from the configuration of the customRestTemplate by copying its converters.
+	 * 
+	 * @return A newly configured RestTemplate instance
+	 */
 	protected RestTemplate createPatchRestTemplate() {
+        // Create a new RestTemplate instance instead of modifying the shared one
+        RestTemplate restTemplate = new RestTemplate();
+
+        // Configure the ObjectMapper for this specific use case
         ObjectMapper objectMapper = new ObjectMapper();
-        
+
         StreamReadConstraints streamReadConstraints = StreamReadConstraints
                 .builder()
                 .maxStringLength(jacksonParserMaxSize)
                 .build();
         objectMapper.getFactory().setStreamReadConstraints(streamReadConstraints);
-    
-		RestTemplate rest = new RestTemplateBuilder()
-                .additionalMessageConverters(new MappingJackson2HttpMessageConverter(objectMapper))
-                .build();
-		
-		return rest;
+
+        // Add all converters from the customRestTemplate to the new instance
+        restTemplate.setMessageConverters(customRestTemplate.getMessageConverters());
+
+        // Add the custom message converter to the new RestTemplate instance
+        restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter(objectMapper));
+
+        return restTemplate;
 	}
-	
-	
+
+
 	protected Collection<Authorization> filterResources(Collection<Authorization> authorizations, int resourceType) {
 		Set<Integer> resourceFilter = Arrays.asList(resourceType).stream().collect(Collectors.toSet());
 		return authorizations.stream().filter(authorization -> resourceFilter.contains(authorization.getResourceType())).collect(Collectors.toList());
 	}
-	
+
 	protected static RuntimeException wrapException(HttpStatusCodeException cause, CIBUser user) {
 		String technicalErrorMsg = cause.getResponseBodyAsString();
 		RuntimeException wrapperException = null;
@@ -343,7 +362,7 @@ public abstract class SevenProviderBase {
 		}
 		return wrapperException;
 	}
-	
+
 	protected String addQueryParameter(String param, String name, Optional<String> value, boolean encode) {
 		if (value.isPresent()) {
 			try {

@@ -38,6 +38,7 @@ import org.springframework.http.converter.ResourceHttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.bind.support.WebDataBinderFactory;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -48,6 +49,8 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.mvc.WebContentInterceptor;
+
+import org.cibseven.webapp.rest.CustomRestTemplate;
 
 import com.fasterxml.jackson.core.StreamReadConstraints;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -61,7 +64,7 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 
 	@Value("${cibseven.webclient.custom.spring.jackson.parser.max-size:20000000}")
 	int jacksonParserMaxSize;
-	
+
     @Bean
     public ObjectMapper objectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
@@ -73,7 +76,7 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
         objectMapper.registerModule(new JavaTimeModule());
         return objectMapper;
     }
-	
+
 	@Override
 	public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
 		converters.add(new ResourceHttpMessageConverter()); // needed for DocumentService.download
@@ -99,7 +102,7 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
     public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
         configurer.favorPathExtension(false);
     }
-	
+
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
 		WebContentInterceptor cacheConfig = new WebContentInterceptor();
@@ -109,7 +112,7 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 		// Strict cache control: prevents any caching (including private caches)
 		// Used for HTML entry points to ensure fresh content delivery
 		CacheControl strictNoStoreControl = CacheControl.noStore();
-		
+
 		// Apply strict no-store policy to main application entry points
 		cacheConfig.addCacheMapping(strictNoStoreControl, "/index.html");
 		cacheConfig.addCacheMapping(strictNoStoreControl, "/");
@@ -154,6 +157,16 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 	public static PropertySourcesPlaceholderConfigurer placeholderConfigurer() {
 		return new PropertySourcesPlaceholderConfigurer();
 	}
-	
-}
 
+	/**
+	 * Creates a custom RestTemplate bean with predefined configuration.
+	 * This can be injected into services that need to make HTTP requests.
+	 * 
+	 * @return a configured CustomRestTemplate instance
+	 */
+	@Bean
+	public CustomRestTemplate customRestTemplate() {
+		return new CustomRestTemplate();
+	}
+
+}
