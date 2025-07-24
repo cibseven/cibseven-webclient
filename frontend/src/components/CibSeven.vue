@@ -198,7 +198,8 @@ export default {
               to: '/seven/auth/batches',
               active: ['seven/auth/batches'],
               tooltip: 'start.cockpit.batches.tooltip',
-              title: 'start.cockpit.batches.title'
+              title: 'start.cockpit.batches.title',
+              activeExact: true,
             }
           ]
         }, {
