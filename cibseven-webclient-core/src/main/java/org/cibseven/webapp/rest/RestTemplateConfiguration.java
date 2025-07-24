@@ -29,6 +29,12 @@ import lombok.Data;
 @Data
 @Configuration
 @ConfigurationProperties(prefix = "cibseven.webclient.rest")
+@ConditionalOnProperty(
+        prefix = "cibseven.webclient.rest",
+        name = "enabled",
+        havingValue = "true",
+        matchIfMissing = true
+)
 public class RestTemplateConfiguration {
 
     /**
@@ -112,5 +118,30 @@ public class RestTemplateConfiguration {
      */
     public int getMaxConnTotal() {
         return maxConnTotal == 0 ? maxConnPerRoute * 2 : maxConnTotal;
+    }
+
+    /**
+     * Provides a string representation of the configuration for logging purposes.
+     * 
+     * @return a string representation of the configuration
+     */
+    @Override
+    public String toString() {
+        return "RestTemplateConfiguration{" +
+                "enabled=" + enabled +
+                ", keepAlive=" + keepAlive +
+                ", socketTimeout=" + socketTimeout +
+                ", connectTimeout=" + connectTimeout +
+                ", connectionRequestTimeout=" + connectionRequestTimeout +
+                ", connectionResponseTimeout=" + connectionResponseTimeout +
+                ", maxConnPerRoute=" + maxConnPerRoute +
+                ", maxConnTotal=" + maxConnTotal +
+                ", connectionTimeToLive=" + connectionTimeToLive +
+                ", connectionPoolingEnabled=" + connectionPoolingEnabled +
+                ", connectionReuseEnabled=" + connectionReuseEnabled +
+                ", metricsEnabled=" + metricsEnabled +
+                ", requestLoggingEnabled=" + requestLoggingEnabled +
+                ", followRedirects=" + followRedirects +
+                '}';
     }
 }

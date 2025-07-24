@@ -28,6 +28,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.DeploymentResource;
+import org.cibseven.webapp.rest.TestRestTemplateConfiguration;
 
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -35,13 +36,13 @@ import okhttp3.mockwebserver.MockWebServer;
 import java.util.List;
 
 @SpringBootTest
-@ContextConfiguration(classes = {DeploymentProvider.class})
+@ContextConfiguration(classes = {DeploymentProvider.class, TestRestTemplateConfiguration.class})
 public class DeploymentProviderIT extends BaseHelper {
 
     static {
         System.setProperty("spring.banner.location", "classpath:fca-banner.txt");
     }
-	
+
     private MockWebServer mockWebServer;
 
     @Autowired
