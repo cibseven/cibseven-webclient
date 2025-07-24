@@ -16,7 +16,10 @@
 -->
 <template>
   <b-modal ref="editVariableModal" :title="$t('process-instance.edit')" @hidden="clearVariableInstances">
-    <div v-if="variableToModify">
+    <div v-if="variableToModify && loading">
+      <p class="text-center p-4"><BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}</p>
+    </div>
+    <div v-else-if="variableToModify && !loading">
       <b-form-group :label="$t('process-instance.variables.name')">
         <b-form-input v-model="variableToModify.name" disabled></b-form-input>
       </b-form-group>
@@ -71,6 +74,7 @@ export default {
   },
   data() {
     return {
+      loading: false,
       variableToModify: null,
       selectedVariable: null,
       valueValidationError: null
@@ -119,6 +123,8 @@ export default {
     ...mapActions('variableInstance', ['clearVariableInstance', 'getVariableInstance']),
     ...mapActions('historicVariableInstance', ['clearHistoricVariableInstance', 'getHistoricVariableInstance']),
     async show(variable) {
+      this.loading = true
+      this.$refs.editVariableModal.show()
       this.selectedVariable = variable
       this.variableToModify = JSON.parse(JSON.stringify(variable))
       this.valueValidationError = null // Reset validation error
@@ -134,7 +140,7 @@ export default {
       } else {
         await this.getHistoricVariableInstance({ id: variable.id, deserializeValue: false })
       }
-      this.$refs.editVariableModal.show()
+      this.loading = false
     },
     updateVariable: function() {
       if (this.variableToModify.type === 'Object' && this.variableToModify.valueInfo?.objectTypeName !== 'java.lang.StringBuilder') {
