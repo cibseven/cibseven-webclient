@@ -17,13 +17,13 @@
 
 -->
 <template>
-    <div class="container-fluid bg-light pt-3 overflow-auto">
+    <div class="container bg-light pt-3 overflow-auto">
       <div class="row justify-content-around">
-        <div class="col-md-7 col-12">
+        <div>
           <RuntimeBatches></RuntimeBatches>
           <HistoricBatches></HistoricBatches>
         </div>
-        <div class="col-md-5 col-12 mb-3">
+        <div class="mb-3">
           <BatchDetails></BatchDetails>
         </div>
       </div>
