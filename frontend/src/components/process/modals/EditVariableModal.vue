@@ -16,24 +16,24 @@
 -->
 <template>
   <b-modal ref="editVariableModal" :title="$t('process-instance.edit')" @hidden="clearVariableInstances">
-    <div v-if="variableToModify && loading">
+    <div v-if="loading">
       <p class="text-center p-4"><BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}</p>
     </div>
-    <div v-else-if="variableToModify && !loading">
+    <div v-else-if="variable && !loading">
       <b-form-group :label="$t('process-instance.variables.name')">
-        <b-form-input v-model="variableToModify.name" disabled></b-form-input>
+        <b-form-input v-model="variable.name" disabled></b-form-input>
       </b-form-group>
       <b-form-group :label="$t('process-instance.variables.type')">
-        <b-form-input v-model="variableToModify.type" disabled></b-form-input>
+        <b-form-input v-model="variable.type" disabled></b-form-input>
       </b-form-group>
-      <template v-if="currentInstance?.valueInfo">
-        <div v-if="currentInstance.valueInfo.objectTypeName" class="mb-3">
+      <template v-if="variable.valueInfo">
+        <div v-if="variable.valueInfo.objectTypeName" class="mb-3">
           <label class="form-label">{{ $t('process-instance.variables.objectTypeName') }}</label>
-          <input type="text" class="form-control" :value="currentInstance.valueInfo.objectTypeName" disabled>
+          <input type="text" class="form-control" :value="variable.valueInfo.objectTypeName" disabled>
         </div>
-        <div v-if="currentInstance.valueInfo.serializationDataFormat" class="mb-3">
+        <div v-if="variable.valueInfo.serializationDataFormat" class="mb-3">
           <label class="form-label">{{ $t('process-instance.variables.serializationDataFormat') }}</label>
-          <input type="text" class="form-control" :value="currentInstance.valueInfo.serializationDataFormat" disabled>
+          <input type="text" class="form-control" :value="variable.valueInfo.serializationDataFormat" disabled>
         </div>
       </template>
       <b-form-group :label="$t('process-instance.variables.value')">
@@ -43,7 +43,7 @@
           rows="5"
           :placeholder="$t('process-instance.variables.enterValue')"
           v-model="formattedJsonValue"
-          :disabled="selectedInstance.state === 'COMPLETED'">
+          :disabled="disabled">
         </textarea>
         <div v-if="isNewValueInvalid" class="invalid-feedback">
           {{ valueValidationError }}
@@ -51,11 +51,18 @@
       </b-form-group>
     </div>
     <template v-slot:modal-footer>
-      <b-button v-if="selectedInstance.state === 'COMPLETED'" @click="$refs.editVariableModal.hide()">{{ $t('confirm.close') }}</b-button>
-      <template v-else>
-        <b-button @click="$refs.editVariableModal.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
-        <b-button @click="updateVariable" variant="primary" :disabled="isNewValueInvalid">{{ $t('process-instance.save') }}</b-button>
-      </template>
+      <div class="row w-100 me-0">
+        <div class="col-2 p-0">
+          <BWaitingBox v-if="saving" class="d-inline me-2" styling="width: 30px"></BWaitingBox>
+        </div>
+        <div class="col-10 p-0 d-flex justify-content-end pe-1">
+          <b-button v-if="disabled" @click="$refs.editVariableModal.hide()">{{ $t('confirm.close') }}</b-button>
+          <template v-else>
+            <b-button @click="$refs.editVariableModal.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
+            <b-button @click="updateVariable" variant="primary" :disabled="!variable || isNewValueInvalid || this.newValue === null || saving">{{ $t('process-instance.save') }}</b-button>
+          </template>
+        </div>
+      </div>
     </template>
   </b-modal>
 </template>
@@ -69,51 +76,54 @@ export default {
   name: 'EditVariableModal',
   components: { BWaitingBox },
   props: {
-    selectedInstance: {
-      type: Object,
-      required: true
+    disabled: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
     return {
       loading: false,
-      variableToModify: null,
-      selectedVariable: null,
+      saving: false,
+      newValue: null,
       valueValidationError: null
     }
   },
   computed: {
     ...mapGetters('variableInstance', ['currentVariableInstance']),
     ...mapGetters('historicVariableInstance', ['currentHistoricVariableInstance']),
-    currentInstance() {
+    variable() {
       // Use regular variable instance for active processes, historic for all others
-      return this.selectedInstance?.state === 'ACTIVE'
-        ? this.currentVariableInstance
-        : this.currentHistoricVariableInstance
+      return this.disabled
+        ? this.currentHistoricVariableInstance
+        : this.currentVariableInstance
     },
     formattedJsonValue: {
       get: function() {
-        if (this.variableToModify) {
-          if (this.variableToModify.rawValue) {
-            return this.variableToModify.rawValue
+        if (this.variable) {
+          if (this.newValue !== null) {
+            return this.newValue
           }
 
-          if (this.variableToModify.type === 'Json') {
-            return JSON.stringify(JSON.parse(this.variableToModify.value), null, 2)
-          } else if (this.variableToModify.type === 'Object') {
-            return JSON.stringify(this.variableToModify.value, null, 2)
-          } else return this.variableToModify.value
+          if (this.variable.type === 'Json') {
+            try {
+              return JSON.stringify(JSON.parse(this.variable.value), null, 2)
+            } catch {
+              return this.variable.value // Fallback to original value if parsing fails
+            }
+          } else if (this.variable.type === 'Object') {
+            return JSON.stringify(this.variable.value, null, 2)
+          } else return this.variable.value
         }
         return ''
       },
       set: function(val) {
         this.validateJson(val)
         if (!this.valueValidationError) {
-          this.variableToModify.rawValue = undefined
-          this.variableToModify.value = this.variableToModify.type === 'Object' ? JSON.parse(val) : val
+          this.newValue = this.variable.type === 'Object' ? JSON.parse(val) : val
         }
         else {
-          this.variableToModify.rawValue = val
+          this.newValue = val
         }
       }
     },
@@ -124,72 +134,73 @@ export default {
   methods: {
     ...mapActions('variableInstance', ['clearVariableInstance', 'getVariableInstance']),
     ...mapActions('historicVariableInstance', ['clearHistoricVariableInstance', 'getHistoricVariableInstance']),
-    async show(variable) {
+    async show(variableId) {
       this.loading = true
-      this.$refs.editVariableModal.show()
-      this.selectedVariable = variable
-      this.variableToModify = JSON.parse(JSON.stringify(variable))
+      this.newValue = null
+      this.saving = false
       this.valueValidationError = null // Reset validation error
+
+      this.$refs.editVariableModal.show()
+
       // Try active, fallback to historic if error
       // Use regular variable instance for active processes, historic for all others
-      if (this.selectedInstance?.state === 'ACTIVE') {
+      if (!this.disabled) {
         try {
-          await this.getVariableInstance({ id: variable.id, deserializeValue: false })
+          await this.getVariableInstance({ id: variableId, deserializeValue: false })
         } catch {
-          await this.getHistoricVariableInstance({ id: variable.id, deserializeValue: false })
-          // Note: We don't modify selectedInstance.state here as it's a prop
+          await this.getHistoricVariableInstance({ id: variableId, deserializeValue: false })
         }
       } else {
-        await this.getHistoricVariableInstance({ id: variable.id, deserializeValue: false })
+        await this.getHistoricVariableInstance({ id: variableId, deserializeValue: false })
       }
       this.loading = false
     },
-    updateVariable: function() {
-      if (this.variableToModify.type === 'Object' && this.variableToModify.valueInfo?.objectTypeName !== 'java.lang.StringBuilder') {
-        const executionId = this.variableToModify.executionId
-        const variableName = this.variableToModify.name
+    updateVariable: async function() {
+      this.saving = true
+      if (this.variable.type === 'Object' && this.variable.valueInfo?.objectTypeName !== 'java.lang.StringBuilder') {
+        const executionId = this.variable.executionId
+        const variableName = this.variable.name
 
         var formData = new FormData()
-        const jsonBlob = new Blob([this.variableToModify.value], { type: 'application/json' })
+        const jsonBlob = new Blob([this.variable.value], { type: 'application/json' })
         formData.append('data', jsonBlob, 'blob')
         formData.append('valueType', 'Bytes')
 
-        ProcessService.modifyVariableDataByExecutionId(executionId, variableName, formData).then(() => {
-          this.selectedVariable.value = this.variableToModify.value
-          this.$emit('variable-updated', this.selectedVariable)
+        await ProcessService.modifyVariableDataByExecutionId(executionId, variableName, formData).then(() => {
+          this.$emit('variable-updated')
           this.$refs.editVariableModal.hide()
         })
       }
       else {
-        const original = this.variableToModify
         const data = { modifications: {} }
-        // Clone the original value
-        let value = original.value
-        if (original.type === 'Json') {
+
+        let value = this.newValue
+        if (this.variable.type === 'Json') {
           // JSON validation already done in setter, no need for try-catch here
           value = JSON.stringify(JSON.parse(value))
-        } else if (original.type === 'Object') {
+        } else if (this.variable.type === 'Object') {
           if (typeof value !== 'string') {
             value = JSON.stringify(value)
           }
         }
-        const mod = { value, type: original.type }
+
+        const mod = { value, type: this.variable.type }
         // Handle StringBuilder special case
-        const objectTypeName = original.valueInfo?.objectTypeName
-        if (original.type === 'Object' && objectTypeName === 'java.lang.StringBuilder') {
+        const objectTypeName = this.variable.valueInfo?.objectTypeName
+        if (this.variable.type === 'Object' && objectTypeName === 'java.lang.StringBuilder') {
           mod.value = JSON.stringify(value)
-          mod.valueInfo = original.valueInfo
+          mod.valueInfo = this.variable.valueInfo
         }
-        data.modifications[original.name] = mod
-        ProcessService.modifyVariableByExecutionId(original.executionId, data).then(() => {
-          this.selectedVariable.value = value
-          this.$emit('variable-updated', this.selectedVariable)
+        data.modifications[this.variable.name] = mod
+        await ProcessService.modifyVariableByExecutionId(this.variable.executionId, data).then(() => {
+          this.$emit('variable-updated')
           this.$refs.editVariableModal.hide()
         })
       }
+      this.saving = false
     },
     validateJson(value) {
-      if (!this.variableToModify || (!['Json', 'Object'].includes(this.variableToModify.type))) {
+      if (!this.variable || (!['Json', 'Object'].includes(this.variable.type))) {
         this.valueValidationError = null
         return
       }

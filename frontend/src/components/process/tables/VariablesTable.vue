@@ -75,7 +75,7 @@
 
     <AddVariableModal ref="addVariableModal" :selected-instance="selectedInstance" @variable-added="loadSelectedInstanceVariables(); $refs.success.show()"></AddVariableModal>
     <DeleteVariableModal ref="deleteVariableModal"></DeleteVariableModal>
-    <EditVariableModal ref="editVariableModal" :selected-instance="selectedInstance" @variable-updated="loadSelectedInstanceVariables(); $refs.success.show()"></EditVariableModal>
+    <EditVariableModal ref="editVariableModal" :disabled="selectedInstance.state === 'COMPLETED'" @variable-updated="loadSelectedInstanceVariables(); $refs.success.show()"></EditVariableModal>
     <SuccessAlert top="0" ref="success" style="z-index: 9999">{{ $t('alert.successOperation') }}</SuccessAlert>
     <TaskPopper ref="importPopper"></TaskPopper>
 
@@ -146,7 +146,7 @@ export default {
       else return this.isFileValueDataSource(item)
     },
     async modifyVariable(variable) {
-      this.$refs.editVariableModal.show(variable)
+      this.$refs.editVariableModal.show(variable.id)
     },
     async deleteVariable(variable) {
       this.$refs.deleteVariableModal.show({
