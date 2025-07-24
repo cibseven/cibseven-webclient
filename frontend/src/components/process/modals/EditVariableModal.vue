@@ -43,7 +43,7 @@
           rows="5"
           :placeholder="$t('process-instance.variables.enterValue')"
           v-model="formattedJsonValue"
-          :disabled="disabled">
+          :disabled="disabled || saving">
         </textarea>
         <div v-if="isNewValueInvalid" class="invalid-feedback">
           {{ valueValidationError }}
