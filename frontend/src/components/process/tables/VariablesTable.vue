@@ -75,6 +75,7 @@
 
     <AddVariableModal ref="addVariableModal" :selected-instance="selectedInstance" @variable-added="loadSelectedInstanceVariables(); $refs.success.show()"></AddVariableModal>
     <DeleteVariableModal ref="deleteVariableModal"></DeleteVariableModal>
+    <EditVariableModal ref="editVariableModal" :selected-instance="selectedInstance" @variable-updated="loadSelectedInstanceVariables(); $refs.success.show()"></EditVariableModal>
     <SuccessAlert top="0" ref="success" style="z-index: 9999">{{ $t('alert.successOperation') }}</SuccessAlert>
     <TaskPopper ref="importPopper"></TaskPopper>
 
@@ -85,47 +86,6 @@
       <template v-slot:modal-footer>
         <b-button @click="$refs.uploadFile.hide(); file = null" variant="link">{{ $t('confirm.cancel') }}</b-button>
         <b-button :disabled="!file" @click="uploadFile(); $refs.uploadFile.hide()" variant="primary">{{ $t('process-instance.upload') }}</b-button>
-      </template>
-    </b-modal>
-
-    <b-modal ref="modifyVariable" :title="$t('process-instance.edit')" @hidden="clearVariableInstances">
-      <div v-if="variableToModify">
-        <b-form-group :label="$t('process-instance.variables.name')">
-          <b-form-input v-model="variableToModify.name" disabled></b-form-input>
-        </b-form-group>
-        <b-form-group :label="$t('process-instance.variables.type')">
-          <b-form-input v-model="variableToModify.type" disabled></b-form-input>
-        </b-form-group>
-        <template v-if="currentInstance?.valueInfo">
-          <div v-if="currentInstance.valueInfo.objectTypeName" class="mb-3">
-            <label class="form-label">{{ $t('process-instance.variables.objectTypeName') }}</label>
-            <input type="text" class="form-control" :value="currentInstance.valueInfo.objectTypeName" disabled>
-          </div>
-          <div v-if="currentInstance.valueInfo.serializationDataFormat" class="mb-3">
-            <label class="form-label">{{ $t('process-instance.variables.serializationDataFormat') }}</label>
-            <input type="text" class="form-control" :value="currentInstance.valueInfo.serializationDataFormat" disabled>
-          </div>
-        </template>
-        <b-form-group :label="$t('process-instance.variables.value')">
-          <textarea
-            class="form-control"
-            :class="{ 'is-invalid': isNewValueInvalid }"
-            rows="5"
-            :placeholder="$t('process-instance.variables.enterValue')"
-            v-model="formattedJsonValue"
-            :disabled="selectedInstance.state === 'COMPLETED'">
-          </textarea>
-          <div v-if="isNewValueInvalid" class="invalid-feedback">
-            {{ valueValidationError }}
-          </div>
-        </b-form-group>
-      </div>
-      <template v-slot:modal-footer>
-        <b-button v-if="selectedInstance.state === 'COMPLETED'" @click="$refs.modifyVariable.hide()">{{ $t('confirm.close') }}</b-button>
-        <template v-else>
-          <b-button @click="$refs.modifyVariable.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
-          <b-button @click="updateVariable" variant="primary" :disabled="isNewValueInvalid">{{ $t('process-instance.save') }}</b-button>
-        </template>
       </template>
     </b-modal>
   </div>
@@ -139,60 +99,24 @@ import TaskPopper from '@/components/common-components/TaskPopper.vue'
 import { ProcessService, HistoryService } from '@/services.js'
 import DeleteVariableModal from '@/components/process/modals/DeleteVariableModal.vue'
 import AddVariableModal from '@/components/process/modals/AddVariableModal.vue'
+import EditVariableModal from '@/components/process/modals/EditVariableModal.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import processesVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
-import { mapGetters, mapActions } from 'vuex'
+import { mapGetters } from 'vuex'
 
 export default {
   name: 'VariablesTable',
-  components: { FlowTable, TaskPopper, AddVariableModal, DeleteVariableModal, SuccessAlert, BWaitingBox },
+  components: { FlowTable, TaskPopper, AddVariableModal, DeleteVariableModal, EditVariableModal, SuccessAlert, BWaitingBox },
   mixins: [processesVariablesMixin],
   data: function() {
     return {
       filteredVariables: [],
-      variableToModify: null,
-      fileObjects: ['de.cib.cibflow.api.files.FileValueDataFlowSource', 'de.cib.cibflow.api.files.FileValueDataSource'],
-      valueValidationError: null
+      fileObjects: ['de.cib.cibflow.api.files.FileValueDataFlowSource', 'de.cib.cibflow.api.files.FileValueDataSource']
     }
   },
   computed: {
     ...mapGetters('variableInstance', ['currentVariableInstance']),
     ...mapGetters('historicVariableInstance', ['currentHistoricVariableInstance']),
-    currentInstance() {
-      // Use regular variable instance for active processes, historic for all others
-      return this.selectedInstance?.state === 'ACTIVE'
-        ? this.currentVariableInstance
-        : this.currentHistoricVariableInstance
-    },
-    formattedJsonValue: {
-      get: function() {
-        if (this.variableToModify) {
-          if (this.variableToModify.rawValue) {
-            return this.variableToModify.rawValue
-          }
-
-          if (this.variableToModify.type === 'Json') {
-            return JSON.stringify(JSON.parse(this.variableToModify.value), null, 2)
-          } else if (this.variableToModify.type === 'Object') {
-            return JSON.stringify(this.variableToModify.value, null, 2)
-          } else return this.variableToModify.value
-        }
-        return ''
-      },
-      set: function(val) {
-        this.validateJson(val)
-        if (!this.valueValidationError) {
-          this.variableToModify.rawValue = undefined
-          this.variableToModify.value = this.variableToModify.type === 'Object' ? JSON.parse(val) : val
-        }
-        else {
-          this.variableToModify.rawValue = val
-        }
-      }
-    },
-    isNewValueInvalid() {
-      return this.valueValidationError !== null
-    },
     ProcessVariablesSearchBoxPlugin: function() {
       return this.$options.components && this.$options.components.ProcessVariablesSearchBoxPlugin
         ? this.$options.components.ProcessVariablesSearchBoxPlugin
@@ -200,8 +124,6 @@ export default {
     },
   },
   methods: {
-    ...mapActions('variableInstance', ['clearVariableInstance', 'getVariableInstance']),
-    ...mapActions('historicVariableInstance', ['clearHistoricVariableInstance', 'getHistoricVariableInstance']),
     isFileValueDataSource: function(item) {
       if (item.type === 'Object') {
         if (item.value && item.value.objectTypeName) {
@@ -224,22 +146,7 @@ export default {
       else return this.isFileValueDataSource(item)
     },
     async modifyVariable(variable) {
-      this.selectedVariable = variable
-      this.variableToModify = JSON.parse(JSON.stringify(variable))
-      this.valueValidationError = null // Reset validation error
-      // Try active, fallback to historic if error
-      // Use regular variable instance for active processes, historic for all others
-      if (this.selectedInstance?.state === 'ACTIVE') {
-        try {
-          await this.getVariableInstance({ id: variable.id, deserializeValue: false })
-        } catch {
-          await this.getHistoricVariableInstance({ id: variable.id, deserializeValue: false })
-          this.selectedInstance.state = 'COMPLETED'
-        }
-      } else {
-        await this.getHistoricVariableInstance({ id: variable.id, deserializeValue: false })
-      }
-      this.$refs.modifyVariable.show()
+      this.$refs.editVariableModal.show(variable)
     },
     async deleteVariable(variable) {
       this.$refs.deleteVariableModal.show({
@@ -265,71 +172,6 @@ export default {
         },
         variable: variable
       })
-    },
-    updateVariable: function() {
-      if (this.variableToModify.type === 'Object' && this.variableToModify.valueInfo?.objectTypeName !== 'java.lang.StringBuilder') {
-        const executionId = this.variableToModify.executionId
-        const variableName = this.variableToModify.name
-
-        var formData = new FormData()
-        const jsonBlob = new Blob([this.variableToModify.value], { type: 'application/json' })
-        formData.append('data', jsonBlob, 'blob')
-        formData.append('valueType', 'Bytes')
-
-        ProcessService.modifyVariableDataByExecutionId(executionId, variableName, formData).then(() => {
-          this.selectedVariable.value = this.variableToModify.value
-          this.$refs.modifyVariable.hide()
-        })
-      }
-      else {
-        const original = this.variableToModify
-        const data = { modifications: {} }
-        // Clone the original value
-        let value = original.value
-        if (original.type === 'Json') {
-          // JSON validation already done in setter, no need for try-catch here
-          value = JSON.stringify(JSON.parse(value))
-        } else if (original.type === 'Object') {
-          if (typeof value !== 'string') {
-            value = JSON.stringify(value)
-          }
-        }
-        const mod = { value, type: original.type }
-        // Handle StringBuilder special case
-        const objectTypeName = original.valueInfo?.objectTypeName
-        if (original.type === 'Object' && objectTypeName === 'java.lang.StringBuilder') {
-          mod.value = JSON.stringify(value)
-          mod.valueInfo = original.valueInfo
-        }
-        data.modifications[original.name] = mod
-        ProcessService.modifyVariableByExecutionId(original.executionId, data).then(() => {
-          this.selectedVariable.value = value
-          this.$refs.modifyVariable.hide()
-        })
-      }
-    },
-    validateJson(value) {
-      if (!this.variableToModify || (!['Json', 'Object'].includes(this.variableToModify.type))) {
-        this.valueValidationError = null
-        return
-      }
-
-      if (!value || value.trim() === '') {
-        this.valueValidationError = null
-        return
-      }
-
-      try {
-        JSON.parse(value)
-        this.valueValidationError = null
-      } catch (e) {
-        this.valueValidationError = e.message
-      }
-    },
-    clearVariableInstances() {
-      this.clearVariableInstance()
-      this.clearHistoricVariableInstance()
-      this.valueValidationError = null // Reset validation error when closing modal
     }
   }
 }
