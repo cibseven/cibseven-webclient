@@ -25,6 +25,7 @@ import org.cibseven.webapp.auth.User;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -164,11 +165,20 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 	 * This can be injected into services that need to make HTTP requests.
 	 * 
 	 * The bean is configured using properties from application.yaml under
-	 * the cibseven.webclient.rest namespace.
+	 * the cibseven.webclient.rest.client namespace.
+	 * 
+	 * This bean is conditional and will only be created if cibseven.webclient.rest.client.enabled=true
+	 * or if the property is not specified (default behavior).
 	 * 
 	 * @return a configured CustomRestTemplate instance
 	 */
 	@Bean
+	@ConditionalOnProperty(
+		prefix = "cibseven.webclient.rest",
+		name = "enabled",
+		havingValue = "true",
+		matchIfMissing = true
+	)
 	public CustomRestTemplate customRestTemplate() {
 		// Create a new CustomRestTemplate instance
 		// It will be configured via @PostConstruct using @Autowired dependencies

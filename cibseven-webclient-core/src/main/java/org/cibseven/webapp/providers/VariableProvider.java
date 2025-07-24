@@ -117,16 +117,8 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		String url = getEngineRestUrl() + "/execution/" + executionId + "/localVariables/" + variableName + "/data";
 
 		try {
-		    // Use the injected customRestTemplate instead of creating a new one
-		    customRestTemplate.getMessageConverters().add(new ByteArrayHttpMessageConverter());
-		    HttpHeaders headers = new HttpHeaders();
-		    headers.setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM));
-			UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
-			if (user != null) headers.add("Authorization", user.getAuthToken());
-		    HttpEntity<String> entity = new HttpEntity<String>(headers);
-		    ResponseEntity<byte[]> response = customRestTemplate.exchange(builder.build().toUriString(), HttpMethod.GET, entity, byte[].class, "1");
-		    return response;
-
+		    // Use doGetWithHeader which creates a new RestTemplate instance for thread safety
+		    return doGetWithHeader(url, byte[].class, user, true, MediaType.APPLICATION_OCTET_STREAM);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
 		}
@@ -169,20 +161,12 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		String url = getEngineRestUrl() + "/history/variable-instance/" + id + "/data";
 
 		try {
-		    // Use the injected customRestTemplate instead of creating a new one
-		    customRestTemplate.getMessageConverters().add(new ByteArrayHttpMessageConverter());
-		    HttpHeaders headers = new HttpHeaders();
-		    headers.setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM));
-			UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
-			if (user != null) headers.add("Authorization", user.getAuthToken());
-		    HttpEntity<String> entity = new HttpEntity<String>(headers);
-		    ResponseEntity<byte[]> response = customRestTemplate.exchange(builder.build().toUriString(), HttpMethod.GET, entity, byte[].class, "1");
-		    return response;
-
+		    // Use doGetWithHeader which creates a new RestTemplate instance for thread safety
+		    return doGetWithHeader(url, byte[].class, user, true, MediaType.APPLICATION_OCTET_STREAM);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
 		}
-	}	
+	}
 
 	@Override
 	public Variable fetchVariable(String taskId, String variableName, 

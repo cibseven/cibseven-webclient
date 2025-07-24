@@ -120,7 +120,17 @@ public abstract class SevenProviderBase {
 	        headers.setAccept(Collections.singletonList(mediaType));
 			UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
 
-			return customRestTemplate.exchange(builder.build(encoded).toUri(), HttpMethod.GET, new HttpEntity<>(headers),
+			// Create a new RestTemplate instance instead of using the shared customRestTemplate
+			// This avoids potential ConcurrentModificationExceptions in multi-threaded environments
+			RestTemplate rest = createPatchRestTemplate();
+
+			// Add ByteArrayHttpMessageConverter if we're expecting octet-stream data
+			// This is necessary for handling binary data like files
+			if (MediaType.APPLICATION_OCTET_STREAM.equals(mediaType) && byte[].class.equals(neededClass)) {
+				rest.getMessageConverters().add(new org.springframework.http.converter.ByteArrayHttpMessageConverter());
+			}
+
+			return rest.exchange(builder.build(encoded).toUri(), HttpMethod.GET, new HttpEntity<>(headers),
 					neededClass);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);

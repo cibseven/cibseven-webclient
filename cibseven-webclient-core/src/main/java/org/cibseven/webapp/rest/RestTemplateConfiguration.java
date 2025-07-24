@@ -18,6 +18,7 @@ package org.cibseven.webapp.rest;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 import lombok.Data;
 
@@ -37,24 +38,41 @@ public class RestTemplateConfiguration {
     private boolean enabled = true;
 
     /**
-     * Connection timeout in milliseconds.
+     * Whether the socket connection should be kept alive.
      */
-    private int connectTimeout = 5000;
+    private boolean keepAlive = true;
 
     /**
-     * Socket read timeout in milliseconds.
+     * Socket read timeout in seconds (0 = infinite).
      */
-    private int readTimeout = 10000;
+    private int socketTimeout = 3600;
 
     /**
-     * Maximum number of connections per route.
+     * Time in seconds to establish connection (0 = infinite).
      */
-    private int maxConnectionsPerRoute = 20;
+    private int connectTimeout = 30;
 
     /**
-     * Maximum total connections.
+     * Time to wait for a connection from the pool in seconds.
      */
-    private int maxTotalConnections = 100;
+    private int connectionRequestTimeout = 180;
+
+    /**
+     * Max response wait time in seconds (0 = infinite).
+     * If null, the socketTimeout value will be used.
+     */
+    private Integer connectionResponseTimeout = null;
+
+    /**
+     * Max HTTP connections per route.
+     */
+    private int maxConnPerRoute = 20;
+
+    /**
+     * Total max HTTP connections.
+     * Defaults to 2 * maxConnPerRoute.
+     */
+    private int maxConnTotal = 40;
 
     /**
      * Connection time to live in milliseconds.
@@ -65,11 +83,6 @@ public class RestTemplateConfiguration {
      * Whether to enable connection pooling.
      */
     private boolean connectionPoolingEnabled = true;
-
-    /**
-     * Whether to enable connection keep-alive.
-     */
-    private boolean keepAliveEnabled = true;
 
     /**
      * Whether to enable connection reuse.
@@ -90,4 +103,14 @@ public class RestTemplateConfiguration {
      * Whether to follow redirects.
      */
     private boolean followRedirects = true;
+
+    /**
+     * Get the maximum total connections.
+     * If not explicitly set, returns 2 * maxConnPerRoute.
+     * 
+     * @return the maximum total connections
+     */
+    public int getMaxConnTotal() {
+        return maxConnTotal == 0 ? maxConnPerRoute * 2 : maxConnTotal;
+    }
 }

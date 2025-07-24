@@ -162,12 +162,14 @@ public class CustomRestTemplate extends RestTemplate {
         log.info("Initializing CustomRestTemplate with connection pooling");
 
         // Log the configuration details
-        log.info("RestTemplateConfiguration: enabled={}, connectTimeout={}ms, readTimeout={}ms, maxConnectionsPerRoute={}, maxTotalConnections={}, " +
-                "connectionTimeToLive={}ms, connectionPoolingEnabled={}, keepAliveEnabled={}, connectionReuseEnabled={}, " +
+        log.info("RestTemplateConfiguration: enabled={}, connectTimeout={}s, socketTimeout={}s, connectionRequestTimeout={}s, " +
+                "connectionResponseTimeout={}, maxConnPerRoute={}, maxConnTotal={}, " +
+                "connectionTimeToLive={}ms, connectionPoolingEnabled={}, keepAlive={}, connectionReuseEnabled={}, " +
                 "metricsEnabled={}, requestLoggingEnabled={}, followRedirects={}",
-                config.isEnabled(), config.getConnectTimeout(), config.getReadTimeout(), config.getMaxConnectionsPerRoute(),
-                config.getMaxTotalConnections(), config.getConnectionTimeToLive(), config.isConnectionPoolingEnabled(),
-                config.isKeepAliveEnabled(), config.isConnectionReuseEnabled(), config.isMetricsEnabled(),
+                config.isEnabled(), config.getConnectTimeout(), config.getSocketTimeout(), config.getConnectionRequestTimeout(),
+                config.getConnectionResponseTimeout(), config.getMaxConnPerRoute(), config.getMaxConnTotal(), 
+                config.getConnectionTimeToLive(), config.isConnectionPoolingEnabled(),
+                config.isKeepAlive(), config.isConnectionReuseEnabled(), config.isMetricsEnabled(),
                 config.isRequestLoggingEnabled(), config.isFollowRedirects());
 
         // Create and configure the HttpClient
@@ -220,7 +222,7 @@ public class CustomRestTemplate extends RestTemplate {
                 .setDefaultHeaders(defaultHeaders);
 
         // Apply keep-alive strategy if enabled
-        if (config.isKeepAliveEnabled()) {
+        if (config.isKeepAlive()) {
             clientBuilder.setKeepAliveStrategy(keepAliveStrategy);
         }
 
@@ -250,8 +252,8 @@ public class CustomRestTemplate extends RestTemplate {
     private PoolingHttpClientConnectionManager createConnectionManager() {
         // Create the connection manager and store it in the class field for later use
         this.connectionManager = PoolingHttpClientConnectionManagerBuilder.create()
-                .setMaxConnPerRoute(config.getMaxConnectionsPerRoute())
-                .setMaxConnTotal(config.getMaxTotalConnections())
+                .setMaxConnPerRoute(config.getMaxConnPerRoute())
+                .setMaxConnTotal(config.getMaxConnTotal())
                 .setConnectionTimeToLive(TimeValue.of(config.getConnectionTimeToLive(), TimeUnit.MILLISECONDS))
                 .build();
 
@@ -264,10 +266,25 @@ public class CustomRestTemplate extends RestTemplate {
      * @return a configured RequestConfig
      */
     private RequestConfig createRequestConfig() {
-        return RequestConfig.custom()
-                .setConnectTimeout(Timeout.of(config.getConnectTimeout(), TimeUnit.MILLISECONDS))
-                .setResponseTimeout(Timeout.of(config.getReadTimeout(), TimeUnit.MILLISECONDS))
-                .build();
+        // Convert seconds to milliseconds for timeout values
+        RequestConfig.Builder builder = RequestConfig.custom()
+                .setConnectTimeout(Timeout.of(config.getConnectTimeout() * 1000, TimeUnit.MILLISECONDS));
+
+        // Set response timeout (socketTimeout)
+        builder.setResponseTimeout(Timeout.of(config.getSocketTimeout() * 1000, TimeUnit.MILLISECONDS));
+
+        // Set connection request timeout if available
+        if (config.getConnectionRequestTimeout() > 0) {
+            builder.setConnectionRequestTimeout(Timeout.of(config.getConnectionRequestTimeout() * 1000, TimeUnit.MILLISECONDS));
+        }
+
+        // Set connection response timeout if available and not null
+        if (config.getConnectionResponseTimeout() != null) {
+            int responseTimeout = config.getConnectionResponseTimeout() * 1000;
+            builder.setResponseTimeout(Timeout.of(responseTimeout, TimeUnit.MILLISECONDS));
+        }
+
+        return builder.build();
     }
 
     /**
@@ -340,11 +357,11 @@ public class CustomRestTemplate extends RestTemplate {
             // Register metrics for connection pool
             gaugeMethod.invoke(meterRegistry, "http.client.connections.max", 
                     config, (java.util.function.ToDoubleFunction<RestTemplateConfiguration>) 
-                    c -> c.getMaxTotalConnections());
+                    c -> c.getMaxConnTotal());
 
             gaugeMethod.invoke(meterRegistry, "http.client.connections.max.per.route", 
                     config, (java.util.function.ToDoubleFunction<RestTemplateConfiguration>) 
-                    c -> c.getMaxConnectionsPerRoute());
+                    c -> c.getMaxConnPerRoute());
 
         } catch (ClassNotFoundException e) {
             // MeterRegistry class not found, which is fine if Micrometer is not available
