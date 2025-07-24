@@ -36,26 +36,27 @@ import org.cibseven.webapp.rest.model.Process;
 import org.cibseven.webapp.rest.model.ProcessDiagram;
 import org.cibseven.webapp.rest.model.ProcessStart;
 import org.cibseven.webapp.rest.model.StartForm;
+import org.cibseven.webapp.rest.TestRestTemplateConfiguration;
 
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 
 @SpringBootTest
-@ContextConfiguration(classes = {ProcessProvider.class})
+@ContextConfiguration(classes = {ProcessProvider.class, TestRestTemplateConfiguration.class})
 public class ProcessProviderIT extends BaseHelper {
-	
+
     static {
         System.setProperty("spring.banner.location", "classpath:fca-banner.txt");
     }
-	
+
     private MockWebServer mockWebServer;
 
     @Autowired
     private ProcessProvider processProvider;
-    
+
     @MockBean
     private IIncidentProvider incidentProvider;
-    
+
     @BeforeEach
     void setUp() throws Exception {
         mockWebServer = new MockWebServer();
@@ -69,7 +70,7 @@ public class ProcessProviderIT extends BaseHelper {
         // Inject mock in ProcessProvider
         ReflectionTestUtils.setField(processProvider, "incidentProvider", incidentProvider);
 
-        
+
         // Configure the base URL for the ProcessProvider to point to the MockWebServer
         String mockBaseUrl = mockWebServer.url("/").toString();
         ReflectionTestUtils.setField(processProvider, "cibsevenUrl", mockBaseUrl);
@@ -111,10 +112,10 @@ public class ProcessProviderIT extends BaseHelper {
         // Arrange
         String processKey = "processKey1";
         CIBUser user = getCibUser();
-        
+
         // Load the mock response from a file
         String mockResponseBody = loadMockResponse("mocks/process_mock.json");
-        
+
         mockWebServer.enqueue(new MockResponse()
                 .setBody(mockResponseBody)
                 .addHeader("Content-Type", "application/json"));
@@ -137,7 +138,7 @@ public class ProcessProviderIT extends BaseHelper {
 
         // Load the mock response from a file
         String mockResponseBody = loadMockResponse("mocks/process_diagram_mock.json");
-        
+
         mockWebServer.enqueue(new MockResponse()
                 .setBody(mockResponseBody)
                 .addHeader("Content-Type", "application/json"));

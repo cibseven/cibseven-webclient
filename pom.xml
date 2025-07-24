@@ -6,10 +6,10 @@
 		<artifactId>release-parent</artifactId>
 		<version>1.2.0</version>
 	</parent>
-	
+
 	<groupId>org.cibseven.webapp</groupId>
 	<artifactId>cibseven-webclient</artifactId>
-	<version>2.1.0-SNAPSHOT</version>
+ 	<version>2.1.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>CIB seven webclient</name>
@@ -20,15 +20,15 @@
 		<target.path>${project.basedir}/target</target.path>
 		<project.git.url>https://github.com/cibseven/cibseven-webclient.git</project.git.url>
 		<nexus-repository.url>https://artifacts.cibseven.org</nexus-repository.url>
-		
+
 		<maven.compiler.source>17</maven.compiler.source>
 		<maven.compiler.target>17</maven.compiler.target>
 		<maven-war-plugin.version>3.4.0</maven-war-plugin.version>
 		<maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
 		<maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
-		
+
 		<git-commit-id-maven-plugin.version>9.0.1</git-commit-id-maven-plugin.version>
-		
+
 		<jjwt.version>0.12.6</jjwt.version>
 		<swagger-annotations.version>2.2.27</swagger-annotations.version>
 		<commons-io.version>2.18.0</commons-io.version>
@@ -39,11 +39,11 @@
 		<jib-maven-plugin.version>3.4.6</jib-maven-plugin.version>
 		<jib.from.image>${image.tomcat-10-base}</jib.from.image>
 		<jib.to.image>harbor.cib.de/dev/cibseven-webclient:${project.version}</jib.to.image>
-		
+
 		<version.eirslett.frontend.maven.plugin>1.12.1</version.eirslett.frontend.maven.plugin>
     	<version.nodejs>22.14.0</version.nodejs>
 	    <version.npm>10.9.2</version.npm>
-		
+
 		<!-- REWRITE COPYRIGHT PARAMEMER FROM SUPER POM (CAMUNDA COPYRIGHT) -->
 		<license.inlineHeader>Copyright CIB software GmbH and/or licensed to CIB software GmbH
 under one or more contributor license agreements. See the NOTICE file
@@ -59,7 +59,7 @@ You may obtain a copy of the License at
  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  See the License for the specific language governing permissions and
  limitations under the License.</license.inlineHeader>
-	    
+
 	</properties>
 
 	<profiles>
@@ -373,7 +373,7 @@ You may obtain a copy of the License at
 			</plugins>
 		</pluginManagement>
 	</build>
-	
+
 	<repositories>
 	    <repository>
 	      <id>maven-central</id>
