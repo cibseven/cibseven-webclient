@@ -24,8 +24,8 @@ import java.util.Optional;
 
 import javax.crypto.SecretKey;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.constraints.NotNull;
 
 import org.cibseven.webapp.auth.exception.AuthenticationException;
 import org.cibseven.webapp.auth.exception.TokenExpiredException;
@@ -33,7 +33,6 @@ import org.cibseven.webapp.auth.providers.JwtUserProvider;
 import org.cibseven.webapp.auth.rest.StandardLogin;
 import org.cibseven.webapp.exception.ErrorMessage;
 import org.cibseven.webapp.exception.SystemException;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -56,7 +55,7 @@ import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class GenericUserProvider extends BaseUserProvider<StandardLogin> implements InitializingBean {
+public class GenericUserProvider extends BaseUserProvider<StandardLogin> {
 
 	@Value("${cibseven.webclient.authentication.jwtSecret:}")
 	String secret;
@@ -70,8 +69,10 @@ public class GenericUserProvider extends BaseUserProvider<StandardLogin> impleme
 	@Value("${cibseven.webclient.url:}")
 	String cibsevenWebclientUrl;
 
-	public void afterPropertiesSet() {
+	@PostConstruct
+	public void init() {
 		settings = new JwtTokenSettings(secret, validMinutes, prolongMinutes);
+		checkKey();
 	}
 
 	@Override

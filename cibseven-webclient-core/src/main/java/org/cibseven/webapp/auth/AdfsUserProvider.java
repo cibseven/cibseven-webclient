@@ -82,6 +82,7 @@ public class AdfsUserProvider extends BaseUserProvider<SSOLogin> {
 	public void init() {
 		settings = new JwtTokenSettings(secret, validMinutes, prolongMinutes);
 		ssoHelper = new SsoHelper(tokenEndpoint, clientId, clientSecret, certEndpoint, null, null);
+		checkKey();
 		SecretKey key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(settings.getSecret()));
 		flowParser = Jwts.parser().verifyWith(key).build();
 	}
