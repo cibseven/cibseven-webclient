@@ -45,14 +45,16 @@
           <div :title="table.item.type" class="text-truncate">{{ table.item.type }}</div>
         </template>
         <template v-slot:cell(value)="table">
-          <div v-if="table.item.type === 'File'" class="text-truncate">{{ table.item.valueInfo.filename }}</div>
-          <div v-if="isFileValueDataSource(table.item)" :title="displayObjectNameValue(table.item)" class="text-truncate">
-            {{ displayObjectNameValue(table.item) }}
-          </div>
-          <div v-else :title="displayObjectTitle(table.item)" class="text-truncate">{{ table.item.value }}</div>
+          <CopyableActionButton
+            :displayValue="displayValue(table.item)"
+            :clickable="isFile(table.item)"
+            :title="displayValueTooltip(table.item)"
+            @click="downloadFile(table.item)"
+            @copy="copyValueToClipboard"
+          />
         </template>
         <template v-slot:cell(actions)="table">
-          <b-button v-if="isFile(table.item)" :title="$t('process-instance.download')"
+          <b-button v-if="isFile(table.item)" :title="displayValueTooltip(table.item)"
             size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-download-outline"
             @click="downloadFile(table.item)">
           </b-button>
@@ -77,6 +79,7 @@
     <DeleteVariableModal ref="deleteVariableModal"></DeleteVariableModal>
     <EditVariableModal ref="editVariableModal" :disabled="selectedInstance.state === 'COMPLETED'" @variable-updated="loadSelectedInstanceVariables(); $refs.success.show()"></EditVariableModal>
     <SuccessAlert top="0" ref="success" style="z-index: 9999">{{ $t('alert.successOperation') }}</SuccessAlert>
+    <SuccessAlert ref="messageCopy" style="z-index: 9999"> {{ $t('process.copySuccess') }} </SuccessAlert>
     <TaskPopper ref="importPopper"></TaskPopper>
 
     <b-modal ref="uploadFile" :title="$t('process-instance.upload')">
@@ -102,12 +105,14 @@ import AddVariableModal from '@/components/process/modals/AddVariableModal.vue'
 import EditVariableModal from '@/components/process/modals/EditVariableModal.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import processesVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
+import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
+import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
 import { mapGetters } from 'vuex'
 
 export default {
   name: 'VariablesTable',
-  components: { FlowTable, TaskPopper, AddVariableModal, DeleteVariableModal, EditVariableModal, SuccessAlert, BWaitingBox },
-  mixins: [processesVariablesMixin],
+  components: { FlowTable, TaskPopper, AddVariableModal, DeleteVariableModal, EditVariableModal, SuccessAlert, BWaitingBox, CopyableActionButton },
+  mixins: [processesVariablesMixin, copyToClipboardMixin],
   data: function() {
     return {
       filteredVariables: [],
@@ -132,14 +137,40 @@ export default {
       }
       return false
     },
-    displayObjectNameValue: function(item) {
+    displayValue(item) {
       if (this.isFileValueDataSource(item)) {
         return item.value.name
       }
-      return item.value
+      else if (item.type === 'File') {
+        return item.valueInfo.filename
+      }
+      else if (item.type === 'Json') {
+        /*if (typeof item.value === 'object') {
+          try {
+            return JSON.stringify(item.value, null, 2)
+          } catch {
+            return '- Json Object -'
+          }
+        }*/
+        return '- Json Object -'
+      } else if (item.type === 'Object') {
+        try {
+          return JSON.stringify(item.value, null, 2)
+        } catch {
+          return '- Object -'
+        }
+      }
+      else {
+        return item.value
+      }
     },
-    displayObjectTitle(item) {
-      return item.type === 'Object' ? JSON.stringify(item.value) : item.value
+    displayValueTooltip(item) {
+      if (this.isFile(item)) {
+        return this.$t('process-instance.download') + ': ' + this.displayValue(item)
+      }
+      else {
+        return this.displayValue(item)
+      }
     },
     isFile: function(item) {
       if (item.type === 'File') return true
