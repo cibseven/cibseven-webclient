@@ -267,30 +267,46 @@ export default {
       })
     },
     updateVariable: function() {
-      const original = this.variableToModify
-      const data = { modifications: {} }
-      // Clone the original value
-      let value = original.value
-      if (original.type === 'Json') {
-        // JSON validation already done in setter, no need for try-catch here
-        value = JSON.stringify(JSON.parse(value))
-      } else if (original.type === 'Object') {
-        if (typeof value !== 'string') {
-          value = JSON.stringify(value)
+      if (this.variableToModify.type === 'Object' && this.variableToModify.valueInfo?.objectTypeName !== 'java.lang.StringBuilder') {
+        const executionId = this.variableToModify.executionId
+        const variableName = this.variableToModify.name
+
+        var formData = new FormData()
+        const jsonBlob = new Blob([this.variableToModify.value], { type: 'application/json' })
+        formData.append('data', jsonBlob, 'blob')
+        formData.append('valueType', 'Bytes')
+
+        ProcessService.modifyVariableDataByExecutionId(executionId, variableName, formData).then(() => {
+          this.selectedVariable.value = this.variableToModify.value
+          this.$refs.modifyVariable.hide()
+        })
+      }
+      else {
+        const original = this.variableToModify
+        const data = { modifications: {} }
+        // Clone the original value
+        let value = original.value
+        if (original.type === 'Json') {
+          // JSON validation already done in setter, no need for try-catch here
+          value = JSON.stringify(JSON.parse(value))
+        } else if (original.type === 'Object') {
+          if (typeof value !== 'string') {
+            value = JSON.stringify(value)
+          }
         }
+        const mod = { value, type: original.type }
+        // Handle StringBuilder special case
+        const objectTypeName = original.valueInfo?.objectTypeName
+        if (original.type === 'Object' && objectTypeName === 'java.lang.StringBuilder') {
+          mod.value = JSON.stringify(value)
+          mod.valueInfo = original.valueInfo
+        }
+        data.modifications[original.name] = mod
+        ProcessService.modifyVariableByExecutionId(original.executionId, data).then(() => {
+          this.selectedVariable.value = value
+          this.$refs.modifyVariable.hide()
+        })
       }
-      const mod = { value, type: original.type }
-      // Handle StringBuilder special case
-      const objectTypeName = original.valueInfo?.objectTypeName
-      if (original.type === 'Object' && objectTypeName === 'java.lang.StringBuilder') {
-        mod.value = JSON.stringify(value)
-        mod.valueInfo = original.valueInfo
-      }
-      data.modifications[original.name] = mod
-      ProcessService.modifyVariableByExecutionId(original.executionId, data).then(() => {
-        this.selectedVariable.value = value
-        this.$refs.modifyVariable.hide()
-      })
     },
     validateJson(value) {
       if (!this.variableToModify || (!['Json', 'Object'].includes(this.variableToModify.type))) {

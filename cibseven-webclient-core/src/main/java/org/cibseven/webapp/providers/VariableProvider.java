@@ -72,7 +72,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 	}
 	
 	@Override
-	public void modifyVariableDataByExecutionId(String executionId, String variableName, MultipartFile file, CIBUser user) throws SystemException {
+	public void modifyVariableDataByExecutionId(String executionId, String variableName, MultipartFile data, String valueType, CIBUser user) throws SystemException {
 		String url = getEngineRestUrl() + "/execution/" + executionId + "/localVariables/" + variableName + "/data";
 		
 		HttpHeaders headers = new HttpHeaders();
@@ -81,11 +81,11 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		if (user != null) headers.add("Authorization", user.getAuthToken());
 		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
 		try {
-			body.add("data", file.getResource());
-			body.add("valueType", "File");
+			body.add("data", data.getResource());
+			body.add("valueType", valueType);
 			HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(body, headers);
 			RestTemplate rest = new RestTemplate();
-		
+
 			rest.exchange(builder.build().toUri(), HttpMethod.POST, request, String.class);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);

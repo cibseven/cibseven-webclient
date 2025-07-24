@@ -558,11 +558,12 @@ public interface BpmProvider {
 	 * Modify a variable data in the Process Instance.
 	 * @param executionId the ID of the execution.
 	 * @param variableName the name of the variable.
-	 * @param file the file containing the data to be updated.
+	 * @param data the file containing the data to be updated.
+	 * @param valueType the type of the variable. Enum with the possible values: "File", "Bytes".
 	 * @param user the user modifying the variable.
      * @throws SystemException in case of any other error.
 	 */ 
-	 void modifyVariableDataByExecutionId(String executionId, String variableName, MultipartFile file, CIBUser user) throws SystemException;
+	 void modifyVariableDataByExecutionId(String executionId, String variableName, MultipartFile data, String valueType, CIBUser user) throws SystemException;
 	
 	 /**
 	 * Fetch a variables from a process instance.

@@ -35,7 +35,7 @@ import org.springframework.web.multipart.MultipartFile;
 public interface IVariableProvider {
 
 	public void modifyVariableByExecutionId(String executionId, Map<String, Object> data, CIBUser user) throws SystemException;
-	public void modifyVariableDataByExecutionId(String executionId, String variableName, MultipartFile file, CIBUser user) throws SystemException;
+	public void modifyVariableDataByExecutionId(String executionId, String variableName, MultipartFile data, String valueType, CIBUser user) throws SystemException;
 	public Collection<Variable> fetchProcessInstanceVariables(String processInstanceId, Map<String, Object> data, CIBUser user) throws NoObjectFoundException, SystemException;
 	public ResponseEntity<byte[]> fetchVariableDataByExecutionId(String executionId, String variableName, CIBUser user) throws NoObjectFoundException, SystemException;
 	public Collection<VariableHistory> fetchProcessInstanceVariablesHistory(String processInstanceId, Map<String, Object> data, CIBUser user) throws SystemException;

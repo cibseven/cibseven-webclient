@@ -713,8 +713,8 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 	
 	@Override
-	public void modifyVariableDataByExecutionId(String executionId, String variableName, MultipartFile file, CIBUser user) throws SystemException {
-		variableProvider.modifyVariableDataByExecutionId(executionId, variableName, file, user);
+	public void modifyVariableDataByExecutionId(String executionId, String variableName, MultipartFile data, String valueType, CIBUser user) throws SystemException {
+		variableProvider.modifyVariableDataByExecutionId(executionId, variableName, data, valueType, user);
 	}
 	
 	@Override

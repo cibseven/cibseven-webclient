@@ -532,13 +532,15 @@ public class ProcessService extends BaseService implements InitializingBean {
 	public ResponseEntity<Void> modifyVariableDataByExecutionId(
 			@Parameter(description = "Execution Id") @PathVariable String executionId,
 			@Parameter(description = "Name of the variable") @PathVariable String variableName,
-			@Parameter(description = "Data to be updated") @RequestParam MultipartFile file,
+			@Parameter(description = "Data to be updated") @RequestParam MultipartFile data,
+			@Parameter(description = "Value type") @RequestParam Optional<String> valueType,
 			Locale loc, CIBUser user) {
 		checkCockpitRights(user);
-        checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.UPDATE_ALL);
-		bpmProvider.modifyVariableDataByExecutionId(executionId, variableName, file, user);
-    // return 204 No Content, no body
-    return ResponseEntity.noContent().build();
+		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.UPDATE_ALL);
+		final String valueTypeStr = valueType.orElse("File"); //  Enum: "Bytes" "File"
+		bpmProvider.modifyVariableDataByExecutionId(executionId, variableName, data, valueTypeStr, user);
+		// return 204 No Content, no body
+		return ResponseEntity.noContent().build();
 	}
 	
 	@Operation(
