@@ -61,11 +61,13 @@
 </template>
 
 <script>
+import { BWaitingBox } from 'cib-common-components'
 import { ProcessService } from '@/services.js'
 import { mapGetters, mapActions } from 'vuex'
 
 export default {
   name: 'EditVariableModal',
+  components: { BWaitingBox },
   props: {
     selectedInstance: {
       type: Object,
