@@ -20,6 +20,7 @@ import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.Data;
@@ -121,7 +122,14 @@ public class VariableInstance {
 
 		if ("json".equalsIgnoreCase(type)) {
 			try {
-				value = new ObjectMapper().writeValueAsString(value);
+				// obj is your Java object
+				ObjectMapper mapper = new ObjectMapper();
+
+				// Convert to JsonNode (real JSON object)
+				JsonNode jsonNode = mapper.valueToTree(value);
+
+				// Now convert JsonNode to pretty or compact JSON string
+				value = mapper.writeValueAsString(jsonNode);
 			} catch (JsonProcessingException e) {
 				e.printStackTrace();
 			}
