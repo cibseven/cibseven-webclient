@@ -95,4 +95,21 @@ public class Variable {
 		String objectTypeName;
 	}
 	*/
+
+	public void deserializeValue() {
+		if (value == null || isNull()) {
+			return;
+		}
+		if (value instanceof String) {
+			return; // already a string
+		}
+
+		if ("json".equalsIgnoreCase(type)) {
+			try {
+				value = new ObjectMapper().writeValueAsString(value);
+			} catch (JsonProcessingException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 }

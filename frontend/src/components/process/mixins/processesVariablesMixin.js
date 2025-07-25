@@ -27,7 +27,7 @@ export default {
 		return {
 			loading: true,
       filter: {
-        deserializeValue: false,
+        deserializeValue: true,
       },
 			variables: [],
 			file: null,
@@ -39,7 +39,7 @@ export default {
 			immediate: true,
 			handler: function () {
         this.filter = {
-          deserializeValue: false,
+          deserializeValue: true,
         }
 				this.variables = []
 				this.filteredVariables = []
@@ -71,7 +71,7 @@ export default {
     restFilter: function () {
       let result = {
         ...this.filter,
-        deserializeValue: false,
+        deserializeValue: true,
       }
       // https://docs.cibseven.org/rest/cibseven/2.0/#tag/Variable-Instance/operation/getVariableInstances
       if (result.activityInstanceIdIn) {
@@ -194,7 +194,7 @@ export default {
     changeFilter: function(queryObject) {
       this.filter = {
         ...queryObject,
-        deserializeValue: false
+        deserializeValue: true
       }
       this.loadSelectedInstanceVariables()
     }

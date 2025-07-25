@@ -34,7 +34,14 @@ public class HistoricVariableInstanceProvider extends SevenProviderBase implemen
 		if (deserializeValue != null) {
 			url += "?deserializeValue=" + deserializeValue;
 		}
-		return doGet(url, VariableHistory.class, user, false).getBody();
+		VariableHistory variableHistory = doGet(url, VariableHistory.class, user, false).getBody();
+		if (variableHistory != null) {
+			// Additional processing if needed
+			if (deserializeValue != null && deserializeValue) {
+				variableHistory.deserializeValue();
+			}
+		}
+		return variableHistory;
 	}
 
 }

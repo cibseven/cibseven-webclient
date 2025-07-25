@@ -109,7 +109,19 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		uriBuilder.queryParam("processInstanceIdIn", processInstanceId);
 
 		String url = uriBuilder.build().toUriString();
-		return Arrays.asList(((ResponseEntity<VariableHistory[]>) doGet(url, VariableHistory[].class, user, false)).getBody());
+		Collection<Variable> variables = Arrays.asList(((ResponseEntity<VariableHistory[]>) doGet(url, VariableHistory[].class, user, false)).getBody());
+
+		final boolean deserializeValue = data != null
+			&& data.containsKey("deserializeValue")
+			&& (Boolean) data.get("deserializeValue");
+
+		if (deserializeValue) {
+			variables.forEach(variable -> {
+				variable.deserializeValue();
+			});
+		}
+
+		return variables;
 	}
 	
 	@Override

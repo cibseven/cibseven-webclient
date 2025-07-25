@@ -145,23 +145,27 @@ export default {
         return item.valueInfo.filename
       }
       else if (item.type === 'Json') {
-        /*if (typeof item.value === 'object') {
+        if (typeof item.value === 'object') {
           try {
             return JSON.stringify(item.value, null, 2)
           } catch {
             return '- Json Object -'
           }
-        }*/
-        return '- Json Object -'
-      } else if (item.type === 'Object') {
-        try {
-          return JSON.stringify(item.value, null, 2)
-        } catch {
-          return '- Object -'
         }
+        return '- Json Object -'
+      }
+      else if (item.type === 'Object') {
+        if (typeof item.value === 'object') {
+          try {
+            return JSON.stringify(item.value, null, 2)
+          } catch {
+            return '- Object -'
+          }
+        }
+        return '- Object -'
       }
       else {
-        return item.value
+        return '' + item.value
       }
     },
     displayValueTooltip(item) {

@@ -19,6 +19,8 @@ package org.cibseven.webapp.rest.model;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.Data;
 
@@ -108,4 +110,21 @@ public class VariableInstance {
      * - serializationDataFormat: The serialization format used to store the variable.
      */
     private Map<String, Object> valueInfo;
+
+	public void deserializeValue() {
+		if (value == null) {
+			return;
+		}
+		if (value instanceof String) {
+			return; // already a string
+		}
+
+		if ("json".equalsIgnoreCase(type)) {
+			try {
+				value = new ObjectMapper().writeValueAsString(value);
+			} catch (JsonProcessingException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 }

@@ -39,13 +39,13 @@
       <b-form-group :label="$t('process-instance.variables.value')">
         <textarea
           class="form-control"
-          :class="{ 'is-invalid': isNewValueInvalid }"
+          :class="{ 'is-invalid': valueValidationError !== null }"
           rows="5"
           :placeholder="$t('process-instance.variables.enterValue')"
-          v-model="formattedJsonValue"
+          v-model="formattedValue"
           :disabled="disabled || saving">
         </textarea>
-        <div v-if="isNewValueInvalid" class="invalid-feedback">
+        <div v-if="valueValidationError" class="invalid-feedback">
           {{ valueValidationError }}
         </div>
       </b-form-group>
@@ -59,7 +59,7 @@
           <b-button v-if="disabled" @click="$refs.editVariableModal.hide()">{{ $t('confirm.close') }}</b-button>
           <template v-else>
             <b-button @click="$refs.editVariableModal.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
-            <b-button @click="updateVariable" variant="primary" :disabled="!variable || isNewValueInvalid || this.newValue === null || saving">{{ $t('process-instance.save') }}</b-button>
+            <b-button @click="updateVariable" variant="primary" :disabled="isSaveDisabled">{{ $t('process-instance.save') }}</b-button>
           </template>
         </div>
       </div>
@@ -86,7 +86,6 @@ export default {
       loading: false,
       saving: false,
       newValue: null,
-      valueValidationError: null
     }
   },
   computed: {
@@ -98,37 +97,153 @@ export default {
         ? this.currentHistoricVariableInstance
         : this.currentVariableInstance
     },
-    formattedJsonValue: {
-      get: function() {
-        if (this.variable) {
-          if (this.newValue !== null) {
-            return this.newValue
-          }
+    valueValidationError() {
+      if (!this.variable) {
+        return null
+      }
 
-          if (this.variable.type === 'Json') {
+      if (!this.formattedValue || this.formattedValue.trim() === '') {
+        return null
+      }
+
+      switch (this.variable.type) {
+        case 'String':
+        case 'Integer':
+        case 'Long':
+        case 'Double':
+        case 'Boolean':
+          // No specific validation needed for these types
+          return null
+        case 'Json': {
+          // JSON validation
+          try {
+            JSON.parse(this.formattedValue)
+            return null
+          } catch (e) {
+            return e.message
+          }
+        }
+        case 'Object': {
+          // Object validation
+          try {
+            const parsedValue = JSON.parse(this.formattedValue)
+            if (typeof parsedValue !== 'object' || parsedValue === null) {
+              return 'Invalid object format. Expected a JSON object.'
+            }
+            return null
+          } catch (e) {
+            return e.message
+          }
+        }
+        default:
+          // For any other type, we assume the value is valid
+          return null
+      }
+    },
+    formattedValue: {
+      get: function() {
+        if (!this.variable) {
+          return ''
+        }
+
+        if (this.newValue !== null) {
+          // If newValue is set, return it directly
+          return this.newValue
+        }
+
+        // Format the value based on its type
+        switch (this.variable.type) {
+          case 'String':
+          case 'Integer':
+          case 'Long':
+          case 'Double':
+          case 'Boolean':
+            return this.variable.value.toString() // Convert primitive types to string
+          case 'Json': {
             try {
               return JSON.stringify(JSON.parse(this.variable.value), null, 2)
             } catch {
-              return this.variable.value // Fallback to original value if parsing fails
+              return this.variable.value.toString() // Fallback to original value if parsing fails
             }
-          } else if (this.variable.type === 'Object') {
-            return JSON.stringify(this.variable.value, null, 2)
-          } else return this.variable.value
+          }
+          case 'Object': {
+            const objectTypeName = this.variable.valueInfo?.objectTypeName
+            switch (objectTypeName) {
+              case 'java.lang.String':
+              case 'java.lang.Integer':
+              case 'java.lang.Long':
+              case 'java.lang.Double':
+              case 'java.lang.Boolean':
+                return this.variable.value.toString() // Convert primitive object types to string
+              case 'java.util.Date':
+                return this.variable.value.toString()
+              case 'java.util.List':
+              case 'java.util.Map':
+              case 'java.util.ArrayList':
+              case 'java.util.HashMap':
+              case 'java.util.Set':
+              case 'java.util.Collection':
+              case 'java.util.LinkedList':
+              case 'java.util.HashSet':
+              case 'java.util.TreeSet':
+              case 'java.util.Vector':
+              case 'java.util.Stack':
+                return JSON.stringify(this.variable.value, null, 2) // Format collections as JSON
+              // Handle StringBuilder specifically
+              case 'java.lang.StringBuffer':
+              case 'java.lang.StringBuilder':
+                // If the value is a StringBuilder or StringBuffer, convert it to string
+                return this.variable.value.toString()
+              default: {
+                // For other object types, try to parse as JSON
+                if (typeof this.variable.value === 'string' && this.variable.value.trim() === '') {
+                  return '' // Return empty string for empty values
+                }
+                if (typeof this.variable.value === 'string' && this.variable.value.startsWith('{') && this.variable.value.endsWith('}')) {
+                  // If the value is a JSON object, parse and format it
+                  try {
+                    return JSON.stringify(JSON.parse(this.variable.value), null, 2)
+                  } catch {
+                    return this.variable.value.toString() // Fallback to original value if parsing fails
+                  }
+                }
+                if (typeof this.variable.value === 'string' && this.variable.value.startsWith('[') && this.variable.value.endsWith(']')) {
+                  // If the value is a JSON array
+                  try {
+                    return JSON.stringify(JSON.parse(this.variable.value), null, 2)
+                  } catch {
+                    return this.variable.value.toString() // Fallback to original value if parsing fails
+                  }
+                }
+              }
+            }
+            return this.variable.value.toString() // For any other object type, return the value directly
+          }
+          default:
+            return this.variable.value.toString() // For any other type, return the value directly
         }
-        return ''
       },
       set: function(val) {
-        this.validateJson(val)
-        if (!this.valueValidationError) {
-          this.newValue = this.variable.type === 'Object' ? JSON.parse(val) : val
-        }
-        else {
-          this.newValue = val
-        }
+        this.newValue = val
       }
     },
-    isNewValueInvalid() {
-      return this.valueValidationError !== null
+    isSaveDisabled() {
+      if (!this.variable) {
+        return true // Disable save if variable is not loaded
+      }
+      if (this.disabled) {
+        return true // Disable save if modal is in disabled state
+      }
+      if (this.saving) {
+        return true // Disable save if already saving
+      }
+      if (this.newValue === null) {
+        return true // Disable save if newValue is not set
+      }
+      if (this.valueValidationError !== null) {
+        return true // Disable save if there is a validation error
+      }
+      return false
     }
   },
   methods: {
@@ -144,83 +259,42 @@ export default {
 
       // Try active, fallback to historic if error
       // Use regular variable instance for active processes, historic for all others
+      const deserializeValue = true
       if (!this.disabled) {
         try {
-          await this.getVariableInstance({ id: variableId, deserializeValue: false })
+          await this.getVariableInstance({ id: variableId, deserializeValue })
         } catch {
-          await this.getHistoricVariableInstance({ id: variableId, deserializeValue: false })
+          await this.getHistoricVariableInstance({ id: variableId, deserializeValue })
         }
       } else {
-        await this.getHistoricVariableInstance({ id: variableId, deserializeValue: false })
+        await this.getHistoricVariableInstance({ id: variableId, deserializeValue })
       }
       this.loading = false
     },
     updateVariable: async function() {
       this.saving = true
-      if (this.variable.type === 'Object' && this.variable.valueInfo?.objectTypeName !== 'java.lang.StringBuilder') {
-        const executionId = this.variable.executionId
-        const variableName = this.variable.name
 
-        var formData = new FormData()
-        const jsonBlob = new Blob([this.variable.value], { type: 'application/json' })
-        formData.append('data', jsonBlob, 'blob')
-        formData.append('valueType', 'Bytes')
-
-        await ProcessService.modifyVariableDataByExecutionId(executionId, variableName, formData).then(() => {
-          this.$emit('variable-updated')
-          this.$refs.editVariableModal.hide()
-        })
+      const value = this.formattedValue.toString()
+      const data = { modifications: {} }
+      data.modifications[this.variable.name] = {
+        value,
+        type: this.variable.type,
+        valueInfo: this.variable.valueInfo
       }
-      else {
-        const data = { modifications: {} }
 
-        let value = this.newValue
-        if (this.variable.type === 'Json') {
-          // JSON validation already done in setter, no need for try-catch here
-          value = JSON.stringify(JSON.parse(value))
-        } else if (this.variable.type === 'Object') {
-          if (typeof value !== 'string') {
-            value = JSON.stringify(value)
-          }
-        }
-
-        const mod = { value, type: this.variable.type }
-        // Handle StringBuilder special case
-        const objectTypeName = this.variable.valueInfo?.objectTypeName
-        if (this.variable.type === 'Object' && objectTypeName === 'java.lang.StringBuilder') {
-          mod.value = JSON.stringify(value)
-          mod.valueInfo = this.variable.valueInfo
-        }
-        data.modifications[this.variable.name] = mod
+      try {
         await ProcessService.modifyVariableByExecutionId(this.variable.executionId, data).then(() => {
           this.$emit('variable-updated')
           this.$refs.editVariableModal.hide()
         })
       }
-      this.saving = false
-    },
-    validateJson(value) {
-      if (!this.variable || (!['Json', 'Object'].includes(this.variable.type))) {
-        this.valueValidationError = null
-        return
-      }
-
-      if (!value || value.trim() === '') {
-        this.valueValidationError = null
-        return
-      }
-
-      try {
-        JSON.parse(value)
-        this.valueValidationError = null
-      } catch (e) {
-        this.valueValidationError = e.message
+      finally {
+        this.saving = false
       }
     },
     clearVariableInstances() {
       this.clearVariableInstance()
       this.clearHistoricVariableInstance()
-      this.valueValidationError = null // Reset validation error when closing modal
     }
   }
 }
