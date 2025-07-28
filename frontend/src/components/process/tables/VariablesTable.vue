@@ -145,6 +145,11 @@ export default {
         return item.valueInfo.filename
       }
       else if (item.type === 'Json') {
+
+        if (typeof item.valueSerialized === 'string') {
+          return item.valueSerialized
+        }
+
         if (typeof item.value === 'object') {
           try {
             return JSON.stringify(item.value, null, 2)
@@ -155,12 +160,20 @@ export default {
         return '- Json Object -'
       }
       else if (item.type === 'Object') {
+
+        if (typeof item.valueDeserialized === 'object') {
+          return JSON.stringify(item.valueDeserialized, null, 2)
+        }
+
         if (typeof item.value === 'object') {
           try {
             return JSON.stringify(item.value, null, 2)
           } catch {
             return '- Object -'
           }
+        }
+        else if (typeof item.value === 'string') {
+          return item.value
         }
         return '- Object -'
       }

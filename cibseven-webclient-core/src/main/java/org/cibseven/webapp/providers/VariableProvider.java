@@ -17,8 +17,10 @@
 package org.cibseven.webapp.providers;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -32,7 +34,6 @@ import org.cibseven.webapp.exception.UnexpectedTypeException;
 import org.cibseven.webapp.rest.model.ProcessStart;
 import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpEntity;
@@ -91,6 +92,41 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 			throw wrapException(e, user);
 		}
 	}
+
+	private void mergeVariablesValues(
+		Collection<Variable> variablesDeserialized,
+		Collection<Variable> variablesSerialized,
+		boolean deserializeValues) {
+
+		if (variablesDeserialized == null) {
+			return;
+		}
+
+		if (variablesSerialized == null) {
+			return;
+		}
+
+		Collection<Variable> variables = (deserializeValues) ? variablesDeserialized : variablesSerialized;
+		variables.forEach(variable -> {
+			String name = variable.getName();
+
+			Variable variableSerialized = (!deserializeValues) ? variable : variablesSerialized.stream()
+				.filter(v -> v.getName().equals(name))
+				.findFirst()
+				.orElse(null);
+			if (variableSerialized != null) {
+				variable.setValueSerialized(variableSerialized.getValue());
+			}
+
+			Variable variableDeserialized = (deserializeValues) ? variable : variablesDeserialized.stream()
+				.filter(v -> v.getName().equals(name))
+				.findFirst()
+				.orElse(null);
+			if (variableDeserialized != null) {
+				variable.setValueDeserialized(variableDeserialized.getValue());
+			}
+		});
+	}
 	
 	@Override
 	public Collection<Variable> fetchProcessInstanceVariables(String processInstanceId, Map<String, Object> data, CIBUser user) throws SystemException {
@@ -108,19 +144,30 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		}
 		uriBuilder.queryParam("processInstanceIdIn", processInstanceId);
 
-		String url = uriBuilder.build().toUriString();
-		Collection<Variable> variables = Arrays.asList(((ResponseEntity<VariableHistory[]>) doGet(url, VariableHistory[].class, user, false)).getBody());
+		final boolean deserializeValues = data != null
+			&& data.containsKey("deserializeValues")
+			&& (Boolean) data.get("deserializeValues");
 
-		final boolean deserializeValue = data != null
-			&& data.containsKey("deserializeValue")
-			&& (Boolean) data.get("deserializeValue");
-
-		if (deserializeValue) {
-			variables.forEach(variable -> {
-				variable.deserializeValue();
-			});
+		uriBuilder.replaceQueryParam("deserializeValues", "true");
+		String urlDeserialized = uriBuilder.build().toUriString();
+		Collection<Variable> variablesDeserialized = Arrays.asList(((ResponseEntity<VariableHistory[]>) doGet(urlDeserialized, VariableHistory[].class, user, false)).getBody());
+		if (variablesDeserialized == null) {
+			return Collections.emptyList();
 		}
 
+		uriBuilder.replaceQueryParam("deserializeValues", "false");
+		String urlSerialized = uriBuilder.build().toUriString();
+		Collection<Variable> variablesSerialized = Arrays.asList(((ResponseEntity<VariableHistory[]>) doGet(urlSerialized, VariableHistory[].class, user, false)).getBody());
+		if (variablesSerialized == null) {
+			return Collections.emptyList();
+		}
+
+		mergeVariablesValues(
+			variablesDeserialized,
+			variablesSerialized,
+			deserializeValues);
+
+		Collection<Variable> variables = (deserializeValues) ? variablesDeserialized : variablesSerialized;
 		return variables;
 	}
 	
@@ -160,8 +207,42 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		}
 		uriBuilder.queryParam("processInstanceIdIn", processInstanceId);
 
-		String url = uriBuilder.build().toUriString();
-		return Arrays.asList(((ResponseEntity<VariableHistory[]>) doGet(url, VariableHistory[].class, user, false)).getBody());
+		final boolean deserializeValues = data != null
+			&& data.containsKey("deserializeValues")
+			&& (Boolean) data.get("deserializeValues");
+
+		uriBuilder.replaceQueryParam("deserializeValues", "true");
+		String urlDeserialized = uriBuilder.build().toUriString();
+		Collection<VariableHistory> variablesDeserialized = Arrays.asList(((ResponseEntity<VariableHistory[]>) doGet(urlDeserialized, VariableHistory[].class, user, false)).getBody());
+		if (variablesDeserialized == null) {
+			return Collections.emptyList();
+		}
+
+		uriBuilder.replaceQueryParam("deserializeValues", "false");
+		String urlSerialized = uriBuilder.build().toUriString();
+		Collection<VariableHistory> variablesSerialized = Arrays.asList(((ResponseEntity<VariableHistory[]>) doGet(urlSerialized, VariableHistory[].class, user, false)).getBody());
+		if (variablesSerialized == null) {
+			return Collections.emptyList();
+		}
+
+		// Get list of variables and merge them
+		final ArrayList<Variable> variablesDeserializedTyped = new ArrayList<>();
+		if (variablesDeserialized.size() > 0) {
+			variablesDeserializedTyped.addAll(variablesDeserialized);
+		}
+
+		final ArrayList<Variable> variablesSerializedTyped = new ArrayList<>();
+		if (variablesSerialized.size() > 0) {
+			variablesSerializedTyped.addAll(variablesSerialized);
+		}
+
+		mergeVariablesValues(
+			variablesDeserializedTyped,
+			variablesSerializedTyped,
+			deserializeValues);
+
+		Collection<VariableHistory> variables = (deserializeValues) ? variablesDeserialized : variablesSerialized;
+		return variables;
 	}
 	
 	@Override
@@ -194,7 +275,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
 		}
-	}	
+	}
 	
 	@Override
 	public Variable fetchVariable(String taskId, String variableName, 

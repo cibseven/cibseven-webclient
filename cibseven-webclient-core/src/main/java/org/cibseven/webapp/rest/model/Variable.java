@@ -22,7 +22,6 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.Data;
@@ -33,6 +32,8 @@ public class Variable {
 	private String name;
 	private String type;
 	private Object value;
+	private Object valueSerialized;
+	private Object valueDeserialized;
 
 	private Map<String, String> valueInfo = new HashMap<>();
 	
@@ -71,7 +72,15 @@ public class Variable {
 	public String setObjectTypeName(String value) {
 		return valueInfo.put("objectTypeName", value);
 	}
-	
+
+	public void setValueSerialized(Object value) {
+		this.valueSerialized = value;
+	}
+
+	public void setValueDeserialized(Object value) {
+		this.valueDeserialized = value;
+	}
+
 	@JsonIgnore
 	public boolean isNull() {
 		return "Null".equals(type);
@@ -96,28 +105,4 @@ public class Variable {
 		String objectTypeName;
 	}
 	*/
-
-	public void deserializeValue() {
-		if (value == null || isNull()) {
-			return;
-		}
-		if (value instanceof String) {
-			return; // already a string
-		}
-
-		if ("json".equalsIgnoreCase(type)) {
-			try {
-				// obj is your Java object
-				ObjectMapper mapper = new ObjectMapper();
-
-				// Convert to JsonNode (real JSON object)
-				JsonNode jsonNode = mapper.valueToTree(value);
-
-				// Now convert JsonNode to pretty or compact JSON string
-				value = mapper.writeValueAsString(jsonNode);
-			} catch (JsonProcessingException e) {
-				e.printStackTrace();
-			}
-		}
-	}
 }

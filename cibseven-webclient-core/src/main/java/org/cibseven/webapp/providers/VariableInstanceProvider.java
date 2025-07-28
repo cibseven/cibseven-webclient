@@ -40,14 +40,7 @@ public class VariableInstanceProvider extends SevenProviderBase implements IVari
 		}
 
 		String url = uriBuilder.buildAndExpand(id).toUriString();
-		VariableInstance variableInstance = doGet(url, VariableInstance.class, user, false).getBody();
-		if (variableInstance != null) {
-			// Additional processing if needed
-			if (deserializeValue != null && deserializeValue) {
-				variableInstance.deserializeValue();
-			}
-		}
-		return variableInstance;
+		return doGet(url, VariableInstance.class, user, false).getBody();
 	}
 
 }
