@@ -1,7 +1,7 @@
 {
   "name": "cib-common-components",
   "description": "Common vue components for building different web applications",
-  "version": "2.0.2-0-SNAPSHOT",
+  "version": "2.0.1-5-SNAPSHOT",
   "type": "module",
   "license": "Apache-2.0",
   "main": "./src/main.js",
@@ -30,7 +30,7 @@
   "dependencies": {
     "bootstrap": "^5.3.6",
     "vue": "^3.5.13",
-    "vue-i18n": "^11.1.2",
+    "vue-i18n": "^11.1.10",
     "vue-router": "^4.5.1"
   },
   "devDependencies": {
