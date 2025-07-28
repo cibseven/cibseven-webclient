@@ -165,9 +165,9 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 	 * This can be injected into services that need to make HTTP requests.
 	 * 
 	 * The bean is configured using properties from application.yaml under
-	 * the cibseven.webclient.rest.client namespace.
+	 * the cibseven.webclient.rest namespace.
 	 * 
-	 * This bean is conditional and will only be created if cibseven.webclient.rest.client.enabled=true
+	 * This bean is conditional and will only be created if cibseven.webclient.rest.enabled=true
 	 * or if the property is not specified (default behavior).
 	 * 
 	 * @return a configured CustomRestTemplate instance
