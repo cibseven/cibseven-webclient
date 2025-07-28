@@ -253,7 +253,6 @@ export default {
       this.loading = true
       this.newValue = null
       this.saving = false
-      this.valueValidationError = null // Reset validation error
 
       this.$refs.editVariableModal.show()
 
