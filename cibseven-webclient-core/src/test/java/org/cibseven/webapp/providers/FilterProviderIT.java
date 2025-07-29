@@ -18,6 +18,7 @@ package org.cibseven.webapp.providers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.cibseven.webapp.rest.TestRestTemplateConfiguration;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,13 +35,13 @@ import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 
 @SpringBootTest
-@ContextConfiguration(classes = {FilterProvider.class})
+@ContextConfiguration(classes = {FilterProvider.class, TestRestTemplateConfiguration.class})
 public class FilterProviderIT extends BaseHelper {
 
     static {
         System.setProperty("spring.banner.location", "classpath:fca-banner.txt");
     }
-	
+
     private MockWebServer mockWebServer;
 
     @Autowired

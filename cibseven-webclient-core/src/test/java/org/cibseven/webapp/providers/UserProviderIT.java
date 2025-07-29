@@ -32,18 +32,19 @@ import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.rest.model.SevenUser;
 import org.cibseven.webapp.rest.model.SevenVerifyUser;
 import org.cibseven.webapp.rest.model.User;
+import org.cibseven.webapp.rest.TestRestTemplateConfiguration;
 
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 
 @SpringBootTest
-@ContextConfiguration(classes = {UserProvider.class})
+@ContextConfiguration(classes = {UserProvider.class, TestRestTemplateConfiguration.class})
 public class UserProviderIT extends BaseHelper {
 
     static {
         System.setProperty("spring.banner.location", "classpath:fca-banner.txt");
     }
-	
+
     private MockWebServer mockWebServer;
 
     @Autowired
@@ -124,7 +125,7 @@ public class UserProviderIT extends BaseHelper {
         assertThat(firstUser.getId()).isEqualTo("user-1");
         assertThat(firstUser.getFirstName()).isEqualTo("John");
     }
-    
+
     @Test
     void testVerifyUser() throws Exception {
         // Arrange

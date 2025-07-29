@@ -33,7 +33,7 @@ pipeline {
     // Parameter that can be changed in the Jenkins UI
     parameters {
         booleanParam(
-            name: 'INSTALL',
+            name: 'PACKAGE',
             defaultValue: true,
             description: 'Build and test'
         )
@@ -115,14 +115,14 @@ pipeline {
             }
         }
 
-        stage('Maven install') {
+        stage('Maven package') {
             when {
-                expression { params.INSTALL }
+                expression { params.PACKAGE }
             }
             steps {
                 script {
                     withMaven(options: [junitPublisher(disabled: false), jacocoPublisher(disabled: false)]) {
-                        sh "mvn -T4 -Dbuild.number=${BUILD_NUMBER} clean install"
+                        sh "mvn -T4 -Dbuild.number=${BUILD_NUMBER} clean package"
                     }
                     if (!params.DEPLOY_TO_MAVEN_CENTRAL) {
                         junit allowEmptyResults: true, testResults: ConstantsInternal.MAVEN_TEST_RESULTS
@@ -159,11 +159,11 @@ pipeline {
             steps {
                 script {
                     withMaven(options: []) {
-                        def skipTestsFlag = params.INSTALL ? "-DskipTests" : ""
+                        def skipTestsFlag = params.PACKAGE ? "-DskipTests" : ""
                         sh "mvn -T4 -U clean deploy ${skipTestsFlag}"
                     }
 
-                    if (!params.INSTALL) {
+                    if (!params.PACKAGE) {
                         junit allowEmptyResults: true, testResults: ConstantsInternal.MAVEN_TEST_RESULTS
 
                         // Show coverage in Jenkins UI

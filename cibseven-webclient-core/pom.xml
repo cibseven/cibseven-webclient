@@ -25,12 +25,32 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		
+
+		<!-- Apache HttpClient for connection pooling -->
+		<dependency>
+			<groupId>org.apache.httpcomponents.client5</groupId>
+			<artifactId>httpclient5</artifactId>
+		</dependency>
+
+		<!-- Spring Boot Configuration Processor for configuration properties -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-configuration-processor</artifactId>
+			<optional>true</optional>
+		</dependency>
+
+		<!-- Micrometer for metrics (optional) -->
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-core</artifactId>
+			<optional>true</optional>
+		</dependency>
+
 		<dependency>
     		<groupId>org.slf4j</groupId>
 		    <artifactId>slf4j-api</artifactId>
 		</dependency>
-		
+
 	    <dependency>
 	        <groupId>org.apache.logging.log4j</groupId>
 	        <artifactId>log4j-slf4j-impl</artifactId>
@@ -42,17 +62,17 @@
 			<artifactId>lombok</artifactId>
 			<scope>provided</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>jakarta.activation</groupId>
 			<artifactId>jakarta.activation-api</artifactId>
 		</dependency>
-		
+
 		<dependency>
 		    <groupId>jakarta.validation</groupId>
 		    <artifactId>jakarta.validation-api</artifactId>
 		</dependency>
-		
+
 		<dependency>
 		    <groupId>jakarta.ws.rs</groupId>
 		    <artifactId>jakarta.ws.rs-api</artifactId>
@@ -63,13 +83,13 @@
 		    <artifactId>jjwt-api</artifactId>
 		    <version>${jjwt.version}</version>
 		</dependency>
-		
+
 		<dependency>
 		    <groupId>io.jsonwebtoken</groupId>
 		    <artifactId>jjwt-impl</artifactId>
 		    <version>${jjwt.version}</version>
 		</dependency>
-		
+
 		<dependency>
 		    <groupId>io.jsonwebtoken</groupId>
 		    <artifactId>jjwt-jackson</artifactId> <!-- or jjwt-gson if Gson is preferred -->
@@ -81,33 +101,33 @@
         	<artifactId>swagger-annotations-jakarta</artifactId>
 			<version>${swagger-annotations.version}</version>				
 		</dependency>
-		
+
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 			<version>${commons-io.version}</version>
 		</dependency>	
-		
+
 		<dependency>
 			<groupId>org.cibseven.webapp.auth</groupId>
 			<artifactId>common-auth</artifactId>
 			<version>${common-auth.version}</version>
 		</dependency>
-		
+
 		<dependency>
 		    <groupId>org.springframework.boot</groupId>
 		    <artifactId>spring-boot-starter-test</artifactId>
 		    <version>${version.spring.boot}</version>
 		    <scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
 		    <groupId>com.squareup.okhttp3</groupId>
 		    <artifactId>mockwebserver</artifactId>
 		    <version>4.12.0</version>
 		    <scope>test</scope>
 		</dependency>
-		
+
 	    <dependency>
 	        <groupId>ch.qos.logback</groupId>
 	        <artifactId>logback-classic</artifactId>

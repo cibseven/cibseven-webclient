@@ -71,10 +71,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class ProcessProvider extends SevenProviderBase implements IProcessProvider{
 
 	 @Autowired private IIncidentProvider incidentProvider;
-	
+
 	@Value("${cibseven.webclient.fetchInstances:true}") boolean fetchInstances;
 	@Value("${cibseven.webclient.fetchIncidents:true}") boolean fetchIncidents;
-	
+
 	@Override
 	public Collection<Process> findProcesses(CIBUser user) {
 		String url = getEngineRestUrl() + "/process-definition?latestVersion=true&sortBy=name&sortOrder=desc";
@@ -84,22 +84,22 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 
 	@Override
 	public Collection<Process> findProcessesWithInfo(CIBUser user) {
-		
+
 		// Get statistics for all process definitions in one call
 		Map<String, Object> queryParams = new HashMap<>();
 		queryParams.put("failedJobs", true);
 		queryParams.put("incidents", true);
 		Collection<ProcessStatistics> statisticsCollection = getProcessStatistics(queryParams, user);
-		
+
 		// Group by key and tenant ID to consolidate different versions
 		List<ProcessStatistics> groupedStatistics = groupProcessStatisticsByKeyAndTenant(statisticsCollection);
-		
+
 		// Build Process objects directly from grouped ProcessStatistics
 		return groupedStatistics.stream()
 				.map(stats -> {
 					Process process = new Process();
 					ProcessDefinitionInfo definition = stats.getDefinition();
-					
+
 					// Copy fields from ProcessDefinitionInfo
 					if (definition != null) {
 						process.setId(definition.getId());
@@ -117,7 +117,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 						process.setHistoryTimeToLive(definition.getHistoryTimeToLive() != null ? definition.getHistoryTimeToLive().toString() : null);
 						process.setStartableInTasklist(definition.getStartableInTasklist());
 					}
-					
+
 					// Set aggregated statistics data
 					process.setRunningInstances(stats.getInstances());
 					// Calculate total incidents from all incident types
@@ -125,11 +125,11 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 						? stats.getIncidents().stream().mapToLong(incident -> incident.getIncidentCount()).sum()
 						: 0L;
 					process.setIncidents(totalIncidents);
-					
+
 					// Set default values for fields not available in statistics
 					process.setAllInstances(stats.getInstances()); // Same as running instances for now
 					process.setCompletedInstances(0L); // Would need separate call to get completed instances
-					
+
 					return process;
 				})
 				.collect(Collectors.toList());
@@ -140,32 +140,32 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		try {
 			String url = getEngineRestUrl() + "/process-definition?" + URLDecoder.decode(filters, StandardCharsets.UTF_8.toString());
 			Collection<Process> processes = Arrays.asList(((ResponseEntity<Process[]>) doGet(url, Process[].class, user, false)).getBody());
-			
+
 			for(Process process : processes) {
 				String urlInstances = getEngineRestUrl() + "/process-instance/count?processDefinitionId=" + process.getId();
 				process.setRunningInstances(((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody().get("count").asLong());
 			}
-			
+
 			return processes;
 		} catch (Exception e) {
 			throw new SystemException(e);
 		}
-		
+
 	}	
-	
+
 	@Override
 	public Process findProcessByDefinitionKey(String key, String tenantId, CIBUser user) {
 		String url = getEngineRestUrl() + "/process-definition/key/" + key;
 		url += tenantId != null ? ("/tenant-id/" + tenantId) : "";
 		return ((ResponseEntity<Process>) doGet(url, Process.class, user, false)).getBody();		
 	}
-	
+
 	@Override
 	public Collection<Process> findProcessVersionsByDefinitionKey(String key, String tenantId, Optional<Boolean> lazyLoad, CIBUser user) {
 		String url = getEngineRestUrl() + "/process-definition?key=" + key + "&sortBy=version&sortOrder=desc";
 		url += tenantId != null ? ("&tenantIdIn=" + tenantId) : "&withoutTenantId=true";
 		Collection<Process> processes = Arrays.asList(((ResponseEntity<Process[]>) doGet(url, Process[].class, user, false)).getBody());		
-		
+
 		if (!lazyLoad.isPresent() || (lazyLoad.isPresent() && !lazyLoad.get())) {
 			for(Process process : processes) {
 				String urlInstances = getEngineRestUrl() + "/history/process-instance/count?processDefinitionId=" + process.getId();
@@ -178,12 +178,12 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		}
 		return processes;
 	}
-	
+
 	@Override
 	public Process findProcessById(String id, Optional<Boolean> extraInfo, CIBUser user) throws SystemException {
 		String url = getEngineRestUrl() + "/process-definition/" + id;
 		Process process = ((ResponseEntity<Process>) doGet(url, Process.class, user, false)).getBody();
-		
+
 		if (extraInfo.isPresent() && extraInfo.get()) {
 			String urlInstances = getEngineRestUrl() + "/history/process-instance/count?processDefinitionId=" + id;
 			process.setAllInstances(((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody().get("count").asLong());
@@ -192,53 +192,53 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 			urlInstances = getEngineRestUrl() + "/history/process-instance/count?completed=true&processDefinitionId=" + process.getId();
 			process.setCompletedInstances(((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody().get("count").asLong());
 		}
-		
+
 		return process;
 	}
-	
+
 	@Override
 	public Collection<ProcessInstance> findProcessesInstances(String key, CIBUser user) {
 		String url = getEngineRestUrl() + "/process-instance?processDefinitionKey=" + key;
 		return Arrays.asList(((ResponseEntity<ProcessInstance[]>) doGet(url, ProcessInstance[].class, user, false)).getBody());	
 	}
-	
+
 	@Override
 	public Collection<ProcessInstance> findCurrentProcessesInstances(Map<String, Object> data, CIBUser user) {
 		String url = getEngineRestUrl() + "/process-instance";
 		return Arrays.asList(((ResponseEntity<ProcessInstance[]>) doPost(url, data, ProcessInstance[].class, user)).getBody());
 	}
-	
+
 	@Override
 	public ProcessDiagram fetchDiagram(String id, CIBUser user) {
 		String url = getEngineRestUrl() + "/process-definition/" + id + "/xml";
 		return ((ResponseEntity<ProcessDiagram>) doGet(url, ProcessDiagram.class, user, false)).getBody();
 	}
-	
+
 	@Override
 	public StartForm fetchStartForm(String processDefinitionId, CIBUser user) {
 		String url = getEngineRestUrl() + "/process-definition/" + processDefinitionId + "/startForm";
 		return ((ResponseEntity<StartForm>) doGet(url, StartForm.class, user, false)).getBody();
 	}
-	
+
 	@Override
 	public Data downloadBpmn(String id, String fileName, CIBUser user) {
 		ProcessDiagram diagram = fetchDiagram(id, user);
 			ByteArrayResource resource = new ByteArrayResource(diagram.getBpmn20Xml().getBytes());
 			return new Data(fileName, "application/bpmn+xml", resource, resource.contentLength());
 	}
-	
+
 	@Override
 	public void suspendProcessInstance(String processInstanceId, Boolean suspend, CIBUser user) {
 		String url = getEngineRestUrl() + "/process-instance/" + processInstanceId + "/suspended";
 		doPut(url, "{ \"suspended\": " + suspend + " }", user);
 	}
-	
+
 	@Override
 	public void deleteProcessInstance(String processInstanceId, CIBUser user) {
 		String url = getEngineRestUrl() + "/process-instance/" + processInstanceId;
 		doDelete(url, user);
 	}
-	
+
 	@Override
 	public void suspendProcessDefinition(String processDefinitionId, Boolean suspend, Boolean includeProcessInstances, String executionDate, CIBUser user) {
 		String url = getEngineRestUrl() + "/process-definition/" + processDefinitionId + "/suspended";
@@ -255,7 +255,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		url += (tenantId != null ? ("/tenant-id/" + tenantId) : "") + "/start";
 		return ((ResponseEntity<ProcessStart>) doPost(url, data, ProcessStart.class, user)).getBody();
 	}
-	
+
 	@Override
 	public ProcessStart submitForm(String processDefinitionKey, String tenantId, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
 		// Used by Webdesk
@@ -263,7 +263,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		url += (tenantId != null ? ("/tenant-id/" + tenantId) : "") + "/submit-form";
 		return ((ResponseEntity<ProcessStart>) doPost(url, data, ProcessStart.class, user)).getBody();
 	}
-	
+
 	@Override
 	public Collection<ProcessStatistics> findProcessStatistics(String processId, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
 		String url = getEngineRestUrl() + "/process-definition/" + processId + "/statistics?failedJobs=true&incidents=true";
@@ -275,13 +275,13 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
     String url = URLUtils.buildUrlWithParams(getEngineRestUrl() + "/process-definition/statistics", queryParams);
     return Arrays.asList(((ResponseEntity<ProcessStatistics[]>) doGet(url, ProcessStatistics[].class, user, false)).getBody());
   }
-	
+
 	@Override
 	public HistoryProcessInstance findHistoryProcessInstanceHistory(String processInstanceId, CIBUser user) {
 		String url = getEngineRestUrl() + "/history/process-instance/" + processInstanceId;
 		return ((ResponseEntity<HistoryProcessInstance>) doGet(url, HistoryProcessInstance.class, user, false)).getBody();
 	}
-	
+
 	@Override
 	public Collection<HistoryProcessInstance> findProcessesInstancesHistory(Map<String, Object> data,
 			Optional<Integer> firstResult, Optional<Integer> maxResults, CIBUser user) {
@@ -290,7 +290,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		if (maxResults.isPresent()) queryParams.put("maxResults", maxResults.get());
 		String url = URLUtils.buildUrlWithParams(getEngineRestUrl() + "/history/process-instance", queryParams);
 		Collection<HistoryProcessInstance> processes = Arrays.asList(((ResponseEntity<HistoryProcessInstance[]>) doPost(url, data, HistoryProcessInstance[].class, user)).getBody());
-		
+
 		// Check if caller wants incident handling
 		Boolean fetchIncidents = (Boolean) data.get("fetchIncidents");
 		if (fetchIncidents != null && fetchIncidents) {
@@ -298,27 +298,27 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 			if (processDefinitionId != null) {
 				@SuppressWarnings("unchecked")
 				List<String> activityIdIn = (List<String>) data.get("activeActivityIdIn");
-				
+
 				// Handle case where no processes found with activity filter - fallback to incident-based search
 				if ((processes == null || processes.isEmpty()) && activityIdIn != null && !activityIdIn.isEmpty()) {
 					String activityId = activityIdIn.get(0);
 					Collection<Incident> incidents = incidentProvider.fetchIncidentsByInstanceAndActivityId(processDefinitionId, activityId, user);
-					
+
 					if (incidents != null && !incidents.isEmpty()) {
 						Map<String, List<Incident>> incidentsByProcessInstance = incidents.stream()
 							.collect(Collectors.groupingBy(Incident::getProcessInstanceId));
-						
+
 						Set<String> processInstanceIds = incidentsByProcessInstance.keySet();
-						
+
 						// Create new query for process instances with incidents
 						Map<String, Object> dataIdIn = new HashMap<>(data);
 						dataIdIn.put("processInstanceIdIn", processInstanceIds);
 						dataIdIn.remove("activeActivityIdIn"); // Remove activity filter for fallback search
-						
+
 						processes = Arrays.asList(
 							((ResponseEntity<HistoryProcessInstance[]>) doPost(url, dataIdIn, HistoryProcessInstance[].class, user)).getBody()
 						);
-						
+
 						// Associate incidents with process instances
 						processes.forEach(p -> p.setIncidents(incidentsByProcessInstance.getOrDefault(p.getId(), Collections.emptyList())));
 					}
@@ -330,10 +330,10 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 				}
 			}
 		}
-		
+
 		return processes;
 	}
-	
+
 	@Override
 	public Collection<HistoryProcessInstance> findProcessesInstancesHistory(String key, Optional<Boolean> active, 
 			Integer firstResult, Integer maxResults, CIBUser user) {
@@ -344,7 +344,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		url += "&firstResult=" + firstResult + "&maxResults=" + maxResults;
 		return Arrays.asList(((ResponseEntity<HistoryProcessInstance[]>) doGet(url, HistoryProcessInstance[].class, user, false)).getBody());	
 	}
-	
+
 	@Override
 	public Collection<HistoryProcessInstance> findProcessesInstancesHistoryById(String id, Optional<String> activityId, Optional<Boolean> active, 
 			Integer firstResult, Integer maxResults, String text, CIBUser user) {
@@ -375,29 +375,29 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		}
 		//findIncident
 		Collection<HistoryProcessInstance> processes = Arrays.asList(((ResponseEntity<HistoryProcessInstance[]>) doPost(url, body, HistoryProcessInstance[].class, user)).getBody());
-		
+
 		if ((processes == null || processes.isEmpty()) && activityId.isPresent() && !activityId.get().isEmpty()) {
 			Collection<Incident> incidents = incidentProvider.fetchIncidentsByInstanceAndActivityId(id, activityId.get(), user);
 		    if (incidents != null && !incidents.isEmpty()) {
 		        Map<String, List<Incident>> incidentsByProcessInstance = incidents.stream()
 		            .collect(Collectors.groupingBy(Incident::getProcessInstanceId));
-		        
+
 		        Set<String> processInstanceIds = incidentsByProcessInstance.keySet();
-		        
+
 		        Map<String, Object> dataIdIn = new HashMap<>();
 		        dataIdIn.put("processInstanceIdIn", processInstanceIds);
 		        dataIdIn.put("processDefinitionId", id);
 		        dataIdIn.put("firstResult", firstResult);
 		        dataIdIn.put("maxResults", maxResults);
 		        dataIdIn.put("sorting", sorting);
-		        
+
 		        String bodyIdIn = "";
 		        try {
 		        	bodyIdIn = objectMapper.writeValueAsString(dataIdIn);
 		        } catch (JsonProcessingException e) {
 		            throw new SystemException(e);
 		        }
-		        
+
 		        processes = Arrays.asList(
 		            ((ResponseEntity<HistoryProcessInstance[]>) doPost(url, bodyIdIn, HistoryProcessInstance[].class, user)).getBody()
 		        );
@@ -408,7 +408,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 				p.setIncidents(incidentProvider.findIncidentByInstanceId(p.getId(), user));
 			});
 		}
-			
+
 		return processes;
 	}
 
@@ -417,39 +417,31 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		String url = getEngineRestUrl() + "/history/process-instance/count";
 		return ((ResponseEntity<JsonNode>) doPost(url, filters, JsonNode.class, user)).getBody().get("count").asLong();
 	}
-	
+
 	@Override
 	public ProcessInstance findProcessInstance(String processInstanceId, CIBUser user) {
 		String url = getEngineRestUrl() + "/process-instance/" + processInstanceId;
 		return ((ResponseEntity<ProcessInstance>) doGet(url, ProcessInstance.class, user, false)).getBody();
 	}
-	
+
 	@Override
 	public Variable fetchProcessInstanceVariable(String processInstanceId, String variableName, String deserializeValue, CIBUser user) throws SystemException  {
 		String url = getEngineRestUrl() + "/process-instance/" + processInstanceId + "/variables/" + variableName;
 		url += StringUtils.isEmpty(deserializeValue) ? "" : "?deserializeValue=" + deserializeValue;
 		return ((ResponseEntity<Variable>) doGet(url, Variable.class, null, false)).getBody();
 	}
-	
+
 	@Override
 	public Collection<Process> findCalledProcessDefinitions(String processDefinitionId, CIBUser user) {
 		String url = getEngineRestUrl() + "/process-definition/" + processDefinitionId + "/static-called-process-definitions";
-		
+
 		return Arrays.asList(((ResponseEntity<Process[]>) doGet(url, Process[].class, user, false)).getBody());
 	}
-	
+
 	@Override
 	public ResponseEntity<byte[]> getDeployedStartForm(String processDefinitionId, CIBUser user) {
 		String url = getEngineRestUrl() + "/process-definition/" + processDefinitionId + "/deployed-start-form";
-		RestTemplate restTemplate = new RestTemplate();
-		restTemplate.getMessageConverters().add(new ByteArrayHttpMessageConverter());
-		HttpHeaders headers = new HttpHeaders();
-	    headers.setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM));
-	    UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
-		if (user != null) headers.add("Authorization", user.getAuthToken());
-		HttpEntity<String> entity = new HttpEntity<String>(headers);
-	    ResponseEntity<byte[]> response = restTemplate.exchange(builder.build().toUriString(), HttpMethod.GET, entity, byte[].class, "1");
-		return response;
+		return doGetWithHeader(url, byte[].class, user, true, MediaType.APPLICATION_OCTET_STREAM);
 	}
 
 	@Override
@@ -467,7 +459,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		String url = getEngineRestUrl() + "/history/process-instance/" + id;
 		doDelete(url, user);
 	}
-	
+
 	@Override
 	public void deleteProcessDefinition(String id, Optional<Boolean> cascade, CIBUser user) {
 		boolean cascadeVal = cascade.orElse(true);
@@ -492,12 +484,12 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 			.stream()
 			.map(group -> {
 				ProcessStatistics result = new ProcessStatistics();
-				
+
 				// Sort by version descending and use the latest version's definition
 				ProcessStatistics latestVersion = group.stream()
 					.max(Comparator.comparing(stat -> stat.getDefinition().getVersion()))
 					.orElse(group.get(0));
-				
+
 				result.setDefinition(latestVersion.getDefinition());
 				result.setId(latestVersion.getId());
 
@@ -521,7 +513,6 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 			})
 			.collect(Collectors.toList());
 	}
-
 	@Override
 	public Object fetchHistoricActivityStatistics(String id, Map<String, Object> params, CIBUser user) {
 	    String url = URLUtils.buildUrlWithParams(getEngineRestUrl() + "/history/process-definition/" + id + "/statistics", params);

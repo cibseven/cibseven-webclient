@@ -17,10 +17,7 @@
 package org.cibseven.webapp.auth;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Collection;
-import java.util.Optional;
 
 import javax.crypto.SecretKey;
 
@@ -33,7 +30,6 @@ import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.providers.SevenProvider;
 import org.cibseven.webapp.rest.model.SevenUser;
 import org.cibseven.webapp.rest.model.SevenVerifyUser;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -45,9 +41,10 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 
-public class SevenUserProvider extends BaseUserProvider<StandardLogin> implements InitializingBean {
+public class SevenUserProvider extends BaseUserProvider<StandardLogin> {
 	
 	@Value("${cibseven.webclient.authentication.jwtSecret:}") String secret;	
 	@Value("${cibseven.webclient.authentication.tokenValidMinutes:60}") long validMinutes;	
@@ -58,11 +55,13 @@ public class SevenUserProvider extends BaseUserProvider<StandardLogin> implement
 	@Autowired BpmProvider provider;
 	SevenProvider sevenProvider;
 	
-	public void afterPropertiesSet() {
+	@PostConstruct
+	public void init() {
 		settings = new JwtTokenSettings(secret, validMinutes, prolongMinutes);
 		if (provider instanceof SevenProvider)
 			sevenProvider = (SevenProvider) provider;
 		else throw new SystemException("SevenUserProvider expects a SevenProvider");
+		checkKey();
 	}
 	
 	@Override

@@ -79,7 +79,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-@Component
 public class SevenProvider extends SevenProviderBase implements BpmProvider {
 		@Autowired private IDeploymentProvider deploymentProvider;
     @Autowired private IVariableProvider variableProvider;
