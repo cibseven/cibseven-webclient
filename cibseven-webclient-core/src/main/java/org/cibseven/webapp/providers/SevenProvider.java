@@ -390,6 +390,11 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 			throws SystemException {
 		return processProvider.findCurrentProcessesInstances(data, user);
 	}
+
+	@Override
+	public Object fetchHistoricActivityStatistics(String id, Map<String, Object> params, CIBUser user) {
+		return processProvider.fetchHistoricActivityStatistics(id, params, user);
+	}
 	
 	/*		
 	
@@ -815,9 +820,8 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 
 	@Override
-	public Collection<ActivityInstanceHistory> findActivitiesProcessDefinitionHistory(String processDefinitionId,
-			CIBUser user) {
-		return activityProvider.findActivitiesProcessDefinitionHistory(processDefinitionId, user);
+	public Collection<ActivityInstanceHistory> findActivitiesProcessDefinitionHistory(String processDefinitionId, Map<String, Object> params, CIBUser user) {
+		return activityProvider.findActivitiesProcessDefinitionHistory(processDefinitionId, params, user);
 	}
 	
 	/*

@@ -120,8 +120,7 @@ export default {
   props: {
     instance: Object,
     process: Object,
-    activityInstance: Object,
-    activityInstanceHistory: Object
+    activityInstance: Object
   },
   computed: {
     ...mapGetters('incidents', ['incidents'])

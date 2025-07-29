@@ -375,6 +375,7 @@
 			"openIncidents": "Incidentes abiertos",
 			"suspendedJobDefinition": "Definición de trabajo suspendida",
 			"activitiesHistory": "Instancias de actividad ejecutadas",
+			"canceledInstances": "Instancias de actividad canceladas",
 			"openSubprocess": "Mostrar la definición del proceso llamado",
 			"disabledSubprocess": "La definición del proceso se resolverá en tiempo de ejecución"
 		}

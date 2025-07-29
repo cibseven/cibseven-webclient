@@ -216,18 +216,17 @@ public class HistoryProcessService extends BaseService {
 	@RequestMapping(value = "/process-history/activity/by-process-definition/{processDefinitionId}", method = RequestMethod.GET)
 	public Collection<ActivityInstanceHistory> findActivitiesProcessDefinitionHistory(
 			@Parameter(description = "Filter by process definition Id") @PathVariable String processDefinitionId,
+			@RequestParam Map<String, Object> params,
 			Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.HISTORIC_PROCESS_INSTANCE, PermissionConstants.READ_ALL);
-		return bpmProvider.findActivitiesProcessDefinitionHistory(processDefinitionId, user);
+		return bpmProvider.findActivitiesProcessDefinitionHistory(processDefinitionId, params, user);
 	}	
 	
-	@Operation(summary = "Get a variable data from the process history")
-	@ApiResponse(responseCode = "404", description = "Variable not found")
-	@RequestMapping(value = "/process-history/variable/{id}/data", method = RequestMethod.GET)
-	public ResponseEntity<byte[]> fetchHistoryVariableDataById(
-			@Parameter(description = "Id of the variable") @PathVariable String id,
-			Locale loc, CIBUser user) {
-        checkPermission(user, SevenResourceType.HISTORIC_PROCESS_INSTANCE, PermissionConstants.READ_ALL);
-		return bpmProvider.fetchHistoryVariableDataById(id, user);
+	@Operation(summary = "Get historic activity statistics for a given process definition")
+	@ApiResponse(responseCode = "404", description = "Process definition not found")
+	@RequestMapping(value = "/process-history/process-definition/{id}/statistics", method = RequestMethod.GET)
+	public Object getHistoricActivityStatistics(@Parameter(description = "ID of the process definition") @PathVariable String id, @RequestParam Map<String, Object> params, CIBUser user) {
+	    checkPermission(user, SevenResourceType.HISTORIC_PROCESS_INSTANCE, PermissionConstants.READ_ALL);
+	    return bpmProvider.fetchHistoricActivityStatistics(id, params, user);
 	}
 }

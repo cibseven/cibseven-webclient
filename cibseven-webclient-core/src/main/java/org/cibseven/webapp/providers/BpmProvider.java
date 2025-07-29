@@ -1023,7 +1023,7 @@ public interface BpmProvider {
 	void putLocalExecutionVariable(String executionId, String varName, Map<String, Object> data, CIBUser user);
 
 	Collection<ActivityInstanceHistory> findActivitiesProcessDefinitionHistory(String processDefinitionId,
-			CIBUser user);
+			Map<String, Object> params, CIBUser user);
 	
 	Collection<JobDefinition> findJobDefinitions(String params, CIBUser user);
 	void suspendJobDefinition(String jobDefinitionId, String params, CIBUser user);
@@ -1124,5 +1124,16 @@ public interface BpmProvider {
 	 * @throws SystemException in case of an error
 	 */
 	Collection<ExternalTask> getExternalTasks(Map<String, Object> queryParams, CIBUser user) throws SystemException;
+
+	/**
+	 * Fetch historic activity statistics for a given process definition ID.
+	 *
+	 * @param id the ID of the process definition
+	 * @param params query parameters to filter statistics (e.g., canceled, finished, incidents)
+	 * @param user the user performing the operation
+	 * @return a list or map containing the historic activity statistics
+	 * @throws SystemException in case of an error
+	 */
+	Object fetchHistoricActivityStatistics(String id, Map<String, Object> params, CIBUser user);
 
 }

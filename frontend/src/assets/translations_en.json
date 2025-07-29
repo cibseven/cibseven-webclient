@@ -374,7 +374,8 @@
 			"runningInstances": "Running activity instances",
 			"openIncidents": "Open incidents",
 			"suspendedJobDefinition": "Suspended job definition",
-			"activitiesHistory": "Executed activity instances",			
+			"activitiesHistory": "Executed activity instances",
+			"canceledInstances": "Canceled activity instances",		
 			"openSubprocess": "Show called process definition",
 			"disabledSubprocess": "Called process definition will be resolved at runtime"
 		}
