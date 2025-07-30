@@ -329,7 +329,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 			}
 
 			modifications.set("variables", variables);
-			doPost(url, modifications, String.class, user);
+			return doPost(url, modifications, ProcessStart.class, user).getBody();
 		} catch (HttpStatusCodeException e) {
 			SystemException se = new SystemException(e.getResponseBodyAsString() + "[VARIABLES] " + variables, e);
 			log.info("Exception in submitStartFormVariables(...):", se);
