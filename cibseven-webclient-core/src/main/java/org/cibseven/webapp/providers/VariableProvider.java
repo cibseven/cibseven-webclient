@@ -329,12 +329,15 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 			}
 
 			modifications.set("variables", variables);
-			try {
-				String jsonBody = mapper.writeValueAsString(modifications);
-				return doPost(url, jsonBody, ProcessStart.class, user).getBody();
-			} catch (JsonProcessingException e) {
-				throw new SystemException(e);
-			}
+			HttpHeaders headers = new HttpHeaders();
+			UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+			if (user != null) headers.add("Authorization", user.getAuthToken());
+			headers.setContentType(MediaType.APPLICATION_JSON);
+
+			HttpEntity<Object> request;
+			request = new HttpEntity<>(modifications, headers);
+			RestTemplate rest = new RestTemplate();
+			return rest.exchange(builder.build().toUri(), HttpMethod.POST, request, ProcessStart.class).getBody();
 		} catch (HttpStatusCodeException e) {
 			SystemException se = new SystemException(e.getResponseBodyAsString() + "[VARIABLES] " + variables, e);
 			log.info("Exception in submitStartFormVariables(...):", se);
@@ -367,10 +370,15 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		modifications.set("modifications", variablesF);
 
 		try {
-			String jsonBody = mapper.writeValueAsString(modifications);
-			doPost(url, jsonBody, String.class, user);
-		} catch (JsonProcessingException e) {
-			throw new SystemException(e);
+			HttpHeaders headers = new HttpHeaders();
+			UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+			if (user != null) headers.add("Authorization", user.getAuthToken());
+			headers.setContentType(MediaType.APPLICATION_JSON);
+
+			HttpEntity<Object> request;
+			request = new HttpEntity<>(modifications, headers);
+			RestTemplate rest = new RestTemplate();
+			rest.exchange(builder.build().toUri(), HttpMethod.POST, request, String.class);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
 		}
@@ -434,11 +442,18 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 
 		modifications.set("modifications", variables);
 
+		modifications.set("modifications", variables);
+
 		try {
-			String jsonBody = mapper.writeValueAsString(modifications);
-			doPost(url, jsonBody, String.class, user);
-		} catch (JsonProcessingException e) {
-			throw new SystemException(e);
+			HttpHeaders headers = new HttpHeaders();
+			UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+			if (user != null) headers.add("Authorization", user.getAuthToken());
+			headers.setContentType(MediaType.APPLICATION_JSON);
+
+			HttpEntity<Object> request;
+			request = new HttpEntity<>(modifications, headers);
+			RestTemplate rest = new RestTemplate();
+			rest.exchange(builder.build().toUri(), HttpMethod.POST, request, String.class);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
 		}
