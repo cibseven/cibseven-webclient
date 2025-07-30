@@ -27,6 +27,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.ExistingGroupRequestException;
 import org.cibseven.webapp.exception.ExistingUserRequestException;
@@ -165,6 +166,20 @@ public abstract class SevenProviderBase {
 	}
 
 	protected <T> ResponseEntity<T> doPost(String url, Map<String, Object> body, Class<T> neededClass, CIBUser user) {
+		HttpHeaders headers = createAuthHeader(user);
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+
+		HttpEntity<Object> request = new HttpEntity<>(body, headers);
+
+		try {
+			return customRestTemplate.exchange(builder.build().toUri(), HttpMethod.POST, request, neededClass);
+		} catch (HttpStatusCodeException e) {
+			throw wrapException(e, user);
+		}
+	}
+
+	protected <T> ResponseEntity<T> doPost(String url, ObjectNode body, Class<T> neededClass, CIBUser user) {
 		HttpHeaders headers = createAuthHeader(user);
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);

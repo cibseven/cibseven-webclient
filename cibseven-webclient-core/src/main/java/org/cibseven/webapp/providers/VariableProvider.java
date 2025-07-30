@@ -329,15 +329,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 			}
 
 			modifications.set("variables", variables);
-			HttpHeaders headers = new HttpHeaders();
-			UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
-			if (user != null) headers.add("Authorization", user.getAuthToken());
-			headers.setContentType(MediaType.APPLICATION_JSON);
-
-			HttpEntity<Object> request;
-			request = new HttpEntity<>(modifications, headers);
-			RestTemplate rest = new RestTemplate();
-			return rest.exchange(builder.build().toUri(), HttpMethod.POST, request, ProcessStart.class).getBody();
+			doPost(url, modifications, String.class, user);
 		} catch (HttpStatusCodeException e) {
 			SystemException se = new SystemException(e.getResponseBodyAsString() + "[VARIABLES] " + variables, e);
 			log.info("Exception in submitStartFormVariables(...):", se);
@@ -370,15 +362,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		modifications.set("modifications", variablesF);
 
 		try {
-			HttpHeaders headers = new HttpHeaders();
-			UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
-			if (user != null) headers.add("Authorization", user.getAuthToken());
-			headers.setContentType(MediaType.APPLICATION_JSON);
-
-			HttpEntity<Object> request;
-			request = new HttpEntity<>(modifications, headers);
-			RestTemplate rest = new RestTemplate();
-			rest.exchange(builder.build().toUri(), HttpMethod.POST, request, String.class);
+			doPost(url, modifications, String.class, user);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
 		}
@@ -442,18 +426,8 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 
 		modifications.set("modifications", variables);
 
-		modifications.set("modifications", variables);
-
 		try {
-			HttpHeaders headers = new HttpHeaders();
-			UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
-			if (user != null) headers.add("Authorization", user.getAuthToken());
-			headers.setContentType(MediaType.APPLICATION_JSON);
-
-			HttpEntity<Object> request;
-			request = new HttpEntity<>(modifications, headers);
-			RestTemplate rest = new RestTemplate();
-			rest.exchange(builder.build().toUri(), HttpMethod.POST, request, String.class);
+			doPost(url, modifications, String.class, user);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
 		}
