@@ -44,6 +44,7 @@ import org.cibseven.webapp.rest.model.DeploymentResource;
 import org.cibseven.webapp.rest.model.EventSubscription;
 import org.cibseven.webapp.rest.model.ExternalTask;
 import org.cibseven.webapp.rest.model.Filter;
+import org.cibseven.webapp.rest.model.HistoricDecisionInstance;
 import org.cibseven.webapp.rest.model.HistoryBatch;
 import org.cibseven.webapp.rest.model.IdentityLink;
 import org.cibseven.webapp.rest.model.Incident;
@@ -1032,7 +1033,7 @@ public interface BpmProvider {
 	void retryJobDefinitionById(String id, Map<String, Object> params, CIBUser user);
 	
 	Collection<Decision> getDecisionDefinitionList(Map<String, Object> queryParams, CIBUser user);
-	Object getDecisionDefinitionListCount(Map<String, Object> queryParams, CIBUser user);
+	Long getDecisionDefinitionListCount(Map<String, Object> queryParams, CIBUser user);
 	Decision getDecisionDefinitionByKey(String key, CIBUser user);
 	Object getDiagramByKey(String key, CIBUser user);
 	Object evaluateDecisionDefinitionByKey(Map<String, Object> data, String key, CIBUser user);
@@ -1052,9 +1053,9 @@ public interface BpmProvider {
 
 	Collection<Decision> getDecisionVersionsByKey(String key, Optional<Boolean> lazyLoad, CIBUser user);
 	
-	Object getHistoricDecisionInstances(Map<String, Object> queryParams, CIBUser user);
-	Object getHistoricDecisionInstanceCount(Map<String, Object> queryParams, CIBUser user);
-	Object getHistoricDecisionInstanceById(String id, Map<String, Object> queryParams, CIBUser user);
+	Collection<HistoricDecisionInstance> getHistoricDecisionInstances(Map<String, Object> queryParams, CIBUser user);
+	Long getHistoricDecisionInstanceCount(Map<String, Object> queryParams, CIBUser user);
+	HistoricDecisionInstance getHistoricDecisionInstanceById(String id, Map<String, Object> queryParams, CIBUser user);
 	Object deleteHistoricDecisionInstances(Map<String, Object> body, CIBUser user);
 	Object setHistoricDecisionInstanceRemovalTime(Map<String, Object> body, CIBUser user);
   
