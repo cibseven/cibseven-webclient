@@ -95,6 +95,7 @@ export default {
     ...mapActions(['getDecisionVersionsByKey']),
     ...mapMutations(['setSelectedDecisionVersion', 'updateVersion']),
     loadDecisionVersionsByKey(decisionKey, versionIndex, lazyLoad) {
+      this.versionLoaded = false
       this.getDecisionVersionsByKey({ key: decisionKey, lazyLoad: lazyLoad })
       .then(versions => {
         let version = versions[0]
