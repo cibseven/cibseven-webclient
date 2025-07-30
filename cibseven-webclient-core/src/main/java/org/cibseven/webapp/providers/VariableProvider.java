@@ -329,12 +329,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 			}
 
 			modifications.set("variables", variables);
-			try {
-				String jsonBody = mapper.writeValueAsString(modifications);
-				return doPost(url, jsonBody, ProcessStart.class, user).getBody();
-			} catch (JsonProcessingException e) {
-				throw new SystemException(e);
-			}
+			return doPost(url, modifications, ProcessStart.class, user).getBody();
 		} catch (HttpStatusCodeException e) {
 			SystemException se = new SystemException(e.getResponseBodyAsString() + "[VARIABLES] " + variables, e);
 			log.info("Exception in submitStartFormVariables(...):", se);
@@ -367,10 +362,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		modifications.set("modifications", variablesF);
 
 		try {
-			String jsonBody = mapper.writeValueAsString(modifications);
-			doPost(url, jsonBody, String.class, user);
-		} catch (JsonProcessingException e) {
-			throw new SystemException(e);
+			doPost(url, modifications, String.class, user);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
 		}
@@ -435,10 +427,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		modifications.set("modifications", variables);
 
 		try {
-			String jsonBody = mapper.writeValueAsString(modifications);
-			doPost(url, jsonBody, String.class, user);
-		} catch (JsonProcessingException e) {
-			throw new SystemException(e);
+			doPost(url, modifications, String.class, user);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
 		}
