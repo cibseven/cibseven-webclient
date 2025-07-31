@@ -130,15 +130,15 @@ public class HistoryProcessService extends BaseService {
 			@Parameter(description = "Variable values ignore case") @RequestParam Optional<Boolean> variableValuesIgnoreCase,
 			@Parameter(description = "Deserialize value") @RequestParam Optional<Boolean> deserialize,
 			Locale loc, CIBUser user) {
-	  checkCockpitRights(user);
-    checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_INSTANCE_VARIABLE_ALL);
-    final Map<String, Object> data = new HashMap<>();
-    data.put("variableName", variableName.orElse(null));
-    data.put("variableNameLike", variableNameLike.orElse(null));
-    data.put("variableValues", variableValues.orElse(null));
-    data.put("variableNamesIgnoreCase", variableNamesIgnoreCase.orElse(false));
-    data.put("variableValuesIgnoreCase", variableValuesIgnoreCase.orElse(false));
-    data.put("deserializeValue", deserialize.orElse(true));
+		checkCockpitRights(user);
+		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_INSTANCE_VARIABLE_ALL);
+		final Map<String, Object> data = new HashMap<>();
+		data.put("variableName", variableName.orElse(null));
+		data.put("variableNameLike", variableNameLike.orElse(null));
+		data.put("variableValues", variableValues.orElse(null));
+		data.put("variableNamesIgnoreCase", variableNamesIgnoreCase.orElse(false));
+		data.put("variableValuesIgnoreCase", variableValuesIgnoreCase.orElse(false));
+		data.put("deserializeValue", deserialize.orElse(true));
 		// Call the provider method to fetch the variables history
 		return bpmProvider.fetchProcessInstanceVariablesHistory(processInstanceId, data, user);
 	}

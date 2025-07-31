@@ -43,7 +43,7 @@ public interface IVariableProvider {
 	public Collection<VariableHistory> fetchActivityVariables(String activityInstanceId, CIBUser user);
 	public ResponseEntity<byte[]> fetchHistoryVariableDataById(String id, CIBUser user) throws NoObjectFoundException, SystemException;
 	public Variable fetchVariable(String taskId, String variableName, 
-			Optional<Boolean> deserializeValue, CIBUser user) throws NoObjectFoundException, SystemException;
+			boolean deserializeValue, CIBUser user) throws NoObjectFoundException, SystemException;
 	public void deleteVariable(String taskId, String variableName, CIBUser user) throws NoObjectFoundException, SystemException;
 	public Map<String, Variable> fetchFormVariables(String taskId, boolean deserializeValues, CIBUser user) throws NoObjectFoundException, SystemException;
 	public Map<String, Variable> fetchFormVariables(List<String> variableListName, String taskId, CIBUser user) throws NoObjectFoundException, SystemException;

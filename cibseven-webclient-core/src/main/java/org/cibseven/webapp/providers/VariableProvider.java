@@ -34,6 +34,7 @@ import org.cibseven.webapp.exception.UnexpectedTypeException;
 import org.cibseven.webapp.rest.model.ProcessStart;
 import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
+import org.cibseven.webapp.rest.model.VariableInstance;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpEntity;
@@ -276,13 +277,30 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 			throw wrapException(e, user);
 		}
 	}
-	
+
+	public Variable fetchVariableImpl(String taskId, String variableName, 
+			boolean deserializeValue, CIBUser user) throws NoObjectFoundException, SystemException {		
+		String url = getEngineRestUrl() + "/task/" + taskId + "/variables/" + variableName
+			+ "?deserializeValue=" + deserializeValue;
+		return doGet(url, Variable.class, user, false).getBody();
+	}
+
 	@Override
 	public Variable fetchVariable(String taskId, String variableName, 
-			Optional<Boolean> deserializeValue, CIBUser user) throws NoObjectFoundException, SystemException {		
-		String url = getEngineRestUrl() + "/task/" + taskId + "/variables/" + variableName;
-		url += deserializeValue.isPresent() ? "?deserializeValue=" + deserializeValue.get() : "";
-		return doGet(url, Variable.class, user, false).getBody();
+			boolean deserializeValue, CIBUser user) throws NoObjectFoundException, SystemException {		
+		Variable variableSerialized = fetchVariableImpl(taskId, variableName, false, user);
+		Variable variableDeserialized = fetchVariableImpl(taskId, variableName, true, user);
+
+		if (deserializeValue) {
+			variableDeserialized.setValueSerialized(variableSerialized.getValue());
+			variableDeserialized.setValueDeserialized(variableDeserialized.getValue());
+			return variableDeserialized;
+		}
+		else {
+			variableSerialized.setValueSerialized(variableSerialized.getValue());
+			variableSerialized.setValueDeserialized(variableDeserialized.getValue());
+			return variableSerialized;
+		}
 	}
 	
 	@Override
@@ -467,11 +485,20 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 			throw se;
 		}
 	}
-	
+
+	private Variable fetchVariableByProcessInstanceIdImpl(String processInstanceId, String variableName, boolean deserializeValue, CIBUser user) throws SystemException {
+		String url = getEngineRestUrl() + "/process-instance/" + processInstanceId + "/variables/" + variableName + "?deserializeValue=" + deserializeValue;
+		return doGet(url, Variable.class, user, false).getBody();
+	}
+
 	@Override
 	public Variable fetchVariableByProcessInstanceId(String processInstanceId, String variableName, CIBUser user) throws SystemException {
-		String url = getEngineRestUrl() + "/process-instance/" + processInstanceId + "/variables/" + variableName + "?deserializeValue=true";
-		return doGet(url, Variable.class, user, false).getBody();
+		Variable variableSerialized = fetchVariableByProcessInstanceIdImpl(processInstanceId, variableName, false, user);
+		Variable variableDeserialized = fetchVariableByProcessInstanceIdImpl(processInstanceId, variableName, true, user);
+
+		variableDeserialized.setValueSerialized(variableSerialized.getValue());
+		variableDeserialized.setValueDeserialized(variableDeserialized.getValue());
+		return variableDeserialized;
 	}
 	
 	// TODO: Split it

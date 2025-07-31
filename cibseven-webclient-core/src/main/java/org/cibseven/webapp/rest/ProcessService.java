@@ -659,12 +659,13 @@ public class ProcessService extends BaseService implements InitializingBean {
 	public Variable findProcessInstanceVariable(
 			@Parameter(description = "Process instance Id") @PathVariable String processInstanceId,
 			@Parameter(description = "Variable name") @PathVariable String variableName,
-			@Parameter(description = "Deserialize value") @RequestParam(required = false) String deserializeValue,
+			@Parameter(description = "Deserialize value") @RequestParam(required = false) Boolean deserializeValue,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
 		checkCockpitRights(user);
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_INSTANCE_VARIABLE_ALL);
-		return sevenProvider.fetchProcessInstanceVariable(processInstanceId, variableName, deserializeValue, user);
+		boolean deserialize = (deserializeValue == null) || (deserializeValue != null && deserializeValue == true);
+		return sevenProvider.fetchProcessInstanceVariable(processInstanceId, variableName, deserialize, user);
 	}
 	
 	@Operation(
