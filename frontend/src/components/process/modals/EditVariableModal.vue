@@ -52,7 +52,8 @@
           <textarea
             class="form-control mt-2"
             rows="5"
-            :disabled="true">{{ serializedValue }}</textarea>
+            v-model="serializedValue"
+            :disabled="true"></textarea>
         </b-tab>
       </b-tabs>
       <b-form-group v-if="isEditSerializedValue" :label="$t('process-instance.variables.value')">
