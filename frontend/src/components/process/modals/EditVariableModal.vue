@@ -34,7 +34,28 @@
           <b-form-input v-model="variable.valueInfo.serializationDataFormat" disabled></b-form-input>
         </b-form-group>
       </template>
-      <b-form-group :label="$t('process-instance.variables.value')">
+      <b-tabs v-if="isEditDeserializedValue" :activeTab="1">
+        <b-tab id="1" :title="$t('process-instance.variables.value')">
+          <textarea
+            class="form-control mt-2"
+            :class="{ 'is-invalid': valueValidationError !== null }"
+            rows="5"
+            :placeholder="$t('process-instance.variables.enterValue')"
+            v-model="formattedValue"
+            :disabled="disabled || saving">
+          </textarea>
+          <div v-if="valueValidationError" class="invalid-feedback">
+            {{ valueValidationError }}
+          </div>
+        </b-tab>
+        <b-tab id="2" :title="$t('process-instance.variables.valueSerialized')">
+          <textarea
+            class="form-control mt-2"
+            rows="5"
+            :disabled="true">{{ serializedValue }}</textarea>
+        </b-tab>
+      </b-tabs>
+      <b-form-group v-if="isEditSerializedValue" :label="$t('process-instance.variables.value')">
         <textarea
           class="form-control"
           :class="{ 'is-invalid': valueValidationError !== null }"
@@ -95,6 +116,18 @@ export default {
         ? this.currentHistoricVariableInstance
         : this.currentVariableInstance
     },
+    isEditDeserializedValue() {
+      if (!this.variable) return false
+      return this.variable.type === 'Object'
+    },
+    isEditSerializedValue() {
+      if (!this.variable) return false
+      return this.variable.type !== 'Object'
+    },
+    serializedValue() {
+      if (!this.variable) return ''
+      return this.isEditDeserializedValue ? this.variable.valueSerialized : ''
+    },
     valueValidationError() {
       if (!this.variable) {
         return null
@@ -149,6 +182,8 @@ export default {
           return this.newValue
         }
 
+        const value = this.isEditDeserializedValue ? this.variable.valueDeserialized : this.variable.value
+
         // Format the value based on its type
         switch (this.variable.type) {
           case 'String':
@@ -156,12 +191,12 @@ export default {
           case 'Long':
           case 'Double':
           case 'Boolean':
-            return this.variable.value.toString() // Convert primitive types to string
+            return value.toString() // Convert primitive types to string
           case 'Json': {
             try {
-              return JSON.stringify(JSON.parse(this.variable.value), null, 2)
+              return JSON.stringify(JSON.parse(value), null, 2)
             } catch {
-              return this.variable.value.toString() // Fallback to original value if parsing fails
+              return value.toString() // Fallback to original value if parsing fails
             }
           }
           case 'Object': {
@@ -172,9 +207,9 @@ export default {
               case 'java.lang.Long':
               case 'java.lang.Double':
               case 'java.lang.Boolean':
-                return this.variable.value.toString() // Convert primitive object types to string
+                return value.toString() // Convert primitive object types to string
               case 'java.util.Date':
-                return this.variable.value.toString()
+                return value.toString()
               case 'java.util.List':
               case 'java.util.Map':
               case 'java.util.ArrayList':
@@ -186,39 +221,39 @@ export default {
               case 'java.util.TreeSet':
               case 'java.util.Vector':
               case 'java.util.Stack':
-                return JSON.stringify(this.variable.value, null, 2) // Format collections as JSON
+                return JSON.stringify(value, null, 2) // Format collections as JSON
               // Handle StringBuilder specifically
               case 'java.lang.StringBuffer':
               case 'java.lang.StringBuilder':
                 // If the value is a StringBuilder or StringBuffer, convert it to string
-                return this.variable.value.toString()
+                return value.toString()
               default: {
                 // For other object types, try to parse as JSON
-                if (typeof this.variable.value === 'string' && this.variable.value.trim() === '') {
+                if (typeof value === 'string' && value.trim() === '') {
                   return '' // Return empty string for empty values
                 }
-                if (typeof this.variable.value === 'string' && this.variable.value.startsWith('{') && this.variable.value.endsWith('}')) {
+                if (typeof value === 'string' && value.startsWith('{') && value.endsWith('}')) {
                   // If the value is a JSON object, parse and format it
                   try {
-                    return JSON.stringify(JSON.parse(this.variable.value), null, 2)
+                    return JSON.stringify(JSON.parse(value), null, 2)
                   } catch {
-                    return this.variable.value.toString() // Fallback to original value if parsing fails
+                    return value.toString() // Fallback to original value if parsing fails
                   }
                 }
-                if (typeof this.variable.value === 'string' && this.variable.value.startsWith('[') && this.variable.value.endsWith(']')) {
+                if (typeof value === 'string' && value.startsWith('[') && value.endsWith(']')) {
                   // If the value is a JSON array
                   try {
-                    return JSON.stringify(JSON.parse(this.variable.value), null, 2)
+                    return JSON.stringify(JSON.parse(value), null, 2)
                   } catch {
-                    return this.variable.value.toString() // Fallback to original value if parsing fails
+                    return value.toString() // Fallback to original value if parsing fails
                   }
                 }
               }
             }
-            return this.variable.value.toString() // For any other object type, return the value directly
+            return value.toString() // For any other object type, return the value directly
           }
           default:
-            return this.variable.value.toString() // For any other type, return the value directly
+            return value.toString() // For any other type, return the value directly
         }
       },
       set: function(val) {
