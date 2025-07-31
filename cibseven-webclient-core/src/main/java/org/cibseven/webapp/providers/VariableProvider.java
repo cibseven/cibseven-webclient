@@ -342,7 +342,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		    String filename = null;
 		    String mimeType = null;
 		    
-		    Variable variable = fetchVariable(taskId, variableName, Optional.of(true), user);
+		    Variable variable = fetchVariable(taskId, variableName, true, user);
 			String objectType = variable.getValueInfo().get("objectTypeName");
 			if (objectType != null) {
 				try {

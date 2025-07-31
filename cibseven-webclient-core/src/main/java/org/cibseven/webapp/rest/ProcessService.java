@@ -684,7 +684,8 @@ public class ProcessService extends BaseService implements InitializingBean {
 		// TODO: Check the permission, but not considered the groups, needs to be checked.
 		// checkSpecificProcessRights(user, processDefinitionKey);
 		try {
-			return sevenProvider.fetchProcessInstanceVariable(processInstanceId, "chatComments", deserialize, user);	
+			boolean deserializeValue = (deserialize == null) || (deserialize != null && deserialize == "true");
+			return sevenProvider.fetchProcessInstanceVariable(processInstanceId, "chatComments", deserializeValue, user);	
 		} catch(NoObjectFoundException e) {
 			return null;
 		}
@@ -706,7 +707,8 @@ public class ProcessService extends BaseService implements InitializingBean {
 		// TODO: Check the permission, but not considered the groups, needs to be checked.
 		// checkSpecificProcessRights(user, processDefinitionKey);
 		try {
-			return sevenProvider.fetchProcessInstanceVariable(processInstanceId, "_statusDataset", deserialize, user);	
+			boolean deserializeValue = (deserialize == null) || (deserialize != null && deserialize == "true");
+			return sevenProvider.fetchProcessInstanceVariable(processInstanceId, "_statusDataset", deserializeValue, user);	
 		} catch(NoObjectFoundException e) {
 			return null;
 		}

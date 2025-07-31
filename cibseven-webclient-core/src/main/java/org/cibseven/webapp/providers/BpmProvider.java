@@ -884,7 +884,7 @@ public interface BpmProvider {
 	List<ActivityInstanceHistory> findActivityInstanceHistory(String processInstanceId, CIBUser user)
 			throws SystemException;
 
-	Variable fetchVariable(String taskId, String variableName, Optional<Boolean> deserialize, CIBUser user)
+	Variable fetchVariable(String taskId, String variableName, boolean deserialize, CIBUser user)
 			throws NoObjectFoundException, SystemException;
 
 	void deleteVariable(String taskId, String variableName, CIBUser user)
