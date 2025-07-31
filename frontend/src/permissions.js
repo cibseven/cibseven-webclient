@@ -53,6 +53,7 @@ var permissionsMixin = {
 		},
 		filtersByPermissions: function(permissionsRequired, filters) {
 			var tmpFilters = []
+			if (!filters || !Array.isArray(filters) || !filters.length) return tmpFilters // Return empty array if no filters are provided or filters is not an array
 			var permissionsCheck = this.$_permissionsMixin_setAllPermissionsObject(permissionsRequired)
 
 			filters.forEach(function(f) {
@@ -105,9 +106,9 @@ var permissionsMixin = {
 			return permissionsProcesses
 		},
 		$_permissionsMixin_getPermissionsGrouped: function(permissions, field) {
-			return permissions.filter(function(p) {
+			return permissions?.filter(function(p) {
 				return p[field] !== null
-			})
+			}) || []
 		},
 		$_permissionsMixin_checkPermissionsAllowed: function(object, key, permissionsCheck) {
 			var check = false
