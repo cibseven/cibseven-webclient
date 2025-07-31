@@ -27,14 +27,12 @@
         <b-form-input v-model="variable.type" disabled></b-form-input>
       </b-form-group>
       <template v-if="variable.valueInfo">
-        <div v-if="variable.valueInfo.objectTypeName" class="mb-3">
-          <label class="form-label">{{ $t('process-instance.variables.objectTypeName') }}</label>
-          <input type="text" class="form-control" :value="variable.valueInfo.objectTypeName" disabled>
-        </div>
-        <div v-if="variable.valueInfo.serializationDataFormat" class="mb-3">
-          <label class="form-label">{{ $t('process-instance.variables.serializationDataFormat') }}</label>
-          <input type="text" class="form-control" :value="variable.valueInfo.serializationDataFormat" disabled>
-        </div>
+        <b-form-group v-if="variable.valueInfo.objectTypeName" :label="$t('process-instance.variables.objectTypeName')">
+          <b-form-input v-model="variable.valueInfo.objectTypeName" disabled></b-form-input>
+        </b-form-group>
+        <b-form-group v-if="variable.valueInfo.serializationDataFormat" :label="$t('process-instance.variables.serializationDataFormat')">
+          <b-form-input v-model="variable.valueInfo.serializationDataFormat" disabled></b-form-input>
+        </b-form-group>
       </template>
       <b-form-group :label="$t('process-instance.variables.value')">
         <textarea
