@@ -258,7 +258,7 @@ export default {
 
       // Try active, fallback to historic if error
       // Use regular variable instance for active processes, historic for all others
-      const deserializeValue = true
+      const deserializeValue = false
       if (!this.disabled) {
         try {
           await this.getVariableInstance({ id: variableId, deserializeValue })
