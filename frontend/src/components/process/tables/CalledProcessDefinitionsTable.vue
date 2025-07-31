@@ -83,8 +83,7 @@ export default {
   components: { FlowTable, CopyableActionButton, SuccessAlert, BWaitingBox },
   mixins: [copyToClipboardMixin],
   props: {
-    process: Object,
-    activitiesHistory: Array
+    process: Object
   },
   data() {
     return {
@@ -97,7 +96,8 @@ export default {
       'calledProcessDefinitions',
       'getCalledProcessState'
     ]),
-    ...mapGetters(['diagramXml', 'selectedActivityId']),
+    ...mapGetters(['selectedActivityId']),
+    ...mapGetters('diagram', ['isDiagramReady']),
     showSpinner() {
       return this.initialLoading && this.calledProcessDefinitions.length === 0
     }
@@ -109,19 +109,16 @@ export default {
     },
     'process.id': {
       handler(id) {
-        if (id) {
+        if (id && this.isDiagramReady) {
           this.loadCalledProcessDefinitionsData()
         }
       },
       immediate: true
     },
-    activitiesHistory: {
-      handler(newActivitiesHistory) {
-        if (newActivitiesHistory && this.process?.id) {
-          this.loadCalledProcessDefinitionsData()
-        }
-      },
-      immediate: false
+    isDiagramReady(ready) {
+      if (ready && this.process?.id && !this.loading) {
+        this.loadCalledProcessDefinitionsData()
+      }
     }
   },
   methods: {
@@ -132,7 +129,7 @@ export default {
     ]),
     async loadCalledProcessDefinitionsData() {
       // Only proceed if we have the required data
-      if (!this.process?.id || !this.activitiesHistory) {
+      if (!this.process?.id) {
         return
       }
       
@@ -141,8 +138,6 @@ export default {
       try {
         await this.loadCalledProcessDefinitions({ 
           processId: this.process.id,
-          activitiesHistory: this.activitiesHistory,
-          diagramXml: this.diagramXml,
           chunkSize: this.$root?.config?.maxProcessesResults || 50
         })
       } catch (error) {

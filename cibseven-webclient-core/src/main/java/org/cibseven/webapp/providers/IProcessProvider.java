@@ -72,5 +72,6 @@ public interface IProcessProvider {
 	public void deleteProcessInstanceFromHistory(String id, CIBUser user);
 	public void deleteProcessDefinition(String id, Optional<Boolean> cascade, CIBUser user);
 	public Long countProcessesInstancesHistory(Map<String, Object> filters, CIBUser user);
+	public Object fetchHistoricActivityStatistics(String id, Map<String, Object> params, CIBUser user);
 	
 }

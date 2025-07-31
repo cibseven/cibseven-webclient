@@ -80,9 +80,8 @@ public class ActivityProvider extends SevenProviderBase implements IActivityProv
 	}
 
 	@Override
-	public Collection<ActivityInstanceHistory> findActivitiesProcessDefinitionHistory(String processDefinitionId,
-			CIBUser user) {
-		String url = getEngineRestUrl() + "/history/activity-instance?processDefinitionId=" + processDefinitionId;
+	public Collection<ActivityInstanceHistory> findActivitiesProcessDefinitionHistory(String processDefinitionId, Map<String, Object> params, CIBUser user) {
+		String url = URLUtils.buildUrlWithParams(getEngineRestUrl() + "/history/activity-instance?processDefinitionId=" + processDefinitionId, params);
 		return Arrays.asList(((ResponseEntity<ActivityInstanceHistory[]>) doGet(url, ActivityInstanceHistory[].class, user, false)).getBody());
 	}
 	

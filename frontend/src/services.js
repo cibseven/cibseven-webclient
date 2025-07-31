@@ -375,8 +375,8 @@ var HistoryService = {
   findActivitiesInstancesHistory: function(processInstanceId) {
     return axios.get(getServicesBasePath() + "/process-history/activity/by-process-instance/" + processInstanceId)
   },
-  findActivitiesProcessDefinitionHistory: function(processDefinitionId) {
-    return axios.get(getServicesBasePath() + "/process-history/activity/by-process-definition/" + processDefinitionId)
+  findActivitiesProcessDefinitionHistory: function(processDefinitionId, params) {
+    return axios.get(getServicesBasePath() + "/process-history/activity/by-process-definition/" + processDefinitionId, { params })
   },
   findActivitiesInstancesHistoryWithFilter(filter){
 	return axios.get(getServicesBasePath() + "/process-history/activity", 	{ params: filter })
@@ -399,6 +399,9 @@ var HistoryService = {
   },
   deleteVariableHistoryInstance: function(id) {
     return axios.delete(getServicesBasePath() + "/process-history/instance/" + id + "/variables")
+  },
+  findHistoryActivityStatistics: function(processDefinitionId, params) {
+    return axios.get(getServicesBasePath() + "/process-history/process-definition/" + processDefinitionId + "/statistics", { params })
   }
 }
 
