@@ -100,7 +100,7 @@ const appRoutes = [
         },
 
         // Start new process (end-user)
-        { path: 'start-process', name: 'start-process', beforeEnter: permissionsGuard('tasklist'),
+        { path: 'start-process', name: 'start-process', beforeEnter: permissionsGuard('startProcess'),
           component: StartProcessView
         },
 
