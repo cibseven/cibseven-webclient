@@ -134,7 +134,7 @@ import SystemDiagnostics from '@/components/system/SystemDiagnostics.vue'
 import ExecutionMetrics from '@/components/system/ExecutionMetrics.vue'
 import ShortcutsModal from '@/components/modals/ShortcutsModal.vue'
 import ShortcutsTable from '@/components/modals/ShortcutsTable.vue'
-import { TaskService, HistoryService, ProcessService, getServicesBasePath, setServicesBasePath, IncidentService } from '@/services.js';
+import { TaskService, HistoryService, ProcessService, getServicesBasePath, setServicesBasePath, IncidentService, DecisionService } from '@/services.js';
 import DeployedForm from '@/components/forms/DeployedForm.vue'
 import StartDeployedForm from '@/components/forms/StartDeployedForm.vue'
 import DecisionDefinitionDetails from '@/components/decision/DecisionDefinitionDetails.vue'
@@ -343,6 +343,7 @@ export {
   TaskService,
   HistoryService,
   ProcessService,
+  DecisionService,
   getServicesBasePath,
   setServicesBasePath,
   IncidentService,
