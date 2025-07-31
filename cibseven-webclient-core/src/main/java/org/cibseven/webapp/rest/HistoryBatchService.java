@@ -38,7 +38,7 @@ import jakarta.servlet.http.HttpServletRequest;
 @RestController @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/history/batch")
 public class HistoryBatchService extends BaseService implements InitializingBean {
 
-    @Autowired BpmProvider bpmProvider;
+	@Autowired BpmProvider bpmProvider;
 	SevenProvider sevenProvider;
 	
 	public void afterPropertiesSet() {
@@ -47,7 +47,8 @@ public class HistoryBatchService extends BaseService implements InitializingBean
 		else throw new SystemException("HistoryBatchService expects a BpmProvider");
 	}
 
-    @GetMapping
+
+	@GetMapping
 	public Collection<HistoryBatch> getBatches(
 			@RequestParam Map<String, Object> params,
 			Locale loc, HttpServletRequest rq) {
@@ -55,23 +56,36 @@ public class HistoryBatchService extends BaseService implements InitializingBean
 		checkPermission(user, SevenResourceType.BATCH, PermissionConstants.READ_HISTORY_ALL);
 		return bpmProvider.getHistoricBatches(params, user);
 	}
-    
-    @GetMapping("/{id}")
-   	public HistoryBatch getHistoricBatchById(
-   			@Parameter(description = "Batch id") @PathVariable String id, HttpServletRequest rq) {
-   		CIBUser user = checkAuthorization(rq, true);
-   		checkPermission(user, SevenResourceType.BATCH, PermissionConstants.READ_HISTORY_ALL);
-   		return bpmProvider.getHistoricBatchById(id, user);
-   	}
-    
-    @DeleteMapping("/{id}")
-   	public ResponseEntity<Void> deleteHistoricBatch(
-   			@Parameter(description = "Batch id") @PathVariable String id, HttpServletRequest rq) {
-   		CIBUser user = checkAuthorization(rq, true);
-   		checkPermission(user, SevenResourceType.BATCH, PermissionConstants.DELETE_HISTORY_ALL);
-   		bpmProvider.deleteHistoricBatch(id, user);
-      // return 204 No Content, no body
-      return ResponseEntity.noContent().build();
-   	}
+
+	/**
+	 * Returns the count of historic batches matching the given parameters.
+	 * GET /history/batch/count
+	 */
+	@GetMapping("/count")
+	public Long getHistoricBatchesCount(
+			@RequestParam Map<String, Object> params,
+			Locale loc, HttpServletRequest rq) {
+		CIBUser user = checkAuthorization(rq, true);
+		checkPermission(user, SevenResourceType.BATCH, PermissionConstants.READ_HISTORY_ALL);
+		return bpmProvider.getHistoricBatchCount(params, user);
+	}
+	
+	@GetMapping("/{id}")
+	public HistoryBatch getHistoricBatchById(
+			@Parameter(description = "Batch id") @PathVariable String id, HttpServletRequest rq) {
+		CIBUser user = checkAuthorization(rq, true);
+		checkPermission(user, SevenResourceType.BATCH, PermissionConstants.READ_HISTORY_ALL);
+		return bpmProvider.getHistoricBatchById(id, user);
+	}
+	
+	@DeleteMapping("/{id}")
+	public ResponseEntity<Void> deleteHistoricBatch(
+			@Parameter(description = "Batch id") @PathVariable String id, HttpServletRequest rq) {
+		CIBUser user = checkAuthorization(rq, true);
+		checkPermission(user, SevenResourceType.BATCH, PermissionConstants.DELETE_HISTORY_ALL);
+		bpmProvider.deleteHistoricBatch(id, user);
+	  // return 204 No Content, no body
+	  return ResponseEntity.noContent().build();
+	}
 
 }

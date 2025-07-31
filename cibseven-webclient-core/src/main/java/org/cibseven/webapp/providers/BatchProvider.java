@@ -29,6 +29,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 @Component
 public class BatchProvider extends SevenProviderBase implements IBatchProvider {
 	
@@ -82,9 +84,10 @@ public class BatchProvider extends SevenProviderBase implements IBatchProvider {
     }
 	
 	@Override
-	public Object getHistoricBatchCount(Map<String, Object> queryParams) {
+	public Long getHistoricBatchCount(Map<String, Object> queryParams, CIBUser user) {
 		String url = buildUrlWithParams("/history/batch/count", queryParams);
-        return ((ResponseEntity<Object>) doGet(url, Object.class, null, false)).getBody();
+		JsonNode response = ((ResponseEntity<JsonNode>) doGet(url, JsonNode.class, user, true)).getBody();
+		return response != null ? response.get("count").asLong() : 0L;
     }
     
 	@Override
