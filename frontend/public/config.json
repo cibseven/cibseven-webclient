@@ -88,6 +88,7 @@
 			"filter": ["CREATE"]
 		},
 		"startProcess": {
+			"application": ["ALL"],
 			"processDefinition": ["READ", "CREATE_INSTANCE"],
 			"processInstance": ["CREATE"]
 		},
