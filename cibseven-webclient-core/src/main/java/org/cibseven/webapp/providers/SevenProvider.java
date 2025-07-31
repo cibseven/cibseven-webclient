@@ -1042,8 +1042,8 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
     }
 	
 	@Override
-	public Object getHistoricBatchCount(Map<String, Object> queryParams) {
-		return batchProvider.getHistoricBatchCount(queryParams);
+	public Long getHistoricBatchCount(Map<String, Object> queryParams, CIBUser user) {
+		return batchProvider.getHistoricBatchCount(queryParams, user);
     }
     
 	@Override

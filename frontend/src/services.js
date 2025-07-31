@@ -630,7 +630,7 @@ var BatchService = {
     return axios.get(getServicesBasePath() + '/history/batch', { params })
   },
   getHistoricBatchCount(params) {
-    return axios.get('/history/batch/count', { params })
+    return axios.get(getServicesBasePath() + '/history/batch/count', { params })
   },
   getHistoricBatchById: function(id) {
     return axios.get(getServicesBasePath() + '/history/batch/' + id)
@@ -639,13 +639,13 @@ var BatchService = {
     return axios.delete(getServicesBasePath() + '/history/batch/' + id)
   },
   setRemovalTime(payload) {
-    return axios.post('/history/batch/set-removal-time', payload)
+    return axios.post(getServicesBasePath() + '/history/batch/set-removal-time', payload)
   },
   getCleanableBatchReport(params) {
-    return axios.get('/history/batch/cleanable-batch-report', { params })
+    return axios.get(getServicesBasePath() + '/history/batch/cleanable-batch-report', { params })
   },
   getCleanableBatchReportCount() {
-    return axios.get('/history/batch/cleanable-batch-report/count')
+    return axios.get(getServicesBasePath() + '/history/batch/cleanable-batch-report/count')
   }
 }
 

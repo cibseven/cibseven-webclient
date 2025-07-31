@@ -1073,7 +1073,7 @@ public interface BpmProvider {
 	void deleteBatch(String id, Map<String, Object> params, CIBUser user);
 	void setBatchSuspensionState(String id, Map<String, Object> params, CIBUser user);
 	Collection<HistoryBatch> getHistoricBatches(Map<String, Object> params, CIBUser user);
-	Object getHistoricBatchCount(Map<String, Object> queryParams);
+	Long getHistoricBatchCount(Map<String, Object> queryParams, CIBUser user);
 	HistoryBatch getHistoricBatchById(String id, CIBUser user);
 	void deleteHistoricBatch(String id, CIBUser user);
 	Object setRemovalTime(Map<String, Object> payload);
