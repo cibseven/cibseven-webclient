@@ -304,7 +304,52 @@ export default {
       }
       this.loading = false
     },
-    updateVariable: async function() {
+    async updateVariable() {
+      this.isEditDeserializedValue ? await this.updateVariableDeserialized() : await this.updateVariableSerialized()
+    },
+    async updateVariableDeserialized() {
+      this.saving = true
+
+      const executionId = this.variable.executionId
+      const variableName = this.variable.name
+
+      var formData = new FormData()
+      const jsonBlob = new Blob([this.formattedValue.toString()], { type: 'application/json' })
+      formData.append('data', jsonBlob, 'blob')
+      formData.append('valueType', this.variable.valueInfo.objectTypeName)
+
+      try {
+        await ProcessService.modifyVariableDataByExecutionId(executionId, variableName, formData).then(() => {
+          this.$emit('variable-updated')
+          this.$refs.editVariableModal.hide()
+        })
+      }
+      finally {
+        this.saving = false
+      }
+
+/*
+      this.saving = true
+
+      const value = this.formattedValue.toString()
+      const data = { modifications: {} }
+      data.modifications[this.variable.name] = {
+        value: JSON.parse(this.formattedValue.toString()),
+        type: this.variable.type,
+        valueInfo: this.variable.valueInfo
+      }
+
+      try {
+        await ProcessService.modifyVariableByExecutionId(this.variable.executionId, data).then(() => {
+          this.$emit('variable-updated')
+          this.$refs.editVariableModal.hide()
+        })
+      }
+      finally {
+        this.saving = false
+      }*/
+    },
+    async updateVariableSerialized() {
       this.saving = true
 
       const value = this.formattedValue.toString()
