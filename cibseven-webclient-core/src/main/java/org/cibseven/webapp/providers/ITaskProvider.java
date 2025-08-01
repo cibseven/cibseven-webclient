@@ -46,6 +46,7 @@ public interface ITaskProvider {
 	public void submit(String taskId, CIBUser user);
 	public void submit(Task task, List<Variable> formResult, CIBUser user);
 	public Object formReference(String taskId, CIBUser user);
+	public Object form(String taskId, CIBUser user);
 	public Collection<Task> findTasksByFilter(TaskFiltering filters, String filterId, CIBUser user, Integer firstResult, Integer maxResults);
 	public Integer findTasksCountByFilter(String filterId, CIBUser user, TaskFiltering filters);
 	public Collection<TaskHistory> findTasksByProcessInstanceHistory(String processInstanceId, CIBUser user);

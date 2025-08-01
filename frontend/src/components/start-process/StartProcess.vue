@@ -98,6 +98,7 @@ export default {
         url: this.startParams.url,
         processDefinitionId: this.startParams.processDefinitionId,
         isEmbedded: this.startParams.isEmbedded,
+        isGenerated: this.startParams.isGenerated,
         assignee: this.$root.user,
         id: this.selectedProcess.id,
         processInstanceId: this.selectedProcess.processInstanceId }
@@ -128,8 +129,12 @@ export default {
             }, () => this.isStartingProcess = false)
           } else {
             this.startParams = {}
-            //Embedded forms
-            if (url.key && url.key.startsWith('embedded:') && !url.key.startsWith('embedded:/camunda/app/tasklist/ui-element-templates/template.html')) {
+            if (url.key && url.key.includes('/rendered-form')) {
+              // Generated forms
+              this.startParams.processDefinitionId = processLatest.id
+              this.startParams.isGenerated = true
+            } else if (url.key && url.key.startsWith('embedded:') && !url.key.startsWith('embedded:/camunda/app/tasklist/ui-element-templates/template.html')) {
+              //Embedded forms
               this.startParams.processDefinitionId = processLatest.id
               this.startParams.isEmbedded = true
             } else {
