@@ -229,6 +229,16 @@ public interface BpmProvider {
 	Object formReference(String taskId, CIBUser user) throws SystemException, NoObjectFoundException;
 	
 	/**
+	 * Retrieves the form configuration data associated with a specific task.
+	 * @param taskId filter by task id.
+	 * @param user the user performing the search
+	 * @return TaskForm object containing key, camundaFormRef, and contextPath
+     * @throws NoObjectFoundException when the searched task could not be found.
+     * @throws SystemException in case of any other error.
+	 */
+	Object form(String taskId, CIBUser user) throws SystemException, NoObjectFoundException;
+	
+	/**
 	 * Search processes.
      * @param user the user performing the search
      * @return Fetched processes.

@@ -174,6 +174,18 @@ public class TaskService extends BaseService implements InitializingBean {
 	}
 	
 	@Operation(
+			summary = "Retrieves the form configuration data associated with a specific task",
+			description = "<strong>Return: TaskForm object containing key, camundaFormRef, and contextPath")
+	@ApiResponse(responseCode = "404", description= "Task not found")
+	@RequestMapping(value = "/task/{taskId}/form", method = RequestMethod.GET)
+	public Object form(
+			@Parameter(description = "Task Id") @PathVariable String taskId,
+			Locale loc, CIBUser user) {
+		checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
+		return bpmProvider.form(taskId, user);
+	}
+	
+	@Operation(
 			summary = "Set assignee to an specific task",
 			description = "UserID will be the assignee" + "<br>" + "<strong>Return: void")
 	@ApiResponse(responseCode = "404", description= "Task or User not found")
