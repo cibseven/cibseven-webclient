@@ -74,6 +74,7 @@ public class VariableInstanceService extends BaseService implements Initializing
 			@RequestParam(required = false) Boolean deserializeValue,
 			CIBUser user) {
 		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.READ_ALL);
-		return bpmProvider.getVariableInstance(id, deserializeValue, user);
+		boolean deserialize = (deserializeValue == null) || (deserializeValue != null && deserializeValue == true);
+		return bpmProvider.getVariableInstance(id, deserialize, user);
 	}
 }

@@ -47,6 +47,7 @@ import org.cibseven.webapp.rest.model.ProcessStatistics;
 import org.cibseven.webapp.rest.model.StartForm;
 import org.cibseven.webapp.rest.model.TaskSorting;
 import org.cibseven.webapp.rest.model.Variable;
+import org.cibseven.webapp.rest.model.VariableHistory;
 import org.cibseven.webapp.providers.utils.URLUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -424,13 +425,29 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		return ((ResponseEntity<ProcessInstance>) doGet(url, ProcessInstance.class, user, false)).getBody();
 	}
 
-	@Override
-	public Variable fetchProcessInstanceVariable(String processInstanceId, String variableName, String deserializeValue, CIBUser user) throws SystemException  {
+	public Variable fetchProcessInstanceVariableImpl(String processInstanceId, String variableName, boolean deserializeValue, CIBUser user) throws SystemException  {
 		String url = getEngineRestUrl() + "/process-instance/" + processInstanceId + "/variables/" + variableName;
-		url += StringUtils.isEmpty(deserializeValue) ? "" : "?deserializeValue=" + deserializeValue;
+		url += "?deserializeValue=" + deserializeValue;
 		return ((ResponseEntity<Variable>) doGet(url, Variable.class, null, false)).getBody();
 	}
 
+	@Override
+	public Variable fetchProcessInstanceVariable(String processInstanceId, String variableName, boolean deserializeValue, CIBUser user) throws SystemException  {
+		Variable variableSerialized = fetchProcessInstanceVariableImpl(processInstanceId, variableName, false, user);
+		Variable variableDeserialized = fetchProcessInstanceVariableImpl(processInstanceId, variableName, true, user);
+
+		if (deserializeValue) {
+			variableDeserialized.setValueSerialized(variableSerialized.getValue());
+			variableDeserialized.setValueDeserialized(variableDeserialized.getValue());
+			return variableDeserialized;
+		}
+		else {
+			variableSerialized.setValueSerialized(variableSerialized.getValue());
+			variableSerialized.setValueDeserialized(variableDeserialized.getValue());
+			return variableSerialized;
+		}
+	}
+	
 	@Override
 	public Collection<Process> findCalledProcessDefinitions(String processDefinitionId, CIBUser user) {
 		String url = getEngineRestUrl() + "/process-definition/" + processDefinitionId + "/static-called-process-definitions";

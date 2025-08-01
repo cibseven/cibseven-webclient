@@ -65,7 +65,7 @@ public interface IProcessProvider {
 	public Collection<HistoryProcessInstance> findProcessesInstancesHistoryById(String id, Optional<String> activityId, Optional<Boolean> active, 
 			Integer firstResult, Integer maxResults, String text, CIBUser user);
 	public ProcessInstance findProcessInstance(String processInstanceId, CIBUser user);
-	public Variable fetchProcessInstanceVariable(String processInstanceId, String variableName, String deserializeValue, CIBUser user) throws SystemException;
+	public Variable fetchProcessInstanceVariable(String processInstanceId, String variableName, boolean deserializeValue, CIBUser user) throws SystemException;
 	public Collection<Process> findCalledProcessDefinitions(String processDefinitionId, CIBUser user);
 	public ResponseEntity<byte[]> getDeployedStartForm(String processDefinitionId, CIBUser user);
 	public void updateHistoryTimeToLive(String id, Map<String, Object> data, CIBUser user);

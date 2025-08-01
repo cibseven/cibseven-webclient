@@ -28,13 +28,27 @@ import org.springframework.stereotype.Component;
 @Component
 public class HistoricVariableInstanceProvider extends SevenProviderBase implements IHistoricVariableInstanceProvider {
 
-	@Override
-	public VariableHistory getHistoricVariableInstance(String id, Boolean deserializeValue, CIBUser user) throws SystemException, NoObjectFoundException {
-		String url = getEngineRestUrl() + "/history/variable-instance/" + id;
-		if (deserializeValue != null) {
-			url += "?deserializeValue=" + deserializeValue;
-		}
+	private VariableHistory getHistoricVariableInstanceImpl(String id, boolean deserializeValue, CIBUser user) throws SystemException, NoObjectFoundException {
+		String url = getEngineRestUrl() + "/history/variable-instance/" + id +
+			"?deserializeValue=" + deserializeValue;
 		return doGet(url, VariableHistory.class, user, false).getBody();
+	}
+
+	@Override
+	public VariableHistory getHistoricVariableInstance(String id, boolean deserializeValue, CIBUser user) throws SystemException, NoObjectFoundException {
+		VariableHistory variableSerialized = getHistoricVariableInstanceImpl(id, false, user);
+		VariableHistory variableDeserialized = getHistoricVariableInstanceImpl(id, true, user);
+
+		if (deserializeValue) {
+			variableDeserialized.setValueSerialized(variableSerialized.getValue());
+			variableDeserialized.setValueDeserialized(variableDeserialized.getValue());
+			return variableDeserialized;
+		}
+		else {
+			variableSerialized.setValueSerialized(variableSerialized.getValue());
+			variableSerialized.setValueDeserialized(variableDeserialized.getValue());
+			return variableSerialized;
+		}
 	}
 
 }

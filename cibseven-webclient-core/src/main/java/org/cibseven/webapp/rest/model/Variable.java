@@ -32,6 +32,8 @@ public class Variable {
 	private String name;
 	private String type;
 	private Object value;
+	private Object valueSerialized;
+	private Object valueDeserialized;
 
 	private Map<String, String> valueInfo = new HashMap<>();
 	
@@ -70,7 +72,15 @@ public class Variable {
 	public String setObjectTypeName(String value) {
 		return valueInfo.put("objectTypeName", value);
 	}
-	
+
+	public void setValueSerialized(Object value) {
+		this.valueSerialized = value;
+	}
+
+	public void setValueDeserialized(Object value) {
+		this.valueDeserialized = value;
+	}
+
 	@JsonIgnore
 	public boolean isNull() {
 		return "Null".equals(type);

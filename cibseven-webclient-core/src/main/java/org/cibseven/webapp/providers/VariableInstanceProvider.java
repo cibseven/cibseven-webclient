@@ -19,6 +19,7 @@ package org.cibseven.webapp.providers;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableInstance;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -29,18 +30,31 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Component
 public class VariableInstanceProvider extends SevenProviderBase implements IVariableInstanceProvider {
 
-	@Override
-	public VariableInstance getVariableInstance(String id, Boolean deserializeValue, CIBUser user) throws SystemException, NoObjectFoundException {
+	public VariableInstance getVariableInstanceImpl(String id, boolean deserializeValue, CIBUser user) throws SystemException, NoObjectFoundException {
 		UriComponentsBuilder uriBuilder = UriComponentsBuilder
 				.fromUriString(getEngineRestUrl())
-				.path("/variable-instance/{id}");
-
-		if (deserializeValue != null) {
-			uriBuilder.queryParam("deserializeValue", deserializeValue);
-		}
+				.path("/variable-instance/{id}")
+				.queryParam("deserializeValue", deserializeValue);
 
 		String url = uriBuilder.buildAndExpand(id).toUriString();
 		return doGet(url, VariableInstance.class, user, false).getBody();
+	}
+
+	@Override
+	public VariableInstance getVariableInstance(String id, boolean deserializeValue, CIBUser user) throws SystemException, NoObjectFoundException {
+		VariableInstance variableSerialized = getVariableInstanceImpl(id, false, user);
+		VariableInstance variableDeserialized = getVariableInstanceImpl(id, true, user);
+
+		if (deserializeValue) {
+			variableDeserialized.setValueSerialized(variableSerialized.getValue());
+			variableDeserialized.setValueDeserialized(variableDeserialized.getValue());
+			return variableDeserialized;
+		}
+		else {
+			variableSerialized.setValueSerialized(variableSerialized.getValue());
+			variableSerialized.setValueDeserialized(variableDeserialized.getValue());
+			return variableSerialized;
+		}
 	}
 
 }

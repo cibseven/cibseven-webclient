@@ -325,7 +325,8 @@ public class TaskService extends BaseService implements InitializingBean {
 	      @RequestParam Optional<Boolean> deserialize, HttpServletRequest rq) {
 	    CIBUser userAuth = (CIBUser) baseUserProvider.authenticateUser(rq);
         checkPermission(userAuth, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.READ_ALL);
-	    return bpmProvider.fetchVariable(taskId, variableName, deserialize, userAuth);
+		boolean deserializeValue = deserialize.orElse(true);
+	    return bpmProvider.fetchVariable(taskId, variableName, deserializeValue, userAuth);
 	  }
 	  
 	  @RequestMapping(value = "/task/{taskId}/variable/{variableName}/data", method = RequestMethod.GET)

@@ -95,6 +95,8 @@ public class VariableInstance {
      * Note: Not every endpoint supports every type.
      */
     private Object value;
+	private Object valueSerialized;
+	private Object valueDeserialized;
 
     /**
      * The value type of the variable.

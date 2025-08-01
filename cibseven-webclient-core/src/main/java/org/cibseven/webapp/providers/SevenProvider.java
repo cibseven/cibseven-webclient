@@ -351,7 +351,7 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 
 	@Override
-	public Variable fetchProcessInstanceVariable(String processInstanceId, String variableName, String deserializeValue, CIBUser user) throws SystemException  {
+	public Variable fetchProcessInstanceVariable(String processInstanceId, String variableName, boolean deserializeValue, CIBUser user) throws SystemException  {
 		return processProvider.fetchProcessInstanceVariable(processInstanceId, variableName, deserializeValue, user);
 	}
 	
@@ -713,8 +713,8 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 	
 	@Override
-	public void modifyVariableDataByExecutionId(String executionId, String variableName, MultipartFile file, CIBUser user) throws SystemException {
-		variableProvider.modifyVariableDataByExecutionId(executionId, variableName, file, user);
+	public void modifyVariableDataByExecutionId(String executionId, String variableName, MultipartFile data, String valueType, CIBUser user) throws SystemException {
+		variableProvider.modifyVariableDataByExecutionId(executionId, variableName, data, valueType, user);
 	}
 	
 	@Override
@@ -749,7 +749,7 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public Variable fetchVariable(String taskId, String variableName, 
-			Optional<Boolean> deserializeValue, CIBUser user) throws NoObjectFoundException, SystemException {		
+			boolean deserializeValue, CIBUser user) throws NoObjectFoundException, SystemException {		
 		return variableProvider.fetchVariable(taskId, variableName, deserializeValue, user);
 	}
 	
@@ -1156,7 +1156,7 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	*/
 
 	@Override
-	public VariableInstance getVariableInstance(String id, Boolean deserializeValue, CIBUser user) throws SystemException, NoObjectFoundException {
+	public VariableInstance getVariableInstance(String id, boolean deserializeValue, CIBUser user) throws SystemException, NoObjectFoundException {
 		return variableInstanceProvider.getVariableInstance(id, deserializeValue, user);
 	}
 
@@ -1170,7 +1170,7 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
                                                                                                                                                                                                                                                              
 	 */
 	@Override
-	public VariableHistory getHistoricVariableInstance(String id, Boolean deserializeValue, CIBUser user) throws SystemException, NoObjectFoundException {
+	public VariableHistory getHistoricVariableInstance(String id, boolean deserializeValue, CIBUser user) throws SystemException, NoObjectFoundException {
 		return historicVariableInstanceProvider.getHistoricVariableInstance(id, deserializeValue, user);
 	}
 	
