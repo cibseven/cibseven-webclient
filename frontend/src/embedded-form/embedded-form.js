@@ -373,6 +373,18 @@ function normalizeGeneratedFormHtml(htmlString) {
     const helpBlocks = doc.querySelectorAll('.help-block');
     helpBlocks.forEach(el => el.remove());
 
+    // Add asterisk (*) to labels of required fields
+    const requiredInputs = doc.querySelectorAll('input[required="true"], select[required="true"]');
+    requiredInputs.forEach(input => {
+        const fieldId = input.id || input.name;
+        if (fieldId) {
+            const label = doc.querySelector(`label[for="${fieldId}"]`);
+            if (label && !label.textContent.trim().endsWith('*')) {
+                label.innerHTML = label.innerHTML.trim() + ' <span style="color: red;">*</span>';
+            }
+        }
+    });
+
     // Select all Angular date inputs (with uib-datepicker-popup)
     const dateInputs = doc.querySelectorAll('input[uib-datepicker-popup]');
 
