@@ -31,6 +31,7 @@ import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.exception.UnexpectedTypeException;
+import org.cibseven.webapp.exception.UnsupportedTypeException;
 import org.cibseven.webapp.rest.model.ProcessStart;
 import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
@@ -83,15 +84,32 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		if (user != null) headers.add("Authorization", user.getAuthToken());
 		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
 		try {
-			body.add("data", data.getResource());
-			body.add("valueType", valueType);
+      
+      if (valueType.equalsIgnoreCase("File") || valueType.equalsIgnoreCase("Bytes")) {
+        // Handle binary/file data
+        body.add("data", data.getResource());
+        body.add("valueType", valueType);
+      } else {
+        // Handle JSON/serialized data
+        String jsonContent = new String(data.getBytes());
+        HttpHeaders jsonHeaders = new HttpHeaders();
+        jsonHeaders.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> jsonEntity = new HttpEntity<>(jsonContent, jsonHeaders);
+        
+        body.add("data", jsonEntity);
+        body.add("type", valueType);
+        body.add("valueType", SERIALIZATION_DATA_FORMAT_JSON);
+      }
+      
 			HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(body, headers);
 			RestTemplate rest = new RestTemplate();
 
 			rest.exchange(builder.build().toUri(), HttpMethod.POST, request, String.class);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
-		}
+		} catch (IOException e) { // from data.getBytes()
+      throw new UnsupportedTypeException(e);
+    }
 	}
 
 	private void mergeVariablesValues(
