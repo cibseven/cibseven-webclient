@@ -256,13 +256,15 @@ function loadEmbeddedForm(
             if (formInfo.key.includes('deployment:')) {
                 let resource = await loadDeployedForm(client, isStartForm, referenceId);
                 formContainer.innerHTML = resource;
-                formConfig.formElement = '#generatedRoot'
+                formConfig.formElement = formContainer
                 if (embeddedContainer) embeddedContainer.style.display = 'none';
             } else if (formInfo.key.includes('/rendered-form')) {
                 // Load Camunda generated form HTML and normalize it for Vue integration
                 let resource = await loadGeneratedForm(isStartForm, referenceId, formContainer, client, config)
                 formContainer.innerHTML = resource;
-                formConfig.formElement = formContainer;
+                // Use #embeddedFormRoot as the form element for Camunda SDK
+                // This is a workaround to fix related to jquery selector in Camunda SDK
+                formConfig.formElement = '#embeddedFormRoot'
                 if (embeddedContainer) embeddedContainer.style.display = 'none';
             } else {
                 // Start with a relative url and replace doubled slashes if necessary
