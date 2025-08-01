@@ -34,6 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.cibseven.webapp.rest.TestRestTemplateConfiguration;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,13 +43,13 @@ import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 
 @SpringBootTest
-@ContextConfiguration(classes = {VariableProvider.class})
+@ContextConfiguration(classes = {VariableProvider.class, TestRestTemplateConfiguration.class})
 public class VariableProviderIT extends BaseHelper {
 
     static {
         System.setProperty("spring.banner.location", "classpath:fca-banner.txt");
     }
-	
+
     @Autowired
     private VariableProvider variableProvider;
 
@@ -62,7 +63,7 @@ public class VariableProviderIT extends BaseHelper {
         String mockBaseUrl = mockWebServer.url("/").toString();
         ReflectionTestUtils.setField(variableProvider, "cibsevenUrl", mockBaseUrl);
     }
-    
+
     @AfterEach
     void tearDown() throws Exception {
         mockWebServer.shutdown();
@@ -117,14 +118,14 @@ public class VariableProviderIT extends BaseHelper {
     void testSubmitStartFormVariables() throws Exception {
         String processDefinitionId = "definition-1";
         CIBUser user = getCibUser();
-        
+
         ObjectMapper mapper = new ObjectMapper();
-        
+
         List<Variable> formResult = mapper.readValue(
             new File("src/test/resources/mocks/variable_form_result_mock.json"),
             new TypeReference<List<Variable>>() {}
         );
-        
+
         String mockResponseBody = loadMockResponse("mocks/process_start_mock.json");
 
         mockWebServer.enqueue(new MockResponse().setBody(mockResponseBody).addHeader("Content-Type", "application/json"));

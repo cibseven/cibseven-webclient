@@ -23,6 +23,7 @@ import java.util.Optional;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.rest.model.Decision;
+import org.cibseven.webapp.rest.model.HistoricDecisionInstance;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -39,9 +40,10 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 	}
 
 	@Override
-	public Object getDecisionDefinitionListCount(Map<String, Object> queryParams, CIBUser user) {
+	public Long getDecisionDefinitionListCount(Map<String, Object> queryParams, CIBUser user) {
 		String url = buildUrlWithParams(getEngineRestUrl() + "/decision-definition/count", queryParams);    
-		return ((ResponseEntity<Object>) doGet(url, Object.class, user, false)).getBody();
+		JsonNode response = ((ResponseEntity<JsonNode>) doGet(url, JsonNode.class, user, true)).getBody();
+		return response != null ? response.get("count").asLong() : 0L;
 	}
 	
 	@Override
@@ -154,31 +156,33 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 	}
 	
 	@Override
-	public Object getHistoricDecisionInstances(Map<String, Object> queryParams, CIBUser user){
+	public Collection<HistoricDecisionInstance> getHistoricDecisionInstances(Map<String, Object> queryParams, CIBUser user) {
 		String url = buildUrlWithParams(getEngineRestUrl() + "/history/decision-instance", queryParams);
-		return ((ResponseEntity<Object>) doGet(url, Object.class, user, false)).getBody();
+		HistoricDecisionInstance[] arr = ((ResponseEntity<HistoricDecisionInstance[]>) doGet(url, HistoricDecisionInstance[].class, user, false)).getBody();
+		return Arrays.asList(arr);
 	}
 	
 	@Override
-	public Object getHistoricDecisionInstanceCount(Map<String, Object> queryParams, CIBUser user){
+	public Long getHistoricDecisionInstanceCount(Map<String, Object> queryParams, CIBUser user) {
 		String url = buildUrlWithParams(getEngineRestUrl() + "/history/decision-instance/count", queryParams);
-		return ((ResponseEntity<Object>) doGet(url, Object.class, user, false)).getBody();
+		JsonNode response = ((ResponseEntity<JsonNode>) doGet(url, JsonNode.class, user, true)).getBody();
+		return response != null ? response.get("count").asLong() : 0L;
 	}
 	
 	@Override
-	public Object getHistoricDecisionInstanceById(String id, Map<String, Object> queryParams, CIBUser user){
+	public HistoricDecisionInstance getHistoricDecisionInstanceById(String id, Map<String, Object> queryParams, CIBUser user) {
 		String url = buildUrlWithParams(getEngineRestUrl() + "/history/decision-instance/" + id, queryParams);
-		return ((ResponseEntity<Object>) doGet(url, Object.class, user, false)).getBody();
+		return ((ResponseEntity<HistoricDecisionInstance>) doGet(url, HistoricDecisionInstance.class, user, false)).getBody();
 	}
 	
 	@Override
-	public Object deleteHistoricDecisionInstances(Map<String, Object> body, CIBUser user){
+	public Object deleteHistoricDecisionInstances(Map<String, Object> body, CIBUser user) {
 		String url = getEngineRestUrl() + "/history/decision-instance/delete";
 		return ((ResponseEntity<Object>) doPost(url, body, null, user)).getBody();
 	}
 	
 	@Override
-	public Object setHistoricDecisionInstanceRemovalTime(Map<String, Object> body, CIBUser user){
+	public Object setHistoricDecisionInstanceRemovalTime(Map<String, Object> body, CIBUser user) {
 		String url = getEngineRestUrl() + "/history/decision-instance/set-removal-time";
 		return ((ResponseEntity<Object>) doPost(url, body, null, null)).getBody();
 	}

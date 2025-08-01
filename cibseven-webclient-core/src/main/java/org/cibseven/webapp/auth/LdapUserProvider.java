@@ -19,16 +19,12 @@ package org.cibseven.webapp.auth;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Collection;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.Optional;
 
 import javax.crypto.SecretKey;
-import javax.naming.NameNotFoundException;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.InitialDirContext;
@@ -41,7 +37,6 @@ import org.cibseven.webapp.auth.exception.TokenExpiredException;
 import org.cibseven.webapp.auth.providers.JwtUserProvider;
 import org.cibseven.webapp.auth.rest.StandardLogin;
 import org.cibseven.webapp.exception.SystemException;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -53,12 +48,12 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Component
-public class LdapUserProvider extends BaseUserProvider<StandardLogin> implements InitializingBean {
+public class LdapUserProvider extends BaseUserProvider<StandardLogin> {
 	
 	@Value("${cibseven.webclient.ldap.url:}") String serverURL;
 	@Value("${cibseven.webclient.ldap.user:}") String ldapUser;
@@ -74,8 +69,9 @@ public class LdapUserProvider extends BaseUserProvider<StandardLogin> implements
 	@Value("${cibseven.webclient.authentication.jwtSecret:}") String secret;
 	@Value("${cibseven.webclient.authentication.tokenValidMinutes:60}") long validMinutes;
 	@Value("${cibseven.webclient.authentication.tokenProlongMinutes:1440}") long prolongMinutes;
-		
-	public void afterPropertiesSet() {
+	
+	@PostConstruct
+	public void init() {
 		settings = new JwtTokenSettings(secret, validMinutes, prolongMinutes);		
 	}
 

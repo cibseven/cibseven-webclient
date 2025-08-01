@@ -30,7 +30,7 @@ public interface IBatchProvider {
 	public void deleteBatch(String id, Map<String, Object> queryParams, CIBUser user);
 	public void setBatchSuspensionState(String id, Map<String, Object> queryParams, CIBUser user);
 	public Collection<HistoryBatch> getHistoricBatches(Map<String, Object> queryParams, CIBUser user);
-    public Object getHistoricBatchCount(Map<String, Object> queryParams);
+    public Long getHistoricBatchCount(Map<String, Object> queryParams, CIBUser user);
     public HistoryBatch getHistoricBatchById(String id, CIBUser user);
     public void deleteHistoricBatch(String id, CIBUser user);
     public Object setRemovalTime(Map<String, Object> payload);

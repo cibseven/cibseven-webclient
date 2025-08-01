@@ -42,6 +42,7 @@ import org.cibseven.webapp.rest.model.DeploymentResource;
 import org.cibseven.webapp.rest.model.EventSubscription;
 import org.cibseven.webapp.rest.model.ExternalTask;
 import org.cibseven.webapp.rest.model.Filter;
+import org.cibseven.webapp.rest.model.HistoricDecisionInstance;
 import org.cibseven.webapp.rest.model.HistoryBatch;
 import org.cibseven.webapp.rest.model.HistoryProcessInstance;
 import org.cibseven.webapp.rest.model.IdentityLink;
@@ -79,7 +80,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-@Component
 public class SevenProvider extends SevenProviderBase implements BpmProvider {
 		@Autowired private IDeploymentProvider deploymentProvider;
     @Autowired private IVariableProvider variableProvider;
@@ -837,7 +837,7 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	
 	@Override
-	public Object getDecisionDefinitionListCount(Map<String, Object> queryParams, CIBUser user) {
+	public Long getDecisionDefinitionListCount(Map<String, Object> queryParams, CIBUser user) {
 		return decisionProvider.getDecisionDefinitionListCount(queryParams, user);
 	}
 	
@@ -922,17 +922,17 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 	
 	@Override
-	public Object getHistoricDecisionInstances(Map<String, Object> queryParams, CIBUser user){
+	public Collection<HistoricDecisionInstance> getHistoricDecisionInstances(Map<String, Object> queryParams, CIBUser user){
 		return decisionProvider.getHistoricDecisionInstances(queryParams, user);
 	}
 	
 	@Override
-	public Object getHistoricDecisionInstanceCount(Map<String, Object> queryParams, CIBUser user){
+	public Long getHistoricDecisionInstanceCount(Map<String, Object> queryParams, CIBUser user){
 		return decisionProvider.getHistoricDecisionInstanceCount(queryParams, user);
 	}
 	
 	@Override
-	public Object getHistoricDecisionInstanceById(String id, Map<String, Object> queryParams, CIBUser user){
+	public HistoricDecisionInstance getHistoricDecisionInstanceById(String id, Map<String, Object> queryParams, CIBUser user){
 		return decisionProvider.getHistoricDecisionInstanceById(id, queryParams, user);
 	}
 	
@@ -1042,8 +1042,8 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
     }
 	
 	@Override
-	public Object getHistoricBatchCount(Map<String, Object> queryParams) {
-		return batchProvider.getHistoricBatchCount(queryParams);
+	public Long getHistoricBatchCount(Map<String, Object> queryParams, CIBUser user) {
+		return batchProvider.getHistoricBatchCount(queryParams, user);
     }
     
 	@Override

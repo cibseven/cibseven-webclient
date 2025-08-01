@@ -28,7 +28,7 @@
           :versions="versions" @refresh-decision-versions="loadDecisionVersionsByKey(decisionKey, versionIndex, $event)"></DecisionVersionListSidebar>
       </template>
       <router-view
-        v-if="decision"
+        v-if="decision && versionLoaded"
         :key="$route.fullPath"
         :loading="loading"
       />
@@ -55,7 +55,8 @@ export default {
       leftOpen: true,
       rightOpen: false,
       filter: '',
-      loading: false
+      loading: false,
+      versionLoaded: false
     }
   },
   watch: {
@@ -94,9 +95,11 @@ export default {
     ...mapActions(['getDecisionVersionsByKey']),
     ...mapMutations(['setSelectedDecisionVersion', 'updateVersion']),
     loadDecisionVersionsByKey(decisionKey, versionIndex, lazyLoad) {
+      this.versionLoaded = false
       this.getDecisionVersionsByKey({ key: decisionKey, lazyLoad: lazyLoad })
       .then(versions => {
         let version = versions[0]
+        this.setSelectedDecisionVersion({ key: decisionKey, version: versionIndex })
         if (!versionIndex) {
           versionIndex = version.version
           this.$router.push(`/seven/auth/decision/${decisionKey}/${versionIndex}`)
@@ -106,7 +109,7 @@ export default {
         DecisionService.getDecisionDefinitionById(version.id, true).then(result => {
           if (result) this.updateVersion({ key: decisionKey, newVersion: result })
         })
-        this.setSelectedDecisionVersion({ key: decisionKey, version: versionIndex })
+        this.versionLoaded = true
       })
     }
   }
