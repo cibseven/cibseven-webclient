@@ -327,27 +327,6 @@ export default {
       finally {
         this.saving = false
       }
-
-/*
-      this.saving = true
-
-      const value = this.formattedValue.toString()
-      const data = { modifications: {} }
-      data.modifications[this.variable.name] = {
-        value: JSON.parse(this.formattedValue.toString()),
-        type: this.variable.type,
-        valueInfo: this.variable.valueInfo
-      }
-
-      try {
-        await ProcessService.modifyVariableByExecutionId(this.variable.executionId, data).then(() => {
-          this.$emit('variable-updated')
-          this.$refs.editVariableModal.hide()
-        })
-      }
-      finally {
-        this.saving = false
-      }*/
     },
     async updateVariableSerialized() {
       this.saving = true
