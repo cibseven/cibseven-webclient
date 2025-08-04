@@ -380,10 +380,16 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		for (Variable variable: formResult) {
 			ObjectNode variablePost = mapper.getNodeFactory().objectNode();
 			String val = String.valueOf(variable.getValue());
-			if (variable.getType().equals("Boolean")) {
+			if (variable.getType().equals("boolean") || variable.getType().equals("Boolean")) {
 				variablePost.put("value", Boolean.parseBoolean(val));
 			} else if (variable.getType().equals("Double")) {
-				variablePost.put("value", Double.parseDouble(val));
+			  variablePost.put("value", Double.parseDouble(val));
+			} else if (variable.getType().equals("number")) {
+			  if (variable.getValue().getClass() == Double.class)
+			    variablePost.put("value", Double.parseDouble(val));
+			  else
+			   variablePost.put("value", Integer.parseInt(val));
+
 			}
 			else variablePost.put("value", val);
 			//TODO Changing variables before saving should be done in the task classes
