@@ -33,6 +33,7 @@ import org.cibseven.webapp.exception.UnsupportedTypeException;
 import org.cibseven.webapp.rest.model.ProcessStart;
 import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
+import org.cibseven.webapp.rest.model.VariableInstance;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpEntity;

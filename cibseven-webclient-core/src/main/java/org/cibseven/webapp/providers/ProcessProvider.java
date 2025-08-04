@@ -47,6 +47,7 @@ import org.cibseven.webapp.rest.model.ProcessStatistics;
 import org.cibseven.webapp.rest.model.StartForm;
 import org.cibseven.webapp.rest.model.TaskSorting;
 import org.cibseven.webapp.rest.model.Variable;
+import org.cibseven.webapp.rest.model.VariableHistory;
 import org.cibseven.webapp.providers.utils.URLUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

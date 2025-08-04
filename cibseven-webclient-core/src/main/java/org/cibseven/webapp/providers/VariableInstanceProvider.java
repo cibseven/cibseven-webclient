@@ -19,6 +19,7 @@ package org.cibseven.webapp.providers;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableInstance;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
