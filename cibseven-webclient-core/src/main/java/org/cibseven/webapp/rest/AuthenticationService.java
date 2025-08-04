@@ -44,8 +44,8 @@ public class AuthenticationService extends BaseService {
 	public User login(@RequestBody Map<String, Object> data, HttpServletRequest rq) {
 		String honeypot = (String) data.get("lastname");
 		if (honeypot != null) return null;
-	    String username = (String) data.get("username");
-	    String password = (String) data.get("password");
+	    //String username = (String) data.get("username");
+	    //String password = (String) data.get("password");
 		data.remove("lastname");
 		StandardLogin standardLogin = new ObjectMapper().convertValue(data, StandardLogin.class);
 
