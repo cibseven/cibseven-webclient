@@ -70,12 +70,35 @@ export default {
         this.templateMetaData = template
         var formContent = JSON.parse(template.variables.formularContent.value)
         var formData = JSON.parse(template.variables.formVariables.value)
+        
+        // Process form variables with valuesKey references
+        this.processFormVariables(formContent, formData)
+        
         this.formularContent = formContent
         this.form = new Form({
             container: document.querySelector('#form'),
         })
         this.form.importSchema(this.formularContent, formData)
       })
+    },
+    
+    processFormVariables: function(formContent, formData) {
+      // Process components that reference form variables via valuesKey
+      if (formContent.components) {
+        formContent.components.forEach(component => {
+          if (component.valuesKey && formData[component.valuesKey]) {
+            try {
+              // Parse the referenced values and set them as component values
+              const options = typeof formData[component.valuesKey] === 'string' 
+                ? JSON.parse(formData[component.valuesKey])
+                : formData[component.valuesKey]
+              component.values = options
+            } catch (e) {
+              console.warn(`Could not parse values for ${component.valuesKey}:`, e)
+            }
+          }
+        })
+      }
     },
     saveForm: function() {
       this.closeTask = false
@@ -88,7 +111,7 @@ export default {
       Object.entries(result.data).forEach(([key, value]) => {
         this.dataToSubmit[key] = {
               name: key,
-              type: typeof value,
+              type: this.determineValueTypeFromSchema(key, value),
               value: value,
               valueInfo: null
           }
@@ -104,6 +127,91 @@ export default {
       }).finally(() =>{
         this.closeTask = true
       })
+    },
+    determineValueTypeFromSchema: function(fieldKey, value) {
+      // Find the field definition in the form schema
+      const fieldDef = this.findFieldByKey(this.formularContent, fieldKey)
+      
+      if (fieldDef) {
+        switch (fieldDef.type) {
+          case 'number':
+            // Check if it has decimal digits to determine Integer vs Double
+            if (fieldDef.decimalDigits && fieldDef.decimalDigits > 0) {
+              return 'Double'
+            } else {
+              return Number.isInteger(Number(value)) ? 'Integer' : 'Double'
+            }
+          case 'checkbox':
+            return 'Boolean'
+          case 'select':
+            return 'String'
+          case 'textfield':
+          case 'textarea':
+            return 'String'
+          case 'datetime':
+            return 'Date'
+          default:
+            return 'String'
+        }
+      }
+      
+      // Fallback to original logic if field not found in schema
+      return this.determineValueType(value)
+    },
+    
+    findFieldByKey: function(schema, key) {
+      if (!schema || !schema.components) return null
+      
+      for (const component of schema.components) {
+        if (component.key === key) {
+          return component
+        }
+        // Recursively search in nested components if they exist
+        if (component.components) {
+          const found = this.findFieldByKey(component, key)
+          if (found) return found
+        }
+      }
+      return null
+    },
+    
+    determineValueType: function(value) {
+      // Handle null and undefined
+      if (value === null || value === undefined) {
+        return 'String'
+      }
+      
+      // If it's already a number, return appropriate type
+      if (typeof value === 'number') {
+        return Number.isInteger(value) ? 'Integer' : 'Double'
+      }
+      
+      // If it's a boolean, return Boolean
+      if (typeof value === 'boolean') {
+        return 'Boolean'
+      }
+      
+      // If it's a string, try to determine if it represents a number
+      if (typeof value === 'string') {
+        // Check if it's a valid number
+        const numValue = Number(value)
+        if (!isNaN(numValue) && value.trim() !== '') {
+          // Check if it's an integer or decimal
+          if (Number.isInteger(numValue)) {
+            return 'Integer'
+          } else {
+            return 'Double'
+          }
+        }
+        
+        // Check if it's a boolean string
+        if (value.toLowerCase() === 'true' || value.toLowerCase() === 'false') {
+          return 'Boolean'
+        }
+      }
+      
+      // Default to String for everything else
+      return 'String'
     }
   }
 }
