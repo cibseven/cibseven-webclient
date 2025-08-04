@@ -19,8 +19,6 @@ package org.cibseven.webapp.providers;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-
 import org.cibseven.webapp.NamedByteArrayDataSource;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.NoObjectFoundException;
