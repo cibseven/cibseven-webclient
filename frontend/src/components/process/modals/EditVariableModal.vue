@@ -57,7 +57,15 @@
         </b-tab>
       </b-tabs>
       <b-form-group v-if="isEditSerializedValue" :label="$t('process-instance.variables.value')">
-        <textarea
+        <div v-if="variable.type === 'Boolean'" class="d-flex justify-content-end">
+          <span class="me-2">{{ formattedValue ? $t('process.true') : $t('process.false') }}</span>
+          <b-form-checkbox v-model="formattedValue" switch :title="formattedValue ? $t('process.true') : $t('process.false')"></b-form-checkbox>
+        </div>
+        <b-form-input v-else-if="['Short', 'Integer', 'Long', 'Double'].includes(variable.type)"
+          v-model="formattedValue" type="number"></b-form-input>
+        <b-form-datepicker v-else-if="variable.type === 'Date'" v-model="formattedValue"></b-form-datepicker>
+        <div v-else-if="variable.type === 'Null'"></div>
+        <textarea v-else
           class="form-control"
           :class="{ 'is-invalid': valueValidationError !== null }"
           rows="5"
@@ -134,7 +142,7 @@ export default {
         return null
       }
 
-      if (!this.formattedValue || this.formattedValue.trim() === '') {
+      if (!this.formattedValue) {
         return null
       }
 
@@ -147,6 +155,9 @@ export default {
           // No specific validation needed for these types
           return null
         case 'Json': {
+          if (this.formattedValue.trim() === '') {
+            return false
+          }
           // JSON validation
           try {
             JSON.parse(this.formattedValue)
@@ -156,6 +167,9 @@ export default {
           }
         }
         case 'Object': {
+          if (this.formattedValue.trim() === '') {
+            return false
+          }
           // Object validation
           try {
             const parsedValue = JSON.parse(this.formattedValue)
@@ -191,8 +205,9 @@ export default {
           case 'Integer':
           case 'Long':
           case 'Double':
-          case 'Boolean':
             return value.toString() // Convert primitive types to string
+          case 'Boolean':
+            return !!value
           case 'Json': {
             try {
               return JSON.stringify(JSON.parse(value), null, 2)
@@ -258,6 +273,9 @@ export default {
         }
       },
       set: function(val) {
+        if (this.variable.type === 'Date') {
+          val = val.replace('Z', '+0000')
+        }
         this.newValue = val
       }
     },
