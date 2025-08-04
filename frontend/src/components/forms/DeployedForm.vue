@@ -71,34 +71,12 @@ export default {
         var formContent = JSON.parse(template.variables.formularContent.value)
         var formData = JSON.parse(template.variables.formVariables.value)
         
-        // Process form variables with valuesKey references
-        this.processFormVariables(formContent, formData)
-        
         this.formularContent = formContent
         this.form = new Form({
             container: document.querySelector('#form'),
         })
         this.form.importSchema(this.formularContent, formData)
       })
-    },
-    
-    processFormVariables: function(formContent, formData) {
-      // Process components that reference form variables via valuesKey
-      if (formContent.components) {
-        formContent.components.forEach(component => {
-          if (component.valuesKey && formData[component.valuesKey]) {
-            try {
-              // Parse the referenced values and set them as component values
-              const options = typeof formData[component.valuesKey] === 'string' 
-                ? JSON.parse(formData[component.valuesKey])
-                : formData[component.valuesKey]
-              component.values = options
-            } catch (e) {
-              console.warn(`Could not parse values for ${component.valuesKey}:`, e)
-            }
-          }
-        })
-      }
     },
     saveForm: function() {
       this.closeTask = false
