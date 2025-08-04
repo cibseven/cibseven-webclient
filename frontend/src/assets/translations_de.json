@@ -242,6 +242,7 @@
 			"name": "Name",
 			"type": "Typ",
 			"value": "Wert",
+			"valueSerialized": "Serialisierter Wert",
 			"actions": "Aktionen",
 			"scope": "Umfang",
 			"objectTypeName": "Objekttypname",

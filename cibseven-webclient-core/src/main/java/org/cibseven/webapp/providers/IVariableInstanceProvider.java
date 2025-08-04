@@ -35,6 +35,6 @@ public interface IVariableInstanceProvider {
 	 * @throws SystemException in case of an error
 	 * @throws NoObjectFoundException when the variable instance could not be found
 	 */
-	VariableInstance getVariableInstance(String id, Boolean deserializeValue, CIBUser user) throws SystemException, NoObjectFoundException;
+	VariableInstance getVariableInstance(String id, boolean deserializeValue, CIBUser user) throws SystemException, NoObjectFoundException;
 
 }

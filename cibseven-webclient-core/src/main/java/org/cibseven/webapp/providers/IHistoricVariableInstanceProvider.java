@@ -35,6 +35,6 @@ public interface IHistoricVariableInstanceProvider {
 	 * @throws SystemException in case of an error
 	 * @throws NoObjectFoundException when the historic variable instance could not be found
 	 */
-	VariableHistory getHistoricVariableInstance(String id, Boolean deserializeValue, CIBUser user) throws SystemException, NoObjectFoundException;
+	VariableHistory getHistoricVariableInstance(String id, boolean deserializeValue, CIBUser user) throws SystemException, NoObjectFoundException;
 
 }

@@ -242,6 +242,7 @@
 			"name": "Ім’я",
 			"type": "Тип",
 			"value": "Значення",
+			"valueSerialized": "Серіалізоване значення",
 			"actions": "Дії",
 			"scope": "Область",
 			"objectTypeName": "Назва типу об’єкта",
