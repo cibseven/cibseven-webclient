@@ -110,7 +110,7 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 	public Decision getDecisionDefinitionById(String id, Optional<Boolean> extraInfo, CIBUser user) {
 		String url = getEngineRestUrl() + "/decision-definition/" + id;
 		Decision decision = ((ResponseEntity<Decision>) doGet(url, Decision.class, user, false)).getBody();
-		if (extraInfo.isPresent() && extraInfo.get()) {
+		if (decision != null && extraInfo.isPresent() && extraInfo.get()) {
 			String urlCount = getEngineRestUrl() + "/history/decision-instance/count?decisionDefinitionId=" + decision.getId();
 			decision.setAllInstances(((ResponseEntity<JsonNode>) doGet(urlCount, JsonNode.class, user, false)).getBody().get("count").asLong());
 		}
