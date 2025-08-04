@@ -70,6 +70,21 @@ export default {
         this.templateMetaData = template
         var formContent = JSON.parse(template.variables.formularContent.value)
         var formData = JSON.parse(template.variables.formVariables.value)
+        
+        // Parse any JSON strings in form data
+        Object.keys(formData).forEach(key => {
+          if (typeof formData[key] === 'string') {
+            try {
+              // Try to parse as JSON, if it's valid JSON it will be parsed
+              const parsed = JSON.parse(formData[key])
+              formData[key] = parsed
+            } catch {
+              // If it's not valid JSON, keep it as string
+              // This handles regular string values that shouldn't be parsed
+            }
+          }
+        })
+        
         this.formularContent = formContent
         this.form = new Form({
             container: document.querySelector('#form'),
