@@ -778,6 +778,11 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 	
 	@Override
+	public void uploadVariableFileData(String taskId, String variableName, MultipartFile data, String valueType, CIBUser user) throws NoObjectFoundException, SystemException {
+		variableProvider.uploadVariableFileData(taskId, variableName, data, valueType, user);
+	}
+	
+	@Override
 	public ResponseEntity<byte[]> fetchProcessInstanceVariableData(String processInstanceId, String variableName,
 			CIBUser user) throws NoObjectFoundException, SystemException {
 		return variableProvider.fetchProcessInstanceVariableData(processInstanceId, variableName, user);
