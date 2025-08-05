@@ -27,6 +27,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.ExistingGroupRequestException;
 import org.cibseven.webapp.exception.ExistingUserRequestException;
@@ -43,14 +44,12 @@ import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.exception.UnsupportedTypeException;
 import org.cibseven.webapp.rest.model.Authorization;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
@@ -165,6 +164,20 @@ public abstract class SevenProviderBase {
 	}
 
 	protected <T> ResponseEntity<T> doPost(String url, Map<String, Object> body, Class<T> neededClass, CIBUser user) {
+		HttpHeaders headers = createAuthHeader(user);
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+
+		HttpEntity<Object> request = new HttpEntity<>(body, headers);
+
+		try {
+			return customRestTemplate.exchange(builder.build().toUri(), HttpMethod.POST, request, neededClass);
+		} catch (HttpStatusCodeException e) {
+			throw wrapException(e, user);
+		}
+	}
+
+	protected <T> ResponseEntity<T> doPost(String url, ObjectNode body, Class<T> neededClass, CIBUser user) {
 		HttpHeaders headers = createAuthHeader(user);
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);

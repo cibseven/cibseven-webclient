@@ -82,6 +82,7 @@ import FilterNavBar from '@/components/task/filter/FilterNavBar.vue'
 import FilterNavCollapsed from '@/components/task/filter/FilterNavCollapsed.vue'
 import ProcessView from '@/components/process/ProcessView.vue'
 import AddVariableModal from '@/components/process/modals/AddVariableModal.vue'
+import EditVariableModal from '@/components/process/modals/EditVariableModal.vue'
 import DeleteVariableModal from '@/components/process/modals/DeleteVariableModal.vue'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
 import InstancesTable from '@/components/process/tables/InstancesTable.vue'
@@ -134,7 +135,8 @@ import SystemDiagnostics from '@/components/system/SystemDiagnostics.vue'
 import ExecutionMetrics from '@/components/system/ExecutionMetrics.vue'
 import ShortcutsModal from '@/components/modals/ShortcutsModal.vue'
 import ShortcutsTable from '@/components/modals/ShortcutsTable.vue'
-import { TaskService, HistoryService, ProcessService, getServicesBasePath, setServicesBasePath, IncidentService } from '@/services.js';
+import { TaskService, HistoryService, ProcessService, getServicesBasePath, 
+  setServicesBasePath, IncidentService, DecisionService, BatchService } from '@/services.js';
 import DeployedForm from '@/components/forms/DeployedForm.vue'
 import StartDeployedForm from '@/components/forms/StartDeployedForm.vue'
 import DecisionDefinitionDetails from '@/components/decision/DecisionDefinitionDetails.vue'
@@ -192,6 +194,7 @@ const registerComponents = function(app) {
   app.component('filter-nav-collapsed', FilterNavCollapsed)
   app.component('process-view', ProcessView)
   app.component('add-variable-modal', AddVariableModal)
+  app.component('edit-variable-modal', EditVariableModal)
   app.component('delete-variable-modal', DeleteVariableModal)
   app.component('bpmn-viewer', BpmnViewer)
   app.component('instances-table', InstancesTable)
@@ -307,6 +310,7 @@ export {
   FilterNavCollapsed,
   ProcessView,
   AddVariableModal,
+  EditVariableModal,
   DeleteVariableModal,
   BpmnViewer,
   InstancesTable,
@@ -343,6 +347,8 @@ export {
   TaskService,
   HistoryService,
   ProcessService,
+  BatchService,
+  DecisionService,
   getServicesBasePath,
   setServicesBasePath,
   IncidentService,
@@ -396,6 +402,6 @@ export {
   fetchDecisionsIfEmpty,
   setupTaskNotifications,
   parseXMLDocumentation,
-  
+
   initEmbeddedForm
 }

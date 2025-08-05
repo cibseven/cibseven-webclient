@@ -19,9 +19,6 @@ package org.cibseven.webapp.auth;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.Collection;
-import java.util.Optional;
-
 import javax.crypto.SecretKey;
 
 import jakarta.annotation.PostConstruct;

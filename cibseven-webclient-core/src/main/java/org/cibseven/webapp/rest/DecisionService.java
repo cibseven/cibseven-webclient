@@ -21,6 +21,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
+import org.cibseven.webapp.rest.model.HistoricDecisionInstance;
+
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.exception.SystemException;
@@ -84,7 +86,7 @@ public class DecisionService extends BaseService implements InitializingBean {
 	}
 	
 	@GetMapping("/count")
-	public Object getDecisionDefinitionListCount(@RequestParam Map<String, Object> queryParams, CIBUser user) {
+	public Long getDecisionDefinitionListCount(@RequestParam Map<String, Object> queryParams, CIBUser user) {
 		checkPermission(user, SevenResourceType.DECISION_DEFINITION, PermissionConstants.READ_ALL);
 		return bpmProvider.getDecisionDefinitionListCount(queryParams, user);
 	}
@@ -111,8 +113,8 @@ public class DecisionService extends BaseService implements InitializingBean {
 	public ResponseEntity<Void> updateHistoryTTLByKey(@RequestBody Map<String, Object> data, @PathVariable String key, CIBUser user) {
 		checkPermission(user, SevenResourceType.DECISION_DEFINITION, PermissionConstants.UPDATE_ALL);
 		bpmProvider.updateHistoryTTLByKey(data, key, user);
-    // return 204 No Content, no body
-    return ResponseEntity.noContent().build();
+	    // return 204 No Content, no body
+	    return ResponseEntity.noContent().build();
 	}
 
 	@GetMapping("/key/{key}/tenant/{tenant}")
@@ -152,7 +154,7 @@ public class DecisionService extends BaseService implements InitializingBean {
 
 	@GetMapping("/id/{id}")
 	public Decision getDecisionDefinitionById(@PathVariable String id, @RequestParam Optional<Boolean> extraInfo, CIBUser user) {
-  	checkPermission(user, SevenResourceType.DECISION_DEFINITION, PermissionConstants.READ_ALL);
+		checkPermission(user, SevenResourceType.DECISION_DEFINITION, PermissionConstants.READ_ALL);
 		return bpmProvider.getDecisionDefinitionById(id, extraInfo, user);
 	}
 
@@ -171,10 +173,10 @@ public class DecisionService extends BaseService implements InitializingBean {
 	@PutMapping("/id/{id}/history-ttl")
 	public ResponseEntity<Void> updateHistoryTTLById(@PathVariable String id, 
 			@RequestBody Map<String, Object> data, CIBUser user) {
-  	checkPermission(user, SevenResourceType.DECISION_DEFINITION, PermissionConstants.UPDATE_ALL);
+		checkPermission(user, SevenResourceType.DECISION_DEFINITION, PermissionConstants.UPDATE_ALL);
 		bpmProvider.updateHistoryTTLById(id, data, user);
-    // return 204 No Content, no body
-    return ResponseEntity.noContent().build();
+	    // return 204 No Content, no body
+	    return ResponseEntity.noContent().build();
 	}
 
 	@GetMapping("/id/{id}/xml")
@@ -193,21 +195,21 @@ public class DecisionService extends BaseService implements InitializingBean {
 	
 	@Operation(summary = "Get a list of historic decision instances")
 	@GetMapping("/history/instances")
-	public Object getHistoricDecisionInstances(@RequestParam Map<String, Object> queryParams, CIBUser user) {
+	public Collection<HistoricDecisionInstance> getHistoricDecisionInstances(@RequestParam Map<String, Object> queryParams, CIBUser user) {
 		checkPermission(user, SevenResourceType.DECISION_DEFINITION, PermissionConstants.READ_HISTORY_ALL);
 		return bpmProvider.getHistoricDecisionInstances(queryParams, user);
 	}
 	
 	@Operation(summary = "Get the count of historic decision instances")
 	@GetMapping("/history/instances/count")
-	public Object getHistoricDecisionInstanceCount(@RequestParam Map<String, Object> queryParams, CIBUser user) {
+	public Long getHistoricDecisionInstanceCount(@RequestParam Map<String, Object> queryParams, CIBUser user) {
 		checkPermission(user, SevenResourceType.DECISION_DEFINITION, PermissionConstants.READ_HISTORY_ALL);
 		return bpmProvider.getHistoricDecisionInstanceCount(queryParams, user);
 	}
 
 	@Operation(summary = "Get a single historic decision instance by ID")
 	@GetMapping("/history/instances/{id}")
-	public Object getHistoricDecisionInstanceById(
+	public HistoricDecisionInstance getHistoricDecisionInstanceById(
 	        @PathVariable String id,
 	        @RequestParam Map<String, Object> queryParams, CIBUser user) {
 		checkPermission(user, SevenResourceType.DECISION_DEFINITION, PermissionConstants.READ_HISTORY_ALL);

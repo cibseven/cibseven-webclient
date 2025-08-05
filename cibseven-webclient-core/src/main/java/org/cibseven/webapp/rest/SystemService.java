@@ -26,8 +26,6 @@ import org.cibseven.webapp.providers.SevenProvider;
 import org.cibseven.webapp.rest.model.Metric;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;

@@ -158,9 +158,14 @@ pipeline {
             }
             steps {
                 script {
+                    String deployment = ""
+                    if (isPatchVersion()) {
+                        deployment = "-Dnexus.release.repository.id=mvn-cibseven-private -Dnexus.release.repository=https://artifacts.cibseven.de/repository/private"
+                    }
+
                     withMaven(options: []) {
                         def skipTestsFlag = params.PACKAGE ? "-DskipTests" : ""
-                        sh "mvn -T4 -U clean deploy ${skipTestsFlag}"
+                        sh "mvn -T4 -U clean deploy ${skipTestsFlag} ${deployment}"
                     }
 
                     if (!params.PACKAGE) {
@@ -446,4 +451,18 @@ pipeline {
             }
         }
     }
+}
+
+// - "1.2.0" -> no
+// - "1.2.0-SNAPSHOT" -> no
+// - "1.2.3" -> yes
+// - "1.2.3-SNAPSHOT" -> yes
+// - "7.22.0-cibseven" -> no
+// - "7.22.1-cibseven" -> yes
+def isPatchVersion() {
+    List version = mavenProjectInformation.version.tokenize('.')
+    if (version.size() < 3) {
+        return false
+    }
+    return version[2].tokenize('-')[0] != "0"
 }

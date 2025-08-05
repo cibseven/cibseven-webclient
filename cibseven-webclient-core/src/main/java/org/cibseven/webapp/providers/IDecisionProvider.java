@@ -22,11 +22,12 @@ import java.util.Optional;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.rest.model.Decision;
+import org.cibseven.webapp.rest.model.HistoricDecisionInstance;
 
 public interface IDecisionProvider {
 	
 	public Collection<Decision> getDecisionDefinitionList(Map<String, Object> queryParams, CIBUser user);
-	public Object getDecisionDefinitionListCount(Map<String, Object> queryParams, CIBUser user);
+	public Long getDecisionDefinitionListCount(Map<String, Object> queryParams, CIBUser user);
 	public Decision getDecisionDefinitionByKey(String key, CIBUser user);
 	public Object getDiagramByKey(String key, CIBUser user);
 	public Object evaluateDecisionDefinitionByKey(Map<String, Object> data, String key, CIBUser user);
@@ -44,9 +45,9 @@ public interface IDecisionProvider {
 	public void updateHistoryTTLById(String id, Map<String, Object> data, CIBUser user);
 	public Object getXmlById(String id, CIBUser user);
 	public Collection<Decision> getDecisionVersionsByKey(String key, Optional<Boolean> lazyLoad, CIBUser user);
-	public Object getHistoricDecisionInstances(Map<String, Object> queryParams, CIBUser user);
-	public Object getHistoricDecisionInstanceCount(Map<String, Object> queryParams, CIBUser user);
-	public Object getHistoricDecisionInstanceById(String id, Map<String, Object> queryParams, CIBUser user);
+	public Collection<HistoricDecisionInstance> getHistoricDecisionInstances(Map<String, Object> queryParams, CIBUser user);
+	public Long getHistoricDecisionInstanceCount(Map<String, Object> queryParams, CIBUser user);
+	public HistoricDecisionInstance getHistoricDecisionInstanceById(String id, Map<String, Object> queryParams, CIBUser user);
 	public Object deleteHistoricDecisionInstances(Map<String, Object> body, CIBUser user);
 	public Object setHistoricDecisionInstanceRemovalTime(Map<String, Object> body, CIBUser user);
 

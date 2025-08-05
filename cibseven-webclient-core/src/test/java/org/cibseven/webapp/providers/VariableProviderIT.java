@@ -80,6 +80,10 @@ public class VariableProviderIT extends BaseHelper {
         		.setBody(mockResponseBody)
         		.addHeader("Content-Type", "application/json"));
 
+        mockWebServer.enqueue(new MockResponse()
+        		.setBody(mockResponseBody)
+        		.addHeader("Content-Type", "application/json"));
+
         final Map<String, Object> data = Map.of(
             "deserializeValue", true
         );

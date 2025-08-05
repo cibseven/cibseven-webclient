@@ -532,13 +532,15 @@ public class ProcessService extends BaseService implements InitializingBean {
 	public ResponseEntity<Void> modifyVariableDataByExecutionId(
 			@Parameter(description = "Execution Id") @PathVariable String executionId,
 			@Parameter(description = "Name of the variable") @PathVariable String variableName,
-			@Parameter(description = "Data to be updated") @RequestParam MultipartFile file,
+			@Parameter(description = "Data to be updated") @RequestParam MultipartFile data,
+			@Parameter(description = "Value type") @RequestParam Optional<String> valueType,
 			Locale loc, CIBUser user) {
 		checkCockpitRights(user);
-        checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.UPDATE_ALL);
-		bpmProvider.modifyVariableDataByExecutionId(executionId, variableName, file, user);
-    // return 204 No Content, no body
-    return ResponseEntity.noContent().build();
+		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.UPDATE_ALL);
+		final String valueTypeStr = valueType.orElse("File"); //  Enum: "Bytes" "File"
+		bpmProvider.modifyVariableDataByExecutionId(executionId, variableName, data, valueTypeStr, user);
+		// return 204 No Content, no body
+		return ResponseEntity.noContent().build();
 	}
 	
 	@Operation(
@@ -657,12 +659,13 @@ public class ProcessService extends BaseService implements InitializingBean {
 	public Variable findProcessInstanceVariable(
 			@Parameter(description = "Process instance Id") @PathVariable String processInstanceId,
 			@Parameter(description = "Variable name") @PathVariable String variableName,
-			@Parameter(description = "Deserialize value") @RequestParam(required = false) String deserializeValue,
+			@Parameter(description = "Deserialize value") @RequestParam(required = false) Boolean deserializeValue,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
 		checkCockpitRights(user);
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_INSTANCE_VARIABLE_ALL);
-		return sevenProvider.fetchProcessInstanceVariable(processInstanceId, variableName, deserializeValue, user);
+		boolean deserialize = (deserializeValue == null) || (deserializeValue != null && deserializeValue == true);
+		return sevenProvider.fetchProcessInstanceVariable(processInstanceId, variableName, deserialize, user);
 	}
 	
 	@Operation(
@@ -681,7 +684,8 @@ public class ProcessService extends BaseService implements InitializingBean {
 		// TODO: Check the permission, but not considered the groups, needs to be checked.
 		// checkSpecificProcessRights(user, processDefinitionKey);
 		try {
-			return sevenProvider.fetchProcessInstanceVariable(processInstanceId, "chatComments", deserialize, user);	
+			boolean deserializeValue = (deserialize == null) || (deserialize != null && deserialize == "true");
+			return sevenProvider.fetchProcessInstanceVariable(processInstanceId, "chatComments", deserializeValue, user);	
 		} catch(NoObjectFoundException e) {
 			return null;
 		}
@@ -703,7 +707,8 @@ public class ProcessService extends BaseService implements InitializingBean {
 		// TODO: Check the permission, but not considered the groups, needs to be checked.
 		// checkSpecificProcessRights(user, processDefinitionKey);
 		try {
-			return sevenProvider.fetchProcessInstanceVariable(processInstanceId, "_statusDataset", deserialize, user);	
+			boolean deserializeValue = (deserialize == null) || (deserialize != null && deserialize == "true");
+			return sevenProvider.fetchProcessInstanceVariable(processInstanceId, "_statusDataset", deserializeValue, user);	
 		} catch(NoObjectFoundException e) {
 			return null;
 		}
