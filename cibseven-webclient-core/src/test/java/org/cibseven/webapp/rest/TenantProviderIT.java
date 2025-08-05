@@ -28,7 +28,6 @@ import org.cibseven.webapp.providers.BaseGroupsTestHelper;
 import org.cibseven.webapp.providers.BaseHelper;
 import org.cibseven.webapp.providers.TenantProvider;
 import org.cibseven.webapp.providers.UserProvider;
-import org.cibseven.webapp.rest.TestRestTemplateConfiguration;
 
 @SpringBootTest(properties = {
 	    "cibseven.webclient.engineRest.url=http://localhost:8080"

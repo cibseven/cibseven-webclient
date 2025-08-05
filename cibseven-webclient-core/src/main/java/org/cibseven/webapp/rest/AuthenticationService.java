@@ -16,10 +16,7 @@
  */
 package org.cibseven.webapp.rest;
 
-import java.util.Collection;
 import java.util.Map;
-import java.util.Optional;
-
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.User;
 import org.cibseven.webapp.auth.rest.StandardLogin;
@@ -27,7 +24,6 @@ import org.cibseven.webapp.rest.model.Authorizations;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,8 +44,8 @@ public class AuthenticationService extends BaseService {
 	public User login(@RequestBody Map<String, Object> data, HttpServletRequest rq) {
 		String honeypot = (String) data.get("lastname");
 		if (honeypot != null) return null;
-	    String username = (String) data.get("username");
-	    String password = (String) data.get("password");
+	    //String username = (String) data.get("username");
+	    //String password = (String) data.get("password");
 		data.remove("lastname");
 		StandardLogin standardLogin = new ObjectMapper().convertValue(data, StandardLogin.class);
 
