@@ -29,7 +29,7 @@
     <template v-slot:filter>
       <FilterNavCollapsed v-if="!leftOpenFilter && leftCaptionFilter" v-model:left-open="leftOpenFilter"></FilterNavCollapsed>
     </template>
-    <SidebarsFlow ref="regionTasks" role="region" :aria-label="$t('seven.allTasks')" class="h-100 bg-light" :number="nTasksShown" header-margin="55px" v-model:left-open="leftOpenTask" v-model:right-open="rightOpenTask"
+    <SidebarsFlow ref="regionTasks" role="region" :aria-label="$t('seven.allTasks')" class="h-100 bg-light" :number="totalTasksInFilter" header-margin="55px" v-model:left-open="leftOpenTask" v-model:right-open="rightOpenTask"
       :leftSize="getTasksNavbarSize" :left-caption="leftCaptionTask" :right-caption="TasksRightSidebar ? rightCaptionTask : null">
       <template v-slot:left>
         <TasksNavBar @filter-alert="showFilterAlert($event)" ref="navbar" :tasks="tasks" @selected-task="selectedTask($event)"
@@ -138,7 +138,7 @@ export default {
     leftCaptionTask: function() {
       return this.$store.state.filter.selected.name
     },
-    nTasksShown: function() {
+    totalTasksInFilter: function() {
       return this.$store.state.filter.selected?.tasksNumber || 0
     },
     leftCaptionFilter: function() {
