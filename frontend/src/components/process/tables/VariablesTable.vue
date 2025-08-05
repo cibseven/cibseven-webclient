@@ -177,6 +177,9 @@ export default {
         }
         return '- Object -'
       }
+      else if (item.type === 'Null') {
+        return ''
+      }
       else {
         return '' + item.value
       }
