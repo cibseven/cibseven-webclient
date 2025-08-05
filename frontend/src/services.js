@@ -492,6 +492,17 @@ var FormsService = {
   downloadFile: function(processInstanceId, fileVariable) {
     return axios.get(getServicesBasePath() + '/task/' + processInstanceId + '/variable/download/' + fileVariable, { responseType: 'blob' })
   },
+  uploadVariableFileData: function(taskId, variableName, file, valueType = 'File') {
+    const formData = new FormData()
+    formData.append('data', file)
+    formData.append('valueType', valueType)
+
+    return axios.post(getServicesBasePath() + '/task/' + taskId + '/variables/' + variableName + '/data', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+  },
   fetchVariable: function(taskId, variableName, deserialize) {
     return axios.get(getServicesBasePath() + '/task/' + taskId + '/variable/' + variableName, { params: { deserialize: deserialize } })
   },
