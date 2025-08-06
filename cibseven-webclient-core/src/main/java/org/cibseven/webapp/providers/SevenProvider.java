@@ -789,6 +789,11 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 	
 	@Override
+	public void uploadProcessInstanceVariableFileData(String processInstanceId, String variableName, MultipartFile data, String valueType, CIBUser user) throws NoObjectFoundException, SystemException {
+		variableProvider.uploadProcessInstanceVariableFileData(processInstanceId, variableName, data, valueType, user);
+	}
+	
+	@Override
 	public ProcessStart submitStartFormVariables(String processDefinitionId, List<Variable> formResult, CIBUser user) throws SystemException {
 		return variableProvider.submitStartFormVariables(processDefinitionId, formResult, user);
 	}

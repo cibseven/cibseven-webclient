@@ -429,6 +429,26 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		}
 	}
 
+	@Override
+	public void uploadProcessInstanceVariableFileData(String processInstanceId, String variableName, MultipartFile data, String valueType, CIBUser user) throws NoObjectFoundException, SystemException {
+		String url = getEngineRestUrl() + "/process-instance/" + processInstanceId + "/variables/" + variableName + "/data";
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+		if (user != null) headers.add("Authorization", user.getAuthToken());
+		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+		try {
+			body.add("data", data.getResource());
+			body.add("valueType", valueType);
+			HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(body, headers);
+
+			customRestTemplate.exchange(builder.build().toUri(), HttpMethod.POST, request, String.class);
+		} catch (HttpStatusCodeException e) {
+			throw wrapException(e, user);
+		}
+	}
+
 	// TODO: Split it
 	@Override
 	public ProcessStart submitStartFormVariables(String processDefinitionId, List<Variable> formResult, CIBUser user) throws SystemException {

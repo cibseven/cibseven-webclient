@@ -909,6 +909,9 @@ public interface BpmProvider {
 	ResponseEntity<byte[]> fetchProcessInstanceVariableData(String processInstanceId, String variableName,
 			CIBUser user) throws NoObjectFoundException, SystemException;
 
+	void uploadProcessInstanceVariableFileData(String processInstanceId, String variableName, MultipartFile data, String valueType, CIBUser user)
+			throws NoObjectFoundException, SystemException;
+
 	Variable fetchVariableByProcessInstanceId(
 			String processInstanceId, String variableName, CIBUser user)
 			throws SystemException;
