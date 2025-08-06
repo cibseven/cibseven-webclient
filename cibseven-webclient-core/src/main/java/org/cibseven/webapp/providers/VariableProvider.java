@@ -440,9 +440,20 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		}
 	}
 
-	@Override
-	public void uploadProcessInstanceVariableFileData(String processInstanceId, String variableName, MultipartFile data, String valueType, CIBUser user) throws NoObjectFoundException, SystemException {
-		String url = getEngineRestUrl() + "/process-instance/" + processInstanceId + "/variables/" + variableName + "/data";
+    /**
+     * Uploads file data for a variable of a specific process instance.
+     *
+     * @param processInstanceId the ID of the process instance
+     * @param variableName the name of the variable to which the file data will be uploaded
+     * @param data the file data to upload
+     * @param valueType the type of the value being uploaded
+     * @param user the user performing the upload operation
+     * @throws NoObjectFoundException if the process instance or variable is not found
+     * @throws SystemException if a system error occurs during the upload
+     */
+    @Override
+    public void uploadProcessInstanceVariableFileData(String processInstanceId, String variableName, MultipartFile data, String valueType, CIBUser user) throws NoObjectFoundException, SystemException {
+        String url = getEngineRestUrl() + "/process-instance/" + processInstanceId + "/variables/" + variableName + "/data";
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
