@@ -113,7 +113,6 @@ export default {
         for (const [variableName, file] of Object.entries(this.$refs.templateBase.formFiles)) {
           try {
             await ProcessService.uploadProcessInstanceVariableFileData(data.id, variableName, file, 'File');
-            console.log(`File ${file.name} uploaded successfully for variable ${variableName}`);
           } catch (error) {
             console.error(`Error uploading file for variable ${variableName}:`, error);
           }
