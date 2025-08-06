@@ -376,6 +376,7 @@
 				"openIncidents": "Відкриті інциденти",
 				"suspendedJobDefinition": "Призупинене визначення завдання",
 				"activitiesHistory": "Історія екземплярів завдань",
+				"canceledInstances": "Скасовані екземпляри активності",
 				"openSubprocess": "Показати викликаний процес",
 				"disabledSubprocess": "Визначення процесу буде отримане під час виконання"
 			}
