@@ -20,7 +20,7 @@
   <component
     v-if="valueToCopy"
     :is="componentType"
-    :to="routerTo"
+    v-bind="bindAttrs"
     :class="containerClasses"
     :title="title || displayValue"
     @mouseenter="isHovered = true"
@@ -76,6 +76,13 @@ export default {
       type: [String, Object],
       default: null,
     },
+    /**
+     * Whether to open the link in a new tab
+     */
+    newTab: {
+      type: Boolean,
+      default: false,
+    },
   },
   emits: ['click', 'copy'],
   data() {
@@ -86,7 +93,7 @@ export default {
   computed: {
     componentType() {
       if (this.to) {
-        return 'router-link'
+        return this.newTab ? 'a' : 'router-link'
       }
       return this.clickable ? 'button' : 'div'
     },
@@ -128,13 +135,45 @@ export default {
         }
       }
     },
+    bindAttrs() {
+      if (this.componentType === 'router-link') {
+        return { to: this.routerTo }
+      }
+      if (this.componentType === 'a') {
+        // For hash mode, we need to construct the full URL with hash
+        let href
+        if (typeof this.routerTo === 'string') {
+          // If it's already a full URL, use it as is, otherwise add hash
+          href = this.routerTo.startsWith('http') ? this.routerTo : `#${this.routerTo}`
+        } else if (this.$router && this.routerTo) {
+          const resolved = this.$router.resolve(this.routerTo)
+          // resolved.href already contains the hash for hash mode routers
+          href = window.location.origin + window.location.pathname + resolved.href
+        }
+        return {
+          href,
+          target: '_blank',
+          rel: 'noopener',
+        }
+      }
+      return {}
+    },
   },
   methods: {
-    handleClick() {
-      // For router links, the navigation is handled automatically by Vue Router
+    handleClick(event) {
+      // Stop event propagation to prevent parent elements from handling the click
+      if (event) {
+        event.stopPropagation()
+      }
+      
+      // For router links and anchor tags, let the browser handle the navigation
+      if (this.to) {
+        return // Let the default behavior happen
+      }
+      
       // Only emit click event for buttons or non-router links
-      if (!this.to && this.clickable) {
-        this.$emit('click')
+      if (this.clickable) {
+        this.$emit('click', event)
       }
     },
     handleCopy() {

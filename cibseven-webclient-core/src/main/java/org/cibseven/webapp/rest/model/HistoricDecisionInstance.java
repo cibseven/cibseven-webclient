@@ -30,8 +30,8 @@ public class HistoricDecisionInstance {
     private String decisionDefinitionId;
     private String decisionDefinitionKey;
     private String decisionDefinitionName;
-    private OffsetDateTime evaluationTime;
-    private OffsetDateTime removalTime;
+    private String evaluationTime;
+    private String removalTime;
     private String processDefinitionId;
     private String processDefinitionKey;
     private String processInstanceId;
