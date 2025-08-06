@@ -7,6 +7,11 @@
 		"loadMore": {
 			"title": "Cargar más",
 			"tooltip": "Haga clic para cargar los siguientes {chunkSize} registros"
+		},
+		"actualisation": {
+			"progress": "Actualizando datos...",
+			"disabled": "Última actualización: {date}\n\nLas actualizaciones automáticas están desactivadas.\nPresiona F5 para recargar los datos.",
+			"enabled": "Última actualización: {date}\n\nLas actualizaciones automáticas están activadas.\nRecargando cada {seconds} segundos."
 		}
 	},
 	"login": {
