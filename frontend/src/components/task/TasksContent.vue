@@ -117,6 +117,7 @@ export default {
       interval: null,
       filterMessage: '',
       filterName: '',
+      totalTasksInFilter: 0,
       nFiltersShown: 0,
       tasksNavbarSizes: [[12, 6, 4, 4, 3], [12, 6, 4, 5, 4], [12, 6, 4, 6, 5]],
       tasksNavbarSize: 0,
@@ -138,9 +139,6 @@ export default {
     leftCaptionTask: function() {
       return this.$store.state.filter.selected.name
     },
-    totalTasksInFilter: function() {
-      return this.$store.state.filter.selected?.tasksNumber || 0
-    },
     leftCaptionFilter: function() {
       return this.leftOpenTask ? this.$t('seven.filters') : ''
     },
@@ -156,7 +154,9 @@ export default {
     rightOpenTask: function(newVal) {
       localStorage.setItem('rightOpenTask', newVal)
     },
-    '$store.state.filter.selected.tasksNumber': function() {},
+    '$store.state.filter.selected.tasksNumber': function(val) {
+      this.totalTasksInFilter = val || 0
+    },
     '$route.params.taskId': function() { if (!this.$route.params.taskId) this.cleanSelectedTask() },
     '$route.params.filterId': function() { if (!this.$route.params.filterId) this.cleanSelectedFilter() },
     leftOpenTask: function(leftOpen) {
