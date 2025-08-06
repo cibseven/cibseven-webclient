@@ -147,8 +147,7 @@ export default {
           href = this.routerTo.startsWith('http') ? this.routerTo : `#${this.routerTo}`
         } else if (this.$router && this.routerTo) {
           const resolved = this.$router.resolve(this.routerTo)
-          // resolved.href already contains the hash for hash mode routers
-          href = window.location.origin + window.location.pathname + resolved.href
+          href = new URL(resolved.href, window.location.origin).href
         }
         return {
           href,
