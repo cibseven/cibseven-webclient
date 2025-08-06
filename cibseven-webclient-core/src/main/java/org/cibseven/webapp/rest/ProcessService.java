@@ -659,7 +659,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 	public ResponseEntity<Void> uploadProcessInstanceVariableFileData(
 			@Parameter(description = "Process instance Id") @PathVariable String processInstanceId,
 			@Parameter(description = "Variable name") @PathVariable String variableName,
-			@Parameter(description = "File data to be uploaded") @RequestParam MultipartFile data,
+			@Parameter(description = "File data to be uploaded") @RequestParam(required = true) MultipartFile data,
 			@Parameter(description = "Value type") @RequestParam Optional<String> valueType,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
