@@ -17,7 +17,7 @@
 
 -->
 <template>
-  <TemplateBase noDiagramm noTitle :templateMetaData="templateMetaData" :loader="loader">
+  <TemplateBase ref="templateBase" noDiagramm noTitle :templateMetaData="templateMetaData" :loader="loader">
     <template v-slot:button-row>
       <IconButton icon="check" :disabled="disabled" @click="setVariablesAndSubmit()" variant="secondary" :text="$t('task.actions.submit')"></IconButton>
     </template>
@@ -83,31 +83,9 @@ export default {
       const fileInputs = document.querySelectorAll('#form input[type="file"]');
       fileInputs.forEach(fileInput => {
         fileInput.addEventListener('change', async (e) => {
-          this.handleFileSelection(e, fileInput, this.formularContent, this.formFiles);
+          this.$refs.templateBase.handleFileSelection(e, fileInput, this.formularContent, this.formFiles);
         });
       });
-    },
-    handleFileSelection: async function(event, fileInput, formularContent, formFiles) {
-      const file = event.target.files[0];
-      if (file) {
-        console.log('Selected file:', file);
-
-        // Find the corresponding field in formContent to get the key
-        let variableName = null;
-
-        // Extract field ID from input ID (e.g., "fjs-form-0q23qer-Field_0cz77cj" -> "Field_0cz77cj")
-        const fieldIdMatch = fileInput.id.match(/Field_[a-zA-Z0-9]+$/);
-        const fieldId = fieldIdMatch ? fieldIdMatch[0] : null;
-
-        if (fieldId && formularContent && formularContent.components) {
-          const field = formularContent.components.find(component => component.id === fieldId);
-          if (field && field.key) {
-            variableName = field.key;
-            // Store file for later upload - actual file upload will be done during form submission
-            formFiles[variableName] = file;
-          }
-        }
-      }
     },
     setVariablesAndSubmit: async function() {
       this.dataToSubmit = {}
