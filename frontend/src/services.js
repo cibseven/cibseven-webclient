@@ -229,6 +229,17 @@ var ProcessService = {
   },
   deleteVariableByExecutionId: function(executionId, varName) {
     return axios.delete(getServicesBasePath() + "/process/execution/" + executionId + "/localVariables/" + varName)
+  },
+  uploadProcessInstanceVariableFileData: function(processInstanceId, variableName, file, valueType = 'File') {
+    const formData = new FormData()
+    formData.append('data', file)
+    formData.append('valueType', valueType)
+
+    return axios.post(getServicesBasePath() + '/process/process-instance/' + processInstanceId + '/variables/' + variableName + '/data', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
   }
 }
 
