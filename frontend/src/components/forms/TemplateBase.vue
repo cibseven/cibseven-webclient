@@ -75,8 +75,6 @@ export default {
     handleFileSelection: async function(event, fileInput, formularContent) {
       const file = event.target.files[0];
       if (file) {
-        console.log('Selected file:', file);
-
         // Find the corresponding field in formContent to get the key
         let variableName = null;
 
