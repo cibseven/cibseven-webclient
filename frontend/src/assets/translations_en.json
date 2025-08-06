@@ -7,6 +7,11 @@
 		"loadMore": {
 			"title": "Load more",
 			"tooltip": "Click to load next {chunkSize} records"
+		},
+		"actualisation": {
+			"progress": "Updating data...",
+			"disabled": "Last update: {date}\n\nAutomatic updates are disabled.\nPress F5 to reload the data.",
+			"enabled": "Last update: {date}\n\nAutomatic updates are enabled.\nRefreshing every {seconds} seconds."
 		}
 	},
 	"login": {

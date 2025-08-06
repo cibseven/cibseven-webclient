@@ -155,6 +155,12 @@
 			"interval": 0
 		}
 	},
+	"dashboard": {
+		"autoUpdate": {
+			"enabled": true,
+			"interval": 60000
+		}
+	},
 	"layout": {
 		"showPopoverHowToAssign": true,
 		"showBusinessKey": true,
