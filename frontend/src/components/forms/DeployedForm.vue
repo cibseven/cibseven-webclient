@@ -57,9 +57,7 @@ export default {
       disabled: false,
       form: null,
       dataToSubmit: {},
-      closeTask: true,
-      // Stores files selected in the form, keyed by variable name, for later upload during submission
-      formFiles: {}
+      closeTask: true
     }
   },
   created: function() {
@@ -68,7 +66,6 @@ export default {
   methods: {
     loadForm: async function() {
       this.loader = false
-      this.formFiles = {} // Clear any previous file variables
       try {
         const template = await TemplateService.getTemplate('CibsevenFormUiTask', this.taskId, this.locale, this.token)
         this.templateMetaData = template
@@ -84,7 +81,7 @@ export default {
         const fileInputs = document.querySelectorAll('#form input[type="file"]');
         fileInputs.forEach(fileInput => {
           fileInput.addEventListener('change', async (e) => {
-            this.$refs.templateBase.handleFileSelection(e, fileInput, this.formularContent, this.formFiles);
+            this.$refs.templateBase.handleFileSelection(e, fileInput, this.formularContent);
           });
         });
 
@@ -102,8 +99,8 @@ export default {
       var result = this.form.submit()
       if (Object.keys(result.errors).length > 0 && this.closeTask) return
 
-      // Upload all selected files to the server before submitting form data
-      for (const [variableName, file] of Object.entries(this.formFiles)) {
+      // To submit file variables, we must use separate endpoint before or after submitting non-file form data.
+      for (const [variableName, file] of Object.entries(this.$refs.templateBase.formFiles)) {
         try {
           await FormsService.uploadVariableFileData(this.taskId, variableName, file, 'File');
           console.log(`File ${file.name} uploaded successfully for variable ${variableName}`);
@@ -112,9 +109,9 @@ export default {
         }
       }
 
-      // Process and submit non-file form fields (files were already uploaded)
+      // Process and submit non-file form fields (files have been uploaded separately)
       Object.entries(result.data).forEach(([key, value]) => {
-        if (!this.formFiles[key]) {
+        if (!this.$refs.templateBase.formFiles[key]) {
           this.dataToSubmit[key] = {
                 name: key,
                 type: typeof value,
@@ -123,7 +120,6 @@ export default {
             }
         }
       })
-
       return FormsService.submitVariables(this.templateMetaData.task, Object.values(this.dataToSubmit), this.closeTask).then(data => {
         if (this.closeTask) this.sendMessageToParent({ method: 'completeTask', task: data })
         else this.sendMessageToParent({ method: 'displaySuccessMessage' })

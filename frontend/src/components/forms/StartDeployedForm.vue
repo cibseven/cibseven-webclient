@@ -56,9 +56,7 @@ export default {
       disabled: false,
       form: null,
       dataToSubmit: {},
-      closeTask: true,
-      // Stores files selected in the form, keyed by variable name, for later upload during submission
-      formFiles: {}
+      closeTask: true
     }
   },
   created: function() {
@@ -66,7 +64,6 @@ export default {
   },
   methods: {
     loadForm: async function() {
-      this.formFiles = {} // Clear any previous file variables
       const template = await TemplateService.getStartFormTemplate('CibsevenFormUiTask', this.processDefinitionId, this.locale, this.token)
 
       this.loader = false
@@ -83,7 +80,7 @@ export default {
       const fileInputs = document.querySelectorAll('#form input[type="file"]');
       fileInputs.forEach(fileInput => {
         fileInput.addEventListener('change', async (e) => {
-          this.$refs.templateBase.handleFileSelection(e, fileInput, this.formularContent, this.formFiles);
+          this.$refs.templateBase.handleFileSelection(e, fileInput, this.formularContent);
         });
       });
     },
@@ -94,7 +91,7 @@ export default {
 
       // Process and submit non-file form fields (files were already uploaded)
       Object.entries(result.data).forEach(([key, value]) => {
-        if (!this.formFiles[key]) {
+        if (!this.$refs.templateBase.formFiles[key]) {
           this.dataToSubmit[key] = {
             name: key,
             type: typeof value,
@@ -113,7 +110,7 @@ export default {
           Object.values(this.dataToSubmit), this.locale);
 
         // To submit a file variable, we must use separate endpoint after starting the process.
-        for (const [variableName, file] of Object.entries(this.formFiles)) {
+        for (const [variableName, file] of Object.entries(this.$refs.templateBase.formFiles)) {
           try {
             await ProcessService.uploadProcessInstanceVariableFileData(data.id, variableName, file, 'File');
             console.log(`File ${file.name} uploaded successfully for variable ${variableName}`);

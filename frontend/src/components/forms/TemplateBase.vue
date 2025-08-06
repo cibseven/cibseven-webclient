@@ -60,13 +60,19 @@ export default {
   mixins: [postMessageMixin],
   components: { IconButton, BpmnViewer, BWaitingBox },
   inject: ['isMobile'],
+  data: function() {
+    return {
+      // Stores files selected in the form, keyed by variable name, for later upload during submission
+      formFiles: {}
+    }
+  },
   computed: {
     title: function() {
       return this.templateMetaData && this.templateMetaData.activityInstances.name + " - " + this.templateMetaData.task.name
     }
   },
   methods: {
-    handleFileSelection: async function(event, fileInput, formularContent, formFiles) {
+    handleFileSelection: async function(event, fileInput, formularContent) {
       const file = event.target.files[0];
       if (file) {
         console.log('Selected file:', file);
@@ -83,7 +89,7 @@ export default {
           if (field && field.key) {
             variableName = field.key;
             // Store file for later upload - actual file upload will be done during form submission
-            formFiles[variableName] = file;
+            this.formFiles[variableName] = file;
           }
         }
       }
