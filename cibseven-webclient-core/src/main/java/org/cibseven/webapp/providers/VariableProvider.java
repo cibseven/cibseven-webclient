@@ -373,6 +373,17 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		}
 	}
 
+	/**
+	 * Uploads file data for a specific variable of a task.
+	 *
+	 * @param taskId the ID of the task to which the variable belongs
+	 * @param variableName the name of the variable to upload data for
+	 * @param data the file data to upload
+	 * @param valueType the type of the variable value
+	 * @param user the user performing the upload operation
+	 * @throws NoObjectFoundException if the task or variable is not found
+	 * @throws SystemException if an internal error occurs during upload
+	 */
 	@Override
 	public void uploadVariableFileData(String taskId, String variableName, MultipartFile data, String valueType, CIBUser user) throws NoObjectFoundException, SystemException {
 		String url = getEngineRestUrl() + "/task/" + taskId + "/variables/" + variableName + "/data";
