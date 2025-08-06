@@ -66,6 +66,28 @@ export default {
     }
   },
   methods: {
+    handleFileSelection: async function(event, fileInput, formularContent, formFiles) {
+      const file = event.target.files[0];
+      if (file) {
+        console.log('Selected file:', file);
+
+        // Find the corresponding field in formContent to get the key
+        let variableName = null;
+
+        // Extract field ID from input ID (e.g., "fjs-form-0q23qer-Field_0cz77cj" -> "Field_0cz77cj")
+        const fieldIdMatch = fileInput.id.match(/Field_[a-zA-Z0-9]+$/);
+        const fieldId = fieldIdMatch ? fieldIdMatch[0] : null;
+
+        if (fieldId && formularContent && formularContent.components) {
+          const field = formularContent.components.find(component => component.id === fieldId);
+          if (field && field.key) {
+            variableName = field.key;
+            // Store file for later upload - actual file upload will be done during form submission
+            formFiles[variableName] = file;
+          }
+        }
+      }
+    },
     showDiagram: function () {
       this.$refs.process.show()
       //TODO: Review b-modal static
