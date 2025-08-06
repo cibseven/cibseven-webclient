@@ -349,7 +349,7 @@ public class TaskService extends BaseService implements InitializingBean {
 		public ResponseEntity<Void> uploadVariableFileData(
 				@Parameter(description = "Task Id") @PathVariable String id,
 				@Parameter(description = "Variable name") @PathVariable String variableName,
-				@RequestParam("data") MultipartFile data,
+				@RequestParam(value = "data", required = true) MultipartFile data,
 				@RequestParam(value = "valueType", required = false, defaultValue = "File") String valueType,
 				HttpServletRequest rq) {
 			CIBUser userAuth = (CIBUser) baseUserProvider.authenticateUser(rq);
