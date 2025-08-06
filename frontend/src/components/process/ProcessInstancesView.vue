@@ -209,6 +209,7 @@ export default {
       //TODO: Refactor to fetch from store
       handler: async function(newId, oldId) {
         if (newId && newId !== oldId) {
+          this.clearHistoricActivityStatistics()
           await this.loadHistoricActivityStatistics({ processDefinitionId: this.process.id })
           await this.loadStaticCalledProcessDefinitions({ processDefinitionId: this.process.id })
           ProcessService.fetchDiagram(newId).then(response => {
@@ -232,6 +233,7 @@ export default {
     }
   },
   mounted: function() {
+    this.clearHistoricActivityStatistics()
     const params = { canceled: true, completedScoped: true, finished: true, incidents: true }
     this.loadHistoricActivityStatistics({ processDefinitionId: this.process.id, params })
     this.loadStaticCalledProcessDefinitions({ processDefinitionId: this.process.id })
@@ -301,7 +303,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions(['clearActivitySelection', 'setDiagramXml', 'loadHistoricActivityStatistics']),
+    ...mapActions(['clearActivitySelection', 'setDiagramXml', 'loadHistoricActivityStatistics', 'clearHistoricActivityStatistics']),
     ...mapActions('calledProcessDefinitions', ['loadStaticCalledProcessDefinitions']),
     applySorting: function(sortingCriteria) {
       this.sorting = true

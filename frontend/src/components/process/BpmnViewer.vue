@@ -72,7 +72,18 @@ export default {
     statistics: Array,
     processDefinitionId: String,
     activeTab: String,
-    selectedInstance: Object
+    selectedInstance: Object,
+    badgeOptions: {
+      type: Object,
+      default: () => ({
+        showRunning: true,
+        showHistory: true,
+        showCanceled: true,
+        showIncidents: true,
+        showCalledProcesses: true,
+        showJobDefinitions: true
+      })
+    }
   },
   data: function() {
     return {
@@ -87,10 +98,13 @@ export default {
   computed: {
     ...mapGetters(['highlightedElement', 'getHistoricActivityStatistics']),
     ...mapGetters('calledProcessDefinitions', ['getStaticCalledProcessDefinitions']),
-    ...mapGetters('job', ['jobDefinitions'])
+    ...mapGetters('job', ['jobDefinitions']),
+    historicActivityStatistics() {
+      return this.getHistoricActivityStatistics(this.processDefinitionId)
+    }
   },
   watch: {
-    getHistoricActivityStatistics: {
+    historicActivityStatistics: {
       handler() {
         this.drawDiagramState()
       },
@@ -271,29 +285,30 @@ export default {
       })
     },
     drawActivitiesBadges: function(elementRegistry) {
-      const historyStatistics = this.getHistoricActivityStatistics
+      const historyStatistics = this.historicActivityStatistics
+      const options = this.badgeOptions || {}
       historyStatistics.forEach(stat => {
         const element = elementRegistry.get(stat.id)
         if (!element) return
 
         // Handle canceled activities - draw in the main position
-        if (stat.canceled > 0) {
+        if (options.showCanceled && stat.canceled > 0) {
           const html = this.getBadgeOverlayHtml(stat.canceled, 'bg-warning', 'canceledInstances', stat.id)
           this.setHtmlOnDiagram(stat.id, html, { bottom: 15, right: 13 })
         }
         
         // Handle finished activities - draw above canceled ones or in main position if no canceled
         const actualFinished = stat.finished - (stat.canceled || 0)
-        if (actualFinished > 0) {
+        if (options.showHistory && actualFinished > 0) {
           const position = stat.canceled > 0 ? { bottom: 35, right: 13 } : { bottom: 15, right: 13 }
           const html = this.getBadgeOverlayHtml(actualFinished, 'bg-gray', 'activitiesHistory', stat.id)
           this.setHtmlOnDiagram(stat.id, html, position)
         }
-        if (stat.instances > 0) {
+        if (options.showRunning && stat.instances > 0) {
           const html = this.getBadgeOverlayHtml(stat.instances, 'bg-info', 'runningInstances', stat.id)
           this.setHtmlOnDiagram(stat.id, html, { bottom: 15, left: -7 })
         }
-        if (stat.openIncidents > 0) {
+        if (options.showIncidents && stat.openIncidents > 0) {
           const position = stat.instances > 0 ? { bottom: 15, left: 18 } : { bottom: 15, left: -7 }
           const html = this.getBadgeOverlayHtml(stat.openIncidents, 'bg-danger', 'openIncidents', stat.id)
           this.setHtmlOnDiagram(stat.id, html, position)
@@ -301,8 +316,9 @@ export default {
       })
     },
     drawSubprocessLinks: function(elementRegistry) {
+      if (this.badgeOptions?.showCalledProcesses === false) return
       const staticCalledProcesses = this.getStaticCalledProcessDefinitions || []
-      const activityStats = this.getHistoricActivityStatistics || []
+      const activityStats = this.historicActivityStatistics || []
 
       // Map to know which activity calls which process
       const activityToProcessMap = {}
@@ -423,6 +439,7 @@ export default {
       }
     },
     drawJobDefinitionBadges: function() {
+      if (this.badgeOptions?.showJobDefinitions === false) return
       const overlays = this.viewer?.get('overlays')
       const elementRegistry = this.viewer?.get('elementRegistry')
       if (!overlays || !elementRegistry || !Array.isArray(this.jobDefinitions)) return

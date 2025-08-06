@@ -46,7 +46,7 @@ export default {
       commit('setAllCalledProcessDefinitions', [])
 
       const staticDefinitions = getters.getStaticCalledProcessDefinitions || []
-      const historicStats = rootGetters.getHistoricActivityStatistics || []
+      const historicStats = rootGetters.getHistoricActivityStatistics(processId) || []
       const getActivityName = rootGetters.getProcessActivities || {}
 
       const groupedMap = new Map()

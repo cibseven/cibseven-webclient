@@ -18,9 +18,9 @@
 import { ProcessService, HistoryService } from '@/services.js'
 
 const ProcessStore = {
-  state: { list: [], historicActivityStatistics: [] },
+  state: { list: [], historicActivityStatistics: {} },
   getters: {
-    getHistoricActivityStatistics: (state) => state.historicActivityStatistics
+    getHistoricActivityStatistics: (state) => (key) => state.historicActivityStatistics[key] || []
   },
   mutations: {
     setProcesses: function (state, param) {
@@ -32,8 +32,18 @@ const ProcessStore = {
     setStatistics: function (state, params) {
       params.process.statistics = params.statistics
     },
-    setHistoricActivityStatistics: function (state, params) {
-      state.historicActivityStatistics = params
+    setHistoricActivityStatistics: function (state, { key, data }) {
+      state.historicActivityStatistics = {
+        ...state.historicActivityStatistics,
+        [key]: data
+      }
+    },
+    clearHistoricActivityStatistics: function (state, key) {
+      if (key) {
+        delete state.historicActivityStatistics[key]
+      } else {
+        state.historicActivityStatistics = {}
+      }
     },
     setSuspended: function (state, params) {
       params.process.suspended = params.suspended
@@ -67,10 +77,13 @@ const ProcessStore = {
     setStatistics: function(ctx, params) {
       ctx.commit('setStatistics', { process: params.process, statistics: params.statistics })
     },
+    clearHistoricActivityStatistics: function({ commit }, key) {
+      commit('clearHistoricActivityStatistics', key)
+    },
     async loadHistoricActivityStatistics({ commit }, { processDefinitionId, params }) {
       const finalParams = { canceled: true, completedScoped: true, finished: true, incidents: true, ...params }
-      const historyActivityStatistics = await HistoryService.findHistoryActivityStatistics(processDefinitionId, finalParams)
-      commit('setHistoricActivityStatistics', historyActivityStatistics)
+      const historyActivityStatistics = await HistoryService.findHistoryActivityStatistics(processDefinitionId, finalParams)      
+      commit('setHistoricActivityStatistics', { key: processDefinitionId, data: historyActivityStatistics })
     },
     setSuspended: function (ctx, params) {
       ctx.commit('setSuspended', { process: params.process, suspended: params.suspended })

@@ -189,12 +189,13 @@ export default {
       this.loadSuperProcessInstance(this.selectedInstance.superProcessInstanceId)
     }
     if (this.selectedInstance) {
+      this.clearHistoricActivityStatistics()
       const params = { processInstanceIdIn: this.selectedInstance.id }
       this.loadHistoricActivityStatistics({ processDefinitionId: this.process.id, params })
     }
   },
   methods: {
-    ...mapActions(['loadHistoricActivityStatistics']),
+    ...mapActions(['loadHistoricActivityStatistics', 'clearHistoricActivityStatistics']),
     selectTask: function(event) {
       this.selectedTask = event
       this.$emit('task-selected', event);
