@@ -95,9 +95,12 @@ export default {
         }
       }
 
+      const staticActivityIds = new Set(
+        staticDefinitions.flatMap(def => def.calledFromActivityIds || [])
+      )
       const hasDynamicCalls = historicStats.some(stat => {
         const activity = getActivityName[stat.id]
-        return activity && !staticDefinitions.some(def => def.calledFromActivityIds.includes(stat.id))
+        return activity && !staticActivityIds.has(stat.id)
       })
 
       // 2. Dynamic processes
