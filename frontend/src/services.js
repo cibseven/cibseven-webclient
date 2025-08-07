@@ -173,6 +173,9 @@ var ProcessService = {
       }
     })
   },
+  findDeployment: function(deploymentId) {
+	return axios.get(getServicesBasePath() + "/process/deployments/" + deploymentId)
+  },
   findDeploymentResources: function(deploymentId) {
     return axios.get(getServicesBasePath() + "/process/deployments/" + deploymentId + "/resources")
   },

@@ -417,6 +417,18 @@ public class ProcessService extends BaseService implements InitializingBean {
 	}
 	
 	@Operation(
+			summary = "Get deployment with a specific Id",
+			description = "<strong>Return: Deployment")
+	@ApiResponse(responseCode = "404", description = "Process not found")
+	@RequestMapping(value = "/deployments/{deploymentId}", method = RequestMethod.GET)
+	public Deployment findDeployment(
+		@Parameter(description = "Deployment Id") @PathVariable String deploymentId,
+		CIBUser user) {
+		checkPermission(user, SevenResourceType.DEPLOYMENT, PermissionConstants.READ_ALL);
+		return bpmProvider.findDeployment(deploymentId, user);
+	}
+	
+	@Operation(
 			summary = "Get all deployment resources of a given deployment",
 			description = "<strong>Return: Collection of deployment resources")
 	@ApiResponse(responseCode = "404", description = "Deployment not found")

@@ -27,13 +27,13 @@
         <b-collapse class="me-3" :id="group.name" v-model="group.visible">
           <div class="row">
             <div v-for="d of group.data" :key="d.id" class="col-md-6 col-lg-3 col-12 my-3">
-              <b-button @click="setDeployment(d)" ref="deploymentCard" variant="link" class="text-decoration-none p-0 w-100 shadow-sm">
+              <b-button @click="setDeployment(d)" :ref="d.id" variant="link" class="text-decoration-none p-0 w-100 shadow-sm">
                 <b-card style="min-height: 120px;">
                   <b-card-body :class="d === deployment ? 'border-start border-primary border-4' : ''">
                     <b-card-text>
-                      <label @click.stop class="d-flex align-items-start m-0 hover-highlight">
-                        <b-form-checkbox size="sm" v-model="d.isSelected" @click.stop></b-form-checkbox>
+                      <label @click.stop class="d-flex justify-content-between m-0 hover-highlight">
                         <span class="fw-bold text-break">{{ d.name || d.id }}</span>
+                        <b-form-checkbox size="sm" v-model="d.isSelected" @click.stop></b-form-checkbox>
                       </label>
                       <div class="d-flex align-items-center pt-2">
                         <span>{{ formatDate(d.deploymentTime) }}</span>
@@ -65,6 +65,8 @@ export default {
     groups: Array,
     deployments: Array,
     deployment: Object,
+    deploymentId: String,
+    deploymentsReady: Boolean
   },
   watch: {
     '$route.params.deploymentId': {
@@ -73,15 +75,22 @@ export default {
       },
       immediate: true
     },
-  },
-  mounted: function() {
-    if (this.deployment) {
-      let deploymentNumber = this.deployments.findIndex(d => {
-        return d.id === this.deployment.id
+    deploymentsReady: function(){
+      if (this.deploymentsReady) {
+      this.$nextTick(() => {
+      this.$refs[this.deploymentId]?.[0]?.$el.scrollIntoView({behavior: 'smooth', block: 'start'})
       })
-      this.$refs.deploymentCard[deploymentNumber].$el.scrollIntoView({ behavior: 'instant' })
-      }
-      },
+    }
+    }
+  },
+  created: function() {
+    let found = this.deployments.some(d => {
+      return (d.id === this.deploymentId)
+    })
+    if (found) {
+      this.$refs[this.deploymentId]?.[0]?.$el.scrollIntoView({behavior: 'smooth', block: 'start'})
+    }
+  },  
   methods: {
     formatDate,
     setDeployment: function(d) {
