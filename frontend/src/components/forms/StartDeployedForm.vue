@@ -31,7 +31,7 @@ import TemplateBase from '@/components/forms/TemplateBase.vue'
 
 import postMessageMixin from '@/components/forms/postMessage.js'
 
-import { FormsService, TemplateService } from '@/services.js'
+import { FormsService, ProcessService } from '@/services.js'
 import IconButton from '@/components/forms/IconButton.vue'
 
 import { Form } from '@bpmn-io/form-js'
@@ -63,18 +63,21 @@ export default {
     this.loadForm()
   },
   methods: {
-    loadForm: function() {
-      TemplateService.getStartFormTemplate('CibsevenFormUiTask', this.processDefinitionId,
-        this.locale, this.token).then(template => {
-          this.loader = false
-          this.templateMetaData = template
-          var formContent = JSON.parse(template.variables.formularContent.value)
-          this.formularContent = formContent
-          this.form = new Form({
-              container: document.querySelector('#form'),
-          })
-          this.form.importSchema(this.formularContent)
-      })
+    loadForm: async function() {
+      try {
+        // Load form content
+        const formContent = await ProcessService.getDeployedStartForm(this.processDefinitionId)
+        
+        this.formularContent = formContent
+        this.form = new Form({
+            container: document.querySelector('#form'),
+        })
+        this.form.importSchema(this.formularContent)
+        this.loader = false
+      } catch (error) {
+        console.error('Error loading start form:', error)
+        this.loader = false
+      }
     },
     setVariablesAndSubmit: function() {
       this.dataToSubmit = {}
