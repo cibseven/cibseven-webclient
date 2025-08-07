@@ -82,7 +82,7 @@ export default {
       nameFocused: 0,
       isNameFocused: true,
       type: 'String',
-      value: null,
+      value: '',
       objectTypeName: '',
       serializationDataFormat: ''
     }
@@ -93,12 +93,28 @@ export default {
         this.value = true
       }
       else if (['Short', 'Integer', 'Long', 'Double'].includes(type)) {
-        this.value = 0
+        if (this.value == null || this.value === '' || isNaN(this.value) || isNaN(Number(this.value))) {
+          this.value = 0
+        }
+        else {
+          this.value = Number(this.value)
+        }
       }
       else if (type === 'Date') {
         this.value = moment(new Date()).startOf('day').format('YYYY-MM-DDTHH:mm:ss.SSSZZ')
       }
-      else this.value = null
+      else if (type === 'Json') {
+        this.value = '{}'
+      }
+      else if (type === 'String') {
+        if (this.value == null) {
+          this.value = ''
+        }
+        else {
+          this.value = '' + this.value
+        }
+      }
+      else this.value = ''
     }
   },
   computed: {
@@ -135,37 +151,32 @@ export default {
     isValid: function() {
       if (this.type === 'Null') return true
       if (this.type === 'Boolean') return !!this.name
-      if (!this.name || !this.value) return false
-
+      if (!this.name || this.value == null) return false
       if (this.type === 'Object') {
         return this.valueInfo.objectTypeName && this.valueInfo.serializationDataFormat
-      } else if (this.type === 'Short') {
-        return this.value >= -32768 && this.value <= 32767
-      } else if (this.type === 'Integer') {
-        return this.value >= -2147483648 && this.value <= 2147483647
-      } else if (this.type === 'Long') {
-        return this.value >= -Number.MAX_SAFE_INTEGER && this.value <= Number.MAX_SAFE_INTEGER
-      } else if (this.type === 'Double') {
-        return !isNaN(this.value)
-      } else if (this.type === 'Json') {
-        try {
-          JSON.parse(this.value)
-          return true
-          // eslint-disable-next-line no-unused-vars
-        } catch(error) {
-          return false
-        }
-      } else if (this.type === 'Xml') {
-        const parser = new DOMParser()
-        const xmlDoc = parser.parseFromString(this.value, 'text/xml')
-        return !xmlDoc.getElementsByTagName('parsererror').length
       }
-      return true
+      return this.valueValidationError == null
     },
     valueValidationError: function() {
-      if (this.type === 'Double') {
+      if (['Short', 'Integer', 'Long', 'Double'].includes(this.type)) {
         if (isNaN(this.value)) {
           return 'isNan'
+        }
+
+        if (this.type === 'Short') {
+          if (this.value < -32768 || this.value > 32767) {
+            return 'Out of range: -32768 ... 32767'
+          }
+        }
+        else if (this.type === 'Integer') {
+          if (this.value < -2147483648 || this.value > 2147483647) {
+            return 'Out of range: -2147483648 ... 2147483647'
+          }
+        }
+        else if (this.type === 'Long') {
+          if (this.value < -Number.MAX_SAFE_INTEGER || this.value > Number.MAX_SAFE_INTEGER) {
+            return 'Out of range: -' + Number.MAX_SAFE_INTEGER + ' ... ' + Number.MAX_SAFE_INTEGER
+          }
         }
       }
       else if (this.type === 'Json') {
@@ -214,7 +225,7 @@ export default {
       this.nameFocused = 0
       this.isNameFocused = true
       this.type = 'String'
-      this.value = null
+      this.value = ''
       this.objectTypeName = ''
       this.serializationDataFormat = ''
     }
