@@ -21,32 +21,45 @@
     <div>
       <b-form-group>
         <template #label>{{ $t('process-instance.variables.name') }}*</template>
-        <b-form-input ref="variableName" v-model="variable.name" autofocus></b-form-input>
+        <b-form-input ref="variableName" v-model="name" autofocus
+          @focus="isNameFocused = true, nameFocused++"
+          @blur="isNameFocused = false"
+          :class="{ 'is-invalid': !name && (!isNameFocused || nameFocused > 2) }"
+        ></b-form-input>
       </b-form-group>
       <b-form-group :label="$t('process-instance.variables.type')">
-        <b-form-select v-model="variable.type" :options="types"  class="mb-0"></b-form-select>
+        <b-form-select v-model="type" :options="types"  class="mb-0"></b-form-select>
       </b-form-group>
-      <div v-if="variable.type === 'Object'">
+      <div v-if="type === 'Object'">
         <b-form-group>
           <template #label>{{ $t('process-instance.variables.objectTypeName') }}*</template>
-          <b-form-input v-model="variable.valueInfo.objectTypeName"></b-form-input>
+          <b-form-input v-model="objectTypeName"></b-form-input>
         </b-form-group>
         <b-form-group>
           <template #label>{{ $t('process-instance.variables.serializationDataFormat') }}*</template>
-          <b-form-input v-model="variable.valueInfo.serializationDataFormat"></b-form-input>
+          <b-form-input v-model="serializationDataFormat"></b-form-input>
         </b-form-group>
       </div>
-      <b-form-group class="p-0">
-        <template #label>{{ $t('process-instance.variables.value') }}<span v-if="variable.type != 'Boolean'">*</span></template>
-        <div v-if="variable.type === 'Boolean'" class="d-flex justify-content-end">
-          <span class="me-2">{{ variable.value ? $t('process.true') : $t('process.false') }}</span>
-          <b-form-checkbox v-model="variable.value" switch :title="variable.value ? $t('process.true') : $t('process.false')"></b-form-checkbox>
+      <b-form-group class="p-0 mb-0">
+        <template #label>{{ $t('process-instance.variables.value') }}<span v-if="type != 'Boolean'">*</span></template>
+        <div v-if="type === 'Boolean'" class="d-flex justify-content-end">
+          <span class="me-2">{{ value ? $t('process.true') : $t('process.false') }}</span>
+          <b-form-checkbox v-model="value" switch :title="value ? $t('process.true') : $t('process.false')"></b-form-checkbox>
         </div>
-        <b-form-input v-else-if="['Short', 'Integer', 'Long', 'Double'].includes(variable.type)"
-          v-model="variable.value" type="number"></b-form-input>
-        <b-form-datepicker v-else-if="variable.type === 'Date'" v-model="variable.value"></b-form-datepicker>
-        <div v-else-if="variable.type === 'Null'"></div>
-        <b-form-textarea v-else v-model="variable.value"></b-form-textarea>
+        <b-form-input v-else-if="['Short', 'Integer', 'Long', 'Double'].includes(type)"
+          v-model="value" type="number" :class="{ 'is-invalid': valueValidationError !== null }"></b-form-input>
+        <b-form-datepicker v-else-if="type === 'Date'" v-model="value"></b-form-datepicker>
+        <div v-else-if="type === 'Null'"></div>
+        <textarea v-else
+          class="form-control"
+          :class="{ 'is-invalid': valueValidationError !== null }"
+          rows="5"
+          :placeholder="$t('process-instance.variables.enterValue')"
+          v-model="value">
+        </textarea>
+        <div v-if="valueValidationError" class="invalid-feedback">
+          {{ valueValidationError }}
+        </div>
       </b-form-group>
     </div>
     <template v-slot:modal-footer>
@@ -65,69 +78,130 @@ export default {
   props: { selectedInstance: Object },
   data: function() {
     return {
-      variable: { name: '', type: 'String', value: null, valueInfo: {} }
+      name: '',
+      nameFocused: 0,
+      isNameFocused: true,
+      type: 'String',
+      value: null,
+      objectTypeName: '',
+      serializationDataFormat: ''
     }
   },
   watch: {
-    'variable.type': function(type) {
+    'type': function(type) {
       if (type === 'Boolean') {
-        this.variable.value = true
-      } else this.variable.value = null
+        this.value = true
+      }
+      else if (['Short', 'Integer', 'Long', 'Double'].includes(type)) {
+        this.value = 0
+      }
+      else if (type === 'Date') {
+        this.value = moment(new Date()).startOf('day').format('YYYY-MM-DDTHH:mm:ss.SSSZZ')
+      }
+      else this.value = null
     }
   },
   computed: {
     types: function() {
       return [
-        { text: 'String', value: 'String' },
-        { text: 'Boolean', value: 'Boolean' },
-        { text: 'Short', value: 'Short' },
-        { text: 'Integer', value: 'Integer' },
-        { text: 'Long', value: 'Long' },
-        { text: 'Double', value: 'Double' },
-        { text: 'Date', value: 'Date' },
-        { text: 'Null', value: 'Null' },
-        { text: 'Object', value: 'Object' },
-        { text: 'Json', value: 'Json' },
-        { text: 'Xml', value: 'Xml' }
+        {
+          label: 'Basic',
+          options: [
+            { text: 'Boolean', value: 'Boolean' },
+            { text: 'Date', value: 'Date' },
+            { text: 'String', value: 'String' },
+          ]
+        },
+        {
+          label: 'Numbers',
+          options: [
+            { text: 'Short', value: 'Short' },
+            { text: 'Integer', value: 'Integer' },
+            { text: 'Long', value: 'Long' },
+            { text: 'Double', value: 'Double' },
+          ]
+        },
+        {
+          label: 'Objects',
+          options: [
+            { text: 'Null', value: 'Null' },
+            { text: 'Object', value: 'Object' },
+            { text: 'Json', value: 'Json' },
+            { text: 'Xml', value: 'Xml' }
+          ]
+        },
       ]
     },
     isValid: function() {
-      if (this.variable.type === 'Null') return true
-      if (this.variable.type === 'Boolean') return !!this.variable.name
-      if (!this.variable.name || !this.variable.value) return false
-      const value = this.variable.value
-      if (this.variable.type === 'Object') {
-        return this.variable.valueInfo.objectTypeName && this.variable.valueInfo.serializationDataFormat
-      } else if (this.variable.type === 'Short') {
-        return value >= -32768 && value <= 32767
-      } else if (this.variable.type === 'Integer') {
-        return value >= -2147483648 && value <= 2147483647
-      } else if (this.variable.type === 'Long') {
-        return value >= -Number.MAX_SAFE_INTEGER && value <= Number.MAX_SAFE_INTEGER
-      } else if (this.variable.type === 'Double') {
-        return !isNaN(value)
-      } else if (this.variable.type === 'Json') {
+      if (this.type === 'Null') return true
+      if (this.type === 'Boolean') return !!this.name
+      if (!this.name || !this.value) return false
+
+      if (this.type === 'Object') {
+        return this.valueInfo.objectTypeName && this.valueInfo.serializationDataFormat
+      } else if (this.type === 'Short') {
+        return this.value >= -32768 && this.value <= 32767
+      } else if (this.type === 'Integer') {
+        return this.value >= -2147483648 && this.value <= 2147483647
+      } else if (this.type === 'Long') {
+        return this.value >= -Number.MAX_SAFE_INTEGER && this.value <= Number.MAX_SAFE_INTEGER
+      } else if (this.type === 'Double') {
+        return !isNaN(this.value)
+      } else if (this.type === 'Json') {
         try {
-          JSON.parse(value)
+          JSON.parse(this.value)
           return true
           // eslint-disable-next-line no-unused-vars
         } catch(error) {
           return false
         }
-      } else if (this.variable.type === 'Xml') {
+      } else if (this.type === 'Xml') {
         const parser = new DOMParser()
-        const xmlDoc = parser.parseFromString(value, 'text/xml')
+        const xmlDoc = parser.parseFromString(this.value, 'text/xml')
         return !xmlDoc.getElementsByTagName('parsererror').length
       }
       return true
+    },
+    valueValidationError: function() {
+      if (this.type === 'Double') {
+        if (isNaN(this.value)) {
+          return 'isNan'
+        }
+      }
+      else if (this.type === 'Json') {
+        try {
+          JSON.parse(this.value)
+        } catch (e) {
+          return e.message
+        }
+      }
+      else if (this.type === 'Xml') {
+        const parser = new DOMParser()
+        const xmlDoc = parser.parseFromString(this.value, 'text/xml')
+        const error = xmlDoc.getElementsByTagName('parsererror')
+        if (error?.length > 0) {
+          return error[0].textContent || error[0].innerText
+        }
+      }
+
+      return null
     }
   },
   methods: {
     show: function() {
+      this.reset()
       this.$refs.addVariable.show()
     },
     addVariable: function() {
-      var variable = JSON.parse(JSON.stringify(this.variable))
+      var variable = {
+        name: this.name,
+        type: this.type,
+        value: this.value,
+        valueInfo: {
+          objectTypeName: this.objectTypeName,
+          serializationDataFormat: this.serializationDataFormat,
+        }
+      }
       if (variable.type === 'Date') variable.value = moment(variable.value).format('YYYY-MM-DDTHH:mm:ss.SSSZZ')
       if (variable.type !== 'Object') delete variable.valueInfo
       ProcessService.putLocalExecutionVariable(this.selectedInstance.id, variable.name, variable).then(() => {
@@ -136,7 +210,13 @@ export default {
       })
     },
     reset: function() {
-      this.variable = { name: '', type: 'String', value: null, valueInfo: {} }
+      this.name = ''
+      this.nameFocused = 0
+      this.isNameFocused = true
+      this.type = 'String'
+      this.value = null
+      this.objectTypeName = ''
+      this.serializationDataFormat = ''
     }
   }
 }
