@@ -285,7 +285,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 				return null;
 			}
 			
-			String jsonString = new String(body, "UTF-8");
+			String jsonString = new String(body, StandardCharsets.UTF_8);
 			ObjectMapper objectMapper = new ObjectMapper();
 			return objectMapper.readValue(jsonString, Object.class);
 			
