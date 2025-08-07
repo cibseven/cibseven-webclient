@@ -379,7 +379,7 @@ var HistoryService = {
     return axios.get(getServicesBasePath() + "/process-history/activity/by-process-definition/" + processDefinitionId, { params })
   },
   findActivitiesInstancesHistoryWithFilter(filter){
-	return axios.get(getServicesBasePath() + "/process-history/activity", 	{ params: filter })
+	return axios.get(getServicesBasePath() + "/process-history/activity", { params: filter })
   },
   fetchProcessInstanceVariablesHistory: function(processInstanceId, filter) {
     return axios.get(getServicesBasePath() + "/process-history/instance/by-process-instance/" + processInstanceId + "/variables",
