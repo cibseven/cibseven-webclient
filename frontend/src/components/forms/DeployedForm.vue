@@ -17,7 +17,7 @@
 
 -->
 <template>
-  <TemplateBase noDiagramm noTitle :templateMetaData="templateMetaData" :loader="loader">
+  <TemplateBase ref="templateBase" noDiagramm noTitle :templateMetaData="templateMetaData" :loader="loader">
     <template v-slot:button-row>
       <IconButton icon="check" :disabled="disabled" @click="setVariablesAndSubmit()" variant="secondary" :text="$t('task.actions.submit')"></IconButton>
     </template>
@@ -31,7 +31,7 @@ import TemplateBase from '@/components/forms/TemplateBase.vue'
 
 import postMessageMixin from '@/components/forms/postMessage.js'
 
-import { FormsService, TemplateService } from '@/services.js'
+import { FormsService, TemplateService, TaskService } from '@/services.js'
 
 import IconButton from '@/components/forms/IconButton.vue'
 
@@ -52,7 +52,6 @@ export default {
   data: function() {
     return {
       templateMetaData: null,
-      formularContent: null,
       loader: true,
       disabled: false,
       form: null,
@@ -64,33 +63,29 @@ export default {
     this.loadForm()
   },
   methods: {
-    loadForm: function() {
+    loadForm: async function() {
       this.loader = false
-      TemplateService.getTemplate('CibsevenFormUiTask', this.taskId, this.locale, this.token).then(template => {
+      try {
+        const template = await TemplateService.getTemplate('CibsevenFormUiTask', this.taskId, this.locale, this.token)
         this.templateMetaData = template
-        var formContent = JSON.parse(template.variables.formularContent.value)
-        var formData = JSON.parse(template.variables.formVariables.value)
         
-        // Parse any JSON strings in form data
-        Object.keys(formData).forEach(key => {
-          if (typeof formData[key] === 'string') {
-            try {
-              // Try to parse as JSON, if it's valid JSON it will be parsed
-              const parsed = JSON.parse(formData[key])
-              formData[key] = parsed
-            } catch {
-              // If it's not valid JSON, keep it as string
-              // This handles regular string values that shouldn't be parsed
-            }
-          }
-        })
+        // Use the new getDeployedForm method to load form content
+        const formContent = await TaskService.getDeployedForm(this.taskId)
         
-        this.formularContent = formContent
+        // Use the new fetchFormVariables method to load form variables
+        const formData = await FormsService.fetchFormVariables(this.taskId, false, this.locale)
+
+        // Convert the service response format to the format expected by form-js
+        const convertedFormData = this.$refs.templateBase.convertFormDataForFormJs(formData)
+        
         this.form = new Form({
             container: document.querySelector('#form'),
         })
-        this.form.importSchema(this.formularContent, formData)
-      })
+        this.form.importSchema(formContent, convertedFormData)
+      } catch (error) {
+        console.error('Error loading form:', error)
+        this.loader = false
+      }
     },
     saveForm: function() {
       this.closeTask = false
