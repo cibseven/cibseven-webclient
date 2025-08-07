@@ -263,7 +263,7 @@ function loadEmbeddedForm(
                 let resource = await loadGeneratedForm(isStartForm, referenceId, formContainer, client, config);
                 formContainer.innerHTML = resource;
                 // Use #embeddedFormRoot as the form element for Camunda SDK
-                // This is a workaround to fix related to jquery selector in Camunda SDK
+                // This is a workaround for issues in the Camunda SDK where the formElement must be provided as a jQuery selector string (e.g., '#embeddedFormRoot') instead of a DOM element.
                 formConfig.formElement = '#embeddedFormRoot';
                 if (embeddedContainer) embeddedContainer.style.display = 'none';
             } else {
