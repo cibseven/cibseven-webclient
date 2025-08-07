@@ -503,12 +503,6 @@ var FormsService = {
   fetchVariables: function(taskId, deserialize) {
     return axios.post(getServicesBasePath() + '/task/' + taskId, null, { params: { deserialize: deserialize } } )
   },
-  fetchFormVariables: function(taskId, deserialize, locale) {
-    const params = {}
-    if (deserialize !== undefined) params.deserialize = deserialize
-    if (locale !== undefined) params.locale = locale
-    return axios.post(getServicesBasePath() + '/task/' + taskId, null, { params })
-  },
   deleteVariable: function(taskId, variableName) {
     return axios.delete(getServicesBasePath() + '/task/' + taskId + '/variable/' + variableName)
   },

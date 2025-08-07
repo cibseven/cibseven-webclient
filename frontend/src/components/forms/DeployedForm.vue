@@ -73,7 +73,7 @@ export default {
         const formContent = await TaskService.getDeployedForm(this.taskId)
         
         // Load form variables
-        const formData = await FormsService.fetchFormVariables(this.taskId, false, this.locale)
+        const formData = await FormsService.fetchVariables(this.taskId, false)
 
         // Convert the service response format to the format expected by form-js
         const convertedFormData = this.$refs.templateBase.convertFormDataForFormJs(formData)
