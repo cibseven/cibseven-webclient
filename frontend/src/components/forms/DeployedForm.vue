@@ -69,10 +69,10 @@ export default {
         const template = await TemplateService.getTemplate('CibsevenFormUiTask', this.taskId, this.locale, this.token)
         this.templateMetaData = template
         
-        // Use the new getDeployedForm method to load form content
+        // Load form content
         const formContent = await TaskService.getDeployedForm(this.taskId)
         
-        // Use the new fetchFormVariables method to load form variables
+        // Load form variables
         const formData = await FormsService.fetchFormVariables(this.taskId, false, this.locale)
 
         // Convert the service response format to the format expected by form-js
