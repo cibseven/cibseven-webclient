@@ -153,7 +153,7 @@ export default {
       if (this.type === 'Boolean') return !!this.name
       if (!this.name || this.value == null) return false
       if (this.type === 'Object') {
-        return this.valueInfo.objectTypeName && this.valueInfo.serializationDataFormat
+        return this.objectTypeName.length > 0 && this.serializationDataFormat.length > 0
       }
       return this.valueValidationError == null
     },

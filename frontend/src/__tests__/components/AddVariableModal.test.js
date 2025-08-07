@@ -178,14 +178,69 @@ describe('AddVariableModal.vue UI interactions', () => {
   })
 
   describe('buttons', () => {
-    it('disables add button when form is invalid', async () => {
-      await wrapper.setData({ name: '', type: 'String', value: '' })
+    it.each([
+      [{ name: '', type: 'String', value: '' }],
+      [{ name: '', type: 'Json', value: '' }],
+      [{ name: '', type: 'Xml', value: '' }],
+      [{ name: '', type: 'Object', value: '' }],
+
+      [{ name: 'name', type: 'Xml', value: '' }],
+      [{ name: 'name', type: 'Object', value: '' }],
+
+      [{ name: 'name', type: 'Short', value: -32768-1 }],
+      [{ name: 'name', type: 'Integer', value: -2147483648-1 }],
+      [{ name: 'name', type: 'Long', value: -Number.MAX_SAFE_INTEGER-1 }],
+
+      [{ name: 'name', type: 'Short', value: 32767+1 }],
+      [{ name: 'name', type: 'Integer', value: 2147483647+1 }],
+      [{ name: 'name', type: 'Long', value: Number.MAX_SAFE_INTEGER+1 }],
+
+    ])('isValid=false: %s', async (data) => {
+      await wrapper.setData(data)
       expect(wrapper.vm.isValid).toBe(false)
     })
 
-    it('enables add button when form is valid', async () => {
-      await wrapper.setData({ name: 'name', type: 'String', value: 'val' })
+    it.each([
+      [{ name: 'name', type: 'String', value: '' }],
+      [{ name: 'name', type: 'Json', value: '' }],
+      [{ name: 'name', type: 'Object', value: '', objectTypeName: 'x', serializationDataFormat: 'x' }],
+
+      [{ name: 'name', type: 'String', value: 'text' }],
+      [{ name: 'name', type: 'Json', value: '' }],
+      [{ name: 'name', type: 'Json', value: '{}' }],
+      //[{ name: 'name', type: 'Xml', value: '<b>vvv</b>' }],
+      [{ name: 'name', type: 'Object', value: 'some data', objectTypeName: 'x', serializationDataFormat: 'x' }],
+
+      [{ name: 'name', type: 'Short', value: 0 }],
+      [{ name: 'name', type: 'Integer', value: 0 }],
+      [{ name: 'name', type: 'Long', value: 0 }],
+      [{ name: 'name', type: 'Double', value: 0 }],
+
+      [{ name: 'name', type: 'Short', value: -100 }],
+      [{ name: 'name', type: 'Integer', value: -100 }],
+      [{ name: 'name', type: 'Long', value: -100 }],
+      [{ name: 'name', type: 'Double', value: -100 }],
+
+      [{ name: 'name', type: 'Short', value: 100 }],
+      [{ name: 'name', type: 'Integer', value: 100 }],
+      [{ name: 'name', type: 'Long', value: 100 }],
+      [{ name: 'name', type: 'Double', value: 100 }],
+
+      [{ name: 'name', type: 'Short', value: -32768 }],
+      [{ name: 'name', type: 'Integer', value: -2147483648 }],
+      [{ name: 'name', type: 'Long', value: -Number.MAX_SAFE_INTEGER }],
+      [{ name: 'name', type: 'Double', value: -Number.MAX_SAFE_INTEGER - 100 }],
+
+      [{ name: 'name', type: 'Short', value: 32767 }],
+      [{ name: 'name', type: 'Integer', value: 2147483647 }],
+      [{ name: 'name', type: 'Long', value: Number.MAX_SAFE_INTEGER }],
+      [{ name: 'name', type: 'Double', value: Number.MAX_SAFE_INTEGER + 100 }],
+
+    ])('isValid=true: %s', async (data) => {
+      await wrapper.setData(data)
+      expect(wrapper.vm.valueValidationError).toBeNull()
       expect(wrapper.vm.isValid).toBe(true)
     })
+
   })
 })
