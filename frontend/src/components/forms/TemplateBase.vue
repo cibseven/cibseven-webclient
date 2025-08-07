@@ -92,6 +92,36 @@ export default {
         }
       }
     },
+    convertFilesToVariables: async function() {
+      const fileVariables = {};
+      
+      if (this.formFiles && Object.keys(this.formFiles).length > 0) {
+        for (const [key, file] of Object.entries(this.formFiles)) {
+          // Convert file to base64
+          const base64Content = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+              // Remove the data:*/*;base64, prefix to get only the base64 content
+              const base64 = reader.result.split(',')[1];
+              resolve(base64);
+            };
+            reader.readAsDataURL(file);
+          });
+
+          fileVariables[key] = {
+            name: key,
+            value: base64Content,
+            type: "File",
+            valueInfo: {
+              filename: file.name,
+              mimeType: file.type
+            }
+          };
+        }
+      }
+      
+      return fileVariables;
+    },
     showDiagram: function () {
       this.$refs.process.show()
       //TODO: Review b-modal static

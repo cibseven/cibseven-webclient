@@ -31,7 +31,7 @@ import TemplateBase from '@/components/forms/TemplateBase.vue'
 
 import postMessageMixin from '@/components/forms/postMessage.js'
 
-import { FormsService, TemplateService, ProcessService } from '@/services.js'
+import { FormsService, TemplateService } from '@/services.js'
 import IconButton from '@/components/forms/IconButton.vue'
 
 import { Form } from '@bpmn-io/form-js'
@@ -100,6 +100,13 @@ export default {
           }
         }
       })
+
+      // Add files from formFiles to dataToSubmit
+      const fileVariables = await this.$refs.templateBase.convertFilesToVariables();
+      Object.keys(fileVariables).forEach(key => {
+        this.dataToSubmit[key] = fileVariables[key];
+      });
+
       this.dataToSubmit.initiator = { name: 'initiator', type: 'string', value: this.$root.user.userID }
       Object.keys(this.dataToSubmit).forEach(key => {
         if (this.dataToSubmit[key].value === null) delete this.dataToSubmit[key]
@@ -108,15 +115,6 @@ export default {
       try {
         const data = await FormsService.submitStartFormVariables(this.processDefinitionId,
           Object.values(this.dataToSubmit), this.locale);
-
-        // To submit a file variable, we must use separate endpoint after starting the process.
-        for (const [variableName, file] of Object.entries(this.$refs.templateBase.formFiles)) {
-          try {
-            await ProcessService.uploadProcessInstanceVariableFileData(data.id, variableName, file, 'File');
-          } catch (error) {
-            console.error(`Error uploading file for variable ${variableName}:`, error);
-          }
-        }
 
         this.sendMessageToParent({ method: 'completeTask', task: data })
         this.loader = false
