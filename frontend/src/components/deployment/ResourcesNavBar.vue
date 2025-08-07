@@ -25,7 +25,7 @@
             <div v-if="deployment">
               <h4>{{ deployment.name }}</h4>
             </div>
-            <a class="btn btn-sm btn-primary text-dark border-white bg-white" data-bs-toggle="collapse"
+            <a class="btn btn-sm btn-primary text-dark border-white bg-white shadow-none" data-bs-toggle="collapse"
               href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample"
               @click="toggleButton">
               <span class="mdi mdi-18px" :class="toggleIcon"></span>
@@ -59,10 +59,12 @@
             <b-list-group-item class="text-dark border-white bg-white">
               <div class="d-flex">
                 <b-button @click="$emit('delete-deployment', this.deployment)"
-                  class="mdi mdi-trash-can border-dark text-dark bg-white me-3" :title="$t('deployment.delete')">
+                  class="border-dark text-dark bg-white me-3" :title="$t('deployment.delete')">
+                  <span class="mdi mdi-trash-can"></span>
                   {{ $t('deployment.delete') }}</b-button>
                 <b-button @click="$emit('show-deployment', this.deployment)"
-                  class="mdi mdi-text-search border-dark text-dark bg-white" :title="$t('deployment.showDeployment')">
+                  class="border-dark text-dark bg-white" :title="$t('deployment.showDeployment')">
+                  <span class="mdi mdi-download-multiple-outline"></span>
                   {{ $t('deployment.showDeployment') }}</b-button>
               </div>
             </b-list-group-item>
