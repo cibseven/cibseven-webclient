@@ -273,14 +273,18 @@ export default {
           // Parse date from dd/mm/yyyy format
           const date = e.data.data.value;
           if (typeof date === 'string') {
-            const [day, month, year] = date.split('/');
-            if (day && month && year) {
+            const dateRegex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+            const match = date.match(dateRegex);
+            if (match) {
+              const [, day, month, year] = match;
               var dateObject = new Date(year, month - 1, day);
               if (isNaN(dateObject.getTime())) {
                 this.datePickerValue = null;
               } else {
                 this.datePickerValue = dateObject;
               }
+            } else {
+              this.datePickerValue = null;
             }
           }
 
