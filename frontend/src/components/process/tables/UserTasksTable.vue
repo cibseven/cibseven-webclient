@@ -22,7 +22,7 @@
       <p class="text-center p-4"><BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}</p>
     </div>
     <FlowTable v-else-if="userTasks.length > 0" resizable striped thead-class="sticky-header" :items="userTasks" primary-key="id" prefix="process-instance.usertasks."
-      sort-by="label" :sort-desc="true" :fields="[
+      sort-by="created" :sort-desc="true" :fields="[
       { label: 'activity', key: 'name', class: 'col-2', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' },
       { label: 'assignee', key: 'assignee', class: 'col-1', thClass: 'border-end', tdClass: 'position-relative py-1 border-end border-top-0' },
       { label: 'owner', key: 'owner', class: 'col-1', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' },
@@ -88,7 +88,9 @@ export default {
   mounted: function() {
     TaskService.findTasksPost({
       processInstanceId: this.selectedInstance.id,
-      processDefinitionId: this.selectedInstance.processDefinitionId
+      processDefinitionId: this.selectedInstance.processDefinitionId,
+      sortBy: 'created',
+      sortOrder: 'desc'
     }).then(res => {
       this.loading = false
       this.userTasks = res
