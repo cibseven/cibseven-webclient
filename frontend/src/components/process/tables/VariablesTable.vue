@@ -202,23 +202,40 @@ export default {
     async deleteVariable(variable) {
       this.$refs.deleteVariableModal.show({
         ok: async () => {
-          // Try active, fallback to historic if error
-          if (this.selectedInstance.state === 'ACTIVE') {
-            try {
-              await ProcessService.deleteVariableByExecutionId(variable.executionId, variable.name)
-              this.loadSelectedInstanceVariables()
-              this.$refs.success.show()
-            } catch {
-              // Fallback to historic deletion
+          try {
+            // Try active, fallback to historic if error
+            if (this.selectedInstance.state === 'ACTIVE') {
+              try {
+                await ProcessService.deleteVariableByExecutionId(variable.executionId, variable.name)
+                this.loadSelectedInstanceVariables()
+                this.$refs.success.show()
+              } catch (activeDeleteError) {
+                // Fallback to historic deletion with user notification
+                console.warn('Active variable deletion failed, attempting historic deletion:', activeDeleteError)
+                try {
+                  await HistoryService.deleteVariableHistoryInstance(variable.id)
+                  this.selectedInstance.state = 'COMPLETED'
+                  this.loadSelectedInstanceVariables()
+                  this.$refs.success.show()
+                } catch (historicDeleteError) {
+                  // Both deletion attempts failed - notify user
+                  console.error('Failed to delete variable via both active and historic services:', historicDeleteError)
+                  if (this.$refs && this.$refs.error) {
+                    this.$refs.error.show()
+                  }
+                }
+              }
+            } else {
               await HistoryService.deleteVariableHistoryInstance(variable.id)
-              this.selectedInstance.state = 'COMPLETED'
               this.loadSelectedInstanceVariables()
               this.$refs.success.show()
             }
-          } else {
-            await HistoryService.deleteVariableHistoryInstance(variable.id)
-            this.loadSelectedInstanceVariables()
-            this.$refs.success.show()
+          } catch (error) {
+            // Handle unexpected errors in delete operation
+            console.error('Unexpected error during variable deletion:', error)
+            if (this.$refs && this.$refs.error) {
+              this.$refs.error.show()
+            }
           }
         },
         variable: variable

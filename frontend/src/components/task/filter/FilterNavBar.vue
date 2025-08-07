@@ -217,8 +217,10 @@ export default {
           selectedFilter = (!this.$route.params.filterId || this.$route.params.filterId === '*') && localStorage.getItem('filter') ?
             JSON.parse(localStorage.getItem('filter')) : selectedFilter
         } catch(error) {
-          console.error('Filter format wrong: corrected')
-          console.error(error)
+          // Handle corrupted filter data in localStorage gracefully
+          console.warn('Invalid filter format in localStorage, using default filter:', error)
+          localStorage.removeItem('filter') // Clear corrupted data
+          selectedFilter = this.$store.state.filter.list[0] // Use first available filter
         }
         if ((!this.$route.params.filterId || selectedFilter) || !selectedFilter) {
           this.$store.state.filter.selected = selectedFilter || this.$store.state.filter.list[0]

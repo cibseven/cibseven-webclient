@@ -98,51 +98,101 @@ export default {
 			}
 		},
 		fetchInstanceVariables: async function (service, method) {
-			this.loading = true
-			const variablesToSerialize = []
-			let variables = await serviceMap[service][method](this.selectedInstance.id, this.restFilter)
-			variables.forEach(variable => {
-				try {
-					variable.value = variable.type === 'Object' ? JSON.parse(variable.value) : variable.value
-				} catch {
-					variablesToSerialize.push(variable.id)
-				}
-				variable.modify = false
-			})
-			if (variablesToSerialize.length > 0) {
-				const dVariables = await serviceMap[service][method](this.selectedInstance.id, this.restFilter)
-				dVariables.forEach(dVariable => {
-					const variableToSerialize = variables.find(variable => variable.id === dVariable.id)
-					if (variableToSerialize) {
-						variableToSerialize.value = dVariable.value
+			try {
+				this.loading = true
+				const variablesToSerialize = []
+				let variables = await serviceMap[service][method](this.selectedInstance.id, this.restFilter)
+				variables.forEach(variable => {
+					try {
+						variable.value = variable.type === 'Object' ? JSON.parse(variable.value) : variable.value
+					} catch {
+						variablesToSerialize.push(variable.id)
 					}
+					variable.modify = false
 				})
+				if (variablesToSerialize.length > 0) {
+					try {
+						const dVariables = await serviceMap[service][method](this.selectedInstance.id, this.restFilter)
+						dVariables.forEach(dVariable => {
+							const variableToSerialize = variables.find(variable => variable.id === dVariable.id)
+							if (variableToSerialize) {
+								variableToSerialize.value = dVariable.value
+							}
+						})
+					} catch (error) {
+						// Handle variable deserialization errors gracefully
+						console.error('Failed to deserialize some variables:', error)
+						// Continue with partial data rather than failing completely
+					}
+				}
+				variables.forEach(v => {
+					v.scope = this.activityInstancesGrouped[v.activityInstanceId]
+				})
+				variables.sort((a, b) => a.name.localeCompare(b.name))
+				this.variables = variables
+				this.filteredVariables = [...variables]
+			} catch (error) {
+				// Handle service call failures with user feedback
+				console.error('Failed to load instance variables:', error)
+				if (this.$refs && this.$refs.error) {
+					this.$refs.error.show()
+				}
+				// Reset to empty state on error
+				this.variables = []
+				this.filteredVariables = []
+			} finally {
+				this.loading = false
 			}
-			variables.forEach(v => {
-				v.scope = this.activityInstancesGrouped[v.activityInstanceId]
-			})
-			variables.sort((a, b) => a.name.localeCompare(b.name))
-			this.variables = variables
-			this.filteredVariables = [...variables]
-			this.loading = false
 		},
 		downloadFile: function(variable) {
-			if (variable.type === 'Object') {
-				if (variable.value.objectTypeName.includes('FileValueDataFlowSource')) {
-					TaskService.downloadFile(variable.processInstanceId, variable.name).then(data => {
-						this.$refs.importPopper.triggerDownload(data, variable.value.name)
-					})
+			try {
+				if (variable.type === 'Object') {
+					if (variable.value.objectTypeName.includes('FileValueDataFlowSource')) {
+						TaskService.downloadFile(variable.processInstanceId, variable.name)
+							.then(data => {
+								this.$refs.importPopper.triggerDownload(data, variable.value.name)
+							})
+							.catch(error => {
+								// Handle download failure with user feedback
+								if (this.$refs && this.$refs.error) {
+									this.$refs.error.show()
+								}
+								console.error('Failed to download file from service:', error)
+							})
+					} else {
+						try {
+							var blob = new Blob([Uint8Array.from(atob(variable.value.data), c => c.charCodeAt(0))], { type: variable.value.contentType })
+							this.$refs.importPopper.triggerDownload(blob, variable.value.name)
+						} catch (error) {
+							// Handle blob creation errors (e.g., invalid base64 data)
+							if (this.$refs && this.$refs.error) {
+								this.$refs.error.show()
+							}
+							console.error('Failed to create downloadable blob from variable data:', error)
+						}
+					}
 				} else {
-					var blob = new Blob([Uint8Array.from(atob(variable.value.data), c => c.charCodeAt(0))], { type: variable.value.contentType })
-					this.$refs.importPopper.triggerDownload(blob, variable.value.name)
+					var download = this.selectedInstance.state === 'ACTIVE' ?
+						ProcessService.fetchVariableDataByExecutionId(variable.executionId, variable.name) :
+						HistoryService.fetchHistoryVariableDataById(variable.id)
+					download
+						.then(data => {
+							this.$refs.importPopper.triggerDownload(data, variable.valueInfo.filename)
+						})
+						.catch(error => {
+							// Handle download service errors with meaningful feedback
+							if (this.$refs && this.$refs.error) {
+								this.$refs.error.show()
+							}
+							console.error('Failed to download variable data:', error)
+						})
 				}
-			} else {
-				var download = this.selectedInstance.state === 'ACTIVE' ?
-					ProcessService.fetchVariableDataByExecutionId(variable.executionId, variable.name) :
-					HistoryService.fetchHistoryVariableDataById(variable.id)
-				download.then(data => {
-					this.$refs.importPopper.triggerDownload(data, variable.valueInfo.filename)
-				})
+			} catch (error) {
+				// Catch any unexpected errors in download operation
+				if (this.$refs && this.$refs.error) {
+					this.$refs.error.show()
+				}
+				console.error('Unexpected error during file download:', error)
 			}
 		},
 		uploadFile: function () {
@@ -165,11 +215,26 @@ export default {
 						value: JSON.stringify(fileData),
 						valueInfo: valueInfo, type: this.selectedVariable.type
 					}
-					ProcessService.modifyVariableByExecutionId(this.selectedVariable.executionId, data).then(() => {
-						this.selectedVariable.value = fileData
-					})
+					ProcessService.modifyVariableByExecutionId(this.selectedVariable.executionId, data)
+						.then(() => {
+							this.selectedVariable.value = fileData
+							this.file = null
+						})
+						.catch(error => {
+							// Notify user of upload failure with meaningful message
+							if (this.$refs && this.$refs.error) {
+								this.$refs.error.show()
+							}
+							console.error('Failed to upload file:', error)
+						})
 				}
-				reader.onerror = () => { }
+				// Handle file reading errors with user feedback
+				reader.onerror = () => {
+					if (this.$refs && this.$refs.error) {
+						this.$refs.error.show()
+					}
+					console.error('Failed to read file:', this.file.name)
+				}
 				reader.readAsDataURL(this.file)
 			} else {
 				var formData = new FormData()
@@ -181,6 +246,13 @@ export default {
 						this.selectedVariable.valueInfo.filename = fileObj.name
 						this.selectedVariable.valueInfo.mimeType = fileObj.type
 						this.file = null
+					})
+					.catch(error => {
+						// Provide meaningful error feedback for file upload failure
+						if (this.$refs && this.$refs.error) {
+							this.$refs.error.show()
+						}
+						console.error('Failed to upload file data:', error)
 					})
 			}
 		},

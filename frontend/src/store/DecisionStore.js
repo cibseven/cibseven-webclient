@@ -112,37 +112,57 @@ const DecisionStore = {
     // ────────────────────────────────────────────────────────────────
 
     async getDecisionList({ state, commit }, params) {
-      if (state.list.length < 1) {
-        const decisions = await DecisionService.getDecisionList(params)
-        const reduced = decisions.map(d => ({ key: d.key, id: d.id, name: d.name, latestVersion: d.version }))
-        commit('setDecisions', { decisions: reduced })
-        return reduced
-      } else {
-        return state.list
+      try {
+        if (state.list.length < 1) {
+          const decisions = await DecisionService.getDecisionList(params)
+          const reduced = decisions.map(d => ({ key: d.key, id: d.id, name: d.name, latestVersion: d.version }))
+          commit('setDecisions', { decisions: reduced })
+          return reduced
+        } else {
+          return state.list
+        }
+      } catch (error) {
+        console.error('Failed to load decision list:', error)
+        throw error // Re-throw to allow calling components to handle the error
       }
     },
     async getDecisionByKey({ state }, params) {
-      if (state.list && state.list.length > 0) {
-        const found = state.list.find(decision => decision.key === params.key)
-        if (found) return found
+      try {
+        if (state.list && state.list.length > 0) {
+          const found = state.list.find(decision => decision.key === params.key)
+          if (found) return found
+        }
+        const newList = await DecisionService.getDecisionList(params)
+        const foundAfterReload = newList.find(decision => decision.key === params.key)
+        if (foundAfterReload) return foundAfterReload
+        return DecisionService.getDecisionByKey(params.key)
+      } catch (error) {
+        console.error('Failed to load decision by key:', params.key, error)
+        throw error
       }
-      const newList = await DecisionService.getDecisionList(params)
-      const foundAfterReload = newList.find(decision => decision.key === params.key)
-      if (foundAfterReload) return foundAfterReload
-      return DecisionService.getDecisionByKey(params.key)
     },
     async getDecisionByKeyAndTenant(_, { key, tenant }) {
-      return DecisionService.getDecisionByKeyAndTenant(key, tenant)
+      try {
+        return DecisionService.getDecisionByKeyAndTenant(key, tenant)
+      } catch (error) {
+        console.error('Failed to load decision by key and tenant:', key, tenant, error)
+        throw error
+      }
     },
     async getDecisionVersionsByKey({ commit }, { key, lazyLoad }) {
-      const result = await DecisionService.getDecisionVersionsByKey(key, lazyLoad)
-      if (lazyLoad) {
-        result.forEach(v => {
-          v.allInstances = '-'
-        })
+      try {
+        const result = await DecisionService.getDecisionVersionsByKey(key, lazyLoad)
+        if (lazyLoad) {
+          result.forEach(v => {
+            v.allInstances = '-'
+          })
+        }
+        commit('setDecisionVersions', { key, versions: result })
+        return result
+      } catch (error) {
+        console.error('Failed to load decision versions by key:', key, error)
+        throw error
       }
-      commit('setDecisionVersions', { key, versions: result })
-      return result
     },
     async getDecisionById(_, id) {
       const decisions = await DecisionService.getDecisionList({ decisionDefinitionId: id })

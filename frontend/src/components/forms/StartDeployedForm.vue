@@ -65,16 +65,30 @@ export default {
   methods: {
     loadForm: function() {
       TemplateService.getStartFormTemplate('CibsevenFormUiTask', this.processDefinitionId,
-        this.locale, this.token).then(template => {
+        this.locale, this.token)
+        .then(template => {
+          try {
+            this.loader = false
+            this.templateMetaData = template
+            var formContent = JSON.parse(template.variables.formularContent.value)
+            this.formularContent = formContent
+            this.form = new Form({
+                container: document.querySelector('#form'),
+            })
+            this.form.importSchema(this.formularContent)
+          } catch (parseError) {
+            // Handle JSON parsing or form creation errors
+            console.error('Failed to parse start form data or create form:', parseError)
+            this.sendMessageToParent({ method: 'displayErrorMessage', status: 'START_FORM_PARSE_ERROR' })
+            this.loader = false
+          }
+        })
+        .catch(error => {
+          // Handle start form template service call failures
+          console.error('Failed to load start form template:', error)
+          this.sendMessageToParent({ method: 'displayErrorMessage', status: error.response?.status || 'START_TEMPLATE_LOAD_ERROR' })
           this.loader = false
-          this.templateMetaData = template
-          var formContent = JSON.parse(template.variables.formularContent.value)
-          this.formularContent = formContent
-          this.form = new Form({
-              container: document.querySelector('#form'),
-          })
-          this.form.importSchema(this.formularContent)
-      })
+        })
     },
     setVariablesAndSubmit: function() {
       this.dataToSubmit = {}

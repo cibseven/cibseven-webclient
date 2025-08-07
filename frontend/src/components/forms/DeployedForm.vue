@@ -66,16 +66,28 @@ export default {
   methods: {
     loadForm: function() {
       this.loader = false
-      TemplateService.getTemplate('CibsevenFormUiTask', this.taskId, this.locale, this.token).then(template => {
-        this.templateMetaData = template
-        var formContent = JSON.parse(template.variables.formularContent.value)
-        var formData = JSON.parse(template.variables.formVariables.value)
-        this.formularContent = formContent
-        this.form = new Form({
-            container: document.querySelector('#form'),
+      TemplateService.getTemplate('CibsevenFormUiTask', this.taskId, this.locale, this.token)
+        .then(template => {
+          try {
+            this.templateMetaData = template
+            var formContent = JSON.parse(template.variables.formularContent.value)
+            var formData = JSON.parse(template.variables.formVariables.value)
+            this.formularContent = formContent
+            this.form = new Form({
+                container: document.querySelector('#form'),
+            })
+            this.form.importSchema(this.formularContent, formData)
+          } catch (parseError) {
+            // Handle JSON parsing or form creation errors
+            console.error('Failed to parse form data or create form:', parseError)
+            this.sendMessageToParent({ method: 'displayErrorMessage', status: 'FORM_PARSE_ERROR' })
+          }
         })
-        this.form.importSchema(this.formularContent, formData)
-      })
+        .catch(error => {
+          // Handle template service call failures
+          console.error('Failed to load form template:', error)
+          this.sendMessageToParent({ method: 'displayErrorMessage', status: error.response?.status || 'TEMPLATE_LOAD_ERROR' })
+        })
     },
     saveForm: function() {
       this.closeTask = false

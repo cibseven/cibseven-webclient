@@ -114,7 +114,8 @@ export function handleAxiosError(router, root, error) {
       return Promise.reject(error)
     }
   } else { // for example "Network Error" - doesn't work with spaces in translations.json
-    console && console.error('Strange AJAX error', error)
+    // Log network errors for debugging while providing user feedback
+    console.error('Network or connection error:', error)
     var message = error.message.replace(' ', '_')
     if (message !== 'Request_aborted') root.$refs.error.show({ type: message })
     return Promise.reject(error)

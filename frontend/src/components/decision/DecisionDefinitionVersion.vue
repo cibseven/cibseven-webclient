@@ -125,7 +125,11 @@ export default {
           }, 100)
         })
         .catch(error => {
+          // Handle diagram loading errors with user feedback
           console.error("Error loading diagram:", error)
+          if (this.$refs && this.$refs.error) {
+            this.$refs.error.show()
+          }
         })
     },
     handleScrollDecisions: function(el) {

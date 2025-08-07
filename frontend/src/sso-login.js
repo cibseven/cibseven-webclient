@@ -24,10 +24,12 @@ import { InfoService } from '@/services.js'
 function handler(error) {
     if (error.response) {
         var res = error.response
-        console && console.error('Strange AJAX error', error)
+        // Log error for debugging while providing user-friendly alert
+        console.error('AJAX request failed:', error)
         alert('Technical error: ' + (res.data.type || 'SystemException'))
     } else {
-        console && console.error('Strange AJAX error', error)
+        // Log network or other errors while providing user feedback
+        console.error('Network or unexpected error occurred:', error)
         alert('Technical error occurred')
     }
     return Promise.reject(error)
