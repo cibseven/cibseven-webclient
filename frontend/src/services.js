@@ -69,6 +69,7 @@ var TaskService = {
   },
   submit: function(taskId) { return axios.post(getServicesBasePath() + "/task/submit/" + taskId) },
   formReference: function(taskId) { return axios.get(getServicesBasePath() + "/task/" + taskId + "/form-reference") },
+  getDeployedForm: function(taskId) { return axios.get(getServicesBasePath() + "/task/" + taskId + "/deployed-form") },
   setAssignee: function(taskId, userId) { return axios.post(getServicesBasePath() + "/task/" + taskId + "/assignee/" + userId) },
   update: function(task) { return axios.put(getServicesBasePath() + "/task/update", task) },
   fetchActivityVariables: function(activityInstanceId) {
@@ -140,6 +141,7 @@ var ProcessService = {
     })
   },
   startForm: function(processDefinitionId) { return axios.get(getServicesBasePath() + "/process/" + processDefinitionId + "/start-form") },
+  getDeployedStartForm: function(processDefinitionId) { return axios.get(getServicesBasePath() + "/process/" + processDefinitionId + "/deployed-start-form") },
   suspendInstance: function(processInstanceId, suspend) {
     return axios.put(getServicesBasePath() + "/process/instance/" + processInstanceId + "/suspend", null, { params: { suspend: suspend } })
   },
@@ -501,6 +503,12 @@ var FormsService = {
   fetchVariables: function(taskId, deserialize) {
     return axios.post(getServicesBasePath() + '/task/' + taskId, null, { params: { deserialize: deserialize } } )
   },
+  fetchFormVariables: function(taskId, deserialize, locale) {
+    const params = {}
+    if (deserialize !== undefined) params.deserialize = deserialize
+    if (locale !== undefined) params.locale = locale
+    return axios.post(getServicesBasePath() + '/task/' + taskId, null, { params })
+  },
   deleteVariable: function(taskId, variableName) {
     return axios.delete(getServicesBasePath() + '/task/' + taskId + '/variable/' + variableName)
   },
@@ -512,13 +520,6 @@ var FormsService = {
 var TemplateService = {
   getTemplate: function(element, taskId, locale, token) {
 	return axios.get(getServicesBasePath() + '/template/' + element + '/' + taskId + '?locale=' + locale, {
-	    headers: {
-        Authorization: `${token}`
-	    }
-	  })
-  },
-  getStartFormTemplate: function(element, processDefinitionId, locale, token) {
-    return axios.get(getServicesBasePath() + '/template/' + element + '/key/' + processDefinitionId + '?locale=' + locale, {
 	    headers: {
         Authorization: `${token}`
 	    }
