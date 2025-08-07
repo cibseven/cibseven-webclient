@@ -65,103 +65,127 @@ describe('AddVariableModal.vue UI interactions', () => {
     })
   })
 
+  async function changeType(newType) {
+    const select = wrapper.find('select')
+    await select.setValue(newType)    
+  }
+
+  async function setValue(newValue) {
+    await wrapper.setData({ value: newValue })
+  }
+
   describe('change type', () => {
     it('resets form on hide', () => {
-        wrapper.setData({ name: 'test', type: 'Object', value: 'val', objectTypeName: 'obj', serializationDataFormat: 'format' })
-        wrapper.vm.reset()
-        expect(wrapper.vm.name).toBe('')
-        expect(wrapper.vm.type).toBe('String')
-        expect(wrapper.vm.value).toBe('')
-        expect(wrapper.vm.objectTypeName).toBe('')
-        expect(wrapper.vm.serializationDataFormat).toBe('')
+      wrapper.setData({ name: 'test', type: 'Object', value: 'val', objectTypeName: 'obj', serializationDataFormat: 'format' })
+      wrapper.vm.reset()
+      expect(wrapper.vm.name).toBe('')
+      expect(wrapper.vm.type).toBe('String')
+      expect(wrapper.vm.value).toBe('')
+      expect(wrapper.vm.objectTypeName).toBe('')
+      expect(wrapper.vm.serializationDataFormat).toBe('')
     })
 
     it('changing type to Object shows objectTypeName and serializationDataFormat inputs', async () => {
-        expect(wrapper.findAll('input').length).toBe(1)
-        expect(wrapper.findAll('textarea').length).toBe(1)
+      expect(wrapper.findAll('input').length).toBe(1)
+      expect(wrapper.findAll('textarea').length).toBe(1)
 
-        // Select Object type
-        await wrapper.setData({ type: 'Object' })
-        await wrapper.vm.$nextTick()
-        expect(wrapper.findAll('input').length).toBe(3)
-        expect(wrapper.findAll('textarea').length).toBe(1)
+      // Select Object type
+      await changeType('Object')
+      expect(wrapper.findAll('input').length).toBe(3)
+      expect(wrapper.findAll('textarea').length).toBe(1)
     })
 
     it('changing type to Boolean updates value and displays switch', async () => {
-        await wrapper.setData({ type: 'Boolean' })
-        await wrapper.vm.$nextTick()
-        expect(wrapper.vm.value).toBe(true)
+      await changeType('Boolean')
+      expect(wrapper.vm.value).toBe(true)
 
-        // Simulate toggling checkbox
-        wrapper.setData({ value: false })
-        expect(wrapper.vm.value).toBe(false)
+      // Simulate toggling checkbox
+      await setValue(false)
+      expect(wrapper.vm.value).toBe(false)
+
+      await changeType('Long')
+      expect(wrapper.vm.value).toBe(0)
+
+      await changeType('Boolean')
+      expect(wrapper.vm.value).toBe(true)
+      await setValue(true)
+      await changeType('Long')
+      expect(wrapper.vm.value).toBe(1)
     })
 
     it('changing type to Json sets default value', async () => {
-        await wrapper.setData({ type: 'Json' })
-        await wrapper.vm.$nextTick()
-        expect(wrapper.vm.value).toBe('{}')
+      await changeType('Json')
+      expect(wrapper.vm.value).toBe('{}')
     })
 
     it('changing type to String does not reset value to empty string', async () => {
-        wrapper.setData({ value: 'some text' })
-        await wrapper.setData({ type: 'String' })
-        expect(wrapper.vm.value).toBe('some text')
+      await setValue('some text')
+      await changeType('String')
+      expect(wrapper.vm.value).toBe('some text')
     })
 
     it('selects different types and updates value accordingly', async () => {
-        const typesToTest = ['Boolean', 'Object', 'Json', 'String']
-        for (const t of typesToTest) {
+      const typesToTest = ['Boolean', 'Object', 'Json', 'String']
+      for (const t of typesToTest) {
         await wrapper.setData({ type: t, value: t === 'Boolean' ? false : 'test' })
         await wrapper.vm.$nextTick()
-        }
-        expect(wrapper.vm.type).toBe('String') // default reset
+      }
+      expect(wrapper.vm.type).toBe('String') // default reset
+    })
+
+    it('chnage type from String to Long preservs number value', async () => {
+      await changeType('String')
+      await setValue('100')
+      expect(wrapper.vm.value).toBe('100')
+      await changeType('Long')
+      expect(wrapper.vm.value).toBe(100)
+      await changeType('String')
+      expect(wrapper.vm.value).toBe('100')
     })
   })
 
   describe('type selection', () => {
     it('selects different options from the type select', async () => {
-        const select = wrapper.find('select')
-        // select 'Object'
-        await select.setValue('Object')
-        expect(wrapper.vm.type).toBe('Object')
+      await changeType('Object')
+      expect(wrapper.vm.type).toBe('Object')
     })
   })
 
   describe('validate value', () => {
     it('validates number input and shows validation error', async () => {
-        await wrapper.setData({ type: 'Integer' })
-        await wrapper.setData({ value: 'notANumber' })
-        expect(wrapper.vm.valueValidationError).toBe('isNan')
-        await wrapper.setData({ value: 5000000000 }) // out of range
-        wrapper.vm.type = 'Long'
-        expect(wrapper.vm.valueValidationError).toBeNull()
+      await wrapper.setData({ type: 'Integer' })
+      await wrapper.setData({ value: 'notANumber' })
+      expect(wrapper.vm.valueValidationError).toBe('isNan')
+      await wrapper.setData({ value: 5000000000 }) // out of range
+      expect(wrapper.vm.valueValidationError).toBe('Out of range: -2147483648 ... 2147483647')
+      wrapper.vm.type = 'Long'
+      expect(wrapper.vm.valueValidationError).toBeNull()
     })
 
     it('validates JSON input and shows error for invalid JSON', async () => {
-        await wrapper.setData({ type: 'Json' })
-        await wrapper.setData({ value: '{ invalid json' })
-        expect(wrapper.vm.valueValidationError).toBeTruthy()
+      await wrapper.setData({ type: 'Json' })
+      await wrapper.setData({ value: '{ invalid json' })
+      expect(wrapper.vm.valueValidationError).toBeTruthy()
 
-        await wrapper.setData({ value: '{ "a": "b"}' })
-        expect(wrapper.vm.valueValidationError).toBeNull()
-      })
+      await wrapper.setData({ value: '{ "a": "b"}' })
+      expect(wrapper.vm.valueValidationError).toBeNull()
+    })
 
     it('validates XML input and shows error for invalid XML', async () => {
-        await wrapper.setData({ type: 'Xml', value: '<invalid></xml>' })
-        expect(wrapper.vm.valueValidationError).toBeTruthy()
+      await wrapper.setData({ type: 'Xml', value: '<invalid></xml>' })
+      expect(wrapper.vm.valueValidationError).toBeTruthy()
     })
   })
 
   describe('buttons', () => {
     it('disables add button when form is invalid', async () => {
-        await wrapper.setData({ name: '', type: 'String', value: '' })
-        expect(wrapper.vm.isValid).toBe(false)
+      await wrapper.setData({ name: '', type: 'String', value: '' })
+      expect(wrapper.vm.isValid).toBe(false)
     })
 
     it('enables add button when form is valid', async () => {
-        await wrapper.setData({ name: 'name', type: 'String', value: 'val' })
-        expect(wrapper.vm.isValid).toBe(true)
+      await wrapper.setData({ name: 'name', type: 'String', value: 'val' })
+      expect(wrapper.vm.isValid).toBe(true)
     })
   })
 })
