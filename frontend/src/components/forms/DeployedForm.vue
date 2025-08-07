@@ -17,7 +17,7 @@
 
 -->
 <template>
-  <TemplateBase ref="templateBase" noDiagramm noTitle :templateMetaData="templateMetaData" :loader="loader">
+  <TemplateBase noDiagramm noTitle :templateMetaData="templateMetaData" :loader="loader">
     <template v-slot:button-row>
       <IconButton icon="check" :disabled="disabled" @click="setVariablesAndSubmit()" variant="secondary" :text="$t('task.actions.submit')"></IconButton>
     </template>
@@ -37,6 +37,8 @@ import IconButton from '@/components/forms/IconButton.vue'
 
 import { Form } from '@bpmn-io/form-js'
 import '@bpmn-io/form-js/dist/assets/form-js.css'
+
+import { convertFormDataForFormJs } from './formJsUtils.js'
 
 export default {
   name: "DeployedForm",
@@ -76,7 +78,7 @@ export default {
         const formData = await FormsService.fetchVariables(this.taskId, false)
 
         // Convert the service response format to the format expected by form-js
-        const convertedFormData = this.$refs.templateBase.convertFormDataForFormJs(formData)
+        const convertedFormData = convertFormDataForFormJs(formData)
         
         this.form = new Form({
             container: document.querySelector('#form'),
