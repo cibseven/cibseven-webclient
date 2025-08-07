@@ -64,25 +64,37 @@ export default {
   },
   methods: {
     loadForm: async function() {
-      const template = await TemplateService.getStartFormTemplate('CibsevenFormUiTask', this.processDefinitionId, this.locale, this.token)
+      try {
+        const template = await TemplateService.getStartFormTemplate('CibsevenFormUiTask', this.processDefinitionId, this.locale, this.token)
 
-      this.loader = false
-      this.templateMetaData = template
-      var formContent = JSON.parse(template.variables.formularContent.value)
-      this.formularContent = formContent
-      
-      this.form = new Form({
-        container: document.querySelector('#form'),
-      })
-      await this.form.importSchema(this.formularContent)
+        this.templateMetaData = template
+        var formContent = JSON.parse(template.variables.formularContent.value)
+        this.formularContent = formContent
+        
+        this.form = new Form({
+          container: document.querySelector('#form'),
+        })
+        await this.form.importSchema(this.formularContent)
 
-      // Find all file input fields in the form to attach change listeners for file upload handling
-      const fileInputs = document.querySelectorAll('#form input[type="file"]');
-      fileInputs.forEach(fileInput => {
-        fileInput.addEventListener('change', async (e) => {
-          this.$refs.templateBase.handleFileSelection(e, fileInput, this.formularContent);
-        });
-      });
+        // Wait for DOM to be updated after form import
+        await this.$nextTick()
+
+        // Find all file input fields in the form to attach change listeners for file upload handling
+        const fileInputs = document.querySelectorAll('#form input[type="file"]');
+        if (fileInputs.length > 0) {
+          fileInputs.forEach(fileInput => {
+            fileInput.addEventListener('change', async (e) => {
+              this.$refs.templateBase.handleFileSelection(e, fileInput, this.formularContent);
+            });
+          });
+        }
+
+        this.loader = false
+      } catch (error) {
+        console.error('Error loading start form:', error)
+        this.sendMessageToParent({ method: 'displayErrorMessage', message: error.message || 'An error occurred during form loading' })
+        this.loader = false
+      }
     },
     setVariablesAndSubmit: async function() {
       try {

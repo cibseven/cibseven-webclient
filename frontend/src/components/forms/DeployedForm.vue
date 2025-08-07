@@ -77,16 +77,22 @@ export default {
         })
         await this.form.importSchema(this.formularContent, formData)
 
+        // Wait for DOM to be updated after form import
+        await this.$nextTick()
+
         // Find all file input fields in the form to attach change listeners for file upload handling
         const fileInputs = document.querySelectorAll('#form input[type="file"]');
-        fileInputs.forEach(fileInput => {
-          fileInput.addEventListener('change', async (e) => {
-            this.$refs.templateBase.handleFileSelection(e, fileInput, this.formularContent);
+        if (fileInputs.length > 0) {
+          fileInputs.forEach(fileInput => {
+            fileInput.addEventListener('change', async (e) => {
+              this.$refs.templateBase.handleFileSelection(e, fileInput, this.formularContent);
+            });
           });
-        });
+        }
 
       } catch (error) {
         console.error('Error loading form:', error);
+        this.sendMessageToParent({ method: 'displayErrorMessage', message: error.message || 'An error occurred during form loading' })
         this.loader = false;
       }
     },
@@ -95,40 +101,39 @@ export default {
       this.setVariablesAndSubmit()
     },
     setVariablesAndSubmit: async function() {
-      this.dataToSubmit = {}
-      var result = this.form.submit()
-      if (Object.keys(result.errors).length > 0 && this.closeTask) return
+      try {
+        this.dataToSubmit = {}
+        var result = this.form.submit()
+        if (Object.keys(result.errors).length > 0 && this.closeTask) return
 
-      // To submit file variables, we must use separate endpoint before or after submitting non-file form data.
-      for (const [variableName, file] of Object.entries(this.$refs.templateBase.formFiles)) {
-        try {
+        // To submit file variables, we must use separate endpoint before or after submitting non-file form data.
+        for (const [variableName, file] of Object.entries(this.$refs.templateBase.formFiles)) {
           await FormsService.uploadVariableFileData(this.taskId, variableName, file, 'File');
-        } catch (error) {
-          console.error(`Error uploading file for variable ${variableName}:`, error);
         }
-      }
 
-      // Process and submit non-file form fields (files have been uploaded separately)
-      Object.entries(result.data).forEach(([key, value]) => {
-        if (!this.$refs.templateBase.formFiles[key]) {
-          this.dataToSubmit[key] = {
-                name: key,
-                type: typeof value,
-                value: value,
-                valueInfo: null
-            }
-        }
-      })
-      return FormsService.submitVariables(this.templateMetaData.task, Object.values(this.dataToSubmit), this.closeTask).then(data => {
+        // Process and submit non-file form fields (files have been uploaded separately)
+        Object.entries(result.data).forEach(([key, value]) => {
+          if (!this.$refs.templateBase.formFiles[key]) {
+            this.dataToSubmit[key] = {
+                  name: key,
+                  type: typeof value,
+                  value: value,
+                  valueInfo: null
+              }
+          }
+        })
+        
+        const data = await FormsService.submitVariables(this.templateMetaData.task, Object.values(this.dataToSubmit), this.closeTask);
         if (this.closeTask) this.sendMessageToParent({ method: 'completeTask', task: data })
         else this.sendMessageToParent({ method: 'displaySuccessMessage' })
         this.loader = false
-      }, e => {
-        this.sendMessageToParent({ method: 'displayErrorMessage', status: e.response.status })
+      } catch (error) {
+        console.error('Error during form submission:', error)
+        this.sendMessageToParent({ method: 'displayErrorMessage', message: error.message || 'An error occurred during form submission' })
         this.loader = false
-      }).finally(() =>{
+      } finally {
         this.closeTask = true
-      })
+      }
     }
   }
 }
