@@ -148,10 +148,14 @@ export default {
             this.task.id + '/' + this.$root.user.authToken + '/' + themeContext + '/' + translationContext
 
             this.loader = false
-          }, () => {
-            // Not needed but just in case something changes in the backend method
+          }, (error) => {
+            // Handle form reference loading errors with proper feedback
+            console.error('Failed to load form reference for task:', this.task.id, error)
             this.formFrame = false
             this.loader = false
+            if (this.$refs && this.$refs.error) {
+              this.$refs.error.show()
+            }
           })
         }
       }
@@ -165,9 +169,17 @@ export default {
       }
     },
     completeEmptyTask: function() {
-      TaskService.submit(this.task.id).then(() => {
-        this.completeTask()
-      })
+      TaskService.submit(this.task.id)
+        .then(() => {
+          this.completeTask()
+        })
+        .catch(error => {
+          // Handle task submission errors with user feedback
+          console.error('Failed to complete empty task:', error)
+          if (this.$refs && this.$refs.error) {
+            this.$refs.error.show()
+          }
+        })
     },
     completeTask: function(task) {
       this.submitForm = true
@@ -206,14 +218,21 @@ export default {
       this.$router.push('.')
     },
     updateFilters: function(data) {
-      this.AuthService.fetchAuths().then(permissions => {
-        this.$root.user.permissions = permissions
-        this.$store.dispatch('findFilters').then(response => {
+      this.AuthService.fetchAuths()
+        .then(permissions => {
+          this.$root.user.permissions = permissions
+          return this.$store.dispatch('findFilters')
+        })
+        .then(response => {
           this.$store.commit('setFilters',
             { filters: this.filtersByPermissions(this.$root.config.permissions.displayFilter, response) })
           if (data.filterId) this.selectFilter(data.filterId)
         })
-      })
+        .catch(error => {
+          // Handle filter update errors gracefully
+          console.error('Failed to update filters or permissions:', error)
+          // Continue with existing permissions/filters rather than breaking the UI
+        })
     },
     selectFilter: function(filterId) {
       var selectedFilter = this.$store.state.filter.list.find(f => {

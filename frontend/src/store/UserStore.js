@@ -40,10 +40,15 @@ const UserStore = {
     findUsersByCandidates: function(ctx, params) {
       if (params.idIn.length > 0) {
         var idIn = params.idIn.join(',')
-        return AdminService.findUsers({ idIn: idIn }).then(users => {
-          ctx.commit('concatCandidateUsers', users)
-          ctx.commit('concatSearchUsers', users)
-        })
+        return AdminService.findUsers({ idIn: idIn })
+          .then(users => {
+            ctx.commit('concatCandidateUsers', users)
+            ctx.commit('concatSearchUsers', users)
+          })
+          .catch(error => {
+            console.error('Failed to find users by candidates:', error)
+            throw error
+          })
       }
     },
     findUsers: function(ctx, params) {
@@ -65,6 +70,11 @@ const UserStore = {
           users = users[0].concat(users[1]).concat(users[2])
           ctx.commit('setSearchUsers', users)
         })
+        .catch(error => {
+          console.error('Failed to search users:', error)
+          ctx.commit('setSearchUsers', []) // Set empty results on error
+          throw error
+        })
       }
     },
     /**
@@ -72,12 +82,17 @@ const UserStore = {
      */
     fetchUsersByIds: function(ctx, userIds) {
       if (!userIds || userIds.length === 0) return Promise.resolve({})
-      return AdminService.findUsers({ idIn: userIds.join(',') }).then(users => {
-        // Build a map: userId -> user
-        const userMap = {}
-        users.forEach(u => { userMap[u.id] = u })
-        return userMap
-      })
+      return AdminService.findUsers({ idIn: userIds.join(',') })
+        .then(users => {
+          // Build a map: userId -> user
+          const userMap = {}
+          users.forEach(u => { userMap[u.id] = u })
+          return userMap
+        })
+        .catch(error => {
+          console.error('Failed to fetch users by IDs:', userIds, error)
+          return {} // Return empty map on error
+        })
     },
   }
 }

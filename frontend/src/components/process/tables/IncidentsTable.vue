@@ -174,9 +174,17 @@ export default {
         // For other incident types, use job stack trace
         stackTracePromise = IncidentService.fetchIncidentStacktraceByJobId(configuration)
       }
-      stackTracePromise.then(res => {
-        this.$refs.stackTraceModal.show(res)
-      })
+      stackTracePromise
+        .then(res => {
+          this.$refs.stackTraceModal.show(res)
+        })
+        .catch(error => {
+          // Handle stack trace loading errors with user feedback
+          console.error('Failed to load incident stack trace:', error)
+          if (this.$refs && this.$refs.error) {
+            this.$refs.error.show()
+          }
+        })
     },
     showPrettyTimestamp: function(orignalDate) {
       return moment(orignalDate).format('DD/MM/YYYY HH:mm:ss')

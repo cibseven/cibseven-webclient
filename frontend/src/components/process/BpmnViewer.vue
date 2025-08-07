@@ -140,12 +140,21 @@ export default {
     showDiagram: function(xml) {
       this.setDiagramReady(false)
       this.loader = true
-      this.viewer.importXML(xml).then(() => {
-        setTimeout(() => {
-          this.viewer.get('canvas').zoom('fit-viewport')
+      this.viewer.importXML(xml)
+        .then(() => {
+          setTimeout(() => {
+            this.viewer.get('canvas').zoom('fit-viewport')
+            this.loader = false
+          }, 500)
+        })
+        .catch(error => {
+          // Handle BPMN diagram import errors with user feedback
+          console.error('Failed to import BPMN diagram:', error)
           this.loader = false
-        }, 500)
-      })
+          if (this.$refs && this.$refs.error) {
+            this.$refs.error.show()
+          }
+        })
     },
     zoomIn: function() {
       this.viewer.get('zoomScroll').stepZoom(1)

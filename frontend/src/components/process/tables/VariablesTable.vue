@@ -80,6 +80,7 @@
     <EditVariableModal ref="editVariableModal" :disabled="selectedInstance.state === 'COMPLETED'" @variable-updated="loadSelectedInstanceVariables(); $refs.success.show()"></EditVariableModal>
     <SuccessAlert top="0" ref="success" style="z-index: 9999">{{ $t('alert.successOperation') }}</SuccessAlert>
     <SuccessAlert ref="messageCopy" style="z-index: 9999"> {{ $t('process.copySuccess') }} </SuccessAlert>
+    <ErrorDialog ref="error" />
     <TaskPopper ref="importPopper"></TaskPopper>
 
     <b-modal ref="uploadFile" :title="$t('process-instance.upload')">
@@ -104,6 +105,7 @@ import DeleteVariableModal from '@/components/process/modals/DeleteVariableModal
 import AddVariableModal from '@/components/process/modals/AddVariableModal.vue'
 import EditVariableModal from '@/components/process/modals/EditVariableModal.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
+import ErrorDialog from '@/components/common-components/ErrorDialog.vue'
 import processesVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
@@ -111,7 +113,7 @@ import { mapGetters } from 'vuex'
 
 export default {
   name: 'VariablesTable',
-  components: { FlowTable, TaskPopper, AddVariableModal, DeleteVariableModal, EditVariableModal, SuccessAlert, BWaitingBox, CopyableActionButton },
+  components: { FlowTable, TaskPopper, AddVariableModal, DeleteVariableModal, EditVariableModal, SuccessAlert, ErrorDialog, BWaitingBox, CopyableActionButton },
   mixins: [processesVariablesMixin, copyToClipboardMixin],
   data: function() {
     return {
