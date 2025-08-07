@@ -45,12 +45,6 @@ export default {
       commit('setIncidents', response)
       return response
     },
-    async loadIncidentsByProcessInstance({ dispatch }, processInstanceId) {
-      return dispatch('loadIncidents', { processInstanceId })
-    },
-    async loadIncidentsByProcessDefinition({ dispatch }, processDefinitionId) {
-      return dispatch('loadIncidents', { processDefinitionId })
-    },
     removeIncident({ commit }, incidentId) {
       commit('removeIncident', incidentId)
     },

@@ -32,7 +32,7 @@
     </div>
     <div class="overflow-y-scroll bg-white container-fluid g-0 flex-grow-1">
       <FlowTable v-if="!loading" striped resizable thead-class="sticky-header" :items="filteredVariables" primary-key="id" prefix="process-instance.variables."
-        sort-by="name" :sort-desc="false" :fields="[
+        sort-by="name" :fields="[
         { label: 'name', key: 'name', class: 'col-3', tdClass: 'py-1 border-end border-top-0' },
         { label: 'type', key: 'type', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
         { label: 'value', key: 'value', class: 'col-3', tdClass: 'py-1 border-end border-top-0' },

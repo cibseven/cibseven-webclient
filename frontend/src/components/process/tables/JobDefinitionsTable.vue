@@ -22,8 +22,7 @@
       <p class="text-center p-4"><BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}</p>
     </div>
     <FlowTable v-else-if="jobDefinitions.length > 0" striped thead-class="sticky-header" 
-      :items="jobDefinitions" primary-key="id" prefix="process-instance.jobDefinitions." sort-by="label" 
-      :sort-desc="true" :fields="[
+      :items="jobDefinitions" primary-key="id" prefix="process-instance.jobDefinitions." sort-by="suspended" :fields="[
       { label: 'state', key: 'suspended', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
       { label: 'activity', key: 'activityId', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
       { label: 'type', key: 'jobType', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },

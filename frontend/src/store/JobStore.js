@@ -61,12 +61,6 @@ const JobStore = {
       commit('setJobs', result)
       return result
     },
-    async loadJobsByProcessInstance({ dispatch }, processInstanceId) {
-      return dispatch('loadJobs', { processInstanceId })
-    },
-    async loadJobsByProcessDefinition({ dispatch }, processDefinitionId) {
-      return dispatch('loadJobs', { processDefinitionId })
-    },
     async loadJobDefinitions({ commit }, query) {
       const result = await JobDefinitionService.findJobDefinitions(query)
       commit('setJobDefinitions', result)
