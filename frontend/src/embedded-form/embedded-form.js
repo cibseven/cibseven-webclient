@@ -256,7 +256,7 @@ function loadEmbeddedForm(
             if (formInfo.key.includes('deployment:')) {
                 let resource = await loadDeployedForm(client, isStartForm, referenceId);
                 formContainer.innerHTML = resource;
-                formConfig.formElement = formContainer
+                formConfig.formElement = formContainer;
                 if (embeddedContainer) embeddedContainer.style.display = 'none';
             } else if (formInfo.key.includes('/rendered-form')) {
                 // Load Camunda generated form HTML and normalize it for Vue integration
