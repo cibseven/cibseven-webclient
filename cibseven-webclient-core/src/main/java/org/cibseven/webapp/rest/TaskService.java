@@ -175,7 +175,7 @@ public class TaskService extends BaseService implements InitializingBean {
 	
 	@Operation(
 			summary = "Retrieves the form configuration data associated with a specific task",
-			description = "<strong>Return: TaskForm object containing key, camundaFormRef, and contextPath")
+			description = "<strong>Return: TaskForm object containing key, camundaFormRef, and contextPath</strong>")
 	@ApiResponse(responseCode = "404", description= "Task not found")
 	@RequestMapping(value = "/task/{taskId}/form", method = RequestMethod.GET)
 	public Object form(
