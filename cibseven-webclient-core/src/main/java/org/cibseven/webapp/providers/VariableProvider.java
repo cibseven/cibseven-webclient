@@ -511,6 +511,11 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 						throw se;
 					}
 				}
+		
+				if (variable.getType().equals("File")) {
+					variablePost.set("valueInfo", mapper.valueToTree(variable.getValueInfo()));
+					variablePost.put("type", "File");
+				}
 
 				variables.set(variable.getName(), variablePost);
 			}
