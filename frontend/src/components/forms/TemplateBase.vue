@@ -98,12 +98,15 @@ export default {
       if (this.formFiles && Object.keys(this.formFiles).length > 0) {
         for (const [key, file] of Object.entries(this.formFiles)) {
           // Convert file to base64
-          const base64Content = await new Promise((resolve) => {
+          const base64Content = await new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = () => {
               // Remove the data:*/*;base64, prefix to get only the base64 content
               const base64 = reader.result.split(',')[1];
               resolve(base64);
+            };
+            reader.onerror = () => {
+              reject(new Error(`Failed to read file: ${file.name}`));
             };
             reader.readAsDataURL(file);
           });

@@ -85,41 +85,42 @@ export default {
       });
     },
     setVariablesAndSubmit: async function() {
-      this.dataToSubmit = {}
-      var result = this.form.submit()
-      if (Object.keys(result.errors).length > 0) return
-
-      // Process and submit non-file form fields (files were already uploaded)
-      Object.entries(result.data).forEach(([key, value]) => {
-        if (!this.$refs.templateBase.formFiles[key]) {
-          this.dataToSubmit[key] = {
-            name: key,
-            type: typeof value,
-            value: value,
-            valueInfo: null
-          }
-        }
-      })
-
-      // Add files from formFiles to dataToSubmit
-      const fileVariables = await this.$refs.templateBase.convertFilesToVariables();
-      Object.keys(fileVariables).forEach(key => {
-        this.dataToSubmit[key] = fileVariables[key];
-      });
-
-      this.dataToSubmit.initiator = { name: 'initiator', type: 'string', value: this.$root.user.userID }
-      Object.keys(this.dataToSubmit).forEach(key => {
-        if (this.dataToSubmit[key].value === null) delete this.dataToSubmit[key]
-      })
-      
       try {
+        this.dataToSubmit = {}
+        var result = this.form.submit()
+        if (Object.keys(result.errors).length > 0) return
+
+        // Process and submit non-file form fields (files were already uploaded)
+        Object.entries(result.data).forEach(([key, value]) => {
+          if (!this.$refs.templateBase.formFiles[key]) {
+            this.dataToSubmit[key] = {
+              name: key,
+              type: typeof value,
+              value: value,
+              valueInfo: null
+            }
+          }
+        })
+
+        // Add files from formFiles to dataToSubmit
+        const fileVariables = await this.$refs.templateBase.convertFilesToVariables();
+        Object.keys(fileVariables).forEach(key => {
+          this.dataToSubmit[key] = fileVariables[key];
+        });
+
+        this.dataToSubmit.initiator = { name: 'initiator', type: 'string', value: this.$root.user.userID }
+        Object.keys(this.dataToSubmit).forEach(key => {
+          if (this.dataToSubmit[key].value === null) delete this.dataToSubmit[key]
+        })
+        
         const data = await FormsService.submitStartFormVariables(this.processDefinitionId,
           Object.values(this.dataToSubmit), this.locale);
 
         this.sendMessageToParent({ method: 'completeTask', task: data })
         this.loader = false
-      } catch (e) {
-        this.sendMessageToParent({ method: 'displayErrorMessage', status: e.response.status })
+      } catch (error) {
+        console.error('Error during form submission:', error)
+        this.sendMessageToParent({ method: 'displayErrorMessage', message: error.message || 'An error occurred during form submission' })
         this.loader = false
       }
     }
