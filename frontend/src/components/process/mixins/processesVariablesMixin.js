@@ -72,6 +72,8 @@ export default {
       let result = {
         ...this.filter,
         deserializeValue: false,
+				sortBy: 'variableName',
+		  	sortOrder: 'asc'
       }
       // https://docs.cibseven.org/rest/cibseven/2.0/#tag/Variable-Instance/operation/getVariableInstances
       if (result.activityInstanceIdIn) {
