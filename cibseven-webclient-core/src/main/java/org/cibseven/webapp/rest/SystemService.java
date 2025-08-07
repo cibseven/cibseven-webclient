@@ -43,9 +43,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 @RestController @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/system")
 public class SystemService extends BaseService implements InitializingBean {
 
-	@Autowired BpmProvider bpmProvider;
+ @Autowired BpmProvider bpmProvider;
 	SevenProvider sevenProvider;
-	
+
+	@Autowired
+	private CustomRestTemplate restTemplate;
+
 	public void afterPropertiesSet() {
 		if (bpmProvider instanceof SevenProvider)
 			sevenProvider = (SevenProvider) bpmProvider;
@@ -60,6 +63,11 @@ public class SystemService extends BaseService implements InitializingBean {
 	@GetMapping("/metrics/data")
 		public Collection<Metric> getMetrics(@RequestParam Map<String, Object> queryParams, CIBUser user) {
 			return bpmProvider.getMetrics(queryParams, user);
+	}
+
+	@GetMapping("/pool-status")
+	public String poolStatus() {
+		return restTemplate.getConnectionPoolStats();
 	}
 
 }

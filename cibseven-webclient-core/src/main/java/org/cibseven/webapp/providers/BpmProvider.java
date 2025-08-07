@@ -44,6 +44,7 @@ import org.cibseven.webapp.rest.model.DeploymentResource;
 import org.cibseven.webapp.rest.model.EventSubscription;
 import org.cibseven.webapp.rest.model.ExternalTask;
 import org.cibseven.webapp.rest.model.Filter;
+import org.cibseven.webapp.rest.model.HistoricDecisionInstance;
 import org.cibseven.webapp.rest.model.HistoryBatch;
 import org.cibseven.webapp.rest.model.IdentityLink;
 import org.cibseven.webapp.rest.model.Incident;
@@ -325,14 +326,14 @@ public interface BpmProvider {
 	 * @throws SystemException in case of an error.
 	 */
 	Collection<ProcessStatistics> findProcessStatistics(String id, CIBUser user) throws SystemException;
-	
-	/**
+  /**
    * Search statistics for all processes.
+   * @param queryParams query parameters to filter the search
    * @param user the user performing the search
    * @return Fetched processes instances.
    * @throws SystemException in case of an error.
    */
-	public Collection<ProcessStatistics> getProcessStatistics(CIBUser user) throws SystemException;
+	public Collection<ProcessStatistics> getProcessStatistics(Map<String, Object> queryParams, CIBUser user) throws SystemException;
 
 	/**
 	 * Search processes instances by filter.
@@ -389,12 +390,12 @@ public interface BpmProvider {
 	 * Fetch variables from a specific process instance.
 	 * The variables found belong to the history, they have other attributes, and variables from finished process instances are also fetched.
      * @param processInstanceId filter by process instance id.
-	 * @param deserializeValue whether to deserialize the variable values.
+	 * @param data a map of parameters to filter the query.
 	 * @param user the user performing the search
      * @return Fetched variables.
      * @throws SystemException in case of an error.
      */
-	Collection<VariableHistory> fetchProcessInstanceVariablesHistory(String processInstanceId, CIBUser user, Optional<Boolean> deserializeValue) 
+	Collection<VariableHistory> fetchProcessInstanceVariablesHistory(String processInstanceId, Map<String, Object> data, CIBUser user) 
 			throws SystemException;
 
 	/**
@@ -558,21 +559,22 @@ public interface BpmProvider {
 	 * Modify a variable data in the Process Instance.
 	 * @param executionId the ID of the execution.
 	 * @param variableName the name of the variable.
-	 * @param file the file containing the data to be updated.
+	 * @param data the file containing the data to be updated.
+	 * @param valueType the type of the variable. Enum with the possible values: "File", "Bytes".
 	 * @param user the user modifying the variable.
      * @throws SystemException in case of any other error.
 	 */ 
-	 void modifyVariableDataByExecutionId(String executionId, String variableName, MultipartFile file, CIBUser user) throws SystemException;
+	 void modifyVariableDataByExecutionId(String executionId, String variableName, MultipartFile data, String valueType, CIBUser user) throws SystemException;
 	
 	 /**
 	 * Fetch a variables from a process instance.
 	 * @param processInstanceId Id of the instance.
+	 * @param data a map of parameters to filter the query.
 	 * @param user User who is fetching the variables.
-	 * @param deserializeValue 
 	 * @return Data.
      * @throws SystemException in case of any other error.
 	 */ 
-	 Collection<Variable> fetchProcessInstanceVariables(String processInstanceId, CIBUser user, Optional<Boolean> deserializeValue) 
+	 Collection<Variable> fetchProcessInstanceVariables(String processInstanceId, Map<String, Object> data, CIBUser user) 
 			 throws NoObjectFoundException, SystemException;
 	
 	 /**
@@ -891,7 +893,7 @@ public interface BpmProvider {
 	List<ActivityInstanceHistory> findActivityInstanceHistory(String processInstanceId, CIBUser user)
 			throws SystemException;
 
-	Variable fetchVariable(String taskId, String variableName, Optional<Boolean> deserialize, CIBUser user)
+	Variable fetchVariable(String taskId, String variableName, boolean deserialize, CIBUser user)
 			throws NoObjectFoundException, SystemException;
 
 	void deleteVariable(String taskId, String variableName, CIBUser user)
@@ -978,12 +980,12 @@ public interface BpmProvider {
 	 * Retrieves a variable of a given process instance by id.
 	 * @param processInstanceId filter by process instance id.
 	 * @param variableName variable name.
-	 * @param deserializeValue whether to deserialize the variable value.
+	 * @param deserializeValue whether to deserialize the variable value. Default: true.
 	 * @param user the user performing the search.
 	 * @return Fetched variables.
 	 * @throws SystemException in case of an error.
 	 */
-	Variable fetchProcessInstanceVariable(String processInstanceId, String variableName, String deserializeValue,
+	Variable fetchProcessInstanceVariable(String processInstanceId, String variableName, boolean deserializeValue,
 			CIBUser user) throws SystemException;
 
 	
@@ -1031,7 +1033,7 @@ public interface BpmProvider {
 	void putLocalExecutionVariable(String executionId, String varName, Map<String, Object> data, CIBUser user);
 
 	Collection<ActivityInstanceHistory> findActivitiesProcessDefinitionHistory(String processDefinitionId,
-			CIBUser user);
+			Map<String, Object> params, CIBUser user);
 	
 	Collection<JobDefinition> findJobDefinitions(String params, CIBUser user);
 	void suspendJobDefinition(String jobDefinitionId, String params, CIBUser user);
@@ -1040,7 +1042,7 @@ public interface BpmProvider {
 	void retryJobDefinitionById(String id, Map<String, Object> params, CIBUser user);
 	
 	Collection<Decision> getDecisionDefinitionList(Map<String, Object> queryParams, CIBUser user);
-	Object getDecisionDefinitionListCount(Map<String, Object> queryParams, CIBUser user);
+	Long getDecisionDefinitionListCount(Map<String, Object> queryParams, CIBUser user);
 	Decision getDecisionDefinitionByKey(String key, CIBUser user);
 	Object getDiagramByKey(String key, CIBUser user);
 	Object evaluateDecisionDefinitionByKey(Map<String, Object> data, String key, CIBUser user);
@@ -1060,9 +1062,9 @@ public interface BpmProvider {
 
 	Collection<Decision> getDecisionVersionsByKey(String key, Optional<Boolean> lazyLoad, CIBUser user);
 	
-	Object getHistoricDecisionInstances(Map<String, Object> queryParams, CIBUser user);
-	Object getHistoricDecisionInstanceCount(Map<String, Object> queryParams, CIBUser user);
-	Object getHistoricDecisionInstanceById(String id, Map<String, Object> queryParams, CIBUser user);
+	Collection<HistoricDecisionInstance> getHistoricDecisionInstances(Map<String, Object> queryParams, CIBUser user);
+	Long getHistoricDecisionInstanceCount(Map<String, Object> queryParams, CIBUser user);
+	HistoricDecisionInstance getHistoricDecisionInstanceById(String id, Map<String, Object> queryParams, CIBUser user);
 	Object deleteHistoricDecisionInstances(Map<String, Object> body, CIBUser user);
 	Object setHistoricDecisionInstanceRemovalTime(Map<String, Object> body, CIBUser user);
   
@@ -1080,7 +1082,7 @@ public interface BpmProvider {
 	void deleteBatch(String id, Map<String, Object> params, CIBUser user);
 	void setBatchSuspensionState(String id, Map<String, Object> params, CIBUser user);
 	Collection<HistoryBatch> getHistoricBatches(Map<String, Object> params, CIBUser user);
-	Object getHistoricBatchCount(Map<String, Object> queryParams);
+	Long getHistoricBatchCount(Map<String, Object> queryParams, CIBUser user);
 	HistoryBatch getHistoricBatchById(String id, CIBUser user);
 	void deleteHistoricBatch(String id, CIBUser user);
 	Object setRemovalTime(Map<String, Object> payload);
@@ -1093,7 +1095,7 @@ public interface BpmProvider {
 	Collection<Tenant> fetchTenants(Map<String, Object> queryParams, CIBUser user);
 	Tenant fetchTenant(String tenantId, CIBUser user);
 	void createTenant(Tenant tenant, CIBUser user);
-	void udpateTenant(Tenant tenant, CIBUser user);
+	void updateTenant(Tenant tenant, CIBUser user);
 	void deleteTenant(String tenantId, CIBUser user);
 	void addMemberToTenant(String tenantId, String userId, CIBUser user);
 	void deleteMemberFromTenant(String tenantId, String userId, CIBUser user);
@@ -1110,7 +1112,7 @@ public interface BpmProvider {
 	 * @throws SystemException in case of an error
 	 * @throws NoObjectFoundException when the variable instance could not be found
 	 */
-	VariableInstance getVariableInstance(String id, Boolean deserializeValue, CIBUser user) throws SystemException, NoObjectFoundException;
+	VariableInstance getVariableInstance(String id, boolean deserializeValue, CIBUser user) throws SystemException, NoObjectFoundException;
 
 	/**
 	 * Retrieves a historic variable instance by its ID.
@@ -1121,7 +1123,7 @@ public interface BpmProvider {
 	 * @throws SystemException in case of an error
 	 * @throws NoObjectFoundException when the historic variable instance could not be found
 	 */
-	VariableHistory getHistoricVariableInstance(String id, Boolean deserializeValue, CIBUser user) throws SystemException, NoObjectFoundException;
+	VariableHistory getHistoricVariableInstance(String id, boolean deserializeValue, CIBUser user) throws SystemException, NoObjectFoundException;
 
 	/**
 	 * Get external tasks based on query parameters
@@ -1132,5 +1134,16 @@ public interface BpmProvider {
 	 * @throws SystemException in case of an error
 	 */
 	Collection<ExternalTask> getExternalTasks(Map<String, Object> queryParams, CIBUser user) throws SystemException;
+
+	/**
+	 * Fetch historic activity statistics for a given process definition ID.
+	 *
+	 * @param id the ID of the process definition
+	 * @param params query parameters to filter statistics (e.g., canceled, finished, incidents)
+	 * @param user the user performing the operation
+	 * @return a list or map containing the historic activity statistics
+	 * @throws SystemException in case of an error
+	 */
+	Object fetchHistoricActivityStatistics(String id, Map<String, Object> params, CIBUser user);
 
 }

@@ -35,5 +35,6 @@ public class ActivityInstance {
 	private String processInstanceId;
 	private List<ActivityInstance> childActivityInstances;
 	private List<TransitionInstance> childTransitionInstances;
+	private List<ActivityInstanceIncident> incidents;
 
 }

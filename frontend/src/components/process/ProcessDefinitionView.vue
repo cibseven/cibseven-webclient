@@ -30,7 +30,7 @@
           :version-index="versionIndex"
           @on-refresh-process-definitions="onRefreshProcessDefinitions"
           @on-delete-process-definition="onDeleteProcessDefinition"
-          :instances="instances"></ProcessDetailsSidebar>
+          :instances="instances" :selected-instance="selectedInstance"></ProcessDetailsSidebar>
       </template>
       <transition name="slide-in" mode="out-in">
         <ProcessInstancesView ref="process" v-if="process && !selectedInstance && !instanceId"
@@ -54,7 +54,6 @@
           :activity-instance="activityInstance"
           :activity-instance-history="activityInstanceHistory"
           :selected-instance="selectedInstance"
-          :parent-process="parentProcess"
           @task-selected="setSelectedTask($event)"></ProcessInstanceView>
       </transition>
     </SidebarsFlow>
@@ -281,17 +280,11 @@ export default {
           })
         }
     },
-    loadProcessActivitiesHistory: function() {
-      HistoryService.findActivitiesProcessDefinitionHistory(this.process.id).then(activities => {
-        this.process.activitiesHistory = activities
-      })
-    },
     loadProcessVersion: function(process) {
       return new Promise(() => {
         this.process = process
         this.findProcessAndAssignData(process)
         if (!this.process.statistics) this.loadStatistics()
-        if (!this.process.activitiesHistory) this.loadProcessActivitiesHistory()
 
         // Load parent process if parentProcessDefinitionId exists in route query
         if (this.$route.query.parentProcessDefinitionId) {
@@ -313,8 +306,7 @@ export default {
     onInstanceDeleted: function() {
       this.setSelectedInstance({ selectedInstance: null })
       return Promise.all([
-        this.loadStatistics(),
-        this.loadProcessActivitiesHistory()
+        this.loadStatistics()
       ]).then(() => {
         this.findProcessAndAssignData(this.process)
         this.$refs.process.refreshDiagram()

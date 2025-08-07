@@ -74,6 +74,7 @@ public class HistoricVariableInstanceService extends BaseService implements Init
 			@RequestParam(required = false) Boolean deserializeValue,
 			CIBUser user) {
 		checkPermission(user, SevenResourceType.HISTORIC_PROCESS_INSTANCE, PermissionConstants.READ_ALL);
-		return bpmProvider.getHistoricVariableInstance(id, deserializeValue, user);
+		boolean deserialize = (deserializeValue == null) || (deserializeValue != null && deserializeValue == true);
+		return bpmProvider.getHistoricVariableInstance(id, deserialize, user);
 	}
 }

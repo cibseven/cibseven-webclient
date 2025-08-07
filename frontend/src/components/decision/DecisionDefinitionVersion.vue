@@ -100,7 +100,7 @@ export default {
   computed: {
     ...mapGetters(['getSelectedDecisionVersion']),
     decision: function() {
-      return this.getSelectedDecisionVersion(this.decisionKey)
+      return this.getSelectedDecisionVersion()
     }
   },
   mounted: function() {

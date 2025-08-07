@@ -104,8 +104,8 @@ function CamundaForm(options) {
   this.processDefinitionId = options.processDefinitionId;
   this.processDefinitionKey = options.processDefinitionKey;
 
-  this.formElement = options.formElement;
-  this.containerElement = options.containerElement;
+  this.formElement = $(options.formElement);
+  this.containerElement = $(options.containerElement);
   this.formUrl = options.formUrl;
 
   if (!this.formElement && !this.containerElement) {

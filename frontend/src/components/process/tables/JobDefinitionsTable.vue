@@ -21,7 +21,7 @@
     <div v-if="loading">
       <p class="text-center p-4"><BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}</p>
     </div>
-    <FlowTable v-else-if="jobDefinitions.length > 0" striped thead-class="sticky-header" @click="showJobDefinition($event)" 
+    <FlowTable v-else-if="jobDefinitions.length > 0" striped thead-class="sticky-header" 
       :items="jobDefinitions" primary-key="id" prefix="process-instance.jobDefinitions." sort-by="label" 
       :sort-desc="true" :fields="[
       { label: 'state', key: 'suspended', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
@@ -37,9 +37,13 @@
         </div>
       </template>
       <template v-slot:cell(activityId)="table">
-        <div :title="table.item.activityId" class="text-truncate">
-          {{ $store.state.activity.processActivities[table.item.activityId] }}
-        </div>
+        <CopyableActionButton
+          :display-value="getActivityDisplayName(table.item.activityId)"
+          :copy-value="table.item.activityId"
+          :title="getActivityDisplayName(table.item.activityId)"
+          @click="highlightElement(table.item.activityId)"
+          @copy="copyValueToClipboard"
+        />
       </template>
       <template v-slot:cell(actions)="table">
         <b-button :title="stateActionKey(table.item)"
@@ -59,19 +63,24 @@
 
     <JobDefinitionStateModal ref="changeJobStateModal"></JobDefinitionStateModal>
     <JobDefinitionPriorityModal ref="overrideJobPriorityModal"></JobDefinitionPriorityModal>
+    <SuccessAlert ref="messageCopy" style="z-index: 9999">{{ $t('process.copySuccess') }}</SuccessAlert>
   </div>
 </template>
 
 <script>
 import FlowTable from '@/components/common-components/FlowTable.vue'
+import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
 import JobDefinitionStateModal from '@/components/process/modals/JobDefinitionStateModal.vue'
 import JobDefinitionPriorityModal from '@/components/process/modals/JobDefinitionPriorityModal.vue'
+import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import { BWaitingBox } from 'cib-common-components'
 import { mapActions, mapGetters } from 'vuex'
+import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 
 export default {
   name: 'JobsDefinitionsTable',
-  components: { FlowTable, JobDefinitionStateModal, JobDefinitionPriorityModal, BWaitingBox },
+  components: { FlowTable, CopyableActionButton, JobDefinitionStateModal, JobDefinitionPriorityModal, SuccessAlert, BWaitingBox },
+  mixins: [copyToClipboardMixin],
   props: {
     processId: String
   },
@@ -105,9 +114,15 @@ export default {
         this.loading = false
       }
     },
-    
-    showJobDefinition: function(jobDefinition) {
-      this.setHighlightedElement(jobDefinition)
+    getActivityDisplayName(activityId) {
+      if (!activityId) return ''
+      // Try to get the activity name from the store, fallback to activityId if not found
+      return this.$store.state.activity.processActivities[activityId] || activityId
+    },
+    highlightElement: function(activityId) {
+      if (activityId) {
+        this.setHighlightedElement(activityId)
+      }
     },
     getStateLabel: function(item) {
       return item.suspended

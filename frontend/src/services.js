@@ -188,12 +188,9 @@ var ProcessService = {
   findProcessStatistics: function(processId) {
     return axios.get(getServicesBasePath() + "/process/process-definition/" + processId + "/statistics")
   },
-  fetchProcessInstanceVariables: function(processInstanceId, deserialize) {
+  fetchProcessInstanceVariables: function(processInstanceId, filter) {
     return axios.get(getServicesBasePath() + "/process/variable-instance/process-instance/" + processInstanceId + "/variables",
-      { params: {
-        deserialize: deserialize
-      }
-    })
+      { params: filter })
   },
   modifyVariableByExecutionId: function(executionId, data) {
     return axios.post(getServicesBasePath() + "/process/execution/" + executionId + "/localVariables", data)
@@ -381,18 +378,15 @@ var HistoryService = {
   findActivitiesInstancesHistory: function(processInstanceId) {
     return axios.get(getServicesBasePath() + "/process-history/activity/by-process-instance/" + processInstanceId)
   },
-  findActivitiesProcessDefinitionHistory: function(processDefinitionId) {
-    return axios.get(getServicesBasePath() + "/process-history/activity/by-process-definition/" + processDefinitionId)
+  findActivitiesProcessDefinitionHistory: function(processDefinitionId, params) {
+    return axios.get(getServicesBasePath() + "/process-history/activity/by-process-definition/" + processDefinitionId, { params })
   },
   findActivitiesInstancesHistoryWithFilter(filter){
 	return axios.get(getServicesBasePath() + "/process-history/activity", 	{ params: filter })
   },
-  fetchProcessInstanceVariablesHistory: function(processInstanceId, deserialize) {
+  fetchProcessInstanceVariablesHistory: function(processInstanceId, filter) {
     return axios.get(getServicesBasePath() + "/process-history/instance/by-process-instance/" + processInstanceId + "/variables",
-      { params: {
-        deserialize: deserialize
-      }
-    })
+      { params: filter })
   },
   fetchHistoryVariableDataById: function(id) {
     return axios.get(getServicesBasePath() + "/process-history/variable/" + id + "/data", { responseType: "blob" })
@@ -408,6 +402,9 @@ var HistoryService = {
   },
   deleteVariableHistoryInstance: function(id) {
     return axios.delete(getServicesBasePath() + "/process-history/instance/" + id + "/variables")
+  },
+  findHistoryActivityStatistics: function(processDefinitionId, params) {
+    return axios.get(getServicesBasePath() + "/process-history/process-definition/" + processDefinitionId + "/statistics", { params })
   }
 }
 
@@ -639,7 +636,7 @@ var BatchService = {
     return axios.get(getServicesBasePath() + '/history/batch', { params })
   },
   getHistoricBatchCount(params) {
-    return axios.get('/history/batch/count', { params })
+    return axios.get(getServicesBasePath() + '/history/batch/count', { params })
   },
   getHistoricBatchById: function(id) {
     return axios.get(getServicesBasePath() + '/history/batch/' + id)
@@ -648,13 +645,13 @@ var BatchService = {
     return axios.delete(getServicesBasePath() + '/history/batch/' + id)
   },
   setRemovalTime(payload) {
-    return axios.post('/history/batch/set-removal-time', payload)
+    return axios.post(getServicesBasePath() + '/history/batch/set-removal-time', payload)
   },
   getCleanableBatchReport(params) {
-    return axios.get('/history/batch/cleanable-batch-report', { params })
+    return axios.get(getServicesBasePath() + '/history/batch/cleanable-batch-report', { params })
   },
   getCleanableBatchReportCount() {
-    return axios.get('/history/batch/cleanable-batch-report/count')
+    return axios.get(getServicesBasePath() + '/history/batch/cleanable-batch-report/count')
   }
 }
 

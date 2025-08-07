@@ -23,6 +23,7 @@ import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.providers.PermissionConstants;
 import org.cibseven.webapp.rest.model.Filter;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -69,11 +70,13 @@ public class FilterService extends BaseService{
 			description = "Request body: A JSON object with the following properties: id, resourceType, name, owner, query and properties" + "<br>" +
 			"<strong>Return: void")
 	@RequestMapping(method = RequestMethod.PUT)
-	public void updateFilter(
+	public ResponseEntity<Void> updateFilter(
 			@RequestBody Filter filter,
 			Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.FILTER, PermissionConstants.UPDATE_ALL);
 		bpmProvider.updateFilter(filter, user);
+    // return 204 No Content, no body
+    return ResponseEntity.noContent().build();
 	}
 	
 	@Operation(
@@ -81,11 +84,13 @@ public class FilterService extends BaseService{
 			description = "<strong>Return: void")
 	@ApiResponse(responseCode = "404", description = "Filter not found")
 	@RequestMapping(value = "/{filterId}", method = RequestMethod.DELETE)
-	public void deleteFilter(
+	public ResponseEntity<Void> deleteFilter(
 			@Parameter(description = "Filter Id") @PathVariable String filterId,
 			Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.FILTER, PermissionConstants.DELETE_ALL);
 		bpmProvider.deleteFilter(filterId, user);
+    // return 204 No Content, no body
+    return ResponseEntity.noContent().build();
 	}
 	
 }

@@ -7,6 +7,11 @@
 		"loadMore": {
 			"title": "Завантажити ще",
 			"tooltip": "Натисніть, щоб завантажити наступні {chunkSize} записів"
+		},
+		"actualisation": {
+			"progress": "Оновлення даних...",
+			"disabled": "Останнє оновлення: {date}\n\nАвтоматичне оновлення вимкнено.\nНатисніть F5 для повторної загрузки даних.",
+			"enabled": "Останнє оновлення: {date}\n\nАвтоматичне оновлення увімкнено.\nОновлення кожні {seconds} секунд."
 		}
 	},
 	"login": {
@@ -115,6 +120,7 @@
 			"definitionKey": "Ключ визначення",
 			"definitionName": "Назва визначення",
 			"deploymentId": "ID розгортання",
+			"superProcessInstanceId": "ID супервиконання процесу",
 			"instancesRunning": "Активні екземпляри",
 			"currentVersion": "Поточна версія",
 			"allVersions": "Усі версії",
@@ -241,6 +247,7 @@
 			"name": "Ім’я",
 			"type": "Тип",
 			"value": "Значення",
+			"valueSerialized": "Серіалізоване значення",
 			"actions": "Дії",
 			"scope": "Область",
 			"objectTypeName": "Назва типу об’єкта",
@@ -266,7 +273,9 @@
 			"scheduleAt": "Запланувати на",
 			"invalidDateError": "Введіть коректну дату",
 			"retry": "Повторити спробу",
-			"editAnnotation": "Редагувати анотацію"
+			"editAnnotation": "Редагувати анотацію",
+			"causeIncidentProcessInstanceId": "ID екземпляра процесу-джерела",
+			"rootCauseIncidentProcessInstanceId": "ID екземпляра кореневого процесу-джерела"
 		},
 		"jobDefinitions": {
 			"state": "Стан",
@@ -372,6 +381,7 @@
 				"openIncidents": "Відкриті інциденти",
 				"suspendedJobDefinition": "Призупинене визначення завдання",
 				"activitiesHistory": "Історія екземплярів завдань",
+				"canceledInstances": "Скасовані екземпляри активності",
 				"openSubprocess": "Показати викликаний процес",
 				"disabledSubprocess": "Визначення процесу буде отримане під час виконання"
 			}
@@ -967,6 +977,8 @@
 			"InvalidValueHistoryTimeToLive": "Недопустимі нульові значення для часу зберігання історії."
 		},
 		"searches": {
+			"filter": "Фільтрувати",
+			"refreshAndFilter": "Оновити та відфільтрувати",
 			"search": "Пошук...",
 			"searchByTaskName": "Пошук за назвою завдання...",
 			"searchByDeploymentName": "Пошук за назвою розгортання...",

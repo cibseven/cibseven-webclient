@@ -7,6 +7,11 @@
 		"loadMore": {
 			"title": "Mehr laden",
 			"tooltip": "Klicken Sie, um die nächsten {chunkSize} Einträge zu laden"
+		},
+		"actualisation": {
+			"progress": "Daten werden aktualisiert...",
+			"disabled": "Letztes Update: {date}\n\nAutomatische Updates sind deaktiviert.\nDrücken Sie F5, um die Daten neu zu laden.",
+			"enabled": "Letztes Update: {date}\n\nAutomatische Updates sind aktiviert.\nAktualisierung alle {seconds} Sekunden."
 		}
 	},
 	"login": {
@@ -115,6 +120,7 @@
 			"definitionKey": "Definitionsschlüssel",
 			"definitionName": "Definitionsname",
 			"deploymentId": "Deployment-ID",
+			"superProcessInstanceId": "Super Prozessinstanz-ID",
 			"instancesRunning": "Laufende Instanzen",
 			"currentVersion": "Aktuelle Version",
 			"allVersions": "Alle Versionen",
@@ -241,6 +247,7 @@
 			"name": "Name",
 			"type": "Typ",
 			"value": "Wert",
+			"valueSerialized": "Serialisierter Wert",
 			"actions": "Aktionen",
 			"scope": "Umfang",
 			"objectTypeName": "Objekttypname",
@@ -249,14 +256,14 @@
 			"enterValue": "Wert eingeben"
 		},
 		"incidents": {
-		    "message": "Nachricht",
-		    "timestamp": "Zeitstempel",
-		    "activity": "Aktivität",
-		    "failedActivity": "Fehlgeschlagene Aktivität",
-		    "incidentType": "Vorfallstyp",
-		    "retryJob": "Anzahl der Wiederholungsversuche eines fehlgeschlagenen Jobs erhöhen",
+			"message": "Nachricht",
+			"timestamp": "Zeitstempel",
+			"activity": "Aktivität",
+			"failedActivity": "Fehlgeschlagene Aktivität",
+			"incidentType": "Vorfallstyp",
+			"retryJob": "Anzahl der Wiederholungsversuche eines fehlgeschlagenen Jobs erhöhen",
 			"annotation": "Anmerkung",
-		    "actions": "Aktionen",
+			"actions": "Aktionen",
 			"incrementNumberRetries": "Anzahl der Wiederholungsversuche erhöhen",
 			"retryMsg": "Die Anzahl der Wiederholungsversuche des fehlgeschlagenen Jobs für das ausgewählte Ereignis wird erhöht.",
 			"dueDateMsg": "Der Zeitpunkt der Ausführung eines Jobs wird durch das Fälligkeitsdatum bestimmt:",
@@ -266,7 +273,9 @@
 			"scheduleAt": "Planen um",
 			"invalidDateError": "Sie müssen ein gültiges Datum eingeben",
 			"retry": "Wiederholen",
-			"editAnnotation": "Anmerkung bearbeiten"
+			"editAnnotation": "Anmerkung bearbeiten",
+			"causeIncidentProcessInstanceId": "Ursächliche Prozessinstanz-ID",
+			"rootCauseIncidentProcessInstanceId": "Ursächliche Hauptprozessinstanz-ID"
 		},
 		"jobDefinitions": {
 			"state": "Status",
@@ -299,14 +308,14 @@
 			"invalidDateError": "Sie müssen ein gültiges Datum eingeben"
 		},
 		"usertasks": {
-		    "activity": "Aktivität",
-		    "assignee": "Bearbeiter",
-		    "owner": "Besitzer",
-		    "startTime": "Startzeit",
-		    "due": "Fälligkeitsdatum",
-		    "followUp": "Nachverfolgung",
-		    "taskID": "Aufgaben-ID",
-		    "actions": "Aktionen"
+			"activity": "Aktivität",
+			"assignee": "Bearbeiter",
+			"owner": "Besitzer",
+			"startTime": "Startzeit",
+			"due": "Fälligkeitsdatum",
+			"followUp": "Nachverfolgung",
+			"taskID": "Aufgaben-ID",
+			"actions": "Aktionen"
 		},
 		"calledProcesses": {
 			"callingActivity": "Aktivität",
@@ -317,17 +326,17 @@
 			"endTime": "Enddatum"
 		},
 		"assignModal": {
-		    "manageUsersGroups": "Benutzer/Gruppen verwalten",
+			"manageUsersGroups": "Benutzer/Gruppen verwalten",
 			"manageAssignee": "Zugewiesenen Benutzer verwalten",
-		    "groupId": "Gruppen-ID",
-		    "userId": "@:admin.users.id",
-		    "groups": "Gruppen",
-		    "users": "Benutzer",		    			
-		    "assignee": "Bearbeiter",
-		    "add": "Hinzufügen",
-		    "delete": "@:confirm.delete",
-		    "actions": "Aktionen",
-		    "exists": "Diese Entität ist bereits zugewiesen"
+			"groupId": "Gruppen-ID",
+			"userId": "@:admin.users.id",
+			"groups": "Gruppen",
+			"users": "Benutzer",		    			
+			"assignee": "Bearbeiter",
+			"add": "Hinzufügen",
+			"delete": "@:confirm.delete",
+			"actions": "Aktionen",
+			"exists": "Diese Entität ist bereits zugewiesen"
 		},
 		"noResults": "Keine Ergebnisse",
 		"noIncidents": "Keine Vorfälle",		
@@ -372,8 +381,9 @@
 			"openIncidents": "Offene Vorfälle",
 			"suspendedJobDefinition": "Ausgesetzte Jobdefinition",
 			"activitiesHistory": "Ausgeführte Aktivitätsinstanzen",
+			"canceledInstances": "Abgebrochene Aktivitätsinstanzen",
 			"openSubprocess": "Aufgerufene Prozessdefinition anzeigen",
-  			"disabledSubprocess": "Die Prozessdefinition wird zur Laufzeit ermittelt"
+			"disabledSubprocess": "Die Prozessdefinition wird zur Laufzeit ermittelt"
 		}
 	},
 	"task": {
@@ -630,8 +640,8 @@
 				"title": "Ausführungsmetriken",
 				"metricsHelp": "Erfasste Anzahl von Prozessinstanzen und Entscheidungsinstanzen, die von der Engine verarbeitet wurden, sowie Task-Benutzern, die einer Benutzeraufgabe zugewiesen wurden.",
 				"startDateContract": "Vertragsbeginn",
-				"process-instances": "Entscheidungsinstanzen",
-				"decision-instances": "Prozessinstanzen",
+				"process-instances": "Prozessinstanzen",
+				"decision-instances": "Entscheidungsinstanzen",
 				"task-users": "Aufgabenbenutzer",
 				"usageLast12MonthsByMonth": "Nutzung der letzten 12 Monate nach Monat",
 				"annualUsageBySubscriptionTerm": "Jährliche Nutzungsmetriken nach Abonnementlaufzeit",
@@ -686,11 +696,11 @@
 		"help": "Info & Hilfe",
 		"user": "Konto",
 		"logout": "Abmelden",
-	    "en": "English",
-	    "de": "Deutsch",
-	    "es": "Español",
+		"en": "English",
+		"de": "Deutsch",
+		"es": "Español",
 		"ua": "Українська",
-	    "ru": "Русский"
+		"ru": "Русский"
 	},
 	"cib-datepicker": {
 		"months" : "Januar_Februar_März_April_Mai_Juni_Juli_August_September_Oktober_November_Dezember",
@@ -884,10 +894,10 @@
 		"filtersAdditionalsTitle": "Weitere Filter",
 		"changeSize": "Breite der Aufgabenliste vergrößern"
 	},
-    "ienotify": { 
+	"ienotify": { 
 		"remember": "Diese Meldung nicht mehr anzeigen",
-        "text": "CIB seven wird nicht vollständig vom Internet Explorer unterstützt. Um CIB seven in vollem Umfang nutzen zu können, empfehlen wir, einen anderen Browser zu verwenden."
-    },
+		"text": "CIB seven wird nicht vollständig vom Internet Explorer unterstützt. Um CIB seven in vollem Umfang nutzen zu können, empfehlen wir, einen anderen Browser zu verwenden."
+	},
 	"start": { 
 		"close": "Schließen",
 		"startProcess": {
@@ -936,7 +946,7 @@
 		"invalid": "Es fehlt eine gültige Eingabe",
 		"invalidName": "Dieser Name ist ungültig oder wird bereits benutzt",
 		"Network_Error": "Es gibt ein Verbindungsproblem",
-        "FolderUploadError": "Ordner Hochladen ist nicht möglich, bitte lade Dateien hoch.",
+		"FolderUploadError": "Ordner Hochladen ist nicht möglich, bitte lade Dateien hoch.",
 		"SystemException": "Es ist ein unerwartetes technisches Problem aufgetreten. Möchtest du einen Bericht senden?",		
 		"DoxichangeException": "Die Vorschau konnte nicht erzeugt werden. Möchtest du das betroffene Dokument zur Analyse bereitstellen?",
 		"AccessDeniedException": "Keine Berechtigung ({0})",
@@ -953,7 +963,7 @@
 		"AuthenticationException": "Die Authentifizierungsinformation fehlt oder ist falsch",
 		"LoginException": "Benutzername oder Passwort ist nicht korrekt",
 		"TokenExpiredException": "Die Authentifizierungsinformation ist nicht mehr gültig",
-        "urlError": "Ungültige URL",
+		"urlError": "Ungültige URL",
 		"errorSaveTask": "Beim Speichern der Aufgabe ist ein Fehler aufgetreten.",
 		"taskSelectedNotExist": "Diese Aufgabe ist nicht mehr verfügbar und wird daher aus dem Arbeitsbereich verschwinden",
 		"ExistingUserRequestException": "Der Benutzer existiert bereits",
@@ -967,6 +977,8 @@
 		"InvalidValueHistoryTimeToLive": "Nullwerte für die Lebensdauer des Verlaufs sind nicht erlaubt."
 	},
 	"searches": {
+		"filter": "Filtern",
+		"refreshAndFilter": "Aktualisieren und filtern",
 		"search": "Suchen...",
 		"searchByTaskName": "Suche in Aufgaben...",
 		"searchByDeploymentName": "Suche nach Deployment...",
@@ -1104,19 +1116,19 @@
 		}
 	},
 	"multisort": {
-	    "title": "Sortierkriterien",
-	    "column": "Spalte",
-	    "order": "Reihenfolge",
-	    "orderBy": "Sortieren nach",
-	    "thenBy": "Dann nach",
-	    "asc": "Aufsteigend",
-	    "desc": "Absteigend",
-	    "add": "Kriterium hinzufügen",
-	    "moveUp": "Nach oben bewegen",
-	    "moveDown": "Nach unten bewegen",
-	    "remove": "Entfernen",
-	    "cancel": "Abbrechen",
-	    "apply": "Anwenden"
+		"title": "Sortierkriterien",
+		"column": "Spalte",
+		"order": "Reihenfolge",
+		"orderBy": "Sortieren nach",
+		"thenBy": "Dann nach",
+		"asc": "Aufsteigend",
+		"desc": "Absteigend",
+		"add": "Kriterium hinzufügen",
+		"moveUp": "Nach oben bewegen",
+		"moveDown": "Nach unten bewegen",
+		"remove": "Entfernen",
+		"cancel": "Abbrechen",
+		"apply": "Anwenden"
 	},
 	"password": {
 		"policy": {
@@ -1161,36 +1173,36 @@
 		"noState": "Für diese Aufgabe gibt es keinen Status"
 	},
 	"advanced-search": {
-	    "title": "Erweiterte Suche",
-	    "criteriaKey": "Kriteriumsschlüssel",
-	    "selectProperty": "Eigenschaft auswählen",
-	    "property": "Eigenschaftsname",
-	    "value": "Wert",
-	    "add": "Kriterium hinzufügen",
-	    "remove": "Kriterium entfernen",
-	    "type": "Übereinstimmungstyp",
-	    "apply": "Anwenden",
-	    "cancel": "Abbrechen",
-	    "cleanAll": "Alle Kriterien löschen",
-	    "any": "Irgendein",
-	    "all": "Alle",
-	    "criteriaKeys": {    	
-	        "processVariables": "Prozessvariable"
-	    },
-	    "table": {
-	        "key": "Schlüssel",
-	        "value": "Wert"
-	    },	    
-	    "operators": {
-	        "eq": "=",
-	        "neq": "≠",
-	        "gt": ">",
-	        "gteq": ">=",
-	        "lt": "<",
-	        "lteq": "<=",
-	        "like": "like",
-	        "notLike": "not like"
-	    }
+		"title": "Erweiterte Suche",
+		"criteriaKey": "Kriteriumsschlüssel",
+		"selectProperty": "Eigenschaft auswählen",
+		"property": "Eigenschaftsname",
+		"value": "Wert",
+		"add": "Kriterium hinzufügen",
+		"remove": "Kriterium entfernen",
+		"type": "Übereinstimmungstyp",
+		"apply": "Anwenden",
+		"cancel": "Abbrechen",
+		"cleanAll": "Alle Kriterien löschen",
+		"any": "Irgendein",
+		"all": "Alle",
+		"criteriaKeys": {    	
+			"processVariables": "Prozessvariable"
+		},
+		"table": {
+			"key": "Schlüssel",
+			"value": "Wert"
+		},	    
+		"operators": {
+			"eq": "=",
+			"neq": "≠",
+			"gt": ">",
+			"gteq": ">=",
+			"lt": "<",
+			"lteq": "<=",
+			"like": "like",
+			"notLike": "not like"
+		}
 	},
 	"notification": {
 		"newTasks": "Neue Aufgaben",

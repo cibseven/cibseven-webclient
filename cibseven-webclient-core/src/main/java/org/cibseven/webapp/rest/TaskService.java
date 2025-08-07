@@ -152,11 +152,13 @@ public class TaskService extends BaseService implements InitializingBean {
 			"<strong>Return: void")
 	@ApiResponse(responseCode = "403", description = "Forbidden")
 	@RequestMapping(value = "/task/submit/{taskId}", method = RequestMethod.POST)
-	public void submit(
+	public ResponseEntity<Void> submit(
 			@Parameter(description = "Task Id") @PathVariable String taskId,
 			Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.TASK, PermissionConstants.UPDATE_ALL);
 		bpmProvider.submit(taskId, user);
+    // return 204 No Content, no body
+    return ResponseEntity.noContent().build();
 	}
 	
 	@Operation(
@@ -176,12 +178,14 @@ public class TaskService extends BaseService implements InitializingBean {
 			description = "UserID will be the assignee" + "<br>" + "<strong>Return: void")
 	@ApiResponse(responseCode = "404", description= "Task or User not found")
 	@RequestMapping(value = "/task/{taskId}/assignee/{userId}", method = RequestMethod.POST)
-	public void setAssignee(
+	public ResponseEntity<Void> setAssignee(
 			@Parameter(description = "Task Id") @PathVariable String taskId,
 			@Parameter(description = "User to be set as assignee") @PathVariable String userId,
 			Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.TASK, PermissionConstants.UPDATE_ALL);
 		bpmProvider.setAssignee(taskId, userId, user);
+    // return 204 No Content, no body
+    return ResponseEntity.noContent().build();
 	}
 	
 	@Operation(
@@ -189,11 +193,13 @@ public class TaskService extends BaseService implements InitializingBean {
 			description = "Request body: Task to be updated with the desired values already modified" + "<br>" +
 			"<strong>Return: void")
 	@RequestMapping(value = "/task/update", method = RequestMethod.PUT)
-	public void update(
+	public ResponseEntity<Void> update(
 			@RequestBody Task task,
 			Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.TASK, PermissionConstants.UPDATE_ALL);
 		bpmProvider.update(task, user);
+    // return 204 No Content, no body
+    return ResponseEntity.noContent().build();
 	}
 
 	//Requested by OFDKA
@@ -229,24 +235,28 @@ public class TaskService extends BaseService implements InitializingBean {
 			summary = "Create identity links, e.g. to set the candidates user or groups of a task",
 			description = "<strong>Return: void")
 	@RequestMapping(value = "/task/{taskId}/identity-links", method = RequestMethod.POST)
-	public void createIdentityLink(
+	public ResponseEntity<Void> createIdentityLink(
 			@Parameter(description = "Task Id") @PathVariable String taskId,
 			@RequestBody Map<String, Object> data,
 			Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.TASK, PermissionConstants.UPDATE_ALL);
 		bpmProvider.createIdentityLink(taskId, data, user);
+    // return 204 No Content, no body
+    return ResponseEntity.noContent().build();
 	}
 	
 	@Operation(
 			summary = "Delete identity links, e.g. to remove the candidates user or groups of a task",
 			description = "<strong>Return: void")
 	@RequestMapping(value = "/task/{taskId}/identity-links/delete", method = RequestMethod.POST)
-	public void deleteIdentityLink(
+	public ResponseEntity<Void> deleteIdentityLink(
 			@Parameter(description = "Task Id") @PathVariable String taskId,
 			@RequestBody Map<String, Object> data,
 			Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.TASK, PermissionConstants.DELETE_ALL);
 		bpmProvider.deleteIdentityLink(taskId, data, user);
+    // return 204 No Content, no body
+    return ResponseEntity.noContent().build();
 	}
 	
 	@Operation(
@@ -315,7 +325,8 @@ public class TaskService extends BaseService implements InitializingBean {
 	      @RequestParam Optional<Boolean> deserialize, HttpServletRequest rq) {
 	    CIBUser userAuth = (CIBUser) baseUserProvider.authenticateUser(rq);
         checkPermission(userAuth, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.READ_ALL);
-	    return bpmProvider.fetchVariable(taskId, variableName, deserialize, userAuth);
+		boolean deserializeValue = deserialize.orElse(true);
+	    return bpmProvider.fetchVariable(taskId, variableName, deserializeValue, userAuth);
 	  }
 	  
 	  @RequestMapping(value = "/task/{taskId}/variable/{variableName}/data", method = RequestMethod.GET)
@@ -336,17 +347,21 @@ public class TaskService extends BaseService implements InitializingBean {
 	  }
 
 	  @RequestMapping(value = "/task/{taskId}/variable/{variableName}", method = RequestMethod.DELETE)
-	  public void deleteVariable(@PathVariable String taskId, @PathVariable String variableName, HttpServletRequest rq) {
+	  public ResponseEntity<Void> deleteVariable(@PathVariable String taskId, @PathVariable String variableName, HttpServletRequest rq) {
 	    CIBUser userAuth = (CIBUser) baseUserProvider.authenticateUser(rq);
         checkPermission(userAuth, SevenResourceType.TASK, PermissionConstants.DELETE_ALL);
 	    bpmProvider.deleteVariable(taskId, variableName, userAuth);
+      // return 204 No Content, no body
+      return ResponseEntity.noContent().build();
 	  }
 	  
 	  @RequestMapping(value = "/task/{taskId}/bpmnError", method = RequestMethod.POST)
-	  public void handleBpmnError(@PathVariable String taskId, @RequestBody Map<String, Object> data, 
+	  public ResponseEntity<Void> handleBpmnError(@PathVariable String taskId, @RequestBody Map<String, Object> data, 
 	      @RequestParam Optional<String> locale, CIBUser user) throws Exception {
 		checkPermission(user, SevenResourceType.TASK, PermissionConstants.UPDATE_ALL);
 	    bpmProvider.handleBpmnError(taskId, data, user);
+      // return 204 No Content, no body
+      return ResponseEntity.noContent().build();
 	  }
 
 	  @GetMapping("/task/report/candidate-group-count")

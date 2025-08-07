@@ -16,8 +16,15 @@
 -->
 <template>
   <div class="d-flex flex-column h-100">
-    <div v-if="selectedInstance.state === 'ACTIVE'" class="bg-light d-flex w-100">
-      <div class="p-3">
+    <div v-if="selectedInstance.state === 'ACTIVE' || ProcessVariablesSearchBoxPlugin" class="bg-light d-flex w-100">
+      <div v-if="ProcessVariablesSearchBoxPlugin" :class="selectedInstance.state === 'ACTIVE' ? 'col-10 p-2' : 'col-12 p-2'">
+        <component :is="ProcessVariablesSearchBoxPlugin"
+          :query="filter"
+          @change-query-object="changeFilter"
+          :total-count="filteredVariables.length"
+        ></component>
+      </div>
+      <div v-if="selectedInstance.state === 'ACTIVE'" :class="ProcessVariablesSearchBoxPlugin ? 'col-2 p-3' : 'p-3'">
         <b-button class="border" size="sm" variant="light" @click="$refs.addVariableModal.show()" :title="$t('process-instance.addVariable')">
           <span class="mdi mdi-plus"></span> {{ $t('process-instance.addVariable') }}
         </b-button>
@@ -38,14 +45,16 @@
           <div :title="table.item.type" class="text-truncate">{{ table.item.type }}</div>
         </template>
         <template v-slot:cell(value)="table">
-          <div v-if="table.item.type === 'File'" class="text-truncate">{{ table.item.valueInfo.filename }}</div>
-          <div v-if="isFileValueDataSource(table.item)" :title="displayObjectNameValue(table.item)" class="text-truncate">
-            {{ displayObjectNameValue(table.item) }}
-          </div>
-          <div v-else :title="displayObjectTitle(table.item)" class="text-truncate">{{ table.item.value }}</div>
+          <CopyableActionButton
+            :displayValue="displayValue(table.item)"
+            :clickable="isFile(table.item)"
+            :title="displayValueTooltip(table.item)"
+            @click="downloadFile(table.item)"
+            @copy="copyValueToClipboard"
+          />
         </template>
         <template v-slot:cell(actions)="table">
-          <b-button v-if="isFile(table.item)" :title="$t('process-instance.download')"
+          <b-button v-if="isFile(table.item)" :title="displayValueTooltip(table.item)"
             size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-download-outline"
             @click="downloadFile(table.item)">
           </b-button>
@@ -68,7 +77,9 @@
 
     <AddVariableModal ref="addVariableModal" :selected-instance="selectedInstance" @variable-added="loadSelectedInstanceVariables(); $refs.success.show()"></AddVariableModal>
     <DeleteVariableModal ref="deleteVariableModal"></DeleteVariableModal>
-    <SuccessAlert top="0" ref="success">{{ $t('alert.successOperation') }}</SuccessAlert>
+    <EditVariableModal ref="editVariableModal" :disabled="selectedInstance.state === 'COMPLETED'" @variable-updated="loadSelectedInstanceVariables(); $refs.success.show()"></EditVariableModal>
+    <SuccessAlert top="0" ref="success" style="z-index: 9999">{{ $t('alert.successOperation') }}</SuccessAlert>
+    <SuccessAlert ref="messageCopy" style="z-index: 9999"> {{ $t('process.copySuccess') }} </SuccessAlert>
     <TaskPopper ref="importPopper"></TaskPopper>
 
     <b-modal ref="uploadFile" :title="$t('process-instance.upload')">
@@ -80,43 +91,6 @@
         <b-button :disabled="!file" @click="uploadFile(); $refs.uploadFile.hide()" variant="primary">{{ $t('process-instance.upload') }}</b-button>
       </template>
     </b-modal>
-
-    <b-modal ref="modifyVariable" :title="$t('process-instance.edit')" @hidden="clearVariableInstances">
-      <div v-if="variableToModify">
-        <b-form-group :label="$t('process-instance.variables.name')">
-          <b-form-input v-model="variableToModify.name" disabled></b-form-input>
-        </b-form-group>
-        <b-form-group :label="$t('process-instance.variables.type')">
-          <b-form-input v-model="variableToModify.type" disabled></b-form-input>
-        </b-form-group>
-        <template v-if="currentInstance?.valueInfo">
-          <div v-if="currentInstance.valueInfo.objectTypeName" class="mb-3">
-            <label class="form-label">{{ $t('process-instance.variables.objectTypeName') }}</label>
-            <input type="text" class="form-control" :value="currentInstance.valueInfo.objectTypeName" disabled>
-          </div>
-          <div v-if="currentInstance.valueInfo.serializationDataFormat" class="mb-3">
-            <label class="form-label">{{ $t('process-instance.variables.serializationDataFormat') }}</label>
-            <input type="text" class="form-control" :value="currentInstance.valueInfo.serializationDataFormat" disabled>
-          </div>
-        </template>
-        <b-form-group :label="$t('process-instance.variables.value')">
-          <textarea
-            class="form-control"
-            rows="5"
-            :placeholder="$t('process-instance.variables.enterValue')"
-            v-model="formattedJsonValue"
-            :disabled="selectedInstance.state === 'COMPLETED'">
-          </textarea>
-        </b-form-group>
-      </div>
-      <template v-slot:modal-footer>
-        <b-button v-if="selectedInstance.state === 'COMPLETED'" @click="$refs.modifyVariable.hide()">{{ $t('confirm.close') }}</b-button>
-        <template v-else>
-          <b-button @click="$refs.modifyVariable.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
-          <b-button @click="updateVariable" variant="primary">{{ $t('process-instance.save') }}</b-button>
-        </template>
-      </template>
-    </b-modal>
   </div>
 
 </template>
@@ -125,52 +99,36 @@
 import { BWaitingBox } from 'cib-common-components'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import TaskPopper from '@/components/common-components/TaskPopper.vue'
-import { ProcessService, VariableInstanceService } from '@/services.js'
+import { ProcessService, HistoryService } from '@/services.js'
 import DeleteVariableModal from '@/components/process/modals/DeleteVariableModal.vue'
 import AddVariableModal from '@/components/process/modals/AddVariableModal.vue'
+import EditVariableModal from '@/components/process/modals/EditVariableModal.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import processesVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
-import { mapGetters, mapActions } from 'vuex'
+import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
+import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
+import { mapGetters } from 'vuex'
 
 export default {
   name: 'VariablesTable',
-  components: { FlowTable, TaskPopper, AddVariableModal, DeleteVariableModal, SuccessAlert, BWaitingBox },
-  mixins: [processesVariablesMixin],
+  components: { FlowTable, TaskPopper, AddVariableModal, DeleteVariableModal, EditVariableModal, SuccessAlert, BWaitingBox, CopyableActionButton },
+  mixins: [processesVariablesMixin, copyToClipboardMixin],
   data: function() {
     return {
       filteredVariables: [],
-      variableToModify: null,
       fileObjects: ['de.cib.cibflow.api.files.FileValueDataFlowSource', 'de.cib.cibflow.api.files.FileValueDataSource']
     }
   },
   computed: {
     ...mapGetters('variableInstance', ['currentVariableInstance']),
     ...mapGetters('historicVariableInstance', ['currentHistoricVariableInstance']),
-    currentInstance() {
-      // Use regular variable instance for active processes, historic for all others
-      return this.selectedInstance?.state === 'ACTIVE' 
-        ? this.currentVariableInstance 
-        : this.currentHistoricVariableInstance
+    ProcessVariablesSearchBoxPlugin: function() {
+      return this.$options.components && this.$options.components.ProcessVariablesSearchBoxPlugin
+        ? this.$options.components.ProcessVariablesSearchBoxPlugin
+        : null
     },
-    formattedJsonValue: {
-      get: function() {
-        if (this.variableToModify) {
-          if (this.variableToModify.type === 'Json') {
-            return JSON.stringify(JSON.parse(this.variableToModify.value), null, 2)
-          } else if (this.variableToModify.type === 'Object') {
-            return JSON.stringify(this.variableToModify.value, null, 2)
-          } else return this.variableToModify.value
-        }
-        return ''
-      },
-      set: function(val) {
-        this.variableToModify.value = this.variableToModify.type === 'Object' ? JSON.parse(val) : val
-      }
-    }
   },
   methods: {
-    ...mapActions('variableInstance', ['clearVariableInstance', 'getVariableInstance']),
-    ...mapActions('historicVariableInstance', ['clearHistoricVariableInstance', 'getHistoricVariableInstance']),
     isFileValueDataSource: function(item) {
       if (item.type === 'Object') {
         if (item.value && item.value.objectTypeName) {
@@ -179,86 +137,93 @@ export default {
       }
       return false
     },
-    displayObjectNameValue: function(item) {
+    displayValue(item) {
       if (this.isFileValueDataSource(item)) {
         return item.value.name
       }
-      return item.value
+      else if (item.type === 'File') {
+        return item.valueInfo.filename
+      }
+      else if (item.type === 'Json') {
+
+        if (typeof item.valueSerialized === 'string') {
+          return item.valueSerialized
+        }
+
+        if (typeof item.value === 'object') {
+          try {
+            return JSON.stringify(item.value, null, 2)
+          } catch {
+            return '- Json Object -'
+          }
+        }
+        return '- Json Object -'
+      }
+      else if (item.type === 'Object') {
+
+        if (typeof item.valueDeserialized === 'object') {
+          return JSON.stringify(item.valueDeserialized, null, 2)
+        }
+
+        if (typeof item.value === 'object') {
+          try {
+            return JSON.stringify(item.value, null, 2)
+          } catch {
+            return '- Object -'
+          }
+        }
+        else if (typeof item.value === 'string') {
+          return item.value
+        }
+        return '- Object -'
+      }
+      else if (item.type === 'Null') {
+        return ''
+      }
+      else {
+        return '' + item.value
+      }
     },
-    displayObjectTitle(item) {
-      return item.type === 'Object' ? JSON.stringify(item.value) : item.value
+    displayValueTooltip(item) {
+      if (this.isFile(item)) {
+        return this.$t('process-instance.download') + ': ' + this.displayValue(item)
+      }
+      else {
+        return this.displayValue(item)
+      }
     },
     isFile: function(item) {
       if (item.type === 'File') return true
       else return this.isFileValueDataSource(item)
     },
-    modifyVariable(variable) {
-      this.selectedVariable = variable
-      this.variableToModify = JSON.parse(JSON.stringify(variable))
-      
-      // Use regular variable instance for active processes, historic for all others
-      if (this.selectedInstance?.state === 'ACTIVE') {
-        this.getVariableInstance({ id: variable.id, deserializeValue: false })
-      } else {
-        this.getHistoricVariableInstance({ id: variable.id, deserializeValue: false })
-      }
-      
-      this.$refs.modifyVariable.show()
+    async modifyVariable(variable) {
+      this.$refs.editVariableModal.show(variable.id)
     },
-    deleteVariable: function(variable) {
+    async deleteVariable(variable) {
       this.$refs.deleteVariableModal.show({
-        ok: this.deleteVariableConfirmed,
+        ok: async () => {
+          // Try active, fallback to historic if error
+          if (this.selectedInstance.state === 'ACTIVE') {
+            try {
+              await ProcessService.deleteVariableByExecutionId(variable.executionId, variable.name)
+              this.loadSelectedInstanceVariables()
+              this.$refs.success.show()
+            } catch {
+              // Fallback to historic deletion
+              await HistoryService.deleteVariableHistoryInstance(variable.id)
+              this.selectedInstance.state = 'COMPLETED'
+              this.loadSelectedInstanceVariables()
+              this.$refs.success.show()
+            }
+          } else {
+            await HistoryService.deleteVariableHistoryInstance(variable.id)
+            this.loadSelectedInstanceVariables()
+            this.$refs.success.show()
+          }
+        },
         variable: variable
       })
-    },
-    deleteVariableConfirmed: function(variable) {
-      if (this.selectedInstance.state === 'ACTIVE') {
-        ProcessService.deleteVariableByExecutionId(variable.executionId, variable.name).then(() => {
-          this.loadSelectedInstanceVariables()
-          this.$refs.success.show()
-        })
-      } else {
-        VariableInstanceService.deleteVariableHistoryInstance(variable.id).then(() => {
-          this.loadSelectedInstanceVariables()
-          this.$refs.success.show()
-        })
-      }
-    },
-    updateVariable: function() {
-      const original = this.variableToModify
-      const data = { modifications: {} }
-      // Clone the original value
-      let value = original.value
-      if (original.type === 'Json') {
-        try {
-          value = JSON.stringify(JSON.parse(value))
-        } catch (e) {
-          console.error('Invalid JSON input:', e)
-          return
-        }
-      } else if (original.type === 'Object') {
-        if (typeof value !== 'string') {
-          value = JSON.stringify(value)
-        }
-      }
-      const mod = { value, type: original.type }
-      // Handle StringBuilder special case
-      const objectTypeName = original.valueInfo?.objectTypeName
-      if (original.type === 'Object' && objectTypeName === 'java.lang.StringBuilder') {
-        mod.value = JSON.stringify(value)
-        mod.valueInfo = original.valueInfo
-      }
-      data.modifications[original.name] = mod
-      ProcessService.modifyVariableByExecutionId(original.executionId, data).then(() => {
-        this.selectedVariable.value = value
-        this.$refs.modifyVariable.hide()
-      })
-    },
-    clearVariableInstances() {
-      this.clearVariableInstance()
-      this.clearHistoricVariableInstance()
     }
-
   }
 }
 </script>

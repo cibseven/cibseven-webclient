@@ -43,11 +43,11 @@
     <div @mousedown="handleMouseDown" class="v-resizable position-absolute w-100" style="left: 0" :style="'height: ' + bpmnViewerHeight + 'px; ' + toggleTransition">
       <component :is="BpmnViewerPlugin" v-if="BpmnViewerPlugin" ref="diagram" @task-selected="selectTask($event)" @activity-map-ready="activityMap = $event"
         :process-definition-id="process.id" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" :statistics="process.statistics"
-        :activities-history="process.activitiesHistory" :active-tab="activeTab" class="h-100">
+        :active-tab="activeTab" class="h-100">
       </component>
       <BpmnViewer v-else ref="diagram" @task-selected="selectTask($event)" @activity-map-ready="activityMap = $event"
         :process-definition-id="process.id" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" :statistics="process.statistics"
-        :activities-history="process.activitiesHistory" :active-tab="activeTab" class="h-100">
+        :active-tab="activeTab" class="h-100">
       </BpmnViewer>
       <span role="button" size="sm" variant="light" class="bg-white px-2 py-1 me-1 position-absolute border rounded" style="bottom: 15px; left: 15px;" @click="toggleContent">
         <span class="mdi mdi-18px" :class="toggleIcon"></span>
@@ -113,7 +113,6 @@
           </div>
           <InstancesTable ref="instancesTable"
             :process="process"
-            :activity-instance="activityInstance"
             :sortByDefaultKey="sortByDefaultKey"
             :sortDesc="sortDesc"
             :sorting="sorting"
@@ -124,11 +123,10 @@
           ></InstancesTable>
         </template>
         <IncidentsTable v-else-if="activeTab === 'incidents'"
-          :process="process" :activity-instance="activityInstance"
-          :activity-instance-history="process.activitiesHistory"/>
+          :process="process" :activity-instance="activityInstance" />
         <JobDefinitionsTable v-else-if="activeTab === 'jobDefinitions'"
           :process-id="process.id" />
-        <CalledProcessDefinitionsTable v-else-if="activeTab === 'calledProcessDefinitions'" :process="process" :activities-history="process.activitiesHistory"/>
+        <CalledProcessDefinitionsTable v-else-if="activeTab === 'calledProcessDefinitions'" :process="process" />
         <component :is="ProcessInstancesTabsContentPlugin" v-if="ProcessInstancesTabsContentPlugin" :process="process" :active-tab="activeTab"></component>
       </div>
     </div>
@@ -209,8 +207,11 @@ export default {
   watch: {
     'process.id': {
       //TODO: Refactor to fetch from store
-      handler: function(newId, oldId) {
+      handler: async function(newId, oldId) {
         if (newId && newId !== oldId) {
+          this.clearHistoricActivityStatistics()
+          await this.loadHistoricActivityStatistics({ processDefinitionId: this.process.id })
+          await this.loadStaticCalledProcessDefinitions({ processDefinitionId: this.process.id })
           ProcessService.fetchDiagram(newId).then(response => {
             this.$refs.diagram.showDiagram(response.bpmn20Xml)
             this.setDiagramXml(response.bpmn20Xml)
@@ -232,6 +233,10 @@ export default {
     }
   },
   mounted: function() {
+    this.clearHistoricActivityStatistics()
+    const params = { canceled: true, completedScoped: true, finished: true, incidents: true }
+    this.loadHistoricActivityStatistics({ processDefinitionId: this.process.id, params })
+    this.loadStaticCalledProcessDefinitions({ processDefinitionId: this.process.id })
     ProcessService.fetchDiagram(this.process.id).then(response => {
       setTimeout(() => {
         this.$refs.diagram.showDiagram(response.bpmn20Xml)
@@ -298,7 +303,8 @@ export default {
     },
   },
   methods: {
-    ...mapActions(['clearActivitySelection', 'setDiagramXml']),
+    ...mapActions(['clearActivitySelection', 'setDiagramXml', 'loadHistoricActivityStatistics', 'clearHistoricActivityStatistics']),
+    ...mapActions('calledProcessDefinitions', ['loadStaticCalledProcessDefinitions']),
     applySorting: function(sortingCriteria) {
       this.sorting = true
       this.sortDesc = null
@@ -339,7 +345,7 @@ export default {
         this.$store.dispatch('setSuspended', { process: this.process, suspended: 'true' })
         // Refresh instances table to reflect the state change
         if (this.$refs.instancesTable) {
-          this.$refs.instancesTable.loadInstances()
+          this.$refs.instancesTable.loadInstancesData()
         }
         this.$refs.success.show()
       })
@@ -353,7 +359,7 @@ export default {
         this.$store.dispatch('setSuspended', { process: this.process, suspended: 'false' })
         // Refresh instances table to reflect the state change
         if (this.$refs.instancesTable) {
-          this.$refs.instancesTable.loadInstances()
+          this.$refs.instancesTable.loadInstancesData()
         }
         this.$refs.success.show()
       })

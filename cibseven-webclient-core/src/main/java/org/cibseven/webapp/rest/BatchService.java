@@ -29,6 +29,7 @@ import org.cibseven.webapp.providers.SevenProvider;
 import org.cibseven.webapp.rest.model.Batch;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -63,23 +64,27 @@ public class BatchService extends BaseService implements InitializingBean {
 	}
     
     @DeleteMapping("/{id}")
-   	public void deleteBatch(
+   	public ResponseEntity<Void> deleteBatch(
    			@PathVariable String id,
 			@RequestParam Map<String, Object> params,
 			HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.BATCH, PermissionConstants.DELETE_ALL);
 		bpmProvider.deleteBatch(id, params, user);
+    // return 204 No Content, no body
+    return ResponseEntity.noContent().build();
 	}
     
     @PutMapping("/{id}/suspended")
-   	public void setBatchSuspensionState(
+   	public ResponseEntity<Void> setBatchSuspensionState(
    			@PathVariable String id,
    			@RequestBody Map<String, Object> params,
 			HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.BATCH, PermissionConstants.UPDATE_ALL);
 		bpmProvider.setBatchSuspensionState(id, params, user);
+    // return 204 No Content, no body
+    return ResponseEntity.noContent().build();
 	}
 
 }

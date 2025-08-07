@@ -252,8 +252,7 @@ function authGuard(strict) {
         console && console.info('auth successful', res.data)
         axios.defaults.headers.common.authorization = res.data.authToken
           AuthService.fetchAuths().then(permissions => {
-            res.data.permissions = permissions
-            router.root.user = res.data
+            router.root.user = { ...res.data, permissions }
             next()
           })
       })

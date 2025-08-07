@@ -26,9 +26,9 @@ import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.ActivityInstance;
 import org.cibseven.webapp.rest.model.ActivityInstanceHistory;
 import org.cibseven.webapp.providers.utils.URLUtils;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpStatusCodeException;
 
 @Component
 public class ActivityProvider extends SevenProviderBase implements IActivityProvider {
@@ -66,7 +66,11 @@ public class ActivityProvider extends SevenProviderBase implements IActivityProv
 	@Override
 	public void deleteVariableByExecutionId(String executionId, String variableName, CIBUser user) {
 		String url = getEngineRestUrl() + "/execution/" + executionId + "/localVariables/" + variableName;
-		doDelete(url, user);
+		try {
+			doDelete(url, user);
+		} catch (HttpStatusCodeException e) {
+			throw wrapException(e, user);
+		}
 	}
 
 	@Override
@@ -76,9 +80,8 @@ public class ActivityProvider extends SevenProviderBase implements IActivityProv
 	}
 
 	@Override
-	public Collection<ActivityInstanceHistory> findActivitiesProcessDefinitionHistory(String processDefinitionId,
-			CIBUser user) {
-		String url = getEngineRestUrl() + "/history/activity-instance?processDefinitionId=" + processDefinitionId;
+	public Collection<ActivityInstanceHistory> findActivitiesProcessDefinitionHistory(String processDefinitionId, Map<String, Object> params, CIBUser user) {
+		String url = URLUtils.buildUrlWithParams(getEngineRestUrl() + "/history/activity-instance?processDefinitionId=" + processDefinitionId, params);
 		return Arrays.asList(((ResponseEntity<ActivityInstanceHistory[]>) doGet(url, ActivityInstanceHistory[].class, user, false)).getBody());
 	}
 	
