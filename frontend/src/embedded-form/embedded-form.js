@@ -264,7 +264,7 @@ function loadEmbeddedForm(
                 formContainer.innerHTML = resource;
                 // Use #embeddedFormRoot as the form element for Camunda SDK
                 // This is a workaround to fix related to jquery selector in Camunda SDK
-                formConfig.formElement = '#embeddedFormRoot'
+                formConfig.formElement = '#embeddedFormRoot';
                 if (embeddedContainer) embeddedContainer.style.display = 'none';
             } else {
                 // Start with a relative url and replace doubled slashes if necessary
