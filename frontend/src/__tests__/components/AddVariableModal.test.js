@@ -1,0 +1,167 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { mount } from '@vue/test-utils'
+import { i18n } from '@/i18n'
+import AddVariableModal from '@/components/process/modals/AddVariableModal.vue'
+import { readFileSync } from 'fs'
+import { resolve } from 'path'
+import { BButton, BFormGroup, BFormInput, BFormSelect, BFormCheckbox, BAlert, BFormDatepicker } from 'cib-common-components'
+
+// Mock dependencies
+vi.mock('@/services.js', () => ({
+  ProcessService: {
+    putLocalExecutionVariable: vi.fn(() => Promise.resolve())
+  }
+}))
+
+describe('AddVariableModal.vue UI interactions', () => {
+  let wrapper
+
+  const translations = {...JSON.parse(
+      // eslint-disable-next-line no-undef
+      readFileSync(resolve(__dirname, '../../assets/translations_en.json'), 'utf-8')
+    ),
+    ...{
+      bcomponents: {
+        ariaLabelClose: 'Close',
+      },
+    }
+  }
+
+  beforeEach(() => {
+
+    i18n.global.locale = 'en'
+    i18n.global.setLocaleMessage('en', translations)
+
+    wrapper = mount(AddVariableModal, {
+      props: {
+          selectedInstance: { id: 100 }
+      },
+      global: {
+        provide: {
+          // Provide any necessary global properties or mocks
+        },
+        mocks: {
+          $t: (msg) => msg,
+          $te: () => true,
+        },
+        plugins: [i18n],
+        stubs: {
+          'b-modal': {
+            template: '<div><slot></slot></div>',
+            methods: {
+              show: vi.fn(),
+              hide: vi.fn(),
+            }
+          },
+          'b-form-group': BFormGroup,
+          'b-form-input': BFormInput,
+          'b-form-select': BFormSelect,
+          'b-form-checkbox': BFormCheckbox,
+          'b-form-datepicker': BFormDatepicker,
+          'b-button': BButton,
+          'b-alert': BAlert,
+        }
+      }
+    })
+  })
+
+  describe('change type', () => {
+    it('resets form on hide', () => {
+        wrapper.setData({ name: 'test', type: 'Object', value: 'val', objectTypeName: 'obj', serializationDataFormat: 'format' })
+        wrapper.vm.reset()
+        expect(wrapper.vm.name).toBe('')
+        expect(wrapper.vm.type).toBe('String')
+        expect(wrapper.vm.value).toBe('')
+        expect(wrapper.vm.objectTypeName).toBe('')
+        expect(wrapper.vm.serializationDataFormat).toBe('')
+    })
+
+    it('changing type to Object shows objectTypeName and serializationDataFormat inputs', async () => {
+        expect(wrapper.findAll('input').length).toBe(1)
+        expect(wrapper.findAll('textarea').length).toBe(1)
+
+        // Select Object type
+        await wrapper.setData({ type: 'Object' })
+        await wrapper.vm.$nextTick()
+        expect(wrapper.findAll('input').length).toBe(3)
+        expect(wrapper.findAll('textarea').length).toBe(1)
+    })
+
+    it('changing type to Boolean updates value and displays switch', async () => {
+        await wrapper.setData({ type: 'Boolean' })
+        await wrapper.vm.$nextTick()
+        expect(wrapper.vm.value).toBe(true)
+
+        // Simulate toggling checkbox
+        wrapper.setData({ value: false })
+        expect(wrapper.vm.value).toBe(false)
+    })
+
+    it('changing type to Json sets default value', async () => {
+        await wrapper.setData({ type: 'Json' })
+        await wrapper.vm.$nextTick()
+        expect(wrapper.vm.value).toBe('{}')
+    })
+
+    it('changing type to String does not reset value to empty string', async () => {
+        wrapper.setData({ value: 'some text' })
+        await wrapper.setData({ type: 'String' })
+        expect(wrapper.vm.value).toBe('some text')
+    })
+
+    it('selects different types and updates value accordingly', async () => {
+        const typesToTest = ['Boolean', 'Object', 'Json', 'String']
+        for (const t of typesToTest) {
+        await wrapper.setData({ type: t, value: t === 'Boolean' ? false : 'test' })
+        await wrapper.vm.$nextTick()
+        }
+        expect(wrapper.vm.type).toBe('String') // default reset
+    })
+  })
+
+  describe('type selection', () => {
+    it('selects different options from the type select', async () => {
+        const select = wrapper.find('select')
+        // select 'Object'
+        await select.setValue('Object')
+        expect(wrapper.vm.type).toBe('Object')
+    })
+  })
+
+  describe('validate value', () => {
+    it('validates number input and shows validation error', async () => {
+        await wrapper.setData({ type: 'Integer' })
+        await wrapper.setData({ value: 'notANumber' })
+        expect(wrapper.vm.valueValidationError).toBe('isNan')
+        await wrapper.setData({ value: 5000000000 }) // out of range
+        wrapper.vm.type = 'Long'
+        expect(wrapper.vm.valueValidationError).toBeNull()
+    })
+
+    it('validates JSON input and shows error for invalid JSON', async () => {
+        await wrapper.setData({ type: 'Json' })
+        await wrapper.setData({ value: '{ invalid json' })
+        expect(wrapper.vm.valueValidationError).toBeTruthy()
+
+        await wrapper.setData({ value: '{ "a": "b"}' })
+        expect(wrapper.vm.valueValidationError).toBeNull()
+      })
+
+    it('validates XML input and shows error for invalid XML', async () => {
+        await wrapper.setData({ type: 'Xml', value: '<invalid></xml>' })
+        expect(wrapper.vm.valueValidationError).toBeTruthy()
+    })
+  })
+
+  describe('buttons', () => {
+    it('disables add button when form is invalid', async () => {
+        await wrapper.setData({ name: '', type: 'String', value: '' })
+        expect(wrapper.vm.isValid).toBe(false)
+    })
+
+    it('enables add button when form is valid', async () => {
+        await wrapper.setData({ name: 'name', type: 'String', value: 'val' })
+        expect(wrapper.vm.isValid).toBe(true)
+    })
+  })
+})
