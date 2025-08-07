@@ -121,8 +121,8 @@ export default {
 						})
 					} catch (error) {
 						// Handle variable deserialization errors gracefully
-						console.error('Failed to deserialize some variables:', error)
 						// Continue with partial data rather than failing completely
+						console.error('Failed to deserialize some variables:', error)
 					}
 				}
 				variables.forEach(v => {
@@ -133,11 +133,11 @@ export default {
 				this.filteredVariables = [...variables]
 			} catch (error) {
 				// Handle service call failures with user feedback
+				// Reset to empty state on error to prevent stale data display
 				console.error('Failed to load instance variables:', error)
 				if (this.$refs && this.$refs.error) {
 					this.$refs.error.show()
 				}
-				// Reset to empty state on error
 				this.variables = []
 				this.filteredVariables = []
 			} finally {
@@ -222,6 +222,7 @@ export default {
 						})
 						.catch(error => {
 							// Notify user of upload failure with meaningful message
+							// This prevents silent failures that could confuse users
 							if (this.$refs && this.$refs.error) {
 								this.$refs.error.show()
 							}
@@ -229,6 +230,7 @@ export default {
 						})
 				}
 				// Handle file reading errors with user feedback
+				// Previously this was an empty handler, causing silent failures
 				reader.onerror = () => {
 					if (this.$refs && this.$refs.error) {
 						this.$refs.error.show()
@@ -249,6 +251,7 @@ export default {
 					})
 					.catch(error => {
 						// Provide meaningful error feedback for file upload failure
+						// This ensures users are aware when file operations fail
 						if (this.$refs && this.$refs.error) {
 							this.$refs.error.show()
 						}
