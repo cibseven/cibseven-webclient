@@ -69,17 +69,19 @@ export default {
 			}
 		},
     	restFilter: function () {
-		let result = {
-			...this.filter,
-			deserializeValue: false,
-		}
-		// https://docs.cibseven.org/rest/cibseven/2.0/#tag/Variable-Instance/operation/getVariableInstances
-		if (result.activityInstanceIdIn) {
-			result.activityInstanceIdIn = result.activityInstanceIdIn.join(',')
-		}
-		if (result.variableValues) {
-			result.variableValues = result.variableValues.map((v) => `${v.name}_${v.operator}_${v.value}`).join(',')
-		}
+			let result = {
+				...this.filter,
+				deserializeValue: false,
+				sortBy: 'variableName',
+				sortOrder: 'asc'
+			}
+			// https://docs.cibseven.org/rest/cibseven/2.0/#tag/Variable-Instance/operation/getVariableInstances
+			if (result.activityInstanceIdIn) {
+				result.activityInstanceIdIn = result.activityInstanceIdIn.join(',')
+			}
+			if (result.variableValues) {
+				result.variableValues = result.variableValues.map((v) => `${v.name}_${v.operator}_${v.value}`).join(',')
+			}
 			return result
 		}
 	},

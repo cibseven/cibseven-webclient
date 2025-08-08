@@ -30,6 +30,7 @@ You may obtain a copy of the License at
       primary-key="id"
       prefix="process-instance.externalTasks."
       :fields="tableFields"
+      sort-by="priority"
     >
       <template v-slot:cell(id)="table">
         <CopyableActionButton
@@ -162,7 +163,7 @@ export default {
         const params = {
           processInstanceId: id,
           sortBy: 'taskPriority',
-          sortOrder: 'desc'
+          sortOrder: 'asc'
         }
         await this.loadExternalTasks(params)
       } finally {
