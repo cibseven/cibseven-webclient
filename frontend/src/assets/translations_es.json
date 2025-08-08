@@ -7,6 +7,11 @@
 		"loadMore": {
 			"title": "Cargar más",
 			"tooltip": "Haga clic para cargar los siguientes {chunkSize} registros"
+		},
+		"actualisation": {
+			"progress": "Actualizando datos...",
+			"disabled": "Última actualización: {date}\n\nLas actualizaciones automáticas están desactivadas.\nPresiona F5 para recargar los datos.",
+			"enabled": "Última actualización: {date}\n\nLas actualizaciones automáticas están activadas.\nRecargando cada {seconds} segundos."
 		}
 	},
 	"login": {
@@ -242,6 +247,7 @@
 			"name": "Nombre",
 			"type": "Tipo",
 			"value": "Valor",
+			"valueSerialized": "Valor serializado",
 			"actions": "Acciones",
 			"scope": "Ámbito",
 			"objectTypeName": "Nombre del tipo de objeto",
@@ -375,6 +381,7 @@
 			"openIncidents": "Incidentes abiertos",
 			"suspendedJobDefinition": "Definición de trabajo suspendida",
 			"activitiesHistory": "Instancias de actividad ejecutadas",
+			"canceledInstances": "Instancias de actividad canceladas",
 			"openSubprocess": "Mostrar la definición del proceso llamado",
 			"disabledSubprocess": "La definición del proceso se resolverá en tiempo de ejecución"
 		}

@@ -70,6 +70,7 @@ var TaskService = {
   submit: function(taskId) { return axios.post(getServicesBasePath() + "/task/submit/" + taskId) },
   formReference: function(taskId) { return axios.get(getServicesBasePath() + "/task/" + taskId + "/form-reference") },
   getDeployedForm: function(taskId) { return axios.get(getServicesBasePath() + "/task/" + taskId + "/deployed-form") },
+  form: function(taskId) { return axios.get(getServicesBasePath() + "/task/" + taskId + "/form") },
   setAssignee: function(taskId, userId) { return axios.post(getServicesBasePath() + "/task/" + taskId + "/assignee/" + userId) },
   update: function(task) { return axios.put(getServicesBasePath() + "/task/update", task) },
   fetchActivityVariables: function(activityInstanceId) {
@@ -231,6 +232,17 @@ var ProcessService = {
   },
   deleteVariableByExecutionId: function(executionId, varName) {
     return axios.delete(getServicesBasePath() + "/process/execution/" + executionId + "/localVariables/" + varName)
+  },
+  uploadProcessInstanceVariableFileData: function(processInstanceId, variableName, file, valueType = 'File') {
+    const formData = new FormData()
+    formData.append('data', file)
+    formData.append('valueType', valueType)
+
+    return axios.post(getServicesBasePath() + '/process/process-instance/' + processInstanceId + '/variables/' + variableName + '/data', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
   }
 }
 
@@ -377,11 +389,11 @@ var HistoryService = {
   findActivitiesInstancesHistory: function(processInstanceId) {
     return axios.get(getServicesBasePath() + "/process-history/activity/by-process-instance/" + processInstanceId)
   },
-  findActivitiesProcessDefinitionHistory: function(processDefinitionId) {
-    return axios.get(getServicesBasePath() + "/process-history/activity/by-process-definition/" + processDefinitionId)
+  findActivitiesProcessDefinitionHistory: function(processDefinitionId, params) {
+    return axios.get(getServicesBasePath() + "/process-history/activity/by-process-definition/" + processDefinitionId, { params })
   },
   findActivitiesInstancesHistoryWithFilter(filter){
-	return axios.get(getServicesBasePath() + "/process-history/activity", 	{ params: filter })
+	return axios.get(getServicesBasePath() + "/process-history/activity", { params: filter })
   },
   fetchProcessInstanceVariablesHistory: function(processInstanceId, filter) {
     return axios.get(getServicesBasePath() + "/process-history/instance/by-process-instance/" + processInstanceId + "/variables",
@@ -401,6 +413,9 @@ var HistoryService = {
   },
   deleteVariableHistoryInstance: function(id) {
     return axios.delete(getServicesBasePath() + "/process-history/instance/" + id + "/variables")
+  },
+  findHistoryActivityStatistics: function(processDefinitionId, params) {
+    return axios.get(getServicesBasePath() + "/process-history/process-definition/" + processDefinitionId + "/statistics", { params })
   }
 }
 
@@ -493,6 +508,17 @@ var FormsService = {
   },
   downloadFile: function(processInstanceId, fileVariable) {
     return axios.get(getServicesBasePath() + '/task/' + processInstanceId + '/variable/download/' + fileVariable, { responseType: 'blob' })
+  },
+  uploadVariableFileData: function(taskId, variableName, file, valueType = 'File') {
+    const formData = new FormData()
+    formData.append('data', file)
+    formData.append('valueType', valueType)
+
+    return axios.post(getServicesBasePath() + '/task/' + taskId + '/variables/' + variableName + '/data', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
   },
   fetchVariable: function(taskId, variableName, deserialize) {
     return axios.get(getServicesBasePath() + '/task/' + taskId + '/variable/' + variableName, { params: { deserialize: deserialize } })

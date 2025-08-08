@@ -172,9 +172,8 @@ export default {
         this.$store.commit('setFilters',
           { filters: this.filtersByPermissions(this.$root.config.permissions.displayFilter, response) })
         if (this.$root.config.taskFilter.tasksNumber.enabled) {
-          const interval = this.$root.config.taskFilter.tasksNumber.interval < MIN_TASKNUMBER_INTERVAL ?
-            MIN_TASKNUMBER_INTERVAL : this.$root.config.taskFilter.tasksNumber.interval
           this.setTasksNumber()
+          const interval = Math.max(this.$root.config.taskFilter.tasksNumber.interval, MIN_TASKNUMBER_INTERVAL)
           this.interval = setInterval(() => { this.setTasksNumber() }, interval)
         }
         if (this.$route.query.filtername) {

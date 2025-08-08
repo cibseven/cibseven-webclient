@@ -19,7 +19,7 @@
 <template>
   <div class="overflow-auto bg-white container-fluid g-0 h-100" @scroll="handleScroll">
     <FlowTable v-if="matchedCalledList.length > 0" striped thead-class="sticky-header" :items="matchedCalledList" primary-key="id" prefix="process-instance.calledProcesses."
-      sort-by="label" :sort-desc="true" :fields="[
+      sort-by="process" :fields="[
       { label: 'state', key: 'state', class: 'col-1', tdClass: 'py-1 border-end border-top-0 justify-content-center' },
       { label: 'calledProcessInstance', key: 'calledProcessInstance', class: 'col-4', tdClass: 'py-1 border-end border-top-0' },
       { label: 'process', key: 'process', class: 'col-4', tdClass: 'py-1 border-end border-top-0' },

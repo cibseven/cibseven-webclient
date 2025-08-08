@@ -7,6 +7,11 @@
 		"loadMore": {
 			"title": "Mehr laden",
 			"tooltip": "Klicken Sie, um die nächsten {chunkSize} Einträge zu laden"
+		},
+		"actualisation": {
+			"progress": "Daten werden aktualisiert...",
+			"disabled": "Letztes Update: {date}\n\nAutomatische Updates sind deaktiviert.\nDrücken Sie F5, um die Daten neu zu laden.",
+			"enabled": "Letztes Update: {date}\n\nAutomatische Updates sind aktiviert.\nAktualisierung alle {seconds} Sekunden."
 		}
 	},
 	"login": {
@@ -242,6 +247,7 @@
 			"name": "Name",
 			"type": "Typ",
 			"value": "Wert",
+			"valueSerialized": "Serialisierter Wert",
 			"actions": "Aktionen",
 			"scope": "Umfang",
 			"objectTypeName": "Objekttypname",
@@ -375,6 +381,7 @@
 			"openIncidents": "Offene Vorfälle",
 			"suspendedJobDefinition": "Ausgesetzte Jobdefinition",
 			"activitiesHistory": "Ausgeführte Aktivitätsinstanzen",
+			"canceledInstances": "Abgebrochene Aktivitätsinstanzen",
 			"openSubprocess": "Aufgerufene Prozessdefinition anzeigen",
 			"disabledSubprocess": "Die Prozessdefinition wird zur Laufzeit ermittelt"
 		}

@@ -45,6 +45,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -202,6 +204,18 @@ public class TaskService extends BaseService implements InitializingBean {
 			throw new SystemException("Error parsing deployed form: " + e.getMessage(), e);
 		}
 	}
+
+	@Operation(
+			summary = "Retrieves the form configuration data associated with a specific task",
+			description = "<strong>Return: TaskForm object containing key, camundaFormRef, and contextPath</strong>")
+	@ApiResponse(responseCode = "404", description= "Task not found")
+	@RequestMapping(value = "/task/{taskId}/form", method = RequestMethod.GET)
+	public Object form(
+			@Parameter(description = "Task Id") @PathVariable String taskId,
+			Locale loc, CIBUser user) {
+		checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
+		return bpmProvider.form(taskId, user);
+	}
 	
 	@Operation(
 			summary = "Set assignee to an specific task",
@@ -355,7 +369,8 @@ public class TaskService extends BaseService implements InitializingBean {
 	      @RequestParam Optional<Boolean> deserialize, HttpServletRequest rq) {
 	    CIBUser userAuth = (CIBUser) baseUserProvider.authenticateUser(rq);
         checkPermission(userAuth, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.READ_ALL);
-	    return bpmProvider.fetchVariable(taskId, variableName, deserialize, userAuth);
+		boolean deserializeValue = deserialize.orElse(true);
+	    return bpmProvider.fetchVariable(taskId, variableName, deserializeValue, userAuth);
 	  }
 	  
 	  @RequestMapping(value = "/task/{taskId}/variable/{variableName}/data", method = RequestMethod.GET)
@@ -366,6 +381,31 @@ public class TaskService extends BaseService implements InitializingBean {
 	    NamedByteArrayDataSource res = bpmProvider.fetchVariableFileData(taskId, variableName, userAuth);
 	    return res.getContent();
 	  }
+
+
+		@Operation(summary = "Upload file data to a task variable", description = "Upload binary data or file to a specific task variable"
+				+ "<br>" +
+				"<strong>Request body: Multipart form data with 'data' (binary) and 'valueType' (Bytes/File) parts")
+		@ApiResponse(responseCode = "404", description = "Task or variable not found")
+		@RequestMapping(value = "/task/{id}/variables/{variableName}/data", method = RequestMethod.POST, consumes = "multipart/form-data")
+		public ResponseEntity<Void> uploadVariableFileData(
+				@Parameter(description = "Task Id") @PathVariable String id,
+				@Parameter(description = "Variable name") @PathVariable String variableName,
+				@RequestParam(value = "data", required = true) MultipartFile data,
+				@RequestParam(value = "valueType", required = false, defaultValue = "File") String valueType,
+				HttpServletRequest rq) {
+			CIBUser userAuth = (CIBUser) baseUserProvider.authenticateUser(rq);
+			checkPermission(userAuth, SevenResourceType.TASK, PermissionConstants.UPDATE_ALL);
+			try {
+				bpmProvider.uploadVariableFileData(id, variableName, data, valueType, userAuth);
+				return ResponseEntity.noContent().build();
+			} catch (Exception e) {
+				if (e instanceof NoObjectFoundException) {
+					return ResponseEntity.notFound().build();
+				}
+				throw new RuntimeException("Failed to upload variable file data", e);
+			}
+		}
 
 	  @RequestMapping(value = "/task/{taskId}", method = RequestMethod.POST)
 	  public Map<String, Variable> fetchVariables(@PathVariable String taskId, 

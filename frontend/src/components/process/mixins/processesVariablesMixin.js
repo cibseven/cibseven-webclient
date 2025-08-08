@@ -72,6 +72,8 @@ export default {
       let result = {
         ...this.filter,
         deserializeValue: false,
+				sortBy: 'variableName',
+        sortOrder: 'asc'
       }
       // https://docs.cibseven.org/rest/cibseven/2.0/#tag/Variable-Instance/operation/getVariableInstances
       if (result.activityInstanceIdIn) {
@@ -171,8 +173,9 @@ export default {
 				reader.readAsDataURL(this.file)
 			} else {
 				var formData = new FormData()
-				formData.append('file', this.file)
-				var fileObj = { name: this.file.name, type: this.file.type }
+				formData.append('data', this.file)
+        formData.append('valueType', 'File')
+				const fileObj = { name: this.file.name, type: this.file.type }
 				ProcessService.modifyVariableDataByExecutionId(this.selectedVariable.executionId, this.selectedVariable.name, formData)
 					.then(() => {
 						this.selectedVariable.valueInfo.filename = fileObj.name

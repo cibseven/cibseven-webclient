@@ -24,7 +24,7 @@
         <b-form-input ref="variableName" v-model="variable.name" autofocus></b-form-input>
       </b-form-group>
       <b-form-group :label="$t('process-instance.variables.type')">
-        <b-form-select v-model="variable.type" :options="types"></b-form-select>
+        <b-form-select v-model="variable.type" :options="types"  class="mb-0"></b-form-select>
       </b-form-group>
       <div v-if="variable.type === 'Object'">
         <b-form-group>
@@ -36,12 +36,12 @@
           <b-form-input v-model="variable.valueInfo.serializationDataFormat"></b-form-input>
         </b-form-group>
       </div>
-      <b-form-group>
-        <template #label>{{ $t('process-instance.variables.value') }}*</template>
-        <b-form-select v-if="variable.type === 'Boolean'" v-model="variable.value">
-          <b-form-select-option :value="true">{{ $t('process.true') }}</b-form-select-option>
-          <b-form-select-option :value="false">{{ $t('process.false') }}</b-form-select-option>
-        </b-form-select>
+      <b-form-group class="p-0">
+        <template #label>{{ $t('process-instance.variables.value') }}<span v-if="variable.type != 'Boolean'">*</span></template>
+        <div v-if="variable.type === 'Boolean'" class="d-flex justify-content-end">
+          <span class="me-2">{{ variable.value ? $t('process.true') : $t('process.false') }}</span>
+          <b-form-checkbox v-model="variable.value" switch :title="variable.value ? $t('process.true') : $t('process.false')"></b-form-checkbox>
+        </div>
         <b-form-input v-else-if="['Short', 'Integer', 'Long', 'Double'].includes(variable.type)"
           v-model="variable.value" type="number"></b-form-input>
         <b-form-datepicker v-else-if="variable.type === 'Date'" v-model="variable.value"></b-form-datepicker>
@@ -93,6 +93,7 @@ export default {
     },
     isValid: function() {
       if (this.variable.type === 'Null') return true
+      if (this.variable.type === 'Boolean') return !!this.variable.name
       if (!this.variable.name || !this.variable.value) return false
       const value = this.variable.value
       if (this.variable.type === 'Object') {

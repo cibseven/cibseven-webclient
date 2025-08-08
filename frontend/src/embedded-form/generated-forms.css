@@ -1,0 +1,51 @@
+/* Generated Forms CSS Styles */
+
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+#loader {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Minimal generated form styles */
+.form-group {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+label {
+  display: inline-block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+/* Override form-control styles for checkboxes specifically */
+input[type="checkbox"].form-control {
+  width: 16px !important;
+  height: 16px !important;
+  padding: 0 !important;
+  margin: 0 8px 0 0 !important;
+  background: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  display: inline-block !important;
+  vertical-align: middle !important;
+  cursor: pointer !important;
+  -webkit-appearance: checkbox !important;
+  -moz-appearance: checkbox !important;
+  appearance: checkbox !important;
+}
+
+/* Ensure checkbox container stacks items vertically */
+.form-group:has(input[type="checkbox"]) {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  margin-bottom: 1rem !important;
+}

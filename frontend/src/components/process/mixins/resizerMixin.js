@@ -21,11 +21,13 @@ const FILTER_HEIGHT = 60
 const DEFAULT_TRANSITION_TIME = 0.4
 const TABS_AREA_HEIGHT = 38
 
+const getDefaultBpmnViewerHeight = () => Math.min(DEFAULT_BPMN_VIEWER_HEIGHT, Math.floor((window.innerHeight - FILTER_HEIGHT * 2) / 2))
+
 export default {
     data: function() {
         return {
-            bpmnViewerOriginalHeight: DEFAULT_BPMN_VIEWER_HEIGHT,
-            bpmnViewerHeight: DEFAULT_BPMN_VIEWER_HEIGHT,
+            bpmnViewerOriginalHeight: getDefaultBpmnViewerHeight(),
+            bpmnViewerHeight: getDefaultBpmnViewerHeight(),
             topBarHeight: TOP_BAR_HEIGHT,
             dragSelectorHeight: DRAG_SELECTOR_HEIGHT,
             filterHeight: FILTER_HEIGHT,

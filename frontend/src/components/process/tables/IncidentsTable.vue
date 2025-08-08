@@ -22,7 +22,7 @@
       <p class="text-center p-4"><BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}</p>
     </div>
     <FlowTable v-else-if="incidents.length > 0" striped thead-class="sticky-header" :items="incidents" primary-key="id" prefix="process-instance.incidents."
-      sort-by="label" :sort-desc="true" native-layout :fields="[
+      sort-by="incidentType" native-layout :fields="[
       { label: 'message', key: 'incidentMessage', tdClass: 'border-end border-top-0' },
       { label: 'timestamp', key: 'incidentTimestamp', tdClass: 'border-end border-top-0' },
       { label: 'activity', key: 'activityId', tdClass: 'border-end border-top-0' },
@@ -120,8 +120,7 @@ export default {
   props: {
     instance: Object,
     process: Object,
-    activityInstance: Object,
-    activityInstanceHistory: Object
+    activityInstance: Object
   },
   computed: {
     ...mapGetters('incidents', ['incidents'])
@@ -135,7 +134,7 @@ export default {
     'instance.id': {
       handler(id) {
         if (id) {
-          this.loadIncidents(id, true)
+          this.loadIncidentsData(id, true)
         }
       },
       immediate: true
@@ -143,22 +142,23 @@ export default {
     'process.id': {
       handler(id) {
         if (id && !this.instance) {
-          this.loadIncidents(id, false)
+          this.loadIncidentsData(id, false)
         }
       },
       immediate: true
     }
   },
   methods: {
-    ...mapActions('incidents', ['loadIncidentsByProcessInstance', 'loadIncidentsByProcessDefinition', 'removeIncident', 'updateIncidentAnnotation']),
-    async loadIncidents(id, isInstance = true) {
+    ...mapActions('incidents', ['loadIncidents', 'removeIncident', 'updateIncidentAnnotation']),
+    async loadIncidentsData(id, isInstance = true) {
       this.loading = true
+      const params = {
+        sortBy: 'incidentType',
+        sortOrder: 'asc',
+        ...(isInstance ? { processInstanceId: id } : { processDefinitionId: id })
+      }
       try {
-        if (isInstance) {
-          await this.loadIncidentsByProcessInstance(id)
-        } else {
-          await this.loadIncidentsByProcessDefinition(id)
-        }
+        await this.loadIncidents(params)
       } finally {
         this.loading = false
       }
