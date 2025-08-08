@@ -30,7 +30,7 @@
           :title="$t('processes-dashboard.items.running-instances.title')"
           :tooltip="$t('processes-dashboard.items.running-instances.tooltip')"
           @click="navigateToProcess($event)"
-          link="/seven/auth/processes/list"
+          :link="linkInstancesSearch"
           :loading="loading"
         ></PieChart>
         <PieChart
@@ -39,7 +39,7 @@
           :title="$t('processes-dashboard.items.open-incidents.title')"
           :tooltip="$t('processes-dashboard.items.open-incidents.tooltip')"
           @click="navigateToProcess($event, 'incidents')"
-          link="/seven/auth/processes/list?onlyIncidents=true"
+          :link="linkIncidentsSearch"
           :loading="loading"
         ></PieChart>
         <PieChart
@@ -138,7 +138,15 @@ export default {
           seconds: Math.floor(this.reloadInterval / 1000),
          })
       }
-    }
+    },
+    // Method is overridden in EE
+    linkInstancesSearch() {
+      return '/seven/auth/processes/list'
+    },
+    // Method is overridden in EE
+    linkIncidentsSearch() {
+      return '/seven/auth/processes/list?onlyIncidents=true'
+    },
   },
   mounted() {
     this.initAnalytics()
