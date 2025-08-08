@@ -97,25 +97,7 @@ export default {
 		},
 		fetchInstanceVariables: async function (service, method) {
 			this.loading = true
-			const variablesToSerialize = []
 			let variables = await serviceMap[service][method](this.selectedInstance.id, this.restFilter)
-			variables.forEach(variable => {
-				try {
-					variable.value = variable.type === 'Object' ? JSON.parse(variable.value) : variable.value
-				} catch {
-					variablesToSerialize.push(variable.id)
-				}
-				variable.modify = false
-			})
-			if (variablesToSerialize.length > 0) {
-				const dVariables = await serviceMap[service][method](this.selectedInstance.id, this.restFilter)
-				dVariables.forEach(dVariable => {
-					const variableToSerialize = variables.find(variable => variable.id === dVariable.id)
-					if (variableToSerialize) {
-						variableToSerialize.value = dVariable.value
-					}
-				})
-			}
 			variables.forEach(v => {
 				v.scope = this.activityInstancesGrouped[v.activityInstanceId]
 			})
