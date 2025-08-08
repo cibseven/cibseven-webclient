@@ -921,6 +921,8 @@ public interface BpmProvider {
 	
 	String findExternalTaskErrorDetails(String externalTaskId, CIBUser user);
 	
+	String findHistoricExternalTaskErrorDetails(String externalTaskId, CIBUser user);
+	
 	void retryExternalTask(String externalTaskId, Map<String, Object> data, CIBUser user);
 	
 	void setIncidentAnnotation(String incidentId, Map<String, Object> data, CIBUser user);
