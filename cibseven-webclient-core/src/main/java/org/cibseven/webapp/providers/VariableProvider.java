@@ -373,6 +373,37 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		}
 	}
 
+	/**
+	 * Uploads file data for a specific variable of a task.
+	 *
+	 * @param taskId the ID of the task to which the variable belongs
+	 * @param variableName the name of the variable to upload data for
+	 * @param data the file data to upload
+	 * @param valueType the type of the variable value
+	 * @param user the user performing the upload operation
+	 * @throws NoObjectFoundException if the task or variable is not found
+	 * @throws SystemException if an internal error occurs during upload
+	 */
+	@Override
+	public void uploadVariableFileData(String taskId, String variableName, MultipartFile data, String valueType, CIBUser user) throws NoObjectFoundException, SystemException {
+		String url = getEngineRestUrl() + "/task/" + taskId + "/variables/" + variableName + "/data";
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+		if (user != null) headers.add("Authorization", user.getAuthToken());
+		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+		try {
+			body.add("data", data.getResource());
+			body.add("valueType", valueType);
+			HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(body, headers);
+
+			customRestTemplate.exchange(builder.build().toUri(), HttpMethod.POST, request, String.class);
+		} catch (HttpStatusCodeException e) {
+			throw wrapException(e, user);
+		}
+	}
+
 	@Override
 	public ResponseEntity<byte[]> fetchProcessInstanceVariableData(String processInstanceId, String variableName,
 			CIBUser user) throws NoObjectFoundException, SystemException {
@@ -406,6 +437,37 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 			throw wrapException(e, user);
 		} catch (IOException e) {
 			throw new SystemException(e);
+		}
+	}
+
+    /**
+     * Uploads file data for a variable of a specific process instance.
+     *
+     * @param processInstanceId the ID of the process instance
+     * @param variableName the name of the variable to which the file data will be uploaded
+     * @param data the file data to upload
+     * @param valueType the type of the value being uploaded
+     * @param user the user performing the upload operation
+     * @throws NoObjectFoundException if the process instance or variable is not found
+     * @throws SystemException if a system error occurs during the upload
+     */
+    @Override
+    public void uploadProcessInstanceVariableFileData(String processInstanceId, String variableName, MultipartFile data, String valueType, CIBUser user) throws NoObjectFoundException, SystemException {
+        String url = getEngineRestUrl() + "/process-instance/" + processInstanceId + "/variables/" + variableName + "/data";
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+		if (user != null) headers.add("Authorization", user.getAuthToken());
+		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+		try {
+			body.add("data", data.getResource());
+			body.add("valueType", valueType);
+			HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(body, headers);
+
+			customRestTemplate.exchange(builder.build().toUri(), HttpMethod.POST, request, String.class);
+		} catch (HttpStatusCodeException e) {
+			throw wrapException(e, user);
 		}
 	}
 
@@ -448,6 +510,11 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 						log.info("Exception in submitVariables(...):", se);
 						throw se;
 					}
+				}
+		
+				if (variable.getType().equals("File")) {
+					variablePost.set("valueInfo", mapper.valueToTree(variable.getValueInfo()));
+					variablePost.put("type", "File");
 				}
 
 				variables.set(variable.getName(), variablePost);

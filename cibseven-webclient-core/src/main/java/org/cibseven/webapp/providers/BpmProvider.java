@@ -913,8 +913,14 @@ public interface BpmProvider {
 	NamedByteArrayDataSource fetchVariableFileData(String taskId, String variableName, CIBUser user)
 			throws NoObjectFoundException, UnexpectedTypeException, SystemException;
 
+	void uploadVariableFileData(String taskId, String variableName, MultipartFile data, String valueType, CIBUser user)
+			throws NoObjectFoundException, SystemException;
+
 	ResponseEntity<byte[]> fetchProcessInstanceVariableData(String processInstanceId, String variableName,
 			CIBUser user) throws NoObjectFoundException, SystemException;
+
+	void uploadProcessInstanceVariableFileData(String processInstanceId, String variableName, MultipartFile data, String valueType, CIBUser user)
+			throws NoObjectFoundException, SystemException;
 
 	Variable fetchVariableByProcessInstanceId(
 			String processInstanceId, String variableName, CIBUser user)
