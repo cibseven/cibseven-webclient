@@ -26,9 +26,9 @@ export default {
 	data: function () {
 		return {
 			loading: true,
-      filter: {
-        deserializeValue: false,
-      },
+			filter: {
+				deserializeValue: false,
+			},
 			variables: [],
 			file: null,
 			selectedVariable: null
@@ -38,9 +38,9 @@ export default {
 		'selectedInstance.id': {
 			immediate: true,
 			handler: function () {
-        this.filter = {
-          deserializeValue: false,
-        }
+				this.filter = {
+				deserializeValue: false,
+				}
 				this.variables = []
 				this.filteredVariables = []
 				this.file = null
@@ -68,20 +68,20 @@ export default {
 				return res
 			}
 		},
-    restFilter: function () {
-      let result = {
-        ...this.filter,
-        deserializeValue: false,
-      }
-      // https://docs.cibseven.org/rest/cibseven/2.0/#tag/Variable-Instance/operation/getVariableInstances
-      if (result.activityInstanceIdIn) {
-        result.activityInstanceIdIn = result.activityInstanceIdIn.join(',')
-      }
-      if (result.variableValues) {
-        result.variableValues = result.variableValues.map((v) => `${v.name}_${v.operator}_${v.value}`).join(',')
-      }
-      return result
-    }
+    	restFilter: function () {
+		let result = {
+			...this.filter,
+			deserializeValue: false,
+		}
+		// https://docs.cibseven.org/rest/cibseven/2.0/#tag/Variable-Instance/operation/getVariableInstances
+		if (result.activityInstanceIdIn) {
+			result.activityInstanceIdIn = result.activityInstanceIdIn.join(',')
+		}
+		if (result.variableValues) {
+			result.variableValues = result.variableValues.map((v) => `${v.name}_${v.operator}_${v.value}`).join(',')
+		}
+			return result
+		}
 	},
 	methods: {
 		loadSelectedInstanceVariables: function () {
@@ -172,7 +172,7 @@ export default {
 			} else {
 				var formData = new FormData()
 				formData.append('data', this.file)
-        formData.append('valueType', 'File')
+				formData.append('valueType', 'File')
 				const fileObj = { name: this.file.name, type: this.file.type }
 				ProcessService.modifyVariableDataByExecutionId(this.selectedVariable.executionId, this.selectedVariable.name, formData)
 					.then(() => {
@@ -191,12 +191,12 @@ export default {
 				})
 			} else variable.modify = true
 		},
-    changeFilter: function(queryObject) {
-      this.filter = {
-        ...queryObject,
-        deserializeValue: false
-      }
-      this.loadSelectedInstanceVariables()
-    }
+		changeFilter: function(queryObject) {
+			this.filter = {
+				...queryObject,
+				deserializeValue: false
+			}
+			this.loadSelectedInstanceVariables()
+		}
 	}
 }
