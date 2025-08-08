@@ -162,6 +162,11 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 	
 	@Override
+	public Object form(String taskId, CIBUser user) {
+		return taskProvider.form(taskId, user);
+	}
+	
+	@Override
 	public Collection<Task> findTasksByFilter(TaskFiltering filters, String filterId, CIBUser user, Integer firstResult, Integer maxResults) {
 		return taskProvider.findTasksByFilter(filters, filterId, user, firstResult, maxResults);
 	}

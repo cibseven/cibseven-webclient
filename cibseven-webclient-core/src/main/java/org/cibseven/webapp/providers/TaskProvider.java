@@ -32,6 +32,7 @@ import org.cibseven.webapp.rest.model.IdentityLink;
 import org.cibseven.webapp.rest.model.ProcessVariables;
 import org.cibseven.webapp.rest.model.Task;
 import org.cibseven.webapp.rest.model.TaskFiltering;
+import org.cibseven.webapp.rest.model.TaskForm;
 import org.cibseven.webapp.rest.model.TaskHistory;
 import org.cibseven.webapp.rest.model.Variable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -142,6 +143,16 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 		Variable formReference = ((ResponseEntity<ProcessVariables>) doGet(url, ProcessVariables.class, user, false)).getBody().getFormReference();
 		if (formReference == null) return new String("empty-task"); 
 		else return formReference.getValue();
+	}
+	
+	@Override
+	public Object form(String taskId, CIBUser user) {
+		String url = getEngineRestUrl() + "/task/" + taskId + "/form";
+		TaskForm taskForm = ((ResponseEntity<TaskForm>) doGet(url, TaskForm.class, user, false)).getBody();
+		if (taskForm == null || taskForm.getKey() == null) {
+			return "empty-task";
+		}
+		return taskForm;
 	}
 
 	@Override

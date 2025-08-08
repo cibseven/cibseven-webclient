@@ -69,6 +69,7 @@ var TaskService = {
   },
   submit: function(taskId) { return axios.post(getServicesBasePath() + "/task/submit/" + taskId) },
   formReference: function(taskId) { return axios.get(getServicesBasePath() + "/task/" + taskId + "/form-reference") },
+  form: function(taskId) { return axios.get(getServicesBasePath() + "/task/" + taskId + "/form") },
   setAssignee: function(taskId, userId) { return axios.post(getServicesBasePath() + "/task/" + taskId + "/assignee/" + userId) },
   update: function(task) { return axios.put(getServicesBasePath() + "/task/update", task) },
   fetchActivityVariables: function(activityInstanceId) {
