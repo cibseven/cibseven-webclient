@@ -69,6 +69,7 @@ var TaskService = {
   },
   submit: function(taskId) { return axios.post(getServicesBasePath() + "/task/submit/" + taskId) },
   formReference: function(taskId) { return axios.get(getServicesBasePath() + "/task/" + taskId + "/form-reference") },
+  getDeployedForm: function(taskId) { return axios.get(getServicesBasePath() + "/task/" + taskId + "/deployed-form") },
   form: function(taskId) { return axios.get(getServicesBasePath() + "/task/" + taskId + "/form") },
   setAssignee: function(taskId, userId) { return axios.post(getServicesBasePath() + "/task/" + taskId + "/assignee/" + userId) },
   update: function(task) { return axios.put(getServicesBasePath() + "/task/update", task) },
@@ -141,6 +142,7 @@ var ProcessService = {
     })
   },
   startForm: function(processDefinitionId) { return axios.get(getServicesBasePath() + "/process/" + processDefinitionId + "/start-form") },
+  getDeployedStartForm: function(processDefinitionId) { return axios.get(getServicesBasePath() + "/process/" + processDefinitionId + "/deployed-start-form") },
   suspendInstance: function(processInstanceId, suspend) {
     return axios.put(getServicesBasePath() + "/process/instance/" + processInstanceId + "/suspend", null, { params: { suspend: suspend } })
   },
@@ -538,13 +540,6 @@ var FormsService = {
 var TemplateService = {
   getTemplate: function(element, taskId, locale, token) {
 	return axios.get(getServicesBasePath() + '/template/' + element + '/' + taskId + '?locale=' + locale, {
-	    headers: {
-        Authorization: `${token}`
-	    }
-	  })
-  },
-  getStartFormTemplate: function(element, processDefinitionId, locale, token) {
-    return axios.get(getServicesBasePath() + '/template/' + element + '/key/' + processDefinitionId + '?locale=' + locale, {
 	    headers: {
         Authorization: `${token}`
 	    }

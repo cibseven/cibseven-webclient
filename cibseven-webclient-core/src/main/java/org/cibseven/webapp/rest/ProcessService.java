@@ -24,6 +24,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
+import java.nio.charset.StandardCharsets;
+
 import org.cibseven.webapp.Data;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenResourceType;
@@ -70,6 +72,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.core.MediaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ApiResponses({
 	@ApiResponse(responseCode = "500", description = "An unexpected system error occured"),
@@ -264,6 +267,33 @@ public class ProcessService extends BaseService implements InitializingBean {
 		CIBUser user = checkAuthorization(request, false);
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_ALL);
 		return bpmProvider.fetchStartForm(processDefinitionId, user);
+	}
+	
+	@Operation(
+			summary = "Get deployed start form for process",
+			description = "<strong>Return: Start form data as JSON")
+	@ApiResponse(responseCode = "404", description = "Process or start form not found")
+	@RequestMapping(value = "/{processDefinitionId}/deployed-start-form", method = RequestMethod.GET)
+	public Object getDeployedStartForm(
+			@Parameter(description = "Process definition Id") @PathVariable String processDefinitionId,
+			Locale loc, CIBUser user) {
+		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_ALL);
+		
+		try {
+			ResponseEntity<byte[]> response = bpmProvider.getDeployedStartForm(processDefinitionId, user);
+			byte[] body = response.getBody();
+			
+			if (body == null || body.length == 0) {
+				return null;
+			}
+			
+			String jsonString = new String(body, StandardCharsets.UTF_8);
+			ObjectMapper objectMapper = new ObjectMapper();
+			return objectMapper.readValue(jsonString, Object.class);
+			
+		} catch (Exception e) {
+			throw new SystemException("Error parsing deployed start form: " + e.getMessage(), e);
+		}
 	}
 	
 	@Operation(

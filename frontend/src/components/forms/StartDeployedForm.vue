@@ -31,7 +31,7 @@ import TemplateBase from '@/components/forms/TemplateBase.vue'
 
 import postMessageMixin from '@/components/forms/postMessage.js'
 
-import { FormsService, TemplateService } from '@/services.js'
+import { FormsService, ProcessService } from '@/services.js'
 import IconButton from '@/components/forms/IconButton.vue'
 
 import { Form } from '@bpmn-io/form-js'
@@ -51,7 +51,6 @@ export default {
   data: function() {
     return {
       templateMetaData: null,
-      formularContent: null,
       loader: true,
       disabled: false,
       form: null,
@@ -65,16 +64,13 @@ export default {
   methods: {
     loadForm: async function() {
       try {
-        const template = await TemplateService.getStartFormTemplate('CibsevenFormUiTask', this.processDefinitionId, this.locale, this.token)
-
-        this.templateMetaData = template
-        var formContent = JSON.parse(template.variables.formularContent.value)
-        this.formularContent = formContent
+        // Load form content
+        const formContent = await ProcessService.getDeployedStartForm(this.processDefinitionId)
         
         this.form = new Form({
           container: document.querySelector('#form'),
         })
-        await this.form.importSchema(this.formularContent)
+        await this.form.importSchema(formContent)
 
         // Wait for DOM to be updated after form import
         await this.$nextTick()
@@ -84,7 +80,7 @@ export default {
         if (fileInputs.length > 0) {
           fileInputs.forEach(fileInput => {
             fileInput.addEventListener('change', async (e) => {
-              this.$refs.templateBase.handleFileSelection(e, fileInput, this.formularContent);
+              this.$refs.templateBase.handleFileSelection(e, fileInput, formContent);
             });
           });
         }

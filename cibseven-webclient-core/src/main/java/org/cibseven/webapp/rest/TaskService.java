@@ -22,6 +22,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
+import java.nio.charset.StandardCharsets;
+
 import org.cibseven.webapp.NamedByteArrayDataSource;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenResourceType;
@@ -52,6 +54,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.core.MediaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ApiResponses({
 	@ApiResponse(responseCode = "500", description = "An unexpected system error occured"),
@@ -175,6 +178,33 @@ public class TaskService extends BaseService implements InitializingBean {
 		return bpmProvider.formReference(taskId, user);
 	}
 	
+	@Operation(
+			summary = "Get deployed form for task",
+			description = "<strong>Return: Form data as JSON")
+	@ApiResponse(responseCode = "404", description= "Task or form not found")
+	@RequestMapping(value = "/task/{taskId}/deployed-form", method = RequestMethod.GET)
+	public Object getDeployedForm(
+			@Parameter(description = "Task Id") @PathVariable String taskId,
+			Locale loc, CIBUser user) {
+		checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
+		
+		try {
+			ResponseEntity<byte[]> response = bpmProvider.getDeployedForm(taskId, user);
+			byte[] body = response.getBody();
+			
+			if (body == null || body.length == 0) {
+				return null;
+			}
+			
+			String jsonString = new String(body, StandardCharsets.UTF_8);
+			ObjectMapper objectMapper = new ObjectMapper();
+			return objectMapper.readValue(jsonString, Object.class);
+			
+		} catch (Exception e) {
+			throw new SystemException("Error parsing deployed form: " + e.getMessage(), e);
+		}
+	}
+
 	@Operation(
 			summary = "Retrieves the form configuration data associated with a specific task",
 			description = "<strong>Return: TaskForm object containing key, camundaFormRef, and contextPath</strong>")

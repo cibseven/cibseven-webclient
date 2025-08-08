@@ -31,12 +31,14 @@ import TemplateBase from '@/components/forms/TemplateBase.vue'
 
 import postMessageMixin from '@/components/forms/postMessage.js'
 
-import { FormsService, TemplateService } from '@/services.js'
+import { FormsService, TemplateService, TaskService } from '@/services.js'
 
 import IconButton from '@/components/forms/IconButton.vue'
 
 import { Form } from '@bpmn-io/form-js'
 import '@bpmn-io/form-js/dist/assets/form-js.css'
+
+import { convertFormDataForFormJs } from './formJsUtils.js'
 
 export default {
   name: "DeployedForm",
@@ -52,7 +54,6 @@ export default {
   data: function() {
     return {
       templateMetaData: null,
-      formularContent: null,
       loader: true,
       disabled: false,
       form: null,
@@ -69,13 +70,20 @@ export default {
       try {
         const template = await TemplateService.getTemplate('CibsevenFormUiTask', this.taskId, this.locale, this.token)
         this.templateMetaData = template
-        var formContent = JSON.parse(template.variables.formularContent.value)
-        var formData = JSON.parse(template.variables.formVariables.value)
-        this.formularContent = formContent
+        
+        // Load form content
+        const formContent = await TaskService.getDeployedForm(this.taskId)
+        
+        // Load form variables
+        const formData = await FormsService.fetchVariables(this.taskId, false)
+
+        // Convert the service response format to the format expected by form-js
+        const convertedFormData = convertFormDataForFormJs(formData)
+        
         this.form = new Form({
             container: document.querySelector('#form'),
         })
-        await this.form.importSchema(this.formularContent, formData)
+        await this.form.importSchema(formContent, convertedFormData)
 
         // Wait for DOM to be updated after form import
         await this.$nextTick()
@@ -85,7 +93,7 @@ export default {
         if (fileInputs.length > 0) {
           fileInputs.forEach(fileInput => {
             fileInput.addEventListener('change', async (e) => {
-              this.$refs.templateBase.handleFileSelection(e, fileInput, this.formularContent);
+              this.$refs.templateBase.handleFileSelection(e, fileInput, formContent);
             });
           });
         }
@@ -94,6 +102,7 @@ export default {
         console.error('Error loading form:', error);
         this.sendMessageToParent({ method: 'displayErrorMessage', message: error.message || 'An error occurred during form loading' })
         this.loader = false;
+
       }
     },
     saveForm: function() {

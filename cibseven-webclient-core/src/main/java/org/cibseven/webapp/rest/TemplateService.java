@@ -67,12 +67,5 @@ public class TemplateService extends BaseService implements InitializingBean {
 	  CIBUser user = checkAuthorization(request, false);
 		return name2element.get(element).getTemplate(taskId, locale, user);
 	}
-
-	@RequestMapping(value = "/{element}/key/{processDefinitionId}", method = RequestMethod.GET)
-	public StartFormTemplate getStartFormTemplate(@PathVariable String element, @PathVariable String processDefinitionId, @RequestParam Optional<String> processDefinitionKey,
-			@RequestParam Optional<String> locale, HttpServletRequest request) throws Exception {
-	  CIBUser user = checkAuthorization(request, false);
-		return name2element.get(element).getStartFormTemplate(processDefinitionId, processDefinitionKey, locale, user);
-	}
 	
 }
