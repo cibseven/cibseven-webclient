@@ -390,7 +390,7 @@ export default {
         styleStr += " cursor: pointer;"
       }
       var overlayHtml = `
-        <span data-activity-id="${activityId || ''}" class="bubble position-absolute" style="${styleStr}" title="${title}">
+        <span data-activity-id="${activityId || ''}" data-type="${type || ''}" class="bubble position-absolute" style="${styleStr}" title="${title}">
           <span class="badge rounded-pill border border-dark px-2 py-1 me-1 ${classes}">${number}</span>
         </span>
       `
