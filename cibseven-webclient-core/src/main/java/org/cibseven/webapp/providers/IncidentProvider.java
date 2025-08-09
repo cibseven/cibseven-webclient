@@ -120,6 +120,12 @@ public class IncidentProvider extends SevenProviderBase implements IIncidentProv
 	}
 	
 	@Override
+	public String findHistoricExternalTaskErrorDetails(String externalTaskId, CIBUser user) {
+		String url = getEngineRestUrl() + "/history/external-task-log/" + externalTaskId + "/error-details";
+		return doGetWithHeader(url, String.class, user, false, MediaType.ALL).getBody();
+	}
+	
+	@Override
 	public Collection<Incident> fetchIncidentsByInstanceAndActivityId(String processDefinitionId, String activityId, CIBUser user) {
 	    String url = getEngineRestUrl() + "/incident?processDefinitionId=" + processDefinitionId + "&activityId=" + activityId;
 	    Incident[] response = ((ResponseEntity<Incident[]>) doGet(url, Incident[].class, user, false)).getBody();
