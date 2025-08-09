@@ -56,6 +56,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 @Configuration
+@ConditionalOnProperty(
+	prefix = "cibseven.webclient",
+	name = "enabled",
+	havingValue = "true",
+	matchIfMissing = true
+)
 @ComponentScan({ "org.cibseven.webapp.providers", "org.cibseven.webapp.auth", "org.cibseven.webapp.rest", "org.cibseven.webapp.template", "org.cibseven.webapp.config" })
 public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArgumentResolver {
 
