@@ -629,6 +629,14 @@ public interface BpmProvider {
 	 * @return Fetched deployment resources.
      * @throws SystemException in case of any other error.
 	 */
+	Deployment findDeployment(String deploymentId, CIBUser user) throws SystemException;
+	
+	/**
+     * Search deployment with a specific Id.
+     * @param deploymentId the ID of the deployment.
+     * @return Fetched deployment.
+     * @throws SystemException in case of any other error.
+     */
 	Collection<DeploymentResource> findDeploymentResources(String deploymentId, CIBUser user) throws SystemException;
 
 	/**
