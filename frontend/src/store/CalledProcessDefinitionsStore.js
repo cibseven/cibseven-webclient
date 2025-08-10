@@ -95,8 +95,16 @@ export default {
         }
       }
 
+      const staticActivityIds = new Set(
+        staticDefinitions.flatMap(def => def.calledFromActivityIds || [])
+      )
+      const hasDynamicCalls = historicStats.some(stat => {
+        const activity = getActivityName[stat.id]
+        return activity && !staticActivityIds.has(stat.id)
+      })
+
       // 2. Dynamic processes
-      if (processId) {
+      if (processId && hasDynamicCalls) {
         const activitiesHistory = await HistoryService.findActivitiesProcessDefinitionHistory(processId, {
           activityType: 'callActivity',
           unfinished: true
