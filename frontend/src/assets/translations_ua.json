@@ -976,6 +976,7 @@
 			"taskSelectedNotExist": "Це завдання більше недоступне, тому не буде показано на центральній панелі",
 			"ExistingUserRequestException": "Користувач уже існує",
 			"ExistingGroupRequestException": "Група вже існує",
+			"VariableModificationException": "Змінна не може бути успішно змінена. Будь ласка, оновіть сторінку та спробуйте знову.",
 			"processNotFound": "Процес з ключем \"{0}\" не знайдено",
 			"filterSaveError": "Сталася помилка під час спроби зберегти фільтр, перевірте введені дані.",
 			"passwordDoNotMatch": "Паролі не збігаються",

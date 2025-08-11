@@ -573,10 +573,9 @@ public interface BpmProvider {
 	 * @param valueType the type of the variable. Enum with the possible values: "File", "Bytes".
 	 * @param user the user modifying the variable.
      * @throws SystemException in case of any other error.
-	 */ 
-	 void modifyVariableDataByExecutionId(String executionId, String variableName, MultipartFile data, String valueType, CIBUser user) throws SystemException;
-	
-	 /**
+     * @throws VariableModificationException if the execution doesn't exist.
+     */
+	 void modifyVariableDataByExecutionId(String executionId, String variableName, MultipartFile data, String valueType, CIBUser user) throws SystemException;	 /**
 	 * Fetch a variables from a process instance.
 	 * @param processInstanceId Id of the instance.
 	 * @param data a map of parameters to filter the query.

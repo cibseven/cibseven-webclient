@@ -16,15 +16,15 @@
 -->
 <template>
   <div class="d-flex flex-column h-100">
-    <div v-if="selectedInstance.state === 'ACTIVE' || ProcessVariablesSearchBoxPlugin" class="bg-light d-flex w-100">
-      <div v-if="ProcessVariablesSearchBoxPlugin" :class="selectedInstance.state === 'ACTIVE' ? 'col-10 p-2' : 'col-12 p-2'">
+    <div v-if="isActiveInstance || ProcessVariablesSearchBoxPlugin" class="bg-light d-flex w-100">
+      <div v-if="ProcessVariablesSearchBoxPlugin" :class="isActiveInstance ? 'col-10 p-2' : 'col-12 p-2'">
         <component :is="ProcessVariablesSearchBoxPlugin"
           :query="filter"
           @change-query-object="changeFilter"
           :total-count="filteredVariables.length"
         ></component>
       </div>
-      <div v-if="selectedInstance.state === 'ACTIVE'" :class="ProcessVariablesSearchBoxPlugin ? 'col-2 p-3' : 'p-3'">
+      <div v-if="isActiveInstance" :class="ProcessVariablesSearchBoxPlugin ? 'col-2 p-3' : 'p-3'">
         <b-button class="border" size="sm" variant="light" @click="$refs.addVariableModal.show()" :title="$t('process-instance.addVariable')">
           <span class="mdi mdi-plus"></span> {{ $t('process-instance.addVariable') }}
         </b-button>
@@ -66,7 +66,7 @@
             :title="$t('process-instance.edit')" size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-square-edit-outline"
             @click="modifyVariable(table.item)">
           </b-button>
-          <b-button v-if="selectedInstance.state !== 'SUSPENDED'" :title="$t('confirm.delete')" size="sm" variant="outline-secondary"
+          <b-button :title="$t('confirm.delete')" size="sm" variant="outline-secondary"
             class="border-0 mdi mdi-18px mdi-delete-outline" @click="deleteVariable(table.item)"></b-button>
         </template>
       </FlowTable>
@@ -77,7 +77,7 @@
 
     <AddVariableModal ref="addVariableModal" :selected-instance="selectedInstance" @variable-added="loadSelectedInstanceVariables(); $refs.success.show()"></AddVariableModal>
     <DeleteVariableModal ref="deleteVariableModal"></DeleteVariableModal>
-    <EditVariableModal ref="editVariableModal" :disabled="selectedInstance.state === 'COMPLETED'" @variable-updated="loadSelectedInstanceVariables(); $refs.success.show()"></EditVariableModal>
+    <EditVariableModal ref="editVariableModal" :disabled="!isActiveInstance" @variable-updated="loadSelectedInstanceVariables(); $refs.success.show()" @instance-status-updated="updateInstanceStatus"></EditVariableModal>
     <SuccessAlert top="0" ref="success" style="z-index: 9999">{{ $t('alert.successOperation') }}</SuccessAlert>
     <SuccessAlert ref="messageCopy" style="z-index: 9999"> {{ $t('process.copySuccess') }} </SuccessAlert>
     <TaskPopper ref="importPopper"></TaskPopper>
@@ -127,8 +127,15 @@ export default {
         ? this.$options.components.ProcessVariablesSearchBoxPlugin
         : null
     },
+    isActiveInstance: function() {
+      const activeStates = ['ACTIVE', 'SUSPENDED']
+      return this.selectedInstance && activeStates.includes(this.selectedInstance.state)
+    },
   },
   methods: {
+    updateInstanceStatus() {
+      this.selectedInstance.state = 'COMPLETED'
+    },
     isFileValueDataSource: function(item) {
       if (item.type === 'Object') {
         if (item.value && item.value.objectTypeName) {
