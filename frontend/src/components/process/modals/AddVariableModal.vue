@@ -31,8 +31,8 @@ export default {
   components: { AddVariableModalUI },
   props: { selectedInstance: Object },
   methods: {
-    show: function() {
-      this.$refs.addVariableModalUI.show()
+    show: function(variable = {}) {
+      this.$refs.addVariableModalUI.show(variable)
     },
     addVariable: function(variable) {
       ProcessService.putLocalExecutionVariable(this.selectedInstance.id, variable.name, variable).then(() => {

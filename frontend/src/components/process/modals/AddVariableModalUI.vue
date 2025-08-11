@@ -160,7 +160,7 @@ export default {
     valueValidationError: function() {
       if (['Short', 'Integer', 'Long', 'Double'].includes(this.type)) {
         if (isNaN(this.value)) {
-          return 'isNan'
+          return 'isNaN'
         }
 
         if (this.type === 'Short') {
@@ -202,7 +202,7 @@ export default {
     show: function(variable = {}) {
       this.reset()
 
-      if (Object.keys(variable)) {
+      if (Object.keys(variable).length > 0) {
         const {
           name = '',
           type = 'String',
