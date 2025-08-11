@@ -2,7 +2,7 @@ import { InfoService } from "@/services";
 import { switchLanguage, i18n } from "@/i18n";
 import { getTheme } from "@/utils/init";
 import CamSDK from "bpm-sdk";
-// jQuery imported only to wrap a form container passed to CamSDK.Form so bpm-sdk .find() calls work
+// Import jQuery to wrap DOM elements for BPM SDK compatibility - the SDK expects jQuery objects for .find() method calls
 import $ from 'jquery';
 
 /**
