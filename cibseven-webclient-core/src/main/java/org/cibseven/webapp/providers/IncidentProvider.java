@@ -126,6 +126,63 @@ public class IncidentProvider extends SevenProviderBase implements IIncidentProv
 	}
 	
 	@Override
+	public Collection<Incident> findHistoricIncidents(Map<String, Object> params, CIBUser user) {
+		String url = URLUtils.buildUrlWithParams(getEngineRestUrl() + "/history/incident", params);
+		Incident[] response = ((ResponseEntity<Incident[]>) doGet(url, Incident[].class, user, false)).getBody();
+		List<Incident> incidents = response != null ? Arrays.asList(response) : Arrays.asList();
+		
+		// Enrich historic incidents with root cause incident data (same enrichment algorithm as current incidents)
+		for (Incident incident : incidents) {
+			if (incident.getId() != null && incident.getRootCauseIncidentId() != null 
+					&& !incident.getId().equals(incident.getRootCauseIncidentId())) {
+				try {
+					// For historic incidents, try to fetch the root cause from historic incidents first, then from current incidents
+					Incident rootCauseIncident = fetchHistoricIncidentById(incident.getRootCauseIncidentId(), user);
+					if (rootCauseIncident != null) {
+						// Map root cause incident data to the specific fields
+						incident.setCauseIncidentProcessInstanceId(rootCauseIncident.getProcessInstanceId());
+						incident.setCauseIncidentProcessDefinitionId(rootCauseIncident.getProcessDefinitionId());
+						incident.setCauseIncidentActivityId(rootCauseIncident.getActivityId());
+						incident.setCauseIncidentFailedActivityId(rootCauseIncident.getFailedActivityId());
+						incident.setRootCauseIncidentProcessInstanceId(rootCauseIncident.getProcessInstanceId());
+						incident.setRootCauseIncidentProcessDefinitionId(rootCauseIncident.getProcessDefinitionId());
+						incident.setRootCauseIncidentActivityId(rootCauseIncident.getActivityId());
+						incident.setRootCauseIncidentFailedActivityId(rootCauseIncident.getFailedActivityId());
+						incident.setRootCauseIncidentConfiguration(rootCauseIncident.getConfiguration());
+						incident.setRootCauseIncidentMessage(rootCauseIncident.getIncidentMessage());
+					}
+				} catch (Exception e) {
+					log.warn("Failed to enrich historic incident with ID: {} and root cause ID: {}", 
+						incident.getId(), 
+						incident.getRootCauseIncidentId(), 
+						e);
+				}
+			}
+		}
+		
+		return incidents;
+	}
+	
+	private Incident fetchHistoricIncidentById(String incidentId, CIBUser user) {
+		try {
+			Map<String, Object> params = Map.of("incidentId", incidentId);
+			String url = URLUtils.buildUrlWithParams(getEngineRestUrl() + "/history/incident", params);
+			Incident[] response = ((ResponseEntity<Incident[]>) doGet(url, Incident[].class, user, false)).getBody();
+			// Return the first incident if found, null otherwise
+			return (response != null && response.length > 0) ? response[0] : null;
+		} catch (Exception e) {
+			// Historic incident not found, return null
+			return null;
+		}
+	}
+	
+	@Override
+	public String findHistoricStacktraceByJobId(String jobId, CIBUser user) {
+		String url = getEngineRestUrl() + "/history/job-log/" + jobId + "/stacktrace";
+		return doGetWithHeader(url, String.class, user, false, MediaType.ALL).getBody();
+	}
+	
+	@Override
 	public Collection<Incident> fetchIncidentsByInstanceAndActivityId(String processDefinitionId, String activityId, CIBUser user) {
 	    String url = getEngineRestUrl() + "/incident?processDefinitionId=" + processDefinitionId + "&activityId=" + activityId;
 	    Incident[] response = ((ResponseEntity<Incident[]>) doGet(url, Incident[].class, user, false)).getBody();

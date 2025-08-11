@@ -939,6 +939,10 @@ public interface BpmProvider {
 	
 	String findHistoricExternalTaskErrorDetails(String externalTaskId, CIBUser user);
 	
+	Collection<Incident> findHistoricIncidents(Map<String, Object> params, CIBUser user);
+	
+	String findHistoricStacktraceByJobId(String jobId, CIBUser user);
+	
 	void retryExternalTask(String externalTaskId, Map<String, Object> data, CIBUser user);
 	
 	void setIncidentAnnotation(String incidentId, Map<String, Object> data, CIBUser user);

@@ -256,6 +256,12 @@
 			"enterValue": "Enter value"
 		},
 		"incidents": {
+			"state": "State",
+			"processInstance": "Process Instance",
+			"deleted": "Deleted",
+			"resolved": "Resolved",
+			"open": "Open",
+			"unknown": "Unknown",
 			"message": "Message",
 			"timestamp": "Timestamp",
 			"activity": "Activity",
@@ -275,7 +281,9 @@
 			"retry": "Retry",			
 			"editAnnotation": "Edit annotation",
 			"causeIncidentProcessInstanceId": "Cause process instance ID",
-			"rootCauseIncidentProcessInstanceId": "Root cause process instance ID"
+			"rootCauseIncidentProcessInstanceId": "Root cause process instance ID",
+			"createTime": "Creation date",
+			"endTime": "End date"
 		},
 		"jobDefinitions": {
 			"state": "State",
@@ -348,8 +356,8 @@
 		"addVariable": "Add variable",
 		"jobs": {
 			"id": "ID",
-			"dueDate": "Due Date",
-			"createTime": "Creation Date",
+			"dueDate": "Due date",
+			"createTime": "Creation date",
 			"retries": "Retries",
 			"activity": "Activity",
 			"failedActivity": "Failed activity",

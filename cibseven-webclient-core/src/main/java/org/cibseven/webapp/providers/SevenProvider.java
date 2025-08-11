@@ -547,6 +547,16 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 	
 	@Override
+	public Collection<Incident> findHistoricIncidents(Map<String, Object> params, CIBUser user) {
+		return incidentProvider.findHistoricIncidents(params, user);
+	}
+	
+	@Override
+	public String findHistoricStacktraceByJobId(String jobId, CIBUser user) {
+		return incidentProvider.findHistoricStacktraceByJobId(jobId, user);
+	}
+	
+	@Override
 	public void retryJobById(String jobId, Map<String, Object> data, CIBUser user) {
 		utilsProvider.retryJobById(jobId, data, user);
 	}

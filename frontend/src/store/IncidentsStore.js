@@ -41,7 +41,7 @@ export default {
   },
   actions: {
     async loadIncidents({ commit }, params) {
-      const response = await IncidentService.findIncidents(params)
+      const response = await IncidentService.fetchHistoricIncidents(params)
       commit('setIncidents', response)
       return response
     },

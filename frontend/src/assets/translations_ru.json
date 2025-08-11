@@ -256,6 +256,12 @@
 			"enterValue": "Введите значение"
 		},
 		"incidents": {
+			"state": "Состояние",
+			"processInstance": "Экземпляр процесса",
+			"deleted": "Удален",
+			"resolved": "Решен",
+			"open": "Открыт",
+			"unknown": "Неизвестно",
 			"message": "Сообщение",
 			"timestamp": "Дата",
 			"activity": "Активность",
@@ -275,7 +281,9 @@
 			"retry": "Повторить попытку",
 			"editAnnotation": "Редактировать аннотацию",
 			"causeIncidentProcessInstanceId": "ID экземпляра процесса-причины",
-			"rootCauseIncidentProcessInstanceId": "ID экземпляра корневого процесса-причины"
+			"rootCauseIncidentProcessInstanceId": "ID экземпляра корневого процесса-причины",
+			"createTime": "Дата создания",
+			"endTime": "Дата завершения"
 		},
 		"jobDefinitions": {
 			"state": "Состояние",

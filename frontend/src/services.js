@@ -447,6 +447,12 @@ var IncidentService = {
   fetchHistoricIncidentStacktraceByExternalTaskId: function(id) {
     return axios.get(getServicesBasePath() + "/incident/history/external-task/" + id + "/errorDetails")
   },
+  fetchHistoricIncidents: function(params) {
+    return axios.get(getServicesBasePath() + "/incident/history", { params })
+  },
+  fetchHistoricStacktraceByJobId: function(id) {
+    return axios.get(getServicesBasePath() + "/incident/history/" + id + "/stacktrace")
+  },
   retryJobById: function(id, params) {
     return axios.put(getServicesBasePath() + "/incident/job/" + id + "/retries", params)
   },

@@ -50,7 +50,7 @@ You may obtain a copy of the License at
         />
       </template>
       <template v-slot:cell(lockExpirationTime)="table">
-        <div :title="formatDate(table.item.lockExpirationTime)" class="text-truncate">{{ formatDate(table.item.lockExpirationTime) }}</div>
+        <div :title="formatDate(table.item.lockExpirationTime, 'DD/MM/YYYY HH:mm:ss')" class="text-truncate">{{ formatDate(table.item.lockExpirationTime, 'DD/MM/YYYY HH:mm:ss') }}</div>
       </template>
     </FlowTable>
     <div v-else-if="!loading">
@@ -65,11 +65,11 @@ You may obtain a copy of the License at
 </template>
 
 <script>
-import { moment } from '@/globals.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
+import { formatDate } from '@/utils/dates.js'
 import { BWaitingBox } from 'cib-common-components'
 import { mapGetters, mapActions } from 'vuex'
 
@@ -154,9 +154,7 @@ export default {
   methods: {
     ...mapActions(['setHighlightedElement']),
     ...mapActions('externalTasks', ['loadExternalTasks']),
-    formatDate(date) {
-      return date ? moment(date).format('DD/MM/YYYY HH:mm:ss') : '-'
-    },
+    formatDate,
     async handleExternalTask(id) {
       this.loading = true
       try {

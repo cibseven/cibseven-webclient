@@ -256,6 +256,12 @@
 			"enterValue": "Введіть значення"
 		},
 		"incidents": {
+			"state": "Стан",
+			"processInstance": "Екземпляр процесу",
+			"deleted": "Видалено",
+			"resolved": "Вирішено",
+			"open": "Відкрито",
+			"unknown": "Невідомо",
 			"message": "Повідомлення",
 			"timestamp": "Дата",
 			"activity": "Активність",
@@ -275,7 +281,9 @@
 			"retry": "Повторити спробу",
 			"editAnnotation": "Редагувати анотацію",
 			"causeIncidentProcessInstanceId": "ID екземпляра процесу-джерела",
-			"rootCauseIncidentProcessInstanceId": "ID екземпляра кореневого процесу-джерела"
+			"rootCauseIncidentProcessInstanceId": "ID екземпляра кореневого процесу-джерела",
+			"createTime": "Дата створення",
+			"endTime": "Дата завершення"
 		},
 		"jobDefinitions": {
 			"state": "Стан",
