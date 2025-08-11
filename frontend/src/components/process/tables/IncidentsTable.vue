@@ -35,7 +35,6 @@
       { label: 'incidentType', key: 'incidentType', tdClass: 'border-end border-top-0' },
       { label: 'annotation', key: 'annotation', tdClass: 'border-end border-top-0' },
       { label: 'actions', key: 'actions', sortable: false, tdClass: 'py-0 border-top-0' }]">
-            <!-- State column -->
       <template #cell(state)="row">
         <span v-if="row.item.deleted">{{ $t('process-instance.incidents.deleted') }}</span>
         <span v-else-if="row.item.resolved">{{ $t('process-instance.incidents.resolved') }}</span>
@@ -190,13 +189,12 @@ export default {
     },
     showIncidentMessage: function(incident) {
       // Only open modal if historyConfiguration is present
-      const configuration = incident.historyConfiguration
-      if (!configuration) return
+      if (!incident.historyConfiguration) return
       let stackTracePromise
       if (incident.incidentType === 'failedExternalTask') {
-        stackTracePromise = IncidentService.fetchHistoricIncidentStacktraceByExternalTaskId(configuration)
+        stackTracePromise = IncidentService.fetchHistoricIncidentStacktraceByExternalTaskId(incident.historyConfiguration)
       } else {
-        stackTracePromise = IncidentService.fetchHistoricStacktraceByJobId(configuration)
+        stackTracePromise = IncidentService.fetchHistoricStacktraceByJobId(incident.historyConfiguration)
       }
       stackTracePromise.then(res => {
         this.$refs.stackTraceModal.show(res)
@@ -228,7 +226,6 @@ export default {
     },
     async navigateToIncidentProcessInstance(processInstanceId) {
       if (!processInstanceId) return
-      
       try {
         const processInstance = await HistoryService.findProcessInstance(processInstanceId)
         const processKey = processInstance.processDefinitionKey
