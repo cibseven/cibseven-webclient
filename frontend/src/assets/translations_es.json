@@ -421,7 +421,8 @@
 			"title": "Acciones de la tarea",
 			"submit": "Cerrar",
 			"save": "Guardar",
-			"saveError": "Se produjo un error al guardar la tarea: {0}"
+			"saveError": "Se produjo un error al guardar la tarea: {0}",
+			"initError": "Se produjo un error al inicializar el formulario: {0}"
 		},
 		"emptyTask": "Tarea vacía",
 		"showMore": "Mostrar más...",

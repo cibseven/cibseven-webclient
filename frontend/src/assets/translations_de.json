@@ -421,7 +421,8 @@
 			"title": "Aktionen zur Aufgabe",
 			"submit": "Abschließen",
 			"save": "Speichern",
-			"saveError": "Beim Speichern der Aufgabe ist ein Fehler aufgetreten: {0}"
+			"saveError": "Beim Speichern der Aufgabe ist ein Fehler aufgetreten: {0}",
+			"initError": "Beim Initialisieren des Formulars ist ein Fehler aufgetreten: {0}"
 		},
 		"emptyTask": "Leere Aufgabe",
 		"showMore": "Mehr anzeigen...",
