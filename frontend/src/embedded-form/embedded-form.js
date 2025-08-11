@@ -2,6 +2,8 @@ import { InfoService } from "@/services";
 import { switchLanguage, i18n } from "@/i18n";
 import { getTheme } from "@/utils/init";
 import CamSDK from "bpm-sdk";
+// jQuery imported only to wrap a form container passed to CamSDK.Form so bpm-sdk .find() calls work
+import $ from 'jquery';
 
 /**
  * Initialize the embedded form application
@@ -256,15 +258,13 @@ function loadEmbeddedForm(
             if (formInfo.key.includes('deployment:')) {
                 let resource = await loadDeployedForm(client, isStartForm, referenceId);
                 formContainer.innerHTML = resource;
-                formConfig.formElement = formContainer;
+                formConfig.formElement = $(formContainer);
                 if (embeddedContainer) embeddedContainer.style.display = 'none';
             } else if (formInfo.key.includes('/rendered-form')) {
                 // Load Camunda generated form HTML and normalize it for Vue integration
                 let resource = await loadGeneratedForm(isStartForm, referenceId, formContainer, client, config);
                 formContainer.innerHTML = resource;
-                // Use #embeddedFormRoot as the form element for Camunda SDK
-                // This is a workaround for issues in the Camunda SDK where the formElement must be provided as a jQuery selector string (e.g., '#embeddedFormRoot') instead of a DOM element.
-                formConfig.formElement = '#embeddedFormRoot';
+                formConfig.formElement = $(formContainer);
                 if (embeddedContainer) embeddedContainer.style.display = 'none';
             } else {
                 // Start with a relative url and replace doubled slashes if necessary
@@ -274,7 +274,7 @@ function loadEmbeddedForm(
                     .replace(/^(\/+|([^/]))/, '/$2')
                     .replace(/\/\/+/, '/');
                 formConfig.formUrl = url;
-                formConfig.containerElement = embeddedContainer;
+                formConfig.containerElement = $(embeddedContainer);
                 if (formContainer) formContainer.style.display = 'none';
             }
 
