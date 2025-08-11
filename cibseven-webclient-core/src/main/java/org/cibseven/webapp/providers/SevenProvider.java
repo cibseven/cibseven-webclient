@@ -542,6 +542,11 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 	
 	@Override
+	public String findHistoricExternalTaskErrorDetails(String externalTaskId, CIBUser user) {
+		return incidentProvider.findHistoricExternalTaskErrorDetails(externalTaskId, user);
+	}
+	
+	@Override
 	public void retryJobById(String jobId, Map<String, Object> data, CIBUser user) {
 		utilsProvider.retryJobById(jobId, data, user);
 	}
