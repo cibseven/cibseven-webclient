@@ -256,6 +256,12 @@
 			"enterValue": "Wert eingeben"
 		},
 		"incidents": {
+			"state": "Status",
+			"processInstance": "Prozessinstanz",
+			"deleted": "Gelöscht",
+			"resolved": "Gelöst",
+			"open": "Offen",
+			"unknown": "Unbekannt",
 			"message": "Nachricht",
 			"timestamp": "Zeitstempel",
 			"activity": "Aktivität",
@@ -275,7 +281,9 @@
 			"retry": "Wiederholen",
 			"editAnnotation": "Anmerkung bearbeiten",
 			"causeIncidentProcessInstanceId": "Ursächliche Prozessinstanz-ID",
-			"rootCauseIncidentProcessInstanceId": "Ursächliche Hauptprozessinstanz-ID"
+			"rootCauseIncidentProcessInstanceId": "Ursächliche Hauptprozessinstanz-ID",
+			"createTime": "Erstellungsdatum",
+			"endTime": "Enddatum"
 		},
 		"jobDefinitions": {
 			"state": "Status",

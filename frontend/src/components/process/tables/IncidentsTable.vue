@@ -23,8 +23,11 @@
     </div>
     <FlowTable v-else-if="incidents.length > 0" striped thead-class="sticky-header" :items="incidents" primary-key="id" prefix="process-instance.incidents."
       sort-by="incidentType" native-layout :fields="[
+      { label: 'state', key: 'state', tdClass: 'border-end border-top-0' },
       { label: 'message', key: 'incidentMessage', tdClass: 'border-end border-top-0' },
-      { label: 'timestamp', key: 'incidentTimestamp', tdClass: 'border-end border-top-0' },
+      { label: 'processInstance', key: 'processInstanceId', tdClass: 'border-end border-top-0' },
+      { label: 'createTime', key: 'createTime', tdClass: 'border-end border-top-0' },
+      { label: 'endTime', key: 'endTime', tdClass: 'border-end border-top-0' },
       { label: 'activity', key: 'activityId', tdClass: 'border-end border-top-0' },
       { label: 'failedActivity', key: 'failedActivityId', tdClass: 'border-end border-top-0' },
       { label: 'causeIncidentProcessInstanceId', key: 'causeIncidentProcessInstanceId', tdClass: 'border-end border-top-0' },
@@ -32,6 +35,12 @@
       { label: 'incidentType', key: 'incidentType', tdClass: 'border-end border-top-0' },
       { label: 'annotation', key: 'annotation', tdClass: 'border-end border-top-0' },
       { label: 'actions', key: 'actions', sortable: false, tdClass: 'py-0 border-top-0' }]">
+      <template #cell(state)="row">
+        <span v-if="row.item.deleted">{{ $t('process-instance.incidents.deleted') }}</span>
+        <span v-else-if="row.item.resolved">{{ $t('process-instance.incidents.resolved') }}</span>
+        <span v-else-if="row.item.open">{{ $t('process-instance.incidents.open') }}</span>
+        <span v-else>{{ $t('process-instance.incidents.unknown') }}</span>
+      </template>
       <template v-slot:cell(incidentMessage)="table">
         <CopyableActionButton 
           :display-value="getIncidentMessage(table.item)"
@@ -42,8 +51,22 @@
           @copy="copyValueToClipboard"
         />
       </template>
-      <template v-slot:cell(incidentTimestamp)="table">
-        <div :title="table.item.incidentTimestamp" class="text-truncate">{{ showPrettyTimestamp(table.item.incidentTimestamp) }}</div>
+      <template #cell(processInstanceId)="row">
+        <CopyableActionButton 
+          v-if="row.item.processInstanceId"
+          :display-value="row.item.processInstanceId"
+          :copy-value="row.item.processInstanceId" 
+          :title="row.item.processInstanceId"
+          @click="navigateToIncidentProcessInstance(row.item.processInstanceId)"
+          @copy="copyValueToClipboard"
+        />
+        <span v-else>-</span>
+      </template>
+      <template v-slot:cell(createTime)="table">
+        <div :title="formatDate(table.item.createTime, 'DD/MM/YYYY HH:mm:ss')" class="text-truncate">{{ formatDate(table.item.createTime, 'DD/MM/YYYY HH:mm:ss') }}</div>
+      </template>
+      <template v-slot:cell(endTime)="table">
+        <div :title="formatDate(table.item.endTime, 'DD/MM/YYYY HH:mm:ss')" class="text-truncate">{{ formatDate(table.item.endTime, 'DD/MM/YYYY HH:mm:ss') }}</div>
       </template>
       <template v-slot:cell(activityId)="table">
         <div :title="table.item.activityId" class="text-truncate">{{ $store.state.activity.processActivities[table.item.activityId] || table.item.activityId }}</div>
@@ -78,11 +101,11 @@
         </div>
       </template>
       <template v-slot:cell(actions)="table">
-        <b-button :title="$t('process-instance.incidents.editAnnotation')"
+        <b-button v-if="!table.item.endTime" :title="$t('process-instance.incidents.editAnnotation')"
           size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-note-edit-outline"
           @click="$refs.annotationModal.show(table.item.id, table.item.annotation)">
         </b-button>
-        <b-button :title="$t('process-instance.incidents.retryJob')"
+        <b-button v-if="!table.item.endTime" :title="$t('process-instance.incidents.retryJob')"
           size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-reload"
           @click="$refs.incidentRetryModal.show(table.item)">
         </b-button>
@@ -101,7 +124,6 @@
 </template>
 
 <script>
-import { moment } from '@/globals.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { IncidentService, HistoryService } from '@/services.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
@@ -111,6 +133,7 @@ import AnnotationModal from '@/components/process/modals/AnnotationModal.vue'
 import StackTraceModal from '@/components/process/modals/StackTraceModal.vue'
 import { BWaitingBox } from 'cib-common-components'
 import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
+import { formatDate } from '@/utils/dates.js'
 import { mapGetters, mapActions } from 'vuex'
 
 export default {
@@ -150,6 +173,7 @@ export default {
   },
   methods: {
     ...mapActions('incidents', ['loadIncidents', 'removeIncident', 'updateIncidentAnnotation']),
+    formatDate,
     async loadIncidentsData(id, isInstance = true) {
       this.loading = true
       const params = {
@@ -164,22 +188,17 @@ export default {
       }
     },
     showIncidentMessage: function(incident) {
-      // Choose the appropriate method based on incident type
+      // Only open modal if historyConfiguration is present
+      if (!incident.historyConfiguration) return
       let stackTracePromise
-      const configuration = incident.rootCauseIncidentConfiguration || incident.configuration
       if (incident.incidentType === 'failedExternalTask') {
-        // For external task incidents, use the external task error details endpoint
-        stackTracePromise = IncidentService.fetchIncidentStacktraceByExternalTaskId(configuration)
+        stackTracePromise = IncidentService.fetchHistoricIncidentStacktraceByExternalTaskId(incident.historyConfiguration)
       } else {
-        // For other incident types, use job stack trace
-        stackTracePromise = IncidentService.fetchIncidentStacktraceByJobId(configuration)
+        stackTracePromise = IncidentService.fetchHistoricStacktraceByJobId(incident.historyConfiguration)
       }
       stackTracePromise.then(res => {
         this.$refs.stackTraceModal.show(res)
       })
-    },
-    showPrettyTimestamp: function(orignalDate) {
-      return moment(orignalDate).format('DD/MM/YYYY HH:mm:ss')
     },
     incrementNumberRetry: function({ incident, params }) {
       // Choose the appropriate retry method based on incident type
@@ -207,7 +226,6 @@ export default {
     },
     async navigateToIncidentProcessInstance(processInstanceId) {
       if (!processInstanceId) return
-      
       try {
         const processInstance = await HistoryService.findProcessInstance(processInstanceId)
         const processKey = processInstance.processDefinitionKey

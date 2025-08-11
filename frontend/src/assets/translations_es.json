@@ -256,6 +256,12 @@
 			"enterValue": "Introducir valor"
 		},
 		"incidents": {
+			"state": "Estado",
+			"processInstance": "Instancia de proceso",
+			"deleted": "Eliminado",
+			"resolved": "Resuelto",
+			"open": "Abierto",
+			"unknown": "Desconocido",
 			"message": "Mensaje",
 			"timestamp": "Timestamp",
 			"activity": "Actividad",
@@ -275,7 +281,9 @@
 			"retry": "Reintentar",
 			"editAnnotation": "Editar anotación",
 			"causeIncidentProcessInstanceId": "ID de instancia del proceso causante",
-			"rootCauseIncidentProcessInstanceId": "ID de instancia del proceso causa raíz"
+			"rootCauseIncidentProcessInstanceId": "ID de instancia del proceso causa raíz",
+			"createTime": "Fecha de creación",
+			"endTime": "Fecha de finalización"
 		},
 		"jobDefinitions": {
 			"state": "Estado",
