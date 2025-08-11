@@ -575,7 +575,9 @@ public interface BpmProvider {
      * @throws SystemException in case of any other error.
      * @throws VariableModificationException if the execution doesn't exist.
      */
-	 void modifyVariableDataByExecutionId(String executionId, String variableName, MultipartFile data, String valueType, CIBUser user) throws SystemException;	 /**
+	 void modifyVariableDataByExecutionId(String executionId, String variableName, MultipartFile data, String valueType, CIBUser user) throws SystemException;
+	 
+	 /**
 	 * Fetch a variables from a process instance.
 	 * @param processInstanceId Id of the instance.
 	 * @param data a map of parameters to filter the query.
