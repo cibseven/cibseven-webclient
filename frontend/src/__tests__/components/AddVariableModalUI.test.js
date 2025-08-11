@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { i18n } from '@/i18n'
-import AddVariableModal from '@/components/process/modals/AddVariableModal.vue'
+import AddVariableModalUI from '@/components/process/modals/AddVariableModalUI.vue'
 import { readFileSync } from 'fs'
 import { resolve } from 'path'
 import { BButton, BFormGroup, BFormInput, BFormSelect, BFormCheckbox, BAlert, BFormDatepicker } from 'cib-common-components'
@@ -32,7 +32,7 @@ describe('AddVariableModal.vue UI interactions', () => {
     i18n.global.locale = 'en'
     i18n.global.setLocaleMessage('en', translations)
 
-    wrapper = mount(AddVariableModal, {
+    wrapper = mount(AddVariableModalUI, {
       props: {
           selectedInstance: { id: 100 }
       },
@@ -155,7 +155,7 @@ describe('AddVariableModal.vue UI interactions', () => {
     it('validates number input and shows validation error', async () => {
       await wrapper.setData({ type: 'Integer' })
       await wrapper.setData({ value: 'notANumber' })
-      expect(wrapper.vm.valueValidationError).toBe('isNan')
+      expect(wrapper.vm.valueValidationError).toBe('isNaN')
       await wrapper.setData({ value: 5000000000 }) // out of range
       expect(wrapper.vm.valueValidationError).toBe('Out of range: -2147483648 ... 2147483647')
       wrapper.vm.type = 'Long'
