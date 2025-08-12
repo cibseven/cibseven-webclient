@@ -93,7 +93,7 @@
       }
     },
     computed: {
-      ...mapGetters(['jobLogs']),
+      ...mapGetters('job', ['jobLogs']),
       jobLogFields: function() {
         return [
           { label: 'state', key: 'state', class: 'col-1', tdClass: 'p-1', sortable: false },
