@@ -42,6 +42,7 @@ import org.cibseven.webapp.exception.PasswordPolicyException;
 import org.cibseven.webapp.exception.SubmitDeniedException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.exception.UnsupportedTypeException;
+import org.cibseven.webapp.exception.VariableModificationException;
 import org.cibseven.webapp.rest.model.Authorization;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -359,6 +360,8 @@ public abstract class SevenProviderBase {
 			wrapperException = new ExistingGroupRequestException(cause);
 		} else if (technicalErrorMsg.matches(".*The given authenticated user password is not valid.*")) {
 			wrapperException = new SystemException(cause); // TODO? Create a specific exception this error.
+		} else if (technicalErrorMsg.matches(".*Cannot modify variables for execution.*execution.*doesn't exist: execution is null.*")) {
+			wrapperException = new VariableModificationException(cause);
 		} else if (technicalErrorMsg.matches(".*No matching task with id.*")
 				|| technicalErrorMsg.matches(".*Process instance with id.*does not exist.*")
 				|| technicalErrorMsg.matches(".*Cannot find task with id.*")

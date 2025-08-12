@@ -977,6 +977,7 @@
 		"taskSelectedNotExist": "Esta tarea ya no está disponible por lo que desaparecerá del area de trabajo",
 		"ExistingUserRequestException": "El usuario ya existe",
 		"ExistingGroupRequestException": "El grupo ya existe",
+		"VariableModificationException": "La variable no pudo ser modificada exitosamente. Por favor, actualice la página e inténtelo de nuevo.",
 		"processNotFound": "Proceso con clave \"{0}\" no encontrado",
 		"filterSaveError": "Ocurrió un error al intentar guardar el filtro, verifique los datos ingresados.",
 		"passwordDoNotMatch": "Las contraseñas no coinciden",

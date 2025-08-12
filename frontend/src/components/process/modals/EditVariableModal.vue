@@ -101,9 +101,10 @@ import { ProcessService } from '@/services.js'
 import { mapGetters, mapActions } from 'vuex'
 
 export default {
-  name: 'EditVariableModal',
-  components: { BWaitingBox },
-  props: {
+name: 'EditVariableModal',
+emits: ['instance-status-updated', 'variable-updated'],
+components: { BWaitingBox },
+props: {
     disabled: {
       type: Boolean,
       default: false
@@ -316,6 +317,7 @@ export default {
           await this.getVariableInstance({ id: variableId, deserializeValue })
         } catch {
           await this.getHistoricVariableInstance({ id: variableId, deserializeValue })
+          this.$emit('instance-status-updated')
         }
       } else {
         await this.getHistoricVariableInstance({ id: variableId, deserializeValue })
