@@ -38,6 +38,14 @@ export function initEmbeddedForm(options = {}) {
             document.head.appendChild(css);
         }
 
+        function loadGeneratedFormsCss() {
+            const css = document.createElement('link');
+            css.rel = 'stylesheet';
+            css.type = 'text/css';
+            css.href = 'src/embedded-form/generated-forms.css';
+            document.head.appendChild(css);
+        }
+
         loadTheme();
 
         const searchParams = new URLSearchParams(window.location.search);
@@ -53,6 +61,10 @@ export function initEmbeddedForm(options = {}) {
             const isStartForm = !!processDefinitionId;
             const isGeneratedForm = !!generated;
             let embeddedForm;
+
+            if (isGeneratedForm) {
+                loadGeneratedFormsCss();
+            }
 
             if (isStartForm) {
                 submitButton.innerHTML = i18n.global.t('process.start');
