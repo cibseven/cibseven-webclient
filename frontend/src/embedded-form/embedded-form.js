@@ -24,7 +24,7 @@ export function initEmbeddedForm(options = {}) {
         embeddedContainer,
         formContainer
     } = options;
-    
+
     return InfoService.getProperties().then(response => {
         const config = response.data;
 
@@ -110,7 +110,13 @@ export function initEmbeddedForm(options = {}) {
                     services.displayErrorMessage(err);
                     throw err;
                 }
-            );
+            ).catch(err => {
+                console.error('Error initializing embedded form:', err);
+                errorDiv.style.display = '';
+                errorDiv.innerHTML = i18n.global.t('task.actions.initError', [err]);
+                loaderDiv.style.display = 'none';
+                throw err;
+            });
         });
     });
 }
@@ -159,12 +165,12 @@ function setupDatePickerHandlers(formContainer) {
     // Find Angular date inputs with uib-datepicker-popup attribute from Camunda generated forms
     // These inputs are normalized during HTML processing to remove the original Angular calendar functionality
     const dateInputs = formContainer.querySelectorAll('input[uib-datepicker-popup]');
-    
+
     dateInputs.forEach(input => {
         // Remove any existing listeners to prevent duplicates
         input.removeEventListener('click', handleDateInputClick);
         input.removeEventListener('focus', handleDateInputClick);
-        
+
         // Add both click and focus handlers for better UX
         input.addEventListener('click', handleDateInputClick);
         input.addEventListener('focus', handleDateInputClick);
@@ -173,20 +179,20 @@ function setupDatePickerHandlers(formContainer) {
 
 function handleDateInputClick(e) {
     e.preventDefault();
-    
+
     const input = e.target;
     const fieldName = input.name;
-    
+
     try {
         // Create a unique message handler to listen for the date picker result from the parent window
         // This ensures we only respond to the correct date picker response for this specific field
         const messageHandler = function(event) {
-            if (event.data && 
-                event.data.method === 'datePickerResult' && 
+            if (event.data &&
+                event.data.method === 'datePickerResult' &&
                 event.data.fieldName === fieldName) {
-                
+
                 window.removeEventListener('message', messageHandler);
-                
+
                 if (event.data.value !== null) {
                     input.value = event.data.value;
                     // Move cursor to end of input
@@ -194,16 +200,16 @@ function handleDateInputClick(e) {
                 }
             }
         };
-        
+
         // Add the listener to handle the date picker result
         window.addEventListener('message', messageHandler);
-        
+
         // Send the request to parent window to open the date picker
         callParent('openDatePicker', {
             fieldName: fieldName,
             value: input.value
         });
-        
+
     } catch (err) {
         console.error('Date picker error:', err);
         services.displayErrorMessage(err);
@@ -242,14 +248,13 @@ function loadEmbeddedForm(
             });
         }
         async function loadForm(formInfo) {
-            let embeddedForm;
             let formConfig = {
                 client: client,
-                done: err => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(embeddedForm);
+                done: function(err, form) {
+                  if (err) {
+                      reject(err);
+                    } else if (form) {
+                        resolve(form);
                     }
                 }
             };
@@ -283,7 +288,7 @@ function loadEmbeddedForm(
             } else {
                 formConfig.taskId = referenceId;
             }
-            embeddedForm = new CamSDK.Form(formConfig);
+            new CamSDK.Form(formConfig);
         }
     });
 }
