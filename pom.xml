@@ -334,6 +334,7 @@ You may obtain a copy of the License at
 					<target>${maven.compiler.target}</target>
 					<compilerArgs>
 						<arg>-parameters</arg>
+						<arg>-Werror</arg>
 					</compilerArgs>
 				</configuration>
 			</plugin>	
