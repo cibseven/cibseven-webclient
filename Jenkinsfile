@@ -248,19 +248,10 @@ pipeline {
                 script {
                     withCredentials([file(credentialsId: 'credential-cibseven-artifacts-npmrc', variable: 'NPMRC_FILE')]) {
                         withMaven() {
-                            def baseVersion = mavenProjectInformation.version.replace("-SNAPSHOT", "")
-                            def dynamicVersion = mavenProjectInformation.version.contains('-SNAPSHOT') ?
-                                "${baseVersion}-${BUILD_NUMBER}-SNAPSHOT" : mavenProjectInformation.version
 
                             sh """
                                 echo "Copy the .npmrc file to the frontend directory..."
                                 cp ${NPMRC_FILE} ./bpm-sdk/.npmrc
-
-                                echo "Setting dynamic version to ${dynamicVersion}..."
-                                sed -i 's/__CI_VERSION__/${dynamicVersion}/' bpm-sdk/package.json
-
-                                echo "Final package.json version:"
-                                grep '"version"' bpm-sdk/package.json
 
                                 echo "Running Maven to release the npm package..."
                                 mvn -T4 \
@@ -286,19 +277,9 @@ pipeline {
                     withCredentials([file(credentialsId: 'credential-cibseven-artifacts-npmrc', variable: 'NPMRC_FILE')]) {
                         withMaven() {
 
-                            def baseVersion = mavenProjectInformation.version.replace("-SNAPSHOT", "")
-                            def dynamicVersion = mavenProjectInformation.version.contains('-SNAPSHOT') ?
-                                "${baseVersion}-${BUILD_NUMBER}-SNAPSHOT" : mavenProjectInformation.version
-
                             sh """
                                 echo "Copy the .npmrc file to the frontend directory..."
                                 cp ${NPMRC_FILE} ./frontend/.npmrc
-
-                                echo "Setting dynamic version to ${dynamicVersion}..."
-                                sed -i 's/__CI_VERSION__/${dynamicVersion}/' frontend/package.json
-
-                                echo "Final package.json version:"
-                                grep '"version"' frontend/package.json
 
                                 echo "Running Maven to release the npm package..."
                                 mvn -T4 \
