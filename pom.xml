@@ -9,7 +9,7 @@
 
 	<groupId>org.cibseven.webapp</groupId>
 	<artifactId>cibseven-webclient</artifactId>
- 	<version>2.1.0-alpha-SNAPSHOT</version>
+ 	<version>2.1.0-alpha</version>
 	<packaging>pom</packaging>
 
 	<name>CIB seven webclient</name>
