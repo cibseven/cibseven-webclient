@@ -5,7 +5,9 @@
 		<artifactId>cibseven-webclient</artifactId>
 		<version>2.1.0-alpha</version>
 	</parent>
-	<artifactId>cibseven-webclient-core</artifactId>  
+	<artifactId>cibseven-webclient-core</artifactId>
+	<name>CIB seven webclient core</name>
+	<description>Core backend services and APIs for the CIB seven webclient platform</description>
 
 	<dependencies>
 
