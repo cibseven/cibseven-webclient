@@ -17,7 +17,7 @@
 
 -->
 <template>
-  <div class="d-flex flex-column bg-light overflow-auto">
+  <div class="d-flex flex-column bg-light overflow-auto overflow-y-scroll">
     <div class="container bg-light pt-3 px-0">
       <ContentBlock :title="$t('processes-dashboard.headerActive')">
         <template #actions>
