@@ -32,19 +32,13 @@ import org.cibseven.webapp.rest.model.IdentityLink;
 import org.cibseven.webapp.rest.model.ProcessVariables;
 import org.cibseven.webapp.rest.model.Task;
 import org.cibseven.webapp.rest.model.TaskFiltering;
+import org.cibseven.webapp.rest.model.TaskForm;
 import org.cibseven.webapp.rest.model.TaskHistory;
 import org.cibseven.webapp.rest.model.Variable;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -55,7 +49,7 @@ import lombok.extern.slf4j.Slf4j;
 public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 
 	@Autowired private IVariableProvider variableProvider;
-	
+
 	@Override
 	public Collection<Task> findTasks(String filter, CIBUser user) {
 		String url = getEngineRestUrl() + "/task?sortBy=created&sortOrder=desc" + (filter!=null ? filter : "");
@@ -67,7 +61,7 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 		String url = getEngineRestUrl() + "/task/count";
 		return ((ResponseEntity<JsonNode>) doPost(url, filters, JsonNode.class, user)).getBody().get("count").asInt();		
 	}
-	
+
 	@Override
 	public Collection<Task> findTasksByProcessInstance(String processInstanceId, CIBUser user) {
 		String url = getEngineRestUrl() + "/task?processInstanceId=" + processInstanceId;
@@ -88,13 +82,13 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 		}
 		return Arrays.asList(((ResponseEntity<Task[]>) doGet(url, Task[].class, user, true)).getBody());
 	}
-	
+
 	@Override
 	public Task findTaskById(String id, CIBUser user) {
 		String url = getEngineRestUrl() + "/task/" + id;
 		return ((ResponseEntity<Task>) doGet(url, Task.class, user, false)).getBody();
 	}
-	
+
 	@Override
 	public void update(Task task, CIBUser user) {
 		String url = getEngineRestUrl() + "/task/" + task.getId();
@@ -113,28 +107,28 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 		filteredTask += " }";
 		doPut(url, filteredTask, user);
 	}
-	
+
 	@Override
 	public void setAssignee(String taskId, String assignee, CIBUser user) {
 		String url = getEngineRestUrl() + "/task/" + taskId;
 		String variables = "{}";
-		
+
 		if(!assignee.equals("null")) {
 			url += "/assignee";
 			variables = "{ \"userId\": \"" + assignee + "\" }";
 		} else {
 			url += "/unclaim";
 		}
-		
+
 		doPost(url, variables, String.class, user);
 	}
-	
+
 	@Override
 	public void submit(String taskId, CIBUser user) {
 		String url = getEngineRestUrl() + "/task/" + taskId + "/submit-form";
 		doPost(url, "{ \"variables\": {} }", String.class, user);
 	}
-	
+
 	@Override
 	public void submit(Task task, List<Variable> formResult, CIBUser user) {
 		if (!formResult.isEmpty()) {
@@ -142,7 +136,7 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 		}
 		submit(task.getId(), user);
 	}
-	
+
 	@Override
 	public Object formReference(String taskId, CIBUser user) {
 		String url = getEngineRestUrl() + "/task/" + taskId + "/form-variables?variableNames=formReference";
@@ -151,6 +145,16 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 		else return formReference.getValue();
 	}
 	
+	@Override
+	public Object form(String taskId, CIBUser user) {
+		String url = getEngineRestUrl() + "/task/" + taskId + "/form";
+		TaskForm taskForm = ((ResponseEntity<TaskForm>) doGet(url, TaskForm.class, user, false)).getBody();
+		if (taskForm == null || taskForm.getKey() == null) {
+			return "empty-task";
+		}
+		return taskForm;
+	}
+
 	@Override
 	public Collection<Task> findTasksByFilter(TaskFiltering filters, String filterId, CIBUser user, Integer firstResult, Integer maxResults) {
 		String url = getEngineRestUrl() + "/filter/" + filterId + "/list?firstResult=" + firstResult + "&maxResults=" + maxResults;		
@@ -162,7 +166,7 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 			throw se;
 		}
 	}
-	
+
 	@Override
 	public Integer findTasksCountByFilter(String filterId, CIBUser user, TaskFiltering filters) {
 		String url = getEngineRestUrl() + "/filter/" + filterId + "/count";		
@@ -174,50 +178,50 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 			throw se;
 		}
 	}
-	
+
 	@Override
 	public Collection<TaskHistory> findTasksByProcessInstanceHistory(String processInstanceId, CIBUser user) {
 		String url = getEngineRestUrl() + "/history/task?processInstanceId=" + processInstanceId + "&sortBy=startTime&sortOrder=desc";
 		return Arrays.asList(((ResponseEntity<TaskHistory[]>) doGet(url, TaskHistory[].class, user, false)).getBody());
 	}
-	
+
 	@Override
 	public Collection<TaskHistory> findTasksByDefinitionKeyHistory(String taskDefinitionKey, String processInstanceId, CIBUser user) {
 		String url = getEngineRestUrl() + "/history/task?processInstanceId=" + processInstanceId + "&taskDefinitionKey=" + taskDefinitionKey;
 		return Arrays.asList(((ResponseEntity<TaskHistory[]>) doGet(url, TaskHistory[].class, user, false)).getBody());				
 	}
-	
+
 	@Override
 	public Collection<Task> findTasksPost(Map<String, Object> data, CIBUser user) throws SystemException {
 		String url = getEngineRestUrl() + "/task";
 		return Arrays.asList(((ResponseEntity<Task[]>) doPost(url, data, Task[].class, user)).getBody());
 	}
-	
+
 	@Override
 	public Collection<IdentityLink> findIdentityLink(String taskId, Optional<String> type, CIBUser user) 
 	{
 		String url = getEngineRestUrl() + "/task/" + taskId	+ "/identity-links";
-		
+
 		String param = "";
 		param += addQueryParameter(param, "type", type, true);
-		
+
 		url += param;
-		
+
 		return Arrays.asList(((ResponseEntity<IdentityLink[]>) doGet(url, IdentityLink[].class, user, false)).getBody());
 	}
-	
+
 	@Override
 	public void createIdentityLink(String taskId, Map<String, Object> data, CIBUser user) {
 		String url = getEngineRestUrl() + "/task/" + taskId	+ "/identity-links";
 		doPost(url, data, null, user);
 	}
-	
+
 	@Override
 	public void deleteIdentityLink(String taskId, Map<String, Object> data, CIBUser user) {
 		String url = getEngineRestUrl() + "/task/" + taskId	+ "/identity-links/delete";
 		doPost(url, data, null, user);
 	}
-	
+
 	@Override
 	public void handleBpmnError(String taskId, Map<String, Object> data, CIBUser user) throws SystemException {
 		String url = getEngineRestUrl() + "/task/" + taskId + "/bpmnError";
@@ -229,21 +233,13 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 		String url = getEngineRestUrl() + "/history/task?taskId=" + taskId;
 		return Arrays.asList(((ResponseEntity<TaskHistory[]>) doGet(url, TaskHistory[].class, user, false)).getBody());
 	}
-	
+
 	@Override
 	public ResponseEntity<byte[]> getDeployedForm(String taskId, CIBUser user) {
 		String url = getEngineRestUrl() + "/task/" + taskId + "/deployed-form";
-		RestTemplate restTemplate = new RestTemplate();
-		restTemplate.getMessageConverters().add(new ByteArrayHttpMessageConverter());
-		HttpHeaders headers = new HttpHeaders();
-	    headers.setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM));
-	    UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
-		if (user != null) headers.add("Authorization", user.getAuthToken());
-		HttpEntity<String> entity = new HttpEntity<String>(headers);
-	    ResponseEntity<byte[]> response = restTemplate.exchange(builder.build().toUriString(), HttpMethod.GET, entity, byte[].class, "1");
-		return response;
+		return doGetWithHeader(url, byte[].class, user, true, MediaType.APPLICATION_OCTET_STREAM);
 	}
-	
+
 	@Override
 	public Integer findHistoryTasksCount(Map<String, Object> filters, CIBUser user) {
 		String url = getEngineRestUrl() + "/history/task/count";

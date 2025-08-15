@@ -24,19 +24,19 @@
     <template v-slot:left>
       <FilterNavBar ref="filterNavbar" @filter-alert="showFilterAlert($event)"
         @selected-filter="selectedFilter()" @set-filter="filter = $event;listTasksWithFilter()" @selected-task="selectedTask($event)"
-        @refresh-tasks="listTasksWithFilter()" @n-filters-shown="nFiltersShown = $event" class="border-0 bg-white"></FilterNavBar>
+        @refresh-tasks="listTasksWithFilter()" @refresh-tasks-number="onRefreshTasksNumber" @n-filters-shown="nFiltersShown = $event" class="border-0 bg-white"></FilterNavBar>
     </template>
     <template v-slot:filter>
       <FilterNavCollapsed v-if="!leftOpenFilter && leftCaptionFilter" v-model:left-open="leftOpenFilter"></FilterNavCollapsed>
     </template>
-    <SidebarsFlow ref="regionTasks" role="region" :aria-label="$t('seven.allTasks')" class="h-100 bg-light" :number="nTasksShown" header-margin="55px" v-model:left-open="leftOpenTask" v-model:right-open="rightOpenTask"
+    <SidebarsFlow ref="regionTasks" role="region" :aria-label="$t('seven.allTasks')" class="h-100 bg-light" :number="totalTasksInFilter" header-margin="55px" v-model:left-open="leftOpenTask" v-model:right-open="rightOpenTask"
       :leftSize="getTasksNavbarSize" :left-caption="leftCaptionTask" :right-caption="TasksRightSidebar ? rightCaptionTask : null">
       <template v-slot:left>
         <TasksNavBar @filter-alert="showFilterAlert($event)" ref="navbar" :tasks="tasks" @selected-task="selectedTask($event)"
           @update-assignee="updateAssignee($event, 'task')" @set-filter="filter = $event; listTasksWithFilter()"
           @open-sidebar-date="rightOpenTask = true" @show-more="showMore()" :taskResultsIndex="taskResultsIndex"
           @process-started="listTasksWithFilter();$refs.processStarted.show(10); checkAndOpenTask($event, true)"
-          @search-filter="search = $event" @refresh-tasks="listTasksWithFilter()"></TasksNavBar>
+          @search-filter="search = $event" @refresh-tasks="listTasksWithFilter()" @refresh-tasks-number="onRefreshTasksNumber"></TasksNavBar>
       </template>
 
       <transition name="slide-in" mode="out-in">
@@ -92,12 +92,14 @@ import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import { BWaitingBox } from 'cib-common-components'
 import { updateAppTitle } from '@/utils/init'
 import { splitToWords } from '@/utils/search'
+import { mapActions } from 'vuex'
+import assigneeMixin from '@/mixins/assigneeMixin.js'
 
 export default {
   name: 'TasksContent',
   components: { TasksNavBar, FilterNavBar, FilterNavCollapsed, SidebarsFlow, SuccessAlert, BWaitingBox },
   inject: ['isMobile', 'AuthService'],
-  mixins: [permissionsMixin],
+  mixins: [permissionsMixin, assigneeMixin],
   data: function () {
     var leftOpenFilter = localStorage.getItem('leftOpenFilter') ?
       localStorage.getItem('leftOpenFilter') === 'true' : true
@@ -115,7 +117,7 @@ export default {
       interval: null,
       filterMessage: '',
       filterName: '',
-      nTasksShown: 0,
+      totalTasksInFilter: 0,
       nFiltersShown: 0,
       tasksNavbarSizes: [[12, 6, 4, 4, 3], [12, 6, 4, 5, 4], [12, 6, 4, 6, 5]],
       tasksNavbarSize: 0,
@@ -143,8 +145,17 @@ export default {
     getTasksNavbarSize: function() { return this.tasksNavbarSizes[this.tasksNavbarSize] }
   },
   watch: {
+    task: {
+      handler(newTask) {
+        this.assignee = newTask ? newTask.assignee : null
+      },
+      immediate: true
+    },
     rightOpenTask: function(newVal) {
       localStorage.setItem('rightOpenTask', newVal)
+    },
+    '$store.state.filter.selected.tasksNumber': function(val) {
+      this.totalTasksInFilter = val || 0
     },
     '$route.params.taskId': function() { if (!this.$route.params.taskId) this.cleanSelectedTask() },
     '$route.params.filterId': function() { if (!this.$route.params.filterId) this.cleanSelectedFilter() },
@@ -168,6 +179,7 @@ export default {
     this.setIntervalTaskList()
   },
   methods: {
+    ...mapActions('task', ['setSelectedAssignee']),
     canOpenRightTask: function() {
       if (!this.TasksRightSidebar) return false
       return (this.$root.config.layout.showTaskDetailsSidebar ||
@@ -185,9 +197,11 @@ export default {
     listTasksWithFilter: function() {
       this.tasks = []
       this.processesInstances = []
-      this.nTasksShown = 0
       if (this.$refs.navbar.$refs.taskLoader) this.$refs.navbar.$refs.taskLoader.done = false
       this.fetchTasks(0, this.taskResultsIndex)
+    },
+    onRefreshTasksNumber: function() {
+      this.$refs.filterNavbar.setTasksNumber()
     },
     listTasksWithFilterAuto: function(showMore) {
       if (this.$route.params.filterId) {
@@ -237,9 +251,6 @@ export default {
         TaskService.findTasksByFilter(this.$store.state.filter.selected.id, filters,
           { firstResult: firstResult, maxResults: maxResults }).then(result => {
           var tasks = this.tasksByPermissions(this.$root.config.permissions.displayTasks, result)
-          TaskService.findTasksCountByFilter(this.$store.state.filter.selected.id, filters).then(count => {
-            this.nTasksShown = count
-          })
           //Only needed to fetch the businessKey of every instance.
           this.updateProcessesInstances(tasks, showMore)
         }, () => {
@@ -256,16 +267,20 @@ export default {
       this.tasks.splice(index, 1, updatedTask)
       this.listTasksWithFilterAuto()
     },
-    updateAssignee: function(assignee, target) {
-      if (this.processInstanceHistory) {
-        this.processInstanceHistory.tasksHistory[0].assignee = assignee
+    updateAssignee: function(taskStore, target) {
+      let assigneeString = taskStore?.assignee || null
+      let taskId = taskStore?.taskId || null
+      if (this.task && this.task.id === taskId) {
+        this.assignee = assigneeString
+        this.task.assignee = assigneeString
+      }
+      if (this.processInstanceHistory && this.processInstanceHistory.tasksHistory?.[0]?.id === taskId) {
+        this.processInstanceHistory.tasksHistory[0].assignee = assigneeString
         this.selectedTask(this.processInstanceHistory.tasksHistory[0])
       }
-      if (target === 'taskList') {
-        var currentTaskIndex = this.tasks.findIndex(task => {
-          return task.id === this.task.id
-        })
-        if (currentTaskIndex !== -1) this.tasks[currentTaskIndex].assignee = assignee
+      if (target === 'taskList' && taskId) {
+        const currentTask = this.tasks.find(task => task.id === taskId)
+        if (currentTask) currentTask.assignee = assigneeString
       }
       this.listTasksWithFilterAuto()
     },
@@ -276,6 +291,7 @@ export default {
       this.listTasksWithFilterAuto()
       this.checkAndOpenTask(JSON.parse(JSON.stringify(this.task)))
       this.task = null
+      this.assignee = null
     },
     checkAndOpenTask: function(task, started) {
       if (this.$root.config.automaticallyOpenTask) this.openTaskAutomatically(task, started)
@@ -332,6 +348,7 @@ export default {
     },
     selectedTask: function(task) {
       this.task = task
+      this.assignee = task.assignee || null
       updateAppTitle(
         this.$root.config.productNamePageTitle,
         this.$t('start.taskList.title'),

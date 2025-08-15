@@ -16,17 +16,14 @@
  */
 package org.cibseven.webapp.auth;
 
-import java.util.Collection;
-import java.util.Optional;
-
 import org.cibseven.webapp.auth.providers.JwtUserProvider;
 import org.cibseven.webapp.auth.rest.StandardLogin;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+import io.jsonwebtoken.security.WeakKeyException;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 
 public abstract class BaseUserProvider<R extends StandardLogin> implements JwtUserProvider<R> {
@@ -38,6 +35,15 @@ public abstract class BaseUserProvider<R extends StandardLogin> implements JwtUs
 	
 	@Getter
 	protected JwtTokenSettings settings;
+
+	public void checkKey() {
+		var settings = getSettings();
+		try {
+			createKey(settings.getSecret());
+		} catch(WeakKeyException | IllegalArgumentException e) {
+			throw new IllegalArgumentException("Secret must be at least 155 characters long and a base64 decodable string");
+		}
+	}
 	
 	@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "type")
 	public static abstract class UserSerialization {

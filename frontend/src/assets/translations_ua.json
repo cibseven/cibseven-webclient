@@ -2,7 +2,17 @@
 	"commons": {
 		"edit": "Редагувати",
 		"save": "Зберегти",
-		"copyValue": "Скопіювати значення"
+		"copyValue": "Скопіювати значення",
+		"noMoreResults": "Більше немає результатів",
+		"loadMore": {
+			"title": "Завантажити ще",
+			"tooltip": "Натисніть, щоб завантажити наступні {chunkSize} записів"
+		},
+		"actualisation": {
+			"progress": "Оновлення даних...",
+			"disabled": "Останнє оновлення: {date}\n\nАвтоматичне оновлення вимкнено.\nНатисніть F5 для повторної загрузки даних.",
+			"enabled": "Останнє оновлення: {date}\n\nАвтоматичне оновлення увімкнено.\nОновлення кожні {seconds} секунд."
+		}
 	},
 	"login": {
 		"productName": "CIB seven",
@@ -110,6 +120,7 @@
 			"definitionKey": "Ключ визначення",
 			"definitionName": "Назва визначення",
 			"deploymentId": "ID розгортання",
+			"superProcessInstanceId": "ID супервиконання процесу",
 			"instancesRunning": "Активні екземпляри",
 			"currentVersion": "Поточна версія",
 			"allVersions": "Усі версії",
@@ -236,6 +247,7 @@
 			"name": "Ім’я",
 			"type": "Тип",
 			"value": "Значення",
+			"valueSerialized": "Серіалізоване значення",
 			"actions": "Дії",
 			"scope": "Область",
 			"objectTypeName": "Назва типу об’єкта",
@@ -244,6 +256,12 @@
 			"enterValue": "Введіть значення"
 		},
 		"incidents": {
+			"state": "Стан",
+			"processInstance": "Екземпляр процесу",
+			"deleted": "Видалено",
+			"resolved": "Вирішено",
+			"open": "Відкрито",
+			"unknown": "Невідомо",
 			"message": "Повідомлення",
 			"timestamp": "Дата",
 			"activity": "Активність",
@@ -261,7 +279,11 @@
 			"scheduleAt": "Запланувати на",
 			"invalidDateError": "Введіть коректну дату",
 			"retry": "Повторити спробу",
-			"editAnnotation": "Редагувати анотацію"
+			"editAnnotation": "Редагувати анотацію",
+			"causeIncidentProcessInstanceId": "ID екземпляра процесу-джерела",
+			"rootCauseIncidentProcessInstanceId": "ID екземпляра кореневого процесу-джерела",
+			"createTime": "Дата створення",
+			"endTime": "Дата завершення"
 		},
 		"jobDefinitions": {
 			"state": "Стан",
@@ -367,6 +389,7 @@
 				"openIncidents": "Відкриті інциденти",
 				"suspendedJobDefinition": "Призупинене визначення завдання",
 				"activitiesHistory": "Історія екземплярів завдань",
+				"canceledInstances": "Скасовані екземпляри активності",
 				"openSubprocess": "Показати викликаний процес",
 				"disabledSubprocess": "Визначення процесу буде отримане під час виконання"
 			}
@@ -406,7 +429,8 @@
 				"title": "Дії для завдання",
 				"submit": "Завершити",
 				"save": "Зберегти",
-				"saveError": "Помилка збереження завдання: {0}"
+				"saveError": "Помилка збереження завдання: {0}",
+				"initError": "Сталася помилка під час ініціалізації форми: {0}"
 			},
 			"emptyTask": "Пусте завдання",
 			"showMore": "Показати більше...",
@@ -951,8 +975,9 @@
 			"urlError": "URL недійсний",
 			"errorSaveTask": "Під час збереження завдання сталася помилка.",
 			"taskSelectedNotExist": "Це завдання більше недоступне, тому не буде показано на центральній панелі",
-			"ExistingUserRequestException": "Користувач уже існує",
+			"ExistingUserRequestException": "Користувач вже існує",
 			"ExistingGroupRequestException": "Група вже існує",
+			"VariableModificationException": "Змінна не може бути успішно змінена. Будь ласка, оновіть сторінку та спробуйте знову.",
 			"processNotFound": "Процес з ключем \"{0}\" не знайдено",
 			"filterSaveError": "Сталася помилка під час спроби зберегти фільтр, перевірте введені дані.",
 			"passwordDoNotMatch": "Паролі не збігаються",
@@ -962,6 +987,8 @@
 			"InvalidValueHistoryTimeToLive": "Недопустимі нульові значення для часу зберігання історії."
 		},
 		"searches": {
+			"filter": "Фільтрувати",
+			"refreshAndFilter": "Оновити та відфільтрувати",
 			"search": "Пошук...",
 			"searchByTaskName": "Пошук за назвою завдання...",
 			"searchByDeploymentName": "Пошук за назвою розгортання...",

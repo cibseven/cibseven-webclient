@@ -23,8 +23,8 @@
     :key="index"
   >
     <a
-      role="button"
-      @click="$emit('update:modelValue', tab.id)"
+      :href="getTabUrl(tab)"
+      @click.prevent="handleTabClick(tab)"
       class="nav-link py-2"
       :class="{
         active: tab.id === modelValue,
@@ -41,6 +41,18 @@
 export default {
   name: 'GenericTabs',
   emits: ['update:modelValue'],
-  props: { tabs: Array, modelValue: String }
+  props: { tabs: Array, modelValue: String },
+  methods: {
+    getTabUrl(tab) {
+      const resolved = this.$router.resolve({
+        ...this.$route,
+        query: { ...this.$route.query, tab: tab.id }
+      })
+      return resolved.href
+    },
+    handleTabClick(tab) {
+      this.$emit('update:modelValue', tab.id)
+    }
+  }
 }
 </script>

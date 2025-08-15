@@ -24,10 +24,10 @@ import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.User;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.CacheControl;
@@ -49,11 +49,19 @@ import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.mvc.WebContentInterceptor;
 
+import org.cibseven.webapp.rest.CustomRestTemplate;
+
 import com.fasterxml.jackson.core.StreamReadConstraints;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 @Configuration
+@ConditionalOnProperty(
+	prefix = "cibseven.webclient",
+	name = "enabled",
+	havingValue = "true",
+	matchIfMissing = true
+)
 @ComponentScan({ "org.cibseven.webapp.providers", "org.cibseven.webapp.auth", "org.cibseven.webapp.rest", "org.cibseven.webapp.template", "org.cibseven.webapp.config" })
 public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArgumentResolver {
 
@@ -61,7 +69,7 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 
 	@Value("${cibseven.webclient.custom.spring.jackson.parser.max-size:20000000}")
 	int jacksonParserMaxSize;
-	
+
     @Bean
     public ObjectMapper objectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
@@ -73,7 +81,7 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
         objectMapper.registerModule(new JavaTimeModule());
         return objectMapper;
     }
-	
+
 	@Override
 	public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
 		converters.add(new ResourceHttpMessageConverter()); // needed for DocumentService.download
@@ -99,7 +107,7 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
     public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
         configurer.favorPathExtension(false);
     }
-	
+
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
 		WebContentInterceptor cacheConfig = new WebContentInterceptor();
@@ -109,7 +117,7 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 		// Strict cache control: prevents any caching (including private caches)
 		// Used for HTML entry points to ensure fresh content delivery
 		CacheControl strictNoStoreControl = CacheControl.noStore();
-		
+
 		// Apply strict no-store policy to main application entry points
 		cacheConfig.addCacheMapping(strictNoStoreControl, "/index.html");
 		cacheConfig.addCacheMapping(strictNoStoreControl, "/");
@@ -135,14 +143,14 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 		return provider.authenticateUser(((ServletWebRequest) rq).getRequest());
 	}
 
-	@Bean @Primary
+	@Bean
 	public BpmProvider bpmProvider(@Value("${cibseven.webclient.bpm.provider:org.cibseven.webapp.providers.SevenProvider}") Class<BpmProvider> providerClass)
 			throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException,
 			NoSuchMethodException, SecurityException {
 		return (BpmProvider) providerClass.getConstructor().newInstance();
 	}
 
-	@Bean @Primary
+	@Bean
 	public BaseUserProvider baseUserProvider(@Value("${cibseven.webclient.user.provider:org.cibseven.webapp.auth.SevenUserProvider}") Class<BaseUserProvider> providerClass)
 			throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException,
 			NoSuchMethodException, SecurityException {
@@ -154,6 +162,30 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 	public static PropertySourcesPlaceholderConfigurer placeholderConfigurer() {
 		return new PropertySourcesPlaceholderConfigurer();
 	}
-	
-}
 
+	/**
+	 * Creates a custom RestTemplate bean with configurable settings.
+	 * This can be injected into services that need to make HTTP requests.
+	 * 
+	 * The bean is configured using properties from application.yaml under
+	 * the cibseven.webclient.rest namespace.
+	 * 
+	 * This bean is conditional and will only be created if cibseven.webclient.rest.enabled=true
+	 * or if the property is not specified (default behavior).
+	 * 
+	 * @return a configured CustomRestTemplate instance
+	 */
+	@Bean
+	@ConditionalOnProperty(
+		prefix = "cibseven.webclient.rest",
+		name = "enabled",
+		havingValue = "true",
+		matchIfMissing = true
+	)
+	public CustomRestTemplate customRestTemplate() {
+		// Create a new CustomRestTemplate instance
+		// It will be configured via @PostConstruct using @Autowired dependencies
+		return new CustomRestTemplate();
+	}
+
+}

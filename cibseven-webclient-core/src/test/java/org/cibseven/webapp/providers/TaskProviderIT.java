@@ -27,30 +27,31 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.rest.model.Task;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
+import org.cibseven.webapp.rest.TestRestTemplateConfiguration;
 
 @SpringBootTest
-@ContextConfiguration(classes = {TaskProvider.class})
+@ContextConfiguration(classes = {TaskProvider.class, TestRestTemplateConfiguration.class})
 public class TaskProviderIT extends BaseHelper {
 
     static {
         System.setProperty("spring.banner.location", "classpath:fca-banner.txt");
     }
-	
+
     private MockWebServer mockWebServer;
 
     @Autowired
     private TaskProvider taskProvider;
-    
-    @MockBean
+
+    @MockitoBean
     private IVariableProvider variableProvider;
-    
+
 
     @BeforeEach
     void setUp() throws Exception {
@@ -67,7 +68,7 @@ public class TaskProviderIT extends BaseHelper {
 
         // Inject mock in TaskProvider
         ReflectionTestUtils.setField(taskProvider, "variableProvider", variableProvider);
-        
+
         // Configure the base URL for the TaskProvider to point to the MockWebServer
         String mockBaseUrl = mockWebServer.url("/").toString();
         ReflectionTestUtils.setField(taskProvider, "cibsevenUrl", mockBaseUrl);
@@ -113,7 +114,7 @@ public class TaskProviderIT extends BaseHelper {
         mockWebServer.enqueue(new MockResponse()
                 .setBody(mockResponseBody)
                 .addHeader("Content-Type", "application/json"));
-        
+
         Map<String, Object> params = Map.of();
         // Act
         Integer taskCount = taskProvider.findTasksCount(params, user);

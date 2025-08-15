@@ -5,15 +5,56 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta http-equiv="Cache-Control" content="no-store">
     <style>
-        html, body {
+        html,
+        body {
             height: 100%;
             margin: 0;
         }
+    
         #loader {
             height: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
+        }
+    
+        /* Minimal generated form styles */
+        .form-group {
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+        }
+    
+        /* Restrict label styling to labels inside form groups */
+        .form-group > label, .form-group label {
+            display: inline-block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+    
+        /* Override form-control styles for checkboxes specifically */
+        input[type="checkbox"].form-control {
+            width: 16px !important;
+            height: 16px !important;
+            padding: 0 !important;
+            margin: 0 8px 0 0 !important;
+            background: none !important;
+            border: none !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            display: inline-block !important;
+            vertical-align: middle !important;
+            cursor: pointer !important;
+            -webkit-appearance: checkbox !important;
+            -moz-appearance: checkbox !important;
+            appearance: checkbox !important;
+        }
+    
+        /* Ensure checkbox container stacks items vertically */
+        .form-group:has(input[type="checkbox"]) {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            margin-bottom: 1rem !important;
         }
     </style>
 </head>
@@ -30,6 +71,28 @@
             <button id="submitButton" class="btn btn-secondary">Submit</button>
         </div>
     </div>
-    <script type="module" src="/src/embedded-form/embedded-form.js"></script>
+    <script type="module">
+        import { initEmbeddedForm } from '/src/embedded-form/embedded-form.js'
+        
+        // Get all the required DOM elements
+        const submitButton = document.getElementById('submitButton')
+        const saveButton = document.getElementById('saveButton')
+        const loaderDiv = document.getElementById('loader')
+        const contentDiv = document.getElementById('content')
+        const errorDiv = document.getElementById('embeddedFormError')
+        const embeddedContainer = document.getElementById('embeddedRoot')
+        const formContainer = document.getElementById('embeddedFormRoot')
+            
+        // Initialize the embedded form using the imported function
+        initEmbeddedForm({
+            submitButton,
+            saveButton,
+            loaderDiv,
+            contentDiv,
+            errorDiv,
+            embeddedContainer,
+            formContainer
+        })
+    </script>
 </body>
 </html>

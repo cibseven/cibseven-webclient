@@ -28,8 +28,6 @@ import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.template.StartFormTemplate;
 import org.cibseven.webapp.template.Template;
 import org.cibseven.webapp.template.TemplateTask;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,9 +42,7 @@ import jakarta.servlet.http.HttpServletRequest;
 @Service
 @RestController @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/template")
 public class TemplateService extends BaseService implements InitializingBean {
-  
-  private static final Logger logger = LoggerFactory.getLogger(TemplateService.class);
-	
+
 	@Autowired
 	BaseUserProvider<?> provider;
 	@Autowired
@@ -70,13 +66,6 @@ public class TemplateService extends BaseService implements InitializingBean {
 	public Template getTemplate(@PathVariable String element, @PathVariable String taskId, @RequestParam Optional<String> locale, HttpServletRequest request) throws Exception {
 	  CIBUser user = checkAuthorization(request, false);
 		return name2element.get(element).getTemplate(taskId, locale, user);
-	}
-
-	@RequestMapping(value = "/{element}/key/{processDefinitionId}", method = RequestMethod.GET)
-	public StartFormTemplate getStartFormTemplate(@PathVariable String element, @PathVariable String processDefinitionId, @RequestParam Optional<String> processDefinitionKey,
-			@RequestParam Optional<String> locale, HttpServletRequest request) throws Exception {
-	  CIBUser user = checkAuthorization(request, false);
-		return name2element.get(element).getStartFormTemplate(processDefinitionId, processDefinitionKey, locale, user);
 	}
 	
 }

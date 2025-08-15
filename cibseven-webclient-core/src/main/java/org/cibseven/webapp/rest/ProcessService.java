@@ -18,10 +18,13 @@ package org.cibseven.webapp.rest;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+
+import java.nio.charset.StandardCharsets;
 
 import org.cibseven.webapp.Data;
 import org.cibseven.webapp.auth.CIBUser;
@@ -37,6 +40,7 @@ import org.cibseven.webapp.rest.model.ActivityInstance;
 import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.DeploymentResource;
 import org.cibseven.webapp.rest.model.EventSubscription;
+import org.cibseven.webapp.rest.model.Incident;
 import org.cibseven.webapp.rest.model.Message;
 import org.cibseven.webapp.rest.model.Process;
 import org.cibseven.webapp.rest.model.ProcessDiagram;
@@ -68,6 +72,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.core.MediaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ApiResponses({
 	@ApiResponse(responseCode = "500", description = "An unexpected system error occured"),
@@ -265,6 +270,33 @@ public class ProcessService extends BaseService implements InitializingBean {
 	}
 	
 	@Operation(
+			summary = "Get deployed start form for process",
+			description = "<strong>Return: Start form data as JSON")
+	@ApiResponse(responseCode = "404", description = "Process or start form not found")
+	@RequestMapping(value = "/{processDefinitionId}/deployed-start-form", method = RequestMethod.GET)
+	public Object getDeployedStartForm(
+			@Parameter(description = "Process definition Id") @PathVariable String processDefinitionId,
+			Locale loc, CIBUser user) {
+		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_ALL);
+		
+		try {
+			ResponseEntity<byte[]> response = bpmProvider.getDeployedStartForm(processDefinitionId, user);
+			byte[] body = response.getBody();
+			
+			if (body == null || body.length == 0) {
+				return null;
+			}
+			
+			String jsonString = new String(body, StandardCharsets.UTF_8);
+			ObjectMapper objectMapper = new ObjectMapper();
+			return objectMapper.readValue(jsonString, Object.class);
+			
+		} catch (Exception e) {
+			throw new SystemException("Error parsing deployed start form: " + e.getMessage(), e);
+		}
+	}
+	
+	@Operation(
 			summary = "Download BPMN",
 			description = "<strong>Return: BPMN")
 	@ApiResponse(responseCode = "404", description = "Process not found")
@@ -294,7 +326,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			description = "<strong>Return: void")
 	@ApiResponse(responseCode = "404", description = "Process not found")
 	@RequestMapping(value = "/instance/{processInstanceId}/suspend", method = RequestMethod.PUT)
-	public void suspendProcessInstance(
+	public ResponseEntity<Void> suspendProcessInstance(
 			@Parameter(description = "Process instance Id") @PathVariable String processInstanceId,
 			@Parameter(description = "If true, the process instance will be activated"
 					+ "<br>If false, the process will be suspended") @RequestParam Boolean suspend,
@@ -302,6 +334,8 @@ public class ProcessService extends BaseService implements InitializingBean {
 		checkCockpitRights(user);
 		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.SUSPEND_INSTANCE_ALL);
 		bpmProvider.suspendProcessInstance(processInstanceId, suspend, user);
+    // return 204 No Content, no body
+    return ResponseEntity.noContent().build();
 	}
 	
 	@Operation(
@@ -309,12 +343,14 @@ public class ProcessService extends BaseService implements InitializingBean {
 			description = "<strong>Return: void")
 	@ApiResponse(responseCode = "404", description = "Process not found")
 	@RequestMapping(value = "/instance/{processInstanceId}/delete", method = RequestMethod.DELETE)
-	public void deleteProcessInstance(
+	public ResponseEntity<Void> deleteProcessInstance(
 			@Parameter(description = "Process instance Id") @PathVariable String processInstanceId,
 			Locale loc, CIBUser user) {
 		checkCockpitRights(user);
 		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.DELETE_ALL);
 		bpmProvider.deleteProcessInstance(processInstanceId, user);
+    // return 204 No Content, no body
+    return ResponseEntity.noContent().build();
 	}
 	
 	@Operation(
@@ -322,13 +358,15 @@ public class ProcessService extends BaseService implements InitializingBean {
 			description = "<strong>Return: void")
 	@ApiResponse(responseCode = "404", description = "Process not found")
 	@RequestMapping(value = "/{id}/delete", method = RequestMethod.DELETE)
-	public void deleteProcessDefinition(
+	public ResponseEntity<Void> deleteProcessDefinition(
 			@Parameter(description = "Process definition Id") @PathVariable String id,
 			@RequestParam Optional<Boolean> cascade,
 			Locale loc, CIBUser user) {
 		checkCockpitRights(user);
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.DELETE_ALL);
 		bpmProvider.deleteProcessDefinition(id, cascade, user);
+    // return 204 No Content, no body
+    return ResponseEntity.noContent().build();
 	}
 	
 	@Operation(
@@ -339,7 +377,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 		@ApiResponse(responseCode = "415", description = "Unsupported value type")
 	})
 	@RequestMapping(value = "/{processId}/suspend", method = RequestMethod.PUT)
-	public void suspendProcessDefinition(
+	public ResponseEntity<Void> suspendProcessDefinition(
 			@Parameter(description = "Process definition Id") @PathVariable String processId,
 			@Parameter(description = "If true, the process instance will be activated"
 					+ "<br>If false, the process will be suspended") @RequestParam Boolean suspend,
@@ -351,6 +389,8 @@ public class ProcessService extends BaseService implements InitializingBean {
 		checkCockpitRights(user);
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.SUSPEND_ALL);
 		bpmProvider.suspendProcessDefinition(processId, suspend, includeProcessInstances, executionDate.orElse(null), user);
+    // return 204 No Content, no body
+    return ResponseEntity.noContent().build();
 	}
 
 	@Operation(
@@ -358,12 +398,12 @@ public class ProcessService extends BaseService implements InitializingBean {
 			description = "<strong>Return: void")
 	@ApiResponse(responseCode = "404", description = "Process not found")
 	@RequestMapping(value = "/{key}/incidents", method = RequestMethod.GET)
-	public void fetchIncidents(
+	public Collection<Incident> fetchIncidents(
 			@Parameter(description = "Process key") @PathVariable String key,
 			Locale loc, CIBUser user) {
 		checkCockpitRights(user);
 		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.READ_ALL);
-		bpmProvider.fetchIncidents(key, user);
+    return bpmProvider.fetchIncidents(key, user);
 	}
 
 	@Operation(
@@ -389,12 +429,31 @@ public class ProcessService extends BaseService implements InitializingBean {
 	}
 
 	@Operation(
-			summary = "Get all deployments of a given deployment",
+			summary = "Get count of all deployments for given query",
+			description = "<strong>Return: number of deployments")
+	@RequestMapping(value = "/deployments/count", method = RequestMethod.GET)
+	public Long countDeployments(
+		CIBUser user,
+		@RequestParam(value = "nameLike", required = false, defaultValue = "") String nameLike
+	) {
+		checkPermission(user, SevenResourceType.DEPLOYMENT, PermissionConstants.READ_ALL);
+		return bpmProvider.countDeployments(user, nameLike);
+	}
+
+	@Operation(
+			summary = "Get all deployments for given query",
 			description = "<strong>Return: Collection of deployments")
 	@RequestMapping(value = "/deployments", method = RequestMethod.GET)
-	public Collection<Deployment> findDeployments(CIBUser user) {
-    	checkPermission(user, SevenResourceType.DEPLOYMENT, PermissionConstants.READ_ALL);
-		return bpmProvider.findDeployments(user);
+	public Collection<Deployment> findDeployments(
+		CIBUser user,
+		@RequestParam(value = "nameLike", required = false, defaultValue = "") String nameLike,
+		@RequestParam(value = "firstResult", required = false, defaultValue = "0") int firstResult,
+		@RequestParam(value = "maxResults", required = false, defaultValue = "50") int maxResults,
+		@RequestParam(value = "sortBy", required = false, defaultValue = "deploymentTime") String sortBy,
+		@RequestParam(value = "sortOrder", required = false, defaultValue = "desc") String sortOrder
+	) {
+		checkPermission(user, SevenResourceType.DEPLOYMENT, PermissionConstants.READ_ALL);
+		return bpmProvider.findDeployments(user, nameLike, firstResult, maxResults, sortBy, sortOrder);
 	}
 	
 	@Operation(
@@ -438,13 +497,15 @@ public class ProcessService extends BaseService implements InitializingBean {
 			description = "<strong>Return: void")
 	@ApiResponse(responseCode = "404", description = "Deployment not found")
 	@RequestMapping(value = "/deployments/{deploymentId}", method = RequestMethod.DELETE)
-	public void deleteDeployment(
+	public ResponseEntity<Void> deleteDeployment(
 			@Parameter(description = "Deployment Id") @PathVariable String deploymentId,
 			@Parameter(description = "Delete in cascade?") @RequestParam Boolean cascade,
 			Locale loc, CIBUser user) {
 		checkCockpitRights(user);
 		checkPermission(user, SevenResourceType.DEPLOYMENT, PermissionConstants.DELETE_ALL);
 		bpmProvider.deleteDeployment(deploymentId, cascade, user);
+    // return 204 No Content, no body
+    return ResponseEntity.noContent().build();
 	}
 	
 	@Operation(
@@ -482,13 +543,15 @@ public class ProcessService extends BaseService implements InitializingBean {
 			"<strong>Return: void")
 	@ApiResponse(responseCode = "404", description = "Execution not found")
 	@RequestMapping(value = "/execution/{executionId}/localVariables", method = RequestMethod.POST)
-	public void modifyVariableByExecutionId(
+	public ResponseEntity<Void> modifyVariableByExecutionId(
 			@Parameter(description = "Id of the execution") @PathVariable String executionId,
 			@RequestBody Map<String, Object> data,
 			Locale loc, CIBUser user) {
 		checkCockpitRights(user);
         checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.UPDATE_ALL);
 		bpmProvider.modifyVariableByExecutionId(executionId, data, user);
+    // return 204 No Content, no body
+    return ResponseEntity.noContent().build();
 	}
 	
 	@Operation(
@@ -496,14 +559,18 @@ public class ProcessService extends BaseService implements InitializingBean {
 			description = "<strong>Return: void")
 	@ApiResponse(responseCode = "404", description = "Execution not found")
 	@RequestMapping(value = "/execution/{executionId}/localVariables/{variableName}/data", method = RequestMethod.POST)
-	public void modifyVariableDataByExecutionId(
+	public ResponseEntity<Void> modifyVariableDataByExecutionId(
 			@Parameter(description = "Execution Id") @PathVariable String executionId,
 			@Parameter(description = "Name of the variable") @PathVariable String variableName,
-			@Parameter(description = "Data to be updated") @RequestParam MultipartFile file,
+			@Parameter(description = "Data to be updated") @RequestParam MultipartFile data,
+			@Parameter(description = "Value type") @RequestParam Optional<String> valueType,
 			Locale loc, CIBUser user) {
 		checkCockpitRights(user);
-        checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.UPDATE_ALL);
-		bpmProvider.modifyVariableDataByExecutionId(executionId, variableName, file, user);
+		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.UPDATE_ALL);
+		final String valueTypeStr = valueType.orElse("File"); //  Enum: "Bytes" "File"
+		bpmProvider.modifyVariableDataByExecutionId(executionId, variableName, data, valueTypeStr, user);
+		// return 204 No Content, no body
+		return ResponseEntity.noContent().build();
 	}
 	
 	@Operation(
@@ -524,13 +591,15 @@ public class ProcessService extends BaseService implements InitializingBean {
 			summary = "Delete a variable in the process instance")
 	@ApiResponse(responseCode = "404", description = "Execution not found")
 	@RequestMapping(value = "/execution/{executionId}/localVariables/{variableName}", method = RequestMethod.DELETE)
-	public void deleteVariableByExecutionId(
+	public ResponseEntity<Void> deleteVariableByExecutionId(
 			@Parameter(description = "Id of the execution") @PathVariable String executionId,
 			@PathVariable String variableName,
 			Locale loc, CIBUser user) {
 		checkCockpitRights(user);
 		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.DELETE_ALL);
 		bpmProvider.deleteVariableByExecutionId(executionId, variableName, user);
+    // return 204 No Content, no body
+    return ResponseEntity.noContent().build();
 	}
 	
 	@Operation(
@@ -540,11 +609,23 @@ public class ProcessService extends BaseService implements InitializingBean {
 	@RequestMapping(value = "/variable-instance/process-instance/{processInstanceId}/variables", method = RequestMethod.GET)
 	public Collection<Variable> fetchProcessInstanceVariables(
 			@Parameter(description = "Process instance Id") @PathVariable String processInstanceId,
+			@Parameter(description = "Variable name") @RequestParam Optional<String> variableName,
+			@Parameter(description = "Variable name like") @RequestParam Optional<String> variableNameLike,
+			@Parameter(description = "Variable values") @RequestParam Optional<String> variableValues,
+			@Parameter(description = "Variable names ignore case") @RequestParam Optional<Boolean> variableNamesIgnoreCase,
+			@Parameter(description = "Variable values ignore case") @RequestParam Optional<Boolean> variableValuesIgnoreCase,
 			@Parameter(description = "Deserialize value") @RequestParam Optional<Boolean> deserialize,
 			Locale loc, CIBUser user) {
 		checkCockpitRights(user);
-        checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_INSTANCE_VARIABLE_ALL);
-		return bpmProvider.fetchProcessInstanceVariables(processInstanceId, user, deserialize);
+		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_INSTANCE_VARIABLE_ALL);
+		final Map<String, Object> data = new HashMap<>();
+		data.put("variableName", variableName.orElse(null));
+		data.put("variableNameLike", variableNameLike.orElse(null));
+		data.put("variableValues", variableValues.orElse(null));
+		data.put("variableNamesIgnoreCase", variableNamesIgnoreCase.orElse(false));
+		data.put("variableValuesIgnoreCase", variableValuesIgnoreCase.orElse(false));
+		data.put("deserializeValue", deserialize.orElse(true));
+		return bpmProvider.fetchProcessInstanceVariables(processInstanceId, data, user);
 	}
 	
 	@Operation(
@@ -563,9 +644,9 @@ public class ProcessService extends BaseService implements InitializingBean {
       summary = "Get statistics for all processes ",
       description = "<strong>Return: Collection of all processes statistics")
   @RequestMapping(value = "/process-definition/statistics", method = RequestMethod.GET)
-  public Collection<ProcessStatistics> getProcessStatistics(Locale loc, CIBUser user) {
+  public Collection<ProcessStatistics> getProcessStatistics(@RequestParam Map<String, Object> queryParams, Locale loc, CIBUser user) {
     checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_ALL);
-    return bpmProvider.getProcessStatistics(user);
+    return bpmProvider.getProcessStatistics(queryParams, user);
   }
 	
 	//Requested by OFDKA
@@ -599,6 +680,31 @@ public class ProcessService extends BaseService implements InitializingBean {
         checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_INSTANCE_VARIABLE_ALL);
 		return sevenProvider.fetchProcessInstanceVariableData(processInstanceId, variableName, user);
 	}
+	
+	@Operation(
+			summary = "Upload file data for a variable of a given process instance by Id",
+			description = "<strong>Return: void")
+	@ApiResponse(responseCode = "404", description = "Process instance not found")
+	@RequestMapping(value = "/process-instance/{processInstanceId}/variables/{variableName}/data", method = RequestMethod.POST)
+	public ResponseEntity<Void> uploadProcessInstanceVariableFileData(
+			@Parameter(description = "Process instance Id") @PathVariable String processInstanceId,
+			@Parameter(description = "Variable name") @PathVariable String variableName,
+			@Parameter(description = "File data to be uploaded") @RequestParam(required = true) MultipartFile data,
+			@Parameter(description = "Value type") @RequestParam Optional<String> valueType,
+			Locale loc, HttpServletRequest rq) {
+		CIBUser user = checkAuthorization(rq, true);
+		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.UPDATE_INSTANCE_VARIABLE_ALL);
+		final String valueTypeStr = valueType.orElse("File"); //  Enum: "Bytes" "File"
+		try {
+			sevenProvider.uploadProcessInstanceVariableFileData(processInstanceId, variableName, data, valueTypeStr, user);
+			return ResponseEntity.noContent().build();
+		} catch (Exception e) {
+			if (e instanceof NoObjectFoundException) {
+				return ResponseEntity.notFound().build();
+			}
+			throw new RuntimeException("Failed to upload variable file data", e);
+		}
+	}
 		
 	@Operation(
 			description = "Get a variable of a given process instance by Id" +
@@ -608,12 +714,13 @@ public class ProcessService extends BaseService implements InitializingBean {
 	public Variable findProcessInstanceVariable(
 			@Parameter(description = "Process instance Id") @PathVariable String processInstanceId,
 			@Parameter(description = "Variable name") @PathVariable String variableName,
-			@Parameter(description = "Deserialize value") @RequestParam(required = false) String deserializeValue,
+			@Parameter(description = "Deserialize value") @RequestParam(required = false) Boolean deserializeValue,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
 		checkCockpitRights(user);
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_INSTANCE_VARIABLE_ALL);
-		return sevenProvider.fetchProcessInstanceVariable(processInstanceId, variableName, deserializeValue, user);
+		boolean deserialize = (deserializeValue == null) || (deserializeValue != null && deserializeValue == true);
+		return sevenProvider.fetchProcessInstanceVariable(processInstanceId, variableName, deserialize, user);
 	}
 	
 	@Operation(
@@ -632,7 +739,8 @@ public class ProcessService extends BaseService implements InitializingBean {
 		// TODO: Check the permission, but not considered the groups, needs to be checked.
 		// checkSpecificProcessRights(user, processDefinitionKey);
 		try {
-			return sevenProvider.fetchProcessInstanceVariable(processInstanceId, "chatComments", deserialize, user);	
+			boolean deserializeValue = (deserialize == null) || (deserialize != null && deserialize == "true");
+			return sevenProvider.fetchProcessInstanceVariable(processInstanceId, "chatComments", deserializeValue, user);	
 		} catch(NoObjectFoundException e) {
 			return null;
 		}
@@ -654,7 +762,8 @@ public class ProcessService extends BaseService implements InitializingBean {
 		// TODO: Check the permission, but not considered the groups, needs to be checked.
 		// checkSpecificProcessRights(user, processDefinitionKey);
 		try {
-			return sevenProvider.fetchProcessInstanceVariable(processInstanceId, "_statusDataset", deserialize, user);	
+			boolean deserializeValue = (deserialize == null) || (deserialize != null && deserialize == "true");
+			return sevenProvider.fetchProcessInstanceVariable(processInstanceId, "_statusDataset", deserializeValue, user);	
 		} catch(NoObjectFoundException e) {
 			return null;
 		}
@@ -702,18 +811,20 @@ public class ProcessService extends BaseService implements InitializingBean {
 			summary = "Update process definition history time to live",
 			description = "<strong>Return: void")
 	@RequestMapping(value = "/{id}/history-time-to-live", method = RequestMethod.PUT)
-	public void updateHistoryTimeToLive(@PathVariable String id, 
+	public ResponseEntity<Void> updateHistoryTimeToLive(@PathVariable String id, 
 			@RequestBody Map<String, Object> data, Locale loc, CIBUser user) {
 		checkCockpitRights(user);
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.UPDATE_ALL);
 		bpmProvider.updateHistoryTimeToLive(id, data, user);
+    // return 204 No Content, no body
+    return ResponseEntity.noContent().build();
 	}
 	
 	
 	@Operation(summary = "Create a variable in the process instance")
 	@ApiResponse(responseCode = "404", description = "Execution not found")
 	@RequestMapping(value = "/execution/{executionId}/localVariables/{varName}", method = RequestMethod.PUT)
-	public void putLocalExecutionVariable(
+	public ResponseEntity<Void> putLocalExecutionVariable(
 			@Parameter(description = "Id of the execution") @PathVariable String executionId,
 			@Parameter(description = "Variable name") @PathVariable String varName,
 			@RequestBody Map<String, Object> data,
@@ -721,6 +832,8 @@ public class ProcessService extends BaseService implements InitializingBean {
 		checkCockpitRights(user);
         checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.UPDATE_INSTANCE_VARIABLE_ALL);
 		bpmProvider.putLocalExecutionVariable(executionId, varName, data, user);
+    // return 204 No Content, no body
+    return ResponseEntity.noContent().build();
 	}
 	
 	  @Consumes(MediaType.APPLICATION_JSON)

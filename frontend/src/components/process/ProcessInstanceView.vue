@@ -21,19 +21,35 @@
     <ol class="breadcrumb m-0 d-flex align-items-center w-100 ps-3" style="min-height: 40px; line-height: 20px;">
       <!-- Parent process link if exists -->
       <li v-if="parentProcess" class="breadcrumb-item">
-        <router-link 
-          :to="{
-            path: `/seven/auth/process/${parentProcess.key}/${parentProcess.version}`,
-            query: {
-              ...Object.fromEntries(
-                Object.entries($route.query).filter(([key]) => key !== 'parentProcessDefinitionId')
-              ),
-              tab: 'instances'
-            }
-          }"
-          class="text-decoration-none d-flex align-items-center fw-bold text-info">
-          {{ parentProcess.name || parentProcess.key }}
-        </router-link>
+        <span class="d-flex align-items-center">
+          <router-link 
+            :to="{
+              path: `/seven/auth/process/${parentProcess.key}/${parentProcess.version}`,
+              query: {
+                ...Object.fromEntries(
+                  Object.entries($route.query).filter(([key]) => key !== 'parentProcessDefinitionId')
+                ),
+                tab: 'instances'
+              }
+            }"
+            class="text-decoration-none d-flex align-items-center fw-bold text-info">
+            {{ parentProcess.name || parentProcess.key }}
+          </router-link>
+          <span v-if="superProcessInstance" class="pe-1">:</span>
+          <router-link v-if="superProcessInstance"
+            :to="{
+              name: 'process',
+              params: {
+                processKey: superProcessInstance.processDefinitionKey,
+                versionIndex: superProcessInstance.processDefinitionVersion,
+                instanceId: superProcessInstance.id
+              },
+              query: { tab: 'variables' }
+            }"
+            class="text-decoration-none d-flex align-items-center fw-bold text-info">
+            {{ superProcessInstance.id }}
+          </router-link>
+        </span>
       </li>
       <!-- Current process link -->
       <li class="breadcrumb-item d-flex align-items-center">
@@ -58,12 +74,12 @@
       <component :is="BpmnViewerPlugin" v-if="BpmnViewerPlugin" ref="diagram" class="h-100"
         @child-activity="filterByChildActivity($event)" @task-selected="selectTask($event)" @activity-map-ready="activityMap = $event"
         :activityId="activityId" :activity-instance="activityInstance" :process-definition-id="process.id" :selected-instance="selectedInstance" :activity-instance-history="activityInstanceHistory" 
-        :statistics="process.statistics" :activities-history="process.activitiesHistory" :active-tab="activeTab" >
+        :statistics="process.statistics" :active-tab="activeTab" >
       </component>
       <BpmnViewer v-else ref="diagram" class="h-100"
         @child-activity="filterByChildActivity($event)" @task-selected="selectTask($event)" :activityId="activityId" 
         :activity-instance="activityInstance" :selected-instance="selectedInstance" :activity-instance-history="activityInstanceHistory" 
-        :statistics="process.statistics" :process-definition-id="process.id" :activities-history="process.activitiesHistory">
+        :statistics="process.statistics" :process-definition-id="process.id">
       </BpmnViewer>
       <span role="button" size="sm" variant="light" class="bg-white px-2 py-1 me-1 position-absolute border rounded" style="bottom: 90px; right: 11px;" @click="toggleContent">
         <span class="mdi mdi-18px" :class="toggleIcon"></span>
@@ -105,7 +121,8 @@
 </template>
 
 <script>
-import { ProcessService } from '@/services.js'
+import { ProcessService, HistoryService } from '@/services.js'
+import { mapActions } from 'vuex'
 
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
 import tabScrollButtons from '@/components/process/mixins/tabScrollButtons.js'
@@ -130,14 +147,15 @@ export default {
   props: {
     selectedInstance: Object,
     activityInstance: Object,
-    activityInstanceHistory: Object,
-    parentProcess: Object
+    activityInstanceHistory: Object
   },
   data: function() {
     return {
       filterHeight: 0,
       activityId: '',
-      defaultTab: 'variables'
+      defaultTab: 'variables',
+      parentProcess: null,
+      superProcessInstance: null
     }
   },
   watch: {
@@ -145,6 +163,14 @@ export default {
       ProcessService.fetchDiagram(this.process.id).then(response => {
         this.$refs.diagram.showDiagram(response.bpmn20Xml, null, null)
       })
+    },
+    'selectedInstance.superProcessInstanceId': function(newVal) {
+      if (newVal) {
+        this.loadSuperProcessInstance(newVal)
+      } else {
+        this.superProcessInstance = null
+        this.parentProcess = null
+      }
     }
   },
   computed: {
@@ -168,8 +194,18 @@ export default {
     ProcessService.fetchDiagram(this.process.id).then(response => {
       this.$refs.diagram.showDiagram(response.bpmn20Xml, null, null)
     })
+    // Load super process instance if available
+    if (this.selectedInstance?.superProcessInstanceId) {
+      this.loadSuperProcessInstance(this.selectedInstance.superProcessInstanceId)
+    }
+    if (this.selectedInstance) {
+      this.clearHistoricActivityStatistics()
+      const params = { processInstanceIdIn: this.selectedInstance.id }
+      this.loadHistoricActivityStatistics({ processDefinitionId: this.process.id, params })
+    }
   },
   methods: {
+    ...mapActions(['loadHistoricActivityStatistics', 'clearHistoricActivityStatistics']),
     selectTask: function(event) {
       this.selectedTask = event
       this.$emit('task-selected', event);
@@ -182,7 +218,28 @@ export default {
         this.activityId = ''
         this.filteredVariables = this.variables
       }
-    }
+    },
+    loadSuperProcessInstance: async function(superProcessInstanceId) {
+      try {
+        // Fetch the super process instance data
+        this.superProcessInstance = await HistoryService.findProcessInstance(superProcessInstanceId)
+        
+        // Use the process definition data from the super process instance
+        if (this.superProcessInstance.processDefinitionKey) {
+          this.parentProcess = {
+            key: this.superProcessInstance.processDefinitionKey,
+            name: this.superProcessInstance.processDefinitionName || this.superProcessInstance.processDefinitionKey,
+            version: this.superProcessInstance.processDefinitionVersion,
+            id: this.superProcessInstance.processDefinitionId,
+            tenantId: this.superProcessInstance.tenantId
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load super process instance:', error)
+        this.superProcessInstance = null
+        this.parentProcess = null
+      }
+    },
   }
 }
 </script>

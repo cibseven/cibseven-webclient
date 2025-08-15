@@ -37,15 +37,27 @@
                 <span class="text-primary mdi mdi-18px mdi-filter-variant" :title="$t('sorting.sortBy')"></span><span>{{ $t('sorting.sortBy') }}</span>
               </b-input-group-prepend>
               <b-input-group-append class="d-flex align-items-center">
-                <b-form-select size="sm" v-model="sorting.key" :options="sortingFields" class="mb-0"></b-form-select>
+                <b-form-select size="sm" v-model="sortBy" :options="sortingFields" class="mb-0"></b-form-select>
                 <b-button size="sm" v-hover-style="{ classes: ['text-primary'] }" variant="secondary-outline" @click="changeSortingOrder()" class="mdi mdi-18px ms-1 border-0"
-                  :class="sorting.order === 'desc' ? 'mdi-arrow-down' : 'mdi-arrow-up'"
-                  :title="sorting.order === 'desc' ? $t('sorting.desc') : $t('sorting.asc')"></b-button>
+                  :class="sortOrder === 'desc' ? 'mdi-arrow-down' : 'mdi-arrow-up'"
+                  :title="sortOrder === 'desc' ? $t('sorting.desc') : $t('sorting.asc')"></b-button>
               </b-input-group-append>
             </b-input-group>
           </b-form-group>
         </div>
-        <div class="col-6">
+        <div class="col-2 text-secondary p-0 m-0">
+          <div class="">
+            <span>{{ $t('deployment.title') }}:&nbsp;</span>
+            <div class="d-inline-block text-nowrap">
+              <span v-if="!loading">{{ deployments.length }}</span>
+              <span v-else>0</span>
+              /
+              <span v-if="totalCount !== undefined">{{ totalCount }}</span>
+              <span v-else>0</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-4">
           <b-input-group size="sm" class="align-items-center justify-content-end">
             <b-form-checkbox class="me-3" size="sm" v-model="isAllChecked">
               <span>{{ $t('deployment.selectAll') }}</span>
@@ -58,19 +70,39 @@
         </div>
       </div>
     </div>
-    <SidebarsFlow ref="sidebars" class="border-top overflow-auto" v-model:right-open="rightOpen" :right-caption="$t('deployment.resourcesCaption')" :rightSize="[12, 4, 3, 3, 3]">
+    <SidebarsFlow class="border-top" v-model:right-open="rightOpen" :right-caption="$t('deployment.resourcesCaption')" :rightSize="[12, 4, 3, 3, 3]">
       <template v-slot:right>
         <ResourcesNavBar v-if="!resourcesLoading" :resources="resources" :deployment="deployment"></ResourcesNavBar>
         <b-waiting-box v-else styling="width: 35px" class="h-100 d-flex justify-content-center"></b-waiting-box>
       </template>
-      <DeploymentList v-if="!loading && deploymentsFiltered.length > 0" :deployments="deploymentsFiltered" :deployment="deployment" :sorting="sorting"
-        @select-deployment="selectDeployment($event)"></DeploymentList>
-      <div v-else-if="!loading && deploymentsFiltered.length === 0" class="text-center text-secondary">
-        <img src="@/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mt-5 mb-3" style="width: 200px">
-        <div class="h5 text-secondary text-center">{{ $t('deployment.noDeployments') }}</div>
-      </div>
-      <div v-else class="h-100 d-flex justify-content-center align-items-center">
-        <b-waiting-box class="d-inline me-2" styling="width: 35px"></b-waiting-box> {{ $t('admin.loading') }}
+      <div ref="scrollableArea" class="w-100 h-100 d-flex flex-column overflow-auto overflow-y-scroll">
+
+        <PagedScrollableContent
+          :loading="loading"
+          :loaded-count="deployments.length"
+          :total-count="totalCount"
+          :chunk-size="maxResults"
+          :scrollable-area="$refs.scrollableArea"
+          @load-next-page="loadNextPage"
+          :show-loading-spinner="loading && deployments.length > 0"
+          >
+          <DeploymentList v-if="deployments.length > 0"
+            :groups="groups"
+            :deployments="deployments"
+            :deployment="deployment"
+            @select-deployment="selectDeployment"
+            ></DeploymentList>
+          <div v-else class="h-100 d-flex justify-content-center align-items-center text-center text-secondary">
+            <div v-if="loading">
+              <b-waiting-box class="d-inline me-2" styling="width: 35px"></b-waiting-box> {{ $t('admin.loading') }}
+            </div>
+            <div v-else>
+              <img src="@/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mt-5 mb-3" style="width: 200px">
+              <div class="h5">{{ $t('deployment.noDeployments') }}</div>
+            </div>
+          </div>
+        </PagedScrollableContent>
+
       </div>
     </SidebarsFlow>
     <b-modal ref="deleteModal" :title="$t('confirm.title')">
@@ -95,49 +127,55 @@
 </template>
 
 <script>
-import { sortDeployments } from '@/components/deployment/utils.js'
 import { permissionsMixin } from '@/permissions.js'
 import { ProcessService } from '@/services.js'
+import { moment } from '@/globals.js'
+import { debounce } from '@/utils/debounce.js'
 import DeploymentList from '@/components/deployment/DeploymentList.vue'
+import PagedScrollableContent from '@/components/common-components/PagedScrollableContent.vue'
 import ResourcesNavBar from '@/components/deployment/ResourcesNavBar.vue'
 import SidebarsFlow from '@/components/common-components/SidebarsFlow.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 
 export default {
   name: 'DeploymentsView',
-  components: { DeploymentList, ResourcesNavBar, SidebarsFlow, SuccessAlert },
+  components: { PagedScrollableContent, DeploymentList, ResourcesNavBar, SidebarsFlow, SuccessAlert },
   inject: ['loadProcesses'],
   mixins: [permissionsMixin],
   data: function() {
     return {
       rightOpen: false,
+      groups: [],
       deployments: [],
       deployment: null,
-      loading: true,
+      totalCount: undefined,
+      loading: false,
       deleteLoader: false,
       filter: this.$route.query.filter || '',
-      sorting: { key: 'deploymentTime', order: 'asc' },
+      firstResult: 0,
+      maxResults: 50, // The maximum number of results to fetch per page.
+      sortBy: 'deploymentTime', // Enum: "id" "name" "deploymentTime" "tenantId"
+      sortOrder: 'desc', // Enum: "asc" "desc"
       cascadeDelete: true,
       resources: [],
       resourcesLoading: false,
-      deploymentsDelData: { total: 0, deleted: 0 }
+      deploymentsDelData: { total: 0, deleted: 0 },
+      debouncedSearch: null
     }
   },
   watch: {
-    sorting: {
-      handler: function() {
-        localStorage.setItem('cibseven:deploymentSorting', JSON.stringify(this.sorting))
-      },
-      deep: true
+    filter: function() {
+      this.debouncedSearch()
+    },
+    sortBy: function(newSortBy) {
+      localStorage.setItem('cibseven:deployments.sortBy', newSortBy)
+      this.groups = []
+      this.deployments = []
+      this.deployment = null
+      this.loadNextPage()
     }
   },
   computed: {
-    deploymentsFiltered: function() {
-      const filterUpper = this.filter.toUpperCase()
-      return this.deployments
-        .filter(d => this.isDeploymentFiltered(d, filterUpper))
-        .sort((a, b) => sortDeployments(a, b, this.sorting.key, this.sorting.order))
-    },
     sortingFields: function() {
       return [
         { text: this.$t('sorting.deployments.deploymentTime'), value: 'deploymentTime' },
@@ -145,35 +183,106 @@ export default {
       ]
     },
     deploymentsSelected: function() {
-      return this.deploymentsFiltered.filter(d => {
+      return this.deployments.filter(d => {
         return d.isSelected
       })
     },
     isAllChecked: {
       get: function() {
-        return this.deploymentsFiltered.length > 0 && this.deploymentsFiltered.reduce((allSelected, d) => (allSelected && d.isSelected), true)
+        return this.deployments.length > 0 && this.deployments.reduce((allSelected, d) => (allSelected && d.isSelected), true)
       },
       set: function(checked) {
-        this.deploymentsFiltered.forEach(d => { d.isSelected = checked })
+        this.deployments.forEach(d => { d.isSelected = checked })
       }
-    }
+    },
+    allLoaded() {
+      return (this.totalCount === undefined) ? false : (this.deployments.length >= this.totalCount)
+    },
   },
   created: function () {
-    this.sorting = localStorage.getItem('cibseven:deploymentSorting') ? JSON.parse(localStorage.getItem('cibseven:deploymentSorting')) :
-      { key: 'deploymentTime', order: 'asc' }
-    this.sorting.key = this.sortingFields.some((field) => field.value === this.sorting.key) ? this.sorting.key : 'deploymentTime'
-    this.sorting.order = ['asc','desc'].includes(this.sorting.order) ? this.sorting.order : 'asc'
+    this.debouncedSearch = debounce(800, this.performSearch)
 
-    ProcessService.findDeployments().then(deployments => {
-      deployments.forEach(d => {
-        d.isSelected = false
-        d.name = d.name || d.id
-      })
-      this.deployments = deployments
-      this.loading = false
-    })
+    // load sortBy
+    const newSortBy = localStorage.getItem('cibseven:deployments.sortBy')
+    if (this.sortingFields.some((field) => field.value === newSortBy)) {
+      this.sortBy = newSortBy
+    } else {
+      this.sortBy = 'deploymentTime'
+    }
+
+    // load sortOrder
+    const newSortOrder = localStorage.getItem('cibseven:deployments.sortOrder')
+    if (['asc','desc'].includes(newSortOrder)) {
+      this.sortOrder = newSortOrder
+    }
+    else {
+      this.sortOrder = this.sortBy === 'deploymentTime' ? 'desc' : 'asc'
+    }
+
+    this.loadNextPage()
   },
   methods: {
+    performSearch: function() {
+      this.groups = []
+      this.deployments = []
+      this.deployment = null
+      this.loadNextPage()
+    },
+    refreshTotalCount() {
+      this.totalCount = undefined
+      ProcessService.findDeploymentsCount(this.filter).then(count => {
+        this.totalCount = count
+      })
+      .catch(error => {
+        console.error(error)
+        this.totalCount = undefined
+      })
+    },
+    loadNextChunk(offset) {
+      if (this.loading || this.allLoaded) {
+        return
+      }
+      this.loading = true
+      // Perform the search with the current query object and offset
+      ProcessService.findDeployments(this.filter, offset, this.maxResults, this.sortBy, this.sortOrder).then(deployments => {
+
+        deployments.forEach(d => {
+          d.isSelected = false
+          d.name = d.name || d.id
+
+          let group = '-'
+          let name = '-'
+          if (this.sortBy === 'name') {
+            group = (d.name || '-')[0].toUpperCase() || '-'
+            name = group
+          }
+          else {
+            group = moment(d.deploymentTime).format('YYYY-MM-DD') || '-'
+            name = group === '-' ? group : moment(group).format('LL')
+          }
+
+          if (this.groups.length === 0 || this.groups[this.groups.length - 1].name !== name) {
+            this.groups.push({ visible: true, data: [d], name: name })
+          }
+          else {
+            this.groups[this.groups.length - 1].data.push(d)
+          }
+        })
+
+        this.deployments.push(...deployments)
+        this.loading = false
+      }).catch(error => {
+        console.error(error)
+        this.loading = false
+      })
+    },
+    loadNextPage: function() {
+      // refresh the total count in case remote data has changed
+      this.refreshTotalCount()
+
+      // Fetch next chunk based on the query object
+      this.loadNextChunk(this.deployments.length)
+    },
     deleteDeployments: function() {
       var vm = this
       this.deleteLoader = true
@@ -209,13 +318,6 @@ export default {
       this.rightOpen = true
       this.findDeploymentResources(d.id)
     },
-    isDeploymentFiltered: function(d, filterUpper) {
-      if (!filterUpper) {
-        return true
-      }
-      const value = (d.name || d.id).toUpperCase()
-      return value.includes(filterUpper)
-    },
     findDeploymentResources: function(deploymentId) {
       this.resourcesLoading = true
       this.resources = null
@@ -228,7 +330,14 @@ export default {
       })
     },
     changeSortingOrder: function() {
-      this.sorting.order = this.sorting.order === 'desc' ? 'asc' : 'desc'
+      this.sortOrder = this.sortOrder === 'desc' ? 'asc' : 'desc'
+      localStorage.setItem('cibseven:deployments.sortOrder', this.sortOrder)
+
+      // Clear current deployments and reload with new sorting
+      this.groups = []
+      this.deployments = []
+      this.deployment = null
+      this.loadNextPage()
     }
   }
 }

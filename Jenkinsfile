@@ -33,7 +33,7 @@ pipeline {
     // Parameter that can be changed in the Jenkins UI
     parameters {
         booleanParam(
-            name: 'INSTALL',
+            name: 'PACKAGE',
             defaultValue: true,
             description: 'Build and test'
         )
@@ -115,14 +115,14 @@ pipeline {
             }
         }
 
-        stage('Maven install') {
+        stage('Maven package') {
             when {
-                expression { params.INSTALL }
+                expression { params.PACKAGE }
             }
             steps {
                 script {
                     withMaven(options: [junitPublisher(disabled: false), jacocoPublisher(disabled: false)]) {
-                        sh "mvn -T4 -Dbuild.number=${BUILD_NUMBER} clean install"
+                        sh "mvn -T4 -Dbuild.number=${BUILD_NUMBER} clean package"
                     }
                     if (!params.DEPLOY_TO_MAVEN_CENTRAL) {
                         junit allowEmptyResults: true, testResults: ConstantsInternal.MAVEN_TEST_RESULTS
@@ -143,19 +143,32 @@ pipeline {
 
         stage('Deploy to artifacts.cibseven.org') {
             when {
-                allOf {
-                    expression { params.DEPLOY_TO_ARTIFACTS }
-                    expression { !params.DEPLOY_TO_MAVEN_CENTRAL }
+                anyOf {
+                    allOf {
+                        // Automatically deploy on main branch if version is SNAPSHOT
+                        expression { branch 'main' }
+                        expression { mavenProjectInformation.version.endsWith("-SNAPSHOT") == true }
+                        expression { !params.DEPLOY_TO_MAVEN_CENTRAL }
+                    }
+                    allOf {
+                        expression { params.DEPLOY_TO_ARTIFACTS }
+                        expression { !params.DEPLOY_TO_MAVEN_CENTRAL }
+                    }
                 }
             }
             steps {
                 script {
-                    withMaven(options: []) {
-                        def skipTestsFlag = params.INSTALL ? "-DskipTests" : ""
-                        sh "mvn -T4 -U clean deploy ${skipTestsFlag}"
+                    String deployment = ""
+                    if (isPatchVersion()) {
+                        deployment = "-Dnexus.release.repository.id=mvn-cibseven-private -Dnexus.release.repository=https://artifacts.cibseven.de/repository/private"
                     }
 
-                    if (!params.INSTALL) {
+                    withMaven(options: []) {
+                        def skipTestsFlag = params.PACKAGE ? "-DskipTests" : ""
+                        sh "mvn -T4 -U clean deploy ${skipTestsFlag} ${deployment}"
+                    }
+
+                    if (!params.PACKAGE) {
                         junit allowEmptyResults: true, testResults: ConstantsInternal.MAVEN_TEST_RESULTS
 
                         // Show coverage in Jenkins UI
@@ -438,4 +451,18 @@ pipeline {
             }
         }
     }
+}
+
+// - "1.2.0" -> no
+// - "1.2.0-SNAPSHOT" -> no
+// - "1.2.3" -> yes
+// - "1.2.3-SNAPSHOT" -> yes
+// - "7.22.0-cibseven" -> no
+// - "7.22.1-cibseven" -> yes
+def isPatchVersion() {
+    List version = mavenProjectInformation.version.tokenize('.')
+    if (version.size() < 3) {
+        return false
+    }
+    return version[2].tokenize('-')[0] != "0"
 }

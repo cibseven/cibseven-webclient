@@ -14,12 +14,18 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-export function sortDeployments(a, b, sorting, order) {
-  if (!a[sorting] && !b[sorting]) return 0
-  else if (!a[sorting] && b[sorting]) return (order === 'asc') ? -1 : 1
-  else if (a[sorting] && !b[sorting]) return (order === 'asc') ? 1 : -1
-  a = a[sorting].toLowerCase()
-  b = b[sorting].toLowerCase()
-  if (order === 'asc') return a < b ? -1 : a > b ? 1 : 0
-  else return a < b ? 1 : a > b ? -1 : 0
+package org.cibseven.webapp.rest.model;
+
+import java.io.Serializable;
+import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@Data
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class HistoricDecisionInputInstance implements Serializable {
+    protected String clauseId;
+    protected String clauseName;
+    protected String decisionInstanceId;
+    protected String errorMessage;
+    protected String id;
 }

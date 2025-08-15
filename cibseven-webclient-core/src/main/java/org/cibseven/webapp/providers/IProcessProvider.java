@@ -17,6 +17,7 @@
 package org.cibseven.webapp.providers;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -54,7 +55,8 @@ public interface IProcessProvider {
 	public ProcessStart startProcess(String processDefinitionKey, String tenantId, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException;
 	public ProcessStart submitForm(String processDefinitionKey, String tenantId, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException;
 	public Collection<ProcessStatistics> findProcessStatistics(String processId, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException;
-	public Collection<ProcessStatistics> getProcessStatistics(CIBUser user);
+	public Collection<ProcessStatistics> getProcessStatistics(Map<String, Object> queryParams, CIBUser user);
+	public List<ProcessStatistics> groupProcessStatisticsByKeyAndTenant(Collection<ProcessStatistics> processStatistics);
 	public HistoryProcessInstance findHistoryProcessInstanceHistory(String processInstanceId, CIBUser user);
 	public Collection<HistoryProcessInstance> findProcessesInstancesHistory(Map<String, Object> filters,
 			Optional<Integer> firstResult, Optional<Integer> maxResults, CIBUser user);
@@ -63,12 +65,13 @@ public interface IProcessProvider {
 	public Collection<HistoryProcessInstance> findProcessesInstancesHistoryById(String id, Optional<String> activityId, Optional<Boolean> active, 
 			Integer firstResult, Integer maxResults, String text, CIBUser user);
 	public ProcessInstance findProcessInstance(String processInstanceId, CIBUser user);
-	public Variable fetchProcessInstanceVariable(String processInstanceId, String variableName, String deserializeValue, CIBUser user) throws SystemException;
+	public Variable fetchProcessInstanceVariable(String processInstanceId, String variableName, boolean deserializeValue, CIBUser user) throws SystemException;
 	public Collection<Process> findCalledProcessDefinitions(String processDefinitionId, CIBUser user);
 	public ResponseEntity<byte[]> getDeployedStartForm(String processDefinitionId, CIBUser user);
 	public void updateHistoryTimeToLive(String id, Map<String, Object> data, CIBUser user);
 	public void deleteProcessInstanceFromHistory(String id, CIBUser user);
 	public void deleteProcessDefinition(String id, Optional<Boolean> cascade, CIBUser user);
 	public Long countProcessesInstancesHistory(Map<String, Object> filters, CIBUser user);
+	public Object fetchHistoricActivityStatistics(String id, Map<String, Object> params, CIBUser user);
 	
 }

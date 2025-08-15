@@ -2,7 +2,17 @@
 	"commons": {
 		"edit": "Edit",
 		"save": "Save",
-		"copyValue": "Copy value"
+		"copyValue": "Copy value",
+		"noMoreResults": "No more results",
+		"loadMore": {
+			"title": "Load more",
+			"tooltip": "Click to load next {chunkSize} records"
+		},
+		"actualisation": {
+			"progress": "Updating data...",
+			"disabled": "Last update: {date}\n\nAutomatic updates are disabled.\nPress F5 to reload the data.",
+			"enabled": "Last update: {date}\n\nAutomatic updates are enabled.\nRefreshing every {seconds} seconds."
+		}
 	},
 	"login": {
 		"productName": "CIB seven",
@@ -110,6 +120,7 @@
 			"definitionKey": "Definition Key",
 			"definitionName": "Definition Name",
 			"deploymentId": "Deployment ID",
+			"superProcessInstanceId": "Super Process Instance ID",
 			"instancesRunning": "Instances Running",
 			"currentVersion": "Current version",
 			"allVersions": "All versions",
@@ -236,6 +247,7 @@
 			"name": "Name",
 			"type": "Type",
 			"value": "Value",
+			"valueSerialized": "Serialized value",
 			"actions": "Actions",
 			"scope": "Scope",
 			"objectTypeName": "Object type name",
@@ -244,14 +256,20 @@
 			"enterValue": "Enter value"
 		},
 		"incidents": {
-		    "message": "Message",
-		    "timestamp": "Timestamp",
-		    "activity": "Activity",
-		    "failedActivity": "Failed activity",
-		    "incidentType": "Incident type",
-		    "retryJob": "Increment number of retries of failed job",
+			"state": "State",
+			"processInstance": "Process Instance",
+			"deleted": "Deleted",
+			"resolved": "Resolved",
+			"open": "Open",
+			"unknown": "Unknown",
+			"message": "Message",
+			"timestamp": "Timestamp",
+			"activity": "Activity",
+			"failedActivity": "Failed activity",
+			"incidentType": "Incident type",
+			"retryJob": "Increment number of retries of failed job",
 			"annotation": "Annotation",
-		    "actions": "Actions",
+			"actions": "Actions",
 			"incrementNumberRetries": "Increment number of retries",
 			"retryMsg": "The number of retries of the corresponding failed job of the selected incident will be incremented.",
 			"dueDateMsg": "The point in time a job is executed is determined by the due date:",
@@ -261,7 +279,11 @@
 			"scheduleAt": "Schedule at",
 			"invalidDateError": "You must enter a valid date",
 			"retry": "Retry",			
-			"editAnnotation": "Edit annotation"
+			"editAnnotation": "Edit annotation",
+			"causeIncidentProcessInstanceId": "Cause process instance ID",
+			"rootCauseIncidentProcessInstanceId": "Root cause process instance ID",
+			"createTime": "Creation date",
+			"endTime": "End date"
 		},
 		"jobDefinitions": {
 			"state": "State",
@@ -273,7 +295,7 @@
 			"active": "Active",
 			"suspendJob": "Suspend job definition",
 			"activateJob": "Activate job definition",
-  			"suspended": "Suspended",
+			"suspended": "Suspended",
 			"activateMsg": "This job definition will be activated, so that new jobs based on this job definition are initially active.",
 			"suspendMsg": "This job definition will be suspended, so that new jobs based on this job definition are initially suspended.",
 			"includeExisting": "Include existing job",
@@ -294,14 +316,14 @@
 			"invalidDateError": "You must enter a valid date"
 		},
 		"usertasks": {
-		    "activity": "Activity",
-		    "assignee": "Assignee",
-		    "owner": "Owner",
-		    "startTime": "Start Time",
-		    "due": "Due Date",
-		    "followUp": "Follow-Up",
-		    "taskID": "Task ID",
-		    "actions": "Actions"
+			"activity": "Activity",
+			"assignee": "Assignee",
+			"owner": "Owner",
+			"startTime": "Start Time",
+			"due": "Due Date",
+			"followUp": "Follow-Up",
+			"taskID": "Task ID",
+			"actions": "Actions"
 		},
 		"calledProcesses": {
 			"callingActivity": "Activity",
@@ -312,17 +334,17 @@
 			"endTime": "End time"
 		},
 		"assignModal": {
-		    "manageUsersGroups": "Manage users/groups",
+			"manageUsersGroups": "Manage users/groups",
 			"manageAssignee": "Manage assigned user",
-		    "groupId": "Group ID",
-		    "userId": "@:admin.users.id",
-		    "groups": "Groups",
-		    "users": "Users",
-		    "assignee": "Assignee",
-		    "add": "Add",
-		    "delete": "@:confirm.delete",
-		    "actions": "Actions",
-		    "exists": "This entity is already assigned"
+			"groupId": "Group ID",
+			"userId": "@:admin.users.id",
+			"groups": "Groups",
+			"users": "Users",
+			"assignee": "Assignee",
+			"add": "Add",
+			"delete": "@:confirm.delete",
+			"actions": "Actions",
+			"exists": "This entity is already assigned"
 		},
 		"noResults": "No results",
 		"noIncidents": "No incidents",
@@ -334,8 +356,8 @@
 		"addVariable": "Add variable",
 		"jobs": {
 			"id": "ID",
-			"dueDate": "Due Date",
-			"createTime": "Creation Date",
+			"dueDate": "Due date",
+			"createTime": "Creation date",
 			"retries": "Retries",
 			"activity": "Activity",
 			"failedActivity": "Failed activity",
@@ -366,7 +388,8 @@
 			"runningInstances": "Running activity instances",
 			"openIncidents": "Open incidents",
 			"suspendedJobDefinition": "Suspended job definition",
-			"activitiesHistory": "Executed activity instances",			
+			"activitiesHistory": "Executed activity instances",
+			"canceledInstances": "Canceled activity instances",		
 			"openSubprocess": "Show called process definition",
 			"disabledSubprocess": "Called process definition will be resolved at runtime"
 		}
@@ -406,7 +429,8 @@
 			"title": "Task actions",
 			"submit": "Complete",
 			"save": "Save",
-			"saveError": "An error occurred while saving the task: {0}"
+			"saveError": "An error occurred while saving the task: {0}",
+			"initError": "An error occurred while initializing the form: {0}"
 		},
 		"emptyTask": "Empty task",
 		"showMore": "Show more...",
@@ -953,6 +977,7 @@
 		"taskSelectedNotExist": "This task is no longer available and will therefore disappear from the work area",
 		"ExistingUserRequestException": "User already exists",
 		"ExistingGroupRequestException": "Group already exists",
+		"VariableModificationException": "The variable could not be changed successfully. Please refresh the page and try again.",
 		"processNotFound": "Process with key \"{0}\" not found",
 		"filterSaveError": "An error occurred  trying to save the filter, please check the data introduced.",
 		"passwordDoNotMatch": "Passwords do not match",
@@ -963,6 +988,8 @@
 		
 	},
 	"searches": {
+		"filter": "Filter",
+		"refreshAndFilter": "Refresh and filter",
 		"search": "Search...",
 		"searchByTaskName": "Search by task name...",
 		"searchByDeploymentName": "Search by deployment...",
@@ -1098,19 +1125,19 @@
 		}
 	},
 	"multisort": {
-	    "title": "Sorting Criteria",
-	    "column": "Column",
-	    "order": "Order",
-	    "orderBy": "Order By",
-	    "thenBy": "Then By",
-	    "asc": "Ascending",
-	    "desc": "Descending",
-	    "add": "Add criteria",
-	    "moveUp": "Move Up",
-	    "moveDown": "Move Down",
-	    "remove": "Remove",
-	    "cancel": "Cancel",
-	    "apply": "Apply"
+		"title": "Sorting Criteria",
+		"column": "Column",
+		"order": "Order",
+		"orderBy": "Order By",
+		"thenBy": "Then By",
+		"asc": "Ascending",
+		"desc": "Descending",
+		"add": "Add criteria",
+		"moveUp": "Move Up",
+		"moveDown": "Move Down",
+		"remove": "Remove",
+		"cancel": "Cancel",
+		"apply": "Apply"
 	},
 	"password": {
 		"recover": {
@@ -1155,37 +1182,37 @@
 		"noState": "There is no status for this task"
 	},
 	"advanced-search": {
-	    "title": "Advanced search",
-	    "criteriaKey": "Criteria key",
-	    "selectProperty": "Select property",
-	    "property": "Property name",
-	    "value": "Value",
-	    "add": "Add criteria",
-	    "remove": "Remove criteria",
-	    "type": "Match type",
-	    "apply": "Apply",
-	    "cancel": "Cancel",
-	    "cleanAll": "Clear all criteria",
-	    "any": "Any",
-	    "all": "All",
-	    "criteriaKeys": {    	
-	        "processVariables": "Process variable"
-	    },
-	    "table": {
-	        "key": "Key",
-	        "value": "Value"
-	    },	    
-	    "operators": {
-	        "eq": "=",
-	        "neq": "≠",
-	        "gt": ">",
-	        "gteq": ">=",
-	        "lt": "<",
-	        "lteq": "<=",
-	        "like": "like",
-	        "notLike": "not like"
-	    }
-    },
+		"title": "Advanced search",
+		"criteriaKey": "Criteria key",
+		"selectProperty": "Select property",
+		"property": "Property name",
+		"value": "Value",
+		"add": "Add criteria",
+		"remove": "Remove criteria",
+		"type": "Match type",
+		"apply": "Apply",
+		"cancel": "Cancel",
+		"cleanAll": "Clear all criteria",
+		"any": "Any",
+		"all": "All",
+		"criteriaKeys": {    	
+			"processVariables": "Process variable"
+		},
+		"table": {
+			"key": "Key",
+			"value": "Value"
+		},	    
+		"operators": {
+			"eq": "=",
+			"neq": "≠",
+			"gt": ">",
+			"gteq": ">=",
+			"lt": "<",
+			"lteq": "<=",
+			"like": "like",
+			"notLike": "not like"
+		}
+	},
 	"notification": {
 		"newTasks": "New tasks",
 		"newTasksTitle": "You got new tasks assigned on CIB seven"

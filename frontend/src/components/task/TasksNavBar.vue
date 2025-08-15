@@ -46,7 +46,7 @@
               </b-dropdown>
               <b-button variant="link" class="text-decoration-none px-0" @click="$refs.sortingList.show()">{{ $t('sorting.' + taskSorting.sortBy) }}</b-button>
               <template v-slot:append>
-                <b-button size="sm" v-hover-style="{ classes: ['text-primary'] }" variant="secondary-outline" @click="setSorting('order')" class="mdi mdi-18px ms-1"
+                <b-button size="sm" v-hover-style="{ classes: ['text-primary'] }" variant="link" @click="setSorting('order')" class="mdi mdi-18px ms-1"
                   :class="taskSorting.sortOrder === 'desc' ? 'mdi-arrow-down' : 'mdi-arrow-up'"
                   :title="taskSorting.sortOrder === 'desc' ? $t('sorting.desc') : $t('sorting.asc')">
                   <span v-if="taskSorting.sortOrder === 'desc'" class="visually-hidden">{{ $t('sorting.desc') }}</span>
@@ -179,6 +179,7 @@ import AdvancedSearchModal from '@/components/task/AdvancedSearchModal.vue'
 import SmartSearch from '@/components/task/SmartSearch.vue'
 import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
 import { BWaitingBox } from 'cib-common-components'
+import { mapActions } from 'vuex'
 
 export default {
   name: 'TasksNavBar',
@@ -261,6 +262,7 @@ export default {
     }
   },
   methods: {
+    ...mapActions('task', ['setSelectedAssignee']),
     formatDate,
     loadAdvancedFilters: function() {
       this.advancedFilter = []
@@ -379,7 +381,7 @@ export default {
     claim: function(task) {
       TaskService.setAssignee(task.id, this.$root.user.id).then(() => {
         task.assignee = this.$root.user.id
-        this.$emit('update-assignee', task.assignee)
+        this.$emit('update-assignee', { taskId: task.id, assignee: task.assignee })
       })
     },
     checkAssignee: function(task) {
@@ -480,6 +482,7 @@ export default {
     refreshTasks() {
       if (!this.pauseRefreshButton) {
         this.$emit('refresh-tasks')
+        this.$emit('refresh-tasks-number')
         this.pauseButton()
       }
     },

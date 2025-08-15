@@ -15,6 +15,8 @@ spring:
 
 cibseven:
   webclient:
+    # Global enable/disable flag for the entire CIB seven webclient
+    enabled: true
     # Engine rest
     engineRest:
       url: http://localhost:8080
@@ -66,12 +68,43 @@ cibseven:
 
     cockpit:
       url: /camunda/app/cockpit/default/
-    
+
     theme: cib
+
+    # RestTemplate configuration
+    rest:
+      # Whether the custom RestTemplate is enabled. If false, a default RestTemplate will be used.
+      enabled: true
+      # Whether the socket connection should be kept alive between requests.
+      keepAlive: true
+      # Socket read timeout in seconds (0 = infinite). Maximum time to wait for data from an established connection.
+      socketTimeout: 3600
+      # Time in seconds to establish connection (0 = infinite). Maximum time to wait while establishing a connection.
+      connectTimeout: 30
+      # Time to wait in seconds for a connection from the connection pool.
+      connectionRequestTimeout: 180
+      # Max response wait time in seconds (0 = infinite). If not set, the socketTimeout value will be used.
+      connectionResponseTimeout:
+      # Max HTTP connections per route. Limits the number of connections to a specific host.
+      maxConnPerRoute: 20
+      # Total max HTTP connections across all routes. Defaults to 2 * maxConnPerRoute if not specified.
+      maxConnTotal: 40
+      # Connection time to live in milliseconds. Maximum time a connection can be reused.
+      connectionTimeToLive: 50000
+      # Whether to enable connection pooling. Improves performance by reusing connections.
+      connectionPoolingEnabled: true
+      # Whether to enable connection reuse. Allows reusing connections for multiple requests.
+      connectionReuseEnabled: true
+      # Whether to enable Micrometer metrics for monitoring connection pool usage.
+      metricsEnabled: false
+      # Whether to enable request/response logging for debugging purposes.
+      requestLoggingEnabled: false
+      # Whether to automatically follow HTTP redirects (status codes 3xx).
+      followRedirects: true
 
     services:
       basePath: services/v1
-  
+
     api:
       common:
         title: "CIB seven webclient API"

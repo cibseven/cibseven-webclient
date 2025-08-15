@@ -26,6 +26,7 @@ import org.cibseven.webapp.providers.SevenProvider;
 import org.cibseven.webapp.rest.model.Tenant;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -66,39 +67,53 @@ public class TenantService extends BaseService implements InitializingBean {
     }
 
     @PostMapping
-    public void createTenant(@RequestBody Tenant tenant, CIBUser user) {
+    public ResponseEntity<Void> createTenant(@RequestBody Tenant tenant, CIBUser user) {
     	bpmProvider.createTenant(tenant, user);
+      // return 204 No Content, no body
+      return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{tenantId}")
-    public void updateTenant(@PathVariable String tenantId, @RequestBody Tenant tenant, CIBUser user) {
+    public ResponseEntity<Void> updateTenant(@PathVariable String tenantId, @RequestBody Tenant tenant, CIBUser user) {
         tenant.setId(tenantId);
-        bpmProvider.udpateTenant(tenant, user);
+        bpmProvider.updateTenant(tenant, user);
+        // return 204 No Content, no body
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{tenantId}")
-    public void deleteTenant(@PathVariable String tenantId, CIBUser user) {
+    public ResponseEntity<Void> deleteTenant(@PathVariable String tenantId, CIBUser user) {
     	bpmProvider.deleteTenant(tenantId, user);
+        // return 204 No Content, no body
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{tenantId}/users/{userId}")
-    public void addUserToTenant(@PathVariable String tenantId, @PathVariable String userId, CIBUser user) {
+    public ResponseEntity<Void> addUserToTenant(@PathVariable String tenantId, @PathVariable String userId, CIBUser user) {
     	bpmProvider.addMemberToTenant(tenantId, userId, user);
+        // return 204 No Content, no body
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{tenantId}/users/{userId}")
-    public void removeUserFromTenant(@PathVariable String tenantId, @PathVariable String userId, CIBUser user) {
+    public ResponseEntity<Void> removeUserFromTenant(@PathVariable String tenantId, @PathVariable String userId, CIBUser user) {
     	bpmProvider.deleteMemberFromTenant(tenantId, userId, user);
+        // return 204 No Content, no body
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{tenantId}/groups/{groupId}")
-    public void addGroupToTenant(@PathVariable String tenantId, @PathVariable String groupId, CIBUser user) {
+    public ResponseEntity<Void> addGroupToTenant(@PathVariable String tenantId, @PathVariable String groupId, CIBUser user) {
     	bpmProvider.addGroupToTenant(tenantId, groupId, user);
+        // return 204 No Content, no body
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{tenantId}/groups/{groupId}")
-    public void removeGroupFromTenant(@PathVariable String tenantId, @PathVariable String groupId, CIBUser user) {
+    public ResponseEntity<Void> removeGroupFromTenant(@PathVariable String tenantId, @PathVariable String groupId, CIBUser user) {
     	bpmProvider.deleteGroupFromTenant(tenantId, groupId, user);
+        // return 204 No Content, no body
+        return ResponseEntity.noContent().build();
     }
 
 }

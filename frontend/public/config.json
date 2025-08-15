@@ -155,10 +155,16 @@
 			"interval": 0
 		}
 	},
+	"dashboard": {
+		"autoUpdate": {
+			"enabled": true,
+			"interval": 60000
+		}
+	},
 	"layout": {
 		"showPopoverHowToAssign": true,
 		"showBusinessKey": true,
-		"showTaskDetailsSidebar": true,
+		"showTaskDetailsSidebar": false,
 		"showFilterDueDate": true,
 		"showFilterReminderDate": true,
 		"showFeedbackButton": false,

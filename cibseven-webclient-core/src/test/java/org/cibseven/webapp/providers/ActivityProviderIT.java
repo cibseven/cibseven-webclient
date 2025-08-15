@@ -33,17 +33,18 @@ import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.rest.model.ActivityInstance;
 import org.cibseven.webapp.rest.model.ActivityInstanceHistory;
 import org.cibseven.webapp.rest.model.TransitionInstance;
+import org.cibseven.webapp.rest.TestRestTemplateConfiguration;
 
 import java.util.List;
 
 @SpringBootTest
-@ContextConfiguration(classes = {ActivityProvider.class})
+@ContextConfiguration(classes = {ActivityProvider.class, TestRestTemplateConfiguration.class})
 public class ActivityProviderIT extends BaseHelper {
 
     static {
         System.setProperty("spring.banner.location", "classpath:fca-banner.txt");
     }
-	
+
     private MockWebServer mockWebServer;
 
     @Autowired
@@ -58,7 +59,7 @@ public class ActivityProviderIT extends BaseHelper {
         String mockBaseUrl = mockWebServer.url("/").toString();
         ReflectionTestUtils.setField(activityProvider, "cibsevenUrl", mockBaseUrl);
     }
-    
+
     @AfterEach
     void tearDown() throws Exception {
     	// Shutdown the MockWebServer after each test
@@ -73,7 +74,7 @@ public class ActivityProviderIT extends BaseHelper {
 
         // Load the mock response from a file
         String mockResponseBody = loadMockResponse("mocks/activity_instance_mock.json");
-        
+
         // Enqueue the mock response for the MockWebServer
         mockWebServer.enqueue(new MockResponse()
                 .setBody(mockResponseBody)
@@ -123,7 +124,7 @@ public class ActivityProviderIT extends BaseHelper {
         assertThat(request.getMethod()).isEqualTo("GET");
         assertThat(request.getPath()).isEqualTo("/engine-rest/process-instance/12345/activity-instances");
     }
-    
+
     @Test
     void testFindActivitiesInstancesHistory() throws Exception {
         // Arrange

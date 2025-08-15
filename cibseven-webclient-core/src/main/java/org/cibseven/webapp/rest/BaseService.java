@@ -22,10 +22,8 @@ import java.util.List;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-import org.cibseven.webapp.exception.AccessDeniedException;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import org.cibseven.webapp.auth.exception.AuthenticationException;
 import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.auth.rest.StandardLogin;
 

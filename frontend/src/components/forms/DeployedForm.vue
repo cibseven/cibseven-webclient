@@ -17,7 +17,7 @@
 
 -->
 <template>
-  <TemplateBase noDiagramm noTitle :templateMetaData="templateMetaData" :loader="loader">
+  <TemplateBase ref="templateBase" noDiagramm noTitle :templateMetaData="templateMetaData" :loader="loader">
     <template v-slot:button-row>
       <IconButton icon="check" :disabled="disabled" @click="setVariablesAndSubmit()" variant="secondary" :text="$t('task.actions.submit')"></IconButton>
     </template>
@@ -31,12 +31,14 @@ import TemplateBase from '@/components/forms/TemplateBase.vue'
 
 import postMessageMixin from '@/components/forms/postMessage.js'
 
-import { FormsService, TemplateService } from '@/services.js'
+import { FormsService, TemplateService, TaskService } from '@/services.js'
 
 import IconButton from '@/components/forms/IconButton.vue'
 
 import { Form } from '@bpmn-io/form-js'
 import '@bpmn-io/form-js/dist/assets/form-js.css'
+
+import { convertFormDataForFormJs } from './formJsUtils.js'
 
 export default {
   name: "DeployedForm",
@@ -52,7 +54,6 @@ export default {
   data: function() {
     return {
       templateMetaData: null,
-      formularContent: null,
       loader: true,
       disabled: false,
       form: null,
@@ -64,46 +65,84 @@ export default {
     this.loadForm()
   },
   methods: {
-    loadForm: function() {
+    loadForm: async function() {
       this.loader = false
-      TemplateService.getTemplate('CibsevenFormUiTask', this.taskId, this.locale, this.token).then(template => {
+      try {
+        const template = await TemplateService.getTemplate('CibsevenFormUiTask', this.taskId, this.locale, this.token)
         this.templateMetaData = template
-        var formContent = JSON.parse(template.variables.formularContent.value)
-        var formData = JSON.parse(template.variables.formVariables.value)
-        this.formularContent = formContent
+        
+        // Load form content
+        const formContent = await TaskService.getDeployedForm(this.taskId)
+        
+        // Load form variables
+        const formData = await FormsService.fetchVariables(this.taskId, false)
+
+        // Convert the service response format to the format expected by form-js
+        const convertedFormData = convertFormDataForFormJs(formData)
+        
         this.form = new Form({
             container: document.querySelector('#form'),
         })
-        this.form.importSchema(this.formularContent, formData)
-      })
+        await this.form.importSchema(formContent, convertedFormData)
+
+        // Wait for DOM to be updated after form import
+        await this.$nextTick()
+
+        // Find all file input fields in the form to attach change listeners for file upload handling
+        const fileInputs = document.querySelectorAll('#form input[type="file"]');
+        if (fileInputs.length > 0) {
+          fileInputs.forEach(fileInput => {
+            fileInput.addEventListener('change', async (e) => {
+              this.$refs.templateBase.handleFileSelection(e, fileInput, formContent);
+            });
+          });
+        }
+
+      } catch (error) {
+        console.error('Error loading form:', error);
+        this.sendMessageToParent({ method: 'displayErrorMessage', message: error.message || 'An error occurred during form loading' })
+        this.loader = false;
+
+      }
     },
     saveForm: function() {
       this.closeTask = false
       this.setVariablesAndSubmit()
     },
-    setVariablesAndSubmit: function() {
-      this.dataToSubmit = {}
-      var result = this.form.submit()
-      if (Object.keys(result.errors).length > 0 && this.closeTask) return
-      Object.entries(result.data).forEach(([key, value]) => {
-        this.dataToSubmit[key] = {
-              name: key,
-              type: typeof value,
-              value: value,
-              valueInfo: null
-          }
-      })
+    setVariablesAndSubmit: async function() {
+      try {
+        this.dataToSubmit = {}
+        var result = this.form.submit()
+        if (Object.keys(result.errors).length > 0 && this.closeTask) return
 
-      return FormsService.submitVariables(this.templateMetaData.task, Object.values(this.dataToSubmit), this.closeTask).then(data => {
+        // To submit file variables, we must use separate endpoint before or after submitting non-file form data.
+        for (const [variableName, file] of Object.entries(this.$refs.templateBase.formFiles)) {
+          await FormsService.uploadVariableFileData(this.taskId, variableName, file, 'File');
+        }
+
+        // Process and submit non-file form fields (files have been uploaded separately)
+        Object.entries(result.data).forEach(([key, value]) => {
+          if (!this.$refs.templateBase.formFiles[key]) {
+            this.dataToSubmit[key] = {
+                  name: key,
+                  type: typeof value,
+                  value: value,
+                  valueInfo: null
+              }
+          }
+        })
+        
+        const data = await FormsService.submitVariables(this.templateMetaData.task, Object.values(this.dataToSubmit), this.closeTask);
         if (this.closeTask) this.sendMessageToParent({ method: 'completeTask', task: data })
         else this.sendMessageToParent({ method: 'displaySuccessMessage' })
         this.loader = false
-      }, e => {
-        this.sendMessageToParent({ method: 'displayErrorMessage', status: e.response.status })
+      } catch (error) {
+        console.error('Error during form submission:', error)
+        this.sendMessageToParent({ method: 'displayErrorMessage', message: error.message || 'An error occurred during form submission' })
         this.loader = false
-      }).finally(() =>{
+      } finally {
         this.closeTask = true
-      })
+      }
     }
   }
 }

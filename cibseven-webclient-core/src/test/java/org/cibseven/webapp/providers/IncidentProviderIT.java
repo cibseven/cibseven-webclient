@@ -32,18 +32,20 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.rest.model.Incident;
+import org.cibseven.webapp.rest.TestRestTemplateConfiguration;
 
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 
+
 @SpringBootTest
-@ContextConfiguration(classes = {IncidentProvider.class})
+@ContextConfiguration(classes = {IncidentProvider.class, TestRestTemplateConfiguration.class})
 public class IncidentProviderIT extends BaseHelper {
 
     static {
         System.setProperty("spring.banner.location", "classpath:fca-banner.txt");
     }
-	
+
     @Autowired
     private IncidentProvider incidentProvider;
 
@@ -99,7 +101,7 @@ public class IncidentProviderIT extends BaseHelper {
         // Act
         Map<String, Object> params = new HashMap<>();
         params.put("incidentId", "incident-1");
-        
+
         Collection<Incident> incidents = incidentProvider.findIncident(params, user);
 
         // Assert

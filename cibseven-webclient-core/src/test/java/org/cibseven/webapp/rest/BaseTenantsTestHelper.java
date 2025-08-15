@@ -63,7 +63,7 @@ public class BaseTenantsTestHelper {
 	public void updateTenant(String tenantId, String tenantName, CIBUser user) {
 		if (verifyTenant(tenantId, user) != null) {
 			Tenant newTenant = new Tenant(tenantId, tenantName);
-			tenantProvider.udpateTenant(newTenant, user);			
+			tenantProvider.updateTenant(newTenant, user);
 		}
 	}
 	

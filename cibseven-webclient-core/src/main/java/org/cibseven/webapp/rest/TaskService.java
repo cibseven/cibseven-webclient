@@ -22,6 +22,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
+import java.nio.charset.StandardCharsets;
+
 import org.cibseven.webapp.NamedByteArrayDataSource;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenResourceType;
@@ -43,6 +45,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -50,6 +54,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.core.MediaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ApiResponses({
 	@ApiResponse(responseCode = "500", description = "An unexpected system error occured"),
@@ -152,11 +157,13 @@ public class TaskService extends BaseService implements InitializingBean {
 			"<strong>Return: void")
 	@ApiResponse(responseCode = "403", description = "Forbidden")
 	@RequestMapping(value = "/task/submit/{taskId}", method = RequestMethod.POST)
-	public void submit(
+	public ResponseEntity<Void> submit(
 			@Parameter(description = "Task Id") @PathVariable String taskId,
 			Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.TASK, PermissionConstants.UPDATE_ALL);
 		bpmProvider.submit(taskId, user);
+    // return 204 No Content, no body
+    return ResponseEntity.noContent().build();
 	}
 	
 	@Operation(
@@ -172,16 +179,57 @@ public class TaskService extends BaseService implements InitializingBean {
 	}
 	
 	@Operation(
+			summary = "Get deployed form for task",
+			description = "<strong>Return: Form data as JSON")
+	@ApiResponse(responseCode = "404", description= "Task or form not found")
+	@RequestMapping(value = "/task/{taskId}/deployed-form", method = RequestMethod.GET)
+	public Object getDeployedForm(
+			@Parameter(description = "Task Id") @PathVariable String taskId,
+			Locale loc, CIBUser user) {
+		checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
+		
+		try {
+			ResponseEntity<byte[]> response = bpmProvider.getDeployedForm(taskId, user);
+			byte[] body = response.getBody();
+			
+			if (body == null || body.length == 0) {
+				return null;
+			}
+			
+			String jsonString = new String(body, StandardCharsets.UTF_8);
+			ObjectMapper objectMapper = new ObjectMapper();
+			return objectMapper.readValue(jsonString, Object.class);
+			
+		} catch (Exception e) {
+			throw new SystemException("Error parsing deployed form: " + e.getMessage(), e);
+		}
+	}
+
+	@Operation(
+			summary = "Retrieves the form configuration data associated with a specific task",
+			description = "<strong>Return: TaskForm object containing key, camundaFormRef, and contextPath</strong>")
+	@ApiResponse(responseCode = "404", description= "Task not found")
+	@RequestMapping(value = "/task/{taskId}/form", method = RequestMethod.GET)
+	public Object form(
+			@Parameter(description = "Task Id") @PathVariable String taskId,
+			Locale loc, CIBUser user) {
+		checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
+		return bpmProvider.form(taskId, user);
+	}
+	
+	@Operation(
 			summary = "Set assignee to an specific task",
 			description = "UserID will be the assignee" + "<br>" + "<strong>Return: void")
 	@ApiResponse(responseCode = "404", description= "Task or User not found")
 	@RequestMapping(value = "/task/{taskId}/assignee/{userId}", method = RequestMethod.POST)
-	public void setAssignee(
+	public ResponseEntity<Void> setAssignee(
 			@Parameter(description = "Task Id") @PathVariable String taskId,
 			@Parameter(description = "User to be set as assignee") @PathVariable String userId,
 			Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.TASK, PermissionConstants.UPDATE_ALL);
 		bpmProvider.setAssignee(taskId, userId, user);
+    // return 204 No Content, no body
+    return ResponseEntity.noContent().build();
 	}
 	
 	@Operation(
@@ -189,11 +237,13 @@ public class TaskService extends BaseService implements InitializingBean {
 			description = "Request body: Task to be updated with the desired values already modified" + "<br>" +
 			"<strong>Return: void")
 	@RequestMapping(value = "/task/update", method = RequestMethod.PUT)
-	public void update(
+	public ResponseEntity<Void> update(
 			@RequestBody Task task,
 			Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.TASK, PermissionConstants.UPDATE_ALL);
 		bpmProvider.update(task, user);
+    // return 204 No Content, no body
+    return ResponseEntity.noContent().build();
 	}
 
 	//Requested by OFDKA
@@ -229,24 +279,28 @@ public class TaskService extends BaseService implements InitializingBean {
 			summary = "Create identity links, e.g. to set the candidates user or groups of a task",
 			description = "<strong>Return: void")
 	@RequestMapping(value = "/task/{taskId}/identity-links", method = RequestMethod.POST)
-	public void createIdentityLink(
+	public ResponseEntity<Void> createIdentityLink(
 			@Parameter(description = "Task Id") @PathVariable String taskId,
 			@RequestBody Map<String, Object> data,
 			Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.TASK, PermissionConstants.UPDATE_ALL);
 		bpmProvider.createIdentityLink(taskId, data, user);
+    // return 204 No Content, no body
+    return ResponseEntity.noContent().build();
 	}
 	
 	@Operation(
 			summary = "Delete identity links, e.g. to remove the candidates user or groups of a task",
 			description = "<strong>Return: void")
 	@RequestMapping(value = "/task/{taskId}/identity-links/delete", method = RequestMethod.POST)
-	public void deleteIdentityLink(
+	public ResponseEntity<Void> deleteIdentityLink(
 			@Parameter(description = "Task Id") @PathVariable String taskId,
 			@RequestBody Map<String, Object> data,
 			Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.TASK, PermissionConstants.DELETE_ALL);
 		bpmProvider.deleteIdentityLink(taskId, data, user);
+    // return 204 No Content, no body
+    return ResponseEntity.noContent().build();
 	}
 	
 	@Operation(
@@ -315,7 +369,8 @@ public class TaskService extends BaseService implements InitializingBean {
 	      @RequestParam Optional<Boolean> deserialize, HttpServletRequest rq) {
 	    CIBUser userAuth = (CIBUser) baseUserProvider.authenticateUser(rq);
         checkPermission(userAuth, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.READ_ALL);
-	    return bpmProvider.fetchVariable(taskId, variableName, deserialize, userAuth);
+		boolean deserializeValue = deserialize.orElse(true);
+	    return bpmProvider.fetchVariable(taskId, variableName, deserializeValue, userAuth);
 	  }
 	  
 	  @RequestMapping(value = "/task/{taskId}/variable/{variableName}/data", method = RequestMethod.GET)
@@ -327,6 +382,31 @@ public class TaskService extends BaseService implements InitializingBean {
 	    return res.getContent();
 	  }
 
+
+		@Operation(summary = "Upload file data to a task variable", description = "Upload binary data or file to a specific task variable"
+				+ "<br>" +
+				"<strong>Request body: Multipart form data with 'data' (binary) and 'valueType' (Bytes/File) parts")
+		@ApiResponse(responseCode = "404", description = "Task or variable not found")
+		@RequestMapping(value = "/task/{id}/variables/{variableName}/data", method = RequestMethod.POST, consumes = "multipart/form-data")
+		public ResponseEntity<Void> uploadVariableFileData(
+				@Parameter(description = "Task Id") @PathVariable String id,
+				@Parameter(description = "Variable name") @PathVariable String variableName,
+				@RequestParam(value = "data", required = true) MultipartFile data,
+				@RequestParam(value = "valueType", required = false, defaultValue = "File") String valueType,
+				HttpServletRequest rq) {
+			CIBUser userAuth = (CIBUser) baseUserProvider.authenticateUser(rq);
+			checkPermission(userAuth, SevenResourceType.TASK, PermissionConstants.UPDATE_ALL);
+			try {
+				bpmProvider.uploadVariableFileData(id, variableName, data, valueType, userAuth);
+				return ResponseEntity.noContent().build();
+			} catch (Exception e) {
+				if (e instanceof NoObjectFoundException) {
+					return ResponseEntity.notFound().build();
+				}
+				throw new RuntimeException("Failed to upload variable file data", e);
+			}
+		}
+
 	  @RequestMapping(value = "/task/{taskId}", method = RequestMethod.POST)
 	  public Map<String, Variable> fetchVariables(@PathVariable String taskId, 
 	      @RequestParam Optional<Boolean> deserialize, 
@@ -336,17 +416,21 @@ public class TaskService extends BaseService implements InitializingBean {
 	  }
 
 	  @RequestMapping(value = "/task/{taskId}/variable/{variableName}", method = RequestMethod.DELETE)
-	  public void deleteVariable(@PathVariable String taskId, @PathVariable String variableName, HttpServletRequest rq) {
+	  public ResponseEntity<Void> deleteVariable(@PathVariable String taskId, @PathVariable String variableName, HttpServletRequest rq) {
 	    CIBUser userAuth = (CIBUser) baseUserProvider.authenticateUser(rq);
         checkPermission(userAuth, SevenResourceType.TASK, PermissionConstants.DELETE_ALL);
 	    bpmProvider.deleteVariable(taskId, variableName, userAuth);
+      // return 204 No Content, no body
+      return ResponseEntity.noContent().build();
 	  }
 	  
 	  @RequestMapping(value = "/task/{taskId}/bpmnError", method = RequestMethod.POST)
-	  public void handleBpmnError(@PathVariable String taskId, @RequestBody Map<String, Object> data, 
+	  public ResponseEntity<Void> handleBpmnError(@PathVariable String taskId, @RequestBody Map<String, Object> data, 
 	      @RequestParam Optional<String> locale, CIBUser user) throws Exception {
 		checkPermission(user, SevenResourceType.TASK, PermissionConstants.UPDATE_ALL);
 	    bpmProvider.handleBpmnError(taskId, data, user);
+      // return 204 No Content, no body
+      return ResponseEntity.noContent().build();
 	  }
 
 	  @GetMapping("/task/report/candidate-group-count")

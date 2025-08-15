@@ -33,7 +33,12 @@
         <router-link v-for="version of processDefinitions" :key="version.id"
           :to="{
             path: `/seven/auth/process/${version.key}/${version.version}`,
-            query: $route.query
+            query: {
+              ...Object.fromEntries(
+                Object.entries($route.query).filter(([key]) => key !== 'tab')
+              ),
+              tab: 'instances'
+            }
           }" class="btn border-0">
           <div
             class="rounded-0 mt-3 p-2 bg-white border-0 list-group-item-action btn active"
@@ -64,7 +69,8 @@
               </div>
             </div>
             <b-popover :target="version.id" triggers="hover" placement="right" boundary="viewport" max-width="350px">
-              <ProcessDefinitionDetails :version="version" :instances="instances" @onUpdateHistoryTimeToLive="onUpdateHistoryTimeToLive"></ProcessDefinitionDetails>
+              <ProcessDefinitionDetails :version="version" :instances="instances" :version-index="versionIndex" 
+                :selected-instance="selectedInstance" @onUpdateHistoryTimeToLive="onUpdateHistoryTimeToLive"></ProcessDefinitionDetails>
             </b-popover>
           </div>
         </router-link>
@@ -93,7 +99,8 @@ export default {
     },
     instances: Array,
     processKey: String,
-    versionIndex: { type: String, default: '' }
+    versionIndex: { type: String, default: '' },
+    selectedInstance: { type: Object, default: null }
   },
   methods: {
     onRefreshProcessDefinitions: function(lazyLoadHistory) {

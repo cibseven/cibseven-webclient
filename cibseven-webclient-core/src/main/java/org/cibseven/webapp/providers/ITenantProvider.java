@@ -31,7 +31,7 @@ public interface ITenantProvider {
 	
 	public void createTenant(Tenant newTenant, CIBUser user) throws InvalidUserIdException;
 	public void deleteTenant(String tenantId, CIBUser user);
-	public void udpateTenant(Tenant tenant, CIBUser user) throws InvalidUserIdException;
+	public void updateTenant(Tenant tenant, CIBUser user) throws InvalidUserIdException;
 	
 	public void addMemberToTenant(String tenantId, String userId, CIBUser user);
 	public void deleteMemberFromTenant(String tenantId, String userId, CIBUser user);

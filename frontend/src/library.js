@@ -30,6 +30,7 @@ import { debounce } from '@/utils/debounce.js'
 import { formatDate, formatDuration } from '@/utils/dates.js'
 import { HoverStyle } from '@/components/common-components/directives.js'
 import { InfoService, AuthService, SystemService } from './services.js'
+import { initEmbeddedForm } from './embedded-form/embedded-form.js'
 import { i18n, setLanguage, loadTranslations, translationSources } from './i18n'
 import { appRoutes,
   createAppRouter,
@@ -73,6 +74,7 @@ import ProfileGroup from '@/components/admin/ProfileGroup.vue'
 import ProfileUser from '@/components/admin/ProfileUser.vue'
 import UsersManagement from '@/components/admin/UsersManagement.vue'
 import DeploymentList from '@/components/deployment/DeploymentList.vue'
+import PagedScrollableContent from '@/components/common-components/PagedScrollableContent.vue'
 import DeploymentsView from '@/components/deployment/DeploymentsView.vue'
 import ResourcesNavBar from '@/components/deployment/ResourcesNavBar.vue'
 import FilterModal from '@/components/task/filter/FilterModal.vue'
@@ -80,6 +82,8 @@ import FilterNavBar from '@/components/task/filter/FilterNavBar.vue'
 import FilterNavCollapsed from '@/components/task/filter/FilterNavCollapsed.vue'
 import ProcessView from '@/components/process/ProcessView.vue'
 import AddVariableModal from '@/components/process/modals/AddVariableModal.vue'
+import AddVariableModalUI from '@/components/process/modals/AddVariableModalUI.vue'
+import EditVariableModal from '@/components/process/modals/EditVariableModal.vue'
 import DeleteVariableModal from '@/components/process/modals/DeleteVariableModal.vue'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
 import InstancesTable from '@/components/process/tables/InstancesTable.vue'
@@ -132,7 +136,8 @@ import SystemDiagnostics from '@/components/system/SystemDiagnostics.vue'
 import ExecutionMetrics from '@/components/system/ExecutionMetrics.vue'
 import ShortcutsModal from '@/components/modals/ShortcutsModal.vue'
 import ShortcutsTable from '@/components/modals/ShortcutsTable.vue'
-import { TaskService, HistoryService, ProcessService, getServicesBasePath, setServicesBasePath } from '@/services.js';
+import { TaskService, HistoryService, ProcessService, getServicesBasePath, 
+  setServicesBasePath, IncidentService, DecisionService, BatchService } from '@/services.js';
 import DeployedForm from '@/components/forms/DeployedForm.vue'
 import StartDeployedForm from '@/components/forms/StartDeployedForm.vue'
 import DecisionDefinitionDetails from '@/components/decision/DecisionDefinitionDetails.vue'
@@ -144,6 +149,7 @@ import LoginView from '@/components/login/LoginView.vue'
 import GenericTabs from '@/components/common-components/GenericTabs.vue'
 import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
 import TranslationsDownload from '@/components/common-components/TranslationsDownload.vue'
+import StackTraceModal from '@/components/process/modals/StackTraceModal.vue'
 
 const registerComponents = function(app) {
   app.component('cib-seven', CibSeven)
@@ -181,6 +187,7 @@ const registerComponents = function(app) {
   app.component('profile-user', ProfileUser)
   app.component('users-management', UsersManagement)
   app.component('deployment-list', DeploymentList)
+  app.component('paged-scrollable-content', PagedScrollableContent)
   app.component('deployments-view', DeploymentsView)
   app.component('resources-nav-bar', ResourcesNavBar)
   app.component('filter-modal', FilterModal)
@@ -188,6 +195,8 @@ const registerComponents = function(app) {
   app.component('filter-nav-collapsed', FilterNavCollapsed)
   app.component('process-view', ProcessView)
   app.component('add-variable-modal', AddVariableModal)
+  app.component('add-variable-modal-ui', AddVariableModalUI)
+  app.component('edit-variable-modal', EditVariableModal)
   app.component('delete-variable-modal', DeleteVariableModal)
   app.component('bpmn-viewer', BpmnViewer)
   app.component('instances-table', InstancesTable)
@@ -295,6 +304,7 @@ export {
   ProfileUser,
   UsersManagement,
   DeploymentList,
+  PagedScrollableContent,
   DeploymentsView,
   ResourcesNavBar,
   FilterModal,
@@ -302,6 +312,8 @@ export {
   FilterNavCollapsed,
   ProcessView,
   AddVariableModal,
+  AddVariableModalUI,
+  EditVariableModal,
   DeleteVariableModal,
   BpmnViewer,
   InstancesTable,
@@ -338,8 +350,11 @@ export {
   TaskService,
   HistoryService,
   ProcessService,
+  BatchService,
+  DecisionService,
   getServicesBasePath,
   setServicesBasePath,
+  IncidentService,
   HumanTasksView,
   DecisionView,
   DecisionList,
@@ -370,7 +385,7 @@ export {
   loadTranslations,
   translationSources,
   TranslationsDownload,
-
+  StackTraceModal,
   // router
   appRoutes,
   createAppRouter,
@@ -389,5 +404,7 @@ export {
   fetchAndStoreProcesses,
   fetchDecisionsIfEmpty,
   setupTaskNotifications,
-  parseXMLDocumentation
+  parseXMLDocumentation,
+
+  initEmbeddedForm
 }

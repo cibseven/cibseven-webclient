@@ -66,7 +66,19 @@ const UserStore = {
           ctx.commit('setSearchUsers', users)
         })
       }
-    }
+    },
+    /**
+     * Fetch users by an array of userIds and return a map userId -> user object
+     */
+    fetchUsersByIds: function(ctx, userIds) {
+      if (!userIds || userIds.length === 0) return Promise.resolve({})
+      return AdminService.findUsers({ idIn: userIds.join(',') }).then(users => {
+        // Build a map: userId -> user
+        const userMap = {}
+        users.forEach(u => { userMap[u.id] = u })
+        return userMap
+      })
+    },
   }
 }
 

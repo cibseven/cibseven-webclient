@@ -60,12 +60,71 @@ export default {
   mixins: [postMessageMixin],
   components: { IconButton, BpmnViewer, BWaitingBox },
   inject: ['isMobile'],
+  data: function() {
+    return {
+      // Stores files selected in the form, keyed by variable name, for later upload during submission
+      formFiles: {}
+    }
+  },
   computed: {
     title: function() {
       return this.templateMetaData && this.templateMetaData.activityInstances.name + " - " + this.templateMetaData.task.name
     }
   },
   methods: {
+    handleFileSelection: async function(event, fileInput, formularContent) {
+      const file = event.target.files[0];
+      if (file) {
+        // Find the corresponding field in formContent to get the key
+        let variableName = null;
+
+        // Extract field ID from input ID (e.g., "fjs-form-0q23qer-Field_0cz77cj" -> "Field_0cz77cj")
+        const fieldIdMatch = fileInput.id.match(/Field_[a-zA-Z0-9]+$/);
+        const fieldId = fieldIdMatch ? fieldIdMatch[0] : null;
+
+        if (fieldId && formularContent && formularContent.components) {
+          const field = formularContent.components.find(component => component.id === fieldId);
+          if (field && field.key) {
+            variableName = field.key;
+            // Store file for later upload - actual file upload will be done during form submission
+            this.formFiles[variableName] = file;
+          }
+        }
+      }
+    },
+    convertFilesToVariables: async function() {
+      const fileVariables = {};
+      
+      if (this.formFiles && Object.keys(this.formFiles).length > 0) {
+        for (const [key, file] of Object.entries(this.formFiles)) {
+          // Convert file to base64
+          const base64Content = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+              // Remove the data:*/*;base64, prefix to get only the base64 content
+              const base64 = reader.result.split(',')[1];
+              resolve(base64);
+            };
+            reader.onerror = () => {
+              reject(new Error(`Failed to read file: ${file.name}`));
+            };
+            reader.readAsDataURL(file);
+          });
+
+          fileVariables[key] = {
+            name: key,
+            value: base64Content,
+            type: "File",
+            valueInfo: {
+              filename: file.name,
+              mimeType: file.type
+            }
+          };
+        }
+      }
+      
+      return fileVariables;
+    },
     showDiagram: function () {
       this.$refs.process.show()
       //TODO: Review b-modal static

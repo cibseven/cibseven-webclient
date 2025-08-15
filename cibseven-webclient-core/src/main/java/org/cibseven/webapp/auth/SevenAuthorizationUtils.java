@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import org.cibseven.webapp.auth.exception.AuthenticationException;
 import org.cibseven.webapp.exception.AccessDeniedException;
 import org.cibseven.webapp.rest.model.Authorization;
 import org.cibseven.webapp.rest.model.Authorizations;
