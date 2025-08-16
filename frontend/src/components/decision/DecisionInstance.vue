@@ -36,33 +36,19 @@
 
     <div class="position-absolute w-100" style="left: 0; z-index: 1" :style="'height: '+ tabsAreaHeight +'px; top: ' + (bottomContentPosition - tabsAreaHeight + 1) + 'px; ' + toggleTransition">
       <div class="d-flex align-items-end">
-        <div class="tabs-scroll-container flex-grow-1">
-          <button v-if="showLeftButton" type="button" @click="scrollLeft" 
-            class="scroll-button border border-start-0 btn btn-light position-absolute rounded-0" 
-            style="left: 0; box-shadow: 5px 0 5px -5px rgba(0, 0, 0, 0.1);"
-            :style="'height: ' + tabsAreaHeight + 'px;'">
-            <span class="mdi mdi-chevron-left"></span>
-          </button>
-          <ul ref="tabsContainer" class="nav nav-tabs m-0 border-0 flex-nowrap" style="display: flex; overflow-y: hidden" @scroll="checkScrollButtons">
-            <li class="nav-item m-0 flex-shrink-0 border-0" v-for="(tab, index) in tabs" :key="index">
-              <a role="button" @click="changeTab(tab)" class="nav-link py-2" 
-                :class="{ 
-                  'active': tab.active, 
-                  'bg-light border border-bottom-0': !tab.active,
-                  'border-start-0': index === 0
-                }"
-                :style="tab.active ? 'border-bottom: 3px solid white' : ''">
-                {{ $t('decision.' + tab.id) }}
-              </a>
-            </li>
-          </ul>
-          <button v-if="showRightButton" type="button" @click="scrollRight" 
-            class="scroll-button border border-end-0 btn btn-light position-absolute rounded-0" 
-            style="right: 0; box-shadow: -5px 0 5px -5px rgba(0, 0, 0, 0.1)"
-            :style="'height: ' + tabsAreaHeight + 'px;'">
-            <span class="mdi mdi-chevron-right"></span>
-          </button>
-        </div>
+        <ScrollableTabsContainer :tabs-area-height="tabsAreaHeight">
+          <li class="nav-item m-0 flex-shrink-0 border-0" v-for="(tab, index) in tabs" :key="index">
+            <a role="button" @click="changeTab(tab)" class="nav-link py-2" 
+              :class="{ 
+                'active': tab.active, 
+                'bg-light border border-bottom-0': !tab.active,
+                'border-start-0': index === 0
+              }"
+              :style="tab.active ? 'border-bottom: 3px solid white' : ''">
+              {{ $t('decision.' + tab.id) }}
+            </a>
+          </li>
+        </ScrollableTabsContainer>
       </div>
     </div>
 
@@ -94,14 +80,14 @@ import { permissionsMixin } from '@/permissions.js'
 import { DecisionService } from '@/services.js'
 import DmnViewer from '@/components/decision/DmnViewer.vue'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
-import tabScrollButtons from '@/components/process/mixins/tabScrollButtons.js'
+import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import { mapActions } from 'vuex'
 
 export default {
   name: 'DecisionInstance',
-  components: { DmnViewer, FlowTable },
-  mixins: [permissionsMixin, resizerMixin, tabScrollButtons],
+  components: { DmnViewer, FlowTable, ScrollableTabsContainer },
+  mixins: [permissionsMixin, resizerMixin],
   props: {
     versionIndex: String,
     instanceId: String,

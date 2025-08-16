@@ -56,28 +56,10 @@
 
     <div class="position-absolute w-100" style="left: 0; z-index: 2" :style="'height: '+ tabsAreaHeight +'px; top: ' + (bottomContentPosition - tabsAreaHeight + 1) + 'px; ' + toggleTransition">
       <div class="d-flex align-items-end">
-        <div class="tabs-scroll-container flex-grow-1">
-
-          <button v-if="showLeftButton" type="button" @click="scrollLeft" 
-            class="scroll-button border border-start-0 btn btn-light position-absolute rounded-0" 
-            style="left: 0; box-shadow: 5px 0 5px -5px rgba(0, 0, 0, 0.1);"
-            :style="'height: ' + tabsAreaHeight + 'px;'">
-            <span class="mdi mdi-chevron-left"></span>
-          </button>
-
-          <ul ref="tabsContainer" class="nav nav-tabs m-0 border-0 flex-nowrap tabs-scroll-container" 
-            style="display: flex; overflow-y: hidden" @scroll="checkScrollButtons">
-            <component :is="ProcessInstancesTabsPlugin" v-if="ProcessInstancesTabsPlugin" v-model="activeTab" @tab-click="handleTabClick" />
-            <ProcessInstancesTabs v-else v-model="activeTab" @tab-click="handleTabClick" />
-          </ul>
-
-          <button v-if="showRightButton" type="button" @click="scrollRight" 
-            class="scroll-button border border-end-0 btn btn-light position-absolute rounded-0" 
-            style="right: 0; box-shadow: -5px 0 5px -5px rgba(0, 0, 0, 0.1)"
-            :style="'height: ' + tabsAreaHeight + 'px;'">
-            <span class="mdi mdi-chevron-right"></span>
-          </button>
-        </div>
+        <ScrollableTabsContainer :tabs-area-height="tabsAreaHeight">
+          <component :is="ProcessInstancesTabsPlugin" v-if="ProcessInstancesTabsPlugin" v-model="activeTab" @tab-click="handleTabClick" />
+          <ProcessInstancesTabs v-else v-model="activeTab" />
+        </ScrollableTabsContainer>
       </div>
     </div>
 
@@ -176,7 +158,6 @@ import IncidentsTable from '@/components/process/tables/IncidentsTable.vue'
 import MultisortModal from '@/components/process/modals/MultisortModal.vue'
 import CalledProcessDefinitionsTable from '@/components/process/tables/CalledProcessDefinitionsTable.vue'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
-import tabScrollButtons from '@/components/process/mixins/tabScrollButtons.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import tabUrlMixin from '@/components/process/mixins/tabUrlMixin.js'
 import { debounce } from '@/utils/debounce.js'
@@ -184,15 +165,16 @@ import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
 import { BWaitingBox } from 'cib-common-components'
 import ProcessInstancesTabs from '@/components/process/ProcessInstancesTabs.vue'
+import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
 import { mapGetters, mapActions } from 'vuex'
 
 export default {
   name: 'ProcessInstancesView',
   components: { InstancesTable, JobDefinitionsTable, BpmnViewer, MultisortModal,
      SuccessAlert, ConfirmDialog, BWaitingBox, IncidentsTable, CalledProcessDefinitionsTable,
-     ProcessInstancesTabs },
+     ProcessInstancesTabs, ScrollableTabsContainer },
   inject: ['loadProcesses'],
-  mixins: [permissionsMixin, resizerMixin, copyToClipboardMixin, tabUrlMixin, tabScrollButtons],
+  mixins: [permissionsMixin, resizerMixin, copyToClipboardMixin, tabUrlMixin],
   emits: ['task-selected', 'filter-instances', 'instance-deleted'],
   props: {
     process: Object,
@@ -405,15 +387,7 @@ export default {
         ...this.filter,
         editField: freeText,
       })
-    }),
-    handleTabClick(event) {
-      // Automatically scroll to the clicked tab to ensure it's visible
-      this.$nextTick(() => {
-        if (event.tabElement) {
-          this.scrollToTab(event.tabElement)
-        }
-      })
-    },
+    })
   }
 }
 </script>

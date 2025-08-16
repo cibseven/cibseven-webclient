@@ -57,21 +57,6 @@ thead.resizable tr, thead.resizable + tbody tr {
 .bg-task-filter {
         background-color: rgb(98, 142, 199, 0.2);
 }
-.tabs-scroll-container {
-  overflow: hidden;
-  scroll-behavior: smooth;
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
-}
-.tabs-scroll-container::-webkit-scrollbar {
-  display: none;  /* Chrome, Safari and Opera */
-}
-.scroll-button {
-  top: 0; 
-  bottom: 0; 
-  z-index: 10; 
-  transition: all 0.2s ease;
-}
 
 /* BPMN Viewer - Fix for blue expand process button icon not being centered */
 .bjs-container {

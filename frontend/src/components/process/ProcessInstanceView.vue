@@ -88,25 +88,10 @@
 
     <div class="position-absolute w-100 border-bottom" style="z-index: 2; left: 0;" :style="'height: '+ tabsAreaHeight +'px; top: ' + (bottomContentPosition - tabsAreaHeight) + 'px; ' + toggleTransition">
       <div class="d-flex align-items-end">
-        <div class="tabs-scroll-container flex-grow-1" style="white-space: nowrap;">
-          <button v-if="showLeftButton" type="button" @click="scrollLeft" 
-            class="scroll-button border border-start-0 btn btn-light position-absolute rounded-0" 
-            style="left: 0; box-shadow: 5px 0 5px -5px rgba(0, 0, 0, 0.1);"
-            :style="'height: ' + tabsAreaHeight + 'px;'">
-            <span class="mdi mdi-chevron-left"></span>
-          </button>
-          <ul ref="tabsContainer" class="nav nav-tabs m-0 border-0 flex-nowrap tabs-scroll-container" 
-            style="display: flex; overflow-y: hidden" @scroll="checkScrollButtons">
-            <component :is="ProcessInstanceTabsPlugin" v-if="ProcessInstanceTabsPlugin" v-model="activeTab" @tab-click="handleTabClick"></component>
-            <ProcessInstanceTabs v-else v-model="activeTab" @tab-click="handleTabClick"></ProcessInstanceTabs>
-          </ul>
-          <button v-if="showRightButton" type="button" @click="scrollRight" 
-            class="scroll-button border border-end-0 btn btn-light position-absolute rounded-0" 
-            style="right: 0; box-shadow: -5px 0 5px -5px rgba(0, 0, 0, 0.1)"
-            :style="'height: ' + tabsAreaHeight + 'px;'">
-            <span class="mdi mdi-chevron-right"></span>
-          </button>
-        </div>
+        <ScrollableTabsContainer :tabs-area-height="tabsAreaHeight" :container-style="{ whiteSpace: 'nowrap' }">
+          <component :is="ProcessInstanceTabsPlugin" v-if="ProcessInstanceTabsPlugin" v-model="activeTab"></component>
+          <ProcessInstanceTabs v-else v-model="activeTab"></ProcessInstanceTabs>
+        </ScrollableTabsContainer>
       </div>
     </div>
 
@@ -129,7 +114,6 @@ import { ProcessService, HistoryService } from '@/services.js'
 import { mapActions } from 'vuex'
 
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
-import tabScrollButtons from '@/components/process/mixins/tabScrollButtons.js'
 import procesessVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
 import tabUrlMixin from '@/components/process/mixins/tabUrlMixin.js'
 
@@ -140,14 +124,15 @@ import JobsTable from '@/components/process/tables/JobsTable.vue'
 import CalledProcessInstancesTable from '@/components/process/tables/CalledProcessInstancesTable.vue'
 import ExternalTasksTable from '@/components/process/tables/ExternalTasksTable.vue'
 import ProcessInstanceTabs from '@/components/process/ProcessInstanceTabs.vue'
+import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
 
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
 
 export default {
   name: 'ProcessInstanceView',
   components: { VariablesTable, IncidentsTable, UserTasksTable, BpmnViewer, 
-    JobsTable, CalledProcessInstancesTable, ExternalTasksTable, ProcessInstanceTabs },
-  mixins: [procesessVariablesMixin, resizerMixin, tabUrlMixin, tabScrollButtons],
+    JobsTable, CalledProcessInstancesTable, ExternalTasksTable, ProcessInstanceTabs, ScrollableTabsContainer },
+  mixins: [procesessVariablesMixin, resizerMixin, tabUrlMixin],
   props: {
     selectedInstance: Object,
     activityInstance: Object,
@@ -243,15 +228,7 @@ export default {
         this.superProcessInstance = null
         this.parentProcess = null
       }
-    },
-    handleTabClick(event) {
-      // Automatically scroll to the clicked tab to ensure it's visible
-      this.$nextTick(() => {
-        if (event.tabElement) {
-          this.scrollToTab(event.tabElement)
-        }
-      })
-    },
+    }
   }
 }
 </script>
