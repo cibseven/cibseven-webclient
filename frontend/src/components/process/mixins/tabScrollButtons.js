@@ -102,12 +102,32 @@ export default {
       if (!el) return
 
       const tolerance = 2 // Small tolerance to avoid flickering due to rounding
+      const wasShowingButtons = this.showLeftButton || this.showRightButton
 
       // Show left button if we're scrolled past the left edge
       this.showLeftButton = el.scrollLeft > tolerance
 
       // Show right button if there's more content to scroll to the right
       this.showRightButton = el.scrollLeft + el.clientWidth < el.scrollWidth - tolerance
+
+      // If buttons just appeared (container got smaller), scroll to active tab
+      const isNowShowingButtons = this.showLeftButton || this.showRightButton
+      if (!wasShowingButtons && isNowShowingButtons) {
+        this.$nextTick(() => {
+          this.scrollToActiveTab()
+        })
+      }
+    },
+    scrollToActiveTab() {
+      const el = this.$refs.tabsContainer
+      if (!el) return
+
+      // Find the active tab element
+      const activeTab = el.querySelector('.nav-link.active, .active')
+      if (!activeTab) return
+
+      // Scroll to the active tab
+      this.scrollToTab(activeTab)
     },
     setupEventListeners() {
       window.addEventListener('resize', this.checkScrollButtons)
