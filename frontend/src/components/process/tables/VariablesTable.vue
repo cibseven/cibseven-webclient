@@ -16,7 +16,7 @@
 -->
 <template>
   <div class="d-flex flex-column h-100">
-    <div v-if="isActiveInstance || ProcessVariablesSearchBoxPlugin" class="bg-light d-flex w-100">
+    <div v-if="isActiveInstance || ProcessVariablesSearchBoxPlugin" class="bg-white d-flex w-100">
       <div v-if="ProcessVariablesSearchBoxPlugin" :class="isActiveInstance ? 'col-10 p-2' : 'col-12 p-2'">
         <component :is="ProcessVariablesSearchBoxPlugin"
           :query="filter"
