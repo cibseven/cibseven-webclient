@@ -90,8 +90,9 @@
       <div class="d-flex align-items-end">
         <div class="tabs-scroll-container flex-grow-1" style="white-space: nowrap;">
           <button v-if="showLeftButton" type="button" @click="scrollLeft" 
-            class="scroll-button border border-bottom-0 border-start-0 btn btn-light position-absolute rounded-0" 
-            style="left: 0; box-shadow: 5px 0 5px -5px rgba(0, 0, 0, 0.1);">
+            class="scroll-button border border-start-0 btn btn-light position-absolute rounded-0" 
+            style="left: 0; box-shadow: 5px 0 5px -5px rgba(0, 0, 0, 0.1);"
+            :style="'height: ' + tabsAreaHeight + 'px;'">
             <span class="mdi mdi-chevron-left"></span>
           </button>
           <ul ref="tabsContainer" class="nav nav-tabs m-0 border-0 flex-nowrap tabs-scroll-container" 
@@ -100,8 +101,9 @@
             <ProcessInstanceTabs v-else v-model="activeTab" @tab-click="handleTabClick"></ProcessInstanceTabs>
           </ul>
           <button v-if="showRightButton" type="button" @click="scrollRight" 
-            class="scroll-button border border-bottom-0 border-end-0 btn btn-light position-absolute rounded-0" 
-            style="right: 0; box-shadow: -5px 0 5px -5px rgba(0, 0, 0, 0.1)">
+            class="scroll-button border border-end-0 btn btn-light position-absolute rounded-0" 
+            style="right: 0; box-shadow: -5px 0 5px -5px rgba(0, 0, 0, 0.1)"
+            :style="'height: ' + tabsAreaHeight + 'px;'">
             <span class="mdi mdi-chevron-right"></span>
           </button>
         </div>
