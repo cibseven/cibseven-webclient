@@ -19,17 +19,18 @@ export default {
   data() {
     return {
       showLeftButton: false,
-      showRightButton: false
+      showRightButton: false,
+      resizeObserver: null
     }
   },
   mounted() {
     this.$nextTick(() => {
       this.checkScrollButtons()
-      window.addEventListener('resize', this.checkScrollButtons)
+      this.setupEventListeners()
     })
   },
   beforeDestroy() {
-    window.removeEventListener('resize', this.checkScrollButtons)
+    this.cleanupEventListeners()
   },
   methods: {
     scrollLeft() {
@@ -107,6 +108,25 @@ export default {
 
       // Show right button if there's more content to scroll to the right
       this.showRightButton = el.scrollLeft + el.clientWidth < el.scrollWidth - tolerance
+    },
+    setupEventListeners() {
+      window.addEventListener('resize', this.checkScrollButtons)
+      const el = this.$refs.tabsContainer
+      if (el && window.ResizeObserver) {
+        this.resizeObserver = new ResizeObserver(() => {
+          this.$nextTick(() => {
+            this.checkScrollButtons()
+          })
+        })
+        this.resizeObserver.observe(el)
+      }
+    },
+    cleanupEventListeners() {
+      window.removeEventListener('resize', this.checkScrollButtons)
+      if (this.resizeObserver) {
+        this.resizeObserver.disconnect()
+        this.resizeObserver = null
+      }
     }
   }
 }
