@@ -89,16 +89,18 @@
     <div class="position-absolute w-100 border-bottom" style="z-index: 2; left: 0;" :style="'height: '+ tabsAreaHeight +'px; top: ' + (bottomContentPosition - tabsAreaHeight) + 'px; ' + toggleTransition">
       <div class="d-flex align-items-end">
         <div class="tabs-scroll-container flex-grow-1" style="white-space: nowrap;">
-          <button v-if="showLeftButton" type="button" @click="scrollLeft" class="scroll-button border border-bottom-0 btn btn-light position-absolute rounded-0" 
+          <button v-if="showLeftButton" type="button" @click="scrollLeft" 
+            class="scroll-button border border-bottom-0 border-start-0 btn btn-light position-absolute rounded-0" 
             style="left: 0; box-shadow: 5px 0 5px -5px rgba(0, 0, 0, 0.1);">
             <span class="mdi mdi-chevron-left"></span>
           </button>
           <ul ref="tabsContainer" class="nav nav-tabs m-0 border-0 flex-nowrap tabs-scroll-container" 
             style="display: flex; overflow-y: hidden" @scroll="checkScrollButtons">
-            <component :is="ProcessInstanceTabsPlugin" v-if="ProcessInstanceTabsPlugin" v-model="activeTab"></component>
-            <ProcessInstanceTabs v-else v-model="activeTab"></ProcessInstanceTabs>
+            <component :is="ProcessInstanceTabsPlugin" v-if="ProcessInstanceTabsPlugin" v-model="activeTab" @tab-click="handleTabClick"></component>
+            <ProcessInstanceTabs v-else v-model="activeTab" @tab-click="handleTabClick"></ProcessInstanceTabs>
           </ul>
-          <button v-if="showRightButton" type="button" @click="scrollRight" class="scroll-button border border-bottom-0 btn btn-light position-absolute rounded-0" 
+          <button v-if="showRightButton" type="button" @click="scrollRight" 
+            class="scroll-button border border-bottom-0 border-end-0 btn btn-light position-absolute rounded-0" 
             style="right: 0; box-shadow: -5px 0 5px -5px rgba(0, 0, 0, 0.1)">
             <span class="mdi mdi-chevron-right"></span>
           </button>
@@ -239,6 +241,14 @@ export default {
         this.superProcessInstance = null
         this.parentProcess = null
       }
+    },
+    handleTabClick(event) {
+      // Automatically scroll to the clicked tab to ensure it's visible
+      this.$nextTick(() => {
+        if (event.tabElement) {
+          this.scrollToTab(event.tabElement)
+        }
+      })
     },
   }
 }

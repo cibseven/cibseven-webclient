@@ -82,7 +82,7 @@ export default {
       return [
         { label: 'name', key: 'name', class: 'col-9', tdClass: 'border-end py-1 border-top-0' },
         { label: 'actions', key: 'actions', sortable: false, class: 'col-3 d-flex justify-content-center',
-        tdClass: 'border-end py-0 border-top-0' },
+        tdClass: 'py-0 border-top-0' },
       ]
     }
   },

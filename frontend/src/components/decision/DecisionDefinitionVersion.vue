@@ -25,22 +25,29 @@
       </span>
     </div>
     
-    <div class="position-absolute w-100 border-bottom" style="left: 0; z-index: 1" :style="'height: '+ tabsAreaHeight +'px; top: ' + (bottomContentPosition - tabsAreaHeight) + 'px; ' + toggleTransition">
+    <div class="position-absolute w-100" style="left: 0; z-index: 1" :style="'height: '+ tabsAreaHeight +'px; top: ' + (bottomContentPosition - tabsAreaHeight + 1) + 'px; ' + toggleTransition">
       <div class="d-flex align-items-end">
         <div class="tabs-scroll-container flex-grow-1">
-          <button v-if="showLeftButton" type="button" @click="scrollLeft" class="scroll-button border border-bottom-0 btn btn-light position-absolute rounded-0" 
+          <button v-if="showLeftButton" type="button" @click="scrollLeft" 
+            class="scroll-button border border-bottom-0 border-start-0 btn btn-light position-absolute rounded-0" 
             style="left: 0; box-shadow: 5px 0 5px -5px rgba(0, 0, 0, 0.1);">
             <span class="mdi mdi-chevron-left"></span>
           </button>
           <ul ref="tabsContainer" class="nav nav-tabs m-0 border-0 flex-nowrap tabs-scroll-container" style="display: flex; overflow-y: hidden" @scroll="checkScrollButtons">
             <li class="nav-item m-0 flex-shrink-0 border-0" v-for="(tab, index) in tabs" :key="index">
-              <a role="button" @click="changeTab(tab)" class="nav-link py-2" :class="{ 'active': tab.active, 'bg-light border-bottom-0': !tab.active }"
-                :style="tab.active ? 'border-bottom: 2px solid white' : ''">
+              <a role="button" @click="changeTab(tab)" class="nav-link py-2" 
+                :class="{ 
+                  'active': tab.active, 
+                  'bg-light': !tab.active,
+                  'border-start-0': index === 0,
+                }"
+                :style="tab.active ? 'border-bottom: 3px solid white' : ''">
                 {{ $t('decision.' + tab.id) }}
               </a>
             </li>
           </ul>
-          <button v-if="showRightButton" type="button" @click="scrollRight" class="scroll-button border border-bottom-0 btn btn-light position-absolute rounded-0" 
+          <button v-if="showRightButton" type="button" @click="scrollRight" 
+            class="scroll-button border border-bottom-0 border-end-0btn btn-light position-absolute rounded-0" 
             style="right: 0; box-shadow: -5px 0 5px -5px rgba(0, 0, 0, 0.1)">
             <span class="mdi mdi-chevron-right"></span>
           </button>
@@ -48,7 +55,7 @@
       </div>
     </div>
 
-    <div class="position-absolute w-100 overflow-hidden" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
+    <div class="position-absolute w-100 overflow-hidden border-top" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
       <div v-if="activeTab === 'instances'">
         <div ref="filterTable" class="bg-white d-flex position-absolute w-100">
           <div class="col-3 p-3">

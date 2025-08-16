@@ -22,19 +22,6 @@
     <div :class="loader ? 'invisible' : 'visible'" class="h-100">
       <div class="h-100" ref="diagram"></div>
     </div>
-    <div class="d-none d-md-block position-absolute" style="right:30px; top:15px">
-      <div v-if="activityInstanceHistory" class="row g-0 border rounded ms-1">
-        <div class="h-100">
-          <div class="bg-white border-light rounded-top text-center" style="opacity:0.8">
-            <span>{{ $t('bpmn-viewer.legend.title') }}</span>
-          </div>
-          <div class="bg-light border-light rounded-bottom" style="opacity:0.8">
-            <span class="px-2"><span class="mdi mdi-arrow-right-drop-circle mdi-24px text-success align-middle me-1"></span>{{ $t('bpmn-viewer.legend.currentTask') }}</span>
-            <span class="pe-2"><span class="mdi mdi-card-outline mdi-24px text-info align-middle me-1"></span>{{ $t('bpmn-viewer.legend.selectedTask') }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
     <div class="position-absolute" style="right:15px;bottom:225px;">
       <b-button size="sm" class="border" variant="light" :title="$t('bpmn-viewer.resetZoom')" @click="resetZoom()">
         <span class="mdi mdi-18px mdi-target"></span>

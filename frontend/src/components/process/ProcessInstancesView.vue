@@ -54,22 +54,24 @@
       </span>
     </div>
 
-    <div class="position-absolute w-100 border-bottom" style="left: 0; z-index: 2" :style="'height: '+ tabsAreaHeight +'px; top: ' + (bottomContentPosition - tabsAreaHeight) + 'px; ' + toggleTransition">
+    <div class="position-absolute w-100" style="left: 0; z-index: 2" :style="'height: '+ tabsAreaHeight +'px; top: ' + (bottomContentPosition - tabsAreaHeight + 1) + 'px; ' + toggleTransition">
       <div class="d-flex align-items-end">
         <div class="tabs-scroll-container flex-grow-1">
 
-          <button v-if="showLeftButton" type="button" @click="scrollLeft" class="scroll-button border border-bottom-0 btn btn-light position-absolute rounded-0" 
+          <button v-if="showLeftButton" type="button" @click="scrollLeft" 
+            class="scroll-button border border-bottom-0 border-start-0 btn btn-light position-absolute rounded-0" 
             style="left: 0; box-shadow: 5px 0 5px -5px rgba(0, 0, 0, 0.1);">
             <span class="mdi mdi-chevron-left"></span>
           </button>
 
           <ul ref="tabsContainer" class="nav nav-tabs m-0 border-0 flex-nowrap tabs-scroll-container" 
             style="display: flex; overflow-y: hidden" @scroll="checkScrollButtons">
-            <component :is="ProcessInstancesTabsPlugin" v-if="ProcessInstancesTabsPlugin" v-model="activeTab" />
-            <ProcessInstancesTabs v-else v-model="activeTab" />
+            <component :is="ProcessInstancesTabsPlugin" v-if="ProcessInstancesTabsPlugin" v-model="activeTab" @tab-click="handleTabClick" />
+            <ProcessInstancesTabs v-else v-model="activeTab" @tab-click="handleTabClick" />
           </ul>
 
-          <button v-if="showRightButton" type="button" @click="scrollRight" class="scroll-button border border-bottom-0 btn btn-light position-absolute rounded-0" 
+          <button v-if="showRightButton" type="button" @click="scrollRight" 
+            class="scroll-button border border-end-0 border-bottom-0 btn btn-light position-absolute rounded-0" 
             style="right: 0; box-shadow: -5px 0 5px -5px rgba(0, 0, 0, 0.1)">
             <span class="mdi mdi-chevron-right"></span>
           </button>
@@ -77,7 +79,7 @@
       </div>
     </div>
 
-    <div ref="rContent" class="position-absolute w-100 overflow-hidden" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
+    <div ref="rContent" class="position-absolute w-100 overflow-hidden border-top" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
       <div class="overflow-y-scroll bg-white position-absolute w-100" style="top: 0px; left: 0; bottom: 0" @scroll="handleScroll">
         <template v-if="isInstancesView">
           <div ref="filterTable" class="d-flex w-100">
@@ -401,7 +403,15 @@ export default {
         ...this.filter,
         editField: freeText,
       })
-    })
+    }),
+    handleTabClick(event) {
+      // Automatically scroll to the clicked tab to ensure it's visible
+      this.$nextTick(() => {
+        if (event.tabElement) {
+          this.scrollToTab(event.tabElement)
+        }
+      })
+    },
   }
 }
 </script>

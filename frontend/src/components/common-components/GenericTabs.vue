@@ -24,13 +24,14 @@
   >
     <a
       :href="getTabUrl(tab)"
-      @click.prevent="handleTabClick(tab)"
-      class="nav-link py-2"
+      @click.prevent="handleTabClick(tab, $event)"
+      class="nav-link py-2 border"
       :class="{
         active: tab.id === modelValue,
-        'bg-light border-bottom-0': tab.id != modelValue
+        'bg-light': tab.id != modelValue,
+        'border-start-0': index === 0,
       }"
-      :style="tab.id === modelValue ? 'border-bottom: 2px solid white' : ''"
+      :style="tab.id === modelValue ? 'border-bottom: 3px solid white!important' : ''"
     >
       {{ $t(tab.text) }}
     </a>
@@ -40,7 +41,7 @@
 <script>
 export default {
   name: 'GenericTabs',
-  emits: ['update:modelValue'],
+  emits: ['update:modelValue', 'tab-click'],
   props: { tabs: Array, modelValue: String },
   methods: {
     getTabUrl(tab) {
@@ -50,8 +51,12 @@ export default {
       })
       return resolved.href
     },
-    handleTabClick(tab) {
+    handleTabClick(tab, event) {
       this.$emit('update:modelValue', tab.id)
+      this.$emit('tab-click', {
+        tab,
+        tabElement: event.target.closest('li')
+      })
     }
   }
 }
