@@ -88,7 +88,7 @@
 
     <div class="position-absolute w-100 border-bottom" style="z-index: 2; left: 0;" :style="'height: '+ tabsAreaHeight +'px; top: ' + (bottomContentPosition - tabsAreaHeight) + 'px; ' + toggleTransition">
       <div class="d-flex align-items-end">
-        <ScrollableTabsContainer :tabs-area-height="tabsAreaHeight" :container-style="{ whiteSpace: 'nowrap' }">
+        <ScrollableTabsContainer :tabs-area-height="tabsAreaHeight" :active-tab="activeTab" :container-style="{ whiteSpace: 'nowrap' }">
           <component :is="ProcessInstanceTabsPlugin" v-if="ProcessInstanceTabsPlugin" v-model="activeTab"></component>
           <ProcessInstanceTabs v-else v-model="activeTab"></ProcessInstanceTabs>
         </ScrollableTabsContainer>

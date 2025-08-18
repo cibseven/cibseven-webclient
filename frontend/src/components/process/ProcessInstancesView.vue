@@ -56,8 +56,8 @@
 
     <div class="position-absolute w-100" style="left: 0; z-index: 2" :style="'height: '+ tabsAreaHeight +'px; top: ' + (bottomContentPosition - tabsAreaHeight + 1) + 'px; ' + toggleTransition">
       <div class="d-flex align-items-end">
-        <ScrollableTabsContainer :tabs-area-height="tabsAreaHeight">
-          <component :is="ProcessInstancesTabsPlugin" v-if="ProcessInstancesTabsPlugin" v-model="activeTab" @tab-click="handleTabClick" />
+        <ScrollableTabsContainer :tabs-area-height="tabsAreaHeight" :active-tab="activeTab">
+          <component :is="ProcessInstancesTabsPlugin" v-if="ProcessInstancesTabsPlugin" v-model="activeTab" />
           <ProcessInstancesTabs v-else v-model="activeTab" />
         </ScrollableTabsContainer>
       </div>

@@ -57,6 +57,11 @@ import tabScrollButtons from '@/components/process/mixins/tabScrollButtons.js'
 export default {
   name: 'ScrollableTabsContainer',
   mixins: [tabScrollButtons],
+  watch: {
+    activeTab() {
+      this.$nextTick(() => this.scrollToActiveTab())
+    }
+  },
   props: {
     // Height of the tabs area (for button styling)
     tabsAreaHeight: {
@@ -66,6 +71,10 @@ export default {
     containerStyle: {
       type: [String, Object],
       default: () => ({})
+    },
+    activeTab: {
+      type: String,
+      default: null
     }
   },
   computed: {
@@ -73,25 +82,6 @@ export default {
       return {
         height: this.tabsAreaHeight + 'px'
       }
-    }
-  },
-  emits: ['tab-click'],
-  mounted() {
-    // Listen for tab-click events from child components
-    this.$el.addEventListener('tab-click', this.handleTabClick)
-  },
-  beforeUnmount() {
-    this.$el.removeEventListener('tab-click', this.handleTabClick)
-  },
-  methods: {
-    handleTabClick(event) {
-      // Forward the tab-click event and auto-scroll to the clicked tab
-      this.$nextTick(() => {
-        if (event.detail?.tabElement) {
-          this.scrollToTab(event.detail.tabElement)
-        }
-      })
-      this.$emit('tab-click', event.detail)
     }
   }
 }
