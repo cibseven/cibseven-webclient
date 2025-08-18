@@ -40,11 +40,10 @@
           <li class="nav-item m-0 flex-shrink-0 border-0" v-for="(tab, index) in tabs" :key="index">
             <a role="button" @click="changeTab(tab)" class="nav-link py-2" 
               :class="{ 
-                'active': tab.active, 
+                'active active-tab-border': tab.active, 
                 'bg-light border border-bottom-0': !tab.active,
                 'border-start-0': index === 0
-              }"
-              :style="tab.active ? 'border-bottom: 3px solid white' : ''">
+              }">
               {{ $t('decision.' + tab.id) }}
             </a>
           </li>
@@ -138,3 +137,8 @@ export default {
   }
 }
 </script>
+<style scoped>
+.active-tab-border {
+  border-bottom: 3px solid white!important;
+}
+</style>

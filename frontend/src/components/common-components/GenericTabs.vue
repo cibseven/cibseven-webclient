@@ -27,11 +27,10 @@
       @click.prevent="handleTabClick(tab, $event)"
       class="nav-link py-2 border"
       :class="{
-        active: tab.id === modelValue,
+        'active active-tab-border': tab.id === modelValue,
         'bg-light': tab.id != modelValue,
         'border-start-0': index === 0,
       }"
-      :style="tab.id === modelValue ? 'border-bottom: 3px solid white!important' : ''"
     >
       {{ $t(tab.text) }}
     </a>
@@ -61,3 +60,8 @@ export default {
   }
 }
 </script>
+<style scoped>
+.active-tab-border {
+  border-bottom: 3px solid white!important;
+}
+</style>

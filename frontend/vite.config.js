@@ -23,7 +23,7 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
-const backendUrl = 'http://localhost:8095/webapp'
+const backendUrl = 'http://localhost:8080/webapp'
 //Needed for Embedded forms
 const engineRestUrl = 'http://localhost:8080/'
 //Engine REST API path - customize this if using a custom Jersey application path
