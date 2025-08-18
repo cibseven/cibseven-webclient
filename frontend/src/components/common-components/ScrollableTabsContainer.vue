@@ -23,8 +23,7 @@
       v-if="showLeftButton" 
       type="button" 
       @click="scrollLeft" 
-      class="scroll-button border border-start-0 btn btn-light position-absolute rounded-0" 
-      style="left: 0; box-shadow: 5px 0 5px -5px rgba(0, 0, 0, 0.1);"
+      class="scroll-button scroll-button-left border border-start-0 btn btn-light position-absolute rounded-0" 
       :style="buttonStyle">
       <span class="mdi mdi-chevron-left"></span>
     </button>
@@ -43,8 +42,7 @@
       v-if="showRightButton" 
       type="button" 
       @click="scrollRight" 
-      class="scroll-button border border-end-0 btn btn-light position-absolute rounded-0" 
-      style="right: 0; box-shadow: -5px 0 5px -5px rgba(0, 0, 0, 0.1);"
+      class="scroll-button scroll-button-right border border-end-0 btn btn-light position-absolute rounded-0" 
       :style="buttonStyle">
       <span class="mdi mdi-chevron-right"></span>
     </button>
@@ -102,6 +100,16 @@ export default {
   bottom: 0; 
   z-index: 10; 
   transition: all 0.2s ease;
+}
+
+.scroll-button-left {
+  left: 0;
+  box-shadow: 5px 0 5px -5px rgba(0, 0, 0, 0.1);
+}
+
+.scroll-button-right {
+  right: 0;
+  box-shadow: -5px 0 5px -5px rgba(0, 0, 0, 0.1);
 }
 
 /* Ensure buttons don't interfere with tab content */
