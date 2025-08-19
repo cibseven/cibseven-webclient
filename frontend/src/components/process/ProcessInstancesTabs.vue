@@ -17,7 +17,7 @@
 
 -->
 <template>
-  <GenericTabs :tabs="tabs" :modelValue="modelValue" @update:modelValue="$emit('update:modelValue', $event)"></GenericTabs>
+  <GenericTabs :tabs="tabs" :modelValue="modelValue" @update:modelValue="$emit('update:modelValue', $event)" @tab-click="$emit('tab-click', $event)"></GenericTabs>
 </template>
 
 <script>
@@ -29,7 +29,7 @@ export default {
     GenericTabs,
   },
   props: { modelValue: String },
-  emits: ['update:modelValue'],
+  emits: ['update:modelValue', 'tab-click'],
   data: function () {
     return {
       tabs: [

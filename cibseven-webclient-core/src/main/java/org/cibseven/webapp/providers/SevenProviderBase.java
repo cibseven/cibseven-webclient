@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.exception.BatchOperationException;
 import org.cibseven.webapp.exception.ExistingGroupRequestException;
 import org.cibseven.webapp.exception.ExistingUserRequestException;
 import org.cibseven.webapp.exception.ExpressionEvaluationException;
@@ -384,7 +385,9 @@ public abstract class SevenProviderBase {
 			wrapperException = new InvalidUserIdException(cause);
 		} else if (technicalErrorMsg.matches(".*Null historyTimeToLive values are not allowed.*")) {
 			wrapperException = new InvalidValueHistoryTimeToLive(cause);
-		} 
+		} else if (technicalErrorMsg.matches(".*processInstanceIds is empty.*")) {
+			wrapperException = new BatchOperationException(cause);
+		}
 		if (wrapperException == null) wrapperException = new SystemException(technicalErrorMsg, cause);
 		if (wrapperException instanceof NoObjectFoundException) {
 			log.debug("Exception when calling engine-rest:", wrapperException);	

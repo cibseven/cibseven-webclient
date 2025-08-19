@@ -81,19 +81,17 @@
         :activity-instance="activityInstance" :selected-instance="selectedInstance" :activity-instance-history="activityInstanceHistory" 
         :statistics="process.statistics" :process-definition-id="process.id">
       </BpmnViewer>
-      <span role="button" size="sm" variant="light" class="bg-white px-2 py-1 me-1 position-absolute border rounded" style="bottom: 15px; left: 15px;" @click="toggleContent">
+      <span role="button" size="sm" variant="light" class="bg-white px-2 py-1 me-1 position-absolute border rounded" style="bottom: 90px; right: 11px;" @click="toggleContent">
         <span class="mdi mdi-18px" :class="toggleIcon"></span>
       </span>
     </div>
 
-    <div class="position-absolute w-100 bg-light border-bottom" style="z-index: 2; left: 0;" :style="'top: ' + (bottomContentPosition - tabsAreaHeight) + 'px; ' + toggleTransition">
+    <div class="position-absolute w-100 border-bottom" style="z-index: 2; left: 0;" :style="'height: '+ tabsAreaHeight +'px; top: ' + (bottomContentPosition - tabsAreaHeight) + 'px; ' + toggleTransition">
       <div class="d-flex align-items-end">
-        <div class="tabs-scroll-container flex-grow-1" style="white-space: nowrap;">
-          <ul class="nav nav-tabs m-0 border-0 flex-nowrap" style="display: inline-flex; overflow-y: hidden">
-            <component :is="ProcessInstanceTabsPlugin" v-if="ProcessInstanceTabsPlugin" v-model="activeTab"></component>
-            <ProcessInstanceTabs v-else v-model="activeTab"></ProcessInstanceTabs>
-          </ul>
-        </div>
+        <ScrollableTabsContainer :tabs-area-height="tabsAreaHeight" :active-tab="activeTab" :container-style="{ whiteSpace: 'nowrap' }">
+          <component :is="ProcessInstanceTabsPlugin" v-if="ProcessInstanceTabsPlugin" v-model="activeTab"></component>
+          <ProcessInstanceTabs v-else v-model="activeTab"></ProcessInstanceTabs>
+        </ScrollableTabsContainer>
       </div>
     </div>
 
@@ -126,13 +124,14 @@ import JobsTable from '@/components/process/tables/JobsTable.vue'
 import CalledProcessInstancesTable from '@/components/process/tables/CalledProcessInstancesTable.vue'
 import ExternalTasksTable from '@/components/process/tables/ExternalTasksTable.vue'
 import ProcessInstanceTabs from '@/components/process/ProcessInstanceTabs.vue'
+import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
 
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
 
 export default {
   name: 'ProcessInstanceView',
   components: { VariablesTable, IncidentsTable, UserTasksTable, BpmnViewer, 
-    JobsTable, CalledProcessInstancesTable, ExternalTasksTable, ProcessInstanceTabs },
+    JobsTable, CalledProcessInstancesTable, ExternalTasksTable, ProcessInstanceTabs, ScrollableTabsContainer },
   mixins: [procesessVariablesMixin, resizerMixin, tabUrlMixin],
   props: {
     selectedInstance: Object,
@@ -229,7 +228,7 @@ export default {
         this.superProcessInstance = null
         this.parentProcess = null
       }
-    },
+    }
   }
 }
 </script>
