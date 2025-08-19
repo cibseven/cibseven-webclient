@@ -139,16 +139,14 @@ import { formatDate } from '@/utils/dates.js'
 import { createSortComparator } from '@/utils/sort.js'
 import { mapGetters, mapActions } from 'vuex'
 
-// Constants for incident state sorting
-const INCIDENT_STATE_ORDER = {
-  'open': 1,
-  'resolved': 2,
-  'deleted': 3,
-  'unknown': 4
+
+// Helper to get incident state as a sortable number
+function getStateAsNumber(incident) {
+  if (incident.deleted) return 3
+  if (incident.resolved) return 2
+  if (incident.open) return 1
+  return 4 // unknown
 }
-
-const UNKNOWN_STATE_ORDER = 4
-
 
 export default {
   name: 'IncidentsTable',
@@ -210,18 +208,8 @@ export default {
       let sortedIncidents
       if (sortBy === 'state') {
         // Custom sorting logic for state field
-        const getStateOrder = (incident) => {
-          const getState = (incident) => {
-            if (incident.deleted) return 'deleted'
-            if (incident.resolved) return 'resolved'
-            if (incident.open) return 'open'
-            return 'unknown'
-          }
-          const state = getState(incident)
-          return INCIDENT_STATE_ORDER[state] || UNKNOWN_STATE_ORDER
-        }
         sortedIncidents = [...this.incidents].sort(
-          createSortComparator(getStateOrder, sortDesc)
+          createSortComparator(getStateAsNumber, sortDesc)
         )
       } else {
         // For other fields, use standard sorting
