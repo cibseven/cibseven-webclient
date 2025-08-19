@@ -614,7 +614,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			@Parameter(description = "Variable values") @RequestParam Optional<String> variableValues,
 			@Parameter(description = "Variable names ignore case") @RequestParam Optional<Boolean> variableNamesIgnoreCase,
 			@Parameter(description = "Variable values ignore case") @RequestParam Optional<Boolean> variableValuesIgnoreCase,
-			@Parameter(description = "Deserialize value") @RequestParam Optional<Boolean> deserialize,
+			@Parameter(description = "Deserialize values") @RequestParam Optional<Boolean> deserializeValues,
 			Locale loc, CIBUser user) {
 		checkCockpitRights(user);
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_INSTANCE_VARIABLE_ALL);
@@ -624,7 +624,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 		data.put("variableValues", variableValues.orElse(null));
 		data.put("variableNamesIgnoreCase", variableNamesIgnoreCase.orElse(false));
 		data.put("variableValuesIgnoreCase", variableValuesIgnoreCase.orElse(false));
-		data.put("deserializeValue", deserialize.orElse(true));
+		data.put("deserializeValues", deserializeValues.orElse(true));
 		return bpmProvider.fetchProcessInstanceVariables(processInstanceId, data, user);
 	}
 	
