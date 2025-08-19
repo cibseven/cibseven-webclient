@@ -27,7 +27,7 @@ export default {
 		return {
 			loading: true,
 			filter: {
-				deserializeValue: false,
+				deserializeValues: false,
 			},
 			variables: [],
 			file: null,
@@ -39,7 +39,7 @@ export default {
 			immediate: true,
 			handler: function () {
 				this.filter = {
-				deserializeValue: false,
+					deserializeValues: false,
 				}
 				this.variables = []
 				this.filteredVariables = []
@@ -71,7 +71,7 @@ export default {
     	restFilter: function () {
 			let result = {
 				...this.filter,
-				deserializeValue: false,
+				deserializeValues: false,
 				sortBy: 'variableName',
 				sortOrder: 'asc'
 			}
@@ -178,7 +178,7 @@ export default {
 		changeFilter: function(queryObject) {
 			this.filter = {
 				...queryObject,
-				deserializeValue: false
+				deserializeValues: false
 			}
 			this.loadSelectedInstanceVariables()
 		}
