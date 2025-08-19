@@ -230,8 +230,16 @@ export default {
       }
       if (!this.sortKey) return this.items
       return [...this.items].sort((a, b) => {
-        if (a[this.sortKey] < b[this.sortKey]) return -1 * this.sortOrder
-        if (a[this.sortKey] > b[this.sortKey]) return 1 * this.sortOrder
+        const aVal = a[this.sortKey]
+        const bVal = b[this.sortKey]
+        // Treat null and '' as empty
+        const aEmpty = aVal === null || aVal === ''
+        const bEmpty = bVal === null || bVal === ''
+        if (aEmpty && bEmpty) return 0
+        if (aEmpty) return -1 * this.sortOrder
+        if (bEmpty) return 1 * this.sortOrder
+        if (aVal < bVal) return -1 * this.sortOrder
+        if (aVal > bVal) return 1 * this.sortOrder
         return 0
       })
     },

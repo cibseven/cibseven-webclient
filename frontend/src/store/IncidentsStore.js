@@ -45,6 +45,9 @@ export default {
       commit('setIncidents', response)
       return response
     },
+    setIncidents({ commit }, incidents) {
+      commit('setIncidents', incidents)
+    },
     removeIncident({ commit }, incidentId) {
       commit('removeIncident', incidentId)
     },

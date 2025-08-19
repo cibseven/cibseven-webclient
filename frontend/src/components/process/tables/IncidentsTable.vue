@@ -22,7 +22,9 @@
       <p class="text-center p-4"><BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}</p>
     </div>
     <FlowTable v-else-if="incidents.length > 0" striped thead-class="sticky-header" :items="incidents" primary-key="id" prefix="process-instance.incidents."
-      sort-by="incidentType" native-layout :fields="[
+      :sort-by="currentSortBy" :sort-desc="currentSortDesc" native-layout external-sort
+      @external-sort="handleExternalSort"
+      :fields="[
       { label: 'state', key: 'state', tdClass: 'border-end border-top-0' },
       { label: 'message', key: 'incidentMessage', tdClass: 'border-end border-top-0' },
       { label: 'processInstance', key: 'processInstanceId', tdClass: 'border-end border-top-0' },
@@ -150,7 +152,9 @@ export default {
   },
   data: function() {
     return {
-      loading: true
+      loading: true,
+      currentSortBy: 'incidentType',
+      currentSortDesc: false
     }
   },
   watch: {
@@ -172,7 +176,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions('incidents', ['loadIncidents', 'removeIncident', 'updateIncidentAnnotation']),
+    ...mapActions('incidents', ['loadIncidents', 'removeIncident', 'updateIncidentAnnotation', 'setIncidents']),
     formatDate,
     async loadIncidentsData(id, isInstance = true) {
       this.loading = true
@@ -185,6 +189,48 @@ export default {
         await this.loadIncidents(params)
       } finally {
         this.loading = false
+      }
+    },
+    handleExternalSort({ sortBy, sortDesc }) {
+      this.currentSortBy = sortBy
+      this.currentSortDesc = sortDesc
+      if (sortBy === 'state') {
+        // Custom sorting logic for state field
+        const stateOrder = { 'open': 1, 'resolved': 2, 'deleted': 3 }
+        const sortedIncidents = [...this.incidents].sort((a, b) => {
+          const getState = (incident) => {
+            if (incident.deleted) return 'deleted'
+            if (incident.resolved) return 'resolved' 
+            if (incident.open) return 'open'
+            return 'unknown'
+          }
+          const aState = getState(a)
+          const bState = getState(b)
+          const aOrder = stateOrder[aState] || 4
+          const bOrder = stateOrder[bState] || 4
+          if (sortDesc) {
+            return bOrder - aOrder
+          } else {
+            return aOrder - bOrder
+          }
+        })
+        this.setIncidents(sortedIncidents)
+      } else {
+        // For other fields, use standard sorting
+        const sortedIncidents = [...this.incidents].sort((a, b) => {
+          const aVal = a[sortBy]
+          const bVal = b[sortBy]
+          const aEmpty = aVal == null || aVal === ''
+          const bEmpty = bVal == null || bVal === ''
+          if (aEmpty && bEmpty) return 0
+          if (aEmpty) return sortDesc ? 1 : -1
+          if (bEmpty) return sortDesc ? -1 : 1
+          
+          if (aVal < bVal) return sortDesc ? 1 : -1
+          if (aVal > bVal) return sortDesc ? -1 : 1
+          return 0
+        })
+        this.setIncidents(sortedIncidents)
       }
     },
     showIncidentMessage: function(incident) {
