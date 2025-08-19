@@ -28,7 +28,7 @@
       <div class="h-100" ref="diagram"></div>
 
       <!-- Zoom Controls -->
-      <div v-if="isDrdView" class="btn-group-vertical position-absolute" style="right:15px; bottom:15px;">
+      <div v-if="isDrdView" class="btn-group-vertical position-absolute" style="right:15px; bottom:140px;">
         <b-button size="sm" class="border" variant="light" title="Zoom In" @click="zoomIn">
           <span class="mdi mdi-18px mdi-plus"></span>
         </b-button>

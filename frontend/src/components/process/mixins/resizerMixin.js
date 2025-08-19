@@ -19,7 +19,7 @@ const TOP_BAR_HEIGHT = 41
 const DRAG_SELECTOR_HEIGHT = 10
 const FILTER_HEIGHT = 60
 const DEFAULT_TRANSITION_TIME = 0.4
-const TABS_AREA_HEIGHT = 38
+const TABS_AREA_HEIGHT = 39
 
 const getDefaultBpmnViewerHeight = () => Math.min(DEFAULT_BPMN_VIEWER_HEIGHT, Math.floor((window.innerHeight - FILTER_HEIGHT * 2) / 2))
 
@@ -40,7 +40,7 @@ export default {
     },
     computed: {
         bottomContentPosition: function() {
-            return this.bpmnViewerHeight + this.topBarHeight + this.tabsAreaHeight
+            return this.bpmnViewerHeight + this.topBarHeight
         }
     },
     methods: {
@@ -68,7 +68,6 @@ export default {
             this.toggleTransition = 'transition: top '+ this.transitionTime +'s ease, height '+ this.transitionTime +'s ease'
             if (this.bpmnViewerHeight < (this.bpmnViewerHeight + this.$refs.rContent.offsetHeight)) {
                 this.bpmnViewerHeight += this.$refs.rContent.offsetHeight
-                if (this.$refs.filterTable) this.bpmnViewerHeight += this.$refs.filterTable.offsetHeight
                 this.toggleIcon = 'mdi-chevron-up'
             }
             else {

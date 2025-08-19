@@ -49,26 +49,24 @@
         :process-definition-id="process.id" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" :statistics="process.statistics"
         :active-tab="activeTab" class="h-100">
       </BpmnViewer>
-      <span role="button" size="sm" variant="light" class="bg-white px-2 py-1 me-1 position-absolute border rounded" style="bottom: 15px; left: 15px;" @click="toggleContent">
+      <span role="button" size="sm" variant="light" class="bg-white px-2 py-1 me-1 position-absolute border rounded" style="bottom: 90px; right: 11px;" @click="toggleContent">
         <span class="mdi mdi-18px" :class="toggleIcon"></span>
       </span>
     </div>
 
-    <div class="position-absolute w-100 bg-light border-bottom" style="left: 0; z-index: 2" :style="'top: ' + (bottomContentPosition - tabsAreaHeight) + 'px; ' + toggleTransition">
+    <div class="position-absolute w-100" style="left: 0; z-index: 2" :style="'height: '+ tabsAreaHeight +'px; top: ' + (bottomContentPosition - tabsAreaHeight + 1) + 'px; ' + toggleTransition">
       <div class="d-flex align-items-end">
-        <div class="tabs-scroll-container flex-grow-1" style="white-space: nowrap;">
-          <ul class="nav nav-tabs m-0 border-0 flex-nowrap" style="display: inline-flex; overflow-y: hidden">
-            <component :is="ProcessInstancesTabsPlugin" v-if="ProcessInstancesTabsPlugin" v-model="activeTab" />
-            <ProcessInstancesTabs v-else v-model="activeTab" />
-          </ul>
-        </div>
+        <ScrollableTabsContainer :tabs-area-height="tabsAreaHeight" :active-tab="activeTab">
+          <component :is="ProcessInstancesTabsPlugin" v-if="ProcessInstancesTabsPlugin" v-model="activeTab" />
+          <ProcessInstancesTabs v-else v-model="activeTab" />
+        </ScrollableTabsContainer>
       </div>
     </div>
 
-    <div class="position-absolute w-100 overflow-hidden" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
-      <div ref="rContent" class="overflow-y-scroll bg-white position-absolute w-100" style="top: 0px; left: 0; bottom: 0" @scroll="handleScroll">
+    <div ref="rContent" class="position-absolute w-100 overflow-hidden border-top" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
+      <div class="overflow-y-scroll bg-white position-absolute w-100" style="top: 0px; left: 0; bottom: 0" @scroll="handleScroll">
         <template v-if="isInstancesView">
-          <div ref="filterTable" class="bg-light d-flex w-100">
+          <div ref="filterTable" class="d-flex w-100">
 
             <div v-if="ProcessInstancesSearchBoxPlugin" class="col-10 p-2">
               <component :is="ProcessInstancesSearchBoxPlugin"
@@ -167,13 +165,14 @@ import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
 import { BWaitingBox } from 'cib-common-components'
 import ProcessInstancesTabs from '@/components/process/ProcessInstancesTabs.vue'
+import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
 import { mapGetters, mapActions } from 'vuex'
 
 export default {
   name: 'ProcessInstancesView',
   components: { InstancesTable, JobDefinitionsTable, BpmnViewer, MultisortModal,
      SuccessAlert, ConfirmDialog, BWaitingBox, IncidentsTable, CalledProcessDefinitionsTable,
-     ProcessInstancesTabs },
+     ProcessInstancesTabs, ScrollableTabsContainer },
   inject: ['loadProcesses'],
   mixins: [permissionsMixin, resizerMixin, copyToClipboardMixin, tabUrlMixin],
   emits: ['task-selected', 'filter-instances', 'instance-deleted'],
