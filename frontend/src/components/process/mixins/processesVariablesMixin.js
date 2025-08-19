@@ -68,7 +68,7 @@ export default {
 				return res
 			}
 		},
-    	restFilter: function () {
+		restFilter: function () {
 			let result = {
 				...this.filter,
 				deserializeValues: false,
