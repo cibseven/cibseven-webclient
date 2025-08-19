@@ -136,7 +136,19 @@ import StackTraceModal from '@/components/process/modals/StackTraceModal.vue'
 import { BWaitingBox } from 'cib-common-components'
 import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
 import { formatDate } from '@/utils/dates.js'
+import { createSortComparator } from '@/utils/sort.js'
 import { mapGetters, mapActions } from 'vuex'
+
+// Constants for incident state sorting
+const INCIDENT_STATE_ORDER = {
+  'open': 1,
+  'resolved': 2,
+  'deleted': 3,
+  'unknown': 4
+}
+
+const UNKNOWN_STATE_ORDER = 4
+
 
 export default {
   name: 'IncidentsTable',
@@ -194,44 +206,30 @@ export default {
     handleExternalSort({ sortBy, sortDesc }) {
       this.currentSortBy = sortBy
       this.currentSortDesc = sortDesc
+
+      let sortedIncidents
       if (sortBy === 'state') {
         // Custom sorting logic for state field
-        const stateOrder = { 'open': 1, 'resolved': 2, 'deleted': 3 }
-        const sortedIncidents = [...this.incidents].sort((a, b) => {
+        const getStateOrder = (incident) => {
           const getState = (incident) => {
             if (incident.deleted) return 'deleted'
-            if (incident.resolved) return 'resolved' 
+            if (incident.resolved) return 'resolved'
             if (incident.open) return 'open'
             return 'unknown'
           }
-          const aState = getState(a)
-          const bState = getState(b)
-          const aOrder = stateOrder[aState] || 4
-          const bOrder = stateOrder[bState] || 4
-          if (sortDesc) {
-            return bOrder - aOrder
-          } else {
-            return aOrder - bOrder
-          }
-        })
-        this.setIncidents(sortedIncidents)
+          const state = getState(incident)
+          return INCIDENT_STATE_ORDER[state] || UNKNOWN_STATE_ORDER
+        }
+        sortedIncidents = [...this.incidents].sort(
+          createSortComparator(getStateOrder, sortDesc)
+        )
       } else {
         // For other fields, use standard sorting
-        const sortedIncidents = [...this.incidents].sort((a, b) => {
-          const aVal = a[sortBy]
-          const bVal = b[sortBy]
-          const aEmpty = aVal == null || aVal === ''
-          const bEmpty = bVal == null || bVal === ''
-          if (aEmpty && bEmpty) return 0
-          if (aEmpty) return sortDesc ? 1 : -1
-          if (bEmpty) return sortDesc ? -1 : 1
-          
-          if (aVal < bVal) return sortDesc ? 1 : -1
-          if (aVal > bVal) return sortDesc ? -1 : 1
-          return 0
-        })
-        this.setIncidents(sortedIncidents)
+        sortedIncidents = [...this.incidents].sort(
+          createSortComparator(item => item[sortBy], sortDesc)
+        )
       }
+      this.setIncidents(sortedIncidents)
     },
     showIncidentMessage: function(incident) {
       // Only open modal if historyConfiguration is present
