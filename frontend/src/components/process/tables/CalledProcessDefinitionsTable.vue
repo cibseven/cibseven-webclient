@@ -23,9 +23,9 @@
     </div>
     <FlowTable v-else-if="calledProcessDefinitions.length > 0" resizable striped thead-class="sticky-header" :items="calledProcessDefinitions" primary-key="id" prefix="process-instance.calledProcessDefinitions."
       :fields="[
-        { label: 'calledProcessDefinition', key: 'label', class: 'col-4', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' },
-        { label: 'state', key: 'state', class: 'col-4', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' },
-        { label: 'activity', key: 'activity', class: 'col-4', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' }
+        { label: 'calledProcessDefinition', key: 'label', class: 'col-4', tdClass: 'py-1' },
+        { label: 'state', key: 'state', class: 'col-4', tdClass: 'py-1' },
+        { label: 'activity', key: 'activity', class: 'col-4', tdClass: 'py-1' }
       ]">
       <template v-slot:cell(label)="table">
         <CopyableActionButton

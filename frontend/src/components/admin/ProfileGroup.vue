@@ -74,9 +74,9 @@
                 </div>
                 <div v-if="users" class="container-fluid overflow-auto bg-white shadow-sm border rounded g-0">
                   <FlowTable :items="users" primary-key="id" striped
-                    prefix="admin.users." :fields="[{label: 'id', key: 'id', class: 'col-md-3 col-sm-3', tdClass: 'border-end py-2' },
-                      { label: 'firstName', key: 'firstName', class: 'col-md-3 col-sm-3', tdClass: 'border-end py-2' },
-                      { label: 'lastName', key: 'lastName', class: 'col-md-3 col-sm-3', tdClass: 'border-end py-2' },
+                    prefix="admin.users." :fields="[{ label: 'id', key: 'id', class: 'col-md-3 col-sm-3', tdClass: 'py-2' },
+                      { label: 'firstName', key: 'firstName', class: 'col-md-3 col-sm-3', tdClass: 'py-2' },
+                      { label: 'lastName', key: 'lastName', class: 'col-md-3 col-sm-3', tdClass: 'py-2' },
                       { label: 'email', key: 'email', class: 'col-md-3 col-sm-3', tdClass: 'py-2' }]"
                     @contextmenu="focusedUser = $event" @mouseenter="focusedUser = $event" @mouseleave="focusedUser = null">
                   </FlowTable>
@@ -104,8 +104,8 @@
                 </div>
                 <div v-if="groupTenants.length > 0" class="container-fluid overflow-auto bg-white shadow-sm border rounded g-0">
                   <FlowTable :items="groupTenants" primary-key="id" striped
-                    prefix="admin.tenants." :fields="[{ label: 'fullId', key: 'id', class: 'col-5', tdClass: 'border-end py-2' },
-                      { label: 'fullName', key: 'name', class: 'col-5', tdClass: 'border-end py-2' },
+                    prefix="admin.tenants." :fields="[{ label: 'fullId', key: 'id', class: 'col-5', tdClass: 'py-2' },
+                      { label: 'fullName', key: 'name', class: 'col-5', tdClass: 'py-2' },
                       { label: 'actions', key: 'actions', class: 'col-2', tdClass: 'justify-content-center py-2', thClass: 'justify-content-center text-center', sortable: false }]"
                     @contextmenu="focusedTenant = $event" @mouseenter="focusedTenant = $event" @mouseleave="focusedTenant = null">
                     <template v-slot:cell(actions)="row">
