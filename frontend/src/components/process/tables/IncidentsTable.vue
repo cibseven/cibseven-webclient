@@ -150,18 +150,18 @@ export default {
     ...mapGetters('incidents', ['incidents']),
     incidentFields() {
       const baseFields = [
-        { label: 'state', key: 'state', tdClass: 'border-end border-top-0' },
-        { label: 'message', key: 'incidentMessage', tdClass: 'border-end border-top-0' },
-        ...(this.isInstanceView ? [] : [{ label: 'processInstance', key: 'processInstanceId', tdClass: 'border-end border-top-0' }]),
-        { label: 'createTime', key: 'createTime', tdClass: 'border-end border-top-0' },
-        { label: 'endTime', key: 'endTime', tdClass: 'border-end border-top-0' },
-        { label: 'activity', key: 'activityId', tdClass: 'border-end border-top-0' },
-        { label: 'failedActivity', key: 'failedActivityId', tdClass: 'border-end border-top-0' },
-        { label: 'causeIncidentProcessInstanceId', key: 'causeIncidentProcessInstanceId', tdClass: 'border-end border-top-0' },
-        { label: 'rootCauseIncidentProcessInstanceId', key: 'rootCauseIncidentProcessInstanceId', tdClass: 'border-end border-top-0' },
-        { label: 'incidentType', key: 'incidentType', tdClass: 'border-end border-top-0' },
-        { label: 'annotation', key: 'annotation', tdClass: 'border-end border-top-0' },
-        { label: 'actions', key: 'actions', sortable: false, tdClass: 'py-0 border-top-0' }
+        { label: 'state', key: 'state' },
+        { label: 'message', key: 'incidentMessage' },
+        ...(this.isInstanceView ? [] : [{ label: 'processInstance', key: 'processInstanceId' }]),
+        { label: 'createTime', key: 'createTime' },
+        { label: 'endTime', key: 'endTime' },
+        { label: 'activity', key: 'activityId' },
+        { label: 'failedActivity', key: 'failedActivityId' },
+        { label: 'causeIncidentProcessInstanceId', key: 'causeIncidentProcessInstanceId' },
+        { label: 'rootCauseIncidentProcessInstanceId', key: 'rootCauseIncidentProcessInstanceId' },
+        { label: 'incidentType', key: 'incidentType' },
+        { label: 'annotation', key: 'annotation' },
+        { label: 'actions', key: 'actions', sortable: false, tdClass: 'py-0' }
       ]
       return baseFields
     }

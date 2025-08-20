@@ -80,9 +80,8 @@ export default {
     },
     fields: function() {
       return [
-        { label: 'name', key: 'name', class: 'col-9', tdClass: 'border-end py-1 border-top-0' },
-        { label: 'actions', key: 'actions', sortable: false, class: 'col-3 d-flex justify-content-center',
-        tdClass: 'py-0 border-top-0' },
+        { label: 'name', key: 'name', class: 'col-9', tdClass: 'py-1' },
+        { label: 'actions', key: 'actions', sortable: false, class: 'col-3 d-flex justify-content-center', tdClass: 'py-0' },
       ]
     }
   },

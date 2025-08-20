@@ -21,8 +21,8 @@
     <div class="overflow-auto p-0" style="max-height: 35vh">
       <FlowTable v-if="jobs && jobs.length > 0 && !loading" striped thead-class="sticky-header" :items="jobs" primary-key="id" prefix="batches." 
         :fields="[
-          { label: 'id', key: 'id', class: 'col-3', tdClass: 'border-end p-1' },
-          { label: 'exception', key: 'exceptionMessage', class: 'col-6', tdClass: 'border-end p-1' },
+          { label: 'id', key: 'id', class: 'col-3', tdClass: 'p-1' },
+          { label: 'exception', key: 'exceptionMessage', class: 'col-6', tdClass: 'p-1' },
           { label: 'actions', key: 'actions', sortable: false, class: 'col-3 d-flex justify-content-center', tdClass: 'py-0' }
         ]">
         <template v-slot:cell(id)="table">

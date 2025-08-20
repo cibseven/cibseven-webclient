@@ -71,9 +71,9 @@
                 </div>
                 <div v-if="users" class="container-fluid overflow-auto bg-white shadow-sm border rounded g-0">
                   <FlowTable :items="users" primary-key="id" striped
-                    prefix="admin.users." :fields="[{label: 'id', key: 'id', class: 'col-md-3 col-sm-3', tdClass: 'border-end py-2' },
-                      {label: 'firstName', key: 'firstName', class: 'col-md-3 col-sm-3', tdClass: 'border-end py-2' },
-                      {label: 'lastName', key: 'lastName', class: 'col-md-3 col-sm-3', tdClass: 'border-end py-2' },
+                    prefix="admin.users." :fields="[{label: 'id', key: 'id', class: 'col-md-3 col-sm-3', tdClass: 'py-2' },
+                      {label: 'firstName', key: 'firstName', class: 'col-md-3 col-sm-3', tdClass: 'py-2' },
+                      {label: 'lastName', key: 'lastName', class: 'col-md-3 col-sm-3', tdClass: 'py-2' },
                       {label: 'email', key: 'email', class: 'col-md-3 col-sm-3', tdClass: 'py-2' }]">
                   </FlowTable>
                 </div>
@@ -94,8 +94,8 @@
                 <div v-if="groups" class="container-fluid overflow-auto bg-white shadow-sm border rounded g-0">
                   <FlowTable :items="groups" primary-key="id" striped
                     prefix="admin.groups." :fields="[
-                      { label: 'id', key: 'id', class: 'col-4', tdClass: 'border-end py-2' },
-                      { label: 'name', key: 'name', class: 'col-4', tdClass: 'border-end py-2' },
+                      { label: 'id', key: 'id', class: 'col-4', tdClass: 'py-2' },
+                      { label: 'name', key: 'name', class: 'col-4', tdClass: 'py-2' },
                       { label: 'type', key: 'type', class: 'col-4', tdClass: 'py-2' }
                     ]">
                   </FlowTable>

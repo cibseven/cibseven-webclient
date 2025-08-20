@@ -180,12 +180,12 @@ export default {
     },
     fields: function() {
       return [
-        { label: 'status', key: 'incidents', thClass:'py-0', tdClass:'py-0 ps-0 border-end border-top-0', class: 'col-1 d-flex align-items-center justify-content-center' },
-        { label: 'runningInstances', key: 'runningInstances', class: 'col-1 d-flex justify-content-center', tdClass: 'border-end py-1 border-top-0' },
-        { label: 'key', key: 'key', class: 'col-3', tdClass: 'border-end py-1 border-top-0' },
-        { label: 'name', key: 'name', class: 'col-3', tdClass: 'border-end py-1 border-top-0' },
-        { label: 'tenant', key: 'tenantId', class: 'col-2', tdClass: 'border-end py-1 border-top-0' },
-        { label: 'actions', key: 'actions', sortable: false, class: 'col-2 d-flex justify-content-center', tdClass: 'py-0 border-top-0' },
+        { label: 'status', key: 'incidents', thClass:'py-0', tdClass:'py-0 ps-0', class: 'col-1 d-flex align-items-center justify-content-center' },
+        { label: 'runningInstances', key: 'runningInstances', class: 'col-1 d-flex justify-content-center', tdClass: 'py-1' },
+        { label: 'key', key: 'key', class: 'col-3', tdClass: 'py-1' },
+        { label: 'name', key: 'name', class: 'col-3', tdClass: 'py-1' },
+        { label: 'tenant', key: 'tenantId', class: 'col-2', tdClass: 'py-1' },
+        { label: 'actions', key: 'actions', sortable: false, class: 'col-2 d-flex justify-content-center', tdClass: 'py-0' },
       ]
     }
   },

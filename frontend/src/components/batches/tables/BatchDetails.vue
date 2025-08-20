@@ -37,7 +37,7 @@
       <div class="overflow-auto">
         <FlowTable v-if="batchDetails" striped thead-class="sticky-header" :items="batchDetails" primary-key="id" prefix="batches."
           :fields="[
-            { label: 'property', key: 'property', class: 'col-6', tdClass: 'border-end p-1' },
+            { label: 'property', key: 'property', class: 'col-6', tdClass: 'p-1' },
             { label: 'value', key: 'value', class: 'col-6', tdClass: 'p-1' },
           ]">
         </FlowTable>

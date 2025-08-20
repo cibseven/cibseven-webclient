@@ -176,10 +176,10 @@
         <b-modal v-if="editMode" ref="assignGroupsModal" :title="$t('admin.users.group.add')" size="lg">
           <div class="container g-0">
             <FlowTable :items="unAssignedGroups" primary-key="id" prefix="admin.groups." striped
-              :fields="[{ label: '', key: 'selected', class: 'col-sm-1', sortable: false, thClass: 'text-center, border-top-0', tdClass: 'text-center' },
-              { label: 'id', key: 'id', class: 'col-sm-3', thClass: 'border-top-0' },
-              { label: 'name', key: 'name', class: 'col-sm-5', thClass: 'border-top-0' },
-              { label: 'type', key: 'type', class: 'col-sm-3', thClass: 'border-top-0' }]">
+              :fields="[{ label: '', key: 'selected', class: 'col-sm-1', sortable: false, thClass: 'text-center', tdClass: 'text-center' },
+              { label: 'id', key: 'id', class: 'col-sm-3' },
+              { label: 'name', key: 'name', class: 'col-sm-5' },
+              { label: 'type', key: 'type', class: 'col-sm-3' }]">
               <template v-slot:cell(selected)="row">
                 <b-form-checkbox v-model="row.item.selected"></b-form-checkbox>
               </template>
@@ -200,9 +200,9 @@
         <b-modal v-if="editMode" ref="assignTenantsModal" :title="$t('admin.tenants.addTo')" size="lg">
           <div v-if="unassignedTenants.length > 0" class="container g-0">
             <FlowTable :items="unassignedTenants" primary-key="id" prefix="admin.tenants." striped
-              :fields="[{ label: '', key: 'selected', class: 'col-sm-1', sortable: false, thClass: 'text-center, border-top-0', tdClass: 'text-center' },
-              { label: 'fullId', key: 'id', class: 'col-6', thClass: 'border-top-0' },
-              { label: 'fullName', key: 'name', class: 'col-5', thClass: 'border-top-0' }]">
+              :fields="[{ label: '', key: 'selected', class: 'col-sm-1', sortable: false, tdClass: 'text-center' },
+              { label: 'fullId', key: 'id', class: 'col-6' },
+              { label: 'fullName', key: 'name', class: 'col-5' }]">
               <template v-slot:cell(selected)="row">
                 <b-form-checkbox v-model="row.item.selected"></b-form-checkbox>
               </template>
@@ -329,19 +329,19 @@ export default {
           label: 'id',
           key: 'id',
           class: 'col-md-4 col-sm-4',
-          ...(isEditable && { tdClass: 'border-end py-1' })
+          ...(isEditable && { tdClass: 'py-1' })
         },
         {
           label: 'name',
           key: 'name',
           class: 'col-md-4 col-sm-4',
-          ...(isEditable && { tdClass: 'border-end py-1' })
+          ...(isEditable && { tdClass: 'py-1' })
         },
         {
           label: 'type',
           key: 'type',
           class: isEditable ? 'col-md-2 col-sm-2' : 'col-md-4 col-sm-4',
-          ...(isEditable && { tdClass: 'border-end py-1' })
+          ...(isEditable && { tdClass: 'py-1' })
         }
       ]
       if (isEditable) {
@@ -364,13 +364,13 @@ export default {
           label: 'fullId',
           key: 'id',
           class: isEditable ? 'col-md-4 col-sm-4' : 'col-md-6 col-sm-6',
-          ...(isEditable && { tdClass: 'border-end py-1' })
+          ...(isEditable && { tdClass: 'py-1' })
         },
         {
           label: 'fullName',
           key: 'name',
           class: isEditable ? 'col-md-4 col-sm-4' : 'col-md-6 col-sm-6',
-          ...(isEditable && { tdClass: 'border-end py-1' })
+          ...(isEditable && { tdClass: 'py-1' })
         }
       ]
       if (isEditable) {
