@@ -51,7 +51,7 @@ export default {
         }
       }
       const variablesToSerialize = []
-      const filter = { deserializeValue: false }
+      const filter = { deserializeValues: false }
       let variables = await serviceMap[service][method](instanceId, filter)
       variables.forEach(variable => {
         try {

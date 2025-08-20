@@ -351,7 +351,12 @@ props: {
     async updateVariableSerialized() {
       this.saving = true
 
-      const value = this.formattedValue.toString()
+      let value = this.formattedValue.toString()
+      // minimize value
+      if (this.variable.type === 'Json') {
+        value = JSON.stringify(JSON.parse(value))
+      }
+
       const data = { modifications: {} }
       data.modifications[this.variable.name] = {
         value,
