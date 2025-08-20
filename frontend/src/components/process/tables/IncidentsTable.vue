@@ -226,17 +226,29 @@ export default {
       this.setIncidents(sortedIncidents)
     },
     showIncidentMessage: function(incident) {
-      // Only open modal if historyConfiguration is present
-      if (!incident.historyConfiguration) return
-      let stackTracePromise
-      if (incident.incidentType === 'failedExternalTask') {
-        stackTracePromise = IncidentService.fetchHistoricIncidentStacktraceByExternalTaskId(incident.historyConfiguration)
-      } else {
-        stackTracePromise = IncidentService.fetchHistoricStacktraceByJobId(incident.historyConfiguration)
-      }
+      const configuration = incident.historyConfiguration || incident.rootCauseIncidentConfiguration
+      if (!configuration) return
+
+      const isHistoric = !!incident.historyConfiguration
+      const isExternalTask = incident.incidentType === 'failedExternalTask'
+      
+      // Select appropriate service method based on incident type and whether it's historic
+      const stackTracePromise = this.getStackTracePromise(isHistoric, isExternalTask, configuration)
+      
       stackTracePromise.then(res => {
         this.$refs.stackTraceModal.show(res)
       })
+    },
+    getStackTracePromise(isHistoric, isExternalTask, configuration) {
+      if (isExternalTask) {
+        return isHistoric 
+          ? IncidentService.fetchHistoricIncidentStacktraceByExternalTaskId(configuration)
+          : IncidentService.fetchIncidentStacktraceByExternalTaskId(configuration)
+      } else {
+        return isHistoric
+          ? IncidentService.fetchHistoricStacktraceByJobId(configuration)
+          : IncidentService.fetchIncidentStacktraceByJobId(configuration)
+      }
     },
     incrementNumberRetry: function({ item, params }) {
       // Choose the appropriate retry method based on incident type
