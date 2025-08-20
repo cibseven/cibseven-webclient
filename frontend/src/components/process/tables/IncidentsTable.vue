@@ -22,7 +22,9 @@
       <p class="text-center p-4"><BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}</p>
     </div>
     <FlowTable v-else-if="incidents.length > 0" striped thead-class="sticky-header" :items="incidents" primary-key="id" prefix="process-instance.incidents."
-      sort-by="incidentType" native-layout :fields="[
+      :sort-by="currentSortBy" :sort-desc="currentSortDesc" native-layout external-sort
+      @external-sort="handleExternalSort"
+      :fields="[
       { label: 'state', key: 'state', tdClass: 'border-end border-top-0' },
       { label: 'message', key: 'incidentMessage', tdClass: 'border-end border-top-0' },
       { label: 'processInstance', key: 'processInstanceId', tdClass: 'border-end border-top-0' },
@@ -134,7 +136,17 @@ import StackTraceModal from '@/components/process/modals/StackTraceModal.vue'
 import { BWaitingBox } from 'cib-common-components'
 import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
 import { formatDate } from '@/utils/dates.js'
+import { createSortComparator } from '@/utils/sort.js'
 import { mapGetters, mapActions } from 'vuex'
+
+
+// Helper to get incident state as a sortable number
+function getStateAsNumber(incident) {
+  if (incident.deleted) return 3
+  if (incident.resolved) return 2
+  if (incident.open) return 1
+  return 4 // unknown
+}
 
 export default {
   name: 'IncidentsTable',
@@ -150,7 +162,9 @@ export default {
   },
   data: function() {
     return {
-      loading: true
+      loading: true,
+      currentSortBy: 'incidentType',
+      currentSortDesc: false
     }
   },
   watch: {
@@ -172,7 +186,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions('incidents', ['loadIncidents', 'removeIncident', 'updateIncidentAnnotation']),
+    ...mapActions('incidents', ['loadIncidents', 'removeIncident', 'updateIncidentAnnotation', 'setIncidents']),
     formatDate,
     async loadIncidentsData(id, isInstance = true) {
       this.loading = true
@@ -186,6 +200,24 @@ export default {
       } finally {
         this.loading = false
       }
+    },
+    handleExternalSort({ sortBy, sortDesc }) {
+      this.currentSortBy = sortBy
+      this.currentSortDesc = sortDesc
+
+      let sortedIncidents
+      if (sortBy === 'state') {
+        // Custom sorting logic for state field
+        sortedIncidents = [...this.incidents].sort(
+          createSortComparator(getStateAsNumber, sortDesc)
+        )
+      } else {
+        // For other fields, use standard sorting
+        sortedIncidents = [...this.incidents].sort(
+          createSortComparator(item => item[sortBy], sortDesc)
+        )
+      }
+      this.setIncidents(sortedIncidents)
     },
     showIncidentMessage: function(incident) {
       // Only open modal if historyConfiguration is present

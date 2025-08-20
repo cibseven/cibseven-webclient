@@ -107,6 +107,8 @@
 </template>
 
 <script>
+import { createSortComparator } from '@/utils/sort.js'
+
 export default {
   name: 'FlowTable',
   props: {
@@ -229,11 +231,9 @@ export default {
         return this.items
       }
       if (!this.sortKey) return this.items
-      return [...this.items].sort((a, b) => {
-        if (a[this.sortKey] < b[this.sortKey]) return -1 * this.sortOrder
-        if (a[this.sortKey] > b[this.sortKey]) return 1 * this.sortOrder
-        return 0
-      })
+      return [...this.items].sort(
+        createSortComparator(item => item[this.sortKey], this.sortOrder === -1)
+      )
     },
     columnSelectionStyle() {
       return {
