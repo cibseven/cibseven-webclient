@@ -235,6 +235,12 @@ export default {
       }
       if (variable.type === 'Date') variable.value = moment(variable.value).format('YYYY-MM-DDTHH:mm:ss.SSSZZ')
       if (variable.type !== 'Object') delete variable.valueInfo
+
+      // minimize value
+      if (variable.type === 'Json') {
+        variable.value = JSON.stringify(JSON.parse(variable.value))
+      }
+
       this.$emit('add-variable', variable)
     },
     reset: function() {

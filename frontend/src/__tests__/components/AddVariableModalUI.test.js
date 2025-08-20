@@ -34,7 +34,7 @@ describe('AddVariableModal.vue UI interactions', () => {
 
     wrapper = mount(AddVariableModalUI, {
       props: {
-          selectedInstance: { id: 100 }
+        selectedInstance: { id: 100 }
       },
       global: {
         provide: {
@@ -116,6 +116,18 @@ describe('AddVariableModal.vue UI interactions', () => {
     it('changing type to Json sets default value', async () => {
       await changeType('Json')
       expect(wrapper.vm.value).toBe('{}')
+    })
+
+    it('compress Json value', async () => {
+      await changeType('Json')
+      expect(wrapper.vm.value).toBe('{}')
+      await setValue('{  "a":   "b"\n  }')
+
+      await wrapper.vm.addVariable()
+
+      expect(wrapper.emitted('add-variable')).toBeTruthy()
+      const args = wrapper.emitted('add-variable')[0][0]
+      expect(args.value).toContain('{"a":"b"}')
     })
 
     it('changing type to String does not reset value to empty string', async () => {
