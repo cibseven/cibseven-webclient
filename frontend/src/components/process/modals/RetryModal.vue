@@ -17,17 +17,17 @@
 
 -->
 <template>
-	<b-modal ref="incidentRetryModal" :title="$t('process-instance.incidents.incrementNumberRetries')" size="lg">
+	<b-modal ref="retryModal" :title="$t(translationPrefix + 'incrementNumberRetries')" size="lg">
 		<div class="container-fluid pt-2">
-			<p>{{ $t('process-instance.incidents.retryMsg') }}</p>
+			<p>{{ $t(translationPrefix + 'retryMsg') }}</p>
 			<b-form-group>
-				<label class="fw-medium mt-2 mb-1">{{ $t('process-instance.incidents.dueDateMsg') }}</label>
+				<label class="fw-medium mt-2 mb-1">{{ $t(translationPrefix + 'dueDateMsg') }}</label>
 				<div class="form-check" v-for="option in executionOptions" :key="option">
 					<input class="form-check-input" type="radio" :id="option" :value="option" v-model="executionOption" />
-					<label class="form-check-label" :for="option">{{ $t('process-instance.incidents.' + option) }}</label>
+					<label class="form-check-label" :for="option">{{ $t(translationPrefix + option) }}</label>
 				</div>
 				<div v-if="executionOption === 'setDueDate'" class="row">
-					<label class="fw-medium mt-2 mb-1">{{ $t('process-instance.incidents.scheduleAt') }}</label>
+					<label class="fw-medium mt-2 mb-1">{{ $t(translationPrefix + 'scheduleAt') }}</label>
 					<div class="col-6">
 						<b-form-datepicker v-model="scheduledAt.date" size="sm" :date-disabled-fn="isInThePast" input-class="text-start">
 							<template v-slot:prepend>
@@ -36,7 +36,7 @@
 								</span>
 							</template>
 						</b-form-datepicker>
-						<span v-if="invalidDate" class="text-danger">{{ $t('process-instance.incidents.invalidDateError') }}</span>
+						<span v-if="invalidDate" class="text-danger">{{ $t(translationPrefix + 'invalidDateError') }}</span>
 					</div>
 					<div class="col-6">
 						<b-form-timepicker v-model="scheduledAt.time" size="sm" input-class="text-start" no-close-button :label-no-time-selected="$t('cib-timepicker.noDate')"
@@ -52,8 +52,8 @@
 			</b-form-group>
 		</div>
 		<template v-slot:modal-footer>
-			<b-button @click="$refs.incidentRetryModal.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
-			<b-button @click="incrementNumberRetries()" variant="primary">{{ $t('process-instance.incidents.retry') }}</b-button>
+			<b-button @click="$refs.retryModal.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
+			<b-button @click="incrementNumberRetries()" variant="primary">{{ $t(translationPrefix + 'retry') }}</b-button>
 		</template>
 	</b-modal>
 </template>
@@ -62,11 +62,15 @@
 	import { moment } from '@/globals.js'
 
 	export default {
-		name: 'IncidentRetryModal',
+		name: 'retryModal',
 		inject: ['currentLanguage'],
+		emits: ['increment-number-retry'],
+		props: {
+			translationPrefix: { type: String, required: true }
+		},
 		data: function() {
 			return {
-				selectedIncident: null,
+				selectedItem: null,
 				executionOption: 'keepDueDate',
 				executionOptions: ['keepDueDate','setDueDate'],
 				scheduledAt: null,
@@ -74,19 +78,19 @@
 			}
 		},
 		methods: {
-			show: function(selectedIncident) {
+			show: function(selectedItem) {
 				const now = new Date()
 				now.setMinutes(now.getMinutes() + 1)
 				const hours = now.getHours().toString().padStart(2, '0')
 				const minutes = now.getMinutes().toString().padStart(2, '0')				
 				this.invalidDate = false
-				this.selectedIncident = selectedIncident
+				this.selectedItem = selectedItem
 				this.executionOption = 'keepDueDate'
 				this.scheduledAt = { date: new Date(), time: `${hours}:${minutes}` },
-				this.$refs.incidentRetryModal.show()
+				this.$refs.retryModal.show()
 			},
 			hide: function() {
-				this.$refs.incidentRetryModal.hide()
+				this.$refs.retryModal.hide()
 			},
 			isInThePast: function(ymd, date) {
 				return date < moment().startOf('day')
@@ -108,7 +112,7 @@
 					params.dueDate = this.formatScheduledAt()
 				}
 				this.$emit('increment-number-retry', {
-					incident: this.selectedIncident,
+					item: this.selectedItem,
 					params
 				})
 			}

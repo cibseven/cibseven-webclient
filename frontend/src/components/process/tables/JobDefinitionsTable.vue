@@ -54,7 +54,8 @@
           size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-cog"
           @click.stop="openChangeJobPriorityModal(table.item)">
         </b-button>
-      </template>      
+        <component :is="JobDefinitionsTableActionsPlugin" v-if="JobDefinitionsTableActionsPlugin" :table-item="table.item"></component>
+      </template>
     </FlowTable>
     <div v-else-if="!loading">
       <p class="text-center p-4">{{ $t('process-instance.noJobDefinitions') }}</p>
@@ -84,7 +85,12 @@ export default {
     processId: String
   },
   computed: {
-    ...mapGetters('job', ['jobDefinitions'])
+    ...mapGetters('job', ['jobDefinitions']),    
+    JobDefinitionsTableActionsPlugin: function() {
+      return this.$options.components && this.$options.components.JobDefinitionsTableActionsPlugin
+        ? this.$options.components.JobDefinitionsTableActionsPlugin
+        : null
+    }
   },
   data() {
     return {
