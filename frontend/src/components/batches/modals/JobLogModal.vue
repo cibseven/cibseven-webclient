@@ -112,7 +112,7 @@
       }
     },
     methods: {
-      ...mapActions(['getHistoryJobLog', 'getHistoryJobLogStacktrace']),
+      ...mapActions('job', ['getHistoryJobLogStacktrace']),
       formatDate,
       show: function() {
         this.selectedJobLog = null

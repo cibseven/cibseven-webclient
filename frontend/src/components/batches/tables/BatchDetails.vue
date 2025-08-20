@@ -117,7 +117,7 @@
         'getBatchStatistics',
         'setBatchSuspensionState'
       ]),
-      ...mapActions('jobDefinition', [
+      ...mapActions('job', [
         'retryJobDefinitionById'
       ]),
       formatDate,

@@ -116,7 +116,7 @@
     </div>
 
     <AnnotationModal ref="annotationModal" @set-incident-annotation="setIncidentAnnotation"></AnnotationModal>
-    <IncidentRetryModal ref="incidentRetryModal" @increment-number-retry="incrementNumberRetry"></IncidentRetryModal>
+    <RetryModal ref="incidentRetryModal" @increment-number-retry="incrementNumberRetry" translation-prefix="process-instance.incidents."></RetryModal>
     <StackTraceModal ref="stackTraceModal"></StackTraceModal>
     <SuccessAlert ref="messageCopy">{{ $t('process.copySuccess') }}</SuccessAlert>
     <SuccessAlert ref="successRetryJob">{{ $t('process-instance.successRetryJob') }}</SuccessAlert>
@@ -128,7 +128,7 @@ import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { IncidentService, HistoryService } from '@/services.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
-import IncidentRetryModal from '@/components/process/modals/IncidentRetryModal.vue'
+import RetryModal from '@/components/process/modals/RetryModal.vue'
 import AnnotationModal from '@/components/process/modals/AnnotationModal.vue'
 import StackTraceModal from '@/components/process/modals/StackTraceModal.vue'
 import { BWaitingBox } from 'cib-common-components'
@@ -138,7 +138,7 @@ import { mapGetters, mapActions } from 'vuex'
 
 export default {
   name: 'IncidentsTable',
-  components: { FlowTable, SuccessAlert, IncidentRetryModal, AnnotationModal, StackTraceModal, BWaitingBox, CopyableActionButton },
+  components: { FlowTable, SuccessAlert, RetryModal, AnnotationModal, StackTraceModal, BWaitingBox, CopyableActionButton },
   mixins: [copyToClipboardMixin],
   props: {
     instance: Object,
@@ -200,18 +200,18 @@ export default {
         this.$refs.stackTraceModal.show(res)
       })
     },
-    incrementNumberRetry: function({ incident, params }) {
+    incrementNumberRetry: function({ item, params }) {
       // Choose the appropriate retry method based on incident type
       let retryPromise
-      if (incident.incidentType === 'failedExternalTask') {
+      if (item.incidentType === 'failedExternalTask') {
         // For external task incidents, use the external task retry endpoint
-        retryPromise = IncidentService.retryExternalTaskById(incident.configuration, params)
+        retryPromise = IncidentService.retryExternalTaskById(item.configuration, params)
       } else {
         // For other incident types, use job retry
-        retryPromise = IncidentService.retryJobById(incident.configuration, params)
+        retryPromise = IncidentService.retryJobById(item.configuration, params)
       }
       retryPromise.then(() => {
-        this.removeIncident(incident.id)
+        this.removeIncident(item.id)
         this.$refs.incidentRetryModal.hide()
       })
     },

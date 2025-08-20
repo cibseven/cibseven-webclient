@@ -150,6 +150,7 @@ import GenericTabs from '@/components/common-components/GenericTabs.vue'
 import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
 import TranslationsDownload from '@/components/common-components/TranslationsDownload.vue'
 import StackTraceModal from '@/components/process/modals/StackTraceModal.vue'
+import RetryModal from '@/components/process/modals/RetryModal.vue'
 
 const registerComponents = function(app) {
   app.component('cib-seven', CibSeven)
@@ -386,6 +387,7 @@ export {
   translationSources,
   TranslationsDownload,
   StackTraceModal,
+  RetryModal,
   // router
   appRoutes,
   createAppRouter,
