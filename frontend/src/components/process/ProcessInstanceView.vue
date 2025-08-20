@@ -114,7 +114,6 @@ import { ProcessService, HistoryService } from '@/services.js'
 import { mapActions } from 'vuex'
 
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
-import procesessVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
 import tabUrlMixin from '@/components/process/mixins/tabUrlMixin.js'
 
 import VariablesTable from '@/components/process/tables/VariablesTable.vue'
@@ -132,8 +131,9 @@ export default {
   name: 'ProcessInstanceView',
   components: { VariablesTable, IncidentsTable, UserTasksTable, BpmnViewer, 
     JobsTable, CalledProcessInstancesTable, ExternalTasksTable, ProcessInstanceTabs, ScrollableTabsContainer },
-  mixins: [procesessVariablesMixin, resizerMixin, tabUrlMixin],
+  mixins: [resizerMixin, tabUrlMixin],
   props: {
+    process: Object,
     selectedInstance: Object,
     activityInstance: Object,
     activityInstanceHistory: Object
@@ -202,10 +202,8 @@ export default {
     filterByChildActivity: function(event) {
       if (event) {
         this.activityId = event.activityId
-        this.filteredVariables = this.variables.filter(obj => obj.activityInstanceId === event.id)
       } else {
         this.activityId = ''
-        this.filteredVariables = this.variables
       }
     },
     loadSuperProcessInstance: async function(superProcessInstanceId) {
