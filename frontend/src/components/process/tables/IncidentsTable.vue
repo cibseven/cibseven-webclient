@@ -24,19 +24,7 @@
     <FlowTable v-else-if="incidents.length > 0" striped thead-class="sticky-header" :items="incidents" primary-key="id" prefix="process-instance.incidents."
       :sort-by="currentSortBy" :sort-desc="currentSortDesc" native-layout external-sort
       @external-sort="handleExternalSort"
-      :fields="[
-      { label: 'state', key: 'state', tdClass: 'border-end border-top-0' },
-      { label: 'message', key: 'incidentMessage', tdClass: 'border-end border-top-0' },
-      { label: 'processInstance', key: 'processInstanceId', tdClass: 'border-end border-top-0' },
-      { label: 'createTime', key: 'createTime', tdClass: 'border-end border-top-0' },
-      { label: 'endTime', key: 'endTime', tdClass: 'border-end border-top-0' },
-      { label: 'activity', key: 'activityId', tdClass: 'border-end border-top-0' },
-      { label: 'failedActivity', key: 'failedActivityId', tdClass: 'border-end border-top-0' },
-      { label: 'causeIncidentProcessInstanceId', key: 'causeIncidentProcessInstanceId', tdClass: 'border-end border-top-0' },
-      { label: 'rootCauseIncidentProcessInstanceId', key: 'rootCauseIncidentProcessInstanceId', tdClass: 'border-end border-top-0' },
-      { label: 'incidentType', key: 'incidentType', tdClass: 'border-end border-top-0' },
-      { label: 'annotation', key: 'annotation', tdClass: 'border-end border-top-0' },
-      { label: 'actions', key: 'actions', sortable: false, tdClass: 'py-0 border-top-0' }]">
+      :fields="incidentFields">
       <template #cell(state)="row">
         <span v-if="row.item.deleted">{{ $t('process-instance.incidents.deleted') }}</span>
         <span v-else-if="row.item.resolved">{{ $t('process-instance.incidents.resolved') }}</span>
@@ -155,10 +143,28 @@ export default {
   props: {
     instance: Object,
     process: Object,
-    activityInstance: Object
+    activityInstance: Object,
+    isInstanceView: Boolean
   },
   computed: {
-    ...mapGetters('incidents', ['incidents'])
+    ...mapGetters('incidents', ['incidents']),
+    incidentFields() {
+      const baseFields = [
+        { label: 'state', key: 'state', tdClass: 'border-end border-top-0' },
+        { label: 'message', key: 'incidentMessage', tdClass: 'border-end border-top-0' },
+        ...(this.isInstanceView ? [] : [{ label: 'processInstance', key: 'processInstanceId', tdClass: 'border-end border-top-0' }]),
+        { label: 'createTime', key: 'createTime', tdClass: 'border-end border-top-0' },
+        { label: 'endTime', key: 'endTime', tdClass: 'border-end border-top-0' },
+        { label: 'activity', key: 'activityId', tdClass: 'border-end border-top-0' },
+        { label: 'failedActivity', key: 'failedActivityId', tdClass: 'border-end border-top-0' },
+        { label: 'causeIncidentProcessInstanceId', key: 'causeIncidentProcessInstanceId', tdClass: 'border-end border-top-0' },
+        { label: 'rootCauseIncidentProcessInstanceId', key: 'rootCauseIncidentProcessInstanceId', tdClass: 'border-end border-top-0' },
+        { label: 'incidentType', key: 'incidentType', tdClass: 'border-end border-top-0' },
+        { label: 'annotation', key: 'annotation', tdClass: 'border-end border-top-0' },
+        { label: 'actions', key: 'actions', sortable: false, tdClass: 'py-0 border-top-0' }
+      ]
+      return baseFields
+    }
   },
   data: function() {
     return {
