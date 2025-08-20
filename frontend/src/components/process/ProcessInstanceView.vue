@@ -98,7 +98,8 @@
     <div ref="rContent" class="position-absolute w-100 overflow-hidden" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
 
       <VariablesTable v-if="activeTab === 'variables'" :selected-instance="selectedInstance" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory"></VariablesTable>
-      <IncidentsTable v-else-if="activeTab === 'incidents'" :instance="selectedInstance" :process="process" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory"></IncidentsTable>
+      <IncidentsTable v-else-if="activeTab === 'incidents'" :instance="selectedInstance" :process="process" :activity-instance="activityInstance" 
+        :is-instance-view="true" :activity-instance-history="activityInstanceHistory"></IncidentsTable>
       <UserTasksTable v-else-if="activeTab === 'usertasks'" :selected-instance="selectedInstance"></UserTasksTable>
       <JobsTable v-else-if="activeTab === 'jobs'" :instance="selectedInstance" :process="process"></JobsTable>
       <CalledProcessInstancesTable v-else-if="activeTab === 'calledProcessInstances'" :selectedInstance="selectedInstance" :activityInstanceHistory="activityInstanceHistory" :activity-instance="activityInstance"></CalledProcessInstancesTable>
@@ -114,7 +115,6 @@ import { ProcessService, HistoryService } from '@/services.js'
 import { mapActions } from 'vuex'
 
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
-import procesessVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
 import tabUrlMixin from '@/components/process/mixins/tabUrlMixin.js'
 
 import VariablesTable from '@/components/process/tables/VariablesTable.vue'
@@ -132,8 +132,9 @@ export default {
   name: 'ProcessInstanceView',
   components: { VariablesTable, IncidentsTable, UserTasksTable, BpmnViewer, 
     JobsTable, CalledProcessInstancesTable, ExternalTasksTable, ProcessInstanceTabs, ScrollableTabsContainer },
-  mixins: [procesessVariablesMixin, resizerMixin, tabUrlMixin],
+  mixins: [resizerMixin, tabUrlMixin],
   props: {
+    process: Object,
     selectedInstance: Object,
     activityInstance: Object,
     activityInstanceHistory: Object
@@ -202,10 +203,8 @@ export default {
     filterByChildActivity: function(event) {
       if (event) {
         this.activityId = event.activityId
-        this.filteredVariables = this.variables.filter(obj => obj.activityInstanceId === event.id)
       } else {
         this.activityId = ''
-        this.filteredVariables = this.variables
       }
     },
     loadSuperProcessInstance: async function(superProcessInstanceId) {

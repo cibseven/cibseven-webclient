@@ -22,19 +22,9 @@
       <p class="text-center p-4"><BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}</p>
     </div>
     <FlowTable v-else-if="incidents.length > 0" striped thead-class="sticky-header" :items="incidents" primary-key="id" prefix="process-instance.incidents."
-      sort-by="incidentType" native-layout :fields="[
-      { label: 'state', key: 'state', tdClass: 'border-end border-top-0' },
-      { label: 'message', key: 'incidentMessage', tdClass: 'border-end border-top-0' },
-      { label: 'processInstance', key: 'processInstanceId', tdClass: 'border-end border-top-0' },
-      { label: 'createTime', key: 'createTime', tdClass: 'border-end border-top-0' },
-      { label: 'endTime', key: 'endTime', tdClass: 'border-end border-top-0' },
-      { label: 'activity', key: 'activityId', tdClass: 'border-end border-top-0' },
-      { label: 'failedActivity', key: 'failedActivityId', tdClass: 'border-end border-top-0' },
-      { label: 'causeIncidentProcessInstanceId', key: 'causeIncidentProcessInstanceId', tdClass: 'border-end border-top-0' },
-      { label: 'rootCauseIncidentProcessInstanceId', key: 'rootCauseIncidentProcessInstanceId', tdClass: 'border-end border-top-0' },
-      { label: 'incidentType', key: 'incidentType', tdClass: 'border-end border-top-0' },
-      { label: 'annotation', key: 'annotation', tdClass: 'border-end border-top-0' },
-      { label: 'actions', key: 'actions', sortable: false, tdClass: 'py-0 border-top-0' }]">
+      :sort-by="currentSortBy" :sort-desc="currentSortDesc" native-layout external-sort
+      @external-sort="handleExternalSort"
+      :fields="incidentFields">
       <template #cell(state)="row">
         <span v-if="row.item.deleted">{{ $t('process-instance.incidents.deleted') }}</span>
         <span v-else-if="row.item.resolved">{{ $t('process-instance.incidents.resolved') }}</span>
@@ -116,7 +106,7 @@
     </div>
 
     <AnnotationModal ref="annotationModal" @set-incident-annotation="setIncidentAnnotation"></AnnotationModal>
-    <IncidentRetryModal ref="incidentRetryModal" @increment-number-retry="incrementNumberRetry"></IncidentRetryModal>
+    <RetryModal ref="incidentRetryModal" @increment-number-retry="incrementNumberRetry" translation-prefix="process-instance.incidents."></RetryModal>
     <StackTraceModal ref="stackTraceModal"></StackTraceModal>
     <SuccessAlert ref="messageCopy">{{ $t('process.copySuccess') }}</SuccessAlert>
     <SuccessAlert ref="successRetryJob">{{ $t('process-instance.successRetryJob') }}</SuccessAlert>
@@ -128,29 +118,59 @@ import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { IncidentService, HistoryService } from '@/services.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
-import IncidentRetryModal from '@/components/process/modals/IncidentRetryModal.vue'
+import RetryModal from '@/components/process/modals/RetryModal.vue'
 import AnnotationModal from '@/components/process/modals/AnnotationModal.vue'
 import StackTraceModal from '@/components/process/modals/StackTraceModal.vue'
 import { BWaitingBox } from 'cib-common-components'
 import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
 import { formatDate } from '@/utils/dates.js'
+import { createSortComparator } from '@/utils/sort.js'
 import { mapGetters, mapActions } from 'vuex'
+
+
+// Helper to get incident state as a sortable number
+function getStateAsNumber(incident) {
+  if (incident.deleted) return 3
+  if (incident.resolved) return 2
+  if (incident.open) return 1
+  return 4 // unknown
+}
 
 export default {
   name: 'IncidentsTable',
-  components: { FlowTable, SuccessAlert, IncidentRetryModal, AnnotationModal, StackTraceModal, BWaitingBox, CopyableActionButton },
+  components: { FlowTable, SuccessAlert, RetryModal, AnnotationModal, StackTraceModal, BWaitingBox, CopyableActionButton },
   mixins: [copyToClipboardMixin],
   props: {
     instance: Object,
     process: Object,
-    activityInstance: Object
+    activityInstance: Object,
+    isInstanceView: Boolean
   },
   computed: {
-    ...mapGetters('incidents', ['incidents'])
+    ...mapGetters('incidents', ['incidents']),
+    incidentFields() {
+      const baseFields = [
+        { label: 'state', key: 'state', tdClass: 'border-end border-top-0' },
+        { label: 'message', key: 'incidentMessage', tdClass: 'border-end border-top-0' },
+        ...(this.isInstanceView ? [] : [{ label: 'processInstance', key: 'processInstanceId', tdClass: 'border-end border-top-0' }]),
+        { label: 'createTime', key: 'createTime', tdClass: 'border-end border-top-0' },
+        { label: 'endTime', key: 'endTime', tdClass: 'border-end border-top-0' },
+        { label: 'activity', key: 'activityId', tdClass: 'border-end border-top-0' },
+        { label: 'failedActivity', key: 'failedActivityId', tdClass: 'border-end border-top-0' },
+        { label: 'causeIncidentProcessInstanceId', key: 'causeIncidentProcessInstanceId', tdClass: 'border-end border-top-0' },
+        { label: 'rootCauseIncidentProcessInstanceId', key: 'rootCauseIncidentProcessInstanceId', tdClass: 'border-end border-top-0' },
+        { label: 'incidentType', key: 'incidentType', tdClass: 'border-end border-top-0' },
+        { label: 'annotation', key: 'annotation', tdClass: 'border-end border-top-0' },
+        { label: 'actions', key: 'actions', sortable: false, tdClass: 'py-0 border-top-0' }
+      ]
+      return baseFields
+    }
   },
   data: function() {
     return {
-      loading: true
+      loading: true,
+      currentSortBy: 'incidentType',
+      currentSortDesc: false
     }
   },
   watch: {
@@ -172,7 +192,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions('incidents', ['loadIncidents', 'removeIncident', 'updateIncidentAnnotation']),
+    ...mapActions('incidents', ['loadIncidents', 'removeIncident', 'updateIncidentAnnotation', 'setIncidents']),
     formatDate,
     async loadIncidentsData(id, isInstance = true) {
       this.loading = true
@@ -187,31 +207,61 @@ export default {
         this.loading = false
       }
     },
-    showIncidentMessage: function(incident) {
-      // Only open modal if historyConfiguration is present
-      if (!incident.historyConfiguration) return
-      let stackTracePromise
-      if (incident.incidentType === 'failedExternalTask') {
-        stackTracePromise = IncidentService.fetchHistoricIncidentStacktraceByExternalTaskId(incident.historyConfiguration)
+    handleExternalSort({ sortBy, sortDesc }) {
+      this.currentSortBy = sortBy
+      this.currentSortDesc = sortDesc
+
+      let sortedIncidents
+      if (sortBy === 'state') {
+        // Custom sorting logic for state field
+        sortedIncidents = [...this.incidents].sort(
+          createSortComparator(getStateAsNumber, sortDesc)
+        )
       } else {
-        stackTracePromise = IncidentService.fetchHistoricStacktraceByJobId(incident.historyConfiguration)
+        // For other fields, use standard sorting
+        sortedIncidents = [...this.incidents].sort(
+          createSortComparator(item => item[sortBy], sortDesc)
+        )
       }
+      this.setIncidents(sortedIncidents)
+    },
+    showIncidentMessage: function(incident) {
+      const configuration = incident.historyConfiguration || incident.rootCauseIncidentConfiguration
+      if (!configuration) return
+
+      const isHistoric = !!incident.historyConfiguration
+      const isExternalTask = incident.incidentType === 'failedExternalTask'
+      
+      // Select appropriate service method based on incident type and whether it's historic
+      const stackTracePromise = this.getStackTracePromise(isHistoric, isExternalTask, configuration)
+      
       stackTracePromise.then(res => {
         this.$refs.stackTraceModal.show(res)
       })
     },
-    incrementNumberRetry: function({ incident, params }) {
+    getStackTracePromise(isHistoric, isExternalTask, configuration) {
+      if (isExternalTask) {
+        return isHistoric 
+          ? IncidentService.fetchHistoricIncidentStacktraceByExternalTaskId(configuration)
+          : IncidentService.fetchIncidentStacktraceByExternalTaskId(configuration)
+      } else {
+        return isHistoric
+          ? IncidentService.fetchHistoricStacktraceByJobId(configuration)
+          : IncidentService.fetchIncidentStacktraceByJobId(configuration)
+      }
+    },
+    incrementNumberRetry: function({ item, params }) {
       // Choose the appropriate retry method based on incident type
       let retryPromise
-      if (incident.incidentType === 'failedExternalTask') {
+      if (item.incidentType === 'failedExternalTask') {
         // For external task incidents, use the external task retry endpoint
-        retryPromise = IncidentService.retryExternalTaskById(incident.configuration, params)
+        retryPromise = IncidentService.retryExternalTaskById(item.configuration, params)
       } else {
         // For other incident types, use job retry
-        retryPromise = IncidentService.retryJobById(incident.configuration, params)
+        retryPromise = IncidentService.retryJobById(item.configuration, params)
       }
       retryPromise.then(() => {
-        this.removeIncident(incident.id)
+        this.removeIncident(item.id)
         this.$refs.incidentRetryModal.hide()
       })
     },
