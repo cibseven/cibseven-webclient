@@ -112,7 +112,10 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 		Decision decision = ((ResponseEntity<Decision>) doGet(url, Decision.class, user, false)).getBody();
 		if (decision != null && extraInfo.isPresent() && extraInfo.get()) {
 			String urlCount = getEngineRestUrl() + "/history/decision-instance/count?decisionDefinitionId=" + decision.getId();
-			decision.setAllInstances(((ResponseEntity<JsonNode>) doGet(urlCount, JsonNode.class, user, false)).getBody().get("count").asLong());
+			JsonNode body = ((ResponseEntity<JsonNode>) doGet(urlCount, JsonNode.class, user, false)).getBody();
+			if (body == null)
+				throw new NullPointerException();
+			decision.setAllInstances(body.get("count").asLong());
 		}
 		return decision;
 	}
@@ -149,7 +152,11 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 		if (!lazyLoad.isPresent() || (lazyLoad.isPresent() && !lazyLoad.get())) {
 			for(Decision decision : decisions) {
 				String urlCount = getEngineRestUrl() + "/history/decision-instance/count?decisionDefinitionId=" + decision.getId();
-				decision.setAllInstances(((ResponseEntity<JsonNode>) doGet(urlCount, JsonNode.class, user, false)).getBody().get("count").asLong());
+				JsonNode body = ((ResponseEntity<JsonNode>) doGet(urlCount, JsonNode.class, user, false)).getBody();
+				if (body == null)
+					throw new NullPointerException();
+
+				decision.setAllInstances(body.get("count").asLong());
 			}
 		}
 		return decisions;
