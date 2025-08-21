@@ -55,18 +55,18 @@
       <div v-if="activeTab === 'inputs'">
         <div ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 0; left: 0; bottom: 0">
           <FlowTable striped resizable thead-class="sticky-header" :items="instance.inputs" primary-key="id" prefix="decision." :fields="[
-            { label: 'name', key: 'clauseName', class: 'col-4', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0 position-relative' },
-            { label: 'type', key: 'type', class: 'col-4', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0' },
-            { label: 'value', key: 'value', class: 'col-4', tdClass: 'py-1 border-top-0' }]">
+            { label: 'name', key: 'clauseName', class: 'col-4', tdClass: 'py-1' },
+            { label: 'type', key: 'type', class: 'col-4', tdClass: 'py-1' },
+            { label: 'value', key: 'value', class: 'col-4', tdClass: 'py-1' }]">
           </FlowTable>
         </div>
       </div>
       <div v-if="activeTab === 'outputs'">
         <div ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 0; left: 0; bottom: 0">
           <FlowTable striped resizable thead-class="sticky-header" :items="instance.outputs" primary-key="id" prefix="decision." :fields="[
-            { label: 'name', key: 'clauseName', class: 'col-4', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0 position-relative' },
-            { label: 'type', key: 'type', class: 'col-4', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0' },
-            { label: 'value', key: 'value', class: 'col-4', tdClass: 'py-1 border-top-0' }]">
+            { label: 'name', key: 'clauseName', class: 'col-4', tdClass: 'py-1' },
+            { label: 'type', key: 'type', class: 'col-4', tdClass: 'py-1' },
+            { label: 'value', key: 'value', class: 'col-4', tdClass: 'py-1' }]">
           </FlowTable>
         </div>
       </div>

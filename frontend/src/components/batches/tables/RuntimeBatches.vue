@@ -21,11 +21,11 @@
     <div class="overflow-auto p-0" style="max-height: 35vh">
       <FlowTable v-if="batches && batches.length > 0 && !loading" striped thead-class="sticky-header" :items="batches" primary-key="id" prefix="batches."
         :fields="[
-            { label: 'id', key: 'id', class: 'col-2', tdClass: 'border-end p-0' },
-            { label: 'type', key: 'type', class: 'col-2', tdClass: 'border-end p-1' },
-            { label: 'user', key: 'createUserId', class: 'col-2', tdClass: 'border-end p-1' },
-            { label: 'startTime', key: 'startTime', class: 'col-2', tdClass: 'border-end p-1' },
-            { label: 'failedJobs', key: 'failedJobs', class: 'col-2', tdClass: 'border-end p-1' },
+            { label: 'id', key: 'id', class: 'col-2', tdClass: 'p-0' },
+            { label: 'type', key: 'type', class: 'col-2', tdClass: 'p-1' },
+            { label: 'user', key: 'createUserId', class: 'col-2', tdClass: 'p-1' },
+            { label: 'startTime', key: 'startTime', class: 'col-2', tdClass: 'p-1' },
+            { label: 'failedJobs', key: 'failedJobs', class: 'col-2', tdClass: 'p-1' },
             { label: 'progress', key: 'progress', class: 'col-2', tdClass: 'p-1' }
         ]"
         @click="loadBatchDetails($event)">

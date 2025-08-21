@@ -23,13 +23,13 @@
     </div>
     <FlowTable v-else-if="jobs && jobs.length > 0" resizable striped thead-class="sticky-header" :items="jobs" primary-key="id" prefix="process-instance.jobs."
       sort-by="id" :sort-desc="true" :fields="[
-      { label: 'id', key: 'id', class: 'col-2', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' },
-      { label: 'dueDate', key: 'dueDate', class: 'col-2', thClass: 'border-end', tdClass: 'position-relative py-1 border-end border-top-0' },
-      { label: 'createTime', key: 'createTime', class: 'col-2', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' },
-      { label: 'retries', key: 'retries', class: 'col-1', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0' },
-      { label: 'activity', key: 'activityId', class: 'col-2', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0' },
-      { label: 'failedActivity', key: 'failedActivityId', class: 'col-2', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0' },
-      { label: 'actions', key: 'actions', class: 'col-1', sortable: false, tdClass: 'py-1 border-top-0' }]">
+      { label: 'id', key: 'id', class: 'col-2', tdClass: 'py-1' },
+      { label: 'dueDate', key: 'dueDate', class: 'col-2', tdClass: 'position-relative py-1' },
+      { label: 'createTime', key: 'createTime', class: 'col-2', tdClass: 'py-1' },
+      { label: 'retries', key: 'retries', class: 'col-1', tdClass: 'py-1' },
+      { label: 'activity', key: 'activityId', class: 'col-2', tdClass: 'py-1' },
+      { label: 'failedActivity', key: 'failedActivityId', class: 'col-2', tdClass: 'py-1' },
+      { label: 'actions', key: 'actions', class: 'col-1', sortable: false, tdClass: 'py-1' }]">
       <template v-slot:cell(id)="table">
         <span :title="table.item.id" class="text-truncate">{{ table.item.id }}</span>
       </template>

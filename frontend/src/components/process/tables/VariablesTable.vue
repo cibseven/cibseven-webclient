@@ -33,11 +33,11 @@
     <div class="overflow-y-scroll bg-white container-fluid g-0 flex-grow-1">
       <FlowTable v-if="!loading" striped resizable thead-class="sticky-header" :items="filteredVariables" primary-key="id" prefix="process-instance.variables."
         sort-by="name" :fields="[
-        { label: 'name', key: 'name', class: 'col-3', tdClass: 'py-1 border-end border-top-0' },
-        { label: 'type', key: 'type', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
-        { label: 'value', key: 'value', class: 'col-3', tdClass: 'py-1 border-end border-top-0' },
-        { label: 'scope', key: 'scope', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
-        { label: 'actions', key: 'actions', class: 'col-2', sortable: false, tdClass: 'py-1 border-top-0' }]">
+        { label: 'name', key: 'name', class: 'col-3', tdClass: 'py-1' },
+        { label: 'type', key: 'type', class: 'col-2', tdClass: 'py-1' },
+        { label: 'value', key: 'value', class: 'col-3', tdClass: 'py-1' },
+        { label: 'scope', key: 'scope', class: 'col-2', tdClass: 'py-1' },
+        { label: 'actions', key: 'actions', class: 'col-2', sortable: false, tdClass: 'py-1' }]">
         <template v-slot:cell(name)="table">
           <div :title="table.item.name" class="text-truncate">{{ table.item.name }}</div>
         </template>
