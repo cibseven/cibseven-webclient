@@ -59,7 +59,11 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 	@Override
 	public Integer findTasksCount(Map<String, Object> filters, CIBUser user) {
 		String url = getEngineRestUrl() + "/task/count";
-		return ((ResponseEntity<JsonNode>) doPost(url, filters, JsonNode.class, user)).getBody().get("count").asInt();		
+		JsonNode body =  ((ResponseEntity<JsonNode>) doPost(url, filters, JsonNode.class, user)).getBody();
+		if (body == null) {
+			throw new NullPointerException();
+		}
+		return body.get("count").asInt();
 	}
 
 	@Override
@@ -140,7 +144,11 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 	@Override
 	public Object formReference(String taskId, CIBUser user) {
 		String url = getEngineRestUrl() + "/task/" + taskId + "/form-variables?variableNames=formReference";
-		Variable formReference = ((ResponseEntity<ProcessVariables>) doGet(url, ProcessVariables.class, user, false)).getBody().getFormReference();
+		ProcessVariables body =  ((ResponseEntity<ProcessVariables>) doGet(url, ProcessVariables.class, user, false)).getBody();
+		if (body == null) {
+			throw new NullPointerException();
+		}
+		Variable formReference = body.getFormReference();
 		if (formReference == null) return new String("empty-task"); 
 		else return formReference.getValue();
 	}
@@ -171,7 +179,11 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 	public Integer findTasksCountByFilter(String filterId, CIBUser user, TaskFiltering filters) {
 		String url = getEngineRestUrl() + "/filter/" + filterId + "/count";		
 		try {
-			return ((ResponseEntity<JsonNode>) doPost(url, filters.json(), JsonNode.class, user)).getBody().get("count").asInt();
+			JsonNode body =  ((ResponseEntity<JsonNode>) doPost(url, filters.json(), JsonNode.class, user)).getBody();
+			if (body == null) {
+				throw new NullPointerException();
+			}
+			return body.get("count").asInt();
 		} catch (JsonProcessingException e) {
 			SystemException se = new SystemException(e);
 			log.info("Exception in findTasksCountByFilter(...):", se);
@@ -243,7 +255,11 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 	@Override
 	public Integer findHistoryTasksCount(Map<String, Object> filters, CIBUser user) {
 		String url = getEngineRestUrl() + "/history/task/count";
-		return ((ResponseEntity<JsonNode>) doPost(url, filters, JsonNode.class, user)).getBody().get("count").asInt();
+		JsonNode body = ((ResponseEntity<JsonNode>) doPost(url, filters, JsonNode.class, user)).getBody();
+		if (body == null) {
+			throw new NullPointerException();
+		}
+		return body.get("count").asInt();
 	}
 
 	@Override
