@@ -47,6 +47,7 @@
 import NavigatedViewer from 'bpmn-js/lib/NavigatedViewer'
 import { BWaitingBox } from 'cib-common-components'
 import { mapActions, mapGetters } from 'vuex'
+import { HistoryService } from '@/services.js'
 
 const interactionTypes = [
   // Tasks
@@ -135,7 +136,7 @@ export default {
     })
   },
   methods: {
-    ...mapActions(['selectActivity', 'clearActivitySelection', 'setHighlightedElement']),
+    ...mapActions(['selectActivity', 'clearActivitySelection', 'setHighlightedElement', 'loadActivitiesInstanceHistory', 'getProcessById']),
     ...mapActions('diagram', ['setDiagramReady']),
     showDiagram: function(xml) {
       this.setDiagramReady(false)
@@ -328,6 +329,14 @@ export default {
         })
       })
 
+      // Map to know which activities have been executed
+      // This is used to determine if a dynamic call activity can be opened
+      const executedActivities = new Set(
+        activityStats
+          .filter(stat => (stat.finished ?? 0) > 0 || (stat.canceled ?? 0) > 0)
+          .map(stat => stat.id)
+      )
+
       const callActivitiesList = elementRegistry.getAll().filter(el => el.type === 'bpmn:CallActivity')
 
       callActivitiesList.forEach(ca => {
@@ -342,11 +351,12 @@ export default {
         const isDynamic = /^\$\{.+\}$/.test(calledElement)
         const isStatic = !isDynamic && !!calledProcess
         
-        const shouldEnableDynamic = isDynamic && runningInstances > 0
+        const inInstanceView = !!this.selectedInstance
+        const wasExecuted = inInstanceView && executedActivities.has(ca.id)
+        const shouldEnableDynamic = isDynamic && (runningInstances > 0 || wasExecuted)
+        const isCurrentDefinitionAlreadyVisible = !!this.selectedInstance && calledProcess?.id === this.selectedInstance.processDefinitionId
 
-        const resolvedCalledProcess = isStatic ? calledProcess : null
-
-        const disabled = !isStatic && !shouldEnableDynamic
+        const disabled = (!isStatic && !shouldEnableDynamic) || isCurrentDefinitionAlreadyVisible
 
         const title = disabled
           ? this.$t('bpmn-viewer.legend.disabledSubprocess')
@@ -364,18 +374,7 @@ export default {
           wrapper.style.cursor = 'not-allowed'
         } else {
           button.addEventListener('click', () => {
-            if (isStatic) {
-              this.openSubprocess(ca.id, resolvedCalledProcess)
-            } else if (isDynamic) {
-              this.selectActivity(ca.id)
-              this.$router.push({
-                path: this.$route.path,
-                query: {
-                  ...this.$route.query,
-                  tab: 'calledProcessDefinitions'
-                }
-              })
-            }
+            this.openSubprocess(ca.id, calledProcess, isDynamic)
           })
         }
 
@@ -413,20 +412,45 @@ export default {
     getTypeAllowed: function(typeI, types) {
       return types.some(type => typeI.includes(type))
     },
-    openSubprocess: function(activityId, calledProcess) {
-      if (!calledProcess?.id) {
-        console.warn('No processDefinitionId for activityId:', activityId)
-        return
-      }
-      this.navigateToSubprocess(calledProcess)
-    },
-    async navigateToSubprocess(calledProcess) {
+    async openSubprocess(activityId, calledProcess, isDynamic) {
       try {
-        const processKey = calledProcess.key
-        const versionIndex = calledProcess.version
+        if (this.selectedInstance) {
+          const params = {
+            processInstanceId: this.selectedInstance.id,
+            activityType: 'callActivity',
+            activityId,
+            sortBy: 'startTime',
+            sortOrder: 'desc',
+            maxResults: 1
+          }
+          const calledInstance = await this.loadActivitiesInstanceHistory(params)
+          const processDefinition = await HistoryService.findProcessesInstancesHistory({ processInstanceId: calledInstance[0].calledProcessInstanceId })
+          if (calledInstance?.length && calledInstance[0].calledProcessInstanceId) {
+            return this.navigateToSubprocess(processDefinition[0].processDefinitionKey, processDefinition[0].processDefinitionVersion, calledInstance[0].calledProcessInstanceId)
+          }
+        }
+        // If no instance view or no instance found, try to get the called process directly
+        if (isDynamic && !this.selectedInstance) {
+          this.$router.push({
+            path: this.$route.path,
+            query: { ...this.$route.query, tab: 'calledProcessDefinitions' }
+          })
+        } else {          
+          if (!calledProcess) {
+            console.warn('No called process definition for activityId:', activityId)
+            return
+          }
+          this.navigateToSubprocess(calledProcess.key, calledProcess.version, null)
+        }
+      } catch (error) {
+        console.error('Failed to open subprocess:', error)
+      }
+    },
+    async navigateToSubprocess(processKey, versionIndex, calledProcessInstanceId) {
+      try {
         const params = { processKey, versionIndex }
-        if (this.activityInstanceHistory) {
-          params.instanceId = calledProcess.id
+        if (calledProcessInstanceId) {
+          params.instanceId = calledProcessInstanceId
         }        
         const routeConfig = {
           name: 'process',

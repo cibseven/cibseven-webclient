@@ -113,7 +113,7 @@ var ProcessService = {
     return axios.get(url)
   },
   findProcessById: function(id, extraInfo = false) {
-	return axios.get(getServicesBasePath() + "/process/process-definition-id/" + id + '?extraInfo=' + extraInfo)
+	  return axios.get(getServicesBasePath() + "/process/process-definition-id/" + id + '?extraInfo=' + extraInfo)
   },
   findProcessesInstances: function(key) {
 	  return axios.get(getServicesBasePath() + "/process/instances/by-process-key/" + key)
@@ -393,7 +393,7 @@ var HistoryService = {
     return axios.get(getServicesBasePath() + "/process-history/activity/by-process-definition/" + processDefinitionId, { params })
   },
   findActivitiesInstancesHistoryWithFilter(filter){
-	return axios.get(getServicesBasePath() + "/process-history/activity", { params: filter })
+	  return axios.get(getServicesBasePath() + "/process-history/activity", { params: filter })
   },
   fetchProcessInstanceVariablesHistory: function(processInstanceId, filter) {
     return axios.get(getServicesBasePath() + "/process-history/instance/by-process-instance/" + processInstanceId + "/variables",

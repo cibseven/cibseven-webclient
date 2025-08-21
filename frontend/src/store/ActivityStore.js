@@ -64,8 +64,9 @@ const ActivityStore = {
       commit('clearActivitySelection')
     },
     async loadActivitiesInstanceHistory({ commit }, params) {
-      const activitiesInstace = await HistoryService.findActivitiesInstancesHistoryWithFilter(params)
-      commit('setActivitiesInstanceHistory', activitiesInstace)
+      const activitiesInstance = await HistoryService.findActivitiesInstancesHistoryWithFilter(params)
+      commit('setActivitiesInstanceHistory', activitiesInstance)
+      return activitiesInstance
     },
     setDiagramXml: function ({ commit }, diagramXml) {
       commit('setDiagramXml', diagramXml)
