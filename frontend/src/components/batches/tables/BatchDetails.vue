@@ -125,13 +125,22 @@
         if (!this.batchId || !this.batchType) return
         this.batch = null
         this.loading = true
-
         try {
           if (this.batchType === 'history') {
             this.batch = await this.getHistoricBatch(this.batchId)
           } else if (this.batchType === 'runtime') {
             const res = await this.getBatchStatistics({ batchId: this.batchId })
-            this.batch = res[0]
+            if (res && res.length > 0) {
+              this.batch = res[0]
+            } else {
+              // If runtime is empty, update the URL to type=history so the watcher reloads automatically
+              this.$router.replace({
+                query: {
+                  ...this.$route.query,
+                  type: 'history'
+                }
+              })
+            }
           }
         } finally {
           this.loading = false
