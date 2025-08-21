@@ -387,6 +387,7 @@
 			"selectedTask": "@:task.selectedTask",
 			"runningInstances": "Instancias de actividad en ejecución",
 			"openIncidents": "Incidentes abiertos",
+			"closedIncidents": "Incidentes cerrados",
 			"suspendedJobDefinition": "Definición de trabajo suspendida",
 			"activitiesHistory": "Instancias de actividad ejecutadas",
 			"canceledInstances": "Instancias de actividad canceladas",

@@ -82,7 +82,8 @@ export default {
         showCanceled: true,
         showIncidents: true,
         showCalledProcesses: true,
-        showJobDefinitions: true
+        showJobDefinitions: true,
+        showClosedIncidents: true
       })
     }
   },
@@ -287,8 +288,12 @@ export default {
     },
     drawActivitiesBadges: function(elementRegistry) {
       const historyStatistics = this.historicActivityStatistics
+      const mergedStatistics = historyStatistics.map(hs => {
+        const stat = this.statistics.find(s => s.id === hs.id)
+        return stat ? { ...hs, instances: stat.instances } : hs
+      })
       const options = this.badgeOptions || {}
-      historyStatistics.forEach(stat => {
+      mergedStatistics.forEach(stat => {
         const element = elementRegistry.get(stat.id)
         if (!element) return
 
@@ -304,6 +309,18 @@ export default {
           const position = stat.canceled > 0 ? { bottom: 35, right: 13 } : { bottom: 15, right: 13 }
           const html = this.getBadgeOverlayHtml(actualFinished, 'bg-gray', 'activitiesHistory', stat.id)
           this.setHtmlOnDiagram(stat.id, html, position)
+        }
+        // Handle closed incidents - draw next to main position if main position occupied and selectedInstance is set
+        if (options.showClosedIncidents && this.selectedInstance) {
+          if (stat.resolvedIncidents > 0 || stat.deletedIncidents > 0) {
+            const mainOccupied =
+              (options.showCanceled && stat.canceled > 0) ||
+              ((!stat.canceled || stat.canceled === 0) && (options.showHistory && actualFinished > 0))
+            const position = mainOccupied ? { bottom: 15, right: 36 } : { bottom: 15, right: 13 }
+
+            const html = this.getBadgeOverlayHtml('!', 'bg-danger', 'closedIncidents', stat.id)
+            this.setHtmlOnDiagram(stat.id, html, position)
+          }
         }
         if (options.showRunning && stat.instances > 0) {
           const html = this.getBadgeOverlayHtml(stat.instances, 'bg-info', 'runningInstances', stat.id)

@@ -387,6 +387,7 @@
 				"selectedTask": "@:task.selectedTask",
 				"runningInstances": "Запущені екземпляри завдань",
 				"openIncidents": "Відкриті інциденти",
+				"closedIncidents": "Закриті інциденти",
 				"suspendedJobDefinition": "Призупинене визначення завдання",
 				"activitiesHistory": "Історія екземплярів завдань",
 				"canceledInstances": "Скасовані екземпляри активності",
