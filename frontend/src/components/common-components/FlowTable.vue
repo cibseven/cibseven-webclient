@@ -85,7 +85,7 @@
         :class="[getRowClass(item), nativeLayout ? '' : 'd-flex']"
         @mouseenter="$emit('mouseenter', item)"
         @mouseleave="$emit('mouseleave', item)"
-        @click.stop="$emit('click', item)"
+        @click.stop="onRowClick(item)"
         style="cursor: pointer"
         role="row">
         <td v-for="(field, colIndex) in computedColumns"
@@ -405,7 +405,12 @@ export default {
       this.$nextTick(() => {
         this.restartColumnWidths()
       })
-    }
+    },
+    onRowClick(item) {
+      // Only emit click if no text is selected
+      if (window.getSelection && window.getSelection().toString()) return
+      this.$emit('click', item)
+    },
   },
   mounted() {
     if (this.api2) {
