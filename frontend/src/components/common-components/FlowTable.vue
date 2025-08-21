@@ -250,8 +250,8 @@ export default {
       return {
         position: 'absolute',
         top: '0',
-        right: '0',
-        width: '5px',
+        right: '-7px',
+        width: '12px',
         height: '100%',
         cursor: 'col-resize',
         zIndex: '10',
