@@ -61,6 +61,22 @@
     <div class="container overflow-auto h-100 rounded g-0">
       <div class="m-3 mb-0">
       <FlowTable :items="processesFiltered" thead-class="sticky-header" striped primary-key="id" prefix="process." :fields="fields" @click="goToShowProcessHistory($event)" @select="focused = $event[0]" @mouseenter="focused = $event" @mouseleave="focused = null">
+        <template v-slot:cell(key)="table">
+          <CopyableActionButton 
+            :display-value="table.item.key" 
+            :copy-value="table.item.key" 
+            :to="getProcessRoute(table.item)"
+            @copy="copyValueToClipboard"
+          />
+        </template>
+        <template v-slot:cell(name)="table">
+          <CopyableActionButton 
+            :display-value="table.item.name || ''" 
+            :copy-value="table.item.name || ''" 
+            :to="getProcessRoute(table.item)"
+            @copy="copyValueToClipboard"
+          />
+        </template>
         <template v-slot:cell(incidents)="table">
           <span v-if="loadingInstances"><b-spinner small></b-spinner></span>
           <div v-else-if="table.item.incidents > 0">
@@ -74,10 +90,6 @@
             <span :title="$t('process.details.totalInstances') + ': ' + table.item.runningInstances" class="mdi mdi-18px mdi-chevron-triple-right text-success"></span><span class="ms-1">{{ table.item.runningInstances }}</span>
           </div>
           <span v-else>___</span>
-        </template>
-        <template v-slot:cell(description)="table">
-          <div v-if="$te('process-descriptions.' + table.item.key)" v-b-popover.hover.left="$t('process-descriptions.' + table.item.key)" class="text-truncate">
-          {{ $t('process-descriptions.' + table.item.key) }}</div>
         </template>
         <template v-slot:cell(actions)="table">
           <component :is="ProcessDefinitionActions" v-if="ProcessDefinitionActions" :focused="focused" :item="table.item"></component>
@@ -101,18 +113,24 @@
       </div>
     </div>
   </div>
+  <SuccessAlert ref="messageCopy">
+    {{ $t('process.copySuccess') }}
+  </SuccessAlert>
   </div>
 </template>
 
 <script>
 import { permissionsMixin } from '@/permissions.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
+import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
+import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
+import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 
 export default {
   name: 'ProcessList',
-  components: { FlowTable },
+  components: { FlowTable, CopyableActionButton, SuccessAlert },
   inject: ['loadProcesses'],
-  mixins: [permissionsMixin],
+  mixins: [permissionsMixin, copyToClipboardMixin],
   data: function() {
     return {
       selected: null,
@@ -180,12 +198,12 @@ export default {
     },
     fields: function() {
       return [
-        { label: 'status', key: 'incidents', thClass:'py-0', tdClass:'py-0 ps-0 border-end border-top-0', class: 'col-1 d-flex align-items-center justify-content-center' },
-        { label: 'runningInstances', key: 'runningInstances', class: 'col-1 d-flex justify-content-center', tdClass: 'border-end py-1 border-top-0' },
-        { label: 'key', key: 'key', class: 'col-3', tdClass: 'border-end py-1 border-top-0' },
-        { label: 'name', key: 'name', class: 'col-3', tdClass: 'border-end py-1 border-top-0' },
-        { label: 'tenant', key: 'tenantId', class: 'col-2', tdClass: 'border-end py-1 border-top-0' },
-        { label: 'actions', key: 'actions', sortable: false, class: 'col-2 d-flex justify-content-center', tdClass: 'py-0 border-top-0' },
+        { label: 'status', key: 'incidents', thClass:'py-0', tdClass:'py-0 ps-0', class: 'col-1 d-flex align-items-center justify-content-center' },
+        { label: 'runningInstances', key: 'runningInstances', class: 'col-1 d-flex justify-content-center', tdClass: 'py-1' },
+        { label: 'key', key: 'key', class: 'col-3', tdClass: 'py-1' },
+        { label: 'name', key: 'name', class: 'col-3', tdClass: 'py-1' },
+        { label: 'tenant', key: 'tenantId', class: 'col-2', tdClass: 'py-1' },
+        { label: 'actions', key: 'actions', sortable: false, class: 'col-2 d-flex justify-content-center', tdClass: 'py-0' },
       ]
     }
   },
@@ -202,15 +220,26 @@ export default {
       window.open(this.$root.config.cockpitUrl + '#/process-definition/' + process.id, '_blank')
     },
     goToShowProcessHistory: function(process) {
-      let url = '/seven/auth/process/' + process.key
-      url += process.tenantId ? ('?tenantId=' + process.tenantId + '&tab=instances') : '?tab=instances'
-      this.$router.push(url)
+      this.$router.push(this.getProcessRoute(process))
     },
     refreshSearch() {
       this.loadingInstances = true
       this.loadProcesses(true).then(() => {
         this.loadingInstances = false
       })
+    },
+    getProcessRoute(item) {
+      const route = {
+        name: 'process',
+        params: {
+          processKey: item.key,
+        },
+        query: {
+          ...(item.tenantId ? { tenantId: item.tenantId } : {}),
+          tab: 'instances'
+        }
+      }
+      return route
     }
   }
 }

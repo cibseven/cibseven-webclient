@@ -23,14 +23,14 @@
     </div>
     <FlowTable v-else-if="userTasks.length > 0" resizable striped thead-class="sticky-header" :items="userTasks" primary-key="id" prefix="process-instance.usertasks."
       sort-by="created" :sort-desc="true" :fields="[
-      { label: 'activity', key: 'name', class: 'col-2', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' },
-      { label: 'assignee', key: 'assignee', class: 'col-1', thClass: 'border-end', tdClass: 'position-relative py-1 border-end border-top-0' },
-      { label: 'owner', key: 'owner', class: 'col-1', thClass: 'border-end', tdClass: 'py-1 border-end border-top-0' },
-      { label: 'startTime', key: 'created', class: 'col-2', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0' },
-      { label: 'due', key: 'due', class: 'col-2', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0' },
-      { label: 'followUp', key: 'followUp', class: 'col-1', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0' },
-      { label: 'taskID', key: 'id', class: 'col-2', thClass: 'border-end', tdClass: 'position-relative border-end py-1 border-top-0' },
-      { label: 'actions', key: 'actions', class: 'col-1', sortable: false, tdClass: 'py-1 border-top-0' }]">
+      { label: 'activity', key: 'name', class: 'col-2', tdClass: 'py-1' },
+      { label: 'assignee', key: 'assignee', class: 'col-1', tdClass: 'position-relative py-1' },
+      { label: 'owner', key: 'owner', class: 'col-1', tdClass: 'py-1' },
+      { label: 'startTime', key: 'created', class: 'col-2', tdClass: 'py-1' },
+      { label: 'due', key: 'due', class: 'col-2', tdClass: 'py-1' },
+      { label: 'followUp', key: 'followUp', class: 'col-1', tdClass: 'py-1' },
+      { label: 'taskID', key: 'id', class: 'col-2', tdClass: 'position-relative py-1' },
+      { label: 'actions', key: 'actions', class: 'col-1', sortable: false, tdClass: 'py-1' }]">
       <template v-slot:cell(assignee)="table">
         <div :title="table.item.assignee" class="text-truncate w-100" :class="focusedCell === table.item.assignee ? 'pe-4': ''" @mouseenter="focusedCell = table.item.assignee" @mouseleave="focusedCell = null">
           {{ table.item.assignee || '&nbsp;' }}

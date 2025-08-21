@@ -23,12 +23,12 @@
     </div>
     <FlowTable v-else-if="jobDefinitions.length > 0" striped thead-class="sticky-header" 
       :items="jobDefinitions" primary-key="id" prefix="process-instance.jobDefinitions." sort-by="suspended" :fields="[
-      { label: 'state', key: 'suspended', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
-      { label: 'activity', key: 'activityId', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
-      { label: 'type', key: 'jobType', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
-      { label: 'configuration', key: 'jobConfiguration', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
-      { label: 'overridingJobPriority', key: 'overridingJobPriority', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
-      { label: 'actions', key: 'actions', class: 'col-2', sortable: false, tdClass: 'py-1 border-top-0' }
+      { label: 'state', key: 'suspended', class: 'col-2', tdClass: 'py-1' },
+      { label: 'activity', key: 'activityId', class: 'col-2', tdClass: 'py-1' },
+      { label: 'type', key: 'jobType', class: 'col-2', tdClass: 'py-1' },
+      { label: 'configuration', key: 'jobConfiguration', class: 'col-2', tdClass: 'py-1' },
+      { label: 'overridingJobPriority', key: 'overridingJobPriority', class: 'col-2', tdClass: 'py-1' },
+      { label: 'actions', key: 'actions', class: 'col-2', sortable: false, tdClass: 'py-1' }
       ]">
       <template v-slot:cell(suspended)="table">
         <div :title="getStateLabel(table.item)" class="text-truncate">
