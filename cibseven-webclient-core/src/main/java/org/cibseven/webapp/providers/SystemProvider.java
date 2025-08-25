@@ -48,7 +48,11 @@ public class SystemProvider extends SevenProviderBase implements ISystemProvider
 			params += addQueryParameter(params, entry.getKey(), value, true);
 	    }
 		url += params;
-		return ((ResponseEntity<JsonNode>) doGet(url, JsonNode.class, user, true)).getBody().get("result").asInt();
+		JsonNode body =  ((ResponseEntity<JsonNode>) doGet(url, JsonNode.class, user, true)).getBody();
+		if (body == null) {
+			throw new NullPointerException();
+		}
+		return body.get("result").asInt();
 	}
 	
 	private Map<String, Object> createSumParamsMap(String metric, String startDate, String endDate) {
