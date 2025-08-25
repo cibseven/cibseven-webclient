@@ -123,8 +123,15 @@ public class DeploymentProvider extends SevenProviderBase implements IDeployment
 
 			InputStream targetStream = new ByteArrayInputStream(response.getBody());
 			InputStreamSource iso = new InputStreamResource(targetStream);
-
-			return new Data(fileName, response.getHeaders().getContentType().toString(), iso, response.getBody().length);
+			Data returnValue;
+			byte[] body = response.getBody();
+			if (body == null)
+				throw new NullPointerException();
+			MediaType contentType = response.getHeaders().getContentType();
+			if (contentType == null)
+				throw new NullPointerException();
+			returnValue = new Data(fileName, contentType.toString(), iso, response.getBody().length);
+			return returnValue;
 
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, null);
