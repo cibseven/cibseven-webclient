@@ -47,7 +47,6 @@ import org.cibseven.webapp.rest.model.ProcessStatistics;
 import org.cibseven.webapp.rest.model.StartForm;
 import org.cibseven.webapp.rest.model.TaskSorting;
 import org.cibseven.webapp.rest.model.Variable;
-import org.cibseven.webapp.rest.model.VariableHistory;
 import org.cibseven.webapp.providers.utils.URLUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -136,7 +135,11 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 
 			for(Process process : processes) {
 				String urlInstances = getEngineRestUrl() + "/process-instance/count?processDefinitionId=" + process.getId();
-				process.setRunningInstances(((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody().get("count").asLong());
+				JsonNode body = ((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody();
+				if (body == null) {
+					throw new NullPointerException();
+				}
+				process.setRunningInstances(body.get("count").asLong());
 			}
 
 			return processes;
@@ -162,11 +165,24 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		if (!lazyLoad.isPresent() || (lazyLoad.isPresent() && !lazyLoad.get())) {
 			for(Process process : processes) {
 				String urlInstances = getEngineRestUrl() + "/history/process-instance/count?processDefinitionId=" + process.getId();
-				process.setAllInstances(((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody().get("count").asLong());
+
+				JsonNode body = ((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody();
+				if (body == null)
+					throw new NullPointerException();
+				process.setAllInstances(body.get("count").asLong());
+
 				urlInstances = getEngineRestUrl() + "/history/process-instance/count?unfinished=true&processDefinitionId=" + process.getId();
-				process.setRunningInstances(((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody().get("count").asLong());
+
+				body = ((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody();
+				if (body == null)
+					throw new NullPointerException();
+				process.setRunningInstances(body.get("count").asLong());
+
 				urlInstances = getEngineRestUrl() + "/history/process-instance/count?completed=true&processDefinitionId=" + process.getId();
-				process.setCompletedInstances(((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody().get("count").asLong());
+				body = ((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody();
+				if (body == null)
+					throw new NullPointerException();
+				process.setCompletedInstances(body.get("count").asLong());
 			}
 		}
 		return processes;
@@ -176,14 +192,25 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	public Process findProcessById(String id, Optional<Boolean> extraInfo, CIBUser user) throws SystemException {
 		String url = getEngineRestUrl() + "/process-definition/" + id;
 		Process process = ((ResponseEntity<Process>) doGet(url, Process.class, user, false)).getBody();
+		if (process == null)
+			throw new NullPointerException();
 
 		if (extraInfo.isPresent() && extraInfo.get()) {
 			String urlInstances = getEngineRestUrl() + "/history/process-instance/count?processDefinitionId=" + id;
-			process.setAllInstances(((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody().get("count").asLong());
+			JsonNode body = ((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody();
+			if (body == null)
+				throw new NullPointerException();
+			process.setAllInstances(body.get("count").asLong());
 			urlInstances = getEngineRestUrl() + "/history/process-instance/count?unfinished=true&processDefinitionId=" + process.getId();
-			process.setRunningInstances(((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody().get("count").asLong());
+			body = ((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody();;
+			if (body == null)
+				throw new NullPointerException();
+			process.setRunningInstances(body.get("count").asLong());
 			urlInstances = getEngineRestUrl() + "/history/process-instance/count?completed=true&processDefinitionId=" + process.getId();
-			process.setCompletedInstances(((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody().get("count").asLong());
+			body = ((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody();;
+			if (body == null)
+				throw new NullPointerException();
+			process.setCompletedInstances(body.get("count").asLong());
 		}
 
 		return process;
@@ -315,7 +342,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 						// Associate incidents with process instances
 						processes.forEach(p -> p.setIncidents(incidentsByProcessInstance.getOrDefault(p.getId(), Collections.emptyList())));
 					}
-				} else {
+				} else if (processes != null) {
 					// For regular queries, fetch incidents for all returned processes
 					processes.forEach(p -> {
 						p.setIncidents(incidentProvider.findIncidentByInstanceId(p.getId(), user));
@@ -396,7 +423,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		        );
 		        processes.forEach(p -> p.setIncidents(incidentsByProcessInstance.getOrDefault(p.getId(), Collections.emptyList())));
 		    }
-		} else {		
+		} else if (processes != null) {
 			processes.forEach(p -> {
 				p.setIncidents(incidentProvider.findIncidentByInstanceId(p.getId(), user));
 			});
@@ -408,7 +435,11 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	@Override
 	public Long countProcessesInstancesHistory(Map<String, Object> filters, CIBUser user) {
 		String url = getEngineRestUrl() + "/history/process-instance/count";
-		return ((ResponseEntity<JsonNode>) doPost(url, filters, JsonNode.class, user)).getBody().get("count").asLong();
+		JsonNode body = ((ResponseEntity<JsonNode>) doPost(url, filters, JsonNode.class, user)).getBody();
+		if (body == null) {
+			throw new NullPointerException();
+		}
+		return body.get("count").asLong();
 	}
 
 	@Override
