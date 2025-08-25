@@ -98,7 +98,7 @@ public class GenericUserProvider extends BaseUserProvider<StandardLogin> {
 			SevenAdminAuth response = ((ResponseEntity<SevenAdminAuth>) rest.exchange(url, HttpMethod.GET,
 					new HttpEntity<>(headers), SevenAdminAuth.class)).getBody();
 
-			if (userId.equals(response.getUserId())) {
+			if (response != null && userId.equals(response.getUserId())) {
 				CIBUser user = new CIBUser(userId);
 				user.setAuthToken(createToken(getSettings(), true, false, user));
 				return user;
@@ -148,10 +148,11 @@ public class GenericUserProvider extends BaseUserProvider<StandardLogin> {
 			headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 			RestTemplate template = new RestTemplate();
 			try {
-				return template
-						.exchange(cibsevenWebclientUrl + "/auth", HttpMethod.GET, new HttpEntity(headers),
-								CIBUser.class)
-						.getBody().getAuthToken();
+				CIBUser body = template.exchange(cibsevenWebclientUrl + "/auth", HttpMethod.GET, new HttpEntity(headers),
+								CIBUser.class).getBody();
+				if (body == null)
+					throw new NullPointerException();
+				return body.getAuthToken();
 			} catch (HttpClientErrorException e) {
 				ObjectMapper mapper = new ObjectMapper();
 				try {
