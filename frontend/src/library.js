@@ -23,6 +23,7 @@ import registerOwnComponents from './register.js'
 import processesVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
 import processesMixin from '@/components/process/mixins/processesMixin.js'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
+import tabUrlMixin from '@/components/process/mixins/tabUrlMixin.js'
 import store, { modules } from '@/store'
 import usersMixin from '@/mixins/usersMixin.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
@@ -410,5 +411,6 @@ export {
   parseXMLDocumentation,
 
   initEmbeddedForm,
-  ScrollableTabsContainer
+  ScrollableTabsContainer,
+  tabUrlMixin
 }
