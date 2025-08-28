@@ -83,25 +83,21 @@
 		<dependency>
 		    <groupId>io.jsonwebtoken</groupId>
 		    <artifactId>jjwt-api</artifactId>
-		    <version>${jjwt.version}</version>
 		</dependency>
 
 		<dependency>
 		    <groupId>io.jsonwebtoken</groupId>
 		    <artifactId>jjwt-impl</artifactId>
-		    <version>${jjwt.version}</version>
 		</dependency>
 
 		<dependency>
 		    <groupId>io.jsonwebtoken</groupId>
 		    <artifactId>jjwt-jackson</artifactId> <!-- or jjwt-gson if Gson is preferred -->
-		    <version>${jjwt.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>io.swagger.core.v3</groupId>
         	<artifactId>swagger-annotations-jakarta</artifactId>
-			<version>${swagger-annotations.version}</version>				
 		</dependency>
 
 		<dependency>
@@ -114,6 +110,24 @@
 			<groupId>org.cibseven.webapp.auth</groupId>
 			<artifactId>common-auth</artifactId>
 			<version>${common-auth.version}</version>
+			<exclusions>
+				<exclusion>
+				    <groupId>io.jsonwebtoken</groupId>
+				    <artifactId>jjwt-api</artifactId>
+				</exclusion>
+				<exclusion>
+				    <groupId>io.jsonwebtoken</groupId>
+				    <artifactId>jjwt-impl</artifactId>
+				</exclusion>
+				<exclusion>
+				    <groupId>io.jsonwebtoken</groupId>
+			    	<artifactId>jjwt-jackson</artifactId>
+				</exclusion>		
+				<exclusion>
+					<groupId>io.swagger.core.v3</groupId>
+		        	<artifactId>swagger-annotations-jakarta</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>

@@ -29,12 +29,9 @@
 
 		<git-commit-id-maven-plugin.version>9.0.1</git-commit-id-maven-plugin.version>
 
-		<jjwt.version>0.12.6</jjwt.version>
-		<swagger-annotations.version>2.2.27</swagger-annotations.version>
 		<commons-io.version>2.18.0</commons-io.version>
-		<common-auth.version>1.1.0</common-auth.version>
+		<common-auth.version>1.2.0-SNAPSHOT</common-auth.version>
 		<version.spring.boot>3.5.4</version.spring.boot>
-		<version.openapi-starter-webmvc-ui>2.8.4</version.openapi-starter-webmvc-ui>
 		<image.tomcat-10-base>harbor.cib.de/dev/tomcat-10-base:2.0.0</image.tomcat-10-base>
 		<jib-maven-plugin.version>3.4.6</jib-maven-plugin.version>
 		<jib.from.image>${image.tomcat-10-base}</jib.from.image>
@@ -300,6 +297,13 @@ You may obtain a copy of the License at
 				<scope>import</scope>
 				<type>pom</type>
 				<version>${version.spring.boot}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.cibseven.webapp.bom</groupId>
+				<artifactId>cibseven-webclient-bom</artifactId>
+				<scope>import</scope>
+				<type>pom</type>
+				<version>1.0.0</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
