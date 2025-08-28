@@ -158,7 +158,9 @@ const appRoutes = [
           ]
         },
         { path: 'deployments/:deploymentId?', name: 'deployments', beforeEnter: permissionsGuard('cockpit'),
-          component: DeploymentsView
+          component: DeploymentsView, props: route => ({
+            deploymentId: route.params.deploymentId
+          })
         },
         { path: 'human-tasks', name: 'human-tasks', beforeEnter: permissionsGuard('cockpit'), component: HumanTasksView },
         // users management

@@ -26,6 +26,7 @@ import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.DeploymentResource;
+import org.cibseven.webapp.rest.model.Process;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.InputStreamSource;
 import org.springframework.http.HttpEntity;
@@ -100,7 +101,12 @@ public class DeploymentProvider extends SevenProviderBase implements IDeployment
 		String url = builder.toUriString();
 		return Arrays.asList(((ResponseEntity<Deployment[]>) doGet(url, Deployment[].class, user, true)).getBody());
 	}
-
+  
+  	@Override
+  	public Deployment findDeployment(String deploymentId, CIBUser user) {
+  	    String url = getEngineRestUrl() + "/deployment/" + deploymentId;
+  	    return ((ResponseEntity<Deployment>) doGet(url, Deployment.class, user, false)).getBody();
+  	}
 	@Override
 	public Collection<DeploymentResource> findDeploymentResources(String deploymentId, CIBUser user) {
 		String url = getEngineRestUrl() + "/deployment/" + deploymentId + "/resources";
