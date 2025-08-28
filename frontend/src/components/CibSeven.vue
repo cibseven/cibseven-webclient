@@ -289,7 +289,20 @@ export default {
         }
         const item = group.items.find(i => this.isMenuItemActive(i))
         if (item) {
-          title = this.$t(item.title)
+          // exceptional case with 'Processes' menu item
+          if (this.$route.name === 'process') {
+            const hasInstanceIdParam = 'instanceId' in this.$route.params
+            if (hasInstanceIdParam) {
+              title = this.$t('start.cockpit.process-instance.title')
+            }
+            else {
+              title = this.$t('start.cockpit.process-definition.title')
+            }
+          }
+          // default
+          if (!title) {
+            title = this.$t(item.title)
+          }
           return true
         }
         return false

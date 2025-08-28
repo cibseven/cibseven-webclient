@@ -925,6 +925,12 @@
 				"title": "Procesos",
 				"tooltip": "Explora las definiciones de procesos disponibles"
 			},
+			"process-definition": {
+				"title": "Definición de Proceso"
+			},
+			"process-instance": {
+				"title": "Instancia de Proceso"
+			},
 			"decisions": {
 				"title": "Decisiones",
 				"tooltip": "Explora las definiciones de decisiones disponibles"
