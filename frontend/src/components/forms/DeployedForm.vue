@@ -118,7 +118,7 @@ export default {
     createDocumentReference(variableName, file) {
       return [{
         documentId: variableName,
-        endpoint: `${window.location.origin}/${getServicesBasePath()}/process/process-instance/${this.templateMetaData.task.processInstanceId}/variables/${variableName}/data`,
+        endpoint: `${window.location.origin}/${getServicesBasePath()}/process/process-instance/${this.templateMetaData.task.processInstanceId}/variables/${variableName}/data?&contentType=${encodeURIComponent(file.type)}`,
         metadata: {
           contentType: file.type,
           fileName: file.name
@@ -169,7 +169,10 @@ export default {
                   component.properties[DOCUMENT_REFERENCE_KEY]
                 );
 
+                // This boolean indicates whether we need to create a document reference variable for preview components
                 const hasDocumentReferenceKey = !!filePickerComponent;
+
+                // Check if this file picker component has the document-reference-key property
                 if (hasDocumentReferenceKey) {
                   // Upload the selected file to the backend and associate it with the process variable
                   await FormsService.uploadVariableFileData(this.taskId, variableName, file, 'File');
@@ -190,7 +193,7 @@ export default {
                     }
                   };;
 
-                  // Update fileDataSource endpoint with authentication token and cache bust
+                  // Update documentReference endpoint with authentication token and cache bust
                   updateEndpointCredentials({ documentReference }, this.$root.user.authToken);
 
                   // Direct state update (more reliable for document previews)
