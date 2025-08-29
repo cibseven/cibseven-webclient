@@ -67,3 +67,21 @@ export function convertFormDataForFormJs(formData) {
   
   return convertedFormData
 }
+
+/**
+ * Update authentication tokens and cache bust parameters in document reference endpoints
+ * @param {Object} formData - Form data containing document references
+ * @param {String} authToken - Authentication token to add to endpoints
+ * 
+ * Note: Cache busting prevents stale document previews due to browser caching
+ */
+export function updateEndpointCredentials(formData, authToken) {
+  Object.values(formData).flat().forEach(item => {
+    if (item?.endpoint) {
+      const url = new URL(item.endpoint);
+      url.searchParams.set('token', authToken);
+      url.searchParams.set('cacheBust', Date.now().toString());
+      item.endpoint = url.toString();
+    }
+  });
+}
