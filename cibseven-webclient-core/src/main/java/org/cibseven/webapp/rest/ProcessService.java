@@ -674,7 +674,14 @@ public class ProcessService extends BaseService implements InitializingBean {
 	public ResponseEntity<byte[]> findProcessInstanceVariableData(
 			@Parameter(description = "Process instance Id") @PathVariable String processInstanceId,
 			@Parameter(description = "Varaible name") @PathVariable String variableName,
+			@RequestParam Optional<String> token,
 			Locale loc, HttpServletRequest rq) {
+		// Inject the token into the request header if present.
+		// This is required for secure access to variable data endpoints, especially for document/file previews
+		// where the frontend passes the token as a query parameter and the backend must convert it to a header.
+		if (token.isPresent() && !token.get().isEmpty()) {
+			rq = new HeaderModifyingRequestWrapper(rq, token.get());
+		}
 		CIBUser user = checkAuthorization(rq, true);
 		checkCockpitRights(user);
         checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_INSTANCE_VARIABLE_ALL);
