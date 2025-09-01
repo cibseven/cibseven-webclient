@@ -23,7 +23,7 @@
         <div class="p-2 bg-white">
           <div class="d-flex justify-content-between bg-white ps-3 pe-3">
             <div v-if="deployment">
-              <h4>{{ deployment.name }}</h4>
+              <h4>{{ deployment.name || deployment.id }}</h4>
             </div>
             <a class="btn btn-sm btn-primary text-dark border-white bg-white shadow-none" data-bs-toggle="collapse"
               href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample"
