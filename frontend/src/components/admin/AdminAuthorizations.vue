@@ -44,6 +44,7 @@ import AuthorizationsNavBar from '@/components/admin/AuthorizationsNavBar.vue'
 import SidebarsFlow from '@/components/common-components/SidebarsFlow.vue'
 
 export default {
+  name: 'AdminAuthorizations',
   components: { AuthorizationsNavBar, SidebarsFlow },
   data: function () {
     return {
