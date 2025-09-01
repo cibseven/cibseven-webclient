@@ -376,6 +376,11 @@
 			"noExternalTasks": "No se encontraron tareas externas"
 		}
 	},
+	"dmn-viewer": {
+		"zoomIn": "Acercarse",
+		"zoomOut": "Alejarse",
+		"resetZoom": "Restablecer zoom"
+	},
 	"bpmn-viewer": {
 		"zoomIn": "Acercarse",
 		"zoomOut": "Alejarse",

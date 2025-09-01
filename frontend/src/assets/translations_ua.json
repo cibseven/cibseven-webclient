@@ -376,7 +376,12 @@
 			"noExternalTasks": "Зовнішні завдання не знайдено"
 		}
 	},
-		"bpmn-viewer": {
+	"dmn-viewer": {
+		"zoomIn": "Збільшити",
+		"zoomOut": "Зменшити",
+		"resetZoom": "Скинути масштаб"
+	},
+	"bpmn-viewer": {
 			"zoomIn": "Збільшити",
 			"zoomOut": "Зменшити",
 			"resetZoom": "Скинути масштаб",
