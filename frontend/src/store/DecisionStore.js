@@ -111,15 +111,10 @@ const DecisionStore = {
     //  Definitions
     // ────────────────────────────────────────────────────────────────
 
-    async getDecisionList({ state, commit }, params) {
-      if (state.list.length < 1) {
-        const decisions = await DecisionService.getDecisionList(params)
-        const reduced = decisions.map(d => ({ key: d.key, id: d.id, name: d.name, latestVersion: d.version }))
-        commit('setDecisions', { decisions: reduced })
-        return reduced
-      } else {
-        return state.list
-      }
+    async getDecisionList({ commit }, params) {
+      const decisions = await DecisionService.getDecisionList(params)
+      commit('setDecisions', { decisions })
+      return decisions
     },
     async getDecisionByKey({ state }, params) {
       if (state.list && state.list.length > 0) {

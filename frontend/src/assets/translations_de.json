@@ -1226,6 +1226,7 @@
 	"decision" : {
 		"id": "ID",
 		"name": "Name",
+		"tenantId": "Mandanten-ID",
 		"actions": "Aktionen",
 		"emptyProcessList": "Ihre Entscheidungsliste ist derzeit leer.",
 		"emptyProcessListFiltered": "Es gibt keinen Entscheidung für den angewandten Filter.",
