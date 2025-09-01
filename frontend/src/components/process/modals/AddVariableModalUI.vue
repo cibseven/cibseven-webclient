@@ -64,7 +64,7 @@
     </div>
     <template v-slot:modal-footer>
       <b-button @click="$refs.addVariable.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
-      <b-button :disabled="!isValid" @click="addVariable()" variant="primary">{{ $t('process-instance.addVariable') }}</b-button>
+      <b-button :disabled="!isValid" @click="addVariable()" variant="primary">{{ isEditing ? $t('process-instance.save') : $t('process-instance.addVariable') }}</b-button>
     </template>
   </b-modal>
 </template>
@@ -84,7 +84,8 @@ export default {
       type: 'String',
       value: '',
       objectTypeName: '',
-      serializationDataFormat: ''
+      serializationDataFormat: '',
+      isEditing: false
     }
   },
   watch: {
@@ -216,6 +217,7 @@ export default {
         this.value = value;
         this.objectTypeName = objectTypeName;
         this.serializationDataFormat = serializationDataFormat;
+        this.isEditing = true;
       }
 
       this.$refs.addVariable.show()
@@ -251,6 +253,7 @@ export default {
       this.value = ''
       this.objectTypeName = ''
       this.serializationDataFormat = ''
+      this.isEditing = false
     }
   }
 }
