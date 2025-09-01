@@ -146,7 +146,7 @@ pipeline {
                 anyOf {
                     allOf {
                         // Automatically deploy on main branch if version is SNAPSHOT
-                        expression { branch 'main' }
+                        branch 'main'
                         expression { mavenProjectInformation.version.endsWith("-SNAPSHOT") == true }
                         expression { !params.DEPLOY_TO_MAVEN_CENTRAL }
                     }
@@ -317,8 +317,8 @@ pipeline {
             when {
                 anyOf {
                     allOf {
-                      branch 'main'
-                      expression { mavenProjectInformation.version.endsWith("-SNAPSHOT") == true }
+                        branch 'main'
+                        expression { mavenProjectInformation.version.endsWith("-SNAPSHOT") == true }
                     }
                     expression { params.DEPLOY_ANY_BRANCH_TO_HARBOR == true }
                 }
@@ -377,15 +377,15 @@ pipeline {
         }
         
         stage('Deploy Helm Charts to Harbor') {
-	        when {
+            when {
                 anyOf {
                     allOf {
-                      branch 'main'
-                      expression { mavenProjectInformation.version.endsWith("-SNAPSHOT") == true }
+                        branch 'main'
+                        expression { mavenProjectInformation.version.endsWith("-SNAPSHOT") == true }
                     }
                     expression { params.DEPLOY_ANY_BRANCH_TO_HARBOR }
                 }
-	        }
+            }
 	        steps {
 	            script {
                     HelmChartInformation helmChartInformation = readHelmChart(path: 'helm/cibseven-webclient')
