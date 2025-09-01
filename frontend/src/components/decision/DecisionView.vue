@@ -100,7 +100,7 @@ export default {
       .then(versions => {
         let version = versions[0]
         this.setSelectedDecisionVersion({ key: decisionKey, version: versionIndex })
-        if (!versionIndex) {
+        if (!versionIndex || versionIndex === 'undefined') {
           versionIndex = version.version
           this.$router.push(`/seven/auth/decision/${decisionKey}/${versionIndex}`)
         } else {
