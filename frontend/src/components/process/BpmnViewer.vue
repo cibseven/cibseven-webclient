@@ -288,10 +288,13 @@ export default {
     },
     drawActivitiesBadges: function(elementRegistry) {
       const historyStatistics = this.historicActivityStatistics
-      const mergedStatistics = historyStatistics.map(hs => {
-        const stat = this.statistics.find(s => s.id === hs.id)
-        return stat ? { ...hs, instances: stat.instances } : hs
-      })
+      let mergedStatistics = historyStatistics
+        if (!this.selectedInstance) {
+          mergedStatistics = historyStatistics.map(hs => {
+            const stat = this.statistics.find(s => s.id === hs.id)
+            return stat ? { ...hs, instances: stat.instances } : hs
+          })
+      }
       const options = this.badgeOptions || {}
       mergedStatistics.forEach(stat => {
         const element = elementRegistry.get(stat.id)

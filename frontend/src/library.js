@@ -23,6 +23,7 @@ import registerOwnComponents from './register.js'
 import processesVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
 import processesMixin from '@/components/process/mixins/processesMixin.js'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
+import tabUrlMixin from '@/components/process/mixins/tabUrlMixin.js'
 import store, { modules } from '@/store'
 import usersMixin from '@/mixins/usersMixin.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
@@ -151,6 +152,7 @@ import CopyableActionButton from '@/components/common-components/CopyableActionB
 import TranslationsDownload from '@/components/common-components/TranslationsDownload.vue'
 import StackTraceModal from '@/components/process/modals/StackTraceModal.vue'
 import RetryModal from '@/components/process/modals/RetryModal.vue'
+import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
 
 const registerComponents = function(app) {
   app.component('cib-seven', CibSeven)
@@ -408,5 +410,7 @@ export {
   setupTaskNotifications,
   parseXMLDocumentation,
 
-  initEmbeddedForm
+  initEmbeddedForm,
+  ScrollableTabsContainer,
+  tabUrlMixin
 }
