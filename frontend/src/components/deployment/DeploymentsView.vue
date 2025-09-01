@@ -360,13 +360,14 @@ export default {
     },
     deleteDeployment: function (deployment) {
       ProcessService.deleteDeployment(deployment.id, true).then(() => {
-        this.deploymentsDelData.deleted++
         this.deployments = this.deployments.filter(d => {
           return deployment.id !== d.id
         })
+        this.deployment = null
         this.loadProcesses(false)
+        this.deploymentsDelData.total = 1
+        this.deploymentsDelData.deleted++
         this.$refs.deploymentsDeleted.show()
-        if (this.deployment && deployment.id === this.deployment.id) this.deployment = null
       })
     },
     selectDeployment: function (d) {
