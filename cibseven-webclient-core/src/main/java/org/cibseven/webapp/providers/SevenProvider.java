@@ -455,6 +455,11 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	public Collection<Deployment> findDeployments(CIBUser user, String nameLike, int firstResult, int maxResults, String sortBy, String sortOrder) {
 		return deploymentProvider.findDeployments(user, nameLike, firstResult, maxResults, sortBy, sortOrder);
 	}
+	
+	@Override
+	public Deployment findDeployment(String deploymentId, CIBUser user) {
+		return deploymentProvider.findDeployment(deploymentId, user);
+	}
 
 	@Override
 	public Collection<DeploymentResource> findDeploymentResources(String deploymentId, CIBUser user) {
