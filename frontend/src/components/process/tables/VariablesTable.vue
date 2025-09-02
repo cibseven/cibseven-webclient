@@ -145,7 +145,7 @@ export default {
           try {
             const parsed = JSON.parse(item.value)
             if (parsed && parsed.name) return parsed.name
-          } catch (e) {}
+          } catch { return '' }
         }
         return ''
       }
