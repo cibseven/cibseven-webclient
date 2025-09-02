@@ -1233,6 +1233,7 @@
 	"decision": {
 		"id": "ID",
 		"name": "Название",
+		"tenantId": "ID тенанта",
 		"actions": "Действия",
 		"emptyProcessList": "Список решений в настоящее время пуст.",
 		"emptyProcessListFiltered": "Нет решений, соответствующих применённому фильтру.",
