@@ -50,31 +50,32 @@ import { permissionsMixin } from '@/permissions.js'
 import processesMixin from '@/components/process/mixins/processesMixin.js'
 
 export default {
-mixins: [permissionsMixin, processesMixin],
-props: { process: Object },
-computed: {
-  viewStyles: function() {
-    return {
-      'view-comfy': {
-        cardSize: 'width: 280px; height: 250px',
-        imgSize: 'width: 140px; height: 60px',
-        imgBlock: 'height: 70px',
-        textBlock: 'height: 150px'
-      },
-      'view-module': {
-        cardSize: 'width: 400px; height: 250px',
-        imgSize: 'width: 140px; height: 60px',
-        imgBlock: 'height: 70px',
-        textBlock: 'height: 150px'
+  name: 'ProcessCard',
+  mixins: [permissionsMixin, processesMixin],
+  props: { process: Object },
+  computed: {
+    viewStyles: function() {
+      return {
+        'view-comfy': {
+          cardSize: 'width: 280px; height: 250px',
+          imgSize: 'width: 140px; height: 60px',
+          imgBlock: 'height: 70px',
+          textBlock: 'height: 150px'
+        },
+        'view-module': {
+          cardSize: 'width: 400px; height: 250px',
+          imgSize: 'width: 140px; height: 60px',
+          imgBlock: 'height: 70px',
+          textBlock: 'height: 150px'
+        }
       }
+    },
+    textHtml: function() {
+      const tenantHtml = this.process.tenantId ? '<div class="fst-italic mb-2">' + this.process.tenantId + '</div>' : ''
+      return '<h5 :title="' + this.processName + '">' + this.processName + '</h5>' +
+        tenantHtml +
+        '<div>' + this.showDescription(this.process.key) + '</div>'
     }
-  },
-  textHtml: function() {
-    const tenantHtml = this.process.tenantId ? '<div class="fst-italic mb-2">' + this.process.tenantId + '</div>' : ''
-    return '<h5 :title="' + this.processName + '">' + this.processName + '</h5>' +
-      tenantHtml +
-      '<div>' + this.showDescription(this.process.key) + '</div>'
   }
-}
 }
 </script>

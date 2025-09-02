@@ -65,6 +65,7 @@ import HighlightedText from '@/components/common-components/HighlightedText.vue'
 import { permissionsMixin } from '@/permissions.js'
 
 export default {
+  name: 'StartProcess',
   components: { RenderTemplate, BWaitingBox, HighlightedText },
   inject: ['loadProcesses', 'currentLanguage'],
   emits: ['process-started'],
