@@ -183,7 +183,8 @@ export default {
               to: '/seven/auth/decisions',
               active: ['seven/auth/decision'],
               tooltip: 'start.cockpit.decisions.tooltip',
-              title: 'start.cockpit.decisions.title'
+              title: 'start.cockpit.decisions.title',
+              activeExact: true
             }, {
               to: '/seven/auth/human-tasks',
               active: ['seven/auth/human-tasks'],
