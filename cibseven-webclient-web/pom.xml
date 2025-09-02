@@ -90,8 +90,11 @@
 				          		<fileset>
 				            		<directory>${project.basedir}/src/main/webapp</directory>
 			            			<includes>
-				              		<include>**/*</include>
+				              			<include>**/*</include>
 				            		</includes>
+				            		<excludes>
+				            			<exclude>README.md</exclude>
+				            		</excludes>
 				          		</fileset>
 				        	</filesets>
 			      		</configuration>
