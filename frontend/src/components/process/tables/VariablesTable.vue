@@ -136,17 +136,18 @@ export default {
     updateInstanceStatus() {
       this.selectedInstance.state = 'COMPLETED'
     },
-    isFileValueDataSource: function(item) {
-      if (item.type === 'Object') {
-        if (item.value && item.value.objectTypeName) {
-          if (this.fileObjects.includes(item.value.objectTypeName)) return true
-        }
-      }
-      return false
-    },
     displayValue(item) {
       if (this.isFileValueDataSource(item)) {
-        return item.value.name
+        if (item.value && typeof item.value === 'object' && item.value.name) {
+          return item.value.name
+        }
+        if (item.value && typeof item.value === 'string') {
+          try {
+            const parsed = JSON.parse(item.value)
+            if (parsed && parsed.name) return parsed.name
+          } catch (e) {}
+        }
+        return ''
       }
       else if (item.type === 'File') {
         return item.valueInfo.filename
