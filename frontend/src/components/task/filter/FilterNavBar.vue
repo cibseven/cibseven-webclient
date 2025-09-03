@@ -123,11 +123,16 @@ export default {
       sortOrder: '',
       interval: null,
       taskpool: new TaskPool(5),
-      workingFilter: {}
+      workingFilter: {},
+      isSelectingFilter: false
     }
   },
   watch: {
     '$route.params.filterId': function(to) {
+      if (this.isSelectingFilter) {
+        this.isSelectingFilter = false
+        return
+      }
       if (this.$route.query.filtername) {
         this.setFilterByName()
       } else this.checkFilterIdInUrl(to)
@@ -226,7 +231,10 @@ export default {
           localStorage.setItem('filter', JSON.stringify(this.$store.state.filter.selected))
           var filterId = this.$route.params.filterId === '*' ? '*' : this.$store.state.filter.selected.id
           var path = '/seven/auth/tasks/' + filterId + (taskId ? '/' + taskId : '')
-          if (this.$route.path !== path) this.$router.replace(path)
+          if (this.$route.path !== path) {
+            this.isSelectingFilter = true
+            this.$router.replace(path)
+          }
         }
       }
     },
