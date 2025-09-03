@@ -88,7 +88,7 @@ export default {
           // Check if dataSource starts with "=" (indicating a variable reference)
           if (dataSource && dataSource.startsWith('=')) {
             const variableName = dataSource.substring(1) // Remove the "=" prefix
-            var documentReferenceKey = variableName
+            let documentReferenceKey = variableName
 
             // Check if there's a file picker component with the same variable name
             const hasFilePicker = formContent.components && formContent.components.some(comp =>
