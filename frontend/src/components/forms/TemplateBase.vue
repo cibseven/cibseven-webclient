@@ -129,7 +129,7 @@ export default {
               if (!taskId) {
                 this.sendMessageToParent({
                   method: 'displayErrorMessage',
-                  message: 'File preview is only available after the task has started.'
+                  data: 'File preview is only available after the task has started.'
                 });
                 return; // Don't create document reference if preview is not possible
               }
@@ -140,7 +140,7 @@ export default {
               if (uploadResponse && uploadResponse.status !== 204) {
                 this.sendMessageToParent({
                   method: 'displayErrorMessage',
-                  message: 'Cannot preview this file due to file upload failure.'
+                  data: 'Cannot preview this file due to file upload failure.'
                 });
                 return; // Don't create document reference if upload failed
               }

@@ -139,7 +139,7 @@ export default {
 
       } catch (error) {
         console.error('Error loading form:', error);
-        this.sendMessageToParent({ method: 'displayErrorMessage', message: error.message || 'An error occurred during form loading' })
+        this.sendMessageToParent({ method: 'displayErrorMessage', data: error.message || 'An error occurred during form loading' })
         this.loader = false;
 
       }
@@ -173,7 +173,7 @@ export default {
         this.loader = false
       } catch (error) {
         console.error('Error during form submission:', error)
-        this.sendMessageToParent({ method: 'displayErrorMessage', message: error.message || 'An error occurred during form submission' })
+        this.sendMessageToParent({ method: 'displayErrorMessage', data: error.message || 'An error occurred during form submission' })
         this.loader = false
       } finally {
         this.closeTask = true

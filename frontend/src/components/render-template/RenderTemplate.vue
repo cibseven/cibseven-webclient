@@ -209,12 +209,19 @@ export default {
         this.submitForm = false
       }
     },
-    displayErrorMessage: function(params) {
+    displayErrorMessage: function(data) {
+      // Show custom error messages when no HTTP status is provided
+      if (!data.status) {
+        this.$root.$refs.error.show(data)
+        return
+      }
+
+      // Process HTTP error responses and display corresponding error messages
       var type = ''
       var errorParams = []
-      switch (params.status) {
+      switch (data.status) {
         case 404:
-          if (params.type !== 'generic') {
+          if (data.type !== 'generic') {
             type = 'taskSelectedNotExist'
           } else type = 'NoObjectFoundException'
           break
@@ -226,7 +233,7 @@ export default {
           type = 'errorSaveTask'
       }
       this.$root.$refs.error.show({ type: type, params: errorParams })
-      if (params.status === 404 && params.type !== 'generic')
+      if (data.status === 404 && data.type !== 'generic')
         this.$router.push('/seven/auth/tasks/' + this.$route.params.filterId)
     },
     cancelTask: function() {
@@ -260,7 +267,7 @@ export default {
         if (e.data.method === 'completeTask') this.completeTask(e.data.task)
         else if (e.data.method === 'displaySuccessMessage') this.$refs.messageSaved.show(10)
         else if (e.data.method === 'displayGenericSuccessMessage') this.$refs.messageSuccess.show(10)
-        else if (e.data.method === 'displayErrorMessage') this.displayErrorMessage(e.data)
+        else if (e.data.method === 'displayErrorMessage') this.displayErrorMessage(e.data.data)
         else if (e.data.method === 'cancelTask') this.cancelTask()
         else if (e.data.method === 'updateFilters') this.updateFilters(e.data)
       else if (e.data.method === 'openDatePicker') {
