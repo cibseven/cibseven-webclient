@@ -80,7 +80,7 @@ export default {
         if (fileInputs.length > 0) {
           fileInputs.forEach(fileInput => {
             fileInput.addEventListener('change', async (e) => {
-              this.$refs.templateBase.handleFileSelection(e, fileInput, formContent);
+              this.$refs.templateBase.handleFileSelection(e, fileInput, formContent, null, this.form);
             });
           });
         }

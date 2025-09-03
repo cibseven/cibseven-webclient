@@ -69,19 +69,22 @@ export function convertFormDataForFormJs(formData) {
 }
 
 /**
- * Update authentication tokens and cache bust parameters in document reference endpoints
- * @param {Object} formData - Form data containing document references
- * @param {String} authToken - Authentication token to add to endpoints
- * 
- * Note: Cache busting prevents stale document previews due to browser caching
+ * Find all documentPreview components in form schema
+ * @param {Object} formContent - Form schema object
+ * @returns {Array} Array of documentPreview components
  */
-export function updateEndpointCredentials(formData, authToken) {
-  Object.values(formData).flat().forEach(item => {
-    if (item?.endpoint) {
-      const url = new URL(item.endpoint);
-      url.searchParams.set('token', authToken);
-      url.searchParams.set('cacheBust', Date.now().toString());
-      item.endpoint = url.toString();
-    }
-  });
+export function findDocumentPreviewComponents(formContent) {
+  return formContent.components?.filter(component => component.type === 'documentPreview') || []
+}
+
+/**
+ * Generate document reference variable name by adding postfix.
+ * The postfix is needed to avoid conflicts when file picker and document preview use the same variable name in the form.
+ * Without the postfix, their data would overwrite each other in form data.
+ * 
+ * @param {string} variableName - Original variable name
+ * @returns {string} Variable name with document reference postfix
+ */
+export function getDocumentReferenceVariableName(variableName) {
+  return variableName + '_documentReference'
 }
