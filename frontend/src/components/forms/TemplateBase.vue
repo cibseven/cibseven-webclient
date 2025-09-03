@@ -137,7 +137,7 @@ export default {
               const uploadResponse = await FormsService.uploadVariableFileData(taskId, variableName, file, 'File');
 
               // Check if upload was successful (expecting 204 No Content)
-              if (uploadResponse && uploadResponse.status !== 204) {
+              if (!uploadResponse || uploadResponse.status !== 204) {
                 this.sendMessageToParent({
                   method: 'displayErrorMessage',
                   data: 'Cannot preview this file due to file upload failure.'
