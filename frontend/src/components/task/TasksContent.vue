@@ -409,7 +409,6 @@ export default {
       this.processInstanceHistory = null
       this.task = null
       if (this.$route.params.filterId) {
-        this.listTasksWithFilterAuto()
         var path = '/seven/auth/tasks/' + this.$route.params.filterId
         if (path !== this.$route.path) this.$router.push(path)
       }
