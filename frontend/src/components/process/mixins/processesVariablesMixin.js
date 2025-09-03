@@ -108,16 +108,23 @@ export default {
 			this.filteredVariables = [...variables]
 			this.loading = false
 		},
+		isFileValueDataSource: function(item) {
+      if (item.type === 'Object') {
+        const objectTypeName =
+          (item.value && item.value.objectTypeName) ||
+          (item.valueInfo && item.valueInfo.objectTypeName)
+        if (objectTypeName && this.fileObjects.includes(objectTypeName)) return true
+      }
+      return false
+    },
 		downloadFile: function(variable) {
-			if (variable.type === 'Object') {
-				if (variable.value.objectTypeName.includes('FileValueDataFlowSource')) {
-					TaskService.downloadFile(variable.processInstanceId, variable.name).then(data => {
-						this.$refs.importPopper.triggerDownload(data, variable.value.name)
-					})
-				} else {
-					var blob = new Blob([Uint8Array.from(atob(variable.value.data), c => c.charCodeAt(0))], { type: variable.value.contentType })
-					this.$refs.importPopper.triggerDownload(blob, variable.value.name)
-				}
+			if (this.isFileValueDataSource(variable)) {
+				TaskService.downloadFile(variable.processInstanceId, variable.name).then(data => {
+					this.$refs.importPopper.triggerDownload(data, variable.value.name)
+				})
+			} else if (variable.type === 'Object') {
+				var blob = new Blob([Uint8Array.from(atob(variable.value.data), c => c.charCodeAt(0))], { type: variable.value.contentType })
+				this.$refs.importPopper.triggerDownload(blob, variable.value.name)
 			} else {
 				var download = this.selectedInstance.state === 'ACTIVE' ?
 					ProcessService.fetchVariableDataByExecutionId(variable.executionId, variable.name) :

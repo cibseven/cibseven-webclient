@@ -376,6 +376,11 @@
 			"noExternalTasks": "No se encontraron tareas externas"
 		}
 	},
+	"dmn-viewer": {
+		"zoomIn": "Acercarse",
+		"zoomOut": "Alejarse",
+		"resetZoom": "Restablecer zoom"
+	},
 	"bpmn-viewer": {
 		"zoomIn": "Acercarse",
 		"zoomOut": "Alejarse",
@@ -1074,6 +1079,8 @@
 		"selectAll": "Seleccionar todo",
 		"deleteDeployments": "Eliminar despliegues",
 		"showModel": "Mostrar modelo",
+		"delete": "Borrar despliegue",
+		"showDeployment": "Cargar despliegue en lista",
 		"deploymentsDeleted": "{0} de {1} despliegues se han eliminado correctamente",
 		"tenant": "Tenant",
 		"errorLoading": "No se puede cargar el recurso para la implementación seleccionada"
@@ -1226,6 +1233,7 @@
 	"decision": {
 		"id": "ID",
 		"name": "Nombre",
+		"tenantId": "ID del tenant",
 		"actions": "Acciones",
 		"emptyProcessList": "Tu lista de decisiones está actualmente vacía.",
 		"emptyProcessListFiltered": "No hay decisiones que coincidan con el filtro aplicado.",

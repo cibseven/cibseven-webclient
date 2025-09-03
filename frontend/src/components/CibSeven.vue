@@ -180,10 +180,11 @@ export default {
               tooltip: 'start.cockpit.processes.tooltip',
               title: 'start.cockpit.processes.title'
             }, {
-              to: '/seven/auth/decisions',
-              active: ['seven/auth/decision'],
+              to: '/seven/auth/decisions/list',
+              active: ['seven/auth/decision', 'seven/auth/decisions/list'],
               tooltip: 'start.cockpit.decisions.tooltip',
-              title: 'start.cockpit.decisions.title'
+              title: 'start.cockpit.decisions.title',
+              activeExact: true
             }, {
               to: '/seven/auth/human-tasks',
               active: ['seven/auth/human-tasks'],

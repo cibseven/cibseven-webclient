@@ -376,7 +376,12 @@
 			"noExternalTasks": "Зовнішні завдання не знайдено"
 		}
 	},
-		"bpmn-viewer": {
+	"dmn-viewer": {
+		"zoomIn": "Збільшити",
+		"zoomOut": "Зменшити",
+		"resetZoom": "Скинути масштаб"
+	},
+	"bpmn-viewer": {
 			"zoomIn": "Збільшити",
 			"zoomOut": "Зменшити",
 			"resetZoom": "Скинути масштаб",
@@ -1074,6 +1079,8 @@
 		"selectAll": "Вибрати все",
 		"deleteDeployments": "Видалити розгортання",
 		"showModel": "Показати модель",
+		"delete": "Видалити розгортання",
+		"showDeployment": "Показати розгортання у списку",
 		"deploymentsDeleted": "{0} з {1} розгортань успішно видалено",
 		"tenant": "Орендар",
 		"errorLoading": "Не вдалося завантажити ресурс для обраного розгортання"
@@ -1226,6 +1233,7 @@
 	"decision": {
 		"id": "ID",
 		"name": "Назва",
+		"tenantId": "ID клієнта",
 		"actions": "Дії",
 		"emptyProcessList": "Список рішень наразі порожній.",
 		"emptyProcessListFiltered": "Немає рішень, що відповідають застосованому фільтру.",

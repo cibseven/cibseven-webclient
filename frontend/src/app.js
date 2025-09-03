@@ -55,6 +55,7 @@ Promise.all([
   switchLanguage(config, i18n.global.locale).then(() => {
 
     const app = createApp({ /*jshint nonew:false */
+      name: 'CIB7App',
       el: '#app',
       mixins: [permissionsMixin],
       provide: function() {

@@ -28,6 +28,7 @@
 import { inject, computed } from 'vue';
 
 export default {
+  name: 'IconButton',
   props: {
     variant: { type: String, default: 'outline-secondary' },
     icon: String,

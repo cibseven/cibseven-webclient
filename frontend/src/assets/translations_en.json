@@ -376,6 +376,11 @@
 			"noExternalTasks": "No external tasks found"
 		}
 	},
+	"dmn-viewer": {
+		"zoomIn": "Zoom in",
+		"zoomOut": "Zoom out",
+		"resetZoom": "Reset zoom"
+	},
 	"bpmn-viewer": {
 		"zoomIn": "Zoom in",
 		"zoomOut": "Zoom out",
@@ -1075,6 +1080,8 @@
 		"selectAll": "Select all",
 		"deleteDeployments": "Delete deployments",
 		"showModel": "Show model",
+		"delete": "Delete Deployment",
+		"showDeployment": "Load Deployment in list",
 		"deploymentsDeleted": "{0} out of {1} deployments have been successfully deleted",
 		"tenant": "Tenant",
 		"errorLoading": "Unable to load resource for the selected deployment"
@@ -1227,6 +1234,7 @@
 	"decision": {
 		"id": "ID",
 		"name": "Name",
+		"tenantId": "Tenant ID",
 		"actions": "Actions",
 		"emptyProcessList": "Your decision list is currently empty.",
 		"emptyProcessListFiltered": "There is no decision for the applied filter.",
