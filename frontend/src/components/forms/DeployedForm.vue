@@ -111,7 +111,7 @@ export default {
               const fileName = fileVariable.valueInfo?.filename || 'document'
 
               // Use the unified createDocumentReference method from TemplateBase
-              const documentReference = this.$refs.templateBase.createDocumentReference(documentReferenceKey, fileType, fileName)
+              const documentReference = this.$refs.templateBase.createDocumentReference(variableName, fileType, fileName)
 
               // Store the document reference with the postfix in converted form data
               convertedFormData[documentReferenceKey] = documentReference
