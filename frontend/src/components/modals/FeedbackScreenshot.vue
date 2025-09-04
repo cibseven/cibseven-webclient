@@ -47,6 +47,7 @@ import screenshotImage from '@/assets/images/common-layout/files/screenshot.svg'
 export default {
   name: 'FeedbackScreenshot',
   props: { disabled: Boolean, img: String, height: Number },
+  emits: ['update:modelValue'],
   data: function() {
     return {
       focused: false,

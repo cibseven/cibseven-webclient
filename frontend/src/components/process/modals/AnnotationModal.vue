@@ -36,6 +36,7 @@
 
 export default {
   name: 'AnnotationModal',
+  emits: ['set-incident-annotation'],
   data: function() {
     return {
       incidentId: null,

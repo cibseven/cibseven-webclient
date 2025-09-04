@@ -41,6 +41,7 @@ export default {
   props: {
     okTitle: String
   },
+  emits: ['ok'],
   data: function() { return { param: null } },
   methods: {
     show: function(param) {

@@ -58,6 +58,7 @@ export default {
     placeholder: String,
     loading: { type: Boolean, default: false }
   },
+  emits: ['update:modelValue', 'update:loading', 'clean-elements', 'enter', 'shown', 'hide'],
   data: function() {
     return { filter: '' }
   },

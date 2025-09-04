@@ -49,6 +49,7 @@ export default [
   {
     "rules": {
       "vue/require-name-property": "error",
+      "vue/require-explicit-emits": "error",
     }
   },
   skipFormatting,
