@@ -47,6 +47,9 @@ const ProcessStore = {
     },
     setSuspended: function (state, params) {
       params.process.suspended = params.suspended
+    },
+    removeProcessByKeyTenant(state, { key, tenantId }) {
+      state.list = state.list.filter(p => !(p.key === key && p.tenantId === tenantId))
     }
   },
   actions: {
@@ -87,6 +90,9 @@ const ProcessStore = {
     },
     setSuspended: function (ctx, params) {
       ctx.commit('setSuspended', { process: params.process, suspended: params.suspended })
+    },
+    removeProcessByKeyTenant({ commit }, { key, tenantId }) {
+      commit('removeProcessByKeyTenant', { key, tenantId })
     }
   }
 }
