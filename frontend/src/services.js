@@ -330,7 +330,7 @@ var HistoryService = {
     if (maxResults != null) params.maxResults = maxResults
     return axios.post(getServicesBasePath() + '/process-history/instance', filters, { params })
   },
-  findProcessesInstancesHistoryById: function(id, activityId, firstResult, maxResults, filter = {}, active, sortingCriteria = [], fetchIncidents = false) {
+  findProcessesInstancesHistoryById: function(id, firstResult, maxResults, filter = {}, active, sortingCriteria = [], fetchIncidents = false) {
     const requestBody = {
       ...(filter || {}),
       processDefinitionId: id
@@ -339,16 +339,6 @@ var HistoryService = {
     // Add incident fetching if requested
     if (fetchIncidents) {
       requestBody.fetchIncidents = true
-    }
-
-    // Add activity filter
-    if (activityId) {
-      requestBody.activeActivityIdIn = [
-        ...(filter?.activityIdIn || []),
-        activityId,
-      ]
-      // remove duplicates
-      requestBody.activeActivityIdIn = [...new Set(requestBody.activeActivityIdIn)]
     }
 
     // Add text search with OR logic (business key LIKE or exact process instance ID)
@@ -370,6 +360,17 @@ var HistoryService = {
       } else {
         requestBody.finished = true
       }
+    }
+
+    if (requestBody.activityIdIn != undefined) {
+      if (requestBody.orQueries === undefined) {
+        requestBody.orQueries = []
+      }
+      requestBody.orQueries.push({
+        activityIdIn: requestBody.activityIdIn,
+        executedActivityIdIn: requestBody.activityIdIn
+      })
+      delete requestBody.activityIdIn
     }
 
     // Add sorting criteria
