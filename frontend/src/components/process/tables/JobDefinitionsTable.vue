@@ -78,7 +78,7 @@ import { mapActions, mapGetters } from 'vuex'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 
 export default {
-  name: 'JobsDefinitionsTable',
+  name: 'JobDefinitionsTable',
   components: { FlowTable, CopyableActionButton, JobDefinitionStateModal, JobDefinitionPriorityModal, SuccessAlert, BWaitingBox },
   mixins: [copyToClipboardMixin],
   props: {
