@@ -30,6 +30,7 @@
 export default {
   name: 'SecureInput',
   props: { modelValue: String, placeholder: String, required: Boolean, disabled: Boolean, autocomplete: String },
+  emits: ['update:modelValue'],
   data: function() {
     return { show: false }
   }

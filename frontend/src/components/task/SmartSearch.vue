@@ -45,6 +45,7 @@
 export default {
   name: 'SmartSearch',
   props: { options: Array, maxlength: Number },
+  emits: ['open-advanced-search', 'search-filter'],
   computed: { id: function() { return 'smart-search' + Date.now() } }, // https://dev.to/rahmanfadhil/how-to-generate-unique-id-in-javascript-1b13
   data: function() { return { filter: '' } },
   methods: {

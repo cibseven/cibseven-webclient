@@ -56,6 +56,7 @@ export default {
   name: 'ProcessAdvanced',
   mixins: [permissionsMixin, processesMixin],
   props: { process: Object },
+  emits: ['favorite', 'start-process'],
   computed: {
     viewStyles: function() {
       return {

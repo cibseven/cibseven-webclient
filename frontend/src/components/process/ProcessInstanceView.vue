@@ -139,6 +139,7 @@ export default {
     activityInstance: Object,
     activityInstanceHistory: Object
   },
+  emits: ['task-selected'],
   data: function() {
     return {
       filterHeight: 0,
