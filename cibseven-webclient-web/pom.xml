@@ -74,34 +74,6 @@
 				</executions>
 			</plugin>
 
-			<!-- Clean webapp folder before copying new frontend resources -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-clean-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>clean-webapp-folder</id>
-						<phase>validate</phase>
-						<goals>
-							<goal>clean</goal>
-						</goals>
-						<configuration>
-							<filesets>
-								<fileset>
-									<directory>${project.basedir}/src/main/webapp</directory>
-									<includes>
-										<include>**/*</include>
-									</includes>
-									<excludes>
-										<exclude>README.md</exclude>
-									</excludes>
-								</fileset>
-							</filesets>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
 			<!-- Index.html contain projectVersion variable which needs to be
 			replace by the current version of the project -->
 			<plugin>
