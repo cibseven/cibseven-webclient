@@ -184,6 +184,19 @@
 			"suspend": "Do you really want to suspend the next process definition with all running process instances?",
 			"activate": "Do you really want to activate the next process definition with all running process instances?"
 		},
+		"activityIdBadge": {
+			"remove": "Remove criteria - to list all process instances",
+			"title": {
+				"executed": "{activityId} (executed only)",
+				"active": "{activityId} (active only)",
+				"all": "{activityId}"
+			},
+			"tooltip": {
+				"executed": "List instances that executed {activityId} activity",
+				"active": "List instances that still active with {activityId} activity",
+				"all": "List instances that executed {activityId} activity or still active with {activityId} activity"
+			}
+		},
 		"true": "True",
 		"false": "False",				
 		"jobDefinitions": "Job definitions",
