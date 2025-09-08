@@ -26,9 +26,9 @@ export default {
 	data: function () {
 		return {
 			loading: true,
-      filter: {
-        deserializeValue: false,
-      },
+			filter: {
+				deserializeValues: false,
+			},
 			variables: [],
 			file: null,
 			selectedVariable: null
@@ -38,9 +38,9 @@ export default {
 		'selectedInstance.id': {
 			immediate: true,
 			handler: function () {
-        this.filter = {
-          deserializeValue: false,
-        }
+				this.filter = {
+					deserializeValues: false,
+				}
 				this.variables = []
 				this.filteredVariables = []
 				this.file = null
@@ -68,20 +68,22 @@ export default {
 				return res
 			}
 		},
-    restFilter: function () {
-      let result = {
-        ...this.filter,
-        deserializeValue: false,
-      }
-      // https://docs.cibseven.org/rest/cibseven/2.0/#tag/Variable-Instance/operation/getVariableInstances
-      if (result.activityInstanceIdIn) {
-        result.activityInstanceIdIn = result.activityInstanceIdIn.join(',')
-      }
-      if (result.variableValues) {
-        result.variableValues = result.variableValues.map((v) => `${v.name}_${v.operator}_${v.value}`).join(',')
-      }
-      return result
-    }
+		restFilter: function () {
+			let result = {
+				...this.filter,
+				deserializeValues: false,
+				sortBy: 'variableName',
+				sortOrder: 'asc'
+			}
+			// https://docs.cibseven.org/rest/cibseven/2.0/#tag/Variable-Instance/operation/getVariableInstances
+			if (result.activityInstanceIdIn) {
+				result.activityInstanceIdIn = result.activityInstanceIdIn.join(',')
+			}
+			if (result.variableValues) {
+				result.variableValues = result.variableValues.map((v) => `${v.name}_${v.operator}_${v.value}`).join(',')
+			}
+			return result
+		}
 	},
 	methods: {
 		loadSelectedInstanceVariables: function () {
@@ -97,25 +99,7 @@ export default {
 		},
 		fetchInstanceVariables: async function (service, method) {
 			this.loading = true
-			const variablesToSerialize = []
 			let variables = await serviceMap[service][method](this.selectedInstance.id, this.restFilter)
-			variables.forEach(variable => {
-				try {
-					variable.value = variable.type === 'Object' ? JSON.parse(variable.value) : variable.value
-				} catch {
-					variablesToSerialize.push(variable.id)
-				}
-				variable.modify = false
-			})
-			if (variablesToSerialize.length > 0) {
-				const dVariables = await serviceMap[service][method](this.selectedInstance.id, this.restFilter)
-				dVariables.forEach(dVariable => {
-					const variableToSerialize = variables.find(variable => variable.id === dVariable.id)
-					if (variableToSerialize) {
-						variableToSerialize.value = dVariable.value
-					}
-				})
-			}
 			variables.forEach(v => {
 				v.scope = this.activityInstancesGrouped[v.activityInstanceId]
 			})
@@ -124,16 +108,35 @@ export default {
 			this.filteredVariables = [...variables]
 			this.loading = false
 		},
+		isFileValueDataSource: function(item) {
+      if (item.type === 'Object') {
+        const objectTypeName =
+          (item.value && item.value.objectTypeName) ||
+          (item.valueInfo && item.valueInfo.objectTypeName)
+        if (objectTypeName && this.fileObjects.includes(objectTypeName)) return true
+      }
+      return false
+    },
+		getFileVariableName: function(item) {
+			if (item.value && typeof item.value === 'object' && item.value.name) {
+				return item.value.name
+			}
+			if (item.value && typeof item.value === 'string') {
+				try {
+					const parsed = JSON.parse(item.value)
+					if (parsed && parsed.name) return parsed.name
+				} catch { return '' }
+			}
+			return ''
+		},
 		downloadFile: function(variable) {
-			if (variable.type === 'Object') {
-				if (variable.value.objectTypeName.includes('FileValueDataFlowSource')) {
-					TaskService.downloadFile(variable.processInstanceId, variable.name).then(data => {
-						this.$refs.importPopper.triggerDownload(data, variable.value.name)
-					})
-				} else {
-					var blob = new Blob([Uint8Array.from(atob(variable.value.data), c => c.charCodeAt(0))], { type: variable.value.contentType })
-					this.$refs.importPopper.triggerDownload(blob, variable.value.name)
-				}
+			if (this.isFileValueDataSource(variable)) {
+				TaskService.downloadFile(variable.processInstanceId, variable.name).then(data => {
+					this.$refs.importPopper.triggerDownload(data, this.getFileVariableName(variable))
+				})
+			} else if (variable.type === 'Object') {
+				var blob = new Blob([Uint8Array.from(atob(variable.value.data), c => c.charCodeAt(0))], { type: variable.value.contentType })
+				this.$refs.importPopper.triggerDownload(blob, this.getFileVariableName(variable))
 			} else {
 				var download = this.selectedInstance.state === 'ACTIVE' ?
 					ProcessService.fetchVariableDataByExecutionId(variable.executionId, variable.name) :
@@ -171,8 +174,9 @@ export default {
 				reader.readAsDataURL(this.file)
 			} else {
 				var formData = new FormData()
-				formData.append('file', this.file)
-				var fileObj = { name: this.file.name, type: this.file.type }
+				formData.append('data', this.file)
+				formData.append('valueType', 'File')
+				const fileObj = { name: this.file.name, type: this.file.type }
 				ProcessService.modifyVariableDataByExecutionId(this.selectedVariable.executionId, this.selectedVariable.name, formData)
 					.then(() => {
 						this.selectedVariable.valueInfo.filename = fileObj.name
@@ -190,12 +194,12 @@ export default {
 				})
 			} else variable.modify = true
 		},
-    changeFilter: function(queryObject) {
-      this.filter = {
-        ...queryObject,
-        deserializeValue: false
-      }
-      this.loadSelectedInstanceVariables()
-    }
+		changeFilter: function(queryObject) {
+			this.filter = {
+				...queryObject,
+				deserializeValues: false
+			}
+			this.loadSelectedInstanceVariables()
+		}
 	}
 }

@@ -59,6 +59,7 @@
 export default {
   name: 'MultisortModal',
   props: { prefix: String, sortKeys: Array },
+  emits: ['apply-sorting'],
   data: function() {
     return {
       selectedIndex: null,

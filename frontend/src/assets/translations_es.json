@@ -7,6 +7,11 @@
 		"loadMore": {
 			"title": "Cargar más",
 			"tooltip": "Haga clic para cargar los siguientes {chunkSize} registros"
+		},
+		"actualisation": {
+			"progress": "Actualizando datos...",
+			"disabled": "Última actualización: {date}\n\nLas actualizaciones automáticas están desactivadas.\nPresiona F5 para recargar los datos.",
+			"enabled": "Última actualización: {date}\n\nLas actualizaciones automáticas están activadas.\nRecargando cada {seconds} segundos."
 		}
 	},
 	"login": {
@@ -242,6 +247,7 @@
 			"name": "Nombre",
 			"type": "Tipo",
 			"value": "Valor",
+			"valueSerialized": "Valor serializado",
 			"actions": "Acciones",
 			"scope": "Ámbito",
 			"objectTypeName": "Nombre del tipo de objeto",
@@ -250,6 +256,12 @@
 			"enterValue": "Introducir valor"
 		},
 		"incidents": {
+			"state": "Estado",
+			"processInstance": "Instancia de proceso",
+			"deleted": "Eliminado",
+			"resolved": "Resuelto",
+			"open": "Abierto",
+			"unknown": "Desconocido",
 			"message": "Mensaje",
 			"timestamp": "Timestamp",
 			"activity": "Actividad",
@@ -269,7 +281,9 @@
 			"retry": "Reintentar",
 			"editAnnotation": "Editar anotación",
 			"causeIncidentProcessInstanceId": "ID de instancia del proceso causante",
-			"rootCauseIncidentProcessInstanceId": "ID de instancia del proceso causa raíz"
+			"rootCauseIncidentProcessInstanceId": "ID de instancia del proceso causa raíz",
+			"createTime": "Fecha de creación",
+			"endTime": "Fecha de finalización"
 		},
 		"jobDefinitions": {
 			"state": "Estado",
@@ -362,6 +376,11 @@
 			"noExternalTasks": "No se encontraron tareas externas"
 		}
 	},
+	"dmn-viewer": {
+		"zoomIn": "Acercarse",
+		"zoomOut": "Alejarse",
+		"resetZoom": "Restablecer zoom"
+	},
 	"bpmn-viewer": {
 		"zoomIn": "Acercarse",
 		"zoomOut": "Alejarse",
@@ -373,8 +392,10 @@
 			"selectedTask": "@:task.selectedTask",
 			"runningInstances": "Instancias de actividad en ejecución",
 			"openIncidents": "Incidentes abiertos",
+			"closedIncidents": "Incidentes cerrados",
 			"suspendedJobDefinition": "Definición de trabajo suspendida",
 			"activitiesHistory": "Instancias de actividad ejecutadas",
+			"canceledInstances": "Instancias de actividad canceladas",
 			"openSubprocess": "Mostrar la definición del proceso llamado",
 			"disabledSubprocess": "La definición del proceso se resolverá en tiempo de ejecución"
 		}
@@ -414,7 +435,8 @@
 			"title": "Acciones de la tarea",
 			"submit": "Cerrar",
 			"save": "Guardar",
-			"saveError": "Se produjo un error al guardar la tarea: {0}"
+			"saveError": "Se produjo un error al guardar la tarea: {0}",
+			"initError": "Se produjo un error al inicializar el formulario: {0}"
 		},
 		"emptyTask": "Tarea vacía",
 		"showMore": "Mostrar más...",
@@ -908,6 +930,12 @@
 				"title": "Procesos",
 				"tooltip": "Explora las definiciones de procesos disponibles"
 			},
+			"process-definition": {
+				"title": "Definición de Proceso"
+			},
+			"process-instance": {
+				"title": "Instancia de Proceso"
+			},
 			"decisions": {
 				"title": "Decisiones",
 				"tooltip": "Explora las definiciones de decisiones disponibles"
@@ -961,6 +989,7 @@
 		"taskSelectedNotExist": "Esta tarea ya no está disponible por lo que desaparecerá del area de trabajo",
 		"ExistingUserRequestException": "El usuario ya existe",
 		"ExistingGroupRequestException": "El grupo ya existe",
+		"VariableModificationException": "La variable no pudo ser modificada exitosamente. Por favor, actualice la página e inténtelo de nuevo.",
 		"processNotFound": "Proceso con clave \"{0}\" no encontrado",
 		"filterSaveError": "Ocurrió un error al intentar guardar el filtro, verifique los datos ingresados.",
 		"passwordDoNotMatch": "Las contraseñas no coinciden",
@@ -1050,6 +1079,8 @@
 		"selectAll": "Seleccionar todo",
 		"deleteDeployments": "Eliminar despliegues",
 		"showModel": "Mostrar modelo",
+		"delete": "Borrar despliegue",
+		"showDeployment": "Cargar despliegue en lista",
 		"deploymentsDeleted": "{0} de {1} despliegues se han eliminado correctamente",
 		"tenant": "Tenant",
 		"errorLoading": "No se puede cargar el recurso para la implementación seleccionada"
@@ -1202,6 +1233,7 @@
 	"decision": {
 		"id": "ID",
 		"name": "Nombre",
+		"tenantId": "ID del tenant",
 		"actions": "Acciones",
 		"emptyProcessList": "Tu lista de decisiones está actualmente vacía.",
 		"emptyProcessListFiltered": "No hay decisiones que coincidan con el filtro aplicado.",

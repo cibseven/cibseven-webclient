@@ -15,10 +15,13 @@
  *  limitations under the License.
  */
 
-import { ProcessService } from '@/services.js'
+import { ProcessService, HistoryService } from '@/services.js'
 
 const ProcessStore = {
-  state: { list: [] },
+  state: { list: [], historicActivityStatistics: {} },
+  getters: {
+    getHistoricActivityStatistics: (state) => (key) => state.historicActivityStatistics[key] || []
+  },
   mutations: {
     setProcesses: function (state, param) {
       state.list = param.processes
@@ -29,8 +32,24 @@ const ProcessStore = {
     setStatistics: function (state, params) {
       params.process.statistics = params.statistics
     },
+    setHistoricActivityStatistics: function (state, { key, data }) {
+      state.historicActivityStatistics = {
+        ...state.historicActivityStatistics,
+        [key]: data
+      }
+    },
+    clearHistoricActivityStatistics: function (state, key) {
+      if (key) {
+        delete state.historicActivityStatistics[key]
+      } else {
+        state.historicActivityStatistics = {}
+      }
+    },
     setSuspended: function (state, params) {
       params.process.suspended = params.suspended
+    },
+    removeProcessByKeyTenant(state, { key, tenantId }) {
+      state.list = state.list.filter(p => !(p.key === key && p.tenantId === tenantId))
     }
   },
   actions: {
@@ -61,8 +80,19 @@ const ProcessStore = {
     setStatistics: function(ctx, params) {
       ctx.commit('setStatistics', { process: params.process, statistics: params.statistics })
     },
+    clearHistoricActivityStatistics: function({ commit }, key) {
+      commit('clearHistoricActivityStatistics', key)
+    },
+    async loadHistoricActivityStatistics({ commit }, { processDefinitionId, params }) {
+      const finalParams = { canceled: true, completedScoped: true, finished: true, incidents: true, ...params }
+      const historyActivityStatistics = await HistoryService.findHistoryActivityStatistics(processDefinitionId, finalParams)      
+      commit('setHistoricActivityStatistics', { key: processDefinitionId, data: historyActivityStatistics })
+    },
     setSuspended: function (ctx, params) {
       ctx.commit('setSuspended', { process: params.process, suspended: params.suspended })
+    },
+    removeProcessByKeyTenant({ commit }, { key, tenantId }) {
+      commit('removeProcessByKeyTenant', { key, tenantId })
     }
   }
 }

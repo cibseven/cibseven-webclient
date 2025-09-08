@@ -90,8 +90,8 @@
       ...mapGetters(['tenants']),
       tenantFields: function() {
         return [
-          { label: 'id', key: 'id', class: 'col-5', tdClass: 'border-end py-1' },
-          { label: 'name', key: 'name', class: 'col-5', tdClass: 'border-end py-1' },
+          { label: 'id', key: 'id', class: 'col-5', tdClass: 'py-1' },
+          { label: 'name', key: 'name', class: 'col-5', tdClass: 'py-1' },
           { label: 'actions', key: 'actions', class: 'col-2 text-center', sortable: false, thClass: 'justify-content-center', tdClass: 'justify-content-center py-0' }
         ]
       },

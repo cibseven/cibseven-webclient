@@ -7,6 +7,11 @@
 		"loadMore": {
 			"title": "Mehr laden",
 			"tooltip": "Klicken Sie, um die nächsten {chunkSize} Einträge zu laden"
+		},
+		"actualisation": {
+			"progress": "Daten werden aktualisiert...",
+			"disabled": "Letztes Update: {date}\n\nAutomatische Updates sind deaktiviert.\nDrücken Sie F5, um die Daten neu zu laden.",
+			"enabled": "Letztes Update: {date}\n\nAutomatische Updates sind aktiviert.\nAktualisierung alle {seconds} Sekunden."
 		}
 	},
 	"login": {
@@ -242,6 +247,7 @@
 			"name": "Name",
 			"type": "Typ",
 			"value": "Wert",
+			"valueSerialized": "Serialisierter Wert",
 			"actions": "Aktionen",
 			"scope": "Umfang",
 			"objectTypeName": "Objekttypname",
@@ -250,6 +256,12 @@
 			"enterValue": "Wert eingeben"
 		},
 		"incidents": {
+			"state": "Status",
+			"processInstance": "Prozessinstanz",
+			"deleted": "Gelöscht",
+			"resolved": "Gelöst",
+			"open": "Offen",
+			"unknown": "Unbekannt",
 			"message": "Nachricht",
 			"timestamp": "Zeitstempel",
 			"activity": "Aktivität",
@@ -269,7 +281,9 @@
 			"retry": "Wiederholen",
 			"editAnnotation": "Anmerkung bearbeiten",
 			"causeIncidentProcessInstanceId": "Ursächliche Prozessinstanz-ID",
-			"rootCauseIncidentProcessInstanceId": "Ursächliche Hauptprozessinstanz-ID"
+			"rootCauseIncidentProcessInstanceId": "Ursächliche Hauptprozessinstanz-ID",
+			"createTime": "Erstellungsdatum",
+			"endTime": "Enddatum"
 		},
 		"jobDefinitions": {
 			"state": "Status",
@@ -362,6 +376,11 @@
 			"noExternalTasks": "Keine externen Aufgaben gefunden"
 		}
 	},
+	"dmn-viewer": {
+		"zoomIn": "Heranzoomen",
+		"zoomOut": "Herauszoomen",
+		"resetZoom": "Zoom zurücksetzen"
+	},
 	"bpmn-viewer": {
 		"zoomIn": "Heranzoomen",
 		"zoomOut": "Herauszoomen",
@@ -373,8 +392,10 @@
 			"selectedTask": "@:task.selectedTask",
 			"runningInstances": "Laufende Aktivitätsinstanzen",
 			"openIncidents": "Offene Vorfälle",
+			"closedIncidents": "Geschlossene Vorfälle",
 			"suspendedJobDefinition": "Ausgesetzte Jobdefinition",
 			"activitiesHistory": "Ausgeführte Aktivitätsinstanzen",
+			"canceledInstances": "Abgebrochene Aktivitätsinstanzen",
 			"openSubprocess": "Aufgerufene Prozessdefinition anzeigen",
 			"disabledSubprocess": "Die Prozessdefinition wird zur Laufzeit ermittelt"
 		}
@@ -414,7 +435,8 @@
 			"title": "Aktionen zur Aufgabe",
 			"submit": "Abschließen",
 			"save": "Speichern",
-			"saveError": "Beim Speichern der Aufgabe ist ein Fehler aufgetreten: {0}"
+			"saveError": "Beim Speichern der Aufgabe ist ein Fehler aufgetreten: {0}",
+			"initError": "Beim Initialisieren des Formulars ist ein Fehler aufgetreten: {0}"
 		},
 		"emptyTask": "Leere Aufgabe",
 		"showMore": "Mehr anzeigen...",
@@ -908,6 +930,12 @@
 				"title": "Prozesse",
 				"tooltip": "Verfügbare Prozessdefinitionen durchsuchen"
 			},
+			"process-definition": {
+				"title": "Prozessdefinition"
+			},
+			"process-instance": {
+				"title": "Prozessinstanz"
+			},
 			"decisions": {
 				"title": "Entscheidungen",
 				"tooltip": "Verfügbare Entscheidungsdefinitionen durchsuchen"
@@ -961,6 +989,7 @@
 		"taskSelectedNotExist": "Diese Aufgabe ist nicht mehr verfügbar und wird daher aus dem Arbeitsbereich verschwinden",
 		"ExistingUserRequestException": "Der Benutzer existiert bereits",
 		"ExistingGroupRequestException": "Die Gruppe existiert bereits",
+		"VariableModificationException": "Die Variable konnte nicht erfolgreich geändert werden. Bitte aktualisieren Sie die Seite und versuchen Sie es erneut.",
 		"processNotFound": "Prozess mit Schlüssel \"{0}\" nicht gefunden",
 		"filterSaveError": "Beim Speichern des Filters ist ein Fehler aufgetreten, bitte überprüfen Sie die eingegebenen Daten.",
 		"passwordDoNotMatch": "Passwörter stimmen nicht überein",
@@ -1050,6 +1079,8 @@
 		"selectAll": "Alle auswählen",
 		"deleteDeployments": "Deployments löschen",
 		"showModel": "Modell anzeigen",
+		"delete": "Deployment löschen",
+		"showDeployment": "Deployment in Liste laden",
 		"deploymentsDeleted": "{0} von {1} Deployments wurden erfolgreich gelöscht",
 		"tenant": "Mandant",
 		"errorLoading": "Ressource für die ausgewählte Bereitstellung konnte nicht geladen werden"
@@ -1202,6 +1233,7 @@
 	"decision" : {
 		"id": "ID",
 		"name": "Name",
+		"tenantId": "Mandanten-ID",
 		"actions": "Aktionen",
 		"emptyProcessList": "Ihre Entscheidungsliste ist derzeit leer.",
 		"emptyProcessListFiltered": "Es gibt keinen Entscheidung für den angewandten Filter.",

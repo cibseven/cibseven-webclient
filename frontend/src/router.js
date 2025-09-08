@@ -158,7 +158,9 @@ const appRoutes = [
           ]
         },
         { path: 'deployments/:deploymentId?', name: 'deployments', beforeEnter: permissionsGuard('cockpit'),
-          component: DeploymentsView
+          component: DeploymentsView, props: route => ({
+            deploymentId: route.params.deploymentId
+          })
         },
         { path: 'human-tasks', name: 'human-tasks', beforeEnter: permissionsGuard('cockpit'), component: HumanTasksView },
         // users management
@@ -250,8 +252,7 @@ function authGuard(strict) {
         console && console.info('auth successful', res.data)
         axios.defaults.headers.common.authorization = res.data.authToken
           AuthService.fetchAuths().then(permissions => {
-            res.data.permissions = permissions
-            router.root.user = res.data
+            router.root.user = { ...res.data, permissions }
             next()
           })
       })

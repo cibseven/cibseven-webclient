@@ -113,6 +113,7 @@ export default {
   name: 'FilterNavBar',
   components: { FilterModal, ConfirmDialog, BWaitingBox },
   mixins: [permissionsMixin],
+  emits: ['filter-alert', 'n-filters-shown', 'selected-filter', 'set-filter'],
   data: function () {
     return {
       filter: '',
@@ -123,11 +124,16 @@ export default {
       sortOrder: '',
       interval: null,
       taskpool: new TaskPool(5),
-      workingFilter: {}
+      workingFilter: {},
+      isSelectingFilter: false
     }
   },
   watch: {
     '$route.params.filterId': function(to) {
+      if (this.isSelectingFilter) {
+        this.isSelectingFilter = false
+        return
+      }
       if (this.$route.query.filtername) {
         this.setFilterByName()
       } else this.checkFilterIdInUrl(to)
@@ -172,9 +178,8 @@ export default {
         this.$store.commit('setFilters',
           { filters: this.filtersByPermissions(this.$root.config.permissions.displayFilter, response) })
         if (this.$root.config.taskFilter.tasksNumber.enabled) {
-          const interval = this.$root.config.taskFilter.tasksNumber.interval < MIN_TASKNUMBER_INTERVAL ?
-            MIN_TASKNUMBER_INTERVAL : this.$root.config.taskFilter.tasksNumber.interval
           this.setTasksNumber()
+          const interval = Math.max(this.$root.config.taskFilter.tasksNumber.interval, MIN_TASKNUMBER_INTERVAL)
           this.interval = setInterval(() => { this.setTasksNumber() }, interval)
         }
         if (this.$route.query.filtername) {
@@ -227,7 +232,10 @@ export default {
           localStorage.setItem('filter', JSON.stringify(this.$store.state.filter.selected))
           var filterId = this.$route.params.filterId === '*' ? '*' : this.$store.state.filter.selected.id
           var path = '/seven/auth/tasks/' + filterId + (taskId ? '/' + taskId : '')
-          if (this.$route.path !== path) this.$router.replace(path)
+          if (this.$route.path !== path) {
+            this.isSelectingFilter = true
+            this.$router.replace(path)
+          }
         }
       }
     },

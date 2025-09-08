@@ -17,23 +17,22 @@
 package org.cibseven.webapp.providers;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.io.IOUtils;
 import org.cibseven.webapp.NamedByteArrayDataSource;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.exception.UnexpectedTypeException;
+import org.cibseven.webapp.exception.UnsupportedTypeException;
 import org.cibseven.webapp.rest.model.ProcessStart;
 import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpEntity;
@@ -42,7 +41,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -73,7 +71,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 	}
 
 	@Override
-	public void modifyVariableDataByExecutionId(String executionId, String variableName, MultipartFile file, CIBUser user) throws SystemException {
+	public void modifyVariableDataByExecutionId(String executionId, String variableName, MultipartFile data, String valueType, CIBUser user) throws SystemException {
 		String url = getEngineRestUrl() + "/execution/" + executionId + "/localVariables/" + variableName + "/data";
 
 		HttpHeaders headers = new HttpHeaders();
@@ -82,14 +80,67 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		if (user != null) headers.add("Authorization", user.getAuthToken());
 		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
 		try {
-			body.add("data", file.getResource());
-			body.add("valueType", "File");
+      
+      if (valueType.equalsIgnoreCase("File") || valueType.equalsIgnoreCase("Bytes")) {
+        // Handle binary/file data
+        body.add("data", data.getResource());
+        body.add("valueType", valueType);
+      } else {
+        // Handle JSON/serialized data
+        String jsonContent = new String(data.getBytes());
+        HttpHeaders jsonHeaders = new HttpHeaders();
+        jsonHeaders.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> jsonEntity = new HttpEntity<>(jsonContent, jsonHeaders);
+        
+        body.add("data", jsonEntity);
+        body.add("type", valueType);
+        body.add("valueType", SERIALIZATION_DATA_FORMAT_JSON);
+      }
+      
 			HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(body, headers);
+			RestTemplate rest = new RestTemplate();
 
-			customRestTemplate.exchange(builder.build().toUri(), HttpMethod.POST, request, String.class);
+			rest.exchange(builder.build().toUri(), HttpMethod.POST, request, String.class);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
+		} catch (IOException e) { // from data.getBytes()
+      throw new UnsupportedTypeException(e);
+    }
+	}
+
+	private void mergeVariablesValues(
+		Collection<Variable> variablesDeserialized,
+		Collection<Variable> variablesSerialized,
+		boolean deserializeValues) {
+
+		if (variablesDeserialized == null) {
+			return;
 		}
+
+		if (variablesSerialized == null) {
+			return;
+		}
+
+		Collection<Variable> variables = (deserializeValues) ? variablesDeserialized : variablesSerialized;
+		variables.forEach(variable -> {
+			String name = variable.getName();
+
+			Variable variableSerialized = (!deserializeValues) ? variable : variablesSerialized.stream()
+				.filter(v -> v.getName().equals(name))
+				.findFirst()
+				.orElse(null);
+			if (variableSerialized != null) {
+				variable.setValueSerialized(variableSerialized.getValue());
+			}
+
+			Variable variableDeserialized = (deserializeValues) ? variable : variablesDeserialized.stream()
+				.filter(v -> v.getName().equals(name))
+				.findFirst()
+				.orElse(null);
+			if (variableDeserialized != null) {
+				variable.setValueDeserialized(variableDeserialized.getValue());
+			}
+		});
 	}
 
 	@Override
@@ -108,8 +159,31 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		}
 		uriBuilder.queryParam("processInstanceIdIn", processInstanceId);
 
-		String url = uriBuilder.build().toUriString();
-		return Arrays.asList(((ResponseEntity<VariableHistory[]>) doGet(url, VariableHistory[].class, user, false)).getBody());
+		final boolean deserializeValues = data != null
+			&& data.containsKey("deserializeValues")
+			&& (Boolean) data.get("deserializeValues");
+
+		uriBuilder.replaceQueryParam("deserializeValues", "true");
+		String urlDeserialized = uriBuilder.build().toUriString();
+		Collection<Variable> variablesDeserialized = Arrays.asList(((ResponseEntity<VariableHistory[]>) doGet(urlDeserialized, VariableHistory[].class, user, false)).getBody());
+		if (variablesDeserialized == null) {
+			return Collections.emptyList();
+		}
+
+		uriBuilder.replaceQueryParam("deserializeValues", "false");
+		String urlSerialized = uriBuilder.build().toUriString();
+		Collection<Variable> variablesSerialized = Arrays.asList(((ResponseEntity<VariableHistory[]>) doGet(urlSerialized, VariableHistory[].class, user, false)).getBody());
+		if (variablesSerialized == null) {
+			return Collections.emptyList();
+		}
+
+		mergeVariablesValues(
+			variablesDeserialized,
+			variablesSerialized,
+			deserializeValues);
+
+		Collection<Variable> variables = (deserializeValues) ? variablesDeserialized : variablesSerialized;
+		return variables;
 	}
 
 	@Override
@@ -140,8 +214,42 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		}
 		uriBuilder.queryParam("processInstanceIdIn", processInstanceId);
 
-		String url = uriBuilder.build().toUriString();
-		return Arrays.asList(((ResponseEntity<VariableHistory[]>) doGet(url, VariableHistory[].class, user, false)).getBody());
+		final boolean deserializeValues = data != null
+			&& data.containsKey("deserializeValues")
+			&& (Boolean) data.get("deserializeValues");
+
+		uriBuilder.replaceQueryParam("deserializeValues", "true");
+		String urlDeserialized = uriBuilder.build().toUriString();
+		Collection<VariableHistory> variablesDeserialized = Arrays.asList(((ResponseEntity<VariableHistory[]>) doGet(urlDeserialized, VariableHistory[].class, user, false)).getBody());
+		if (variablesDeserialized == null) {
+			return Collections.emptyList();
+		}
+
+		uriBuilder.replaceQueryParam("deserializeValues", "false");
+		String urlSerialized = uriBuilder.build().toUriString();
+		Collection<VariableHistory> variablesSerialized = Arrays.asList(((ResponseEntity<VariableHistory[]>) doGet(urlSerialized, VariableHistory[].class, user, false)).getBody());
+		if (variablesSerialized == null) {
+			return Collections.emptyList();
+		}
+
+		// Get list of variables and merge them
+		final ArrayList<Variable> variablesDeserializedTyped = new ArrayList<>();
+		if (variablesDeserialized.size() > 0) {
+			variablesDeserializedTyped.addAll(variablesDeserialized);
+		}
+
+		final ArrayList<Variable> variablesSerializedTyped = new ArrayList<>();
+		if (variablesSerialized.size() > 0) {
+			variablesSerializedTyped.addAll(variablesSerialized);
+		}
+
+		mergeVariablesValues(
+			variablesDeserializedTyped,
+			variablesSerializedTyped,
+			deserializeValues);
+
+		Collection<VariableHistory> variables = (deserializeValues) ? variablesDeserialized : variablesSerialized;
+		return variables;
 	}
 
 	@Override
@@ -168,12 +276,29 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		}
 	}
 
+	public Variable fetchVariableImpl(String taskId, String variableName, 
+			boolean deserializeValue, CIBUser user) throws NoObjectFoundException, SystemException {		
+		String url = getEngineRestUrl() + "/task/" + taskId + "/variables/" + variableName
+			+ "?deserializeValue=" + deserializeValue;
+		return doGet(url, Variable.class, user, false).getBody();
+	}
+
 	@Override
 	public Variable fetchVariable(String taskId, String variableName, 
-			Optional<Boolean> deserializeValue, CIBUser user) throws NoObjectFoundException, SystemException {		
-		String url = getEngineRestUrl() + "/task/" + taskId + "/variables/" + variableName;
-		url += deserializeValue.isPresent() ? "?deserializeValue=" + deserializeValue.get() : "";
-		return doGet(url, Variable.class, user, false).getBody();
+			boolean deserializeValue, CIBUser user) throws NoObjectFoundException, SystemException {		
+		Variable variableSerialized = fetchVariableImpl(taskId, variableName, false, user);
+		Variable variableDeserialized = fetchVariableImpl(taskId, variableName, true, user);
+
+		if (deserializeValue) {
+			variableDeserialized.setValueSerialized(variableSerialized.getValue());
+			variableDeserialized.setValueDeserialized(variableDeserialized.getValue());
+			return variableDeserialized;
+		}
+		else {
+			variableSerialized.setValueSerialized(variableSerialized.getValue());
+			variableSerialized.setValueDeserialized(variableDeserialized.getValue());
+			return variableSerialized;
+		}
 	}
 
 	@Override
@@ -214,8 +339,8 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		    byte[] data = null;
 		    String filename = null;
 		    String mimeType = null;
-
-		    Variable variable = fetchVariable(taskId, variableName, Optional.of(true), user);
+		    
+		    Variable variable = fetchVariable(taskId, variableName, true, user);
 			String objectType = variable.getValueInfo().get("objectTypeName");
 			if (objectType != null) {
 				try {
@@ -245,6 +370,37 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 			throw wrapException(e, user);
 		} catch (IOException e) {
 			throw new SystemException(e);
+		}
+	}
+
+	/**
+	 * Uploads file data for a specific variable of a task.
+	 *
+	 * @param taskId the ID of the task to which the variable belongs
+	 * @param variableName the name of the variable to upload data for
+	 * @param data the file data to upload
+	 * @param valueType the type of the variable value
+	 * @param user the user performing the upload operation
+	 * @throws NoObjectFoundException if the task or variable is not found
+	 * @throws SystemException if an internal error occurs during upload
+	 */
+	@Override
+	public void uploadVariableFileData(String taskId, String variableName, MultipartFile data, String valueType, CIBUser user) throws NoObjectFoundException, SystemException {
+		String url = getEngineRestUrl() + "/task/" + taskId + "/variables/" + variableName + "/data";
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+		if (user != null) headers.add("Authorization", user.getAuthToken());
+		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+		try {
+			body.add("data", data.getResource());
+			body.add("valueType", valueType);
+			HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(body, headers);
+
+			customRestTemplate.exchange(builder.build().toUri(), HttpMethod.POST, request, String.class);
+		} catch (HttpStatusCodeException e) {
+			throw wrapException(e, user);
 		}
 	}
 
@@ -281,6 +437,37 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 			throw wrapException(e, user);
 		} catch (IOException e) {
 			throw new SystemException(e);
+		}
+	}
+
+    /**
+     * Uploads file data for a variable of a specific process instance.
+     *
+     * @param processInstanceId the ID of the process instance
+     * @param variableName the name of the variable to which the file data will be uploaded
+     * @param data the file data to upload
+     * @param valueType the type of the value being uploaded
+     * @param user the user performing the upload operation
+     * @throws NoObjectFoundException if the process instance or variable is not found
+     * @throws SystemException if a system error occurs during the upload
+     */
+    @Override
+    public void uploadProcessInstanceVariableFileData(String processInstanceId, String variableName, MultipartFile data, String valueType, CIBUser user) throws NoObjectFoundException, SystemException {
+        String url = getEngineRestUrl() + "/process-instance/" + processInstanceId + "/variables/" + variableName + "/data";
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+		if (user != null) headers.add("Authorization", user.getAuthToken());
+		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+		try {
+			body.add("data", data.getResource());
+			body.add("valueType", valueType);
+			HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(body, headers);
+
+			customRestTemplate.exchange(builder.build().toUri(), HttpMethod.POST, request, String.class);
+		} catch (HttpStatusCodeException e) {
+			throw wrapException(e, user);
 		}
 	}
 
@@ -324,6 +511,11 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 						throw se;
 					}
 				}
+		
+				if (variable.getType().equals("File")) {
+					variablePost.set("valueInfo", mapper.valueToTree(variable.getValueInfo()));
+					variablePost.put("type", "File");
+				}
 
 				variables.set(variable.getName(), variablePost);
 			}
@@ -337,10 +529,19 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		}
 	}
 
+	private Variable fetchVariableByProcessInstanceIdImpl(String processInstanceId, String variableName, boolean deserializeValue, CIBUser user) throws SystemException {
+		String url = getEngineRestUrl() + "/process-instance/" + processInstanceId + "/variables/" + variableName + "?deserializeValue=" + deserializeValue;
+		return doGet(url, Variable.class, user, false).getBody();
+	}
+
 	@Override
 	public Variable fetchVariableByProcessInstanceId(String processInstanceId, String variableName, CIBUser user) throws SystemException {
-		String url = getEngineRestUrl() + "/process-instance/" + processInstanceId + "/variables/" + variableName + "?deserializeValue=true";
-		return doGet(url, Variable.class, user, false).getBody();
+		Variable variableSerialized = fetchVariableByProcessInstanceIdImpl(processInstanceId, variableName, false, user);
+		Variable variableDeserialized = fetchVariableByProcessInstanceIdImpl(processInstanceId, variableName, true, user);
+
+		variableDeserialized.setValueSerialized(variableSerialized.getValue());
+		variableDeserialized.setValueDeserialized(variableDeserialized.getValue());
+		return variableDeserialized;
 	}
 
 	// TODO: Split it

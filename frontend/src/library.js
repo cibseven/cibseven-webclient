@@ -23,6 +23,7 @@ import registerOwnComponents from './register.js'
 import processesVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
 import processesMixin from '@/components/process/mixins/processesMixin.js'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
+import tabUrlMixin from '@/components/process/mixins/tabUrlMixin.js'
 import store, { modules } from '@/store'
 import usersMixin from '@/mixins/usersMixin.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
@@ -82,6 +83,8 @@ import FilterNavBar from '@/components/task/filter/FilterNavBar.vue'
 import FilterNavCollapsed from '@/components/task/filter/FilterNavCollapsed.vue'
 import ProcessView from '@/components/process/ProcessView.vue'
 import AddVariableModal from '@/components/process/modals/AddVariableModal.vue'
+import AddVariableModalUI from '@/components/process/modals/AddVariableModalUI.vue'
+import EditVariableModal from '@/components/process/modals/EditVariableModal.vue'
 import DeleteVariableModal from '@/components/process/modals/DeleteVariableModal.vue'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
 import InstancesTable from '@/components/process/tables/InstancesTable.vue'
@@ -148,6 +151,25 @@ import GenericTabs from '@/components/common-components/GenericTabs.vue'
 import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
 import TranslationsDownload from '@/components/common-components/TranslationsDownload.vue'
 import StackTraceModal from '@/components/process/modals/StackTraceModal.vue'
+import RetryModal from '@/components/process/modals/RetryModal.vue'
+import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
+
+import JobLogModal from '@/components/batches/modals/JobLogModal.vue'
+import FailedJobs from '@/components/batches/tables/FailedJobs.vue'
+import LoginForm from '@/components/login/LoginForm.vue'
+import ProcessDefinitionDetails from '@/components/process/ProcessDefinitionDetails.vue'
+import ProcessInstanceTabs from '@/components/process/ProcessInstanceTabs.vue'
+import ProcessInstancesTabs from '@/components/process/ProcessInstancesTabs.vue'
+import AnnotationModal from '@/components/process/modals/AnnotationModal.vue'
+import JobDefinitionPriorityModal from '@/components/process/modals/JobDefinitionPriorityModal.vue'
+import JobDefinitionStateModal from '@/components/process/modals/JobDefinitionStateModal.vue'
+import CalledProcessDefinitionsTable from '@/components/process/tables/CalledProcessDefinitionsTable.vue'
+import CalledProcessInstancesTable from '@/components/process/tables/CalledProcessInstancesTable.vue'
+import JobDefinitionsTable from '@/components/process/tables/JobDefinitionsTable.vue'
+import JobsTable from '@/components/process/tables/JobsTable.vue'
+
+// mixins
+import assigneeMixin from '@/mixins/assigneeMixin.js'
 
 const registerComponents = function(app) {
   app.component('cib-seven', CibSeven)
@@ -193,6 +215,8 @@ const registerComponents = function(app) {
   app.component('filter-nav-collapsed', FilterNavCollapsed)
   app.component('process-view', ProcessView)
   app.component('add-variable-modal', AddVariableModal)
+  app.component('add-variable-modal-ui', AddVariableModalUI)
+  app.component('edit-variable-modal', EditVariableModal)
   app.component('delete-variable-modal', DeleteVariableModal)
   app.component('bpmn-viewer', BpmnViewer)
   app.component('instances-table', InstancesTable)
@@ -308,6 +332,8 @@ export {
   FilterNavCollapsed,
   ProcessView,
   AddVariableModal,
+  AddVariableModalUI,
+  EditVariableModal,
   DeleteVariableModal,
   BpmnViewer,
   InstancesTable,
@@ -380,6 +406,24 @@ export {
   translationSources,
   TranslationsDownload,
   StackTraceModal,
+  RetryModal,
+  JobLogModal,
+  FailedJobs,
+  LoginForm,
+  ProcessDefinitionDetails,
+  ProcessInstanceTabs,
+  ProcessInstancesTabs,
+  AnnotationModal,
+  JobDefinitionPriorityModal,
+  JobDefinitionStateModal,
+  CalledProcessDefinitionsTable,
+  CalledProcessInstancesTable,
+  JobDefinitionsTable,
+  JobsTable,
+
+  // mixins
+  assigneeMixin,
+
   // router
   appRoutes,
   createAppRouter,
@@ -399,6 +443,8 @@ export {
   fetchDecisionsIfEmpty,
   setupTaskNotifications,
   parseXMLDocumentation,
-  
-  initEmbeddedForm
+
+  initEmbeddedForm,
+  ScrollableTabsContainer,
+  tabUrlMixin
 }

@@ -24,6 +24,5 @@ import org.cibseven.webapp.auth.CIBUser;
 public interface TemplateTask {
 	
 	Template getTemplate(String taskId, Optional<String> locale, CIBUser user) throws Exception;
-	StartFormTemplate getStartFormTemplate(String processDefinitionId, Optional<String> processDefinitionKey, Optional<String> locale, CIBUser user) throws Exception;
 	
 }

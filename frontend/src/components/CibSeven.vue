@@ -180,10 +180,11 @@ export default {
               tooltip: 'start.cockpit.processes.tooltip',
               title: 'start.cockpit.processes.title'
             }, {
-              to: '/seven/auth/decisions',
-              active: ['seven/auth/decision'],
+              to: '/seven/auth/decisions/list',
+              active: ['seven/auth/decision', 'seven/auth/decisions/list'],
               tooltip: 'start.cockpit.decisions.tooltip',
-              title: 'start.cockpit.decisions.title'
+              title: 'start.cockpit.decisions.title',
+              activeExact: true
             }, {
               to: '/seven/auth/human-tasks',
               active: ['seven/auth/human-tasks'],
@@ -289,7 +290,20 @@ export default {
         }
         const item = group.items.find(i => this.isMenuItemActive(i))
         if (item) {
-          title = this.$t(item.title)
+          // exceptional case with 'Processes' menu item
+          if (this.$route.name === 'process') {
+            const hasInstanceIdParam = 'instanceId' in this.$route.params
+            if (hasInstanceIdParam) {
+              title = this.$t('start.cockpit.process-instance.title')
+            }
+            else {
+              title = this.$t('start.cockpit.process-definition.title')
+            }
+          }
+          // default
+          if (!title) {
+            title = this.$t(item.title)
+          }
           return true
         }
         return false

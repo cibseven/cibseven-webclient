@@ -74,33 +74,32 @@
       <component :is="BpmnViewerPlugin" v-if="BpmnViewerPlugin" ref="diagram" class="h-100"
         @child-activity="filterByChildActivity($event)" @task-selected="selectTask($event)" @activity-map-ready="activityMap = $event"
         :activityId="activityId" :activity-instance="activityInstance" :process-definition-id="process.id" :selected-instance="selectedInstance" :activity-instance-history="activityInstanceHistory" 
-        :statistics="process.statistics" :activities-history="process.activitiesHistory" :active-tab="activeTab" >
+        :statistics="process.statistics" :active-tab="activeTab" >
       </component>
       <BpmnViewer v-else ref="diagram" class="h-100"
         @child-activity="filterByChildActivity($event)" @task-selected="selectTask($event)" :activityId="activityId" 
         :activity-instance="activityInstance" :selected-instance="selectedInstance" :activity-instance-history="activityInstanceHistory" 
-        :statistics="process.statistics" :process-definition-id="process.id" :activities-history="process.activitiesHistory">
+        :statistics="process.statistics" :process-definition-id="process.id">
       </BpmnViewer>
-      <span role="button" size="sm" variant="light" class="bg-white px-2 py-1 me-1 position-absolute border rounded" style="bottom: 15px; left: 15px;" @click="toggleContent">
+      <span role="button" size="sm" variant="light" class="bg-white px-2 py-1 me-1 position-absolute border rounded" style="bottom: 90px; right: 11px;" @click="toggleContent">
         <span class="mdi mdi-18px" :class="toggleIcon"></span>
       </span>
     </div>
 
-    <div class="position-absolute w-100 bg-light border-bottom" style="z-index: 2; left: 0;" :style="'top: ' + (bottomContentPosition - tabsAreaHeight) + 'px; ' + toggleTransition">
+    <div class="position-absolute w-100 border-bottom" style="z-index: 2; left: 0;" :style="'height: '+ tabsAreaHeight +'px; top: ' + (bottomContentPosition - tabsAreaHeight) + 'px; ' + toggleTransition">
       <div class="d-flex align-items-end">
-        <div class="tabs-scroll-container flex-grow-1" style="white-space: nowrap;">
-          <ul class="nav nav-tabs m-0 border-0 flex-nowrap" style="display: inline-flex; overflow-y: hidden">
-            <component :is="ProcessInstanceTabsPlugin" v-if="ProcessInstanceTabsPlugin" v-model="activeTab"></component>
-            <ProcessInstanceTabs v-else v-model="activeTab"></ProcessInstanceTabs>
-          </ul>
-        </div>
+        <ScrollableTabsContainer :tabs-area-height="tabsAreaHeight" :active-tab="activeTab" :container-style="{ whiteSpace: 'nowrap' }">
+          <component :is="ProcessInstanceTabsPlugin" v-if="ProcessInstanceTabsPlugin" v-model="activeTab"></component>
+          <ProcessInstanceTabs v-else v-model="activeTab"></ProcessInstanceTabs>
+        </ScrollableTabsContainer>
       </div>
     </div>
 
     <div ref="rContent" class="position-absolute w-100 overflow-hidden" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
 
       <VariablesTable v-if="activeTab === 'variables'" :selected-instance="selectedInstance" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory"></VariablesTable>
-      <IncidentsTable v-else-if="activeTab === 'incidents'" :instance="selectedInstance" :process="process" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory"></IncidentsTable>
+      <IncidentsTable v-else-if="activeTab === 'incidents'" :instance="selectedInstance" :process="process" :activity-instance="activityInstance" 
+        :is-instance-view="true" :activity-instance-history="activityInstanceHistory"></IncidentsTable>
       <UserTasksTable v-else-if="activeTab === 'usertasks'" :selected-instance="selectedInstance"></UserTasksTable>
       <JobsTable v-else-if="activeTab === 'jobs'" :instance="selectedInstance" :process="process"></JobsTable>
       <CalledProcessInstancesTable v-else-if="activeTab === 'calledProcessInstances'" :selectedInstance="selectedInstance" :activityInstanceHistory="activityInstanceHistory" :activity-instance="activityInstance"></CalledProcessInstancesTable>
@@ -113,9 +112,9 @@
 
 <script>
 import { ProcessService, HistoryService } from '@/services.js'
+import { mapActions } from 'vuex'
 
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
-import procesessVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
 import tabUrlMixin from '@/components/process/mixins/tabUrlMixin.js'
 
 import VariablesTable from '@/components/process/tables/VariablesTable.vue'
@@ -125,19 +124,22 @@ import JobsTable from '@/components/process/tables/JobsTable.vue'
 import CalledProcessInstancesTable from '@/components/process/tables/CalledProcessInstancesTable.vue'
 import ExternalTasksTable from '@/components/process/tables/ExternalTasksTable.vue'
 import ProcessInstanceTabs from '@/components/process/ProcessInstanceTabs.vue'
+import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
 
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
 
 export default {
   name: 'ProcessInstanceView',
   components: { VariablesTable, IncidentsTable, UserTasksTable, BpmnViewer, 
-    JobsTable, CalledProcessInstancesTable, ExternalTasksTable, ProcessInstanceTabs },
-  mixins: [procesessVariablesMixin, resizerMixin, tabUrlMixin],
+    JobsTable, CalledProcessInstancesTable, ExternalTasksTable, ProcessInstanceTabs, ScrollableTabsContainer },
+  mixins: [resizerMixin, tabUrlMixin],
   props: {
+    process: Object,
     selectedInstance: Object,
     activityInstance: Object,
     activityInstanceHistory: Object
   },
+  emits: ['task-selected'],
   data: function() {
     return {
       filterHeight: 0,
@@ -187,8 +189,14 @@ export default {
     if (this.selectedInstance?.superProcessInstanceId) {
       this.loadSuperProcessInstance(this.selectedInstance.superProcessInstanceId)
     }
+    if (this.selectedInstance) {
+      this.clearHistoricActivityStatistics()
+      const params = { processInstanceIdIn: this.selectedInstance.id }
+      this.loadHistoricActivityStatistics({ processDefinitionId: this.process.id, params })
+    }
   },
   methods: {
+    ...mapActions(['loadHistoricActivityStatistics', 'clearHistoricActivityStatistics']),
     selectTask: function(event) {
       this.selectedTask = event
       this.$emit('task-selected', event);
@@ -196,10 +204,8 @@ export default {
     filterByChildActivity: function(event) {
       if (event) {
         this.activityId = event.activityId
-        this.filteredVariables = this.variables.filter(obj => obj.activityInstanceId === event.id)
       } else {
         this.activityId = ''
-        this.filteredVariables = this.variables
       }
     },
     loadSuperProcessInstance: async function(superProcessInstanceId) {
@@ -222,7 +228,7 @@ export default {
         this.superProcessInstance = null
         this.parentProcess = null
       }
-    },
+    }
   }
 }
 </script>

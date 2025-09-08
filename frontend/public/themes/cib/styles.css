@@ -695,15 +695,8 @@ th {
   text-align: -webkit-match-parent;
 }
 
-thead,
-tbody,
-tfoot,
-tr,
-td,
-th {
-  border-color: inherit;
-  border-style: solid;
-  border-width: 0;
+thead tr {
+  border-bottom: 2px solid var(--bs-border-color);
 }
 
 label {

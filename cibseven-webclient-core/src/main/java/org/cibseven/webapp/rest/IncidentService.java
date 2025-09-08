@@ -105,6 +105,35 @@ public class IncidentService extends BaseService implements InitializingBean {
 		return sevenProvider.findExternalTaskErrorDetails(externalTaskId, user);
 	}
 
+	@Operation(summary = "Get historic external task error details", description = "<strong>Return: Historic error details")
+	@ApiResponse(responseCode = "404", description = "Historic external task not found")
+	@RequestMapping(value = "/history/external-task/{externalTaskId}/errorDetails", method = RequestMethod.GET)
+	public String findHistoricExternalTaskErrorDetails(
+			@Parameter(description = "External Task Id") @PathVariable String externalTaskId,
+			Locale loc, HttpServletRequest rq) {
+		CIBUser user = checkAuthorization(rq, true);
+		return sevenProvider.findHistoricExternalTaskErrorDetails(externalTaskId, user);
+	}
+
+	@Operation(summary = "Get historic incidents", description = "<strong>Return: Collection of historic incidents")
+	@ApiResponse(responseCode = "404", description = "Historic incidents not found")
+	@RequestMapping(value = "/history", method = RequestMethod.GET)
+	public Collection<Incident> findHistoricIncidents(@RequestParam Map<String, Object> params, HttpServletRequest rq) {
+		CIBUser user = checkAuthorization(rq, true);
+		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.READ_ALL);
+		return sevenProvider.findHistoricIncidents(params, user);
+	}
+
+	@Operation(summary = "Get historic stack trace by job id", description = "<strong>Return: Historic stacktrace")
+	@ApiResponse(responseCode = "404", description = "Historic job not found")
+	@RequestMapping(value = "/history/{jobId}/stacktrace", method = RequestMethod.GET)
+	public String findHistoricStacktraceByJobId(
+			@Parameter(description = "Job Id") @PathVariable String jobId,
+			Locale loc, HttpServletRequest rq) {
+		CIBUser user = checkAuthorization(rq, true);
+		return sevenProvider.findHistoricStacktraceByJobId(jobId, user);
+	}
+
 	@Operation(summary = "Increment job retries by job id", description = "<strong>Return: void")
 	@ApiResponse(responseCode = "404", description = "Job not found")
 	@RequestMapping(value = "/job/{jobId}/retries", method = RequestMethod.PUT)

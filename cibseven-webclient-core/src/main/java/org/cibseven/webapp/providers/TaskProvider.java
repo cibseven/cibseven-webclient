@@ -32,19 +32,13 @@ import org.cibseven.webapp.rest.model.IdentityLink;
 import org.cibseven.webapp.rest.model.ProcessVariables;
 import org.cibseven.webapp.rest.model.Task;
 import org.cibseven.webapp.rest.model.TaskFiltering;
+import org.cibseven.webapp.rest.model.TaskForm;
 import org.cibseven.webapp.rest.model.TaskHistory;
 import org.cibseven.webapp.rest.model.Variable;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -65,7 +59,11 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 	@Override
 	public Integer findTasksCount(Map<String, Object> filters, CIBUser user) {
 		String url = getEngineRestUrl() + "/task/count";
-		return ((ResponseEntity<JsonNode>) doPost(url, filters, JsonNode.class, user)).getBody().get("count").asInt();		
+		JsonNode body =  ((ResponseEntity<JsonNode>) doPost(url, filters, JsonNode.class, user)).getBody();
+		if (body == null) {
+			throw new NullPointerException();
+		}
+		return body.get("count").asInt();
 	}
 
 	@Override
@@ -146,9 +144,23 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 	@Override
 	public Object formReference(String taskId, CIBUser user) {
 		String url = getEngineRestUrl() + "/task/" + taskId + "/form-variables?variableNames=formReference";
-		Variable formReference = ((ResponseEntity<ProcessVariables>) doGet(url, ProcessVariables.class, user, false)).getBody().getFormReference();
+		ProcessVariables body =  ((ResponseEntity<ProcessVariables>) doGet(url, ProcessVariables.class, user, false)).getBody();
+		if (body == null) {
+			throw new NullPointerException();
+		}
+		Variable formReference = body.getFormReference();
 		if (formReference == null) return new String("empty-task"); 
 		else return formReference.getValue();
+	}
+	
+	@Override
+	public Object form(String taskId, CIBUser user) {
+		String url = getEngineRestUrl() + "/task/" + taskId + "/form";
+		TaskForm taskForm = ((ResponseEntity<TaskForm>) doGet(url, TaskForm.class, user, false)).getBody();
+		if (taskForm == null || taskForm.getKey() == null) {
+			return "empty-task";
+		}
+		return taskForm;
 	}
 
 	@Override
@@ -167,7 +179,11 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 	public Integer findTasksCountByFilter(String filterId, CIBUser user, TaskFiltering filters) {
 		String url = getEngineRestUrl() + "/filter/" + filterId + "/count";		
 		try {
-			return ((ResponseEntity<JsonNode>) doPost(url, filters.json(), JsonNode.class, user)).getBody().get("count").asInt();
+			JsonNode body =  ((ResponseEntity<JsonNode>) doPost(url, filters.json(), JsonNode.class, user)).getBody();
+			if (body == null) {
+				throw new NullPointerException();
+			}
+			return body.get("count").asInt();
 		} catch (JsonProcessingException e) {
 			SystemException se = new SystemException(e);
 			log.info("Exception in findTasksCountByFilter(...):", se);
@@ -239,7 +255,11 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 	@Override
 	public Integer findHistoryTasksCount(Map<String, Object> filters, CIBUser user) {
 		String url = getEngineRestUrl() + "/history/task/count";
-		return ((ResponseEntity<JsonNode>) doPost(url, filters, JsonNode.class, user)).getBody().get("count").asInt();
+		JsonNode body = ((ResponseEntity<JsonNode>) doPost(url, filters, JsonNode.class, user)).getBody();
+		if (body == null) {
+			throw new NullPointerException();
+		}
+		return body.get("count").asInt();
 	}
 
 	@Override

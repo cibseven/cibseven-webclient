@@ -30,6 +30,24 @@
       </div>
       <SuccessAlert top="0" style="z-index: 1031" ref="messageSaved"> {{ $t('alert.successSaveTask') }}</SuccessAlert>
       <SuccessAlert top="0" style="z-index: 1031" ref="messageSuccess"> {{ $t('alert.successOperation') }}</SuccessAlert>
+      <b-modal ref="datePickerModal">
+        <b-calendar
+          v-model="datePickerValue"
+          value-as-date
+          :start-weekday="1"
+          :locale="currentLanguage()"
+          block
+          :label-no-date-selected="$t('cib-datepicker2.noDate')"
+          :date-format-options="{ year: 'numeric', month: '2-digit', day: '2-digit' }"
+          :label-reset-button="$t('cib-datepicker2.reset')"
+          :label-today-button="$t('cib-datepicker2.today')"
+          label-help=""
+        ></b-calendar>
+        <template v-slot:modal-footer>
+          <b-button :title="$t('confirm.cancel')" @click="$refs.datePickerModal.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
+          <b-button :title="$t('confirm.ok')" @click="onDatePickerConfirm()" variant="primary">{{ $t('confirm.ok') }}</b-button>
+        </template>
+      </b-modal>
     </div>
   </div>
 </template>
@@ -47,6 +65,7 @@ export default {
   props: ['task'],
   mixins: [permissionsMixin],
   inject: ['currentLanguage', 'AuthService'],
+  emits: ['complete-task'],
   data: function() {
     return {
       userInstruction: null,
@@ -54,7 +73,9 @@ export default {
       height: 0,
       submitForm: false,
       formFrame: true,
-      loader: false
+      loader: false,
+      datePickerValue: null,
+      datePickerRequest: null
     }
   },
   watch: {
@@ -95,7 +116,7 @@ export default {
     this.onBeforeUnload()
   },
   methods: {
-    loadIframe: function() {
+    loadIframe: async function() {
       this.loader = true
       this.submitForm = false
       this.formFrame = true
@@ -118,12 +139,19 @@ export default {
         this.loader = false
       } else if (this.task.isEmbedded && this.task.processDefinitionId) {
         formFrame.src = `embedded-forms.html?processDefinitionId=${this.task.processDefinitionId}&lang=${this.currentLanguage()}&authorization=${this.$root.user.authToken}`
-        
+        this.loader = false
+      } else if (this.task.isGenerated && this.task.processDefinitionId) {
+        formFrame.src = `embedded-forms.html?generated=true&processDefinitionId=${this.task.processDefinitionId}&lang=${this.currentLanguage()}&authorization=${this.$root.user.authToken}`
         this.loader = false
       } else if (this.task.id) {
-        
-        //Embedded forms if not "standard" ui-element-templates
-        if (this.task.formKey && this.task.formKey.startsWith('embedded:') && this.task.formKey !== 'embedded:/camunda/app/tasklist/ui-element-templates/template.html') {
+        var form = this.task.formKey || await TaskService.form(this.task.id)
+        if (form.key && form.key.includes('/rendered-form')) {
+          // Generated forms
+          this.formFrame = true
+          formFrame.src = `embedded-forms.html?generated=true&taskId=${this.task.id}&lang=${this.currentLanguage()}&authorization=${this.$root.user.authToken}`
+          this.loader = false
+        } else  if (this.task.formKey && this.task.formKey.startsWith('embedded:') && this.task.formKey !== 'embedded:/camunda/app/tasklist/ui-element-templates/template.html') {
+          //Embedded forms if not "standard" ui-element-templates
           this.formFrame = true
           formFrame.src = `embedded-forms.html?taskId=${this.task.id}&lang=${this.currentLanguage()}&authorization=${this.$root.user.authToken}`
           this.loader = false
@@ -236,14 +264,74 @@ export default {
         else if (e.data.method === 'displayErrorMessage') this.displayErrorMessage(e.data)
         else if (e.data.method === 'cancelTask') this.cancelTask()
         else if (e.data.method === 'updateFilters') this.updateFilters(e.data)
-//					var res = this[e.data.method](e.data)
-//					if (e.data.callback) {
-//						formFrame.contentWindow.postMessage({
-//						    'callback': e.data.callback,
-//							'result': res
-//						}, '*');
-//					}
+      else if (e.data.method === 'openDatePicker') {
+          // Handle date picking request from the iframe
+          const data = e.data;
+          this.datePickerRequest = {
+            fieldName: data.data.fieldName,
+            value: data.data.value
+          }
+          // Parse date from dd/mm/yyyy format
+          const date = e.data.data.value;
+          if (typeof date === 'string') {
+            const dateRegex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+            const match = date.match(dateRegex);
+            if (match) {
+              const [, day, month, year] = match;
+              var dateObject = new Date(year, month - 1, day);
+              if (isNaN(dateObject.getTime())) {
+                this.datePickerValue = null;
+              } else {
+                this.datePickerValue = dateObject;
+              }
+            } else {
+              this.datePickerValue = null;
+            }
+          }
+
+          // Show the date picker modal
+          this.$refs.datePickerModal.show();
+        }
       }
+    },
+    /**
+     * Handles the date picker confirmation.
+     * Formats the selected date as dd/mm/yyyy and sends it back to the iframe.
+     */
+    onDatePickerConfirm: function() {
+      let result = null
+      if (this.datePickerValue) {
+        let d = new Date(this.datePickerValue)
+        // Format as dd/mm/yyyy
+        const day = String(d.getDate()).padStart(2, '0')
+        const month = String(d.getMonth() + 1).padStart(2, '0')
+        const year = d.getFullYear()
+        result = `${day}/${month}/${year}`
+      }
+      
+      // Send result back to iframe
+      if (this.datePickerRequest && this.datePickerRequest.fieldName) {
+        const response = {
+          method: 'datePickerResult',
+          fieldName: this.datePickerRequest.fieldName,
+          value: result
+        }
+        
+        // Post message to the iframe
+        const formFrame = this.$refs['template-frame']
+        if (formFrame && formFrame.contentWindow) {
+          formFrame.contentWindow.postMessage(response, '*')
+        }
+      }
+      
+      // Hide the date picker modal
+      if (this.$refs.datePickerModal) {
+        this.$refs.datePickerModal.hide()
+      }
+
+      // Reset date picker state
+      this.datePickerValue = null
+      this.datePickerRequest = null
     },
     onBeforeUnload: function() {
       var formFrame = this.$refs['template-frame']

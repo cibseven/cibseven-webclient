@@ -29,7 +29,7 @@
     <template v-slot:filter>
       <FilterNavCollapsed v-if="!leftOpenFilter && leftCaptionFilter" v-model:left-open="leftOpenFilter"></FilterNavCollapsed>
     </template>
-    <SidebarsFlow ref="regionTasks" role="region" :aria-label="$t('seven.allTasks')" class="h-100 bg-light" :number="nTasksShown" header-margin="55px" v-model:left-open="leftOpenTask" v-model:right-open="rightOpenTask"
+    <SidebarsFlow ref="regionTasks" role="region" :aria-label="$t('seven.allTasks')" class="h-100 bg-light" :number="totalTasksInFilter" header-margin="55px" v-model:left-open="leftOpenTask" v-model:right-open="rightOpenTask"
       :leftSize="getTasksNavbarSize" :left-caption="leftCaptionTask" :right-caption="TasksRightSidebar ? rightCaptionTask : null">
       <template v-slot:left>
         <TasksNavBar @filter-alert="showFilterAlert($event)" ref="navbar" :tasks="tasks" @selected-task="selectedTask($event)"
@@ -117,7 +117,7 @@ export default {
       interval: null,
       filterMessage: '',
       filterName: '',
-      nTasksShown: 0,
+      totalTasksInFilter: 0,
       nFiltersShown: 0,
       tasksNavbarSizes: [[12, 6, 4, 4, 3], [12, 6, 4, 5, 4], [12, 6, 4, 6, 5]],
       tasksNavbarSize: 0,
@@ -153,6 +153,9 @@ export default {
     },
     rightOpenTask: function(newVal) {
       localStorage.setItem('rightOpenTask', newVal)
+    },
+    '$store.state.filter.selected.tasksNumber': function(val) {
+      this.totalTasksInFilter = val || 0
     },
     '$route.params.taskId': function() { if (!this.$route.params.taskId) this.cleanSelectedTask() },
     '$route.params.filterId': function() { if (!this.$route.params.filterId) this.cleanSelectedFilter() },
@@ -194,7 +197,6 @@ export default {
     listTasksWithFilter: function() {
       this.tasks = []
       this.processesInstances = []
-      this.nTasksShown = 0
       if (this.$refs.navbar.$refs.taskLoader) this.$refs.navbar.$refs.taskLoader.done = false
       this.fetchTasks(0, this.taskResultsIndex)
     },
@@ -249,9 +251,6 @@ export default {
         TaskService.findTasksByFilter(this.$store.state.filter.selected.id, filters,
           { firstResult: firstResult, maxResults: maxResults }).then(result => {
           var tasks = this.tasksByPermissions(this.$root.config.permissions.displayTasks, result)
-          TaskService.findTasksCountByFilter(this.$store.state.filter.selected.id, filters).then(count => {
-            this.nTasksShown = count
-          })
           //Only needed to fetch the businessKey of every instance.
           this.updateProcessesInstances(tasks, showMore)
         }, () => {
@@ -410,7 +409,6 @@ export default {
       this.processInstanceHistory = null
       this.task = null
       if (this.$route.params.filterId) {
-        this.listTasksWithFilterAuto()
         var path = '/seven/auth/tasks/' + this.$route.params.filterId
         if (path !== this.$route.path) this.$router.push(path)
       }

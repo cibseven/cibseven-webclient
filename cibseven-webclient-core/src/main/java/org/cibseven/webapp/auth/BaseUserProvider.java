@@ -16,9 +16,6 @@
  */
 package org.cibseven.webapp.auth;
 
-import java.util.Collection;
-import java.util.Optional;
-
 import org.cibseven.webapp.auth.providers.JwtUserProvider;
 import org.cibseven.webapp.auth.rest.StandardLogin;
 

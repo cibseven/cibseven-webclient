@@ -432,6 +432,12 @@ configmaps:
           "subProcessFolder": "activities/",
           "taskFilter": {{ .Values.ui.taskFilter | toPrettyJson | indent 2 }},
           "layout": {{ .Values.ui.layout | toPrettyJson | indent 2 }},
+          "dashboard": {
+            "autoUpdate": {
+              "enabled": true,
+              "interval": 60000
+            }
+          },
           "admin": {
             "resourcesTypes": {
               "0": { "id": "0", "key": "application", "permissions": ["ACCESS"] },

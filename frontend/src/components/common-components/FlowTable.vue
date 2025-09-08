@@ -85,7 +85,7 @@
         :class="[getRowClass(item), nativeLayout ? '' : 'd-flex']"
         @mouseenter="$emit('mouseenter', item)"
         @mouseleave="$emit('mouseleave', item)"
-        @click.stop="$emit('click', item)"
+        @click.stop="onRowClick(item)"
         style="cursor: pointer"
         role="row">
         <td v-for="(field, colIndex) in computedColumns"
@@ -107,6 +107,8 @@
 </template>
 
 <script>
+import { createSortComparator } from '@/utils/sort.js'
+
 export default {
   name: 'FlowTable',
   props: {
@@ -169,6 +171,7 @@ export default {
      */
     externalSort: { type: Boolean, default: false },
   },
+  emits: ['mouseenter', 'mouseleave', 'external-sort', 'click'],
   data() {
     return {
       columnVisibility: {},
@@ -229,11 +232,9 @@ export default {
         return this.items
       }
       if (!this.sortKey) return this.items
-      return [...this.items].sort((a, b) => {
-        if (a[this.sortKey] < b[this.sortKey]) return -1 * this.sortOrder
-        if (a[this.sortKey] > b[this.sortKey]) return 1 * this.sortOrder
-        return 0
-      })
+      return [...this.items].sort(
+        createSortComparator(item => item[this.sortKey], this.sortOrder === -1)
+      )
     },
     columnSelectionStyle() {
       return {
@@ -250,8 +251,8 @@ export default {
       return {
         position: 'absolute',
         top: '0',
-        right: '0',
-        width: '5px',
+        right: '-7px',
+        width: '12px',
         height: '100%',
         cursor: 'col-resize',
         zIndex: '10',
@@ -405,7 +406,12 @@ export default {
       this.$nextTick(() => {
         this.restartColumnWidths()
       })
-    }
+    },
+    onRowClick(item) {
+      // Only emit click if no text is selected
+      if (window.getSelection && window.getSelection().toString()) return
+      this.$emit('click', item)
+    },
   },
   mounted() {
     if (this.api2) {

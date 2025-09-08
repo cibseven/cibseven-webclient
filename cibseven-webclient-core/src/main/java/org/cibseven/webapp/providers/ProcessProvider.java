@@ -51,18 +51,10 @@ import org.cibseven.webapp.providers.utils.URLUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 import org.springframework.web.client.HttpStatusCodeException;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -143,7 +135,11 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 
 			for(Process process : processes) {
 				String urlInstances = getEngineRestUrl() + "/process-instance/count?processDefinitionId=" + process.getId();
-				process.setRunningInstances(((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody().get("count").asLong());
+				JsonNode body = ((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody();
+				if (body == null) {
+					throw new NullPointerException();
+				}
+				process.setRunningInstances(body.get("count").asLong());
 			}
 
 			return processes;
@@ -169,11 +165,24 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		if (!lazyLoad.isPresent() || (lazyLoad.isPresent() && !lazyLoad.get())) {
 			for(Process process : processes) {
 				String urlInstances = getEngineRestUrl() + "/history/process-instance/count?processDefinitionId=" + process.getId();
-				process.setAllInstances(((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody().get("count").asLong());
+
+				JsonNode body = ((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody();
+				if (body == null)
+					throw new NullPointerException();
+				process.setAllInstances(body.get("count").asLong());
+
 				urlInstances = getEngineRestUrl() + "/history/process-instance/count?unfinished=true&processDefinitionId=" + process.getId();
-				process.setRunningInstances(((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody().get("count").asLong());
+
+				body = ((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody();
+				if (body == null)
+					throw new NullPointerException();
+				process.setRunningInstances(body.get("count").asLong());
+
 				urlInstances = getEngineRestUrl() + "/history/process-instance/count?completed=true&processDefinitionId=" + process.getId();
-				process.setCompletedInstances(((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody().get("count").asLong());
+				body = ((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody();
+				if (body == null)
+					throw new NullPointerException();
+				process.setCompletedInstances(body.get("count").asLong());
 			}
 		}
 		return processes;
@@ -183,14 +192,25 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	public Process findProcessById(String id, Optional<Boolean> extraInfo, CIBUser user) throws SystemException {
 		String url = getEngineRestUrl() + "/process-definition/" + id;
 		Process process = ((ResponseEntity<Process>) doGet(url, Process.class, user, false)).getBody();
+		if (process == null)
+			throw new NullPointerException();
 
 		if (extraInfo.isPresent() && extraInfo.get()) {
 			String urlInstances = getEngineRestUrl() + "/history/process-instance/count?processDefinitionId=" + id;
-			process.setAllInstances(((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody().get("count").asLong());
+			JsonNode body = ((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody();
+			if (body == null)
+				throw new NullPointerException();
+			process.setAllInstances(body.get("count").asLong());
 			urlInstances = getEngineRestUrl() + "/history/process-instance/count?unfinished=true&processDefinitionId=" + process.getId();
-			process.setRunningInstances(((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody().get("count").asLong());
+			body = ((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody();;
+			if (body == null)
+				throw new NullPointerException();
+			process.setRunningInstances(body.get("count").asLong());
 			urlInstances = getEngineRestUrl() + "/history/process-instance/count?completed=true&processDefinitionId=" + process.getId();
-			process.setCompletedInstances(((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody().get("count").asLong());
+			body = ((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody();;
+			if (body == null)
+				throw new NullPointerException();
+			process.setCompletedInstances(body.get("count").asLong());
 		}
 
 		return process;
@@ -322,7 +342,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 						// Associate incidents with process instances
 						processes.forEach(p -> p.setIncidents(incidentsByProcessInstance.getOrDefault(p.getId(), Collections.emptyList())));
 					}
-				} else {
+				} else if (processes != null) {
 					// For regular queries, fetch incidents for all returned processes
 					processes.forEach(p -> {
 						p.setIncidents(incidentProvider.findIncidentByInstanceId(p.getId(), user));
@@ -403,7 +423,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		        );
 		        processes.forEach(p -> p.setIncidents(incidentsByProcessInstance.getOrDefault(p.getId(), Collections.emptyList())));
 		    }
-		} else {		
+		} else if (processes != null) {
 			processes.forEach(p -> {
 				p.setIncidents(incidentProvider.findIncidentByInstanceId(p.getId(), user));
 			});
@@ -415,7 +435,11 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	@Override
 	public Long countProcessesInstancesHistory(Map<String, Object> filters, CIBUser user) {
 		String url = getEngineRestUrl() + "/history/process-instance/count";
-		return ((ResponseEntity<JsonNode>) doPost(url, filters, JsonNode.class, user)).getBody().get("count").asLong();
+		JsonNode body = ((ResponseEntity<JsonNode>) doPost(url, filters, JsonNode.class, user)).getBody();
+		if (body == null) {
+			throw new NullPointerException();
+		}
+		return body.get("count").asLong();
 	}
 
 	@Override
@@ -424,13 +448,29 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		return ((ResponseEntity<ProcessInstance>) doGet(url, ProcessInstance.class, user, false)).getBody();
 	}
 
-	@Override
-	public Variable fetchProcessInstanceVariable(String processInstanceId, String variableName, String deserializeValue, CIBUser user) throws SystemException  {
+	public Variable fetchProcessInstanceVariableImpl(String processInstanceId, String variableName, boolean deserializeValue, CIBUser user) throws SystemException  {
 		String url = getEngineRestUrl() + "/process-instance/" + processInstanceId + "/variables/" + variableName;
-		url += StringUtils.isEmpty(deserializeValue) ? "" : "?deserializeValue=" + deserializeValue;
+		url += "?deserializeValue=" + deserializeValue;
 		return ((ResponseEntity<Variable>) doGet(url, Variable.class, null, false)).getBody();
 	}
 
+	@Override
+	public Variable fetchProcessInstanceVariable(String processInstanceId, String variableName, boolean deserializeValue, CIBUser user) throws SystemException  {
+		Variable variableSerialized = fetchProcessInstanceVariableImpl(processInstanceId, variableName, false, user);
+		Variable variableDeserialized = fetchProcessInstanceVariableImpl(processInstanceId, variableName, true, user);
+
+		if (deserializeValue) {
+			variableDeserialized.setValueSerialized(variableSerialized.getValue());
+			variableDeserialized.setValueDeserialized(variableDeserialized.getValue());
+			return variableDeserialized;
+		}
+		else {
+			variableSerialized.setValueSerialized(variableSerialized.getValue());
+			variableSerialized.setValueDeserialized(variableDeserialized.getValue());
+			return variableSerialized;
+		}
+	}
+	
 	@Override
 	public Collection<Process> findCalledProcessDefinitions(String processDefinitionId, CIBUser user) {
 		String url = getEngineRestUrl() + "/process-definition/" + processDefinitionId + "/static-called-process-definitions";
@@ -512,5 +552,11 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 				return result;
 			})
 			.collect(Collectors.toList());
+	}
+	@Override
+	public Object fetchHistoricActivityStatistics(String id, Map<String, Object> params, CIBUser user) {
+	    String url = URLUtils.buildUrlWithParams(getEngineRestUrl() + "/history/process-definition/" + id + "/statistics", params);
+	    ResponseEntity<Object> response = doGet(url, Object.class, user, false);
+	    return response.getBody();
 	}
 }

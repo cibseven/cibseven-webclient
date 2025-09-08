@@ -34,4 +34,7 @@ public interface IIncidentProvider {
 	public void setIncidentAnnotation(String incidentId, Map<String, Object> data, CIBUser user);
 	public void retryExternalTask(String externalTaskId, Map<String, Object> data, CIBUser user);
 	public String findExternalTaskErrorDetails(String externalTaskId, CIBUser user);
+	public String findHistoricExternalTaskErrorDetails(String externalTaskId, CIBUser user);
+	public Collection<Incident> findHistoricIncidents(Map<String, Object> params, CIBUser user);
+	public String findHistoricStacktraceByJobId(String jobId, CIBUser user);
 }

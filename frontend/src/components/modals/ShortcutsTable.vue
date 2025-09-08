@@ -22,8 +22,8 @@
     prefix=""
     sort-by=""
     :fields="[
-      { label: 'infoAndHelp.shortcuts.columnShortcut', key: 'buttons', class: 'col-4 justify-content-center', tdClass: 'py-1 border-top-0', sortable: false },
-      { label: 'infoAndHelp.shortcuts.columnDescription', key: 'description', class: 'col-8 ps-0', tdClass: 'py-1 border-top-0', sortable: false },
+      { label: 'infoAndHelp.shortcuts.columnShortcut', key: 'buttons', class: 'col-4 justify-content-center', tdClass: 'py-1', sortable: false },
+      { label: 'infoAndHelp.shortcuts.columnDescription', key: 'description', class: 'col-8 ps-0', tdClass: 'py-1', sortable: false },
     ]">
     <template v-slot:cell(buttons)="table">
       <span v-for="(button, index) in table.item.buttons" :key="index"

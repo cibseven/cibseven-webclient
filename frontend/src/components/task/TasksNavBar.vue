@@ -46,7 +46,7 @@
               </b-dropdown>
               <b-button variant="link" class="text-decoration-none px-0" @click="$refs.sortingList.show()">{{ $t('sorting.' + taskSorting.sortBy) }}</b-button>
               <template v-slot:append>
-                <b-button size="sm" v-hover-style="{ classes: ['text-primary'] }" variant="secondary-outline" @click="setSorting('order')" class="mdi mdi-18px ms-1"
+                <b-button size="sm" v-hover-style="{ classes: ['text-primary'] }" variant="link" @click="setSorting('order')" class="mdi mdi-18px ms-1"
                   :class="taskSorting.sortOrder === 'desc' ? 'mdi-arrow-down' : 'mdi-arrow-up'"
                   :title="taskSorting.sortOrder === 'desc' ? $t('sorting.desc') : $t('sorting.asc')">
                   <span v-if="taskSorting.sortOrder === 'desc'" class="visually-hidden">{{ $t('sorting.desc') }}</span>
@@ -186,6 +186,7 @@ export default {
   components: { StartProcess, AdvancedSearchModal, SmartSearch, ConfirmDialog, BWaitingBox },
   props: { tasks: Array, taskResultsIndex: Number },
   inject: ['currentLanguage','isMobile'],
+  emits: ['search-filter', 'process-started', 'selected-task', 'update-assignee', 'show-more', 'refresh-tasks', 'refresh-tasks-number'],
   data: function () {
     return {
       currentSorting: {},

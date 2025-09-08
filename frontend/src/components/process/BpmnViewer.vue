@@ -22,25 +22,12 @@
     <div :class="loader ? 'invisible' : 'visible'" class="h-100">
       <div class="h-100" ref="diagram"></div>
     </div>
-    <div class="d-none d-md-block position-absolute" style="right:30px; top:15px">
-      <div v-if="activityInstanceHistory" class="row g-0 border rounded ms-1">
-        <div class="h-100">
-          <div class="bg-white border-light rounded-top text-center" style="opacity:0.8">
-            <span>{{ $t('bpmn-viewer.legend.title') }}</span>
-          </div>
-          <div class="bg-light border-light rounded-bottom" style="opacity:0.8">
-            <span class="px-2"><span class="mdi mdi-arrow-right-drop-circle mdi-24px text-success align-middle me-1"></span>{{ $t('bpmn-viewer.legend.currentTask') }}</span>
-            <span class="pe-2"><span class="mdi mdi-card-outline mdi-24px text-info align-middle me-1"></span>{{ $t('bpmn-viewer.legend.selectedTask') }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="position-absolute" style="right:15px;bottom:100px;">
+    <div class="position-absolute" style="right:15px;bottom:225px;">
       <b-button size="sm" class="border" variant="light" :title="$t('bpmn-viewer.resetZoom')" @click="resetZoom()">
         <span class="mdi mdi-18px mdi-target"></span>
       </b-button>
     </div>
-    <div class="btn-group-vertical" style="position:absolute;right:15px;bottom:15px;">
+    <div class="btn-group-vertical" style="position:absolute;right:15px;bottom:139px;">
       <b-button size="sm" class="border" variant="light" :title="$t('bpmn-viewer.zoomIn')" @click="zoomIn()">
         <span class="mdi mdi-18px mdi-plus"></span>
       </b-button>
@@ -58,9 +45,9 @@
 
 <script>
 import NavigatedViewer from 'bpmn-js/lib/NavigatedViewer'
-import { HistoryService } from '@/services.js'
 import { BWaitingBox } from 'cib-common-components'
 import { mapActions, mapGetters } from 'vuex'
+import { HistoryService } from '@/services.js'
 
 const interactionTypes = [
   // Tasks
@@ -75,65 +62,6 @@ const interactionTypes = [
   'bpmn:StartEvent', 'bpmn:EndEvent', 'bpmn:IntermediateThrowEvent', 
   'bpmn:IntermediateCatchEvent', 'bpmn:BoundaryEvent'
 ]
-const drawedTypes = [
-  // Tasks
-  'userTask', 'serviceTask', 'scriptTask', 'sendTask', 'receiveTask', 'manualTask', 'businessRuleTask',
-  // Activities
-  'callActivity', 'subProcess', 'transaction',
-  // Gateways
-  'exclusiveGateway', 'inclusiveGateway', 'parallelGateway', 'eventBasedGateway', 'complexGateway',
-  // Events
-  'startEvent', 'endEvent', 'noneEndEvent', 'intermediateThrowEvent', 'intermediateCatchEvent', 'boundaryEvent',
-  'intermediateNoneThrowEvent', 'intermediateConditional',
-  // Event definitions (specific types)
-  'messageStartEvent', 'timerStartEvent', 'signalStartEvent', 'conditionalStartEvent', 'errorStartEvent',
-  'escalationStartEvent', 'compensationStartEvent', 'messageEndEvent', 'errorEndEvent', 'escalationEndEvent',
-  'cancelEndEvent', 'compensationEndEvent', 'signalEndEvent', 'terminateEndEvent',
-  'messageIntermediateThrowEvent', 'signalIntermediateThrowEvent', 'compensationIntermediateThrowEvent',
-  'escalationIntermediateThrowEvent', 'linkIntermediateThrowEvent', 'messageIntermediateCatchEvent',
-  'timerIntermediateCatchEvent', 'conditionalIntermediateCatchEvent', 'signalIntermediateCatchEvent',
-  'linkIntermediateCatchEvent', 'messageBoundaryEvent', 'timerBoundaryEvent', 'errorBoundaryEvent',
-  'escalationBoundaryEvent', 'conditionalBoundaryEvent', 'signalBoundaryEvent', 'compensationBoundaryEvent',
-  'cancelBoundaryEvent'
-]
-
-function getActivitiesToMark(treeObj) {
-  let result = []
-  if (!treeObj.childTransitionInstances.length && !treeObj.childActivityInstances.length) {
-    result.push(treeObj.activityId)
-  } else {
-    treeObj.childTransitionInstances.forEach(transitionInstance => {
-      result.push(transitionInstance.activityId)
-    })
-    treeObj.childActivityInstances.forEach(activityInstance => {
-      result = result.concat(getActivitiesToMark(activityInstance))
-    })
-  }
-  return result
-}
-
-function getActivitiesWithIncidentsFromActivityInstance(activityInstance) {
-  if (!activityInstance) return {}
-
-  // Helper to extract incidents from an array of instances
-  const extractIncidents = arr =>
-    arr ? arr.flatMap(inst => inst.incidents || []) : []
-
-  // Gather all incidents from current, children, and transitions
-  const allIncidents = [
-    ...(activityInstance.incidents || []),
-    ...extractIncidents(activityInstance.childActivityInstances),
-    ...extractIncidents(activityInstance.childTransitionInstances)
-  ]
-
-  // Count incidents per activityId
-  return allIncidents.reduce((acc, incident) => {
-    if (incident.activityId) {
-      acc[incident.activityId] = (acc[incident.activityId] || 0) + 1
-    }
-    return acc
-  }, {})
-}
 
 export default {
   name: 'BpmnViewer',
@@ -144,9 +72,20 @@ export default {
     activityInstanceHistory: Array,
     statistics: Array,
     processDefinitionId: String,
-    activitiesHistory: Array,
     activeTab: String,
-    selectedInstance: Object
+    selectedInstance: Object,
+    badgeOptions: {
+      type: Object,
+      default: () => ({
+        showRunning: true,
+        showHistory: true,
+        showCanceled: true,
+        showIncidents: true,
+        showCalledProcesses: true,
+        showJobDefinitions: true,
+        showClosedIncidents: true
+      })
+    }
   },
   data: function() {
     return {
@@ -154,25 +93,24 @@ export default {
       currentHighlight: null,
       overlayList: [],
       loader: true,
-      runningActivities: [],
       suspendedOverlayMap: {},
       overlayClickHandler: null
     }
   },
   computed: {
-    ...mapGetters(['highlightedElement']),
-    jobDefinitions: function() {
-      return this.$store.getters['jobDefinition/getJobDefinitions']
+    ...mapGetters(['highlightedElement', 'getHistoricActivityStatistics']),
+    ...mapGetters('calledProcessDefinitions', ['getStaticCalledProcessDefinitions']),
+    ...mapGetters('job', ['jobDefinitions']),
+    historicActivityStatistics() {
+      return this.getHistoricActivityStatistics(this.processDefinitionId)
     }
   },
   watch: {
-    activityInstanceHistory: function() {
-      setTimeout(() => {
+    historicActivityStatistics: {
+      handler() {
         this.drawDiagramState()
-        if (this.currentHighlight) this.currentHighlight.shape.classList.remove('bpmn-highlight')
-        this.currentHighlight = null
-        this.$emit('task-selected', null)
-      }, 100)
+      },
+      deep: true
     },
     jobDefinitions: {
       handler() {
@@ -199,7 +137,7 @@ export default {
     })
   },
   methods: {
-    ...mapActions(['selectActivity', 'clearActivitySelection', 'setHighlightedElement']),
+    ...mapActions(['selectActivity', 'clearActivitySelection', 'setHighlightedElement', 'loadActivitiesInstanceHistory', 'getProcessById']),
     ...mapActions('diagram', ['setDiagramReady']),
     showDiagram: function(xml) {
       this.setDiagramReady(false)
@@ -319,70 +257,8 @@ export default {
     drawDiagramState: function() {
       const elementRegistry = this.viewer.get('elementRegistry')
       this.cleanDiagramState()
-      if (this.activityInstance != null) {
-        // Mark running activities
-        getActivitiesToMark(this.activityInstance).forEach(activityId => {
-          const htmlTemplate = '<div><i class="mdi mdi-arrow-right-drop-circle mdi-24px text-success"/></div>'
-          this.setHtmlOnDiagram(activityId, htmlTemplate, { top: 5, right: 25 })
-          this.runningActivities.push(activityId)
-        })
-        
-        // Mark activities with incidents from activity instance structure
-        const activitiesWithIncidents = getActivitiesWithIncidentsFromActivityInstance(this.activityInstance)
-        Object.keys(activitiesWithIncidents).forEach(activityId => {
-          const incidentCount = activitiesWithIncidents[activityId]
-          const incidentsHtml = this.getBadgeOverlayHtml(incidentCount, 'bg-danger', 'openIncidents', activityId)
-          this.setHtmlOnDiagram(activityId, incidentsHtml, { top: -7, right: 15 })
-        })
-      }
-      if (this.activityInstanceHistory != null) {
-        this.drawActivitiesHistory(this.activityInstanceHistory, elementRegistry)
-      }
-      if (!this.activityInstance && !this.activityInstanceHistory) {
-        if (this.statistics) {
-          this.statistics.forEach(item => {
-            const shape = elementRegistry.get(item.id)
-            if (shape) {
-              const htmlTemplate = this.getBadgeOverlayHtml(item.instances, 'bg-info', 'runningInstances', item.id)
-              this.setHtmlOnDiagram(item.id, htmlTemplate, { bottom: 15, left: -7 })
-              if ((item.incidents?.length || 0) > 0) {
-                const incidentsCount = item.incidents.reduce((sum, inc) => sum + (inc.incidentCount || 0), 0)
-                const failedHtml = this.getBadgeOverlayHtml(incidentsCount, 'bg-danger', 'openIncidents', item.id)
-                this.setHtmlOnDiagram(item.id, failedHtml, { top: -7, right: 15 })
-              }
-              shape.nInstances = item.instances
-            }
-          })
-        }
-        if (this.activitiesHistory) {
-          this.drawActivitiesHistory(this.activitiesHistory, elementRegistry)
-        }
-      }
-      const callActivitiesList = elementRegistry.getAll().filter(element => element.type === 'bpmn:CallActivity')
-      callActivitiesList.forEach(ca => {
-        const shape = elementRegistry.get(ca.id)
-        if (shape) {
-          const disabled = (ca.nInstances === undefined && this.runningActivities.indexOf(ca.id) === -1)
-          const title = disabled
-            ? this.$t('bpmn-viewer.legend.disabledSubprocess')
-            : this.$t('bpmn-viewer.legend.openSubprocess')
-          const wrapper = document.createElement('div')
-          wrapper.title = title
-          const button = document.createElement('button')
-          button.type = 'button'
-          button.className = 'btn btn-info btn-sm mdi mdi-link-variant px-1 py-0'
-          if (disabled) {
-            button.disabled = true
-            wrapper.style.cursor = 'not-allowed'
-          } else {
-            button.addEventListener('click', () => {
-              this.openSubprocess(ca.id)
-            })
-          }
-          wrapper.appendChild(button)
-          this.setHtmlOnDiagram(ca.id, wrapper, { bottom: -7, right: 15 })
-        }
-      })
+      this.drawActivitiesBadges(elementRegistry)
+      this.drawSubprocessLinks(elementRegistry)
       if (this.jobDefinitions) {
         this.drawJobDefinitionBadges()
       }
@@ -410,19 +286,120 @@ export default {
         }
       })
     },
-    drawActivitiesHistory: function(activities, elementRegistry) {
-      const filledActivities = {}
-      activities.forEach(item => {
-        const typeAllowed = this.getTypeAllowed(item.activityType, drawedTypes)
-        if (!typeAllowed || !item.endTime) return
-        filledActivities[item.activityId] = (filledActivities[item.activityId] || 0) + 1
-      })
-      Object.keys(filledActivities).forEach(key => {
-        const shape = elementRegistry.get(key)
-        if (shape) {
-          this.setHtmlOnDiagram(key, this.getBadgeOverlayHtml(filledActivities[key], 'bg-gray', 'activitiesHistory', null),
-            { bottom: 15, right: 13 })
+    drawActivitiesBadges: function(elementRegistry) {
+      const historyStatistics = this.historicActivityStatistics
+      let mergedStatistics = historyStatistics
+        if (!this.selectedInstance) {
+          mergedStatistics = historyStatistics.map(hs => {
+            const stat = this.statistics.find(s => s.id === hs.id)
+            return stat ? { ...hs, instances: stat.instances } : hs
+          })
+      }
+      const options = this.badgeOptions || {}
+      mergedStatistics.forEach(stat => {
+        const element = elementRegistry.get(stat.id)
+        if (!element) return
+
+        // Handle canceled activities - draw in the main position
+        if (options.showCanceled && stat.canceled > 0) {
+          const html = this.getBadgeOverlayHtml(stat.canceled, 'bg-warning', 'canceledInstances', stat.id)
+          this.setHtmlOnDiagram(stat.id, html, { bottom: 15, right: 13 })
         }
+        
+        // Handle finished activities - draw above canceled ones or in main position if no canceled
+        const actualFinished = stat.finished - (stat.canceled || 0)
+        if (options.showHistory && actualFinished > 0) {
+          const position = stat.canceled > 0 ? { bottom: 35, right: 13 } : { bottom: 15, right: 13 }
+          const html = this.getBadgeOverlayHtml(actualFinished, 'bg-gray', 'activitiesHistory', stat.id)
+          this.setHtmlOnDiagram(stat.id, html, position)
+        }
+        // Handle closed incidents - draw next to main position if main position occupied and selectedInstance is set
+        if (options.showClosedIncidents && this.selectedInstance) {
+          if (stat.resolvedIncidents > 0 || stat.deletedIncidents > 0) {
+            const mainOccupied =
+              (options.showCanceled && stat.canceled > 0) ||
+              ((!stat.canceled || stat.canceled === 0) && (options.showHistory && actualFinished > 0))
+            const position = mainOccupied ? { bottom: 15, right: 36 } : { bottom: 15, right: 13 }
+
+            const html = this.getBadgeOverlayHtml('!', 'bg-danger', 'closedIncidents', stat.id)
+            this.setHtmlOnDiagram(stat.id, html, position)
+          }
+        }
+        if (options.showRunning && stat.instances > 0) {
+          const html = this.getBadgeOverlayHtml(stat.instances, 'bg-info', 'runningInstances', stat.id)
+          this.setHtmlOnDiagram(stat.id, html, { bottom: 15, left: -7 })
+        }
+        if (options.showIncidents && stat.openIncidents > 0) {
+          const position = stat.instances > 0 ? { bottom: 15, left: 18 } : { bottom: 15, left: -7 }
+          const html = this.getBadgeOverlayHtml(stat.openIncidents, 'bg-danger', 'openIncidents', stat.id)
+          this.setHtmlOnDiagram(stat.id, html, position)
+        }
+      })
+    },
+    drawSubprocessLinks: function(elementRegistry) {
+      if (this.badgeOptions?.showCalledProcesses === false) return
+      const staticCalledProcesses = this.getStaticCalledProcessDefinitions || []
+      const activityStats = this.historicActivityStatistics || []
+
+      // Map to know which activity calls which process
+      const activityToProcessMap = {}
+      staticCalledProcesses.forEach(proc => {
+        proc.calledFromActivityIds.forEach(activityId => {
+          activityToProcessMap[activityId] = proc
+        })
+      })
+
+      // Map to know which activities have been executed
+      // This is used to determine if a dynamic call activity can be opened
+      const executedActivities = new Set(
+        activityStats
+          .filter(stat => (stat.finished ?? 0) > 0 || (stat.canceled ?? 0) > 0)
+          .map(stat => stat.id)
+      )
+
+      const callActivitiesList = elementRegistry.getAll().filter(el => el.type === 'bpmn:CallActivity')
+
+      callActivitiesList.forEach(ca => {
+        const shape = elementRegistry.get(ca.id)
+        if (!shape) return
+
+        const calledProcess = activityToProcessMap[ca.id]
+        const activityStat = activityStats.find(stat => stat.id === ca.id)
+        const runningInstances = activityStat?.instances || 0
+
+        const calledElement = ca.businessObject?.calledElement || ''
+        const isDynamic = /^\$\{.+\}$/.test(calledElement)
+        const isStatic = !isDynamic && !!calledProcess
+        
+        const inInstanceView = !!this.selectedInstance
+        const wasExecuted = inInstanceView && executedActivities.has(ca.id)
+        const shouldEnableDynamic = isDynamic && (runningInstances > 0 || wasExecuted)
+        const isCurrentDefinitionAlreadyVisible = !!this.selectedInstance && calledProcess?.id === this.selectedInstance.processDefinitionId
+
+        const disabled = (!isStatic && !shouldEnableDynamic) || isCurrentDefinitionAlreadyVisible
+
+        const title = disabled
+          ? this.$t('bpmn-viewer.legend.disabledSubprocess')
+          : this.$t('bpmn-viewer.legend.openSubprocess')
+
+        const wrapper = document.createElement('div')
+        wrapper.title = title
+
+        const button = document.createElement('button')
+        button.type = 'button'
+        button.className = 'btn btn-info btn-sm mdi mdi-link-variant px-1 py-0'
+
+        if (disabled) {
+          button.disabled = true
+          wrapper.style.cursor = 'not-allowed'
+        } else {
+          button.addEventListener('click', () => {
+            this.openSubprocess(ca.id, calledProcess, isDynamic)
+          })
+        }
+
+        wrapper.appendChild(button)
+        this.setHtmlOnDiagram(ca.id, wrapper, { bottom: -7, right: 15 })
       })
     },
     getBadgeOverlayHtml: function(number, classes, type, activityId) {
@@ -432,7 +409,7 @@ export default {
         styleStr += " cursor: pointer;"
       }
       var overlayHtml = `
-        <span data-activity-id="${activityId || ''}" class="bubble position-absolute" style="${styleStr}" title="${title}">
+        <span data-activity-id="${activityId || ''}" data-type="${type || ''}" class="bubble position-absolute" style="${styleStr}" title="${title}">
           <span class="badge rounded-pill border border-dark px-2 py-1 me-1 ${classes}">${number}</span>
         </span>
       `
@@ -455,29 +432,45 @@ export default {
     getTypeAllowed: function(typeI, types) {
       return types.some(type => typeI.includes(type))
     },
-    openSubprocess: function(activityId) {
-      const childInstance = this.findChildInstanceByActivityId(activityId)      
-      if (!childInstance?.calledProcessInstanceId) {
-        console.warn('No child process instance found for activityId:', activityId)
-        return
-      }
-      this.navigateToSubprocess(childInstance.calledProcessInstanceId)
-    },
-    findChildInstanceByActivityId: function(activityId) {
-      const searchArray = this.activityInstanceHistory || this.activitiesHistory
-      if (!searchArray) return null      
-      return searchArray.find(
-        ai => ai.activityId === activityId && ai.calledProcessInstanceId
-      )
-    },
-    async navigateToSubprocess(calledProcessInstanceId) {
+    async openSubprocess(activityId, calledProcess, isDynamic) {
       try {
-        const subprocess = await HistoryService.findProcessInstance(calledProcessInstanceId)
-        const processKey = subprocess.processDefinitionKey
-        const versionIndex = subprocess.processDefinitionVersion
+        if (this.selectedInstance) {
+          const params = {
+            processInstanceId: this.selectedInstance.id,
+            activityType: 'callActivity',
+            activityId,
+            sortBy: 'startTime',
+            sortOrder: 'desc',
+            maxResults: 1
+          }
+          const calledInstance = await this.loadActivitiesInstanceHistory(params)
+          const processDefinition = await HistoryService.findProcessesInstancesHistory({ processInstanceId: calledInstance[0].calledProcessInstanceId })
+          if (calledInstance?.length && calledInstance[0].calledProcessInstanceId) {
+            return this.navigateToSubprocess(processDefinition[0].processDefinitionKey, processDefinition[0].processDefinitionVersion, calledInstance[0].calledProcessInstanceId)
+          }
+        }
+        // If no instance view or no instance found, try to get the called process directly
+        if (isDynamic && !this.selectedInstance) {
+          this.$router.push({
+            path: this.$route.path,
+            query: { ...this.$route.query, tab: 'calledProcessDefinitions' }
+          })
+        } else {          
+          if (!calledProcess) {
+            console.warn('No called process definition for activityId:', activityId)
+            return
+          }
+          this.navigateToSubprocess(calledProcess.key, calledProcess.version, null)
+        }
+      } catch (error) {
+        console.error('Failed to open subprocess:', error)
+      }
+    },
+    async navigateToSubprocess(processKey, versionIndex, calledProcessInstanceId) {
+      try {
         const params = { processKey, versionIndex }
-        if (this.activityInstanceHistory) {
-          params.instanceId = subprocess.id
+        if (calledProcessInstanceId) {
+          params.instanceId = calledProcessInstanceId
         }        
         const routeConfig = {
           name: 'process',
@@ -490,6 +483,7 @@ export default {
       }
     },
     drawJobDefinitionBadges: function() {
+      if (this.badgeOptions?.showJobDefinitions === false) return
       const overlays = this.viewer?.get('overlays')
       const elementRegistry = this.viewer?.get('elementRegistry')
       if (!overlays || !elementRegistry || !Array.isArray(this.jobDefinitions)) return
@@ -506,7 +500,7 @@ export default {
               <span class="mdi mdi-pause"></span>
             </span>`
           const overlayId = overlays.add(jobDefinition.activityId, {
-            position: { top: -10, left: -15 },
+            position: { top: -10, right: 15 },
             html: suspendedBadge
           })
           this.suspendedOverlayMap[jobDefinition.activityId] = overlayId

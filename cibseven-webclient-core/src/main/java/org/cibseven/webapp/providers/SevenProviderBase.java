@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.exception.BatchOperationException;
 import org.cibseven.webapp.exception.ExistingGroupRequestException;
 import org.cibseven.webapp.exception.ExistingUserRequestException;
 import org.cibseven.webapp.exception.ExpressionEvaluationException;
@@ -42,16 +43,15 @@ import org.cibseven.webapp.exception.PasswordPolicyException;
 import org.cibseven.webapp.exception.SubmitDeniedException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.exception.UnsupportedTypeException;
+import org.cibseven.webapp.exception.VariableModificationException;
 import org.cibseven.webapp.rest.model.Authorization;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
@@ -361,6 +361,8 @@ public abstract class SevenProviderBase {
 			wrapperException = new ExistingGroupRequestException(cause);
 		} else if (technicalErrorMsg.matches(".*The given authenticated user password is not valid.*")) {
 			wrapperException = new SystemException(cause); // TODO? Create a specific exception this error.
+		} else if (technicalErrorMsg.matches(".*Cannot modify variables for execution.*execution.*doesn't exist: execution is null.*")) {
+			wrapperException = new VariableModificationException(cause);
 		} else if (technicalErrorMsg.matches(".*No matching task with id.*")
 				|| technicalErrorMsg.matches(".*Process instance with id.*does not exist.*")
 				|| technicalErrorMsg.matches(".*Cannot find task with id.*")
@@ -383,7 +385,9 @@ public abstract class SevenProviderBase {
 			wrapperException = new InvalidUserIdException(cause);
 		} else if (technicalErrorMsg.matches(".*Null historyTimeToLive values are not allowed.*")) {
 			wrapperException = new InvalidValueHistoryTimeToLive(cause);
-		} 
+		} else if (technicalErrorMsg.matches(".*processInstanceIds is empty.*")) {
+			wrapperException = new BatchOperationException(cause);
+		}
 		if (wrapperException == null) wrapperException = new SystemException(technicalErrorMsg, cause);
 		if (wrapperException instanceof NoObjectFoundException) {
 			log.debug("Exception when calling engine-rest:", wrapperException);	

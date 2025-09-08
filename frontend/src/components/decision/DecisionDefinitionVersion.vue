@@ -20,28 +20,31 @@
   <div v-if="decision" class="h-100">
     <div @mousedown="handleMouseDown" class="v-resizable position-absolute w-100" style="left: 0" :style="'height: ' + bpmnViewerHeight + 'px; ' + toggleTransition">
       <DmnViewer ref="diagram" class="h-100" />
-      <span role="button" size="sm" variant="light" class="bg-white px-2 py-1 me-1 position-absolute border rounded" style="bottom: 15px; left: 15px;" @click="toggleContent">
+      <span role="button" size="sm" variant="light" class="bg-white px-2 py-1 me-1 position-absolute border rounded" style="bottom: 90px; right: 11px;" @click="toggleContent">
         <span class="mdi mdi-18px" :class="toggleIcon"></span>
       </span>
     </div>
     
-    <div class="position-absolute w-100 bg-light border-bottom" style="left: 0; z-index: 1" :style="'top: ' + (bottomContentPosition - tabsAreaHeight) + 'px; ' + toggleTransition">
+    <div class="position-absolute w-100" style="left: 0; z-index: 1" :style="'height: '+ tabsAreaHeight +'px; top: ' + (bottomContentPosition - tabsAreaHeight + 1) + 'px; ' + toggleTransition">
       <div class="d-flex align-items-end">
-        <div class="tabs-scroll-container flex-grow-1" style="white-space: nowrap;">
-          <ul class="nav nav-tabs m-0 border-0 flex-nowrap" style="display: inline-flex; overflow-y: hidden">
-            <li class="nav-item m-0 flex-shrink-0 border-0" v-for="(tab, index) in tabs" :key="index">
-              <a role="button" @click="changeTab(tab)" class="nav-link py-2 border-0 rounded-0" :class="{ 'active': tab.active, 'bg-light border border-bottom-0': !tab.active }">
-                {{ $t('decision.' + tab.id) }}
-              </a>
-            </li>
-          </ul>
-        </div>
+        <ScrollableTabsContainer :tabs-area-height="tabsAreaHeight">
+          <li class="nav-item m-0 flex-shrink-0 border-0" v-for="(tab, index) in tabs" :key="index">
+            <a role="button" @click="changeTab(tab)" class="nav-link py-2" 
+              :class="{ 
+                'active active-tab-border': tab.active, 
+                'bg-light': !tab.active,
+                'border-start-0': index === 0,
+              }">
+              {{ $t('decision.' + tab.id) }}
+            </a>
+          </li>
+        </ScrollableTabsContainer>
       </div>
     </div>
 
-    <div class="position-absolute w-100 overflow-hidden" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
+    <div class="position-absolute w-100 overflow-hidden border-top" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
       <div v-if="activeTab === 'instances'">
-        <div ref="filterTable" class="bg-light d-flex position-absolute w-100">
+        <div ref="filterTable" class="bg-white d-flex position-absolute w-100">
           <div class="col-3 p-3">
             <b-input-group size="sm">
               <template #prepend>
@@ -71,13 +74,14 @@ import { permissionsMixin } from '@/permissions.js'
 import DmnViewer from '@/components/decision/DmnViewer.vue'
 import InstancesTable from '@/components/decision/InstancesTable.vue'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
+import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
 import { BWaitingBox } from 'cib-common-components'
 import { mapGetters, mapActions } from 'vuex'
 import { debounce } from '@/utils/debounce.js'
 
 export default {
   name: 'DecisionDefinitionVersion',
-  components: { DmnViewer, InstancesTable, BWaitingBox },
+  components: { DmnViewer, InstancesTable, BWaitingBox, ScrollableTabsContainer },
   mixins: [permissionsMixin, resizerMixin],
   props: {
     versionIndex: String,
@@ -94,7 +98,8 @@ export default {
       sortDesc: true,
       decisionInstances: [],
       firstResult: 0,
-      maxResults: this.$root.config.maxProcessesResults
+      maxResults: this.$root.config.maxProcessesResults,
+      filter: null
     }
   },
   computed: {
@@ -171,3 +176,8 @@ export default {
   }
 }
 </script>
+<style scoped>
+.active-tab-border {
+  border-bottom: 3px solid white!important;
+}
+</style>

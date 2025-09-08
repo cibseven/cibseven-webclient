@@ -17,7 +17,7 @@
 
 -->
 <template>
-  <TemplateBase noDiagramm noTitle :templateMetaData="templateMetaData" :loader="loader">
+  <TemplateBase ref="templateBase" noDiagramm noTitle :templateMetaData="templateMetaData" :loader="loader">
     <template v-slot:button-row>
       <IconButton icon="check" :disabled="disabled" @click="setVariablesAndSubmit()" variant="secondary" :text="$t('task.actions.submit')"></IconButton>
     </template>
@@ -31,7 +31,7 @@ import TemplateBase from '@/components/forms/TemplateBase.vue'
 
 import postMessageMixin from '@/components/forms/postMessage.js'
 
-import { FormsService, TemplateService } from '@/services.js'
+import { FormsService, ProcessService } from '@/services.js'
 import IconButton from '@/components/forms/IconButton.vue'
 
 import { Form } from '@bpmn-io/form-js'
@@ -51,7 +51,6 @@ export default {
   data: function() {
     return {
       templateMetaData: null,
-      formularContent: null,
       loader: true,
       disabled: false,
       form: null,
@@ -63,44 +62,75 @@ export default {
     this.loadForm()
   },
   methods: {
-    loadForm: function() {
-      TemplateService.getStartFormTemplate('CibsevenFormUiTask', this.processDefinitionId,
-        this.locale, this.token).then(template => {
-          this.loader = false
-          this.templateMetaData = template
-          var formContent = JSON.parse(template.variables.formularContent.value)
-          this.formularContent = formContent
-          this.form = new Form({
-              container: document.querySelector('#form'),
-          })
-          this.form.importSchema(this.formularContent)
-      })
+    loadForm: async function() {
+      try {
+        // Load form content
+        const formContent = await ProcessService.getDeployedStartForm(this.processDefinitionId)
+        
+        this.form = new Form({
+          container: document.querySelector('#form'),
+        })
+        await this.form.importSchema(formContent)
+
+        // Wait for DOM to be updated after form import
+        await this.$nextTick()
+
+        // Find all file input fields in the form to attach change listeners for file upload handling
+        const fileInputs = document.querySelectorAll('#form input[type="file"]');
+        if (fileInputs.length > 0) {
+          fileInputs.forEach(fileInput => {
+            fileInput.addEventListener('change', async (e) => {
+              this.$refs.templateBase.handleFileSelection(e, fileInput, formContent);
+            });
+          });
+        }
+
+        this.loader = false
+      } catch (error) {
+        console.error('Error loading start form:', error)
+        this.sendMessageToParent({ method: 'displayErrorMessage', message: error.message || 'An error occurred during form loading' })
+        this.loader = false
+      }
     },
-    setVariablesAndSubmit: function() {
-      this.dataToSubmit = {}
-      var result = this.form.submit()
-      if (Object.keys(result.errors).length > 0) return
-      Object.entries(result.data).forEach(([key, value]) => {
-        this.dataToSubmit[key] = {
+    setVariablesAndSubmit: async function() {
+      try {
+        this.dataToSubmit = {}
+        var result = this.form.submit()
+        if (Object.keys(result.errors).length > 0) return
+
+        // Process and submit non-file form fields (files were already uploaded)
+        Object.entries(result.data).forEach(([key, value]) => {
+          if (!this.$refs.templateBase.formFiles[key]) {
+            this.dataToSubmit[key] = {
               name: key,
               type: typeof value,
               value: value,
               valueInfo: null
+            }
           }
-      })
-      this.dataToSubmit.initiator = { name: 'initiator', type: 'string', value: this.$root.user.userID }
-      Object.keys(this.dataToSubmit).forEach(key => {
-        if (this.dataToSubmit[key].value === null) delete this.dataToSubmit[key]
-      })
-      FormsService.submitStartFormVariables(this.processDefinitionId,
-        Object.values(this.dataToSubmit), this.locale)
-      .then(data => {
+        })
+
+        // Add files from formFiles to dataToSubmit
+        const fileVariables = await this.$refs.templateBase.convertFilesToVariables();
+        Object.keys(fileVariables).forEach(key => {
+          this.dataToSubmit[key] = fileVariables[key];
+        });
+
+        this.dataToSubmit.initiator = { name: 'initiator', type: 'string', value: this.$root.user.userID }
+        Object.keys(this.dataToSubmit).forEach(key => {
+          if (this.dataToSubmit[key].value === null) delete this.dataToSubmit[key]
+        })
+        
+        const data = await FormsService.submitStartFormVariables(this.processDefinitionId,
+          Object.values(this.dataToSubmit), this.locale);
+
         this.sendMessageToParent({ method: 'completeTask', task: data })
         this.loader = false
-      }, e => {
-        this.sendMessageToParent({ method: 'displayErrorMessage', status: e.response.status })
+      } catch (error) {
+        console.error('Error during form submission:', error)
+        this.sendMessageToParent({ method: 'displayErrorMessage', message: error.message || 'An error occurred during form submission' })
         this.loader = false
-      })
+      }
     }
   }
 }

@@ -7,6 +7,11 @@
 		"loadMore": {
 			"title": "Load more",
 			"tooltip": "Click to load next {chunkSize} records"
+		},
+		"actualisation": {
+			"progress": "Updating data...",
+			"disabled": "Last update: {date}\n\nAutomatic updates are disabled.\nPress F5 to reload the data.",
+			"enabled": "Last update: {date}\n\nAutomatic updates are enabled.\nRefreshing every {seconds} seconds."
 		}
 	},
 	"login": {
@@ -242,6 +247,7 @@
 			"name": "Name",
 			"type": "Type",
 			"value": "Value",
+			"valueSerialized": "Serialized value",
 			"actions": "Actions",
 			"scope": "Scope",
 			"objectTypeName": "Object type name",
@@ -250,6 +256,12 @@
 			"enterValue": "Enter value"
 		},
 		"incidents": {
+			"state": "State",
+			"processInstance": "Process Instance",
+			"deleted": "Deleted",
+			"resolved": "Resolved",
+			"open": "Open",
+			"unknown": "Unknown",
 			"message": "Message",
 			"timestamp": "Timestamp",
 			"activity": "Activity",
@@ -269,7 +281,9 @@
 			"retry": "Retry",			
 			"editAnnotation": "Edit annotation",
 			"causeIncidentProcessInstanceId": "Cause process instance ID",
-			"rootCauseIncidentProcessInstanceId": "Root cause process instance ID"
+			"rootCauseIncidentProcessInstanceId": "Root cause process instance ID",
+			"createTime": "Creation date",
+			"endTime": "End date"
 		},
 		"jobDefinitions": {
 			"state": "State",
@@ -342,8 +356,8 @@
 		"addVariable": "Add variable",
 		"jobs": {
 			"id": "ID",
-			"dueDate": "Due Date",
-			"createTime": "Creation Date",
+			"dueDate": "Due date",
+			"createTime": "Creation date",
 			"retries": "Retries",
 			"activity": "Activity",
 			"failedActivity": "Failed activity",
@@ -362,6 +376,11 @@
 			"noExternalTasks": "No external tasks found"
 		}
 	},
+	"dmn-viewer": {
+		"zoomIn": "Zoom in",
+		"zoomOut": "Zoom out",
+		"resetZoom": "Reset zoom"
+	},
 	"bpmn-viewer": {
 		"zoomIn": "Zoom in",
 		"zoomOut": "Zoom out",
@@ -373,8 +392,10 @@
 			"selectedTask": "@:task.selectedTask",
 			"runningInstances": "Running activity instances",
 			"openIncidents": "Open incidents",
+			"closedIncidents": "Closed incidents",
 			"suspendedJobDefinition": "Suspended job definition",
-			"activitiesHistory": "Executed activity instances",			
+			"activitiesHistory": "Executed activity instances",
+			"canceledInstances": "Canceled activity instances",		
 			"openSubprocess": "Show called process definition",
 			"disabledSubprocess": "Called process definition will be resolved at runtime"
 		}
@@ -414,7 +435,8 @@
 			"title": "Task actions",
 			"submit": "Complete",
 			"save": "Save",
-			"saveError": "An error occurred while saving the task: {0}"
+			"saveError": "An error occurred while saving the task: {0}",
+			"initError": "An error occurred while initializing the form: {0}"
 		},
 		"emptyTask": "Empty task",
 		"showMore": "Show more...",
@@ -908,6 +930,12 @@
 				"title": "Processes",
 				"tooltip": "Explore available process definitions"
 			},
+			"process-definition": {
+				"title": "Process Definition"
+			},
+			"process-instance": {
+				"title": "Process Instance"
+			},
 			"decisions": {
 				"title": "Decisions",
 				"tooltip": "Explore available decision definitions"
@@ -961,6 +989,7 @@
 		"taskSelectedNotExist": "This task is no longer available and will therefore disappear from the work area",
 		"ExistingUserRequestException": "User already exists",
 		"ExistingGroupRequestException": "Group already exists",
+		"VariableModificationException": "The variable could not be changed successfully. Please refresh the page and try again.",
 		"processNotFound": "Process with key \"{0}\" not found",
 		"filterSaveError": "An error occurred  trying to save the filter, please check the data introduced.",
 		"passwordDoNotMatch": "Passwords do not match",
@@ -1051,6 +1080,8 @@
 		"selectAll": "Select all",
 		"deleteDeployments": "Delete deployments",
 		"showModel": "Show model",
+		"delete": "Delete Deployment",
+		"showDeployment": "Load Deployment in list",
 		"deploymentsDeleted": "{0} out of {1} deployments have been successfully deleted",
 		"tenant": "Tenant",
 		"errorLoading": "Unable to load resource for the selected deployment"
@@ -1203,6 +1234,7 @@
 	"decision": {
 		"id": "ID",
 		"name": "Name",
+		"tenantId": "Tenant ID",
 		"actions": "Actions",
 		"emptyProcessList": "Your decision list is currently empty.",
 		"emptyProcessListFiltered": "There is no decision for the applied filter.",

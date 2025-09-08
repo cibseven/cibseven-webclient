@@ -49,6 +49,7 @@ export default {
   name: 'ResetDialog',
   components: { SecureInput },
   props: { credentials2: Object },
+  emits: ['success'],
   data: function() { return { busy: false } },
   methods: {
     show: function(userId) {

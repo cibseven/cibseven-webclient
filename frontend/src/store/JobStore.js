@@ -61,12 +61,6 @@ const JobStore = {
       commit('setJobs', result)
       return result
     },
-    async loadJobsByProcessInstance({ dispatch }, processInstanceId) {
-      return dispatch('loadJobs', { processInstanceId })
-    },
-    async loadJobsByProcessDefinition({ dispatch }, processDefinitionId) {
-      return dispatch('loadJobs', { processDefinitionId })
-    },
     async loadJobDefinitions({ commit }, query) {
       const result = await JobDefinitionService.findJobDefinitions(query)
       commit('setJobDefinitions', result)
@@ -94,6 +88,9 @@ const JobStore = {
     async retryJobById(_, { id, retries }) {
       const params = { retries }
       return IncidentService.retryJobById(id, params)
+    },
+    async retryJobDefinitionById(_, { id, params }) {
+      return JobDefinitionService.retryJobDefinitionById(id, params)
     },
     async setSuspended({ commit }, { jobId, suspended }) {
       await JobService.setSuspended(jobId, { suspended })

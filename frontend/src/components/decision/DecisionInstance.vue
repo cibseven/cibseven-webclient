@@ -29,41 +29,44 @@
 
     <div @mousedown="handleMouseDown" class="v-resizable position-absolute w-100" style="left: 0" :style="'height: ' + bpmnViewerHeight + 'px; ' + toggleTransition">
       <DmnViewer ref="diagram" class="h-100" />
-      <span role="button" size="sm" variant="light" class="bg-white px-2 py-1 me-1 position-absolute border rounded" style="bottom: 15px; left: 15px;" @click="toggleContent">
+      <span role="button" size="sm" variant="light" class="bg-white px-2 py-1 me-1 position-absolute border rounded" style="bottom: 90px; right: 11px;" @click="toggleContent">
         <span class="mdi mdi-18px" :class="toggleIcon"></span>
       </span>
     </div>
 
-    <div class="position-absolute w-100 bg-light border-bottom" style="left: 0; z-index: 1" :style="'top: ' + (bottomContentPosition - tabsAreaHeight) + 'px; ' + toggleTransition">
+    <div class="position-absolute w-100" style="left: 0; z-index: 1" :style="'height: '+ tabsAreaHeight +'px; top: ' + (bottomContentPosition - tabsAreaHeight + 1) + 'px; ' + toggleTransition">
       <div class="d-flex align-items-end">
-        <div class="tabs-scroll-container flex-grow-1" style="white-space: nowrap;">
-          <ul class="nav nav-tabs m-0 border-0 flex-nowrap" style="display: inline-flex; overflow-y: hidden">
-            <li class="nav-item m-0 flex-shrink-0 border-0" v-for="(tab, index) in tabs" :key="index">
-              <a role="button" @click="changeTab(tab)" class="nav-link py-2 border-0 rounded-0" :class="{ 'active': tab.active, 'bg-light border border-bottom-0': !tab.active }">
-                {{ $t('decision.' + tab.id) }}
-              </a>
-            </li>
-          </ul>
-        </div>
+        <ScrollableTabsContainer :tabs-area-height="tabsAreaHeight">
+          <li class="nav-item m-0 flex-shrink-0 border-0" v-for="(tab, index) in tabs" :key="index">
+            <a role="button" @click="changeTab(tab)" class="nav-link py-2" 
+              :class="{ 
+                'active active-tab-border': tab.active, 
+                'bg-light border border-bottom-0': !tab.active,
+                'border-start-0': index === 0
+              }">
+              {{ $t('decision.' + tab.id) }}
+            </a>
+          </li>
+        </ScrollableTabsContainer>
       </div>
     </div>
 
-    <div class="position-absolute w-100" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
+    <div class="position-absolute w-100 border-top" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
       <div v-if="activeTab === 'inputs'">
         <div ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 0; left: 0; bottom: 0">
           <FlowTable striped resizable thead-class="sticky-header" :items="instance.inputs" primary-key="id" prefix="decision." :fields="[
-            { label: 'name', key: 'clauseName', class: 'col-4', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0 position-relative' },
-            { label: 'type', key: 'type', class: 'col-4', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0' },
-            { label: 'value', key: 'value', class: 'col-4', thClass: 'border-end', tdClass: 'py-1 border-top-0' }]">
+            { label: 'name', key: 'clauseName', class: 'col-4', tdClass: 'py-1' },
+            { label: 'type', key: 'type', class: 'col-4', tdClass: 'py-1' },
+            { label: 'value', key: 'value', class: 'col-4', tdClass: 'py-1' }]">
           </FlowTable>
         </div>
       </div>
       <div v-if="activeTab === 'outputs'">
         <div ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 0; left: 0; bottom: 0">
           <FlowTable striped resizable thead-class="sticky-header" :items="instance.outputs" primary-key="id" prefix="decision." :fields="[
-            { label: 'name', key: 'clauseName', class: 'col-4', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0 position-relative' },
-            { label: 'type', key: 'type', class: 'col-4', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0' },
-            { label: 'value', key: 'value', class: 'col-4', thClass: 'border-end', tdClass: 'py-1 border-top-0' }]">
+            { label: 'name', key: 'clauseName', class: 'col-4', tdClass: 'py-1' },
+            { label: 'type', key: 'type', class: 'col-4', tdClass: 'py-1' },
+            { label: 'value', key: 'value', class: 'col-4', tdClass: 'py-1' }]">
           </FlowTable>
         </div>
       </div>
@@ -76,12 +79,13 @@ import { permissionsMixin } from '@/permissions.js'
 import { DecisionService } from '@/services.js'
 import DmnViewer from '@/components/decision/DmnViewer.vue'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
+import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import { mapActions } from 'vuex'
 
 export default {
   name: 'DecisionInstance',
-  components: { DmnViewer, FlowTable },
+  components: { DmnViewer, FlowTable, ScrollableTabsContainer },
   mixins: [permissionsMixin, resizerMixin],
   props: {
     versionIndex: String,
@@ -133,3 +137,8 @@ export default {
   }
 }
 </script>
+<style scoped>
+.active-tab-border {
+  border-bottom: 3px solid white!important;
+}
+</style>

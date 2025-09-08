@@ -75,6 +75,7 @@ export default {
     rightSize: { type: Array, default: function() { return [12, 6, 4, 2, 2] } },
     number: Number, headerCalc: { type: String, default: '40px' }
   },
+  emits: ['update:rightOpen', 'update:leftOpen'],
   computed: {
     middleClasses: function() {
       if (this.leftOpen) {

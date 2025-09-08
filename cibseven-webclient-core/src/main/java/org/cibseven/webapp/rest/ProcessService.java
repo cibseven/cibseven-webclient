@@ -24,6 +24,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
+import java.nio.charset.StandardCharsets;
+
 import org.cibseven.webapp.Data;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenResourceType;
@@ -70,6 +72,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.core.MediaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ApiResponses({
 	@ApiResponse(responseCode = "500", description = "An unexpected system error occured"),
@@ -267,6 +270,33 @@ public class ProcessService extends BaseService implements InitializingBean {
 	}
 	
 	@Operation(
+			summary = "Get deployed start form for process",
+			description = "<strong>Return: Start form data as JSON")
+	@ApiResponse(responseCode = "404", description = "Process or start form not found")
+	@RequestMapping(value = "/{processDefinitionId}/deployed-start-form", method = RequestMethod.GET)
+	public Object getDeployedStartForm(
+			@Parameter(description = "Process definition Id") @PathVariable String processDefinitionId,
+			Locale loc, CIBUser user) {
+		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_ALL);
+		
+		try {
+			ResponseEntity<byte[]> response = bpmProvider.getDeployedStartForm(processDefinitionId, user);
+			byte[] body = response.getBody();
+			
+			if (body == null || body.length == 0) {
+				return null;
+			}
+			
+			String jsonString = new String(body, StandardCharsets.UTF_8);
+			ObjectMapper objectMapper = new ObjectMapper();
+			return objectMapper.readValue(jsonString, Object.class);
+			
+		} catch (Exception e) {
+			throw new SystemException("Error parsing deployed start form: " + e.getMessage(), e);
+		}
+	}
+	
+	@Operation(
 			summary = "Download BPMN",
 			description = "<strong>Return: BPMN")
 	@ApiResponse(responseCode = "404", description = "Process not found")
@@ -427,6 +457,18 @@ public class ProcessService extends BaseService implements InitializingBean {
 	}
 	
 	@Operation(
+			summary = "Get deployment with a specific Id",
+			description = "<strong>Return: Deployment")
+	@ApiResponse(responseCode = "404", description = "Process not found")
+	@RequestMapping(value = "/deployments/{deploymentId}", method = RequestMethod.GET)
+	public Deployment findDeployment(
+		@Parameter(description = "Deployment Id") @PathVariable String deploymentId,
+		CIBUser user) {
+		checkPermission(user, SevenResourceType.DEPLOYMENT, PermissionConstants.READ_ALL);
+		return bpmProvider.findDeployment(deploymentId, user);
+	}
+	
+	@Operation(
 			summary = "Get all deployment resources of a given deployment",
 			description = "<strong>Return: Collection of deployment resources")
 	@ApiResponse(responseCode = "404", description = "Deployment not found")
@@ -532,13 +574,15 @@ public class ProcessService extends BaseService implements InitializingBean {
 	public ResponseEntity<Void> modifyVariableDataByExecutionId(
 			@Parameter(description = "Execution Id") @PathVariable String executionId,
 			@Parameter(description = "Name of the variable") @PathVariable String variableName,
-			@Parameter(description = "Data to be updated") @RequestParam MultipartFile file,
+			@Parameter(description = "Data to be updated") @RequestParam MultipartFile data,
+			@Parameter(description = "Value type") @RequestParam Optional<String> valueType,
 			Locale loc, CIBUser user) {
 		checkCockpitRights(user);
-        checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.UPDATE_ALL);
-		bpmProvider.modifyVariableDataByExecutionId(executionId, variableName, file, user);
-    // return 204 No Content, no body
-    return ResponseEntity.noContent().build();
+		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.UPDATE_ALL);
+		final String valueTypeStr = valueType.orElse("File"); //  Enum: "Bytes" "File"
+		bpmProvider.modifyVariableDataByExecutionId(executionId, variableName, data, valueTypeStr, user);
+		// return 204 No Content, no body
+		return ResponseEntity.noContent().build();
 	}
 	
 	@Operation(
@@ -582,7 +626,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			@Parameter(description = "Variable values") @RequestParam Optional<String> variableValues,
 			@Parameter(description = "Variable names ignore case") @RequestParam Optional<Boolean> variableNamesIgnoreCase,
 			@Parameter(description = "Variable values ignore case") @RequestParam Optional<Boolean> variableValuesIgnoreCase,
-			@Parameter(description = "Deserialize value") @RequestParam Optional<Boolean> deserialize,
+			@Parameter(description = "Deserialize values") @RequestParam Optional<Boolean> deserializeValues,
 			Locale loc, CIBUser user) {
 		checkCockpitRights(user);
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_INSTANCE_VARIABLE_ALL);
@@ -592,7 +636,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 		data.put("variableValues", variableValues.orElse(null));
 		data.put("variableNamesIgnoreCase", variableNamesIgnoreCase.orElse(false));
 		data.put("variableValuesIgnoreCase", variableValuesIgnoreCase.orElse(false));
-		data.put("deserializeValue", deserialize.orElse(true));
+		data.put("deserializeValues", deserializeValues.orElse(true));
 		return bpmProvider.fetchProcessInstanceVariables(processInstanceId, data, user);
 	}
 	
@@ -648,6 +692,31 @@ public class ProcessService extends BaseService implements InitializingBean {
         checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_INSTANCE_VARIABLE_ALL);
 		return sevenProvider.fetchProcessInstanceVariableData(processInstanceId, variableName, user);
 	}
+	
+	@Operation(
+			summary = "Upload file data for a variable of a given process instance by Id",
+			description = "<strong>Return: void")
+	@ApiResponse(responseCode = "404", description = "Process instance not found")
+	@RequestMapping(value = "/process-instance/{processInstanceId}/variables/{variableName}/data", method = RequestMethod.POST)
+	public ResponseEntity<Void> uploadProcessInstanceVariableFileData(
+			@Parameter(description = "Process instance Id") @PathVariable String processInstanceId,
+			@Parameter(description = "Variable name") @PathVariable String variableName,
+			@Parameter(description = "File data to be uploaded") @RequestParam(required = true) MultipartFile data,
+			@Parameter(description = "Value type") @RequestParam Optional<String> valueType,
+			Locale loc, HttpServletRequest rq) {
+		CIBUser user = checkAuthorization(rq, true);
+		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.UPDATE_INSTANCE_VARIABLE_ALL);
+		final String valueTypeStr = valueType.orElse("File"); //  Enum: "Bytes" "File"
+		try {
+			sevenProvider.uploadProcessInstanceVariableFileData(processInstanceId, variableName, data, valueTypeStr, user);
+			return ResponseEntity.noContent().build();
+		} catch (Exception e) {
+			if (e instanceof NoObjectFoundException) {
+				return ResponseEntity.notFound().build();
+			}
+			throw new RuntimeException("Failed to upload variable file data", e);
+		}
+	}
 		
 	@Operation(
 			description = "Get a variable of a given process instance by Id" +
@@ -657,12 +726,13 @@ public class ProcessService extends BaseService implements InitializingBean {
 	public Variable findProcessInstanceVariable(
 			@Parameter(description = "Process instance Id") @PathVariable String processInstanceId,
 			@Parameter(description = "Variable name") @PathVariable String variableName,
-			@Parameter(description = "Deserialize value") @RequestParam(required = false) String deserializeValue,
+			@Parameter(description = "Deserialize value") @RequestParam(required = false) Boolean deserializeValue,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
 		checkCockpitRights(user);
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_INSTANCE_VARIABLE_ALL);
-		return sevenProvider.fetchProcessInstanceVariable(processInstanceId, variableName, deserializeValue, user);
+		boolean deserialize = (deserializeValue == null) || (deserializeValue != null && deserializeValue == true);
+		return sevenProvider.fetchProcessInstanceVariable(processInstanceId, variableName, deserialize, user);
 	}
 	
 	@Operation(
@@ -681,7 +751,8 @@ public class ProcessService extends BaseService implements InitializingBean {
 		// TODO: Check the permission, but not considered the groups, needs to be checked.
 		// checkSpecificProcessRights(user, processDefinitionKey);
 		try {
-			return sevenProvider.fetchProcessInstanceVariable(processInstanceId, "chatComments", deserialize, user);	
+			boolean deserializeValue = (deserialize == null) || (deserialize != null && deserialize == "true");
+			return sevenProvider.fetchProcessInstanceVariable(processInstanceId, "chatComments", deserializeValue, user);	
 		} catch(NoObjectFoundException e) {
 			return null;
 		}
@@ -703,7 +774,8 @@ public class ProcessService extends BaseService implements InitializingBean {
 		// TODO: Check the permission, but not considered the groups, needs to be checked.
 		// checkSpecificProcessRights(user, processDefinitionKey);
 		try {
-			return sevenProvider.fetchProcessInstanceVariable(processInstanceId, "_statusDataset", deserialize, user);	
+			boolean deserializeValue = (deserialize == null) || (deserialize != null && deserialize == "true");
+			return sevenProvider.fetchProcessInstanceVariable(processInstanceId, "_statusDataset", deserializeValue, user);	
 		} catch(NoObjectFoundException e) {
 			return null;
 		}

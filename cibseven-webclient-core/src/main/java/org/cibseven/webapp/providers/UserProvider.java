@@ -62,12 +62,12 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 			String urlUsers = getEngineRestUrl() + "/authorization";
 			UriComponentsBuilder builder;
 			
-			builder = UriComponentsBuilder.fromHttpUrl(urlUsers).queryParam("userIdIn", URLEncoder.encode(userId, StandardCharsets.UTF_8.toString()));
+			builder = UriComponentsBuilder.fromUriString(urlUsers).queryParam("userIdIn", URLEncoder.encode(userId, StandardCharsets.UTF_8.toString()));
 	
 			Collection<Authorization> userAuthorizations = new ArrayList<Authorization>(Arrays.asList(((ResponseEntity<Authorization[]>) doGet(builder, Authorization[].class, user)).getBody()));
 			
 			String urlGroup = getEngineRestUrl() + "/group";
-			builder = UriComponentsBuilder.fromHttpUrl(urlGroup).queryParam("member", URLEncoder.encode(userId, StandardCharsets.UTF_8.toString()));
+			builder = UriComponentsBuilder.fromUriString(urlGroup).queryParam("member", URLEncoder.encode(userId, StandardCharsets.UTF_8.toString()));
 			Collection<UserGroup> userGroups = Arrays.asList(((ResponseEntity<UserGroup[]>) doGet(builder, UserGroup[].class, user)).getBody());
 			
 			String listGroups = "";
@@ -78,12 +78,12 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 			
 			if (userGroups.size() > 0) {
 				String urlGroupAuthorizations = getEngineRestUrl() + "/authorization";
-				builder = UriComponentsBuilder.fromHttpUrl(urlGroupAuthorizations).queryParam("groupIdIn", URLEncoder.encode(listGroups, StandardCharsets.UTF_8.toString()));
+				builder = UriComponentsBuilder.fromUriString(urlGroupAuthorizations).queryParam("groupIdIn", URLEncoder.encode(listGroups, StandardCharsets.UTF_8.toString()));
 				Collection<Authorization> groupsAuthorizations = Arrays.asList(((ResponseEntity<Authorization[]>) doGet(builder, Authorization[].class, user)).getBody());
 				userAuthorizations.addAll(groupsAuthorizations);
 			}
 
-			builder = UriComponentsBuilder.fromHttpUrl(urlUsers).queryParam("type", 0);
+			builder = UriComponentsBuilder.fromUriString(urlUsers).queryParam("type", 0);
 			Collection<Authorization> globalAuthorizations = Arrays.asList(((ResponseEntity<Authorization[]>) doGet(builder, Authorization[].class, user)).getBody());
 			userAuthorizations.addAll(globalAuthorizations);
 
