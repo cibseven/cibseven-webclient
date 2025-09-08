@@ -84,12 +84,6 @@ You may obtain a copy of the License at
 								<fileset>
 									<directory>./frontend/target</directory>
 								</fileset>
-								<fileset>
-									<directory>${project.build.directory}/webapp</directory>
-									<excludes>
-										<exclude>README.md</exclude>
-									</excludes>
-								</fileset>
 							</filesets>
 						</configuration>
 					</plugin>
@@ -187,12 +181,6 @@ You may obtain a copy of the License at
 							<filesets>
 								<fileset>
 									<directory>./frontend/target</directory>
-								</fileset>
-								<fileset>
-									<directory>${project.build.directory}/webapp</directory>
-									<excludes>
-										<exclude>README.md</exclude>
-									</excludes>
 								</fileset>
 							</filesets>
 						</configuration>
