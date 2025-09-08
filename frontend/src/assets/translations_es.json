@@ -940,6 +940,12 @@
 				"title": "Decisiones",
 				"tooltip": "Explora las definiciones de decisiones disponibles"
 			},
+			"decision-definition": {
+				"title": "Definición de Decisión"
+			},
+			"decision-instance": {
+				"title": "Instancia de Decisión"
+			},
 			"humanTasks": {
 				"title": "Tareas de Usuario",
 				"tooltip": "Ver todas las tareas humanas pendientes"
