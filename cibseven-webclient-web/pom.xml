@@ -74,6 +74,30 @@
 				</executions>
 			</plugin>
 
+			<!-- Clean webapp folder to have a clean copy of resources in the root of WAR (copy-frontend-resources) -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>clean-webapp-folder</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target>
+								<delete includeemptydirs="true">
+									<fileset dir="${project.basedir}/src/main/webapp">
+										<exclude name="README.md"/>
+									</fileset>
+								</delete>
+							</target>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
 			<!-- Index.html contain projectVersion variable which needs to be
 			replace by the current version of the project -->
 			<plugin>
