@@ -86,7 +86,7 @@
               </div>
               <div class="col-1 p-3">
                 <span v-if="selectedActivityId" class="badge bg-info rounded-pill p-2 pe-3" style="font-weight: 500; font-size: 0.75rem">
-                  <span @click="clearActivitySelection" role="button" class="mdi mdi-close-thick py-2 px-1"></span> {{ selectedActivityId }}
+                  <span @click="clearActivitySelection" role="button" class="mdi mdi-close-thick py-2 px-1"></span> {{ selectedActivityIdBadge }}
                 </span>
               </div>
             </template>
@@ -295,11 +295,22 @@ export default {
     isInstancesView: function() {
       return this.activeTab === 'instances'
     },
-    ...mapGetters(['selectedActivityId']),
+    ...mapGetters(['selectedActivityId', 'selectedActivityInstancesListMode']),
     ...mapGetters('instances', ['instances']),
     collapseButtons: function() {
       return this.ProcessInstancesSearchBoxPlugin || this.selectedActivityId
     },
+    selectedActivityIdBadge() {
+      if (!this.selectedActivityId) return ''
+      switch (this.selectedActivityInstancesListMode) {
+        case 'executed':
+          return `${this.selectedActivityId} (executed only)`
+        case 'active':
+          return `${this.selectedActivityId} (active only)`
+        default:
+          return this.selectedActivityId
+      }
+    }
   },
   methods: {
     ...mapActions(['clearActivitySelection', 'setDiagramXml', 'loadHistoricActivityStatistics', 'clearHistoricActivityStatistics']),
