@@ -256,14 +256,22 @@ export default {
 
       // append `selectedActivityId` into activityIdIn array
       if (this.selectedActivityId) {
-        if (!result.activityIdIn || !Array.isArray(result.activityIdIn)) {
-          result.activityIdIn = [this.selectedActivityId]
-        }
-        else if (!result.activityIdIn.includes(this.selectedActivityId)) {
-          result.activityIdIn = [
-            ...result.activityIdIn,
-            this.selectedActivityId
-          ]
+
+        // clean up
+        delete result.executedActivityIdIn
+        delete result.activityIdIn
+        delete result.activeOrExecutedActivityIdIn
+
+        switch (this.selectedActivityInstancesListMode) {
+          case 'executed':
+            result.executedActivityIdIn = [this.selectedActivityId]
+            break
+          case 'active':
+            result.activityIdIn = [this.selectedActivityId]
+            break
+          default:
+            result.activeOrExecutedActivityIdIn = [this.selectedActivityId]
+            break
         }
       }
 

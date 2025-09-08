@@ -209,7 +209,7 @@ export default {
         const bubble = event.target.closest('.bubble')
         if (bubble && bubble.dataset.activityId) {
           this.setHighlightedElement(bubble.dataset.activityId)
-          const listMode = bubble.dataset.type === 'activitiesHistory' ? 'executed' : 'active'
+          const listMode = ['activitiesHistory', 'canceledInstances'].includes(bubble.dataset.type) ? 'executed' : 'active'
           this.selectActivity({ activityId: bubble.dataset.activityId, listMode })
         }
         

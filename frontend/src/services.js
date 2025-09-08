@@ -362,15 +362,15 @@ var HistoryService = {
       }
     }
 
-    if (requestBody.activityIdIn != undefined) {
+    if (requestBody.activeOrExecutedActivityIdIn != undefined) {
       if (requestBody.orQueries === undefined) {
         requestBody.orQueries = []
       }
       requestBody.orQueries.push({
-        activityIdIn: requestBody.activityIdIn,
-        executedActivityIdIn: requestBody.activityIdIn
+        activeActivityIdIn: requestBody.activeOrExecutedActivityIdIn,
+        executedActivityIdIn: requestBody.activeOrExecutedActivityIdIn
       })
-      delete requestBody.activityIdIn
+      delete requestBody.activeOrExecutedActivityIdIn
     }
 
     // Add sorting criteria
