@@ -75,7 +75,7 @@ export function convertFormDataForFormJs(formData) {
  * @param {*} value - The field value
  * @returns {string} The determined type (Integer, Double, Boolean, String)
  */
-export function determineValueTypeFromSchema(schema, fieldKey, value) {
+export function determineValueTypeFromSchema(schema, fieldKey) {
   // Find the field definition in the form schema
   const fieldDef = findFieldByKey(schema, fieldKey)
   

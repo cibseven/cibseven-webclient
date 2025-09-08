@@ -127,7 +127,7 @@ export default {
           if (!this.$refs.templateBase.formFiles[key]) {
             this.dataToSubmit[key] = {
                   name: key,
-                  type: determineValueTypeFromSchema(this.formSchema, key, value),
+                  type: determineValueTypeFromSchema(this.formSchema, key),
                   value: value,
                   valueInfo: null
               }
