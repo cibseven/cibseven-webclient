@@ -483,7 +483,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 			for (Variable variable: formResult) {
 				ObjectNode variablePost = mapper.getNodeFactory().objectNode();
                 String val = String.valueOf(variable.getValue());
-                if (variable.getType().equals("boolean") || variable.getType().equals("Boolean")) {
+                if (variable.getType().equals("Boolean")) {
                     variablePost.put("value", Boolean.parseBoolean(val));
                 } else if (variable.getType().equals("Double")) {
                     variablePost.put("value", Double.parseDouble(val));
@@ -583,7 +583,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		for (Variable variable: formResult) {
 			ObjectNode variablePost = mapper.getNodeFactory().objectNode();
 			String val = String.valueOf(variable.getValue());
-			if (variable.getType().equals("boolean") || variable.getType().equals("Boolean")) {
+			if (variable.getType().equals("Boolean")) {
 				variablePost.put("value", Boolean.parseBoolean(val));
 			} else if (variable.getType().equals("Double")) {
 			  	variablePost.put("value", Double.parseDouble(val));
