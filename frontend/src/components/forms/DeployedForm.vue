@@ -38,7 +38,7 @@ import IconButton from '@/components/forms/IconButton.vue'
 import { Form } from '@bpmn-io/form-js'
 import '@bpmn-io/form-js/dist/assets/form-js.css'
 
-import { convertFormDataForFormJs } from './formJsUtils.js'
+import { convertFormDataForFormJs, determineValueTypeFromSchema } from './formJsUtils.js'
 
 export default {
   name: "DeployedForm",
@@ -57,6 +57,7 @@ export default {
       loader: true,
       disabled: false,
       form: null,
+      formSchema: null,
       dataToSubmit: {},
       closeTask: true
     }
@@ -84,6 +85,7 @@ export default {
             container: document.querySelector('#form'),
         })
         await this.form.importSchema(formContent, convertedFormData)
+        this.formSchema = formContent
 
         // Wait for DOM to be updated after form import
         await this.$nextTick()
@@ -125,7 +127,7 @@ export default {
           if (!this.$refs.templateBase.formFiles[key]) {
             this.dataToSubmit[key] = {
                   name: key,
-                  type: this.determineValueTypeFromSchema(key, value),
+                  type: determineValueTypeFromSchema(this.formSchema, key, value),
                   value: value,
                   valueInfo: null
               }
@@ -143,90 +145,6 @@ export default {
       } finally {
         this.closeTask = true
       }
-    },
-    determineValueTypeFromSchema: function(fieldKey, value) {
-      // Find the field definition in the form schema
-      const fieldDef = this.findFieldByKey(this.formularContent, fieldKey)
-      
-      if (fieldDef) {
-        switch (fieldDef.type) {
-          case 'number':
-            // Check if it has decimal digits to determine Integer vs Double
-            if (fieldDef.decimalDigits && fieldDef.decimalDigits > 0) {
-              return 'Double'
-            } else {
-              return Number.isInteger(Number(value)) ? 'Integer' : 'Double'
-            }
-          case 'checkbox':
-            return 'Boolean'
-          case 'select':
-            return 'String'
-          case 'textfield':
-          case 'textarea':
-            return 'String'
-          case 'datetime':
-            return 'Date'
-          default:
-            return 'String'
-        }
-      }
-      
-      // Fallback to original logic if field not found in schema
-      return this.determineValueType(value)
-    },
-    
-    findFieldByKey: function(schema, key) {
-      if (!schema || !schema.components) return null
-      
-      for (const component of schema.components) {
-        if (component.key === key) {
-          return component
-        }
-        // Recursively search in nested components if they exist
-        if (component.components) {
-          const found = this.findFieldByKey(component, key)
-          if (found) return found
-        }
-      }
-      return null
-    },
-    determineValueType: function(value) {
-      // Handle null and undefined
-      if (value === null || value === undefined) {
-        return 'String'
-      }
-      
-      // If it's already a number, return appropriate type
-      if (typeof value === 'number') {
-        return Number.isInteger(value) ? 'Integer' : 'Double'
-      }
-      
-      // If it's a boolean, return Boolean
-      if (typeof value === 'boolean') {
-        return 'Boolean'
-      }
-      
-      // If it's a string, try to determine if it represents a number
-      if (typeof value === 'string') {
-        // Check if it's a valid number
-        const numValue = Number(value)
-        if (!isNaN(numValue) && value.trim() !== '') {
-          // Check if it's an integer or decimal
-          if (Number.isInteger(numValue)) {
-            return 'Integer'
-          } else {
-            return 'Double'
-          }
-        }
-        
-        // Check if it's a boolean string
-        if (value.toLowerCase() === 'true' || value.toLowerCase() === 'false') {
-          return 'Boolean'
-        }
-      }
-      
-      // Default to String for everything else
-      return 'String'
     }
   }
 }

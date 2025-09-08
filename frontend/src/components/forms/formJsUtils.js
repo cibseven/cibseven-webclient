@@ -67,3 +67,56 @@ export function convertFormDataForFormJs(formData) {
   
   return convertedFormData
 }
+
+/**
+ * Determine the value type based on the form field schema definition
+ * @param {Object} schema - The form schema object
+ * @param {string} fieldKey - The field key to look up
+ * @param {*} value - The field value
+ * @returns {string} The determined type (Integer, Double, Boolean, String)
+ */
+export function determineValueTypeFromSchema(schema, fieldKey, value) {
+  // Find the field definition in the form schema
+  const fieldDef = findFieldByKey(schema, fieldKey)
+  
+  if (fieldDef) {
+    switch (fieldDef.type) {
+      case 'number':
+        // Check if it has decimal digits to determine Integer vs Double
+        if (fieldDef.decimalDigits && fieldDef.decimalDigits > 0) {
+          return 'Double'
+        } else {
+          return Number.isInteger(Number(value)) ? 'Integer' : 'Double'
+        }
+      case 'checkbox':
+        return 'Boolean'
+      default:
+        return 'String'
+    }
+  }
+  
+  // Default to String if field not found in schema
+  return 'String'
+}
+
+/**
+ * Recursively find a field by key in the form schema
+ * @param {Object} schema - The schema object to search in
+ * @param {string} key - The field key to find
+ * @returns {Object|null} The field definition or null if not found
+ */
+export function findFieldByKey(schema, key) {
+  if (!schema || !schema.components) return null
+  
+  for (const component of schema.components) {
+    if (component.key === key) {
+      return component
+    }
+    // Recursively search in nested components if they exist
+    if (component.components) {
+      const found = findFieldByKey(component, key)
+      if (found) return found
+    }
+  }
+  return null
+}
