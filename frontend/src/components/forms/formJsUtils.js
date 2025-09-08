@@ -86,7 +86,7 @@ export function determineValueTypeFromSchema(schema, fieldKey, value) {
         if (fieldDef.decimalDigits && fieldDef.decimalDigits > 0) {
           return 'Double'
         } else {
-          return Number.isInteger(Number(value)) ? 'Integer' : 'Double'
+          return 'Integer'
         }
       case 'checkbox':
         return 'Boolean'
