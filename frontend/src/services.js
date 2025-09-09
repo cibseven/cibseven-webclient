@@ -101,7 +101,6 @@ var FilterService = {
 var ProcessService = {
   findProcesses: function() { return axios.get(getServicesBasePath() + "/process") },
   findProcessesWithInfo: function() { return axios.get(getServicesBasePath() + "/process/extra-info") },
-  findProcessesCount: function() { return axios.get(getServicesBasePath() + "/process/count") },
   findProcessesWithFilters: function(filters) { return axios.post(getServicesBasePath() + "/process", filters) },
   findProcessByDefinitionKey: function(key, tenantId) {
     let url = `${getServicesBasePath()}/process/${key}`
