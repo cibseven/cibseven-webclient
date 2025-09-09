@@ -184,6 +184,19 @@
 			"suspend": "¿Realmente desea suspender la siguiente definición de proceso con todas las instancias de proceso en ejecución?",
 			"activate": "¿Realmente quieres activar la siguiente definición de proceso con todas las instancias de proceso en ejecución?"
 		},
+		"activityIdBadge": {
+			"remove": "Eliminar criterio - para listar todas las instancias de proceso",
+			"title": {
+				"executed": "{activityId} (solo ejecutadas)",
+				"active": "{activityId} (solo activas)",
+				"all": "{activityId}"
+			},
+			"tooltip": {
+				"executed": "Listar instancias que ejecutaron la actividad {activityId}",
+				"active": "Listar instancias que aún están activas con la actividad {activityId}",
+				"all": "Listar instancias que ejecutaron la actividad {activityId} o que aún están activas con la actividad {activityId}"
+			}
+		},
 		"true": "Verdadero",
 		"false": "Falso",		
 		"jobDefinitions": "Definiciones de trabajos",

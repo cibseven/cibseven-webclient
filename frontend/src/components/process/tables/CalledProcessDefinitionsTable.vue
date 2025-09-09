@@ -53,7 +53,7 @@
             v-for="(act, index) in table.item.activities" :key="index" 
             :display-value="act.activityName"
             :title="act.activityName"
-            @click="selectActivity(act.activityId)"
+            @click="selectActivity({ activityId: act.activityId, listMode: 'all' })"
             @copy="copyValueToClipboard"
           />
         </div>
