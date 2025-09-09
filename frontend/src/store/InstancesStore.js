@@ -40,11 +40,10 @@ export default {
     }
   },
   actions: {
-    async loadInstances({ commit }, { processId, activityId, filter, showMore = false, tenantId, camundaHistoryLevel, firstResult, maxResults, sortingCriteria = [], fetchIncidents = false }) {
+    async loadInstances({ commit }, { processId, filter, showMore = false, tenantId, camundaHistoryLevel, firstResult, maxResults, sortingCriteria = [], fetchIncidents = false }) {
       if (camundaHistoryLevel !== 'none') {
         const instances = await HistoryService.findProcessesInstancesHistoryById(
           processId, 
-          activityId,
           firstResult, 
           maxResults, 
           filter,
@@ -61,7 +60,7 @@ export default {
       } else {
         const versions = await ProcessService.findProcessVersionsByDefinitionKey(processId, tenantId, true)
         const promises = versions.map(() => 
-          HistoryService.findProcessesInstancesHistoryById(processId, activityId, firstResult, maxResults, filter, null, sortingCriteria, fetchIncidents)
+          HistoryService.findProcessesInstancesHistoryById(processId, firstResult, maxResults, filter, null, sortingCriteria, fetchIncidents)
         )
         const responses = await Promise.all(promises)
         if (!showMore) commit('setInstances', [])

@@ -117,6 +117,7 @@ export default {
   mixins: [usersMixin, assigneeMixin],
   inject: ['isMobile'],
   props: { task: Object },
+  emits: ['complete-task', 'update-assignee'],
   setup: function() {
     const POPOVER_DELAY = 1200 // 1.2 seconds
     return { POPOVER_DELAY }

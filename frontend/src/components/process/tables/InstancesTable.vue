@@ -162,7 +162,6 @@ export default {
       try {
         const instances = await this.loadInstances({
           processId: this.process.id,
-          activityId: null,
           filter: this.filter,
           tenantId: this.tenantId,
           camundaHistoryLevel: this.$root.config.camundaHistoryLevel,

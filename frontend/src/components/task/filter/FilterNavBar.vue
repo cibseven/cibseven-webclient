@@ -113,6 +113,7 @@ export default {
   name: 'FilterNavBar',
   components: { FilterModal, ConfirmDialog, BWaitingBox },
   mixins: [permissionsMixin],
+  emits: ['filter-alert', 'n-filters-shown', 'selected-filter', 'set-filter'],
   data: function () {
     return {
       filter: '',

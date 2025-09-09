@@ -48,6 +48,7 @@ export default {
   components: { FlowTable },
   mixins: [permissionsMixin, processesMixin],
   props: { processes: Array },
+  emits: ['favorite', 'start-process'],
   computed: {
     fields: function() {
       return [{ label: 'favorite', key: 'favorite', sortable: false, thClass:'py-0', tdClass:'py-0 ps-0',
