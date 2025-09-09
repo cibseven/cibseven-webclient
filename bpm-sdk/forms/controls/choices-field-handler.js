@@ -146,7 +146,10 @@ var ChoicesFieldHandler = AbstractFormField.extend(
           value.push($(this).val());
         });
       } else {
-        value = this.element.find('option:selected').attr('value');
+        // Use .val() instead of .attr('value') to handle options without explicit value attributes
+        // When no value attribute exists, .val() returns the text content, while .attr('value') returns undefined
+        var selectedOption = this.element.find('option:selected');
+        value = selectedOption.length > 0 ? selectedOption.val() : undefined;
       }
 
       // write value to variable
