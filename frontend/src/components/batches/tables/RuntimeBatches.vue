@@ -28,7 +28,7 @@
             { label: 'failedJobs', key: 'failedJobs', class: 'col-2', tdClass: 'p-1' },
             { label: 'progress', key: 'progress', class: 'col-2', tdClass: 'p-1' }
         ]"
-        @click="loadBatchDetails($event)">
+        @click="loadBatchDetails($event)" sort-by="startTime" sort-desc>
         <template v-slot:cell(id)="table">
           <div class="p-1 text-truncate" :class="batchIsSelected(table.item.id) ? 'border-start border-4 border-primary' : ''">
             {{ table.item.id }}
