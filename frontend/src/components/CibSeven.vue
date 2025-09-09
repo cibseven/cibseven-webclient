@@ -45,7 +45,7 @@
             </template>
             <template v-for="(group, gIdx) in computedMenuItems" :key="gIdx">
               <b-dropdown-divider v-if="group.divider"></b-dropdown-divider>
-              <b-dropdown-group v-else :header="$t(group.groupTitle)">
+              <b-dropdown-group v-else-if="group.items && group.items.length > 0" :header="$t(group.groupTitle)">
                 <b-dropdown-item
                   v-for="(item, idx) in group.items"
                   :key="'ext-' + idx"
@@ -163,7 +163,7 @@ export default {
             }
           ]
         }, {
-          show: this.permissionsTaskList && this.permissionsCockpit,
+          show: this.permissionsTaskList && this.permissionsCockpit && this.startableProcesses,
           divider: true,
         }, {
           show: this.permissionsCockpit,
