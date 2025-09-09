@@ -26,7 +26,7 @@
           { label: 'startTime', key: 'startTime', class: 'col-2', tdClass: 'p-1' },
           { label: 'endTime', key: 'endTime', class: 'col-2', tdClass: 'p-1' },
         ]"
-        @click="loadBatchDetails($event)">
+        sort-by="endTime" sort-desc @click="loadBatchDetails($event)">
         <template v-slot:cell(id)="table">
           <div class="p-1 text-truncate" :class="batchIsSelected(table.item.id) ? 'border-start border-4 border-primary' : ''">
             {{ table.item.id }}
