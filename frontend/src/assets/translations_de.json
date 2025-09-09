@@ -953,6 +953,12 @@
 				"title": "Entscheidungen",
 				"tooltip": "Verfügbare Entscheidungsdefinitionen durchsuchen"
 			},
+			"decision-definition": {
+				"title": "Entscheidungsdefinition"
+			},
+			"decision-instance": {
+				"title": "Entscheidungsinstanz"
+			},
 			"humanTasks": {
 				"title": "Aufgaben",
 				"tooltip": "Alle ausstehenden Aufgaben anzeigen"
