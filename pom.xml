@@ -30,9 +30,9 @@
 		<git-commit-id-maven-plugin.version>9.0.1</git-commit-id-maven-plugin.version>
 
 		<jjwt.version>0.12.6</jjwt.version>
-		<swagger-annotations.version>2.2.27</swagger-annotations.version>
+		<swagger-annotations.version>2.2.28</swagger-annotations.version>
 		<commons-io.version>2.18.0</commons-io.version>
-		<common-auth.version>1.1.0</common-auth.version>
+		<common-auth.version>1.2.0-SNAPSHOT</common-auth.version>
 		<version.spring.boot>3.5.4</version.spring.boot>
 		<version.openapi-starter-webmvc-ui>2.8.4</version.openapi-starter-webmvc-ui>
 		<image.tomcat-10-base>harbor.cib.de/dev/tomcat-10-base:2.0.0</image.tomcat-10-base>
@@ -83,12 +83,6 @@ You may obtain a copy of the License at
 							<filesets>
 								<fileset>
 									<directory>./frontend/target</directory>
-								</fileset>
-								<fileset>
-									<directory>${project.build.directory}/webapp</directory>
-									<excludes>
-										<exclude>README.md</exclude>
-									</excludes>
 								</fileset>
 							</filesets>
 						</configuration>
@@ -187,12 +181,6 @@ You may obtain a copy of the License at
 							<filesets>
 								<fileset>
 									<directory>./frontend/target</directory>
-								</fileset>
-								<fileset>
-									<directory>${project.build.directory}/webapp</directory>
-									<excludes>
-										<exclude>README.md</exclude>
-									</excludes>
 								</fileset>
 							</filesets>
 						</configuration>
