@@ -362,7 +362,7 @@ var HistoryService = {
       }
     }
 
-    if (requestBody.activeOrExecutedActivityIdIn != undefined) {
+    if (requestBody.activeOrExecutedActivityIdIn !== undefined) {
       if (requestBody.orQueries === undefined) {
         requestBody.orQueries = []
       }
