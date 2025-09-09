@@ -181,7 +181,7 @@ export default {
               title: 'start.cockpit.processes.title'
             }, {
               to: '/seven/auth/decisions/list',
-              active: ['seven/auth/decision'],
+              active: ['seven/auth/decision/', 'seven/auth/decisions/list'],
               tooltip: 'start.cockpit.decisions.tooltip',
               title: 'start.cockpit.decisions.title',
             }, {
