@@ -30,6 +30,7 @@ import { permissionsMixin }  from './permissions.js'
 import { InfoService, AuthService, setServicesBasePath } from './services.js'
 import { getTheme, hasHeader, isMobile, checkExternalReturn } from './utils/init'
 import { applyTheme, handleAxiosError, fetchAndStoreProcesses, fetchDecisionsIfEmpty, setupTaskNotifications } from './utils/init'
+import { applyConfigDefaults } from './utils/config.js'
 import { i18n, switchLanguage } from './i18n'
 
 // check for token inside hash
@@ -37,11 +38,13 @@ import { i18n, switchLanguage } from './i18n'
 checkExternalReturn(window.location.href, window.location.hash)
 
 Promise.all([
-  axios.get('config.json'),
+  axios.get('config.json').catch(() => ({ data: {} })), // Handle missing config.json
   InfoService.getProperties()
 ]).then(responses => {
-  Object.assign(responses[0].data, responses[1].data)
-  var config = responses[0].data
+  // Apply defaults before merging
+  const configFromFile = applyConfigDefaults(responses[0].data)
+  Object.assign(configFromFile, responses[1].data)
+  var config = configFromFile
 
   setServicesBasePath(config.servicesBasePath)
 
