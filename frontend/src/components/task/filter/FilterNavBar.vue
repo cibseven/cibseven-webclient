@@ -173,8 +173,8 @@ export default {
   },
   methods: {
     fetchFilters: function() {
-        this.$refs.filterLoader.done = false
-        this.$store.dispatch('findFilters').then(response => {
+      this.$refs.filterLoader.done = false
+      this.$store.dispatch('findFilters').then(response => {
         this.$store.commit('setFilters',
           { filters: this.filtersByPermissions(this.$root.config.permissions.displayFilter, response) })
         if (this.$root.config.taskFilter.tasksNumber.enabled) {
