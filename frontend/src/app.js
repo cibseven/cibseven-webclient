@@ -39,11 +39,9 @@ checkExternalReturn(window.location.href, window.location.hash)
 
 Promise.all([
   axios.get('config.json').then(response => {
-    // Check if response is HTML instead of JSON
-    // This is needed since the missing config.json does not return an error, but a 200.
-    if (typeof response.data === 'string' && response.data.trim().startsWith('<!DOCTYPE html')) {
-      console.warn('Received HTML response instead of JSON for config.json, using defaults')
-      // Handle missing config.json
+    // Check if response data is not an object
+    if (typeof response.data !== 'object' || response.data === null) {
+      console.warn('Received non-object response for config.json, using defaults')
       return { data: {} }
     }
     return response
