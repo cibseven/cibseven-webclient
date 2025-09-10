@@ -31,7 +31,7 @@ export function getEnabledShortcuts(config, category) {
   }
   
   return Object.entries(config.shortcuts[category])
-    .filter(([key, shortcut]) => shortcut.enabled)
+    .filter(([, shortcut]) => shortcut.enabled)
     .map(([key, shortcut]) => ({
       id: key,
       ...shortcut
@@ -127,7 +127,7 @@ export function checkKeyMatch(event, keys) {
   // Check if all keys in the combination match
   return keys.every(key => {
     const keyLower = key.toLowerCase()
-    if (keyMap.hasOwnProperty(keyLower)) {
+    if (Object.prototype.hasOwnProperty.call(keyMap, keyLower)) {
       return keyMap[keyLower]
     }
     // For regular keys, check the pressed key
