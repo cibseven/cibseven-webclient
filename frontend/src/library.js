@@ -42,6 +42,7 @@ import { appRoutes,
 import { updateAppTitle, checkExternalReturn, isMobile, hasHeader, getTheme } from './utils/init.js'
 import { applyTheme, handleAxiosError, fetchAndStoreProcesses, fetchDecisionsIfEmpty, setupTaskNotifications } from './utils/init'
 import { parseXMLDocumentation } from './utils/parser.js'
+import { applyConfigDefaults } from './utils/config.js'
 import CibSeven from '@/components/CibSeven.vue'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import ContentBlock from '@/components/common-components/ContentBlock.vue'
@@ -137,7 +138,7 @@ import SystemDiagnostics from '@/components/system/SystemDiagnostics.vue'
 import ExecutionMetrics from '@/components/system/ExecutionMetrics.vue'
 import ShortcutsModal from '@/components/modals/ShortcutsModal.vue'
 import ShortcutsTable from '@/components/modals/ShortcutsTable.vue'
-import { TaskService, HistoryService, ProcessService, getServicesBasePath, 
+import { TaskService, HistoryService, ProcessService, getServicesBasePath,
   setServicesBasePath, IncidentService, DecisionService, BatchService } from '@/services.js';
 import DeployedForm from '@/components/forms/DeployedForm.vue'
 import StartDeployedForm from '@/components/forms/StartDeployedForm.vue'
@@ -446,5 +447,8 @@ export {
 
   initEmbeddedForm,
   ScrollableTabsContainer,
-  tabUrlMixin
+  tabUrlMixin,
+
+  // Configuration utilities
+  applyConfigDefaults
 }
