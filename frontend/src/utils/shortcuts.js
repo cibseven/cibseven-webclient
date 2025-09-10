@@ -78,15 +78,6 @@ function formatKeysForDisplay(keys) {
 }
 
 /**
- * Generate Vue GlobalEvents event string from key combination
- * @param {Array} keys - Array of key names
- * @returns {String} Event string for GlobalEvents (e.g., 'keydown.ctrl.left.prevent')
- */
-export function generateEventString(keys) {
-  return `keydown.${keys.map(key => key.toLowerCase()).join('.')}.prevent`
-}
-
-/**
  * Get all global navigation shortcuts that should trigger route changes
  * @param {Object} config - The application config object
  * @returns {Array} Array of global shortcuts with route information
@@ -123,14 +114,21 @@ export function checkKeyMatch(event, keys) {
     'up': event.key === 'ArrowUp',
     'down': event.key === 'ArrowDown'
   }
-  
   // Check if all keys in the combination match
   return keys.every(key => {
     const keyLower = key.toLowerCase()
     if (Object.prototype.hasOwnProperty.call(keyMap, keyLower)) {
       return keyMap[keyLower]
     }
-    // For regular keys, check the pressed key
-    return event.key.toLowerCase() === keyLower
+    // For regular keys (letters, numbers, etc.), check multiple possibilities
+    const matches = [
+      event.key === key,                    // Exact match
+      event.key.toLowerCase() === keyLower, // Lowercase match
+      event.key === keyLower,               // Direct lowercase match
+      event.code === `Digit${key}`,         // For numbers: Digit1, Digit2, etc.
+      event.code === `Key${key.toUpperCase()}`, // For letters: KeyA, KeyB, etc.
+    ]
+    const result = matches.some(match => match)
+    return result
   })
 }

@@ -241,19 +241,19 @@
 		"global": {
 			"startProcess": {
 				"enabled": true,
-				"keys": ["ctrl", "left"],
-				"description": "infoAndHelp.shortcuts.shortcuts.startProcess",
+				"keys": ["ctrl", "alt", "1"],
+				"description": "infoAndHelp.shortcuts.shortcuts.startProcessView",
 				"route": "/seven/auth/start-process"
 			},
 			"tasksView": {
 				"enabled": true,
-				"keys": ["ctrl", "down"],
+				"keys": ["ctrl", "alt", "2"],
 				"description": "infoAndHelp.shortcuts.shortcuts.tasksView",
 				"route": "/seven/auth/tasks"
 			},
 			"processesView": {
 				"enabled": true,
-				"keys": ["ctrl", "right"],
+				"keys": ["ctrl", "alt", "3"],
 				"description": "infoAndHelp.shortcuts.shortcuts.processesView",
 				"route": "/seven/auth/processes/list"
 			}
