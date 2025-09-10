@@ -222,6 +222,11 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 	
 	@Override
+	public ResponseEntity<String> getRenderedForm(String taskId, Map<String, Object> params, CIBUser user) {
+		return taskProvider.getRenderedForm(taskId, params, user);
+	}
+	
+	@Override
 	public Integer findHistoryTasksCount(Map<String, Object> filters, CIBUser user) {
 		return taskProvider.findHistoryTasksCount(filters, user);
 	}
@@ -372,6 +377,11 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	@Override
 	public ResponseEntity<byte[]> getDeployedStartForm(String processDefinitionId, CIBUser user) {
 		return processProvider.getDeployedStartForm(processDefinitionId, user);
+	}
+
+	@Override
+	public ResponseEntity<String> getRenderedStartForm(String processDefinitionId, Map<String, Object> params, CIBUser user) {
+		return processProvider.getRenderedForm(processDefinitionId, params, user);
 	}
 
 	@Override
