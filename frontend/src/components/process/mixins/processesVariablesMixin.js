@@ -108,16 +108,35 @@ export default {
 			this.filteredVariables = [...variables]
 			this.loading = false
 		},
+		isFileValueDataSource: function(item) {
+      if (item.type === 'Object') {
+        const objectTypeName =
+          (item.value && item.value.objectTypeName) ||
+          (item.valueInfo && item.valueInfo.objectTypeName)
+        if (objectTypeName && this.fileObjects.includes(objectTypeName)) return true
+      }
+      return false
+    },
+		getFileVariableName: function(item) {
+			if (item.value && typeof item.value === 'object' && item.value.name) {
+				return item.value.name
+			}
+			if (item.value && typeof item.value === 'string') {
+				try {
+					const parsed = JSON.parse(item.value)
+					if (parsed && parsed.name) return parsed.name
+				} catch { return '' }
+			}
+			return ''
+		},
 		downloadFile: function(variable) {
-			if (variable.type === 'Object') {
-				if (variable.value.objectTypeName.includes('FileValueDataFlowSource')) {
-					TaskService.downloadFile(variable.processInstanceId, variable.name).then(data => {
-						this.$refs.importPopper.triggerDownload(data, variable.value.name)
-					})
-				} else {
-					var blob = new Blob([Uint8Array.from(atob(variable.value.data), c => c.charCodeAt(0))], { type: variable.value.contentType })
-					this.$refs.importPopper.triggerDownload(blob, variable.value.name)
-				}
+			if (this.isFileValueDataSource(variable)) {
+				TaskService.downloadFile(variable.processInstanceId, variable.name).then(data => {
+					this.$refs.importPopper.triggerDownload(data, this.getFileVariableName(variable))
+				})
+			} else if (variable.type === 'Object') {
+				var blob = new Blob([Uint8Array.from(atob(variable.value.data), c => c.charCodeAt(0))], { type: variable.value.contentType })
+				this.$refs.importPopper.triggerDownload(blob, this.getFileVariableName(variable))
 			} else {
 				var download = this.selectedInstance.state === 'ACTIVE' ?
 					ProcessService.fetchVariableDataByExecutionId(variable.executionId, variable.name) :

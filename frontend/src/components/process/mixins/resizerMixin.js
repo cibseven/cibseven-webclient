@@ -66,7 +66,7 @@ export default {
         },
         toggleContent: function() {
             this.toggleTransition = 'transition: top '+ this.transitionTime +'s ease, height '+ this.transitionTime +'s ease'
-            if (this.bpmnViewerHeight < (this.bpmnViewerHeight + this.$refs.rContent.offsetHeight)) {
+            if (this.bpmnViewerHeight < (this.bpmnViewerHeight + this.$refs.rContent.offsetHeight - 1)) {
                 this.bpmnViewerHeight += this.$refs.rContent.offsetHeight
                 this.toggleIcon = 'mdi-chevron-up'
             }

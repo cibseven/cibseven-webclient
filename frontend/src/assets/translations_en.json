@@ -184,6 +184,19 @@
 			"suspend": "Do you really want to suspend the next process definition with all running process instances?",
 			"activate": "Do you really want to activate the next process definition with all running process instances?"
 		},
+		"activityIdBadge": {
+			"remove": "Remove criteria - to list all process instances",
+			"title": {
+				"executed": "{activityId} (executed only)",
+				"active": "{activityId} (active only)",
+				"all": "{activityId}"
+			},
+			"tooltip": {
+				"executed": "List instances that executed {activityId} activity",
+				"active": "List instances that still active with {activityId} activity",
+				"all": "List instances that executed {activityId} activity or still active with {activityId} activity"
+			}
+		},
 		"true": "True",
 		"false": "False",				
 		"jobDefinitions": "Job definitions",
@@ -375,6 +388,11 @@
 			"priority": "Priority",
 			"noExternalTasks": "No external tasks found"
 		}
+	},
+	"dmn-viewer": {
+		"zoomIn": "Zoom in",
+		"zoomOut": "Zoom out",
+		"resetZoom": "Reset zoom"
 	},
 	"bpmn-viewer": {
 		"zoomIn": "Zoom in",
@@ -925,9 +943,21 @@
 				"title": "Processes",
 				"tooltip": "Explore available process definitions"
 			},
+			"process-definition": {
+				"title": "Process Definition"
+			},
+			"process-instance": {
+				"title": "Process Instance"
+			},
 			"decisions": {
 				"title": "Decisions",
 				"tooltip": "Explore available decision definitions"
+			},
+			"decision-definition": {
+				"title": "Decision Definition"
+			},
+			"decision-instance": {
+				"title": "Decision Instance"
 			},
 			"humanTasks": {
 				"title": "Human Tasks",
@@ -1069,6 +1099,8 @@
 		"selectAll": "Select all",
 		"deleteDeployments": "Delete deployments",
 		"showModel": "Show model",
+		"delete": "Delete Deployment",
+		"showDeployment": "Load Deployment in list",
 		"deploymentsDeleted": "{0} out of {1} deployments have been successfully deleted",
 		"tenant": "Tenant",
 		"errorLoading": "Unable to load resource for the selected deployment"
@@ -1221,6 +1253,7 @@
 	"decision": {
 		"id": "ID",
 		"name": "Name",
+		"tenantId": "Tenant ID",
 		"actions": "Actions",
 		"emptyProcessList": "Your decision list is currently empty.",
 		"emptyProcessListFiltered": "There is no decision for the applied filter.",

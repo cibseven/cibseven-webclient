@@ -18,7 +18,7 @@
 -->
 <template>
   <div class="d-flex flex-column bg-light pt-3">
-    <div class="d-flex flex-column container bg-white border rounded shadow-sm p-0 mt-3 mb-3">
+    <div class="d-flex flex-column container bg-white border rounded shadow-sm p-0 mt-3 mb-3 overflow-y-auto">
 
     <div class="container pt-4">
       <div class="row align-items-center pb-2 ps-1">

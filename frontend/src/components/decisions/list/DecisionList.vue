@@ -31,9 +31,8 @@
       </div>
     </div>
     <div class="container overflow-auto h-100 bg-white shadow-sm border rounded g-0">
-      <FlowTable :items="decisionsFiltered" thead-class="sticky-header" striped primary-key="id" prefix="decision." :fields="fields" @click="goToDecision($event)" @select="focused = $event[0]" @mouseenter="focused = $event" @mouseleave="focused = null">
+      <FlowTable :items="decisionsFiltered" thead-class="sticky-header" striped native-layout primary-key="id" prefix="decision." :fields="fields" @click="goToDecision($event)" @select="focused = $event[0]" @mouseenter="focused = $event" @mouseleave="focused = null">
         <template v-slot:cell(actions)="table">
-          <component :is="decisionDefinitionActions" v-if="decisionDefinitionActions" :focused="focused" :item="table.item"></component>
           <b-button :disabled="focused !== table.item" style="opacity: 1" @click.stop="goToDecision(table.item)" class="px-2 border-0 shadow-none" :title="$t('decision.showManagement')" variant="link">
             <span class="mdi mdi-18px mdi-account-tie-outline"></span>
           </b-button>
@@ -66,12 +65,6 @@ export default {
   },
   computed: {
     ...mapGetters(['decisionDefinitions', 'getFilteredDecisions']),
-
-    decisionDefinitionActions: function() {
-      return this.$options.components && this.$options.components.DecisionDefinitionActions
-        ? this.$options.components.DecisionDefinitionActions
-        : null
-    },
     decisionsFiltered: function() {
       return this.getFilteredDecisions(this.filter)
     },
@@ -80,8 +73,9 @@ export default {
     },
     fields: function() {
       return [
-        { label: 'name', key: 'name', class: 'col-9', tdClass: 'py-1' },
-        { label: 'actions', key: 'actions', sortable: false, class: 'col-3 d-flex justify-content-center', tdClass: 'py-0' },
+        { label: 'name', key: 'name'},
+        { label: 'tenantId', key: 'tenantId'},
+        { label: 'actions', key: 'actions', sortable: false, tdClass: 'py-0 text-center', thClass: 'justify-content-center' }
       ]
     }
   },

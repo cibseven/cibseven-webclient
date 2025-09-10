@@ -23,6 +23,7 @@ import registerOwnComponents from './register.js'
 import processesVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
 import processesMixin from '@/components/process/mixins/processesMixin.js'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
+import tabUrlMixin from '@/components/process/mixins/tabUrlMixin.js'
 import store, { modules } from '@/store'
 import usersMixin from '@/mixins/usersMixin.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
@@ -152,6 +153,23 @@ import TranslationsDownload from '@/components/common-components/TranslationsDow
 import StackTraceModal from '@/components/process/modals/StackTraceModal.vue'
 import RetryModal from '@/components/process/modals/RetryModal.vue'
 import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
+
+import JobLogModal from '@/components/batches/modals/JobLogModal.vue'
+import FailedJobs from '@/components/batches/tables/FailedJobs.vue'
+import LoginForm from '@/components/login/LoginForm.vue'
+import ProcessDefinitionDetails from '@/components/process/ProcessDefinitionDetails.vue'
+import ProcessInstanceTabs from '@/components/process/ProcessInstanceTabs.vue'
+import ProcessInstancesTabs from '@/components/process/ProcessInstancesTabs.vue'
+import AnnotationModal from '@/components/process/modals/AnnotationModal.vue'
+import JobDefinitionPriorityModal from '@/components/process/modals/JobDefinitionPriorityModal.vue'
+import JobDefinitionStateModal from '@/components/process/modals/JobDefinitionStateModal.vue'
+import CalledProcessDefinitionsTable from '@/components/process/tables/CalledProcessDefinitionsTable.vue'
+import CalledProcessInstancesTable from '@/components/process/tables/CalledProcessInstancesTable.vue'
+import JobDefinitionsTable from '@/components/process/tables/JobDefinitionsTable.vue'
+import JobsTable from '@/components/process/tables/JobsTable.vue'
+
+// mixins
+import assigneeMixin from '@/mixins/assigneeMixin.js'
 
 const registerComponents = function(app) {
   app.component('cib-seven', CibSeven)
@@ -389,6 +407,23 @@ export {
   TranslationsDownload,
   StackTraceModal,
   RetryModal,
+  JobLogModal,
+  FailedJobs,
+  LoginForm,
+  ProcessDefinitionDetails,
+  ProcessInstanceTabs,
+  ProcessInstancesTabs,
+  AnnotationModal,
+  JobDefinitionPriorityModal,
+  JobDefinitionStateModal,
+  CalledProcessDefinitionsTable,
+  CalledProcessInstancesTable,
+  JobDefinitionsTable,
+  JobsTable,
+
+  // mixins
+  assigneeMixin,
+
   // router
   appRoutes,
   createAppRouter,
@@ -410,5 +445,6 @@ export {
   parseXMLDocumentation,
 
   initEmbeddedForm,
-  ScrollableTabsContainer
+  ScrollableTabsContainer,
+  tabUrlMixin
 }

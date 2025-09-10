@@ -161,6 +161,12 @@
 			"interval": 60000
 		}
 	},
+	"processes": {
+		"autoUpdate": {
+			"enabled": false,
+			"interval": 0
+		}
+	},
 	"layout": {
 		"showPopoverHowToAssign": true,
 		"showBusinessKey": true,

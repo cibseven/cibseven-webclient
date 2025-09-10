@@ -91,6 +91,7 @@ import FlowTable from '@/components/common-components/FlowTable.vue'
 export default {
   name: 'AdvancedSearchModal',
   components: { FlowTable },
+  emits: ['refresh-tasks'],
   data: function () {
     return {
       matchAllCriteria: true,

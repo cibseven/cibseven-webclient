@@ -136,17 +136,9 @@ export default {
     updateInstanceStatus() {
       this.selectedInstance.state = 'COMPLETED'
     },
-    isFileValueDataSource: function(item) {
-      if (item.type === 'Object') {
-        if (item.value && item.value.objectTypeName) {
-          if (this.fileObjects.includes(item.value.objectTypeName)) return true
-        }
-      }
-      return false
-    },
     displayValue(item) {
       if (this.isFileValueDataSource(item)) {
-        return item.value.name
+        return this.getFileVariableName(item)
       }
       else if (item.type === 'File') {
         return item.valueInfo.filename

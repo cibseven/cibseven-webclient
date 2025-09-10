@@ -40,6 +40,7 @@ export default {
   name: 'OtpDialog',
   components: { CIBForm },
   props: { credentials2: Object, rememberMe: Boolean },
+  emits: ['success'],
   data: function() { return { busy: false } },
   methods: {
     show: function(userId) {

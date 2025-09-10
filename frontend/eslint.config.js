@@ -46,5 +46,11 @@ export default [
       'cypress/support/**/*.{js,ts,jsx,tsx}'
     ],
   },
+  {
+    "rules": {
+      "vue/require-name-property": "error",
+      "vue/require-explicit-emits": "error",
+    }
+  },
   skipFormatting,
 ]

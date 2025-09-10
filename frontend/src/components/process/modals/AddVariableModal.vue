@@ -30,6 +30,7 @@ export default {
   name: 'AddVariableModal',
   components: { AddVariableModalUI },
   props: { selectedInstance: Object },
+  emits: ['variable-added'],
   methods: {
     show: function(variable = {}) {
       this.$refs.addVariableModalUI.show(variable)

@@ -67,6 +67,7 @@ export default {
   name: 'CIBHeaderFlow',
   inject: ['currentLanguage'],
   props: { languages: Array, user: Object },
+  emits: ['logout'],
   methods: {
     logout: function() {
       sessionStorage.getItem('token') ? sessionStorage.removeItem('token') : localStorage.removeItem('token')

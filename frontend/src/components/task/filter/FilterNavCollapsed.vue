@@ -44,6 +44,7 @@
 export default {
   name: 'FilterNavCollapsed',
   props: { leftOpen: Boolean },
+  emits: ['update:leftOpen', 'selected-filter'],
   data: function() {
     return {
       sizes: { filter: 140, arrow: 40, header: 55, dots: 40 }

@@ -173,7 +173,7 @@ export default {
             const childActivity = this.activityInstance.childActivityInstances.find(obj => obj.activityId === event.element.id)
             this.$emit('child-activity', childActivity || event.element)
           } else {
-            this.selectActivity(event.element.id)
+            this.selectActivity({ activityId: event.element.id, listMode: 'all' })
           }
         } else {
           if (this.currentHighlight) {
@@ -209,7 +209,8 @@ export default {
         const bubble = event.target.closest('.bubble')
         if (bubble && bubble.dataset.activityId) {
           this.setHighlightedElement(bubble.dataset.activityId)
-          this.selectActivity(bubble.dataset.activityId)
+          const listMode = ['activitiesHistory', 'canceledInstances'].includes(bubble.dataset.type) ? 'executed' : 'active'
+          this.selectActivity({ activityId: bubble.dataset.activityId, listMode })
         }
         
         // Generic: emit overlay-click for any overlay element with a data-overlay-type attribute
@@ -288,10 +289,13 @@ export default {
     },
     drawActivitiesBadges: function(elementRegistry) {
       const historyStatistics = this.historicActivityStatistics
-      const mergedStatistics = historyStatistics.map(hs => {
-        const stat = this.statistics.find(s => s.id === hs.id)
-        return stat ? { ...hs, instances: stat.instances } : hs
-      })
+      let mergedStatistics = historyStatistics
+        if (!this.selectedInstance) {
+          mergedStatistics = historyStatistics.map(hs => {
+            const stat = this.statistics.find(s => s.id === hs.id)
+            return stat ? { ...hs, instances: stat.instances } : hs
+          })
+      }
       const options = this.badgeOptions || {}
       mergedStatistics.forEach(stat => {
         const element = elementRegistry.get(stat.id)

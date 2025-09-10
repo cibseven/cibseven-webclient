@@ -86,6 +86,7 @@ import { TaskService } from '@/services.js'
 
 export default {
   name: 'TaskAssignationModal',
+  emits: ['change-assignee'],
   data: function() {
     return {
       identityLinks: [],

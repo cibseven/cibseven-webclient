@@ -102,6 +102,7 @@ export default {
     versionIndex: { type: String, default: '' },
     selectedInstance: { type: Object, default: null }
   },
+  emits: ['onDeleteProcessDefinition', 'onRefreshProcessDefinitions'],
   methods: {
     onRefreshProcessDefinitions: function(lazyLoadHistory) {
       this.$emit('onRefreshProcessDefinitions', lazyLoadHistory)

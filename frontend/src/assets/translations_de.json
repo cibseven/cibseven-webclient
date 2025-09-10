@@ -184,6 +184,19 @@
 			"suspend": "Wollen Sie wirklich die nächste Prozessdefinition mit allen laufenden Prozessinstanzen aussetzen?",
 			"activate": "Möchten Sie die nächste Prozessdefinition mit allen laufenden Prozessinstanzen wirklich aktivieren?"
 		},
+		"activityIdBadge": {
+			"remove": "Kriterium entfernen – um alle Prozessinstanzen aufzulisten",
+			"title": {
+				"executed": "{activityId} (nur ausgeführt)",
+				"active": "{activityId} (nur aktiv)",
+				"all": "{activityId}"
+			},
+			"tooltip": {
+				"executed": "Instanzen auflisten, die die Aktivität {activityId} ausgeführt haben",
+				"active": "Instanzen auflisten, die noch aktiv mit der Aktivität {activityId} sind",
+				"all": "Instanzen auflisten, die die Aktivität {activityId} ausgeführt haben oder noch aktiv mit der Aktivität {activityId} sind"
+			}
+		},
 		"true": "Wahr",
 		"false": "Falsch",
 		"jobDefinitions": "Job-Definitionen",
@@ -375,6 +388,11 @@
 			"priority": "Priorität",
 			"noExternalTasks": "Keine externen Aufgaben gefunden"
 		}
+	},
+	"dmn-viewer": {
+		"zoomIn": "Heranzoomen",
+		"zoomOut": "Herauszoomen",
+		"resetZoom": "Zoom zurücksetzen"
 	},
 	"bpmn-viewer": {
 		"zoomIn": "Heranzoomen",
@@ -925,9 +943,21 @@
 				"title": "Prozesse",
 				"tooltip": "Verfügbare Prozessdefinitionen durchsuchen"
 			},
+			"process-definition": {
+				"title": "Prozessdefinition"
+			},
+			"process-instance": {
+				"title": "Prozessinstanz"
+			},
 			"decisions": {
 				"title": "Entscheidungen",
 				"tooltip": "Verfügbare Entscheidungsdefinitionen durchsuchen"
+			},
+			"decision-definition": {
+				"title": "Entscheidungsdefinition"
+			},
+			"decision-instance": {
+				"title": "Entscheidungsinstanz"
 			},
 			"humanTasks": {
 				"title": "Aufgaben",
@@ -1068,6 +1098,8 @@
 		"selectAll": "Alle auswählen",
 		"deleteDeployments": "Deployments löschen",
 		"showModel": "Modell anzeigen",
+		"delete": "Deployment löschen",
+		"showDeployment": "Deployment in Liste laden",
 		"deploymentsDeleted": "{0} von {1} Deployments wurden erfolgreich gelöscht",
 		"tenant": "Mandant",
 		"errorLoading": "Ressource für die ausgewählte Bereitstellung konnte nicht geladen werden"
@@ -1220,6 +1252,7 @@
 	"decision" : {
 		"id": "ID",
 		"name": "Name",
+		"tenantId": "Mandanten-ID",
 		"actions": "Aktionen",
 		"emptyProcessList": "Ihre Entscheidungsliste ist derzeit leer.",
 		"emptyProcessListFiltered": "Es gibt keinen Entscheidung für den angewandten Filter.",

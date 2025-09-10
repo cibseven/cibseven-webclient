@@ -34,6 +34,8 @@
 
 <script>
 export default {
+  name: 'AuthorizationsNavBar',
+  emits: ['middle'],
   computed: {
     ExtendedAuthorizations: function() {
       return this.$options.components && this.$options.components.ExtendedAuthorizations
