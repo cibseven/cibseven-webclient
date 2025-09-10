@@ -174,21 +174,27 @@ export default {
     },
     formatDate,
     getIconTitle: function(instance) {
-      if (instance.endTime) {
-        return this.$t('process.instanceFinished')
+      switch(instance.state) {
+        case 'ACTIVE':
+          return this.$t('process.instanceRunning')
+          break;
+        case 'SUSPENDED':
+          return this.$t('process.instanceIncidents')
+          break;
+        default:
+          return this.$t('process.instanceFinished')
       }
-      return this.$t('process.instanceRunning')
     },
     getIconState: function(instance) {
       switch(instance.state) {
         case 'ACTIVE':
           return 'mdi-chevron-triple-right text-success'
           break;
-        case 'COMPLETED':
-          return 'mdi-flag-triangle'
+        case 'SUSPENDED':
+          return 'mdi-close-circle-outline'
           break;
         default:
-          return 'mdi-close-circle-outline'
+          return 'mdi-flag-triangle'
       }
     }
   }
