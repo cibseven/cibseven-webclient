@@ -189,11 +189,10 @@ export default {
       })
     },
     setTasksNumber: function() {
-      this.$store.state.filter.list.forEach(f => this.fetchFilterTasksNumber(f))
-    },
-    fetchFilterTasksNumber: function(f) {
-      this.taskpool.add(TaskService.findTasksCountByFilter, [f.id, {}]).then(tasksNumber => {
-        f.tasksNumber = tasksNumber
+      this.$store.state.filter.list.forEach(f => {
+        this.taskpool.add(TaskService.findTasksCountByFilter, [f.id, {}]).then(tasksNumber => {
+          f.tasksNumber = tasksNumber
+        })
       })
     },
     setFilterByName: function() {
@@ -241,7 +240,9 @@ export default {
         if (this.$store.state.filter.selected) {
           const f = this.$store.state.filter.selected
           if (f && f.id && !this.$root.config.taskFilter.tasksNumber.enabled) {
-            this.fetchFilterTasksNumber(f)
+            TaskService.findTasksCountByFilter(f.id, {}).then(tasksNumber =>
+              this.saveTasksCountInStore(f.id, tasksNumber)
+            )
           }
         }
       }
@@ -270,6 +271,10 @@ export default {
     deleteFavoriteFilter: function(filter) {
       this.$store.dispatch('deleteFavoriteFilter', { filterId: filter.id })
     },
+    saveTasksCountInStore(filterId, tasksNumber) {
+      const newFilters = this.$store.state.filter.list.map(f => f.id === filterId ? { ...f, tasksNumber } : f)
+      this.$store.commit('setFilters', { filters: newFilters })
+    }
   },
   beforeUnmount: function() {
     clearInterval(this.interval)
