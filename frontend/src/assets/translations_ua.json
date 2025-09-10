@@ -984,6 +984,8 @@
 		"AuthenticationException": "Дані авторизації відсутні або невірні",
 		"LoginException": "Ім’я користувача або пароль недійсні",
 		"TokenExpiredException": "Дані авторизації застаріли",
+		"WrongDeploymenIdException": "Не вдалося знайти розгортання для цього ідентифікатора.",
+		"NoRessourcesFoundException": "Ресурси для цього deploymentId не існують.",
 		"urlError": "URL недійсний",
 		"errorSaveTask": "Під час збереження завдання сталася помилка.",
 		"taskSelectedNotExist": "Це завдання більше недоступне, тому не буде показано на центральній панелі",

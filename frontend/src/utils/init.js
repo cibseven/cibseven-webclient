@@ -105,7 +105,7 @@ export function handleAxiosError(router, root, error) {
       var exceptions = ['NoObjectFoundException', 'InvalidAttributeValueException', 'SubmitDeniedException',
         'UnsupportedTypeException', 'ExpressionEvaluationException', 'ExistingUserRequestException',
         'ExistingGroupRequestException', 'AccessDeniedException', 'SystemException', 'InvalidUserIdException', 'InvalidValueHistoryTimeToLive',
-        'VariableModificationException']
+        'VariableModificationException', 'WrongDeploymenIdException', 'NoRessourcesFoundException']
       if (res.data.type && exceptions.indexOf(res.data.type) !== -1)
         root.$refs.error.show(res.data)
       //root.$refs.report.show(res.data)

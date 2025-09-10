@@ -20,18 +20,18 @@
   <div class="overflow-auto h-100">
     <div class="h-100 d-flex flex-column">
       <div class="overflow-auto flex-fill">
-        <div class="p-2 bg-white">
+        <div v-if="deployment" class="p-2 bg-white">
           <div class="d-flex justify-content-between bg-white ps-3 pe-3">
             <div v-if="deployment">
               <h4>{{ deployment.name || deployment.id }}</h4>
             </div>
             <a class="btn btn-sm btn-primary text-dark border-white bg-white shadow-none" data-bs-toggle="collapse"
-              href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample"
+              href="#deploymentInfo" role="button" aria-expanded="false" aria-controls="deploymentInfo"
               @click="toggleButton">
               <span class="mdi mdi-18px" :class="toggleIcon"></span>
             </a>
           </div>
-          <div class="collapse border-none" id="collapseExample">
+          <div class="collapse border-none" id="deploymentInfo">
             <div class="card card-body text-dark border-white bg-white">
               <div v-if="deployment">
                 <p>{{ formatDate(deployment.deploymentTime) }}</p>
@@ -69,13 +69,13 @@
               </div>
             </b-list-group-item>
           </b-list-group>
-          <div v-else-if="resources">
-            <img src="@/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mt-5 mb-3" style="width: 200px">
-          </div>
           <div v-else class="h-100 d-flex flex-column justify-content-center align-items-center text-center">
             <span class="mdi mdi-48px mdi-file-cancel-outline pe-1 text-warning"></span>
             <span>{{ $t('deployment.errorLoading') }}</span>
           </div>
+        </div> 
+        <div v-else>
+          <img src="@/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mt-5 mb-3" style="width: 200px">
         </div>
       </div>
     </div>
@@ -169,13 +169,25 @@ export default {
           else {
             ProcessService.findDeployment(this.deploymentId).then(deployment => {
               this.deployment = deployment
-            })
+            }).catch(error => {
+        let errorMessage = "No deployment could not be found for this Id!";
+        if (error.response && error.response.data && error.response.data.error) {
+          errorMessage = error.response.data.error;
+        }
+        console.error("Deployment fetch failed:", errorMessage)
+      })
           }
         }
         else {
           ProcessService.findDeployment(this.deploymentId).then(deployment => {
             this.deployment = deployment
-          })
+          }).catch(error => {
+        let errorMessage = "No deployment could not be found for this Id!";
+        if (error.response && error.response.data && error.response.data.error) {
+          errorMessage = error.response.data.error;
+        }
+        console.error("Deployment fetch failed:", errorMessage)
+      })
         }
       }
     },

@@ -80,7 +80,7 @@
         :rightSize="[12, 4, 3, 3, 3]">
         <template v-slot:right>
           <ResourcesNavBar v-if="!resourcesLoading" :resources="resources" :deploymentId="deploymentId"
-            @delete-deployment="deleteDeployment($event)" @show-deployment="loadToSelectedDeployment()">
+            @delete-deployment="$refs.deleteSelectedModal.show()" @show-deployment="loadToSelectedDeployment()">
           </ResourcesNavBar>
           <b-waiting-box v-else styling="width: 35px" class="h-100 d-flex justify-content-center"></b-waiting-box>
         </template>
@@ -90,7 +90,7 @@
             :chunk-size="maxResults" :scrollable-area="$refs.scrollableArea" @load-next-page="loadNextPage"
             :show-loading-spinner="loading && deployments.length > 0">
             <DeploymentList v-if="deployments.length > 0" :groups="groups" :deployments="deployments"
-              :deployment="deployment" :deploymentId="deploymentId" :deploymentsReady="deploymentsReady"
+              :deployment="deployment" :deploymentId="deploymentId" v-model:deploymentsReady="deploymentsReady"
               @select-deployment="selectDeployment">
             </DeploymentList>
             <div v-else class="h-100 d-flex justify-content-center align-items-center text-center text-secondary">
@@ -127,6 +127,25 @@
           }}</b-button>
       </template>
     </b-modal>
+    <b-modal ref="deleteSelectedModal" :title="$t('confirm.title')">
+      <div class="container-fluid">
+        <div class="row align-items-center">
+          <div class="col-2">
+            <span class="mdi-36px mdi mdi-alert-outline text-warning me-3"></span>
+          </div>
+          <div class="col-10">
+            <span>{{ $t('deployment.confirmDeleteDeployment') }}</span>
+            <b-form-checkbox disabled v-model="cascadeDelete" class="mt-3">{{ $t('deployment.deleteRunningInstances')
+              }}</b-form-checkbox>
+          </div>
+        </div>
+      </div>
+      <template v-slot:modal-footer>
+        <b-button @click="$refs.deleteSelectedModal.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
+        <b-button @click="deleteDeployment(); $refs.deleteSelectedModal.hide()" variant="primary">{{ $t('confirm.delete')
+          }}</b-button>
+      </template>
+    </b-modal>
     <SuccessAlert top="0" style="z-index: 1031" ref="deploymentsDeleted"> {{ $t('deployment.deploymentsDeleted',
       [deploymentsDelData.deleted, deploymentsDelData.total]) }}</SuccessAlert>
   </div>
@@ -160,7 +179,7 @@ export default {
       deleteLoader: false,
       filter: this.$route.query.filter || '',
       firstResult: 0,
-      maxResults: 50, // The maximum number of results to fetch per page.
+      maxResults: 10, // The maximum number of results to fetch per page.
       sortBy: 'deploymentTime', // Enum: "id" "name" "deploymentTime" "tenantId"
       sortOrder: 'desc', // Enum: "asc" "desc"
       cascadeDelete: true,
@@ -238,10 +257,10 @@ export default {
     }
     if (this.deploymentId) {
       this.findDeploymentResources(this.deploymentId)
-    }
     this.rightOpen = true
+    }
     this.loadNextPage()
-
+    
   },
   methods: {
     performSearch: function () {
@@ -293,6 +312,9 @@ export default {
           else {
             this.groups[this.groups.length - 1].data.push(d)
           }
+          if (d.id === this.deploymentId) {
+            this.selectDeployment(d)
+          }
         })
         this.deployments.push(...deployments)
         this.loading = false
@@ -300,7 +322,6 @@ export default {
           offset += deployments.length
           found = this.deployments.some(d => {
             if (d.id === this.deploymentId) {
-              this.selectDeployment(d)
               this.searchDeployment = false
               this.loading = false
               this.deploymentsReady = true
@@ -326,6 +347,12 @@ export default {
     loadToSelectedDeployment: async function () {
       this.searchDeployment = true
       this.refreshTotalCount()
+      let found = this.deployments.some(dep => {
+          return dep.id === this.deploymentId
+        })
+      if (found) {
+        this.deploymentsReady = true
+      }
       this.loadDeployments(this.deployments.length)
     },
     deleteDeployments: function () {
@@ -334,6 +361,30 @@ export default {
       this.deploymentsDelData.total = this.deploymentsSelected.length
       this.deploymentsDelData.deleted = 0
       var pool = this.deploymentsSelected.slice(0, this.deploymentsSelected.length)
+      let groupEmptyName = null
+        pool.forEach(deployment => {
+          this.groups.some(group => {
+          const index = group.data.findIndex(d => {
+            return deployment.id === d.id
+          })
+          if (index !== -1) {
+            group.data.splice(index, 1)
+            if (group.data.length < 1) {
+              groupEmptyName = group.name
+            }
+            return true
+          }
+          return false
+        })
+        })
+         if (groupEmptyName) {
+          let groupEmptyIndex = this.groups.findIndex( group => {
+            return groupEmptyName === group.name
+          })
+          this.groups.splice(groupEmptyIndex, 1)
+        }
+
+        pool = this.deploymentsSelected.slice(0, this.deploymentsSelected.length)
       startTask()
       function startTask() {
         var deployment = pool.shift()
@@ -358,17 +409,45 @@ export default {
         })
       }
     },
-    deleteDeployment: function (deployment) {
-      ProcessService.deleteDeployment(deployment.id, true).then(() => {
+    deleteDeployment: function() {
+      ProcessService.deleteDeployment(this.deploymentId, true).then(() => {
         this.deployments = this.deployments.filter(d => {
-          return deployment.id !== d.id
+          return this.deploymentId !== d.id
         })
         this.deployment = null
         this.loadProcesses(false)
         this.deploymentsDelData.total = 1
         this.deploymentsDelData.deleted++
         this.$refs.deploymentsDeleted.show()
+        let groupEmptyName = null
+        this.groups.some(group => {
+          const index = group.data.findIndex(d => {
+            return this.deploymentId === d.id
+          })
+          if (index !== -1) {
+            group.data.splice(index, 1)
+            if (group.data.length < 1) {
+              groupEmptyName = group.name
+            }
+            return true
+          }
+          return false
+        })
+        if (groupEmptyName) {
+          let groupEmptyIndex = this.groups.findIndex( group => {
+            return groupEmptyName === group.name
+          })
+          this.groups.splice(groupEmptyIndex, 1)
+        }
+        this.$router.push({
+        name: 'deployments',
+        params: {
+          deploymentId: ''
+        }
       })
+      })
+      
+
     },
     selectDeployment: function (d) {
       this.deployment = d
@@ -381,9 +460,15 @@ export default {
       ProcessService.findDeploymentResources(deploymentId).then(resources => {
         this.resources = resources
         this.resourcesLoading = false
-      }).catch(() => {
+      }).catch(error => {
         this.resources = null
         this.resourcesLoading = false
+
+        let errorMessage = "Deployment with id" + deploymentId + " does not exist.";
+        if (error.response && error.response.data && error.response.data.error) {
+          errorMessage = error.response.data.error;
+        }
+        console.error("Deployment fetch failed:", errorMessage)
       })
     },
     changeSortingOrder: function () {

@@ -38,12 +38,14 @@ import org.cibseven.webapp.exception.InvalidUserIdException;
 import org.cibseven.webapp.exception.InvalidValueHistoryTimeToLive;
 import org.cibseven.webapp.exception.MissingVariableException;
 import org.cibseven.webapp.exception.NoObjectFoundException;
+import org.cibseven.webapp.exception.NoRessourcesFoundException;
 import org.cibseven.webapp.exception.OptimisticLockingException;
 import org.cibseven.webapp.exception.PasswordPolicyException;
 import org.cibseven.webapp.exception.SubmitDeniedException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.exception.UnsupportedTypeException;
 import org.cibseven.webapp.exception.VariableModificationException;
+import org.cibseven.webapp.exception.WrongDeploymenIdException;
 import org.cibseven.webapp.rest.model.Authorization;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -377,7 +379,7 @@ public abstract class SevenProviderBase {
 			wrapperException = new NoObjectFoundException(cause);
 		} else if (technicalErrorMsg.matches(".*OptimisticLockingException.*")) {
 			wrapperException = new OptimisticLockingException(cause);
-		} else if (technicalErrorMsg.matches(".*task variable with name.*does not exist.*")) {
+		} else if (technicalErrorMsg.matches(".*task variable with namedoes not exist.*")) {
 			wrapperException = new MissingVariableException(cause);
 		} else if (technicalErrorMsg.matches(".*Password does not match policy.*")) {
 			wrapperException = new PasswordPolicyException(cause);
@@ -387,6 +389,10 @@ public abstract class SevenProviderBase {
 			wrapperException = new InvalidValueHistoryTimeToLive(cause);
 		} else if (technicalErrorMsg.matches(".*processInstanceIds is empty.*")) {
 			wrapperException = new BatchOperationException(cause);
+		} else if (technicalErrorMsg.matches(".*Deployment with id .*does not exist.*")) {
+			wrapperException = new WrongDeploymenIdException(cause);
+		} else if (technicalErrorMsg.matches(".*Deployment resources for deployment id .*do not exist.*")) {
+			wrapperException = new NoRessourcesFoundException(cause);
 		}
 		if (wrapperException == null) wrapperException = new SystemException(technicalErrorMsg, cause);
 		if (wrapperException instanceof NoObjectFoundException) {
