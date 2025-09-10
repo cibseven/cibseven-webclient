@@ -164,14 +164,14 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 	
 	@Override
 	public Collection<HistoricDecisionInstance> getHistoricDecisionInstances(Map<String, Object> queryParams, CIBUser user) {
-		String url = buildUrlWithParams(getEngineRestUrl() + "/history/decision-instance", queryParams);
-		HistoricDecisionInstance[] arr = ((ResponseEntity<HistoricDecisionInstance[]>) doGet(url, HistoricDecisionInstance[].class, user, false)).getBody();
+		String url = getEngineRestUrl() + "/history/decision-instance" + this.encodeQueryParams(queryParams);
+		HistoricDecisionInstance[] arr = ((ResponseEntity<HistoricDecisionInstance[]>) doGet(url, HistoricDecisionInstance[].class, user, true)).getBody();
 		return Arrays.asList(arr);
 	}
 	
 	@Override
 	public Long getHistoricDecisionInstanceCount(Map<String, Object> queryParams, CIBUser user) {
-		String url = buildUrlWithParams(getEngineRestUrl() + "/history/decision-instance/count", queryParams);
+		String url = getEngineRestUrl() + "/history/decision-instance/count" + this.encodeQueryParams(queryParams);
 		JsonNode response = ((ResponseEntity<JsonNode>) doGet(url, JsonNode.class, user, true)).getBody();
 		return response != null ? response.get("count").asLong() : 0L;
 	}
