@@ -177,7 +177,7 @@ export default {
   computed: {
     tiles() {
       const tiles = []
-      if (this.applicationPermissions(this.$root.config.permissions.tasklist, 'tasklist') && this.startableProcesses) {
+      if (this.applicationPermissions(this.$root.config.permissions.startProcess, 'startProcess')) {
         tiles.push('startProcess')
       }
       if (this.applicationPermissions(this.$root.config.permissions.tasklist, 'tasklist')) {

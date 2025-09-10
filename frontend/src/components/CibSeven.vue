@@ -31,7 +31,7 @@
         </div>
       </div>
 
-      <b-button v-if="$root.user && startableProcesses && $route.name === 'tasklist'" class="d-none d-sm-block py-0 me-3" variant="outline-secondary" :title="$t('start.startProcess.title')" @click="openStartProcess()">
+      <b-button v-if="$route.name === 'tasklist' && canStartProcesses" class="d-none d-sm-block py-0 me-3" variant="outline-secondary" :title="$t('start.startProcess.title')" @click="openStartProcess()">
         <span class="mdi mdi-18px mdi-rocket"><span class="d-none d-lg-inline">{{ $t('start.startProcess.title') }}</span></span>
       </b-button>
 
@@ -111,7 +111,7 @@
     <AboutModal ref="about"></AboutModal>
     <FeedbackModal ref="report" url="feedback" :email="$root.user && $root.user.email" @report="$refs.down.$emit('report', $event)"></FeedbackModal>
 
-    <GlobalEvents v-if="permissionsTaskList" @keydown.ctrl.left.prevent="$router.push('/seven/auth/start-process')"></GlobalEvents>
+    <GlobalEvents v-if="canStartProcesses" @keydown.ctrl.left.prevent="$router.push('/seven/auth/start-process')"></GlobalEvents>
     <GlobalEvents v-if="permissionsCockpit" @keydown.ctrl.right.prevent="$router.push('/seven/auth/processes/list')"></GlobalEvents>
     <GlobalEvents v-if="permissionsTaskList" @keydown.ctrl.down.prevent="$router.push('/seven/auth/tasks')"></GlobalEvents>
 
@@ -147,15 +147,22 @@ export default {
   },
   computed: {
     menuItems: function() {
-      return [{
-          show: this.permissionsTaskList && this.startableProcesses,
-          groupTitle: 'start.taskList.title',
+      return [
+        {
+          show: this.canStartProcesses,
+          groupTitle: 'start.startProcess.title',
           items: [{
               to: '/seven/auth/start-process',
               active: ['seven/auth/start-process'],
               tooltip: 'start.startProcess.tooltip',
               title: 'start.startProcess.title'
-            }, {
+            }
+          ]
+        },
+        {
+          show: this.permissionsTaskList,
+          groupTitle: 'start.taskList.title',
+          items: [{
               to: '/seven/auth/tasks',
               active: ['seven/auth/tasks'],
               tooltip: 'start.taskList.tooltip',
@@ -319,6 +326,9 @@ export default {
         return false
       })
       return title
+    },
+    canStartProcesses: function() {
+      return this.$root.user && this.applicationPermissions(this.$root.config.permissions.startProcess, 'startProcess')
     },
     permissionsTaskList: function() {
       return this.$root.user && this.applicationPermissions(this.$root.config.permissions.tasklist, 'tasklist')
