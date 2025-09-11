@@ -23,7 +23,7 @@
         <div class="row align-items-center pb-1">
           <div class="col-8">
             <div class="border rounded d-flex flex-fill align-items-center">
-              <b-button @click.stop="null"
+              <b-button @click.stop="loadDecisions()"
                 size="sm" class="mdi mdi-magnify mdi-24px text-secondary" variant="link"
                 :title="$t('searches.refreshAndFilter')"></b-button>
               <div class="flex-grow-1">
@@ -73,8 +73,7 @@ export default {
     return {
       selected: null,
       filter: '',
-      focused: null,
-      loadingInstances: true
+      focused: null
     }
   },
   computed: {
