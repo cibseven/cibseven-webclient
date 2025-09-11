@@ -177,10 +177,8 @@ export default {
       switch(instance.state) {
         case 'ACTIVE':
           return this.$t('process.instanceRunning')
-          break;
         case 'SUSPENDED':
           return this.$t('process.instanceIncidents')
-          break;
         default:
           return this.$t('process.instanceFinished')
       }
@@ -189,10 +187,8 @@ export default {
       switch(instance.state) {
         case 'ACTIVE':
           return 'mdi-chevron-triple-right text-success'
-          break;
         case 'SUSPENDED':
           return 'mdi-close-circle-outline'
-          break;
         default:
           return 'mdi-flag-triangle'
       }
