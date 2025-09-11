@@ -379,7 +379,7 @@ public abstract class SevenProviderBase {
 			wrapperException = new NoObjectFoundException(cause);
 		} else if (technicalErrorMsg.matches(".*OptimisticLockingException.*")) {
 			wrapperException = new OptimisticLockingException(cause);
-		} else if (technicalErrorMsg.matches("*task variable with name.*does not exist.*")) {
+		} else if (technicalErrorMsg.matches(".*task variable with name.*does not exist.*")) {
 			wrapperException = new MissingVariableException(cause);
 		} else if (technicalErrorMsg.matches(".*Password does not match policy.*")) {
 			wrapperException = new PasswordPolicyException(cause);
