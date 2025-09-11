@@ -240,9 +240,10 @@ export default {
         if (this.$store.state.filter.selected) {
           const f = this.$store.state.filter.selected
           if (f && f.id && !this.$root.config.taskFilter.tasksNumber.enabled) {
-            TaskService.findTasksCountByFilter(f.id, {}).then(tasksNumber =>
+            TaskService.findTasksCountByFilter(f.id, {}).then(tasksNumber => {
+              f.tasksNumber = tasksNumber
               this.saveTasksCountInStore(f.id, tasksNumber)
-            )
+            })
           }
         }
       }
