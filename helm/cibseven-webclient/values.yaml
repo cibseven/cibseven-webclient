@@ -164,6 +164,8 @@ ui:
     tasksNumber:
       enabled: false
       interval: 30000
+    selectedFilterTasksNumber:
+      enabled: true
   layout:
     showPopoverHowToAssign: true
     showBusinessKey: true

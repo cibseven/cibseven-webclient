@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-import { FilterService } from '@/services.js'
+import { FilterService, TaskService } from '@/services.js'
 
 if (localStorage.getItem('filterSettings')) {
   localStorage.removeItem('filterSettings')
@@ -101,6 +101,28 @@ const FilterStore = {
         JSON.parse(localStorage.getItem('favoriteFilters')) : []
       favorites.push(params.filterId)
       localStorage.setItem('favoriteFilters', JSON.stringify(favorites))
+    },
+    updateFilterTasksCount: function(state, params) {
+      // Update the filter in the list
+      const filterIndex = state.list.findIndex(f => f.id === params.filterId)
+      if (filterIndex !== -1) {
+        state.list[filterIndex].tasksNumber = params.tasksNumber
+        state.list[filterIndex].tasksNumberLastUpdated = params.tasksNumberLastUpdated
+      }
+      
+      // Update the selected filter if it matches
+      if (state.selected.id === params.filterId) {
+        state.selected.tasksNumber = params.tasksNumber
+        state.selected.tasksNumberLastUpdated = params.tasksNumberLastUpdated
+      }
+    }
+  },
+  getters: {
+    selectedFilterTasksNumber: (state) => {
+      return state.selected.tasksNumber || 0
+    },
+    selectedFilterTasksNumberLastUpdated: (state) => {
+      return state.selected.tasksNumberLastUpdated || 0
     }
   },
   actions: {
@@ -134,6 +156,17 @@ const FilterStore = {
     },
     deleteFavoriteFilter: function(ctx, params) {
       ctx.commit('deleteFavoriteFilter', { filterId: params.filterId })
+    },
+    updateFilterTasksCount: function(ctx, params) {
+      return TaskService.findTasksCountByFilter(params.filterId, params.filters || {}).then(tasksNumber => {
+        const tasksNumberLastUpdated = Date.now()
+        ctx.commit('updateFilterTasksCount', { 
+          filterId: params.filterId, 
+          tasksNumber, 
+          tasksNumberLastUpdated 
+        })
+        return { tasksNumber, tasksNumberLastUpdated }
+      })
     }
   }
 }

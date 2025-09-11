@@ -111,9 +111,9 @@ import FilterModal from '@/components/task/filter/FilterModal.vue'
 import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
 import { BWaitingBox } from 'cib-common-components'
 import { formatDate } from '@/utils/dates.js'
+import { mapActions } from 'vuex'
 
 import { TaskPool } from "@/taskpool.js"
-import { TaskService } from '@/services.js'
 
 const MIN_TASKNUMBER_INTERVAL = 10000
 
@@ -180,6 +180,7 @@ export default {
     this.fetchFilters()
   },
   methods: {
+    ...mapActions(['updateFilterTasksCount']),
     formatDate,
     fetchFilters: function() {
       this.$refs.filterLoader.done = false
@@ -203,11 +204,7 @@ export default {
     },
     setTasksNumber: function() {
       this.$store.state.filter.list.forEach(f => {
-        this.taskpool.add(TaskService.findTasksCountByFilter, [f.id, {}]).then(tasksNumber => {
-          f.tasksNumber = tasksNumber
-          f.tasksNumberLastUpdated = Date.now()
-          this.saveTasksCountInStore(f.id, tasksNumber, f.tasksNumberLastUpdated)
-        })
+        this.taskpool.add(this.updateFilterTasksCount, [{ filterId: f.id, filters: {} }])
       })
     },
     setFilterByName: function() {
@@ -252,16 +249,13 @@ export default {
             this.$router.replace(path)
           }
         }
-        if (this.$store.state.filter.selected) {
-          const f = this.$store.state.filter.selected
-          if (f && f.id && !this.$root.config.taskFilter.tasksNumber.enabled) {
-            TaskService.findTasksCountByFilter(f.id, {}).then(tasksNumber => {
-              f.tasksNumber = tasksNumber
-              f.tasksNumberLastUpdated = Date.now()
-              this.saveTasksCountInStore(f.id, tasksNumber, f.tasksNumberLastUpdated)
-            })
-          }
-        }
+        this.updateSelectedFilterTasksCountIfNeeded()
+      }
+    },
+    updateSelectedFilterTasksCountIfNeeded() {
+      const f = this.$store.state.filter.selected
+      if (f && f.id && !this.$root.config.taskFilter.tasksNumber.enabled && this.$root.config.taskFilter.selectedFilterTasksNumber.enabled) {
+        this.updateFilterTasksCount({ filterId: f.id, filters: {} })
       }
     },
     getClasses: function(filter) {
@@ -287,10 +281,6 @@ export default {
     },
     deleteFavoriteFilter: function(filter) {
       this.$store.dispatch('deleteFavoriteFilter', { filterId: filter.id })
-    },
-    saveTasksCountInStore(filterId, tasksNumber, tasksNumberLastUpdated) {
-      const newFilters = this.$store.state.filter.list.map(f => f.id === filterId ? { ...f, tasksNumber, tasksNumberLastUpdated } : f)
-      this.$store.commit('setFilters', { filters: newFilters })
     }
   },
   beforeUnmount: function() {
@@ -299,6 +289,3 @@ export default {
   }
 }
 </script>
-
-<style lang="css" scoped>
-</style>
