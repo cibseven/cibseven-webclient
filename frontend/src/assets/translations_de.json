@@ -10,6 +10,7 @@
 		},
 		"actualisation": {
 			"progress": "Daten werden aktualisiert...",
+			"lastUpdate": "Letztes Update: {date}",
 			"disabled": "Letztes Update: {date}\n\nAutomatische Updates sind deaktiviert.\nDrücken Sie F5, um die Daten neu zu laden.",
 			"enabled": "Letztes Update: {date}\n\nAutomatische Updates sind aktiviert.\nAktualisierung alle {seconds} Sekunden."
 		}
@@ -783,7 +784,8 @@
 	},
 	"nav-bar": {
 		"no-tasks-pending": "Sie haben keine offenen Aufgaben",
-		"no-tasks": "Keine Aufgaben gefunden",	
+		"no-tasks": "Keine Aufgaben gefunden",
+		"tasks-count": "Offene Aufgaben: {count}",
 		"processes": "@:process.title",
 		"filters": {
 			"addFilter": "Filter hinzufügen",
