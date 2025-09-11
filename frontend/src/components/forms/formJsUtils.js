@@ -67,3 +67,24 @@ export function convertFormDataForFormJs(formData) {
   
   return convertedFormData
 }
+
+/**
+ * Find all documentPreview components in form schema
+ * @param {Object} formContent - Form schema object
+ * @returns {Array} Array of documentPreview components
+ */
+export function findDocumentPreviewComponents(formContent) {
+  return formContent.components?.filter(component => component.type === 'documentPreview') || []
+}
+
+/**
+ * Generate document reference variable name by adding postfix.
+ * The postfix is needed to avoid conflicts when file picker and document preview use the same variable name in the form.
+ * Without the postfix, their data would overwrite each other in form data.
+ * 
+ * @param {string} variableName - Original variable name
+ * @returns {string} Variable name with document reference postfix
+ */
+export function getDocumentReferenceVariableName(variableName) {
+  return variableName + '_documentReference'
+}

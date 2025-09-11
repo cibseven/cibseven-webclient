@@ -686,11 +686,34 @@ public class ProcessService extends BaseService implements InitializingBean {
 	public ResponseEntity<byte[]> findProcessInstanceVariableData(
 			@Parameter(description = "Process instance Id") @PathVariable String processInstanceId,
 			@Parameter(description = "Varaible name") @PathVariable String variableName,
+			@RequestParam Optional<String> token,
+			@Parameter(description = "Content-Type header to set for file preview in browser (e.g., 'application/pdf', 'image/jpeg', 'text/plain'). When provided, enables inline preview instead of download.") @RequestParam Optional<String> contentType,
 			Locale loc, HttpServletRequest rq) {
+		// Inject the token into the request header if present.
+		// This is required for secure access to variable data endpoints, especially for document/file previews
+		// where the frontend passes the token as a query parameter and the backend must convert it to a header.
+		if (token.isPresent() && !token.get().isEmpty()) {
+			rq = new HeaderModifyingRequestWrapper(rq, token.get());
+		}
 		CIBUser user = checkAuthorization(rq, true);
 		checkCockpitRights(user);
         checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_INSTANCE_VARIABLE_ALL);
-		return sevenProvider.fetchProcessInstanceVariableData(processInstanceId, variableName, user);
+		
+		// Get the variable data from the provider
+		ResponseEntity<byte[]> response = sevenProvider.fetchProcessInstanceVariableData(processInstanceId, variableName, user);
+		
+		// If contentType is provided, set preview headers
+		if (contentType.isPresent() && !contentType.get().isEmpty()) {
+			HttpHeaders headers = new HttpHeaders();
+			
+			// Set content-type and disposition for browser preview
+			headers.setContentType(org.springframework.http.MediaType.valueOf(contentType.get()));
+			headers.set("Content-Disposition", "inline");
+			
+			return new ResponseEntity<>(response.getBody(), headers, response.getStatusCode());
+		}
+		
+		return response;
 	}
 	
 	@Operation(
