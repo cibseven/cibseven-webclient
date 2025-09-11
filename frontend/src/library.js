@@ -170,6 +170,8 @@ import JobsTable from '@/components/process/tables/JobsTable.vue'
 
 // mixins
 import assigneeMixin from '@/mixins/assigneeMixin.js'
+import { getEnabledShortcuts, getShortcutsForModal, generateEventString, 
+  getGlobalNavigationShortcuts, getTaskEventShortcuts, checkKeyMatch } from './utils/shortcuts.js'
 
 const registerComponents = function(app) {
   app.component('cib-seven', CibSeven)
@@ -443,6 +445,12 @@ export {
   fetchDecisionsIfEmpty,
   setupTaskNotifications,
   parseXMLDocumentation,
+  getEnabledShortcuts,
+  getShortcutsForModal,
+  generateEventString,
+  getGlobalNavigationShortcuts,
+  getTaskEventShortcuts,
+  checkKeyMatch,
 
   initEmbeddedForm,
   ScrollableTabsContainer,
