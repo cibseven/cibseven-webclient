@@ -10,6 +10,7 @@
 		},
 		"actualisation": {
 			"progress": "Daten werden aktualisiert...",
+			"lastUpdate": "Letztes Update: {date}",
 			"disabled": "Letztes Update: {date}\n\nAutomatische Updates sind deaktiviert.\nDrücken Sie F5, um die Daten neu zu laden.",
 			"enabled": "Letztes Update: {date}\n\nAutomatische Updates sind aktiviert.\nAktualisierung alle {seconds} Sekunden."
 		}
@@ -183,6 +184,19 @@
 		"confirm": {
 			"suspend": "Wollen Sie wirklich die nächste Prozessdefinition mit allen laufenden Prozessinstanzen aussetzen?",
 			"activate": "Möchten Sie die nächste Prozessdefinition mit allen laufenden Prozessinstanzen wirklich aktivieren?"
+		},
+		"activityIdBadge": {
+			"remove": "Kriterium entfernen – um alle Prozessinstanzen aufzulisten",
+			"title": {
+				"executed": "{activityId} (nur ausgeführt)",
+				"active": "{activityId} (nur aktiv)",
+				"all": "{activityId}"
+			},
+			"tooltip": {
+				"executed": "Instanzen auflisten, die die Aktivität {activityId} ausgeführt haben",
+				"active": "Instanzen auflisten, die noch aktiv mit der Aktivität {activityId} sind",
+				"all": "Instanzen auflisten, die die Aktivität {activityId} ausgeführt haben oder noch aktiv mit der Aktivität {activityId} sind"
+			}
 		},
 		"true": "Wahr",
 		"false": "Falsch",
@@ -770,7 +784,8 @@
 	},
 	"nav-bar": {
 		"no-tasks-pending": "Sie haben keine offenen Aufgaben",
-		"no-tasks": "Keine Aufgaben gefunden",	
+		"no-tasks": "Keine Aufgaben gefunden",
+		"tasks-count": "Offene Aufgaben: {count}",
 		"processes": "@:process.title",
 		"filters": {
 			"addFilter": "Filter hinzufügen",
@@ -939,6 +954,12 @@
 			"decisions": {
 				"title": "Entscheidungen",
 				"tooltip": "Verfügbare Entscheidungsdefinitionen durchsuchen"
+			},
+			"decision-definition": {
+				"title": "Entscheidungsdefinition"
+			},
+			"decision-instance": {
+				"title": "Entscheidungsinstanz"
 			},
 			"humanTasks": {
 				"title": "Aufgaben",
@@ -1110,14 +1131,14 @@
 			"columnDescription": "Beschreibung",
 			"buttonCtrl": "Strg",
 			"shortcuts": {
-				"ctrlLeft": "Zur Ansicht 'Startprozess' springen",
-				"ctrlDown": "Zur Ansicht 'Aufgaben' springen",
-				"ctrlRight": "Zur Ansicht 'Prozesse' springen",
-				"ctrlAltP": "Das Pop-up-Fenster 'Startprozess' öffnen",
-				"ctrlAltC": "Übernehme die derzeit ausgewählte Aufgabe",
-				"alt1": "Fokus auf Filter setzen",
-				"alt2": "Fokus auf die Liste der gefilterten Aufgaben setzen",
-				"alt3": "Fokus auf die ausgewählte Aufgabe setzen"
+				"startProcessView": "Zur Ansicht 'Startprozess' springen",
+				"tasksView": "Zur Ansicht 'Aufgaben' springen",
+				"processesView": "Zur Ansicht 'Prozesse' springen",
+				"startProcess": "Das Pop-up-Fenster 'Startprozess' öffnen",
+				"claimTask": "Übernehme die derzeit ausgewählte Aufgabe",
+				"focusFilters": "Fokus auf Filter setzen",
+				"focusTasks": "Fokus auf die Liste der gefilterten Aufgaben setzen",
+				"focusTask": "Fokus auf die ausgewählte Aufgabe setzen"
 			}
 		},
 		"flowModalSupport": {

@@ -39,6 +39,9 @@ const BatchStore = {
     appendHistoricBatches(state, newBatches) {
       state.historicBatches = state.historicBatches.concat(newBatches)
     },
+    prependHistoricBatches(state, newBatches) {
+      state.historicBatches = newBatches.concat(state.historicBatches)
+    },
     setCleanableBatchReport(state, report) {
         state.cleanableBatchReport = report
     },
@@ -77,6 +80,20 @@ const BatchStore = {
         commit('setHistoricBatches', filtered)
       }
       return filtered
+    },
+    async prependNewHistoricBatches({ dispatch, commit, state }, query) {
+      const newBatches = await dispatch('getHistoricBatches', query)
+      
+      // Filter out batches that are already in the state
+      //  to avoid duplicates when prepending
+      const existingIds = new Set(state.historicBatches.map(b => b.id))
+      const trulyNewBatches = newBatches.filter(batch => !existingIds.has(batch.id))
+      
+      if (trulyNewBatches.length > 0) {
+        commit('prependHistoricBatches', trulyNewBatches)
+      }
+      
+      return trulyNewBatches
     },
     async getHistoricBatch({ commit }, id) {
         const result = await BatchService.getHistoricBatchById(id)

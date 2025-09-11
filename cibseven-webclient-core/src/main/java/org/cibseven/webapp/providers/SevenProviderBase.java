@@ -409,4 +409,14 @@ public abstract class SevenProviderBase {
 		return "";
 	}
 
+	protected String encodeQueryParams(Map<String, Object> queryParams) {
+		StringBuilder paramStr = new StringBuilder();
+		for (Map.Entry<String, Object> entry : queryParams.entrySet()) {
+			if (entry.getValue() != null) {
+				paramStr.append(addQueryParameter(paramStr.toString(), entry.getKey(), Optional.ofNullable(entry.getValue().toString()), true));
+			}
+		}
+		return paramStr.toString();
+	}
+
 }
