@@ -111,9 +111,11 @@
     <AboutModal ref="about"></AboutModal>
     <FeedbackModal ref="report" url="feedback" :email="$root.user && $root.user.email" @report="$refs.down.$emit('report', $event)"></FeedbackModal>
 
-    <GlobalEvents v-if="permissionsTaskList" @keydown.ctrl.left.prevent="$router.push('/seven/auth/start-process')"></GlobalEvents>
-    <GlobalEvents v-if="permissionsCockpit" @keydown.ctrl.right.prevent="$router.push('/seven/auth/processes/list')"></GlobalEvents>
-    <GlobalEvents v-if="permissionsTaskList" @keydown.ctrl.down.prevent="$router.push('/seven/auth/tasks')"></GlobalEvents>
+    <GlobalEvents 
+      v-for="shortcut in globalShortcuts" 
+      :key="shortcut.id" 
+      @keydown="handleShortcut($event, shortcut)">
+    </GlobalEvents>
 
   </div>
 </template>
@@ -121,6 +123,7 @@
 <script>
 import platform from 'platform'
 import { permissionsMixin } from '@/permissions.js'
+import { getGlobalNavigationShortcuts, checkKeyMatch } from '@/utils/shortcuts.js'
 import ShortcutsModal from '@/components/modals/ShortcutsModal.vue'
 import AboutModal from '@/components/modals/AboutModal.vue'
 import SupportModal from '@/components/modals/SupportModal.vue'
@@ -320,6 +323,19 @@ export default {
       })
       return title
     },
+    globalShortcuts() {
+      const shortcuts = getGlobalNavigationShortcuts(this.$root.config)
+      return shortcuts.filter(shortcut => {
+        // Apply permission checks based on the route
+        if (shortcut.route.includes('/seven/auth/start-process') || shortcut.route.includes('/seven/auth/tasks')) {
+          return this.permissionsTaskList
+        }
+        if (shortcut.route.includes('/seven/auth/processes')) {
+          return this.permissionsCockpit
+        }
+        return true
+      })
+    },
     permissionsTaskList: function() {
       return this.$root.user && this.applicationPermissions(this.$root.config.permissions.tasklist, 'tasklist')
     },
@@ -369,6 +385,14 @@ export default {
     },
     openStartProcess: function() {
       this.$eventBus.emit('openStartProcess')
+    },
+    handleShortcut: function(event, shortcut) {
+      // Check if the current key combination matches the shortcut
+      const isMatch = checkKeyMatch(event, shortcut.keys)
+      if (isMatch) {
+        event.preventDefault()
+        this.$router.push(shortcut.route)
+      }
     },
     doNotShowIeNotification: function() { if (this.rememberNotShow) localStorage.setItem('ienotify', true) },
     // change title of the whole web-page in browser

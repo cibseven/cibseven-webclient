@@ -10,6 +10,7 @@
 		},
 		"actualisation": {
 			"progress": "Actualizando datos...",
+			"lastUpdate": "Última actualización: {date}",
 			"disabled": "Última actualización: {date}\n\nLas actualizaciones automáticas están desactivadas.\nPresiona F5 para recargar los datos.",
 			"enabled": "Última actualización: {date}\n\nLas actualizaciones automáticas están activadas.\nRecargando cada {seconds} segundos."
 		}
@@ -784,6 +785,7 @@
 	"nav-bar": {
 		"no-tasks-pending": "No tiene tareas pendientes",
 		"no-tasks": "No se encontraron tareas",
+		"tasks-count": "Tareas abiertas: {count}",
 		"processes": "@:process.title",
 		"filters": {
 			"addFilter": "Añadir filtro",
@@ -1129,14 +1131,14 @@
 			"columnDescription": "Descripción",
 			"buttonCtrl": "Ctrl",
 			"shortcuts": {
-				"ctrlLeft": "Ir a la vista 'Iniciar proceso'",
-				"ctrlDown": "Ir a la vista 'Tareas'",
-				"ctrlRight": "Ir a la vista 'Procesos'",
-				"ctrlAltP": "Abrir la ventana emergente 'Iniciar proceso'",
-				"ctrlAltC": "Reclamar la tarea actualmente seleccionada",
-				"alt1": "Establecer el foco en los filtros",
-				"alt2": "Establecer el foco en la lista de tareas filtradas",
-				"alt3": "Establecer el foco en la tarea seleccionada"
+				"startProcessView": "Ir a la vista 'Iniciar proceso'",
+				"tasksView": "Ir a la vista 'Tareas'",
+				"processesView": "Ir a la vista 'Procesos'",
+				"startProcess": "Abrir la ventana emergente 'Iniciar proceso'",
+				"claimTask": "Reclamar la tarea actualmente seleccionada",
+				"focusFilters": "Establecer el foco en los filtros",
+				"focusTasks": "Establecer el foco en la lista de tareas filtradas",
+				"focusTask": "Establecer el foco en la tarea seleccionada"
 			}
 		},
 		"flowModalSupport": {

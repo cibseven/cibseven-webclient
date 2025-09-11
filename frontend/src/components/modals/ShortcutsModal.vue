@@ -23,9 +23,9 @@
         <span class="mdi mdi-48px mdi-keyboard-outline pe-1 text-info"></span>
       </div>
       <div class="col-10 ps-0">
-        <h5>{{ $t('infoAndHelp.flowModalAbout.title') }}</h5>
+        <h5 v-if="itemsGlobal.length > 0">{{ $t('infoAndHelp.flowModalAbout.title') }}</h5>
         <ShortcutsTable :items="itemsGlobal"></ShortcutsTable>
-        <h5>{{ $t('start.taskList.title') }}</h5>
+        <h5 v-if="itemsTasks.length > 0">{{ $t('start.taskList.title') }}</h5>
         <ShortcutsTable :items="itemsTasks"></ShortcutsTable>
       </div>
     </div>
@@ -34,40 +34,17 @@
 
 <script>
 import ShortcutsTable from '@/components/modals/ShortcutsTable.vue'
+import { getShortcutsForModal } from '@/utils/shortcuts.js'
 
 export default {
   name: 'ShortcutsModal',
   components: { ShortcutsTable },
-  data: function() {
-    return {
-      itemsGlobal: [{
-          buttons: ["Ctrl", "+", "🠄"],
-          description: 'infoAndHelp.shortcuts.shortcuts.ctrlLeft',
-        }, {
-          buttons: ["Ctrl", "+", "🠇"],
-          description: 'infoAndHelp.shortcuts.shortcuts.ctrlDown',
-        }, {
-          buttons: ["Ctrl", "+", "🠆"],
-          description: 'infoAndHelp.shortcuts.shortcuts.ctrlRight',
-        }
-      ],
-      itemsTasks: [{
-          buttons: ["Ctrl", "+", "Alt", "+", "C"],
-          description: 'infoAndHelp.shortcuts.shortcuts.ctrlAltC',
-        }, {
-          buttons: ["Ctrl", "+", "Alt", "+", "P"],
-          description: 'infoAndHelp.shortcuts.shortcuts.ctrlAltP',
-        }, {
-          buttons: ["Alt", "+", "1"],
-          description: 'infoAndHelp.shortcuts.shortcuts.alt1',
-        }, {
-          buttons: ["Alt", "+", "2"],
-          description: 'infoAndHelp.shortcuts.shortcuts.alt2',
-        }, {
-          buttons: ["Alt", "+", "3"],
-          description: 'infoAndHelp.shortcuts.shortcuts.alt3',
-        }
-      ]
+  computed: {
+    itemsGlobal() {
+      return getShortcutsForModal(this.$root.config, 'global')
+    },
+    itemsTasks() {
+      return getShortcutsForModal(this.$root.config, 'tasks')
     }
   },
   methods: {

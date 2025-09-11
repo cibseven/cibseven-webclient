@@ -105,7 +105,7 @@
       <p class="text-center p-4">{{ $t('process-instance.noIncidents') }}</p>
     </div>
 
-    <AnnotationModal ref="annotationModal" @set-incident-annotation="setIncidentAnnotation"></AnnotationModal>
+    <AnnotationModal ref="annotationModal" @set-annotation="setIncidentAnnotation" lang-key="process-instance.incidents"></AnnotationModal>
     <RetryModal ref="incidentRetryModal" @increment-number-retry="incrementNumberRetry" translation-prefix="process-instance.incidents."></RetryModal>
     <StackTraceModal ref="stackTraceModal"></StackTraceModal>
     <SuccessAlert ref="messageCopy">{{ $t('process.copySuccess') }}</SuccessAlert>

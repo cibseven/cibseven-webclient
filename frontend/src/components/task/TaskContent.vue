@@ -57,9 +57,8 @@
                 <!-- <span class="mdi mdi-18px mdi-account mdi-dark"></span><span class="p-1" style="line-height: initial">{{ getCompleteName }}</span> -->
               </span>
               <span v-else>
-                <GlobalEvents @keydown.ctrl.alt.c.prevent="assignee = $root.user.id"></GlobalEvents>
                 <b-button ref="assignToMeButton" variant="link" class="p-0 text-dark me-2"
-                  @click="assignee = $root.user.id" :title="$t('infoAndHelp.shortcuts.shortcuts.ctrlAltC')"><span
+                  @click="assignee = $root.user.id" :title="$t('infoAndHelp.shortcuts.shortcuts.claimTask')"><span
                     class="mdi mdi-18px mdi-account-question mdi-dark"></span> {{ $t('task.assignToMe') }}</b-button>
               </span>
               <FilterableSelect v-if="task.assignee == null" v-model:loading="loadingUsers" @enter="findUsers($event)"
@@ -181,6 +180,11 @@ export default {
   },
   methods: {
     ...mapActions('task', ['setSelectedAssignee']),
+    claimCurrentTask: function() {
+      if (!this.task.assignee) {
+        this.assignee = this.$root.user.id
+      }
+    },
     loadIdentityLinks: function(taskId) {
       this.candidateUsers = []
       var promises = []
