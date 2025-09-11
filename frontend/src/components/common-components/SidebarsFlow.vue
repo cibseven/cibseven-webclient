@@ -24,7 +24,7 @@
           <slot name="leftIcon">
             <span class="mdi mdi-18px mdi-chevron-left float-end"></span>
           </slot>
-          <h5 class="m-0 w-75" style="word-wrap: break-word">{{ leftCaption }}<span v-if="number" class="h5 ps-2"><b-badge pill variant="light">{{ number }}</b-badge></span></h5>
+          <h5 class="m-0 w-75" style="word-wrap: break-word">{{ leftCaption }}<span v-if="number" class="h5 ps-2"><b-badge pill variant="light" :title="numberTooltip">{{ number }}</b-badge></span></h5>
         </b-button>
         <div :style="{ height: leftCaption ? 'calc(100% - ' + headerCalc + ')' : '100%' }">
           <slot name="left"></slot>
@@ -70,10 +70,16 @@
 <script>
 export default {
   name: 'SidebarsFlow',
-  props: { leftOpen: Boolean, rightOpen: Boolean, leftCaption: String, rightCaption: String,
+  props: {
+    leftOpen: Boolean,
+    rightOpen: Boolean,
+    leftCaption: String,
+    rightCaption: String,
     leftSize: { type: Array, default: function() { return [12, 6, 4, 3, 3] } },
     rightSize: { type: Array, default: function() { return [12, 6, 4, 2, 2] } },
-    number: Number, headerCalc: { type: String, default: '40px' }
+    number: Number,
+    numberTooltip: String,
+    headerCalc: { type: String, default: '40px' }
   },
   emits: ['update:rightOpen', 'update:leftOpen'],
   computed: {

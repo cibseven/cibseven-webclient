@@ -31,7 +31,10 @@
     <template v-slot:filter>
       <FilterNavCollapsed v-if="!leftOpenFilter && leftCaptionFilter" v-model:left-open="leftOpenFilter"></FilterNavCollapsed>
     </template>
-    <SidebarsFlow ref="regionTasks" role="region" :aria-label="$t('seven.allTasks')" class="h-100 bg-light" :number="totalTasksInFilter" header-margin="55px" v-model:left-open="leftOpenTask" v-model:right-open="rightOpenTask"
+    <SidebarsFlow ref="regionTasks" role="region" :aria-label="$t('seven.allTasks')" class="h-100 bg-light"
+      :number="totalTasksInFilter"
+      :number-tooltip="totalTasksInFilterTooltip"
+      header-margin="55px" v-model:left-open="leftOpenTask" v-model:right-open="rightOpenTask"
       :leftSize="getTasksNavbarSize" :left-caption="leftCaptionTask" :right-caption="TasksRightSidebar ? rightCaptionTask : null">
       <template v-slot:left>
         <TasksNavBar @filter-alert="showFilterAlert($event)" ref="navbar" :tasks="tasks" @selected-task="selectedTask($event)"
@@ -97,6 +100,7 @@ import { splitToWords } from '@/utils/search'
 import { getTaskEventShortcuts, checkKeyMatch } from '@/utils/shortcuts.js'
 import { mapActions } from 'vuex'
 import assigneeMixin from '@/mixins/assigneeMixin.js'
+import { formatDate } from '@/utils/dates.js'
 
 export default {
   name: 'TasksContent',
@@ -121,6 +125,7 @@ export default {
       filterMessage: '',
       filterName: '',
       totalTasksInFilter: 0,
+      totalTasksInFilterLastUpdated: 0,
       nFiltersShown: 0,
       tasksNavbarSizes: [[12, 6, 4, 4, 3], [12, 6, 4, 5, 4], [12, 6, 4, 6, 5]],
       tasksNavbarSize: 0,
@@ -148,6 +153,9 @@ export default {
     getTasksNavbarSize: function() { return this.tasksNavbarSizes[this.tasksNavbarSize] },
     taskShortcuts() {
       return getTaskEventShortcuts(this.$root.config)
+    },
+    totalTasksInFilterTooltip: function() {
+      return this.$t('nav-bar.tasks-count', { count: this.totalTasksInFilter }) + '\n' + this.$t('commons.actualisation.lastUpdate', { date: formatDate(this.totalTasksInFilterLastUpdated, 'HH:mm') })
     }
   },
   watch: {
@@ -162,6 +170,9 @@ export default {
     },
     '$store.state.filter.selected.tasksNumber': function(val) {
       this.totalTasksInFilter = val || 0
+    },
+    '$store.state.filter.selected.tasksNumberLastUpdated': function(val) {
+      this.totalTasksInFilterLastUpdated = val || 0
     },
     '$route.params.taskId': function() { if (!this.$route.params.taskId) this.cleanSelectedTask() },
     '$route.params.filterId': function() { if (!this.$route.params.filterId) this.cleanSelectedFilter() },
