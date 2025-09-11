@@ -117,14 +117,14 @@
           <div class="col-10">
             <span>{{ $t('deployment.confirmDeleteDeployment') }}</span>
             <b-form-checkbox disabled v-model="cascadeDelete" class="mt-3">{{ $t('deployment.deleteRunningInstances')
-              }}</b-form-checkbox>
+            }}</b-form-checkbox>
           </div>
         </div>
       </div>
       <template v-slot:modal-footer>
         <b-button @click="$refs.deleteModal.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
         <b-button @click="deleteDeployments(); $refs.deleteModal.hide()" variant="primary">{{ $t('confirm.delete')
-          }}</b-button>
+        }}</b-button>
       </template>
     </b-modal>
     <b-modal ref="deleteSelectedModal" :title="$t('confirm.title')">
@@ -136,13 +136,13 @@
           <div class="col-10">
             <span>{{ $t('deployment.confirmDeleteDeployment') }}</span>
             <b-form-checkbox disabled v-model="cascadeDelete" class="mt-3">{{ $t('deployment.deleteRunningInstances')
-              }}</b-form-checkbox>
+            }}</b-form-checkbox>
           </div>
         </div>
       </div>
       <template v-slot:modal-footer>
         <b-button @click="$refs.deleteSelectedModal.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
-        <b-button @click="deleteDeployment(); $refs.deleteSelectedModal.hide()" variant="primary">{{ $t('confirm.delete')
+        <b-button @click="deleteDeployment(); $refs.deleteSelectedModal.hide()" variant="primary">{{$t('confirm.delete')
           }}</b-button>
       </template>
     </b-modal>
@@ -179,7 +179,7 @@ export default {
       deleteLoader: false,
       filter: this.$route.query.filter || '',
       firstResult: 0,
-      maxResults: 10, // The maximum number of results to fetch per page.
+      maxResults: 50, // The maximum number of results to fetch per page.
       sortBy: 'deploymentTime', // Enum: "id" "name" "deploymentTime" "tenantId"
       sortOrder: 'desc', // Enum: "asc" "desc"
       cascadeDelete: true,
@@ -257,10 +257,10 @@ export default {
     }
     if (this.deploymentId) {
       this.findDeploymentResources(this.deploymentId)
-    this.rightOpen = true
+      this.rightOpen = true
     }
     this.loadNextPage()
-    
+
   },
   methods: {
     performSearch: function () {
@@ -348,8 +348,8 @@ export default {
       this.searchDeployment = true
       this.refreshTotalCount()
       let found = this.deployments.some(dep => {
-          return dep.id === this.deploymentId
-        })
+        return dep.id === this.deploymentId
+      })
       if (found) {
         this.deploymentsReady = true
       }
@@ -362,29 +362,23 @@ export default {
       this.deploymentsDelData.deleted = 0
       var pool = this.deploymentsSelected.slice(0, this.deploymentsSelected.length)
       let groupEmptyName = null
-        pool.forEach(deployment => {
-          this.groups.some(group => {
+      pool.forEach(deployment => {
+        let found = this.groups.findIndex(group => {
           const index = group.data.findIndex(d => {
             return deployment.id === d.id
           })
           if (index !== -1) {
             group.data.splice(index, 1)
-            if (group.data.length < 1) {
-              groupEmptyName = group.name
-            }
-            return true
+            return group
           }
-          return false
         })
-        })
-         if (groupEmptyName) {
-          let groupEmptyIndex = this.groups.findIndex( group => {
-            return groupEmptyName === group.name
-          })
-          this.groups.splice(groupEmptyIndex, 1)
+        if (found !== -1) {
+          if (this.groups[found].data.length < 1) {
+            this.groups.splice(found, 1)
+          }
         }
-
-        pool = this.deploymentsSelected.slice(0, this.deploymentsSelected.length)
+      })
+      pool = this.deploymentsSelected.slice(0, this.deploymentsSelected.length)
       startTask()
       function startTask() {
         var deployment = pool.shift()
@@ -409,7 +403,7 @@ export default {
         })
       }
     },
-    deleteDeployment: function() {
+    deleteDeployment: function () {
       ProcessService.deleteDeployment(this.deploymentId, true).then(() => {
         this.deployments = this.deployments.filter(d => {
           return this.deploymentId !== d.id
@@ -419,35 +413,27 @@ export default {
         this.deploymentsDelData.total = 1
         this.deploymentsDelData.deleted++
         this.$refs.deploymentsDeleted.show()
-        let groupEmptyName = null
-        this.groups.some(group => {
+        let found = this.groups.findIndex(group => {
           const index = group.data.findIndex(d => {
             return this.deploymentId === d.id
           })
           if (index !== -1) {
             group.data.splice(index, 1)
-            if (group.data.length < 1) {
-              groupEmptyName = group.name
-            }
-            return true
+            return group
           }
-          return false
         })
-        if (groupEmptyName) {
-          let groupEmptyIndex = this.groups.findIndex( group => {
-            return groupEmptyName === group.name
-          })
-          this.groups.splice(groupEmptyIndex, 1)
+        if (found !== -1) {
+          if (this.groups[found].data.length < 1) {
+            this.groups.splice(found, 1)
+          }
         }
         this.$router.push({
-        name: 'deployments',
-        params: {
-          deploymentId: ''
-        }
+          name: 'deployments',
+          params: {
+            deploymentId: ''
+          }
+        })
       })
-      })
-      
-
     },
     selectDeployment: function (d) {
       this.deployment = d
@@ -460,15 +446,9 @@ export default {
       ProcessService.findDeploymentResources(deploymentId).then(resources => {
         this.resources = resources
         this.resourcesLoading = false
-      }).catch(error => {
+      }).catch(() => {
         this.resources = null
         this.resourcesLoading = false
-
-        let errorMessage = "Deployment with id" + deploymentId + " does not exist.";
-        if (error.response && error.response.data && error.response.data.error) {
-          errorMessage = error.response.data.error;
-        }
-        console.error("Deployment fetch failed:", errorMessage)
       })
     },
     changeSortingOrder: function () {

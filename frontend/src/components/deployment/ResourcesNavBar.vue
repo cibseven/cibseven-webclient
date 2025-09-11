@@ -169,25 +169,13 @@ export default {
           else {
             ProcessService.findDeployment(this.deploymentId).then(deployment => {
               this.deployment = deployment
-            }).catch(error => {
-        let errorMessage = "No deployment could not be found for this Id!";
-        if (error.response && error.response.data && error.response.data.error) {
-          errorMessage = error.response.data.error;
-        }
-        console.error("Deployment fetch failed:", errorMessage)
-      })
+            })
           }
         }
         else {
           ProcessService.findDeployment(this.deploymentId).then(deployment => {
             this.deployment = deployment
-          }).catch(error => {
-        let errorMessage = "No deployment could not be found for this Id!";
-        if (error.response && error.response.data && error.response.data.error) {
-          errorMessage = error.response.data.error;
-        }
-        console.error("Deployment fetch failed:", errorMessage)
-      })
+          })
         }
       }
     },
