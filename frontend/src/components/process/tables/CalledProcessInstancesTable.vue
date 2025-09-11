@@ -143,6 +143,7 @@ export default {
         this.matchedCalledList = this.calledInstanceList.map(processPL => {
           const key = processPL.processDefinitionKey
           const version = processPL.processDefinitionVersion
+          const state = processPL.state
           
           let foundInst = this.activityInstanceHistory.find(processAIH => {
             if (processAIH.activityType === "callActivity"){
@@ -161,7 +162,8 @@ export default {
             callingActivity: foundInst,
             key: key,
             version: version,
-            name: foundProcess ? foundProcess.name : key
+            name: foundProcess ? foundProcess.name : key,
+            state: state
           })
         })
         this.loading = false
@@ -172,16 +174,24 @@ export default {
     },
     formatDate,
     getIconTitle: function(instance) {
-      if (instance.endTime) {
-        return this.$t('process.instanceFinished')
+      switch(instance.state) {
+        case 'ACTIVE':
+          return this.$t('process.instanceRunning')
+        case 'SUSPENDED':
+          return this.$t('process.instanceIncidents')
+        default:
+          return this.$t('process.instanceFinished')
       }
-      return this.$t('process.instanceRunning')
     },
     getIconState: function(instance) {
-      if (instance.endTime) {
-        return 'mdi-close-circle-outline'
+      switch(instance.state) {
+        case 'ACTIVE':
+          return 'mdi-chevron-triple-right text-success'
+        case 'SUSPENDED':
+          return 'mdi-close-circle-outline'
+        default:
+          return 'mdi-flag-triangle'
       }
-      return 'mdi-chevron-triple-right text-success'
     }
   }
 }
