@@ -516,9 +516,8 @@ export default {
       }
     }
   },
-  beforeRouteLeave: function(to, from, next) {
+  beforeUnmount: function() {
     clearInterval(this.interval)
-    next()
   }
 }
 </script>
