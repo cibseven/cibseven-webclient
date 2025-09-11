@@ -17,10 +17,10 @@
 
 -->
 <template>
-  <b-modal ref="annotationModal" :title="$t('process-instance.incidents.editAnnotation')">
+  <b-modal ref="annotationModal" :title="$t(`${langKey}.editAnnotation`)">
     <div>
       <b-form-group>
-        <template #label>{{ $t('process-instance.incidents.annotation') }}</template>
+        <template #label>{{ $t(`${langKey}.annotation`) }}</template>
         <b-form-textarea v-model="annotation" :maxlength="annotationMaxLength" class="mb-1"></b-form-textarea>
         <div class="small float-end" :class="{ 'text-danger': invalidAnnotation }">{{ annotationLengthInfo }}</div>
       </b-form-group>
@@ -36,10 +36,16 @@
 
 export default {
   name: 'AnnotationModal',
-  emits: ['set-incident-annotation'],
+  emits: ['set-annotation'],
+  props: {
+    langKey: {
+      type: String,
+      required: true
+    }
+  },
   data: function() {
     return {
-      incidentId: null,
+      id: null,
       annotation: null,
       annotationMaxLength: 4000
     }
@@ -56,7 +62,7 @@ export default {
   },
   methods: {
     show: function(id, annotation) {
-      this.incidentId = id
+      this.id = id
       this.annotation = annotation
       this.$refs.annotationModal.show()
     },
@@ -66,8 +72,8 @@ export default {
     saveAnnotation: function() {
       if (this.invalidAnnotation) return
       var params = { annotation: this.annotation }
-      this.$emit('set-incident-annotation', {
-          id: this.incidentId,
+      this.$emit('set-annotation', {
+          id: this.id,
           params
       })
     }
