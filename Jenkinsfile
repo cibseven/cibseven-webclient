@@ -19,46 +19,18 @@ import groovy.transform.Field
     testMode: false
 ]
 
-// Shared function for npm package release with prerelease handling
+// Shared function for npm package release
 def npmReleasePackage(String packageDir, String packageName, String npmrcFile) {
     def isDevVersion = mavenProjectInformation.version.contains('-dev')
     def mavenTagArg = isDevVersion ? "-Dnpm.publish.tag.arg=' --tag dev'" : ""
 
     sh """
-        npm_prerelease_and_pr() {
-          local dir="\$1"
-          local pkgname="\$2"
-          local file="\$dir/package.json"
-          if [ "${isDevVersion}" = "true" ]; then
-            echo "Running npm version prerelease for dev build in \$dir..."
-            cd "\$dir"
-            npm version prerelease --no-git-tag-version
-            cd ..
-            if ! git diff --exit-code "\$file" > /dev/null; then
-              echo "Detected version change in \$file, creating pull request..."
-              branch_name="auto/npm-prerelease-\$dir"
-              git checkout -b "\$branch_name"
-              git add "\$file"
-              git commit -m "chore(\$pkgname): bump pre-release version"
-              git push origin "\$branch_name"
-              if command -v gh > /dev/null; then
-                gh pr create --fill --title "chore(\$pkgname): bump pre-release version" --body "Automated PR for npm pre-release version bump." || true
-              else
-                echo "GitHub CLI (gh) not found, please create a PR manually."
-              fi
-            fi
-          fi
-        }
-
         # Copy the .npmrc file to the package directory
         echo "Copying .npmrc file to ${packageDir} directory..."
         cp ${npmrcFile} ./${packageDir}/.npmrc
         
         echo "Current package.json version:"
         grep '"version"' ${packageDir}/package.json
-        
-        # Handle prerelease versioning and PR creation if needed
-        npm_prerelease_and_pr "${packageDir}" "${packageName}"
         
         echo "Running Maven to release the npm package..."
         mvn -T4 \\
