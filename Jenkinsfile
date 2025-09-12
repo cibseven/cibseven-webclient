@@ -19,6 +19,57 @@ import groovy.transform.Field
     testMode: false
 ]
 
+// Shared function for npm package release with prerelease handling
+def npmReleasePackage(String packageDir, String packageName, String npmrcFile) {
+    def isDevVersion = mavenProjectInformation.version.contains('-dev')
+    def mavenTagArg = isDevVersion ? "-Dnpm.publish.tag.arg=' --tag dev'" : ""
+
+    sh """
+        npm_prerelease_and_pr() {
+          local dir="\$1"
+          local pkgname="\$2"
+          local file="\$dir/package.json"
+          if [ "${isDevVersion}" = "true" ]; then
+            echo "Running npm version prerelease for dev build in \$dir..."
+            cd "\$dir"
+            npm version prerelease --no-git-tag-version
+            cd ..
+            if ! git diff --exit-code "\$file" > /dev/null; then
+              echo "Detected version change in \$file, creating pull request..."
+              branch_name="auto/npm-prerelease-\$dir"
+              git checkout -b "\$branch_name"
+              git add "\$file"
+              git commit -m "chore(\$pkgname): bump pre-release version"
+              git push origin "\$branch_name"
+              if command -v gh > /dev/null; then
+                gh pr create --fill --title "chore(\$pkgname): bump pre-release version" --body "Automated PR for npm pre-release version bump." || true
+              else
+                echo "GitHub CLI (gh) not found, please create a PR manually."
+              fi
+            fi
+          fi
+        }
+
+        # Copy the .npmrc file to the package directory
+        echo "Copying .npmrc file to ${packageDir} directory..."
+        cp ${npmrcFile} ./${packageDir}/.npmrc
+        
+        echo "Current package.json version:"
+        grep '"version"' ${packageDir}/package.json
+        
+        # Handle prerelease versioning and PR creation if needed
+        npm_prerelease_and_pr "${packageDir}" "${packageName}"
+        
+        echo "Running Maven to release the npm package..."
+        mvn -T4 \\
+            -Dbuild.number=${BUILD_NUMBER} \\
+            -Drelease-npm-library=${packageDir} \\
+            -Dskip.npm.version.update=true \\
+            ${mavenTagArg} \\
+            clean generate-resources
+    """
+}
+
 pipeline {
     agent {
         kubernetes {
@@ -226,12 +277,7 @@ pipeline {
                 script {
                     withCredentials([file(credentialsId: 'credential-cibseven-artifacts-npmrc', variable: 'NPMRC_FILE')]) {
                         withMaven() {
-                            sh """
-                                # Copy the .npmrc file to the frontend directory
-                                cp ${NPMRC_FILE} ./cib-common-components/.npmrc
-                                # Run Maven with the required profile
-                                mvn -T4 -Dbuild.number=${BUILD_NUMBER} clean generate-resources -Drelease-npm-library=cib-common-components -Dskip.npm.version.update=true
-                            """
+                            npmReleasePackage('cib-common-components', 'cib-common-components', env.NPMRC_FILE)
                         }
                     }
                 }
@@ -248,27 +294,7 @@ pipeline {
                 script {
                     withCredentials([file(credentialsId: 'credential-cibseven-artifacts-npmrc', variable: 'NPMRC_FILE')]) {
                         withMaven() {
-                            def baseVersion = mavenProjectInformation.version.replace("-SNAPSHOT", "")
-                            def dynamicVersion = mavenProjectInformation.version.contains('-SNAPSHOT') ?
-                                "${baseVersion}-${BUILD_NUMBER}-SNAPSHOT" : mavenProjectInformation.version
-
-                            sh """
-                                echo "Copy the .npmrc file to the frontend directory..."
-                                cp ${NPMRC_FILE} ./bpm-sdk/.npmrc
-
-                                echo "Setting dynamic version to ${dynamicVersion}..."
-                                sed -i 's/__CI_VERSION__/${dynamicVersion}/' bpm-sdk/package.json
-
-                                echo "Final package.json version:"
-                                grep '"version"' bpm-sdk/package.json
-
-                                echo "Running Maven to release the npm package..."
-                                mvn -T4 \
-                                    -Dbuild.number=${BUILD_NUMBER} \
-                                    -Drelease-npm-library=bpm-sdk \
-                                    -Dskip.npm.version.update=true \
-                                    clean generate-resources
-                            """
+                            npmReleasePackage('bpm-sdk', 'bpm-sdk', env.NPMRC_FILE)
                         }
                     }
                 }
@@ -285,28 +311,7 @@ pipeline {
                 script {
                     withCredentials([file(credentialsId: 'credential-cibseven-artifacts-npmrc', variable: 'NPMRC_FILE')]) {
                         withMaven() {
-
-                            def baseVersion = mavenProjectInformation.version.replace("-SNAPSHOT", "")
-                            def dynamicVersion = mavenProjectInformation.version.contains('-SNAPSHOT') ?
-                                "${baseVersion}-${BUILD_NUMBER}-SNAPSHOT" : mavenProjectInformation.version
-
-                            sh """
-                                echo "Copy the .npmrc file to the frontend directory..."
-                                cp ${NPMRC_FILE} ./frontend/.npmrc
-
-                                echo "Setting dynamic version to ${dynamicVersion}..."
-                                sed -i 's/__CI_VERSION__/${dynamicVersion}/' frontend/package.json
-
-                                echo "Final package.json version:"
-                                grep '"version"' frontend/package.json
-
-                                echo "Running Maven to release the npm package..."
-                                mvn -T4 \
-                                    -Dbuild.number=${BUILD_NUMBER} \
-                                    -Drelease-npm-library=frontend \
-                                    -Dskip.npm.version.update=true \
-                                    clean generate-resources
-                            """
+                            npmReleasePackage('frontend', 'frontend', env.NPMRC_FILE)
                         }
                     }
                 }
