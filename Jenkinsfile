@@ -20,7 +20,7 @@ import groovy.transform.Field
 ]
 
 // Shared function for npm package release
-def npmReleasePackage(String packageDir, String packageName, String npmrcFile) {
+def npmReleasePackage(String packageDir, String npmrcFile) {
     def isDevVersion = mavenProjectInformation.version.contains('-dev')
     def mavenTagArg = isDevVersion ? "-Dnpm.publish.tag.arg=' --tag dev'" : ""
 
@@ -249,7 +249,7 @@ pipeline {
                 script {
                     withCredentials([file(credentialsId: 'credential-cibseven-artifacts-npmrc', variable: 'NPMRC_FILE')]) {
                         withMaven() {
-                            npmReleasePackage('cib-common-components', 'cib-common-components', env.NPMRC_FILE)
+                            npmReleasePackage('cib-common-components', env.NPMRC_FILE)
                         }
                     }
                 }
@@ -266,7 +266,7 @@ pipeline {
                 script {
                     withCredentials([file(credentialsId: 'credential-cibseven-artifacts-npmrc', variable: 'NPMRC_FILE')]) {
                         withMaven() {
-                            npmReleasePackage('bpm-sdk', 'bpm-sdk', env.NPMRC_FILE)
+                            npmReleasePackage('bpm-sdk', env.NPMRC_FILE)
                         }
                     }
                 }
@@ -283,7 +283,7 @@ pipeline {
                 script {
                     withCredentials([file(credentialsId: 'credential-cibseven-artifacts-npmrc', variable: 'NPMRC_FILE')]) {
                         withMaven() {
-                            npmReleasePackage('frontend', 'frontend', env.NPMRC_FILE)
+                            npmReleasePackage('frontend', env.NPMRC_FILE)
                         }
                     }
                 }
