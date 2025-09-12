@@ -1,0 +1,16 @@
+{
+  "name": "cibseven-webclient",
+  "private": true,
+  "workspaces": [
+    "bpm-sdk"
+  ],
+  "scripts": {
+
+  },
+  "devDependencies": {
+
+  },
+  "publishConfig": {
+    "registry": "https://artifacts.cibseven.org/repository/oleg/"
+  }
+}

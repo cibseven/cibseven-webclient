@@ -15,3 +15,5 @@ cib-common-components/.npmrc
 
 # MacOS
 .DS_Store
+
+node_modules/
