@@ -34,6 +34,6 @@
     "cross-env": "^7.0.3"
   },
   "publishConfig": {
-    "registry": "https://artifacts.cibseven.org/repository/npm-hosted/"
+    "registry": "https://artifacts.cibseven.org/repository/oleg/"
   }
 }
