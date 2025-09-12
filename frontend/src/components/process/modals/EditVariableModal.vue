@@ -279,10 +279,9 @@ props: {
                   }
                 }
 
-                break
+                return value.toString() // For any other object type, return the value directly
               }
             }
-            return value.toString() // For any other object type, return the value directly
           }
           default:
             return this.variable.value.toString() // For any other type, return the value directly
