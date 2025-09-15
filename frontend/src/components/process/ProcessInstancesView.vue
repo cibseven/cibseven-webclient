@@ -84,14 +84,20 @@
                   <b-button size="sm" variant="light" @click="$refs.sortModal.show()" class="ms-1 border"><span class="mdi mdi-sort" style="line-height: initial"></span></b-button>
                 </b-input-group>
               </div>
-              <div class="col-1 p-3">
-                <span v-if="selectedActivityId" class="badge bg-info rounded-pill p-2 pe-3" style="font-weight: 500; font-size: 0.75rem">
-                  <span @click="clearActivitySelection" role="button" class="mdi mdi-close-thick py-2 px-1"></span> {{ selectedActivityId }}
+              <div v-if="selectedActivityId" class="col-3 p-3">
+                <span class="badge bg-info rounded-pill p-2 pe-3" style="font-weight: 500; font-size: 0.75rem">
+                  <span
+                    @click="clearActivitySelection"
+                    :title="$t('process.activityIdBadge.remove')"
+                    role="button" class="mdi mdi-close-thick py-2 px-1"></span>
+                    <span :title="$t('process.activityIdBadge.tooltip.' + selectedActivityInstancesListMode, { activityId: selectedActivityId })">
+                      {{ $t('process.activityIdBadge.title.' + selectedActivityInstancesListMode, { activityId: selectedActivityId }) }}
+                    </span>
                 </span>
               </div>
             </template>
 
-            <div :class="[ProcessInstancesSearchBoxPlugin ? 'col-2' : 'col-8', 'p-3', 'text-end']">
+            <div :class="[ProcessInstancesSearchBoxPlugin ? 'col-2' : ( selectedActivityId ? 'col-6' : 'col-9'), 'p-3', 'text-end']">
               <div>
                 <b-button v-if="process.suspended === 'false'" class="border" size="sm" variant="light" @click="confirmSuspend" :title="$t('process.suspendProcess')">
                   <span class="mdi mdi-pause-circle-outline"></span> {{ collapseButtons ? '': $t('process.suspendProcess') }}
@@ -256,14 +262,22 @@ export default {
 
       // append `selectedActivityId` into activityIdIn array
       if (this.selectedActivityId) {
-        if (!result.activityIdIn || !Array.isArray(result.activityIdIn)) {
-          result.activityIdIn = [this.selectedActivityId]
-        }
-        else if (!result.activityIdIn.includes(this.selectedActivityId)) {
-          result.activityIdIn = [
-            ...result.activityIdIn,
-            this.selectedActivityId
-          ]
+
+        // clean up
+        delete result.executedActivityIdIn
+        delete result.activityIdIn
+        delete result.activeOrExecutedActivityIdIn
+
+        switch (this.selectedActivityInstancesListMode) {
+          case 'executed':
+            result.executedActivityIdIn = [this.selectedActivityId]
+            break
+          case 'active':
+            result.activityIdIn = [this.selectedActivityId]
+            break
+          default:
+            result.activeOrExecutedActivityIdIn = [this.selectedActivityId]
+            break
         }
       }
 
@@ -295,7 +309,7 @@ export default {
     isInstancesView: function() {
       return this.activeTab === 'instances'
     },
-    ...mapGetters(['selectedActivityId']),
+    ...mapGetters(['selectedActivityId', 'selectedActivityInstancesListMode']),
     ...mapGetters('instances', ['instances']),
     collapseButtons: function() {
       return this.ProcessInstancesSearchBoxPlugin || this.selectedActivityId

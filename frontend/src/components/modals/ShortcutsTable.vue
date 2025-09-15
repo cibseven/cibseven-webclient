@@ -17,7 +17,7 @@
 
 -->
 <template>
-  <FlowTable striped :resizable="false" thead-class="sticky-header" :items="items"
+  <FlowTable v-if="items && items.length > 0" striped :resizable="false" thead-class="sticky-header" :items="items"
     primary-key="buttons"
     prefix=""
     sort-by=""

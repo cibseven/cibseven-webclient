@@ -21,6 +21,7 @@ const ActivityStore = {
   state: { 
     processActivities: [],
     selectedActivityId: '',
+    selectedActivityInstancesListMode: 'all', // all | executed | active
     highlightedElement: null,
     activitiesInstanceHistory: [],
     diagramXml: null
@@ -29,14 +30,17 @@ const ActivityStore = {
     setProcessActivities: function (state, activities) {
       state.processActivities = activities
     },
-    setSelectedActivityId: function (state, activityId) {
+    setSelectedActivityId: function (state, payload = { activityId: 0, listMode: 'all' }) {
+      const { activityId, listMode = 'all' } = payload
       state.selectedActivityId = activityId
+      state.selectedActivityInstancesListMode = listMode
     },
     setHighlightedElement: function (state, element) {
       state.highlightedElement = element
     },
     clearActivitySelection: function (state) {
       state.selectedActivityId = ''
+      state.selectedActivityInstancesListMode = 'all'
       state.highlightedElement = null
     },
     setActivitiesInstanceHistory: function (state, activitiesInstance) {
@@ -48,14 +52,15 @@ const ActivityStore = {
   },
   getters: {
     selectedActivityId: (state) => state.selectedActivityId,
+    selectedActivityInstancesListMode: (state) => state.selectedActivityInstancesListMode,
     highlightedElement: (state) => state.highlightedElement,
     getProcessActivities: (state) => state.processActivities,
     activitiesInstanceHistory: (state) => state.activitiesInstanceHistory,
     diagramXml: (state) => state.diagramXml
   },
   actions: {
-    selectActivity: function ({ commit }, activityId) {
-      commit('setSelectedActivityId', activityId)
+    selectActivity: function ({ commit }, payload = { activityId: 0, listMode: 'all' }) {
+      commit('setSelectedActivityId', payload)
     },
     setHighlightedElement: function ({ commit }, element) {
       commit('setHighlightedElement', element)
