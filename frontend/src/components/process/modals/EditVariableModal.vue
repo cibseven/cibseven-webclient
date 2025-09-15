@@ -279,6 +279,14 @@ props: {
                   }
                 }
 
+                if (typeof value === 'object') {
+                  try {
+                    return JSON.stringify(value, null, 2) // Format objects as JSON
+                  } catch {
+                    return value.toString() // Fallback to original value if serialization fails
+                  }
+                }
+
                 return value.toString() // For any other object type, return the value directly
               }
             }
