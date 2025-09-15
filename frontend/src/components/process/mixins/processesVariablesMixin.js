@@ -26,6 +26,7 @@ export default {
 	data: function () {
 		return {
 			loading: true,
+			customFilter: false,
 			filter: {
 				deserializeValues: false,
 			},
@@ -45,7 +46,7 @@ export default {
 				this.filteredVariables = []
 				this.file = null
 				this.selectedVariable = null
-				this.loadSelectedInstanceVariables()
+				this.loadSelectedInstanceVariables(false)
 			}
 		},
 		activityInstancesGrouped: 'loadSelectedInstanceVariables'
@@ -86,27 +87,37 @@ export default {
 		}
 	},
 	methods: {
-		loadSelectedInstanceVariables: function () {
+		loadSelectedInstanceVariables: function (customFiltering = false) {
 			if (this.selectedInstance && this.activityInstancesGrouped) {
 				if (this.selectedInstance.state === 'ACTIVE') {
-					this.fetchInstanceVariables('ProcessService', 'fetchProcessInstanceVariables')
+					this.fetchInstanceVariables('ProcessService', 'fetchProcessInstanceVariables', customFiltering)
 				} else {
 					if (this.$root.config.camundaHistoryLevel === 'full') {
-						this.fetchInstanceVariables('HistoryService', 'fetchProcessInstanceVariablesHistory')
+						this.fetchInstanceVariables('HistoryService', 'fetchProcessInstanceVariablesHistory', customFiltering)
 					}
 				}
 			}
 		},
-		fetchInstanceVariables: async function (service, method) {
+		fetchInstanceVariables: async function (service, method, customFiltering) {
 			this.loading = true
 			let variables = await serviceMap[service][method](this.selectedInstance.id, this.restFilter)
 			variables.forEach(v => {
 				v.scope = this.activityInstancesGrouped[v.activityInstanceId]
 			})
 			variables.sort((a, b) => a.name.localeCompare(b.name))
-			this.variables = variables
-			this.filteredVariables = [...variables]
-			this.loading = false
+
+			let useData = true
+			if (this.customFilter) {
+				if (!customFiltering) {
+					useData = false
+				}
+			}
+
+			if (useData) {
+				this.variables = variables
+				this.filteredVariables = [...variables]
+				this.loading = false
+			}
 		},
 		isFileValueDataSource: function(item) {
       if (item.type === 'Object') {
@@ -195,11 +206,12 @@ export default {
 			} else variable.modify = true
 		},
 		changeFilter: function(queryObject) {
+			this.customFilter = true
 			this.filter = {
 				...queryObject,
 				deserializeValues: false
 			}
-			this.loadSelectedInstanceVariables()
+			this.loadSelectedInstanceVariables(true)
 		}
 	}
 }
