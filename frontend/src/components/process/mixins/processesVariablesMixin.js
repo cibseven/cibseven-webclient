@@ -26,7 +26,6 @@ export default {
 	data: function () {
 		return {
 			loading: true,
-			customFilter: false,
 			filter: {
 				deserializeValues: false,
 			},
@@ -37,7 +36,6 @@ export default {
 	},
 	watch: {
 		'selectedInstance.id': {
-			immediate: true,
 			handler: function () {
 				this.filter = {
 					deserializeValues: false,
@@ -46,7 +44,7 @@ export default {
 				this.filteredVariables = []
 				this.file = null
 				this.selectedVariable = null
-				this.loadSelectedInstanceVariables(false)
+				this.loadSelectedInstanceVariables()
 			}
 		},
 		activityInstancesGrouped: 'loadSelectedInstanceVariables'
@@ -86,19 +84,24 @@ export default {
 			return result
 		}
 	},
+	mounted() {
+		if (!this.$route.query.q) {
+			this.loadSelectedInstanceVariables()
+		}
+	},
 	methods: {
-		loadSelectedInstanceVariables: function (customFiltering = false) {
+		loadSelectedInstanceVariables: function() {
 			if (this.selectedInstance && this.activityInstancesGrouped) {
 				if (this.selectedInstance.state === 'ACTIVE') {
-					this.fetchInstanceVariables('ProcessService', 'fetchProcessInstanceVariables', customFiltering)
+					this.fetchInstanceVariables('ProcessService', 'fetchProcessInstanceVariables')
 				} else {
 					if (this.$root.config.camundaHistoryLevel === 'full') {
-						this.fetchInstanceVariables('HistoryService', 'fetchProcessInstanceVariablesHistory', customFiltering)
+						this.fetchInstanceVariables('HistoryService', 'fetchProcessInstanceVariablesHistory')
 					}
 				}
 			}
 		},
-		fetchInstanceVariables: async function (service, method, customFiltering) {
+		fetchInstanceVariables: async function (service, method) {
 			this.loading = true
 			let variables = await serviceMap[service][method](this.selectedInstance.id, this.restFilter)
 			variables.forEach(v => {
@@ -106,18 +109,9 @@ export default {
 			})
 			variables.sort((a, b) => a.name.localeCompare(b.name))
 
-			let useData = true
-			if (this.customFilter) {
-				if (!customFiltering) {
-					useData = false
-				}
-			}
-
-			if (useData) {
-				this.variables = variables
-				this.filteredVariables = [...variables]
-				this.loading = false
-			}
+			this.variables = variables
+			this.filteredVariables = [...variables]
+			this.loading = false
 		},
 		isFileValueDataSource: function(item) {
       if (item.type === 'Object') {
@@ -206,12 +200,11 @@ export default {
 			} else variable.modify = true
 		},
 		changeFilter: function(queryObject) {
-			this.customFilter = true
 			this.filter = {
 				...queryObject,
 				deserializeValues: false
 			}
-			this.loadSelectedInstanceVariables(true)
+			this.loadSelectedInstanceVariables()
 		}
 	}
 }

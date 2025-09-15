@@ -81,7 +81,6 @@
 <script>
 import { formatDate } from '@/utils/dates.js'
 import { HistoryService } from '@/services.js'
-import processesVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import { BWaitingBox } from 'cib-common-components'
 import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
@@ -92,7 +91,7 @@ import { mapActions } from 'vuex'
 export default {
   name: 'CalledProcessInstancesTable',
   components: { FlowTable, BWaitingBox, CopyableActionButton, SuccessAlert },
-  mixins: [processesVariablesMixin, copyToClipboardMixin],
+  mixins: [copyToClipboardMixin],
   data: function() {
     return{
       calledInstanceList: [],
@@ -102,8 +101,12 @@ export default {
       maxResults: this.$root?.config?.maxProcessesResults || 50
     }
   },
-  props:{
-    selectedInstance: Object
+  props: {
+    selectedInstance: Object,
+    activityInstanceHistory: {
+      type: Array,
+      default: () => []
+    }
   },
   watch: {
     'selectedInstance.id': function() {
