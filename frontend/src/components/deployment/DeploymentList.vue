@@ -60,7 +60,7 @@ import { formatDate } from '@/utils/dates.js'
 
 export default {
   name: 'DeploymentList',
-  emits: [ 'select-deployment' ],
+  emits: [ 'select-deployment', 'update:deploymentsReady' ],
   props: {
     groups: Array,
     deployments: Array,
@@ -80,6 +80,7 @@ export default {
       this.$nextTick(() => {
       this.$refs[this.deploymentId]?.[0]?.$el.scrollIntoView({behavior: 'smooth', block: 'start'})
       })
+      this.$emit('update:deploymentsReady', false)
     }
     }
   },

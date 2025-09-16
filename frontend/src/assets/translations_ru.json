@@ -1011,6 +1011,8 @@
 		"AuthenticationException": "Aвторизационные данные отсутствуют или неверны",
 		"LoginException": "Имя пользователя или пароль недействительны",
 		"TokenExpiredException": "Авторизационные данные истекли",
+		"WrongDeploymenIdException": "Не удалось найти развертывание для этого идентификатора.",
+		"NoRessourcesFoundException": "Ресурсы для этого deploymentId не существуют.",
 		"urlError": "URL недействителен",
 		"errorSaveTask": "Во время сохранения задачи произошла ошибка.",
 		"taskSelectedNotExist": "Данная задача больше недоступна и поэтому не будет показана на центральной панеле",

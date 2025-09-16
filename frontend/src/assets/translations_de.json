@@ -1011,6 +1011,8 @@
 		"AuthenticationException": "Die Authentifizierungsinformation fehlt oder ist falsch",
 		"LoginException": "Benutzername oder Passwort ist nicht korrekt",
 		"TokenExpiredException": "Die Authentifizierungsinformation ist nicht mehr gültig",
+		"WrongDeploymenIdException": "Für diese ID konnte kein Deployment gefunden werden.",
+		"NoRessourcesFoundException": "Es sind keine Ressourcen für diese DeploymentId vorhanden",
 		"urlError": "Ungültige URL",
 		"errorSaveTask": "Beim Speichern der Aufgabe ist ein Fehler aufgetreten.",
 		"taskSelectedNotExist": "Diese Aufgabe ist nicht mehr verfügbar und wird daher aus dem Arbeitsbereich verschwinden",

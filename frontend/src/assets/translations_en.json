@@ -1011,6 +1011,8 @@
 		"AuthenticationException": "Authentication data is wrong",
 		"LoginException": "Username or password is incorrect",
 		"TokenExpiredException": "Authentication data expired",
+		"WrongDeploymenIdException": "No deployment could not be found for this Id.",
+		"NoRessourcesFoundException": "Deployment resources for this deploymentId do not exist.",
 		"urlError": "Invalid URL",
 		"errorSaveTask": "An error occurred while saving the task.",
 		"taskSelectedNotExist": "This task is no longer available and will therefore disappear from the work area",
