@@ -35,7 +35,7 @@
 
     <transition name="slide-in" mode="out-in">
       <div v-if="group.id" class="d-flex flex-column h-100 bg-light">
-        <b-button variant="light" style="min-height: 35px; line-height: 20px;" :block="true" class="rounded-0 border-bottom text-start" href="#/seven/auth/admin/groups">
+        <b-button variant="light" style="min-height: 40px; line-height: 20px;" :block="true" class="rounded-0 border-bottom text-start" href="#/seven/auth/admin/groups">
           <span class="mdi mdi-arrow-left me-2"></span>
           <span class="fw-semibold">{{ $t('admin.groups.title') }}</span>
         </b-button>
