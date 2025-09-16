@@ -27,9 +27,7 @@
     "test:e2e:dev": "start-server-and-test 'vite dev --port 4173' http://localhost:4173 'cypress open --e2e'",
     "lint": "eslint . --fix",
     "bump:dev": "../bump-dev-version.sh cib-common-components",
-    "bump:dev:win": "../bump-dev-version.bat cib-common-components",
-    "remove:dev": "../npm-version-release.sh cib-common-components",
-    "remove:dev:win": "../npm-version-release.bat cib-common-components"
+    "remove:dev": "../npm-version-release.sh cib-common-components"
   },
   "dependencies": {
     "bootstrap": "^5.3.6",

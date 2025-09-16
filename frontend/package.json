@@ -31,9 +31,7 @@
     "lint": "eslint . --fix",
     "format": "prettier --write src/",
     "bump:dev": "../bump-dev-version.sh frontend",
-    "bump:dev:win": "../bump-dev-version.bat frontend",
-    "remove:dev": "../npm-version-release.sh frontend",
-    "remove:dev:win": "../npm-version-release.bat frontend"
+    "remove:dev": "../npm-version-release.sh frontend"
   },
   "dependencies": {
     "@bpmn-io/form-js": "^1.15.2",

@@ -22,9 +22,7 @@
     "dev": "vite",
     "test": "vitest run",
     "bump:dev": "../bump-dev-version.sh bpm-sdk",
-    "bump:dev:win": "../bump-dev-version.bat bpm-sdk",
-    "remove:dev": "../npm-version-release.sh bpm-sdk",
-    "remove:dev:win": "../npm-version-release.bat bpm-sdk"
+    "remove:dev": "../npm-version-release.sh bpm-sdk"
   },
   "dependencies": {
     "fast-xml-parser": "^5.2.3",
