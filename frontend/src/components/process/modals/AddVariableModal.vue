@@ -37,8 +37,8 @@ export default {
     },
     addVariable: function(variable) {
       ProcessService.putLocalExecutionVariable(this.selectedInstance.id, variable.name, variable).then(() => {
-        this.$emit('variable-added')
         this.$refs.addVariableModalUI.hide()
+        this.$emit('variable-added')
       })
     },
   }
