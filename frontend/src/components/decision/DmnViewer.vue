@@ -46,7 +46,6 @@
 <script>
 // Import dmn-js with full modeling capability
 import DmnJS from 'dmn-js'
-// import DmnJS from 'dmn-js/lib/Modeler'
 
 // UI loading indicator
 import { BWaitingBox } from 'cib-common-components'
