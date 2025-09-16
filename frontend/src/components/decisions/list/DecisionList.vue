@@ -37,8 +37,8 @@
                   />
                 </div>
                 <div class="block text-secondary ms-2 me-3 text-nowrap"
-                  :title="$t('start.cockpit.decisions.title') + ': ' + decisionsFiltered.length"
-                >{{ decisionsFiltered.length }}</div>
+                  :title="$t('start.cockpit.decisions.title') + ': ' + statistics"
+                >{{ statistics }}</div>
               </div>
             </div>
           </div>
@@ -81,9 +81,17 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['decisionDefinitions', 'getFilteredDecisions', 'isLoading']),
+    ...mapGetters(['getFilteredDecisions', 'isLoading']),
     decisionsFiltered: function() {
       return this.getFilteredDecisions(this.filter)
+    },
+    statistics: function() {
+      const total = this.getFilteredDecisions().length
+      if (total === 0) {
+        return ''
+      }
+      const filtered = this.decisionsFiltered.length
+      return filtered === total ? total : `${filtered} / ${total}`
     },
     textEmptyDecisionsList: function() {
       return this.filter === '' ? 'decision.emptyProcessList' : 'decision.emptyProcessListFiltered' // TODO: change the images for decicions

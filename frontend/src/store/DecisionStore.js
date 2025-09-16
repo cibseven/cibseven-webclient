@@ -72,13 +72,18 @@ const DecisionStore = {
   getters: {
     getFilteredDecisions: (state) => (filter) => {
       if (!state.list) return []
-      const filterUpper = filter.toUpperCase()
-      const decisions = state.list.filter(decision => {
-        return (
-          decision.key.toUpperCase().includes(filterUpper) ||
-          (decision.name && decision.name.toUpperCase().includes(filterUpper))
-        )
-      })
+      let decisions = state.list
+      // If filter is provided and not empty, apply filtering
+      if (filter && filter.trim() !== '') {
+        const filterUpper = filter.toUpperCase()
+        decisions = state.list.filter(decision => {
+          return (
+            decision.key.toUpperCase().includes(filterUpper) ||
+            (decision.name && decision.name.toUpperCase().includes(filterUpper))
+          )
+        })
+      }
+      // Sort the results
       decisions.sort((objA, objB) => {
         const nameA = objA.name ? objA.name.toUpperCase() : ''
         const nameB = objB.name ? objB.name.toUpperCase() : ''
