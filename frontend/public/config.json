@@ -238,3 +238,301 @@
 	},
 	"filtersSearch": false
 }
+=======
+{
+	"supportedLanguages": ["de", "en", "es", "ua", "ru"],
+	"filters": [
+		{ "key": "processInstanceId", "text": "processInstanceId", "type": "text", "group": "processInstanceGroup" },
+		{ "key": "processInstanceBusinessKey", "text": "processInstanceBusinessKey", "type": "text", "group": "processInstanceGroup"  },
+		{ "key": "processInstanceBusinessKeyExpression", "text": "processInstanceBusinessKeyExpression", "type": "text", "group": "processInstanceGroup"  },
+		{ "key": "processInstanceBusinessKeyLike", "text": "processInstanceBusinessKeyLike", "type": "text", "group": "processInstanceGroup"  },
+		{ "key": "processInstanceBusinessKeyLikeExpression", "text": "processInstanceBusinessKeyLikeExpression", "type": "text", "group": "processInstanceGroup"  },
+		{ "key": "processDefinitionId", "text": "processDefinitionId", "type": "text", "group": "processDefinitionGroup" },
+		{ "key": "processDefinitionKey", "text": "processDefinitionKey", "type": "text", "group": "processDefinitionGroup"  },
+		{ "key": "processDefinitionKeyIn", "text": "processDefinitionKeyIn", "type": "array", "group": "processDefinitionGroup" },
+		{ "key": "processDefinitionName", "text": "processDefinitionName", "type": "text", "group": "processDefinitionGroup" },
+		{ "key": "processDefinitionNameLike", "text": "processDefinitionNameLike", "type": "text", "group": "processDefinitionGroup" },
+		{ "key": "caseInstanceId", "text": "caseInstanceId", "type": "text", "group": "caseInstanceGroup" },
+		{ "key": "caseInstanceBusinessKey", "text": "caseInstanceBusinessKey", "type": "text", "group": "caseInstanceGroup" },
+		{ "key": "caseInstanceBusinessKeyLike", "text": "caseInstanceBusinessKeyLike", "type": "text", "group": "caseInstanceGroup" },
+		{ "key": "caseDefinitionId", "text": "caseDefinitionId", "type": "text", "group": "caseDefinitionGroup" },
+		{ "key": "caseDefinitionKey", "text": "caseDefinitionKey", "type": "text", "group": "caseDefinitionGroup" },
+		{ "key": "caseDefinitionName", "text": "caseDefinitionName", "type": "text", "group": "caseDefinitionGroup" },
+		{ "key": "caseDefinitionNameLike", "text": "caseDefinitionNameLike", "type": "text", "group": "caseDefinitionGroup" },
+		{ "key": "executionId", "text": "executionId", "type": "text", "group": "otherGroup" },
+		{ "key": "activityInstanceIdIn", "text": "activityInstanceIdIn", "type": "array", "group": "otherGroup" },
+		{ "key": "active", "text": "active", "type": "text", "group": "otherGroup" },
+		{ "key": "assignee", "text": "assignee", "type": "text", "group": "usersGroup" },
+		{ "key": "assigneeExpression", "text": "assigneeExpression", "type": "text", "group": "usersGroup" },
+		{ "key": "assigneeIn", "text": "assigneeIn", "type": "array", "group": "usersGroup" },
+		{ "key": "assigneeLike", "text": "assigneeLike", "type": "text", "group": "usersGroup" },
+		{ "key": "assigneeLikeExpression", "text": "assigneeLikeExpression", "type": "text", "group": "usersGroup" },
+		{ "key": "ownerExpression", "text": "ownerExpression", "type": "text", "group": "usersGroup" },
+		{ "key": "candidateGroup", "text": "candidateGroup", "type": "text", "group": "usersGroup" },
+		{ "key": "candidateGroupExpression", "text": "candidateGroupExpression", "type": "text", "group": "usersGroup" },
+		{ "key": "candidateGroups", "text": "candidateGroups", "type": "text", "group": "usersGroup" },
+		{ "key": "candidateGroupsExpression", "text": "candidateGroupsExpression", "type": "text", "group": "usersGroup" },
+		{ "key": "candidateUser", "text": "candidateUser", "type": "text", "group": "usersGroup" },
+		{ "key": "candidateUserExpression", "text": "candidateUserExpression", "type": "text", "group": "usersGroup" },
+		{ "key": "involvedUser", "text": "involvedUser", "type": "text", "group": "usersGroup" },
+		{ "key": "involvedUserExpression", "text": "involvedUserExpression", "type": "text", "group": "usersGroup" },
+		{ "key": "unassigned", "text": "unassigned", "type": "text", "group": "usersGroup" },
+		{ "key": "delegationState", "text": "delegationState", "type": "text", "group": "usersGroup" },
+		{ "key": "taskDefinitionKey", "text": "taskDefinitionKey", "type": "text", "group": "taskGroup" },
+		{ "key": "taskDefinitionKeyIn", "text": "taskDefinitionKeyIn", "type": "array", "group": "taskGroup" },
+		{ "key": "taskDefinitionKeyLike", "text": "taskDefinitionKeyLike", "type": "text", "group": "taskGroup" },
+		{ "key": "name", "text": "name", "type": "text", "group": "taskGroup" },
+		{ "key": "nameLike", "text": "nameLike", "type": "text", "group": "taskGroup" },
+		{ "key": "description", "text": "description", "type": "text", "group": "taskGroup" },
+		{ "key": "descriptionLike", "text": "descriptionLike", "type": "text", "group": "taskGroup" },
+		{ "key": "priority", "text": "priority", "type": "text", "group": "taskGroup" },
+		{ "key": "maxPriority", "text": "maxPriority", "type": "text", "group": "taskGroup" },
+		{ "key": "minPriority", "text": "minPriority", "type": "text", "group": "taskGroup" },
+		{ "key": "tenantIdIn", "text": "tenantIdIn", "type": "array", "group": "taskGroup" },
+		{ "key": "withoutTenantId", "text": "withoutTenantId", "type": "text", "group": "taskGroup" },
+		{ "key": "createdBefore", "text": "createdBefore", "type": "text", "group": "datesGroup" },
+		{ "key": "createdBeforeExpression", "text": "createdBeforeExpression", "type": "text", "group": "datesGroup" },
+		{ "key": "dueBefore", "text": "dueBefore", "type": "text", "group": "datesGroup" },
+		{ "key": "dueBeforeExpression", "text": "dueBeforeExpression", "type": "text", "group": "datesGroup" },
+		{ "key": "dueAfter", "text": "dueAfter", "type": "text", "group": "datesGroup" },
+		{ "key": "dueAfterExpression", "text": "dueAfterExpression", "type": "text", "group": "datesGroup" },
+		{ "key": "followUpAfter", "text": "followUpAfter", "type": "text", "group": "datesGroup" },
+		{ "key": "followUpAfterExpression", "text": "followUpAfterExpression", "type": "text", "group": "datesGroup" },
+		{ "key": "followUpBefore", "text": "followUpBefore", "type": "text", "group": "datesGroup" },
+		{ "key": "followUpBeforeExpression", "text": "followUpBeforeExpression", "type": "text", "group": "datesGroup" },
+		{ "key": "followUpBeforeOrNotExistent", "text": "followUpBeforeOrNotExistent", "type": "text", "group": "datesGroup" },
+		{ "key": "followUpBeforeOrNotExistentExpression", "text": "followUpBeforeOrNotExistentExpression", "type": "text", "group": "datesGroup"},
+		{ "key": "processVariables", "text": "processVariables", "type": "variable", "group": "otherGroup"}
+	],
+	"taskListTime": "30000",
+	"warnOnDueExpirationIn": 48,
+	"permissions": {
+		"tasklist": {
+			"application": ["ALL"]
+		},
+		"cockpit": {
+			"application": ["ALL"]
+		},
+		"displayTasks": {
+			"task": ["READ", "UPDATE"]
+		},
+		"displayFilter": {
+			"filter": ["READ"]
+		},
+		"editFilter": {
+			"filter": ["UPDATE"]
+		},
+		"deleteFilter": {
+			"filter": ["DELETE"]
+		},
+		"createFilter": {
+			"filter": ["CREATE"]
+		},
+		"startProcess": {
+			"processDefinition": ["READ", "CREATE_INSTANCE"],
+			"processInstance": ["CREATE"]
+		},
+		"displayProcess": {
+			"processDefinition": ["READ"]
+		},
+		"managementProcess": {
+			"processDefinition": ["READ"]
+		},
+		"historyProcess": {
+			"processDefinition": ["READ", "READ_HISTORY"]
+		},
+		"usersManagement": {
+			"user": ["ALL"]
+		},
+		"groupsManagement": {
+			"group": ["ALL"]
+		},
+		"authorizationsManagement": {
+			"authorization": ["ALL"]
+		},
+		"systemManagement": {
+			"system": ["ALL"]
+		},
+		"tenantsManagement": {
+			"tenant": ["ALL"]
+		},
+		"userProfile": {
+			"application": ["ALL"]
+		},
+		"deleteProcessDefinition": {
+			"processDefinition": ["DELETE"]
+		},
+		"deleteProcessInstance": {
+			"processInstance": ["DELETE"]
+		}
+	},
+	"taskSorting": {
+		"fields": [
+			"created",
+			"dueDate",
+			"followUpDate",
+			"name",
+			"assignee",
+			"priority"
+		],
+		"default": { 
+			"sortOrder": "desc",
+			"sortBy": "created"
+		}
+	},
+	"subProcessFolder": "activities/",
+	"taskFilter": {
+		"smartSearch": {
+			"options": []
+		},
+		"advancedSearch": {
+			"modalEnabled": false,
+			"filterEnabled": false,
+			"criteriaKeys": ["processVariables"],
+			"processVariables": []
+		},
+		"tasksNumber": {
+			"enabled": false,
+			"interval": 0
+		},
+		"selectedFilterTasksNumber": {
+			"enabled": true
+		}
+	},
+	"dashboard": {
+		"autoUpdate": {
+			"enabled": true,
+			"interval": 60000
+		}
+	},
+	"processes": {
+		"autoUpdate": {
+			"enabled": false,
+			"interval": 0
+		}
+	},
+	"layout": {
+		"showPopoverHowToAssign": true,
+		"showBusinessKey": true,
+		"showTaskDetailsSidebar": false,
+		"showFilterDueDate": true,
+		"showFilterReminderDate": true,
+		"showFeedbackButton": false,
+		"showTaskListManualRefresh": true,
+		"disableCandidateUsers": false,
+		"showProcessName": true,
+		"showSupportInfo": false,
+		"showInfoAndHelp": true,
+		"showChat": true,		
+		"showUserSettings": true,
+		"showStatusBar": true
+	},
+	"admin": {
+		"resourcesTypes": {
+			"0": { "id": "0", "key": "application", "permissions": ["ACCESS"] },
+			"4": { "id": "4", "key": "authorization", "permissions": ["READ","UPDATE","CREATE","DELETE"] },
+			"13": { "id": "13", "key": "batch", "permissions": [
+				"READ","UDPATE","CREATE","DELETE","READ_HISTORY","DELETE_HISTORY","CREATE_BATCH_MIGRATE_PROCESS_INSTANCES",
+				"CREATE_BATCH_MODIFY_PROCESS_INSTANCES","CREATE_BATCH_RESTART_PROCESS_INSTANCES","CREATE_BATCH_DELETE_RUNNING_PROCESS_INSTANCES",
+				"CREATE_BATCH_DELETE_FINISHED_PROCESS_INSTANCES","CREATE_BATCH_DELETE_DECISION_INSTANCES","CREATE_BATCH_SET_JOB_RETRIES",
+				"CREATE_BATCH_SET_REMOVAL_TIME","CREATE_BATCH_SET_EXTERNAL_TASK_RETRIES",
+				"CREATE_BATCH_UPDATE_PROCESS_INSTANCES_SUSPEND","CREATE_BATCH_SET_VARIABLES"
+			] },
+			"10": { "id": "10", "key": "decisionDefinition", "permissions": ["READ","UPDATE","CREATE_INSTANCE","READ_HISTORY","DELETE_HISTORY"] },
+			"14": { "id": "14", "key": "decisionRequirements", "permissions": ["READ"] },
+			"9": { "id": "9", "key": "deployment", "permissions": ["CREATE","READ","DELETE"] },
+			"5": { "id": "5", "key": "filter", "permissions": ["READ","UPDATE","CREATE","DELETE"]  },
+			"2": { "id": "2", "key": "group", "permissions": ["READ","UPDATE","CREATE","DELETE"] },
+			"3": { "id": "3", "key": "groupMembership", "permissions": ["CREATE","DELETE"]  },
+			"20": { "id": "20", "key": "historicProcessInstance", "permissions": ["READ"] },
+			"19": { "id": "19", "key": "historicTask", "permissions": ["READ","READ_VARIABLE"] },
+			"17": { "id": "17", "key": "userOperationLogCategory", "permissions": ["READ","DELETE","UPDATE"] },
+			"6": { "id": "6", "key": "processDefinition", "permissions": [
+				"READ","UPDATE","DELETE","SUSPEND","CREATE_INSTANCE","READ_INSTANCE","UPDATE_INSTANCE",
+				"RETRY_JOB","SUSPEND_INSTANCE","DELETE_INSTANCE","MIGRATE_INSTANCE","READ_TASK",
+				"UPDATE_TASK","TASK_ASSIGN","TASK_WORK","READ_TASK_VARIABLE","READ_HISTORY","READ_HISTORY_VARIABLE",
+				"DELETE_HISTORY","READ_INSTANCE_VARIABLE","UPDATE_INSTANCE_VARIABLE","UPDATE_TASK_VARIABLE","UPDATE_HISTORY"
+			] },
+			"8": { "id": "8", "key": "processInstance", "permissions": ["CREATE","READ","UPDATE","DELETE","RETRY_JOB","SUSPEND","UPDATE_VARIABLE"] },
+			"7": { "id": "7", "key": "task", "permissions": ["CREATE","READ","UPDATE","DELETE","TASK_ASSIGN","TASK_WORK","UPDATE_VARIABLE","READ_VARIABLE"] },
+			"11": { "id": "11", "key": "tenant", "permissions": ["READ","UPDATE","CREATE","DELETE"] },
+			"12": { "id": "12", "key": "tenantMembership", "permissions": ["CREATE","DELETE"] },
+			"21": { "id": "21", "key": "system", "permissions": ["READ"] },
+			"1": { "id": "1", "key": "user", "permissions": ["READ","UPDATE","CREATE","DELETE"] }
+		},
+		"types": {
+			"0": { "id": "0", "key": "global" },
+			"1": { "id": "1", "key": "allow" },
+			"2": { "id": "2", "key": "deny" }
+		},
+		"passwordPolicyEnabled": false
+	},
+	"maxTaskResults": 20,
+	"maxProcessesResults": 50,
+	"maxUsersResults": 10,
+	"notAssignedTaskLayer": true,
+	"automaticallyOpenTask": false,
+	"pauseButtonTime": 5000,
+	"lazyLoadHistory": true,
+	"notifications": {
+		"tasks": {
+			"enabled": false,
+			"interval": 0
+		}
+	},
+	"filtersSearch": false,
+	"shortcuts": {
+		"global": {
+			"startProcess": {
+				"enabled": true,
+				"keys": ["ctrl", "alt", "1"],
+				"description": "infoAndHelp.shortcuts.shortcuts.startProcessView",
+				"route": "/seven/auth/start-process"
+			},
+			"tasksView": {
+				"enabled": true,
+				"keys": ["ctrl", "alt", "2"],
+				"description": "infoAndHelp.shortcuts.shortcuts.tasksView",
+				"route": "/seven/auth/tasks"
+			},
+			"processesView": {
+				"enabled": true,
+				"keys": ["ctrl", "alt", "3"],
+				"description": "infoAndHelp.shortcuts.shortcuts.processesView",
+				"route": "/seven/auth/processes/list"
+			}
+		},
+		"tasks": {
+			"claimTask": {
+				"enabled": true,
+				"keys": ["ctrl", "alt", "c"],
+				"description": "infoAndHelp.shortcuts.shortcuts.claimTask",
+				"event": "claimTask"
+			},
+			"startProcess": {
+				"enabled": true,
+				"keys": ["ctrl", "alt", "p"],
+				"description": "infoAndHelp.shortcuts.shortcuts.startProcess",
+				"event": "openStartProcess"
+			},
+			"focusFilters": {
+				"enabled": true,
+				"keys": ["alt", "1"],
+				"description": "infoAndHelp.shortcuts.shortcuts.focusFilters",
+				"event": "focusFilters"
+			},
+			"focusTasks": {
+				"enabled": true,
+				"keys": ["alt", "2"],
+				"description": "infoAndHelp.shortcuts.shortcuts.focusTasks",
+				"event": "focusTasks"
+			},
+			"focusTask": {
+				"enabled": true,
+				"keys": ["alt", "3"],
+				"description": "infoAndHelp.shortcuts.shortcuts.focusTask",
+				"event": "focusTask"
+			}
+		}
+	}
+}

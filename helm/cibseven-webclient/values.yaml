@@ -164,6 +164,8 @@ ui:
     tasksNumber:
       enabled: false
       interval: 30000
+    selectedFilterTasksNumber:
+      enabled: true
   layout:
     showPopoverHowToAssign: true
     showBusinessKey: true
@@ -492,7 +494,61 @@ configmaps:
           "automaticallyOpenTask": {{ .Values.ui.automaticallyOpenTask }},
           "pauseButtonTime": {{ .Values.ui.pauseButtonTime }},
           "lazyLoadHistory": {{ .Values.ui.lazyLoadHistory }},
-          "filtersSearch": {{ .Values.ui.filtersSearch }}
+          "filtersSearch": {{ .Values.ui.filtersSearch }},
+          "shortcuts": {
+            "global": {
+              "startProcess": {
+                "enabled": true,
+                "keys": ["ctrl", "alt", "1"],
+                "description": "infoAndHelp.shortcuts.shortcuts.startProcess",
+                "route": "/seven/auth/start-process"
+              },
+              "tasksView": {
+                "enabled": true,
+                "keys": ["ctrl", "alt", "2"],
+                "description": "infoAndHelp.shortcuts.shortcuts.tasksView",
+                "route": "/seven/auth/tasks"
+              },
+              "processesView": {
+                "enabled": true,
+                "keys": ["ctrl", "alt", "3"],
+                "description": "infoAndHelp.shortcuts.shortcuts.processesView",
+                "route": "/seven/auth/processes/list"
+              }
+            },
+            "tasks": {
+              "claimTask": {
+                "enabled": true,
+                "keys": ["ctrl", "alt", "c"],
+                "description": "infoAndHelp.shortcuts.shortcuts.claimTask",
+                "event": "claimTask"
+              },
+              "startProcess": {
+                "enabled": true,
+                "keys": ["ctrl", "alt", "p"],
+                "description": "infoAndHelp.shortcuts.shortcuts.startProcess",
+                "event": "openStartProcess"
+              },
+              "focusFilters": {
+                "enabled": true,
+                "keys": ["alt", "1"],
+                "description": "infoAndHelp.shortcuts.shortcuts.focusFilters",
+                "event": "focusFilters"
+              },
+              "focusTasks": {
+                "enabled": true,
+                "keys": ["alt", "2"],
+                "description": "infoAndHelp.shortcuts.shortcuts.focusTasks",
+                "event": "focusTasks"
+              },
+              "focusTask": {
+                "enabled": true,
+                "keys": ["alt", "3"],
+                "description": "infoAndHelp.shortcuts.shortcuts.focusTask",
+                "event": "focusTask"
+              }
+            }
+          }
         }
 
 secrets:

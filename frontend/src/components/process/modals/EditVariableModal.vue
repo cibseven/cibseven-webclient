@@ -198,25 +198,41 @@ props: {
           return this.newValue
         }
 
-        const value = this.isEditDeserializedValue ? this.variable.valueDeserialized : this.variable.value
-
-        // Format the value based on its type
+        // Format the original value based on its type
         switch (this.variable.type) {
           case 'String':
           case 'Integer':
           case 'Long':
           case 'Double':
-            return value.toString() // Convert primitive types to string
+            return this.variable.value.toString() // Convert primitive types to string
           case 'Boolean':
-            return !!value
+            return !!this.variable.value
           case 'Json': {
             try {
-              return JSON.stringify(JSON.parse(value), null, 2)
+              return JSON.stringify(JSON.parse(this.variable.value), null, 2)
             } catch {
-              return value.toString() // Fallback to original value if parsing fails
+              return this.variable.value.toString() // Fallback to original value if parsing fails
             }
           }
           case 'Object': {
+
+            // based on serialization format
+            switch (this.variable.valueInfo?.serializationDataFormat) {
+              case 'application/json': {
+                const value = this.variable.valueSerialized
+                if (typeof value === 'string') {
+                  try {
+                    return JSON.stringify(JSON.parse(value), null, 2)
+                  } catch {
+                    return value.toString() // Fallback to original value if parsing fails
+                  }
+                }
+                break
+              }
+            }
+
+            // based on object type
+            const value = this.variable.valueDeserialized
             const objectTypeName = this.variable.valueInfo?.objectTypeName
             switch (objectTypeName) {
               case 'java.lang.String':
@@ -249,28 +265,34 @@ props: {
                 if (typeof value === 'string' && value.trim() === '') {
                   return '' // Return empty string for empty values
                 }
-                if (typeof value === 'string' && value.startsWith('{') && value.endsWith('}')) {
-                  // If the value is a JSON object, parse and format it
+
+                const treatAsJson = (
+                  (typeof value === 'string' && value.startsWith('{') && value.endsWith('}')) ||
+                  (typeof value === 'string' && value.startsWith('[') && value.endsWith(']'))
+                )
+
+                if (treatAsJson) {
                   try {
                     return JSON.stringify(JSON.parse(value), null, 2)
                   } catch {
                     return value.toString() // Fallback to original value if parsing fails
                   }
                 }
-                if (typeof value === 'string' && value.startsWith('[') && value.endsWith(']')) {
-                  // If the value is a JSON array
+
+                if (typeof value === 'object') {
                   try {
-                    return JSON.stringify(JSON.parse(value), null, 2)
+                    return JSON.stringify(value, null, 2) // Format objects as JSON
                   } catch {
-                    return value.toString() // Fallback to original value if parsing fails
+                    return value.toString() // Fallback to original value if serialization fails
                   }
                 }
+
+                return value.toString() // For any other object type, return the value directly
               }
             }
-            return value.toString() // For any other object type, return the value directly
           }
           default:
-            return value.toString() // For any other type, return the value directly
+            return this.variable.value.toString() // For any other type, return the value directly
         }
       },
       set: function(val) {
