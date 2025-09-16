@@ -63,7 +63,7 @@
           </pre>
         </div>
       </div>
-      <div class="mb-3 text-center w-100" v-else-if="loading">
+      <div class="text-center w-100" v-else-if="loading">
         <BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('batches.loading') }}
       </div>
     </div>
@@ -112,17 +112,29 @@
       }
     },
     methods: {
-      ...mapActions('job', ['getHistoryJobLogStacktrace']),
+      ...mapActions('job', ['getHistoryJobLogStacktrace', 'getHistoryJobLog', 'clearJobLogs']),
       formatDate,
-      show: function() {
+      show(jobId) {
         this.selectedJobLog = null
+        this.clearJobLogs()
+        this.loading = true
         this.$refs.jobLogModal.show()
+        this.getHistoryJobLogList(jobId)
       },
       state: function(log) {
         if (log.creationLog) return this.$t('batches.jobLog.created')
         if (log.failureLog) return this.$t('batches.jobLog.failed')
         if (log.successLog) return this.$t('batches.jobLog.successful')
         return this.$t('batches.jobLog.unknown')
+      },
+      async getHistoryJobLogList(jobId) {
+        const params = {
+          jobId,
+          sortBy: 'timestamp',
+          sortOrder: 'desc'
+        }
+        await this.getHistoryJobLog(params)
+        this.loading = false
       },
       async showJobLogDetails(job) {
         this.selectedJobLog = null
