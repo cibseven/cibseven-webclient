@@ -646,7 +646,10 @@
 				"dashboard": "Dashboard",
 				"userOperationLogCategory": "User Operation Log Category",
 				"historicTask": "Historic Task",
-				"historicProcessInstance": "Historic Process Instance"
+				"historicProcessInstance": "Historic Process Instance",
+				"optimize": "Optimize",
+				"operationLogCategory": "Operation Log Category",
+				"property": "Property"
 			},
 			"unselectAll": "Unselect All",
 			"selectAll": "Select All",

@@ -646,7 +646,10 @@
 				"dashboard": "Tablero",
 				"userOperationLogCategory": "Categoría de registro de operaciones de usuario",
 				"historicTask": "Tarea histórica",
-				"historicProcessInstance": "Instancia histórica de proceso"
+				"historicProcessInstance": "Instancia histórica de proceso",
+				"optimize": "Optimizar",
+				"operationLogCategory": "Categoría del registro de operaciones",
+				"property": "Propiedad"
 			},
 			"unselectAll": "Deseleccionar todos",
 			"selectAll": "Seleccionar todos",

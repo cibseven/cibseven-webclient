@@ -646,7 +646,10 @@
 				"dashboard": "Панель управления",
 				"userOperationLogCategory": "Категория журнала операций пользователя",
 				"historicTask": "Историческая задача",
-				"historicProcessInstance": "Исторический экземпляр процесса"
+				"historicProcessInstance": "Исторический экземпляр процесса",
+				"optimize": "Оптимизировать",
+				"operationLogCategory": "Категория журнала операций",
+				"property": "Свойство"
 			},
 			"unselectAll": "Снять выделение со всех",
 			"selectAll": "Выбрать все",
