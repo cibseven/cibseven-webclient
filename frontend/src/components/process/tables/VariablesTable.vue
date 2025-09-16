@@ -66,7 +66,7 @@
             :title="$t('process-instance.edit')" size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-square-edit-outline"
             @click="modifyVariable(table.item)">
           </b-button>
-          <b-button :title="$t('confirm.delete')" size="sm" variant="outline-secondary"
+          <b-button v-if="hasDeletionPermission" :title="$t('confirm.delete')" size="sm" variant="outline-secondary"
             class="border-0 mdi mdi-18px mdi-delete-outline" @click="deleteVariable(table.item)"></b-button>
         </template>
       </FlowTable>
@@ -78,6 +78,7 @@
     <AddVariableModal ref="addVariableModal" :selected-instance="selectedInstance" @variable-added="loadSelectedInstanceVariables(); $refs.success.show()"></AddVariableModal>
     <DeleteVariableModal ref="deleteVariableModal" @variable-deleted="onVariableDeleted"></DeleteVariableModal>
     <EditVariableModal ref="editVariableModal" :disabled="!isActiveInstance" @variable-updated="loadSelectedInstanceVariables(); $refs.success.show()" @instance-status-updated="updateInstanceStatus"></EditVariableModal>
+    <SuccessAlert top="0" ref="success" style="z-index: 9999">{{ $t('alert.successOperation') }}</SuccessAlert>
     <SuccessAlert top="0" ref="runtimeVariableDeleted" style="z-index: 9999">{{ $t('process-instance.variables.deleteStatus.runtime') }}</SuccessAlert>
     <SuccessAlert top="0" ref="historicVariableDeleted" style="z-index: 9999">{{ $t('process-instance.variables.deleteStatus.historic') }}</SuccessAlert>
     <SuccessAlert ref="messageCopy" style="z-index: 9999"> {{ $t('process.copySuccess') }} </SuccessAlert>
@@ -107,12 +108,13 @@ import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import processesVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
+import { permissionsMixin } from '@/permissions.js'
 import { mapGetters } from 'vuex'
 
 export default {
   name: 'VariablesTable',
   components: { FlowTable, TaskPopper, AddVariableModal, DeleteVariableModal, EditVariableModal, SuccessAlert, BWaitingBox, CopyableActionButton },
-  mixins: [processesVariablesMixin, copyToClipboardMixin],
+  mixins: [ processesVariablesMixin, copyToClipboardMixin, permissionsMixin ],
   data: function() {
     return {
       filteredVariables: [],
@@ -130,6 +132,14 @@ export default {
     isActiveInstance: function() {
       const activeStates = ['ACTIVE', 'SUSPENDED']
       return this.selectedInstance && activeStates.includes(this.selectedInstance.state)
+    },
+    hasDeletionPermission: function() {
+      if (this.isActiveInstance) {
+        return this.processByPermissions(this.$root.config.permissions.deleteProcessInstance, this.selectedInstance)
+      }
+      else {
+        return this.processByPermissions(this.$root.config.permissions.deleteHistoricProcessInstance, this.selectedInstance)
+      }
     },
   },
   methods: {
@@ -199,13 +209,11 @@ export default {
       this.$refs.editVariableModal.show(variable.id)
     },
     async deleteVariable(variable) {
-      const isInstanceActive = this.selectedInstance.state === 'ACTIVE'
-      this.$refs.deleteVariableModal.show(isInstanceActive, variable)
+      this.$refs.deleteVariableModal.show(this.isActiveInstance, variable)
     },
     onVariableDeleted() {
       this.loadSelectedInstanceVariables()
-      const isInstanceActive = this.selectedInstance.state === 'ACTIVE'
-      if (isInstanceActive) {
+      if (this.isActiveInstance) {
         this.$refs.runtimeVariableDeleted.show()
       }
       else {

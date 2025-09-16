@@ -31,7 +31,8 @@ const DEFAULT_CONFIG = {
     tenantsManagement: { tenant: ["ALL"] },
     userProfile: { application: ["ALL"] },
     deleteProcessDefinition: { processDefinition: ["DELETE"] },
-    deleteProcessInstance: { processInstance: ["DELETE"] }
+    deleteProcessInstance: { processInstance: ["DELETE"] },
+    deleteHistoricProcessInstance: { historicProcessInstance: ["DELETE"] },
   },
   taskSorting: {
     fields: ["created", "dueDate", "name", "assignee", "priority"],

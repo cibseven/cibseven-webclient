@@ -123,6 +123,9 @@
 		},
 		"deleteProcessInstance": {
 			"processInstance": ["DELETE"]
+		},
+		"deleteHistoricProcessInstance": {
+			"historicProcessInstance": ["DELETE"]
 		}
 	},
 	"taskSorting": {
@@ -364,6 +367,9 @@
 		},
 		"deleteProcessInstance": {
 			"processInstance": ["DELETE"]
+		},
+		"deleteHistoricProcessInstance": {
+			"historicProcessInstance": ["DELETE"]
 		}
 	},
 	"taskSorting": {
