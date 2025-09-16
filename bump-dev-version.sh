@@ -59,7 +59,7 @@ npm version prerelease --preid=dev --no-git-tag-version
 NEW_VERSION=$(node -p "require('./package.json').version")
 
 # Commit changes
-git add package.json
+git add package.json package-lock.json
 git commit -m "bump: increase $PACKAGE version to $NEW_VERSION"
 
 # Push branch
