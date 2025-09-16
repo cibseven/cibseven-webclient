@@ -58,7 +58,7 @@ npm version --no-git-tag-version %PROD_VERSION%
 git add package.json
 git commit -m "release: %PACKAGE% %PROD_VERSION%"
 
-REM 3. Push commits and tags
+REM 2. Push commits and tags
 git push origin "%BRANCH_NAME%"
 
 echo Package: %PACKAGE%

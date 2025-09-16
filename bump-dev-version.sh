@@ -53,7 +53,7 @@ BRANCH_NAME="bump-$PACKAGE-version-$(date +%Y%m%d-%H%M%S)"
 git checkout -b "$BRANCH_NAME"
 
 # Bump prerelease version
-npm version prerelease --no-git-tag-version
+npm version prerelease --preid=dev --no-git-tag-version
 
 # Get the new version
 NEW_VERSION=$(node -p "require('./package.json').version")

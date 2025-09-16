@@ -51,7 +51,7 @@ set "BRANCH_NAME=bump-%PACKAGE%-version-%YYYY%%MM%%DD%-%HH%%Min%%Sec%"
 git checkout -b "%BRANCH_NAME%"
 
 REM Bump prerelease version
-npm version prerelease --no-git-tag-version
+npm version prerelease --preid=dev --no-git-tag-version
 
 REM Get the new version
 for /f "tokens=*" %%i in ('node -p "require('./package.json').version"') do set NEW_VERSION=%%i
