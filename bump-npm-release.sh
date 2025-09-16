@@ -50,7 +50,7 @@ fi
 
 # Get current version and extract production version (remove -dev.x)
 CURRENT_VERSION=$(node -p "require('./package.json').version")
-PROD_VERSION=$(echo $CURRENT_VERSION | sed 's/-dev\.[0-9]\+$//')
+PROD_VERSION=$(echo $CURRENT_VERSION | sed 's/-dev\.[0-9]*$//')
 
 echo "Current version: $CURRENT_VERSION"
 echo "Production version: $PROD_VERSION"
