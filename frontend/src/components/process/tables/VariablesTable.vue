@@ -76,9 +76,10 @@
     </div>
 
     <AddVariableModal ref="addVariableModal" :selected-instance="selectedInstance" @variable-added="loadSelectedInstanceVariables(); $refs.success.show()"></AddVariableModal>
-    <DeleteVariableModal ref="deleteVariableModal"></DeleteVariableModal>
+    <DeleteVariableModal ref="deleteVariableModal" @variable-deleted="onVariableDeleted"></DeleteVariableModal>
     <EditVariableModal ref="editVariableModal" :disabled="!isActiveInstance" @variable-updated="loadSelectedInstanceVariables(); $refs.success.show()" @instance-status-updated="updateInstanceStatus"></EditVariableModal>
-    <SuccessAlert top="0" ref="success" style="z-index: 9999">{{ $t('alert.successOperation') }}</SuccessAlert>
+    <SuccessAlert top="0" ref="runtimeVariableDeleted" style="z-index: 9999">{{ $t('process-instance.variables.deleteStatus.runtime') }}</SuccessAlert>
+    <SuccessAlert top="0" ref="historicVariableDeleted" style="z-index: 9999">{{ $t('process-instance.variables.deleteStatus.historic') }}</SuccessAlert>
     <SuccessAlert ref="messageCopy" style="z-index: 9999"> {{ $t('process.copySuccess') }} </SuccessAlert>
     <TaskPopper ref="importPopper"></TaskPopper>
 
@@ -99,7 +100,6 @@
 import { BWaitingBox } from 'cib-common-components'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import TaskPopper from '@/components/common-components/TaskPopper.vue'
-import { ProcessService, HistoryService } from '@/services.js'
 import DeleteVariableModal from '@/components/process/modals/DeleteVariableModal.vue'
 import AddVariableModal from '@/components/process/modals/AddVariableModal.vue'
 import EditVariableModal from '@/components/process/modals/EditVariableModal.vue'
@@ -199,30 +199,19 @@ export default {
       this.$refs.editVariableModal.show(variable.id)
     },
     async deleteVariable(variable) {
-      this.$refs.deleteVariableModal.show({
-        ok: async () => {
-          // Try active, fallback to historic if error
-          if (this.selectedInstance.state === 'ACTIVE') {
-            try {
-              await ProcessService.deleteVariableByExecutionId(variable.executionId, variable.name)
-              this.loadSelectedInstanceVariables()
-              this.$refs.success.show()
-            } catch {
-              // Fallback to historic deletion
-              await HistoryService.deleteVariableHistoryInstance(variable.id)
-              this.selectedInstance.state = 'COMPLETED'
-              this.loadSelectedInstanceVariables()
-              this.$refs.success.show()
-            }
-          } else {
-            await HistoryService.deleteVariableHistoryInstance(variable.id)
-            this.loadSelectedInstanceVariables()
-            this.$refs.success.show()
-          }
-        },
-        variable: variable
-      })
-    }
+      const isInstanceActive = this.selectedInstance.state === 'ACTIVE'
+      this.$refs.deleteVariableModal.show(isInstanceActive, variable)
+    },
+    onVariableDeleted() {
+      this.loadSelectedInstanceVariables()
+      const isInstanceActive = this.selectedInstance.state === 'ACTIVE'
+      if (isInstanceActive) {
+        this.$refs.runtimeVariableDeleted.show()
+      }
+      else {
+        this.$refs.historicVariableDeleted.show()
+      }
+    },
   }
 }
 </script>
