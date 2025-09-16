@@ -137,7 +137,6 @@ export default {
 
               const uploadResponse = await FormsService.uploadVariableFileData(taskId, variableName, file, 'File');
 
-              // Check if upload was successful (expecting 204 No Content)
               // For successful uploads, we expect an empty response (204 No Content has no body)
               if (uploadResponse != '') {
                 this.sendMessageToParent({
