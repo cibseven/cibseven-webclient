@@ -173,8 +173,8 @@ export default {
   },
   methods: {
     fetchFilters: function() {
-        this.$refs.filterLoader.done = false
-        this.$store.dispatch('findFilters').then(response => {
+      this.$refs.filterLoader.done = false
+      this.$store.dispatch('findFilters').then(response => {
         this.$store.commit('setFilters',
           { filters: this.filtersByPermissions(this.$root.config.permissions.displayFilter, response) })
         if (this.$root.config.taskFilter.tasksNumber.enabled) {
@@ -237,6 +237,15 @@ export default {
             this.$router.replace(path)
           }
         }
+        if (this.$store.state.filter.selected) {
+          const f = this.$store.state.filter.selected
+          if (f && f.id && !this.$root.config.taskFilter.tasksNumber.enabled) {
+            TaskService.findTasksCountByFilter(f.id, {}).then(tasksNumber => {
+              f.tasksNumber = tasksNumber
+              this.saveTasksCountInStore(f.id, tasksNumber)
+            })
+          }
+        }
       }
     },
     getClasses: function(filter) {
@@ -263,6 +272,10 @@ export default {
     deleteFavoriteFilter: function(filter) {
       this.$store.dispatch('deleteFavoriteFilter', { filterId: filter.id })
     },
+    saveTasksCountInStore(filterId, tasksNumber) {
+      const newFilters = this.$store.state.filter.list.map(f => f.id === filterId ? { ...f, tasksNumber } : f)
+      this.$store.commit('setFilters', { filters: newFilters })
+    }
   },
   beforeUnmount: function() {
     clearInterval(this.interval)

@@ -18,9 +18,11 @@
 -->
 <template>
   <SidebarsFlow ref="regionFilter" role="region" :aria-label="$t('seven.filters')" @selected-filter="selectedFilter()" v-model:left-open="leftOpenFilter" :left-caption="leftCaptionFilter" :rightSize="[12, 4, 2, 2, 2]" :leftSize="[12, 4, 2, 2, 2]">
-    <GlobalEvents @keydown.alt.1.prevent="navigateRegion('regionFilter')"></GlobalEvents>
-    <GlobalEvents @keydown.alt.2.prevent="navigateRegion('regionTasks')"></GlobalEvents>
-    <GlobalEvents @keydown.alt.3.prevent="navigateRegion('regionTask')"></GlobalEvents>
+    <GlobalEvents 
+      v-for="shortcut in taskShortcuts" 
+      :key="shortcut.id" 
+      @keydown="handleTaskShortcut($event, shortcut)">
+    </GlobalEvents>
     <template v-slot:left>
       <FilterNavBar ref="filterNavbar" @filter-alert="showFilterAlert($event)"
         @selected-filter="selectedFilter()" @set-filter="filter = $event;listTasksWithFilter()" @selected-task="selectedTask($event)"
@@ -92,6 +94,7 @@ import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import { BWaitingBox } from 'cib-common-components'
 import { updateAppTitle } from '@/utils/init'
 import { splitToWords } from '@/utils/search'
+import { getTaskEventShortcuts, checkKeyMatch } from '@/utils/shortcuts.js'
 import { mapActions } from 'vuex'
 import assigneeMixin from '@/mixins/assigneeMixin.js'
 
@@ -142,7 +145,10 @@ export default {
     leftCaptionFilter: function() {
       return this.leftOpenTask ? this.$t('seven.filters') : ''
     },
-    getTasksNavbarSize: function() { return this.tasksNavbarSizes[this.tasksNavbarSize] }
+    getTasksNavbarSize: function() { return this.tasksNavbarSizes[this.tasksNavbarSize] },
+    taskShortcuts() {
+      return getTaskEventShortcuts(this.$root.config)
+    }
   },
   watch: {
     task: {
@@ -444,6 +450,39 @@ export default {
         this.$refs[region].$refs.leftSidebar.focus()
       } else {
         if (this.$refs.taskComponent) this.$refs.taskComponent.$refs.task.$refs.titleTask.focus()
+      }
+    },
+    handleTaskShortcut: function(event, shortcut) {
+      // Check if the current key combination matches the shortcut
+      const isMatch = checkKeyMatch(event, shortcut.keys)
+      if (isMatch) {
+        event.preventDefault()
+        this.executeTaskShortcut(shortcut.event)
+      }
+    },
+    executeTaskShortcut: function(eventName) {
+      switch (eventName) {
+        case 'focusFilters':
+          this.navigateRegion('regionFilter')
+          break
+        case 'focusTasks':
+          this.navigateRegion('regionTasks')
+          break
+        case 'focusTask':
+          this.navigateRegion('regionTask')
+          break
+        case 'openStartProcess':
+          if (this.$refs.navbar) {
+            this.$refs.navbar.$refs.startProcess.show()
+          }
+          break
+        case 'claimTask':
+          if (this.$refs.taskComponent && this.$refs.taskComponent.$refs.task) {
+            this.$refs.taskComponent.$refs.task.claimCurrentTask()
+          }
+          break
+        default:
+          console.warn('Unknown task shortcut event:', eventName)
       }
     },
     checkActiveTask: function() {
