@@ -72,8 +72,6 @@ export default {
         } else if (this.href) {
           window.location.href = this.href
         }
-      } else {
-        this.$emit('click', event)
       }
     }
   }

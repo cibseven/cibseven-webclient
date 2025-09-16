@@ -646,7 +646,10 @@
 				"dashboard": "Dashboard",
 				"userOperationLogCategory": "Kategorie des Benutzeraktionsprotokolls",
 				"historicTask": "Historische Aufgabe",
-				"historicProcessInstance": "Historische Prozessinstanz"
+				"historicProcessInstance": "Historische Prozessinstanz",
+				"optimize": "Optimieren",
+				"operationLogCategory": "Kategorie des Operationsprotokolls",
+				"property": "Eigenschaft"
 			},
 			"unselectAll": "Alle abwählen",
 			"selectAll": "Alle auswählen",
