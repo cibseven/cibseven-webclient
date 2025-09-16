@@ -23,8 +23,8 @@
     "test": "vitest run",
     "bump:dev": "../bump-npm-dev.sh bpm-sdk",
     "bump:dev:win": "../bump-npm-dev.bat bpm-sdk",
-    "release": "../bump-npm-release.sh bpm-sdk",
-    "release:win": "../bump-npm-release.bat bpm-sdk"
+    "remove:dev": "../bump-npm-release.sh bpm-sdk",
+    "remove:dev:win": "../bump-npm-release.bat bpm-sdk"
   },
   "dependencies": {
     "fast-xml-parser": "^5.2.3",

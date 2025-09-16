@@ -28,8 +28,8 @@
     "lint": "eslint . --fix",
     "bump:dev": "../bump-npm-dev.sh cib-common-components",
     "bump:dev:win": "../bump-npm-dev.bat cib-common-components",
-    "release": "../bump-npm-release.sh cib-common-components",
-    "release:win": "../bump-npm-release.bat cib-common-components"
+    "remove:dev": "../bump-npm-release.sh cib-common-components",
+    "remove:dev:win": "../bump-npm-release.bat cib-common-components"
   },
   "dependencies": {
     "bootstrap": "^5.3.6",

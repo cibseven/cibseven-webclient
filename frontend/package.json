@@ -32,8 +32,8 @@
     "format": "prettier --write src/",
     "bump:dev": "../bump-npm-dev.sh frontend",
     "bump:dev:win": "../bump-npm-dev.bat frontend",
-    "release": "../bump-npm-release.sh frontend",
-    "release:win": "../bump-npm-release.bat frontend"
+    "remove:dev": "../bump-npm-release.sh frontend",
+    "remove:dev:win": "../bump-npm-release.bat frontend"
   },
   "dependencies": {
     "@bpmn-io/form-js": "^1.15.2",
