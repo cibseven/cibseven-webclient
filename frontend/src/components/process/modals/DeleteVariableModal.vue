@@ -32,10 +32,15 @@
             {{ $t('process-instance.variables.type') }}: <strong>{{ variable?.type }}</strong>
           </p>
 
-          <p v-if="errorMessage" class="alert alert-danger d-flex align-items-center">
-            <span class="mdi mdi-alert-octagon-outline text-danger"></span>
-            <span class="ms-2">{{ errorMessage }}</span>
-          </p>
+          <div v-if="errorMessage" class="alert alert-danger text-danger d-flex align-items-center">
+            <div class="me-4">
+              <span class="mdi-36px mdi mdi-alert-octagon-outline text-danger"></span>
+            </div>
+            <div>
+              <p class="ms-0">{{ errorTitle }}</p>
+              <p class="mb-0">{{ errorMessage }}</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -69,6 +74,15 @@ export default {
       errorMessage: '',
     }
   },
+  computed: {
+    errorTitle() {
+      if (!this.errorMessage || !this.variable) {
+        return ''
+      }
+      const messageTemplate = this.isInstanceActive ? 'process-instance.variables.deleteStatus.runtimeError' : 'process-instance.variables.deleteStatus.historicError'
+      return this.$t(messageTemplate, { name: this.variable.name })
+    }
+  },
   methods: {
     show: function(isInstanceActive, variable) {
       this.isInstanceActive = isInstanceActive
@@ -82,25 +96,21 @@ export default {
       this.deleting = true
       this.errorMessage = ''
 
-      let success = false
       try {
         if (this.isInstanceActive) {
           await ProcessService.deleteVariableByExecutionId(this.variable.executionId, this.variable.name)
         } else {
           await HistoryService.deleteVariableHistoryInstance(this.variable.id)
         }
-        success = true
-      } catch {
-        success = false
+      } catch (error) {
+        this.errorMessage = error.message
       }
 
-      if (success) {
+      if (!this.errorMessage) {
         this.$refs.confirm.hide('ok')
         this.$emit('variable-deleted', this.variable)
       }
       else {
-        const messageTemplate = this.isInstanceActive ? 'process-instance.variables.deleteStatus.runtimeError' : 'process-instance.variables.deleteStatus.historicError'
-        this.errorMessage = this.$t(messageTemplate, { name: this.variable.name })
         this.deleting = false
       }
     }
