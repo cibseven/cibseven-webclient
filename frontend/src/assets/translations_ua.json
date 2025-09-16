@@ -646,7 +646,10 @@
 					"dashboard": "Панель приладів",
 					"userOperationLogCategory": "Категорія журналу дій користувача",
 					"historicTask": "Історичне завдання",
-					"historicProcessInstance": "Історичний екземпляр процесу"
+					"historicProcessInstance": "Історичний екземпляр процесу",
+					"optimize": "Оптимізувати",
+					"operationLogCategory": "Категорія журналу операцій",
+					"property": "Властивість"
 				},
 				"unselectAll": "Скасувати всі",
 				"selectAll": "Вибрати всі",
