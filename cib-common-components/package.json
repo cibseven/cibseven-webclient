@@ -1,7 +1,7 @@
 {
   "name": "cib-common-components",
   "description": "Common vue components for building different web applications",
-  "version": "2.0.1-5-SNAPSHOT",
+  "version": "2.0.1-dev.0",
   "type": "module",
   "license": "Apache-2.0",
   "main": "./src/main.js",
@@ -25,7 +25,9 @@
     "test:unit": "vitest",
     "test:e2e": "start-server-and-test preview http://localhost:4173 'cypress run --e2e'",
     "test:e2e:dev": "start-server-and-test 'vite dev --port 4173' http://localhost:4173 'cypress open --e2e'",
-    "lint": "eslint . --fix"
+    "lint": "eslint . --fix",
+    "bump:dev": "../bump-dev-version.sh cib-common-components",
+    "remove:dev": "../npm-version-release.sh cib-common-components"
   },
   "dependencies": {
     "bootstrap": "^5.3.6",
