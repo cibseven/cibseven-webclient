@@ -361,7 +361,6 @@ export default {
       this.deploymentsDelData.total = this.deploymentsSelected.length
       this.deploymentsDelData.deleted = 0
       var pool = this.deploymentsSelected.slice(0, this.deploymentsSelected.length)
-      let groupEmptyName = null
       pool.forEach(deployment => {
         let found = this.groups.findIndex(group => {
           const index = group.data.findIndex(d => {
