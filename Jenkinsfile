@@ -21,7 +21,12 @@ import groovy.transform.Field
 
 // Shared function for npm package release
 def npmReleasePackage(String packageDir, String npmrcFile) {
-    def isDevVersion = mavenProjectInformation.version.contains('-dev')
+    // Read the version from package.json to determine if it's a dev version
+    def packageVersion = sh(
+        script: "jq -r '.version' ${packageDir}/package.json",
+        returnStdout: true
+    ).trim()
+    def isDevVersion = packageVersion.contains('-dev')
     def mavenTagArg = isDevVersion ? "-Dnpm.publish.tag.arg=' --tag dev'" : ""
 
     sh """
