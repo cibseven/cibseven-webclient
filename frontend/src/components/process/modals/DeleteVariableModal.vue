@@ -100,7 +100,7 @@ export default {
       }
       else {
         const messageTemplate = this.isInstanceActive ? 'process-instance.variables.deleteStatus.runtimeError' : 'process-instance.variables.deleteStatus.historicError'
-        this.errorMessage = this.$t(messageTemplate, { name: this.variable.name });
+        this.errorMessage = this.$t(messageTemplate, { name: this.variable.name })
         this.deleting = false
       }
     }
