@@ -64,7 +64,7 @@ git checkout -b "$BRANCH_NAME"
 
 # 1. Bump to production version (removes -dev.x)
 npm version --no-git-tag-version $PROD_VERSION
-git add package.json
+git add package.json package-lock.json
 git commit -m "release: $PACKAGE $PROD_VERSION"
 
 # 2. Push commits and tags
