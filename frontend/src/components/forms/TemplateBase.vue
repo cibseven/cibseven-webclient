@@ -92,6 +92,7 @@ export default {
 
       const authToken = this.$root.user.authToken;
       const encodedContentType = encodeURIComponent(fileType);
+      // Add cacheBust to prevent caching issues in form-js document preview component
       const cacheBust = Date.now().toString();
       documentReference.endpoint = `${window.location.origin}/${getServicesBasePath()}/process/process-instance/${this.templateMetaData.task.processInstanceId}/variables/${variableName}/data?token=${authToken}&contentType=${encodedContentType}&cacheBust=${cacheBust}`;
       
@@ -137,7 +138,8 @@ export default {
               const uploadResponse = await FormsService.uploadVariableFileData(taskId, variableName, file, 'File');
 
               // Check if upload was successful (expecting 204 No Content)
-              if (!uploadResponse || uploadResponse.status !== 204) {
+              // For successful uploads, we expect an empty response (204 No Content has no body)
+              if (uploadResponse != '') {
                 this.sendMessageToParent({
                   method: 'displayErrorMessage',
                   data: 'Cannot preview this file due to file upload failure.'
