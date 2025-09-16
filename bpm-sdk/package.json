@@ -21,10 +21,10 @@
     "build:library": "cross-env BUILD_MODE=library vite build",
     "dev": "vite",
     "test": "vitest run",
-    "bump:dev": "../bump-npm-dev.sh bpm-sdk",
-    "bump:dev:win": "../bump-npm-dev.bat bpm-sdk",
-    "remove:dev": "../bump-npm-release.sh bpm-sdk",
-    "remove:dev:win": "../bump-npm-release.bat bpm-sdk"
+    "bump:dev": "../bump-dev-version.sh bpm-sdk",
+    "bump:dev:win": "../bump-dev-version.bat bpm-sdk",
+    "remove:dev": "../npm-version-release.sh bpm-sdk",
+    "remove:dev:win": "../npm-version-release.bat bpm-sdk"
   },
   "dependencies": {
     "fast-xml-parser": "^5.2.3",

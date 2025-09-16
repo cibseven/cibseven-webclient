@@ -1,9 +1,12 @@
 #!/bin/bash
-# Universal script to create production release for bpm-sdk, cib-common-components, or frontend
-# Usage: 
-#   ./bump-npm-release.sh bpm-sdk
-#   ./bump-npm-release.sh cib-common-components
-#   ./bump-npm-release.sh frontend
+# This script finalizes the npm package version by removing the -dev.x suffix using `npm version`.
+# It creates a release branch, updates package.json to the production version, commits, and pushes the branch.
+# Usage:
+#   npm-version-release.sh <package>
+# Example:
+#   npm-version-release.sh bpm-sdk
+#   npm-version-release.sh cib-common-components
+#   npm-version-release.sh frontend
 
 set -e
 

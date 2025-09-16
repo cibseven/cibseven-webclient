@@ -1,12 +1,9 @@
 @echo off
-REM This script finalizes the npm package version by removing the -dev.x suffix using `npm version`.
-REM It creates a release branch, updates package.json to the production version, commits, and pushes the branch.
-REM Usage:
-REM   npm-version-release.bat <package>
-REM Example:
-REM   npm-version-release.bat bpm-sdk
-REM   npm-version-release.bat cib-common-components
-REM   npm-version-release.bat frontend
+REM Universal script to create production release for bpm-sdk, cib-common-components, or frontend
+REM Usage: 
+REM   bump-npm-release.bat bpm-sdk
+REM   bump-npm-release.bat cib-common-components
+REM   bump-npm-release.bat frontend
 
 setlocal enabledelayedexpansion
 

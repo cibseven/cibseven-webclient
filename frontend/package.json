@@ -30,10 +30,10 @@
     "test:e2e:dev": "start-server-and-test 'vite dev --port 4173' http://localhost:4173 'cypress open --e2e'",
     "lint": "eslint . --fix",
     "format": "prettier --write src/",
-    "bump:dev": "../bump-npm-dev.sh frontend",
-    "bump:dev:win": "../bump-npm-dev.bat frontend",
-    "remove:dev": "../bump-npm-release.sh frontend",
-    "remove:dev:win": "../bump-npm-release.bat frontend"
+    "bump:dev": "../bump-dev-version.sh frontend",
+    "bump:dev:win": "../bump-dev-version.bat frontend",
+    "remove:dev": "../npm-version-release.sh frontend",
+    "remove:dev:win": "../npm-version-release.bat frontend"
   },
   "dependencies": {
     "@bpmn-io/form-js": "^1.15.2",
