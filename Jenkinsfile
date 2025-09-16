@@ -23,7 +23,7 @@ import groovy.transform.Field
 def npmReleasePackage(String packageDir, String npmrcFile) {
     // Read the version from package.json to determine if it's a dev version
     def packageVersion = sh(
-        script: "jq -r '.version' ${packageDir}/package.json",
+        script: "grep '\"version\"' ${packageDir}/package.json | cut -d'\"' -f4",
         returnStdout: true
     ).trim()
     def isDevVersion = packageVersion.contains('-dev')
