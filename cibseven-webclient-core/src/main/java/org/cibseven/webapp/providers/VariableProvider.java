@@ -487,13 +487,15 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		try {		
 			for (Variable variable: formResult) {
 				ObjectNode variablePost = mapper.getNodeFactory().objectNode();
-				String val = String.valueOf(variable.getValue());
-				if (variable.getType().equals("Boolean")) {
-					variablePost.put("value", Boolean.parseBoolean(val));
-				} else if (variable.getType().equals("Double")) {
-					variablePost.put("value", Double.parseDouble(val));
-				}
-				else variablePost.put("value", val);
+                String val = String.valueOf(variable.getValue());
+                if (variable.getType().equals("Boolean")) {
+                    variablePost.put("value", Boolean.parseBoolean(val));
+                } else if (variable.getType().equals("Double")) {
+                    variablePost.put("value", Double.parseDouble(val));
+                } else if (variable.getType().equals("Integer")) {
+                    variablePost.put("value", Integer.parseInt(val));
+                }
+                else variablePost.put("value", val);
 
 				if(variable.getType().equals("file")) {
 
@@ -589,7 +591,9 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 			if (variable.getType().equals("Boolean")) {
 				variablePost.put("value", Boolean.parseBoolean(val));
 			} else if (variable.getType().equals("Double")) {
-				variablePost.put("value", Double.parseDouble(val));
+			  	variablePost.put("value", Double.parseDouble(val));
+			} else if (variable.getType().equals("Integer")) {
+			  	variablePost.put("value", Integer.parseInt(val));
 			}
 			else variablePost.put("value", val);
 			//TODO Changing variables before saving should be done in the task classes

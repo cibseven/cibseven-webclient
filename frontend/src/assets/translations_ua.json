@@ -267,6 +267,12 @@
 			"objectTypeName": "Назва типу об’єкта",
 			"serializationDataFormat": "Формат серіалізації даних",
 			"confirmDelete": "Бажаєте видалити змінну?",
+			"deleteStatus": {
+				"runtime": "Змінну було успішно видалено.",
+				"runtimeError": "Сталася помилка під час спроби видалити змінну \"{name}\".",
+				"historic": "Історичну змінну було успішно видалено.",
+				"historicError": "Сталася помилка під час спроби видалити історичну змінну \"{name}\"."
+			},
 			"enterValue": "Введіть значення"
 		},
 		"incidents": {
@@ -1005,6 +1011,8 @@
 		"AuthenticationException": "Дані авторизації відсутні або невірні",
 		"LoginException": "Ім’я користувача або пароль недійсні",
 		"TokenExpiredException": "Дані авторизації застаріли",
+		"WrongDeploymenIdException": "Не вдалося знайти розгортання для цього ідентифікатора.",
+		"NoRessourcesFoundException": "Ресурси для цього deploymentId не існують.",
 		"urlError": "URL недійсний",
 		"errorSaveTask": "Під час збереження завдання сталася помилка.",
 		"taskSelectedNotExist": "Це завдання більше недоступне, тому не буде показано на центральній панелі",

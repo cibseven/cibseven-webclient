@@ -102,6 +102,9 @@ const JobStore = {
     async deleteJob({ commit }, id) {
       await JobService.deleteJob(id)
       commit('removeJob', id)
+    },
+    clearJobLogs({ commit }) {
+      commit('setJobLogs', [])
     }
   },
   getters: {
