@@ -267,6 +267,12 @@
 			"objectTypeName": "Object type name",
 			"serializationDataFormat": "Serialization data format",
 			"confirmDelete": "Do you want to delete the variable?",
+			"deleteStatus": {
+				"runtime": "The variable was deleted successfully.",
+				"runtimeError": "An error occurred while attempting to delete the variable \"{name}\".",
+				"historic": "The historic variable was deleted successfully.",
+				"historicError": "An error occurred while attempting to delete the historic variable \"{name}\"."
+			},
 			"enterValue": "Enter value"
 		},
 		"incidents": {
