@@ -36,7 +36,6 @@ export default {
 	},
 	watch: {
 		'selectedInstance.id': {
-			immediate: true,
 			handler: function () {
 				this.filter = {
 					deserializeValues: false,
@@ -85,8 +84,13 @@ export default {
 			return result
 		}
 	},
+	mounted() {
+		if (!this.$route.query.q) {
+			this.loadSelectedInstanceVariables()
+		}
+	},
 	methods: {
-		loadSelectedInstanceVariables: function () {
+		loadSelectedInstanceVariables: function() {
 			if (this.selectedInstance && this.activityInstancesGrouped) {
 				if (this.selectedInstance.state === 'ACTIVE') {
 					this.fetchInstanceVariables('ProcessService', 'fetchProcessInstanceVariables')
@@ -104,6 +108,7 @@ export default {
 				v.scope = this.activityInstancesGrouped[v.activityInstanceId]
 			})
 			variables.sort((a, b) => a.name.localeCompare(b.name))
+
 			this.variables = variables
 			this.filteredVariables = [...variables]
 			this.loading = false

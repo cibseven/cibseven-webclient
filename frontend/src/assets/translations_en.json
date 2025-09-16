@@ -10,6 +10,7 @@
 		},
 		"actualisation": {
 			"progress": "Updating data...",
+			"lastUpdate": "Last update: {date}",
 			"disabled": "Last update: {date}\n\nAutomatic updates are disabled.\nPress F5 to reload the data.",
 			"enabled": "Last update: {date}\n\nAutomatic updates are enabled.\nRefreshing every {seconds} seconds."
 		}
@@ -784,6 +785,7 @@
 	"nav-bar": {
 		"no-tasks-pending": "You have no tasks pending",
 		"no-tasks": "No tasks found",
+		"tasks-count": "Open tasks: {count}",
 		"processes": "@:process.title",
 		"filters": {
 			"addFilter": "Add Filter",

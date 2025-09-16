@@ -124,9 +124,14 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		Collection<Variable> variables = (deserializeValues) ? variablesDeserialized : variablesSerialized;
 		variables.forEach(variable -> {
 			String name = variable.getName();
+			
+			// Skip variables with null names to avoid NullPointerException
+			if (name == null) {
+				return;
+			}
 
 			Variable variableSerialized = (!deserializeValues) ? variable : variablesSerialized.stream()
-				.filter(v -> v.getName().equals(name))
+				.filter(v -> v.getName() != null && v.getName().equals(name))
 				.findFirst()
 				.orElse(null);
 			if (variableSerialized != null) {
@@ -134,7 +139,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 			}
 
 			Variable variableDeserialized = (deserializeValues) ? variable : variablesDeserialized.stream()
-				.filter(v -> v.getName().equals(name))
+				.filter(v -> v.getName() != null && v.getName().equals(name))
 				.findFirst()
 				.orElse(null);
 			if (variableDeserialized != null) {

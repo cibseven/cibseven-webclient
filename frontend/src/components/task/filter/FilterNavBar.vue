@@ -47,7 +47,14 @@
             action class="border-0 rounded-0 p-2" :class="filter.id === $store.state.filter.selected.id ? 'active' : ''" :to="'/seven/auth/tasks/' + filter.id">
             <div class="d-flex align-items-center">
               <div class="col-7 p-0" style="word-wrap: break-word">
-                <span>{{ filter.name }} <b-badge v-if="filter.tasksNumber" pill variant="light">{{ filter.tasksNumber }}</b-badge></span>
+                <span>
+                  {{ filter.name }}
+                  <b-badge v-if="(filter.tasksNumber || filter.id === $store.state.filter.selected.id) && filter.tasksNumberLastUpdated > 0" pill variant="light"
+                    :title="
+                    $t('nav-bar.tasks-count', { count: filter.tasksNumber || 0 }) + '\n' +
+                    $t('commons.actualisation.lastUpdate', { date: formatDate(filter.tasksNumberLastUpdated, 'HH:mm') })"
+                  >{{ filter.tasksNumber }}</b-badge>
+                </span>
               </div>
               <div :class="getClasses(filter)" class="ms-auto">
                 <button v-if="filterByPermissions($root.config.permissions.editFilter, $store.state.filter.selected)"
@@ -103,9 +110,10 @@ import { permissionsMixin } from '@/permissions.js'
 import FilterModal from '@/components/task/filter/FilterModal.vue'
 import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
 import { BWaitingBox } from 'cib-common-components'
+import { formatDate } from '@/utils/dates.js'
+import { mapActions } from 'vuex'
 
 import { TaskPool } from "@/taskpool.js"
-import { TaskService } from '@/services.js'
 
 const MIN_TASKNUMBER_INTERVAL = 10000
 
@@ -172,9 +180,15 @@ export default {
     this.fetchFilters()
   },
   methods: {
+    ...mapActions(['updateFilterTasksCount']),
+    formatDate,
     fetchFilters: function() {
       this.$refs.filterLoader.done = false
       this.$store.dispatch('findFilters').then(response => {
+        response.forEach(f => {
+          f.tasksNumber = f.tasksNumber || null
+          f.tasksNumberLastUpdated = f.tasksNumberLastUpdated || 0
+        })
         this.$store.commit('setFilters',
           { filters: this.filtersByPermissions(this.$root.config.permissions.displayFilter, response) })
         if (this.$root.config.taskFilter.tasksNumber.enabled) {
@@ -190,9 +204,7 @@ export default {
     },
     setTasksNumber: function() {
       this.$store.state.filter.list.forEach(f => {
-        this.taskpool.add(TaskService.findTasksCountByFilter, [f.id, {}]).then(tasksNumber => {
-          f.tasksNumber = tasksNumber
-        })
+        this.taskpool.add(this.updateFilterTasksCount, [{ filterId: f.id, filters: {} }])
       })
     },
     setFilterByName: function() {
@@ -237,15 +249,13 @@ export default {
             this.$router.replace(path)
           }
         }
-        if (this.$store.state.filter.selected) {
-          const f = this.$store.state.filter.selected
-          if (f && f.id && !this.$root.config.taskFilter.tasksNumber.enabled) {
-            TaskService.findTasksCountByFilter(f.id, {}).then(tasksNumber => {
-              f.tasksNumber = tasksNumber
-              this.saveTasksCountInStore(f.id, tasksNumber)
-            })
-          }
-        }
+        this.updateSelectedFilterTasksCountIfNeeded()
+      }
+    },
+    updateSelectedFilterTasksCountIfNeeded() {
+      const f = this.$store.state.filter.selected
+      if (f && f.id && !this.$root.config.taskFilter.tasksNumber.enabled && this.$root.config.taskFilter.selectedFilterTasksNumber.enabled) {
+        this.updateFilterTasksCount({ filterId: f.id, filters: {} })
       }
     },
     getClasses: function(filter) {
@@ -271,10 +281,6 @@ export default {
     },
     deleteFavoriteFilter: function(filter) {
       this.$store.dispatch('deleteFavoriteFilter', { filterId: filter.id })
-    },
-    saveTasksCountInStore(filterId, tasksNumber) {
-      const newFilters = this.$store.state.filter.list.map(f => f.id === filterId ? { ...f, tasksNumber } : f)
-      this.$store.commit('setFilters', { filters: newFilters })
     }
   },
   beforeUnmount: function() {
@@ -283,6 +289,3 @@ export default {
   }
 }
 </script>
-
-<style lang="css" scoped>
-</style>
