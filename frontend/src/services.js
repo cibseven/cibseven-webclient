@@ -113,7 +113,7 @@ var ProcessService = {
     return axios.get(url)
   },
   findProcessById: function(id, extraInfo = false) {
-	return axios.get(getServicesBasePath() + "/process/process-definition-id/" + id + '?extraInfo=' + extraInfo)
+	  return axios.get(getServicesBasePath() + "/process/process-definition-id/" + id + '?extraInfo=' + extraInfo)
   },
   findProcessesInstances: function(key) {
 	  return axios.get(getServicesBasePath() + "/process/instances/by-process-key/" + key)
@@ -175,6 +175,9 @@ var ProcessService = {
         sortOrder,
       }
     })
+  },
+  findDeployment: function(deploymentId) {
+	return axios.get(getServicesBasePath() + "/process/deployments/" + deploymentId)
   },
   findDeploymentResources: function(deploymentId) {
     return axios.get(getServicesBasePath() + "/process/deployments/" + deploymentId + "/resources")
@@ -327,7 +330,7 @@ var HistoryService = {
     if (maxResults != null) params.maxResults = maxResults
     return axios.post(getServicesBasePath() + '/process-history/instance', filters, { params })
   },
-  findProcessesInstancesHistoryById: function(id, activityId, firstResult, maxResults, filter = {}, active, sortingCriteria = [], fetchIncidents = false) {
+  findProcessesInstancesHistoryById: function(id, firstResult, maxResults, filter = {}, active, sortingCriteria = [], fetchIncidents = false) {
     const requestBody = {
       ...(filter || {}),
       processDefinitionId: id
@@ -336,16 +339,6 @@ var HistoryService = {
     // Add incident fetching if requested
     if (fetchIncidents) {
       requestBody.fetchIncidents = true
-    }
-
-    // Add activity filter
-    if (activityId) {
-      requestBody.activeActivityIdIn = [
-        ...(filter?.activityIdIn || []),
-        activityId,
-      ]
-      // remove duplicates
-      requestBody.activeActivityIdIn = [...new Set(requestBody.activeActivityIdIn)]
     }
 
     // Add text search with OR logic (business key LIKE or exact process instance ID)
@@ -367,6 +360,17 @@ var HistoryService = {
       } else {
         requestBody.finished = true
       }
+    }
+
+    if (requestBody.activeOrExecutedActivityIdIn !== undefined) {
+      if (requestBody.orQueries === undefined) {
+        requestBody.orQueries = []
+      }
+      requestBody.orQueries.push({
+        activeActivityIdIn: requestBody.activeOrExecutedActivityIdIn,
+        executedActivityIdIn: requestBody.activeOrExecutedActivityIdIn
+      })
+      delete requestBody.activeOrExecutedActivityIdIn
     }
 
     // Add sorting criteria
@@ -393,7 +397,7 @@ var HistoryService = {
     return axios.get(getServicesBasePath() + "/process-history/activity/by-process-definition/" + processDefinitionId, { params })
   },
   findActivitiesInstancesHistoryWithFilter(filter){
-	return axios.get(getServicesBasePath() + "/process-history/activity", { params: filter })
+	  return axios.get(getServicesBasePath() + "/process-history/activity", { params: filter })
   },
   fetchProcessInstanceVariablesHistory: function(processInstanceId, filter) {
     return axios.get(getServicesBasePath() + "/process-history/instance/by-process-instance/" + processInstanceId + "/variables",

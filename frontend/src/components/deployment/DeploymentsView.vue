@@ -18,15 +18,17 @@
 -->
 <template>
   <div class="d-flex flex-column">
-    <div style="background-color: rgba(98, 142, 199, 0.2)">
+    <div style="background-color: rgba(98, 142, 199, 0.2);">
       <div class="d-flex align-items-center py-2 container-fluid">
         <div class="col-3">
           <b-input-group>
             <b-input-group-prepend>
-              <b-button :title="$t('searches.search')" aria-hidden="true" size="sm" class="rounded-left" variant="secondary"><span class="mdi mdi-magnify" style="line-height: initial"></span></b-button>
+              <b-button :title="$t('searches.search')" aria-hidden="true" size="sm" class="rounded-left"
+                variant="secondary"><span class="mdi mdi-magnify" style="line-height: initial"></span></b-button>
             </b-input-group-prepend>
             <b-input-group-append>
-              <b-form-input :title="$t('searches.search')" size="sm" :placeholder="$t('searches.search')" v-model.trim="filter"></b-form-input>
+              <b-form-input :title="$t('searches.search')" size="sm" :placeholder="$t('searches.search')"
+                v-model.trim="filter"></b-form-input>
             </b-input-group-append>
           </b-input-group>
         </div>
@@ -34,11 +36,13 @@
           <b-form-group class="mb-0">
             <b-input-group size="sm" class="align-items-center">
               <b-input-group-prepend class="me-2 align-items-center">
-                <span class="text-primary mdi mdi-18px mdi-filter-variant" :title="$t('sorting.sortBy')"></span><span>{{ $t('sorting.sortBy') }}</span>
+                <span class="text-primary mdi mdi-18px mdi-filter-variant" :title="$t('sorting.sortBy')"></span><span>{{
+                  $t('sorting.sortBy') }}</span>
               </b-input-group-prepend>
               <b-input-group-append class="d-flex align-items-center">
                 <b-form-select size="sm" v-model="sortBy" :options="sortingFields" class="mb-0"></b-form-select>
-                <b-button size="sm" v-hover-style="{ classes: ['text-primary'] }" variant="secondary-outline" @click="changeSortingOrder()" class="mdi mdi-18px ms-1 border-0"
+                <b-button size="sm" v-hover-style="{ classes: ['text-primary'] }" variant="secondary-outline"
+                  @click="changeSortingOrder()" class="mdi mdi-18px ms-1 border-0"
                   :class="sortOrder === 'desc' ? 'mdi-arrow-down' : 'mdi-arrow-up'"
                   :title="sortOrder === 'desc' ? $t('sorting.desc') : $t('sorting.asc')"></b-button>
               </b-input-group-append>
@@ -62,7 +66,8 @@
             <b-form-checkbox class="me-3" size="sm" v-model="isAllChecked">
               <span>{{ $t('deployment.selectAll') }}</span>
             </b-form-checkbox>
-            <b-button class="border-secondary" size="sm" :disabled="!deploymentsSelected.length > 0 || deleteLoader" variant="light" @click="$refs.deleteModal.show()" :title="$t('deployment.deleteDeployments')">
+            <b-button class="border-secondary" size="sm" :disabled="!deploymentsSelected.length > 0 || deleteLoader"
+              variant="light" @click="$refs.deleteModal.show()" :title="$t('deployment.deleteDeployments')">
               <span v-if="deleteLoader"><b-spinner small></b-spinner> {{ $t('deployment.deleteDeployments') }}</span>
               <span v-else class="mdi mdi-delete-outline">{{ $t('deployment.deleteDeployments') }}</span>
             </b-button>
@@ -70,41 +75,39 @@
         </div>
       </div>
     </div>
-    <SidebarsFlow class="border-top" v-model:right-open="rightOpen" :right-caption="$t('deployment.resourcesCaption')" :rightSize="[12, 4, 3, 3, 3]">
-      <template v-slot:right>
-        <ResourcesNavBar v-if="!resourcesLoading" :resources="resources" :deployment="deployment"></ResourcesNavBar>
-        <b-waiting-box v-else styling="width: 35px" class="h-100 d-flex justify-content-center"></b-waiting-box>
-      </template>
-      <div ref="scrollableArea" class="w-100 h-100 d-flex flex-column overflow-auto overflow-y-scroll">
+    <div class="flex-grow-1" style="min-height: 0">
+      <SidebarsFlow class="border-top" v-model:right-open="rightOpen" :right-caption="$t('deployment.resourcesCaption')"
+        :rightSize="[12, 4, 3, 3, 3]">
+        <template v-slot:right>
+          <ResourcesNavBar v-if="!resourcesLoading" :resources="resources" :deploymentId="deploymentId"
+            @delete-deployment="$refs.deleteSelectedModal.show()" @show-deployment="loadToSelectedDeployment()">
+          </ResourcesNavBar>
+          <b-waiting-box v-else styling="width: 35px" class="h-100 d-flex justify-content-center"></b-waiting-box>
+        </template>
+        <div ref="scrollableArea" class="w-100 h-100 d-flex flex-column overflow-auto overflow-y-scroll">
 
-        <PagedScrollableContent
-          :loading="loading"
-          :loaded-count="deployments.length"
-          :total-count="totalCount"
-          :chunk-size="maxResults"
-          :scrollable-area="$refs.scrollableArea"
-          @load-next-page="loadNextPage"
-          :show-loading-spinner="loading && deployments.length > 0"
-          >
-          <DeploymentList v-if="deployments.length > 0"
-            :groups="groups"
-            :deployments="deployments"
-            :deployment="deployment"
-            @select-deployment="selectDeployment"
-            ></DeploymentList>
-          <div v-else class="h-100 d-flex justify-content-center align-items-center text-center text-secondary">
-            <div v-if="loading">
-              <b-waiting-box class="d-inline me-2" styling="width: 35px"></b-waiting-box> {{ $t('admin.loading') }}
+          <PagedScrollableContent :loading="loading" :loaded-count="deployments.length" :total-count="totalCount"
+            :chunk-size="maxResults" :scrollable-area="$refs.scrollableArea" @load-next-page="loadNextPage"
+            :show-loading-spinner="loading && deployments.length > 0">
+            <DeploymentList v-if="deployments.length > 0" :groups="groups" :deployments="deployments"
+              :deployment="deployment" :deploymentId="deploymentId" v-model:deploymentsReady="deploymentsReady"
+              @select-deployment="selectDeployment">
+            </DeploymentList>
+            <div v-else class="h-100 d-flex justify-content-center align-items-center text-center text-secondary">
+              <div v-if="loading">
+                <b-waiting-box class="d-inline me-2" styling="width: 35px"></b-waiting-box> {{ $t('admin.loading') }}
+              </div>
+              <div v-else>
+                <img src="@/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mt-5 mb-3"
+                  style="width: 200px">
+                <div class="h5">{{ $t('deployment.noDeployments') }}</div>
+              </div>
             </div>
-            <div v-else>
-              <img src="@/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mt-5 mb-3" style="width: 200px">
-              <div class="h5">{{ $t('deployment.noDeployments') }}</div>
-            </div>
-          </div>
-        </PagedScrollableContent>
+          </PagedScrollableContent>
 
-      </div>
-    </SidebarsFlow>
+        </div>
+      </SidebarsFlow>
+    </div>
     <b-modal ref="deleteModal" :title="$t('confirm.title')">
       <div class="container-fluid">
         <div class="row align-items-center">
@@ -113,16 +116,38 @@
           </div>
           <div class="col-10">
             <span>{{ $t('deployment.confirmDeleteDeployment') }}</span>
-            <b-form-checkbox disabled v-model="cascadeDelete" class="mt-3">{{ $t('deployment.deleteRunningInstances') }}</b-form-checkbox>
+            <b-form-checkbox disabled v-model="cascadeDelete" class="mt-3">{{ $t('deployment.deleteRunningInstances')
+            }}</b-form-checkbox>
           </div>
         </div>
       </div>
       <template v-slot:modal-footer>
         <b-button @click="$refs.deleteModal.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
-        <b-button @click="deleteDeployments(); $refs.deleteModal.hide()" variant="primary">{{ $t('confirm.delete') }}</b-button>
+        <b-button @click="deleteDeployments(); $refs.deleteModal.hide()" variant="primary">{{ $t('confirm.delete')
+        }}</b-button>
       </template>
     </b-modal>
-    <SuccessAlert top="0" style="z-index: 1031" ref="deploymentsDeleted"> {{ $t('deployment.deploymentsDeleted', [deploymentsDelData.deleted, deploymentsDelData.total]) }}</SuccessAlert>
+    <b-modal ref="deleteSelectedModal" :title="$t('confirm.title')">
+      <div class="container-fluid">
+        <div class="row align-items-center">
+          <div class="col-2">
+            <span class="mdi-36px mdi mdi-alert-outline text-warning me-3"></span>
+          </div>
+          <div class="col-10">
+            <span>{{ $t('deployment.confirmDeleteDeployment') }}</span>
+            <b-form-checkbox disabled v-model="cascadeDelete" class="mt-3">{{ $t('deployment.deleteRunningInstances')
+            }}</b-form-checkbox>
+          </div>
+        </div>
+      </div>
+      <template v-slot:modal-footer>
+        <b-button @click="$refs.deleteSelectedModal.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
+        <b-button @click="deleteDeployment(); $refs.deleteSelectedModal.hide()" variant="primary">{{$t('confirm.delete')
+          }}</b-button>
+      </template>
+    </b-modal>
+    <SuccessAlert top="0" style="z-index: 1031" ref="deploymentsDeleted"> {{ $t('deployment.deploymentsDeleted',
+      [deploymentsDelData.deleted, deploymentsDelData.total]) }}</SuccessAlert>
   </div>
 </template>
 
@@ -142,7 +167,8 @@ export default {
   components: { PagedScrollableContent, DeploymentList, ResourcesNavBar, SidebarsFlow, SuccessAlert },
   inject: ['loadProcesses'],
   mixins: [permissionsMixin],
-  data: function() {
+  props: { deploymentId: String },
+  data: function () {
     return {
       rightOpen: false,
       groups: [],
@@ -160,38 +186,49 @@ export default {
       resources: [],
       resourcesLoading: false,
       deploymentsDelData: { total: 0, deleted: 0 },
-      debouncedSearch: null
+      debouncedSearch: null,
+      deploymentsReady: false,
+      searchDeployment: false
     }
   },
   watch: {
-    filter: function() {
+    filter: function () {
       this.debouncedSearch()
     },
-    sortBy: function(newSortBy) {
+    sortBy: function (newSortBy) {
       localStorage.setItem('cibseven:deployments.sortBy', newSortBy)
       this.groups = []
       this.deployments = []
       this.deployment = null
       this.loadNextPage()
+    },
+    deploymentId: function () {
+      let found = this.deployments.some(d => {
+        return (d.id === this.deploymentId)
+      })
+      if (!found) {
+        this.deploymentsReady = false
+        this.loadToSelectedDeployment()
+      }
     }
   },
   computed: {
-    sortingFields: function() {
+    sortingFields: function () {
       return [
         { text: this.$t('sorting.deployments.deploymentTime'), value: 'deploymentTime' },
         { text: this.$t('sorting.deployments.name'), value: 'name' }
       ]
     },
-    deploymentsSelected: function() {
+    deploymentsSelected: function () {
       return this.deployments.filter(d => {
         return d.isSelected
       })
     },
     isAllChecked: {
-      get: function() {
+      get: function () {
         return this.deployments.length > 0 && this.deployments.reduce((allSelected, d) => (allSelected && d.isSelected), true)
       },
-      set: function(checked) {
+      set: function (checked) {
         this.deployments.forEach(d => { d.isSelected = checked })
       }
     },
@@ -212,17 +249,21 @@ export default {
 
     // load sortOrder
     const newSortOrder = localStorage.getItem('cibseven:deployments.sortOrder')
-    if (['asc','desc'].includes(newSortOrder)) {
+    if (['asc', 'desc'].includes(newSortOrder)) {
       this.sortOrder = newSortOrder
     }
     else {
       this.sortOrder = this.sortBy === 'deploymentTime' ? 'desc' : 'asc'
     }
-
+    if (this.deploymentId) {
+      this.findDeploymentResources(this.deploymentId)
+      this.rightOpen = true
+    }
     this.loadNextPage()
+
   },
   methods: {
-    performSearch: function() {
+    performSearch: function () {
       this.groups = []
       this.deployments = []
       this.deployment = null
@@ -233,10 +274,10 @@ export default {
       ProcessService.findDeploymentsCount(this.filter).then(count => {
         this.totalCount = count
       })
-      .catch(error => {
-        console.error(error)
-        this.totalCount = undefined
-      })
+        .catch(error => {
+          console.error(error)
+          this.totalCount = undefined
+        })
     },
     loadNextChunk(offset) {
       if (this.loading || this.allLoaded) {
@@ -244,8 +285,12 @@ export default {
       }
       this.loading = true
       // Perform the search with the current query object and offset
+      this.loadDeployments(offset)
+    },
+    loadDeployments: function (offset) {
+      let found = false
+      this.loading = true
       ProcessService.findDeployments(this.filter, offset, this.maxResults, this.sortBy, this.sortOrder).then(deployments => {
-
         deployments.forEach(d => {
           d.isSelected = false
           d.name = d.name || d.id
@@ -267,28 +312,72 @@ export default {
           else {
             this.groups[this.groups.length - 1].data.push(d)
           }
+          if (d.id === this.deploymentId) {
+            this.selectDeployment(d)
+          }
         })
-
         this.deployments.push(...deployments)
         this.loading = false
+        if (this.deploymentId && this.searchDeployment) {
+          offset += deployments.length
+          found = this.deployments.some(d => {
+            if (d.id === this.deploymentId) {
+              this.searchDeployment = false
+              this.loading = false
+              this.deploymentsReady = true
+              return true
+            }
+          })
+          if (!found) {
+            this.loadDeployments(offset)
+          }
+        }
       }).catch(error => {
         console.error(error)
         this.loading = false
       })
     },
-    loadNextPage: function() {
+    loadNextPage: function () {
       // refresh the total count in case remote data has changed
       this.refreshTotalCount()
 
       // Fetch next chunk based on the query object
       this.loadNextChunk(this.deployments.length)
     },
-    deleteDeployments: function() {
+    loadToSelectedDeployment: async function () {
+      this.searchDeployment = true
+      this.refreshTotalCount()
+      let found = this.deployments.some(dep => {
+        return dep.id === this.deploymentId
+      })
+      if (found) {
+        this.deploymentsReady = true
+      }
+      this.loadDeployments(this.deployments.length)
+    },
+    deleteDeployments: function () {
       var vm = this
       this.deleteLoader = true
       this.deploymentsDelData.total = this.deploymentsSelected.length
       this.deploymentsDelData.deleted = 0
       var pool = this.deploymentsSelected.slice(0, this.deploymentsSelected.length)
+      pool.forEach(deployment => {
+        let found = this.groups.findIndex(group => {
+          const index = group.data.findIndex(d => {
+            return deployment.id === d.id
+          })
+          if (index !== -1) {
+            group.data.splice(index, 1)
+            return group
+          }
+        })
+        if (found !== -1) {
+          if (this.groups[found].data.length < 1) {
+            this.groups.splice(found, 1)
+          }
+        }
+      })
+      pool = this.deploymentsSelected.slice(0, this.deploymentsSelected.length)
       startTask()
       function startTask() {
         var deployment = pool.shift()
@@ -313,12 +402,44 @@ export default {
         })
       }
     },
-    selectDeployment: function(d) {
+    deleteDeployment: function () {
+      ProcessService.deleteDeployment(this.deploymentId, true).then(() => {
+        this.deployments = this.deployments.filter(d => {
+          return this.deploymentId !== d.id
+        })
+        this.deployment = null
+        this.loadProcesses(false)
+        this.deploymentsDelData.total = 1
+        this.deploymentsDelData.deleted++
+        this.$refs.deploymentsDeleted.show()
+        let found = this.groups.findIndex(group => {
+          const index = group.data.findIndex(d => {
+            return this.deploymentId === d.id
+          })
+          if (index !== -1) {
+            group.data.splice(index, 1)
+            return group
+          }
+        })
+        if (found !== -1) {
+          if (this.groups[found].data.length < 1) {
+            this.groups.splice(found, 1)
+          }
+        }
+        this.$router.push({
+          name: 'deployments',
+          params: {
+            deploymentId: ''
+          }
+        })
+      })
+    },
+    selectDeployment: function (d) {
       this.deployment = d
       this.rightOpen = true
       this.findDeploymentResources(d.id)
     },
-    findDeploymentResources: function(deploymentId) {
+    findDeploymentResources: function (deploymentId) {
       this.resourcesLoading = true
       this.resources = null
       ProcessService.findDeploymentResources(deploymentId).then(resources => {
@@ -329,7 +450,7 @@ export default {
         this.resourcesLoading = false
       })
     },
-    changeSortingOrder: function() {
+    changeSortingOrder: function () {
       this.sortOrder = this.sortOrder === 'desc' ? 'asc' : 'desc'
       localStorage.setItem('cibseven:deployments.sortOrder', this.sortOrder)
 

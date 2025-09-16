@@ -44,6 +44,7 @@ export default {
     items: Array,
     loading: Boolean,
   },
+  emits: ['click'],
   computed: {
     isEmptyChart() {
       return this.items.length === 0

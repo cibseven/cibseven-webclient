@@ -30,10 +30,10 @@
 		<git-commit-id-maven-plugin.version>9.0.1</git-commit-id-maven-plugin.version>
 
 		<jjwt.version>0.12.6</jjwt.version>
-		<swagger-annotations.version>2.2.27</swagger-annotations.version>
+		<swagger-annotations.version>2.2.28</swagger-annotations.version>
 		<commons-io.version>2.18.0</commons-io.version>
-		<common-auth.version>1.1.0-SNAPSHOT</common-auth.version>
-		<version.spring.boot>3.5.1</version.spring.boot>
+		<common-auth.version>1.2.0-SNAPSHOT</common-auth.version>
+		<version.spring.boot>3.5.4</version.spring.boot>
 		<version.openapi-starter-webmvc-ui>2.8.4</version.openapi-starter-webmvc-ui>
 		<image.tomcat-10-base>harbor.cib.de/dev/tomcat-10-base:2.0.0</image.tomcat-10-base>
 		<jib-maven-plugin.version>3.4.6</jib-maven-plugin.version>
@@ -43,6 +43,9 @@
 		<version.eirslett.frontend.maven.plugin>1.12.1</version.eirslett.frontend.maven.plugin>
     	<version.nodejs>22.14.0</version.nodejs>
 	    <version.npm>10.9.2</version.npm>
+
+		<!-- NPM publish tag configuration - empty by default (uses 'latest'), can be overridden with tag dev -->
+		<npm.publish.tag.arg></npm.publish.tag.arg>
 
 		<!-- REWRITE COPYRIGHT PARAMEMER FROM SUPER POM (CAMUNDA COPYRIGHT) -->
 		<license.inlineHeader>Copyright CIB software GmbH and/or licensed to CIB software GmbH
@@ -83,12 +86,6 @@ You may obtain a copy of the License at
 							<filesets>
 								<fileset>
 									<directory>./frontend/target</directory>
-								</fileset>
-								<fileset>
-									<directory>${project.build.directory}/webapp</directory>
-									<excludes>
-										<exclude>README.md</exclude>
-									</excludes>
 								</fileset>
 							</filesets>
 						</configuration>
@@ -188,12 +185,6 @@ You may obtain a copy of the License at
 								<fileset>
 									<directory>./frontend/target</directory>
 								</fileset>
-								<fileset>
-									<directory>${project.build.directory}/webapp</directory>
-									<excludes>
-										<exclude>README.md</exclude>
-									</excludes>
-								</fileset>
 							</filesets>
 						</configuration>
 					</plugin>
@@ -255,7 +246,7 @@ You may obtain a copy of the License at
 								</goals>
 								<phase>generate-resources</phase>
 								<configuration>
-									<arguments>publish</arguments>
+									<arguments>publish${npm.publish.tag.arg}</arguments>
 								</configuration>
 							</execution>
 						</executions>
@@ -334,9 +325,18 @@ You may obtain a copy of the License at
 					<target>${maven.compiler.target}</target>
 					<compilerArgs>
 						<arg>-parameters</arg>
+						<arg>-Werror</arg>
 					</compilerArgs>
 				</configuration>
 			</plugin>	
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<configuration>
+					<failOnError>false</failOnError>
+					<doclint>none</doclint>
+				</configuration>
+			</plugin>
 		</plugins>
 		<pluginManagement>
 			<plugins>

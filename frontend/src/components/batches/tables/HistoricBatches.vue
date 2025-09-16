@@ -21,12 +21,12 @@
     <div class="overflow-auto p-0" style="max-height: 35vh" @scroll="showMore">
       <FlowTable striped thead-class="sticky-header" :items="historicBatches" primary-key="id" prefix="batches."
         :fields="[
-          { label: 'id', key: 'id', class: 'col-5', tdClass: 'border-end p-0' },
-          { label: 'type', key: 'type', class: 'col-3', tdClass: 'border-end p-1' },
-          { label: 'startTime', key: 'startTime', class: 'col-2', tdClass: 'border-end p-1' },
+          { label: 'id', key: 'id', class: 'col-5', tdClass: 'p-0' },
+          { label: 'type', key: 'type', class: 'col-3', tdClass: 'p-1' },
+          { label: 'startTime', key: 'startTime', class: 'col-2', tdClass: 'p-1' },
           { label: 'endTime', key: 'endTime', class: 'col-2', tdClass: 'p-1' },
         ]"
-        @click="loadBatchDetails($event)">
+        sort-by="endTime" sort-desc @click="loadBatchDetails($event)">
         <template v-slot:cell(id)="table">
           <div class="p-1 text-truncate" :class="batchIsSelected(table.item.id) ? 'border-start border-4 border-primary' : ''">
             {{ table.item.id }}
@@ -72,11 +72,22 @@ export default {
   mounted: function() {
     this.fetchHistoricBatches()
   },
+  watch: {
+    runtimeBatchesCount(newCount, oldCount) {
+      // Only refresh if the count of runtime batches has decreased
+      if (oldCount > 0 && newCount < oldCount) {
+        this.refreshForNewBatches()
+      }
+    }
+  },
   computed: {
-    ...mapGetters(['historicBatches'])
+    ...mapGetters(['historicBatches', 'runtimeBatches']),
+    runtimeBatchesCount() {
+      return this.runtimeBatches.length
+    }
   },
   methods: {
-    ...mapActions(['loadHistoricBatches']),
+    ...mapActions(['loadHistoricBatches', 'prependNewHistoricBatches']),
     formatDate,
     fetchHistoricBatches: debounce(500, function (showMore = false) {
       this.loading = true
@@ -93,6 +104,22 @@ export default {
         this.loading = false
       })
     }),
+    refreshForNewBatches: function() {
+      const params = {
+        finished: true,
+        sortBy: 'endTime',
+        sortOrder: 'desc',
+        firstResult: 0,
+        maxResults: this.maxResults
+      }
+      
+      this.prependNewHistoricBatches(params).then(newBatches => {
+        if (newBatches.length > 0) {
+          // Adjust firstResult to keep correct pagination
+          this.firstResult += newBatches.length
+        }
+      })
+    },
     showMore: function(el) {
       if (this.loading || !this.hasMore) return
       const nearBottom = el.target.scrollTop + el.target.offsetHeight >= el.target.scrollHeight - 1

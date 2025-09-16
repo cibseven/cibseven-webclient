@@ -25,9 +25,9 @@
           <FlowTable striped resizable thead-class="sticky-header" :items="countsByType"
             primary-key="id" prefix="human-tasks."
             sort-by="label" :fields="[
-            { label: 'tasks', key: 'tasks', class: 'col-3', tdClass: 'py-1 border-top-0 fw-bold justify-content-center',
+            { label: 'tasks', key: 'tasks', class: 'col-3', tdClass: 'py-1 fw-bold justify-content-center',
               thClass: 'd-flex justify-content-center', sortable: false },
-            { label: 'types', key: 'types', class: 'col-9', tdClass: 'py-1 border-top-0', sortable: false }]">
+            { label: 'types', key: 'types', class: 'col-9', tdClass: 'py-1', sortable: false }]">
             <template v-slot:cell(tasks)="table">
               <transition name="fade" mode="out-in">
                 <span v-if="!loading[table.item.id]">{{ table.item.tasks }}</span>
@@ -44,9 +44,9 @@
           <FlowTable striped resizable thead-class="sticky-header" :items="taskCountByCandidateGroup"
             primary-key="id" prefix="human-tasks."
             sort-by="label" :fields="[
-            { label: 'tasks', key: 'taskCount', class: 'col-3', tdClass: 'py-1 border-top-0 justify-content-center',
+            { label: 'tasks', key: 'taskCount', class: 'col-3', tdClass: 'py-1 justify-content-center',
               thClass: 'd-flex justify-content-center', sortable: false },
-            { label: 'groupName', key: 'groupName', class: 'col-9', tdClass: 'py-1 border-top-0', sortable: false }]">
+            { label: 'groupName', key: 'groupName', class: 'col-9', tdClass: 'py-1', sortable: false }]">
             <template v-slot:cell(groupName)="table">
               <div>{{ table.item.groupName ? table.item.groupName : $t('human-tasks.noGroups') }}</div>
             </template>

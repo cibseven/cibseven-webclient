@@ -21,11 +21,15 @@ const DecisionStore = {
     list: [],
     selectedDecisionVersion: null,
     selectedInstance: null,
-    instances: []
+    instances: [],
+    isLoading: false
   },
   mutations: {
     setDecisions: function (state, params) {
       state.list = params.decisions
+    },
+    setLoading: function (state, isLoading) {
+      state.isLoading = isLoading
     },
     setHistoricInstancesForKey: function (state, { key, version, instances }) {
       const decision = state.list.find(decision => decision.key === key)
@@ -103,7 +107,8 @@ const DecisionStore = {
       const decision = state.list.find(d => d.key === key)
       return decision?.versions?.find(v => String(v.version) === String(version)) || null
     },
-    decisionInstances: (state) => state.instances
+    decisionInstances: (state) => state.instances,
+    isLoading: (state) => state.isLoading
   },
   actions: {
 
@@ -111,14 +116,23 @@ const DecisionStore = {
     //  Definitions
     // ────────────────────────────────────────────────────────────────
 
-    async getDecisionList({ state, commit }, params) {
-      if (state.list.length < 1) {
+    async getDecisionList({ commit }, params) {
+      commit('setLoading', true)
+      try {
         const decisions = await DecisionService.getDecisionList(params)
-        const reduced = decisions.map(d => ({ key: d.key, id: d.id, name: d.name, latestVersion: d.version }))
+        const reduced = decisions.map(d => ({ 
+          key: d.key, 
+          id: d.id, 
+          name: d.name, 
+          latestVersion: d.version, 
+          tenantId: d.tenantId,
+          decisionRequirementsDefinitionId: d.decisionRequirementsDefinitionId,
+          decisionRequirementsDefinitionKey: d.decisionRequirementsDefinitionKey
+        }))
         commit('setDecisions', { decisions: reduced })
         return reduced
-      } else {
-        return state.list
+      } finally {
+        commit('setLoading', false)
       }
     },
     async getDecisionByKey({ state }, params) {

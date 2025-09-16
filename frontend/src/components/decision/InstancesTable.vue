@@ -19,11 +19,11 @@
 <template>
   <FlowTable striped resizable thead-class="sticky-header" :items="instances" primary-key="id" prefix="decision."
     :sort-by="sortByDefaultKey" :sort-desc="sortDesc" :fields="[
-    { label: 'id', key: 'id', class: 'col-2', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0 position-relative' },
-    { label: 'evaluationTime', key: 'evaluationTime', class: 'col-2', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0' },
-    { label: 'callingProcess', key: 'processDefinitionKey', class: 'col-3', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0 position-relative' },
-    { label: 'callingInstanceId', key: 'processInstanceId', class: 'col-3', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0 position-relative' },
-    { label: 'activityId', key: 'activityId', class: 'col-2', thClass: 'border-end', tdClass: 'border-end py-1 border-top-0' }]">
+    { label: 'id', key: 'id', class: 'col-2', tdClass: 'py-1 position-relative' },
+    { label: 'evaluationTime', key: 'evaluationTime', class: 'col-2', tdClass: 'py-1' },
+    { label: 'callingProcess', key: 'processDefinitionKey', class: 'col-3', tdClass: 'py-1 position-relative' },
+    { label: 'callingInstanceId', key: 'processInstanceId', class: 'col-3', tdClass: 'py-1 position-relative' },
+    { label: 'activityId', key: 'activityId', class: 'col-2', tdClass: 'py-1' }]">
     <template v-slot:cell(id)="table">
       <button :title="table.item.id" class="text-truncate w-100 btn btn-link text-start" :class="focusedCell === table.item.id ? 'pe-4': ''" 
         @mouseenter="focusedCell = table.item.id" @mouseleave="focusedCell = null" @click="goToInstance(table.item)">

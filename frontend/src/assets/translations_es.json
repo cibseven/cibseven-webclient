@@ -10,6 +10,7 @@
 		},
 		"actualisation": {
 			"progress": "Actualizando datos...",
+			"lastUpdate": "Última actualización: {date}",
 			"disabled": "Última actualización: {date}\n\nLas actualizaciones automáticas están desactivadas.\nPresiona F5 para recargar los datos.",
 			"enabled": "Última actualización: {date}\n\nLas actualizaciones automáticas están activadas.\nRecargando cada {seconds} segundos."
 		}
@@ -184,6 +185,19 @@
 			"suspend": "¿Realmente desea suspender la siguiente definición de proceso con todas las instancias de proceso en ejecución?",
 			"activate": "¿Realmente quieres activar la siguiente definición de proceso con todas las instancias de proceso en ejecución?"
 		},
+		"activityIdBadge": {
+			"remove": "Eliminar criterio - para listar todas las instancias de proceso",
+			"title": {
+				"executed": "{activityId} (solo ejecutadas)",
+				"active": "{activityId} (solo activas)",
+				"all": "{activityId}"
+			},
+			"tooltip": {
+				"executed": "Listar instancias que ejecutaron la actividad {activityId}",
+				"active": "Listar instancias que aún están activas con la actividad {activityId}",
+				"all": "Listar instancias que ejecutaron la actividad {activityId} o que aún están activas con la actividad {activityId}"
+			}
+		},
 		"true": "Verdadero",
 		"false": "Falso",		
 		"jobDefinitions": "Definiciones de trabajos",
@@ -253,6 +267,12 @@
 			"objectTypeName": "Nombre del tipo de objeto",
 			"serializationDataFormat": "Formato de datos de serialización",
 			"confirmDelete": "¿Desea eliminar la variable?",
+			"deleteStatus": {
+				"runtime": "La variable se eliminó correctamente.",
+				"runtimeError": "Se produjo un error al intentar eliminar la variable \"{name}\".",
+				"historic": "La variable histórica se eliminó correctamente.",
+				"historicError": "Se produjo un error al intentar eliminar la variable histórica \"{name}\"."
+			},
 			"enterValue": "Introducir valor"
 		},
 		"incidents": {
@@ -376,6 +396,11 @@
 			"noExternalTasks": "No se encontraron tareas externas"
 		}
 	},
+	"dmn-viewer": {
+		"zoomIn": "Acercarse",
+		"zoomOut": "Alejarse",
+		"resetZoom": "Restablecer zoom"
+	},
 	"bpmn-viewer": {
 		"zoomIn": "Acercarse",
 		"zoomOut": "Alejarse",
@@ -387,6 +412,7 @@
 			"selectedTask": "@:task.selectedTask",
 			"runningInstances": "Instancias de actividad en ejecución",
 			"openIncidents": "Incidentes abiertos",
+			"closedIncidents": "Incidentes cerrados",
 			"suspendedJobDefinition": "Definición de trabajo suspendida",
 			"activitiesHistory": "Instancias de actividad ejecutadas",
 			"canceledInstances": "Instancias de actividad canceladas",
@@ -765,6 +791,7 @@
 	"nav-bar": {
 		"no-tasks-pending": "No tiene tareas pendientes",
 		"no-tasks": "No se encontraron tareas",
+		"tasks-count": "Tareas abiertas: {count}",
 		"processes": "@:process.title",
 		"filters": {
 			"addFilter": "Añadir filtro",
@@ -924,9 +951,21 @@
 				"title": "Procesos",
 				"tooltip": "Explora las definiciones de procesos disponibles"
 			},
+			"process-definition": {
+				"title": "Definición de Proceso"
+			},
+			"process-instance": {
+				"title": "Instancia de Proceso"
+			},
 			"decisions": {
 				"title": "Decisiones",
 				"tooltip": "Explora las definiciones de decisiones disponibles"
+			},
+			"decision-definition": {
+				"title": "Definición de Decisión"
+			},
+			"decision-instance": {
+				"title": "Instancia de Decisión"
 			},
 			"humanTasks": {
 				"title": "Tareas de Usuario",
@@ -972,6 +1011,8 @@
 		"AuthenticationException": "Los datos son incorrectos",
 		"LoginException": "Nombre de usuario o contraseña incorrectos",
 		"TokenExpiredException": "Los datos de autentificación son incorrectos",
+		"WrongDeploymenIdException": "No se ha encontrado ninguna implementación para este ID.",
+		"NoRessourcesFoundException": "Los recursos de implementación para este deploymentId no existen.",
 		"urlError": "URL no válida",
 		"errorSaveTask": "Se produjo un error al intentar guardar la tarea.",
 		"taskSelectedNotExist": "Esta tarea ya no está disponible por lo que desaparecerá del area de trabajo",
@@ -1067,6 +1108,8 @@
 		"selectAll": "Seleccionar todo",
 		"deleteDeployments": "Eliminar despliegues",
 		"showModel": "Mostrar modelo",
+		"delete": "Borrar despliegue",
+		"showDeployment": "Cargar despliegue en lista",
 		"deploymentsDeleted": "{0} de {1} despliegues se han eliminado correctamente",
 		"tenant": "Tenant",
 		"errorLoading": "No se puede cargar el recurso para la implementación seleccionada"
@@ -1096,14 +1139,14 @@
 			"columnDescription": "Descripción",
 			"buttonCtrl": "Ctrl",
 			"shortcuts": {
-				"ctrlLeft": "Ir a la vista 'Iniciar proceso'",
-				"ctrlDown": "Ir a la vista 'Tareas'",
-				"ctrlRight": "Ir a la vista 'Procesos'",
-				"ctrlAltP": "Abrir la ventana emergente 'Iniciar proceso'",
-				"ctrlAltC": "Reclamar la tarea actualmente seleccionada",
-				"alt1": "Establecer el foco en los filtros",
-				"alt2": "Establecer el foco en la lista de tareas filtradas",
-				"alt3": "Establecer el foco en la tarea seleccionada"
+				"startProcessView": "Ir a la vista 'Iniciar proceso'",
+				"tasksView": "Ir a la vista 'Tareas'",
+				"processesView": "Ir a la vista 'Procesos'",
+				"startProcess": "Abrir la ventana emergente 'Iniciar proceso'",
+				"claimTask": "Reclamar la tarea actualmente seleccionada",
+				"focusFilters": "Establecer el foco en los filtros",
+				"focusTasks": "Establecer el foco en la lista de tareas filtradas",
+				"focusTask": "Establecer el foco en la tarea seleccionada"
 			}
 		},
 		"flowModalSupport": {
@@ -1219,6 +1262,7 @@
 	"decision": {
 		"id": "ID",
 		"name": "Nombre",
+		"tenantId": "ID del tenant",
 		"actions": "Acciones",
 		"emptyProcessList": "Tu lista de decisiones está actualmente vacía.",
 		"emptyProcessListFiltered": "No hay decisiones que coincidan con el filtro aplicado.",

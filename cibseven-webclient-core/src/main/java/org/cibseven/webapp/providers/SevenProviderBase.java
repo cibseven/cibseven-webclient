@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.exception.BatchOperationException;
 import org.cibseven.webapp.exception.ExistingGroupRequestException;
 import org.cibseven.webapp.exception.ExistingUserRequestException;
 import org.cibseven.webapp.exception.ExpressionEvaluationException;
@@ -37,12 +38,14 @@ import org.cibseven.webapp.exception.InvalidUserIdException;
 import org.cibseven.webapp.exception.InvalidValueHistoryTimeToLive;
 import org.cibseven.webapp.exception.MissingVariableException;
 import org.cibseven.webapp.exception.NoObjectFoundException;
+import org.cibseven.webapp.exception.NoRessourcesFoundException;
 import org.cibseven.webapp.exception.OptimisticLockingException;
 import org.cibseven.webapp.exception.PasswordPolicyException;
 import org.cibseven.webapp.exception.SubmitDeniedException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.exception.UnsupportedTypeException;
 import org.cibseven.webapp.exception.VariableModificationException;
+import org.cibseven.webapp.exception.WrongDeploymenIdException;
 import org.cibseven.webapp.rest.model.Authorization;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -384,7 +387,13 @@ public abstract class SevenProviderBase {
 			wrapperException = new InvalidUserIdException(cause);
 		} else if (technicalErrorMsg.matches(".*Null historyTimeToLive values are not allowed.*")) {
 			wrapperException = new InvalidValueHistoryTimeToLive(cause);
-		} 
+		} else if (technicalErrorMsg.matches(".*processInstanceIds is empty.*")) {
+			wrapperException = new BatchOperationException(cause);
+		} else if (technicalErrorMsg.matches(".*Deployment with id .*does not exist.*")) {
+			wrapperException = new WrongDeploymenIdException(cause);
+		} else if (technicalErrorMsg.matches(".*Deployment resources for deployment id .*do not exist.*")) {
+			wrapperException = new NoRessourcesFoundException(cause);
+		}
 		if (wrapperException == null) wrapperException = new SystemException(technicalErrorMsg, cause);
 		if (wrapperException instanceof NoObjectFoundException) {
 			log.debug("Exception when calling engine-rest:", wrapperException);	
@@ -404,6 +413,16 @@ public abstract class SevenProviderBase {
 			}
 		}
 		return "";
+	}
+
+	protected String encodeQueryParams(Map<String, Object> queryParams) {
+		StringBuilder paramStr = new StringBuilder();
+		for (Map.Entry<String, Object> entry : queryParams.entrySet()) {
+			if (entry.getValue() != null) {
+				paramStr.append(addQueryParameter(paramStr.toString(), entry.getKey(), Optional.ofNullable(entry.getValue().toString()), true));
+			}
+		}
+		return paramStr.toString();
 	}
 
 }

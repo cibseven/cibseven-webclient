@@ -10,6 +10,7 @@
 		},
 		"actualisation": {
 			"progress": "Daten werden aktualisiert...",
+			"lastUpdate": "Letztes Update: {date}",
 			"disabled": "Letztes Update: {date}\n\nAutomatische Updates sind deaktiviert.\nDrücken Sie F5, um die Daten neu zu laden.",
 			"enabled": "Letztes Update: {date}\n\nAutomatische Updates sind aktiviert.\nAktualisierung alle {seconds} Sekunden."
 		}
@@ -184,6 +185,19 @@
 			"suspend": "Wollen Sie wirklich die nächste Prozessdefinition mit allen laufenden Prozessinstanzen aussetzen?",
 			"activate": "Möchten Sie die nächste Prozessdefinition mit allen laufenden Prozessinstanzen wirklich aktivieren?"
 		},
+		"activityIdBadge": {
+			"remove": "Kriterium entfernen – um alle Prozessinstanzen aufzulisten",
+			"title": {
+				"executed": "{activityId} (nur ausgeführt)",
+				"active": "{activityId} (nur aktiv)",
+				"all": "{activityId}"
+			},
+			"tooltip": {
+				"executed": "Instanzen auflisten, die die Aktivität {activityId} ausgeführt haben",
+				"active": "Instanzen auflisten, die noch aktiv mit der Aktivität {activityId} sind",
+				"all": "Instanzen auflisten, die die Aktivität {activityId} ausgeführt haben oder noch aktiv mit der Aktivität {activityId} sind"
+			}
+		},
 		"true": "Wahr",
 		"false": "Falsch",
 		"jobDefinitions": "Job-Definitionen",
@@ -253,6 +267,12 @@
 			"objectTypeName": "Objekttypname",
 			"serializationDataFormat": "Serialisierungsdatenformat",
 			"confirmDelete": "Wollen Sie die Variable löschen?",
+			"deleteStatus": {
+				"runtime": "Die Variable wurde erfolgreich gelöscht.",
+				"runtimeError": "Beim Löschen der Variable \"{name}\" ist ein Fehler aufgetreten.",
+				"historic": "Die historische Variable wurde erfolgreich gelöscht.",
+				"historicError": "Beim Löschen der historischen Variable \"{name}\" ist ein Fehler aufgetreten."
+			},
 			"enterValue": "Wert eingeben"
 		},
 		"incidents": {
@@ -376,6 +396,11 @@
 			"noExternalTasks": "Keine externen Aufgaben gefunden"
 		}
 	},
+	"dmn-viewer": {
+		"zoomIn": "Heranzoomen",
+		"zoomOut": "Herauszoomen",
+		"resetZoom": "Zoom zurücksetzen"
+	},
 	"bpmn-viewer": {
 		"zoomIn": "Heranzoomen",
 		"zoomOut": "Herauszoomen",
@@ -387,6 +412,7 @@
 			"selectedTask": "@:task.selectedTask",
 			"runningInstances": "Laufende Aktivitätsinstanzen",
 			"openIncidents": "Offene Vorfälle",
+			"closedIncidents": "Geschlossene Vorfälle",
 			"suspendedJobDefinition": "Ausgesetzte Jobdefinition",
 			"activitiesHistory": "Ausgeführte Aktivitätsinstanzen",
 			"canceledInstances": "Abgebrochene Aktivitätsinstanzen",
@@ -764,7 +790,8 @@
 	},
 	"nav-bar": {
 		"no-tasks-pending": "Sie haben keine offenen Aufgaben",
-		"no-tasks": "Keine Aufgaben gefunden",	
+		"no-tasks": "Keine Aufgaben gefunden",
+		"tasks-count": "Offene Aufgaben: {count}",
 		"processes": "@:process.title",
 		"filters": {
 			"addFilter": "Filter hinzufügen",
@@ -924,9 +951,21 @@
 				"title": "Prozesse",
 				"tooltip": "Verfügbare Prozessdefinitionen durchsuchen"
 			},
+			"process-definition": {
+				"title": "Prozessdefinition"
+			},
+			"process-instance": {
+				"title": "Prozessinstanz"
+			},
 			"decisions": {
 				"title": "Entscheidungen",
 				"tooltip": "Verfügbare Entscheidungsdefinitionen durchsuchen"
+			},
+			"decision-definition": {
+				"title": "Entscheidungsdefinition"
+			},
+			"decision-instance": {
+				"title": "Entscheidungsinstanz"
 			},
 			"humanTasks": {
 				"title": "Aufgaben",
@@ -972,6 +1011,8 @@
 		"AuthenticationException": "Die Authentifizierungsinformation fehlt oder ist falsch",
 		"LoginException": "Benutzername oder Passwort ist nicht korrekt",
 		"TokenExpiredException": "Die Authentifizierungsinformation ist nicht mehr gültig",
+		"WrongDeploymenIdException": "Für diese ID konnte kein Deployment gefunden werden.",
+		"NoRessourcesFoundException": "Es sind keine Ressourcen für diese DeploymentId vorhanden",
 		"urlError": "Ungültige URL",
 		"errorSaveTask": "Beim Speichern der Aufgabe ist ein Fehler aufgetreten.",
 		"taskSelectedNotExist": "Diese Aufgabe ist nicht mehr verfügbar und wird daher aus dem Arbeitsbereich verschwinden",
@@ -1067,6 +1108,8 @@
 		"selectAll": "Alle auswählen",
 		"deleteDeployments": "Deployments löschen",
 		"showModel": "Modell anzeigen",
+		"delete": "Deployment löschen",
+		"showDeployment": "Deployment in Liste laden",
 		"deploymentsDeleted": "{0} von {1} Deployments wurden erfolgreich gelöscht",
 		"tenant": "Mandant",
 		"errorLoading": "Ressource für die ausgewählte Bereitstellung konnte nicht geladen werden"
@@ -1096,14 +1139,14 @@
 			"columnDescription": "Beschreibung",
 			"buttonCtrl": "Strg",
 			"shortcuts": {
-				"ctrlLeft": "Zur Ansicht 'Startprozess' springen",
-				"ctrlDown": "Zur Ansicht 'Aufgaben' springen",
-				"ctrlRight": "Zur Ansicht 'Prozesse' springen",
-				"ctrlAltP": "Das Pop-up-Fenster 'Startprozess' öffnen",
-				"ctrlAltC": "Übernehme die derzeit ausgewählte Aufgabe",
-				"alt1": "Fokus auf Filter setzen",
-				"alt2": "Fokus auf die Liste der gefilterten Aufgaben setzen",
-				"alt3": "Fokus auf die ausgewählte Aufgabe setzen"
+				"startProcessView": "Zur Ansicht 'Startprozess' springen",
+				"tasksView": "Zur Ansicht 'Aufgaben' springen",
+				"processesView": "Zur Ansicht 'Prozesse' springen",
+				"startProcess": "Das Pop-up-Fenster 'Startprozess' öffnen",
+				"claimTask": "Übernehme die derzeit ausgewählte Aufgabe",
+				"focusFilters": "Fokus auf Filter setzen",
+				"focusTasks": "Fokus auf die Liste der gefilterten Aufgaben setzen",
+				"focusTask": "Fokus auf die ausgewählte Aufgabe setzen"
 			}
 		},
 		"flowModalSupport": {
@@ -1219,6 +1262,7 @@
 	"decision" : {
 		"id": "ID",
 		"name": "Name",
+		"tenantId": "Mandanten-ID",
 		"actions": "Aktionen",
 		"emptyProcessList": "Ihre Entscheidungsliste ist derzeit leer.",
 		"emptyProcessListFiltered": "Es gibt keinen Entscheidung für den angewandten Filter.",

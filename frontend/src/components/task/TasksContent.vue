@@ -18,25 +18,30 @@
 -->
 <template>
   <SidebarsFlow ref="regionFilter" role="region" :aria-label="$t('seven.filters')" @selected-filter="selectedFilter()" v-model:left-open="leftOpenFilter" :left-caption="leftCaptionFilter" :rightSize="[12, 4, 2, 2, 2]" :leftSize="[12, 4, 2, 2, 2]">
-    <GlobalEvents @keydown.alt.1.prevent="navigateRegion('regionFilter')"></GlobalEvents>
-    <GlobalEvents @keydown.alt.2.prevent="navigateRegion('regionTasks')"></GlobalEvents>
-    <GlobalEvents @keydown.alt.3.prevent="navigateRegion('regionTask')"></GlobalEvents>
+    <GlobalEvents 
+      v-for="shortcut in taskShortcuts" 
+      :key="shortcut.id" 
+      @keydown="handleTaskShortcut($event, shortcut)">
+    </GlobalEvents>
     <template v-slot:left>
       <FilterNavBar ref="filterNavbar" @filter-alert="showFilterAlert($event)"
         @selected-filter="selectedFilter()" @set-filter="filter = $event;listTasksWithFilter()" @selected-task="selectedTask($event)"
-        @refresh-tasks="listTasksWithFilter()" @refresh-tasks-number="onRefreshTasksNumber" @n-filters-shown="nFiltersShown = $event" class="border-0 bg-white"></FilterNavBar>
+        @refresh-tasks="listTasksWithFilter()" @refresh-tasks-number="refreshTasksNumber" @n-filters-shown="nFiltersShown = $event" class="border-0 bg-white"></FilterNavBar>
     </template>
     <template v-slot:filter>
       <FilterNavCollapsed v-if="!leftOpenFilter && leftCaptionFilter" v-model:left-open="leftOpenFilter"></FilterNavCollapsed>
     </template>
-    <SidebarsFlow ref="regionTasks" role="region" :aria-label="$t('seven.allTasks')" class="h-100 bg-light" :number="totalTasksInFilter" header-margin="55px" v-model:left-open="leftOpenTask" v-model:right-open="rightOpenTask"
+    <SidebarsFlow ref="regionTasks" role="region" :aria-label="$t('seven.allTasks')" class="h-100 bg-light"
+      :number="totalTasksInFilter"
+      :number-tooltip="totalTasksInFilterTooltip"
+      header-margin="55px" v-model:left-open="leftOpenTask" v-model:right-open="rightOpenTask"
       :leftSize="getTasksNavbarSize" :left-caption="leftCaptionTask" :right-caption="TasksRightSidebar ? rightCaptionTask : null">
       <template v-slot:left>
         <TasksNavBar @filter-alert="showFilterAlert($event)" ref="navbar" :tasks="tasks" @selected-task="selectedTask($event)"
           @update-assignee="updateAssignee($event, 'task')" @set-filter="filter = $event; listTasksWithFilter()"
           @open-sidebar-date="rightOpenTask = true" @show-more="showMore()" :taskResultsIndex="taskResultsIndex"
           @process-started="listTasksWithFilter();$refs.processStarted.show(10); checkAndOpenTask($event, true)"
-          @search-filter="search = $event" @refresh-tasks="listTasksWithFilter()" @refresh-tasks-number="onRefreshTasksNumber"></TasksNavBar>
+          @search-filter="search = $event" @refresh-tasks="listTasksWithFilter()" @refresh-tasks-number="refreshTasksNumber"></TasksNavBar>
       </template>
 
       <transition name="slide-in" mode="out-in">
@@ -92,8 +97,10 @@ import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import { BWaitingBox } from 'cib-common-components'
 import { updateAppTitle } from '@/utils/init'
 import { splitToWords } from '@/utils/search'
-import { mapActions } from 'vuex'
+import { getTaskEventShortcuts, checkKeyMatch } from '@/utils/shortcuts.js'
+import { mapActions, mapGetters } from 'vuex'
 import assigneeMixin from '@/mixins/assigneeMixin.js'
+import { formatDate } from '@/utils/dates.js'
 
 export default {
   name: 'TasksContent',
@@ -117,7 +124,6 @@ export default {
       interval: null,
       filterMessage: '',
       filterName: '',
-      totalTasksInFilter: 0,
       nFiltersShown: 0,
       tasksNavbarSizes: [[12, 6, 4, 4, 3], [12, 6, 4, 5, 4], [12, 6, 4, 6, 5]],
       tasksNavbarSize: 0,
@@ -126,6 +132,10 @@ export default {
     }
   },
   computed: {
+    ...mapGetters([
+      'selectedFilterTasksNumber',
+      'selectedFilterTasksNumberLastUpdated'
+    ]),
     TasksRightSidebar: function() {
       return this.$options.components && this.$options.components.TasksRightSidebar
         ? this.$options.components.TasksRightSidebar
@@ -142,7 +152,19 @@ export default {
     leftCaptionFilter: function() {
       return this.leftOpenTask ? this.$t('seven.filters') : ''
     },
-    getTasksNavbarSize: function() { return this.tasksNavbarSizes[this.tasksNavbarSize] }
+    getTasksNavbarSize: function() { return this.tasksNavbarSizes[this.tasksNavbarSize] },
+    taskShortcuts() {
+      return getTaskEventShortcuts(this.$root.config)
+    },
+    totalTasksInFilter() {
+      return this.selectedFilterTasksNumber
+    },
+    totalTasksInFilterLastUpdated() {
+      return this.selectedFilterTasksNumberLastUpdated
+    },
+    totalTasksInFilterTooltip: function() {
+      return this.$t('nav-bar.tasks-count', { count: this.totalTasksInFilter }) + '\n' + this.$t('commons.actualisation.lastUpdate', { date: formatDate(this.totalTasksInFilterLastUpdated, 'HH:mm') })
+    }
   },
   watch: {
     task: {
@@ -153,9 +175,6 @@ export default {
     },
     rightOpenTask: function(newVal) {
       localStorage.setItem('rightOpenTask', newVal)
-    },
-    '$store.state.filter.selected.tasksNumber': function(val) {
-      this.totalTasksInFilter = val || 0
     },
     '$route.params.taskId': function() { if (!this.$route.params.taskId) this.cleanSelectedTask() },
     '$route.params.filterId': function() { if (!this.$route.params.filterId) this.cleanSelectedFilter() },
@@ -190,6 +209,7 @@ export default {
       if (this.$root.config.taskListTime !== '0') {
         this.interval = setInterval(() => {
           this.listTasksWithFilterAuto()
+          this.refreshTasksNumber()
           if (this.task) this.checkActiveTask()
         }, this.$root.config.taskListTime)
       }
@@ -200,8 +220,8 @@ export default {
       if (this.$refs.navbar.$refs.taskLoader) this.$refs.navbar.$refs.taskLoader.done = false
       this.fetchTasks(0, this.taskResultsIndex)
     },
-    onRefreshTasksNumber: function() {
-      this.$refs.filterNavbar.setTasksNumber()
+    refreshTasksNumber: function() {
+      this.$refs.filterNavbar.updateSelectedFilterTasksCountIfNeeded()
     },
     listTasksWithFilterAuto: function(showMore) {
       if (this.$route.params.filterId) {
@@ -409,7 +429,6 @@ export default {
       this.processInstanceHistory = null
       this.task = null
       if (this.$route.params.filterId) {
-        this.listTasksWithFilterAuto()
         var path = '/seven/auth/tasks/' + this.$route.params.filterId
         if (path !== this.$route.path) this.$router.push(path)
       }
@@ -447,6 +466,39 @@ export default {
         if (this.$refs.taskComponent) this.$refs.taskComponent.$refs.task.$refs.titleTask.focus()
       }
     },
+    handleTaskShortcut: function(event, shortcut) {
+      // Check if the current key combination matches the shortcut
+      const isMatch = checkKeyMatch(event, shortcut.keys)
+      if (isMatch) {
+        event.preventDefault()
+        this.executeTaskShortcut(shortcut.event)
+      }
+    },
+    executeTaskShortcut: function(eventName) {
+      switch (eventName) {
+        case 'focusFilters':
+          this.navigateRegion('regionFilter')
+          break
+        case 'focusTasks':
+          this.navigateRegion('regionTasks')
+          break
+        case 'focusTask':
+          this.navigateRegion('regionTask')
+          break
+        case 'openStartProcess':
+          if (this.$refs.navbar) {
+            this.$refs.navbar.$refs.startProcess.show()
+          }
+          break
+        case 'claimTask':
+          if (this.$refs.taskComponent && this.$refs.taskComponent.$refs.task) {
+            this.$refs.taskComponent.$refs.task.claimCurrentTask()
+          }
+          break
+        default:
+          console.warn('Unknown task shortcut event:', eventName)
+      }
+    },
     checkActiveTask: function() {
       if (this.task) {
         var task = this.tasks.find(t => { return t.id === this.task.id })
@@ -464,9 +516,8 @@ export default {
       }
     }
   },
-  beforeRouteLeave: function(to, from, next) {
+  beforeUnmount: function() {
     clearInterval(this.interval)
-    next()
   }
 }
 </script>

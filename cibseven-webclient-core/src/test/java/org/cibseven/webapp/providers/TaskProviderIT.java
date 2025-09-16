@@ -27,8 +27,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.rest.model.Task;
@@ -49,7 +49,7 @@ public class TaskProviderIT extends BaseHelper {
     @Autowired
     private TaskProvider taskProvider;
 
-    @MockBean
+    @MockitoBean
     private IVariableProvider variableProvider;
 
 

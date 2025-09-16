@@ -22,12 +22,12 @@
     <div :class="loader ? 'invisible' : 'visible'" class="h-100">
       <div class="h-100" ref="diagram"></div>
     </div>
-    <div class="position-absolute" style="right:15px;bottom:100px;">
+    <div class="position-absolute" style="right:15px;bottom:225px;">
       <b-button size="sm" class="border" variant="light" :title="$t('bpmn-viewer.resetZoom')" @click="resetZoom()">
         <span class="mdi mdi-18px mdi-target"></span>
       </b-button>
     </div>
-    <div class="btn-group-vertical" style="position:absolute;right:15px;bottom:15px;">
+    <div class="btn-group-vertical" style="position:absolute;right:15px;bottom:139px;">
       <b-button size="sm" class="border" variant="light" :title="$t('bpmn-viewer.zoomIn')" @click="zoomIn()">
         <span class="mdi mdi-18px mdi-plus"></span>
       </b-button>
@@ -47,6 +47,7 @@
 import NavigatedViewer from 'bpmn-js/lib/NavigatedViewer'
 import { BWaitingBox } from 'cib-common-components'
 import { mapActions, mapGetters } from 'vuex'
+import { HistoryService } from '@/services.js'
 
 const interactionTypes = [
   // Tasks
@@ -81,7 +82,8 @@ export default {
         showCanceled: true,
         showIncidents: true,
         showCalledProcesses: true,
-        showJobDefinitions: true
+        showJobDefinitions: true,
+        showClosedIncidents: true
       })
     }
   },
@@ -135,7 +137,7 @@ export default {
     })
   },
   methods: {
-    ...mapActions(['selectActivity', 'clearActivitySelection', 'setHighlightedElement']),
+    ...mapActions(['selectActivity', 'clearActivitySelection', 'setHighlightedElement', 'loadActivitiesInstanceHistory', 'getProcessById']),
     ...mapActions('diagram', ['setDiagramReady']),
     showDiagram: function(xml) {
       this.setDiagramReady(false)
@@ -171,7 +173,7 @@ export default {
             const childActivity = this.activityInstance.childActivityInstances.find(obj => obj.activityId === event.element.id)
             this.$emit('child-activity', childActivity || event.element)
           } else {
-            this.selectActivity(event.element.id)
+            this.selectActivity({ activityId: event.element.id, listMode: 'all' })
           }
         } else {
           if (this.currentHighlight) {
@@ -207,7 +209,8 @@ export default {
         const bubble = event.target.closest('.bubble')
         if (bubble && bubble.dataset.activityId) {
           this.setHighlightedElement(bubble.dataset.activityId)
-          this.selectActivity(bubble.dataset.activityId)
+          const listMode = ['activitiesHistory', 'canceledInstances'].includes(bubble.dataset.type) ? 'executed' : 'active'
+          this.selectActivity({ activityId: bubble.dataset.activityId, listMode })
         }
         
         // Generic: emit overlay-click for any overlay element with a data-overlay-type attribute
@@ -286,8 +289,15 @@ export default {
     },
     drawActivitiesBadges: function(elementRegistry) {
       const historyStatistics = this.historicActivityStatistics
+      let mergedStatistics = historyStatistics
+        if (!this.selectedInstance) {
+          mergedStatistics = historyStatistics.map(hs => {
+            const stat = this.statistics.find(s => s.id === hs.id)
+            return stat ? { ...hs, instances: stat.instances } : hs
+          })
+      }
       const options = this.badgeOptions || {}
-      historyStatistics.forEach(stat => {
+      mergedStatistics.forEach(stat => {
         const element = elementRegistry.get(stat.id)
         if (!element) return
 
@@ -303,6 +313,18 @@ export default {
           const position = stat.canceled > 0 ? { bottom: 35, right: 13 } : { bottom: 15, right: 13 }
           const html = this.getBadgeOverlayHtml(actualFinished, 'bg-gray', 'activitiesHistory', stat.id)
           this.setHtmlOnDiagram(stat.id, html, position)
+        }
+        // Handle closed incidents - draw next to main position if main position occupied and selectedInstance is set
+        if (options.showClosedIncidents && this.selectedInstance) {
+          if (stat.resolvedIncidents > 0 || stat.deletedIncidents > 0) {
+            const mainOccupied =
+              (options.showCanceled && stat.canceled > 0) ||
+              ((!stat.canceled || stat.canceled === 0) && (options.showHistory && actualFinished > 0))
+            const position = mainOccupied ? { bottom: 15, right: 36 } : { bottom: 15, right: 13 }
+
+            const html = this.getBadgeOverlayHtml('!', 'bg-danger', 'closedIncidents', stat.id)
+            this.setHtmlOnDiagram(stat.id, html, position)
+          }
         }
         if (options.showRunning && stat.instances > 0) {
           const html = this.getBadgeOverlayHtml(stat.instances, 'bg-info', 'runningInstances', stat.id)
@@ -328,6 +350,14 @@ export default {
         })
       })
 
+      // Map to know which activities have been executed
+      // This is used to determine if a dynamic call activity can be opened
+      const executedActivities = new Set(
+        activityStats
+          .filter(stat => (stat.finished ?? 0) > 0 || (stat.canceled ?? 0) > 0)
+          .map(stat => stat.id)
+      )
+
       const callActivitiesList = elementRegistry.getAll().filter(el => el.type === 'bpmn:CallActivity')
 
       callActivitiesList.forEach(ca => {
@@ -342,11 +372,12 @@ export default {
         const isDynamic = /^\$\{.+\}$/.test(calledElement)
         const isStatic = !isDynamic && !!calledProcess
         
-        const shouldEnableDynamic = isDynamic && runningInstances > 0
+        const inInstanceView = !!this.selectedInstance
+        const wasExecuted = inInstanceView && executedActivities.has(ca.id)
+        const shouldEnableDynamic = isDynamic && (runningInstances > 0 || wasExecuted)
+        const isCurrentDefinitionAlreadyVisible = !!this.selectedInstance && calledProcess?.id === this.selectedInstance.processDefinitionId
 
-        const resolvedCalledProcess = isStatic ? calledProcess : null
-
-        const disabled = !isStatic && !shouldEnableDynamic
+        const disabled = (!isStatic && !shouldEnableDynamic) || isCurrentDefinitionAlreadyVisible
 
         const title = disabled
           ? this.$t('bpmn-viewer.legend.disabledSubprocess')
@@ -364,18 +395,7 @@ export default {
           wrapper.style.cursor = 'not-allowed'
         } else {
           button.addEventListener('click', () => {
-            if (isStatic) {
-              this.openSubprocess(ca.id, resolvedCalledProcess)
-            } else if (isDynamic) {
-              this.selectActivity(ca.id)
-              this.$router.push({
-                path: this.$route.path,
-                query: {
-                  ...this.$route.query,
-                  tab: 'calledProcessDefinitions'
-                }
-              })
-            }
+            this.openSubprocess(ca.id, calledProcess, isDynamic)
           })
         }
 
@@ -413,20 +433,45 @@ export default {
     getTypeAllowed: function(typeI, types) {
       return types.some(type => typeI.includes(type))
     },
-    openSubprocess: function(activityId, calledProcess) {
-      if (!calledProcess?.id) {
-        console.warn('No processDefinitionId for activityId:', activityId)
-        return
-      }
-      this.navigateToSubprocess(calledProcess)
-    },
-    async navigateToSubprocess(calledProcess) {
+    async openSubprocess(activityId, calledProcess, isDynamic) {
       try {
-        const processKey = calledProcess.key
-        const versionIndex = calledProcess.version
+        if (this.selectedInstance) {
+          const params = {
+            processInstanceId: this.selectedInstance.id,
+            activityType: 'callActivity',
+            activityId,
+            sortBy: 'startTime',
+            sortOrder: 'desc',
+            maxResults: 1
+          }
+          const calledInstance = await this.loadActivitiesInstanceHistory(params)
+          const processDefinition = await HistoryService.findProcessesInstancesHistory({ processInstanceId: calledInstance[0].calledProcessInstanceId })
+          if (calledInstance?.length && calledInstance[0].calledProcessInstanceId) {
+            return this.navigateToSubprocess(processDefinition[0].processDefinitionKey, processDefinition[0].processDefinitionVersion, calledInstance[0].calledProcessInstanceId)
+          }
+        }
+        // If no instance view or no instance found, try to get the called process directly
+        if (isDynamic && !this.selectedInstance) {
+          this.$router.push({
+            path: this.$route.path,
+            query: { ...this.$route.query, tab: 'calledProcessDefinitions' }
+          })
+        } else {          
+          if (!calledProcess) {
+            console.warn('No called process definition for activityId:', activityId)
+            return
+          }
+          this.navigateToSubprocess(calledProcess.key, calledProcess.version, null)
+        }
+      } catch (error) {
+        console.error('Failed to open subprocess:', error)
+      }
+    },
+    async navigateToSubprocess(processKey, versionIndex, calledProcessInstanceId) {
+      try {
         const params = { processKey, versionIndex }
-        if (this.activityInstanceHistory) {
-          params.instanceId = calledProcess.id
+        if (calledProcessInstanceId) {
+          params.instanceId = calledProcessInstanceId
         }        
         const routeConfig = {
           name: 'process',

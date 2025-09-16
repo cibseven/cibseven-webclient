@@ -49,26 +49,24 @@
         :process-definition-id="process.id" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" :statistics="process.statistics"
         :active-tab="activeTab" class="h-100">
       </BpmnViewer>
-      <span role="button" size="sm" variant="light" class="bg-white px-2 py-1 me-1 position-absolute border rounded" style="bottom: 15px; left: 15px;" @click="toggleContent">
+      <span role="button" size="sm" variant="light" class="bg-white px-2 py-1 me-1 position-absolute border rounded" style="bottom: 90px; right: 11px;" @click="toggleContent">
         <span class="mdi mdi-18px" :class="toggleIcon"></span>
       </span>
     </div>
 
-    <div class="position-absolute w-100 bg-light border-bottom" style="left: 0; z-index: 2" :style="'top: ' + (bottomContentPosition - tabsAreaHeight) + 'px; ' + toggleTransition">
+    <div class="position-absolute w-100" style="left: 0; z-index: 2" :style="'height: '+ tabsAreaHeight +'px; top: ' + (bottomContentPosition - tabsAreaHeight + 1) + 'px; ' + toggleTransition">
       <div class="d-flex align-items-end">
-        <div class="tabs-scroll-container flex-grow-1" style="white-space: nowrap;">
-          <ul class="nav nav-tabs m-0 border-0 flex-nowrap" style="display: inline-flex; overflow-y: hidden">
-            <component :is="ProcessInstancesTabsPlugin" v-if="ProcessInstancesTabsPlugin" v-model="activeTab" />
-            <ProcessInstancesTabs v-else v-model="activeTab" />
-          </ul>
-        </div>
+        <ScrollableTabsContainer :tabs-area-height="tabsAreaHeight" :active-tab="activeTab">
+          <component :is="ProcessInstancesTabsPlugin" v-if="ProcessInstancesTabsPlugin" v-model="activeTab" />
+          <ProcessInstancesTabs v-else v-model="activeTab" />
+        </ScrollableTabsContainer>
       </div>
     </div>
 
-    <div class="position-absolute w-100 overflow-hidden" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
-      <div ref="rContent" class="overflow-y-scroll bg-white position-absolute w-100" style="top: 0px; left: 0; bottom: 0" @scroll="handleScroll">
+    <div ref="rContent" class="position-absolute w-100 overflow-hidden border-top" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
+      <div class="overflow-y-scroll bg-white position-absolute w-100" style="top: 0px; left: 0; bottom: 0" @scroll="handleScroll">
         <template v-if="isInstancesView">
-          <div ref="filterTable" class="bg-light d-flex w-100">
+          <div ref="filterTable" class="d-flex w-100">
 
             <div v-if="ProcessInstancesSearchBoxPlugin" class="col-10 p-2">
               <component :is="ProcessInstancesSearchBoxPlugin"
@@ -86,14 +84,20 @@
                   <b-button size="sm" variant="light" @click="$refs.sortModal.show()" class="ms-1 border"><span class="mdi mdi-sort" style="line-height: initial"></span></b-button>
                 </b-input-group>
               </div>
-              <div class="col-1 p-3">
-                <span v-if="selectedActivityId" class="badge bg-info rounded-pill p-2 pe-3" style="font-weight: 500; font-size: 0.75rem">
-                  <span @click="clearActivitySelection" role="button" class="mdi mdi-close-thick py-2 px-1"></span> {{ selectedActivityId }}
+              <div v-if="selectedActivityId" class="col-3 p-3">
+                <span class="badge bg-info rounded-pill p-2 pe-3" style="font-weight: 500; font-size: 0.75rem">
+                  <span
+                    @click="clearActivitySelection"
+                    :title="$t('process.activityIdBadge.remove')"
+                    role="button" class="mdi mdi-close-thick py-2 px-1"></span>
+                    <span :title="$t('process.activityIdBadge.tooltip.' + selectedActivityInstancesListMode, { activityId: selectedActivityId })">
+                      {{ $t('process.activityIdBadge.title.' + selectedActivityInstancesListMode, { activityId: selectedActivityId }) }}
+                    </span>
                 </span>
               </div>
             </template>
 
-            <div :class="[ProcessInstancesSearchBoxPlugin ? 'col-2' : 'col-8', 'p-3', 'text-end']">
+            <div :class="[ProcessInstancesSearchBoxPlugin ? 'col-2' : ( selectedActivityId ? 'col-6' : 'col-9'), 'p-3', 'text-end']">
               <div>
                 <b-button v-if="process.suspended === 'false'" class="border" size="sm" variant="light" @click="confirmSuspend" :title="$t('process.suspendProcess')">
                   <span class="mdi mdi-pause-circle-outline"></span> {{ collapseButtons ? '': $t('process.suspendProcess') }}
@@ -167,13 +171,14 @@ import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
 import { BWaitingBox } from 'cib-common-components'
 import ProcessInstancesTabs from '@/components/process/ProcessInstancesTabs.vue'
+import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
 import { mapGetters, mapActions } from 'vuex'
 
 export default {
   name: 'ProcessInstancesView',
   components: { InstancesTable, JobDefinitionsTable, BpmnViewer, MultisortModal,
      SuccessAlert, ConfirmDialog, BWaitingBox, IncidentsTable, CalledProcessDefinitionsTable,
-     ProcessInstancesTabs },
+     ProcessInstancesTabs, ScrollableTabsContainer },
   inject: ['loadProcesses'],
   mixins: [permissionsMixin, resizerMixin, copyToClipboardMixin, tabUrlMixin],
   emits: ['task-selected', 'filter-instances', 'instance-deleted'],
@@ -257,14 +262,22 @@ export default {
 
       // append `selectedActivityId` into activityIdIn array
       if (this.selectedActivityId) {
-        if (!result.activityIdIn || !Array.isArray(result.activityIdIn)) {
-          result.activityIdIn = [this.selectedActivityId]
-        }
-        else if (!result.activityIdIn.includes(this.selectedActivityId)) {
-          result.activityIdIn = [
-            ...result.activityIdIn,
-            this.selectedActivityId
-          ]
+
+        // clean up
+        delete result.executedActivityIdIn
+        delete result.activityIdIn
+        delete result.activeOrExecutedActivityIdIn
+
+        switch (this.selectedActivityInstancesListMode) {
+          case 'executed':
+            result.executedActivityIdIn = [this.selectedActivityId]
+            break
+          case 'active':
+            result.activityIdIn = [this.selectedActivityId]
+            break
+          default:
+            result.activeOrExecutedActivityIdIn = [this.selectedActivityId]
+            break
         }
       }
 
@@ -296,7 +309,7 @@ export default {
     isInstancesView: function() {
       return this.activeTab === 'instances'
     },
-    ...mapGetters(['selectedActivityId']),
+    ...mapGetters(['selectedActivityId', 'selectedActivityInstancesListMode']),
     ...mapGetters('instances', ['instances']),
     collapseButtons: function() {
       return this.ProcessInstancesSearchBoxPlugin || this.selectedActivityId

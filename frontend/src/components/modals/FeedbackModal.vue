@@ -46,6 +46,7 @@ export default {
   name: 'FeedbackModal',
   components: { CIBForm, FeedbackScreenshot },
   props: { url: String, email: String },
+  emits: ['sent', 'report'],
   data: function() { return { problem: '', email2: null, clip: null } },
   methods: {
     show: function() {

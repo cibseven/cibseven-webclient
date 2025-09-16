@@ -112,7 +112,10 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 		Decision decision = ((ResponseEntity<Decision>) doGet(url, Decision.class, user, false)).getBody();
 		if (decision != null && extraInfo.isPresent() && extraInfo.get()) {
 			String urlCount = getEngineRestUrl() + "/history/decision-instance/count?decisionDefinitionId=" + decision.getId();
-			decision.setAllInstances(((ResponseEntity<JsonNode>) doGet(urlCount, JsonNode.class, user, false)).getBody().get("count").asLong());
+			JsonNode body = ((ResponseEntity<JsonNode>) doGet(urlCount, JsonNode.class, user, false)).getBody();
+			if (body == null)
+				throw new NullPointerException();
+			decision.setAllInstances(body.get("count").asLong());
 		}
 		return decision;
 	}
@@ -149,7 +152,11 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 		if (!lazyLoad.isPresent() || (lazyLoad.isPresent() && !lazyLoad.get())) {
 			for(Decision decision : decisions) {
 				String urlCount = getEngineRestUrl() + "/history/decision-instance/count?decisionDefinitionId=" + decision.getId();
-				decision.setAllInstances(((ResponseEntity<JsonNode>) doGet(urlCount, JsonNode.class, user, false)).getBody().get("count").asLong());
+				JsonNode body = ((ResponseEntity<JsonNode>) doGet(urlCount, JsonNode.class, user, false)).getBody();
+				if (body == null)
+					throw new NullPointerException();
+
+				decision.setAllInstances(body.get("count").asLong());
 			}
 		}
 		return decisions;
@@ -157,14 +164,14 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 	
 	@Override
 	public Collection<HistoricDecisionInstance> getHistoricDecisionInstances(Map<String, Object> queryParams, CIBUser user) {
-		String url = buildUrlWithParams(getEngineRestUrl() + "/history/decision-instance", queryParams);
-		HistoricDecisionInstance[] arr = ((ResponseEntity<HistoricDecisionInstance[]>) doGet(url, HistoricDecisionInstance[].class, user, false)).getBody();
+		String url = getEngineRestUrl() + "/history/decision-instance" + this.encodeQueryParams(queryParams);
+		HistoricDecisionInstance[] arr = ((ResponseEntity<HistoricDecisionInstance[]>) doGet(url, HistoricDecisionInstance[].class, user, true)).getBody();
 		return Arrays.asList(arr);
 	}
 	
 	@Override
 	public Long getHistoricDecisionInstanceCount(Map<String, Object> queryParams, CIBUser user) {
-		String url = buildUrlWithParams(getEngineRestUrl() + "/history/decision-instance/count", queryParams);
+		String url = getEngineRestUrl() + "/history/decision-instance/count" + this.encodeQueryParams(queryParams);
 		JsonNode response = ((ResponseEntity<JsonNode>) doGet(url, JsonNode.class, user, true)).getBody();
 		return response != null ? response.get("count").asLong() : 0L;
 	}

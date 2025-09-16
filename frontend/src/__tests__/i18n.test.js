@@ -68,6 +68,7 @@ function skipValue(value, lang) {
       '',
       'cib seven', 'ok', 'id',
       'email',
+      '{activityid}',
 
       'ctrl', // en = ru
       'chat', // en = de = es

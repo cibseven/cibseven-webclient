@@ -65,6 +65,7 @@ export default {
   props: ['task'],
   mixins: [permissionsMixin],
   inject: ['currentLanguage', 'AuthService'],
+  emits: ['complete-task'],
   data: function() {
     return {
       userInstruction: null,

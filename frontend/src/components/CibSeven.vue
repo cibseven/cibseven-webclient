@@ -45,7 +45,7 @@
             </template>
             <template v-for="(group, gIdx) in computedMenuItems" :key="gIdx">
               <b-dropdown-divider v-if="group.divider"></b-dropdown-divider>
-              <b-dropdown-group v-else :header="$t(group.groupTitle)">
+              <b-dropdown-group v-else-if="group.items && group.items.length > 0" :header="$t(group.groupTitle)">
                 <b-dropdown-item
                   v-for="(item, idx) in group.items"
                   :key="'ext-' + idx"
@@ -111,9 +111,11 @@
     <AboutModal ref="about"></AboutModal>
     <FeedbackModal ref="report" url="feedback" :email="$root.user && $root.user.email" @report="$refs.down.$emit('report', $event)"></FeedbackModal>
 
-    <GlobalEvents v-if="permissionsTaskList" @keydown.ctrl.left.prevent="$router.push('/seven/auth/start-process')"></GlobalEvents>
-    <GlobalEvents v-if="permissionsCockpit" @keydown.ctrl.right.prevent="$router.push('/seven/auth/processes/list')"></GlobalEvents>
-    <GlobalEvents v-if="permissionsTaskList" @keydown.ctrl.down.prevent="$router.push('/seven/auth/tasks')"></GlobalEvents>
+    <GlobalEvents 
+      v-for="shortcut in globalShortcuts" 
+      :key="shortcut.id" 
+      @keydown="handleShortcut($event, shortcut)">
+    </GlobalEvents>
 
   </div>
 </template>
@@ -121,6 +123,7 @@
 <script>
 import platform from 'platform'
 import { permissionsMixin } from '@/permissions.js'
+import { getGlobalNavigationShortcuts, checkKeyMatch } from '@/utils/shortcuts.js'
 import ShortcutsModal from '@/components/modals/ShortcutsModal.vue'
 import AboutModal from '@/components/modals/AboutModal.vue'
 import SupportModal from '@/components/modals/SupportModal.vue'
@@ -163,7 +166,7 @@ export default {
             }
           ]
         }, {
-          show: this.permissionsTaskList && this.permissionsCockpit,
+          show: this.permissionsTaskList && this.permissionsCockpit && this.startableProcesses,
           divider: true,
         }, {
           show: this.permissionsCockpit,
@@ -180,10 +183,10 @@ export default {
               tooltip: 'start.cockpit.processes.tooltip',
               title: 'start.cockpit.processes.title'
             }, {
-              to: '/seven/auth/decisions',
-              active: ['seven/auth/decision'],
+              to: '/seven/auth/decisions/list',
+              active: ['seven/auth/decision/', 'seven/auth/decisions/list'],
               tooltip: 'start.cockpit.decisions.tooltip',
-              title: 'start.cockpit.decisions.title'
+              title: 'start.cockpit.decisions.title',
             }, {
               to: '/seven/auth/human-tasks',
               active: ['seven/auth/human-tasks'],
@@ -289,12 +292,49 @@ export default {
         }
         const item = group.items.find(i => this.isMenuItemActive(i))
         if (item) {
-          title = this.$t(item.title)
+          // exceptional case with 'Processes' menu item
+          if (this.$route.name === 'process') {
+            const hasInstanceIdParam = 'instanceId' in this.$route.params
+            if (hasInstanceIdParam) {
+              title = this.$t('start.cockpit.process-instance.title')
+            }
+            else {
+              title = this.$t('start.cockpit.process-definition.title')
+            }
+          }
+          else if (this.$route.name === 'decision-list') {
+            title = this.$t('start.cockpit.decisions.title')
+          }
+          // default
+          if (!title) {
+            title = this.$t(item.title)
+          }
           return true
+        }
+        else {
+          if (this.$route.name === 'decision-version') {
+            title = this.$t('start.cockpit.decision-definition.title')
+          }
+          else if (this.$route.name === 'decision-instance') {
+            title = this.$t('start.cockpit.decision-instance.title')
+          }
         }
         return false
       })
       return title
+    },
+    globalShortcuts() {
+      const shortcuts = getGlobalNavigationShortcuts(this.$root.config)
+      return shortcuts.filter(shortcut => {
+        // Apply permission checks based on the route
+        if (shortcut.route.includes('/seven/auth/start-process') || shortcut.route.includes('/seven/auth/tasks')) {
+          return this.permissionsTaskList
+        }
+        if (shortcut.route.includes('/seven/auth/processes')) {
+          return this.permissionsCockpit
+        }
+        return true
+      })
     },
     permissionsTaskList: function() {
       return this.$root.user && this.applicationPermissions(this.$root.config.permissions.tasklist, 'tasklist')
@@ -345,6 +385,14 @@ export default {
     },
     openStartProcess: function() {
       this.$eventBus.emit('openStartProcess')
+    },
+    handleShortcut: function(event, shortcut) {
+      // Check if the current key combination matches the shortcut
+      const isMatch = checkKeyMatch(event, shortcut.keys)
+      if (isMatch) {
+        event.preventDefault()
+        this.$router.push(shortcut.route)
+      }
     },
     doNotShowIeNotification: function() { if (this.rememberNotShow) localStorage.setItem('ienotify', true) },
     // change title of the whole web-page in browser

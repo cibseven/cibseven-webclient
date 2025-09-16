@@ -38,7 +38,7 @@ import IconButton from '@/components/forms/IconButton.vue'
 import { Form } from '@bpmn-io/form-js'
 import '@bpmn-io/form-js/dist/assets/form-js.css'
 
-import { convertFormDataForFormJs, findDocumentPreviewComponents, getDocumentReferenceVariableName } from './formJsUtils.js'
+import { convertFormDataForFormJs, findDocumentPreviewComponents, getDocumentReferenceVariableName, determineValueTypeFromSchema } from './formJsUtils.js'
 
 export default {
   name: "DeployedForm",
@@ -57,6 +57,7 @@ export default {
       loader: true,
       disabled: false,
       form: null,
+      formSchema: null,
       dataToSubmit: {},
       closeTask: true
     }
@@ -123,6 +124,7 @@ export default {
             container: document.querySelector('#form'),
         })
         await this.form.importSchema(formContent, convertedFormData)
+        this.formSchema = formContent
 
         // Wait for DOM to be updated after form import
         await this.$nextTick()
@@ -160,7 +162,7 @@ export default {
           if (!this.$refs.templateBase.formFiles[key]) {
             this.dataToSubmit[key] = {
                   name: key,
-                  type: typeof value,
+                  type: determineValueTypeFromSchema(this.formSchema, key),
                   value: value,
                   valueInfo: null
               }

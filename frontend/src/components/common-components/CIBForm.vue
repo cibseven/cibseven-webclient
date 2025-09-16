@@ -25,6 +25,7 @@
 <script>
 export default {
   name: 'CIBForm',
+  emits: ['submitted', 'fail'],
   data: function() {
     return { showValidation: false }
   },

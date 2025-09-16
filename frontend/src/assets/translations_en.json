@@ -10,6 +10,7 @@
 		},
 		"actualisation": {
 			"progress": "Updating data...",
+			"lastUpdate": "Last update: {date}",
 			"disabled": "Last update: {date}\n\nAutomatic updates are disabled.\nPress F5 to reload the data.",
 			"enabled": "Last update: {date}\n\nAutomatic updates are enabled.\nRefreshing every {seconds} seconds."
 		}
@@ -184,6 +185,19 @@
 			"suspend": "Do you really want to suspend the next process definition with all running process instances?",
 			"activate": "Do you really want to activate the next process definition with all running process instances?"
 		},
+		"activityIdBadge": {
+			"remove": "Remove criteria - to list all process instances",
+			"title": {
+				"executed": "{activityId} (executed only)",
+				"active": "{activityId} (active only)",
+				"all": "{activityId}"
+			},
+			"tooltip": {
+				"executed": "List instances that executed {activityId} activity",
+				"active": "List instances that still active with {activityId} activity",
+				"all": "List instances that executed {activityId} activity or still active with {activityId} activity"
+			}
+		},
 		"true": "True",
 		"false": "False",				
 		"jobDefinitions": "Job definitions",
@@ -253,6 +267,12 @@
 			"objectTypeName": "Object type name",
 			"serializationDataFormat": "Serialization data format",
 			"confirmDelete": "Do you want to delete the variable?",
+			"deleteStatus": {
+				"runtime": "The variable was deleted successfully.",
+				"runtimeError": "An error occurred while attempting to delete the variable \"{name}\".",
+				"historic": "The historic variable was deleted successfully.",
+				"historicError": "An error occurred while attempting to delete the historic variable \"{name}\"."
+			},
 			"enterValue": "Enter value"
 		},
 		"incidents": {
@@ -376,6 +396,11 @@
 			"noExternalTasks": "No external tasks found"
 		}
 	},
+	"dmn-viewer": {
+		"zoomIn": "Zoom in",
+		"zoomOut": "Zoom out",
+		"resetZoom": "Reset zoom"
+	},
 	"bpmn-viewer": {
 		"zoomIn": "Zoom in",
 		"zoomOut": "Zoom out",
@@ -387,6 +412,7 @@
 			"selectedTask": "@:task.selectedTask",
 			"runningInstances": "Running activity instances",
 			"openIncidents": "Open incidents",
+			"closedIncidents": "Closed incidents",
 			"suspendedJobDefinition": "Suspended job definition",
 			"activitiesHistory": "Executed activity instances",
 			"canceledInstances": "Canceled activity instances",		
@@ -765,6 +791,7 @@
 	"nav-bar": {
 		"no-tasks-pending": "You have no tasks pending",
 		"no-tasks": "No tasks found",
+		"tasks-count": "Open tasks: {count}",
 		"processes": "@:process.title",
 		"filters": {
 			"addFilter": "Add Filter",
@@ -924,9 +951,21 @@
 				"title": "Processes",
 				"tooltip": "Explore available process definitions"
 			},
+			"process-definition": {
+				"title": "Process Definition"
+			},
+			"process-instance": {
+				"title": "Process Instance"
+			},
 			"decisions": {
 				"title": "Decisions",
 				"tooltip": "Explore available decision definitions"
+			},
+			"decision-definition": {
+				"title": "Decision Definition"
+			},
+			"decision-instance": {
+				"title": "Decision Instance"
 			},
 			"humanTasks": {
 				"title": "Human Tasks",
@@ -972,6 +1011,8 @@
 		"AuthenticationException": "Authentication data is wrong",
 		"LoginException": "Username or password is incorrect",
 		"TokenExpiredException": "Authentication data expired",
+		"WrongDeploymenIdException": "No deployment could not be found for this Id.",
+		"NoRessourcesFoundException": "Deployment resources for this deploymentId do not exist.",
 		"urlError": "Invalid URL",
 		"errorSaveTask": "An error occurred while saving the task.",
 		"taskSelectedNotExist": "This task is no longer available and will therefore disappear from the work area",
@@ -1068,6 +1109,8 @@
 		"selectAll": "Select all",
 		"deleteDeployments": "Delete deployments",
 		"showModel": "Show model",
+		"delete": "Delete Deployment",
+		"showDeployment": "Load Deployment in list",
 		"deploymentsDeleted": "{0} out of {1} deployments have been successfully deleted",
 		"tenant": "Tenant",
 		"errorLoading": "Unable to load resource for the selected deployment"
@@ -1097,14 +1140,14 @@
 			"columnDescription": "Description",
 			"buttonCtrl": "Ctrl",
 			"shortcuts": {
-				"ctrlLeft": "Jump to \"Start process\" view",
-				"ctrlDown": "Jump to \"Tasks\" view",
-				"ctrlRight": "Jump to \"Processes\" view",
-				"ctrlAltP": "Open \"Start process\" pop-up window",
-				"ctrlAltC": "Claim the currently selected task",
-				"alt1": "Set focus on filters",
-				"alt2": "Set focus on the list of filtered tasks",
-				"alt3": "Set focus on the selected task"
+				"startProcessView": "Jump to \"Start process\" view",
+				"tasksView": "Jump to \"Tasks\" view",
+				"processesView": "Jump to \"Processes\" view",
+				"startProcess": "Open \"Start process\" pop-up window",
+				"claimTask": "Claim the currently selected task",
+				"focusFilters": "Set focus on filters",
+				"focusTasks": "Set focus on the list of filtered tasks",
+				"focusTask": "Set focus on the selected task"
 			}
 		},
 		"flowModalSupport": {
@@ -1220,6 +1263,7 @@
 	"decision": {
 		"id": "ID",
 		"name": "Name",
+		"tenantId": "Tenant ID",
 		"actions": "Actions",
 		"emptyProcessList": "Your decision list is currently empty.",
 		"emptyProcessListFiltered": "There is no decision for the applied filter.",

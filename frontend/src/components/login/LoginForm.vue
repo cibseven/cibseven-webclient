@@ -83,6 +83,7 @@ export default {
     onRegister: Function,
     forgottenType: { type: String, default: 'email' }
   },
+  emits: ['success'],
   data: function() {
     return {
       rememberMe: true,

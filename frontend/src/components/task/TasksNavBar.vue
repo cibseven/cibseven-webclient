@@ -186,6 +186,7 @@ export default {
   components: { StartProcess, AdvancedSearchModal, SmartSearch, ConfirmDialog, BWaitingBox },
   props: { tasks: Array, taskResultsIndex: Number },
   inject: ['currentLanguage','isMobile'],
+  emits: ['search-filter', 'process-started', 'selected-task', 'update-assignee', 'show-more', 'refresh-tasks', 'refresh-tasks-number'],
   data: function () {
     return {
       currentSorting: {},

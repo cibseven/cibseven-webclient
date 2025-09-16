@@ -31,6 +31,7 @@ import TaskContent from '@/components/task/TaskContent.vue'
 export default {
   name: 'TaskView',
   components: { TaskContent },
-  props: { task: Object }
+  props: { task: Object },
+  emits: ['complete-task', 'update-assignee', 'update-task']
 }
 </script>

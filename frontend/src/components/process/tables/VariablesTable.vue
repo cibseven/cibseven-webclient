@@ -16,7 +16,7 @@
 -->
 <template>
   <div class="d-flex flex-column h-100">
-    <div v-if="isActiveInstance || ProcessVariablesSearchBoxPlugin" class="bg-light d-flex w-100">
+    <div v-if="isActiveInstance || ProcessVariablesSearchBoxPlugin" class="bg-white d-flex w-100">
       <div v-if="ProcessVariablesSearchBoxPlugin" :class="isActiveInstance ? 'col-10 p-2' : 'col-12 p-2'">
         <component :is="ProcessVariablesSearchBoxPlugin"
           :query="filter"
@@ -33,11 +33,11 @@
     <div class="overflow-y-scroll bg-white container-fluid g-0 flex-grow-1">
       <FlowTable v-if="!loading" striped resizable thead-class="sticky-header" :items="filteredVariables" primary-key="id" prefix="process-instance.variables."
         sort-by="name" :fields="[
-        { label: 'name', key: 'name', class: 'col-3', tdClass: 'py-1 border-end border-top-0' },
-        { label: 'type', key: 'type', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
-        { label: 'value', key: 'value', class: 'col-3', tdClass: 'py-1 border-end border-top-0' },
-        { label: 'scope', key: 'scope', class: 'col-2', tdClass: 'py-1 border-end border-top-0' },
-        { label: 'actions', key: 'actions', class: 'col-2', sortable: false, tdClass: 'py-1 border-top-0' }]">
+        { label: 'name', key: 'name', class: 'col-3', tdClass: 'py-1' },
+        { label: 'type', key: 'type', class: 'col-2', tdClass: 'py-1' },
+        { label: 'value', key: 'value', class: 'col-3', tdClass: 'py-1' },
+        { label: 'scope', key: 'scope', class: 'col-2', tdClass: 'py-1' },
+        { label: 'actions', key: 'actions', class: 'col-2', sortable: false, tdClass: 'py-1' }]">
         <template v-slot:cell(name)="table">
           <div :title="table.item.name" class="text-truncate">{{ table.item.name }}</div>
         </template>
@@ -76,9 +76,10 @@
     </div>
 
     <AddVariableModal ref="addVariableModal" :selected-instance="selectedInstance" @variable-added="loadSelectedInstanceVariables(); $refs.success.show()"></AddVariableModal>
-    <DeleteVariableModal ref="deleteVariableModal"></DeleteVariableModal>
+    <DeleteVariableModal ref="deleteVariableModal" @variable-deleted="onVariableDeleted"></DeleteVariableModal>
     <EditVariableModal ref="editVariableModal" :disabled="!isActiveInstance" @variable-updated="loadSelectedInstanceVariables(); $refs.success.show()" @instance-status-updated="updateInstanceStatus"></EditVariableModal>
-    <SuccessAlert top="0" ref="success" style="z-index: 9999">{{ $t('alert.successOperation') }}</SuccessAlert>
+    <SuccessAlert top="0" ref="runtimeVariableDeleted" style="z-index: 9999">{{ $t('process-instance.variables.deleteStatus.runtime') }}</SuccessAlert>
+    <SuccessAlert top="0" ref="historicVariableDeleted" style="z-index: 9999">{{ $t('process-instance.variables.deleteStatus.historic') }}</SuccessAlert>
     <SuccessAlert ref="messageCopy" style="z-index: 9999"> {{ $t('process.copySuccess') }} </SuccessAlert>
     <TaskPopper ref="importPopper"></TaskPopper>
 
@@ -99,7 +100,6 @@
 import { BWaitingBox } from 'cib-common-components'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import TaskPopper from '@/components/common-components/TaskPopper.vue'
-import { ProcessService, HistoryService } from '@/services.js'
 import DeleteVariableModal from '@/components/process/modals/DeleteVariableModal.vue'
 import AddVariableModal from '@/components/process/modals/AddVariableModal.vue'
 import EditVariableModal from '@/components/process/modals/EditVariableModal.vue'
@@ -136,17 +136,9 @@ export default {
     updateInstanceStatus() {
       this.selectedInstance.state = 'COMPLETED'
     },
-    isFileValueDataSource: function(item) {
-      if (item.type === 'Object') {
-        if (item.value && item.value.objectTypeName) {
-          if (this.fileObjects.includes(item.value.objectTypeName)) return true
-        }
-      }
-      return false
-    },
     displayValue(item) {
       if (this.isFileValueDataSource(item)) {
-        return item.value.name
+        return this.getFileVariableName(item)
       }
       else if (item.type === 'File') {
         return item.valueInfo.filename
@@ -207,30 +199,19 @@ export default {
       this.$refs.editVariableModal.show(variable.id)
     },
     async deleteVariable(variable) {
-      this.$refs.deleteVariableModal.show({
-        ok: async () => {
-          // Try active, fallback to historic if error
-          if (this.selectedInstance.state === 'ACTIVE') {
-            try {
-              await ProcessService.deleteVariableByExecutionId(variable.executionId, variable.name)
-              this.loadSelectedInstanceVariables()
-              this.$refs.success.show()
-            } catch {
-              // Fallback to historic deletion
-              await HistoryService.deleteVariableHistoryInstance(variable.id)
-              this.selectedInstance.state = 'COMPLETED'
-              this.loadSelectedInstanceVariables()
-              this.$refs.success.show()
-            }
-          } else {
-            await HistoryService.deleteVariableHistoryInstance(variable.id)
-            this.loadSelectedInstanceVariables()
-            this.$refs.success.show()
-          }
-        },
-        variable: variable
-      })
-    }
+      const isInstanceActive = this.selectedInstance.state === 'ACTIVE'
+      this.$refs.deleteVariableModal.show(isInstanceActive, variable)
+    },
+    onVariableDeleted() {
+      this.loadSelectedInstanceVariables()
+      const isInstanceActive = this.selectedInstance.state === 'ACTIVE'
+      if (isInstanceActive) {
+        this.$refs.runtimeVariableDeleted.show()
+      }
+      else {
+        this.$refs.historicVariableDeleted.show()
+      }
+    },
   }
 }
 </script>

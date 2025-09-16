@@ -89,6 +89,9 @@ const JobStore = {
       const params = { retries }
       return IncidentService.retryJobById(id, params)
     },
+    async retryJobDefinitionById(_, { id, params }) {
+      return JobDefinitionService.retryJobDefinitionById(id, params)
+    },
     async setSuspended({ commit }, { jobId, suspended }) {
       await JobService.setSuspended(jobId, { suspended })
       commit('updateJobSuspended', { jobId, suspended })
@@ -99,6 +102,9 @@ const JobStore = {
     async deleteJob({ commit }, id) {
       await JobService.deleteJob(id)
       commit('removeJob', id)
+    },
+    clearJobLogs({ commit }) {
+      commit('setJobLogs', [])
     }
   },
   getters: {

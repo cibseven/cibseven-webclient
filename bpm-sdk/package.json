@@ -1,6 +1,6 @@
 {
   "name": "bpm-sdk",
-  "version": "__CI_VERSION__",
+  "version": "2.1.0-dev.2",
   "description": "Camunda BPM SDK extracted as a standalone library.",
   "main": "dist/bpm-sdk.umd.js",
   "module": "dist/bpm-sdk.es.js",
@@ -20,7 +20,9 @@
     "build": "vite build",
     "build:library": "cross-env BUILD_MODE=library vite build",
     "dev": "vite",
-    "test": "vitest run"
+    "test": "vitest run",
+    "bump:dev": "../bump-dev-version.sh bpm-sdk",
+    "remove:dev": "../npm-version-release.sh bpm-sdk"
   },
   "dependencies": {
     "fast-xml-parser": "^5.2.3",
