@@ -410,11 +410,20 @@ configmaps:
             "userProfile": {
               "application": ["ALL"]
             },
+            "updateInstanceProcessDefinition": {
+              "processDefinition": ["UPDATE_INSTANCE"]
+            },
+            "updateProcessDefinition": {
+              "processDefinition": ["UPDATE"]
+            },
             "deleteProcessDefinition": {
               "processDefinition": ["DELETE"]
             },
+            "updateProcessInstance": {
+              "processInstance": ["UPDATE"]
+            },
             "deleteProcessInstance": {
-             "processInstance": ["DELETE"]
+              "processInstance": ["DELETE"]
             },
             "deleteHistoricProcessInstance": {
               "historicProcessInstance": ["DELETE"]

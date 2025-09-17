@@ -129,7 +129,7 @@
         <IncidentsTable v-else-if="activeTab === 'incidents'"
           :process="process" :activity-instance="activityInstance" />
         <JobDefinitionsTable v-else-if="activeTab === 'jobDefinitions'"
-          :process-id="process.id" />
+          :process="process" />
         <CalledProcessDefinitionsTable v-else-if="activeTab === 'calledProcessDefinitions'" :process="process" />
         <component :is="ProcessInstancesTabsContentPlugin" v-if="ProcessInstancesTabsContentPlugin" :process="process" :active-tab="activeTab"></component>
       </div>
