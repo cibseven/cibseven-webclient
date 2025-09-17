@@ -41,7 +41,7 @@
     "bootstrap": "^5.3.6",
     "bpm-sdk": "^2.1.0-dev.2",
     "bpmn-js": "^18.3.2",
-    "cib-common-components": "^2.0.3-dev.0",
+    "cib-common-components": "^2.0.3-dev.1",
     "dmn-js": "^17.2.0",
     "js-sha256": "^0.11.0",
     "moment": "^2.30.1",
