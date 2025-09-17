@@ -36,6 +36,17 @@ function setServicesBasePath(basePath) {
   servicesBasePath = basePath
 }
 
+/**
+ * Creates a document endpoint URL for file preview
+ */
+function createDocumentEndpointUrl(processInstanceId, variableName, authToken, contentType, cacheBust) {
+  // Use base path from current location (removes hash). This reliably includes any deployment context path, both locally and in production.
+  const basePath = window.location.href.replace(window.location.hash, '');
+  const encodedContentType = encodeURIComponent(contentType);
+  
+  return `${basePath}${getServicesBasePath()}/process/process-instance/${processInstanceId}/variables/${variableName}/data?token=${authToken}&contentType=${encodedContentType}&cacheBust=${cacheBust}`;
+}
+
 var TaskService = {
   findIdentityLinks: function(taskId) {
     return axios.get(getServicesBasePath() + '/task/' + taskId + '/identity-links')
@@ -736,4 +747,4 @@ var ExternalTaskService = {
 
 export { TaskService, FilterService, ProcessService, VariableInstanceService, HistoricVariableInstanceService, AdminService, JobService, JobDefinitionService, SystemService,
   HistoryService, IncidentService, AuthService, InfoService, FormsService, TemplateService, DecisionService,
-  AnalyticsService, BatchService, TenantService, ExternalTaskService, getServicesBasePath, setServicesBasePath }
+  AnalyticsService, BatchService, TenantService, ExternalTaskService, getServicesBasePath, setServicesBasePath, createDocumentEndpointUrl }
