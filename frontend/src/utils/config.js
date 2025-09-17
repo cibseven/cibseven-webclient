@@ -31,6 +31,7 @@ const DEFAULT_CONFIG = {
     tenantsManagement: { tenant: ["ALL"] },
     userProfile: { application: ["ALL"] },
     deleteProcessDefinition: { processDefinition: ["DELETE"] },
+    suspendProcessInstance: {processInstance: ["SUSPEND"] },
     deleteProcessInstance: { processInstance: ["DELETE"] },
     deleteHistoricProcessInstance: { historicProcessInstance: ["DELETE"] },
   },
