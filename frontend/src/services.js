@@ -27,7 +27,6 @@ function filterToUrlParams(filters) {
 }
 
 let servicesBasePath = ''
-let contextPath = ''
 
 function getServicesBasePath() {
   return servicesBasePath

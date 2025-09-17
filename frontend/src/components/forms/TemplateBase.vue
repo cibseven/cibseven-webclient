@@ -94,8 +94,7 @@ export default {
       const encodedContentType = encodeURIComponent(fileType);
       // Add cacheBust to prevent caching issues in form-js document preview component
       const cacheBust = Date.now().toString();
-      
-      // Use base path from current location (works for all deployments)
+      // Use base path from current location (removes hash). This reliably includes any deployment context path, both locally and in production.
       const basePath = window.location.href.replace(window.location.hash, '');
       
       documentReference.endpoint = `${basePath}${getServicesBasePath()}/process/process-instance/${this.templateMetaData.task.processInstanceId}/variables/${variableName}/data?token=${authToken}&contentType=${encodedContentType}&cacheBust=${cacheBust}`;
