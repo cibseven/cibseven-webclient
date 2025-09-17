@@ -37,14 +37,6 @@ function setServicesBasePath(basePath) {
   servicesBasePath = basePath
 }
 
-function getContextPath() {
-  return contextPath
-}
-
-function setContextPath(path) {
-  contextPath = path
-}
-
 var TaskService = {
   findIdentityLinks: function(taskId) {
     return axios.get(getServicesBasePath() + '/task/' + taskId + '/identity-links')
