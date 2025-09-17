@@ -737,4 +737,4 @@ var ExternalTaskService = {
 
 export { TaskService, FilterService, ProcessService, VariableInstanceService, HistoricVariableInstanceService, AdminService, JobService, JobDefinitionService, SystemService,
   HistoryService, IncidentService, AuthService, InfoService, FormsService, TemplateService, DecisionService,
-  AnalyticsService, BatchService, TenantService, ExternalTaskService, getServicesBasePath, setServicesBasePath, getContextPath, setContextPath }
+  AnalyticsService, BatchService, TenantService, ExternalTaskService, getServicesBasePath, setServicesBasePath }
