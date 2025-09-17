@@ -54,6 +54,7 @@
                 <b-button @click.stop="showResource(resource)" size="sm" variant="outline-secondary"
                   class="border-0 mdi mdi-18px mdi-eye-outline text-dark bg-white"
                   :title="$t('deployment.showModel')"></b-button>
+                <component :is="ResourcesNavBarActions" v-if="ResourcesNavBarActions" :resource="resource" :deployment="deployment"></component>
               </div>
             </b-list-group-item>
             <b-list-group-item class="text-dark border-white bg-white">
@@ -120,13 +121,20 @@ export default {
       isDmnResource: false
     }
   },
-  created: function () {
-    this.loadDeployment()
-  },
   watch: {
     deploymentId: function () {
       this.loadDeployment()
     },
+  },
+  computed: {
+    ResourcesNavBarActions: function() {
+      return this.$options.components && this.$options.components.ResourcesNavBarActions
+        ? this.$options.components.ResourcesNavBarActions
+        : null
+    }
+  },
+  created: function () {
+    this.loadDeployment()
   },
   methods: {
     ...mapActions(['getDecisionList', 'getXmlById']),
