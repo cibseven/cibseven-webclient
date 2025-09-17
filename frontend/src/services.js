@@ -27,6 +27,7 @@ function filterToUrlParams(filters) {
 }
 
 let servicesBasePath = ''
+let contextPath = ''
 
 function getServicesBasePath() {
   return servicesBasePath
@@ -34,6 +35,14 @@ function getServicesBasePath() {
 
 function setServicesBasePath(basePath) {
   servicesBasePath = basePath
+}
+
+function getContextPath() {
+  return contextPath
+}
+
+function setContextPath(path) {
+  contextPath = path
 }
 
 var TaskService = {
@@ -736,4 +745,4 @@ var ExternalTaskService = {
 
 export { TaskService, FilterService, ProcessService, VariableInstanceService, HistoricVariableInstanceService, AdminService, JobService, JobDefinitionService, SystemService,
   HistoryService, IncidentService, AuthService, InfoService, FormsService, TemplateService, DecisionService,
-  AnalyticsService, BatchService, TenantService, ExternalTaskService, getServicesBasePath, setServicesBasePath }
+  AnalyticsService, BatchService, TenantService, ExternalTaskService, getServicesBasePath, setServicesBasePath, getContextPath, setContextPath }

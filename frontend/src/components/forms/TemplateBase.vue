@@ -53,7 +53,7 @@ import { BWaitingBox } from 'cib-common-components'
 import postMessageMixin from '@/components/forms/postMessage.js'
 import IconButton from '@/components/forms/IconButton.vue'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
-import { FormsService, getServicesBasePath } from '@/services.js'
+import { FormsService, getServicesBasePath, getContextPath } from '@/services.js'
 import { findDocumentPreviewComponents, getDocumentReferenceVariableName } from './formJsUtils.js'
 
 export default {
@@ -94,7 +94,11 @@ export default {
       const encodedContentType = encodeURIComponent(fileType);
       // Add cacheBust to prevent caching issues in form-js document preview component
       const cacheBust = Date.now().toString();
-      documentReference.endpoint = `${window.location.origin}/${getServicesBasePath()}/process/process-instance/${this.templateMetaData.task.processInstanceId}/variables/${variableName}/data?token=${authToken}&contentType=${encodedContentType}&cacheBust=${cacheBust}`;
+      
+      // Use context path from backend configuration
+      const contextPath = getContextPath();
+      
+      documentReference.endpoint = `${window.location.origin}${contextPath}/${getServicesBasePath()}/process/process-instance/${this.templateMetaData.task.processInstanceId}/variables/${variableName}/data?token=${authToken}&contentType=${encodedContentType}&cacheBust=${cacheBust}`;
       
       return [documentReference];
     },

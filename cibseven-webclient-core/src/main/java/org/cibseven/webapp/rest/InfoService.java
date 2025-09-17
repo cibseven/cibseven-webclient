@@ -48,6 +48,7 @@ public class InfoService extends BaseService {
 	@Value("${cibseven.webclient.productNamePageTitle:CIB seven}") private String productNamePageTitle;
 	
 	@Value("${cibseven.webclient.services.basePath:services/v1}") private String servicesBasePath;
+	@Value("${cibseven.webclient.context.path:}") private String contextPath;
 	
 	@Value("${cibseven.webclient.link.terms:}") private String flowLinkTerms;
 	@Value("${cibseven.webclient.link.privacy:}") private String flowLinkPrivacy;
@@ -84,6 +85,7 @@ public class InfoService extends BaseService {
 		configJson.put("flowLinkHelp", flowLinkHelp);
 		configJson.put("productNamePageTitle", productNamePageTitle);
 		configJson.put("servicesBasePath", servicesBasePath);
+		configJson.put("contextPath", contextPath);
 		configJson.put("engineRestPath", engineRestPath);
 		
         try {

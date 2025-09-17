@@ -27,7 +27,7 @@ import { createAppRouter, appRoutes } from './router.js'
 import registerOwnComponents from './register.js'
 import { permissionsMixin }  from './permissions.js'
 
-import { InfoService, AuthService, setServicesBasePath } from './services.js'
+import { InfoService, AuthService, setServicesBasePath, setContextPath } from './services.js'
 import { getTheme, hasHeader, isMobile, checkExternalReturn } from './utils/init'
 import { applyTheme, handleAxiosError, fetchAndStoreProcesses, fetchDecisionsIfEmpty, setupTaskNotifications } from './utils/init'
 import { applyConfigDefaults } from './utils/config.js'
@@ -54,6 +54,7 @@ Promise.all([
   var config = configFromFile
 
   setServicesBasePath(config.servicesBasePath)
+  setContextPath(config.contextPath || '')
 
   // (Optional) check if possible
   //axios.defaults.baseURL = appConfig.adminBasePath
