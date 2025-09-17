@@ -95,8 +95,9 @@ export default {
       // Add cacheBust to prevent caching issues in form-js document preview component
       const cacheBust = Date.now().toString();
       
-      // Use context path from backend configuration
-      const contextPath = getContextPath();
+      // Use context path from backend configuration, but ignore in development mode
+      const isDevelopment = import.meta.env.DEV;
+      const contextPath = isDevelopment ? '' : getContextPath();
       
       documentReference.endpoint = `${window.location.origin}${contextPath}/${getServicesBasePath()}/process/process-instance/${this.templateMetaData.task.processInstanceId}/variables/${variableName}/data?token=${authToken}&contentType=${encodedContentType}&cacheBust=${cacheBust}`;
       
