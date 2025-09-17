@@ -187,6 +187,17 @@ describe('AddVariableModal.vue UI interactions', () => {
       await wrapper.setData({ type: 'Xml', value: '<invalid></xml>' })
       expect(wrapper.vm.valueValidationError).toBeTruthy()
     })
+
+    it('Null', async () => {
+      await changeType('Null')
+      expect(wrapper.vm.value).toBe(null)
+    })
+
+    it('Boolean', async () => {
+      await changeType('Boolean')
+      expect(wrapper.vm.value).toBe(true)
+    })
+
   })
 
   describe('buttons', () => {

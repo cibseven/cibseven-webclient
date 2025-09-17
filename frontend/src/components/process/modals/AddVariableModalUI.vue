@@ -115,6 +115,9 @@ export default {
           this.value = '' + this.value
         }
       }
+      else if (type === 'Null') {
+        this.value = null
+      }
       else this.value = ''
     }
   },
@@ -235,6 +238,7 @@ export default {
           serializationDataFormat: this.serializationDataFormat,
         }
       }
+      if (variable.type === 'Null') variable.value = null
       if (variable.type === 'Date') variable.value = moment(variable.value).format('YYYY-MM-DDTHH:mm:ss.SSSZZ')
       if (variable.type !== 'Object') delete variable.valueInfo
 
