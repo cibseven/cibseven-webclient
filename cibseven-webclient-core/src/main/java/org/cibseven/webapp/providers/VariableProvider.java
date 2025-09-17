@@ -488,14 +488,17 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 			for (Variable variable: formResult) {
 				ObjectNode variablePost = mapper.getNodeFactory().objectNode();
                 String val = String.valueOf(variable.getValue());
-                if (variable.getType().equals("Boolean")) {
+				if (variable.getValue() == null) {
+					variablePost.put("type", "Null");
+				}
+                else if (variable.getType().equals("Boolean")) {
                     variablePost.put("value", Boolean.parseBoolean(val));
                 } else if (variable.getType().equals("Double")) {
                     variablePost.put("value", Double.parseDouble(val));
                 } else if (variable.getType().equals("Integer")) {
                     variablePost.put("value", Integer.parseInt(val));
                 }
-                else variablePost.put("value", val);
+				else variablePost.put("value", val);
 
 				if(variable.getType().equals("file")) {
 
@@ -588,7 +591,10 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		for (Variable variable: formResult) {
 			ObjectNode variablePost = mapper.getNodeFactory().objectNode();
 			String val = String.valueOf(variable.getValue());
-			if (variable.getType().equals("Boolean")) {
+			if (variable.getValue() == null) {
+				variablePost.put("type", "Null");
+			}
+			else if (variable.getType().equals("Boolean")) {
 				variablePost.put("value", Boolean.parseBoolean(val));
 			} else if (variable.getType().equals("Double")) {
 			  	variablePost.put("value", Double.parseDouble(val));
