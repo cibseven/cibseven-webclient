@@ -90,7 +90,6 @@ public class InfoService extends BaseService {
 		configJson.put("productNamePageTitle", productNamePageTitle);
 		configJson.put("servicesBasePath", servicesBasePath);
 		
-		// Use servlet context path - this automatically works for all deployment scenarios
 		String contextPath = servletContext.getContextPath();
 		configJson.put("contextPath", contextPath != null ? contextPath : "");
 		
