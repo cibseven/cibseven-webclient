@@ -16,7 +16,6 @@
  */
 package org.cibseven.webapp.rest;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,7 +30,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import jakarta.servlet.ServletContext;
 import lombok.extern.slf4j.Slf4j;
 
 @ApiResponses({ @ApiResponse(responseCode= "500", description = "An unexpected system error occured") })
@@ -50,9 +48,6 @@ public class InfoService extends BaseService {
 	@Value("${cibseven.webclient.productNamePageTitle:CIB seven}") private String productNamePageTitle;
 	
 	@Value("${cibseven.webclient.services.basePath:services/v1}") private String servicesBasePath;
-	
-	@Autowired
-	private ServletContext servletContext;
 	
 	@Value("${cibseven.webclient.link.terms:}") private String flowLinkTerms;
 	@Value("${cibseven.webclient.link.privacy:}") private String flowLinkPrivacy;
@@ -89,9 +84,6 @@ public class InfoService extends BaseService {
 		configJson.put("flowLinkHelp", flowLinkHelp);
 		configJson.put("productNamePageTitle", productNamePageTitle);
 		configJson.put("servicesBasePath", servicesBasePath);
-		
-		String contextPath = servletContext.getContextPath();
-		configJson.put("contextPath", contextPath != null ? contextPath : "");
 		
 		configJson.put("engineRestPath", engineRestPath);
 		
