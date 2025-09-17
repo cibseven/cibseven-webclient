@@ -56,7 +56,7 @@
       <template v-slot:cell(actions)="table">
         <b-button v-if="table.item.state === 'ACTIVE' && processByPermissions($root.config.permissions.suspendProcessInstance, table.item)" @click.stop="confirmSuspend(table.item)"
         size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-pause-circle-outline" :title="$t('process.suspendInstance')"></b-button>
-        <b-button v-else-if="table.item.state === 'SUSPENDED'" @click.stop="confirmActivate(table.item)"
+        <b-button v-else-if="table.item.state === 'SUSPENDED' && processByPermissions($root.config.permissions.suspendProcessInstance, table.item)" @click.stop="confirmActivate(table.item)"
         size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-play-circle-outline" :title="$t('process.activateInstance')"></b-button>
         <b-button @click="selectInstance(table.item)" size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-eye-outline" :title="$t('process.showInstance')"></b-button>
         <b-button v-if="['ACTIVE', 'SUSPENDED'].includes(table.item.state) && processByPermissions($root.config.permissions.deleteProcessInstance, table.item)"
