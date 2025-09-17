@@ -45,7 +45,7 @@
         />
       </template>
       <template v-slot:cell(actions)="table">
-        <b-button :title="stateActionKey(table.item)"
+        <b-button v-if="hasUpdatePermission" :title="stateActionKey(table.item)"
           size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px"
           :class="table.item.suspended ? 'mdi-play' : 'mdi-pause'"
           @click.stop="openChangeStateJobModal(table.item)">
@@ -75,21 +75,30 @@ import JobDefinitionPriorityModal from '@/components/process/modals/JobDefinitio
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import { BWaitingBox } from 'cib-common-components'
 import { mapActions, mapGetters } from 'vuex'
+import { permissionsMixin } from '@/permissions.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 
 export default {
   name: 'JobDefinitionsTable',
   components: { FlowTable, CopyableActionButton, JobDefinitionStateModal, JobDefinitionPriorityModal, SuccessAlert, BWaitingBox },
-  mixins: [copyToClipboardMixin],
+  mixins: [copyToClipboardMixin, permissionsMixin],
   props: {
-    processId: String
+    process: Object,
   },
   computed: {
-    ...mapGetters('job', ['jobDefinitions']),    
+    ...mapGetters('job', ['jobDefinitions']),
+    processId: function() {
+      return this.process?.id
+    },
     JobDefinitionsTableActionsPlugin: function() {
       return this.$options.components && this.$options.components.JobDefinitionsTableActionsPlugin
         ? this.$options.components.JobDefinitionsTableActionsPlugin
         : null
+    },
+    hasUpdatePermission: function() {
+      return this.processByPermissions(this.$root.config.permissions.updateProcessDefinition, this.process) &&
+        (this.processByPermissions(this.$root.config.permissions.updateInstanceProcessDefinition, this.process) ||
+         this.processByPermissions(this.$root.config.permissions.updateProcessInstance, this.process) )
     }
   },
   data() {

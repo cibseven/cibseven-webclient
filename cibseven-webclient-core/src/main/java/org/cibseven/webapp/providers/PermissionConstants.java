@@ -31,5 +31,6 @@ public class PermissionConstants {
     public static final List<String> SUSPEND_INSTANCE_ALL = List.of("ALL", "SUSPEND_INSTANCE");
     public static final List<String> READ_INSTANCE_VARIABLE_ALL = List.of("ALL", "READ_INSTANCE_VARIABLE");
     public static final List<String> UPDATE_INSTANCE_VARIABLE_ALL = List.of("ALL", "UPDATE_INSTANCE_VARIABLE");
+    public static final List<String> UPDATE_INSTANCE_ALL = List.of("ALL", "UPDATE_INSTANCE");
 
 } 

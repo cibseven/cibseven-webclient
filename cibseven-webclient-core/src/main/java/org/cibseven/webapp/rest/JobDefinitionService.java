@@ -18,10 +18,12 @@ package org.cibseven.webapp.rest;
 
 import java.util.Collection;
 import java.util.Map;
-
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.auth.SevenResourceType;
+import org.cibseven.webapp.exception.AccessDeniedException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.providers.BpmProvider;
+import org.cibseven.webapp.providers.PermissionConstants;
 import org.cibseven.webapp.providers.SevenProvider;
 import org.cibseven.webapp.rest.model.JobDefinition;
 import org.springframework.beans.factory.InitializingBean;
@@ -66,10 +68,17 @@ public class JobDefinitionService extends BaseService implements InitializingBea
 	@PutMapping("/{jobDefinitionId}/suspend")
 	public ResponseEntity<Void> suspendJobDefinition(@PathVariable String jobDefinitionId, @RequestBody String params, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		//checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.UPDATE_ALL);
-        bpmProvider.suspendJobDefinition(jobDefinitionId, params, user);
-        // return 204 No Content, no body
-        return ResponseEntity.noContent().build();
+		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.UPDATE_ALL);
+		// OR logic:
+		// https://docs.cibseven.org/javadoc/cibseven/2.0/org/cibseven/bpm/engine/management/UpdateJobDefinitionSuspensionStateBuilder.html#suspend()
+		try {
+			checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.UPDATE_INSTANCE_ALL);
+		} catch (AccessDeniedException x) {
+			checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.UPDATE_ALL);
+		}
+		bpmProvider.suspendJobDefinition(jobDefinitionId, params, user);
+		// return 204 No Content, no body
+		return ResponseEntity.noContent().build();
 	}
 	
 	@Operation(
@@ -80,9 +89,9 @@ public class JobDefinitionService extends BaseService implements InitializingBea
 	public ResponseEntity<Void> overrideJobDefinitionPriority(@PathVariable String jobDefinitionId, @RequestBody String params, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
 		//checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.UPDATE_ALL);
-        bpmProvider.overrideJobDefinitionPriority(jobDefinitionId, params, user);
-        // return 204 No Content, no body
-        return ResponseEntity.noContent().build();
+		bpmProvider.overrideJobDefinitionPriority(jobDefinitionId, params, user);
+		// return 204 No Content, no body
+		return ResponseEntity.noContent().build();
 	}
 	
 	@Operation(
@@ -93,7 +102,7 @@ public class JobDefinitionService extends BaseService implements InitializingBea
 	public JobDefinition findJobDefinition(@PathVariable String id, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
 		//checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.READ_ALL);
-        return bpmProvider.findJobDefinition(id, user);
+		return bpmProvider.findJobDefinition(id, user);
 	}
 	
 	@Operation(
@@ -102,10 +111,10 @@ public class JobDefinitionService extends BaseService implements InitializingBea
 	@ApiResponse(responseCode = "404", description = "Job not found")
 	@PutMapping("/{id}/retries")
 	public ResponseEntity<Void> retryJobDefinitionById(@PathVariable String id, @RequestBody Map<String, Object> data, HttpServletRequest rq) {
-	    CIBUser user = checkAuthorization(rq, true);
-	    //checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.UPDATE_ALL);
-	    bpmProvider.retryJobDefinitionById(id, data, user);
-      // return 204 No Content, no body
-      return ResponseEntity.noContent().build();
+		CIBUser user = checkAuthorization(rq, true);
+		//checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.UPDATE_ALL);
+		bpmProvider.retryJobDefinitionById(id, data, user);
+		// return 204 No Content, no body
+		return ResponseEntity.noContent().build();
 	}
 }
