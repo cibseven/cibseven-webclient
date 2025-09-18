@@ -121,9 +121,6 @@ export default {
         });
 
         this.dataToSubmit.initiator = { name: 'initiator', type: 'string', value: this.$root.user.userID }
-        Object.keys(this.dataToSubmit).forEach(key => {
-          if (this.dataToSubmit[key].value === null) delete this.dataToSubmit[key]
-        })
         
         const data = await FormsService.submitStartFormVariables(this.processDefinitionId,
           Object.values(this.dataToSubmit), this.locale);

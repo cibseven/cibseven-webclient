@@ -81,8 +81,7 @@
       </div>
     </div>
 
-    <b-modal static ref="diagramModal" :size="error ? '' : 'xl'" :title="resource.name" dialog-class="h-75"
-      content-class="h-100" :ok-only="true">
+    <b-modal static ref="diagramModal" :size="error ? '' : 'xl'" :title="resource.name" :ok-only="true">
       <div class="container-fluid h-100 p-0">
         <div v-if="diagramLoading" class="text-center">
           <b-waiting-box styling="width: 35px"></b-waiting-box>
@@ -91,8 +90,10 @@
           <span class="mdi mdi-48px mdi-file-cancel-outline pe-1 text-warning"></span>
           <span>{{ $t('deployment.errorLoading') }}</span>
         </div>
-        <BpmnViewer v-show="!diagramLoading && error === false && !isDmnResource" class="h-100" ref="diagram"></BpmnViewer>
-        <DmnViewer v-show="!diagramLoading && error === false && isDmnResource" class="h-100" ref="dmnDiagram"></DmnViewer>
+        <div v-show="!diagramLoading && error === false" style="height: calc(100vh - 210px);">
+          <BpmnViewer v-show="!isDmnResource" class="h-100" ref="diagram"></BpmnViewer>
+          <DmnViewer v-show="isDmnResource" class="h-100" ref="dmnDiagram"></DmnViewer>
+        </div>
       </div>
     </b-modal>
 

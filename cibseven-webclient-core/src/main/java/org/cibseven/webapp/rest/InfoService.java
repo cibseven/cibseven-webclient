@@ -84,6 +84,7 @@ public class InfoService extends BaseService {
 		configJson.put("flowLinkHelp", flowLinkHelp);
 		configJson.put("productNamePageTitle", productNamePageTitle);
 		configJson.put("servicesBasePath", servicesBasePath);
+		
 		configJson.put("engineRestPath", engineRestPath);
 		
         try {
