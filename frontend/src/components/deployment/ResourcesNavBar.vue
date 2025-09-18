@@ -203,7 +203,7 @@ export default {
               .then(response => {
                 setTimeout(() => {
                   this.diagramLoading = false
-                  this.$refs.dmnDiagram.showDiagram(response.dmnXml || response)
+                  this.$refs.dmnDiagram.showDiagram(response.dmnXml)
                 }, 500)
               })
               .catch(() => {
