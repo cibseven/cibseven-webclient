@@ -141,7 +141,7 @@ export default {
             } else {
               var templateType
               //Camunda form
-              if (url.camundaFormRef) {
+              if (url.camundaFormRef || url.key && url.key.startsWith('camunda-forms:')) {
                 templateType = 'start-deployed-form'
               //Ui-element-templates
               } else {
