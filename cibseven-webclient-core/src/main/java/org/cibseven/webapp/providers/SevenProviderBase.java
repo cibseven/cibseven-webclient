@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.BatchOperationException;
+import org.cibseven.webapp.exception.DmnTransformationException;
 import org.cibseven.webapp.exception.ExistingGroupRequestException;
 import org.cibseven.webapp.exception.ExistingUserRequestException;
 import org.cibseven.webapp.exception.ExpressionEvaluationException;
@@ -415,6 +416,8 @@ public abstract class SevenProviderBase {
 			wrapperException = new WrongDeploymenIdException(cause);
 		} else if (technicalErrorMsg.matches(".*Deployment resources for deployment id .*do not exist.*")) {
 			wrapperException = new NoRessourcesFoundException(cause);
+		} else if (technicalErrorMsg.matches(".*Unable to transform DMN resource.*")) {
+			wrapperException = new DmnTransformationException(cause);
 		}
 		if (wrapperException == null) wrapperException = new SystemException(technicalErrorMsg, cause);
 		if (wrapperException instanceof NoObjectFoundException) {

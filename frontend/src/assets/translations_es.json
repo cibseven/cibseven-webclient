@@ -1028,7 +1028,8 @@
 		"PasswordPolicyException": "La contraseña no coincide con los parámetros de política de contraseña",
 		"InvalidUserIdException": "El ID de usuario contiene caracteres no válidos. Sólo se permiten caracteres alfanuméricos (a-z, A-Z, 0-9). Por favor, corrija su entrada.",
 		"invalidEmail": "Introduce una dirección de correo electrónico válida.",
-		"InvalidValueHistoryTimeToLive": "No están permitidos valores nulos para el tiempo de vida del histórico."
+		"InvalidValueHistoryTimeToLive": "No están permitidos valores nulos para el tiempo de vida del histórico.",
+		"DmnTransformationException": "El recurso no pudo ser actualizado. No se puede transformar el recurso DMN."
 	},
 	"searches": {
 		"filter": "Filtrar",
