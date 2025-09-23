@@ -54,6 +54,7 @@
           />
         </template>
         <template v-slot:cell(actions)="table">
+          <component :is="VariablesTableActionsPlugin" v-if="VariablesTableActionsPlugin" :table-item="table.item" :selected-instance="selectedInstance" :file-objects="fileObjects"></component>
           <b-button v-if="isFile(table.item)" :title="displayValueTooltip(table.item)"
             size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-download-outline"
             @click="downloadFile(table.item)">
@@ -127,6 +128,11 @@ export default {
     ProcessVariablesSearchBoxPlugin: function() {
       return this.$options.components && this.$options.components.ProcessVariablesSearchBoxPlugin
         ? this.$options.components.ProcessVariablesSearchBoxPlugin
+        : null
+    },
+    VariablesTableActionsPlugin: function() {
+      return this.$options.components && this.$options.components.VariablesTableActionsPlugin
+        ? this.$options.components.VariablesTableActionsPlugin
         : null
     },
     isActiveInstance: function() {
