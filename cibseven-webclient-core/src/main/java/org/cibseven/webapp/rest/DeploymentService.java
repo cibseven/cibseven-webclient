@@ -20,7 +20,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 public class DeploymentService extends BaseService {
 
     /**
-     * Creates a new deployment using the Camunda REST API
+     * Creates a new deployment
      * 
      * @param data The deployment parameters (deployment-name, deployment-source, tenant-id, etc.)
      * @param files The files to deploy (DMN, BPMN, etc.)
@@ -28,7 +28,7 @@ public class DeploymentService extends BaseService {
      */
     @Operation(
         summary = "Create a new deployment",
-        description = "Creates a new deployment using the Camunda REST API. "
+        description = "Creates a new deployment."
                 + "Requires CREATE permission on the DEPLOYMENT resource type.")
     @ApiResponse(responseCode = "200", description = "Deployment created successfully")
     @ApiResponse(responseCode = "400", description = "Bad request - invalid parameters or deployment failed")
