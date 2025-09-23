@@ -88,6 +88,7 @@ public class DeploymentProvider extends SevenProviderBase implements IDeployment
 		for (int i = 0; i < files.length; i++) {
 			MultipartFile file = files[i];
 			// API expects files with parameter name "data", so we use indexed keys
+			// result could be: ['data0', 'data1', 'data2', ...] or just single ['data']
 			String key = files.length > 1 ? "data" + i : "data";
 			formData.add(key, file.getResource());
 		}
