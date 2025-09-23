@@ -1,6 +1,9 @@
 package org.cibseven.webapp.rest;
 
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.util.MultiValueMap;
 import org.cibseven.webapp.rest.model.Deployment;
@@ -36,7 +39,7 @@ public class DeploymentService extends BaseService {
     @PostMapping("/create")
     public Deployment createDeployment(
             @RequestParam MultiValueMap<String, Object> data,
-            @RequestParam(value = "data", required = true) MultipartFile[] files,
+            @RequestParam(required = true) MultipartFile[] files,
             CIBUser user) {
         // Check permissions
         checkPermission(user, SevenResourceType.DEPLOYMENT, PermissionConstants.CREATE_ALL);

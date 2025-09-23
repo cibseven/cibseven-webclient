@@ -84,9 +84,12 @@ public class DeploymentProvider extends SevenProviderBase implements IDeployment
 		// Prepare multipart form data - start with provided data
 		MultiValueMap<String, Object> formData = new LinkedMultiValueMap<>(data);
 		
-		// Add files to form data
-		for (MultipartFile file : files) {
-			formData.add("data", file.getResource());
+		// Add files to form data with indexed "data" keys (Camunda standard)
+		for (int i = 0; i < files.length; i++) {
+			MultipartFile file = files[i];
+			// Camunda expects files with parameter name "data", so we use indexed keys
+			String key = files.length > 1 ? "data" + i : "data";
+			formData.add(key, file.getResource());
 		}
 		
 		// Use the base class method for multipart POST
