@@ -47,7 +47,6 @@ describe('library.js', () => {
 
     it('all .vue files have license headers', () => {
       vueFiles.forEach(f => {
-        console.log(f)
         const content = fs.readFileSync(f, 'utf-8')
         const hasLicenseHeader = content.includes('Copyright CIB software GmbH') && content.includes('apache.org/licenses/LICENSE-2.0')
         expect(hasLicenseHeader).toBe(true, `File ${f} is missing license header`)
@@ -57,7 +56,6 @@ describe('library.js', () => {
     it('all .js files have license headers', () => {
       const jsFiles = findComponents(srcDir, '.js')
       jsFiles.forEach(f => {
-        console.log(f)
         const content = fs.readFileSync(f, 'utf-8')
         const hasLicenseHeader = content.includes('Copyright CIB software GmbH') && content.includes('apache.org/licenses/LICENSE-2.0')
         expect(hasLicenseHeader).toBe(true, `File ${f} is missing license header`)
