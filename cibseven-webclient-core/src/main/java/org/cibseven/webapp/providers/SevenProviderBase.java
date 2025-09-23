@@ -59,6 +59,7 @@ import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.MultiValueMap;
 
 import com.fasterxml.jackson.core.StreamReadConstraints;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -218,6 +219,27 @@ public abstract class SevenProviderBase {
 		try {
 			ResponseEntity<T> response = customRestTemplate.exchange(builder.build().toUri(), HttpMethod.POST, request, neededClass);
 			return response;
+		} catch (HttpStatusCodeException e) {
+			throw wrapException(e, user);
+		}
+	}
+
+	/**
+	 * Performs a POST request with multipart form data
+	 * @param url the URL to post to
+	 * @param formData the multipart form data containing files and parameters
+	 * @param neededClass the expected response class
+	 * @param user the user context for authentication
+	 * @return the response entity
+	 */
+	protected <T> ResponseEntity<T> doPostMultipart(String url, MultiValueMap<String, Object> formData, Class<T> neededClass, CIBUser user) {
+		HttpHeaders headers = createAuthHeader(user);
+		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
+
+		HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(formData, headers);
+		try {
+			return customRestTemplate.exchange(builder.build().toUri(), HttpMethod.POST, request, neededClass);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
 		}

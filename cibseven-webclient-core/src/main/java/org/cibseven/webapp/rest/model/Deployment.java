@@ -32,7 +32,7 @@ public class Deployment {
 	private String deploymentTime;
 	private String tenantId;
 	private Map<String, Process> deployedProcessDefinitions;
-	private String deployedCaseDefinitions;
-	private Object deployedDecisionDefinitions;
-	private String deployedDecisionRequirementsDefinitions;
+	private Map<String, Object> deployedCaseDefinitions;
+	private Map<String, Object> deployedDecisionDefinitions;
+	private Map<String, Object> deployedDecisionRequirementsDefinitions;
 }
