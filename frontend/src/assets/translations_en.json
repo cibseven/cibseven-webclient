@@ -1028,7 +1028,8 @@
 		"PasswordPolicyException": "Password does not match policy",
 		"InvalidUserIdException": "The user ID contains invalid characters. Only alphanumeric characters (a-z, A-Z, 0-9) are allowed. Please correct your entry.",
 		"invalidEmail": "Please enter a valid email address.",
-		"InvalidValueHistoryTimeToLive": "Null values are not allowed for history time to live."
+		"InvalidValueHistoryTimeToLive": "Null values are not allowed for history time to live.",
+		"DmnTransformationException": "The resource could not be updated. Unable to transform DMN resource."
 		
 	},
 	"searches": {
