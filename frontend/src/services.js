@@ -36,6 +36,17 @@ function setServicesBasePath(basePath) {
   servicesBasePath = basePath
 }
 
+/**
+ * Creates a document endpoint URL for file preview
+ */
+function createDocumentEndpointUrl(processInstanceId, variableName, authToken, contentType, cacheBust) {
+  // Use base path from current location (removes hash). This reliably includes any deployment context path, both locally and in production.
+  const basePath = window.location.href.replace(window.location.hash, '');
+  const encodedContentType = encodeURIComponent(contentType);
+  
+  return `${basePath}${getServicesBasePath()}/process/process-instance/${processInstanceId}/variables/${variableName}/data?token=${authToken}&contentType=${encodedContentType}&cacheBust=${cacheBust}`;
+}
+
 var TaskService = {
   findIdentityLinks: function(taskId) {
     return axios.get(getServicesBasePath() + '/task/' + taskId + '/identity-links')
@@ -330,7 +341,7 @@ var HistoryService = {
     if (maxResults != null) params.maxResults = maxResults
     return axios.post(getServicesBasePath() + '/process-history/instance', filters, { params })
   },
-  findProcessesInstancesHistoryById: function(id, activityId, firstResult, maxResults, filter = {}, active, sortingCriteria = [], fetchIncidents = false) {
+  findProcessesInstancesHistoryById: function(id, firstResult, maxResults, filter = {}, active, sortingCriteria = [], fetchIncidents = false) {
     const requestBody = {
       ...(filter || {}),
       processDefinitionId: id
@@ -339,16 +350,6 @@ var HistoryService = {
     // Add incident fetching if requested
     if (fetchIncidents) {
       requestBody.fetchIncidents = true
-    }
-
-    // Add activity filter
-    if (activityId) {
-      requestBody.activeActivityIdIn = [
-        ...(filter?.activityIdIn || []),
-        activityId,
-      ]
-      // remove duplicates
-      requestBody.activeActivityIdIn = [...new Set(requestBody.activeActivityIdIn)]
     }
 
     // Add text search with OR logic (business key LIKE or exact process instance ID)
@@ -370,6 +371,17 @@ var HistoryService = {
       } else {
         requestBody.finished = true
       }
+    }
+
+    if (requestBody.activeOrExecutedActivityIdIn !== undefined) {
+      if (requestBody.orQueries === undefined) {
+        requestBody.orQueries = []
+      }
+      requestBody.orQueries.push({
+        activeActivityIdIn: requestBody.activeOrExecutedActivityIdIn,
+        executedActivityIdIn: requestBody.activeOrExecutedActivityIdIn
+      })
+      delete requestBody.activeOrExecutedActivityIdIn
     }
 
     // Add sorting criteria
@@ -735,4 +747,4 @@ var ExternalTaskService = {
 
 export { TaskService, FilterService, ProcessService, VariableInstanceService, HistoricVariableInstanceService, AdminService, JobService, JobDefinitionService, SystemService,
   HistoryService, IncidentService, AuthService, InfoService, FormsService, TemplateService, DecisionService,
-  AnalyticsService, BatchService, TenantService, ExternalTaskService, getServicesBasePath, setServicesBasePath }
+  AnalyticsService, BatchService, TenantService, ExternalTaskService, getServicesBasePath, setServicesBasePath, createDocumentEndpointUrl }

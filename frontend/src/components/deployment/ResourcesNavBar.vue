@@ -22,7 +22,7 @@
       <div class="overflow-auto flex-fill">
         <div v-if="deployment" class="p-2 bg-white">
           <div class="d-flex justify-content-between bg-white ps-3 pe-3">
-            <div v-if="deployment">
+            <div>
               <h4>{{ deployment.name || deployment.id }}</h4>
             </div>
             <a class="btn btn-sm btn-primary text-dark border-white bg-white shadow-none" data-bs-toggle="collapse"
@@ -33,7 +33,7 @@
           </div>
           <div class="collapse border-none" id="deploymentInfo">
             <div class="card card-body text-dark border-white bg-white">
-              <div v-if="deployment">
+              <div>
                 <p>{{ formatDate(deployment.deploymentTime) }}</p>
                 <small>
                   <p>{{ $t('deployment.tenant') }}: {{ deployment.tenantId }}</p>
@@ -45,15 +45,16 @@
             </div>
           </div>
           <b-list-group v-if="resources && resources.length > 0">
-            <b-list-group-item v-for="resource of resources" :key="resource.id" action
+            <b-list-group-item v-for="resource of resources" :key="resource.id" button
               class="border-0 rounded-0 text-dark border-white bg-white" @click="showResource(resource)">
               <div class="d-flex align-items-center justify-content-between">
                 <div class="text-truncate me-0" style="flex: 1">
                   <span :title="$t('deployment.showModel')">{{ resource.name }}</span>
                 </div>
-                <b-button @click="showResource(resource)" size="sm" variant="outline-secondary"
+                <b-button @click.stop="showResource(resource)" size="sm" variant="outline-secondary"
                   class="border-0 mdi mdi-18px mdi-eye-outline text-dark bg-white"
                   :title="$t('deployment.showModel')"></b-button>
+                <component :is="ResourcesNavBarActions" v-if="ResourcesNavBarActions" :resource="resource" :deployment="deployment" @refresh-deployments="$emit('refresh-deployments')"></component>
               </div>
             </b-list-group-item>
             <b-list-group-item class="text-dark border-white bg-white">
@@ -80,8 +81,7 @@
       </div>
     </div>
 
-    <b-modal static ref="diagramModal" :size="error ? '' : 'xl'" :title="resource.name" dialog-class="h-75"
-      content-class="h-100" :ok-only="true">
+    <b-modal static ref="diagramModal" :size="error ? '' : 'xl'" :title="resource.name" :ok-only="true">
       <div class="container-fluid h-100 p-0">
         <div v-if="diagramLoading" class="text-center">
           <b-waiting-box styling="width: 35px"></b-waiting-box>
@@ -90,7 +90,10 @@
           <span class="mdi mdi-48px mdi-file-cancel-outline pe-1 text-warning"></span>
           <span>{{ $t('deployment.errorLoading') }}</span>
         </div>
-        <BpmnViewer v-show="!diagramLoading && error === false" class="h-100" ref="diagram"></BpmnViewer>
+        <div v-show="!diagramLoading && error === false" style="height: calc(100vh - 210px);">
+          <BpmnViewer v-show="!isDmnResource" class="h-100" ref="diagram"></BpmnViewer>
+          <DmnViewer v-show="isDmnResource" class="h-100" ref="dmnDiagram"></DmnViewer>
+        </div>
       </div>
     </b-modal>
 
@@ -100,12 +103,14 @@
 <script>
 import { ProcessService } from '@/services.js'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
+import DmnViewer from '@/components/decision/DmnViewer.vue'
 import { formatDate } from '@/utils/dates.js'
+import { mapActions } from 'vuex'
 
 export default {
   name: 'ResourcesNavBar',
-  emits: ['delete-deployment', 'show-deployment'],
-  components: { BpmnViewer },
+  emits: ['delete-deployment', 'show-deployment', 'refresh-deployments'],
+  components: { BpmnViewer, DmnViewer },
   props: { resources: Array, deploymentId: String },
   data: function () {
     return {
@@ -113,27 +118,55 @@ export default {
       diagramLoading: false,
       error: false,
       deployment: null,
-      toggleIcon: 'mdi-chevron-down'
+      toggleIcon: 'mdi-chevron-down',
+      isDmnResource: false
     }
-  },
-  created: function () {
-    this.loadDeployment()
   },
   watch: {
     deploymentId: function () {
       this.loadDeployment()
     },
   },
+  computed: {
+    ResourcesNavBarActions: function() {
+      return this.$options.components && this.$options.components.ResourcesNavBarActions
+        ? this.$options.components.ResourcesNavBarActions
+        : null
+    }
+  },
+  created: function () {
+    this.loadDeployment()
+  },
   methods: {
+    ...mapActions(['getDecisionList', 'getXmlById']),
     formatDate,
     showResource: function (resource) {
       this.error = false
       this.diagramLoading = true
-      this.$refs.diagram.cleanDiagramState()
-      this.$refs.diagram.drawDiagramState()
+      this.resource = resource
+      
+      // Determine if this is a DMN resource based on file extension
+      this.isDmnResource = resource.name.toLowerCase().endsWith('.dmn')
+      
+      // Clean diagram state for the appropriate viewer
+      if (this.isDmnResource) {
+        this.$refs.dmnDiagram?.cleanDiagramState()
+      } else {
+        this.$refs.diagram?.cleanDiagramState()
+        this.$refs.diagram?.drawDiagramState()
+      }
+      
       this.$refs.diagramModal.show()
 
-      this.resource = resource
+      if (this.isDmnResource) {
+        // Handle DMN resources
+        this.loadDmnResource(resource)
+      } else {
+        // Handle BPMN resources
+        this.loadBpmnResource(resource)
+      }
+    },
+    loadBpmnResource: function(resource) {
       ProcessService.findProcessesWithFilters('deploymentId=' + this.deployment.id + '&resourceName=' + resource.name)
         .then(processesDefinition => {
           if (processesDefinition.length > 0) {
@@ -147,12 +180,42 @@ export default {
               this.diagramLoading = false
               this.error = true
             })
-          }
-          else {
+          } else {
             this.diagramLoading = false
             this.error = true
           }
         }).catch(() => {
+          this.diagramLoading = false
+          this.error = true
+        })
+    },
+    loadDmnResource: function(resource) {
+      // Get decision definitions for this deployment and resource name for exact match
+      this.getDecisionList({ 
+        deploymentId: this.deployment.id,
+        resourceName: resource.name 
+      })
+        .then(decisions => {
+          if (decisions.length > 0) {
+            const decision = decisions[0] // Should be exact match with resourceName
+            // Get the XML using store action
+            this.getXmlById(decision.id)
+              .then(response => {
+                setTimeout(() => {
+                  this.diagramLoading = false
+                  this.$refs.dmnDiagram.showDiagram(response.dmnXml)
+                }, 500)
+              })
+              .catch(() => {
+                this.diagramLoading = false
+                this.error = true
+              })
+          } else {
+            this.diagramLoading = false
+            this.error = true
+          }
+        })
+        .catch(() => {
           this.diagramLoading = false
           this.error = true
         })

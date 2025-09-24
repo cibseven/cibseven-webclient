@@ -53,6 +53,8 @@ import { BWaitingBox } from 'cib-common-components'
 import postMessageMixin from '@/components/forms/postMessage.js'
 import IconButton from '@/components/forms/IconButton.vue'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
+import { FormsService, createDocumentEndpointUrl } from '@/services.js'
+import { findDocumentPreviewComponents, getDocumentReferenceVariableName } from './formJsUtils.js'
 
 export default {
   name: 'TemplateBase',
@@ -72,7 +74,36 @@ export default {
     }
   },
   methods: {
-    handleFileSelection: async function(event, fileInput, formularContent) {
+    /**
+     * Creates a document reference for file preview with endpoint and metadata
+     * @param {string} variableName - Variable name for the file
+     * @param {string} fileType - MIME type of the file
+     * @param {string} fileName - Name of the file
+     * @returns {Array} Document reference array for form-js
+     */
+    createDocumentReference(variableName, fileType, fileName) {
+      const documentReference = {
+        documentId: variableName,
+        metadata: {
+          contentType: fileType,
+          fileName: fileName
+        }
+      };
+
+      // Add cacheBust to prevent caching issues in form-js document preview component
+      const cacheBust = Date.now().toString();
+      
+      documentReference.endpoint = createDocumentEndpointUrl(
+        this.templateMetaData.task.processInstanceId,
+        variableName,
+        this.$root.user.authToken,
+        fileType,
+        cacheBust
+      );
+      
+      return [documentReference];
+    },
+    handleFileSelection: async function(event, fileInput, formularContent, taskId, form) {
       const file = event.target.files[0];
       if (file) {
         // Find the corresponding field in formContent to get the key
@@ -88,6 +119,46 @@ export default {
             variableName = field.key;
             // Store file for later upload - actual file upload will be done during form submission
             this.formFiles[variableName] = file;
+
+            // Check if there's a documentPreview component that references this variable
+            const documentPreviews = findDocumentPreviewComponents(formularContent);
+            const documentReferenceVar = getDocumentReferenceVariableName(variableName);
+            const hasDocumentPreview = documentPreviews.some(component =>
+              component.dataSource === `=${documentReferenceVar}` || 
+              component.dataSource === `=${variableName}`
+            );
+
+            // Create document reference only if there's a documentPreview component that uses this variable
+            if (hasDocumentPreview) {
+
+              // Document preview is only supported for task forms (taskId exists), not for start forms
+              if (!taskId) {
+                this.sendMessageToParent({
+                  method: 'displayErrorMessage',
+                  data: 'File preview is only available after the task has started.'
+                });
+                return; // Don't create document reference if preview is not possible
+              }
+
+              const uploadResponse = await FormsService.uploadVariableFileData(taskId, variableName, file, 'File');
+
+              // For successful uploads, we expect an empty response (204 No Content has no body)
+              if (uploadResponse != '') {
+                this.sendMessageToParent({
+                  method: 'displayErrorMessage',
+                  data: 'Cannot preview this file due to file upload failure.'
+                });
+                return; // Don't create document reference if upload failed
+              }
+
+              // Create a document reference variable for preview (includes endpoint with auth token and file metadata)
+              const documentReference = this.createDocumentReference(variableName, file.type, file.name);
+
+              // Direct state update (more reliable for document previews)
+              const formState = form._getState();
+              formState.data[documentReferenceVar] = documentReference;
+              form._setState(formState);
+            }
           }
         }
       }

@@ -38,7 +38,7 @@ import IconButton from '@/components/forms/IconButton.vue'
 import { Form } from '@bpmn-io/form-js'
 import '@bpmn-io/form-js/dist/assets/form-js.css'
 
-import { convertFormDataForFormJs } from './formJsUtils.js'
+import { convertFormDataForFormJs, findDocumentPreviewComponents, getDocumentReferenceVariableName, determineValueTypeFromSchema } from './formJsUtils.js'
 
 export default {
   name: "DeployedForm",
@@ -57,6 +57,7 @@ export default {
       loader: true,
       disabled: false,
       form: null,
+      formSchema: null,
       dataToSubmit: {},
       closeTask: true
     }
@@ -79,11 +80,51 @@ export default {
 
         // Convert the service response format to the format expected by form-js
         const convertedFormData = convertFormDataForFormJs(formData)
-        
+
+        // Find all documentPreview components in the form schema
+        const documentPreviewComponents = findDocumentPreviewComponents(formContent)
+        documentPreviewComponents.forEach(component => {
+          const dataSource = component.dataSource
+
+          // Check if dataSource starts with "=" (indicating a variable reference)
+          if (dataSource && dataSource.startsWith('=')) {
+            const variableName = dataSource.substring(1) // Remove the "=" prefix
+            let documentReferenceKey = variableName
+
+            // Check if there's a file picker component with the same variable name
+            const hasFilePicker = formContent.components && formContent.components.some(comp =>
+              comp.type === 'filepicker' && comp.key === variableName
+            );
+
+            if (hasFilePicker) {
+              // Add postfix to create a new variable name for document reference
+              documentReferenceKey = getDocumentReferenceVariableName(variableName)
+
+              // Update the component's dataSource to point to the new variable name
+              component.dataSource = `=${documentReferenceKey}`
+            }
+
+            // Check if this variable exists in original form data and is of type "File"
+            if (formData[variableName] && formData[variableName].type === 'File') {
+              const fileVariable = formData[variableName]
+              // Extract file type and name from the file variable metadata
+              const fileType = fileVariable.valueInfo?.mimeType || 'application/octet-stream'
+              const fileName = fileVariable.valueInfo?.filename || 'document'
+
+              // Use the unified createDocumentReference method from TemplateBase
+              const documentReference = this.$refs.templateBase.createDocumentReference(variableName, fileType, fileName)
+
+              // Store the document reference with the postfix in converted form data
+              convertedFormData[documentReferenceKey] = documentReference
+            }
+          }
+        })
+
         this.form = new Form({
             container: document.querySelector('#form'),
         })
         await this.form.importSchema(formContent, convertedFormData)
+        this.formSchema = formContent
 
         // Wait for DOM to be updated after form import
         await this.$nextTick()
@@ -93,21 +134,17 @@ export default {
         if (fileInputs.length > 0) {
           fileInputs.forEach(fileInput => {
             fileInput.addEventListener('change', async (e) => {
-              this.$refs.templateBase.handleFileSelection(e, fileInput, formContent);
+              this.$refs.templateBase.handleFileSelection(e, fileInput, formContent, this.taskId, this.form);
             });
           });
         }
 
       } catch (error) {
         console.error('Error loading form:', error);
-        this.sendMessageToParent({ method: 'displayErrorMessage', message: error.message || 'An error occurred during form loading' })
+        this.sendMessageToParent({ method: 'displayErrorMessage', data: error.message || 'An error occurred during form loading' })
         this.loader = false;
 
       }
-    },
-    saveForm: function() {
-      this.closeTask = false
-      this.setVariablesAndSubmit()
     },
     setVariablesAndSubmit: async function() {
       try {
@@ -125,7 +162,7 @@ export default {
           if (!this.$refs.templateBase.formFiles[key]) {
             this.dataToSubmit[key] = {
                   name: key,
-                  type: typeof value,
+                  type: determineValueTypeFromSchema(this.formSchema, key),
                   value: value,
                   valueInfo: null
               }
@@ -138,7 +175,7 @@ export default {
         this.loader = false
       } catch (error) {
         console.error('Error during form submission:', error)
-        this.sendMessageToParent({ method: 'displayErrorMessage', message: error.message || 'An error occurred during form submission' })
+        this.sendMessageToParent({ method: 'displayErrorMessage', data: error.message || 'An error occurred during form submission' })
         this.loader = false
       } finally {
         this.closeTask = true

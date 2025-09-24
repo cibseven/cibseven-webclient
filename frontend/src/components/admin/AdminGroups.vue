@@ -98,7 +98,7 @@ import { BWaitingBox } from 'cib-common-components'
 import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
 
 export default {
-  name: 'AdminGroup',
+  name: 'AdminGroups',
   components: { FlowTable, TaskPopper, BWaitingBox, ConfirmDialog },
   data: function () {
     return {

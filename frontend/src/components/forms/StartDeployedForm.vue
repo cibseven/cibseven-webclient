@@ -37,6 +37,8 @@ import IconButton from '@/components/forms/IconButton.vue'
 import { Form } from '@bpmn-io/form-js'
 import '@bpmn-io/form-js/dist/assets/form-js.css'
 
+import { determineValueTypeFromSchema } from './formJsUtils.js'
+
 export default {
   name: "StartDeployedForm",
   mixins: [postMessageMixin],
@@ -55,6 +57,7 @@ export default {
       disabled: false,
       form: null,
       dataToSubmit: {},
+      formSchema: null,
       closeTask: true
     }
   },
@@ -71,6 +74,7 @@ export default {
           container: document.querySelector('#form'),
         })
         await this.form.importSchema(formContent)
+        this.formSchema = formContent
 
         // Wait for DOM to be updated after form import
         await this.$nextTick()
@@ -80,7 +84,7 @@ export default {
         if (fileInputs.length > 0) {
           fileInputs.forEach(fileInput => {
             fileInput.addEventListener('change', async (e) => {
-              this.$refs.templateBase.handleFileSelection(e, fileInput, formContent);
+              this.$refs.templateBase.handleFileSelection(e, fileInput, formContent, null, this.form);
             });
           });
         }
@@ -88,7 +92,7 @@ export default {
         this.loader = false
       } catch (error) {
         console.error('Error loading start form:', error)
-        this.sendMessageToParent({ method: 'displayErrorMessage', message: error.message || 'An error occurred during form loading' })
+        this.sendMessageToParent({ method: 'displayErrorMessage', data: error.message || 'An error occurred during form loading' })
         this.loader = false
       }
     },
@@ -103,7 +107,7 @@ export default {
           if (!this.$refs.templateBase.formFiles[key]) {
             this.dataToSubmit[key] = {
               name: key,
-              type: typeof value,
+              type: determineValueTypeFromSchema(this.formSchema, key),
               value: value,
               valueInfo: null
             }
@@ -117,9 +121,6 @@ export default {
         });
 
         this.dataToSubmit.initiator = { name: 'initiator', type: 'string', value: this.$root.user.userID }
-        Object.keys(this.dataToSubmit).forEach(key => {
-          if (this.dataToSubmit[key].value === null) delete this.dataToSubmit[key]
-        })
         
         const data = await FormsService.submitStartFormVariables(this.processDefinitionId,
           Object.values(this.dataToSubmit), this.locale);
@@ -128,7 +129,7 @@ export default {
         this.loader = false
       } catch (error) {
         console.error('Error during form submission:', error)
-        this.sendMessageToParent({ method: 'displayErrorMessage', message: error.message || 'An error occurred during form submission' })
+        this.sendMessageToParent({ method: 'displayErrorMessage', data: error })
         this.loader = false
       }
     }

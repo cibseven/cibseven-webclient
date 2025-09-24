@@ -84,7 +84,7 @@ export default {
     ...mapGetters('job', ['jobs'])
   },
   methods: {
-    ...mapActions('job', ['loadJobs', 'retryJobById', 'getHistoryJobLog', 'getHistoryJobLogStacktrace', 'deleteJob']),
+    ...mapActions('job', ['loadJobs', 'retryJobById', 'deleteJob']),
     async loadFailedJobs() {
       if (!this.batch?.batchJobDefinitionId) return
       this.loading = true
@@ -105,13 +105,7 @@ export default {
       this.loadFailedJobs()
     },
     async seeFullLog(jobId) {
-      const params = {
-        jobId,
-        sortBy: 'timestamp',
-        sortOrder: 'desc'
-      }
-      await this.getHistoryJobLog(params)
-      this.$refs.jobLogModal.show()
+      this.$refs.jobLogModal.show(jobId)
     }
   }
 }

@@ -42,6 +42,7 @@ import { appRoutes,
 import { updateAppTitle, checkExternalReturn, isMobile, hasHeader, getTheme } from './utils/init.js'
 import { applyTheme, handleAxiosError, fetchAndStoreProcesses, fetchDecisionsIfEmpty, setupTaskNotifications } from './utils/init'
 import { parseXMLDocumentation } from './utils/parser.js'
+import { applyConfigDefaults } from './utils/config.js'
 import CibSeven from '@/components/CibSeven.vue'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import ContentBlock from '@/components/common-components/ContentBlock.vue'
@@ -137,7 +138,7 @@ import SystemDiagnostics from '@/components/system/SystemDiagnostics.vue'
 import ExecutionMetrics from '@/components/system/ExecutionMetrics.vue'
 import ShortcutsModal from '@/components/modals/ShortcutsModal.vue'
 import ShortcutsTable from '@/components/modals/ShortcutsTable.vue'
-import { TaskService, HistoryService, ProcessService, getServicesBasePath, 
+import { TaskService, HistoryService, ProcessService, getServicesBasePath,
   setServicesBasePath, IncidentService, DecisionService, BatchService } from '@/services.js';
 import DeployedForm from '@/components/forms/DeployedForm.vue'
 import StartDeployedForm from '@/components/forms/StartDeployedForm.vue'
@@ -153,6 +154,25 @@ import TranslationsDownload from '@/components/common-components/TranslationsDow
 import StackTraceModal from '@/components/process/modals/StackTraceModal.vue'
 import RetryModal from '@/components/process/modals/RetryModal.vue'
 import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
+
+import JobLogModal from '@/components/batches/modals/JobLogModal.vue'
+import FailedJobs from '@/components/batches/tables/FailedJobs.vue'
+import LoginForm from '@/components/login/LoginForm.vue'
+import ProcessDefinitionDetails from '@/components/process/ProcessDefinitionDetails.vue'
+import ProcessInstanceTabs from '@/components/process/ProcessInstanceTabs.vue'
+import ProcessInstancesTabs from '@/components/process/ProcessInstancesTabs.vue'
+import AnnotationModal from '@/components/process/modals/AnnotationModal.vue'
+import JobDefinitionPriorityModal from '@/components/process/modals/JobDefinitionPriorityModal.vue'
+import JobDefinitionStateModal from '@/components/process/modals/JobDefinitionStateModal.vue'
+import CalledProcessDefinitionsTable from '@/components/process/tables/CalledProcessDefinitionsTable.vue'
+import CalledProcessInstancesTable from '@/components/process/tables/CalledProcessInstancesTable.vue'
+import JobDefinitionsTable from '@/components/process/tables/JobDefinitionsTable.vue'
+import JobsTable from '@/components/process/tables/JobsTable.vue'
+
+// mixins
+import assigneeMixin from '@/mixins/assigneeMixin.js'
+import { getEnabledShortcuts, getShortcutsForModal, 
+  getGlobalNavigationShortcuts, getTaskEventShortcuts, checkKeyMatch } from './utils/shortcuts.js'
 
 const registerComponents = function(app) {
   app.component('cib-seven', CibSeven)
@@ -390,6 +410,23 @@ export {
   TranslationsDownload,
   StackTraceModal,
   RetryModal,
+  JobLogModal,
+  FailedJobs,
+  LoginForm,
+  ProcessDefinitionDetails,
+  ProcessInstanceTabs,
+  ProcessInstancesTabs,
+  AnnotationModal,
+  JobDefinitionPriorityModal,
+  JobDefinitionStateModal,
+  CalledProcessDefinitionsTable,
+  CalledProcessInstancesTable,
+  JobDefinitionsTable,
+  JobsTable,
+
+  // mixins
+  assigneeMixin,
+
   // router
   appRoutes,
   createAppRouter,
@@ -409,8 +446,16 @@ export {
   fetchDecisionsIfEmpty,
   setupTaskNotifications,
   parseXMLDocumentation,
+  getEnabledShortcuts,
+  getShortcutsForModal,
+  getGlobalNavigationShortcuts,
+  getTaskEventShortcuts,
+  checkKeyMatch,
 
   initEmbeddedForm,
   ScrollableTabsContainer,
-  tabUrlMixin
+  tabUrlMixin,
+
+  // Configuration utilities
+  applyConfigDefaults
 }

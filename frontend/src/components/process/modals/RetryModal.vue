@@ -59,63 +59,63 @@
 </template>
 
 <script>
-	import { moment } from '@/globals.js'
+import { moment } from '@/globals.js'
 
-	export default {
-		name: 'retryModal',
-		inject: ['currentLanguage'],
-		emits: ['increment-number-retry'],
-		props: {
-			translationPrefix: { type: String, required: true }
+export default {
+	name: 'RetryModal',
+	inject: ['currentLanguage'],
+	emits: ['increment-number-retry'],
+	props: {
+		translationPrefix: { type: String, required: true }
+	},
+	data: function() {
+		return {
+			selectedItem: null,
+			executionOption: 'keepDueDate',
+			executionOptions: ['keepDueDate','setDueDate'],
+			scheduledAt: null,
+			invalidDate: false
+		}
+	},
+	methods: {
+		show: function(selectedItem) {
+			const now = new Date()
+			now.setMinutes(now.getMinutes() + 1)
+			const hours = now.getHours().toString().padStart(2, '0')
+			const minutes = now.getMinutes().toString().padStart(2, '0')				
+			this.invalidDate = false
+			this.selectedItem = selectedItem
+			this.executionOption = 'keepDueDate'
+			this.scheduledAt = { date: new Date(), time: `${hours}:${minutes}` },
+			this.$refs.retryModal.show()
 		},
-		data: function() {
-			return {
-				selectedItem: null,
-				executionOption: 'keepDueDate',
-				executionOptions: ['keepDueDate','setDueDate'],
-				scheduledAt: null,
-				invalidDate: false
-			}
+		hide: function() {
+			this.$refs.retryModal.hide()
 		},
-		methods: {
-			show: function(selectedItem) {
-				const now = new Date()
-				now.setMinutes(now.getMinutes() + 1)
-				const hours = now.getHours().toString().padStart(2, '0')
-				const minutes = now.getMinutes().toString().padStart(2, '0')				
-				this.invalidDate = false
-				this.selectedItem = selectedItem
-				this.executionOption = 'keepDueDate'
-				this.scheduledAt = { date: new Date(), time: `${hours}:${minutes}` },
-				this.$refs.retryModal.show()
-			},
-			hide: function() {
-				this.$refs.retryModal.hide()
-			},
-			isInThePast: function(ymd, date) {
-				return date < moment().startOf('day')
-			},
-			formatScheduledAt: function() {
-				const date = moment(this.scheduledAt.date)
-				const datePart = date.format('YYYY-MM-DD')
-				const timePart = this.scheduledAt.time + ':00.000'
-				return moment(`${datePart}T${timePart}`).format('YYYY-MM-DDTHH:mm:ss.SSSZZ')
-			},
-			incrementNumberRetries: function() {
-				this.invalidDate = false
-				var params = { retries: 1 }
-				if (this.executionOption === 'setDueDate') {
-					if (!this.scheduledAt.date) {
-						this.invalidDate = true
-						return
-					}
-					params.dueDate = this.formatScheduledAt()
+		isInThePast: function(ymd, date) {
+			return date < moment().startOf('day')
+		},
+		formatScheduledAt: function() {
+			const date = moment(this.scheduledAt.date)
+			const datePart = date.format('YYYY-MM-DD')
+			const timePart = this.scheduledAt.time + ':00.000'
+			return moment(`${datePart}T${timePart}`).format('YYYY-MM-DDTHH:mm:ss.SSSZZ')
+		},
+		incrementNumberRetries: function() {
+			this.invalidDate = false
+			var params = { retries: 1 }
+			if (this.executionOption === 'setDueDate') {
+				if (!this.scheduledAt.date) {
+					this.invalidDate = true
+					return
 				}
-				this.$emit('increment-number-retry', {
-					item: this.selectedItem,
-					params
-				})
+				params.dueDate = this.formatScheduledAt()
 			}
+			this.$emit('increment-number-retry', {
+				item: this.selectedItem,
+				params
+			})
 		}
 	}
+}
 </script>

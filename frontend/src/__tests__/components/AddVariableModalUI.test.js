@@ -1,3 +1,19 @@
+/*
+ * Copyright CIB software GmbH and/or licensed to CIB software GmbH
+ * under one or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information regarding copyright
+ * ownership. CIB software licenses this file to you under the Apache License,
+ * Version 2.0; you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { i18n } from '@/i18n'
@@ -187,6 +203,17 @@ describe('AddVariableModal.vue UI interactions', () => {
       await wrapper.setData({ type: 'Xml', value: '<invalid></xml>' })
       expect(wrapper.vm.valueValidationError).toBeTruthy()
     })
+
+    it('Null', async () => {
+      await changeType('Null')
+      expect(wrapper.vm.value).toBe(null)
+    })
+
+    it('Boolean', async () => {
+      await changeType('Boolean')
+      expect(wrapper.vm.value).toBe(true)
+    })
+
   })
 
   describe('buttons', () => {

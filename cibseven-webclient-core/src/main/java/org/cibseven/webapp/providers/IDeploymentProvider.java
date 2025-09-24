@@ -31,6 +31,7 @@ import jakarta.servlet.http.HttpServletRequest;
 public interface IDeploymentProvider {
 
 	public Deployment deployBpmn(MultiValueMap<String, Object> data, MultiValueMap<String, MultipartFile> file, CIBUser user) throws SystemException;
+	public Deployment createDeployment(MultiValueMap<String, Object> data, MultipartFile[] files, CIBUser user);
 	public Long countDeployments(CIBUser user, String nameLike);
 	public Collection<Deployment> findDeployments(CIBUser user, String nameLike, int firstResult, int maxResults, String sortBy, String sortOrder);
 	public Collection<DeploymentResource> findDeploymentResources(String deploymentId, CIBUser user);

@@ -67,3 +67,77 @@ export function convertFormDataForFormJs(formData) {
   
   return convertedFormData
 }
+
+/**
+ * Find all documentPreview components in form schema
+ * @param {Object} formContent - Form schema object
+ * @returns {Array} Array of documentPreview components
+ */
+export function findDocumentPreviewComponents(formContent) {
+  return formContent.components?.filter(component => component.type === 'documentPreview') || []
+}
+
+/**
+ * Generate document reference variable name by adding postfix.
+ * The postfix is needed to avoid conflicts when file picker and document preview use the same variable name in the form.
+ * Without the postfix, their data would overwrite each other in form data.
+ * 
+ * @param {string} variableName - Original variable name
+ * @returns {string} Variable name with document reference postfix
+ */
+export function getDocumentReferenceVariableName(variableName) {
+  return variableName + '_documentReference'
+}
+
+/**
+ * Determine the value type based on the form field schema definition
+ * @param {Object} schema - The form schema object
+ * @param {string} fieldKey - The field key to look up
+ * @param {*} value - The field value
+ * @returns {string} The determined type (Integer, Double, Boolean, String)
+ */
+export function determineValueTypeFromSchema(schema, fieldKey) {
+  // Find the field definition in the form schema
+  const fieldDef = findFieldByKey(schema, fieldKey)
+  
+  if (fieldDef) {
+    switch (fieldDef.type) {
+      case 'number':
+        // Check if it has decimal digits to determine Integer vs Double
+        if (fieldDef.decimalDigits && fieldDef.decimalDigits > 0) {
+          return 'Double'
+        } else {
+          return 'Integer'
+        }
+      case 'checkbox':
+        return 'Boolean'
+      default:
+        return 'String'
+    }
+  }
+  
+  // Default to String if field not found in schema
+  return 'String'
+}
+
+/**
+ * Recursively find a field by key in the form schema
+ * @param {Object} schema - The schema object to search in
+ * @param {string} key - The field key to find
+ * @returns {Object|null} The field definition or null if not found
+ */
+export function findFieldByKey(schema, key) {
+  if (!schema || !schema.components) return null
+  
+  for (const component of schema.components) {
+    if (component.key === key) {
+      return component
+    }
+    // Recursively search in nested components if they exist
+    if (component.components) {
+      const found = findFieldByKey(component, key)
+      if (found) return found
+    }
+  }
+  return null
+}

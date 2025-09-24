@@ -54,6 +54,7 @@
           />
         </template>
         <template v-slot:cell(actions)="table">
+          <component :is="VariablesTableActionsPlugin" v-if="VariablesTableActionsPlugin" :table-item="table.item" :selected-instance="selectedInstance" :file-objects="fileObjects"></component>
           <b-button v-if="isFile(table.item)" :title="displayValueTooltip(table.item)"
             size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-download-outline"
             @click="downloadFile(table.item)">
@@ -66,7 +67,7 @@
             :title="$t('process-instance.edit')" size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-square-edit-outline"
             @click="modifyVariable(table.item)">
           </b-button>
-          <b-button :title="$t('confirm.delete')" size="sm" variant="outline-secondary"
+          <b-button v-if="hasDeletionPermission" :title="$t('confirm.delete')" size="sm" variant="outline-secondary"
             class="border-0 mdi mdi-18px mdi-delete-outline" @click="deleteVariable(table.item)"></b-button>
         </template>
       </FlowTable>
@@ -76,9 +77,11 @@
     </div>
 
     <AddVariableModal ref="addVariableModal" :selected-instance="selectedInstance" @variable-added="loadSelectedInstanceVariables(); $refs.success.show()"></AddVariableModal>
-    <DeleteVariableModal ref="deleteVariableModal"></DeleteVariableModal>
+    <DeleteVariableModal ref="deleteVariableModal" @variable-deleted="onVariableDeleted"></DeleteVariableModal>
     <EditVariableModal ref="editVariableModal" :disabled="!isActiveInstance" @variable-updated="loadSelectedInstanceVariables(); $refs.success.show()" @instance-status-updated="updateInstanceStatus"></EditVariableModal>
     <SuccessAlert top="0" ref="success" style="z-index: 9999">{{ $t('alert.successOperation') }}</SuccessAlert>
+    <SuccessAlert top="0" ref="runtimeVariableDeleted" style="z-index: 9999">{{ $t('process-instance.variables.deleteStatus.runtime') }}</SuccessAlert>
+    <SuccessAlert top="0" ref="historicVariableDeleted" style="z-index: 9999">{{ $t('process-instance.variables.deleteStatus.historic') }}</SuccessAlert>
     <SuccessAlert ref="messageCopy" style="z-index: 9999"> {{ $t('process.copySuccess') }} </SuccessAlert>
     <TaskPopper ref="importPopper"></TaskPopper>
 
@@ -99,7 +102,6 @@
 import { BWaitingBox } from 'cib-common-components'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import TaskPopper from '@/components/common-components/TaskPopper.vue'
-import { ProcessService, HistoryService } from '@/services.js'
 import DeleteVariableModal from '@/components/process/modals/DeleteVariableModal.vue'
 import AddVariableModal from '@/components/process/modals/AddVariableModal.vue'
 import EditVariableModal from '@/components/process/modals/EditVariableModal.vue'
@@ -107,12 +109,13 @@ import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import processesVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
+import { permissionsMixin } from '@/permissions.js'
 import { mapGetters } from 'vuex'
 
 export default {
   name: 'VariablesTable',
   components: { FlowTable, TaskPopper, AddVariableModal, DeleteVariableModal, EditVariableModal, SuccessAlert, BWaitingBox, CopyableActionButton },
-  mixins: [processesVariablesMixin, copyToClipboardMixin],
+  mixins: [ processesVariablesMixin, copyToClipboardMixin, permissionsMixin ],
   data: function() {
     return {
       filteredVariables: [],
@@ -127,9 +130,22 @@ export default {
         ? this.$options.components.ProcessVariablesSearchBoxPlugin
         : null
     },
+    VariablesTableActionsPlugin: function() {
+      return this.$options.components && this.$options.components.VariablesTableActionsPlugin
+        ? this.$options.components.VariablesTableActionsPlugin
+        : null
+    },
     isActiveInstance: function() {
       const activeStates = ['ACTIVE', 'SUSPENDED']
       return this.selectedInstance && activeStates.includes(this.selectedInstance.state)
+    },
+    hasDeletionPermission: function() {
+      if (this.isActiveInstance) {
+        return this.processByPermissions(this.$root.config.permissions.deleteProcessInstance, this.selectedInstance)
+      }
+      else {
+        return this.processByPermissions(this.$root.config.permissions.deleteHistoricProcessInstance, this.selectedInstance)
+      }
     },
   },
   methods: {
@@ -138,16 +154,7 @@ export default {
     },
     displayValue(item) {
       if (this.isFileValueDataSource(item)) {
-        if (item.value && typeof item.value === 'object' && item.value.name) {
-          return item.value.name
-        }
-        if (item.value && typeof item.value === 'string') {
-          try {
-            const parsed = JSON.parse(item.value)
-            if (parsed && parsed.name) return parsed.name
-          } catch { return '' }
-        }
-        return ''
+        return this.getFileVariableName(item)
       }
       else if (item.type === 'File') {
         return item.valueInfo.filename
@@ -208,30 +215,17 @@ export default {
       this.$refs.editVariableModal.show(variable.id)
     },
     async deleteVariable(variable) {
-      this.$refs.deleteVariableModal.show({
-        ok: async () => {
-          // Try active, fallback to historic if error
-          if (this.selectedInstance.state === 'ACTIVE') {
-            try {
-              await ProcessService.deleteVariableByExecutionId(variable.executionId, variable.name)
-              this.loadSelectedInstanceVariables()
-              this.$refs.success.show()
-            } catch {
-              // Fallback to historic deletion
-              await HistoryService.deleteVariableHistoryInstance(variable.id)
-              this.selectedInstance.state = 'COMPLETED'
-              this.loadSelectedInstanceVariables()
-              this.$refs.success.show()
-            }
-          } else {
-            await HistoryService.deleteVariableHistoryInstance(variable.id)
-            this.loadSelectedInstanceVariables()
-            this.$refs.success.show()
-          }
-        },
-        variable: variable
-      })
-    }
+      this.$refs.deleteVariableModal.show(this.isActiveInstance, variable)
+    },
+    onVariableDeleted() {
+      this.loadSelectedInstanceVariables()
+      if (this.isActiveInstance) {
+        this.$refs.runtimeVariableDeleted.show()
+      }
+      else {
+        this.$refs.historicVariableDeleted.show()
+      }
+    },
   }
 }
 </script>

@@ -53,6 +53,7 @@ export default {
   name: 'ProcessCard',
   mixins: [permissionsMixin, processesMixin],
   props: { process: Object },
+  emits: ['favorite', 'start-process'],
   computed: {
     viewStyles: function() {
       return {

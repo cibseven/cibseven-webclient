@@ -23,6 +23,9 @@ import org.cibseven.webapp.exception.AccessDeniedException;
 import org.cibseven.webapp.exception.ApplicationException;
 import org.cibseven.webapp.exception.ErrorMessage;
 import org.cibseven.webapp.exception.NoObjectFoundException;
+import org.cibseven.webapp.rest.BaseService;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -31,7 +34,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import lombok.extern.slf4j.Slf4j;
 
-@ControllerAdvice @ResponseBody
+@ControllerAdvice (assignableTypes = {BaseService.class}) @ResponseBody
+@Order(Ordered.HIGHEST_PRECEDENCE)
 @Slf4j
 public class ExceptionConverter {
 	

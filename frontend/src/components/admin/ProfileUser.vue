@@ -42,7 +42,7 @@
 
     <transition name="slide-in" mode="out-in">
       <div class="d-flex flex-column bg-light w-100 h-100" v-if="user.id">
-        <b-button v-if="editMode" variant="light" style="min-height: 35px; line-height: 20px;" :block="true" class="rounded-0 border-bottom text-start" href="#/seven/auth/admin/users">
+        <b-button v-if="editMode" variant="light" style="min-height: 40px; line-height: 20px;" :block="true" class="rounded-0 border-bottom text-start" href="#/seven/auth/admin/users">
           <span class="mdi mdi-arrow-left me-2"></span>
           <span class="fw-bold">{{ $t('admin.users.title') }}</span>
         </b-button>

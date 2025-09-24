@@ -32,6 +32,10 @@
       </template>
     </i18n-t>
 
+    <b-form-checkbox disabled v-model="cascadeDelete" class="mt-3">
+      {{ $t('deployment.deleteRunningInstances') }}
+    </b-form-checkbox>
+
   </ConfirmDialog>
 </template>
 
@@ -43,7 +47,8 @@ export default {
   components: { ConfirmDialog },
   data: function() {
     return {
-      params: Object
+      params: Object,
+      cascadeDelete: true,
     }
   },
   methods: {

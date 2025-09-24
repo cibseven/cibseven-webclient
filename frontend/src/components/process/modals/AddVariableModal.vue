@@ -30,14 +30,15 @@ export default {
   name: 'AddVariableModal',
   components: { AddVariableModalUI },
   props: { selectedInstance: Object },
+  emits: ['variable-added'],
   methods: {
     show: function(variable = {}) {
       this.$refs.addVariableModalUI.show(variable)
     },
     addVariable: function(variable) {
       ProcessService.putLocalExecutionVariable(this.selectedInstance.id, variable.name, variable).then(() => {
-        this.$emit('variable-added')
         this.$refs.addVariableModalUI.hide()
+        this.$emit('variable-added')
       })
     },
   }

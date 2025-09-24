@@ -102,7 +102,7 @@
         :is-instance-view="true" :activity-instance-history="activityInstanceHistory"></IncidentsTable>
       <UserTasksTable v-else-if="activeTab === 'usertasks'" :selected-instance="selectedInstance"></UserTasksTable>
       <JobsTable v-else-if="activeTab === 'jobs'" :instance="selectedInstance" :process="process"></JobsTable>
-      <CalledProcessInstancesTable v-else-if="activeTab === 'calledProcessInstances'" :selectedInstance="selectedInstance" :activityInstanceHistory="activityInstanceHistory" :activity-instance="activityInstance"></CalledProcessInstancesTable>
+      <CalledProcessInstancesTable v-else-if="activeTab === 'calledProcessInstances'" :selected-instance="selectedInstance" :activity-instance-history="activityInstanceHistory"></CalledProcessInstancesTable>
       <ExternalTasksTable v-else-if="activeTab === 'externalTasks'" :instance="selectedInstance"></ExternalTasksTable>
       <component :is="ProcessInstanceTabsContentPlugin" v-if="ProcessInstanceTabsContentPlugin" :instance="selectedInstance" :active-tab="activeTab" :process="process"></component>
     </div>
@@ -139,6 +139,7 @@ export default {
     activityInstance: Object,
     activityInstanceHistory: Object
   },
+  emits: ['task-selected'],
   data: function() {
     return {
       filterHeight: 0,

@@ -660,6 +660,17 @@ public interface BpmProvider {
 	void deleteDeployment(String deploymentId, Boolean cascade, CIBUser user) throws SystemException;
 
 	/**
+	 * Creates a new deployment using the Camunda REST API.
+	 *
+	 * @param data the deployment parameters (deployment-name, deployment-source, tenant-id, etc.)
+	 * @param files the files to deploy (DMN, BPMN, etc.)
+	 * @param user the user creating the deployment
+	 * @return the created deployment
+	 * @throws SystemException in case of an error
+	 */
+	Deployment createDeployment(MultiValueMap<String, Object> data, MultipartFile[] files, CIBUser user) throws SystemException;
+
+	/**
 	 *  Identity links, e.g. to get the candidates user or groups of a task.
 	 *  
 	 * @param taskId the ID of the task.

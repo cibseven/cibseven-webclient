@@ -86,8 +86,8 @@ export default {
     },
     modalClasses() {
       return [
-        this.sizeClass,
-        { 'modal-dialog-scrollable': this.scrollable, 'modal-fullscreen': this.fullscreen }
+  		  this.sizeClass,
+	      { 'modal-dialog-scrollable': this.scrollable, 'modal-fullscreen': this.fullscreen }
       ]
     }
   },

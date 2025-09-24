@@ -19,6 +19,34 @@ import groovy.transform.Field
     testMode: false
 ]
 
+// Shared function for npm package release
+def npmReleasePackage(String packageDir, String npmrcFile) {
+    // Read the version from package.json to determine if it's a dev version
+    def packageVersion = sh(
+        script: "grep '\"version\"' ${packageDir}/package.json | cut -d'\"' -f4",
+        returnStdout: true
+    ).trim()
+    def isDevVersion = packageVersion.contains('-dev')
+    def mavenTagArg = isDevVersion ? "-Dnpm.publish.tag.arg=' --tag dev'" : ""
+
+    sh """
+        # Copy the .npmrc file to the package directory
+        echo "Copying .npmrc file to ${packageDir} directory..."
+        cp ${npmrcFile} ./${packageDir}/.npmrc
+        
+        echo "Current package.json version:"
+        grep '"version"' ${packageDir}/package.json
+        
+        echo "Running Maven to release the npm package..."
+        mvn -T4 \\
+            -Dbuild.number=${BUILD_NUMBER} \\
+            -Drelease-npm-library=${packageDir} \\
+            -Dskip.npm.version.update=true \\
+            ${mavenTagArg} \\
+            clean generate-resources
+    """
+}
+
 pipeline {
     agent {
         kubernetes {
@@ -226,12 +254,7 @@ pipeline {
                 script {
                     withCredentials([file(credentialsId: 'credential-cibseven-artifacts-npmrc', variable: 'NPMRC_FILE')]) {
                         withMaven() {
-                            sh """
-                                # Copy the .npmrc file to the frontend directory
-                                cp ${NPMRC_FILE} ./cib-common-components/.npmrc
-                                # Run Maven with the required profile
-                                mvn -T4 -Dbuild.number=${BUILD_NUMBER} clean generate-resources -Drelease-npm-library=cib-common-components -Dskip.npm.version.update=true
-                            """
+                            npmReleasePackage('cib-common-components', env.NPMRC_FILE)
                         }
                     }
                 }
@@ -248,27 +271,7 @@ pipeline {
                 script {
                     withCredentials([file(credentialsId: 'credential-cibseven-artifacts-npmrc', variable: 'NPMRC_FILE')]) {
                         withMaven() {
-                            def baseVersion = mavenProjectInformation.version.replace("-SNAPSHOT", "")
-                            def dynamicVersion = mavenProjectInformation.version.contains('-SNAPSHOT') ?
-                                "${baseVersion}-${BUILD_NUMBER}-SNAPSHOT" : mavenProjectInformation.version
-
-                            sh """
-                                echo "Copy the .npmrc file to the frontend directory..."
-                                cp ${NPMRC_FILE} ./bpm-sdk/.npmrc
-
-                                echo "Setting dynamic version to ${dynamicVersion}..."
-                                sed -i 's/__CI_VERSION__/${dynamicVersion}/' bpm-sdk/package.json
-
-                                echo "Final package.json version:"
-                                grep '"version"' bpm-sdk/package.json
-
-                                echo "Running Maven to release the npm package..."
-                                mvn -T4 \
-                                    -Dbuild.number=${BUILD_NUMBER} \
-                                    -Drelease-npm-library=bpm-sdk \
-                                    -Dskip.npm.version.update=true \
-                                    clean generate-resources
-                            """
+                            npmReleasePackage('bpm-sdk', env.NPMRC_FILE)
                         }
                     }
                 }
@@ -285,28 +288,7 @@ pipeline {
                 script {
                     withCredentials([file(credentialsId: 'credential-cibseven-artifacts-npmrc', variable: 'NPMRC_FILE')]) {
                         withMaven() {
-
-                            def baseVersion = mavenProjectInformation.version.replace("-SNAPSHOT", "")
-                            def dynamicVersion = mavenProjectInformation.version.contains('-SNAPSHOT') ?
-                                "${baseVersion}-${BUILD_NUMBER}-SNAPSHOT" : mavenProjectInformation.version
-
-                            sh """
-                                echo "Copy the .npmrc file to the frontend directory..."
-                                cp ${NPMRC_FILE} ./frontend/.npmrc
-
-                                echo "Setting dynamic version to ${dynamicVersion}..."
-                                sed -i 's/__CI_VERSION__/${dynamicVersion}/' frontend/package.json
-
-                                echo "Final package.json version:"
-                                grep '"version"' frontend/package.json
-
-                                echo "Running Maven to release the npm package..."
-                                mvn -T4 \
-                                    -Dbuild.number=${BUILD_NUMBER} \
-                                    -Drelease-npm-library=frontend \
-                                    -Dskip.npm.version.update=true \
-                                    clean generate-resources
-                            """
+                            npmReleasePackage('frontend', env.NPMRC_FILE)
                         }
                     }
                 }

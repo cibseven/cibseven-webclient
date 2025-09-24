@@ -171,6 +171,7 @@ export default {
      */
     externalSort: { type: Boolean, default: false },
   },
+  emits: ['mouseenter', 'mouseleave', 'external-sort', 'click'],
   data() {
     return {
       columnVisibility: {},
