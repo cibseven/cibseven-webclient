@@ -746,7 +746,7 @@ var ExternalTaskService = {
 }
 
 var DeploymentService = {
-  createDeployment({ data, files }) {
+  createDeployment(data, files) {
     const formData = new FormData()
     // Add all data parameters to the form
     if (data) {
