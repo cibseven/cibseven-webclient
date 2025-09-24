@@ -54,7 +54,7 @@
                 <b-button @click.stop="showResource(resource)" size="sm" variant="outline-secondary"
                   class="border-0 mdi mdi-18px mdi-eye-outline text-dark bg-white"
                   :title="$t('deployment.showModel')"></b-button>
-                <component :is="ResourcesNavBarActions" v-if="ResourcesNavBarActions" :resource="resource" :deployment="deployment" @refresh-deployments="$emit('refresh-deployments')"></component>
+                <component :is="ResourcesNavBarActions" v-if="ResourcesNavBarActions" :resource="resource" :deployment="deployment" @deployment-success="$emit('deployment-success')"></component>
               </div>
             </b-list-group-item>
             <b-list-group-item class="text-dark border-white bg-white">
@@ -109,7 +109,7 @@ import { mapActions } from 'vuex'
 
 export default {
   name: 'ResourcesNavBar',
-  emits: ['delete-deployment', 'show-deployment', 'refresh-deployments'],
+  emits: ['delete-deployment', 'show-deployment', 'deployment-success'],
   components: { BpmnViewer, DmnViewer },
   props: { resources: Array, deploymentId: String },
   data: function () {

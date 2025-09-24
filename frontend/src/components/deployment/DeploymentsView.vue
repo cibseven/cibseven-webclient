@@ -81,7 +81,7 @@
         <template v-slot:right>
           <ResourcesNavBar v-if="!resourcesLoading" :resources="resources" :deploymentId="deploymentId"
             @delete-deployment="$refs.deleteSelectedModal.show()" @show-deployment="loadToSelectedDeployment" 
-            @refresh-deployments="onRefreshDeployments">
+            @deployment-success="onDeploymentSuccess">
           </ResourcesNavBar>
           <b-waiting-box v-else styling="width: 35px" class="h-100 d-flex justify-content-center"></b-waiting-box>
         </template>
@@ -149,6 +149,7 @@
     </b-modal>
     <SuccessAlert top="0" style="z-index: 1031" ref="deploymentsDeleted"> {{ $t('deployment.deploymentsDeleted',
       [deploymentsDelData.deleted, deploymentsDelData.total]) }}</SuccessAlert>
+    <SuccessAlert ref="success" top="0" style="z-index: 1031">{{ $t('alert.successOperation') }}</SuccessAlert>
   </div>
 </template>
 
@@ -437,7 +438,11 @@ export default {
       this.deployment = null
       this.loadNextPage()
     },
-    onRefreshDeployments() {
+    onDeploymentSuccess() {
+      this.$refs.success.show()
+      this.refreshDeployments()
+    },
+    refreshDeployments() {
       // Fetch the latest deployments to check for new ones
       ProcessService.findDeployments(this.filter, 0, this.maxResults, this.sortBy, this.sortOrder).then(latestDeployments => {
         // Find new deployments that don't exist in current list
