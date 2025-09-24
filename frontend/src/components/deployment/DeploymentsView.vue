@@ -362,6 +362,16 @@ export default {
       this.deploymentsDelData.deleted = 0
       var pool = this.deploymentsSelected.slice(0, this.deploymentsSelected.length)
       pool.forEach(deployment => {
+		if (this.deploymentId) {
+			if (deployment.id === this.deploymentId) {
+				this.$router.push({
+					name: 'deployments',
+					params: {
+				  		deploymentId: ''
+				  	}
+				})
+			}
+		}
         let found = this.groups.findIndex(group => {
           const index = group.data.findIndex(d => {
             return deployment.id === d.id
