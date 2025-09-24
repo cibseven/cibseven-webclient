@@ -40,7 +40,7 @@
           <b-form-input v-model="serializationDataFormat"></b-form-input>
         </b-form-group>
       </div>
-      <b-form-group class="p-0 mb-0">
+      <b-form-group class="p-0 mb-0" v-if="type !== 'Null'">
         <template #label>{{ $t('process-instance.variables.value') }}<span v-if="type != 'Boolean'">*</span></template>
         <div v-if="type === 'Boolean'" class="d-flex justify-content-end">
           <span class="me-2">{{ value ? $t('process.true') : $t('process.false') }}</span>
