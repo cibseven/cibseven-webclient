@@ -9,7 +9,7 @@ const DEFAULT_CONFIG = {
   theme: "generic",
   taskListTime: "30000",
   warnOnDueExpirationIn: 48,
-  authorizationEnabled: true,
+  authorizationEnabled: false,
   permissions: {
     tasklist: { application: ["ALL"] },
     cockpit: { application: ["ALL"] },
