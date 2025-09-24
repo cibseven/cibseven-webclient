@@ -56,7 +56,7 @@
             :disabled="true"></textarea>
         </b-tab>
       </b-tabs>
-      <b-form-group v-if="isEditSerializedValue" :label="$t('process-instance.variables.value')">
+      <b-form-group v-if="isEditSerializedValue && variable.type !== 'Null'" :label="$t('process-instance.variables.value')">
         <div v-if="variable.type === 'Boolean'" class="d-flex justify-content-end">
           <span class="me-2">{{ formattedValue ? $t('process.true') : $t('process.false') }}</span>
           <b-form-checkbox v-model="formattedValue" switch :title="formattedValue ? $t('process.true') : $t('process.false')"></b-form-checkbox>
@@ -155,6 +155,8 @@ props: {
         case 'Boolean':
           // No specific validation needed for these types
           return null
+        case 'Null':
+          return this.formattedValue !== null ? 'Should be null' : null
         case 'Json': {
           if (this.formattedValue.trim() === '') {
             return false
@@ -207,6 +209,8 @@ props: {
             return this.variable.value.toString() // Convert primitive types to string
           case 'Boolean':
             return !!this.variable.value
+          case 'Null':
+            return null
           case 'Json': {
             try {
               return JSON.stringify(JSON.parse(this.variable.value), null, 2)
@@ -374,6 +378,7 @@ props: {
       this.saving = true
 
       let value = this.formattedValue.toString()
+      if (this.variable.type === 'Null') value = null
       // minimize value
       if (this.variable.type === 'Json') {
         value = JSON.stringify(JSON.parse(value))

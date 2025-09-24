@@ -63,7 +63,7 @@
             size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-upload-outline"
             @click="selectedVariable = table.item; $refs.uploadFile.show()">
           </b-button>
-          <b-button v-if="!['File', 'Null'].includes(table.item.type) && !isFileValueDataSource(table.item)"
+          <b-button v-if="'File' !== table.item.type && !isFileValueDataSource(table.item)"
             :title="$t('process-instance.edit')" size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-square-edit-outline"
             @click="modifyVariable(table.item)">
           </b-button>
