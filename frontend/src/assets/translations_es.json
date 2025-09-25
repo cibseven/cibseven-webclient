@@ -267,6 +267,10 @@
 			"objectTypeName": "Nombre del tipo de objeto",
 			"serializationDataFormat": "Formato de datos de serialización",
 			"confirmDelete": "¿Desea eliminar la variable?",
+			"loadStatus": {
+				"runtimeError": "Se produjo un error al intentar cargar la variable \"{name}\" con la ID {id}.",
+				"historicError": "Se produjo un error al intentar cargar la variable histórica \"{name}\" con la ID {id}."
+			},
 			"deleteStatus": {
 				"runtime": "La variable se eliminó correctamente.",
 				"runtimeError": "Se produjo un error al intentar eliminar la variable \"{name}\".",

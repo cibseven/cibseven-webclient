@@ -267,6 +267,10 @@
 			"objectTypeName": "Objekttypname",
 			"serializationDataFormat": "Serialisierungsdatenformat",
 			"confirmDelete": "Wollen Sie die Variable löschen?",
+			"loadStatus": {
+				"runtimeError": "Beim Laden der Variable \"{name}\" mit der ID {id} ist ein Fehler aufgetreten.",
+				"historicError": "Beim Laden der historischen Variable \"{name}\" mit der ID {id} ist ein Fehler aufgetreten."
+			},
 			"deleteStatus": {
 				"runtime": "Die Variable wurde erfolgreich gelöscht.",
 				"runtimeError": "Beim Löschen der Variable \"{name}\" ist ein Fehler aufgetreten.",

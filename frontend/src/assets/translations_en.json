@@ -267,6 +267,10 @@
 			"objectTypeName": "Object type name",
 			"serializationDataFormat": "Serialization data format",
 			"confirmDelete": "Do you want to delete the variable?",
+			"loadStatus": {
+				"runtimeError": "An error occurred while attempting to load the variable \"{name}\" with {id} id.",
+				"historicError": "An error occurred while attempting to load the historic variable \"{name}\" with {id} id."
+			},
 			"deleteStatus": {
 				"runtime": "The variable was deleted successfully.",
 				"runtimeError": "An error occurred while attempting to delete the variable \"{name}\".",

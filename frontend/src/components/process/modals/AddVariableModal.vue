@@ -18,6 +18,7 @@
 -->
 <template>
   <AddVariableModalUI ref="addVariableModalUI"
+    :edit-mode="false"
     @add-variable="addVariable"
   ></AddVariableModalUI>
 </template>
@@ -32,10 +33,11 @@ export default {
   props: { selectedInstance: Object },
   emits: ['variable-added'],
   methods: {
-    show: function(variable = {}) {
-      this.$refs.addVariableModalUI.show(variable)
+    show: function() {
+      this.$refs.addVariableModalUI.show()
     },
     addVariable: function(variable) {
+      // TODO handle error/save
       ProcessService.putLocalExecutionVariable(this.selectedInstance.id, variable.name, variable).then(() => {
         this.$refs.addVariableModalUI.hide()
         this.$emit('variable-added')
