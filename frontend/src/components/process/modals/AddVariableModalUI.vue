@@ -30,7 +30,7 @@
 
       <!-- Name -->
       <b-form-group>
-        <template #label>{{ $t('process-instance.variables.name') }}*</template>
+        <template #label>{{ $t('process-instance.variables.name') }}<span v-if="!editMode">*</span></template>
         <b-form-input ref="variableName" v-model="name" autofocus
           @focus="isNameFocused = true, nameFocused++"
           @blur="isNameFocused = false"
