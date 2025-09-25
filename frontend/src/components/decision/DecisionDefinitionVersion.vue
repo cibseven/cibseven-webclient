@@ -89,14 +89,13 @@ import DmnViewer from '@/components/decision/DmnViewer.vue'
 import InstancesTable from '@/components/decision/InstancesTable.vue'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
 import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
-import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import { BWaitingBox } from 'cib-common-components'
 import { mapGetters, mapActions } from 'vuex'
 import { debounce } from '@/utils/debounce.js'
 
 export default {
   name: 'DecisionDefinitionVersion',
-  components: { DmnViewer, InstancesTable, BWaitingBox, ScrollableTabsContainer, SuccessAlert },
+  components: { DmnViewer, InstancesTable, BWaitingBox, ScrollableTabsContainer },
   mixins: [permissionsMixin, resizerMixin],
   props: {
     versionIndex: String,
