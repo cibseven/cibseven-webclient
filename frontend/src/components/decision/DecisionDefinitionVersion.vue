@@ -63,7 +63,7 @@
                 </div>
               </div>
               <div class="col-4">
-                <component :is="DecisionDefinitionVersionActions" v-if="DecisionDefinitionVersionActions" :decision="decision" @deployment-success="onDeploymentSuccess"></component>
+                <component :is="DecisionDefinitionVersionActions" v-if="DecisionDefinitionVersionActions" :decision="decision" :decision-key="decisionKey"></component>
               </div>
             </div>
           </div>
@@ -79,9 +79,6 @@
         </div>
       </div>
     </div>
-    
-    <!-- Success Alert -->
-    <SuccessAlert ref="success" style="z-index: 1031">{{ $t('alert.successOperation') }}</SuccessAlert>
   </div>
 </template>
 
@@ -138,7 +135,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions(['getXmlById', 'getHistoricDecisionInstances', 'refreshDecisionVersions']),
+    ...mapActions(['getXmlById', 'getHistoricDecisionInstances']),
     changeTab: function(selectedTab) {
       this.tabs.forEach((tab) => {
         tab.active = tab.id === selectedTab.id
@@ -195,11 +192,7 @@ export default {
       this.filter = evt.target.value
       this.firstResult = 0
       this.loadInstances()
-    }),
-    async onDeploymentSuccess() {
-      this.$refs.success.show()
-      await this.refreshDecisionVersions(this.decisionKey, this.$root.config.lazyLoadHistory)
-    }
+    })
   }
 }
 </script>
