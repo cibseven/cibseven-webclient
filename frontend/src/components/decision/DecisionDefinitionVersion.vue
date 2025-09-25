@@ -45,13 +45,27 @@
     <div class="position-absolute w-100 overflow-hidden border-top" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
       <div v-if="activeTab === 'instances'">
         <div ref="filterTable" class="bg-white d-flex position-absolute w-100">
-          <div class="col-3 p-3">
-            <b-input-group size="sm">
-              <template #prepend>
-                <b-button :title="$t('searches.search')" aria-hidden="true" size="sm" class="rounded-left" variant="secondary"><span class="mdi mdi-magnify" style="line-height: initial"></span></b-button>
-              </template>
-              <b-form-input :title="$t('searches.search')" size="sm" :placeholder="$t('searches.search')" @input="search"></b-form-input>
-            </b-input-group>
+          <div class="container p-2">
+            <div class="row align-items-center pb-1">
+              <div class="col-8">
+                <div class="border rounded d-flex flex-fill align-items-center">
+                  <b-button @click.stop="search"
+                    size="sm" class="mdi mdi-magnify mdi-24px text-secondary" variant="link"
+                    :title="$t('searches.refreshAndFilter')"></b-button>
+                  <div class="flex-grow-1">
+                    <input
+                      type="text"
+                      :placeholder="$t('searches.filter')"
+                      class="form-control-plaintext w-100"
+                      @input="search"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="col-4">
+                <component :is="DecisionDefinitionVersionActions" v-if="DecisionDefinitionVersionActions" :decision="decision" @deployment-success="onDeploymentSuccess"></component>
+              </div>
+            </div>
           </div>
         </div>
         <div ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 60px; left: 0; bottom: 0" @scroll="handleScrollDecisions">
@@ -65,6 +79,9 @@
         </div>
       </div>
     </div>
+    
+    <!-- Success Alert -->
+    <SuccessAlert ref="success" style="z-index: 1031">{{ $t('alert.successOperation') }}</SuccessAlert>
   </div>
 </template>
 
@@ -75,13 +92,14 @@ import DmnViewer from '@/components/decision/DmnViewer.vue'
 import InstancesTable from '@/components/decision/InstancesTable.vue'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
 import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
+import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import { BWaitingBox } from 'cib-common-components'
 import { mapGetters, mapActions } from 'vuex'
 import { debounce } from '@/utils/debounce.js'
 
 export default {
   name: 'DecisionDefinitionVersion',
-  components: { DmnViewer, InstancesTable, BWaitingBox, ScrollableTabsContainer },
+  components: { DmnViewer, InstancesTable, BWaitingBox, ScrollableTabsContainer, SuccessAlert },
   mixins: [permissionsMixin, resizerMixin],
   props: {
     versionIndex: String,
@@ -106,6 +124,11 @@ export default {
     ...mapGetters(['getSelectedDecisionVersion']),
     decision: function() {
       return this.getSelectedDecisionVersion()
+    },
+    DecisionDefinitionVersionActions: function() {
+      return this.$options.components && this.$options.components.DecisionDefinitionVersionActions
+        ? this.$options.components.DecisionDefinitionVersionActions
+        : null
     }
   },
   mounted: function() {
@@ -115,7 +138,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions(['getXmlById', 'getHistoricDecisionInstances']),
+    ...mapActions(['getXmlById', 'getHistoricDecisionInstances', 'refreshDecisionVersions']),
     changeTab: function(selectedTab) {
       this.tabs.forEach((tab) => {
         tab.active = tab.id === selectedTab.id
@@ -172,7 +195,11 @@ export default {
       this.filter = evt.target.value
       this.firstResult = 0
       this.loadInstances()
-    })
+    }),
+    async onDeploymentSuccess() {
+      this.$refs.success.show()
+      await this.refreshDecisionVersions(this.decisionKey, this.$root.config.lazyLoadHistory)
+    }
   }
 }
 </script>
