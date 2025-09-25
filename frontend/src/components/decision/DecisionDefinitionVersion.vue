@@ -49,7 +49,7 @@
             <div class="row align-items-center pb-1">
               <div class="col-8">
                 <div class="border rounded d-flex flex-fill align-items-center">
-                  <b-button @click.stop="search"
+                  <b-button @click.stop="search(filter)"
                     size="sm" class="mdi mdi-magnify mdi-24px text-secondary" variant="link"
                     :title="$t('searches.refreshAndFilter')"></b-button>
                   <div class="flex-grow-1">
@@ -57,7 +57,7 @@
                       type="text"
                       :placeholder="$t('searches.filter')"
                       class="form-control-plaintext w-100"
-                      @input="search"
+                      @input="search($event.target.value)"
                     />
                   </div>
                 </div>
@@ -188,8 +188,8 @@ export default {
       this.firstResult += this.$root.config.maxProcessesResults
       this.loadInstances(true)
     },
-    search: debounce(800, function(evt) { 
-      this.filter = evt.target.value
+    search: debounce(800, function(filter) {
+      this.filter = filter
       this.firstResult = 0
       this.loadInstances()
     })
