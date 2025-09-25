@@ -79,7 +79,6 @@
 
         <!-- Input: Date -->
         <b-form-datepicker v-else-if="type === 'Date'"
-          ref="dateValue"
           v-model="value"
           :disabled="disabled || saving || loading"></b-form-datepicker>
 
@@ -388,9 +387,6 @@ export default {
             case 'Long':
             case 'Double':
               this.$refs.numberValue?.focus()
-              break
-            case 'Date':
-              this.$refs.dateValue?.focus()
               break
             case 'String':
             case 'Json':
