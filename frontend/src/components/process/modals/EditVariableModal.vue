@@ -142,7 +142,11 @@ props: {
 
     calcEditableValue: function(variable) {
       if (!variable) {
-        return ''
+        return null
+      }
+
+      if (variable.value === null || variable.value === undefined) {
+        return null
       }
 
       // Format the original value based on its type

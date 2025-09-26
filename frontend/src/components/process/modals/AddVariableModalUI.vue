@@ -61,6 +61,7 @@
 
         <!-- Label -->
         <template #label v-if="!editMode || (type !== 'Object')">{{ $t('process-instance.variables.value') }}<span v-if="type != 'Boolean'">*</span></template>
+        <p v-if="value === null"><small class="form-text text-muted">Null value is specified.</small></p>
 
         <!-- Input: Boolean -->
         <div v-if="type === 'Boolean'" class="d-flex justify-content-end">
@@ -263,73 +264,120 @@ export default {
         },
       ]
     },
-    isValid: function() {
-      if (this.type === 'Null') return true
-      if (this.type === 'Boolean') return !!this.name
-      if (!this.name || this.value == null) return false
-      if (this.type === 'Object') {
-        return this.objectTypeName.length > 0 && this.serializationDataFormat.length > 0
-      }
-      return this.valueValidationError == null
-    },
     valueValidationError: function() {
-      if (this.value === null) return null
+      if (this.value === undefined) return 'Value is required'
 
-      if (['Short', 'Integer', 'Long', 'Double'].includes(this.type)) {
-        if (isNaN(this.value)) {
-          return 'isNaN'
-        }
-
-        if (this.type === 'Short') {
-          if (this.value < -32768 || this.value > 32767) {
-            return 'Out of range: -32768 ... 32767'
-          }
-        }
-        else if (this.type === 'Integer') {
-          if (this.value < -2147483648 || this.value > 2147483647) {
-            return 'Out of range: -2147483648 ... 2147483647'
-          }
-        }
-        else if (this.type === 'Long') {
-          if (this.value < -Number.MAX_SAFE_INTEGER || this.value > Number.MAX_SAFE_INTEGER) {
-            return 'Out of range: -' + Number.MAX_SAFE_INTEGER + ' ... ' + Number.MAX_SAFE_INTEGER
-          }
-        }
-      }
-      else if (this.type === 'Json') {
-        if (this.value.trim() === '') {
-          return false
-        }
-        // JSON validation
-        try {
-          JSON.parse(this.value)
-          return null
-        } catch (e) {
-          return e.message
-        }
-      }
-      else if (this.type === 'Xml') {
-        const parser = new DOMParser()
-        const xmlDoc = parser.parseFromString(this.value, 'text/xml')
-        const error = xmlDoc.getElementsByTagName('parsererror')
-        if (error?.length > 0) {
-          return error[0].textContent || error[0].innerText
-        }
-      }
-      else if (this.type === 'Object') {
-        if (this.value.trim() === '') {
-          return false
-        }
-        // Object validation
-        try {
-          const parsedValue = JSON.parse(this.value)
-          if (typeof parsedValue !== 'object' || parsedValue === null) {
-            return 'Invalid object format. Expected a JSON object.'
+      switch (this.type) {
+        case 'Boolean': {
+          if (this.value === null) return null
+          if (typeof this.value !== 'boolean') {
+            return 'Invalid boolean value'
           }
           return null
-        } catch (e) {
-          return e.message
         }
+        case 'Date': {
+          if (this.value === null) return null
+          if (typeof this.value !== 'string') {
+            return 'Invalid string value'
+          }
+          if (this.value.trim() === '') {
+            return null
+          }
+          if (!moment(this.value, moment.ISO_8601, true).isValid()) {
+            return 'Invalid date format'
+          }
+          return null
+        }
+        case 'String': {
+          if (this.value === null) return null
+          if (typeof this.value !== 'string') {
+            return 'Invalid string value'
+          }
+          return null
+        }
+        case 'Short':
+        case 'Integer':
+        case 'Long':
+        case 'Double': {
+          if (this.value === null) return null
+          if (this.value === '' || isNaN(this.value) || isNaN(Number(this.value))) {
+            return 'Invalid number'
+          }
+
+          if (this.type === 'Short') {
+            if (this.value < -32768 || this.value > 32767) {
+              return 'Out of range: -32768 ... 32767'
+            }
+            // if floating point number
+            if (!Number.isInteger(Number(this.value))) {
+              return 'Invalid Short value: must be an short integer'
+            }
+          }
+          else if (this.type === 'Integer') {
+            if (this.value < -2147483648 || this.value > 2147483647) {
+              return 'Out of range: -2147483648 ... 2147483647'
+            }
+            // if floating point number
+            if (!Number.isInteger(Number(this.value))) {
+              return 'Invalid Integer value: must be an integer'
+            }
+          }
+          else if (this.type === 'Long') {
+            if (this.value < -Number.MAX_SAFE_INTEGER || this.value > Number.MAX_SAFE_INTEGER) {
+              return 'Out of range: -' + Number.MAX_SAFE_INTEGER + ' ... ' + Number.MAX_SAFE_INTEGER
+            }
+            // if floating point number
+            if (!Number.isInteger(Number(this.value))) {
+              return 'Invalid Long value: must be an Long integer'
+            }
+          }
+
+          return null
+        }
+        case 'Null': {
+          if (this.value === null) return null
+          return this.value === null ? null : 'Value must be null'
+        }
+        case 'Object': {
+          if (this.objectTypeName.toString().trim().length === 0 ||
+            this.serializationDataFormat.toString().trim().length === 0) {
+            return 'Object Type Name and Serialization Data Format are required'
+          }
+
+          if (this.value === null) return null
+
+          // based on serialization format
+          switch (this.serializationDataFormat) {
+            case 'application/json': {
+              return this.verifyJson(this.value)
+            }
+          }
+
+          if (this.value.trim() === '') {
+            return null
+          }
+
+          return null
+        }
+        case 'Json': {
+          return this.verifyJson(this.value)
+        }
+        case 'Xml': {
+          if (this.value === null) return null
+          if (this.value.trim() === '') {
+            return null
+          }
+
+          const parser = new DOMParser()
+          const xmlDoc = parser.parseFromString(this.value, 'text/xml')
+          const error = xmlDoc.getElementsByTagName('parsererror')
+          if (error?.length > 0) {
+            return error[0].textContent || error[0].innerText
+          }
+          break
+        }
+        default:
+          return 'Unknown type: ' + this.type
       }
 
       return null
@@ -341,14 +389,44 @@ export default {
       if (this.saving || this.loading) {
         return true // Disable save if already saving or loading
       }
-      if (!this.isValid) {
+      if (!this.name) {
+        return true // Disable save if name is empty
+      }
+      if (this.valueValidationError !== null) {
         return true // Disable save if form is not valid
       }
       return false // Enable save
     }
   },
   methods: {
-    show: function(variable = {}) {
+    verifyJson: function(value) {
+      if (value === null) return null
+      if (typeof value !== 'string') {
+        return 'Invalid JSON value'
+      }
+      if (value.trim() === '') {
+        return null
+      }      
+      try {
+        JSON.parse(value)
+        return null
+      } catch (e) {
+        return e.message
+      }
+    },
+
+    reset: function() {
+      this.name = ''
+      this.nameFocused = 0
+      this.isNameFocused = true
+      this.type = 'String'
+      this.value = ''
+      this.valueSerialized = null
+      this.objectTypeName = ''
+      this.serializationDataFormat = ''
+    },
+
+    setData: function(variable = {}) {
       this.reset()
 
       if (variable !== null && Object.keys(variable).length > 0) {
@@ -365,18 +443,26 @@ export default {
         this.type = type
 
         this.$nextTick(() => {
+          // wait until type watcher sets correct default value
+          // and then override with provided value
+
           this.value = value
           this.valueSerialized = valueSerialized
           this.objectTypeName = objectTypeName
           this.serializationDataFormat = serializationDataFormat
         })
       }
+    },
 
+    show: function(variable = {}) {
+      this.setData(variable)
       this.$refs.addVariable.show()
     },
+
     hide: function() {
       this.$refs.addVariable.hide()
     },
+
     onShown: function() {
       this.$nextTick(() => {
         if (this.error) return
@@ -401,6 +487,7 @@ export default {
         }
       })
     },
+
     onSubmit: function() {
       var variable = {
         name: this.name,
@@ -422,16 +509,6 @@ export default {
 
       this.$emit('add-variable', variable)
     },
-    reset: function() {
-      this.name = ''
-      this.nameFocused = 0
-      this.isNameFocused = true
-      this.type = 'String'
-      this.value = ''
-      this.valueSerialized = null
-      this.objectTypeName = ''
-      this.serializationDataFormat = ''
-    }
   }
 }
 </script>
