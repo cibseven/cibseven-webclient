@@ -250,7 +250,12 @@ export default {
         }
       }
       else if (type === 'Object') {
-        this.value = '' + this.value
+        if (this.value === null || this.value === 0 || this.value === 0.0 || this.value === false || this.value === true) {
+          this.value = ''
+        }
+        else {
+          this.value = '' + this.value
+        }
       }
       else if (type === 'Xml') {
         this.value = ''
