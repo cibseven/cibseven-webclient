@@ -45,7 +45,7 @@
     <div class="position-absolute w-100 overflow-hidden border-top" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
       <div v-if="activeTab === 'instances'">
         <div ref="filterTable" class="bg-white d-flex position-absolute w-100">
-          <div class="container p-2">
+          <div class="container-fluid p-2">
             <div class="row align-items-center pb-1">
               <div class="col-8">
                 <div class="border rounded d-flex flex-fill align-items-center">
