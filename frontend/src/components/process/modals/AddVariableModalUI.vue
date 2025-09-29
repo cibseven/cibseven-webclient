@@ -199,7 +199,15 @@ export default {
       if (type === 'Boolean') {
         this.value = true
       }
-      else if (['Short', 'Integer', 'Long', 'Double'].includes(type)) {
+      else if (['Short', 'Integer', 'Long'].includes(type)) {
+        if (this.value == null || this.value === '' || isNaN(this.value) || isNaN(Number(this.value))) {
+          this.value = 0
+        }
+        else {
+          this.value = Math.trunc(Number(this.value))
+        }
+      }
+      else if ('Double' === type) {
         if (this.value == null || this.value === '' || isNaN(this.value) || isNaN(Number(this.value))) {
           this.value = 0
         }
@@ -208,7 +216,7 @@ export default {
         }
       }
       else if (type === 'Date') {
-        this.value = moment(new Date()).startOf('day').format('YYYY-MM-DDTHH:mm:ss.SSSZZ')
+        this.value = this.currentDate()
       }
       else if (type === 'Json') {
         this.value = '{}'
@@ -399,6 +407,10 @@ export default {
     }
   },
   methods: {
+    currentDate: function() {
+      return moment(new Date()).startOf('day').format('YYYY-MM-DDTHH:mm:ss.SSSZZ')
+    },
+
     verifyJson: function(value) {
       if (value === null) return null
       if (typeof value !== 'string') {
