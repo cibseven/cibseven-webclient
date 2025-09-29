@@ -73,7 +73,7 @@ describe('AddVariableModal.vue UI interactions', () => {
           'b-form-input': BFormInput,
           'b-form-select': BFormSelect,
           'b-form-checkbox': BFormCheckbox,
-          'b-form-datepicker': false,
+          'b-form-datepicker': true,
           'b-button': BButton,
           'b-alert': BAlert,
           'b-tab': { template: '<div><slot></slot></div>' },
