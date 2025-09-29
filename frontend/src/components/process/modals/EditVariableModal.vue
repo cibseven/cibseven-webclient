@@ -98,46 +98,37 @@ props: {
       this.saving = true
 
       var formData = new FormData()
-      const jsonBlob = new Blob([this.formattedValue.toString()], { type: 'application/json' })
+      const jsonBlob = new Blob([variable.value.toString()], { type: 'application/json' })
       formData.append('data', jsonBlob, 'blob')
-      formData.append('valueType', variable.objectTypeName)
+      formData.append('valueType', variable.valueInfo?.objectTypeName || 'java.lang.Object')
 
-      try {
-        await ProcessService.modifyVariableDataByExecutionId(this.executionId, this.variableName, formData).then(() => {
-          this.$emit('variable-updated')
-          this.$refs.addVariableModalUI.hide()
-        })
-      }
-      finally {
+      await ProcessService.modifyVariableDataByExecutionId(this.executionId, this.variableName, formData).then(() => {
+        this.$emit('variable-updated')
+        this.$refs.addVariableModalUI.hide()
+      }).catch((error) => {
+        this.error = error.message
         this.saving = false
-      }
+      })
     },
 
     async updateVariableSerialized(variable) {
       this.saving = true
 
-      const value = (variable.type === 'Null') ? null : variable.value.toString()
+      const value = (variable.type === 'Null') ? null : (variable.value?.toString() || null)
       const data = { modifications: {} }
       data.modifications[this.variableName] = {
         value,
         type: variable.type,
-      }
-      if (variable.objectTypeName || variable.serializationDataFormat) {
-        data.modifications[this.variableName].valueInfo = {
-          objectTypeName: variable.objectTypeName || null,
-          serializationDataFormat: variable.serializationDataFormat || null,
-        }
+        valueInfo: variable.valueInfo,
       }
 
-      try {
-        await ProcessService.modifyVariableByExecutionId(this.executionId, data).then(() => {
-          this.$emit('variable-updated')
-          this.$refs.addVariableModalUI.hide()
-        })
-      }
-      finally {
+      await ProcessService.modifyVariableByExecutionId(this.executionId, data).then(() => {
+        this.$emit('variable-updated')
+        this.$refs.addVariableModalUI.hide()
+      }).catch((error) => {
+        this.error = error.message
         this.saving = false
-      }
+      })
     },
 
     calcEditableValue: function(variable) {
