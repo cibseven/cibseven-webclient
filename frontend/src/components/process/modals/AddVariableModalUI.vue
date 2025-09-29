@@ -253,6 +253,24 @@ export default {
         if (this.value === null || this.value === 0 || this.value === 0.0 || this.value === false || this.value === true) {
           this.value = ''
         }
+        else if (typeof this.value === 'string' && this.verifyJson(this.value) === null) {
+          try {
+            const obj = JSON.parse(this.value)
+            this.value = JSON.stringify(obj, null, 2)
+
+            if (!this.objectTypeName) {
+              if (obj instanceof Array) this.objectTypeName = 'java.util.List'
+              if (obj instanceof Object) this.objectTypeName = 'java.util.Map'
+              else this.objectTypeName = ''
+            }
+
+            if (!this.serializationDataFormat && this.objectTypeName) {
+              this.serializationDataFormat = 'application/json'
+            }
+          } catch {
+            this.value = '' + this.value
+          }
+        }
         else {
           this.value = '' + this.value
         }

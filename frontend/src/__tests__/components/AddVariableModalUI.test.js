@@ -545,7 +545,7 @@ describe('AddVariableModal.vue UI interactions', () => {
         
         it('to Object', async () => {
           await changeType('Object')
-          expect(wrapper.vm.value).toBe('10.50')
+          expect(wrapper.vm.value).toBe('10.5')
         })
       })
 
@@ -588,7 +588,7 @@ describe('AddVariableModal.vue UI interactions', () => {
 
         it('to Object', async () => {
           await changeType('Object')
-          expect(wrapper.vm.value).toBe('{"a":"b"}')
+          expect(wrapper.vm.value).toBe('{\n  "a": "b"\n}')
         })
       })
     })
@@ -1297,6 +1297,52 @@ describe('AddVariableModal.vue UI interactions', () => {
         it('"123" to Object', async () => {
           await changeType('Object')
           expect(wrapper.vm.value).toBe('123')
+          expect(wrapper.vm.objectTypeName).toBe('')
+          expect(wrapper.vm.serializationDataFormat).toBe('')          
+        })
+      })
+
+      describe('json object {"a":"b"}', () => {
+        beforeEach(async () => {
+          await setData({ type: 'Json', value: '{"a":"b"}' })
+          expect(wrapper.vm.value).toBe('{"a":"b"}')
+        })
+
+        it('"{"a":"b"}" to Boolean', async () => {
+          await changeType('Boolean')
+          expect(wrapper.vm.value).toBe(true)
+        })
+
+        it('"{"a":"b"}" to Long', async () => {
+          await changeType('Long')
+          expect(wrapper.vm.value).toBe(0)
+        })
+
+        it('"{"a":"b"}" to Double', async () => {
+          await changeType('Double')
+          expect(wrapper.vm.value).toBe(0.0)
+        })
+
+        it('"{"a":"b"}" to String', async () => {
+          await changeType('String')
+          expect(wrapper.vm.value).toBe('{"a":"b"}')
+        })
+
+        it('"{"a":"b"}" to Date', async () => {
+          await changeType('Date')
+          expect(wrapper.vm.value).toBe(wrapper.vm.currentDate())
+        })
+
+        it('"{"a":"b"}" to Xml', async () => {
+          await changeType('Xml')
+          expect(wrapper.vm.value).toBe('')
+        })
+
+        it('"{"a":"b"}" to Object', async () => {
+          await changeType('Object')
+          expect(wrapper.vm.value).toBe('{\n  "a": "b"\n}')
+          expect(wrapper.vm.objectTypeName).toBe('java.util.Map')
+          expect(wrapper.vm.serializationDataFormat).toBe('application/json')
         })
       })
     })
