@@ -427,13 +427,10 @@ export default {
     },
 
     setData: function(variable = {}) {
-      this.reset()
-
       if (variable !== null && Object.keys(variable).length > 0) {
         const {
           name = '',
           type = 'String',
-          value = '',
           valueSerialized = null,
           objectTypeName = '',
           serializationDataFormat = ''
@@ -446,7 +443,13 @@ export default {
           // wait until type watcher sets correct default value
           // and then override with provided value
 
-          this.value = value
+          if (variable?.value === null || variable?.value === undefined || !Object.prototype.hasOwnProperty.call(variable, 'value')) {
+            this.value = null
+          }
+          else {
+            this.value = variable?.value
+          }
+
           this.valueSerialized = valueSerialized
           this.objectTypeName = objectTypeName
           this.serializationDataFormat = serializationDataFormat
@@ -455,6 +458,7 @@ export default {
     },
 
     show: function(variable = {}) {
+      this.reset()
       this.setData(variable)
       this.$refs.addVariable.show()
     },
