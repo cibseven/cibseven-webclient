@@ -70,7 +70,7 @@ props: {
         variable = null
         this.error = this.$t(
           this.historic ? 'process-instance.variables.loadStatus.historicError' : 'process-instance.variables.loadStatus.runtimeError',
-          { name: name || '?', id: variableId }) + error.message
+          { name: name || '?', id: variableId }) + ' ' + error.message
       })
 
       this.executionId = variable?.executionId
