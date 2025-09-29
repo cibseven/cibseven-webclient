@@ -219,10 +219,23 @@ export default {
         this.value = this.currentDate()
       }
       else if (type === 'Json') {
-        this.value = '{}'
+        if (typeof this.value === 'string' && this.verifyJson(this.value) === null) {
+          try {
+            const obj = JSON.parse(this.value)
+            this.value = JSON.stringify(obj, null, 2)
+          } catch {
+            this.value = '{}'
+          }
+        }
+        else {
+          this.value = '{}'
+        }
       }
       else if (type === 'String') {
         if (this.value == null) {
+          this.value = ''
+        }
+        else if (this.value === 0 || this.value === 0.0 || this.value === false || this.value === true) {
           this.value = ''
         }
         else {

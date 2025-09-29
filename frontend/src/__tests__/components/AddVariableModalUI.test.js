@@ -535,7 +535,50 @@ describe('AddVariableModal.vue UI interactions', () => {
 
         it('to Json', async () => {
           await changeType('Json')
-          expect(wrapper.vm.value).toBe('{}')
+          expect(wrapper.vm.value).toBe('10.5')
+        })
+
+        it('to Xml', async () => {
+          await changeType('Xml')
+          expect(wrapper.vm.value).toBe('')
+        })
+        
+        it('to Object', async () => {
+          await changeType('Object')
+          expect(wrapper.vm.value).toBe('')
+        })
+      })
+
+      describe('from String "{"a":"b"}"', () => {
+
+        beforeEach(async () => {
+          await setData({ type: 'String', value: '{"a":"b"}' })
+          expect(wrapper.vm.value).toBe('{"a":"b"}')
+        })
+
+        it('to Boolean', async () => {
+          await changeType('Boolean')
+          expect(wrapper.vm.value).toBe(true)
+        })
+
+        it('to Long', async () => {
+          await changeType('Long')
+          expect(wrapper.vm.value).toBe(0)
+        })
+
+        it('to Double', async () => {
+          await changeType('Double')
+          expect(wrapper.vm.value).toBe(0.0)
+        })
+
+        it('to Date', async () => {
+          await changeType('Date')
+          expect(wrapper.vm.value).toBe(wrapper.vm.currentDate())
+        })
+
+        it('to Json', async () => {
+          await changeType('Json')
+          expect(wrapper.vm.value).toBe('{\n  "a": "b"\n}')
         })
 
         it('to Xml', async () => {
@@ -567,6 +610,11 @@ describe('AddVariableModal.vue UI interactions', () => {
           await changeType('Double')
           expect(wrapper.vm.value).toBe(1.0)
         })
+
+        it('true to String', async () => {
+          await changeType('String')
+          expect(wrapper.vm.value).toBe('')
+        })
       })
 
       describe('false', () => {
@@ -583,6 +631,11 @@ describe('AddVariableModal.vue UI interactions', () => {
         it('false to Double', async () => {
           await changeType('Double')
           expect(wrapper.vm.value).toBe(0.0)
+        })
+
+        it('false to String', async () => {
+          await changeType('String')
+          expect(wrapper.vm.value).toBe('')
         })
       })
 
@@ -601,8 +654,127 @@ describe('AddVariableModal.vue UI interactions', () => {
           await changeType('Double')
           expect(wrapper.vm.value).toBe(0.0)
         })
+
+        it('null to String', async () => {
+          await changeType('String')
+          expect(wrapper.vm.value).toBe('')
+        })
       })
 
+    })
+
+    describe('from Long', () => {
+
+      describe('0', () => {
+        beforeEach(async () => {
+          await setData({ type: 'Long', value: 0 })
+          expect(wrapper.vm.value).toBe(0)
+        })
+
+        it('0 to Boolean', async () => {
+          await changeType('Boolean')
+          expect(wrapper.vm.value).toBe(true)
+        })
+
+        it('0 to Double', async () => {
+          await changeType('Double')
+          expect(wrapper.vm.value).toBe(0.0)
+        })
+
+        it('0 to String', async () => {
+          await changeType('String')
+          expect(wrapper.vm.value).toBe('')
+        })
+
+        it('0 to Json', async () => {
+          await changeType('Json')
+          expect(wrapper.vm.value).toBe('{}')
+        })
+      })
+
+      describe('100', () => {
+        beforeEach(async () => {
+          await setData({ type: 'Long', value: 100 })
+          expect(wrapper.vm.value).toBe(100)
+        })
+
+        it('100 to Boolean', async () => {
+          await changeType('Boolean')
+          expect(wrapper.vm.value).toBe(true)
+        })
+
+        it('100 to Double', async () => {
+          await changeType('Double')
+          expect(wrapper.vm.value).toBe(100.0)
+        })
+
+        it('100 to String', async () => {
+          await changeType('String')
+          expect(wrapper.vm.value).toBe('100')
+        })
+
+        it('100 to Json', async () => {
+          await changeType('Json')
+          expect(wrapper.vm.value).toBe('{}')
+        })
+      })
+    })
+
+    describe('from Double', () => {
+
+      describe('0.0', () => {
+        beforeEach(async () => {
+          await setData({ type: 'Double', value: 0.0 })
+          expect(wrapper.vm.value).toBe(0.0)
+        })
+
+        it('0 to Boolean', async () => {
+          await changeType('Boolean')
+          expect(wrapper.vm.value).toBe(true)
+        })
+
+        it('0 to Double', async () => {
+          await changeType('Double')
+          expect(wrapper.vm.value).toBe(0.0)
+        })
+
+        it('0 to String', async () => {
+          await changeType('String')
+          expect(wrapper.vm.value).toBe('')
+        })
+
+        it('0 to Json', async () => {
+          await changeType('Json')
+          expect(wrapper.vm.value).toBe('{}')
+        })
+      })
+
+      describe('100.50', () => {
+        beforeEach(async () => {
+          await setData({ type: 'Double', value: 100.50 })
+          expect(wrapper.vm.value).toBe(100.50)
+        })
+
+        it('100.50 to Boolean', async () => {
+          await changeType('Boolean')
+          expect(wrapper.vm.value).toBe(true)
+        })
+
+        it('100.50 to Double', async () => {
+          await changeType('Double')
+          expect(wrapper.vm.value).toBe(100.50)
+        })
+
+        it('100.50 to String', async () => {
+          await changeType('String')
+          expect(wrapper.vm.value).toBe('100.5')
+        })
+
+        it('100.50 to Json', async () => {
+          await changeType('Json')
+          expect(wrapper.vm.value).toBe('{}')
+        })
+      })
     })
   })
 })
