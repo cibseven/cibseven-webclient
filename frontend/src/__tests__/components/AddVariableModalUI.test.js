@@ -459,7 +459,7 @@ describe('AddVariableModal.vue UI interactions', () => {
         
         it('to Object', async () => {
           await changeType('Object')
-          expect(wrapper.vm.value).toBe('')
+          expect(wrapper.vm.value).toBe('text')
         })
       })
 
@@ -545,7 +545,7 @@ describe('AddVariableModal.vue UI interactions', () => {
         
         it('to Object', async () => {
           await changeType('Object')
-          expect(wrapper.vm.value).toBe('')
+          expect(wrapper.vm.value).toBe('10.50')
         })
       })
 
@@ -585,10 +585,10 @@ describe('AddVariableModal.vue UI interactions', () => {
           await changeType('Xml')
           expect(wrapper.vm.value).toBe('')
         })
-        
+
         it('to Object', async () => {
           await changeType('Object')
-          expect(wrapper.vm.value).toBe('')
+          expect(wrapper.vm.value).toBe('{"a":"b"}')
         })
       })
     })

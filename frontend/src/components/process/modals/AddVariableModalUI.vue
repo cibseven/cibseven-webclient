@@ -199,6 +199,20 @@ export default {
       if (type === 'Boolean') {
         this.value = true
       }
+      else if (type === 'Date') {
+        this.value = this.currentDate()
+      }
+      else if (type === 'String') {
+        if (this.value == null) {
+          this.value = ''
+        }
+        else if (this.value === 0 || this.value === 0.0 || this.value === false || this.value === true) {
+          this.value = ''
+        }
+        else {
+          this.value = '' + this.value
+        }
+      }
       else if (['Short', 'Integer', 'Long'].includes(type)) {
         if (this.value == null || this.value === '' || isNaN(this.value) || isNaN(Number(this.value))) {
           this.value = 0
@@ -215,8 +229,8 @@ export default {
           this.value = Number(this.value)
         }
       }
-      else if (type === 'Date') {
-        this.value = this.currentDate()
+      else if (type === 'Null') {
+        this.value = null
       }
       else if (type === 'Json') {
         if (typeof this.value === 'string' && this.verifyJson(this.value) === null) {
@@ -231,19 +245,11 @@ export default {
           this.value = '{}'
         }
       }
-      else if (type === 'String') {
-        if (this.value == null) {
-          this.value = ''
-        }
-        else if (this.value === 0 || this.value === 0.0 || this.value === false || this.value === true) {
-          this.value = ''
-        }
-        else {
-          this.value = '' + this.value
-        }
+      else if (type === 'Object') {
+        this.value = '' + this.value
       }
-      else if (type === 'Null') {
-        this.value = null
+      else if (type === 'Xml') {
+        this.value = ''
       }
       else this.value = ''
     }
@@ -360,8 +366,10 @@ export default {
           return this.value === null ? null : 'Value must be null'
         }
         case 'Object': {
-          if (this.objectTypeName.toString().trim().length === 0 ||
-            this.serializationDataFormat.toString().trim().length === 0) {
+          if (!this.objectTypeName ||
+              this.objectTypeName.toString().trim().length === 0 ||
+              !this.serializationDataFormat ||
+              this.serializationDataFormat.toString().trim().length === 0) {
             return 'Object Type Name and Serialization Data Format are required'
           }
 
