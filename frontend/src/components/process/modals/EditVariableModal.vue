@@ -21,6 +21,7 @@
     :loading="loading"
     :saving="saving"
     :error="error"
+    :show-only-error="showOnlyError"
 
     @add-variable="saveVariable"
   ></AddVariableModalUI>
@@ -48,10 +49,11 @@ props: {
       loading: true,
       saving: false,
       error: null,
+      /**
+       * show only error when load failed, but show error with controls when save failed
+       */
+      showOnlyError: false,
     }
-  },
-  computed: {
-
   },
   methods: {
     async show(variableId, variableName) {
@@ -60,6 +62,7 @@ props: {
       this.loading = true
       this.saving = false
       this.error = null
+      this.showOnlyError = false
 
       this.$refs.addVariableModalUI.show(null, true)
 
@@ -68,9 +71,10 @@ props: {
         variable = res
       }).catch((error) => {
         variable = null
+        this.showOnlyError = true
         this.error = this.$t(
           this.historic ? 'process-instance.variables.loadStatus.historicError' : 'process-instance.variables.loadStatus.runtimeError',
-          { name: name || '?', id: variableId }) + ' ' + error.message
+          { name: variableName || '?', id: variableId }) + ' ' + error.message
       })
 
       this.executionId = variable?.executionId

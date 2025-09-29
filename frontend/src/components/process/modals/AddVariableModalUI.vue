@@ -26,7 +26,7 @@
       <p class="text-center p-4"><BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}</p>
     </div>
 
-    <div v-if="!error">
+    <div v-else-if="!showOnlyError">
 
       <!-- Name -->
       <b-form-group>
@@ -126,7 +126,7 @@
       </b-form-group>
     </div>
 
-    <div v-if="error" class="alert alert-danger text-danger d-flex align-items-center">
+    <div v-if="error" class="text-danger d-flex align-items-center" :class="showOnlyError ? '' : 'alert alert-danger mt-4 mb-2'">
       <div class="me-4">
           <span class="mdi-36px mdi mdi-alert-octagon-outline text-danger"></span>
       </div>
@@ -141,7 +141,7 @@
           <BWaitingBox v-if="saving" class="d-inline me-2" styling="width: 30px"></BWaitingBox>
         </div>
         <div class="col-10 p-0 d-flex justify-content-end pe-1">
-          <b-button v-if="disabled" @click="$refs.addVariable.hide()">{{ $t('confirm.close') }}</b-button>
+          <b-button v-if="disabled || showOnlyError" @click="$refs.addVariable.hide()">{{ $t('confirm.close') }}</b-button>
           <template v-else>
             <b-button @click="$refs.addVariable.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
             <b-button :disabled="isSubmitDisabled" @click="onSubmit" variant="primary">{{ computedSubmitButtonText }}</b-button>
@@ -180,6 +180,10 @@ export default {
       type: String,
       default: ''
     },
+    showOnlyError: {
+      type: Boolean,
+      default: false
+    }
   },
   emits: [ 'add-variable' ],
   data: function() {
