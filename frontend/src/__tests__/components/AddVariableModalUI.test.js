@@ -369,21 +369,20 @@ describe('AddVariableModal.vue UI interactions', () => {
       [{ type: 'Xml', value: '<root></root>' }, true],
       [{ type: 'Xml', value: '<a><b>text</b></a>' }, true],
 
-      // Object with invalid values
-      [{ type: 'Object', value: undefined }, false],
-      [{ type: 'Object', value: null }, false],
-      [{ type: 'Object', value: 'text' }, false],
-      [{ type: 'Object', value: '' }, false],
-      // Object with valid values
-      [{ type: 'Object', value: null, objectTypeName: 'any', serializationDataFormat: 'any' }, true],
-      [{ type: 'Object', value: undefined, objectTypeName: 'any', serializationDataFormat: 'any' }, true],
-      [{ type: 'Object', value: '', objectTypeName: 'any', serializationDataFormat: 'any' }, true],
-      [{ type: 'Object', value: '{"json":"value"}', objectTypeName: 'any', serializationDataFormat: 'any' }, true],
-      [{ type: 'Object', value: '{"json":"value"}', objectTypeName: 'any', serializationDataFormat: 'application/json' }, true],
-      [{ type: 'Object', value: 'invalide json', objectTypeName: 'any', serializationDataFormat: 'application/json' }, false],
-      [{ type: 'Object', value: 'some data', objectTypeName: 'any', serializationDataFormat: 'any' }, true],
+      // Object
+      [{ type: 'Object', value: undefined }, true, false],
+      [{ type: 'Object', value: null }, true, false],
+      [{ type: 'Object', value: 'text' }, true, false],
+      [{ type: 'Object', value: '' }, true, false],
+      [{ type: 'Object', value: null, objectTypeName: 'any', serializationDataFormat: 'any' }, true, true],
+      [{ type: 'Object', value: undefined, objectTypeName: 'any', serializationDataFormat: 'any' }, true, true],
+      [{ type: 'Object', value: '', objectTypeName: 'any', serializationDataFormat: 'any' }, true, true],
+      [{ type: 'Object', value: '{"json":"value"}', objectTypeName: 'any', serializationDataFormat: 'any' }, true, true],
+      [{ type: 'Object', value: '{"json":"value"}', objectTypeName: 'any', serializationDataFormat: 'application/json' }, true, true],
+      [{ type: 'Object', value: 'invalide json', objectTypeName: 'any', serializationDataFormat: 'application/json' }, false, false],
+      [{ type: 'Object', value: 'some data', objectTypeName: 'any', serializationDataFormat: 'any' }, true, true],
 
-    ])('valueValidationError(%s) = %s', async (data, result) => {
+    ])('valueValidationError(%s) = %s', async (data, result, validObjectTypes) => {
       await setData({
         ...data,
         name: 'name',
@@ -393,6 +392,10 @@ describe('AddVariableModal.vue UI interactions', () => {
       }
       else {
         expect(wrapper.vm.valueValidationError).not.toBeNull()
+      }
+
+      if (validObjectTypes !== undefined) {
+        expect(wrapper.vm.isSubmitDisabled).not.toEqual(validObjectTypes)
       }
     })
   })

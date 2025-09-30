@@ -397,13 +397,6 @@ export default {
           return this.value === null ? null : 'Value must be null'
         }
         case 'Object': {
-          if (!this.objectTypeName ||
-              this.objectTypeName.toString().trim().length === 0 ||
-              !this.serializationDataFormat ||
-              this.serializationDataFormat.toString().trim().length === 0) {
-            return 'Object Type Name and Serialization Data Format are required'
-          }
-
           if (this.value === null) return null
 
           // based on serialization format
@@ -451,6 +444,14 @@ export default {
       }
       if (!this.name) {
         return true // Disable save if name is empty
+      }
+      if (this.type === 'Object') {
+        if (!this.objectTypeName ||
+            this.objectTypeName.toString().trim().length === 0 ||
+            !this.serializationDataFormat ||
+            this.serializationDataFormat.toString().trim().length === 0) {
+          return true
+        }
       }
       if (this.valueValidationError !== null) {
         return true // Disable save if form is not valid
