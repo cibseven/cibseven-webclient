@@ -51,7 +51,7 @@ export default {
     },
     addVariable: async function(variable) {
       this.saving = true
-      return ProcessService.putLocalExecutionVariable(this.selectedInstance.id, variable.name, variable).then(() => {
+      await ProcessService.putLocalExecutionVariable(this.selectedInstance.id, variable.name, variable).then(() => {
         this.$refs.addVariableModalUI.hide()
         this.$emit('variable-added')
       }).catch(error => {
