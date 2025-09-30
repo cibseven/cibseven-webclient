@@ -107,8 +107,8 @@ props: {
       formData.append('valueType', variable.valueInfo?.objectTypeName || 'java.lang.Object')
 
       await ProcessService.modifyVariableDataByExecutionId(this.executionId, this.variableName, formData).then(() => {
-        this.$emit('variable-updated')
         this.$refs.addVariableModalUI.hide()
+        this.$emit('variable-updated')
       }).catch((error) => {
         this.error = error.message
         this.saving = false
@@ -127,8 +127,8 @@ props: {
       }
 
       await ProcessService.modifyVariableByExecutionId(this.executionId, data).then(() => {
-        this.$emit('variable-updated')
         this.$refs.addVariableModalUI.hide()
+        this.$emit('variable-updated')
       }).catch((error) => {
         this.error = error.message
         this.saving = false
