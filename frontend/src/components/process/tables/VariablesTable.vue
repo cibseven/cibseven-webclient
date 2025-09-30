@@ -25,7 +25,7 @@
         ></component>
       </div>
       <div v-if="isActiveInstance" :class="ProcessVariablesSearchBoxPlugin ? 'col-2 p-3' : 'p-3'">
-        <b-button class="border" size="sm" variant="light" @click="$refs.addVariableModal.show()" :title="$t('process-instance.addVariable')">
+        <b-button class="border" size="sm" variant="light" @click="addNewVariable" :title="$t('process-instance.addVariable')">
           <span class="mdi mdi-plus"></span> {{ $t('process-instance.addVariable') }}
         </b-button>
       </div>
@@ -63,8 +63,9 @@
             size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-upload-outline"
             @click="selectedVariable = table.item; $refs.uploadFile.show()">
           </b-button>
-          <b-button v-if="!['File', 'Null'].includes(table.item.type) && !isFileValueDataSource(table.item)"
-            :title="$t('process-instance.edit')" size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-square-edit-outline"
+          <b-button v-if="'File' !== table.item.type && !isFileValueDataSource(table.item)"
+            :title="$t(isActiveInstance ? 'process-instance.edit' : 'process-instance.variables.historicVariable.tooltip')" size="sm" variant="outline-secondary"
+            class="border-0 mdi mdi-18px" :class="isActiveInstance ? 'mdi-square-edit-outline' : 'mdi-eye-outline'"
             @click="modifyVariable(table.item)">
           </b-button>
           <b-button v-if="hasDeletionPermission" :title="$t('confirm.delete')" size="sm" variant="outline-secondary"
@@ -78,7 +79,7 @@
 
     <AddVariableModal ref="addVariableModal" :selected-instance="selectedInstance" @variable-added="loadSelectedInstanceVariables(); $refs.success.show()"></AddVariableModal>
     <DeleteVariableModal ref="deleteVariableModal" @variable-deleted="onVariableDeleted"></DeleteVariableModal>
-    <EditVariableModal ref="editVariableModal" :disabled="!isActiveInstance" @variable-updated="loadSelectedInstanceVariables(); $refs.success.show()" @instance-status-updated="updateInstanceStatus"></EditVariableModal>
+    <EditVariableModal ref="editVariableModal" :historic="!isActiveInstance" @variable-updated="loadSelectedInstanceVariables(); $refs.success.show()"></EditVariableModal>
     <SuccessAlert top="0" ref="success" style="z-index: 9999">{{ $t('alert.successOperation') }}</SuccessAlert>
     <SuccessAlert top="0" ref="runtimeVariableDeleted" style="z-index: 9999">{{ $t('process-instance.variables.deleteStatus.runtime') }}</SuccessAlert>
     <SuccessAlert top="0" ref="historicVariableDeleted" style="z-index: 9999">{{ $t('process-instance.variables.deleteStatus.historic') }}</SuccessAlert>
@@ -149,11 +150,11 @@ export default {
     },
   },
   methods: {
-    updateInstanceStatus() {
-      this.selectedInstance.state = 'COMPLETED'
+    async addNewVariable() {
+      this.$refs.addVariableModal.show()
     },
     async modifyVariable(variable) {
-      this.$refs.editVariableModal.show(variable.id)
+      this.$refs.editVariableModal.show(variable.id, variable.name)
     },
     async deleteVariable(variable) {
       this.$refs.deleteVariableModal.show(this.isActiveInstance, variable)

@@ -18,6 +18,9 @@
 -->
 <template>
   <AddVariableModalUI ref="addVariableModalUI"
+    :edit-mode="false"
+    :saving="saving"
+    :error="error"
     @add-variable="addVariable"
   ></AddVariableModalUI>
 </template>
@@ -31,16 +34,31 @@ export default {
   components: { AddVariableModalUI },
   props: { selectedInstance: Object },
   emits: ['variable-added'],
+  data: function() {
+    return {
+      saving: false,
+      error: null,
+    }
+  },
   methods: {
-    show: function(variable = {}) {
-      this.$refs.addVariableModalUI.show(variable)
+    reset: function() {
+      this.error = null
+      this.saving = false
     },
-    addVariable: function(variable) {
-      ProcessService.putLocalExecutionVariable(this.selectedInstance.id, variable.name, variable).then(() => {
+    show: function() {
+      this.reset()
+      this.$refs.addVariableModalUI.show()
+    },
+    addVariable: async function(variable) {
+      this.saving = true
+      await ProcessService.putLocalExecutionVariable(this.selectedInstance.id, variable.name, variable).then(() => {
         this.$refs.addVariableModalUI.hide()
         this.$emit('variable-added')
+      }).catch(error => {
+        this.error = error.message
+        this.saving = false
       })
-    },
+    }
   }
 }
 </script>
