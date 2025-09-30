@@ -60,7 +60,7 @@
       <b-form-group class="p-0 mb-0" v-if="type !== 'Null'">
 
         <!-- Label -->
-        <template #label v-if="!editMode || (type !== 'Object')">{{ $t('process-instance.variables.value') }}<span v-if="type != 'Boolean'">*</span></template>
+        <template #label v-if="!editMode || (type !== 'Object')">{{ $t('process-instance.variables.value') }}<span v-if="type != 'Boolean' && !disabled">*</span></template>
         <p v-if="value === null"><small class="form-text text-muted">Null value is specified.</small></p>
 
         <!-- Input: Boolean -->
