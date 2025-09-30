@@ -20,6 +20,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import org.cibseven.bpm.ProcessEngineService;
+import org.cibseven.bpm.engine.ProcessEngine;
+import org.cibseven.bpm.engine.AuthorizationService;
+import org.cibseven.bpm.engine.IdentityService;
+import org.cibseven.bpm.engine.TaskService;
+import org.cibseven.bpm.engine.IdentityService;
+import org.cibseven.bpm.engine.FormService;
+import org.cibseven.webapp.auth.SevenAuthorizationUtils;
 import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.User;
 import org.cibseven.webapp.providers.BpmProvider;
@@ -163,6 +171,11 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 		return new PropertySourcesPlaceholderConfigurer();
 	}
 
+	@Bean
+  public static SevenAuthorizationUtils sevenAuthorizationUtils() {
+    return new SevenAuthorizationUtils();
+  }
+
 	/**
 	 * Creates a custom RestTemplate bean with configurable settings.
 	 * This can be injected into services that need to make HTTP requests.
@@ -187,5 +200,40 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 		// It will be configured via @PostConstruct using @Autowired dependencies
 		return new CustomRestTemplate();
 	}
+
+  @Bean
+  public ProcessEngine getDefaultProcessEngine() {
+    return org.cibseven.bpm.BpmPlatform.getDefaultProcessEngine();
+  }
+
+  @Bean
+  public IdentityService getIdentityService() {
+    return getDefaultProcessEngine().getIdentityService();
+  }
+
+  @Bean
+  public AuthorizationService getAuthorizationService() {
+    return getDefaultProcessEngine().getAuthorizationService();
+  }
+
+  @Bean
+  public TaskService getTaskService() {
+    return getDefaultProcessEngine().getTaskService();
+  }
+
+  @Bean
+  public FormService getFormService() {
+    return getDefaultProcessEngine().getFormService();
+  }
+
+//    <bean id="historyService"
+//      factory-bean="processEngine"
+//      factory-method="getHistoryService" />
+//    <bean id="managementService"
+//      factory-bean="processEngine"
+//      factory-method="getManagementService" />
+//    <bean id="identityService"
+//      factory-bean="processEngine"
+//      factory-method="getIdentityService" />
 
 }

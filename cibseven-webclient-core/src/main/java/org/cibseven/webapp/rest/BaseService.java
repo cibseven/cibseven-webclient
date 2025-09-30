@@ -39,6 +39,8 @@ public class BaseService {
 	protected BpmProvider bpmProvider;
 	@Autowired
 	protected BaseUserProvider baseUserProvider;
+	@Autowired
+	protected SevenAuthorizationUtils sevenAuthorizationUtils;
 
 	protected CIBUser checkAuthorization(HttpServletRequest rq, boolean basicAuthAllowed) {
 		CIBUser user = null;
@@ -74,8 +76,10 @@ public class BaseService {
 	}
 
 	public void checkPermission(CIBUser user, SevenResourceType type, List<String> permissions) {
-		Authorizations authorizations = bpmProvider.getUserAuthorization(user.getId(), user);
-		// SevenAuthorizationUtils.checkPermission now throws detailed AccessDeniedException when permission check fails
-		SevenAuthorizationUtils.checkPermission(authorizations, type, permissions);
+	  sevenAuthorizationUtils.checkPermission(user, type, permissions);
+
+//	  Authorizations authorizations = bpmProvider.getUserAuthorization(user.getId(), user);
+//		// SevenAuthorizationUtils.checkPermission now throws detailed AccessDeniedException when permission check fails
+//		SevenAuthorizationUtils.checkPermission(authorizations, type, permissions);
 	}
 }

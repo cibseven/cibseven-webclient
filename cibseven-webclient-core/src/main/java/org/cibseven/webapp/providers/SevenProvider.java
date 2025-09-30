@@ -16,7 +16,10 @@
  */
 package org.cibseven.webapp.providers;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -69,7 +72,15 @@ import org.cibseven.webapp.rest.model.UserGroup;
 import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
 import org.cibseven.webapp.rest.model.VariableInstance;
+import org.apache.commons.io.IOUtils;
+import org.cibseven.bpm.engine.FormService;
+import org.cibseven.bpm.engine.TaskService;
+import org.cibseven.bpm.engine.identity.Group;
+import org.cibseven.bpm.engine.IdentityService;
+import org.cibseven.bpm.engine.task.TaskQuery;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -99,6 +110,27 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
     @Autowired private ITenantProvider tenantProvider;
     @Autowired private IExternalTaskProvider externalTaskProvider;
     
+    // direct access interface
+    @Autowired private FormService formService;
+    @Autowired private TaskService taskService;
+    @Autowired private IdentityService identityService;
+    /** user access is implemented in a rest service
+     *   -> 
+        @Override
+        public CountResultDto getUserCount(UriInfo uriInfo) {
+          UserQueryDto queryDto = new UserQueryDto(getObjectMapper(), uriInfo.getQueryParameters());
+          return getUserCount(queryDto);
+        }
+
+        protected CountResultDto getUserCount(UserQueryDto queryDto) {
+          UserQuery query = queryDto.toQuery(getProcessEngine());
+          long count = query.count();
+          return new CountResultDto(count);
+        }
+     *
+     *
+     * */
+//    @Autowired private UserRestService userRestService;
     
     /*
 	
@@ -112,26 +144,40 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
     
 	@Override
 	public Collection<Task> findTasks(String filter, CIBUser user) {
+    Map<String, Object> filters = new HashMap<>();
+    // put filter into map
+	  queryTasks(filters, user);
+
 		return taskProvider.findTasks(filter, user);
 	}
 
 	@Override
 	public Integer findTasksCount(@RequestBody Map<String, Object> filters, CIBUser user) {
+    queryTasks(filters, user);
 		return taskProvider.findTasksCount(filters, user);
 	}
 	
 	@Override
 	public Collection<Task> findTasksByProcessInstance(String processInstanceId, CIBUser user) {
+	  Map<String, Object> filters = new HashMap<>();
+	  //TODO: processInstanceId
+    queryTasks(filters, user);
 		return taskProvider.findTasksByProcessInstance(processInstanceId, user);
 	}
 	
 	@Override
 	public Collection<Task> findTasksByProcessInstanceAsignee(Optional<String> processInstanceId, Optional<String> createdAfter, CIBUser user) {
+    Map<String, Object> filters = new HashMap<>();
+    //TODO: processInstanceId, createdAfter
+    queryTasks(filters, user);
 		return taskProvider.findTasksByProcessInstanceAsignee(processInstanceId, createdAfter, user);
 	}
 	
 	@Override
 	public Task findTaskById(String id, CIBUser user) {
+    Map<String, Object> filters = new HashMap<>();
+    //TODO: id
+    queryTasks(filters, user);
 		return taskProvider.findTaskById(id, user);
 	}
 	
@@ -218,7 +264,16 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public ResponseEntity<byte[]> getDeployedForm(String taskId, CIBUser user) {
-		return taskProvider.getDeployedForm(taskId, user);
+		InputStream form = formService.getDeployedTaskForm(taskId);
+		try {
+      byte[] bytes = IOUtils.toByteArray(form);
+      ResponseEntity<byte[]> responseEntity = new ResponseEntity<>(bytes, HttpStatusCode.valueOf(200));
+      return responseEntity;
+    } catch (IOException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+	  return taskProvider.getDeployedForm(taskId, user);
 	}
 	
 	@Override
@@ -593,7 +648,9 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 	
 	public Collection<SevenUser> fetchUsers(CIBUser user) throws SystemException {
-		return userProvider.fetchUsers(user);
+//	  UriInfo uriInfo = null; 
+//	  userRestService.getUserCount(uriInfo)
+	  return userProvider.fetchUsers(user);
 	}
 	
 	public SevenVerifyUser verifyUser(String username, String password, CIBUser user) throws SystemException {
@@ -604,12 +661,22 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	public Collection<User> findUsers(Optional<String> id, Optional<String> firstName, Optional<String> firstNameLike, Optional<String> lastName, Optional<String> lastNameLike,
 			Optional<String> email, Optional<String> emailLike, Optional<String> memberOfGroup, Optional<String> memberOfTenant, Optional<String> idIn, 
 			Optional<String> firstResult, Optional<String> maxResults, Optional<String> sortBy, Optional<String> sortOrder, CIBUser user) {
-		return userProvider.findUsers(id, firstName, firstNameLike, lastName, lastNameLike, email, emailLike, memberOfGroup, memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder, user);
+	  //authorizationRestService.
+	  return userProvider.findUsers(id, firstName, firstNameLike, lastName, lastNameLike, email, emailLike, memberOfGroup, memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder, user);
 	}
 	
 	@Override
 	public void createUser(NewUser user, CIBUser flowUser) throws InvalidUserIdException {
-		userProvider.createUser(user, flowUser);
+	  User profile = user.getProfile();
+	  org.cibseven.bpm.engine.identity.User newUser = identityService.newUser(profile.getId());
+	  newUser.setId(profile.getId());
+	  newUser.setFirstName(profile.getFirstName());
+	  newUser.setLastName(profile.getLastName());
+	  newUser.setEmail(profile.getEmail());
+	  newUser.setPassword(user.getCredentials().getPassword());
+	  identityService.saveUser(newUser);
+
+		//userProvider.createUser(user, flowUser);
 	}
 	
 	@Override
@@ -634,7 +701,8 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 
 	@Override
 	public void deleteUser(String userId, CIBUser user) {
-		userProvider.deleteUser(userId, user);
+		identityService.deleteUser(userId);
+	  //userProvider.deleteUser(userId, user);
 	}
 	
 	@Override
@@ -651,7 +719,12 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 
 	@Override
 	public void createGroup(UserGroup group, CIBUser user) {
-		userProvider.createGroup(group, user);
+	  Group newGroup = identityService.newGroup(group.getId());
+	  newGroup.setId(group.getId()); 
+	  newGroup.setName(group.getName());
+	  newGroup.setType(group.getType());
+	  identityService.saveGroup(newGroup);
+		//userProvider.createGroup(group, user);
 	}
 
 	@Override
@@ -1242,4 +1315,11 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 		return deploymentProvider.createDeployment(data, files, user);
 	}
 
+  // direct access interface
+	private List<org.cibseven.bpm.engine.task.Task> queryTasks(Map<String, Object> filters, CIBUser user) {
+	  TaskQuery taskQuery = taskService.createTaskQuery();
+	  //TODO: apply filters
+	  List<org.cibseven.bpm.engine.task.Task> taskList = taskQuery.taskInvolvedUser(user.getUserID()).list();
+	  return taskList;
+	}
 }
