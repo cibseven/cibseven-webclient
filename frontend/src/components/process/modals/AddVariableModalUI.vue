@@ -19,7 +19,6 @@
 <template>
   <b-modal ref="addVariable"
     :title="computedTitle"
-    @hide="reset()"
     @shown="onShown">
 
     <div v-if="loading && !error">
