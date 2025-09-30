@@ -45,10 +45,8 @@ export default mergeConfig(
           'vite.config.js', // Exclude Vite config
           'vitest.config.js', // Exclude this config file itself
           '**/*.config.js', // Exclude all config files
-          '**/*.config.ts', // Exclude all TypeScript config files
           
           // Other common exclusions
-          '**/*.d.ts', // Type definition files
           '**/index.js', // Entry point files (often just re-exports)
           '**/main.js', // Main entry files
         ],
