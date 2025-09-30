@@ -59,13 +59,13 @@ public class AnalyticsService extends BaseService implements InitializingBean {
 	@Autowired
 	IProcessProvider processProvider;
 	
-	SevenProvider sevenProvider;
+//	SevenProvider sevenProvider;
 
 	public void afterPropertiesSet() {
-		if (bpmProvider instanceof SevenProvider)
-			sevenProvider = (SevenProvider) bpmProvider;
-		else
-			throw new SystemException("AnalyticsService expects a BpmProvider");
+//		if (bpmProvider instanceof SevenProvider)
+//			sevenProvider = (SevenProvider) bpmProvider;
+//		else
+//			throw new SystemException("AnalyticsService expects a BpmProvider");
 	}
 
 	@Operation(summary = "Get analytics for processes, decisions and human Tasks", description = "<strong>Return: Analytics")
