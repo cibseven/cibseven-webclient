@@ -27,7 +27,6 @@ import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.providers.PermissionConstants;
-import org.cibseven.webapp.providers.SevenProvider;
 import org.cibseven.webapp.rest.model.Incident;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,13 +54,8 @@ public class IncidentService extends BaseService implements InitializingBean {
 
 	@Autowired
 	BpmProvider bpmProvider;
-	SevenProvider sevenProvider;
 
 	public void afterPropertiesSet() {
-		if (bpmProvider instanceof SevenProvider)
-			sevenProvider = (SevenProvider) bpmProvider;
-		else
-			throw new SystemException("IncidentService expects a BpmProvider");
 	}
 
 	@Operation(summary = "Get number of incidents", description = "<strong>Return: Number of incidents")
@@ -70,7 +64,7 @@ public class IncidentService extends BaseService implements InitializingBean {
 	public Long countIncident(@RequestParam Map<String, Object> params, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.READ_ALL);
-		return sevenProvider.countIncident(params, user);
+		return bpmProvider.countIncident(params, user);
 	}
 
 	@Operation(summary = "Get number of historic incidents", description = "<strong>Return: Number of incidents")
@@ -79,7 +73,7 @@ public class IncidentService extends BaseService implements InitializingBean {
 	public Long countHistoricIncident(@RequestParam Map<String, Object> params, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.HISTORIC_PROCESS_INSTANCE, PermissionConstants.READ_ALL);
-		return sevenProvider.countHistoricIncident(params, user);
+		return bpmProvider.countHistoricIncident(params, user);
 	}
 
 	@Operation(summary = "Get incident/s", description = "<strong>Return: Collection of incident/s")
@@ -88,7 +82,7 @@ public class IncidentService extends BaseService implements InitializingBean {
 	public Collection<Incident> findIncident(@RequestParam Map<String, Object> params, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.READ_ALL);
-		return sevenProvider.findIncident(params, user);
+		return bpmProvider.findIncident(params, user);
 	}
 
 	@Operation(summary = "Get stack trace", description = "<strong>Return: Stacktrace")
@@ -101,7 +95,7 @@ public class IncidentService extends BaseService implements InitializingBean {
 		// checkPermission(user, SevenResourceType.JOB_DEFINITION,
 		// PermissionConstants.READ_ALL);
 
-		return sevenProvider.findStacktrace(jobId, user);
+		return bpmProvider.findStacktrace(jobId, user);
 	}
 
 	@Operation(summary = "Get external task error details", description = "<strong>Return: Error details")
@@ -111,7 +105,7 @@ public class IncidentService extends BaseService implements InitializingBean {
 			@Parameter(description = "External Task Id") @PathVariable String externalTaskId,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		return sevenProvider.findExternalTaskErrorDetails(externalTaskId, user);
+		return bpmProvider.findExternalTaskErrorDetails(externalTaskId, user);
 	}
 
 	@Operation(summary = "Get historic external task error details", description = "<strong>Return: Historic error details")
@@ -121,7 +115,7 @@ public class IncidentService extends BaseService implements InitializingBean {
 			@Parameter(description = "External Task Id") @PathVariable String externalTaskId,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		return sevenProvider.findHistoricExternalTaskErrorDetails(externalTaskId, user);
+		return bpmProvider.findHistoricExternalTaskErrorDetails(externalTaskId, user);
 	}
 
 	@Operation(summary = "Get historic incidents", description = "<strong>Return: Collection of historic incidents")
@@ -130,7 +124,7 @@ public class IncidentService extends BaseService implements InitializingBean {
 	public Collection<Incident> findHistoricIncidents(@RequestParam Map<String, Object> params, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.READ_ALL);
-		return sevenProvider.findHistoricIncidents(params, user);
+		return bpmProvider.findHistoricIncidents(params, user);
 	}
 
 	@Operation(summary = "Get historic stack trace by job id", description = "<strong>Return: Historic stacktrace")
@@ -140,7 +134,7 @@ public class IncidentService extends BaseService implements InitializingBean {
 			@Parameter(description = "Job Id") @PathVariable String jobId,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		return sevenProvider.findHistoricStacktraceByJobId(jobId, user);
+		return bpmProvider.findHistoricStacktraceByJobId(jobId, user);
 	}
 
 	@Operation(summary = "Increment job retries by job id", description = "<strong>Return: void")
@@ -153,7 +147,7 @@ public class IncidentService extends BaseService implements InitializingBean {
 		CIBUser user = checkAuthorization(rq, true);
 		// checkPermission(user, SevenResourceType.JOB_DEFINITION,
 		// PermissionConstants.UPDATE_ALL);
-		sevenProvider.retryJobById(jobId, data, user);
+		bpmProvider.retryJobById(jobId, data, user);
     // return 204 No Content, no body
     return ResponseEntity.noContent().build();
 	}
@@ -167,7 +161,7 @@ public class IncidentService extends BaseService implements InitializingBean {
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.UPDATE_ALL);
-		sevenProvider.retryExternalTask(externalTaskId, data, user);
+		bpmProvider.retryExternalTask(externalTaskId, data, user);
     // return 204 No Content, no body
     return ResponseEntity.noContent().build();
 	}

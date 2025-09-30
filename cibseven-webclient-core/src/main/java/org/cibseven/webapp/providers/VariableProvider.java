@@ -108,7 +108,8 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
     }
 	}
 
-	private void mergeVariablesValues(
+	//TODO: changed to public static to be accessible in SevenDirectProvider
+	public static void mergeVariablesValues(
 		Collection<Variable> variablesDeserialized,
 		Collection<Variable> variablesSerialized,
 		boolean deserializeValues) {

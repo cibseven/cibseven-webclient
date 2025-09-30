@@ -8,7 +8,9 @@
 	<artifactId>cibseven-webclient-core</artifactId>
 	<name>CIB seven webclient core</name>
 	<description>Core backend services and APIs for the CIB seven webclient platform</description>
-
+	<properties>
+	    <version.jaxrs.api>2.0.1.Final</version.jaxrs.api>
+	</properties>
 	<dependencies>
 
 		<dependency>
@@ -136,6 +138,19 @@
 	        <scope>test</scope>
 	    </dependency>
 
+	    <dependency>
+	        <groupId>org.cibseven.bpm</groupId>
+	        <artifactId>cibseven-engine-rest-core-jakarta</artifactId>
+	        <type>jar</type>
+			<version>${project.version}</version>
+		</dependency>
+        <dependency>
+           <groupId>org.cibseven.bpm</groupId>
+           <artifactId>cibseven-engine</artifactId>
+           <scope>provided</scope>
+           <type>jar</type>
+           <version>${project.version}</version>
+       </dependency>
 	</dependencies>
 
 	<build>

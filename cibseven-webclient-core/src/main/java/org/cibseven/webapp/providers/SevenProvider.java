@@ -16,6 +16,7 @@
  */
 package org.cibseven.webapp.providers;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -70,6 +71,7 @@ import org.cibseven.webapp.rest.model.UserGroup;
 import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
 import org.cibseven.webapp.rest.model.VariableInstance;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
@@ -325,7 +327,7 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 
   @Override
   public Collection<ProcessStatistics> getProcessStatistics(Map<String, Object> queryParams, CIBUser user) {
-    return processProvider.getProcessStatistics(queryParams, user);
+  	return processProvider.getProcessStatistics(queryParams, user);
   }
 	
 	@Override
@@ -418,7 +420,7 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 
 	@Override
-	public Filter createFilter(Filter filter, CIBUser user) {
+	public  Filter createFilter(Filter filter, CIBUser user) {
 		return filterProvider.createFilter(filter, user);
 	}
 
@@ -451,7 +453,7 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	@Override
 	public Long countDeployments(CIBUser user, String nameLike) {
 		return deploymentProvider.countDeployments(user, nameLike);
-	}
+}
 
 	@Override
 	public Collection<Deployment> findDeployments(CIBUser user, String nameLike, int firstResult, int maxResults, String sortBy, String sortOrder) {
@@ -598,6 +600,7 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 		return userProvider.fetchUsers(user);
 	}
 	
+	@Override
 	public SevenVerifyUser verifyUser(String username, String password, CIBUser user) throws SystemException {
 		return userProvider.verifyUser(username, password, user);
 	}
@@ -878,8 +881,7 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	@Override
 	public Collection<Decision> getDecisionDefinitionList(Map<String, Object> queryParams, CIBUser user) {
 		return decisionProvider.getDecisionDefinitionList(queryParams, user);
-	}
-	
+	}	
 	
 	@Override
 	public Long getDecisionDefinitionListCount(Map<String, Object> queryParams, CIBUser user) {
@@ -918,11 +920,15 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public Object evaluateDecisionDefinitionByKeyAndTenant(String key, String tenant, CIBUser user) {
+		//TODO: not implemented in DecisionProvder
+		//interface should contain parameters like evaluateDecisionDefinitionByKey 
 		return decisionProvider.evaluateDecisionDefinitionByKeyAndTenant(key, tenant, user);
 	}
 	
 	@Override
 	public Object updateHistoryTTLByKeyAndTenant(String key, String tenant, CIBUser user) {
+		//TODO: not implemented in DecisionProvder
+		//interface should contain parameters like HistoryTTLByKey 
 		return decisionProvider.updateHistoryTTLByKeyAndTenant(key, tenant, user);
 	}
 	
@@ -948,6 +954,7 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public Object evaluateDecisionDefinitionById(String id, CIBUser user) {
+		//TODO: not implemented in DecisionProvider
 		return decisionProvider.evaluateDecisionDefinitionById(id, user);
 	}
 	
@@ -1074,7 +1081,7 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	@Override
 	public Collection<Batch> getBatches(Map<String, Object> params, CIBUser user) {
 		return batchProvider.getBatches(params, user);
-    }
+	}
 
 	@Override
 	public Collection<Batch> getBatchStatistics(Map<String, Object> params, CIBUser user) {
@@ -1094,22 +1101,22 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	@Override
 	public Collection<HistoryBatch> getHistoricBatches(Map<String, Object> params, CIBUser user) {
 		return batchProvider.getHistoricBatches(params, user);
-    }
+	}
 	
 	@Override
 	public Long getHistoricBatchCount(Map<String, Object> queryParams, CIBUser user) {
 		return batchProvider.getHistoricBatchCount(queryParams, user);
-    }
+}
     
 	@Override
 	public HistoryBatch getHistoricBatchById(String id, CIBUser user) {
 		return batchProvider.getHistoricBatchById(id, user);
-    }
+	}
 	
 	@Override
 	public void deleteHistoricBatch(String id, CIBUser user) {
 		batchProvider.deleteHistoricBatch(id, user);
-    }
+	}
 	
 	@Override
 	public Object setRemovalTime(Map<String, Object> payload, CIBUser user) {
