@@ -79,9 +79,14 @@
           :disabled="disabled || saving || loading"></b-form-input>
 
         <!-- Input: Date -->
-        <b-form-datepicker v-else-if="type === 'Date'"
-          v-model="value"
-          :disabled="disabled || saving || loading"></b-form-datepicker>
+        <template v-else-if="type === 'Date'">
+          <b-form-input v-if="disabled"
+            v-model="value" type="text" :class="{ 'is-invalid': valueValidationError !== null }"
+            :disabled="true"></b-form-input>
+          <b-form-datepicker v-else
+            v-model="value"
+            :disabled="disabled || saving || loading"></b-form-datepicker>
+        </template>
 
         <!-- Input: Null -->
         <div v-else-if="type === 'Null'"></div>
