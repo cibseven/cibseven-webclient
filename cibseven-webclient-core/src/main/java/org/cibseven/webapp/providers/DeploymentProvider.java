@@ -80,10 +80,8 @@ public class DeploymentProvider extends SevenProviderBase implements IDeployment
 	@Override
 	public Deployment createDeployment(MultiValueMap<String, Object> data, MultipartFile[] files, CIBUser user) {
 		String url = getEngineRestUrl() + "/deployment/create";
-		
 		// Prepare multipart form data - start with provided data
 		MultiValueMap<String, Object> formData = new LinkedMultiValueMap<>(data);
-		
 		// Add files to form data with indexed "data" keys
 		for (int i = 0; i < files.length; i++) {
 			MultipartFile file = files[i];
@@ -92,7 +90,6 @@ public class DeploymentProvider extends SevenProviderBase implements IDeployment
 			String key = files.length > 1 ? "data" + i : "data";
 			formData.add(key, file.getResource());
 		}
-		
 		// Use the base class method for multipart POST
 		ResponseEntity<Deployment> response = doPostMultipart(url, formData, Deployment.class, user);
 		return response.getBody();

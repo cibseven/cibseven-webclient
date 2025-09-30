@@ -1036,7 +1036,8 @@
 		"PasswordPolicyException": "Passwort stimmt nicht mit Richtlinie überein",
 		"InvalidUserIdException": "Die Benutzer-ID enthält unzulässige Zeichen. Es sind nur alphanumerische Zeichen (a-z, A-Z, 0-9) erlaubt. Bitte korrigieren Sie Ihre Eingabe.",
 		"invalidEmail": "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
-		"InvalidValueHistoryTimeToLive": "Nullwerte für die Lebensdauer des Verlaufs sind nicht erlaubt."
+		"InvalidValueHistoryTimeToLive": "Nullwerte für die Lebensdauer des Verlaufs sind nicht erlaubt.",
+		"DmnTransformationException": "Die Ressource konnte nicht aktualisiert werden. DMN-Ressource kann nicht transformiert werden."
 	},
 	"searches": {
 		"filter": "Filtern",

@@ -112,7 +112,66 @@ export default {
 			this.variables = variables
 			this.filteredVariables = [...variables]
 			this.loading = false
-		},
+		},    
+    displayValue(item) {
+      if (this.isFileValueDataSource(item)) {
+        return this.getFileVariableName(item)
+      }
+      else if (item.type === 'File') {
+        return item.valueInfo.filename
+      }
+      else if (item.type === 'Json') {
+
+        if (typeof item.valueSerialized === 'string') {
+          return item.valueSerialized
+        }
+
+        if (typeof item.value === 'object') {
+          try {
+            return JSON.stringify(item.value, null, 2)
+          } catch {
+            return '- Json Object -'
+          }
+        }
+        return '- Json Object -'
+      }
+      else if (item.type === 'Object') {
+
+        if (typeof item.valueDeserialized === 'object') {
+          return JSON.stringify(item.valueDeserialized, null, 2)
+        }
+
+        if (typeof item.value === 'object') {
+          try {
+            return JSON.stringify(item.value, null, 2)
+          } catch {
+            return '- Object -'
+          }
+        }
+        else if (typeof item.value === 'string') {
+          return item.value
+        }
+        return '- Object -'
+      }
+      else if (item.type === 'Null') {
+        return ''
+      }
+      else {
+        return '' + item.value
+      }
+    },
+    displayValueTooltip(item) {
+      if (this.isFile(item)) {
+        return this.$t('process-instance.download') + ': ' + this.displayValue(item)
+      }
+      else {
+        return this.displayValue(item)
+      }
+    },
+    isFile: function(item) {
+      if (item.type === 'File') return true
+      else return this.isFileValueDataSource(item)
+    },
 		isFileValueDataSource: function(item) {
       if (item.type === 'Object') {
         const objectTypeName =

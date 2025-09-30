@@ -163,6 +163,23 @@ const DecisionStore = {
       commit('setDecisionVersions', { key, versions: result })
       return result
     },
+    async refreshDecisionVersions({ commit, getters }, key, lazyLoad) {
+      // Get fresh versions from service
+      const freshVersions = await DecisionService.getDecisionVersionsByKey(key, lazyLoad)
+      // Get current versions from store
+      const currentVersions = getters.getDecisionVersions(key)
+      // Find new versions (versions that don't exist in current list)
+      const newVersions = freshVersions.filter(freshVersion => 
+        !currentVersions.some(currentVersion => currentVersion.id === freshVersion.id)
+      )
+      if (newVersions.length > 0) {
+        // Merge current versions with new versions, sorted by version number descending
+        const mergedVersions = [...currentVersions, ...newVersions]
+          .sort((a, b) => parseInt(b.version) - parseInt(a.version))
+        // Update store with merged versions
+        commit('setDecisionVersions', { key, versions: mergedVersions })
+      }
+    },
     async getDecisionById(_, id) {
       const decisions = await DecisionService.getDecisionList({ decisionDefinitionId: id })
       if (decisions && decisions.length > 0) {

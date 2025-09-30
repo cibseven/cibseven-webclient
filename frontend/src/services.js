@@ -745,6 +745,33 @@ var ExternalTaskService = {
   }
 }
 
+var DeploymentService = {
+  createDeployment(data, files) {
+    const formData = new FormData()
+    // Add all data parameters to the form
+    if (data) {
+      Object.entries(data).forEach(([key, value]) => {
+        if (value) formData.append(key, value)
+      })
+    }
+    // Add files (accepts File, Blob, or array)
+    if (Array.isArray(files)) {
+      files.forEach(file => {
+        if (file instanceof File || file instanceof Blob) {
+          formData.append('files', file)
+        }
+      })
+    } else if (files instanceof File || files instanceof Blob) {
+      formData.append('files', files)
+    }
+    return axios.post(
+      getServicesBasePath() + '/deployment/create',
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    )
+  }
+}
+
 export { TaskService, FilterService, ProcessService, VariableInstanceService, HistoricVariableInstanceService, AdminService, JobService, JobDefinitionService, SystemService,
   HistoryService, IncidentService, AuthService, InfoService, FormsService, TemplateService, DecisionService,
-  AnalyticsService, BatchService, TenantService, ExternalTaskService, getServicesBasePath, setServicesBasePath, createDocumentEndpointUrl }
+  AnalyticsService, BatchService, TenantService, ExternalTaskService, DeploymentService, getServicesBasePath, setServicesBasePath, createDocumentEndpointUrl }
