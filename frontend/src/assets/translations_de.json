@@ -258,6 +258,10 @@
 			"deleteHistoryInstance": "Wollen Sie wirklich die nächste historische Instanz des Prozesses löschen?"
 		},
 		"variables": {
+			"historicVariable": {
+				"title": "Historische Variable",
+				"tooltip": "Historische Variable anzeigen"
+			},
 			"name": "Name",
 			"type": "Typ",
 			"value": "Wert",

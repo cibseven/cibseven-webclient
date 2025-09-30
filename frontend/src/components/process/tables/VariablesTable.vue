@@ -64,7 +64,8 @@
             @click="selectedVariable = table.item; $refs.uploadFile.show()">
           </b-button>
           <b-button v-if="'File' !== table.item.type && !isFileValueDataSource(table.item)"
-            :title="$t('process-instance.edit')" size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-square-edit-outline"
+            :title="$t(isActiveInstance ? 'process-instance.edit' : 'process-instance.variables.historicVariable.tooltip')" size="sm" variant="outline-secondary"
+            class="border-0 mdi mdi-18px" :class="isActiveInstance ? 'mdi-square-edit-outline' : 'mdi-eye-outline'"
             @click="modifyVariable(table.item)">
           </b-button>
           <b-button v-if="hasDeletionPermission" :title="$t('confirm.delete')" size="sm" variant="outline-secondary"

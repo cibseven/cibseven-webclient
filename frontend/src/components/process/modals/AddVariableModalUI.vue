@@ -287,6 +287,9 @@ export default {
   },
   computed: {
     computedTitle: function() {
+      if (this.disabled) {
+        return this.$t('process-instance.variables.historicVariable.title')
+      }
       return this.editMode ? this.$t('process-instance.edit') : this.$t('process-instance.addVariable')
     },
     computedSubmitButtonText: function() {
