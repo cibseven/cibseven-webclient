@@ -769,6 +769,12 @@ var DeploymentService = {
       formData,
       { headers: { 'Content-Type': 'multipart/form-data' } }
     )
+  },
+  redeployDeployment(deploymentId, data) {
+    return axios.post(
+      getServicesBasePath() + '/deployment/' + deploymentId + '/redeploy',
+      data
+    )
   }
 }
 
