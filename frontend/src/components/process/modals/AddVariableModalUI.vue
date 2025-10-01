@@ -33,7 +33,7 @@
         <b-form-input ref="variableName" v-model="name" autofocus
           @focus="isNameFocused = true, nameFocused++"
           @blur="isNameFocused = false"
-          :disabled="editMode || disabled || saving || loading"
+          :disabled="!computedAllowEditName"
           :class="{ 'is-invalid': !name && (!isNameFocused || nameFocused > 2) }"
         ></b-form-input>
       </b-form-group>
@@ -184,6 +184,14 @@ export default {
       type: String,
       default: ''
     },
+    /**
+     * Allow editing name in edit mode.
+     * For add mode, name is always editable.
+     */
+    allowEditName: {
+      type: Boolean,
+      default: false
+    },
     showOnlyError: {
       type: Boolean,
       default: false
@@ -197,7 +205,7 @@ export default {
       isNameFocused: true,
       type: 'String',
       value: '',
-      valueSerialized: null,
+      valueSerialized: '',
       objectTypeName: '',
       serializationDataFormat: '',
     }
@@ -294,6 +302,18 @@ export default {
     },
     computedSubmitButtonText: function() {
       return this.editMode ? this.$t('process-instance.save') : this.$t('process-instance.addVariable')
+    },
+    computedAllowEditName: function() {
+      if (this.disabled || this.saving || this.loading) {
+        return false
+      }
+
+      if (this.editMode) {
+        return this.allowEditName
+      }
+      else {
+        return true // always allow editing name in add mode
+      }
     },
     types: function() {
       return [
@@ -489,23 +509,15 @@ export default {
       this.isNameFocused = true
       this.type = 'String'
       this.value = ''
-      this.valueSerialized = null
+      this.valueSerialized = ''
       this.objectTypeName = ''
       this.serializationDataFormat = ''
     },
 
     setData: function(variable = {}) {
       if (variable !== null && Object.keys(variable).length > 0) {
-        const {
-          name = '',
-          type = 'String',
-          valueSerialized = null,
-          objectTypeName = '',
-          serializationDataFormat = ''
-        } = variable;
-
-        this.name = name
-        this.type = type
+        this.name = variable?.name || ''
+        this.type = variable?.type || 'String'
 
         this.$nextTick(() => {
           // wait until type watcher sets correct default value
@@ -518,9 +530,9 @@ export default {
             this.value = variable?.value
           }
 
-          this.valueSerialized = valueSerialized
-          this.objectTypeName = objectTypeName
-          this.serializationDataFormat = serializationDataFormat
+          this.valueSerialized = variable?.valueSerialized || ''
+          this.objectTypeName = variable?.valueInfo?.objectTypeName || ''
+          this.serializationDataFormat = variable?.valueInfo?.serializationDataFormat || ''
         })
       }
     },
