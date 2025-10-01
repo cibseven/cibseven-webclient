@@ -83,8 +83,7 @@ props: {
         type: variable?.type || 'String',
         value: this.calcEditableValue(variable),
         valueSerialized: variable?.type === 'Object' ? variable?.valueSerialized : null,
-        objectTypeName: variable?.valueInfo?.objectTypeName || null,
-        serializationDataFormat: variable?.valueInfo?.serializationDataFormat || null,
+        valueInfo: variable?.valueInfo || null,
       }, true)
       this.loading = false
     },

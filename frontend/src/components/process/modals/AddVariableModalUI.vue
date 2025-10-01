@@ -197,7 +197,7 @@ export default {
       isNameFocused: true,
       type: 'String',
       value: '',
-      valueSerialized: null,
+      valueSerialized: '',
       objectTypeName: '',
       serializationDataFormat: '',
     }
@@ -489,23 +489,15 @@ export default {
       this.isNameFocused = true
       this.type = 'String'
       this.value = ''
-      this.valueSerialized = null
+      this.valueSerialized = ''
       this.objectTypeName = ''
       this.serializationDataFormat = ''
     },
 
     setData: function(variable = {}) {
       if (variable !== null && Object.keys(variable).length > 0) {
-        const {
-          name = '',
-          type = 'String',
-          valueSerialized = null,
-          objectTypeName = '',
-          serializationDataFormat = ''
-        } = variable;
-
-        this.name = name
-        this.type = type
+        this.name = variable?.name || ''
+        this.type = variable?.type || 'String'
 
         this.$nextTick(() => {
           // wait until type watcher sets correct default value
@@ -518,9 +510,9 @@ export default {
             this.value = variable?.value
           }
 
-          this.valueSerialized = valueSerialized
-          this.objectTypeName = objectTypeName
-          this.serializationDataFormat = serializationDataFormat
+          this.valueSerialized = variable?.valueSerialized || ''
+          this.objectTypeName = variable?.valueInfo?.objectTypeName || ''
+          this.serializationDataFormat = variable?.valueInfo?.serializationDataFormat || ''
         })
       }
     },

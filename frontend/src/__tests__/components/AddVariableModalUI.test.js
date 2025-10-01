@@ -374,13 +374,13 @@ describe('AddVariableModal.vue UI interactions', () => {
       [{ type: 'Object', value: null }, true, false],
       [{ type: 'Object', value: 'text' }, true, false],
       [{ type: 'Object', value: '' }, true, false],
-      [{ type: 'Object', value: null, objectTypeName: 'any', serializationDataFormat: 'any' }, true, true],
-      [{ type: 'Object', value: undefined, objectTypeName: 'any', serializationDataFormat: 'any' }, true, true],
-      [{ type: 'Object', value: '', objectTypeName: 'any', serializationDataFormat: 'any' }, true, true],
-      [{ type: 'Object', value: '{"json":"value"}', objectTypeName: 'any', serializationDataFormat: 'any' }, true, true],
-      [{ type: 'Object', value: '{"json":"value"}', objectTypeName: 'any', serializationDataFormat: 'application/json' }, true, true],
-      [{ type: 'Object', value: 'invalide json', objectTypeName: 'any', serializationDataFormat: 'application/json' }, false, false],
-      [{ type: 'Object', value: 'some data', objectTypeName: 'any', serializationDataFormat: 'any' }, true, true],
+      [{ type: 'Object', value: null, valueInfo: { objectTypeName: 'any', serializationDataFormat: 'any' } }, true, true],
+      [{ type: 'Object', value: undefined, valueInfo: { objectTypeName: 'any', serializationDataFormat: 'any' } }, true, true],
+      [{ type: 'Object', value: '', valueInfo: { objectTypeName: 'any', serializationDataFormat: 'any' } }, true, true],
+      [{ type: 'Object', value: '{"json":"value"}', valueInfo: { objectTypeName: 'any', serializationDataFormat: 'any' } }, true, true],
+      [{ type: 'Object', value: '{"json":"value"}', valueInfo: { objectTypeName: 'any', serializationDataFormat: 'application/json' } }, true, true],
+      [{ type: 'Object', value: 'invalide json', valueInfo: { objectTypeName: 'any', serializationDataFormat: 'application/json' } }, false, false],
+      [{ type: 'Object', value: 'some data', valueInfo: { objectTypeName: 'any', serializationDataFormat: 'any' } }, true, true],
 
     ])('valueValidationError(%s) = %s', async (data, result, validObjectTypes) => {
       await setData({
