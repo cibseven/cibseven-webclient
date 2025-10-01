@@ -33,7 +33,7 @@
         <b-form-input ref="variableName" v-model="name" autofocus
           @focus="isNameFocused = true, nameFocused++"
           @blur="isNameFocused = false"
-          :disabled="editMode || disabled || saving || loading"
+          :disabled="!computedAllowEditName"
           :class="{ 'is-invalid': !name && (!isNameFocused || nameFocused > 2) }"
         ></b-form-input>
       </b-form-group>
@@ -184,6 +184,14 @@ export default {
       type: String,
       default: ''
     },
+    /**
+     * Allow editing name in edit mode.
+     * For add mode, name is always editable.
+     */
+    allowEditName: {
+      type: Boolean,
+      default: false
+    },
     showOnlyError: {
       type: Boolean,
       default: false
@@ -294,6 +302,18 @@ export default {
     },
     computedSubmitButtonText: function() {
       return this.editMode ? this.$t('process-instance.save') : this.$t('process-instance.addVariable')
+    },
+    computedAllowEditName: function() {
+      if (this.disabled || this.saving || this.loading) {
+        return false
+      }
+
+      if (this.editMode) {
+        return this.allowEditName
+      }
+      else {
+        return true // always allow editing name in add mode
+      }
     },
     types: function() {
       return [

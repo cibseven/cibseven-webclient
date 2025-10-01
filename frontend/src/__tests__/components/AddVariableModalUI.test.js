@@ -32,26 +32,9 @@ vi.mock('@/services.js', () => ({
 describe('AddVariableModal.vue UI interactions', () => {
   let wrapper
 
-  const translations = {...JSON.parse(
-      // eslint-disable-next-line no-undef
-      readFileSync(resolve(__dirname, '../../assets/translations_en.json'), 'utf-8')
-    ),
-    ...{
-      bcomponents: {
-        ariaLabelClose: 'Close',
-      },
-    }
-  }
-
-  beforeEach(() => {
-
-    i18n.global.locale = 'en'
-    i18n.global.setLocaleMessage('en', translations)
-
-    wrapper = mount(AddVariableModalUI, {
-      props: {
-        selectedInstance: { id: 100 }
-      },
+  function createWrapper(props = {}) {
+    return mount(AddVariableModalUI, {
+      props: props,
       global: {
         provide: {
           // Provide any necessary global properties or mocks
@@ -81,6 +64,24 @@ describe('AddVariableModal.vue UI interactions', () => {
         }
       }
     })
+  }
+
+  const translations = {...JSON.parse(
+      // eslint-disable-next-line no-undef
+      readFileSync(resolve(__dirname, '../../assets/translations_en.json'), 'utf-8')
+    ),
+    ...{
+      bcomponents: {
+        ariaLabelClose: 'Close',
+      },
+    }
+  }
+
+  beforeEach(() => {
+    i18n.global.locale = 'en'
+    i18n.global.setLocaleMessage('en', translations)
+
+    wrapper = createWrapper({})
   })
 
   async function setData(data) {
@@ -95,6 +96,54 @@ describe('AddVariableModal.vue UI interactions', () => {
   async function setValue(newValue) {
     await wrapper.setData({ value: newValue })
   }
+
+  describe('editMode', () => {
+    describe('editMode=true', () => {
+      it('allowEditName=undefined', async () => {
+        wrapper = createWrapper({ editMode: true })
+        expect(wrapper.vm.editMode).toBe(true)
+        expect(wrapper.vm.computedAllowEditName).toBe(false)
+        expect(wrapper.find('input').attributes('disabled')).toBeDefined()
+      })
+
+      it('allowEditName=false', async () => {
+        wrapper = createWrapper({ editMode: true, allowEditName: false })
+        expect(wrapper.vm.editMode).toBe(true)
+        expect(wrapper.vm.computedAllowEditName).toBe(false)
+        expect(wrapper.find('input').attributes('disabled')).toBeDefined()
+      })
+
+      it('allowEditName=true', async () => {
+        wrapper = createWrapper({ editMode: true, allowEditName: true })
+        expect(wrapper.vm.editMode).toBe(true)
+        expect(wrapper.vm.computedAllowEditName).toBe(true)
+        expect(wrapper.find('input').attributes('disabled')).toBeUndefined()
+      })
+    })
+
+    describe('editMode=false', () => {
+      it('allowEditName=undefined', async () => {
+        wrapper = createWrapper({ editMode: false })
+        expect(wrapper.vm.editMode).toBe(false)
+        expect(wrapper.vm.computedAllowEditName).toBe(true)
+        expect(wrapper.find('input').attributes('disabled')).toBeUndefined()
+      })
+
+      it('allowEditName=false', async () => {
+        wrapper = createWrapper({ editMode: false, allowEditName: false })
+        expect(wrapper.vm.editMode).toBe(false)
+        expect(wrapper.vm.computedAllowEditName).toBe(true)
+        expect(wrapper.find('input').attributes('disabled')).toBeUndefined()
+      })
+
+      it('allowEditName=true', async () => {
+        wrapper = createWrapper({ editMode: false, allowEditName: true })
+        expect(wrapper.vm.editMode).toBe(false)
+        expect(wrapper.vm.computedAllowEditName).toBe(true)
+        expect(wrapper.find('input').attributes('disabled')).toBeUndefined()
+      })
+    })
+  })
 
   describe('change type', () => {
     it('resets form on hide', () => {
