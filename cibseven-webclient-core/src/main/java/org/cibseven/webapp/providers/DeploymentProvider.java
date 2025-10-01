@@ -99,7 +99,6 @@ public class DeploymentProvider extends SevenProviderBase implements IDeployment
 	@Override
 	public Deployment redeployDeployment(String id, Map<String, Object> data, CIBUser user) throws SystemException {
 		String url = getEngineRestUrl() + "/deployment/" + id + "/redeploy";
-		// Use the base class method for POST with request body
 		ResponseEntity<Deployment> response = doPost(url, data, Deployment.class, user);
 		return response.getBody();
 	}
