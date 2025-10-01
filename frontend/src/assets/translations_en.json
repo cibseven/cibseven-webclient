@@ -13,7 +13,8 @@
 			"lastUpdate": "Last update: {date}",
 			"disabled": "Last update: {date}\n\nAutomatic updates are disabled.\nPress F5 to reload the data.",
 			"enabled": "Last update: {date}\n\nAutomatic updates are enabled.\nRefreshing every {seconds} seconds."
-		}
+		},
+		"remove": "Remove"
 	},
 	"login": {
 		"productName": "CIB seven",
