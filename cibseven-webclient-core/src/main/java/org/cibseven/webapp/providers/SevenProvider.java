@@ -1242,4 +1242,9 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 		return deploymentProvider.createDeployment(data, files, user);
 	}
 
+	@Override
+	public Deployment redeployDeployment(String id, Map<String, Object> data, CIBUser user) throws SystemException {
+		return deploymentProvider.redeployDeployment(id, data, user);
+	}
+
 }

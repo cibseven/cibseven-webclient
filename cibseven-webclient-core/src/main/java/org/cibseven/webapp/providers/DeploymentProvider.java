@@ -20,6 +20,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
 
 import org.cibseven.webapp.Data;
 import org.cibseven.webapp.auth.CIBUser;
@@ -92,6 +93,13 @@ public class DeploymentProvider extends SevenProviderBase implements IDeployment
 		}
 		// Use the base class method for multipart POST
 		ResponseEntity<Deployment> response = doPostMultipart(url, formData, Deployment.class, user);
+		return response.getBody();
+	}
+
+	@Override
+	public Deployment redeployDeployment(String id, Map<String, Object> data, CIBUser user) throws SystemException {
+		String url = getEngineRestUrl() + "/deployment/" + id + "/redeploy";
+		ResponseEntity<Deployment> response = doPost(url, data, Deployment.class, user);
 		return response.getBody();
 	}
 
