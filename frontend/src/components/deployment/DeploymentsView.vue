@@ -30,6 +30,7 @@
               <b-form-input :title="$t('searches.search')" size="sm" :placeholder="$t('searches.search')"
                 v-model.trim="filter"></b-form-input>
             </b-input-group-append>
+            <component :is="DeploymentsViewActions" v-if="DeploymentsViewActions" @deployment-success="onDeploymentSuccess" class="ms-2"></component>
           </b-input-group>
         </div>
         <div class="col-3">
@@ -237,6 +238,11 @@ export default {
     allLoaded() {
       return (this.totalCount === undefined) ? false : (this.deployments.length >= this.totalCount)
     },
+    DeploymentsViewActions: function() {
+      return this.$options.components && this.$options.components.DeploymentsViewActions
+        ? this.$options.components.DeploymentsViewActions
+        : null
+    }
   },
   created: function () {
     this.debouncedSearch = debounce(800, this.performSearch)
