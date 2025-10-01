@@ -20,22 +20,26 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-import org.cibseven.bpm.ProcessEngineService;
 import org.cibseven.bpm.engine.ProcessEngine;
+import org.cibseven.bpm.engine.ProcessEngineConfiguration;
+import org.cibseven.bpm.engine.RepositoryService;
 import org.cibseven.bpm.engine.AuthorizationService;
 import org.cibseven.bpm.engine.IdentityService;
+import org.cibseven.bpm.engine.ManagementService;
 import org.cibseven.bpm.engine.TaskService;
-import org.cibseven.bpm.engine.IdentityService;
 import org.cibseven.bpm.engine.FormService;
+import org.cibseven.bpm.engine.RuntimeService;
 import org.cibseven.webapp.auth.SevenAuthorizationUtils;
 import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.User;
 import org.cibseven.webapp.providers.BpmProvider;
+import org.cibseven.webapp.providers.SevenDirectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.CacheControl;
@@ -202,6 +206,11 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 	}
 
   @Bean
+  public SevenDirectProvider getSevenDirectProvider() {
+    return new SevenDirectProvider();
+  }
+
+  @Bean
   public ProcessEngine getDefaultProcessEngine() {
     return org.cibseven.bpm.BpmPlatform.getDefaultProcessEngine();
   }
@@ -217,6 +226,10 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
   }
 
   @Bean
+  public ProcessEngineConfiguration getProcessEngineConfiguration() {
+    return getDefaultProcessEngine().getProcessEngineConfiguration();
+  }
+  @Bean
   public TaskService getTaskService() {
     return getDefaultProcessEngine().getTaskService();
   }
@@ -224,6 +237,21 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
   @Bean
   public FormService getFormService() {
     return getDefaultProcessEngine().getFormService();
+  }
+
+  @Bean
+  public RuntimeService getRuntimeService() {
+    return getDefaultProcessEngine().getRuntimeService();
+  }
+  
+  @Bean
+  public ManagementService getManagementService() {
+    return getDefaultProcessEngine().getManagementService();
+  }
+
+  @Bean
+  public RepositoryService getRepositoryService() {
+    return getDefaultProcessEngine().getRepositoryService();
   }
 
 //    <bean id="historyService"
@@ -235,5 +263,4 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 //    <bean id="identityService"
 //      factory-bean="processEngine"
 //      factory-method="getIdentityService" />
-
 }

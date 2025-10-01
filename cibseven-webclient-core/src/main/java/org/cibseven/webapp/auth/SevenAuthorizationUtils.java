@@ -48,7 +48,6 @@ public class SevenAuthorizationUtils{
 		private final int type;
 	}
 
-	private static SevenAuthorizationUtils INSTANCE;
   @Autowired
   protected AuthorizationService authorizationService;
   @Autowired
