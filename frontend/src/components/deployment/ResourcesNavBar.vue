@@ -58,15 +58,16 @@
               </div>
             </b-list-group-item>
             <b-list-group-item class="text-dark border-white bg-white">
-              <div class="d-flex">
+              <div class="d-flex flex-column align-items-center gap-2">
                 <b-button @click="$emit('delete-deployment', this.deployment)"
-                  class="border-dark text-dark bg-white me-3" :title="$t('deployment.delete')">
+                  class="border-dark text-dark bg-white w-100" :title="$t('deployment.delete')">
                   <span class="mdi mdi-trash-can"></span>
                   {{ $t('deployment.delete') }}</b-button>
                 <b-button @click="$emit('show-deployment', this.deployment)"
-                  class="border-dark text-dark bg-white" :title="$t('deployment.showDeployment')">
+                  class="border-dark text-dark bg-white w-100" :title="$t('deployment.showDeployment')">
                   <span class="mdi mdi-download-multiple-outline"></span>
                   {{ $t('deployment.showDeployment') }}</b-button>
+                <component :is="ResourcesNavBarDeploymentActionsPlugin" v-if="ResourcesNavBarDeploymentActionsPlugin" :deployment="deployment" @deployment-success="$emit('deployment-success')" class="w-100"></component>
               </div>
             </b-list-group-item>
           </b-list-group>
@@ -90,7 +91,7 @@
           <span class="mdi mdi-48px mdi-file-cancel-outline pe-1 text-warning"></span>
           <span>{{ $t('deployment.errorLoading') }}</span>
         </div>
-        <div v-show="!diagramLoading && error === false" style="height: calc(100vh - 210px);">
+        <div v-show="!diagramLoading && error === false" style="height: calc(100vh - 210px)">
           <BpmnViewer v-show="!isDmnResource" class="h-100" ref="diagram"></BpmnViewer>
           <DmnViewer v-show="isDmnResource" class="h-100" ref="dmnDiagram"></DmnViewer>
         </div>
@@ -131,6 +132,11 @@ export default {
     ResourcesNavBarActions: function() {
       return this.$options.components && this.$options.components.ResourcesNavBarActions
         ? this.$options.components.ResourcesNavBarActions
+        : null
+    },
+    ResourcesNavBarDeploymentActionsPlugin: function() {
+      return this.$options.components && this.$options.components.ResourcesNavBarDeploymentActionsPlugin
+        ? this.$options.components.ResourcesNavBarDeploymentActionsPlugin
         : null
     }
   },
