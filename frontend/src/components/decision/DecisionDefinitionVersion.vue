@@ -63,7 +63,7 @@
                 </div>
               </div>
               <div class="col-4">
-                <component :is="DecisionDefinitionVersionActions" v-if="DecisionDefinitionVersionActions" :decision="decision" :decision-key="decisionKey"></component>
+                <component :is="DecisionDefinitionVersionActionsPlugin" v-if="DecisionDefinitionVersionActionsPlugin" :decision="decision" :decision-key="decisionKey"></component>
               </div>
             </div>
           </div>
@@ -121,9 +121,9 @@ export default {
     decision: function() {
       return this.getSelectedDecisionVersion()
     },
-    DecisionDefinitionVersionActions: function() {
-      return this.$options.components && this.$options.components.DecisionDefinitionVersionActions
-        ? this.$options.components.DecisionDefinitionVersionActions
+    DecisionDefinitionVersionActionsPlugin: function() {
+      return this.$options.components && this.$options.components.DecisionDefinitionVersionActionsPlugin
+        ? this.$options.components.DecisionDefinitionVersionActionsPlugin
         : null
     }
   },

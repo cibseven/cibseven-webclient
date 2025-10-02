@@ -54,7 +54,7 @@
                 <b-button @click.stop="showResource(resource)" size="sm" variant="outline-secondary"
                   class="border-0 mdi mdi-18px mdi-eye-outline text-dark bg-white"
                   :title="$t('deployment.showModel')"></b-button>
-                <component :is="ResourcesNavBarActions" v-if="ResourcesNavBarActions" :resource="resource" :deployment="deployment" @deployment-success="$emit('deployment-success')"></component>
+                <component :is="ResourcesNavBarActionsPlugin" v-if="ResourcesNavBarActionsPlugin" :resource="resource" :deployment="deployment" @deployment-success="$emit('deployment-success')"></component>
               </div>
             </b-list-group-item>
             <b-list-group-item class="text-dark border-white bg-white">
@@ -129,9 +129,9 @@ export default {
     },
   },
   computed: {
-    ResourcesNavBarActions: function() {
-      return this.$options.components && this.$options.components.ResourcesNavBarActions
-        ? this.$options.components.ResourcesNavBarActions
+    ResourcesNavBarActionsPlugin: function() {
+      return this.$options.components && this.$options.components.ResourcesNavBarActionsPlugin
+        ? this.$options.components.ResourcesNavBarActionsPlugin
         : null
     },
     ResourcesNavBarDeploymentActionsPlugin: function() {
