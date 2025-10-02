@@ -111,7 +111,7 @@
                 <b-button class="border" size="sm" variant="light" @click="viewDeployment()" :title="$t('process.showDeployment')">
                   <span class="mdi mdi-file-eye-outline"></span> {{ collapseButtons  ? '': $t('process.showDeployment') }}
                 </b-button>
-                <component :is="ProcessActions" v-if="ProcessActions" :process="process" :collapseButtons="collapseButtons"></component>
+                <component :is="ProcessActionsPlugin" v-if="ProcessActionsPlugin" :process="process" :collapseButtons="collapseButtons"></component>
               </div>
             </div>
           </div>
@@ -283,9 +283,9 @@ export default {
 
       return result
     },
-    ProcessActions: function() {
-      return this.$options.components && this.$options.components.ProcessActions
-        ? this.$options.components.ProcessActions
+    ProcessActionsPlugin: function() {
+      return this.$options.components && this.$options.components.ProcessActionsPlugin
+        ? this.$options.components.ProcessActionsPlugin
         : null
     },
     ProcessInstancesTabsContentPlugin: function() {
