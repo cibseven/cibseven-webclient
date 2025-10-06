@@ -76,10 +76,6 @@ public class BaseService {
 	}
 
 	public void checkPermission(CIBUser user, SevenResourceType type, List<String> permissions) {
-	//TODO: exception on type == HISTORIC_PROCESS_INSTANCE and READ
-	  //TODO: Rest reactivated to check the above 
-	  //sevenAuthorizationUtils.checkPermission(user, type, permissions);
-
 	  Authorizations authorizations = bpmProvider.getUserAuthorization(user.getId(), user);
 		// SevenAuthorizationUtils.checkPermission now throws detailed AccessDeniedException when permission check fails
 		SevenAuthorizationUtils.checkPermission(authorizations, type, permissions);

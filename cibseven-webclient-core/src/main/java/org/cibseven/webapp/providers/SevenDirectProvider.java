@@ -16,16 +16,23 @@
  */
 package org.cibseven.webapp.providers;
 
+import static org.cibseven.webapp.auth.SevenAuthorizationUtils.resourceType;
+
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.HttpMethod;
@@ -53,7 +60,10 @@ import org.cibseven.bpm.engine.TaskService;
 import org.cibseven.bpm.engine.authorization.AuthorizationQuery;
 import org.cibseven.bpm.engine.authorization.Permissions;
 import org.cibseven.bpm.engine.identity.Group;
+import org.cibseven.bpm.engine.identity.GroupQuery;
+import org.cibseven.bpm.engine.identity.UserQuery;
 import org.cibseven.bpm.engine.impl.RuntimeServiceImpl;
+import org.cibseven.bpm.engine.impl.identity.Authentication;
 import org.cibseven.bpm.engine.impl.persistence.entity.ProcessDefinitionStatisticsEntity;
 import org.cibseven.bpm.engine.impl.util.PermissionConverter;
 import org.cibseven.bpm.engine.management.ActivityStatistics;
@@ -67,12 +77,17 @@ import org.cibseven.bpm.engine.rest.dto.VariableValueDto;
 import org.cibseven.bpm.engine.rest.dto.authorization.AuthorizationDto;
 import org.cibseven.bpm.engine.rest.dto.authorization.AuthorizationQueryDto;
 import org.cibseven.bpm.engine.rest.dto.converter.DelegationStateConverter;
+import org.cibseven.bpm.engine.rest.dto.identity.GroupQueryDto;
+import org.cibseven.bpm.engine.rest.dto.identity.UserQueryDto;
 import org.cibseven.bpm.engine.rest.dto.repository.ProcessDefinitionDto;
 import org.cibseven.bpm.engine.rest.dto.repository.ProcessDefinitionQueryDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.ProcessInstanceDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.ProcessInstanceWithVariablesDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.StartProcessInstanceDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.modification.ProcessInstanceModificationInstructionDto;
+import org.cibseven.bpm.engine.rest.dto.task.GroupDto;
+import org.cibseven.bpm.engine.rest.dto.task.GroupInfoDto;
+import org.cibseven.bpm.engine.rest.dto.task.UserDto;
 import org.cibseven.bpm.engine.rest.exception.InvalidRequestException;
 import org.cibseven.bpm.engine.rest.sub.repository.impl.ProcessDefinitionResourceImpl;
 import org.cibseven.bpm.engine.rest.util.QueryUtil;
@@ -89,6 +104,7 @@ import org.cibseven.bpm.engine.variable.value.builder.FileValueBuilder;
 import org.cibseven.bpm.engine.variable.value.TypedValue;
 import org.cibseven.webapp.Data;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.exception.ExpressionEvaluationException;
 import org.cibseven.webapp.exception.InvalidUserIdException;
 import org.cibseven.webapp.exception.NoObjectFoundException;
@@ -109,10 +125,13 @@ import org.cibseven.webapp.rest.model.User;
 import org.cibseven.webapp.rest.model.UserGroup;
 import org.cibseven.webapp.rest.model.Variable;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import camundajar.impl.scala.Array;
@@ -1082,100 +1101,272 @@ ProcessDefinitionResourceImpl  public List<StatisticsResultDto> getActivityStati
   
   //@Override
   public Authorizations getUserAuthorization(String userId, CIBUser user) {
-    //TODO: to be implemented
-    Authorizations auths = new Authorizations();
-//    try {
+    //TODO: eliminate rest classes
     AuthorizationQueryDto queryDto = new AuthorizationQueryDto();
     queryDto.setUserIdIn(new String[]{userId});
     queryDto.setObjectMapper(new ObjectMapper());
-    //queryDto.setObjectMapper(getObjectMapper());
-    AuthorizationQuery query = queryDto.toQuery(processEngine);
+    AuthorizationQuery userQuery = queryDto.toQuery(processEngine);
 
-    List<org.cibseven.bpm.engine.authorization.Authorization> authorizationList = QueryUtil.list(query, null, null);
+    List<org.cibseven.bpm.engine.authorization.Authorization> userAuthorizationList = QueryUtil.list(userQuery, null, null);
+    GroupQuery groupQuery = identityService.createGroupQuery();
+    List<Group> userGroups = groupQuery.groupMember(userId)
+        .orderByGroupName()
+        .asc()
+        .unlimitedList();
 
-    List<AuthorizationDto> authorizationDtoList = AuthorizationDto.fromAuthorizationList(authorizationList, processEngineConfiguration);
-    
-    return auths;
-    
-/* UserProvider does:
-      first part done above
+    Set<UserDto> allGroupUsers = new HashSet<>();
+    List<GroupDto> allGroups = new ArrayList<>();//TODO: not used, yet
 
-      String urlGroup = getEngineRestUrl() + "/group";
-      builder = UriComponentsBuilder.fromUriString(urlGroup).queryParam("member", URLEncoder.encode(userId, StandardCharsets.UTF_8.toString()));
-      Collection<UserGroup> userGroups = Arrays.asList(((ResponseEntity<UserGroup[]>) doGet(builder, UserGroup[].class, user)).getBody());
-      
-      String listGroups = "";
-      
-      for (UserGroup userGroup : userGroups) {
-        listGroups += userGroup.getId() + ",";
+    List<String> listGroups = new ArrayList<>();
+    for (Group group : userGroups) {
+      List<org.cibseven.bpm.engine.identity.User> groupUsers = identityService.createUserQuery()
+          .memberOfGroup(group.getId())
+          .unlimitedList();
+
+      for (org.cibseven.bpm.engine.identity.User groupUser : groupUsers) {
+        if (!user.getId().equals(userId)) {
+          allGroupUsers.add(new UserDto(groupUser.getId(), groupUser.getFirstName(), groupUser.getLastName()));
+        }
       }
-      
-      if (userGroups.size() > 0) {
-        String urlGroupAuthorizations = getEngineRestUrl() + "/authorization";
-        builder = UriComponentsBuilder.fromUriString(urlGroupAuthorizations).queryParam("groupIdIn", URLEncoder.encode(listGroups, StandardCharsets.UTF_8.toString()));
-        Collection<Authorization> groupsAuthorizations = Arrays.asList(((ResponseEntity<Authorization[]>) doGet(builder, Authorization[].class, user)).getBody());
-        userAuthorizations.addAll(groupsAuthorizations);
-      }
-
-      builder = UriComponentsBuilder.fromUriString(urlUsers).queryParam("type", 0);
-      Collection<Authorization> globalAuthorizations = Arrays.asList(((ResponseEntity<Authorization[]>) doGet(builder, Authorization[].class, user)).getBody());
-      userAuthorizations.addAll(globalAuthorizations);
-
-      auths.setApplication(filterResources(userAuthorizations, resourceType(SevenResourceType.APPLICATION)));
-      auths.setFilter(filterResources(userAuthorizations, resourceType(SevenResourceType.FILTER)));
-      auths.setProcessDefinition(filterResources(userAuthorizations, resourceType(SevenResourceType.PROCESS_DEFINITION)));
-      auths.setProcessInstance(filterResources(userAuthorizations, resourceType(SevenResourceType.PROCESS_INSTANCE)));
-      auths.setTask(filterResources(userAuthorizations, resourceType(SevenResourceType.TASK)));
-      auths.setAuthorization(filterResources(userAuthorizations, resourceType(SevenResourceType.AUTHORIZATION)));
-      auths.setUser(filterResources(userAuthorizations, resourceType(SevenResourceType.USER)));
-      auths.setGroup(filterResources(userAuthorizations, resourceType(SevenResourceType.GROUP)));
-      auths.setDecisionDefinition(filterResources(userAuthorizations, resourceType(SevenResourceType.DECISION_DEFINITION)));
-      auths.setDecisionRequirementsDefinition(filterResources(userAuthorizations, resourceType(SevenResourceType.DECISION_REQUIREMENTS_DEFINITION)));
-      auths.setDeployment(filterResources(userAuthorizations, resourceType(SevenResourceType.DEPLOYMENT)));
-      //auths.setCaseDefinition(filterResources(userAuthorizations, resourceType(SevenResourceType.CASE_DEFINITION)));
-      //auths.setCaseInstance(filterResources(userAuthorizations, resourceType(SevenResourceType.CASE_INSTANCE)));
-      //auths.setJobDefinition(filterResources(userAuthorizations, resourceType(SevenResourceType.JOB_DEFINITION)));
-      auths.setBatch(filterResources(userAuthorizations, resourceType(SevenResourceType.BATCH)));
-      auths.setGroupMembership(filterResources(userAuthorizations, resourceType(SevenResourceType.GROUP_MEMBERSHIP)));
-      auths.setHistoricTask(filterResources(userAuthorizations, resourceType(SevenResourceType.HISTORIC_TASK)));
-      auths.setHistoricProcessInstance(filterResources(userAuthorizations, resourceType(SevenResourceType.HISTORIC_PROCESS_INSTANCE)));
-      auths.setTenant(filterResources(userAuthorizations, resourceType(SevenResourceType.TENANT)));
-      auths.setTenantMembership(filterResources(userAuthorizations, resourceType(SevenResourceType.TENANT_MEMBERSHIP)));
-      auths.setReport(filterResources(userAuthorizations, resourceType(SevenResourceType.REPORT)));
-      auths.setDashboard(filterResources(userAuthorizations, resourceType(SevenResourceType.DASHBOARD)));
-      auths.setUserOperationLogCategory(filterResources(userAuthorizations, resourceType(SevenResourceType.USER_OPERATION_LOG_CATEGORY)));
-      auths.setSystem(filterResources(userAuthorizations, resourceType(SevenResourceType.SYSTEM)));
-      //auths.setMessage(filterResources(userAuthorizations, resourceType(SevenResourceType.MESSAGE)));
-      //auths.setEventSubscription(filterResources(userAuthorizations, resourceType(SevenResourceType.EVENT_SUBSCRIPTION)));
-      
-    } catch (UnsupportedEncodingException e) {
-      throw new SystemException(e);
+      allGroups.add(new GroupDto(group.getId(), group.getName()));
+      listGroups.add(group.getId());
     }
 
-    return auths;
+    AuthorizationQueryDto groupIdQueryDto = new AuthorizationQueryDto();
+    groupIdQueryDto.setGroupIdIn(listGroups.toArray(new String[0]));
+    groupIdQueryDto.setObjectMapper(new ObjectMapper());
+    AuthorizationQuery groupIdQuery = groupIdQueryDto.toQuery(processEngine);
+    //expected: 51 authorizations with id, type, userid, groupId, resourceType, resourceId
+    List<org.cibseven.bpm.engine.authorization.Authorization> groupIdResultList = QueryUtil.list(groupIdQuery, null, null);
+    Collection<Authorization> groupsAuthorizations = createAuthorizationCollection(groupIdResultList);
 
-*/    
+    AuthorizationQueryDto globalIdQueryDto = new AuthorizationQueryDto();
+    globalIdQueryDto.setType(0);
+    globalIdQueryDto.setObjectMapper(new ObjectMapper());
+    AuthorizationQuery globalIdQuery = globalIdQueryDto.toQuery(processEngine);
+    List<org.cibseven.bpm.engine.authorization.Authorization> globalIdResultList = QueryUtil.list(globalIdQuery, null, null);
+    Collection<Authorization> globalAuthorizations = createAuthorizationCollection(globalIdResultList);
     
+    
+    Authorizations auths = new Authorizations();
+    Collection<Authorization> userAuthorizations = createAuthorizationCollection(userAuthorizationList);
+    userAuthorizations.addAll(groupsAuthorizations);
+    userAuthorizations.addAll(globalAuthorizations);
+    
+    auths.setApplication(filterResources(userAuthorizations, resourceType(SevenResourceType.APPLICATION)));
+    auths.setFilter(filterResources(userAuthorizations, resourceType(SevenResourceType.FILTER)));
+    auths.setProcessDefinition(filterResources(userAuthorizations, resourceType(SevenResourceType.PROCESS_DEFINITION)));
+    auths.setProcessInstance(filterResources(userAuthorizations, resourceType(SevenResourceType.PROCESS_INSTANCE)));
+    auths.setTask(filterResources(userAuthorizations, resourceType(SevenResourceType.TASK)));
+    auths.setAuthorization(filterResources(userAuthorizations, resourceType(SevenResourceType.AUTHORIZATION)));
+    auths.setUser(filterResources(userAuthorizations, resourceType(SevenResourceType.USER)));
+    auths.setGroup(filterResources(userAuthorizations, resourceType(SevenResourceType.GROUP)));
+    auths.setDecisionDefinition(filterResources(userAuthorizations, resourceType(SevenResourceType.DECISION_DEFINITION)));
+    auths.setDecisionRequirementsDefinition(filterResources(userAuthorizations, resourceType(SevenResourceType.DECISION_REQUIREMENTS_DEFINITION)));
+    auths.setDeployment(filterResources(userAuthorizations, resourceType(SevenResourceType.DEPLOYMENT)));
+    //auths.setCaseDefinition(filterResources(userAuthorizations, resourceType(SevenResourceType.CASE_DEFINITION)));
+    //auths.setCaseInstance(filterResources(userAuthorizations, resourceType(SevenResourceType.CASE_INSTANCE)));
+    //auths.setJobDefinition(filterResources(userAuthorizations, resourceType(SevenResourceType.JOB_DEFINITION)));
+    auths.setBatch(filterResources(userAuthorizations, resourceType(SevenResourceType.BATCH)));
+    auths.setGroupMembership(filterResources(userAuthorizations, resourceType(SevenResourceType.GROUP_MEMBERSHIP)));
+    auths.setHistoricTask(filterResources(userAuthorizations, resourceType(SevenResourceType.HISTORIC_TASK)));
+    auths.setHistoricProcessInstance(filterResources(userAuthorizations, resourceType(SevenResourceType.HISTORIC_PROCESS_INSTANCE)));
+    auths.setTenant(filterResources(userAuthorizations, resourceType(SevenResourceType.TENANT)));
+    auths.setTenantMembership(filterResources(userAuthorizations, resourceType(SevenResourceType.TENANT_MEMBERSHIP)));
+    auths.setReport(filterResources(userAuthorizations, resourceType(SevenResourceType.REPORT)));
+    auths.setDashboard(filterResources(userAuthorizations, resourceType(SevenResourceType.DASHBOARD)));
+    auths.setUserOperationLogCategory(filterResources(userAuthorizations, resourceType(SevenResourceType.USER_OPERATION_LOG_CATEGORY)));
+    auths.setSystem(filterResources(userAuthorizations, resourceType(SevenResourceType.SYSTEM)));
+    //auths.setMessage(filterResources(userAuthorizations, resourceType(SevenResourceType.MESSAGE)));
+    //auths.setEventSubscription(filterResources(userAuthorizations, resourceType(SevenResourceType.EVENT_SUBSCRIPTION)));
+    
+    return auths;
+  }
+  
+  //TODO: this method will be obsolete once the base class is correctly set
+  private Collection<Authorization> filterResources(Collection<Authorization> authorizations, int resourceType) {
+    Set<Integer> resourceFilter = Arrays.asList(resourceType).stream().collect(Collectors.toSet());
+    return authorizations.stream().filter(authorization -> resourceFilter.contains(authorization.getResourceType())).collect(Collectors.toList());
+  }
+  
+  
+  private Collection<Authorization> createAuthorizationCollection(List<org.cibseven.bpm.engine.authorization.Authorization> userAuthorizationList) {
+    Collection<Authorization> resultAuthorization = new ArrayList<>();
+    for (org.cibseven.bpm.engine.authorization.Authorization userAuthorization : userAuthorizationList) {
+      resultAuthorization.add(createAuthorization(userAuthorization));
+    }
+    return resultAuthorization;
+  }
+
+  private Authorization createAuthorization(org.cibseven.bpm.engine.authorization.Authorization userAuthorization) {
+    Authorization newUserAuthorization = new Authorization();
+    newUserAuthorization.setGroupId(userAuthorization.getGroupId());
+    newUserAuthorization.setId(userAuthorization.getId());
+    newUserAuthorization.setPermissions(PermissionConverter.getNamesForPermissions( userAuthorization, userAuthorization.getPermissions(Permissions.values())));
+    newUserAuthorization.setResourceId(userAuthorization.getResourceId());
+    newUserAuthorization.setResourceType(userAuthorization.getResourceType());
+    newUserAuthorization.setType(userAuthorization.getAuthorizationType());
+    newUserAuthorization.setUserId(userAuthorization.getUserId());
+    return newUserAuthorization;
   }
   
   public Collection<SevenUser> fetchUsers(CIBUser user) throws SystemException {
-    //TODO: to be implemented
-    return null;
+    UserQueryDto queryDto = new UserQueryDto();
+    //TODO: which ObjectMapper should be used
+    queryDto.setObjectMapper(new ObjectMapper());
+    UserQuery query = queryDto.toQuery(processEngine);
+    query.userId(user.getId());
+    List<org.cibseven.bpm.engine.identity.User> resultList = QueryUtil.list(query, null, null);
+
+    Collection<SevenUser> userCollection = createSevenUsers(resultList); 
+    return userCollection;
   }
   
   public SevenVerifyUser verifyUser(String username, String password, CIBUser user) throws SystemException {
-    //TODO: to be implemented
-    return null;
+    if ((username == null || username.isBlank())|| (password == null || password.isBlank()))
+      //TODO: exception type
+      throw new IllegalArgumentException("Username and password are required");
+    SevenVerifyUser verifyUser = new SevenVerifyUser();
+    boolean valid = identityService.checkPassword(username, password);
+    verifyUser.setAuthenticated(valid);
+    verifyUser.setAuthenticatedUser(username);
+    return verifyUser;
   }
   
   //@Override
   public Collection<User> findUsers(Optional<String> id, Optional<String> firstName, Optional<String> firstNameLike, Optional<String> lastName, Optional<String> lastNameLike,
       Optional<String> email, Optional<String> emailLike, Optional<String> memberOfGroup, Optional<String> memberOfTenant, Optional<String> idIn, 
       Optional<String> firstResult, Optional<String> maxResults, Optional<String> sortBy, Optional<String> sortOrder, CIBUser user) {
-    //TODO: to be implemented
-    return null;
+    //TODO: does not work with ldap/adfsUserProvider
+    //
+    
+    if (firstNameLike.isPresent()) { // javier, JAVIER, Javier
+      Collection<User> lowerCaseResult = getUsers(id, firstName, 
+          Optional.of(firstNameLike.get().toLowerCase()), lastName, lastNameLike, email, emailLike, memberOfGroup, 
+          memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder);
+      Collection<User> upperCaseResult = getUsers(id, firstName, 
+          Optional.of(firstNameLike.get().toUpperCase()), lastName, lastNameLike, email, emailLike, memberOfGroup, 
+          memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder);
+      Collection<User> normalCaseResult = getUsers(id, firstName, Optional.of(firstNameLike.get().substring(0, 2).toUpperCase() + firstNameLike.get().substring(2).toLowerCase()), lastName, lastNameLike, email, emailLike, memberOfGroup, 
+          memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder);
+        
+      Collection<User> res = new ArrayList<User>();
+      res.addAll(lowerCaseResult);
+      res.addAll(upperCaseResult);
+      res.addAll(normalCaseResult);
+      
+      return res;
+    }
+    
+    if (lastNameLike.isPresent()) { // javier, JAVIER, Javier
+      Collection<User> lowerCaseResult = getUsers(id, firstName, 
+          firstNameLike, lastName, Optional.of(lastNameLike.get().toLowerCase()), email, emailLike, memberOfGroup, 
+          memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder);
+      Collection<User> upperCaseResult = getUsers(id, firstName, 
+          firstNameLike, lastName, Optional.of(lastNameLike.get().toLowerCase()), email, emailLike, memberOfGroup, 
+          memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder);
+      Collection<User> normalCaseResult = getUsers(id, firstName, firstNameLike, lastName, Optional.of(lastNameLike.get().substring(0, 2).toUpperCase() + lastNameLike.get().substring(2).toLowerCase()), email, emailLike, memberOfGroup, 
+          memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder);
+        
+      Collection<User> res = new ArrayList<User>();
+      res.addAll(lowerCaseResult);
+      res.addAll(upperCaseResult);
+      res.addAll(normalCaseResult);
+      
+      return res;
+    }
+    
+    return getUsers(id, firstName, firstNameLike, lastName, lastNameLike, email, emailLike, memberOfGroup, 
+        memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder);
   }
   
+  private Collection<User> getUsers(Optional<String> id, Optional<String> firstName, Optional<String> firstNameLike,
+      Optional<String> lastName, Optional<String> lastNameLike, Optional<String> email, Optional<String> emailLike,
+      Optional<String> memberOfGroup, Optional<String> memberOfTenant, Optional<String> idIn,
+      Optional<String> firstResult, Optional<String> maxResults, Optional<String> sortBy, Optional<String> sortOrder) {
+
+    //TODO: Wildcard is always set to "%"
+    final String wcard = "%";
+    UserQueryDto queryDto = new UserQueryDto();
+    //TODO: which ObjectMapper should be used
+    queryDto.setObjectMapper(new ObjectMapper());
+    UserQuery query = queryDto.toQuery(processEngine);
+    if (memberOfGroup.isPresent())
+       query.memberOfGroup(memberOfGroup.get());
+    if (memberOfTenant.isPresent())
+      query.memberOfTenant(memberOfTenant.get());
+    //TODO: there is protected void query.applySortBy(UserQuery query, String sortBy, Map<String, Object> parameters, ProcessEngine engine)
+    if (sortBy.isPresent()) {
+      String sortByValue = sortBy.get();
+      switch (sortByValue) {
+      case "userId":
+        query.orderByUserId();
+        break;
+      case "firstName":
+        query.orderByUserFirstName();
+        break;
+      case "lastName":
+        query.orderByUserLastName();
+        break;
+      case "email":
+        query.orderByUserEmail();
+        break;
+      default:
+      }
+    }
+    if (email.isPresent())
+      query.userEmail(email.get());
+    if (emailLike.isPresent())
+      query.userEmailLike(emailLike.get().replace("*", wcard));
+    if (firstName.isPresent())
+      query.userFirstName(firstName.get());
+    if (firstNameLike.isPresent())
+      query.userFirstNameLike(firstNameLike.get().replace("*", wcard));
+    if (id.isPresent())
+      query.userId(id.get());
+    //query.userIdIn(null);
+    if (lastName.isPresent())
+      query.userLastName(lastName.get());
+    if (lastNameLike.isPresent())
+      query.userLastNameLike(lastNameLike.get().replace("*", wcard));
+    Integer first = firstResult.isPresent() ? Integer.parseInt(firstResult.get()) : null;
+    Integer max = maxResults.isPresent() ? Integer.parseInt(maxResults.get()) : null;
+    List<org.cibseven.bpm.engine.identity.User> resultList = QueryUtil.list(query, first, max);
+
+    Collection<User> userCollection = createUsers(resultList); 
+    return userCollection;
+  }
+
+  private Collection<User> createUsers(List<org.cibseven.bpm.engine.identity.User> resultList) {
+    Collection<User> users = new ArrayList<>();
+    for (org.cibseven.bpm.engine.identity.User resultUser : resultList) {
+      User user = new User();
+      user.setEmail(resultUser.getEmail());
+      user.setFirstName(resultUser.getFirstName());
+      user.setId(resultUser.getId());
+      user.setLastName(resultUser.getLastName());
+      users.add(user);
+    }
+    return users;
+  }
+
+  private Collection<SevenUser> createSevenUsers(List<org.cibseven.bpm.engine.identity.User> resultList) {
+    Collection<SevenUser> users = new ArrayList<>();
+    for (org.cibseven.bpm.engine.identity.User resultUser : resultList) {
+      users.add(createSevenUser(resultUser));
+    }
+    return users;
+  }
+
+  private SevenUser createSevenUser(org.cibseven.bpm.engine.identity.User engineUser) {
+    SevenUser user = new SevenUser();
+    user.setEmail(engineUser.getEmail());
+    user.setFirstName(engineUser.getFirstName());
+    user.setId(engineUser.getId());
+    user.setLastName(engineUser.getPassword());
+    return user;
+  }
+
   //@Override
   public void createUser(NewUser user, CIBUser flowUser) throws InvalidUserIdException {
     User profile = user.getProfile();
@@ -1190,22 +1381,98 @@ ProcessDefinitionResourceImpl  public List<StatisticsResultDto> getActivityStati
   
   //@Override
   public void updateUserProfile(String userId, User user, CIBUser flowUser) {
-    //TODO: to be implemented
+    if(identityService.isReadOnly()) {
+      //TODO: exception type
+      throw new IllegalArgumentException("Identity service implementation is read-only.");
+    }
+
+    org.cibseven.bpm.engine.identity.User dbUser = findUserObject(user.getId());
+    if(dbUser == null) {
+      //TODO: exception type
+      throw new IllegalArgumentException("User with id " + user.getId() + " does not exist");
+    }
+
+    dbUser.setId(user.getId());
+    dbUser.setFirstName(user.getFirstName());
+    dbUser.setLastName(user.getLastName());
+    dbUser.setEmail(user.getEmail());
+    identityService.saveUser(dbUser);
   }
   
+  private org.cibseven.bpm.engine.identity.User findUserObject(String id) {
+    org.cibseven.bpm.engine.identity.User dbUser = null;
+    try {
+      List<org.cibseven.bpm.engine.identity.User> users = identityService.createUserQuery().userId(id).list();
+
+      if (users.size() == 1) {
+        dbUser = users.get(0);
+      } else if (!users.isEmpty()) {
+
+        dbUser = users.stream().filter(u -> u.getId().equals(id)).findFirst().orElse(null);
+
+        if (dbUser == null) {
+          dbUser = users.get(0);
+        }
+      }
+    } catch (ProcessEngineException e) {
+      // TODO: exception type
+      throw new IllegalArgumentException("Exception while performing user query: " + e.getMessage());
+    }
+    return dbUser;
+  }
+
+  private Group findGroupObject(String groupId) {
+    try {
+      return identityService.createGroupQuery()
+          .groupId(groupId)
+          .singleResult();
+    } catch(ProcessEngineException e) {
+      //TODO: exception type
+      throw new IllegalArgumentException("Exception while performing group query: "+ e.getMessage());
+    }
+  }
+  
+  //TODO: not tested, UI seems to have no function to change password without sending mails before
   //@Override
   public void updateUserCredentials(String userId, Map<String, Object> data, CIBUser user) {
-    //TODO: to be implemented
+    if(identityService.isReadOnly()) {
+      //TODO: exception type
+      throw new IllegalArgumentException("Identity service implementation is read-only.");
+    }
+    Authentication currentAuthentication = identityService.getCurrentAuthentication();
+    if(currentAuthentication != null && currentAuthentication.getUserId() != null) {
+      if(!identityService.checkPassword(currentAuthentication.getUserId(), (String)data.get("authenticatedUserPassword"))) {
+        //TODO: exception type
+        throw new IllegalArgumentException("The given authenticated user password is not valid.");
+      }
+    }
+
+    org.cibseven.bpm.engine.identity.User dbUser = findUserObject(userId);
+    if(dbUser == null) {
+      //TODO: exception type
+      throw new IllegalArgumentException("User with id " + user.getId() + " does not exist");
+    }
+
+    dbUser.setPassword((String)data.get("password"));
+    identityService.saveUser(dbUser);
   }
   
   //@Override
   public void addMemberToGroup(String groupId, String userId, CIBUser user) {
-    //TODO: to be implemented
+    if(identityService.isReadOnly()) {
+      //TODO: exception type
+      throw new IllegalArgumentException("Identity service implementation is read-only.");
+    }
+    identityService.createMembership(userId, groupId);
   }
   
   //@Override
   public void deleteMemberFromGroup(String groupId, String userId, CIBUser user) {
-    //TODO: to be implemented
+    if(identityService.isReadOnly()) {
+      //TODO: exception type
+      throw new IllegalArgumentException("Identity service implementation is read-only.");
+    }
+    identityService.deleteMembership(userId, groupId);
   }
 
   //@Override
@@ -1230,12 +1497,7 @@ ProcessDefinitionResourceImpl  public List<StatisticsResultDto> getActivityStati
           identityUser = users.get(0);
       }
     }
-    SevenUser sevenUser = new SevenUser();
-    sevenUser.setEmail(identityUser.getEmail());
-    sevenUser.setFirstName(identityUser.getFirstName());
-    sevenUser.setLastName(identityUser.getLastName());
-    sevenUser.setId(userId);
-    return sevenUser;
+    return createSevenUser(identityUser);
     
   }
 
@@ -1243,12 +1505,59 @@ ProcessDefinitionResourceImpl  public List<StatisticsResultDto> getActivityStati
   public Collection<UserGroup> findGroups(Optional<String> id, Optional<String> name, Optional<String> nameLike, Optional<String> type,
       Optional<String> member, Optional<String> memberOfTenant, Optional<String> sortBy, Optional<String> sortOrder, Optional<String> firstResult,
       Optional<String> maxResults, CIBUser user) {
-    //TODO: to be implemented
-    return null;
+    //TODO: Wildcard is always set to "%"
+    final String wcard = "%";
+    GroupQueryDto queryDto = new GroupQueryDto();
+    queryDto.setObjectMapper(new ObjectMapper());
+    //set parameters
+    if (id.isPresent())
+        queryDto.setId(id.get());
+    if (name.isPresent())
+      queryDto.setName(name.get());
+    if (nameLike.isPresent())
+      queryDto.setNameLike(nameLike.get().replace("*", wcard));;
+    if (type.isPresent())
+      queryDto.setType(type.get());
+    if (member.isPresent())
+      queryDto.setMember(member.get());
+    if (memberOfTenant.isPresent())
+      queryDto.setMemberOfTenant(memberOfTenant.get());
+    if (sortBy.isPresent())//TODO: value unknown
+      queryDto.setSortBy(sortBy.get());
+    if (sortOrder.isPresent())//TODO: value unknown
+      queryDto.setSortOrder( sortOrder.get().equals("asc")? "asc" : "desc");
+    GroupQuery query = queryDto.toQuery(processEngine);
+
+    Integer first = firstResult.isPresent() ? Integer.parseInt(firstResult.get()) : null;
+    Integer max = maxResults.isPresent() ? Integer.parseInt(maxResults.get()) : null;
+    List<Group> resultList = QueryUtil.list(query, first, max);
+
+    Collection<UserGroup> userGroups = createUserGroups(resultList); 
+    return userGroups;
+  }
+
+  private Collection<UserGroup> createUserGroups(List<Group> resultList) {
+    Collection<UserGroup> userGroups = new ArrayList<>();
+    for (Group group : resultList) {
+      userGroups.add(createUserGroup(group));
+    }
+    return userGroups;
+  }
+
+  private UserGroup createUserGroup(Group group) {
+    UserGroup userGroup = new UserGroup();
+    userGroup.setId(group.getId());
+    userGroup.setName(group.getName());
+    userGroup.setType(group.getType());
+    return userGroup;
   }
 
   //@Override
   public void createGroup(UserGroup group, CIBUser user) {
+    if(identityService.isReadOnly()) {
+      //TODO: exception type
+      throw new IllegalArgumentException("Identity service implementation is read-only.");
+    }
     Group newGroup = identityService.newGroup(group.getId());
     newGroup.setId(group.getId()); 
     newGroup.setName(group.getName());
@@ -1258,11 +1567,30 @@ ProcessDefinitionResourceImpl  public List<StatisticsResultDto> getActivityStati
 
   //@Override
   public void updateGroup(String groupId, UserGroup group, CIBUser user) {
-    //TODO: to be implemented
+    if(identityService.isReadOnly()) {
+      //TODO: exception type
+      throw new IllegalArgumentException("Identity service implementation is read-only.");
+    }
+
+    Group dbGroup = findGroupObject(groupId);
+    if(dbGroup == null) {
+      //TODO: exception type
+      throw new IllegalArgumentException("Group with id " + groupId + " does not exist");
+    }
+
+    dbGroup.setId(group.getId());
+    dbGroup.setName(group.getName());
+    dbGroup.setType(group.getType());
+
+    identityService.saveGroup(dbGroup);
   }
 
   //@Override
   public void deleteGroup(String groupId, CIBUser user) {
+    if(identityService.isReadOnly()) {
+      //TODO: exception type
+      throw new IllegalArgumentException("Identity service implementation is read-only.");
+    }
     identityService.deleteGroup(groupId);
   }
 
@@ -1302,12 +1630,36 @@ ProcessDefinitionResourceImpl  public List<StatisticsResultDto> getActivityStati
 
   //@Override
   public void updateAuthorization(String authorizationId, Map<String, Object> data, CIBUser user) {
-    //TODO: to be implemented
+    org.cibseven.bpm.engine.authorization.Authorization dbAuthorization = authorizationService
+        .createAuthorizationQuery().authorizationId(authorizationId).singleResult();
+
+    if (dbAuthorization == null) {
+      // TODO: exception type
+      throw new IllegalArgumentException("Authorization with id " + authorizationId + " does not exist.");
+    }
+    AuthorizationDto authorizationDto = new AuthorizationDto();
+    if (data.containsKey("groupId"))
+      authorizationDto.setGroupId((String) data.get("groupId"));
+    if (data.containsKey("permissions")) {
+      List<String> permissionList = (List<String>) data.get("permissions");
+      authorizationDto.setPermissions(permissionList.toArray(new String[0]));
+    }
+    if (data.containsKey("resourceId"))
+      authorizationDto.setResourceId((String) data.get("resourceId"));
+    if (data.containsKey("resourceType"))
+      authorizationDto.setResourceType((Integer) data.get("resourceType"));
+    if (data.containsKey("type"))
+      authorizationDto.setType((Integer) data.get("type"));
+    if (data.containsKey("userId"))
+      authorizationDto.setUserId((String) data.get("userId"));
+    AuthorizationDto.update(authorizationDto, dbAuthorization, processEngineConfiguration);
+    // save
+    authorizationService.saveAuthorization(dbAuthorization);
   }
 
   //@Override
   public void deleteAuthorization(String authorizationId, CIBUser user) {
-    //TODO: to be implemented
+    authorizationService.deleteAuthorization(authorizationId);
   }
 
   

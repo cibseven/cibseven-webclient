@@ -641,28 +641,34 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public Authorizations getUserAuthorization(String userId, CIBUser user) {
-    if (useDirectInterface)
+	  if (!useRestInterface)
       return sevenDirectProvider.getUserAuthorization(userId, user);
     else
 		  return userProvider.getUserAuthorization(userId, user);
 	}
 	
 	public Collection<SevenUser> fetchUsers(CIBUser user) throws SystemException {
-//	  UriInfo uriInfo = null; 
-//	  userRestService.getUserCount(uriInfo)
-	  return userProvider.fetchUsers(user);
+    if (useDirectInterface)
+      return sevenDirectProvider.fetchUsers(user);
+    else
+	    return userProvider.fetchUsers(user);
 	}
 	
 	public SevenVerifyUser verifyUser(String username, String password, CIBUser user) throws SystemException {
-		return userProvider.verifyUser(username, password, user);
+    if (!useRestInterface)
+      return sevenDirectProvider.verifyUser(username, password, user);
+    else
+		  return userProvider.verifyUser(username, password, user);
 	}
 	
 	@Override
 	public Collection<User> findUsers(Optional<String> id, Optional<String> firstName, Optional<String> firstNameLike, Optional<String> lastName, Optional<String> lastNameLike,
 			Optional<String> email, Optional<String> emailLike, Optional<String> memberOfGroup, Optional<String> memberOfTenant, Optional<String> idIn, 
 			Optional<String> firstResult, Optional<String> maxResults, Optional<String> sortBy, Optional<String> sortOrder, CIBUser user) {
-	  //authorizationRestService.
-	  return userProvider.findUsers(id, firstName, firstNameLike, lastName, lastNameLike, email, emailLike, memberOfGroup, memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder, user);
+    if (!useRestInterface)
+      return sevenDirectProvider.findUsers(id, firstName, firstNameLike, lastName, lastNameLike, email, emailLike, memberOfGroup, memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder, user);
+    else
+	    return userProvider.findUsers(id, firstName, firstNameLike, lastName, lastNameLike, email, emailLike, memberOfGroup, memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder, user);
 	}
 	
 	@Override
@@ -675,22 +681,34 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public void updateUserProfile(String userId, User user, CIBUser flowUser) {
-		userProvider.updateUserProfile(userId, user, flowUser);
+    if (useDirectInterface)
+      sevenDirectProvider.updateUserProfile(userId, user, flowUser);
+    else
+		  userProvider.updateUserProfile(userId, user, flowUser);
 	}
 	
 	@Override
 	public void updateUserCredentials(String userId, Map<String, Object> data, CIBUser user) {
-		userProvider.updateUserCredentials(userId, data, user);
+    if (useDirectInterface)
+      sevenDirectProvider.updateUserCredentials(userId, data, user);
+    else
+      userProvider.updateUserCredentials(userId, data, user);
 	}
 	
 	@Override
 	public void addMemberToGroup(String groupId, String userId, CIBUser user) {
-		userProvider.addMemberToGroup(groupId, userId, user);
+    if (useDirectInterface)
+      sevenDirectProvider.addMemberToGroup(groupId, userId, user);
+    else
+		  userProvider.addMemberToGroup(groupId, userId, user);
 	}
 	
 	@Override
 	public void deleteMemberFromGroup(String groupId, String userId, CIBUser user) {
-		userProvider.deleteMemberFromGroup(groupId, userId, user);
+    if (useDirectInterface)
+      sevenDirectProvider.deleteMemberFromGroup(groupId, userId, user);
+    else
+      userProvider.deleteMemberFromGroup(groupId, userId, user);
 	}
 
 	@Override
@@ -713,12 +731,15 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	public Collection<UserGroup> findGroups(Optional<String> id, Optional<String> name, Optional<String> nameLike, Optional<String> type,
 			Optional<String> member, Optional<String> memberOfTenant, Optional<String> sortBy, Optional<String> sortOrder, Optional<String> firstResult,
 			Optional<String> maxResults, CIBUser user) {
-		return userProvider.findGroups(id, name, nameLike, type, member, memberOfTenant, sortBy, sortOrder, firstResult, maxResults, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.findGroups(id, name, nameLike, type, member, memberOfTenant, sortBy, sortOrder, firstResult, maxResults, user);
+    else
+      return userProvider.findGroups(id, name, nameLike, type, member, memberOfTenant, sortBy, sortOrder, firstResult, maxResults, user);
 	}
 
 	@Override
 	public void createGroup(UserGroup group, CIBUser user) {
-    if (useDirectInterface)
+    if (!useRestInterface)
       sevenDirectProvider.createGroup(group, user);
     else
 	    userProvider.createGroup(group, user);
@@ -726,12 +747,15 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 
 	@Override
 	public void updateGroup(String groupId, UserGroup group, CIBUser user) {
-		userProvider.updateGroup(groupId, group, user);
+    if (!useRestInterface)
+      sevenDirectProvider.updateGroup(groupId, group, user);
+    else
+      userProvider.updateGroup(groupId, group, user);
 	}
 
 	@Override
 	public void deleteGroup(String groupId, CIBUser user) {
-    if (useDirectInterface)
+    if (!useRestInterface)
       sevenDirectProvider.deleteGroup(groupId, user);
     else
       userProvider.deleteGroup(groupId, user);
@@ -746,7 +770,7 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 
 	@Override
 	public ResponseEntity<Authorization> createAuthorization(Authorization authorization, CIBUser user) {
-	  if (useDirectInterface)
+	  if (!useRestInterface)
 	    return sevenDirectProvider.createAuthorization(authorization, user);
 	  else
 	    return userProvider.createAuthorization(authorization, user);
@@ -754,12 +778,18 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 
 	@Override
 	public void updateAuthorization(String authorizationId, Map<String, Object> data, CIBUser user) {
-		userProvider.updateAuthorization(authorizationId, data, user);
+    if (!useRestInterface)
+      sevenDirectProvider.updateAuthorization(authorizationId, data, user);
+    else
+      userProvider.updateAuthorization(authorizationId, data, user);
 	}
 
 	@Override
 	public void deleteAuthorization(String authorizationId, CIBUser user) {
-		userProvider.deleteAuthorization(authorizationId, user);
+    if (!useRestInterface)
+      sevenDirectProvider.deleteAuthorization(authorizationId, user);
+    else
+      userProvider.deleteAuthorization(authorizationId, user);
 	}
 
 	/*
