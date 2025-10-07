@@ -93,7 +93,7 @@ public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
 			if (cachedAccessToken != null) {
 				Date expiration = ssoHelper.getTokenExpiration(cachedAccessToken);
 				if (expiration != null && expiration.after(new Date(System.currentTimeMillis() + 60000)))
-					return cachedAccessToken;
+					return JwtUserProvider.BEARER_PREFIX + cachedAccessToken;
 			}
 			SSOUser oauthUser = (SSOUser) user;
 			TokenResponse tokens = ssoHelper.refreshToken(oauthUser.getRefreshToken());
