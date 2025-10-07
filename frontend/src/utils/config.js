@@ -74,6 +74,9 @@ const DEFAULT_CONFIG = {
     tasksNumber: {
       enabled: false,
       interval: 0
+    },
+    selectedFilterTasksNumber: {
+      enabled: true
     }
   },
   dashboard: {
