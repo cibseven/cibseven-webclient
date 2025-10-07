@@ -62,6 +62,7 @@ public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
 	@Value("${cibseven.webclient.sso.clientSecret}") String clientSecret;
 	@Value("${cibseven.webclient.sso.userIdProperty}") String userIdProperty;
 	@Value("${cibseven.webclient.sso.userNameProperty}") String userNameProperty;
+	@Value("${cibseven.webclient.sso.forwardToken:false}") boolean forwardToken;
 	@Value("${cibseven.webclient.authentication.jwtSecret}") String secret;
 	@Value("${cibseven.webclient.authentication.tokenValidMinutes}") long validMinutes;
 	@Value("${cibseven.webclient.authentication.tokenProlongMinutes}") long prolongMinutes;
@@ -73,6 +74,7 @@ public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
 		formUrlEncodedHeader.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 	}
 	JwtParser flowParser;
+	String cachedAccessToken = null;
 	
 	@PostConstruct
 	public void init() {
@@ -85,11 +87,21 @@ public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
 
 	@Override
 	public String getEngineRestToken(CIBUser user) {
-		// Rolling refresh tokens are NOT supported!
-		SSOUser oauthUser = (SSOUser) user;
-		TokenResponse tokens = ssoHelper.refreshToken(oauthUser.getRefreshToken());
-		oauthUser.setRefreshToken(tokens.getRefresh_token());
-		return "Bearer " + tokens.getAccess_token();
+		//getUserFromAccessToken(user.getAuthToken());
+		if (forwardToken) {
+			// Rolling refresh tokens are NOT supported!
+			if (cachedAccessToken != null) {
+				Date expiration = ssoHelper.getTokenExpiration(cachedAccessToken);
+				if (expiration != null && expiration.after(new Date(System.currentTimeMillis() + 60000)))
+					return cachedAccessToken;
+			}
+			SSOUser oauthUser = (SSOUser) user;
+			TokenResponse tokens = ssoHelper.refreshToken(oauthUser.getRefreshToken());
+			oauthUser.setRefreshToken(tokens.getRefresh_token());
+			cachedAccessToken = tokens.getAccess_token();
+			return JwtUserProvider.BEARER_PREFIX + cachedAccessToken;
+		}
+		return super.getEngineRestToken(user);
 	}
 
 	@Override
