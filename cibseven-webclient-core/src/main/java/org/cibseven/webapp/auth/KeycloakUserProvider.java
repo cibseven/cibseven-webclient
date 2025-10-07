@@ -84,6 +84,15 @@ public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
 	}
 
 	@Override
+	public String getEngineRestToken(CIBUser user) {
+		// Rolling refresh tokens are NOT supported!
+		SSOUser oauthUser = (SSOUser) user;
+		TokenResponse tokens = ssoHelper.refreshToken(oauthUser.getRefreshToken());
+		oauthUser.setRefreshToken(tokens.getRefresh_token());
+		return "Bearer " + tokens.getAccess_token();
+	}
+
+	@Override
 	public User login(SSOLogin params, HttpServletRequest rq) {
 		if (params.getAuthToken() != null && !params.getAuthToken().isEmpty()) {
 			// Get the user from the access token

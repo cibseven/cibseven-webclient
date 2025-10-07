@@ -28,7 +28,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.auth.rest.StandardLogin;
 import org.cibseven.webapp.exception.BatchOperationException;
 import org.cibseven.webapp.exception.DmnTransformationException;
 import org.cibseven.webapp.exception.ExistingGroupRequestException;
@@ -80,6 +83,10 @@ public abstract class SevenProviderBase {
 	@Autowired
 	protected CustomRestTemplate customRestTemplate;
 
+	@Autowired
+	protected BaseUserProvider<? extends StandardLogin> baseUserProvider;
+
+
 	/**
 	 * Constructs the full engine REST base URL by combining the base URL with the configurable path
 	 * @return the complete engine REST URL
@@ -98,7 +105,7 @@ public abstract class SevenProviderBase {
 	private HttpHeaders createAuthHeader(CIBUser user) {
 		HttpHeaders headers =  new HttpHeaders();
 		if (user != null) {
-		  headers.add(HttpHeaders.AUTHORIZATION, user.getAuthToken());
+		  headers.add(HttpHeaders.AUTHORIZATION, baseUserProvider.getEngineRestToken(user));
 		  headers.add(USER_ID_HEADER, user.getId());
 		}
 		return headers;
