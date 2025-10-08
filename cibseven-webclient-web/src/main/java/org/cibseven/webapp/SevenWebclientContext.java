@@ -24,10 +24,13 @@ import org.cibseven.bpm.engine.ProcessEngine;
 import org.cibseven.bpm.engine.ProcessEngineConfiguration;
 import org.cibseven.bpm.engine.RepositoryService;
 import org.cibseven.bpm.engine.AuthorizationService;
+import org.cibseven.bpm.engine.ExternalTaskService;
+import org.cibseven.bpm.engine.FilterService;
 import org.cibseven.bpm.engine.IdentityService;
 import org.cibseven.bpm.engine.ManagementService;
 import org.cibseven.bpm.engine.TaskService;
 import org.cibseven.bpm.engine.FormService;
+import org.cibseven.bpm.engine.HistoryService;
 import org.cibseven.bpm.engine.RuntimeService;
 import org.cibseven.webapp.auth.SevenAuthorizationUtils;
 import org.cibseven.webapp.auth.BaseUserProvider;
@@ -252,6 +255,20 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
   @Bean
   public RepositoryService getRepositoryService() {
     return getDefaultProcessEngine().getRepositoryService();
+  }
+
+  @Bean
+  public HistoryService getHistoryService() {
+    return getDefaultProcessEngine().getHistoryService();
+  }
+  
+  @Bean
+  public FilterService getFilterService() {
+    return getDefaultProcessEngine().getFilterService();
+  }
+  @Bean
+  public ExternalTaskService getExternalTaskService() {
+    return getDefaultProcessEngine().getExternalTaskService();
   }
 
 //    <bean id="historyService"
