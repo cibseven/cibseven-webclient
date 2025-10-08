@@ -52,6 +52,7 @@ import org.cibseven.webapp.exception.VariableModificationException;
 import org.cibseven.webapp.exception.WrongDeploymenIdException;
 import org.cibseven.webapp.rest.model.Authorization;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -76,14 +77,15 @@ public abstract class SevenProviderBase {
 
   protected static final String USER_ID_HEADER = "Context-User-ID";
 
- @Value("${cibseven.webclient.custom.spring.jackson.parser.max-size:20000000}") int jacksonParserMaxSize;
+	@Value("${cibseven.webclient.custom.spring.jackson.parser.max-size:20000000}") int jacksonParserMaxSize;
 	@Value("${cibseven.webclient.engineRest.url:./}") protected String cibsevenUrl;
 	@Value("${cibseven.webclient.engineRest.path:/engine-rest}") protected String engineRestPath;
 
 	@Autowired
 	protected CustomRestTemplate customRestTemplate;
 
-	@Autowired
+	@Autowired 
+	@Lazy
 	protected BaseUserProvider<? extends StandardLogin> baseUserProvider;
 
 
