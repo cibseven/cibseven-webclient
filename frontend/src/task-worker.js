@@ -16,18 +16,19 @@
  */
 /* jshint worker: true */
 
-import moment from './globals.js'
-import { getServicesBasePath } from './services.js'
+import moment from 'moment'
 
-var authToken = ''
-var createdAfter = ''
-var interval = ''
-var userId = ''
+let authToken = ''
+let createdAfter = ''
+let interval = null
+let userId = ''
+let intervalId = null
+let servicesBasePath = ''
 
-var Services = {
+const Services = {
 	findTasksPost: function(body) {
 		'use strict';
-		const url = getServicesBasePath() + '/task'
+		const url = servicesBasePath + '/task'
 		return fetch(url, {
       method: 'POST',
       headers: {
@@ -45,29 +46,56 @@ self.addEventListener('message', event => {
 		authToken = event.data.authToken
 		userId = event.data.userId
 		interval = event.data.interval ? event.data.interval : null
+		servicesBasePath = event.data.servicesBasePath
 	} else if (event.data && event.data.type === 'checkNewTasks') {
 		createdAfter = moment().format('YYYY-MM-DDTHH:mm:ss.SSSZZ')
+		// Clear existing interval to prevent duplicates
+		if (intervalId) {
+			clearInterval(intervalId)
+		}
 		if (interval) {
-			setInterval(() => {
+			intervalId = setInterval(() => {
 				checkNewTasks()
 			}, interval)
 		}
-    }
+	} else if (event.data && event.data.type === 'stop') {
+		if (intervalId) {
+			clearInterval(intervalId)
+			intervalId = null
+		}
+	}
 })
 
 function checkNewTasks() {
 	'use strict';
-	var body = { assignee: userId }
+	const body = { assignee: userId }
 	if (createdAfter) body.createdAfter = createdAfter
-	Services.findTasksPost(body).then(response => {
-		createdAfter = moment().format('YYYY-MM-DDTHH:mm:ss.SSSZZ')
-		return response.json()
-	}).then(data => {
-		if (data) {
-			if (data.type === 'TokenExpiredException' && data.params) authToken = data.params[0]
-			else if (data.length > 0) {
-				self.postMessage({ type: 'sendNotification', tasks: data })
+	
+	Services.findTasksPost(body)
+		.then(response => {
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`)
 			}
-		}
-	})
+			return response.json()
+		})
+		.then(data => {
+			if (data) {
+				if (data.type === 'TokenExpiredException' && data.params) {
+					authToken = data.params[0]
+					// Retry with new token
+					return checkNewTasks()
+				} else {
+					// Update timestamp only after successful response
+					createdAfter = moment().format('YYYY-MM-DDTHH:mm:ss.SSSZZ')
+					
+					if (data.length > 0) {
+						self.postMessage({ type: 'sendNotification', tasks: data })
+					}
+				}
+			}
+		})
+		.catch(error => {
+			console.error('Error checking new tasks:', error)
+			self.postMessage({ type: 'error', error: error.message })
+		})
 }

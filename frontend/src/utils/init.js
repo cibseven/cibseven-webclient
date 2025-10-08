@@ -18,6 +18,7 @@
  * @return subfolder for the active theme
  */
 import { axios } from '@/globals.js'
+import { getServicesBasePath } from '@/services.js'
 
 export function getTheme(config) {
   return config.theme || "generic"
@@ -168,11 +169,18 @@ export async function fetchDecisionsIfEmpty(store) {
 export function setupTaskNotifications(app, root, theme) {
   if (window.Worker && localStorage.getItem('tasksCheckNotificationsDisabled') !== 'true' &&
     root.config.notifications.tasks.enabled && Notification.permission === 'granted') {
-    const taskWorker = new Worker('./task-worker.js')
+    const taskWorker = new Worker(new URL('../task-worker.js', import.meta.url), { type: 'module' })
     const authToken = sessionStorage.getItem('token') || localStorage.getItem('token')
+    // Construct the full URL for the worker since it runs in a different context
+    const baseUrl = window.location.origin
+    const servicesPath = getServicesBasePath()
+    const fullServicesUrl = baseUrl + '/' + servicesPath
     taskWorker.postMessage({
-      type: 'setup', interval: root.config.notifications.tasks.interval,
-      authToken: authToken, userId: root.user.id
+      type: 'setup', 
+      interval: root.config.notifications.tasks.interval,
+      authToken: authToken, 
+      userId: root.user.id,
+      servicesBasePath: fullServicesUrl
     })
     taskWorker.postMessage({ type: 'checkNewTasks' })
     taskWorker.addEventListener('message', event => {
