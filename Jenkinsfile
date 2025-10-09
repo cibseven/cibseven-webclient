@@ -59,7 +59,7 @@ def npmReleasePackage(String packageDir, String npmrcFile) {
 pipeline {
     agent {
         kubernetes {
-            yaml BuildPodCreator.cibStandardPod()
+            yaml BuildPodCreator.cibStandardPod(nodepool: Constants.NODEPOOL_STABLE)
                     .withContainerFromName(pipelineParams.mvnContainerName, pipelineParams.buildPodConfig[pipelineParams.mvnContainerName])
                     .withHelm3Container()
                     .asYaml()
