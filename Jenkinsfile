@@ -60,7 +60,7 @@ pipeline {
     agent {
         kubernetes {
             yaml BuildPodCreator.cibStandardPod()
-                    .withContainerFromName(pipelineParams.mvnContainerName)
+                    .withContainerFromName(pipelineParams.mvnContainerName, pipelineParams.buildPodConfig[pipelineParams.mvnContainerName])
                     .withHelm3Container()
                     .asYaml()
             defaultContainer pipelineParams.mvnContainerName
