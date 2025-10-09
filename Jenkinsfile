@@ -16,7 +16,16 @@ import groovy.transform.Field
     pom: ConstantsInternal.DEFAULT_MAVEN_POM_PATH,
     mvnContainerName: Constants.MAVEN_JDK_17_CONTAINER,
     uiParamPresets: [:],
-    testMode: false
+    testMode: false,
+    buildPodConfig: [
+        (Constants.MAVEN_JDK_17_CONTAINER): [
+            resources: [
+                cpu: '4',
+                memory: '8Gi',
+                ephemeralStorage: '8Gi'
+            ]
+        ]
+    ]
 ]
 
 // Shared function for npm package release
