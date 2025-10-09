@@ -360,7 +360,10 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public void suspendProcessInstance(String processInstanceId, Boolean suspend, CIBUser user) {
-		processProvider.suspendProcessInstance(processInstanceId, suspend, user);
+    if (!useRestInterface)
+      sevenDirectProvider.suspendProcessInstance(processInstanceId, suspend, user);
+    else
+		  processProvider.suspendProcessInstance(processInstanceId, suspend, user);
 	}
 	
 	@Override
@@ -405,7 +408,10 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	@Override
 	public Collection<HistoryProcessInstance> findProcessesInstancesHistory(Map<String, Object> filters,
 			Optional<Integer> firstResult, Optional<Integer> maxResults, CIBUser user) {
-		return processProvider.findProcessesInstancesHistory(filters, firstResult, maxResults, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.findProcessesInstancesHistory(filters, firstResult, maxResults, user);
+    else
+		  return processProvider.findProcessesInstancesHistory(filters, firstResult, maxResults, user);
 	}
 	
 	@Override
@@ -437,12 +443,18 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public HistoryProcessInstance findHistoryProcessInstanceHistory(String processInstanceId, CIBUser user) {
-		return processProvider.findHistoryProcessInstanceHistory(processInstanceId, user);
+    if (!useRestInterface)
+      return sevenDirectProvider.findHistoryProcessInstanceHistory(processInstanceId, user);
+    else
+		  return processProvider.findHistoryProcessInstanceHistory(processInstanceId, user);
 	}
 	
 	@Override
 	public Collection<Process> findCalledProcessDefinitions(String processDefinitionId, CIBUser user) {
-		return processProvider.findCalledProcessDefinitions(processDefinitionId, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.findCalledProcessDefinitions(processDefinitionId, user);
+    else
+		  return processProvider.findCalledProcessDefinitions(processDefinitionId, user);
 	}
 	
 	@Override
@@ -576,7 +588,10 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public ActivityInstance findActivityInstance(String processInstanceId, CIBUser user) {
-		return activityProvider.findActivityInstance(processInstanceId, user);
+    if (!useRestInterface)
+      return sevenDirectProvider.findActivityInstance(processInstanceId, user);
+    else
+		  return activityProvider.findActivityInstance(processInstanceId, user);
 	}
 	
 	@Override
@@ -586,7 +601,10 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public List<ActivityInstanceHistory> findActivitiesInstancesHistory(String processInstanceId, CIBUser user) {
-		return activityProvider.findActivitiesInstancesHistory(processInstanceId, user);
+    if (!useRestInterface)
+      return sevenDirectProvider.findActivitiesInstancesHistory(processInstanceId, user);
+    else
+      return activityProvider.findActivitiesInstancesHistory(processInstanceId, user);
 	}
 	
 	@Override
@@ -601,12 +619,15 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 
 	@Override
 	public void deleteVariableByExecutionId(String executionId, String variableName, CIBUser user) {
-		activityProvider.deleteVariableByExecutionId(executionId, variableName, user);
+    if (useDirectInterface)
+      sevenDirectProvider.deleteVariableByExecutionId(executionId, variableName, user);
+    else
+      activityProvider.deleteVariableByExecutionId(executionId, variableName, user);
 	}
 
 	@Override
 	public void deleteVariableHistoryInstance(String id, CIBUser user) {
-	  if (useDirectInterface)
+	  if (!useRestInterface)
 	    sevenDirectProvider.deleteVariableHistoryInstance(id, user);
 	  else
 	    activityProvider.deleteVariableHistoryInstance(id, user);
@@ -862,17 +883,26 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public List<Incident> findIncidentByInstanceId(String processInstanceId, CIBUser user) {
-		return incidentProvider.findIncidentByInstanceId(processInstanceId, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.findIncidentByInstanceId(processInstanceId, user);
+    else
+		  return incidentProvider.findIncidentByInstanceId(processInstanceId, user);
 	}
 
 	@Override
 	public Collection<Incident> fetchIncidents(String processDefinitionKey, CIBUser user) {
-		return incidentProvider.fetchIncidents(processDefinitionKey, user);
+	  if (useDirectInterface)
+      return sevenDirectProvider.fetchIncidents(processDefinitionKey, user);
+    else
+  		return incidentProvider.fetchIncidents(processDefinitionKey, user);
 	}
 	
 	@Override
 	public Collection<Incident> fetchIncidentsByInstanceAndActivityId(String processDefinitionKey, String activityId, CIBUser user) {
-		return incidentProvider.fetchIncidentsByInstanceAndActivityId(processDefinitionKey, activityId, user);
+		if (useDirectInterface)
+		  return sevenDirectProvider.fetchIncidentsByInstanceAndActivityId(processDefinitionKey, activityId, user);
+		else
+	    return incidentProvider.fetchIncidentsByInstanceAndActivityId(processDefinitionKey, activityId, user);
 	}
 	
 	@Override
@@ -900,6 +930,9 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public void modifyVariableDataByExecutionId(String executionId, String variableName, MultipartFile data, String valueType, CIBUser user) throws SystemException {
+  if (useDirectInterface)
+    sevenDirectProvider.modifyVariableDataByExecutionId(executionId, variableName, data, valueType, user);
+  else
 		variableProvider.modifyVariableDataByExecutionId(executionId, variableName, data, valueType, user);
 	}
 	
@@ -913,12 +946,18 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public ResponseEntity<byte[]> fetchVariableDataByExecutionId(String executionId, String variableName, CIBUser user) throws NoObjectFoundException, SystemException  {
-		return variableProvider.fetchVariableDataByExecutionId(executionId, variableName, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.fetchVariableDataByExecutionId(executionId, variableName, user);
+    else
+      return variableProvider.fetchVariableDataByExecutionId(executionId, variableName, user);
 	}	
 	
 	@Override
 	public Collection<VariableHistory> fetchProcessInstanceVariablesHistory(String processInstanceId, Map<String, Object> data, CIBUser user) throws SystemException {
-		return variableProvider.fetchProcessInstanceVariablesHistory(processInstanceId, data, user);
+    if (!useRestInterface)
+      return sevenDirectProvider.fetchProcessInstanceVariablesHistory(processInstanceId, data, user);
+    else
+		  return variableProvider.fetchProcessInstanceVariablesHistory(processInstanceId, data, user);
 	}
 	
 	@Override
@@ -1164,47 +1203,74 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public void suspendJobDefinition(String jobDefinitionId, String params, CIBUser user) {
-		jobDefinitionProvider.suspendJobDefinition(jobDefinitionId, params, user);
+    if (useDirectInterface)
+      sevenDirectProvider.suspendJobDefinition(jobDefinitionId, params, user);
+    else
+      jobDefinitionProvider.suspendJobDefinition(jobDefinitionId, params, user);
 	}
 	
 	@Override
 	public void overrideJobDefinitionPriority(String jobDefinitionId, String params, CIBUser user) {
-		jobDefinitionProvider.overrideJobDefinitionPriority(jobDefinitionId, params, user);
+    if (useDirectInterface)
+      sevenDirectProvider.overrideJobDefinitionPriority(jobDefinitionId, params, user);
+    else
+      jobDefinitionProvider.overrideJobDefinitionPriority(jobDefinitionId, params, user);
 	}
 
 	@Override
 	public void retryJobDefinitionById(String id, Map<String, Object> params, CIBUser user) {
-		jobDefinitionProvider.retryJobDefinitionById(id, params, user);
+    if (useDirectInterface)
+      sevenDirectProvider.retryJobDefinitionById(id, params, user);
+    else
+      jobDefinitionProvider.retryJobDefinitionById(id, params, user);
 	}
 	
 	@Override
 	public Collection<Job> getJobs(Map<String, Object> params, CIBUser user) {
-		return jobProvider.getJobs(params, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.getJobs(params, user);
+    else
+      return jobProvider.getJobs(params, user);
 	}
 
 	@Override
 	public void setSuspended(String id, Map<String, Object> params, CIBUser user) {
-		jobProvider.setSuspended(id, params, user);
+	  if (useDirectInterface)
+	    sevenDirectProvider.setSuspended(id, params, user);
+	  else
+		  jobProvider.setSuspended(id, params, user);
 	}
 
 	@Override
 	public void deleteJob(String id, CIBUser user) {
-		jobProvider.deleteJob(id, user);
+    if (useDirectInterface)
+      sevenDirectProvider.deleteJob(id, user);
+    else
+      jobProvider.deleteJob(id, user);
 	}
 
 	@Override
 	public JobDefinition findJobDefinition(String id, CIBUser user) {
-		return jobDefinitionProvider.findJobDefinition(id, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.findJobDefinition(id, user);
+    else
+      return jobDefinitionProvider.findJobDefinition(id, user);
 	}	
 
 	@Override
 	public Collection<Object> getHistoryJobLog(Map<String, Object> params, CIBUser user) {
-		return jobProvider.getHistoryJobLog(params, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.getHistoryJobLog(params, user);
+    else
+      return jobProvider.getHistoryJobLog(params, user);
 	}
 	
 	@Override
 	public String getHistoryJobLogStacktrace(String id, CIBUser user) {
-		return jobProvider.getHistoryJobLogStacktrace(id, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.getHistoryJobLogStacktrace(id, user);
+    else
+      return jobProvider.getHistoryJobLogStacktrace(id, user);
 	}
 
 	/*
@@ -1375,7 +1441,10 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	 */
 	@Override
 	public VariableHistory getHistoricVariableInstance(String id, boolean deserializeValue, CIBUser user) throws SystemException, NoObjectFoundException {
-		return historicVariableInstanceProvider.getHistoricVariableInstance(id, deserializeValue, user);
+    if (!useRestInterface)
+      return sevenDirectProvider.getHistoricVariableInstance(id, deserializeValue, user);
+    else
+      return historicVariableInstanceProvider.getHistoricVariableInstance(id, deserializeValue, user);
 	}
 	
 	/*
@@ -1390,7 +1459,10 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 
 	@Override
 	public Collection<ExternalTask> getExternalTasks(Map<String, Object> queryParams, CIBUser user) throws SystemException {
-		return externalTaskProvider.getExternalTasks(queryParams, user);
+    if (!useRestInterface)
+      return sevenDirectProvider.getExternalTasks(queryParams, user);
+    else
+      return externalTaskProvider.getExternalTasks(queryParams, user);
 	}
 
 	/*

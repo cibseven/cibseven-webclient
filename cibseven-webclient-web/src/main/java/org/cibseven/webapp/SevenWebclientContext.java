@@ -24,6 +24,7 @@ import org.cibseven.bpm.engine.ProcessEngine;
 import org.cibseven.bpm.engine.ProcessEngineConfiguration;
 import org.cibseven.bpm.engine.RepositoryService;
 import org.cibseven.bpm.engine.AuthorizationService;
+import org.cibseven.bpm.engine.CaseService;
 import org.cibseven.bpm.engine.ExternalTaskService;
 import org.cibseven.bpm.engine.FilterService;
 import org.cibseven.bpm.engine.IdentityService;
@@ -266,9 +267,15 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
   public FilterService getFilterService() {
     return getDefaultProcessEngine().getFilterService();
   }
+
   @Bean
   public ExternalTaskService getExternalTaskService() {
     return getDefaultProcessEngine().getExternalTaskService();
+  }
+
+  @Bean
+  public CaseService getCaseService() {
+    return getDefaultProcessEngine().getCaseService();
   }
 
 //    <bean id="historyService"
