@@ -150,7 +150,7 @@
 		"incidents": "Инциденты",
 		"variables": "Переменные",
 		"usertasks": "Пользовательские задачи",
-		"calledProcessInstances": "называемые экземпляры процессов",
+		"calledProcessInstances": "Называемые экземпляры процессов",
 		"onlyIncidents": {
 			"title": "Только с инцидентами",
 			"tooltip": "Показать только процессы с инцидентами"
