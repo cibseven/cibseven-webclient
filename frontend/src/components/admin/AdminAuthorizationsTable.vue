@@ -233,6 +233,7 @@ export default {
       ]
       if (this.$route.params.resourceTypeId === '5')
         baseFields.splice(3, 0, { label: 'name', key: 'name', class: 'col' })
+
       return baseFields
     },
     exportableAuth: function() {
@@ -261,6 +262,11 @@ export default {
         }).then(response => {
           if (!showMore) this.authorizations = response
           else this.authorizations = this.authorizations.concat(response)
+
+          this.authorizations.forEach(authorization => {
+            authorization.userIdGroupId = authorization.userId != null ? authorization.userId : authorization.groupId
+          })
+
           if (resourceTypeId === '5') {
             this.authorizations.forEach(authorization => {
               var filter = this.$store.state.filter.list.find(obj => obj.id === authorization.resourceId)
@@ -331,7 +337,8 @@ export default {
         authorization.groupId = authorization.userId
         authorization.userId = null
       }
-
+      authorization.userIdGroupId = authorization.userId != null ? authorization.userId : authorization.groupId
+      
       if (this.selected.length === this.resourcesTypes[this.$route.params.resourceTypeId].permissions.length) {
         authorization.permissions = ['ALL']
       } else if (this.selected.length === 0) {
