@@ -23,7 +23,7 @@ import java.util.List;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.springframework.beans.factory.annotation.Value;
 import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.auth.rest.StandardLogin;
 
@@ -39,6 +39,9 @@ public class BaseService {
 	protected BpmProvider bpmProvider;
 	@Autowired
 	protected BaseUserProvider baseUserProvider;
+	
+	@Value("${camunda.bpm.authorization.enabled:true}")
+	private boolean authorizationEnabled;
 
 	protected CIBUser checkAuthorization(HttpServletRequest rq, boolean basicAuthAllowed) {
 		CIBUser user = null;
@@ -62,18 +65,21 @@ public class BaseService {
 	}
 
 	public void checkSpecificProcessRights(CIBUser user, String processKey) {
+		if (!authorizationEnabled) return;	
 		Authorizations authorizations = bpmProvider.getUserAuthorization(user.getId(), user);
 		// hasSpecificProcessRights now throws detailed AccessDeniedException when permission check fails
 		SevenAuthorizationUtils.hasSpecificProcessRights(authorizations, processKey);
 	}
 
 	public void checkCockpitRights(CIBUser user) {
+		if (!authorizationEnabled) return;	
 		Authorizations authorizations = bpmProvider.getUserAuthorization(user.getId(), user);
 		// hasCockpitRights now throws detailed AccessDeniedException when permission check fails
 		SevenAuthorizationUtils.hasCockpitRights(authorizations);
 	}
 
 	public void checkPermission(CIBUser user, SevenResourceType type, List<String> permissions) {
+		if (!authorizationEnabled) return;	
 		Authorizations authorizations = bpmProvider.getUserAuthorization(user.getId(), user);
 		// SevenAuthorizationUtils.checkPermission now throws detailed AccessDeniedException when permission check fails
 		SevenAuthorizationUtils.checkPermission(authorizations, type, permissions);
