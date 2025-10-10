@@ -60,5 +60,9 @@ public abstract class BaseUserProvider<R extends StandardLogin> implements JwtUs
 		CIBUser user = new CIBUser(params.getUsername());
 		return createToken(getSettings(), true, false, user);
 	}
+	
+	public String getEngineRestToken(CIBUser user) {
+		return user.getAuthToken();
+	}
 
 }

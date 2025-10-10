@@ -62,6 +62,7 @@ public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
 	@Value("${cibseven.webclient.sso.clientSecret}") String clientSecret;
 	@Value("${cibseven.webclient.sso.userIdProperty}") String userIdProperty;
 	@Value("${cibseven.webclient.sso.userNameProperty}") String userNameProperty;
+	@Value("${cibseven.webclient.sso.accessTokenToEngineRest:false}") boolean forwardToken;
 	@Value("${cibseven.webclient.authentication.jwtSecret}") String secret;
 	@Value("${cibseven.webclient.authentication.tokenValidMinutes}") long validMinutes;
 	@Value("${cibseven.webclient.authentication.tokenProlongMinutes}") long prolongMinutes;
@@ -73,6 +74,7 @@ public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
 		formUrlEncodedHeader.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 	}
 	JwtParser flowParser;
+	String cachedAccessToken = null;
 	
 	@PostConstruct
 	public void init() {
@@ -81,6 +83,27 @@ public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
 		checkKey();
 		SecretKey key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(settings.getSecret()));
 		flowParser = Jwts.parser().verifyWith(key).build();
+	}
+
+	@Override
+	public String getEngineRestToken(CIBUser user) {
+		if (forwardToken) {
+			// Rolling refresh tokens are NOT supported!
+			if (cachedAccessToken != null) {
+				try {
+					Date expiration = ssoHelper.getTokenExpiration(cachedAccessToken);
+					if (expiration != null && expiration.after(new Date(System.currentTimeMillis() + 60000)))
+						return JwtUserProvider.BEARER_PREFIX + cachedAccessToken;
+				}
+				catch (ExpiredJwtException e) { /* no-op*/}
+			}
+			SSOUser oauthUser = (SSOUser) user;
+			TokenResponse tokens = ssoHelper.refreshToken(oauthUser.getRefreshToken());
+			oauthUser.setRefreshToken(tokens.getRefresh_token());
+			cachedAccessToken = tokens.getAccess_token();
+			return JwtUserProvider.BEARER_PREFIX + cachedAccessToken;
+		}
+		return super.getEngineRestToken(user);
 	}
 
 	@Override
