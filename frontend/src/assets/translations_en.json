@@ -1115,7 +1115,7 @@
 		"deploymentTime": "Time",
 		"source": "Source",
 		"confirmDeleteDeployment": "Do you really want to delete the selected deployments?",
-		"deleteRunningInstances": "Delete running process instances",
+		"deleteRunningInstances": "Stop running process instances",
 		"goToManagement": "Go to process management area",
 		"loadingProcesses": "Loading...",
 		"noModelSelected": "Select a model to view it",
