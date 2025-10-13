@@ -1114,7 +1114,7 @@
 		"deploymentTime": "Час",
 		"source": "Джерело",
 		"confirmDeleteDeployment": "Ви дійсно хочете видалити обрані розгортання?",
-		"deleteRunningInstances": "Видалити поточні екземпляри процесу",
+		"deleteRunningInstances": "Зупинити поточні екземпляри процесу",
 		"goToManagement": "Перейти в область керування процесами",
 		"loadingProcesses": "Завантаження...",
 		"noModelSelected": "Виберіть модель для перегляду",

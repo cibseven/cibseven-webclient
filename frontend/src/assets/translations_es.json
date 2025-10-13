@@ -1114,7 +1114,7 @@
 		"deploymentTime": "Hora",
 		"source": "Fuente",
 		"confirmDeleteDeployment": "Realmente quiere borrar los despliegues seleccionados?",
-		"deleteRunningInstances": "Borrar instancias de proceso activas",
+		"deleteRunningInstances": "Detener instancias de proceso activas",
 		"goToManagement": "Ir al area de administración de procesos",
 		"loadingProcesses": "Cargando...",
 		"noModelSelected": "Seleccione un modelo para verlo",

@@ -1114,7 +1114,7 @@
 		"deploymentTime": "Zeitpunkt",
 		"source": "Quelle",
 		"confirmDeleteDeployment": "Möchten Sie die ausgewählten Deployments wirklich löschen?",
-		"deleteRunningInstances": "Laufende Prozessinstanzen löschen",
+		"deleteRunningInstances": "Laufende Prozessinstanzen stoppen",
 		"goToManagement": "Zum Prozessmanagement wechseln ",
 		"loadingProcesses": "Wird geladen...",
 		"noModelSelected": "Ein Modell zum Ansehen auswählen",
