@@ -43,6 +43,7 @@
         <ContentBlock class="col-12 col-md-5" :title="$t('human-tasks.assignmentsByGroup')" :info="$t('human-tasks.assignmentsByGroupInfo')">
           <FlowTable striped resizable thead-class="sticky-header" :items="taskCountByCandidateGroup"
             primary-key="id" prefix="human-tasks."
+            :loading="loading[4]"
             sort-by="label" :fields="[
             { label: 'tasks', key: 'taskCount', class: 'col-3', tdClass: 'py-1 justify-content-center',
               thClass: 'd-flex justify-content-center', sortable: false },
