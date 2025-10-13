@@ -82,21 +82,21 @@ export default {
     }
   },
   mounted() {
-    TaskService.findHistoryTaksCount({ unfinished: true, assigned: true }).then(data => {
+    TaskService.findHistoryTasksCount({ unfinished: true, assigned: true }).then(data => {
       this.countsByType[0].tasks = data
       this.loading[0] = false
     })
-    TaskService.findHistoryTaksCount({ unfinished: true,
+    TaskService.findHistoryTasksCount({ unfinished: true,
       unassigned: true, withCandidateGroups: true }).then(data => {
       this.countsByType[1].tasks = data
       this.loading[1] = false
     })
-    TaskService.findHistoryTaksCount({ unfinished: true,
+    TaskService.findHistoryTasksCount({ unfinished: true,
       unassigned: true, withoutCandidateGroups: true }).then(data => {
       this.countsByType[2].tasks = data
       this.loading[2] = false
     })
-    TaskService.findHistoryTaksCount({ unfinished: true }).then(data => {
+    TaskService.findHistoryTasksCount({ unfinished: true }).then(data => {
       this.countsByType[3].tasks = data
       this.loading[3] = false
     })
