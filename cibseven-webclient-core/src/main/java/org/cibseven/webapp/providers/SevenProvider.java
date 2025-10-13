@@ -143,10 +143,10 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public Collection<Task> findTasksByProcessInstanceAsignee(Optional<String> processInstanceId, Optional<String> createdAfter, CIBUser user) {
-//    if (useDirectInterface)
-//      return sevenDirectProvider.findTasksByProcessInstanceAsignee(processInstanceId, createdAfter, user);
-//    else
-		return taskProvider.findTasksByProcessInstanceAsignee(processInstanceId, createdAfter, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.findTasksByProcessInstanceAsignee(processInstanceId, createdAfter, user);
+    else
+		  return taskProvider.findTasksByProcessInstanceAsignee(processInstanceId, createdAfter, user);
 	}
 	
 	@Override
@@ -320,7 +320,10 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public Collection<Process> findProcessesWithFilters(String filters, CIBUser user) {
-		return processProvider.findProcessesWithFilters(filters, user);
+    if (!useRestInterface)
+      return sevenDirectProvider.findProcessesWithFilters(filters, user);
+    else
+      return processProvider.findProcessesWithFilters(filters, user);
 	}	
 	
 	@Override
@@ -345,7 +348,10 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public ProcessDiagram fetchDiagram(String id, CIBUser user) {
-		return processProvider.fetchDiagram(id, user);
+    if (!useRestInterface)
+      return sevenDirectProvider.fetchDiagram(id, user);
+    else
+		  return processProvider.fetchDiagram(id, user);
 	}
 	
 	@Override
@@ -433,7 +439,10 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public ProcessInstance findProcessInstance(String processInstanceId, CIBUser user) {
-		return processProvider.findProcessInstance(processInstanceId, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.findProcessInstance(processInstanceId, user);
+    else
+		  return processProvider.findProcessInstance(processInstanceId, user);
 	}
 
 	@Override
@@ -480,7 +489,10 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	@Override
 	public Collection<ProcessInstance> findCurrentProcessesInstances(Map<String, Object> data, CIBUser user)
 			throws SystemException {
-		return processProvider.findCurrentProcessesInstances(data, user);
+    if (!useRestInterface)
+      return sevenDirectProvider.findCurrentProcessesInstances(data, user);
+    else
+		  return processProvider.findCurrentProcessesInstances(data, user);
 	}
 
 	@Override
@@ -542,38 +554,59 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public Deployment deployBpmn(MultiValueMap<String, Object> data, MultiValueMap<String, MultipartFile> file, CIBUser user) throws SystemException {
-		return deploymentProvider.deployBpmn(data, file, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.deployBpmn(data, file, user);
+    else
+      return deploymentProvider.deployBpmn(data, file, user);
 		
 	}
 
 	@Override
 	public Long countDeployments(CIBUser user, String nameLike) {
-		return deploymentProvider.countDeployments(user, nameLike);
+    if (!useRestInterface)
+      return sevenDirectProvider.countDeployments(user, nameLike);
+    else
+      return deploymentProvider.countDeployments(user, nameLike);
 	}
 
 	@Override
 	public Collection<Deployment> findDeployments(CIBUser user, String nameLike, int firstResult, int maxResults, String sortBy, String sortOrder) {
-		return deploymentProvider.findDeployments(user, nameLike, firstResult, maxResults, sortBy, sortOrder);
+    if (!useRestInterface)
+      return sevenDirectProvider.findDeployments(user, nameLike, firstResult, maxResults, sortBy, sortOrder);
+    else
+      return deploymentProvider.findDeployments(user, nameLike, firstResult, maxResults, sortBy, sortOrder);
 	}
 	
 	@Override
 	public Deployment findDeployment(String deploymentId, CIBUser user) {
-		return deploymentProvider.findDeployment(deploymentId, user);
+    if (!useRestInterface)
+      return sevenDirectProvider.findDeployment(deploymentId, user);
+    else
+      return deploymentProvider.findDeployment(deploymentId, user);
 	}
 
 	@Override
 	public Collection<DeploymentResource> findDeploymentResources(String deploymentId, CIBUser user) {
-		return deploymentProvider.findDeploymentResources(deploymentId, user);
+    if (!useRestInterface)
+      return sevenDirectProvider.findDeploymentResources(deploymentId, user);
+    else
+      return deploymentProvider.findDeploymentResources(deploymentId, user);
 	}
 
 	@Override
 	public Data fetchDataFromDeploymentResource(HttpServletRequest rq, String deploymentId, String resourceId, String fileName) {
-		return deploymentProvider.fetchDataFromDeploymentResource(rq, deploymentId, resourceId, fileName);
+    if (useDirectInterface)
+      return sevenDirectProvider.fetchDataFromDeploymentResource(rq, deploymentId, resourceId, fileName);
+    else
+      return deploymentProvider.fetchDataFromDeploymentResource(rq, deploymentId, resourceId, fileName);
 	}
 	
 	@Override
 	public void deleteDeployment(String deploymentId, Boolean cascade, CIBUser user) throws SystemException {
-		deploymentProvider.deleteDeployment(deploymentId, cascade, user);
+    if (!useRestInterface)
+      sevenDirectProvider.deleteDeployment(deploymentId, cascade, user);
+    else
+      deploymentProvider.deleteDeployment(deploymentId, cascade, user);
 	}
 		
 	/*
@@ -1477,7 +1510,10 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 
 	@Override
 	public Deployment createDeployment(MultiValueMap<String, Object> data, MultipartFile[] files, CIBUser user) throws SystemException {
-		return deploymentProvider.createDeployment(data, files, user);
+		if (useDirectInterface)
+		  return sevenDirectProvider.createDeployment(data, files, user);
+		else
+		  return deploymentProvider.createDeployment(data, files, user);
 	}
 
 }

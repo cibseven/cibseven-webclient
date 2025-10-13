@@ -25,6 +25,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -42,6 +44,8 @@ import java.util.stream.Collectors;
 import javax.ws.rs.HttpMethod;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.net.URLEncodedUtils;
 import org.cibseven.bpm.engine.AuthorizationException;
 import org.cibseven.bpm.engine.AuthorizationService;
 import org.cibseven.bpm.engine.CaseService;
@@ -60,6 +64,7 @@ import org.cibseven.bpm.engine.RuntimeService;
 import org.cibseven.webapp.rest.model.Process;
 import org.cibseven.webapp.rest.model.ProcessDefinitionInfo;
 import org.cibseven.webapp.rest.model.ProcessDiagram;
+import org.cibseven.webapp.rest.model.ProcessInstance;
 import org.cibseven.webapp.rest.model.ProcessStart;
 import org.cibseven.webapp.rest.model.ProcessStatistics;
 import org.cibseven.webapp.rest.model.ProcessVariables;
@@ -88,9 +93,11 @@ import org.cibseven.bpm.engine.identity.Group;
 import org.cibseven.bpm.engine.identity.GroupQuery;
 import org.cibseven.bpm.engine.identity.UserQuery;
 import org.cibseven.bpm.engine.impl.RuntimeServiceImpl;
+import org.cibseven.bpm.engine.impl.calendar.DateTimeUtil;
 import org.cibseven.bpm.engine.impl.form.validator.FormFieldValidationException;
 import org.cibseven.bpm.engine.impl.identity.Authentication;
 import org.cibseven.bpm.engine.impl.persistence.entity.ProcessDefinitionStatisticsEntity;
+import org.cibseven.bpm.engine.impl.util.IoUtil;
 import org.cibseven.bpm.engine.impl.util.PermissionConverter;
 import org.cibseven.bpm.engine.management.ActivityStatistics;
 import org.cibseven.bpm.engine.management.ActivityStatisticsQuery;
@@ -99,9 +106,14 @@ import org.cibseven.bpm.engine.management.JobDefinitionQuery;
 import org.cibseven.bpm.engine.management.ProcessDefinitionStatistics;
 import org.cibseven.bpm.engine.management.ProcessDefinitionStatisticsQuery;
 import org.cibseven.bpm.engine.query.Query;
+import org.cibseven.bpm.engine.repository.DeploymentBuilder;
+import org.cibseven.bpm.engine.repository.DeploymentQuery;
+import org.cibseven.bpm.engine.repository.DeploymentWithDefinitions;
 import org.cibseven.bpm.engine.repository.ProcessDefinition;
 import org.cibseven.bpm.engine.repository.ProcessDefinitionQuery;
+import org.cibseven.bpm.engine.repository.Resource;
 import org.cibseven.bpm.engine.rest.dto.AbstractQueryDto;
+import org.cibseven.bpm.engine.rest.dto.CountResultDto;
 import org.cibseven.bpm.engine.rest.dto.VariableValueDto;
 import org.cibseven.bpm.engine.rest.dto.authorization.AuthorizationDto;
 import org.cibseven.bpm.engine.rest.dto.authorization.AuthorizationQueryDto;
@@ -123,6 +135,11 @@ import org.cibseven.bpm.engine.rest.dto.management.JobDefinitionDto;
 import org.cibseven.bpm.engine.rest.dto.management.JobDefinitionQueryDto;
 import org.cibseven.bpm.engine.rest.dto.management.JobDefinitionSuspensionStateDto;
 import org.cibseven.bpm.engine.rest.dto.repository.CalledProcessDefinitionDto;
+import org.cibseven.bpm.engine.rest.dto.repository.DeploymentDto;
+import org.cibseven.bpm.engine.rest.dto.repository.DeploymentQueryDto;
+import org.cibseven.bpm.engine.rest.dto.repository.DeploymentResourceDto;
+import org.cibseven.bpm.engine.rest.dto.repository.DeploymentWithDefinitionsDto;
+import org.cibseven.bpm.engine.rest.dto.repository.ProcessDefinitionDiagramDto;
 import org.cibseven.bpm.engine.rest.dto.repository.ProcessDefinitionDto;
 import org.cibseven.bpm.engine.rest.dto.repository.ProcessDefinitionQueryDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.ActivityInstanceDto;
@@ -131,6 +148,7 @@ import org.cibseven.bpm.engine.rest.dto.runtime.FilterQueryDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.IncidentDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.IncidentQueryDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.ProcessInstanceDto;
+import org.cibseven.bpm.engine.rest.dto.runtime.ProcessInstanceQueryDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.ProcessInstanceSuspensionStateDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.ProcessInstanceWithVariablesDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.StartProcessInstanceDto;
@@ -146,13 +164,16 @@ import org.cibseven.bpm.engine.rest.dto.task.TaskDto;
 import org.cibseven.bpm.engine.rest.dto.task.TaskQueryDto;
 import org.cibseven.bpm.engine.rest.dto.task.UserDto;
 import org.cibseven.bpm.engine.rest.exception.InvalidRequestException;
+import org.cibseven.bpm.engine.rest.mapper.JacksonConfigurator;
+import org.cibseven.bpm.engine.rest.mapper.MultipartFormData;
+import org.cibseven.bpm.engine.rest.mapper.MultipartFormData.FormPart;
 import org.cibseven.bpm.engine.rest.sub.impl.VariableResponseProvider;
 import org.cibseven.bpm.engine.rest.sub.repository.impl.ProcessDefinitionResourceImpl;
 import org.cibseven.bpm.engine.rest.util.ApplicationContextPathUtil;
 import org.cibseven.bpm.engine.rest.util.QueryUtil;
 import org.cibseven.bpm.engine.runtime.EventSubscription;
 import org.cibseven.bpm.engine.runtime.IncidentQuery;
-import org.cibseven.bpm.engine.runtime.ProcessInstance;
+import org.cibseven.bpm.engine.runtime.ProcessInstanceQuery;
 import org.cibseven.bpm.engine.runtime.ProcessInstanceWithVariables;
 import org.cibseven.bpm.engine.runtime.ProcessInstantiationBuilder;
 import org.cibseven.bpm.engine.runtime.VariableInstanceQuery;
@@ -185,6 +206,8 @@ import org.cibseven.webapp.rest.model.Authorization;
 import org.cibseven.webapp.rest.model.Authorizations;
 import org.cibseven.webapp.rest.model.CamundaForm;
 import org.cibseven.webapp.rest.model.CandidateGroupTaskCount;
+import org.cibseven.webapp.rest.model.Deployment;
+import org.cibseven.webapp.rest.model.DeploymentResource;
 import org.cibseven.webapp.rest.model.ExternalTask;
 import org.cibseven.webapp.rest.model.Filter;
 import org.cibseven.webapp.rest.model.FilterCriterias;
@@ -207,9 +230,15 @@ import org.cibseven.webapp.rest.model.VariableHistory;
 import org.cibseven.webapp.rest.model.VariableInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.InputStreamSource;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.multipart.MultipartFile;
@@ -219,9 +248,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import camundajar.impl.scala.Array;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.core.MultivaluedHashMap;
 import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.Response;
@@ -250,6 +281,57 @@ public class SevenDirectProvider /* extends SevenProviderBase implements BpmProv
   @Autowired private ProcessEngineConfiguration processEngineConfiguration;
   @Autowired private ProcessEngine processEngine;
   
+  private ObjectMapper objectMapper = null;
+  
+  //Required in deployment code
+  protected static final Map<String, String> MEDIA_TYPE_MAPPING = new HashMap<String, String>();
+
+  static {
+    //TODO: rest code uses import javax.ws.rs.core.MediaType;
+    MEDIA_TYPE_MAPPING.put("bpmn", MediaType.APPLICATION_XML.toString());
+    MEDIA_TYPE_MAPPING.put("cmmn", MediaType.APPLICATION_XML.toString());
+    MEDIA_TYPE_MAPPING.put("dmn", MediaType.APPLICATION_XML.toString());
+    MEDIA_TYPE_MAPPING.put("json", MediaType.APPLICATION_JSON.toString());
+    MEDIA_TYPE_MAPPING.put("xml", MediaType.APPLICATION_XML.toString());
+
+    MEDIA_TYPE_MAPPING.put("gif", "image/gif");
+    MEDIA_TYPE_MAPPING.put("jpeg", "image/jpeg");
+    MEDIA_TYPE_MAPPING.put("jpe", "image/jpeg");
+    MEDIA_TYPE_MAPPING.put("jpg", "image/jpeg");
+    MEDIA_TYPE_MAPPING.put("png", "image/png");
+    MEDIA_TYPE_MAPPING.put("svg", "image/svg+xml");
+    MEDIA_TYPE_MAPPING.put("tiff", "image/tiff");
+    MEDIA_TYPE_MAPPING.put("tif", "image/tiff");
+
+    MEDIA_TYPE_MAPPING.put("groovy", "text/plain");
+    MEDIA_TYPE_MAPPING.put("java", "text/plain");
+    MEDIA_TYPE_MAPPING.put("js", "text/plain");
+    MEDIA_TYPE_MAPPING.put("php", "text/plain");
+    MEDIA_TYPE_MAPPING.put("py", "text/plain");
+    MEDIA_TYPE_MAPPING.put("rb", "text/plain");
+
+    MEDIA_TYPE_MAPPING.put("html", "text/html");
+    MEDIA_TYPE_MAPPING.put("txt", "text/plain");
+  }
+
+  public final static String DEPLOYMENT_NAME = "deployment-name";
+  public final static String DEPLOYMENT_ACTIVATION_TIME = "deployment-activation-time";
+  public final static String ENABLE_DUPLICATE_FILTERING = "enable-duplicate-filtering";
+  public final static String DEPLOY_CHANGED_ONLY = "deploy-changed-only";
+  public final static String DEPLOYMENT_SOURCE = "deployment-source";
+  public final static String TENANT_ID = "tenant-id";
+
+  protected static final Set<String> RESERVED_KEYWORDS = new HashSet<String>();
+
+  static {
+    RESERVED_KEYWORDS.add(DEPLOYMENT_NAME);
+    RESERVED_KEYWORDS.add(DEPLOYMENT_ACTIVATION_TIME);
+    RESERVED_KEYWORDS.add(ENABLE_DUPLICATE_FILTERING);
+    RESERVED_KEYWORDS.add(DEPLOY_CHANGED_ONLY);
+    RESERVED_KEYWORDS.add(DEPLOYMENT_SOURCE);
+    RESERVED_KEYWORDS.add(TENANT_ID);
+  }
+  
   /*
   
     ████████  █████  ███████ ██   ██     ██████  ██████   ██████  ██    ██ ██ ██████  ███████ ██████  
@@ -263,6 +345,7 @@ public class SevenDirectProvider /* extends SevenProviderBase implements BpmProv
   //@Override
   public Collection<Task> findTasks(String filter, CIBUser user) {
       Map<String, Object> filters = new HashMap<>();
+      //TODO: add filter to map!
       return convertTasks(queryTasks(filters, user));
   }
 
@@ -273,6 +356,7 @@ public class SevenDirectProvider /* extends SevenProviderBase implements BpmProv
   
   //@Override
   public Collection<Task> findTasksByProcessInstance(String processInstanceId, CIBUser user) {
+    //TODO: not tested
     TaskQuery taskQuery = taskService.createTaskQuery().processInstanceId(processInstanceId);
     List<org.cibseven.bpm.engine.task.Task> resultList = taskQuery.initializeFormKeys().list();
     return convertTasks(resultList);
@@ -347,7 +431,7 @@ public class SevenDirectProvider /* extends SevenProviderBase implements BpmProv
   //@Override
   public void submit(Task task, List<Variable> formResult, CIBUser user) {
     //in progress
-    ObjectMapper objectMapper = new ObjectMapper();
+    ObjectMapper objectMapper = getObjectMapper();
     // VariableValueDto contains
 //            protected String type;
 //        protected Object value;
@@ -507,7 +591,7 @@ public class SevenDirectProvider /* extends SevenProviderBase implements BpmProv
       // TODO: exception type
       throw new IllegalArgumentException("Failed json conversion", e);
     }
-    List<?> entities = executeFilterList(extendingQuery, filterId, firstResult, maxResults, new ObjectMapper());
+    List<?> entities = executeFilterList(extendingQuery, filterId, firstResult, maxResults, getObjectMapper());
     return entities;
   }
 
@@ -519,7 +603,7 @@ public class SevenDirectProvider /* extends SevenProviderBase implements BpmProv
 //
     if (entities != null && !entities.isEmpty()) {
       //TODO: currently list of TaskDto
-      ObjectMapper objectMapper = new ObjectMapper();
+      ObjectMapper objectMapper = getObjectMapper();
       List<Task> list = convertToDtoList(entities, objectMapper);
       return list;
     }
@@ -846,7 +930,7 @@ processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, pro
   }
   
   private List<org.cibseven.bpm.engine.task.Task> queryTasks(Map<String, Object> filters, CIBUser user) {
-    ObjectMapper objectMapper = new ObjectMapper();
+    ObjectMapper objectMapper = getObjectMapper();
     //TODO: 'unfinished' is requested but not supported by the TaskQuery -> create Ticket!
     objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     TaskQueryDto dto = objectMapper.convertValue(filters, TaskQueryDto.class);
@@ -873,8 +957,7 @@ processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, pro
     queryParameters.add("latestVersion", "true");
     queryParameters.add("sortBy", "name");
     queryParameters.add("sortOrder", "desc");
-    //TODO: which ObjectMapper should be used
-    ProcessDefinitionQueryDto queryDto = new ProcessDefinitionQueryDto(new ObjectMapper(), queryParameters);
+    ProcessDefinitionQueryDto queryDto = new ProcessDefinitionQueryDto(getObjectMapper(), queryParameters);
     List<ProcessDefinitionDto> definitions = new ArrayList<>();
 
     ProcessDefinitionQuery query = queryDto.toQuery(processEngine);
@@ -942,11 +1025,40 @@ processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, pro
   
   //@Override
   public Collection<Process> findProcessesWithFilters(String filters, CIBUser user) {
-    //TODO: to be implemented
-    return null;
+
+    Map<String, String> filterMap = new HashMap<>();
+    String[] splitFilter = filters.split("&");
+    for (String params : splitFilter) {
+      String[] splitValue = params.split("=");
+      if (splitValue.length > 1)
+        filterMap.put(splitValue[0], URLDecoder.decode(splitValue[1], Charset.forName("UTF-8")));
+    }
+    
+    ProcessDefinitionQueryDto queryDto = getObjectMapper().convertValue(filterMap, ProcessDefinitionQueryDto.class);
+
+    List<Process> processes = new ArrayList<>();
+    ProcessDefinitionQuery query = queryDto.toQuery(processEngine);
+    List<ProcessDefinition> matchingDefinitions = QueryUtil.list(query, null, null);
+
+    for (ProcessDefinition definition : matchingDefinitions) {
+      ProcessDefinitionDto def = ProcessDefinitionDto.fromProcessDefinition(definition);
+      processes.add(convertValue(getObjectMapper(), def, Process.class));
+    }
+    for(Process process : processes) {
+      ProcessInstanceQueryDto processInstanceQueryDto = new ProcessInstanceQueryDto();
+      processInstanceQueryDto.setProcessDefinitionId(process.getId());
+       process.setRunningInstances(queryProcessInstancesCount(processInstanceQueryDto));
+    }
+    return processes;
   } 
   
-  //@Override
+  private Long queryProcessInstancesCount(ProcessInstanceQueryDto queryDto) {
+    queryDto.setObjectMapper(getObjectMapper());
+    ProcessInstanceQuery query = queryDto.toQuery(processEngine);
+    return query.count();
+  }
+  
+//@Override
   public Process findProcessByDefinitionKey(String key, String tenantId, CIBUser user) {
     //TODO: to be implemented
     return null;
@@ -972,8 +1084,23 @@ processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, pro
   
   //@Override
   public ProcessDiagram fetchDiagram(String id, CIBUser user) {
-    //TODO: to be implemented
-    return null;
+    //TODO: in progress
+    InputStream processModelIn = null;
+    try {
+      processModelIn = repositoryService.getProcessModel(id);
+      byte[] processModel = IoUtil.readInputStream(processModelIn, "processModelBpmn20Xml");
+      return convertValue(getObjectMapper(), ProcessDefinitionDiagramDto.create(id, new String(processModel, "UTF-8")), ProcessDiagram.class);
+    } catch (AuthorizationException e) {
+      throw e;
+    } catch (NotFoundException e) {
+      // TODO: check exception type
+      throw new IllegalArgumentException( "No matching definition with id " + id, e);
+    } catch (UnsupportedEncodingException e) {
+      // TODO: check exception type
+      throw new IllegalArgumentException(e.getMessage(), e);
+    } finally {
+      IoUtil.closeSilently(processModelIn);
+    }
   }
   
   //@Override
@@ -1085,8 +1212,7 @@ processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, pro
   
   //TODO: rename, move to util class
   private ProcessInstanceWithVariables startProcessInstanceAtActivities(StartProcessInstanceDto dto, String processDefinitionKey) {
-        //TODO: which ObjectMapper
-    ObjectMapper objectMapper = new ObjectMapper();
+    ObjectMapper objectMapper = getObjectMapper();
     Map<String, Object> processInstanceVariables = VariableValueDto.toMap(dto.getVariables(), processEngine, objectMapper);
     String businessKey = dto.getBusinessKey();
     String caseInstanceId = dto.getCaseInstanceId();
@@ -1305,7 +1431,7 @@ ProcessDefinitionResourceImpl  public List<StatisticsResultDto> getActivityStati
     if (fetchIncidents != null) {
       filters.remove("fetchIncidents");
     }
-    ObjectMapper objectMapper = new ObjectMapper();
+    ObjectMapper objectMapper = getObjectMapper();
     HistoricProcessInstanceQueryDto historicProcessInstanceQueryDto =
         objectMapper.convertValue(filters, HistoricProcessInstanceQueryDto.class);
   
@@ -1391,8 +1517,16 @@ Collection<Incident> incidents = fetchIncidentsByInstanceAndActivityId(processDe
   
   //@Override
   public ProcessInstance findProcessInstance(String processInstanceId, CIBUser user) {
-    //TODO: to be implemented
-    return null;
+    //TODO: not tested
+    org.cibseven.bpm.engine.runtime.ProcessInstance instance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
+
+    if (instance == null) {
+      //TODO: exception type
+      throw new IllegalArgumentException("Process instance with id " + processInstanceId + " does not exist");
+    }
+
+    ProcessInstanceDto result = ProcessInstanceDto.fromProcessInstance(instance);
+    return convertValue(getObjectMapper(), result, ProcessInstance.class);
   }
 
   //@Override
@@ -1453,7 +1587,7 @@ variablesprovider:
       throw new IllegalArgumentException("Historic process instance with id " + processInstanceId + " does not exist");
     }
 
-    HistoryProcessInstance historyProcessInstance = convertValue(new ObjectMapper(), 
+    HistoryProcessInstance historyProcessInstance = convertValue(getObjectMapper(), 
         HistoricProcessInstanceDto.fromHistoricProcessInstance(instance), 
         HistoryProcessInstance.class);;
     return historyProcessInstance;
@@ -1506,8 +1640,19 @@ variablesprovider:
   //@Override
   public Collection<ProcessInstance> findCurrentProcessesInstances(Map<String, Object> data, CIBUser user)
       throws SystemException {
-    //TODO: to be implemented
-    return null;
+
+    ProcessInstanceQueryDto queryDto = objectMapper.convertValue(data, ProcessInstanceQueryDto.class);
+    queryDto.setObjectMapper(getObjectMapper());
+    ProcessInstanceQuery query = queryDto.toQuery(processEngine);
+
+    List<org.cibseven.bpm.engine.runtime.ProcessInstance> matchingInstances = QueryUtil.list(query, null, null);
+
+    List<ProcessInstance> instanceResults = new ArrayList<>();
+    for (org.cibseven.bpm.engine.runtime.ProcessInstance instance : matchingInstances) {
+      ProcessInstanceDto resultInstance = ProcessInstanceDto.fromProcessInstance(instance);
+      instanceResults.add(convertValue(getObjectMapper(), resultInstance, ProcessInstance.class));
+    }
+    return instanceResults;
   }
 
   //@Override
@@ -1570,7 +1715,7 @@ variablesprovider:
     List<org.cibseven.bpm.engine.filter.Filter> matchingFilters = QueryUtil.list(query, null, null);
 
     List<Filter> filters = new ArrayList<>();
-    ObjectMapper objectMapper = new ObjectMapper();
+    ObjectMapper objectMapper = getObjectMapper();
     for (org.cibseven.bpm.engine.filter.Filter filter : matchingFilters) {
       FilterDto filterDto = FilterDto.fromFilter(filter);
       // TODO: itemCount not used?
@@ -1585,7 +1730,7 @@ variablesprovider:
   //@Override
   public  Filter createFilter(Filter filter, CIBUser user) {
   //TODO: untested
-    ObjectMapper objectMapper = new ObjectMapper();
+    ObjectMapper objectMapper = getObjectMapper();
     FilterDto filterDto = convertValue(objectMapper, filter, FilterDto.class); 
     String resourceType = filterDto.getResourceType();
 
@@ -1614,7 +1759,7 @@ variablesprovider:
   //@Override
   public void updateFilter(Filter filter, CIBUser user) {
   //TODO: untested
-    ObjectMapper objectMapper = new ObjectMapper();
+    ObjectMapper objectMapper = getObjectMapper();
     FilterDto filterDto = convertValue(objectMapper, filter, FilterDto.class); 
     org.cibseven.bpm.engine.filter.Filter dbFilter = filterService.getFilter(filter.getId());
 
@@ -1645,7 +1790,318 @@ variablesprovider:
     }
   }
   
+
   /*
+  
+  ██████  ███████ ██████  ██       ██████  ██    ██ ███    ███ ███████ ███    ██ ████████     ██████  ██████   ██████  ██    ██ ██ ██████  ███████ ██████  
+  ██   ██ ██      ██   ██ ██      ██    ██  ██  ██  ████  ████ ██      ████   ██    ██        ██   ██ ██   ██ ██    ██ ██    ██ ██ ██   ██ ██      ██   ██ 
+  ██   ██ █████   ██████  ██      ██    ██   ████   ██ ████ ██ █████   ██ ██  ██    ██        ██████  ██████  ██    ██ ██    ██ ██ ██   ██ █████   ██████  
+  ██   ██ ██      ██      ██      ██    ██    ██    ██  ██  ██ ██      ██  ██ ██    ██        ██      ██   ██ ██    ██  ██  ██  ██ ██   ██ ██      ██   ██ 
+  ██████  ███████ ██      ███████  ██████     ██    ██      ██ ███████ ██   ████    ██        ██      ██   ██  ██████    ████   ██ ██████  ███████ ██   ██ 
+                                                                                                                                                                                                                                                                                                           
+   */
+  
+  //@Override
+  public Deployment deployBpmn(MultiValueMap<String, Object> data, MultiValueMap<String, MultipartFile> file, CIBUser user) throws SystemException {
+    //TODO: not tested
+    //MultipartFormData payload;
+    //TODO: add authorization
+    ObjectMapper objectMapper = getObjectMapper();
+    file.forEach((key, value) -> { 
+      try {
+        data.add(key, value.get(0).getResource());
+      } catch (Exception e) {
+        throw new SystemException(e);
+      }
+    });
+    DeploymentBuilder deploymentBuilder = extractDeploymentInformation(convertValue(objectMapper, data, MultipartFormData.class));
+
+    if(!deploymentBuilder.getResourceNames().isEmpty()) {
+      DeploymentWithDefinitions deployment = deploymentBuilder.deployWithResult();
+
+      DeploymentWithDefinitionsDto deploymentDto = DeploymentWithDefinitionsDto.fromDeployment(deployment);
+
+
+      //TODO: getEngineRestUrl() will be a base class method after completion
+      UriComponentsBuilder builder = UriComponentsBuilder.fromUriString("http://localhost:8080");//getEngineRestUrl());
+      URI uri = builder
+        .path("/")//relativeRootResourcePath)
+        .path("/deployment")//DeploymentRestService.PATH)
+        .path(deployment.getId())
+        .build().toUri();
+
+      // GET
+      deploymentDto.addReflexiveLink(uri, HttpMethod.GET, "self");
+      return convertValue(objectMapper, deploymentDto, Deployment.class);
+
+    } else {
+      //TODO: exception type 
+      throw new IllegalArgumentException("No deployment resources contained in the form upload.");
+    }
+/*
+    String url = getEngineRestUrl() + "/deployment/create";
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+    if (user != null) {
+      headers.add(HttpHeaders.AUTHORIZATION, user.getAuthToken());
+      headers.add(USER_ID_HEADER, user.getId());
+    }
+    UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+
+    file.forEach((key, value) -> { 
+      try {
+        data.add(key, value.get(0).getResource());
+      } catch (Exception e) {
+        throw new SystemException(e);
+      }
+    });
+
+    HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(data, headers);
+
+    try {
+      return customRestTemplate.exchange(builder.build().toUri(), HttpMethod.POST, request, Deployment.class).getBody();
+    } catch (HttpStatusCodeException e) {
+      throw wrapException(e, user);
+    }
+ * */    
+  }
+
+  //TODO: change interface to use MultiValueMap<String, Object> instead of MultipartFormData
+  private DeploymentBuilder extractDeploymentInformation(MultipartFormData payload) {
+    DeploymentBuilder deploymentBuilder = repositoryService.createDeployment();
+
+    Set<String> partNames = payload.getPartNames();
+
+    for (String name : partNames) {
+      FormPart part = payload.getNamedPart(name);
+
+      if (!RESERVED_KEYWORDS.contains(name)) {
+        String fileName = part.getFileName();
+        if (fileName != null) {
+          deploymentBuilder.addInputStream(part.getFileName(), new ByteArrayInputStream(part.getBinaryContent()));
+        } else {
+          //TODO: exception type 
+          throw new IllegalArgumentException("No file name found in the deployment resource described by form parameter '" + fileName + "'.");
+        }
+      }
+    }
+
+    FormPart deploymentName = payload.getNamedPart(DEPLOYMENT_NAME);
+    if (deploymentName != null) {
+      deploymentBuilder.name(deploymentName.getTextContent());
+    }
+
+    FormPart deploymentActivationTime = payload.getNamedPart(DEPLOYMENT_ACTIVATION_TIME);
+    if (deploymentActivationTime != null && !deploymentActivationTime.getTextContent().isEmpty()) {
+      deploymentBuilder.activateProcessDefinitionsOn(DateTimeUtil.parseDate(deploymentActivationTime.getTextContent()));
+    }
+
+    FormPart deploymentSource = payload.getNamedPart(DEPLOYMENT_SOURCE);
+    if (deploymentSource != null) {
+      deploymentBuilder.source(deploymentSource.getTextContent());
+    }
+
+    FormPart deploymentTenantId = payload.getNamedPart(TENANT_ID);
+    if (deploymentTenantId != null) {
+      deploymentBuilder.tenantId(deploymentTenantId.getTextContent());
+    }
+
+    extractDuplicateFilteringForDeployment(payload, deploymentBuilder);
+    return deploymentBuilder;
+  }
+
+  private void extractDuplicateFilteringForDeployment(MultipartFormData payload, DeploymentBuilder deploymentBuilder) {
+    boolean enableDuplicateFiltering = false;
+    boolean deployChangedOnly = false;
+
+    FormPart deploymentEnableDuplicateFiltering = payload.getNamedPart(ENABLE_DUPLICATE_FILTERING);
+    if (deploymentEnableDuplicateFiltering != null) {
+      enableDuplicateFiltering = Boolean.parseBoolean(deploymentEnableDuplicateFiltering.getTextContent());
+    }
+
+    FormPart deploymentDeployChangedOnly = payload.getNamedPart(DEPLOY_CHANGED_ONLY);
+    if (deploymentDeployChangedOnly != null) {
+      deployChangedOnly = Boolean.parseBoolean(deploymentDeployChangedOnly.getTextContent());
+    }
+
+    // deployChangedOnly overrides the enableDuplicateFiltering setting
+    if (deployChangedOnly) {
+      deploymentBuilder.enableDuplicateFiltering(true);
+    } else if (enableDuplicateFiltering) {
+      deploymentBuilder.enableDuplicateFiltering(false);
+    }
+  }
+
+
+  //@Override
+  public Long countDeployments(CIBUser user, String nameLike) {
+    ObjectMapper objectMapper = getObjectMapper();
+    MultivaluedMap<String, String> queryParams = new MultivaluedHashMap<>();
+    if (nameLike != null && !nameLike.isEmpty()) {
+      queryParams.putSingle("nameLike", nameLike);
+    }
+    DeploymentQueryDto queryDto = new DeploymentQueryDto(objectMapper, queryParams);
+
+    DeploymentQuery query = queryDto.toQuery(processEngine);
+
+    return query.count();
+  }
+
+  //@Override
+  public Collection<Deployment> findDeployments(CIBUser user, String nameLike, int firstResult, int maxResults, String sortBy, String sortOrder) {
+    ObjectMapper objectMapper = getObjectMapper();
+    JacksonConfigurator.configureObjectMapper(objectMapper);
+    MultivaluedMap<String, String> queryParams = new MultivaluedHashMap<>();
+    queryParams.putSingle("sortBy", sortBy);
+    queryParams.putSingle("sortOrder", sortOrder);
+    if (nameLike != null && !nameLike.isEmpty()) {
+      queryParams.putSingle("nameLike", nameLike);
+    }
+    
+    DeploymentQueryDto queryDto = new DeploymentQueryDto(objectMapper, queryParams);
+    DeploymentQuery query = queryDto.toQuery(processEngine);
+    List<org.cibseven.bpm.engine.repository.Deployment> matchingDeployments = QueryUtil.list(query, firstResult, maxResults);
+    List<Deployment> deployments = new ArrayList<>();
+    for (org.cibseven.bpm.engine.repository.Deployment deployment : matchingDeployments) {
+      DeploymentDto def = DeploymentDto.fromDeployment(deployment);
+      deployments.add(convertValue(objectMapper, def, Deployment.class));
+    }
+    return deployments;
+  }
+  
+  //@Override
+  public Deployment findDeployment(String deploymentId, CIBUser user) {
+    org.cibseven.bpm.engine.repository.Deployment deployment = repositoryService.createDeploymentQuery().deploymentId(deploymentId).singleResult();
+
+    if (deployment == null) {
+      //TODO: exception type 
+      throw new IllegalArgumentException("Deployment with id '" + deploymentId + "' does not exist");
+    }
+
+    ObjectMapper objectMapper = getObjectMapper();
+    return convertValue(objectMapper, DeploymentDto.fromDeployment(deployment), Deployment.class);
+  }
+
+  //@Override
+  public Collection<DeploymentResource> findDeploymentResources(String deploymentId, CIBUser user) {
+    
+    List<Resource> resources = repositoryService.getDeploymentResources(deploymentId);
+
+    ObjectMapper objectMapper = getObjectMapper();
+    List<DeploymentResource> deploymentResources = new ArrayList<DeploymentResource>();
+    for (Resource resource : resources) {
+      deploymentResources.add(convertValue(objectMapper, DeploymentResourceDto.fromResources(resource), DeploymentResource.class));
+    }
+
+    if (!deploymentResources.isEmpty()) {
+      return deploymentResources;
+    }
+    else {
+      //TODO: exception type 
+      throw new IllegalArgumentException("Deployment resources for deployment id '" + deploymentId + "' do not exist.");
+    }
+  }
+
+  //@Override
+  public Data fetchDataFromDeploymentResource(HttpServletRequest rq, String deploymentId, String resourceId, String fileName) {
+    //TODO: not tested
+    InputStream resourceAsStream = repositoryService.getResourceAsStreamById(deploymentId, resourceId);
+    if (resourceAsStream != null) {
+      DeploymentResourceDto resource = getDeploymentResource(resourceId, deploymentId);
+      String name = resource.getName();
+      String filename = null;
+      String mediaType = null;
+
+      if (name != null) {
+        name = name.replace("\\", "/");
+        String[] filenameParts = name.split("/");
+        if (filenameParts.length > 0) {
+          int idx = filenameParts.length-1;
+          filename = filenameParts[idx];
+        }
+
+        String[] extensionParts = name.split("\\.");
+        if (extensionParts.length > 0) {
+          int idx = extensionParts.length-1;
+          String extension = extensionParts[idx];
+          if (extension != null) {
+            mediaType = MEDIA_TYPE_MAPPING.get(extension);
+          }
+        }
+      }
+
+      if (filename == null) {
+        filename = "data";
+      }
+
+      if (mediaType == null) {
+        mediaType = MediaType.APPLICATION_OCTET_STREAM.toString();
+      }
+
+      
+      try {
+        byte[] body = resourceAsStream.readAllBytes();
+        if (body == null)
+          throw new NullPointerException();
+        InputStream targetStream = new ByteArrayInputStream(body);
+        InputStreamSource iso = new InputStreamResource(targetStream);
+        Data returnValue = new Data(fileName, mediaType, iso, body.length);
+        return returnValue;
+      } catch (IOException e) {
+        //TODO: exception type 
+        throw new IllegalArgumentException("Deployment resource '" + resourceId + "' for deployment id '" + deploymentId + "'could not be read.");
+      }
+    } else {
+      //TODO: exception type 
+      throw new IllegalArgumentException("Deployment resource '" + resourceId + "' for deployment id '" + deploymentId + "' does not exist.");
+    }
+  }
+  
+  private DeploymentResourceDto getDeploymentResource(String resourceId, String deploymentId) {
+    List<DeploymentResourceDto> deploymentResources = getDeploymentResources(deploymentId);
+    for (DeploymentResourceDto deploymentResource : deploymentResources) {
+      if (deploymentResource.getId().equals(resourceId)) {
+        return deploymentResource;
+      }
+    }
+  
+    //TODO: exception type 
+    throw new IllegalArgumentException("Deployment resource with resource id '" + resourceId + "' for deployment id '" + deploymentId + "' does not exist.");
+  }
+  
+  private List<DeploymentResourceDto> getDeploymentResources(String deploymentId) {
+    List<Resource> resources = processEngine.getRepositoryService().getDeploymentResources(deploymentId);
+
+    List<DeploymentResourceDto> deploymentResources = new ArrayList<DeploymentResourceDto>();
+    for (Resource resource : resources) {
+      deploymentResources.add(DeploymentResourceDto.fromResources(resource));
+    }
+
+    if (!deploymentResources.isEmpty()) {
+      return deploymentResources;
+    }
+    else {
+      //TODO: exception type 
+      throw new IllegalArgumentException("Deployment resources for deployment id '" + deploymentId + "' do not exist.");
+    }
+  }
+  
+  //@Override
+  public void deleteDeployment(String deploymentId, Boolean cascade, CIBUser user) throws SystemException {
+    org.cibseven.bpm.engine.repository.Deployment deployment = repositoryService.createDeploymentQuery().deploymentId(deploymentId).singleResult();
+    if (deployment == null) {
+      //TODO: exception type 
+      throw new IllegalArgumentException("Deployment with id '" + deploymentId + "' do not exist");
+    }
+
+    //TODO: properties unused
+    boolean skipCustomListeners = false;
+    boolean skipIoMappings = false;
+
+    repositoryService.deleteDeployment(deploymentId, cascade, skipCustomListeners, skipIoMappings);
+  }
+    /*
   
   █████   ██████ ████████ ██ ██    ██ ██ ████████ ██    ██     ██████  ██████   ██████  ██    ██ ██ ██████  ███████ ██████  
  ██   ██ ██         ██    ██ ██    ██ ██    ██     ██  ██      ██   ██ ██   ██ ██    ██ ██    ██ ██ ██   ██ ██      ██   ██ 
@@ -1673,7 +2129,7 @@ variablesprovider:
    }
 
    ActivityInstanceDto result = ActivityInstanceDto.fromActivityInstance(activityInstance);
-   return convertValue(new ObjectMapper(), result, ActivityInstance.class);
+   return convertValue(getObjectMapper(), result, ActivityInstance.class);
  }
  
  //@Override
@@ -1684,7 +2140,7 @@ variablesprovider:
  
  //@Override
  public List<ActivityInstanceHistory> findActivitiesInstancesHistory(String processInstanceId, CIBUser user) {
-   ObjectMapper objectMapper = new ObjectMapper();
+   ObjectMapper objectMapper = getObjectMapper();
    HistoricActivityInstanceQueryDto queryHistoricActivityInstanceDto = new HistoricActivityInstanceQueryDto();
    queryHistoricActivityInstanceDto.setObjectMapper(objectMapper);
    queryHistoricActivityInstanceDto.setProcessInstanceId(processInstanceId);
@@ -1783,7 +2239,7 @@ variablesprovider:
   
   //@Override
   public Collection<Incident> findHistoricIncidents(Map<String, Object> params, CIBUser user) {
-    ObjectMapper objectMapper = new ObjectMapper();
+    ObjectMapper objectMapper = getObjectMapper();
     HistoricIncidentQueryDto queryDto = objectMapper.convertValue(params, HistoricIncidentQueryDto.class);
     HistoricIncidentQuery query = queryDto.toQuery(processEngine);
 
@@ -1884,7 +2340,7 @@ variablesprovider:
     //TODO: eliminate rest classes
     AuthorizationQueryDto queryDto = new AuthorizationQueryDto();
     queryDto.setUserIdIn(new String[]{userId});
-    queryDto.setObjectMapper(new ObjectMapper());
+    queryDto.setObjectMapper(getObjectMapper());
     AuthorizationQuery userQuery = queryDto.toQuery(processEngine);
 
     List<org.cibseven.bpm.engine.authorization.Authorization> userAuthorizationList = QueryUtil.list(userQuery, null, null);
@@ -1914,7 +2370,7 @@ variablesprovider:
 
     AuthorizationQueryDto groupIdQueryDto = new AuthorizationQueryDto();
     groupIdQueryDto.setGroupIdIn(listGroups.toArray(new String[0]));
-    groupIdQueryDto.setObjectMapper(new ObjectMapper());
+    groupIdQueryDto.setObjectMapper(getObjectMapper());
     AuthorizationQuery groupIdQuery = groupIdQueryDto.toQuery(processEngine);
     //expected: 51 authorizations with id, type, userid, groupId, resourceType, resourceId
     List<org.cibseven.bpm.engine.authorization.Authorization> groupIdResultList = QueryUtil.list(groupIdQuery, null, null);
@@ -1922,7 +2378,7 @@ variablesprovider:
 
     AuthorizationQueryDto globalIdQueryDto = new AuthorizationQueryDto();
     globalIdQueryDto.setType(0);
-    globalIdQueryDto.setObjectMapper(new ObjectMapper());
+    globalIdQueryDto.setObjectMapper(getObjectMapper());
     AuthorizationQuery globalIdQuery = globalIdQueryDto.toQuery(processEngine);
     List<org.cibseven.bpm.engine.authorization.Authorization> globalIdResultList = QueryUtil.list(globalIdQuery, null, null);
     Collection<Authorization> globalAuthorizations = createAuthorizationCollection(globalIdResultList);
@@ -1992,8 +2448,7 @@ variablesprovider:
   
   public Collection<SevenUser> fetchUsers(CIBUser user) throws SystemException {
     UserQueryDto queryDto = new UserQueryDto();
-    //TODO: which ObjectMapper should be used
-    queryDto.setObjectMapper(new ObjectMapper());
+    queryDto.setObjectMapper(getObjectMapper());
     UserQuery query = queryDto.toQuery(processEngine);
     query.userId(user.getId());
     List<org.cibseven.bpm.engine.identity.User> resultList = QueryUtil.list(query, null, null);
@@ -2068,8 +2523,7 @@ variablesprovider:
     //TODO: Wildcard is always set to "%"
     final String wcard = "%";
     UserQueryDto queryDto = new UserQueryDto();
-    //TODO: which ObjectMapper should be used
-    queryDto.setObjectMapper(new ObjectMapper());
+    queryDto.setObjectMapper(getObjectMapper());
     UserQuery query = queryDto.toQuery(processEngine);
     if (memberOfGroup.isPresent())
        query.memberOfGroup(memberOfGroup.get());
@@ -2288,7 +2742,7 @@ variablesprovider:
     //TODO: Wildcard is always set to "%"
     final String wcard = "%";
     GroupQueryDto queryDto = new GroupQueryDto();
-    queryDto.setObjectMapper(new ObjectMapper());
+    queryDto.setObjectMapper(getObjectMapper());
     //set parameters
     if (id.isPresent())
         queryDto.setId(id.get());
@@ -2507,7 +2961,7 @@ variablesprovider:
   
   private List<Incident> fetchIncidents(String processDefinitionKey, 
       String activityId, CIBUser user, String processInstanceId) {
-    ObjectMapper objectMapper = new ObjectMapper();
+    ObjectMapper objectMapper = getObjectMapper();
     IncidentQueryDto queryDto = new IncidentQueryDto();
     queryDto.setActivityId(activityId);
     if (processDefinitionKey != null)
@@ -2654,7 +3108,7 @@ variablesprovider:
     }
     HistoricVariableInstance variableInstance = query.singleResult();
     if (variableInstance != null) {
-      VariableHistory result = convertValue(new ObjectMapper(),
+      VariableHistory result = convertValue(getObjectMapper(),
           HistoricVariableInstanceDto.fromHistoricVariableInstance(variableInstance), VariableHistory.class);
       return result;
     } else {
@@ -2677,7 +3131,7 @@ variablesprovider:
   public Collection<ExternalTask> getExternalTasks(Map<String, Object> queryParams, CIBUser user)
       throws SystemException {
     // TODO: in progress
-    ObjectMapper objectMapper = new ObjectMapper();
+    ObjectMapper objectMapper = getObjectMapper();
     ExternalTaskQueryDto queryDto = objectMapper.convertValue(queryParams, ExternalTaskQueryDto.class);
     queryDto.setObjectMapper(objectMapper);
     ExternalTaskQuery query = queryDto.toQuery(processEngine);
@@ -2727,7 +3181,7 @@ variablesprovider:
     if (data != null && data.containsKey("deserializeValues"))
       data.remove("deserializeValues"); 
 
-    ObjectMapper objectMapper = new ObjectMapper();
+    ObjectMapper objectMapper = getObjectMapper();
     VariableInstanceQueryDto queryDto = objectMapper.convertValue(data, VariableInstanceQueryDto.class);
     
     queryDto.setObjectMapper(objectMapper);
@@ -2826,7 +3280,7 @@ variablesprovider:
     if (data != null && data.containsKey("deserializeValues"))
       data.remove("deserializeValues"); 
 
-    ObjectMapper objectMapper = new ObjectMapper();
+    ObjectMapper objectMapper = getObjectMapper();
     //TODO: data contains "variableValues=null" which is not member of HistoricVariableInstanceQueryDto
     //but there is "variableValue" -> create ticket
     objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -3013,8 +3467,7 @@ variablesprovider:
   
   //@Override
   public Collection<JobDefinition> findJobDefinitions(String params, CIBUser user) {
-    //TODO: which ObjectMapper
-    ObjectMapper objectMapper = new ObjectMapper();
+    ObjectMapper objectMapper = getObjectMapper();
     JobDefinitionQueryDto queryDto;
     try {
       queryDto = objectMapper.readValue(params, JobDefinitionQueryDto.class);
@@ -3060,7 +3513,7 @@ variablesprovider:
   //@Override
   public void setSuspended(String id, Map<String, Object> params, CIBUser user) {
     // TODO: in progress
-    ObjectMapper objectMapper = new ObjectMapper();
+    ObjectMapper objectMapper = getObjectMapper();
     JobDefinitionSuspensionStateDto jobDefinitionSuspensionStateDto = objectMapper.convertValue(params,
         JobDefinitionSuspensionStateDto.class);
     jobDefinitionSuspensionStateDto.setProcessDefinitionId(id);
@@ -3114,5 +3567,104 @@ variablesprovider:
       return objectMapper.convertValue(filterDtoMap, toValueType);
   }
   
+  /*
 
+  ██████  ███████ ██████  ██       ██████  ██    ██ ███    ███ ███████ ███    ██ ████████     ██████  ██████   ██████  ██    ██ ██ ██████  ███████ ██████  
+  ██   ██ ██      ██   ██ ██      ██    ██  ██  ██  ████  ████ ██      ████   ██    ██        ██   ██ ██   ██ ██    ██ ██    ██ ██ ██   ██ ██      ██   ██ 
+  ██   ██ █████   ██████  ██      ██    ██   ████   ██ ████ ██ █████   ██ ██  ██    ██        ██████  ██████  ██    ██ ██    ██ ██ ██   ██ █████   ██████  
+  ██   ██ ██      ██      ██      ██    ██    ██    ██  ██  ██ ██      ██  ██ ██    ██        ██      ██   ██ ██    ██  ██  ██  ██ ██   ██ ██      ██   ██ 
+  ██████  ███████ ██      ███████  ██████     ██    ██      ██ ███████ ██   ████    ██        ██      ██   ██  ██████    ████   ██ ██████  ███████ ██   ██ 
+                                                                                                                                                         
+   */
+
+  //@Override
+  public Deployment createDeployment(MultiValueMap<String, Object> data, MultipartFile[] files, CIBUser user) throws SystemException {
+    //TODO: in progress
+    //TODO: add authorization
+    ObjectMapper objectMapper = getObjectMapper();
+    MultiValueMap<String, Object> formData = new LinkedMultiValueMap<>(data);
+    for (int i = 0; i < files.length; i++) {
+      MultipartFile file = files[i];
+      // API expects files with parameter name "data", so we use indexed keys
+      // result could be: ['data0', 'data1', 'data2', ...] or just single ['data']
+      String key = files.length > 1 ? "data" + i : "data";
+      formData.add(key, file.getResource());
+    }
+    DeploymentBuilder deploymentBuilder = extractDeploymentInformation(convertValue(objectMapper, formData, MultipartFormData.class));
+
+    if(!deploymentBuilder.getResourceNames().isEmpty()) {
+      DeploymentWithDefinitions deployment = deploymentBuilder.deployWithResult();
+
+      DeploymentWithDefinitionsDto deploymentDto = DeploymentWithDefinitionsDto.fromDeployment(deployment);
+
+
+      //TODO: getEngineRestUrl() will be a base class method after completion
+      UriComponentsBuilder builder = UriComponentsBuilder.fromUriString("http://localhost:8080");//getEngineRestUrl());
+      URI uri = builder
+        .path("/")//relativeRootResourcePath)
+        .path("/deployment")//DeploymentRestService.PATH)
+        .path(deployment.getId())
+        .build().toUri();
+
+      // GET
+      deploymentDto.addReflexiveLink(uri, HttpMethod.GET, "self");
+      return convertValue(objectMapper, deploymentDto, Deployment.class);
+
+    } else {
+      //TODO: exception type 
+      throw new IllegalArgumentException("No deployment resources contained in the form upload.");
+    }
+/*
+    String url = getEngineRestUrl() + "/deployment/create";
+    // Prepare multipart form data - start with provided data
+    MultiValueMap<String, Object> formData = new LinkedMultiValueMap<>(data);
+    // Add files to form data with indexed "data" keys
+    for (int i = 0; i < files.length; i++) {
+      MultipartFile file = files[i];
+      // API expects files with parameter name "data", so we use indexed keys
+      // result could be: ['data0', 'data1', 'data2', ...] or just single ['data']
+      String key = files.length > 1 ? "data" + i : "data";
+      formData.add(key, file.getResource());
+    }
+    // Use the base class method for multipart POST
+    ResponseEntity<Deployment> response = doPostMultipart(url, formData, Deployment.class, user);
+    return response.getBody();
+
+//deploy bpmn:
+    String url = getEngineRestUrl() + "/deployment/create";
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+    if (user != null) {
+      headers.add(HttpHeaders.AUTHORIZATION, user.getAuthToken());
+      headers.add(USER_ID_HEADER, user.getId());
+    }
+    UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+
+    file.forEach((key, value) -> { 
+      try {
+        data.add(key, value.get(0).getResource());
+      } catch (Exception e) {
+        throw new SystemException(e);
+      }
+    });
+
+    HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(data, headers);
+
+    try {
+      return customRestTemplate.exchange(builder.build().toUri(), HttpMethod.POST, request, Deployment.class).getBody();
+    } catch (HttpStatusCodeException e) {
+      throw wrapException(e, user);
+    }
+ * */    
+    
+  }
+  private ObjectMapper getObjectMapper() {
+    if (objectMapper == null) 
+    {
+      objectMapper = new ObjectMapper();
+      JacksonConfigurator.configureObjectMapper(objectMapper);
+    }
+    return objectMapper;
+  }
 }
