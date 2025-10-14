@@ -23,6 +23,8 @@ import java.util.List;
 import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.User;
 import org.cibseven.webapp.providers.BpmProvider;
+import org.cibseven.webapp.rest.CustomRestTemplate;
+import org.cibseven.webapp.rest.model.InfoVersion;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -48,8 +50,6 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.mvc.WebContentInterceptor;
-
-import org.cibseven.webapp.rest.CustomRestTemplate;
 
 import com.fasterxml.jackson.core.StreamReadConstraints;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -157,6 +157,11 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 		this.provider = (BaseUserProvider) providerClass.getConstructor().newInstance();
 		return provider;
 	}
+	
+    @Bean
+    public InfoVersion infoVersion() {
+        return new InfoVersion();
+    }
 
 	@Bean // http://blog.codeleak.pl/2015/09/placeholders-support-in-value.html
 	public static PropertySourcesPlaceholderConfigurer placeholderConfigurer() {
