@@ -182,12 +182,14 @@ export default {
       return false
     },
 		getFileVariableName: function(item) {
-			if (item.value && typeof item.value === 'object' && item.value.name) {
-				return item.value.name
+			// Prioritize valueDeserialized over value
+			const targetValue = item.valueDeserialized || item.value
+			if (targetValue && typeof targetValue === 'object' && targetValue.name) {
+				return targetValue.name
 			}
-			if (item.value && typeof item.value === 'string') {
+			if (targetValue && typeof targetValue === 'string') {
 				try {
-					const parsed = JSON.parse(item.value)
+					const parsed = JSON.parse(targetValue)
 					if (parsed && parsed.name) return parsed.name
 				} catch { return '' }
 			}
