@@ -127,7 +127,7 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 
 	@Override
 	public Integer findTasksCount(@RequestBody Map<String, Object> filters, CIBUser user) {
-    if (useDirectInterface)
+    if (!useRestInterface)
       return sevenDirectProvider.findTasksCount(filters, user);
     else
 		  return taskProvider.findTasksCount(filters, user);
@@ -224,12 +224,18 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public Collection<TaskHistory> findTasksByProcessInstanceHistory(String processInstanceId, CIBUser user) {
-		return taskProvider.findTasksByProcessInstanceHistory(processInstanceId, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.findTasksByProcessInstanceHistory(processInstanceId, user);
+    else
+		  return taskProvider.findTasksByProcessInstanceHistory(processInstanceId, user);
 	}
 	
 	@Override
 	public Collection<TaskHistory> findTasksByDefinitionKeyHistory(String taskDefinitionKey, String processInstanceId, CIBUser user) {
-		return taskProvider.findTasksByDefinitionKeyHistory(taskDefinitionKey, processInstanceId, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.findTasksByDefinitionKeyHistory(taskDefinitionKey, processInstanceId, user);
+    else
+      return taskProvider.findTasksByDefinitionKeyHistory(taskDefinitionKey, processInstanceId, user);
 	}
 	
 	@Override
@@ -266,12 +272,18 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public void handleBpmnError(String taskId, Map<String, Object> data, CIBUser user) throws SystemException {
-		taskProvider.handleBpmnError(taskId, data, user);
+    if (useDirectInterface)
+      sevenDirectProvider.handleBpmnError(taskId, data, user);
+    else
+      taskProvider.handleBpmnError(taskId, data, user);
 	}
 
 	@Override
 	public Collection<TaskHistory> findTasksByTaskIdHistory(String taskId, CIBUser user) {
-		return taskProvider.findTasksByTaskIdHistory(taskId, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.findTasksByTaskIdHistory(taskId, user);
+    else
+      return taskProvider.findTasksByTaskIdHistory(taskId, user);
 	}	
 	
 	@Override
@@ -284,12 +296,18 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public Integer findHistoryTasksCount(Map<String, Object> filters, CIBUser user) {
-		return taskProvider.findHistoryTasksCount(filters, user);
+    if (!useRestInterface)
+      return sevenDirectProvider.findHistoryTasksCount(filters, user);
+    else
+      return taskProvider.findHistoryTasksCount(filters, user);
 	}
 
 	@Override
 	public Collection<CandidateGroupTaskCount> getTaskCountByCandidateGroup(CIBUser user) {
-		return taskProvider.getTaskCountByCandidateGroup(user);
+    if (!useRestInterface)
+      return sevenDirectProvider.getTaskCountByCandidateGroup(user);
+    else
+      return taskProvider.getTaskCountByCandidateGroup(user);
 	}
 	
 	/* 
@@ -328,7 +346,10 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public Process findProcessByDefinitionKey(String key, String tenantId, CIBUser user) {
-		return processProvider.findProcessByDefinitionKey(key, tenantId, user);
+    if (!useRestInterface)
+      return sevenDirectProvider.findProcessByDefinitionKey(key, tenantId, user);
+    else
+		  return processProvider.findProcessByDefinitionKey(key, tenantId, user);
 	}
 	
 	@Override
@@ -359,12 +380,18 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public StartForm fetchStartForm(String processDefinitionId, CIBUser user) {
-		return processProvider.fetchStartForm(processDefinitionId, user);
+    if (!useRestInterface)
+      return sevenDirectProvider.fetchStartForm(processDefinitionId, user);
+    else
+      return processProvider.fetchStartForm(processDefinitionId, user);
 	}
 	
 	@Override
 	public Data downloadBpmn(String id, String fileName, CIBUser user) {
-		return processProvider.downloadBpmn(id, fileName, user);
+    if (!useRestInterface)
+      return sevenDirectProvider.downloadBpmn(id, fileName, user);
+    else
+      return processProvider.downloadBpmn(id, fileName, user);
 	}
 	
 	@Override
@@ -377,12 +404,18 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public void deleteProcessInstance(String processInstanceId, CIBUser user) {
-		processProvider.deleteProcessInstance(processInstanceId, user);
+    if (useDirectInterface)
+      sevenDirectProvider.deleteProcessInstance(processInstanceId, user);
+    else
+      processProvider.deleteProcessInstance(processInstanceId, user);
 	}
 	
 	@Override
 	public void suspendProcessDefinition(String processDefinitionId, Boolean suspend, Boolean includeProcessInstances, String executionDate, CIBUser user) {
-		processProvider.suspendProcessDefinition(processDefinitionId, suspend, includeProcessInstances, executionDate, user);
+    if (useDirectInterface)
+      sevenDirectProvider.suspendProcessDefinition(processDefinitionId, suspend, includeProcessInstances, executionDate, user);
+    else
+      processProvider.suspendProcessDefinition(processDefinitionId, suspend, includeProcessInstances, executionDate, user);
 	}
 	
 	@Override
@@ -395,7 +428,10 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public ProcessStart submitForm(String processDefinitionKey, String tenantId, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
-		return processProvider.submitForm(processDefinitionKey, tenantId, data, user);
+    if (!useRestInterface)
+      return sevenDirectProvider.submitForm(processDefinitionKey, tenantId, data, user);
+    else
+      return processProvider.submitForm(processDefinitionKey, tenantId, data, user);
 	}
 	
 	@Override
@@ -487,7 +523,10 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 
 	@Override
 	public void deleteProcessInstanceFromHistory(String id, CIBUser user) {
-		processProvider.deleteProcessInstanceFromHistory(id, user);
+    if (useDirectInterface)
+      sevenDirectProvider.deleteProcessInstanceFromHistory(id, user);
+    else
+      processProvider.deleteProcessInstanceFromHistory(id, user);
 	}
 	
 	@Override
