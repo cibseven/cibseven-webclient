@@ -26,7 +26,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -44,8 +43,6 @@ import java.util.stream.Collectors;
 import javax.ws.rs.HttpMethod;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.hc.core5.http.NameValuePair;
-import org.apache.hc.core5.net.URLEncodedUtils;
 import org.cibseven.bpm.engine.AuthorizationException;
 import org.cibseven.bpm.engine.AuthorizationService;
 import org.cibseven.bpm.engine.CaseService;
@@ -67,7 +64,6 @@ import org.cibseven.webapp.rest.model.ProcessDiagram;
 import org.cibseven.webapp.rest.model.ProcessInstance;
 import org.cibseven.webapp.rest.model.ProcessStart;
 import org.cibseven.webapp.rest.model.ProcessStatistics;
-import org.cibseven.webapp.rest.model.ProcessVariables;
 import org.cibseven.webapp.rest.model.SevenUser;
 import org.cibseven.webapp.rest.model.SevenVerifyUser;
 import org.cibseven.webapp.rest.model.StartForm;
@@ -94,9 +90,7 @@ import org.cibseven.bpm.engine.identity.GroupQuery;
 import org.cibseven.bpm.engine.identity.UserQuery;
 import org.cibseven.bpm.engine.impl.RuntimeServiceImpl;
 import org.cibseven.bpm.engine.impl.calendar.DateTimeUtil;
-import org.cibseven.bpm.engine.impl.form.validator.FormFieldValidationException;
 import org.cibseven.bpm.engine.impl.identity.Authentication;
-import org.cibseven.bpm.engine.impl.persistence.entity.ProcessDefinitionStatisticsEntity;
 import org.cibseven.bpm.engine.impl.util.IoUtil;
 import org.cibseven.bpm.engine.impl.util.PermissionConverter;
 import org.cibseven.bpm.engine.management.ActivityStatistics;
@@ -164,6 +158,7 @@ import org.cibseven.bpm.engine.rest.dto.task.TaskDto;
 import org.cibseven.bpm.engine.rest.dto.task.TaskQueryDto;
 import org.cibseven.bpm.engine.rest.dto.task.UserDto;
 import org.cibseven.bpm.engine.rest.exception.InvalidRequestException;
+import org.cibseven.bpm.engine.rest.exception.RestException;
 import org.cibseven.bpm.engine.rest.mapper.JacksonConfigurator;
 import org.cibseven.bpm.engine.rest.mapper.MultipartFormData;
 import org.cibseven.bpm.engine.rest.mapper.MultipartFormData.FormPart;
@@ -171,6 +166,7 @@ import org.cibseven.bpm.engine.rest.sub.impl.VariableResponseProvider;
 import org.cibseven.bpm.engine.rest.sub.repository.impl.ProcessDefinitionResourceImpl;
 import org.cibseven.bpm.engine.rest.util.ApplicationContextPathUtil;
 import org.cibseven.bpm.engine.rest.util.QueryUtil;
+import org.cibseven.bpm.engine.runtime.DeserializationTypeValidator;
 import org.cibseven.bpm.engine.runtime.EventSubscription;
 import org.cibseven.bpm.engine.runtime.IncidentQuery;
 import org.cibseven.bpm.engine.runtime.ProcessInstanceQuery;
@@ -181,12 +177,13 @@ import org.cibseven.bpm.engine.task.DelegationState;
 import org.cibseven.bpm.engine.task.TaskQuery;
 import org.cibseven.bpm.engine.variable.VariableMap;
 import org.cibseven.bpm.engine.variable.Variables;
+import org.cibseven.bpm.engine.variable.impl.type.AbstractValueTypeImpl;
+import org.cibseven.bpm.engine.variable.type.FileValueType;
 import org.cibseven.bpm.engine.variable.type.ValueType;
 import org.cibseven.bpm.engine.variable.value.BytesValue;
 import org.cibseven.bpm.engine.variable.value.FileValue;
 import org.cibseven.bpm.engine.variable.value.PrimitiveValue;
 import org.cibseven.bpm.engine.variable.value.SerializableValue;
-import org.cibseven.bpm.engine.variable.value.builder.FileValueBuilder;
 import org.cibseven.bpm.model.bpmn.instance.Message;
 import org.cibseven.bpm.engine.variable.value.TypedValue;
 import org.cibseven.webapp.Data;
@@ -241,22 +238,28 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 
 import camundajar.impl.scala.Array;
+import jakarta.activation.MimeType;
+import jakarta.activation.MimeTypeParseException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.core.MultivaluedHashMap;
 import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
+import jakarta.ws.rs.core.Response.Status;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -332,6 +335,8 @@ public class SevenDirectProvider /* extends SevenProviderBase implements BpmProv
     RESERVED_KEYWORDS.add(TENANT_ID);
   }
   
+  protected static final String DEFAULT_BINARY_VALUE_TYPE = "Bytes";
+
   /*
   
     ████████  █████  ███████ ██   ██     ██████  ██████   ██████  ██    ██ ██ ██████  ███████ ██████  
@@ -1060,8 +1065,16 @@ processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, pro
   
 //@Override
   public Process findProcessByDefinitionKey(String key, String tenantId, CIBUser user) {
-    //TODO: to be implemented
-    return null;
+    //TODO: not tested
+    ProcessInstanceQuery query = runtimeService.createProcessInstanceQuery().processDefinitionKey(key);
+    if (tenantId !=null)
+      query.tenantIdIn(new String[] {tenantId});
+    org.cibseven.bpm.engine.runtime.ProcessInstance instance = query.singleResult();
+    if (instance == null) {
+        throw new SystemException("Process instance not found: " + key);
+    }
+    Process process = convertValue(objectMapper, ProcessInstanceDto.fromProcessInstance(instance), Process.class);
+    return process;
   }
   
   //@Override
@@ -1070,21 +1083,59 @@ processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, pro
     return null;
   }
 
-  //@Override
+  // @Override
   public Process findProcessById(String id, Optional<Boolean> extraInfo, CIBUser user) throws SystemException {
-    //TODO: to be implemented
-    return null;
+    ProcessDefinition definition;
+    try {
+      definition = repositoryService.getProcessDefinition(id);
+    } catch (ProcessEngineException e) {
+      throw new SystemException("No matching definition with id " + id, e);
+    }
+
+    ProcessDefinitionDto definitionDto = ProcessDefinitionDto.fromProcessDefinition(definition);
+    Process process = convertValue(objectMapper, definitionDto, Process.class);
+    if (extraInfo.isPresent() && extraInfo.get()) {
+      Map<String, Object> filters = new HashMap<>();
+      filters.put("processDefinitionId", id);
+      Long count = countProcessesInstancesHistory(filters, user);
+      process.setAllInstances(count);
+      filters.clear();
+      filters.put("processDefinitionId", process.getId());
+      filters.put("unfinished", true);
+      count = countProcessesInstancesHistory(filters, user);
+      process.setRunningInstances(count);
+      filters.clear();
+      filters.put("processDefinitionId", process.getId());
+      filters.put("completed", true);
+      count = countProcessesInstancesHistory(filters, user);
+      process.setCompletedInstances(count);
+    }
+    return process;
   }
     
   //@Override
   public Collection<ProcessInstance> findProcessesInstances(String key, CIBUser user) {
     //TODO: to be implemented
-    return null;
+    //git copilot work
+    
+    List<ProcessInstance> result = new ArrayList<>();
+    // Query the runtime service for process instances matching the given definition key
+    List<org.cibseven.bpm.engine.runtime.ProcessInstance> instances = runtimeService.createProcessInstanceQuery()
+        .processDefinitionKey(key)
+        .list();
+
+    for (org.cibseven.bpm.engine.runtime.ProcessInstance camundaInstance : instances) {
+        // Convert or map Camunda's ProcessInstance to your webclient's ProcessInstance type
+        ProcessInstanceDto backendDto = ProcessInstanceDto.fromProcessInstance(camundaInstance);
+        ProcessInstance webClientDto = convertValue(objectMapper, backendDto, ProcessInstance.class);
+        result.add(webClientDto);
+    }
+    return result;
   }
   
   //@Override
   public ProcessDiagram fetchDiagram(String id, CIBUser user) {
-    //TODO: in progress
+
     InputStream processModelIn = null;
     try {
       processModelIn = repositoryService.getProcessModel(id);
@@ -1505,14 +1556,36 @@ Collection<Incident> incidents = fetchIncidentsByInstanceAndActivityId(processDe
   //@Override
   public Collection<HistoryProcessInstance> findProcessesInstancesHistoryById(String id, Optional<String> activityId, Optional<Boolean> active, 
       Integer firstResult, Integer maxResults, String text, CIBUser user) {
-    //TODO: to be implemented
-    return null;
+    //TODO: not tested
+  
+    HistoricProcessInstanceQueryDto historicProcessInstanceQueryDto = new HistoricProcessInstanceQueryDto();
+    historicProcessInstanceQueryDto.setProcessDefinitionId(id);
+    if (activityId.isPresent())
+      historicProcessInstanceQueryDto.setActivityIdIn(Arrays.asList(activityId.get()));
+    if (active.isPresent())
+      historicProcessInstanceQueryDto.setActive(active.get());
+    historicProcessInstanceQueryDto.setObjectMapper(getObjectMapper());
+    HistoricProcessInstanceQuery query = historicProcessInstanceQueryDto.toQuery(processEngine);
+    List<HistoricProcessInstance> matchingHistoricProcessInstances = QueryUtil.list(query, firstResult, maxResults);
+
+    List<HistoryProcessInstance> HistoryProcessInstanceResults = new ArrayList<HistoryProcessInstance>();
+    for (HistoricProcessInstance historicProcessInstance : matchingHistoricProcessInstances) {
+      HistoricProcessInstanceDto resultHistoricProcessInstanceDto = HistoricProcessInstanceDto.fromHistoricProcessInstance(historicProcessInstance);
+      HistoryProcessInstanceResults.add(convertValue(getObjectMapper(), resultHistoricProcessInstanceDto, HistoryProcessInstance.class));
+    }
+    return HistoryProcessInstanceResults;
+
   }
   
   //@Override
   public Long countProcessesInstancesHistory(Map<String, Object> filters, CIBUser user) {
-    //TODO: to be implemented
-    return null;
+    HistoricProcessInstanceQueryDto historicProcessInstanceQueryDto = getObjectMapper().convertValue(filters, HistoricProcessInstanceQueryDto.class);  
+    
+    historicProcessInstanceQueryDto.setObjectMapper(getObjectMapper());
+    HistoricProcessInstanceQuery query = historicProcessInstanceQueryDto.toQuery(processEngine);
+
+    long count = query.count();
+    return count;
   }
   
   //@Override
@@ -3001,6 +3074,8 @@ variablesprovider:
       throws SystemException, NoObjectFoundException {
     VariableInstance variableDeserialized = getVariableInstanceImpl(id, true, user);
     VariableInstance variableSerialized = getVariableInstanceImpl(id, false, user);
+    if (variableDeserialized == null || variableSerialized == null)
+      throw new SystemException("Variable not found: " + id);
 
     if (deserializeValue) {
       variableDeserialized.setValueSerialized(variableSerialized.getValue());
@@ -3011,6 +3086,7 @@ variablesprovider:
       variableSerialized.setValueDeserialized(variableDeserialized.getValue());
       return variableSerialized;
     }
+    //result: VariableInstance(id=21e2d1fd-72b7-11f0-b970-4ce1734f67af, name=amount, processDefinitionId=ReviewInvoice:1:1e944334-72b7-11f0-b970-4ce1734f67af, processInstanceId=21e283dc-72b7-11f0-b970-4ce1734f67af, executionId=21e283dc-72b7-11f0-b970-4ce1734f67af, caseInstanceId=null, caseExecutionId=null, taskId=null, batchId=null, activityInstanceId=21e283dc-72b7-11f0-b970-4ce1734f67af, tenantId=null, errorMessage=null, value=10.99, valueSerialized=10.99, valueDeserialized=10.99, type=Double, valueInfo={})
   }
 
   private VariableInstance getVariableInstanceImpl(String id, boolean deserializeValue, CIBUser user)
@@ -3024,56 +3100,18 @@ variablesprovider:
     }
     org.cibseven.bpm.engine.runtime.VariableInstance variableEngineInstance = variableInstanceQuery.singleResult();
     if (variableEngineInstance != null) {
-      VariableInstance variableInstance = new VariableInstance();
-      variableInstance.setActivityInstanceId(variableEngineInstance.getActivityInstanceId());
-      variableInstance.setBatchId(variableEngineInstance.getBatchId());
-      variableInstance.setCaseExecutionId(variableEngineInstance.getCaseInstanceId());
-      variableInstance.setCaseInstanceId(variableEngineInstance.getCaseInstanceId());
-      variableInstance.setErrorMessage(variableEngineInstance.getErrorMessage());
-      variableInstance.setExecutionId(variableEngineInstance.getExecutionId());
-      variableInstance.setId(variableEngineInstance.getId());
-      variableInstance.setName(variableEngineInstance.getName());
-      variableInstance.setProcessDefinitionId(variableEngineInstance.getProcessDefinitionId());
-      variableInstance.setProcessInstanceId(variableEngineInstance.getProcessInstanceId());
-      variableInstance.setTaskId(variableEngineInstance.getTaskId());
-      variableInstance.setTenantId(variableEngineInstance.getTenantId());
-      variableInstance.setType(toRestApiTypeName(variableEngineInstance.getTypeName()));
-      variableInstance.setValue(variableEngineInstance.getValue());
-      TypedValue engineValue = variableEngineInstance.getTypedValue();
-      if (engineValue != null) {
-        ValueType type = engineValue.getType();
-        if (type != null) {
-          variableInstance.setValueInfo(type.getValueInfo(engineValue));
-        }
-
-        if (engineValue instanceof SerializableValue) {
-          SerializableValue serializableValue = (SerializableValue) engineValue;
-
-          if (serializableValue.isDeserialized() && deserializeValue) {
-            variableInstance.setValueDeserialized(serializableValue.getValue());
-          } else {
-            variableInstance.setValueSerialized(serializableValue.getValueSerialized());
-          }
-        } else if (engineValue instanceof FileValue) {
-          // do not set the value for FileValues since we don't want to send
-          // megabytes over the network without explicit request
-        } else {
-          variableInstance.setValue(engineValue.getValue());
-        }
-
+      VariableInstance variableInstance = convertValue(getObjectMapper(), variableEngineInstance, VariableInstance.class);
         // return transformToDto(variableInstance);
         return variableInstance;
-      } else {
-        // TODO: exception type
-        throw new IllegalArgumentException("Variable with Id '" + id + "' does not exist.");
-      }
+    } else {
+      // TODO: exception type
+      throw new IllegalArgumentException("Variable with Id '" + id + "' does not exist.");
     }
-    return null;
   }
   
-  private static String toRestApiTypeName(String name) {
-    return name.substring(0, 1).toUpperCase() + name.substring(1);
-  }
+//  private static String toRestApiTypeName(String name) {
+//    return name.substring(0, 1).toUpperCase() + name.substring(1);
+//  }
 
   /*
   
@@ -3167,13 +3205,127 @@ variablesprovider:
   }
   
   //@Override
-  public void modifyVariableDataByExecutionId(String executionId, String variableName, MultipartFile data, String valueType, CIBUser user) throws SystemException {
-    //TODO: to be implemented
+  public void modifyVariableDataByExecutionId(String executionId, String variableName, MultipartFile data, 
+      String valueType, CIBUser user) throws SystemException {
+    //TODO: in progress - binary/file part is working correctly
+    try {
+      if (valueType.equalsIgnoreCase("File") || valueType.equalsIgnoreCase("Bytes")) {
+        // Handle binary/file data
+        String valueTypeName = DEFAULT_BINARY_VALUE_TYPE;
+        valueTypeName = valueType;
+
+        VariableValueDto valueDto = new VariableValueDto();
+        valueDto.setType(valueTypeName);
+        valueDto.setValue(data.getBytes());
+
+        String contentType = data.getContentType();
+        if (contentType == null) {
+          contentType = MediaType.APPLICATION_OCTET_STREAM.toString();
+        }
+
+        Map<String, Object> valueInfoMap = new HashMap<>();
+        valueInfoMap.put(FileValueType.VALUE_INFO_FILE_NAME, data.getResource().getFilename());
+        MimeType mimeType = null;
+        try {
+          mimeType = new MimeType(contentType);
+        } catch (MimeTypeParseException e) {
+          throw new RestException(Status.BAD_REQUEST, "Invalid mime type given");
+        }
+
+        valueInfoMap.put(FileValueType.VALUE_INFO_FILE_MIME_TYPE, mimeType.getBaseType());
+
+        String encoding = mimeType.getParameter("encoding");
+        if (encoding != null) {
+          valueInfoMap.put(FileValueType.VALUE_INFO_FILE_ENCODING, encoding);
+        }
+
+        String transientString = mimeType.getParameter("transient");
+        boolean isTransient = Boolean.parseBoolean(transientString);
+        if (isTransient) {
+          valueInfoMap.put(AbstractValueTypeImpl.VALUE_INFO_TRANSIENT, isTransient);
+        }
+        valueDto.setValueInfo(valueInfoMap);
+        try {
+          TypedValue typedValue = valueDto.toTypedValue(processEngine, objectMapper);//creates FileValueImpl
+          runtimeService.setVariable(executionId, variableName, typedValue);
+        } catch (AuthorizationException e) {
+          throw e;
+        } catch (ProcessEngineException e) {
+          String errorMessage = String.format("Cannot put %s variable %s: %s", executionId, variableName, e.getMessage());
+          throw new SystemException(errorMessage, e);
+        }
+      } else {
+        // Handle JSON/serialized data
+          Object object = null;
+
+          if(data.getContentType() !=null
+              && data.getContentType().toLowerCase().contains(MediaType.APPLICATION_JSON.toString())) {
+            object = deserializeJsonObject(valueType, data.getBytes());
+
+          } else {
+            throw new SystemException("Unrecognized content type for serialized java type: " + data.getContentType());
+          }
+
+          if(object != null) {
+            runtimeService.setVariable(executionId, variableName, Variables.objectValue(object).create());
+          }
+      }
+    } catch (IOException e) { // from data.getBytes()
+      throw new UnsupportedTypeException(e);
+    }
+  }
+
+  private Object deserializeJsonObject(String className, byte[] data) {
+    try {
+      JavaType type = TypeFactory.defaultInstance().constructFromCanonical(className);
+      validateType(type);
+      return objectMapper.readValue(new String(data, Charset.forName("UTF-8")), type);
+    } catch(Exception e) {
+      throw new InvalidRequestException(Status.INTERNAL_SERVER_ERROR, "Could not deserialize JSON object: "+e.getMessage());
+    }
+  }
+
+  /**
+   * Validate the type with the help of the validator in the engine.<br>
+   * Note: when adjusting this method, please also consider adjusting
+   * the {@code JacksonJsonDataFormatMapper#validateType} in the Engine Spin Plugin
+   */
+  private void validateType(JavaType type) {
+    if (processEngineConfiguration.isDeserializationTypeValidationEnabled()) {
+      DeserializationTypeValidator validator = processEngineConfiguration.getDeserializationTypeValidator();
+      if (validator != null) {
+        List<String> invalidTypes = new ArrayList<>();
+        validateType(type, validator, invalidTypes);
+        if (!invalidTypes.isEmpty()) {
+          throw new IllegalArgumentException("The following classes are not whitelisted for deserialization: " + invalidTypes);
+        }
+      }
+    }
+  }
+
+  private void validateType(JavaType type, DeserializationTypeValidator validator, List<String> invalidTypes) {
+    if (!type.isPrimitive()) {
+      if (!type.isArrayType()) {
+        validateTypeInternal(type, validator, invalidTypes);
+      }
+      if (type.isMapLikeType()) {
+        validateType(type.getKeyType(), validator, invalidTypes);
+      }
+      if (type.isContainerType() || type.hasContentType()) {
+        validateType(type.getContentType(), validator, invalidTypes);
+      }
+    }
   }
   
+  private void validateTypeInternal(JavaType type, DeserializationTypeValidator validator, List<String> invalidTypes) {
+    String className = type.getRawClass().getName();
+    if (!validator.validate(className) && !invalidTypes.contains(className)) {
+      invalidTypes.add(className);
+    }
+  }
+
   //@Override
   public Collection<Variable> fetchProcessInstanceVariables(String processInstanceId, Map<String, Object> data, CIBUser user) throws SystemException {
-    //TODO: requires more testing
     data.put("processInstanceIdIn", new String[]{processInstanceId});
     final boolean deserializeValues = data != null
         && data.containsKey("deserializeValues")
@@ -3187,11 +3339,9 @@ variablesprovider:
     queryDto.setObjectMapper(objectMapper);
     
     List<Variable> variablesDeserialized = queryVariableInstances(queryDto, objectMapper, null, null, true);
-//[VariableHistory(id=2b38760a-a35a-11f0-afe5-4ce1734f67af, name=testBool, processDefinitionKey=null, processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, processInstanceId=8a620626-a356-11f0-afe5-4ce1734f67af, executionId=8a620626-a356-11f0-afe5-4ce1734f67af, activityInstanceId=8a620626-a356-11f0-afe5-4ce1734f67af, caseDefinitionKey=null, caseDefinitionId=null, caseInstanceId=null, caseExecutionId=null, taskId=null, errorMessage=null, tenantId=null, state=null, createTime=null, removalTime=null, rootProcessInstanceId=null), VariableHistory(id=2b38760c-a35a-11f0-afe5-4ce1734f67af, name=datetime_fr4cbr, processDefinitionKey=null, processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, processInstanceId=8a620626-a356-11f0-afe5-4ce1734f67af, executionId=8a620626-a356-11f0-afe5-4ce1734f67af, activityInstanceId=8a620626-a356-11f0-afe5-4ce1734f67af, caseDefinitionKey=null, caseDefinitionId=null, caseInstanceId=null, caseExecutionId=null, taskId=null, errorMessage=null, tenantId=null, state=null, createTime=null, removalTime=null, rootProcessInstanceId=null), VariableHistory(id=2b389d1e-a35a-11f0-afe5-4ce1734f67af, name=season, processDefinitionKey=null, processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, processInstanceId=8a620626-a356-11f0-afe5-4ce1734f67af, executionId=8a620626-a356-11f0-afe5-4ce1734f67af, activityInstanceId=8a620626-a356-11f0-afe5-4ce1734f67af, caseDefinitionKey=null, caseDefinitionId=null, caseInstanceId=null, caseExecutionId=null, taskId=null, errorMessage=null, tenantId=null, state=null, createTime=null, removalTime=null, rootProcessInstanceId=null), VariableHistory(id=2b389d20-a35a-11f0-afe5-4ce1734f67af, name=guestCount, processDefinitionKey=null, processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, processInstanceId=8a620626-a356-11f0-afe5-4ce1734f67af, executionId=8a620626-a356-11f0-afe5-4ce1734f67af, activityInstanceId=8a620626-a356-11f0-afe5-4ce1734f67af, caseDefinitionKey=null, caseDefinitionId=null, caseInstanceId=null, caseExecutionId=null, taskId=null, errorMessage=null, tenantId=null, state=null, createTime=null, removalTime=null, rootProcessInstanceId=null), VariableHistory(id=2b389d22-a35a-11f0-afe5-4ce1734f67af, name=number_double, processDefinitionKey=null, processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, processInstanceId=8a620626-a356-11f0-afe5-4ce1734f67af, executionId=8a620626-a356-11f0-afe5-4ce1734f67af, activityInstanceId=8a620626-a356-11f0-afe5-4ce1734f67af, caseDefinitionKey=null, caseDefinitionId=null, caseInstanceId=null, caseExecutionId=null, taskId=null, errorMessage=null, tenantId=null, state=null, createTime=null, removalTime=null, rootProcessInstanceId=null)]    
     if ( variablesDeserialized.isEmpty())
       return Collections.emptyList();
     List<Variable> variablesSerialized = queryVariableInstances(queryDto, objectMapper, null, null, false);
-//[VariableHistory(id=2b38760a-a35a-11f0-afe5-4ce1734f67af, name=testBool, processDefinitionKey=null, processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, processInstanceId=8a620626-a356-11f0-afe5-4ce1734f67af, executionId=8a620626-a356-11f0-afe5-4ce1734f67af, activityInstanceId=8a620626-a356-11f0-afe5-4ce1734f67af, caseDefinitionKey=null, caseDefinitionId=null, caseInstanceId=null, caseExecutionId=null, taskId=null, errorMessage=null, tenantId=null, state=null, createTime=null, removalTime=null, rootProcessInstanceId=null), VariableHistory(id=2b38760c-a35a-11f0-afe5-4ce1734f67af, name=datetime_fr4cbr, processDefinitionKey=null, processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, processInstanceId=8a620626-a356-11f0-afe5-4ce1734f67af, executionId=8a620626-a356-11f0-afe5-4ce1734f67af, activityInstanceId=8a620626-a356-11f0-afe5-4ce1734f67af, caseDefinitionKey=null, caseDefinitionId=null, caseInstanceId=null, caseExecutionId=null, taskId=null, errorMessage=null, tenantId=null, state=null, createTime=null, removalTime=null, rootProcessInstanceId=null), VariableHistory(id=2b389d1e-a35a-11f0-afe5-4ce1734f67af, name=season, processDefinitionKey=null, processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, processInstanceId=8a620626-a356-11f0-afe5-4ce1734f67af, executionId=8a620626-a356-11f0-afe5-4ce1734f67af, activityInstanceId=8a620626-a356-11f0-afe5-4ce1734f67af, caseDefinitionKey=null, caseDefinitionId=null, caseInstanceId=null, caseExecutionId=null, taskId=null, errorMessage=null, tenantId=null, state=null, createTime=null, removalTime=null, rootProcessInstanceId=null), VariableHistory(id=2b389d20-a35a-11f0-afe5-4ce1734f67af, name=guestCount, processDefinitionKey=null, processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, processInstanceId=8a620626-a356-11f0-afe5-4ce1734f67af, executionId=8a620626-a356-11f0-afe5-4ce1734f67af, activityInstanceId=8a620626-a356-11f0-afe5-4ce1734f67af, caseDefinitionKey=null, caseDefinitionId=null, caseInstanceId=null, caseExecutionId=null, taskId=null, errorMessage=null, tenantId=null, state=null, createTime=null, removalTime=null, rootProcessInstanceId=null), VariableHistory(id=2b389d22-a35a-11f0-afe5-4ce1734f67af, name=number_double, processDefinitionKey=null, processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, processInstanceId=8a620626-a356-11f0-afe5-4ce1734f67af, executionId=8a620626-a356-11f0-afe5-4ce1734f67af, activityInstanceId=8a620626-a356-11f0-afe5-4ce1734f67af, caseDefinitionKey=null, caseDefinitionId=null, caseInstanceId=null, caseExecutionId=null, taskId=null, errorMessage=null, tenantId=null, state=null, createTime=null, removalTime=null, rootProcessInstanceId=null)]
     if ( variablesSerialized.isEmpty())
       return Collections.emptyList();
     
@@ -3200,7 +3350,6 @@ variablesprovider:
         variablesDeserialized,
         variablesSerialized,
         deserializeValues);
-
       Collection<Variable> variables = (deserializeValues) ? variablesDeserialized : variablesSerialized;
       return variables;
   }
@@ -3223,7 +3372,7 @@ variablesprovider:
     List<Variable> instanceResults = new ArrayList<>();
     for (org.cibseven.bpm.engine.runtime.VariableInstance instance : matchingInstances) {
       VariableInstanceDto resultInstanceDto = VariableInstanceDto.fromVariableInstance(instance);
-      Variable resultInstance = convertValue(objectMapper, resultInstanceDto, Variable.class);
+      VariableHistory resultInstance = convertValue(objectMapper, resultInstanceDto, VariableHistory.class);
       instanceResults.add(resultInstance);
     }
     return instanceResults;
@@ -3239,6 +3388,10 @@ variablesprovider:
     TypedValue typedVariableValue = runtimeService.getVariableLocalTyped(executionId, variableName, false);
     // id: 79816b6b-a393-11f0-8830-4ce1734f67af
 
+    return getResponseForTypedVariable(typedVariableValue, executionId);
+  }
+
+  private ResponseEntity<byte[]> getResponseForTypedVariable(TypedValue typedVariableValue, String id) {
     if (typedVariableValue instanceof BytesValue || ValueType.BYTES.equals(typedVariableValue.getType())) {
       byte[] valueBytes = (byte[]) typedVariableValue.getValue();
       if (valueBytes == null) {
@@ -3257,8 +3410,9 @@ variablesprovider:
       try {
         byte[] bytes = typedFileValue.getValue() == null ? null : IOUtils.toByteArray(typedFileValue.getValue());
         // status code if bytes==null?
-        ResponseEntity<byte[]> responseEntity = new ResponseEntity<>(bytes, HttpStatusCode.valueOf(200));
-        responseEntity.getHeaders().setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(typedFileValue.getMimeType() != null ? MediaType.valueOf(typedFileValue.getMimeType()) :  MediaType.APPLICATION_OCTET_STREAM);
+        ResponseEntity<byte[]> responseEntity = new ResponseEntity<>(bytes, headers, HttpStatusCode.valueOf(200));
         return responseEntity;
       } catch (IOException e) {
         // TODO exception type
@@ -3266,7 +3420,7 @@ variablesprovider:
       }
     } else {
       // TODO: exception type
-      throw new IllegalArgumentException(String.format("Value of variable with id %s is not a binary value.", executionId));
+      throw new IllegalArgumentException(String.format("Value of variable with id %s is not a binary value.", id));
     }
   }
 
@@ -3359,8 +3513,17 @@ variablesprovider:
   
   //@Override
   public ResponseEntity<byte[]> fetchHistoryVariableDataById(String id, CIBUser user) throws NoObjectFoundException, SystemException  {
-    //TODO: to be implemented
-    return null;
+    //TODO: needs more testing
+    HistoricVariableInstanceQuery query = historyService.createHistoricVariableInstanceQuery().variableId(id);
+    query.disableCustomObjectDeserialization();
+    //HistoricVariableInstanceEntity?
+    HistoricVariableInstance queryResult = query.singleResult();
+    if (queryResult != null) {
+      TypedValue typedValue = queryResult.getTypedValue();
+      return getResponseForTypedVariable(typedValue, id);
+    } else {
+      throw new IllegalArgumentException("HistoryVariable with Id '" + id + "' does not exist.");
+    }
   }
   
   //@Override

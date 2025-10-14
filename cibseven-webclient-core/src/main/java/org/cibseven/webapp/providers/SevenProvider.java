@@ -338,7 +338,10 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 
 	@Override
 	public Process findProcessById(String id, Optional<Boolean> extraInfo, CIBUser user) throws SystemException {
-		return processProvider.findProcessById(id, extraInfo, user);
+    if (!useRestInterface)
+      return sevenDirectProvider.findProcessById(id, extraInfo, user);
+    else
+      return processProvider.findProcessById(id, extraInfo, user);
 	}
 		
 	@Override
@@ -429,12 +432,18 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	@Override
 	public Collection<HistoryProcessInstance> findProcessesInstancesHistoryById(String id, Optional<String> activityId, Optional<Boolean> active, 
 			Integer firstResult, Integer maxResults, String text, CIBUser user) {
-		return processProvider.findProcessesInstancesHistoryById(id, activityId, active, firstResult, maxResults, text, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.findProcessesInstancesHistoryById(id, activityId, active, firstResult, maxResults, text, user);
+    else
+      return processProvider.findProcessesInstancesHistoryById(id, activityId, active, firstResult, maxResults, text, user);
 	}
 	
 	@Override
 	public Long countProcessesInstancesHistory(Map<String, Object> filters, CIBUser user) {
-		return processProvider.countProcessesInstancesHistory(filters, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.countProcessesInstancesHistory(filters, user);
+    else
+      return processProvider.countProcessesInstancesHistory(filters, user);
 	}
 	
 	@Override
@@ -1005,7 +1014,10 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public ResponseEntity<byte[]> fetchHistoryVariableDataById(String id, CIBUser user) throws NoObjectFoundException, SystemException  {
-		return variableProvider.fetchHistoryVariableDataById(id, user);
+	  if (useDirectInterface)
+	    return sevenDirectProvider.fetchHistoryVariableDataById(id, user);
+	  else
+	    return variableProvider.fetchHistoryVariableDataById(id, user);
 	}
 	
 	@Override
