@@ -197,7 +197,11 @@ pipeline {
                 script {
                     String deployment = ""
                     if (isPatchVersion()) {
-                        deployment = "-Dnexus.release.repository.id=mvn-cibseven-private -Dnexus.release.repository=https://artifacts.cibseven.de/repository/private"
+                        if (isSNAPSHOTVersion()) {
+                            deployment = "-Dnexus.snapshot.repository.id=mvn-cibseven-private -Dnexus.snapshot.repository=https://artifacts.cibseven.de/repository/private-snapshots"
+                        } else {
+                            deployment = "-Dnexus.release.repository.id=mvn-cibseven-private -Dnexus.release.repository=https://artifacts.cibseven.de/repository/private"
+                        }
                     }
 
                     withMaven(options: []) {
@@ -457,3 +461,8 @@ def isPatchVersion() {
     }
     return version[2].tokenize('-')[0] != "0"
 }
+
+def isSNAPSHOTVersion() {
+    return mavenProjectInformation.version.endsWith("-SNAPSHOT")
+}
+
