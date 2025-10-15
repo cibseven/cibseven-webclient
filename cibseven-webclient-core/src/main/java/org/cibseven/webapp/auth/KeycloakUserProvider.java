@@ -18,8 +18,14 @@ package org.cibseven.webapp.auth;
 
 import java.io.IOException;
 import java.util.Base64;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import javax.crypto.SecretKey;
 
@@ -29,6 +35,7 @@ import org.cibseven.webapp.auth.providers.JwtUserProvider;
 import org.cibseven.webapp.auth.sso.SSOLogin;
 import org.cibseven.webapp.auth.sso.SSOUser;
 import org.cibseven.webapp.auth.sso.SsoHelper;
+import org.cibseven.webapp.auth.sso.TokenCache;
 import org.cibseven.webapp.auth.sso.TokenResponse;
 import org.cibseven.webapp.exception.SystemException;
 import org.springframework.beans.factory.annotation.Value;
@@ -47,6 +54,7 @@ import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.InvalidKeyException;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -62,6 +70,7 @@ public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
 	@Value("${cibseven.webclient.sso.clientSecret}") String clientSecret;
 	@Value("${cibseven.webclient.sso.userIdProperty}") String userIdProperty;
 	@Value("${cibseven.webclient.sso.userNameProperty}") String userNameProperty;
+	@Value("${cibseven.webclient.sso.accessTokenToEngineRest:false}") boolean forwardToken;
 	@Value("${cibseven.webclient.authentication.jwtSecret}") String secret;
 	@Value("${cibseven.webclient.authentication.tokenValidMinutes}") long validMinutes;
 	@Value("${cibseven.webclient.authentication.tokenProlongMinutes}") long prolongMinutes;
@@ -73,6 +82,8 @@ public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
 		formUrlEncodedHeader.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 	}
 	JwtParser flowParser;
+	private final ConcurrentMap<String, TokenCache> cachedAccessToken = new ConcurrentHashMap<>();
+	private ScheduledExecutorService scheduler;
 	
 	@PostConstruct
 	public void init() {
@@ -81,6 +92,65 @@ public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
 		checkKey();
 		SecretKey key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(settings.getSecret()));
 		flowParser = Jwts.parser().verifyWith(key).build();
+		
+		// Schedule cleanup of expired tokens every 10 minutes
+		scheduler = Executors.newSingleThreadScheduledExecutor();
+		scheduler.scheduleAtFixedRate(this::cleanup, 10, 10, java.util.concurrent.TimeUnit.MINUTES);
+	}
+	
+	@PreDestroy
+	public void destroy() {
+		scheduler.shutdownNow();
+	}
+
+	private void cleanup() {
+		long now = System.currentTimeMillis();
+		cachedAccessToken.entrySet().removeIf(e -> {
+			TokenCache entry = e.getValue();
+			Date expiration = entry.getExpiration();
+			if (expiration == null || (expiration.before(new Date(now)) && !entry.isCurrentlyFetched())) {
+				return true;
+			}
+			return false;
+		});
+	}
+	
+	@Override
+	public String getEngineRestToken(CIBUser user) {
+		if (forwardToken) {
+			SSOUser oauthUser = (SSOUser) user;
+			String refreshToken = oauthUser.getRefreshToken();
+			String cacheKey = user.getId() + refreshToken;
+			
+			TokenCache entry = cachedAccessToken.computeIfAbsent(cacheKey, k -> new TokenCache(null, null, true));
+
+			synchronized (entry) {
+				// Rolling refresh tokens are NOT supported!
+				if (entry.getAccessToken() != null) {
+					try {
+						Date expiration = entry.getExpiration();
+						if (expiration != null && expiration.after(new Date(System.currentTimeMillis() + 5000)))
+							return JwtUserProvider.BEARER_PREFIX + entry.getAccessToken();
+					} catch (JwtException e) {
+						 // remove invalid token from cache
+						entry.setAccessToken(null);
+						entry.setExpiration(null);
+					}
+				}
+				entry.setCurrentlyFetched(true);
+
+				try {
+					TokenResponse tokens = ssoHelper.refreshToken(oauthUser.getRefreshToken());
+					Date expiration = ssoHelper.getTokenExpiration(tokens.getAccess_token());
+					entry.setAccessToken(tokens.getAccess_token());
+					entry.setExpiration(expiration);
+					return JwtUserProvider.BEARER_PREFIX + tokens.getAccess_token();
+				} finally {
+					entry.setCurrentlyFetched(false);
+				}
+			}
+		}
+		return super.getEngineRestToken(user);
 	}
 
 	@Override
