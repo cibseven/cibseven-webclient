@@ -67,6 +67,7 @@ export default {
         instances.forEach(instance => {
           instance.processDefinitionId = processDefinition.id
           instance.processDefinitionVersion = processDefinition.version
+          instance.processDefinitionKey = processDefinition.key
           // 'incidents' field is mandatory (not available in runtime api)
           instance.incidents = []
         })
