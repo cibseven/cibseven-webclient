@@ -70,9 +70,9 @@ pipeline {
     // Parameter that can be changed in the Jenkins UI
     parameters {
         booleanParam(
-            name: 'PACKAGE',
+            name: 'VERIFY',
             defaultValue: true,
-            description: 'Build and test'
+            description: 'Build and test using "mvn verify"'
         )
         booleanParam(
             name: 'RELEASE_COMMON_COMPONENTS',
@@ -152,14 +152,14 @@ pipeline {
             }
         }
 
-        stage('Maven package') {
+        stage('Maven verify') {
             when {
-                expression { params.PACKAGE }
+                expression { params.VERIFY }
             }
             steps {
                 script {
                     withMaven(options: [junitPublisher(disabled: false), jacocoPublisher(disabled: false)]) {
-                        sh "mvn -T4 -Dbuild.number=${BUILD_NUMBER} clean package"
+                        sh "mvn -T4 -Dbuild.number=${BUILD_NUMBER} clean verify"
                     }
                     if (!params.DEPLOY_TO_MAVEN_CENTRAL) {
                         junit allowEmptyResults: true, testResults: ConstantsInternal.MAVEN_TEST_RESULTS
@@ -205,11 +205,11 @@ pipeline {
                     }
 
                     withMaven(options: []) {
-                        def skipTestsFlag = params.PACKAGE ? "-DskipTests" : ""
+                        def skipTestsFlag = params.VERIFY ? "-DskipTests" : ""
                         sh "mvn -T4 -U clean deploy ${skipTestsFlag} ${deployment}"
                     }
 
-                    if (!params.PACKAGE) {
+                    if (!params.VERIFY) {
                         junit allowEmptyResults: true, testResults: ConstantsInternal.MAVEN_TEST_RESULTS
 
                         // Show coverage in Jenkins UI

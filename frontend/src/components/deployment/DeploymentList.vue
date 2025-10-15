@@ -29,7 +29,7 @@
             <div v-for="d of group.data" :key="d.id" class="col-md-6 col-lg-3 col-12 my-3">
               <b-button @click="setDeployment(d)" :ref="d.id" variant="link" class="text-decoration-none p-0 w-100 shadow-sm">
                 <b-card style="min-height: 120px;">
-                  <b-card-body :class="d === deployment ? 'border-start border-primary border-4' : ''">
+                  <b-card-body :class="d === deployment ? 'border-start border-primary border-4' : ''" class="text-start">
                     <b-card-text>
                       <label @click.stop class="d-flex justify-content-between m-0 hover-highlight">
                         <span class="fw-bold text-break">{{ d.name || d.id }}</span>

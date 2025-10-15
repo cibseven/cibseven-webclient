@@ -1034,8 +1034,8 @@
 		"AuthenticationException": "Los datos son incorrectos",
 		"LoginException": "Nombre de usuario o contraseña incorrectos",
 		"TokenExpiredException": "Los datos de autentificación son incorrectos",
-		"WrongDeploymenIdException": "No se ha encontrado ninguna implementación para este ID.",
-		"NoRessourcesFoundException": "Los recursos de implementación para este deploymentId no existen.",
+		"WrongDeploymenIdException": "No se ha encontrado ningún despliegue para este ID.",
+		"NoRessourcesFoundException": "Los recursos de despliegue para este deploymentId no existen.",
 		"urlError": "URL no válida",
 		"errorSaveTask": "Se produjo un error al intentar guardar la tarea.",
 		"taskSelectedNotExist": "Esta tarea ya no está disponible por lo que desaparecerá del area de trabajo",
@@ -1136,7 +1136,7 @@
 		"showDeployment": "Cargar despliegue en lista",
 		"deploymentsDeleted": "{0} de {1} despliegues se han eliminado correctamente",
 		"tenant": "Tenant",
-		"errorLoading": "No se puede cargar el recurso para la implementación seleccionada"
+		"errorLoading": "No se puede cargar el recurso para el despliegue seleccionado"
 	},
 	"cib-table2": {
 		"filter": "Filtrar"

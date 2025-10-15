@@ -36,7 +36,7 @@ import okhttp3.mockwebserver.MockWebServer;
 import java.util.List;
 
 @SpringBootTest
-@ContextConfiguration(classes = {DeploymentProvider.class, TestRestTemplateConfiguration.class})
+@ContextConfiguration(classes = {DeploymentProvider.class, TestRestTemplateConfiguration.class, MockUserProviderTestConfiguration.class})
 public class DeploymentProviderIT extends BaseHelper {
 
     static {

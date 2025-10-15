@@ -55,6 +55,11 @@ props: {
       showOnlyError: false,
     }
   },
+  computed: {
+    isHistoricFetch() {
+      return this.historic && this.$root.config.camundaHistoryLevel !== 'none'
+    }
+  },
   methods: {
     async show(variableId, variableName) {
       this.executionId = null
@@ -73,7 +78,7 @@ props: {
         variable = null
         this.showOnlyError = true
         this.error = this.$t(
-          this.historic ? 'process-instance.variables.loadStatus.historicError' : 'process-instance.variables.loadStatus.runtimeError',
+          this.isHistoricFetch ? 'process-instance.variables.loadStatus.historicError' : 'process-instance.variables.loadStatus.runtimeError',
           { name: variableName || '?', id: variableId }) + ' ' + error.message
       })
 
@@ -89,7 +94,7 @@ props: {
     },
 
     async loadVariableInstance(variableId) {
-      return this.historic ? HistoricVariableInstanceService.getHistoricVariableInstance(variableId, false) : VariableInstanceService.getVariableInstance(variableId, false)
+      return this.isHistoricFetch ? HistoricVariableInstanceService.getHistoricVariableInstance(variableId, false) : VariableInstanceService.getVariableInstance(variableId, false)
     },
 
     async saveVariable(variable) {

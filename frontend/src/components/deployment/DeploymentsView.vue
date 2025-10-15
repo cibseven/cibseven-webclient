@@ -20,25 +20,24 @@
   <div class="d-flex flex-column">
     <div style="background-color: rgba(98, 142, 199, 0.2);">
       <div class="d-flex align-items-center py-2 container-fluid">
-        <div class="col-3">
-          <b-input-group>
-            <b-input-group-prepend>
-              <b-button :title="$t('searches.search')" aria-hidden="true" size="sm" class="rounded-left"
-                variant="secondary"><span class="mdi mdi-magnify" style="line-height: initial"></span></b-button>
-            </b-input-group-prepend>
-            <b-input-group-append>
-              <b-form-input :title="$t('searches.search')" size="sm" :placeholder="$t('searches.search')"
-                v-model.trim="filter"></b-form-input>
-            </b-input-group-append>
-            <component :is="DeploymentsViewActionsPlugin" v-if="DeploymentsViewActionsPlugin" @deployment-success="onDeploymentSuccess" class="ms-2"></component>
-          </b-input-group>
-        </div>
-        <div class="col-3">
+        <div class="col-8 d-flex align-items-center gap-2">
+          <div class="border rounded d-flex flex-fill align-items-center bg-white me-3" style="max-width: 220px;">
+            <b-button
+              size="sm" class="mdi mdi-magnify mdi-18px text-secondary py-0" variant="link"
+              :title="$t('searches.search')"></b-button>
+            <div class="flex-grow-1">
+              <input
+                type="text"
+                v-model.trim="filter"
+                :placeholder="$t('searches.search')"
+                class="form-control-plaintext form-control-sm w-100"
+              />
+            </div>
+          </div>
           <b-form-group class="mb-0">
             <b-input-group size="sm" class="align-items-center">
               <b-input-group-prepend class="me-2 align-items-center">
-                <span class="text-primary mdi mdi-18px mdi-filter-variant" :title="$t('sorting.sortBy')"></span><span>{{
-                  $t('sorting.sortBy') }}</span>
+                <span>{{ $t('sorting.sortBy') }}</span>
               </b-input-group-prepend>
               <b-input-group-append class="d-flex align-items-center">
                 <b-form-select size="sm" v-model="sortBy" :options="sortingFields" class="mb-0"></b-form-select>
@@ -49,11 +48,9 @@
               </b-input-group-append>
             </b-input-group>
           </b-form-group>
-        </div>
-        <div class="col-2 text-secondary p-0 m-0">
-          <div class="">
-            <span>{{ $t('deployment.title') }}:&nbsp;</span>
-            <div class="d-inline-block text-nowrap">
+          <div class="text-secondary p-0 m-0">
+            <div class="text-nowrap">
+              <span>{{ $t('deployment.title') }}:&nbsp;</span>
               <span v-if="!loading">{{ deployments.length }}</span>
               <span v-else>0</span>
               /
@@ -62,17 +59,18 @@
             </div>
           </div>
         </div>
-        <div class="col-4">
-          <b-input-group size="sm" class="align-items-center justify-content-end">
-            <b-form-checkbox class="me-3" size="sm" v-model="isAllChecked">
+        <div class="col-4 d-flex align-items-center gap-3 justify-content-end">
+          <component :is="DeploymentsViewActionsPlugin" v-if="DeploymentsViewActionsPlugin" @deployment-success="onDeploymentSuccess"></component>
+          <div class="d-flex align-items-center gap-2">
+            <b-form-checkbox size="sm" v-model="isAllChecked">
               <span>{{ $t('deployment.selectAll') }}</span>
             </b-form-checkbox>
-            <b-button class="border-secondary" size="sm" :disabled="!deploymentsSelected.length > 0 || deleteLoader"
+            <b-button class="border-dark" size="sm" :disabled="!deploymentsSelected.length > 0 || deleteLoader"
               variant="light" @click="$refs.deleteModal.show()" :title="$t('deployment.deleteDeployments')">
               <span v-if="deleteLoader"><b-spinner small></b-spinner> {{ $t('deployment.deleteDeployments') }}</span>
-              <span v-else class="mdi mdi-delete-outline">{{ $t('deployment.deleteDeployments') }}</span>
+              <span v-else><span class="mdi mdi-delete-outline"></span> {{ $t('deployment.deleteDeployments') }}</span>
             </b-button>
-          </b-input-group>
+          </div>
         </div>
       </div>
     </div>

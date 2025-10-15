@@ -195,7 +195,7 @@
 				<version>${version.spring.boot}</version>
 				<configuration>
 					<fork>true</fork>
-					<mainClass>org.cibseven.webapp.Application</mainClass>
+					<mainClass>org.cibseven.webapp.SevenWebclientApplication</mainClass>
 				</configuration>
 				<executions>
 					<execution>
