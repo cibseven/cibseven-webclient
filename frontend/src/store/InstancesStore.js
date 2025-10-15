@@ -58,22 +58,20 @@ export default {
         }
         return instances
       } else {
-        const versions = await ProcessService.findProcessVersionsByDefinitionKey(processId, tenantId, true)
-        const promises = versions.map(() => 
-          HistoryService.findProcessesInstancesHistoryById(processId, firstResult, maxResults, filter, null, sortingCriteria, fetchIncidents)
-        )
-        const responses = await Promise.all(promises)
-        if (!showMore) commit('setInstances', [])
-        let i = 0
-        responses.forEach(instances => {
-          instances.forEach(instance => {
-            instance.processDefinitionId = versions[i].id
-            instance.processDefinitionVersion = versions[i].version
-          })
-          commit('appendInstances', instances)
-          i++
+        const processDefinition = await ProcessService.findProcessById(processId, true)
+        // only runtime instances to list here
+        const instances = await ProcessService.findCurrentProcessesInstances({
+          processDefinitionId: processId,
+          tenantId: tenantId,
         })
-        return responses.flat()
+        instances.forEach(instance => {
+          instance.processDefinitionId = processDefinition.id
+          instance.processDefinitionVersion = processDefinition.version
+          // 'incidents' field is mandatory (not available in runtime api)
+          instance.incidents = []
+        })
+        commit('appendInstances', instances)
+        return instances
       }
     },
     resetInstances({ commit }) {
