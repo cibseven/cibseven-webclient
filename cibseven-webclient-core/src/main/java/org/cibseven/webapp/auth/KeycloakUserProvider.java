@@ -96,7 +96,7 @@ public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
 			String cacheKey = user.getId() + refreshToken;
 			
 			TokenCache entry = cachedAccessToken.computeIfAbsent(cacheKey, k -> new TokenCache(null, null));
-			synchronized (entry.getLock()) {
+			synchronized (entry) {
 				// Rolling refresh tokens are NOT supported!
 				if (entry.getAccessToken() != null) {
 					try {
