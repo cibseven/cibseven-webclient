@@ -71,6 +71,7 @@
 
 <script>
 import { moment } from '@/globals.js'
+import { mapActions } from 'vuex'
 
 export default {
   name: 'JobDueDateModal',
@@ -88,18 +89,9 @@ export default {
   computed: {
     dueDateOptions() {
       return [
-        {
-          value: 'recalculate_creation',
-          label: this.$t('process-instance.jobs.recalculateFromCreation')
-        },
-        {
-          value: 'recalculate_current',
-          label: this.$t('process-instance.jobs.recalculateFromCurrent')
-        },
-        {
-          value: 'specific',
-          label: this.$t('process-instance.jobs.setSpecificDate')
-        }
+        { value: 'recalculate_creation', label: this.$t('process-instance.jobs.recalculateFromCreation') },
+        { value: 'recalculate_current', label: this.$t('process-instance.jobs.recalculateFromCurrent') },
+        { value: 'specific', label: this.$t('process-instance.jobs.setSpecificDate') }
       ]
     },
     canChange: function() {
@@ -110,6 +102,7 @@ export default {
     }
   },
   methods: {
+    ...mapActions('job', ['recalculateJobDueDate', 'changeJobDueDate']),
     show: function(selectedJob) {
       const now = new Date()
       now.setMinutes(now.getMinutes() + 1)
@@ -130,42 +123,29 @@ export default {
       this.$refs.changeDueDateModal.show()
     },
     changeDueDate: function() {
-      this.dateTimeError = false
-      
-      let promise
-      
-      switch (this.selectedOption) {
-        case 'recalculate_creation':
-          promise = this.$store.dispatch('job/recalculateJobDueDate', {
-            jobId: this.selectedJob.id,
-            params: { creationDateBased: true }
-          })
-          break
-        case 'recalculate_current':
-          promise = this.$store.dispatch('job/recalculateJobDueDate', {
-            jobId: this.selectedJob.id,
-            params: { creationDateBased: false }
-          })
-          break
-        case 'specific':
-          if (!this.scheduledAt.date) {
-            this.dateTimeError = true
-            return
+      this.dateTimeError = false      
+      let promise      
+      if (this.selectedOption === 'specific') {
+        if (!this.scheduledAt.date) {
+          this.dateTimeError = true
+          return
+        }
+        promise = this.changeJobDueDate({
+          jobId: this.selectedJob.id,
+          params: {
+            duedate: this.formatScheduledAt(),
+            cascade: this.cascade
           }
-          promise = this.$store.dispatch('job/changeJobDueDate', {
-            jobId: this.selectedJob.id,
-            params: {
-              duedate: this.formatScheduledAt(),
-              cascade: this.cascade
-            }
-          })
-          break
+        })
+      } else {
+        promise = this.recalculateJobDueDate({
+          jobId: this.selectedJob.id,
+          params: { creationDateBased: this.selectedOption === 'recalculate_creation' }
+        })
       }
-
       promise.then(() => {
         this.$emit('job-due-date-changed')
-      })
-      
+      })      
       this.$refs.changeDueDateModal.hide()
     },
     isInThePast: function(ymd, date) {
