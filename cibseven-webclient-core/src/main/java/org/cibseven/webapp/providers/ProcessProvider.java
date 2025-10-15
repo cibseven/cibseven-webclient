@@ -196,16 +196,25 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 			throw new NullPointerException();
 
 		if (extraInfo.isPresent() && extraInfo.get()) {
+
+			// all instances
 			String urlInstances = getEngineRestUrl() + "/history/process-instance/count?processDefinitionId=" + id;
 			JsonNode body = ((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody();
 			if (body == null)
 				throw new NullPointerException();
 			process.setAllInstances(body.get("count").asLong());
-			urlInstances = getEngineRestUrl() + "/history/process-instance/count?unfinished=true&processDefinitionId=" + process.getId();
+
+			// running instances
+			// should be fetched from runtime api, due to:
+			// - when historyLevel is none, no history is recorded
+			// - it could be faster when a lot of instances are completed in the past
+			urlInstances = getEngineRestUrl() + "/process-instance/count?processDefinitionId=" + process.getId();
 			body = ((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody();;
 			if (body == null)
 				throw new NullPointerException();
 			process.setRunningInstances(body.get("count").asLong());
+
+			// completed instances
 			urlInstances = getEngineRestUrl() + "/history/process-instance/count?completed=true&processDefinitionId=" + process.getId();
 			body = ((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody();;
 			if (body == null)
