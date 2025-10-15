@@ -18,10 +18,14 @@ package org.cibseven.webapp.auth;
 
 import java.io.IOException;
 import java.util.Base64;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import javax.crypto.SecretKey;
 
@@ -50,6 +54,7 @@ import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.InvalidKeyException;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -78,6 +83,7 @@ public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
 	}
 	JwtParser flowParser;
 	private final ConcurrentMap<String, TokenCache> cachedAccessToken = new ConcurrentHashMap<>();
+	private ScheduledExecutorService scheduler;
 	
 	@PostConstruct
 	public void init() {
@@ -86,8 +92,29 @@ public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
 		checkKey();
 		SecretKey key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(settings.getSecret()));
 		flowParser = Jwts.parser().verifyWith(key).build();
+		
+		// Schedule cleanup of expired tokens every 10 minutes
+		scheduler = Executors.newSingleThreadScheduledExecutor();
+		scheduler.scheduleAtFixedRate(this::cleanup, 10, 10, java.util.concurrent.TimeUnit.MINUTES);
+	}
+	
+	@PreDestroy
+	public void destroy() {
+		scheduler.shutdownNow();
 	}
 
+	private void cleanup() {
+		long now = System.currentTimeMillis();
+		cachedAccessToken.entrySet().removeIf(e -> {
+			TokenCache entry = e.getValue();
+			Date expiration = entry.getExpiration();
+			if (expiration == null || (expiration.before(new Date(now)) && !entry.isCurrentlyFetched())) {
+				return true;
+			}
+			return false;
+		});
+	}
+	
 	@Override
 	public String getEngineRestToken(CIBUser user) {
 		if (forwardToken) {
@@ -95,27 +122,32 @@ public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
 			String refreshToken = oauthUser.getRefreshToken();
 			String cacheKey = user.getId() + refreshToken;
 			
-			TokenCache entry = cachedAccessToken.computeIfAbsent(cacheKey, k -> new TokenCache(null, null));
+			TokenCache entry = cachedAccessToken.computeIfAbsent(cacheKey, k -> new TokenCache(null, null, true));
+
 			synchronized (entry) {
 				// Rolling refresh tokens are NOT supported!
 				if (entry.getAccessToken() != null) {
 					try {
-						Date expiration = entry.getExpiration(); //.getTokenExpiration(accessToken);
+						Date expiration = entry.getExpiration();
 						if (expiration != null && expiration.after(new Date(System.currentTimeMillis() + 5000)))
 							return JwtUserProvider.BEARER_PREFIX + entry.getAccessToken();
-					}
-					catch (JwtException e) { 
+					} catch (JwtException e) {
 						 // remove invalid token from cache
-						cachedAccessToken.remove(cacheKey);
+						entry.setAccessToken(null);
+						entry.setExpiration(null);
 					}
 				}
-				
-				TokenResponse tokens = ssoHelper.refreshToken(oauthUser.getRefreshToken());
-				oauthUser.setRefreshToken(tokens.getRefresh_token());
-				Date expiration = ssoHelper.getTokenExpiration(tokens.getAccess_token());
-				TokenCache newCache = new TokenCache(tokens.getAccess_token(), expiration);
-				cachedAccessToken.put(user.getId() + tokens.getRefresh_token(), newCache);
-				return JwtUserProvider.BEARER_PREFIX + tokens.getAccess_token();
+				entry.setCurrentlyFetched(true);
+
+				try {
+					TokenResponse tokens = ssoHelper.refreshToken(oauthUser.getRefreshToken());
+					Date expiration = ssoHelper.getTokenExpiration(tokens.getAccess_token());
+					entry.setAccessToken(tokens.getAccess_token());
+					entry.setExpiration(expiration);
+					return JwtUserProvider.BEARER_PREFIX + tokens.getAccess_token();
+				} finally {
+					entry.setCurrentlyFetched(false);
+				}
 			}
 		}
 		return super.getEngineRestToken(user);

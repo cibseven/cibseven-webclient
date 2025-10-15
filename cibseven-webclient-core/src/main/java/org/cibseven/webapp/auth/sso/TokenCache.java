@@ -2,12 +2,15 @@ package org.cibseven.webapp.auth.sso;
 
 import java.util.Date;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 @Getter
-@RequiredArgsConstructor
+@Setter
+@AllArgsConstructor
 public class TokenCache {
-	private final String accessToken;
-	private final Date expiration;
+	private String accessToken;
+	private Date expiration;
+	private boolean currentlyFetched;
 }
