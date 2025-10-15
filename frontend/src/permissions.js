@@ -16,7 +16,7 @@
  */
 var permissionsMixin = {
 	methods: {
-        hasAdminManagementPermissions: function(permissions) {
+		hasAdminManagementPermissions: function(permissions) {
 			return (this.adminManagementPermissions(permissions.usersManagement, 'user') ||
 			this.adminManagementPermissions(permissions.groupsManagement, 'group') ||
 			this.adminManagementPermissions(permissions.authorizationsManagement, 'authorization') ||
@@ -111,6 +111,7 @@ var permissionsMixin = {
 			}) || []
 		},
 		$_permissionsMixin_checkPermissionsAllowed: function(object, key, permissionsCheck) {
+			if (!this.$root.config.authorizationEnabled) return true;
 			var check = false
 			var val = key ? object[key] : object
 			for (var i = 0; i < permissionsCheck.length; i++) {
@@ -121,13 +122,14 @@ var permissionsMixin = {
 			return check
 		},
 		$_permissionsMixin_checkPermissionsDenied: function(object, key, permissionsCheck) {
-		    var val = key ? object[key] : object
-		    for (var i = 0; i < permissionsCheck.length; i++) {
-		        if (permissionsCheck[i].revoked.indexOf(val) !== -1 || permissionsCheck[i].revoked.indexOf('*') !== -1) {
-		            return true
-		        }
-		    }
-		    return false
+			if (!this.$root.config.authorizationEnabled) return false;
+			var val = key ? object[key] : object
+			for (var i = 0; i < permissionsCheck.length; i++) {
+				if (permissionsCheck[i].revoked.indexOf(val) !== -1 || permissionsCheck[i].revoked.indexOf('*') !== -1) {
+					return true
+				}
+			}
+			return false
 		}
 	}
 }

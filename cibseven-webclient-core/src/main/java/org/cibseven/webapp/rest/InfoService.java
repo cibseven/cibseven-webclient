@@ -58,6 +58,8 @@ public class InfoService extends BaseService {
 	@Value("${cibseven.webclient.link.help:}") private String flowLinkHelp;
 	@Value("${cibseven.webclient.support-dialog:}") private String supportDialog;
 	@Value("${cibseven.webclient.engineRest.path:/engine-rest}") private String engineRestPath;
+
+	@Value("${camunda.bpm.authorization.enabled:false}") private boolean authorizationEnabled;	
 	
 	@Autowired
 	InfoVersion infoVersion;
@@ -90,6 +92,7 @@ public class InfoService extends BaseService {
 		configJson.put("servicesBasePath", servicesBasePath);
 		
 		configJson.put("engineRestPath", engineRestPath);
+		configJson.put("authorizationEnabled", authorizationEnabled);
 		
         try {
             ObjectMapper mapper = new ObjectMapper();
