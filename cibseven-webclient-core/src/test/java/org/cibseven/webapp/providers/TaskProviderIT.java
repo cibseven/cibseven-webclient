@@ -37,7 +37,7 @@ import okhttp3.mockwebserver.MockWebServer;
 import org.cibseven.webapp.rest.TestRestTemplateConfiguration;
 
 @SpringBootTest
-@ContextConfiguration(classes = {TaskProvider.class, TestRestTemplateConfiguration.class})
+@ContextConfiguration(classes = {TaskProvider.class, TestRestTemplateConfiguration.class, MockUserProviderTestConfiguration.class})
 public class TaskProviderIT extends BaseHelper {
 
     static {

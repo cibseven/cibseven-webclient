@@ -38,7 +38,7 @@ import org.cibseven.webapp.rest.TestRestTemplateConfiguration;
 import java.util.List;
 
 @SpringBootTest
-@ContextConfiguration(classes = {ActivityProvider.class, TestRestTemplateConfiguration.class})
+@ContextConfiguration(classes = {ActivityProvider.class, TestRestTemplateConfiguration.class, MockUserProviderTestConfiguration.class})
 public class ActivityProviderIT extends BaseHelper {
 
     static {
