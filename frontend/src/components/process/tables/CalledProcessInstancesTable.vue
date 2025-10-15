@@ -80,7 +80,7 @@
 
 <script>
 import { formatDate } from '@/utils/dates.js'
-import { HistoryService } from '@/services.js'
+import { HistoryService, ProcessService } from '@/services.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import { BWaitingBox } from 'cib-common-components'
 import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
@@ -116,10 +116,8 @@ export default {
     activityInstanceHistory: 'loadCalledProcessInstances'
   },
   created: function() {
-    if (this.activityInstanceHistory) {
-      this.firstResult = 0
-      this.loadCalledProcessInstances()
-    }
+    this.firstResult = 0
+    this.loadCalledProcessInstances()
   },
   methods: {
     ...mapActions(['setHighlightedElement']),
@@ -129,13 +127,18 @@ export default {
         this.loadCalledProcessInstances(true)
       }
     },
+    async findCalledProcessInstances(filter, firstResult, maxResults) {
+      return (this.$root.config.camundaHistoryLevel !== 'none') ?
+        HistoryService.findProcessesInstancesHistory(filter, firstResult, maxResults) :
+        ProcessService.findCurrentProcessesInstances(filter, firstResult, maxResults)
+    },
     loadCalledProcessInstances (showMore = false) {
       if (!this.selectedInstance || !this.selectedInstance.id) {
         this.loading = false
         return
       }
       this.loading = true
-      HistoryService.findProcessesInstancesHistory({"superProcessInstanceId": this.selectedInstance.id}, this.firstResult, this.maxResults).then(response => {
+      this.findCalledProcessInstances({"superProcessInstanceId": this.selectedInstance.id}, this.firstResult, this.maxResults).then(response => {
         this.firstResult += this.maxResults
         if (!showMore) {
           this.calledInstanceList = response
