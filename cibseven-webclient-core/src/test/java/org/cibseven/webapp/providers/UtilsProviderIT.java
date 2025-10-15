@@ -31,6 +31,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.auth.SevenUserProvider;
 import org.cibseven.webapp.rest.model.EventSubscription;
 import org.cibseven.webapp.rest.model.Message;
 import org.cibseven.webapp.rest.TestRestTemplateConfiguration;
@@ -39,7 +40,7 @@ import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 
 @SpringBootTest
-@ContextConfiguration(classes = {UtilsProvider.class, TestRestTemplateConfiguration.class})
+@ContextConfiguration(classes = {UtilsProvider.class, SevenUserProvider.class, TestRestTemplateConfiguration.class})
 public class UtilsProviderIT extends BaseHelper {
 
     static {
