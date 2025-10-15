@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.Base64;
 import java.util.Date;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.crypto.SecretKey;
 
@@ -74,7 +75,7 @@ public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
 		formUrlEncodedHeader.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 	}
 	JwtParser flowParser;
-	String cachedAccessToken = null;
+	private Map<String, String> cachedAccessToken = new ConcurrentHashMap<>();
 	
 	@PostConstruct
 	public void init() {
@@ -88,20 +89,27 @@ public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
 	@Override
 	public String getEngineRestToken(CIBUser user) {
 		if (forwardToken) {
-			// Rolling refresh tokens are NOT supported!
-			if (cachedAccessToken != null) {
-				try {
-					Date expiration = ssoHelper.getTokenExpiration(cachedAccessToken);
-					if (expiration != null && expiration.after(new Date(System.currentTimeMillis() + 60000)))
-						return JwtUserProvider.BEARER_PREFIX + cachedAccessToken;
-				}
-				catch (ExpiredJwtException e) { /* no-op*/}
-			}
 			SSOUser oauthUser = (SSOUser) user;
+			String refreshToken = oauthUser.getRefreshToken();
+			String cacheKey = user.getId() + refreshToken;
+			// Rolling refresh tokens are NOT supported!
+			if (cachedAccessToken.containsKey(cacheKey)) {
+				try {
+					String accessToken = cachedAccessToken.get(cacheKey);
+					Date expiration = ssoHelper.getTokenExpiration(accessToken);
+					if (expiration != null && expiration.after(new Date(System.currentTimeMillis() + 5000)))
+						return JwtUserProvider.BEARER_PREFIX + accessToken;
+				}
+				catch (JwtException e) { 
+					 // remove invalid token from cache
+					cachedAccessToken.remove(cacheKey);
+				}
+			}
+			
 			TokenResponse tokens = ssoHelper.refreshToken(oauthUser.getRefreshToken());
 			oauthUser.setRefreshToken(tokens.getRefresh_token());
-			cachedAccessToken = tokens.getAccess_token();
-			return JwtUserProvider.BEARER_PREFIX + cachedAccessToken;
+			cachedAccessToken.put(user.getId() + tokens.getRefresh_token(), tokens.getAccess_token());
+			return JwtUserProvider.BEARER_PREFIX + tokens.getAccess_token();
 		}
 		return super.getEngineRestToken(user);
 	}
