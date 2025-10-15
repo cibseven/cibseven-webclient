@@ -27,7 +27,7 @@ cibseven:
     historyLevel: full
     # Token generation
     authentication:
-      jwtSecret:
+      jwtSecret: 01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
       tokenValidMinutes: 60
       tokenProlongMinutes: 1440
     # LDAP
