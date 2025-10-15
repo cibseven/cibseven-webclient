@@ -55,7 +55,7 @@
             <div class="d-flex">
               <div class="mb-1">
                 <div class="text-start">{{ $t('process.details.unfinishedInstances') + ': ' + version.runningInstances }}</div>
-                <div class="text-start">{{ $t('process.details.totalInstances') + ': ' + version.allInstances }}</div>
+                <div class="text-start" v-if="hasHistory">{{ $t('process.details.totalInstances') + ': ' + version.allInstances }}</div>
               </div>
               <div class="d-flex ms-auto my-auto mb-0">
                 <b-button v-if="processByPermissions($root.config.permissions.deleteProcessDefinition, version)"
@@ -103,6 +103,11 @@ export default {
     selectedInstance: { type: Object, default: null }
   },
   emits: ['onDeleteProcessDefinition', 'onRefreshProcessDefinitions'],
+  computed: {
+    hasHistory() {
+      return this.$root.config.camundaHistoryLevel !== 'none'
+    }
+  },
   methods: {
     onRefreshProcessDefinitions: function(lazyLoadHistory) {
       this.$emit('onRefreshProcessDefinitions', lazyLoadHistory)

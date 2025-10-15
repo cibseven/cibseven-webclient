@@ -51,7 +51,6 @@ export default {
 	},
 	computed: {
 		activityInstancesGrouped: function () {
-			if (this.activityInstanceHistory) {
 				var res = []
 				if (this.activityInstance) {
 					res[this.activityInstance.id] = this.activityInstance.name
@@ -60,12 +59,13 @@ export default {
 					})
 				} else {
 					res[this.selectedInstance.id] = this.selectedInstance.processDefinitionName
-					this.activityInstanceHistory.forEach(ai => {
-						res[ai.id] = ai.activityName
-					})
+					if (this.activityInstanceHistory) {
+						this.activityInstanceHistory.forEach(ai => {
+							res[ai.id] = ai.activityName
+						})
+					}
 				}
 				return res
-			}
 		},
 		restFilter: function () {
 			let result = {
@@ -92,7 +92,7 @@ export default {
 	methods: {
 		loadSelectedInstanceVariables: function() {
 			if (this.selectedInstance && this.activityInstancesGrouped) {
-				if (this.selectedInstance.state === 'ACTIVE') {
+				if (this.selectedInstance.state === 'ACTIVE' || this.$root.config.camundaHistoryLevel === 'none') {
 					this.fetchInstanceVariables('ProcessService', 'fetchProcessInstanceVariables')
 				} else {
 					if (this.$root.config.camundaHistoryLevel === 'full') {

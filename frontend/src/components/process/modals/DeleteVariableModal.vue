@@ -79,7 +79,7 @@ export default {
       if (!this.errorMessage || !this.variable) {
         return ''
       }
-      const messageTemplate = this.isInstanceActive ? 'process-instance.variables.deleteStatus.runtimeError' : 'process-instance.variables.deleteStatus.historicError'
+      const messageTemplate = (this.isInstanceActive || this.$root.config.camundaHistoryLevel === 'none') ? 'process-instance.variables.deleteStatus.runtimeError' : 'process-instance.variables.deleteStatus.historicError'
       return this.$t(messageTemplate, { name: this.variable.name })
     }
   },
@@ -97,7 +97,7 @@ export default {
       this.errorMessage = ''
 
       try {
-        if (this.isInstanceActive) {
+        if (this.isInstanceActive || this.$root.config.camundaHistoryLevel === 'none') {
           await ProcessService.deleteVariableByExecutionId(this.variable.executionId, this.variable.name)
         } else {
           await HistoryService.deleteVariableHistoryInstance(this.variable.id)
