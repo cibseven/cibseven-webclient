@@ -158,9 +158,13 @@ export default {
   methods: {
     ...mapActions(['clearActivitySelection', 'getProcessById']),
     formatDate,
+    async findProcessInstance(instanceId) {
+      return (this.$root.config.camundaHistoryLevel !== 'none') ?
+        HistoryService.findProcessInstance(instanceId) :
+        ProcessService.findProcessInstance(instanceId)
+    },
     loadInstanceById: function(instanceId) {
-      // Always use HistoryService for process instance fetching
-      HistoryService.findProcessInstance(instanceId).then(instance => {
+      this.findProcessInstance(instanceId).then(instance => {
         if (instance) {
           this.setSelectedInstance({ selectedInstance: instance })
         }
