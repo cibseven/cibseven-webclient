@@ -21,26 +21,18 @@
     <div class="h-100 d-flex flex-column">
       <div class="overflow-auto flex-fill">
         <div v-if="deployment" class="p-2 bg-white">
-          <div class="d-flex justify-content-between bg-white ps-3 pe-3">
-            <div>
-              <h4>{{ deployment.name || deployment.id }}</h4>
-            </div>
-            <a class="btn btn-sm btn-primary text-dark border-white bg-white shadow-none" data-bs-toggle="collapse"
-              href="#deploymentInfo" role="button" aria-expanded="false" aria-controls="deploymentInfo"
-              @click="toggleButton">
-              <span class="mdi mdi-18px" :class="toggleIcon"></span>
-            </a>
-          </div>
+          <a class="d-flex justify-content-between bg-white ps-3 pe-3 align-items-center text-decoration-none text-dark cursor-pointer"
+            data-bs-toggle="collapse" href="#deploymentInfo" role="button" aria-expanded="false" 
+            aria-controls="deploymentInfo" @click="toggleButton">
+            <h6 class="fw-bold m-0">{{ deployment.name || deployment.id }}</h6>
+            <span class="mdi mdi-18px" :class="toggleIcon"></span>
+          </a>
           <div class="collapse border-none" id="deploymentInfo">
-            <div class="card card-body text-dark border-white bg-white">
+            <div class="card card-body text-dark border-white bg-white py-2">
               <div>
-                <p>{{ formatDate(deployment.deploymentTime) }}</p>
-                <small>
-                  <p>{{ $t('deployment.tenant') }}: {{ deployment.tenantId }}</p>
-                </small>
-                <small>
-                  <p>{{ $t('deployment.source') }}: {{ deployment.source }}</p>
-                </small>
+                <div class="pb-2">{{ formatDate(deployment.deploymentTime) }}</div>
+                <div class="pb-2 small">{{ $t('deployment.tenant') }}: {{ deployment.tenantId }}</div>
+                <div class="small">{{ $t('deployment.source') }}: {{ deployment.source }}</div>
               </div>
             </div>
           </div>
@@ -58,16 +50,16 @@
               </div>
             </b-list-group-item>
             <b-list-group-item class="text-dark border-white bg-white">
-              <div class="d-flex flex-column align-items-center gap-2">
-                <b-button @click="$emit('delete-deployment', this.deployment)"
-                  class="border-dark text-dark bg-white w-100" :title="$t('deployment.delete')">
-                  <span class="mdi mdi-trash-can"></span>
-                  {{ $t('deployment.delete') }}</b-button>
-                <b-button @click="$emit('show-deployment', this.deployment)"
-                  class="border-dark text-dark bg-white w-100" :title="$t('deployment.showDeployment')">
+              <div class="d-flex flex-column align-items-start gap-2">
+                <component :is="ResourcesNavBarDeploymentActionsPlugin" v-if="ResourcesNavBarDeploymentActionsPlugin" :deployment="deployment" @deployment-success="$emit('deployment-success')" class="w-100"></component>
+                <b-button variant="light" size="sm" @click="$emit('show-deployment', this.deployment)"
+                  class="border-dark" :title="$t('deployment.showDeployment')">
                   <span class="mdi mdi-download-multiple-outline"></span>
                   {{ $t('deployment.showDeployment') }}</b-button>
-                <component :is="ResourcesNavBarDeploymentActionsPlugin" v-if="ResourcesNavBarDeploymentActionsPlugin" :deployment="deployment" @deployment-success="$emit('deployment-success')" class="w-100"></component>
+                <b-button variant="light" size="sm" @click="$emit('delete-deployment', this.deployment)"
+                  class="border-dark" :title="$t('deployment.delete')">
+                  <span class="mdi mdi-trash-can"></span>
+                  {{ $t('deployment.delete') }}</b-button>
               </div>
             </b-list-group-item>
           </b-list-group>
