@@ -31,6 +31,7 @@ import org.cibseven.webapp.auth.providers.JwtUserProvider;
 import org.cibseven.webapp.auth.sso.SSOLogin;
 import org.cibseven.webapp.auth.sso.SSOUser;
 import org.cibseven.webapp.auth.sso.SsoHelper;
+import org.cibseven.webapp.auth.sso.TokenCache;
 import org.cibseven.webapp.auth.sso.TokenResponse;
 import org.cibseven.webapp.exception.SystemException;
 import org.springframework.beans.factory.annotation.Value;
@@ -76,8 +77,7 @@ public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
 		formUrlEncodedHeader.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 	}
 	JwtParser flowParser;
-	private final ConcurrentMap<String, String> cachedAccessToken = new ConcurrentHashMap<>();
-	private final ConcurrentMap<String, Object> locks = new ConcurrentHashMap<>();
+	private final ConcurrentMap<String, TokenCache> cachedAccessToken = new ConcurrentHashMap<>();
 	
 	@PostConstruct
 	public void init() {
@@ -95,15 +95,14 @@ public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
 			String refreshToken = oauthUser.getRefreshToken();
 			String cacheKey = user.getId() + refreshToken;
 			
-			Object lock = locks.computeIfAbsent(cacheKey, k -> new Object());
-			synchronized (lock) {
+			TokenCache entry = cachedAccessToken.computeIfAbsent(cacheKey, k -> new TokenCache(null, null));
+			synchronized (entry.getLock()) {
 				// Rolling refresh tokens are NOT supported!
-				if (cachedAccessToken.containsKey(cacheKey)) {
+				if (entry.getAccessToken() != null) {
 					try {
-						String accessToken = cachedAccessToken.get(cacheKey);
-						Date expiration = ssoHelper.getTokenExpiration(accessToken);
+						Date expiration = entry.getExpiration(); //.getTokenExpiration(accessToken);
 						if (expiration != null && expiration.after(new Date(System.currentTimeMillis() + 5000)))
-							return JwtUserProvider.BEARER_PREFIX + accessToken;
+							return JwtUserProvider.BEARER_PREFIX + entry.getAccessToken();
 					}
 					catch (JwtException e) { 
 						 // remove invalid token from cache
@@ -113,7 +112,9 @@ public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
 				
 				TokenResponse tokens = ssoHelper.refreshToken(oauthUser.getRefreshToken());
 				oauthUser.setRefreshToken(tokens.getRefresh_token());
-				cachedAccessToken.put(user.getId() + tokens.getRefresh_token(), tokens.getAccess_token());
+				Date expiration = ssoHelper.getTokenExpiration(tokens.getAccess_token());
+				TokenCache newCache = new TokenCache(tokens.getAccess_token(), expiration);
+				cachedAccessToken.put(user.getId() + tokens.getRefresh_token(), newCache);
 				return JwtUserProvider.BEARER_PREFIX + tokens.getAccess_token();
 			}
 		}
