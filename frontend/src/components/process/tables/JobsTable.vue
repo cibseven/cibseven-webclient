@@ -48,6 +48,8 @@
       <template v-slot:cell(actions)="table">
         <b-button :title="suspendedStatusText(table.item)" @click="setSuspendedJob(table.item, !table.item.suspended)"
           size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px" :class="table.item.suspended ? 'mdi-play' : 'mdi-pause'"></b-button>
+        <b-button :title="$t('process-instance.jobs.changeDueDate')" @click="changeJobDueDate(table.item)"
+          size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-clock-outline"></b-button>
       </template>
     </FlowTable>
     <div v-else-if="!loading">
@@ -55,6 +57,7 @@
     </div>
     <SuccessAlert ref="success"> {{ $t('alert.successOperation') }}</SuccessAlert>
     <SuccessAlert ref="messageCopy"> {{ $t('process.copySuccess') }} </SuccessAlert>
+    <JobDueDateModal ref="jobDueDateModal" @job-due-date-changed="onJobDueDateChanged" />
   </div>
 </template>
 
@@ -63,12 +66,13 @@ import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { formatDate } from '@/utils/dates.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
+import JobDueDateModal from '@/components/process/modals/JobDueDateModal.vue'
 import { BWaitingBox } from 'cib-common-components'
 import { mapGetters, mapActions } from 'vuex'
 
 export default {
   name: 'JobsTable',
-  components: { FlowTable, SuccessAlert, BWaitingBox },
+  components: { FlowTable, SuccessAlert, BWaitingBox, JobDueDateModal },
   mixins: [copyToClipboardMixin],
   props: { 
     instance: Object,
@@ -101,7 +105,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions('job', ['loadJobs', 'setSuspended']),
+    ...mapActions('job', ['loadJobs', 'setSuspended', 'changeJobDueDate', 'recalculateJobDueDate']),
     formatDate,
     async loadJobsData(id, isInstance = true) {
       this.loading = true
@@ -125,6 +129,18 @@ export default {
     },
     suspendedStatusText(job) {
       return job.suspended ? this.$t('process-instance.jobs.resume') : this.$t('process-instance.jobs.suspend')
+    },
+    changeJobDueDate(job) {
+      this.$refs.jobDueDateModal.show(job)
+    },
+    onJobDueDateChanged() {
+      // Reload jobs after due date change
+      if (this.instance && this.instance.id) {
+        this.loadJobsData(this.instance.id, true)
+      } else if (this.process && this.process.id) {
+        this.loadJobsData(this.process.id, false)
+      }
+      this.$refs.success.show()
     }
   }
 }

@@ -63,6 +63,18 @@ public class JobProvider extends SevenProviderBase implements IJobProvider {
 		String url = buildUrlWithParams("/history/job-log/" + id + "/stacktrace", new HashMap<>());
 		return doGetWithHeader(url, String.class, user, false, MediaType.ALL).getBody();
 	}
+
+	@Override
+	public void changeDueDate(String id, Map<String, Object> data, CIBUser user) {
+		String url = getEngineRestUrl() + "/job/" + id + "/duedate";
+		doPut(url, data, user);
+	}
+
+	@Override
+	public void recalculateDueDate(String id, Map<String, Object> params, CIBUser user) {
+		String url = buildUrlWithParams("/job/" + id + "/duedate/recalculate", params);
+		doPost(url, new HashMap<>(), Object.class, user);
+	}
 	
 	private String buildUrlWithParams(String path, Map<String, Object> queryParams) {
 	    UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(getEngineRestUrl() + path);

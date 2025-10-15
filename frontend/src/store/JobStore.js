@@ -105,6 +105,12 @@ const JobStore = {
     },
     clearJobLogs({ commit }) {
       commit('setJobLogs', [])
+    },
+    async changeJobDueDate(_, { jobId, params }) {
+      await JobService.changeDueDate(jobId, params)
+    },
+    async recalculateJobDueDate(_, { jobId, params }) {
+      await JobService.recalculateDueDate(jobId, params)
     }
   },
   getters: {

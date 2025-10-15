@@ -392,7 +392,18 @@
 			"failedActivity": "Неуспішна активність",
 			"actions": "Дії",
 			"suspend": "Призупинити",
-			"resume": "Відновити"
+			"resume": "Відновити",
+			"changeDueDate": "Змінити термін виконання таймера",
+			"recalculateFromCreation": "Від дати створення",
+			"recalculateFromCurrent": "Від поточного часу",
+			"setSpecificDate": "Встановити певну дату",
+			"cascade": "Застосувати каскадно до дочірніх процесів",
+			"changeDueDateMsg": "Оберіть один з наступних варіантів для зміни цього таймера:",
+			"recalculate": "Перерахувати",
+			"execute": "Виконати",
+			"scheduleAt": "Заплановано на",
+			"invalidDateError": "Ви повинні ввести дійсну дату",
+			"overrideAction": "Переписати"
 		},
 		"externalTasks": {
 			"id": "ID зовнішнього завдання",

@@ -655,6 +655,12 @@ var JobService = {
   },
   getHistoryJobLogStacktrace: function(id) {
     return axios.get(getServicesBasePath() + '/job/history/job-log/' + id + '/stacktrace')
+  },
+  changeDueDate: function(id, data) {
+    return axios.put(getServicesBasePath() + '/job/' + id + '/duedate', data)
+  },
+  recalculateDueDate: function(id, params) {
+    return axios.post(getServicesBasePath() + '/job/' + id + '/duedate/recalculate', null, { params })
   }
 }
 
