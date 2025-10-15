@@ -56,11 +56,6 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 	@Value("${cibseven.webclient.users.search.wildcard:}") String wildcard;
 	
 	@Override
-	public String getEngineRestToken(CIBUser user) {
-		return user.getAuthToken();
-	}	
-	
-	@Override
 	public Authorizations getUserAuthorization(String userId, CIBUser user) {
 		Authorizations auths = new Authorizations();
 		try {
