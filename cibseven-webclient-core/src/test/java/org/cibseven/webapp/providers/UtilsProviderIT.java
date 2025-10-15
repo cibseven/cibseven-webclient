@@ -39,7 +39,7 @@ import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 
 @SpringBootTest
-@ContextConfiguration(classes = {UtilsProvider.class, TestRestTemplateConfiguration.class})
+@ContextConfiguration(classes = {UtilsProvider.class, TestRestTemplateConfiguration.class, MockUserProviderTestConfiguration.class})
 public class UtilsProviderIT extends BaseHelper {
 
     static {

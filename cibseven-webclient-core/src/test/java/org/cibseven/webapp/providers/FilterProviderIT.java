@@ -35,7 +35,7 @@ import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 
 @SpringBootTest
-@ContextConfiguration(classes = {FilterProvider.class, TestRestTemplateConfiguration.class})
+@ContextConfiguration(classes = {FilterProvider.class, TestRestTemplateConfiguration.class, MockUserProviderTestConfiguration.class})
 public class FilterProviderIT extends BaseHelper {
 
     static {
