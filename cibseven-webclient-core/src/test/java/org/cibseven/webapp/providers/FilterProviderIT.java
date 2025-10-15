@@ -27,6 +27,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.auth.SevenUserProvider;
 import org.cibseven.webapp.rest.model.Filter;
 import org.cibseven.webapp.rest.model.FilterCriterias;
 import org.cibseven.webapp.rest.model.FilterProperties;
@@ -35,7 +36,7 @@ import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 
 @SpringBootTest
-@ContextConfiguration(classes = {FilterProvider.class, TestRestTemplateConfiguration.class})
+@ContextConfiguration(classes = {FilterProvider.class, SevenUserProvider.class, TestRestTemplateConfiguration.class})
 public class FilterProviderIT extends BaseHelper {
 
     static {

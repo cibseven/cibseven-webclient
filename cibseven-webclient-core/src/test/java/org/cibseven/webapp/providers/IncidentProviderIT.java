@@ -31,6 +31,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.auth.SevenUserProvider;
 import org.cibseven.webapp.rest.model.Incident;
 import org.cibseven.webapp.rest.TestRestTemplateConfiguration;
 
@@ -39,7 +40,7 @@ import okhttp3.mockwebserver.MockWebServer;
 
 
 @SpringBootTest
-@ContextConfiguration(classes = {IncidentProvider.class, TestRestTemplateConfiguration.class})
+@ContextConfiguration(classes = {IncidentProvider.class, SevenUserProvider.class, TestRestTemplateConfiguration.class})
 public class IncidentProviderIT extends BaseHelper {
 
     static {

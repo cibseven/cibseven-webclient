@@ -30,6 +30,7 @@ import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.auth.SevenUserProvider;
 import org.cibseven.webapp.rest.model.ActivityInstance;
 import org.cibseven.webapp.rest.model.ActivityInstanceHistory;
 import org.cibseven.webapp.rest.model.TransitionInstance;
@@ -38,7 +39,7 @@ import org.cibseven.webapp.rest.TestRestTemplateConfiguration;
 import java.util.List;
 
 @SpringBootTest
-@ContextConfiguration(classes = {ActivityProvider.class, TestRestTemplateConfiguration.class})
+@ContextConfiguration(classes = {ActivityProvider.class, SevenUserProvider.class, TestRestTemplateConfiguration.class})
 public class ActivityProviderIT extends BaseHelper {
 
     static {

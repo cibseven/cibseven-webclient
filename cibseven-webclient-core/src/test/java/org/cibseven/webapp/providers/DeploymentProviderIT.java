@@ -26,6 +26,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.auth.SevenUserProvider;
 import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.DeploymentResource;
 import org.cibseven.webapp.rest.TestRestTemplateConfiguration;
@@ -36,7 +37,7 @@ import okhttp3.mockwebserver.MockWebServer;
 import java.util.List;
 
 @SpringBootTest
-@ContextConfiguration(classes = {DeploymentProvider.class, TestRestTemplateConfiguration.class})
+@ContextConfiguration(classes = {DeploymentProvider.class, SevenUserProvider.class, TestRestTemplateConfiguration.class})
 public class DeploymentProviderIT extends BaseHelper {
 
     static {

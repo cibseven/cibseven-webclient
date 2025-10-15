@@ -31,13 +31,14 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.auth.SevenUserProvider;
 import org.cibseven.webapp.rest.model.Task;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.cibseven.webapp.rest.TestRestTemplateConfiguration;
 
 @SpringBootTest
-@ContextConfiguration(classes = {TaskProvider.class, TestRestTemplateConfiguration.class})
+@ContextConfiguration(classes = {TaskProvider.class, SevenUserProvider.class, TestRestTemplateConfiguration.class})
 public class TaskProviderIT extends BaseHelper {
 
     static {
