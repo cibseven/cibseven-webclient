@@ -1023,7 +1023,7 @@
 		"AuthenticationException": "Los datos son incorrectos",
 		"LoginException": "Nombre de usuario o contraseña incorrectos",
 		"TokenExpiredException": "Los datos de autentificación son incorrectos",
-		"WrongDeploymentIdException": "No se ha encontrado ningún despliegue para este ID.",
+		"WrongDeploymenIdException": "No se ha encontrado ningún despliegue para este ID.",
 		"NoRessourcesFoundException": "Los recursos de despliegue para este deploymentId no existen.",
 		"urlError": "URL no válida",
 		"errorSaveTask": "Se produjo un error al intentar guardar la tarea.",
