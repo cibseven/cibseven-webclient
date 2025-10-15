@@ -123,7 +123,7 @@
                 :label-reset-button="$t('cib-datepicker2.reset')" :label-today-button="$t('cib-datepicker2.today')" :date-disabled-fn="isInThePast" label-help="">
                 </b-calendar>
                 <template v-slot:modal-footer>
-                  <b-button @click="$refs['followUp' + task.id][0].hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
+                  <b-button @click="$refs['followUp' + task.id][0].hide()" variant="secondary">{{ $t('confirm.cancel') }}</b-button>
                   <b-button @click="setDate(task, 'followUp')" variant="primary">{{ $t('task.setReminder') }}</b-button>
                 </template>
               </b-modal>
@@ -136,7 +136,7 @@
                 <b-form-timepicker v-model="selectedDateT.dueTime" @input="setTime($event, 'due')" no-close-button :label-no-time-selected="$t('cib-timepicker.noDate')"
                   reset-button class="flex-fill" reset-value="23:59:00" :label-reset-button="$t('cib-timepicker.reset')" :locale="currentLanguage()"></b-form-timepicker>
                 <template v-slot:modal-footer>
-                  <b-button :title="$t('confirm.cancel')" @click="$refs['due' + task.id][0].hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
+                  <b-button :title="$t('confirm.cancel')" @click="$refs['due' + task.id][0].hide()" variant="secondary">{{ $t('confirm.cancel') }}</b-button>
                   <b-button :title="$t('task.setDeadline')" @click="setDate(task, 'due')" variant="primary">{{ $t('task.setDeadline') }}</b-button>
                 </template>
               </b-modal>

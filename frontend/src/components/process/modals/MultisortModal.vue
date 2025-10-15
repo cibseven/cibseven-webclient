@@ -49,7 +49,7 @@
       </div>
     </div>
     <template #modal-footer="{ cancel, ok }">
-      <b-button @click="cancel" variant="link">{{ $t('multisort.cancel') }}</b-button>
+      <b-button @click="cancel" variant="secondary">{{ $t('multisort.cancel') }}</b-button>
       <b-button @click="applySorting(); ok()" variant="primary">{{ $t('multisort.apply') }}</b-button>
     </template>
   </b-modal>

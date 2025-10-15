@@ -122,9 +122,8 @@
         </div>
       </div>
       <template v-slot:modal-footer>
-        <b-button @click="$refs.deleteModal.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
-        <b-button @click="deleteDeployments(); $refs.deleteModal.hide()" variant="primary">{{ $t('confirm.delete')
-        }}</b-button>
+        <b-button @click="$refs.deleteModal.hide()" variant="secondary">{{ $t('confirm.cancel') }}</b-button>
+        <b-button @click="deleteDeployments(); $refs.deleteModal.hide()" variant="primary">{{ $t('confirm.delete') }}</b-button>
       </template>
     </b-modal>
     <b-modal ref="deleteSelectedModal" :title="$t('confirm.title')">
@@ -135,15 +134,13 @@
           </div>
           <div class="col-10">
             <span>{{ $t('deployment.confirmDeleteDeployment') }}</span>
-            <b-form-checkbox disabled v-model="cascadeDelete" class="mt-3">{{ $t('deployment.deleteRunningInstances')
-            }}</b-form-checkbox>
+            <b-form-checkbox disabled v-model="cascadeDelete" class="mt-3">{{ $t('deployment.deleteRunningInstances') }}</b-form-checkbox>
           </div>
         </div>
       </div>
       <template v-slot:modal-footer>
-        <b-button @click="$refs.deleteSelectedModal.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
-        <b-button @click="deleteDeployment(); $refs.deleteSelectedModal.hide()" variant="primary">{{$t('confirm.delete')
-          }}</b-button>
+        <b-button @click="$refs.deleteSelectedModal.hide()" variant="secondary">{{ $t('confirm.cancel') }}</b-button>
+        <b-button @click="deleteDeployment(); $refs.deleteSelectedModal.hide()" variant="primary">{{ $t('confirm.delete') }}</b-button>
       </template>
     </b-modal>
     <SuccessAlert top="0" style="z-index: 1031" ref="deploymentsDeleted"> {{ $t('deployment.deploymentsDeleted',

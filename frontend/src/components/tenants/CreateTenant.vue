@@ -30,9 +30,9 @@
                   <b-form-group :label="$t('admin.tenants.name') + '*'" label-cols-sm="2" label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
                     <b-form-input v-model="tenant.name" :state="notEmpty(tenant.name)" required></b-form-input>
                   </b-form-group>
-                  <div class="float-end mt-4">
-                    <b-button @click="cancel()" variant="link">{{ $t('admin.tenants.cancel') }}</b-button>
-                    <b-button type="submit" variant="secondary">{{ $t('admin.tenants.create') }}</b-button>
+                  <div class="d-flex justify-content-end gap-2 mt-4">
+                    <b-button @click="cancel()" variant="secondary">{{ $t('admin.tenants.cancel') }}</b-button>
+                    <b-button type="submit" variant="primary">{{ $t('admin.tenants.create') }}</b-button>
                   </div>
               </form>
             </b-card-text>

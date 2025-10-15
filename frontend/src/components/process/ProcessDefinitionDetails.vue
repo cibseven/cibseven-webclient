@@ -120,7 +120,7 @@
       <span class="ms-2">{{ $t('process.days') }}</span>
     </div>
     <template v-slot:modal-footer>
-      <b-button @click="$refs.historyTimeToLive.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
+      <b-button @click="$refs.historyTimeToLive.hide()" variant="secondary">{{ $t('confirm.cancel') }}</b-button>
       <b-button @click="updateHistoryTimeToLive()" variant="primary">{{ $t('process-instance.save') }}</b-button>
     </template>
   </b-modal>

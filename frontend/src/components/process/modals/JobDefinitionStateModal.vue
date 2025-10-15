@@ -55,7 +55,7 @@
       </b-form-group>
     </div>
     <template v-slot:modal-footer>
-      <b-button @click="$refs.changeJobStateModal.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
+      <b-button @click="$refs.changeJobStateModal.hide()" variant="secondary">{{ $t('confirm.cancel') }}</b-button>
       <b-button @click="changeJobDefinitionState()" variant="primary">
         {{ selectedJobDefinition && selectedJobDefinition.suspended ? $t('process-instance.jobDefinitions.activate') : $t('process-instance.jobDefinitions.suspend') }}
       </b-button>

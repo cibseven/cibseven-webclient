@@ -137,7 +137,7 @@
             {{ $t('admin.noResults') }}
           </div>
           <template v-slot:modal-footer>
-            <b-button @click="$refs.assignTenantsModal.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
+            <b-button @click="$refs.assignTenantsModal.hide()" variant="secondary">{{ $t('confirm.cancel') }}</b-button>
             <b-button @click="assignTenants(); $refs.assignTenantsModal.hide()" variant="primary">{{ $t('confirm.ok') }}</b-button>
           </template>
         </b-modal>
