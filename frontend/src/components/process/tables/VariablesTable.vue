@@ -137,8 +137,16 @@ export default {
         : null
     },
     isActiveInstance: function() {
-      const activeStates = ['ACTIVE', 'SUSPENDED']
-      return this.selectedInstance && activeStates.includes(this.selectedInstance.state)
+      if (this.selectedInstance?.state) {
+        // 'state' is available from historic process instances
+        const activeStates = ['ACTIVE', 'SUSPENDED']
+        return this.selectedInstance && activeStates.includes(this.selectedInstance.state)
+      }
+      else {
+        // use runtime instance
+        // they have 'ended' and 'suspended' states
+        return this.selectedInstance && this.selectedInstance.ended === false
+      }
     },
     hasDeletionPermission: function() {
       if (this.isActiveInstance) {

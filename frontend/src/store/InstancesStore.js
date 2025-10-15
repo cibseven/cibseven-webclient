@@ -70,6 +70,13 @@ export default {
           instance.processDefinitionKey = processDefinition.key
           // 'incidents' field is mandatory (not available in runtime api)
           instance.incidents = []
+          if (instance.suspended) {
+            instance.state = 'SUSPENDED'
+          } else if (instance.ended) {
+            instance.state = 'COMPLETED'
+          } else {
+            instance.state = 'ACTIVE'
+          }
         })
         commit('appendInstances', instances)
         return instances
