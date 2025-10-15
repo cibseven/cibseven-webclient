@@ -20,19 +20,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-import org.cibseven.bpm.engine.ProcessEngine;
-import org.cibseven.bpm.engine.ProcessEngineConfiguration;
-import org.cibseven.bpm.engine.RepositoryService;
-import org.cibseven.bpm.engine.AuthorizationService;
-import org.cibseven.bpm.engine.CaseService;
-import org.cibseven.bpm.engine.ExternalTaskService;
-import org.cibseven.bpm.engine.FilterService;
-import org.cibseven.bpm.engine.IdentityService;
-import org.cibseven.bpm.engine.ManagementService;
-import org.cibseven.bpm.engine.TaskService;
-import org.cibseven.bpm.engine.FormService;
-import org.cibseven.bpm.engine.HistoryService;
-import org.cibseven.bpm.engine.RuntimeService;
 import org.cibseven.webapp.auth.SevenAuthorizationUtils;
 import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.User;
@@ -211,80 +198,6 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 
   @Bean
   public SevenDirectProvider getSevenDirectProvider() {
-    return new SevenDirectProvider();
+    return new SevenDirectProvider(null);
   }
-
-  @Bean
-  public ProcessEngine getDefaultProcessEngine() {
-    return org.cibseven.bpm.BpmPlatform.getDefaultProcessEngine();
-  }
-
-  @Bean
-  public IdentityService getIdentityService() {
-    return getDefaultProcessEngine().getIdentityService();
-  }
-
-  @Bean
-  public AuthorizationService getAuthorizationService() {
-    return getDefaultProcessEngine().getAuthorizationService();
-  }
-
-  @Bean
-  public ProcessEngineConfiguration getProcessEngineConfiguration() {
-    return getDefaultProcessEngine().getProcessEngineConfiguration();
-  }
-  @Bean
-  public TaskService getTaskService() {
-    return getDefaultProcessEngine().getTaskService();
-  }
-
-  @Bean
-  public FormService getFormService() {
-    return getDefaultProcessEngine().getFormService();
-  }
-
-  @Bean
-  public RuntimeService getRuntimeService() {
-    return getDefaultProcessEngine().getRuntimeService();
-  }
-  
-  @Bean
-  public ManagementService getManagementService() {
-    return getDefaultProcessEngine().getManagementService();
-  }
-
-  @Bean
-  public RepositoryService getRepositoryService() {
-    return getDefaultProcessEngine().getRepositoryService();
-  }
-
-  @Bean
-  public HistoryService getHistoryService() {
-    return getDefaultProcessEngine().getHistoryService();
-  }
-  
-  @Bean
-  public FilterService getFilterService() {
-    return getDefaultProcessEngine().getFilterService();
-  }
-
-  @Bean
-  public ExternalTaskService getExternalTaskService() {
-    return getDefaultProcessEngine().getExternalTaskService();
-  }
-
-  @Bean
-  public CaseService getCaseService() {
-    return getDefaultProcessEngine().getCaseService();
-  }
-
-//    <bean id="historyService"
-//      factory-bean="processEngine"
-//      factory-method="getHistoryService" />
-//    <bean id="managementService"
-//      factory-bean="processEngine"
-//      factory-method="getManagementService" />
-//    <bean id="identityService"
-//      factory-bean="processEngine"
-//      factory-method="getIdentityService" />
 }

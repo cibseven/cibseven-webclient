@@ -55,6 +55,7 @@ import org.cibseven.bpm.engine.FormService;
 import org.cibseven.bpm.engine.HistoryService;
 import org.cibseven.bpm.engine.IdentityService;
 import org.cibseven.bpm.engine.ManagementService;
+import org.cibseven.bpm.engine.MismatchingMessageCorrelationException;
 import org.cibseven.bpm.engine.ProcessEngine;
 import org.cibseven.bpm.engine.ProcessEngineConfiguration;
 import org.cibseven.bpm.engine.ProcessEngineException;
@@ -83,6 +84,8 @@ import org.cibseven.bpm.engine.form.FormData;
 import org.cibseven.bpm.engine.form.StartFormData;
 import org.cibseven.bpm.engine.history.HistoricActivityInstance;
 import org.cibseven.bpm.engine.history.HistoricActivityInstanceQuery;
+import org.cibseven.bpm.engine.history.HistoricActivityStatistics;
+import org.cibseven.bpm.engine.history.HistoricActivityStatisticsQuery;
 import org.cibseven.bpm.engine.history.HistoricIncident;
 import org.cibseven.bpm.engine.history.HistoricIncidentQuery;
 import org.cibseven.bpm.engine.history.HistoricProcessInstance;
@@ -106,6 +109,7 @@ import org.cibseven.bpm.engine.management.IncidentStatistics;
 import org.cibseven.bpm.engine.management.JobDefinitionQuery;
 import org.cibseven.bpm.engine.management.ProcessDefinitionStatistics;
 import org.cibseven.bpm.engine.management.ProcessDefinitionStatisticsQuery;
+import org.cibseven.bpm.engine.management.SetJobRetriesBuilder;
 import org.cibseven.bpm.engine.query.Query;
 import org.cibseven.bpm.engine.repository.DeploymentBuilder;
 import org.cibseven.bpm.engine.repository.DeploymentQuery;
@@ -114,7 +118,9 @@ import org.cibseven.bpm.engine.repository.ProcessDefinition;
 import org.cibseven.bpm.engine.repository.ProcessDefinitionQuery;
 import org.cibseven.bpm.engine.repository.Resource;
 import org.cibseven.bpm.engine.rest.dto.AbstractQueryDto;
+import org.cibseven.bpm.engine.rest.dto.AnnotationDto;
 import org.cibseven.bpm.engine.rest.dto.CountResultDto;
+import org.cibseven.bpm.engine.rest.dto.HistoryTimeToLiveDto;
 import org.cibseven.bpm.engine.rest.dto.StatisticsResultDto;
 import org.cibseven.bpm.engine.rest.dto.VariableValueDto;
 import org.cibseven.bpm.engine.rest.dto.authorization.AuthorizationDto;
@@ -127,6 +133,7 @@ import org.cibseven.bpm.engine.rest.dto.externaltask.ExternalTaskQueryDto;
 import org.cibseven.bpm.engine.rest.dto.history.DeleteHistoricProcessInstancesDto;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricActivityInstanceDto;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricActivityInstanceQueryDto;
+import org.cibseven.bpm.engine.rest.dto.history.HistoricActivityStatisticsDto;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricIncidentDto;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricIncidentQueryDto;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricProcessInstanceDto;
@@ -140,6 +147,9 @@ import org.cibseven.bpm.engine.rest.dto.identity.UserQueryDto;
 import org.cibseven.bpm.engine.rest.dto.management.JobDefinitionDto;
 import org.cibseven.bpm.engine.rest.dto.management.JobDefinitionQueryDto;
 import org.cibseven.bpm.engine.rest.dto.management.JobDefinitionSuspensionStateDto;
+import org.cibseven.bpm.engine.rest.dto.message.CorrelationMessageDto;
+import org.cibseven.bpm.engine.rest.dto.message.MessageCorrelationResultDto;
+import org.cibseven.bpm.engine.rest.dto.message.MessageCorrelationResultWithVariableDto;
 import org.cibseven.bpm.engine.rest.dto.repository.ActivityStatisticsResultDto;
 import org.cibseven.bpm.engine.rest.dto.repository.CalledProcessDefinitionDto;
 import org.cibseven.bpm.engine.rest.dto.repository.DeploymentDto;
@@ -152,6 +162,8 @@ import org.cibseven.bpm.engine.rest.dto.repository.ProcessDefinitionQueryDto;
 import org.cibseven.bpm.engine.rest.dto.repository.ProcessDefinitionStatisticsResultDto;
 import org.cibseven.bpm.engine.rest.dto.repository.ProcessDefinitionSuspensionStateDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.ActivityInstanceDto;
+import org.cibseven.bpm.engine.rest.dto.runtime.EventSubscriptionDto;
+import org.cibseven.bpm.engine.rest.dto.runtime.EventSubscriptionQueryDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.FilterDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.FilterQueryDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.IncidentDto;
@@ -160,6 +172,7 @@ import org.cibseven.bpm.engine.rest.dto.runtime.ProcessInstanceDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.ProcessInstanceQueryDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.ProcessInstanceSuspensionStateDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.ProcessInstanceWithVariablesDto;
+import org.cibseven.bpm.engine.rest.dto.runtime.RetriesDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.StartProcessInstanceDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.VariableInstanceDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.VariableInstanceQueryDto;
@@ -178,16 +191,21 @@ import org.cibseven.bpm.engine.rest.dto.task.TaskWithAttachmentAndCommentDto;
 import org.cibseven.bpm.engine.rest.dto.task.UserDto;
 import org.cibseven.bpm.engine.rest.exception.InvalidRequestException;
 import org.cibseven.bpm.engine.rest.exception.RestException;
+import org.cibseven.bpm.engine.rest.impl.history.HistoricActivityStatisticsQueryDto;
 import org.cibseven.bpm.engine.rest.mapper.JacksonConfigurator;
 import org.cibseven.bpm.engine.rest.mapper.MultipartFormData;
 import org.cibseven.bpm.engine.rest.mapper.MultipartFormData.FormPart;
 import org.cibseven.bpm.engine.rest.sub.impl.VariableResponseProvider;
 import org.cibseven.bpm.engine.rest.sub.repository.impl.ProcessDefinitionResourceImpl;
 import org.cibseven.bpm.engine.rest.util.ApplicationContextPathUtil;
+import org.cibseven.bpm.engine.rest.util.ContentTypeUtil;
 import org.cibseven.bpm.engine.rest.util.QueryUtil;
 import org.cibseven.bpm.engine.runtime.DeserializationTypeValidator;
-import org.cibseven.bpm.engine.runtime.EventSubscription;
+import org.cibseven.bpm.engine.runtime.EventSubscriptionQuery;
 import org.cibseven.bpm.engine.runtime.IncidentQuery;
+import org.cibseven.bpm.engine.runtime.MessageCorrelationBuilder;
+import org.cibseven.bpm.engine.runtime.MessageCorrelationResult;
+import org.cibseven.bpm.engine.runtime.MessageCorrelationResultWithVariables;
 import org.cibseven.bpm.engine.runtime.ProcessInstanceQuery;
 import org.cibseven.bpm.engine.runtime.ProcessInstanceWithVariables;
 import org.cibseven.bpm.engine.runtime.ProcessInstantiationBuilder;
@@ -204,7 +222,6 @@ import org.cibseven.bpm.engine.variable.value.BytesValue;
 import org.cibseven.bpm.engine.variable.value.FileValue;
 import org.cibseven.bpm.engine.variable.value.PrimitiveValue;
 import org.cibseven.bpm.engine.variable.value.SerializableValue;
-import org.cibseven.bpm.model.bpmn.instance.Message;
 import org.cibseven.bpm.engine.variable.value.TypedValue;
 import org.cibseven.webapp.Data;
 import org.cibseven.webapp.NamedByteArrayDataSource;
@@ -225,6 +242,7 @@ import org.cibseven.webapp.rest.model.CamundaForm;
 import org.cibseven.webapp.rest.model.CandidateGroupTaskCount;
 import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.DeploymentResource;
+import org.cibseven.webapp.rest.model.EventSubscription;
 import org.cibseven.webapp.rest.model.ExternalTask;
 import org.cibseven.webapp.rest.model.Filter;
 import org.cibseven.webapp.rest.model.FilterCriterias;
@@ -235,6 +253,7 @@ import org.cibseven.webapp.rest.model.Incident;
 import org.cibseven.webapp.rest.model.IncidentInfo;
 import org.cibseven.webapp.rest.model.Job;
 import org.cibseven.webapp.rest.model.JobDefinition;
+import org.cibseven.webapp.rest.model.Message;
 import org.cibseven.webapp.rest.model.NewUser;
 import org.cibseven.webapp.rest.model.Task;
 import org.cibseven.webapp.rest.model.TaskFiltering;
@@ -291,19 +310,19 @@ public class SevenDirectProvider /* extends SevenProviderBase implements BpmProv
 
 
   // direct access interface
-  @Autowired private FormService formService;
-  @Autowired private TaskService taskService;
-  @Autowired private IdentityService identityService;
-  @Autowired private AuthorizationService authorizationService;
-  @Autowired private RuntimeService runtimeService;
-  @Autowired private ManagementService managementService;
-  @Autowired private RepositoryService repositoryService;
-  @Autowired private HistoryService historyService;
-  @Autowired private FilterService filterService;
-  @Autowired private ExternalTaskService externalTaskService;
-  @Autowired private CaseService caseService;
-  @Autowired private ProcessEngineConfiguration processEngineConfiguration;
-  @Autowired private ProcessEngine processEngine;
+  private FormService formService;
+  private TaskService taskService;
+  private IdentityService identityService;
+  private AuthorizationService authorizationService;
+  private RuntimeService runtimeService;
+  private ManagementService managementService;
+  private RepositoryService repositoryService;
+  private HistoryService historyService;
+  private FilterService filterService;
+  private ExternalTaskService externalTaskService;
+  //private CaseService caseService;
+  private ProcessEngineConfiguration processEngineConfiguration;
+  private ProcessEngine processEngine;
   
   private ObjectMapper objectMapper = null;
   
@@ -357,6 +376,28 @@ public class SevenDirectProvider /* extends SevenProviderBase implements BpmProv
   }
   
   protected static final String DEFAULT_BINARY_VALUE_TYPE = "Bytes";
+  
+  public SevenDirectProvider(String engineName) {
+    if (engineName == null)
+      processEngine = org.cibseven.bpm.BpmPlatform.getDefaultProcessEngine();
+    else
+      processEngine = org.cibseven.bpm.BpmPlatform.getProcessEngineService().getProcessEngine(engineName);
+    formService = processEngine.getFormService();
+    taskService = processEngine.getTaskService();
+    identityService = processEngine.getIdentityService();
+    authorizationService = processEngine.getAuthorizationService();
+    runtimeService = processEngine.getRuntimeService();
+    managementService = processEngine.getManagementService();
+    repositoryService = processEngine.getRepositoryService();
+    historyService = processEngine.getHistoryService();
+    filterService = processEngine.getFilterService();
+    externalTaskService = processEngine.getExternalTaskService();
+    //caseService = processEngine.getCaseService();
+    processEngineConfiguration = processEngine.getProcessEngineConfiguration();
+    objectMapper = new ObjectMapper();
+    JacksonConfigurator.configureObjectMapper(objectMapper);
+    
+  }
 
   /*
   
@@ -396,10 +437,10 @@ public class SevenDirectProvider /* extends SevenProviderBase implements BpmProv
   
   //@Override
   public Collection<Task> findTasksByProcessInstanceAsignee(Optional<String> processInstanceId, Optional<String> createdAfter, CIBUser user) {
-    //TODO: in progress
+    //TODO: not tested
     TaskQueryDto dto = new TaskQueryDto();
     if (createdAfter.isPresent()) {
-      dto.setCreatedAfter(getObjectMapper().convertValue(createdAfter.get(), Date.class));
+      dto.setCreatedAfter(objectMapper.convertValue(createdAfter.get(), Date.class));
     }
     dto.setAssignee(user.getId());
     if (processInstanceId.isPresent())
@@ -413,7 +454,7 @@ public class SevenDirectProvider /* extends SevenProviderBase implements BpmProv
   //@Override
   public Task findTaskById(String id, CIBUser user) {
     org.cibseven.bpm.engine.task.Task result = taskService.createTaskQuery().taskId(id).initializeFormKeys().singleResult();
-    return getObjectMapper().convertValue(TaskDto.fromEntity(result), Task.class);
+    return objectMapper.convertValue(TaskDto.fromEntity(result), Task.class);
   }
 
   //@Override
@@ -438,8 +479,8 @@ public class SevenDirectProvider /* extends SevenProviderBase implements BpmProv
     }
     foundTask.setDelegationState(state);
 
-    foundTask.setDueDate(getObjectMapper().convertValue(task.getDue(), Date.class));
-    foundTask.setFollowUpDate(getObjectMapper().convertValue(task.getFollowUp(), Date.class));
+    foundTask.setDueDate(objectMapper.convertValue(task.getDue(), Date.class));
+    foundTask.setFollowUpDate(objectMapper.convertValue(task.getFollowUp(), Date.class));
     foundTask.setParentTaskId(task.getParentTaskId());
     foundTask.setCaseInstanceId(task.getCaseInstanceId());
     foundTask.setTenantId(task.getTenantId());    
@@ -462,14 +503,11 @@ public class SevenDirectProvider /* extends SevenProviderBase implements BpmProv
   
   //@Override
   public void submit(Task task, List<Variable> formResult, CIBUser user) {
-    //in progress
-    ObjectMapper objectMapper = getObjectMapper();
-    
+    //TODO: not tested
     Map<String, VariableValueDto> variables = new HashMap<>();
-    //objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     for (Variable variable : formResult) {
       VariableValueDto variableValueDto1 = new VariableValueDto();
-      VariableValueDto variableValueDto = convertValue(objectMapper, variable, VariableValueDto.class);
+      VariableValueDto variableValueDto = convertValue(variable, VariableValueDto.class);
       variableValueDto.setType(variable.getType());
       variableValueDto.setValue(variable.getValue());
       if (variable.getValueInfo() != null)
@@ -488,8 +526,7 @@ public class SevenDirectProvider /* extends SevenProviderBase implements BpmProv
 
     } catch (ProcessEngineException e) {
       String errorMessage = String.format("Cannot submit task form %s: %s", task.getId(), e.getMessage());
-      //TODO: exception type
-      throw new IllegalArgumentException(errorMessage, e);
+      throw new SystemException(errorMessage, e);
     }
   }
 
@@ -511,30 +548,6 @@ public class SevenDirectProvider /* extends SevenProviderBase implements BpmProv
       return VariableValueDto.fromMap(startFormVariables);    
     }
     
-/*    
-    String url = getEngineRestUrl() + "/task/" + taskId + "/form-variables?variableNames=formReference";
-    ProcessVariables body =  ((ResponseEntity<ProcessVariables>) doGet(url, ProcessVariables.class, user, false)).getBody();
-    if (body == null) {
-      throw new NullPointerException();
-    }
-    Variable formReference = body.getFormReference();
-    if (formReference == null) return new String("empty-task"); 
-    else return formReference.getValue();
-
-    final FormService formService = engine.getFormService();
-    List<String> formVariables = null;
-
-    if(variableNames != null) {
-      StringListConverter stringListConverter = new StringListConverter();
-      formVariables = stringListConverter.convertQueryParameterToType(variableNames);
-    }
-
-    VariableMap startFormVariables = formService.getTaskFormVariables(taskId, formVariables, deserializeValues);
-
-    return VariableValueDto.fromMap(startFormVariables);
-
-
-*/
   }
   
   //@Override
@@ -546,8 +559,7 @@ public class SevenDirectProvider /* extends SevenProviderBase implements BpmProv
     } catch (AuthorizationException e) {
       throw e;
     } catch (ProcessEngineException e) {
-      // TODO: exception type
-      throw new IllegalArgumentException("Cannot get form for task " + taskId, e);
+      throw new SystemException("Cannot get form for task " + taskId, e);
     }
 
     FormDto dto = FormDto.fromFormData(formData);
@@ -603,22 +615,20 @@ public class SevenDirectProvider /* extends SevenProviderBase implements BpmProv
     try {
       extendingQuery = filters.json();
     } catch (JsonProcessingException e) {
-      // TODO: exception type
-      throw new IllegalArgumentException("Failed json conversion", e);
+      throw new SystemException("Failed json conversion", e);
     }
-    List<?> entities = executeFilterList(extendingQuery, filterId, firstResult, maxResults, getObjectMapper());
+    List<?> entities = executeFilterList(extendingQuery, filterId, firstResult, maxResults, objectMapper);
     return entities;
   }
 
   //@Override
   public Collection<Task> findTasksByFilter(TaskFiltering filters, String filterId, CIBUser user, 
       Integer firstResult, Integer maxResults) {
-    //TODO: in progress
+
     List<?> entities = executeFilterList(filters, filterId, user, firstResult, maxResults);
-//
+
     if (entities != null && !entities.isEmpty()) {
       //TODO: currently list of TaskDto
-      ObjectMapper objectMapper = getObjectMapper();
       List<Task> list = convertToDtoList(entities, objectMapper);
       return list;
     }
@@ -635,12 +645,10 @@ public class SevenDirectProvider /* extends SevenProviderBase implements BpmProv
   }
   private Task convertToDto(Object entity, ObjectMapper objectMapper) {
     if (entity instanceof org.cibseven.bpm.engine.task.Task) {
-    //if (isEntityOfClass(entity, org.cibseven.bpm.engine.task.Task.class)) {
-      return convertValue(objectMapper, TaskDto.fromEntity((org.cibseven.bpm.engine.task.Task) entity), Task.class);
+      return convertValue(TaskDto.fromEntity((org.cibseven.bpm.engine.task.Task) entity), Task.class);
     }
     else {
-      //TODO: exception type
-      throw new IllegalArgumentException("Entities of class '" + entity.getClass().getCanonicalName() + "' are currently not supported by filters."); 
+      throw new SystemException("Entities of class '" + entity.getClass().getCanonicalName() + "' are currently not supported by filters."); 
     }
   }
   
@@ -662,8 +670,7 @@ public class SevenDirectProvider /* extends SevenProviderBase implements BpmProv
       }
     }
     catch (NullValueException e) {
-      //TODO: exception type
-      throw new IllegalArgumentException("Filter not found",e);
+      throw new SystemException("Filter not found",e);
     }
   }
   private Query<?,?> convertQuery(String queryString, String filterId, ObjectMapper objectMapper) {
@@ -683,12 +690,10 @@ public class SevenDirectProvider /* extends SevenProviderBase implements BpmProv
       if (EntityTypes.TASK.equals(resourceType)) {
         return objectMapper.readValue(queryString, TaskQueryDto.class);
       } else {
-        //TODO: exception type
-        throw new IllegalArgumentException("Queries for resource type '" + resourceType + "' are currently not supported by filters.");
+        throw new SystemException("Queries for resource type '" + resourceType + "' are currently not supported by filters.");
       }
     } catch (IOException e) {
-        //TODO: exception type
-        throw new IllegalArgumentException("Invalid query for resource type '" + resourceType + "'", e);
+        throw new SystemException("Invalid query for resource type '" + resourceType + "'", e);
     }
   }
   
@@ -710,7 +715,7 @@ public class SevenDirectProvider /* extends SevenProviderBase implements BpmProv
     List<TaskHistory> taskHistoryList = new ArrayList<>();
     List<HistoricTaskInstance> results = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).unlimitedList();
     for (HistoricTaskInstance result : results) {
-      taskHistoryList.add(convertValue(objectMapper, HistoricTaskInstanceDto.fromHistoricTaskInstance(result), TaskHistory.class));
+      taskHistoryList.add(convertValue(HistoricTaskInstanceDto.fromHistoricTaskInstance(result), TaskHistory.class));
     }
     return taskHistoryList;
   }
@@ -721,16 +726,15 @@ public class SevenDirectProvider /* extends SevenProviderBase implements BpmProv
     List<TaskHistory> taskHistoryList = new ArrayList<>();
     List<HistoricTaskInstance> results = historyService.createHistoricTaskInstanceQuery().taskDefinitionKey(taskDefinitionKey).unlimitedList();
     for (HistoricTaskInstance result : results) {
-      taskHistoryList.add(convertValue(objectMapper, HistoricTaskInstanceDto.fromHistoricTaskInstance(result), TaskHistory.class));
+      taskHistoryList.add(convertValue(HistoricTaskInstanceDto.fromHistoricTaskInstance(result), TaskHistory.class));
     }
     return taskHistoryList;
   }
   
   //@Override
   public Collection<Task> findTasksPost(Map<String, Object> data, CIBUser user) throws SystemException {
-    //TODO: in progress
-    TaskQueryDto queryDto = getObjectMapper().convertValue(data, TaskQueryDto.class); 
-    queryDto.setObjectMapper(getObjectMapper());
+    TaskQueryDto queryDto = objectMapper.convertValue(data, TaskQueryDto.class); 
+    queryDto.setObjectMapper(objectMapper);
     TaskQuery query = queryDto.toQuery(processEngine);
 
     query.initializeFormKeys();
@@ -745,57 +749,9 @@ public class SevenDirectProvider /* extends SevenProviderBase implements BpmProv
     }
     List<Task> resultTasks = new ArrayList<>();
     for ( org.cibseven.bpm.engine.task.Task matchingTask : matchingTasks) {
-      resultTasks.add(getObjectMapper().convertValue(matchingTask, Task.class));
+      resultTasks.add(objectMapper.convertValue(matchingTask, Task.class));
     }
     return resultTasks;
-/*
-data could be: 
-{
- processInstanceId=8a620626-a356-11f0-afe5-4ce1734f67af, 
- processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, 
- sortBy=created, 
- sortOrder=desc
- }
- 
- TaskRestServiceImpl:
-   public List<TaskDto> queryTasks(TaskQueryDto queryDto, Integer firstResult,
-      Integer maxResults) {
-    ProcessEngine engine = getProcessEngine();
-    queryDto.setObjectMapper(getObjectMapper());
-    TaskQuery query = queryDto.toQuery(engine);
-
-    List<Task> matchingTasks = executeTaskQuery(firstResult, maxResults, query);
-
-    List<TaskDto> tasks = new ArrayList<TaskDto>();
-    if (Boolean.TRUE.equals(queryDto.getWithCommentAttachmentInfo())) {
-      tasks = matchingTasks.stream().map(TaskWithAttachmentAndCommentDto::fromEntity).collect(Collectors.toList());
-    }
-    else {
-      tasks = matchingTasks.stream().map(TaskDto::fromEntity).collect(Collectors.toList());
-    }
-    return tasks;
-  }
-
-result could be:
-Task(assignee=null, 
-caseDefinitionId=null, 
-caseExecutionId=null, 
-caseInstanceId=null, 
-delegationState=null, 
-description=null, 
-executionId=8a620626-a356-11f0-afe5-4ce1734f67af, 
-formKey=null, id=2fb6d245-a35a-11f0-afe5-4ce1734f67af, 
-name=ShowDishSelection, 
-owner=null, 
-parentTaskId=null, 
-priority=50, 
-suspended=false, 
-tenantId=null, 
-camundaFormRef=CamundaForm(key=ShowDishSelection, binding=latest, version=null), 
-created=2025-10-07T10:46:59.138+0200, due=null, followUp=null, 
-taskDefinitionKey=Activity_0sy6qc5, 
-processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, processInstanceId=8a620626-a356-11f0-afe5-4ce1734f67af)
- * */    
   }
   
   //@Override
@@ -818,13 +774,11 @@ processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, pro
     String userId = (String)data.get("userId");
     String groupId = (String)data.get("groupId");
     if (userId != null && groupId != null) {
-      //TODO: exception type
-      throw new IllegalArgumentException("Identity Link requires userId or groupId, but not both.");
+      throw new SystemException("Identity Link requires userId or groupId, but not both.");
     }
       
     if (userId == null && groupId == null) {
-      //TODO: exception type
-      throw new IllegalArgumentException("Identity Link requires userId or groupId.");
+      throw new SystemException("Identity Link requires userId or groupId.");
     }
 
     String type = (String)data.get("type");
@@ -841,13 +795,11 @@ processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, pro
     String userId = (String)data.get("userId");
     String groupId = (String)data.get("groupId");
     if (userId != null && groupId != null) {
-      //TODO: exception type
-      throw new IllegalArgumentException("Identity Link requires userId or groupId, but not both.");
+      throw new SystemException("Identity Link requires userId or groupId, but not both.");
     }
       
     if (userId == null && groupId == null) {
-      //TODO: exception type
-      throw new IllegalArgumentException("Identity Link requires userId or groupId.");
+      throw new SystemException("Identity Link requires userId or groupId.");
     }
 
     String type = (String)data.get("type");
@@ -862,7 +814,7 @@ processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, pro
   //@Override
   public void handleBpmnError(String taskId, Map<String, Object> data, CIBUser user) throws SystemException {
     //TODO: not tested
-    TaskBpmnErrorDto dto = getObjectMapper().convertValue(data, TaskBpmnErrorDto.class); 
+    TaskBpmnErrorDto dto = objectMapper.convertValue(data, TaskBpmnErrorDto.class); 
     try {
       taskService.handleBpmnError(taskId, dto.getErrorCode(), dto.getErrorMessage(),
           VariableValueDto.toMap(dto.getVariables(), processEngine, objectMapper));
@@ -879,7 +831,7 @@ processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, pro
     List<TaskHistory> taskHistoryList = new ArrayList<>();
     List<HistoricTaskInstance> results = historyService.createHistoricTaskInstanceQuery().taskId(taskId).unlimitedList();
     for (HistoricTaskInstance result : results) {
-      taskHistoryList.add(convertValue(objectMapper, HistoricTaskInstanceDto.fromHistoricTaskInstance(result), TaskHistory.class));
+      taskHistoryList.add(convertValue(HistoricTaskInstanceDto.fromHistoricTaskInstance(result), TaskHistory.class));
     }
     return taskHistoryList;
   } 
@@ -892,7 +844,7 @@ processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, pro
       ResponseEntity<byte[]> responseEntity = new ResponseEntity<>(bytes, HttpStatusCode.valueOf(200));
       return responseEntity;
     } catch (IOException e) {
-      // TODO Auto-generated catch block
+      //TODO Auto-generated catch block
       e.printStackTrace();
     }
     return new ResponseEntity<byte[]>(HttpStatusCode.valueOf(422));
@@ -900,7 +852,7 @@ processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, pro
   
   //@Override
   public Integer findHistoryTasksCount(Map<String, Object> filters, CIBUser user) {
-    HistoricTaskInstanceQueryDto queryDto = getObjectMapper().convertValue(filters, HistoricTaskInstanceQueryDto.class);
+    HistoricTaskInstanceQueryDto queryDto = objectMapper.convertValue(filters, HistoricTaskInstanceQueryDto.class);
     queryDto.setObjectMapper(objectMapper);
     HistoricTaskInstanceQuery query = queryDto.toQuery(processEngine);
 
@@ -915,7 +867,6 @@ processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, pro
     Collection<CandidateGroupTaskCount> resultTaskCount = new ArrayList<>();
     for (TaskCountByCandidateGroupResult result : results) {
       resultTaskCount.add(convertValue(
-        getObjectMapper(), 
         TaskCountByCandidateGroupResultDto.fromTaskCountByCandidateGroupResultDto(result),
         CandidateGroupTaskCount.class));
     }
@@ -924,17 +875,17 @@ processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, pro
   
   private Collection<Task> convertTasks(Collection<org.cibseven.bpm.engine.task.Task> engineTasks) {
     List<Task> resultList = new ArrayList<>();
-    ObjectMapper objectMapper = getObjectMapper();
     for( org.cibseven.bpm.engine.task.Task engineTask : engineTasks )
        resultList.add(objectMapper.convertValue(engineTask, Task.class));
     return resultList;
   }
   
   private List<org.cibseven.bpm.engine.task.Task> queryTasks(Map<String, Object> filters, CIBUser user) {
-    ObjectMapper objectMapper = getObjectMapper();
+    ObjectMapper localObjectMapper = new ObjectMapper();
+    JacksonConfigurator.configureObjectMapper(localObjectMapper);
     //TODO: 'unfinished' is requested but not supported by the TaskQuery -> create Ticket!
-    objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    TaskQueryDto dto = objectMapper.convertValue(filters, TaskQueryDto.class);
+    localObjectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    TaskQueryDto dto = localObjectMapper.convertValue(filters, TaskQueryDto.class);
     TaskQuery taskQuery = dto.toQuery(processEngine);
     List<org.cibseven.bpm.engine.task.Task> taskList = 
         taskQuery.taskInvolvedUser(user.getUserID()).list();
@@ -953,22 +904,23 @@ processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, pro
   
   //@Override
   public Collection<Process> findProcesses(CIBUser user) {
+
     MultivaluedMap<String, String> queryParameters = new MultivaluedHashMap<>();
     // ProcessProvider adds:  "?latestVersion=true&sortBy=name&sortOrder=desc";"
     queryParameters.add("latestVersion", "true");
     queryParameters.add("sortBy", "name");
     queryParameters.add("sortOrder", "desc");
-    ProcessDefinitionQueryDto queryDto = new ProcessDefinitionQueryDto(getObjectMapper(), queryParameters);
-    List<ProcessDefinitionDto> definitions = new ArrayList<>();
+    ProcessDefinitionQueryDto queryDto = new ProcessDefinitionQueryDto(objectMapper, queryParameters);
 
     ProcessDefinitionQuery query = queryDto.toQuery(processEngine);
     List<ProcessDefinition> matchingDefinitions = QueryUtil.list(query, null, null);
 
+    List<Process> processes = new ArrayList<>(); 
     for (ProcessDefinition definition : matchingDefinitions) {
       ProcessDefinitionDto def = ProcessDefinitionDto.fromProcessDefinition(definition);
-      definitions.add(def);
+      processes.add(convertValue(def, Process.class));
     }
-    return convertProcesses(definitions);
+    return processes;
   }
   
   // @Override
@@ -1031,15 +983,15 @@ processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, pro
     Boolean includeRootIncidents = (Boolean)queryParams.get("rootIncidents");
     Boolean includeFailedJobs = (Boolean)queryParams.get("failedJobs");
     if (includeIncidents != null && includeIncidentsForType != null) {
-      throw new IllegalArgumentException("Only one of the query parameter includeIncidents or includeIncidentsForType can be set.");
+      throw new SystemException("Only one of the query parameter includeIncidents or includeIncidentsForType can be set.");
     }
 
     if (includeIncidents != null && includeRootIncidents != null) {
-      throw new IllegalArgumentException("Only one of the query parameter includeIncidents or includeRootIncidents can be set.");
+      throw new SystemException("Only one of the query parameter includeIncidents or includeRootIncidents can be set.");
     }
 
     if (includeRootIncidents != null && includeIncidentsForType != null) {
-      throw new IllegalArgumentException("Only one of the query parameter includeRootIncidents or includeIncidentsForType can be set.");
+      throw new SystemException("Only one of the query parameter includeRootIncidents or includeIncidentsForType can be set.");
     }
 
      ProcessDefinitionStatisticsQuery query = managementService.createProcessDefinitionStatisticsQuery();
@@ -1060,7 +1012,7 @@ processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, pro
 
     Collection<ProcessStatistics> processStatistics = new ArrayList<>();
     for (ProcessDefinitionStatistics queryResult : queryResults) {
-      processStatistics.add(getObjectMapper().convertValue(ProcessDefinitionStatisticsResultDto.fromProcessDefinitionStatistics(queryResult), ProcessStatistics.class));
+      processStatistics.add(objectMapper.convertValue(ProcessDefinitionStatisticsResultDto.fromProcessDefinitionStatistics(queryResult), ProcessStatistics.class));
     }
     return processStatistics;
   }
@@ -1077,7 +1029,7 @@ processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, pro
         filterMap.put(splitValue[0], URLDecoder.decode(splitValue[1], Charset.forName("UTF-8")));
     }
     
-    ProcessDefinitionQueryDto queryDto = getObjectMapper().convertValue(filterMap, ProcessDefinitionQueryDto.class);
+    ProcessDefinitionQueryDto queryDto = objectMapper.convertValue(filterMap, ProcessDefinitionQueryDto.class);
 
     List<Process> processes = new ArrayList<>();
     ProcessDefinitionQuery query = queryDto.toQuery(processEngine);
@@ -1085,7 +1037,7 @@ processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, pro
 
     for (ProcessDefinition definition : matchingDefinitions) {
       ProcessDefinitionDto def = ProcessDefinitionDto.fromProcessDefinition(definition);
-      processes.add(convertValue(getObjectMapper(), def, Process.class));
+      processes.add(convertValue(def, Process.class));
     }
     for(Process process : processes) {
       ProcessInstanceQueryDto processInstanceQueryDto = new ProcessInstanceQueryDto();
@@ -1096,7 +1048,7 @@ processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, pro
   } 
   
   private Long queryProcessInstancesCount(ProcessInstanceQueryDto queryDto) {
-    queryDto.setObjectMapper(getObjectMapper());
+    queryDto.setObjectMapper(objectMapper);
     ProcessInstanceQuery query = queryDto.toQuery(processEngine);
     return query.count();
   }
@@ -1117,14 +1069,58 @@ processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, pro
       else
         throw new SystemException("Process instance not found: " + key);
     }
-    Process process = convertValue(objectMapper, ProcessDefinitionDto.fromProcessDefinition(instance), Process.class);
+    Process process = convertValue(ProcessDefinitionDto.fromProcessDefinition(instance), Process.class);
     return process;
   }
   
   //@Override
   public Collection<Process> findProcessVersionsByDefinitionKey(String key, String tenantId, Optional<Boolean> lazyLoad, CIBUser user) {
-    //TODO: to be implemented
-    return null;
+    //TODO: not tested
+    ProcessDefinitionQueryDto queryDto = new ProcessDefinitionQueryDto();
+    queryDto.setKey(key);
+    if (tenantId != null)
+        queryDto.setTenantIdIn(Arrays.asList(tenantId));
+    else
+      queryDto.setWithoutTenantId(true);
+    ProcessDefinitionQuery query = queryDto.toQuery(processEngine);
+    List<ProcessDefinition> definitions = QueryUtil.list(query, null, null);
+    List<Process> processes = new ArrayList<>(); 
+    for (ProcessDefinition definition : definitions) {
+      ProcessDefinitionDto def = ProcessDefinitionDto.fromProcessDefinition(definition);
+      processes.add(convertValue(def, Process.class));
+    }
+
+    if (!lazyLoad.isPresent() || (lazyLoad.isPresent() && !lazyLoad.get())) {
+      for(Process process : processes) {
+        HistoricProcessInstanceQueryDto historicProcessInstanceQueryDto = new HistoricProcessInstanceQueryDto();
+        historicProcessInstanceQueryDto.setProcessDefinitionId(process.getId());
+        historicProcessInstanceQueryDto.setObjectMapper(objectMapper);
+        HistoricProcessInstanceQuery historicProcessInstanceQuery = historicProcessInstanceQueryDto.toQuery(processEngine);
+        List<ProcessDefinition> matchingHistoricProcessInstances = query.unlimitedList(); 
+
+        if (matchingHistoricProcessInstances.isEmpty())
+          throw new NullPointerException();
+        process.setAllInstances(matchingHistoricProcessInstances.size());
+        
+        historicProcessInstanceQueryDto.setUnfinished(true);
+        historicProcessInstanceQuery = historicProcessInstanceQueryDto.toQuery(processEngine);
+        matchingHistoricProcessInstances = query.unlimitedList(); 
+        
+        if (matchingHistoricProcessInstances.isEmpty())
+          throw new NullPointerException();
+        process.setRunningInstances(matchingHistoricProcessInstances.size());
+        
+        historicProcessInstanceQueryDto.setUnfinished(false);
+        historicProcessInstanceQueryDto.setCompleted(true);
+        historicProcessInstanceQuery = historicProcessInstanceQueryDto.toQuery(processEngine);
+        matchingHistoricProcessInstances = query.unlimitedList(); 
+        
+        if (matchingHistoricProcessInstances.isEmpty())
+          throw new NullPointerException();
+        process.setCompletedInstances(matchingHistoricProcessInstances.size());
+      }
+    }
+    return processes;
   }
 
   // @Override
@@ -1137,7 +1133,7 @@ processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, pro
     }
 
     ProcessDefinitionDto definitionDto = ProcessDefinitionDto.fromProcessDefinition(definition);
-    Process process = convertValue(objectMapper, definitionDto, Process.class);
+    Process process = convertValue(definitionDto, Process.class);
     if (extraInfo.isPresent() && extraInfo.get()) {
       Map<String, Object> filters = new HashMap<>();
       filters.put("processDefinitionId", id);
@@ -1159,19 +1155,15 @@ processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, pro
     
   //@Override
   public Collection<ProcessInstance> findProcessesInstances(String key, CIBUser user) {
-    //TODO: to be implemented
-    //git copilot work
-    
+    //TODO: not tested
     List<ProcessInstance> result = new ArrayList<>();
-    // Query the runtime service for process instances matching the given definition key
     List<org.cibseven.bpm.engine.runtime.ProcessInstance> instances = runtimeService.createProcessInstanceQuery()
         .processDefinitionKey(key)
         .list();
 
-    for (org.cibseven.bpm.engine.runtime.ProcessInstance camundaInstance : instances) {
-        // Convert or map Camunda's ProcessInstance to your webclient's ProcessInstance type
-        ProcessInstanceDto backendDto = ProcessInstanceDto.fromProcessInstance(camundaInstance);
-        ProcessInstance webClientDto = convertValue(objectMapper, backendDto, ProcessInstance.class);
+    for (org.cibseven.bpm.engine.runtime.ProcessInstance instance : instances) {
+        ProcessInstanceDto backendDto = ProcessInstanceDto.fromProcessInstance(instance);
+        ProcessInstance webClientDto = convertValue(backendDto, ProcessInstance.class);
         result.add(webClientDto);
     }
     return result;
@@ -1184,15 +1176,15 @@ processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, pro
     try {
       processModelIn = repositoryService.getProcessModel(id);
       byte[] processModel = IoUtil.readInputStream(processModelIn, "processModelBpmn20Xml");
-      return convertValue(getObjectMapper(), ProcessDefinitionDiagramDto.create(id, new String(processModel, "UTF-8")), ProcessDiagram.class);
+      return convertValue(ProcessDefinitionDiagramDto.create(id, new String(processModel, "UTF-8")), ProcessDiagram.class);
     } catch (AuthorizationException e) {
       throw e;
     } catch (NotFoundException e) {
-      // TODO: check exception type
-      throw new IllegalArgumentException( "No matching definition with id " + id, e);
+      //TODO: check exception type
+      throw new SystemException( "No matching definition with id " + id, e);
     } catch (UnsupportedEncodingException e) {
-      // TODO: check exception type
-      throw new IllegalArgumentException(e.getMessage(), e);
+      //TODO: check exception type
+      throw new SystemException(e.getMessage(), e);
     } finally {
       IoUtil.closeSilently(processModelIn);
     }
@@ -1215,7 +1207,7 @@ processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, pro
       }
     }
     dto.setContextPath(ApplicationContextPathUtil.getApplicationPathByProcessDefinitionId(processEngine, processDefinitionId));
-    return convertValue(getObjectMapper(), dto, StartForm.class);
+    return convertValue(dto, StartForm.class);
   }
   
   //@Override
@@ -1244,14 +1236,13 @@ processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, pro
   
   //@Override
   public void suspendProcessDefinition(String processDefinitionId, Boolean suspend, Boolean includeProcessInstances, String executionDate, CIBUser user) {
-    //TODO: in progress
     ProcessDefinitionSuspensionStateDto dto = new ProcessDefinitionSuspensionStateDto();
     dto.setProcessDefinitionId(processDefinitionId);
     dto.setSuspended(suspend);
     dto.setIncludeProcessInstances(includeProcessInstances);
     //TODO: date conversion required?
     if (executionDate != null)
-      dto .setExecutionDate(executionDate);
+      dto.setExecutionDate(executionDate);
     try {
       dto.updateSuspensionState(processEngine);
 
@@ -1277,15 +1268,15 @@ processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, pro
           ? String.format("No matching process definition with key: %s and tenant-id: %s", processDefinitionKey,
               tenantId)
           : String.format("No matching process definition with key: %s and no tenant-id", processDefinitionKey);
-      // TODO: check exception type
-      throw new IllegalArgumentException(errorMessage);
+      //TODO: check exception type
+      throw new SystemException(errorMessage);
 
     } else {
       // start the process
       ProcessInstanceWithVariables processInstanceWithVariables = null;
       // the simple case contains the _locale variable, only
       StartProcessInstanceDto startProcessInstanceDto = new StartProcessInstanceDto();
-      // TODO: nothing to be set?
+      //TODO: nothing to be set?
       // startProcessInstanceDto.setBusinessKey();
       // startProcessInstanceDto.setCaseInstanceId();
       // startProcessInstanceDto.setSkipCustomListeners();
@@ -1302,7 +1293,6 @@ processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, pro
       } catch (ProcessEngineException e) {
         String errorMessage = String.format("Cannot instantiate process definition %s: %s", processDefinition.getId(),
             e.getMessage());
-        // TODO: exception type!
         throw new RuntimeException(errorMessage, e);
       }
 
@@ -1322,7 +1312,7 @@ processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, pro
         URI uri = new URI(url);
         result.addReflexiveLink(uri, HttpMethod.GET, "self");
       } catch (URISyntaxException e) {
-        // TODO Auto-generated catch block
+        //TODO Auto-generated catch block
         e.printStackTrace();
       }
 
@@ -1330,7 +1320,7 @@ processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, pro
       try {
         definition = repositoryService.getProcessDefinition(processDefinition.getId());
       } catch (ProcessEngineException e) {
-        throw new IllegalArgumentException("No matching definition with id " + processDefinition.getId(), e);
+        throw new SystemException("No matching definition with id " + processDefinition.getId(), e);
       }
 
       return createProcessDefinitionQuery(definition);
@@ -1340,7 +1330,6 @@ processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, pro
   
   //TODO: rename, move to util class
   private ProcessInstanceWithVariables startProcessInstanceAtActivities(StartProcessInstanceDto dto, String processDefinitionKey) {
-    ObjectMapper objectMapper = getObjectMapper();
     Map<String, Object> processInstanceVariables = VariableValueDto.toMap(dto.getVariables(), processEngine, objectMapper);
     String businessKey = dto.getBusinessKey();
     String caseInstanceId = dto.getCaseInstanceId();
@@ -1378,7 +1367,6 @@ processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, pro
   //@Override
   public ProcessStart submitForm(String processDefinitionKey, String tenantId, Map<String, Object> data, CIBUser user) 
     throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
-  //TODO: in progress
     ProcessDefinitionQuery query = processEngine
         .getRepositoryService()
         .createProcessDefinitionQuery()
@@ -1394,7 +1382,7 @@ processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, pro
       String errorMessage = String.format("No matching process definition with key: %s and tenant-id: %s", processDefinitionKey, tenantId);
       throw new SystemException(errorMessage);
     } else {
-      StartProcessInstanceDto parameters = getObjectMapper().convertValue(data,  StartProcessInstanceDto.class);
+      StartProcessInstanceDto parameters = objectMapper.convertValue(data,  StartProcessInstanceDto.class);
       org.cibseven.bpm.engine.runtime.ProcessInstance instance = null;
       try {
         Map<String, Object> variables = VariableValueDto.toMap(parameters.getVariables(), processEngine, objectMapper);
@@ -1430,43 +1418,22 @@ processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, pro
   
       result.addReflexiveLink(uri, HttpMethod.GET, "self");
   
-      return getObjectMapper().convertValue(result, ProcessStart.class);
+      return objectMapper.convertValue(result, ProcessStart.class);
       
     }
   }
   
   //@Override
   public Collection<ProcessStatistics> findProcessStatistics(String processId, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
-    //TODO: in progress
     ActivityStatisticsQuery query = managementService.createActivityStatisticsQuery(processId);
     List<ActivityStatistics> queryResults = query.unlimitedList();
 
     Collection<ProcessStatistics> processStatistics = new ArrayList<>();
     for (ActivityStatistics queryResult : queryResults) {
       StatisticsResultDto dto = ActivityStatisticsResultDto.fromActivityStatistics(queryResult);
-      processStatistics.add(getObjectMapper().convertValue(dto, ProcessStatistics.class));
+      processStatistics.add(objectMapper.convertValue(dto, ProcessStatistics.class));
     }
     return processStatistics;
-  }
-
-
-  private ProcessDefinitionInfo createDefinition(ProcessDefinition definition) {
-    ProcessDefinitionInfo processDefinitionInfo = new ProcessDefinitionInfo();
-    processDefinitionInfo.setCategory(definition.getCategory());
-    processDefinitionInfo.setDeploymentId(definition.getDeploymentId());
-    processDefinitionInfo.setDescription(definition.getDescription());
-    processDefinitionInfo.setDiagram(definition.getDiagramResourceName());
-    processDefinitionInfo.setHistoryTimeToLive(definition.getHistoryTimeToLive());
-    processDefinitionInfo.setId(definition.getId());
-    processDefinitionInfo.setKey(definition.getKey());
-    processDefinitionInfo.setName(definition.getName());
-    processDefinitionInfo.setResource(definition.getResourceName());
-    processDefinitionInfo.setStartableInTasklist(definition.isStartableInTasklist());
-    processDefinitionInfo.setSuspended(definition.isSuspended());
-    processDefinitionInfo.setTenantId(definition.getTenantId());
-    processDefinitionInfo.setVersion(definition.getVersion());
-    processDefinitionInfo.setVersionTag(definition.getVersionTag());
-    return processDefinitionInfo;
   }
 
   //@Override
@@ -1476,7 +1443,6 @@ processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, pro
     if (fetchIncidents != null) {
       filters.remove("fetchIncidents");
     }
-    ObjectMapper objectMapper = getObjectMapper();
     HistoricProcessInstanceQueryDto historicProcessInstanceQueryDto =
         objectMapper.convertValue(filters, HistoricProcessInstanceQueryDto.class);
   
@@ -1491,7 +1457,7 @@ processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, pro
     List<HistoryProcessInstance> historicProcessInstanceResults = new ArrayList<HistoryProcessInstance>();
     for (HistoricProcessInstance historicProcessInstance : matchingHistoricProcessInstances) {
       HistoricProcessInstanceDto resultHistoricProcessInstanceDto = HistoricProcessInstanceDto.fromHistoricProcessInstance(historicProcessInstance);
-      historicProcessInstanceResults.add(convertValue(objectMapper, resultHistoricProcessInstanceDto, HistoryProcessInstance.class));
+      historicProcessInstanceResults.add(convertValue(resultHistoricProcessInstanceDto, HistoryProcessInstance.class));
     }
     // Check if caller wants incident handling
     if (fetchIncidents != null && fetchIncidents) {
@@ -1543,39 +1509,48 @@ Collection<Incident> incidents = fetchIncidentsByInstanceAndActivityId(processDe
   //@Override
   public Collection<HistoryProcessInstance> findProcessesInstancesHistory(String key, Optional<Boolean> active, 
       Integer firstResult, Integer maxResults, CIBUser user) {
-    //TODO: to be implemented
-    return null;
+    //TODO: not tested
+    HistoricProcessInstanceQueryDto historicProcessInstanceQueryDto = new HistoricProcessInstanceQueryDto();
+    //historicProcessInstanceQueryDto.setProcessDefinitionId(id);
+    historicProcessInstanceQueryDto.setProcessDefinitionKey(key);
+    if (active.isPresent())
+      historicProcessInstanceQueryDto.setActive(active.get());
+    return queryHistoryProcessInstances(historicProcessInstanceQueryDto, firstResult, maxResults);
   }
   
   //@Override
   public Collection<HistoryProcessInstance> findProcessesInstancesHistoryById(String id, Optional<String> activityId, Optional<Boolean> active, 
       Integer firstResult, Integer maxResults, String text, CIBUser user) {
     //TODO: not tested
-  
     HistoricProcessInstanceQueryDto historicProcessInstanceQueryDto = new HistoricProcessInstanceQueryDto();
     historicProcessInstanceQueryDto.setProcessDefinitionId(id);
     if (activityId.isPresent())
       historicProcessInstanceQueryDto.setActivityIdIn(Arrays.asList(activityId.get()));
     if (active.isPresent())
       historicProcessInstanceQueryDto.setActive(active.get());
-    historicProcessInstanceQueryDto.setObjectMapper(getObjectMapper());
+    return queryHistoryProcessInstances(historicProcessInstanceQueryDto, firstResult, maxResults);
+  }
+  
+  private Collection<HistoryProcessInstance> queryHistoryProcessInstances(
+      HistoricProcessInstanceQueryDto historicProcessInstanceQueryDto, Integer firstResult, Integer maxResults){
+    historicProcessInstanceQueryDto.setObjectMapper(objectMapper);
+    
     HistoricProcessInstanceQuery query = historicProcessInstanceQueryDto.toQuery(processEngine);
     List<HistoricProcessInstance> matchingHistoricProcessInstances = QueryUtil.list(query, firstResult, maxResults);
 
     List<HistoryProcessInstance> HistoryProcessInstanceResults = new ArrayList<HistoryProcessInstance>();
     for (HistoricProcessInstance historicProcessInstance : matchingHistoricProcessInstances) {
       HistoricProcessInstanceDto resultHistoricProcessInstanceDto = HistoricProcessInstanceDto.fromHistoricProcessInstance(historicProcessInstance);
-      HistoryProcessInstanceResults.add(convertValue(getObjectMapper(), resultHistoricProcessInstanceDto, HistoryProcessInstance.class));
+      HistoryProcessInstanceResults.add(convertValue(resultHistoricProcessInstanceDto, HistoryProcessInstance.class));
     }
     return HistoryProcessInstanceResults;
-
   }
   
   //@Override
   public Long countProcessesInstancesHistory(Map<String, Object> filters, CIBUser user) {
-    HistoricProcessInstanceQueryDto historicProcessInstanceQueryDto = getObjectMapper().convertValue(filters, HistoricProcessInstanceQueryDto.class);  
+    HistoricProcessInstanceQueryDto historicProcessInstanceQueryDto = objectMapper.convertValue(filters, HistoricProcessInstanceQueryDto.class);  
     
-    historicProcessInstanceQueryDto.setObjectMapper(getObjectMapper());
+    historicProcessInstanceQueryDto.setObjectMapper(objectMapper);
     HistoricProcessInstanceQuery query = historicProcessInstanceQueryDto.toQuery(processEngine);
 
     long count = query.count();
@@ -1586,63 +1561,38 @@ Collection<Incident> incidents = fetchIncidentsByInstanceAndActivityId(processDe
   public ProcessInstance findProcessInstance(String processInstanceId, CIBUser user) {
     //TODO: not tested
     org.cibseven.bpm.engine.runtime.ProcessInstance instance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
-
     if (instance == null) {
-      //TODO: exception type
-      throw new IllegalArgumentException("Process instance with id " + processInstanceId + " does not exist");
+      throw new SystemException("Process instance with id " + processInstanceId + " does not exist");
     }
 
     ProcessInstanceDto result = ProcessInstanceDto.fromProcessInstance(instance);
-    return convertValue(getObjectMapper(), result, ProcessInstance.class);
+    return convertValue(result, ProcessInstance.class);
   }
 
   //@Override
   public Variable fetchProcessInstanceVariable(String processInstanceId, String variableName, boolean deserializeValue, CIBUser user) throws SystemException  {
-    //TODO: to be implemented
-/*
+    //TODO: not tested
+    VariableInstanceQueryDto queryDto = new VariableInstanceQueryDto();
+    queryDto.setProcessInstanceIdIn(new String[] {processInstanceId});
+    queryDto.setVariableName(variableName);
+    queryDto.setObjectMapper(objectMapper);
+
+    List<Variable> variablesDeserialized = queryVariableInstances(queryDto, objectMapper, null, null, true);
+    List<Variable> variablesSerialized = queryVariableInstances(queryDto, objectMapper, null, null, false);
+    Variable variableDeserialized = variablesDeserialized.size() == 1 ? variablesDeserialized.get(0) : null;
+    Variable variableSerialized = variablesSerialized.size() == 1 ? variablesSerialized.get(0) : null;
     
-variablesprovider:    
-    UriComponentsBuilder uriBuilder = UriComponentsBuilder
-      .fromUriString(getEngineRestUrl())
-      .path("/variable-instance");
-
-    if (data != null) {
-      data.forEach((key, value) -> {
-        if (value != null) {
-          uriBuilder.queryParam(key, value);
-        }
-      });
+    if (deserializeValue) {
+      variableDeserialized.setValueSerialized(variableSerialized.getValue());
+      variableDeserialized.setValueDeserialized(variableDeserialized.getValue());
+      return variableDeserialized;
     }
-    uriBuilder.queryParam("processInstanceIdIn", processInstanceId);
-
-    final boolean deserializeValues = data != null
-      && data.containsKey("deserializeValues")
-      && (Boolean) data.get("deserializeValues");
-
-    uriBuilder.replaceQueryParam("deserializeValues", "true");
-    String urlDeserialized = uriBuilder.build().toUriString();
-    Collection<Variable> variablesDeserialized = Arrays.asList(((ResponseEntity<VariableHistory[]>) doGet(urlDeserialized, VariableHistory[].class, user, false)).getBody());
-    if (variablesDeserialized == null) {
-      return Collections.emptyList();
+    else {
+      variableSerialized.setValueSerialized(variableSerialized.getValue());
+      variableSerialized.setValueDeserialized(variableDeserialized.getValue());
+      return variableSerialized;
     }
 
-    uriBuilder.replaceQueryParam("deserializeValues", "false");
-    String urlSerialized = uriBuilder.build().toUriString();
-    Collection<Variable> variablesSerialized = Arrays.asList(((ResponseEntity<VariableHistory[]>) doGet(urlSerialized, VariableHistory[].class, user, false)).getBody());
-    if (variablesSerialized == null) {
-      return Collections.emptyList();
-    }
-
-    mergeVariablesValues(
-      variablesDeserialized,
-      variablesSerialized,
-      deserializeValues);
-
-    Collection<Variable> variables = (deserializeValues) ? variablesDeserialized : variablesSerialized;
-    return variables;
-
-*/
-    return null;
   }
   
   //@Override
@@ -1650,11 +1600,10 @@ variablesprovider:
     HistoricProcessInstance instance = 
         historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
     if (instance == null) {
-      //TODO: exception type
-      throw new IllegalArgumentException("Historic process instance with id " + processInstanceId + " does not exist");
+      throw new SystemException("Historic process instance with id " + processInstanceId + " does not exist");
     }
 
-    HistoryProcessInstance historyProcessInstance = convertValue(getObjectMapper(), 
+    HistoryProcessInstance historyProcessInstance = convertValue(
         HistoricProcessInstanceDto.fromHistoricProcessInstance(instance), 
         HistoryProcessInstance.class);;
     return historyProcessInstance;
@@ -1670,8 +1619,7 @@ variablesprovider:
             .collect(Collectors.toList());
       return calledProcessDefinitionDtos;
     } catch (NotFoundException e) {
-      //TODO: exception type
-      throw new IllegalArgumentException(e.getMessage());
+      throw new SystemException(e.getMessage());
     }
     
   }
@@ -1685,13 +1633,29 @@ variablesprovider:
   
   //@Override
   public ResponseEntity<byte[]> getDeployedStartForm(String processDefinitionId, CIBUser user) {
-    //TODO: to be implemented
-    return null;
+    //TODO: not tested
+    try {
+      InputStream deployedStartForm = formService.getDeployedStartForm(processDefinitionId);
+      byte[] bytes = IOUtils.toByteArray(deployedStartForm);
+      return new ResponseEntity<byte[]>(bytes, HttpStatusCode.valueOf(200));
+    } catch (NotFoundException e) {
+      throw new SystemException(e.getMessage());
+    } catch (NullValueException e) {
+      throw new SystemException(e.getMessage());
+    } catch (AuthorizationException e) {
+      throw new SystemException(e.getMessage());
+    } catch (BadUserRequestException e) {
+      throw new SystemException(e.getMessage());
+    } catch (IOException e) {
+      throw new SystemException(e.getMessage());
+    }
   }
 
   //@Override
   public void updateHistoryTimeToLive(String id, Map<String, Object> data, CIBUser user) {
-    //TODO: to be implemented
+    //TODO: not tested
+    HistoryTimeToLiveDto historyTimeToLiveDto = objectMapper.convertValue(data, HistoryTimeToLiveDto.class);
+    repositoryService.updateProcessDefinitionHistoryTimeToLive(id, historyTimeToLiveDto.getHistoryTimeToLive());
   }
 
   //@Override
@@ -1699,13 +1663,19 @@ variablesprovider:
     try {
       historyService.deleteHistoricProcessInstance(id);
     } catch (BadUserRequestException e) {
-      throw new InvalidRequestException(Status.BAD_REQUEST, e.getMessage());
+      throw new SystemException(e.getMessage());
     }
   }
   
   //@Override
   public void deleteProcessDefinition(String id, Optional<Boolean> cascade, CIBUser user) {
-    //TODO: to be implemented
+    //TODO: not tested
+    boolean cascadeVal = cascade.orElse(true);
+    try {
+      repositoryService.deleteProcessDefinition(id, cascadeVal);
+    } catch (NotFoundException nfe) {
+      throw new SystemException(nfe.getMessage(), nfe);
+    }
   }
   
   //@Override
@@ -1713,7 +1683,7 @@ variablesprovider:
       throws SystemException {
 
     ProcessInstanceQueryDto queryDto = objectMapper.convertValue(data, ProcessInstanceQueryDto.class);
-    queryDto.setObjectMapper(getObjectMapper());
+    queryDto.setObjectMapper(objectMapper);
     ProcessInstanceQuery query = queryDto.toQuery(processEngine);
 
     List<org.cibseven.bpm.engine.runtime.ProcessInstance> matchingInstances = QueryUtil.list(query, null, null);
@@ -1721,52 +1691,26 @@ variablesprovider:
     List<ProcessInstance> instanceResults = new ArrayList<>();
     for (org.cibseven.bpm.engine.runtime.ProcessInstance instance : matchingInstances) {
       ProcessInstanceDto resultInstance = ProcessInstanceDto.fromProcessInstance(instance);
-      instanceResults.add(convertValue(getObjectMapper(), resultInstance, ProcessInstance.class));
+      instanceResults.add(convertValue(resultInstance, ProcessInstance.class));
     }
     return instanceResults;
   }
 
   //@Override
   public Object fetchHistoricActivityStatistics(String id, Map<String, Object> params, CIBUser user) {
-    //TODO: to be implemented
-    return null;
-  }
-  
+    //TODO: not tested
+    HistoricActivityStatisticsQueryDto historicActivityStatisticsQueryDto = objectMapper.convertValue(params, HistoricActivityStatisticsQueryDto.class);
+    historicActivityStatisticsQueryDto.setProcessDefinitionId(id);
+    HistoricActivityStatisticsQuery query = historicActivityStatisticsQueryDto.toQuery(processEngine);
 
-  private Process convertProcess(ProcessDefinitionDto definition) {
-    Process process = new Process(
-      definition.getCategory(),
-      definition.getDeploymentId(),
-      definition.getDescription(),
-      definition.getDiagram(),
-      //TODO: int to string?
-      definition.getHistoryTimeToLive().toString(),
-      definition.getId(),
-      definition.getKey(),
-      definition.getName(),
-      definition.getResource(),
-      definition.isStartableInTasklist(),
-      //TODO: string values?
-      definition.isSuspended() ? "TRUE" : "FALSE",
-      definition.getTenantId(),
-      // int to string?
-      Integer.toString(definition.getVersion()),
-      definition.getVersionTag(),
-      null, //List<String> calledFromActivityIds;
-      0, //long runningInstances;
-      0, //long allInstances;
-      0, //long completedInstances;
-      0 //long incidents;
-    );
-    return process;
-  }
-  private Collection<Process> convertProcesses(List<ProcessDefinitionDto> definitions) {
-    List<Process> processes = new ArrayList<>();
-    for (ProcessDefinitionDto definition : definitions) {
-      processes.add(convertProcess(definition));
+    List<HistoricActivityStatisticsDto> result = new ArrayList<>();
+    List<HistoricActivityStatistics> statistics = query.unlimitedList();
+    for (HistoricActivityStatistics currentStatistics : statistics) {
+      result.add(HistoricActivityStatisticsDto.fromHistoricActivityStatistics(currentStatistics));
     }
-    return processes;
+    return result;
   }
+
   /*    
   
   ███████ ██ ██      ████████ ███████ ██████      ██████  ██████   ██████  ██    ██ ██ ██████  ███████ ██████  
@@ -1786,14 +1730,13 @@ variablesprovider:
     List<org.cibseven.bpm.engine.filter.Filter> matchingFilters = QueryUtil.list(query, null, null);
 
     List<Filter> filters = new ArrayList<>();
-    ObjectMapper objectMapper = getObjectMapper();
     for (org.cibseven.bpm.engine.filter.Filter filter : matchingFilters) {
       FilterDto filterDto = FilterDto.fromFilter(filter);
-      // TODO: itemCount not used?
+      //TODO: itemCount not used?
       // if (itemCount != null && itemCount) {
       // dto.setItemCount(filterService.count(filter.getId()));
       // }
-      filters.add(convertValue(objectMapper, filterDto, Filter.class));
+      filters.add(convertValue(filterDto, Filter.class));
     }
     return filters;
   }
@@ -1801,8 +1744,7 @@ variablesprovider:
   //@Override
   public  Filter createFilter(Filter filter, CIBUser user) {
   //TODO: untested
-    ObjectMapper objectMapper = getObjectMapper();
-    FilterDto filterDto = convertValue(objectMapper, filter, FilterDto.class); 
+    FilterDto filterDto = convertValue(filter, FilterDto.class); 
     String resourceType = filterDto.getResourceType();
 
     org.cibseven.bpm.engine.filter.Filter engineFilter;
@@ -1810,41 +1752,36 @@ variablesprovider:
       engineFilter = filterService.newTaskFilter();
     }
     else {
-      //TODO: exception type
-      throw new IllegalArgumentException("Unable to create filter with invalid resource type '" + resourceType + "'");
+      throw new SystemException("Unable to create filter with invalid resource type '" + resourceType + "'");
     }
 
     try {
       filterDto.updateFilter(engineFilter, processEngine);
     }
     catch (NotValidException e) {
-      //TODO: exception type
-      throw new IllegalArgumentException("Unable to create filter with invalid content", e);
+      throw new SystemException("Unable to create filter with invalid content", e);
     }
 
     filterService.saveFilter(engineFilter);
 
-    Filter resultFilter = convertValue(objectMapper, FilterDto.fromFilter(engineFilter), Filter.class);
+    Filter resultFilter = convertValue(FilterDto.fromFilter(engineFilter), Filter.class);
     return resultFilter;
   }
   //@Override
   public void updateFilter(Filter filter, CIBUser user) {
   //TODO: untested
-    ObjectMapper objectMapper = getObjectMapper();
-    FilterDto filterDto = convertValue(objectMapper, filter, FilterDto.class); 
+    FilterDto filterDto = convertValue(filter, FilterDto.class); 
     org.cibseven.bpm.engine.filter.Filter dbFilter = filterService.getFilter(filter.getId());
 
     if (dbFilter == null) {
-      //TODO: exception type
-      throw new IllegalArgumentException("Requested filter not found: " + filter.getId());
+      throw new SystemException("Requested filter not found: " + filter.getId());
     }
 
     try {
       filterDto.updateFilter(dbFilter, processEngine);
     }
     catch (NotValidException e) {
-      //TODO: exception type
-      throw new IllegalArgumentException("Unable to update filter with invalid content", e);
+      throw new SystemException("Unable to update filter with invalid content", e);
     }
     filterService.saveFilter(dbFilter);
   }
@@ -1856,8 +1793,7 @@ variablesprovider:
       filterService.deleteFilter(filterId);
     }
     catch (NullValueException e) {
-      //TODO: exception type
-      throw new IllegalArgumentException("Requested filter not found: " + filterId);
+      throw new SystemException("Requested filter not found: " + filterId);
     }
   }
   
@@ -1877,7 +1813,6 @@ variablesprovider:
     //TODO: not tested
     //MultipartFormData payload;
     //TODO: add authorization
-    ObjectMapper objectMapper = getObjectMapper();
     file.forEach((key, value) -> { 
       try {
         data.add(key, value.get(0).getResource());
@@ -1885,7 +1820,7 @@ variablesprovider:
         throw new SystemException(e);
       }
     });
-    DeploymentBuilder deploymentBuilder = extractDeploymentInformation(convertValue(objectMapper, data, MultipartFormData.class));
+    DeploymentBuilder deploymentBuilder = extractDeploymentInformation(convertValue(data, MultipartFormData.class));
 
     if(!deploymentBuilder.getResourceNames().isEmpty()) {
       DeploymentWithDefinitions deployment = deploymentBuilder.deployWithResult();
@@ -1903,11 +1838,10 @@ variablesprovider:
 
       // GET
       deploymentDto.addReflexiveLink(uri, HttpMethod.GET, "self");
-      return convertValue(objectMapper, deploymentDto, Deployment.class);
+      return convertValue(deploymentDto, Deployment.class);
 
     } else {
-      //TODO: exception type 
-      throw new IllegalArgumentException("No deployment resources contained in the form upload.");
+      throw new SystemException("No deployment resources contained in the form upload.");
     }
 /*
     String url = getEngineRestUrl() + "/deployment/create";
@@ -1952,8 +1886,7 @@ variablesprovider:
         if (fileName != null) {
           deploymentBuilder.addInputStream(part.getFileName(), new ByteArrayInputStream(part.getBinaryContent()));
         } else {
-          //TODO: exception type 
-          throw new IllegalArgumentException("No file name found in the deployment resource described by form parameter '" + fileName + "'.");
+          throw new SystemException("No file name found in the deployment resource described by form parameter '" + fileName + "'.");
         }
       }
     }
@@ -2007,7 +1940,6 @@ variablesprovider:
 
   //@Override
   public Long countDeployments(CIBUser user, String nameLike) {
-    ObjectMapper objectMapper = getObjectMapper();
     MultivaluedMap<String, String> queryParams = new MultivaluedHashMap<>();
     if (nameLike != null && !nameLike.isEmpty()) {
       queryParams.putSingle("nameLike", nameLike);
@@ -2021,8 +1953,6 @@ variablesprovider:
 
   //@Override
   public Collection<Deployment> findDeployments(CIBUser user, String nameLike, int firstResult, int maxResults, String sortBy, String sortOrder) {
-    ObjectMapper objectMapper = getObjectMapper();
-    JacksonConfigurator.configureObjectMapper(objectMapper);
     MultivaluedMap<String, String> queryParams = new MultivaluedHashMap<>();
     queryParams.putSingle("sortBy", sortBy);
     queryParams.putSingle("sortOrder", sortOrder);
@@ -2036,7 +1966,7 @@ variablesprovider:
     List<Deployment> deployments = new ArrayList<>();
     for (org.cibseven.bpm.engine.repository.Deployment deployment : matchingDeployments) {
       DeploymentDto def = DeploymentDto.fromDeployment(deployment);
-      deployments.add(convertValue(objectMapper, def, Deployment.class));
+      deployments.add(convertValue(def, Deployment.class));
     }
     return deployments;
   }
@@ -2046,12 +1976,10 @@ variablesprovider:
     org.cibseven.bpm.engine.repository.Deployment deployment = repositoryService.createDeploymentQuery().deploymentId(deploymentId).singleResult();
 
     if (deployment == null) {
-      //TODO: exception type 
-      throw new IllegalArgumentException("Deployment with id '" + deploymentId + "' does not exist");
+      throw new SystemException("Deployment with id '" + deploymentId + "' does not exist");
     }
 
-    ObjectMapper objectMapper = getObjectMapper();
-    return convertValue(objectMapper, DeploymentDto.fromDeployment(deployment), Deployment.class);
+    return convertValue(DeploymentDto.fromDeployment(deployment), Deployment.class);
   }
 
   //@Override
@@ -2059,18 +1987,16 @@ variablesprovider:
     
     List<Resource> resources = repositoryService.getDeploymentResources(deploymentId);
 
-    ObjectMapper objectMapper = getObjectMapper();
     List<DeploymentResource> deploymentResources = new ArrayList<DeploymentResource>();
     for (Resource resource : resources) {
-      deploymentResources.add(convertValue(objectMapper, DeploymentResourceDto.fromResources(resource), DeploymentResource.class));
+      deploymentResources.add(convertValue(DeploymentResourceDto.fromResources(resource), DeploymentResource.class));
     }
 
     if (!deploymentResources.isEmpty()) {
       return deploymentResources;
     }
     else {
-      //TODO: exception type 
-      throw new IllegalArgumentException("Deployment resources for deployment id '" + deploymentId + "' do not exist.");
+      throw new SystemException("Deployment resources for deployment id '" + deploymentId + "' do not exist.");
     }
   }
 
@@ -2120,12 +2046,10 @@ variablesprovider:
         Data returnValue = new Data(fileName, mediaType, iso, body.length);
         return returnValue;
       } catch (IOException e) {
-        //TODO: exception type 
-        throw new IllegalArgumentException("Deployment resource '" + resourceId + "' for deployment id '" + deploymentId + "'could not be read.");
+        throw new SystemException("Deployment resource '" + resourceId + "' for deployment id '" + deploymentId + "'could not be read.");
       }
     } else {
-      //TODO: exception type 
-      throw new IllegalArgumentException("Deployment resource '" + resourceId + "' for deployment id '" + deploymentId + "' does not exist.");
+      throw new SystemException("Deployment resource '" + resourceId + "' for deployment id '" + deploymentId + "' does not exist.");
     }
   }
   
@@ -2137,8 +2061,7 @@ variablesprovider:
       }
     }
   
-    //TODO: exception type 
-    throw new IllegalArgumentException("Deployment resource with resource id '" + resourceId + "' for deployment id '" + deploymentId + "' does not exist.");
+    throw new SystemException("Deployment resource with resource id '" + resourceId + "' for deployment id '" + deploymentId + "' does not exist.");
   }
   
   private List<DeploymentResourceDto> getDeploymentResources(String deploymentId) {
@@ -2153,8 +2076,7 @@ variablesprovider:
       return deploymentResources;
     }
     else {
-      //TODO: exception type 
-      throw new IllegalArgumentException("Deployment resources for deployment id '" + deploymentId + "' do not exist.");
+      throw new SystemException("Deployment resources for deployment id '" + deploymentId + "' do not exist.");
     }
   }
   
@@ -2162,8 +2084,7 @@ variablesprovider:
   public void deleteDeployment(String deploymentId, Boolean cascade, CIBUser user) throws SystemException {
     org.cibseven.bpm.engine.repository.Deployment deployment = repositoryService.createDeploymentQuery().deploymentId(deploymentId).singleResult();
     if (deployment == null) {
-      //TODO: exception type 
-      throw new IllegalArgumentException("Deployment with id '" + deploymentId + "' do not exist");
+      throw new SystemException("Deployment with id '" + deploymentId + "' do not exist");
     }
 
     //TODO: properties unused
@@ -2190,31 +2111,34 @@ variablesprovider:
    } catch (AuthorizationException e) {
      throw e;
    } catch (ProcessEngineException e) {
-     //TODO: exception type 
-     throw new IllegalArgumentException(e.getMessage(), e);
+     throw new SystemException(e.getMessage(), e);
    }
 
    if (activityInstance == null) {
-     //TODO: exception type 
-     throw new IllegalArgumentException("Process instance with id " + processInstanceId + " does not exist");
+     throw new SystemException("Process instance with id " + processInstanceId + " does not exist");
    }
 
    ActivityInstanceDto result = ActivityInstanceDto.fromActivityInstance(activityInstance);
-   return convertValue(getObjectMapper(), result, ActivityInstance.class);
+   return convertValue(result, ActivityInstance.class);
  }
  
  //@Override
  public List<ActivityInstanceHistory> findActivitiesInstancesHistory(Map<String, Object> queryParams, CIBUser user) {
-   //TODO: to be implemented
-   return null;
+   //TODO: not tested
+   HistoricActivityInstanceQueryDto queryHistoricActivityInstanceDto = objectMapper.convertValue(queryParams, HistoricActivityInstanceQueryDto.class);
+   return queryHistoricActivityInstance(queryHistoricActivityInstanceDto);
+
  }
  
  //@Override
  public List<ActivityInstanceHistory> findActivitiesInstancesHistory(String processInstanceId, CIBUser user) {
-   ObjectMapper objectMapper = getObjectMapper();
    HistoricActivityInstanceQueryDto queryHistoricActivityInstanceDto = new HistoricActivityInstanceQueryDto();
-   queryHistoricActivityInstanceDto.setObjectMapper(objectMapper);
    queryHistoricActivityInstanceDto.setProcessInstanceId(processInstanceId);
+   return queryHistoricActivityInstance(queryHistoricActivityInstanceDto);
+ }
+ 
+ private List<ActivityInstanceHistory> queryHistoricActivityInstance(HistoricActivityInstanceQueryDto queryHistoricActivityInstanceDto) {
+   queryHistoricActivityInstanceDto.setObjectMapper(objectMapper);
    HistoricActivityInstanceQuery query = queryHistoricActivityInstanceDto.toQuery(processEngine);
    List<HistoricActivityInstance> matchingHistoricActivityInstances = QueryUtil.list(query, null, null);
 
@@ -2223,34 +2147,50 @@ variablesprovider:
      HistoricActivityInstanceDto resultHistoricActivityInstance = new HistoricActivityInstanceDto();
      HistoricActivityInstanceDto.fromHistoricActivityInstance(resultHistoricActivityInstance, historicActivityInstance);
      historicActivityInstanceResults
-         .add(convertValue(objectMapper, resultHistoricActivityInstance, ActivityInstanceHistory.class));
+         .add(convertValue(resultHistoricActivityInstance, ActivityInstanceHistory.class));
    }
    return historicActivityInstanceResults;
  }
  
  //@Override
  public ActivityInstance findActivityInstances(String processInstanceId, CIBUser user) throws SystemException {
-   //TODO: to be implemented
-   return null;
+   //TODO: not tested
+   org.cibseven.bpm.engine.runtime.ActivityInstance activityInstance = null;
+
+   try {
+     activityInstance = runtimeService.getActivityInstance(processInstanceId);
+   } catch (AuthorizationException e) {
+     throw e;
+   } catch (ProcessEngineException e) {
+     throw new SystemException(e.getMessage(), e);
+   }
+
+   if (activityInstance == null) {
+     throw new SystemException("Process instance with id " + processInstanceId + " does not exist");
+   }
+
+   ActivityInstanceDto result = ActivityInstanceDto.fromActivityInstance(activityInstance);
+   return convertValue(result, ActivityInstance.class);
  }
  
  //@Override
  public List<ActivityInstanceHistory> findActivityInstanceHistory(String processInstanceId, CIBUser user) throws SystemException {
-   //TODO: to be implemented
-   return null;
+   //TODO: not tested
+   HistoricActivityInstanceQueryDto queryHistoricActivityInstanceDto = new HistoricActivityInstanceQueryDto();
+   queryHistoricActivityInstanceDto.setProcessInstanceId(processInstanceId);
+   return queryHistoricActivityInstance(queryHistoricActivityInstanceDto);
  } 
 
  //@Override
  public void deleteVariableByExecutionId(String executionId, String variableName, CIBUser user) {
-   // TODO: in progress
+   //TODO: not tested
    try {
      runtimeService.removeVariableLocal(executionId, variableName);
    } catch (AuthorizationException e) {
      throw e;
    } catch (ProcessEngineException e) {
      String errorMessage = String.format("Cannot delete %s variable %s: %s", executionId, variableName, e.getMessage());
-     // TODO: exception type
-     throw new IllegalArgumentException(errorMessage, e);
+     throw new SystemException(errorMessage, e);
    }
 
  }
@@ -2260,8 +2200,7 @@ variablesprovider:
    try {
      historyService.deleteHistoricVariableInstance(id);
    } catch (NotFoundException nfe) { // rewrite status code from bad request (400) to not found (404)
-     //TODO: exception type 
-     throw new IllegalArgumentException(nfe.getMessage(), nfe);
+     throw new SystemException(nfe.getMessage(), nfe);
    }
  } 
   /*
@@ -2275,14 +2214,138 @@ variablesprovider:
    */
   //@Override
   public Collection<Message> correlateMessage(Map<String, Object> data, CIBUser user) throws SystemException {
-   //TODO: to be implemented
-   return null;
+    // TODO: not tested
+    CorrelationMessageDto messageDto = objectMapper.convertValue(data, CorrelationMessageDto.class);
+    if (messageDto.getMessageName() == null) {
+      throw new SystemException("No message name supplied");
+    }
+    if (messageDto.getTenantId() != null && messageDto.isWithoutTenantId()) {
+      throw new SystemException("Parameter 'tenantId' cannot be used together with parameter 'withoutTenantId'.");
+    }
+    boolean variablesInResultEnabled = messageDto.isVariablesInResultEnabled();
+    if (!messageDto.isResultEnabled() && variablesInResultEnabled) {
+      throw new SystemException(
+          "Parameter 'variablesInResultEnabled' cannot be used without 'resultEnabled' set to true.");
+    }
+
+    List<MessageCorrelationResultDto> resultDtos = new ArrayList<>();
+    try {
+      MessageCorrelationBuilder correlation = createMessageCorrelationBuilder(messageDto);
+      if (!variablesInResultEnabled) {
+        resultDtos.addAll(correlate(messageDto, correlation));
+      } else {
+        resultDtos.addAll(correlateWithVariablesEnabled(messageDto, correlation));
+      }
+    } catch (RestException e) {
+      String errorMessage = String.format("Cannot deliver message: %s", e.getMessage());
+      throw new SystemException(errorMessage, e);
+
+    } catch (MismatchingMessageCorrelationException e) {
+      throw new SystemException(e);
+    }
+    List<Message> messageList = new ArrayList<>();
+    if (messageDto.isResultEnabled()) {
+      for (MessageCorrelationResultDto resultDto : resultDtos) {
+        messageList.add(convertValue(resultDto, Message.class));
+      }
+    }
+    return messageList;
   }
-  
+
+  private List<MessageCorrelationResultDto> correlate(CorrelationMessageDto messageDto, MessageCorrelationBuilder correlation) {
+    List<MessageCorrelationResultDto> resultDtos = new ArrayList<>();
+    if (!messageDto.isAll()) {
+      MessageCorrelationResult result = correlation.correlateWithResult();
+      resultDtos.add(MessageCorrelationResultDto.fromMessageCorrelationResult(result));
+    } else {
+      List<MessageCorrelationResult> results = correlation.correlateAllWithResult();
+      for (MessageCorrelationResult result : results) {
+        resultDtos.add(MessageCorrelationResultDto.fromMessageCorrelationResult(result));
+      }
+    }
+    return resultDtos;
+  }
+
+  private List<MessageCorrelationResultWithVariableDto> correlateWithVariablesEnabled(CorrelationMessageDto messageDto, MessageCorrelationBuilder correlation) {
+    List<MessageCorrelationResultWithVariableDto> resultDtos = new ArrayList<>();
+    if (!messageDto.isAll()) {
+      MessageCorrelationResultWithVariables result = correlation.correlateWithResultAndVariables(false);
+      resultDtos.add(MessageCorrelationResultWithVariableDto.fromMessageCorrelationResultWithVariables(result));
+    } else {
+      List<MessageCorrelationResultWithVariables> results = correlation.correlateAllWithResultAndVariables(false);
+      for (MessageCorrelationResultWithVariables result : results) {
+        resultDtos.add(MessageCorrelationResultWithVariableDto.fromMessageCorrelationResultWithVariables(result));
+      }
+    }
+    return resultDtos;
+  }
+
+  private MessageCorrelationBuilder createMessageCorrelationBuilder(CorrelationMessageDto messageDto) {
+    RuntimeService runtimeService = processEngine.getRuntimeService();
+
+    Map<String, Object> correlationKeys = VariableValueDto.toMap(messageDto.getCorrelationKeys(), processEngine, objectMapper);
+    Map<String, Object> localCorrelationKeys = VariableValueDto.toMap(messageDto.getLocalCorrelationKeys(), processEngine, objectMapper);
+    Map<String, Object> processVariables = VariableValueDto.toMap(messageDto.getProcessVariables(), processEngine, objectMapper);
+    Map<String, Object> processVariablesLocal = VariableValueDto.toMap(messageDto.getProcessVariablesLocal(), processEngine, objectMapper);
+    Map<String, Object> processVariablesToTriggeredScope = VariableValueDto.toMap(messageDto.getProcessVariablesToTriggeredScope(), processEngine, objectMapper);
+
+    MessageCorrelationBuilder builder = runtimeService
+        .createMessageCorrelation(messageDto.getMessageName());
+
+    if (processVariables != null) {
+      builder.setVariables(processVariables);
+    }
+    if (processVariablesLocal != null) {
+      builder.setVariablesLocal(processVariablesLocal);
+    }
+    if (processVariablesToTriggeredScope != null) {
+      builder.setVariablesToTriggeredScope(processVariablesToTriggeredScope);
+    }
+    if (messageDto.getBusinessKey() != null) {
+      builder.processInstanceBusinessKey(messageDto.getBusinessKey());
+    }
+
+    if (correlationKeys != null && !correlationKeys.isEmpty()) {
+      for (java.util.Map.Entry<String, Object> correlationKey  : correlationKeys.entrySet()) {
+        String name = correlationKey.getKey();
+        Object value = correlationKey.getValue();
+        builder.processInstanceVariableEquals(name, value);
+      }
+    }
+
+    if (localCorrelationKeys != null && !localCorrelationKeys.isEmpty()) {
+      for (java.util.Map.Entry<String, Object> correlationKey  : localCorrelationKeys.entrySet()) {
+        String name = correlationKey.getKey();
+        Object value = correlationKey.getValue();
+        builder.localVariableEquals(name, value);
+      }
+    }
+
+    if (messageDto.getTenantId() != null) {
+      builder.tenantId(messageDto.getTenantId());
+
+    } else if (messageDto.isWithoutTenantId()) {
+      builder.withoutTenantId();
+    }
+
+    String processInstanceId = messageDto.getProcessInstanceId();
+    if (processInstanceId != null) {
+      builder.processInstanceId(processInstanceId);
+    }
+
+    return builder;
+  }
   //@Override
   public String findStacktrace(String jobId, CIBUser user) {
-   //TODO: to be implemented
-   return null;
+    //TODO: not tested
+    try {
+      String stacktrace = managementService.getJobExceptionStacktrace(jobId);
+      return stacktrace;
+    } catch (AuthorizationException e) {
+      throw e;
+    } catch (ProcessEngineException e) {
+      throw new SystemException(e.getMessage());
+    }
   }
   
   //@Override
@@ -2291,8 +2354,7 @@ variablesprovider:
     try {
       return externalTaskService.getExternalTaskErrorDetails(externalTaskId);
     } catch (NotFoundException e) {
-      //TODO: exception type
-      throw new IllegalArgumentException("External task with id " + externalTaskId + " does not exist", e);
+      throw new SystemException("External task with id " + externalTaskId + " does not exist", e);
     }
   }
   
@@ -2303,14 +2365,12 @@ variablesprovider:
     } catch (AuthorizationException e) {
       throw e;
     } catch (ProcessEngineException e) {
-      //TODO: exception type
-      throw new IllegalArgumentException(e.getMessage());
+      throw new SystemException(e.getMessage());
     }
   }
   
   //@Override
   public Collection<Incident> findHistoricIncidents(Map<String, Object> params, CIBUser user) {
-    ObjectMapper objectMapper = getObjectMapper();
     HistoricIncidentQueryDto queryDto = objectMapper.convertValue(params, HistoricIncidentQueryDto.class);
     HistoricIncidentQuery query = queryDto.toQuery(processEngine);
 
@@ -2326,7 +2386,7 @@ variablesprovider:
     //TODO: enrichment is not tested
     // Enrich historic incidents with root cause incident data (same enrichment algorithm as current incidents)
     for (HistoricIncidentDto incidentDto : historicIncidentDtos) {
-      Incident incident = convertValue(objectMapper, incidentDto, Incident.class);
+      Incident incident = convertValue(incidentDto, Incident.class);
       if (incidentDto.getId() != null && incidentDto.getRootCauseIncidentId() != null 
           && !incidentDto.getId().equals(incidentDto.getRootCauseIncidentId())) {
         try {
@@ -2374,25 +2434,75 @@ variablesprovider:
   
   //@Override
   public String findHistoricStacktraceByJobId(String jobId, CIBUser user) {
-   //TODO: to be implemented
-   return null;
+   //TODO: not tested
+    try {
+      String stacktrace = historyService.getHistoricJobLogExceptionStacktrace(jobId);
+      return stacktrace;
+    } catch (AuthorizationException e) {
+      throw e;
+    } catch (ProcessEngineException e) {
+      throw new SystemException(e.getMessage());
+    }
   }
   
   //@Override
   public void retryJobById(String jobId, Map<String, Object> data, CIBUser user) {
-   //TODO: to be implemented
-  }
+   //TODO: not tested
+    RetriesDto dto = objectMapper.convertValue(data, RetriesDto.class);
+    try {
+      SetJobRetriesBuilder builder = managementService
+          .setJobRetries(dto.getRetries())
+          .jobId(jobId);
+      if (dto.isDueDateSet()) {
+        builder.dueDate(dto.getDueDate());
+      }
+      builder.execute();
+    } catch (AuthorizationException e) {
+      throw e;
+    } catch (ProcessEngineException e) {
+      throw new SystemException(e.getMessage());
+    }
+}
 
   //@Override
   public void retryExternalTask(String externalTaskId, Map<String, Object> data, CIBUser user) {
-   //TODO: to be implemented
+   //TODO: not tested
+    RetriesDto dto = objectMapper.convertValue(data, RetriesDto.class);
+    Integer retries = dto.getRetries();
+
+    if (retries == null) {
+      throw new SystemException("The number of retries cannot be null.");
+    }
+
+    try {
+      externalTaskService.setRetries(externalTaskId, retries);
+    } catch (NotFoundException e) {
+      throw new SystemException("External task with id " + externalTaskId + " does not exist", e);
+    }
   }
 
   //@Override
   public Collection<EventSubscription> getEventSubscriptions(Optional<String> processInstanceId,
       Optional<String> eventType, Optional<String> eventName, CIBUser user) {
-   //TODO: to be implemented
-   return null;
+   //TODO: not tested
+    EventSubscriptionQueryDto queryDto = new EventSubscriptionQueryDto();
+    queryDto.setObjectMapper(objectMapper);
+    if (processInstanceId.isPresent())
+      queryDto.setProcessInstanceId(processInstanceId.get());
+    if (eventType.isPresent())
+      queryDto.setEventType(eventType.get());
+    if (eventName.isPresent())
+      queryDto.setEventName(eventName.get());
+    EventSubscriptionQuery query = queryDto.toQuery(processEngine);
+
+    List<org.cibseven.bpm.engine.runtime.EventSubscription> matchingEventSubscriptions = QueryUtil.list(query, null, null);
+
+    List<EventSubscription> eventSubscriptionResults = new ArrayList<>();
+    for (org.cibseven.bpm.engine.runtime.EventSubscription eventSubscription : matchingEventSubscriptions) {
+      EventSubscriptionDto resultEventSubscription = EventSubscriptionDto.fromEventSubscription(eventSubscription);
+      eventSubscriptionResults.add(convertValue(resultEventSubscription, EventSubscription.class));
+    }
+    return eventSubscriptionResults;
   } 
   
   /*
@@ -2411,7 +2521,7 @@ variablesprovider:
     //TODO: eliminate rest classes
     AuthorizationQueryDto queryDto = new AuthorizationQueryDto();
     queryDto.setUserIdIn(new String[]{userId});
-    queryDto.setObjectMapper(getObjectMapper());
+    queryDto.setObjectMapper(objectMapper);
     AuthorizationQuery userQuery = queryDto.toQuery(processEngine);
 
     List<org.cibseven.bpm.engine.authorization.Authorization> userAuthorizationList = QueryUtil.list(userQuery, null, null);
@@ -2441,7 +2551,7 @@ variablesprovider:
 
     AuthorizationQueryDto groupIdQueryDto = new AuthorizationQueryDto();
     groupIdQueryDto.setGroupIdIn(listGroups.toArray(new String[0]));
-    groupIdQueryDto.setObjectMapper(getObjectMapper());
+    groupIdQueryDto.setObjectMapper(objectMapper);
     AuthorizationQuery groupIdQuery = groupIdQueryDto.toQuery(processEngine);
     //expected: 51 authorizations with id, type, userid, groupId, resourceType, resourceId
     List<org.cibseven.bpm.engine.authorization.Authorization> groupIdResultList = QueryUtil.list(groupIdQuery, null, null);
@@ -2449,7 +2559,7 @@ variablesprovider:
 
     AuthorizationQueryDto globalIdQueryDto = new AuthorizationQueryDto();
     globalIdQueryDto.setType(0);
-    globalIdQueryDto.setObjectMapper(getObjectMapper());
+    globalIdQueryDto.setObjectMapper(objectMapper);
     AuthorizationQuery globalIdQuery = globalIdQueryDto.toQuery(processEngine);
     List<org.cibseven.bpm.engine.authorization.Authorization> globalIdResultList = QueryUtil.list(globalIdQuery, null, null);
     Collection<Authorization> globalAuthorizations = createAuthorizationCollection(globalIdResultList);
@@ -2519,7 +2629,7 @@ variablesprovider:
   
   public Collection<SevenUser> fetchUsers(CIBUser user) throws SystemException {
     UserQueryDto queryDto = new UserQueryDto();
-    queryDto.setObjectMapper(getObjectMapper());
+    queryDto.setObjectMapper(objectMapper);
     UserQuery query = queryDto.toQuery(processEngine);
     query.userId(user.getId());
     List<org.cibseven.bpm.engine.identity.User> resultList = QueryUtil.list(query, null, null);
@@ -2530,8 +2640,7 @@ variablesprovider:
   
   public SevenVerifyUser verifyUser(String username, String password, CIBUser user) throws SystemException {
     if ((username == null || username.isBlank())|| (password == null || password.isBlank()))
-      //TODO: exception type
-      throw new IllegalArgumentException("Username and password are required");
+      throw new SystemException("Username and password are required");
     SevenVerifyUser verifyUser = new SevenVerifyUser();
     boolean valid = identityService.checkPassword(username, password);
     verifyUser.setAuthenticated(valid);
@@ -2594,7 +2703,7 @@ variablesprovider:
     //TODO: Wildcard is always set to "%"
     final String wcard = "%";
     UserQueryDto queryDto = new UserQueryDto();
-    queryDto.setObjectMapper(getObjectMapper());
+    queryDto.setObjectMapper(objectMapper);
     UserQuery query = queryDto.toQuery(processEngine);
     if (memberOfGroup.isPresent())
        query.memberOfGroup(memberOfGroup.get());
@@ -2687,14 +2796,12 @@ variablesprovider:
   //@Override
   public void updateUserProfile(String userId, User user, CIBUser flowUser) {
     if(identityService.isReadOnly()) {
-      //TODO: exception type
-      throw new IllegalArgumentException("Identity service implementation is read-only.");
+      throw new SystemException("Identity service implementation is read-only.");
     }
 
     org.cibseven.bpm.engine.identity.User dbUser = findUserObject(user.getId());
     if(dbUser == null) {
-      //TODO: exception type
-      throw new IllegalArgumentException("User with id " + user.getId() + " does not exist");
+      throw new SystemException("User with id " + user.getId() + " does not exist");
     }
 
     dbUser.setId(user.getId());
@@ -2720,8 +2827,7 @@ variablesprovider:
         }
       }
     } catch (ProcessEngineException e) {
-      // TODO: exception type
-      throw new IllegalArgumentException("Exception while performing user query: " + e.getMessage());
+      throw new SystemException("Exception while performing user query: " + e.getMessage());
     }
     return dbUser;
   }
@@ -2732,8 +2838,7 @@ variablesprovider:
           .groupId(groupId)
           .singleResult();
     } catch(ProcessEngineException e) {
-      //TODO: exception type
-      throw new IllegalArgumentException("Exception while performing group query: "+ e.getMessage());
+      throw new SystemException("Exception while performing group query: "+ e.getMessage());
     }
   }
   
@@ -2741,21 +2846,18 @@ variablesprovider:
   //@Override
   public void updateUserCredentials(String userId, Map<String, Object> data, CIBUser user) {
     if(identityService.isReadOnly()) {
-      //TODO: exception type
-      throw new IllegalArgumentException("Identity service implementation is read-only.");
+      throw new SystemException("Identity service implementation is read-only.");
     }
     Authentication currentAuthentication = identityService.getCurrentAuthentication();
     if(currentAuthentication != null && currentAuthentication.getUserId() != null) {
       if(!identityService.checkPassword(currentAuthentication.getUserId(), (String)data.get("authenticatedUserPassword"))) {
-        //TODO: exception type
-        throw new IllegalArgumentException("The given authenticated user password is not valid.");
+        throw new SystemException("The given authenticated user password is not valid.");
       }
     }
 
     org.cibseven.bpm.engine.identity.User dbUser = findUserObject(userId);
     if(dbUser == null) {
-      //TODO: exception type
-      throw new IllegalArgumentException("User with id " + user.getId() + " does not exist");
+      throw new SystemException("User with id " + user.getId() + " does not exist");
     }
 
     dbUser.setPassword((String)data.get("password"));
@@ -2765,8 +2867,7 @@ variablesprovider:
   //@Override
   public void addMemberToGroup(String groupId, String userId, CIBUser user) {
     if(identityService.isReadOnly()) {
-      //TODO: exception type
-      throw new IllegalArgumentException("Identity service implementation is read-only.");
+      throw new SystemException("Identity service implementation is read-only.");
     }
     identityService.createMembership(userId, groupId);
   }
@@ -2774,8 +2875,7 @@ variablesprovider:
   //@Override
   public void deleteMemberFromGroup(String groupId, String userId, CIBUser user) {
     if(identityService.isReadOnly()) {
-      //TODO: exception type
-      throw new IllegalArgumentException("Identity service implementation is read-only.");
+      throw new SystemException("Identity service implementation is read-only.");
     }
     identityService.deleteMembership(userId, groupId);
   }
@@ -2813,7 +2913,7 @@ variablesprovider:
     //TODO: Wildcard is always set to "%"
     final String wcard = "%";
     GroupQueryDto queryDto = new GroupQueryDto();
-    queryDto.setObjectMapper(getObjectMapper());
+    queryDto.setObjectMapper(objectMapper);
     //set parameters
     if (id.isPresent())
         queryDto.setId(id.get());
@@ -2860,8 +2960,7 @@ variablesprovider:
   //@Override
   public void createGroup(UserGroup group, CIBUser user) {
     if(identityService.isReadOnly()) {
-      //TODO: exception type
-      throw new IllegalArgumentException("Identity service implementation is read-only.");
+      throw new SystemException("Identity service implementation is read-only.");
     }
     Group newGroup = identityService.newGroup(group.getId());
     newGroup.setId(group.getId()); 
@@ -2873,14 +2972,12 @@ variablesprovider:
   //@Override
   public void updateGroup(String groupId, UserGroup group, CIBUser user) {
     if(identityService.isReadOnly()) {
-      //TODO: exception type
-      throw new IllegalArgumentException("Identity service implementation is read-only.");
+      throw new SystemException("Identity service implementation is read-only.");
     }
 
     Group dbGroup = findGroupObject(groupId);
     if(dbGroup == null) {
-      //TODO: exception type
-      throw new IllegalArgumentException("Group with id " + groupId + " does not exist");
+      throw new SystemException("Group with id " + groupId + " does not exist");
     }
 
     dbGroup.setId(group.getId());
@@ -2893,8 +2990,7 @@ variablesprovider:
   //@Override
   public void deleteGroup(String groupId, CIBUser user) {
     if(identityService.isReadOnly()) {
-      //TODO: exception type
-      throw new IllegalArgumentException("Identity service implementation is read-only.");
+      throw new SystemException("Identity service implementation is read-only.");
     }
     identityService.deleteGroup(groupId);
   }
@@ -2903,10 +2999,47 @@ variablesprovider:
   public Collection<Authorization> findAuthorization(Optional<String> id, Optional<String> type, Optional<String> userIdIn, Optional<String> groupIdIn,
       Optional<String> resourceType, Optional<String> resourceId, Optional<String> sortBy, Optional<String> sortOrder, Optional<String> firstResult,
       Optional<String> maxResults, CIBUser user) {
-    //TODO: to be implemented
-    return null;
+    //TODO: not tested
+    AuthorizationQueryDto queryDto = new AuthorizationQueryDto();
+    queryDto.setObjectMapper(objectMapper);
+    if (id.isPresent())
+      queryDto.setId(id.get());
+    if (type.isPresent())
+      queryDto.setType(Integer.parseInt(type.get()));
+    if (userIdIn.isPresent())
+      queryDto.setUserIdIn(new String[]{userIdIn.get()});
+    if (groupIdIn.isPresent())
+      queryDto.setGroupIdIn(new String[]{groupIdIn.get()});
+    if (resourceType.isPresent())
+      queryDto.setResourceType(Integer.parseInt(resourceType.get()));
+    if (resourceId.isPresent())
+      queryDto.setResourceId(resourceId.get());
+    if (sortOrder.isPresent())
+      queryDto.setSortOrder(sortOrder.get());
+    if (sortOrder.isPresent())
+      queryDto.setSortOrder(sortOrder.get());
+    Integer firstResultParam = null;
+    if (firstResult.isPresent())
+      firstResultParam = Integer.parseInt(firstResult.get());
+    Integer maxResultsParam = null;
+    if (maxResults.isPresent())
+      maxResultsParam = Integer.parseInt(maxResults.get());
+    return queryAuthorizations(queryDto, firstResultParam, maxResultsParam);
   }
 
+  private List<Authorization> queryAuthorizations(AuthorizationQueryDto queryDto, Integer firstResult, Integer maxResults) {
+    //TODO: not tested
+    queryDto.setObjectMapper(objectMapper);
+    AuthorizationQuery query = queryDto.toQuery(processEngine);
+  
+    List<org.cibseven.bpm.engine.authorization.Authorization> resultList = QueryUtil.list(query, firstResult, maxResults);
+    List<AuthorizationDto> authorizationDtoList = AuthorizationDto.fromAuthorizationList(resultList, processEngine.getProcessEngineConfiguration());
+    List<Authorization> authorizationList = new ArrayList<>();
+    for (AuthorizationDto authorizationDto : authorizationDtoList) {
+      authorizationList.add(convertValue(authorizationDto, Authorization.class));
+    }
+    return authorizationList;
+  }
   //@Override
   public ResponseEntity<Authorization> createAuthorization(Authorization authorization, CIBUser user) {
     
@@ -2939,8 +3072,7 @@ variablesprovider:
         .createAuthorizationQuery().authorizationId(authorizationId).singleResult();
 
     if (dbAuthorization == null) {
-      // TODO: exception type
-      throw new IllegalArgumentException("Authorization with id " + authorizationId + " does not exist.");
+      throw new SystemException("Authorization with id " + authorizationId + " does not exist.");
     }
     AuthorizationDto authorizationDto = new AuthorizationDto();
     if (data.containsKey("groupId"))
@@ -2972,7 +3104,7 @@ variablesprovider:
     //TODO: any use of 'withCommentAttachmentInfo()'
     if (foundTask == null) {
       //TODO: check exception type
-      throw new IllegalArgumentException("No matching task with id " + taskId);
+      throw new SystemException("No matching task with id " + taskId);
     }
     return foundTask;
   }
@@ -3001,14 +3133,63 @@ variablesprovider:
   
   //@Override
   public Long countIncident(Map<String, Object> params, CIBUser user) {
-    //TODO: to be implemented
-    return null;
+    //TODO: not tested
+    IncidentQueryDto queryDto = objectMapper.convertValue(params, IncidentQueryDto.class);
+    IncidentQuery query = queryDto.toQuery(processEngine);
+    return query.count();
   }
 
   //@Override
   public Collection<Incident> findIncident(Map<String, Object> params, CIBUser user) {
-    //TODO: to be implemented
-    return null;
+    //TODO: not tested
+    IncidentQueryDto queryDto = objectMapper.convertValue(params, IncidentQueryDto.class);
+    IncidentQuery query = queryDto.toQuery(processEngine);
+
+    List<org.cibseven.bpm.engine.runtime.Incident> queryResult = QueryUtil.list(query, null, null);
+
+    List<Incident> incidents = new ArrayList<>();
+    for (org.cibseven.bpm.engine.runtime.Incident incident : queryResult) {
+      IncidentDto dto = IncidentDto.fromIncident(incident);
+      incidents.add(convertValue(dto, Incident.class));
+    }
+
+    for (Incident incident : incidents) {
+      if (incident.getId() != null && incident.getRootCauseIncidentId() != null 
+          && !incident.getId().equals(incident.getRootCauseIncidentId())) {
+        try {
+          // Fetch the root cause incident
+          Incident rootCauseIncident = fetchIncidentById(incident.getRootCauseIncidentId());
+          if (rootCauseIncident != null) {
+            // Map root cause incident data to the specific fields
+            incident.setCauseIncidentProcessInstanceId(rootCauseIncident.getProcessInstanceId());
+            incident.setCauseIncidentProcessDefinitionId(rootCauseIncident.getProcessDefinitionId());
+            incident.setCauseIncidentActivityId(rootCauseIncident.getActivityId());
+            incident.setCauseIncidentFailedActivityId(rootCauseIncident.getFailedActivityId());
+            incident.setRootCauseIncidentProcessInstanceId(rootCauseIncident.getProcessInstanceId());
+            incident.setRootCauseIncidentProcessDefinitionId(rootCauseIncident.getProcessDefinitionId());
+            incident.setRootCauseIncidentActivityId(rootCauseIncident.getActivityId());
+            incident.setRootCauseIncidentFailedActivityId(rootCauseIncident.getFailedActivityId());
+            incident.setRootCauseIncidentConfiguration(rootCauseIncident.getConfiguration());
+            incident.setRootCauseIncidentMessage(rootCauseIncident.getIncidentMessage());
+          }
+        } catch (Exception e) {
+          log.warn("Failed to enrich incident with ID: {} and root cause ID: {}", 
+            incident.getId(), 
+            incident.getRootCauseIncidentId(), 
+            e);
+        }
+      }
+    }
+    return incidents;
+  }
+    
+  private Incident fetchIncidentById(String incidentId) {
+    org.cibseven.bpm.engine.runtime.Incident incident = runtimeService.createIncidentQuery().incidentId(incidentId).singleResult();
+    if (incident == null) {
+      throw new InvalidRequestException(Status.NOT_FOUND, "No matching incident with id " + incidentId);
+    }
+    return convertValue(IncidentDto.fromIncident(incident), Incident.class);
+
   }
   
   //@Override
@@ -3032,7 +3213,6 @@ variablesprovider:
   
   private List<Incident> fetchIncidents(String processDefinitionKey, 
       String activityId, CIBUser user, String processInstanceId) {
-    ObjectMapper objectMapper = getObjectMapper();
     IncidentQueryDto queryDto = new IncidentQueryDto();
     queryDto.setActivityId(activityId);
     if (processDefinitionKey != null)
@@ -3045,7 +3225,7 @@ variablesprovider:
     List<Incident> result = new ArrayList<>();
     for (org.cibseven.bpm.engine.runtime.Incident incident : queryResult) {
       IncidentDto dto = IncidentDto.fromIncident(incident);
-      result.add(convertValue(objectMapper, dto, Incident.class));
+      result.add(convertValue(dto, Incident.class));
     }
 
     return result;
@@ -3054,8 +3234,10 @@ variablesprovider:
   
   //@Override
   public void setIncidentAnnotation(String incidentId, Map<String, Object> data, CIBUser user) {
-    //TODO: to be implemented
-  }
+    //TODO: not tested
+    AnnotationDto annotationDto = objectMapper.convertValue(data, AnnotationDto.class);
+    runtimeService.setAnnotationForIncidentById(incidentId, annotationDto.getAnnotation());
+}
 
   /*
   
@@ -3098,18 +3280,14 @@ variablesprovider:
     }
     org.cibseven.bpm.engine.runtime.VariableInstance variableEngineInstance = variableInstanceQuery.singleResult();
     if (variableEngineInstance != null) {
-      VariableInstance variableInstance = convertValue(getObjectMapper(), variableEngineInstance, VariableInstance.class);
+      VariableInstance variableInstance = convertValue(variableEngineInstance, VariableInstance.class);
         // return transformToDto(variableInstance);
         return variableInstance;
     } else {
-      // TODO: exception type
-      throw new IllegalArgumentException("Variable with Id '" + id + "' does not exist.");
+      throw new SystemException("Variable with Id '" + id + "' does not exist.");
     }
   }
   
-//  private static String toRestApiTypeName(String name) {
-//    return name.substring(0, 1).toUpperCase() + name.substring(1);
-//  }
 
   /*
   
@@ -3144,12 +3322,10 @@ variablesprovider:
     }
     HistoricVariableInstance variableInstance = query.singleResult();
     if (variableInstance != null) {
-      VariableHistory result = convertValue(getObjectMapper(),
-          HistoricVariableInstanceDto.fromHistoricVariableInstance(variableInstance), VariableHistory.class);
+      VariableHistory result = convertValue(HistoricVariableInstanceDto.fromHistoricVariableInstance(variableInstance), VariableHistory.class);
       return result;
     } else {
-      // TODO: exception type
-      throw new IllegalArgumentException(" historic variable with Id '" + id + "' does not exist.");
+      throw new SystemException(" historic variable with Id '" + id + "' does not exist.");
     }
   }
   
@@ -3166,8 +3342,7 @@ variablesprovider:
   //@Override
   public Collection<ExternalTask> getExternalTasks(Map<String, Object> queryParams, CIBUser user)
       throws SystemException {
-    // TODO: in progress
-    ObjectMapper objectMapper = getObjectMapper();
+    //TODO: in progress
     ExternalTaskQueryDto queryDto = objectMapper.convertValue(queryParams, ExternalTaskQueryDto.class);
     queryDto.setObjectMapper(objectMapper);
     ExternalTaskQuery query = queryDto.toQuery(processEngine);
@@ -3176,7 +3351,7 @@ variablesprovider:
     List<ExternalTask> taskResults = new ArrayList<>();
     for (org.cibseven.bpm.engine.externaltask.ExternalTask task : matchingTasks) {
       ExternalTaskDto resultInstance = ExternalTaskDto.fromExternalTask(task);
-      taskResults.add(convertValue(objectMapper, resultInstance, ExternalTask.class));
+      taskResults.add(convertValue(resultInstance, ExternalTask.class));
     }
     return taskResults;
   }    
@@ -3279,7 +3454,7 @@ variablesprovider:
       validateType(type);
       return objectMapper.readValue(new String(data, Charset.forName("UTF-8")), type);
     } catch(Exception e) {
-      throw new InvalidRequestException(Status.INTERNAL_SERVER_ERROR, "Could not deserialize JSON object: "+e.getMessage());
+      throw new SystemException("Could not deserialize JSON object: "+e.getMessage());
     }
   }
 
@@ -3295,7 +3470,7 @@ variablesprovider:
         List<String> invalidTypes = new ArrayList<>();
         validateType(type, validator, invalidTypes);
         if (!invalidTypes.isEmpty()) {
-          throw new IllegalArgumentException("The following classes are not whitelisted for deserialization: " + invalidTypes);
+          throw new SystemException("The following classes are not whitelisted for deserialization: " + invalidTypes);
         }
       }
     }
@@ -3331,7 +3506,6 @@ variablesprovider:
     if (data != null && data.containsKey("deserializeValues"))
       data.remove("deserializeValues"); 
 
-    ObjectMapper objectMapper = getObjectMapper();
     VariableInstanceQueryDto queryDto = objectMapper.convertValue(data, VariableInstanceQueryDto.class);
     
     queryDto.setObjectMapper(objectMapper);
@@ -3370,7 +3544,7 @@ variablesprovider:
     List<Variable> instanceResults = new ArrayList<>();
     for (org.cibseven.bpm.engine.runtime.VariableInstance instance : matchingInstances) {
       VariableInstanceDto resultInstanceDto = VariableInstanceDto.fromVariableInstance(instance);
-      VariableHistory resultInstance = convertValue(objectMapper, resultInstanceDto, VariableHistory.class);
+      VariableHistory resultInstance = convertValue(resultInstanceDto, VariableHistory.class);
       instanceResults.add(resultInstance);
     }
     return instanceResults;
@@ -3381,7 +3555,7 @@ variablesprovider:
   // @Override
   public ResponseEntity<byte[]> fetchVariableDataByExecutionId(String executionId, String variableName, CIBUser user)
       throws NoObjectFoundException, SystemException {
-    // TODO: in progress
+    //TODO: in progress
     // R( /engine-rest/execution/79816b6b-a393-11f0-8830-4ce1734f67af/localVariables/invoiceDocument/data)
     TypedValue typedVariableValue = runtimeService.getVariableLocalTyped(executionId, variableName, false);
     // id: 79816b6b-a393-11f0-8830-4ce1734f67af
@@ -3413,12 +3587,11 @@ variablesprovider:
         ResponseEntity<byte[]> responseEntity = new ResponseEntity<>(bytes, headers, HttpStatusCode.valueOf(200));
         return responseEntity;
       } catch (IOException e) {
-        // TODO exception type
-        throw new IllegalArgumentException(e.getMessage(), e);
+        //TODO exception type
+        throw new SystemException(e.getMessage(), e);
       }
     } else {
-      // TODO: exception type
-      throw new IllegalArgumentException(String.format("Value of variable with id %s is not a binary value.", id));
+      throw new SystemException(String.format("Value of variable with id %s is not a binary value.", id));
     }
   }
 
@@ -3432,19 +3605,20 @@ variablesprovider:
     if (data != null && data.containsKey("deserializeValues"))
       data.remove("deserializeValues"); 
 
-    ObjectMapper objectMapper = getObjectMapper();
+    ObjectMapper localObjectMapper = new ObjectMapper();
+    JacksonConfigurator.configureObjectMapper(objectMapper);
     //TODO: data contains "variableValues=null" which is not member of HistoricVariableInstanceQueryDto
     //but there is "variableValue" -> create ticket
-    objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    HistoricVariableInstanceQueryDto queryDto = objectMapper.convertValue(data, HistoricVariableInstanceQueryDto.class);
+    localObjectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    HistoricVariableInstanceQueryDto queryDto = localObjectMapper.convertValue(data, HistoricVariableInstanceQueryDto.class);
     
-    queryDto.setObjectMapper(objectMapper);
+    queryDto.setObjectMapper(localObjectMapper);
     
-    List<VariableHistory> variablesDeserialized = queryHistoricVariableInstances(queryDto, objectMapper, null, null, true);
+    List<VariableHistory> variablesDeserialized = queryHistoricVariableInstances(queryDto, localObjectMapper, null, null, true);
 //[VariableHistory(id=2b38760a-a35a-11f0-afe5-4ce1734f67af, name=testBool, processDefinitionKey=null, processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, processInstanceId=8a620626-a356-11f0-afe5-4ce1734f67af, executionId=8a620626-a356-11f0-afe5-4ce1734f67af, activityInstanceId=8a620626-a356-11f0-afe5-4ce1734f67af, caseDefinitionKey=null, caseDefinitionId=null, caseInstanceId=null, caseExecutionId=null, taskId=null, errorMessage=null, tenantId=null, state=null, createTime=null, removalTime=null, rootProcessInstanceId=null), VariableHistory(id=2b38760c-a35a-11f0-afe5-4ce1734f67af, name=datetime_fr4cbr, processDefinitionKey=null, processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, processInstanceId=8a620626-a356-11f0-afe5-4ce1734f67af, executionId=8a620626-a356-11f0-afe5-4ce1734f67af, activityInstanceId=8a620626-a356-11f0-afe5-4ce1734f67af, caseDefinitionKey=null, caseDefinitionId=null, caseInstanceId=null, caseExecutionId=null, taskId=null, errorMessage=null, tenantId=null, state=null, createTime=null, removalTime=null, rootProcessInstanceId=null), VariableHistory(id=2b389d1e-a35a-11f0-afe5-4ce1734f67af, name=season, processDefinitionKey=null, processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, processInstanceId=8a620626-a356-11f0-afe5-4ce1734f67af, executionId=8a620626-a356-11f0-afe5-4ce1734f67af, activityInstanceId=8a620626-a356-11f0-afe5-4ce1734f67af, caseDefinitionKey=null, caseDefinitionId=null, caseInstanceId=null, caseExecutionId=null, taskId=null, errorMessage=null, tenantId=null, state=null, createTime=null, removalTime=null, rootProcessInstanceId=null), VariableHistory(id=2b389d20-a35a-11f0-afe5-4ce1734f67af, name=guestCount, processDefinitionKey=null, processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, processInstanceId=8a620626-a356-11f0-afe5-4ce1734f67af, executionId=8a620626-a356-11f0-afe5-4ce1734f67af, activityInstanceId=8a620626-a356-11f0-afe5-4ce1734f67af, caseDefinitionKey=null, caseDefinitionId=null, caseInstanceId=null, caseExecutionId=null, taskId=null, errorMessage=null, tenantId=null, state=null, createTime=null, removalTime=null, rootProcessInstanceId=null), VariableHistory(id=2b389d22-a35a-11f0-afe5-4ce1734f67af, name=number_double, processDefinitionKey=null, processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, processInstanceId=8a620626-a356-11f0-afe5-4ce1734f67af, executionId=8a620626-a356-11f0-afe5-4ce1734f67af, activityInstanceId=8a620626-a356-11f0-afe5-4ce1734f67af, caseDefinitionKey=null, caseDefinitionId=null, caseInstanceId=null, caseExecutionId=null, taskId=null, errorMessage=null, tenantId=null, state=null, createTime=null, removalTime=null, rootProcessInstanceId=null)]    
     if ( variablesDeserialized.isEmpty())
       return Collections.emptyList();
-    List<VariableHistory> variablesSerialized = queryHistoricVariableInstances(queryDto, objectMapper, null, null, false);
+    List<VariableHistory> variablesSerialized = queryHistoricVariableInstances(queryDto, localObjectMapper, null, null, false);
 //[VariableHistory(id=2b38760a-a35a-11f0-afe5-4ce1734f67af, name=testBool, processDefinitionKey=null, processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, processInstanceId=8a620626-a356-11f0-afe5-4ce1734f67af, executionId=8a620626-a356-11f0-afe5-4ce1734f67af, activityInstanceId=8a620626-a356-11f0-afe5-4ce1734f67af, caseDefinitionKey=null, caseDefinitionId=null, caseInstanceId=null, caseExecutionId=null, taskId=null, errorMessage=null, tenantId=null, state=null, createTime=null, removalTime=null, rootProcessInstanceId=null), VariableHistory(id=2b38760c-a35a-11f0-afe5-4ce1734f67af, name=datetime_fr4cbr, processDefinitionKey=null, processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, processInstanceId=8a620626-a356-11f0-afe5-4ce1734f67af, executionId=8a620626-a356-11f0-afe5-4ce1734f67af, activityInstanceId=8a620626-a356-11f0-afe5-4ce1734f67af, caseDefinitionKey=null, caseDefinitionId=null, caseInstanceId=null, caseExecutionId=null, taskId=null, errorMessage=null, tenantId=null, state=null, createTime=null, removalTime=null, rootProcessInstanceId=null), VariableHistory(id=2b389d1e-a35a-11f0-afe5-4ce1734f67af, name=season, processDefinitionKey=null, processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, processInstanceId=8a620626-a356-11f0-afe5-4ce1734f67af, executionId=8a620626-a356-11f0-afe5-4ce1734f67af, activityInstanceId=8a620626-a356-11f0-afe5-4ce1734f67af, caseDefinitionKey=null, caseDefinitionId=null, caseInstanceId=null, caseExecutionId=null, taskId=null, errorMessage=null, tenantId=null, state=null, createTime=null, removalTime=null, rootProcessInstanceId=null), VariableHistory(id=2b389d20-a35a-11f0-afe5-4ce1734f67af, name=guestCount, processDefinitionKey=null, processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, processInstanceId=8a620626-a356-11f0-afe5-4ce1734f67af, executionId=8a620626-a356-11f0-afe5-4ce1734f67af, activityInstanceId=8a620626-a356-11f0-afe5-4ce1734f67af, caseDefinitionKey=null, caseDefinitionId=null, caseInstanceId=null, caseExecutionId=null, taskId=null, errorMessage=null, tenantId=null, state=null, createTime=null, removalTime=null, rootProcessInstanceId=null), VariableHistory(id=2b389d22-a35a-11f0-afe5-4ce1734f67af, name=number_double, processDefinitionKey=null, processDefinitionId=Process_CalcDish:3:b5fcf7f6-7e60-11f0-8785-4ce1734f67af, processInstanceId=8a620626-a356-11f0-afe5-4ce1734f67af, executionId=8a620626-a356-11f0-afe5-4ce1734f67af, activityInstanceId=8a620626-a356-11f0-afe5-4ce1734f67af, caseDefinitionKey=null, caseDefinitionId=null, caseInstanceId=null, caseExecutionId=null, taskId=null, errorMessage=null, tenantId=null, state=null, createTime=null, removalTime=null, rootProcessInstanceId=null)]
     if ( variablesSerialized.isEmpty())
       return Collections.emptyList();
@@ -3490,8 +3664,7 @@ variablesprovider:
     List<VariableHistory> instanceResults = new ArrayList<>();
     for ( HistoricVariableInstance instance : matchingInstances) {
       HistoricVariableInstanceDto resultInstanceDto = HistoricVariableInstanceDto.fromHistoricVariableInstance(instance);
-      VariableHistory resultInstance = convertValue(objectMapper, resultInstanceDto, VariableHistory.class);
-      //Variable resultInstance = createVariable(instance);
+      VariableHistory resultInstance = convertValue(resultInstanceDto, VariableHistory.class);
       instanceResults.add(resultInstance);
     }
     return instanceResults;
@@ -3520,7 +3693,7 @@ variablesprovider:
       TypedValue typedValue = queryResult.getTypedValue();
       return getResponseForTypedVariable(typedValue, id);
     } else {
-      throw new IllegalArgumentException("HistoryVariable with Id '" + id + "' does not exist.");
+      throw new SystemException("HistoryVariable with Id '" + id + "' does not exist.");
     }
   }
   
@@ -3628,13 +3801,11 @@ variablesprovider:
   
   //@Override
   public Collection<JobDefinition> findJobDefinitions(String params, CIBUser user) {
-    ObjectMapper objectMapper = getObjectMapper();
     JobDefinitionQueryDto queryDto;
     try {
       queryDto = objectMapper.readValue(params, JobDefinitionQueryDto.class);
     } catch (JsonProcessingException e) {
-      // TODO: exception type
-      throw new IllegalArgumentException(e.getMessage());
+      throw new SystemException(e.getMessage());
     }
     queryDto.setObjectMapper(objectMapper);
     JobDefinitionQuery query = queryDto.toQuery(processEngine);
@@ -3644,7 +3815,7 @@ variablesprovider:
     List<JobDefinition> jobDefinitionResults = new ArrayList<>();
     for (org.cibseven.bpm.engine.management.JobDefinition jobDefinition : matchingJobDefinitions) {
       JobDefinitionDto result = JobDefinitionDto.fromJobDefinition(jobDefinition);
-      jobDefinitionResults.add(convertValue(objectMapper, result, JobDefinition.class));
+      jobDefinitionResults.add(convertValue(result, JobDefinition.class));
     }
 
     return jobDefinitionResults;
@@ -3673,15 +3844,13 @@ variablesprovider:
 
   //@Override
   public void setSuspended(String id, Map<String, Object> params, CIBUser user) {
-    // TODO: in progress
-    ObjectMapper objectMapper = getObjectMapper();
+    //TODO: in progress
     JobDefinitionSuspensionStateDto jobDefinitionSuspensionStateDto = objectMapper.convertValue(params,
         JobDefinitionSuspensionStateDto.class);
     jobDefinitionSuspensionStateDto.setProcessDefinitionId(id);
     if (jobDefinitionSuspensionStateDto.getJobDefinitionId() != null) {
       String message = "Either processDefinitionId or processDefinitionKey can be set to update the suspension state.";
-      // TODO: exception type
-      throw new IllegalArgumentException(message);
+      throw new SystemException(message);
     }
 
     try {
@@ -3690,8 +3859,7 @@ variablesprovider:
     } catch (IllegalArgumentException e) {
       String message = String.format("Could not update the suspension state of Job Definitions due to: %s",
           e.getMessage());
-      // TODO: exception type
-      throw new IllegalArgumentException(message, e);
+      throw new SystemException(message, e);
     }
   }
 
@@ -3721,7 +3889,7 @@ variablesprovider:
 /** 
 * conversion and helper functions
 */
-  private <T> T convertValue(ObjectMapper objectMapper, Object fromValueDto, Class<T> toValueType)
+  private <T> T convertValue(Object fromValueDto, Class<T> toValueType)
         throws IllegalArgumentException {
       Map<String, Object> filterDtoMap = objectMapper
           .convertValue(fromValueDto, new TypeReference<Map<String, Object>>() {});
@@ -3742,7 +3910,6 @@ variablesprovider:
   public Deployment createDeployment(MultiValueMap<String, Object> data, MultipartFile[] files, CIBUser user) throws SystemException {
     //TODO: in progress
     //TODO: add authorization
-    ObjectMapper objectMapper = getObjectMapper();
     MultiValueMap<String, Object> formData = new LinkedMultiValueMap<>(data);
     for (int i = 0; i < files.length; i++) {
       MultipartFile file = files[i];
@@ -3751,7 +3918,7 @@ variablesprovider:
       String key = files.length > 1 ? "data" + i : "data";
       formData.add(key, file.getResource());
     }
-    DeploymentBuilder deploymentBuilder = extractDeploymentInformation(convertValue(objectMapper, formData, MultipartFormData.class));
+    DeploymentBuilder deploymentBuilder = extractDeploymentInformation(convertValue(formData, MultipartFormData.class));
 
     if(!deploymentBuilder.getResourceNames().isEmpty()) {
       DeploymentWithDefinitions deployment = deploymentBuilder.deployWithResult();
@@ -3769,11 +3936,10 @@ variablesprovider:
 
       // GET
       deploymentDto.addReflexiveLink(uri, HttpMethod.GET, "self");
-      return convertValue(objectMapper, deploymentDto, Deployment.class);
+      return convertValue(deploymentDto, Deployment.class);
 
     } else {
-      //TODO: exception type 
-      throw new IllegalArgumentException("No deployment resources contained in the form upload.");
+      throw new SystemException("No deployment resources contained in the form upload.");
     }
 /*
     String url = getEngineRestUrl() + "/deployment/create";
@@ -3819,13 +3985,5 @@ variablesprovider:
     }
  * */    
     
-  }
-  private ObjectMapper getObjectMapper() {
-    if (objectMapper == null) 
-    {
-      objectMapper = new ObjectMapper();
-      JacksonConfigurator.configureObjectMapper(objectMapper);
-    }
-    return objectMapper;
   }
 }

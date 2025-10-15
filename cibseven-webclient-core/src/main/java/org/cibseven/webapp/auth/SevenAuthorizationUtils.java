@@ -16,23 +16,13 @@
  */
 package org.cibseven.webapp.auth;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import org.cibseven.bpm.engine.AuthorizationService;
-import org.cibseven.bpm.engine.IdentityService;
-import org.cibseven.bpm.engine.authorization.Permission;
-import org.cibseven.bpm.engine.authorization.Permissions;
-import org.cibseven.bpm.engine.authorization.Resource;
-import org.cibseven.bpm.engine.identity.Group;
-import org.cibseven.bpm.engine.identity.GroupQuery;
-import org.cibseven.bpm.engine.rest.util.ResourceUtil;
 import org.cibseven.webapp.exception.AccessDeniedException;
 import org.cibseven.webapp.rest.model.Authorization;
 import org.cibseven.webapp.rest.model.Authorizations;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -48,10 +38,6 @@ public class SevenAuthorizationUtils{
 		private final int type;
 	}
 
-  @Autowired
-  protected AuthorizationService authorizationService;
-  @Autowired
-  protected IdentityService identityService;
 
 	public static int resourceType(SevenResourceType type) {
 	    return type.getType();
@@ -152,26 +138,4 @@ public class SevenAuthorizationUtils{
 
         return true;
     }
-
-    public void checkPermission(CIBUser user, SevenResourceType type, List<String> permissions) {
-      GroupQuery query = identityService.createGroupQuery();
-      List<Group> userGroups = query.groupMember(user.getUserID())
-          .orderByGroupName()
-          .asc()
-          .unlimitedList();
-      List<String> groupIds = new ArrayList<>();
-      for (Group group : userGroups) {
-        groupIds.add(group.getId());
-      }
-      Resource resource = new ResourceUtil(type.toString(), type.getType());
-      for (String permission : permissions) {
-        Permission authPermission = Permissions.forName(permission);
-        boolean isAuthorized = authorizationService.isUserAuthorized(user.getUserID(), groupIds, authPermission, resource);
-        if (!isAuthorized) {
-  //        //TODO: SevenAuthorizationUtils.checkPermission creates errors by type or resource
-          throw new AccessDeniedException("You are not authorized to access resource type: " + type.name());
-        }
-      }
-    }
-
 }

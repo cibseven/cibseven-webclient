@@ -16,6 +16,7 @@
  */
 package org.cibseven.webapp.providers;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -354,7 +355,11 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public Collection<Process> findProcessVersionsByDefinitionKey(String key, String tenantId, Optional<Boolean> lazyLoad, CIBUser user) {
-		return processProvider.findProcessVersionsByDefinitionKey(key, tenantId, lazyLoad, user);
+    //TODO: not implemented
+	  if (useDirectInterface)
+      return sevenDirectProvider.findProcessVersionsByDefinitionKey(key, tenantId, lazyLoad, user);
+    else
+      return processProvider.findProcessVersionsByDefinitionKey(key, tenantId, lazyLoad, user);
 	}
 
 	@Override
@@ -367,7 +372,10 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 		
 	@Override
 	public Collection<ProcessInstance> findProcessesInstances(String key, CIBUser user) {
-		return processProvider.findProcessesInstances(key, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.findProcessesInstances(key, user);
+    else
+      return processProvider.findProcessesInstances(key, user);
 	}
 	
 	@Override
@@ -462,7 +470,10 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	@Override
 	public Collection<HistoryProcessInstance> findProcessesInstancesHistory(String key, Optional<Boolean> active, 
 			Integer firstResult, Integer maxResults, CIBUser user) {
-		return processProvider.findProcessesInstancesHistory(key, active, firstResult, maxResults, user);
+	  if (useDirectInterface)
+      return sevenDirectProvider.findProcessesInstancesHistory(key, active, firstResult, maxResults, user);
+    else
+      return processProvider.findProcessesInstancesHistory(key, active, firstResult, maxResults, user);
 	}
 	
 	@Override
@@ -492,7 +503,10 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 
 	@Override
 	public Variable fetchProcessInstanceVariable(String processInstanceId, String variableName, boolean deserializeValue, CIBUser user) throws SystemException  {
-		return processProvider.fetchProcessInstanceVariable(processInstanceId, variableName, deserializeValue, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.fetchProcessInstanceVariable(processInstanceId, variableName, deserializeValue, user);
+    else
+      return processProvider.fetchProcessInstanceVariable(processInstanceId, variableName, deserializeValue, user);
 	}
 	
 	@Override
@@ -513,12 +527,18 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public ResponseEntity<byte[]> getDeployedStartForm(String processDefinitionId, CIBUser user) {
-		return processProvider.getDeployedStartForm(processDefinitionId, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.getDeployedStartForm(processDefinitionId, user);
+    else
+      return processProvider.getDeployedStartForm(processDefinitionId, user);
 	}
 
 	@Override
 	public void updateHistoryTimeToLive(String id, Map<String, Object> data, CIBUser user) {
-		processProvider.updateHistoryTimeToLive(id, data, user);
+    if (useDirectInterface)
+      sevenDirectProvider.updateHistoryTimeToLive(id, data, user);
+    else
+      processProvider.updateHistoryTimeToLive(id, data, user);
 	}
 
 	@Override
@@ -531,7 +551,10 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public void deleteProcessDefinition(String id, Optional<Boolean> cascade, CIBUser user) {
-		processProvider.deleteProcessDefinition(id, cascade, user);
+    if (useDirectInterface)
+      sevenDirectProvider.deleteProcessDefinition(id, cascade, user);
+    else
+      processProvider.deleteProcessDefinition(id, cascade, user);
 	}
 	
 	@Override
@@ -545,7 +568,10 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 
 	@Override
 	public Object fetchHistoricActivityStatistics(String id, Map<String, Object> params, CIBUser user) {
-		return processProvider.fetchHistoricActivityStatistics(id, params, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.fetchHistoricActivityStatistics(id, params, user);
+    else
+      return processProvider.fetchHistoricActivityStatistics(id, params, user);
 	}
 	
 	/*		
@@ -677,7 +703,10 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public List<ActivityInstanceHistory> findActivitiesInstancesHistory(Map<String, Object> queryParams, CIBUser user) {
-		return activityProvider.findActivitiesInstancesHistory(queryParams, user);
+	  if (useDirectInterface)
+      return sevenDirectProvider.findActivitiesInstancesHistory(queryParams, user);
+    else
+      return activityProvider.findActivitiesInstancesHistory(queryParams, user);
 	}
 	
 	@Override
@@ -690,12 +719,18 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public ActivityInstance findActivityInstances(String processInstanceId, CIBUser user) throws SystemException {
-		return activityProvider.findActivityInstances(processInstanceId, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.findActivityInstances(processInstanceId, user);
+    else
+      return activityProvider.findActivityInstances(processInstanceId, user);
 	}
 	
 	@Override
 	public List<ActivityInstanceHistory> findActivityInstanceHistory(String processInstanceId, CIBUser user) throws SystemException {
-		return activityProvider.findActivityInstanceHistory(processInstanceId, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.findActivityInstanceHistory(processInstanceId, user);
+    else
+      return activityProvider.findActivityInstanceHistory(processInstanceId, user);
 	}	
 
 	@Override
@@ -726,12 +761,18 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public Collection<Message> correlateMessage(Map<String, Object> data, CIBUser user) throws SystemException {
-		return utilsProvider.correlateMessage(data, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.correlateMessage(data, user);
+    else
+      return utilsProvider.correlateMessage(data, user);
 	}
 	
 	@Override
 	public String findStacktrace(String jobId, CIBUser user) {
-		return utilsProvider.findStacktrace(jobId, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.findStacktrace(jobId, user);
+    else
+      return utilsProvider.findStacktrace(jobId, user);
 	}
 	
 	@Override
@@ -760,23 +801,35 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public String findHistoricStacktraceByJobId(String jobId, CIBUser user) {
-		return incidentProvider.findHistoricStacktraceByJobId(jobId, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.findHistoricStacktraceByJobId(jobId, user);
+    else
+      return incidentProvider.findHistoricStacktraceByJobId(jobId, user);
 	}
 	
 	@Override
 	public void retryJobById(String jobId, Map<String, Object> data, CIBUser user) {
-		utilsProvider.retryJobById(jobId, data, user);
+    if (useDirectInterface)
+      sevenDirectProvider.retryJobById(jobId, data, user);
+    else
+      utilsProvider.retryJobById(jobId, data, user);
 	}
 
 	@Override
 	public void retryExternalTask(String externalTaskId, Map<String, Object> data, CIBUser user) {
-		incidentProvider.retryExternalTask(externalTaskId, data, user);
+    if (useDirectInterface)
+      sevenDirectProvider.retryExternalTask(externalTaskId, data, user);
+    else
+      incidentProvider.retryExternalTask(externalTaskId, data, user);
 	}
 
 	@Override
 	public Collection<EventSubscription> getEventSubscriptions(Optional<String> processInstanceId,
 			Optional<String> eventType, Optional<String> eventName, CIBUser user) {
-		return utilsProvider.getEventSubscriptions(processInstanceId, eventType, eventName, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.getEventSubscriptions(processInstanceId, eventType, eventName, user);
+    else
+      return utilsProvider.getEventSubscriptions(processInstanceId, eventType, eventName, user);
 	}	
 	
 	/*
@@ -915,7 +968,10 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	public Collection<Authorization> findAuthorization(Optional<String> id, Optional<String> type, Optional<String> userIdIn, Optional<String> groupIdIn,
 			Optional<String> resourceType, Optional<String> resourceId, Optional<String> sortBy, Optional<String> sortOrder, Optional<String> firstResult,
 			Optional<String> maxResults, CIBUser user) {
-		return userProvider.findAuthorization(id, type, userIdIn, groupIdIn, resourceType, resourceId, sortBy, sortOrder, firstResult, maxResults, user);
+	  if (useDirectInterface)
+      return sevenDirectProvider.findAuthorization(id, type, userIdIn, groupIdIn, resourceType, resourceId, sortBy, sortOrder, firstResult, maxResults, user);
+    else
+      return userProvider.findAuthorization(id, type, userIdIn, groupIdIn, resourceType, resourceId, sortBy, sortOrder, firstResult, maxResults, user);
 	}
 
 	@Override
@@ -954,12 +1010,18 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public Long countIncident(Map<String, Object> params, CIBUser user) {
-		return incidentProvider.countIncident(params, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.countIncident(params, user);
+    else
+      return incidentProvider.countIncident(params, user);
 	}
 
 	@Override
 	public Collection<Incident> findIncident(Map<String, Object> params, CIBUser user) {
-		return incidentProvider.findIncident(params, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.findIncident(params, user);
+    else
+      return incidentProvider.findIncident(params, user);
 	}
 	
 	@Override
@@ -988,7 +1050,10 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public void setIncidentAnnotation(String incidentId, Map<String, Object> data, CIBUser user) {
-		incidentProvider.setIncidentAnnotation(incidentId, data, user);
+    if (useDirectInterface)
+      sevenDirectProvider.setIncidentAnnotation(incidentId, data, user);
+    else
+      incidentProvider.setIncidentAnnotation(incidentId, data, user);
 	}
 
 	/*
