@@ -20,8 +20,9 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.cibseven.webapp.rest.InfoService;
+import org.cibseven.webapp.rest.model.InfoVersion;
 import org.springdoc.core.customizers.OpenApiCustomizer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -55,6 +56,9 @@ public class OpenApiConfig {
 	@Value("${cibseven.webclient.api.common.contact.email:info@cibseven.org}")
 	String apiContactEmail;
 	
+	@Autowired
+	InfoVersion infoVersion;
+	
 	@Bean
 	OpenAPI getOpenApiDocumentation() {
 		OpenAPI openAPI = new OpenAPI();
@@ -66,7 +70,7 @@ public class OpenApiConfig {
 		}
 
 		return openAPI.info(
-			new Info().title(apiTitle).description(apiDescription).version(new InfoService().getImplementationVersion())
+			new Info().title(apiTitle).description(apiDescription).version(infoVersion.getVersion())
 			.contact(new Contact().name(apiContactName).url(apiContactUrl).email(apiContactEmail))
 			.termsOfService(apiTermsOfService).license(new License().name(apiLicense).url(apiLicenseUrl)));
 	}

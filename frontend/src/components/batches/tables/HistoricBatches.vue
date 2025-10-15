@@ -19,7 +19,7 @@
 <template>
   <ContentBlock :title="$t('batches.historicBatches')">
     <div class="overflow-auto p-0" style="max-height: 35vh" @scroll="showMore">
-      <FlowTable striped thead-class="sticky-header" :items="historicBatches" primary-key="id" prefix="batches."
+      <FlowTable v-if="historicBatches.length > 0" striped thead-class="sticky-header" :items="historicBatches" primary-key="id" prefix="batches."
         :fields="[
           { label: 'id', key: 'id', class: 'col-5', tdClass: 'p-0' },
           { label: 'type', key: 'type', class: 'col-3', tdClass: 'p-1' },
@@ -89,10 +89,13 @@ export default {
   methods: {
     ...mapActions(['loadHistoricBatches', 'prependNewHistoricBatches']),
     formatDate,
-    fetchHistoricBatches: debounce(500, function (showMore = false) {
+    fetchHistoricBatches: function (showMore = false) {
       this.loading = true
+      this.debouncedFetch(showMore)
+    },
+    debouncedFetch: debounce(500, function (showMore) {
       const params = {
-        finished: true,
+        completed: true,
         sortBy: 'endTime',
         sortOrder: 'desc',
         firstResult: this.firstResult,
@@ -106,7 +109,7 @@ export default {
     }),
     refreshForNewBatches: function() {
       const params = {
-        finished: true,
+        completed: true,
         sortBy: 'endTime',
         sortOrder: 'desc',
         firstResult: 0,

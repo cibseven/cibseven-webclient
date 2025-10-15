@@ -158,7 +158,7 @@ export default {
         } else {
           let formReferencePromise
           //Camunda Forms
-          if (this.task.camundaFormRef) {
+          if (this.task.camundaFormRef || (this.task.formKey && this.task.formKey.startsWith('camunda-forms:'))) {
             formReferencePromise = Promise.resolve('deployed-form')
           } else {
             formReferencePromise = TaskService.formReference(this.task.id)

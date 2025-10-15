@@ -1227,4 +1227,24 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 		return externalTaskProvider.getExternalTasks(queryParams, user);
 	}
 
+	/*
+
+	██████  ███████ ██████  ██       ██████  ██    ██ ███    ███ ███████ ███    ██ ████████     ██████  ██████   ██████  ██    ██ ██ ██████  ███████ ██████  
+	██   ██ ██      ██   ██ ██      ██    ██  ██  ██  ████  ████ ██      ████   ██    ██        ██   ██ ██   ██ ██    ██ ██    ██ ██ ██   ██ ██      ██   ██ 
+	██   ██ █████   ██████  ██      ██    ██   ████   ██ ████ ██ █████   ██ ██  ██    ██        ██████  ██████  ██    ██ ██    ██ ██ ██   ██ █████   ██████  
+	██   ██ ██      ██      ██      ██    ██    ██    ██  ██  ██ ██      ██  ██ ██    ██        ██      ██   ██ ██    ██  ██  ██  ██ ██   ██ ██      ██   ██ 
+	██████  ███████ ██      ███████  ██████     ██    ██      ██ ███████ ██   ████    ██        ██      ██   ██  ██████    ████   ██ ██████  ███████ ██   ██ 
+                                                                                                                                                         
+	 */
+
+	@Override
+	public Deployment createDeployment(MultiValueMap<String, Object> data, MultipartFile[] files, CIBUser user) throws SystemException {
+		return deploymentProvider.createDeployment(data, files, user);
+	}
+
+	@Override
+	public Deployment redeployDeployment(String id, Map<String, Object> data, CIBUser user) throws SystemException {
+		return deploymentProvider.redeployDeployment(id, data, user);
+	}
+
 }

@@ -14,25 +14,23 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.cibseven.webapp.rest.model;
+import { describe, it, expect } from 'vitest'
+import { readFileSync } from 'fs'
+import { resolve } from 'path'
 
-import java.util.Collection;
-import java.util.Map;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import lombok.Data;
-
-@Data @JsonIgnoreProperties(ignoreUnknown = true)
-public class Deployment {
-	private Collection<Object> links;
-	private String id;
-	private String name;
-	private String source;
-	private String deploymentTime;
-	private String tenantId;
-	private Map<String, Process> deployedProcessDefinitions;
-	private Map<String, Object> deployedCaseDefinitions;
-	private Map<String, Object> deployedDecisionDefinitions;
-	private Map<String, Object> deployedDecisionRequirementsDefinitions;
+function getConfigJson() {
+  // eslint-disable-next-line no-undef
+  const filePath = resolve(__dirname, `../../public/config.json`)
+  const translation = JSON.parse(readFileSync(filePath, 'utf-8'))
+  return translation
 }
+
+describe('config.json', () => {
+  it(`validation`, () => {
+    const config = getConfigJson()
+    expect(config).toBeTypeOf('object')
+    expect(config).toHaveProperty('supportedLanguages')
+    expect(config).toHaveProperty('permissions')
+    expect(config).toHaveProperty('filters')
+  })
+})

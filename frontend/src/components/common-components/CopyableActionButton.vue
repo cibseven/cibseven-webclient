@@ -147,7 +147,9 @@ export default {
           href = this.routerTo.startsWith('http') ? this.routerTo : `#${this.routerTo}`
         } else if (this.$router && this.routerTo) {
           const resolved = this.$router.resolve(this.routerTo)
-          href = new URL(resolved.href, window.location.origin).href
+          // Get the base URL from current location, ensuring we include the context path
+          const baseUrl = window.location.origin + window.location.pathname.split('#')[0]
+          href = baseUrl + '#' + resolved.path + (resolved.query ? '?' + new URLSearchParams(resolved.query).toString() : '')
         }
         return {
           href,

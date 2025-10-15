@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.BatchOperationException;
+import org.cibseven.webapp.exception.DmnTransformationException;
 import org.cibseven.webapp.exception.ExistingGroupRequestException;
 import org.cibseven.webapp.exception.ExistingUserRequestException;
 import org.cibseven.webapp.exception.ExpressionEvaluationException;
@@ -59,6 +60,7 @@ import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.MultiValueMap;
 
 import com.fasterxml.jackson.core.StreamReadConstraints;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -218,6 +220,27 @@ public abstract class SevenProviderBase {
 		try {
 			ResponseEntity<T> response = customRestTemplate.exchange(builder.build().toUri(), HttpMethod.POST, request, neededClass);
 			return response;
+		} catch (HttpStatusCodeException e) {
+			throw wrapException(e, user);
+		}
+	}
+
+	/**
+	 * Performs a POST request with multipart form data
+	 * @param url the URL to post to
+	 * @param formData the multipart form data containing files and parameters
+	 * @param neededClass the expected response class
+	 * @param user the user context for authentication
+	 * @return the response entity
+	 */
+	protected <T> ResponseEntity<T> doPostMultipart(String url, MultiValueMap<String, Object> formData, Class<T> neededClass, CIBUser user) {
+		HttpHeaders headers = createAuthHeader(user);
+		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
+
+		HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(formData, headers);
+		try {
+			return customRestTemplate.exchange(builder.build().toUri(), HttpMethod.POST, request, neededClass);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
 		}
@@ -393,6 +416,8 @@ public abstract class SevenProviderBase {
 			wrapperException = new WrongDeploymenIdException(cause);
 		} else if (technicalErrorMsg.matches(".*Deployment resources for deployment id .*do not exist.*")) {
 			wrapperException = new NoRessourcesFoundException(cause);
+		} else if (technicalErrorMsg.matches(".*Unable to transform DMN resource.*")) {
+			wrapperException = new DmnTransformationException(cause);
 		}
 		if (wrapperException == null) wrapperException = new SystemException(technicalErrorMsg, cause);
 		if (wrapperException instanceof NoObjectFoundException) {

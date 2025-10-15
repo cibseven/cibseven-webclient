@@ -14,25 +14,13 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.cibseven.webapp.rest.model;
+package org.cibseven.webapp.exception;
 
-import java.util.Collection;
-import java.util.Map;
+public class DmnTransformationException extends RuntimeException {
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+	private static final long serialVersionUID = -8754321098765432109L;
 
-import lombok.Data;
-
-@Data @JsonIgnoreProperties(ignoreUnknown = true)
-public class Deployment {
-	private Collection<Object> links;
-	private String id;
-	private String name;
-	private String source;
-	private String deploymentTime;
-	private String tenantId;
-	private Map<String, Process> deployedProcessDefinitions;
-	private Map<String, Object> deployedCaseDefinitions;
-	private Map<String, Object> deployedDecisionDefinitions;
-	private Map<String, Object> deployedDecisionRequirementsDefinitions;
+	public DmnTransformationException(Throwable cause) {
+		super("Unable to transform DMN resource! The DMN file contains invalid content or structure.", cause);
+	}
 }

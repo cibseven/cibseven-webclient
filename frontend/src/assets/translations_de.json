@@ -13,7 +13,8 @@
 			"lastUpdate": "Letztes Update: {date}",
 			"disabled": "Letztes Update: {date}\n\nAutomatische Updates sind deaktiviert.\nDrücken Sie F5, um die Daten neu zu laden.",
 			"enabled": "Letztes Update: {date}\n\nAutomatische Updates sind aktiviert.\nAktualisierung alle {seconds} Sekunden."
-		}
+		},
+		"remove": "Entfernen"
 	},
 	"login": {
 		"productName": "CIB seven",
@@ -258,6 +259,10 @@
 			"deleteHistoryInstance": "Wollen Sie wirklich die nächste historische Instanz des Prozesses löschen?"
 		},
 		"variables": {
+			"historicVariable": {
+				"title": "Historische Variable",
+				"tooltip": "Historische Variable anzeigen"
+			},
 			"name": "Name",
 			"type": "Typ",
 			"value": "Wert",
@@ -267,6 +272,10 @@
 			"objectTypeName": "Objekttypname",
 			"serializationDataFormat": "Serialisierungsdatenformat",
 			"confirmDelete": "Wollen Sie die Variable löschen?",
+			"loadStatus": {
+				"runtimeError": "Beim Laden der Variable \"{name}\" mit der ID {id} ist ein Fehler aufgetreten.",
+				"historicError": "Beim Laden der historischen Variable \"{name}\" mit der ID {id} ist ein Fehler aufgetreten."
+			},
 			"deleteStatus": {
 				"runtime": "Die Variable wurde erfolgreich gelöscht.",
 				"runtimeError": "Beim Löschen der Variable \"{name}\" ist ein Fehler aufgetreten.",
@@ -1028,7 +1037,8 @@
 		"PasswordPolicyException": "Passwort stimmt nicht mit Richtlinie überein",
 		"InvalidUserIdException": "Die Benutzer-ID enthält unzulässige Zeichen. Es sind nur alphanumerische Zeichen (a-z, A-Z, 0-9) erlaubt. Bitte korrigieren Sie Ihre Eingabe.",
 		"invalidEmail": "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
-		"InvalidValueHistoryTimeToLive": "Nullwerte für die Lebensdauer des Verlaufs sind nicht erlaubt."
+		"InvalidValueHistoryTimeToLive": "Nullwerte für die Lebensdauer des Verlaufs sind nicht erlaubt.",
+		"DmnTransformationException": "Die Ressource konnte nicht aktualisiert werden. DMN-Ressource kann nicht transformiert werden."
 	},
 	"searches": {
 		"filter": "Filtern",
@@ -1104,7 +1114,7 @@
 		"deploymentTime": "Zeitpunkt",
 		"source": "Quelle",
 		"confirmDeleteDeployment": "Möchten Sie die ausgewählten Deployments wirklich löschen?",
-		"deleteRunningInstances": "Laufende Prozessinstanzen löschen",
+		"deleteRunningInstances": "Laufende Prozessinstanzen stoppen",
 		"goToManagement": "Zum Prozessmanagement wechseln ",
 		"loadingProcesses": "Wird geladen...",
 		"noModelSelected": "Ein Modell zum Ansehen auswählen",

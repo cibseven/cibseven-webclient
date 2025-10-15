@@ -112,7 +112,66 @@ export default {
 			this.variables = variables
 			this.filteredVariables = [...variables]
 			this.loading = false
-		},
+		},    
+    displayValue(item) {
+      if (this.isFileValueDataSource(item)) {
+        return this.getFileVariableName(item)
+      }
+      else if (item.type === 'File') {
+        return item.valueInfo.filename
+      }
+      else if (item.type === 'Json') {
+
+        if (typeof item.valueSerialized === 'string') {
+          return item.valueSerialized
+        }
+
+        if (typeof item.value === 'object') {
+          try {
+            return JSON.stringify(item.value, null, 2)
+          } catch {
+            return '- Json Object -'
+          }
+        }
+        return '- Json Object -'
+      }
+      else if (item.type === 'Object') {
+
+        if (typeof item.valueDeserialized === 'object') {
+          return JSON.stringify(item.valueDeserialized, null, 2)
+        }
+
+        if (typeof item.value === 'object') {
+          try {
+            return JSON.stringify(item.value, null, 2)
+          } catch {
+            return '- Object -'
+          }
+        }
+        else if (typeof item.value === 'string') {
+          return item.value
+        }
+        return '- Object -'
+      }
+      else if (item.type === 'Null') {
+        return ''
+      }
+      else {
+        return '' + item.value
+      }
+    },
+    displayValueTooltip(item) {
+      if (this.isFile(item)) {
+        return this.$t('process-instance.download') + ': ' + this.displayValue(item)
+      }
+      else {
+        return this.displayValue(item)
+      }
+    },
+    isFile: function(item) {
+      if (item.type === 'File') return true
+      else return this.isFileValueDataSource(item)
+    },
 		isFileValueDataSource: function(item) {
       if (item.type === 'Object') {
         const objectTypeName =
@@ -123,12 +182,14 @@ export default {
       return false
     },
 		getFileVariableName: function(item) {
-			if (item.value && typeof item.value === 'object' && item.value.name) {
-				return item.value.name
+			// Prioritize valueDeserialized over value
+			const targetValue = item.valueDeserialized || item.value
+			if (targetValue && typeof targetValue === 'object' && targetValue.name) {
+				return targetValue.name
 			}
-			if (item.value && typeof item.value === 'string') {
+			if (targetValue && typeof targetValue === 'string') {
 				try {
-					const parsed = JSON.parse(item.value)
+					const parsed = JSON.parse(targetValue)
 					if (parsed && parsed.name) return parsed.name
 				} catch { return '' }
 			}

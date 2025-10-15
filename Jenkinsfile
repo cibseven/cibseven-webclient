@@ -16,7 +16,16 @@ import groovy.transform.Field
     pom: ConstantsInternal.DEFAULT_MAVEN_POM_PATH,
     mvnContainerName: Constants.MAVEN_JDK_17_CONTAINER,
     uiParamPresets: [:],
-    testMode: false
+    testMode: false,
+    buildPodConfig: [
+        (Constants.MAVEN_JDK_17_CONTAINER): [
+            resources: [
+                cpu: '4',
+                memory: '8Gi',
+                ephemeralStorage: '8Gi'
+            ]
+        ]
+    ]
 ]
 
 // Shared function for npm package release
@@ -50,8 +59,8 @@ def npmReleasePackage(String packageDir, String npmrcFile) {
 pipeline {
     agent {
         kubernetes {
-            yaml BuildPodCreator.cibStandardPod()
-                    .withContainerFromName(pipelineParams.mvnContainerName)
+            yaml BuildPodCreator.cibStandardPod(nodepool: Constants.NODEPOOL_STABLE)
+                    .withContainerFromName(pipelineParams.mvnContainerName, pipelineParams.buildPodConfig[pipelineParams.mvnContainerName])
                     .withHelm3Container()
                     .asYaml()
             defaultContainer pipelineParams.mvnContainerName
@@ -188,7 +197,11 @@ pipeline {
                 script {
                     String deployment = ""
                     if (isPatchVersion()) {
-                        deployment = "-Dnexus.release.repository.id=mvn-cibseven-private -Dnexus.release.repository=https://artifacts.cibseven.de/repository/private"
+                        if (isSNAPSHOTVersion()) {
+                            deployment = "-Dnexus.snapshot.repository.id=mvn-cibseven-private -Dnexus.snapshot.repository=https://artifacts.cibseven.de/repository/private-snapshots"
+                        } else {
+                            deployment = "-Dnexus.release.repository.id=mvn-cibseven-private -Dnexus.release.repository=https://artifacts.cibseven.de/repository/private"
+                        }
                     }
 
                     withMaven(options: []) {
@@ -448,3 +461,8 @@ def isPatchVersion() {
     }
     return version[2].tokenize('-')[0] != "0"
 }
+
+def isSNAPSHOTVersion() {
+    return mavenProjectInformation.version.endsWith("-SNAPSHOT")
+}
+

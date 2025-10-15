@@ -13,7 +13,8 @@
 			"lastUpdate": "Last update: {date}",
 			"disabled": "Last update: {date}\n\nAutomatic updates are disabled.\nPress F5 to reload the data.",
 			"enabled": "Last update: {date}\n\nAutomatic updates are enabled.\nRefreshing every {seconds} seconds."
-		}
+		},
+		"remove": "Remove"
 	},
 	"login": {
 		"productName": "CIB seven",
@@ -258,6 +259,10 @@
 			"deleteHistoryInstance": "Do you really want to delete the next historical instance of the process?"
 		},
 		"variables": {
+			"historicVariable": {
+				"title": "Historic variable",
+				"tooltip": "View historic variable"
+			},
 			"name": "Name",
 			"type": "Type",
 			"value": "Value",
@@ -267,6 +272,10 @@
 			"objectTypeName": "Object type name",
 			"serializationDataFormat": "Serialization data format",
 			"confirmDelete": "Do you want to delete the variable?",
+			"loadStatus": {
+				"runtimeError": "An error occurred while attempting to load the variable \"{name}\" with {id} id.",
+				"historicError": "An error occurred while attempting to load the historic variable \"{name}\" with {id} id."
+			},
 			"deleteStatus": {
 				"runtime": "The variable was deleted successfully.",
 				"runtimeError": "An error occurred while attempting to delete the variable \"{name}\".",
@@ -1028,7 +1037,8 @@
 		"PasswordPolicyException": "Password does not match policy",
 		"InvalidUserIdException": "The user ID contains invalid characters. Only alphanumeric characters (a-z, A-Z, 0-9) are allowed. Please correct your entry.",
 		"invalidEmail": "Please enter a valid email address.",
-		"InvalidValueHistoryTimeToLive": "Null values are not allowed for history time to live."
+		"InvalidValueHistoryTimeToLive": "Null values are not allowed for history time to live.",
+		"DmnTransformationException": "The resource could not be updated. Unable to transform DMN resource."
 		
 	},
 	"searches": {
@@ -1105,7 +1115,7 @@
 		"deploymentTime": "Time",
 		"source": "Source",
 		"confirmDeleteDeployment": "Do you really want to delete the selected deployments?",
-		"deleteRunningInstances": "Delete running process instances",
+		"deleteRunningInstances": "Stop running process instances",
 		"goToManagement": "Go to process management area",
 		"loadingProcesses": "Loading...",
 		"noModelSelected": "Select a model to view it",

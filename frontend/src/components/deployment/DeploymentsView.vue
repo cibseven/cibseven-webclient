@@ -30,6 +30,7 @@
               <b-form-input :title="$t('searches.search')" size="sm" :placeholder="$t('searches.search')"
                 v-model.trim="filter"></b-form-input>
             </b-input-group-append>
+            <component :is="DeploymentsViewActionsPlugin" v-if="DeploymentsViewActionsPlugin" @deployment-success="onDeploymentSuccess" class="ms-2"></component>
           </b-input-group>
         </div>
         <div class="col-3">
@@ -80,7 +81,8 @@
         :rightSize="[12, 4, 3, 3, 3]">
         <template v-slot:right>
           <ResourcesNavBar v-if="!resourcesLoading" :resources="resources" :deploymentId="deploymentId"
-            @delete-deployment="$refs.deleteSelectedModal.show()" @show-deployment="loadToSelectedDeployment()">
+            @delete-deployment="$refs.deleteSelectedModal.show()" @show-deployment="loadToSelectedDeployment" 
+            @deployment-success="onDeploymentSuccess">
           </ResourcesNavBar>
           <b-waiting-box v-else styling="width: 35px" class="h-100 d-flex justify-content-center"></b-waiting-box>
         </template>
@@ -148,6 +150,7 @@
     </b-modal>
     <SuccessAlert top="0" style="z-index: 1031" ref="deploymentsDeleted"> {{ $t('deployment.deploymentsDeleted',
       [deploymentsDelData.deleted, deploymentsDelData.total]) }}</SuccessAlert>
+    <SuccessAlert ref="success" top="0" style="z-index: 1031">{{ $t('alert.successOperation') }}</SuccessAlert>
   </div>
 </template>
 
@@ -235,6 +238,11 @@ export default {
     allLoaded() {
       return (this.totalCount === undefined) ? false : (this.deployments.length >= this.totalCount)
     },
+    DeploymentsViewActionsPlugin: function() {
+      return this.$options.components && this.$options.components.DeploymentsViewActionsPlugin
+        ? this.$options.components.DeploymentsViewActionsPlugin
+        : null
+    }
   },
   created: function () {
     this.debouncedSearch = debounce(800, this.performSearch)
@@ -291,31 +299,7 @@ export default {
       let found = false
       this.loading = true
       ProcessService.findDeployments(this.filter, offset, this.maxResults, this.sortBy, this.sortOrder).then(deployments => {
-        deployments.forEach(d => {
-          d.isSelected = false
-          d.name = d.name || d.id
-
-          let group = '-'
-          let name = '-'
-          if (this.sortBy === 'name') {
-            group = (d.name || '-')[0].toUpperCase() || '-'
-            name = group
-          }
-          else {
-            group = moment(d.deploymentTime).format('YYYY-MM-DD') || '-'
-            name = group === '-' ? group : moment(group).format('LL')
-          }
-
-          if (this.groups.length === 0 || this.groups[this.groups.length - 1].name !== name) {
-            this.groups.push({ visible: true, data: [d], name: name })
-          }
-          else {
-            this.groups[this.groups.length - 1].data.push(d)
-          }
-          if (d.id === this.deploymentId) {
-            this.selectDeployment(d)
-          }
-        })
+        this.processDeployments(deployments)
         this.deployments.push(...deployments)
         this.loading = false
         if (this.deploymentId && this.searchDeployment) {
@@ -459,6 +443,53 @@ export default {
       this.deployments = []
       this.deployment = null
       this.loadNextPage()
+    },
+    onDeploymentSuccess() {
+      this.$refs.success.show()
+      this.refreshDeployments()
+    },
+    refreshDeployments() {
+      // Fetch the latest deployments to check for new ones
+      ProcessService.findDeployments(this.filter, 0, this.maxResults, this.sortBy, this.sortOrder).then(latestDeployments => {
+        // Find new deployments that don't exist in current list
+        const existingIds = new Set(this.deployments.map(d => d.id))
+        const newDeployments = latestDeployments.filter(d => !existingIds.has(d.id))
+        if (newDeployments.length > 0) {
+          this.loading = true
+          this.deployments.unshift(...newDeployments)
+          this.groups = []
+          this.processDeployments(this.deployments)
+          this.refreshTotalCount()
+          this.loading = false
+        }
+      })
+    },
+    processDeployments(deployments) {
+      deployments.forEach(d => {
+        d.isSelected = false
+        d.name = d.name || d.id
+
+        let group = '-'
+        let name = '-'
+        if (this.sortBy === 'name') {
+          group = (d.name || '-')[0].toUpperCase() || '-'
+          name = group
+        }
+        else {
+          group = moment(d.deploymentTime).format('YYYY-MM-DD') || '-'
+          name = group === '-' ? group : moment(group).format('LL')
+        }
+
+        if (this.groups.length === 0 || this.groups[this.groups.length - 1].name !== name) {
+          this.groups.push({ visible: true, data: [d], name: name })
+        }
+        else {
+          this.groups[this.groups.length - 1].data.push(d)
+        }
+        if (d.id === this.deploymentId) {
+          this.selectDeployment(d)
+        }
+      })
     }
   }
 }

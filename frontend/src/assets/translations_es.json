@@ -13,7 +13,8 @@
 			"lastUpdate": "Última actualización: {date}",
 			"disabled": "Última actualización: {date}\n\nLas actualizaciones automáticas están desactivadas.\nPresiona F5 para recargar los datos.",
 			"enabled": "Última actualización: {date}\n\nLas actualizaciones automáticas están activadas.\nRecargando cada {seconds} segundos."
-		}
+		},
+		"remove": "Eliminar"
 	},
 	"login": {
 		"productName": "CIB seven",
@@ -258,6 +259,10 @@
 			"deleteHistoryInstance": "¿Realmente quieres borrar la siguiente instancia histórica del proceso?"
 		},
 		"variables": {
+			"historicVariable": {
+				"title": "Variable histórica",
+				"tooltip": "Ver detalles de la variable histórica"
+			},
 			"name": "Nombre",
 			"type": "Tipo",
 			"value": "Valor",
@@ -267,6 +272,10 @@
 			"objectTypeName": "Nombre del tipo de objeto",
 			"serializationDataFormat": "Formato de datos de serialización",
 			"confirmDelete": "¿Desea eliminar la variable?",
+			"loadStatus": {
+				"runtimeError": "Se produjo un error al intentar cargar la variable \"{name}\" con la ID {id}.",
+				"historicError": "Se produjo un error al intentar cargar la variable histórica \"{name}\" con la ID {id}."
+			},
 			"deleteStatus": {
 				"runtime": "La variable se eliminó correctamente.",
 				"runtimeError": "Se produjo un error al intentar eliminar la variable \"{name}\".",
@@ -1028,7 +1037,8 @@
 		"PasswordPolicyException": "La contraseña no coincide con los parámetros de política de contraseña",
 		"InvalidUserIdException": "El ID de usuario contiene caracteres no válidos. Sólo se permiten caracteres alfanuméricos (a-z, A-Z, 0-9). Por favor, corrija su entrada.",
 		"invalidEmail": "Introduce una dirección de correo electrónico válida.",
-		"InvalidValueHistoryTimeToLive": "No están permitidos valores nulos para el tiempo de vida del histórico."
+		"InvalidValueHistoryTimeToLive": "No están permitidos valores nulos para el tiempo de vida del histórico.",
+		"DmnTransformationException": "El recurso no pudo ser actualizado. No se puede transformar el recurso DMN."
 	},
 	"searches": {
 		"filter": "Filtrar",
@@ -1104,7 +1114,7 @@
 		"deploymentTime": "Hora",
 		"source": "Fuente",
 		"confirmDeleteDeployment": "Realmente quiere borrar los despliegues seleccionados?",
-		"deleteRunningInstances": "Borrar instancias de proceso activas",
+		"deleteRunningInstances": "Detener instancias de proceso activas",
 		"goToManagement": "Ir al area de administración de procesos",
 		"loadingProcesses": "Cargando...",
 		"noModelSelected": "Seleccione un modelo para verlo",

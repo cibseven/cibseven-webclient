@@ -16,6 +16,8 @@
  */
 package org.cibseven.webapp.rest;
 
+import org.cibseven.webapp.rest.model.InfoVersion;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -59,12 +61,15 @@ public class InfoService extends BaseService {
 
 	@Value("${camunda.bpm.authorization.enabled:false}") private boolean authorizationEnabled;	
 	
+	@Autowired
+	InfoVersion infoVersion;
+	
 	@Operation(
 			summary = "Get info version",
 			description = "<strong>Return: Info version")
 	@GetMapping
 	public String getImplementationVersion() {
-		return InfoService.class.getPackage().getImplementationVersion();
+		return infoVersion.getVersion();
 	}
 	
 	@Operation(

@@ -20,13 +20,13 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
 
 import org.cibseven.webapp.Data;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.DeploymentResource;
-import org.cibseven.webapp.rest.model.Process;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.InputStreamSource;
 import org.springframework.http.HttpEntity;
@@ -35,6 +35,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.multipart.MultipartFile;
@@ -75,6 +76,31 @@ public class DeploymentProvider extends SevenProviderBase implements IDeployment
 			throw wrapException(e, user);
 		}
 
+	}
+
+	@Override
+	public Deployment createDeployment(MultiValueMap<String, Object> data, MultipartFile[] files, CIBUser user) {
+		String url = getEngineRestUrl() + "/deployment/create";
+		// Prepare multipart form data - start with provided data
+		MultiValueMap<String, Object> formData = new LinkedMultiValueMap<>(data);
+		// Add files to form data with indexed "data" keys
+		for (int i = 0; i < files.length; i++) {
+			MultipartFile file = files[i];
+			// API expects files with parameter name "data", so we use indexed keys
+			// result could be: ['data0', 'data1', 'data2', ...] or just single ['data']
+			String key = files.length > 1 ? "data" + i : "data";
+			formData.add(key, file.getResource());
+		}
+		// Use the base class method for multipart POST
+		ResponseEntity<Deployment> response = doPostMultipart(url, formData, Deployment.class, user);
+		return response.getBody();
+	}
+
+	@Override
+	public Deployment redeployDeployment(String id, Map<String, Object> data, CIBUser user) throws SystemException {
+		String url = getEngineRestUrl() + "/deployment/" + id + "/redeploy";
+		ResponseEntity<Deployment> response = doPost(url, data, Deployment.class, user);
+		return response.getBody();
 	}
 
 	@Override
@@ -136,7 +162,7 @@ public class DeploymentProvider extends SevenProviderBase implements IDeployment
 			MediaType contentType = response.getHeaders().getContentType();
 			if (contentType == null)
 				throw new NullPointerException();
-			returnValue = new Data(fileName, contentType.toString(), iso, response.getBody().length);
+			returnValue = new Data(fileName, contentType.toString(), iso, body.length);
 			return returnValue;
 
 		} catch (HttpStatusCodeException e) {

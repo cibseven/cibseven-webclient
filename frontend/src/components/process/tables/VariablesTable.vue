@@ -25,7 +25,7 @@
         ></component>
       </div>
       <div v-if="isActiveInstance" :class="ProcessVariablesSearchBoxPlugin ? 'col-2 p-3' : 'p-3'">
-        <b-button class="border" size="sm" variant="light" @click="$refs.addVariableModal.show()" :title="$t('process-instance.addVariable')">
+        <b-button class="border" size="sm" variant="light" @click="addNewVariable" :title="$t('process-instance.addVariable')">
           <span class="mdi mdi-plus"></span> {{ $t('process-instance.addVariable') }}
         </b-button>
       </div>
@@ -54,6 +54,7 @@
           />
         </template>
         <template v-slot:cell(actions)="table">
+          <component :is="VariablesTableActionsPlugin" v-if="VariablesTableActionsPlugin" :table-item="table.item" :selected-instance="selectedInstance" :file-objects="fileObjects"></component>
           <b-button v-if="isFile(table.item)" :title="displayValueTooltip(table.item)"
             size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-download-outline"
             @click="downloadFile(table.item)">
@@ -62,8 +63,9 @@
             size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-upload-outline"
             @click="selectedVariable = table.item; $refs.uploadFile.show()">
           </b-button>
-          <b-button v-if="!['File', 'Null'].includes(table.item.type) && !isFileValueDataSource(table.item)"
-            :title="$t('process-instance.edit')" size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-square-edit-outline"
+          <b-button v-if="'File' !== table.item.type && !isFileValueDataSource(table.item)"
+            :title="$t(isActiveInstance ? 'process-instance.edit' : 'process-instance.variables.historicVariable.tooltip')" size="sm" variant="outline-secondary"
+            class="border-0 mdi mdi-18px" :class="isActiveInstance ? 'mdi-square-edit-outline' : 'mdi-eye-outline'"
             @click="modifyVariable(table.item)">
           </b-button>
           <b-button v-if="hasDeletionPermission" :title="$t('confirm.delete')" size="sm" variant="outline-secondary"
@@ -77,7 +79,7 @@
 
     <AddVariableModal ref="addVariableModal" :selected-instance="selectedInstance" @variable-added="loadSelectedInstanceVariables(); $refs.success.show()"></AddVariableModal>
     <DeleteVariableModal ref="deleteVariableModal" @variable-deleted="onVariableDeleted"></DeleteVariableModal>
-    <EditVariableModal ref="editVariableModal" :disabled="!isActiveInstance" @variable-updated="loadSelectedInstanceVariables(); $refs.success.show()" @instance-status-updated="updateInstanceStatus"></EditVariableModal>
+    <EditVariableModal ref="editVariableModal" :historic="!isActiveInstance" @variable-updated="loadSelectedInstanceVariables(); $refs.success.show()"></EditVariableModal>
     <SuccessAlert top="0" ref="success" style="z-index: 9999">{{ $t('alert.successOperation') }}</SuccessAlert>
     <SuccessAlert top="0" ref="runtimeVariableDeleted" style="z-index: 9999">{{ $t('process-instance.variables.deleteStatus.runtime') }}</SuccessAlert>
     <SuccessAlert top="0" ref="historicVariableDeleted" style="z-index: 9999">{{ $t('process-instance.variables.deleteStatus.historic') }}</SuccessAlert>
@@ -129,6 +131,11 @@ export default {
         ? this.$options.components.ProcessVariablesSearchBoxPlugin
         : null
     },
+    VariablesTableActionsPlugin: function() {
+      return this.$options.components && this.$options.components.VariablesTableActionsPlugin
+        ? this.$options.components.VariablesTableActionsPlugin
+        : null
+    },
     isActiveInstance: function() {
       const activeStates = ['ACTIVE', 'SUSPENDED']
       return this.selectedInstance && activeStates.includes(this.selectedInstance.state)
@@ -143,70 +150,11 @@ export default {
     },
   },
   methods: {
-    updateInstanceStatus() {
-      this.selectedInstance.state = 'COMPLETED'
-    },
-    displayValue(item) {
-      if (this.isFileValueDataSource(item)) {
-        return this.getFileVariableName(item)
-      }
-      else if (item.type === 'File') {
-        return item.valueInfo.filename
-      }
-      else if (item.type === 'Json') {
-
-        if (typeof item.valueSerialized === 'string') {
-          return item.valueSerialized
-        }
-
-        if (typeof item.value === 'object') {
-          try {
-            return JSON.stringify(item.value, null, 2)
-          } catch {
-            return '- Json Object -'
-          }
-        }
-        return '- Json Object -'
-      }
-      else if (item.type === 'Object') {
-
-        if (typeof item.valueDeserialized === 'object') {
-          return JSON.stringify(item.valueDeserialized, null, 2)
-        }
-
-        if (typeof item.value === 'object') {
-          try {
-            return JSON.stringify(item.value, null, 2)
-          } catch {
-            return '- Object -'
-          }
-        }
-        else if (typeof item.value === 'string') {
-          return item.value
-        }
-        return '- Object -'
-      }
-      else if (item.type === 'Null') {
-        return ''
-      }
-      else {
-        return '' + item.value
-      }
-    },
-    displayValueTooltip(item) {
-      if (this.isFile(item)) {
-        return this.$t('process-instance.download') + ': ' + this.displayValue(item)
-      }
-      else {
-        return this.displayValue(item)
-      }
-    },
-    isFile: function(item) {
-      if (item.type === 'File') return true
-      else return this.isFileValueDataSource(item)
+    async addNewVariable() {
+      this.$refs.addVariableModal.show()
     },
     async modifyVariable(variable) {
-      this.$refs.editVariableModal.show(variable.id)
+      this.$refs.editVariableModal.show(variable.id, variable.name)
     },
     async deleteVariable(variable) {
       this.$refs.deleteVariableModal.show(this.isActiveInstance, variable)

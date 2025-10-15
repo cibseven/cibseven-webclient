@@ -92,7 +92,7 @@
           <span v-else>___</span>
         </template>
         <template v-slot:cell(actions)="table">
-          <component :is="ProcessDefinitionActions" v-if="ProcessDefinitionActions" :focused="focused" :item="table.item"></component>
+          <component :is="ProcessDefinitionActionsPlugin" v-if="ProcessDefinitionActionsPlugin" :focused="focused" :item="table.item"></component>
           <b-button :disabled="focused !== table.item" style="opacity: 1" @click.stop="goToShowProcessHistory(table.item)" class="px-2 border-0 shadow-none" :title="$t('process.showManagement')" variant="link">
             <span class="mdi mdi-18px mdi-account-tie-outline"></span>
           </b-button>
@@ -156,9 +156,9 @@ export default {
         this.$router.push({ query: { ...this.$route.query, onlyActive: value } })
       }
     },
-    ProcessDefinitionActions: function() {
-      return this.$options.components && this.$options.components.ProcessDefinitionActions
-        ? this.$options.components.ProcessDefinitionActions
+    ProcessDefinitionActionsPlugin: function() {
+      return this.$options.components && this.$options.components.ProcessDefinitionActionsPlugin
+        ? this.$options.components.ProcessDefinitionActionsPlugin
         : null
     },
     processesFiltered: function() {
