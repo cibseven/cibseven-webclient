@@ -57,7 +57,6 @@ export function initEmbeddedForm(options = {}) {
         loadTheme();
 
         const searchParams = new URLSearchParams(window.location.search);
-        const authorization = searchParams.get('authorization');
         const lang = searchParams.get('lang');
         const processDefinitionId = searchParams.get('processDefinitionId');
         const taskId = searchParams.get('taskId');
@@ -65,75 +64,78 @@ export function initEmbeddedForm(options = {}) {
         const generated = searchParams.get('generated');
         config.supportedLanguages = [lang];
 
-        return switchLanguage(config, lang).then(() => {
-            const isStartForm = !!processDefinitionId;
-            const isGeneratedForm = !!generated;
-            let embeddedForm;
+        // Request authorization token from parent window via postMessage
+        return services.requestAuthToken().then(authorization => {
+            return switchLanguage(config, lang).then(() => {
+                const isStartForm = !!processDefinitionId;
+                const isGeneratedForm = !!generated;
+                let embeddedForm;
 
-            if (isStartForm) {
-                submitButton.innerHTML = i18n.global.t('process.start');
-            } else {
-                submitButton.innerHTML = i18n.global.t('task.actions.submit');
-            }
-            submitButton.addEventListener('click', () => {
-                blockButtons(submitButton, saveButton);
-                embeddedForm.submit(err => {
-                    if (err) {
-                        errorDiv.style.display = '';
-                        errorDiv.innerHTML = i18n.global.t('task.actions.saveError', [err]);
-                    } else {
-                        services.completeTask();
-                    }
-                    unblockButtons(submitButton, saveButton);
-                });
-            });
-
-            if (isStartForm) {
-                saveButton.style.display = 'none';
-            }
-            saveButton.innerHTML = i18n.global.t('task.actions.save');
-            saveButton.addEventListener('click', () => {
-                blockButtons(submitButton, saveButton);
-                embeddedForm.store(err => {
-                    if (err) {
-                        errorDiv.style.display = '';
-                        errorDiv.innerHTML = i18n.global.t('task.actions.saveError', [err]);
-                    } else {
-                        services.displaySuccessMessage();
-                    }
-                    unblockButtons(submitButton, saveButton);
-                });
-            });
-
-            return loadEmbeddedForm(
-                isStartForm,
-                isGeneratedForm,
-                processDefinitionId || taskId,
-                embeddedContainer,
-                formContainer,
-                authorization,
-                config
-            ).then(
-                form => {
-                    embeddedForm = form;
-                    loaderDiv.style.display = 'none';
-                    contentDiv.style.display = 'flex';
-                    // Setup date picker handlers for generated forms to use Vue date picker from parent window
-                    if (isGeneratedForm) {
-                        setupDatePickerHandlers(formContainer);
-                    }
-                },
-                err => {
-                    console.error(err);
-                    services.displayErrorMessage(err);
-                    throw err;
+                if (isStartForm) {
+                    submitButton.innerHTML = i18n.global.t('process.start');
+                } else {
+                    submitButton.innerHTML = i18n.global.t('task.actions.submit');
                 }
-            ).catch(err => {
-                console.error('Error initializing embedded form:', err);
-                errorDiv.style.display = '';
-                errorDiv.innerHTML = i18n.global.t('task.actions.initError', [err]);
-                loaderDiv.style.display = 'none';
-                throw err;
+                submitButton.addEventListener('click', () => {
+                    blockButtons(submitButton, saveButton);
+                    embeddedForm.submit(err => {
+                        if (err) {
+                            errorDiv.style.display = '';
+                            errorDiv.innerHTML = i18n.global.t('task.actions.saveError', [err]);
+                        } else {
+                            services.completeTask();
+                        }
+                        unblockButtons(submitButton, saveButton);
+                    });
+                });
+
+                if (isStartForm) {
+                    saveButton.style.display = 'none';
+                }
+                saveButton.innerHTML = i18n.global.t('task.actions.save');
+                saveButton.addEventListener('click', () => {
+                    blockButtons(submitButton, saveButton);
+                    embeddedForm.store(err => {
+                        if (err) {
+                            errorDiv.style.display = '';
+                            errorDiv.innerHTML = i18n.global.t('task.actions.saveError', [err]);
+                        } else {
+                            services.displaySuccessMessage();
+                        }
+                        unblockButtons(submitButton, saveButton);
+                    });
+                });
+
+                return loadEmbeddedForm(
+                    isStartForm,
+                    isGeneratedForm,
+                    processDefinitionId || taskId,
+                    embeddedContainer,
+                    formContainer,
+                    authorization,
+                    config
+                ).then(
+                    form => {
+                        embeddedForm = form;
+                        loaderDiv.style.display = 'none';
+                        contentDiv.style.display = 'flex';
+                        // Setup date picker handlers for generated forms to use Vue date picker from parent window
+                        if (isGeneratedForm) {
+                            setupDatePickerHandlers(formContainer);
+                        }
+                    },
+                    err => {
+                        console.error(err);
+                        services.displayErrorMessage(err);
+                        throw err;
+                    }
+                ).catch(err => {
+                    console.error('Error initializing embedded form:', err);
+                    errorDiv.style.display = '';
+                    errorDiv.innerHTML = i18n.global.t('task.actions.initError', [err]);
+                    loaderDiv.style.display = 'none';
+                    throw err;
+                });
             });
         });
     });
@@ -157,6 +159,28 @@ const services = {
     },
     updateFilters(data) {
         callParent('updateFilters', data);
+    },
+    requestAuthToken() {
+        return new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => {
+                reject(new Error('Timeout waiting for auth token from parent window'));
+            }, 5000);
+            const messageHandler = function(event) {
+                if (event.data && event.data.method === 'authTokenResponse') {
+                    clearTimeout(timeout);
+                    window.removeEventListener('message', messageHandler);
+                    
+                    if (event.data.authToken) {
+                        resolve(event.data.authToken);
+                    } else {
+                        reject(new Error('No auth token received from parent window'));
+                    }
+                }
+            };
+            window.addEventListener('message', messageHandler);
+            // Request auth token from parent window
+            callParent('requestAuthToken');
+        });
     }
 };
 

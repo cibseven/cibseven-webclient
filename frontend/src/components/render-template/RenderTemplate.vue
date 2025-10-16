@@ -138,22 +138,22 @@ export default {
 
         this.loader = false
       } else if (this.task.isEmbedded && this.task.processDefinitionId) {
-        formFrame.src = `embedded-forms.html?processDefinitionId=${this.task.processDefinitionId}&lang=${this.currentLanguage()}&authorization=${this.$root.user.authToken}`
+        formFrame.src = `embedded-forms.html?processDefinitionId=${this.task.processDefinitionId}&lang=${this.currentLanguage()}`
         this.loader = false
       } else if (this.task.isGenerated && this.task.processDefinitionId) {
-        formFrame.src = `embedded-forms.html?generated=true&processDefinitionId=${this.task.processDefinitionId}&lang=${this.currentLanguage()}&authorization=${this.$root.user.authToken}`
+        formFrame.src = `embedded-forms.html?generated=true&processDefinitionId=${this.task.processDefinitionId}&lang=${this.currentLanguage()}`
         this.loader = false
       } else if (this.task.id) {
         var form = this.task.formKey || await TaskService.form(this.task.id)
         if (form.key && form.key.includes('/rendered-form')) {
           // Generated forms
           this.formFrame = true
-          formFrame.src = `embedded-forms.html?generated=true&taskId=${this.task.id}&lang=${this.currentLanguage()}&authorization=${this.$root.user.authToken}`
+          formFrame.src = `embedded-forms.html?generated=true&taskId=${this.task.id}&lang=${this.currentLanguage()}`
           this.loader = false
         } else  if (this.task.formKey && this.task.formKey.startsWith('embedded:') && this.task.formKey !== 'embedded:/camunda/app/tasklist/ui-element-templates/template.html') {
           //Embedded forms if not "standard" ui-element-templates
           this.formFrame = true
-          formFrame.src = `embedded-forms.html?taskId=${this.task.id}&lang=${this.currentLanguage()}&authorization=${this.$root.user.authToken}`
+          formFrame.src = `embedded-forms.html?taskId=${this.task.id}&lang=${this.currentLanguage()}`
           this.loader = false
         } else {
           let formReferencePromise
@@ -271,6 +271,14 @@ export default {
         else if (e.data.method === 'displayErrorMessage') this.displayErrorMessage(e.data.data)
         else if (e.data.method === 'cancelTask') this.cancelTask()
         else if (e.data.method === 'updateFilters') this.updateFilters(e.data)
+        else if (e.data.method === 'requestAuthToken') {
+          // Securely provide auth token to iframe via postMessage
+          const response = {
+            method: 'authTokenResponse',
+            authToken: this.$root.user.authToken
+          }
+          formFrame.contentWindow.postMessage(response, '*')
+        }
       else if (e.data.method === 'openDatePicker') {
           // Handle date picking request from the iframe
           const data = e.data;
