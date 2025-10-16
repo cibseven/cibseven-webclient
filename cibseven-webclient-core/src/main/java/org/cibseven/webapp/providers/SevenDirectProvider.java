@@ -19,6 +19,7 @@ package org.cibseven.webapp.providers;
 import static org.cibseven.webapp.auth.SevenAuthorizationUtils.resourceType;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -26,6 +27,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -35,6 +40,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -44,10 +50,14 @@ import java.util.stream.Collectors;
 import javax.ws.rs.HttpMethod;
 
 import org.apache.commons.io.IOUtils;
+import org.cibseven.bpm.dmn.engine.DmnDecisionResult;
+import org.cibseven.bpm.dmn.engine.DmnDecisionResultEntries;
+import org.cibseven.bpm.dmn.engine.DmnEngineException;
 import org.cibseven.bpm.engine.AuthorizationException;
 import org.cibseven.bpm.engine.AuthorizationService;
 import org.cibseven.bpm.engine.BadUserRequestException;
 import org.cibseven.bpm.engine.CaseService;
+import org.cibseven.bpm.engine.DecisionService;
 import org.cibseven.bpm.engine.EntityTypes;
 import org.cibseven.bpm.engine.ExternalTaskService;
 import org.cibseven.bpm.engine.FilterService;
@@ -73,7 +83,11 @@ import org.cibseven.webapp.rest.model.StartForm;
 import org.cibseven.bpm.engine.TaskService;
 import org.cibseven.bpm.engine.authorization.AuthorizationQuery;
 import org.cibseven.bpm.engine.authorization.Permissions;
-import org.cibseven.bpm.engine.batch.Batch;
+import org.cibseven.bpm.engine.batch.BatchQuery;
+import org.cibseven.bpm.engine.batch.BatchStatistics;
+import org.cibseven.bpm.engine.batch.BatchStatisticsQuery;
+import org.cibseven.bpm.engine.batch.history.HistoricBatch;
+import org.cibseven.bpm.engine.batch.history.HistoricBatchQuery;
 import org.cibseven.bpm.engine.exception.NotFoundException;
 import org.cibseven.bpm.engine.exception.NotValidException;
 import org.cibseven.bpm.engine.exception.NullValueException;
@@ -82,20 +96,28 @@ import org.cibseven.bpm.engine.filter.FilterQuery;
 import org.cibseven.bpm.engine.form.CamundaFormRef;
 import org.cibseven.bpm.engine.form.FormData;
 import org.cibseven.bpm.engine.form.StartFormData;
+import org.cibseven.bpm.engine.history.CleanableHistoricBatchReport;
+import org.cibseven.bpm.engine.history.CleanableHistoricBatchReportResult;
 import org.cibseven.bpm.engine.history.HistoricActivityInstance;
 import org.cibseven.bpm.engine.history.HistoricActivityInstanceQuery;
 import org.cibseven.bpm.engine.history.HistoricActivityStatistics;
 import org.cibseven.bpm.engine.history.HistoricActivityStatisticsQuery;
+import org.cibseven.bpm.engine.history.HistoricDecisionInstanceQuery;
 import org.cibseven.bpm.engine.history.HistoricIncident;
 import org.cibseven.bpm.engine.history.HistoricIncidentQuery;
+import org.cibseven.bpm.engine.history.HistoricJobLog;
+import org.cibseven.bpm.engine.history.HistoricJobLogQuery;
 import org.cibseven.bpm.engine.history.HistoricProcessInstance;
 import org.cibseven.bpm.engine.history.HistoricProcessInstanceQuery;
 import org.cibseven.bpm.engine.history.HistoricTaskInstance;
 import org.cibseven.bpm.engine.history.HistoricTaskInstanceQuery;
 import org.cibseven.bpm.engine.history.HistoricVariableInstance;
 import org.cibseven.bpm.engine.history.HistoricVariableInstanceQuery;
+import org.cibseven.bpm.engine.history.SetRemovalTimeSelectModeForHistoricBatchesBuilder;
+import org.cibseven.bpm.engine.history.SetRemovalTimeSelectModeForHistoricDecisionInstancesBuilder;
 import org.cibseven.bpm.engine.identity.Group;
 import org.cibseven.bpm.engine.identity.GroupQuery;
+import org.cibseven.bpm.engine.identity.TenantQuery;
 import org.cibseven.bpm.engine.identity.UserQuery;
 import org.cibseven.bpm.engine.impl.RuntimeServiceImpl;
 import org.cibseven.bpm.engine.impl.calendar.DateTimeUtil;
@@ -107,10 +129,14 @@ import org.cibseven.bpm.engine.management.ActivityStatistics;
 import org.cibseven.bpm.engine.management.ActivityStatisticsQuery;
 import org.cibseven.bpm.engine.management.IncidentStatistics;
 import org.cibseven.bpm.engine.management.JobDefinitionQuery;
+import org.cibseven.bpm.engine.management.Metrics;
+import org.cibseven.bpm.engine.management.MetricsQuery;
 import org.cibseven.bpm.engine.management.ProcessDefinitionStatistics;
 import org.cibseven.bpm.engine.management.ProcessDefinitionStatisticsQuery;
 import org.cibseven.bpm.engine.management.SetJobRetriesBuilder;
 import org.cibseven.bpm.engine.query.Query;
+import org.cibseven.bpm.engine.repository.DecisionDefinition;
+import org.cibseven.bpm.engine.repository.DecisionDefinitionQuery;
 import org.cibseven.bpm.engine.repository.DeploymentBuilder;
 import org.cibseven.bpm.engine.repository.DeploymentQuery;
 import org.cibseven.bpm.engine.repository.DeploymentWithDefinitions;
@@ -121,28 +147,47 @@ import org.cibseven.bpm.engine.rest.dto.AbstractQueryDto;
 import org.cibseven.bpm.engine.rest.dto.AnnotationDto;
 import org.cibseven.bpm.engine.rest.dto.CountResultDto;
 import org.cibseven.bpm.engine.rest.dto.HistoryTimeToLiveDto;
+import org.cibseven.bpm.engine.rest.dto.PatchVariablesDto;
 import org.cibseven.bpm.engine.rest.dto.StatisticsResultDto;
 import org.cibseven.bpm.engine.rest.dto.VariableValueDto;
 import org.cibseven.bpm.engine.rest.dto.authorization.AuthorizationDto;
 import org.cibseven.bpm.engine.rest.dto.authorization.AuthorizationQueryDto;
 import org.cibseven.bpm.engine.rest.dto.batch.BatchDto;
+import org.cibseven.bpm.engine.rest.dto.batch.BatchQueryDto;
+import org.cibseven.bpm.engine.rest.dto.batch.BatchStatisticsDto;
+import org.cibseven.bpm.engine.rest.dto.batch.BatchStatisticsQueryDto;
+import org.cibseven.bpm.engine.rest.dto.converter.DateConverter;
 import org.cibseven.bpm.engine.rest.dto.converter.DelegationStateConverter;
 import org.cibseven.bpm.engine.rest.dto.converter.StringListConverter;
+import org.cibseven.bpm.engine.rest.dto.dmn.EvaluateDecisionDto;
 import org.cibseven.bpm.engine.rest.dto.externaltask.ExternalTaskDto;
 import org.cibseven.bpm.engine.rest.dto.externaltask.ExternalTaskQueryDto;
 import org.cibseven.bpm.engine.rest.dto.history.DeleteHistoricProcessInstancesDto;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricActivityInstanceDto;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricActivityInstanceQueryDto;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricActivityStatisticsDto;
+import org.cibseven.bpm.engine.rest.dto.history.HistoricDecisionInstanceDto;
+import org.cibseven.bpm.engine.rest.dto.history.HistoricDecisionInstanceQueryDto;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricIncidentDto;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricIncidentQueryDto;
+import org.cibseven.bpm.engine.rest.dto.history.HistoricJobLogDto;
+import org.cibseven.bpm.engine.rest.dto.history.HistoricJobLogQueryDto;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricProcessInstanceDto;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricProcessInstanceQueryDto;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricTaskInstanceDto;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricTaskInstanceQueryDto;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricVariableInstanceDto;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricVariableInstanceQueryDto;
+import org.cibseven.bpm.engine.rest.dto.history.batch.CleanableHistoricBatchReportDto;
+import org.cibseven.bpm.engine.rest.dto.history.batch.CleanableHistoricBatchReportResultDto;
+import org.cibseven.bpm.engine.rest.dto.history.batch.DeleteHistoricDecisionInstancesDto;
+import org.cibseven.bpm.engine.rest.dto.history.batch.HistoricBatchDto;
+import org.cibseven.bpm.engine.rest.dto.history.batch.HistoricBatchQueryDto;
+import org.cibseven.bpm.engine.rest.dto.history.batch.removaltime.SetRemovalTimeToHistoricBatchesDto;
+import org.cibseven.bpm.engine.rest.dto.history.batch.removaltime.SetRemovalTimeToHistoricDecisionInstancesDto;
 import org.cibseven.bpm.engine.rest.dto.identity.GroupQueryDto;
+import org.cibseven.bpm.engine.rest.dto.identity.TenantDto;
+import org.cibseven.bpm.engine.rest.dto.identity.TenantQueryDto;
 import org.cibseven.bpm.engine.rest.dto.identity.UserQueryDto;
 import org.cibseven.bpm.engine.rest.dto.management.JobDefinitionDto;
 import org.cibseven.bpm.engine.rest.dto.management.JobDefinitionQueryDto;
@@ -152,6 +197,9 @@ import org.cibseven.bpm.engine.rest.dto.message.MessageCorrelationResultDto;
 import org.cibseven.bpm.engine.rest.dto.message.MessageCorrelationResultWithVariableDto;
 import org.cibseven.bpm.engine.rest.dto.repository.ActivityStatisticsResultDto;
 import org.cibseven.bpm.engine.rest.dto.repository.CalledProcessDefinitionDto;
+import org.cibseven.bpm.engine.rest.dto.repository.DecisionDefinitionDiagramDto;
+import org.cibseven.bpm.engine.rest.dto.repository.DecisionDefinitionDto;
+import org.cibseven.bpm.engine.rest.dto.repository.DecisionDefinitionQueryDto;
 import org.cibseven.bpm.engine.rest.dto.repository.DeploymentDto;
 import org.cibseven.bpm.engine.rest.dto.repository.DeploymentQueryDto;
 import org.cibseven.bpm.engine.rest.dto.repository.DeploymentResourceDto;
@@ -189,6 +237,7 @@ import org.cibseven.bpm.engine.rest.dto.task.TaskDto;
 import org.cibseven.bpm.engine.rest.dto.task.TaskQueryDto;
 import org.cibseven.bpm.engine.rest.dto.task.TaskWithAttachmentAndCommentDto;
 import org.cibseven.bpm.engine.rest.dto.task.UserDto;
+import org.cibseven.bpm.engine.rest.dto.telemetry.TelemetryDataDto;
 import org.cibseven.bpm.engine.rest.exception.InvalidRequestException;
 import org.cibseven.bpm.engine.rest.exception.RestException;
 import org.cibseven.bpm.engine.rest.impl.history.HistoricActivityStatisticsQueryDto;
@@ -200,6 +249,7 @@ import org.cibseven.bpm.engine.rest.sub.repository.impl.ProcessDefinitionResourc
 import org.cibseven.bpm.engine.rest.util.ApplicationContextPathUtil;
 import org.cibseven.bpm.engine.rest.util.ContentTypeUtil;
 import org.cibseven.bpm.engine.rest.util.QueryUtil;
+import org.cibseven.bpm.engine.rest.util.URLEncodingUtil;
 import org.cibseven.bpm.engine.runtime.DeserializationTypeValidator;
 import org.cibseven.bpm.engine.runtime.EventSubscriptionQuery;
 import org.cibseven.bpm.engine.runtime.IncidentQuery;
@@ -213,6 +263,7 @@ import org.cibseven.bpm.engine.runtime.VariableInstanceQuery;
 import org.cibseven.bpm.engine.task.DelegationState;
 import org.cibseven.bpm.engine.task.TaskCountByCandidateGroupResult;
 import org.cibseven.bpm.engine.task.TaskQuery;
+import org.cibseven.bpm.engine.telemetry.TelemetryData;
 import org.cibseven.bpm.engine.variable.VariableMap;
 import org.cibseven.bpm.engine.variable.Variables;
 import org.cibseven.bpm.engine.variable.impl.type.AbstractValueTypeImpl;
@@ -238,8 +289,10 @@ import org.cibseven.webapp.rest.model.ActivityInstance;
 import org.cibseven.webapp.rest.model.ActivityInstanceHistory;
 import org.cibseven.webapp.rest.model.Authorization;
 import org.cibseven.webapp.rest.model.Authorizations;
+import org.cibseven.webapp.rest.model.Batch;
 import org.cibseven.webapp.rest.model.CamundaForm;
 import org.cibseven.webapp.rest.model.CandidateGroupTaskCount;
+import org.cibseven.webapp.rest.model.Decision;
 import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.DeploymentResource;
 import org.cibseven.webapp.rest.model.EventSubscription;
@@ -247,6 +300,8 @@ import org.cibseven.webapp.rest.model.ExternalTask;
 import org.cibseven.webapp.rest.model.Filter;
 import org.cibseven.webapp.rest.model.FilterCriterias;
 import org.cibseven.webapp.rest.model.FilterProperties;
+import org.cibseven.webapp.rest.model.HistoricDecisionInstance;
+import org.cibseven.webapp.rest.model.HistoryBatch;
 import org.cibseven.webapp.rest.model.HistoryProcessInstance;
 import org.cibseven.webapp.rest.model.IdentityLink;
 import org.cibseven.webapp.rest.model.Incident;
@@ -254,11 +309,13 @@ import org.cibseven.webapp.rest.model.IncidentInfo;
 import org.cibseven.webapp.rest.model.Job;
 import org.cibseven.webapp.rest.model.JobDefinition;
 import org.cibseven.webapp.rest.model.Message;
+import org.cibseven.webapp.rest.model.Metric;
 import org.cibseven.webapp.rest.model.NewUser;
 import org.cibseven.webapp.rest.model.Task;
 import org.cibseven.webapp.rest.model.TaskFiltering;
 import org.cibseven.webapp.rest.model.TaskForm;
 import org.cibseven.webapp.rest.model.TaskHistory;
+import org.cibseven.webapp.rest.model.Tenant;
 import org.cibseven.webapp.rest.model.User;
 import org.cibseven.webapp.rest.model.UserGroup;
 import org.cibseven.webapp.rest.model.Variable;
@@ -266,6 +323,7 @@ import org.cibseven.webapp.rest.model.VariableHistory;
 import org.cibseven.webapp.rest.model.VariableInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.InputStreamSource;
@@ -289,9 +347,11 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 
 import camundajar.impl.scala.Array;
+import jakarta.activation.DataSource;
 import jakarta.activation.MimeType;
 import jakarta.activation.MimeTypeParseException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -320,6 +380,7 @@ public class SevenDirectProvider /* extends SevenProviderBase implements BpmProv
   private HistoryService historyService;
   private FilterService filterService;
   private ExternalTaskService externalTaskService;
+  private DecisionService decisionService;
   //private CaseService caseService;
   private ProcessEngineConfiguration processEngineConfiguration;
   private ProcessEngine processEngine;
@@ -392,6 +453,7 @@ public class SevenDirectProvider /* extends SevenProviderBase implements BpmProv
     historyService = processEngine.getHistoryService();
     filterService = processEngine.getFilterService();
     externalTaskService = processEngine.getExternalTaskService();
+    decisionService = processEngine.getDecisionService();
     //caseService = processEngine.getCaseService();
     processEngineConfiguration = processEngine.getProcessEngineConfiguration();
     objectMapper = new ObjectMapper();
@@ -506,7 +568,6 @@ public class SevenDirectProvider /* extends SevenProviderBase implements BpmProv
     //TODO: not tested
     Map<String, VariableValueDto> variables = new HashMap<>();
     for (Variable variable : formResult) {
-      VariableValueDto variableValueDto1 = new VariableValueDto();
       VariableValueDto variableValueDto = convertValue(variable, VariableValueDto.class);
       variableValueDto.setType(variable.getType());
       variableValueDto.setValue(variable.getValue());
@@ -929,33 +990,13 @@ public class SevenDirectProvider /* extends SevenProviderBase implements BpmProv
     queryParams.put("failedJobs", true);
     queryParams.put("incidents", true);
     Collection<ProcessStatistics> statisticsCollection = getProcessStatistics(queryParams, user);
-
+    // TODO: not tested
     // Group by key and tenant ID to consolidate different versions
     List<ProcessStatistics> groupedStatistics = processProvider
         .groupProcessStatisticsByKeyAndTenant(statisticsCollection);
     // Build Process objects directly from grouped ProcessStatistics
     return groupedStatistics.stream().map(stats -> {
-      Process process = new Process();
-      ProcessDefinitionInfo definition = stats.getDefinition();
-
-      // Copy fields from ProcessDefinitionInfo
-      if (definition != null) {
-        process.setId(definition.getId());
-        process.setKey(definition.getKey());
-        process.setCategory(definition.getCategory());
-        process.setDescription(definition.getDescription());
-        process.setName(definition.getName());
-        process.setVersion(definition.getVersion() != null ? definition.getVersion().toString() : null);
-        process.setResource(definition.getResource());
-        process.setDeploymentId(definition.getDeploymentId());
-        process.setDiagram(definition.getDiagram());
-        process.setSuspended(definition.getSuspended() != null ? definition.getSuspended().toString() : null);
-        process.setTenantId(definition.getTenantId());
-        process.setVersionTag(definition.getVersionTag());
-        process.setHistoryTimeToLive(
-            definition.getHistoryTimeToLive() != null ? definition.getHistoryTimeToLive().toString() : null);
-        process.setStartableInTasklist(definition.getStartableInTasklist());
-      }
+      Process process = convertValue(stats.getDefinition(), Process.class);
 
       // Set aggregated statistics data
       process.setRunningInstances(stats.getInstances());
@@ -1075,7 +1116,6 @@ public class SevenDirectProvider /* extends SevenProviderBase implements BpmProv
   
   //@Override
   public Collection<Process> findProcessVersionsByDefinitionKey(String key, String tenantId, Optional<Boolean> lazyLoad, CIBUser user) {
-    //TODO: not tested
     ProcessDefinitionQueryDto queryDto = new ProcessDefinitionQueryDto();
     queryDto.setKey(key);
     if (tenantId != null)
@@ -1096,7 +1136,7 @@ public class SevenDirectProvider /* extends SevenProviderBase implements BpmProv
         historicProcessInstanceQueryDto.setProcessDefinitionId(process.getId());
         historicProcessInstanceQueryDto.setObjectMapper(objectMapper);
         HistoricProcessInstanceQuery historicProcessInstanceQuery = historicProcessInstanceQueryDto.toQuery(processEngine);
-        List<ProcessDefinition> matchingHistoricProcessInstances = query.unlimitedList(); 
+        List<HistoricProcessInstance> matchingHistoricProcessInstances = historicProcessInstanceQuery.unlimitedList(); 
 
         if (matchingHistoricProcessInstances.isEmpty())
           throw new NullPointerException();
@@ -1104,7 +1144,7 @@ public class SevenDirectProvider /* extends SevenProviderBase implements BpmProv
         
         historicProcessInstanceQueryDto.setUnfinished(true);
         historicProcessInstanceQuery = historicProcessInstanceQueryDto.toQuery(processEngine);
-        matchingHistoricProcessInstances = query.unlimitedList(); 
+        matchingHistoricProcessInstances = historicProcessInstanceQuery.unlimitedList(); 
         
         if (matchingHistoricProcessInstances.isEmpty())
           throw new NullPointerException();
@@ -1113,7 +1153,7 @@ public class SevenDirectProvider /* extends SevenProviderBase implements BpmProv
         historicProcessInstanceQueryDto.setUnfinished(false);
         historicProcessInstanceQueryDto.setCompleted(true);
         historicProcessInstanceQuery = historicProcessInstanceQueryDto.toQuery(processEngine);
-        matchingHistoricProcessInstances = query.unlimitedList(); 
+        matchingHistoricProcessInstances = historicProcessInstanceQuery.unlimitedList(); 
         
         if (matchingHistoricProcessInstances.isEmpty())
           throw new NullPointerException();
@@ -1268,22 +1308,14 @@ public class SevenDirectProvider /* extends SevenProviderBase implements BpmProv
           ? String.format("No matching process definition with key: %s and tenant-id: %s", processDefinitionKey,
               tenantId)
           : String.format("No matching process definition with key: %s and no tenant-id", processDefinitionKey);
-      //TODO: check exception type
+      
       throw new SystemException(errorMessage);
 
     } else {
       // start the process
       ProcessInstanceWithVariables processInstanceWithVariables = null;
       // the simple case contains the _locale variable, only
-      StartProcessInstanceDto startProcessInstanceDto = new StartProcessInstanceDto();
-      //TODO: nothing to be set?
-      // startProcessInstanceDto.setBusinessKey();
-      // startProcessInstanceDto.setCaseInstanceId();
-      // startProcessInstanceDto.setSkipCustomListeners();
-      // startProcessInstanceDto.setSkipIoMappings();
-      // startProcessInstanceDto.setStartInstructions();
-      // startProcessInstanceDto.setVariables();
-      // startProcessInstanceDto.setWithVariablesInReturn();
+      StartProcessInstanceDto startProcessInstanceDto = objectMapper.convertValue(data,  StartProcessInstanceDto.class);
       try {
         processInstanceWithVariables = startProcessInstanceAtActivities(startProcessInstanceDto,
             processDefinition.getId());
@@ -1577,8 +1609,8 @@ Collection<Incident> incidents = fetchIncidentsByInstanceAndActivityId(processDe
     queryDto.setVariableName(variableName);
     queryDto.setObjectMapper(objectMapper);
 
-    List<Variable> variablesDeserialized = queryVariableInstances(queryDto, objectMapper, null, null, true);
-    List<Variable> variablesSerialized = queryVariableInstances(queryDto, objectMapper, null, null, false);
+    List<Variable> variablesDeserialized = queryVariableInstances(queryDto, null, null, true);
+    List<Variable> variablesSerialized = queryVariableInstances(queryDto, null, null, false);
     Variable variableDeserialized = variablesDeserialized.size() == 1 ? variablesDeserialized.get(0) : null;
     Variable variableSerialized = variablesSerialized.size() == 1 ? variablesSerialized.get(0) : null;
     
@@ -1698,11 +1730,13 @@ Collection<Incident> incidents = fetchIncidentsByInstanceAndActivityId(processDe
 
   //@Override
   public Object fetchHistoricActivityStatistics(String id, Map<String, Object> params, CIBUser user) {
-    //TODO: not tested
-    HistoricActivityStatisticsQueryDto historicActivityStatisticsQueryDto = objectMapper.convertValue(params, HistoricActivityStatisticsQueryDto.class);
-    historicActivityStatisticsQueryDto.setProcessDefinitionId(id);
+    MultivaluedMap<String, String> queryParams = new MultivaluedHashMap<>();
+    for (String key: params.keySet()) {
+      queryParams.put(key, Arrays.asList((String)params.get(key)));
+    }
+    
+    HistoricActivityStatisticsQueryDto historicActivityStatisticsQueryDto = new HistoricActivityStatisticsQueryDto(objectMapper, id, queryParams);  
     HistoricActivityStatisticsQuery query = historicActivityStatisticsQueryDto.toQuery(processEngine);
-
     List<HistoricActivityStatisticsDto> result = new ArrayList<>();
     List<HistoricActivityStatistics> statistics = query.unlimitedList();
     for (HistoricActivityStatistics currentStatistics : statistics) {
@@ -2154,7 +2188,7 @@ Collection<Incident> incidents = fetchIncidentsByInstanceAndActivityId(processDe
  
  //@Override
  public ActivityInstance findActivityInstances(String processInstanceId, CIBUser user) throws SystemException {
-   //TODO: not tested
+
    org.cibseven.bpm.engine.runtime.ActivityInstance activityInstance = null;
 
    try {
@@ -2175,7 +2209,7 @@ Collection<Incident> incidents = fetchIncidentsByInstanceAndActivityId(processDe
  
  //@Override
  public List<ActivityInstanceHistory> findActivityInstanceHistory(String processInstanceId, CIBUser user) throws SystemException {
-   //TODO: not tested
+
    HistoricActivityInstanceQueryDto queryHistoricActivityInstanceDto = new HistoricActivityInstanceQueryDto();
    queryHistoricActivityInstanceDto.setProcessInstanceId(processInstanceId);
    return queryHistoricActivityInstance(queryHistoricActivityInstanceDto);
@@ -3368,13 +3402,26 @@ Collection<Incident> incidents = fetchIncidentsByInstanceAndActivityId(processDe
   
   //@Override
   public void modifyVariableByExecutionId(String executionId, Map<String, Object> data, CIBUser user) throws SystemException {
-    //TODO: to be implemented
-/**
- * data contains modifications as HashMap which contains at least one value of type HashMap 
- * containing value, type [String] and valueInfo [HashMap]. 
- */
-    
-      ((RuntimeServiceImpl)runtimeService).updateVariablesLocal(executionId, data, null);
+    //TODO: not tested
+    PatchVariablesDto patch = objectMapper.convertValue(data, PatchVariablesDto.class);  
+    VariableMap variableModifications = null;
+    try {
+      variableModifications = VariableValueDto.toMap(patch.getModifications(), processEngine, objectMapper);
+
+    } catch (RestException e) {
+      String errorMessage = String.format("Cannot modify variables for %s: %s", "modifyVariableByExecutionId", e.getMessage());
+      throw new SystemException(errorMessage, e);
+    }
+
+    List<String> variableDeletions = patch.getDeletions();
+    try {
+      ((RuntimeServiceImpl) runtimeService).updateVariables(executionId, variableModifications, variableDeletions);
+    } catch (AuthorizationException e) {
+      throw e;
+    } catch (ProcessEngineException e) {
+      String errorMessage = String.format("Cannot modify variables for %s %s: %s", "modifyVariableByExecutionId", executionId, e.getMessage());
+      throw new SystemException(errorMessage, e);
+    }
   }
   
   //@Override
@@ -3386,38 +3433,7 @@ Collection<Incident> incidents = fetchIncidentsByInstanceAndActivityId(processDe
         // Handle binary/file data
         String valueTypeName = DEFAULT_BINARY_VALUE_TYPE;
         valueTypeName = valueType;
-
-        VariableValueDto valueDto = new VariableValueDto();
-        valueDto.setType(valueTypeName);
-        valueDto.setValue(data.getBytes());
-
-        String contentType = data.getContentType();
-        if (contentType == null) {
-          contentType = MediaType.APPLICATION_OCTET_STREAM.toString();
-        }
-
-        Map<String, Object> valueInfoMap = new HashMap<>();
-        valueInfoMap.put(FileValueType.VALUE_INFO_FILE_NAME, data.getResource().getFilename());
-        MimeType mimeType = null;
-        try {
-          mimeType = new MimeType(contentType);
-        } catch (MimeTypeParseException e) {
-          throw new RestException(Status.BAD_REQUEST, "Invalid mime type given");
-        }
-
-        valueInfoMap.put(FileValueType.VALUE_INFO_FILE_MIME_TYPE, mimeType.getBaseType());
-
-        String encoding = mimeType.getParameter("encoding");
-        if (encoding != null) {
-          valueInfoMap.put(FileValueType.VALUE_INFO_FILE_ENCODING, encoding);
-        }
-
-        String transientString = mimeType.getParameter("transient");
-        boolean isTransient = Boolean.parseBoolean(transientString);
-        if (isTransient) {
-          valueInfoMap.put(AbstractValueTypeImpl.VALUE_INFO_TRANSIENT, isTransient);
-        }
-        valueDto.setValueInfo(valueInfoMap);
+        VariableValueDto valueDto = createVariableValueDto(valueType, data);
         try {
           TypedValue typedValue = valueDto.toTypedValue(processEngine, objectMapper);//creates FileValueImpl
           runtimeService.setVariable(executionId, variableName, typedValue);
@@ -3510,10 +3526,10 @@ Collection<Incident> incidents = fetchIncidentsByInstanceAndActivityId(processDe
     
     queryDto.setObjectMapper(objectMapper);
     
-    List<Variable> variablesDeserialized = queryVariableInstances(queryDto, objectMapper, null, null, true);
+    List<Variable> variablesDeserialized = queryVariableInstances(queryDto, null, null, true);
     if ( variablesDeserialized.isEmpty())
       return Collections.emptyList();
-    List<Variable> variablesSerialized = queryVariableInstances(queryDto, objectMapper, null, null, false);
+    List<Variable> variablesSerialized = queryVariableInstances(queryDto, null, null, false);
     if ( variablesSerialized.isEmpty())
       return Collections.emptyList();
     
@@ -3527,7 +3543,7 @@ Collection<Incident> incidents = fetchIncidentsByInstanceAndActivityId(processDe
   }
  
   private List<Variable> queryVariableInstances(
-      VariableInstanceQueryDto queryDto, ObjectMapper objectMapper ,Integer firstResult, Integer maxResults, boolean deserializeObjectValues) {  
+      VariableInstanceQueryDto queryDto, Integer firstResult, Integer maxResults, boolean deserializeObjectValues) {  
     VariableInstanceQuery query = queryDto.toQuery(processEngine);
 
     // disable binary fetching by default.
@@ -3555,11 +3571,8 @@ Collection<Incident> incidents = fetchIncidentsByInstanceAndActivityId(processDe
   // @Override
   public ResponseEntity<byte[]> fetchVariableDataByExecutionId(String executionId, String variableName, CIBUser user)
       throws NoObjectFoundException, SystemException {
-    //TODO: in progress
-    // R( /engine-rest/execution/79816b6b-a393-11f0-8830-4ce1734f67af/localVariables/invoiceDocument/data)
+    //TODO: not tested
     TypedValue typedVariableValue = runtimeService.getVariableLocalTyped(executionId, variableName, false);
-    // id: 79816b6b-a393-11f0-8830-4ce1734f67af
-
     return getResponseForTypedVariable(typedVariableValue, executionId);
   }
 
@@ -3672,14 +3685,44 @@ Collection<Incident> incidents = fetchIncidentsByInstanceAndActivityId(processDe
   
   //@Override
   public Collection<VariableHistory> fetchActivityVariablesHistory(String activityInstanceId, CIBUser user) {
-    //TODO: to be implemented
-    return null;
+    //TODO: not tested
+    HistoricVariableInstanceQueryDto queryDto = new HistoricVariableInstanceQueryDto();
+    queryDto.setObjectMapper(objectMapper);
+    return queryHistoricVariableInstances(queryDto, null, null, true);
+  }
+
+  private List<VariableHistory> queryHistoricVariableInstances(HistoricVariableInstanceQueryDto queryDto,
+      Integer firstResult, Integer maxResults, boolean deserializeObjectValues) {
+    queryDto.setObjectMapper(objectMapper);
+    HistoricVariableInstanceQuery query = queryDto.toQuery(processEngine);
+    query.disableBinaryFetching();
+
+    if (!deserializeObjectValues) {
+      query.disableCustomObjectDeserialization();
+    }
+
+    List<HistoricVariableInstance> matchingHistoricVariableInstances = QueryUtil.list(query, firstResult, maxResults);
+    List<VariableHistory> historicVariableInstanceDtoResults = new ArrayList<>();
+    for (HistoricVariableInstance historicVariableInstance : matchingHistoricVariableInstances) {
+      HistoricVariableInstanceDto resultHistoricVariableInstance = HistoricVariableInstanceDto.fromHistoricVariableInstance(historicVariableInstance);
+      historicVariableInstanceDtoResults.add(convertValue(resultHistoricVariableInstance, VariableHistory.class));
+    }
+    return historicVariableInstanceDtoResults;
   }
   
   //@Override
   public Collection<VariableHistory> fetchActivityVariables(String activityInstanceId, CIBUser user) {
-    //TODO: to be implemented
-    return null;
+    //TODO: not tested
+    //TODO: method returns VariableHistory without acessing history data: "/variable-instance" 
+    VariableInstanceQueryDto queryDto = new VariableInstanceQueryDto();
+    queryDto.setObjectMapper(objectMapper);
+    queryDto.setActivityInstanceIdIn(new String[] {activityInstanceId});
+    List<Variable> variableInstances = queryVariableInstances(queryDto, null, null, true);
+    List<VariableHistory> historyVariables = new ArrayList<>();
+    for(Variable variableInstance : variableInstances) {
+      historyVariables.add(convertValue(variableInstance, VariableHistory.class));
+    }
+    return historyVariables;
   }
   
   //@Override
@@ -3700,95 +3743,1026 @@ Collection<Incident> incidents = fetchIncidentsByInstanceAndActivityId(processDe
   //@Override
   public Variable fetchVariable(String taskId, String variableName, 
       boolean deserializeValue, CIBUser user) throws NoObjectFoundException, SystemException {    
-    //TODO: to be implemented
-    return null;
+    //TODO: in progress
+    Variable variableSerialized = fetchTaskVariableImpl(taskId, variableName, false, user);
+    Variable variableDeserialized = fetchTaskVariableImpl(taskId, variableName, true, user);
+
+    if (deserializeValue) {
+      variableDeserialized.setValueSerialized(variableSerialized.getValue());
+      variableDeserialized.setValueDeserialized(variableDeserialized.getValue());
+      return variableDeserialized;
+    }
+    else {
+      variableSerialized.setValueSerialized(variableSerialized.getValue());
+      variableSerialized.setValueDeserialized(variableDeserialized.getValue());
+      return variableSerialized;
+    }
+  }
+  
+  private Variable fetchTaskVariableImpl(String taskId, String variableName, 
+      boolean deserializeValue, CIBUser user) throws NoObjectFoundException, SystemException {    
+    //TODO: not tested
+    TypedValue value = getTypedValueForTaskVariable(taskId, variableName, deserializeValue);
+    return convertValue(VariableValueDto.fromTypedValue(value), Variable.class);
+  }
+
+  private TypedValue getTypedValueForTaskVariable(String taskId, String variableName, boolean deserializeValue) {
+    TypedValue value = null;
+    try {
+       value = taskService.getVariableTyped(taskId, variableName, deserializeValue);
+    } catch (AuthorizationException e) {
+      throw e;
+    } catch (ProcessEngineException e) {
+      String errorMessage = String.format("Cannot get %s variable %s: %s", "task", variableName, e.getMessage());
+      throw new SystemException(errorMessage, e);
+    }
+
+    if (value == null) {
+      String errorMessage = String.format("%s variable with name %s does not exist", "task", variableName);
+      throw new SystemException(errorMessage);
+    }
+    return value;
   }
   
   //@Override
   public void deleteVariable(String taskId, String variableName, CIBUser user) throws NoObjectFoundException, SystemException {   
-    //TODO: to be implemented
+    //TODO: not tested
+    try {
+      taskService.removeVariable(taskId, variableName);
+    } catch (AuthorizationException e) {
+      throw e;
+    } catch (ProcessEngineException e) {
+      String errorMessage = String.format("Cannot delete %s variable %s: %s", "task", variableName, e.getMessage());
+      throw new SystemException(errorMessage, e);
+    }
   }
   
   //@Override
-  public Map<String, Variable> fetchFormVariables(String taskId, boolean deserializeValues, CIBUser user) throws NoObjectFoundException, SystemException {
-    //TODO: to be implemented
-    return null;
+  public Map<String, Variable> fetchFormVariables(String taskId, boolean deserializeValues, CIBUser user) 
+        throws NoObjectFoundException, SystemException {
+    //TODO: not tested
+    return fetchFormVariables(null, taskId, user);
   }
   
   //@Override
-  public Map<String, Variable> fetchFormVariables(List<String> variableListName, String taskId, CIBUser user) throws NoObjectFoundException, SystemException {
-    //TODO: to be implemented
-    return null;
+  public Map<String, Variable> fetchFormVariables(List<String> variableListName, String taskId, CIBUser user) 
+       throws NoObjectFoundException, SystemException {
+    //TODO: not tested
+    VariableMap startFormVariables = formService.getTaskFormVariables(taskId, variableListName, true);
+    Map<String, VariableValueDto> variableDtos = VariableValueDto.fromMap(startFormVariables);
+    Map<String, Variable> variablesMap = new HashMap<>();
+    for (Entry<String, VariableValueDto> e : variableDtos.entrySet()) {
+      variablesMap.put(e.getKey(), convertValue(e.getValue(), Variable.class));
+    }
+    return variablesMap;
   }
   
   //@Override
   public Map<String, Variable> fetchProcessFormVariables(String key, CIBUser user) throws NoObjectFoundException, SystemException {
-    //TODO: to be implemented
-    return null;
+    //TODO: not tested
+    List<String> formVariables = null;
+
+//    if(variableNames != null) {
+//      StringListConverter stringListConverter = new StringListConverter();
+//      formVariables = stringListConverter.convertQueryParameterToType(variableNames);
+//    }
+    ProcessDefinition processDefinition = processEngine
+        .getRepositoryService()
+        .createProcessDefinitionQuery()
+        .processDefinitionKey(key)
+        .withoutTenantId()
+        .latestVersion()
+        .singleResult();
+
+    if(processDefinition == null){
+      String errorMessage = String.format("No matching process definition with key: %s and no tenant-id", key);
+      throw new SystemException(errorMessage);
+
+    }
+
+    VariableMap startFormVariables = formService.getStartFormVariables(processDefinition.getId(), formVariables, true);
+    Map<String, VariableValueDto> variableDtos = VariableValueDto.fromMap(startFormVariables);
+    Map<String, Variable> variablesMap = new HashMap<>();
+    for (Entry<String, VariableValueDto> e : variableDtos.entrySet()) {
+      variablesMap.put(e.getKey(), convertValue(e.getValue(), Variable.class));
+    }
+    return variablesMap;
   }
   
   //@Override
   public NamedByteArrayDataSource fetchVariableFileData(String taskId, String variableName, CIBUser user) throws NoObjectFoundException, UnexpectedTypeException, SystemException {   
-    //TODO: to be implemented
-    return null;
+    //TODO: not tested
+    try {
+      byte[] data = null;
+      String filename = null;
+      String mimeType = null;
+        
+      Variable variable = fetchVariable(taskId, variableName, true, user);
+      String objectType = variable.getValueInfo().get("objectTypeName");
+      if (objectType != null) {
+        try {
+          Class<?> clazz =  Class.forName(objectType);
+
+          if (DataSource.class.isAssignableFrom(clazz)) {
+            @SuppressWarnings("unchecked")
+            DataSource ds = objectMapper.convertValue(variable.getValue(), (Class<? extends DataSource>) clazz);
+
+            return new NamedByteArrayDataSource(ds.getName(), ds.getContentType(),
+                IOUtils.toByteArray(ds.getInputStream()));
+          }
+        } catch (ClassNotFoundException e) {
+          log.info("Class " + objectType + " could not be loaded!");
+        }
+      }
+
+      filename = variable.getFilename();
+      mimeType = variable.getMimeType();
+
+      TypedValue typedVariableValue = getTypedValueForTaskVariable(taskId, variableName, true);
+      //VariableValueDto dto = VariableValueDto.fromTypedValue(value);
+      if (typedVariableValue instanceof BytesValue || ValueType.BYTES.equals(typedVariableValue.getType())) {
+        data = (byte[]) typedVariableValue.getValue();
+        if (data == null) {
+          data = new byte[0];
+        }
+      } else if (ValueType.FILE.equals(typedVariableValue.getType())) {
+        FileValue typedFileValue = (FileValue) typedVariableValue;
+        try {
+          data = typedFileValue.getValue() == null ? null : IOUtils.toByteArray(typedFileValue.getValue());
+          // status code if bytes==null?
+        } catch (IOException e) {
+          throw new SystemException(e.getMessage(), e);
+        }
+      } else {
+        throw new SystemException(String.format("Value of variable with id %s is not a binary value.", variableName));
+      }
+      
+      return new NamedByteArrayDataSource(filename, mimeType, data);
+    } catch (HttpStatusCodeException e) {
+      //TODO: wrapException will be provided by the base class
+      //throw wrapException(e, user);
+      throw new SystemException(e.getMessage());
+    } catch (IOException e) {
+      throw new SystemException(e);
+    }
   }
   
   //@Override
-  public void uploadVariableFileData(String taskId, String variableName, MultipartFile data, String valueType, CIBUser user) throws NoObjectFoundException, SystemException {
-    //TODO: to be implemented
+  public void uploadVariableFileData(String taskId, String variableName, MultipartFile data, String valueType, CIBUser user) 
+    throws NoObjectFoundException, SystemException {
+    //TODO: not tested
+    try {
+      setBinaryVariable(data, valueType, null, taskId, null, variableName);
+    } catch (HttpStatusCodeException e) {
+      //TODO: wrapException will be provided by the base class
+      //throw wrapException(e, user);
+      throw new SystemException(e.getMessage());
+    } catch (IOException e) {
+      throw new SystemException(e.getMessage());
+    }
   }
   
+  /*
+    puts variable to different targets depending on taskId, processInstanceId, ...
+  */
+  private void setBinaryVariable(MultipartFile data, String valueType, String objectType, 
+    String taskId, String processInstanceId, String variableName) throws IOException {
+    if(objectType != null) {
+      Object object = null;
+
+      if(data.getContentType()!=null
+          && data.getContentType().toLowerCase().contains(MediaType.APPLICATION_JSON.toString())) {
+
+        byte[] bytes = IOUtils.toByteArray(data.getResource().getInputStream());
+        object = deserializeJsonObject(objectType, bytes);
+
+      } else {
+        throw new SystemException("Unrecognized content type for serialized java type: "+ data.getContentType());
+      }
+
+      if(object != null) {
+        if (taskId != null)
+          taskService.setVariable(taskId, variableName, Variables.objectValue(object).create());
+        else if (processInstanceId != null)
+          runtimeService.setVariable(processInstanceId, variableName, Variables.objectValue(object).create());
+      }
+    } else {
+
+      String valueTypeName = DEFAULT_BINARY_VALUE_TYPE;
+      if (valueType != null) {
+        if (valueType.isBlank()) {
+          throw new InvalidRequestException(Status.BAD_REQUEST,
+              "Form part with name 'valueType' must have a text/plain value");
+        }
+
+        valueTypeName = valueType;
+      }
+      VariableValueDto valueDto = createVariableValueDto(valueTypeName, data);
+      try {
+
+        TypedValue typedValue = valueDto.toTypedValue(processEngine, objectMapper);
+        if (taskId != null)
+        taskService.setVariable(taskId, variableName, typedValue);
+        else if (processInstanceId != null)
+          runtimeService.setVariable(taskId, variableName, typedValue);
+      } catch (AuthorizationException e) {
+        throw e;
+      } catch (ProcessEngineException e) {
+        String errorMessage = String.format("Cannot put %s variable %s: %s", "task", variableName, e.getMessage());
+        throw new SystemException(errorMessage, e);
+      }
+    }
+    
+  }
+  
+  private VariableValueDto createVariableValueDto(String valueTypeName, MultipartFile data) throws IOException {
+    VariableValueDto valueDto = new VariableValueDto();
+    valueDto.setType(valueTypeName);
+    valueDto.setValue(data.getBytes());
+
+    String contentType = data.getContentType();
+    if (contentType == null) {
+      contentType = MediaType.APPLICATION_OCTET_STREAM.toString();
+    }
+
+    Map<String, Object> valueInfoMap = new HashMap<>();
+    valueInfoMap.put(FileValueType.VALUE_INFO_FILE_NAME, data.getResource().getFilename());
+    MimeType mimeType = null;
+    try {
+      mimeType = new MimeType(contentType);
+    } catch (MimeTypeParseException e) {
+      throw new RestException(Status.BAD_REQUEST, "Invalid mime type given");
+    }
+
+    valueInfoMap.put(FileValueType.VALUE_INFO_FILE_MIME_TYPE, mimeType.getBaseType());
+
+    String encoding = mimeType.getParameter("encoding");
+    if (encoding != null) {
+      valueInfoMap.put(FileValueType.VALUE_INFO_FILE_ENCODING, encoding);
+    }
+
+    String transientString = mimeType.getParameter("transient");
+    boolean isTransient = Boolean.parseBoolean(transientString);
+    if (isTransient) {
+      valueInfoMap.put(AbstractValueTypeImpl.VALUE_INFO_TRANSIENT, isTransient);
+    }
+    valueDto.setValueInfo(valueInfoMap);
+    return valueDto;
+  }  
   //@Override
   public ResponseEntity<byte[]> fetchProcessInstanceVariableData(String processInstanceId, String variableName,
       CIBUser user) throws NoObjectFoundException, SystemException {
-    //TODO: to be implemented
+    //TODO: not tested
+    Variable variable = fetchVariableByProcessInstanceId(processInstanceId, variableName, user);
+    String objectType = variable.getValueInfo().get("objectTypeName");
+    if (objectType != null) {
+      try {
+        Class<?> clazz =  Class.forName(objectType);
+
+        if (DataSource.class.isAssignableFrom(clazz)) {
+          final ObjectMapper mapper = new ObjectMapper();
+          @SuppressWarnings("unchecked")
+          DataSource ds = mapper.convertValue(variable.getValue(), (Class<? extends DataSource>) clazz);
+
+          new ResponseEntity<>(IOUtils.toByteArray(ds.getInputStream()), HttpStatusCode.valueOf(200));
+        }
+      } catch (ClassNotFoundException e) {
+        log.info("Class " + objectType + " could not be loaded!");
+      } catch (IOException e) {
+        throw new SystemException(e.getMessage(), e);
+      }
+    }
+    TypedValue value = null;
+    try {
+      // value = getVariableEntity(variableName, false);
+      value = runtimeService.getVariableTyped(processInstanceId, variableName, false);
+    } catch (AuthorizationException e) {
+      throw e;
+    } catch (ProcessEngineException e) {
+      String errorMessage = String.format("Cannot get %s variable %s: %s", "processInstance", variableName, e.getMessage());
+      throw new RestException(Status.INTERNAL_SERVER_ERROR, e, errorMessage);
+    }
+
+    if (value == null) {
+      String errorMessage = String.format("%s variable with name %s does not exist", "processInstance", variableName);
+      throw new InvalidRequestException(Status.NOT_FOUND, errorMessage);
+    }
+    if (value instanceof BytesValue || ValueType.BYTES.equals(value.getType())) {
+      byte[] valueBytes = (byte[]) value.getValue();
+      if (valueBytes == null) {
+        valueBytes = new byte[0];
+      }
+      ResponseEntity<byte[]> responseEntity = new ResponseEntity<>(valueBytes, HttpStatusCode.valueOf(200));
+    } else if (ValueType.FILE.equals(value.getType())) {
+      FileValue typedFileValue = (FileValue) value;
+      try {
+        byte[] bytes = typedFileValue.getValue() == null ? null : IOUtils.toByteArray(typedFileValue.getValue());
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(typedFileValue.getMimeType() != null ? MediaType.valueOf(typedFileValue.getMimeType()) :  MediaType.APPLICATION_OCTET_STREAM);
+        ResponseEntity<byte[]> responseEntity = new ResponseEntity<>(bytes, headers, HttpStatusCode.valueOf(200));
+        return responseEntity;
+      } catch (IOException e) {
+        throw new SystemException(e.getMessage(), e);
+      }
+    } else {
+      throw new InvalidRequestException(Response.Status.BAD_REQUEST, String.format("Value of variable with id %s is not a binary value.", variableName));
+    }
     return null;
   }
   
   //@Override
   public void uploadProcessInstanceVariableFileData(String processInstanceId, String variableName, MultipartFile data, String valueType, CIBUser user) throws NoObjectFoundException, SystemException {
-    //TODO: to be implemented
+    //TODO: not tested
+    try {
+      setBinaryVariable(data, valueType, null, null, processInstanceId, variableName);
+    } catch (HttpStatusCodeException e) {
+      //TODO: wrapException will be provided by the base class
+      //throw wrapException(e, user);
+      throw new SystemException(e.getMessage());
+    } catch (IOException e) {
+      throw new SystemException(e.getMessage());
+    }
   }
   
   //@Override
-  public ProcessStart submitStartFormVariables(String processDefinitionId, List<Variable> formResult, CIBUser user) throws SystemException {
-    //TODO: to be implemented
-    return null;
+  public ProcessStart submitStartFormVariables(String processDefinitionId, List<Variable> formResult, CIBUser user) 
+    throws SystemException {
+    //TODO: not tested
+    
+    Map<String, Object> variables = new HashMap<>();
+    for (Variable variable : formResult) {
+      VariableValueDto variableValueDto = convertValue(variable, VariableValueDto.class);
+      variableValueDto.setType(variable.getType());
+      variableValueDto.setValue(variable.getValue());
+      if (variable.getValueInfo() != null)
+        variableValueDto.setValueInfo(new HashMap<>(variable.getValueInfo()));
+      variables.put(variable.getName(), variableValueDto);
+    }
+
+    //TODO: VariableProvider modifies the variables:
+//  ObjectMapper mapper = new ObjectMapper();
+//  ObjectNode variables = mapper.getNodeFactory().objectNode();
+//  ObjectNode modifications = mapper.getNodeFactory().objectNode();
+//  try {   
+//    for (Variable variable: formResult) {
+//      ObjectNode variablePost = mapper.getNodeFactory().objectNode();
+//              String val = String.valueOf(variable.getValue());
+//      if (variable.getValue() == null) {
+//        variablePost.put("type", "Null");
+//      }
+//              else if (variable.getType().equals("Boolean")) {
+//                  variablePost.put("value", Boolean.parseBoolean(val));
+//              } else if (variable.getType().equals("Double")) {
+//                  variablePost.put("value", Double.parseDouble(val));
+//              } else if (variable.getType().equals("Integer")) {
+//                  variablePost.put("value", Integer.parseInt(val));
+//              }
+//      else variablePost.put("value", val);
+//
+//      if(variable.getType().equals("file")) {
+//
+//        //https://helpdesk.cib.de/browse/BPM4CIB-434
+//        int lastIndex = variable.getFilename().lastIndexOf(".rtf");
+//        if ((lastIndex > 0) && ((lastIndex + 4) == variable.getFilename().length())) {
+//          variable.getValueInfo().put("mimeType", "application/rtf");
+//        }
+//
+//      }
+//
+//      if (variable.getType().equals("Object")) {
+//        variablePost.set("valueInfo", mapper.valueToTree(variable.getValueInfo()));
+//        variablePost.put("type", "Object");
+//        try {
+//          variablePost.put("value", mapper.writeValueAsString(variable.getValue()));
+//        } catch (IOException e) {
+//          SystemException se = new SystemException(e);
+//          log.info("Exception in submitVariables(...):", se);
+//          throw se;
+//        }
+//      }
+//  
+//      if (variable.getType().equals("File")) {
+//        variablePost.set("valueInfo", mapper.valueToTree(variable.getValueInfo()));
+//        variablePost.put("type", "File");
+//      }
+//
+//      variables.set(variable.getName(), variablePost);
+//    }
+//
+//    modifications.set("variables", variables);
+    
+    org.cibseven.bpm.engine.runtime.ProcessInstance instance = null;
+    try {
+      //TODO: businessKey not ued here
+      //Map<String, Object> variables = VariableValueDto.toMap(startProcessInstanceDto.getVariables(), engine, objectMapper);
+//      String businessKey = startProcessInstanceDto.getBusinessKey();
+//      if (businessKey != null) {
+//        instance = formService.submitStartForm(processDefinitionId, businessKey, variables);
+//      } else {
+        instance = formService.submitStartForm(processDefinitionId, variables);
+//      }
+
+    } catch (AuthorizationException e) {
+      throw e;
+
+    } catch (FormFieldValidationException e) {
+      String errorMessage = String.format("Cannot instantiate process definition %s: %s", processDefinitionId, e.getMessage());
+      throw new SystemException(errorMessage, e);
+
+    } catch (ProcessEngineException e) {
+      String errorMessage = String.format("Cannot instantiate process definition %s: %s", processDefinitionId, e.getMessage());
+      throw new SystemException(errorMessage, e);
+
+    } catch (RestException e) {
+      String errorMessage = String.format("Cannot instantiate process definition %s: %s", processDefinitionId, e.getMessage());
+      throw new SystemException(errorMessage, e);
+
+    }
+
+    ProcessInstanceDto processInstanceDto = ProcessInstanceDto.fromProcessInstance(instance);
+
+    //TODO: implementation creates URL that is probably unused
+//    URI uri = context.getBaseUriBuilder()
+//      .path(rootResourcePath)
+//      .path(ProcessInstanceRestService.PATH)
+//      .path(instance.getId())
+//      .build();
+//
+//    result.addReflexiveLink(uri, HttpMethod.GET, "self");
+    ProcessStart result = convertValue(processInstanceDto, ProcessStart.class);
+    return result;
+    
   }
   
   //@Override
   public Variable fetchVariableByProcessInstanceId(String processInstanceId, String variableName, CIBUser user) throws SystemException {
     //TODO: to be implemented
-    return null;
+    Variable variableSerialized = fetchVariableByProcessInstanceIdImpl(processInstanceId, variableName, false, user);
+    Variable variableDeserialized = fetchVariableByProcessInstanceIdImpl(processInstanceId, variableName, true, user);
+
+    variableDeserialized.setValueSerialized(variableSerialized.getValue());
+    variableDeserialized.setValueDeserialized(variableDeserialized.getValue());
+    return variableDeserialized;
   }
 
-  //@Override
-  public void saveVariableInProcessInstanceId(String processInstanceId, List<Variable> variables, CIBUser user) throws SystemException {
-    //TODO: to be implemented
+  private Variable fetchVariableByProcessInstanceIdImpl(String processInstanceId, String variableName, boolean deserializeValue, CIBUser user) 
+      throws SystemException {
+    //TODO: not tested
+    TypedValue value = getTypedValueForProcessInstanceVariable(processInstanceId, variableName, deserializeValue);
+    return convertValue(VariableValueDto.fromTypedValue(value), Variable.class);
+  }
+  
+  private TypedValue getTypedValueForProcessInstanceVariable(String processInstanceId, String variableName, boolean deserializeValue) {
+    try {
+       return runtimeService.getVariableTyped(processInstanceId, variableName, deserializeValue);
+    } catch (AuthorizationException e) {
+      throw e;
+    } catch (ProcessEngineException e) {
+      String errorMessage = String.format("Cannot get %s variable %s: %s", "task", variableName, e.getMessage());
+      throw new SystemException(errorMessage, e);
+    }
   }
   
   //@Override
-  public void submitVariables(String processInstanceId, List<Variable> formResult, CIBUser user, String processDefinitionId) throws SystemException {
-    //TODO: to be implemented
+  public void saveVariableInProcessInstanceId(String processInstanceId, List<Variable> variables, CIBUser user) throws SystemException {
+    //TODO: not tested
+    List<String> deletions = new ArrayList<>();
+    Map<String, VariableValueDto> modifications = new HashMap<>();
+    for (Variable variable : variables) {
+      VariableValueDto variableValueDto = convertValue(variable, VariableValueDto.class);
+      variableValueDto.setType(variable.getType());
+      variableValueDto.setValue(variable.getValue());
+      if (variable.getValueInfo() != null)
+        variableValueDto.setValueInfo(new HashMap<>(variable.getValueInfo()));
+      modifications.put(variable.getName(), variableValueDto);
+    }
+    updateVariableEntities(processInstanceId, modifications, deletions);
+  }
+
+  //updates execution variables 
+  private void updateVariableEntities(String processInstanceId, Map<String, VariableValueDto> modifications, List<String> deletions) {
+    VariableMap variableModifications = null;
+    try {
+      variableModifications = VariableValueDto.toMap(modifications, processEngine, objectMapper);
+    } catch (RestException e) {
+      String errorMessage = String.format("Cannot modify variables for %s: %s", "processInstance", e.getMessage());
+      throw new SystemException(errorMessage, e);
+    }
+    try {
+      RuntimeServiceImpl runtimeServiceImpl = (RuntimeServiceImpl) runtimeService;
+      runtimeServiceImpl.updateVariables(processInstanceId, variableModifications, deletions);
+    } catch (AuthorizationException e) {
+      throw e;
+    } catch (ProcessEngineException e) {
+      String errorMessage = String.format("Cannot modify variables for %s %s: %s", "processInstance", processInstanceId, e.getMessage());
+      throw new RestException(Status.INTERNAL_SERVER_ERROR, e, errorMessage);
+    }
+  }
+  
+  //@Override
+  public void submitVariables(String processInstanceId, List<Variable> formResult, CIBUser user, String processDefinitionId) 
+       throws SystemException {
+    //TODO: not tested
+    //TODO: VariableProvider ignores processDefinitionId and converts the variables: 
+//  ObjectMapper mapper = new ObjectMapper();
+//  ObjectNode variables = mapper.getNodeFactory().objectNode();
+//  ObjectNode modifications = mapper.getNodeFactory().objectNode();
+//
+//  for (Variable variable: formResult) {
+//    ObjectNode variablePost = mapper.getNodeFactory().objectNode();
+//    String val = String.valueOf(variable.getValue());
+//    if (variable.getValue() == null) {
+//      variablePost.put("type", "Null");
+//    }
+//    else if (variable.getType().equals("Boolean")) {
+//      variablePost.put("value", Boolean.parseBoolean(val));
+//    } else if (variable.getType().equals("Double")) {
+//        variablePost.put("value", Double.parseDouble(val));
+//    } else if (variable.getType().equals("Integer")) {
+//        variablePost.put("value", Integer.parseInt(val));
+//    }
+//    else variablePost.put("value", val);
+//    //TODO Changing variables before saving should be done in the task classes
+//
+//    if (variable.getType().equals("file")) {
+//
+//      //https://helpdesk.cib.de/browse/BPM4CIB-434
+//      int lastIndex = variable.getFilename().lastIndexOf(".rtf");
+//      if ((lastIndex > 0) && ((lastIndex + 4) == variable.getFilename().length())) {
+//        variable.getValueInfo().put("mimeType", "application/rtf");
+//      }
+//    }
+//
+//    if (variable.getType().equals("json")) {
+//      variablePost.set("valueInfo", mapper.valueToTree(variable.getValueInfo()));
+//      variablePost.put("type", "json");
+//      try {
+//        variablePost.put("value", mapper.writeValueAsString(variable.getValue()));
+//      } catch (IOException e) {
+//        SystemException se = new SystemException(e);
+//        log.info("Exception in submitVariables(...):", se);
+//        throw se;
+//      }
+//    }
+//
+//    if (variable.getType().equals("Object")) {
+//      variablePost.set("valueInfo", mapper.valueToTree(variable.getValueInfo()));
+//      variablePost.put("type", "Object");
+//      try {
+//        variablePost.put("value", mapper.writeValueAsString(variable.getValue()));
+//      } catch (IOException e) {
+//        SystemException se = new SystemException(e);
+//        log.info("Exception in submitVariables(...):", se);
+//        throw se;
+//      }
+//    }
+//
+//    variables.set(variable.getName(), variablePost);
+//}
+    
+    List<String> deletions = new ArrayList<>();
+    Map<String, VariableValueDto> modifications = new HashMap<>();
+    for (Variable variable : formResult) {
+      VariableValueDto variableValueDto = convertValue(variable, VariableValueDto.class);
+      variableValueDto.setType(variable.getType());
+      variableValueDto.setValue(variable.getValue());
+      if (variable.getValueInfo() != null)
+        variableValueDto.setValueInfo(new HashMap<>(variable.getValueInfo()));
+      modifications.put(variable.getName(), variableValueDto);
+    }
+    
+    updateVariableEntities(processInstanceId, modifications, deletions);
+    
   }
   
   //@Override
   public Map<String, Variable> fetchProcessFormVariablesById(String id, CIBUser user) throws SystemException {
-    //TODO: to be implemented
-    return null;
-  }
+    //TODO: not tested
+    VariableMap startFormVariables = formService.getStartFormVariables(id, null, true);
+    Map<String, Variable> resultMap = new HashMap<>(); 
+    Map<String, VariableValueDto> resultDtoMap = VariableValueDto.fromMap(startFormVariables);
+    for (Entry<String, VariableValueDto> resultDtoEntry : resultDtoMap.entrySet()) {
+      resultMap.put(resultDtoEntry.getKey(), convertValue(resultDtoEntry.getValue(), Variable.class));
+    }
+    return resultMap;
+}
   
   //@Override
   public void putLocalExecutionVariable(String executionId, String varName, Map<String, Object> data, CIBUser user) {
-    //TODO: to be implemented
+    //TODO: not tested
+    try {
+      VariableValueDto variable = objectMapper.convertValue(data, VariableValueDto.class);
+      TypedValue typedValue = variable.toTypedValue(processEngine, objectMapper);
+      runtimeService.setVariable(executionId, varName, typedValue);
+
+    } catch (RestException e) {
+      throw new InvalidRequestException(e.getStatus(), e,
+        String.format("Cannot put %s variable %s: %s", "execution", varName, e.getMessage()));
+    } catch (BadUserRequestException e) {
+      throw new SystemException(String.format("Cannot put %s variable %s: %s", "execution", varName, e.getMessage()), e);
+    } catch (AuthorizationException e) {
+      throw e;
+    } catch (ProcessEngineException e) {
+      throw new SystemException(String.format("Cannot put %s variable %s: %s", "execution", varName, e.getMessage()), e);
+    }
   }
 
   //@Override
   public Collection<ActivityInstanceHistory> findActivitiesProcessDefinitionHistory(String processDefinitionId, Map<String, Object> params, CIBUser user) {
-    //TODO: to be implemented
+    //TODO: not tested
+    HistoricActivityInstanceQueryDto queryHistoricActivityInstanceDto = objectMapper.convertValue(params, HistoricActivityInstanceQueryDto.class);
+    queryHistoricActivityInstanceDto.setProcessDefinitionId(processDefinitionId);
+    return queryHistoricActivityInstance(queryHistoricActivityInstanceDto);
+    
+  }
+
+  /*
+  
+  ██████  ███████  ██████ ██ ███████ ██  ██████  ███    ██     ██████  ██████   ██████  ██    ██ ██ ██████  ███████ ██████  
+  ██   ██ ██      ██      ██ ██      ██ ██    ██ ████   ██     ██   ██ ██   ██ ██    ██ ██    ██ ██ ██   ██ ██      ██   ██ 
+  ██   ██ █████   ██      ██ ███████ ██ ██    ██ ██ ██  ██     ██████  ██████  ██    ██ ██    ██ ██ ██   ██ █████   ██████  
+  ██   ██ ██      ██      ██      ██ ██ ██    ██ ██  ██ ██     ██      ██   ██ ██    ██  ██  ██  ██ ██   ██ ██      ██   ██ 
+  ██████  ███████  ██████ ██ ███████ ██  ██████  ██   ████     ██      ██   ██  ██████    ████   ██ ██████  ███████ ██   ██ 
+                                                                                                                                                                                                                                
+  */
+  
+  //@Override
+  public Collection<Decision> getDecisionDefinitionList(Map<String, Object> queryParams, CIBUser user) {
+     
+    DecisionDefinitionQueryDto queryDto = objectMapper.convertValue(queryParams, DecisionDefinitionQueryDto.class);
+    List<Decision> definitions = new ArrayList<>();
+    DecisionDefinitionQuery query = queryDto.toQuery(processEngine);
+    List<DecisionDefinition> matchingDefinitions = QueryUtil.list(query, null, null);
+    for (DecisionDefinition definition : matchingDefinitions) {
+      DecisionDefinitionDto def = DecisionDefinitionDto.fromDecisionDefinition(definition);
+      definitions.add(convertValue(def, Decision.class));
+    }
+    return definitions;
+  } 
+  
+  //@Override
+  public Long getDecisionDefinitionListCount(Map<String, Object> queryParams, CIBUser user) {
+    //TODO: not tested
+    DecisionDefinitionQueryDto queryDto = objectMapper.convertValue(queryParams, DecisionDefinitionQueryDto.class);
+    DecisionDefinitionQuery query = queryDto.toQuery(processEngine);
+    List<DecisionDefinition> matchingDefinitions = QueryUtil.list(query, null, null);
+    return Long.valueOf(matchingDefinitions.size());
+  }
+  
+  //@Override
+  public Decision getDecisionDefinitionByKey(String key, CIBUser user) {
+    //TODO: not tested
+    DecisionDefinition decisionDefinition = getDecisionDefinitionByKeyAndTenant(key, null);
+    return convertValue(DecisionDefinitionDto.fromDecisionDefinition(decisionDefinition), Decision.class);
+}
+  
+  private DecisionDefinition getDecisionDefinitionByKeyAndTenant(String key, String tenantId) {
+    DecisionDefinitionQuery query = repositoryService
+    .createDecisionDefinitionQuery()
+    .decisionDefinitionKey(key);
+    if (tenantId == null)
+      query.withoutTenantId();
+    else
+      query.tenantIdIn(new String[] {tenantId});
+    
+    DecisionDefinition decisionDefinition = query
+        .latestVersion()
+        .singleResult();
+
+    if (decisionDefinition == null) {
+      String errorMessage = String.format("No matching decision definition with key: %s and no tenant-id", key);
+      throw new SystemException(errorMessage);
+    }
+    return decisionDefinition;
+  }
+
+  //@Override
+  public Object getDiagramByKey(String key, CIBUser user) {
+    //TODO: not tested
+    return getDiagramByKeyAndTenant(key, null, user);
+  }
+
+  //@Override
+  public Object evaluateDecisionDefinitionByKey(Map<String, Object> data, String key, CIBUser user) {
+    //TODO: not tested
+    EvaluateDecisionDto parameters = objectMapper.convertValue(data, EvaluateDecisionDto.class);
+    Map<String, Object> variables = VariableValueDto.toMap(parameters.getVariables(), processEngine, objectMapper);
+    DecisionDefinition decisionDefinition = getDecisionDefinitionByKeyAndTenant(key, null);
+
+    try {
+      DmnDecisionResult decisionResult = decisionService
+          .evaluateDecisionById(decisionDefinition.getId())
+          .variables(variables)
+          .evaluate();
+
+      List<Map<String, VariableValueDto>> dto = new ArrayList<>();
+
+      for (DmnDecisionResultEntries entries : decisionResult) {
+        Map<String, VariableValueDto> resultEntriesDto = createResultEntriesDto(entries);
+        dto.add(resultEntriesDto);
+      }
+      //TODO: probably wrong object type
+      return dto;
+
+    }
+    catch (AuthorizationException e) {
+      throw e;
+    }
+    catch (NotFoundException e) {
+      String errorMessage = String.format("Cannot evaluate decision %s: %s", decisionDefinition.getId(), e.getMessage());
+      throw new SystemException(errorMessage, e);
+    }
+    catch (NotValidException e) {
+      String errorMessage = String.format("Cannot evaluate decision %s: %s", decisionDefinition.getId(), e.getMessage());
+      throw new SystemException(errorMessage, e);
+    }
+    catch (ProcessEngineException e) {
+      String errorMessage = String.format("Cannot evaluate decision %s: %s", decisionDefinition.getId(), e.getMessage());
+      throw new SystemException(errorMessage, e);
+    }
+    catch (DmnEngineException e) {
+      String errorMessage = String.format("Cannot evaluate decision %s: %s", decisionDefinition.getId(), e.getMessage());
+      throw new SystemException(errorMessage, e);
+    }
+  }
+  
+  private Map<String, VariableValueDto> createResultEntriesDto(DmnDecisionResultEntries entries) {
+    VariableMap variableMap = Variables.createVariables();
+
+    for(String key : entries.keySet()) {
+      TypedValue typedValue = entries.getEntryTyped(key);
+      variableMap.putValueTyped(key, typedValue);
+    }
+
+    return VariableValueDto.fromMap(variableMap);
+  }
+
+  //@Override
+  public void updateHistoryTTLByKey(Map<String, Object> data, String key, CIBUser user) {
+    //TODO: not tested
+    HistoryTimeToLiveDto historyTimeToLiveDto = objectMapper.convertValue(data,  HistoryTimeToLiveDto.class);
+    DecisionDefinition decisionDefinition = getDecisionDefinitionByKeyAndTenant(key, null);
+    repositoryService.updateDecisionDefinitionHistoryTimeToLive(decisionDefinition.getId(), 
+        historyTimeToLiveDto.getHistoryTimeToLive());
+}
+  
+  //@Override
+  public Decision getDecisionDefinitionByKeyAndTenant(String key, String tenant, CIBUser user) {
+    //TODO: not tested
+    DecisionDefinition decisionDefinition = getDecisionDefinitionByKeyAndTenant(key, tenant);
+    DecisionDefinitionDto dto = DecisionDefinitionDto.fromDecisionDefinition(decisionDefinition); 
+    return convertValue(dto, Decision.class);
+  }
+  
+  //@Override
+  public Object getDiagramByKeyAndTenant(String key, String tenant, CIBUser user) {
+    //TODO: not tested
+    DecisionDefinition decisionDefinition = getDecisionDefinitionByKeyAndTenant(key, tenant);
+    return getDiagramByDecisionDefinition(decisionDefinition, user);
+  }
+  
+  private Object getDiagramByDecisionDefinition(DecisionDefinition decisionDefinition, CIBUser user) {
+    InputStream decisionDiagram = repositoryService.getDecisionDiagram(decisionDefinition.getId());
+    if (decisionDiagram == null) {
+      return Response.noContent().build();
+    } else {
+      //TODO: fetchDiagram creates xml 
+//      byte[] processModel = IoUtil.readInputStream(processModelIn, "processModelBpmn20Xml");
+//      return convertValue(ProcessDefinitionDiagramDto.create(id, new String(processModel, "UTF-8")), ProcessDiagram.class);
+      //TODO: probably not the correct object type
+      String fileName = decisionDefinition.getDiagramResourceName();
+      return Response.ok(decisionDiagram).header("Content-Disposition",URLEncodingUtil.buildAttachmentValue(fileName))
+          .type(ProcessDefinitionResourceImpl.getMediaTypeForFileSuffix(fileName)).build();
+    }
+  }
+
+  //@Override
+  public Object evaluateDecisionDefinitionByKeyAndTenant(String key, String tenant, CIBUser user) {
+    //TODO: not implemented in DecisionProvider, parameter array not part of the interface as in evaluateDecisionDefinitionByKey() 
     return null;
   }
   
+  //@Override
+  public Object updateHistoryTTLByKeyAndTenant(String key, String tenant, CIBUser user) {
+    //TODO: not implemented in DecisionProvider, parameter array not part of the interface as in updateHistoryTTLByKey() 
+    return null;
+  }
+  
+  //@Override
+  public Object getXmlByKey(String key, CIBUser user) {
+    //TODO: not tested
+    return getXmlByKeyAndTenant(key, null, user);
+  }
+  
+  //@Override
+  public Object getXmlByKeyAndTenant(String key, String tenant, CIBUser user) {
+    //TODO: not tested
+    DecisionDefinition decisionDefinition = getDecisionDefinitionByKeyAndTenant(key, tenant);
+    return getXmlByDefinitionId(decisionDefinition.getId());
+  }
+  
+  private Object getXmlByDefinitionId(String definitionId) {
+    InputStream decisionModelInputStream = null;
+    try {
+      decisionModelInputStream = repositoryService.getDecisionModel(definitionId);
+
+      byte[] decisionModel = IoUtil.readInputStream(decisionModelInputStream, "decisionModelDmnXml");
+      return DecisionDefinitionDiagramDto.create(definitionId, new String(decisionModel, "UTF-8"));
+
+    } catch (ProcessEngineException|UnsupportedEncodingException e) {
+      throw new SystemException(e.getMessage(), e);
+
+    } finally {
+      IoUtil.closeSilently(decisionModelInputStream);
+    }
+  }
+  
+  //@Override
+  public Decision getDecisionDefinitionById(String id, Optional<Boolean> extraInfo, CIBUser user) {
+    
+    DecisionDefinition definition = getDecisionDefinitionId(id, user);
+    Decision decision = convertValue(DecisionDefinitionDto.fromDecisionDefinition(definition), Decision.class);
+    if (extraInfo.isPresent() && extraInfo.get()) {
+      Map<String, Object> queryParams = new HashMap<>();
+      queryParams.put("decisionDefinitionId", definition.getId());
+      Long count = getHistoricDecisionInstanceCount(queryParams, user);
+      decision.setAllInstances(count);
+    }
+    return decision;
+  }
+  
+  //@Override
+  public Object getDiagramById(String id, CIBUser user) {
+    //TODO: not tested
+    DecisionDefinition definition = getDecisionDefinitionId(id, user);
+    return getDiagramByDecisionDefinition(definition, user);
+  }
+  
+  private DecisionDefinition getDecisionDefinitionId(String id, CIBUser user) {
+    //TODO: not tested
+    DecisionDefinition definition = null;
+    try {
+      definition = repositoryService.getDecisionDefinition(id);
+    } catch (ProcessEngineException e) {
+      throw new SystemException(e.getMessage(), e);
+    }
+    return definition;
+  }
+
+  //@Override
+  public Object evaluateDecisionDefinitionById(String id, CIBUser user) {
+    //TODO: not implemented in DecisionProvider and parameters are missing like in evaluateDecisionDefinitionByKey() 
+    DecisionDefinition definition = getDecisionDefinitionId(id, user);
+    return null;
+  }
+  
+  //@Override
+  public void updateHistoryTTLById(String id, Map<String, Object> data, CIBUser user) {
+    //TODO: not tested
+    HistoryTimeToLiveDto historyTimeToLiveDto = objectMapper.convertValue(data,  HistoryTimeToLiveDto.class);
+    repositoryService.updateDecisionDefinitionHistoryTimeToLive(id, 
+        historyTimeToLiveDto.getHistoryTimeToLive());
+  }
+  
+  //@Override
+  public Object getXmlById(String id, CIBUser user) {
+    //TODO: not tested
+    //should return like 
+//    {id=dish:1:92f39b44-76b2-11f0-bd0d-4ce1734f67af, dmnXml=<?xml version="1.0" encoding="UTF-8"?>
+//    <definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:modeler="http://camunda.org/schema/modeler/1.0" xmlns:camunda="http://camunda.org/schema/1.0/dmn" id="Dish" name="dish" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.35.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.23.0">
+//      <decision id="dish" name="Last Dish ;-)" camunda:historyTimeToLive="P180D">
+    //but returns:
+// id=dish:1:92f39b44-76b2-11f0-bd0d-4ce1734f67af
+// dmnXml: <?xml version="1.0" encoding="UTF-8"?>
+//    <definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:modeler="http://camunda.org/schema/modeler/1.0" xmlns:camunda="http://camunda.org/schema/1.0/dmn" id="Dish" name="dish" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.35.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.23.0">
+//    <decision id="dish" name="Last Dish ;-)" camunda:historyTimeToLive="P180D">
+//      <decisionTable id="DecisionTable_18p9dax">
+    
+    
+    return getXmlByDefinitionId(id);
+  }
+
+  //@Override
+  public Collection<Decision> getDecisionVersionsByKey(String key, Optional<Boolean> lazyLoad, CIBUser user) {
+    List<DecisionDefinition> decisionDefinitions = repositoryService
+    .createDecisionDefinitionQuery()
+    .decisionDefinitionKey(key)
+    .withoutTenantId()
+    .unlimitedList();;
+
+    if (decisionDefinitions == null  || decisionDefinitions.isEmpty()) {
+      String errorMessage = String.format("No matching decision definition with key: %s and no tenant-id", key);
+      throw new SystemException(errorMessage);
+    }
+    List<Decision> decisions = new ArrayList<>();    
+    for (DecisionDefinition decisionDefinition : decisionDefinitions) {
+      DecisionDefinitionDto decisionDefinitionDto = DecisionDefinitionDto.fromDecisionDefinition(decisionDefinition); 
+      decisions.add(convertValue(decisionDefinitionDto, Decision.class));
+    }
+    return decisions;
+  }
+  
+  //@Override
+  public Collection<HistoricDecisionInstance> getHistoricDecisionInstances(Map<String, Object> queryParams, CIBUser user){
+    HistoricDecisionInstanceQueryDto queryHistoricDecisionInstanceDto = objectMapper.convertValue(queryParams, HistoricDecisionInstanceQueryDto.class);
+    HistoricDecisionInstanceQuery query = queryHistoricDecisionInstanceDto.toQuery(processEngine);
+
+    List<org.cibseven.bpm.engine.history.HistoricDecisionInstance> matchingHistoricDecisionInstances = QueryUtil.list(query, null, null);
+
+    List<HistoricDecisionInstance> historicDecisionInstanceDtoResults = new ArrayList<>();
+    for (org.cibseven.bpm.engine.history.HistoricDecisionInstance historicDecisionInstance : matchingHistoricDecisionInstances) {
+      HistoricDecisionInstanceDto resultHistoricDecisionInstanceDto = HistoricDecisionInstanceDto.fromHistoricDecisionInstance(historicDecisionInstance);
+      historicDecisionInstanceDtoResults.add(convertValue(resultHistoricDecisionInstanceDto, HistoricDecisionInstance.class));
+    }
+    return historicDecisionInstanceDtoResults;
+  }
+  
+  //@Override
+  public Long getHistoricDecisionInstanceCount(Map<String, Object> queryParams, CIBUser user){
+    //TODO: not tested
+    HistoricDecisionInstanceQueryDto queryHistoricDecisionInstanceDto = objectMapper.convertValue(queryParams, HistoricDecisionInstanceQueryDto.class);
+    HistoricDecisionInstanceQuery query = queryHistoricDecisionInstanceDto.toQuery(processEngine);
+    return query.count();
+  }
+  
+  //@Override
+  public HistoricDecisionInstance getHistoricDecisionInstanceById(String id, Map<String, Object> queryParams, CIBUser user){
+    //TODO: not tested
+    HistoricDecisionInstanceQueryDto historicDecisionInstanceQueryDto = objectMapper.convertValue(queryParams, HistoricDecisionInstanceQueryDto.class);
+    HistoricDecisionInstanceQuery query = historicDecisionInstanceQueryDto.toQuery(processEngine);
+    org.cibseven.bpm.engine.history.HistoricDecisionInstance instance = query.singleResult();
+
+    if (instance == null) {
+      throw new SystemException("Historic decision instance with id '" + id + "' does not exist");
+    }
+
+    return convertValue(HistoricDecisionInstanceDto.fromHistoricDecisionInstance(instance), HistoricDecisionInstance.class);
+  }
+  
+  //@Override
+  public Object deleteHistoricDecisionInstances(Map<String, Object> data, CIBUser user){
+    //TODO: not tested
+    DeleteHistoricDecisionInstancesDto dto = objectMapper.convertValue(data, DeleteHistoricDecisionInstancesDto.class);
+    HistoricDecisionInstanceQuery decisionInstanceQuery = null;
+    if (dto.getHistoricDecisionInstanceQuery() != null) {
+      decisionInstanceQuery = dto.getHistoricDecisionInstanceQuery().toQuery(processEngine);
+    }
+
+    try {
+      List<String> historicDecisionInstanceIds = dto.getHistoricDecisionInstanceIds();
+      String deleteReason = dto.getDeleteReason();
+      org.cibseven.bpm.engine.batch.Batch batch = processEngine.getHistoryService().deleteHistoricDecisionInstancesAsync(historicDecisionInstanceIds, decisionInstanceQuery, deleteReason);
+      return BatchDto.fromBatch(batch);
+    }
+    catch (BadUserRequestException e) {
+      throw new InvalidRequestException(Status.BAD_REQUEST, e.getMessage());
+    }
+  }
+  
+  //@Override
+  public Object setHistoricDecisionInstanceRemovalTime(Map<String, Object> data, CIBUser user){
+    //TODO: not tested
+    SetRemovalTimeToHistoricDecisionInstancesDto dto = objectMapper.convertValue(data, SetRemovalTimeToHistoricDecisionInstancesDto.class);
+    HistoryService historyService = processEngine.getHistoryService();
+
+    HistoricDecisionInstanceQuery historicDecisionInstanceQuery = null;
+
+    if (dto.getHistoricDecisionInstanceQuery() != null) {
+      historicDecisionInstanceQuery = dto.getHistoricDecisionInstanceQuery().toQuery(processEngine);
+
+    }
+
+    SetRemovalTimeSelectModeForHistoricDecisionInstancesBuilder builder =
+      historyService.setRemovalTimeToHistoricDecisionInstances();
+
+    if (dto.isCalculatedRemovalTime()) {
+      builder.calculatedRemovalTime();
+
+    }
+
+    Date removalTime = dto.getAbsoluteRemovalTime();
+    if (dto.getAbsoluteRemovalTime() != null) {
+      builder.absoluteRemovalTime(removalTime);
+
+    }
+
+    if (dto.isClearedRemovalTime()) {
+      builder.clearedRemovalTime();
+
+    }
+
+    builder.byIds(dto.getHistoricDecisionInstanceIds());
+    builder.byQuery(historicDecisionInstanceQuery);
+
+    if (dto.isHierarchical()) {
+      builder.hierarchical();
+
+    }
+
+    org.cibseven.bpm.engine.batch.Batch batch = builder.executeAsync();
+    return BatchDto.fromBatch(batch);
+  }
+
 /*
   
        ██  ██████  ██████      ██████  ██████   ██████  ██    ██ ██ ██████  ███████ ██████  
@@ -3865,25 +4839,53 @@ Collection<Incident> incidents = fetchIncidentsByInstanceAndActivityId(processDe
 
   //@Override
   public void deleteJob(String id, CIBUser user) {
-    //TODO: to be implemented
+    //TODO: not tested
+    try {
+      managementService.deleteJob(id);
+    } catch (AuthorizationException e) {
+      throw e;
+    } catch (ProcessEngineException e) {
+      throw new SystemException(e.getMessage());
+    }
   }
 
   //@Override
   public JobDefinition findJobDefinition(String id, CIBUser user) {
-    //TODO: to be implemented
-    return null;
+    //TODO: not tested
+    org.cibseven.bpm.engine.management.JobDefinition jobDefinition = managementService.createJobDefinitionQuery().jobDefinitionId(id).singleResult();
+    if (jobDefinition == null) {
+      throw new SystemException("Job Definition with id " + id + " does not exist");
+    }
+    return convertValue(JobDefinitionDto.fromJobDefinition(jobDefinition), JobDefinition.class);
   } 
 
   //@Override
   public Collection<Object> getHistoryJobLog(Map<String, Object> params, CIBUser user) {
-    //TODO: to be implemented
-    return null;
+    //TODO: not tested
+    HistoricJobLogQueryDto queryDto = objectMapper.convertValue(params, HistoricJobLogQueryDto.class);
+    queryDto.setObjectMapper(objectMapper);
+    HistoricJobLogQuery query = queryDto.toQuery(processEngine);
+    List<HistoricJobLog> matchingHistoricJobLogs = QueryUtil.list(query, null, null);
+
+    List<Object> results = new ArrayList<>();
+    for (HistoricJobLog historicJobLog : matchingHistoricJobLogs) {
+      HistoricJobLogDto result = HistoricJobLogDto.fromHistoricJobLog(historicJobLog);
+      results.add(result);
+    }
+    return results;
   }
   
   //@Override
   public String getHistoryJobLogStacktrace(String id, CIBUser user) {
-    //TODO: to be implemented
-    return null;
+    //TODO: not tested
+    try {
+      String stacktrace = historyService.getHistoricJobLogExceptionStacktrace(id);
+      return stacktrace;
+    } catch (AuthorizationException e) {
+      throw e;
+    } catch (ProcessEngineException e) {
+      throw new SystemException(e.getMessage());
+    }
   }
 
 /** 
@@ -3894,6 +4896,444 @@ Collection<Incident> incidents = fetchIncidentsByInstanceAndActivityId(processDe
       Map<String, Object> filterDtoMap = objectMapper
           .convertValue(fromValueDto, new TypeReference<Map<String, Object>>() {});
       return objectMapper.convertValue(filterDtoMap, toValueType);
+  }
+  
+  /*
+
+  ██████   █████  ████████  ██████ ██   ██     ██████  ██████   ██████  ██    ██ ██ ██████  ███████ ██████  
+  ██   ██ ██   ██    ██    ██      ██   ██     ██   ██ ██   ██ ██    ██ ██    ██ ██ ██   ██ ██      ██   ██ 
+  ██████  ███████    ██    ██      ███████     ██████  ██████  ██    ██ ██    ██ ██ ██   ██ █████   ██████  
+  ██   ██ ██   ██    ██    ██      ██   ██     ██      ██   ██ ██    ██  ██  ██  ██ ██   ██ ██      ██   ██ 
+  ██████  ██   ██    ██     ██████ ██   ██     ██      ██   ██  ██████    ████   ██ ██████  ███████ ██   ██ 
+                                                                                                                                                                                              
+  */
+  
+  //@Override
+  public Collection<Batch> getBatches(Map<String, Object> params, CIBUser user) {
+    //TODO: not tested
+    //TODO: no default Ctor in BatchStatisticsQueryDto - will not work! 
+    BatchQueryDto queryDto = objectMapper.convertValue(params, BatchQueryDto.class);
+    BatchQuery query = queryDto.toQuery(processEngine);
+
+    List<org.cibseven.bpm.engine.batch.Batch> matchingBatches = QueryUtil.list(query, null, null);
+
+    List<Batch> batchResults = new ArrayList<>();
+    for (org.cibseven.bpm.engine.batch.Batch matchingBatch : matchingBatches) {
+      batchResults.add(convertValue(BatchDto.fromBatch(matchingBatch), Batch.class));
+    }
+    batchResults.forEach(batch -> {
+      String batchId = batch.getId();
+
+        Map<String, Object> statParams = new HashMap<>();
+        statParams.put("batchId", batchId);
+
+        Collection<Batch> statList = getBatchStatistics(statParams, user);
+        if (!statList.isEmpty()) {
+          Batch stats = statList.iterator().next();
+            batch.setCompletedJobs(stats.getCompletedJobs());
+            batch.setRemainingJobs(stats.getRemainingJobs());
+            batch.setFailedJobs(stats.getFailedJobs());
+        }
+      });
+    
+    return batchResults;
+  }
+
+  //@Override
+  public Collection<Batch> getBatchStatistics(Map<String, Object> params, CIBUser user) {
+    //TODO: not tested
+    //TODO: no default Ctor in BatchStatisticsQueryDto - will not work! 
+    BatchStatisticsQueryDto queryDto = objectMapper.convertValue(params, BatchStatisticsQueryDto.class);
+    BatchStatisticsQuery query = queryDto.toQuery(processEngine);
+
+    List<BatchStatistics> batchStatisticsList = QueryUtil.list(query, null, null);
+
+    List<Batch> statisticsResults = new ArrayList<>();
+    for (BatchStatistics batchStatistics : batchStatisticsList) {
+      statisticsResults.add(convertValue(BatchStatisticsDto.fromBatchStatistics(batchStatistics), Batch.class));
+    }
+
+    return statisticsResults;
+  }
+
+  //@Override
+  public void deleteBatch(String id, Map<String, Object> params, CIBUser user) {
+    //TODO: in progress - not tested
+    //is cascade in params?
+    Boolean cascade = false;
+    params.containsValue("cascade");
+      cascade = params.get("cascade").equals("true");
+    try {
+      processEngine.getManagementService()
+        .deleteBatch(id, cascade);
+    }
+    catch (BadUserRequestException e) {
+      throw new SystemException("Unable to delete batch with id '" + id + "'", e);
+    }
+  }
+  
+  //@Override
+  public void setBatchSuspensionState(String id, Map<String, Object> params, CIBUser user) {
+    //TODO: not tested
+    //is suspended in params?
+    Boolean suspended = false;
+    params.containsValue("suspended");
+      suspended = params.get("suspended").equals("true");
+
+    if (suspended) {
+      try {
+        processEngine.getManagementService().suspendBatchById(id);
+      }
+      catch (BadUserRequestException e) {
+        throw new SystemException("Unable to suspend batch with id '" + id + "'", e);
+      }
+    }
+    else {
+      try {
+        processEngine.getManagementService().activateBatchById(id);
+      }
+      catch (BadUserRequestException e) {
+        throw new SystemException("Unable to activate batch with id '" + id + "'", e);
+      }
+    }
+  }
+  
+  //@Override
+  public Collection<HistoryBatch> getHistoricBatches(Map<String, Object> params, CIBUser user) {
+    //TODO: not tested
+    HistoricBatchQueryDto queryDto = objectMapper.convertValue(params, HistoricBatchQueryDto.class);
+    HistoricBatchQuery query = queryDto.toQuery(processEngine);
+
+    List<HistoricBatch> matchingBatches = QueryUtil.list(query, null, null);
+
+    List<HistoryBatch> batchResults = new ArrayList<>();
+    for (HistoricBatch matchingBatch : matchingBatches) {
+      batchResults.add(convertValue(HistoricBatchDto.fromBatch(matchingBatch), HistoryBatch.class));
+    }
+    return batchResults;
+  }
+  
+  //@Override
+  public Long getHistoricBatchCount(Map<String, Object> queryParams, CIBUser user) {
+    //TODO: not tested
+    HistoricBatchQueryDto queryDto = objectMapper.convertValue(queryParams, HistoricBatchQueryDto.class);
+    HistoricBatchQuery query = queryDto.toQuery(processEngine);
+    return query.count();
+  }
+    
+  //@Override
+  public HistoryBatch getHistoricBatchById(String id, CIBUser user) {
+    //TODO: not tested
+    HistoricBatch batch = processEngine.getHistoryService()
+      .createHistoricBatchQuery()
+      .batchId(id)
+      .singleResult();
+
+    if (batch == null) {
+      throw new SystemException("Historic batch with id '" + id + "' does not exist");
+    }
+
+    return convertValue(HistoricBatchDto.fromBatch(batch), HistoryBatch.class);
+  }
+  
+  //@Override
+  public void deleteHistoricBatch(String id, CIBUser user) {
+    //TODO: not tested
+    try {
+      processEngine.getHistoryService()
+        .deleteHistoricBatch(id);
+    }
+    catch (BadUserRequestException e) {
+      throw new SystemException("Unable to delete historic batch with id '" + id + "'", e);
+    }
+  }
+  
+  //@Override
+  public Object setRemovalTime(Map<String, Object> payload) {
+    //TODO: not tested
+    SetRemovalTimeToHistoricBatchesDto dto = objectMapper.convertValue(payload, SetRemovalTimeToHistoricBatchesDto.class); 
+    HistoricBatchQuery historicBatchQuery = null;
+
+    if (dto.getHistoricBatchQuery() != null) {
+      historicBatchQuery = dto.getHistoricBatchQuery().toQuery(processEngine);
+    }
+
+    SetRemovalTimeSelectModeForHistoricBatchesBuilder builder = historyService.setRemovalTimeToHistoricBatches();
+
+    if (dto.isCalculatedRemovalTime()) {
+      builder.calculatedRemovalTime();
+    }
+
+    Date removalTime = dto.getAbsoluteRemovalTime();
+    if (dto.getAbsoluteRemovalTime() != null) {
+      builder.absoluteRemovalTime(removalTime);
+    }
+
+    if (dto.isClearedRemovalTime()) {
+      builder.clearedRemovalTime();
+    }
+
+    builder.byIds(dto.getHistoricBatchIds());
+    builder.byQuery(historicBatchQuery);
+
+    org.cibseven.bpm.engine.batch.Batch batch = builder.executeAsync();
+    return convertValue(BatchDto.fromBatch(batch), Batch.class);
+  }
+    
+  //@Override
+  public Object getCleanableBatchReport(Map<String, Object> queryParams) {
+    //TODO: not tested
+    MultivaluedMap<String, String> multiValueMap = new MultivaluedHashMap<>();
+    for (String key: queryParams.keySet()) {
+      multiValueMap.put(key, Arrays.asList((String)queryParams.get(key)));
+    }
+    CleanableHistoricBatchReportDto queryDto = new CleanableHistoricBatchReportDto(objectMapper, multiValueMap);
+    CleanableHistoricBatchReport query = queryDto.toQuery(processEngine);
+
+    List<CleanableHistoricBatchReportResult> reportResult = QueryUtil.list(query, null, null);
+
+    return CleanableHistoricBatchReportResultDto.convert(reportResult);
+  }
+    
+  //@Override
+  public Object getCleanableBatchReportCount() {
+    //TODO: not tested - why aren't there parameters?
+    MultivaluedMap<String, String> multiValueMap = new MultivaluedHashMap<>();
+    CleanableHistoricBatchReportDto queryDto = new CleanableHistoricBatchReportDto(objectMapper, multiValueMap);
+    queryDto.setObjectMapper(objectMapper);
+    CleanableHistoricBatchReport query = queryDto.toQuery(processEngine);
+    return query.count();
+  }
+  
+  /*
+
+  ███████ ██    ██ ███████ ████████ ███████ ███    ███     ██████  ██████   ██████  ██    ██ ██ ██████  ███████ ██████  
+  ██       ██  ██  ██         ██    ██      ████  ████     ██   ██ ██   ██ ██    ██ ██    ██ ██ ██   ██ ██      ██   ██ 
+  ███████   ████   ███████    ██    █████   ██ ████ ██     ██████  ██████  ██    ██ ██    ██ ██ ██   ██ █████   ██████  
+       ██    ██         ██    ██    ██      ██  ██  ██     ██      ██   ██ ██    ██  ██  ██  ██ ██   ██ ██      ██   ██ 
+  ███████    ██    ███████    ██    ███████ ██      ██     ██      ██   ██  ██████    ████   ██ ██████  ███████ ██   ██ 
+
+  */                                                                                                                      
+
+  //@Override
+  public JsonNode getTelemetryData(CIBUser user) {
+    //TODO: not tested
+    TelemetryData data = managementService.getTelemetryData();
+    JsonNode node = objectMapper.valueToTree(TelemetryDataDto.fromEngineDto(data));
+    return node;
+  }
+  
+  //@Override
+  public Collection<Metric> getMetrics(Map<String, Object> queryParams, CIBUser user) {
+    //TODO: not tested
+    Collection<Metric> metrics = new ArrayList<>();
+    List<Map<String, Object>> queryData = new ArrayList<>();
+    List<String> metricNames = Optional.ofNullable(queryParams.get("metrics"))
+            .map(Object::toString)
+            .filter(s -> !s.isEmpty())
+            .map(s -> Arrays.asList(s.split(",")))
+            .orElse(Arrays.asList("process-instances", "decision-instances", "task-users"));
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZZ");
+    String currentDate = ZonedDateTime.now(ZoneId.systemDefault()).format(formatter);
+    String groupBy = Optional.ofNullable(queryParams.get("groupBy"))
+            .map(Object::toString)
+            .orElse("month");
+    String subsStartDate = queryParams.get("subscriptionStartDate").toString();
+    ZonedDateTime subsStartDateParsed = ZonedDateTime.parse(subsStartDate, formatter);
+    if (groupBy.equals("year")) {
+      String prevDate = subsStartDateParsed.minusYears(1).format(formatter);
+      for (String metric : metricNames) {
+          queryData.add(createSumParamsMap(metric, subsStartDate, currentDate));
+          queryData.add(createSumParamsMap(metric, prevDate, subsStartDate));
+      }
+    } else if (groupBy.equals("month")) {
+      String startDate = queryParams.get("startDate").toString();
+      ZonedDateTime startDateParsed = ZonedDateTime.parse(startDate, formatter);
+      for (ZonedDateTime stDate = startDateParsed; !stDate.isAfter(subsStartDateParsed); stDate = stDate.plusMonths(1)) {
+          ZonedDateTime startDayM = stDate.with(TemporalAdjusters.firstDayOfMonth()).withHour(0).withMinute(0).withSecond(0).withNano(0);
+          ZonedDateTime endDayM = stDate.with(TemporalAdjusters.lastDayOfMonth()).withHour(23).withMinute(59).withSecond(59).withNano(999_000_000);
+          for (String metric : metricNames) {
+             queryData.add(createSumParamsMap(metric, startDayM.format(formatter), endDayM.format(formatter)));
+          }
+      }
+    }
+    for (Map<String, Object> params : queryData) {
+      Metric metricsData = new Metric();
+      metricsData.setMetric(params.get("metric").toString());
+      ZonedDateTime startDate = ZonedDateTime.parse(params.get("startDate").toString(), formatter);
+      metricsData.setSubscriptionYear(startDate.getYear());
+      if (groupBy.equals("month")) {
+        metricsData.setSubscriptionMonth(startDate.getMonthValue());
+      }
+      int count = getSum(metricsData.getMetric(), params, user);
+      metricsData.setSum(count);
+      metrics.add(metricsData);
+    }
+    return metrics;
+  }
+
+  private Map<String, Object> createSumParamsMap(String metric, String startDate, String endDate) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("metric", metric);
+    params.put("startDate", startDate);
+    params.put("endDate", endDate);
+    return params;
+  }
+  
+  private int getSum(String metricsName, Map<String, Object> queryParams, CIBUser user) {
+    DateConverter dateConverter = new DateConverter();
+    dateConverter.setObjectMapper(objectMapper);
+
+    long result = 0;
+
+    if (Metrics.UNIQUE_TASK_WORKERS.equals(metricsName) || Metrics.TASK_USERS.equals(metricsName)) {
+      result = processEngine.getManagementService().getUniqueTaskWorkerCount(
+          extractStartDate(queryParams, dateConverter),
+          extractEndDate(queryParams, dateConverter));
+    } else {
+      MetricsQuery query = processEngine.getManagementService()
+        .createMetricsQuery()
+        .name(metricsName);
+
+      applyQueryParams(queryParams, dateConverter, query);
+      result = query.sum();
+    }
+    return (int)result;
+  }
+  
+  private void applyQueryParams(Map<String, Object> queryParameters, DateConverter dateConverter, MetricsQuery query) {
+    Date startDate = extractStartDate(queryParameters, dateConverter);
+    Date endDate = extractEndDate(queryParameters, dateConverter);
+    if (startDate != null) {
+      query.startDate(startDate);
+    }
+    if (endDate != null) {
+      query.endDate(endDate);
+    }
+  }
+
+  private Date extractEndDate(Map<String, Object> queryParameters, DateConverter dateConverter) {
+    if(queryParameters.containsKey("endDate")) {
+      return dateConverter.convertQueryParameterToType((String)queryParameters.get("endDate"));
+    }
+    return null;
+  }
+
+  private Date extractStartDate(Map<String, Object> queryParameters, DateConverter dateConverter) {
+    if(queryParameters.containsKey("startDate")) {
+      return dateConverter.convertQueryParameterToType((String)queryParameters.get("startDate"));
+    }
+    return null;
+  }
+
+  /*
+      
+  ████████ ███████ ███    ██  █████  ███    ██ ████████     ██████  ██████   ██████  ██    ██ ██ ██████  ███████ ██████  
+     ██    ██      ████   ██ ██   ██ ████   ██    ██        ██   ██ ██   ██ ██    ██ ██    ██ ██ ██   ██ ██      ██   ██ 
+     ██    █████   ██ ██  ██ ███████ ██ ██  ██    ██        ██████  ██████  ██    ██ ██    ██ ██ ██   ██ █████   ██████  
+     ██    ██      ██  ██ ██ ██   ██ ██  ██ ██    ██        ██      ██   ██ ██    ██  ██  ██  ██ ██   ██ ██      ██   ██ 
+     ██    ███████ ██   ████ ██   ██ ██   ████    ██        ██      ██   ██  ██████    ████   ██ ██████  ███████ ██   ██ 
+                                                                                                                       
+  */
+  
+  //@Override
+  public Collection<Tenant> fetchTenants(Map<String, Object> queryParams, CIBUser user) {
+    //TODO: not tested
+    TenantQueryDto queryDto = objectMapper.convertValue(queryParams, TenantQueryDto.class);
+
+    TenantQuery query = queryDto.toQuery(processEngine);
+    List<org.cibseven.bpm.engine.identity.Tenant> tenants = QueryUtil.list(query, null, null);
+    List<Tenant> tenantList = new ArrayList<>();
+    List<TenantDto> tennantDtoList = TenantDto.fromTenantList(tenants);
+    for (TenantDto tennantDto : tennantDtoList) {
+      tenantList.add(convertValue(tennantDto, Tenant.class));
+    }
+    return tenantList;
+  }
+
+  //@Override
+  public Tenant fetchTenant(String tenantId, CIBUser user) {
+    //TODO: not tested
+    org.cibseven.bpm.engine.identity.Tenant tenant = findTenantObject(tenantId);    
+    TenantDto dto = TenantDto.fromTenant(tenant);
+    return convertValue(tenant, Tenant.class);
+  }
+
+  //@Override
+  public void createTenant(Tenant tenant, CIBUser user) {
+    //TODO: not tested
+    ensureNotReadOnly();
+    TenantDto tenantDto = convertValue(tenant, TenantDto.class);
+
+    org.cibseven.bpm.engine.identity.Tenant newTenant = identityService.newTenant(tenantDto.getId());
+    tenantDto.update(newTenant);
+
+    identityService.saveTenant(newTenant);
+}
+
+  //@Override
+  public void updateTenant(Tenant tenant, CIBUser user) {
+    //TODO: not tested
+      ensureNotReadOnly();
+      TenantDto tenantDto = convertValue(tenant, TenantDto.class);
+      org.cibseven.bpm.engine.identity.Tenant systemTenant = findTenantObject(tenant.getId());
+      if(systemTenant == null) {
+        throw new SystemException("Tenant with id " + tenant.getId() + " does not exist");
+      }
+      tenantDto.update(systemTenant);
+      identityService.saveTenant(systemTenant);
+  }
+  
+  private org.cibseven.bpm.engine.identity.Tenant findTenantObject(String tenantId) {
+    try {
+      return identityService.createTenantQuery()
+          .tenantId(tenantId)
+          .singleResult();
+
+    } catch(ProcessEngineException e) {
+      throw new SystemException("Exception while performing tenant query: " + e.getMessage());
+    }
+  }
+  
+  //@Override
+  public void deleteTenant(String tenantId, CIBUser user) {
+    //TODO: not tested
+    ensureNotReadOnly();
+    identityService.deleteTenant(tenantId);
+  }
+
+  //@Override
+  public void addMemberToTenant(String tenantId, String userId, CIBUser user) {
+    //TODO: not tested
+    ensureNotReadOnly();
+    identityService.createTenantUserMembership(tenantId, userId);
+  }
+
+  //@Override
+  public void deleteMemberFromTenant(String tenantId, String userId, CIBUser user) {
+    //TODO: not tested
+    ensureNotReadOnly();
+    identityService.deleteTenantUserMembership(tenantId, userId);
+  }
+
+  //@Override
+  public void addGroupToTenant(String tenantId, String groupId, CIBUser user) {
+    //TODO: not tested
+    ensureNotReadOnly();
+    identityService.createTenantGroupMembership(tenantId, groupId);
+  }
+  
+  //@Override
+  public void deleteGroupFromTenant(String tenantId, String groupId, CIBUser user) {
+    //TODO: not tested
+    ensureNotReadOnly();
+    identityService.deleteTenantGroupMembership(tenantId, groupId);
+}
+
+  private void ensureNotReadOnly() {
+    if(identityService.isReadOnly()) {
+      throw new InvalidRequestException(Status.FORBIDDEN, "Identity service implementation is read-only.");
+    }
   }
   
   /*

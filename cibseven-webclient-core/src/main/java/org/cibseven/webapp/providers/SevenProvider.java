@@ -355,7 +355,6 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public Collection<Process> findProcessVersionsByDefinitionKey(String key, String tenantId, Optional<Boolean> lazyLoad, CIBUser user) {
-    //TODO: not implemented
 	  if (useDirectInterface)
       return sevenDirectProvider.findProcessVersionsByDefinitionKey(key, tenantId, lazyLoad, user);
     else
@@ -1068,9 +1067,9 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public void modifyVariableByExecutionId(String executionId, Map<String, Object> data, CIBUser user) throws SystemException {
-//    if (useDirectInterface)
-//      sevenDirectProvider.modifyVariableByExecutionId(executionId, data, user);
-//    else
+	  if (useDirectInterface)
+      sevenDirectProvider.modifyVariableByExecutionId(executionId, data, user);
+    else
 		  variableProvider.modifyVariableByExecutionId(executionId, data, user);
 	}
 	
@@ -1108,12 +1107,18 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public Collection<VariableHistory> fetchActivityVariablesHistory(String activityInstanceId, CIBUser user) {
-		return variableProvider.fetchActivityVariablesHistory(activityInstanceId, user);
+	  if (useDirectInterface)
+      return sevenDirectProvider.fetchActivityVariablesHistory(activityInstanceId, user);
+    else
+      return variableProvider.fetchActivityVariablesHistory(activityInstanceId, user);
 	}
 	
 	@Override
 	public Collection<VariableHistory> fetchActivityVariables(String activityInstanceId, CIBUser user) {
-		return variableProvider.fetchActivityVariables(activityInstanceId, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.fetchActivityVariables(activityInstanceId, user);
+    else
+      return variableProvider.fetchActivityVariables(activityInstanceId, user);
 	}
 	
 	@Override
@@ -1127,83 +1132,131 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	@Override
 	public Variable fetchVariable(String taskId, String variableName, 
 			boolean deserializeValue, CIBUser user) throws NoObjectFoundException, SystemException {		
-		return variableProvider.fetchVariable(taskId, variableName, deserializeValue, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.fetchVariable(taskId, variableName, deserializeValue, user);
+    else
+      return variableProvider.fetchVariable(taskId, variableName, deserializeValue, user);
 	}
 	
 	@Override
 	public void deleteVariable(String taskId, String variableName, CIBUser user) throws NoObjectFoundException, SystemException {		
-		variableProvider.deleteVariable(taskId, variableName, user);
+    if (useDirectInterface)
+      sevenDirectProvider.deleteVariable(taskId, variableName, user);
+    else
+      variableProvider.deleteVariable(taskId, variableName, user);
 	}
 	
 	@Override
 	public Map<String, Variable> fetchFormVariables(String taskId, boolean deserializeValues, CIBUser user) throws NoObjectFoundException, SystemException {
-		return variableProvider.fetchFormVariables(taskId, deserializeValues, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.fetchFormVariables(taskId, deserializeValues, user);
+    else
+      return variableProvider.fetchFormVariables(taskId, deserializeValues, user);
 	}
 	
 	@Override
 	public Map<String, Variable> fetchFormVariables(List<String> variableListName, String taskId, CIBUser user) throws NoObjectFoundException, SystemException {
-		return variableProvider.fetchFormVariables(variableListName, taskId, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.fetchFormVariables(variableListName, taskId, user);
+    else
+      return variableProvider.fetchFormVariables(variableListName, taskId, user);
 	}
 	
 	@Override
 	public Map<String, Variable> fetchProcessFormVariables(String key, CIBUser user) throws NoObjectFoundException, SystemException {
-		return variableProvider.fetchProcessFormVariables(key, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.fetchProcessFormVariables(key, user);
+    else
+      return variableProvider.fetchProcessFormVariables(key, user);
 	}
 	
 	@Override
 	public NamedByteArrayDataSource fetchVariableFileData(String taskId, String variableName, CIBUser user) throws NoObjectFoundException, UnexpectedTypeException, SystemException {		
-		return variableProvider.fetchVariableFileData(taskId, variableName, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.fetchVariableFileData(taskId, variableName, user);
+    else
+      return variableProvider.fetchVariableFileData(taskId, variableName, user);
 	}
 	
 	@Override
 	public void uploadVariableFileData(String taskId, String variableName, MultipartFile data, String valueType, CIBUser user) throws NoObjectFoundException, SystemException {
-		variableProvider.uploadVariableFileData(taskId, variableName, data, valueType, user);
+    if (useDirectInterface)
+      sevenDirectProvider.uploadVariableFileData(taskId, variableName, data, valueType, user);
+    else
+      variableProvider.uploadVariableFileData(taskId, variableName, data, valueType, user);
 	}
 	
 	@Override
 	public ResponseEntity<byte[]> fetchProcessInstanceVariableData(String processInstanceId, String variableName,
 			CIBUser user) throws NoObjectFoundException, SystemException {
-		return variableProvider.fetchProcessInstanceVariableData(processInstanceId, variableName, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.fetchProcessInstanceVariableData(processInstanceId, variableName, user);
+    else
+      return variableProvider.fetchProcessInstanceVariableData(processInstanceId, variableName, user);
 	}
 	
 	@Override
 	public void uploadProcessInstanceVariableFileData(String processInstanceId, String variableName, MultipartFile data, String valueType, CIBUser user) throws NoObjectFoundException, SystemException {
-		variableProvider.uploadProcessInstanceVariableFileData(processInstanceId, variableName, data, valueType, user);
+    if (useDirectInterface)
+      sevenDirectProvider.uploadProcessInstanceVariableFileData(processInstanceId, variableName, data, valueType, user);
+    else
+      variableProvider.uploadProcessInstanceVariableFileData(processInstanceId, variableName, data, valueType, user);
 	}
 	
 	@Override
 	public ProcessStart submitStartFormVariables(String processDefinitionId, List<Variable> formResult, CIBUser user) throws SystemException {
-		return variableProvider.submitStartFormVariables(processDefinitionId, formResult, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.submitStartFormVariables(processDefinitionId, formResult, user);
+    else
+      return variableProvider.submitStartFormVariables(processDefinitionId, formResult, user);
 	}
 	
 	@Override
 	public Variable fetchVariableByProcessInstanceId(String processInstanceId, String variableName, CIBUser user) throws SystemException {
-		return variableProvider.fetchVariableByProcessInstanceId(processInstanceId, variableName, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.fetchVariableByProcessInstanceId(processInstanceId, variableName, user);
+    else
+      return variableProvider.fetchVariableByProcessInstanceId(processInstanceId, variableName, user);
 	}
 
 	@Override
 	public void saveVariableInProcessInstanceId(String processInstanceId, List<Variable> variables, CIBUser user) throws SystemException {
-		variableProvider.saveVariableInProcessInstanceId(processInstanceId, variables, user);
+    if (useDirectInterface)
+      sevenDirectProvider.saveVariableInProcessInstanceId(processInstanceId, variables, user);
+    else
+      variableProvider.saveVariableInProcessInstanceId(processInstanceId, variables, user);
 	}
 	
 	@Override
 	public void submitVariables(String processInstanceId, List<Variable> formResult, CIBUser user, String processDefinitionId) throws SystemException {
-		variableProvider.submitVariables(processInstanceId, formResult, user, processDefinitionId);
+    if (useDirectInterface)
+      sevenDirectProvider.submitVariables(processInstanceId, formResult, user, processDefinitionId);
+    else
+      variableProvider.submitVariables(processInstanceId, formResult, user, processDefinitionId);
 	}
 	
 	@Override
 	public Map<String, Variable> fetchProcessFormVariablesById(String id, CIBUser user) throws SystemException {
-		return variableProvider.fetchProcessFormVariablesById(id, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.fetchProcessFormVariablesById(id, user);
+    else
+      return variableProvider.fetchProcessFormVariablesById(id, user);
 	}
 	
 	@Override
 	public void putLocalExecutionVariable(String executionId, String varName, Map<String, Object> data, CIBUser user) {
-		variableProvider.putLocalExecutionVariable(executionId, varName, data, user);
+    if (useDirectInterface)
+      sevenDirectProvider.putLocalExecutionVariable(executionId, varName, data, user);
+    else
+      variableProvider.putLocalExecutionVariable(executionId, varName, data, user);
 	}
 
 	@Override
 	public Collection<ActivityInstanceHistory> findActivitiesProcessDefinitionHistory(String processDefinitionId, Map<String, Object> params, CIBUser user) {
-		return activityProvider.findActivitiesProcessDefinitionHistory(processDefinitionId, params, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.findActivitiesProcessDefinitionHistory(processDefinitionId, params, user);
+    else
+      return activityProvider.findActivitiesProcessDefinitionHistory(processDefinitionId, params, user);
 	}
 	
 	/*
@@ -1218,118 +1271,194 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public Collection<Decision> getDecisionDefinitionList(Map<String, Object> queryParams, CIBUser user) {
-		return decisionProvider.getDecisionDefinitionList(queryParams, user);
-	}
-	
+	  if (useDirectInterface)
+      return sevenDirectProvider.getDecisionDefinitionList(queryParams, user);
+    else
+      return decisionProvider.getDecisionDefinitionList(queryParams, user);
+	}	
 	
 	@Override
 	public Long getDecisionDefinitionListCount(Map<String, Object> queryParams, CIBUser user) {
-		return decisionProvider.getDecisionDefinitionListCount(queryParams, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.getDecisionDefinitionListCount(queryParams, user);
+    else
+      return decisionProvider.getDecisionDefinitionListCount(queryParams, user);
 	}
 	
 	@Override
 	public Decision getDecisionDefinitionByKey(String key, CIBUser user) {
-		return decisionProvider.getDecisionDefinitionByKey(key, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.getDecisionDefinitionByKey(key, user);
+    else
+      return decisionProvider.getDecisionDefinitionByKey(key, user);
 	}
 	
 	@Override
 	public Object getDiagramByKey(String key, CIBUser user) {
-		return decisionProvider.getDiagramByKey(key, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.getDiagramByKey(key, user);
+    else
+      return decisionProvider.getDiagramByKey(key, user);
 	}
 
 	@Override
 	public Object evaluateDecisionDefinitionByKey(Map<String, Object> data, String key, CIBUser user) {
-		return decisionProvider.evaluateDecisionDefinitionByKey(data, key, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.evaluateDecisionDefinitionByKey(data, key, user);
+    else
+      return decisionProvider.evaluateDecisionDefinitionByKey(data, key, user);
 	}
 	
 	@Override
 	public void updateHistoryTTLByKey(Map<String, Object> data, String key, CIBUser user) {
-		decisionProvider.updateHistoryTTLByKey(data, key, user);
+    if (useDirectInterface)
+      sevenDirectProvider.updateHistoryTTLByKey(data, key, user);
+    else
+      decisionProvider.updateHistoryTTLByKey(data, key, user);
 	}
 	
 	@Override
 	public Decision getDecisionDefinitionByKeyAndTenant(String key, String tenant, CIBUser user) {
-		return decisionProvider.getDecisionDefinitionByKeyAndTenant(key, tenant, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.getDecisionDefinitionByKeyAndTenant(key, tenant, user);
+    else
+      return decisionProvider.getDecisionDefinitionByKeyAndTenant(key, tenant, user);
 	}
 	
 	@Override
 	public Object getDiagramByKeyAndTenant(String key, String tenant, CIBUser user) {
-		return decisionProvider.getDiagramByKeyAndTenant(key, tenant, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.getDiagramByKeyAndTenant(key, tenant, user);
+    else
+      return decisionProvider.getDiagramByKeyAndTenant(key, tenant, user);
 	}
 	
 	@Override
 	public Object evaluateDecisionDefinitionByKeyAndTenant(String key, String tenant, CIBUser user) {
-		return decisionProvider.evaluateDecisionDefinitionByKeyAndTenant(key, tenant, user);
+    //TODO: not implemented
+    if (useDirectInterface)
+      return sevenDirectProvider.evaluateDecisionDefinitionByKeyAndTenant(key, tenant, user);
+    else
+      //TODO: not implemented in DecisionProvder
+      //interface should contain parameters like evaluateDecisionDefinitionByKey 
+      return decisionProvider.evaluateDecisionDefinitionByKeyAndTenant(key, tenant, user);
 	}
 	
 	@Override
 	public Object updateHistoryTTLByKeyAndTenant(String key, String tenant, CIBUser user) {
-		return decisionProvider.updateHistoryTTLByKeyAndTenant(key, tenant, user);
+    //TODO: not implemented
+    if (useDirectInterface)
+      return sevenDirectProvider.updateHistoryTTLByKeyAndTenant(key, tenant, user);
+    else
+      //TODO: not implemented in DecisionProvder
+      //interface should contain parameters like HistoryTTLByKey 
+      return decisionProvider.updateHistoryTTLByKeyAndTenant(key, tenant, user);
 	}
 	
 	@Override
 	public Object getXmlByKey(String key, CIBUser user) {
-		return decisionProvider.getXmlByKey(key, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.getXmlByKey(key, user);
+    else
+      return decisionProvider.getXmlByKey(key, user);
 	}
 	
 	@Override
 	public Object getXmlByKeyAndTenant(String key, String tenant, CIBUser user) {
-		return decisionProvider.getXmlByKeyAndTenant(key, tenant, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.getXmlByKeyAndTenant(key, tenant, user);
+    else
+      return decisionProvider.getXmlByKeyAndTenant(key, tenant, user);
 	}
 	
 	@Override
 	public Decision getDecisionDefinitionById(String id, Optional<Boolean> extraInfo, CIBUser user) {
-		return decisionProvider.getDecisionDefinitionById(id, extraInfo, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.getDecisionDefinitionById(id, extraInfo, user);
+    else
+      return decisionProvider.getDecisionDefinitionById(id, extraInfo, user);
 	}
 	
 	@Override
 	public Object getDiagramById(String id, CIBUser user) {
-		return decisionProvider.getDiagramById(id, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.getDiagramById(id, user);
+    else
+      return decisionProvider.getDiagramById(id, user);
 	}
 	
 	@Override
 	public Object evaluateDecisionDefinitionById(String id, CIBUser user) {
-		return decisionProvider.evaluateDecisionDefinitionById(id, user);
+    //TODO: not implemented
+    if (useDirectInterface)
+      return sevenDirectProvider.evaluateDecisionDefinitionById(id, user);
+    else
+      //TODO: not implemented in DecisionProvider
+      return decisionProvider.evaluateDecisionDefinitionById(id, user);
 	}
 	
 	@Override
 	public void updateHistoryTTLById(String id, Map<String, Object> data, CIBUser user) {
-		decisionProvider.updateHistoryTTLById(id, data, user);
+    if (useDirectInterface)
+      sevenDirectProvider.updateHistoryTTLById(id, data, user);
+    else
+      decisionProvider.updateHistoryTTLById(id, data, user);
 	}
 	
 	@Override
 	public Object getXmlById(String id, CIBUser user) {
-		return decisionProvider.getXmlById(id, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.getXmlById(id, user);
+    else
+      return decisionProvider.getXmlById(id, user);
 	}
 
 	@Override
 	public Collection<Decision> getDecisionVersionsByKey(String key, Optional<Boolean> lazyLoad, CIBUser user) {
-		return decisionProvider.getDecisionVersionsByKey(key, lazyLoad, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.getDecisionVersionsByKey(key, lazyLoad, user);
+    else
+      return decisionProvider.getDecisionVersionsByKey(key, lazyLoad, user);
 	}
 	
 	@Override
 	public Collection<HistoricDecisionInstance> getHistoricDecisionInstances(Map<String, Object> queryParams, CIBUser user){
-		return decisionProvider.getHistoricDecisionInstances(queryParams, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.getHistoricDecisionInstances(queryParams, user);
+    else
+      return decisionProvider.getHistoricDecisionInstances(queryParams, user);
 	}
 	
 	@Override
 	public Long getHistoricDecisionInstanceCount(Map<String, Object> queryParams, CIBUser user){
-		return decisionProvider.getHistoricDecisionInstanceCount(queryParams, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.getHistoricDecisionInstanceCount(queryParams, user);
+    else
+      return decisionProvider.getHistoricDecisionInstanceCount(queryParams, user);
 	}
 	
 	@Override
 	public HistoricDecisionInstance getHistoricDecisionInstanceById(String id, Map<String, Object> queryParams, CIBUser user){
-		return decisionProvider.getHistoricDecisionInstanceById(id, queryParams, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.getHistoricDecisionInstanceById(id, queryParams, user);
+    else
+      return decisionProvider.getHistoricDecisionInstanceById(id, queryParams, user);
 	}
 	
 	@Override
 	public Object deleteHistoricDecisionInstances(Map<String, Object> data, CIBUser user){
-		return decisionProvider.deleteHistoricDecisionInstances(data, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.deleteHistoricDecisionInstances(data, user);
+    else
+      return decisionProvider.deleteHistoricDecisionInstances(data, user);
 	}
 	
 	@Override
 	public Object setHistoricDecisionInstanceRemovalTime(Map<String, Object> data, CIBUser user){
-		return decisionProvider.setHistoricDecisionInstanceRemovalTime(data, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.setHistoricDecisionInstanceRemovalTime(data, user);
+    else
+      return decisionProvider.setHistoricDecisionInstanceRemovalTime(data, user);
 	}
 	
 	/*
@@ -1368,7 +1497,8 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 
 	@Override
 	public void retryJobDefinitionById(String id, Map<String, Object> params, CIBUser user) {
-    if (useDirectInterface)
+    //TODO: not implemented
+	  if (useDirectInterface)
       sevenDirectProvider.retryJobDefinitionById(id, params, user);
     else
       jobDefinitionProvider.retryJobDefinitionById(id, params, user);
@@ -1376,6 +1506,7 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public Collection<Job> getJobs(Map<String, Object> params, CIBUser user) {
+    //TODO: not implemented
     if (useDirectInterface)
       return sevenDirectProvider.getJobs(params, user);
     else
@@ -1416,6 +1547,7 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public String getHistoryJobLogStacktrace(String id, CIBUser user) {
+    //TODO: not implemented
     if (useDirectInterface)
       return sevenDirectProvider.getHistoryJobLogStacktrace(id, user);
     else
@@ -1434,57 +1566,90 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public Collection<Batch> getBatches(Map<String, Object> params, CIBUser user) {
-		return batchProvider.getBatches(params, user);
+	  if (useDirectInterface)
+      return sevenDirectProvider.getBatches(params, user);
+    else
+      return batchProvider.getBatches(params, user);
     }
 
 	@Override
 	public Collection<Batch> getBatchStatistics(Map<String, Object> params, CIBUser user) {
-		return batchProvider.getBatchStatistics(params, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.getBatchStatistics(params, user);
+    else
+      return batchProvider.getBatchStatistics(params, user);
 	}
 
 	@Override
 	public void deleteBatch(String id, Map<String, Object> params, CIBUser user) {
-		batchProvider.deleteBatch(id, params, user);		
+    if (useDirectInterface)
+      sevenDirectProvider.deleteBatch(id, params, user);
+    else
+      batchProvider.deleteBatch(id, params, user);		
 	}
 	
 	@Override
 	public void setBatchSuspensionState(String id, Map<String, Object> params, CIBUser user) {
-		batchProvider.setBatchSuspensionState(id, params, user);		
+    if (useDirectInterface)
+      sevenDirectProvider.setBatchSuspensionState(id, params, user);
+    else
+      batchProvider.setBatchSuspensionState(id, params, user);		
 	}
 	
 	@Override
 	public Collection<HistoryBatch> getHistoricBatches(Map<String, Object> params, CIBUser user) {
-		return batchProvider.getHistoricBatches(params, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.getHistoricBatches(params, user);
+    else
+      return batchProvider.getHistoricBatches(params, user);
     }
 	
 	@Override
 	public Long getHistoricBatchCount(Map<String, Object> queryParams, CIBUser user) {
-		return batchProvider.getHistoricBatchCount(queryParams, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.getHistoricBatchCount(queryParams, user);
+    else
+      return batchProvider.getHistoricBatchCount(queryParams, user);
     }
     
 	@Override
 	public HistoryBatch getHistoricBatchById(String id, CIBUser user) {
-		return batchProvider.getHistoricBatchById(id, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.getHistoricBatchById(id, user);
+    else
+      return batchProvider.getHistoricBatchById(id, user);
     }
 	
 	@Override
 	public void deleteHistoricBatch(String id, CIBUser user) {
-		batchProvider.deleteHistoricBatch(id, user);
+    if (useDirectInterface)
+      sevenDirectProvider.deleteHistoricBatch(id, user);
+    else
+      batchProvider.deleteHistoricBatch(id, user);
     }
 	
 	@Override
 	public Object setRemovalTime(Map<String, Object> payload) {
-		return batchProvider.setRemovalTime(payload);
+    if (useDirectInterface)
+      return sevenDirectProvider.setRemovalTime(payload);
+    else
+      return batchProvider.setRemovalTime(payload);
     }
     
 	@Override
 	public Object getCleanableBatchReport(Map<String, Object> queryParams) {
-		return batchProvider.getCleanableBatchReport(queryParams);
+    if (useDirectInterface)
+      return sevenDirectProvider.getCleanableBatchReport(queryParams);
+    else
+      return batchProvider.getCleanableBatchReport(queryParams);
     }
     
 	@Override
 	public Object getCleanableBatchReportCount() {
-		return batchProvider.getCleanableBatchReportCount();
+    if (useDirectInterface)
+      return sevenDirectProvider.getCleanableBatchReportCount();
+    else
+      return batchProvider.getCleanableBatchReportCount();
     }
 	
 	/*
@@ -1499,12 +1664,20 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 
 	@Override
 	public JsonNode getTelemetryData(CIBUser user) {
-		return systemProvider.getTelemetryData(user);
+    //TODO: not implemented
+    if (useDirectInterface)
+      return sevenDirectProvider.getTelemetryData(user);
+    else
+      return systemProvider.getTelemetryData(user);
 	}
 	
 	@Override
 	public Collection<Metric> getMetrics(Map<String, Object> queryParams, CIBUser user) {
-		return systemProvider.getMetrics(queryParams, user);
+    //TODO: not implemented
+    if (useDirectInterface)
+      return sevenDirectProvider.getMetrics(queryParams, user);
+    else
+      return systemProvider.getMetrics(queryParams, user);
 	}
 
 	/*
@@ -1519,46 +1692,73 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public Collection<Tenant> fetchTenants(Map<String, Object> queryParams, CIBUser user) {
-		return tenantProvider.fetchTenants(queryParams, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.fetchTenants(queryParams, user);
+    else
+      return tenantProvider.fetchTenants(queryParams, user);
 	}
 
 	@Override
 	public Tenant fetchTenant(String tenantId, CIBUser user) {
-		return tenantProvider.fetchTenant(tenantId, user);
+    if (useDirectInterface)
+      return sevenDirectProvider.fetchTenant(tenantId, user);
+    else
+      return tenantProvider.fetchTenant(tenantId, user);
 	}
 
 	@Override
 	public void createTenant(Tenant tenant, CIBUser user) {
-		tenantProvider.createTenant(tenant, user);
+    if (useDirectInterface)
+      sevenDirectProvider.createTenant(tenant, user);
+    else
+      tenantProvider.createTenant(tenant, user);
 	}
 
 	@Override
 	public void updateTenant(Tenant tenant, CIBUser user) {
-		tenantProvider.updateTenant(tenant, user);
+    if (useDirectInterface)
+      sevenDirectProvider.updateTenant(tenant, user);
+    else
+      tenantProvider.updateTenant(tenant, user);
 	}
 	@Override
 	public void deleteTenant(String tenantId, CIBUser user) {
-		tenantProvider.deleteTenant(tenantId, user);
+    if (useDirectInterface)
+      sevenDirectProvider.deleteTenant(tenantId, user);
+    else
+      tenantProvider.deleteTenant(tenantId, user);
 	}
 
 	@Override
 	public void addMemberToTenant(String tenantId, String userId, CIBUser user) {
-		tenantProvider.addMemberToTenant(tenantId, userId, user);
+    if (useDirectInterface)
+      sevenDirectProvider.addMemberToTenant(tenantId, userId, user);
+    else
+      tenantProvider.addMemberToTenant(tenantId, userId, user);
 	}
 
 	@Override
 	public void deleteMemberFromTenant(String tenantId, String userId, CIBUser user) {
-		tenantProvider.deleteMemberFromTenant(tenantId, userId, user);
+    if (useDirectInterface)
+      sevenDirectProvider.deleteMemberFromTenant(tenantId, userId, user);
+    else
+      tenantProvider.deleteMemberFromTenant(tenantId, userId, user);
 	}
 
 	@Override
 	public void addGroupToTenant(String tenantId, String groupId, CIBUser user) {
-		tenantProvider.addGroupToTenant(tenantId, groupId, user);
+    if (useDirectInterface)
+      sevenDirectProvider.addGroupToTenant(tenantId, groupId, user);
+    else
+      tenantProvider.addGroupToTenant(tenantId, groupId, user);
 	}
 	
 	@Override
 	public void deleteGroupFromTenant(String tenantId, String groupId, CIBUser user) {
-		tenantProvider.deleteGroupFromTenant(tenantId, groupId, user);
+    if (useDirectInterface)
+      sevenDirectProvider.deleteGroupFromTenant(tenantId, groupId, user);
+    else
+      tenantProvider.deleteGroupFromTenant(tenantId, groupId, user);
 	}
 
 	/*
