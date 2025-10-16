@@ -29,10 +29,10 @@
           </b-input-group>
         </div>
         <div class="col-8 text-end">
-          <b-button class="border me-1" size="sm" variant="light" v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'" @click="add()">
+          <b-button class="me-1" size="sm" variant="secondary" v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'" @click="add()">
             <span class="mdi mdi-plus"> {{ $t('admin.users.add') }} </span>
           </b-button>
-          <b-button v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'" class="border" size="sm" variant="light"
+          <b-button v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'" size="sm" variant="light"
             :disabled="exporting" @click="exportCSV()">
             <span v-if="exporting"><b-spinner small></b-spinner> {{ $t('admin.exportCsv') }}</span>
             <span v-else class="mdi mdi-download"> {{ $t('admin.exportCsv') }} </span>

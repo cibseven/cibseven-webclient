@@ -53,11 +53,11 @@
               <div class="d-flex flex-column align-items-start gap-2">
                 <component :is="ResourcesNavBarDeploymentActionsPlugin" v-if="ResourcesNavBarDeploymentActionsPlugin" :deployment="deployment" @deployment-success="$emit('deployment-success')" class="w-100"></component>
                 <b-button variant="light" size="sm" @click="$emit('show-deployment', this.deployment)"
-                  class="border-dark" :title="$t('deployment.showDeployment')">
+                  :title="$t('deployment.showDeployment')">
                   <span class="mdi mdi-download-multiple-outline"></span>
                   {{ $t('deployment.showDeployment') }}</b-button>
                 <b-button variant="light" size="sm" @click="$emit('delete-deployment', this.deployment)"
-                  class="border-dark" :title="$t('deployment.delete')">
+                  :title="$t('deployment.delete')">
                   <span class="mdi mdi-trash-can"></span>
                   {{ $t('deployment.delete') }}</b-button>
               </div>

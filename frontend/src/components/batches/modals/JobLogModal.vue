@@ -68,7 +68,7 @@
       </div>
     </div>
     <template v-slot:modal-footer>
-      <b-button v-if="selectedJobLog" @click="selectedJobLog = null" variant="outline-secondary">{{ $t('process.back') }}</b-button>
+      <b-button v-if="selectedJobLog" @click="selectedJobLog = null" variant="secondary">{{ $t('process.back') }}</b-button>
       <b-button @click="$refs.jobLogModal.hide()" variant="primary">{{ $t('confirm.ok') }}</b-button>
     </template>
   </b-modal>

@@ -41,7 +41,7 @@
       </div>
     </div>
     <template v-slot:modal-footer>
-      <b-button @click="$refs.overrideJobPriorityModal.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
+      <b-button @click="$refs.overrideJobPriorityModal.hide()" variant="secondary">{{ $t('confirm.cancel') }}</b-button>
       <b-button @click="overrideJobPriority()" variant="primary" :disabled="!canOverride">
         {{ overridingOption === 'set' ? $t('process-instance.jobDefinitions.overrideAction') : $t('process-instance.jobDefinitions.clearAction') }}
       </b-button>

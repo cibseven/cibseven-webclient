@@ -26,7 +26,7 @@
       </b-form-group>
     </div>
     <template v-slot:modal-footer>
-      <b-button @click="$refs.annotationModal.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
+      <b-button @click="$refs.annotationModal.hide()" variant="secondary">{{ $t('confirm.cancel') }}</b-button>
       <b-button @click="saveAnnotation()" :disabled="invalidAnnotation" variant="primary">{{ $t('commons.save') }}</b-button>
     </template>
   </b-modal>

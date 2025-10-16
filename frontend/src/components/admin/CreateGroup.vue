@@ -36,9 +36,9 @@
                   <b-form-group :label="$t('admin.groups.type')" label-cols-sm="2" label-align-sm="left" label-class="pb-4">
                     <b-form-input v-model="group.type"></b-form-input>
                   </b-form-group>
-                  <div class="float-end">
-                    <b-button type="reset" @click="onReset()" variant="link">{{ $t('admin.groups.cancel') }}</b-button>
-                    <b-button type="submit" variant="secondary">{{ $t('admin.groups.createLabel') }}</b-button>
+                  <div class="d-flex justify-content-end gap-2 mt-4">
+                    <b-button type="reset" @click="onReset()" variant="secondary">{{ $t('admin.groups.cancel') }}</b-button>
+                    <b-button type="submit" variant="primary">{{ $t('admin.groups.createLabel') }}</b-button>
                   </div>
                 </b-form-group>
               </CIBForm>
