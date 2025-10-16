@@ -65,7 +65,7 @@
             <b-form-checkbox size="sm" v-model="isAllChecked">
               <span>{{ $t('deployment.selectAll') }}</span>
             </b-form-checkbox>
-            <b-button class="border-dark" size="sm" :disabled="!deploymentsSelected.length > 0 || deleteLoader"
+            <b-button size="sm" :disabled="!deploymentsSelected.length > 0 || deleteLoader"
               variant="light" @click="$refs.deleteModal.show()" :title="$t('deployment.deleteDeployments')">
               <span v-if="deleteLoader"><b-spinner small></b-spinner> {{ $t('deployment.deleteDeployments') }}</span>
               <span v-else><span class="mdi mdi-delete-outline"></span> {{ $t('deployment.deleteDeployments') }}</span>

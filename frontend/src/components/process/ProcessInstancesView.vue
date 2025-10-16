@@ -99,16 +99,16 @@
 
             <div :class="[ProcessInstancesSearchBoxPlugin ? 'col-2' : ( selectedActivityId ? 'col-6' : 'col-9'), 'p-3', 'text-end']">
               <div>
-                <b-button v-if="process.suspended === 'false'" class="border" size="sm" variant="light" @click="confirmSuspend" :title="$t('process.suspendProcess')">
+                <b-button v-if="process.suspended === 'false'" size="sm" variant="light" @click="confirmSuspend" :title="$t('process.suspendProcess')">
                   <span class="mdi mdi-pause-circle-outline"></span> {{ collapseButtons ? '': $t('process.suspendProcess') }}
                 </b-button>
-                <b-button v-else class="border" size="sm" variant="light" @click="confirmActivate" :title="$t('process.activateProcess')">
+                <b-button v-else size="sm" variant="light" @click="confirmActivate" :title="$t('process.activateProcess')">
                   <span class="mdi mdi-play-circle-outline"></span> {{ collapseButtons  ? '': $t('process.activateProcess') }}
                 </b-button>
-                <b-button class="border" size="sm" variant="light" @click="downloadBpmn()" :title="$t('process.downloadBpmn')">
+                <b-button size="sm" variant="light" @click="downloadBpmn()" :title="$t('process.downloadBpmn')">
                   <span class="mdi mdi-download"></span> {{ collapseButtons  ? '': $t('process.downloadBpmn') }}
                 </b-button>
-                <b-button class="border" size="sm" variant="light" @click="viewDeployment()" :title="$t('process.showDeployment')">
+                <b-button size="sm" variant="light" @click="viewDeployment()" :title="$t('process.showDeployment')">
                   <span class="mdi mdi-file-eye-outline"></span> {{ collapseButtons  ? '': $t('process.showDeployment') }}
                 </b-button>
                 <component :is="ProcessActionsPlugin" v-if="ProcessActionsPlugin" :process="process" :collapseButtons="collapseButtons"></component>

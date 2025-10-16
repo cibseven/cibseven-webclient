@@ -53,7 +53,7 @@
                       <b-form-input v-model="group.type" @update:modelValue="dirty = true"></b-form-input>
                     </b-form-group>
                     <div class="d-flex justify-content-between" v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'">
-                      <b-button variant="warning" @click="$refs.deleteModal.show()">{{ $t('admin.groups.deleteGroup') }}</b-button>
+                      <b-button variant="light" @click="$refs.deleteModal.show()">{{ $t('admin.groups.deleteGroup') }}</b-button>
                       <b-button type="submit" variant="secondary" :disabled="!dirty" >{{ $t('admin.groups.update') }}</b-button>
                     </div>
                   </CIBForm>
@@ -96,7 +96,7 @@
                   </div>
                   <div class="col-3 pb-3">
                     <div class="float-end">
-                      <b-button class="border" size="sm" variant="light" v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'" @click="openAssignTenantModal">
+                      <b-button size="sm" variant="secondary" v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'" @click="openAssignTenantModal">
                         <span class="mdi mdi-plus"> {{ $t('admin.tenants.addTo') }} </span>
                       </b-button>
                     </div>

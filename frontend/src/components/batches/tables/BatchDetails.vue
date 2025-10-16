@@ -20,15 +20,15 @@
   <ContentBlock :title="$t('batches.' + batchType + 'Details')" v-if="batchId && batchType">
     <template #actions>
       <div v-if="batchDetails && batchDetails.length > 0 && !loading">
-        <b-button v-if="batchType === 'runtime'" class="border me-1" size="sm" variant="light"
+        <b-button v-if="batchType === 'runtime'" class="me-1" size="sm" variant="light"
           @click="setBatchSuspension" :title="batch.suspended ? $t('batches.activate') : $t('batches.suspend')">
           <span class="mdi" :class="batch.suspended ? 'mdi-play' : 'mdi-pause'"></span>
         </b-button>
-        <b-button v-if="batchType === 'runtime' && batch.failedJobs > 0" class="border me-1" size="sm" variant="light"
+        <b-button v-if="batchType === 'runtime' && batch.failedJobs > 0" class="me-1" size="sm" variant="light"
           @click="retryJobs" :title="$t('batches.retryFailedJobs')">
           <span class="mdi mdi-reload"></span>
         </b-button>
-        <b-button class="border" size="sm" variant="light" @click="$refs.confirmRemove.show()" :title="$t('batches.remove')">
+        <b-button size="sm" variant="light" @click="$refs.confirmRemove.show()" :title="$t('batches.remove')">
           <span class="mdi mdi-delete-outline"></span>
         </b-button>
       </div>

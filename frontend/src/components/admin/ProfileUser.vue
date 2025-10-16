@@ -103,7 +103,7 @@
                   </div>
                   <div v-if="editMode" class="col-3 pb-3">
                     <div class="float-end">
-                      <b-button class="border" size="sm" variant="light" v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'" @click="openAssignGroupModal">
+                      <b-button size="sm" variant="secondary" v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'" @click="openAssignGroupModal">
                         <span class="mdi mdi-plus"> {{ $t('admin.users.group.add') }} </span>
                       </b-button>
                     </div>
@@ -136,7 +136,7 @@
                   </div>
                   <div v-if="editMode" class="col-3 pb-3">
                     <div class="float-end">
-                      <b-button class="border" size="sm" variant="light" v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'" @click="openAssignTenantModal">
+                      <b-button size="sm" variant="secondary" v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'" @click="openAssignTenantModal">
                         <span class="mdi mdi-plus"> {{ $t('admin.tenants.addTo') }} </span>
                       </b-button>
                     </div>

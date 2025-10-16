@@ -50,7 +50,7 @@
                       <b-form-input v-model="tenant.name" @update:modelValue="dirty=true" :state="notEmpty(tenant.name)" required></b-form-input>
                     </b-form-group>
                     <div class="d-flex justify-content-between" v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'">
-                      <b-button variant="warning" @click="$refs.deleteModal.show()">{{ $t('admin.tenants.deleteTenant') }}</b-button>
+                      <b-button variant="light" @click="$refs.deleteModal.show()">{{ $t('admin.tenants.deleteTenant') }}</b-button>
                       <b-button type="submit" variant="secondary" :disabled="!dirty" >{{ $t('admin.tenants.update') }}</b-button>
                     </div>
                   </CIBForm>

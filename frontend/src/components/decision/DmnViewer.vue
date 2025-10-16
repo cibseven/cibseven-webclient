@@ -29,13 +29,13 @@
 
       <!-- Zoom Controls -->
       <div v-if="isDrdView" class="btn-group-vertical position-absolute" style="right:15px; bottom:140px;">
-        <b-button size="sm" class="border" variant="light" :title="$t('dmn-viewer.zoomIn')" @click="zoomIn">
+        <b-button size="sm" variant="light" :title="$t('dmn-viewer.zoomIn')" @click="zoomIn">
           <span class="mdi mdi-18px mdi-plus"></span>
         </b-button>
-        <b-button size="sm" class="border" variant="light" :title="$t('dmn-viewer.zoomOut')" @click="zoomOut">
+        <b-button size="sm" variant="light" :title="$t('dmn-viewer.zoomOut')" @click="zoomOut">
           <span class="mdi mdi-18px mdi-minus"></span>
         </b-button>
-        <b-button size="sm" class="border" variant="light" :title="$t('dmn-viewer.resetZoom')" @click="resetZoom">
+        <b-button size="sm" variant="light" :title="$t('dmn-viewer.resetZoom')" @click="resetZoom">
           <span class="mdi mdi-18px mdi-target"></span>
         </b-button>
       </div>
