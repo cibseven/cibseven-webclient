@@ -161,25 +161,13 @@ const services = {
         callParent('updateFilters', data);
     },
     requestAuthToken() {
-        return new Promise((resolve, reject) => {
-            const timeout = setTimeout(() => {
-                reject(new Error('Timeout waiting for auth token from parent window'));
-            }, 5000);
-            const messageHandler = function(event) {
-                if (event.data && event.data.method === 'authTokenResponse') {
-                    clearTimeout(timeout);
-                    window.removeEventListener('message', messageHandler);
-                    
-                    if (event.data.authToken) {
-                        resolve(event.data.authToken);
-                    } else {
-                        reject(new Error('No auth token received from parent window'));
-                    }
-                }
-            };
-            window.addEventListener('message', messageHandler);
-            // Request auth token from parent window
-            callParent('requestAuthToken');
+        return requestFromParent({
+            requestMethod: 'requestAuthToken',
+            responseMethod: 'authTokenResponse',
+            extractData: (eventData) => eventData.authToken,
+            validateData: (authToken) => !!authToken,
+            errorMessage: 'No auth token received from parent window',
+            timeout: 5000
         });
     }
 };
@@ -189,6 +177,66 @@ function callParent(method, data) {
         method,
         data
     });
+}
+
+function requestFromParent(options) {
+    const {
+        requestMethod,
+        responseMethod,
+        extractData,
+        validateData,
+        errorMessage,
+        timeout = 5000,
+        requestData
+    } = options;
+
+    return new Promise((resolve, reject) => {
+        const timeoutId = createTimeout(reject, timeout, requestMethod);
+        const messageHandler = createMessageHandler({
+            responseMethod,
+            extractData,
+            validateData,
+            errorMessage,
+            timeoutId,
+            resolve,
+            reject
+        });
+
+        window.addEventListener('message', messageHandler);
+        callParent(requestMethod, requestData);
+    });
+}
+
+function createTimeout(reject, timeout, requestMethod) {
+    return setTimeout(() => {
+        reject(new Error(`Timeout waiting for response to '${requestMethod}' from parent window`));
+    }, timeout);
+}
+
+function createMessageHandler(config) {
+    const {
+        responseMethod,
+        extractData,
+        validateData,
+        errorMessage,
+        timeoutId,
+        resolve,
+        reject
+    } = config;
+
+    return function messageHandler(event) {
+        if (event.data && event.data.method === responseMethod) {
+            clearTimeout(timeoutId);
+            window.removeEventListener('message', messageHandler);
+
+            const data = extractData(event.data);
+            if (validateData(data)) {
+                resolve(data);
+            } else {
+                reject(new Error(errorMessage));
+            }
+        }
+    };
 }
 
 function blockButtons(...buttons) {
