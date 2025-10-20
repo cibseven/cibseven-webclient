@@ -93,14 +93,16 @@ public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
 		SecretKey key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(settings.getSecret()));
 		flowParser = Jwts.parser().verifyWith(key).build();
 		
-		// Schedule cleanup of expired tokens every 10 minutes
-		scheduler = Executors.newSingleThreadScheduledExecutor();
-		scheduler.scheduleAtFixedRate(this::cleanup, 10, 10, java.util.concurrent.TimeUnit.MINUTES);
+		if (forwardToken) {
+			// Schedule cleanup of expired tokens every 10 minutes
+			scheduler = Executors.newSingleThreadScheduledExecutor();
+			scheduler.scheduleAtFixedRate(this::cleanup, 10, 10, java.util.concurrent.TimeUnit.MINUTES);
+		}
 	}
 	
 	@PreDestroy
 	public void destroy() {
-		scheduler.shutdownNow();
+		if (scheduler != null) scheduler.shutdownNow();
 	}
 
 	private void cleanup() {
