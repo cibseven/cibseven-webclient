@@ -50,7 +50,7 @@
           <BWaitingBox v-if="deleting" class="d-inline me-2" styling="width: 25px"></BWaitingBox>
         </div>
         <div class="col-8 p-0 d-flex justify-content-end gap-2">
-          <b-button :disabled="deleting" @click="$refs.confirm.hide('cancel')" variant="secondary">{{ $t('confirm.cancel') }}</b-button>
+          <b-button :disabled="deleting" @click="$refs.confirm.hide('cancel')" variant="light">{{ $t('confirm.cancel') }}</b-button>
           <b-button :disabled="deleting" @click="onDelete" variant="primary">{{ $t('confirm.delete') }}</b-button>
         </div>
       </div>

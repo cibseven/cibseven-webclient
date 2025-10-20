@@ -192,7 +192,7 @@
             <b-waiting-box class="d-inline me-2" styling="width: 35px"></b-waiting-box> {{ $t('admin.loading') }}
           </div>
           <template v-slot:modal-footer>
-            <b-button @click="$refs.assignGroupsModal.hide()" variant="secondary">{{ $t('confirm.cancel') }}</b-button>
+            <b-button @click="$refs.assignGroupsModal.hide()" variant="light">{{ $t('confirm.cancel') }}</b-button>
             <b-button @click="assignGroups(); $refs.assignGroupsModal.hide()" variant="primary">{{ $t('confirm.ok') }}</b-button>
           </template>
         </b-modal>
@@ -212,7 +212,7 @@
             {{ $t('admin.noResults') }}
           </div>
           <template v-slot:modal-footer>
-            <b-button @click="$refs.assignTenantsModal.hide()" variant="secondary">{{ $t('confirm.cancel') }}</b-button>
+            <b-button @click="$refs.assignTenantsModal.hide()" variant="light">{{ $t('confirm.cancel') }}</b-button>
             <b-button @click="assignTenants(); $refs.assignTenantsModal.hide()" variant="primary">{{ $t('confirm.ok') }}</b-button>
           </template>
         </b-modal>
@@ -233,7 +233,7 @@
             </div>
           </div>
           <template v-slot:modal-footer>
-            <b-button @click="$refs.deleteModal.hide()" variant="secondary">{{ $t('confirm.cancel') }}</b-button>
+            <b-button @click="$refs.deleteModal.hide()" variant="light">{{ $t('confirm.cancel') }}</b-button>
             <b-button @click="deleteUser(); $refs.deleteModal.hide()" variant="primary">{{ $t('confirm.ok') }}</b-button>
           </template>
         </b-modal>

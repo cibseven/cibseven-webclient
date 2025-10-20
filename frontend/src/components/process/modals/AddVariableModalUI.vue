@@ -147,7 +147,7 @@
         <div class="col-10 p-0 d-flex justify-content-end gap-2">
           <b-button v-if="disabled || showOnlyError" @click="$refs.addVariable.hide()">{{ $t('confirm.close') }}</b-button>
           <template v-else>
-            <b-button @click="$refs.addVariable.hide()" variant="secondary">{{ $t('confirm.cancel') }}</b-button>
+            <b-button @click="$refs.addVariable.hide()" variant="light">{{ $t('confirm.cancel') }}</b-button>
             <b-button :disabled="isSubmitDisabled" @click="onSubmit" variant="primary">{{ computedSubmitButtonText }}</b-button>
           </template>
         </div>

@@ -29,7 +29,7 @@
       </div>
     </div>
     <template v-slot:modal-footer>
-      <b-button @click="$refs.modal.hide('cancel')" variant="secondary">{{ $t('confirm.cancel') }}</b-button>
+      <b-button @click="$refs.modal.hide('cancel')" variant="light">{{ $t('confirm.cancel') }}</b-button>
       <b-button @click="$emit('ok', param); $refs.modal.hide('ok')" variant="primary">{{ okTitle || $t('confirm.ok') }}</b-button>
     </template>
   </b-modal>

@@ -106,7 +106,7 @@
     </div>
 
     <template v-slot:modal-footer>
-      <b-button @click="$refs.filterHandler.hide()" variant="secondary">{{ $t('confirm.cancel') }}</b-button>
+      <b-button @click="$refs.filterHandler.hide()" variant="light">{{ $t('confirm.cancel') }}</b-button>
       <b-button @click="createFilter" :disabled="isFormInvalid" variant="primary">{{ mode === 'create' ? $t('nav-bar.filters.addFilter') : $t('nav-bar.filters.updateFilter') }}</b-button>
     </template>
   </b-modal>

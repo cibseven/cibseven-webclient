@@ -31,7 +31,7 @@
                     <b-form-input v-model="tenant.name" :state="notEmpty(tenant.name)" required></b-form-input>
                   </b-form-group>
                   <div class="d-flex justify-content-end gap-2 mt-4">
-                    <b-button @click="cancel()" variant="secondary">{{ $t('admin.tenants.cancel') }}</b-button>
+                    <b-button @click="cancel()" variant="light">{{ $t('admin.tenants.cancel') }}</b-button>
                     <b-button type="submit" variant="primary">{{ $t('admin.tenants.create') }}</b-button>
                   </div>
               </form>

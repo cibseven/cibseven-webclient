@@ -52,7 +52,7 @@
 			</b-form-group>
 		</div>
 		<template v-slot:modal-footer>
-			<b-button @click="$refs.retryModal.hide()" variant="secondary">{{ $t('confirm.cancel') }}</b-button>
+			<b-button @click="$refs.retryModal.hide()" variant="light">{{ $t('confirm.cancel') }}</b-button>
 			<b-button @click="incrementNumberRetries()" variant="primary">{{ $t(translationPrefix + 'retry') }}</b-button>
 		</template>
 	</b-modal>

@@ -122,7 +122,7 @@
         </div>
       </div>
       <template v-slot:modal-footer>
-        <b-button @click="$refs.deleteModal.hide()" variant="secondary">{{ $t('confirm.cancel') }}</b-button>
+        <b-button @click="$refs.deleteModal.hide()" variant="light">{{ $t('confirm.cancel') }}</b-button>
         <b-button @click="deleteDeployments(); $refs.deleteModal.hide()" variant="primary">{{ $t('confirm.delete') }}</b-button>
       </template>
     </b-modal>
@@ -139,7 +139,7 @@
         </div>
       </div>
       <template v-slot:modal-footer>
-        <b-button @click="$refs.deleteSelectedModal.hide()" variant="secondary">{{ $t('confirm.cancel') }}</b-button>
+        <b-button @click="$refs.deleteSelectedModal.hide()" variant="light">{{ $t('confirm.cancel') }}</b-button>
         <b-button @click="deleteDeployment(); $refs.deleteSelectedModal.hide()" variant="primary">{{ $t('confirm.delete') }}</b-button>
       </template>
     </b-modal>

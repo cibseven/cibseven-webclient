@@ -68,7 +68,7 @@
                     <b-form-input v-model="profile.email" type="email" autocomplete="email" :state="isValidEmail(profile.email)"></b-form-input>
                   </b-form-group>
                   <div class="d-flex justify-content-end gap-2 mt-4">
-                    <b-button type="reset" @click="onReset()" variant="secondary">{{ $t('admin.users.cancel') }}</b-button>
+                    <b-button type="reset" @click="onReset()" variant="light">{{ $t('admin.users.cancel') }}</b-button>
                     <b-button type="submit" variant="primary">{{ $t('admin.users.create') }}</b-button>
                   </div>
                 </b-form-group>
