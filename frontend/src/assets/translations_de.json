@@ -400,7 +400,6 @@
 			"cascade": "Auf untergeordnete Prozesse übertragen",
 			"changeDueDateMsg": "Wählen Sie eine der folgenden Optionen, um diesen Timer zu ändern:",
 			"recalculate": "Neu berechnen",
-			"execute": "Ausführen",
 			"scheduleAt": "Geplant um",
 			"invalidDateError": "Sie müssen ein gültiges Datum eingeben",
 			"overrideAction": "Überschreiben"

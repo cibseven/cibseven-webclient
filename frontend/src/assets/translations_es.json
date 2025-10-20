@@ -400,7 +400,6 @@
 			"cascade": "Aplicar en cascada a procesos hijos",
 			"changeDueDateMsg": "Selecciona una de las siguientes opciones para cambiar este temporizador:",
 			"recalculate": "Recalcular",
-			"execute": "Ejecutar",
 			"scheduleAt": "Programar en",
 			"invalidDateError": "Debe ingresar una fecha válida",
 			"overrideAction": "Anular"

@@ -168,6 +168,7 @@ import CalledProcessDefinitionsTable from '@/components/process/tables/CalledPro
 import CalledProcessInstancesTable from '@/components/process/tables/CalledProcessInstancesTable.vue'
 import JobDefinitionsTable from '@/components/process/tables/JobDefinitionsTable.vue'
 import JobsTable from '@/components/process/tables/JobsTable.vue'
+import JobDueDateModal from '@/components/process/modals/JobDueDateModal.vue'
 
 // mixins
 import assigneeMixin from '@/mixins/assigneeMixin.js'
@@ -424,6 +425,7 @@ export {
   CalledProcessInstancesTable,
   JobDefinitionsTable,
   JobsTable,
+  JobDueDateModal,
 
   // mixins
   assigneeMixin,
