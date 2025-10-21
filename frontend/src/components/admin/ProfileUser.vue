@@ -25,7 +25,7 @@
           <span> {{ $t('admin.users.profile') }}</span>
         </b-list-group-item>
         <b-list-group-item v-if="!readOnlyUser" class="border-0 px-3 py-2" :active="$route.query.tab === 'account'" exact :to="'?tab=account'">
-          <span> {{ $t('admin.users.account') }}</span>
+          <span> {{ $t('password.recover.changePassword') }}</span>
         </b-list-group-item>
         <b-list-group-item class="border-0 px-3 py-2" :active="$route.query.tab === 'groups'" exact :to="'?tab=groups'">
           <span> {{ $t('admin.users.groups') }}</span>
@@ -33,7 +33,7 @@
         <b-list-group-item class="border-0 px-3 py-2" :active="$route.query.tab === 'tenants'" exact :to="'?tab=tenants'">
           <span> {{ $t('admin.tenants.title') }}</span>
         </b-list-group-item>
-        <b-list-group-item v-if="$root.user && $root.user.id === user.id && $root.config.notifications.tasks.enabled" class="border-0 px-3 py-2"
+        <b-list-group-item v-if="$root.user && $root.user.id === user.id" class="border-0 px-3 py-2"
           :active="$route.query.tab === 'preferences'" exact :to="'?tab=preferences'">
           <span> {{ $t('admin.users.preferences.title') }}</span>
         </b-list-group-item>
@@ -76,18 +76,19 @@
           </div>
           <div v-else-if="$route.query.tab === 'account' && !readOnlyUser" class="row">
             <div class="col-sm-12 col-md-12 col-lg-8 col-xl-6 p-4">
-              <b-card class="p-5 shadow-sm border rounded" :title="$t('admin.users.editMessage', [user.firstName + ' ' + user.lastName])">
-                <h6 class="mt-4">{{ $t('password.recover.changePassword') }}</h6>
-                <b-form-group labels-cols-lg="2" label-size="lg" label-class="fw-bold pt-0 pb-4" class="m-0">
-                  <b-form-group :label="$t('password.recover.id') + '*'" label-cols-sm="2"
-                    label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
-                    <b-form-input v-model="user.id" :state="notEmpty(user.id)" required readonly></b-form-input>
+              <b-card class="p-5 shadow-sm border rounded" :title="$t('password.recover.changePassword')">
+                <b-card-text class="border-top pt-4 mt-3">
+                  <b-form-group labels-cols-lg="2" label-size="lg" label-class="fw-bold pt-0 pb-4" class="m-0">
+                    <b-form-group :label="$t('password.recover.id') + '*'" label-cols-sm="2"
+                      label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
+                      <b-form-input v-model="user.id" :state="notEmpty(user.id)" required readonly></b-form-input>
+                    </b-form-group>
+                    <div class="float-end d-flex align-items-center">
+                      <b-spinner variant="primary" class="mx-2" v-if="sendingEmail"></b-spinner>
+                      <b-button type="submit" variant="secondary" :disabled="sendingEmail" @click="onSendEmail()">{{ $t('password.recover.sendEmail') }}</b-button>
+                    </div>
                   </b-form-group>
-                  <div class="float-end d-flex align-items-center">
-                    <b-spinner variant="primary" class="mx-2" v-if="sendingEmail"></b-spinner>
-                    <b-button type="submit" variant="secondary" :disabled="sendingEmail" @click="onSendEmail()">{{ $t('password.recover.sendEmail') }}</b-button>
-                  </div>
-                </b-form-group>
+                </b-card-text>
               </b-card>
             </div>
           </div>
@@ -159,12 +160,13 @@
           </div>
           <div v-else-if="$route.query.tab === 'preferences'" class="row">
             <div class="col-sm-12 col-md-12 col-lg-8 col-xl-6 p-4">
-              <b-card class="p-5 shadow-sm border rounded" :title="$t('admin.users.editMessage', [user.firstName + ' ' + user.lastName])">
+              <b-card class="p-5 shadow-sm border rounded" :title="$t('admin.users.preferences.title')">
                 <b-card-text class="border-top pt-4 mt-3">
                   <b-form-group>
-                    <b-form-checkbox v-model="tasksCheckNotificationsDisabled">
+                    <b-form-checkbox v-model="tasksCheckNotificationsDisabled" v-if="$root.config.notifications.tasks.enabled">
                       {{ $t('admin.users.preferences.notifications') }}
                     </b-form-checkbox>
+                    <span v-else>Nothing to show</span>
                   </b-form-group>
                 </b-card-text>
               </b-card>
