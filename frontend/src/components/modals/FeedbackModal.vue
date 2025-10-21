@@ -30,7 +30,7 @@
       </b-form-group>
     </CIBForm>
     <template v-slot:modal-footer>
-      <b-button @click="$refs.modal.hide()" variant="link">{{ $t('problem-report.cancel') }}</b-button>
+      <b-button @click="$refs.modal.hide()" variant="light">{{ $t('problem-report.cancel') }}</b-button>
       <b-button @click="$refs.form.onSubmit()" variant="primary">{{ $t('problem-report.ok') }}</b-button>
     </template>
   </b-modal>

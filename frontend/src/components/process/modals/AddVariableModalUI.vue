@@ -144,10 +144,10 @@
         <div class="col-2 p-0">
           <BWaitingBox v-if="saving" class="d-inline me-2" styling="width: 30px"></BWaitingBox>
         </div>
-        <div class="col-10 p-0 d-flex justify-content-end pe-1">
+        <div class="col-10 p-0 d-flex justify-content-end gap-2">
           <b-button v-if="disabled || showOnlyError" @click="$refs.addVariable.hide()">{{ $t('confirm.close') }}</b-button>
           <template v-else>
-            <b-button @click="$refs.addVariable.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
+            <b-button @click="$refs.addVariable.hide()" variant="light">{{ $t('confirm.cancel') }}</b-button>
             <b-button :disabled="isSubmitDisabled" @click="onSubmit" variant="primary">{{ computedSubmitButtonText }}</b-button>
           </template>
         </div>

@@ -51,7 +51,7 @@
         </div>
       </div>
       <template v-slot:modal-footer>
-        <b-button v-if="startParams && !hideProcessSelection" @click="startParams = null" class="text-secondary" variant="link">{{ $t('process.back') }}</b-button>
+        <b-button v-if="startParams && !hideProcessSelection" @click="startParams = null" class="text-secondary" variant="light">{{ $t('process.back') }}</b-button>
       </template>
     </b-modal>
   </div>

@@ -79,7 +79,7 @@
 
     </form>
     <template #modal-footer>
-      <b-button @click="$refs.advancedSearchModal.hide()" variant="link">{{ $t('advanced-search.cancel') }}</b-button>
+      <b-button @click="$refs.advancedSearchModal.hide()" variant="light">{{ $t('advanced-search.cancel') }}</b-button>
       <b-button @click="handleSubmit" variant="primary">{{ $t('advanced-search.apply') }}</b-button>
     </template>
   </b-modal>

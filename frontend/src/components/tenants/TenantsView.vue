@@ -29,7 +29,7 @@
           </b-input-group>
         </div>
         <div class="col-8 text-end">
-          <b-button class="border me-1" size="sm" variant="light" v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'" @click="add()">
+          <b-button class="me-1" size="sm" variant="secondary" v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'" @click="add()">
             <span class="mdi mdi-plus"> {{ $t('admin.tenants.add') }} </span>
           </b-button>
         </div>

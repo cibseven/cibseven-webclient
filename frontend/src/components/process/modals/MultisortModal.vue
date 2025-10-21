@@ -42,14 +42,14 @@
         </div>
       </div>
       <div class="mt-3">
-        <b-button @click="addCriteria" variant="light" class="border mdi mdi-plus" :title="$t('multisort.add')">{{ $t('multisort.add') }}</b-button>
-        <b-button @click="moveCriteria('up')" variant="light" size="sm" class="border mdi mdi-18px mdi-chevron-up" :disabled="selectedIndex === 0 || selectedIndex === null" :title="$t('multisort.moveUp')"></b-button>
-        <b-button @click="moveCriteria('down')" variant="light" size="sm" class="border mdi mdi-18px mdi-chevron-down" :disabled="selectedIndex === (sortingCriteria.length - 1) || selectedIndex === null" :title="$t('multisort.moveDown')"></b-button>
+        <b-button @click="addCriteria" variant="light" class="mdi mdi-plus" :title="$t('multisort.add')">{{ $t('multisort.add') }}</b-button>
+        <b-button @click="moveCriteria('up')" variant="light" size="sm" class="mdi mdi-18px mdi-chevron-up" :disabled="selectedIndex === 0 || selectedIndex === null" :title="$t('multisort.moveUp')"></b-button>
+        <b-button @click="moveCriteria('down')" variant="light" size="sm" class="mdi mdi-18px mdi-chevron-down" :disabled="selectedIndex === (sortingCriteria.length - 1) || selectedIndex === null" :title="$t('multisort.moveDown')"></b-button>
         <b-button @click="removeCriteria" variant="outline-danger" size="sm" class="mdi mdi-18px mdi-delete-outline" :disabled="sortingCriteria.length === 1" :title="$t('multisort.remove')"></b-button>
       </div>
     </div>
     <template #modal-footer="{ cancel, ok }">
-      <b-button @click="cancel" variant="link">{{ $t('multisort.cancel') }}</b-button>
+      <b-button @click="cancel" variant="light">{{ $t('multisort.cancel') }}</b-button>
       <b-button @click="applySorting(); ok()" variant="primary">{{ $t('multisort.apply') }}</b-button>
     </template>
   </b-modal>

@@ -38,7 +38,7 @@
     </div>
     <transition name="fade"> <!-- In a fixed component the margin-top must be applied right in the component -->
       <slot name="filter">
-        <b-button v-if="!leftOpen && leftCaption" variant="light" class="rounded-0 border border-end-0 text-nowrap position-absolute w-auto" @click="$emit('update:leftOpen', true)"
+        <b-button v-if="!leftOpen && leftCaption" variant="light" class="rounded-0 border-end-0 text-nowrap position-absolute w-auto" @click="$emit('update:leftOpen', true)"
           style="right: 100%; transform: rotate(-90deg); transform-origin: right top">
           {{ leftCaption }} <span v-if="number"><b-badge pill variant="light">{{ number }}</b-badge></span>
           <i class="mdi mdi-18px mdi-chevron-down"></i>
@@ -58,7 +58,7 @@
       </div>
     </transition>
     <transition name="fade"> <!-- In a fixed component the margin-top must be applied right in the component -->
-      <b-button v-if="!rightOpen && rightCaption" variant="light" class="rounded-0 border border-start-0 text-nowrap position-absolute w-auto" @click="$emit('update:rightOpen', true)"
+      <b-button v-if="!rightOpen && rightCaption" variant="light" class="rounded-0 border-start-0 text-nowrap position-absolute w-auto" @click="$emit('update:rightOpen', true)"
         style="left: 100%; transform: rotate(90deg); transform-origin: left top">
         <i class="mdi mdi-18px mdi-chevron-down"></i>
         {{ rightCaption }}

@@ -54,7 +54,7 @@ thead.resizable tr, thead.resizable + tbody tr {
   background-color: #2cdd3b59!important;
 }
 .bg-task-filter {
-        background-color: rgb(98, 142, 199, 0.2);
+  background-color: var(--bs-gray-500);
 }
 
 /* BPMN Viewer - Fix for blue expand process button icon not being centered */

@@ -44,7 +44,7 @@
           label-help=""
         ></b-calendar>
         <template v-slot:modal-footer>
-          <b-button :title="$t('confirm.cancel')" @click="$refs.datePickerModal.hide()" variant="link">{{ $t('confirm.cancel') }}</b-button>
+          <b-button :title="$t('confirm.cancel')" @click="$refs.datePickerModal.hide()" variant="light">{{ $t('confirm.cancel') }}</b-button>
           <b-button :title="$t('confirm.ok')" @click="onDatePickerConfirm()" variant="primary">{{ $t('confirm.ok') }}</b-button>
         </template>
       </b-modal>
