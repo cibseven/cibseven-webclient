@@ -191,26 +191,24 @@ function requestFromParent(options) {
     } = options;
 
     return new Promise((resolve, reject) => {
-        const timeoutId = createTimeout(reject, timeout, requestMethod);
         const messageHandler = createMessageHandler({
             responseMethod,
             extractData,
             validateData,
             errorMessage,
-            timeoutId,
             resolve,
             reject
         });
+        const timeoutId = setTimeout(() => {
+            window.removeEventListener('message', messageHandler);
+            reject(new Error(`Timeout waiting for response to '${requestMethod}' from parent window`));
+        }, timeout);
+        // Pass timeoutId to messageHandler
+        messageHandler.timeoutId = timeoutId;
 
         window.addEventListener('message', messageHandler);
         callParent(requestMethod, requestData);
     });
-}
-
-function createTimeout(reject, timeout, requestMethod) {
-    return setTimeout(() => {
-        reject(new Error(`Timeout waiting for response to '${requestMethod}' from parent window`));
-    }, timeout);
 }
 
 function createMessageHandler(config) {
@@ -219,24 +217,27 @@ function createMessageHandler(config) {
         extractData,
         validateData,
         errorMessage,
-        timeoutId,
         resolve,
         reject
     } = config;
 
-    return function messageHandler(event) {
+    function messageHandler(event) {
         if (event.data && event.data.method === responseMethod) {
-            clearTimeout(timeoutId);
+            if (messageHandler.timeoutId) {
+                clearTimeout(messageHandler.timeoutId);
+            }
             window.removeEventListener('message', messageHandler);
 
             const data = extractData(event.data);
             if (validateData(data)) {
                 resolve(data);
             } else {
+                window.removeEventListener('message', messageHandler);
                 reject(new Error(errorMessage));
             }
         }
-    };
+    }
+    return messageHandler;
 }
 
 function blockButtons(...buttons) {
