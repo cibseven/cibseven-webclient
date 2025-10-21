@@ -90,7 +90,7 @@
         </div>
       </BWaitingBox>
       <button v-if="filterByPermissions($root.config.permissions.createFilter, null, true)"
-        class="btn btn-outline-secondary btn-sm border-light p-2" type="button"
+        class="btn btn-light btn-sm border-light p-2" type="button"
         @click="showFilterDialog('create')">
         <span class="mdi mdi-18px mdi-filter-plus-outline"></span><span class="ms-2">{{ $t('nav-bar.filters.create') }}</span>
       </button>
