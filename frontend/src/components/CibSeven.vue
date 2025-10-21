@@ -31,8 +31,8 @@
         </div>
       </div>
 
-      <b-button v-if="$root.user && startableProcesses && $route.name === 'tasklist'" class="d-none d-sm-block py-0 me-3" variant="outline-secondary" :title="$t('start.startProcess.title')" @click="openStartProcess()">
-        <span class="mdi mdi-18px mdi-rocket"><span class="d-none d-lg-inline">{{ $t('start.startProcess.title') }}</span></span>
+      <b-button v-if="$root.user && startableProcesses && $route.name === 'tasklist'" class="d-none d-sm-block py-0 me-3" variant="secondary" :title="$t('start.startProcess.title')" @click="openStartProcess()">
+        <span class="mdi mdi-18px mdi-rocket"><span class="d-none d-lg-inline ms-2">{{ $t('start.startProcess.title') }}</span></span>
       </b-button>
 
       <!-- Main menu -->
