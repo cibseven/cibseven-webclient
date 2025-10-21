@@ -21,6 +21,7 @@
     <BWaitingBox v-if="loader" class="h-100" ref="loader" styling="width:25%;height:25%;align-items:center;justify-content:center;position:absolute;top:36%;right:36%"></BWaitingBox>
     <div :class="loader ? 'invisible' : 'visible'" class="h-100">
       <div class="h-100" ref="diagram"></div>
+      <slot v-if="!loader" name="viewer-overlay" :viewer="viewer" :viewer-parent="$refs.diagram"></slot>
     </div>
     <div class="position-absolute" style="right:15px;bottom:225px;">
       <b-button size="sm" variant="light" :title="$t('bpmn-viewer.resetZoom')" @click="resetZoom()">
