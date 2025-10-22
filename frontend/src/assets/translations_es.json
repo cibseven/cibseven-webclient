@@ -565,6 +565,19 @@
 				"notifications": "Desactivar notificaciones"
 			}
 		},
+		"preferences": {
+			"dates": {
+				"title": "Formatos de fecha y hora",
+				"formatDefault": "Formato",
+				"formatLong": "Formato largo (con hora exacta)",
+				"formatDefaultDescription": "Se utiliza en campos de fecha generales",
+				"formatLongDescription": "Se utiliza en campos de fecha donde se requiere la hora exacta (como las marcas de tiempo de incidentes) y dentro de los tooltips para todas las fechas",
+				"groupStandard": "Estándar internacional",
+				"groupEuropean": "Formatos europeos",
+				"groupUS": "Formatos de EE.UU.",
+				"groupISO": "Formatos ISO/Técnicos"
+			}
+		},
 		"groups": {
 			"title": "Grupos",
 			"id": "ID",

@@ -34,10 +34,10 @@
         <span :title="table.item.id" class="text-truncate">{{ table.item.id }}</span>
       </template>
       <template v-slot:cell(dueDate)="table">
-        <span :title="formatDate(table.item.dueDate)" class="text-truncate">{{ formatDate(table.item.dueDate) }}</span>
+        <span :title="formatDateForTooltips(table.item.dueDate)" class="text-truncate">{{ formatDate(table.item.dueDate) }}</span>
       </template>
       <template v-slot:cell(createTime)="table">
-        <span :title="formatDate(table.item.createTime)" class="text-truncate">{{ formatDate(table.item.createTime) }}</span>
+        <span :title="formatDateForTooltips(table.item.createTime)" class="text-truncate">{{ formatDate(table.item.createTime) }}</span>
       </template>
       <template v-slot:cell(activityId)="table">
         <span :title="table.item.activityId" class="text-truncate">{{ $store.state.activity.processActivities[table.item.activityId] }}</span>
@@ -60,7 +60,7 @@
 
 <script>
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
-import { formatDate } from '@/utils/dates.js'
+import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import { BWaitingBox } from 'cib-common-components'
@@ -103,6 +103,7 @@ export default {
   methods: {
     ...mapActions('job', ['loadJobs', 'setSuspended']),
     formatDate,
+    formatDateForTooltips,
     async loadJobsData(id, isInstance = true) {
       this.loading = true
       const params = {

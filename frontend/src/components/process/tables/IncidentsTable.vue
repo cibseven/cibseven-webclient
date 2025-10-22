@@ -53,10 +53,10 @@
         <span v-else>-</span>
       </template>
       <template v-slot:cell(createTime)="table">
-        <div :title="formatDate(table.item.createTime, 'DD/MM/YYYY HH:mm:ss')" class="text-truncate">{{ formatDate(table.item.createTime, 'DD/MM/YYYY HH:mm:ss') }}</div>
+        <div :title="formatDateForTooltips(table.item.createTime)" class="text-truncate">{{ formatDateForTooltips(table.item.createTime) }}</div>
       </template>
       <template v-slot:cell(endTime)="table">
-        <div :title="formatDate(table.item.endTime, 'DD/MM/YYYY HH:mm:ss')" class="text-truncate">{{ formatDate(table.item.endTime, 'DD/MM/YYYY HH:mm:ss') }}</div>
+        <div :title="formatDateForTooltips(table.item.endTime)" class="text-truncate">{{ formatDateForTooltips(table.item.endTime) }}</div>
       </template>
       <template v-slot:cell(activityId)="table">
         <div :title="table.item.activityId" class="text-truncate">{{ $store.state.activity.processActivities[table.item.activityId] || table.item.activityId }}</div>
@@ -123,7 +123,7 @@ import AnnotationModal from '@/components/process/modals/AnnotationModal.vue'
 import StackTraceModal from '@/components/process/modals/StackTraceModal.vue'
 import { BWaitingBox } from 'cib-common-components'
 import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
-import { formatDate } from '@/utils/dates.js'
+import { formatDateForTooltips } from '@/utils/dates.js'
 import { createSortComparator } from '@/utils/sort.js'
 import { mapGetters, mapActions } from 'vuex'
 
@@ -193,7 +193,7 @@ export default {
   },
   methods: {
     ...mapActions('incidents', ['loadIncidents', 'removeIncident', 'updateIncidentAnnotation', 'setIncidents']),
-    formatDate,
+    formatDateForTooltips,
     async loadIncidentsData(id, isInstance = true) {
       this.loading = true
       const params = {

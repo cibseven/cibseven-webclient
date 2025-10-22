@@ -48,10 +48,10 @@
         />
       </template>
       <template v-slot:cell(startTime)="table">
-        <span :title="formatDate(table.item.startTime)" class="text-truncate d-block">{{ formatDate(table.item.startTime) }}</span>
+        <span :title="formatDateForTooltips(table.item.startTime)" class="text-truncate d-block">{{ formatDate(table.item.startTime) }}</span>
       </template>
       <template v-slot:cell(endTime)="table">
-        <span :title="formatDate(table.item.endTime)" class="text-truncate d-block">{{ formatDate(table.item.endTime) }}</span>
+        <span :title="formatDateForTooltips(table.item.endTime)" class="text-truncate d-block">{{ formatDate(table.item.endTime) }}</span>
       </template>
       <template v-slot:cell(actions)="table">
         <b-button v-if="table.item.state === 'ACTIVE' && processByPermissions($root.config.permissions.suspendProcessInstance, table.item)" @click.stop="confirmSuspend(table.item)"
@@ -84,7 +84,7 @@ import { ProcessService, HistoryService } from '@/services.js'
 import { permissionsMixin } from '@/permissions.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
-import { formatDate } from '@/utils/dates.js'
+import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import ConfirmActionOnProcessInstanceModal from '@/components/process/modals/ConfirmActionOnProcessInstanceModal.vue'
@@ -148,6 +148,7 @@ export default {
   methods: {
     ...mapActions('instances', ['loadInstances', 'resetInstances']),
     formatDate,
+    formatDateForTooltips,
     resetPagination() {
       this.firstResult = 0
       this.hasMoreData = true

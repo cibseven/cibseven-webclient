@@ -565,6 +565,19 @@
 				"notifications": "Disable notifications"
 			}
 		},
+		"preferences": {
+			"dates": {
+				"title": "Date and Time Formats",
+				"formatDefault": "Format",
+				"formatLong": "Long Format (with exact time)",
+				"formatDefaultDescription": "Used in general date fields",
+				"formatLongDescription": "Used in date fields where exact time is required (such as incident timestamps) and inside tooltips for all dates",
+				"groupStandard": "Standard International",
+				"groupEuropean": "European Formats",
+				"groupUS": "US Formats",
+				"groupISO": "ISO/Technical Formats"
+			}
+		},
 		"groups": {
 			"title": "Groups",
 			"id": "Group ID",

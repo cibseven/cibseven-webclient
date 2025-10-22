@@ -108,8 +108,7 @@
                 {{ getProcessName(task.processDefinitionId) }}
               </div>
               <div class="d-flex align-items-center">
-    <!-- 						<span class="mdi mdi-18px mdi-calendar-month mdi-dark"></span> -->
-                <div class="h6 fw-normal m-0" :title="formatDate(task.created, 'L LTS')">{{ getDateFormatted(task.created) }}</div><br>
+                <div class="h6 fw-normal m-0" :title="formatDateForTooltips(task.created)">{{ getDateFormatted(task.created) }}</div><br>
                 <div class="d-flex ms-auto">
                   <div class="h6 text-end p-0 fw-normal m-0" v-if="task.assignee != null"><span class="mdi mdi-18px mdi-account text-secondary"></span><span class="p-1">{{ getCompleteName(task) }}</span></div>
                   <div class="h6 text-end p-0 fw-normal n-0" v-if="task.assignee == null">
@@ -173,7 +172,7 @@
 import { moment } from '@/globals.js'
 import { TaskService, AdminService } from '@/services.js'
 import { debounce } from '@/utils/debounce.js'
-import { formatDate } from '@/utils/dates.js'
+import { formatDateForTooltips } from '@/utils/dates.js'
 import StartProcess from '@/components/start-process/StartProcess.vue'
 import AdvancedSearchModal from '@/components/task/AdvancedSearchModal.vue'
 import SmartSearch from '@/components/task/SmartSearch.vue'
@@ -264,7 +263,7 @@ export default {
   },
   methods: {
     ...mapActions('task', ['setSelectedAssignee']),
-    formatDate,
+    formatDateForTooltips,
     loadAdvancedFilters: function() {
       this.advancedFilter = []
       this.$root.config.taskFilter.advancedSearch.processVariables.forEach(pv => {

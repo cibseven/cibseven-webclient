@@ -17,10 +17,16 @@
 
 import { moment } from '@/globals.js'
 
-const DATE_FORMAT = 'LL HH:mm'
-
-function formatDate(date, format = DATE_FORMAT) {
+function formatDate(date, format = null) {
   if (!date) return ''
+  format = format || localStorage.getItem('cibseven:preferences:formatDefault') || 'LL HH:mm'
+  const d = moment(date)
+  return d.isValid() ? d.format(format) : ''
+}
+
+function formatDateForTooltips(date, format = null) {
+  if (!date) return ''
+  format = format || localStorage.getItem('cibseven:preferences:formatLong') || 'LL HH:mm:ss.SSS'
   const d = moment(date)
   return d.isValid() ? d.format(format) : ''
 }
@@ -32,5 +38,6 @@ function formatDuration(value) {
 
 export {
     formatDate,
+    formatDateForTooltips,
     formatDuration
 }

@@ -159,18 +159,7 @@
             </div>
           </div>
           <div v-else-if="$route.query.tab === 'preferences'" class="row">
-            <div class="col-sm-12 col-md-12 col-lg-8 col-xl-6 p-4">
-              <b-card class="p-5 shadow-sm border rounded" :title="$t('admin.users.preferences.title')">
-                <b-card-text class="border-top pt-4 mt-3">
-                  <b-form-group>
-                    <b-form-checkbox v-model="tasksCheckNotificationsDisabled" v-if="$root.config.notifications.tasks.enabled">
-                      {{ $t('admin.users.preferences.notifications') }}
-                    </b-form-checkbox>
-                    <span v-else>Nothing to show</span>
-                  </b-form-group>
-                </b-card-text>
-              </b-card>
-            </div>
+            <ProfilePreferencesTab></ProfilePreferencesTab>
           </div>
         </div>
 
@@ -265,11 +254,12 @@ import SidebarsFlow from '@/components/common-components/SidebarsFlow.vue'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import CIBForm from '@/components/common-components/CIBForm.vue'
+import ProfilePreferencesTab from '@/components/admin/ProfilePreferencesTab.vue'
 import { mapActions, mapGetters } from 'vuex'
 
 export default {
   name: 'ProfileUser',
-  components: { SidebarsFlow, FlowTable, SuccessAlert, CIBForm },
+  components: { SidebarsFlow, FlowTable, SuccessAlert, CIBForm, ProfilePreferencesTab },
   inject: ['AuthService'],
   props: {
     editMode: {
@@ -314,14 +304,6 @@ export default {
     ...mapGetters(['tenants']),
     readOnlyUser: function() {
       return (this.$root.config.userProvider !== 'org.cibseven.webapp.auth.SevenUserProvider')
-    },
-    tasksCheckNotificationsDisabled: {
-      get: function() {
-        return localStorage.getItem('tasksCheckNotificationsDisabled') === 'true' || false
-      },
-      set: function(val) {
-        !localStorage.setItem('tasksCheckNotificationsDisabled', val)
-      }
     },
     groupFields() {
       const isSevenUser = this.$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'

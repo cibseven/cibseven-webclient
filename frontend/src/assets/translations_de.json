@@ -565,6 +565,19 @@
 				"notifications": "Benachrichtigungen ausschalten"
 			}
 		},
+		"preferences": {
+			"dates": {
+				"title": "Datums- und Zeitformate",
+				"formatDefault": "Format",
+				"formatLong": "Langformat (mit genauer Uhrzeit)",
+				"formatDefaultDescription": "Wird in allgemeinen Datumsfeldern verwendet",
+				"formatLongDescription": "Wird in Datumsfeldern verwendet, in denen die genaue Uhrzeit erforderlich ist (z. B. Vorfall-Zeitstempel) und in Tooltips für alle Datumsangaben",
+				"groupStandard": "Internationaler Standard",
+				"groupEuropean": "Europäische Formate",
+				"groupUS": "US-Formate",
+				"groupISO": "ISO/Technische Formate"
+			}
+		},
 		"groups": {
 			"title": "Gruppen",
 			"id": "Gruppe-ID",
