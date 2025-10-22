@@ -42,7 +42,7 @@
       </b-card-text>
     </b-card>
 
-    <template v-if="!$root.config.notifications.tasks.enabled">
+    <template v-if="$root.config.notifications.tasks.enabled">
       <b-card class="p-4 shadow-sm border rounded" :title="$t('admin.preferences.notifications.title')">
         <b-card-text class="border-top pt-4 mt-3">
           <b-form-group>
