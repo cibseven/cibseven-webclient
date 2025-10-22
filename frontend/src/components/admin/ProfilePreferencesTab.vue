@@ -180,9 +180,7 @@ export default {
   },
   methods: {
     createDateOptions(formats) {
-      return formats.map(value => { 
-        return { value: value, text: formatDate(new Date(), value) }
-      })
+      return formats.map(value => ({ value, text: formatDate(new Date(), value) }))
     }
   }
 }
