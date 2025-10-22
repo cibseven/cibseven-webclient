@@ -70,81 +70,81 @@ export default {
         // Standard International
         { 
           label: this.$t('admin.preferences.dates.groupStandard'),
-          options: [
-            { value: 'L', text: formatDate(new Date(), 'L') },
-            { value: 'L LT', text: formatDate(new Date(), 'L LT') },
-            { value: 'L LTS', text: formatDate(new Date(), 'L LTS') },
-            { value: 'LL', text: formatDate(new Date(), 'LL') },
-            { value: 'LLL', text: formatDate(new Date(), 'LLL') },
-            { value: 'LLLL', text: formatDate(new Date(), 'LLLL') },
-            { value: 'LL HH:mm', text: formatDate(new Date(), 'LL HH:mm') },
-            { value: 'LL HH:mm:ss', text: formatDate(new Date(), 'LL HH:mm:ss') },
-            { value: 'LL HH:mm:ss.SSS', text: formatDate(new Date(), 'LL HH:mm:ss.SSS') },
-            { value: 'dddd, MMMM Do YYYY, h:mm A', text: formatDate(new Date(), 'dddd, MMMM Do YYYY, h:mm A') },
-            { value: 'dddd, MMMM Do YYYY, h:mm:ss A', text: formatDate(new Date(), 'dddd, MMMM Do YYYY, h:mm:ss A') },
-            { value: 'dddd, MMMM Do YYYY, h:mm:ss.SSS A', text: formatDate(new Date(), 'dddd, MMMM Do YYYY, h:mm:ss.SSS A') },
-            { value: 'MMM D, YYYY, h:mm A', text: formatDate(new Date(), 'MMM D, YYYY, h:mm A') },
-            { value: 'MMM D, YYYY, h:mm:ss A', text: formatDate(new Date(), 'MMM D, YYYY, h:mm:ss A') },
-            { value: 'MMM D, YYYY, h:mm:ss.SSS A', text: formatDate(new Date(), 'MMM D, YYYY, h:mm:ss.SSS A') },
-            { value: 'ddd, MMM D, YYYY h:mm A', text: formatDate(new Date(), 'ddd, MMM D, YYYY h:mm A') },
-            { value: 'ddd, MMM D, YYYY h:mm:ss A', text: formatDate(new Date(), 'ddd, MMM D, YYYY h:mm:ss A') },
-            { value: 'MMMM Do, YYYY HH:mm', text: formatDate(new Date(), 'MMMM Do, YYYY HH:mm') },
-            { value: 'MMMM Do, YYYY HH:mm:ss', text: formatDate(new Date(), 'MMMM Do, YYYY HH:mm:ss') },
-            { value: 'Do MMMM YYYY, HH:mm', text: formatDate(new Date(), 'Do MMMM YYYY, HH:mm') },
-            { value: 'Do MMMM YYYY, HH:mm:ss', text: formatDate(new Date(), 'Do MMMM YYYY, HH:mm:ss') }
-          ]
+          options: this.createDateOptions([
+            'L',
+            'L LT',
+            'L LTS',
+            'LL',
+            'LLL',
+            'LLLL',
+            'LL HH:mm',
+            'LL HH:mm:ss',
+            'LL HH:mm:ss.SSS',
+            'dddd, MMMM Do YYYY, h:mm A',
+            'dddd, MMMM Do YYYY, h:mm:ss A',
+            'dddd, MMMM Do YYYY, h:mm:ss.SSS A',
+            'MMM D, YYYY, h:mm A',
+            'MMM D, YYYY, h:mm:ss A',
+            'MMM D, YYYY, h:mm:ss.SSS A',
+            'ddd, MMM D, YYYY h:mm A',
+            'ddd, MMM D, YYYY h:mm:ss A',
+            'MMMM Do, YYYY HH:mm',
+            'MMMM Do, YYYY HH:mm:ss',
+            'Do MMMM YYYY, HH:mm',
+            'Do MMMM YYYY, HH:mm:ss',
+          ])
         },
         // European Formats
         {
           label: this.$t('admin.preferences.dates.groupEuropean'),
-          options: [
-            { value: 'DD.MM.YYYY HH:mm', text: formatDate(new Date(), 'DD.MM.YYYY HH:mm') },
-            { value: 'DD.MM.YYYY HH:mm:ss', text: formatDate(new Date(), 'DD.MM.YYYY HH:mm:ss') },
-            { value: 'DD.MM.YYYY HH:mm:ss.SSS', text: formatDate(new Date(), 'DD.MM.YYYY HH:mm:ss.SSS') },
-            { value: 'DD.MM.YY HH:mm', text: formatDate(new Date(), 'DD.MM.YY HH:mm') },
-            { value: 'DD.MM.YY HH:mm:ss', text: formatDate(new Date(), 'DD.MM.YY HH:mm:ss') },
-            { value: 'DD/MM/YYYY HH:mm', text: formatDate(new Date(), 'DD/MM/YYYY HH:mm') },
-            { value: 'DD/MM/YYYY HH:mm:ss', text: formatDate(new Date(), 'DD/MM/YYYY HH:mm:ss') },
-            { value: 'DD/MM/YYYY HH:mm:ss.SSS', text: formatDate(new Date(), 'DD/MM/YYYY HH:mm:ss.SSS') },
-            { value: 'DD-MM-YYYY HH:mm', text: formatDate(new Date(), 'DD-MM-YYYY HH:mm') },
-            { value: 'DD-MM-YYYY HH:mm:ss', text: formatDate(new Date(), 'DD-MM-YYYY HH:mm:ss') },
-            { value: 'DD MMM YYYY HH:mm', text: formatDate(new Date(), 'DD MMM YYYY HH:mm') },
-            { value: 'DD MMM YYYY HH:mm:ss', text: formatDate(new Date(), 'DD MMM YYYY HH:mm:ss') },
-            { value: 'DD MMM YY HH:mm', text: formatDate(new Date(), 'DD MMM YY HH:mm') },
-            { value: 'DD MMM YY HH:mm:ss', text: formatDate(new Date(), 'DD MMM YY HH:mm:ss') },
-            { value: 'dddd DD/MM/YYYY HH:mm', text: formatDate(new Date(), 'dddd DD/MM/YYYY HH:mm') },
-            { value: 'dddd DD/MM/YYYY HH:mm:ss', text: formatDate(new Date(), 'dddd DD/MM/YYYY HH:mm:ss') }
-          ]
+          options: this.createDateOptions([
+            'DD.MM.YYYY HH:mm',
+            'DD.MM.YYYY HH:mm:ss',
+            'DD.MM.YYYY HH:mm:ss.SSS',
+            'DD.MM.YY HH:mm',
+            'DD.MM.YY HH:mm:ss',
+            'DD/MM/YYYY HH:mm',
+            'DD/MM/YYYY HH:mm:ss',
+            'DD/MM/YYYY HH:mm:ss.SSS',
+            'DD-MM-YYYY HH:mm',
+            'DD-MM-YYYY HH:mm:ss',
+            'DD MMM YYYY HH:mm',
+            'DD MMM YYYY HH:mm:ss',
+            'DD MMM YY HH:mm',
+            'DD MMM YY HH:mm:ss',
+            'dddd DD/MM/YYYY HH:mm',
+            'dddd DD/MM/YYYY HH:mm:ss',
+          ])
         },
         // US Formats
         {
           label: this.$t('admin.preferences.dates.groupUS'),
-          options: [
-            { value: 'MM/DD/YYYY hh:mm A', text: formatDate(new Date(), 'MM/DD/YYYY hh:mm A') },
-            { value: 'MM/DD/YYYY hh:mm:ss A', text: formatDate(new Date(), 'MM/DD/YYYY hh:mm:ss A') },
-            { value: 'MM/DD/YYYY hh:mm:ss.SSS A', text: formatDate(new Date(), 'MM/DD/YYYY hh:mm:ss.SSS A') },
-            { value: 'MM/DD/YY h:mm A', text: formatDate(new Date(), 'MM/DD/YY h:mm A') },
-            { value: 'MM/DD/YY h:mm:ss A', text: formatDate(new Date(), 'MM/DD/YY h:mm:ss A') },
-            { value: 'MM/DD/YY h:mm:ss.SSS A', text: formatDate(new Date(), 'MM/DD/YY h:mm:ss.SSS A') },
-            { value: 'MM-DD-YYYY HH:mm', text: formatDate(new Date(), 'MM-DD-YYYY HH:mm') },
-            { value: 'MM-DD-YYYY HH:mm:ss', text: formatDate(new Date(), 'MM-DD-YYYY HH:mm:ss') },
-            { value: 'MM-DD-YYYY HH:mm:ss.SSS', text: formatDate(new Date(), 'MM-DD-YYYY HH:mm:ss.SSS') }
-          ]
+          options: this.createDateOptions([
+            'MM/DD/YYYY hh:mm A',
+            'MM/DD/YYYY hh:mm:ss A',
+            'MM/DD/YYYY hh:mm:ss.SSS A',
+            'MM/DD/YY h:mm A',
+            'MM/DD/YY h:mm:ss A',
+            'MM/DD/YY h:mm:ss.SSS A',
+            'MM-DD-YYYY HH:mm',
+            'MM-DD-YYYY HH:mm:ss',
+            'MM-DD-YYYY HH:mm:ss.SSS'
+          ])
         },
         // ISO/Technical Formats
         {
           label: this.$t('admin.preferences.dates.groupISO'),
-          options: [
-            { value: 'YYYY-MM-DD HH:mm', text: formatDate(new Date(), 'YYYY-MM-DD HH:mm') },
-            { value: 'YYYY-MM-DD HH:mm:ss', text: formatDate(new Date(), 'YYYY-MM-DD HH:mm:ss') },
-            { value: 'YYYY-MM-DD HH:mm:ss.SSS', text: formatDate(new Date(), 'YYYY-MM-DD HH:mm:ss.SSS') },
-            { value: 'YYYY-MM-DD hh:mm A', text: formatDate(new Date(), 'YYYY-MM-DD hh:mm A') },
-            { value: 'YYYY-MM-DD hh:mm:ss A', text: formatDate(new Date(), 'YYYY-MM-DD hh:mm:ss A') },
-            { value: 'YYYY-MM-DD hh:mm:ss.SSS A', text: formatDate(new Date(), 'YYYY-MM-DD hh:mm:ss.SSS A') },
-            { value: 'YYYY/MM/DD HH:mm', text: formatDate(new Date(), 'YYYY/MM/DD HH:mm') },
-            { value: 'YYYY/MM/DD HH:mm:ss', text: formatDate(new Date(), 'YYYY/MM/DD HH:mm:ss') },
-            { value: 'YYYY/MM/DD HH:mm:ss.SSS', text: formatDate(new Date(), 'YYYY/MM/DD HH:mm:ss.SSS') }
-          ]
+          options: this.createDateOptions([
+            'YYYY-MM-DD HH:mm',
+            'YYYY-MM-DD HH:mm:ss',
+            'YYYY-MM-DD HH:mm:ss.SSS',
+            'YYYY-MM-DD hh:mm A',
+            'YYYY-MM-DD hh:mm:ss A',
+            'YYYY-MM-DD hh:mm:ss.SSS A',
+            'YYYY/MM/DD HH:mm',
+            'YYYY/MM/DD HH:mm:ss',
+            'YYYY/MM/DD HH:mm:ss.SSS'
+          ])
         }
       ]
     },
@@ -177,6 +177,13 @@ export default {
         ? this.$options.components.ProfilePreferencesPlugin
         : null
     },
+  },
+  methods: {
+    createDateOptions(formats) {
+      return formats.map(value => { 
+        return { value: value, text: formatDate(new Date(), value) }
+      })
+    }
   }
 }
 </script>
