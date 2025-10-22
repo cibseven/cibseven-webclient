@@ -50,6 +50,8 @@
         </b-form-checkbox>
       </b-form-group>
     </ContentBlock>
+
+    <component :is="ProfilePreferencesPlugin" v-if="ProfilePreferencesPlugin"></component>
   </div>
 </template>
 
@@ -149,28 +151,33 @@ export default {
   },
   computed: {
     formatDefault: {
-      get: function() {
+      get() {
         return localStorage.getItem('cibseven:preferences:formatDefault') || 'LL HH:mm'
       },
-      set: function(val) {
+      set(val) {
         localStorage.setItem('cibseven:preferences:formatDefault', val)
       }
     },
     formatLong: {
-      get: function() {
+      get() {
         return localStorage.getItem('cibseven:preferences:formatLong') || 'LL HH:mm:ss.SSS'
       },
-      set: function(val) {
+      set(val) {
         localStorage.setItem('cibseven:preferences:formatLong', val)
       }
     },
     tasksCheckNotificationsDisabled: {
-      get: function() {
+      get() {
         return localStorage.getItem('tasksCheckNotificationsDisabled') === 'true' || false
       },
-      set: function(val) {
+      set(val) {
         localStorage.setItem('tasksCheckNotificationsDisabled', val)
       }
+    },
+    ProfilePreferencesPlugin() {
+      return this.$options.components && this.$options.components.ProfilePreferencesPlugin
+        ? this.$options.components.ProfilePreferencesPlugin
+        : null
     },
   }
 }
