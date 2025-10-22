@@ -64,9 +64,9 @@ export default {
   components: {
     ContentBlock
   },
-  data() {
-    return {
-      dateFormatOptions: [
+  computed: {
+    dateFormatOptions() {
+      return [
         // Standard International
         { 
           label: this.$t('admin.preferences.dates.groupStandard'),
@@ -147,9 +147,7 @@ export default {
           ]
         }
       ]
-    }
-  },
-  computed: {
+    },
     formatDefault: {
       get() {
         return localStorage.getItem('cibseven:preferences:formatDefault') || 'LL HH:mm'
