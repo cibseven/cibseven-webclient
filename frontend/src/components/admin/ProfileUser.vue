@@ -21,7 +21,7 @@
     :left-caption="$t('admin.users.title') + ' - ' + user.id" :left-size="[12, 6, 4, 3, 2]">
     <template v-slot:left>
       <b-list-group>
-        <b-list-group-item class="border-0 px-3 py-2" :active="$route.query.tab === 'profile'" exact :to="'?tab=profile'">
+        <b-list-group-item class="border-0 px-3 py-2" :active="$route.query.tab === 'profile' || !$route.query.tab" exact :to="'?tab=profile'">
           <span> {{ $t('admin.users.profile') }}</span>
         </b-list-group-item>
         <b-list-group-item v-if="!readOnlyUser" class="border-0 px-3 py-2" :active="$route.query.tab === 'account'" exact :to="'?tab=account'">
@@ -47,7 +47,7 @@
           <span class="fw-bold">{{ $t('admin.users.title') }}</span>
         </b-button>
         <div class="container-fluid overflow-auto">
-          <div v-if="$route.query.tab === 'profile'" class="row">
+          <div v-if="$route.query.tab === 'profile' || !$route.query.tab" class="row">
             <div class="col-sm-12 col-md-12 col-lg-8 col-xl-6 p-4">
               <b-card class="p-5 shadow-sm border rounded" :title="$t('admin.users.editMessage', [user.firstName + ' ' + user.lastName])">
                 <b-card-text class="border-top pt-4 mt-3">
