@@ -392,7 +392,17 @@
 			"failedActivity": "Actividad fallida",
 			"actions": "Acciones",
 			"suspend": "Suspender",
-			"resume": "Reanudar"
+			"resume": "Reanudar",
+			"changeDueDate": "Cambiar fecha de vencimiento del temporizador",
+			"recalculateFromCreation": "Desde la fecha de creación",
+			"recalculateFromCurrent": "Desde la fecha actual",
+			"setSpecificDate": "Establecer una fecha específica",
+			"cascade": "Aplicar en cascada a procesos hijos",
+			"changeDueDateMsg": "Selecciona una de las siguientes opciones para cambiar este temporizador:",
+			"recalculate": "Recalcular",
+			"scheduleAt": "Programar en",
+			"invalidDateError": "Debe ingresar una fecha válida",
+			"overrideAction": "Anular"
 		},
 		"externalTasks": {
 			"id": "ID de tarea externa",

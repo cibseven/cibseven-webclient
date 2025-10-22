@@ -85,4 +85,24 @@ public class JobService extends BaseService implements InitializingBean {
 		return bpmProvider.getHistoryJobLogStacktrace(id, user);
 	}
 
+    @PutMapping("/{id}/duedate")
+	public void changeDueDate(
+			@PathVariable String id,
+			@RequestBody Map<String, Object> data,
+			HttpServletRequest rq) {
+		CIBUser user = checkAuthorization(rq, true);
+		//checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.UPDATE_ALL);
+		bpmProvider.changeDueDate(id, data, user);
+	}
+
+    @PostMapping("/{id}/duedate/recalculate")
+	public void recalculateDueDate(
+			@PathVariable String id,
+			@RequestParam Map<String, Object> params,
+			HttpServletRequest rq) {
+		CIBUser user = checkAuthorization(rq, true);
+		//checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.UPDATE_ALL);
+		bpmProvider.recalculateDueDate(id, params, user);
+	}
+
 }

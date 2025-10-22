@@ -32,5 +32,9 @@ public interface IJobProvider {
 	public String getHistoryJobLogStacktrace(String id, CIBUser user);
 
 	public void deleteJob(String id, CIBUser user);
+
+	public void changeDueDate(String id, Map<String, Object> data, CIBUser user);
+
+	public void recalculateDueDate(String id, Map<String, Object> params, CIBUser user);
 	
 }

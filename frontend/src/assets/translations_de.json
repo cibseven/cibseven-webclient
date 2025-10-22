@@ -392,7 +392,17 @@
 			"failedActivity": "Fehlgeschlagene Aktivität",
 			"actions": "Aktionen",
 			"suspend": "Anhalten",
-			"resume": "Fortsetzen"
+			"resume": "Fortsetzen",
+			"changeDueDate": "Timer-Fälligkeitsdatum ändern",
+			"recalculateFromCreation": "Ab Erstellungszeit",
+			"recalculateFromCurrent": "Ab aktueller Zeit",
+			"setSpecificDate": "Bestimmtes Datum festlegen",
+			"cascade": "Auf untergeordnete Prozesse übertragen",
+			"changeDueDateMsg": "Wählen Sie eine der folgenden Optionen, um diesen Timer zu ändern:",
+			"recalculate": "Neu berechnen",
+			"scheduleAt": "Geplant um",
+			"invalidDateError": "Sie müssen ein gültiges Datum eingeben",
+			"overrideAction": "Überschreiben"
 		},
 		"externalTasks": {
 			"id": "Externe Aufgaben-ID",

@@ -392,7 +392,17 @@
 			"failedActivity": "Неудачная активность",
 			"actions": "Действия",
 			"suspend": "Приостановить",
-			"resume": "Возобновить"
+			"resume": "Возобновить",
+			"changeDueDate": "Изменить срок выполнения таймера",
+			"recalculateFromCreation": "От даты создания",
+			"recalculateFromCurrent": "От текущего времени",
+			"setSpecificDate": "Установить определенную дату",
+			"cascade": "Применить каскадно к дочерним процессам",
+			"changeDueDateMsg": "Выберите один из следующих вариантов для изменения этого таймера:",
+			"recalculate": "Пересчитать",
+			"scheduleAt": "Запланировано на",
+			"invalidDateError": "Вы должны ввести действительную дату",
+			"overrideAction": "Переопределить"
 		},
 		"externalTasks": {
 			"id": "ID внешней задачи",

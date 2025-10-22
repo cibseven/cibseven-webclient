@@ -392,7 +392,17 @@
 			"failedActivity": "Failed activity",
 			"actions": "Actions",
 			"suspend": "Suspend",
-			"resume": "Resume"
+			"resume": "Resume",
+			"changeDueDate": "Change timer due date",
+			"recalculateFromCreation": "From creation time",
+			"recalculateFromCurrent": "From current time",
+			"setSpecificDate": "Set a specific date",
+			"cascade": "Cascade to child processes",
+			"changeDueDateMsg": "Select one of the following options to change this timer:",
+			"recalculate": "Recalculate",
+			"scheduleAt": "Schedule at",
+			"invalidDateError": "You must enter a valid date",
+			"overrideAction": "Override"
 		},
 		"externalTasks": {
 			"id": "External task ID",
