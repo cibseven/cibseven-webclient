@@ -569,10 +569,27 @@
 			"group": {
 				"title": "{0}'s Groups",
 				"add": "Add to a group"
+			}
+		},
+		"preferences": {
+			"title": "Preferences",
+			"dates": {
+				"title": "Date and Time Formats",
+				"formatDefault": "Format",
+				"formatLong": "Long Format (with exact time)",
+				"formatDefaultDescription": "Used in general date fields",
+				"formatLongDescription": "Used in date fields where exact time is required (such as incident timestamps) and inside tooltips for all dates",
+				"groupStandard": "Standard International",
+				"groupEuropean": "European Formats",
+				"groupUS": "US Formats",
+				"groupISO": "ISO/Technical Formats"
 			},
-			"preferences": {
-				"title": "Preferences",
-				"notifications": "Disable notifications"
+			"notifications": {
+				"title": "Notifications",
+				"tasksCheckNotificationsDisabled": {
+					"label": "Disable task notifications",
+					"description": "If checked, you will not receive in browser any notifications when new tasks are assigned to you."
+				}
 			}
 		},
 		"groups": {

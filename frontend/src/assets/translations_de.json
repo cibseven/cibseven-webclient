@@ -569,10 +569,27 @@
 			"group": {
 				"title": "{0} Gruppen",
 				"add": "Zu einer Gruppe hinzufügen"
+			}
+		},
+		"preferences": {
+			"title": "Einstellungen",
+			"dates": {
+				"title": "Datums- und Zeitformate",
+				"formatDefault": "Format",
+				"formatLong": "Langformat (mit genauer Uhrzeit)",
+				"formatDefaultDescription": "Wird in allgemeinen Datumsfeldern verwendet",
+				"formatLongDescription": "Wird in Datumsfeldern verwendet, in denen die genaue Uhrzeit erforderlich ist (z. B. Vorfall-Zeitstempel) und in Tooltips für alle Datumsangaben",
+				"groupStandard": "Internationaler Standard",
+				"groupEuropean": "Europäische Formate",
+				"groupUS": "US-Formate",
+				"groupISO": "ISO/Technische Formate"
 			},
-			"preferences": {
-				"title": "Einstellungen",
-				"notifications": "Benachrichtigungen ausschalten"
+			"notifications": {
+				"title": "Benachrichtigungen",
+				"tasksCheckNotificationsDisabled": {
+					"label": "Aufgabenbenachrichtigungen deaktivieren",
+					"description": "Wenn aktiviert, erhalten Sie im Browser keine Benachrichtigungen, wenn neue Aufgaben Ihnen zugewiesen werden."
+				}
 			}
 		},
 		"groups": {

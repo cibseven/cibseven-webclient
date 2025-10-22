@@ -569,10 +569,27 @@
 			"group": {
 				"title": "Grupos del usuario {0}",
 				"add": "Añadir a un grupo"
+			}
+		},
+		"preferences": {
+			"title": "Preferencias",
+			"dates": {
+				"title": "Formatos de fecha y hora",
+				"formatDefault": "Formato",
+				"formatLong": "Formato largo (con hora exacta)",
+				"formatDefaultDescription": "Se utiliza en campos de fecha generales",
+				"formatLongDescription": "Se utiliza en campos de fecha donde se requiere la hora exacta (como las marcas de tiempo de incidentes) y dentro de los tooltips para todas las fechas",
+				"groupStandard": "Estándar internacional",
+				"groupEuropean": "Formatos europeos",
+				"groupUS": "Formatos de EE.UU.",
+				"groupISO": "Formatos ISO/Técnicos"
 			},
-			"preferences": {
-				"title": "Preferencias",
-				"notifications": "Desactivar notificaciones"
+			"notifications": {
+				"title": "Notificaciones",
+				"tasksCheckNotificationsDisabled": {
+					"label": "Desactivar notificaciones de tareas",
+					"description": "Si se marca, no recibirá en el navegador ninguna notificación cuando se le asignen nuevas tareas."
+				}
 			}
 		},
 		"groups": {

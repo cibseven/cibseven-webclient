@@ -33,10 +33,10 @@
           </div>
         </template>
         <template v-slot:cell(startTime)="table">
-          <div>{{ formatDate(table.item.startTime) }}</div>
+          <div :title="formatDateForTooltips(table.item.startTime)">{{ formatDate(table.item.startTime) }}</div>
         </template>
         <template v-slot:cell(endTime)="table">
-          <div>{{ formatDate(table.item.endTime) }}</div>
+          <div :title="formatDateForTooltips(table.item.endTime)">{{ formatDate(table.item.endTime) }}</div>
         </template>
       </FlowTable>
       <div class="mb-3 text-center w-100" v-if="loading">
@@ -50,7 +50,7 @@
 </template>
 
 <script>
-import { formatDate } from '@/utils/dates.js'
+import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import { mapGetters, mapActions } from 'vuex'
 import { debounce } from '@/utils/debounce.js'
@@ -89,6 +89,7 @@ export default {
   methods: {
     ...mapActions(['loadHistoricBatches', 'prependNewHistoricBatches']),
     formatDate,
+    formatDateForTooltips,
     fetchHistoricBatches: function (showMore = false) {
       this.loading = true
       this.debouncedFetch(showMore)

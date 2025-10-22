@@ -21,11 +21,11 @@
     :left-caption="$t('admin.users.title') + ' - ' + user.id" :left-size="[12, 6, 4, 3, 2]">
     <template v-slot:left>
       <b-list-group>
-        <b-list-group-item class="border-0 px-3 py-2" :active="$route.query.tab === 'profile'" exact :to="'?tab=profile'">
+        <b-list-group-item class="border-0 px-3 py-2" :active="$route.query.tab === 'profile' || !$route.query.tab" exact :to="'?tab=profile'">
           <span> {{ $t('admin.users.profile') }}</span>
         </b-list-group-item>
         <b-list-group-item v-if="!readOnlyUser" class="border-0 px-3 py-2" :active="$route.query.tab === 'account'" exact :to="'?tab=account'">
-          <span> {{ $t('admin.users.account') }}</span>
+          <span> {{ $t('password.recover.changePassword') }}</span>
         </b-list-group-item>
         <b-list-group-item class="border-0 px-3 py-2" :active="$route.query.tab === 'groups'" exact :to="'?tab=groups'">
           <span> {{ $t('admin.users.groups') }}</span>
@@ -33,9 +33,9 @@
         <b-list-group-item class="border-0 px-3 py-2" :active="$route.query.tab === 'tenants'" exact :to="'?tab=tenants'">
           <span> {{ $t('admin.tenants.title') }}</span>
         </b-list-group-item>
-        <b-list-group-item v-if="$root.user && $root.user.id === user.id && $root.config.notifications.tasks.enabled" class="border-0 px-3 py-2"
+        <b-list-group-item v-if="$root.user && $root.user.id === user.id" class="border-0 px-3 py-2"
           :active="$route.query.tab === 'preferences'" exact :to="'?tab=preferences'">
-          <span> {{ $t('admin.users.preferences.title') }}</span>
+          <span> {{ $t('admin.preferences.title') }}</span>
         </b-list-group-item>
       </b-list-group>
     </template>
@@ -47,129 +47,114 @@
           <span class="fw-bold">{{ $t('admin.users.title') }}</span>
         </b-button>
         <div class="container-fluid overflow-auto">
-          <div v-if="$route.query.tab === 'profile'" class="row">
-            <div class="col-sm-12 col-md-12 col-lg-8 col-xl-6 p-4">
-              <b-card class="p-5 shadow-sm border rounded" :title="$t('admin.users.editMessage', [user.firstName + ' ' + user.lastName])">
-                <b-card-text class="border-top pt-4 mt-3">
-                  <CIBForm @submitted="update()">
-                    <b-form-group :label="$t('admin.users.firstName') + '*'" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4"
-                      :invalid-feedback="$t('errors.invalid')">
-                      <b-form-input v-model="user.firstName"  @update:modelValue="dirty=true"
-                        :state="notEmpty(user.firstName)" :readonly="readOnlyUser || !editMode" required></b-form-input>
-                    </b-form-group>
-                    <b-form-group :label="$t('admin.users.lastName') + '*'" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4"
-                      :invalid-feedback="$t('errors.invalid')">
-                      <b-form-input v-model="user.lastName"  @update:modelValue="dirty=true"
-                        :state="notEmpty(user.lastName)" :readonly="readOnlyUser || !editMode" required></b-form-input>
-                    </b-form-group>
-                    <b-form-group :label="$t('admin.users.email')" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4"
-                      :invalid-feedback="$t('errors.invalid')">
-                      <b-form-input v-model="user.email" type="email" autocomplete="email"  @update:modelValue="dirty = true" :readonly="readOnlyUser || !editMode"></b-form-input>
-                    </b-form-group>
-                    <div class="float-end" v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'">
-                      <b-button type="submit" variant="secondary" :disabled="!dirty" >{{ $t('admin.users.update') }}</b-button>
-                    </div>
-                  </CIBForm>
-                </b-card-text>
-              </b-card>
-            </div>
-          </div>
-          <div v-else-if="$route.query.tab === 'account' && !readOnlyUser" class="row">
-            <div class="col-sm-12 col-md-12 col-lg-8 col-xl-6 p-4">
-              <b-card class="p-5 shadow-sm border rounded" :title="$t('admin.users.editMessage', [user.firstName + ' ' + user.lastName])">
-                <h6 class="mt-4">{{ $t('password.recover.changePassword') }}</h6>
-                <b-form-group labels-cols-lg="2" label-size="lg" label-class="fw-bold pt-0 pb-4" class="m-0">
-                  <b-form-group :label="$t('password.recover.id') + '*'" label-cols-sm="2"
-                    label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
-                    <b-form-input v-model="user.id" :state="notEmpty(user.id)" required readonly></b-form-input>
-                  </b-form-group>
-                  <div class="float-end d-flex align-items-center">
-                    <b-spinner variant="primary" class="mx-2" v-if="sendingEmail"></b-spinner>
-                    <b-button type="submit" variant="secondary" :disabled="sendingEmail" @click="onSendEmail()">{{ $t('password.recover.sendEmail') }}</b-button>
-                  </div>
+
+          <!-- Profile Tab -->
+          <div v-if="$route.query.tab === 'profile' || !$route.query.tab" class="row pt-3 ps-4 pe-4">
+            <ContentBlock
+              :title="$t('admin.users.editMessage', [user.firstName + ' ' + user.lastName])"
+              class="col-lg-6 col-md-8 col-sm-12">
+              <CIBForm @submitted="update()">
+                <b-form-group :label="$t('admin.users.firstName') + '*'" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4"
+                  :invalid-feedback="$t('errors.invalid')">
+                  <b-form-input v-model="user.firstName"  @update:modelValue="dirty=true"
+                    :state="notEmpty(user.firstName)" :readonly="readOnlyUser || !editMode" required></b-form-input>
                 </b-form-group>
-              </b-card>
-            </div>
-          </div>
-          <div v-else-if="$route.query.tab === 'groups'" class="row">
-            <div class="col-12">
-              <div class="p-3">
-                <b-form-group labels-cols-lg="2" label-size="lg" label-class="fw-bold pt-0"
-                  :label="$t('admin.users.editMessage', [user.firstName + ' ' + user.lastName])">
+                <b-form-group :label="$t('admin.users.lastName') + '*'" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4"
+                  :invalid-feedback="$t('errors.invalid')">
+                  <b-form-input v-model="user.lastName"  @update:modelValue="dirty=true"
+                    :state="notEmpty(user.lastName)" :readonly="readOnlyUser || !editMode" required></b-form-input>
                 </b-form-group>
-                <div class="row pt-3">
-                  <div class="col-9">
-                    <h5>{{ $t('admin.users.group.title', [user.firstName + ' ' + user.lastName]) }}</h5>
-                  </div>
-                  <div v-if="editMode" class="col-3 pb-3">
-                    <div class="float-end">
-                      <b-button size="sm" variant="secondary" v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'" @click="openAssignGroupModal">
-                        <span class="mdi mdi-plus"> {{ $t('admin.users.group.add') }} </span>
+                <b-form-group :label="$t('admin.users.email')" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4"
+                  :invalid-feedback="$t('errors.invalid')">
+                  <b-form-input v-model="user.email" type="email" autocomplete="email"  @update:modelValue="dirty = true" :readonly="readOnlyUser || !editMode"></b-form-input>
+                </b-form-group>
+                <div class="float-end" v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'">
+                  <b-button type="submit" variant="secondary" :disabled="!dirty" >{{ $t('admin.users.update') }}</b-button>
+                </div>
+              </CIBForm>
+            </ContentBlock>
+          </div>
+
+          <!-- Account Tab -->
+          <div v-else-if="$route.query.tab === 'account' && !readOnlyUser" class="row pt-3 ps-4 pe-4">
+            <ContentBlock
+              :title="$t('password.recover.changePassword')"
+              class="col-lg-6 col-md-8 col-sm-12">
+              <b-form-group labels-cols-lg="4" label-size="lg" label-class="fw-bold pt-0 pb-4" class="m-0">
+                <b-form-group :label="$t('password.recover.id') + '*'" label-cols-sm="4"
+                  label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
+                  <b-form-input v-model="user.id" :state="notEmpty(user.id)" required readonly></b-form-input>
+                </b-form-group>
+                <div class="float-end d-flex align-items-center">
+                  <b-spinner variant="primary" class="mx-2" v-if="sendingEmail"></b-spinner>
+                  <b-button type="submit" variant="secondary" :disabled="sendingEmail" @click="onSendEmail()">{{ $t('password.recover.sendEmail') }}</b-button>
+                </div>
+              </b-form-group>
+            </ContentBlock>
+          </div>
+
+          <!-- Groups Tab -->
+          <div v-else-if="$route.query.tab === 'groups'" class="row pt-3 ps-4 pe-4">
+            <ContentBlock
+              :title="$t('admin.users.group.title', [user.firstName + ' ' + user.lastName])"
+              class="">
+
+              <template v-if="editMode" v-slot:actions>
+                <b-button size="sm" variant="secondary" v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'" @click="openAssignGroupModal" class="mdi mdi-plus">
+                  <span class="ms-2">{{ $t('admin.users.group.add') }}</span>
+                </b-button>
+              </template>
+
+              <div v-if="groups" class="p-2">
+                <FlowTable striped :items="groups" primary-key="id" prefix="admin.groups." :fields="groupFields"
+                  @contextmenu="focusedGroup = $event" @mouseenter="focusedGroup = $event" @mouseleave="focusedGroup = null">
+                  <template v-slot:cell(actions)="row">
+                    <div>
+                      <b-button :disabled="focusedGroup !== row.item" style="opacity: 1" @click="unassignGroup(row.item)" class="px-2 border-0 shadow-none" :title="$t('admin.groups.deleteGroup')" variant="link">
+                        <span class="mdi mdi-18px mdi-delete-outline"></span>
                       </b-button>
                     </div>
-                  </div>
-                </div>
-                <div v-if="groups" class="container-fluid overflow-auto bg-white shadow-sm border rounded g-0">
-                  <FlowTable striped :items="groups" primary-key="id" prefix="admin.groups." :fields="groupFields"
-                    @contextmenu="focusedGroup = $event" @mouseenter="focusedGroup = $event" @mouseleave="focusedGroup = null">
-                    <template v-slot:cell(actions)="row">
-                      <div>
-                        <b-button :disabled="focusedGroup !== row.item" style="opacity: 1" @click="unassignGroup(row.item)" class="px-2 border-0 shadow-none" :title="$t('admin.groups.deleteGroup')" variant="link">
-                          <span class="mdi mdi-18px mdi-delete-outline"></span>
-                        </b-button>
-                      </div>
-                    </template>
-                  </FlowTable>
-                </div>
+                  </template>
+                </FlowTable>
               </div>
-            </div>
+            </ContentBlock>
           </div>
-          <div v-else-if="$route.query.tab === 'tenants'" class="row">
-            <div class="col-12">
-              <div class="p-3">
-                <b-form-group labels-cols-lg="2" label-size="lg" label-class="fw-bold pt-0"
-                  :label="$t('admin.users.editMessage', [user.firstName + ' ' + user.lastName])">
-                </b-form-group>
-                <div class="row pt-3">
-                  <div class="col-9">
-                    <h5>{{ $t('admin.tenants.associationTitle', [user.firstName + ' ' + user.lastName]) }}</h5>
-                  </div>
-                  <div v-if="editMode" class="col-3 pb-3">
-                    <div class="float-end">
-                      <b-button size="sm" variant="secondary" v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'" @click="openAssignTenantModal">
-                        <span class="mdi mdi-plus"> {{ $t('admin.tenants.addTo') }} </span>
+
+          <!-- Tenants Tab -->
+          <div v-else-if="$route.query.tab === 'tenants'" class="row pt-3 ps-4 pe-4">
+            <ContentBlock
+              :title="$t('admin.tenants.associationTitle', [user.firstName + ' ' + user.lastName])"
+              class="">
+
+              <template v-if="editMode" v-slot:actions>
+                <b-button size="sm" variant="secondary" v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'" @click="openAssignTenantModal" class="mdi mdi-plus">
+                  <span class="ms-2"> {{ $t('admin.tenants.addTo') }} </span>
+                </b-button>
+              </template>
+
+              <div v-if="userTenants.length > 0" class="p-2">
+                <FlowTable striped :items="userTenants" primary-key="id" prefix="admin.tenants." :fields="tenantFields"
+                  @contextmenu="focusedTenant = $event" @mouseenter="focusedTenant = $event" @mouseleave="focusedTenant = null">
+                  <template v-slot:cell(actions)="row">
+                    <div>
+                      <b-button :disabled="focusedTenant !== row.item" style="opacity: 1" @click="unassignTenant(row.item)" class="px-2 border-0 shadow-none" variant="link">
+                        <span class="mdi mdi-18px mdi-delete-outline"></span>
                       </b-button>
                     </div>
-                  </div>
-                </div>
-                <div v-if="userTenants.length > 0" class="container-fluid overflow-auto bg-white shadow-sm border rounded g-0">
-                  <FlowTable striped :items="userTenants" primary-key="id" prefix="admin.tenants." :fields="tenantFields"
-                    @contextmenu="focusedTenant = $event" @mouseenter="focusedTenant = $event" @mouseleave="focusedTenant = null">
-                    <template v-slot:cell(actions)="row">
-                      <div>
-                        <b-button :disabled="focusedTenant !== row.item" style="opacity: 1" @click="unassignTenant(row.item)" class="px-2 border-0 shadow-none" variant="link">
-                          <span class="mdi mdi-18px mdi-delete-outline"></span>
-                        </b-button>
-                      </div>
-                    </template>
-                  </FlowTable>
-                </div>
+                  </template>
+                </FlowTable>
               </div>
-            </div>
+              <span v-else class="d-block text-center p-4">
+                {{ $t('admin.noResults') }}
+              </span>
+            </ContentBlock>
           </div>
-          <div v-else-if="$route.query.tab === 'preferences'" class="row">
-            <div class="col-sm-12 col-md-12 col-lg-8 col-xl-6 p-4">
-              <b-card class="p-5 shadow-sm border rounded" :title="$t('admin.users.editMessage', [user.firstName + ' ' + user.lastName])">
-                <b-card-text class="border-top pt-4 mt-3">
-                  <b-form-group>
-                    <b-form-checkbox v-model="tasksCheckNotificationsDisabled">
-                      {{ $t('admin.users.preferences.notifications') }}
-                    </b-form-checkbox>
-                  </b-form-group>
-                </b-card-text>
-              </b-card>
-            </div>
+
+          <!-- Preferences Tab -->
+          <div v-else-if="$route.query.tab === 'preferences'" class="row pt-3 ps-4 pe-4">
+            <ProfilePreferencesTab></ProfilePreferencesTab>
           </div>
+
         </div>
 
         <!-- Assign Groups Modal -->
@@ -263,11 +248,13 @@ import SidebarsFlow from '@/components/common-components/SidebarsFlow.vue'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import CIBForm from '@/components/common-components/CIBForm.vue'
+import ProfilePreferencesTab from '@/components/admin/ProfilePreferencesTab.vue'
+import ContentBlock from '@/components/common-components/ContentBlock.vue'
 import { mapActions, mapGetters } from 'vuex'
 
 export default {
   name: 'ProfileUser',
-  components: { SidebarsFlow, FlowTable, SuccessAlert, CIBForm },
+  components: { SidebarsFlow, FlowTable, SuccessAlert, CIBForm, ProfilePreferencesTab, ContentBlock },
   inject: ['AuthService'],
   props: {
     editMode: {
@@ -312,14 +299,6 @@ export default {
     ...mapGetters(['tenants']),
     readOnlyUser: function() {
       return (this.$root.config.userProvider !== 'org.cibseven.webapp.auth.SevenUserProvider')
-    },
-    tasksCheckNotificationsDisabled: {
-      get: function() {
-        return localStorage.getItem('tasksCheckNotificationsDisabled') === 'true' || false
-      },
-      set: function(val) {
-        !localStorage.setItem('tasksCheckNotificationsDisabled', val)
-      }
     },
     groupFields() {
       const isSevenUser = this.$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'

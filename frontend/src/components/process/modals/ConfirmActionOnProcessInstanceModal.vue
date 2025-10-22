@@ -27,7 +27,7 @@
       <strong>{{ params?.instance?.id }}</strong>
 
       <br>{{ $t('process.startTime') }}:
-      <strong>{{ formatDate(params?.instance?.startTime) }}</strong>
+      <strong :title="formatDateForTooltips(params?.instance?.startTime)">{{ formatDate(params?.instance?.startTime) }}</strong>
 
       <br>{{ $t('process.state') }}:
       <strong>{{ params?.instance?.state }}</strong>
@@ -38,7 +38,7 @@
 
 <script>
 import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
-import { formatDate } from '@/utils/dates.js'
+import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
 
 export default {
   name: 'ConfirmActionOnProcessInstanceModal',
@@ -50,6 +50,7 @@ export default {
   },
   methods: {
     formatDate,
+    formatDateForTooltips,
     show: function(params) {
       this.params = params
       this.$refs.confirm.show()
