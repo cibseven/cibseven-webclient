@@ -19,7 +19,7 @@
 <template>
   <div>
     <b-modal ref="modal" :title="$t('process-instance.stacktrace')" size="xl" :ok-only="true">
-      <div v-if="stackTraceMessage" class="container-fluid pt-3">
+      <div v-if="stackTraceMessage" class="container-fluid p-0">
         <div class="position-relative">
           <textarea 
             ref="textarea" 
