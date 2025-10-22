@@ -166,10 +166,10 @@ export default {
     },
     tasksCheckNotificationsDisabled: {
       get: function() {
-        return localStorage.getItem('cibseven:preferences:tasksCheckNotificationsDisabled') === 'true' || false
+        return localStorage.getItem('tasksCheckNotificationsDisabled') === 'true' || false
       },
       set: function(val) {
-        localStorage.setItem('cibseven:preferences:tasksCheckNotificationsDisabled', val)
+        localStorage.setItem('tasksCheckNotificationsDisabled', val)
       }
     },
   }
