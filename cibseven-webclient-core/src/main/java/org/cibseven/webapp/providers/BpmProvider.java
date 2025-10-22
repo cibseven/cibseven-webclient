@@ -60,6 +60,7 @@ import org.cibseven.webapp.rest.model.HistoryProcessInstance;
 import org.cibseven.webapp.rest.model.ProcessStart;
 import org.cibseven.webapp.rest.model.ProcessStatistics;
 import org.cibseven.webapp.rest.model.SevenUser;
+import org.cibseven.webapp.rest.model.SevenVerifyUser;
 import org.cibseven.webapp.rest.model.StartForm;
 import org.cibseven.webapp.rest.model.Task;
 import org.cibseven.webapp.rest.model.TaskFiltering;
@@ -80,6 +81,16 @@ import jakarta.servlet.http.HttpServletRequest;
 
 public interface BpmProvider {
 	
+	/**
+	 *
+	 * @param username login user
+	 * @param password login password
+	 * @param user the calling user
+	 * @return verification
+	 * @throws SystemException
+	 */
+
+	SevenVerifyUser verifyUser(String username, String password, CIBUser user) throws SystemException;
 	/**
      * Search tasks, which contains specified filter.
      * @param filter applied in the search

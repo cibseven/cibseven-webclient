@@ -210,6 +210,7 @@ import org.cibseven.bpm.engine.rest.dto.runtime.FilterDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.FilterQueryDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.IncidentDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.IncidentQueryDto;
+import org.cibseven.bpm.engine.rest.dto.runtime.JobDefinitionPriorityDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.ProcessInstanceDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.ProcessInstanceQueryDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.ProcessInstanceSuspensionStateDto;
@@ -338,15 +339,13 @@ import jakarta.ws.rs.core.Response.Status;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class SevenDirectProvider /*
-                                  * extends SevenProviderBase implements
-                                  * BpmProvider
-                                  */ {
+public class SevenDirectProvider extends SevenProviderBase implements BpmProvider {
 
 	// TODO: used to call groupProcessStatisticsByKeyAndTenant which should be
 	// moved to some util class
-	@Autowired
-	private IProcessProvider processProvider;
+	@Autowired private IProcessProvider processProvider;
+  //decides about ldap/adfs
+	@Autowired private IUserProvider userProvider;
 
 	// direct access interface
 	private FormService formService;
@@ -360,7 +359,6 @@ public class SevenDirectProvider /*
 	private FilterService filterService;
 	private ExternalTaskService externalTaskService;
 	private DecisionService decisionService;
-	// private CaseService caseService;
 	private ProcessEngineConfiguration processEngineConfiguration;
 	private ProcessEngine processEngine;
 
@@ -417,7 +415,15 @@ public class SevenDirectProvider /*
 
 	protected static final String DEFAULT_BINARY_VALUE_TYPE = "Bytes";
 
+	public SevenDirectProvider() {
+		init(null);
+	}
+
 	public SevenDirectProvider(String engineName) {
+		init (engineName);
+	}
+
+	private void init(String engineName) {
 		if (engineName == null)
 			processEngine = org.cibseven.bpm.BpmPlatform.getDefaultProcessEngine();
 		else
@@ -433,7 +439,6 @@ public class SevenDirectProvider /*
 		filterService = processEngine.getFilterService();
 		externalTaskService = processEngine.getExternalTaskService();
 		decisionService = processEngine.getDecisionService();
-		// caseService = processEngine.getCaseService();
 		processEngineConfiguration = processEngine.getProcessEngineConfiguration();
 		objectMapper = new ObjectMapper();
 		JacksonConfigurator.configureObjectMapper(objectMapper);
@@ -450,7 +455,7 @@ public class SevenDirectProvider /*
                                                                                                                                                                                             
 */
 
-	// @Override
+	@Override
 	public Collection<Task> findTasks(String filter, CIBUser user) {
 		// TODO: method excluded in TaskService
 		Map<String, Object> filters = new HashMap<>();
@@ -462,25 +467,23 @@ public class SevenDirectProvider /*
 		}
 		return convertTasks(queryTasks(filters, user));
 	}
-	
-	// @Override
+
+	@Override
 	public Integer findTasksCount(@RequestBody Map<String, Object> filters, CIBUser user) {
-		// tested
+
 		return queryTasks(filters, user).size();
 	}
 	
-	// @Override
+	@Override
 	public Collection<Task> findTasksByProcessInstance(String processInstanceId, CIBUser user) {
-		// tested
 		TaskQuery taskQuery = taskService.createTaskQuery().processInstanceId(processInstanceId);
 		List<org.cibseven.bpm.engine.task.Task> resultList = taskQuery.initializeFormKeys().list();
 		return convertTasks(resultList);
 	}
 	
-	// @Override
+	@Override
 	public Collection<Task> findTasksByProcessInstanceAsignee(Optional<String> processInstanceId,
 			Optional<String> createdAfter, CIBUser user) {
-		// tested
 		TaskQueryDto dto = new TaskQueryDto();
 		if (createdAfter.isPresent()) {
 			dto.setCreatedAfter(objectMapper.convertValue(createdAfter.get(), Date.class));
@@ -494,9 +497,8 @@ public class SevenDirectProvider /*
 	
 	}
 	
-	// @Override
+	@Override
 	public Task findTaskById(String id, CIBUser user) {
-		// tested
 		org.cibseven.bpm.engine.task.Task result = taskService.createTaskQuery().taskId(id).initializeFormKeys()
 				.singleResult();
 		if (result == null)
@@ -504,16 +506,15 @@ public class SevenDirectProvider /*
 		return objectMapper.convertValue(TaskDto.fromEntity(result), Task.class);
 	}
 	
-	// @Override
+	@Override
 	public void update(Task task, CIBUser user) {
-		// tested
 		org.cibseven.bpm.engine.task.Task foundTask = taskService.createTaskQuery().taskId(task.getId()).initializeFormKeys()
 				.singleResult();
-	
+
 		if (foundTask == null) {
 			throw new SystemException("No matching task with id " + task.getId());
 		}
-	
+
 		foundTask.setName(task.getName());
 		foundTask.setDescription(task.getDescription());
 		foundTask.setPriority((int) task.getPriority());
@@ -535,25 +536,23 @@ public class SevenDirectProvider /*
 	
 		taskService.saveTask(foundTask);
 	}
-	
-	// @Override
+
+	@Override
 	public void setAssignee(String taskId, String assignee, CIBUser user) {
-		// tested
 		org.cibseven.bpm.engine.task.Task foundTask = getTaskById(taskId);
 		foundTask.setAssignee(assignee);
 		taskService.saveTask(foundTask);
 	}
-	
-	// @Override
+
+	@Override
 	public void submit(String taskId, CIBUser user) {
 		// only tested with task that requires variables and the throws
 		VariableMap variables = null;
 		formService.submitTaskForm(taskId, variables);
 	}
 	
-	// @Override
+	@Override
 	public void submit(Task task, List<Variable> formResult, CIBUser user) {
-		// tested
 		Map<String, VariableValueDto> variables = new HashMap<>();
 		for (Variable variable : formResult) {
 			VariableValueDto variableValueDto = convertValue(variable, VariableValueDto.class);
@@ -569,17 +568,15 @@ public class SevenDirectProvider /*
 		try {
 			VariableMap variablesMap = VariableValueDto.toMap(completeTaskDto.getVariables(), processEngine, objectMapper);
 			formService.submitTaskForm(task.getId(), variablesMap);
-	
 		} catch (AuthorizationException e) {
 			throw e;
-	
 		} catch (ProcessEngineException e) {
 			String errorMessage = String.format("Cannot submit task form %s: %s", task.getId(), e.getMessage());
 			throw new SystemException(errorMessage, e);
 		}
 	}
-	
-	// @Override
+
+	@Override
 	public Object formReference(String taskId, CIBUser user) {
 		// not tested with a task that returns startFormVariables
 		List<String> formVariables = null;
@@ -600,9 +597,8 @@ public class SevenDirectProvider /*
 	
 	}
 	
-	// @Override
+	@Override
 	public Object form(String taskId, CIBUser user) {
-		// tested
 		org.cibseven.bpm.engine.task.Task task = getTaskById(taskId);
 		FormData formData;
 		try {
@@ -671,10 +667,9 @@ public class SevenDirectProvider /*
 		return entities;
 	}
 	
-	// @Override
+	@Override
 	public Collection<Task> findTasksByFilter(TaskFiltering filters, String filterId, CIBUser user, Integer firstResult,
 			Integer maxResults) {
-		// tested
 		List<?> entities = executeFilterList(filters, filterId, user, firstResult, maxResults);
 	
 		if (entities != null && !entities.isEmpty()) {
@@ -753,16 +748,14 @@ public class SevenDirectProvider /*
 		return jsonString == null || jsonString.trim().isEmpty() || EMPTY_JSON_BODY.matcher(jsonString).matches();
 	}
 	
-	// @Override
+	@Override
 	public Integer findTasksCountByFilter(String filterId, CIBUser user, TaskFiltering filters) {
-		// tested
 		List<?> entities = executeFilterList(filters, filterId, user, null, null);
 		return entities.size();
 	}
 	
-	// @Override
+	@Override
 	public Collection<TaskHistory> findTasksByProcessInstanceHistory(String processInstanceId, CIBUser user) {
-		// tested
 		List<TaskHistory> taskHistoryList = new ArrayList<>();
 		List<HistoricTaskInstance> results = historyService.createHistoricTaskInstanceQuery()
 				.processInstanceId(processInstanceId).unlimitedList();
@@ -772,10 +765,9 @@ public class SevenDirectProvider /*
 		return taskHistoryList;
 	}
 	
-	// @Override
+	@Override
 	public Collection<TaskHistory> findTasksByDefinitionKeyHistory(String taskDefinitionKey, String processInstanceId,
 			CIBUser user) {
-		// tested
 		List<TaskHistory> taskHistoryList = new ArrayList<>();
 		List<HistoricTaskInstance> results = historyService.createHistoricTaskInstanceQuery()
 				.taskDefinitionKey(taskDefinitionKey).processInstanceId(processInstanceId).unlimitedList();
@@ -785,9 +777,8 @@ public class SevenDirectProvider /*
 		return taskHistoryList;
 	}
 	
-	// @Override
+	@Override
 	public Collection<Task> findTasksPost(Map<String, Object> data, CIBUser user) throws SystemException {
-		// tested
 		TaskQueryDto queryDto = objectMapper.convertValue(data, TaskQueryDto.class);
 		queryDto.setObjectMapper(objectMapper);
 		TaskQuery query = queryDto.toQuery(processEngine);
@@ -809,9 +800,8 @@ public class SevenDirectProvider /*
 		return resultTasks;
 	}
 	
-	// @Override
+	@Override
 	public Collection<IdentityLink> findIdentityLink(String taskId, Optional<String> type, CIBUser user) {
-		// tested
 		List<org.cibseven.bpm.engine.task.IdentityLink> identityLinks = taskService.getIdentityLinksForTask(taskId);
 	
 		Collection<IdentityLink> result = new ArrayList<>();
@@ -823,9 +813,8 @@ public class SevenDirectProvider /*
 		return result;
 	}
 	
-	// @Override
+	@Override
 	public void createIdentityLink(String taskId, Map<String, Object> data, CIBUser user) {
-		// tested
 		String userId = (String) data.get("userId");
 		String groupId = (String) data.get("groupId");
 		if (userId != null && groupId != null) {
@@ -844,9 +833,8 @@ public class SevenDirectProvider /*
 		}
 	}
 	
-	// @Override
+	@Override
 	public void deleteIdentityLink(String taskId, Map<String, Object> data, CIBUser user) {
-		// tested
 		String userId = (String) data.get("userId");
 		String groupId = (String) data.get("groupId");
 		if (userId != null && groupId != null) {
@@ -866,9 +854,8 @@ public class SevenDirectProvider /*
 	
 	}
 	
-	// @Override
+	@Override
 	public void handleBpmnError(String taskId, Map<String, Object> data, CIBUser user) throws SystemException {
-		// TODO: not tested
 		TaskBpmnErrorDto dto = objectMapper.convertValue(data, TaskBpmnErrorDto.class);
 		try {
 			taskService.handleBpmnError(taskId, dto.getErrorCode(), dto.getErrorMessage(),
@@ -880,9 +867,8 @@ public class SevenDirectProvider /*
 		}
 	}
 	
-	// @Override
+	@Override
 	public Collection<TaskHistory> findTasksByTaskIdHistory(String taskId, CIBUser user) {
-		// tested
 		List<TaskHistory> taskHistoryList = new ArrayList<>();
 		List<HistoricTaskInstance> results = historyService.createHistoricTaskInstanceQuery().taskId(taskId).unlimitedList();
 		for (HistoricTaskInstance result : results) {
@@ -891,24 +877,23 @@ public class SevenDirectProvider /*
 		return taskHistoryList;
 	}
 	
-	// @Override
+	@Override
 	public ResponseEntity<byte[]> getDeployedForm(String taskId, CIBUser user) {
-		// tested
 		InputStream form = formService.getDeployedTaskForm(taskId);
-		try {
-			byte[] bytes = IOUtils.toByteArray(form);
-			ResponseEntity<byte[]> responseEntity = new ResponseEntity<>(bytes, HttpStatusCode.valueOf(200));
-			return responseEntity;
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		if (form != null) {
+			try {
+				byte[] bytes = IOUtils.toByteArray(form);
+				ResponseEntity<byte[]> responseEntity = new ResponseEntity<>(bytes, HttpStatusCode.valueOf(200));
+				return responseEntity;
+			} catch (IOException e) {
+				throw new SystemException(e.getMessage());
+			}
 		}
 		return new ResponseEntity<byte[]>(HttpStatusCode.valueOf(422));
 	}
 	
-	// @Override
+	@Override
 	public Integer findHistoryTasksCount(Map<String, Object> filters, CIBUser user) {
-		// tested
 		HistoricTaskInstanceQueryDto queryDto = objectMapper.convertValue(filters, HistoricTaskInstanceQueryDto.class);
 		queryDto.setObjectMapper(objectMapper);
 		HistoricTaskInstanceQuery query = queryDto.toQuery(processEngine);
@@ -917,9 +902,8 @@ public class SevenDirectProvider /*
 		return (int) count;
 	}
 	
-	// @Override
+	@Override
 	public Collection<CandidateGroupTaskCount> getTaskCountByCandidateGroup(CIBUser user) {
-		// tested
 		TaskCountByCandidateGroupResultDto reportDto = new TaskCountByCandidateGroupResultDto();
 		List<TaskCountByCandidateGroupResult> results = reportDto.executeTaskCountByCandidateGroupReport(processEngine);
 		Collection<CandidateGroupTaskCount> resultTaskCount = new ArrayList<>();
@@ -959,9 +943,8 @@ public class SevenDirectProvider /*
                                                                                                                             
 */
 
-	// @Override
+	@Override
 	public Collection<Process> findProcesses(CIBUser user) {
-		// tested
 		MultivaluedMap<String, String> queryParameters = new MultivaluedHashMap<>();
 		// ProcessProvider adds: "?latestVersion=true&sortBy=name&sortOrder=desc";"
 		queryParameters.add("latestVersion", "true");
@@ -980,21 +963,19 @@ public class SevenDirectProvider /*
 		return processes;
 	}
 	
-	// @Override
+	@Override
 	public Collection<Process> findProcessesWithInfo(CIBUser user) {
-		// tested
 		Map<String, Object> queryParams = new HashMap<>();
 		queryParams.put("failedJobs", true);
 		queryParams.put("incidents", true);
 		Collection<ProcessStatistics> statisticsCollection = getProcessStatistics(queryParams, user);
-		// tested
 		// Group by key and tenant ID to consolidate different versions
 		List<ProcessStatistics> groupedStatistics = processProvider
 				.groupProcessStatisticsByKeyAndTenant(statisticsCollection);
 		// Build Process objects directly from grouped ProcessStatistics
 		return groupedStatistics.stream().map(stats -> {
 			Process process = convertValue(stats.getDefinition(), Process.class);
-	
+
 			// Set aggregated statistics data
 			process.setRunningInstances(stats.getInstances());
 			// Calculate total incidents from all incident types
@@ -1008,19 +989,19 @@ public class SevenDirectProvider /*
 																											// instances for now
 			process.setCompletedInstances(0L); // Would need separate call to get
 																					// completed instances
-	
+
 			return process;
 		}).collect(Collectors.toList());
-	
+
 	}
-	
+
 	public Collection<ProcessStatistics> getProcessStatistics(Map<String, Object> queryParams, CIBUser user) {
-		// tested
-		Boolean includeIncidents = Boolean.valueOf((String) queryParams.get("incidents"));
-		;
+		Boolean includeIncidents = getBooleanValueFromObject(queryParams.get("incidents"));
+
 		String includeIncidentsForType = (String) queryParams.get("incidentsForType");
-		Boolean includeRootIncidents = Boolean.valueOf((String) queryParams.get("rootIncidents"));
-		Boolean includeFailedJobs = Boolean.valueOf((String) queryParams.get("failedJobs"));
+		Boolean includeRootIncidents = getBooleanValueFromObject(queryParams.get("rootIncidents"));
+		
+		Boolean includeFailedJobs = getBooleanValueFromObject(queryParams.get("failedJobs"));
 		if (includeIncidents != null && includeIncidents.booleanValue() && includeIncidentsForType != null
 				&& !includeIncidentsForType.isBlank()) {
 			throw new SystemException(
@@ -1062,9 +1043,11 @@ public class SevenDirectProvider /*
 		return processStatistics;
 	}
 	
-	// @Override
+	private Boolean getBooleanValueFromObject(Object value) {
+		return objectMapper.convertValue(value, Boolean.class);
+	}
+	@Override
 	public Collection<Process> findProcessesWithFilters(String filters, CIBUser user) {
-		// tested
 		Map<String, String> filterMap = new HashMap<>();
 		String[] splitFilter = filters.split("&");
 		for (String params : splitFilter) {
@@ -1095,9 +1078,8 @@ public class SevenDirectProvider /*
 		return query.count();
 	}
 	
-	// @Override
+	@Override
 	public Process findProcessByDefinitionKey(String key, String tenantId, CIBUser user) {
-		// tested
 		ProcessDefinitionQuery query = repositoryService.createProcessDefinitionQuery().processDefinitionKey(key)
 				.latestVersion();
 		if (tenantId != null)
@@ -1115,7 +1097,7 @@ public class SevenDirectProvider /*
 		return process;
 	}
 	
-	// @Override
+	@Override
 	public Collection<Process> findProcessVersionsByDefinitionKey(String key, String tenantId, Optional<Boolean> lazyLoad,
 			CIBUser user) {
 		// returns same array but in different order
@@ -1167,9 +1149,8 @@ public class SevenDirectProvider /*
 		return processes;
 	}
 	
-	// @Override
+	@Override
 	public Process findProcessById(String id, Optional<Boolean> extraInfo, CIBUser user) throws SystemException {
-		// tested
 		ProcessDefinition definition;
 		try {
 			definition = repositoryService.getProcessDefinition(id);
@@ -1198,9 +1179,8 @@ public class SevenDirectProvider /*
 		return process;
 	}
 	
-	// @Override
+	@Override
 	public Collection<ProcessInstance> findProcessesInstances(String key, CIBUser user) {
-		// tested
 		List<ProcessInstance> result = new ArrayList<>();
 		List<org.cibseven.bpm.engine.runtime.ProcessInstance> instances = runtimeService.createProcessInstanceQuery()
 				.processDefinitionKey(key).list();
@@ -1213,9 +1193,8 @@ public class SevenDirectProvider /*
 		return result;
 	}
 	
-	// @Override
+	@Override
 	public ProcessDiagram fetchDiagram(String id, CIBUser user) {
-		// tested
 		InputStream processModelIn = null;
 		try {
 			processModelIn = repositoryService.getProcessModel(id);
@@ -1235,9 +1214,8 @@ public class SevenDirectProvider /*
 		}
 	}
 	
-	// @Override
+	@Override
 	public StartForm fetchStartForm(String processDefinitionId, CIBUser user) {
-		// tested
 		final StartFormData formData;
 		try {
 			formData = formService.getStartFormData(processDefinitionId);
@@ -1257,26 +1235,24 @@ public class SevenDirectProvider /*
 		return convertValue(dto, StartForm.class);
 	}
 	
-	// @Override
+	@Override
 	public Data downloadBpmn(String id, String fileName, CIBUser user) {
-		// tested
+
 		ProcessDiagram diagram = fetchDiagram(id, user);
 		ByteArrayResource resource = new ByteArrayResource(diagram.getBpmn20Xml().getBytes());
 		return new Data(fileName, "application/bpmn+xml", resource, resource.contentLength());
 	}
 	
-	// @Override
+	@Override
 	public void suspendProcessInstance(String processInstanceId, Boolean suspend, CIBUser user) {
-		// tested
 		ProcessInstanceSuspensionStateDto processInstanceSuspensionStateDto = new ProcessInstanceSuspensionStateDto();
 		processInstanceSuspensionStateDto.setProcessInstanceIds(Arrays.asList(processInstanceId));
 		processInstanceSuspensionStateDto.setSuspended(suspend);
 		processInstanceSuspensionStateDto.updateSuspensionState(processEngine);
 	}
 	
-	// @Override
+	@Override
 	public void deleteProcessInstance(String processInstanceId, CIBUser user) {
-		// tested
 		try {
 			runtimeService.deleteProcessInstance(processInstanceId, null);
 		} catch (BadUserRequestException e) {
@@ -1284,10 +1260,10 @@ public class SevenDirectProvider /*
 		}
 	}
 	
-	// @Override
+	@Override
 	public void suspendProcessDefinition(String processDefinitionId, Boolean suspend, Boolean includeProcessInstances,
 			String executionDate, CIBUser user) {
-		// tested
+
 		ProcessDefinitionSuspensionStateDto dto = new ProcessDefinitionSuspensionStateDto();
 		dto.setProcessDefinitionId(processDefinitionId);
 		dto.setSuspended(suspend);
@@ -1305,10 +1281,9 @@ public class SevenDirectProvider /*
 		}
 	}
 	
-	// @Override
+	@Override
 	public ProcessStart startProcess(String processDefinitionKey, String tenantId, Map<String, Object> data, CIBUser user)
 			throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
-		// tested
 		ProcessDefinitionQuery processDefinitionQuery = repositoryService.createProcessDefinitionQuery()
 				.processDefinitionKey(processDefinitionKey);
 		if (tenantId != null)
@@ -1348,17 +1323,12 @@ public class SevenDirectProvider /*
 				result = ProcessInstanceDto.fromProcessInstance(processInstanceWithVariables);
 			}
 	
-			// creates something like
-			// http://localhost:8080/engine-rest/process-instance/804e094c-9f90-11f0-89f5-4ce1734f67af
-			// getEngineRestUrl() will be a base class function once this instance is
-			// ready
-			String url = /* getEngineRestUrl() */ "http://localhost:8080/engine-rest" + "/process-instance/" + result.getId();
+			String url = getEngineRestUrl() + "/process-instance/" + result.getId();
 			try {
 				URI uri = new URI(url);
 				result.addReflexiveLink(uri, HttpMethod.GET, "self");
 			} catch (URISyntaxException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				throw new SystemException(e.getMessage());
 			}
 	
 			ProcessStart processStart = convertValue(result, ProcessStart.class);
@@ -1386,10 +1356,9 @@ public class SevenDirectProvider /*
 		return instantiationBuilder.executeWithVariablesInReturn(dto.isSkipCustomListeners(), dto.isSkipIoMappings());
 	}
 	
-	// @Override
+	@Override
 	public ProcessStart submitForm(String processDefinitionKey, String tenantId, Map<String, Object> data, CIBUser user)
 			throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
-		// tested
 		ProcessDefinitionQuery query = processEngine.getRepositoryService().createProcessDefinitionQuery()
 				.processDefinitionKey(processDefinitionKey);
 		if (tenantId != null)
@@ -1431,8 +1400,7 @@ public class SevenDirectProvider /*
 	
 			ProcessInstanceDto result = ProcessInstanceDto.fromProcessInstance(instance);
 	
-			// TODO: getEngineRestUrl() will be a base class method after completion
-			UriComponentsBuilder builder = UriComponentsBuilder.fromUriString("http://localhost:8080");// getEngineRestUrl());
+			UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(getEngineRestUrl());
 			URI uri = builder.path("/")// relativeRootResourcePath)
 					.path("/process-instance")// ProcessInstanceRestService.PATH)
 					.path(instance.getId()).build().toUri();
@@ -1444,10 +1412,9 @@ public class SevenDirectProvider /*
 		}
 	}
 	
-	// @Override
+	@Override
 	public Collection<ProcessStatistics> findProcessStatistics(String processId, CIBUser user)
 			throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
-		// tested
 		ActivityStatisticsQuery query = managementService.createActivityStatisticsQuery(processId);
 		List<ActivityStatistics> queryResults = query.unlimitedList();
 	
@@ -1459,10 +1426,9 @@ public class SevenDirectProvider /*
 		return processStatistics;
 	}
 	
-	// @Override
+	@Override
 	public Collection<HistoryProcessInstance> findProcessesInstancesHistory(Map<String, Object> filters,
 			Optional<Integer> firstResult, Optional<Integer> maxResults, CIBUser user) {
-		// tested
 		Boolean fetchIncidents = (Boolean) filters.get("fetchIncidents");
 		if (fetchIncidents != null) {
 			filters.remove("fetchIncidents");
@@ -1527,10 +1493,9 @@ public class SevenDirectProvider /*
 	
 	}
 	
-	// @Override
+	@Override
 	public Collection<HistoryProcessInstance> findProcessesInstancesHistory(String key, Optional<Boolean> active,
 			Integer firstResult, Integer maxResults, CIBUser user) {
-		// tested
 		HistoricProcessInstanceQueryDto historicProcessInstanceQueryDto = new HistoricProcessInstanceQueryDto();
 		// historicProcessInstanceQueryDto.setProcessDefinitionId(id);
 		historicProcessInstanceQueryDto.setProcessDefinitionKey(key);
@@ -1539,10 +1504,9 @@ public class SevenDirectProvider /*
 		return queryHistoryProcessInstances(historicProcessInstanceQueryDto, firstResult, maxResults);
 	}
 	
-	// @Override
+	@Override
 	public Collection<HistoryProcessInstance> findProcessesInstancesHistoryById(String id, Optional<String> activityId,
 			Optional<Boolean> active, Integer firstResult, Integer maxResults, String text, CIBUser user) {
-		// tested only with invalid "text"
 		HistoricProcessInstanceQueryDto historicProcessInstanceQueryDto = new HistoricProcessInstanceQueryDto();
 		historicProcessInstanceQueryDto.setProcessDefinitionId(id);
 		if (activityId.isPresent())
@@ -1577,11 +1541,10 @@ public class SevenDirectProvider /*
 		return HistoryProcessInstanceResults;
 	}
 	
-	// @Override
+	@Override
 	public Long countProcessesInstancesHistory(Map<String, Object> filters, CIBUser user) {
 		HistoricProcessInstanceQueryDto historicProcessInstanceQueryDto = objectMapper.convertValue(filters,
 				HistoricProcessInstanceQueryDto.class);
-		// tested
 		historicProcessInstanceQueryDto.setObjectMapper(objectMapper);
 		HistoricProcessInstanceQuery query = historicProcessInstanceQueryDto.toQuery(processEngine);
 	
@@ -1589,9 +1552,8 @@ public class SevenDirectProvider /*
 		return count;
 	}
 	
-	// @Override
+	@Override
 	public ProcessInstance findProcessInstance(String processInstanceId, CIBUser user) {
-		// tested
 		org.cibseven.bpm.engine.runtime.ProcessInstance instance = runtimeService.createProcessInstanceQuery()
 				.processInstanceId(processInstanceId).singleResult();
 		if (instance == null) {
@@ -1602,10 +1564,9 @@ public class SevenDirectProvider /*
 		return convertValue(result, ProcessInstance.class);
 	}
 	
-	// @Override
+	@Override
 	public Variable fetchProcessInstanceVariable(String processInstanceId, String variableName, boolean deserializeValue,
 			CIBUser user) throws SystemException {
-		// tested
 		VariableInstanceQueryDto queryDto = new VariableInstanceQueryDto();
 		queryDto.setProcessInstanceIdIn(new String[] { processInstanceId });
 		queryDto.setVariableName(variableName);
@@ -1629,9 +1590,8 @@ public class SevenDirectProvider /*
 	
 	}
 	
-	// @Override
+	@Override
 	public HistoryProcessInstance findHistoryProcessInstanceHistory(String processInstanceId, CIBUser user) {
-		// tested
 		HistoricProcessInstance instance = historyService.createHistoricProcessInstanceQuery()
 				.processInstanceId(processInstanceId).singleResult();
 		if (instance == null) {
@@ -1644,7 +1604,7 @@ public class SevenDirectProvider /*
 		return historyProcessInstance;
 	}
 	
-	// @Override
+	@Override
 	public Collection<Process> findCalledProcessDefinitions(String processDefinitionId, CIBUser user) {
 		// tested without result count
 		try {
@@ -1665,7 +1625,7 @@ public class SevenDirectProvider /*
 		return objectMapper.convertValue(filterDtoMap, Process.class);
 	}
 	
-	// @Override
+	@Override
 	public ResponseEntity<byte[]> getDeployedStartForm(String processDefinitionId, CIBUser user) {
 		// TODO: only tested with ids that result in error:
 		// "One of the attributes 'formKey' and 'camunda:formRef' must be supplied but
@@ -1689,16 +1649,14 @@ public class SevenDirectProvider /*
 		}
 	}
 	
-	// @Override
+	@Override
 	public void updateHistoryTimeToLive(String id, Map<String, Object> data, CIBUser user) {
-		// tested
 		HistoryTimeToLiveDto historyTimeToLiveDto = objectMapper.convertValue(data, HistoryTimeToLiveDto.class);
 		repositoryService.updateProcessDefinitionHistoryTimeToLive(id, historyTimeToLiveDto.getHistoryTimeToLive());
 	}
 	
-	// @Override
+	@Override
 	public void deleteProcessInstanceFromHistory(String id, CIBUser user) {
-		// tested
 		try {
 			historyService.deleteHistoricProcessInstance(id);
 		} catch (BadUserRequestException e) {
@@ -1706,9 +1664,8 @@ public class SevenDirectProvider /*
 		}
 	}
 	
-	// @Override
+	@Override
 	public void deleteProcessDefinition(String id, Optional<Boolean> cascade, CIBUser user) {
-		// tested
 		boolean cascadeVal = cascade.orElse(true);
 		try {
 			repositoryService.deleteProcessDefinition(id, cascadeVal);
@@ -1717,10 +1674,9 @@ public class SevenDirectProvider /*
 		}
 	}
 	
-	// @Override
+	@Override
 	public Collection<ProcessInstance> findCurrentProcessesInstances(Map<String, Object> data, CIBUser user)
 			throws SystemException {
-		// tested
 		ProcessInstanceQueryDto queryDto = objectMapper.convertValue(data, ProcessInstanceQueryDto.class);
 		queryDto.setObjectMapper(objectMapper);
 		ProcessInstanceQuery query = queryDto.toQuery(processEngine);
@@ -1735,7 +1691,7 @@ public class SevenDirectProvider /*
 		return instanceResults;
 	}
 	
-	// @Override
+	@Override
 	public Object fetchHistoricActivityStatistics(String id, Map<String, Object> params, CIBUser user) {
 		// TODO: returns different object array
 		MultivaluedMap<String, String> queryParams = new MultivaluedHashMap<>();
@@ -1764,9 +1720,8 @@ public class SevenDirectProvider /*
                                                                                                                                                                               
 */
 
-	// @Override
+	@Override
 	public Collection<Filter> findFilters(CIBUser user) {
-		// tested
 		FilterQueryDto filterQueryDto = new FilterQueryDto();
 		filterQueryDto.setResourceType("Task");
 		FilterQuery query = filterQueryDto.toQuery(processEngine);
@@ -1785,9 +1740,8 @@ public class SevenDirectProvider /*
 		return filters;
 	}
 	
-	// @Override
+	@Override
 	public Filter createFilter(Filter filter, CIBUser user) {
-		// tested
 		FilterDto filterDto = convertValue(filter, FilterDto.class);
 		String resourceType = filterDto.getResourceType();
 	
@@ -1810,9 +1764,8 @@ public class SevenDirectProvider /*
 		return resultFilter;
 	}
 	
-	// @Override
+	@Override
 	public void updateFilter(Filter filter, CIBUser user) {
-		// tested
 		FilterDto filterDto = convertValue(filter, FilterDto.class);
 		org.cibseven.bpm.engine.filter.Filter dbFilter = filterService.getFilter(filter.getId());
 	
@@ -1828,9 +1781,8 @@ public class SevenDirectProvider /*
 		filterService.saveFilter(dbFilter);
 	}
 	
-	// @Override
+	@Override
 	public void deleteFilter(String filterId, CIBUser user) {
-		// tested
 		try {
 			filterService.deleteFilter(filterId);
 		} catch (NullValueException e) {
@@ -1848,7 +1800,7 @@ public class SevenDirectProvider /*
                                                                                                                                                                                                                                                                                                            
 */
 
-	// @Override
+	@Override
 	public Deployment deployBpmn(MultiValueMap<String, Object> data, MultiValueMap<String, MultipartFile> file,
 			CIBUser user) throws SystemException {
 		// TODO: not tested
@@ -1868,8 +1820,7 @@ public class SevenDirectProvider /*
 	
 			DeploymentWithDefinitionsDto deploymentDto = DeploymentWithDefinitionsDto.fromDeployment(deployment);
 	
-			// TODO: getEngineRestUrl() will be a base class method after completion
-			UriComponentsBuilder builder = UriComponentsBuilder.fromUriString("http://localhost:8080");// getEngineRestUrl());
+			UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(getEngineRestUrl());
 			URI uri = builder.path("/")// relativeRootResourcePath)
 					.path("/deployment")// DeploymentRestService.PATH)
 					.path(deployment.getId()).build().toUri();
@@ -1883,7 +1834,6 @@ public class SevenDirectProvider /*
 		}
 	}
 	
-	// TODO: change interface to use MultiValueMap<String, Object> instead of
 	// MultipartFormData
 	private DeploymentBuilder extractDeploymentInformation(MultipartFormData payload) {
 		// TODO: not tested
@@ -1930,7 +1880,6 @@ public class SevenDirectProvider /*
 	}
 	
 	private void extractDuplicateFilteringForDeployment(MultipartFormData payload, DeploymentBuilder deploymentBuilder) {
-		// TODO: not tested
 		boolean enableDuplicateFiltering = false;
 		boolean deployChangedOnly = false;
 	
@@ -1952,9 +1901,8 @@ public class SevenDirectProvider /*
 		}
 	}
 	
-	// @Override
+	@Override
 	public Long countDeployments(CIBUser user, String nameLike) {
-		// tested
 		MultivaluedMap<String, String> queryParams = new MultivaluedHashMap<>();
 		if (nameLike != null && !nameLike.isEmpty()) {
 			queryParams.putSingle("nameLike", nameLike);
@@ -1966,10 +1914,9 @@ public class SevenDirectProvider /*
 		return query.count();
 	}
 	
-	// @Override
+	@Override
 	public Collection<Deployment> findDeployments(CIBUser user, String nameLike, int firstResult, int maxResults,
 			String sortBy, String sortOrder) {
-		// tested
 		MultivaluedMap<String, String> queryParams = new MultivaluedHashMap<>();
 		queryParams.putSingle("sortBy", sortBy);
 		queryParams.putSingle("sortOrder", sortOrder);
@@ -1989,9 +1936,8 @@ public class SevenDirectProvider /*
 		return deployments;
 	}
 	
-	// @Override
+	@Override
 	public Deployment findDeployment(String deploymentId, CIBUser user) {
-		// tested
 		org.cibseven.bpm.engine.repository.Deployment deployment = repositoryService.createDeploymentQuery()
 				.deploymentId(deploymentId).singleResult();
 		if (deployment == null) {
@@ -2001,9 +1947,8 @@ public class SevenDirectProvider /*
 		return convertValue(DeploymentDto.fromDeployment(deployment), Deployment.class);
 	}
 	
-	// @Override
+	@Override
 	public Collection<DeploymentResource> findDeploymentResources(String deploymentId, CIBUser user) {
-		// tested
 		List<Resource> resources = repositoryService.getDeploymentResources(deploymentId);
 	
 		List<DeploymentResource> deploymentResources = new ArrayList<DeploymentResource>();
@@ -2018,10 +1963,9 @@ public class SevenDirectProvider /*
 		}
 	}
 	
-	// @Override
+	@Override
 	public Data fetchDataFromDeploymentResource(HttpServletRequest rq, String deploymentId, String resourceId,
 			String fileName) {
-		// tested
 		InputStream resourceAsStream = repositoryService.getResourceAsStreamById(deploymentId, resourceId);
 		if (resourceAsStream != null) {
 			DeploymentResourceDto resource = getDeploymentResource(resourceId, deploymentId);
@@ -2099,9 +2043,8 @@ public class SevenDirectProvider /*
 		}
 	}
 	
-	// @Override
+	@Override
 	public void deleteDeployment(String deploymentId, Boolean cascade, CIBUser user) throws SystemException {
-		// tested
 		org.cibseven.bpm.engine.repository.Deployment deployment = repositoryService.createDeploymentQuery()
 				.deploymentId(deploymentId).singleResult();
 		if (deployment == null) {
@@ -2124,9 +2067,8 @@ public class SevenDirectProvider /*
                                                                                                                             
 */
 
-	// @Override
+	@Override
 	public ActivityInstance findActivityInstance(String processInstanceId, CIBUser user) {
-		// tested
 		org.cibseven.bpm.engine.runtime.ActivityInstance activityInstance = null;
 		try {
 			activityInstance = runtimeService.getActivityInstance(processInstanceId);
@@ -2144,18 +2086,16 @@ public class SevenDirectProvider /*
 		return convertValue(result, ActivityInstance.class);
 	}
 	
-	// @Override
+	@Override
 	public List<ActivityInstanceHistory> findActivitiesInstancesHistory(Map<String, Object> queryParams, CIBUser user) {
-		// TODO: not tested
 		HistoricActivityInstanceQueryDto queryHistoricActivityInstanceDto = objectMapper.convertValue(queryParams,
 				HistoricActivityInstanceQueryDto.class);
 		return queryHistoricActivityInstance(queryHistoricActivityInstanceDto);
 	
 	}
 	
-	// @Override
+	@Override
 	public List<ActivityInstanceHistory> findActivitiesInstancesHistory(String processInstanceId, CIBUser user) {
-		// tested
 		HistoricActivityInstanceQueryDto queryHistoricActivityInstanceDto = new HistoricActivityInstanceQueryDto();
 		queryHistoricActivityInstanceDto.setProcessInstanceId(processInstanceId);
 		return queryHistoricActivityInstance(queryHistoricActivityInstanceDto);
@@ -2176,7 +2116,7 @@ public class SevenDirectProvider /*
 		return historicActivityInstanceResults;
 	}
 	
-	// @Override
+	@Override
 	public ActivityInstance findActivityInstances(String processInstanceId, CIBUser user) throws SystemException {
 	
 		org.cibseven.bpm.engine.runtime.ActivityInstance activityInstance = null;
@@ -2197,7 +2137,7 @@ public class SevenDirectProvider /*
 		return convertValue(result, ActivityInstance.class);
 	}
 	
-	// @Override
+	@Override
 	public List<ActivityInstanceHistory> findActivityInstanceHistory(String processInstanceId, CIBUser user)
 			throws SystemException {
 	
@@ -2206,9 +2146,8 @@ public class SevenDirectProvider /*
 		return queryHistoricActivityInstance(queryHistoricActivityInstanceDto);
 	}
 	
-	// @Override
+	@Override
 	public void deleteVariableByExecutionId(String executionId, String variableName, CIBUser user) {
-		// tested
 		try {
 			runtimeService.removeVariableLocal(executionId, variableName);
 		} catch (AuthorizationException e) {
@@ -2220,7 +2159,7 @@ public class SevenDirectProvider /*
 	
 	}
 	
-	// @Override
+	@Override
 	public void deleteVariableHistoryInstance(String id, CIBUser user) {
 		try {
 			historyService.deleteHistoricVariableInstance(id);
@@ -2239,9 +2178,9 @@ public class SevenDirectProvider /*
    ██████     ██    ██ ███████ ███████     ██      ██   ██  ██████    ████   ██ ██████  ███████ ██   ██ 
                                                                                                                                                                                               
 */
-	// @Override
+	@Override
 	public Collection<Message> correlateMessage(Map<String, Object> data, CIBUser user) throws SystemException {
-		// TODO: not tested
+		//tested with invalid message name, only
 		CorrelationMessageDto messageDto = objectMapper.convertValue(data, CorrelationMessageDto.class);
 		if (messageDto.getMessageName() == null) {
 			throw new SystemException("No message name supplied");
@@ -2369,9 +2308,9 @@ public class SevenDirectProvider /*
 		return builder;
 	}
 	
-	// @Override
+	@Override
 	public String findStacktrace(String jobId, CIBUser user) {
-		// TODO: not tested
+		// TODO: tested with invalid jobId
 		try {
 			String stacktrace = managementService.getJobExceptionStacktrace(jobId);
 			return stacktrace;
@@ -2382,9 +2321,9 @@ public class SevenDirectProvider /*
 		}
 	}
 	
-	// @Override
+	@Override
 	public String findExternalTaskErrorDetails(String externalTaskId, CIBUser user) {
-		// untested
+		// tested with invalid externalTaskId
 		try {
 			return externalTaskService.getExternalTaskErrorDetails(externalTaskId);
 		} catch (NotFoundException e) {
@@ -2392,9 +2331,8 @@ public class SevenDirectProvider /*
 		}
 	}
 	
-	// @Override
+	@Override
 	public String findHistoricExternalTaskErrorDetails(String externalTaskId, CIBUser user) {
-		// tested
 		try {
 			return historyService.getHistoricExternalTaskLogErrorDetails(externalTaskId);
 		} catch (AuthorizationException e) {
@@ -2404,9 +2342,8 @@ public class SevenDirectProvider /*
 		}
 	}
 	
-	// @Override
+	@Override
 	public Collection<Incident> findHistoricIncidents(Map<String, Object> params, CIBUser user) {
-		// tested
 		HistoricIncidentQueryDto queryDto = objectMapper.convertValue(params, HistoricIncidentQueryDto.class);
 		HistoricIncidentQuery query = queryDto.toQuery(processEngine);
 	
@@ -2469,9 +2406,9 @@ public class SevenDirectProvider /*
 		return null;
 	}
 	
-	// @Override
+	@Override
 	public String findHistoricStacktraceByJobId(String jobId, CIBUser user) {
-		// TODO: not tested
+		// tested with invalid jobId
 		try {
 			String stacktrace = historyService.getHistoricJobLogExceptionStacktrace(jobId);
 			return stacktrace;
@@ -2482,9 +2419,9 @@ public class SevenDirectProvider /*
 		}
 	}
 	
-	// @Override
+	@Override
 	public void retryJobById(String jobId, Map<String, Object> data, CIBUser user) {
-		// TODO: not tested
+		// tested with invalid jobId
 		RetriesDto dto = objectMapper.convertValue(data, RetriesDto.class);
 		try {
 			SetJobRetriesBuilder builder = managementService.setJobRetries(dto.getRetries()).jobId(jobId);
@@ -2499,9 +2436,9 @@ public class SevenDirectProvider /*
 		}
 	}
 	
-	// @Override
+	@Override
 	public void retryExternalTask(String externalTaskId, Map<String, Object> data, CIBUser user) {
-		// TODO: not tested
+		// tested with invalid externalTaskId
 		RetriesDto dto = objectMapper.convertValue(data, RetriesDto.class);
 		Integer retries = dto.getRetries();
 	
@@ -2516,10 +2453,10 @@ public class SevenDirectProvider /*
 		}
 	}
 	
-	// @Override
+	@Override
 	public Collection<EventSubscription> getEventSubscriptions(Optional<String> processInstanceId,
 			Optional<String> eventType, Optional<String> eventName, CIBUser user) {
-		// TODO: not tested
+		// tested without results
 		EventSubscriptionQueryDto queryDto = new EventSubscriptionQueryDto();
 		queryDto.setObjectMapper(objectMapper);
 		if (processInstanceId.isPresent())
@@ -2551,9 +2488,8 @@ public class SevenDirectProvider /*
                                                                                                     
 */
 
-	// @Override
+	@Override
 	public Authorizations getUserAuthorization(String userId, CIBUser user) {
-		// TODO: eliminate rest classes
 		AuthorizationQueryDto queryDto = new AuthorizationQueryDto();
 		queryDto.setUserIdIn(new String[] { userId });
 		queryDto.setObjectMapper(objectMapper);
@@ -2642,12 +2578,12 @@ public class SevenDirectProvider /*
 		return auths;
 	}
 	
-	// TODO: this method will be obsolete once the base class is correctly set
-	private Collection<Authorization> filterResources(Collection<Authorization> authorizations, int resourceType) {
-		Set<Integer> resourceFilter = Arrays.asList(resourceType).stream().collect(Collectors.toSet());
-		return authorizations.stream().filter(authorization -> resourceFilter.contains(authorization.getResourceType()))
-				.collect(Collectors.toList());
-	}
+//	// TODO: this method will be obsolete once the base class is correctly set
+//	private Collection<Authorization> filterResources(Collection<Authorization> authorizations, int resourceType) {
+//		Set<Integer> resourceFilter = Arrays.asList(resourceType).stream().collect(Collectors.toSet());
+//		return authorizations.stream().filter(authorization -> resourceFilter.contains(authorization.getResourceType()))
+//				.collect(Collectors.toList());
+//	}
 	
 	private Collection<Authorization> createAuthorizationCollection(
 			List<org.cibseven.bpm.engine.authorization.Authorization> userAuthorizationList) {
@@ -2682,6 +2618,7 @@ public class SevenDirectProvider /*
 		return userCollection;
 	}
 	
+	@Override
 	public SevenVerifyUser verifyUser(String username, String password, CIBUser user) throws SystemException {
 		if ((username == null || username.isBlank()) || (password == null || password.isBlank()))
 			throw new SystemException("Username and password are required");
@@ -2692,14 +2629,19 @@ public class SevenDirectProvider /*
 		return verifyUser;
 	}
 	
-	// @Override
+	@Override
 	public Collection<User> findUsers(Optional<String> id, Optional<String> firstName, Optional<String> firstNameLike,
 			Optional<String> lastName, Optional<String> lastNameLike, Optional<String> email, Optional<String> emailLike,
 			Optional<String> memberOfGroup, Optional<String> memberOfTenant, Optional<String> idIn,
 			Optional<String> firstResult, Optional<String> maxResults, Optional<String> sortBy, Optional<String> sortOrder,
 			CIBUser user) {
-		// TODO: does not work with ldap/adfsUserProvider
-		//
+		//tested without ldap/adfs
+		// TODO: how to determine user provider if the member is not available, decides about ldap/adfs
+		if (!userProvider.equals("org.cibseven.webapp.auth.SevenUserProvider")) {
+			Collection<User> result = getUsers(id, firstName, Optional.of(firstNameLike.get()), lastName, lastNameLike, email, emailLike, memberOfGroup, memberOfTenant, idIn, firstResult, maxResults, sortBy,
+					sortOrder);
+			return result;
+		}
 	
 		if (firstNameLike.isPresent()) { // javier, JAVIER, Javier
 			Collection<User> lowerCaseResult = getUsers(id, firstName, Optional.of(firstNameLike.get().toLowerCase()), lastName,
@@ -2748,7 +2690,6 @@ public class SevenDirectProvider /*
 			Optional<String> lastName, Optional<String> lastNameLike, Optional<String> email, Optional<String> emailLike,
 			Optional<String> memberOfGroup, Optional<String> memberOfTenant, Optional<String> idIn,
 			Optional<String> firstResult, Optional<String> maxResults, Optional<String> sortBy, Optional<String> sortOrder) {
-		// tested
 		// TODO: Wildcard is always set to "%"
 		final String wcard = "%";
 		UserQueryDto queryDto = new UserQueryDto();
@@ -2831,7 +2772,7 @@ public class SevenDirectProvider /*
 		return user;
 	}
 	
-	// @Override
+	@Override
 	public void createUser(NewUser user, CIBUser flowUser) throws InvalidUserIdException {
 		User profile = user.getProfile();
 		org.cibseven.bpm.engine.identity.User newUser = identityService.newUser(profile.getId());
@@ -2843,7 +2784,7 @@ public class SevenDirectProvider /*
 		identityService.saveUser(newUser);
 	}
 	
-	// @Override
+	@Override
 	public void updateUserProfile(String userId, User user, CIBUser flowUser) {
 		if (identityService.isReadOnly()) {
 			throw new SystemException("Identity service implementation is read-only.");
@@ -2892,7 +2833,7 @@ public class SevenDirectProvider /*
 	
 	// TODO: not tested, UI seems to have no function to change password without
 	// sending mails before
-	// @Override
+	@Override
 	public void updateUserCredentials(String userId, Map<String, Object> data, CIBUser user) {
 		if (identityService.isReadOnly()) {
 			throw new SystemException("Identity service implementation is read-only.");
@@ -2914,7 +2855,7 @@ public class SevenDirectProvider /*
 		identityService.saveUser(dbUser);
 	}
 	
-	// @Override
+	@Override
 	public void addMemberToGroup(String groupId, String userId, CIBUser user) {
 		if (identityService.isReadOnly()) {
 			throw new SystemException("Identity service implementation is read-only.");
@@ -2922,7 +2863,7 @@ public class SevenDirectProvider /*
 		identityService.createMembership(userId, groupId);
 	}
 	
-	// @Override
+	@Override
 	public void deleteMemberFromGroup(String groupId, String userId, CIBUser user) {
 		if (identityService.isReadOnly()) {
 			throw new SystemException("Identity service implementation is read-only.");
@@ -2930,12 +2871,12 @@ public class SevenDirectProvider /*
 		identityService.deleteMembership(userId, groupId);
 	}
 	
-	// @Override
+	@Override
 	public void deleteUser(String userId, CIBUser user) {
 		identityService.deleteUser(userId);
 	}
 	
-	// @Override
+	@Override
 	public SevenUser getUserProfile(String userId, CIBUser user) {
 		List<org.cibseven.bpm.engine.identity.User> users = identityService.createUserQuery().userId(userId).list();
 		org.cibseven.bpm.engine.identity.User identityUser = null;
@@ -2953,7 +2894,7 @@ public class SevenDirectProvider /*
 	
 	}
 	
-	// @Override
+	@Override
 	public Collection<UserGroup> findGroups(Optional<String> id, Optional<String> name, Optional<String> nameLike,
 			Optional<String> type, Optional<String> member, Optional<String> memberOfTenant, Optional<String> sortBy,
 			Optional<String> sortOrder, Optional<String> firstResult, Optional<String> maxResults, CIBUser user) {
@@ -3005,7 +2946,7 @@ public class SevenDirectProvider /*
 		return userGroup;
 	}
 	
-	// @Override
+	@Override
 	public void createGroup(UserGroup group, CIBUser user) {
 		if (identityService.isReadOnly()) {
 			throw new SystemException("Identity service implementation is read-only.");
@@ -3017,7 +2958,7 @@ public class SevenDirectProvider /*
 		identityService.saveGroup(newGroup);
 	}
 	
-	// @Override
+	@Override
 	public void updateGroup(String groupId, UserGroup group, CIBUser user) {
 		if (identityService.isReadOnly()) {
 			throw new SystemException("Identity service implementation is read-only.");
@@ -3035,7 +2976,7 @@ public class SevenDirectProvider /*
 		identityService.saveGroup(dbGroup);
 	}
 	
-	// @Override
+	@Override
 	public void deleteGroup(String groupId, CIBUser user) {
 		if (identityService.isReadOnly()) {
 			throw new SystemException("Identity service implementation is read-only.");
@@ -3043,12 +2984,11 @@ public class SevenDirectProvider /*
 		identityService.deleteGroup(groupId);
 	}
 	
-	// @Override
+	@Override
 	public Collection<Authorization> findAuthorization(Optional<String> id, Optional<String> type,
 			Optional<String> userIdIn, Optional<String> groupIdIn, Optional<String> resourceType, Optional<String> resourceId,
 			Optional<String> sortBy, Optional<String> sortOrder, Optional<String> firstResult, Optional<String> maxResults,
 			CIBUser user) {
-		// TODO: not tested
 		AuthorizationQueryDto queryDto = new AuthorizationQueryDto();
 		queryDto.setObjectMapper(objectMapper);
 		if (id.isPresent())
@@ -3092,16 +3032,10 @@ public class SevenDirectProvider /*
 		return authorizationList;
 	}
 	
-	// @Override
+	@Override
 	public ResponseEntity<Authorization> createAuthorization(Authorization authorization, CIBUser user) {
-	
-		// TODO: resulting permissions always set to ALL + selection permissions,
-		// the same happens in SevenProvider!
-		// parameters contain ALL + selected values
 		org.cibseven.bpm.engine.authorization.Authorization newAuthorization = authorizationService
 				.createNewAuthorization(authorization.getType());
-		// AuthorizationCreateDto authorizationCreateDto = new
-		// AuthorizationCreateDto();
 		newAuthorization.setGroupId(authorization.getGroupId());
 		newAuthorization.setUserId(authorization.getUserId());
 		newAuthorization.setResourceType(authorization.getResourceType());
@@ -3122,8 +3056,8 @@ public class SevenDirectProvider /*
 		resultAuthorization.setUserId(newAuthorization.getUserId());
 		return new ResponseEntity<Authorization>(resultAuthorization, HttpStatusCode.valueOf(200));
 	}
-	
-	// @Override
+
+	@Override
 	public void updateAuthorization(String authorizationId, Map<String, Object> data, CIBUser user) {
 		org.cibseven.bpm.engine.authorization.Authorization dbAuthorization = authorizationService.createAuthorizationQuery()
 				.authorizationId(authorizationId).singleResult();
@@ -3151,11 +3085,11 @@ public class SevenDirectProvider /*
 		authorizationService.saveAuthorization(dbAuthorization);
 	}
 	
-	// @Override
+	@Override
 	public void deleteAuthorization(String authorizationId, CIBUser user) {
 		authorizationService.deleteAuthorization(authorizationId);
 	}
-	
+
 	private org.cibseven.bpm.engine.task.Task getTaskById(String taskId) {
 		org.cibseven.bpm.engine.task.Task foundTask = taskService.createTaskQuery().taskId(taskId).initializeFormKeys()
 				.singleResult();
@@ -3189,17 +3123,15 @@ public class SevenDirectProvider /*
                                                                                                                               
  */
 
-	// @Override
+	@Override
 	public Long countIncident(Map<String, Object> params, CIBUser user) {
-		// TODO: not tested
 		IncidentQueryDto queryDto = objectMapper.convertValue(params, IncidentQueryDto.class);
 		IncidentQuery query = queryDto.toQuery(processEngine);
 		return query.count();
 	}
 	
-	// @Override
+	@Override
 	public Collection<Incident> findIncident(Map<String, Object> params, CIBUser user) {
-		// TODO: not tested
 		IncidentQueryDto queryDto = objectMapper.convertValue(params, IncidentQueryDto.class);
 		IncidentQuery query = queryDto.toQuery(processEngine);
 	
@@ -3249,22 +3181,22 @@ public class SevenDirectProvider /*
 	
 	}
 	
-	// @Override
+	@Override
 	public List<Incident> findIncidentByInstanceId(String processInstanceId, CIBUser user) {
 		// TODO: only tested with empty list
 		return fetchIncidents(null, null, user, processInstanceId);
 	}
 	
-	// @Override
+	@Override
 	public Collection<Incident> fetchIncidents(String processDefinitionKey, CIBUser user) {
-		// TODO: requires testing
+		// tested with invalid key
 		return fetchIncidents(processDefinitionKey, null, user, null);
 	}
 	
-	// @Override
+	@Override
 	public Collection<Incident> fetchIncidentsByInstanceAndActivityId(String processDefinitionKey, String activityId,
 			CIBUser user) {
-		// TODO: in progress
+		//called only internally
 		return fetchIncidents(processDefinitionKey, activityId, user, null);
 	}
 	
@@ -3290,9 +3222,8 @@ public class SevenDirectProvider /*
 	
 	}
 	
-	// @Override
+	@Override
 	public void setIncidentAnnotation(String incidentId, Map<String, Object> data, CIBUser user) {
-		// TODO: not tested
 		AnnotationDto annotationDto = objectMapper.convertValue(data, AnnotationDto.class);
 		runtimeService.setAnnotationForIncidentById(incidentId, annotationDto.getAnnotation());
 	}
@@ -3307,7 +3238,7 @@ public class SevenDirectProvider /*
                                                                                                                                        
 */
 
-	// @Override
+	@Override
 	public VariableInstance getVariableInstance(String id, boolean deserializeValue, CIBUser user)
 			throws SystemException, NoObjectFoundException {
 		VariableInstance variableDeserialized = getVariableInstanceImpl(id, true, user);
@@ -3324,15 +3255,6 @@ public class SevenDirectProvider /*
 			variableSerialized.setValueDeserialized(variableDeserialized.getValue());
 			return variableSerialized;
 		}
-		// result: VariableInstance(id=21e2d1fd-72b7-11f0-b970-4ce1734f67af,
-		// name=amount,
-		// processDefinitionId=ReviewInvoice:1:1e944334-72b7-11f0-b970-4ce1734f67af,
-		// processInstanceId=21e283dc-72b7-11f0-b970-4ce1734f67af,
-		// executionId=21e283dc-72b7-11f0-b970-4ce1734f67af, caseInstanceId=null,
-		// caseExecutionId=null, taskId=null, batchId=null,
-		// activityInstanceId=21e283dc-72b7-11f0-b970-4ce1734f67af, tenantId=null,
-		// errorMessage=null, value=10.99, valueSerialized=10.99,
-		// valueDeserialized=10.99, type=Double, valueInfo={})
 	}
 	
 	private VariableInstance getVariableInstanceImpl(String id, boolean deserializeValue, CIBUser user)
@@ -3363,10 +3285,9 @@ public class SevenDirectProvider /*
   ██   ██ ██ ███████    ██     ██████  ██   ██ ██  ██████       ████   ██   ██ ██   ██ ██ ██   ██ ██████  ███████ ███████     ██ ██   ████ ███████    ██    ██   ██ ██   ████  ██████ ███████     ██      ██   ██  ██████    ████   ██ ██████  ███████ ██   ██ 
                                                                                                                                                                                                                                                              
 */
-	// @Override
+	@Override
 	public VariableHistory getHistoricVariableInstance(String id, boolean deserializeValue, CIBUser user)
 			throws SystemException, NoObjectFoundException {
-		// tested
 		VariableHistory variableSerialized = getHistoricVariableInstanceImpl(id, false, user);
 		VariableHistory variableDeserialized = getHistoricVariableInstanceImpl(id, true, user);
 	
@@ -3406,9 +3327,8 @@ public class SevenDirectProvider /*
                                                                                                                                               
 */
 
-	// @Override
+	@Override
 	public Collection<ExternalTask> getExternalTasks(Map<String, Object> queryParams, CIBUser user) throws SystemException {
-		// tested
 		ExternalTaskQueryDto queryDto = objectMapper.convertValue(queryParams, ExternalTaskQueryDto.class);
 		queryDto.setObjectMapper(objectMapper);
 		ExternalTaskQuery query = queryDto.toQuery(processEngine);
@@ -3432,7 +3352,7 @@ public class SevenDirectProvider /*
                                                                                                                                        
 */
 
-	// @Override
+	@Override
 	public void modifyVariableByExecutionId(String executionId, Map<String, Object> data, CIBUser user)
 			throws SystemException {
 		// TODO: not tested
@@ -3459,7 +3379,7 @@ public class SevenDirectProvider /*
 		}
 	}
 	
-	// @Override
+	@Override
 	public void modifyVariableDataByExecutionId(String executionId, String variableName, MultipartFile data,
 			String valueType, CIBUser user) throws SystemException {
 		// TODO: in progress - binary/file part is working correctly
@@ -3549,10 +3469,9 @@ public class SevenDirectProvider /*
 		}
 	}
 	
-	// @Override
+	@Override
 	public Collection<Variable> fetchProcessInstanceVariables(String processInstanceId, Map<String, Object> data,
 			CIBUser user) throws SystemException {
-		// tested
 		data.put("processInstanceIdIn", new String[] { processInstanceId });
 		final boolean deserializeValues = data != null && data.containsKey("deserializeValues")
 				&& (Boolean) data.get("deserializeValues");
@@ -3601,7 +3520,7 @@ public class SevenDirectProvider /*
 		return instanceResults;
 	}
 	
-	// @Override
+	@Override
 	public ResponseEntity<byte[]> fetchVariableDataByExecutionId(String executionId, String variableName, CIBUser user)
 			throws NoObjectFoundException, SystemException {
 		// TODO: not tested
@@ -3643,7 +3562,7 @@ public class SevenDirectProvider /*
 		}
 	}
 	
-	// @Override
+	@Override
 	public Collection<VariableHistory> fetchProcessInstanceVariablesHistory(String processInstanceId,
 			Map<String, Object> data, CIBUser user) throws SystemException {
 		// TODO: requires further testing, escp. merging
@@ -3717,7 +3636,7 @@ public class SevenDirectProvider /*
 		return instanceResults;
 	}
 	
-	// @Override
+	@Override
 	public Collection<VariableHistory> fetchActivityVariablesHistory(String activityInstanceId, CIBUser user) {
 		// TODO: not tested
 		HistoricVariableInstanceQueryDto queryDto = new HistoricVariableInstanceQueryDto();
@@ -3745,10 +3664,10 @@ public class SevenDirectProvider /*
 		return historicVariableInstanceDtoResults;
 	}
 	
-	// @Override
+	@Override
 	public Collection<VariableHistory> fetchActivityVariables(String activityInstanceId, CIBUser user) {
 		// TODO: not tested
-		// TODO: method returns VariableHistory without acessing history data:
+		// TODO: method returns VariableHistory without accessing history data:
 		// "/variable-instance"
 		VariableInstanceQueryDto queryDto = new VariableInstanceQueryDto();
 		queryDto.setObjectMapper(objectMapper);
@@ -3761,7 +3680,7 @@ public class SevenDirectProvider /*
 		return historyVariables;
 	}
 	
-	// @Override
+	@Override
 	public ResponseEntity<byte[]> fetchHistoryVariableDataById(String id, CIBUser user)
 			throws NoObjectFoundException, SystemException {
 		// TODO: needs more testing
@@ -3777,7 +3696,7 @@ public class SevenDirectProvider /*
 		}
 	}
 	
-	// @Override
+	@Override
 	public Variable fetchVariable(String taskId, String variableName, boolean deserializeValue, CIBUser user)
 			throws NoObjectFoundException, SystemException {
 		// TODO: in progress
@@ -3797,7 +3716,6 @@ public class SevenDirectProvider /*
 	
 	private Variable fetchTaskVariableImpl(String taskId, String variableName, boolean deserializeValue, CIBUser user)
 			throws NoObjectFoundException, SystemException {
-		// TODO: not tested
 		TypedValue value = getTypedValueForTaskVariable(taskId, variableName, deserializeValue);
 		return convertValue(VariableValueDto.fromTypedValue(value), Variable.class);
 	}
@@ -3820,7 +3738,7 @@ public class SevenDirectProvider /*
 		return value;
 	}
 	
-	// @Override
+	@Override
 	public void deleteVariable(String taskId, String variableName, CIBUser user)
 			throws NoObjectFoundException, SystemException {
 		// TODO: not tested
@@ -3834,14 +3752,13 @@ public class SevenDirectProvider /*
 		}
 	}
 	
-	// @Override
+	@Override
 	public Map<String, Variable> fetchFormVariables(String taskId, boolean deserializeValues, CIBUser user)
 			throws NoObjectFoundException, SystemException {
-		// tested
 		return fetchFormVariables(null, taskId, user);
 	}
 	
-	// @Override
+	@Override
 	public Map<String, Variable> fetchFormVariables(List<String> variableListName, String taskId, CIBUser user)
 			throws NoObjectFoundException, SystemException {
 		// TODO: not tested
@@ -3854,7 +3771,7 @@ public class SevenDirectProvider /*
 		return variablesMap;
 	}
 	
-	// @Override
+	@Override
 	public Map<String, Variable> fetchProcessFormVariables(String key, CIBUser user)
 			throws NoObjectFoundException, SystemException {
 		// TODO: not tested
@@ -3883,7 +3800,7 @@ public class SevenDirectProvider /*
 		return variablesMap;
 	}
 	
-	// @Override
+	@Override
 	public NamedByteArrayDataSource fetchVariableFileData(String taskId, String variableName, CIBUser user)
 			throws NoObjectFoundException, UnexpectedTypeException, SystemException {
 		// TODO: not tested
@@ -3942,7 +3859,7 @@ public class SevenDirectProvider /*
 		}
 	}
 	
-	// @Override
+	@Override
 	public void uploadVariableFileData(String taskId, String variableName, MultipartFile data, String valueType,
 			CIBUser user) throws NoObjectFoundException, SystemException {
 		// TODO: not tested
@@ -4046,7 +3963,7 @@ public class SevenDirectProvider /*
 		return valueDto;
 	}
 	
-	// @Override
+	@Override
 	public ResponseEntity<byte[]> fetchProcessInstanceVariableData(String processInstanceId, String variableName,
 			CIBUser user) throws NoObjectFoundException, SystemException {
 		// TODO: not tested
@@ -4110,7 +4027,7 @@ public class SevenDirectProvider /*
 		return null;
 	}
 	
-	// @Override
+	@Override
 	public void uploadProcessInstanceVariableFileData(String processInstanceId, String variableName, MultipartFile data,
 			String valueType, CIBUser user) throws NoObjectFoundException, SystemException {
 		// TODO: not tested
@@ -4125,7 +4042,7 @@ public class SevenDirectProvider /*
 		}
 	}
 	
-	// @Override
+	@Override
 	public ProcessStart submitStartFormVariables(String processDefinitionId, List<Variable> formResult, CIBUser user)
 			throws SystemException {
 		// TODO: not tested
@@ -4232,23 +4149,20 @@ public class SevenDirectProvider /*
 	
 		ProcessInstanceDto processInstanceDto = ProcessInstanceDto.fromProcessInstance(instance);
 	
-		// TODO: implementation creates URL that is probably unused
-		// URI uri = context.getBaseUriBuilder()
-		// .path(rootResourcePath)
-		// .path(ProcessInstanceRestService.PATH)
-		// .path(instance.getId())
-		// .build();
-		//
-		// result.addReflexiveLink(uri, HttpMethod.GET, "self");
+		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(getEngineRestUrl());
+		URI uri = builder.path("/")
+				.path("/process-instance")
+				.path(instance.getId()).build().toUri();
+		processInstanceDto.addReflexiveLink(uri, HttpMethod.GET, "self");
 		ProcessStart result = convertValue(processInstanceDto, ProcessStart.class);
 		return result;
 	
 	}
 	
-	// @Override
+	@Override
 	public Variable fetchVariableByProcessInstanceId(String processInstanceId, String variableName, CIBUser user)
 			throws SystemException {
-		// TODO: to be implemented
+		// TODO: not tested
 		Variable variableSerialized = fetchVariableByProcessInstanceIdImpl(processInstanceId, variableName, false, user);
 		Variable variableDeserialized = fetchVariableByProcessInstanceIdImpl(processInstanceId, variableName, true, user);
 	
@@ -4276,7 +4190,7 @@ public class SevenDirectProvider /*
 		}
 	}
 	
-	// @Override
+	@Override
 	public void saveVariableInProcessInstanceId(String processInstanceId, List<Variable> variables, CIBUser user)
 			throws SystemException {
 		// TODO: not tested
@@ -4315,7 +4229,7 @@ public class SevenDirectProvider /*
 		}
 	}
 	
-	// @Override
+	@Override
 	public void submitVariables(String processInstanceId, List<Variable> formResult, CIBUser user,
 			String processDefinitionId) throws SystemException {
 		// TODO: not tested
@@ -4398,7 +4312,7 @@ public class SevenDirectProvider /*
 	
 	}
 	
-	// @Override
+	@Override
 	public Map<String, Variable> fetchProcessFormVariablesById(String id, CIBUser user) throws SystemException {
 		// TODO: not tested
 		VariableMap startFormVariables = formService.getStartFormVariables(id, null, true);
@@ -4410,9 +4324,8 @@ public class SevenDirectProvider /*
 		return resultMap;
 	}
 	
-	// @Override
+	@Override
 	public void putLocalExecutionVariable(String executionId, String varName, Map<String, Object> data, CIBUser user) {
-		// tested
 		try {
 			VariableValueDto variable = objectMapper.convertValue(data, VariableValueDto.class);
 			TypedValue typedValue = variable.toTypedValue(processEngine, objectMapper);
@@ -4430,10 +4343,9 @@ public class SevenDirectProvider /*
 		}
 	}
 	
-	// @Override
+	@Override
 	public Collection<ActivityInstanceHistory> findActivitiesProcessDefinitionHistory(String processDefinitionId,
 			Map<String, Object> params, CIBUser user) {
-		// tested
 		HistoricActivityInstanceQueryDto queryHistoricActivityInstanceDto = objectMapper.convertValue(params,
 				HistoricActivityInstanceQueryDto.class);
 		queryHistoricActivityInstanceDto.setProcessDefinitionId(processDefinitionId);
@@ -4451,9 +4363,8 @@ public class SevenDirectProvider /*
                                                                                                                                                                                                                                 
 */
 	
-	// @Override
+	@Override
 	public Collection<Decision> getDecisionDefinitionList(Map<String, Object> queryParams, CIBUser user) {
-	
 		DecisionDefinitionQueryDto queryDto = objectMapper.convertValue(queryParams, DecisionDefinitionQueryDto.class);
 		List<Decision> definitions = new ArrayList<>();
 		DecisionDefinitionQuery query = queryDto.toQuery(processEngine);
@@ -4465,7 +4376,7 @@ public class SevenDirectProvider /*
 		return definitions;
 	}
 	
-	// @Override
+	@Override
 	public Long getDecisionDefinitionListCount(Map<String, Object> queryParams, CIBUser user) {
 		// TODO: not tested
 		DecisionDefinitionQueryDto queryDto = objectMapper.convertValue(queryParams, DecisionDefinitionQueryDto.class);
@@ -4474,7 +4385,7 @@ public class SevenDirectProvider /*
 		return Long.valueOf(matchingDefinitions.size());
 	}
 	
-	// @Override
+	@Override
 	public Decision getDecisionDefinitionByKey(String key, CIBUser user) {
 		// TODO: not tested
 		DecisionDefinition decisionDefinition = getDecisionDefinitionByKeyAndTenant(key, null);
@@ -4497,13 +4408,13 @@ public class SevenDirectProvider /*
 		return decisionDefinition;
 	}
 	
-	// @Override
+	@Override
 	public Object getDiagramByKey(String key, CIBUser user) {
 		// TODO: not tested
 		return getDiagramByKeyAndTenant(key, null, user);
 	}
 	
-	// @Override
+	@Override
 	public Object evaluateDecisionDefinitionByKey(Map<String, Object> data, String key, CIBUser user) {
 		// TODO: not tested
 		EvaluateDecisionDto parameters = objectMapper.convertValue(data, EvaluateDecisionDto.class);
@@ -4551,7 +4462,7 @@ public class SevenDirectProvider /*
 		return VariableValueDto.fromMap(variableMap);
 	}
 	
-	// @Override
+	@Override
 	public void updateHistoryTTLByKey(Map<String, Object> data, String key, CIBUser user) {
 		// TODO: not tested
 		HistoryTimeToLiveDto historyTimeToLiveDto = objectMapper.convertValue(data, HistoryTimeToLiveDto.class);
@@ -4560,7 +4471,7 @@ public class SevenDirectProvider /*
 				historyTimeToLiveDto.getHistoryTimeToLive());
 	}
 	
-	// @Override
+	@Override
 	public Decision getDecisionDefinitionByKeyAndTenant(String key, String tenant, CIBUser user) {
 		// TODO: not tested
 		DecisionDefinition decisionDefinition = getDecisionDefinitionByKeyAndTenant(key, tenant);
@@ -4568,7 +4479,7 @@ public class SevenDirectProvider /*
 		return convertValue(dto, Decision.class);
 	}
 	
-	// @Override
+	@Override
 	public Object getDiagramByKeyAndTenant(String key, String tenant, CIBUser user) {
 		// TODO: not tested
 		DecisionDefinition decisionDefinition = getDecisionDefinitionByKeyAndTenant(key, tenant);
@@ -4592,27 +4503,27 @@ public class SevenDirectProvider /*
 		}
 	}
 	
-	// @Override
+	@Override
 	public Object evaluateDecisionDefinitionByKeyAndTenant(String key, String tenant, CIBUser user) {
 		// TODO: not implemented in DecisionProvider, parameter array not part of
 		// the interface as in evaluateDecisionDefinitionByKey()
 		return null;
 	}
 	
-	// @Override
+	@Override
 	public Object updateHistoryTTLByKeyAndTenant(String key, String tenant, CIBUser user) {
 		// TODO: not implemented in DecisionProvider, parameter array not part of
 		// the interface as in updateHistoryTTLByKey()
 		return null;
 	}
 	
-	// @Override
+	@Override
 	public Object getXmlByKey(String key, CIBUser user) {
 		// TODO: not tested
 		return getXmlByKeyAndTenant(key, null, user);
 	}
 	
-	// @Override
+	@Override
 	public Object getXmlByKeyAndTenant(String key, String tenant, CIBUser user) {
 		// TODO: not tested
 		DecisionDefinition decisionDefinition = getDecisionDefinitionByKeyAndTenant(key, tenant);
@@ -4635,9 +4546,8 @@ public class SevenDirectProvider /*
 		}
 	}
 	
-	// @Override
+	@Override
 	public Decision getDecisionDefinitionById(String id, Optional<Boolean> extraInfo, CIBUser user) {
-		// tested
 		DecisionDefinition definition = getDecisionDefinitionId(id, user);
 		Decision decision = convertValue(DecisionDefinitionDto.fromDecisionDefinition(definition), Decision.class);
 		if (extraInfo.isPresent() && extraInfo.get()) {
@@ -4649,7 +4559,7 @@ public class SevenDirectProvider /*
 		return decision;
 	}
 	
-	// @Override
+	@Override
 	public Object getDiagramById(String id, CIBUser user) {
 		// TODO: not tested
 		DecisionDefinition definition = getDecisionDefinitionId(id, user);
@@ -4657,7 +4567,7 @@ public class SevenDirectProvider /*
 	}
 	
 	private DecisionDefinition getDecisionDefinitionId(String id, CIBUser user) {
-		// TODO: not tested
+
 		DecisionDefinition definition = null;
 		try {
 			definition = repositoryService.getDecisionDefinition(id);
@@ -4667,7 +4577,7 @@ public class SevenDirectProvider /*
 		return definition;
 	}
 	
-	// @Override
+	@Override
 	public Object evaluateDecisionDefinitionById(String id, CIBUser user) {
 		// TODO: not implemented in DecisionProvider and parameters are missing like
 		// in evaluateDecisionDefinitionByKey()
@@ -4675,21 +4585,19 @@ public class SevenDirectProvider /*
 		return null;
 	}
 	
-	// @Override
+	@Override
 	public void updateHistoryTTLById(String id, Map<String, Object> data, CIBUser user) {
 		// TODO: not tested
 		HistoryTimeToLiveDto historyTimeToLiveDto = objectMapper.convertValue(data, HistoryTimeToLiveDto.class);
 		repositoryService.updateDecisionDefinitionHistoryTimeToLive(id, historyTimeToLiveDto.getHistoryTimeToLive());
 	}
 	
-	// @Override
+	@Override
 	public Object getXmlById(String id, CIBUser user) {
-		// tested. different representation to the SevenProvider but the frontend
-		// shows the same result
 		return getXmlByDefinitionId(id);
 	}
 	
-	// @Override
+	@Override
 	public Collection<Decision> getDecisionVersionsByKey(String key, Optional<Boolean> lazyLoad, CIBUser user) {
 		List<DecisionDefinition> decisionDefinitions = repositoryService.createDecisionDefinitionQuery()
 				.decisionDefinitionKey(key).withoutTenantId().unlimitedList();
@@ -4706,7 +4614,7 @@ public class SevenDirectProvider /*
 		return decisions;
 	}
 	
-	// @Override
+	@Override
 	public Collection<HistoricDecisionInstance> getHistoricDecisionInstances(Map<String, Object> queryParams,
 			CIBUser user) {
 		HistoricDecisionInstanceQueryDto queryHistoricDecisionInstanceDto = objectMapper.convertValue(queryParams,
@@ -4726,16 +4634,16 @@ public class SevenDirectProvider /*
 		return historicDecisionInstanceDtoResults;
 	}
 	
-	// @Override
+	@Override
 	public Long getHistoricDecisionInstanceCount(Map<String, Object> queryParams, CIBUser user) {
-		// TODO: not tested
+ 
 		HistoricDecisionInstanceQueryDto queryHistoricDecisionInstanceDto = objectMapper.convertValue(queryParams,
 				HistoricDecisionInstanceQueryDto.class);
 		HistoricDecisionInstanceQuery query = queryHistoricDecisionInstanceDto.toQuery(processEngine);
 		return query.count();
 	}
 	
-	// @Override
+	@Override
 	public HistoricDecisionInstance getHistoricDecisionInstanceById(String id, Map<String, Object> queryParams,
 			CIBUser user) {
 		// TODO: not tested
@@ -4752,7 +4660,7 @@ public class SevenDirectProvider /*
 				HistoricDecisionInstance.class);
 	}
 	
-	// @Override
+	@Override
 	public Object deleteHistoricDecisionInstances(Map<String, Object> data, CIBUser user) {
 		// TODO: not tested
 		DeleteHistoricDecisionInstancesDto dto = objectMapper.convertValue(data, DeleteHistoricDecisionInstancesDto.class);
@@ -4772,7 +4680,7 @@ public class SevenDirectProvider /*
 		}
 	}
 	
-	// @Override
+	@Override
 	public Object setHistoricDecisionInstanceRemovalTime(Map<String, Object> data, CIBUser user) {
 		// TODO: not tested
 		SetRemovalTimeToHistoricDecisionInstancesDto dto = objectMapper.convertValue(data,
@@ -4827,7 +4735,7 @@ public class SevenDirectProvider /*
                                                                                             
 */
 	
-	// @Override
+	@Override
 	public Collection<JobDefinition> findJobDefinitions(String params, CIBUser user) {
 		JobDefinitionQueryDto queryDto;
 		try {
@@ -4849,30 +4757,93 @@ public class SevenDirectProvider /*
 		return jobDefinitionResults;
 	}
 	
-	// @Override
+	@Override
 	public void suspendJobDefinition(String jobDefinitionId, String params, CIBUser user) {
-		// TODO: to be implemented
+		// TODO: not tested
+		JobDefinitionSuspensionStateDto dto = objectMapper.convertValue(params, JobDefinitionSuspensionStateDto.class);
+		try {
+			dto.setJobDefinitionId(jobDefinitionId);
+			dto.updateSuspensionState(processEngine);
+
+		} catch (IllegalArgumentException e) {
+			String message = String.format(
+					"The suspension state of Job Definition with id %s could not be updated due to: %s", jobDefinitionId,
+					e.getMessage());
+			throw new SystemException(message, e);
+		}
 	}
 	
-	// @Override
+	@Override
 	public void overrideJobDefinitionPriority(String jobDefinitionId, String params, CIBUser user) {
-		// TODO: to be implemented
+		// TODO: not tested
+		JobDefinitionPriorityDto dto = objectMapper.convertValue(params, JobDefinitionPriorityDto.class);
+		try {
+
+			if (dto.getPriority() != null) {
+				managementService.setOverridingJobPriorityForJobDefinition(jobDefinitionId, dto.getPriority(),
+						dto.isIncludeJobs());
+			} else {
+				if (dto.isIncludeJobs()) {
+					throw new InvalidRequestException(Status.BAD_REQUEST,
+							"Cannot reset priority for job definition " + jobDefinitionId + " with includeJobs=true");
+				}
+
+				managementService.clearOverridingJobPriorityForJobDefinition(jobDefinitionId);
+			}
+
+		} catch (AuthorizationException e) {
+			throw e;
+		} catch (ProcessEngineException e) {
+			throw new SystemException(e.getMessage());
+		}
 	}
 	
-	// @Override
+	@Override
 	public void retryJobDefinitionById(String id, Map<String, Object> params, CIBUser user) {
-		// TODO: to be implemented
+		// TODO: not tested
+		RetriesDto dto = objectMapper.convertValue(params, RetriesDto.class);
+		try {
+			SetJobRetriesBuilder builder = managementService.setJobRetries(dto.getRetries()).jobDefinitionId(id);
+			if (dto.isDueDateSet()) {
+				builder.dueDate(dto.getDueDate());
+			}
+			builder.execute();
+		} catch (AuthorizationException e) {
+			throw e;
+		} catch (ProcessEngineException e) {
+			throw new SystemException(e.getMessage());
+		}
 	}
 	
-	// @Override
+	@Override
 	public Collection<Job> getJobs(Map<String, Object> params, CIBUser user) {
-		// TODO: to be implemented
-		return null;
+
+		JobDefinitionQueryDto queryDto = objectMapper.convertValue(params, JobDefinitionQueryDto.class);
+		queryDto.setObjectMapper(objectMapper);
+		JobDefinitionQuery query = queryDto.toQuery(processEngine);
+		Integer firstResult = null;
+		Integer maxResults = null;
+		for (Entry<String, Object> entry : params.entrySet()) {
+			if (entry.getKey().equals("firstResult"))
+				firstResult = Integer.parseInt((String) params.get("firstResult"));
+			else if (entry.getKey().equals("maxResults"))
+				maxResults = Integer.parseInt((String) params.get("maxResults"));
+		}
+
+		List<org.cibseven.bpm.engine.management.JobDefinition> matchingJobDefinitions = QueryUtil.list(query, firstResult,
+				maxResults);
+
+		List<Job> jobDefinitionResults = new ArrayList<>();
+		for (org.cibseven.bpm.engine.management.JobDefinition jobDefinition : matchingJobDefinitions) {
+			JobDefinitionDto result = JobDefinitionDto.fromJobDefinition(jobDefinition);
+			jobDefinitionResults.add(convertValue(result, Job.class));
+		}
+		return jobDefinitionResults;
 	}
 	
-	// @Override
+	@Override
 	public void setSuspended(String id, Map<String, Object> params, CIBUser user) {
-		// TODO: in progress
+
 		JobDefinitionSuspensionStateDto jobDefinitionSuspensionStateDto = objectMapper.convertValue(params,
 				JobDefinitionSuspensionStateDto.class);
 		jobDefinitionSuspensionStateDto.setProcessDefinitionId(id);
@@ -4891,9 +4862,9 @@ public class SevenDirectProvider /*
 		}
 	}
 	
-	// @Override
+	@Override
 	public void deleteJob(String id, CIBUser user) {
-		// TODO: not tested
+		// test always excepts with "job is null"
 		try {
 			managementService.deleteJob(id);
 		} catch (AuthorizationException e) {
@@ -4903,9 +4874,9 @@ public class SevenDirectProvider /*
 		}
 	}
 	
-	// @Override
+	@Override
 	public JobDefinition findJobDefinition(String id, CIBUser user) {
-		// TODO: not tested
+
 		org.cibseven.bpm.engine.management.JobDefinition jobDefinition = managementService.createJobDefinitionQuery()
 				.jobDefinitionId(id).singleResult();
 		if (jobDefinition == null) {
@@ -4914,14 +4885,22 @@ public class SevenDirectProvider /*
 		return convertValue(JobDefinitionDto.fromJobDefinition(jobDefinition), JobDefinition.class);
 	}
 	
-	// @Override
+	@Override
 	public Collection<Object> getHistoryJobLog(Map<String, Object> params, CIBUser user) {
-		// TODO: not tested
+
 		HistoricJobLogQueryDto queryDto = objectMapper.convertValue(params, HistoricJobLogQueryDto.class);
 		queryDto.setObjectMapper(objectMapper);
 		HistoricJobLogQuery query = queryDto.toQuery(processEngine);
-		List<HistoricJobLog> matchingHistoricJobLogs = QueryUtil.list(query, null, null);
-	
+		Integer firstResult = null;
+		Integer maxResults = null;
+		for (Entry<String, Object> entry : params.entrySet()) {
+			if (entry.getKey().equals("firstResult"))
+				firstResult = Integer.parseInt((String) params.get("firstResult"));
+			else if (entry.getKey().equals("maxResults"))
+				maxResults = Integer.parseInt((String) params.get("maxResults"));
+		}
+		List<HistoricJobLog> matchingHistoricJobLogs = QueryUtil.list(query, firstResult, maxResults);
+
 		List<Object> results = new ArrayList<>();
 		for (HistoricJobLog historicJobLog : matchingHistoricJobLogs) {
 			HistoricJobLogDto result = HistoricJobLogDto.fromHistoricJobLog(historicJobLog);
@@ -4930,9 +4909,9 @@ public class SevenDirectProvider /*
 		return results;
 	}
 	
-	// @Override
+	@Override
 	public String getHistoryJobLogStacktrace(String id, CIBUser user) {
-		// TODO: not tested
+
 		try {
 			String stacktrace = historyService.getHistoricJobLogExceptionStacktrace(id);
 			return stacktrace;
@@ -4962,9 +4941,8 @@ public class SevenDirectProvider /*
                                                                                                                                                                                               
 */
 	
-	// @Override
+	@Override
 	public Collection<Batch> getBatches(Map<String, Object> params, CIBUser user) {
-		// tested
 		MultivaluedMap<String, String> multiValueMap = new MultivaluedHashMap<>();
 		Integer firstResult = null;
 		Integer maxResults = null;
@@ -5003,9 +4981,8 @@ public class SevenDirectProvider /*
 		return batchResults;
 	}
 	
-	// @Override
+	@Override
 	public Collection<Batch> getBatchStatistics(Map<String, Object> params, CIBUser user) {
-		// tested
 		MultivaluedMap<String, String> multiValueMap = new MultivaluedHashMap<>();
 		Integer firstResult = null;
 		Integer maxResults = null;
@@ -5030,9 +5007,8 @@ public class SevenDirectProvider /*
 		return statisticsResults;
 	}
 	
-	// @Override
+	@Override
 	public void deleteBatch(String id, Map<String, Object> params, CIBUser user) {
-		// tested
 		Boolean cascade = false;
 		if (params.containsKey("cascade"))
 			cascade = params.get("cascade").equals("true");
@@ -5043,9 +5019,8 @@ public class SevenDirectProvider /*
 		}
 	}
 	
-	// @Override
+	@Override
 	public void setBatchSuspensionState(String id, Map<String, Object> params, CIBUser user) {
-		// tested
 		Boolean suspended = false;
 		if (params.containsKey("suspended"))
 			suspended = params.get("suspended").equals("true");
@@ -5065,9 +5040,8 @@ public class SevenDirectProvider /*
 		}
 	}
 	
-	// @Override
+	@Override
 	public Collection<HistoryBatch> getHistoricBatches(Map<String, Object> params, CIBUser user) {
-		// tested
 		HistoricBatchQueryDto queryDto = objectMapper.convertValue(params, HistoricBatchQueryDto.class);
 		HistoricBatchQuery query = queryDto.toQuery(processEngine);
 		Integer firstResult = null;
@@ -5087,17 +5061,15 @@ public class SevenDirectProvider /*
 		return batchResults;
 	}
 	
-	// @Override
+	@Override
 	public Long getHistoricBatchCount(Map<String, Object> queryParams, CIBUser user) {
-		// tested
 		HistoricBatchQueryDto queryDto = objectMapper.convertValue(queryParams, HistoricBatchQueryDto.class);
 		HistoricBatchQuery query = queryDto.toQuery(processEngine);
 		return query.count();
 	}
 	
-	// @Override
+	@Override
 	public HistoryBatch getHistoricBatchById(String id, CIBUser user) {
-		// tested
 		HistoricBatch batch = processEngine.getHistoryService().createHistoricBatchQuery().batchId(id).singleResult();
 	
 		if (batch == null) {
@@ -5107,9 +5079,8 @@ public class SevenDirectProvider /*
 		return convertValue(HistoricBatchDto.fromBatch(batch), HistoryBatch.class);
 	}
 	
-	// @Override
+	@Override
 	public void deleteHistoricBatch(String id, CIBUser user) {
-		// tested
 		try {
 			processEngine.getHistoryService().deleteHistoricBatch(id);
 		} catch (BadUserRequestException e) {
@@ -5117,7 +5088,7 @@ public class SevenDirectProvider /*
 		}
 	}
 	
-	// @Override
+	@Override
 	// TODO: Never called, related endpoint does not exist
 	public Object setRemovalTime(Map<String, Object> payload) {
 		// TODO: not tested
@@ -5150,7 +5121,7 @@ public class SevenDirectProvider /*
 		return convertValue(BatchDto.fromBatch(batch), Batch.class);
 	}
 	
-	// @Override
+	@Override
 	// TODO: Never called, related endpoint does not exist
 	public Object getCleanableBatchReport(Map<String, Object> queryParams) {
 		// TODO: not tested
@@ -5166,7 +5137,7 @@ public class SevenDirectProvider /*
 		return CleanableHistoricBatchReportResultDto.convert(reportResult);
 	}
 	
-	// @Override
+	@Override
 	// TODO: Never called, related endpoint does not exist
 	public Object getCleanableBatchReportCount() {
 		// TODO: not tested
@@ -5187,17 +5158,15 @@ public class SevenDirectProvider /*
 
 */                                                                                                                      
 	
-	// @Override
+	@Override
 	public JsonNode getTelemetryData(CIBUser user) {
-		// tested
 		TelemetryData data = managementService.getTelemetryData();
 		JsonNode node = objectMapper.valueToTree(TelemetryDataDto.fromEngineDto(data));
 		return node;
 	}
 	
-	// @Override
+	@Override
 	public Collection<Metric> getMetrics(Map<String, Object> queryParams, CIBUser user) {
-		// tested
 		Collection<Metric> metrics = new ArrayList<>();
 		List<Map<String, Object>> queryData = new ArrayList<>();
 		List<String> metricNames = Optional.ofNullable(queryParams.get("metrics")).map(Object::toString)
@@ -5303,9 +5272,8 @@ public class SevenDirectProvider /*
                                                                                                                        
 */
 
-	// @Override
+	@Override
 	public Collection<Tenant> fetchTenants(Map<String, Object> queryParams, CIBUser user) {
-		// tested
 		TenantQueryDto queryDto = objectMapper.convertValue(queryParams, TenantQueryDto.class);
 	
 		TenantQuery query = queryDto.toQuery(processEngine);
@@ -5318,17 +5286,15 @@ public class SevenDirectProvider /*
 		return tenantList;
 	}
 	
-	// @Override
+	@Override
 	public Tenant fetchTenant(String tenantId, CIBUser user) {
-		// tested
 		org.cibseven.bpm.engine.identity.Tenant tenant = findTenantObject(tenantId);
 		TenantDto dto = TenantDto.fromTenant(tenant);
 		return convertValue(dto, Tenant.class);
 	}
 	
-	// @Override
+	@Override
 	public void createTenant(Tenant tenant, CIBUser user) {
-		// tested
 		ensureNotReadOnly();
 		TenantDto tenantDto = convertValue(tenant, TenantDto.class);
 	
@@ -5338,9 +5304,8 @@ public class SevenDirectProvider /*
 		identityService.saveTenant(newTenant);
 	}
 	
-	// @Override
+	@Override
 	public void updateTenant(Tenant tenant, CIBUser user) {
-		// tested
 		ensureNotReadOnly();
 		TenantDto tenantDto = convertValue(tenant, TenantDto.class);
 		org.cibseven.bpm.engine.identity.Tenant systemTenant = findTenantObject(tenant.getId());
@@ -5360,37 +5325,32 @@ public class SevenDirectProvider /*
 		}
 	}
 	
-	// @Override
+	@Override
 	public void deleteTenant(String tenantId, CIBUser user) {
-		// tested
 		ensureNotReadOnly();
 		identityService.deleteTenant(tenantId);
 	}
 	
-	// @Override
+	@Override
 	public void addMemberToTenant(String tenantId, String userId, CIBUser user) {
-		// tested
 		ensureNotReadOnly();
 		identityService.createTenantUserMembership(tenantId, userId);
 	}
 	
-	// @Override
+	@Override
 	public void deleteMemberFromTenant(String tenantId, String userId, CIBUser user) {
-		// tested
 		ensureNotReadOnly();
 		identityService.deleteTenantUserMembership(tenantId, userId);
 	}
 	
-	// @Override
+	@Override
 	public void addGroupToTenant(String tenantId, String groupId, CIBUser user) {
-		// tested
 		ensureNotReadOnly();
 		identityService.createTenantGroupMembership(tenantId, groupId);
 	}
 	
-	// @Override
+	@Override
 	public void deleteGroupFromTenant(String tenantId, String groupId, CIBUser user) {
-		// tested
 		ensureNotReadOnly();
 		identityService.deleteTenantGroupMembership(tenantId, groupId);
 	}
@@ -5411,7 +5371,7 @@ public class SevenDirectProvider /*
                                                                                                                                                          
 */
 
-	// @Override
+	@Override
 	public Deployment createDeployment(MultiValueMap<String, Object> data, MultipartFile[] files, CIBUser user)
 			throws SystemException {
 		// TODO: not tested
@@ -5430,8 +5390,7 @@ public class SevenDirectProvider /*
 		if (!deploymentBuilder.getResourceNames().isEmpty()) {
 			DeploymentWithDefinitions deployment = deploymentBuilder.deployWithResult();
 			DeploymentWithDefinitionsDto deploymentDto = DeploymentWithDefinitionsDto.fromDeployment(deployment);
-			// TODO: getEngineRestUrl() will be a base class method after completion
-			UriComponentsBuilder builder = UriComponentsBuilder.fromUriString("http://localhost:8080");// getEngineRestUrl());
+			UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(getEngineRestUrl());
 			URI uri = builder.path("/")// relativeRootResourcePath)
 					.path("/deployment")// DeploymentRestService.PATH)
 					.path(deployment.getId()).build().toUri();

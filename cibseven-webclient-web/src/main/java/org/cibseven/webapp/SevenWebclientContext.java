@@ -196,8 +196,8 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 		return new CustomRestTemplate();
 	}
 
-  @Bean
-  public SevenDirectProvider getSevenDirectProvider() {
-    return new SevenDirectProvider(null);
-  }
+//  @Bean
+//  public SevenDirectProvider getSevenDirectProvider() {
+//    return new SevenDirectProvider(null);
+//  }
 }
