@@ -99,6 +99,7 @@ function skipValue(value, lang) {
       'dashboard',
       'filter',
       'status',
+      'format',
       'name: {name}version: {version}',
       'element'
     ],
