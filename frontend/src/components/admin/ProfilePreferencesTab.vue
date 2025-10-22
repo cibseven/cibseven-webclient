@@ -17,53 +17,51 @@
 
 -->
 <template>
-  <div class="p-4 d-flex flex-column gap-4">
-    <b-card class="p-4 pb-0 shadow-sm border rounded" :title="$t('admin.preferences.dates.title')">
-      <b-card-text class="border-top pt-4 mt-3">
-        <b-form-group>
+  <div class="p-0 m-0 d-flex flex-column gap-4">
+    <ContentBlock :title="$t('admin.preferences.dates.title')">
+      <b-form-group>
+        <label class="form-label">
+          {{ $t('admin.preferences.dates.formatDefault') }}
+          <span v-b-popover.hover.right="$t('admin.preferences.dates.formatDefaultDescription')" class="mdi mdi-18px mdi-information-outline text-info"></span>
+        </label>
+        <b-form-select v-model="formatDefault" :options="dateFormatOptions" 
+          class="col-lg-6 col-md-8 col-sm-12"
+        />
+      </b-form-group>
 
-          <label class="form-label">
-            {{ $t('admin.preferences.dates.formatDefault') }}
-            <span v-b-popover.hover.right="$t('admin.preferences.dates.formatDefaultDescription')" class="mdi mdi-18px mdi-information-outline text-info"></span>
-          </label>
-          <b-form-select v-model="formatDefault" :options="dateFormatOptions" 
-            class="col-lg-6 col-md-8 col-sm-12"
-          />
+      <b-form-group>
+        <label class="form-label">
+          {{ $t('admin.preferences.dates.formatLong') }}
+          <span v-b-popover.hover.right="$t('admin.preferences.dates.formatLongDescription')" class="mdi mdi-18px mdi-information-outline text-info"></span>
+        </label>
+        <b-form-select v-model="formatLong" :options="dateFormatOptions"
+          class="col-lg-6 col-md-8 col-sm-12"
+        />
 
-          <label class="form-label">
-            {{ $t('admin.preferences.dates.formatLong') }}
-            <span v-b-popover.hover.right="$t('admin.preferences.dates.formatLongDescription')" class="mdi mdi-18px mdi-information-outline text-info"></span>
-          </label>
-          <b-form-select v-model="formatLong" :options="dateFormatOptions"
-            class="col-lg-6 col-md-8 col-sm-12"
-          />
+      </b-form-group>
+    </ContentBlock>
 
-        </b-form-group>
-      </b-card-text>
-    </b-card>
-
-    <template v-if="$root.config.notifications.tasks.enabled">
-      <b-card class="p-4 shadow-sm border rounded" :title="$t('admin.preferences.notifications.title')">
-        <b-card-text class="border-top pt-4 mt-3">
-          <b-form-group>
-            <b-form-checkbox v-model="tasksCheckNotificationsDisabled">
-              {{ $t('admin.preferences.notifications.tasksCheckNotificationsDisabled.label') }}
-              <br/>
-            <span class="small">{{ $t('admin.preferences.notifications.tasksCheckNotificationsDisabled.description') }}</span>
-            </b-form-checkbox>
-          </b-form-group>
-        </b-card-text>
-      </b-card>
-    </template>
-
+    <ContentBlock v-if="$root.config.notifications.tasks.enabled" :title="$t('admin.preferences.notifications.title')">
+      <b-form-group>
+        <b-form-checkbox v-model="tasksCheckNotificationsDisabled">
+          {{ $t('admin.preferences.notifications.tasksCheckNotificationsDisabled.label') }}
+          <br/>
+        <span class="small">{{ $t('admin.preferences.notifications.tasksCheckNotificationsDisabled.description') }}</span>
+        </b-form-checkbox>
+      </b-form-group>
+    </ContentBlock>
   </div>
 </template>
 
 <script>
 import { formatDate } from '@/utils/dates.js'
+import ContentBlock from '@/components/common-components/ContentBlock.vue'
 
 export default {
   name: 'ProfilePreferencesTab',
+  components: {
+    ContentBlock
+  },
   data() {
     return {
       dateFormatOptions: [
