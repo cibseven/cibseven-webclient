@@ -559,13 +559,10 @@
 			"group": {
 				"title": "{0}'s Groups",
 				"add": "Add to a group"
-			},
-			"preferences": {
-				"title": "Preferences",
-				"notifications": "Disable notifications"
 			}
 		},
 		"preferences": {
+			"title": "Preferences",
 			"dates": {
 				"title": "Date and Time Formats",
 				"formatDefault": "Format",
@@ -576,6 +573,13 @@
 				"groupEuropean": "European Formats",
 				"groupUS": "US Formats",
 				"groupISO": "ISO/Technical Formats"
+			},
+			"notifications": {
+				"title": "Notifications",
+				"tasksCheckNotificationsDisabled": {
+					"label": "Disable task notifications",
+					"description": "If checked, you will not receive in browser any notifications when new tasks are assigned to you."
+				}
 			}
 		},
 		"groups": {

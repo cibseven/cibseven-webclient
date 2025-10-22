@@ -559,13 +559,10 @@
 			"group": {
 				"title": "{0} Gruppen",
 				"add": "Zu einer Gruppe hinzufügen"
-			},
-			"preferences": {
-				"title": "Einstellungen",
-				"notifications": "Benachrichtigungen ausschalten"
 			}
 		},
 		"preferences": {
+			"title": "Einstellungen",
 			"dates": {
 				"title": "Datums- und Zeitformate",
 				"formatDefault": "Format",
@@ -576,6 +573,13 @@
 				"groupEuropean": "Europäische Formate",
 				"groupUS": "US-Formate",
 				"groupISO": "ISO/Technische Formate"
+			},
+			"notifications": {
+				"title": "Benachrichtigungen",
+				"tasksCheckNotificationsDisabled": {
+					"label": "Aufgabenbenachrichtigungen deaktivieren",
+					"description": "Wenn aktiviert, erhalten Sie im Browser keine Benachrichtigungen, wenn neue Aufgaben Ihnen zugewiesen werden."
+				}
 			}
 		},
 		"groups": {

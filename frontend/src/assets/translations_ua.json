@@ -559,13 +559,10 @@
 				"group": {
 					"title": "Групи {0}",
 					"add": "Додати до групи"
-				},
-				"preferences": {
-					"title": "Налаштування",
-					"notifications": "Вимкнути сповіщення"
 				}
 			},
 			"preferences": {
+				"title": "Налаштування",
 				"dates": {
 					"title": "Формати дати та часу",
 					"formatDefault": "Формат",
@@ -576,6 +573,13 @@
 					"groupEuropean": "Європейські формати",
 					"groupUS": "Формати США",
 					"groupISO": "ISO/Технічні формати"
+				},
+				"notifications": {
+					"title": "Сповіщення",
+					"tasksCheckNotificationsDisabled": {
+						"label": "Вимкнути сповіщення про завдання",
+						"description": "Якщо позначено, ви не отримуватимете сповіщення у браузері про нові призначені вам завдання."
+					}
 				}
 			},
 			"groups": {

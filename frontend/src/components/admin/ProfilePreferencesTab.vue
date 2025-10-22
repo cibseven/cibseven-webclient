@@ -42,12 +42,14 @@
       </b-card-text>
     </b-card>
 
-    <template v-if="$root.config.notifications.tasks.enabled">
-      <b-card class="p-4 shadow-sm border rounded" :title="'Notifications'">
+    <template v-if="!$root.config.notifications.tasks.enabled">
+      <b-card class="p-4 shadow-sm border rounded" :title="$t('admin.preferences.notifications.title')">
         <b-card-text class="border-top pt-4 mt-3">
           <b-form-group>
             <b-form-checkbox v-model="tasksCheckNotificationsDisabled">
-              {{ $t('admin.users.preferences.notifications') }}
+              {{ $t('admin.preferences.notifications.tasksCheckNotificationsDisabled.label') }}
+              <br/>
+            <span class="small">{{ $t('admin.preferences.notifications.tasksCheckNotificationsDisabled.description') }}</span>
             </b-form-checkbox>
           </b-form-group>
         </b-card-text>

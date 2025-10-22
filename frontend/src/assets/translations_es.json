@@ -559,13 +559,10 @@
 			"group": {
 				"title": "Grupos del usuario {0}",
 				"add": "Añadir a un grupo"
-			},
-			"preferences": {
-				"title": "Preferencias",
-				"notifications": "Desactivar notificaciones"
 			}
 		},
 		"preferences": {
+			"title": "Preferencias",
 			"dates": {
 				"title": "Formatos de fecha y hora",
 				"formatDefault": "Formato",
@@ -576,6 +573,13 @@
 				"groupEuropean": "Formatos europeos",
 				"groupUS": "Formatos de EE.UU.",
 				"groupISO": "Formatos ISO/Técnicos"
+			},
+			"notifications": {
+				"title": "Notificaciones",
+				"tasksCheckNotificationsDisabled": {
+					"label": "Desactivar notificaciones de tareas",
+					"description": "Si se marca, no recibirá en el navegador ninguna notificación cuando se le asignen nuevas tareas."
+				}
 			}
 		},
 		"groups": {

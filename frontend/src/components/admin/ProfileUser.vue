@@ -35,7 +35,7 @@
         </b-list-group-item>
         <b-list-group-item v-if="$root.user && $root.user.id === user.id" class="border-0 px-3 py-2"
           :active="$route.query.tab === 'preferences'" exact :to="'?tab=preferences'">
-          <span> {{ $t('admin.users.preferences.title') }}</span>
+          <span> {{ $t('admin.preferences.title') }}</span>
         </b-list-group-item>
       </b-list-group>
     </template>

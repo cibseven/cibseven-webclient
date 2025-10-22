@@ -559,13 +559,10 @@
 			"group": {
 				"title": "Группы {0}",
 				"add": "Добавить в группу"
-			},
-			"preferences": {
-				"title": "Предпочтения",
-				"notifications": "Отключить уведомления"
 			}
 		},
 		"preferences": {
+			"title": "Предпочтения",
 			"dates": {
 				"title": "Форматы даты и времени",
 				"formatDefault": "Формат",
@@ -576,6 +573,13 @@
 				"groupEuropean": "Европейские форматы",
 				"groupUS": "Форматы США",
 				"groupISO": "ISO/Технические форматы"
+			},
+			"notifications": {
+				"title": "Уведомления",
+				"tasksCheckNotificationsDisabled": {
+					"label": "Отключить уведомления о задачах",
+					"description": "Если отмечено, вы не будете получать уведомления в браузере при назначении вам новых задач."
+				}
 			}
 		},
 		"groups": {
