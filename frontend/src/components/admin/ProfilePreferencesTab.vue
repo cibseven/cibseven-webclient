@@ -41,12 +41,22 @@
       </b-form-group>
     </ContentBlock>
 
-    <ContentBlock v-if="$root.config.notifications.tasks.enabled" :title="$t('admin.preferences.notifications.title')">
-      <b-form-group>
+    <ContentBlock :title="$t('admin.preferences.notifications.title')"
+      v-if="$root.config.notifications.tasks.enabled || $root.config.layout.showPopoverHowToAssign"
+    >
+      <b-form-group v-if="$root.config.notifications.tasks.enabled">
         <b-form-checkbox v-model="tasksCheckNotificationsDisabled">
-          {{ $t('admin.preferences.notifications.tasksCheckNotificationsDisabled.label') }}
+          <span class="fw-semibold">{{ $t('admin.preferences.notifications.tasksCheckNotificationsDisabled.label') }}</span>
           <br/>
-        <span class="small">{{ $t('admin.preferences.notifications.tasksCheckNotificationsDisabled.description') }}</span>
+        <span class="small text-secondary">{{ $t('admin.preferences.notifications.tasksCheckNotificationsDisabled.description') }}</span>
+        </b-form-checkbox>
+      </b-form-group>
+
+      <b-form-group v-if="$root.config.layout.showPopoverHowToAssign">
+        <b-form-checkbox v-model="showPopoverHowToAssign">
+          <span class="fw-semibold">{{ $t('admin.preferences.notifications.showPopoverHowToAssign.label') }}</span>
+          <br/>
+        <span class="small text-secondary">{{ $t('admin.preferences.notifications.showPopoverHowToAssign.description') }}</span>
         </b-form-checkbox>
       </b-form-group>
     </ContentBlock>
@@ -170,6 +180,14 @@ export default {
       },
       set(val) {
         localStorage.setItem('tasksCheckNotificationsDisabled', val)
+      }
+    },
+    showPopoverHowToAssign: {
+      get() {
+        return localStorage.getItem('showPopoverHowToAssign') !== 'false' || true
+      },
+      set(val) {
+        localStorage.setItem('showPopoverHowToAssign', val)
       }
     },
     ProfilePreferencesPlugin() {

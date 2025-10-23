@@ -586,6 +586,10 @@
 			},
 			"notifications": {
 				"title": "Benachrichtigungen",
+				"showPopoverHowToAssign": {
+					"label": "„Aufgabe ist Ihnen nicht zugewiesen“-Popup anzeigen",
+					"description": "Wenn aktiviert, wird beim Öffnen einer nicht zugewiesenen Aufgabe in der Aufgabenliste eine Informations-Popup-Nachricht angezeigt, die Ihnen hilft, die Aufgabe sich selbst oder jemand anderem zuzuweisen."
+				},
 				"tasksCheckNotificationsDisabled": {
 					"label": "Aufgabenbenachrichtigungen deaktivieren",
 					"description": "Wenn aktiviert, erhalten Sie im Browser keine Benachrichtigungen, wenn neue Aufgaben Ihnen zugewiesen werden."
