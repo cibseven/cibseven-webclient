@@ -586,6 +586,10 @@
 			},
 			"notifications": {
 				"title": "Notifications",
+				"showPopoverHowToAssign": {
+					"label": "Show 'Task is not assigned to you' popup",
+					"description": "When enabled, opening an unassigned task in Tasklist view will display an information popup to help you assign the task to yourself or to someone else."
+				},
 				"tasksCheckNotificationsDisabled": {
 					"label": "Disable task notifications",
 					"description": "If checked, you will not receive in browser any notifications when new tasks are assigned to you."

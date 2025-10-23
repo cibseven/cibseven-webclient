@@ -586,6 +586,10 @@
 			},
 			"notifications": {
 				"title": "Notificaciones",
+				"showPopoverHowToAssign": {
+					"label": "Mostrar el popup 'La tarea no está asignada a usted'",
+					"description": "Cuando está habilitado, al abrir una tarea no asignada en la vista de lista de tareas, se mostrará un popup de información para ayudarle a asignar la tarea a usted mismo o a otra persona."
+				},
 				"tasksCheckNotificationsDisabled": {
 					"label": "Desactivar notificaciones de tareas",
 					"description": "Si se marca, no recibirá en el navegador ninguna notificación cuando se le asignen nuevas tareas."
