@@ -139,8 +139,7 @@ export default {
     selectEngine(engineName) {
       this.selectedEngine = engineName
       localStorage.setItem(ENGINE_STORAGE_KEY, engineName)
-      // Reload the page to apply the new engine selection
-      location.reload()
+      this.logout()
     }
   }
 }

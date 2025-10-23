@@ -97,18 +97,7 @@ public class SevenUserProvider extends BaseUserProvider<StandardLogin> {
 	@Override
 	public User getUserInfo(User user, String userId) {
 		if (user.getId().equals(userId)) {
-			try {
-				// Validate that the user exists in the selected engine
-				SevenUser userProfile = sevenProvider.getUserProfile(userId, (CIBUser) user);
-				// Update display name if available from engine
-				if (userProfile != null && userProfile.getFirstName() != null && userProfile.getLastName() != null) {
-					((CIBUser) user).setDisplayName(userProfile.getFirstName() + " " + userProfile.getLastName());
-				}
-				return user;
-			} catch (Exception e) {
-				// User doesn't exist in the selected engine
-				throw new AuthenticationException(userId);
-			}
+			return user;
 		}
 		else {
 			throw new AuthenticationException(userId);
