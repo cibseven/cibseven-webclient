@@ -124,7 +124,11 @@ export default {
   },
   watch: {
     deploymentId: function () {
+      if(this.deploymentId){
       this.loadDeployment()
+      } else {
+        this.deployment = null
+      }
     },
   },
   computed: {

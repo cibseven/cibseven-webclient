@@ -372,7 +372,13 @@ export default {
           vm.deployments = vm.deployments.filter(df => {
             return deployment.id !== df.id
           })
-          if (vm.deployment && deployment.id === vm.deployment.id) vm.deployment = null
+          if (vm.deployment && deployment.id === vm.deployment.id) {
+            vm.deployment = null
+            vm.resources = null
+            vm.$router.push({
+              name: 'deployments'
+            })
+          }
           setTimeout(() => {
             startTask()
           }, 1000)
@@ -385,6 +391,7 @@ export default {
           return this.deploymentId !== d.id
         })
         this.deployment = null
+        this.resources = null
         this.loadProcesses(false)
         this.deploymentsDelData.total = 1
         this.deploymentsDelData.deleted++
@@ -404,10 +411,7 @@ export default {
           }
         }
         this.$router.push({
-          name: 'deployments',
-          params: {
-            deploymentId: ''
-          }
+          name: 'deployments'
         })
       })
     },
