@@ -120,6 +120,7 @@ import org.cibseven.bpm.engine.impl.RuntimeServiceImpl;
 import org.cibseven.bpm.engine.impl.calendar.DateTimeUtil;
 import org.cibseven.bpm.engine.impl.form.validator.FormFieldValidationException;
 import org.cibseven.bpm.engine.impl.identity.Authentication;
+import org.cibseven.bpm.engine.impl.persistence.entity.VariableInstanceEntity;
 import org.cibseven.bpm.engine.impl.util.IoUtil;
 import org.cibseven.bpm.engine.impl.util.PermissionConverter;
 import org.cibseven.bpm.engine.management.ActivityStatistics;
@@ -324,6 +325,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
@@ -673,7 +675,6 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 		List<?> entities = executeFilterList(filters, filterId, user, firstResult, maxResults);
 	
 		if (entities != null && !entities.isEmpty()) {
-			// TODO: currently list of TaskDto
 			List<Task> list = convertToDtoList(entities, objectMapper);
 			return list;
 		} else {
@@ -1204,10 +1205,8 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 		} catch (AuthorizationException e) {
 			throw e;
 		} catch (NotFoundException e) {
-			// TODO: check exception type
 			throw new SystemException("No matching definition with id " + id, e);
 		} catch (UnsupportedEncodingException e) {
-			// TODO: check exception type
 			throw new SystemException(e.getMessage(), e);
 		} finally {
 			IoUtil.closeSilently(processModelIn);
@@ -1402,7 +1401,7 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 	
 			UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(getEngineRestUrl());
 			URI uri = builder.path("/")// relativeRootResourcePath)
-					.path("/process-instance")// ProcessInstanceRestService.PATH)
+					.path("/process-instance/")// ProcessInstanceRestService.PATH)
 					.path(instance.getId()).build().toUri();
 	
 			result.addReflexiveLink(uri, HttpMethod.GET, "self");
@@ -1822,7 +1821,7 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 	
 			UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(getEngineRestUrl());
 			URI uri = builder.path("/")// relativeRootResourcePath)
-					.path("/deployment")// DeploymentRestService.PATH)
+					.path("/deployment/")// DeploymentRestService.PATH)
 					.path(deployment.getId()).build().toUri();
 	
 			// GET
@@ -1836,7 +1835,6 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 	
 	// MultipartFormData
 	private DeploymentBuilder extractDeploymentInformation(MultipartFormData payload) {
-		// TODO: not tested
 		DeploymentBuilder deploymentBuilder = repositoryService.createDeployment();
 	
 		Set<String> partNames = payload.getPartNames();
@@ -2051,11 +2049,7 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 			throw new SystemException("Deployment with id '" + deploymentId + "' do not exist");
 		}
 	
-		// TODO: properties unused
-		boolean skipCustomListeners = false;
-		boolean skipIoMappings = false;
-	
-		repositoryService.deleteDeployment(deploymentId, cascade, skipCustomListeners, skipIoMappings);
+		repositoryService.deleteDeployment(deploymentId, cascade, false, false);
 	}
 /*
   
@@ -2501,7 +2495,7 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 		List<Group> userGroups = groupQuery.groupMember(userId).orderByGroupName().asc().unlimitedList();
 	
 		Set<UserDto> allGroupUsers = new HashSet<>();
-		List<GroupDto> allGroups = new ArrayList<>();// TODO: not used, yet
+		List<GroupDto> allGroups = new ArrayList<>();
 	
 		List<String> listGroups = new ArrayList<>();
 		for (Group group : userGroups) {
@@ -2521,8 +2515,6 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 		groupIdQueryDto.setGroupIdIn(listGroups.toArray(new String[0]));
 		groupIdQueryDto.setObjectMapper(objectMapper);
 		AuthorizationQuery groupIdQuery = groupIdQueryDto.toQuery(processEngine);
-		// expected: 51 authorizations with id, type, userid, groupId, resourceType,
-		// resourceId
 		List<org.cibseven.bpm.engine.authorization.Authorization> groupIdResultList = QueryUtil.list(groupIdQuery, null,
 				null);
 		Collection<Authorization> groupsAuthorizations = createAuthorizationCollection(groupIdResultList);
@@ -2540,6 +2532,7 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 		userAuthorizations.addAll(groupsAuthorizations);
 		userAuthorizations.addAll(globalAuthorizations);
 	
+		//TODO: same comments as in SevenUserProvider, code should be shared
 		auths.setApplication(filterResources(userAuthorizations, resourceType(SevenResourceType.APPLICATION)));
 		auths.setFilter(filterResources(userAuthorizations, resourceType(SevenResourceType.FILTER)));
 		auths.setProcessDefinition(filterResources(userAuthorizations, resourceType(SevenResourceType.PROCESS_DEFINITION)));
@@ -2552,12 +2545,9 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 		auths.setDecisionRequirementsDefinition(
 				filterResources(userAuthorizations, resourceType(SevenResourceType.DECISION_REQUIREMENTS_DEFINITION)));
 		auths.setDeployment(filterResources(userAuthorizations, resourceType(SevenResourceType.DEPLOYMENT)));
-		// auths.setCaseDefinition(filterResources(userAuthorizations,
-		// resourceType(SevenResourceType.CASE_DEFINITION)));
-		// auths.setCaseInstance(filterResources(userAuthorizations,
-		// resourceType(SevenResourceType.CASE_INSTANCE)));
-		// auths.setJobDefinition(filterResources(userAuthorizations,
-		// resourceType(SevenResourceType.JOB_DEFINITION)));
+		// auths.setCaseDefinition(filterResources(userAuthorizations, resourceType(SevenResourceType.CASE_DEFINITION)));
+		// auths.setCaseInstance(filterResources(userAuthorizations, resourceType(SevenResourceType.CASE_INSTANCE)));
+		// auths.setJobDefinition(filterResources(userAuthorizations, resourceType(SevenResourceType.JOB_DEFINITION)));
 		auths.setBatch(filterResources(userAuthorizations, resourceType(SevenResourceType.BATCH)));
 		auths.setGroupMembership(filterResources(userAuthorizations, resourceType(SevenResourceType.GROUP_MEMBERSHIP)));
 		auths.setHistoricTask(filterResources(userAuthorizations, resourceType(SevenResourceType.HISTORIC_TASK)));
@@ -2570,20 +2560,11 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 		auths.setUserOperationLogCategory(
 				filterResources(userAuthorizations, resourceType(SevenResourceType.USER_OPERATION_LOG_CATEGORY)));
 		auths.setSystem(filterResources(userAuthorizations, resourceType(SevenResourceType.SYSTEM)));
-		// auths.setMessage(filterResources(userAuthorizations,
-		// resourceType(SevenResourceType.MESSAGE)));
-		// auths.setEventSubscription(filterResources(userAuthorizations,
-		// resourceType(SevenResourceType.EVENT_SUBSCRIPTION)));
+		// auths.setMessage(filterResources(userAuthorizations, resourceType(SevenResourceType.MESSAGE)));
+		// auths.setEventSubscription(filterResources(userAuthorizations, resourceType(SevenResourceType.EVENT_SUBSCRIPTION)));
 	
 		return auths;
 	}
-	
-//	// TODO: this method will be obsolete once the base class is correctly set
-//	private Collection<Authorization> filterResources(Collection<Authorization> authorizations, int resourceType) {
-//		Set<Integer> resourceFilter = Arrays.asList(resourceType).stream().collect(Collectors.toSet());
-//		return authorizations.stream().filter(authorization -> resourceFilter.contains(authorization.getResourceType()))
-//				.collect(Collectors.toList());
-//	}
 	
 	private Collection<Authorization> createAuthorizationCollection(
 			List<org.cibseven.bpm.engine.authorization.Authorization> userAuthorizationList) {
@@ -2636,7 +2617,7 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 			Optional<String> firstResult, Optional<String> maxResults, Optional<String> sortBy, Optional<String> sortOrder,
 			CIBUser user) {
 		//tested without ldap/adfs
-		// TODO: how to determine user provider if the member is not available, decides about ldap/adfs
+		// TODO: "userProvider" decides about ldap/adfs
 		if (!userProvider.equals("org.cibseven.webapp.auth.SevenUserProvider")) {
 			Collection<User> result = getUsers(id, firstName, Optional.of(firstNameLike.get()), lastName, lastNameLike, email, emailLike, memberOfGroup, memberOfTenant, idIn, firstResult, maxResults, sortBy,
 					sortOrder);
@@ -2699,8 +2680,7 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 			query.memberOfGroup(memberOfGroup.get());
 		if (memberOfTenant.isPresent())
 			query.memberOfTenant(memberOfTenant.get());
-		// TODO: there is protected void query.applySortBy(UserQuery query, String
-		// sortBy, Map<String, Object> parameters, ProcessEngine engine)
+		// TODO: there is a protected void UserQuery.applySortBy(UserQuery query, String sortBy, Map<String, Object> parameters, ProcessEngine engine)
 		if (sortBy.isPresent()) {
 			String sortByValue = sortBy.get();
 			switch (sortByValue) {
@@ -2729,7 +2709,6 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 			query.userFirstNameLike(firstNameLike.get().replace("*", wcard));
 		if (id.isPresent())
 			query.userId(id.get());
-		// query.userIdIn(null);
 		if (lastName.isPresent())
 			query.userLastName(lastName.get());
 		if (lastNameLike.isPresent())
@@ -3018,7 +2997,6 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 	
 	private List<Authorization> queryAuthorizations(AuthorizationQueryDto queryDto, Integer firstResult,
 			Integer maxResults) {
-		// TODO: not tested
 		queryDto.setObjectMapper(objectMapper);
 		AuthorizationQuery query = queryDto.toQuery(processEngine);
 	
@@ -3355,7 +3333,6 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 	@Override
 	public void modifyVariableByExecutionId(String executionId, Map<String, Object> data, CIBUser user)
 			throws SystemException {
-		// TODO: not tested
 		PatchVariablesDto patch = objectMapper.convertValue(data, PatchVariablesDto.class);
 		VariableMap variableModifications = null;
 		try {
@@ -3523,7 +3500,6 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 	@Override
 	public ResponseEntity<byte[]> fetchVariableDataByExecutionId(String executionId, String variableName, CIBUser user)
 			throws NoObjectFoundException, SystemException {
-		// TODO: not tested
 		TypedValue typedVariableValue = runtimeService.getVariableLocalTyped(executionId, variableName, false);
 		return getResponseForTypedVariable(typedVariableValue, executionId);
 	}
@@ -3638,8 +3614,8 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 	
 	@Override
 	public Collection<VariableHistory> fetchActivityVariablesHistory(String activityInstanceId, CIBUser user) {
-		// TODO: not tested
 		HistoricVariableInstanceQueryDto queryDto = new HistoricVariableInstanceQueryDto();
+		queryDto.setActivityInstanceIdIn(new String[] { activityInstanceId});
 		queryDto.setObjectMapper(objectMapper);
 		return queryHistoricVariableInstances(queryDto, null, null, true);
 	}
@@ -3666,9 +3642,6 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 	
 	@Override
 	public Collection<VariableHistory> fetchActivityVariables(String activityInstanceId, CIBUser user) {
-		// TODO: not tested
-		// TODO: method returns VariableHistory without accessing history data:
-		// "/variable-instance"
 		VariableInstanceQueryDto queryDto = new VariableInstanceQueryDto();
 		queryDto.setObjectMapper(objectMapper);
 		queryDto.setActivityInstanceIdIn(new String[] { activityInstanceId });
@@ -3699,7 +3672,6 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 	@Override
 	public Variable fetchVariable(String taskId, String variableName, boolean deserializeValue, CIBUser user)
 			throws NoObjectFoundException, SystemException {
-		// TODO: in progress
 		Variable variableSerialized = fetchTaskVariableImpl(taskId, variableName, false, user);
 		Variable variableDeserialized = fetchTaskVariableImpl(taskId, variableName, true, user);
 	
@@ -3741,7 +3713,6 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 	@Override
 	public void deleteVariable(String taskId, String variableName, CIBUser user)
 			throws NoObjectFoundException, SystemException {
-		// TODO: not tested
 		try {
 			taskService.removeVariable(taskId, variableName);
 		} catch (AuthorizationException e) {
@@ -3761,7 +3732,6 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 	@Override
 	public Map<String, Variable> fetchFormVariables(List<String> variableListName, String taskId, CIBUser user)
 			throws NoObjectFoundException, SystemException {
-		// TODO: not tested
 		VariableMap startFormVariables = formService.getTaskFormVariables(taskId, variableListName, true);
 		Map<String, VariableValueDto> variableDtos = VariableValueDto.fromMap(startFormVariables);
 		Map<String, Variable> variablesMap = new HashMap<>();
@@ -3772,16 +3742,11 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 	}
 	
 	@Override
+	//TODO: never called, no rest endpoint exists
 	public Map<String, Variable> fetchProcessFormVariables(String key, CIBUser user)
 			throws NoObjectFoundException, SystemException {
-		// TODO: not tested
 		List<String> formVariables = null;
 	
-		// if(variableNames != null) {
-		// StringListConverter stringListConverter = new StringListConverter();
-		// formVariables =
-		// stringListConverter.convertQueryParameterToType(variableNames);
-		// }
 		ProcessDefinition processDefinition = processEngine.getRepositoryService().createProcessDefinitionQuery()
 				.processDefinitionKey(key).withoutTenantId().latestVersion().singleResult();
 	
@@ -3803,7 +3768,6 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 	@Override
 	public NamedByteArrayDataSource fetchVariableFileData(String taskId, String variableName, CIBUser user)
 			throws NoObjectFoundException, UnexpectedTypeException, SystemException {
-		// TODO: not tested
 		try {
 			byte[] data = null;
 			String filename = null;
@@ -3851,9 +3815,7 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 	
 			return new NamedByteArrayDataSource(filename, mimeType, data);
 		} catch (HttpStatusCodeException e) {
-			// TODO: wrapException will be provided by the base class
-			// throw wrapException(e, user);
-			throw new SystemException(e.getMessage());
+			throw wrapException(e, user);
 		} catch (IOException e) {
 			throw new SystemException(e);
 		}
@@ -3862,13 +3824,10 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 	@Override
 	public void uploadVariableFileData(String taskId, String variableName, MultipartFile data, String valueType,
 			CIBUser user) throws NoObjectFoundException, SystemException {
-		// TODO: not tested
 		try {
 			setBinaryVariable(data, valueType, null, taskId, null, variableName);
 		} catch (HttpStatusCodeException e) {
-			// TODO: wrapException will be provided by the base class
-			// throw wrapException(e, user);
-			throw new SystemException(e.getMessage());
+			throw wrapException(e, user);
 		} catch (IOException e) {
 			throw new SystemException(e.getMessage());
 		}
@@ -3966,7 +3925,6 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 	@Override
 	public ResponseEntity<byte[]> fetchProcessInstanceVariableData(String processInstanceId, String variableName,
 			CIBUser user) throws NoObjectFoundException, SystemException {
-		// TODO: not tested
 		Variable variable = fetchVariableByProcessInstanceId(processInstanceId, variableName, user);
 		String objectType = variable.getValueInfo().get("objectTypeName");
 		if (objectType != null) {
@@ -4034,9 +3992,7 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 		try {
 			setBinaryVariable(data, valueType, null, null, processInstanceId, variableName);
 		} catch (HttpStatusCodeException e) {
-			// TODO: wrapException will be provided by the base class
-			// throw wrapException(e, user);
-			throw new SystemException(e.getMessage());
+			throw wrapException(e, user);
 		} catch (IOException e) {
 			throw new SystemException(e.getMessage());
 		}
@@ -4045,7 +4001,14 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 	@Override
 	public ProcessStart submitStartFormVariables(String processDefinitionId, List<Variable> formResult, CIBUser user)
 			throws SystemException {
-		// TODO: not tested
+		// TODO: fails
+		/*
+		 in current state an exception occures in VariableInstanceEntity.create:
+		 "ENGINE-03041 Cannot work with serializers outside of command context."
+		 if a VariableValuDtos are put into submitStartForm() then 
+		 Cannot deserialize object in variable 'variable2': SPIN/JACKSON-JSON-01007 Cannot construct java type from string 'org.cibseven.bpm.engine.rest.dto.VariableValueDto'
+		 * */
+		
 	
 		Map<String, Object> variables = new HashMap<>();
 		for (Variable variable : formResult) {
@@ -4054,7 +4017,9 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 			variableValueDto.setValue(variable.getValue());
 			if (variable.getValueInfo() != null)
 				variableValueDto.setValueInfo(new HashMap<>(variable.getValueInfo()));
-			variables.put(variable.getName(), variableValueDto);
+			variables.put(variable.getName(), 
+					VariableInstanceEntity.create(variable.getName(), 
+							variableValueDto.toTypedValue(processEngine, objectMapper), true));
 		}
 	
 		// TODO: VariableProvider modifies the variables:
@@ -4124,6 +4089,7 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 			// instance = formService.submitStartForm(processDefinitionId,
 			// businessKey, variables);
 			// } else {
+
 			instance = formService.submitStartForm(processDefinitionId, variables);
 			// }
 	
@@ -4151,7 +4117,7 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 	
 		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(getEngineRestUrl());
 		URI uri = builder.path("/")
-				.path("/process-instance")
+				.path("/process-instance/")
 				.path(instance.getId()).build().toUri();
 		processInstanceDto.addReflexiveLink(uri, HttpMethod.GET, "self");
 		ProcessStart result = convertValue(processInstanceDto, ProcessStart.class);
@@ -4162,7 +4128,6 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 	@Override
 	public Variable fetchVariableByProcessInstanceId(String processInstanceId, String variableName, CIBUser user)
 			throws SystemException {
-		// TODO: not tested
 		Variable variableSerialized = fetchVariableByProcessInstanceIdImpl(processInstanceId, variableName, false, user);
 		Variable variableDeserialized = fetchVariableByProcessInstanceIdImpl(processInstanceId, variableName, true, user);
 	
@@ -4173,7 +4138,6 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 	
 	private Variable fetchVariableByProcessInstanceIdImpl(String processInstanceId, String variableName,
 			boolean deserializeValue, CIBUser user) throws SystemException {
-		// TODO: not tested
 		TypedValue value = getTypedValueForProcessInstanceVariable(processInstanceId, variableName, deserializeValue);
 		return convertValue(VariableValueDto.fromTypedValue(value), Variable.class);
 	}
@@ -4193,7 +4157,6 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 	@Override
 	public void saveVariableInProcessInstanceId(String processInstanceId, List<Variable> variables, CIBUser user)
 			throws SystemException {
-		// TODO: not tested
 		List<String> deletions = new ArrayList<>();
 		Map<String, VariableValueDto> modifications = new HashMap<>();
 		for (Variable variable : variables) {
@@ -4232,9 +4195,8 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 	@Override
 	public void submitVariables(String processInstanceId, List<Variable> formResult, CIBUser user,
 			String processDefinitionId) throws SystemException {
-		// TODO: not tested
 		// TODO: VariableProvider ignores processDefinitionId and converts the
-		// variables:
+		// variables. So here is also no use of processDefinitionId
 		// ObjectMapper mapper = new ObjectMapper();
 		// ObjectNode variables = mapper.getNodeFactory().objectNode();
 		// ObjectNode modifications = mapper.getNodeFactory().objectNode();
@@ -4314,7 +4276,6 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 	
 	@Override
 	public Map<String, Variable> fetchProcessFormVariablesById(String id, CIBUser user) throws SystemException {
-		// TODO: not tested
 		VariableMap startFormVariables = formService.getStartFormVariables(id, null, true);
 		Map<String, Variable> resultMap = new HashMap<>();
 		Map<String, VariableValueDto> resultDtoMap = VariableValueDto.fromMap(startFormVariables);
@@ -4378,7 +4339,6 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 	
 	@Override
 	public Long getDecisionDefinitionListCount(Map<String, Object> queryParams, CIBUser user) {
-		// TODO: not tested
 		DecisionDefinitionQueryDto queryDto = objectMapper.convertValue(queryParams, DecisionDefinitionQueryDto.class);
 		DecisionDefinitionQuery query = queryDto.toQuery(processEngine);
 		List<DecisionDefinition> matchingDefinitions = QueryUtil.list(query, null, null);
@@ -4387,7 +4347,6 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 	
 	@Override
 	public Decision getDecisionDefinitionByKey(String key, CIBUser user) {
-		// TODO: not tested
 		DecisionDefinition decisionDefinition = getDecisionDefinitionByKeyAndTenant(key, null);
 		return convertValue(DecisionDefinitionDto.fromDecisionDefinition(decisionDefinition), Decision.class);
 	}
@@ -4410,13 +4369,12 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 	
 	@Override
 	public Object getDiagramByKey(String key, CIBUser user) {
-		// TODO: not tested
+		// TODO: tested but available decisions don't contain a diagram resource
 		return getDiagramByKeyAndTenant(key, null, user);
 	}
 	
 	@Override
 	public Object evaluateDecisionDefinitionByKey(Map<String, Object> data, String key, CIBUser user) {
-		// TODO: not tested
 		EvaluateDecisionDto parameters = objectMapper.convertValue(data, EvaluateDecisionDto.class);
 		Map<String, Object> variables = VariableValueDto.toMap(parameters.getVariables(), processEngine, objectMapper);
 		DecisionDefinition decisionDefinition = getDecisionDefinitionByKeyAndTenant(key, null);
@@ -4431,7 +4389,6 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 				Map<String, VariableValueDto> resultEntriesDto = createResultEntriesDto(entries);
 				dto.add(resultEntriesDto);
 			}
-			// TODO: probably wrong object type
 			return dto;
 	
 		} catch (AuthorizationException e) {
@@ -4464,7 +4421,7 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 	
 	@Override
 	public void updateHistoryTTLByKey(Map<String, Object> data, String key, CIBUser user) {
-		// TODO: not tested
+
 		HistoryTimeToLiveDto historyTimeToLiveDto = objectMapper.convertValue(data, HistoryTimeToLiveDto.class);
 		DecisionDefinition decisionDefinition = getDecisionDefinitionByKeyAndTenant(key, null);
 		repositoryService.updateDecisionDefinitionHistoryTimeToLive(decisionDefinition.getId(),
@@ -4473,7 +4430,7 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 	
 	@Override
 	public Decision getDecisionDefinitionByKeyAndTenant(String key, String tenant, CIBUser user) {
-		// TODO: not tested
+		// TODO: not tested - available decisions don't contain a diagram resource - and have to tenant
 		DecisionDefinition decisionDefinition = getDecisionDefinitionByKeyAndTenant(key, tenant);
 		DecisionDefinitionDto dto = DecisionDefinitionDto.fromDecisionDefinition(decisionDefinition);
 		return convertValue(dto, Decision.class);
@@ -4481,7 +4438,7 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 	
 	@Override
 	public Object getDiagramByKeyAndTenant(String key, String tenant, CIBUser user) {
-		// TODO: not tested
+		// TODO: not tested - available decisions don't contain a diagram resource - and have to tenant
 		DecisionDefinition decisionDefinition = getDecisionDefinitionByKeyAndTenant(key, tenant);
 		return getDiagramByDecisionDefinition(decisionDefinition, user);
 	}
@@ -4489,17 +4446,16 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 	private Object getDiagramByDecisionDefinition(DecisionDefinition decisionDefinition, CIBUser user) {
 		InputStream decisionDiagram = repositoryService.getDecisionDiagram(decisionDefinition.getId());
 		if (decisionDiagram == null) {
-			return Response.noContent().build();
+			throw new SystemException("Diagram of decision " + decisionDefinition.getId() + " not found.");
 		} else {
-			// TODO: fetchDiagram creates xml
-			// byte[] processModel = IoUtil.readInputStream(processModelIn,
-			// "processModelBpmn20Xml");
-			// return convertValue(ProcessDefinitionDiagramDto.create(id, new
-			// String(processModel, "UTF-8")), ProcessDiagram.class);
-			// TODO: probably not the correct object type
-			String fileName = decisionDefinition.getDiagramResourceName();
-			return Response.ok(decisionDiagram).header("Content-Disposition", URLEncodingUtil.buildAttachmentValue(fileName))
-					.type(ProcessDefinitionResourceImpl.getMediaTypeForFileSuffix(fileName)).build();
+			// TODO: empty result object
+			// DecisionProvider creates a Decision from the body 		
+			// return ((ResponseEntity<Decision>) doGet(url, Decision.class, user, false)).getBody();
+			// the backend puts an InputStream with filename into the response 
+			// return Response.ok(decisionDiagram).header("Content-Disposition", URLEncodingUtil.buildAttachmentValue(fileName))
+			// .type(ProcessDefinitionResourceImpl.getMediaTypeForFileSuffix(fileName)).build();
+			Decision decision = new Decision();
+			return decision;
 		}
 	}
 	
@@ -4519,13 +4475,13 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 	
 	@Override
 	public Object getXmlByKey(String key, CIBUser user) {
-		// TODO: not tested
+		//TODO: returns DecisionDefinitionDiagramDto containing id and xml 
 		return getXmlByKeyAndTenant(key, null, user);
 	}
 	
 	@Override
 	public Object getXmlByKeyAndTenant(String key, String tenant, CIBUser user) {
-		// TODO: not tested
+		// TODO: no tenant related diagram available
 		DecisionDefinition decisionDefinition = getDecisionDefinitionByKeyAndTenant(key, tenant);
 		return getXmlByDefinitionId(decisionDefinition.getId());
 	}
@@ -4548,7 +4504,7 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 	
 	@Override
 	public Decision getDecisionDefinitionById(String id, Optional<Boolean> extraInfo, CIBUser user) {
-		DecisionDefinition definition = getDecisionDefinitionId(id, user);
+		DecisionDefinition definition = getDecisionDefinitionById(id, user);
 		Decision decision = convertValue(DecisionDefinitionDto.fromDecisionDefinition(definition), Decision.class);
 		if (extraInfo.isPresent() && extraInfo.get()) {
 			Map<String, Object> queryParams = new HashMap<>();
@@ -4561,12 +4517,12 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 	
 	@Override
 	public Object getDiagramById(String id, CIBUser user) {
-		// TODO: not tested
-		DecisionDefinition definition = getDecisionDefinitionId(id, user);
+		// TODO: not tested - available decisions don't contain a diagram resource
+		DecisionDefinition definition = getDecisionDefinitionById(id, user);
 		return getDiagramByDecisionDefinition(definition, user);
 	}
 	
-	private DecisionDefinition getDecisionDefinitionId(String id, CIBUser user) {
+	private DecisionDefinition getDecisionDefinitionById(String id, CIBUser user) {
 
 		DecisionDefinition definition = null;
 		try {
@@ -4581,13 +4537,12 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 	public Object evaluateDecisionDefinitionById(String id, CIBUser user) {
 		// TODO: not implemented in DecisionProvider and parameters are missing like
 		// in evaluateDecisionDefinitionByKey()
-		DecisionDefinition definition = getDecisionDefinitionId(id, user);
+		DecisionDefinition definition = getDecisionDefinitionById(id, user);
 		return null;
 	}
 	
 	@Override
 	public void updateHistoryTTLById(String id, Map<String, Object> data, CIBUser user) {
-		// TODO: not tested
 		HistoryTimeToLiveDto historyTimeToLiveDto = objectMapper.convertValue(data, HistoryTimeToLiveDto.class);
 		repositoryService.updateDecisionDefinitionHistoryTimeToLive(id, historyTimeToLiveDto.getHistoryTimeToLive());
 	}
@@ -4646,9 +4601,10 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 	@Override
 	public HistoricDecisionInstance getHistoricDecisionInstanceById(String id, Map<String, Object> queryParams,
 			CIBUser user) {
-		// TODO: not tested
+
 		HistoricDecisionInstanceQueryDto historicDecisionInstanceQueryDto = objectMapper.convertValue(queryParams,
 				HistoricDecisionInstanceQueryDto.class);
+		historicDecisionInstanceQueryDto.setDecisionInstanceId(id);
 		HistoricDecisionInstanceQuery query = historicDecisionInstanceQueryDto.toQuery(processEngine);
 		org.cibseven.bpm.engine.history.HistoricDecisionInstance instance = query.singleResult();
 	
@@ -4662,7 +4618,7 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 	
 	@Override
 	public Object deleteHistoricDecisionInstances(Map<String, Object> data, CIBUser user) {
-		// TODO: not tested
+
 		DeleteHistoricDecisionInstancesDto dto = objectMapper.convertValue(data, DeleteHistoricDecisionInstancesDto.class);
 		HistoricDecisionInstanceQuery decisionInstanceQuery = null;
 		if (dto.getHistoricDecisionInstanceQuery() != null) {
@@ -4682,7 +4638,7 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 	
 	@Override
 	public Object setHistoricDecisionInstanceRemovalTime(Map<String, Object> data, CIBUser user) {
-		// TODO: not tested
+		// TODO: tested but the result was "BadUserRequestException "historicDecisionInstances is empty" - same as in SevenProvider
 		SetRemovalTimeToHistoricDecisionInstancesDto dto = objectMapper.convertValue(data,
 				SetRemovalTimeToHistoricDecisionInstancesDto.class);
 		HistoryService historyService = processEngine.getHistoryService();
@@ -4758,10 +4714,11 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 	}
 	
 	@Override
-	public void suspendJobDefinition(String jobDefinitionId, String params, CIBUser user) {
-		// TODO: not tested
-		JobDefinitionSuspensionStateDto dto = objectMapper.convertValue(params, JobDefinitionSuspensionStateDto.class);
+	public void suspendJobDefinition(String jobDefinitionId, String param, CIBUser user) {
 		try {
+			@SuppressWarnings("unchecked")
+			Map<String,Object> params = objectMapper.readValue(param, HashMap.class);
+			JobDefinitionSuspensionStateDto dto = objectMapper.convertValue(params, JobDefinitionSuspensionStateDto.class);
 			dto.setJobDefinitionId(jobDefinitionId);
 			dto.updateSuspensionState(processEngine);
 
@@ -4770,14 +4727,17 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 					"The suspension state of Job Definition with id %s could not be updated due to: %s", jobDefinitionId,
 					e.getMessage());
 			throw new SystemException(message, e);
+		} catch (JsonProcessingException e) {
+			throw new SystemException(e.getMessage());
 		}
 	}
 	
 	@Override
-	public void overrideJobDefinitionPriority(String jobDefinitionId, String params, CIBUser user) {
-		// TODO: not tested
-		JobDefinitionPriorityDto dto = objectMapper.convertValue(params, JobDefinitionPriorityDto.class);
+	public void overrideJobDefinitionPriority(String jobDefinitionId, String param, CIBUser user) {
 		try {
+			@SuppressWarnings("unchecked")
+			Map<String,Object> params = objectMapper.readValue(param, HashMap.class);
+			JobDefinitionPriorityDto dto = objectMapper.convertValue(params, JobDefinitionPriorityDto.class);
 
 			if (dto.getPriority() != null) {
 				managementService.setOverridingJobPriorityForJobDefinition(jobDefinitionId, dto.getPriority(),
@@ -4787,20 +4747,18 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 					throw new InvalidRequestException(Status.BAD_REQUEST,
 							"Cannot reset priority for job definition " + jobDefinitionId + " with includeJobs=true");
 				}
-
 				managementService.clearOverridingJobPriorityForJobDefinition(jobDefinitionId);
 			}
 
 		} catch (AuthorizationException e) {
 			throw e;
-		} catch (ProcessEngineException e) {
+		} catch (JsonProcessingException|ProcessEngineException e) {
 			throw new SystemException(e.getMessage());
 		}
 	}
 	
 	@Override
 	public void retryJobDefinitionById(String id, Map<String, Object> params, CIBUser user) {
-		// TODO: not tested
 		RetriesDto dto = objectMapper.convertValue(params, RetriesDto.class);
 		try {
 			SetJobRetriesBuilder builder = managementService.setJobRetries(dto.getRetries()).jobDefinitionId(id);
@@ -4817,7 +4775,6 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 	
 	@Override
 	public Collection<Job> getJobs(Map<String, Object> params, CIBUser user) {
-
 		JobDefinitionQueryDto queryDto = objectMapper.convertValue(params, JobDefinitionQueryDto.class);
 		queryDto.setObjectMapper(objectMapper);
 		JobDefinitionQuery query = queryDto.toQuery(processEngine);
@@ -5091,7 +5048,6 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 	@Override
 	// TODO: Never called, related endpoint does not exist
 	public Object setRemovalTime(Map<String, Object> payload) {
-		// TODO: not tested
 		SetRemovalTimeToHistoricBatchesDto dto = objectMapper.convertValue(payload, SetRemovalTimeToHistoricBatchesDto.class);
 		HistoricBatchQuery historicBatchQuery = null;
 	
@@ -5124,7 +5080,6 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 	@Override
 	// TODO: Never called, related endpoint does not exist
 	public Object getCleanableBatchReport(Map<String, Object> queryParams) {
-		// TODO: not tested
 		MultivaluedMap<String, String> multiValueMap = new MultivaluedHashMap<>();
 		for (String key : queryParams.keySet()) {
 			multiValueMap.put(key, Arrays.asList((String) queryParams.get(key)));
@@ -5140,7 +5095,6 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 	@Override
 	// TODO: Never called, related endpoint does not exist
 	public Object getCleanableBatchReportCount() {
-		// TODO: not tested
 		MultivaluedMap<String, String> multiValueMap = new MultivaluedHashMap<>();
 		CleanableHistoricBatchReportDto queryDto = new CleanableHistoricBatchReportDto(objectMapper, multiValueMap);
 		queryDto.setObjectMapper(objectMapper);
@@ -5392,7 +5346,7 @@ public class SevenDirectProvider extends SevenProviderBase implements BpmProvide
 			DeploymentWithDefinitionsDto deploymentDto = DeploymentWithDefinitionsDto.fromDeployment(deployment);
 			UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(getEngineRestUrl());
 			URI uri = builder.path("/")// relativeRootResourcePath)
-					.path("/deployment")// DeploymentRestService.PATH)
+					.path("/deployment/")// DeploymentRestService.PATH)
 					.path(deployment.getId()).build().toUri();
 	
 			// GET
