@@ -39,6 +39,7 @@ import org.cibseven.webapp.rest.model.CandidateGroupTaskCount;
 import org.cibseven.webapp.rest.model.Decision;
 import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.DeploymentResource;
+import org.cibseven.webapp.rest.model.Engine;
 import org.cibseven.webapp.rest.model.EventSubscription;
 import org.cibseven.webapp.rest.model.ExternalTask;
 import org.cibseven.webapp.rest.model.Filter;
@@ -98,6 +99,7 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
     @Autowired private ISystemProvider systemProvider;
     @Autowired private ITenantProvider tenantProvider;
     @Autowired private IExternalTaskProvider externalTaskProvider;
+    @Autowired private IEngineProvider engineProvider;
     
     
     /*
@@ -1245,6 +1247,21 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	@Override
 	public Deployment redeployDeployment(String id, Map<String, Object> data, CIBUser user) throws SystemException {
 		return deploymentProvider.redeployDeployment(id, data, user);
+	}
+
+	/*
+
+	███████ ███    ██  ██████  ██ ███    ██ ███████     ██████  ██████   ██████  ██    ██ ██ ██████  ███████ ██████  
+	██      ████   ██ ██       ██ ████   ██ ██          ██   ██ ██   ██ ██    ██ ██    ██ ██ ██   ██ ██      ██   ██ 
+	█████   ██ ██  ██ ██   ███ ██ ██ ██  ██ █████       ██████  ██████  ██    ██ ██    ██ ██ ██   ██ █████   ██████  
+	██      ██  ██ ██ ██    ██ ██ ██  ██ ██ ██          ██      ██   ██ ██    ██  ██  ██  ██ ██   ██ ██      ██   ██ 
+	███████ ██   ████  ██████  ██ ██   ████ ███████     ██      ██   ██  ██████    ████   ██ ██████  ███████ ██   ██ 
+                                                                                                                    
+	 */
+
+	@Override
+	public Collection<Engine> getProcessEngineNames(CIBUser user) {
+		return engineProvider.getProcessEngineNames(user);
 	}
 
 }

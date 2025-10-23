@@ -19,7 +19,12 @@ import { axios } from '@/globals.js'
 
 export default {
     login: function(params, remember) {
-        return axios.create().post(getServicesBasePath() + '/auth/login', params, { params: { source: 'WEBSITE' } }).then(function(user) {
+        const engineName = localStorage.getItem('cibseven:engine')
+        const headers = engineName ? { 'X-Process-Engine': engineName } : {}
+        return axios.create().post(getServicesBasePath() + '/auth/login', params, { 
+            params: { source: 'WEBSITE' },
+            headers: headers
+        }).then(function(user) {
             axios.defaults.headers.common.authorization = user.data.authToken
             ;(remember ? localStorage : sessionStorage).setItem('token', user.data.authToken)
             return user.data

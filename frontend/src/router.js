@@ -247,8 +247,11 @@ function authGuard(strict) {
     function getSelfInfo() {
       if (to.query.token) sessionStorage.setItem('token', to.query.token)
       var token = sessionStorage.getItem('token') || localStorage.getItem('token')
+      var engineName = localStorage.getItem('cibseven:engine')
+      var headers = { authorization: token }
+      if (engineName) headers['X-Process-Engine'] = engineName
       var inst = axios.create() // bypass standard error handling
-      return inst.get(router.root.config.servicesBasePath + '/auth', { headers: { authorization: token } }).then(res => {
+      return inst.get(router.root.config.servicesBasePath + '/auth', { headers: headers }).then(res => {
         console && console.info('auth successful', res.data)
         axios.defaults.headers.common.authorization = res.data.authToken
           AuthService.fetchAuths().then(permissions => {

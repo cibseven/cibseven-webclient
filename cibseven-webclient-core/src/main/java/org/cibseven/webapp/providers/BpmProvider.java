@@ -41,6 +41,7 @@ import org.cibseven.webapp.rest.model.Batch;
 import org.cibseven.webapp.rest.model.CandidateGroupTaskCount;
 import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.DeploymentResource;
+import org.cibseven.webapp.rest.model.Engine;
 import org.cibseven.webapp.rest.model.EventSubscription;
 import org.cibseven.webapp.rest.model.ExternalTask;
 import org.cibseven.webapp.rest.model.Filter;
@@ -1190,5 +1191,14 @@ public interface BpmProvider {
 	 * @throws SystemException in case of an error
 	 */
 	Object fetchHistoricActivityStatistics(String id, Map<String, Object> params, CIBUser user);
+
+	/**
+	 * Get the names of all process engines available on the engine.
+	 *
+	 * @param user the user performing the operation
+	 * @return a collection of engine objects containing name information
+	 * @throws SystemException in case of an error
+	 */
+	Collection<Engine> getProcessEngineNames(CIBUser user);
 
 }

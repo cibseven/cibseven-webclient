@@ -150,6 +150,20 @@ Promise.all([
     const root = app.mount('#app')
     router.setRoot(root)
 
+    // Add request interceptor to include engine name header
+    axios.interceptors.request.use(
+      config => {
+        const engineName = localStorage.getItem('cibseven:engine')
+        if (engineName) {
+          config.headers['X-Process-Engine'] = engineName
+        }
+        return config
+      },
+      error => {
+        return Promise.reject(error)
+      }
+    )
+
     axios.interceptors.response.use(
       res => res.data,
       error => {

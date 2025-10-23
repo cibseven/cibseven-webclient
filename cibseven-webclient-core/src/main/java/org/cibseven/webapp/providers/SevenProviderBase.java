@@ -76,6 +76,10 @@ import lombok.extern.slf4j.Slf4j;
 public abstract class SevenProviderBase {
 
   protected static final String USER_ID_HEADER = "Context-User-ID";
+  public static final String ENGINE_NAME_HEADER = "X-Process-Engine";
+  
+  // ThreadLocal to store the engine name for the current request
+  private static final ThreadLocal<String> currentEngineName = new ThreadLocal<>();
 
 	@Value("${cibseven.webclient.custom.spring.jackson.parser.max-size:20000000}") int jacksonParserMaxSize;
 	@Value("${cibseven.webclient.engineRest.url:./}") protected String cibsevenUrl;
@@ -88,14 +92,61 @@ public abstract class SevenProviderBase {
 	@Lazy
 	protected BaseUserProvider<? extends StandardLogin> baseUserProvider;
 
+	/**
+	 * Sets the engine name for the current request thread
+	 * @param engineName the name of the engine to use
+	 */
+	public static void setCurrentEngineName(String engineName) {
+		currentEngineName.set(engineName);
+	}
 
 	/**
-	 * Constructs the full engine REST base URL by combining the base URL with the configurable path
+	 * Gets the engine name for the current request thread
+	 * @return the engine name or null if not set
+	 */
+	public static String getCurrentEngineName() {
+		return currentEngineName.get();
+	}
+
+	/**
+	 * Clears the engine name for the current request thread
+	 * Should be called at the end of request processing to prevent memory leaks
+	 */
+	public static void clearCurrentEngineName() {
+		currentEngineName.remove();
+	}
+
+
+	/**
+	 * Constructs the full engine REST base URL by combining the base URL with the configurable path.
+	 * If an engine name is set in the current thread context and it's not "default", 
+	 * the URL will include the engine-specific path: /engine-rest/engine/{engineName}
+	 * 
 	 * @return the complete engine REST URL
 	 */
 	protected String getEngineRestUrl() {
+		return getEngineRestUrl(true);
+	}
+
+	/**
+	 * Constructs the full engine REST base URL by combining the base URL with the configurable path.
+	 * 
+	 * @param useEngineContext if true, uses the engine name from ThreadLocal to build engine-specific URLs.
+	 *                         if false, returns the base URL without engine context (for engine-agnostic operations)
+	 * @return the complete engine REST URL
+	 */
+	protected String getEngineRestUrl(boolean useEngineContext) {
 		String baseUrl = cibsevenUrl.endsWith("/") ? cibsevenUrl.substring(0, cibsevenUrl.length() - 1) : cibsevenUrl;
 		String restPath = engineRestPath.startsWith("/") ? engineRestPath : "/" + engineRestPath;
+		
+		if (useEngineContext) {
+			String engineName = getCurrentEngineName();
+			// If engine name is provided and not "default", add it to the path
+			if (engineName != null && !engineName.isEmpty() && !"default".equals(engineName)) {
+				return baseUrl + restPath + "/engine/" + engineName;
+			}
+		}
+		
 		return baseUrl + restPath;
 	}
 
