@@ -18,6 +18,7 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 
 import { axios } from './globals.js'
+import { ENGINE_STORAGE_KEY } from './constants.js'
 
 import { AuthService } from '@/services.js'
 import { permissionsMixin } from '@/permissions.js'
@@ -247,9 +248,13 @@ function authGuard(strict) {
     function getSelfInfo() {
       if (to.query.token) sessionStorage.setItem('token', to.query.token)
       var token = sessionStorage.getItem('token') || localStorage.getItem('token')
-      var engineName = localStorage.getItem('cibseven:engine')
+      var engineName = localStorage.getItem(ENGINE_STORAGE_KEY)
       var headers = { authorization: token }
-      if (engineName) headers['X-Process-Engine'] = engineName
+      if (engineName) {
+        headers['X-Process-Engine'] = engineName
+        // Also set it as a default header for future requests
+        axios.defaults.headers.common['X-Process-Engine'] = engineName
+      }
       var inst = axios.create() // bypass standard error handling
       return inst.get(router.root.config.servicesBasePath + '/auth', { headers: headers }).then(res => {
         console && console.info('auth successful', res.data)

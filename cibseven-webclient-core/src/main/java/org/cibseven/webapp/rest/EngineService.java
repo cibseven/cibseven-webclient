@@ -38,6 +38,6 @@ public class EngineService extends BaseService {
 	@ApiResponse(responseCode = "200", description = "List of engine names successfully retrieved")
 	@GetMapping
 	public Collection<Engine> getProcessEngineNames() {
-		return bpmProvider.getProcessEngineNames(null);
+		return bpmProvider.getProcessEngineNames();
 	}
 }

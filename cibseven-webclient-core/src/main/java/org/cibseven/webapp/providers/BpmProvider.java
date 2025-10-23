@@ -1195,10 +1195,9 @@ public interface BpmProvider {
 	/**
 	 * Get the names of all process engines available on the engine.
 	 *
-	 * @param user the user performing the operation
 	 * @return a collection of engine objects containing name information
 	 * @throws SystemException in case of an error
 	 */
-	Collection<Engine> getProcessEngineNames(CIBUser user);
+	Collection<Engine> getProcessEngineNames();
 
 }

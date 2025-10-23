@@ -15,6 +15,7 @@
  *  limitations under the License.
  */
 import { axios } from './globals.js'
+import { ENGINE_STORAGE_KEY } from './constants.js'
 
 function filterToUrlParams(filters) {
   var filter = ''
@@ -494,7 +495,7 @@ var AuthService = {
     { headers: { authorization: recoverToken } }
   ) },
   login: function(params, remember) {
-    const engineName = localStorage.getItem('cibseven:engine')
+    const engineName = localStorage.getItem(ENGINE_STORAGE_KEY)
     const headers = engineName ? { 'X-Process-Engine': engineName } : {}
     return axios.create().post(getServicesBasePath() + '/auth/login', params, { headers: headers }).then(function(user) {
       axios.defaults.headers.common.authorization = user.data.authToken

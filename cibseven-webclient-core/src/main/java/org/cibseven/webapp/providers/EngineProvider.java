@@ -19,7 +19,6 @@ package org.cibseven.webapp.providers;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.rest.model.Engine;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -31,7 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 public class EngineProvider extends SevenProviderBase implements IEngineProvider {
 
 	@Override
-	public Collection<Engine> getProcessEngineNames(CIBUser user) {
+	public Collection<Engine> getProcessEngineNames() {
 		String url = getEngineRestUrl(false) + "/engine";
 		
 		return Arrays.asList(

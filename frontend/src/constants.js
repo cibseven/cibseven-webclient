@@ -14,13 +14,6 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.cibseven.webapp.providers;
 
-import java.util.Collection;
-
-import org.cibseven.webapp.rest.model.Engine;
-
-public interface IEngineProvider {
-	
-	public Collection<Engine> getProcessEngineNames();
-}
+// Storage keys
+export const ENGINE_STORAGE_KEY = 'cibseven:engine'

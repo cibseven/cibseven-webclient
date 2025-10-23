@@ -84,8 +84,8 @@
 
 <script>
 import { EngineService } from '@/services.js'
-
-const ENGINE_STORAGE_KEY = 'cibseven:engine'
+import { ENGINE_STORAGE_KEY } from '@/constants.js'
+import { axios } from '@/globals.js'
 
 export default {
   name: 'CIBHeaderFlow',
@@ -135,10 +135,17 @@ export default {
           localStorage.setItem(ENGINE_STORAGE_KEY, this.selectedEngine)
         }
       }
+      
+      // Set the engine header as a default axios header
+      if (this.selectedEngine) {
+        axios.defaults.headers.common['X-Process-Engine'] = this.selectedEngine
+      }
     },
     selectEngine(engineName) {
       this.selectedEngine = engineName
       localStorage.setItem(ENGINE_STORAGE_KEY, engineName)
+      // Update the default axios header
+      axios.defaults.headers.common['X-Process-Engine'] = engineName
       this.logout()
     }
   }

@@ -1260,8 +1260,8 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	 */
 
 	@Override
-	public Collection<Engine> getProcessEngineNames(CIBUser user) {
-		return engineProvider.getProcessEngineNames(user);
+	public Collection<Engine> getProcessEngineNames() {
+		return engineProvider.getProcessEngineNames();
 	}
 
 }
