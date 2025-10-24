@@ -573,6 +573,24 @@
 		},
 		"preferences": {
 			"title": "Preferences",
+			"general": {
+				"title": "General Settings",
+				"startPage": {
+					"label": "Default start page",
+					"description": "Select the page that will be displayed after login.",
+					"goTo": "Go to {page}",
+					"options": {
+						"home": "Home",
+						"groupTasklist": "Tasklist",
+						"startProcess": "Start Process",
+						"tasks": "Tasks",
+						"groupCockpit": "Cockpit",
+						"processesDashboard": "Processes Dashboard",
+						"decisionsList": "Decisions List",
+						"humanTasksDashboard": "Human Tasks Dashboard"
+					}
+				}
+			},
 			"dates": {
 				"title": "Date and Time Formats",
 				"formatDefault": "Format",

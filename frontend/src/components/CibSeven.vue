@@ -340,7 +340,7 @@ export default {
       return this.$root.user && this.applicationPermissions(this.$root.config.permissions.tasklist, 'tasklist')
     },
     permissionsCockpit: function() {
-      return this.$root.user && this.applicationPermissions(this.$root.config.permissions.tasklist, 'cockpit')
+      return this.$root.user && this.applicationPermissions(this.$root.config.permissions.cockpit, 'cockpit')
     },
     permissionsUsers: function() {
       return this.$root.user && this.hasAdminManagementPermissions(this.$root.config.permissions)
