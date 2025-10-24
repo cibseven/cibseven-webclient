@@ -26,11 +26,12 @@
 		<maven-war-plugin.version>3.4.0</maven-war-plugin.version>
 		<maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
 		<maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
+		<maven-enforcer-plugin.version>3.4.1</maven-enforcer-plugin.version>
 
 		<git-commit-id-maven-plugin.version>9.0.1</git-commit-id-maven-plugin.version>
 
 		<jjwt.version>0.12.6</jjwt.version>
-		<swagger-annotations.version>2.2.28</swagger-annotations.version>
+		<swagger-annotations.version>2.2.36</swagger-annotations.version>
 		<commons-io.version>2.18.0</commons-io.version>
 		<common-auth.version>1.2.0</common-auth.version>
 		<version.spring.boot>3.5.6</version.spring.boot>
@@ -43,8 +44,8 @@
 		<jib.to.image>harbor.cib.de/dev/cibseven-webclient:${project.version}</jib.to.image>
 
 		<version.eirslett.frontend.maven.plugin>1.12.1</version.eirslett.frontend.maven.plugin>
-    	<version.nodejs>22.14.0</version.nodejs>
-	    <version.npm>10.9.2</version.npm>
+		<version.nodejs>22.14.0</version.nodejs>
+		<version.npm>10.9.2</version.npm>
 
 		<!-- NPM publish tag configuration - empty by default (uses 'latest'), can be overridden with tag dev -->
 		<npm.publish.tag.arg></npm.publish.tag.arg>
@@ -68,17 +69,17 @@ You may obtain a copy of the License at
 	</properties>
 
 	<profiles>
-        <profile>
-            <id>normal-build</id>
-            <activation>
-                <property>
-                    <name>!release-npm-library</name>
-                </property>
-            </activation>
-            <modules>
-                <module>cibseven-webclient-web</module>
-                <module>cibseven-webclient-core</module>
-            </modules>
+		<profile>
+			<id>normal-build</id>
+			<activation>
+				<property>
+					<name>!release-npm-library</name>
+				</property>
+			</activation>
+			<modules>
+				<module>cibseven-webclient-web</module>
+				<module>cibseven-webclient-core</module>
+			</modules>
 			<build>
 				<plugins>
 					<plugin>
@@ -169,14 +170,14 @@ You may obtain a copy of the License at
 					</plugin>
 				</plugins>
 			</build>
-        </profile>
+		</profile>
 		<profile>
-		    <id>release-npm-library</id>
-            <activation>
-                <property>
-                    <name>release-npm-library</name>
-                </property>
-            </activation>
+			<id>release-npm-library</id>
+			<activation>
+				<property>
+					<name>release-npm-library</name>
+				</property>
+			</activation>
 			<build>
 				<plugins>
 					<plugin>
@@ -308,6 +309,25 @@ You may obtain a copy of the License at
 	<build>
 		<plugins>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<version>${maven-enforcer-plugin.version}</version>
+				<executions>
+					<execution>
+						<id>enforce-dependency-convergence</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<DependencyConvergence />
+							</rules>
+							<fail>true</fail>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<artifactId>maven-clean-plugin</artifactId>
 				<inherited>false</inherited>
 				<configuration>
@@ -377,26 +397,26 @@ You may obtain a copy of the License at
 	</build>
 
 	<repositories>
-	    <repository>
-	      <id>maven-central</id>
-	      <name>Maven Central</name>
-	      <url>https://repo1.maven.org/maven2</url>
-	      <snapshots>
-	        <enabled>false</enabled>
-	      </snapshots>
-	    </repository>
-	    <repository>
-	      <!-- Required for local builds by community users on master branch -->
-	      <id>mvn-cibseven-public</id>
-	      <name>CIB seven Public Repository</name>
-	      <url>https://artifacts.cibseven.org/repository/public</url>
-	    </repository>
-	    <repository>
-	      <!-- Required for local builds by developers on maintainance branches -->
-	      <id>mvn-cibseven-snapshots</id>
-	      <name>CIB seven Snapshots repository</name>
-	      <url>https://artifacts.cibseven.org/repository/snapshots</url>
-	    </repository>
+		<repository>
+			<id>maven-central</id>
+			<name>Maven Central</name>
+			<url>https://repo1.maven.org/maven2</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+		<!-- Required for local builds by community users on master branch -->
+			<id>mvn-cibseven-public</id>
+			<name>CIB seven Public Repository</name>
+			<url>https://artifacts.cibseven.org/repository/public</url>
+			</repository>
+		<repository>
+		<!-- Required for local builds by developers on maintainance branches -->
+			<id>mvn-cibseven-snapshots</id>
+			<name>CIB seven Snapshots repository</name>
+			<url>https://artifacts.cibseven.org/repository/snapshots</url>
+		</repository>
 	</repositories>
 
 	<scm>
