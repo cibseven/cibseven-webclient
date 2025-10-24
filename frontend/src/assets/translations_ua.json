@@ -573,6 +573,24 @@
 			},
 			"preferences": {
 				"title": "Налаштування",
+				"general": {
+					"title": "Загальні налаштування",
+					"startPage": {
+						"label": "Сторінка за замовчуванням після входу",
+						"description": "Виберіть сторінку, яка буде показана після входу.",
+						"goTo": "Перейти до {page}",
+						"options": {
+							"home": "Головна",
+							"groupTasklist": "Список завдань",
+							"startProcess": "Запуск процесу",
+							"tasks": "Завдання",
+							"groupCockpit": "Cockpit",
+							"processesDashboard": "Панель процесів",
+							"decisionsList": "Список рішень",
+							"humanTasksDashboard": "Панель користувацьких завдань"
+						}
+					}
+				},
 				"dates": {
 					"title": "Формати дати та часу",
 					"formatDefault": "Формат",

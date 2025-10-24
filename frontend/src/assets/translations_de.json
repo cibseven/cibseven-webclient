@@ -573,6 +573,24 @@
 		},
 		"preferences": {
 			"title": "Einstellungen",
+			"general": {
+				"title": "Allgemeine Einstellungen",
+				"startPage": {
+					"label": "Standard-Startseite",
+					"description": "Wählen Sie die Seite aus, die nach dem Login angezeigt wird.",
+					"goTo": "Gehe zu {page}",
+					"options": {
+						"home": "Startseite",
+						"groupTasklist": "Aufgabenliste",
+						"startProcess": "Prozess starten",
+						"tasks": "Aufgaben",
+						"groupCockpit": "Cockpit",
+						"processesDashboard": "Prozess-Dashboard",
+						"decisionsList": "Entscheidungen",
+						"humanTasksDashboard": "Benutzeraufgaben-Dashboard"
+					}
+				}
+			},
 			"dates": {
 				"title": "Datums- und Zeitformate",
 				"formatDefault": "Format",

@@ -573,6 +573,24 @@
 		},
 		"preferences": {
 			"title": "Preferencias",
+			"general": {
+				"title": "Configuración general",
+				"startPage": {
+					"label": "Página de inicio predeterminada",
+					"description": "Seleccione la página que se mostrará después de iniciar sesión.",
+					"goTo": "Ir a {page}",
+					"options": {
+						"home": "Inicio",
+						"groupTasklist": "Tasklist",
+						"startProcess": "Iniciar proceso",
+						"tasks": "Tareas",
+						"groupCockpit": "Cockpit",
+						"processesDashboard": "Panel de procesos",
+						"decisionsList": "Lista de decisiones",
+						"humanTasksDashboard": "Panel de tareas humanas"
+					}
+				}
+			},
 			"dates": {
 				"title": "Formatos de fecha y hora",
 				"formatDefault": "Formato",

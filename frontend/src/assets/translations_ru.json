@@ -573,6 +573,24 @@
 		},
 		"preferences": {
 			"title": "Предпочтения",
+			"general": {
+				"title": "Общие настройки",
+				"startPage": {
+					"label": "Стартовая страница по умолчанию",
+					"description": "Выберите страницу, которая будет отображаться после входа.",
+					"goTo": "Перейти на {page}",
+					"options": {
+						"home": "Главная",
+						"groupTasklist": "Список задач",
+						"startProcess": "Запуск процесса",
+						"tasks": "Задачи",
+						"groupCockpit": "Cockpit",
+						"processesDashboard": "Панель операций",
+						"decisionsList": "Список решений",
+						"humanTasksDashboard": "Задачи пользователей"
+					}
+				}
+			},
 			"dates": {
 				"title": "Форматы даты и времени",
 				"formatDefault": "Формат",
