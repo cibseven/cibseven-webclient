@@ -31,7 +31,6 @@
 		<git-commit-id-maven-plugin.version>9.0.1</git-commit-id-maven-plugin.version>
 
 		<jjwt.version>0.12.6</jjwt.version>
-		<swagger-annotations.version>2.2.36</swagger-annotations.version>
 		<commons-io.version>2.18.0</commons-io.version>
 		<common-auth.version>1.2.0</common-auth.version>
 		<version.spring.boot>3.5.6</version.spring.boot>
