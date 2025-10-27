@@ -326,37 +326,7 @@ export default {
     },
     handleTaskLink: function(taskId) {
       TaskService.findTaskById(taskId).then(task => {
-        if (task.assignee && (task.assignee.toLowerCase() === this.$root.user.userID.toLowerCase()))
-          return this.$emit('selected-task', task)
-        else {
-          TaskService.findIdentityLinks(taskId).then(identityLinks => {
-            var userIdLink = identityLinks.find(i => {
-              return i.type === 'candidate' && i.userId && i.userId.toLowerCase() === this.$root.user.userID.toLowerCase()
-            })
-            if (userIdLink) return this.$emit('selected-task', task)
-            this.manageCandidateGroups(identityLinks, task)
-          })
-        }
-      })
-    },
-    manageCandidateGroups: function(identityLinks, task) {
-      var promises = []
-      for (var i in identityLinks) {
-        if (identityLinks[i].type === 'candidate' && identityLinks[i].groupId) {
-          var promise = AdminService.findUsers({ memberOfGroup: identityLinks[i].groupId }).then(users => {
-            return users.some(u => {
-              return u.id.toLowerCase() === this.$root.user.userID.toLowerCase()
-            })
-          })
-          promises.push(promise)
-        }
-      }
-      Promise.all(promises).then(results => {
-        if (results.some(r => { return r })) this.$emit('selected-task', task)
-        else {
-          this.$root.$refs.error.show({ type: 'AccessDeniedException', params: [task.id] })
-          this.$router.push('/seven/auth/tasks/' + this.$store.state.filter.selected.id)
-        }
+        this.$emit('selected-task', task)
       })
     },
     getDateFormatted: function(date, format, emptyMsg) {
