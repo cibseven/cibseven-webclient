@@ -170,7 +170,7 @@
 
 <script>
 import { moment } from '@/globals.js'
-import { TaskService, AdminService } from '@/services.js'
+import { TaskService } from '@/services.js'
 import { debounce } from '@/utils/debounce.js'
 import { formatDateForTooltips } from '@/utils/dates.js'
 import StartProcess from '@/components/start-process/StartProcess.vue'
