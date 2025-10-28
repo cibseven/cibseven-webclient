@@ -14,6 +14,10 @@
 			"disabled": "Letztes Update: {date}\n\nAutomatische Updates sind deaktiviert.\nDrücken Sie F5, um die Daten neu zu laden.",
 			"enabled": "Letztes Update: {date}\n\nAutomatische Updates sind aktiviert.\nAktualisierung alle {seconds} Sekunden."
 		},
+		"notAvailable": {
+			"label": "N/A",
+			"tooltip": "Nicht verfügbar"
+		},
 		"remove": "Entfernen"
 	},
 	"login": {
