@@ -73,6 +73,7 @@
 	"process": {
 		"instanceRunning": "Instancia en ejecución",
 		"instanceIncidents": "Instancia con incidentes",
+		"instanceSuspended": "Instancia suspendida",
 		"instanceWithoutIncidents": "Instancia sin incidencias",
 		"instanceFinished": "Instancia finalizada",
 		"name": "Nombre",

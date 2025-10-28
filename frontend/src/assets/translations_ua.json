@@ -73,6 +73,7 @@
 	"process": {
 		"instanceRunning": "Запущений екземпляр",
 		"instanceIncidents": "Екземпляр з інцидентами",
+		"instanceSuspended": "Екземпляр призупинено", 
 		"instanceWithoutIncidents": "Екземпляр без інцидентів",
 		"instanceFinished": "Завершений екземпляр",
 		"name": "Ім’я",

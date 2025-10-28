@@ -184,7 +184,7 @@ export default {
         case 'ACTIVE':
           return this.$t('process.instanceRunning')
         case 'SUSPENDED':
-          return this.$t('process.instanceIncidents')
+          return this.$t('process.instanceSuspended')
         default:
           return this.$t('process.instanceFinished')
       }
