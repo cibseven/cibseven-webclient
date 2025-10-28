@@ -21,7 +21,7 @@
     <div v-if="loading">
       <p class="text-center p-4"><BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}</p>
     </div>
-    <FlowTable v-else-if="incidents.length > 0" striped thead-class="sticky-header" :items="incidents" primary-key="id" prefix="process-instance.incidents."
+    <FlowTable v-else-if="incidents.length > 0" striped thead-class="sticky-header" :items="incidents" primary-key="id" prefix=""
       :sort-by="currentSortBy" :sort-desc="currentSortDesc" native-layout external-sort
       @external-sort="handleExternalSort"
       :fields="incidentFields">
@@ -50,7 +50,17 @@
           @click="navigateToIncidentProcessInstance(row.item.processInstanceId)"
           @copy="copyValueToClipboard"
         />
-        <span v-else>-</span>
+        <span v-else class="text-muted fst-italic" :title="$t('commons.notAvailable.tooltip')">{{ $t('commons.notAvailable.label') }}</span>
+      </template>
+      <template #cell(businessKey)="row">
+        <CopyableActionButton v-if="row.item.businessKey !== undefined"
+          :display-value="row.item.businessKey"
+          :copy-value="row.item.businessKey" 
+          :title="row.item.businessKey"
+          :clickable="false"
+          @copy="copyValueToClipboard"
+        />
+        <span v-else class="text-muted fst-italic" :title="$t('commons.notAvailable.tooltip')">{{ $t('commons.notAvailable.label') }}</span>
       </template>
       <template v-slot:cell(createTime)="table">
         <div :title="formatDateForTooltips(table.item.createTime)" class="text-truncate">{{ formatDateForTooltips(table.item.createTime) }}</div>
@@ -148,20 +158,22 @@ export default {
   },
   computed: {
     ...mapGetters('incidents', ['incidents']),
+    ...mapGetters('instances', ['instances']),
     incidentFields() {
       const baseFields = [
-        { label: 'state', key: 'state' },
-        { label: 'message', key: 'incidentMessage' },
-        ...(this.isInstanceView ? [] : [{ label: 'processInstance', key: 'processInstanceId' }]),
-        { label: 'createTime', key: 'createTime' },
-        { label: 'endTime', key: 'endTime' },
-        { label: 'activity', key: 'activityId' },
-        { label: 'failedActivity', key: 'failedActivityId' },
-        { label: 'causeIncidentProcessInstanceId', key: 'causeIncidentProcessInstanceId' },
-        { label: 'rootCauseIncidentProcessInstanceId', key: 'rootCauseIncidentProcessInstanceId' },
-        { label: 'incidentType', key: 'incidentType' },
-        { label: 'annotation', key: 'annotation' },
-        { label: 'actions', key: 'actions', sortable: false, tdClass: 'py-0' }
+        { label: 'process-instance.incidents.state', key: 'state' },
+        { label: 'process-instance.incidents.message', key: 'incidentMessage' },
+        ...(this.isInstanceView ? [] : [{ label: 'process-instance.incidents.processInstance', key: 'processInstanceId' }]),
+        ...(this.isInstanceView ? [] : [{ label: 'process.businessKey', key: 'businessKey' }]),
+        { label: 'process-instance.incidents.createTime', key: 'createTime' },
+        { label: 'process-instance.incidents.endTime', key: 'endTime' },
+        { label: 'process-instance.incidents.activity', key: 'activityId' },
+        { label: 'process-instance.incidents.failedActivity', key: 'failedActivityId' },
+        { label: 'process-instance.incidents.causeIncidentProcessInstanceId', key: 'causeIncidentProcessInstanceId' },
+        { label: 'process-instance.incidents.rootCauseIncidentProcessInstanceId', key: 'rootCauseIncidentProcessInstanceId' },
+        { label: 'process-instance.incidents.incidentType', key: 'incidentType' },
+        { label: 'process-instance.incidents.annotation', key: 'annotation' },
+        { label: 'process-instance.incidents.actions', key: 'actions', sortable: false, tdClass: 'py-0' }
       ]
       return baseFields
     }
@@ -203,9 +215,30 @@ export default {
       }
       try {
         await this.loadIncidents(params)
+        if (!this.isInstanceView && this.incidents.length > 0) {
+          this.enrichWithBusinessKey()
+        }
       } finally {
         this.loading = false
       }
+    },
+    enrichWithBusinessKey() {
+      // create mapping of instance IDs to their business keys
+      const instanceIdToProcessInfo = this.instances.reduce((map, instance) => {
+        map[instance.id] = { businessKey: instance.businessKey }
+        return map
+      }, {})
+
+      // enrich incidents with business keys
+      const enrichedIncidents = this.incidents.map(incident => {
+        const instanceInfo = instanceIdToProcessInfo[incident.processInstanceId]
+        return {
+          ...incident,
+          ...instanceInfo,
+        }
+      })
+
+      this.setIncidents(enrichedIncidents)
     },
     handleExternalSort({ sortBy, sortDesc }) {
       this.currentSortBy = sortBy

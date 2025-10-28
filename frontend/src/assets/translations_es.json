@@ -14,6 +14,10 @@
 			"disabled": "Última actualización: {date}\n\nLas actualizaciones automáticas están desactivadas.\nPresiona F5 para recargar los datos.",
 			"enabled": "Última actualización: {date}\n\nLas actualizaciones automáticas están activadas.\nRecargando cada {seconds} segundos."
 		},
+		"notAvailable": {
+			"label": "N/A",
+			"tooltip": "No disponible"
+		},
 		"remove": "Eliminar"
 	},
 	"login": {
