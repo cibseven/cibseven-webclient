@@ -46,7 +46,7 @@
         @contextmenu="focused = $event" @mouseenter="focused = $event" @mouseleave="focused = null">
         <template v-slot:cell(actions)="row">
           <div v-if="$root.config.userEditable">
-            <b-button :disabled="focused !== row.item" style="opacity: 1" @click="edit(row.item)" class="px-2 border-0 shadow-none" :title="$t('admin.users.editUser')" variant="link">
+            <b-button :disabled="focused !== row.item" style="opacity: 1" @click="openUser(row.item)" class="px-2 border-0 shadow-none" :title="$t('admin.users.editUser')" variant="link">
               <span class="mdi mdi-18px mdi-pencil-outline"></span>
             </b-button>
             <span class="border-start h-50" :class="focused === row.item ? 'border-secondary' : ''"></span>
@@ -55,7 +55,7 @@
             </b-button>
           </div>
           <div v-else>
-            <b-button :disabled="focused !== row.item" style="opacity: 1" @click="view(row.item)" class="px-2 border-0 shadow-none" :title="$t('admin.users.viewUser')" variant="link">
+            <b-button :disabled="focused !== row.item" style="opacity: 1" @click="openUser(row.item)" class="px-2 border-0 shadow-none" :title="$t('admin.users.viewUser')" variant="link">
               <span class="mdi mdi-18px mdi-eye-outline"></span>
             </b-button>
           </div>
@@ -153,11 +153,7 @@ export default {
         this.loadUsers()
       })
     },
-    edit: function (user) {
-      this.$router.push('/seven/auth/admin/user/' + user.id + '?tab=profile')
-    },
-    view: function (user) {
-      // For now, just redirect to the profile (read-only mode will be handled later)
+    openUser: function (user) {
       this.$router.push('/seven/auth/admin/user/' + user.id + '?tab=profile')
     },
     showMore: function(el) {
