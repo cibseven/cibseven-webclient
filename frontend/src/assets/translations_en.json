@@ -73,6 +73,7 @@
 	"process": {
 		"instanceRunning": "Instance running",
 		"instanceIncidents": "Instance with incidents",
+		"instanceSuspended": "Instance suspended",
 		"instanceWithoutIncidents": "Instance without incidents",
 		"instanceFinished": "Instance finished",		
 		"name": "Name",

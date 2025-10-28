@@ -110,7 +110,7 @@ export default {
     getIconTitle(state) {
       switch (state) {
         case 'ACTIVE': return this.$t('decision.instanceRunning')
-        case 'SUSPENDED': return this.$t('decision.instanceIncidents')
+        case 'SUSPENDED': return this.$t('decision.instanceSuspended')
         default: return this.$t('decision.instanceFinished')
       }
     },
