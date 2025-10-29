@@ -112,23 +112,13 @@ You may obtain a copy of the License at
 								</goals>
 							</execution>
 							<execution>
-								<id>npm cache clean</id>
-								<goals>
-									<goal>npm</goal>
-								</goals>
-								<phase>generate-resources</phase>
-								<configuration>
-									<arguments>cache clean --force</arguments>
-								</configuration>
-							</execution>
-							<execution>
 								<id>npm ci</id>
 								<goals>
 									<goal>npm</goal>
 								</goals>
 								<phase>generate-resources</phase>
 								<configuration>
-									<arguments>ci --no-audit --no-fund --verbose</arguments>
+									<arguments>ci --no-audit --no-fund</arguments>
 								</configuration>
 							</execution>
 							<!--
@@ -226,7 +216,7 @@ You may obtain a copy of the License at
 								</goals>
 								<phase>generate-resources</phase>
 								<configuration>
-									<arguments>ci --no-audit --no-fund --verbose</arguments>
+									<arguments>ci --no-audit --no-fund</arguments>
 								</configuration>
 							</execution>
 							<execution>
