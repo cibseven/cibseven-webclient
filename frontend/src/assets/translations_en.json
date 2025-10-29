@@ -21,7 +21,7 @@
 		"remove": "Remove"
 	},
 	"login": {
-		"productName": "CIB seven",
+		"productName": "@:cib-header.productName",
 		"productSlogan": "Process Management Platform",
 		"username": "Username",
 		"password": "Password",

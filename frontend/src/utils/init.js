@@ -64,7 +64,7 @@ export function checkExternalReturn(href, hash) {
 }
 
 export function updateAppTitle(productName, sectionName = undefined, taskName = undefined) {
-  var title = productName || 'CIB seven'
+  var title = productName
   if (sectionName) {
     title += ' | '
     title += sectionName

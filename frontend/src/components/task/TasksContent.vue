@@ -370,7 +370,7 @@ export default {
       this.task = task
       this.assignee = task.assignee || null
       updateAppTitle(
-        this.$root.config.productNamePageTitle,
+        this.$root.config.productNamePageTitle || this.$t('cib-header.productName'),
         this.$t('start.taskList.title'),
         task.name
       )
