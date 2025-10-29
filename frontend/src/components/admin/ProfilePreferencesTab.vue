@@ -207,9 +207,12 @@ export default {
     startPageOptions() {
       const options = []
 
-      options.push(
-        { value: 'start', text: this.$t('admin.preferences.general.startPage.options.home') },
-      )
+      options.push({
+        label: this.$root.config.productNamePageTitle || this.$t('cib-header.productName'),
+        options: [
+          { value: 'start', text: this.$t('admin.preferences.general.startPage.options.home') },
+        ]
+      })
 
       if (this.permissionsTaskList()) {
         options.push(

@@ -21,7 +21,7 @@
 		"remove": "Видалити"
 	},
 	"login": {
-		"productName": "CIB seven",
+		"productName": "@:cib-header.productName",
 		"productSlogan": "Платформа для керування процесами",
 		"username": "Ім’я користувача",
 		"password": "Пароль",

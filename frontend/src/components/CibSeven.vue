@@ -20,7 +20,7 @@
   <div class="h-100 d-flex flex-column">
     <CIBHeaderFlow v-if="$root.header === 'true'" class="flex-shrink-0" :languages="$root.config.supportedLanguages.sort()" :user="$root.user" @logout="logout">
       <div class="me-auto d-flex flex-column flex-md-row" style="height: 38px">
-        <b-navbar-brand class="py-0" :title="$t('navigation.home')" to="/">
+        <b-navbar-brand class="py-0" :title="$t('navigation.home')" to="/seven/auth/start">
           <img height="38px" :alt="$t('cib-header.productName')" :src="$root.logoPath"/>
           <span class="d-none d-md-inline align-middle"></span>
         </b-navbar-brand>
@@ -411,7 +411,7 @@ export default {
         case 'adminTenants':
           // "CIB seven | Admin | <view>"
           updateAppTitle(
-            this.$root.config.productNamePageTitle,
+            this.$root.config.productNamePageTitle || this.$t('cib-header.productName'),
             this.$t('start.admin.title'),
             title
           )
@@ -419,7 +419,7 @@ export default {
         default:
           // "CIB seven | <view>"
           updateAppTitle(
-            this.$root.config.productNamePageTitle,
+            this.$root.config.productNamePageTitle || this.$t('cib-header.productName'),
             title
           )
           break
