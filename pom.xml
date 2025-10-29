@@ -118,7 +118,7 @@ You may obtain a copy of the License at
 								</goals>
 								<phase>generate-resources</phase>
 								<configuration>
-									<arguments>ci --no-audit --no-fund</arguments>
+									<arguments>ci --no-audit --no-fund --verbose</arguments>
 								</configuration>
 							</execution>
 							<!--
@@ -216,7 +216,7 @@ You may obtain a copy of the License at
 								</goals>
 								<phase>generate-resources</phase>
 								<configuration>
-									<arguments>ci --no-audit --no-fund</arguments>
+									<arguments>ci --no-audit --no-fund --verbose</arguments>
 								</configuration>
 							</execution>
 							<execution>
