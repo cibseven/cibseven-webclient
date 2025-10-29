@@ -411,7 +411,7 @@ export default {
         case 'adminTenants':
           // "CIB seven | Admin | <view>"
           updateAppTitle(
-            this.$root.config.productNamePageTitle || this.$t('login.productName'),
+            this.$root.config.productNamePageTitle || this.$t('cib-header.productName'),
             this.$t('start.admin.title'),
             title
           )
@@ -419,7 +419,7 @@ export default {
         default:
           // "CIB seven | <view>"
           updateAppTitle(
-            this.$root.config.productNamePageTitle || this.$t('login.productName'),
+            this.$root.config.productNamePageTitle || this.$t('cib-header.productName'),
             title
           )
           break
