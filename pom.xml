@@ -118,7 +118,7 @@ You may obtain a copy of the License at
 								</goals>
 								<phase>generate-resources</phase>
 								<configuration>
-									<arguments>npm cache clean --force</arguments>
+									<arguments>cache clean --force</arguments>
 								</configuration>
 							</execution>
 							<execution>
