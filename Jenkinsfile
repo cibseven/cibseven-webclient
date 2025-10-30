@@ -163,7 +163,7 @@ pipeline {
                         sh "mvn -T4 -Dbuild.number=${BUILD_NUMBER} clean verify"
                     }
                     if (!params.DEPLOY_TO_MAVEN_CENTRAL) {
-                        junit allowEmptyResults: true, testResults: ConstantsInternal.MAVEN_TEST_RESULTS
+                        junit allowEmptyResults: true, testResults: 'cibseven-webclient-core/target/failsafe-reports/**'
 
                         // Show coverage in Jenkins UI
                         recordCoverage(
@@ -173,7 +173,8 @@ pipeline {
                         )
 
                         // This archives the whole HTML coverage report so you can download or view it from Jenkins
-                        archiveArtifacts artifacts: 'frontend/coverage/lcov-report/**', allowEmptyArchive: false
+                        // This archives the Vitest test reports so you can download or view them from Jenkins
+                        archiveArtifacts artifacts: 'frontend/coverage/lcov-report/**, frontend/target/vitest-reports/**, cibseven-webclient-core/target/failsafe-reports/**', allowEmptyArchive: false, fingerprint: true
                     }
                 }
             }
