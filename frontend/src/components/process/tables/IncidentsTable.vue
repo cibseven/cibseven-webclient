@@ -23,6 +23,7 @@
     </div>
     <FlowTable v-else-if="incidents.length > 0" :items="incidents"
       striped
+      resizable
       thead-class="sticky-header"
       primary-key="id"
       prefix=""
