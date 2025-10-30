@@ -406,51 +406,53 @@ function loadDeployedForm(client, isStartForm, referenceId) {
 }
 
 function loadGeneratedForm(isStartForm, referenceId, formContainer, client, config) {
-    // Fetches Camunda generated form HTML from the engine REST API and normalizes it by removing unsupported Angular components
+    // Fetches Camunda generated form HTML from the middleware services via parent window
     return new Promise((resolve, reject) => {
-        if (isStartForm) {
-            client.http.get(`process-definition/${referenceId}/rendered-form`, {
-            data: {
-                noCache: Date.now(),
-                userId: config.userId,
-                engineName: config.engineName
-            },
-            headers: {
-                'Accept': '*/*'
-            },
-            done: function(err, renderedFormHtml) {
-                if (err) {
-                    console.error('Error getting rendered form:', err);
-                    reject(err);
-                } else {
-                    var updatedHtml = normalizeGeneratedFormHtml(renderedFormHtml);
-                    resolve(updatedHtml);
-                }
-            }
-        });
+        const params = {
+            noCache: Date.now(),
+            userId: config.userId,
+            engineName: config.engineName
+        };
+
+        if (!isStartForm) {
+            // Add taskId for tasks
+            params.taskId = referenceId;
         }
-        else {
-            const Task = client.resource('task');
-            Task.http.get(`task/${referenceId}/rendered-form`, {
-                data: {
-                    noCache: Date.now(),
-                    userId: config.userId,
-                    engineName: config.engineName,
-                    taskId: referenceId
-                },
-                headers: {
-                    'Accept': '*/*'
-                },
-                done: function (err, renderedFormHtml) {
-                    if (err) {
-                        console.error('Error getting rendered form:', err);
-                        reject(err);
-                    } else {
-                        var updatedHtml = normalizeGeneratedFormHtml(renderedFormHtml);
+
+        try {
+            // Create a unique message handler to listen for the rendered form result from the parent window
+            const messageHandler = function(event) {
+                if (event.data &&
+                    event.data.method === 'renderedFormResult' &&
+                    event.data.referenceId === referenceId) {
+
+                    window.removeEventListener('message', messageHandler);
+
+                    if (event.data.error) {
+                        console.error('Error getting rendered form:', event.data.error);
+                        reject(event.data.error);
+                    } else if (event.data.html) {
+                        const updatedHtml = normalizeGeneratedFormHtml(event.data.html);
                         resolve(updatedHtml);
+                    } else {
+                        reject(new Error('No HTML content received'));
                     }
                 }
+            };
+
+            // Add the listener to handle the rendered form result
+            window.addEventListener('message', messageHandler);
+
+            // Send the request to parent window to get the rendered form
+            callParent('getRenderedForm', {
+                isStartForm: isStartForm,
+                referenceId: referenceId,
+                params: params
             });
+
+        } catch (err) {
+            console.error('Rendered form request error:', err);
+            reject(err);
         }
     });
 }
