@@ -54,7 +54,7 @@
 
 <script>
 import { permissionsMixin } from '@/permissions.js'
-import { TaskService } from '@/services.js'
+import { TaskService, ProcessService } from '@/services.js'
 import IconButton from '@/components/render-template/IconButton.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import { BWaitingBox } from 'cib-common-components'
@@ -271,6 +271,7 @@ export default {
         else if (e.data.method === 'displayErrorMessage') this.displayErrorMessage(e.data.data)
         else if (e.data.method === 'cancelTask') this.cancelTask()
         else if (e.data.method === 'updateFilters') this.updateFilters(e.data)
+        else if (e.data.method === 'getRenderedForm') this.handleRenderedFormRequest(e)
         else if (e.data.method === 'requestAuthToken') {
           // Securely provide auth token to iframe via postMessage
           const response = {
@@ -347,6 +348,41 @@ export default {
       // Reset date picker state
       this.datePickerValue = null
       this.datePickerRequest = null
+    },
+    handleRenderedFormRequest: async function(e) {
+      const { isStartForm, referenceId, params } = e.data.data;
+      const formFrame = this.$refs['template-frame'];
+
+      try {
+        let response;
+        if (isStartForm) {
+          // Call ProcessService for start forms
+          response = await ProcessService.getRenderedForm(referenceId, params);
+        } else {
+          // Call TaskService for task forms
+          response = await TaskService.getRenderedForm(referenceId, params);
+        }
+
+        // Send success response back to iframe
+        if (formFrame && formFrame.contentWindow) {
+          formFrame.contentWindow.postMessage({
+            method: 'renderedFormResult',
+            referenceId: referenceId,
+            html: response
+          }, '*');
+        }
+      } catch (error) {
+        console.error('Error getting rendered form:', error);
+
+        // Send error response back to iframe
+        if (formFrame && formFrame.contentWindow) {
+          formFrame.contentWindow.postMessage({
+            method: 'renderedFormResult',
+            referenceId: referenceId,
+            error: error.message || error
+          }, '*');
+        }
+      }
     },
     onBeforeUnload: function() {
       var formFrame = this.$refs['template-frame']
