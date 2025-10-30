@@ -21,17 +21,18 @@
     <div v-if="loading">
       <p class="text-center p-4"><BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}</p>
     </div>
-    <FlowTable v-else-if="incidents.length > 0"
+    <FlowTable v-else-if="incidents.length > 0" :items="incidents"
       striped
       thead-class="sticky-header"
-      :items="incidents"
       primary-key="id"
       prefix=""
       native-layout
+      :column-definitions="columnDefinitions"
+      :columns="visibleColumns"
+      :useCase="useCase"
       external-sort
       :sort-by="currentSortBy" :sort-desc="currentSortDesc"
-      @external-sort="handleExternalSort"
-      :fields="incidentFields">
+      @external-sort="handleExternalSort">
       <template #cell(state)="row">
         <span v-if="row.item.deleted">{{ $t('process-instance.incidents.deleted') }}</span>
         <span v-else-if="row.item.resolved">{{ $t('process-instance.incidents.resolved') }}</span>
@@ -163,13 +164,37 @@ export default {
     activityInstance: Object,
     isInstanceView: Boolean
   },
+  data: function() {
+    return {
+      loading: true,
+      currentSortBy: 'incidentType',
+      currentSortDesc: false
+    }
+  },
   computed: {
     ...mapGetters('incidents', ['incidents']),
     ...mapGetters('instances', ['instances']),
-    incidentFields() {
-      const baseFields = [
+    visibleColumns() {
+      return [
+        'state',
+        'incidentMessage',
+        ...(this.isInstanceView ? [] : ['processInstanceId']),
+        ...(this.isInstanceView ? [] : ['businessKey']),
+        'createTime',
+        'endTime',
+        'activityId',
+        'failedActivityId',
+        'causeIncidentProcessInstanceId',
+        'rootCauseIncidentProcessInstanceId',
+        'incidentType',
+        'annotation',
+        'actions'
+      ]
+    },
+    columnDefinitions() {
+      return [
         { label: 'process-instance.incidents.state', key: 'state' },
-        { label: 'process-instance.incidents.message', key: 'incidentMessage' },
+        { label: 'process-instance.incidents.message', key: 'incidentMessage', groupSeparator: true },
         ...(this.isInstanceView ? [] : [{ label: 'process-instance.incidents.processInstance', key: 'processInstanceId' }]),
         ...(this.isInstanceView ? [] : [{ label: 'process.businessKey', key: 'businessKey' }]),
         { label: 'process-instance.incidents.createTime', key: 'createTime' },
@@ -180,16 +205,11 @@ export default {
         { label: 'process-instance.incidents.rootCauseIncidentProcessInstanceId', key: 'rootCauseIncidentProcessInstanceId' },
         { label: 'process-instance.incidents.incidentType', key: 'incidentType' },
         { label: 'process-instance.incidents.annotation', key: 'annotation' },
-        { label: 'process-instance.incidents.actions', key: 'actions', sortable: false, tdClass: 'py-0' }
+        { label: 'process-instance.incidents.actions', key: 'actions', disableToggle: true, sortable: false, groupSeparator: true, tdClass: 'py-0' }
       ]
-      return baseFields
-    }
-  },
-  data: function() {
-    return {
-      loading: true,
-      currentSortBy: 'incidentType',
-      currentSortDesc: false
+    },
+    useCase() {
+      return this.isInstanceView ? 'process-instance-incidents' : 'process-definition-incidents'
     }
   },
   watch: {
