@@ -58,6 +58,7 @@ import { TaskService } from '@/services.js'
 import IconButton from '@/components/render-template/IconButton.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import { BWaitingBox } from 'cib-common-components'
+import { ENGINE_STORAGE_KEY } from '@/constants.js'
 
 export default {
   name: 'RenderTemplate',
@@ -271,11 +272,18 @@ export default {
         else if (e.data.method === 'displayErrorMessage') this.displayErrorMessage(e.data.data)
         else if (e.data.method === 'cancelTask') this.cancelTask()
         else if (e.data.method === 'updateFilters') this.updateFilters(e.data)
-        else if (e.data.method === 'requestAuthToken') {
-          // Securely provide auth token to iframe via postMessage
-          const response = {
-            method: 'authTokenResponse',
+        else if (e.data.method === 'requestConfig') {
+          // Securely provide config (auth token + engine) to iframe via postMessage
+          const engineName = localStorage.getItem(ENGINE_STORAGE_KEY)
+          const config = {
             authToken: this.$root.user.authToken
+          }
+          if (engineName) {
+            config.engineName = engineName
+          }
+          const response = {
+            method: 'configResponse',
+            config: config
           }
           formFrame.contentWindow.postMessage(response, '*')
         }

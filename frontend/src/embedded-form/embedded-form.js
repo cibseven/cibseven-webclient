@@ -64,8 +64,8 @@ export function initEmbeddedForm(options = {}) {
         const generated = searchParams.get('generated');
         config.supportedLanguages = [lang];
 
-        // Request authorization token from parent window via postMessage
-        return services.requestAuthToken().then(authorization => {
+        // Request configuration from parent window via postMessage
+        return services.requestConfig().then(parentConfig => {
             return switchLanguage(config, lang).then(() => {
                 const isStartForm = !!processDefinitionId;
                 const isGeneratedForm = !!generated;
@@ -112,7 +112,7 @@ export function initEmbeddedForm(options = {}) {
                     processDefinitionId || taskId,
                     embeddedContainer,
                     formContainer,
-                    authorization,
+                    parentConfig,
                     config
                 ).then(
                     form => {
@@ -160,13 +160,13 @@ const services = {
     updateFilters(data) {
         callParent('updateFilters', data);
     },
-    requestAuthToken() {
+    requestConfig() {
         return requestFromParent({
-            requestMethod: 'requestAuthToken',
-            responseMethod: 'authTokenResponse',
-            extractData: (eventData) => eventData.authToken,
-            validateData: (authToken) => !!authToken,
-            errorMessage: 'No auth token received from parent window',
+            requestMethod: 'requestConfig',
+            responseMethod: 'configResponse',
+            extractData: (eventData) => eventData.config,
+            validateData: (config) => !!config && !!config.authToken,
+            errorMessage: 'No config received from parent window',
             timeout: 5000
         });
     }
@@ -313,15 +313,24 @@ function loadEmbeddedForm(
     referenceId,
     embeddedContainer,
     formContainer,
-    authorization,
+    parentConfig,
     config
 ) {
+    const headers = {
+        authorization: parentConfig.authToken
+    };
+    
+    // Add X-Process-Engine header if engine is specified
+    // Note: The CamSDK.Client will handle the engine path internally based on the engine parameter
+    if (parentConfig.engineName) {
+        headers['X-Process-Engine'] = parentConfig.engineName;
+    }
+    
     var client = new CamSDK.Client({
         mock: false,
         apiUri: config.engineRestPath || '/engine-rest',
-        headers: {
-            authorization: authorization
-        }
+        headers: headers,
+        engine: parentConfig.engineName || 'default'
     });
     return new Promise((resolve, reject) => {
         if (isStartForm) {
