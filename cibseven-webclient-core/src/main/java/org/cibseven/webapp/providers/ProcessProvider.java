@@ -16,7 +16,9 @@
  */
 package org.cibseven.webapp.providers;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
@@ -491,6 +493,31 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	public ResponseEntity<byte[]> getDeployedStartForm(String processDefinitionId, CIBUser user) {
 		String url = getEngineRestUrl() + "/process-definition/" + processDefinitionId + "/deployed-start-form";
 		return doGetWithHeader(url, byte[].class, user, true, MediaType.APPLICATION_OCTET_STREAM);
+	}
+
+	@Override
+	public ResponseEntity<String> getRenderedForm(String processDefinitionId, Map<String, Object> params, CIBUser user) {
+		String url = getEngineRestUrl() + "/process-definition/" + processDefinitionId + "/rendered-form";
+		try {
+			// Build query parameters from the params map
+			StringBuilder queryParams = new StringBuilder();
+			for (Map.Entry<String, Object> entry : params.entrySet()) {
+				if (queryParams.length() > 0) {
+					queryParams.append("&");
+				}
+				queryParams.append(URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8.toString()))
+					.append("=")
+					.append(URLEncoder.encode(String.valueOf(entry.getValue()), StandardCharsets.UTF_8.toString()));
+			}
+			
+			if (queryParams.length() > 0) {
+				url += "?" + queryParams.toString();
+			}
+			
+			return doGetWithHeader(url, String.class, user, true, MediaType.ALL);
+		} catch (UnsupportedEncodingException e) {
+			throw new SystemException("Error encoding URL parameters for rendered form request", e);
+		}
 	}
 
 	@Override

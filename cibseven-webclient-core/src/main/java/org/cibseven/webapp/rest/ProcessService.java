@@ -295,6 +295,19 @@ public class ProcessService extends BaseService implements InitializingBean {
 			throw new SystemException("Error parsing deployed start form: " + e.getMessage(), e);
 		}
 	}
+
+	@Operation(
+			summary = "Get rendered form HTML for process definition",
+			description = "<strong>Return: Rendered form HTML as string</strong>")
+	@ApiResponse(responseCode = "404", description= "Process definition or rendered form not found")
+	@RequestMapping(value = "/{processDefinitionId}/rendered-form", method = RequestMethod.GET, produces = "text/html")
+	public ResponseEntity<String> getRenderedForm(
+			@Parameter(description = "Process definition Id") @PathVariable String processDefinitionId,
+			@RequestParam Map<String, Object> params,
+			Locale loc, CIBUser user) {
+		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_ALL);
+		return sevenProvider.getRenderedStartForm(processDefinitionId, params, user);
+	}
 	
 	@Operation(
 			summary = "Download BPMN",
