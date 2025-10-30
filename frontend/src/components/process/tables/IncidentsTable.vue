@@ -21,8 +21,15 @@
     <div v-if="loading">
       <p class="text-center p-4"><BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}</p>
     </div>
-    <FlowTable v-else-if="incidents.length > 0" striped thead-class="sticky-header" :items="incidents" primary-key="id" prefix=""
-      :sort-by="currentSortBy" :sort-desc="currentSortDesc" native-layout external-sort
+    <FlowTable v-else-if="incidents.length > 0"
+      striped
+      thead-class="sticky-header"
+      :items="incidents"
+      primary-key="id"
+      prefix=""
+      native-layout
+      external-sort
+      :sort-by="currentSortBy" :sort-desc="currentSortDesc"
       @external-sort="handleExternalSort"
       :fields="incidentFields">
       <template #cell(state)="row">
