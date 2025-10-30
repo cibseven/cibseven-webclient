@@ -29,10 +29,10 @@
           </b-input-group>
         </div>
         <div class="col-8 text-end">
-          <b-button class="me-1" size="sm" variant="secondary" v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'" @click="add()">
+          <b-button class="me-1" size="sm" variant="secondary" v-if="$root.config.userEditable" @click="add()">
             <span class="mdi mdi-plus"> {{ $t('admin.users.add') }} </span>
           </b-button>
-          <b-button v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'" size="sm" variant="light"
+          <b-button v-if="$root.config.userEditable" size="sm" variant="light"
             :disabled="exporting" @click="exportCSV()">
             <span v-if="exporting"><b-spinner small></b-spinner> {{ $t('admin.exportCsv') }}</span>
             <span v-else class="mdi mdi-download"> {{ $t('admin.exportCsv') }} </span>
@@ -41,16 +41,12 @@
       </div>
     </div>
     <div class="container overflow-auto bg-white shadow-sm border rounded g-0" @scroll="showMore">
-      <FlowTable striped v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'" thead-class="sticky-header" :items="users" primary-key="id"
-        prefix="admin.users." :fields="[{label: 'id', key: 'id', class: 'col-md-2 col-sm-2', tdClass: 'py-1' },
-            {label: 'firstName', key: 'firstName', class: 'col-md-3 col-sm-3', tdClass: 'py-1' },
-            {label: 'lastName', key: 'lastName', class: 'col-md-2 col-sm-2', tdClass: 'py-1' },
-            {label: 'email', key: 'email', class: 'col-md-3 col-sm-3', tdClass: 'py-1' },
-            {label: 'actions', key: 'actions', class: 'col-md-2 col-sm-2 text-center', sortable: false, thClass: 'justify-content-center', tdClass: 'justify-content-center py-0' }]"
+      <FlowTable striped thead-class="sticky-header" :items="users" primary-key="id"
+        prefix="admin.users." :fields="tableFields"
         @contextmenu="focused = $event" @mouseenter="focused = $event" @mouseleave="focused = null">
         <template v-slot:cell(actions)="row">
-          <div>
-            <b-button :disabled="focused !== row.item" style="opacity: 1" @click="edit(row.item)" class="px-2 border-0 shadow-none" :title="$t('admin.users.editUser')" variant="link">
+          <div v-if="$root.config.userEditable">
+            <b-button :disabled="focused !== row.item" style="opacity: 1" @click="openUser(row.item)" class="px-2 border-0 shadow-none" :title="$t('admin.users.editUser')" variant="link">
               <span class="mdi mdi-18px mdi-pencil-outline"></span>
             </b-button>
             <span class="border-start h-50" :class="focused === row.item ? 'border-secondary' : ''"></span>
@@ -58,14 +54,12 @@
               <span class="mdi mdi-18px mdi-delete-outline"></span>
             </b-button>
           </div>
+          <div v-else>
+            <b-button :disabled="focused !== row.item" style="opacity: 1" @click="openUser(row.item)" class="px-2 border-0 shadow-none" :title="$t('admin.users.viewUser')" variant="link">
+              <span class="mdi mdi-18px mdi-eye-outline"></span>
+            </b-button>
+          </div>
         </template>
-      </FlowTable>
-      <FlowTable v-else striped :items="users" primary-key="id" table-class="table-striped"
-        prefix="admin.users." :fields="[{label: 'id', key: 'id', class: 'col-md-3 col-sm-3'},
-            {label: 'firstName', key: 'firstName', class: 'col-md-3 col-sm-3'},
-            {label: 'lastName', key: 'lastName', class: 'col-md-3 col-sm-3'},
-            {label: 'email', key: 'email', class: 'col-md-3 col-sm-3'}]"
-        @contextmenu="focused = $event" @mouseenter="focused = $event" @mouseleave="focused = null">
       </FlowTable>
       <div class="mb-3 text-center w-100" v-if="loading">
         <BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}
@@ -117,6 +111,17 @@ export default {
       exporting: false
     }
   },
+  computed: {
+    tableFields() {
+      return [
+        { label: 'id', key: 'id', class: 'col-md-2 col-sm-2', tdClass: 'py-1' },
+        { label: 'firstName', key: 'firstName', class: 'col-md-3 col-sm-3', tdClass: 'py-1' },
+        { label: 'lastName', key: 'lastName', class: 'col-md-2 col-sm-2', tdClass: 'py-1' },
+        { label: 'email', key: 'email', class: 'col-md-3 col-sm-3', tdClass: 'py-1' },
+        { label: 'actions', key: 'actions', class: 'col-md-2 col-sm-2 text-center', sortable: false, thClass: 'justify-content-center', tdClass: 'justify-content-center py-0' }
+      ]
+    }
+  },
   watch: {
     filter: function() {
       this.searchUsers()
@@ -148,7 +153,7 @@ export default {
         this.loadUsers()
       })
     },
-    edit: function (user) {
+    openUser: function (user) {
       this.$router.push('/seven/auth/admin/user/' + user.id + '?tab=profile')
     },
     showMore: function(el) {

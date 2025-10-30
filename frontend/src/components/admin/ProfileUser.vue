@@ -24,7 +24,7 @@
         <b-list-group-item class="border-0 px-3 py-2" :active="$route.query.tab === 'profile' || !$route.query.tab" exact :to="'?tab=profile'">
           <span> {{ $t('admin.users.profile') }}</span>
         </b-list-group-item>
-        <b-list-group-item v-if="!readOnlyUser" class="border-0 px-3 py-2" :active="$route.query.tab === 'account'" exact :to="'?tab=account'">
+        <b-list-group-item v-if="$root.config.userEditable" class="border-0 px-3 py-2" :active="$route.query.tab === 'account'" exact :to="'?tab=account'">
           <span> {{ $t('password.recover.changePassword') }}</span>
         </b-list-group-item>
         <b-list-group-item class="border-0 px-3 py-2" :active="$route.query.tab === 'groups'" exact :to="'?tab=groups'">
@@ -57,18 +57,18 @@
                 <b-form-group :label="$t('admin.users.firstName') + '*'" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4"
                   :invalid-feedback="$t('errors.invalid')">
                   <b-form-input v-model="user.firstName"  @update:modelValue="dirty=true"
-                    :state="notEmpty(user.firstName)" :readonly="readOnlyUser || !editMode" required></b-form-input>
+                    :state="notEmpty(user.firstName)" :readonly="!$root.config.userEditable || !editMode" required></b-form-input>
                 </b-form-group>
                 <b-form-group :label="$t('admin.users.lastName') + '*'" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4"
                   :invalid-feedback="$t('errors.invalid')">
                   <b-form-input v-model="user.lastName"  @update:modelValue="dirty=true"
-                    :state="notEmpty(user.lastName)" :readonly="readOnlyUser || !editMode" required></b-form-input>
+                    :state="notEmpty(user.lastName)" :readonly="!$root.config.userEditable || !editMode" required></b-form-input>
                 </b-form-group>
                 <b-form-group :label="$t('admin.users.email')" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4"
                   :invalid-feedback="$t('errors.invalid')">
-                  <b-form-input v-model="user.email" type="email" autocomplete="email"  @update:modelValue="dirty = true" :readonly="readOnlyUser || !editMode"></b-form-input>
+                  <b-form-input v-model="user.email" type="email" autocomplete="email"  @update:modelValue="dirty = true" :readonly="!$root.config.userEditable || !editMode"></b-form-input>
                 </b-form-group>
-                <div class="float-end" v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'">
+                <div class="float-end" v-if="$root.config.userEditable">
                   <b-button type="submit" variant="secondary" :disabled="!dirty" >{{ $t('admin.users.update') }}</b-button>
                 </div>
               </CIBForm>
@@ -76,7 +76,7 @@
           </div>
 
           <!-- Account Tab -->
-          <div v-else-if="$route.query.tab === 'account' && !readOnlyUser" class="row pt-3 ps-4 pe-4">
+          <div v-else-if="$route.query.tab === 'account' && $root.config.userEditable" class="row pt-3 ps-4 pe-4">
             <ContentBlock
               :title="$t('password.recover.changePassword')"
               class="col-lg-6 col-md-8 col-sm-12">
@@ -100,7 +100,7 @@
               class="">
 
               <template v-if="editMode" v-slot:actions>
-                <b-button size="sm" variant="secondary" v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'" @click="openAssignGroupModal" class="mdi mdi-plus">
+                <b-button size="sm" variant="secondary" v-if="$root.config.userEditable" @click="openAssignGroupModal" class="mdi mdi-plus">
                   <span class="ms-2">{{ $t('admin.users.group.add') }}</span>
                 </b-button>
               </template>
@@ -127,7 +127,7 @@
               class="">
 
               <template v-if="editMode" v-slot:actions>
-                <b-button size="sm" variant="secondary" v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'" @click="openAssignTenantModal" class="mdi mdi-plus">
+                <b-button size="sm" variant="secondary" v-if="$root.config.userEditable" @click="openAssignTenantModal" class="mdi mdi-plus">
                   <span class="ms-2"> {{ $t('admin.tenants.addTo') }} </span>
                 </b-button>
               </template>
@@ -297,12 +297,8 @@ export default {
   },
   computed: {
     ...mapGetters(['tenants']),
-    readOnlyUser: function() {
-      return (this.$root.config.userProvider !== 'org.cibseven.webapp.auth.SevenUserProvider')
-    },
     groupFields() {
-      const isSevenUser = this.$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'
-      const isEditable = this.editMode && isSevenUser
+      const isEditable = this.editMode && this.$root.config.userEditable
       const fields = [
         {
           label: 'id',
@@ -336,8 +332,7 @@ export default {
       return fields
     },
     tenantFields() {
-      const isSevenUser = this.$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'
-      const isEditable = this.editMode && isSevenUser
+      const isEditable = this.editMode && this.$root.config.userEditable
       const fields = [
         {
           label: 'fullId',
