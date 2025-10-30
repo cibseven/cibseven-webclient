@@ -163,7 +163,7 @@ pipeline {
                         sh "mvn -T4 -Dbuild.number=${BUILD_NUMBER} clean verify"
                     }
                     if (!params.DEPLOY_TO_MAVEN_CENTRAL) {
-                        junit allowEmptyResults: true, testResults: 'cibseven-webclient-core/target/failsafe-reports/**'
+                        junit allowEmptyResults: true, testResults: ConstantsInternal.MAVEN_TEST_RESULTS
 
                         // Show coverage in Jenkins UI
                         recordCoverage(
