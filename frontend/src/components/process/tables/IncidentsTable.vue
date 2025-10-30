@@ -194,17 +194,17 @@ export default {
     columnDefinitions() {
       return [
         { label: 'process-instance.incidents.state', key: 'state' },
-        { label: 'process-instance.incidents.message', key: 'incidentMessage', groupSeparator: true },
-        ...(this.isInstanceView ? [] : [{ label: 'process-instance.incidents.processInstance', key: 'processInstanceId' }]),
-        ...(this.isInstanceView ? [] : [{ label: 'process.businessKey', key: 'businessKey' }]),
-        { label: 'process-instance.incidents.createTime', key: 'createTime' },
+        { label: 'process-instance.incidents.incidentType', key: 'incidentType' },
+        { label: 'process-instance.incidents.message', key: 'incidentMessage' },
+        { label: 'process-instance.incidents.createTime', key: 'createTime', groupSeparator: true },
         { label: 'process-instance.incidents.endTime', key: 'endTime' },
+        ...(this.isInstanceView ? [] : [{ label: 'process-instance.incidents.processInstance', key: 'processInstanceId', groupSeparator: true }]),
+        ...(this.isInstanceView ? [] : [{ label: 'process.businessKey', key: 'businessKey' }]),
         { label: 'process-instance.incidents.activity', key: 'activityId' },
         { label: 'process-instance.incidents.failedActivity', key: 'failedActivityId' },
         { label: 'process-instance.incidents.causeIncidentProcessInstanceId', key: 'causeIncidentProcessInstanceId' },
         { label: 'process-instance.incidents.rootCauseIncidentProcessInstanceId', key: 'rootCauseIncidentProcessInstanceId' },
-        { label: 'process-instance.incidents.incidentType', key: 'incidentType' },
-        { label: 'process-instance.incidents.annotation', key: 'annotation' },
+        { label: 'process-instance.incidents.annotation', key: 'annotation', groupSeparator: true },
         { label: 'process-instance.incidents.actions', key: 'actions', disableToggle: true, sortable: false, groupSeparator: true, tdClass: 'py-0' }
       ]
     },
