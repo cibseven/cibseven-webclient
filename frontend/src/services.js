@@ -82,6 +82,12 @@ var TaskService = {
   formReference: function(taskId) { return axios.get(getServicesBasePath() + "/task/" + taskId + "/form-reference") },
   getDeployedForm: function(taskId) { return axios.get(getServicesBasePath() + "/task/" + taskId + "/deployed-form") },
   form: function(taskId) { return axios.get(getServicesBasePath() + "/task/" + taskId + "/form") },
+  getRenderedForm: function(taskId, params) {
+    return axios.get(getServicesBasePath() + "/task/" + taskId + "/rendered-form", {
+      params,
+      headers: { 'Accept': 'text/html,*/*' }
+    })
+  },
   setAssignee: function(taskId, userId) { return axios.post(getServicesBasePath() + "/task/" + taskId + "/assignee/" + userId) },
   update: function(task) { return axios.put(getServicesBasePath() + "/task/update", task) },
   fetchActivityVariables: function(activityInstanceId) {
@@ -154,6 +160,12 @@ var ProcessService = {
   },
   startForm: function(processDefinitionId) { return axios.get(getServicesBasePath() + "/process/" + processDefinitionId + "/start-form") },
   getDeployedStartForm: function(processDefinitionId) { return axios.get(getServicesBasePath() + "/process/" + processDefinitionId + "/deployed-start-form") },
+  getRenderedForm: function(processDefinitionId, params) {
+    return axios.get(getServicesBasePath() + "/process/" + processDefinitionId + "/rendered-form", {
+      params,
+      headers: { 'Accept': 'text/html,*/*' }
+    })
+  },
   suspendInstance: function(processInstanceId, suspend) {
     return axios.put(getServicesBasePath() + "/process/instance/" + processInstanceId + "/suspend", null, { params: { suspend: suspend } })
   },
