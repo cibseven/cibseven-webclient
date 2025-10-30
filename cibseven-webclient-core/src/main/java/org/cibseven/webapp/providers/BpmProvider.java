@@ -1075,7 +1075,11 @@ public interface BpmProvider {
 	
 	ResponseEntity<byte[]> getDeployedForm(String taskId, CIBUser user);
 	
+	ResponseEntity<String> getRenderedForm(String taskId, Map<String, Object> params, CIBUser user);
+	
 	ResponseEntity<byte[]> getDeployedStartForm(String processDefinitionId, CIBUser user);
+	
+	ResponseEntity<String> getRenderedStartForm(String processDefinitionId, Map<String, Object> params, CIBUser user);
 	
 	void updateHistoryTimeToLive(String id, Map<String, Object> data, CIBUser user);
 

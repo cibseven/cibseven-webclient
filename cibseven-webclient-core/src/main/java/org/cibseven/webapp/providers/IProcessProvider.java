@@ -68,6 +68,7 @@ public interface IProcessProvider {
 	public Variable fetchProcessInstanceVariable(String processInstanceId, String variableName, boolean deserializeValue, CIBUser user) throws SystemException;
 	public Collection<Process> findCalledProcessDefinitions(String processDefinitionId, CIBUser user);
 	public ResponseEntity<byte[]> getDeployedStartForm(String processDefinitionId, CIBUser user);
+	public ResponseEntity<String> getRenderedForm(String processDefinitionId, Map<String, Object> params, CIBUser user);
 	public void updateHistoryTimeToLive(String id, Map<String, Object> data, CIBUser user);
 	public void deleteProcessInstanceFromHistory(String id, CIBUser user);
 	public void deleteProcessDefinition(String id, Optional<Boolean> cascade, CIBUser user);

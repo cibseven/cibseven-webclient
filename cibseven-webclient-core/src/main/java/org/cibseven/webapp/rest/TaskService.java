@@ -216,6 +216,19 @@ public class TaskService extends BaseService implements InitializingBean {
 		checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
 		return bpmProvider.form(taskId, user);
 	}
+
+	@Operation(
+			summary = "Get rendered form HTML for task",
+			description = "<strong>Return: Rendered form HTML as string</strong>")
+	@ApiResponse(responseCode = "404", description= "Task or rendered form not found")
+	@RequestMapping(value = "/task/{taskId}/rendered-form", method = RequestMethod.GET, produces = "text/html")
+	public ResponseEntity<String> getRenderedForm(
+			@Parameter(description = "Task Id") @PathVariable String taskId,
+			@RequestParam Map<String, Object> params,
+			Locale loc, CIBUser user) {
+		checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
+		return sevenProvider.getRenderedForm(taskId, params, user);
+	}
 	
 	@Operation(
 			summary = "Set assignee to an specific task",
