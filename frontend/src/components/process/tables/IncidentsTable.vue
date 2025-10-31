@@ -264,7 +264,12 @@ export default {
         { label: 'process-instance.incidents.rootCauseIncidentProcessInstanceId', key: 'rootCauseIncidentProcessInstanceId' },
         { label: 'process-instance.incidents.annotation', key: 'annotation', groupSeparator: true },
         { label: 'process-instance.incidents.actions', key: 'actions', disableToggle: true, sortable: false, groupSeparator: true, tdClass: 'py-0' }
-      ]
+      ].map(col => {
+        return {
+          ...col,
+          tdClass: col.tdClass ? col.tdClass + ' pe-0' : 'pe-0',
+        }
+      })
     },
     useCase() {
       const useCase = this.isInstanceView ? 'process-instance-incidents' : 'process-definition-incidents'
