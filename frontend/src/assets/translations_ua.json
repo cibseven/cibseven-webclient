@@ -300,6 +300,7 @@
 			"timestamp": "Дата",
 			"activity": "Активність",
 			"failedActivity": "Помилкова активність",
+			"executionId": "ID виконання",
 			"incidentType": "Тип інциденту",
 			"retryJob": "Збільшити кількість спроб повторення при збої",
 			"annotation": "Анотація",

@@ -34,12 +34,14 @@
       external-sort
       :sort-by="currentSortBy" :sort-desc="currentSortDesc"
       @external-sort="handleExternalSort">
+
       <template #cell(state)="row">
         <span v-if="row.item.deleted">{{ $t('process-instance.incidents.deleted') }}</span>
         <span v-else-if="row.item.resolved">{{ $t('process-instance.incidents.resolved') }}</span>
         <span v-else-if="row.item.open">{{ $t('process-instance.incidents.open') }}</span>
         <span v-else>{{ $t('process-instance.incidents.unknown') }}</span>
       </template>
+
       <template v-slot:cell(incidentMessage)="table">
         <CopyableActionButton 
           :display-value="getIncidentMessage(table.item)"
@@ -50,6 +52,7 @@
           @copy="copyValueToClipboard"
         />
       </template>
+
       <template #cell(processInstanceId)="row">
         <CopyableActionButton 
           v-if="row.item.processInstanceId"
@@ -61,6 +64,7 @@
         />
         <span v-else class="text-muted fst-italic" :title="$t('commons.notAvailable.tooltip')">{{ $t('commons.notAvailable.label') }}</span>
       </template>
+
       <template #cell(businessKey)="row">
         <CopyableActionButton v-if="row.item.businessKey !== undefined"
           :display-value="row.item.businessKey"
@@ -71,18 +75,37 @@
         />
         <span v-else class="text-muted fst-italic" :title="$t('commons.notAvailable.tooltip')">{{ $t('commons.notAvailable.label') }}</span>
       </template>
+
+      <template v-slot:cell(incidentTimestamp)="table">
+        <div :title="formatDateForTooltips(table.item.incidentTimestamp)" class="text-truncate">{{ formatDateForTooltips(table.item.incidentTimestamp) }}</div>
+      </template>
+
       <template v-slot:cell(createTime)="table">
         <div :title="formatDateForTooltips(table.item.createTime)" class="text-truncate">{{ formatDateForTooltips(table.item.createTime) }}</div>
       </template>
+
       <template v-slot:cell(endTime)="table">
         <div :title="formatDateForTooltips(table.item.endTime)" class="text-truncate">{{ formatDateForTooltips(table.item.endTime) }}</div>
       </template>
+
       <template v-slot:cell(activityId)="table">
         <div :title="table.item.activityId" class="text-truncate">{{ $store.state.activity.processActivities[table.item.activityId] || table.item.activityId }}</div>
       </template>
+
       <template v-slot:cell(failedActivityId)="table">
         <div :title="table.item.failedActivityId" class="text-truncate">{{ $store.state.activity.processActivities[table.item.failedActivityId] || table.item.failedActivityId }}</div>
       </template>
+
+      <template v-slot:cell(executionId)="table">
+        <CopyableActionButton
+          :display-value="table.item.executionId"
+          :copy-value="table.item.executionId" 
+          :title="$t('process-instance.incidents.executionId') + ':\n' + table.item.executionId"
+          :clickable="false"
+          @copy="copyValueToClipboard"
+        />
+      </template>
+
       <template v-slot:cell(causeIncidentProcessInstanceId)="table">
         <CopyableActionButton 
           :display-value="table.item.causeIncidentProcessInstanceId"
@@ -92,6 +115,7 @@
           @copy="copyValueToClipboard"
         />
       </template>
+
       <template v-slot:cell(rootCauseIncidentProcessInstanceId)="table">
         <CopyableActionButton 
           :display-value="table.item.rootCauseIncidentProcessInstanceId"
@@ -101,14 +125,17 @@
           @copy="copyValueToClipboard"
         />
       </template>
+
       <template v-slot:cell(incidentType)="table">
         <div :title="table.item.incidentType" class="text-truncate">{{ table.item.incidentType }}</div>
       </template>
+
       <template v-slot:cell(annotation)="table">
         <div :title="table.item.annotation" class="text-truncate w-100" @click="copyValueToClipboard(table.item.annotation)">
           {{ table.item.annotation }}
         </div>
       </template>
+
       <template v-slot:cell(actions)="table">
         <b-button v-if="!table.item.endTime" :title="$t('process-instance.incidents.editAnnotation')"
           size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-note-edit-outline"
@@ -175,43 +202,6 @@ export default {
   computed: {
     ...mapGetters('incidents', ['incidents']),
     ...mapGetters('instances', ['instances']),
-    visibleColumns() {
-      return [
-        'state',
-        'incidentMessage',
-        ...(this.isInstanceView ? [] : ['processInstanceId']),
-        ...(this.isInstanceView ? [] : ['businessKey']),
-        'createTime',
-        'endTime',
-        'activityId',
-        'failedActivityId',
-        'causeIncidentProcessInstanceId',
-        'rootCauseIncidentProcessInstanceId',
-        'incidentType',
-        'annotation',
-        'actions'
-      ]
-    },
-    columnDefinitions() {
-      return [
-        { label: 'process-instance.incidents.state', key: 'state' },
-        { label: 'process-instance.incidents.incidentType', key: 'incidentType' },
-        { label: 'process-instance.incidents.message', key: 'incidentMessage' },
-        { label: 'process-instance.incidents.createTime', key: 'createTime', groupSeparator: true },
-        { label: 'process-instance.incidents.endTime', key: 'endTime' },
-        ...(this.isInstanceView ? [] : [{ label: 'process-instance.incidents.processInstance', key: 'processInstanceId', groupSeparator: true }]),
-        ...(this.isInstanceView ? [] : [{ label: 'process.businessKey', key: 'businessKey' }]),
-        { label: 'process-instance.incidents.activity', key: 'activityId' },
-        { label: 'process-instance.incidents.failedActivity', key: 'failedActivityId' },
-        { label: 'process-instance.incidents.causeIncidentProcessInstanceId', key: 'causeIncidentProcessInstanceId' },
-        { label: 'process-instance.incidents.rootCauseIncidentProcessInstanceId', key: 'rootCauseIncidentProcessInstanceId' },
-        { label: 'process-instance.incidents.annotation', key: 'annotation', groupSeparator: true },
-        { label: 'process-instance.incidents.actions', key: 'actions', disableToggle: true, sortable: false, groupSeparator: true, tdClass: 'py-0' }
-      ]
-    },
-    useCase() {
-      return this.isInstanceView ? 'process-instance-incidents' : 'process-definition-incidents'
-    },
     isHistoricView() {
       switch (this.$root.config.camundaHistoryLevel) {
         case 'none':
@@ -225,7 +215,62 @@ export default {
           }
           return true // history view for definition incidents
       }
-    }
+    },
+    visibleColumns() {
+      return [
+        ...(this.isHistoricView ? ['state'] : []),
+        'incidentType',
+        'incidentMessage',
+
+        ...(this.isHistoricView ? [
+          'createTime',
+          'endTime',
+        ] : [
+          'incidentTimestamp',
+        ]),
+
+        ...(this.isInstanceView ? [] : ['processInstanceId']),
+        ...(this.isInstanceView ? [] : ['businessKey']),
+        'activityId',
+        'failedActivityId',
+        // 'executionId', // hidden by default
+        'causeIncidentProcessInstanceId',
+        'rootCauseIncidentProcessInstanceId',
+        'annotation',
+        'actions'
+      ]
+    },
+    columnDefinitions() {
+      return [
+        ...(this.isHistoricView ? [{ label: 'process-instance.incidents.state', key: 'state' }] : []),
+        { label: 'process-instance.incidents.incidentType', key: 'incidentType' },
+        { label: 'process-instance.incidents.message', key: 'incidentMessage' },
+
+        ...(
+          this.isHistoricView ? [
+            { label: 'process-instance.incidents.createTime', key: 'createTime', groupSeparator: true },
+            { label: 'process-instance.incidents.endTime', key: 'endTime' },
+          ] : [
+            { label: 'process-instance.incidents.timestamp', key: 'incidentTimestamp' },
+          ]
+        ),
+
+        ...(this.isInstanceView ? [] : [{ label: 'process-instance.incidents.processInstance', key: 'processInstanceId', groupSeparator: true }]),
+        ...(this.isInstanceView ? [] : [{ label: 'process.businessKey', key: 'businessKey' }]),
+        { label: 'process-instance.incidents.activity', key: 'activityId', groupSeparator: this.isInstanceView },
+        { label: 'process-instance.incidents.failedActivity', key: 'failedActivityId' },
+        { label: 'process-instance.incidents.executionId', key: 'executionId' },
+        { label: 'process-instance.incidents.causeIncidentProcessInstanceId', key: 'causeIncidentProcessInstanceId' },
+        { label: 'process-instance.incidents.rootCauseIncidentProcessInstanceId', key: 'rootCauseIncidentProcessInstanceId' },
+        { label: 'process-instance.incidents.annotation', key: 'annotation', groupSeparator: true },
+        { label: 'process-instance.incidents.actions', key: 'actions', disableToggle: true, sortable: false, groupSeparator: true, tdClass: 'py-0' }
+      ]
+    },
+    useCase() {
+      const useCase = this.isInstanceView ? 'process-instance-incidents' : 'process-definition-incidents'
+      const viewType = this.isHistoricView ? 'historic' : 'runtime'
+      return `${useCase}-${viewType}`
+    },
   },
   watch: {
     'instance.id': {
