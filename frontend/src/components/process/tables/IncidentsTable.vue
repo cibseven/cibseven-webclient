@@ -152,7 +152,7 @@
         <CopyableActionButton
           :display-value="table.item.annotation"
           :copy-value="table.item.annotation" 
-          :title="$t('process-instance.incidents.annotation') + ':\n' + table.item.annotation"
+          :title="$t('process-instance.incidents.editAnnotation') + ':\n' + table.item.annotation"
           @click="$refs.annotationModal.show(table.item.id, table.item.annotation)"
           @copy="copyValueToClipboard"
         />
