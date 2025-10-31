@@ -211,6 +211,20 @@ export default {
     },
     useCase() {
       return this.isInstanceView ? 'process-instance-incidents' : 'process-definition-incidents'
+    },
+    isHistoricView() {
+      switch (this.$root.config.camundaHistoryLevel) {
+        case 'none':
+        case 'activity':
+          return false // always runtime view
+        case 'full':
+        case 'audit':
+        default:
+          if (this.isInstanceView) {
+            return this.instance?.state !== 'ACTIVE' // historic view for non-active instances
+          }
+          return true // history view for definition incidents
+      }
     }
   },
   watch: {
@@ -232,7 +246,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions('incidents', ['loadIncidents', 'removeIncident', 'updateIncidentAnnotation', 'setIncidents']),
+    ...mapActions('incidents', ['loadRuntimeIncidents', 'loadHistoryIncidents', 'removeIncident', 'updateIncidentAnnotation', 'setIncidents']),
     formatDateForTooltips,
     async loadIncidentsData(id, isInstance = true) {
       this.loading = true
@@ -242,7 +256,11 @@ export default {
         ...(isInstance ? { processInstanceId: id } : { processDefinitionId: id })
       }
       try {
-        await this.loadIncidents(params)
+        if (this.isHistoricView) {
+          await this.loadHistoryIncidents(params)
+        } else {
+          await this.loadRuntimeIncidents(params)
+        }
         if (!this.isInstanceView && this.incidents.length > 0) {
           this.enrichWithBusinessKey()
         }
