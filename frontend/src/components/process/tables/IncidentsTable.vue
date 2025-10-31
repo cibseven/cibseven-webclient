@@ -36,10 +36,10 @@
       @external-sort="handleExternalSort">
 
       <template #cell(state)="row">
-        <span v-if="row.item.deleted">{{ $t('process-instance.incidents.deleted') }}</span>
-        <span v-else-if="row.item.resolved">{{ $t('process-instance.incidents.resolved') }}</span>
-        <span v-else-if="row.item.open">{{ $t('process-instance.incidents.open') }}</span>
-        <span v-else>{{ $t('process-instance.incidents.unknown') }}</span>
+        <span v-if="row.item.deleted" class="text-truncate mdi mdi-18px mdi-minus-circle-outline" :title="$t('process-instance.incidents.state') + ': ' + $t('process-instance.incidents.deleted')"><span class="ms-1">{{ $t('process-instance.incidents.deleted') }}</span></span>
+        <span v-else-if="row.item.resolved" class="text-truncate mdi mdi-18px mdi-check-circle-outline text-success" :title="$t('process-instance.incidents.state') + ': ' + $t('process-instance.incidents.resolved')"><span class="ms-1">{{ $t('process-instance.incidents.resolved') }}</span></span>
+        <span v-else-if="row.item.open" class="text-truncate mdi mdi-18px mdi-alert-outline mt-0 text-warning" :title="$t('process-instance.incidents.state') + ': ' + $t('process-instance.incidents.open')"><span class="ms-1">{{ $t('process-instance.incidents.open') }}</span></span>
+        <span v-else class="text-truncate mdi mdi-18px mdi-help-circle-outline" :title="$t('process-instance.incidents.state') + ': ' + $t('process-instance.incidents.unknown')"><span class="ms-1">{{ $t('process-instance.incidents.unknown') }}</span></span>
       </template>
 
       <template v-slot:cell(incidentMessage)="table">
@@ -242,7 +242,7 @@ export default {
     },
     columnDefinitions() {
       return [
-        ...(this.isHistoricView ? [{ label: 'process-instance.incidents.state', key: 'state' }] : []),
+        ...(this.isHistoricView ? [{ label: 'process-instance.incidents.state', key: 'state', tdClass: 'pt-1' }] : []),
         { label: 'process-instance.incidents.incidentType', key: 'incidentType' },
         { label: 'process-instance.incidents.message', key: 'incidentMessage' },
 
@@ -264,12 +264,7 @@ export default {
         { label: 'process-instance.incidents.rootCauseIncidentProcessInstanceId', key: 'rootCauseIncidentProcessInstanceId' },
         { label: 'process-instance.incidents.annotation', key: 'annotation', groupSeparator: true },
         { label: 'process-instance.incidents.actions', key: 'actions', disableToggle: true, sortable: false, groupSeparator: true, tdClass: 'py-0' }
-      ].map(col => {
-        return {
-          ...col,
-          tdClass: col.tdClass ? col.tdClass + ' pe-0' : 'pe-0',
-        }
-      })
+      ]
     },
     useCase() {
       const useCase = this.isInstanceView ? 'process-instance-incidents' : 'process-definition-incidents'
