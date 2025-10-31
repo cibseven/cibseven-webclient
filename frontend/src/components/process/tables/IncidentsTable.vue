@@ -34,12 +34,24 @@
       external-sort
       :sort-by="currentSortBy" :sort-desc="currentSortDesc"
       @external-sort="handleExternalSort">
+
       <template #cell(state)="row">
-        <span v-if="row.item.deleted">{{ $t('process-instance.incidents.deleted') }}</span>
-        <span v-else-if="row.item.resolved">{{ $t('process-instance.incidents.resolved') }}</span>
-        <span v-else-if="row.item.open">{{ $t('process-instance.incidents.open') }}</span>
-        <span v-else>{{ $t('process-instance.incidents.unknown') }}</span>
+        <span v-if="row.item.deleted" class="text-truncate mdi mdi-18px mdi-minus-circle-outline" :title="$t('process-instance.incidents.state') + ': ' + $t('process-instance.incidents.deleted')"><span class="ms-1">{{ $t('process-instance.incidents.deleted') }}</span></span>
+        <span v-else-if="row.item.resolved" class="text-truncate mdi mdi-18px mdi-check-circle-outline text-success" :title="$t('process-instance.incidents.state') + ': ' + $t('process-instance.incidents.resolved')"><span class="ms-1">{{ $t('process-instance.incidents.resolved') }}</span></span>
+        <span v-else-if="row.item.open" class="text-truncate mdi mdi-18px mdi-alert-outline mt-0 text-warning" :title="$t('process-instance.incidents.state') + ': ' + $t('process-instance.incidents.open')"><span class="ms-1">{{ $t('process-instance.incidents.open') }}</span></span>
+        <span v-else class="text-truncate mdi mdi-18px mdi-help-circle-outline" :title="$t('process-instance.incidents.state') + ': ' + $t('process-instance.incidents.unknown')"><span class="ms-1">{{ $t('process-instance.incidents.unknown') }}</span></span>
       </template>
+
+      <template v-slot:cell(incidentType)="table">
+        <CopyableActionButton
+          :display-value="table.item.incidentType"
+          :copy-value="table.item.incidentType" 
+          :title="$t('process-instance.incidents.incidentType') + ':\n' + table.item.incidentType"
+          :clickable="false"
+          @copy="copyValueToClipboard"
+        />
+      </template>
+
       <template v-slot:cell(incidentMessage)="table">
         <CopyableActionButton 
           :display-value="getIncidentMessage(table.item)"
@@ -50,6 +62,7 @@
           @copy="copyValueToClipboard"
         />
       </template>
+
       <template #cell(processInstanceId)="row">
         <CopyableActionButton 
           v-if="row.item.processInstanceId"
@@ -61,6 +74,7 @@
         />
         <span v-else class="text-muted fst-italic" :title="$t('commons.notAvailable.tooltip')">{{ $t('commons.notAvailable.label') }}</span>
       </template>
+
       <template #cell(businessKey)="row">
         <CopyableActionButton v-if="row.item.businessKey !== undefined"
           :display-value="row.item.businessKey"
@@ -71,44 +85,79 @@
         />
         <span v-else class="text-muted fst-italic" :title="$t('commons.notAvailable.tooltip')">{{ $t('commons.notAvailable.label') }}</span>
       </template>
+
+      <template v-slot:cell(incidentTimestamp)="table">
+        <div :title="formatDateForTooltips(table.item.incidentTimestamp)" class="text-truncate">{{ formatDateForTooltips(table.item.incidentTimestamp) }}</div>
+      </template>
+
       <template v-slot:cell(createTime)="table">
         <div :title="formatDateForTooltips(table.item.createTime)" class="text-truncate">{{ formatDateForTooltips(table.item.createTime) }}</div>
       </template>
+
       <template v-slot:cell(endTime)="table">
         <div :title="formatDateForTooltips(table.item.endTime)" class="text-truncate">{{ formatDateForTooltips(table.item.endTime) }}</div>
       </template>
+
       <template v-slot:cell(activityId)="table">
-        <div :title="table.item.activityId" class="text-truncate">{{ $store.state.activity.processActivities[table.item.activityId] || table.item.activityId }}</div>
+        <CopyableActionButton
+          :display-value="$store.state.activity.processActivities[table.item.activityId] || table.item.activityId"
+          :copy-value="$store.state.activity.processActivities[table.item.activityId] || table.item.activityId" 
+          :title="$t('process-instance.incidents.activity') + ':\n' + ($store.state.activity.processActivities[table.item.activityId] || table.item.activityId)"
+          :clickable="false"
+          @copy="copyValueToClipboard"
+        />
       </template>
+
       <template v-slot:cell(failedActivityId)="table">
-        <div :title="table.item.failedActivityId" class="text-truncate">{{ $store.state.activity.processActivities[table.item.failedActivityId] || table.item.failedActivityId }}</div>
+        <CopyableActionButton
+          :display-value="$store.state.activity.processActivities[table.item.failedActivityId] || table.item.failedActivityId"
+          :copy-value="$store.state.activity.processActivities[table.item.failedActivityId] || table.item.failedActivityId" 
+          :title="$t('process-instance.incidents.failedActivity') + ':\n' + ($store.state.activity.processActivities[table.item.failedActivityId] || table.item.failedActivityId)"
+          :clickable="false"
+          @copy="copyValueToClipboard"
+        />
       </template>
+
+      <template v-slot:cell(executionId)="table">
+        <CopyableActionButton
+          :display-value="table.item.executionId"
+          :copy-value="table.item.executionId" 
+          :title="$t('process-instance.incidents.executionId') + ':\n' + table.item.executionId"
+          :clickable="false"
+          @copy="copyValueToClipboard"
+        />
+      </template>
+
       <template v-slot:cell(causeIncidentProcessInstanceId)="table">
         <CopyableActionButton 
           :display-value="table.item.causeIncidentProcessInstanceId"
           :copy-value="table.item.causeIncidentProcessInstanceId" 
-          :title="table.item.causeIncidentProcessInstanceId"
+          :title="$t('process-instance.incidents.causeIncidentProcessInstanceId') + ':\n' + table.item.causeIncidentProcessInstanceId"
           @click="navigateToIncidentProcessInstance(table.item.causeIncidentProcessInstanceId)"
           @copy="copyValueToClipboard"
         />
       </template>
+
       <template v-slot:cell(rootCauseIncidentProcessInstanceId)="table">
         <CopyableActionButton 
           :display-value="table.item.rootCauseIncidentProcessInstanceId"
           :copy-value="table.item.rootCauseIncidentProcessInstanceId" 
-          :title="table.item.rootCauseIncidentProcessInstanceId"
+          :title="$t('process-instance.incidents.rootCauseIncidentProcessInstanceId') + ':\n' + table.item.rootCauseIncidentProcessInstanceId"
           @click="navigateToIncidentProcessInstance(table.item.rootCauseIncidentProcessInstanceId)"
           @copy="copyValueToClipboard"
         />
       </template>
-      <template v-slot:cell(incidentType)="table">
-        <div :title="table.item.incidentType" class="text-truncate">{{ table.item.incidentType }}</div>
-      </template>
+
       <template v-slot:cell(annotation)="table">
-        <div :title="table.item.annotation" class="text-truncate w-100" @click="copyValueToClipboard(table.item.annotation)">
-          {{ table.item.annotation }}
-        </div>
+        <CopyableActionButton
+          :display-value="table.item.annotation"
+          :copy-value="table.item.annotation" 
+          :title="$t('process-instance.incidents.editAnnotation') + ':\n' + table.item.annotation"
+          @click="$refs.annotationModal.show(table.item.id, table.item.annotation)"
+          @copy="copyValueToClipboard"
+        />
       </template>
+
       <template v-slot:cell(actions)="table">
         <b-button v-if="!table.item.endTime" :title="$t('process-instance.incidents.editAnnotation')"
           size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-note-edit-outline"
@@ -175,34 +224,64 @@ export default {
   computed: {
     ...mapGetters('incidents', ['incidents']),
     ...mapGetters('instances', ['instances']),
+    isHistoricView() {
+      switch (this.$root.config.camundaHistoryLevel) {
+        case 'none':
+        case 'activity':
+          return false // always runtime view
+        case 'full':
+        case 'audit':
+        default:
+          if (this.isInstanceView) {
+            return this.instance?.state !== 'ACTIVE' // historic view for non-active instances
+          }
+          return true // history view for definition incidents
+      }
+    },
     visibleColumns() {
       return [
-        'state',
+        ...(this.isHistoricView ? ['state'] : []),
+        'incidentType',
         'incidentMessage',
+
+        ...(this.isHistoricView ? [
+          'createTime',
+          'endTime',
+        ] : [
+          'incidentTimestamp',
+        ]),
+
         ...(this.isInstanceView ? [] : ['processInstanceId']),
         ...(this.isInstanceView ? [] : ['businessKey']),
-        'createTime',
-        'endTime',
         'activityId',
         'failedActivityId',
+        // 'executionId', // hidden by default
         'causeIncidentProcessInstanceId',
         'rootCauseIncidentProcessInstanceId',
-        'incidentType',
         'annotation',
         'actions'
       ]
     },
     columnDefinitions() {
       return [
-        { label: 'process-instance.incidents.state', key: 'state' },
+        ...(this.isHistoricView ? [{ label: 'process-instance.incidents.state', key: 'state', tdClass: 'pt-1' }] : []),
         { label: 'process-instance.incidents.incidentType', key: 'incidentType' },
         { label: 'process-instance.incidents.message', key: 'incidentMessage' },
-        { label: 'process-instance.incidents.createTime', key: 'createTime', groupSeparator: true },
-        { label: 'process-instance.incidents.endTime', key: 'endTime' },
+
+        ...(
+          this.isHistoricView ? [
+            { label: 'process-instance.incidents.createTime', key: 'createTime', groupSeparator: true },
+            { label: 'process-instance.incidents.endTime', key: 'endTime' },
+          ] : [
+            { label: 'process-instance.incidents.timestamp', key: 'incidentTimestamp' },
+          ]
+        ),
+
         ...(this.isInstanceView ? [] : [{ label: 'process-instance.incidents.processInstance', key: 'processInstanceId', groupSeparator: true }]),
         ...(this.isInstanceView ? [] : [{ label: 'process.businessKey', key: 'businessKey' }]),
-        { label: 'process-instance.incidents.activity', key: 'activityId' },
+        { label: 'process-instance.incidents.activity', key: 'activityId', groupSeparator: this.isInstanceView },
         { label: 'process-instance.incidents.failedActivity', key: 'failedActivityId' },
+        { label: 'process-instance.incidents.executionId', key: 'executionId' },
         { label: 'process-instance.incidents.causeIncidentProcessInstanceId', key: 'causeIncidentProcessInstanceId' },
         { label: 'process-instance.incidents.rootCauseIncidentProcessInstanceId', key: 'rootCauseIncidentProcessInstanceId' },
         { label: 'process-instance.incidents.annotation', key: 'annotation', groupSeparator: true },
@@ -210,8 +289,10 @@ export default {
       ]
     },
     useCase() {
-      return this.isInstanceView ? 'process-instance-incidents' : 'process-definition-incidents'
-    }
+      const useCase = this.isInstanceView ? 'process-instance-incidents' : 'process-definition-incidents'
+      const viewType = this.isHistoricView ? 'historic' : 'runtime'
+      return `${useCase}-${viewType}`
+    },
   },
   watch: {
     'instance.id': {
@@ -232,7 +313,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions('incidents', ['loadIncidents', 'removeIncident', 'updateIncidentAnnotation', 'setIncidents']),
+    ...mapActions('incidents', ['loadRuntimeIncidents', 'loadHistoryIncidents', 'removeIncident', 'updateIncidentAnnotation', 'setIncidents']),
     formatDateForTooltips,
     async loadIncidentsData(id, isInstance = true) {
       this.loading = true
@@ -242,7 +323,11 @@ export default {
         ...(isInstance ? { processInstanceId: id } : { processDefinitionId: id })
       }
       try {
-        await this.loadIncidents(params)
+        if (this.isHistoricView) {
+          await this.loadHistoryIncidents(params)
+        } else {
+          await this.loadRuntimeIncidents(params)
+        }
         if (!this.isInstanceView && this.incidents.length > 0) {
           this.enrichWithBusinessKey()
         }

@@ -300,6 +300,7 @@
 			"timestamp": "Zeitstempel",
 			"activity": "Aktivität",
 			"failedActivity": "Fehlgeschlagene Aktivität",
+			"executionId": "Ausführungs-ID",
 			"incidentType": "Vorfallstyp",
 			"retryJob": "Anzahl der Wiederholungsversuche eines fehlgeschlagenen Jobs erhöhen",
 			"annotation": "Anmerkung",

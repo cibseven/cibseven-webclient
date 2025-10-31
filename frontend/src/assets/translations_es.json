@@ -300,6 +300,7 @@
 			"timestamp": "Timestamp",
 			"activity": "Actividad",
 			"failedActivity": "Actividad fallida",
+			"executionId": "ID de ejecución",
 			"incidentType": "Tipo de incidente",
 			"retryJob": "Incrementar el número de reintentos de trabajo fallido",
 			"annotation": "Anotación",
