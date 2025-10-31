@@ -110,7 +110,7 @@
         <CopyableActionButton 
           :display-value="table.item.causeIncidentProcessInstanceId"
           :copy-value="table.item.causeIncidentProcessInstanceId" 
-          :title="table.item.causeIncidentProcessInstanceId"
+          :title="$t('process-instance.incidents.causeIncidentProcessInstanceId') + ':\n' + table.item.causeIncidentProcessInstanceId"
           @click="navigateToIncidentProcessInstance(table.item.causeIncidentProcessInstanceId)"
           @copy="copyValueToClipboard"
         />
@@ -120,7 +120,7 @@
         <CopyableActionButton 
           :display-value="table.item.rootCauseIncidentProcessInstanceId"
           :copy-value="table.item.rootCauseIncidentProcessInstanceId" 
-          :title="table.item.rootCauseIncidentProcessInstanceId"
+          :title="$t('process-instance.incidents.rootCauseIncidentProcessInstanceId') + ':\n' + table.item.rootCauseIncidentProcessInstanceId"
           @click="navigateToIncidentProcessInstance(table.item.rootCauseIncidentProcessInstanceId)"
           @copy="copyValueToClipboard"
         />
