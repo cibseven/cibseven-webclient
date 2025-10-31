@@ -42,6 +42,16 @@
         <span v-else class="text-truncate mdi mdi-18px mdi-help-circle-outline" :title="$t('process-instance.incidents.state') + ': ' + $t('process-instance.incidents.unknown')"><span class="ms-1">{{ $t('process-instance.incidents.unknown') }}</span></span>
       </template>
 
+      <template v-slot:cell(incidentType)="table">
+        <CopyableActionButton
+          :display-value="table.item.incidentType"
+          :copy-value="table.item.incidentType" 
+          :title="$t('process-instance.incidents.incidentType') + ':\n' + table.item.incidentType"
+          :clickable="false"
+          @copy="copyValueToClipboard"
+        />
+      </template>
+
       <template v-slot:cell(incidentMessage)="table">
         <CopyableActionButton 
           :display-value="getIncidentMessage(table.item)"
@@ -89,11 +99,23 @@
       </template>
 
       <template v-slot:cell(activityId)="table">
-        <div :title="table.item.activityId" class="text-truncate">{{ $store.state.activity.processActivities[table.item.activityId] || table.item.activityId }}</div>
+        <CopyableActionButton
+          :display-value="$store.state.activity.processActivities[table.item.activityId] || table.item.activityId"
+          :copy-value="$store.state.activity.processActivities[table.item.activityId] || table.item.activityId" 
+          :title="$t('process-instance.incidents.activity') + ':\n' + ($store.state.activity.processActivities[table.item.activityId] || table.item.activityId)"
+          :clickable="false"
+          @copy="copyValueToClipboard"
+        />
       </template>
 
       <template v-slot:cell(failedActivityId)="table">
-        <div :title="table.item.failedActivityId" class="text-truncate">{{ $store.state.activity.processActivities[table.item.failedActivityId] || table.item.failedActivityId }}</div>
+        <CopyableActionButton
+          :display-value="$store.state.activity.processActivities[table.item.failedActivityId] || table.item.failedActivityId"
+          :copy-value="$store.state.activity.processActivities[table.item.failedActivityId] || table.item.failedActivityId" 
+          :title="$t('process-instance.incidents.failedActivity') + ':\n' + ($store.state.activity.processActivities[table.item.failedActivityId] || table.item.failedActivityId)"
+          :clickable="false"
+          @copy="copyValueToClipboard"
+        />
       </template>
 
       <template v-slot:cell(executionId)="table">
@@ -126,14 +148,14 @@
         />
       </template>
 
-      <template v-slot:cell(incidentType)="table">
-        <div :title="table.item.incidentType" class="text-truncate">{{ table.item.incidentType }}</div>
-      </template>
-
       <template v-slot:cell(annotation)="table">
-        <div :title="table.item.annotation" class="text-truncate w-100" @click="copyValueToClipboard(table.item.annotation)">
-          {{ table.item.annotation }}
-        </div>
+        <CopyableActionButton
+          :display-value="table.item.annotation"
+          :copy-value="table.item.annotation" 
+          :title="$t('process-instance.incidents.annotation') + ':\n' + table.item.annotation"
+          @click="$refs.annotationModal.show(table.item.id, table.item.annotation)"
+          @copy="copyValueToClipboard"
+        />
       </template>
 
       <template v-slot:cell(actions)="table">
