@@ -41,7 +41,7 @@
       :sort-by="currentSortBy" :sort-desc="currentSortDesc"
       @external-sort="handleExternalSort">
 
-      <template #cell(state)="row">
+      <template #cell(incidentState)="row">
         <span v-if="row.item.deleted" class="text-truncate mdi mdi-18px mdi-minus-circle-outline" :title="$t('process-instance.incidents.state') + ': ' + $t('process-instance.incidents.deleted')"><span class="ms-1">{{ $t('process-instance.incidents.deleted') }}</span></span>
         <span v-else-if="row.item.resolved" class="text-truncate mdi mdi-18px mdi-check-circle-outline text-success" :title="$t('process-instance.incidents.state') + ': ' + $t('process-instance.incidents.resolved')"><span class="ms-1">{{ $t('process-instance.incidents.resolved') }}</span></span>
         <span v-else-if="row.item.open" class="text-truncate mdi mdi-18px mdi-alert-outline mt-0 text-warning" :title="$t('process-instance.incidents.state') + ': ' + $t('process-instance.incidents.open')"><span class="ms-1">{{ $t('process-instance.incidents.open') }}</span></span>
@@ -240,7 +240,7 @@ export default {
     },
     visibleColumns() {
       return [
-        ...(this.isHistoricView ? ['state'] : []),
+        ...(this.isHistoricView ? ['incidentState'] : []),
         'incidentType',
         'incidentMessage',
 
@@ -264,7 +264,7 @@ export default {
     },
     columnDefinitions() {
       return [
-        ...(this.isHistoricView ? [{ label: 'process-instance.incidents.state', key: 'state', tdClass: 'pt-1' }] : []),
+        ...(this.isHistoricView ? [{ label: 'process-instance.incidents.state', key: 'incidentState', tdClass: 'pt-1' }] : []),
         { label: 'process-instance.incidents.incidentType', key: 'incidentType' },
         { label: 'process-instance.incidents.message', key: 'incidentMessage' },
 
@@ -335,7 +335,7 @@ export default {
       const params = {
         firstResult: this.firstResult,
         maxResults: this.maxResults,
-        sortBy: this.currentSortBy === 'state' ? 'incidentState' : this.currentSortBy,
+        sortBy: this.currentSortBy,
         sortOrder: this.currentSortDesc ? 'asc' : 'desc',
         ...(isInstance ? { processInstanceId: id } : { processDefinitionId: id })
       }
