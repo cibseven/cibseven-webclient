@@ -465,6 +465,9 @@ var IncidentService = {
   fetchHistoricIncidents: function(params) {
     return axios.get(getServicesBasePath() + "/incident/history", { params })
   },
+  fetchHistoricIncidentsCount: function(params) {
+    return axios.get(getServicesBasePath() + "/incident/history/count", { params })
+  },
   fetchHistoricStacktraceByJobId: function(id) {
     return axios.get(getServicesBasePath() + "/incident/history/" + id + "/stacktrace")
   },
@@ -476,6 +479,9 @@ var IncidentService = {
   },
   findIncidents: function(params) {
     return axios.get(getServicesBasePath() + "/incident", { params })
+  },
+  findIncidentsCount: function(params) {
+    return axios.get(getServicesBasePath() + "/incident/count", { params })
   },
   setIncidentAnnotation: function(id, params) {
     return axios.put(getServicesBasePath() + "/incident/" + id + "/annotation", params)
