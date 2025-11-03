@@ -17,11 +17,17 @@
 
 -->
 <template>
-  <div class="overflow-auto bg-white container-fluid g-0 h-100">
-    <div v-if="loading">
-      <p class="text-center p-4"><BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}</p>
-    </div>
-    <FlowTable v-else-if="incidents.length > 0" :items="incidents"
+  <div ref="scrollableArea"  class="overflow-auto bg-white container-fluid g-0 h-100">
+    <PagedScrollableContent
+      :loading="loading"
+      :loaded-count="incidents.length"
+      :total-count="totalCount"
+      :chunk-size="maxResults"
+      :scrollable-area="$refs.scrollableArea"
+      @load-next-page="loadNextPage"
+      :show-loading-spinner="loading">
+    <FlowTable
+      :items="incidents"
       striped
       resizable
       thead-class="sticky-header"
@@ -169,9 +175,10 @@
         </b-button>
       </template>
     </FlowTable>
-    <div v-else-if="!loading">
-      <p class="text-center p-4">{{ $t('process-instance.noIncidents') }}</p>
-    </div>
+      <div v-if="!loading && incidents.length === 0">
+        <p class="text-center p-4">{{ $t('process-instance.noIncidents') }}</p>
+      </div>
+    </PagedScrollableContent>
 
     <AnnotationModal ref="annotationModal" @set-annotation="setIncidentAnnotation" lang-key="process-instance.incidents"></AnnotationModal>
     <RetryModal ref="incidentRetryModal" @increment-number-retry="incrementNumberRetry" translation-prefix="process-instance.incidents."></RetryModal>
@@ -189,7 +196,7 @@ import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import RetryModal from '@/components/process/modals/RetryModal.vue'
 import AnnotationModal from '@/components/process/modals/AnnotationModal.vue'
 import StackTraceModal from '@/components/process/modals/StackTraceModal.vue'
-import { BWaitingBox } from 'cib-common-components'
+import PagedScrollableContent from '@/components/common-components/PagedScrollableContent.vue'
 import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
 import { formatDateForTooltips } from '@/utils/dates.js'
 import { createSortComparator } from '@/utils/sort.js'
@@ -206,7 +213,7 @@ function getStateAsNumber(incident) {
 
 export default {
   name: 'IncidentsTable',
-  components: { FlowTable, SuccessAlert, RetryModal, AnnotationModal, StackTraceModal, BWaitingBox, CopyableActionButton },
+  components: { FlowTable, SuccessAlert, RetryModal, AnnotationModal, StackTraceModal, PagedScrollableContent, CopyableActionButton },
   mixins: [copyToClipboardMixin],
   props: {
     instance: Object,
@@ -218,7 +225,10 @@ export default {
     return {
       loading: true,
       currentSortBy: 'incidentType',
-      currentSortDesc: false
+      currentSortDesc: false,
+      firstResult: 0,
+      maxResults: 1,
+      totalCount: null,
     }
   },
   computed: {
@@ -315,25 +325,55 @@ export default {
   methods: {
     ...mapActions('incidents', ['loadRuntimeIncidents', 'loadHistoryIncidents', 'removeIncident', 'updateIncidentAnnotation', 'setIncidents']),
     formatDateForTooltips,
+    async fetchCount(params) {
+      const countParams = { ...params }
+      delete countParams.firstResult
+      delete countParams.maxResults
+      return this.isHistoricView ?
+        IncidentService.fetchHistoricIncidentsCount(countParams) :
+        IncidentService.findIncidentsCount(countParams)
+    },
+    async fetch(params) {
+      return this.isHistoricView ?
+        this.loadHistoryIncidents(params) :
+        this.loadRuntimeIncidents(params)
+    },
     async loadIncidentsData(id, isInstance = true) {
       this.loading = true
+
       const params = {
+        firstResult: this.firstResult,
+        maxResults: this.maxResults,
         sortBy: 'incidentType',
         sortOrder: 'asc',
         ...(isInstance ? { processInstanceId: id } : { processDefinitionId: id })
       }
+
+      // clear existing incidents when loading first page
+      if (this.firstResult === 0) {
+        this.setIncidents([])
+        this.totalCount = null
+      }
+
+      this.fetchCount(params).then(count => {
+        this.totalCount = count
+      }).catch(() => {
+        this.totalCount = null
+      })
+
       try {
-        if (this.isHistoricView) {
-          await this.loadHistoryIncidents(params)
-        } else {
-          await this.loadRuntimeIncidents(params)
-        }
+        await this.fetch(params)
         if (!this.isInstanceView && this.incidents.length > 0) {
           this.enrichWithBusinessKey()
         }
       } finally {
         this.loading = false
       }
+    },
+    loadNextPage() {
+      this.firstResult += this.maxResults
+      const id = this.isInstanceView ? this.instance.id : this.process.id
+      this.loadIncidentsData(id, this.isInstanceView)
     },
     enrichWithBusinessKey() {
       // create mapping of instance IDs to their business keys
