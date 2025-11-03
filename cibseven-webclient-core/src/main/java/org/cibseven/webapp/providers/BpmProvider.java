@@ -989,6 +989,7 @@ public interface BpmProvider {
 	void submit(Task task, List<Variable> formResult, CIBUser user) throws SystemException, SubmitDeniedException;
 
 	Long countIncident(Map<String, Object> params, CIBUser user);
+	Long countHistoricIncident(Map<String, Object> params, CIBUser user);
 
 	Collection<Incident> findIncident(Map<String, Object> params, CIBUser user);
 

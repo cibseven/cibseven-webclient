@@ -702,6 +702,11 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 
 	@Override
+	public Long countHistoricIncident(Map<String, Object> params, CIBUser user) {
+		return incidentProvider.countHistoricIncident(params, user);
+	}
+
+	@Override
 	public Collection<Incident> findIncident(Map<String, Object> params, CIBUser user) {
 		return incidentProvider.findIncident(params, user);
 	}

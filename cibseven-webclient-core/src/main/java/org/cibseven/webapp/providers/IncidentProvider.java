@@ -44,6 +44,13 @@ public class IncidentProvider extends SevenProviderBase implements IIncidentProv
 	}
 
 	@Override
+	public Long countHistoricIncident(Map<String, Object> params, CIBUser user) {
+		String url = URLUtils.buildUrlWithParams(getEngineRestUrl() + "/history/incident/count", params);
+		JsonNode response = ((ResponseEntity<JsonNode>) doGet(url, JsonNode.class, user, false)).getBody();
+		return response != null ? response.get("count").asLong() : 0L;
+	}
+
+	@Override
 	public Collection<Incident> findIncident(Map<String, Object> params, CIBUser user) {
 		String url = URLUtils.buildUrlWithParams(getEngineRestUrl() + "/incident", params);
 		Incident[] response = ((ResponseEntity<Incident[]>) doGet(url, Incident[].class, user, false)).getBody();
