@@ -217,7 +217,7 @@ export default {
       currentSortBy: 'incidentType',
       currentSortDesc: false,
       firstResult: 0,
-      maxResults: 1,
+      maxResults: this.$root?.config?.maxProcessesResults || 50,
       totalCount: null,
     }
   },
