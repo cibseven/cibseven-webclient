@@ -199,17 +199,7 @@ import StackTraceModal from '@/components/process/modals/StackTraceModal.vue'
 import PagedScrollableContent from '@/components/common-components/PagedScrollableContent.vue'
 import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
 import { formatDateForTooltips } from '@/utils/dates.js'
-import { createSortComparator } from '@/utils/sort.js'
 import { mapGetters, mapActions } from 'vuex'
-
-
-// Helper to get incident state as a sortable number
-function getStateAsNumber(incident) {
-  if (incident.deleted) return 3
-  if (incident.resolved) return 2
-  if (incident.open) return 1
-  return 4 // unknown
-}
 
 export default {
   name: 'IncidentsTable',
@@ -288,13 +278,13 @@ export default {
         ),
 
         ...(this.isInstanceView ? [] : [{ label: 'process-instance.incidents.processInstance', key: 'processInstanceId', groupSeparator: true }]),
-        ...(this.isInstanceView ? [] : [{ label: 'process.businessKey', key: 'businessKey' }]),
+        ...(this.isInstanceView ? [] : [{ label: 'process.businessKey', key: 'businessKey', sortable: false }]),
         { label: 'process-instance.incidents.activity', key: 'activityId', groupSeparator: this.isInstanceView },
-        { label: 'process-instance.incidents.failedActivity', key: 'failedActivityId' },
+        { label: 'process-instance.incidents.failedActivity', key: 'failedActivityId', sortable: false },
         { label: 'process-instance.incidents.executionId', key: 'executionId' },
-        { label: 'process-instance.incidents.causeIncidentProcessInstanceId', key: 'causeIncidentProcessInstanceId' },
-        { label: 'process-instance.incidents.rootCauseIncidentProcessInstanceId', key: 'rootCauseIncidentProcessInstanceId' },
-        { label: 'process-instance.incidents.annotation', key: 'annotation', groupSeparator: true },
+        { label: 'process-instance.incidents.causeIncidentProcessInstanceId', key: 'causeIncidentProcessInstanceId', sortable: false },
+        { label: 'process-instance.incidents.rootCauseIncidentProcessInstanceId', key: 'rootCauseIncidentProcessInstanceId', sortable: false },
+        { label: 'process-instance.incidents.annotation', key: 'annotation', sortable: false, groupSeparator: true },
         { label: 'process-instance.incidents.actions', key: 'actions', disableToggle: true, sortable: false, groupSeparator: true, tdClass: 'py-0' }
       ]
     },
@@ -344,8 +334,8 @@ export default {
       const params = {
         firstResult: this.firstResult,
         maxResults: this.maxResults,
-        sortBy: 'incidentType',
-        sortOrder: 'asc',
+        sortBy: this.currentSortBy === 'state' ? 'incidentState' : this.currentSortBy,
+        sortOrder: this.currentSortDesc ? 'asc' : 'desc',
         ...(isInstance ? { processInstanceId: id } : { processDefinitionId: id })
       }
 
@@ -396,20 +386,8 @@ export default {
     handleExternalSort({ sortBy, sortDesc }) {
       this.currentSortBy = sortBy
       this.currentSortDesc = sortDesc
-
-      let sortedIncidents
-      if (sortBy === 'state') {
-        // Custom sorting logic for state field
-        sortedIncidents = [...this.incidents].sort(
-          createSortComparator(getStateAsNumber, sortDesc)
-        )
-      } else {
-        // For other fields, use standard sorting
-        sortedIncidents = [...this.incidents].sort(
-          createSortComparator(item => item[sortBy], sortDesc)
-        )
-      }
-      this.setIncidents(sortedIncidents)
+      this.firstResult = 0
+      this.loadIncidentsData(this.isInstanceView ? this.instance.id : this.process.id, this.isInstanceView)
     },
     showIncidentMessage: function(incident) {
       const configuration = incident.historyConfiguration || incident.rootCauseIncidentConfiguration
