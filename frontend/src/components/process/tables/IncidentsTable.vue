@@ -267,16 +267,9 @@ export default {
         ...(this.isHistoricView ? [{ label: 'process-instance.incidents.state', key: 'incidentState', tdClass: 'pt-1' }] : []),
         { label: 'process-instance.incidents.incidentType', key: 'incidentType' },
         { label: 'process-instance.incidents.message', key: 'incidentMessage' },
-
-        ...(
-          this.isHistoricView ? [
-            { label: 'process-instance.incidents.createTime', key: 'createTime', groupSeparator: true },
-            { label: 'process-instance.incidents.endTime', key: 'endTime' },
-          ] : [
-            { label: 'process-instance.incidents.timestamp', key: 'incidentTimestamp' },
-          ]
-        ),
-
+        ...(this.isHistoricView ? [{ label: 'process-instance.incidents.createTime', key: 'createTime', groupSeparator: true }] : []),
+        ...(this.isHistoricView ? [{ label: 'process-instance.incidents.endTime', key: 'endTime' }] : []),
+        ...(this.isHistoricView ? [] : [{ label: 'process-instance.incidents.timestamp', key: 'incidentTimestamp' }]),
         ...(this.isInstanceView ? [] : [{ label: 'process-instance.incidents.processInstance', key: 'processInstanceId', groupSeparator: true }]),
         ...(this.isInstanceView ? [] : [{ label: 'process.businessKey', key: 'businessKey', sortable: false }]),
         { label: 'process-instance.incidents.activity', key: 'activityId', groupSeparator: this.isInstanceView },
