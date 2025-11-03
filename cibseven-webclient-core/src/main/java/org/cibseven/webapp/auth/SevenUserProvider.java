@@ -71,13 +71,15 @@ public class SevenUserProvider extends BaseUserProvider<StandardLogin> {
 			SevenVerifyUser sevenVerifyUser = sevenProvider.verifyUser(user.getId(), login.getPassword(), user);
 			
 			if (sevenVerifyUser.isAuthenticated()) {
+			  // Get engine name from request header
+			  String engine = rq.getHeader("X-Process-Engine");
 			  // Token is needed for the next request (/user/xxx/profile)
-			  user.setAuthToken(createToken(getSettings(), true, false, user));
+			  user.setAuthToken(createTokenWithEngine(getSettings(), true, false, user, engine));
 				SevenUser cUser = sevenProvider.getUserProfile(user.getId(), user);
 				user.setUserID(cUser.getId());
 				user.setDisplayName(cUser.getFirstName() + " " + cUser.getLastName());
 				// Token is created for the second time to include the display name
-				user.setAuthToken(createToken(getSettings(), true, false, user));
+				user.setAuthToken(createTokenWithEngine(getSettings(), true, false, user, engine));
 				return user;	
 			}
 			else {
@@ -106,7 +108,31 @@ public class SevenUserProvider extends BaseUserProvider<StandardLogin> {
 	
 	@Override
 	public Object authenticateUser(HttpServletRequest request) {
-		return authenticate(request);
+		Object result = authenticate(request);
+		
+		// Validate engine claim matches request header
+		if (result instanceof User) {
+			String requestEngine = request.getHeader("X-Process-Engine");
+			String authHeader = request.getHeader("Authorization");
+			
+			if (authHeader != null && authHeader.startsWith(BEARER_PREFIX)) {
+				String token = authHeader.substring(BEARER_PREFIX.length());
+				try {
+					SecretKey key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(getSettings().getSecret()));
+					Claims claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
+					String tokenEngine = (String) claims.get("engine");
+					
+					// Validate engine in token matches engine in request header
+					if (tokenEngine != null && requestEngine != null && !tokenEngine.equals(requestEngine)) {
+						throw new AuthenticationException("Token engine mismatch: token has '" + tokenEngine + "' but request has '" + requestEngine + "'");
+					}
+				} catch (JwtException e) {
+					// Token parsing errors are handled by authenticate method
+				}
+			}
+		}
+		
+		return result;
 	}
 
 	@Override
@@ -155,6 +181,7 @@ public class SevenUserProvider extends BaseUserProvider<StandardLogin> {
 		try {
 			SecretKey key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(settings.getSecret()));
 			Claims claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
+			
 			User user = deserialize((String) claims.get("user"), JwtUserProvider.BEARER_PREFIX + token);
 			if ((boolean) claims.get("verify") && verify(claims) == null)
 				throw new AuthenticationException(token);
@@ -164,13 +191,53 @@ public class SevenUserProvider extends BaseUserProvider<StandardLogin> {
 			long ageMillis = System.currentTimeMillis() - x.getClaims().getExpiration().getTime();
 			if ((boolean) x.getClaims().get("prolongable") && (ageMillis < settings.getProlong().toMillis())) {
 				User user = verify(x.getClaims());
-				if (user != null)
-					throw new TokenExpiredException(createToken(settings, true, false, user));				
+				if (user != null) {
+					// Get engine from expired token to create new one
+					String engine = (String) x.getClaims().get("engine");
+					throw new TokenExpiredException(createTokenWithEngine(settings, true, false, user, engine));
+				}
 			}
 			throw new TokenExpiredException();
 			
 		} catch (JwtException x) {
 			throw new AuthenticationException(token);
+		}
+	}
+	
+	/**
+	 * Creates a JWT token with engine name validation.
+	 * This extends the base createToken method by adding the engine name as a claim
+	 * to prevent token reuse across different engine instances.
+	 * @param settings Token settings
+	 * @param verify Whether to verify the token
+	 * @param prolongable Whether the token can be prolonged
+	 * @param user The user
+	 * @param engine The engine name from X-Process-Engine header
+	 */
+	private String createTokenWithEngine(TokenSettings settings, boolean verify, boolean prolongable, User user, String engine) {
+		String tokenWithPrefix = createToken(settings, verify, prolongable, user);
+		
+		// Remove BEARER_PREFIX to get the pure JWT token
+		String token = tokenWithPrefix.replace(BEARER_PREFIX, "");
+		
+		// Parse the token to get claims and add engine claim
+		try {
+			SecretKey key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(settings.getSecret()));
+			Claims claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
+			
+			// Create new token with engine claim and add BEARER_PREFIX back
+			return BEARER_PREFIX + Jwts.builder()
+				.claim("user", claims.get("user"))
+				.claim("verify", claims.get("verify"))
+				.claim("prolongable", claims.get("prolongable"))
+				.claim("engine", engine)
+				.expiration(claims.getExpiration())
+				.issuedAt(claims.getIssuedAt())
+				.signWith(key)
+				.compact();
+				
+		} catch (JwtException e) {
+			throw new SystemException("Failed to create token with engine claim", e);
 		}
 	}
 	
