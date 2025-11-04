@@ -281,7 +281,7 @@ export default {
         { label: 'process-instance.incidents.rootCauseIncidentProcessInstanceId', key: 'rootCauseIncidentProcessInstanceId', sortable: false },
         ...(this.isInstanceView ? [] : [{ label: 'process.tenant', key: 'tenantId' }]),
         { label: 'process-instance.incidents.annotation', key: 'annotation', sortable: false, groupSeparator: true },
-        { label: 'process-instance.incidents.actions', key: 'actions', disableToggle: true, sortable: false, groupSeparator: true, tdClass: 'py-0' }
+        { label: 'process-instance.incidents.actions', key: 'actions', disableToggle: true, sortable: false, groupSeparator: true, tdClass: 'py-0', thClass: 'text-truncate' },
       ]
     },
     useCase() {
