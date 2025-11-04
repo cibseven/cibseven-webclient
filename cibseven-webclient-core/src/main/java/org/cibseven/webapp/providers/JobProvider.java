@@ -22,11 +22,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.providers.utils.URLUtils;
 import org.cibseven.webapp.rest.model.Job;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.util.UriComponentsBuilder;
 
 @Component
 public class JobProvider extends SevenProviderBase implements IJobProvider {
@@ -51,17 +51,17 @@ public class JobProvider extends SevenProviderBase implements IJobProvider {
 
 	@Override
 	public Collection<Object> getHistoryJobLog(Map<String, Object> params, CIBUser user) {
-		String url = buildUrlWithParams("/history/job-log", params);
+		String url = URLUtils.buildUrlWithParams("/history/job-log", params);
 		Collection<Object> jobLogs = Arrays.asList(
-	        ((ResponseEntity<Object[]>) doGet(url, Object[].class, user, false)).getBody()
+	        ((ResponseEntity<Object[]>) doGet(url, Object[].class, user, true)).getBody()
 	    );
 		return jobLogs;
 	}
 	
 	@Override
 	public String getHistoryJobLogStacktrace(String id, CIBUser user) {
-		String url = buildUrlWithParams("/history/job-log/" + id + "/stacktrace", new HashMap<>());
-		return doGetWithHeader(url, String.class, user, false, MediaType.ALL).getBody();
+		String url = URLUtils.buildUrlWithParams("/history/job-log/" + id + "/stacktrace", new HashMap<>());
+		return doGetWithHeader(url, String.class, user, true, MediaType.ALL).getBody();
 	}
 
 	@Override
@@ -72,18 +72,7 @@ public class JobProvider extends SevenProviderBase implements IJobProvider {
 
 	@Override
 	public void recalculateDueDate(String id, Map<String, Object> params, CIBUser user) {
-		String url = buildUrlWithParams("/job/" + id + "/duedate/recalculate", params);
+		String url = URLUtils.buildUrlWithParams("/job/" + id + "/duedate/recalculate", params);
 		doPost(url, new HashMap<>(), Object.class, user);
 	}
-	
-	private String buildUrlWithParams(String path, Map<String, Object> queryParams) {
-	    UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(getEngineRestUrl() + path);
-	    queryParams.forEach((key, value) -> {
-	        if (value != null) {
-	            builder.queryParam(key, value);
-	        }
-	    });
-	    return builder.toUriString();
-	}	
-	
 }

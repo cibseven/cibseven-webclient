@@ -22,11 +22,11 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.providers.utils.URLUtils;
 import org.cibseven.webapp.rest.model.Decision;
 import org.cibseven.webapp.rest.model.HistoricDecisionInstance;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -35,13 +35,13 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 	
 	@Override
 	public Collection<Decision> getDecisionDefinitionList(Map<String, Object> queryParams, CIBUser user) {
-		String url = buildUrlWithParams(getEngineRestUrl() + "/decision-definition", queryParams);
-		return Arrays.asList(((ResponseEntity<Decision[]>) doGet(url, Decision[].class, user, false)).getBody());
+		String url = URLUtils.buildUrlWithParams(getEngineRestUrl() + "/decision-definition", queryParams);
+		return Arrays.asList(((ResponseEntity<Decision[]>) doGet(url, Decision[].class, user, true)).getBody());
 	}
 
 	@Override
 	public Long getDecisionDefinitionListCount(Map<String, Object> queryParams, CIBUser user) {
-		String url = buildUrlWithParams(getEngineRestUrl() + "/decision-definition/count", queryParams);    
+		String url = URLUtils.buildUrlWithParams(getEngineRestUrl() + "/decision-definition/count", queryParams);    
 		JsonNode response = ((ResponseEntity<JsonNode>) doGet(url, JsonNode.class, user, true)).getBody();
 		return response != null ? response.get("count").asLong() : 0L;
 	}
@@ -178,8 +178,8 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 	
 	@Override
 	public HistoricDecisionInstance getHistoricDecisionInstanceById(String id, Map<String, Object> queryParams, CIBUser user) {
-		String url = buildUrlWithParams(getEngineRestUrl() + "/history/decision-instance/" + id, queryParams);
-		return ((ResponseEntity<HistoricDecisionInstance>) doGet(url, HistoricDecisionInstance.class, user, false)).getBody();
+		String url = URLUtils.buildUrlWithParams(getEngineRestUrl() + "/history/decision-instance/" + id, queryParams);
+		return ((ResponseEntity<HistoricDecisionInstance>) doGet(url, HistoricDecisionInstance.class, user, true)).getBody();
 	}
 	
 	@Override
@@ -193,16 +193,4 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 		String url = getEngineRestUrl() + "/history/decision-instance/set-removal-time";
 		return ((ResponseEntity<Object>) doPost(url, body, null, null)).getBody();
 	}
-	
-	private String buildUrlWithParams(String baseUrl, Map<String, Object> queryParams) {
-	    UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(baseUrl);
-	    queryParams.forEach((key, value) -> {
-	        if (value != null) {
-	            builder.queryParam(key, value);
-	        }
-	    });
-	    return builder.toUriString();
-	}
-
-	
 }
