@@ -38,7 +38,7 @@ public class BatchProvider extends SevenProviderBase implements IBatchProvider {
 	public Collection<Batch> getBatches(Map<String, Object> params, CIBUser user) {
 		String url = buildUrlWithParams("/batch", params);
 	    List<Batch> batches = Arrays.asList(
-	        ((ResponseEntity<Batch[]>) doGet(url, Batch[].class, user, false)).getBody()
+	        ((ResponseEntity<Batch[]>) doGet(url, Batch[].class, user, true)).getBody()
 	    );
 
 	    batches.forEach(batch -> {
@@ -62,7 +62,7 @@ public class BatchProvider extends SevenProviderBase implements IBatchProvider {
 	@Override
 	public Collection<Batch> getBatchStatistics(Map<String, Object> params, CIBUser user) {
 	    String url = buildUrlWithParams("/batch/statistics", params);
-	    return Arrays.asList(((ResponseEntity<Batch[]>) doGet(url, Batch[].class, user, false)).getBody());
+	    return Arrays.asList(((ResponseEntity<Batch[]>) doGet(url, Batch[].class, user, true)).getBody());
 	}
 
 	@Override
@@ -80,7 +80,7 @@ public class BatchProvider extends SevenProviderBase implements IBatchProvider {
 	@Override
 	public Collection<HistoryBatch> getHistoricBatches(Map<String, Object> params, CIBUser user) {
         String url = buildUrlWithParams("/history/batch", params);
-        return Arrays.asList(((ResponseEntity<HistoryBatch[]>) doGet(url, HistoryBatch[].class, user, false)).getBody());
+        return Arrays.asList(((ResponseEntity<HistoryBatch[]>) doGet(url, HistoryBatch[].class, user, true)).getBody());
     }
 	
 	@Override
@@ -93,7 +93,7 @@ public class BatchProvider extends SevenProviderBase implements IBatchProvider {
 	@Override
 	public HistoryBatch getHistoricBatchById(String id, CIBUser user) {
 		String url = buildUrlWithParams("/history/batch/" + id, new HashMap<>());
-        return doGet(url, HistoryBatch.class, null, false).getBody();
+        return doGet(url, HistoryBatch.class, null, true).getBody();
     }
 	
 	@Override
@@ -111,7 +111,7 @@ public class BatchProvider extends SevenProviderBase implements IBatchProvider {
 	@Override
 	public Object getCleanableBatchReport(Map<String, Object> queryParams) {
         String url = buildUrlWithParams("/history/batch/cleanable-batch-report", queryParams);
-        return ((ResponseEntity<Object>) doGet(url, Object.class, null, false)).getBody();
+        return ((ResponseEntity<Object>) doGet(url, Object.class, null, true)).getBody();
     }
     
 	@Override

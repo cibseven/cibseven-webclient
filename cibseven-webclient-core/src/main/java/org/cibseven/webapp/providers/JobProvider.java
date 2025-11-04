@@ -53,7 +53,7 @@ public class JobProvider extends SevenProviderBase implements IJobProvider {
 	public Collection<Object> getHistoryJobLog(Map<String, Object> params, CIBUser user) {
 		String url = buildUrlWithParams("/history/job-log", params);
 		Collection<Object> jobLogs = Arrays.asList(
-	        ((ResponseEntity<Object[]>) doGet(url, Object[].class, user, false)).getBody()
+	        ((ResponseEntity<Object[]>) doGet(url, Object[].class, user, true)).getBody()
 	    );
 		return jobLogs;
 	}
@@ -61,7 +61,7 @@ public class JobProvider extends SevenProviderBase implements IJobProvider {
 	@Override
 	public String getHistoryJobLogStacktrace(String id, CIBUser user) {
 		String url = buildUrlWithParams("/history/job-log/" + id + "/stacktrace", new HashMap<>());
-		return doGetWithHeader(url, String.class, user, false, MediaType.ALL).getBody();
+		return doGetWithHeader(url, String.class, user, true, MediaType.ALL).getBody();
 	}
 
 	@Override

@@ -36,7 +36,7 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 	@Override
 	public Collection<Decision> getDecisionDefinitionList(Map<String, Object> queryParams, CIBUser user) {
 		String url = buildUrlWithParams(getEngineRestUrl() + "/decision-definition", queryParams);
-		return Arrays.asList(((ResponseEntity<Decision[]>) doGet(url, Decision[].class, user, false)).getBody());
+		return Arrays.asList(((ResponseEntity<Decision[]>) doGet(url, Decision[].class, user, true)).getBody());
 	}
 
 	@Override
@@ -179,7 +179,7 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 	@Override
 	public HistoricDecisionInstance getHistoricDecisionInstanceById(String id, Map<String, Object> queryParams, CIBUser user) {
 		String url = buildUrlWithParams(getEngineRestUrl() + "/history/decision-instance/" + id, queryParams);
-		return ((ResponseEntity<HistoricDecisionInstance>) doGet(url, HistoricDecisionInstance.class, user, false)).getBody();
+		return ((ResponseEntity<HistoricDecisionInstance>) doGet(url, HistoricDecisionInstance.class, user, true)).getBody();
 	}
 	
 	@Override

@@ -49,7 +49,7 @@ public class TenantProvider extends SevenProviderBase implements ITenantProvider
 	@Override
 	public Collection<Tenant> fetchTenants(Map<String, Object> queryParams, CIBUser user) throws SystemException {
 		String url = buildUrlWithParams("/tenant", queryParams);
-		return Arrays.asList(((ResponseEntity<Tenant[]>) doGet(url, Tenant[].class, user, false)).getBody());	
+		return Arrays.asList(((ResponseEntity<Tenant[]>) doGet(url, Tenant[].class, user, true)).getBody());	
 	}	
 
 	@Override
