@@ -23,10 +23,10 @@ import java.util.Map;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.InvalidUserIdException;
 import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.webapp.providers.utils.URLUtils;
 import org.cibseven.webapp.rest.model.Tenant;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -35,20 +35,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component
 public class TenantProvider extends SevenProviderBase implements ITenantProvider {
-	
-	private String buildUrlWithParams(String path, Map<String, Object> queryParams) {
-	    UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(getEngineRestUrl() + path);
-	    queryParams.forEach((key, value) -> {
-	        if (value != null) {
-	            builder.queryParam(key, value);
-	        }
-	    });
-	    return builder.toUriString();
-	}
-	
+
 	@Override
 	public Collection<Tenant> fetchTenants(Map<String, Object> queryParams, CIBUser user) throws SystemException {
-		String url = buildUrlWithParams("/tenant", queryParams);
+		String url = URLUtils.buildUrlWithParams("/tenant", queryParams);
 		return Arrays.asList(((ResponseEntity<Tenant[]>) doGet(url, Tenant[].class, user, true)).getBody());	
 	}	
 
