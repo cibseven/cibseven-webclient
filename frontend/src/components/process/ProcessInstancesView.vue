@@ -116,6 +116,7 @@
             </div>
           </div>
           <InstancesTable ref="instancesTable"
+            :scrollable-area="$refs.rContent" 
             :process="process"
             :sortByDefaultKey="sortByDefaultKey"
             :sortDesc="sortDesc"

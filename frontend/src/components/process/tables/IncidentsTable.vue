@@ -17,13 +17,13 @@
 
 -->
 <template>
-  <div ref="scrollableArea"  class="overflow-auto bg-white container-fluid g-0 h-100">
+  <div class="bg-white container-fluid g-0 h-100">
     <PagedScrollableContent
       :loading="loading"
       :loaded-count="incidents.length"
       :total-count="totalCount"
       :chunk-size="maxResults"
-      :scrollable-area="$refs.scrollableArea"
+      :scrollable-area="scrollableArea"
       @load-next-page="loadNextPage"
       :show-loading-spinner="loading">
     <FlowTable
@@ -210,7 +210,8 @@ export default {
     instance: Object,
     process: Object,
     activityInstance: Object,
-    isInstanceView: Boolean
+    isInstanceView: Boolean,
+    scrollableArea: Object,
   },
   data: function() {
     return {
