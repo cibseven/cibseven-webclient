@@ -26,6 +26,29 @@
       :scrollable-area="scrollableArea"
       @load-next-page="loadNextPage"
       :show-loading-spinner="loading">
+
+      <div class="d-flex w-100">
+        <div class="col-6 p-3">
+          <b-input-group size="sm">
+            <template #prepend>
+              <b-button :title="$t('searches.search')" aria-hidden="true" size="sm" class="rounded-left" variant="secondary"><span class="mdi mdi-magnify" style="line-height: initial"></span></b-button>
+            </template>
+            <b-form-input :title="$t('searches.search')" size="sm" :placeholder="$t('searches.search')" @input="(evt) => onInput(evt.target.value.trim())"></b-form-input>
+          </b-input-group>
+        </div>
+        <div v-if="selectedActivityId" class="col-6 p-3">
+          <span class="badge bg-info rounded-pill p-2 pe-3" style="font-weight: 500; font-size: 0.75rem">
+            <span
+              @click="clearActivitySelection"
+              :title="$t('process.activityIdBadge.remove')"
+              role="button" class="mdi mdi-close-thick py-2 px-1"></span>
+              <span :title="$t('process.activityIdBadge.tooltip.all', { activityId: selectedActivityId })">
+                {{ $t('process.activityIdBadge.title.all', { activityId: selectedActivityId }) }}
+              </span>
+          </span>
+        </div>
+      </div>
+
     <FlowTable
       :items="incidents"
       striped
@@ -203,6 +226,7 @@ import PagedScrollableContent from '@/components/common-components/PagedScrollab
 import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
 import { formatDateForTooltips } from '@/utils/dates.js'
 import { mapGetters, mapActions } from 'vuex'
+import { debounce } from '@/utils/debounce.js'
 
 export default {
   name: 'IncidentsTable',
@@ -217,6 +241,7 @@ export default {
   },
   data: function() {
     return {
+      freeText: '',
       loading: true,
       currentSortBy: 'incidentType',
       currentSortDesc: false,
@@ -228,6 +253,7 @@ export default {
   computed: {
     ...mapGetters('incidents', ['incidents']),
     ...mapGetters('instances', ['instances']),
+    ...mapGetters(['selectedActivityId']),
     isHistoricView() {
       switch (this.$root.config.camundaHistoryLevel) {
         case 'none':
@@ -308,9 +334,19 @@ export default {
         }
       },
       immediate: true
+    },
+    'selectedActivityId': {
+      handler() {
+        if (!this.isInstanceView) {
+          this.firstResult = 0
+          const id = this.isInstanceView ? this.instance.id : this.process.id
+          this.loadIncidentsData(id, this.isInstanceView)
+        }
+      }
     }
   },
   methods: {
+    ...mapActions(['clearActivitySelection']),
     ...mapActions('incidents', ['loadRuntimeIncidents', 'loadHistoryIncidents', 'removeIncident', 'updateIncidentAnnotation', 'setIncidents']),
     formatDateForTooltips,
     async fetchCount(params) {
@@ -334,7 +370,9 @@ export default {
         maxResults: this.maxResults,
         sortBy: this.currentSortBy,
         sortOrder: this.currentSortDesc ? 'asc' : 'desc',
-        ...(isInstance ? { processInstanceId: id } : { processDefinitionId: id })
+        ...(isInstance ? { processInstanceId: id } : { processDefinitionId: id }),
+        ...((this.selectedActivityId && !this.isInstanceView) ? { activityId: this.selectedActivityId } : {} ),
+        ...(this.freeText ? { incidentMessageLike: `%${this.freeText}%` } : {} ),
       }
 
       // clear existing incidents when loading first page
@@ -385,7 +423,8 @@ export default {
       this.currentSortBy = sortBy
       this.currentSortDesc = sortDesc
       this.firstResult = 0
-      this.loadIncidentsData(this.isInstanceView ? this.instance.id : this.process.id, this.isInstanceView)
+      const id = this.isInstanceView ? this.instance.id : this.process.id
+      this.loadIncidentsData(id, this.isInstanceView)
     },
     showIncidentMessage: function(incident) {
       const configuration = incident.historyConfiguration || incident.rootCauseIncidentConfiguration
@@ -457,7 +496,13 @@ export default {
       } catch (error) {
         console.error('Failed to navigate to incident process instance:', error)
       }
-    }
+    },
+    onInput: debounce(800, function(freeText) {
+      this.freeText = freeText
+      this.firstResult = 0
+      const id = this.isInstanceView ? this.instance.id : this.process.id
+      this.loadIncidentsData(id, this.isInstanceView)
+    }),
   }
 }
 </script>
