@@ -371,7 +371,7 @@ export default {
         sortBy: this.currentSortBy,
         sortOrder: this.currentSortDesc ? 'asc' : 'desc',
         ...(isInstance ? { processInstanceId: id } : { processDefinitionId: id }),
-        ...((this.selectedActivityId && !this.isInstanceView) ? { activityId: this.selectedActivityId } : {} ),
+        ...((this.selectedActivityId && !this.isInstanceView) ? { failedActivityId: this.selectedActivityId } : {} ),
         ...(this.freeText ? { incidentMessageLike: `%${this.freeText}%` } : {} ),
       }
 
