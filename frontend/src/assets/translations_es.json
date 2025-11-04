@@ -290,6 +290,11 @@
 			"enterValue": "Introducir valor"
 		},
 		"incidents": {
+			"activityIdBadge": {
+				"remove": "Eliminar criterio - para listar todas las incidencias",
+				"title": "{activityId} (actividad fallida)",
+				"tooltip": "Listar solo las incidencias que fueron creadas debido al fallo de la actividad \"{activityId}\"."
+			},
 			"state": "Estado",
 			"processInstance": "Instancia de proceso",
 			"deleted": "Eliminado",

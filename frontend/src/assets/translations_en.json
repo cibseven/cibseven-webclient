@@ -290,6 +290,11 @@
 			"enterValue": "Enter value"
 		},
 		"incidents": {
+			"activityIdBadge": {
+				"remove": "Remove criteria - to list all incidents",
+				"title": "{activityId} (failed activity)",
+				"tooltip": "List only incidents that were created due to the failure of \"{activityId}\" activity."
+			},
 			"state": "State",
 			"processInstance": "Process Instance",
 			"deleted": "Deleted",

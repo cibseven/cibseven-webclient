@@ -39,21 +39,21 @@ public class IncidentProvider extends SevenProviderBase implements IIncidentProv
 	@Override
 	public Long countIncident(Map<String, Object> params, CIBUser user) {
 		String url = URLUtils.buildUrlWithParams(getEngineRestUrl() + "/incident/count", params);
-		JsonNode response = ((ResponseEntity<JsonNode>) doGet(url, JsonNode.class, user, false)).getBody();
+		JsonNode response = ((ResponseEntity<JsonNode>) doGet(url, JsonNode.class, user, true)).getBody();
 		return response != null ? response.get("count").asLong() : 0L;
 	}
 
 	@Override
 	public Long countHistoricIncident(Map<String, Object> params, CIBUser user) {
 		String url = URLUtils.buildUrlWithParams(getEngineRestUrl() + "/history/incident/count", params);
-		JsonNode response = ((ResponseEntity<JsonNode>) doGet(url, JsonNode.class, user, false)).getBody();
+		JsonNode response = ((ResponseEntity<JsonNode>) doGet(url, JsonNode.class, user, true)).getBody();
 		return response != null ? response.get("count").asLong() : 0L;
 	}
 
 	@Override
 	public Collection<Incident> findIncident(Map<String, Object> params, CIBUser user) {
 		String url = URLUtils.buildUrlWithParams(getEngineRestUrl() + "/incident", params);
-		Incident[] response = ((ResponseEntity<Incident[]>) doGet(url, Incident[].class, user, false)).getBody();
+		Incident[] response = ((ResponseEntity<Incident[]>) doGet(url, Incident[].class, user, true)).getBody();
 		List<Incident> incidents = response != null ? Arrays.asList(response) : Arrays.asList();
 		
 		// Enrich incidents with root cause incident data
@@ -135,7 +135,7 @@ public class IncidentProvider extends SevenProviderBase implements IIncidentProv
 	@Override
 	public Collection<Incident> findHistoricIncidents(Map<String, Object> params, CIBUser user) {
 		String url = URLUtils.buildUrlWithParams(getEngineRestUrl() + "/history/incident", params);
-		Incident[] response = ((ResponseEntity<Incident[]>) doGet(url, Incident[].class, user, false)).getBody();
+		Incident[] response = ((ResponseEntity<Incident[]>) doGet(url, Incident[].class, user, true)).getBody();
 		List<Incident> incidents = response != null ? Arrays.asList(response) : Arrays.asList();
 		
 		// Enrich historic incidents with root cause incident data (same enrichment algorithm as current incidents)
@@ -174,7 +174,7 @@ public class IncidentProvider extends SevenProviderBase implements IIncidentProv
 		try {
 			Map<String, Object> params = Map.of("incidentId", incidentId);
 			String url = URLUtils.buildUrlWithParams(getEngineRestUrl() + "/history/incident", params);
-			Incident[] response = ((ResponseEntity<Incident[]>) doGet(url, Incident[].class, user, false)).getBody();
+			Incident[] response = ((ResponseEntity<Incident[]>) doGet(url, Incident[].class, user, true)).getBody();
 			// Return the first incident if found, null otherwise
 			return (response != null && response.length > 0) ? response[0] : null;
 		} catch (Exception e) {
