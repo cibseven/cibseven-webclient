@@ -40,10 +40,10 @@
           <span class="badge bg-info rounded-pill p-2 pe-3" style="font-weight: 500; font-size: 0.75rem">
             <span
               @click="clearActivitySelection"
-              :title="$t('process.activityIdBadge.remove')"
+              :title="$t('process-instance.incidents.activityIdBadge.remove')"
               role="button" class="mdi mdi-close-thick py-2 px-1"></span>
-              <span :title="$t('process.activityIdBadge.tooltip.all', { activityId: selectedActivityId })">
-                {{ $t('process.activityIdBadge.title.all', { activityId: selectedActivityId }) }}
+              <span :title="$t('process-instance.incidents.activityIdBadge.tooltip', { activityId: selectedActivityId })">
+                {{ $t('process-instance.incidents.activityIdBadge.title', { activityId: selectedActivityId }) }}
               </span>
           </span>
         </div>
