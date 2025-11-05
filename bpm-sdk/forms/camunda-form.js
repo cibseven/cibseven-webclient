@@ -184,7 +184,10 @@ CamundaForm.prototype.initialize = function(done) {
   // check whether form needs to be loaded first
   if (this.formUrl) {
     this.client.http.load(this.formUrl, {
-      accept: '*/*',
+      headers: {
+        ...this.client.http.config.headers,
+        'Accept': '*/*'
+      },
       done: function(err, result) {
         if (err) {
           return done(err);

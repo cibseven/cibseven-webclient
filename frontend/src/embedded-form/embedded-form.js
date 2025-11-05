@@ -416,6 +416,7 @@ function loadGeneratedForm(isStartForm, referenceId, formContainer, client, conf
                 engineName: config.engineName
             },
             headers: {
+                ...client.http.config.headers,
                 'Accept': '*/*'
             },
             done: function(err, renderedFormHtml) {
@@ -439,6 +440,7 @@ function loadGeneratedForm(isStartForm, referenceId, formContainer, client, conf
                     taskId: referenceId
                 },
                 headers: {
+                    ...Task.http.config.headers,
                     'Accept': '*/*'
                 },
                 done: function (err, renderedFormHtml) {
