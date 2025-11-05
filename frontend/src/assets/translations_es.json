@@ -572,6 +572,7 @@
 			"newPasswordRepeat": "Nueva contraseña (repetir)",
 			"deleteUser": "Eliminar usuario",
 			"editUser": "Editar usuario",
+			"viewUser": "Mostrar usuario",
 			"changePassword": "Cambiar contraseña",
 			"updateProfileMessage": "Perfil de usuario actualizado",
 			"updatePasswordMessage": "Contraseña actualizada",

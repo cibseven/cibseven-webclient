@@ -16,12 +16,15 @@
  */
 package org.cibseven.webapp.rest;
 
+import org.cibseven.webapp.auth.SevenUserProvider;
 import org.cibseven.webapp.rest.model.InfoVersion;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import jakarta.annotation.PostConstruct;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -46,6 +49,7 @@ public class InfoService extends BaseService {
 	@Value("${cibseven.webclient.sso.scopes:}") private String scopes;
 	@Value("${cibseven.webclient.historyLevel:full}") private String camundaHistoryLevel;
 	@Value("${cibseven.webclient.user.provider:org.cibseven.webapp.auth.SevenUserProvider}") private String userProvider;
+	@Value("${cibseven.webclient.user.editable:#{null}}") private Boolean userEditable;
 	
 	@Value("${cibseven.webclient.productNamePageTitle:CIB seven}") private String productNamePageTitle;
 	
@@ -63,6 +67,14 @@ public class InfoService extends BaseService {
 	
 	@Autowired
 	InfoVersion infoVersion;
+	
+	@PostConstruct
+	public void init() {
+		// If userEditable is not set in yaml, set it based on userProvider
+		if (userEditable == null) {
+			userEditable = SevenUserProvider.class.getName().equals(userProvider);
+		}
+	}
 	
 	@Operation(
 			summary = "Get info version",
@@ -83,6 +95,7 @@ public class InfoService extends BaseService {
 		configJson.put("ssoActive", ssoActive);
 		configJson.put("camundaHistoryLevel", camundaHistoryLevel);
 		configJson.put("userProvider", userProvider);
+		configJson.put("userEditable", userEditable);
 		configJson.put("flowLinkTerms", flowLinkTerms);
 		configJson.put("flowLinkPrivacy", flowLinkPrivacy);
 		configJson.put("flowLinkImprint", flowLinkImprint);
