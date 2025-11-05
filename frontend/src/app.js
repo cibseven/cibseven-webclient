@@ -14,8 +14,8 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import '@mdi/font/css/materialdesignicons.css'
 import './assets/main.css'
+import '@mdi/font/css/materialdesignicons.css'
 import { axios } from './globals.js'
 
 import 'bootstrap'
