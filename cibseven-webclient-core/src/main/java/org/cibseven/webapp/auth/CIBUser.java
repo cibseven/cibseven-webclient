@@ -28,6 +28,7 @@ public class CIBUser implements User {
 	@Getter @Setter String authToken;
 	@Getter @Setter protected String userID;
 	@Setter String displayName;
+	@Getter @Setter String engine;
 	
 	public CIBUser(String userId) {
 		this.userID = userId;
