@@ -33,7 +33,7 @@ public interface IBatchProvider {
     public Long getHistoricBatchCount(Map<String, Object> queryParams, CIBUser user);
     public HistoryBatch getHistoricBatchById(String id, CIBUser user);
     public void deleteHistoricBatch(String id, CIBUser user);
-    public Object setRemovalTime(Map<String, Object> payload);
-    public Object getCleanableBatchReport(Map<String, Object> queryParams);
-    public Object getCleanableBatchReportCount();
+    public Object setRemovalTime(Map<String, Object> payload, CIBUser user);
+    public Object getCleanableBatchReport(Map<String, Object> queryParams, CIBUser user);
+    public Object getCleanableBatchReportCount(CIBUser user);
 }

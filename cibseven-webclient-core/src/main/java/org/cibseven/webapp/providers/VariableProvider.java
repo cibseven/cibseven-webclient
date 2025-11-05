@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright CIB software GmbH and/or licensed to CIB software GmbH
  * under one or more contributor license agreements. See the NOTICE file
  * distributed with this work for additional information regarding copyright
@@ -66,13 +66,13 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 
 	@Override
 	public void modifyVariableByExecutionId(String executionId, Map<String, Object> data, CIBUser user) throws SystemException {
-		String url = getEngineRestUrl() + "/execution/" + executionId + "/localVariables/";
+		String url = getEngineRestUrl(user) + "/execution/" + executionId + "/localVariables/";
 		doPost(url, data, null, user);
 	}
 
 	@Override
 	public void modifyVariableDataByExecutionId(String executionId, String variableName, MultipartFile data, String valueType, CIBUser user) throws SystemException {
-		String url = getEngineRestUrl() + "/execution/" + executionId + "/localVariables/" + variableName + "/data";
+		String url = getEngineRestUrl(user) + "/execution/" + executionId + "/localVariables/" + variableName + "/data";
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
@@ -152,7 +152,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 	public Collection<Variable> fetchProcessInstanceVariables(String processInstanceId, Map<String, Object> data, CIBUser user) throws SystemException {
 
 		UriComponentsBuilder uriBuilder = UriComponentsBuilder
-			.fromUriString(getEngineRestUrl())
+			.fromUriString(getEngineRestUrl(user))
 			.path("/variable-instance");
 
 		if (data != null) {
@@ -193,7 +193,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 
 	@Override
 	public ResponseEntity<byte[]> fetchVariableDataByExecutionId(String executionId, String variableName, CIBUser user) throws NoObjectFoundException, SystemException  {
-		String url = getEngineRestUrl() + "/execution/" + executionId + "/localVariables/" + variableName + "/data";
+		String url = getEngineRestUrl(user) + "/execution/" + executionId + "/localVariables/" + variableName + "/data";
 
 		try {
 		    // Use doGetWithHeader which creates a new RestTemplate instance for thread safety
@@ -207,7 +207,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 	public Collection<VariableHistory> fetchProcessInstanceVariablesHistory(String processInstanceId, Map<String, Object> data, CIBUser user) throws SystemException {
 
 		UriComponentsBuilder uriBuilder = UriComponentsBuilder
-			.fromUriString(getEngineRestUrl())
+			.fromUriString(getEngineRestUrl(user))
 			.path("/history/variable-instance");
 
 		if (data != null) {
@@ -259,19 +259,19 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 
 	@Override
 	public Collection<VariableHistory> fetchActivityVariablesHistory(String activityInstanceId, CIBUser user) {
-		String url = getEngineRestUrl() + "/history/variable-instance?activityInstanceIdIn=" + activityInstanceId;
+		String url = getEngineRestUrl(user) + "/history/variable-instance?activityInstanceIdIn=" + activityInstanceId;
 		return Arrays.asList(((ResponseEntity<VariableHistory[]>) doGet(url, VariableHistory[].class, user, false)).getBody());
 	}
 
 	@Override
 	public Collection<VariableHistory> fetchActivityVariables(String activityInstanceId, CIBUser user) {
-		String url = getEngineRestUrl() + "/variable-instance?activityInstanceIdIn=" + activityInstanceId;
+		String url = getEngineRestUrl(user) + "/variable-instance?activityInstanceIdIn=" + activityInstanceId;
 		return Arrays.asList(((ResponseEntity<VariableHistory[]>) doGet(url, VariableHistory[].class, user, false)).getBody());
 	}	
 
 	@Override
 	public ResponseEntity<byte[]> fetchHistoryVariableDataById(String id, CIBUser user) throws NoObjectFoundException, SystemException  {
-		String url = getEngineRestUrl() + "/history/variable-instance/" + id + "/data";
+		String url = getEngineRestUrl(user) + "/history/variable-instance/" + id + "/data";
 
 		try {
 		    // Use doGetWithHeader which creates a new RestTemplate instance for thread safety
@@ -283,7 +283,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 
 	public Variable fetchVariableImpl(String taskId, String variableName, 
 			boolean deserializeValue, CIBUser user) throws NoObjectFoundException, SystemException {		
-		String url = getEngineRestUrl() + "/task/" + taskId + "/variables/" + variableName
+		String url = getEngineRestUrl(user) + "/task/" + taskId + "/variables/" + variableName
 			+ "?deserializeValue=" + deserializeValue;
 		return doGet(url, Variable.class, user, false).getBody();
 	}
@@ -308,20 +308,20 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 
 	@Override
 	public void deleteVariable(String taskId, String variableName, CIBUser user) throws NoObjectFoundException, SystemException {		
-		String url = getEngineRestUrl() + "/task/" + taskId + "/variables/" + variableName;
+		String url = getEngineRestUrl(user) + "/task/" + taskId + "/variables/" + variableName;
 		doDelete(url, user);
 	}
 
 	@Override
 	public Map<String, Variable> fetchFormVariables(String taskId, boolean deserializeValues, CIBUser user) throws NoObjectFoundException, SystemException {
-		String url = getEngineRestUrl() + "/task/" + taskId + "/form-variables";
+		String url = getEngineRestUrl(user) + "/task/" + taskId + "/form-variables";
 		url += "?deserializeValues=" + deserializeValues;
 		return doGet(url, new ParameterizedTypeReference<Map<String, Variable>>() {}, user).getBody();
 	}	
 
 	@Override
 	public Map<String, Variable> fetchFormVariables(List<String> variableListName, String taskId, CIBUser user) throws NoObjectFoundException, SystemException {
-		String url = getEngineRestUrl() + "/task/" + taskId + "/form-variables?variableNames=";
+		String url = getEngineRestUrl(user) + "/task/" + taskId + "/form-variables?variableNames=";
 
 		for(String variable: variableListName) {
 			url += variable + ",";
@@ -332,13 +332,13 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 
 	@Override
 	public Map<String, Variable> fetchProcessFormVariables(String key, CIBUser user) throws NoObjectFoundException, SystemException {
-		String url = getEngineRestUrl() + "/process-definition/key/" + key + "/form-variables";
+		String url = getEngineRestUrl(user) + "/process-definition/key/" + key + "/form-variables";
 		return doGet(url, new ParameterizedTypeReference<Map<String, Variable>>() {}, user).getBody();
 	}	
 
 	@Override
 	public NamedByteArrayDataSource fetchVariableFileData(String taskId, String variableName, CIBUser user) throws NoObjectFoundException, UnexpectedTypeException, SystemException {		
-		String url = getEngineRestUrl() + "/task/" + taskId + "/variables/" + variableName + "/data";
+		String url = getEngineRestUrl(user) + "/task/" + taskId + "/variables/" + variableName + "/data";
 		try {
 
 		    byte[] data = null;
@@ -391,7 +391,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 	 */
 	@Override
 	public void uploadVariableFileData(String taskId, String variableName, MultipartFile data, String valueType, CIBUser user) throws NoObjectFoundException, SystemException {
-		String url = getEngineRestUrl() + "/task/" + taskId + "/variables/" + variableName + "/data";
+		String url = getEngineRestUrl(user) + "/task/" + taskId + "/variables/" + variableName + "/data";
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
@@ -412,7 +412,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 	@Override
 	public ResponseEntity<byte[]> fetchProcessInstanceVariableData(String processInstanceId, String variableName,
 			CIBUser user) throws NoObjectFoundException, SystemException {
-		String url = getEngineRestUrl() + "/process-instance/" + processInstanceId + "/variables/" + variableName + "/data";
+		String url = getEngineRestUrl(user) + "/process-instance/" + processInstanceId + "/variables/" + variableName + "/data";
 
 		try {
 		    byte[] data = null;
@@ -458,7 +458,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
      */
     @Override
     public void uploadProcessInstanceVariableFileData(String processInstanceId, String variableName, MultipartFile data, String valueType, CIBUser user) throws NoObjectFoundException, SystemException {
-        String url = getEngineRestUrl() + "/process-instance/" + processInstanceId + "/variables/" + variableName + "/data";
+        String url = getEngineRestUrl(user) + "/process-instance/" + processInstanceId + "/variables/" + variableName + "/data";
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
@@ -480,7 +480,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 	@Override
 	public ProcessStart submitStartFormVariables(String processDefinitionId, List<Variable> formResult, CIBUser user) throws SystemException {
 		//String url = camundaUrl + "/engine-rest/process-definition/key/" + processDefinitionKey + "/submit-form";
-		String url = getEngineRestUrl() + "/process-definition/" + processDefinitionId + "/submit-form";
+		String url = getEngineRestUrl(user) + "/process-definition/" + processDefinitionId + "/submit-form";
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode variables = mapper.getNodeFactory().objectNode();
 		ObjectNode modifications = mapper.getNodeFactory().objectNode();
@@ -540,7 +540,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 	}
 
 	private Variable fetchVariableByProcessInstanceIdImpl(String processInstanceId, String variableName, boolean deserializeValue, CIBUser user) throws SystemException {
-		String url = getEngineRestUrl() + "/process-instance/" + processInstanceId + "/variables/" + variableName + "?deserializeValue=" + deserializeValue;
+		String url = getEngineRestUrl(user) + "/process-instance/" + processInstanceId + "/variables/" + variableName + "?deserializeValue=" + deserializeValue;
 		return doGet(url, Variable.class, user, false).getBody();
 	}
 
@@ -557,7 +557,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 	// TODO: Split it
 	@Override
 	public void saveVariableInProcessInstanceId(String processInstanceId, List<Variable> variables, CIBUser user) throws SystemException {
-		String url = getEngineRestUrl() + "/process-instance/" + processInstanceId + "/variables";
+		String url = getEngineRestUrl(user) + "/process-instance/" + processInstanceId + "/variables";
 
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode variablesF = mapper.getNodeFactory().objectNode();
@@ -582,7 +582,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 	// TODO: Split it
 	@Override
 	public void submitVariables(String processInstanceId, List<Variable> formResult, CIBUser user, String processDefinitionId) throws SystemException {
-		String url = getEngineRestUrl() + "/process-instance/" + processInstanceId + "/variables";
+		String url = getEngineRestUrl(user) + "/process-instance/" + processInstanceId + "/variables";
 
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode variables = mapper.getNodeFactory().objectNode();
@@ -651,13 +651,13 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 
 	@Override
 	public Map<String, Variable> fetchProcessFormVariablesById(String id, CIBUser user) throws SystemException {
-		String url = getEngineRestUrl() + "/process-definition/" + id + "/form-variables";
+		String url = getEngineRestUrl(user) + "/process-definition/" + id + "/form-variables";
 		return doGet(url, new ParameterizedTypeReference<Map<String, Variable>>() {}, user).getBody();
 	}
 
 	@Override
 	public void putLocalExecutionVariable(String executionId, String varName, Map<String, Object> data, CIBUser user) {
-		String url = getEngineRestUrl() + "/execution/" + executionId + "/localVariables/" + varName;
+		String url = getEngineRestUrl(user) + "/execution/" + executionId + "/localVariables/" + varName;
 		doPut(url, data, user);
 	}
 

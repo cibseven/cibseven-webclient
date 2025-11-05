@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright CIB software GmbH and/or licensed to CIB software GmbH
  * under one or more contributor license agreements. See the NOTICE file
  * distributed with this work for additional information regarding copyright
@@ -38,21 +38,21 @@ public class IncidentProvider extends SevenProviderBase implements IIncidentProv
 	
 	@Override
 	public Long countIncident(Map<String, Object> params, CIBUser user) {
-		String url = URLUtils.buildUrlWithParams(getEngineRestUrl() + "/incident/count", params);
+		String url = URLUtils.buildUrlWithParams(getEngineRestUrl(user) + "/incident/count", params);
 		JsonNode response = ((ResponseEntity<JsonNode>) doGet(url, JsonNode.class, user, true)).getBody();
 		return response != null ? response.get("count").asLong() : 0L;
 	}
 
 	@Override
 	public Long countHistoricIncident(Map<String, Object> params, CIBUser user) {
-		String url = URLUtils.buildUrlWithParams(getEngineRestUrl() + "/history/incident/count", params);
+		String url = URLUtils.buildUrlWithParams(getEngineRestUrl(user) + "/history/incident/count", params);
 		JsonNode response = ((ResponseEntity<JsonNode>) doGet(url, JsonNode.class, user, true)).getBody();
 		return response != null ? response.get("count").asLong() : 0L;
 	}
 
 	@Override
 	public Collection<Incident> findIncident(Map<String, Object> params, CIBUser user) {
-		String url = URLUtils.buildUrlWithParams(getEngineRestUrl() + "/incident", params);
+		String url = URLUtils.buildUrlWithParams(getEngineRestUrl(user) + "/incident", params);
 		Incident[] response = ((ResponseEntity<Incident[]>) doGet(url, Incident[].class, user, true)).getBody();
 		List<Incident> incidents = response != null ? Arrays.asList(response) : Arrays.asList();
 		
@@ -89,52 +89,52 @@ public class IncidentProvider extends SevenProviderBase implements IIncidentProv
 	}
 	
 	private Incident fetchIncidentById(String incidentId, CIBUser user) {
-		String url = getEngineRestUrl() + "/incident/" + incidentId;
+		String url = getEngineRestUrl(user) + "/incident/" + incidentId;
 		ResponseEntity<Incident> response = doGet(url, Incident.class, user, false);
 		return response != null ? response.getBody() : null;
 	}
 	
 	@Override
 	public List<Incident> findIncidentByInstanceId(String processInstanceId, CIBUser user) {
-		String url = getEngineRestUrl() + "/incident?processInstanceId=" + processInstanceId;
+		String url = getEngineRestUrl(user) + "/incident?processInstanceId=" + processInstanceId;
 		Incident[] response = ((ResponseEntity<Incident[]>) doGet(url, Incident[].class, user, false)).getBody();
 		return response != null ? Arrays.asList(response) : Arrays.asList();
 	}
 
 	@Override
 	public Collection<Incident> fetchIncidents(String processDefinitionKey, CIBUser user) {
-		String url = getEngineRestUrl() + "/incident?processDefinitionKeyIn=" + processDefinitionKey;
+		String url = getEngineRestUrl(user) + "/incident?processDefinitionKeyIn=" + processDefinitionKey;
 		Incident[] response = ((ResponseEntity<Incident[]>) doGet(url, Incident[].class, user, false)).getBody();
 		return response != null ? Arrays.asList(response) : Arrays.asList();
 	}
 
 	@Override
 	public void setIncidentAnnotation(String incidentId, Map<String, Object> data, CIBUser user) {
-		String url = getEngineRestUrl() + "/incident/" + incidentId + "/annotation";
+		String url = getEngineRestUrl(user) + "/incident/" + incidentId + "/annotation";
 		doPut(url, data, user);
 	}	
 
 	@Override
 	public void retryExternalTask(String externalTaskId, Map<String, Object> data, CIBUser user) {
-		String url = getEngineRestUrl() + "/external-task/" + externalTaskId + "/retries";
+		String url = getEngineRestUrl(user) + "/external-task/" + externalTaskId + "/retries";
 		doPut(url, data, user);
 	}
 	
 	@Override
 	public String findExternalTaskErrorDetails(String externalTaskId, CIBUser user) {
-		String url = getEngineRestUrl() + "/external-task/" + externalTaskId + "/errorDetails";
+		String url = getEngineRestUrl(user) + "/external-task/" + externalTaskId + "/errorDetails";
 		return doGetWithHeader(url, String.class, user, false, MediaType.ALL).getBody();
 	}
 	
 	@Override
 	public String findHistoricExternalTaskErrorDetails(String externalTaskId, CIBUser user) {
-		String url = getEngineRestUrl() + "/history/external-task-log/" + externalTaskId + "/error-details";
+		String url = getEngineRestUrl(user) + "/history/external-task-log/" + externalTaskId + "/error-details";
 		return doGetWithHeader(url, String.class, user, false, MediaType.ALL).getBody();
 	}
 	
 	@Override
 	public Collection<Incident> findHistoricIncidents(Map<String, Object> params, CIBUser user) {
-		String url = URLUtils.buildUrlWithParams(getEngineRestUrl() + "/history/incident", params);
+		String url = URLUtils.buildUrlWithParams(getEngineRestUrl(user) + "/history/incident", params);
 		Incident[] response = ((ResponseEntity<Incident[]>) doGet(url, Incident[].class, user, true)).getBody();
 		List<Incident> incidents = response != null ? Arrays.asList(response) : Arrays.asList();
 		
@@ -173,7 +173,7 @@ public class IncidentProvider extends SevenProviderBase implements IIncidentProv
 	private Incident fetchHistoricIncidentById(String incidentId, CIBUser user) {
 		try {
 			Map<String, Object> params = Map.of("incidentId", incidentId);
-			String url = URLUtils.buildUrlWithParams(getEngineRestUrl() + "/history/incident", params);
+			String url = URLUtils.buildUrlWithParams(getEngineRestUrl(user) + "/history/incident", params);
 			Incident[] response = ((ResponseEntity<Incident[]>) doGet(url, Incident[].class, user, true)).getBody();
 			// Return the first incident if found, null otherwise
 			return (response != null && response.length > 0) ? response[0] : null;
@@ -185,13 +185,13 @@ public class IncidentProvider extends SevenProviderBase implements IIncidentProv
 	
 	@Override
 	public String findHistoricStacktraceByJobId(String jobId, CIBUser user) {
-		String url = getEngineRestUrl() + "/history/job-log/" + jobId + "/stacktrace";
+		String url = getEngineRestUrl(user) + "/history/job-log/" + jobId + "/stacktrace";
 		return doGetWithHeader(url, String.class, user, false, MediaType.ALL).getBody();
 	}
 	
 	@Override
 	public Collection<Incident> fetchIncidentsByInstanceAndActivityId(String processDefinitionId, String activityId, CIBUser user) {
-	    String url = getEngineRestUrl() + "/incident?processDefinitionId=" + processDefinitionId + "&activityId=" + activityId;
+	    String url = getEngineRestUrl(user) + "/incident?processDefinitionId=" + processDefinitionId + "&activityId=" + activityId;
 	    Incident[] response = ((ResponseEntity<Incident[]>) doGet(url, Incident[].class, user, false)).getBody();
 	    return response != null ? Arrays.asList(response) : Arrays.asList();
 	}

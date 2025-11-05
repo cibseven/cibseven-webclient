@@ -1112,18 +1112,18 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
     }
 	
 	@Override
-	public Object setRemovalTime(Map<String, Object> payload) {
-		return batchProvider.setRemovalTime(payload);
+	public Object setRemovalTime(Map<String, Object> payload, CIBUser user) {
+		return batchProvider.setRemovalTime(payload, user);
     }
     
 	@Override
-	public Object getCleanableBatchReport(Map<String, Object> queryParams) {
-		return batchProvider.getCleanableBatchReport(queryParams);
+	public Object getCleanableBatchReport(Map<String, Object> queryParams, CIBUser user) {
+		return batchProvider.getCleanableBatchReport(queryParams, user);
     }
     
 	@Override
-	public Object getCleanableBatchReportCount() {
-		return batchProvider.getCleanableBatchReportCount();
+	public Object getCleanableBatchReportCount(CIBUser user) {
+		return batchProvider.getCleanableBatchReportCount(user);
     }
 	
 	/*

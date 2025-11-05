@@ -33,25 +33,10 @@ public abstract class BaseUserProvider<R extends StandardLogin> implements JwtUs
 	public abstract User getSelfInfoJSessionId(String userId, String jSessionId, HttpServletRequest rq);
 	
 	/**
-	 * Authenticates user from request and validates engine consistency.
-	 * This default implementation validates that the engine in the user object
-	 * matches the X-Process-Engine header to prevent token reuse across engines.
+	 * Authenticates user from request.
 	 */
 	public Object authenticateUser(HttpServletRequest request) {
-		Object result = authenticate(request);
-		
-		// Validate engine in user matches request header
-		if (result instanceof CIBUser) {
-			CIBUser user = (CIBUser) result;
-			String requestEngine = request.getHeader("X-Process-Engine");
-			
-			// Validate engine in user object matches engine in request header
-			if (user.getEngine() != null && requestEngine != null && !user.getEngine().equals(requestEngine)) {
-				throw new org.cibseven.webapp.auth.exception.AuthenticationException("Token engine mismatch: user has '" + user.getEngine() + "' but request has '" + requestEngine + "'");
-			}
-		}
-		
-		return result;
+		return authenticate(request);
 	}
 	
 	@Getter

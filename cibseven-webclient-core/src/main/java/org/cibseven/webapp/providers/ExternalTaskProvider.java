@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright CIB software GmbH and/or licensed to CIB software GmbH
  * under one or more contributor license agreements. See the NOTICE file
  * distributed with this work for additional information regarding copyright
@@ -37,7 +37,7 @@ public class ExternalTaskProvider extends SevenProviderBase implements IExternal
 
 	@Override
 	public Collection<ExternalTask> getExternalTasks(Map<String, Object> queryParams, CIBUser user) {
-		String url = URLUtils.buildUrlWithParams(getEngineRestUrl() + "/external-task", queryParams);
+		String url = URLUtils.buildUrlWithParams(getEngineRestUrl(user) + "/external-task", queryParams);
 		ResponseEntity<ExternalTask[]> response = (ResponseEntity<ExternalTask[]>) doGet(url, ExternalTask[].class, user, true);
 		return Arrays.asList(response.getBody());
 	}

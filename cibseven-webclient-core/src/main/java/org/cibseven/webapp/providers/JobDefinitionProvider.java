@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright CIB software GmbH and/or licensed to CIB software GmbH
  * under one or more contributor license agreements. See the NOTICE file
  * distributed with this work for additional information regarding copyright
@@ -30,31 +30,31 @@ public class JobDefinitionProvider extends SevenProviderBase implements IJobDefi
 
 	@Override
 	public Collection<JobDefinition> findJobDefinitions(String params, CIBUser user) {
-		String url = getEngineRestUrl() + "/job-definition";
+		String url = getEngineRestUrl(user) + "/job-definition";
 		return Arrays.asList(((ResponseEntity<JobDefinition[]>) doPost(url, params, JobDefinition[].class, user)).getBody());
 	}
 	
 	@Override
 	public void suspendJobDefinition(String jobDefinitionId, String params, CIBUser user) {
-		String url = getEngineRestUrl() + "/job-definition/" + jobDefinitionId + "/suspended";
+		String url = getEngineRestUrl(user) + "/job-definition/" + jobDefinitionId + "/suspended";
 		doPut(url, params, user);
 	}
 	
 	@Override
 	public void overrideJobDefinitionPriority(String jobDefinitionId, String params, CIBUser user) {
-		String url = getEngineRestUrl() + "/job-definition/" + jobDefinitionId + "/jobPriority";
+		String url = getEngineRestUrl(user) + "/job-definition/" + jobDefinitionId + "/jobPriority";
 		doPut(url, params, user);
 	}
 	
 	@Override
 	public JobDefinition findJobDefinition(String id, CIBUser user) {
-		String url = getEngineRestUrl() + "/job-definition/" + id;
+		String url = getEngineRestUrl(user) + "/job-definition/" + id;
 		return ((ResponseEntity<JobDefinition>) doGet(url, JobDefinition.class, user, false)).getBody();
 	}
 	
 	@Override
 	public void retryJobDefinitionById(String id, Map<String, Object> data, CIBUser user) {
-		String url = getEngineRestUrl() + "/job-definition/" + id + "/retries";
+		String url = getEngineRestUrl(user) + "/job-definition/" + id + "/retries";
 		doPut(url, data, user);
 	}	
 

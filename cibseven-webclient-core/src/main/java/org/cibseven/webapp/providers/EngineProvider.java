@@ -31,7 +31,7 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 
 	@Override
 	public Collection<Engine> getProcessEngineNames() {
-		String url = getEngineRestUrl(false) + "/engine";
+		String url = getEngineRestUrl() + "/engine";
 		
 		return Arrays.asList(
 			((ResponseEntity<Engine[]>) doGet(url, Engine[].class, null, false)).getBody()

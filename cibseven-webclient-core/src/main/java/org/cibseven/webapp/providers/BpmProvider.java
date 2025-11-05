@@ -1134,9 +1134,9 @@ public interface BpmProvider {
 	Long getHistoricBatchCount(Map<String, Object> queryParams, CIBUser user);
 	HistoryBatch getHistoricBatchById(String id, CIBUser user);
 	void deleteHistoricBatch(String id, CIBUser user);
-	Object setRemovalTime(Map<String, Object> payload);
-	Object getCleanableBatchReport(Map<String, Object> queryParams);
-	Object getCleanableBatchReportCount();
+	Object setRemovalTime(Map<String, Object> payload, CIBUser user);
+	Object getCleanableBatchReport(Map<String, Object> queryParams, CIBUser user);
+	Object getCleanableBatchReportCount(CIBUser user);
 
 	JsonNode getTelemetryData(CIBUser user);
 	Collection<Metric> getMetrics(Map<String, Object> queryParams, CIBUser user);

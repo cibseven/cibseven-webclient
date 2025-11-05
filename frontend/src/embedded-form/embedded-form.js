@@ -320,11 +320,7 @@ function loadEmbeddedForm(
         authorization: parentConfig.authToken
     };
     
-    // Add X-Process-Engine header if engine is specified
-    // Note: The CamSDK.Client will handle the engine path internally based on the engine parameter
-    if (parentConfig.engineName) {
-        headers['X-Process-Engine'] = parentConfig.engineName;
-    }
+    // CamSDK.Client handles the engine path internally based on the engine parameter
     
     var client = new CamSDK.Client({
         mock: false,

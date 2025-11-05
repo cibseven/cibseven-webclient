@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright CIB software GmbH and/or licensed to CIB software GmbH
  * under one or more contributor license agreements. See the NOTICE file
  * distributed with this work for additional information regarding copyright
@@ -32,7 +32,7 @@ public class VariableInstanceProvider extends SevenProviderBase implements IVari
 
 	public VariableInstance getVariableInstanceImpl(String id, boolean deserializeValue, CIBUser user) throws SystemException, NoObjectFoundException {
 		UriComponentsBuilder uriBuilder = UriComponentsBuilder
-				.fromUriString(getEngineRestUrl())
+				.fromUriString(getEngineRestUrl(user))
 				.path("/variable-instance/{id}")
 				.queryParam("deserializeValue", deserializeValue);
 

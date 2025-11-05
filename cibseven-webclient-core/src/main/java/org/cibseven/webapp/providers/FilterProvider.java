@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright CIB software GmbH and/or licensed to CIB software GmbH
  * under one or more contributor license agreements. See the NOTICE file
  * distributed with this work for additional information regarding copyright
@@ -35,13 +35,13 @@ public class FilterProvider extends SevenProviderBase implements IFilterProvider
 
 	@Override
 	public Collection<Filter> findFilters(CIBUser user) {
-		String url = getEngineRestUrl() + "/filter?resourceType=Task";
+		String url = getEngineRestUrl(user) + "/filter?resourceType=Task";
 		return Arrays.asList(((ResponseEntity<Filter[]>) doGet(url, Filter[].class, user, false)).getBody());
 	}
 
 	@Override
 	public Filter createFilter(Filter filter, CIBUser user) {
-		String url = getEngineRestUrl() + "/filter/create";
+		String url = getEngineRestUrl(user) + "/filter/create";
 		try {
 			return ((ResponseEntity<Filter>) doPost(url, filter.json(), Filter.class, user)).getBody();
 		} catch (JsonProcessingException e) {
@@ -53,7 +53,7 @@ public class FilterProvider extends SevenProviderBase implements IFilterProvider
 	
 	@Override
 	public void updateFilter(Filter filter, CIBUser user) {
-		String url = getEngineRestUrl() + "/filter/" + filter.getId();
+		String url = getEngineRestUrl(user) + "/filter/" + filter.getId();
 		try {
 			doPut(url, filter.json(), user);
 		} catch (JsonProcessingException e) {
@@ -65,7 +65,7 @@ public class FilterProvider extends SevenProviderBase implements IFilterProvider
 
 	@Override
 	public void deleteFilter(String filterId, CIBUser user) {
-		String url = getEngineRestUrl() + "/filter/" + filterId;
+		String url = getEngineRestUrl(user) + "/filter/" + filterId;
 		doDelete(url, user);
 	}
 

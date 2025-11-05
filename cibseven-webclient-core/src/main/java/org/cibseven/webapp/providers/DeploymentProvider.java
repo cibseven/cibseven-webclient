@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright CIB software GmbH and/or licensed to CIB software GmbH
  * under one or more contributor license agreements. See the NOTICE file
  * distributed with this work for additional information regarding copyright
@@ -50,7 +50,7 @@ public class DeploymentProvider extends SevenProviderBase implements IDeployment
 
 	@Override
 	public Deployment deployBpmn(MultiValueMap<String, Object> data, MultiValueMap<String, MultipartFile> file, CIBUser user) throws SystemException {
-		String url = getEngineRestUrl() + "/deployment/create";
+		String url = getEngineRestUrl(user) + "/deployment/create";
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
@@ -80,7 +80,7 @@ public class DeploymentProvider extends SevenProviderBase implements IDeployment
 
 	@Override
 	public Deployment createDeployment(MultiValueMap<String, Object> data, MultipartFile[] files, CIBUser user) {
-		String url = getEngineRestUrl() + "/deployment/create";
+		String url = getEngineRestUrl(user) + "/deployment/create";
 		// Prepare multipart form data - start with provided data
 		MultiValueMap<String, Object> formData = new LinkedMultiValueMap<>(data);
 		// Add files to form data with indexed "data" keys
@@ -98,14 +98,14 @@ public class DeploymentProvider extends SevenProviderBase implements IDeployment
 
 	@Override
 	public Deployment redeployDeployment(String id, Map<String, Object> data, CIBUser user) throws SystemException {
-		String url = getEngineRestUrl() + "/deployment/" + id + "/redeploy";
+		String url = getEngineRestUrl(user) + "/deployment/" + id + "/redeploy";
 		ResponseEntity<Deployment> response = doPost(url, data, Deployment.class, user);
 		return response.getBody();
 	}
 
 	@Override
 	public Long countDeployments(CIBUser user, String nameLike) {
-		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(getEngineRestUrl() + "/deployment/count");
+		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(getEngineRestUrl(user) + "/deployment/count");
 		if (nameLike != null && !nameLike.isEmpty()) {
 			builder.queryParam("nameLike", nameLike);
 		}
@@ -116,7 +116,7 @@ public class DeploymentProvider extends SevenProviderBase implements IDeployment
 
   @Override
 	public Collection<Deployment> findDeployments(CIBUser user, String nameLike, int firstResult, int maxResults, String sortBy, String sortOrder) {
-		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(getEngineRestUrl() + "/deployment")
+		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(getEngineRestUrl(user) + "/deployment")
 			.queryParam("sortBy", sortBy)
 			.queryParam("sortOrder", sortOrder)
 			.queryParam("firstResult", firstResult)
@@ -130,18 +130,18 @@ public class DeploymentProvider extends SevenProviderBase implements IDeployment
   
   	@Override
   	public Deployment findDeployment(String deploymentId, CIBUser user) {
-  	    String url = getEngineRestUrl() + "/deployment/" + deploymentId;
+  	    String url = getEngineRestUrl(user) + "/deployment/" + deploymentId;
   	    return ((ResponseEntity<Deployment>) doGet(url, Deployment.class, user, false)).getBody();
   	}
 	@Override
 	public Collection<DeploymentResource> findDeploymentResources(String deploymentId, CIBUser user) {
-		String url = getEngineRestUrl() + "/deployment/" + deploymentId + "/resources";
+		String url = getEngineRestUrl(user) + "/deployment/" + deploymentId + "/resources";
 		return Arrays.asList(((ResponseEntity<DeploymentResource[]>) doGet(url, DeploymentResource[].class, user, false)).getBody());
 	}
 
 	@Override
 	public Data fetchDataFromDeploymentResource(HttpServletRequest rq, String deploymentId, String resourceId, String fileName) {
-		String url = getEngineRestUrl() + "/deployment/" + deploymentId + "/resources/" + resourceId + "/data";
+		String url = getEngineRestUrl(user) + "/deployment/" + deploymentId + "/resources/" + resourceId + "/data";
 		try {
 			// Create a CIBUser-like object with just the authorization token
 			CIBUser tempUser = null;
@@ -172,7 +172,7 @@ public class DeploymentProvider extends SevenProviderBase implements IDeployment
 
 	@Override
 	public void deleteDeployment(String deploymentId, Boolean cascade, CIBUser user) throws SystemException {
-		String url = getEngineRestUrl() + "/deployment/" + deploymentId;
+		String url = getEngineRestUrl(user) + "/deployment/" + deploymentId;
 		if(cascade) url += "?cascade=true";
 		doDelete(url, user);
 	}
