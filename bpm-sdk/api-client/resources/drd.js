@@ -18,7 +18,7 @@
 'use strict';
 
 import AbstractClientResource from '../abstract-client-resource.js';
-import utils from '../../utils';
+import utils from '../../utils.js';
 
 /**
  * DRD (Decision Requirements Definition) Resource
