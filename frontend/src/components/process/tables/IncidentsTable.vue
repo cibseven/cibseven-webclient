@@ -17,7 +17,7 @@
 
 -->
 <template>
-  <div class="bg-white container-fluid g-0 h-100">
+  <div class="bg-white container-fluid overflow-y-scroll g-0 h-100">
     <PagedScrollableContent
       :loading="loading"
       :loaded-count="incidents.length"
