@@ -71,9 +71,8 @@ public class SevenUserProvider extends BaseUserProvider<StandardLogin> {
 			SevenVerifyUser sevenVerifyUser = sevenProvider.verifyUser(user.getId(), login.getPassword(), user);
 			
 			if (sevenVerifyUser.isAuthenticated()) {
-			  // Get engine name from request header and store in user
-			  String engine = rq.getHeader("X-Process-Engine");
-			  user.setEngine(engine);
+			  // Set engine from request header
+			  setEngineFromRequest(user, rq);
 			  
 			  // Token is needed for the next request (/user/xxx/profile)
 			  user.setAuthToken(createToken(getSettings(), true, false, user));
@@ -106,24 +105,6 @@ public class SevenUserProvider extends BaseUserProvider<StandardLogin> {
 		else {
 			throw new AuthenticationException(userId);
 		}
-	}
-	
-	@Override
-	public Object authenticateUser(HttpServletRequest request) {
-		Object result = authenticate(request);
-		
-		// Validate engine in user matches request header
-		if (result instanceof CIBUser) {
-			CIBUser user = (CIBUser) result;
-			String requestEngine = request.getHeader("X-Process-Engine");
-			
-			// Validate engine in user object matches engine in request header
-			if (user.getEngine() != null && requestEngine != null && !user.getEngine().equals(requestEngine)) {
-				throw new AuthenticationException("Token engine mismatch: user has '" + user.getEngine() + "' but request has '" + requestEngine + "'");
-			}
-		}
-		
-		return result;
 	}
 
 	@Override
