@@ -42,7 +42,7 @@ public class ActivityProvider extends SevenProviderBase implements IActivityProv
 	@Override
 	public List<ActivityInstanceHistory> findActivitiesInstancesHistory(Map<String, Object> queryParams, CIBUser user) {
 		String url = URLUtils.buildUrlWithParams(getEngineRestUrl() + "/history/activity-instance", queryParams);
-		return Arrays.asList(((ResponseEntity<ActivityInstanceHistory[]>) doGet(url, ActivityInstanceHistory[].class, user, false)).getBody());	
+		return Arrays.asList(((ResponseEntity<ActivityInstanceHistory[]>) doGet(url, ActivityInstanceHistory[].class, user, true)).getBody());	
 	}
 
 	@Override
@@ -82,7 +82,7 @@ public class ActivityProvider extends SevenProviderBase implements IActivityProv
 	@Override
 	public Collection<ActivityInstanceHistory> findActivitiesProcessDefinitionHistory(String processDefinitionId, Map<String, Object> params, CIBUser user) {
 		String url = URLUtils.buildUrlWithParams(getEngineRestUrl() + "/history/activity-instance?processDefinitionId=" + processDefinitionId, params);
-		return Arrays.asList(((ResponseEntity<ActivityInstanceHistory[]>) doGet(url, ActivityInstanceHistory[].class, user, false)).getBody());
+		return Arrays.asList(((ResponseEntity<ActivityInstanceHistory[]>) doGet(url, ActivityInstanceHistory[].class, user, true)).getBody());
 	}
 	
 }

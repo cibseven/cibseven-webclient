@@ -290,6 +290,11 @@
 			"enterValue": "Wert eingeben"
 		},
 		"incidents": {
+			"activityIdBadge": {
+				"remove": "Kriterium entfernen – um alle Vorfälle aufzulisten",
+				"title": "{activityId} (fehlgeschlagene Aktivität)",
+				"tooltip": "Nur Vorfälle auflisten, die durch das Scheitern der Aktivität \"{activityId}\" verursacht wurden."
+			},
 			"state": "Status",
 			"processInstance": "Prozessinstanz",
 			"deleted": "Gelöscht",
@@ -567,6 +572,7 @@
 			"newPasswordRepeat": "Neues Passwort (wiederholen)",
 			"deleteUser": "Benutzer löschen",
 			"editUser": "Benutzer bearbeiten",
+			"viewUser": "Benutzer anzeigen",
 			"changePassword": "Passwort ändern",
 			"updateProfileMessage": "Benutzerprofil erfolgreich aktualisiert",
 			"updatePasswordMessage": "Passwort erfolgreich aktualisiert",

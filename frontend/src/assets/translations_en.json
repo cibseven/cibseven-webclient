@@ -290,6 +290,11 @@
 			"enterValue": "Enter value"
 		},
 		"incidents": {
+			"activityIdBadge": {
+				"remove": "Remove criteria - to list all incidents",
+				"title": "{activityId} (failed activity)",
+				"tooltip": "List only incidents that were created due to the failure of \"{activityId}\" activity."
+			},
 			"state": "State",
 			"processInstance": "Process Instance",
 			"deleted": "Deleted",
@@ -566,6 +571,7 @@
 			"newPassword": "New Password",
 			"newPasswordRepeat": "New Password (repeat)",
 			"editUser": "Edit user",
+			"viewUser": "Display user",
 			"deleteUser": "Delete user",
 			"changePassword": "Change Password",
 			"updateProfileMessage": "User profile successfully updated",
