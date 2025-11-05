@@ -68,6 +68,7 @@ function skipValue(value, lang) {
       '',
       'cib seven', 'ok', 'id',
       'email',
+      'n/a',
       '{activityid}',
 
       'ctrl', // en = ru
@@ -99,6 +100,7 @@ function skipValue(value, lang) {
       'dashboard',
       'filter',
       'status',
+      'format',
       'name: {name}version: {version}',
       'element'
     ],

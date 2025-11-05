@@ -28,7 +28,7 @@ import store, { modules } from '@/store'
 import usersMixin from '@/mixins/usersMixin.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { debounce } from '@/utils/debounce.js'
-import { formatDate, formatDuration } from '@/utils/dates.js'
+import { formatDate, formatDateForTooltips, formatDuration } from '@/utils/dates.js'
 import { HoverStyle } from '@/components/common-components/directives.js'
 import { InfoService, AuthService, SystemService } from './services.js'
 import { initEmbeddedForm } from './embedded-form/embedded-form.js'
@@ -73,6 +73,7 @@ import AuthorizationsNavBar from '@/components/admin/AuthorizationsNavBar.vue'
 import CreateGroup from '@/components/admin/CreateGroup.vue'
 import CreateUser from '@/components/admin/CreateUser.vue'
 import ProfileGroup from '@/components/admin/ProfileGroup.vue'
+import ProfilePreferencesTab from '@/components/admin/ProfilePreferencesTab.vue';
 import ProfileUser from '@/components/admin/ProfileUser.vue'
 import UsersManagement from '@/components/admin/UsersManagement.vue'
 import DeploymentList from '@/components/deployment/DeploymentList.vue'
@@ -168,6 +169,7 @@ import CalledProcessDefinitionsTable from '@/components/process/tables/CalledPro
 import CalledProcessInstancesTable from '@/components/process/tables/CalledProcessInstancesTable.vue'
 import JobDefinitionsTable from '@/components/process/tables/JobDefinitionsTable.vue'
 import JobsTable from '@/components/process/tables/JobsTable.vue'
+import JobDueDateModal from '@/components/process/modals/JobDueDateModal.vue'
 
 // mixins
 import assigneeMixin from '@/mixins/assigneeMixin.js'
@@ -207,6 +209,7 @@ const registerComponents = function(app) {
   app.component('create-group', CreateGroup)
   app.component('create-user', CreateUser)
   app.component('profile-group', ProfileGroup)
+  app.component('profile-preferences-tab', ProfilePreferencesTab)
   app.component('profile-user', ProfileUser)
   app.component('users-management', UsersManagement)
   app.component('deployment-list', DeploymentList)
@@ -291,6 +294,7 @@ export {
   copyToClipboardMixin,
   debounce,
   formatDate,
+  formatDateForTooltips,
   formatDuration,
   HoverStyle,
   CibSeven,
@@ -324,6 +328,7 @@ export {
   CreateGroup,
   CreateUser,
   ProfileGroup,
+  ProfilePreferencesTab,
   ProfileUser,
   UsersManagement,
   DeploymentList,
@@ -424,6 +429,7 @@ export {
   CalledProcessInstancesTable,
   JobDefinitionsTable,
   JobsTable,
+  JobDueDateModal,
 
   // mixins
   assigneeMixin,

@@ -38,7 +38,7 @@ public class ExternalTaskProvider extends SevenProviderBase implements IExternal
 	@Override
 	public Collection<ExternalTask> getExternalTasks(Map<String, Object> queryParams, CIBUser user) {
 		String url = URLUtils.buildUrlWithParams(getEngineRestUrl() + "/external-task", queryParams);
-		ResponseEntity<ExternalTask[]> response = (ResponseEntity<ExternalTask[]>) doGet(url, ExternalTask[].class, user, false);
+		ResponseEntity<ExternalTask[]> response = (ResponseEntity<ExternalTask[]>) doGet(url, ExternalTask[].class, user, true);
 		return Arrays.asList(response.getBody());
 	}
 

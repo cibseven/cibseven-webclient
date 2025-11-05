@@ -23,11 +23,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.providers.utils.URLUtils;
 import org.cibseven.webapp.rest.model.Batch;
 import org.cibseven.webapp.rest.model.HistoryBatch;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -36,9 +36,9 @@ public class BatchProvider extends SevenProviderBase implements IBatchProvider {
 	
 	@Override
 	public Collection<Batch> getBatches(Map<String, Object> params, CIBUser user) {
-		String url = buildUrlWithParams("/batch", params);
+		String url = URLUtils.buildUrlWithParams("/batch", params);
 	    List<Batch> batches = Arrays.asList(
-	        ((ResponseEntity<Batch[]>) doGet(url, Batch[].class, user, false)).getBody()
+	        ((ResponseEntity<Batch[]>) doGet(url, Batch[].class, user, true)).getBody()
 	    );
 
 	    batches.forEach(batch -> {
@@ -61,44 +61,44 @@ public class BatchProvider extends SevenProviderBase implements IBatchProvider {
 	
 	@Override
 	public Collection<Batch> getBatchStatistics(Map<String, Object> params, CIBUser user) {
-	    String url = buildUrlWithParams("/batch/statistics", params);
-	    return Arrays.asList(((ResponseEntity<Batch[]>) doGet(url, Batch[].class, user, false)).getBody());
+	    String url = URLUtils.buildUrlWithParams("/batch/statistics", params);
+	    return Arrays.asList(((ResponseEntity<Batch[]>) doGet(url, Batch[].class, user, true)).getBody());
 	}
 
 	@Override
 	public void deleteBatch(String id, Map<String, Object> params, CIBUser user) {
-		String url = buildUrlWithParams("/batch/" + id, params);
+		String url = URLUtils.buildUrlWithParams("/batch/" + id, params);
 		doDelete(url, user);
 	}
 	
 	@Override
 	public void setBatchSuspensionState(String id, Map<String, Object> params, CIBUser user) {
-		String url = buildUrlWithParams("/batch/" + id + "/suspended", new HashMap<>());
+		String url = URLUtils.buildUrlWithParams("/batch/" + id + "/suspended", new HashMap<>());
 		doPut(url, params, user);
 	}
 
 	@Override
 	public Collection<HistoryBatch> getHistoricBatches(Map<String, Object> params, CIBUser user) {
-        String url = buildUrlWithParams("/history/batch", params);
-        return Arrays.asList(((ResponseEntity<HistoryBatch[]>) doGet(url, HistoryBatch[].class, user, false)).getBody());
+        String url = URLUtils.buildUrlWithParams("/history/batch", params);
+        return Arrays.asList(((ResponseEntity<HistoryBatch[]>) doGet(url, HistoryBatch[].class, user, true)).getBody());
     }
 	
 	@Override
 	public Long getHistoricBatchCount(Map<String, Object> queryParams, CIBUser user) {
-		String url = buildUrlWithParams("/history/batch/count", queryParams);
+		String url = URLUtils.buildUrlWithParams("/history/batch/count", queryParams);
 		JsonNode response = ((ResponseEntity<JsonNode>) doGet(url, JsonNode.class, user, true)).getBody();
 		return response != null ? response.get("count").asLong() : 0L;
     }
     
 	@Override
 	public HistoryBatch getHistoricBatchById(String id, CIBUser user) {
-		String url = buildUrlWithParams("/history/batch/" + id, new HashMap<>());
-        return doGet(url, HistoryBatch.class, null, false).getBody();
+		String url = URLUtils.buildUrlWithParams("/history/batch/" + id, new HashMap<>());
+        return doGet(url, HistoryBatch.class, null, true).getBody();
     }
 	
 	@Override
 	public void deleteHistoricBatch(String id, CIBUser user) {
-        String url = buildUrlWithParams("/history/batch/" + id, new HashMap<>());
+        String url = URLUtils.buildUrlWithParams("/history/batch/" + id, new HashMap<>());
         doDelete(url, user);
     }
 	
@@ -110,8 +110,8 @@ public class BatchProvider extends SevenProviderBase implements IBatchProvider {
     
 	@Override
 	public Object getCleanableBatchReport(Map<String, Object> queryParams) {
-        String url = buildUrlWithParams("/history/batch/cleanable-batch-report", queryParams);
-        return ((ResponseEntity<Object>) doGet(url, Object.class, null, false)).getBody();
+        String url = URLUtils.buildUrlWithParams("/history/batch/cleanable-batch-report", queryParams);
+        return ((ResponseEntity<Object>) doGet(url, Object.class, null, true)).getBody();
     }
     
 	@Override
@@ -119,14 +119,4 @@ public class BatchProvider extends SevenProviderBase implements IBatchProvider {
         String url = getEngineRestUrl() + "/history/batch/cleanable-batch-report/count";
         return ((ResponseEntity<Object>) doGet(url, Object.class, null, false)).getBody();
     }
-	
-    private String buildUrlWithParams(String path, Map<String, Object> queryParams) {
-	    UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(getEngineRestUrl() + path);
-	    queryParams.forEach((key, value) -> {
-	        if (value != null) {
-	            builder.queryParam(key, value);
-	        }
-	    });
-	    return builder.toUriString();
-	}
 }

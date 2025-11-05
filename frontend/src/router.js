@@ -59,7 +59,7 @@ import ExecutionMetrics from '@/components/system/ExecutionMetrics.vue'
 import TranslationsDownload from '@/components/common-components/TranslationsDownload.vue'
 
 const appRoutes = [
-    { path: '/', redirect: '/seven/auth/start' },
+    { path: '/', redirect: '/seven/auth/start-configurable' },
     {
       path: '/api/translations',
       name: 'translations',
@@ -87,6 +87,42 @@ const appRoutes = [
           })
         },
       }, children: [
+
+        // Start page with configurable redirects
+        { path: 'start-configurable', name: 'start-configurable',
+          beforeEnter: (to, from, next) => {
+            const cockpitAvailable = router.root.applicationPermissions(router.root.config.permissions['cockpit'], 'cockpit')
+            const tasklistAvailable = router.root.applicationPermissions(router.root.config.permissions['tasklist'], 'tasklist')
+
+            const cockpitOverride = cockpitAvailable ? null : '/seven/auth/start'
+            const tasklistOverride = tasklistAvailable ? null : '/seven/auth/start'
+
+            const configuredStartPage = localStorage?.getItem('cibseven:preferences:startPage') || 'start'
+            switch (configuredStartPage) {
+              case 'processes-dashboard':
+                next(cockpitOverride || '/seven/auth/processes/dashboard')
+                break;
+              case 'decisions-list':
+                next(cockpitOverride || '/seven/auth/decisions/list')
+                break;
+              case 'human-tasks-dashboard':
+                next(cockpitOverride || '/seven/auth/human-tasks')
+                break;
+
+              case 'tasks':
+                next(tasklistOverride || '/seven/auth/tasks')
+                break;
+              case 'start-process':
+                next(tasklistOverride || '/seven/auth/start-process')
+                break;
+              case 'start':
+              default:
+                next('/seven/auth/start')
+                break;
+            }
+          }
+        },
+
         { path: 'start', name: 'start', component: StartView },
         { path: 'account/:userId', name: 'account', beforeEnter: (to, from, next) => {
             permissionsDeniedGuard('userProfile')(to, from, result => {

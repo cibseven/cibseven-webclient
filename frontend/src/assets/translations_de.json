@@ -14,10 +14,14 @@
 			"disabled": "Letztes Update: {date}\n\nAutomatische Updates sind deaktiviert.\nDrücken Sie F5, um die Daten neu zu laden.",
 			"enabled": "Letztes Update: {date}\n\nAutomatische Updates sind aktiviert.\nAktualisierung alle {seconds} Sekunden."
 		},
+		"notAvailable": {
+			"label": "N/A",
+			"tooltip": "Nicht verfügbar"
+		},
 		"remove": "Entfernen"
 	},
 	"login": {
-		"productName": "CIB seven",
+		"productName": "@:cib-header.productName",
 		"productSlogan": "Prozess Management Plattform",
 		"username": "Benutzername",
 		"password": "Passwort",
@@ -69,6 +73,7 @@
 	"process": {
 		"instanceRunning": "Instanz läuft",
 		"instanceIncidents": "Instanz mit Vorfällen",
+		"instanceSuspended": "Instanz angehalten",
 		"instanceWithoutIncidents": "Instanz ohne Vorfälle",
 		"instanceFinished": "Instanz abgeschlossen",
 		"name": "Name",
@@ -285,6 +290,11 @@
 			"enterValue": "Wert eingeben"
 		},
 		"incidents": {
+			"activityIdBadge": {
+				"remove": "Kriterium entfernen – um alle Vorfälle aufzulisten",
+				"title": "{activityId} (fehlgeschlagene Aktivität)",
+				"tooltip": "Nur Vorfälle auflisten, die durch das Scheitern der Aktivität \"{activityId}\" verursacht wurden."
+			},
 			"state": "Status",
 			"processInstance": "Prozessinstanz",
 			"deleted": "Gelöscht",
@@ -295,6 +305,7 @@
 			"timestamp": "Zeitstempel",
 			"activity": "Aktivität",
 			"failedActivity": "Fehlgeschlagene Aktivität",
+			"executionId": "Ausführungs-ID",
 			"incidentType": "Vorfallstyp",
 			"retryJob": "Anzahl der Wiederholungsversuche eines fehlgeschlagenen Jobs erhöhen",
 			"annotation": "Anmerkung",
@@ -392,7 +403,17 @@
 			"failedActivity": "Fehlgeschlagene Aktivität",
 			"actions": "Aktionen",
 			"suspend": "Anhalten",
-			"resume": "Fortsetzen"
+			"resume": "Fortsetzen",
+			"changeDueDate": "Timer-Fälligkeitsdatum ändern",
+			"recalculateFromCreation": "Ab Erstellungszeit",
+			"recalculateFromCurrent": "Ab aktueller Zeit",
+			"setSpecificDate": "Bestimmtes Datum festlegen",
+			"cascade": "Auf untergeordnete Prozesse übertragen",
+			"changeDueDateMsg": "Wählen Sie eine der folgenden Optionen, um diesen Timer zu ändern:",
+			"recalculate": "Neu berechnen",
+			"scheduleAt": "Geplant um",
+			"invalidDateError": "Sie müssen ein gültiges Datum eingeben",
+			"overrideAction": "Überschreiben"
 		},
 		"externalTasks": {
 			"id": "Externe Aufgaben-ID",
@@ -559,10 +580,49 @@
 			"group": {
 				"title": "{0} Gruppen",
 				"add": "Zu einer Gruppe hinzufügen"
+			}
+		},
+		"preferences": {
+			"title": "Einstellungen",
+			"general": {
+				"title": "Allgemeine Einstellungen",
+				"startPage": {
+					"label": "Standard-Startseite",
+					"description": "Wählen Sie die Seite aus, die nach dem Login angezeigt wird.",
+					"goTo": "Gehe zu {page}",
+					"options": {
+						"home": "Startseite",
+						"groupTasklist": "Aufgabenliste",
+						"startProcess": "Prozess starten",
+						"tasks": "Aufgaben",
+						"groupCockpit": "Cockpit",
+						"processesDashboard": "Prozess-Dashboard",
+						"decisionsList": "Entscheidungen",
+						"humanTasksDashboard": "Benutzeraufgaben-Dashboard"
+					}
+				}
 			},
-			"preferences": {
-				"title": "Einstellungen",
-				"notifications": "Benachrichtigungen ausschalten"
+			"dates": {
+				"title": "Datums- und Zeitformate",
+				"formatDefault": "Format",
+				"formatLong": "Langformat (mit genauer Uhrzeit)",
+				"formatDefaultDescription": "Wird in allgemeinen Datumsfeldern verwendet",
+				"formatLongDescription": "Wird in Datumsfeldern verwendet, in denen die genaue Uhrzeit erforderlich ist (z. B. Vorfall-Zeitstempel) und in Tooltips für alle Datumsangaben",
+				"groupStandard": "Internationaler Standard",
+				"groupEuropean": "Europäische Formate",
+				"groupUS": "US-Formate",
+				"groupISO": "ISO/Technische Formate"
+			},
+			"notifications": {
+				"title": "Benachrichtigungen",
+				"showPopoverHowToAssign": {
+					"label": "„Aufgabe ist Ihnen nicht zugewiesen“-Popup anzeigen",
+					"description": "Wenn aktiviert, wird beim Öffnen einer nicht zugewiesenen Aufgabe in der Aufgabenliste eine Informations-Popup-Nachricht angezeigt, die Ihnen hilft, die Aufgabe sich selbst oder jemand anderem zuzuweisen."
+				},
+				"tasksCheckNotificationsDisabled": {
+					"label": "Aufgabenbenachrichtigungen deaktivieren",
+					"description": "Wenn aktiviert, erhalten Sie im Browser keine Benachrichtigungen, wenn neue Aufgaben Ihnen zugewiesen werden."
+				}
 			}
 		},
 		"groups": {

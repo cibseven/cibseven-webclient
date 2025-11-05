@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import CamSDK from '../index-browser.js';
+import CamSDK from '../index.js';
 
 // Example: adapt one basic test to validate setup
 

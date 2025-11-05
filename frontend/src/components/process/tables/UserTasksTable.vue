@@ -39,7 +39,7 @@
         </div>
       </template>
       <template v-slot:cell(created)="table">
-        <span :title="formatDate(table.item.created)" class="text-truncate d-block">{{ formatDate(table.item.created) }}</span>
+        <span :title="formatDateForTooltips(table.item.created)" class="text-truncate d-block">{{ formatDate(table.item.created) }}</span>
       </template>
       <template v-slot:cell(id)="table">
         <CopyableActionButton
@@ -66,7 +66,7 @@
 <script>
 import { TaskService } from '@/services.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
-import { formatDate } from '@/utils/dates.js'
+import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
 import TaskAssignationModal from '@/components/process/modals/TaskAssignationModal.vue'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
@@ -98,6 +98,7 @@ export default {
   },
   methods: {
     formatDate,
+    formatDateForTooltips,
     changeAssignee: function(event) {
       var userTask = this.userTasks.find(task => task.id === event.taskId)
       userTask.assignee = event.assignee

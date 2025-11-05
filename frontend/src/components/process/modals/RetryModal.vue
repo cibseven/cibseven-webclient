@@ -22,9 +22,9 @@
 			<p>{{ $t(translationPrefix + 'retryMsg') }}</p>
 			<b-form-group>
 				<label class="fw-medium mt-2 mb-1">{{ $t(translationPrefix + 'dueDateMsg') }}</label>
-				<div class="form-check" v-for="option in executionOptions" :key="option">
-					<input class="form-check-input" type="radio" :id="option" :value="option" v-model="executionOption" />
-					<label class="form-check-label" :for="option">{{ $t(translationPrefix + option) }}</label>
+				<div class="form-check" v-for="(option, index) in executionOptions" :key="option">
+					<input class="form-check-input" type="radio" :id="`execution-option-${index}`" :value="option" v-model="executionOption" />
+					<label class="form-check-label" :for="`execution-option-${index}`">{{ $t(translationPrefix + option) }}</label>
 				</div>
 				<div v-if="executionOption === 'setDueDate'" class="row">
 					<label class="fw-medium mt-2 mb-1">{{ $t(translationPrefix + 'scheduleAt') }}</label>

@@ -14,10 +14,14 @@
 			"disabled": "Последнее обновление: {date}\n\nАвтоматическое обновление отключено.\nНажмите F5 для перезагрузки данных.",
 			"enabled": "Последнее обновление: {date}\n\nАвтоматическое обновление включено.\nОбновление каждые {seconds} секунд."
 		},
+		"notAvailable": {
+			"label": "N/A",
+			"tooltip": "Не доступно"
+		},
 		"remove": "Удалить"
 	},
 	"login": {
-		"productName": "CIB seven",
+		"productName": "@:cib-header.productName",
 		"productSlogan": "Платформа для управления процессами",
 		"username": "Имя пользователя",
 		"password": "Пароль",
@@ -69,6 +73,7 @@
 	"process" : {
 		"instanceRunning": "Запущеный экземпляр",
 		"instanceIncidents": "Экзепляр с инцидентами",
+		"instanceSuspended": "Экземпляр приостановлен",
 		"instanceWithoutIncidents": "Экземпляр без инцидентов",
 		"instanceFinished": "Завершеный экземпляр",
 		"name": "Имя",
@@ -285,6 +290,11 @@
 			"enterValue": "Введите значение"
 		},
 		"incidents": {
+			"activityIdBadge": {
+				"remove": "Удалить критерий — показать все инциденты",
+				"title": "{activityId} (сбой активности)",
+				"tooltip": "Показать только инциденты, созданные из-за сбоя активности \"{activityId}\"."
+			},
 			"state": "Состояние",
 			"processInstance": "Экземпляр процесса",
 			"deleted": "Удален",
@@ -294,7 +304,8 @@
 			"message": "Сообщение",
 			"timestamp": "Дата",
 			"activity": "Активность",
-			"failedActivity": "Неудачная активность",
+			"failedActivity": "Сбой активности",
+			"executionId": "ID выполнения",
 			"incidentType": "Тип инцидента",
 			"retryJob": "Увеличить число повторных попыток выполнения активности при неудачи",
 			"annotation": "Аннотация",
@@ -392,7 +403,17 @@
 			"failedActivity": "Неудачная активность",
 			"actions": "Действия",
 			"suspend": "Приостановить",
-			"resume": "Возобновить"
+			"resume": "Возобновить",
+			"changeDueDate": "Изменить срок выполнения таймера",
+			"recalculateFromCreation": "От даты создания",
+			"recalculateFromCurrent": "От текущего времени",
+			"setSpecificDate": "Установить определенную дату",
+			"cascade": "Применить каскадно к дочерним процессам",
+			"changeDueDateMsg": "Выберите один из следующих вариантов для изменения этого таймера:",
+			"recalculate": "Пересчитать",
+			"scheduleAt": "Запланировано на",
+			"invalidDateError": "Вы должны ввести действительную дату",
+			"overrideAction": "Переопределить"
 		},
 		"externalTasks": {
 			"id": "ID внешней задачи",
@@ -559,10 +580,49 @@
 			"group": {
 				"title": "Группы {0}",
 				"add": "Добавить в группу"
+			}
+		},
+		"preferences": {
+			"title": "Предпочтения",
+			"general": {
+				"title": "Общие настройки",
+				"startPage": {
+					"label": "Стартовая страница по умолчанию",
+					"description": "Выберите страницу, которая будет отображаться после входа.",
+					"goTo": "Перейти на {page}",
+					"options": {
+						"home": "Главная",
+						"groupTasklist": "Список задач",
+						"startProcess": "Запуск процесса",
+						"tasks": "Задачи",
+						"groupCockpit": "Cockpit",
+						"processesDashboard": "Панель операций",
+						"decisionsList": "Список решений",
+						"humanTasksDashboard": "Задачи пользователей"
+					}
+				}
 			},
-			"preferences": {
-				"title": "Предпочтения",
-				"notifications": "Отключить уведомления"
+			"dates": {
+				"title": "Форматы даты и времени",
+				"formatDefault": "Формат",
+				"formatLong": "Длинный формат (с точным временем)",
+				"formatDefaultDescription": "Используется в общих полях с датами",
+				"formatLongDescription": "Используется в полях с датами, где требуется точное время (например, временные метки инцидентов) и внутри всплывающих подсказок для всех дат",
+				"groupStandard": "Стандартный международный",
+				"groupEuropean": "Европейские форматы",
+				"groupUS": "Форматы США",
+				"groupISO": "ISO/Технические форматы"
+			},
+			"notifications": {
+				"title": "Уведомления",
+				"showPopoverHowToAssign": {
+					"label": "Показывать всплывающее окно 'Задача не назначена'",
+					"description": "Когда включено, открытие незакрепленной задачи в Tasklist отобразит всплывающее окно с информацией, чтобы помочь вам назначить задачу себе или кому-то еще."
+				},
+				"tasksCheckNotificationsDisabled": {
+					"label": "Отключить уведомления о задачах",
+					"description": "Если отмечено, вы не будете получать уведомления в браузере при назначении вам новых задач."
+				}
 			}
 		},
 		"groups": {

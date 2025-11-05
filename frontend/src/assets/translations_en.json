@@ -14,10 +14,14 @@
 			"disabled": "Last update: {date}\n\nAutomatic updates are disabled.\nPress F5 to reload the data.",
 			"enabled": "Last update: {date}\n\nAutomatic updates are enabled.\nRefreshing every {seconds} seconds."
 		},
+		"notAvailable": {
+			"label": "N/A",
+			"tooltip": "Not available"
+		},
 		"remove": "Remove"
 	},
 	"login": {
-		"productName": "CIB seven",
+		"productName": "@:cib-header.productName",
 		"productSlogan": "Process Management Platform",
 		"username": "Username",
 		"password": "Password",
@@ -69,6 +73,7 @@
 	"process": {
 		"instanceRunning": "Instance running",
 		"instanceIncidents": "Instance with incidents",
+		"instanceSuspended": "Instance suspended",
 		"instanceWithoutIncidents": "Instance without incidents",
 		"instanceFinished": "Instance finished",		
 		"name": "Name",
@@ -285,6 +290,11 @@
 			"enterValue": "Enter value"
 		},
 		"incidents": {
+			"activityIdBadge": {
+				"remove": "Remove criteria - to list all incidents",
+				"title": "{activityId} (failed activity)",
+				"tooltip": "List only incidents that were created due to the failure of \"{activityId}\" activity."
+			},
 			"state": "State",
 			"processInstance": "Process Instance",
 			"deleted": "Deleted",
@@ -295,6 +305,7 @@
 			"timestamp": "Timestamp",
 			"activity": "Activity",
 			"failedActivity": "Failed activity",
+			"executionId": "Execution ID",
 			"incidentType": "Incident type",
 			"retryJob": "Increment number of retries of failed job",
 			"annotation": "Annotation",
@@ -392,7 +403,17 @@
 			"failedActivity": "Failed activity",
 			"actions": "Actions",
 			"suspend": "Suspend",
-			"resume": "Resume"
+			"resume": "Resume",
+			"changeDueDate": "Change timer due date",
+			"recalculateFromCreation": "From creation time",
+			"recalculateFromCurrent": "From current time",
+			"setSpecificDate": "Set a specific date",
+			"cascade": "Cascade to child processes",
+			"changeDueDateMsg": "Select one of the following options to change this timer:",
+			"recalculate": "Recalculate",
+			"scheduleAt": "Schedule at",
+			"invalidDateError": "You must enter a valid date",
+			"overrideAction": "Override"
 		},
 		"externalTasks": {
 			"id": "External task ID",
@@ -559,10 +580,49 @@
 			"group": {
 				"title": "{0}'s Groups",
 				"add": "Add to a group"
+			}
+		},
+		"preferences": {
+			"title": "Preferences",
+			"general": {
+				"title": "General Settings",
+				"startPage": {
+					"label": "Default start page",
+					"description": "Select the page that will be displayed after login.",
+					"goTo": "Go to {page}",
+					"options": {
+						"home": "Home",
+						"groupTasklist": "Tasklist",
+						"startProcess": "Start Process",
+						"tasks": "Tasks",
+						"groupCockpit": "Cockpit",
+						"processesDashboard": "Processes Dashboard",
+						"decisionsList": "Decisions List",
+						"humanTasksDashboard": "Human Tasks Dashboard"
+					}
+				}
 			},
-			"preferences": {
-				"title": "Preferences",
-				"notifications": "Disable notifications"
+			"dates": {
+				"title": "Date and Time Formats",
+				"formatDefault": "Format",
+				"formatLong": "Long Format (with exact time)",
+				"formatDefaultDescription": "Used in general date fields",
+				"formatLongDescription": "Used in date fields where exact time is required (such as incident timestamps) and inside tooltips for all dates",
+				"groupStandard": "Standard International",
+				"groupEuropean": "European Formats",
+				"groupUS": "US Formats",
+				"groupISO": "ISO/Technical Formats"
+			},
+			"notifications": {
+				"title": "Notifications",
+				"showPopoverHowToAssign": {
+					"label": "Show 'Task is not assigned to you' popup",
+					"description": "When enabled, opening an unassigned task in Tasklist view will display an information popup to help you assign the task to yourself or to someone else."
+				},
+				"tasksCheckNotificationsDisabled": {
+					"label": "Disable task notifications",
+					"description": "If checked, you will not receive in browser any notifications when new tasks are assigned to you."
+				}
 			}
 		},
 		"groups": {

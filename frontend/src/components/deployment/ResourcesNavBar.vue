@@ -30,7 +30,7 @@
           <div class="collapse border-none" id="deploymentInfo">
             <div class="card card-body text-dark border-white bg-white py-2">
               <div>
-                <div class="pb-2">{{ formatDate(deployment.deploymentTime) }}</div>
+                <div class="pb-2" :title="formatDateForTooltips(deployment.deploymentTime)">{{ formatDate(deployment.deploymentTime) }}</div>
                 <div class="pb-2 small">{{ $t('deployment.tenant') }}: {{ deployment.tenantId }}</div>
                 <div class="small">{{ $t('deployment.source') }}: {{ deployment.source }}</div>
               </div>
@@ -97,7 +97,7 @@
 import { ProcessService } from '@/services.js'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
 import DmnViewer from '@/components/decision/DmnViewer.vue'
-import { formatDate } from '@/utils/dates.js'
+import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
 import { mapActions } from 'vuex'
 
 export default {
@@ -117,7 +117,11 @@ export default {
   },
   watch: {
     deploymentId: function () {
+      if(this.deploymentId){
       this.loadDeployment()
+      } else {
+        this.deployment = null
+      }
     },
   },
   computed: {
@@ -138,6 +142,7 @@ export default {
   methods: {
     ...mapActions(['getDecisionList', 'getXmlById']),
     formatDate,
+    formatDateForTooltips,
     showResource: function (resource) {
       this.error = false
       this.diagramLoading = true

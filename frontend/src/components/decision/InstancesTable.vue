@@ -33,7 +33,7 @@
       </button>
     </template>
     <template v-slot:cell(evaluationTime)="table">
-        <span :title="formatDate(table.item.evaluationTime)">{{ formatDate(table.item.evaluationTime) }}</span>
+        <span :title="formatDateForTooltips(table.item.evaluationTime)">{{ formatDate(table.item.evaluationTime) }}</span>
       </template>
     <template v-slot:cell(processDefinitionKey)="table">
       <button :title="table.item.processDefinitionKey" class="text-truncate w-100 btn btn-link text-start" @click="goToProcess(table.item)"
@@ -66,7 +66,7 @@
 
 <script>
 import { permissionsMixin } from '@/permissions.js'
-import { formatDate } from '@/utils/dates.js'
+import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
@@ -89,6 +89,7 @@ export default {
   methods: {
     ...mapMutations(['setSelectedInstance']),
     formatDate,
+    formatDateForTooltips,
     goToInstance(instance) {
       this.setSelectedInstance(instance)
       this.$router.push({
@@ -109,7 +110,7 @@ export default {
     getIconTitle(state) {
       switch (state) {
         case 'ACTIVE': return this.$t('decision.instanceRunning')
-        case 'SUSPENDED': return this.$t('decision.instanceIncidents')
+        case 'SUSPENDED': return this.$t('decision.instanceSuspended')
         default: return this.$t('decision.instanceFinished')
       }
     },

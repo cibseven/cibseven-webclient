@@ -14,10 +14,14 @@
 			"disabled": "Última actualización: {date}\n\nLas actualizaciones automáticas están desactivadas.\nPresiona F5 para recargar los datos.",
 			"enabled": "Última actualización: {date}\n\nLas actualizaciones automáticas están activadas.\nRecargando cada {seconds} segundos."
 		},
+		"notAvailable": {
+			"label": "N/A",
+			"tooltip": "No disponible"
+		},
 		"remove": "Eliminar"
 	},
 	"login": {
-		"productName": "CIB seven",
+		"productName": "@:cib-header.productName",
 		"productSlogan": "Plataforma para la gestión de procesos",
 		"username": "Nombre de usuario",
 		"password": "Contraseña",
@@ -69,6 +73,7 @@
 	"process": {
 		"instanceRunning": "Instancia en ejecución",
 		"instanceIncidents": "Instancia con incidentes",
+		"instanceSuspended": "Instancia suspendida",
 		"instanceWithoutIncidents": "Instancia sin incidencias",
 		"instanceFinished": "Instancia finalizada",
 		"name": "Nombre",
@@ -285,6 +290,11 @@
 			"enterValue": "Introducir valor"
 		},
 		"incidents": {
+			"activityIdBadge": {
+				"remove": "Eliminar criterio - para listar todas las incidencias",
+				"title": "{activityId} (actividad fallida)",
+				"tooltip": "Listar solo las incidencias que fueron creadas debido al fallo de la actividad \"{activityId}\"."
+			},
 			"state": "Estado",
 			"processInstance": "Instancia de proceso",
 			"deleted": "Eliminado",
@@ -295,6 +305,7 @@
 			"timestamp": "Timestamp",
 			"activity": "Actividad",
 			"failedActivity": "Actividad fallida",
+			"executionId": "ID de ejecución",
 			"incidentType": "Tipo de incidente",
 			"retryJob": "Incrementar el número de reintentos de trabajo fallido",
 			"annotation": "Anotación",
@@ -392,7 +403,17 @@
 			"failedActivity": "Actividad fallida",
 			"actions": "Acciones",
 			"suspend": "Suspender",
-			"resume": "Reanudar"
+			"resume": "Reanudar",
+			"changeDueDate": "Cambiar fecha de vencimiento del temporizador",
+			"recalculateFromCreation": "Desde la fecha de creación",
+			"recalculateFromCurrent": "Desde la fecha actual",
+			"setSpecificDate": "Establecer una fecha específica",
+			"cascade": "Aplicar en cascada a procesos hijos",
+			"changeDueDateMsg": "Selecciona una de las siguientes opciones para cambiar este temporizador:",
+			"recalculate": "Recalcular",
+			"scheduleAt": "Programar en",
+			"invalidDateError": "Debe ingresar una fecha válida",
+			"overrideAction": "Anular"
 		},
 		"externalTasks": {
 			"id": "ID de tarea externa",
@@ -559,10 +580,49 @@
 			"group": {
 				"title": "Grupos del usuario {0}",
 				"add": "Añadir a un grupo"
+			}
+		},
+		"preferences": {
+			"title": "Preferencias",
+			"general": {
+				"title": "Configuración general",
+				"startPage": {
+					"label": "Página de inicio predeterminada",
+					"description": "Seleccione la página que se mostrará después de iniciar sesión.",
+					"goTo": "Ir a {page}",
+					"options": {
+						"home": "Inicio",
+						"groupTasklist": "Tasklist",
+						"startProcess": "Iniciar proceso",
+						"tasks": "Tareas",
+						"groupCockpit": "Cockpit",
+						"processesDashboard": "Panel de procesos",
+						"decisionsList": "Lista de decisiones",
+						"humanTasksDashboard": "Panel de tareas humanas"
+					}
+				}
 			},
-			"preferences": {
-				"title": "Preferencias",
-				"notifications": "Desactivar notificaciones"
+			"dates": {
+				"title": "Formatos de fecha y hora",
+				"formatDefault": "Formato",
+				"formatLong": "Formato largo (con hora exacta)",
+				"formatDefaultDescription": "Se utiliza en campos de fecha generales",
+				"formatLongDescription": "Se utiliza en campos de fecha donde se requiere la hora exacta (como las marcas de tiempo de incidentes) y dentro de los tooltips para todas las fechas",
+				"groupStandard": "Estándar internacional",
+				"groupEuropean": "Formatos europeos",
+				"groupUS": "Formatos de EE.UU.",
+				"groupISO": "Formatos ISO/Técnicos"
+			},
+			"notifications": {
+				"title": "Notificaciones",
+				"showPopoverHowToAssign": {
+					"label": "Mostrar el popup 'La tarea no está asignada a usted'",
+					"description": "Cuando está habilitado, al abrir una tarea no asignada en la vista de lista de tareas, se mostrará un popup de información para ayudarle a asignar la tarea a usted mismo o a otra persona."
+				},
+				"tasksCheckNotificationsDisabled": {
+					"label": "Desactivar notificaciones de tareas",
+					"description": "Si se marca, no recibirá en el navegador ninguna notificación cuando se le asignen nuevas tareas."
+				}
 			}
 		},
 		"groups": {

@@ -454,3 +454,11 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+:deep(.dropdown-menu) {
+  position: fixed !important;
+  max-height: 400px;
+  overflow-y: auto;
+}
+</style>

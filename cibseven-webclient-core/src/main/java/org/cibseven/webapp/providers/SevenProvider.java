@@ -704,6 +704,11 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 
 	@Override
+	public Long countHistoricIncident(Map<String, Object> params, CIBUser user) {
+		return incidentProvider.countHistoricIncident(params, user);
+	}
+
+	@Override
 	public Collection<Incident> findIncident(Map<String, Object> params, CIBUser user) {
 		return incidentProvider.findIncident(params, user);
 	}
@@ -1044,6 +1049,16 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	@Override
 	public String getHistoryJobLogStacktrace(String id, CIBUser user) {
 		return jobProvider.getHistoryJobLogStacktrace(id, user);
+	}
+
+	@Override
+	public void changeDueDate(String id, Map<String, Object> data, CIBUser user) {
+		jobProvider.changeDueDate(id, data, user);
+	}
+
+	@Override
+	public void recalculateDueDate(String id, Map<String, Object> params, CIBUser user) {
+		jobProvider.recalculateDueDate(id, params, user);
 	}
 
 	/*

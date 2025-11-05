@@ -26,7 +26,7 @@
           <div class="text-truncate" :title="table.item.jobExceptionMessage">{{ table.item.jobExceptionMessage }}</div>
         </template>
         <template v-slot:cell(timestamp)="table">
-          <div class="text-truncate" :title="formatDate(table.item.timestamp)">{{ formatDate(table.item.timestamp) }}</div>
+          <div class="text-truncate" :title="formatDateForTooltips(table.item.timestamp)">{{ formatDate(table.item.timestamp) }}</div>
         </template>
         <template v-slot:cell(jobId)="table">
           <div class="text-truncate" :title="table.item.jobId">{{ table.item.jobId }}</div>
@@ -76,7 +76,7 @@
 </template>
 
 <script>
-  import { formatDate } from '@/utils/dates.js'
+  import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
   import { BWaitingBox } from 'cib-common-components'
   import { mapActions, mapGetters } from 'vuex'
   import FlowTable from '@/components/common-components/FlowTable.vue'
@@ -114,6 +114,7 @@
     methods: {
       ...mapActions('job', ['getHistoryJobLogStacktrace', 'getHistoryJobLog', 'clearJobLogs']),
       formatDate,
+      formatDateForTooltips,
       show(jobId) {
         this.selectedJobLog = null
         this.clearJobLogs()

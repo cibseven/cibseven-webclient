@@ -36,7 +36,7 @@
                         <b-form-checkbox size="sm" v-model="d.isSelected" @click.stop></b-form-checkbox>
                       </label>
                       <div class="d-flex align-items-center pt-2">
-                        <span>{{ formatDate(d.deploymentTime) }}</span>
+                        <span :title="formatDateForTooltips(d.deploymentTime)">{{ formatDate(d.deploymentTime) }}</span>
                       </div>
                       <div class="d-flex align-items-center pt-2">
                         <small>{{ $t('deployment.tenant') }}: {{ d.tenantId ? d.tenantId : '-' }}</small>
@@ -56,7 +56,7 @@
 </template>
 
 <script>
-import { formatDate } from '@/utils/dates.js'
+import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
 
 export default {
   name: 'DeploymentList',
@@ -94,6 +94,7 @@ export default {
   },  
   methods: {
     formatDate,
+    formatDateForTooltips,
     setDeployment: function(d) {
       this.$router.push('/seven/auth/deployments/' + d.id)
     },

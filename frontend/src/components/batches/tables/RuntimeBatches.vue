@@ -35,7 +35,7 @@
           </div>
         </template>
         <template v-slot:cell(startTime)="table">
-          <div>{{ formatDate(table.item.startTime) }}</div>
+          <div :title="formatDateForTooltips(table.item.startTime)">{{ formatDate(table.item.startTime) }}</div>
         </template>
         <template v-slot:cell(progress)="table">
           <div class="w-100">
@@ -54,7 +54,7 @@
 </template>
 
 <script>
-import { formatDate } from '@/utils/dates.js'
+import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import { mapGetters, mapActions } from 'vuex'
 import { BWaitingBox } from 'cib-common-components'
@@ -95,6 +95,7 @@ export default {
   methods: {
     ...mapActions(['getRuntimeBatches']),
     formatDate,
+    formatDateForTooltips,
     loadBatches: function() {
       this.getRuntimeBatches().then(() => {
         if (this.runtimeBatches.length > 0 && !this.batchesInterval) {

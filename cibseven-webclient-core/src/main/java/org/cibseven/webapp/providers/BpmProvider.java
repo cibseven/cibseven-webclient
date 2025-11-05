@@ -990,6 +990,7 @@ public interface BpmProvider {
 	void submit(Task task, List<Variable> formResult, CIBUser user) throws SystemException, SubmitDeniedException;
 
 	Long countIncident(Map<String, Object> params, CIBUser user);
+	Long countHistoricIncident(Map<String, Object> params, CIBUser user);
 
 	Collection<Incident> findIncident(Map<String, Object> params, CIBUser user);
 
@@ -1119,6 +1120,8 @@ public interface BpmProvider {
 	void deleteJob(String id, CIBUser user);
 	Collection<Object> getHistoryJobLog(Map<String, Object> params, CIBUser user);
 	String getHistoryJobLogStacktrace(String id, CIBUser user);
+	void changeDueDate(String id, Map<String, Object> data, CIBUser user);
+	void recalculateDueDate(String id, Map<String, Object> params, CIBUser user);
 	Integer findHistoryTasksCount(Map<String, Object> filters, CIBUser user);
 
 	Collection<CandidateGroupTaskCount> getTaskCountByCandidateGroup(CIBUser user);

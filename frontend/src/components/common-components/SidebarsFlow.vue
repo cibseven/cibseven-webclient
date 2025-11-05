@@ -24,7 +24,7 @@
           <slot name="leftIcon">
             <span class="mdi mdi-18px mdi-chevron-left float-end"></span>
           </slot>
-          <h5 class="m-0 w-75" style="word-wrap: break-word">{{ leftCaption }}<span v-if="number" class="h5 ps-2"><b-badge pill variant="light" :title="numberTooltip">{{ number }}</b-badge></span></h5>
+          <h5 class="m-0 w-75" style="word-wrap: break-word">{{ leftCaption }}<span v-if="number != null" class="h5 ps-2"><b-badge pill variant="light" :title="numberTooltip">{{ number }}</b-badge></span></h5>
         </b-button>
         <div :style="{ height: leftCaption ? 'calc(100% - ' + headerCalc + ')' : '100%' }">
           <slot name="left"></slot>
@@ -40,7 +40,7 @@
       <slot name="filter">
         <b-button v-if="!leftOpen && leftCaption" variant="light" class="rounded-0 border-end-0 text-nowrap position-absolute w-auto" @click="$emit('update:leftOpen', true)"
           style="right: 100%; transform: rotate(-90deg); transform-origin: right top">
-          {{ leftCaption }} <span v-if="number"><b-badge pill variant="light">{{ number }}</b-badge></span>
+          {{ leftCaption }} <span v-if="number != null"><b-badge pill variant="light">{{ number }}</b-badge></span>
           <i class="mdi mdi-18px mdi-chevron-down"></i>
         </b-button>
       </slot>
