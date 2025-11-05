@@ -16,6 +16,7 @@
  */
 package org.cibseven.webapp.rest;
 
+import org.cibseven.webapp.auth.SevenUserProvider;
 import org.cibseven.webapp.rest.model.InfoVersion;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,7 +49,7 @@ public class InfoService extends BaseService {
 	@Value("${cibseven.webclient.sso.scopes:}") private String scopes;
 	@Value("${cibseven.webclient.historyLevel:full}") private String camundaHistoryLevel;
 	@Value("${cibseven.webclient.user.provider:org.cibseven.webapp.auth.SevenUserProvider}") private String userProvider;
-	@Value("${cibseven.webclient.user-management.editable:#{null}}") private Boolean userEditable;
+	@Value("${cibseven.webclient.user.editable:#{null}}") private Boolean userEditable;
 	
 	@Value("${cibseven.webclient.productNamePageTitle:CIB seven}") private String productNamePageTitle;
 	
@@ -71,7 +72,7 @@ public class InfoService extends BaseService {
 	public void init() {
 		// If userEditable is not set in yaml, set it based on userProvider
 		if (userEditable == null) {
-			userEditable = "org.cibseven.webapp.auth.SevenUserProvider".equals(userProvider);
+			userEditable = SevenUserProvider.class.getName().equals(userProvider);
 		}
 	}
 	
