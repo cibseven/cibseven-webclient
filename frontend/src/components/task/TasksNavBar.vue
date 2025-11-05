@@ -330,7 +330,6 @@ export default {
           return this.$emit('selected-task', task)
         else {
           TaskService.findIdentityLinks(taskId).then(identityLinks => {
-            // If no identity links, emit the selected task
             if (!identityLinks || identityLinks.length === 0) {
               return this.$emit('selected-task', task)
             }
