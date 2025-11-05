@@ -571,6 +571,7 @@
 			"newPassword": "Новый пароль",
 			"newPasswordRepeat": "Новый пароль (повтор)",
 			"editUser": "Редактировать пользователя",
+			"viewUser": "Показать пользователя",
 			"deleteUser": "Удалить пользователя",
 			"changePassword": "Изменить пароль",
 			"updateProfileMessage": "Профиль пользователя успешно обновлен",

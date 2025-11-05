@@ -571,6 +571,7 @@
 			"newPassword": "New Password",
 			"newPasswordRepeat": "New Password (repeat)",
 			"editUser": "Edit user",
+			"viewUser": "Display user",
 			"deleteUser": "Delete user",
 			"changePassword": "Change Password",
 			"updateProfileMessage": "User profile successfully updated",
