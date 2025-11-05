@@ -158,6 +158,7 @@ Filter.authorizations = function(id, done) {
     return this.http.options(this.path, {
       done: id,
       headers: {
+        ...this.http.config.headers,
         Accept: 'application/json'
       }
     });
@@ -166,6 +167,7 @@ Filter.authorizations = function(id, done) {
   return this.http.options(this.path + '/' + id, {
     done: done,
     headers: {
+      ...this.http.config.headers,
       Accept: 'application/json'
     }
   });
