@@ -14,10 +14,14 @@
 			"disabled": "Last update: {date}\n\nAutomatic updates are disabled.\nPress F5 to reload the data.",
 			"enabled": "Last update: {date}\n\nAutomatic updates are enabled.\nRefreshing every {seconds} seconds."
 		},
+		"notAvailable": {
+			"label": "N/A",
+			"tooltip": "Not available"
+		},
 		"remove": "Remove"
 	},
 	"login": {
-		"productName": "CIB seven",
+		"productName": "@:cib-header.productName",
 		"productSlogan": "Process Management Platform",
 		"username": "Username",
 		"password": "Password",
@@ -69,6 +73,7 @@
 	"process": {
 		"instanceRunning": "Instance running",
 		"instanceIncidents": "Instance with incidents",
+		"instanceSuspended": "Instance suspended",
 		"instanceWithoutIncidents": "Instance without incidents",
 		"instanceFinished": "Instance finished",		
 		"name": "Name",
@@ -285,6 +290,11 @@
 			"enterValue": "Enter value"
 		},
 		"incidents": {
+			"activityIdBadge": {
+				"remove": "Remove criteria - to list all incidents",
+				"title": "{activityId} (failed activity)",
+				"tooltip": "List only incidents that were created due to the failure of \"{activityId}\" activity."
+			},
 			"state": "State",
 			"processInstance": "Process Instance",
 			"deleted": "Deleted",
@@ -295,6 +305,7 @@
 			"timestamp": "Timestamp",
 			"activity": "Activity",
 			"failedActivity": "Failed activity",
+			"executionId": "Execution ID",
 			"incidentType": "Incident type",
 			"retryJob": "Increment number of retries of failed job",
 			"annotation": "Annotation",
@@ -574,6 +585,24 @@
 		},
 		"preferences": {
 			"title": "Preferences",
+			"general": {
+				"title": "General Settings",
+				"startPage": {
+					"label": "Default start page",
+					"description": "Select the page that will be displayed after login.",
+					"goTo": "Go to {page}",
+					"options": {
+						"home": "Home",
+						"groupTasklist": "Tasklist",
+						"startProcess": "Start Process",
+						"tasks": "Tasks",
+						"groupCockpit": "Cockpit",
+						"processesDashboard": "Processes Dashboard",
+						"decisionsList": "Decisions List",
+						"humanTasksDashboard": "Human Tasks Dashboard"
+					}
+				}
+			},
 			"dates": {
 				"title": "Date and Time Formats",
 				"formatDefault": "Format",

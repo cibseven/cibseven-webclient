@@ -26,7 +26,8 @@ import org.cibseven.webapp.rest.model.Incident;
 public interface IIncidentProvider {
 	
 	public Long countIncident(Map<String, Object> params, CIBUser user);
-	
+	public Long countHistoricIncident(Map<String, Object> params, CIBUser user);
+
 	public Collection<Incident> findIncident(Map<String, Object> params, CIBUser user);
 	public List<Incident> findIncidentByInstanceId(String processInstanceId, CIBUser user);
 	public Collection<Incident> fetchIncidents(String processDefinitionKey, CIBUser user);	

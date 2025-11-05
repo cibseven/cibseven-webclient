@@ -98,7 +98,7 @@
     <div ref="rContent" class="position-absolute w-100 overflow-hidden" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
 
       <VariablesTable v-if="activeTab === 'variables'" :selected-instance="selectedInstance" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory"></VariablesTable>
-      <IncidentsTable v-else-if="activeTab === 'incidents'" :instance="selectedInstance" :process="process" :activity-instance="activityInstance" 
+      <IncidentsTable v-else-if="activeTab === 'incidents'" :scrollable-area="$refs.rContent" :instance="selectedInstance" :process="process" :activity-instance="activityInstance" 
         :is-instance-view="true" :activity-instance-history="activityInstanceHistory"></IncidentsTable>
       <UserTasksTable v-else-if="activeTab === 'usertasks'" :selected-instance="selectedInstance"></UserTasksTable>
       <JobsTable v-else-if="activeTab === 'jobs'" :instance="selectedInstance" :process="process"></JobsTable>

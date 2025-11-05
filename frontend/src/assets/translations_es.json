@@ -14,10 +14,14 @@
 			"disabled": "Última actualización: {date}\n\nLas actualizaciones automáticas están desactivadas.\nPresiona F5 para recargar los datos.",
 			"enabled": "Última actualización: {date}\n\nLas actualizaciones automáticas están activadas.\nRecargando cada {seconds} segundos."
 		},
+		"notAvailable": {
+			"label": "N/A",
+			"tooltip": "No disponible"
+		},
 		"remove": "Eliminar"
 	},
 	"login": {
-		"productName": "CIB seven",
+		"productName": "@:cib-header.productName",
 		"productSlogan": "Plataforma para la gestión de procesos",
 		"username": "Nombre de usuario",
 		"password": "Contraseña",
@@ -69,6 +73,7 @@
 	"process": {
 		"instanceRunning": "Instancia en ejecución",
 		"instanceIncidents": "Instancia con incidentes",
+		"instanceSuspended": "Instancia suspendida",
 		"instanceWithoutIncidents": "Instancia sin incidencias",
 		"instanceFinished": "Instancia finalizada",
 		"name": "Nombre",
@@ -285,6 +290,11 @@
 			"enterValue": "Introducir valor"
 		},
 		"incidents": {
+			"activityIdBadge": {
+				"remove": "Eliminar criterio - para listar todas las incidencias",
+				"title": "{activityId} (actividad fallida)",
+				"tooltip": "Listar solo las incidencias que fueron creadas debido al fallo de la actividad \"{activityId}\"."
+			},
 			"state": "Estado",
 			"processInstance": "Instancia de proceso",
 			"deleted": "Eliminado",
@@ -295,6 +305,7 @@
 			"timestamp": "Timestamp",
 			"activity": "Actividad",
 			"failedActivity": "Actividad fallida",
+			"executionId": "ID de ejecución",
 			"incidentType": "Tipo de incidente",
 			"retryJob": "Incrementar el número de reintentos de trabajo fallido",
 			"annotation": "Anotación",
@@ -574,6 +585,24 @@
 		},
 		"preferences": {
 			"title": "Preferencias",
+			"general": {
+				"title": "Configuración general",
+				"startPage": {
+					"label": "Página de inicio predeterminada",
+					"description": "Seleccione la página que se mostrará después de iniciar sesión.",
+					"goTo": "Ir a {page}",
+					"options": {
+						"home": "Inicio",
+						"groupTasklist": "Tasklist",
+						"startProcess": "Iniciar proceso",
+						"tasks": "Tareas",
+						"groupCockpit": "Cockpit",
+						"processesDashboard": "Panel de procesos",
+						"decisionsList": "Lista de decisiones",
+						"humanTasksDashboard": "Panel de tareas humanas"
+					}
+				}
+			},
 			"dates": {
 				"title": "Formatos de fecha y hora",
 				"formatDefault": "Formato",

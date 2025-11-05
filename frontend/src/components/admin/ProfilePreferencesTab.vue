@@ -17,27 +17,48 @@
 
 -->
 <template>
-  <div class="p-0 m-0 d-flex flex-column gap-4">
+  <div class="p-0 m-0 d-flex flex-column gap-2">
+
+    <ContentBlock :title="$t('admin.preferences.general.title')">
+      <b-form-group>
+        <label class="form-label">
+          <span class="fw-semibold">{{ $t('admin.preferences.general.startPage.label') }}</span>
+          <span v-b-popover.hover.right="$t('admin.preferences.general.startPage.description')" class="mdi mdi-18px mdi-information-outline text-info ms-1"></span>
+        </label>
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="w-100">
+            <b-form-select v-model="startPage" :options="startPageOptions"
+              class="col-lg-6 col-md-8 col-sm-12 mb-0"
+            />
+          </div>
+          <div>
+            <RouterLink :to="{ name: 'start-configurable' }" class="btn btn-sm btn-outline-secondary border-0 mdi mdi-18px mdi-arrow-right"
+              :title="startPageTooltip"
+            />
+          </div>
+        </div>
+      </b-form-group>
+    </ContentBlock>
+
     <ContentBlock :title="$t('admin.preferences.dates.title')">
       <b-form-group>
         <label class="form-label">
-          {{ $t('admin.preferences.dates.formatDefault') }}
-          <span v-b-popover.hover.right="$t('admin.preferences.dates.formatDefaultDescription')" class="mdi mdi-18px mdi-information-outline text-info"></span>
+          <span class="fw-semibold">{{ $t('admin.preferences.dates.formatDefault') }}</span>
+          <span v-b-popover.hover.right="$t('admin.preferences.dates.formatDefaultDescription')" class="mdi mdi-18px mdi-information-outline text-info ms-1"></span>
         </label>
         <b-form-select v-model="formatDefault" :options="dateFormatOptions" 
-          class="col-lg-6 col-md-8 col-sm-12"
+          class="col-lg-6 col-md-8 col-sm-12 mb-0"
         />
       </b-form-group>
 
       <b-form-group>
         <label class="form-label">
-          {{ $t('admin.preferences.dates.formatLong') }}
-          <span v-b-popover.hover.right="$t('admin.preferences.dates.formatLongDescription')" class="mdi mdi-18px mdi-information-outline text-info"></span>
+          <span class="fw-semibold">{{ $t('admin.preferences.dates.formatLong') }}</span>
+          <span v-b-popover.hover.right="$t('admin.preferences.dates.formatLongDescription')" class="mdi mdi-18px mdi-information-outline text-info ms-1"></span>
         </label>
         <b-form-select v-model="formatLong" :options="dateFormatOptions"
-          class="col-lg-6 col-md-8 col-sm-12"
+          class="col-lg-6 col-md-8 col-sm-12 mb-0"
         />
-
       </b-form-group>
     </ContentBlock>
 
@@ -68,11 +89,18 @@
 <script>
 import { formatDate } from '@/utils/dates.js'
 import ContentBlock from '@/components/common-components/ContentBlock.vue'
+import { permissionsMixin } from '@/permissions.js'
 
 export default {
   name: 'ProfilePreferencesTab',
   components: {
     ContentBlock
+  },
+  mixins: [permissionsMixin],
+  data() {
+    return {
+      startPageInternal: null
+    }
   },
   computed: {
     dateFormatOptions() {
@@ -160,36 +188,102 @@ export default {
     },
     formatDefault: {
       get() {
-        return localStorage.getItem('cibseven:preferences:formatDefault') || 'LL HH:mm'
+        return localStorage?.getItem('cibseven:preferences:formatDefault') || 'LL HH:mm'
       },
       set(val) {
-        localStorage.setItem('cibseven:preferences:formatDefault', val)
+        localStorage?.setItem('cibseven:preferences:formatDefault', val)
       }
     },
     formatLong: {
       get() {
-        return localStorage.getItem('cibseven:preferences:formatLong') || 'LL HH:mm:ss.SSS'
+        return localStorage?.getItem('cibseven:preferences:formatLong') || 'LL HH:mm:ss.SSS'
       },
       set(val) {
-        localStorage.setItem('cibseven:preferences:formatLong', val)
+        localStorage?.setItem('cibseven:preferences:formatLong', val)
       }
     },
-    tasksCheckNotificationsDisabled: {
+
+    // start page
+    startPageOptions() {
+      const options = []
+
+      options.push({
+        label: this.$root.config.productNamePageTitle || this.$t('cib-header.productName'),
+        options: [
+          { value: 'start', text: this.$t('admin.preferences.general.startPage.options.home') },
+        ]
+      })
+
+      if (this.permissionsTaskList()) {
+        options.push(
+          {
+            label: this.$t('admin.preferences.general.startPage.options.groupTasklist'),
+            options: [
+              { value: 'start-process', text: this.$t('admin.preferences.general.startPage.options.startProcess') },
+              { value: 'tasks', text: this.$t('admin.preferences.general.startPage.options.tasks') },
+            ]
+          }
+        )
+      }
+
+      if (this.permissionsCockpit()) {
+        options.push(
+          {
+            label: this.$t('admin.preferences.general.startPage.options.groupCockpit'),
+            options: [
+              { value: 'processes-dashboard', text: this.$t('admin.preferences.general.startPage.options.processesDashboard') },
+              { value: 'decisions-list', text: this.$t('admin.preferences.general.startPage.options.decisionsList') },
+              { value: 'human-tasks-dashboard', text: this.$t('admin.preferences.general.startPage.options.humanTasksDashboard') },
+            ]
+          }
+        )
+      }
+
+      return options
+    },
+    startPage: {
       get() {
-        return localStorage.getItem('tasksCheckNotificationsDisabled') === 'true' || false
+        return localStorage?.getItem('cibseven:preferences:startPage') || 'start'
       },
       set(val) {
-        localStorage.setItem('tasksCheckNotificationsDisabled', val)
+        localStorage?.setItem('cibseven:preferences:startPage', val)
+        this.startPageInternal = val
+      }
+    },
+    startPageTooltip() {
+      const startPage = this.startPageInternal || this.startPage
+      const optionOrGroup = this.startPageOptions.find(option => {
+        if (option.options) {
+          const found = option.options.find(subOption => subOption.value === startPage)
+          return !!found
+        } else {
+          return option.value === startPage
+        }
+      }) || this.startPageOptions[0]
+      const option = optionOrGroup.options ? optionOrGroup.options.find(subOption => subOption.value === startPage) : optionOrGroup
+      return this.$t('admin.preferences.general.startPage.goTo', {
+        page: option?.text || ''
+      })
+    },
+
+    // notifications
+    tasksCheckNotificationsDisabled: {
+      get() {
+        return localStorage?.getItem('tasksCheckNotificationsDisabled') === 'true' || false
+      },
+      set(val) {
+        localStorage?.setItem('tasksCheckNotificationsDisabled', val)
       }
     },
     showPopoverHowToAssign: {
       get() {
-        return localStorage.getItem('showPopoverHowToAssign') !== 'false' || true
+        return localStorage?.getItem('showPopoverHowToAssign') !== 'false' || true
       },
       set(val) {
-        localStorage.setItem('showPopoverHowToAssign', val)
+        localStorage?.setItem('showPopoverHowToAssign', val)
       }
     },
+
     ProfilePreferencesPlugin() {
       return this.$options.components && this.$options.components.ProfilePreferencesPlugin
         ? this.$options.components.ProfilePreferencesPlugin
@@ -199,7 +293,13 @@ export default {
   methods: {
     createDateOptions(formats) {
       return formats.map(value => ({ value, text: formatDate(new Date(), value) }))
-    }
+    },
+    permissionsTaskList() {
+      return this.$root.user && this.applicationPermissions(this.$root.config.permissions.tasklist, 'tasklist')
+    },
+    permissionsCockpit() {
+      return this.$root.user && this.applicationPermissions(this.$root.config.permissions.cockpit, 'cockpit')
+    },
   }
 }
 </script>

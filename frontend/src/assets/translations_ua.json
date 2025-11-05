@@ -14,10 +14,14 @@
 			"disabled": "Останнє оновлення: {date}\n\nАвтоматичне оновлення вимкнено.\nНатисніть F5 для повторної загрузки даних.",
 			"enabled": "Останнє оновлення: {date}\n\nАвтоматичне оновлення увімкнено.\nОновлення кожні {seconds} секунд."
 		},
+		"notAvailable": {
+			"label": "N/A",
+			"tooltip": "Не доступно"
+		},
 		"remove": "Видалити"
 	},
 	"login": {
-		"productName": "CIB seven",
+		"productName": "@:cib-header.productName",
 		"productSlogan": "Платформа для керування процесами",
 		"username": "Ім’я користувача",
 		"password": "Пароль",
@@ -69,6 +73,7 @@
 	"process": {
 		"instanceRunning": "Запущений екземпляр",
 		"instanceIncidents": "Екземпляр з інцидентами",
+		"instanceSuspended": "Екземпляр призупинено", 
 		"instanceWithoutIncidents": "Екземпляр без інцидентів",
 		"instanceFinished": "Завершений екземпляр",
 		"name": "Ім’я",
@@ -285,6 +290,11 @@
 			"enterValue": "Введіть значення"
 		},
 		"incidents": {
+			"activityIdBadge": {
+				"remove": "Видалити критерій — показати всі інциденти",
+				"title": "{activityId} (помилкова активність)",
+				"tooltip": "Показати лише інциденти, створені через помилку активності \"{activityId}\"."
+			},
 			"state": "Стан",
 			"processInstance": "Екземпляр процесу",
 			"deleted": "Видалено",
@@ -295,6 +305,7 @@
 			"timestamp": "Дата",
 			"activity": "Активність",
 			"failedActivity": "Помилкова активність",
+			"executionId": "ID виконання",
 			"incidentType": "Тип інциденту",
 			"retryJob": "Збільшити кількість спроб повторення при збої",
 			"annotation": "Анотація",
@@ -574,6 +585,24 @@
 			},
 			"preferences": {
 				"title": "Налаштування",
+				"general": {
+					"title": "Загальні налаштування",
+					"startPage": {
+						"label": "Сторінка за замовчуванням після входу",
+						"description": "Виберіть сторінку, яка буде показана після входу.",
+						"goTo": "Перейти до {page}",
+						"options": {
+							"home": "Головна",
+							"groupTasklist": "Список завдань",
+							"startProcess": "Запуск процесу",
+							"tasks": "Завдання",
+							"groupCockpit": "Cockpit",
+							"processesDashboard": "Панель процесів",
+							"decisionsList": "Список рішень",
+							"humanTasksDashboard": "Панель користувацьких завдань"
+						}
+					}
+				},
 				"dates": {
 					"title": "Формати дати та часу",
 					"formatDefault": "Формат",

@@ -40,9 +40,20 @@ export default {
     }
   },
   actions: {
-    async loadIncidents({ commit }, params) {
+    async loadRuntimeIncidents({ commit, state }, params) {
+      const response = await IncidentService.findIncidents(params)
+      commit('setIncidents', [
+        ...state.incidents,
+        ...response || []
+      ])
+      return response
+    },
+    async loadHistoryIncidents({ commit, state }, params) {
       const response = await IncidentService.fetchHistoricIncidents(params)
-      commit('setIncidents', response)
+      commit('setIncidents', [
+        ...state.incidents,
+        ...response || []
+      ])
       return response
     },
     setIncidents({ commit }, incidents) {

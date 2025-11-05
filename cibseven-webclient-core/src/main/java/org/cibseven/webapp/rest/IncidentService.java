@@ -73,6 +73,15 @@ public class IncidentService extends BaseService implements InitializingBean {
 		return sevenProvider.countIncident(params, user);
 	}
 
+	@Operation(summary = "Get number of historic incidents", description = "<strong>Return: Number of incidents")
+	@ApiResponse(responseCode = "404", description = "Incident not found")
+	@RequestMapping(value = "/history/count", method = RequestMethod.GET)
+	public Long countHistoricIncident(@RequestParam Map<String, Object> params, HttpServletRequest rq) {
+		CIBUser user = checkAuthorization(rq, true);
+		checkPermission(user, SevenResourceType.HISTORIC_PROCESS_INSTANCE, PermissionConstants.READ_ALL);
+		return sevenProvider.countHistoricIncident(params, user);
+	}
+
 	@Operation(summary = "Get incident/s", description = "<strong>Return: Collection of incident/s")
 	@ApiResponse(responseCode = "404", description = "Incident not found")
 	@RequestMapping(method = RequestMethod.GET)

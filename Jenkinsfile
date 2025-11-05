@@ -15,6 +15,7 @@ import groovy.transform.Field
 @Field Map pipelineParams = [
     pom: ConstantsInternal.DEFAULT_MAVEN_POM_PATH,
     mvnContainerName: Constants.MAVEN_JDK_17_CONTAINER,
+	office365WebhookId: Constants.OFFICE_365_CIBSEVEN_WEBHOOK_ID,
     uiParamPresets: [:],
     testMode: false,
     buildPodConfig: [
@@ -172,7 +173,8 @@ pipeline {
                         )
 
                         // This archives the whole HTML coverage report so you can download or view it from Jenkins
-                        archiveArtifacts artifacts: 'frontend/coverage/lcov-report/**', allowEmptyArchive: false
+                        // This archives the Vitest test reports so you can download or view them from Jenkins
+                        archiveArtifacts artifacts: 'frontend/coverage/lcov-report/**, frontend/target/vitest-reports/**, cibseven-webclient-core/target/failsafe-reports/**', allowEmptyArchive: false, fingerprint: true
                     }
                 }
             }
@@ -413,6 +415,28 @@ pipeline {
                         message: "Application was successfully released with version ${mavenProjectInformation.version}"
                     )
                 }
+				
+				if (params.RELEASE_COMMON_COMPONENTS) {
+					notifyResult(
+                        office365WebhookId: pipelineParams.office365WebhookId,
+                        message: "✅ cib-common-components was successfully released to artifacts.cibseven.org with version ${mavenProjectInformation.version}"
+                    )
+				}
+
+				if (params.RELEASE_BPM_SDK) {
+					notifyResult(
+                        office365WebhookId: pipelineParams.office365WebhookId,
+                        message: "✅ bpm-sdk was successfully released to artifacts.cibseven.org with version ${mavenProjectInformation.version}"
+                    )
+				}
+
+				if (params.RELEASE_CIBSEVEN_COMPONENTS) {
+					notifyResult(
+                        office365WebhookId: pipelineParams.office365WebhookId,
+                        message: "✅ cibseven-components was successfully released to artifacts.cibseven.org with version ${mavenProjectInformation.version}"
+                    )
+				}
+				
             }
         }
 
@@ -425,10 +449,10 @@ pipeline {
         failure {
             script {
                 log.warning '❌ Build failed'
-                if (env.BRANCH_NAME == 'master') {
+                if (env.BRANCH_NAME == 'main') {
                     notifyResult(
                         office365WebhookId: pipelineParams.office365WebhookId,
-                        message: "Access build info at ${env.BUILD_URL}"
+                        message: "❌ Build failed on main branch. Access build info at ${env.BUILD_URL}"
                     )
                 }
             }
@@ -437,10 +461,10 @@ pipeline {
         fixed {
             script {
                 log.info '✅ Previous issues fixed'
-                if (env.BRANCH_NAME == 'master') {
+                if (env.BRANCH_NAME == 'main') {
                     notifyResult(
                         office365WebhookId: pipelineParams.office365WebhookId,
-                        message: "Access build info at ${env.BUILD_URL}"
+                        message: "✅ Previous issues on main branch fixed. Access build info at ${env.BUILD_URL}"
                     )
                 }
             }

@@ -14,10 +14,14 @@
 			"disabled": "Letztes Update: {date}\n\nAutomatische Updates sind deaktiviert.\nDrücken Sie F5, um die Daten neu zu laden.",
 			"enabled": "Letztes Update: {date}\n\nAutomatische Updates sind aktiviert.\nAktualisierung alle {seconds} Sekunden."
 		},
+		"notAvailable": {
+			"label": "N/A",
+			"tooltip": "Nicht verfügbar"
+		},
 		"remove": "Entfernen"
 	},
 	"login": {
-		"productName": "CIB seven",
+		"productName": "@:cib-header.productName",
 		"productSlogan": "Prozess Management Plattform",
 		"username": "Benutzername",
 		"password": "Passwort",
@@ -69,6 +73,7 @@
 	"process": {
 		"instanceRunning": "Instanz läuft",
 		"instanceIncidents": "Instanz mit Vorfällen",
+		"instanceSuspended": "Instanz angehalten",
 		"instanceWithoutIncidents": "Instanz ohne Vorfälle",
 		"instanceFinished": "Instanz abgeschlossen",
 		"name": "Name",
@@ -285,6 +290,11 @@
 			"enterValue": "Wert eingeben"
 		},
 		"incidents": {
+			"activityIdBadge": {
+				"remove": "Kriterium entfernen – um alle Vorfälle aufzulisten",
+				"title": "{activityId} (fehlgeschlagene Aktivität)",
+				"tooltip": "Nur Vorfälle auflisten, die durch das Scheitern der Aktivität \"{activityId}\" verursacht wurden."
+			},
 			"state": "Status",
 			"processInstance": "Prozessinstanz",
 			"deleted": "Gelöscht",
@@ -295,6 +305,7 @@
 			"timestamp": "Zeitstempel",
 			"activity": "Aktivität",
 			"failedActivity": "Fehlgeschlagene Aktivität",
+			"executionId": "Ausführungs-ID",
 			"incidentType": "Vorfallstyp",
 			"retryJob": "Anzahl der Wiederholungsversuche eines fehlgeschlagenen Jobs erhöhen",
 			"annotation": "Anmerkung",
@@ -574,6 +585,24 @@
 		},
 		"preferences": {
 			"title": "Einstellungen",
+			"general": {
+				"title": "Allgemeine Einstellungen",
+				"startPage": {
+					"label": "Standard-Startseite",
+					"description": "Wählen Sie die Seite aus, die nach dem Login angezeigt wird.",
+					"goTo": "Gehe zu {page}",
+					"options": {
+						"home": "Startseite",
+						"groupTasklist": "Aufgabenliste",
+						"startProcess": "Prozess starten",
+						"tasks": "Aufgaben",
+						"groupCockpit": "Cockpit",
+						"processesDashboard": "Prozess-Dashboard",
+						"decisionsList": "Entscheidungen",
+						"humanTasksDashboard": "Benutzeraufgaben-Dashboard"
+					}
+				}
+			},
 			"dates": {
 				"title": "Datums- und Zeitformate",
 				"formatDefault": "Format",

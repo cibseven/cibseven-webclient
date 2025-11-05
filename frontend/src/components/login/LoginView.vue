@@ -53,13 +53,23 @@ export default {
       }
     }
   },
+  mounted: function() {
+    // if already logged in, redirect to start page
+    if (this.$root.user) {
+      this.$router.replace({ name: 'start-configurable' })
+    }
+  },
   methods: {
     onSuccess: function(user) {
       this.AuthService.fetchAuths().then(permissions => {
-      user.permissions = permissions
-      this.$root.user = user
-      this.$route.query.nextUrl ? this.$router.push(this.$route.query.nextUrl) :
-      this.$router.push('/seven/auth/start')
+        user.permissions = permissions
+        this.$root.user = user
+        if (this.$route.query.nextUrl) {
+          this.$router.replace(this.$route.query.nextUrl)
+        }
+        else {
+          this.$router.replace({ name: 'start-configurable' })
+        }
       })
     },
     onForgotten: function() {
