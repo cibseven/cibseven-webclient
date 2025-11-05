@@ -1,0 +1,115 @@
+/*
+ * Copyright CIB software GmbH and/or licensed to CIB software GmbH
+ * under one or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information regarding copyright
+ * ownership. CIB software licenses this file to you under the Apache License,
+ * Version 2.0; you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+// CIB Seven Bootstrap Variable Overrides
+// This file contains all Bootstrap SCSS variable overrides
+// See: https://github.com/twbs/bootstrap/blob/v5.3.3/scss/_variables.scss
+
+// Color System
+$primary: #E11E19;
+$secondary: #4D6278;
+$success: #68CBC0;
+$info: #628EC7;
+$warning: #F5B677;
+$danger: #F0716F;
+$light: #F0F4F7;
+$dark: #0F2133;
+
+// Gray colors
+$gray-100: #F5F8FA;
+$gray-200: #F0F4F7;
+$gray-300: #E9F0F7;
+$gray-400: #DFE7F0;
+$gray-500: #CCD7E4;
+$gray-600: #C1CEDD;
+$gray-700: #98A9B7;
+$gray-800: #4D6278;
+$gray-900: #0F2133;
+
+// Additional custom colors
+$gray: #c1cedd;
+
+// Typography - Customize font sizes to match CIB design
+$font-size-base: 0.875rem; // 14px instead of Bootstrap's default 1rem (16px)
+
+// Heading sizes - Custom sizes for CIB
+$h1-font-size: 2.25rem;
+$h2-font-size: 1.875rem;
+$h3-font-size: 1.5rem;
+$h4-font-size: 1.25rem;
+$h5-font-size: 1rem;
+$h6-font-size: 0.875rem;
+
+// Headings
+$headings-margin-bottom: 0.5rem;
+$headings-font-weight: 500;
+$headings-line-height: 1.2;
+
+// Body
+$body-color: #0F2133;
+$body-bg: #fff;
+
+// Links
+$link-color: #0F2133;
+$link-hover-color: #4D6278;
+$link-decoration: underline;
+
+// Borders
+$border-width: 1px;
+$border-style: solid;
+$border-color: #CCD7E4;
+$border-radius: 0.25rem;
+$border-radius-sm: 0.25rem;
+$border-radius-lg: 0.5rem;
+$border-radius-xl: 1rem;
+$border-radius-xxl: 2rem;
+$border-radius-pill: 50rem;
+
+// Secondary/Tertiary backgrounds
+$secondary-bg: #F0F4F7;
+$tertiary-bg: #F5F8FA;
+
+// Buttons
+$btn-font-weight: 500;
+$btn-disabled-opacity: 0.2; // Custom: much lower than Bootstrap's default 0.65
+$btn-light-border-color: $gray-600; // Custom: btn-light uses gray-600 for border instead of light color
+
+// Forms
+$form-select-indicator-color: $secondary; // Custom: dropdown arrow uses secondary color (#4D6278)
+$input-border-color: $gray-700; // Custom: #98A9B7 instead of Bootstrap's default
+$input-focus-border-color: $dark; // Custom: #0F2133 dark color on focus
+$input-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.075); // Inset shadow for inputs (--bs-box-shadow-inset)
+$input-focus-box-shadow: $input-box-shadow, none; // Keep inset shadow on focus, no outer focus ring
+$input-placeholder-color: #96A0A5; // Custom placeholder color
+$input-disabled-bg: #DDE0E1; // Custom disabled background
+$form-select-border-color: $gray-700; // Custom: #98A9B7
+$form-select-focus-border-color: $dark; // Custom: #0F2133
+$form-select-box-shadow: none; // Custom: no box shadow
+$form-select-focus-box-shadow: none, 0 0 0 0.25rem rgba($primary, 0.25); // Custom: no inset shadow, only focus ring
+
+// Alerts
+$alert-border-radius: 1rem; // Custom: very rounded corners instead of Bootstrap's 0.375rem
+$alert-border-width: 0.1rem; // Custom: thinner border than default 1px
+
+// Spacing
+// $spacer: 1rem;
+
+// Border radius
+// $border-radius: 0.25rem;
+// $border-radius-sm: 0.2rem;
+
+// Add any other Bootstrap variable overrides here

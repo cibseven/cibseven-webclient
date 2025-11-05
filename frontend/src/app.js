@@ -15,10 +15,12 @@
  *  limitations under the License.
  */
 import '@mdi/font/css/materialdesignicons.css'
-import './assets/main.css'
+import './styles/main.scss' // Bootstrap with custom variables
+import './assets/main.css'  // Application-specific styles
 import { axios } from './globals.js'
 
-import 'bootstrap'
+// Bootstrap JS is imported by Bootstrap SCSS, but you can import specific components if needed
+// import 'bootstrap'
 
 import { createApp } from 'vue'
 

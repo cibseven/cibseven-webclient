@@ -56,6 +56,15 @@ export default defineConfig({
       vue: 'vue/dist/vue.esm-bundler.js',
     },
   },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        // Suppress deprecation warnings from Bootstrap
+        quietDeps: true,
+        silenceDeprecations: ['legacy-js-api', 'import', 'global-builtin']
+      }
+    }
+  },
   server: {
     proxy: {
       '/info': {

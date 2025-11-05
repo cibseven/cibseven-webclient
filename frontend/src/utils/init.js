@@ -128,7 +128,7 @@ export function applyTheme(theme) {
   var css = document.createElement('Link')
   css.setAttribute('rel', 'stylesheet')
   css.setAttribute('type', 'text/css')
-  css.setAttribute('href', 'themes/' + theme + '/styles.css')
+  // css.setAttribute('href', 'themes/' + theme + '/styles.css')
 
   var favicon = document.createElement('Link')
   favicon.setAttribute('rel', 'icon')
