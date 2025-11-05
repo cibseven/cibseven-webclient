@@ -183,11 +183,10 @@ CamundaForm.prototype.initialize = function(done) {
 
   // check whether form needs to be loaded first
   if (this.formUrl) {
+    // Note: Do not pass authorization headers here as formUrl can point to external/third-party URLs.
+    // Only engine REST API calls should include authorization headers.
     this.client.http.load(this.formUrl, {
-      headers: {
-        ...this.client.http.config.headers,
-        'Accept': '*/*'
-      },
+      accept: '*/*',
       done: function(err, result) {
         if (err) {
           return done(err);
