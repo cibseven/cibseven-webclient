@@ -140,18 +140,12 @@ public class DeploymentProvider extends SevenProviderBase implements IDeployment
 	}
 
 	@Override
-	public Data fetchDataFromDeploymentResource(HttpServletRequest rq, String deploymentId, String resourceId, String fileName) {
+	public Data fetchDataFromDeploymentResource(HttpServletRequest rq, String deploymentId, String resourceId, String fileName, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/deployment/" + deploymentId + "/resources/" + resourceId + "/data";
 		try {
-			// Create a CIBUser-like object with just the authorization token
-			CIBUser tempUser = null;
-			if (rq.getHeader("authorization") != null) {
-				tempUser = new CIBUser();
-				tempUser.setAuthToken(rq.getHeader("authorization"));
-			}
 
 			// Use doGetWithHeader with MediaType.APPLICATION_OCTET_STREAM
-			ResponseEntity<byte[]> response = doGetWithHeader(url, byte[].class, tempUser, true, MediaType.APPLICATION_OCTET_STREAM);
+			ResponseEntity<byte[]> response = doGetWithHeader(url, byte[].class, user, true, MediaType.APPLICATION_OCTET_STREAM);
 
 			InputStream targetStream = new ByteArrayInputStream(response.getBody());
 			InputStreamSource iso = new InputStreamResource(targetStream);
@@ -166,7 +160,7 @@ public class DeploymentProvider extends SevenProviderBase implements IDeployment
 			return returnValue;
 
 		} catch (HttpStatusCodeException e) {
-			throw wrapException(e, null);
+			throw wrapException(e, user);
 		}
 	}
 

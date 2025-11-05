@@ -469,8 +469,8 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 
 	@Override
-	public Data fetchDataFromDeploymentResource(HttpServletRequest rq, String deploymentId, String resourceId, String fileName) {
-		return deploymentProvider.fetchDataFromDeploymentResource(rq, deploymentId, resourceId, fileName);
+	public Data fetchDataFromDeploymentResource(HttpServletRequest rq, String deploymentId, String resourceId, String fileName, CIBUser user) {
+		return deploymentProvider.fetchDataFromDeploymentResource(rq, deploymentId, resourceId, fileName, user);
 	}
 	
 	@Override

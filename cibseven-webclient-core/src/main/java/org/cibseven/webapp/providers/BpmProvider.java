@@ -646,10 +646,11 @@ public interface BpmProvider {
 	 * @param deploymentId the ID of the deployment.
 	 * @param resourceId the ID of the resource.
 	 * @param fileName the name of the file.
+	 * @param user the authenticated user.
 	 * @return resource data.
      * @throws SystemException in case of any other error.
 	 */
-	Data fetchDataFromDeploymentResource(HttpServletRequest rq, String deploymentId, String resourceId, String fileName) throws SystemException;
+	Data fetchDataFromDeploymentResource(HttpServletRequest rq, String deploymentId, String resourceId, String fileName, CIBUser user) throws SystemException;
 
 	/**
 	 * Delete deployment by an Id.

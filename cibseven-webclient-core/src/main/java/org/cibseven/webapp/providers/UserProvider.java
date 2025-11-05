@@ -138,18 +138,18 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 			Optional<String> idIn, Optional<String> firstResult, Optional<String> maxResults, Optional<String> sortBy, Optional<String> sortOrder, CIBUser user) {
 		
 		if (!userProvider.equals("org.cibseven.webapp.auth.SevenUserProvider")) {
-			String url = createFindUserCaseInsensitiveUrl(id, firstName, firstNameLike, lastName, lastNameLike, email, emailLike, memberOfGroup, memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder); 
+			String url = createFindUserCaseInsensitiveUrl(id, firstName, firstNameLike, lastName, lastNameLike, email, emailLike, memberOfGroup, memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder, user); 
 			return Arrays.asList(((ResponseEntity<User[]>) doGet(url, User[].class, user, true)).getBody());
 		}
 
 		// WORKAROUND for case insensitive search in case of SevenUserProvider (TODO should be moved to CIB seven)
 		if (firstNameLike.isPresent()) { // javier, JAVIER, Javier
 			String lowerCaseUrl = createFindUserCaseInsensitiveUrl(id, firstName, Optional.of(firstNameLike.get().toLowerCase()), lastName, lastNameLike, email, emailLike, memberOfGroup, 
-					memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder);
+					memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder, user);
 			String upperCaseUrl = createFindUserCaseInsensitiveUrl(id, firstName, Optional.of(firstNameLike.get().toUpperCase()), lastName, lastNameLike, email, emailLike, memberOfGroup, 
-					memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder);
+					memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder, user);
 			String normalCaseUrl = createFindUserCaseInsensitiveUrl(id, firstName, Optional.of(firstNameLike.get().substring(0, 2).toUpperCase() + firstNameLike.get().substring(2).toLowerCase()), 
-					lastName, lastNameLike, email, emailLike, memberOfGroup, memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder);
+					lastName, lastNameLike, email, emailLike, memberOfGroup, memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder, user);
 			
 	        Collection<User> lowerCaseResult = Arrays.asList(((ResponseEntity<User[]>) doGet(lowerCaseUrl, User[].class, user, true)).getBody());
 	        Collection<User> upperCaseResult = Arrays.asList(((ResponseEntity<User[]>) doGet(upperCaseUrl, User[].class, user, true)).getBody());
@@ -165,11 +165,11 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 		
 		if (lastNameLike.isPresent()) { // medina, MEDINA, Medina
 			String lowerCaseUrl = createFindUserCaseInsensitiveUrl(id, firstName, firstNameLike, lastName, Optional.of(lastNameLike.get().toLowerCase()), email, emailLike, memberOfGroup, 
-					memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder);
+					memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder, user);
 			String upperCaseUrl = createFindUserCaseInsensitiveUrl(id, firstName, firstNameLike, lastName, Optional.of(lastNameLike.get().toUpperCase()), email, emailLike, memberOfGroup, 
-					memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder);
+					memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder, user);
 			String normalCaseUrl = createFindUserCaseInsensitiveUrl(id, firstName, firstNameLike, lastName, Optional.of(lastNameLike.get().substring(0, 2).toUpperCase() + lastNameLike.get().substring(2).toLowerCase()), 
-					email, emailLike, memberOfGroup, memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder);
+					email, emailLike, memberOfGroup, memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder, user);
 			
 	        Collection<User> lowerCaseResult = Arrays.asList(((ResponseEntity<User[]>) doGet(lowerCaseUrl, User[].class, user, true)).getBody());
 	        Collection<User> upperCaseResult = Arrays.asList(((ResponseEntity<User[]>) doGet(upperCaseUrl, User[].class, user, true)).getBody());
@@ -183,13 +183,13 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 	        return res;
 		}
 		
-		String url = createFindUserCaseInsensitiveUrl(id, firstName, firstNameLike, lastName, lastNameLike, email, emailLike, memberOfGroup, memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder); 
+		String url = createFindUserCaseInsensitiveUrl(id, firstName, firstNameLike, lastName, lastNameLike, email, emailLike, memberOfGroup, memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder, user); 
 		return Arrays.asList(((ResponseEntity<User[]>) doGet(url, User[].class, user, true)).getBody());
 	}
 	
 	private String createFindUserCaseInsensitiveUrl(Optional<String> id, Optional<String> firstName, Optional<String> firstNameLike, Optional<String> lastName, 
 			Optional<String> lastNameLike, Optional<String> email, Optional<String> emailLike, Optional<String> memberOfGroup, Optional<String> memberOfTenant,
-			Optional<String> idIn, Optional<String> firstResult, Optional<String> maxResults, Optional<String> sortBy, Optional<String> sortOrder) {
+			Optional<String> idIn, Optional<String> firstResult, Optional<String> maxResults, Optional<String> sortBy, Optional<String> sortOrder, CIBUser user) {
 		
 		String url = getEngineRestUrl(user) + "/user";
 		
@@ -248,7 +248,7 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 	
 	@Override
 	public void createUser(NewUser user, CIBUser flowUser) throws InvalidUserIdException {
-		String url = getEngineRestUrl(user) + "/user/create";
+		String url = getEngineRestUrl(flowUser) + "/user/create";
 
 		try {
 			//	A JSON object with the following properties:
@@ -274,7 +274,7 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 	@Override
 	public void updateUserProfile(String userId, User user, CIBUser flowUser) 
 	{
-		String url = getEngineRestUrl(user) + "/user/" + userId + "/profile";
+		String url = getEngineRestUrl(flowUser) + "/user/" + userId + "/profile";
 
 		try 
 		{
