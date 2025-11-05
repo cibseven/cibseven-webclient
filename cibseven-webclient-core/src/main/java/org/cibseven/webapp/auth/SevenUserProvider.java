@@ -68,12 +68,10 @@ public class SevenUserProvider extends BaseUserProvider<StandardLogin> {
 	public CIBUser login(StandardLogin login, HttpServletRequest rq) {	
 		try {
 			CIBUser user =  new CIBUser(login.getUsername());
+			setEngineFromRequest(user, rq);
 			SevenVerifyUser sevenVerifyUser = sevenProvider.verifyUser(user.getId(), login.getPassword(), user);
 			
 			if (sevenVerifyUser.isAuthenticated()) {
-			  // Set engine from request header
-			  setEngineFromRequest(user, rq);
-			  
 			  // Token is needed for the next request (/user/xxx/profile)
 			  user.setAuthToken(createToken(getSettings(), true, false, user));
 				SevenUser cUser = sevenProvider.getUserProfile(user.getId(), user);
