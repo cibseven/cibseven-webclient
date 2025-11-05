@@ -17,7 +17,7 @@
 
 -->
 <template>
-  <div class="bg-white container-fluid g-0 h-100">
+  <div class="bg-white container-fluid overflow-y-scroll g-0 h-100">
     <PagedScrollableContent
       :loading="loading"
       :loaded-count="incidents.length"
@@ -258,14 +258,11 @@ export default {
       switch (this.$root.config.camundaHistoryLevel) {
         case 'none':
         case 'activity':
+        case 'audit':
           return false // always runtime view
         case 'full':
-        case 'audit':
         default:
-          if (this.isInstanceView) {
-            return this.instance?.state !== 'ACTIVE' // historic view for non-active instances
-          }
-          return true // history view for definition incidents
+          return true // always history view
       }
     },
     visibleColumns() {
