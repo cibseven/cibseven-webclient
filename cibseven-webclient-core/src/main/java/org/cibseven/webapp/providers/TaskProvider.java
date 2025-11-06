@@ -52,8 +52,7 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 
 	@Autowired private IVariableProvider variableProvider;
 
-	@Autowired
-	private ObjectMapper objectMapper = new ObjectMapper();
+	private final ObjectMapper objectMapper = new ObjectMapper();
 
 	@Override
 	public Collection<Task> findTasks(String filter, CIBUser user) {
