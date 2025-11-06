@@ -41,6 +41,7 @@ import org.cibseven.webapp.rest.model.Batch;
 import org.cibseven.webapp.rest.model.CandidateGroupTaskCount;
 import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.DeploymentResource;
+import org.cibseven.webapp.rest.model.Engine;
 import org.cibseven.webapp.rest.model.EventSubscription;
 import org.cibseven.webapp.rest.model.ExternalTask;
 import org.cibseven.webapp.rest.model.Filter;
@@ -645,10 +646,11 @@ public interface BpmProvider {
 	 * @param deploymentId the ID of the deployment.
 	 * @param resourceId the ID of the resource.
 	 * @param fileName the name of the file.
+	 * @param user the authenticated user.
 	 * @return resource data.
      * @throws SystemException in case of any other error.
 	 */
-	Data fetchDataFromDeploymentResource(HttpServletRequest rq, String deploymentId, String resourceId, String fileName) throws SystemException;
+	Data fetchDataFromDeploymentResource(HttpServletRequest rq, String deploymentId, String resourceId, String fileName, CIBUser user) throws SystemException;
 
 	/**
 	 * Delete deployment by an Id.
@@ -1133,9 +1135,9 @@ public interface BpmProvider {
 	Long getHistoricBatchCount(Map<String, Object> queryParams, CIBUser user);
 	HistoryBatch getHistoricBatchById(String id, CIBUser user);
 	void deleteHistoricBatch(String id, CIBUser user);
-	Object setRemovalTime(Map<String, Object> payload);
-	Object getCleanableBatchReport(Map<String, Object> queryParams);
-	Object getCleanableBatchReportCount();
+	Object setRemovalTime(Map<String, Object> payload, CIBUser user);
+	Object getCleanableBatchReport(Map<String, Object> queryParams, CIBUser user);
+	Object getCleanableBatchReportCount(CIBUser user);
 
 	JsonNode getTelemetryData(CIBUser user);
 	Collection<Metric> getMetrics(Map<String, Object> queryParams, CIBUser user);
@@ -1193,5 +1195,13 @@ public interface BpmProvider {
 	 * @throws SystemException in case of an error
 	 */
 	Object fetchHistoricActivityStatistics(String id, Map<String, Object> params, CIBUser user);
+
+	/**
+	 * Get the names of all process engines available on the engine.
+	 *
+	 * @return a collection of engine objects containing name information
+	 * @throws SystemException in case of an error
+	 */
+	Collection<Engine> getProcessEngineNames();
 
 }

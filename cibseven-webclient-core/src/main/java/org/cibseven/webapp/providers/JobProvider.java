@@ -33,25 +33,25 @@ public class JobProvider extends SevenProviderBase implements IJobProvider {
 
 	@Override
 	public Collection<Job> getJobs(Map<String, Object> params, CIBUser user) {
-		String url = getEngineRestUrl() + "/job";
+		String url = getEngineRestUrl(user) + "/job";
 		return Arrays.asList(((ResponseEntity<Job[]>) doPost(url, params, Job[].class, user)).getBody());
 	}
 
 	@Override
 	public void setSuspended(String id, Map<String, Object> data, CIBUser user) {
-		String url = getEngineRestUrl() + "/job/" + id + "/suspended";
+		String url = getEngineRestUrl(user) + "/job/" + id + "/suspended";
 		doPut(url, data, user);
 	}
 
 	@Override
 	public void deleteJob(String id, CIBUser user) {
-		String url = getEngineRestUrl() + "/job/" + id;
+		String url = getEngineRestUrl(user) + "/job/" + id;
 		doDelete(url, user);
 	}
 
 	@Override
 	public Collection<Object> getHistoryJobLog(Map<String, Object> params, CIBUser user) {
-		String url = URLUtils.buildUrlWithParams("/history/job-log", params);
+		String url = URLUtils.buildUrlWithParams(getEngineRestUrl(user) + "/history/job-log", params);
 		Collection<Object> jobLogs = Arrays.asList(
 	        ((ResponseEntity<Object[]>) doGet(url, Object[].class, user, true)).getBody()
 	    );
@@ -60,19 +60,19 @@ public class JobProvider extends SevenProviderBase implements IJobProvider {
 	
 	@Override
 	public String getHistoryJobLogStacktrace(String id, CIBUser user) {
-		String url = URLUtils.buildUrlWithParams("/history/job-log/" + id + "/stacktrace", new HashMap<>());
+		String url = URLUtils.buildUrlWithParams(getEngineRestUrl(user) + "/history/job-log/" + id + "/stacktrace", new HashMap<>());
 		return doGetWithHeader(url, String.class, user, true, MediaType.ALL).getBody();
 	}
 
 	@Override
 	public void changeDueDate(String id, Map<String, Object> data, CIBUser user) {
-		String url = getEngineRestUrl() + "/job/" + id + "/duedate";
+		String url = getEngineRestUrl(user) + "/job/" + id + "/duedate";
 		doPut(url, data, user);
 	}
 
 	@Override
 	public void recalculateDueDate(String id, Map<String, Object> params, CIBUser user) {
-		String url = URLUtils.buildUrlWithParams("/job/" + id + "/duedate/recalculate", params);
+		String url = URLUtils.buildUrlWithParams(getEngineRestUrl(user) + "/job/" + id + "/duedate/recalculate", params);
 		doPost(url, new HashMap<>(), Object.class, user);
 	}
 }

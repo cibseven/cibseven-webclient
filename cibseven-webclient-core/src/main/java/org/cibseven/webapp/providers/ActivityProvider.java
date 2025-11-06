@@ -35,37 +35,37 @@ public class ActivityProvider extends SevenProviderBase implements IActivityProv
 
 	@Override
 	public ActivityInstance findActivityInstance(String processInstanceId, CIBUser user) {
-		String url = getEngineRestUrl() + "/process-instance/" + processInstanceId + "/activity-instances";
+		String url = getEngineRestUrl(user) + "/process-instance/" + processInstanceId + "/activity-instances";
 		return ((ResponseEntity<ActivityInstance>) doGet(url, ActivityInstance.class, user, false)).getBody();		
 	}
 
 	@Override
 	public List<ActivityInstanceHistory> findActivitiesInstancesHistory(Map<String, Object> queryParams, CIBUser user) {
-		String url = URLUtils.buildUrlWithParams(getEngineRestUrl() + "/history/activity-instance", queryParams);
+		String url = URLUtils.buildUrlWithParams(getEngineRestUrl(user) + "/history/activity-instance", queryParams);
 		return Arrays.asList(((ResponseEntity<ActivityInstanceHistory[]>) doGet(url, ActivityInstanceHistory[].class, user, true)).getBody());	
 	}
 
 	@Override
 	public List<ActivityInstanceHistory> findActivitiesInstancesHistory(String processInstanceId, CIBUser user) {
-		String url = getEngineRestUrl() + "/history/activity-instance?processInstanceId=" + processInstanceId;
+		String url = getEngineRestUrl(user) + "/history/activity-instance?processInstanceId=" + processInstanceId;
 		return Arrays.asList(((ResponseEntity<ActivityInstanceHistory[]>) doGet(url, ActivityInstanceHistory[].class, user, false)).getBody());	
 	}
 	
 	@Override
 	public List<ActivityInstanceHistory> findActivityInstanceHistory(String processInstanceId, CIBUser user) throws SystemException {
-		String url = getEngineRestUrl() + "/history/activity-instance?processInstanceId=" + processInstanceId;
+		String url = getEngineRestUrl(user) + "/history/activity-instance?processInstanceId=" + processInstanceId;
 		return Arrays.asList(doGet(url, ActivityInstanceHistory[].class, user, false).getBody());
 	}
 	
 	@Override
 	public ActivityInstance findActivityInstances(String processInstanceId, CIBUser user) throws SystemException {
-		String url = getEngineRestUrl() + "/process-instance/" + processInstanceId + "/activity-instances";
+		String url = getEngineRestUrl(user) + "/process-instance/" + processInstanceId + "/activity-instances";
 		return doGet(url, ActivityInstance.class, user, false).getBody();
 	}
 	
 	@Override
 	public void deleteVariableByExecutionId(String executionId, String variableName, CIBUser user) {
-		String url = getEngineRestUrl() + "/execution/" + executionId + "/localVariables/" + variableName;
+		String url = getEngineRestUrl(user) + "/execution/" + executionId + "/localVariables/" + variableName;
 		try {
 			doDelete(url, user);
 		} catch (HttpStatusCodeException e) {
@@ -75,13 +75,13 @@ public class ActivityProvider extends SevenProviderBase implements IActivityProv
 
 	@Override
 	public void deleteVariableHistoryInstance(String id, CIBUser user) {
-		String url = getEngineRestUrl() + "/history/variable-instance/" + id;
+		String url = getEngineRestUrl(user) + "/history/variable-instance/" + id;
 		doDelete(url, user);
 	}
 
 	@Override
 	public Collection<ActivityInstanceHistory> findActivitiesProcessDefinitionHistory(String processDefinitionId, Map<String, Object> params, CIBUser user) {
-		String url = URLUtils.buildUrlWithParams(getEngineRestUrl() + "/history/activity-instance?processDefinitionId=" + processDefinitionId, params);
+		String url = URLUtils.buildUrlWithParams(getEngineRestUrl(user) + "/history/activity-instance?processDefinitionId=" + processDefinitionId, params);
 		return Arrays.asList(((ResponseEntity<ActivityInstanceHistory[]>) doGet(url, ActivityInstanceHistory[].class, user, true)).getBody());
 	}
 	

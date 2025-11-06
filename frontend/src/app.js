@@ -14,9 +14,9 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+import './assets/main.css'  // Application-specific styles
 import '@mdi/font/css/materialdesignicons.css'
 import './styles/main.scss' // Bootstrap with custom variables
-import './assets/main.css'  // Application-specific styles
 import { axios } from './globals.js'
 
 // Bootstrap JS is imported by Bootstrap SCSS, but you can import specific components if needed

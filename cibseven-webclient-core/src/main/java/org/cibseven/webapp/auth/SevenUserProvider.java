@@ -68,6 +68,7 @@ public class SevenUserProvider extends BaseUserProvider<StandardLogin> {
 	public CIBUser login(StandardLogin login, HttpServletRequest rq) {	
 		try {
 			CIBUser user =  new CIBUser(login.getUsername());
+			setEngineFromRequest(user, rq);
 			SevenVerifyUser sevenVerifyUser = sevenProvider.verifyUser(user.getId(), login.getPassword(), user);
 			
 			if (sevenVerifyUser.isAuthenticated()) {
@@ -102,11 +103,6 @@ public class SevenUserProvider extends BaseUserProvider<StandardLogin> {
 		else {
 			throw new AuthenticationException(userId);
 		}
-	}
-	
-	@Override
-	public Object authenticateUser(HttpServletRequest request) {
-		return authenticate(request);
 	}
 
 	@Override
@@ -155,6 +151,7 @@ public class SevenUserProvider extends BaseUserProvider<StandardLogin> {
 		try {
 			SecretKey key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(settings.getSecret()));
 			Claims claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
+			
 			User user = deserialize((String) claims.get("user"), JwtUserProvider.BEARER_PREFIX + token);
 			if ((boolean) claims.get("verify") && verify(claims) == null)
 				throw new AuthenticationException(token);
@@ -164,8 +161,9 @@ public class SevenUserProvider extends BaseUserProvider<StandardLogin> {
 			long ageMillis = System.currentTimeMillis() - x.getClaims().getExpiration().getTime();
 			if ((boolean) x.getClaims().get("prolongable") && (ageMillis < settings.getProlong().toMillis())) {
 				User user = verify(x.getClaims());
-				if (user != null)
-					throw new TokenExpiredException(createToken(settings, true, false, user));				
+				if (user != null) {
+					throw new TokenExpiredException(createToken(settings, true, false, user));
+				}
 			}
 			throw new TokenExpiredException();
 			

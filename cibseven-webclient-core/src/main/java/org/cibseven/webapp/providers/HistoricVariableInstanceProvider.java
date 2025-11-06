@@ -29,7 +29,7 @@ import org.springframework.stereotype.Component;
 public class HistoricVariableInstanceProvider extends SevenProviderBase implements IHistoricVariableInstanceProvider {
 
 	private VariableHistory getHistoricVariableInstanceImpl(String id, boolean deserializeValue, CIBUser user) throws SystemException, NoObjectFoundException {
-		String url = getEngineRestUrl() + "/history/variable-instance/" + id +
+		String url = getEngineRestUrl(user) + "/history/variable-instance/" + id +
 			"?deserializeValue=" + deserializeValue;
 		return doGet(url, VariableHistory.class, user, false).getBody();
 	}

@@ -572,6 +572,7 @@
 			"newPasswordRepeat": "Neues Passwort (wiederholen)",
 			"deleteUser": "Benutzer löschen",
 			"editUser": "Benutzer bearbeiten",
+			"viewUser": "Benutzer anzeigen",
 			"changePassword": "Passwort ändern",
 			"updateProfileMessage": "Benutzerprofil erfolgreich aktualisiert",
 			"updatePasswordMessage": "Passwort erfolgreich aktualisiert",
@@ -800,6 +801,7 @@
 	"cib-header": {
 		"productName": "CIB seven",
 		"languages": "Sprache",
+		"engine": "Engine",
 		"help": "Info & Hilfe",
 		"user": "Konto",
 		"logout": "Abmelden",

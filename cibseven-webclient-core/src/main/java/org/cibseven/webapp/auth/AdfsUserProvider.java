@@ -89,6 +89,10 @@ public class AdfsUserProvider extends BaseUserProvider<SSOLogin> {
 		SSOUser user = new SSOUser(userClaims.get(userIdProperty, String.class));
 		user.setDisplayName(userClaims.get(userNameProperty, String.class));
 		user.setRefreshToken(tokens.getRefresh_token());
+		
+		// Set engine from request header
+		setEngineFromRequest(user, rq);
+		
 		user.setAuthToken(createToken(getSettings(), true, false, user));
 		user.setRefreshToken(null);
 		return user;
@@ -140,11 +144,6 @@ public class AdfsUserProvider extends BaseUserProvider<SSOLogin> {
 
 	@Override
 	public void logout(User user) {	}
-
-	@Override
-	public Object authenticateUser(HttpServletRequest request) {
-		return authenticate(request);
-	}
 	
 	public User parse(String token, TokenSettings settings) {
 		try {

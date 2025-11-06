@@ -16,6 +16,7 @@
  */
 import { axios } from './globals.js'
 import { sha256 } from 'js-sha256'
+import { ENGINE_STORAGE_KEY } from '@/constants.js'
 
 axios.interceptors.response.use(function(res) { return res.data; }, handler)
 const BASE_URL = import.meta.env.BASE_URL
@@ -46,12 +47,14 @@ InfoService.getProperties().then(function(config) {
         ssoLogin(callbackState, redirectTo)
     } else {
         history.pushState('', document.title, location.pathname + location.search); //Delete hashParams
+        const engineName = localStorage.getItem(ENGINE_STORAGE_KEY) || 'default'
+        const headers = engineName ? { 'X-Process-Engine': engineName } : {}
         axios.post(config.servicesBasePath + '/auth/login', {
             type: 'org.cibseven.webapp.auth.sso.SSOLogin',
             code: ssoCallback.code,
             nonce: callbackState.nonce,
             redirectUrl: location.origin + location.pathname
-        }).then(function(user) {
+        }, { headers: headers }).then(function(user) {
             localStorage.setItem('token', user.authToken)
             sessionStorage.removeItem('callbackState')
             location.href = redirectTo

@@ -14,40 +14,13 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.cibseven.webapp.auth;
+package org.cibseven.webapp.providers;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.util.Collection;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import org.cibseven.webapp.rest.model.Engine;
 
-@NoArgsConstructor  @JsonIgnoreProperties(ignoreUnknown = true)
-public class CIBUser implements User {
+public interface IEngineProvider {
 	
-	@Getter @Setter String authToken;
-	@Getter @Setter protected String userID;
-	@Setter String displayName;
-	@Getter @Setter String engine;
-	
-	public CIBUser(String userId) {
-		this.userID = userId;
-	}
-
-	@Override
-	public String getId() {
-		return userID;
-	}
-
-	@Override
-	public String toString() {
-		return userID; 
-	}
-
-	@Override
-	public String getDisplayName() {
-		if((displayName != null)&&(!displayName.isEmpty())) return displayName;
-		else return userID;
-	}
-
+	public Collection<Engine> getProcessEngineNames();
 }

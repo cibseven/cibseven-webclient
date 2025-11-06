@@ -61,6 +61,7 @@ Group.options = function(options, done) {
   return this.http.options(this.path + '/' + utils.escapeUrl(id), {
     done: done || noop,
     headers: {
+      ...this.http.config.headers,
       Accept: 'application/json'
     }
   });

@@ -37,7 +37,7 @@ public interface IDeploymentProvider {
 	public Long countDeployments(CIBUser user, String nameLike);
 	public Collection<Deployment> findDeployments(CIBUser user, String nameLike, int firstResult, int maxResults, String sortBy, String sortOrder);
 	public Collection<DeploymentResource> findDeploymentResources(String deploymentId, CIBUser user);
-	public Data fetchDataFromDeploymentResource(HttpServletRequest rq, String deploymentId, String resourceId, String fileName);
+	public Data fetchDataFromDeploymentResource(HttpServletRequest rq, String deploymentId, String resourceId, String fileName, CIBUser user);
 	public void deleteDeployment(String deploymentId, Boolean cascade, CIBUser user) throws SystemException;
 	public Deployment findDeployment(String deploymentId, CIBUser user) throws SystemException;
 	

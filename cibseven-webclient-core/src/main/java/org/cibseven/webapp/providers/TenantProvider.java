@@ -38,19 +38,19 @@ public class TenantProvider extends SevenProviderBase implements ITenantProvider
 
 	@Override
 	public Collection<Tenant> fetchTenants(Map<String, Object> queryParams, CIBUser user) throws SystemException {
-		String url = URLUtils.buildUrlWithParams("/tenant", queryParams);
+		String url = URLUtils.buildUrlWithParams(getEngineRestUrl(user) + "/tenant", queryParams);
 		return Arrays.asList(((ResponseEntity<Tenant[]>) doGet(url, Tenant[].class, user, true)).getBody());	
 	}	
 
 	@Override
 	public Tenant fetchTenant(String tenantId, CIBUser user) throws SystemException {
-		String url = getEngineRestUrl() + "/tenant/" + tenantId;
+		String url = getEngineRestUrl(user) + "/tenant/" + tenantId;
 		return ((ResponseEntity<Tenant>) doGet(url, Tenant.class, user, false)).getBody();
 	}
 
 	@Override
 	public void createTenant(Tenant newTenant, CIBUser user) throws InvalidUserIdException {
-		String url = getEngineRestUrl() + "/tenant/create";
+		String url = getEngineRestUrl(user) + "/tenant/create";
 		try {
 			doPost(url, newTenant.json(), null, user);
 		} catch (JsonProcessingException e) {
@@ -62,13 +62,13 @@ public class TenantProvider extends SevenProviderBase implements ITenantProvider
 	
 	@Override
 	public void deleteTenant(String tenantId, CIBUser user) {
-		String url = getEngineRestUrl() + "/tenant/" + tenantId;
+		String url = getEngineRestUrl(user) + "/tenant/" + tenantId;
 		doDelete(url, user);
 	}
 
 	@Override
 	public void updateTenant(Tenant tenant, CIBUser user) {
-		String url = getEngineRestUrl() + "/tenant/" + tenant.getId();
+		String url = getEngineRestUrl(user) + "/tenant/" + tenant.getId();
 		try {		
 			doPut(url, tenant.json() , user);
 		} catch (JsonProcessingException e) {
@@ -80,25 +80,25 @@ public class TenantProvider extends SevenProviderBase implements ITenantProvider
 	
 	@Override
 	public void addMemberToTenant(String tenantId, String userId, CIBUser user) {
-		String url = getEngineRestUrl() + "/tenant/" + tenantId + "/user-members/" + userId;
+		String url = getEngineRestUrl(user) + "/tenant/" + tenantId + "/user-members/" + userId;
 		doPut(url, "", user);
 	}	
 	
 	@Override
 	public void deleteMemberFromTenant(String tenantId, String userId, CIBUser user) {
-		String url = getEngineRestUrl() + "/tenant/" + tenantId + "/user-members/" + userId;
+		String url = getEngineRestUrl(user) + "/tenant/" + tenantId + "/user-members/" + userId;
 		doDelete(url, user);
 	}
 
 	@Override
 	public void addGroupToTenant(String tenantId, String groupId, CIBUser user) {
-		String url = getEngineRestUrl() + "/tenant/" + tenantId + "/group-members/" + groupId;
+		String url = getEngineRestUrl(user) + "/tenant/" + tenantId + "/group-members/" + groupId;
 		doPut(url, "", user);
 	}	
 	
 	@Override
 	public void deleteGroupFromTenant(String tenantId, String groupId, CIBUser user) {
-		String url = getEngineRestUrl() + "/tenant/" + tenantId + "/group-members/" + groupId;
+		String url = getEngineRestUrl(user) + "/tenant/" + tenantId + "/group-members/" + groupId;
 		doDelete(url, user);
 	}
 
