@@ -39,6 +39,7 @@ import org.cibseven.webapp.rest.model.CandidateGroupTaskCount;
 import org.cibseven.webapp.rest.model.Decision;
 import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.DeploymentResource;
+import org.cibseven.webapp.rest.model.Engine;
 import org.cibseven.webapp.rest.model.EventSubscription;
 import org.cibseven.webapp.rest.model.ExternalTask;
 import org.cibseven.webapp.rest.model.Filter;
@@ -98,6 +99,7 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
     @Autowired private ISystemProvider systemProvider;
     @Autowired private ITenantProvider tenantProvider;
     @Autowired private IExternalTaskProvider externalTaskProvider;
+    @Autowired private IEngineProvider engineProvider;
     
     
     /*
@@ -467,8 +469,8 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 
 	@Override
-	public Data fetchDataFromDeploymentResource(HttpServletRequest rq, String deploymentId, String resourceId, String fileName) {
-		return deploymentProvider.fetchDataFromDeploymentResource(rq, deploymentId, resourceId, fileName);
+	public Data fetchDataFromDeploymentResource(HttpServletRequest rq, String deploymentId, String resourceId, String fileName, CIBUser user) {
+		return deploymentProvider.fetchDataFromDeploymentResource(rq, deploymentId, resourceId, fileName, user);
 	}
 	
 	@Override
@@ -1110,18 +1112,18 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
     }
 	
 	@Override
-	public Object setRemovalTime(Map<String, Object> payload) {
-		return batchProvider.setRemovalTime(payload);
+	public Object setRemovalTime(Map<String, Object> payload, CIBUser user) {
+		return batchProvider.setRemovalTime(payload, user);
     }
     
 	@Override
-	public Object getCleanableBatchReport(Map<String, Object> queryParams) {
-		return batchProvider.getCleanableBatchReport(queryParams);
+	public Object getCleanableBatchReport(Map<String, Object> queryParams, CIBUser user) {
+		return batchProvider.getCleanableBatchReport(queryParams, user);
     }
     
 	@Override
-	public Object getCleanableBatchReportCount() {
-		return batchProvider.getCleanableBatchReportCount();
+	public Object getCleanableBatchReportCount(CIBUser user) {
+		return batchProvider.getCleanableBatchReportCount(user);
     }
 	
 	/*
@@ -1260,6 +1262,21 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	@Override
 	public Deployment redeployDeployment(String id, Map<String, Object> data, CIBUser user) throws SystemException {
 		return deploymentProvider.redeployDeployment(id, data, user);
+	}
+
+	/*
+
+	███████ ███    ██  ██████  ██ ███    ██ ███████     ██████  ██████   ██████  ██    ██ ██ ██████  ███████ ██████  
+	██      ████   ██ ██       ██ ████   ██ ██          ██   ██ ██   ██ ██    ██ ██    ██ ██ ██   ██ ██      ██   ██ 
+	█████   ██ ██  ██ ██   ███ ██ ██ ██  ██ █████       ██████  ██████  ██    ██ ██    ██ ██ ██   ██ █████   ██████  
+	██      ██  ██ ██ ██    ██ ██ ██  ██ ██ ██          ██      ██   ██ ██    ██  ██  ██  ██ ██   ██ ██      ██   ██ 
+	███████ ██   ████  ██████  ██ ██   ████ ███████     ██      ██   ██  ██████    ████   ██ ██████  ███████ ██   ██ 
+                                                                                                                    
+	 */
+
+	@Override
+	public Collection<Engine> getProcessEngineNames() {
+		return engineProvider.getProcessEngineNames();
 	}
 
 }

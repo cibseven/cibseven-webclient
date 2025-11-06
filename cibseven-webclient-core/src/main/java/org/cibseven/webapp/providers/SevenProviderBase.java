@@ -88,14 +88,33 @@ public abstract class SevenProviderBase {
 	@Lazy
 	protected BaseUserProvider<? extends StandardLogin> baseUserProvider;
 
+	/**
+	 * Constructs the full engine REST base URL using the engine from the user object.
+	 * @param user the user object containing the engine name
+	 * @return the complete engine REST URL
+	 */
+	protected String getEngineRestUrl(CIBUser user) {
+		String baseUrl = cibsevenUrl.endsWith("/") ? cibsevenUrl.substring(0, cibsevenUrl.length() - 1) : cibsevenUrl;
+		String restPath = engineRestPath.startsWith("/") ? engineRestPath : "/" + engineRestPath;
+		
+		String engineName = user != null ? user.getEngine() : null;
+		// If engine name is provided and not "default", add it to the path
+		if (engineName != null && !engineName.isEmpty() && !"default".equals(engineName)) {
+			return baseUrl + restPath + "/engine/" + engineName;
+		}
+		
+		return baseUrl + restPath;
+	}
 
 	/**
-	 * Constructs the full engine REST base URL by combining the base URL with the configurable path
-	 * @return the complete engine REST URL
+	 * Constructs the base engine REST URL without engine context.
+	 * Use this for engine-agnostic operations.
+	 * @return the base engine REST URL
 	 */
 	protected String getEngineRestUrl() {
 		String baseUrl = cibsevenUrl.endsWith("/") ? cibsevenUrl.substring(0, cibsevenUrl.length() - 1) : cibsevenUrl;
 		String restPath = engineRestPath.startsWith("/") ? engineRestPath : "/" + engineRestPath;
+		
 		return baseUrl + restPath;
 	}
 

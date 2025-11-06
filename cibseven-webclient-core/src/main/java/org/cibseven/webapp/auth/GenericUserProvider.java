@@ -82,11 +82,6 @@ public class GenericUserProvider extends BaseUserProvider<StandardLogin> {
 	}
 
 	@Override
-	public Object authenticateUser(HttpServletRequest request) {
-		return authenticate(request);
-	}
-
-	@Override
 	public User getSelfInfoJSessionId(String userId, String jSessionId, HttpServletRequest rq) {
 		try {
 			String url = cibsevenAdminUrl + "/auth/user/default";
@@ -200,6 +195,10 @@ public class GenericUserProvider extends BaseUserProvider<StandardLogin> {
 		try {
 			if (login != null) {
 				CIBUser user = new CIBUser(login.getUsername());
+				
+				// Set engine from request header
+				setEngineFromRequest(user, rq);
+				
 				user.setAuthToken(createToken(getSettings(), true, false, user));
 				return user;
 			} else {

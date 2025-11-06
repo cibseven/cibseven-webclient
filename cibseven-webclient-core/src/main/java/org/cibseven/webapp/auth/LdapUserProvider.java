@@ -93,6 +93,10 @@ public class LdapUserProvider extends BaseUserProvider<StandardLogin> {
 			SearchResult result = results.next();
 			CIBUser user =  new CIBUser(result.getAttributes().get(ldapNameAttribute).get().toString());
 			user.setDisplayName(result.getAttributes().get(ldapDisplayNameAttribute).get().toString());
+			
+			// Set engine from request header
+			setEngineFromRequest(user, rq);
+			
 			user.setAuthToken(createToken(getSettings(), true, false, user));
 	        
 	        return user;
@@ -139,11 +143,6 @@ public class LdapUserProvider extends BaseUserProvider<StandardLogin> {
 		else {
 			throw new AuthenticationException(userId);
 		}
-	}
-	
-	@Override
-	public Object authenticateUser(HttpServletRequest request) {
-		return authenticate(request);
 	}
 
 	@Override

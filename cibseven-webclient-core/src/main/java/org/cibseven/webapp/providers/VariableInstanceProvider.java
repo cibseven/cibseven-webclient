@@ -32,7 +32,7 @@ public class VariableInstanceProvider extends SevenProviderBase implements IVari
 
 	public VariableInstance getVariableInstanceImpl(String id, boolean deserializeValue, CIBUser user) throws SystemException, NoObjectFoundException {
 		UriComponentsBuilder uriBuilder = UriComponentsBuilder
-				.fromUriString(getEngineRestUrl())
+				.fromUriString(getEngineRestUrl(user))
 				.path("/variable-instance/{id}")
 				.queryParam("deserializeValue", deserializeValue);
 

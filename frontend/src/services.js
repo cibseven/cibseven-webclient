@@ -15,6 +15,7 @@
  *  limitations under the License.
  */
 import { axios } from './globals.js'
+import { ENGINE_STORAGE_KEY } from './constants.js'
 
 function filterToUrlParams(filters) {
   var filter = ''
@@ -500,7 +501,9 @@ var AuthService = {
     { headers: { authorization: recoverToken } }
   ) },
   login: function(params, remember) {
-    return axios.create().post(getServicesBasePath() + '/auth/login', params).then(function(user) {
+    const engineName = localStorage.getItem(ENGINE_STORAGE_KEY)
+    const headers = engineName ? { 'X-Process-Engine': engineName } : {}
+    return axios.create().post(getServicesBasePath() + '/auth/login', params, { headers: headers }).then(function(user) {
       axios.defaults.headers.common.authorization = user.data.authToken
       ;(remember ? localStorage : sessionStorage).setItem('token', user.data.authToken)
       return user.data
@@ -790,6 +793,12 @@ var DeploymentService = {
   }
 }
 
+var EngineService = {
+  getEngines() {
+    return axios.get(getServicesBasePath() + '/engine')
+  }
+}
+
 export { TaskService, FilterService, ProcessService, VariableInstanceService, HistoricVariableInstanceService, AdminService, JobService, JobDefinitionService, SystemService,
   HistoryService, IncidentService, AuthService, InfoService, FormsService, TemplateService, DecisionService,
-  AnalyticsService, BatchService, TenantService, ExternalTaskService, DeploymentService, getServicesBasePath, setServicesBasePath, createDocumentEndpointUrl }
+  AnalyticsService, BatchService, TenantService, ExternalTaskService, DeploymentService, EngineService, getServicesBasePath, setServicesBasePath, createDocumentEndpointUrl }

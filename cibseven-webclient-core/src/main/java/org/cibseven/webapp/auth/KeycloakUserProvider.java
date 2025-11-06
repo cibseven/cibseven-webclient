@@ -174,6 +174,9 @@ public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
 				}
 			}
 			
+			// Set engine from request header
+			setEngineFromRequest(user, rq);
+			
 			user.setAuthToken(createToken(tokenSettings, false, false, user));
 			return user;
 		}
@@ -182,6 +185,10 @@ public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
 		SSOUser user = new SSOUser(tokens.getIdClaims().get(userIdProperty, String.class));
 		user.setDisplayName(tokens.getIdClaims().get(userNameProperty, String.class));
 		user.setRefreshToken(tokens.getRefresh_token());
+		
+		// Set engine from request header
+		setEngineFromRequest(user, rq);
+		
 		user.setAuthToken(createToken(getSettings(), true, false, user));
 		user.setRefreshToken(null);
 		return user;

@@ -801,6 +801,7 @@
 	"cib-header": {
 		"productName": "CIB seven",
 		"languages": "Язык",
+		"engine": "Движок",
 		"help": "Информация и помощь",
 		"logout": "Выход",
 		"user": "Учетная запись",

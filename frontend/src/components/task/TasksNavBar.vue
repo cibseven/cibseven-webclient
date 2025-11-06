@@ -330,6 +330,10 @@ export default {
           return this.$emit('selected-task', task)
         else {
           TaskService.findIdentityLinks(taskId).then(identityLinks => {
+            if (!identityLinks || identityLinks.length === 0) {
+              return this.$emit('selected-task', task)
+            }
+            
             var userIdLink = identityLinks.find(i => {
               return i.type === 'candidate' && i.userId && i.userId.toLowerCase() === this.$root.user.userID.toLowerCase()
             })

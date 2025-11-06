@@ -43,6 +43,7 @@ import { updateAppTitle, checkExternalReturn, isMobile, hasHeader, getTheme } fr
 import { applyTheme, handleAxiosError, fetchAndStoreProcesses, fetchDecisionsIfEmpty, setupTaskNotifications } from './utils/init'
 import { parseXMLDocumentation } from './utils/parser.js'
 import { applyConfigDefaults } from './utils/config.js'
+import { ENGINE_STORAGE_KEY } from './constants.js'
 import CibSeven from '@/components/CibSeven.vue'
 import FlowTable from '@/components/common-components/FlowTable.vue'
 import ContentBlock from '@/components/common-components/ContentBlock.vue'
@@ -464,5 +465,8 @@ export {
   tabUrlMixin,
 
   // Configuration utilities
-  applyConfigDefaults
+  applyConfigDefaults,
+
+  // Constants
+  ENGINE_STORAGE_KEY
 }

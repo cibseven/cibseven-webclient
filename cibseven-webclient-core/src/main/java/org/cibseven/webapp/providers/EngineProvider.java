@@ -14,40 +14,27 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.cibseven.webapp.auth;
+package org.cibseven.webapp.providers;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.util.Arrays;
+import java.util.Collection;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import org.cibseven.webapp.rest.model.Engine;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 
-@NoArgsConstructor  @JsonIgnoreProperties(ignoreUnknown = true)
-public class CIBUser implements User {
-	
-	@Getter @Setter String authToken;
-	@Getter @Setter protected String userID;
-	@Setter String displayName;
-	@Getter @Setter String engine;
-	
-	public CIBUser(String userId) {
-		this.userID = userId;
-	}
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Component
+public class EngineProvider extends SevenProviderBase implements IEngineProvider {
 
 	@Override
-	public String getId() {
-		return userID;
+	public Collection<Engine> getProcessEngineNames() {
+		String url = getEngineRestUrl() + "/engine";
+		
+		return Arrays.asList(
+			((ResponseEntity<Engine[]>) doGet(url, Engine[].class, null, false)).getBody()
+		);
 	}
-
-	@Override
-	public String toString() {
-		return userID; 
-	}
-
-	@Override
-	public String getDisplayName() {
-		if((displayName != null)&&(!displayName.isEmpty())) return displayName;
-		else return userID;
-	}
-
 }
