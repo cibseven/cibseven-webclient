@@ -490,11 +490,12 @@ public class ProcessService extends BaseService implements InitializingBean {
 			@Parameter(description = "Resource Id") @PathVariable String resourceId,
 			@Parameter(description = "Name of the resource file") @RequestParam String filename,
 			@Parameter(description = "Token") @RequestParam String token,
+			CIBUser user,
 			HttpServletRequest rq, HttpServletResponse res) {
 		try {
 			rq = new HeaderModifyingRequestWrapper(rq, token);
 			try {
-				return response(bpmProvider.fetchDataFromDeploymentResource(rq, deploymentId, resourceId, filename));
+				return response(bpmProvider.fetchDataFromDeploymentResource(rq, deploymentId, resourceId, filename, user));
 			} catch (ApplicationException x) {
 				res.sendRedirect("../../../#/flow/auth/deployments/" + deploymentId + "/resources/" + resourceId);
 				throw x;

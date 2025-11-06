@@ -14,40 +14,21 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.cibseven.webapp.auth;
+package org.cibseven.webapp.rest.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-import lombok.Getter;
+import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.Data;
 
-@NoArgsConstructor  @JsonIgnoreProperties(ignoreUnknown = true)
-public class CIBUser implements User {
-	
-	@Getter @Setter String authToken;
-	@Getter @Setter protected String userID;
-	@Setter String displayName;
-	@Getter @Setter String engine;
-	
-	public CIBUser(String userId) {
-		this.userID = userId;
+@Data @NoArgsConstructor @AllArgsConstructor @JsonIgnoreProperties(ignoreUnknown = true) 
+public class Engine {
+	private String name;
+
+	public String json() throws JsonProcessingException {
+		return new ObjectMapper().writeValueAsString(this);
 	}
-
-	@Override
-	public String getId() {
-		return userID;
-	}
-
-	@Override
-	public String toString() {
-		return userID; 
-	}
-
-	@Override
-	public String getDisplayName() {
-		if((displayName != null)&&(!displayName.isEmpty())) return displayName;
-		else return userID;
-	}
-
 }
