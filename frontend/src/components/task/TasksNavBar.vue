@@ -440,6 +440,7 @@ export default {
     },
     setDate: function(task, type) {
       task[type] = this.selectedDateT[type] ? moment(this.selectedDateT[type]).format('YYYY-MM-DDTHH:mm:ss.SSSZZ') : null
+      task.name = task.name ? task.name.replace(/\r?\n|\r/g, ' ') : ''
       TaskService.update(task)
       this.$refs[type + task.id][0].hide()
     },
