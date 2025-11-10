@@ -19,9 +19,6 @@ import '@mdi/font/css/materialdesignicons.css'
 import './styles/main.scss' // Bootstrap with custom variables
 import { axios } from './globals.js'
 
-// Bootstrap JS is imported by Bootstrap SCSS, but you can import specific components if needed
-// import 'bootstrap'
-
 import { createApp } from 'vue'
 
 import store from './store'
