@@ -112,5 +112,12 @@ $table-head-bg: #F5F7F8; // Custom: light gray background for table headers
 $table-head-color: $gray-900; // Custom: #0F2133 dark text for headers
 $table-active-bg: $gray-200; // Custom: #F0F4F7 for active/selected rows
 
+// Progress Bars
+$progress-height: 1rem; // Custom: matches old theme
+$progress-font-size: 0.65625rem; // Custom: smaller font (10.5px)
+$progress-bg: $gray-400; // Custom: #DFE7F0 light background
+$progress-bar-color: #fff; // Custom: white text
+$progress-bar-bg: $primary; // Custom: #E11E19 red bar
+$progress-border-radius: $border-radius; // Uses global border-radius
 
 // Add any other Bootstrap variable overrides here

@@ -115,6 +115,11 @@
   box-shadow: var(--bs-box-shadow-inset);
 }
 
+// Progress bars
+.progress {
+  box-shadow: var(--bs-progress-box-shadow);
+}
+
 input[type="checkbox"] {
   background-color: #fff;
   cursor: pointer;
