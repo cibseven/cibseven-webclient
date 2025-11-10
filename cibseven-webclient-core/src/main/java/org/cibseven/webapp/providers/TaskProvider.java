@@ -41,6 +41,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -49,6 +51,8 @@ import lombok.extern.slf4j.Slf4j;
 public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 
 	@Autowired private IVariableProvider variableProvider;
+
+	private final ObjectMapper objectMapper = new ObjectMapper();
 
 	@Override
 	public Collection<Task> findTasks(String filter, CIBUser user) {
@@ -96,20 +100,26 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 	@Override
 	public void update(Task task, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/task/" + task.getId();
-		String filteredTask = "{ ";
-		if(task.getName() != null) filteredTask += "\"name\": \"" + task.getName() + "\" ";
-		if(task.getDescription() != null) filteredTask += ", \"description\": \"" + task.getDescription() + "\"";
-		//if(task.getPriority() != null) filteredTask += ", \"priority\": " + task.getPriority() + "";
-		if(task.getAssignee() != null) filteredTask += ", \"assignee\": \"" + task.getAssignee() + "\""; 
-		if(task.getOwner() != null) filteredTask += ", \"owner\": \"" + task.getOwner() + "\"";
-		if(task.getDelegationState() != null) filteredTask += ", \"delegationState\": \"" + task.getDelegationState() + "\"";
-		if(task.getDue() != null) filteredTask += ", \"due\": \"" + task.getDue() + "\"";
-		if(task.getFollowUp() != null) filteredTask += ", \"followUp\": \"" + task.getFollowUp() + "\""; 
-		if(task.getParentTaskId() != null) filteredTask += ", \"parentTaskId\": \"" + task.getParentTaskId() + "\""; 
-		if(task.getCaseInstanceId() != null) filteredTask += ", \"caseInstanceId\": \"" + task.getCaseInstanceId() + "\""; 
-		if(task.getTenantId() != null) filteredTask += ", \"tenantId\": \"" + task.getTenantId() + "\"";
-		filteredTask += " }";
-		doPut(url, filteredTask, user);
+
+		ObjectNode taskUpdate = objectMapper.createObjectNode();
+
+		if(task.getName() != null) taskUpdate.put("name", task.getName());
+		if(task.getDescription() != null) taskUpdate.put("description", task.getDescription());
+		if(task.getAssignee() != null) taskUpdate.put("assignee", task.getAssignee());
+		if(task.getOwner() != null) taskUpdate.put("owner", task.getOwner());
+		if(task.getDelegationState() != null) taskUpdate.put("delegationState", task.getDelegationState());
+		if(task.getDue() != null) taskUpdate.put("due", task.getDue().toString());
+		if(task.getFollowUp() != null) taskUpdate.put("followUp", task.getFollowUp().toString());
+		if(task.getParentTaskId() != null) taskUpdate.put("parentTaskId", task.getParentTaskId());
+		if(task.getCaseInstanceId() != null) taskUpdate.put("caseInstanceId", task.getCaseInstanceId());
+		if(task.getTenantId() != null) taskUpdate.put("tenantId", task.getTenantId());
+
+		try {
+			String filteredTask = objectMapper.writeValueAsString(taskUpdate);
+			doPut(url, filteredTask, user);
+		} catch (JsonProcessingException e) {
+			throw new SystemException(e);
+		}
 	}
 
 	@Override
