@@ -125,16 +125,11 @@ export function handleAxiosError(router, root, error) {
 
 export function applyTheme(theme) {
 
-  var css = document.createElement('Link')
-  css.setAttribute('rel', 'stylesheet')
-  css.setAttribute('type', 'text/css')
-
   var favicon = document.createElement('Link')
   favicon.setAttribute('rel', 'icon')
   favicon.setAttribute('type', 'image/x-icon')
   favicon.setAttribute('href', 'themes/' + theme + '/favicon.ico')
 
-  document.head.appendChild(css)
   document.head.appendChild(favicon)
 }
 
