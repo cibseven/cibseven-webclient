@@ -161,3 +161,16 @@ input[type="checkbox"] {
     background: $secondary;
   }
 }
+
+// Table customizations
+.table {
+  // Remove borders from tbody rows
+  > tbody > tr > * {
+    border-bottom-width: 0;
+  }
+  
+  // Keep borders only on thead
+  > thead > tr > * {
+    border-bottom-width: 2px;
+  }
+}
