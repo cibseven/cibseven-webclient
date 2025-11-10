@@ -72,8 +72,8 @@ const DEFAULT_CONFIG = {
       processVariables: []
     },
     tasksNumber: {
-      enabled: false,
-      interval: 0
+      enabled: true,
+      interval: 60000
     },
     selectedFilterTasksNumber: {
       enabled: true
