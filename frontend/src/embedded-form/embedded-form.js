@@ -320,13 +320,32 @@ function loadEmbeddedForm(
         authorization: parentConfig.authToken
     };
     
-    // CamSDK.Client handles the engine path internally based on the engine parameter
+    // Determine the correct API URI based on engine mappings (if configured)
+    const engineName = parentConfig.engineName || 'default';
+    let apiUri = parentConfig.engineRestPath;
+    
+    // Check if we have a mapping for this specific engine
+    if (parentConfig.engineRestMappings && Array.isArray(parentConfig.engineRestMappings)) {
+        const mapping = parentConfig.engineRestMappings.find(m => m.engineName === engineName);
+        if (mapping) {
+            // Use the mapped URL and path
+            let baseUrl = mapping.url;
+            if (baseUrl.endsWith('/')) {
+                baseUrl = baseUrl.substring(0, baseUrl.length - 1);
+            }
+            let restPath = mapping.path;
+            if (!restPath.startsWith('/')) {
+                restPath = '/' + restPath;
+            }
+            apiUri = baseUrl + restPath;
+        }
+    }
     
     var client = new CamSDK.Client({
         mock: false,
-        apiUri: config.engineRestPath || '/engine-rest',
+        apiUri: apiUri,
         headers: headers,
-        engine: parentConfig.engineName || 'default'
+        engine: engineName || 'default'
     });
     return new Promise((resolve, reject) => {
         if (isStartForm) {
