@@ -1094,6 +1094,7 @@
 		"ExistingGroupRequestException": "Die Gruppe existiert bereits",
 		"VariableModificationException": "Die Variable konnte nicht erfolgreich geändert werden. Bitte aktualisieren Sie die Seite und versuchen Sie es erneut.",
 		"processNotFound": "Prozess mit Schlüssel \"{0}\" nicht gefunden",
+		"notFoundInstanceId": "Die Prozessinstanz mit der ID \"{instanceId}\" konnte nicht gefunden werden.\nReferenziert von: {refPath}",
 		"filterSaveError": "Beim Speichern des Filters ist ein Fehler aufgetreten, bitte überprüfen Sie die eingegebenen Daten.",
 		"passwordDoNotMatch": "Passwörter stimmen nicht überein",
 		"PasswordPolicyException": "Passwort stimmt nicht mit Richtlinie überein",

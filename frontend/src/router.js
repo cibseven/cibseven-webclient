@@ -164,30 +164,48 @@ const appRoutes = [
         // process instance by id redirect
         { path: 'processes/instance/:instanceId?', name: 'process-instance-id',
           beforeEnter: async (to, from, next) => {
+            const instanceId = to.params.instanceId
             const cockpitAvailable = router.root.applicationPermissions(router.root.config.permissions['cockpit'], 'cockpit')
             if (cockpitAvailable) {
-              const instanceId = to.params.instanceId
-              const processData = await HistoryService.findProcessInstance(instanceId)
-              next({
-                name: 'process',
-                params: {
-                  processKey: processData.processDefinitionKey,
-                  versionIndex: processData.processDefinitionVersion,
-                  instanceId,
-                },
-                query: {
-                  ...to.query,
-                  tab: to.query?.tab || 'variables',
-                }
+              await HistoryService.findProcessInstance(instanceId).then(processData => {
+                next({
+                  name: 'process',
+                  params: {
+                    processKey: processData.processDefinitionKey,
+                    versionIndex: processData.processDefinitionVersion,
+                    instanceId,
+                  },
+                  query: {
+                    ...to.query,
+                    tab: to.query?.tab || 'variables',
+                  }
+                })
+              }).catch(() => {
+                next({
+                  name: 'not-found-instanceId',
+                  query: {
+                    instanceId,
+                    refPath: from.fullPath,
+                  }
+                })
               })
             }
             else {
               next('/seven/auth/start')
             }
           },
-          component: ProcessView, props: route => ({
-            instanceId: route.params.instanceId,
-          })
+        },
+        { path: 'processes/not-found-instanceId', name: 'not-found-instanceId',
+          beforeEnter: async (to, from, next) => {
+            next({
+              name: 'start',
+              query: {
+                errorType: 'notFoundInstanceId',
+                instanceId: to.query?.instanceId,
+                refPath: to.query?.refPath,
+              }
+            })
+          }
         },
         { path: 'process/:processKey/:versionIndex?/:instanceId?', name: 'process', beforeEnter: permissionsGuard('cockpit'),
           component: ProcessView, props: route => ({
