@@ -228,7 +228,7 @@
 					<skip>false</skip>
 					<!-- https://github.com/GoogleContainerTools/jib/blob/master/jib-maven-plugin/README.md#extended-usage -->
 					<container>
-						<appRoot>/opt/bitnami/tomcat/webapps/seven</appRoot>
+						<appRoot>/usr/local/tomcat/webapps/seven</appRoot>
 					</container>
 				</configuration>
 			</plugin>
