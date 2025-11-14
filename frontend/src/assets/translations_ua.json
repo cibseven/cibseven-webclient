@@ -1094,6 +1094,7 @@
 		"ExistingGroupRequestException": "Група вже існує",
 		"VariableModificationException": "Змінна не може бути успішно змінена. Будь ласка, оновіть сторінку та спробуйте знову.",
 		"processNotFound": "Процес з ключем \"{0}\" не знайдено",
+		"notFoundInstanceId": "Екземпляр процесу з ідентифікатором \"{instanceId}\" не знайдено.\nПосилання з: {refPath}",
 		"filterSaveError": "Сталася помилка під час спроби зберегти фільтр, перевірте введені дані.",
 		"passwordDoNotMatch": "Паролі не збігаються",
 		"PasswordPolicyException": "Пароль не відповідає політиці",

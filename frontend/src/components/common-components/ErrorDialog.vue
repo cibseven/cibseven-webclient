@@ -25,7 +25,10 @@
         </div>
         <!-- min-width: auto leads to min-width: longest word so it will overflow the parent despite the overflow-wrap: break-word -->
         <div style="min-width: 0">
-          <p class="my-4" style="overflow-wrap: break-word">{{ message }}</p>
+          <p v-for="(line, index) in message.split('\n')" :key="index" style="overflow-wrap: break-word">
+            <!-- make strong each quoted word -->
+            <span v-html="line.replace(/&quot;(.*?)&quot;/g, '&quot;<strong>$1</strong>&quot;')"></span>
+          </p>
         </div>
       </div>
     </div>

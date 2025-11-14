@@ -1094,6 +1094,7 @@
 		"ExistingGroupRequestException": "Group already exists",
 		"VariableModificationException": "The variable could not be changed successfully. Please refresh the page and try again.",
 		"processNotFound": "Process with key \"{0}\" not found",
+		"notFoundInstanceId": "The process instance with ID \"{instanceId}\" could not be found.\nReferenced from: {refPath}",
 		"filterSaveError": "An error occurred  trying to save the filter, please check the data introduced.",
 		"passwordDoNotMatch": "Passwords do not match",
 		"PasswordPolicyException": "Password does not match policy",
