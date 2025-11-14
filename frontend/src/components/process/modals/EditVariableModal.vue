@@ -98,7 +98,9 @@ props: {
     },
 
     async saveVariable(variable) {
-      const isEditDeserializedValue = variable.type === 'Object'
+      const isEditDeserializedValue = (variable.type === 'Object' &&
+        // only for non-json serialized objects
+        (variable.valueInfo?.serializationDataFormat !== 'application/json'))
       return isEditDeserializedValue ? this.updateVariableDeserialized(variable) : this.updateVariableSerialized(variable)
     },
 
