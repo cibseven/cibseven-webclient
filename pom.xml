@@ -42,9 +42,9 @@
 		<jib.from.image>${image.tomcat-10-base}</jib.from.image>
 		<jib.to.image>harbor.cib.de/dev/cibseven-webclient:${project.version}</jib.to.image>
 
-		<version.eirslett.frontend.maven.plugin>1.12.1</version.eirslett.frontend.maven.plugin>
-		<version.nodejs>22.14.0</version.nodejs>
-		<version.npm>10.9.2</version.npm>
+		<version.eirslett.frontend.maven.plugin>1.15.4</version.eirslett.frontend.maven.plugin>
+		<version.nodejs>24.11.1</version.nodejs>
+		<version.npm>11.6.2</version.npm>
 
 		<!-- NPM publish tag configuration - empty by default (uses 'latest'), can be overridden with tag dev -->
 		<npm.publish.tag.arg></npm.publish.tag.arg>
