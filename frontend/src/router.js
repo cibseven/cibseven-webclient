@@ -56,6 +56,7 @@ import SystemView from '@/components/system/SystemView.vue'
 import SystemDiagnostics from '@/components/system/SystemDiagnostics.vue'
 import ExecutionMetrics from '@/components/system/ExecutionMetrics.vue'
 import TranslationsDownload from '@/components/common-components/TranslationsDownload.vue'
+import { HistoryService } from '@/services.js'
 
 const appRoutes = [
     { path: '/', redirect: '/seven/auth/start-configurable' },
@@ -159,6 +160,34 @@ const appRoutes = [
         },
         { path: 'processes/list', name: 'processManagement', beforeEnter: permissionsGuard('cockpit'),
           component: ProcessListView
+        },
+        // process instance by id redirect
+        { path: 'processes/instance/:instanceId?', name: 'process-instance-id',
+          beforeEnter: async (to, from, next) => {
+            const cockpitAvailable = router.root.applicationPermissions(router.root.config.permissions['cockpit'], 'cockpit')
+            if (cockpitAvailable) {
+              const instanceId = to.params.instanceId
+              const processData = await HistoryService.findProcessInstance(instanceId)
+              next({
+                name: 'process',
+                params: {
+                  processKey: processData.processDefinitionKey,
+                  versionIndex: processData.processDefinitionVersion,
+                  instanceId,
+                },
+                query: {
+                  ...to.query,
+                  tab: to.query?.tab || 'variables',
+                }
+              })
+            }
+            else {
+              next('/seven/auth/start')
+            }
+          },
+          component: ProcessView, props: route => ({
+            instanceId: route.params.instanceId,
+          })
         },
         { path: 'process/:processKey/:versionIndex?/:instanceId?', name: 'process', beforeEnter: permissionsGuard('cockpit'),
           component: ProcessView, props: route => ({
