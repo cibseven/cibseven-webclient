@@ -220,7 +220,7 @@ configmaps:
     OTEL_EXPORTER_OTLP_TRACES_PROTOCOL: "{{ .Values.global.otel.otlpTracesProtocol }}"
   files:
     password-recover-template_de.yaml:
-      path: "/opt/bitnami/tomcat/webapps/seven/WEB-INF/classes/password-recover-template_de.yaml"
+      path: "/usr/local/tomcat/webapps/seven/WEB-INF/classes/password-recover-template_de.yaml"
       value: |-
         subject: "Passwort-Wiederherstellung"
         body: |
@@ -233,7 +233,7 @@ configmaps:
           <p>Mit freundlichen Grüßen,</p>
           <p>CIB seven</p>
     password-recover-template_en.yaml:
-      path: "/opt/bitnami/tomcat/webapps/seven/WEB-INF/classes/password-recover-template_en.yaml"
+      path: "/usr/local/tomcat/webapps/seven/WEB-INF/classes/password-recover-template_en.yaml"
       value: |-
         subject: "Password Recovery"
         body: |
@@ -246,7 +246,7 @@ configmaps:
           <p>Best regards,</p>
           <p>CIB seven</p>
     password-recover-template_es.yaml:
-      path: "/opt/bitnami/tomcat/webapps/seven/WEB-INF/classes/password-recover-template_es.yaml"
+      path: "/usr/local/tomcat/webapps/seven/WEB-INF/classes/password-recover-template_es.yaml"
       value: |-
         subject: "Recuperación de Contraseña"
         body: |
@@ -288,7 +288,7 @@ configmaps:
         </Configuration>
 
     config.json:
-      path: /opt/bitnami/tomcat/webapps/seven/config.json
+      path: /usr/local/tomcat/webapps/seven/config.json
       value: |-
         {
           "supportedLanguages": {{ toJson .Values.ui.supportedLanguages }},
