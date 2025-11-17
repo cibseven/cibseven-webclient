@@ -108,7 +108,7 @@ import { TaskService, AdminService } from '@/services.js'
 import usersMixin from '@/mixins/usersMixin.js'
 import RenderTemplate from '@/components/render-template/RenderTemplate.vue'
 import FilterableSelect from '@/components/task/filter/FilterableSelect.vue'
-import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
+import { ConfirmDialog } from '@cib/common-frontend'
 import assigneeMixin from '@/mixins/assigneeMixin.js'
 
 export default {
@@ -154,7 +154,7 @@ export default {
         this.$refs.titleTask.focus()
         this.showPopoverWithDelay(this.task.assignee) // when opened task is changed
       },
-      
+
     }
   },
   computed: {

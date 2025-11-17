@@ -158,15 +158,18 @@
         <img :alt="$t('start.emptyStart')" src="@/assets/images/start/empty_start_page.svg" class="d-block mx-auto mt-5 mb-3" style="max-width: 250px">
         <div class="h5 text-secondary text-center">{{ $t('start.emptyStart') }}</div>
       </div>
+      <ErrorDialog v-if="$route.query.errorType" ref="errorPopup" variant="warning" />
     </div>
   </div>
 </template>
 
 <script>
 import { permissionsMixin } from '@/permissions.js'
+import { ErrorDialog } from '@cib/common-frontend'
 
 export default {
   name: "StartView",
+  components: { ErrorDialog },
   mixins: [permissionsMixin],
   inject: ['loadProcesses'],
   data: function() {
@@ -241,6 +244,14 @@ export default {
       this.mutationObserver.observe(this.$refs.startContainer, {
         childList: true,
         subtree: false
+      })
+    }
+    if (this.$route.query.errorType) {
+      this.$nextTick(() => {
+        this.$refs.errorPopup.show({
+          type: this.$route.query?.errorType,
+          params: this.$route.query,
+        })
       })
     }
   },

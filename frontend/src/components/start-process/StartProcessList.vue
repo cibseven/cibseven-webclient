@@ -95,7 +95,7 @@ import ProcessAdvanced from '@/components/process/ProcessAdvanced.vue'
 import ProcessCard from '@/components/process/ProcessCard.vue'
 import StartProcess from '@/components/start-process/StartProcess.vue'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
-import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
+import { SuccessAlert } from '@cib/common-frontend'
 import { ProcessService } from '@/services.js'
 
 export default {
@@ -117,7 +117,7 @@ export default {
       this.checkProcessInUrl(key)
     }
   },
-  created: function() {    
+  created: function() {
     this.loadProcesses(false) // the method takes localStorage.getItem('favorites') into account
     this.view = this.isMobile() ? 'image-outline' : localStorage.getItem('viewMode') || 'image-outline'
   },

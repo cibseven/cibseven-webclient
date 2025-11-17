@@ -33,7 +33,7 @@
             :title="table.item.name"
             @copy="copyValueToClipboard"
             :to="{
-              name: 'process', 
+              name: 'process',
               params: {
                 processKey: table.item.definitionKey,
                 versionIndex: table.item.version
@@ -50,7 +50,7 @@
       <template v-slot:cell(activity)="table">
         <div class="w-100">
           <CopyableActionButton
-            v-for="(act, index) in table.item.activities" :key="index" 
+            v-for="(act, index) in table.item.activities" :key="index"
             :display-value="act.activityName"
             :title="act.activityName"
             @click="selectActivity({ activityId: act.activityId, listMode: 'all' })"
@@ -70,12 +70,11 @@
 </template>
 
 <script>
-import FlowTable from '@/components/common-components/FlowTable.vue'
-import { BWaitingBox } from 'cib-common-components'
+import { FlowTable } from '@cib/common-frontend'
+import { BWaitingBox } from '@cib/bootstrap-components'
 import { mapActions, mapGetters } from 'vuex'
-import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
+import { CopyableActionButton, SuccessAlert } from '@cib/common-frontend'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
-import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 
 
 export default {
@@ -124,7 +123,7 @@ export default {
   methods: {
     ...mapActions(['setHighlightedElement', 'selectActivity']),
     ...mapActions('calledProcessDefinitions', [
-      'loadCalledProcessDefinitions', 
+      'loadCalledProcessDefinitions',
       'filterByActivity'
     ]),
     async loadCalledProcessDefinitionsData() {
@@ -132,11 +131,11 @@ export default {
       if (!this.process?.id) {
         return
       }
-      
+
       this.initialLoading = true
       this.loading = true
       try {
-        await this.loadCalledProcessDefinitions({ 
+        await this.loadCalledProcessDefinitions({
           processId: this.process.id,
           chunkSize: this.$root?.config?.maxProcessesResults || 50
         })

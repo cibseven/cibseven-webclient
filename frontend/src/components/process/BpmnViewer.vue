@@ -46,21 +46,21 @@
 
 <script>
 import NavigatedViewer from 'bpmn-js/lib/NavigatedViewer'
-import { BWaitingBox } from 'cib-common-components'
+import { BWaitingBox } from '@cib/bootstrap-components'
 import { mapActions, mapGetters } from 'vuex'
 import { HistoryService } from '@/services.js'
 
 const interactionTypes = [
   // Tasks
-  'bpmn:UserTask', 'bpmn:ServiceTask', 'bpmn:ScriptTask', 'bpmn:SendTask', 
+  'bpmn:UserTask', 'bpmn:ServiceTask', 'bpmn:ScriptTask', 'bpmn:SendTask',
   'bpmn:ReceiveTask', 'bpmn:ManualTask', 'bpmn:BusinessRuleTask',
   // Activities
   'bpmn:CallActivity', 'bpmn:SubProcess', 'bpmn:Transaction',
   // Gateways
-  'bpmn:ExclusiveGateway', 'bpmn:InclusiveGateway', 'bpmn:ParallelGateway', 
+  'bpmn:ExclusiveGateway', 'bpmn:InclusiveGateway', 'bpmn:ParallelGateway',
   'bpmn:EventBasedGateway', 'bpmn:ComplexGateway',
   // Events
-  'bpmn:StartEvent', 'bpmn:EndEvent', 'bpmn:IntermediateThrowEvent', 
+  'bpmn:StartEvent', 'bpmn:EndEvent', 'bpmn:IntermediateThrowEvent',
   'bpmn:IntermediateCatchEvent', 'bpmn:BoundaryEvent'
 ]
 
@@ -200,20 +200,20 @@ export default {
           }, { once: true })
         }
       })
-      
+
       // Generic overlay click delegation - using event delegation on document
       // Store the handler reference so we can remove it later
       this.overlayClickHandler = (event) => {
         // Only handle clicks within BPMN overlay containers
         if (!event.target.closest('.djs-overlays')) return
-        
+
         const bubble = event.target.closest('.bubble')
         if (bubble && bubble.dataset.activityId) {
           this.setHighlightedElement(bubble.dataset.activityId)
           const listMode = ['activitiesHistory', 'canceledInstances'].includes(bubble.dataset.type) ? 'executed' : 'active'
           this.selectActivity({ activityId: bubble.dataset.activityId, listMode })
         }
-        
+
         // Generic: emit overlay-click for any overlay element with a data-overlay-type attribute
         const overlay = event.target.closest('[data-overlay-type]')
         if (overlay) {
@@ -224,7 +224,7 @@ export default {
           })
         }
       }
-      
+
       document.addEventListener('click', this.overlayClickHandler)
     },
     highlightElement: function(item) {
@@ -307,7 +307,7 @@ export default {
           const html = this.getBadgeOverlayHtml(stat.canceled, 'bg-warning', 'canceledInstances', stat.id)
           this.setHtmlOnDiagram(stat.id, html, { bottom: 15, right: 13 })
         }
-        
+
         // Handle finished activities - draw above canceled ones or in main position if no canceled
         const actualFinished = stat.finished - (stat.canceled || 0)
         if (options.showHistory && actualFinished > 0) {
@@ -372,7 +372,7 @@ export default {
         const calledElement = ca.businessObject?.calledElement || ''
         const isDynamic = /^\$\{.+\}$/.test(calledElement)
         const isStatic = !isDynamic && !!calledProcess
-        
+
         const inInstanceView = !!this.selectedInstance
         const wasExecuted = inInstanceView && executedActivities.has(ca.id)
         const shouldEnableDynamic = isDynamic && (runningInstances > 0 || wasExecuted)
@@ -457,7 +457,7 @@ export default {
             path: this.$route.path,
             query: { ...this.$route.query, tab: 'calledProcessDefinitions' }
           })
-        } else {          
+        } else {
           if (!calledProcess) {
             console.warn('No called process definition for activityId:', activityId)
             return
@@ -473,7 +473,7 @@ export default {
         const params = { processKey, versionIndex }
         if (calledProcessInstanceId) {
           params.instanceId = calledProcessInstanceId
-        }        
+        }
         const routeConfig = {
           name: 'process',
           params,

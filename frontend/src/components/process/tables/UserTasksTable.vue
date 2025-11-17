@@ -68,10 +68,9 @@ import { TaskService } from '@/services.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
 import TaskAssignationModal from '@/components/process/modals/TaskAssignationModal.vue'
-import FlowTable from '@/components/common-components/FlowTable.vue'
-import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
-import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
-import { BWaitingBox } from 'cib-common-components'
+import { FlowTable } from '@cib/common-frontend'
+import { SuccessAlert, CopyableActionButton } from '@cib/common-frontend'
+import { BWaitingBox } from '@cib/bootstrap-components'
 
 export default {
   name: 'UserTasksTable',

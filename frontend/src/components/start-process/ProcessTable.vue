@@ -41,7 +41,7 @@
 <script>
 import { permissionsMixin } from '@/permissions.js'
 import processesMixin from '@/components/process/mixins/processesMixin.js'
-import FlowTable from '@/components/common-components/FlowTable.vue'
+import { FlowTable } from '@cib/common-frontend'
 
 export default {
   name: 'ProcessTable',
