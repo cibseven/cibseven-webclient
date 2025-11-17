@@ -35,7 +35,7 @@
   },
   "dependencies": {
     "@bpmn-io/form-js": "^1.15.2",
-    "@cib/common-frontend": "^0.0.4-dev.4",
+    "@cib/common-frontend": "^0.0.4-dev.7",
     "@cib/bootstrap-components": "^2.1.1-dev.1",
     "@mdi/font": "^7.4.47",
     "apexcharts": "^4.7.0",
