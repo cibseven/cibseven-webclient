@@ -92,10 +92,9 @@ import { AdminService } from '@/services.js'
 import { moment } from '@/globals.js'
 import { debounce } from '@/utils/debounce.js'
 import { getStringObjByKeys } from '@/components/admin/utils.js'
-import FlowTable from '@/components/common-components/FlowTable.vue'
-import TaskPopper from '@/components/common-components/TaskPopper.vue'
-import { BWaitingBox } from 'cib-common-components'
-import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
+import { FlowTable } from '@cib/common-frontend'
+import { TaskPopper, ConfirmDialog } from '@cib/common-frontend'
+import { BWaitingBox } from '@cib/bootstrap-components'
 
 export default {
   name: 'AdminGroups',

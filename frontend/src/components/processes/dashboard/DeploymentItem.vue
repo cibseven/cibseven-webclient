@@ -36,7 +36,7 @@
 </template>
 
 <script>
-import { BWaitingBox } from 'cib-common-components'
+import { BWaitingBox } from '@cib/bootstrap-components'
 
 export default {
   name: 'DeploymentItem',

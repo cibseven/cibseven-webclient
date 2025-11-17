@@ -69,7 +69,7 @@
               </div>
             </div>
             <b-popover :target="version.id" triggers="hover" placement="right" boundary="viewport" max-width="350px">
-              <ProcessDefinitionDetails :version="version" :instances="instances" :version-index="versionIndex" 
+              <ProcessDefinitionDetails :version="version" :instances="instances" :version-index="versionIndex"
                 :selected-instance="selectedInstance" @onUpdateHistoryTimeToLive="onUpdateHistoryTimeToLive"></ProcessDefinitionDetails>
             </b-popover>
           </div>
@@ -84,7 +84,7 @@
 <script>
 import { permissionsMixin } from '@/permissions.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
-import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
+import { SuccessAlert } from '@cib/common-frontend'
 import DeleteProcessDefinitionModal from '@/components/process/modals/DeleteProcessDefinitionModal.vue'
 import ProcessDefinitionDetails from '@/components/process/ProcessDefinitionDetails.vue'
 

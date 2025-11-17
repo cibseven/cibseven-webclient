@@ -25,7 +25,7 @@
     { label: 'callingInstanceId', key: 'processInstanceId', class: 'col-3', tdClass: 'py-1 position-relative' },
     { label: 'activityId', key: 'activityId', class: 'col-2', tdClass: 'py-1' }]">
     <template v-slot:cell(id)="table">
-      <button :title="table.item.id" class="text-truncate w-100 btn btn-link text-start" :class="focusedCell === table.item.id ? 'pe-4': ''" 
+      <button :title="table.item.id" class="text-truncate w-100 btn btn-link text-start" :class="focusedCell === table.item.id ? 'pe-4': ''"
         @mouseenter="focusedCell = table.item.id" @mouseleave="focusedCell = null" @click="goToInstance(table.item)">
         {{ table.item.id }}
         <span v-if="table.item.id && focusedCell === table.item.id" @click.stop="copyValueToClipboard(table.item.id)"
@@ -68,8 +68,8 @@
 import { permissionsMixin } from '@/permissions.js'
 import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
-import FlowTable from '@/components/common-components/FlowTable.vue'
-import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
+import { FlowTable } from '@cib/common-frontend'
+import { SuccessAlert } from '@cib/common-frontend'
 import { HistoryService } from '@/services.js'
 import { mapMutations, mapGetters } from 'vuex'
 

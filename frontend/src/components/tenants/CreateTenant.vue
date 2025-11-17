@@ -46,7 +46,7 @@
 
 <script>
   import { notEmpty } from '@/components/admin/utils.js'
-  import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
+  import { SuccessAlert } from '@cib/common-frontend'
   import { mapActions } from 'vuex'
 
   export default {

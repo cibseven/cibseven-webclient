@@ -40,7 +40,7 @@
 
 import { DecisionService } from '@/services.js'
 import DecisionVersionListSidebar from '@/components/decision/DecisionVersionListSidebar.vue'
-import SidebarsFlow from '@/components/common-components/SidebarsFlow.vue'
+import { SidebarsFlow } from '@cib/common-frontend'
 import { mapGetters, mapActions, mapMutations } from 'vuex'
 
 export default {

@@ -41,7 +41,7 @@
 
 <script>
 import AuthorizationsNavBar from '@/components/admin/AuthorizationsNavBar.vue'
-import SidebarsFlow from '@/components/common-components/SidebarsFlow.vue'
+import { SidebarsFlow } from '@cib/common-frontend'
 
 export default {
   name: 'AdminAuthorizations',
