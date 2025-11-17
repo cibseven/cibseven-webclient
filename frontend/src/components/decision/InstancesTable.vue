@@ -22,7 +22,7 @@
     { label: 'id', key: 'id', class: 'col-2', tdClass: 'py-1 position-relative' },
     { label: 'evaluationTime', key: 'evaluationTime', class: 'col-2', tdClass: 'py-1' },
     { label: 'callingProcess', key: 'processDefinitionKey', class: 'col-3', tdClass: 'py-1 position-relative' },
-    { label: 'callingInstanceId', key: 'processInstanceId', class: 'col-3', tdClass: 'py-1 position-relative' },
+    { label: 'callingInstanceId', key: 'processInstanceId', class: 'col-3', tdClass: 'py-1' },
     { label: 'activityId', key: 'activityId', class: 'col-2', tdClass: 'py-1' }]">
     <template v-slot:cell(id)="table">
       <button :title="table.item.id" class="text-truncate w-100 btn btn-link text-start" :class="focusedCell === table.item.id ? 'pe-4': ''"
@@ -44,12 +44,12 @@
       </button>
     </template>
     <template v-slot:cell(processInstanceId)="table">
-      <button :title="table.item.processInstanceId" class="text-truncate w-100 btn btn-link text-start" @click="goToProcessInstance(table.item)"
-        @mouseenter="focusedCell = table.item.processInstanceId" @mouseleave="focusedCell = null">
-        {{ table.item.processInstanceId }}
-        <span v-if="table.item.id && focusedCell === table.item.processInstanceId"
-          @click.stop="copyValueToClipboard(table.item.processInstanceId)" class="mdi mdi-18px mdi-content-copy px-2 position-absolute end-0 text-secondary lh-sm"></span>
-      </button>
+      <CopyableActionButton
+        :display-value="table.item.processInstanceId"
+        :title="$t('decision.callingInstanceId') + ':\n' + table.item.processInstanceId"
+        @copy="copyValueToClipboard"
+        :to="`/seven/auth/processes/instance/${table.item.processInstanceId}`"
+      />
     </template>
     <template v-slot:cell(activityId)="table">
       <div :title="table.item.activityId" class="text-truncate w-100"
@@ -70,12 +70,13 @@ import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { FlowTable } from '@cib/common-frontend'
 import { SuccessAlert } from '@cib/common-frontend'
+import { CopyableActionButton } from '@cib/common-frontend'
 import { HistoryService } from '@/services.js'
 import { mapMutations, mapGetters } from 'vuex'
 
 export default {
   name: 'InstancesTable',
-  components: { FlowTable, SuccessAlert },
+  components: { FlowTable, SuccessAlert, CopyableActionButton },
   mixins: [copyToClipboardMixin, permissionsMixin],
   props: { instances: Array, sortDesc: Boolean, sortByDefaultKey: String },
   data() {
@@ -121,17 +122,6 @@ export default {
         params: {
           processKey: processData.processDefinitionKey,
           versionIndex: processData.processDefinitionVersion
-        }
-      })
-    },
-    async goToProcessInstance(instance) {
-      let processData = await HistoryService.findProcessInstance(instance.processInstanceId)
-      this.$router.push({
-        name: 'process',
-        params: {
-          processKey: processData.processDefinitionKey,
-          versionIndex: processData.processDefinitionVersion,
-          instanceId: instance.processInstanceId
         }
       })
     }
