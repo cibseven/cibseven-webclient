@@ -71,11 +71,12 @@
     </div>
 
     <div class="flex-grow-1">
-      <div class="overflow-auto shadow bg-white" style="margin: 10px; height: calc(100% - 25px)">
+      <div class="overflow-auto shadow bg-white" ref="scrollContainer" style="margin: 10px; height: calc(100% - 25px)">
         <div class="h-100 p-2">
           <div class="h-100 position-relative" v-if="task">
             <div
               v-if="(task.assignee && task.assignee.toLowerCase() !== $root.user.id.toLowerCase()) || this.task.assignee == null"
+              ref="scrollOverlay"
               class="col-12 shadow-0"
               style="top: 0px; left: 0px; bottom: 0px; right: 0px; cursor: not-allowed; position: absolute; z-index: 1; background-color: rgba(238,238,238,0.33)">
             </div>
@@ -172,11 +173,41 @@ export default {
     this.$store.commit('setCandidateUsers', [])
     this.$store.commit('setSearchUsers', [])
     this.loadIdentityLinks(this.task.id)
-    this.showPopoverWithDelay(this.task.assignee) // when first task is opened
+    // when first task is opened
+    this.showPopoverWithDelay(this.task.assignee)
+    // Overlay scroll forwarding
+    this.$nextTick(() => {
+      const overlay = this.$refs.scrollOverlay;
+      const scrollContainer = this.$refs.scrollContainer;
+      if (overlay && scrollContainer) {
+        overlay.addEventListener('wheel', (e) => {
+          e.preventDefault();
+          scrollContainer.scrollTop += e.deltaY;
+        });
+        overlay.addEventListener('touchstart', (e) => {
+          overlay._startY = e.touches[0].clientY;
+          overlay._startScroll = scrollContainer.scrollTop;
+        });
+        overlay.addEventListener('touchmove', (e) => {
+          if (overlay._startY !== undefined) {
+            const deltaY = overlay._startY - e.touches[0].clientY;
+            scrollContainer.scrollTop = overlay._startScroll + deltaY;
+          }
+          e.preventDefault();
+        });
+      }
+    });
   },
   beforeUnmount: function() {
-    this.resetTimer() // stop timeout for showPopoverWithDelay()
-    this.stopListeningTouchEvents()
+    this.resetTimer();
+    this.stopListeningTouchEvents();
+    // Remove overlay scroll listeners
+    const overlay = this.$refs.scrollOverlay;
+    if (overlay) {
+      overlay.removeEventListener('wheel');
+      overlay.removeEventListener('touchstart');
+      overlay.removeEventListener('touchmove');
+    }
   },
   methods: {
     ...mapActions('task', ['setSelectedAssignee']),
