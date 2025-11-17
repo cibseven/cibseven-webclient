@@ -144,7 +144,7 @@
           :display-value="$store.state.activity.processActivities[table.item.failedActivityId] || table.item.failedActivityId"
           :copy-value="$store.state.activity.processActivities[table.item.failedActivityId] || table.item.failedActivityId"
           :title="$t('process-instance.incidents.failedActivity') + ':\n' + ($store.state.activity.processActivities[table.item.failedActivityId] || table.item.failedActivityId)"
-          :clickable="false"
+          @click="selectActivity({ activityId: table.item.failedActivityId })"
           @copy="copyValueToClipboard"
         />
       </template>
@@ -342,7 +342,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions(['clearActivitySelection']),
+    ...mapActions(['clearActivitySelection', 'selectActivity']),
     ...mapActions('incidents', ['loadRuntimeIncidents', 'loadHistoryIncidents', 'removeIncident', 'updateIncidentAnnotation', 'setIncidents']),
     formatDateForTooltips,
     async fetchCount(params) {
