@@ -165,7 +165,7 @@
 
 <script>
 import { permissionsMixin } from '@/permissions.js'
-import ErrorDialog from '@/components/common-components/ErrorDialog.vue'
+import { ErrorDialog } from '@cib/common-frontend'
 
 export default {
   name: "StartView",
