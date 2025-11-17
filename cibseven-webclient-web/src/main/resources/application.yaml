@@ -19,7 +19,7 @@ cibseven:
     enabled: true
     # Engine rest
     engineRest:
-      url: http://localhost:7093
+      url: http://localhost:8080
       # Configurable path for the engine REST API (default: /engine-rest)
       # This allows customization for different Jersey application paths
       # Example: path: /different-path
@@ -27,7 +27,7 @@ cibseven:
     historyLevel: full
     # Token generation
     authentication:
-      jwtSecret: RtURHZ7SQYfLoX902wcjlvduW2qe9g0bjMUczmffjiTjzU9phbv3mK54zHMqeGK6cqgoEBTIUE6RqwvemSqbpD40qUPXVRElvDHGhn4OAEfjeEP2ANah8GJejSA08E820mForcQHBmediqg2DzIrxnDXyf2
+      jwtSecret: 
       tokenValidMinutes: 60
       tokenProlongMinutes: 1440
     # LDAP
