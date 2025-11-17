@@ -81,11 +81,10 @@
 <script>
 import { formatDate } from '@/utils/dates.js'
 import { HistoryService, ProcessService } from '@/services.js'
-import FlowTable from '@/components/common-components/FlowTable.vue'
-import { BWaitingBox } from 'cib-common-components'
-import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
+import { FlowTable } from '@cib/common-frontend'
+import { BWaitingBox } from '@cib/bootstrap-components'
+import { CopyableActionButton, SuccessAlert } from '@cib/common-frontend'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
-import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import { mapActions } from 'vuex'
 
 export default {
@@ -144,13 +143,13 @@ export default {
           this.calledInstanceList = response
         } else if (response.length > 0) {
           this.calledInstanceList = this.calledInstanceList.concat(response)
-        }    
-        
+        }
+
         this.matchedCalledList = this.calledInstanceList.map(processPL => {
           const key = processPL.processDefinitionKey
           const version = processPL.processDefinitionVersion
           const state = processPL.state
-          
+
           let foundInst = this.activityInstanceHistory.find(processAIH => {
             if (processAIH.activityType === "callActivity"){
               if (processAIH.calledProcessInstanceId === processPL.id) {

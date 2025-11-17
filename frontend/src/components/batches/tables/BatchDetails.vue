@@ -52,18 +52,16 @@
     <div class="text-center w-100" v-else-if="!loading && batchDetails.length === 0">
       {{ $t('admin.noResults') }}
     </div>
-  </ContentBlock> 
+  </ContentBlock>
   <FailedJobs v-if="batchType === 'runtime'" :batch="batch"></FailedJobs>
 </template>
 
 <script>
   import { formatDate } from '@/utils/dates.js'
   import FailedJobs from './FailedJobs.vue'
-  import FlowTable from '@/components/common-components/FlowTable.vue'
-  import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
-  import { BWaitingBox } from 'cib-common-components'
+  import { BWaitingBox } from '@cib/bootstrap-components'
   import { mapActions, mapGetters } from 'vuex'
-  import ContentBlock from '@/components/common-components/ContentBlock.vue'
+  import { FlowTable, ContentBlock, ConfirmDialog } from '@cib/common-frontend'
 
   export default {
     name: 'BatchDetails',
@@ -111,8 +109,8 @@
     },
     methods: {
       ...mapActions([
-        'deleteHistoricBatch', 
-        'deleteRuntimeBatch', 
+        'deleteHistoricBatch',
+        'deleteRuntimeBatch',
         'getHistoricBatch',
         'getBatchStatistics',
         'setBatchSuspensionState'

@@ -18,9 +18,9 @@
 -->
 <template>
   <SidebarsFlow ref="regionFilter" role="region" :aria-label="$t('seven.filters')" @selected-filter="selectedFilter()" v-model:left-open="leftOpenFilter" :left-caption="leftCaptionFilter" :rightSize="[12, 4, 2, 2, 2]" :leftSize="[12, 4, 2, 2, 2]">
-    <GlobalEvents 
-      v-for="shortcut in taskShortcuts" 
-      :key="shortcut.id" 
+    <GlobalEvents
+      v-for="shortcut in taskShortcuts"
+      :key="shortcut.id"
       @keydown="handleTaskShortcut($event, shortcut)">
     </GlobalEvents>
     <template v-slot:left>
@@ -92,9 +92,8 @@ import { debounce } from '@/utils/debounce.js'
 import TasksNavBar from '@/components/task/TasksNavBar.vue'
 import FilterNavBar from '@/components/task/filter/FilterNavBar.vue'
 import FilterNavCollapsed from '@/components/task/filter/FilterNavCollapsed.vue'
-import SidebarsFlow from '@/components/common-components/SidebarsFlow.vue'
-import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
-import { BWaitingBox } from 'cib-common-components'
+import { SidebarsFlow, SuccessAlert } from '@cib/common-frontend'
+import { BWaitingBox } from '@cib/bootstrap-components'
 import { updateAppTitle } from '@/utils/init'
 import { splitToWords } from '@/utils/search'
 import { getTaskEventShortcuts, checkKeyMatch } from '@/utils/shortcuts.js'

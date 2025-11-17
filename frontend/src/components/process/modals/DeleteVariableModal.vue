@@ -59,7 +59,7 @@
 </template>
 
 <script>
-import { BWaitingBox } from 'cib-common-components'
+import { BWaitingBox } from '@cib/bootstrap-components'
 import { ProcessService, HistoryService } from '@/services.js'
 
 export default {

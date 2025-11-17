@@ -25,7 +25,7 @@
 
 <script>
 import ProcessList from '@/components/processes/list/ProcessList.vue'
-import { BWaitingBox } from 'cib-common-components'
+import { BWaitingBox } from '@cib/bootstrap-components'
 
 export default {
   name: 'ProcessListView',

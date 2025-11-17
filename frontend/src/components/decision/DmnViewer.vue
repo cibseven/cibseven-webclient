@@ -48,7 +48,7 @@
 import DmnJS from 'dmn-js'
 
 // UI loading indicator
-import { BWaitingBox } from 'cib-common-components'
+import { BWaitingBox } from '@cib/bootstrap-components'
 import { mapActions } from 'vuex'
 
 // Required styles
@@ -169,11 +169,11 @@ export default {
       const title = this.$t('dmn-viewer.legend.' + type)
       const styleStr = "width: max-content; cursor: pointer;"
       return `
-        <span 
-          data-element-id="${elementId || ''}" 
-          data-type="${type || ''}" 
-          class="position-absolute" 
-          style="${styleStr}" 
+        <span
+          data-element-id="${elementId || ''}"
+          data-type="${type || ''}"
+          class="position-absolute"
+          style="${styleStr}"
           title="${title}"
         >
           <span class="badge rounded-pill border border-dark px-2 py-1 me-1 ${classes}">

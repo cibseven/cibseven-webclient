@@ -14,11 +14,9 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { registerComponents } from 'cib-common-components'
+import { registerComponents } from '@cib/bootstrap-components'
 import { GlobalEvents } from 'vue-global-events'
-import { HoverStyle } from '@/components/common-components/directives.js'
-import ErrorDialog from '@/components/common-components/ErrorDialog.vue'
-import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
+import { ErrorDialog, ConfirmDialog, HoverStyle } from '@cib/common-frontend'
 
 const registerOwnComponents = function(app) {
 

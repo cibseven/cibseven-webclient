@@ -116,7 +116,7 @@
             </div>
           </div>
           <InstancesTable ref="instancesTable"
-            :scrollable-area="$refs.rContent" 
+            :scrollable-area="$refs.rContent"
             :process="process"
             :sortByDefaultKey="sortByDefaultKey"
             :sortDesc="sortDesc"
@@ -168,9 +168,8 @@ import resizerMixin from '@/components/process/mixins/resizerMixin.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import tabUrlMixin from '@/components/process/mixins/tabUrlMixin.js'
 import { debounce } from '@/utils/debounce.js'
-import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
-import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
-import { BWaitingBox } from 'cib-common-components'
+import { SuccessAlert, ConfirmDialog } from '@cib/common-frontend'
+import { BWaitingBox } from '@cib/bootstrap-components'
 import ProcessInstancesTabs from '@/components/process/ProcessInstancesTabs.vue'
 import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
 import { mapGetters, mapActions } from 'vuex'

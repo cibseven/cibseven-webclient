@@ -133,7 +133,7 @@ import { moment } from '@/globals.js'
 import { formatDate } from '@/utils/dates.js'
 import { ProcessService, HistoryService } from '@/services.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
-import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
+import { SuccessAlert } from '@cib/common-frontend'
 
 export default {
   name: 'ProcessDefinitionDetails',
@@ -187,11 +187,11 @@ export default {
         const processKey = processInstance.processDefinitionKey
         const versionIndex = processInstance.processDefinitionVersion
         const params = { processKey, versionIndex, instanceId: processInstance.id }
-        
+
         const routeConfig = {
           name: 'process',
           params,
-          query: { 
+          query: {
             tab: 'variables'
           }
         }

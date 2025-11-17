@@ -37,7 +37,7 @@
 </template>
 
 <script>
-import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
+import { ConfirmDialog } from '@cib/common-frontend'
 import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
 
 export default {

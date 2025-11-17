@@ -21,7 +21,7 @@
 </template>
 
 <script>
-import GenericTabs from '@/components/common-components/GenericTabs.vue'
+import { GenericTabs } from '@cib/common-frontend'
 
 export default {
   name: 'ProcessInstanceTabs',

@@ -48,7 +48,7 @@
 
 <script>
 
-import { BWaitingBox } from 'cib-common-components'
+import { BWaitingBox } from '@cib/bootstrap-components'
 
 import postMessageMixin from '@/components/forms/postMessage.js'
 import IconButton from '@/components/forms/IconButton.vue'
@@ -92,7 +92,7 @@ export default {
 
       // Add cacheBust to prevent caching issues in form-js document preview component
       const cacheBust = Date.now().toString();
-      
+
       documentReference.endpoint = createDocumentEndpointUrl(
         this.templateMetaData.task.processInstanceId,
         variableName,
@@ -100,7 +100,7 @@ export default {
         fileType,
         cacheBust
       );
-      
+
       return [documentReference];
     },
     handleFileSelection: async function(event, fileInput, formularContent, taskId, form) {
@@ -124,7 +124,7 @@ export default {
             const documentPreviews = findDocumentPreviewComponents(formularContent);
             const documentReferenceVar = getDocumentReferenceVariableName(variableName);
             const hasDocumentPreview = documentPreviews.some(component =>
-              component.dataSource === `=${documentReferenceVar}` || 
+              component.dataSource === `=${documentReferenceVar}` ||
               component.dataSource === `=${variableName}`
             );
 
@@ -165,7 +165,7 @@ export default {
     },
     convertFilesToVariables: async function() {
       const fileVariables = {};
-      
+
       if (this.formFiles && Object.keys(this.formFiles).length > 0) {
         for (const [key, file] of Object.entries(this.formFiles)) {
           // Convert file to base64
@@ -193,7 +193,7 @@ export default {
           };
         }
       }
-      
+
       return fileVariables;
     },
     showDiagram: function () {

@@ -43,7 +43,7 @@
 <script>
 import { SystemService } from '@/services.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
-import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
+import { SuccessAlert } from '@cib/common-frontend'
 
 export default {
   name: 'SystemDiagnostics',
