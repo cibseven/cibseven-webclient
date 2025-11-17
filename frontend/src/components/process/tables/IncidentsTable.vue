@@ -76,7 +76,7 @@
       <template v-slot:cell(incidentType)="table">
         <CopyableActionButton
           :display-value="table.item.incidentType"
-          :copy-value="table.item.incidentType" 
+          :copy-value="table.item.incidentType"
           :title="$t('process-instance.incidents.incidentType') + ':\n' + table.item.incidentType"
           :clickable="false"
           @copy="copyValueToClipboard"
@@ -84,9 +84,9 @@
       </template>
 
       <template v-slot:cell(incidentMessage)="table">
-        <CopyableActionButton 
+        <CopyableActionButton
           :display-value="getIncidentMessage(table.item)"
-          :copy-value="getIncidentMessage(table.item)" 
+          :copy-value="getIncidentMessage(table.item)"
           :title="getIncidentMessage(table.item)"
           class="text-truncate w-100"
           @click="showIncidentMessage(table.item)"
@@ -95,10 +95,10 @@
       </template>
 
       <template #cell(processInstanceId)="row">
-        <CopyableActionButton 
+        <CopyableActionButton
           v-if="row.item.processInstanceId"
           :display-value="row.item.processInstanceId"
-          :copy-value="row.item.processInstanceId" 
+          :copy-value="row.item.processInstanceId"
           :title="row.item.processInstanceId"
           @click="navigateToIncidentProcessInstance(row.item.processInstanceId)"
           @copy="copyValueToClipboard"
@@ -109,7 +109,7 @@
       <template #cell(businessKey)="row">
         <CopyableActionButton v-if="row.item.businessKey !== undefined"
           :display-value="row.item.businessKey"
-          :copy-value="row.item.businessKey" 
+          :copy-value="row.item.businessKey"
           :title="row.item.businessKey"
           :clickable="false"
           @copy="copyValueToClipboard"
@@ -132,7 +132,7 @@
       <template v-slot:cell(activityId)="table">
         <CopyableActionButton
           :display-value="$store.state.activity.processActivities[table.item.activityId] || table.item.activityId"
-          :copy-value="$store.state.activity.processActivities[table.item.activityId] || table.item.activityId" 
+          :copy-value="$store.state.activity.processActivities[table.item.activityId] || table.item.activityId"
           :title="$t('process-instance.incidents.activity') + ':\n' + ($store.state.activity.processActivities[table.item.activityId] || table.item.activityId)"
           :clickable="false"
           @copy="copyValueToClipboard"
@@ -142,7 +142,7 @@
       <template v-slot:cell(failedActivityId)="table">
         <CopyableActionButton
           :display-value="$store.state.activity.processActivities[table.item.failedActivityId] || table.item.failedActivityId"
-          :copy-value="$store.state.activity.processActivities[table.item.failedActivityId] || table.item.failedActivityId" 
+          :copy-value="$store.state.activity.processActivities[table.item.failedActivityId] || table.item.failedActivityId"
           :title="$t('process-instance.incidents.failedActivity') + ':\n' + ($store.state.activity.processActivities[table.item.failedActivityId] || table.item.failedActivityId)"
           :clickable="false"
           @copy="copyValueToClipboard"
@@ -152,7 +152,7 @@
       <template v-slot:cell(executionId)="table">
         <CopyableActionButton
           :display-value="table.item.executionId"
-          :copy-value="table.item.executionId" 
+          :copy-value="table.item.executionId"
           :title="$t('process-instance.incidents.executionId') + ':\n' + table.item.executionId"
           :clickable="false"
           @copy="copyValueToClipboard"
@@ -160,9 +160,9 @@
       </template>
 
       <template v-slot:cell(causeIncidentProcessInstanceId)="table">
-        <CopyableActionButton 
+        <CopyableActionButton
           :display-value="table.item.causeIncidentProcessInstanceId"
-          :copy-value="table.item.causeIncidentProcessInstanceId" 
+          :copy-value="table.item.causeIncidentProcessInstanceId"
           :title="$t('process-instance.incidents.causeIncidentProcessInstanceId') + ':\n' + table.item.causeIncidentProcessInstanceId"
           @click="navigateToIncidentProcessInstance(table.item.causeIncidentProcessInstanceId)"
           @copy="copyValueToClipboard"
@@ -170,9 +170,9 @@
       </template>
 
       <template v-slot:cell(rootCauseIncidentProcessInstanceId)="table">
-        <CopyableActionButton 
+        <CopyableActionButton
           :display-value="table.item.rootCauseIncidentProcessInstanceId"
-          :copy-value="table.item.rootCauseIncidentProcessInstanceId" 
+          :copy-value="table.item.rootCauseIncidentProcessInstanceId"
           :title="$t('process-instance.incidents.rootCauseIncidentProcessInstanceId') + ':\n' + table.item.rootCauseIncidentProcessInstanceId"
           @click="navigateToIncidentProcessInstance(table.item.rootCauseIncidentProcessInstanceId)"
           @copy="copyValueToClipboard"
@@ -182,7 +182,7 @@
       <template v-slot:cell(annotation)="table">
         <CopyableActionButton
           :display-value="table.item.annotation"
-          :copy-value="table.item.annotation" 
+          :copy-value="table.item.annotation"
           :title="$t('process-instance.incidents.editAnnotation') + ':\n' + table.item.annotation"
           :clickable="!table.item.endTime"
           @click="$refs.annotationModal.show(table.item.id, table.item.annotation)"
@@ -217,13 +217,12 @@
 <script>
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { IncidentService, HistoryService } from '@/services.js'
-import FlowTable from '@/components/common-components/FlowTable.vue'
-import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
+import { FlowTable } from '@cib/common-frontend'
+import { SuccessAlert } from '@cib/common-frontend'
 import RetryModal from '@/components/process/modals/RetryModal.vue'
 import AnnotationModal from '@/components/process/modals/AnnotationModal.vue'
 import StackTraceModal from '@/components/process/modals/StackTraceModal.vue'
-import PagedScrollableContent from '@/components/common-components/PagedScrollableContent.vue'
-import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
+import { PagedScrollableContent, CopyableActionButton } from '@cib/common-frontend'
 import { formatDateForTooltips } from '@/utils/dates.js'
 import { mapGetters, mapActions } from 'vuex'
 import { debounce } from '@/utils/debounce.js'
@@ -429,17 +428,17 @@ export default {
 
       const isHistoric = !!incident.historyConfiguration
       const isExternalTask = incident.incidentType === 'failedExternalTask'
-      
+
       // Select appropriate service method based on incident type and whether it's historic
       const stackTracePromise = this.getStackTracePromise(isHistoric, isExternalTask, configuration)
-      
+
       stackTracePromise.then(res => {
         this.$refs.stackTraceModal.show(res)
       })
     },
     getStackTracePromise(isHistoric, isExternalTask, configuration) {
       if (isExternalTask) {
-        return isHistoric 
+        return isHistoric
           ? IncidentService.fetchHistoricIncidentStacktraceByExternalTaskId(configuration)
           : IncidentService.fetchIncidentStacktraceByExternalTaskId(configuration)
       } else {
@@ -479,16 +478,16 @@ export default {
         const processKey = processInstance.processDefinitionKey
         const versionIndex = processInstance.processDefinitionVersion
         const params = { processKey, versionIndex, instanceId: processInstance.id }
-        
+
         const routeConfig = {
           name: 'process',
           params,
-          query: { 
+          query: {
             parentProcessDefinitionId: this.process.id,
             tab: 'incidents'
           }
         }
-        
+
         await this.$router.push(routeConfig)
       } catch (error) {
         console.error('Failed to navigate to incident process instance:', error)

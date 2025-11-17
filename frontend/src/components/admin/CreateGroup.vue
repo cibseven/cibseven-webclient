@@ -55,9 +55,7 @@
 <script>
 import { AdminService } from '@/services.js'
 import { notEmpty, isValidId } from '@/components/admin/utils.js'
-import ErrorDialog from '@/components/common-components/ErrorDialog.vue'
-import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
-import CIBForm from '@/components/common-components/CIBForm.vue'
+import { ErrorDialog, SuccessAlert, CIBForm } from '@cib/common-frontend'
 
 export default {
   name: 'CreateGroup',

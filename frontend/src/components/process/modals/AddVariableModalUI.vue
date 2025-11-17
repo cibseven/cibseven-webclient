@@ -158,7 +158,7 @@
 
 <script>
 import { moment } from '@/globals.js'
-import { BWaitingBox } from 'cib-common-components'
+import { BWaitingBox } from '@cib/bootstrap-components'
 
 export default {
   name: 'AddVariableModalUI',
@@ -494,7 +494,7 @@ export default {
       }
       if (value.trim() === '') {
         return null
-      }      
+      }
       try {
         JSON.parse(value)
         return null

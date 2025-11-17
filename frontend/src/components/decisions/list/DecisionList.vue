@@ -65,8 +65,8 @@
 
 <script>
 import { permissionsMixin } from '@/permissions.js'
-import FlowTable from '@/components/common-components/FlowTable.vue'
-import { BWaitingBox } from 'cib-common-components'
+import { FlowTable } from '@cib/common-frontend'
+import { BWaitingBox } from '@cib/bootstrap-components'
 import { mapActions, mapGetters } from 'vuex'
 
 export default {

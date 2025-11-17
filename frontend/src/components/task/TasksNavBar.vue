@@ -176,8 +176,8 @@ import { formatDateForTooltips } from '@/utils/dates.js'
 import StartProcess from '@/components/start-process/StartProcess.vue'
 import AdvancedSearchModal from '@/components/task/AdvancedSearchModal.vue'
 import SmartSearch from '@/components/task/SmartSearch.vue'
-import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
-import { BWaitingBox } from 'cib-common-components'
+import { ConfirmDialog } from '@cib/common-frontend'
+import { BWaitingBox } from '@cib/bootstrap-components'
 import { mapActions } from 'vuex'
 
 export default {
@@ -333,7 +333,7 @@ export default {
             if (!identityLinks || identityLinks.length === 0) {
               return this.$emit('selected-task', task)
             }
-            
+
             var userIdLink = identityLinks.find(i => {
               return i.type === 'candidate' && i.userId && i.userId.toLowerCase() === this.$root.user.userID.toLowerCase()
             })

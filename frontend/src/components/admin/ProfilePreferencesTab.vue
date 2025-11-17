@@ -46,7 +46,7 @@
           <span class="fw-semibold">{{ $t('admin.preferences.dates.formatDefault') }}</span>
           <span v-b-popover.hover.right="$t('admin.preferences.dates.formatDefaultDescription')" class="mdi mdi-18px mdi-information-outline text-info ms-1"></span>
         </label>
-        <b-form-select v-model="formatDefault" :options="dateFormatOptions" 
+        <b-form-select v-model="formatDefault" :options="dateFormatOptions"
           class="col-lg-6 col-md-8 col-sm-12 mb-0"
         />
       </b-form-group>
@@ -88,7 +88,7 @@
 
 <script>
 import { formatDate } from '@/utils/dates.js'
-import ContentBlock from '@/components/common-components/ContentBlock.vue'
+import { ContentBlock } from '@cib/common-frontend'
 import { permissionsMixin } from '@/permissions.js'
 
 export default {
@@ -106,7 +106,7 @@ export default {
     dateFormatOptions() {
       return [
         // Standard International
-        { 
+        {
           label: this.$t('admin.preferences.dates.groupStandard'),
           options: this.createDateOptions([
             'L',

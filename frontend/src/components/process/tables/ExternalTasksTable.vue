@@ -66,11 +66,10 @@ You may obtain a copy of the License at
 
 <script>
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
-import FlowTable from '@/components/common-components/FlowTable.vue'
-import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
-import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
+import { FlowTable } from '@cib/common-frontend'
+import { SuccessAlert, CopyableActionButton } from '@cib/common-frontend'
 import { formatDateForTooltips } from '@/utils/dates.js'
-import { BWaitingBox } from 'cib-common-components'
+import { BWaitingBox } from '@cib/bootstrap-components'
 import { mapGetters, mapActions } from 'vuex'
 
 export default {

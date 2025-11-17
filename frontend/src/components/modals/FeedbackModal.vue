@@ -38,7 +38,7 @@
 
 <script>
 import platform from 'platform'
-import CIBForm from '@/components/common-components/CIBForm.vue'
+import { CIBForm } from '@cib/common-frontend'
 import FeedbackScreenshot from '@/components/modals/FeedbackScreenshot.vue'
 import { axios } from '@/globals.js'
 

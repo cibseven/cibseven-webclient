@@ -63,8 +63,7 @@
 
 <script>
 import { TaskService } from '@/services.js'
-import FlowTable from '@/components/common-components/FlowTable.vue'
-import ContentBlock from '@/components/common-components/ContentBlock.vue'
+import { FlowTable, ContentBlock } from '@cib/common-frontend'
 
 export default {
   name: 'HumanTasksView',

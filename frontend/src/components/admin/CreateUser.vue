@@ -92,7 +92,7 @@
 <script>
 import { AdminService } from '@/services.js'
 import { notEmpty, same, isValidEmail } from '@/components/admin/utils.js'
-import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
+import { SuccessAlert } from '@cib/common-frontend'
 
 export default {
   name: 'CreateUser',

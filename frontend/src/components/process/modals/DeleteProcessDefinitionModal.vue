@@ -40,7 +40,7 @@
 </template>
 
 <script>
-import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
+import { ConfirmDialog } from '@cib/common-frontend'
 
 export default {
   name: 'DeleteProcessDefinitionModal',
