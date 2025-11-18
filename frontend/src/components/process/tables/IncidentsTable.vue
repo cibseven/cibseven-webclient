@@ -39,7 +39,7 @@
         <div v-if="selectedActivityId" class="col-6 p-3">
           <span class="badge bg-info rounded-pill p-2 pe-3" style="font-weight: 500; font-size: 0.75rem">
             <span
-              @click="selectFailedActivityId('')"
+              @click="removeSelectedActivityBadge"
               :title="$t('process-instance.incidents.activityIdBadge.remove')"
               role="button" class="mdi mdi-close-thick py-2 px-1"></span>
               <span :title="$t('process-instance.incidents.activityIdBadge.tooltip', { activityId: selectedActivityId })">
@@ -333,11 +333,9 @@ export default {
     },
     'selectedActivityId': {
       handler() {
-        if (!this.isInstanceView) {
-          this.firstResult = 0
-          const id = this.isInstanceView ? this.instance.id : this.process.id
-          this.loadIncidentsData(id, this.isInstanceView)
-        }
+        this.firstResult = 0
+        const id = this.isInstanceView ? this.instance.id : this.process.id
+        this.loadIncidentsData(id, this.isInstanceView)
       }
     }
   },
@@ -367,7 +365,7 @@ export default {
         sortBy: this.currentSortBy,
         sortOrder: this.currentSortDesc ? 'asc' : 'desc',
         ...(isInstance ? { processInstanceId: id } : { processDefinitionId: id }),
-        ...((this.selectedActivityId && !this.isInstanceView) ? { failedActivityId: this.selectedActivityId } : {} ),
+        ...(this.selectedActivityId ? { failedActivityId: this.selectedActivityId } : {} ),
         ...(this.freeText ? { incidentMessageLike: `%${this.freeText}%` } : {} ),
       }
 
@@ -499,6 +497,10 @@ export default {
       const id = this.isInstanceView ? this.instance.id : this.process.id
       this.loadIncidentsData(id, this.isInstanceView)
     }),
+    removeSelectedActivityBadge: function() {
+      this.clearActivitySelection()
+      this.setHighlightedElement('')
+    },
     selectFailedActivityId(failedActivityId) {
       this.selectActivity({ activityId: failedActivityId })
       this.setHighlightedElement(failedActivityId)
