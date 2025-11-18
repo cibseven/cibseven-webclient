@@ -133,7 +133,7 @@
         <CopyableActionButton
           :display-value="$store.state.activity.processActivities[table.item.activityId] || table.item.activityId"
           :copy-value="$store.state.activity.processActivities[table.item.activityId] || table.item.activityId"
-          :title="$t('process-instance.incidents.activity') + ':\n' + ($store.state.activity.processActivities[table.item.activityId] || table.item.activityId)"
+          :title="getActivityIdTooltip(table.item.activityId)"
           :clickable="false"
           @copy="copyValueToClipboard"
         />
@@ -143,7 +143,7 @@
         <CopyableActionButton
           :display-value="$store.state.activity.processActivities[table.item.failedActivityId] || table.item.failedActivityId"
           :copy-value="$store.state.activity.processActivities[table.item.failedActivityId] || table.item.failedActivityId"
-          :title="$t('process-instance.incidents.failedActivity') + ':\n' + ($store.state.activity.processActivities[table.item.failedActivityId] || table.item.failedActivityId)"
+          :title="getActivityIdTooltip(table.item.failedActivityId)"
           @click="selectFailedActivityId(table.item.failedActivityId)"
           @copy="copyValueToClipboard"
         />
@@ -504,6 +504,10 @@ export default {
     selectFailedActivityId(failedActivityId) {
       this.selectActivity({ activityId: failedActivityId })
       this.setHighlightedElement(failedActivityId)
+    },
+    getActivityIdTooltip(activityId) {
+      const activityName = this.$store.state.activity.processActivities[activityId] || activityId
+      return this.$t('process-instance.incidents.activity') + ':\n' + activityName + '\n\n' + this.$t('decision.activityId') + ':\n' + activityId
     },
   }
 }
