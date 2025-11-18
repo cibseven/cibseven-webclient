@@ -55,10 +55,9 @@
 
 <script>
 import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
-import FlowTable from '@/components/common-components/FlowTable.vue'
+import { FlowTable, ContentBlock } from '@cib/common-frontend'
 import { mapGetters, mapActions } from 'vuex'
-import { BWaitingBox } from 'cib-common-components'
-import ContentBlock from '@/components/common-components/ContentBlock.vue'
+import { BWaitingBox } from '@cib/bootstrap-components'
 
 export default {
   name: 'RuntimeBatches',
@@ -74,7 +73,7 @@ export default {
   mounted: function() {
     this.loading = true
     this.loadBatches()
-  },  
+  },
   unmounted: function() {
     if (this.batchesInterval) {
       clearInterval(this.batchesInterval)

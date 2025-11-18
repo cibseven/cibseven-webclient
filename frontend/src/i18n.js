@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 import { createI18n } from 'vue-i18n'
-import { mergeLocaleMessage as loadTranslationsFromCommonComponents } from 'cib-common-components'
+import { mergeLocaleMessage as loadTranslationsFromCommonComponents } from '@cib/bootstrap-components'
 import { axios, moment } from './globals.js'
 import { getTheme } from './utils/init'
 import 'moment/dist/locale/de'
@@ -86,7 +86,7 @@ const defaultTranslationSources = [
 
 const loadTranslations = async function(config, lang, sources = defaultTranslationSources) {
   if (sources.includes(translationSources.commonComponents)) {
-    // Add translations from cib-common-components/src/assets/translations_*.json
+    // Add translations from bootstrap-components/src/assets/translations_*.json
     loadTranslationsFromCommonComponents(i18n, lang)
   }
 

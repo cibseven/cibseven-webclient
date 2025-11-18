@@ -38,7 +38,7 @@
 </template>
 
 <script>
-import FlowTable from '@/components/common-components/FlowTable.vue'
+import { FlowTable } from '@cib/common-frontend'
 
 export default {
   name: 'ShortcutsTable',

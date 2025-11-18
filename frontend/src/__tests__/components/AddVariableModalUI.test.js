@@ -20,7 +20,7 @@ import { i18n } from '@/i18n'
 import AddVariableModalUI from '@/components/process/modals/AddVariableModalUI.vue'
 import { readFileSync } from 'fs'
 import { resolve } from 'path'
-import { BButton, BFormGroup, BFormInput, BFormSelect, BFormCheckbox, BAlert } from 'cib-common-components'
+import { BButton, BFormGroup, BFormInput, BFormSelect, BFormCheckbox, BAlert } from '@cib/bootstrap-components'
 
 // Mock dependencies
 vi.mock('@/services.js', () => ({
@@ -90,7 +90,7 @@ describe('AddVariableModal.vue UI interactions', () => {
 
   async function changeType(newType) {
     const select = wrapper.find('select')
-    await select.setValue(newType)    
+    await select.setValue(newType)
   }
 
   async function setValue(newValue) {
@@ -454,7 +454,7 @@ describe('AddVariableModal.vue UI interactions', () => {
     it('chain', async () => {
       await setData({ type: 'String', value: 'text' })
       expect(wrapper.vm.value).toBe('text')
-      
+
       await changeType('Boolean')
       expect(wrapper.vm.value).toBe(true)
       await changeType('Long')
@@ -508,7 +508,7 @@ describe('AddVariableModal.vue UI interactions', () => {
           await changeType('Xml')
           expect(wrapper.vm.value).toBe('')
         })
-        
+
         it('to Object', async () => {
           await changeType('Object')
           expect(wrapper.vm.value).toBe('text')
@@ -551,7 +551,7 @@ describe('AddVariableModal.vue UI interactions', () => {
           await changeType('Xml')
           expect(wrapper.vm.value).toBe('')
         })
-        
+
         it('to Object', async () => {
           await changeType('Object')
           expect(wrapper.vm.value).toBe('')
@@ -594,7 +594,7 @@ describe('AddVariableModal.vue UI interactions', () => {
           await changeType('Xml')
           expect(wrapper.vm.value).toBe('')
         })
-        
+
         it('to Object', async () => {
           await changeType('Object')
           expect(wrapper.vm.value).toBe('10.5')
@@ -651,7 +651,7 @@ describe('AddVariableModal.vue UI interactions', () => {
         beforeEach(async () => {
           await setData({ type: 'Boolean', value: true })
           expect(wrapper.vm.value).toBe(true)
-        })        
+        })
 
         it('true to Long', async () => {
           await changeType('Long')
@@ -1350,7 +1350,7 @@ describe('AddVariableModal.vue UI interactions', () => {
           await changeType('Object')
           expect(wrapper.vm.value).toBe('123')
           expect(wrapper.vm.objectTypeName).toBe('')
-          expect(wrapper.vm.serializationDataFormat).toBe('')          
+          expect(wrapper.vm.serializationDataFormat).toBe('')
         })
       })
 

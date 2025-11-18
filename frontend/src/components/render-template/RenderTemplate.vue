@@ -56,8 +56,8 @@
 import { permissionsMixin } from '@/permissions.js'
 import { TaskService } from '@/services.js'
 import IconButton from '@/components/render-template/IconButton.vue'
-import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
-import { BWaitingBox } from 'cib-common-components'
+import { SuccessAlert } from '@cib/common-frontend'
+import { BWaitingBox } from '@cib/bootstrap-components'
 import { ENGINE_STORAGE_KEY } from '@/constants.js'
 
 export default {
@@ -172,7 +172,7 @@ export default {
               return
             }
             //Ui-element-templates
-            
+
             formFrame.src = '#/' + formReference + '/' + this.currentLanguage() + '/' +
             this.task.id + '/' + this.$root.user.authToken + '/' + themeContext + '/' + translationContext
 
@@ -331,7 +331,7 @@ export default {
         const year = d.getFullYear()
         result = `${day}/${month}/${year}`
       }
-      
+
       // Send result back to iframe
       if (this.datePickerRequest && this.datePickerRequest.fieldName) {
         const response = {
@@ -339,14 +339,14 @@ export default {
           fieldName: this.datePickerRequest.fieldName,
           value: result
         }
-        
+
         // Post message to the iframe
         const formFrame = this.$refs['template-frame']
         if (formFrame && formFrame.contentWindow) {
           formFrame.contentWindow.postMessage(response, '*')
         }
       }
-      
+
       // Hide the date picker modal
       if (this.$refs.datePickerModal) {
         this.$refs.datePickerModal.hide()

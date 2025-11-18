@@ -51,11 +51,10 @@
 
 <script>
 import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
-import FlowTable from '@/components/common-components/FlowTable.vue'
 import { mapGetters, mapActions } from 'vuex'
 import { debounce } from '@/utils/debounce.js'
-import { BWaitingBox } from 'cib-common-components'
-import ContentBlock from '@/components/common-components/ContentBlock.vue'
+import { BWaitingBox } from '@cib/bootstrap-components'
+import { FlowTable, ContentBlock } from '@cib/common-frontend'
 
 export default {
   name: 'HistoricBatches',
@@ -116,7 +115,7 @@ export default {
         firstResult: 0,
         maxResults: this.maxResults
       }
-      
+
       this.prependNewHistoricBatches(params).then(newBatches => {
         if (newBatches.length > 0) {
           // Adjust firstResult to keep correct pagination

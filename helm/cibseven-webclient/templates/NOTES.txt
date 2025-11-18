@@ -1,4 +1,4 @@
 {{/*
 Of course you can just take the defined template's contents and insert here to customize more.
 */}}
-{{ include "common-tpl-lib-2.6.1.notes" . }}
+{{ include "common-tpl-lib-2.7.0.notes" . }}

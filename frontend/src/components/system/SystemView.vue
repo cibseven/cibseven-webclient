@@ -38,7 +38,7 @@
 </template>
 
 <script>
-import SidebarsFlow from '@/components/common-components/SidebarsFlow.vue'
+import { SidebarsFlow } from '@cib/common-frontend'
 
 export const SystemSidebarItems = ['system-diagnostics', 'execution-metrics']
 

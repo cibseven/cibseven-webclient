@@ -56,7 +56,7 @@
 <script>
 
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
-import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
+import { SuccessAlert } from '@cib/common-frontend'
 import DecisionDefinitionDetails from '@/components/decision/DecisionDefinitionDetails.vue'
 
 export default {

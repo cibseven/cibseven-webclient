@@ -60,8 +60,8 @@
 <script>
 import { ProcessService } from '@/services.js'
 import RenderTemplate from '@/components/render-template/RenderTemplate.vue'
-import { BWaitingBox } from 'cib-common-components'
-import HighlightedText from '@/components/common-components/HighlightedText.vue'
+import { BWaitingBox } from '@cib/bootstrap-components'
+import { HighlightedText } from '@cib/common-frontend'
 import { permissionsMixin } from '@/permissions.js'
 
 export default {
@@ -109,7 +109,7 @@ export default {
     this.$eventBus.on('openStartProcess', this.show)
   },
   methods: {
-    show: function() {      
+    show: function() {
       this.loadProcesses(false)
       this.$refs.startProcess.show()
     },

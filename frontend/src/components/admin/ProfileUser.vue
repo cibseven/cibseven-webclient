@@ -244,12 +244,10 @@
 <script>
 import { AdminService } from '@/services.js'
 import { notEmpty, same } from '@/components/admin/utils.js'
-import SidebarsFlow from '@/components/common-components/SidebarsFlow.vue'
-import FlowTable from '@/components/common-components/FlowTable.vue'
-import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
-import CIBForm from '@/components/common-components/CIBForm.vue'
+
+import { SidebarsFlow, FlowTable, SuccessAlert, CIBForm, ContentBlock }  from '@cib/common-frontend'
 import ProfilePreferencesTab from '@/components/admin/ProfilePreferencesTab.vue'
-import ContentBlock from '@/components/common-components/ContentBlock.vue'
+
 import { mapActions, mapGetters } from 'vuex'
 
 export default {
