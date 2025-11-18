@@ -39,7 +39,7 @@
         <div v-if="selectedActivityId" class="col-6 p-3">
           <span class="badge bg-info rounded-pill p-2 pe-3" style="font-weight: 500; font-size: 0.75rem">
             <span
-              @click="clearActivitySelection"
+              @click="selectFailedActivityId('')"
               :title="$t('process-instance.incidents.activityIdBadge.remove')"
               role="button" class="mdi mdi-close-thick py-2 px-1"></span>
               <span :title="$t('process-instance.incidents.activityIdBadge.tooltip', { activityId: selectedActivityId })">
@@ -144,7 +144,7 @@
           :display-value="$store.state.activity.processActivities[table.item.failedActivityId] || table.item.failedActivityId"
           :copy-value="$store.state.activity.processActivities[table.item.failedActivityId] || table.item.failedActivityId"
           :title="$t('process-instance.incidents.failedActivity') + ':\n' + ($store.state.activity.processActivities[table.item.failedActivityId] || table.item.failedActivityId)"
-          @click="selectActivity({ activityId: table.item.failedActivityId })"
+          @click="selectFailedActivityId(table.item.failedActivityId)"
           @copy="copyValueToClipboard"
         />
       </template>
@@ -342,7 +342,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions(['clearActivitySelection', 'selectActivity']),
+    ...mapActions(['clearActivitySelection', 'setHighlightedElement', 'selectActivity']),
     ...mapActions('incidents', ['loadRuntimeIncidents', 'loadHistoryIncidents', 'removeIncident', 'updateIncidentAnnotation', 'setIncidents']),
     formatDateForTooltips,
     async fetchCount(params) {
@@ -499,6 +499,10 @@ export default {
       const id = this.isInstanceView ? this.instance.id : this.process.id
       this.loadIncidentsData(id, this.isInstanceView)
     }),
+    selectFailedActivityId(failedActivityId) {
+      this.selectActivity({ activityId: failedActivityId })
+      this.setHighlightedElement(failedActivityId)
+    },
   }
 }
 </script>

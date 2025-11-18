@@ -87,7 +87,7 @@
               <div v-if="selectedActivityId" class="col-3 p-3">
                 <span class="badge bg-info rounded-pill p-2 pe-3" style="font-weight: 500; font-size: 0.75rem">
                   <span
-                    @click="clearActivitySelection"
+                    @click="removeSelectedActivityBadge"
                     :title="$t('process.activityIdBadge.remove')"
                     role="button" class="mdi mdi-close-thick py-2 px-1"></span>
                     <span :title="$t('process.activityIdBadge.tooltip.' + selectedActivityInstancesListMode, { activityId: selectedActivityId })">
@@ -316,7 +316,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions(['clearActivitySelection', 'setDiagramXml', 'loadHistoricActivityStatistics', 'clearHistoricActivityStatistics']),
+    ...mapActions(['clearActivitySelection', 'setHighlightedElement', 'setDiagramXml', 'loadHistoricActivityStatistics', 'clearHistoricActivityStatistics']),
     ...mapActions('calledProcessDefinitions', ['loadStaticCalledProcessDefinitions']),
     applySorting: function(sortingCriteria) {
       this.sorting = true
@@ -401,7 +401,11 @@ export default {
         ...this.filter,
         editField: freeText,
       })
-    })
+    }),
+    removeSelectedActivityBadge: function() {
+      this.clearActivitySelection()
+      this.setHighlightedElement('')
+    }
   }
 }
 </script>
