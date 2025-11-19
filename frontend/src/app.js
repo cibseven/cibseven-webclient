@@ -14,12 +14,10 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import './assets/main.css'
-// Note: 'materialdesignicons.css' is after 'main.css', as inside 'main.css' we have required '@charset "UTF-8";' statement
+import './assets/main.css'  // Application-specific styles
 import '@mdi/font/css/materialdesignicons.css'
+import './styles/main.scss' // Bootstrap with custom variables
 import { axios } from './globals.js'
-
-import 'bootstrap'
 
 import { createApp } from 'vue'
 
