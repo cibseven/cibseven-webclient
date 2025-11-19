@@ -73,7 +73,7 @@
     <div @mousedown="handleMouseDown" class="v-resizable position-absolute w-100" style="left: 0" :style="'height: ' + bpmnViewerHeight + 'px; ' + toggleTransition">
       <component :is="BpmnViewerPlugin" v-if="BpmnViewerPlugin" ref="diagram" class="h-100"
         @child-activity="filterByChildActivity($event)" @task-selected="selectTask($event)" @activity-map-ready="activityMap = $event"
-        :activityId="activityId" :activity-instance="activityInstance" :process-definition-id="process.id" :selected-instance="selectedInstance" :activity-instance-history="activityInstanceHistory" 
+        :activityId="selectedActivityId" :activity-instance="activityInstance" :process-definition-id="process.id" :selected-instance="selectedInstance" :activity-instance-history="activityInstanceHistory" 
         :statistics="process.statistics" :active-tab="activeTab" >
       </component>
       <BpmnViewer v-else ref="diagram"
@@ -82,7 +82,7 @@
         :activity-instance-history="activityInstanceHistory" 
         :statistics="process.statistics"
         :selected-instance="selectedInstance"
-        :activityId="activityId" 
+        :activityId="selectedActivityId" 
         @task-selected="selectTask($event)"
         @child-activity="filterByChildActivity($event)"
         class="h-100">
@@ -133,6 +133,7 @@ import ProcessInstanceTabs from '@/components/process/ProcessInstanceTabs.vue'
 import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
 
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
+import { mapGetters } from 'vuex'
 
 export default {
   name: 'ProcessInstanceView',
@@ -149,7 +150,6 @@ export default {
   data: function() {
     return {
       filterHeight: 0,
-      activityId: '',
       defaultTab: 'variables',
       parentProcess: null,
       superProcessInstance: null
@@ -171,6 +171,7 @@ export default {
     }
   },
   computed: {
+    ...mapGetters(['selectedActivityId']),
     ProcessInstanceTabsPlugin() {
       return this.$options.components && this.$options.components.ProcessInstanceTabsPlugin
         ? this.$options.components.ProcessInstanceTabsPlugin
@@ -202,15 +203,19 @@ export default {
     }
   },
   methods: {
-    ...mapActions(['loadHistoricActivityStatistics', 'clearHistoricActivityStatistics']),
+    ...mapActions(['clearActivitySelection', 'setHighlightedElement', 'selectActivity', 'loadHistoricActivityStatistics', 'clearHistoricActivityStatistics']),
     selectTask: function(event) {
       this.$emit('task-selected', event);
     },
     filterByChildActivity: function(event) {
-      if (event) {
-        this.activityId = event.activityId
-      } else {
-        this.activityId = ''
+      const activityId = event?.id || ''
+      if (activityId) {
+        this.selectActivity({ activityId: activityId })
+        this.setHighlightedElement(activityId)
+      }
+      else {
+        this.clearActivitySelection()
+        this.setHighlightedElement('')
       }
     },
     loadSuperProcessInstance: async function(superProcessInstanceId) {
