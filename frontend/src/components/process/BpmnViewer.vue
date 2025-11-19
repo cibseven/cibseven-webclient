@@ -140,13 +140,14 @@ export default {
   methods: {
     ...mapActions(['selectActivity', 'clearActivitySelection', 'setHighlightedElement', 'loadActivitiesInstanceHistory', 'getProcessById']),
     ...mapActions('diagram', ['setDiagramReady']),
-    showDiagram: function(xml) {
+    showDiagram: function(xml, selectedActivityId = null) {
       this.setDiagramReady(false)
       this.loader = true
       this.viewer.importXML(xml).then(() => {
         setTimeout(() => {
           this.viewer.get('canvas').zoom('fit-viewport')
           this.loader = false
+          this.highlightElement(selectedActivityId)
         }, 500)
       })
     },
@@ -236,6 +237,16 @@ export default {
       } else {
         return
       }
+
+      // Clear previous highlight if no activityId is provided
+      if (!activityId) {
+        if (this.currentHighlight) {
+          this.currentHighlight.shape.classList.remove('bpmn-highlight')
+          this.currentHighlight = null
+        }
+        return
+      }
+
       const elementRegistry = this.viewer.get('elementRegistry')
       const canvas = this.viewer.get('canvas')
       const element = elementRegistry.get(activityId)

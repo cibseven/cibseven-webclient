@@ -200,8 +200,7 @@ export default {
       this.$refs.process.show()
       //TODO: Review b-modal static
       setTimeout(() => {
-        this.$refs.diagram.showDiagram(this.templateMetaData.bpmDiagram.bpmn20Xml, this.templateMetaData.activityInstances,
-          this.templateMetaData.activityInstanceHistory)
+        this.$refs.diagram.showDiagram(this.templateMetaData.bpmDiagram.bpmn20Xml)
       }, 500)
     },
     fullScreen: function() {
