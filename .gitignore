@@ -11,7 +11,5 @@
 *.tgz
 .factorypath
 
-cib-common-components/.npmrc
-
 # MacOS
 .DS_Store
