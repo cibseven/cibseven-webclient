@@ -497,7 +497,7 @@ export default {
       const id = this.isInstanceView ? this.instance.id : this.process.id
       this.loadIncidentsData(id, this.isInstanceView)
     }),
-    removeSelectedActivityBadge: function() {
+    removeSelectedActivityBadge() {
       this.clearActivitySelection()
       this.setHighlightedElement('')
     },

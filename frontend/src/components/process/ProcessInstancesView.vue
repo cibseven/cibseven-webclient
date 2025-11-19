@@ -45,9 +45,16 @@
         :process-definition-id="process.id" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" :statistics="process.statistics"
         :active-tab="activeTab" class="h-100">
       </component>
-      <BpmnViewer v-else ref="diagram" @task-selected="selectTask($event)" @activity-map-ready="activityMap = $event"
-        :process-definition-id="process.id" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" :statistics="process.statistics"
-        :active-tab="activeTab" class="h-100">
+      <BpmnViewer v-else ref="diagram"
+        :process-definition-id="process.id"
+        :activity-instance="activityInstance"
+        :activity-instance-history="activityInstanceHistory"
+        :statistics="process.statistics"
+        :selected-instance="null"
+        :active-tab="activeTab"
+        @task-selected="selectTask($event)"
+        @activity-map-ready="activityMap = $event"
+        class="h-100">
       </BpmnViewer>
       <span role="button" size="sm" variant="light" class="bg-white px-2 py-1 me-1 position-absolute border rounded" style="bottom: 90px; right: 11px;" @click="toggleContent">
         <span class="mdi mdi-18px" :class="toggleIcon"></span>
@@ -199,7 +206,6 @@ export default {
   data: function() {
     return {
       selectedInstance: null,
-      selectedTask: null,
       topBarHeight: 0,
       events: {},
       usages: [],
@@ -334,7 +340,6 @@ export default {
       })
     },
     selectTask: function(event) {
-      this.selectedTask = event
       this.$emit('task-selected', event);
     },
     viewDeployment: function() {

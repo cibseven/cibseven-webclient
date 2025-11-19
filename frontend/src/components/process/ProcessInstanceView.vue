@@ -76,10 +76,16 @@
         :activityId="activityId" :activity-instance="activityInstance" :process-definition-id="process.id" :selected-instance="selectedInstance" :activity-instance-history="activityInstanceHistory" 
         :statistics="process.statistics" :active-tab="activeTab" >
       </component>
-      <BpmnViewer v-else ref="diagram" class="h-100"
-        @child-activity="filterByChildActivity($event)" @task-selected="selectTask($event)" :activityId="activityId" 
-        :activity-instance="activityInstance" :selected-instance="selectedInstance" :activity-instance-history="activityInstanceHistory" 
-        :statistics="process.statistics" :process-definition-id="process.id">
+      <BpmnViewer v-else ref="diagram"
+        :process-definition-id="process.id"
+        :activity-instance="activityInstance"
+        :activity-instance-history="activityInstanceHistory" 
+        :statistics="process.statistics"
+        :selected-instance="selectedInstance"
+        :activityId="activityId" 
+        @task-selected="selectTask($event)"
+        @child-activity="filterByChildActivity($event)"
+        class="h-100">
       </BpmnViewer>
       <span role="button" size="sm" variant="light" class="bg-white px-2 py-1 me-1 position-absolute border rounded" style="bottom: 90px; right: 11px;" @click="toggleContent">
         <span class="mdi mdi-18px" :class="toggleIcon"></span>
@@ -198,7 +204,6 @@ export default {
   methods: {
     ...mapActions(['loadHistoricActivityStatistics', 'clearHistoricActivityStatistics']),
     selectTask: function(event) {
-      this.selectedTask = event
       this.$emit('task-selected', event);
     },
     filterByChildActivity: function(event) {
