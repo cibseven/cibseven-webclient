@@ -224,7 +224,7 @@ export default {
           await this.loadHistoricActivityStatistics({ processDefinitionId: this.process.id })
           await this.loadStaticCalledProcessDefinitions({ processDefinitionId: this.process.id })
           ProcessService.fetchDiagram(newId).then(response => {
-            this.$refs.diagram.showDiagram(response.bpmn20Xml)
+            this.$refs.diagram.showDiagram(response.bpmn20Xml, this.selectedActivityId)
             this.setDiagramXml(response.bpmn20Xml)
           })
         }
@@ -250,7 +250,7 @@ export default {
     this.loadStaticCalledProcessDefinitions({ processDefinitionId: this.process.id })
     ProcessService.fetchDiagram(this.process.id).then(response => {
       setTimeout(() => {
-        this.$refs.diagram.showDiagram(response.bpmn20Xml)
+        this.$refs.diagram.showDiagram(response.bpmn20Xml, this.selectedActivityId)
         this.setDiagramXml(response.bpmn20Xml)
       }, 100)
     })

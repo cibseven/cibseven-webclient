@@ -140,13 +140,14 @@ export default {
   methods: {
     ...mapActions(['selectActivity', 'clearActivitySelection', 'setHighlightedElement', 'loadActivitiesInstanceHistory', 'getProcessById']),
     ...mapActions('diagram', ['setDiagramReady']),
-    showDiagram: function(xml) {
+    showDiagram: function(xml, selectedActivityId) {
       this.setDiagramReady(false)
       this.loader = true
       this.viewer.importXML(xml).then(() => {
         setTimeout(() => {
           this.viewer.get('canvas').zoom('fit-viewport')
           this.loader = false
+          this.highlightElement(selectedActivityId)
         }, 500)
       })
     },
