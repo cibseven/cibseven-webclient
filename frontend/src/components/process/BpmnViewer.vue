@@ -140,7 +140,7 @@ export default {
   methods: {
     ...mapActions(['selectActivity', 'clearActivitySelection', 'setHighlightedElement', 'loadActivitiesInstanceHistory', 'getProcessById']),
     ...mapActions('diagram', ['setDiagramReady']),
-    showDiagram: function(xml, selectedActivityId) {
+    showDiagram: function(xml, selectedActivityId = null) {
       this.setDiagramReady(false)
       this.loader = true
       this.viewer.importXML(xml).then(() => {
