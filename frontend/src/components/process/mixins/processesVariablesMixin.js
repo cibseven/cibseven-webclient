@@ -201,8 +201,20 @@ export default {
 					const filter = { variableName: variable.name, deserializeValues: false }
 					HistoryService.fetchProcessInstanceVariablesHistory(variable.processInstanceId, filter).then(result => {
 						if (result && result.length > 0) {
+							let fileData
 							const value = result[0].value
-							const fileData = typeof value === 'string' ? JSON.parse(value) : value
+							const valueDeserialized = result[0].valueDeserialized
+							if (typeof value === 'string') {
+								try {
+									fileData = JSON.parse(value)
+								} catch {
+									fileData = valueDeserialized
+								}
+							} else if (value && typeof value === 'object') {
+								fileData = value
+							} else {
+								fileData = valueDeserialized
+							}							
 							const blob = new Blob([Uint8Array.from(atob(fileData.data), c => c.charCodeAt(0))], { type: fileData.contentType })
 							this.$refs.importPopper.triggerDownload(blob, fileData.name)
 						}
