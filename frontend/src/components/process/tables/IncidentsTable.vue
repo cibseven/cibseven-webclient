@@ -144,6 +144,7 @@
           :display-value="$store.state.activity.processActivities[table.item.failedActivityId] || table.item.failedActivityId"
           :copy-value="$store.state.activity.processActivities[table.item.failedActivityId] || table.item.failedActivityId"
           :title="getActivityIdTooltip(table.item.failedActivityId)"
+          :clickable="!selectedActivityId"
           @click="selectFailedActivityId(table.item.failedActivityId)"
           @copy="copyValueToClipboard"
         />
