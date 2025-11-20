@@ -23,7 +23,7 @@
         <div class="col-12 p-0">
           <b-card class="border-0 p-5" :title="$t('admin.tenants.create')">
             <b-card-text class="border-top pt-4 mt-3">
-              <form @submit.prevent="onSubmit($event)">
+              <form @submit.prevent="onSubmit">
                   <b-form-group :label="$t('admin.tenants.id') + '*'" label-cols-sm="2" label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
                     <b-form-input v-model="tenant.id" :state="notEmpty(tenant.id) && !tenantIdError" required></b-form-input>
                   </b-form-group>
@@ -31,7 +31,7 @@
                     <b-form-input v-model="tenant.name" :state="notEmpty(tenant.name)" required></b-form-input>
                   </b-form-group>
                   <div class="d-flex justify-content-end gap-2 mt-4">
-                    <b-button @click="cancel()" variant="light">{{ $t('admin.tenants.cancel') }}</b-button>
+                    <b-button type="button" @click="cancel()" variant="light">{{ $t('admin.tenants.cancel') }}</b-button>
                     <b-button type="submit" variant="primary">{{ $t('admin.tenants.create') }}</b-button>
                   </div>
               </form>
@@ -60,8 +60,7 @@
     },
     methods: {
       ...mapActions(['createTenant']),
-      async onSubmit(evt) {
-        evt.preventDefault()
+      async onSubmit() {
         try {
           await this.createTenant(this.tenant)
           this.tenantIdError = false
