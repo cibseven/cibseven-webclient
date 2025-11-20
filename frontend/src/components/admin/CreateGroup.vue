@@ -23,7 +23,7 @@
         <div class="col-12 p-0">
           <b-card class="border-0 p-5" :title="$t('admin.groups.createLabel')">
             <b-card-text class="border-top pt-4 mt-3">
-              <CIBForm @submitted="onSubmit()">
+              <CIBForm @submitted="onSubmit">
                 <b-form-group labels-cols-lg="2" label-size="lg" label-class="fw-bold pt-0 pb-4">
                   <b-form-group :label="$t('admin.groups.id') + '*'" label-cols-sm="2"
                     label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
@@ -37,7 +37,7 @@
                     <b-form-input v-model="group.type"></b-form-input>
                   </b-form-group>
                   <div class="d-flex justify-content-end gap-2 mt-4">
-                    <b-button type="reset" @click="onReset()" variant="light">{{ $t('admin.groups.cancel') }}</b-button>
+                    <b-button type="button" @click="onReset()" variant="light">{{ $t('admin.groups.cancel') }}</b-button>
                     <b-button type="submit" variant="primary">{{ $t('admin.groups.createLabel') }}</b-button>
                   </div>
                 </b-form-group>
