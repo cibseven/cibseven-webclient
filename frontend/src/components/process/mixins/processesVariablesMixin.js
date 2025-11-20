@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { HistoryService, ProcessService, TaskService } from '@/services.js'
+import { HistoryService, ProcessService } from '@/services.js'
 
 const serviceMap = {
 	ProcessService: ProcessService,
@@ -193,33 +193,15 @@ export default {
 		},
 		downloadFile: function(variable) {
 			if (this.isFileValueDataSource(variable)) {
-				if (this.selectedInstance.state === 'ACTIVE') {
-					TaskService.downloadFile(variable.processInstanceId, variable.name).then(data => {
-						this.$refs.importPopper.triggerDownload(data, this.getFileVariableName(variable))
-					})
-				} else {
-					const filter = { variableName: variable.name, deserializeValues: false }
-					HistoryService.fetchProcessInstanceVariablesHistory(variable.processInstanceId, filter).then(result => {
-						if (result && result.length > 0) {
-							let fileData
-							const value = result[0].value
-							const valueDeserialized = result[0].valueDeserialized
-							if (typeof value === 'string') {
-								try {
-									fileData = JSON.parse(value)
-								} catch {
-									fileData = valueDeserialized
-								}
-							} else if (value && typeof value === 'object') {
-								fileData = value
-							} else {
-								fileData = valueDeserialized
-							}							
-							const blob = new Blob([Uint8Array.from(atob(fileData.data), c => c.charCodeAt(0))], { type: fileData.contentType })
-							this.$refs.importPopper.triggerDownload(blob, fileData.name)
-						}
-					})
-				}
+				const filter = { variableName: variable.name, deserializeValues: true }
+				HistoryService.fetchProcessInstanceVariablesHistory(variable.processInstanceId, filter).then(result => {
+					if (result && result.length > 0) {
+						const value = result[0].value
+						const fileData = typeof value === 'string' ? JSON.parse(value) : value
+						const blob = new Blob([Uint8Array.from(atob(fileData.data), c => c.charCodeAt(0))], { type: fileData.contentType })
+						this.$refs.importPopper.triggerDownload(blob, fileData.name)
+					}
+				})
 			} else if (variable.type === 'Object') {
 				var blob = new Blob([Uint8Array.from(atob(variable.value.data), c => c.charCodeAt(0))], { type: variable.value.contentType })
 				this.$refs.importPopper.triggerDownload(blob, this.getFileVariableName(variable))
