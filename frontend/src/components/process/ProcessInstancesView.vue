@@ -45,9 +45,16 @@
         :process-definition-id="process.id" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" :statistics="process.statistics"
         :active-tab="activeTab" class="h-100">
       </component>
-      <BpmnViewer v-else ref="diagram" @task-selected="selectTask($event)" @activity-map-ready="activityMap = $event"
-        :process-definition-id="process.id" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" :statistics="process.statistics"
-        :active-tab="activeTab" class="h-100">
+      <BpmnViewer v-else ref="diagram"
+        :process-definition-id="process.id"
+        :activity-instance="activityInstance"
+        :activity-instance-history="activityInstanceHistory"
+        :statistics="process.statistics"
+        :selected-instance="null"
+        :active-tab="activeTab"
+        @task-selected="selectTask($event)"
+        @activity-map-ready="activityMap = $event"
+        class="h-100">
       </BpmnViewer>
       <span role="button" size="sm" variant="light" class="bg-white px-2 py-1 me-1 position-absolute border rounded" style="bottom: 90px; right: 11px;" @click="toggleContent">
         <span class="mdi mdi-18px" :class="toggleIcon"></span>
@@ -87,7 +94,7 @@
               <div v-if="selectedActivityId" class="col-3 p-3">
                 <span class="badge bg-info rounded-pill p-2 pe-3" style="font-weight: 500; font-size: 0.75rem">
                   <span
-                    @click="clearActivitySelection"
+                    @click="removeSelectedActivityBadge"
                     :title="$t('process.activityIdBadge.remove')"
                     role="button" class="mdi mdi-close-thick py-2 px-1"></span>
                     <span :title="$t('process.activityIdBadge.tooltip.' + selectedActivityInstancesListMode, { activityId: selectedActivityId })">
@@ -199,7 +206,6 @@ export default {
   data: function() {
     return {
       selectedInstance: null,
-      selectedTask: null,
       topBarHeight: 0,
       events: {},
       usages: [],
@@ -218,7 +224,7 @@ export default {
           await this.loadHistoricActivityStatistics({ processDefinitionId: this.process.id })
           await this.loadStaticCalledProcessDefinitions({ processDefinitionId: this.process.id })
           ProcessService.fetchDiagram(newId).then(response => {
-            this.$refs.diagram.showDiagram(response.bpmn20Xml)
+            this.$refs.diagram.showDiagram(response.bpmn20Xml, this.selectedActivityId)
             this.setDiagramXml(response.bpmn20Xml)
           })
         }
@@ -244,7 +250,7 @@ export default {
     this.loadStaticCalledProcessDefinitions({ processDefinitionId: this.process.id })
     ProcessService.fetchDiagram(this.process.id).then(response => {
       setTimeout(() => {
-        this.$refs.diagram.showDiagram(response.bpmn20Xml)
+        this.$refs.diagram.showDiagram(response.bpmn20Xml, this.selectedActivityId)
         this.setDiagramXml(response.bpmn20Xml)
       }, 100)
     })
@@ -316,7 +322,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions(['clearActivitySelection', 'setDiagramXml', 'loadHistoricActivityStatistics', 'clearHistoricActivityStatistics']),
+    ...mapActions(['clearActivitySelection', 'setHighlightedElement', 'setDiagramXml', 'loadHistoricActivityStatistics', 'clearHistoricActivityStatistics']),
     ...mapActions('calledProcessDefinitions', ['loadStaticCalledProcessDefinitions']),
     applySorting: function(sortingCriteria) {
       this.sorting = true
@@ -334,7 +340,6 @@ export default {
       })
     },
     selectTask: function(event) {
-      this.selectedTask = event
       this.$emit('task-selected', event);
     },
     viewDeployment: function() {
@@ -401,7 +406,11 @@ export default {
         ...this.filter,
         editField: freeText,
       })
-    })
+    }),
+    removeSelectedActivityBadge: function() {
+      this.clearActivitySelection()
+      this.setHighlightedElement('')
+    }
   }
 }
 </script>

@@ -379,7 +379,10 @@ var HistoryService = {
         requestBody.orQueries = []
       }
       requestBody.orQueries.push({
-        activeActivityIdIn: requestBody.activeOrExecutedActivityIdIn,
+        // [activityIdIn] - restrict to instances with an active activity with one of the given ids.
+        // In contrast to the [activeActivityIdIn] filter, [activityIdIn] can query for async and incident activities.
+        activityIdIn: requestBody.activeOrExecutedActivityIdIn,
+        // [executedActivityIdIn] - Restrict to instances that executed an activity with one of given ids
         executedActivityIdIn: requestBody.activeOrExecutedActivityIdIn
       })
       delete requestBody.activeOrExecutedActivityIdIn

@@ -140,13 +140,14 @@ export default {
   methods: {
     ...mapActions(['selectActivity', 'clearActivitySelection', 'setHighlightedElement', 'loadActivitiesInstanceHistory', 'getProcessById']),
     ...mapActions('diagram', ['setDiagramReady']),
-    showDiagram: function(xml) {
+    showDiagram: function(xml, selectedActivityId = null) {
       this.setDiagramReady(false)
       this.loader = true
       this.viewer.importXML(xml).then(() => {
         setTimeout(() => {
           this.viewer.get('canvas').zoom('fit-viewport')
           this.loader = false
+          this.highlightElement(selectedActivityId)
         }, 500)
       })
     },
@@ -236,6 +237,16 @@ export default {
       } else {
         return
       }
+
+      // Clear previous highlight if no activityId is provided
+      if (!activityId) {
+        if (this.currentHighlight) {
+          this.currentHighlight.shape.classList.remove('bpmn-highlight')
+          this.currentHighlight = null
+        }
+        return
+      }
+
       const elementRegistry = this.viewer.get('elementRegistry')
       const canvas = this.viewer.get('canvas')
       const element = elementRegistry.get(activityId)
@@ -290,53 +301,148 @@ export default {
     },
     drawActivitiesBadges: function(elementRegistry) {
       const historyStatistics = this.historicActivityStatistics
-      let mergedStatistics = historyStatistics
-        if (!this.selectedInstance) {
-          mergedStatistics = historyStatistics.map(hs => {
-            const stat = this.statistics.find(s => s.id === hs.id)
-            return stat ? { ...hs, instances: stat.instances } : hs
-          })
-      }
-      const options = this.badgeOptions || {}
+      const historyLevel = this.$root?.config?.camundaHistoryLevel
+      const mergedStatistics = this.getMergedStatistics(historyStatistics, historyLevel)
+      
       mergedStatistics.forEach(stat => {
-        const element = elementRegistry.get(stat.id)
-        if (!element) return
+        this.drawActivityBadges(stat, elementRegistry)
+      })
+    },
+    getMergedStatistics: function(historyStatistics, historyLevel) {
+      if (this.selectedInstance) {
+        return this.getInstanceMergedStatistics(historyStatistics, historyLevel)
+      } else if (historyLevel !== 'full') {
+        return this.getProcessMergedStatistics(historyStatistics)
+      } else {
+        return this.getProcessMergedStatisticsFullHistory(historyStatistics)
+      }
+    },
+    getInstanceMergedStatistics: function(historyStatistics, historyLevel) {
+      // Always merge with childTransitionInstances to get running instances
+      if (!this.activityInstance?.childTransitionInstances) {
+        return historyStatistics
+      }
 
-        // Handle canceled activities - draw in the main position
-        if (options.showCanceled && stat.canceled > 0) {
-          const html = this.getBadgeOverlayHtml(stat.canceled, 'bg-warning', 'canceledInstances', stat.id)
-          this.setHtmlOnDiagram(stat.id, html, { bottom: 15, right: 13 })
-        }
-
-        // Handle finished activities - draw above canceled ones or in main position if no canceled
-        const actualFinished = stat.finished - (stat.canceled || 0)
-        if (options.showHistory && actualFinished > 0) {
-          const position = stat.canceled > 0 ? { bottom: 35, right: 13 } : { bottom: 15, right: 13 }
-          const html = this.getBadgeOverlayHtml(actualFinished, 'bg-gray', 'activitiesHistory', stat.id)
-          this.setHtmlOnDiagram(stat.id, html, position)
-        }
-        // Handle closed incidents - draw next to main position if main position occupied and selectedInstance is set
-        if (options.showClosedIncidents && this.selectedInstance) {
-          if (stat.resolvedIncidents > 0 || stat.deletedIncidents > 0) {
-            const mainOccupied =
-              (options.showCanceled && stat.canceled > 0) ||
-              ((!stat.canceled || stat.canceled === 0) && (options.showHistory && actualFinished > 0))
-            const position = mainOccupied ? { bottom: 15, right: 36 } : { bottom: 15, right: 13 }
-
-            const html = this.getBadgeOverlayHtml('!', 'bg-danger', 'closedIncidents', stat.id)
-            this.setHtmlOnDiagram(stat.id, html, position)
-          }
-        }
-        if (options.showRunning && stat.instances > 0) {
-          const html = this.getBadgeOverlayHtml(stat.instances, 'bg-info', 'runningInstances', stat.id)
-          this.setHtmlOnDiagram(stat.id, html, { bottom: 15, left: -7 })
-        }
-        if (options.showIncidents && stat.openIncidents > 0) {
-          const position = stat.instances > 0 ? { bottom: 15, left: 18 } : { bottom: 15, left: -7 }
-          const html = this.getBadgeOverlayHtml(stat.openIncidents, 'bg-danger', 'openIncidents', stat.id)
-          this.setHtmlOnDiagram(stat.id, html, position)
+      const transitionMap = new Map()
+      this.activityInstance.childTransitionInstances.forEach(trans => {
+        transitionMap.set(trans.activityId, {
+          instances: 1,
+          // Only use incidents from transitions when historyLevel is not "full"
+          openIncidents: historyLevel !== 'full' ? (trans.incidents?.length || 0) : undefined
+        })
+      })
+      
+      const merged = historyStatistics.map(hs => {
+        const transData = transitionMap.get(hs.id)
+        if (!transData) return hs        
+        // Merge, but only override openIncidents if historyLevel is not "full"
+        return historyLevel === 'full' 
+          ? { ...hs, instances: transData.instances }
+          : { ...hs, ...transData }
+      })
+      
+      // Add transitions not in historyStatistics
+      this.activityInstance.childTransitionInstances.forEach(trans => {
+        if (!historyStatistics.find(hs => hs.id === trans.activityId)) {
+          merged.push({
+            id: trans.activityId,
+            instances: 1,
+            finished: 0,
+            canceled: 0,
+            openIncidents: historyLevel !== 'full' ? (trans.incidents?.length || 0) : 0,
+            resolvedIncidents: 0,
+            deletedIncidents: 0
+          })
         }
       })
+      
+      return merged
+    },
+    getProcessMergedStatistics: function(historyStatistics) {
+      if (!this.statistics || this.statistics.length === 0) {
+        return historyStatistics || []
+      }
+
+      const historyMap = new Map((historyStatistics || []).map(hs => [hs.id, hs]))
+      
+      const merged = this.statistics.map(stat => {
+        const historyStat = historyMap.get(stat.id)
+        return {
+          id: stat.id,
+          instances: stat.instances || 0,
+          finished: historyStat?.finished || 0,
+          canceled: historyStat?.canceled || 0,
+          openIncidents: stat.incidents?.reduce((sum, inc) => sum + (inc.incidentCount || 0), 0) || 0,
+          resolvedIncidents: historyStat?.resolvedIncidents || 0,
+          deletedIncidents: historyStat?.deletedIncidents || 0
+        }
+      })
+      
+      // Add historyStatistics not in this.statistics
+      historyStatistics?.forEach(hs => {
+        if (!this.statistics.find(s => s.id === hs.id)) {
+          merged.push(hs)
+        }
+      })
+      
+      return merged
+    },
+    getProcessMergedStatisticsFullHistory: function(historyStatistics) {
+      return historyStatistics.map(hs => {
+        const stat = this.statistics?.find(s => s.id === hs.id)
+        return stat ? { ...hs, instances: stat.instances } : hs
+      })
+    },
+    drawActivityBadges: function(stat, elementRegistry) {
+      const element = elementRegistry.get(stat.id)
+      if (!element) return
+
+      const options = this.badgeOptions || {}
+      
+      this.drawCanceledBadge(stat, options)
+      this.drawFinishedBadge(stat, options)
+      this.drawClosedIncidentsBadge(stat, options)
+      this.drawRunningInstancesBadge(stat, options)
+      this.drawOpenIncidentsBadge(stat, options)
+    },
+    drawCanceledBadge: function(stat, options) {
+      if (options.showCanceled && stat.canceled > 0) {
+        const html = this.getBadgeOverlayHtml(stat.canceled, 'bg-warning', 'canceledInstances', stat.id)
+        this.setHtmlOnDiagram(stat.id, html, { bottom: 15, right: 13 })
+      }
+    },
+    drawFinishedBadge: function(stat, options) {
+      const actualFinished = stat.finished - (stat.canceled || 0)
+      if (options.showHistory && actualFinished > 0) {
+        const position = stat.canceled > 0 ? { bottom: 35, right: 13 } : { bottom: 15, right: 13 }
+        const html = this.getBadgeOverlayHtml(actualFinished, 'bg-gray', 'activitiesHistory', stat.id)
+        this.setHtmlOnDiagram(stat.id, html, position)
+      }
+    },
+    drawClosedIncidentsBadge: function(stat, options) {
+      if (!options.showClosedIncidents || !this.selectedInstance) return
+      if (stat.resolvedIncidents === 0 && stat.deletedIncidents === 0) return
+
+      const mainOccupied = 
+        (options.showCanceled && stat.canceled > 0) ||
+        ((!stat.canceled || stat.canceled === 0) && (options.showHistory && (stat.finished - (stat.canceled || 0)) > 0))
+      
+      const position = mainOccupied ? { bottom: 15, right: 36 } : { bottom: 15, right: 13 }
+      const html = this.getBadgeOverlayHtml('!', 'bg-danger', 'closedIncidents', stat.id)
+      this.setHtmlOnDiagram(stat.id, html, position)
+    },
+    drawRunningInstancesBadge: function(stat, options) {
+      if (options.showRunning && stat.instances > 0) {
+        const html = this.getBadgeOverlayHtml(stat.instances, 'bg-info', 'runningInstances', stat.id)
+        this.setHtmlOnDiagram(stat.id, html, { bottom: 15, left: -7 })
+      }
+    },
+    drawOpenIncidentsBadge: function(stat, options) {
+      if (options.showIncidents && stat.openIncidents > 0) {
+        const position = stat.instances > 0 ? { bottom: 15, left: 18 } : { bottom: 15, left: -7 }
+        const html = this.getBadgeOverlayHtml(stat.openIncidents, 'bg-danger', 'openIncidents', stat.id)
+        this.setHtmlOnDiagram(stat.id, html, position)
+      }
     },
     drawSubprocessLinks: function(elementRegistry) {
       if (this.badgeOptions?.showCalledProcesses === false) return

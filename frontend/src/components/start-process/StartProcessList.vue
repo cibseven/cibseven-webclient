@@ -195,7 +195,7 @@ export default {
     viewProcess: function(process) {
       this.selected = process
       ProcessService.fetchDiagram(process.id).then(response => {
-        this.$refs.diagram.showDiagram(response.bpmn20Xml, null, null)
+        this.$refs.diagram.showDiagram(response.bpmn20Xml)
         this.$refs.diagramModal.show()
       })
     }
