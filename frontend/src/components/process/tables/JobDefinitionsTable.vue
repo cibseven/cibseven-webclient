@@ -145,8 +145,8 @@ export default {
     stateActionKey: function(item) {
       if (!item) return null
       return item.suspended
-        ? this.$t('process-instance.jobDefinitions.suspendJob')
-        : this.$t('process-instance.jobDefinitions.activateJob')
+        ? this.$t('process-instance.jobDefinitions.activateJob')
+        : this.$t('process-instance.jobDefinitions.suspendJob')
     },
     openChangeStateJobModal: function(item) {
       this.$refs.changeJobStateModal.show(item)
