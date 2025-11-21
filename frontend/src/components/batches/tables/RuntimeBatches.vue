@@ -30,8 +30,12 @@
         ]"
         @click="loadBatchDetails($event)" sort-by="startTime" sort-desc>
         <template v-slot:cell(id)="table">
-          <div class="p-1 text-truncate" :class="batchIsSelected(table.item.id) ? 'border-start border-4 border-primary' : ''">
-            {{ table.item.id }}
+          <div
+            class="p-0 m-0 h-100 w-100 d-flex align-items-center"
+            :class="batchIsSelected(table.item.id) ? 'border-start border-4 border-primary' : ''">
+            <div class="p-1 text-truncate">
+              {{ table.item.id }}
+            </div>
           </div>
         </template>
         <template v-slot:cell(startTime)="table">
