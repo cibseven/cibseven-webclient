@@ -71,7 +71,7 @@
     </div>
 
     <div class="flex-grow-1">
-      <div class="overflow-auto shadow bg-white" ref="scrollContainer" style="margin: 10px; height: calc(100% - 25px)">
+      <div class="overflow-auto shadow bg-white" style="margin: 10px; height: calc(100% - 25px)">
         <div class="h-100 p-2">
           <div class="h-100 position-relative" v-if="task">
             <div
@@ -80,7 +80,7 @@
               class="col-12 shadow-0"
               style="top: 0px; left: 0px; bottom: 0px; right: 0px; cursor: not-allowed; position: absolute; z-index: 1; background-color: rgba(238,238,238,0.33)">
             </div>
-            <RenderTemplate v-if="task" :task="task" @click.prevent class="h-100"
+            <RenderTemplate v-if="task" :task="task" ref="scrollContainer" @click.prevent class="h-100"
               @complete-task="$emit('complete-task', $event)" :style="renderTemplateStyles"></RenderTemplate>
           </div>
         </div>
@@ -178,21 +178,29 @@ export default {
     // Overlay scroll forwarding
     this.$nextTick(() => {
       const overlay = this.$refs.scrollOverlay;
-      const scrollContainer = this.$refs.scrollContainer;
-      if (overlay && scrollContainer) {
+      if (overlay) {
         overlay.addEventListener('wheel', (e) => {
           e.preventDefault();
-          scrollContainer.scrollTop += e.deltaY;
-        });
-        overlay.addEventListener('touchstart', (e) => {
-          overlay._startY = e.touches[0].clientY;
-          overlay._startScroll = scrollContainer.scrollTop;
-        });
+          window.dispatchEvent(new CustomEvent('scroll-iframe', {
+            detail: {
+              deltaY: e.deltaY,
+              x: e.clientX,
+              y: e.clientY
+            }
+          }))
+        })
         overlay.addEventListener('touchmove', (e) => {
-          if (overlay._startY !== undefined) {
-            const deltaY = overlay._startY - e.touches[0].clientY;
-            scrollContainer.scrollTop = overlay._startScroll + deltaY;
+          if (overlay._lastY !== undefined) {
+            const deltaY = overlay._lastY - e.touches[0].clientY;
+            window.dispatchEvent(new CustomEvent('scroll-iframe', {
+              detail: {
+                deltaY,
+                x: e.touches[0].clientX,
+                y: e.touches[0].clientY
+              }
+            }));
           }
+          overlay._lastY = e.touches[0].clientY;
           e.preventDefault();
         });
       }
@@ -205,7 +213,6 @@ export default {
     const overlay = this.$refs.scrollOverlay;
     if (overlay) {
       overlay.removeEventListener('wheel');
-      overlay.removeEventListener('touchstart');
       overlay.removeEventListener('touchmove');
     }
   },

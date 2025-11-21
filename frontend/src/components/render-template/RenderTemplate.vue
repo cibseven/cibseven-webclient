@@ -20,7 +20,7 @@
   <div>
     <BWaitingBox v-if="loader" class="h-100 d-flex justify-content-center" ref="loader" styling="width:20%"></BWaitingBox>
     <div v-show="!loader" class="h-100">
-      <iframe v-show="!submitForm && formFrame" class="h-100" ref="template-frame" frameBorder="0"
+      <iframe v-show="!submitForm && formFrame" tabindex="-1" class="h-100" ref="template-frame" frameBorder="0"
         src="" width="100%" height="100%" :style="fullModeStyles"></iframe>
       <div class="pt-2" v-if="!formFrame">
         <span class="small-text d-none d-sm-inline" style="vertical-align: middle">
@@ -109,6 +109,10 @@ export default {
     formFrame.setAttribute('msallowfullscreen', true)
 
     //window.addEventListener('beforeunload', this.processMessage)
+    if (formFrame) {
+      this.addScrollIframeListener(formFrame)
+    }
+
     window.onbeforeunload = function() {
       this.onBeforeUnload()
     }.bind(this)
@@ -362,6 +366,51 @@ export default {
         formFrame.contentWindow.postMessage({ type: 'contextChanged' }, '*');
         this.loadIframe()
       }
+    },
+    addScrollIframeListener(formFrame) {
+      window.addEventListener('scroll-iframe', (e) => {
+        if (!formFrame || !formFrame.contentWindow) return
+        const iframeDoc = formFrame.contentDocument || formFrame.contentWindow.document
+        if (!iframeDoc) return
+        const rect = formFrame.getBoundingClientRect()
+        const iframeX = e.detail.x - rect.left
+        const iframeY = e.detail.y - rect.top
+        let el = iframeDoc.elementFromPoint(iframeX, iframeY)
+        while (el) {
+          if (el.tagName === 'IFRAME' && el.contentWindow) {
+            const nestedDoc = el.contentDocument || el.contentWindow.document
+            if (nestedDoc) {
+              const nestedRect = el.getBoundingClientRect()
+              const nestedX = iframeX - nestedRect.left
+              const nestedY = iframeY - nestedRect.top
+              let nestedEl = nestedDoc.elementFromPoint(nestedX, nestedY)
+              while (nestedEl) {
+                let overflowY = el.ownerDocument.defaultView.getComputedStyle(nestedEl).overflowY;
+                let isScrollable = overflowY !== 'visible' && overflowY !== 'hidden'
+                if (isScrollable && nestedEl.scrollHeight > nestedEl.clientHeight) {
+                  nestedEl.scrollTop += e.detail.deltaY
+                  return;
+                }
+                nestedEl = nestedEl.parentElement
+              }
+              if (nestedDoc.body && nestedDoc.body.scrollHeight > nestedDoc.body.clientHeight) {
+                nestedDoc.body.scrollTop += e.detail.deltaY
+              }
+              return;
+            }
+          }
+          let overflowY = window.getComputedStyle(el).overflowY
+          let isScrollable = overflowY !== 'visible' && overflowY !== 'hidden'
+          if (isScrollable && el.scrollHeight > el.clientHeight) {
+            el.scrollTop += e.detail.deltaY
+            return
+          }
+          el = el.parentElement
+        }
+        if (iframeDoc.body && iframeDoc.body.scrollHeight > iframeDoc.body.clientHeight) {
+          iframeDoc.body.scrollTop += e.detail.deltaY
+        }
+      })
     }
   },
   beforeUnmount: function() {
