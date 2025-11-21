@@ -41,6 +41,9 @@
         <template v-slot:cell(startTime)="table">
           <div :title="formatDateForTooltips(table.item.startTime)">{{ formatDate(table.item.startTime) }}</div>
         </template>
+        <template v-slot:cell(failedJobs)="table">
+          <div class="text-center w-100">{{ table.item.failedJobs }}</div>
+        </template>
         <template v-slot:cell(progress)="table">
           <div class="w-100">
             <b-progress :value="table.item.completed" :max="table.item.totalJobs" :variant="getBatchVariant(table.item)" show-progress animated></b-progress>
