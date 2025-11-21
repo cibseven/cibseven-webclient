@@ -17,7 +17,7 @@
 
 -->
 <template>
-    <div class="container-fluid bg-light pt-3 overflow-auto">
+    <div class="container-fluid bg-light pt-3 overflow-auto overflow-y-scroll">
       <div class="row justify-content-around">
         <div class="col-md-7 col-12">
           <RuntimeBatches></RuntimeBatches>
