@@ -105,7 +105,7 @@
 
       <VariablesTable v-if="activeTab === 'variables'" :selected-instance="selectedInstance" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory"></VariablesTable>
       <IncidentsTable v-else-if="activeTab === 'incidents'" :scrollable-area="$refs.rContent" :instance="selectedInstance" :process="process" :activity-instance="activityInstance" 
-        :is-instance-view="true" :activity-instance-history="activityInstanceHistory"></IncidentsTable>
+        :is-instance-view="true" :activity-instance-history="activityInstanceHistory" :tenant-id="tenantId"></IncidentsTable>
       <UserTasksTable v-else-if="activeTab === 'usertasks'" :selected-instance="selectedInstance"></UserTasksTable>
       <JobsTable v-else-if="activeTab === 'jobs'" :instance="selectedInstance" :process="process"></JobsTable>
       <CalledProcessInstancesTable v-else-if="activeTab === 'calledProcessInstances'" :selected-instance="selectedInstance" :activity-instance-history="activityInstanceHistory"></CalledProcessInstancesTable>
@@ -142,6 +142,7 @@ export default {
   mixins: [resizerMixin, tabUrlMixin],
   props: {
     process: Object,
+    tenantId: String,
     selectedInstance: Object,
     activityInstance: Object,
     activityInstanceHistory: Object

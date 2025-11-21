@@ -135,7 +135,10 @@
           ></InstancesTable>
         </template>
         <IncidentsTable v-else-if="activeTab === 'incidents'"
-          :process="process" :activity-instance="activityInstance" />
+          :process="process"
+          :activity-instance="activityInstance"
+          :tenant-id="tenantId"
+        />
         <JobDefinitionsTable v-else-if="activeTab === 'jobDefinitions'"
           :process="process" />
         <CalledProcessDefinitionsTable v-else-if="activeTab === 'calledProcessDefinitions'" :process="process" />
