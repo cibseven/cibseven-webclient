@@ -54,6 +54,7 @@
           :activity-instance="activityInstance"
           :activity-instance-history="activityInstanceHistory"
           :selected-instance="selectedInstance"
+          :tenant-id="tenantId"
           @task-selected="setSelectedTask($event)"></ProcessInstanceView>
       </transition>
     </SidebarsFlow>

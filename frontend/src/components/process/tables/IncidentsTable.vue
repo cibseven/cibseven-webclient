@@ -235,6 +235,7 @@ export default {
   props: {
     instance: Object,
     process: Object,
+    tenantId: String,
     activityInstance: Object,
     isInstanceView: Boolean,
     scrollableArea: Object,
@@ -474,6 +475,9 @@ export default {
       let link = `/seven/auth/processes/instance/${processInstanceId}?tab=incidents`
       if (parentProcessDefinitionId) {
         link += `&parentProcessDefinitionId=${parentProcessDefinitionId}`
+      }
+      if (this.tenantId) {
+        link += `&tenantId=${this.tenantId}`
       }
       return link
     },
