@@ -90,6 +90,11 @@
         <!-- Input: Null -->
         <div v-else-if="type === 'Null'"></div>
 
+        <!-- Input: File -->
+        <div v-else-if="type === 'File'">
+          <input type="file" class="form-control-file" :disabled="disabled || saving || loading" @change="onFileChange">
+        </div>
+
         <!-- Input: Object (only in edit mode) -->
         <b-tabs v-else-if="editMode && type === 'Object'" :activeTab="1">
           <b-tab id="1" :title="$t('process-instance.variables.value')">
@@ -344,6 +349,7 @@ export default {
           label: 'Objects',
           options: [
             { text: 'Null', value: 'Null' },
+            { text: 'File', value: 'File' },
             { text: 'Object', value: 'Object' },
             { text: 'Json', value: 'Json' },
             { text: 'Xml', value: 'Xml' }
