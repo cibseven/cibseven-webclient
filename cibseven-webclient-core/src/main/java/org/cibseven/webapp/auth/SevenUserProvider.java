@@ -52,15 +52,11 @@ public class SevenUserProvider extends BaseUserProvider<StandardLogin> {
 	
 	@Value("${cibseven.webclient.engineRest.url:./}") String cibsevenUrl;
 	
-	@Autowired BpmProvider provider;
-	SevenProvider sevenProvider;
+	@Autowired BpmProvider bpmProvider;
 	
 	@PostConstruct
 	public void init() {
 		settings = new JwtTokenSettings(secret, validMinutes, prolongMinutes);
-		if (provider instanceof SevenProvider)
-			sevenProvider = (SevenProvider) provider;
-		else throw new SystemException("SevenUserProvider expects a SevenProvider");
 		checkKey();
 	}
 	
@@ -69,12 +65,12 @@ public class SevenUserProvider extends BaseUserProvider<StandardLogin> {
 		try {
 			CIBUser user =  new CIBUser(login.getUsername());
 			setEngineFromRequest(user, rq);
-			SevenVerifyUser sevenVerifyUser = sevenProvider.verifyUser(user.getId(), login.getPassword(), user);
+			SevenVerifyUser sevenVerifyUser = bpmProvider.verifyUser(user.getId(), login.getPassword(), user);
 			
 			if (sevenVerifyUser.isAuthenticated()) {
 			  // Token is needed for the next request (/user/xxx/profile)
 			  user.setAuthToken(createToken(getSettings(), true, false, user));
-				SevenUser cUser = sevenProvider.getUserProfile(user.getId(), user);
+				SevenUser cUser = bpmProvider.getUserProfile(user.getId(), user);
 				user.setUserID(cUser.getId());
 				user.setDisplayName(cUser.getFirstName() + " " + cUser.getLastName());
 				// Token is created for the second time to include the display name

@@ -18,7 +18,6 @@ package org.cibseven.webapp.rest;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenResourceType;
-import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.providers.PermissionConstants;
 import org.cibseven.webapp.providers.SevenProvider;
 import org.cibseven.webapp.rest.model.VariableHistory;
@@ -55,9 +54,6 @@ public class HistoricVariableInstanceService extends BaseService implements Init
 	SevenProvider sevenProvider;
 	
 	public void afterPropertiesSet() {
-		if (bpmProvider instanceof SevenProvider)
-			sevenProvider = (SevenProvider) bpmProvider;
-		else throw new SystemException("HistoricVariableInstanceService expects a SevenProvider");
 	}
 	
 	@Operation(
