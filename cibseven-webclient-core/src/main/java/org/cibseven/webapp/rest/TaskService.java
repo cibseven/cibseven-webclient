@@ -32,7 +32,6 @@ import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.logger.TaskLogger;
 import org.cibseven.webapp.providers.PermissionConstants;
-import org.cibseven.webapp.providers.SevenProvider;
 import org.cibseven.webapp.rest.model.CandidateGroupTaskCount;
 import org.cibseven.webapp.rest.model.IdentityLink;
 import org.cibseven.webapp.rest.model.Task;
@@ -63,8 +62,6 @@ import jakarta.ws.rs.core.MediaType;
 @RestController("WebclientTaskService") @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}")
 public class TaskService extends BaseService implements InitializingBean {
 	
-	SevenProvider sevenProvider;
-	
 	public void afterPropertiesSet() {
 	}	
 	
@@ -84,7 +81,7 @@ public class TaskService extends BaseService implements InitializingBean {
 			@RequestBody Map<String, Object> filters,
 			Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
-		return sevenProvider.findTasksCount(filters, user);
+		return bpmProvider.findTasksCount(filters, user);
 	}
 	 
 	//Not used
@@ -256,7 +253,7 @@ public class TaskService extends BaseService implements InitializingBean {
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
-		return sevenProvider.findTasksPost(data, user);
+		return bpmProvider.findTasksPost(data, user);
 	}
 
 	@Operation(

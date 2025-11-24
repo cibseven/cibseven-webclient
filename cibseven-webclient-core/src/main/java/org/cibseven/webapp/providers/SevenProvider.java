@@ -18,8 +18,11 @@ package org.cibseven.webapp.providers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import lombok.Getter;
+
+@Getter
 public class SevenProvider extends SevenProviderBase implements BpmProvider {
-		@Autowired private IDeploymentProvider deploymentProvider;
+    @Autowired private IDeploymentProvider deploymentProvider;
     @Autowired private IVariableProvider variableProvider;
     @Autowired private IVariableInstanceProvider variableInstanceProvider;
     @Autowired private IHistoricVariableInstanceProvider historicVariableInstanceProvider;
@@ -38,83 +41,4 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
     @Autowired private ITenantProvider tenantProvider;
     @Autowired private IExternalTaskProvider externalTaskProvider;
     @Autowired private IEngineProvider engineProvider;
-    
-
-		@Override
-		public IDeploymentProvider getDeploymentProvider() {
-  		return deploymentProvider;
-  	}
-    @Override 
-    public IVariableProvider getVariableProvider() {
-  		return variableProvider;
-  	}
-    @Override 
-    public IVariableInstanceProvider getVariableInstanceProvider() {
-  		return variableInstanceProvider;
-  	}
-    @Override 
-    public IHistoricVariableInstanceProvider getHistoricVariableInstanceProvider() {
-  		return historicVariableInstanceProvider;
-  	}
-    @Override 
-    public ITaskProvider getTaskProvider() {
-  		return taskProvider;
-  	}
-    @Override 
-    public IProcessProvider getProcessProvider() {
-  		return processProvider;
-  	}
-    @Override 
-    public IActivityProvider getActivityProvider() {
-  		return activityProvider;
-  	}
-    @Override 
-    public IFilterProvider getFilterProvider() {
-  		return filterProvider;
-  	}
-    @Override 
-    public IUtilsProvider getUtilsProvider() {
-  		return utilsProvider;
-  	}
-    @Override 
-    public IIncidentProvider getIncidentProvider() {
-  		return incidentProvider;
-  	}
-    @Override 
-    public IJobDefinitionProvider getJobDefinitionProvider() {
-  		return jobDefinitionProvider;
-  	}
-    @Override 
-    public IUserProvider getUserProvider() {
-  		return userProvider;
-  	}
-    @Override 
-    public IDecisionProvider getDecisionProvider() {
-  		return decisionProvider;
-  	}
-    @Override 
-    public IJobProvider getJobProvider() {
-  		return jobProvider;
-  	}
-    @Override 
-    public IBatchProvider getBatchProvider() {
-  		return batchProvider;
-  	}
-    @Override 
-    public ISystemProvider getSystemProvider() {
-  		return systemProvider;
-  	}
-    @Override 
-    public ITenantProvider getTenantProvider() {
-  		return tenantProvider;
-  	}
-    @Override 
-    public IExternalTaskProvider getExternalTaskProvider() {
-  		return externalTaskProvider;
-  	}
-    @Override 
-    public IEngineProvider getEngineProvider() {
-  		return engineProvider;
-  	}
-    
 }

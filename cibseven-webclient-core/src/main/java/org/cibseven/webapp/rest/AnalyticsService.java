@@ -29,7 +29,6 @@ import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.providers.IProcessProvider;
 import org.cibseven.webapp.providers.PermissionConstants;
-import org.cibseven.webapp.providers.SevenProvider;
 import org.cibseven.webapp.rest.model.Analytics;
 import org.cibseven.webapp.rest.model.AnalyticsInfo;
 import org.cibseven.webapp.rest.model.Decision;
@@ -58,8 +57,6 @@ public class AnalyticsService extends BaseService implements InitializingBean {
 	@Autowired
 	IProcessProvider processProvider;
 	
-	SevenProvider sevenProvider;
-
 	public void afterPropertiesSet() {
 	}
 

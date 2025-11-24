@@ -19,7 +19,6 @@ package org.cibseven.webapp.rest;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.providers.PermissionConstants;
-import org.cibseven.webapp.providers.SevenProvider;
 import org.cibseven.webapp.rest.model.VariableInstance;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -50,8 +49,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 @RestController("WebclientVariableInstanceService") 
 @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/variable-instance")
 public class VariableInstanceService extends BaseService implements InitializingBean {
-	
-	SevenProvider sevenProvider;
 	
 	public void afterPropertiesSet() {
 	}

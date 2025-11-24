@@ -26,7 +26,6 @@ import org.cibseven.webapp.rest.model.HistoricDecisionInstance;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.providers.PermissionConstants;
-import org.cibseven.webapp.providers.SevenProvider;
 import org.cibseven.webapp.rest.model.Decision;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.http.ResponseEntity;
@@ -64,8 +63,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 })
 @RestController("WebclientDecisionService") @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/decision")
 public class DecisionService extends BaseService implements InitializingBean {
-	
-	SevenProvider sevenProvider;
 	
 	public void afterPropertiesSet() {
 	}

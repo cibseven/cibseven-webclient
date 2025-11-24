@@ -148,8 +148,8 @@ public interface BpmProvider {
    * @throws NoObjectFoundException when the task searched for could not be found.
    * @throws SystemException in case of any other error.
    */
-	default Task findTaskById(String id, CIBUser user) throws SystemException {
-		return getTaskProvider().findTaskById(id, user);
+	default Task findTaskById(String taskId, CIBUser user) throws SystemException {
+		return getTaskProvider().findTaskById(taskId, user);
 	}
 
 	/**
@@ -195,7 +195,6 @@ public interface BpmProvider {
 	 */
 	default void submit(Task task, List<Variable> formResult, CIBUser user) throws SystemException, SubmitDeniedException {
 		getTaskProvider().submit(task, formResult, user);
-		;
 	}
 
 	/**
@@ -309,7 +308,7 @@ public interface BpmProvider {
 	 *  Create identity links, e.g., to set the candidates user or groups of a task.
 	 *
 	 * @param taskId the ID of the task.
-	 * @param type a map containing the type of the identity link and group or user ID.
+	 * @param data a map containing the type of the identity link and group or user ID.
 	 * @param user the user performing the operation.
 	 * @throws SystemException in case of any other error.
 	 */
