@@ -100,16 +100,14 @@
 </template>
 
 <script>
-import { BWaitingBox } from 'cib-common-components'
-import FlowTable from '@/components/common-components/FlowTable.vue'
-import TaskPopper from '@/components/common-components/TaskPopper.vue'
+import { BWaitingBox } from '@cib/bootstrap-components'
+import { FlowTable } from '@cib/common-frontend'
+import { TaskPopper, SuccessAlert, CopyableActionButton } from '@cib/common-frontend'
 import DeleteVariableModal from '@/components/process/modals/DeleteVariableModal.vue'
 import AddVariableModal from '@/components/process/modals/AddVariableModal.vue'
 import EditVariableModal from '@/components/process/modals/EditVariableModal.vue'
-import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import processesVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
-import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
 import { permissionsMixin } from '@/permissions.js'
 import { mapGetters } from 'vuex'
 
@@ -176,6 +174,11 @@ export default {
         this.$refs.historicVariableDeleted.show()
       }
     },
-  }
+  },  
+	mounted() {
+		if (!this.$route.query.q) {
+			this.loadSelectedInstanceVariables()
+		}
+	}
 }
 </script>

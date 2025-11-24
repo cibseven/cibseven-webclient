@@ -34,7 +34,7 @@
 <!-- eslint-disable vue/no-mutating-props -->
 <script>
 import AuthService from '@/components/login/authService.js'
-import CIBForm from '@/components/common-components/CIBForm.vue'
+import { CIBForm } from '@cib/common-frontend'
 
 export default {
   name: 'OtpDialog',

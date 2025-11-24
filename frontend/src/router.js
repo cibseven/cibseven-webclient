@@ -45,7 +45,7 @@ import HumanTasksView from '@/components/task/HumanTasksView.vue'
 import TasksView from '@/components/task/TasksView.vue'
 import TaskView from '@/components/task/TaskView.vue'
 import LoginView from '@/components/login/LoginView.vue'
-import { BWaitingBox } from 'cib-common-components'
+import { BWaitingBox } from '@cib/bootstrap-components'
 import DeployedForm from '@/components/forms/DeployedForm.vue'
 import StartDeployedForm from '@/components/forms/StartDeployedForm.vue'
 import TenantsView from '@/components/tenants/TenantsView.vue'
@@ -55,7 +55,8 @@ import BatchesView from '@/components/batches/BatchesView.vue'
 import SystemView from '@/components/system/SystemView.vue'
 import SystemDiagnostics from '@/components/system/SystemDiagnostics.vue'
 import ExecutionMetrics from '@/components/system/ExecutionMetrics.vue'
-import TranslationsDownload from '@/components/common-components/TranslationsDownload.vue'
+import { TranslationsDownload } from '@cib/common-frontend'
+import { HistoryService } from '@/services.js'
 
 const appRoutes = [
     { path: '/', redirect: '/seven/auth/start-configurable' },
@@ -159,6 +160,53 @@ const appRoutes = [
         },
         { path: 'processes/list', name: 'processManagement', beforeEnter: permissionsGuard('cockpit'),
           component: ProcessListView
+        },
+        // process instance by id redirect
+        { path: 'processes/instance/:instanceId?', name: 'process-instance-id',
+          beforeEnter: async (to, from, next) => {
+            const instanceId = to.params.instanceId
+            const cockpitAvailable = router.root.applicationPermissions(router.root.config.permissions['cockpit'], 'cockpit')
+            if (cockpitAvailable) {
+              await HistoryService.findProcessInstance(instanceId).then(processData => {
+                next({
+                  name: 'process',
+                  params: {
+                    processKey: processData.processDefinitionKey,
+                    versionIndex: processData.processDefinitionVersion,
+                    instanceId,
+                  },
+                  query: {
+                    ...to.query,
+                    ...(processData.tenantId ? { tenantId: processData.tenantId } : {}),
+                    tab: to.query?.tab || 'variables',
+                  }
+                })
+              }).catch(() => {
+                next({
+                  name: 'not-found-instanceId',
+                  query: {
+                    instanceId,
+                    refPath: from.fullPath,
+                  }
+                })
+              })
+            }
+            else {
+              next('/seven/auth/start')
+            }
+          },
+        },
+        { path: 'processes/not-found-instanceId', name: 'not-found-instanceId',
+          beforeEnter: async (to, from, next) => {
+            next({
+              name: 'start',
+              query: {
+                errorType: 'notFoundInstanceId',
+                instanceId: to.query?.instanceId,
+                refPath: to.query?.refPath,
+              }
+            })
+          }
         },
         { path: 'process/:processKey/:versionIndex?/:instanceId?', name: 'process', beforeEnter: permissionsGuard('cockpit'),
           component: ProcessView, props: route => ({

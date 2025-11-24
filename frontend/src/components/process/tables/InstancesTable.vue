@@ -36,7 +36,7 @@
         <CopyableActionButton
           :displayValue="table.item.id"
           :title="$t('process.showInstance') + ':\n' + table.item.id"
-          :to="`/seven/auth/process/${table.item.processDefinitionKey}/${table.item.processDefinitionVersion}/${table.item.id}?tab=variables`"
+          :to="`/seven/auth/process/${table.item.processDefinitionKey}/${table.item.processDefinitionVersion}/${table.item.id}?tab=variables${tenantId ? `&tenantId=${tenantId}` : ''}`"
           @copy="copyValueToClipboard"
         />
       </template>
@@ -83,12 +83,10 @@
 import { ProcessService, HistoryService } from '@/services.js'
 import { permissionsMixin } from '@/permissions.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
-import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
+import { CopyableActionButton, FlowTable, SuccessAlert } from '@cib/common-frontend'
 import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
-import FlowTable from '@/components/common-components/FlowTable.vue'
-import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import ConfirmActionOnProcessInstanceModal from '@/components/process/modals/ConfirmActionOnProcessInstanceModal.vue'
-import { BWaitingBox } from 'cib-common-components'
+import { BWaitingBox } from '@cib/bootstrap-components'
 import { mapGetters, mapActions } from 'vuex'
 
 export default {

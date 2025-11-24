@@ -62,17 +62,17 @@
       <div class="m-3 mb-0">
       <FlowTable :items="processesFiltered" thead-class="sticky-header" striped primary-key="id" prefix="process." :fields="fields" @click="goToShowProcessHistory($event)" @select="focused = $event[0]" @mouseenter="focused = $event" @mouseleave="focused = null">
         <template v-slot:cell(key)="table">
-          <CopyableActionButton 
-            :display-value="table.item.key" 
-            :copy-value="table.item.key" 
+          <CopyableActionButton
+            :display-value="table.item.key"
+            :copy-value="table.item.key"
             :to="getProcessRoute(table.item)"
             @copy="copyValueToClipboard"
           />
         </template>
         <template v-slot:cell(name)="table">
-          <CopyableActionButton 
-            :display-value="table.item.name || ''" 
-            :copy-value="table.item.name || ''" 
+          <CopyableActionButton
+            :display-value="table.item.name || ''"
+            :copy-value="table.item.name || ''"
             :to="getProcessRoute(table.item)"
             @copy="copyValueToClipboard"
           />
@@ -80,7 +80,7 @@
         <template v-slot:cell(incidents)="table">
           <span v-if="loadingInstances"><b-spinner small></b-spinner></span>
           <div v-else-if="table.item.incidents > 0">
-            <span :title="$t('process.instanceIncidents')" class="mdi mdi-18px mdi-alert-outline text-warning"></span><span>{{ table.item.incidents }}</span>
+            <span :title="$t('process.instanceIncidents')" class="mdi mdi-18px mdi-alert-outline text-warning"></span><span class="ms-1" :title="$t('process.instanceIncidents')" >{{ table.item.incidents }}</span>
           </div>
           <span :title="$t('process.instanceWithoutIncidents')" v-else class="mdi mdi-18px mdi-check-circle-outline text-success"></span>
         </template>
@@ -121,9 +121,7 @@
 
 <script>
 import { permissionsMixin } from '@/permissions.js'
-import FlowTable from '@/components/common-components/FlowTable.vue'
-import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
-import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
+import { CopyableActionButton, SuccessAlert, FlowTable } from '@cib/common-frontend'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 
 export default {

@@ -79,7 +79,7 @@
         :rightSize="[12, 4, 3, 3, 3]">
         <template v-slot:right>
           <ResourcesNavBar v-if="!resourcesLoading" :resources="resources" :deploymentId="deploymentId"
-            @delete-deployment="$refs.deleteSelectedModal.show()" @show-deployment="loadToSelectedDeployment" 
+            @delete-deployment="$refs.deleteSelectedModal.show()" @show-deployment="loadToSelectedDeployment"
             @deployment-success="onDeploymentSuccess">
           </ResourcesNavBar>
           <b-waiting-box v-else styling="width: 35px" class="h-100 d-flex justify-content-center"></b-waiting-box>
@@ -155,10 +155,8 @@ import { ProcessService } from '@/services.js'
 import { moment } from '@/globals.js'
 import { debounce } from '@/utils/debounce.js'
 import DeploymentList from '@/components/deployment/DeploymentList.vue'
-import PagedScrollableContent from '@/components/common-components/PagedScrollableContent.vue'
 import ResourcesNavBar from '@/components/deployment/ResourcesNavBar.vue'
-import SidebarsFlow from '@/components/common-components/SidebarsFlow.vue'
-import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
+import { SidebarsFlow, SuccessAlert, PagedScrollableContent } from '@cib/common-frontend'
 
 export default {
   name: 'DeploymentsView',

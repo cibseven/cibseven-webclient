@@ -177,7 +177,7 @@ export default {
             ProcessService.fetchDiagram(processDefinition.id).then(response => {
               setTimeout(() => {
                 this.diagramLoading = false
-                this.$refs.diagram.showDiagram(response.bpmn20Xml, null, null)
+                this.$refs.diagram.showDiagram(response.bpmn20Xml)
               }, 500)
             }).catch(() => {
               this.diagramLoading = false

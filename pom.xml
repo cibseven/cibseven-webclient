@@ -23,12 +23,12 @@
 
 		<maven.compiler.source>17</maven.compiler.source>
 		<maven.compiler.target>17</maven.compiler.target>
-		<maven-war-plugin.version>3.4.0</maven-war-plugin.version>
+		<maven-war-plugin.version>3.5.0</maven-war-plugin.version>
 		<maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
-		<maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
-		<maven-enforcer-plugin.version>3.4.1</maven-enforcer-plugin.version>
+		<maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
+		<maven-enforcer-plugin.version>3.6.2</maven-enforcer-plugin.version>
 
-		<git-commit-id-maven-plugin.version>9.0.1</git-commit-id-maven-plugin.version>
+		<git-commit-id-maven-plugin.version>9.0.2</git-commit-id-maven-plugin.version>
 
 		<jjwt.version>0.12.6</jjwt.version>
 		<commons-io.version>2.18.0</commons-io.version>
@@ -37,14 +37,14 @@
 		<version.openapi-starter-webmvc-ui>2.8.13</version.openapi-starter-webmvc-ui>
 		<version.commons-lang3>3.18.0</version.commons-lang3>
 		
-		<image.tomcat-10-base>harbor.cib.de/dev/tomcat-10-base:2.0.0</image.tomcat-10-base>
+		<image.tomcat-10-base>harbor.cib.de/dev/tomcat-10-base:3.0.0</image.tomcat-10-base>
 		<jib-maven-plugin.version>3.4.6</jib-maven-plugin.version>
 		<jib.from.image>${image.tomcat-10-base}</jib.from.image>
 		<jib.to.image>harbor.cib.de/dev/cibseven-webclient:${project.version}</jib.to.image>
 
-		<version.eirslett.frontend.maven.plugin>1.12.1</version.eirslett.frontend.maven.plugin>
-		<version.nodejs>22.14.0</version.nodejs>
-		<version.npm>10.9.2</version.npm>
+		<version.eirslett.frontend.maven.plugin>1.15.4</version.eirslett.frontend.maven.plugin>
+		<version.nodejs>24.11.1</version.nodejs>
+		<version.npm>11.6.2</version.npm>
 
 		<!-- NPM publish tag configuration - empty by default (uses 'latest'), can be overridden with tag dev -->
 		<npm.publish.tag.arg></npm.publish.tag.arg>
@@ -118,7 +118,7 @@ You may obtain a copy of the License at
 								</goals>
 								<phase>generate-resources</phase>
 								<configuration>
-									<arguments>ci --no-audit --no-fund</arguments>
+									<arguments>install --no-audit --no-fund</arguments>
 								</configuration>
 							</execution>
 							<!--
@@ -216,7 +216,7 @@ You may obtain a copy of the License at
 								</goals>
 								<phase>generate-resources</phase>
 								<configuration>
-									<arguments>ci --no-audit --no-fund</arguments>
+									<arguments>install --no-audit --no-fund</arguments>
 								</configuration>
 							</execution>
 							<execution>

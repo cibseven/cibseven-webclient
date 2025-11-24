@@ -54,6 +54,7 @@
           :activity-instance="activityInstance"
           :activity-instance-history="activityInstanceHistory"
           :selected-instance="selectedInstance"
+          :tenant-id="tenantId"
           @task-selected="setSelectedTask($event)"></ProcessInstanceView>
       </transition>
     </SidebarsFlow>
@@ -67,8 +68,7 @@ import { TaskService, ProcessService, HistoryService } from '@/services.js'
 import ProcessInstancesView from '@/components/process/ProcessInstancesView.vue'
 import ProcessDetailsSidebar from '@/components/process/ProcessDetailsSidebar.vue'
 import ProcessInstanceView from '@/components/process/ProcessInstanceView.vue'
-import SidebarsFlow from '@/components/common-components/SidebarsFlow.vue'
-import TaskPopper from '@/components/common-components/TaskPopper.vue'
+import { SidebarsFlow, TaskPopper } from '@cib/common-frontend'
 import { mapGetters, mapActions } from 'vuex'
 import { formatDate } from '@/utils/dates.js'
 

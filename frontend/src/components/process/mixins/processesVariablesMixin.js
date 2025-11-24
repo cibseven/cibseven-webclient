@@ -84,11 +84,6 @@ export default {
 			return result
 		}
 	},
-	mounted() {
-		if (!this.$route.query.q) {
-			this.loadSelectedInstanceVariables()
-		}
-	},
 	methods: {
 		loadSelectedInstanceVariables: function() {
 			if (this.selectedInstance && this.activityInstancesGrouped) {

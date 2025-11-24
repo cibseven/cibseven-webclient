@@ -69,9 +69,8 @@
 import AuthService from '@/components/login/authService.js'
 import OptDialog from '@/components/login/OtpDialog.vue'
 import ResetDialog from '@/components/login/ResetDialog.vue'
-import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
+import { SuccessAlert, CIBForm } from '@cib/common-frontend'
 import SecureInput from '@/components/login/SecureInput.vue'
-import CIBForm from '@/components/common-components/CIBForm.vue'
 
 export default {
   name: 'LoginForm',
