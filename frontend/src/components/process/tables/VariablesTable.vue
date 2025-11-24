@@ -174,6 +174,11 @@ export default {
         this.$refs.historicVariableDeleted.show()
       }
     },
-  }
+  },  
+	mounted() {
+		if (!this.$route.query.q) {
+			this.loadSelectedInstanceVariables()
+		}
+	}
 }
 </script>
