@@ -177,6 +177,7 @@ const appRoutes = [
                   },
                   query: {
                     ...to.query,
+                    ...(processData.tenantId ? { tenantId: processData.tenantId } : {}),
                     tab: to.query?.tab || 'variables',
                   }
                 })
