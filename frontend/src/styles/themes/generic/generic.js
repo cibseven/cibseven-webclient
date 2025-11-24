@@ -15,14 +15,5 @@
  *  limitations under the License.
  */
 
-// CIB Seven Main Stylesheet
-// This is the main entry point for all styles
-
-// 1. Import Bootstrap variable overrides BEFORE Bootstrap
-@import './variables';
-
-// 2. Import Bootstrap
-@import 'bootstrap/scss/bootstrap';
-
-// 3. Import custom styles
-@import './custom';
+// Generic Theme Entry Point for Embedded Forms
+import './generic.scss';

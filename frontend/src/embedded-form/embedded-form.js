@@ -46,95 +46,92 @@ export function initEmbeddedForm(options = {}) {
     return InfoService.getProperties().then(response => {
         const config = response.data;
 
-        function loadTheme() {
-            const css = document.createElement('link');
-            css.rel = 'stylesheet';
-            css.type = 'text/css';
-            css.href = 'themes/' + getTheme(config) + '/styles.css';
-            document.head.appendChild(css);
+        async function loadTheme() {
+            const themeName = getTheme(config);
+            await import(`../styles/themes/${themeName}/${themeName}.js`);
         }
 
-        loadTheme();
+        return loadTheme().then(() => {
+            const searchParams = new URLSearchParams(window.location.search);
+            const lang = searchParams.get('lang');
+            const processDefinitionId = searchParams.get('processDefinitionId');
+            const taskId = searchParams.get('taskId');
+            // Check if this is a Camunda generated form (vs embedded form)
+            const generated = searchParams.get('generated');
+            config.supportedLanguages = [lang];
 
-        const searchParams = new URLSearchParams(window.location.search);
-        const lang = searchParams.get('lang');
-        const processDefinitionId = searchParams.get('processDefinitionId');
-        const taskId = searchParams.get('taskId');
-        // Check if this is a Camunda generated form (vs embedded form)
-        const generated = searchParams.get('generated');
-        config.supportedLanguages = [lang];
+            // Request configuration from parent window via postMessage
+            return services.requestConfig().then(parentConfig => {
+                return switchLanguage(config, lang).then(() => {
+                    const isStartForm = !!processDefinitionId;
+                    const isGeneratedForm = !!generated;
+                    let embeddedForm;
 
-        // Request configuration from parent window via postMessage
-        return services.requestConfig().then(parentConfig => {
-            return switchLanguage(config, lang).then(() => {
-                const isStartForm = !!processDefinitionId;
-                const isGeneratedForm = !!generated;
-                let embeddedForm;
-
-                if (isStartForm) {
-                    submitButton.innerHTML = i18n.global.t('process.start');
-                } else {
-                    submitButton.innerHTML = i18n.global.t('task.actions.submit');
-                }
-                submitButton.addEventListener('click', () => {
-                    blockButtons(submitButton, saveButton);
-                    embeddedForm.submit(err => {
-                        if (err) {
-                            errorDiv.style.display = '';
-                            errorDiv.innerHTML = i18n.global.t('task.actions.saveError', [err]);
-                        } else {
-                            services.completeTask();
-                        }
-                        unblockButtons(submitButton, saveButton);
-                    });
-                });
-
-                if (isStartForm) {
-                    saveButton.style.display = 'none';
-                }
-                saveButton.innerHTML = i18n.global.t('task.actions.save');
-                saveButton.addEventListener('click', () => {
-                    blockButtons(submitButton, saveButton);
-                    embeddedForm.store(err => {
-                        if (err) {
-                            errorDiv.style.display = '';
-                            errorDiv.innerHTML = i18n.global.t('task.actions.saveError', [err]);
-                        } else {
-                            services.displaySuccessMessage();
-                        }
-                        unblockButtons(submitButton, saveButton);
-                    });
-                });
-
-                return loadEmbeddedForm(
-                    isStartForm,
-                    isGeneratedForm,
-                    processDefinitionId || taskId,
-                    embeddedContainer,
-                    formContainer,
-                    parentConfig,
-                    config
-                ).then(
-                    form => {
-                        embeddedForm = form;
-                        loaderDiv.style.display = 'none';
-                        contentDiv.style.display = 'flex';
-                        // Setup date picker handlers for generated forms to use Vue date picker from parent window
-                        if (isGeneratedForm) {
-                            setupDatePickerHandlers(formContainer);
-                        }
-                    },
-                    err => {
-                        console.error(err);
-                        services.displayErrorMessage(err);
-                        throw err;
+                    if (isStartForm) {
+                        submitButton.innerHTML = i18n.global.t('process.start');
+                    } else {
+                        submitButton.innerHTML = i18n.global.t('task.actions.submit');
                     }
-                ).catch(err => {
-                    console.error('Error initializing embedded form:', err);
-                    errorDiv.style.display = '';
-                    errorDiv.innerHTML = i18n.global.t('task.actions.initError', [err]);
-                    loaderDiv.style.display = 'none';
-                    throw err;
+                    submitButton.addEventListener('click', () => {
+                        blockButtons(submitButton, saveButton);
+                        embeddedForm.submit(err => {
+                            if (err) {
+                                errorDiv.style.display = '';
+                                errorDiv.innerHTML = i18n.global.t('task.actions.saveError', [err]);
+                            } else {
+                                services.completeTask();
+                            }
+                            unblockButtons(submitButton, saveButton);
+                        });
+                    });
+
+                    if (isStartForm) {
+                        saveButton.style.display = 'none';
+                    }
+                    saveButton.innerHTML = i18n.global.t('task.actions.save');
+                    saveButton.addEventListener('click', () => {
+                        blockButtons(submitButton, saveButton);
+                        embeddedForm.store(err => {
+                            if (err) {
+                                errorDiv.style.display = '';
+                                errorDiv.innerHTML = i18n.global.t('task.actions.saveError', [err]);
+                            } else {
+                                services.displaySuccessMessage();
+                            }
+                            unblockButtons(submitButton, saveButton);
+                        });
+                    });
+
+                    return loadEmbeddedForm(
+                        isStartForm,
+                        isGeneratedForm,
+                        processDefinitionId || taskId,
+                        embeddedContainer,
+                        formContainer,
+                        parentConfig,
+                        config
+                    ).then(
+                        form => {
+                            embeddedForm = form;
+                            loaderDiv.style.display = 'none';
+                            contentDiv.style.display = 'flex';
+                            // Setup date picker handlers for generated forms to use Vue date picker from parent window
+                            if (isGeneratedForm) {
+                                setupDatePickerHandlers(formContainer);
+                            }
+                        },
+                        err => {
+                            console.error(err);
+                            services.displayErrorMessage(err);
+                            throw err;
+                        }
+                    ).catch(err => {
+                        console.error('Error initializing embedded form:', err);
+                        errorDiv.style.display = '';
+                        errorDiv.innerHTML = i18n.global.t('task.actions.initError', [err]);
+                        loaderDiv.style.display = 'none';
+                        throw err;
+                    });
                 });
             });
         });
