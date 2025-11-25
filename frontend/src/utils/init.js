@@ -123,6 +123,14 @@ export function handleAxiosError(router, root, error) {
   }
 }
 
+/**
+ * Load theme dynamically based on configuration
+ * @param {string} themeName - Name of the theme to load
+ */
+export async function loadTheme(themeName) {
+  await import(`../styles/themes/${themeName}/${themeName}.js`);
+}
+
 export function applyTheme(theme) {
 
   var favicon = document.createElement('Link')

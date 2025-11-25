@@ -26,7 +26,7 @@ import registerOwnComponents from './register.js'
 import { permissionsMixin }  from './permissions.js'
 
 import { InfoService, AuthService, setServicesBasePath } from './services.js'
-import { getTheme, hasHeader, isMobile, checkExternalReturn } from './utils/init'
+import { getTheme, hasHeader, isMobile, checkExternalReturn, loadTheme } from './utils/init'
 import { applyTheme, handleAxiosError, fetchAndStoreProcesses, fetchDecisionsIfEmpty, setupTaskNotifications } from './utils/init'
 import { applyConfigDefaults } from './utils/config.js'
 import { i18n, switchLanguage } from './i18n'
@@ -34,14 +34,6 @@ import { i18n, switchLanguage } from './i18n'
 // check for token inside hash
 // if it exists => redirect to new uri
 checkExternalReturn(window.location.href, window.location.hash)
-
-/**
- * Load theme CSS dynamically based on configuration
- * @param {string} themeName - Name of the theme to load
- */
-async function loadThemeCSS(themeName) {
-  await import(`./styles/themes/${themeName}/${themeName}.js`);
-}
 
 Promise.all([
   axios.get('config.json').then(response => {
@@ -66,7 +58,7 @@ Promise.all([
 
   // Load theme CSS and static assets (favicon, etc.)
   var theme = getTheme(config)
-  loadThemeCSS(theme).then(() => {
+  loadTheme(theme).then(() => {
     applyTheme(theme)
     switchLanguage(config, i18n.global.locale).then(() => {
       const app = createApp({ /*jshint nonew:false */

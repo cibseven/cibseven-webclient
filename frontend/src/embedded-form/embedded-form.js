@@ -16,7 +16,7 @@
  */
 import { InfoService } from "@/services";
 import { switchLanguage, i18n } from "@/i18n";
-import { getTheme } from "@/utils/init";
+import { getTheme, loadTheme } from "@/utils/init";
 import CamSDK from "bpm-sdk";
 // Import jQuery to wrap DOM elements for BPM SDK compatibility - the SDK expects jQuery objects for .find() method calls
 import $ from 'jquery';
@@ -46,12 +46,7 @@ export function initEmbeddedForm(options = {}) {
     return InfoService.getProperties().then(response => {
         const config = response.data;
 
-        async function loadTheme() {
-            const themeName = getTheme(config);
-            await import(`../styles/themes/${themeName}/${themeName}.js`);
-        }
-
-        return loadTheme().then(() => {
+        return loadTheme(getTheme(config)).then(() => {
             const searchParams = new URLSearchParams(window.location.search);
             const lang = searchParams.get('lang');
             const processDefinitionId = searchParams.get('processDefinitionId');
