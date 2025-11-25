@@ -59,13 +59,13 @@ import { TranslationsDownload } from '@cib/common-frontend'
 import { redirectToProcessInstance } from '@/utils/redirects.js'
 
 const appRoutes = [
-    { path: '/', redirect: '/seven/auth/start-configurable' },
+    { path: '/',  name: 'root', redirect: '/seven/auth/start-configurable' },
     {
       path: '/api/translations',
       name: 'translations',
       component: TranslationsDownload,
     },
-    { path: '/seven', component: CibSeven, children: [
+    { path: '/seven', name: 'seven', component: CibSeven, children: [
       { path: 'login', name: 'login', beforeEnter: function(to, from, next) {
           if (router.root.config.ssoActive) //If SSO go to other login
             location.href = './sso-login.html?nextUrl=' + encodeURIComponent(to.query.nextUrl ? to.query.nextUrl : '')
@@ -142,7 +142,7 @@ const appRoutes = [
         },
 
         // Tasks in active processes
-        { path: 'tasks', beforeEnter: permissionsGuard('tasklist'), component: TasksView,
+        { path: 'tasks', name: 'tasks', beforeEnter: permissionsGuard('tasklist'), component: TasksView,
           children: [
             { path: ':filterId/:taskId?', name: 'tasklist', component: TaskView }
           ]
@@ -154,7 +154,7 @@ const appRoutes = [
         },
 
         // Process management (power-user)
-        { path: 'processes', redirect: '/seven/auth/processes/dashboard', beforeEnter: permissionsGuard('cockpit') },
+        { path: 'processes', name: 'cockpit', redirect: '/seven/auth/processes/dashboard', beforeEnter: permissionsGuard('cockpit') },
         { path: 'processes/dashboard', name: 'processesDashboard', beforeEnter: permissionsGuard('cockpit'),
           component: ProcessesDashboardView
         },
@@ -186,12 +186,13 @@ const appRoutes = [
           })
         },
         // decisions
-        { path: 'decisions', redirect: '/seven/auth/decisions/list', beforeEnter: permissionsGuard('cockpit') },
+        { path: 'decisions', name: 'decisions', redirect: '/seven/auth/decisions/list', beforeEnter: permissionsGuard('cockpit') },
         { path: 'decisions/list', name: 'decision-list', beforeEnter: permissionsGuard('cockpit'),
           component: DecisionListView
         },
         {
           path: 'decision/:decisionKey',
+          name: 'decision',
           beforeEnter: permissionsGuard('cockpit'),
           component: DecisionView,
           props: true,
@@ -258,12 +259,14 @@ const appRoutes = [
     ]},
     {
       path: '/deployed-form/:locale/:taskId/:token?/:theme?/:translation?',
+      name: 'deployed-form',
       beforeEnter: combineGuards(authGuard(false), permissionsGuard('tasklist')),
       props: true,
       component: DeployedForm
     },
     {
       path: '/start-deployed-form/:locale/:processDefinitionId/:token?/:theme?/:translation?',
+      name: 'start-deployed-form',
       beforeEnter: combineGuards(authGuard(false), permissionsGuard('tasklist')),
       props: true,
       component: StartDeployedForm
