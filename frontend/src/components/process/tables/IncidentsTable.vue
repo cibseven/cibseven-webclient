@@ -472,14 +472,17 @@ export default {
       return incident.rootCauseIncidentMessage || incident.incidentMessage
     },
     linkToIncidentProcessInstance(processInstanceId, parentProcessDefinitionId = '') {
-      let link = `/seven/auth/processes/instance/${processInstanceId}?tab=incidents`
-      if (parentProcessDefinitionId) {
-        link += `&parentProcessDefinitionId=${parentProcessDefinitionId}`
+      return {
+        name: 'process-instance-id',
+        params: {
+          instanceId: processInstanceId,
+        },
+        query: {
+          ...(parentProcessDefinitionId ? { parentProcessDefinitionId } : {}
+          ),
+          tab: 'incidents',
+        }
       }
-      if (this.tenantId) {
-        link += `&tenantId=${this.tenantId}`
-      }
-      return link
     },
     onInput: debounce(800, function(freeText) {
       this.freeText = freeText

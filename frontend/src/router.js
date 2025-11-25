@@ -56,7 +56,7 @@ import SystemView from '@/components/system/SystemView.vue'
 import SystemDiagnostics from '@/components/system/SystemDiagnostics.vue'
 import ExecutionMetrics from '@/components/system/ExecutionMetrics.vue'
 import { TranslationsDownload } from '@cib/common-frontend'
-import { HistoryService } from '@/services.js'
+import { redirectToProcessInstance } from '@/utils/redirects.js'
 
 const appRoutes = [
     { path: '/', redirect: '/seven/auth/start-configurable' },
@@ -163,38 +163,7 @@ const appRoutes = [
         },
         // process instance by id redirect
         { path: 'processes/instance/:instanceId?', name: 'process-instance-id',
-          beforeEnter: async (to, from, next) => {
-            const instanceId = to.params.instanceId
-            const cockpitAvailable = router.root.applicationPermissions(router.root.config.permissions['cockpit'], 'cockpit')
-            if (cockpitAvailable) {
-              await HistoryService.findProcessInstance(instanceId).then(processData => {
-                next({
-                  name: 'process',
-                  params: {
-                    processKey: processData.processDefinitionKey,
-                    versionIndex: processData.processDefinitionVersion,
-                    instanceId,
-                  },
-                  query: {
-                    ...to.query,
-                    ...(processData.tenantId ? { tenantId: processData.tenantId } : {}),
-                    tab: to.query?.tab || 'variables',
-                  }
-                })
-              }).catch(() => {
-                next({
-                  name: 'not-found-instanceId',
-                  query: {
-                    instanceId,
-                    refPath: from.fullPath,
-                  }
-                })
-              })
-            }
-            else {
-              next('/seven/auth/start')
-            }
-          },
+          beforeEnter: async (to, from, next) => redirectToProcessInstance(router, to, from, next),
         },
         { path: 'processes/not-found-instanceId', name: 'not-found-instanceId',
           beforeEnter: async (to, from, next) => {
