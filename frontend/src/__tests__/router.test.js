@@ -17,6 +17,26 @@
 import { describe, it, expect } from 'vitest'
 import { appRoutes, createAppRouter } from '@/router.js'
 
+// Node.js modules for file system and path
+import fs from 'fs'
+import path from 'path'
+
+// Helper to recursively find all .js files in /src/
+function findComponents(dir, extension = '.js') {
+  let results = []
+  const list = fs.readdirSync(dir)
+  list.forEach(file => {
+    const filePath = path.join(dir, file)
+    const stat = fs.statSync(filePath)
+    if (stat && stat.isDirectory()) {
+      results = results.concat(findComponents(filePath, extension))
+    } else if (file.endsWith(extension)) {
+      results.push(filePath)
+    }
+  })
+  return results
+}
+
 describe('router', () => {
 
   describe('routes', () => {
@@ -73,4 +93,34 @@ describe('router', () => {
     })
   })
 
+  describe('no direct URL usage', () => {
+    // Find all .js files in /src/
+
+    // eslint-disable-next-line no-undef
+    const srcDir = path.resolve(__dirname, '../../src')
+    const jsFiles = findComponents(srcDir, '.js')
+
+    it('no hardcoded URLs in *.js files', () => {
+      jsFiles.forEach(f => {
+        const routerFilePath = path.resolve(srcDir, f)
+        const routerContent = fs.readFileSync(routerFilePath, 'utf-8')
+
+        // Regex to match hardcoded URL paths (e.g., '/some/path')
+        const hardcodedUrlRegex = /next\(['"`]\/[a-zA-Z0-9/_-]*['"`]/g
+        const matches = routerContent.match(hardcodedUrlRegex) || []
+
+        // Filter out valid cases (like import statements or comments)
+        const invalidMatches = matches.filter(match => {
+          // Exclude import statements and comments
+          return !match.includes('import') && !match.startsWith('//') && !match.startsWith('/*')
+        })
+
+        const message = invalidMatches.length > 0
+          ? `Hardcoded URLs found in ${f}: ${invalidMatches.join(', ')}. Please use named routes instead.`
+          : ''
+
+        expect(message).toBe('')
+      })
+    })
+  })
 })

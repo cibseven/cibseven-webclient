@@ -87,6 +87,18 @@ const appRoutes = [
           })
         },
       }, children: [
+        { path: 'no-permission', name: 'no-permission',
+          beforeEnter: async (to, from, next) => {
+            next({
+              name: 'start',
+              query: {
+                errorType: 'NoPermission',
+                permission: to.query?.permission,
+                refPath: to.query?.refPath,
+              }
+            })
+          }
+        },
 
         // Start page with configurable redirects
         { path: 'start-configurable', name: 'start-configurable',
@@ -94,8 +106,20 @@ const appRoutes = [
             const cockpitAvailable = router.root.applicationPermissions(router.root.config.permissions['cockpit'], 'cockpit')
             const tasklistAvailable = router.root.applicationPermissions(router.root.config.permissions['tasklist'], 'tasklist')
 
-            const cockpitOverride = cockpitAvailable ? null : '/seven/auth/start'
-            const tasklistOverride = tasklistAvailable ? null : '/seven/auth/start'
+            const cockpitOverride = cockpitAvailable ? null : {
+              name: 'no-permission',
+              query: {
+                permission: 'cockpit',
+                refPath: from.fullPath,
+              }
+            }
+            const tasklistOverride = tasklistAvailable ? null : {
+              name: 'no-permission',
+              query: {
+                permission: 'tasklist',
+                refPath: from.fullPath,
+              }
+            }
 
             const configuredStartPage = localStorage?.getItem('cibseven:preferences:startPage') || 'start'
             switch (configuredStartPage) {
@@ -117,7 +141,7 @@ const appRoutes = [
                 break;
               case 'start':
               default:
-                next('/seven/auth/start')
+                next({ name: 'start' })
                 break;
             }
           }
@@ -126,13 +150,19 @@ const appRoutes = [
         { path: 'start', name: 'start', component: StartView },
         { path: 'account/:userId', name: 'account', beforeEnter: (to, from, next) => {
             permissionsDeniedGuard('userProfile')(to, from, result => {
-                if (result) next(result)
+              if (result) next(result)
               else {
-                    if (to.params.userId && to.params.userId === router.root.user.id &&
-                      router.root.config.layout.showUserSettings)next()
-                    else next('/seven/auth/start')
-                }
-              })
+                if (to.params.userId && to.params.userId === router.root.user.id &&
+                  router.root.config.layout.showUserSettings)next()
+                else next({
+                  name: 'no-permission',
+                  query: {
+                    permission: 'userProfile',
+                    refPath: from.fullPath,
+                  }
+                })
+              }
+            })
           }, component: ProfileUser
         },
 
@@ -319,19 +349,43 @@ function authGuard(strict) {
 function permissionsGuard(permission) {
   return function(to, from, next) {
     if (router.root.applicationPermissions(router.root.config.permissions[permission], permission)) next()
-    else next('/seven/auth/start')
+    else {
+      next({
+        name: 'no-permission',
+        query: {
+          permission: permission,
+          refPath: from.fullPath,
+        }
+      })
+    }
   }
 }
 function permissionsDeniedGuard(permission) {
   return function(to, from, next) {
     if (!router.root.applicationPermissionsDenied(router.root.config.permissions[permission], permission)) next()
-    else next('/seven/auth/start')
+    else {
+      next({
+        name: 'no-permission',
+        query: {
+          permission: permission,
+          refPath: from.fullPath,
+        }
+      })
+    }
   }
 }
 function permissionsGuardUserAdmin(permission, condition) {
   return function(to, from, next) {
     if (router.root.adminManagementPermissions(router.root.config.permissions[permission], condition)) next()
-    else next('/seven/auth/start')
+    else {
+      next({
+        name: 'no-permission',
+        query: {
+          permission: permission,
+          refPath: from.fullPath,
+        }
+      })
+    }
   }
 }
 
