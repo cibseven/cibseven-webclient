@@ -49,11 +49,6 @@ export default mergeConfig(
           // Other common exclusions
           '**/index.js', // Entry point files (often just re-exports)
           '**/main.js', // Main entry files
-          
-          // Theme files (dynamic imports cause coverage issues)
-          '**/themes/**/*.js', // Exclude theme entry points
-          '**/themes/**/*.scss', // Exclude theme SCSS files
-          '**/styles/themes/**', // Exclude all theme-related files
         ],
       },
     },
