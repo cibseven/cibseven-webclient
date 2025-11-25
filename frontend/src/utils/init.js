@@ -123,12 +123,19 @@ export function handleAxiosError(router, root, error) {
   }
 }
 
-/**
- * Load theme dynamically based on configuration
- * @param {string} themeName - Name of the theme to load
- */
+const themeModules = import.meta.glob(
+  '../styles/themes/*/*.js'
+);
+
 export async function loadTheme(themeName) {
-  await import(`../styles/themes/${themeName}/${themeName}.js`);
+  const path = `../styles/themes/${themeName}/${themeName}.js`
+  const importer = themeModules[path]
+
+  if (!importer) {
+    throw new Error(`Theme not found: ${path}`)
+  }
+
+  await importer()
 }
 
 export function applyTheme(theme) {
