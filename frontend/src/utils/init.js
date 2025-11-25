@@ -123,19 +123,27 @@ export function handleAxiosError(router, root, error) {
   }
 }
 
-const themeModules = import.meta.glob(
-  '../styles/themes/*/*.js'
-);
-
 export async function loadTheme(themeName) {
-  const path = `../styles/themes/${themeName}/${themeName}.js`
-  const importer = themeModules[path]
-
-  if (!importer) {
-    throw new Error(`Theme not found: ${path}`)
+  try {
+    const cssContent = await loadBootstrapCss(themeName, true)
+    if (cssContent) {
+      const style = document.createElement('style');
+      style.textContent = cssContent
+      document.head.appendChild(style)
+    }
+  } catch (error) {
+    console.error('Error loading theme:', error)
   }
+}
 
-  await importer()
+async function loadBootstrapCss(theme, minify) {
+  try {
+    const response = await axios.get(`css?theme=${theme}&minify=${minify}`);
+    return response.data
+  } catch (error) {
+    console.error('Error loading css:', error)
+    return null
+  }
 }
 
 export function applyTheme(theme) {
