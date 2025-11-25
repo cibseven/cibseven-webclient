@@ -27,16 +27,14 @@ async function getHistoryProcessInstanceData(instanceId) {
 }
 
 async function getRuntimeProcessInstanceData(instanceId) {
-  return ProcessService.findProcessInstance(instanceId)
-    .then(instanceData => instanceData)
-    .then(async instanceData => {
-      const processDefinition = await ProcessService.findProcessById(instanceData.definitionId, false)
-      return {
-        processKey: processDefinition.key,
-        versionIndex: processDefinition.version,
-        tenantId: instanceData.tenantId,
-      }
-    })
+  return ProcessService.findProcessInstance(instanceId).then(async instanceData => {
+    const processDefinition = await ProcessService.findProcessById(instanceData.definitionId, false)
+    return {
+      processKey: processDefinition.key,
+      versionIndex: processDefinition.version,
+      tenantId: instanceData.tenantId,
+    }
+  })
 }
 
 export async function redirectToProcessInstance(router, to, from, next) {
