@@ -80,6 +80,10 @@ $navbar-collapse-bg: $white;
 
 .btn-light {
   background-color: $btn-light-bg;
+  --bs-btn-border-color: #{$gray-600};
+  --bs-btn-hover-border-color: #{$gray-600};
+  --bs-btn-active-border-color: #{$gray-600};
+  --bs-btn-disabled-border-color: #{$gray-600};
 }
 
 .btn-light:hover {
