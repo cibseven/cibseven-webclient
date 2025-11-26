@@ -42,7 +42,7 @@
 
     <transition name="slide-in" mode="out-in">
       <div class="d-flex flex-column bg-light w-100 h-100" v-if="user.id">
-        <b-button v-if="editMode" variant="light" style="min-height: 40px; line-height: 20px;" :block="true" class="rounded-0 border-bottom text-start" href="#/seven/auth/admin/users">
+        <b-button v-if="editMode" variant="light" style="min-height: 40px; line-height: 20px;" :block="true" class="rounded-0 border-bottom text-start" :to="{ name: 'adminUsers' }">
           <span class="mdi mdi-arrow-left me-2"></span>
           <span class="fw-bold">{{ $t('admin.users.title') }}</span>
         </b-button>
@@ -282,7 +282,7 @@ export default {
   watch: {
     '$route.params.userId': function() {
       if (!this.editMode && this.$route.params.userId !== this.$router.app.user.id) {
-        this.$router.push('/seven/auth/start')
+        this.$router.push({ name: 'start' })
       } else {
         this.loadUser(this.$route.params.userId)
         this.clean()
@@ -407,7 +407,7 @@ export default {
     deleteUser: function() {
       AdminService.deleteUser(this.user.id).then(() => {
         this.$refs.deleteUser.show(2)
-        this.$router.push('/seven/auth/admin/users')
+        this.$router.push({ name: 'adminUsers' })
       })
     },
     unassignGroup: function(group) {

@@ -35,7 +35,7 @@
 
     <transition name="slide-in" mode="out-in">
       <div v-if="tenant.id" class="d-flex flex-column h-100 bg-light">
-        <b-button variant="light" style="min-height: 40px; line-height: 20px;" :block="true" class="rounded-0 border-bottom text-start" href="#/seven/auth/admin/tenants">
+        <b-button variant="light" style="min-height: 40px; line-height: 20px;" :block="true" class="rounded-0 border-bottom text-start" :to="{ name: 'adminTenants' }">
           <span class="mdi mdi-arrow-left me-2"></span>
           <span class="fw-semibold">{{ $t('admin.tenants.title') }}</span>
         </b-button>
@@ -181,7 +181,7 @@
       remove: function() {
         this.deleteTenant(this.tenant.id).then(() => {
           this.$refs.deleteTenant.show(2)
-          this.$router.push('/seven/auth/admin/tenants')
+          this.$router.push({ name: 'adminTenants' })
         })
       },
       clean: function () {

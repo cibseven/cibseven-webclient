@@ -25,7 +25,7 @@
           <div class="row border rounded shadow-sm h-100">
             <div class="align-top" style="flex:auto">
               <div class="text-truncate ps-1"></div>
-              <router-link to="/seven/auth/start-process" class="h-100 text-decoration-none text-reset">
+              <router-link :to="{ name: 'start-process' }" class="h-100 text-decoration-none text-reset">
                 <div class="container">
                   <div class="row ps-3" style="height:55px">
                     <div class="col-12 align-items-center d-flex">
@@ -48,7 +48,7 @@
           <div class="row border rounded shadow-sm h-100">
             <div class="align-top" style="flex:auto">
               <div class="text-truncate ps-1"></div>
-              <router-link to="/seven/auth/tasks" class="h-100 text-decoration-none text-reset">
+              <router-link :to="{ name: 'tasks' }" class="h-100 text-decoration-none text-reset">
                 <div class="container">
                   <div class="row ps-3" style="height:55px">
                     <div class="col-12 align-items-center d-flex">
@@ -72,7 +72,7 @@
           <div class="row border rounded shadow-sm h-100">
             <div class="align-top" style="flex:auto">
               <div class="text-truncate ps-1"></div>
-              <router-link to="/seven/auth/processes" class="h-100 text-decoration-none text-reset">
+              <router-link :to="{ name: 'cockpit' }" class="h-100 text-decoration-none text-reset">
                 <div class="container">
                   <div class="row ps-3" style="height:55px">
                     <div class="col-12 align-items-center d-flex">
@@ -112,7 +112,7 @@
           <div class="row border rounded shadow-sm h-100">
             <div class="align-top" style="flex:auto">
               <div class="text-truncate ps-1"></div>
-              <router-link to="/seven/auth/admin" class="h-100 text-decoration-none text-reset" tabindex="-1">
+              <router-link :to="{ name: 'usersManagement' }" class="h-100 text-decoration-none text-reset" tabindex="-1">
                 <div class="container">
                   <div class="row ps-3" style="height:55px">
                     <div class="col-12 align-items-center d-flex">

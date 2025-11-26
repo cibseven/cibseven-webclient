@@ -1072,6 +1072,7 @@
 		"SystemException": "Se ha producido un problema técnico inesperado. ¿Deseas enviar un informe?",
 		"DoxichangeException": "No se ha podido generar la vista previa. ¿Deseas enviar el documento afectado para su análisis?",
 		"AccessDeniedException": "Sin autorización ({0})",
+		"NoPermission": "No tienes los permisos necesarios para realizar esta acción.\nPermiso requerido: \"{permission}\".\nReferenciado desde: {refPath}",
 		"EntryAlreadyExistsException": "{0} ya existe",
 		"NoObjectFoundException": "¡Se ha producido un problema durante la ejecución del proceso! Por favor, actualice la página en su navegador e inténtelo de nuevo.",
 		"InvalidAttributeValueException": "¡Se ha producido un problema durante la ejecución del proceso! Por favor, actualice la página en su navegador e inténtelo de nuevo.",

@@ -121,7 +121,7 @@ export default {
         this.userIdError = false
         this.$refs.userCreated.show(1)
         setTimeout(() => {
-          this.$router.push('/seven/auth/admin/users')
+          this.$router.push({ name: 'adminUsers' })
         }, 1000)
       }, error => {
         var data = error.response.data
@@ -132,7 +132,7 @@ export default {
       })
     },
     onReset: function() {
-      this.$router.push('/seven/auth/admin/users')
+      this.$router.push({ name: 'adminUsers' })
     },
     notEmpty: function(value) {
       return notEmpty(value)

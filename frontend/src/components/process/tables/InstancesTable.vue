@@ -36,7 +36,7 @@
         <CopyableActionButton
           :displayValue="table.item.id"
           :title="$t('process.showInstance') + ':\n' + table.item.id"
-          :to="`/seven/auth/process/${table.item.processDefinitionKey}/${table.item.processDefinitionVersion}/${table.item.id}?tab=variables${tenantId ? `&tenantId=${tenantId}` : ''}`"
+          :to="selectInstanceRoute(table.item)"
           @copy="copyValueToClipboard"
         />
       </template>
@@ -224,16 +224,23 @@ export default {
       this.resetPagination()
       this.loadInstancesData()
     },
-    selectInstance: function(instance) {
-      this.$router.push({
+    selectInstanceRoute: function(instance) {
+      return {
         name: 'process',
         params: {
           processKey: instance.processDefinitionKey,
           versionIndex: instance.processDefinitionVersion,
           instanceId: instance.id,
         },
-        query: { ...this.$route.query, tab: 'variables' } // Set default tab for instance view
-      })
+        query: {
+          ...this.$route.query,
+          ...(this.tenantId ? { tenantId: this.tenantId } : {} ),
+          tab: 'variables', // Set default tab for instance view
+        },
+      }
+    },
+    selectInstance: function(instance) {
+      this.$router.push(this.selectInstanceRoute(instance))
     },
     // "Stop Instance" button
     confirmStopInstance: function(instance) {
