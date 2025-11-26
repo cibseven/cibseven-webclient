@@ -124,20 +124,20 @@ const appRoutes = [
             const configuredStartPage = localStorage?.getItem('cibseven:preferences:startPage') || 'start'
             switch (configuredStartPage) {
               case 'processes-dashboard':
-                next(cockpitOverride || '/seven/auth/processes/dashboard')
+                next(cockpitOverride || { name: 'processesDashboard' })
                 break;
               case 'decisions-list':
-                next(cockpitOverride || '/seven/auth/decisions/list')
+                next(cockpitOverride || { name: 'decision-list' })
                 break;
               case 'human-tasks-dashboard':
-                next(cockpitOverride || '/seven/auth/human-tasks')
+                next(cockpitOverride || { name: 'human-tasks' })
                 break;
 
               case 'tasks':
-                next(tasklistOverride || '/seven/auth/tasks')
+                next(tasklistOverride || { name: 'tasks'})
                 break;
               case 'start-process':
-                next(tasklistOverride || '/seven/auth/start-process')
+                next(tasklistOverride || { name: 'start-process' })
                 break;
               case 'start':
               default:
@@ -254,7 +254,7 @@ const appRoutes = [
           },
           children: [
             { path: '', name: 'usersManagement', component: UsersManagement },
-            { path: 'users', name:'adminUsers',
+            { path: 'users', name: 'adminUsers',
               beforeEnter: permissionsGuardUserAdmin('usersManagement', 'user'), component: AdminUsers },
             { path: 'user/:userId', name: 'adminUser',
               beforeEnter: permissionsGuardUserAdmin('usersManagement', 'user'), component: ProfileUser,
@@ -263,7 +263,7 @@ const appRoutes = [
             { path: 'groups', name: 'adminGroups', beforeEnter: permissionsGuardUserAdmin('groupsManagement', 'group'), component: AdminGroups },
             { path: 'group/:groupId', name: 'adminGroup', beforeEnter: permissionsGuardUserAdmin('groupsManagement', 'group'), component: ProfileGroup },
             // Tenants
-            { path: 'tenants', name:'adminTenants', beforeEnter: permissionsGuardUserAdmin('tenantsManagement', 'tenant'), component: TenantsView },
+            { path: 'tenants', name: 'adminTenants', beforeEnter: permissionsGuardUserAdmin('tenantsManagement', 'tenant'), component: TenantsView },
             { path: 'tenant/:tenantId', name: 'adminTenant', beforeEnter: permissionsGuardUserAdmin('tenantsManagement', 'tenant'), component: EditTenant },
             // System
             { path: 'system', redirect: '/seven/auth/admin/system/system-diagnostics', name: 'adminSystem', component: SystemView,
