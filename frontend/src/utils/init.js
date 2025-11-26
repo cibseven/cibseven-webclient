@@ -123,19 +123,36 @@ export function handleAxiosError(router, root, error) {
   }
 }
 
-export function applyTheme(theme) {
+export async function loadTheme(themeName) {
+  try {
+    const cssContent = await loadBootstrapCss(themeName, true)
+    if (cssContent) {
+      const style = document.createElement('style');
+      style.textContent = cssContent
+      document.head.appendChild(style)
+    }
+  } catch (error) {
+    console.error('Error loading theme:', error)
+  }
+}
 
-  var css = document.createElement('Link')
-  css.setAttribute('rel', 'stylesheet')
-  css.setAttribute('type', 'text/css')
-  css.setAttribute('href', 'themes/' + theme + '/styles.css')
+async function loadBootstrapCss(theme, minify) {
+  try {
+    const response = await axios.get(`css?theme=${theme}&minify=${minify}`);
+    return response.data
+  } catch (error) {
+    console.error('Error loading css:', error)
+    return null
+  }
+}
+
+export function applyTheme(theme) {
 
   var favicon = document.createElement('Link')
   favicon.setAttribute('rel', 'icon')
   favicon.setAttribute('type', 'image/x-icon')
   favicon.setAttribute('href', 'themes/' + theme + '/favicon.ico')
 
-  document.head.appendChild(css)
   document.head.appendChild(favicon)
 }
 

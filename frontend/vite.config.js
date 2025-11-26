@@ -56,6 +56,15 @@ export default defineConfig({
       vue: 'vue/dist/vue.esm-bundler.js',
     },
   },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        // Suppress deprecation warnings from Bootstrap
+        quietDeps: true,
+        silenceDeprecations: ['legacy-js-api', 'import', 'global-builtin']
+      }
+    }
+  },
   server: {
     proxy: {
       '/info': {
@@ -87,6 +96,22 @@ export default defineConfig({
           })
           proxy.on('proxyRes', (proxyRes, req, _res) => {
             //console.log('Received Response from the Target:', proxyRes.statusCode, backendUrl + req.url)
+          })
+        },
+      },
+      '/css': {
+        target: backendUrl,
+        changeOrigin: true,
+        secure: false,
+        configure: (proxy, _options) => {
+          proxy.on('error', (err, _req, _res) => {
+            console.log('proxy error', err)
+          })
+          proxy.on('proxyReq', (proxyReq, req, _res) => {
+            console.log('Sending Request to the Target:', req.method, backendUrl + req.url)
+          })
+          proxy.on('proxyRes', (proxyRes, req, _res) => {
+            console.log('Received Response from the Target:', proxyRes.statusCode, backendUrl + req.url)
           })
         },
       },
@@ -154,7 +179,7 @@ export default defineConfig({
         input: {
           main: path.resolve(__dirname, 'index.html'),
           ssoLogin: path.resolve(__dirname, 'sso-login.html'),
-          embeddedForms: path.resolve(__dirname, 'embedded-forms.html')
+          embeddedForms: path.resolve(__dirname, 'embedded-forms.html'),
         }
       }
     }
