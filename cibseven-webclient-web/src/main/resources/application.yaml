@@ -70,7 +70,7 @@ cibseven:
     cockpit:
       url: /camunda/app/cockpit/default/
 
-    theme: generic
+    theme: cib
 
     # RestTemplate configuration
     rest:
