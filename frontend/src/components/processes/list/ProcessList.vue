@@ -212,7 +212,7 @@ export default {
   },
   methods: {
     goToDeployment: function(process) {
-      this.$router.push('/seven/auth/deployments/' + process.deploymentId)
+      this.$router.push({ name: 'deployments', params: { deploymentId: process.deploymentId } })
     },
     goToCockpit: function(process) {
       window.open(this.$root.config.cockpitUrl + '#/process-definition/' + process.id, '_blank')

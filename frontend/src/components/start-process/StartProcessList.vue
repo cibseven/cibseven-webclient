@@ -76,7 +76,7 @@
       <SuccessAlert top="0" style="z-index: 1031" ref="processStarted">
         <span>
           {{ $t('process.processCheck') }}
-          <router-link to="/seven/auth/tasks" place="tasks">{{ $t('process.tasks') }}</router-link>
+          <router-link :to="{ name: 'tasks' }" place="tasks">{{ $t('process.tasks') }}</router-link>
         </span>
       </SuccessAlert>
       <b-modal static ref="diagramModal" size="xl" :title="$t('process.diagram.title', [processName(selected)])" dialog-class="h-75" content-class="h-100" :ok-only="true">
