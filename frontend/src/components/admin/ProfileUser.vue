@@ -282,7 +282,7 @@ export default {
   watch: {
     '$route.params.userId': function() {
       if (!this.editMode && this.$route.params.userId !== this.$router.app.user.id) {
-        this.$router.push('/seven/auth/start')
+        this.$router.push({ name: 'start' })
       } else {
         this.loadUser(this.$route.params.userId)
         this.clean()

@@ -116,10 +116,10 @@
         })
       },
       add: function() {
-        this.$router.push('/seven/auth/admin/create-tenant')
+        this.$router.push({ name: 'createTenant' })
       },
       edit: function(tenant) {
-        this.$router.push('/seven/auth/admin/tenant/' + tenant.id + '?tab=information')
+        this.$router.push({ name: 'adminTenant', params: { tenantId: tenant.id }, query: { tab: 'information' } })
       },
       prepareRemove: function(tenant) {
         this.tenantSelected = tenant
