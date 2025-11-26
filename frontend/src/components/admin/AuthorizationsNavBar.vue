@@ -23,7 +23,7 @@
       :key="resourceType.id"
       class="border-0 px-3 py-2 no-radius-right"
       action
-      :active="$route.path.includes(editRoute(resourceType))"
+      :active="isActive(resourceType)"
       :to="editRoute(resourceType)"
       @click="$emit('middle')">
       <span>{{ $t(`admin.authorizations.resourcesTypes.${resourceType.key}`) }}</span>
@@ -44,6 +44,9 @@ export default {
     }
   },
   methods: {
+    isActive: function(resourceType) {
+      return this.$route.path.endsWith(`/${resourceType.id}/${resourceType.key}`)
+    },
     editRoute: function(resourceType) {
       return { name: 'authorizationType', params: { resourceTypeId: resourceType.id, resourceTypeKey: resourceType.key } }
     }
