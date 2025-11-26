@@ -73,9 +73,9 @@
       <button @click="copyValueToClipboard(selectedInstance.superProcessInstanceId)" class="btn btn-sm mdi mdi-content-copy float-end border-0"
         :title="$t('process.details.copyValue')"></button>
     </span>
-    <a class="text-decoration-underline" style="cursor:pointer" @click.prevent="navigateToSuperProcessInstance(selectedInstance.superProcessInstanceId)">
+    <RouterLink class="text-decoration-underline" style="cursor:pointer" :to="routeToSuperProcessInstance(selectedInstance.superProcessInstanceId)">
       {{ selectedInstance.superProcessInstanceId }}
-    </a>
+    </RouterLink>
   </div>
   <hr class="my-2">
   <div class="row">
@@ -131,7 +131,7 @@
 <script>
 import { moment } from '@/globals.js'
 import { formatDate } from '@/utils/dates.js'
-import { ProcessService, HistoryService } from '@/services.js'
+import { ProcessService } from '@/services.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { SuccessAlert } from '@cib/common-frontend'
 
@@ -180,24 +180,15 @@ export default {
         this.$emit('onUpdateHistoryTimeToLive', this.version.id, data.historyTimeToLive);
       })
     },
-    navigateToSuperProcessInstance: async function(superProcessInstanceId) {
-      if (!superProcessInstanceId) return
-      try {
-        const processInstance = await HistoryService.findProcessInstance(superProcessInstanceId)
-        const processKey = processInstance.processDefinitionKey
-        const versionIndex = processInstance.processDefinitionVersion
-        const params = { processKey, versionIndex, instanceId: processInstance.id }
-
-        const routeConfig = {
-          name: 'process',
-          params,
-          query: {
-            tab: 'variables'
-          }
+    routeToSuperProcessInstance(superProcessInstanceId) {
+      return {
+        name: 'process-instance-id',
+        params: {
+          instanceId: superProcessInstanceId
+        },
+        query: {
+          tab: 'calledProcessInstances'
         }
-        await this.$router.push(routeConfig)
-      } catch (error) {
-        console.error('Failed to navigate to super process instance:', error)
       }
     }
   }
