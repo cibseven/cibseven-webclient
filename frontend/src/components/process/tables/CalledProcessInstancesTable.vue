@@ -30,7 +30,7 @@
      <template v-slot:cell(calledProcessInstance)="table">
        <CopyableActionButton
          :display-value="table.item.calledProcessInstance"
-         :title="table.item.name"
+         :title="$t('process-instance.calledProcesses.calledProcessInstance') + ':\n' + table.item.calledProcessInstance"
          :to="{
            name: 'process',
            params: {
@@ -38,7 +38,11 @@
              versionIndex: table.item.version,
              instanceId: table.item.calledProcessInstance
            },
-           query: { parentProcessDefinitionId: this.selectedInstance.processDefinitionId, tab: 'variables' }
+           query: {
+             parentProcessDefinitionId: this.selectedInstance.processDefinitionId,
+             ...(table.item.tenantId ? { tenantId: table.item.tenantId } : {} ),
+             tab: 'variables',
+           }
          }"
          @copy="copyValueToClipboard"
        />
@@ -46,14 +50,18 @@
      <template v-slot:cell(process)="table">
        <CopyableActionButton
          :display-value="table.item.name || table.item.key"
-         :title="table.item.name || table.item.key"
+         :title="$t('process-instance.calledProcesses.process') + ':\n' + (table.item.name || table.item.key)"
          :to="{
            name: 'process',
            params: {
              processKey: table.item.key,
              versionIndex: table.item.version
            },
-           query: { parentProcessDefinitionId: this.selectedInstance.processDefinitionId, tab: 'instances' }
+           query: {
+             parentProcessDefinitionId: this.selectedInstance.processDefinitionId,
+             ...(table.item.tenantId ? { tenantId: table.item.tenantId } : {} ),
+             tab: 'instances',
+          }
          }"
          @copy="copyValueToClipboard"
        />
@@ -62,7 +70,7 @@
         <CopyableActionButton
           :display-value="table.item.callingActivity.activityName || table.item.callingActivity.activityId"
           :copy-value="table.item.callingActivity.activityId"
-          :title="table.item.callingActivity.activityName || table.item.callingActivity.activityId"
+          :title="$t('process-instance.calledProcesses.callingActivity') + ':\n' + (table.item.callingActivity.activityName || table.item.callingActivity.activityId)"
           @click="setHighlightedElement(table.item.callingActivity.activityId)"
           @copy="copyValueToClipboard"
         />
@@ -149,6 +157,7 @@ export default {
           const key = processPL.processDefinitionKey
           const version = processPL.processDefinitionVersion
           const state = processPL.state
+          const tenantId = processPL.tenantId
 
           let foundInst = this.activityInstanceHistory.find(processAIH => {
             if (processAIH.activityType === "callActivity"){
@@ -168,7 +177,8 @@ export default {
             key: key,
             version: version,
             name: foundProcess ? foundProcess.name : key,
-            state: state
+            state: state,
+            tenantId: tenantId
           })
         })
         this.loading = false
