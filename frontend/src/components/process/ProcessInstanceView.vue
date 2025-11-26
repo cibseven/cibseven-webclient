@@ -29,6 +29,7 @@
                 ...Object.fromEntries(
                   Object.entries($route.query).filter(([key]) => key !== 'parentProcessDefinitionId')
                 ),
+                ...(parentProcess.tenantId ? { tenantId: parentProcess.tenantId } : {}),
                 tab: 'instances'
               }
             }"
