@@ -38,10 +38,8 @@
           <span v-if="superProcessInstance" class="pe-1">:</span>
           <router-link v-if="superProcessInstance"
             :to="{
-              name: 'process',
+              name: 'process-instance-id',
               params: {
-                processKey: superProcessInstance.processDefinitionKey,
-                versionIndex: superProcessInstance.processDefinitionVersion,
                 instanceId: superProcessInstance.id
               },
               query: { tab: 'variables' }
