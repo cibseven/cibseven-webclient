@@ -130,7 +130,7 @@ export default {
       })
     }),
     add: function() {
-      this.$router.push('/seven/auth/admin/create-group')
+      this.$router.push({ name: 'createGroup' })
     },
     prepareRemove: function(group) {
       this.groupSelected = group
@@ -144,7 +144,7 @@ export default {
       })
     },
     edit: function(group) {
-      this.$router.push('/seven/auth/admin/group/' + group.id + '?tab=information')
+      this.$router.push({ name: 'adminGroup', params: { groupId: group.id }, query: { tab: 'information' } })
     },
     showMore: function(el) {
       if (this.firstResult <= this.groups.length && !this.loading) {
