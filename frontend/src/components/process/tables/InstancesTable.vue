@@ -232,7 +232,11 @@ export default {
           versionIndex: instance.processDefinitionVersion,
           instanceId: instance.id,
         },
-        query: { ...this.$route.query, tab: 'variables' } // Set default tab for instance view
+        query: {
+          ...this.$route.query,
+          ...(this.tenantId ? { tenantId: this.tenantId } : {} ),
+          tab: 'variables', // Set default tab for instance view
+        },
       }
     },
     selectInstance: function(instance) {
