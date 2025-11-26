@@ -99,9 +99,11 @@ describe('router', () => {
     // eslint-disable-next-line no-undef
     const srcDir = path.resolve(__dirname, '../../src')
     const jsFiles = findComponents(srcDir, '.js')
+    const vueFiles = findComponents(srcDir, '.vue')
+    const allFiles = jsFiles.concat(vueFiles)
 
-    it('no hardcoded URLs in *.js files', () => {
-      jsFiles.forEach(f => {
+    it('no hardcoded URLs in *.js|*.vue files with next() method', () => {
+      allFiles.forEach(f => {
         const routerFilePath = path.resolve(srcDir, f)
         const routerContent = fs.readFileSync(routerFilePath, 'utf-8')
 
@@ -120,6 +122,27 @@ describe('router', () => {
           : ''
 
         expect(message).toBe('')
+      })
+    })
+
+    // No '/seven/auth/start' direct usage
+    // TODO unskip when fixing all occurrences (82 as of Nov 2025)
+    it.skip('no hardcoded URLs in *.js|*.vue files', () => {
+      allFiles.forEach(f => {
+        const routerFilePath = path.resolve(srcDir, f)
+        const routerContent = fs.readFileSync(routerFilePath, 'utf-8')
+
+        if (f.includes('router.test.js')) {
+          return // skip further checks for router.test.js
+        }
+        const hardcodedStartUrlRegex = /push\(['"`]\/seven\/auth\//g
+        const startMatches = routerContent.match(hardcodedStartUrlRegex) || []
+
+        const startMessage = startMatches.length > 0
+          ? `Hardcoded push('/seven/auth/...' URL found in ${f}. Please use named routes instead.`
+          : ''
+
+        expect(startMessage).toBe('')
       })
     })
   })
