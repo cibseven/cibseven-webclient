@@ -25,7 +25,8 @@ export default {
 	props: { process: Object, selectedInstance: Object, activityInstance: Object, activityInstanceHistory: Array },
 	data: function () {
 		return {
-			loading: false,
+			loading: true,
+			fetching: false,
 			filter: {
 				deserializeValues: false,
 			},
@@ -86,7 +87,7 @@ export default {
 	},
 	methods: {
 		loadSelectedInstanceVariables: function() {
-			if (this.loading) return
+			if (this.fetching) return // Prevent concurrent requests
 			if (this.selectedInstance && this.activityInstancesGrouped) {
 				if (this.selectedInstance.state === 'ACTIVE' || this.$root.config.camundaHistoryLevel === 'none') {
 					this.fetchInstanceVariables('ProcessService', 'fetchProcessInstanceVariables')
@@ -98,6 +99,7 @@ export default {
 			}
 		},
 		fetchInstanceVariables: async function (service, method) {
+			this.fetching = true
 			this.loading = true
 			let variables = await serviceMap[service][method](this.selectedInstance.id, this.restFilter)
 			variables.forEach(v => {
@@ -108,6 +110,7 @@ export default {
 			this.variables = variables
 			this.filteredVariables = [...variables]
 			this.loading = false
+			this.fetching = false
 		},    
     displayValue(item) {
       if (this.isFileValueDataSource(item)) {
