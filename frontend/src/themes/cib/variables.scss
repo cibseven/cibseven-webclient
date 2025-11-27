@@ -9,5 +9,5 @@ $dark:          #0F2133;
 $white:			   #FFF;
 
 @import "../cib-variables.scss";
-@import "META-INF/resources/webjars/bootstrap/5.3.8/scss/bootstrap.scss";
+@import "bootstrap/scss/bootstrap.scss";
 @import "../cib-patch.scss";
