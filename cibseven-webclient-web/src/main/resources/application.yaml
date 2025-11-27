@@ -1,3 +1,6 @@
+server:
+  port: 8082
+
 spring:
   banner:
     location: classpath:banner.txt
@@ -27,7 +30,7 @@ cibseven:
     historyLevel: full
     # Token generation
     authentication:
-      jwtSecret: 
+      jwtSecret: YWY1NDhhOdYxOGJjNTg2NjMzOWM0ZTQ5NjkwNjZlNjU4NTk4ODYWY1NDhhOdYxOGJjNTg2NjMzOWM0ZTQ5NjkwNjZlNjU4NTk4ODYWY1NDhhOdYxOGJjNTg2NjMzOWM0ZTQ5NjkwNjZlNjU4NTk4OD
       tokenValidMinutes: 60
       tokenProlongMinutes: 1440
     # LDAP

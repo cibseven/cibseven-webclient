@@ -123,26 +123,23 @@ export function handleAxiosError(router, root, error) {
   }
 }
 
+// Dynamically import theme SCSS files
+const themeModules = import.meta.glob('@/themes/**/variables.scss', { eager: false, query: '?inline' })
+
 export async function loadTheme(themeName) {
   try {
-    const cssContent = await loadBootstrapCss(themeName, true)
-    if (cssContent) {
-      const style = document.createElement('style');
-      style.textContent = cssContent
+    const themePath = `/src/themes/${themeName}/variables.scss`
+    const moduleLoader = themeModules[themePath]
+    if (moduleLoader) {
+      const module = await moduleLoader()
+      const style = document.createElement('style')
+      style.textContent = module.default
       document.head.appendChild(style)
+    } else {
+      console.warn(`Theme "${themeName}" not found, available themes:`, Object.keys(themeModules))
     }
   } catch (error) {
     console.error('Error loading theme:', error)
-  }
-}
-
-async function loadBootstrapCss(theme, minify) {
-  try {
-    const response = await axios.get(`css?theme=${theme}&minify=${minify}`);
-    return response.data
-  } catch (error) {
-    console.error('Error loading css:', error)
-    return null
   }
 }
 
