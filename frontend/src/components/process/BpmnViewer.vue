@@ -301,7 +301,7 @@ export default {
     },
     drawActivitiesBadges: function(elementRegistry) {
       const historyStatistics = this.historicActivityStatistics
-      const historyLevel = this.$root?.config?.camundaHistoryLevel
+      const historyLevel = this.$root.config.camundaHistoryLevel
       const mergedStatistics = this.getMergedStatistics(historyStatistics, historyLevel)
       
       mergedStatistics.forEach(stat => {
