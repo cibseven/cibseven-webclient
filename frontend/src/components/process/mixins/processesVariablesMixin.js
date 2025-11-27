@@ -25,7 +25,7 @@ export default {
 	props: { process: Object, selectedInstance: Object, activityInstance: Object, activityInstanceHistory: Array },
 	data: function () {
 		return {
-			loading: true,
+			loading: false,
 			filter: {
 				deserializeValues: false,
 			},
@@ -86,6 +86,7 @@ export default {
 	},
 	methods: {
 		loadSelectedInstanceVariables: function() {
+			if (this.loading) return
 			if (this.selectedInstance && this.activityInstancesGrouped) {
 				if (this.selectedInstance.state === 'ACTIVE' || this.$root.config.camundaHistoryLevel === 'none') {
 					this.fetchInstanceVariables('ProcessService', 'fetchProcessInstanceVariables')
