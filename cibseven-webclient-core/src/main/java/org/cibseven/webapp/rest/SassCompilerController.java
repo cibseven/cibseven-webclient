@@ -49,7 +49,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class SassCompilerController {
 
 	private static final Map<String, String> cachedCss = new ConcurrentHashMap<>();
-	private static final String DEFAULT_THEME_NAME = "generic";
+	private static final String DEFAULT_THEME_NAME = "cib";
 	private static final String DEFAULT_BOOTSTRAP_VERSION = "bs5"; // default to v5
 	private static final String PATH_THEMES_FOLDER_NAME = "/themes";
 	private static final String VARIABLE_FILE_NAME = "variables.scss"; // for Bootstrap 5.x
@@ -73,7 +73,7 @@ public class SassCompilerController {
     })
     @GetMapping("/css")
     public ResponseEntity<String> getCss(
-            @Parameter(description = "Theme name to compile CSS for", example = "generic")
+            @Parameter(description = "Theme name to compile CSS for", example = "cib")
             @RequestParam(defaultValue = DEFAULT_THEME_NAME) String theme,
 
             @Parameter(description = "Bootstrap version to target. Use '5' (default) or '4' / '4.5.0' for Bootstrap 4.", example = "5")
