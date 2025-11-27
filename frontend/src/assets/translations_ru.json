@@ -363,7 +363,8 @@
 			"due": "Конечная дата",
 			"followUp": "Последующее действие",
 			"taskID": "ID задачи",
-			"actions": "Действия"
+			"actions": "Действия",
+			"openTask": "Открыть задачу \"{name}\" в списке задач"
 		},
 		"calledProcesses": {
 			"callingActivity": "Активность",

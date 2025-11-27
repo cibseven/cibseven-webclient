@@ -363,7 +363,8 @@
 			"due": "Fecha de vencimiento",
 			"followUp": "Seguimiento",
 			"taskID": "ID de tarea",
-			"actions": "Acciones"
+			"actions": "Acciones",
+			"openTask": "Abrir tarea \"{name}\" en la lista de tareas"
 		},
 		"calledProcesses": {
 			"callingActivity": "Actividad",

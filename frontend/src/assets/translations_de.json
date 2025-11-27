@@ -363,7 +363,8 @@
 			"due": "Fälligkeitsdatum",
 			"followUp": "Nachverfolgung",
 			"taskID": "Aufgaben-ID",
-			"actions": "Aktionen"
+			"actions": "Aktionen",
+			"openTask": "Aufgabe \"{name}\" in der Tasklist öffnen"
 		},
 		"calledProcesses": {
 			"callingActivity": "Aktivität",

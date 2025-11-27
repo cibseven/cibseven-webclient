@@ -69,7 +69,37 @@ export async function redirectToProcessInstance(router, to, from, next) {
   }
   else {
     next({
-      name: 'start',
+      name: 'no-permission',
+      query: {
+        permission: 'cockpit',
+        refPath: from.fullPath,
+      }
+    })
+  }
+}
+
+export async function redirectToTask(router, to, from, next) {
+  const taskId = to.params.taskId
+  const cockpitAvailable = router.root.applicationPermissions(router.root.config.permissions['tasklist'], 'tasklist')
+  if (cockpitAvailable) {
+    next({
+      name: 'tasklist',
+      params: {
+        filterId: '-', // TODO: select first available filter with this task
+        taskId,
+      },
+      query: {
+        ...to.query,
+      }
+    })
+  }
+  else {
+    next({
+      name: 'no-permission',
+      query: {
+        permission: 'tasklist',
+        refPath: from.fullPath,
+      }
     })
   }
 }
