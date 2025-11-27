@@ -21,7 +21,7 @@ import { axios } from '@/globals.js'
 import { getServicesBasePath } from '@/services.js'
 
 export function getTheme(config) {
-  return config.theme || "generic"
+  return config.theme || "cib"
 }
 
 export function hasHeader() {
