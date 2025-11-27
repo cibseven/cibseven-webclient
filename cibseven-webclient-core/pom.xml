@@ -136,26 +136,6 @@
 	        <scope>test</scope>
 	    </dependency>
 
-		<!-- SASS Compiler Dependencies -->
-		<dependency>
-			<groupId>org.webjars.npm</groupId>
-			<artifactId>bootstrap</artifactId>
-			<version>5.3.8</version>
-		</dependency>
-
-		<dependency>
-			<groupId>de.larsgrefer.sass</groupId>
-			<artifactId>sass-embedded-host</artifactId>
-			<version>4.3.1</version>
-		</dependency>
-
-		<!-- Add Bootstrap 4.5.0 WebJar to support compiling Bootstrap v4 themes alongside v5. Keep v5 declared first to avoid classpath resolution issues. -->
-		<dependency>
-			<groupId>org.webjars</groupId>
-			<artifactId>bootstrap</artifactId>
-			<version>4.5.0</version>
-		</dependency>
-
 	</dependencies>
 
 	<build>
