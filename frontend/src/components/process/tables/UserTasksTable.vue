@@ -31,6 +31,9 @@
       { label: 'followUp', key: 'followUp', class: 'col-1', tdClass: 'py-1' },
       { label: 'taskID', key: 'id', class: 'col-2', tdClass: 'position-relative py-1' },
       { label: 'actions', key: 'actions', class: 'col-1', sortable: false, tdClass: 'py-1' }]">
+      <template v-slot:cell(name)="table">
+        <span :title="table.item.description || table.item.name" class="text-truncate d-block">{{ table.item.name }}</span>
+      </template>
       <template v-slot:cell(assignee)="table">
         <div :title="table.item.assignee" class="text-truncate w-100" :class="focusedCell === table.item.assignee ? 'pe-4': ''" @mouseenter="focusedCell = table.item.assignee" @mouseleave="focusedCell = null">
           {{ table.item.assignee || '&nbsp;' }}
@@ -54,7 +57,7 @@
         <b-button :title="$t('process-instance.assignModal.manageUsersGroups')" @click="$refs.taskAssignationModal.show(table.item.id, false)"
           size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-account"></b-button>
         <b-button :title="$t('process-instance.usertasks.openTask', { name: table.item.name })" :to="{ name: 'task-id', params: { taskId: table.item.id } }"
-          size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-clipboard-play-outline"></b-button>
+          size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-clipboard-text-play-outline"></b-button>
       </template>
     </FlowTable>
     <div v-else-if="!loading">
