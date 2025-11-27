@@ -363,7 +363,8 @@
 			"due": "Кінцева дата",
 			"followUp": "Подальша дія",
 			"taskID": "ID завдання",
-			"actions": "Дії"
+			"actions": "Дії",
+			"openTask": "Відкрити завдання \"{name}\" у списку завдань"
 		},
 		"calledProcesses": {
 			"callingActivity": "Активність",

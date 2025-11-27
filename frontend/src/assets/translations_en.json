@@ -363,7 +363,8 @@
 			"due": "Due Date",
 			"followUp": "Follow-Up",
 			"taskID": "Task ID",
-			"actions": "Actions"
+			"actions": "Actions",
+			"openTask": "Open \"{name}\" task in Tasklist"
 		},
 		"calledProcesses": {
 			"callingActivity": "Activity",

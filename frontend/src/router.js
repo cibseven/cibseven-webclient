@@ -56,7 +56,7 @@ import SystemView from '@/components/system/SystemView.vue'
 import SystemDiagnostics from '@/components/system/SystemDiagnostics.vue'
 import ExecutionMetrics from '@/components/system/ExecutionMetrics.vue'
 import { TranslationsDownload } from '@cib/common-frontend'
-import { redirectToProcessInstance } from '@/utils/redirects.js'
+import { redirectToProcessInstance, redirectToTask } from '@/utils/redirects.js'
 
 const appRoutes = [
     { path: '/',  name: 'root', redirect: '/seven/auth/start-configurable' },
@@ -172,6 +172,7 @@ const appRoutes = [
         },
 
         // Tasks in active processes
+        { path: 'task/:taskId', name: 'task-id', beforeEnter: async (to, from, next) => redirectToTask(router, to, from, next) },
         { path: 'tasks', name: 'tasks', beforeEnter: permissionsGuard('tasklist'), component: TasksView,
           children: [
             { path: ':filterId/:taskId?', name: 'tasklist', component: TaskView }

@@ -35,6 +35,7 @@
         <div :title="table.item.assignee" class="text-truncate w-100" :class="focusedCell === table.item.assignee ? 'pe-4': ''" @mouseenter="focusedCell = table.item.assignee" @mouseleave="focusedCell = null">
           {{ table.item.assignee || '&nbsp;' }}
           <span v-if="focusedCell === table.item.assignee" @click.stop="$refs.taskAssignationModal.show(table.item.id, true)"
+            :title="$t('process-instance.assignModal.manageAssignee')"
             class="mdi mdi-18px mdi-pencil-outline px-2 position-absolute end-0 text-secondary lh-sm"></span>
         </div>
       </template>
@@ -52,6 +53,8 @@
       <template v-slot:cell(actions)="table">
         <b-button :title="$t('process-instance.assignModal.manageUsersGroups')" @click="$refs.taskAssignationModal.show(table.item.id, false)"
           size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-account"></b-button>
+        <b-button :title="$t('process-instance.usertasks.openTask', { name: table.item.name })" :to="{ name: 'task-id', params: { taskId: table.item.id } }"
+          size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-clipboard-play-outline"></b-button>
       </template>
     </FlowTable>
     <div v-else-if="!loading">
