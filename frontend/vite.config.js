@@ -153,6 +153,7 @@ export default defineConfig({
             },
             // Ensure CSS is extracted and placed in the dist folder
             assetFileNames: 'cibseven-components.[ext]',
+            inlineDynamicImports: true,
           },
         },
         cssCodeSplit: true, // Ensure CSS is extracted into a separate file
