@@ -1,6 +1,6 @@
 {
   "name": "cibseven-components",
-  "version": "2.1.1-dev.5",
+  "version": "2.1.1-dev.6",
   "type": "module",
   "license": "",
   "main": "./src/main.js",
