@@ -39,7 +39,7 @@
     "@cib/common-frontend": "1.0.0",
     "@mdi/font": "7.4.47",
     "apexcharts": "4.7.0",
-    "axios": "1.12.2",
+    "axios": "1.13.2",
     "bootstrap": "5.3.8",
     "bpm-sdk": "2.1.0",
     "bpmn-js": "18.3.2",
