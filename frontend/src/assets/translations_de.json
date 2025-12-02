@@ -363,7 +363,8 @@
 			"due": "Fälligkeitsdatum",
 			"followUp": "Nachverfolgung",
 			"taskID": "Aufgaben-ID",
-			"actions": "Aktionen"
+			"actions": "Aktionen",
+			"openTask": "Aufgabe \"{name}\" in der Tasklist öffnen"
 		},
 		"calledProcesses": {
 			"callingActivity": "Aktivität",
@@ -1072,6 +1073,7 @@
 		"SystemException": "Es ist ein unerwartetes technisches Problem aufgetreten. Möchtest du einen Bericht senden?",		
 		"DoxichangeException": "Die Vorschau konnte nicht erzeugt werden. Möchtest du das betroffene Dokument zur Analyse bereitstellen?",
 		"AccessDeniedException": "Keine Berechtigung ({0})",
+		"NoPermission": "Sie haben nicht die erforderlichen Berechtigungen, um diese Aktion auszuführen.\nErforderliche Berechtigung: \"{permission}\".\nReferenziert von: {refPath}",
 		"EntryAlreadyExistsException": "{0} ist bereits vorhanden",
 		"NoObjectFoundException": "Bei der Ausführung der Anfrage ist ein Problem aufgetreten! Bitte aktualisieren Sie die Seite in Ihrem Browser und versuchen Sie es erneut.",
 		"InvalidAttributeValueException": "Bei der Ausführung der Anfrage ist ein Problem aufgetreten! Bitte aktualisieren Sie die Seite in Ihrem Browser und versuchen Sie es erneut.",

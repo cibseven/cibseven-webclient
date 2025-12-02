@@ -66,7 +66,7 @@
           this.tenantIdError = false
           this.$refs.tenantCreated.show(1)
           setTimeout(() => {
-            this.$router.push('/seven/auth/admin/tenants')
+            this.$router.push({ name: 'adminTenants' })
           }, 1000)
         } catch (error) {
           const data = error.response?.data
@@ -76,7 +76,7 @@
         }
       },
       cancel: function() {
-        this.$router.push('/seven/auth/admin/tenants')
+        this.$router.push({ name: 'adminTenants' })
       },
       notEmpty: function(value) {
         return notEmpty(value)

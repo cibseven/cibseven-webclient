@@ -100,7 +100,7 @@
           :display-value="row.item.processInstanceId"
           :copy-value="row.item.processInstanceId"
           :title="row.item.processInstanceId"
-          @click="navigateToIncidentProcessInstance(row.item.processInstanceId)"
+          :to="linkToIncidentProcessInstance(row.item.processInstanceId)"
           @copy="copyValueToClipboard"
         />
         <span v-else class="text-muted fst-italic" :title="$t('commons.notAvailable.tooltip')">{{ $t('commons.notAvailable.label') }}</span>
@@ -165,7 +165,7 @@
           :display-value="table.item.causeIncidentProcessInstanceId"
           :copy-value="table.item.causeIncidentProcessInstanceId"
           :title="$t('process-instance.incidents.causeIncidentProcessInstanceId') + ':\n' + table.item.causeIncidentProcessInstanceId"
-          @click="navigateToIncidentProcessInstance(table.item.causeIncidentProcessInstanceId)"
+          :to="linkToIncidentProcessInstance(table.item.causeIncidentProcessInstanceId, process.id)"
           @copy="copyValueToClipboard"
         />
       </template>
@@ -175,7 +175,7 @@
           :display-value="table.item.rootCauseIncidentProcessInstanceId"
           :copy-value="table.item.rootCauseIncidentProcessInstanceId"
           :title="$t('process-instance.incidents.rootCauseIncidentProcessInstanceId') + ':\n' + table.item.rootCauseIncidentProcessInstanceId"
-          @click="navigateToIncidentProcessInstance(table.item.rootCauseIncidentProcessInstanceId)"
+          :to="linkToIncidentProcessInstance(table.item.rootCauseIncidentProcessInstanceId, process.id)"
           @copy="copyValueToClipboard"
         />
       </template>
@@ -217,7 +217,7 @@
 
 <script>
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
-import { IncidentService, HistoryService } from '@/services.js'
+import { IncidentService } from '@/services.js'
 import { FlowTable } from '@cib/common-frontend'
 import { SuccessAlert } from '@cib/common-frontend'
 import RetryModal from '@/components/process/modals/RetryModal.vue'
@@ -235,6 +235,7 @@ export default {
   props: {
     instance: Object,
     process: Object,
+    tenantId: String,
     activityInstance: Object,
     isInstanceView: Boolean,
     scrollableArea: Object,
@@ -470,26 +471,17 @@ export default {
     getIncidentMessage(incident) {
       return incident.rootCauseIncidentMessage || incident.incidentMessage
     },
-    async navigateToIncidentProcessInstance(processInstanceId) {
-      if (!processInstanceId) return
-      try {
-        const processInstance = await HistoryService.findProcessInstance(processInstanceId)
-        const processKey = processInstance.processDefinitionKey
-        const versionIndex = processInstance.processDefinitionVersion
-        const params = { processKey, versionIndex, instanceId: processInstance.id }
-
-        const routeConfig = {
-          name: 'process',
-          params,
-          query: {
-            parentProcessDefinitionId: this.process.id,
-            tab: 'incidents'
-          }
+    linkToIncidentProcessInstance(processInstanceId, parentProcessDefinitionId = '') {
+      return {
+        name: 'process-instance-id',
+        params: {
+          instanceId: processInstanceId,
+        },
+        query: {
+          ...(parentProcessDefinitionId ? { parentProcessDefinitionId } : {}
+          ),
+          tab: 'incidents',
         }
-
-        await this.$router.push(routeConfig)
-      } catch (error) {
-        console.error('Failed to navigate to incident process instance:', error)
       }
     },
     onInput: debounce(800, function(freeText) {

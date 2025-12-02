@@ -80,7 +80,7 @@
         <template v-slot:cell(incidents)="table">
           <span v-if="loadingInstances"><b-spinner small></b-spinner></span>
           <div v-else-if="table.item.incidents > 0">
-            <span :title="$t('process.instanceIncidents')" class="mdi mdi-18px mdi-alert-outline text-warning"></span><span>{{ table.item.incidents }}</span>
+            <span :title="$t('process.instanceIncidents')" class="mdi mdi-18px mdi-alert-outline text-warning"></span><span class="ms-1" :title="$t('process.instanceIncidents')" >{{ table.item.incidents }}</span>
           </div>
           <span :title="$t('process.instanceWithoutIncidents')" v-else class="mdi mdi-18px mdi-check-circle-outline text-success"></span>
         </template>
@@ -212,7 +212,7 @@ export default {
   },
   methods: {
     goToDeployment: function(process) {
-      this.$router.push('/seven/auth/deployments/' + process.deploymentId)
+      this.$router.push({ name: 'deployments', params: { deploymentId: process.deploymentId } })
     },
     goToCockpit: function(process) {
       window.open(this.$root.config.cockpitUrl + '#/process-definition/' + process.id, '_blank')

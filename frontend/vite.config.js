@@ -56,6 +56,15 @@ export default defineConfig({
       vue: 'vue/dist/vue.esm-bundler.js',
     },
   },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        // Suppress deprecation warnings from Bootstrap
+        quietDeps: true,
+        silenceDeprecations: ['legacy-js-api', 'import', 'global-builtin']
+      }
+    }
+  },
   server: {
     proxy: {
       '/info': {
@@ -144,6 +153,7 @@ export default defineConfig({
             },
             // Ensure CSS is extracted and placed in the dist folder
             assetFileNames: 'cibseven-components.[ext]',
+            inlineDynamicImports: true,
           },
         },
         cssCodeSplit: true, // Ensure CSS is extracted into a separate file
@@ -154,7 +164,7 @@ export default defineConfig({
         input: {
           main: path.resolve(__dirname, 'index.html'),
           ssoLogin: path.resolve(__dirname, 'sso-login.html'),
-          embeddedForms: path.resolve(__dirname, 'embedded-forms.html')
+          embeddedForms: path.resolve(__dirname, 'embedded-forms.html'),
         }
       }
     }

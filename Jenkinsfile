@@ -76,11 +76,6 @@ pipeline {
             description: 'Build and test using "mvn verify"'
         )
         booleanParam(
-            name: 'RELEASE_COMMON_COMPONENTS',
-            defaultValue: false,
-            description: 'Build and deploy cib-common-components to artifacts.cibseven.org'
-        )
-        booleanParam(
             name: 'RELEASE_BPM_SDK',
             defaultValue: false,
             description: 'Build and deploy bpm-sdk to artifacts.cibseven.org'
@@ -259,23 +254,6 @@ pipeline {
             }
         }
 
-        stage('Release cib-common-components') {
-            when {
-                allOf {
-                    expression { params.RELEASE_COMMON_COMPONENTS }
-                }
-            }
-            steps {
-                script {
-                    withCredentials([file(credentialsId: 'credential-cibseven-artifacts-npmrc', variable: 'NPMRC_FILE')]) {
-                        withMaven() {
-                            npmReleasePackage('cib-common-components', env.NPMRC_FILE)
-                        }
-                    }
-                }
-            }
-        }
-
         stage('Release bpm-sdk') {
             when {
                 allOf {
@@ -415,13 +393,6 @@ pipeline {
                         message: "Application was successfully released with version ${mavenProjectInformation.version}"
                     )
                 }
-				
-				if (params.RELEASE_COMMON_COMPONENTS) {
-					notifyResult(
-                        office365WebhookId: pipelineParams.office365WebhookId,
-                        message: "✅ cib-common-components was successfully released to artifacts.cibseven.org with version ${mavenProjectInformation.version}"
-                    )
-				}
 
 				if (params.RELEASE_BPM_SDK) {
 					notifyResult(

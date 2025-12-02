@@ -38,7 +38,11 @@
                 processKey: table.item.definitionKey,
                 versionIndex: table.item.version
               },
-              query: { parentProcessDefinitionId: process.id, tab: 'instances' }
+              query: {
+                parentProcessDefinitionId: process.id,
+                ...(table.item.tenantId ? { tenantId: table.item.tenantId } : {}),
+                tab: 'instances',
+              }
             }"
           />
       </template>

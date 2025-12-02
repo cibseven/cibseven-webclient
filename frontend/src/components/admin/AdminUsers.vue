@@ -139,7 +139,7 @@ export default {
       })
     }),
     add: function () {
-      this.$router.push('/seven/auth/admin/create-user')
+      this.$router.push({ name: 'createUser' })
     },
     prepareRemove: function (user) {
       this.userSelected = user
@@ -153,7 +153,7 @@ export default {
       })
     },
     openUser: function (user) {
-      this.$router.push('/seven/auth/admin/user/' + user.id + '?tab=profile')
+      this.$router.push({ name: 'adminUser', params: { userId: user.id }, query: { tab: 'profile' } })
     },
     showMore: function(el) {
       if (this.firstResult <= this.users.length && !this.loading) {

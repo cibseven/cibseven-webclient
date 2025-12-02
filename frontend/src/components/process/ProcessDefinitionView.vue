@@ -54,6 +54,7 @@
           :activity-instance="activityInstance"
           :activity-instance-history="activityInstanceHistory"
           :selected-instance="selectedInstance"
+          :tenant-id="tenantId"
           @task-selected="setSelectedTask($event)"></ProcessInstanceView>
       </transition>
     </SidebarsFlow>
@@ -216,7 +217,10 @@ export default {
                 processKey: params.processDefinition.key,
                 versionIndex: nextVersionIndex,
               },
-              query: this.$route.query
+              query: {
+                ...this.$route.query,
+                ...(this.tenantId ? { tenantId: this.tenantId } : {}),
+              }
             })
             this.processDefinitions = versions
           }

@@ -363,7 +363,8 @@
 			"due": "Due Date",
 			"followUp": "Follow-Up",
 			"taskID": "Task ID",
-			"actions": "Actions"
+			"actions": "Actions",
+			"openTask": "Open \"{name}\" task in Tasklist"
 		},
 		"calledProcesses": {
 			"callingActivity": "Activity",
@@ -1072,6 +1073,7 @@
 		"SystemException": "An unexpected technical error occurred. Do you want to send a report?",
 		"DoxichangeException": "The preview can’t be generated. Do you want to send the affected document for analysis?",
 		"AccessDeniedException": "No Permission ({0})",
+		"NoPermission": "You do not have the necessary permissions to perform this action.\nRequired persmission: \"{permission}\".\nReferenced from: {refPath}",
 		"EntryAlreadyExistsException": "{0} already exists",
 		"NoObjectFoundException": "While performing this operation a specific problem has occurred. Please refresh the page in your browser and try again.",
 		"InvalidAttributeValueException": "While performing this operation a specific problem has occurred. Please refresh the page in your browser and try again.",
