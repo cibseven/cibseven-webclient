@@ -3,10 +3,10 @@
 .bjs-powered-by { bottom: 55px!important; right: 15px!important; }
 .selectable { cursor: pointer }
 .bpmn-highlight {
-  stroke: var(--info) !important;
+  stroke: var(--bs-info) !important;
   stroke-width: 2px !important;
   fill-opacity: 0.1 !important;
-  fill: var(--info) !important;
+  fill: var(--bs-info) !important;
 }
 .list-group-item.active {
     z-index: 2;

@@ -217,7 +217,10 @@ export default {
                 processKey: params.processDefinition.key,
                 versionIndex: nextVersionIndex,
               },
-              query: this.$route.query
+              query: {
+                ...this.$route.query,
+                ...(this.tenantId ? { tenantId: this.tenantId } : {}),
+              }
             })
             this.processDefinitions = versions
           }

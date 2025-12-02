@@ -70,12 +70,12 @@ export default {
       AdminService.createGroup(this.group).then(() => {
         this.$refs.groupCreated.show(1)
         setTimeout(() => {
-          this.$router.push('/seven/auth/admin/groups')
+          this.$router.push({ name: 'adminGroups' })
         }, 1000)
       })
     },
     onReset: function() {
-      this.$router.push('/seven/auth/admin/groups')
+      this.$router.push({ name: 'adminGroups' })
     },
     notEmpty: function(value) {
       return notEmpty(value)

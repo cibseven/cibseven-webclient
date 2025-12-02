@@ -301,7 +301,7 @@ export default {
     },
     drawActivitiesBadges: function(elementRegistry) {
       const historyStatistics = this.historicActivityStatistics
-      const historyLevel = this.$root?.config?.camundaHistoryLevel
+      const historyLevel = this.$root.config.camundaHistoryLevel
       const mergedStatistics = this.getMergedStatistics(historyStatistics, historyLevel)
       
       mergedStatistics.forEach(stat => {
@@ -575,19 +575,31 @@ export default {
       }
     },
     async navigateToSubprocess(processKey, versionIndex, calledProcessInstanceId) {
-      try {
-        const params = { processKey, versionIndex }
-        if (calledProcessInstanceId) {
-          params.instanceId = calledProcessInstanceId
-        }
-        const routeConfig = {
+      if (calledProcessInstanceId) {
+        await this.$router.push({
+          name: 'process-instance-id',
+          params: {
+            instanceId: calledProcessInstanceId
+          },
+          query: {
+            parentProcessDefinitionId: this.processDefinitionId,
+            tab: 'variables',
+          }
+        })
+      }
+      else {
+        await this.$router.push({
           name: 'process',
-          params,
-          query: { parentProcessDefinitionId: this.processDefinitionId, tab: params.instanceId ? 'variables' : 'instances' }
-        }
-        await this.$router.push(routeConfig)
-      } catch (error) {
-        console.error('Failed to navigate to subprocess:', error)
+          params: {
+            processKey,
+            versionIndex,
+            // TODO: consider passing tenantId if multi-tenancy is used
+          },
+          query: {
+            parentProcessDefinitionId: this.processDefinitionId,
+            tab: 'instances',
+          }
+        })
       }
     },
     drawJobDefinitionBadges: function() {

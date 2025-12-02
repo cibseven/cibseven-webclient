@@ -17,15 +17,22 @@
 package org.cibseven.webapp.rest.model;
 
 import java.io.Serializable;
+import java.util.Map;
 import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class HistoricDecisionInputInstance implements Serializable {
+    protected String id;
+    protected String decisionInstanceId;
     protected String clauseId;
     protected String clauseName;
-    protected String decisionInstanceId;
     protected String errorMessage;
-    protected String id;
+    protected String type;
+    protected String createTime;
+    protected String removalTime;
+    protected String rootProcessInstanceId;
+    protected Object value;
+    protected Map<String, Object> valueInfo;
 }

@@ -41,7 +41,7 @@ import { appRoutes,
   permissionsGuard,
   permissionsDeniedGuard,
   permissionsGuardUserAdmin } from './router.js'
-import { updateAppTitle, checkExternalReturn, isMobile, hasHeader, getTheme } from './utils/init.js'
+import { updateAppTitle, checkExternalReturn, isMobile, hasHeader, getTheme, loadTheme } from './utils/init.js'
 import { applyTheme, handleAxiosError, fetchAndStoreProcesses, fetchDecisionsIfEmpty, setupTaskNotifications } from './utils/init'
 import { parseXMLDocumentation } from './utils/parser.js'
 import { applyConfigDefaults } from './utils/config.js'
@@ -437,6 +437,7 @@ export {
   isMobile,
   hasHeader,
   getTheme,
+  loadTheme,
   applyTheme,
   handleAxiosError,
   fetchAndStoreProcesses,

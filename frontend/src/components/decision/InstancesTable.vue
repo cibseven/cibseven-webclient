@@ -24,25 +24,31 @@
     { label: 'callingProcess', key: 'processDefinitionKey', class: 'col-3', tdClass: 'py-1 position-relative' },
     { label: 'callingInstanceId', key: 'processInstanceId', class: 'col-3', tdClass: 'py-1' },
     { label: 'activityId', key: 'activityId', class: 'col-2', tdClass: 'py-1' }]">
+
     <template v-slot:cell(id)="table">
-      <button :title="table.item.id" class="text-truncate w-100 btn btn-link text-start" :class="focusedCell === table.item.id ? 'pe-4': ''"
-        @mouseenter="focusedCell = table.item.id" @mouseleave="focusedCell = null" @click="goToInstance(table.item)">
-        {{ table.item.id }}
-        <span v-if="table.item.id && focusedCell === table.item.id" @click.stop="copyValueToClipboard(table.item.id)"
-          class="mdi mdi-18px mdi-content-copy px-2 position-absolute end-0 text-secondary lh-sm"></span>
-      </button>
+      <CopyableActionButton
+        :display-value="table.item.id"
+        :title="$t('decision.id') + ':\n' + table.item.id"
+        @copy="copyValueToClipboard"
+        @click="goToInstance(table.item)"
+      />
     </template>
+
     <template v-slot:cell(evaluationTime)="table">
+      <div class="text-truncate">
         <span :title="formatDateForTooltips(table.item.evaluationTime)">{{ formatDate(table.item.evaluationTime) }}</span>
-      </template>
-    <template v-slot:cell(processDefinitionKey)="table">
-      <button :title="table.item.processDefinitionKey" class="text-truncate w-100 btn btn-link text-start" @click="goToProcess(table.item)"
-        @mouseenter="focusedCell = table.item.id + table.item.processDefinitionKey" @mouseleave="focusedCell = null">
-        {{ table.item.processDefinitionKey }}
-        <span v-if="table.item.id && focusedCell === (table.item.id + table.item.processDefinitionKey)"
-          @click.stop="copyValueToClipboard(table.item.processDefinitionKey)" class="mdi mdi-18px mdi-content-copy px-2 position-absolute end-0 text-secondary lh-sm"></span>
-      </button>
+      </div>
     </template>
+
+    <template v-slot:cell(processDefinitionKey)="table">
+      <CopyableActionButton
+        :display-value="table.item.processDefinitionKey"
+        :title="$t('decision.callingProcess') + ':\n' + table.item.processDefinitionKey"
+        @copy="copyValueToClipboard"
+        @click="goToProcessDefinition(table.item)"
+      />
+    </template>
+
     <template v-slot:cell(processInstanceId)="table">
       <CopyableActionButton
         :display-value="table.item.processInstanceId"
@@ -51,13 +57,14 @@
         :to="`/seven/auth/processes/instance/${table.item.processInstanceId}`"
       />
     </template>
+
     <template v-slot:cell(activityId)="table">
-      <div :title="table.item.activityId" class="text-truncate w-100"
-        @mouseenter="focusedCell = table.item.id + table.item.activityId" @mouseleave="focusedCell = null">
-        {{ table.item.activityId }}
-        <span v-if="table.item.id && focusedCell === (table.item.id + table.item.activityId)"
-          @click.stop="copyValueToClipboard(table.item.activityId)" class="mdi mdi-18px mdi-content-copy px-2 position-absolute end-0 text-secondary lh-sm"></span>
-      </div>
+      <CopyableActionButton
+        :display-value="table.item.activityId"
+        :title="$t('decision.activityId') + ':\n' + table.item.activityId"
+        :clickable="false"
+        @copy="copyValueToClipboard"
+      />
     </template>
   </FlowTable>
   <SuccessAlert top="0" style="z-index: 1031" ref="success"> {{ $t('alert.successOperation') }}</SuccessAlert>
@@ -78,11 +85,10 @@ export default {
   name: 'InstancesTable',
   components: { FlowTable, SuccessAlert, CopyableActionButton },
   mixins: [copyToClipboardMixin, permissionsMixin],
-  props: { instances: Array, sortDesc: Boolean, sortByDefaultKey: String },
-  data() {
-    return {
-      focusedCell: null
-    }
+  props: {
+    instances: Array,
+    sortDesc: Boolean,
+    sortByDefaultKey: String,
   },
   computed: {
     ...mapGetters(['getSelectedDecisionVersion'])
@@ -101,27 +107,17 @@ export default {
         }
       })
     },
-    getIconState(state) {
-      switch (state) {
-        case 'ACTIVE': return 'mdi-chevron-triple-right text-success'
-        case 'SUSPENDED': return 'mdi-close-circle-outline'
-        default: return 'mdi-flag-triangle'
-      }
-    },
-    getIconTitle(state) {
-      switch (state) {
-        case 'ACTIVE': return this.$t('decision.instanceRunning')
-        case 'SUSPENDED': return this.$t('decision.instanceSuspended')
-        default: return this.$t('decision.instanceFinished')
-      }
-    },
-    async goToProcess(instance) {
+    async goToProcessDefinition(instance) {
       let processData = await HistoryService.findProcessInstance(instance.processInstanceId)
       this.$router.push({
         name: 'process',
         params: {
           processKey: processData.processDefinitionKey,
           versionIndex: processData.processDefinitionVersion
+        },
+        query: {
+          ...(processData.tenantId ? { tenantId: processData.tenantId } : {}),
+          tab: 'instances',
         }
       })
     }

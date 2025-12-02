@@ -124,7 +124,7 @@ export default {
       var theme = localStorage.getItem('theme') || this.$root.theme
       var themeContext = ''
       var translationContext = ''
-      if (['cib', 'generic'].includes(theme) || !theme) {
+      if (['cib'].includes(theme) || !theme) {
         themeContext = encodeURIComponent('bootstrap/bootstrap_4.5.0.min.css?v=1.14.0')
       }
       else {

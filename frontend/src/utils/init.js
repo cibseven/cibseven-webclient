@@ -21,7 +21,7 @@ import { axios } from '@/globals.js'
 import { getServicesBasePath } from '@/services.js'
 
 export function getTheme(config) {
-  return config.theme || "generic"
+  return config.theme || "cib"
 }
 
 export function hasHeader() {
@@ -123,19 +123,33 @@ export function handleAxiosError(router, root, error) {
   }
 }
 
-export function applyTheme(theme) {
+// Dynamically import theme SCSS files
+const themeModules = import.meta.glob('@/themes/**/variables.scss', { eager: false, query: '?inline' })
 
-  var css = document.createElement('Link')
-  css.setAttribute('rel', 'stylesheet')
-  css.setAttribute('type', 'text/css')
-  css.setAttribute('href', 'themes/' + theme + '/styles.css')
+export async function loadTheme(themeName) {
+  try {
+    const themePath = `/src/themes/${themeName}/variables.scss`
+    const moduleLoader = themeModules[themePath]
+    if (moduleLoader) {
+      const module = await moduleLoader()
+      const style = document.createElement('style')
+      style.textContent = module.default
+      document.head.appendChild(style)
+    } else {
+      console.warn(`Theme "${themeName}" not found, available themes:`, Object.keys(themeModules))
+    }
+  } catch (error) {
+    console.error('Error loading theme:', error)
+  }
+}
+
+export function applyTheme(theme) {
 
   var favicon = document.createElement('Link')
   favicon.setAttribute('rel', 'icon')
   favicon.setAttribute('type', 'image/x-icon')
   favicon.setAttribute('href', 'themes/' + theme + '/favicon.ico')
 
-  document.head.appendChild(css)
   document.head.appendChild(favicon)
 }
 
