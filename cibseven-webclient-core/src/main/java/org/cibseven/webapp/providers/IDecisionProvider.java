@@ -35,7 +35,7 @@ public interface IDecisionProvider {
 
 	public Decision getDecisionDefinitionByKeyAndTenant(String key, String tenant, CIBUser user);
 	public Object getDiagramByKeyAndTenant(String key, String tenant, CIBUser user);
-	public Object evaluateDecisionDefinitionByKeyAndTenant(String key, String tenant, CIBUser user);
+	public Object evaluateDecisionDefinitionByKeyAndTenant(Map<String, Object> data, String key, String tenant, CIBUser user);
 	public Object updateHistoryTTLByKeyAndTenant(String key, String tenant, CIBUser user);
 	public Object getXmlByKey(String key, CIBUser user);
 	public Object getXmlByKeyAndTenant(String key, String tenant, CIBUser user);

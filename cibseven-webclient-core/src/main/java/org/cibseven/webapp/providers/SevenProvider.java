@@ -917,8 +917,8 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 	
 	@Override
-	public Object evaluateDecisionDefinitionByKeyAndTenant(String key, String tenant, CIBUser user) {
-		return decisionProvider.evaluateDecisionDefinitionByKeyAndTenant(key, tenant, user);
+	public Object evaluateDecisionDefinitionByKeyAndTenant(Map<String, Object> data, String key, String tenant, CIBUser user) {
+		return decisionProvider.evaluateDecisionDefinitionByKeyAndTenant(data, key, tenant, user);
 	}
 	
 	@Override
