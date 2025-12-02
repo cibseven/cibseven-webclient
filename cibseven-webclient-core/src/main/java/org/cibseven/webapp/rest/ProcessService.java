@@ -17,14 +17,13 @@
 package org.cibseven.webapp.rest;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-
-import java.nio.charset.StandardCharsets;
 
 import org.cibseven.webapp.Data;
 import org.cibseven.webapp.auth.CIBUser;
@@ -35,7 +34,6 @@ import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.logger.TaskLogger;
 import org.cibseven.webapp.providers.PermissionConstants;
-import org.cibseven.webapp.providers.SevenProvider;
 import org.cibseven.webapp.rest.model.ActivityInstance;
 import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.DeploymentResource;
@@ -64,6 +62,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -72,7 +72,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.core.MediaType;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ApiResponses({
 	@ApiResponse(responseCode = "500", description = "An unexpected system error occured"),
@@ -81,12 +80,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @RestController @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/process")
 public class ProcessService extends BaseService implements InitializingBean {
 	
-	SevenProvider sevenProvider;
-	
 	public void afterPropertiesSet() {
-		if (bpmProvider instanceof SevenProvider)
-			sevenProvider = (SevenProvider) bpmProvider;
-		else throw new SystemException("ProcessService expects a BpmProvider");
 	}
 
 	@Operation(
@@ -674,7 +668,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.READ_ALL);
-		return sevenProvider.findProcessInstance(processInstanceId, user);
+		return bpmProvider.findProcessInstance(processInstanceId, user);
 	}
 
 	//Requested by OFDKA
@@ -701,7 +695,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_INSTANCE_VARIABLE_ALL);
 		
 		// Get the variable data from the provider
-		ResponseEntity<byte[]> response = sevenProvider.fetchProcessInstanceVariableData(processInstanceId, variableName, user);
+		ResponseEntity<byte[]> response = bpmProvider.fetchProcessInstanceVariableData(processInstanceId, variableName, user);
 		
 		// If contentType is provided, set preview headers
 		if (contentType.isPresent() && !contentType.get().isEmpty()) {
@@ -732,7 +726,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.UPDATE_INSTANCE_VARIABLE_ALL);
 		final String valueTypeStr = valueType.orElse("File"); //  Enum: "Bytes" "File"
 		try {
-			sevenProvider.uploadProcessInstanceVariableFileData(processInstanceId, variableName, data, valueTypeStr, user);
+			bpmProvider.uploadProcessInstanceVariableFileData(processInstanceId, variableName, data, valueTypeStr, user);
 			return ResponseEntity.noContent().build();
 		} catch (Exception e) {
 			if (e instanceof NoObjectFoundException) {
@@ -756,7 +750,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 		checkCockpitRights(user);
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_INSTANCE_VARIABLE_ALL);
 		boolean deserialize = (deserializeValue == null) || (deserializeValue != null && deserializeValue == true);
-		return sevenProvider.fetchProcessInstanceVariable(processInstanceId, variableName, deserialize, user);
+		return bpmProvider.fetchProcessInstanceVariable(processInstanceId, variableName, deserialize, user);
 	}
 
 	@Operation(
@@ -776,7 +770,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 		// checkSpecificProcessRights(user, processDefinitionKey);
 		try {
 			boolean deserializeValue = (deserialize == null) || (deserialize != null && deserialize == "true");
-			return sevenProvider.fetchProcessInstanceVariable(processInstanceId, "chatComments", deserializeValue, user);	
+			return bpmProvider.fetchProcessInstanceVariable(processInstanceId, "chatComments", deserializeValue, user);	
 		} catch(NoObjectFoundException e) {
 			return null;
 		}
@@ -799,7 +793,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 		// checkSpecificProcessRights(user, processDefinitionKey);
 		try {
 			boolean deserializeValue = (deserialize == null) || (deserialize != null && deserialize == "true");
-			return sevenProvider.fetchProcessInstanceVariable(processInstanceId, "_statusDataset", deserializeValue, user);	
+			return bpmProvider.fetchProcessInstanceVariable(processInstanceId, "_statusDataset", deserializeValue, user);	
 		} catch(NoObjectFoundException e) {
 			return null;
 		}
@@ -839,7 +833,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
 		//checkPermission(user, SevenResourceType.EVENT_SUBSCRIPTION, PermissionConstants.READ_ALL);
-		return sevenProvider.getEventSubscriptions(processInstanceId, eventType, eventName, user);
+		return bpmProvider.getEventSubscriptions(processInstanceId, eventType, eventName, user);
 	}
 
 	@Operation(
