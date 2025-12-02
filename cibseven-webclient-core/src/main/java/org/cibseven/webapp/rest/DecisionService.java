@@ -130,9 +130,9 @@ public class DecisionService extends BaseService implements InitializingBean {
 	}
 
 	@PostMapping("/key/{key}/tenant/{tenant}/evaluate")
-	public Object evaluateDecisionDefinitionByKeyAndTenant(@PathVariable String key, @PathVariable String tenant, CIBUser user) {
+	public Object evaluateDecisionDefinitionByKeyAndTenant(@RequestBody Map<String, Object> data, @PathVariable String key, @PathVariable String tenant, CIBUser user) {
 		checkPermission(user, SevenResourceType.DECISION_DEFINITION, PermissionConstants.CREATE_INSTANCE_ALL);
-		return bpmProvider.evaluateDecisionDefinitionByKeyAndTenant(key, tenant, user);
+		return bpmProvider.evaluateDecisionDefinitionByKeyAndTenant(data, key, tenant, user);
 	}
 
 	@PutMapping("/key/{key}/tenant/{tenant}/history-ttl")
