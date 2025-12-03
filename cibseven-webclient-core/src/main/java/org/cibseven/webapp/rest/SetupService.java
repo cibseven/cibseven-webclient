@@ -22,10 +22,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.cibseven.webapp.auth.BaseUserProvider;
-import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenResourceType;
-import org.cibseven.webapp.auth.rest.StandardLogin;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.providers.SevenProvider;
@@ -34,7 +31,6 @@ import org.cibseven.webapp.rest.model.NewUser;
 import org.cibseven.webapp.rest.model.UserGroup;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -68,10 +64,6 @@ public class SetupService extends BaseService implements InitializingBean {
 	// All permissions
 	private static final String[] ALL_PERMISSIONS = new String[] { "ALL" };
 
-	@Value("${cibseven.webclient.technicalUser.user:}") String technicalUserName;
-	@Value("${cibseven.webclient.technicalUser.password:}") String technicalUserPassword;
-
-	@Autowired BaseUserProvider provider;
 	@Autowired BpmProvider bpmProvider;
 	
 	SevenProvider sevenProvider;
@@ -123,23 +115,22 @@ public class SetupService extends BaseService implements InitializingBean {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
 		
-		CIBUser technicalUser = createTechnicalUser(engine);
 		String userId = newUser.getProfile().getId();
 		
 		// 1. Create the admin user
-		sevenProvider.createUser(newUser, technicalUser);
+		sevenProvider.createUser(newUser, null);
 		
 		// 2. Create the admin group if it doesn't exist
-		if (!adminGroupExists(technicalUser)) {
+		if (!adminGroupExists()) {
 			UserGroup adminGroup = new UserGroup(ADMIN_GROUP_ID, ADMIN_GROUP_NAME, ADMIN_GROUP_TYPE);
-			sevenProvider.createGroup(adminGroup, technicalUser);
+			sevenProvider.createGroup(adminGroup, null);
 			
 			// Create authorizations for admin group on all resource types (only if we created the group)
-			createAdminAuthorizations(technicalUser);
+			createAdminAuthorizations();
 		}
 		
 		// 3. Add user to admin group
-		sevenProvider.addMemberToGroup(ADMIN_GROUP_ID, userId, technicalUser);
+		sevenProvider.addMemberToGroup(ADMIN_GROUP_ID, userId, null);
 		
 		return ResponseEntity.status(HttpStatus.CREATED).build();
 	}
@@ -147,7 +138,7 @@ public class SetupService extends BaseService implements InitializingBean {
 	/**
 	 * Checks if the admin group already exists.
 	 */
-	private boolean adminGroupExists(CIBUser technicalUser) {
+	private boolean adminGroupExists() {
 		try {
 			Collection<UserGroup> groups = sevenProvider.findGroups(
 				Optional.of(ADMIN_GROUP_ID),  // id
@@ -160,7 +151,7 @@ public class SetupService extends BaseService implements InitializingBean {
 				Optional.empty(),              // sortOrder
 				Optional.empty(),              // firstResult
 				Optional.of("1"),              // maxResults
-				technicalUser
+				null
 			);
 			return groups != null && !groups.isEmpty();
 		} catch (Exception e) {
@@ -172,7 +163,7 @@ public class SetupService extends BaseService implements InitializingBean {
 	 * Creates GRANT authorizations for the admin group on all resource types.
 	 * Skips any authorizations that already exist to avoid duplicate key errors.
 	 */
-	private void createAdminAuthorizations(CIBUser technicalUser) {
+	private void createAdminAuthorizations() {
 		// Fetch existing authorizations for the admin group
 		Collection<Authorization> existingAuths = sevenProvider.findAuthorization(
 			Optional.empty(),                      // id
@@ -185,7 +176,7 @@ public class SetupService extends BaseService implements InitializingBean {
 			Optional.empty(),                      // sortOrder
 			Optional.empty(),                      // firstResult
 			Optional.empty(),                      // maxResults
-			technicalUser
+			null
 		);
 		
 		// Build a set of existing resource types for quick lookup
@@ -208,7 +199,7 @@ public class SetupService extends BaseService implements InitializingBean {
 				resourceType.getType(),         // resourceType
 				"*"                             // resourceId: all resources
 			);
-			sevenProvider.createAuthorization(auth, technicalUser);
+			sevenProvider.createAuthorization(auth, null);
 		}
 	}
 	
@@ -218,32 +209,13 @@ public class SetupService extends BaseService implements InitializingBean {
 	 */
 	private long getAdminGroupMemberCount(String engine) {
 		try {
-			CIBUser technicalUser = createTechnicalUser(engine);
 			return sevenProvider.countUsers(
 				Map.of("memberOfGroup", ADMIN_GROUP_ID),
-				technicalUser
+				null
 			);
 		} catch (Exception e) {
 			// If we can't query users, assume setup is needed
 			return 0;
 		}
-	}
-	
-	/**
-	 * Creates a technical user with authentication token for setup operations.
-	 */
-	private CIBUser createTechnicalUser(String engine) {
-		StandardLogin loginParams = new StandardLogin();
-		loginParams.setUsername(technicalUserName);
-		loginParams.setPassword(technicalUserPassword);
-		String token = provider.createExternalToken(loginParams);
-		
-		CIBUser technicalUser = new CIBUser();
-		technicalUser.setUserID(technicalUserName);
-		technicalUser.setDisplayName(technicalUserName);
-		technicalUser.setAuthToken(token);
-		technicalUser.setEngine(engine);
-		
-		return technicalUser;
 	}
 }
