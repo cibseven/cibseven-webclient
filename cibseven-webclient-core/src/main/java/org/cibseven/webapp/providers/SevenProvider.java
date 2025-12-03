@@ -922,8 +922,8 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 	
 	@Override
-	public Object updateHistoryTTLByKeyAndTenant(String key, String tenant, CIBUser user) {
-		return decisionProvider.updateHistoryTTLByKeyAndTenant(key, tenant, user);
+	public void updateHistoryTTLByKeyAndTenant(Map<String, Object> data, String key, String tenant, CIBUser user) {
+		decisionProvider.updateHistoryTTLByKeyAndTenant(data, key, tenant, user);
 	}
 	
 	@Override
@@ -947,8 +947,8 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 	
 	@Override
-	public Object evaluateDecisionDefinitionById(String id, CIBUser user) {
-		return decisionProvider.evaluateDecisionDefinitionById(id, user);
+	public Object evaluateDecisionDefinitionById(String id, Map<String, Object> data, CIBUser user) {
+		return decisionProvider.evaluateDecisionDefinitionById(id, data, user);
 	}
 	
 	@Override
