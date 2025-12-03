@@ -32,12 +32,13 @@ import { formatDate, formatDateForTooltips, formatDuration } from '@/utils/dates
 import { HoverStyle, FlowTable, ContentBlock, ErrorDialog, ConfirmDialog, SuccessAlert,
   TaskPopper, CIBForm, SidebarsFlow, PagedScrollableContent, HighlightedText,
   GenericTabs, CopyableActionButton, TranslationsDownload} from '@cib/common-frontend'
-import { InfoService, AuthService, SystemService } from './services.js'
+import { InfoService, AuthService, SystemService, SetupService } from './services.js'
 import { initEmbeddedForm } from './embedded-form/embedded-form.js'
 import { i18n, setLanguage, loadTranslations, translationSources } from './i18n'
 import { appRoutes,
   createAppRouter,
   authGuard,
+  setupGuard,
   permissionsGuard,
   permissionsDeniedGuard,
   permissionsGuardUserAdmin } from './router.js'
@@ -142,6 +143,7 @@ import DmnViewer from '@/components/decision/DmnViewer.vue'
 import TemplateBase from '@/components/forms/TemplateBase.vue'
 import StartView from '@/components/start/StartView.vue'
 import LoginView from '@/components/login/LoginView.vue'
+import InitialSetup from '@/components/setup/InitialSetup.vue'
 import StackTraceModal from '@/components/process/modals/StackTraceModal.vue'
 import RetryModal from '@/components/process/modals/RetryModal.vue'
 import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
@@ -393,11 +395,13 @@ export {
   TemplateBase,
   StartView,
   LoginView,
+  InitialSetup,
   GenericTabs,
   CopyableActionButton,
   InfoService,
   AuthService,
   SystemService,
+  SetupService,
   DeploymentService,
   i18n,
   setLanguage,
@@ -428,6 +432,7 @@ export {
   appRoutes,
   createAppRouter,
   authGuard,
+  setupGuard,
   permissionsGuard,
   permissionsDeniedGuard,
   permissionsGuardUserAdmin,

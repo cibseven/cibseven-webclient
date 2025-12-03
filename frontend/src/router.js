@@ -19,7 +19,7 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 
 import { axios } from './globals.js'
 
-import { AuthService } from '@/services.js'
+import { AuthService, SetupService } from '@/services.js'
 import { permissionsMixin } from '@/permissions.js'
 import CibSeven from '@/components/CibSeven.vue'
 import StartView from '@/components/start/StartView.vue'
@@ -45,6 +45,7 @@ import HumanTasksView from '@/components/task/HumanTasksView.vue'
 import TasksView from '@/components/task/TasksView.vue'
 import TaskView from '@/components/task/TaskView.vue'
 import LoginView from '@/components/login/LoginView.vue'
+import InitialSetup from '@/components/setup/InitialSetup.vue'
 import { BWaitingBox } from '@cib/bootstrap-components'
 import DeployedForm from '@/components/forms/DeployedForm.vue'
 import StartDeployedForm from '@/components/forms/StartDeployedForm.vue'
@@ -67,10 +68,23 @@ const appRoutes = [
     },
     { path: '/seven', name: 'seven', component: CibSeven, children: [
       { path: 'login', name: 'login', beforeEnter: function(to, from, next) {
-          if (router.root.config.ssoActive) //If SSO go to other login
-            location.href = './sso-login.html?nextUrl=' + encodeURIComponent(to.query.nextUrl ? to.query.nextUrl : '')
-          else next()
+          // Check if setup is required first
+          SetupService.getStatus().then(res => {
+            if (res.data) {
+              next({ name: 'setup' }) // Redirect to setup if no users exist
+            } else if (router.root.config.ssoActive) {
+              location.href = './sso-login.html?nextUrl=' + encodeURIComponent(to.query.nextUrl ? to.query.nextUrl : '')
+            } else {
+              next()
+            }
+          }).catch(() => {
+            // On error, proceed with normal login flow
+            if (router.root.config.ssoActive)
+              location.href = './sso-login.html?nextUrl=' + encodeURIComponent(to.query.nextUrl ? to.query.nextUrl : '')
+            else next()
+          })
         }, component: LoginView },
+      { path: 'setup', name: 'setup', beforeEnter: setupGuard, component: InitialSetup },
       { path: 'auth', name: 'auth', beforeEnter: authGuard(true), component: {
         components: { BWaitingBox }, template: '<BWaitingBox ref="loader" class="d-flex justify-content-center" styling="width:20%">\
           <router-view ref="down" class="w-100 h-100"></router-view></BWaitingBox>',
@@ -323,13 +337,27 @@ function authGuard(strict) {
         } else {
           console && console.warn('Not authenticated, redirecting ...')
           sessionStorage.getItem('token') ? sessionStorage.removeItem('token') : localStorage.removeItem('token')
-          next({ path: strict ? '/seven/login' : undefined, query: { nextUrl: to.fullPath } })
+          // Check if setup is required before redirecting to login
+          checkSetupRequired().then(requiresSetup => {
+            if (requiresSetup) {
+              next({ name: 'setup' })
+            } else {
+              next({ path: strict ? '/seven/login' : undefined, query: { nextUrl: to.fullPath } })
+            }
+          }).catch(() => {
+            next({ path: strict ? '/seven/login' : undefined, query: { nextUrl: to.fullPath } })
+          })
           if ((res.data.type !== 'AuthenticationException' && res.data.type !== 'TokenExpiredException') || params)
             router.root.$refs.error.show(res.data) // When reloading $refs.error is often undefined => init race condition ?
         }
         } else
           console && console.error('Strange AJAX error', error)
     })
+
+    function checkSetupRequired() {
+      return SetupService.getStatus()
+        .then(res => res.data)
+    }
 
     function getSelfInfo() {
       if (to.query.token) sessionStorage.setItem('token', to.query.token)
@@ -347,6 +375,20 @@ function authGuard(strict) {
     }
   }
 }
+
+function setupGuard(to, from, next) {
+  SetupService.getStatus().then(res => {
+    if (res.data) {
+      next() // Allow access to setup page
+    } else {
+      next({ name: 'login' }) // Setup not required, redirect to login
+    }
+  }).catch(error => {
+    console && console.error('Error checking setup status', error)
+    next({ name: 'login' }) // On error, redirect to login
+  })
+}
+
 function permissionsGuard(permission) {
   return function(to, from, next) {
     if (router.root.applicationPermissions(router.root.config.permissions[permission], permission)) next()
@@ -447,6 +489,7 @@ export {
   createAppRouter,
 
   authGuard,
+  setupGuard,
   permissionsGuard,
   permissionsDeniedGuard,
   permissionsGuardUserAdmin

@@ -15,6 +15,10 @@ spring:
 
 cibseven:
   webclient:
+    # Technical user for non authenticated operations
+    technicalUser:
+      user:
+      password:
     # Global enable/disable flag for the entire CIB seven webclient
     enabled: true
     # Engine rest
