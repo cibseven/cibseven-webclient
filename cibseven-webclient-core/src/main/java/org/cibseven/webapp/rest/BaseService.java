@@ -71,13 +71,6 @@ public class BaseService {
 		SevenAuthorizationUtils.hasSpecificProcessRights(authorizations, processKey);
 	}
 
-	public void checkCockpitRights(CIBUser user) {
-		if (!authorizationEnabled) return;	
-		Authorizations authorizations = bpmProvider.getUserAuthorization(user.getId(), user);
-		// hasCockpitRights now throws detailed AccessDeniedException when permission check fails
-		SevenAuthorizationUtils.hasCockpitRights(authorizations);
-	}
-
 	public void checkPermission(CIBUser user, SevenResourceType type, List<String> permissions) {
 		if (!authorizationEnabled) return;	
 		Authorizations authorizations = bpmProvider.getUserAuthorization(user.getId(), user);

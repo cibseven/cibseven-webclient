@@ -331,7 +331,6 @@ public class ProcessService extends BaseService implements InitializingBean {
 			@Parameter(description = "If true, the process instance will be activated"
 					+ "<br>If false, the process will be suspended") @RequestParam Boolean suspend,
 			Locale loc, CIBUser user) {
-		checkCockpitRights(user);
 		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.SUSPEND_ALL);
 		bpmProvider.suspendProcessInstance(processInstanceId, suspend, user);
 		// return 204 No Content, no body
@@ -346,7 +345,6 @@ public class ProcessService extends BaseService implements InitializingBean {
 	public ResponseEntity<Void> deleteProcessInstance(
 			@Parameter(description = "Process instance Id") @PathVariable String processInstanceId,
 			Locale loc, CIBUser user) {
-		checkCockpitRights(user);
 		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.DELETE_ALL);
 		bpmProvider.deleteProcessInstance(processInstanceId, user);
 		// return 204 No Content, no body
@@ -362,7 +360,6 @@ public class ProcessService extends BaseService implements InitializingBean {
 			@Parameter(description = "Process definition Id") @PathVariable String id,
 			@RequestParam Optional<Boolean> cascade,
 			Locale loc, CIBUser user) {
-		checkCockpitRights(user);
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.DELETE_ALL);
 		bpmProvider.deleteProcessDefinition(id, cascade, user);
 		// return 204 No Content, no body
@@ -386,7 +383,6 @@ public class ProcessService extends BaseService implements InitializingBean {
 					+ "<br>ej. 2013-01-23T14:42:45. yyyy-MM-dd'T'HH:mm:ss"
 					+ "<br>If null, the suspension state of the given process definition is updated immediately") @RequestParam Optional<String> executionDate,
 			Locale loc, CIBUser user) {
-		checkCockpitRights(user);
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.SUSPEND_ALL);
 		bpmProvider.suspendProcessDefinition(processId, suspend, includeProcessInstances, executionDate.orElse(null), user);
 		// return 204 No Content, no body
@@ -401,7 +397,6 @@ public class ProcessService extends BaseService implements InitializingBean {
 	public Collection<Incident> fetchIncidents(
 			@Parameter(description = "Process key") @PathVariable String key,
 			Locale loc, CIBUser user) {
-		checkCockpitRights(user);
 		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.READ_ALL);
 		return bpmProvider.fetchIncidents(key, user);
 	}
@@ -514,7 +509,6 @@ public class ProcessService extends BaseService implements InitializingBean {
 			@Parameter(description = "Deployment Id") @PathVariable String deploymentId,
 			@Parameter(description = "Delete in cascade?") @RequestParam Boolean cascade,
 			Locale loc, CIBUser user) {
-		checkCockpitRights(user);
 		checkPermission(user, SevenResourceType.DEPLOYMENT, PermissionConstants.DELETE_ALL);
 		bpmProvider.deleteDeployment(deploymentId, cascade, user);
 		// return 204 No Content, no body
@@ -529,7 +523,6 @@ public class ProcessService extends BaseService implements InitializingBean {
 			@Parameter(description = "Variables to start process") @RequestBody Map<String, Object> data,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		checkCockpitRights(user);
 		//checkPermission(user, SevenResourceType.MESSAGE, PermissionConstants.CREATE_ALL);
 		return bpmProvider.correlateMessage(data, user);
 	}
@@ -560,7 +553,6 @@ public class ProcessService extends BaseService implements InitializingBean {
 			@Parameter(description = "Id of the execution") @PathVariable String executionId,
 			@RequestBody Map<String, Object> data,
 			Locale loc, CIBUser user) {
-		checkCockpitRights(user);
 		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.UPDATE_ALL);
 		bpmProvider.modifyVariableByExecutionId(executionId, data, user);
 		// return 204 No Content, no body
@@ -578,7 +570,6 @@ public class ProcessService extends BaseService implements InitializingBean {
 			@Parameter(description = "Data to be updated") @RequestParam MultipartFile data,
 			@Parameter(description = "Value type") @RequestParam Optional<String> valueType,
 			Locale loc, CIBUser user) {
-		checkCockpitRights(user);
 		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.UPDATE_ALL);
 		final String valueTypeStr = valueType.orElse("File"); //  Enum: "Bytes" "File"
 		bpmProvider.modifyVariableDataByExecutionId(executionId, variableName, data, valueTypeStr, user);
@@ -595,7 +586,6 @@ public class ProcessService extends BaseService implements InitializingBean {
 			@Parameter(description = "Execution Id") @PathVariable String executionId,
 			@Parameter(description = "Name of the variable") @PathVariable String variableName,
 			Locale loc, CIBUser user) {
-		checkCockpitRights(user);
 		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.READ_ALL);
 		return bpmProvider.fetchVariableDataByExecutionId(executionId, variableName, user);
 	}
@@ -608,7 +598,6 @@ public class ProcessService extends BaseService implements InitializingBean {
 			@Parameter(description = "Id of the execution") @PathVariable String executionId,
 			@PathVariable String variableName,
 			Locale loc, CIBUser user) {
-		checkCockpitRights(user);
 		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.DELETE_ALL);
 		bpmProvider.deleteVariableByExecutionId(executionId, variableName, user);
 		// return 204 No Content, no body
@@ -629,7 +618,6 @@ public class ProcessService extends BaseService implements InitializingBean {
 			@Parameter(description = "Variable values ignore case") @RequestParam Optional<Boolean> variableValuesIgnoreCase,
 			@Parameter(description = "Deserialize values") @RequestParam Optional<Boolean> deserializeValues,
 			Locale loc, CIBUser user) {
-		checkCockpitRights(user);
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_INSTANCE_VARIABLE_ALL);
 		final Map<String, Object> data = new HashMap<>();
 		data.put("variableName", variableName.orElse(null));
@@ -697,7 +685,6 @@ public class ProcessService extends BaseService implements InitializingBean {
 			rq = new HeaderModifyingRequestWrapper(rq, token.get());
 		}
 		CIBUser user = checkAuthorization(rq, true);
-		checkCockpitRights(user);
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_INSTANCE_VARIABLE_ALL);
 		
 		// Get the variable data from the provider
@@ -753,7 +740,6 @@ public class ProcessService extends BaseService implements InitializingBean {
 			@Parameter(description = "Deserialize value") @RequestParam(required = false) Boolean deserializeValue,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		checkCockpitRights(user);
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_INSTANCE_VARIABLE_ALL);
 		boolean deserialize = (deserializeValue == null) || (deserializeValue != null && deserializeValue == true);
 		return sevenProvider.fetchProcessInstanceVariable(processInstanceId, variableName, deserialize, user);
@@ -848,7 +834,6 @@ public class ProcessService extends BaseService implements InitializingBean {
 	@RequestMapping(value = "/{id}/history-time-to-live", method = RequestMethod.PUT)
 	public ResponseEntity<Void> updateHistoryTimeToLive(@PathVariable String id, 
 			@RequestBody Map<String, Object> data, Locale loc, CIBUser user) {
-		checkCockpitRights(user);
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.UPDATE_ALL);
 		bpmProvider.updateHistoryTimeToLive(id, data, user);
 		// return 204 No Content, no body
@@ -863,7 +848,6 @@ public class ProcessService extends BaseService implements InitializingBean {
 			@Parameter(description = "Variable name") @PathVariable String varName,
 			@RequestBody Map<String, Object> data,
 			Locale loc, CIBUser user) {
-		checkCockpitRights(user);
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.UPDATE_INSTANCE_VARIABLE_ALL);
 		bpmProvider.putLocalExecutionVariable(executionId, varName, data, user);
 		// return 204 No Content, no body
