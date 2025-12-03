@@ -1103,7 +1103,8 @@
 		"InvalidUserIdException": "The user ID contains invalid characters. Only alphanumeric characters (a-z, A-Z, 0-9) are allowed. Please correct your entry.",
 		"invalidEmail": "Please enter a valid email address.",
 		"InvalidValueHistoryTimeToLive": "Null values are not allowed for history time to live.",
-		"DmnTransformationException": "The resource could not be updated. Unable to transform DMN resource."
+		"DmnTransformationException": "The resource could not be updated. Unable to transform DMN resource.",
+		"unknown": "An unexpected error occurred. Please try again."
 		
 	},
 	"searches": {
@@ -1406,5 +1407,16 @@
 		"noGroups": "without group",
 		"groupName": "Group",
 		"assignmentsByGroupInfo": "A task may have multiple groups."
+	},
+	"setup": {
+		"title": "Initial Setup",
+		"description": "Welcome to CIB seven! Create an administrator account to get started.",
+		"createAdminUser": "Create Administrator Account",
+		"createUser": "Create User",
+		"success": "Administrator account created successfully! Redirecting to login...",
+		"help": {
+			"title": "Why is this page shown?",
+			"description": "You are trying to access the process engine \"{0}\". This engine is configured to use the built-in identity service (database) but has no administrative users configured. This page allows you to create an initial user for accessing the process engine."
+		}
 	}
 }

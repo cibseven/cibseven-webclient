@@ -802,6 +802,21 @@ var EngineService = {
   }
 }
 
+// SetupService uses axios.create() to bypass interceptors since these endpoints
+// don't require authentication and are called before the user is logged in
+var SetupService = {
+  getStatus() {
+    const engineName = localStorage.getItem(ENGINE_STORAGE_KEY)
+    const headers = engineName ? { 'X-Process-Engine': engineName } : {}
+    return axios.create().get(getServicesBasePath() + '/setup/status', { headers })
+  },
+  createInitialUser(user) {
+    const engineName = localStorage.getItem(ENGINE_STORAGE_KEY)
+    const headers = engineName ? { 'X-Process-Engine': engineName } : {}
+    return axios.create().post(getServicesBasePath() + '/setup/user', user, { headers })
+  }
+}
+
 export { TaskService, FilterService, ProcessService, VariableInstanceService, HistoricVariableInstanceService, AdminService, JobService, JobDefinitionService, SystemService,
   HistoryService, IncidentService, AuthService, InfoService, FormsService, TemplateService, DecisionService,
-  AnalyticsService, BatchService, TenantService, ExternalTaskService, DeploymentService, EngineService, getServicesBasePath, setServicesBasePath, createDocumentEndpointUrl }
+  AnalyticsService, BatchService, TenantService, ExternalTaskService, DeploymentService, EngineService, SetupService, getServicesBasePath, setServicesBasePath, createDocumentEndpointUrl }

@@ -743,6 +743,15 @@ public interface BpmProvider {
 			Optional<String> sortBy, Optional<String> sortOrder, CIBUser user);
 
 	/**
+	 * Get the count of users in the system with optional filters.
+	 * 
+	 * @param filters the filters to apply (e.g., memberOfGroup). Can be null or empty for no filtering.
+	 * @param user the user performing the operation.
+	 * @return the count of users matching the filters.
+	 */
+	long countUsers(Map<String, Object> filters, CIBUser user);
+
+	/**
 	 * Create a new user.
 	 * 
 	 * @param user the new user to be created.

@@ -594,6 +594,10 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 		return userProvider.getUserAuthorization(userId, user);
 	}
 	
+	public long countUsers(Map<String, Object> filters, CIBUser user) throws SystemException {
+		return userProvider.countUsers(filters, user);
+	}
+	
 	public Collection<SevenUser> fetchUsers(CIBUser user) throws SystemException {
 		return userProvider.fetchUsers(user);
 	}

@@ -88,6 +88,10 @@ application:
       engineRest:
         url: ./
       
+      technicalUser:
+        user: ""
+        password: ""
+
       historyLevel: "full"
       
       link:

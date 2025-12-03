@@ -1103,7 +1103,8 @@
 		"InvalidUserIdException": "Die Benutzer-ID enthält unzulässige Zeichen. Es sind nur alphanumerische Zeichen (a-z, A-Z, 0-9) erlaubt. Bitte korrigieren Sie Ihre Eingabe.",
 		"invalidEmail": "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
 		"InvalidValueHistoryTimeToLive": "Nullwerte für die Lebensdauer des Verlaufs sind nicht erlaubt.",
-		"DmnTransformationException": "Die Ressource konnte nicht aktualisiert werden. DMN-Ressource kann nicht transformiert werden."
+		"DmnTransformationException": "Die Ressource konnte nicht aktualisiert werden. DMN-Ressource kann nicht transformiert werden.",
+		"unknown": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut."
 	},
 	"searches": {
 		"filter": "Filtern",
@@ -1405,5 +1406,16 @@
 		"noGroups": "ohne Gruppe",
 		"groupName": "Gruppe",
 		"assignmentsByGroupInfo": "Eine Aufgabe kann mehreren Gruppen zugewiesen sein."
+	},
+	"setup": {
+		"title": "Ersteinrichtung",
+		"description": "Willkommen bei CIB seven! Erstellen Sie ein Administratorkonto, um zu beginnen.",
+		"createAdminUser": "Administratorkonto erstellen",
+		"createUser": "Benutzer erstellen",
+		"success": "Administratorkonto erfolgreich erstellt! Weiterleitung zur Anmeldung...",
+		"help": {
+			"title": "Warum wird diese Seite angezeigt?",
+			"description": "Sie versuchen, auf die Prozess-Engine \"{0}\" zuzugreifen. Diese Engine ist für die Verwendung des integrierten Identitätsdienstes (Datenbank) konfiguriert, hat jedoch keine administrativen Benutzer eingerichtet. Auf dieser Seite können Sie einen ersten Benutzer für den Zugriff auf die Prozess-Engine erstellen."
+		}
 	}
 }
