@@ -47,6 +47,26 @@ public class SevenAuthorizationUtils{
 	    return type.getType();
 	}
 
+    public static boolean hasCockpitRights(Authorizations authorizations) {
+        boolean hasRights = authorizations.getApplication().stream().anyMatch(auth -> {
+            if (auth.getType() == authorizationType(SevenAuthorizationType.AUTH_TYPE_GRANT) && auth.getPermissions().length > 0 &&
+                    ("ALL".equals(auth.getPermissions()[0]) || "ACCESS".equals(auth.getPermissions()[0])) &&
+                    ("cockpit".equals(auth.getResourceId()) || "*".equals(auth.getResourceId()))) {
+                return true;
+            } else if (auth.getType() == authorizationType(SevenAuthorizationType.AUTH_TYPE_GLOBAL) && Arrays.asList(auth.getPermissions()).contains("ALL") &&
+                    "*".equals(auth.getResourceId())) {
+                return true;
+            }
+            return false;
+        });
+
+        if (!hasRights) {
+            throw new AccessDeniedException("Access denied: Missing required permissions for cockpit access. Required: ALL or ACCESS permission for resource 'cockpit' or '*'");
+        }
+
+        return true;
+    }
+
     public static boolean hasAdminManagementPermissions(Authorizations authorizations, SevenResourceType type, List<String> permissions) {
         return checkPermission(authorizations, type, permissions);
     }
