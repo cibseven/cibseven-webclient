@@ -16,19 +16,12 @@
  */
 package org.cibseven.webapp.rest;
 
-import java.util.Collection;
 import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
-import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.providers.SevenProvider;
-import org.cibseven.webapp.rest.model.Authorization;
 import org.cibseven.webapp.rest.model.NewUser;
-import org.cibseven.webapp.rest.model.UserGroup;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -56,13 +49,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 public class SetupService extends BaseService implements InitializingBean {
 
 	private static final String ADMIN_GROUP_ID = "camunda-admin";
-	private static final String ADMIN_GROUP_NAME = "camunda BPM Administrators";
-	private static final String ADMIN_GROUP_TYPE = "SYSTEM";
-	
-	// Authorization type: 1 = GRANT
-	private static final int AUTH_TYPE_GRANT = 1;
-	// All permissions
-	private static final String[] ALL_PERMISSIONS = new String[] { "ALL" };
 
 	@Autowired BpmProvider bpmProvider;
 	
@@ -96,13 +82,15 @@ public class SetupService extends BaseService implements InitializingBean {
 	 * Create the initial admin user. This endpoint only works when no users exist.
 	 * This endpoint does NOT require authentication.
 	 * 
+	 * The backend will handle group creation, authorization setup, and group membership.
+	 * 
 	 * @param newUser The user to create with profile and credentials
 	 * @param engine The process engine to use (from X-Process-Engine header)
 	 * @return Success response or error if users already exist
 	 */
 	@Operation(
 		summary = "Create initial admin user",
-		description = "Creates the first admin user. Only works when no users exist in the system.")
+		description = "Creates the first admin user. Only works when no users exist in the system. The backend handles group and authorization setup.")
 	@ApiResponses({
 		@ApiResponse(responseCode = "201", description = "User created successfully"),
 		@ApiResponse(responseCode = "403", description = "Setup not allowed - users already exist")
@@ -115,92 +103,10 @@ public class SetupService extends BaseService implements InitializingBean {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
 		
-		String userId = newUser.getProfile().getId();
-		
-		// 1. Create the admin user
+		// Create the admin user - backend handles group and authorization setup
 		sevenProvider.createUser(newUser, null);
 		
-		// 2. Create the admin group if it doesn't exist
-		if (!adminGroupExists()) {
-			UserGroup adminGroup = new UserGroup(ADMIN_GROUP_ID, ADMIN_GROUP_NAME, ADMIN_GROUP_TYPE);
-			sevenProvider.createGroup(adminGroup, null);
-			
-			// Create authorizations for admin group on all resource types (only if we created the group)
-			createAdminAuthorizations();
-		}
-		
-		// 3. Add user to admin group
-		sevenProvider.addMemberToGroup(ADMIN_GROUP_ID, userId, null);
-		
 		return ResponseEntity.status(HttpStatus.CREATED).build();
-	}
-	
-	/**
-	 * Checks if the admin group already exists.
-	 */
-	private boolean adminGroupExists() {
-		try {
-			Collection<UserGroup> groups = sevenProvider.findGroups(
-				Optional.of(ADMIN_GROUP_ID),  // id
-				Optional.empty(),              // name
-				Optional.empty(),              // nameLike
-				Optional.empty(),              // type
-				Optional.empty(),              // member
-				Optional.empty(),              // memberOfTenant
-				Optional.empty(),              // sortBy
-				Optional.empty(),              // sortOrder
-				Optional.empty(),              // firstResult
-				Optional.of("1"),              // maxResults
-				null
-			);
-			return groups != null && !groups.isEmpty();
-		} catch (Exception e) {
-			return false;
-		}
-	}
-	
-	/**
-	 * Creates GRANT authorizations for the admin group on all resource types.
-	 * Skips any authorizations that already exist to avoid duplicate key errors.
-	 */
-	private void createAdminAuthorizations() {
-		// Fetch existing authorizations for the admin group
-		Collection<Authorization> existingAuths = sevenProvider.findAuthorization(
-			Optional.empty(),                      // id
-			Optional.of(String.valueOf(AUTH_TYPE_GRANT)), // type: GRANT
-			Optional.empty(),                      // userIdIn
-			Optional.of(ADMIN_GROUP_ID),           // groupIdIn
-			Optional.empty(),                      // resourceType
-			Optional.empty(),                      // resourceId
-			Optional.empty(),                      // sortBy
-			Optional.empty(),                      // sortOrder
-			Optional.empty(),                      // firstResult
-			Optional.empty(),                      // maxResults
-			null
-		);
-		
-		// Build a set of existing resource types for quick lookup
-		Set<Integer> existingResourceTypes = existingAuths.stream()
-			.map(Authorization::getResourceType)
-			.collect(Collectors.toSet());
-		
-		// Create only missing authorizations
-		for (SevenResourceType resourceType : SevenResourceType.values()) {
-			if (existingResourceTypes.contains(resourceType.getType())) {
-				continue; // Skip if authorization already exists
-			}
-			
-			Authorization auth = new Authorization(
-				null,                           // id (generated by engine)
-				AUTH_TYPE_GRANT,                // type: GRANT
-				ALL_PERMISSIONS,                // permissions: ALL
-				null,                           // userId (null, we use groupId)
-				ADMIN_GROUP_ID,                 // groupId
-				resourceType.getType(),         // resourceType
-				"*"                             // resourceId: all resources
-			);
-			sevenProvider.createAuthorization(auth, null);
-		}
 	}
 	
 	/**
