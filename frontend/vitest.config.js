@@ -35,10 +35,7 @@ export default mergeConfig(
           'target/**',
           'node_modules/**',
           'coverage/**',
-          
-          // Library files
-          '**/cib-common-components*.js', // Exclude common components bundle
-          
+
           // Test and config files
           'cypress/e2e/**', // Exclude Cypress tests
           'cypress.config.js', // Exclude Cypress config
