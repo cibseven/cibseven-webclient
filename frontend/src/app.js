@@ -15,9 +15,8 @@
  *  limitations under the License.
  */
 import './assets/main.css'  // Application-specific styles
-// Note: 'materialdesignicons.css' is after 'style.css', as inside 'style.css' we have required '@charset "UTF-8";' statement
+// Note: 'materialdesignicons.css' is after 'main.css', as inside 'main.css' we have required '@charset "UTF-8";' statement
 import '@mdi/font/css/materialdesignicons.min.css'
-import '@cib/bootstrap-components/dist/style.css'
 import '@cib/common-frontend/dist/style.css'
 
 import { axios } from './globals.js'
