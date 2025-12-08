@@ -89,7 +89,7 @@ import DmnViewer from '@/components/decision/DmnViewer.vue'
 import InstancesTable from '@/components/decision/InstancesTable.vue'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
 import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
-import { BWaitingBox } from '@cib/bootstrap-components'
+import { BWaitingBox } from '@cib/common-frontend'
 import { mapGetters, mapActions } from 'vuex'
 import { debounce } from '@/utils/debounce.js'
 

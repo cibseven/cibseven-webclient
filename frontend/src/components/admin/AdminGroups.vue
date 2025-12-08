@@ -94,7 +94,7 @@ import { debounce } from '@/utils/debounce.js'
 import { getStringObjByKeys } from '@/components/admin/utils.js'
 import { FlowTable } from '@cib/common-frontend'
 import { TaskPopper, ConfirmDialog } from '@cib/common-frontend'
-import { BWaitingBox } from '@cib/bootstrap-components'
+import { BWaitingBox } from '@cib/common-frontend'
 
 export default {
   name: 'AdminGroups',
