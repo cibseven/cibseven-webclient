@@ -25,7 +25,7 @@ import { createApp } from 'vue'
 
 import store from './store'
 import { createAppRouter, appRoutes } from './router.js'
-import registerOwnComponents from './register.js'
+import registerComponents from './register.js'
 import { permissionsMixin }  from './permissions.js'
 
 import { InfoService, AuthService, setServicesBasePath } from './services.js'
@@ -141,7 +141,7 @@ Promise.all([
         }
       })
 
-      registerOwnComponents(app)
+      registerComponents(app)
 
       const router = createAppRouter(appRoutes)
       app.use(router)
