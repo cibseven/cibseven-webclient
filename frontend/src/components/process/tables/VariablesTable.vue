@@ -100,7 +100,7 @@
 </template>
 
 <script>
-import { BWaitingBox } from '@cib/bootstrap-components'
+import { BWaitingBox } from '@cib/common-frontend'
 import { FlowTable } from '@cib/common-frontend'
 import { TaskPopper, SuccessAlert, CopyableActionButton } from '@cib/common-frontend'
 import DeleteVariableModal from '@/components/process/modals/DeleteVariableModal.vue'

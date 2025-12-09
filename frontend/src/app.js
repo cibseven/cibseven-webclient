@@ -15,7 +15,10 @@
  *  limitations under the License.
  */
 import './assets/main.css'  // Application-specific styles
-import '@mdi/font/css/materialdesignicons.css'
+// Note: 'materialdesignicons.css' is after 'main.css', as inside 'main.css' we have required '@charset "UTF-8";' statement
+import '@mdi/font/css/materialdesignicons.min.css'
+import '@cib/common-frontend/dist/style.css'
+
 import { axios } from './globals.js'
 
 import { createApp } from 'vue'

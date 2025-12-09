@@ -46,7 +46,7 @@
 
 <script>
 import NavigatedViewer from 'bpmn-js/lib/NavigatedViewer'
-import { BWaitingBox } from '@cib/bootstrap-components'
+import { BWaitingBox } from '@cib/common-frontend'
 import { mapActions, mapGetters } from 'vuex'
 import { HistoryService } from '@/services.js'
 

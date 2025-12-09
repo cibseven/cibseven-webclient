@@ -76,7 +76,7 @@ import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
 import TaskAssignationModal from '@/components/process/modals/TaskAssignationModal.vue'
 import { FlowTable } from '@cib/common-frontend'
 import { SuccessAlert, CopyableActionButton } from '@cib/common-frontend'
-import { BWaitingBox } from '@cib/bootstrap-components'
+import { BWaitingBox } from '@cib/common-frontend'
 
 export default {
   name: 'UserTasksTable',

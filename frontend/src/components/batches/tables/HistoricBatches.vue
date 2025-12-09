@@ -57,7 +57,7 @@
 import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
 import { mapGetters, mapActions } from 'vuex'
 import { debounce } from '@/utils/debounce.js'
-import { BWaitingBox } from '@cib/bootstrap-components'
+import { BWaitingBox } from '@cib/common-frontend'
 import { FlowTable, ContentBlock } from '@cib/common-frontend'
 
 export default {

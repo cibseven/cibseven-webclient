@@ -20,7 +20,7 @@ import { i18n } from '@/i18n'
 import AddVariableModalUI from '@/components/process/modals/AddVariableModalUI.vue'
 import { readFileSync } from 'fs'
 import { resolve } from 'path'
-import { BButton, BFormGroup, BFormInput, BFormSelect, BFormCheckbox, BAlert } from '@cib/bootstrap-components'
+import { BButton, BFormGroup, BFormInput, BFormSelect, BFormCheckbox, BAlert } from '@cib/common-frontend'
 
 // Mock dependencies
 vi.mock('@/services.js', () => ({
