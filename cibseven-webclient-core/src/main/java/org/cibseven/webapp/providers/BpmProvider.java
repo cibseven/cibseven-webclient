@@ -710,16 +710,16 @@ public interface BpmProvider {
 	/**
 	 * Get groups by id, ....
 	 *
-	 * @param id, // Filter by the id of the group.
-	 * @param name, // Filter by the name of the group.
-	 * @param nameLike, // Filter by the name that the parameter is a substring of.
-	 * @param type, // Filter by the type of the group.
-	 * @param member, // Only retrieve groups which the given user id is a member of.
-	 * @param memberOfTenant, // Only retrieve groups which are members of the given tenant.
-	 * @param sortBy, // Sort the results lexicographically by a given criterion. Valid values are id, name and type. Must be used in conjunction with the sortOrder parameter.
-	 * @param sortOrder, // Sort the results in a given order. Values may be asc for ascending order or desc for descending order. Must be used in conjunction with the sortBy parameter.
-	 * @param firstResult, // Pagination of results. Specifies the index of the first result to return.
-	 * @param maxResults, // Pagination of results. Specifies the maximum number of results to return. Will return less results if there are no more results left.
+	 * @param id // Filter by the id of the group.
+	 * @param name // Filter by the name of the group.
+	 * @param nameLike // Filter by the name that the parameter is a substring of.
+	 * @param type // Filter by the type of the group.
+	 * @param member // Only retrieve groups which the given user id is a member of.
+	 * @param memberOfTenant // Only retrieve groups which are members of the given tenant.
+	 * @param sortBy // Sort the results lexicographically by a given criterion. Valid values are id, name and type. Must be used in conjunction with the sortOrder parameter.
+	 * @param sortOrder // Sort the results in a given order. Values may be asc for ascending order or desc for descending order. Must be used in conjunction with the sortBy parameter.
+	 * @param firstResult // Pagination of results. Specifies the index of the first result to return.
+	 * @param maxResults // Pagination of results. Specifies the maximum number of results to return. Will return less results if there are no more results left.
 	 *
 	 * @param user the user performing the search.
 	 * @return Collection of User Groups.
@@ -764,16 +764,16 @@ public interface BpmProvider {
 	/**
 	 * Get Authorization by id, ....
 	 *
-	 * @param id, // Filter by the id.
-	 * @param type, //  	Filter by authorization type. (0=global, 1=grant, 2=revoke). See the User Guide for more information about authorization types.
-	 * @param userIdIn, //  	Filter by a comma-separated list of userIds.
-	 * @param groupIdIn, //  	Filter by a comma-separated list of groupIds.
-	 * @param resourceType, //  	Filter by an integer representation of the resource type. See the User Guide for a list of integer representations of resource types.
-	 * @param resourceId, //  	Filter by resource id.	 * @param sortBy, // Sort the results lexicographically by a given criterion. Valid values are id, name and type. Must be used in conjunction with the sortOrder parameter.
-	 * @param sortBy, // Sort the results lexicographically by a given criterion. Valid values are id, name and type. Must be used in conjunction with the sortOrder parameter.
-	 * @param sortOrder, // Sort the results in a given order. Values may be asc for ascending order or desc for descending order. Must be used in conjunction with the sortBy parameter.
-	 * @param firstResult, // Pagination of results. Specifies the index of the first result to return.
-	 * @param maxResults, // Pagination of results. Specifies the maximum number of results to return. Will return less results if there are no more results left.
+	 * @param id // Filter by the id.
+	 * @param type //  	Filter by authorization type. (0=global, 1=grant, 2=revoke). See the User Guide for more information about authorization types.
+	 * @param userIdIn //  	Filter by a comma-separated list of userIds.
+	 * @param groupIdIn //  	Filter by a comma-separated list of groupIds.
+	 * @param resourceType //  	Filter by an integer representation of the resource type. See the User Guide for a list of integer representations of resource types.
+	 * @param resourceId //  	Filter by resource id.	 * @param sortBy, // Sort the results lexicographically by a given criterion. Valid values are id, name and type. Must be used in conjunction with the sortOrder parameter.
+	 * @param sortBy // Sort the results lexicographically by a given criterion. Valid values are id, name and type. Must be used in conjunction with the sortOrder parameter.
+	 * @param sortOrder // Sort the results in a given order. Values may be asc for ascending order or desc for descending order. Must be used in conjunction with the sortBy parameter.
+	 * @param firstResult // Pagination of results. Specifies the index of the first result to return.
+	 * @param maxResults // Pagination of results. Specifies the maximum number of results to return. Will return less results if there are no more results left.
 	 * @param user the user performing the search.
 	 * @return Collection of Authorizations.
 	 */
@@ -1389,8 +1389,8 @@ public interface BpmProvider {
      * @throws NoObjectFoundException when the process definition searched for could not be found.
      * @throws SystemException in case of any other error.
 	 */
-	default ProcessDiagram fetchDiagram(String id, CIBUser user) throws SystemException {
-		return getProcessProvider().fetchDiagram(id, user);
+	default ProcessDiagram fetchDiagram(String processDefinitionId, CIBUser user) throws SystemException {
+		return getProcessProvider().fetchDiagram(processDefinitionId, user);
 	}
 
 	/**
@@ -1413,8 +1413,8 @@ public interface BpmProvider {
 	 * @return Fetched bpmn
      * @throws SystemException in case of an error.
 	 */
-	default Data downloadBpmn(String id, String fileName, CIBUser user) throws SystemException {
-		return getProcessProvider().downloadBpmn(id, fileName, user);
+	default Data downloadBpmn(String processDefinitionId, String fileName, CIBUser user) throws SystemException {
+		return getProcessProvider().downloadBpmn(processDefinitionId, fileName, user);
 	}
 
 	/**
@@ -1487,7 +1487,7 @@ public interface BpmProvider {
 
 	/**
 	 * Search statistics from a process.
-	 * @param id filter by process id.
+	 * @param processId filter by process id.
 	 * @param user the user performing the search
 	 * @return Fetched processes instances.
 	 * @throws SystemException in case of an error.
@@ -1676,7 +1676,7 @@ public interface BpmProvider {
 	 *
 	 * @param groupId the ID of the group.
 	 * @param userId the ID of the user to be added.
-	 * @param flowUser the user performing the operation.
+	 * @param user the user performing the operation.
 	 */
 	default void addMemberToGroup(String groupId, String userId, CIBUser user) throws SystemException {
 		getUserProvider().addMemberToGroup(groupId, userId, user);
@@ -1687,7 +1687,7 @@ public interface BpmProvider {
 	 *
 	 * @param groupId the ID of the group.
 	 * @param userId the ID of the user to be removed.
-	 * @param flowUser the user performing the operation.
+	 * @param user the user performing the operation.
 	 */
 	default void deleteMemberFromGroup(String groupId, String userId, CIBUser user) throws SystemException {
 		getUserProvider().deleteMemberFromGroup(groupId, userId, user);
