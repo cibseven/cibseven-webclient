@@ -14,12 +14,12 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { registerComponents } from '@cib/common-frontend'
+import { registerComponents as registerCommonComponents } from '@cib/common-frontend'
 import { GlobalEvents } from 'vue-global-events'
 
-const registerOwnComponents = function(app) {
-  registerComponents(app)
+const registerComponents = function(app) {
+  registerCommonComponents(app)
   app.component('GlobalEvents', GlobalEvents)
 }
 
-export default registerOwnComponents
+export default registerComponents
