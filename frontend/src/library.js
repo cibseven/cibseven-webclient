@@ -16,6 +16,7 @@
  */
 // Import the CSS to ensure it is bundled with the package
 import './assets/main.css';
+import '@cib/common-frontend/dist/style.css';
 
 import { axios, moment } from '@/globals.js'
 import { permissionsMixin } from '@/permissions.js'
