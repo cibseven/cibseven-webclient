@@ -16,10 +16,11 @@
  */
 // Import the CSS to ensure it is bundled with the package
 import './assets/main.css';
+import '@cib/common-frontend/dist/style.css';
 
 import { axios, moment } from '@/globals.js'
 import { permissionsMixin } from '@/permissions.js'
-import registerOwnComponents from './register.js'
+import registerComponents from './register.js'
 import processesVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
 import processesMixin from '@/components/process/mixins/processesMixin.js'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
@@ -168,105 +169,9 @@ import assigneeMixin from '@/mixins/assigneeMixin.js'
 import { getEnabledShortcuts, getShortcutsForModal,
   getGlobalNavigationShortcuts, getTaskEventShortcuts, checkKeyMatch } from './utils/shortcuts.js'
 
-const registerComponents = function(app) {
-  app.component('cib-seven', CibSeven)
-  app.component('flow-table', FlowTable)
-  app.component('content-block', ContentBlock)
-  app.component('error-dialog', ErrorDialog)
-  app.component('confirm-dialog', ConfirmDialog)
-  app.component('about-modal', AboutModal)
-  app.component('feedback-modal', FeedbackModal)
-  app.component('shortcuts-modal', ShortcutsModal)
-  app.component('shortcuts-table', ShortcutsTable)
-  app.component('success-alert', SuccessAlert)
-  app.component('task-popper', TaskPopper)
-  app.component('feedback-screenshot', FeedbackScreenshot)
-  app.component('task-list', TaskList)
-  app.component('cib-header-flow', CIBHeaderFlow)
-  app.component('reset-dialog', ResetDialog)
-  app.component('otp-dialog', OtpDialog)
-  app.component('cib-form', CIBForm)
-  app.component('secure-input', SecureInput)
-  app.component('filterable-select', FilterableSelect)
-  app.component('icon-button', IconButton)
-  app.component('multisort-modal', MultisortModal)
-  app.component('sidebars-flow', SidebarsFlow)
-  app.component('smart-search', SmartSearch)
-  app.component('support-modal', SupportModal)
-  app.component('admin-authorizations', AdminAuthorizations)
-  app.component('admin-authorizations-table', AdminAuthorizationsTable)
-  app.component('admin-groups', AdminGroups)
-  app.component('admin-users', AdminUsers)
-  app.component('authorizations-nav-bar', AuthorizationsNavBar)
-  app.component('create-group', CreateGroup)
-  app.component('create-user', CreateUser)
-  app.component('profile-group', ProfileGroup)
-  app.component('profile-preferences-tab', ProfilePreferencesTab)
-  app.component('profile-user', ProfileUser)
-  app.component('users-management', UsersManagement)
-  app.component('deployment-list', DeploymentList)
-  app.component('paged-scrollable-content', PagedScrollableContent)
-  app.component('deployments-view', DeploymentsView)
-  app.component('resources-nav-bar', ResourcesNavBar)
-  app.component('filter-modal', FilterModal)
-  app.component('filter-nav-bar', FilterNavBar)
-  app.component('filter-nav-collapsed', FilterNavCollapsed)
-  app.component('process-view', ProcessView)
-  app.component('add-variable-modal', AddVariableModal)
-  app.component('add-variable-modal-ui', AddVariableModalUI)
-  app.component('edit-variable-modal', EditVariableModal)
-  app.component('delete-variable-modal', DeleteVariableModal)
-  app.component('bpmn-viewer', BpmnViewer)
-  app.component('instances-table', InstancesTable)
-  app.component('process-instances-view', ProcessInstancesView)
-  app.component('process-advanced', ProcessAdvanced)
-  app.component('process-card', ProcessCard)
-  app.component('process-details-sidebar', ProcessDetailsSidebar)
-  app.component('start-process-list', StartProcessList)
-  app.component('start-process-view', StartProcessView)
-  app.component('process-list', ProcessList)
-  app.component('process-list-view', ProcessListView)
-  app.component('process-table', ProcessTable)
-  app.component('process-instance-view', ProcessInstanceView)
-  app.component('process-definition-view', ProcessDefinitionView)
-  app.component('delete-process-definition-modal', DeleteProcessDefinitionModal)
-  app.component('confirm-action-on-process-instance-modal', ConfirmActionOnProcessInstanceModal)
-  app.component('processes-dashboard-view', ProcessesDashboardView)
-  app.component('pie-chart', PieChart)
-  app.component('deployment-item', DeploymentItem)
-  app.component('start-process', StartProcess)
-  app.component('task-assignation-modal', TaskAssignationModal)
-  app.component('variables-table', VariablesTable)
-  app.component('incidents-table', IncidentsTable)
-  app.component('user-tasks-table', UserTasksTable)
-  app.component('render-template', RenderTemplate)
-  app.component('advanced-search-modal', AdvancedSearchModal)
-  app.component('task-content', TaskContent)
-  app.component('task-view', TaskView)
-  app.component('tasks-content', TasksContent)
-  app.component('tasks-nav-bar', TasksNavBar)
-  app.component('tasks-view', TasksView)
-  app.component('highlighted-text', HighlightedText)
-  app.component('human-tasks', HumanTasksView)
-  app.component('decision-view', DecisionView)
-  app.component('decision-list', DecisionList)
-  app.component('decision-list-view', DecisionListView)
-  app.component('tenants-view', TenantsView)
-  app.component('edit-tenant', EditTenant)
-  app.component('create-tenant', CreateTenant)
-  app.component('batches-view', BatchesView)
-  app.component('system-view', SystemView)
-  app.component('deployed-form', DeployedForm)
-  app.component('decision-definition-details', DecisionDefinitionDetails)
-  app.component('decision-version-list-sidebar', DecisionVersionListSidebar)
-  app.component('dmn-viewer', DmnViewer)
-  app.component('template-base', TemplateBase)
-  app.component('start-view', StartView)
-  app.component('login-view', LoginView)
-}
-
 export {
   registerComponents,
+
   TenantsView,
   CreateTenant,
   EditTenant,
@@ -276,7 +181,6 @@ export {
   axios,
   moment,
   permissionsMixin,
-  registerOwnComponents,
   store,
   modules as storeModules,
   usersMixin,
@@ -465,3 +369,5 @@ export {
   // Constants
   ENGINE_STORAGE_KEY
 }
+
+export * from '@cib/common-frontend'

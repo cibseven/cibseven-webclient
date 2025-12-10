@@ -62,7 +62,7 @@
 import { mapActions, mapGetters } from 'vuex'
 import { ContentBlock, FlowTable } from '@cib/common-frontend'
 import JobLogModal from '../modals/JobLogModal.vue'
-import { BWaitingBox } from '@cib/bootstrap-components'
+import { BWaitingBox } from '@cib/common-frontend'
 
 export default {
   name: 'FailedJobs',

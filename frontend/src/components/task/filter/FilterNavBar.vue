@@ -109,7 +109,7 @@
 import { permissionsMixin } from '@/permissions.js'
 import FilterModal from '@/components/task/filter/FilterModal.vue'
 import { ConfirmDialog } from '@cib/common-frontend'
-import { BWaitingBox } from '@cib/bootstrap-components'
+import { BWaitingBox } from '@cib/common-frontend'
 import { formatDate } from '@/utils/dates.js'
 import { mapActions } from 'vuex'
 

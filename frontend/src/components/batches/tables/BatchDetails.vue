@@ -59,7 +59,7 @@
 <script>
   import { formatDate } from '@/utils/dates.js'
   import FailedJobs from './FailedJobs.vue'
-  import { BWaitingBox } from '@cib/bootstrap-components'
+  import { BWaitingBox } from '@cib/common-frontend'
   import { mapActions, mapGetters } from 'vuex'
   import { FlowTable, ContentBlock, ConfirmDialog } from '@cib/common-frontend'
 

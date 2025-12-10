@@ -158,7 +158,7 @@
 
 <script>
 import { moment } from '@/globals.js'
-import { BWaitingBox } from '@cib/bootstrap-components'
+import { BWaitingBox } from '@cib/common-frontend'
 
 export default {
   name: 'AddVariableModalUI',

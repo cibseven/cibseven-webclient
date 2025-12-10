@@ -15,14 +15,17 @@
  *  limitations under the License.
  */
 import './assets/main.css'  // Application-specific styles
-import '@mdi/font/css/materialdesignicons.css'
+// Note: 'materialdesignicons.css' is after 'main.css', as inside 'main.css' we have required '@charset "UTF-8";' statement
+import '@mdi/font/css/materialdesignicons.min.css'
+import '@cib/common-frontend/dist/style.css'
+
 import { axios } from './globals.js'
 
 import { createApp } from 'vue'
 
 import store from './store'
 import { createAppRouter, appRoutes } from './router.js'
-import registerOwnComponents from './register.js'
+import registerComponents from './register.js'
 import { permissionsMixin }  from './permissions.js'
 
 import { InfoService, AuthService, setServicesBasePath } from './services.js'
@@ -138,7 +141,7 @@ Promise.all([
         }
       })
 
-      registerOwnComponents(app)
+      registerComponents(app)
 
       const router = createAppRouter(appRoutes)
       app.use(router)

@@ -48,7 +48,7 @@
 
 <script>
 
-import { BWaitingBox } from '@cib/bootstrap-components'
+import { BWaitingBox } from '@cib/common-frontend'
 
 import postMessageMixin from '@/components/forms/postMessage.js'
 import IconButton from '@/components/forms/IconButton.vue'
