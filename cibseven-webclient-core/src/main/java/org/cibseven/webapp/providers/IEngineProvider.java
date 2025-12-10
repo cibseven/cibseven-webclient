@@ -18,9 +18,13 @@ package org.cibseven.webapp.providers;
 
 import java.util.Collection;
 
+import org.cibseven.webapp.exception.InvalidUserIdException;
 import org.cibseven.webapp.rest.model.Engine;
+import org.cibseven.webapp.rest.model.NewUser;
 
 public interface IEngineProvider {
 	
 	public Collection<Engine> getProcessEngineNames();
+	public Boolean requiresSetup(String engine);
+	public void createSetupUser(NewUser user, String engine) throws InvalidUserIdException;
 }

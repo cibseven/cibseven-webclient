@@ -16,11 +16,7 @@
  */
 package org.cibseven.webapp.rest;
 
-import java.util.Map;
-
-import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.providers.BpmProvider;
-import org.cibseven.webapp.providers.SevenProvider;
 import org.cibseven.webapp.rest.model.NewUser;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,18 +44,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/setup")
 public class SetupService extends BaseService implements InitializingBean {
 
-	private static final String ADMIN_GROUP_ID = "camunda-admin";
-
 	@Autowired BpmProvider bpmProvider;
-	
-	SevenProvider sevenProvider;
 	
 	@Override
 	public void afterPropertiesSet() {
-		if (bpmProvider instanceof SevenProvider)
-			sevenProvider = (SevenProvider) bpmProvider;
-		else
-			throw new SystemException("SetupService expects a SevenProvider");
 	}
 
 	/**
@@ -75,7 +63,7 @@ public class SetupService extends BaseService implements InitializingBean {
 	@GetMapping("/status")
 	public boolean requiresSetup(
 			@RequestHeader(value = "X-Process-Engine", required = false) String engine) {
-		return getAdminGroupMemberCount(engine) == 0;
+		return bpmProvider.requiresSetup(engine);
 	}
 
 	/**
@@ -99,29 +87,14 @@ public class SetupService extends BaseService implements InitializingBean {
 	public ResponseEntity<Void> createInitialUser(
 			@RequestBody NewUser newUser,
 			@RequestHeader(value = "X-Process-Engine", required = false) String engine) {
-		if (getAdminGroupMemberCount(engine) > 0) {
+		if (!bpmProvider.requiresSetup(engine)) {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
 		
 		// Create the admin user - backend handles group and authorization setup
-		sevenProvider.createUser(newUser, null);
+		bpmProvider.createSetupUser(newUser, engine);
 		
 		return ResponseEntity.status(HttpStatus.CREATED).build();
 	}
 	
-	/**
-	 * Get the count of users that are members of the admin group.
-	 * If no users are members of the admin group, setup is required.
-	 */
-	private long getAdminGroupMemberCount(String engine) {
-		try {
-			return sevenProvider.countUsers(
-				Map.of("memberOfGroup", ADMIN_GROUP_ID),
-				null
-			);
-		} catch (Exception e) {
-			// If we can't query users, assume setup is needed
-			return 0;
-		}
-	}
 }
