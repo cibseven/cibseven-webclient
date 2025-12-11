@@ -63,6 +63,10 @@ public class SetupService extends BaseService implements InitializingBean {
 	private static final String ADMIN_GROUP_NAME = "camunda BPM Administrators";
 	private static final String ADMIN_GROUP_TYPE = "SYSTEM";
 	
+	// Initial setup is only available for internal providers, not for external identity
+	// providers like LDAP, ADFS, or SSO where users are managed externally.
+	private static final String SEVEN_USER_PROVIDER = "org.cibseven.webapp.auth.SevenUserProvider";
+	
 	// Authorization type: 1 = GRANT
 	private static final int AUTH_TYPE_GRANT = 1;
 	// All permissions
@@ -70,6 +74,7 @@ public class SetupService extends BaseService implements InitializingBean {
 
 	@Value("${cibseven.webclient.technicalUser.user:}") String technicalUserName;
 	@Value("${cibseven.webclient.technicalUser.password:}") String technicalUserPassword;
+	@Value("${cibseven.webclient.user.provider:org.cibseven.webapp.auth.SevenUserProvider}") String userProvider;
 
 	@Autowired BaseUserProvider provider;
 	@Autowired BpmProvider bpmProvider;
@@ -88,6 +93,10 @@ public class SetupService extends BaseService implements InitializingBean {
 	 * Check if initial setup is required (no users exist in the system).
 	 * This endpoint does NOT require authentication.
 	 * 
+	 * Setup is only required when using the internal SevenUserProvider.
+	 * When external identity providers (LDAP, ADFS, etc.) are configured,
+	 * setup is never required as users are managed externally.
+	 * 
 	 * @return true if setup is required, false otherwise
 	 */
 	@Operation(
@@ -97,28 +106,38 @@ public class SetupService extends BaseService implements InitializingBean {
 	@GetMapping("/status")
 	public boolean requiresSetup(
 			@RequestHeader(value = "X-Process-Engine", required = false) String engine) {
+		// Setup is only applicable when using internal user provider (SevenUserProvider)
+		// For external identity providers (LDAP, ADFS, SSO), users are managed externally
+		if (!SEVEN_USER_PROVIDER.equals(userProvider)) {
+			return false;
+		}
 		return getAdminGroupMemberCount(engine) == 0;
 	}
 
 	/**
-	 * Create the initial admin user. This endpoint only works when no users exist.
+	 * Create the initial admin user. This endpoint only works when no users exist
+	 * and when using the internal SevenUserProvider.
 	 * This endpoint does NOT require authentication.
 	 * 
 	 * @param newUser The user to create with profile and credentials
 	 * @param engine The process engine to use (from X-Process-Engine header)
-	 * @return Success response or error if users already exist
+	 * @return Success response or error if users already exist or external provider is used
 	 */
 	@Operation(
 		summary = "Create initial admin user",
-		description = "Creates the first admin user. Only works when no users exist in the system.")
+		description = "Creates the first admin user. Only works when no users exist in the system and when using internal user provider.")
 	@ApiResponses({
 		@ApiResponse(responseCode = "201", description = "User created successfully"),
-		@ApiResponse(responseCode = "403", description = "Setup not allowed - users already exist")
+		@ApiResponse(responseCode = "403", description = "Setup not allowed - users already exist or external identity provider is used")
 	})
 	@PostMapping("/user")
 	public ResponseEntity<Void> createInitialUser(
 			@RequestBody NewUser newUser,
 			@RequestHeader(value = "X-Process-Engine", required = false) String engine) {
+		// Setup is only applicable when using internal user provider (SevenUserProvider)
+		if (!SEVEN_USER_PROVIDER.equals(userProvider)) {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+		}
 		if (getAdminGroupMemberCount(engine) > 0) {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
