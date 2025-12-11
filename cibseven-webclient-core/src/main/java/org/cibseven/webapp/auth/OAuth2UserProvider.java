@@ -62,21 +62,21 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class OAuth2UserProvider extends BaseUserProvider<SSOLogin> {
 	
-	@Value("${cibseven.webclient.sso.endpoints.token}") String tokenEndpoint;
-	@Value("${cibseven.webclient.sso.endpoints.jwks}") String certEndpoint;
+	@Value("${cibseven.webclient.sso.endpoints.token}") protected String tokenEndpoint;
+	@Value("${cibseven.webclient.sso.endpoints.jwks}") protected String certEndpoint;
 	@Value("${cibseven.webclient.sso.endpoints.user}") String userEndpoint;
 	@Value("${cibseven.webclient.sso.endpoints.introspection:}") String introspectionEndpoint;
-	@Value("${cibseven.webclient.sso.clientId}") String clientId;
-	@Value("${cibseven.webclient.sso.clientSecret}") String clientSecret;
+	@Value("${cibseven.webclient.sso.clientId}") protected String clientId;
+	@Value("${cibseven.webclient.sso.clientSecret}") protected String clientSecret;
 	@Value("${cibseven.webclient.sso.userIdProperty}") protected String userIdProperty;
 	@Value("${cibseven.webclient.sso.userNameProperty}") protected String userNameProperty;
 	@Value("${cibseven.webclient.sso.accessTokenToEngineRest:false}") boolean forwardToken;
-	@Value("${cibseven.webclient.authentication.jwtSecret}") String secret;
-	@Value("${cibseven.webclient.authentication.tokenValidMinutes}") long validMinutes;
-	@Value("${cibseven.webclient.authentication.tokenProlongMinutes}") long prolongMinutes;
+	@Value("${cibseven.webclient.authentication.jwtSecret}") protected String secret;
+	@Value("${cibseven.webclient.authentication.tokenValidMinutes}") protected long validMinutes;
+	@Value("${cibseven.webclient.authentication.tokenProlongMinutes}") protected long prolongMinutes;
 	
-	@Getter private SsoHelper ssoHelper;
-	@Getter private JwtTokenSettings settings;
+	@Getter protected SsoHelper ssoHelper;
+	@Getter protected JwtTokenSettings settings;
 	HttpHeaders formUrlEncodedHeader = new HttpHeaders();
 	{
 		formUrlEncodedHeader.setContentType(MediaType.APPLICATION_FORM_URLENCODED);

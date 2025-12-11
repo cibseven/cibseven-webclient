@@ -16,17 +16,25 @@
  */
 package org.cibseven.webapp.auth;
 
+import java.util.Base64;
+
+import javax.crypto.SecretKey;
+
 import org.cibseven.webapp.auth.exception.AuthenticationException;
 import org.cibseven.webapp.auth.exception.TokenExpiredException;
 import org.cibseven.webapp.auth.providers.JwtUserProvider;
 import org.cibseven.webapp.auth.sso.SSOLogin;
 import org.cibseven.webapp.auth.sso.SSOUser;
+import org.cibseven.webapp.auth.sso.SsoHelper;
 import org.cibseven.webapp.auth.sso.TokenResponse;
 import org.springframework.beans.factory.annotation.Value;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 
@@ -40,6 +48,16 @@ public class AdfsUserProvider extends OAuth2UserProvider {
 	@Value("${cibseven.webclient.sso.domain:}") String domain;
 	@Value("${cibseven.webclient.sso.infoInIdToken: false}") boolean infoInIdToken;
 	@Value("${cibseven.webclient.sso.technicalUserId}") String technicalUserId;
+
+	@PostConstruct
+	@Override
+	public void init() {
+		settings = new JwtTokenSettings(secret, validMinutes, prolongMinutes);
+		ssoHelper = new SsoHelper(tokenEndpoint, clientId, clientSecret, certEndpoint, null, null);
+		checkKey();
+		SecretKey key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(settings.getSecret()));
+		flowParser = Jwts.parser().verifyWith(key).build();
+	}
 
 	@Override
 	public User login(SSOLogin params, HttpServletRequest rq) {
