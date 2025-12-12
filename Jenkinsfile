@@ -1,6 +1,6 @@
 #!groovy
 
-@Library('cib-pipeline-library') _
+@Library('cib-pipeline-library@master') _
 
 import de.cib.pipeline.library.Constants
 import de.cib.pipeline.library.kubernetes.BuildPodCreator
@@ -67,7 +67,6 @@ pipeline {
                     .withContainerFromName(pipelineParams.mvnContainerName, pipelineParams.buildPodConfig[pipelineParams.mvnContainerName])
                     .withHelm3Container()
                     .withNode20Container()
-                    .withCocogittoContainer()
                     .asYaml()
             defaultContainer pipelineParams.mvnContainerName
         }
