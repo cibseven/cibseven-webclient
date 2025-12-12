@@ -223,7 +223,6 @@ pipeline {
                                         -Dsonar.projectName=${env.PACKAGE_NAME} \
                                         -Dsonar.projectVersion=${env.VERSION} \
                                         -Dsonar.sources=src \
-                                        -Dsonar.tests=src/__tests__ \
                                         -Dsonar.exclusions='**/node_modules/**,**/dist/**,**/build/**,**/*.min.js' \
                                         -Dsonar.javascript.lcov.reportPaths='target/coverage/lcov.info' \
                                         -Dsonar.coverage.exclusions='**/*.test.js,**/*.spec.js,**/*.test.ts,**/*.spec.ts'
