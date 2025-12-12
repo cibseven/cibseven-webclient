@@ -275,7 +275,7 @@ pipeline {
                             withCredentials([string(credentialsId: Constants.DEPENDENCY_TRACK_CREDENTIALS_ID, variable: 'API_KEY')]) {
                                 dependencyTrackPublisher(
                                     autoCreateProjects: true,
-                                    artifact: 'bom.xml',
+                                    artifact: 'frontend/bom.xml',
                                     projectName: "${env.PACKAGE_NAME}",
                                     projectVersion: "${env.VERSION}",
                                     projectProperties: [
