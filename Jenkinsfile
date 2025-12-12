@@ -77,7 +77,11 @@ pipeline {
         booleanParam(
             name: 'VERIFY',
             defaultValue: true,
-            description: 'Build and test using "mvn verify"'
+            description: '''Build and verify the project. This includes:
+            - Build and test using "mvn verify" (all branches)
+            - Run SonarQube Checks on primary branch
+            - Run Dependency-Track upload on primary branch
+            '''
         )
         booleanParam(
             name: 'RELEASE_BPM_SDK',
