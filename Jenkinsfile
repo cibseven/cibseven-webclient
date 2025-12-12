@@ -66,6 +66,7 @@ pipeline {
             yaml BuildPodCreator.cibStandardPod(nodepool: Constants.NODEPOOL_STABLE)
                     .withContainerFromName(pipelineParams.mvnContainerName, pipelineParams.buildPodConfig[pipelineParams.mvnContainerName])
                     .withHelm3Container()
+                    .withNode22Container()
                     .withCocogittoContainer()
                     .asYaml()
             defaultContainer pipelineParams.mvnContainerName
@@ -192,7 +193,7 @@ pipeline {
             }
             steps {
                 script {
-                    withNode20Container() {
+                    container(Constants.NODE_22_CONTAINER) {
                         withSonarQubeEnv(credentialsId: Constants.SONARQUBE_CREDENTIALS_ID, installationName: 'SonarQube') {
                             script {
                                 // Install sonar-scanner
@@ -253,7 +254,7 @@ pipeline {
             }
             steps {
                 script {
-                    withNode20Container() {
+                    container(Constants.NODE_22_CONTAINER) {
                         script {
 
                             sh """
