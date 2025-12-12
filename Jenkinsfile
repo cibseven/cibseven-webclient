@@ -191,49 +191,53 @@ pipeline {
                 }
             }
             steps {
-                withSonarQubeEnv(credentialsId: Constants.SONARQUBE_CREDENTIALS_ID, installationName: 'SonarQube') {
-                    script {
-                        // Install sonar-scanner
-                        sh '''
-                            echo "Installing sonarqube-scanner ..."
-                            cd ./frontend
-                            npm install -g sonarqube-scanner@4.3.2 --ignore-scripts
-                        '''
-
-                        // Read version from package.json
-                        def packageJson = readJSON file: 'package.json'
-                        env.VERSION = packageJson.version
-                        env.PACKAGE_NAME = packageJson.name
-                        env.DESCRIPTION = packageJson.description
-
-                        if (env.VERSION.isEmpty()) {
-                            error("Could not find version in package.json")
-                        }
-
-                        // Sanitize project key: SonarQube only allows alphanumeric, '-', '_', '.' and ':' characters
-                        // Replace '@' and '/' with '-' to create a valid project key
-                        def sanitizedProjectKey = env.PACKAGE_NAME.replaceAll('@', '').replaceAll('/', '-')
-
-                        // Run SonarQube analysis
-                        sh """
-                            cd ./frontend
-                            sonar-scanner \
-                                -Dsonar.projectKey=${sanitizedProjectKey} \
-                                -Dsonar.projectName=${env.PACKAGE_NAME} \
-                                -Dsonar.projectVersion=${env.VERSION} \
-                                -Dsonar.sources=src \
-                                -Dsonar.exclusions='**/node_modules/**,**/dist/**,**/build/**,**/*.min.js' \
-                                -Dsonar.javascript.lcov.reportPaths=${pipelineParams.coverageLcovPattern} \
-                                -Dsonar.coverage.exclusions='**/*.test.js,**/*.spec.js,**/*.test.ts,**/*.spec.ts'
-                        """
-                    }
-                }
                 script {
-                    timeout(time: 5, unit: 'MINUTES') {
-                        def qg = waitForQualityGate()
-                        if (qg.status != 'OK') {
-                            log.info "Pipeline unstable due to quality gate failure: ${qg.status}"
-                            currentBuild.result = 'UNSTABLE'
+                    withNode20Container() {
+                        withSonarQubeEnv(credentialsId: Constants.SONARQUBE_CREDENTIALS_ID, installationName: 'SonarQube') {
+                            script {
+                                // Install sonar-scanner
+                                sh '''
+                                    echo "Installing sonarqube-scanner ..."
+                                    cd ./frontend
+                                    npm install -g sonarqube-scanner@4.3.2 --ignore-scripts
+                                '''
+
+                                // Read version from package.json
+                                def packageJson = readJSON file: 'package.json'
+                                env.VERSION = packageJson.version
+                                env.PACKAGE_NAME = packageJson.name
+                                env.DESCRIPTION = packageJson.description
+
+                                if (env.VERSION.isEmpty()) {
+                                    error("Could not find version in package.json")
+                                }
+
+                                // Sanitize project key: SonarQube only allows alphanumeric, '-', '_', '.' and ':' characters
+                                // Replace '@' and '/' with '-' to create a valid project key
+                                def sanitizedProjectKey = env.PACKAGE_NAME.replaceAll('@', '').replaceAll('/', '-')
+
+                                // Run SonarQube analysis
+                                sh """
+                                    cd ./frontend
+                                    sonar-scanner \
+                                        -Dsonar.projectKey=${sanitizedProjectKey} \
+                                        -Dsonar.projectName=${env.PACKAGE_NAME} \
+                                        -Dsonar.projectVersion=${env.VERSION} \
+                                        -Dsonar.sources=src \
+                                        -Dsonar.exclusions='**/node_modules/**,**/dist/**,**/build/**,**/*.min.js' \
+                                        -Dsonar.javascript.lcov.reportPaths=${pipelineParams.coverageLcovPattern} \
+                                        -Dsonar.coverage.exclusions='**/*.test.js,**/*.spec.js,**/*.test.ts,**/*.spec.ts'
+                                """
+                            }
+                        }
+                        script {
+                            timeout(time: 5, unit: 'MINUTES') {
+                                def qg = waitForQualityGate()
+                                if (qg.status != 'OK') {
+                                    log.info "Pipeline unstable due to quality gate failure: ${qg.status}"
+                                    currentBuild.result = 'UNSTABLE'
+                                }
+                            }
                         }
                     }
                 }
@@ -249,37 +253,42 @@ pipeline {
             }
             steps {
                 script {
-                    withCredentials([string(credentialsId: Constants.DEPENDENCY_TRACK_CREDENTIALS_ID, variable: 'API_KEY')]) {
-                        sh """
-                            cd ./frontend
-                            npm install --global @cyclonedx/cyclonedx-npm@4.1.0 --ignore-scripts
-                            cyclonedx-npm --output-file bom.xml --output-format XML
-                        """
+                    withNode20Container() {
+                        script {
 
-                        // Read version from package.json
-                        def packageJson = readJSON file: 'package.json'
-                        env.VERSION = packageJson.version
-                        env.PACKAGE_NAME = packageJson.name
-                        env.DESCRIPTION = packageJson.description
+                            sh """
+                                cd ./frontend
+                                npm install --global @cyclonedx/cyclonedx-npm@4.1.0 --ignore-scripts
+                                cyclonedx-npm --output-file bom.xml --output-format XML
+                            """
 
-                        if (env.VERSION.isEmpty()) {
-                            error("Could not find version in package.json")
+                            // Read version from package.json
+                            def packageJson = readJSON file: 'package.json'
+                            env.VERSION = packageJson.version
+                            env.PACKAGE_NAME = packageJson.name
+                            env.DESCRIPTION = packageJson.description
+
+                            if (env.VERSION.isEmpty()) {
+                                error("Could not find version in package.json")
+                            }
+
+                            withCredentials([string(credentialsId: Constants.DEPENDENCY_TRACK_CREDENTIALS_ID, variable: 'API_KEY')]) {
+                                dependencyTrackPublisher(
+                                    autoCreateProjects: true,
+                                    artifact: 'bom.xml',
+                                    projectName: "${env.PACKAGE_NAME}",
+                                    projectVersion: "${env.VERSION}",
+                                    projectProperties: [
+                                        description: "${env.DESCRIPTION}",
+                                        tags: ['npm'],
+                                        isLatest: true
+                                    ],
+                                    synchronous: pipelineParams.dependencyTrackSynchronous,
+                                    failOnViolationFail: false,
+                                    dependencyTrackApiKey: API_KEY
+                                )
+                            }
                         }
-
-                        dependencyTrackPublisher(
-                            autoCreateProjects: true,
-                            artifact: 'bom.xml',
-                            projectName: "${env.PACKAGE_NAME}",
-                            projectVersion: "${env.VERSION}",
-                            projectProperties: [
-                                description: "${env.DESCRIPTION}",
-                                tags: ['npm'],
-                                isLatest: true
-                            ],
-                            synchronous: pipelineParams.dependencyTrackSynchronous,
-                            failOnViolationFail: false,
-                            dependencyTrackApiKey: API_KEY
-                        )
                     }
                 }
             }
