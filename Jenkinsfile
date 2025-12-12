@@ -16,6 +16,9 @@ import groovy.transform.Field
     pom: ConstantsInternal.DEFAULT_MAVEN_POM_PATH,
     mvnContainerName: Constants.MAVEN_JDK_17_CONTAINER,
 	office365WebhookId: Constants.OFFICE_365_CIBSEVEN_WEBHOOK_ID,
+    primaryBranch: 'PR-719',
+    dependencyTrackSynchronous: true,
+    coverageLcovPattern: 'target/coverage/lcov.info',
     uiParamPresets: [:],
     testMode: false,
     buildPodConfig: [
@@ -170,6 +173,108 @@ pipeline {
                         // This archives the whole HTML coverage report so you can download or view it from Jenkins
                         // This archives the Vitest test reports so you can download or view them from Jenkins
                         archiveArtifacts artifacts: 'frontend/coverage/lcov-report/**, frontend/target/vitest-reports/**, cibseven-webclient-core/target/failsafe-reports/**', allowEmptyArchive: false, fingerprint: true
+                    }
+                }
+            }
+        }
+
+        stage('Run SonarQube Checks') {
+            when {
+                allOf {
+                    branch pipelineParams.primaryBranch
+                    expression { params.VERIFY == true }
+                }
+            }
+            steps {
+                withSonarQubeEnv(credentialsId: Constants.SONARQUBE_CREDENTIALS_ID, installationName: 'SonarQube') {
+                    script {
+                        // Install sonar-scanner
+                        sh '''
+                            echo "Installing sonarqube-scanner ..."
+                            cd ./frontend
+                            npm install -g sonarqube-scanner@4.3.2 --ignore-scripts
+                        '''
+
+                        // Read version from package.json
+                        def packageJson = readJSON file: 'package.json'
+                        env.VERSION = packageJson.version
+                        env.PACKAGE_NAME = packageJson.name
+                        env.DESCRIPTION = packageJson.description
+
+                        if (env.VERSION.isEmpty()) {
+                            error("Could not find version in package.json")
+                        }
+
+                        // Sanitize project key: SonarQube only allows alphanumeric, '-', '_', '.' and ':' characters
+                        // Replace '@' and '/' with '-' to create a valid project key
+                        def sanitizedProjectKey = env.PACKAGE_NAME.replaceAll('@', '').replaceAll('/', '-')
+
+                        // Run SonarQube analysis
+                        sh """
+                            cd ./frontend
+                            sonar-scanner \
+                                -Dsonar.projectKey=${sanitizedProjectKey} \
+                                -Dsonar.projectName=${env.PACKAGE_NAME} \
+                                -Dsonar.projectVersion=${env.VERSION} \
+                                -Dsonar.sources=src \
+                                -Dsonar.exclusions='**/node_modules/**,**/dist/**,**/build/**,**/*.min.js' \
+                                -Dsonar.javascript.lcov.reportPaths=${pipelineParams.coverageLcovPattern} \
+                                -Dsonar.coverage.exclusions='**/*.test.js,**/*.spec.js,**/*.test.ts,**/*.spec.ts'
+                        """
+                    }
+                }
+                script {
+                    timeout(time: 5, unit: 'MINUTES') {
+                        def qg = waitForQualityGate()
+                        if (qg.status != 'OK') {
+                            log.info "Pipeline unstable due to quality gate failure: ${qg.status}"
+                            currentBuild.result = 'UNSTABLE'
+                        }
+                    }
+                }
+            }
+        }
+        
+        stage('OWASP Dependency-Track') {
+            when {
+                allOf {
+                    branch pipelineParams.primaryBranch
+                    expression { params.VERIFY == true }
+                }
+            }
+            steps {
+                script {
+                    withCredentials([string(credentialsId: Constants.DEPENDENCY_TRACK_CREDENTIALS_ID, variable: 'API_KEY')]) {
+                        sh """
+                            cd ./frontend
+                            npm install --global @cyclonedx/cyclonedx-npm@4.1.0 --ignore-scripts
+                            cyclonedx-npm --output-file bom.xml --output-format XML
+                        """
+
+                        // Read version from package.json
+                        def packageJson = readJSON file: 'package.json'
+                        env.VERSION = packageJson.version
+                        env.PACKAGE_NAME = packageJson.name
+                        env.DESCRIPTION = packageJson.description
+
+                        if (env.VERSION.isEmpty()) {
+                            error("Could not find version in package.json")
+                        }
+
+                        dependencyTrackPublisher(
+                            autoCreateProjects: true,
+                            artifact: 'bom.xml',
+                            projectName: "${env.PACKAGE_NAME}",
+                            projectVersion: "${env.VERSION}",
+                            projectProperties: [
+                                description: "${env.DESCRIPTION}",
+                                tags: ['npm'],
+                                isLatest: true
+                            ],
+                            synchronous: pipelineParams.dependencyTrackSynchronous,
+                            failOnViolationFail: false,
+                            dependencyTrackApiKey: API_KEY
+                        )
                     }
                 }
             }
