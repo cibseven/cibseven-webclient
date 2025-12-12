@@ -66,6 +66,7 @@ pipeline {
             yaml BuildPodCreator.cibStandardPod(nodepool: Constants.NODEPOOL_STABLE)
                     .withContainerFromName(pipelineParams.mvnContainerName, pipelineParams.buildPodConfig[pipelineParams.mvnContainerName])
                     .withHelm3Container()
+                    .withCocogittoContainer()
                     .asYaml()
             defaultContainer pipelineParams.mvnContainerName
         }
