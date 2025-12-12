@@ -18,7 +18,7 @@ import groovy.transform.Field
 	office365WebhookId: Constants.OFFICE_365_CIBSEVEN_WEBHOOK_ID,
     primaryBranch: 'PR-719',
     dependencyTrackSynchronous: true,
-    coverageLcovPattern: 'target/coverage/lcov.info',
+    coverageLcovPattern: 'frontend/target/coverage/lcov.info',
     uiParamPresets: [:],
     testMode: false,
     buildPodConfig: [
@@ -170,14 +170,14 @@ pipeline {
 
                         // Show coverage in Jenkins UI
                         recordCoverage(
-                            tools: [[parser: 'COBERTURA', pattern: 'frontend/coverage/cobertura-coverage.xml']],
+                            tools: [[parser: 'COBERTURA', pattern: 'frontend/target/coverage/cobertura-coverage.xml']],
                             sourceCodeRetention: 'LAST_BUILD',
                             sourceDirectories: [[path: 'frontend/src']]
                         )
 
                         // This archives the whole HTML coverage report so you can download or view it from Jenkins
                         // This archives the Vitest test reports so you can download or view them from Jenkins
-                        archiveArtifacts artifacts: 'frontend/coverage/lcov-report/**, frontend/target/vitest-reports/**, cibseven-webclient-core/target/failsafe-reports/**', allowEmptyArchive: false, fingerprint: true
+                        archiveArtifacts artifacts: 'frontend/target/coverage/lcov-report/**, frontend/target/vitest-reports/**, cibseven-webclient-core/target/failsafe-reports/**', allowEmptyArchive: false, fingerprint: true
                     }
                 }
             }
@@ -330,13 +330,13 @@ pipeline {
 
                         // Show coverage in Jenkins UI
                         recordCoverage(
-                            tools: [[parser: 'COBERTURA', pattern: 'frontend/coverage/cobertura-coverage.xml']],
+                            tools: [[parser: 'COBERTURA', pattern: 'frontend/target/coverage/cobertura-coverage.xml']],
                             sourceCodeRetention: 'LAST_BUILD',
                             sourceDirectories: [[path: 'frontend/src']]
                         )
 
                         // This archives the whole HTML coverage report so you can download or view it from Jenkins
-                        archiveArtifacts artifacts: 'frontend/coverage/lcov-report/**', allowEmptyArchive: false
+                        archiveArtifacts artifacts: 'frontend/target/coverage/lcov-report/**', allowEmptyArchive: false
                     }
                 }
             }
