@@ -87,10 +87,6 @@ application:
       # Engine rest
       engineRest:
         url: ./
-      
-      technicalUser:
-        user: ""
-        password: ""
 
       historyLevel: "full"
       

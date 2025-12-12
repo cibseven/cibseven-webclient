@@ -1213,4 +1213,20 @@ public interface BpmProvider {
 	 */
 	Collection<Engine> getProcessEngineNames();
 
+	/**
+	 * Determine whether an initial user needs to be created
+	 *
+	 * @return true if admin group is available and write access is set
+	 * @throws SystemException in case of an error
+	 */
+	Boolean requiresSetup(String engine);
+
+	/**
+	 * Creates a new initial user assigned to the also created admin group.
+	 *
+	 * @param user the new user to be created.
+	 * @throws InvalidUserIdException when the user ID is invalid.
+	 */
+	void createSetupUser(NewUser user, String engine) throws InvalidUserIdException;
+
 }
