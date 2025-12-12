@@ -20,6 +20,7 @@ import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.rest.model.NewUser;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -45,8 +46,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 public class SetupService extends BaseService implements InitializingBean {
 
 	@Autowired BpmProvider bpmProvider;
+	
+	@Value("${cibseven.webclient.user.provider:org.cibseven.webapp.auth.SevenUserProvider}")
+	String userProvider;
   
-  // Initial setup is only available for internal providers, not for external identity
+  	// Initial setup is only available for internal providers, not for external identity
 	// providers like LDAP, ADFS, or SSO where users are managed externally.
 	private static final String SEVEN_USER_PROVIDER = "org.cibseven.webapp.auth.SevenUserProvider";
 	
@@ -71,7 +75,7 @@ public class SetupService extends BaseService implements InitializingBean {
 	@GetMapping("/status")
 	public boolean requiresSetup(
 			@RequestHeader(value = "X-Process-Engine", required = false) String engine) {
-    // Setup is only applicable when using internal user provider (SevenUserProvider)
+    	// Setup is only applicable when using internal user provider (SevenUserProvider)
 		// For external identity providers (LDAP, ADFS, SSO), users are managed externally
 		if (!SEVEN_USER_PROVIDER.equals(userProvider)) {
 			return false;
@@ -101,7 +105,7 @@ public class SetupService extends BaseService implements InitializingBean {
 	public ResponseEntity<Void> createInitialUser(
 			@RequestBody NewUser newUser,
 			@RequestHeader(value = "X-Process-Engine", required = false) String engine) {
-    // Setup is only applicable when using internal user provider (SevenUserProvider)
+    	// Setup is only applicable when using internal user provider (SevenUserProvider)
 		if (!SEVEN_USER_PROVIDER.equals(userProvider)) {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
