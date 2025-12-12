@@ -1283,4 +1283,13 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 		return engineProvider.getProcessEngineNames();
 	}
 
+	@Override
+	public Boolean requiresSetup(String engine) {
+		return engineProvider.requiresSetup(engine);
+	}
+
+	@Override
+	public void createSetupUser(NewUser user, String engine) throws InvalidUserIdException {
+		engineProvider.createSetupUser(user, engine);
+	}
 }
