@@ -18,7 +18,6 @@ import groovy.transform.Field
 	office365WebhookId: Constants.OFFICE_365_CIBSEVEN_WEBHOOK_ID,
     primaryBranch: 'PR-719',
     dependencyTrackSynchronous: true,
-    coverageLcovPattern: 'frontend/target/coverage/lcov.info',
     uiParamPresets: [:],
     testMode: false,
     buildPodConfig: [
@@ -224,8 +223,9 @@ pipeline {
                                         -Dsonar.projectName=${env.PACKAGE_NAME} \
                                         -Dsonar.projectVersion=${env.VERSION} \
                                         -Dsonar.sources=src \
+                                        -Dsonar.tests=src/__tests__ \
                                         -Dsonar.exclusions='**/node_modules/**,**/dist/**,**/build/**,**/*.min.js' \
-                                        -Dsonar.javascript.lcov.reportPaths=${pipelineParams.coverageLcovPattern} \
+                                        -Dsonar.javascript.lcov.reportPaths='target/coverage/lcov.info' \
                                         -Dsonar.coverage.exclusions='**/*.test.js,**/*.spec.js,**/*.test.ts,**/*.spec.ts'
                                 """
                             }
