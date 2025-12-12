@@ -203,7 +203,7 @@ pipeline {
                                 '''
 
                                 // Read version from package.json
-                                def packageJson = readJSON file: 'package.json'
+                                def packageJson = readJSON file: './frontend/package.json'
                                 env.VERSION = packageJson.version
                                 env.PACKAGE_NAME = packageJson.name
                                 env.DESCRIPTION = packageJson.description
@@ -263,7 +263,7 @@ pipeline {
                             """
 
                             // Read version from package.json
-                            def packageJson = readJSON file: 'package.json'
+                            def packageJson = readJSON file: './frontend/package.json'
                             env.VERSION = packageJson.version
                             env.PACKAGE_NAME = packageJson.name
                             env.DESCRIPTION = packageJson.description
