@@ -18,8 +18,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { i18n } from '@/i18n'
 import AddVariableModalUI from '@/components/process/modals/AddVariableModalUI.vue'
-import { readFileSync } from 'fs'
-import { resolve } from 'path'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { BButton, BFormGroup, BFormInput, BFormSelect, BFormCheckbox, BAlert } from '@cib/common-frontend'
 
 // Mock dependencies
@@ -472,21 +472,36 @@ describe('AddVariableModal.vue UI interactions', () => {
     })
 
     // Helper function to reduce duplication
-    const testTypeConversion = (sourceType, sourceValue, conversions, additionalSetup = {}) => {
+    const testTypeConversion = (sourceType, sourceValues, conversions, additionalSetup = {}) => {
       describe(`from ${sourceType}`, () => {
-        describe(`${sourceType} with value: ${JSON.stringify(sourceValue)}`, () => {
+        const sourceValuesArray = Array.isArray(sourceValues) ? sourceValues : [sourceValues]
+        describe.each(sourceValuesArray)(`${sourceType} with value: %s`, (sourceValue) => {
           beforeEach(async () => {
             await setData({ type: sourceType, value: sourceValue, ...additionalSetup })
             expect(wrapper.vm.value).toBe(sourceValue)
           })
 
-          it.each(conversions)('to %s', async (targetType, expectedValue) => {
+          const conversionsNoSourceType = conversions.filter(([targetType]) => targetType !== sourceType)
+          it.each(conversionsNoSourceType)('to %s', async (targetType, expectedValue) => {
             await changeType(targetType)
             expect(wrapper.vm.value).toBe(expectedValue === null ? wrapper.vm.currentDate() : expectedValue)
           })
         })
       })
     }
+
+    const zeroValues = [
+      ['Boolean', true],
+      ['Long', 0],
+      ['Short', 0],
+      ['Double', 0],
+      ['Integer', 0],
+      ['String', ''],
+      ['Date', null],
+      ['Json', '{}'],
+      ['Xml', ''],
+      ['Object', '']
+    ]
 
     // String conversions
     testTypeConversion('String', 'text', [
@@ -499,15 +514,7 @@ describe('AddVariableModal.vue UI interactions', () => {
       ['Object', 'text'],
     ])
 
-    testTypeConversion('String', '', [
-      ['Boolean', true],
-      ['Long', 0],
-      ['Double', 0],
-      ['Date', null],
-      ['Json', '{}'],
-      ['Xml', ''],
-      ['Object', ''],
-    ])
+    testTypeConversion('String', ['', null], zeroValues)
 
     testTypeConversion('String', '10.50', [
       ['Boolean', true],
@@ -522,7 +529,7 @@ describe('AddVariableModal.vue UI interactions', () => {
     testTypeConversion('String', '{"a":"b"}', [
       ['Boolean', true],
       ['Long', 0],
-      ['Double', 0.0],
+      ['Double', 0],
       ['Date', null],
       ['Json', '{\n  "a": "b"\n}'],
       ['Xml', ''],
@@ -532,7 +539,9 @@ describe('AddVariableModal.vue UI interactions', () => {
     // Boolean conversions
     testTypeConversion('Boolean', true, [
       ['Long', 1],
-      ['Double', 1.0],
+      ['Double', 1],
+      ['Short', 1],
+      ['Integer', 1],
       ['String', ''],
       ['Date', null],
       ['Json', '{}'],
@@ -540,40 +549,14 @@ describe('AddVariableModal.vue UI interactions', () => {
       ['Object', '']
     ])
 
-    testTypeConversion('Boolean', false, [
-      ['Long', 0],
-      ['Double', 0.0],
-      ['String', ''],
-      ['Date', null],
-      ['Json', '{}'],
-      ['Xml', ''],
-      ['Object', '']
-    ])
-
-    testTypeConversion('Boolean', null, [
-      ['Long', 0],
-      ['Double', 0.0],
-      ['String', ''],
-      ['Date', null],
-      ['Json', '{}'],
-      ['Xml', ''],
-      ['Object', '']
-    ])
+    testTypeConversion('Boolean', [false, null], zeroValues)
 
     // Long conversions
-    testTypeConversion('Long', 0, [
-      ['Boolean', true],
-      ['Double', 0.0],
-      ['String', ''],
-      ['Json', '{}'],
-      ['Date', null],
-      ['Xml', ''],
-      ['Object', '']
-    ])
+    testTypeConversion('Long', [0, null], zeroValues)
 
     testTypeConversion('Long', 100, [
       ['Boolean', true],
-      ['Double', 100.0],
+      ['Double', 100],
       ['String', '100'],
       ['Json', '{}'],
       ['Date', null],
@@ -584,7 +567,7 @@ describe('AddVariableModal.vue UI interactions', () => {
     // Double conversions
     testTypeConversion('Double', 0.0, [
       ['Boolean', true],
-      ['Double', 0.0],
+      ['Double', 0],
       ['String', ''],
       ['Json', '{}']
     ])
@@ -604,39 +587,22 @@ describe('AddVariableModal.vue UI interactions', () => {
     testTypeConversion('Date', '2025-09-25', [
       ['Boolean', true],
       ['Long', 0],
-      ['Double', 0.0],
+      ['Double', 0],
       ['String', '2025-09-25'],
       ['Json', '{}'],
       ['Xml', ''],
       ['Object', '2025-09-25']
     ])
 
-    testTypeConversion('Date', null, [
-      ['Boolean', true],
-      ['Long', 0],
-      ['Double', 0.0],
-      ['String', ''],
-      ['Json', '{}'],
-      ['Xml', ''],
-      ['Object', '']
-    ])
+    testTypeConversion('Date', [null, ''], zeroValues)
 
     // Short conversions
-    testTypeConversion('Short', 0, [
-      ['Boolean', true],
-      ['Long', 0],
-      ['Double', 0.0],
-      ['String', ''],
-      ['Date', null],
-      ['Json', '{}'],
-      ['Xml', ''],
-      ['Object', '']
-    ])
+    testTypeConversion('Short', [0, null], zeroValues)
 
     testTypeConversion('Short', 100, [
       ['Boolean', true],
       ['Long', 100],
-      ['Double', 100.0],
+      ['Double', 100],
       ['String', '100'],
       ['Date', null],
       ['Json', '{}'],
@@ -645,21 +611,12 @@ describe('AddVariableModal.vue UI interactions', () => {
     ])
 
     // Integer conversions
-    testTypeConversion('Integer', 0, [
-      ['Boolean', true],
-      ['Long', 0],
-      ['Double', 0.0],
-      ['String', ''],
-      ['Date', null],
-      ['Json', '{}'],
-      ['Xml', ''],
-      ['Object', '']
-    ])
+    testTypeConversion('Integer', [0, null], zeroValues)
 
     testTypeConversion('Integer', 100, [
       ['Boolean', true],
       ['Long', 100],
-      ['Double', 100.0],
+      ['Double', 100],
       ['String', '100'],
       ['Date', null],
       ['Json', '{}'],
@@ -668,20 +625,12 @@ describe('AddVariableModal.vue UI interactions', () => {
     ])
 
     // Json conversions
-    testTypeConversion('Json', '{}', [
-      ['Boolean', true],
-      ['Long', 0],
-      ['Double', 0.0],
-      ['String', '{}'],
-      ['Date', null],
-      ['Xml', ''],
-      ['Object', '{}']
-    ])
+    testTypeConversion('Json', '{}', zeroValues)
 
     testTypeConversion('Json', '123', [
       ['Boolean', true],
       ['Long', 123],
-      ['Double', 123.0],
+      ['Double', 123],
       ['String', '123'],
       ['Date', null],
       ['Xml', '']
@@ -711,7 +660,7 @@ describe('AddVariableModal.vue UI interactions', () => {
         it.each([
           ['Boolean', true],
           ['Long', 0],
-          ['Double', 0.0],
+          ['Double', 0],
           ['String', '{"a":"b"}'],
           ['Date', null],
           ['Xml', '']
@@ -730,20 +679,12 @@ describe('AddVariableModal.vue UI interactions', () => {
     })
 
     // Xml conversions
-    testTypeConversion('Xml', '', [
-      ['Boolean', true],
-      ['Long', 0],
-      ['Double', 0.0],
-      ['String', ''],
-      ['Date', null],
-      ['Json', '{}'],
-      ['Object', '']
-    ])
+    testTypeConversion('Xml', [ '', null ], zeroValues)
 
     testTypeConversion('Xml', '<root>test</root>', [
       ['Boolean', true],
       ['Long', 0],
-      ['Double', 0.0],
+      ['Double', 0],
       ['String', '<root>test</root>'],
       ['Date', null],
       ['Json', '{}'],
@@ -751,20 +692,12 @@ describe('AddVariableModal.vue UI interactions', () => {
     ])
 
     // Object conversions
-    testTypeConversion('Object', '', [
-      ['Boolean', true],
-      ['Long', 0],
-      ['Double', 0.0],
-      ['String', ''],
-      ['Date', null],
-      ['Json', '{}'],
-      ['Xml', '']
-    ], { objectTypeName: 'TestClass', serializationDataFormat: 'application/json' })
+    testTypeConversion('Object', '', zeroValues, { objectTypeName: 'TestClass', serializationDataFormat: 'application/json' })
 
     testTypeConversion('Object', '{"name":"test"}', [
       ['Boolean', true],
       ['Long', 0],
-      ['Double', 0.0],
+      ['Double', 0],
       ['String', '{"name":"test"}'],
       ['Date', null],
       ['Json', '{\n  "name": "test"\n}'],
@@ -772,15 +705,6 @@ describe('AddVariableModal.vue UI interactions', () => {
     ], { objectTypeName: 'TestClass', serializationDataFormat: 'application/json' })
 
     // Null conversions
-    testTypeConversion('Null', null, [
-      ['Boolean', true],
-      ['Long', 0],
-      ['Double', 0.0],
-      ['String', ''],
-      ['Date', null],
-      ['Json', '{}'],
-      ['Xml', ''],
-      ['Object', '']
-    ])
+    testTypeConversion('Null', [null, ''], zeroValues)
   })
 })
