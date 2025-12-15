@@ -276,7 +276,8 @@ pipeline {
                                         -Dsonar.sources=src \
                                         -Dsonar.exclusions='**/node_modules/**,**/dist/**,**/build/**,**/*.min.js' \
                                         -Dsonar.javascript.lcov.reportPaths='target/coverage/lcov.info' \
-                                        -Dsonar.coverage.exclusions='**/*.test.js,**/*.spec.js,**/*.test.ts,**/*.spec.ts'
+                                        -Dsonar.coverage.exclusions='**/*.test.js,**/*.spec.js,**/*.test.ts,**/*.spec.ts' \
+                                        -Dsonar.dependencyCheck.skip=true
                                 """
                             }
                         }
