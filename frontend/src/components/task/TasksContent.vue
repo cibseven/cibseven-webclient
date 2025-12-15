@@ -185,6 +185,14 @@ export default {
     leftOpenFilter: function() {
       if (this.leftOpenTask) localStorage.setItem('leftOpenFilter', this.leftOpenFilter)
     },
+    '$route.query.tasksFilter': {
+      immediate: true,
+      handler: function(newFilter) {
+        if (newFilter !== undefined) {
+          this.search = newFilter || ''
+        }
+      }
+    },
     search: debounce(800, function() { this.listTasksWithFilter() })
   },
   created: function() {
