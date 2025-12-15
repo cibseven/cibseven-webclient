@@ -68,11 +68,9 @@
 </template>
 
 <script>
-import { FlowTable } from '@cib/common-frontend'
-import { CopyableActionButton, SuccessAlert } from '@cib/common-frontend'
+import { FlowTable, CopyableActionButton, SuccessAlert,BWaitingBox } from '@cib/common-frontend'
 import JobDefinitionStateModal from '@/components/process/modals/JobDefinitionStateModal.vue'
 import JobDefinitionPriorityModal from '@/components/process/modals/JobDefinitionPriorityModal.vue'
-import { BWaitingBox } from '@cib/common-frontend'
 import { mapActions, mapGetters } from 'vuex'
 import { permissionsMixin } from '@/permissions.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'

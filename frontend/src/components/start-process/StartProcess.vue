@@ -60,8 +60,7 @@
 <script>
 import { ProcessService } from '@/services.js'
 import RenderTemplate from '@/components/render-template/RenderTemplate.vue'
-import { BWaitingBox } from '@cib/common-frontend'
-import { HighlightedText } from '@cib/common-frontend'
+import { BWaitingBox, HighlightedText } from '@cib/common-frontend'
 import { permissionsMixin } from '@/permissions.js'
 
 export default {

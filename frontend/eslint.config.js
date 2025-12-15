@@ -50,6 +50,7 @@ export default [
     "rules": {
       "vue/require-name-property": "error",
       "vue/require-explicit-emits": "error",
+      "no-duplicate-imports": "error",
       "no-var": "error",
       "prefer-const": "error",
     }

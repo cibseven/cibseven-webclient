@@ -89,9 +89,7 @@
 <script>
 import { formatDate } from '@/utils/dates.js'
 import { HistoryService, ProcessService } from '@/services.js'
-import { FlowTable } from '@cib/common-frontend'
-import { BWaitingBox } from '@cib/common-frontend'
-import { CopyableActionButton, SuccessAlert } from '@cib/common-frontend'
+import { FlowTable, BWaitingBox, CopyableActionButton, SuccessAlert } from '@cib/common-frontend'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { mapActions } from 'vuex'
 

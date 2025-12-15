@@ -29,8 +29,9 @@ import registerComponents from './register.js'
 import { permissionsMixin }  from './permissions.js'
 
 import { InfoService, AuthService, setServicesBasePath } from './services.js'
-import { getTheme, hasHeader, isMobile, checkExternalReturn, loadTheme } from './utils/init'
-import { applyTheme, handleAxiosError, fetchAndStoreProcesses, fetchDecisionsIfEmpty, setupTaskNotifications } from './utils/init'
+import { hasHeader, isMobile, checkExternalReturn,
+  getTheme, loadTheme, applyTheme,
+  handleAxiosError, fetchAndStoreProcesses, fetchDecisionsIfEmpty, setupTaskNotifications } from './utils/init'
 import { applyConfigDefaults } from './utils/config.js'
 import { i18n, switchLanguage } from './i18n'
 

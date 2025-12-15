@@ -117,7 +117,7 @@
 
 <script>
 import { ProcessService, HistoryService } from '@/services.js'
-import { mapActions } from 'vuex'
+import { mapActions, mapGetters } from 'vuex'
 
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
 import tabUrlMixin from '@/components/process/mixins/tabUrlMixin.js'
@@ -132,7 +132,6 @@ import ProcessInstanceTabs from '@/components/process/ProcessInstanceTabs.vue'
 import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
 
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
-import { mapGetters } from 'vuex'
 
 export default {
   name: 'ProcessInstanceView',

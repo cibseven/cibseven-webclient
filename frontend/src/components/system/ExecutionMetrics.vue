@@ -62,8 +62,7 @@
 import { SystemService } from '@/services.js'
 import { moment } from '@/globals.js'
 import VueApexCharts from 'vue3-apexcharts'
-import { FlowTable } from '@cib/common-frontend'
-import { BWaitingBox } from '@cib/common-frontend'
+import { FlowTable, BWaitingBox } from '@cib/common-frontend'
 
 export default {
   name: 'ExecutionMetrics',
