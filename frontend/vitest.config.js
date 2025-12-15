@@ -28,7 +28,7 @@ export default mergeConfig(
       coverage: {
         provider: 'istanbul',
         reporter: ['text', 'lcov', 'cobertura'], // 'text', 'html', 'lcov', 'cobertura'
-        reportsDirectory: './coverage',
+        reportsDirectory: './target/coverage',
         exclude: [
           // Build artifacts and minified files
           'dist/**',
@@ -36,17 +36,20 @@ export default mergeConfig(
           'node_modules/**',
           'coverage/**',
 
+          // Exlclude app files
+          'src/__tests__/**',
+
           // Test and config files
           'cypress/e2e/**', // Exclude Cypress tests
           'cypress.config.js', // Exclude Cypress config
           'vite.config.js', // Exclude Vite config
           'vitest.config.js', // Exclude this config file itself
           '**/*.config.js', // Exclude all config files
-          
-          // Other common exclusions
-          '**/index.js', // Entry point files (often just re-exports)
-          '**/main.js', // Main entry files
+
+          // Exclude Vite internals
+          '**/\0**', // Exclude Vite virtual modules
         ],
+        excludeNodeModules: true,
       },
     },
   }),
