@@ -109,10 +109,6 @@ export default {
     formFrame.setAttribute('msallowfullscreen', true)
 
     //window.addEventListener('beforeunload', this.processMessage)
-    if (formFrame) {
-      this.addScrollIframeListener(formFrame)
-    }
-
     window.onbeforeunload = function() {
       this.onBeforeUnload()
     }.bind(this)
@@ -363,58 +359,67 @@ export default {
     onBeforeUnload: function() {
       var formFrame = this.$refs['template-frame']
       if (formFrame) {
-        formFrame.contentWindow.postMessage({ type: 'contextChanged' }, '*');
+        formFrame.contentWindow.postMessage({ type: 'contextChanged' }, '*')
         this.loadIframe()
       }
     },
-    addScrollIframeListener(formFrame) {
-      window.addEventListener('scroll-iframe', (e) => {
-        if (!formFrame || !formFrame.contentWindow) return
-        const iframeDoc = formFrame.contentDocument || formFrame.contentWindow.document
-        if (!iframeDoc) return
-        const rect = formFrame.getBoundingClientRect()
-        const iframeX = e.detail.x - rect.left
-        const iframeY = e.detail.y - rect.top
-        let el = iframeDoc.elementFromPoint(iframeX, iframeY)
-        while (el) {
-          if (el.tagName === 'IFRAME' && el.contentWindow) {
-            const nestedDoc = el.contentDocument || el.contentWindow.document
-            if (nestedDoc) {
-              const nestedRect = el.getBoundingClientRect()
-              const nestedX = iframeX - nestedRect.left
-              const nestedY = iframeY - nestedRect.top
-              let nestedEl = nestedDoc.elementFromPoint(nestedX, nestedY)
-              while (nestedEl) {
-                let overflowY = el.ownerDocument.defaultView.getComputedStyle(nestedEl).overflowY;
-                let isScrollable = overflowY !== 'visible' && overflowY !== 'hidden'
-                if (isScrollable && nestedEl.scrollHeight > nestedEl.clientHeight) {
-                  nestedEl.scrollTop += e.detail.deltaY
-                  return;
-                }
-                nestedEl = nestedEl.parentElement
+    handleScrollIframe({ deltaY, x, y }) {
+      const frame = this.$refs['template-frame']
+      const ctx = this.getIframeContext(frame, x, y)
+      if (!ctx) return
+      const el = ctx.doc.elementFromPoint(ctx.x, ctx.y)
+      this.findAndScroll(el, deltaY, ctx.x, ctx.y, ctx.doc)
+    },
+    findAndScroll: function(el, deltaY, iframeX, iframeY, rootDoc) {
+      if (!el) return
+      do {
+        if (el.tagName === 'IFRAME') {
+          const ctx = this.getIframeContext(el, iframeX, iframeY)
+          if (ctx) {
+            let nestedEl = ctx.doc.elementFromPoint(ctx.x, ctx.y)
+            do {
+              const overflowY = ctx.doc.defaultView.getComputedStyle(nestedEl).overflowY
+              const isScrollable = overflowY !== 'visible' && overflowY !== 'hidden'
+              if ( isScrollable && nestedEl.scrollHeight > nestedEl.clientHeight) {
+                nestedEl.scrollTop += deltaY
+                return
               }
-              if (nestedDoc.body && nestedDoc.body.scrollHeight > nestedDoc.body.clientHeight) {
-                nestedDoc.body.scrollTop += e.detail.deltaY
-              }
-              return;
+              nestedEl = nestedEl.parentElement
+            } while (nestedEl)
+            if (ctx.doc.body && ctx.doc.body.scrollHeight > ctx.doc.body.clientHeight) {
+              ctx.doc.body.scrollTop += deltaY
             }
-          }
-          let overflowY = window.getComputedStyle(el).overflowY
-          let isScrollable = overflowY !== 'visible' && overflowY !== 'hidden'
-          if (isScrollable && el.scrollHeight > el.clientHeight) {
-            el.scrollTop += e.detail.deltaY
             return
           }
-          el = el.parentElement
         }
-        if (iframeDoc.body && iframeDoc.body.scrollHeight > iframeDoc.body.clientHeight) {
-          iframeDoc.body.scrollTop += e.detail.deltaY
+        const overflowY = window.getComputedStyle(el).overflowY
+        const isScrollable = overflowY !== 'visible' && overflowY !== 'hidden'
+        if (isScrollable && el.scrollHeight > el.clientHeight) {
+          el.scrollTop += deltaY
+          return
         }
-      })
+        el = el.parentElement
+      }  while (el)
+      if (rootDoc.body && rootDoc.body.scrollHeight > rootDoc.body.clientHeight) {
+        rootDoc.body.scrollTop += deltaY
+      }
+    },
+    getIframeContext(iframeEl, x, y) {
+      if (!iframeEl || !iframeEl.contentWindow) return null
+      const doc = iframeEl.contentDocument || iframeEl.contentWindow.document
+      if (!doc) return null
+      const rect = iframeEl.getBoundingClientRect()
+      return {
+        iframe: iframeEl,
+        doc,
+        x: x - rect.left,
+        y: y - rect.top
+      }
     }
   },
   beforeUnmount: function() {
     window.removeEventListener('message', this.processMessage)
-  }
+  },
 }
+let bla = function() {}
 </script>

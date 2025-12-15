@@ -77,6 +77,9 @@
             <div
               v-if="(task.assignee && task.assignee.toLowerCase() !== $root.user.id.toLowerCase()) || this.task.assignee == null"
               ref="scrollOverlay"
+              @wheel="onWheel"
+              @touchmove="onTouchMove"
+              @touchend="onTouchEnd"
               class="col-12 shadow-0"
               style="top: 0px; left: 0px; bottom: 0px; right: 0px; cursor: not-allowed; position: absolute; z-index: 1; background-color: rgba(238,238,238,0.33)">
             </div>
@@ -127,7 +130,8 @@ export default {
       displayPopover: false,
       timer: null,
       loadingUsers: false,
-      candidateUsers: []
+      candidateUsers: [],
+      lastTouchY: undefined
     }
   },
   watch: {
@@ -175,46 +179,10 @@ export default {
     this.loadIdentityLinks(this.task.id)
     // when first task is opened
     this.showPopoverWithDelay(this.task.assignee)
-    // Overlay scroll forwarding
-    this.$nextTick(() => {
-      const overlay = this.$refs.scrollOverlay;
-      if (overlay) {
-        overlay.addEventListener('wheel', (e) => {
-          e.preventDefault();
-          window.dispatchEvent(new CustomEvent('scroll-iframe', {
-            detail: {
-              deltaY: e.deltaY,
-              x: e.clientX,
-              y: e.clientY
-            }
-          }))
-        })
-        overlay.addEventListener('touchmove', (e) => {
-          if (overlay._lastY !== undefined) {
-            const deltaY = overlay._lastY - e.touches[0].clientY;
-            window.dispatchEvent(new CustomEvent('scroll-iframe', {
-              detail: {
-                deltaY,
-                x: e.touches[0].clientX,
-                y: e.touches[0].clientY
-              }
-            }));
-          }
-          overlay._lastY = e.touches[0].clientY;
-          e.preventDefault();
-        });
-      }
-    });
   },
   beforeUnmount: function() {
-    this.resetTimer();
-    this.stopListeningTouchEvents();
-    // Remove overlay scroll listeners
-    const overlay = this.$refs.scrollOverlay;
-    if (overlay) {
-      overlay.removeEventListener('wheel');
-      overlay.removeEventListener('touchmove');
-    }
+    this.resetTimer()
+    this.stopListeningTouchEvents()
   },
   methods: {
     ...mapActions('task', ['setSelectedAssignee']),
@@ -223,6 +191,28 @@ export default {
         this.assignee = this.$root.user.id
       }
     },
+    onWheel: function(event) {
+      this.$refs.scrollContainer.handleScrollIframe({
+      deltaY: event.deltaY,
+      x: event.clientX,
+      y: event.clientY
+    });
+    },
+    onTouchMove: function(event) {
+      if (this.lastTouchY !== undefined) {
+        const deltaY = this.lastTouchY - event.touches[0].clientY;
+        this.$refs.scrollContainer.handleScrollIframe({
+        deltaY,
+        x: event.touches[0].clientX,
+        y: event.touches[0].clientY
+        });
+      }
+      this.lastTouchY = event.touches[0].clientY;
+      event.preventDefault();
+    },
+    onTouchEnd: function() {
+    this.lastTouchY = undefined;
+  },
     loadIdentityLinks: function(taskId) {
       this.candidateUsers = []
       var promises = []
