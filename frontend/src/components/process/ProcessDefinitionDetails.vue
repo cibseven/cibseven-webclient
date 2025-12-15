@@ -173,7 +173,7 @@ export default {
       this.$refs.historyTimeToLive.show()
     },
     updateHistoryTimeToLive: function() {
-      var data = { historyTimeToLive: this.historyTimeToLiveChanged || null }
+      const data = { historyTimeToLive: this.historyTimeToLiveChanged || null }
       ProcessService.updateHistoryTimeToLive(this.version.id, data).then(() => {
         this.historyTimeToLive = data.historyTimeToLive
         this.$refs.historyTimeToLive.hide()

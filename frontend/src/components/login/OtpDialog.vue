@@ -59,7 +59,7 @@ export default {
     },
     onLogin2: function() {
       AuthService.login(this.credentials2, this.rememberMe).then(function(user) { this.$emit('success', user) }.bind(this), function(error) {
-        var res = error.response.data
+        const res = error.response.data
         if (res && res.type === 'LoginException') res.type = 'LoginExceptionTwoFactor'
         this.$root.$refs.error.show(res)
       }.bind(this))

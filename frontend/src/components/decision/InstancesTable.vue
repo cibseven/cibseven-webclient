@@ -108,7 +108,7 @@ export default {
       })
     },
     async goToProcessDefinition(instance) {
-      let processData = await HistoryService.findProcessInstance(instance.processInstanceId)
+      const processData = await HistoryService.findProcessInstance(instance.processInstanceId)
       this.$router.push({
         name: 'process',
         params: {

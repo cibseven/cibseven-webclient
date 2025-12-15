@@ -159,14 +159,14 @@ export default {
           const state = processPL.state
           const tenantId = processPL.tenantId
 
-          let foundInst = this.activityInstanceHistory.find(processAIH => {
+          const foundInst = this.activityInstanceHistory.find(processAIH => {
             if (processAIH.activityType === "callActivity"){
               if (processAIH.calledProcessInstanceId === processPL.id) {
                 return processAIH
               }
             }
           })
-          let foundProcess = this.$store.state.process.list.find(processSPL => {
+          const foundProcess = this.$store.state.process.list.find(processSPL => {
             if (key === processSPL.key) {
               return processSPL
             }

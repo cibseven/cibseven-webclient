@@ -107,7 +107,7 @@ props: {
     async updateVariableDeserialized(variable) {
       this.saving = true
 
-      var formData = new FormData()
+      const formData = new FormData()
       const jsonBlob = new Blob([variable.value.toString()], { type: 'application/json' })
       formData.append('data', jsonBlob, 'blob')
       formData.append('valueType', variable.valueInfo?.objectTypeName || 'java.lang.Object')

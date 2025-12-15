@@ -204,7 +204,7 @@ export default {
       }, 500)
     },
     fullScreen: function() {
-      var onFullscreenError = function() {
+      const onFullscreenError = function() {
         //TODO: error on fullscreen or exit
       }
       if (!document.fullscreenElement) {

@@ -349,7 +349,7 @@ export default {
       this.$router.push('/seven/auth/deployments/' + this.process.deploymentId)
     },
     downloadBpmn: function() {
-      var filename = this.process.resource.substr(this.process.resource.lastIndexOf('/') + 1, this.process.resource.lenght)
+      const filename = this.process.resource.substr(this.process.resource.lastIndexOf('/') + 1, this.process.resource.lenght)
       window.location.href = getServicesBasePath() + '/process/' + this.process.id + '/data?filename=' + filename +
         '&token=' + this.$root.user.authToken
     },

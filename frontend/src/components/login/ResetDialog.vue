@@ -73,7 +73,7 @@ export default {
         this.$refs.resetDialog.hide()
         this.$emit('success')
       }.bind(this), function(error) {
-        var res = error.response.data
+        const res = error.response.data
         if (res && res.type === 'LoginException') res.type = 'LoginExceptionTwoFactor'
         this.$root.$refs.error.show(res)
       }.bind(this))
@@ -84,7 +84,7 @@ export default {
         this.$refs.resetDialog.hide()
         this.$emit('success')
       }.bind(this), function(error) {
-        var res = error.response.data
+        const res = error.response.data
         if (res && res.type === 'LoginException') res.type = 'LoginExceptionTwoFactor'
         this.$root.$refs.error.show(res)
       }.bind(this))

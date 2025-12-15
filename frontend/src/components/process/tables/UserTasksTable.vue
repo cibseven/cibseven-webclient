@@ -105,7 +105,7 @@ export default {
     formatDate,
     formatDateForTooltips,
     changeAssignee: function(event) {
-      var userTask = this.userTasks.find(task => task.id === event.taskId)
+      const userTask = this.userTasks.find(task => task.id === event.taskId)
       userTask.assignee = event.assignee
     }
   }

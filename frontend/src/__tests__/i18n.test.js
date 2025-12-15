@@ -124,7 +124,7 @@ function skipValue(value, lang) {
 }
 
 function reportSameValues(objBase, objTest, path, lang) {
-  var status = true
+  let status = true
 
   // Check if both are objects and not null
   expect(objBase).not.toBeNull()
@@ -153,7 +153,7 @@ function reportSameValues(objBase, objTest, path, lang) {
   return status
 }
 
-var hasHeader = false
+let hasHeader = false
 function reportSameValuesTable(objBase, objTest, languages, path) {
   // Check if both are objects and not null
   expect(objBase).not.toBeNull()

@@ -178,9 +178,9 @@ export default {
       }
     },
     findUsers: debounce(800, function(filter) {
-      var firstNameLike = null
-      var lastNameLike = null
-      var id = null
+      let firstNameLike = null
+      let lastNameLike = null
+      let id = null
       firstNameLike = ({ firstNameLike: '*' + filter + '*' })
       lastNameLike = ({ lastNameLike: '*' + filter + '*' })
       id = ({ id: filter })
@@ -200,15 +200,15 @@ export default {
     }),
     exportCSV: function() {
       this.exporting = true
-      var keys = ['id', 'firstName', 'lastName', 'email']
-      var csvContent = keys.map(k => this.$t('admin.users.' + k)).join(';') + '\n'
+      const keys = ['id', 'firstName', 'lastName', 'email']
+      let csvContent = keys.map(k => this.$t('admin.users.' + k)).join(';') + '\n'
       AdminService.findUsers().then(users => {
         if (users.length > 0) {
           users.forEach(r => {
             csvContent += getStringObjByKeys(keys, r) + '\n'
           })
-          var csvBlob = new Blob([csvContent], { type: 'text/csv' })
-          var filename = 'users_' + moment().format('YYYYMMDD_HHmm') + '.csv'
+          const csvBlob = new Blob([csvContent], { type: 'text/csv' })
+          const filename = 'users_' + moment().format('YYYYMMDD_HHmm') + '.csv'
           this.$refs.importPopper.triggerDownload(csvBlob, filename)
         }
         this.exporting = false

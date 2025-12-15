@@ -161,7 +161,7 @@ export default {
     },
     loadInstances(showMore) {
       if (this.$root.config.camundaHistoryLevel !== 'none') {
-        let data = {
+        const data = {
           key: this.decision.key,
           version: this.versionIndex,
           params: {
