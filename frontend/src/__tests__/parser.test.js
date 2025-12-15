@@ -43,8 +43,7 @@ describe('parseXMLDocumentation', () => {
   })
 
   it('should parse single task with documentation', () => {
-    const bpmnXml = createDefinitionsXml(
-        `<bpmn:task id="task1" name="Test Task">
+    const bpmnXml = createDefinitionsXml(`<bpmn:task id="task1" name="Test Task">
           <bpmn:documentation>This is a test task documentation</bpmn:documentation>
         </bpmn:task>`)
 
@@ -81,8 +80,7 @@ describe('parseXMLDocumentation', () => {
   })
 
   it('should handle tasks without names (fallback to id)', () => {
-    const bpmnXml = createDefinitionsXml(
-      `<bpmn:scriptTask id="script1">
+    const bpmnXml = createDefinitionsXml(`<bpmn:scriptTask id="script1">
           <bpmn:documentation>Script task without name</bpmn:documentation>
         </bpmn:scriptTask>`)
     
@@ -96,8 +94,7 @@ describe('parseXMLDocumentation', () => {
   })
 
   it('should handle tasks without IDs', () => {
-    const bpmnXml = createDefinitionsXml(
-      `<bpmn:manualTask name="Manual Task">
+    const bpmnXml = createDefinitionsXml(`<bpmn:manualTask name="Manual Task">
           <bpmn:documentation>Manual task without ID</bpmn:documentation>
         </bpmn:manualTask>`)
     
@@ -111,8 +108,7 @@ describe('parseXMLDocumentation', () => {
   })
 
   it('should ignore tasks without documentation', () => {
-    const bpmnXml = createDefinitionsXml(
-      `<bpmn:task id="task1" name="Task Without Doc" />
+    const bpmnXml = createDefinitionsXml(`<bpmn:task id="task1" name="Task Without Doc" />
         <bpmn:userTask id="task2" name="Task With Doc">
           <bpmn:documentation>This has documentation</bpmn:documentation>
         </bpmn:userTask>`)
@@ -127,8 +123,7 @@ describe('parseXMLDocumentation', () => {
   })
 
   it('should ignore tasks with empty documentation', () => {
-    const bpmnXml = createDefinitionsXml(
-      `<bpmn:task id="task1" name="Task With Empty Doc">
+    const bpmnXml = createDefinitionsXml(`<bpmn:task id="task1" name="Task With Empty Doc">
           <bpmn:documentation></bpmn:documentation>
         </bpmn:task>
         <bpmn:task id="task2" name="Task With Whitespace Doc">
@@ -148,8 +143,7 @@ describe('parseXMLDocumentation', () => {
   })
 
   it('should handle all supported activity types', () => {
-    const bpmnXml = createDefinitionsXml(
-      `<bpmn:task id="task1" name="Task">
+    const bpmnXml = createDefinitionsXml(`<bpmn:task id="task1" name="Task">
           <bpmn:documentation>Task doc</bpmn:documentation>
         </bpmn:task>
         <bpmn:userTask id="userTask1" name="User Task">
@@ -214,8 +208,7 @@ describe('parseXMLDocumentation', () => {
   })
 
   it('should handle mixed namespaced and non-namespaced elements', () => {
-    const bpmnXml = createDefinitionsXml(
-      `<bpmn:task id="task1" name="Namespaced Task">
+    const bpmnXml = createDefinitionsXml(`<bpmn:task id="task1" name="Namespaced Task">
           <bpmn:documentation>Namespaced documentation</bpmn:documentation>
         </bpmn:task>
         <userTask id="userTask1" name="Non-namespaced User Task">
@@ -237,8 +230,7 @@ describe('parseXMLDocumentation', () => {
   })
 
   it('should trim whitespace from documentation', () => {
-    const bpmnXml = createDefinitionsXml(
-      `<bpmn:task id="task1" name="Task">
+    const bpmnXml = createDefinitionsXml(`<bpmn:task id="task1" name="Task">
           <bpmn:documentation>
             
             This documentation has whitespace
@@ -256,8 +248,7 @@ describe('parseXMLDocumentation', () => {
   })
 
   it('should handle duplicate elements correctly', () => {
-    const bpmnXml = createDefinitionsXml(
-      `<bpmn:task id="task1" name="Task 1">
+    const bpmnXml = createDefinitionsXml(`<bpmn:task id="task1" name="Task 1">
           <bpmn:documentation>First task documentation</bpmn:documentation>
         </bpmn:task>
         <bpmn:task id="task2" name="Task 2">
@@ -279,8 +270,7 @@ describe('parseXMLDocumentation', () => {
   })
 
   it('should handle complex nested BPMN structure', () => {
-    const bpmnXml = createDefinitionsXml(
-      `<bpmn:process id="process1">
+    const bpmnXml = createDefinitionsXml(`<bpmn:process id="process1">
           <bpmn:subProcess id="subprocess1" name="Main Subprocess">
             <bpmn:documentation>Subprocess documentation</bpmn:documentation>
             <bpmn:task id="nestedTask1" name="Nested Task">
