@@ -56,8 +56,7 @@
 import { permissionsMixin } from '@/permissions.js'
 import { TaskService } from '@/services.js'
 import IconButton from '@/components/render-template/IconButton.vue'
-import { SuccessAlert } from '@cib/common-frontend'
-import { BWaitingBox } from '@cib/common-frontend'
+import { SuccessAlert, BWaitingBox } from '@cib/common-frontend'
 import { ENGINE_STORAGE_KEY } from '@/constants.js'
 
 export default {

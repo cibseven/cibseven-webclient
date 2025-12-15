@@ -108,9 +108,7 @@
 </template>
 
 <script>
-import { BWaitingBox } from '@cib/common-frontend'
-import { FlowTable } from '@cib/common-frontend'
-import { TaskPopper, SuccessAlert, CopyableActionButton } from '@cib/common-frontend'
+import { BWaitingBox, FlowTable, TaskPopper, SuccessAlert, CopyableActionButton } from '@cib/common-frontend'
 import DeleteVariableModal from '@/components/process/modals/DeleteVariableModal.vue'
 import AddVariableModal from '@/components/process/modals/AddVariableModal.vue'
 import EditVariableModal from '@/components/process/modals/EditVariableModal.vue'

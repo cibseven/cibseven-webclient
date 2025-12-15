@@ -74,12 +74,9 @@
 </template>
 
 <script>
-import { FlowTable } from '@cib/common-frontend'
-import { BWaitingBox } from '@cib/common-frontend'
+import { FlowTable, BWaitingBox, CopyableActionButton, SuccessAlert } from '@cib/common-frontend'
 import { mapActions, mapGetters } from 'vuex'
-import { CopyableActionButton, SuccessAlert } from '@cib/common-frontend'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
-
 
 export default {
   name: 'CalledProcessDefinitionsTable',

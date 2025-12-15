@@ -218,12 +218,10 @@
 <script>
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { IncidentService } from '@/services.js'
-import { FlowTable } from '@cib/common-frontend'
-import { SuccessAlert } from '@cib/common-frontend'
+import { FlowTable, SuccessAlert, PagedScrollableContent, CopyableActionButton } from '@cib/common-frontend'
 import RetryModal from '@/components/process/modals/RetryModal.vue'
 import AnnotationModal from '@/components/process/modals/AnnotationModal.vue'
 import StackTraceModal from '@/components/process/modals/StackTraceModal.vue'
-import { PagedScrollableContent, CopyableActionButton } from '@cib/common-frontend'
 import { formatDateForTooltips } from '@/utils/dates.js'
 import { mapGetters, mapActions } from 'vuex'
 import { debounce } from '@/utils/debounce.js'

@@ -29,8 +29,7 @@
 
 <script>
 import AddVariableModalUI from '@/components/process/modals/AddVariableModalUI.vue'
-import { ProcessService } from '@/services.js'
-import { VariableInstanceService, HistoricVariableInstanceService } from '@/services.js'
+import { ProcessService, VariableInstanceService, HistoricVariableInstanceService } from '@/services.js'
 
 export default {
 name: 'EditVariableModal',
