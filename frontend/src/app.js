@@ -89,13 +89,14 @@ Promise.all([
           }
         },
         data: function() {
+          const imagePath = 'webjars/seven/components/password/reset-password.svg'
           return {
             user: null,
             config: config,
             consent: localStorage.getItem('consent'),
             logoPath: 'themes/' + theme + '/logo.svg',
             loginImgPath: 'themes/' + theme + '/login-image.svg',
-            resetPasswordImgPath: 'webjars/seven/components/password/reset-password.svg',
+            resetPasswordImgPath: imagePath,
             theme: theme,
             header: hasHeader(),
             processUpdateInterval: null

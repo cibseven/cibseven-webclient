@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { axios } from './globals.js'
+import { axios, createUUID } from './globals.js'
 import { sha256 } from 'js-sha256'
 import { ENGINE_STORAGE_KEY } from '@/constants.js'
 
@@ -24,7 +24,7 @@ import { InfoService } from '@/services.js'
 
 function handler(error) {
     if (error.response) {
-        var res = error.response
+        const res = error.response
         console && console.error('Strange AJAX error', error)
         alert('Technical error: ' + (res.data.type || 'SystemException'))
     } else {
@@ -38,10 +38,10 @@ InfoService.getProperties().then(function(config) {
     // Debug point will be left here because it is hard to debug when it is redirected all the time
     // eslint-disable-next-line no-debugger
     debugger
-    var ssoCallback = parseParams(location.hash.substr(1))
-    var callbackState = JSON.parse(sessionStorage.getItem('callbackState') || '{}')
-    var queryParams = parseParams(location.search.substr(1))
-    var redirectTo = callbackState.redirectTo || BASE_URL + './#' + (queryParams.nextUrl || '').replace(/^(.*\/\/.*?\/|\/)/, '')
+    const ssoCallback = parseParams(location.hash.substr(1))
+    const callbackState = JSON.parse(sessionStorage.getItem('callbackState') || '{}')
+    const queryParams = parseParams(location.search.substr(1))
+    const redirectTo = callbackState.redirectTo || BASE_URL + './#' + (queryParams.nextUrl || '').replace(/^(.*\/\/.*?\/|\/)/, '')
 
     if (!(callbackState.state && ssoCallback.state === callbackState.state)) {
         ssoLogin(callbackState, redirectTo)
@@ -62,10 +62,10 @@ InfoService.getProperties().then(function(config) {
     }
 
     function ssoLogin(callbackState, redirectTo) {
-        var queryParams = parseParams(location.search.substr(1))
-        var state = createUUID()
-        var nonce = createUUID()
-        var request = config.authorizationEndpoint +
+        const queryParams = parseParams(location.search.substr(1))
+        const state = createUUID()
+        const nonce = createUUID()
+        const request = config.authorizationEndpoint +
             '?client_id=' + encodeURIComponent(config.clientId) +
             '&redirect_uri=' + encodeURIComponent(location.origin + location.pathname) +
             '&state=' + encodeURIComponent(state) +
@@ -89,17 +89,4 @@ function parseParams(paramString) {
         params[param.split('=')[0]] = decodeURIComponent(param.split('=')[1])
         return params
     }, {})
-}
-
-function createUUID() { //keycloak.js unique identifier for state and nonce
-    var s = [];
-    var hexDigits = '0123456789abcdef';
-    for (var i = 0; i < 36; i++) {
-        s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
-    }
-    s[14] = '4';
-    s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1);
-    s[8] = s[13] = s[18] = s[23] = '-';
-    var uuid = s.join('');
-    return uuid;
 }
