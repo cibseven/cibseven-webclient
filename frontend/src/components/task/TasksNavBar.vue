@@ -27,7 +27,7 @@
       </b-button>
 
       <div class="py-1 px-2 mb-1 bg-task-filter">
-        <SmartSearch ref="smartSearch" class="m-1 mb-2"
+        <SmartSearch class="m-1 mb-2"
           :maxlength="50"
           :options="$root.config.taskFilter.smartSearch.options"
           :initialFilter="$route.query.tasksFilter || ''"
