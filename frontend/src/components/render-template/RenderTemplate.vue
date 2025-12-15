@@ -132,7 +132,7 @@ export default {
         themeContext = 'themes/' + theme + '/bootstrap_4.5.0.min.css'
       }
 
-      let formFrame = this.$refs['template-frame']
+      const formFrame = this.$refs['template-frame']
       //Startforms
       if (this.task.url) {
         formFrame.src = this.task.url + '/' + themeContext + '/' + translationContext
@@ -145,7 +145,7 @@ export default {
         formFrame.src = `embedded-forms.html?generated=true&processDefinitionId=${this.task.processDefinitionId}&lang=${this.currentLanguage()}`
         this.loader = false
       } else if (this.task.id) {
-        let form = this.task.formKey || await TaskService.form(this.task.id)
+        const form = this.task.formKey || await TaskService.form(this.task.id)
         if (form.key && form.key.includes('/rendered-form')) {
           // Generated forms
           this.formFrame = true
@@ -200,7 +200,7 @@ export default {
     },
     completeTask: function(task) {
       this.submitForm = true
-      let data = JSON.parse(JSON.stringify(this.task))
+      const data = JSON.parse(JSON.stringify(this.task))
       if (task) data.processInstanceId = task.id
       if (this.task.url) {
         this.$emit('complete-task', data)
@@ -220,7 +220,7 @@ export default {
 
       // Process HTTP error responses and display corresponding error messages
       let type = ''
-      let errorParams = []
+      const errorParams = []
       switch (data.status) {
         case 404:
           if (data.type !== 'generic') {
@@ -324,7 +324,7 @@ export default {
     onDatePickerConfirm: function() {
       let result = null
       if (this.datePickerValue) {
-        let d = new Date(this.datePickerValue)
+        const d = new Date(this.datePickerValue)
         // Format as dd/mm/yyyy
         const day = String(d.getDate()).padStart(2, '0')
         const month = String(d.getMonth() + 1).padStart(2, '0')

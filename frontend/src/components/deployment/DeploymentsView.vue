@@ -208,7 +208,7 @@ export default {
       this.loadNextPage()
     },
     deploymentId: function () {
-      let found = this.deployments.some(d => {
+      const found = this.deployments.some(d => {
         return (d.id === this.deploymentId)
       })
       if (!found) {
@@ -333,7 +333,7 @@ export default {
     loadToSelectedDeployment: async function () {
       this.searchDeployment = true
       this.refreshTotalCount()
-      let found = this.deployments.some(dep => {
+      const found = this.deployments.some(dep => {
         return dep.id === this.deploymentId
       })
       if (found) {
@@ -342,13 +342,13 @@ export default {
       this.loadDeployments(this.deployments.length)
     },
     deleteDeployments: function () {
-      let vm = this
+      const vm = this
       this.deleteLoader = true
       this.deploymentsDelData.total = this.deploymentsSelected.length
       this.deploymentsDelData.deleted = 0
       let pool = this.deploymentsSelected.slice(0, this.deploymentsSelected.length)
       pool.forEach(deployment => {
-        let found = this.groups.findIndex(group => {
+        const found = this.groups.findIndex(group => {
           const index = group.data.findIndex(d => {
             return deployment.id === d.id
           })
@@ -405,7 +405,7 @@ export default {
         this.deploymentsDelData.total = 1
         this.deploymentsDelData.deleted++
         this.$refs.deploymentsDeleted.show()
-        let found = this.groups.findIndex(group => {
+        const found = this.groups.findIndex(group => {
           const index = group.data.findIndex(d => {
             return this.deploymentId === d.id
           })

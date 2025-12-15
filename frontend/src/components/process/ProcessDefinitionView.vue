@@ -278,7 +278,7 @@ export default {
     findProcessAndAssignData(selectedProcess) {
       if (selectedProcess) {
           ProcessService.findProcessById(selectedProcess.id, true).then(process => {
-            for (let v of this.processDefinitions) {
+            for (const v of this.processDefinitions) {
               if (v.id === process.id) {
                 Object.assign(v, process)
                 break

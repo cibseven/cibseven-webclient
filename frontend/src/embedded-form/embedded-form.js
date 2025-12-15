@@ -322,13 +322,13 @@ function loadEmbeddedForm(
     });
     return new Promise((resolve, reject) => {
         if (isStartForm) {
-            let processService = client.resource('process-definition');
+            const processService = client.resource('process-definition');
             processService.startForm({ id: referenceId }, (err, taskFormInfo) => {
                 if (err) reject(err);
                 else loadForm(taskFormInfo);
             });
         } else {
-            let taskService = client.resource('task');
+            const taskService = client.resource('task');
             // loads the task form using the task ID provided
             taskService.form(referenceId, (err, taskFormInfo) => {
                 if (err) reject(err);
@@ -336,7 +336,7 @@ function loadEmbeddedForm(
             });
         }
         async function loadForm(formInfo) {
-            let formConfig = {
+            const formConfig = {
                 client: client,
                 done: function(err, form) {
                   if (err) {
@@ -347,13 +347,13 @@ function loadEmbeddedForm(
                 }
             };
             if (formInfo.key.includes('deployment:')) {
-                let resource = await loadDeployedForm(client, isStartForm, referenceId);
+                const resource = await loadDeployedForm(client, isStartForm, referenceId);
                 formContainer.innerHTML = resource;
                 formConfig.formElement = $(formContainer);
                 if (embeddedContainer) embeddedContainer.style.display = 'none';
             } else if (formInfo.key.includes('/rendered-form')) {
                 // Load Camunda generated form HTML and normalize it for Vue integration
-                let resource = await loadGeneratedForm(isStartForm, referenceId, formContainer, client, config);
+                const resource = await loadGeneratedForm(isStartForm, referenceId, formContainer, client, config);
                 formContainer.innerHTML = resource;
                 formConfig.formElement = $(formContainer);
                 if (embeddedContainer) embeddedContainer.style.display = 'none';

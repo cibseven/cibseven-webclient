@@ -18,9 +18,9 @@ import axios from 'axios'
 import moment from 'moment'
 
 function createUUID() { //keycloak.js unique identifier for state and nonce
-    let s = [];
+    const s = [];
     const hexDigits = '0123456789abcdef';
-    let randomValues = new Uint8Array(36);
+    const randomValues = new Uint8Array(36);
     crypto.getRandomValues(randomValues);
     for (let i = 0; i < 36; i++) {
         s[i] = hexDigits.substr(randomValues[i] % 0x10, 1);

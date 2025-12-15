@@ -73,7 +73,7 @@ export default {
   },
   computed: {
     filteredElements: function() {
-      let list = {}
+      const list = {}
       if (this.elements) {
         if (Array.isArray(this.elements)) {
           this.elements.forEach(element => {

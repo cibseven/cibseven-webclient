@@ -33,7 +33,7 @@ const permissionsMixin = {
 		},
 		tasksByPermissions: function(permissionsRequired, tasks) {
 			const permissionsCheck = this.$_permissionsMixin_setAllPermissionsObject(permissionsRequired)
-			let tmpTasks = []
+			const tmpTasks = []
 			tasks.forEach(function(t) {
 				if (this.$_permissionsMixin_checkPermissionsAllowed(t, 'id', permissionsCheck)) tmpTasks.push(t)
 			}.bind(this))
@@ -52,7 +52,7 @@ const permissionsMixin = {
 			return this.$_permissionsMixin_checkPermissionsAllowed(process, 'key', permissionsCheck)
 		},
 		filtersByPermissions: function(permissionsRequired, filters) {
-			let tmpFilters = []
+			const tmpFilters = []
 			if (!filters || !Array.isArray(filters) || !filters.length) return tmpFilters // Return empty array if no filters are provided or filters is not an array
 			const permissionsCheck = this.$_permissionsMixin_setAllPermissionsObject(permissionsRequired)
 

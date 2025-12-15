@@ -187,7 +187,7 @@ export default {
     },
     loadIdentityLinks: function(taskId) {
       this.candidateUsers = []
-      let promises = []
+      const promises = []
       TaskService.findIdentityLinks(taskId).then(identityLinks => {
         identityLinks.forEach(identityLink => {
           if (identityLink.type === 'candidate') {

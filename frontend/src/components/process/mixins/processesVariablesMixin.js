@@ -69,7 +69,7 @@ export default {
 				return res
 		},
 		restFilter: function () {
-			let result = {
+			const result = {
 				...this.filter,
 				deserializeValues: false,
 				sortBy: 'variableName',
@@ -101,7 +101,7 @@ export default {
 		fetchInstanceVariables: async function (service, method) {
 			this.fetching = true
 			this.loading = true
-			let variables = await serviceMap[service][method](this.selectedInstance.id, this.restFilter)
+			const variables = await serviceMap[service][method](this.selectedInstance.id, this.restFilter)
 			variables.forEach(v => {
 				v.scope = this.activityInstancesGrouped[v.activityInstanceId]
 			})

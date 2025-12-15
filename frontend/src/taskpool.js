@@ -19,7 +19,7 @@ const TaskPool = function(limit) {
 	let runningInstances = 0
 	const start = () => {
 		if (pool.length > 0) {
-			let newInstance = pool.shift()
+			const newInstance = pool.shift()
 			if (!newInstance.isExecuted) {
 				newInstance.isExecuted = true
 				newInstance.params = newInstance.params || []

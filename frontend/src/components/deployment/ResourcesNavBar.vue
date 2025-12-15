@@ -226,7 +226,7 @@ export default {
     loadDeployment: function () {
       if (this.deploymentId) {
         if (this.deployments) {
-          let found = this.deployments.find(d => {
+          const found = this.deployments.find(d => {
             return d.id === this.deploymentId
           })
           if (found) {

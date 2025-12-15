@@ -344,8 +344,8 @@ export default {
       })
     },
     manageCandidateGroups: function(identityLinks, task) {
-      let promises = []
-      for (let i in identityLinks) {
+      const promises = []
+      for (const i in identityLinks) {
         if (identityLinks[i].type === 'candidate' && identityLinks[i].groupId) {
           const promise = AdminService.findUsers({ memberOfGroup: identityLinks[i].groupId }).then(users => {
             return users.some(u => {
@@ -369,7 +369,7 @@ export default {
       else return moment(date).fromNow()
     },
     getDueClasses: function(task) {
-      let classes = []
+      const classes = []
       if (!task.due) classes.push('text-muted')
       else if (moment(task.due).isBefore(moment())) classes.push('text-danger')
       else if (moment().add(this.$root.config.warnOnDueExpirationIn, 'hours').isAfter(moment(task.due))) classes.push('text-warning')
@@ -377,7 +377,7 @@ export default {
       return classes
     },
     getReminderClasses: function(task) {
-      let classes = []
+      const classes = []
       if (!task.followUp) classes.push('text-muted')
       if (!this.isMobile() && task !== this.focused && task.id !== this.selectedDateT.id && !task.followUp) classes.push('invisible')
       return classes

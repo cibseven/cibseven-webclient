@@ -33,7 +33,7 @@ export function parseXMLDocumentation(bpmnXml) {
     els.forEach(el => {
       if (seen.has(el)) return
       seen.add(el)
-      let docNode = el.querySelector('documentation') || el.querySelector('bpmn\\:documentation')
+      const docNode = el.querySelector('documentation') || el.querySelector('bpmn\\:documentation')
       if (docNode && docNode.textContent.trim()) {
         docs.push({
           id: el.getAttribute('id') || null,

@@ -287,8 +287,8 @@ export default {
       this.listTasksWithFilterAuto()
     },
     updateAssignee: function(taskStore, target) {
-      let assigneeString = taskStore?.assignee || null
-      let taskId = taskStore?.taskId || null
+      const assigneeString = taskStore?.assignee || null
+      const taskId = taskStore?.taskId || null
       if (this.task && this.task.id === taskId) {
         this.assignee = assigneeString
         this.task.assignee = assigneeString

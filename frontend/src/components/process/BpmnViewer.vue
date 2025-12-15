@@ -532,7 +532,7 @@ export default {
       list.splice(0, list.length)
     },
     setHtmlOnDiagram: function(id, html, position) {
-      let overlays = this.viewer.get('overlays')
+      const overlays = this.viewer.get('overlays')
       const overlayId = overlays.add(id, { position, html })
       this.overlayList.push(overlayId)
       return overlayId

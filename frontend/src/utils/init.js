@@ -45,7 +45,7 @@ export function isMobile() {
 
 export function checkExternalReturn(href, hash) {
   //let hrefAux = href
-  let hashAux = hash
+  const hashAux = hash
 
   if (hashAux.includes('token=')) {
     let token = ''
@@ -145,7 +145,7 @@ export async function loadTheme(themeName) {
 
 export function applyTheme(theme) {
 
-  let favicon = document.createElement('Link')
+  const favicon = document.createElement('Link')
   favicon.setAttribute('rel', 'icon')
   favicon.setAttribute('type', 'image/x-icon')
   favicon.setAttribute('href', 'themes/' + theme + '/favicon.ico')

@@ -52,7 +52,7 @@ export default {
       }
       const variablesToSerialize = []
       const filter = { deserializeValues: false }
-      let variables = await serviceMap[service][method](instanceId, filter)
+      const variables = await serviceMap[service][method](instanceId, filter)
       variables.forEach(variable => {
         try {
           variable.value = variable.type === 'Object' ? JSON.parse(variable.value) : variable.value

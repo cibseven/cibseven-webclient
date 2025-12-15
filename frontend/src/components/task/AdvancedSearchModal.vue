@@ -113,7 +113,7 @@ export default {
   },
   computed: {
     criteriaKeys: function() {
-      let criteriaKeys = []
+      const criteriaKeys = []
       this.$root.config.taskFilter.advancedSearch.criteriaKeys.forEach(item => {
         criteriaKeys.push({ value: item, text: this.$t('advanced-search.criteriaKeys.' + item) })
       })

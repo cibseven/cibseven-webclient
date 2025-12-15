@@ -207,7 +207,7 @@ export default {
       }
     },
     createFilter: function() {
-      let query = {}
+      const query = {}
       if (this.matchAllCriteria) {
         this.criteriasToAdd.forEach(criteria => {
           // if key == '...Like' -> value = '%' + value + '%'
@@ -272,7 +272,7 @@ export default {
       this.selectedCriteriaVariable.splice(index, 1)
     },
     rowClass: function(item) {
-      let stylesForRow = ['row']
+      const stylesForRow = ['row']
       if (item.key === this.criteriaEdited.key ) stylesForRow.push('table-active')
       return stylesForRow
     },
@@ -324,7 +324,7 @@ export default {
     editCriteria: function(index) {
       this.isEditing = true
       // so the row of the table doesnt change too when the inputs are modified
-      let criteriaToEdit = JSON.parse(JSON.stringify(this.criteriasToAdd[index]))
+      const criteriaToEdit = JSON.parse(JSON.stringify(this.criteriasToAdd[index]))
       this.criteriaEdited = { key: criteriaToEdit.key, rowIndex: index }
       this.selectedCriteriaKey = criteriaToEdit.key
       this.selectCriteria(this.selectedCriteriaKey)
@@ -367,7 +367,7 @@ export default {
       this.criteriaEdited = { key: null, rowIndex: null}
 
       // Prepared criterias
-      let auxCriterias = {}
+      const auxCriterias = {}
       this.$root.config.filters.forEach(filter => {
         if (filter.group) {
           if (auxCriterias[filter.group] === undefined) {
@@ -445,7 +445,7 @@ export default {
           value = '%' + value;
         }
 
-        let length = value.length - 1;
+        const length = value.length - 1;
         if (value[length] !== '%') {
           value = value + '%';
         }
