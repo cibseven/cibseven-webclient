@@ -83,7 +83,7 @@ describe('parseXMLDocumentation', () => {
     const bpmnXml = createDefinitionsXml(`<bpmn:scriptTask id="script1">
           <bpmn:documentation>Script task without name</bpmn:documentation>
         </bpmn:scriptTask>`)
-    
+
     const result = parseXMLDocumentation(bpmnXml)
     expect(result).toHaveLength(1)
     expect(result[0]).toEqual({
@@ -97,7 +97,7 @@ describe('parseXMLDocumentation', () => {
     const bpmnXml = createDefinitionsXml(`<bpmn:manualTask name="Manual Task">
           <bpmn:documentation>Manual task without ID</bpmn:documentation>
         </bpmn:manualTask>`)
-    
+
     const result = parseXMLDocumentation(bpmnXml)
     expect(result).toHaveLength(1)
     expect(result[0]).toEqual({
@@ -112,7 +112,7 @@ describe('parseXMLDocumentation', () => {
         <bpmn:userTask id="task2" name="Task With Doc">
           <bpmn:documentation>This has documentation</bpmn:documentation>
         </bpmn:userTask>`)
-    
+
     const result = parseXMLDocumentation(bpmnXml)
     expect(result).toHaveLength(1)
     expect(result[0]).toEqual({
@@ -132,7 +132,7 @@ describe('parseXMLDocumentation', () => {
         <bpmn:userTask id="task3" name="Task With Valid Doc">
           <bpmn:documentation>Valid documentation</bpmn:documentation>
         </bpmn:userTask>`)
-    
+
     const result = parseXMLDocumentation(bpmnXml)
     expect(result).toHaveLength(1)
     expect(result[0]).toEqual({
@@ -167,10 +167,10 @@ describe('parseXMLDocumentation', () => {
         <bpmn:subProcess id="subProcess1" name="Sub Process">
           <bpmn:documentation>Sub process doc</bpmn:documentation>
         </bpmn:subProcess>`)
-    
+
     const result = parseXMLDocumentation(bpmnXml)
     expect(result).toHaveLength(8)
-    
+
     const taskTypes = result.map(r => r.element)
     expect(taskTypes).toContain('Task')
     expect(taskTypes).toContain('User Task')
@@ -192,7 +192,7 @@ describe('parseXMLDocumentation', () => {
           <documentation>Non-namespaced user task doc</documentation>
         </userTask>
       </definitions>`
-    
+
     const result = parseXMLDocumentation(bpmnXml)
     expect(result).toHaveLength(2)
     expect(result[0]).toEqual({
@@ -214,7 +214,7 @@ describe('parseXMLDocumentation', () => {
         <userTask id="userTask1" name="Non-namespaced User Task">
           <documentation>Non-namespaced documentation</documentation>
         </userTask>`)
-    
+
     const result = parseXMLDocumentation(bpmnXml)
     expect(result).toHaveLength(2)
     expect(result[0]).toEqual({
@@ -237,7 +237,7 @@ describe('parseXMLDocumentation', () => {
             
           </bpmn:documentation>
         </bpmn:task>`)
-    
+
     const result = parseXMLDocumentation(bpmnXml)
     expect(result).toHaveLength(1)
     expect(result[0]).toEqual({
@@ -254,7 +254,7 @@ describe('parseXMLDocumentation', () => {
         <bpmn:task id="task2" name="Task 2">
           <bpmn:documentation>Second task documentation</bpmn:documentation>
         </bpmn:task>`)
-    
+
     const result = parseXMLDocumentation(bpmnXml)
     expect(result).toHaveLength(2)
     expect(result[0]).toEqual({
@@ -281,10 +281,10 @@ describe('parseXMLDocumentation', () => {
             <bpmn:documentation>Main task documentation</bpmn:documentation>
           </bpmn:userTask>
         </bpmn:process>`)
-    
+
     const result = parseXMLDocumentation(bpmnXml)
     expect(result).toHaveLength(3)
-    
+
     const taskNames = result.map(r => r.element)
     expect(taskNames).toContain('Main Subprocess')
     expect(taskNames).toContain('Nested Task')
