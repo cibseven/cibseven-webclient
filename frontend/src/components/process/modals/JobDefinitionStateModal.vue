@@ -108,7 +108,7 @@ methods: {
     },
     changeJobDefinitionState: function() {
       this.invalidDate = false
-      var executionDate = null
+      let executionDate = null
       if (this.executionOption === 'delayed') {
         if (!this.scheduledAt.date) {
           this.invalidDate = true
@@ -116,7 +116,7 @@ methods: {
         }
         executionDate = this.formatScheduledAt()        
       }
-      var data = {
+      const data = {
         suspended: !this.selectedJobDefinition.suspended,
         includeJobs: this.includeExistingJob,
         executionDate: executionDate

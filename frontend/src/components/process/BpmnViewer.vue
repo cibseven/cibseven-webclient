@@ -511,12 +511,12 @@ export default {
       })
     },
     getBadgeOverlayHtml: function(number, classes, type, activityId) {
-      var title = this.$t('bpmn-viewer.legend.' + type)
-      var styleStr = "width: max-content;"
+      const title = this.$t('bpmn-viewer.legend.' + type)
+      let styleStr = "width: max-content;"
       if (activityId) {
         styleStr += " cursor: pointer;"
       }
-      var overlayHtml = `
+      const overlayHtml = `
         <span data-activity-id="${activityId || ''}" data-type="${type || ''}" class="bubble position-absolute" style="${styleStr}" title="${title}">
           <span class="badge rounded-pill border border-dark px-2 py-1 me-1 ${classes}">${number}</span>
         </span>
@@ -614,7 +614,7 @@ export default {
       this.jobDefinitions.forEach(jobDefinition => {
         const shape = elementRegistry.get(jobDefinition.activityId)
         if (shape && jobDefinition.suspended) {
-          var title = this.$t('bpmn-viewer.legend.suspendedJobDefinition')
+          const title = this.$t('bpmn-viewer.legend.suspendedJobDefinition')
           const suspendedBadge = `
             <span class="badge bg-warning rounded-pill text-white border border-dark px-2 py-1" title="${title}">
               <span class="mdi mdi-pause"></span>

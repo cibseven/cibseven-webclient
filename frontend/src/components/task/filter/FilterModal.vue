@@ -197,7 +197,7 @@ export default {
   },
   methods: { // TODO: Refactor, many methods and unnecessary structur,,
     selectFilter: function(value) {
-      var selectedFilter = this.$store.state.filter.list.find(filter => {
+      const selectedFilter = this.$store.state.filter.list.find(filter => {
         return filter.id === value
       })
       if (selectedFilter) {
@@ -207,7 +207,7 @@ export default {
       }
     },
     createFilter: function() {
-      var query = {}
+      let query = {}
       if (this.matchAllCriteria) {
         this.criteriasToAdd.forEach(criteria => {
           // if key == '...Like' -> value = '%' + value + '%'
@@ -237,7 +237,7 @@ export default {
           this.$root.$refs.error.show({ type: 'filterSaveError' })
         })
       } else {
-        var filterCreate = {
+        const filterCreate = {
           id: null,
           resourceType: 'Task',
           name: this.selectedFilterName,
@@ -277,7 +277,7 @@ export default {
       return stylesForRow
     },
     addCriteria: function() {
-      var valueToAdd = []
+      let valueToAdd = []
       if (this.selectedCriteriaType === 'variable') {
         valueToAdd = this.selectedCriteriaVariable
       } else if (this.selectedCriteriaType === 'array') {
@@ -296,7 +296,7 @@ export default {
       this.selectedCriteriaVariable = [{ name: '', operator: 'eq', value: '' }]
     },
     updateCriteria: function() {
-      var valueToAdd = []
+      let valueToAdd = []
       if (this.selectedCriteriaType === 'variable') {
         valueToAdd = this.selectedCriteriaVariable
       } else if (this.selectedCriteriaType === 'array') {
@@ -346,7 +346,7 @@ export default {
       this.criteriaEdited = { key: null, rowIndex: null }
     },
     selectCriteria: function(evt) {
-      var criteria = this.criterias.find(option => {
+      const criteria = this.criterias.find(option => {
         return option.value === evt
       })
       if (criteria) this.selectedCriteriaType = criteria.type
@@ -367,7 +367,7 @@ export default {
       this.criteriaEdited = { key: null, rowIndex: null}
 
       // Prepared criterias
-      var auxCriterias = {}
+      let auxCriterias = {}
       this.$root.config.filters.forEach(filter => {
         if (filter.group) {
           if (auxCriterias[filter.group] === undefined) {
@@ -397,10 +397,10 @@ export default {
         if (this.$store.state.filter.selected.query.orQueries && this.$store.state.filter.selected.query.orQueries.length > 0) {
           this.matchAllCriteria = false
           Object.keys(this.$store.state.filter.selected.query.orQueries[0]).forEach(key => {
-            var filterVal = this.$store.state.filter.selected.query.orQueries[0][key]
+            const filterVal = this.$store.state.filter.selected.query.orQueries[0][key]
             if (key === 'includeAssignedTasks') this.includeAssigned = filterVal
             if (!filterVal || (filterVal && filterVal.length === 0)) return
-            var index = this.criterias.findIndex(item => {
+            const index = this.criterias.findIndex(item => {
               return item.value === key
             })
             if (index > -1) {
@@ -416,10 +416,10 @@ export default {
         } else {
           //Match all criterias.
           Object.keys(this.$store.state.filter.selected.query).forEach(key => {
-            var filterVal = this.$store.state.filter.selected.query[key]
+            const filterVal = this.$store.state.filter.selected.query[key]
             if (key === 'includeAssignedTasks') this.includeAssigned = filterVal
             if (!filterVal || (filterVal && filterVal.length === 0)) return
-            var index = this.criterias.findIndex(item => {
+            const index = this.criterias.findIndex(item => {
               return item.value === key
             })
             if (index > -1) {

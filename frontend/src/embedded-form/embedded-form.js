@@ -314,7 +314,7 @@ function loadEmbeddedForm(
     
     // CamSDK.Client handles the engine path internally based on the engine parameter
     
-    var client = new CamSDK.Client({
+    const client = new CamSDK.Client({
         mock: false,
         apiUri: config.engineRestPath || '/engine-rest',
         headers: headers,
@@ -359,7 +359,7 @@ function loadEmbeddedForm(
                 if (embeddedContainer) embeddedContainer.style.display = 'none';
             } else {
                 // Start with a relative url and replace doubled slashes if necessary
-                var url = formInfo.key
+                const url = formInfo.key
                     .replace('embedded:', '')
                     .replace('app:', (formInfo.contextPath || '') + '/')
                     .replace(/^(\/+|([^/]))/, '/$2')
@@ -421,7 +421,7 @@ function loadGeneratedForm(isStartForm, referenceId, formContainer, client, conf
                     console.error('Error getting rendered form:', err);
                     reject(err);
                 } else {
-                    var updatedHtml = normalizeGeneratedFormHtml(renderedFormHtml);
+                    const updatedHtml = normalizeGeneratedFormHtml(renderedFormHtml);
                     resolve(updatedHtml);
                 }
             }
@@ -445,7 +445,7 @@ function loadGeneratedForm(isStartForm, referenceId, formContainer, client, conf
                         console.error('Error getting rendered form:', err);
                         reject(err);
                     } else {
-                        var updatedHtml = normalizeGeneratedFormHtml(renderedFormHtml);
+                        const updatedHtml = normalizeGeneratedFormHtml(renderedFormHtml);
                         resolve(updatedHtml);
                     }
                 }

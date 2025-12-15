@@ -14,12 +14,12 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-var TaskPool = function(limit) {
-	var pool = []
-	var runningInstances = 0
-	var start = () => {
+const TaskPool = function(limit) {
+	let pool = []
+	let runningInstances = 0
+	const start = () => {
 		if (pool.length > 0) {
-			var newInstance = pool.shift()
+			let newInstance = pool.shift()
 			if (!newInstance.isExecuted) {
 				newInstance.isExecuted = true
 				newInstance.params = newInstance.params || []
@@ -33,15 +33,15 @@ var TaskPool = function(limit) {
 			} else start()
 		} else runningInstances--
 	}
-	var add = (func, params, id) => {
+	const add = (func, params, id) => {
 		if (id != null) {
-			var instance = findInstanceById(id)
+			const instance = findInstanceById(id)
 			if (instance) {
 				return instance.promise
 			}
 		}
-		var newEntry
-		var prom = new Promise((resolve, reject) => {
+		let newEntry
+		const prom = new Promise((resolve, reject) => {
 			newEntry = {
 				func: func, params: params, id: id, resolve: resolve, reject: reject
 			}
@@ -54,9 +54,9 @@ var TaskPool = function(limit) {
 		}
 		return prom
 	}
-	var addPrio = (func, params, id) => {
+	const addPrio = (func, params, id) => {
 		if (id != null) {
-			var instance = findInstanceById(id)
+			const instance = findInstanceById(id)
 			if (instance && instance.isExecuted) {
 				return instance.promise
 			} else if (instance) {
@@ -64,8 +64,8 @@ var TaskPool = function(limit) {
 				return instance.promise
 			}
 		}
-		var newEntry
-		var prom = new Promise((resolve, reject) => {
+		let newEntry
+		const prom = new Promise((resolve, reject) => {
 			newEntry = {
 				func: func, params: params, id: id, resolve: resolve, reject: reject
 			}
@@ -78,12 +78,12 @@ var TaskPool = function(limit) {
 		}
 		return prom
 	}
-	var clear = () => {
+	const clear = () => {
 		pool = []
 	}
-	var findInstanceById = (id) => {
+	const findInstanceById = (id) => {
 		//Make copy so the data pool is not modified during the search and prevent wrong search
-		var copyPool = [...pool]
+		const copyPool = [...pool]
 		return copyPool.find(p => {
 			return p.id === id
 		})

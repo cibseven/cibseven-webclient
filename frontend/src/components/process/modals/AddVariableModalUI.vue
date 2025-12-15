@@ -579,7 +579,7 @@ export default {
     },
 
     onSubmit: function() {
-      var variable = {
+      const variable = {
         name: this.name,
         type: this.type,
         value: this.value,

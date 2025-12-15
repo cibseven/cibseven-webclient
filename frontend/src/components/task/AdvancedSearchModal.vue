@@ -113,7 +113,7 @@ export default {
   },
   computed: {
     criteriaKeys: function() {
-      var criteriaKeys = []
+      let criteriaKeys = []
       this.$root.config.taskFilter.advancedSearch.criteriaKeys.forEach(item => {
         criteriaKeys.push({ value: item, text: this.$t('advanced-search.criteriaKeys.' + item) })
       })
@@ -131,7 +131,7 @@ export default {
       this.$refs.advancedSearchModal.show()
     },
     addCriteria: function() {
-      var value = this.selectedCriteriaValue.value
+      let value = this.selectedCriteriaValue.value
       if (value === "true") value = true
       else if (value === "false") value = false
       this.criterias.push({

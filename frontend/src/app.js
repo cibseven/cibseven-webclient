@@ -52,7 +52,7 @@ Promise.all([
   // Apply defaults before merging
   const configFromFile = applyConfigDefaults(responses[0].data)
   Object.assign(configFromFile, responses[1].data)
-  var config = configFromFile
+  const config = configFromFile
 
   setServicesBasePath(config.servicesBasePath)
 
@@ -60,7 +60,7 @@ Promise.all([
   //axios.defaults.baseURL = appConfig.adminBasePath
 
   // Load theme CSS and static assets (favicon, etc.)
-  var theme = getTheme(config)
+  const theme = getTheme(config)
   loadTheme(theme).then(() => {
     applyTheme(theme)
     switchLanguage(config, i18n.global.locale).then(() => {

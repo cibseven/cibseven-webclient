@@ -149,7 +149,7 @@ export default {
     setVariablesAndSubmit: async function() {
       try {
         this.dataToSubmit = {}
-        var result = this.form.submit()
+        const result = this.form.submit()
         if (Object.keys(result.errors).length > 0 && this.closeTask) return
 
         // To submit file variables, we must use separate endpoint before or after submitting non-file form data.

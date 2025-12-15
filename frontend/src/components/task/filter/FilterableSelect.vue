@@ -73,7 +73,7 @@ export default {
   },
   computed: {
     filteredElements: function() {
-      var list = {}
+      let list = {}
       if (this.elements) {
         if (Array.isArray(this.elements)) {
           this.elements.forEach(element => {
@@ -92,7 +92,7 @@ export default {
       return list
     },
     isValid: function() {
-      var allElements = this.elements
+      let allElements = this.elements
       if (!Array.isArray(allElements)) allElements = Object.keys(allElements)
       return !this.noInvalidValues || !this.value ||
         allElements.includes(element => { if (this.value === element.id) return true; else return false })

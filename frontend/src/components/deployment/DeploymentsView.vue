@@ -342,11 +342,11 @@ export default {
       this.loadDeployments(this.deployments.length)
     },
     deleteDeployments: function () {
-      var vm = this
+      let vm = this
       this.deleteLoader = true
       this.deploymentsDelData.total = this.deploymentsSelected.length
       this.deploymentsDelData.deleted = 0
-      var pool = this.deploymentsSelected.slice(0, this.deploymentsSelected.length)
+      let pool = this.deploymentsSelected.slice(0, this.deploymentsSelected.length)
       pool.forEach(deployment => {
         let found = this.groups.findIndex(group => {
           const index = group.data.findIndex(d => {
@@ -366,7 +366,7 @@ export default {
       pool = this.deploymentsSelected.slice(0, this.deploymentsSelected.length)
       startTask()
       function startTask() {
-        var deployment = pool.shift()
+        const deployment = pool.shift()
         if (deployment) {
           deleteDeployment(deployment)
         } else {

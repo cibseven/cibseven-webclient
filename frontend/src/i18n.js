@@ -112,9 +112,9 @@ const setLanguage = function(language) {
   moment.locale(language)
 }
 
-var loadedLanguages = []
+const loadedLanguages = []
 const switchLanguage = async function(config, lang) {
-  var language = config.supportedLanguages.includes(lang) ? lang : config.supportedLanguages[0]
+  const language = config.supportedLanguages.includes(lang) ? lang : config.supportedLanguages[0]
 
   if (loadedLanguages.includes(language)) {
     setLanguage(language)

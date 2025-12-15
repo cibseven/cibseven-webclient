@@ -129,9 +129,9 @@ export default {
             ((process.name) ? process.name.toUpperCase().includes(this.filter.toUpperCase()) : false)) &&
             (!process.revoked))
       }).sort((objA, objB) => {
-        var nameA = objA.name ? objA.name.toUpperCase() : objA.name
-        var nameB = objB.name ? objB.name.toUpperCase() : objB.name
-        var comp = nameA < nameB ? -1 : nameA > nameB ? 1 : 0
+        const nameA = objA.name ? objA.name.toUpperCase() : objA.name
+        const nameB = objB.name ? objB.name.toUpperCase() : objB.name
+        let comp = nameA < nameB ? -1 : (nameA > nameB ? 1 : 0)
 
         if (this.$root.config.subProcessFolder) {
           if (objA.resource.indexOf(this.$root.config.subProcessFolder) > -1) comp = 1
@@ -154,7 +154,7 @@ export default {
   },
   methods: {
     checkProcessInUrl: function (processKey) {
-      var index = this.processesByOptions.findIndex(process => { return process.key === processKey })
+      const index = this.processesByOptions.findIndex(process => { return process.key === processKey })
       if (index > -1) this.startProcess(this.processesByOptions[index])
       else {
         this.$root.$refs.error.show({ type: 'processNotFound', params: [processKey] })
@@ -175,7 +175,7 @@ export default {
     },
     favoriteHandler: function(process) {
       process.favorite = !process.favorite
-      var favorites = this.favoritesFilter(this.$store.state.process.list).map(r => { return r.key })
+      const favorites = this.favoritesFilter(this.$store.state.process.list).map(r => { return r.key })
       localStorage.setItem('favorites', JSON.stringify(favorites))
     },
     changeViewMode: function(mdi) {

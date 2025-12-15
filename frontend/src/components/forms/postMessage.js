@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-var postMessageMixin = {
+const postMessageMixin = {
 //	created: function() {
 //		window.addEventListener('message', this.callMethodFromMessage)
 //	},

@@ -187,12 +187,12 @@ export default {
     },
     loadIdentityLinks: function(taskId) {
       this.candidateUsers = []
-      var promises = []
+      let promises = []
       TaskService.findIdentityLinks(taskId).then(identityLinks => {
         identityLinks.forEach(identityLink => {
           if (identityLink.type === 'candidate') {
             if (identityLink.groupId !== null) {
-              var promise = AdminService.findUsers({ memberOfGroup: identityLink.groupId }).then(users => {
+              const promise = AdminService.findUsers({ memberOfGroup: identityLink.groupId }).then(users => {
                 this.$store.commit('setCandidateUsers', users)
                 this.$store.commit('setSearchUsers', users)
               })

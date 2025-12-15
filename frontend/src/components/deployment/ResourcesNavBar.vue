@@ -173,7 +173,7 @@ export default {
       ProcessService.findProcessesWithFilters('deploymentId=' + this.deployment.id + '&resourceName=' + resource.name)
         .then(processesDefinition => {
           if (processesDefinition.length > 0) {
-            var processDefinition = processesDefinition[0]
+            const processDefinition = processesDefinition[0]
             ProcessService.fetchDiagram(processDefinition.id).then(response => {
               setTimeout(() => {
                 this.diagramLoading = false

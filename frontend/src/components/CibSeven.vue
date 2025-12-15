@@ -272,9 +272,9 @@ export default {
       return this.$store.state.process.list.filter(process => {
         return ((!process.revoked))
       }).sort((objA, objB) => {
-        var nameA = objA.name ? objA.name.toUpperCase() : objA.name
-        var nameB = objB.name ? objB.name.toUpperCase() : objB.name
-        var comp = nameA < nameB ? -1 : nameA > nameB ? 1 : 0
+        const nameA = objA.name ? objA.name.toUpperCase() : objA.name
+        const nameB = objB.name ? objB.name.toUpperCase() : objB.name
+        let comp = nameA < nameB ? -1 : (nameA > nameB ? 1 : 0)
 
         if (this.$root.config.subProcessFolder) {
           if (objA.resource.indexOf(this.$root.config.subProcessFolder) > -1) comp = 1
@@ -353,7 +353,7 @@ export default {
   },
   mounted: function () {
     if (platform.name === 'IE') {
-      var isNotifiedUser = localStorage.getItem('ienotify')
+      const isNotifiedUser = localStorage.getItem('ienotify')
       if (!isNotifiedUser) this.$refs.ieNotification.show() //must notify the user
     }
     this.refreshAppTitle(this.pageTitle)

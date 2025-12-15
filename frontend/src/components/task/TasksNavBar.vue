@@ -238,11 +238,11 @@ export default {
   },
   computed: {
     tasksFiltered: function() {
-      var tasks = []
+      let tasks = []
       if (this.tasks) {
         tasks = this.tasks.filter(task => {
-          var reminder = task.followUp && moment(task.followUp)
-          var dueDate = task.due && moment(task.due)
+          const reminder = task.followUp && moment(task.followUp)
+          const dueDate = task.due && moment(task.due)
           if (!this.$store.state.filter.settings.reminder && !this.$store.state.filter.settings.dueDate) return true
           return this.dateFitsFilter(reminder, this.$store.state.filter.settings.reminder) ||
             this.dateFitsFilter(dueDate, this.$store.state.filter.settings.dueDate)
@@ -267,9 +267,9 @@ export default {
     loadAdvancedFilters: function() {
       this.advancedFilter = []
       this.$root.config.taskFilter.advancedSearch.processVariables.forEach(pv => {
-        var criteria = this.$store.state.advancedSearch.criterias
+        const criteria = this.$store.state.advancedSearch.criterias
           .find(obj => obj.id === pv.key && (obj.operator === 'eq' || obj.operator === 'like'))
-        var advancedFilterObj = {
+        const advancedFilterObj = {
           key: pv.key,
           variableName: pv.variableName,
           displayName: pv.displayName,
@@ -291,10 +291,10 @@ export default {
       })
     },
     updateAdvancedFilters: debounce(800, function() {
-      var criterias = this.advancedFilter
+      const criterias = this.advancedFilter
         .filter(filterItem => filterItem.check && (filterItem.value || filterItem.type === 'Boolean'))
         .map(filterItem => {
-          var value = filterItem.type === 'Boolean' ? filterItem.defaultValue : filterItem.value
+          let value = filterItem.type === 'Boolean' ? filterItem.defaultValue : filterItem.value
           if (filterItem.operator === 'like') value = '%' + value + '%'
           return {
             id: filterItem.key,
@@ -315,7 +315,7 @@ export default {
     }),
     checkTaskIdInUrl: function(taskId) {
       if (this.tasks.length > 0 && taskId && this.$route.params.filterId !== '*') {
-        var index = this.tasks.findIndex(task => {
+        const index = this.tasks.findIndex(task => {
           return task.id === taskId
         })
         if (index > -1) this.$emit('selected-task', this.tasks[index])
@@ -334,7 +334,7 @@ export default {
               return this.$emit('selected-task', task)
             }
 
-            var userIdLink = identityLinks.find(i => {
+            const userIdLink = identityLinks.find(i => {
               return i.type === 'candidate' && i.userId && i.userId.toLowerCase() === this.$root.user.userID.toLowerCase()
             })
             if (userIdLink) return this.$emit('selected-task', task)
@@ -344,10 +344,10 @@ export default {
       })
     },
     manageCandidateGroups: function(identityLinks, task) {
-      var promises = []
-      for (var i in identityLinks) {
+      let promises = []
+      for (let i in identityLinks) {
         if (identityLinks[i].type === 'candidate' && identityLinks[i].groupId) {
-          var promise = AdminService.findUsers({ memberOfGroup: identityLinks[i].groupId }).then(users => {
+          const promise = AdminService.findUsers({ memberOfGroup: identityLinks[i].groupId }).then(users => {
             return users.some(u => {
               return u.id.toLowerCase() === this.$root.user.userID.toLowerCase()
             })
@@ -369,7 +369,7 @@ export default {
       else return moment(date).fromNow()
     },
     getDueClasses: function(task) {
-      var classes = []
+      let classes = []
       if (!task.due) classes.push('text-muted')
       else if (moment(task.due).isBefore(moment())) classes.push('text-danger')
       else if (moment().add(this.$root.config.warnOnDueExpirationIn, 'hours').isAfter(moment(task.due))) classes.push('text-warning')
@@ -377,7 +377,7 @@ export default {
       return classes
     },
     getReminderClasses: function(task) {
-      var classes = []
+      let classes = []
       if (!task.followUp) classes.push('text-muted')
       if (!this.isMobile() && task !== this.focused && task.id !== this.selectedDateT.id && !task.followUp) classes.push('invisible')
       return classes
@@ -396,11 +396,11 @@ export default {
     },
     selectedTask: function(task) {
 	    this.justSelectedFromList = true;
-      var selection = window.getSelection()
-      var filterId = this.$store.state.filter.selected ?
+      const selection = window.getSelection()
+      const filterId = this.$store.state.filter.selected ?
         this.$store.state.filter.selected.id : this.$route.params.filterId
       if (!selection.toString()) {
-        var route = '/seven/auth/tasks/' + filterId + '/' + task.id
+        const route = '/seven/auth/tasks/' + filterId + '/' + task.id
         if (this.$router.currentRoute.path !== route){
           this.$router.push(route)
         }
@@ -408,7 +408,7 @@ export default {
     },
     getProcessName: function(processDefinitionId) {
       if (processDefinitionId === null || !this.$root.config.layout.showProcessName) return ''
-      var process = this.$store.state.process.list.find(item => {
+      const process = this.$store.state.process.list.find(item => {
         return (item.id.split(':')[0] === processDefinitionId.split(':')[0])
       })
       return process && process.name ? process.name : ''
@@ -417,7 +417,7 @@ export default {
       if (this.$root.user.id.toLowerCase() === task.assignee.toLowerCase()) return this.$root.user.id // .displayName
       else {
         if (this.$store.state.user.listCandidates) {
-          var user = this.$store.state.user.listCandidates.find(user => {
+          const user = this.$store.state.user.listCandidates.find(user => {
             return user.id.toLowerCase() === task.assignee.toLowerCase()
           })
           if ((user) && (user.displayName)) return user.displayName
@@ -452,7 +452,7 @@ export default {
     setTime: function(time, type) {
       if (!this.selectedDateT[type]) return
       if (time) {
-        var timeSplit = time.split(':')
+        const timeSplit = time.split(':')
         this.selectedDateT[type].setHours(timeSplit[0])
         this.selectedDateT[type].setMinutes(timeSplit[1])
       } else {
