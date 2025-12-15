@@ -16,7 +16,7 @@ import groovy.transform.Field
     pom: ConstantsInternal.DEFAULT_MAVEN_POM_PATH,
     mvnContainerName: Constants.MAVEN_JDK_17_CONTAINER,
 	office365WebhookId: Constants.OFFICE_365_CIBSEVEN_WEBHOOK_ID,
-    primaryBranch: 'PR-720',
+    primaryBranch: 'PR-721',
     dependencyTrackSynchronous: true,
     uiParamPresets: [:],
     testMode: false,
