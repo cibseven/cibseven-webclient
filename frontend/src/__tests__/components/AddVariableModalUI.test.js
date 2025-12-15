@@ -460,7 +460,7 @@ describe('AddVariableModal.vue UI interactions', () => {
       await changeType('Long')
       expect(wrapper.vm.value).toBe(1)
       await changeType('Double')
-      expect(wrapper.vm.value).toBe(1.0)
+      expect(wrapper.vm.value).toBe(1)
       await changeType('Date')
       expect(wrapper.vm.value).toBe(wrapper.vm.currentDate())
       await changeType('Json')
@@ -476,7 +476,7 @@ describe('AddVariableModal.vue UI interactions', () => {
         it.each([
           ['Boolean', true],
           ['Long', 0],
-          ['Double', 0.],
+          ['Double', 0],
           ['Date', null], // will use currentDate()
           ['Json', '{}'],
           ['Xml', ''],
@@ -497,7 +497,7 @@ describe('AddVariableModal.vue UI interactions', () => {
         it.each([
           ['Boolean', true],
           ['Long', 0],
-          ['Double', 0.],
+          ['Double', 0],
           ['Date', null], // will use currentDate()
           ['Json', '{}'],
           ['Xml', ''],
@@ -539,7 +539,7 @@ describe('AddVariableModal.vue UI interactions', () => {
         it.each([
           ['Boolean', true],
           ['Long', 0],
-          ['Double', 0.0],
+          ['Double', 0],
           ['Date', null], // will use currentDate()
           ['Json', '{\n  "a": "b"\n}'],
           ['Xml', ''],
@@ -567,7 +567,7 @@ describe('AddVariableModal.vue UI interactions', () => {
 
         it.each([
           ['Long', 1],
-          ['Double', 1.0],
+          ['Double', 1],
           ['String', ''],
           ['Date', null],
           ['Json', '{}'],
@@ -587,7 +587,7 @@ describe('AddVariableModal.vue UI interactions', () => {
 
         it.each([
           ['Long', 0],
-          ['Double', 0.0],
+          ['Double', 0],
           ['String', ''],
           ['Date', null],
           ['Json', '{}'],
@@ -607,7 +607,7 @@ describe('AddVariableModal.vue UI interactions', () => {
 
         it.each([
           ['Long', 0],
-          ['Double', 0.0],
+          ['Double', 0],
           ['String', ''],
           ['Date', null],
           ['Json', '{}'],
@@ -630,7 +630,7 @@ describe('AddVariableModal.vue UI interactions', () => {
 
         it.each([
           ['Boolean', true],
-          ['Double', 0.0],
+          ['Double', 0],
           ['String', ''],
           ['Json', '{}'],
           ['Date', null],
@@ -650,7 +650,7 @@ describe('AddVariableModal.vue UI interactions', () => {
 
         it.each([
           ['Boolean', true],
-          ['Double', 100.0],
+          ['Double', 100],
           ['String', '100'],
           ['Json', '{}'],
           ['Date', null],
@@ -673,7 +673,7 @@ describe('AddVariableModal.vue UI interactions', () => {
 
         it.each([
           ['Boolean', true],
-          ['Double', 0.0],
+          ['Double', 0],
           ['String', ''],
           ['Json', '{}']
         ])('0 to %s', async (targetType, expectedValue) => {
@@ -736,7 +736,7 @@ describe('AddVariableModal.vue UI interactions', () => {
         it.each([
           ['Boolean', true],
           ['Long', 0],
-          ['Double', 0.0],
+          ['Double', 0],
           ['String', '2025-09-25'],
           ['Json', '{}'],
           ['Xml', ''],
@@ -756,7 +756,7 @@ describe('AddVariableModal.vue UI interactions', () => {
         it.each([
           ['Boolean', true],
           ['Long', 0],
-          ['Double', 0.0],
+          ['Double', 0],
           ['String', ''],
           ['Json', '{}'],
           ['Xml', ''],
@@ -779,7 +779,7 @@ describe('AddVariableModal.vue UI interactions', () => {
         it.each([
           ['Boolean', true],
           ['Long', 0],
-          ['Double', 0.0],
+          ['Double', 0],
           ['String', ''],
           ['Date', null],
           ['Json', '{}'],
@@ -800,7 +800,7 @@ describe('AddVariableModal.vue UI interactions', () => {
         it.each([
           ['Boolean', true],
           ['Long', 100],
-          ['Double', 100.0],
+          ['Double', 100],
           ['String', '100'],
           ['Date', null],
           ['Json', '{}'],
@@ -824,7 +824,7 @@ describe('AddVariableModal.vue UI interactions', () => {
         it.each([
           ['Boolean', true],
           ['Long', 0],
-          ['Double', 0.0],
+          ['Double', 0],
           ['String', ''],
           ['Date', null],
           ['Json', '{}'],
@@ -845,7 +845,7 @@ describe('AddVariableModal.vue UI interactions', () => {
         it.each([
           ['Boolean', true],
           ['Long', 100],
-          ['Double', 100.0],
+          ['Double', 100],
           ['String', '100'],
           ['Date', null],
           ['Json', '{}'],
@@ -869,7 +869,7 @@ describe('AddVariableModal.vue UI interactions', () => {
         it.each([
           ['Boolean', true],
           ['Long', 0],
-          ['Double', 0.0],
+          ['Double', 0],
           ['String', '{}'],
           ['Date', null],
           ['Xml', ''],
@@ -889,7 +889,7 @@ describe('AddVariableModal.vue UI interactions', () => {
         it.each([
           ['Boolean', true],
           ['Long', 123],
-          ['Double', 123.0],
+          ['Double', 123],
           ['String', '123'],
           ['Date', null],
           ['Xml', '']
@@ -915,7 +915,7 @@ describe('AddVariableModal.vue UI interactions', () => {
         it.each([
           ['Boolean', true],
           ['Long', 0],
-          ['Double', 0.0],
+          ['Double', 0],
           ['String', '{"a":"b"}'],
           ['Date', null],
           ['Xml', '']
@@ -944,7 +944,7 @@ describe('AddVariableModal.vue UI interactions', () => {
         it.each([
           ['Boolean', true],
           ['Long', 0],
-          ['Double', 0.0],
+          ['Double', 0],
           ['String', ''],
           ['Date', null],
           ['Json', '{}'],
@@ -964,7 +964,7 @@ describe('AddVariableModal.vue UI interactions', () => {
         it.each([
           ['Boolean', true],
           ['Long', 0],
-          ['Double', 0.0],
+          ['Double', 0],
           ['String', '<root>test</root>'],
           ['Date', null],
           ['Json', '{}'],
@@ -987,7 +987,7 @@ describe('AddVariableModal.vue UI interactions', () => {
         it.each([
           ['Boolean', true],
           ['Long', 0],
-          ['Double', 0.0],
+          ['Double', 0],
           ['String', ''],
           ['Date', null],
           ['Json', '{}'],
@@ -1007,7 +1007,7 @@ describe('AddVariableModal.vue UI interactions', () => {
         it.each([
           ['Boolean', true],
           ['Long', 0],
-          ['Double', 0.0],
+          ['Double', 0],
           ['String', '{"name":"test"}'],
           ['Date', null],
           ['Json', '{\n  "name": "test"\n}'],
@@ -1027,44 +1027,18 @@ describe('AddVariableModal.vue UI interactions', () => {
           expect(wrapper.vm.value).toBe(null)
         })
 
-        it('null to Boolean', async () => {
-          await changeType('Boolean')
-          expect(wrapper.vm.value).toBe(true)
-        })
-
-        it('null to Long', async () => {
-          await changeType('Long')
-          expect(wrapper.vm.value).toBe(0)
-        })
-
-        it('null to Double', async () => {
-          await changeType('Double')
-          expect(wrapper.vm.value).toBe(0.0)
-        })
-
-        it('null to String', async () => {
-          await changeType('String')
-          expect(wrapper.vm.value).toBe('')
-        })
-
-        it('null to Date', async () => {
-          await changeType('Date')
-          expect(wrapper.vm.value).toBe(wrapper.vm.currentDate())
-        })
-
-        it('null to Json', async () => {
-          await changeType('Json')
-          expect(wrapper.vm.value).toBe('{}')
-        })
-
-        it('null to Xml', async () => {
-          await changeType('Xml')
-          expect(wrapper.vm.value).toBe('')
-        })
-
-        it('null to Object', async () => {
-          await changeType('Object')
-          expect(wrapper.vm.value).toBe('')
+        it.each([
+          ['Boolean', true],
+          ['Long', 0],
+          ['Double', 0],
+          ['String', ''],
+          ['Date', null],
+          ['Json', '{}'],
+          ['Xml', ''],
+          ['Object', '']
+        ])('null to %s', async (targetType, expectedValue) => {
+          await changeType(targetType)
+          expect(wrapper.vm.value).toBe(expectedValue === null ? wrapper.vm.currentDate() : expectedValue)
         })
       })
     })
