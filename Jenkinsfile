@@ -279,7 +279,10 @@ pipeline {
                                 script {
                                     timeout(time: 5, unit: 'MINUTES') {
                                         def qg = waitForQualityGate()
-                                        log.warning "SonarQube quality gate status: ${qg.status}"
+                                        if (qg.status != 'OK') {
+                                            log.info "Pipeline unstable due to quality gate failure: ${qg.status}"
+                                            currentBuild.result = 'UNSTABLE'
+                                        }
                                     }
                                 }
                             }
