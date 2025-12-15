@@ -671,6 +671,17 @@ public interface BpmProvider {
 	}
 
 	/**
+	 * Get the count of users in the system with optional filters.
+	 * 
+	 * @param filters the filters to apply (e.g., memberOfGroup). Can be null or empty for no filtering.
+	 * @param user the user performing the operation.
+	 * @return the count of users matching the filters.
+	 */
+	default long countUsers(Map<String, Object> filters, CIBUser user) {
+		return getUserProvider().countUsers(filters, user);
+	}
+
+	/**
 	 * Create a new user.
 	 *
 	 * @param user the new user to be created.
@@ -1854,6 +1865,26 @@ public interface BpmProvider {
 
 	default Collection<Engine> getProcessEngineNames() throws SystemException {
 		return getEngineProvider().getProcessEngineNames();
+	}
+
+	/**
+	 * Determine whether an initial user needs to be created
+	 *
+	 * @return true if admin group is available and write access is set
+	 * @throws SystemException in case of an error
+	 */
+	default Boolean requiresSetup(String engine) {
+		return getEngineProvider().requiresSetup(engine);
+	}
+
+	/**
+	 * Creates a new initial user assigned to the also created admin group.
+	 *
+	 * @param user the new user to be created.
+	 * @throws InvalidUserIdException when the user ID is invalid.
+	 */
+	default void createSetupUser(NewUser user, String engine) throws InvalidUserIdException {
+		getEngineProvider().createSetupUser(user, engine);
 	}
 
 }

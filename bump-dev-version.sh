@@ -1,15 +1,14 @@
 #!/bin/bash
-# Universal script to bump dev version for bpm-sdk, cib-common-components, or frontend
+# Universal script to bump dev version for bpm-sdk, or frontend
 # Usage: 
 #   ./bump-npm-dev.sh bpm-sdk
-#   ./bump-npm-dev.sh cib-common-components
 #   ./bump-npm-dev.sh frontend
 
 set -e
 
 # Check if package name is provided
 if [ $# -eq 0 ]; then
-    echo "Please specify package: bpm-sdk, cib-common-components, or frontend"
+    echo "Please specify package: bpm-sdk, or frontend"
     echo "Usage: $0 [package-name]"
     exit 1
 fi
@@ -18,11 +17,11 @@ PACKAGE=$1
 
 # Validate package name
 case $PACKAGE in
-    "bpm-sdk"|"cib-common-components"|"frontend")
+    "bpm-sdk"|"frontend")
         ;;
     *)
         echo "Invalid package: $PACKAGE"
-        echo "Valid packages: bpm-sdk, cib-common-components, frontend"
+        echo "Valid packages: bpm-sdk, frontend"
         exit 1
         ;;
 esac

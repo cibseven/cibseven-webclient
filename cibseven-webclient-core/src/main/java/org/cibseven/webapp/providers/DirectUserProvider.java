@@ -645,4 +645,11 @@ public class DirectUserProvider implements IUserProvider {
 		return userGroup;
 	}
 
+	@Override
+	public long countUsers(Map<String, Object> filters, CIBUser user) throws SystemException {
+		UserQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(filters, UserQueryDto.class);
+		UserQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
+		return query.count();
+	}
+
 }

@@ -52,17 +52,17 @@ export default {
 	},
 	computed: {
 		activityInstancesGrouped: function () {
-				var res = []
+				const res = []
 				if (this.activityInstance) {
 					res[this.activityInstance.id] = this.activityInstance.name
 					this.activityInstance.childActivityInstances.forEach(ai => {
-						res[ai.id] = ai.name
+						res[ai.id] = ai.name || ai.activityId
 					})
 				} else {
 					res[this.selectedInstance.id] = this.selectedInstance.processDefinitionName
 					if (this.activityInstanceHistory) {
 						this.activityInstanceHistory.forEach(ai => {
-							res[ai.id] = ai.activityName
+							res[ai.id] = ai.activityName || ai.activityId
 						})
 					}
 				}

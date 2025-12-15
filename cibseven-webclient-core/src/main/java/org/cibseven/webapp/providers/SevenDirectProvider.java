@@ -70,6 +70,6 @@ public class SevenDirectProvider implements BpmProvider {
 		systemProvider = new DirectSystemProvider(getDirectProviderUtil());
 		tenantProvider = new DirectTenantProvider(getDirectProviderUtil());
 		externalTaskProvider = new DirectExternalTaskProvider(getDirectProviderUtil());
-		engineProvider = new DirectEngineProvider();
+		engineProvider = new DirectEngineProvider(getDirectProviderUtil());
   	}	
 }

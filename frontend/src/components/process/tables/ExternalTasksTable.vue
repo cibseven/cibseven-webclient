@@ -69,7 +69,7 @@ import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { FlowTable } from '@cib/common-frontend'
 import { SuccessAlert, CopyableActionButton } from '@cib/common-frontend'
 import { formatDateForTooltips } from '@/utils/dates.js'
-import { BWaitingBox } from '@cib/bootstrap-components'
+import { BWaitingBox } from '@cib/common-frontend'
 import { mapGetters, mapActions } from 'vuex'
 
 export default {

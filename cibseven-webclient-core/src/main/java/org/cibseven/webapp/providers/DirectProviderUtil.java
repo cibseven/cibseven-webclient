@@ -77,6 +77,11 @@ public class DirectProviderUtil {
 		return objectMappers.get(engineName);
 	}
 
+	protected ObjectMapper getObjectMapper(String engineName) {
+		getProcessEngine(engineName);
+		return objectMappers.get(engineName);
+	}
+
 	protected String getEngineName(CIBUser user) {
 	String processEngineName = user != null ? user.getEngine() : null;
 	// If engine name is provided and not "default", add it to the path

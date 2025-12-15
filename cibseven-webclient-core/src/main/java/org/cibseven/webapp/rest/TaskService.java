@@ -305,7 +305,6 @@ public class TaskService extends BaseService implements InitializingBean {
 	public Collection<VariableHistory> fetchActivityVariables(
 			@Parameter(description = "Activity instance Id") @PathVariable String activityInstanceId,
 			Locale loc, CIBUser user) {
-		checkCockpitRights(user);
         checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.READ_ALL);
 		return bpmProvider.fetchActivityVariables(activityInstanceId, user);
 	}

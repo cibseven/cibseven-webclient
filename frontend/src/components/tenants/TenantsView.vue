@@ -72,7 +72,7 @@
 <script>
   import { FlowTable } from '@cib/common-frontend'
   import { ConfirmDialog } from '@cib/common-frontend'
-  import { BWaitingBox } from '@cib/bootstrap-components'
+  import { BWaitingBox } from '@cib/common-frontend'
   import { mapActions, mapGetters } from 'vuex'
 
   export default {

@@ -48,7 +48,7 @@
 import DmnJS from 'dmn-js'
 
 // UI loading indicator
-import { BWaitingBox } from '@cib/bootstrap-components'
+import { BWaitingBox } from '@cib/common-frontend'
 import { mapActions } from 'vuex'
 
 // Required styles

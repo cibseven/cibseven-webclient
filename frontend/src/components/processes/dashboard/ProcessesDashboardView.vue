@@ -73,7 +73,7 @@ import { AnalyticsService } from '@/services.js'
 import DeploymentItem from '@/components/processes/dashboard/DeploymentItem.vue'
 import PieChart from './PieChart.vue'
 import { ContentBlock } from '@cib/common-frontend'
-import { BWaitingBox } from '@cib/bootstrap-components'
+import { BWaitingBox } from '@cib/common-frontend'
 import { moment } from '@/globals.js'
 import { formatDate } from '@/utils/dates.js'
 

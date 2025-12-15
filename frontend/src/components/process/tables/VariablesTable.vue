@@ -38,12 +38,15 @@
         { label: 'value', key: 'value', class: 'col-3', tdClass: 'py-1' },
         { label: 'scope', key: 'scope', class: 'col-2', tdClass: 'py-1' },
         { label: 'actions', key: 'actions', class: 'col-2', sortable: false, tdClass: 'py-1' }]">
+
         <template v-slot:cell(name)="table">
           <div :title="table.item.name" class="text-truncate">{{ table.item.name }}</div>
         </template>
+
         <template v-slot:cell(type)="table">
           <div :title="table.item.type" class="text-truncate">{{ table.item.type }}</div>
         </template>
+
         <template v-slot:cell(value)="table">
           <CopyableActionButton
             :displayValue="displayValue(table.item)"
@@ -53,6 +56,11 @@
             @copy="copyValueToClipboard"
           />
         </template>
+
+        <template v-slot:cell(scope)="table">
+          <div :title="table.item.scope">{{ table.item.scope }}</div>
+        </template>
+
         <template v-slot:cell(actions)="table">
           <component :is="VariablesTableActionsPlugin" v-if="VariablesTableActionsPlugin" :table-item="table.item" :selected-instance="selectedInstance" :file-objects="fileObjects"></component>
           <b-button v-if="isFile(table.item)" :title="displayValueTooltip(table.item)"
@@ -100,7 +108,7 @@
 </template>
 
 <script>
-import { BWaitingBox } from '@cib/bootstrap-components'
+import { BWaitingBox } from '@cib/common-frontend'
 import { FlowTable } from '@cib/common-frontend'
 import { TaskPopper, SuccessAlert, CopyableActionButton } from '@cib/common-frontend'
 import DeleteVariableModal from '@/components/process/modals/DeleteVariableModal.vue'

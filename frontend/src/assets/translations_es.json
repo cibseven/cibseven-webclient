@@ -1103,7 +1103,8 @@
 		"InvalidUserIdException": "El ID de usuario contiene caracteres no válidos. Sólo se permiten caracteres alfanuméricos (a-z, A-Z, 0-9). Por favor, corrija su entrada.",
 		"invalidEmail": "Introduce una dirección de correo electrónico válida.",
 		"InvalidValueHistoryTimeToLive": "No están permitidos valores nulos para el tiempo de vida del histórico.",
-		"DmnTransformationException": "El recurso no pudo ser actualizado. No se puede transformar el recurso DMN."
+		"DmnTransformationException": "El recurso no pudo ser actualizado. No se puede transformar el recurso DMN.",
+		"unknown": "Se produjo un error inesperado. Por favor, inténtelo de nuevo."
 	},
 	"searches": {
 		"filter": "Filtrar",
@@ -1405,5 +1406,16 @@
 		"noGroups": "sin grupo",
 		"groupName": "Grupo",
 		"assignmentsByGroupInfo": "Una tarea puede estar asignada a varios grupos."
+	},
+	"setup": {
+		"title": "Configuración Inicial",
+		"description": "¡Bienvenido a CIB seven! Cree una cuenta de administrador para comenzar.",
+		"createAdminUser": "Crear cuenta de administrador",
+		"createUser": "Crear usuario",
+		"success": "¡Cuenta de administrador creada exitosamente! Redirigiendo al inicio de sesión...",
+		"help": {
+			"title": "¿Por qué se muestra esta página?",
+			"description": "Está intentando acceder al motor de procesos \"{0}\". Este motor está configurado para usar el servicio de identidad integrado (base de datos) pero no tiene usuarios administrativos configurados. Esta página le permite crear un usuario inicial para acceder al motor de procesos."
+		}
 	}
 }
