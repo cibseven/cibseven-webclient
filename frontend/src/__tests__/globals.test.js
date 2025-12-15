@@ -14,22 +14,27 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import axios from 'axios'
-import moment from 'moment'
+import { describe, it, expect } from 'vitest'
+import { createUUID } from '@/globals'
 
-function createUUID() { //keycloak.js unique identifier for state and nonce
-    let s = [];
-    const hexDigits = '0123456789abcdef';
-    let randomValues = new Uint8Array(36);
-    crypto.getRandomValues(randomValues);
-    for (let i = 0; i < 36; i++) {
-        s[i] = hexDigits.substr(randomValues[i] % 0x10, 1);
-    }
-    s[14] = '4';
-    s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1);
-    s[8] = s[13] = s[18] = s[23] = '-';
-    const uuid = s.join('');
-    return uuid;
-}
+describe('globals.js', () => {
 
-export { axios, moment, createUUID }
+  describe('createUUID', () => {
+    it('creates a valid UUID v4', () => {
+      const uuid = createUUID()
+      // Check the format of the UUID v4
+      console.log('Generated UUID:', uuid)
+      const uuidV4Regex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
+      expect(uuid).toMatch(uuidV4Regex)
+    })
+
+    it('creates unique UUIDs', () => {
+      const uuidSet = new Set()
+      const iterations = 1000
+      for (let i = 0; i < iterations; i++) {
+        uuidSet.add(createUUID())
+      }
+      expect(uuidSet.size).toBe(iterations)
+    })
+  })
+})
