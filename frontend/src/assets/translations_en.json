@@ -1114,7 +1114,9 @@
 		"searchByTaskName": "Search by task name...",
 		"searchByDeploymentName": "Search by deployment...",
 		"searchByBusinessKey": "Search by business key...",
-		"searchByFilterName": "Search by filter name..."
+		"searchByFilterName": "Search by filter name...",
+		"wildcardHelp": "Wildcard search is supported.",
+		"wildcardExample": "Use % to represent any number of characters (e.g. %process%)."
 	},
 	"sorting": {
 		"created": "@:task.details.created",

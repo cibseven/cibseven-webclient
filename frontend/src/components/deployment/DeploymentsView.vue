@@ -21,7 +21,7 @@
     <div style="background-color: rgba(98, 142, 199, 0.2);">
       <div class="d-flex align-items-center py-2 container-fluid">
         <div class="col-8 d-flex align-items-center gap-2">
-          <div class="border rounded d-flex flex-fill align-items-center bg-white me-3" style="max-width: 220px;">
+          <div class="border rounded d-flex flex-fill align-items-center bg-white" style="max-width: 220px;">
             <b-button
               size="sm" class="mdi mdi-magnify mdi-18px text-secondary py-0" variant="link"
               :title="$t('searches.search')"></b-button>
@@ -34,6 +34,11 @@
               />
             </div>
           </div>
+          <span 
+            ref="wildcardHelper"
+            class="mdi mdi-help-circle mdi-18px text-secondary me-3" 
+            style="cursor: pointer;">
+          </span>
           <b-form-group class="mb-0">
             <b-input-group size="sm" class="align-items-center">
               <b-input-group-prepend class="me-2 align-items-center">
@@ -143,6 +148,10 @@
         <b-button @click="deleteDeployment(); $refs.deleteSelectedModal.hide()" variant="primary">{{ $t('confirm.delete') }}</b-button>
       </template>
     </b-modal>
+    <b-popover :target="() => $refs.wildcardHelper" triggers="hover">
+      <div>{{ $t('searches.wildcardHelp') }}</div>
+      <div>{{ $t('searches.wildcardExample') }}</div>
+    </b-popover>
     <SuccessAlert top="0" style="z-index: 1031" ref="deploymentsDeleted"> {{ $t('deployment.deploymentsDeleted',
       [deploymentsDelData.deleted, deploymentsDelData.total]) }}</SuccessAlert>
     <SuccessAlert ref="success" top="0" style="z-index: 1031">{{ $t('alert.successOperation') }}</SuccessAlert>
