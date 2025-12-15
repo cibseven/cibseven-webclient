@@ -16,7 +16,7 @@ import groovy.transform.Field
     pom: ConstantsInternal.DEFAULT_MAVEN_POM_PATH,
     mvnContainerName: Constants.MAVEN_JDK_17_CONTAINER,
 	office365WebhookId: Constants.OFFICE_365_CIBSEVEN_WEBHOOK_ID,
-    primaryBranch: 'main',
+    primaryBranch: 'PR-720',
     dependencyTrackSynchronous: true,
     uiParamPresets: [:],
     testMode: false,
@@ -182,6 +182,57 @@ pipeline {
             }
         }
 
+        stage('OWASP Dependency-Track') {
+            when {
+                allOf {
+                    branch pipelineParams.primaryBranch
+                    expression { params.VERIFY == true }
+                }
+            }
+            steps {
+                script {
+                    container(Constants.NODE_20_CONTAINER) {
+                        script {
+
+                            sh """
+                                cd ./frontend
+                                npm install --global @cyclonedx/cyclonedx-npm@4.1.0 --ignore-scripts
+                                cyclonedx-npm --output-file bom.xml --output-format XML
+                            """
+
+                            // Read version from package.json
+                            def packageJson = readJSON file: './frontend/package.json'
+                            env.VERSION = packageJson.version
+                            env.PACKAGE_NAME = packageJson.name
+                            env.DESCRIPTION = packageJson.description
+
+                            if (env.VERSION.isEmpty()) {
+                                error("Could not find version in package.json")
+                            }
+
+                            withCredentials([string(credentialsId: Constants.DEPENDENCY_TRACK_CREDENTIALS_ID, variable: 'API_KEY')]) {
+                                dependencyTrackPublisher(
+                                    autoCreateProjects: true,
+                                    artifact: 'frontend/bom.xml',
+                                    projectName: "${env.PACKAGE_NAME}",
+                                    projectVersion: "${env.VERSION}",
+                                    projectProperties: [
+                                        description: "${env.DESCRIPTION}",
+                                        tags: ['npm'],
+                                        isLatest: true
+                                    ],
+                                    synchronous: pipelineParams.dependencyTrackSynchronous,
+                                    failOnViolationFail: false,
+                                    dependencyTrackApiKey: API_KEY
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Should be run after Dependency-Track
         stage('Run SonarQube Checks') {
             when {
                 allOf {
@@ -236,56 +287,6 @@ pipeline {
                                     log.info "Pipeline unstable due to quality gate failure: ${qg.status}"
                                     currentBuild.result = 'UNSTABLE'
                                 }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        
-        stage('OWASP Dependency-Track') {
-            when {
-                allOf {
-                    branch pipelineParams.primaryBranch
-                    expression { params.VERIFY == true }
-                }
-            }
-            steps {
-                script {
-                    container(Constants.NODE_20_CONTAINER) {
-                        script {
-
-                            sh """
-                                cd ./frontend
-                                npm install --global @cyclonedx/cyclonedx-npm@4.1.0 --ignore-scripts
-                                cyclonedx-npm --output-file bom.xml --output-format XML
-                            """
-
-                            // Read version from package.json
-                            def packageJson = readJSON file: './frontend/package.json'
-                            env.VERSION = packageJson.version
-                            env.PACKAGE_NAME = packageJson.name
-                            env.DESCRIPTION = packageJson.description
-
-                            if (env.VERSION.isEmpty()) {
-                                error("Could not find version in package.json")
-                            }
-
-                            withCredentials([string(credentialsId: Constants.DEPENDENCY_TRACK_CREDENTIALS_ID, variable: 'API_KEY')]) {
-                                dependencyTrackPublisher(
-                                    autoCreateProjects: true,
-                                    artifact: 'frontend/bom.xml',
-                                    projectName: "${env.PACKAGE_NAME}",
-                                    projectVersion: "${env.VERSION}",
-                                    projectProperties: [
-                                        description: "${env.DESCRIPTION}",
-                                        tags: ['npm'],
-                                        isLatest: true
-                                    ],
-                                    synchronous: pipelineParams.dependencyTrackSynchronous,
-                                    failOnViolationFail: false,
-                                    dependencyTrackApiKey: API_KEY
-                                )
                             }
                         }
                     }
