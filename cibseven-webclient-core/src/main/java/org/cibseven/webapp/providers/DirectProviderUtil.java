@@ -38,6 +38,7 @@ import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
+import org.cibseven.bpm.engine.rest.util.EngineUtil;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -55,10 +56,7 @@ public class DirectProviderUtil {
 		if (processEngines.containsKey(processEngineName))
 			processEngine = processEngines.get(processEngineName);
 		else {
-			if (processEngineName == null || processEngineName.equals("default"))
-				processEngine = org.cibseven.bpm.BpmPlatform.getDefaultProcessEngine();
-			else
-				processEngine = org.cibseven.bpm.BpmPlatform.getProcessEngineService().getProcessEngine(processEngineName);
+			processEngine = EngineUtil.lookupProcessEngine(processEngineName);
 			processEngines.put(processEngineName, processEngine);
 			ObjectMapper objectMapper = new ObjectMapper();
 			JacksonConfigurator.configureObjectMapper(objectMapper);
