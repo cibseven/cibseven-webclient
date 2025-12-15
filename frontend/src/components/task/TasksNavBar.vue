@@ -30,6 +30,7 @@
         <SmartSearch class="m-1 mb-2"
           :maxlength="50"
           :options="$root.config.taskFilter.smartSearch.options"
+          :initialFilter="$route.query.tasksFilter || ''"
           @search-filter="$emit('search-filter', $event)"
           @open-advanced-search="$refs.advancedSearchModal.show()"></SmartSearch>
         <hr class="my-0">
