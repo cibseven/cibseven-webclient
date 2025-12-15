@@ -186,7 +186,7 @@ pipeline {
             when {
                 allOf {
                     branch pipelineParams.primaryBranch
-                    expression { params.VERIFY == true }
+                    expression { params.VERIFY }
                 }
             }
             parallel {
