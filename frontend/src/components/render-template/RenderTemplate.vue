@@ -369,12 +369,11 @@ export default {
       if (!ctx) return
       const el = ctx.doc.elementFromPoint(ctx.x, ctx.y)
       findAndScroll(el, deltaY, ctx.x, ctx.y, ctx.doc)
-    },
-    
+    }
   },
   beforeUnmount: function() {
     window.removeEventListener('message', this.processMessage)
-  },
+  }
 }
 function findAndScroll(el, deltaY, iframeX, iframeY, rootDoc) {
       if (!el) return
