@@ -28,7 +28,7 @@ const DEFAULT_CONFIG = {
   warnOnDueExpirationIn: 48,
   permissions: {
     tasklist: { application: ["ACCESS"] },
-    cockpit: { application: ["ALL"] },
+    cockpit: { application: ["ACCESS"] },
     displayTasks: { task: ["READ", "UPDATE"] },
     displayFilter: { filter: ["READ"] },
     editFilter: { filter: ["UPDATE"] },

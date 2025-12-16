@@ -70,7 +70,7 @@
 			"application": ["ACCESS"]
 		},
 		"cockpit": {
-			"application": ["ALL"]
+			"application": ["ACCESS"]
 		},
 		"displayTasks": {
 			"task": ["READ", "UPDATE"]
