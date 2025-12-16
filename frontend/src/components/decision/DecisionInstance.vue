@@ -103,7 +103,7 @@ export default {
     }
   },
   mounted() {
-    let params = {
+    const params = {
       decisionInstanceId: this.instanceId,
       includeInputs: true,
       includeOutputs: true,

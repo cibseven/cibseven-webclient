@@ -29,8 +29,7 @@
 
 <script>
 import AddVariableModalUI from '@/components/process/modals/AddVariableModalUI.vue'
-import { ProcessService } from '@/services.js'
-import { VariableInstanceService, HistoricVariableInstanceService } from '@/services.js'
+import { ProcessService, VariableInstanceService, HistoricVariableInstanceService } from '@/services.js'
 
 export default {
 name: 'EditVariableModal',
@@ -107,7 +106,7 @@ props: {
     async updateVariableDeserialized(variable) {
       this.saving = true
 
-      var formData = new FormData()
+      const formData = new FormData()
       const jsonBlob = new Blob([variable.value.toString()], { type: 'application/json' })
       formData.append('data', jsonBlob, 'blob')
       formData.append('valueType', variable.valueInfo?.objectTypeName || 'java.lang.Object')

@@ -251,8 +251,8 @@ export default {
       const groupTenants = JSON.parse(JSON.stringify(this.groupTenants))
       this.unassignedTenants = []
       this.tenants.forEach(tenant => {
-        var isAssigned = false
-        groupTenants.forEach(groupTenant => {
+        let isAssigned = false
+        groupTenants.forEach(groupTenant => {// TODO optimize with findIndex
           if (tenant.id === groupTenant.id) isAssigned = true
         })
         if (!isAssigned){

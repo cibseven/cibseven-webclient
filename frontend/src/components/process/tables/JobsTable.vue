@@ -64,10 +64,8 @@
 <script>
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
-import { FlowTable } from '@cib/common-frontend'
-import { SuccessAlert } from '@cib/common-frontend'
+import { FlowTable, SuccessAlert, BWaitingBox } from '@cib/common-frontend'
 import JobDueDateModal from '@/components/process/modals/JobDueDateModal.vue'
-import { BWaitingBox } from '@cib/common-frontend'
 import { mapGetters, mapActions } from 'vuex'
 
 export default {

@@ -1113,7 +1113,9 @@
 		"searchByTaskName": "Suche in Aufgaben...",
 		"searchByDeploymentName": "Suche nach Deployment...",
 		"searchByBusinessKey": "Suche nach Fachlicher Schlüssel...",
-		"searchByFilterName": "Suche nach Filternamen..."
+		"searchByFilterName": "Suche nach Filternamen...",
+		"wildcardHelp": "Platzhaltersuche wird unterstützt.",
+		"wildcardExample": "Verwenden Sie % für beliebig viele Zeichen (z.B. %Prozess%)."
 	},
 	"sorting": {
 		"created": "@:task.details.created",

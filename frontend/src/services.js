@@ -18,7 +18,7 @@ import { axios } from './globals.js'
 import { ENGINE_STORAGE_KEY } from './constants.js'
 
 function filterToUrlParams(filters) {
-  var filter = ''
+  let filter = ''
   if (Array.isArray(filters)) {
     filters.forEach(item => {
       filter += "&" + item.key + "=" + item.value
@@ -48,7 +48,7 @@ function createDocumentEndpointUrl(processInstanceId, variableName, authToken, c
   return `${basePath}${getServicesBasePath()}/process/process-instance/${processInstanceId}/variables/${variableName}/data?token=${authToken}&contentType=${encodedContentType}&cacheBust=${cacheBust}`;
 }
 
-var TaskService = {
+const TaskService = {
   findIdentityLinks: function(taskId) {
     return axios.get(getServicesBasePath() + '/task/' + taskId + '/identity-links')
   },
@@ -76,7 +76,7 @@ var TaskService = {
   },
   findTaskById: function(taskId) { return axios.get(getServicesBasePath() + "/task/" + taskId) },
   findTasksByFilter: function(filterId, filters, pagination) {
-    var queryPagination = '?firstResult=' + pagination.firstResult + '&maxResults=' + pagination.maxResults
+    const queryPagination = '?firstResult=' + pagination.firstResult + '&maxResults=' + pagination.maxResults
     return axios.post(getServicesBasePath() + "/task/by-filter/" + filterId + queryPagination, filters)
   },
   submit: function(taskId) { return axios.post(getServicesBasePath() + "/task/submit/" + taskId) },
@@ -103,14 +103,14 @@ var TaskService = {
   }
 }
 
-var FilterService = {
+const FilterService = {
   findFilters: function() { return axios.get(getServicesBasePath() + "/filter") },
   createFilter: function(filter) { return axios.post(getServicesBasePath() + "/filter", filter) },
   updateFilter: function(filter) { return axios.put(getServicesBasePath() + "/filter", filter) },
   deleteFilter: function(filterId) { return axios.delete(getServicesBasePath() + "/filter/" + filterId) }
 }
 
-var ProcessService = {
+const ProcessService = {
   findProcesses: function() { return axios.get(getServicesBasePath() + "/process") },
   findProcessesWithInfo: function() { return axios.get(getServicesBasePath() + "/process/extra-info") },
   findProcessesWithFilters: function(filters) { return axios.post(getServicesBasePath() + "/process", filters) },
@@ -261,7 +261,7 @@ var ProcessService = {
   }
 }
 
-var VariableInstanceService = {
+const VariableInstanceService = {
   getVariableInstance: function(id, deserializeValue) {
     let url = `${getServicesBasePath()}/variable-instance/${id}`
     if (deserializeValue !== null && deserializeValue !== undefined) {
@@ -271,7 +271,7 @@ var VariableInstanceService = {
   }
 }
 
-var HistoricVariableInstanceService = {
+const HistoricVariableInstanceService = {
   getHistoricVariableInstance: function(id, deserializeValue) {
     let url = `${getServicesBasePath()}/history/variable-instance/${id}`
     if (deserializeValue !== null && deserializeValue !== undefined) {
@@ -281,7 +281,7 @@ var HistoricVariableInstanceService = {
   }
 }
 
-var AdminService = {
+const AdminService = {
   findUsers: function(filter) {
     // id, firstName, firstNameLike, lastName, lastNameLike, email, emailLike, memberOfGroup, memberOfTenant, idIn, firstResult, maxResults
     return axios.get(getServicesBasePath() + "/admin/user", {
@@ -321,7 +321,7 @@ var AdminService = {
 
 }
 
-var HistoryService = {
+const HistoryService = {
   findTasksByDefinitionKeyHistory: function(taskDefinitionKey, processInstanceId) {
     return axios.get(getServicesBasePath() + "/task-history/by-process-key", {
       params: {
@@ -438,7 +438,7 @@ var HistoryService = {
   }
 }
 
-var JobDefinitionService = {
+const JobDefinitionService = {
   findJobDefinitions: function(params) {
     return axios.post(getServicesBasePath() + "/job-definition", params)
   },
@@ -456,7 +456,7 @@ var JobDefinitionService = {
   }
 }
 
-var IncidentService = {
+const IncidentService = {
   fetchIncidentStacktraceByJobId: function(id) {
     return axios.get(getServicesBasePath() + "/incident/" + id + "/stacktrace")
   },
@@ -492,7 +492,7 @@ var IncidentService = {
   }
 }
 
-var AuthService = {
+const AuthService = {
   fetchAuths: function() {return axios.get(getServicesBasePath() + "/auth/authorizations") },
   passwordRecover: function(data) { return axios.post(getServicesBasePath() + "/auth/password-recover", data) },
   passwordRecoverCheck: function(recoverToken) { return axios.get(getServicesBasePath() + "/auth/password-recover-check",
@@ -514,7 +514,7 @@ var AuthService = {
   }
 }
 
-var InfoService = {
+const InfoService = {
   getProperties: function() {
     return axios.get('info/properties')
   },
@@ -523,7 +523,7 @@ var InfoService = {
   }
 }
 
-var FormsService = {
+const FormsService = {
   submitVariables: function(task, formResult, close) {
     return axios.post(getServicesBasePath() + '/task/' + task.id + '/submit-variables', formResult, {
       params: {
@@ -573,7 +573,7 @@ var FormsService = {
   }
 }
 
-var TemplateService = {
+const TemplateService = {
   getTemplate: function(element, taskId, locale, token) {
 	return axios.get(getServicesBasePath() + '/template/' + element + '/' + taskId + '?locale=' + locale, {
 	    headers: {
@@ -583,7 +583,7 @@ var TemplateService = {
   }
 }
 
-var DecisionService = {
+const DecisionService = {
   getDecisionList: function(params) {
     return axios.get(getServicesBasePath() + "/decision", { params })
   },
@@ -652,7 +652,7 @@ var DecisionService = {
   }
 }
 
-var JobService = {
+const JobService = {
   getJobs: function(params) {
     return axios.post(getServicesBasePath() + '/job', params)
   },
@@ -676,7 +676,7 @@ var JobService = {
   }
 }
 
-var BatchService = {
+const BatchService = {
   getBatches: function(params) {
     return axios.get(getServicesBasePath() + '/batch', { params })
   },
@@ -712,13 +712,13 @@ var BatchService = {
   }
 }
 
-var AnalyticsService = {
+const AnalyticsService = {
   async getAnalytics() {
     return axios.get(getServicesBasePath() + '/analytics')
   }
 }
 
-var SystemService = {
+const SystemService = {
   getTelemetryData() {
     return axios.get(getServicesBasePath() + '/system/telemetry/data')
   },
@@ -727,7 +727,7 @@ var SystemService = {
   }
 }
 
-var TenantService = {
+const TenantService = {
   getTenants(params) {
     return axios.get(getServicesBasePath() + '/tenant', { params })
   },
@@ -757,13 +757,13 @@ var TenantService = {
   }
 }
 
-var ExternalTaskService = {
+const ExternalTaskService = {
   fetchExternalTasks(params) {
     return axios.get(getServicesBasePath() + '/external-tasks', { params })
   }
 }
 
-var DeploymentService = {
+const DeploymentService = {
   createDeployment(data, files) {
     const formData = new FormData()
     // Add all data parameters to the form
@@ -796,7 +796,7 @@ var DeploymentService = {
   }
 }
 
-var EngineService = {
+const EngineService = {
   getEngines() {
     return axios.get(getServicesBasePath() + '/engine')
   }
@@ -804,7 +804,7 @@ var EngineService = {
 
 // SetupService uses axios.create() to bypass interceptors since these endpoints
 // don't require authentication and are called before the user is logged in
-var SetupService = {
+const SetupService = {
   getStatus() {
     const engineName = localStorage.getItem(ENGINE_STORAGE_KEY)
     const headers = engineName ? { 'X-Process-Engine': engineName } : {}

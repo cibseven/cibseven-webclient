@@ -222,7 +222,7 @@ export default {
         if (this.value == null) {
           this.value = ''
         }
-        else if (this.value === 0 || this.value === 0.0 || this.value === false || this.value === true) {
+        else if (this.value === 0 || this.value === 0.0 || this.value === false || this.value === true || this.value === '{}') {
           this.value = ''
         }
         else {
@@ -230,7 +230,13 @@ export default {
         }
       }
       else if (['Short', 'Integer', 'Long'].includes(type)) {
-        if (this.value == null || this.value === '' || isNaN(this.value) || isNaN(Number(this.value))) {
+        if (this.value === true) {
+          this.value = 1
+        }
+        else if (this.value === false) {
+          this.value = 0
+        }
+        else if (this.value == null || this.value === '' || isNaN(this.value) || isNaN(Number(this.value))) {
           this.value = 0
         }
         else {
@@ -262,7 +268,7 @@ export default {
         }
       }
       else if (type === 'Object') {
-        if (this.value === null || this.value === 0 || this.value === 0.0 || this.value === false || this.value === true) {
+        if (this.value === null || this.value === 0 || this.value === 0.0 || this.value === false || this.value === true || this.value === '{}') {
           this.value = ''
         }
         else if (typeof this.value === 'string' && this.verifyJson(this.value) === null) {
@@ -573,7 +579,7 @@ export default {
     },
 
     onSubmit: function() {
-      var variable = {
+      const variable = {
         name: this.name,
         type: this.type,
         value: this.value,

@@ -124,7 +124,7 @@ export default {
           this.$router.push({ name: 'adminUsers' })
         }, 1000)
       }, error => {
-        var data = error.response.data
+        const data = error.response.data
         if (data) {
           if (data.type === 'PasswordPolicyException') this.passwordPolicyError = true
           else if (data.type === 'InvalidUserIdException') this.userIdError = true

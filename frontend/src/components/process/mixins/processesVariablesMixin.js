@@ -69,7 +69,7 @@ export default {
 				return res
 		},
 		restFilter: function () {
-			let result = {
+			const result = {
 				...this.filter,
 				deserializeValues: false,
 				sortBy: 'variableName',
@@ -101,7 +101,7 @@ export default {
 		fetchInstanceVariables: async function (service, method) {
 			this.fetching = true
 			this.loading = true
-			let variables = await serviceMap[service][method](this.selectedInstance.id, this.restFilter)
+			const variables = await serviceMap[service][method](this.selectedInstance.id, this.restFilter)
 			variables.forEach(v => {
 				v.scope = this.activityInstancesGrouped[v.activityInstanceId]
 			})
@@ -202,10 +202,10 @@ export default {
 					}
 				})
 			} else if (variable.type === 'Object') {
-				var blob = new Blob([Uint8Array.from(atob(variable.value.data), c => c.charCodeAt(0))], { type: variable.value.contentType })
+				const blob = new Blob([Uint8Array.from(atob(variable.value.data), c => c.charCodeAt(0))], { type: variable.value.contentType })
 				this.$refs.importPopper.triggerDownload(blob, this.getFileVariableName(variable))
 			} else {
-				var download = this.selectedInstance.state === 'ACTIVE' ?
+				const download = this.selectedInstance.state === 'ACTIVE' ?
 					ProcessService.fetchVariableDataByExecutionId(variable.executionId, variable.name) :
 					HistoryService.fetchHistoryVariableDataById(variable.id)
 				download.then(data => {
@@ -215,20 +215,20 @@ export default {
 		},
 		uploadFile: function () {
 			if (this.isFileValueDataSource(this.selectedVariable)) {
-				var reader = new FileReader()
+				const reader = new FileReader()
 				reader.onload = event => {
-					var fileData = {
+					const fileData = {
 						contentType: this.file.type,
 						name: this.file.name,
 						encoding: 'UTF-8',
 						data: event.target.result.split(',')[1],
 						objectTypeName: this.selectedVariable.valueInfo.objectTypeName
 					}
-					var valueInfo = {
+					const valueInfo = {
 						objectTypeName: this.selectedVariable.valueInfo.objectTypeName,
 						serializationDataFormat: 'application/json'
 					}
-					var data = { fileObject: true, processDefinitionId: this.selectedVariable.processDefinitionId, modifications: {} }
+					const data = { fileObject: true, processDefinitionId: this.selectedVariable.processDefinitionId, modifications: {} }
 					data.modifications[this.selectedVariable.name] = {
 						value: JSON.stringify(fileData),
 						valueInfo: valueInfo, type: this.selectedVariable.type
@@ -240,7 +240,7 @@ export default {
 				reader.onerror = () => { }
 				reader.readAsDataURL(this.file)
 			} else {
-				var formData = new FormData()
+				const formData = new FormData()
 				formData.append('data', this.file)
 				formData.append('valueType', 'File')
 				const fileObj = { name: this.file.name, type: this.file.type }
@@ -254,7 +254,7 @@ export default {
 		},
 		saveOrEditVariable: function (variable) {
 			if (variable.modify) {
-				var data = { modifications: {} }
+				const data = { modifications: {} }
 				data.modifications[variable.name] = { value: variable.value }
 				ProcessService.modifyVariableByExecutionId(variable.executionId, data).then(() => {
 					variable.modify = false

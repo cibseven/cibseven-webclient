@@ -103,7 +103,7 @@ export default {
 		},
 		incrementNumberRetries: function() {
 			this.invalidDate = false
-			var params = { retries: 1 }
+			const params = { retries: 1 }
 			if (this.executionOption === 'setDueDate') {
 				if (!this.scheduledAt.date) {
 					this.invalidDate = true

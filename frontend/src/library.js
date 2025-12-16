@@ -30,9 +30,6 @@ import usersMixin from '@/mixins/usersMixin.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { debounce } from '@/utils/debounce.js'
 import { formatDate, formatDateForTooltips, formatDuration } from '@/utils/dates.js'
-import { HoverStyle, FlowTable, ContentBlock, ErrorDialog, ConfirmDialog, SuccessAlert,
-  TaskPopper, CIBForm, SidebarsFlow, PagedScrollableContent, HighlightedText,
-  GenericTabs, CopyableActionButton, TranslationsDownload} from '@cib/common-frontend'
 import { InfoService, AuthService, SystemService, SetupService } from './services.js'
 import { initEmbeddedForm } from './embedded-form/embedded-form.js'
 import { i18n, setLanguage, loadTranslations, translationSources } from './i18n'
@@ -128,8 +125,7 @@ import BatchesView from '@/components/batches/BatchesView.vue'
 import RuntimeBatches from '@/components/batches/tables/RuntimeBatches.vue'
 import HistoricBatches from '@/components/batches/tables/HistoricBatches.vue'
 import BatchDetails from '@/components/batches/tables/BatchDetails.vue'
-import SystemView from '@/components/system/SystemView.vue'
-import { SystemSidebarItems } from '@/components/system/SystemView.vue'
+import SystemView, { SystemSidebarItems }  from '@/components/system/SystemView.vue'
 import SystemDiagnostics from '@/components/system/SystemDiagnostics.vue'
 import ExecutionMetrics from '@/components/system/ExecutionMetrics.vue'
 import ShortcutsModal from '@/components/modals/ShortcutsModal.vue'
@@ -192,28 +188,19 @@ export {
   formatDate,
   formatDateForTooltips,
   formatDuration,
-  HoverStyle,
   CibSeven,
-  FlowTable,
-  ContentBlock,
-  ErrorDialog,
-  ConfirmDialog,
   FeedbackModal,
   ShortcutsModal,
   ShortcutsTable,
-  SuccessAlert,
-  TaskPopper,
   FeedbackScreenshot,
   TaskList,
   CIBHeaderFlow,
   ResetDialog,
   OtpDialog,
-  CIBForm,
   SecureInput,
   FilterableSelect,
   IconButton,
   MultisortModal,
-  SidebarsFlow,
   SmartSearch,
   SupportModal,
   AdminAuthorizations,
@@ -228,7 +215,6 @@ export {
   ProfileUser,
   UsersManagement,
   DeploymentList,
-  PagedScrollableContent,
   DeploymentsView,
   ResourcesNavBar,
   FilterModal,
@@ -270,7 +256,6 @@ export {
   TasksContent,
   TasksNavBar,
   TasksView,
-  HighlightedText,
   TaskService,
   HistoryService,
   ProcessService,
@@ -300,8 +285,6 @@ export {
   StartView,
   LoginView,
   InitialSetup,
-  GenericTabs,
-  CopyableActionButton,
   InfoService,
   AuthService,
   SystemService,
@@ -311,7 +294,6 @@ export {
   setLanguage,
   loadTranslations,
   translationSources,
-  TranslationsDownload,
   StackTraceModal,
   RetryModal,
   JobLogModal,

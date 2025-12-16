@@ -42,7 +42,7 @@ export function isValidEmail(value) {
 }
 
 export function getStringObjByKeys(keys, obj) {
-  var result = ''
+  let result = ''
   keys.forEach(key => {
     if (key === 'userIdGroupId') {
       if (obj.userId) result += obj.userId + ';'

@@ -28,7 +28,7 @@
       </template>
       <b-form-input :title="$t('searches.searchByTaskName')" size="sm" ref="input" type="search" v-model="filter" :list="id"
         class="form-control border-start-0 ps-0 form-control border-light shadow-none"
-        :placeholder="$t('searches.searchByTaskName')" :maxlength="maxlength" @input="$emit('search-filter', $event.target.value.trim())"/>
+        :placeholder="$t('searches.searchByTaskName')" :maxlength="maxlength" @input="onInput"/>
       <template v-slot:append v-if="$root.config.taskFilter.advancedSearch.criteriaKeys.length > 0 &&
         $root.config.taskFilter.advancedSearch.modalEnabled">
         <b-button variant="light" class="py-0" @click="$emit('open-advanced-search')" :title="$t('advanced-search.title')">
@@ -44,12 +44,27 @@
 <script>
 export default {
   name: 'SmartSearch',
-  props: { options: Array, maxlength: Number },
+  props: { 
+    options: Array, 
+    maxlength: Number,
+    initialFilter: { type: String, default: '' }
+  },
   emits: ['open-advanced-search', 'search-filter'],
   computed: { id: function() { return 'smart-search' + Date.now() } }, // https://dev.to/rahmanfadhil/how-to-generate-unique-id-in-javascript-1b13
   data: function() { return { filter: '' } },
+  watch: {
+    initialFilter: {
+      immediate: true,
+      handler: function(newVal) {
+        this.filter = newVal
+      }
+    }
+  },
   methods: {
-    focus: function() { this.$refs.input.focus() }
+    focus: function() { this.$refs.input.focus() },
+    onInput: function(event) {
+      this.$emit('search-filter', event.target.value.trim())
+    }
   }
 }
 </script>

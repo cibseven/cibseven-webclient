@@ -14,23 +14,27 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-const postMessageMixin = {
-//	created: function() {
-//		window.addEventListener('message', this.callMethodFromMessage)
-//	},
-	methods: {
-		sendMessageToParent: function(data) {
-			window.parent.postMessage(data, "*");
-		}
-//		callMethodFromMessage: function(e) {
-//			if (e.source === window.parent && e.data.callback && this[e.data.callback]) {
-//				this[e.data.callback](e.data.result)
-//			}
-//		}
-	}
-//	beforeDestroy: function() {
-//		window.removeEventListener('message', this.callMethodFromMessage)
-//	}
-}
+import { describe, it, expect } from 'vitest'
+import { createUUID } from '@/globals'
 
-export default postMessageMixin
+describe('globals.js', () => {
+
+  describe('createUUID', () => {
+    it('creates a valid UUID v4', () => {
+      const uuid = createUUID()
+      // Check the format of the UUID v4
+      console.log('Generated UUID:', uuid)
+      const uuidV4Regex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
+      expect(uuid).toMatch(uuidV4Regex)
+    })
+
+    it('creates unique UUIDs', () => {
+      const uuidSet = new Set()
+      const iterations = 1000
+      for (let i = 0; i < iterations; i++) {
+        uuidSet.add(createUUID())
+      }
+      expect(uuidSet.size).toBe(iterations)
+    })
+  })
+})

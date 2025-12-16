@@ -397,7 +397,7 @@ export default {
           this.passwordPolicyError = false
           this.$refs.updatePassword.show(2)
         }, error => {
-          var data = error.response.data
+          const data = error.response.data
           if (data && data.type === 'PasswordPolicyException') {
             this.passwordPolicyError = true
           }
@@ -418,12 +418,12 @@ export default {
     },
     loadUnassignedGroups: function() {
       this.unAssignedGroupsLoading = true
-      var userGroups = JSON.parse(JSON.stringify(this.groups))
+      const userGroups = JSON.parse(JSON.stringify(this.groups))
       this.unAssignedGroups = []
       AdminService.findGroups().then(allGroups => {
         allGroups.forEach(group => {
-          var isAssigned = false
-          userGroups.forEach(userGroup => {
+          let isAssigned = false
+          userGroups.forEach(userGroup => { // TODO optimize with findIndex
             if (group.id === userGroup.id) isAssigned = true
           })
           if (!isAssigned){
@@ -470,8 +470,8 @@ export default {
       await this.fetchTenants()
       const userTenants = JSON.parse(JSON.stringify(this.userTenants))
       this.unassignedTenants = []
-      this.tenants.forEach(tenant => {
-        var isAssigned = false
+      this.tenants.forEach(tenant => { // TODO optimize with findIndex
+        let isAssigned = false
         userTenants.forEach(userTenant => {
           if (tenant.id === userTenant.id) isAssigned = true
         })

@@ -29,8 +29,9 @@ import registerComponents from './register.js'
 import { permissionsMixin }  from './permissions.js'
 
 import { InfoService, AuthService, setServicesBasePath } from './services.js'
-import { getTheme, hasHeader, isMobile, checkExternalReturn, loadTheme } from './utils/init'
-import { applyTheme, handleAxiosError, fetchAndStoreProcesses, fetchDecisionsIfEmpty, setupTaskNotifications } from './utils/init'
+import { hasHeader, isMobile, checkExternalReturn,
+  getTheme, loadTheme, applyTheme,
+  handleAxiosError, fetchAndStoreProcesses, fetchDecisionsIfEmpty, setupTaskNotifications } from './utils/init'
 import { applyConfigDefaults } from './utils/config.js'
 import { i18n, switchLanguage } from './i18n'
 
@@ -52,7 +53,7 @@ Promise.all([
   // Apply defaults before merging
   const configFromFile = applyConfigDefaults(responses[0].data)
   Object.assign(configFromFile, responses[1].data)
-  var config = configFromFile
+  const config = configFromFile
 
   setServicesBasePath(config.servicesBasePath)
 
@@ -60,7 +61,7 @@ Promise.all([
   //axios.defaults.baseURL = appConfig.adminBasePath
 
   // Load theme CSS and static assets (favicon, etc.)
-  var theme = getTheme(config)
+  const theme = getTheme(config)
   loadTheme(theme).then(() => {
     applyTheme(theme)
     switchLanguage(config, i18n.global.locale).then(() => {
@@ -89,13 +90,14 @@ Promise.all([
           }
         },
         data: function() {
+          const imagePath = 'webjars/seven/components/password/reset-password.svg'
           return {
             user: null,
             config: config,
             consent: localStorage.getItem('consent'),
             logoPath: 'themes/' + theme + '/logo.svg',
             loginImgPath: 'themes/' + theme + '/login-image.svg',
-            resetPasswordImgPath: 'webjars/seven/components/password/reset-password.svg',
+            resetPasswordImgPath: imagePath,
             theme: theme,
             header: hasHeader(),
             processUpdateInterval: null

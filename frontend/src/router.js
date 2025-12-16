@@ -46,7 +46,7 @@ import TasksView from '@/components/task/TasksView.vue'
 import TaskView from '@/components/task/TaskView.vue'
 import LoginView from '@/components/login/LoginView.vue'
 import InitialSetup from '@/components/setup/InitialSetup.vue'
-import { BWaitingBox } from '@cib/common-frontend'
+import { BWaitingBox, TranslationsDownload } from '@cib/common-frontend'
 import DeployedForm from '@/components/forms/DeployedForm.vue'
 import StartDeployedForm from '@/components/forms/StartDeployedForm.vue'
 import TenantsView from '@/components/tenants/TenantsView.vue'
@@ -56,7 +56,6 @@ import BatchesView from '@/components/batches/BatchesView.vue'
 import SystemView from '@/components/system/SystemView.vue'
 import SystemDiagnostics from '@/components/system/SystemDiagnostics.vue'
 import ExecutionMetrics from '@/components/system/ExecutionMetrics.vue'
-import { TranslationsDownload } from '@cib/common-frontend'
 import { redirectToProcessInstance, redirectToTask } from '@/utils/redirects.js'
 
 const appRoutes = [
@@ -318,7 +317,7 @@ const appRoutes = [
     },
   ];
 
-var router = null
+let router = null
 
 function authGuard(strict) {
   return function(to, from, next) {
@@ -327,8 +326,8 @@ function authGuard(strict) {
     if (router.root.user) next()
     else getSelfInfo()['catch'](error => {
       if (error.response) {
-        var res = error.response
-        var params = res.data.params && res.data.params.length > 0
+        const res = error.response
+        const params = res.data.params && res.data.params.length > 0
         if (res.data && res.data.type === 'TokenExpiredException' && params) {
           console && console.info('Prolonged token')
           if (sessionStorage.getItem('token')) sessionStorage.setItem('token', res.data.params[0])
@@ -361,9 +360,9 @@ function authGuard(strict) {
 
     function getSelfInfo() {
       if (to.query.token) sessionStorage.setItem('token', to.query.token)
-      var token = sessionStorage.getItem('token') || localStorage.getItem('token')
-      var headers = { authorization: token }
-      var inst = axios.create() // bypass standard error handling
+      const token = sessionStorage.getItem('token') || localStorage.getItem('token')
+      const headers = { authorization: token }
+      const inst = axios.create() // bypass standard error handling
       return inst.get(router.root.config.servicesBasePath + '/auth', { headers: headers }).then(res => {
         console && console.info('auth successful', res.data)
         axios.defaults.headers.common.authorization = res.data.authToken

@@ -99,7 +99,7 @@ export default {
     setVariablesAndSubmit: async function() {
       try {
         this.dataToSubmit = {}
-        var result = this.form.submit()
+        const result = this.form.submit()
         if (Object.keys(result.errors).length > 0) return
 
         // Process and submit non-file form fields (files were already uploaded)
