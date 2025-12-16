@@ -187,9 +187,7 @@ export default {
     '$route.query.tasksFilter': {
       immediate: true,
       handler: function(newFilter) {
-        if (newFilter !== undefined) {
-          this.search = newFilter || ''
-        }
+        this.search = newFilter || ''
       }
     },
     search: debounce(800, function() { this.listTasksWithFilter() })
