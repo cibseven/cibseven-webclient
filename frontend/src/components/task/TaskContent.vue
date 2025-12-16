@@ -192,20 +192,12 @@ export default {
       }
     },
     onWheel: function(event) {
-      this.$refs.scrollContainer.handleScrollIframe({
-      deltaY: event.deltaY,
-      x: event.clientX,
-      y: event.clientY
-    });
+      this.$refs.scrollContainer.handleScrollIframe(event.deltaY, event.clientX, event.clientY)
     },
     onTouchMove: function(event) {
       if (this.lastTouchY !== undefined) {
         const deltaY = this.lastTouchY - event.touches[0].clientY;
-        this.$refs.scrollContainer.handleScrollIframe({
-        deltaY,
-        x: event.touches[0].clientX,
-        y: event.touches[0].clientY
-        });
+        this.$refs.scrollContainer.handleScrollIframe(deltaY, event.touches[0].clientX, event.touches[0].clientY)
       }
       this.lastTouchY = event.touches[0].clientY;
       event.preventDefault();

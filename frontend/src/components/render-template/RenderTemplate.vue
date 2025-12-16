@@ -363,21 +363,27 @@ export default {
         this.loadIframe()
       }
     },
-    handleScrollIframe({ deltaY, x, y }) {
+    handleScrollIframe(deltaY, x, y) {
       const frame = this.$refs['template-frame']
-      const ctx = this.getIframeContext(frame, x, y)
+      const ctx = getIframeContext(frame, x, y)
       if (!ctx) return
       const el = ctx.doc.elementFromPoint(ctx.x, ctx.y)
-      this.findAndScroll(el, deltaY, ctx.x, ctx.y, ctx.doc)
+      findAndScroll(el, deltaY, ctx.x, ctx.y, ctx.doc)
     },
-    findAndScroll: function(el, deltaY, iframeX, iframeY, rootDoc) {
+    
+  },
+  beforeUnmount: function() {
+    window.removeEventListener('message', this.processMessage)
+  },
+}
+function findAndScroll(el, deltaY, iframeX, iframeY, rootDoc) {
       if (!el) return
       do {
         if (el.tagName === 'IFRAME') {
-          const ctx = this.getIframeContext(el, iframeX, iframeY)
+          const ctx = getIframeContext(el, iframeX, iframeY)
           if (ctx) {
             let nestedEl = ctx.doc.elementFromPoint(ctx.x, ctx.y)
-            do {
+            while (nestedEl) {
               const overflowY = ctx.doc.defaultView.getComputedStyle(nestedEl).overflowY
               const isScrollable = overflowY !== 'visible' && overflowY !== 'hidden'
               if ( isScrollable && nestedEl.scrollHeight > nestedEl.clientHeight) {
@@ -385,7 +391,7 @@ export default {
                 return
               }
               nestedEl = nestedEl.parentElement
-            } while (nestedEl)
+            } 
             if (ctx.doc.body && ctx.doc.body.scrollHeight > ctx.doc.body.clientHeight) {
               ctx.doc.body.scrollTop += deltaY
             }
@@ -403,8 +409,8 @@ export default {
       if (rootDoc.body && rootDoc.body.scrollHeight > rootDoc.body.clientHeight) {
         rootDoc.body.scrollTop += deltaY
       }
-    },
-    getIframeContext(iframeEl, x, y) {
+    }
+    function getIframeContext(iframeEl, x, y) {
       if (!iframeEl || !iframeEl.contentWindow) return null
       const doc = iframeEl.contentDocument || iframeEl.contentWindow.document
       if (!doc) return null
@@ -416,10 +422,4 @@ export default {
         y: y - rect.top
       }
     }
-  },
-  beforeUnmount: function() {
-    window.removeEventListener('message', this.processMessage)
-  },
-}
-let bla = function() {}
 </script>
