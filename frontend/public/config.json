@@ -67,7 +67,7 @@
 	"warnOnDueExpirationIn": 48,
 	"permissions": {
 		"tasklist": {
-			"application": ["ALL"]
+			"application": ["ACCESS"]
 		},
 		"cockpit": {
 			"application": ["ALL"]
