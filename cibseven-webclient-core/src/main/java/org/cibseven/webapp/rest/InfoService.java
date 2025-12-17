@@ -63,7 +63,7 @@ public class InfoService extends BaseService {
 	@Value("${cibseven.webclient.support-dialog:}") private String supportDialog;
 	@Value("${cibseven.webclient.engineRest.path:/engine-rest}") private String engineRestPath;
 
-	@Value("${camunda.bpm.authorization.enabled:false}") private boolean authorizationEnabled;	
+	@Value("${camunda.bpm.authorization.enabled:true}") private boolean authorizationEnabled;	
 	
 	@Autowired
 	InfoVersion infoVersion;
