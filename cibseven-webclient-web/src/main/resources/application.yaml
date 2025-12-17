@@ -13,11 +13,6 @@ spring:
       # Configures the maximum size allowed for the entire request, including all files and form data.
       max-request-size: 1GB
 
-camunda:
-  bpm:
-    authorization:
-      enabled: true
-      
 cibseven:
   webclient:
     # Global enable/disable flag for the entire CIB seven webclient
