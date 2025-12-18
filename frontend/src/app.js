@@ -96,6 +96,7 @@ Promise.all([
             config: config,
             consent: localStorage.getItem('consent'),
             logoPath: 'themes/' + theme + '/logo.svg',
+            logoIconPath: 'themes/' + theme + '/logo-icon.svg',
             loginImgPath: 'themes/' + theme + '/login-image.svg',
             resetPasswordImgPath: imagePath,
             theme: theme,
