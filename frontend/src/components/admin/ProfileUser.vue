@@ -21,20 +21,20 @@
     :left-caption="$t('admin.users.title') + ' - ' + user.id" :left-size="[12, 6, 4, 3, 2]">
     <template v-slot:left>
       <b-list-group>
-        <b-list-group-item class="border-0 px-3 py-2" :active="$route.query.tab === 'profile' || !$route.query.tab" exact :to="'?tab=profile'">
+        <b-list-group-item v-if="!user.noInfo" class="border-0 px-3 py-2" :active="selectedTab === 'profile'" exact :to="'?tab=profile'">
           <span> {{ $t('admin.users.profile') }}</span>
         </b-list-group-item>
-        <b-list-group-item v-if="$root.config.userEditable" class="border-0 px-3 py-2" :active="$route.query.tab === 'account'" exact :to="'?tab=account'">
+        <b-list-group-item v-if="!user.noInfo && $root.config.userEditable" class="border-0 px-3 py-2" :active="selectedTab === 'account'" exact :to="'?tab=account'">
           <span> {{ $t('password.recover.changePassword') }}</span>
         </b-list-group-item>
-        <b-list-group-item class="border-0 px-3 py-2" :active="$route.query.tab === 'groups'" exact :to="'?tab=groups'">
+        <b-list-group-item v-if="!user.noInfo" class="border-0 px-3 py-2" :active="selectedTab === 'groups'" exact :to="'?tab=groups'">
           <span> {{ $t('admin.users.groups') }}</span>
         </b-list-group-item>
-        <b-list-group-item class="border-0 px-3 py-2" :active="$route.query.tab === 'tenants'" exact :to="'?tab=tenants'">
+        <b-list-group-item v-if="!user.noInfo" class="border-0 px-3 py-2" :active="selectedTab === 'tenants'" exact :to="'?tab=tenants'">
           <span> {{ $t('admin.tenants.title') }}</span>
         </b-list-group-item>
         <b-list-group-item v-if="$root.user && $root.user.id === user.id" class="border-0 px-3 py-2"
-          :active="$route.query.tab === 'preferences'" exact :to="'?tab=preferences'">
+          :active="selectedTab === 'preferences'" exact :to="'?tab=preferences'">
           <span> {{ $t('admin.preferences.title') }}</span>
         </b-list-group-item>
       </b-list-group>
@@ -49,7 +49,7 @@
         <div class="container-fluid overflow-auto">
 
           <!-- Profile Tab -->
-          <div v-if="$route.query.tab === 'profile' || !$route.query.tab" class="row pt-3 ps-4 pe-4">
+          <div v-if="selectedTab === 'profile'" class="row pt-3 ps-4 pe-4">
             <ContentBlock
               :title="$t('admin.users.editMessage', [user.firstName + ' ' + user.lastName])"
               class="col-lg-6 col-md-8 col-sm-12">
@@ -76,7 +76,7 @@
           </div>
 
           <!-- Account Tab -->
-          <div v-else-if="$route.query.tab === 'account' && $root.config.userEditable" class="row pt-3 ps-4 pe-4">
+          <div v-else-if="selectedTab === 'account' && $root.config.userEditable" class="row pt-3 ps-4 pe-4">
             <ContentBlock
               :title="$t('password.recover.changePassword')"
               class="col-lg-6 col-md-8 col-sm-12">
@@ -94,7 +94,7 @@
           </div>
 
           <!-- Groups Tab -->
-          <div v-else-if="$route.query.tab === 'groups'" class="row pt-3 ps-4 pe-4">
+          <div v-else-if="selectedTab === 'groups'" class="row pt-3 ps-4 pe-4">
             <ContentBlock
               :title="$t('admin.users.group.title', [user.firstName + ' ' + user.lastName])"
               class="">
@@ -121,7 +121,7 @@
           </div>
 
           <!-- Tenants Tab -->
-          <div v-else-if="$route.query.tab === 'tenants'" class="row pt-3 ps-4 pe-4">
+          <div v-else-if="selectedTab === 'tenants'" class="row pt-3 ps-4 pe-4">
             <ContentBlock
               :title="$t('admin.tenants.associationTitle', [user.firstName + ' ' + user.lastName])"
               class="">
@@ -151,7 +151,7 @@
           </div>
 
           <!-- Preferences Tab -->
-          <div v-else-if="$route.query.tab === 'preferences'" class="row pt-3 ps-4 pe-4">
+          <div v-else-if="selectedTab === 'preferences'" class="row pt-3 ps-4 pe-4">
             <ProfilePreferencesTab></ProfilePreferencesTab>
           </div>
 
@@ -263,7 +263,7 @@ export default {
   data: function () {
     return {
       leftOpen: true,
-      user: { id: null, firstName: null,  lastName: null, email: null },
+      user: { id: null, firstName: null,  lastName: null, email: null, noInfo: true },
       dirty: false,
       credentials: { authenticatedUserPassword: null, password: null },
       passwordRepeat: null,
@@ -289,12 +289,16 @@ export default {
       }
     },
     '$route.query.tab': function() {
-      if (this.$route.query.tab === 'groups') this.loadGroups(this.$route.params.userId)
-      else if (this.$route.query.tab === 'tenants') this.loadTenants(this.$route.params.userId)
+      if (this.selectedTab === 'groups') this.loadGroups(this.$route.params.userId)
+      else if (this.selectedTab === 'tenants') this.loadTenants(this.$route.params.userId)
     }
   },
   computed: {
     ...mapGetters(['tenants']),
+    selectedTab() {
+      const defaultTab = this.user.noInfo ? 'preferences' : 'profile'
+      return this.$route.query.tab || defaultTab
+    },
     groupFields() {
       const isEditable = this.editMode && this.$root.config.userEditable
       const fields = [
@@ -360,14 +364,14 @@ export default {
   },
   created: function () {
     if (this.$route.params.userId) this.loadUser(this.$route.params.userId)
-    if (this.$route.query.tab === 'groups') this.loadGroups(this.$route.params.userId)
-    else if (this.$route.query.tab === 'tenants') this.loadTenants(this.$route.params.userId)
+    if (this.selectedTab === 'groups') this.loadGroups(this.$route.params.userId)
+    else if (this.selectedTab === 'tenants') this.loadTenants(this.$route.params.userId)
   },
   methods: {
     ...mapActions(['fetchTenants', 'getTenantsByUser', 'removeUserFromTenant', 'addUserToTenant']),
-    loadUser: function(userId) {
-      AdminService.findUsers({ id: userId }).then(response => {
-        this.user = response[0]
+    loadUser: async function(userId) {
+      return AdminService.findUsers({ id: userId }).then(response => {
+        this.user = response[0] || { id: userId, firstName: null,  lastName: null, email: null, noInfo: true }
       })
     },
     loadGroups: function(userId) {
