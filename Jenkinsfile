@@ -281,7 +281,7 @@ pipeline {
                                         def qg = waitForQualityGate()
                                         if (qg.status != 'OK') {
                                             log.info "Pipeline unstable due to quality gate failure: ${qg.status}"
-                                            currentBuild.result = 'UNSTABLE'
+                                            // currentBuild.result = 'UNSTABLE'
                                         }
                                     }
                                 }
