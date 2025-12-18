@@ -297,7 +297,7 @@ pipeline {
                 anyOf {
                     allOf {
                         // Automatically deploy on main branch if version is SNAPSHOT
-                        branch 'main'
+                        branch pipelineParams.primaryBranch
                         expression { mavenProjectInformation.version.endsWith("-SNAPSHOT") == true }
                         expression { !params.DEPLOY_TO_MAVEN_CENTRAL }
                     }
@@ -409,7 +409,7 @@ pipeline {
             when {
                 anyOf {
                     allOf {
-                        branch 'main'
+                        branch pipelineParams.primaryBranch
                         expression { mavenProjectInformation.version.endsWith("-SNAPSHOT") == true }
                     }
                     expression { params.DEPLOY_ANY_BRANCH_TO_HARBOR == true }
@@ -478,7 +478,7 @@ pipeline {
             when {
                 anyOf {
                     allOf {
-                        branch 'main'
+                        branch pipelineParams.primaryBranch
                         expression { mavenProjectInformation.version.endsWith("-SNAPSHOT") == true }
                     }
                     expression { params.DEPLOY_ANY_BRANCH_TO_HARBOR }
@@ -543,7 +543,7 @@ pipeline {
         failure {
             script {
                 log.warning '❌ Build failed'
-                if (env.BRANCH_NAME == 'main') {
+                if (env.BRANCH_NAME == pipelineParams.primaryBranch) {
                     notifyResult(
                         office365WebhookId: pipelineParams.office365WebhookId,
                         message: "❌ Build failed on main branch. Access build info at ${env.BUILD_URL}"
@@ -555,7 +555,7 @@ pipeline {
         fixed {
             script {
                 log.info '✅ Previous issues fixed'
-                if (env.BRANCH_NAME == 'main') {
+                if (env.BRANCH_NAME == pipelineParams.primaryBranch) {
                     notifyResult(
                         office365WebhookId: pipelineParams.office365WebhookId,
                         message: "✅ Previous issues on main branch fixed. Access build info at ${env.BUILD_URL}"
