@@ -181,7 +181,7 @@ export default {
     this.showPopoverWithDelay(this.task.assignee)
   },
   beforeUnmount: function() {
-    this.resetTimer()
+    this.resetTimer() // stop timeout for showPopoverWithDelay()
     this.stopListeningTouchEvents()
   },
   methods: {
@@ -203,8 +203,8 @@ export default {
       event.preventDefault();
     },
     onTouchEnd: function() {
-    this.lastTouchY = undefined;
-  },
+      this.lastTouchY = undefined;
+    },
     loadIdentityLinks: function(taskId) {
       this.candidateUsers = []
       var promises = []

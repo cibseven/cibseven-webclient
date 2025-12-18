@@ -59,6 +59,7 @@ import IconButton from '@/components/render-template/IconButton.vue'
 import { SuccessAlert } from '@cib/common-frontend'
 import { BWaitingBox } from '@cib/bootstrap-components'
 import { ENGINE_STORAGE_KEY } from '@/constants.js'
+import { getIframeContext, findAndScroll } from '@/utils/iframe.js'
 
 export default {
   name: 'RenderTemplate',
@@ -375,50 +376,4 @@ export default {
     window.removeEventListener('message', this.processMessage)
   }
 }
-function findAndScroll(el, deltaY, iframeX, iframeY, rootDoc) {
-      if (!el) return
-      do {
-        if (el.tagName === 'IFRAME') {
-          const ctx = getIframeContext(el, iframeX, iframeY)
-          if (ctx) {
-            let nestedEl = ctx.doc.elementFromPoint(ctx.x, ctx.y)
-            while (nestedEl) {
-              const overflowY = ctx.doc.defaultView.getComputedStyle(nestedEl).overflowY
-              const isScrollable = overflowY !== 'visible' && overflowY !== 'hidden'
-              if ( isScrollable && nestedEl.scrollHeight > nestedEl.clientHeight) {
-                nestedEl.scrollTop += deltaY
-                return
-              }
-              nestedEl = nestedEl.parentElement
-            } 
-            if (ctx.doc.body && ctx.doc.body.scrollHeight > ctx.doc.body.clientHeight) {
-              ctx.doc.body.scrollTop += deltaY
-            }
-            return
-          }
-        }
-        const overflowY = window.getComputedStyle(el).overflowY
-        const isScrollable = overflowY !== 'visible' && overflowY !== 'hidden'
-        if (isScrollable && el.scrollHeight > el.clientHeight) {
-          el.scrollTop += deltaY
-          return
-        }
-        el = el.parentElement
-      }  while (el)
-      if (rootDoc.body && rootDoc.body.scrollHeight > rootDoc.body.clientHeight) {
-        rootDoc.body.scrollTop += deltaY
-      }
-    }
-    function getIframeContext(iframeEl, x, y) {
-      if (!iframeEl || !iframeEl.contentWindow) return null
-      const doc = iframeEl.contentDocument || iframeEl.contentWindow.document
-      if (!doc) return null
-      const rect = iframeEl.getBoundingClientRect()
-      return {
-        iframe: iframeEl,
-        doc,
-        x: x - rect.left,
-        y: y - rect.top
-      }
-    }
 </script>
