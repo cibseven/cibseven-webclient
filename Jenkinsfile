@@ -420,6 +420,10 @@ pipeline {
                     withMaven() {
                         // "package" before jib:build is needed to support maven multi module projects
                         // see https://github.com/GoogleContainerTools/jib/tree/master/examples/multi-module
+                        //
+                        // -Djib.useOnlyProjectCache=true and -Djib.disableUpdateChecks=true are used to speed up the build
+                        // and to resolve the build failure which is related to the Jib Maven plugin trying to access a cache directory.
+                        // This is a common issue when building Docker images with Jib in Jenkins.
                         sh """
                             mvn -f ./pom.xml \
                                 package \
@@ -427,6 +431,8 @@ pipeline {
                                 -Dmaven.test.skip \
                                 -DskipTests \
                                 -Dlicense.skipDownloadLicenses=true \
+                                -Djib.useOnlyProjectCache=true \
+                                -Djib.disableUpdateChecks=true \
                                 -T4 \
                                 -Dbuild.number=${BUILD_NUMBER}
                         """
