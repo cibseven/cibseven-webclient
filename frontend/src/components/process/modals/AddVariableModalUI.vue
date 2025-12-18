@@ -59,7 +59,10 @@
       <b-form-group class="p-0 mb-0" v-if="type !== 'Null'">
 
         <!-- Label -->
-        <template #label v-if="!editMode || (type !== 'Object')">{{ $t('process-instance.variables.value') }}<span v-if="type != 'Boolean' && !disabled">*</span></template>
+        <template #label v-if="type !== 'File' && (!editMode || (type !== 'Object'))">
+          {{ $t('process-instance.variables.value') }}
+          <span v-if="type != 'Boolean' && !disabled">*</span>
+        </template>
         <p v-if="value === null"><small class="form-text text-muted">Null value is specified.</small></p>
 
         <!-- Input: Boolean -->
@@ -91,8 +94,12 @@
         <div v-else-if="type === 'Null'"></div>
 
         <!-- Input: File -->
-        <div v-else-if="type === 'File'">
-          <input type="file" class="form-control-file" :disabled="disabled || saving || loading" @change="onFileChange">
+        <div v-else-if="type === 'File' && allowFileUpload">
+          <b-form-file placeholder="" :browse-text="$t('process-instance.selectFile')" :disabled="disabled || saving || loading" v-model="fileToUpload">
+            <template #label>
+              {{ $t('process-instance.upload') }} *
+            </template>
+          </b-form-file>
         </div>
 
         <!-- Input: Object (only in edit mode) -->
@@ -189,6 +196,10 @@ export default {
       type: String,
       default: ''
     },
+    allowFileUpload: {
+      type: Boolean,
+      default: true
+    },
     /**
      * Allow editing name in edit mode.
      * For add mode, name is always editable.
@@ -213,6 +224,7 @@ export default {
       valueSerialized: '',
       objectTypeName: '',
       serializationDataFormat: '',
+      fileToUpload: null,
     }
   },
   watch: {
@@ -241,7 +253,7 @@ export default {
         else if (this.value === false) {
           this.value = 0
         }
-        else if (this.value == null || this.value === '' || isNaN(this.value) || isNaN(Number(this.value))) {
+        else if (this.value == null || this.value === '' || Number.isNaN(this.value) || Number.isNaN(Number(this.value))) {
           this.value = 0
         }
         else {
@@ -249,7 +261,7 @@ export default {
         }
       }
       else if ('Double' === type) {
-        if (this.value == null || this.value === '' || isNaN(this.value) || isNaN(Number(this.value))) {
+        if (this.value == null || this.value === '' || Number.isNaN(this.value) || Number.isNaN(Number(this.value))) {
           this.value = 0
         }
         else {
@@ -259,18 +271,9 @@ export default {
       else if (type === 'Null') {
         this.value = null
       }
-      else if (type === 'Json') {
-        if (typeof this.value === 'string' && this.verifyJson(this.value) === null) {
-          try {
-            const obj = JSON.parse(this.value)
-            this.value = JSON.stringify(obj, null, 2)
-          } catch {
-            this.value = '{}'
-          }
-        }
-        else {
-          this.value = '{}'
-        }
+      else if (type === 'File') {
+        // this.value = null // no need to reset value for File type as user might change his mind
+        this.fileToUpload = null
       }
       else if (type === 'Object') {
         if (this.value === null || this.value === 0 || this.value === 0.0 || this.value === false || this.value === true || this.value === '{}') {
@@ -298,6 +301,19 @@ export default {
           this.value = '' + this.value
         }
       }
+      else if (type === 'Json') {
+        if (typeof this.value === 'string' && this.verifyJson(this.value) === null) {
+          try {
+            const obj = JSON.parse(this.value)
+            this.value = JSON.stringify(obj, null, 2)
+          } catch {
+            this.value = '{}'
+          }
+        }
+        else {
+          this.value = '{}'
+        }
+      }
       else if (type === 'Xml') {
         this.value = ''
       }
@@ -312,6 +328,9 @@ export default {
       return this.editMode ? this.$t('process-instance.edit') : this.$t('process-instance.addVariable')
     },
     computedSubmitButtonText: function() {
+      if (this.type === 'File') {
+        return this.$t('process-instance.upload')
+      }
       return this.editMode ? this.$t('process-instance.save') : this.$t('process-instance.addVariable')
     },
     computedAllowEditName: function() {
@@ -349,7 +368,7 @@ export default {
           label: 'Objects',
           options: [
             { text: 'Null', value: 'Null' },
-            { text: 'File', value: 'File' },
+            ...(this.allowFileUpload ? [{ text: 'File', value: 'File' }] : []),
             { text: 'Object', value: 'Object' },
             { text: 'Json', value: 'Json' },
             { text: 'Xml', value: 'Xml' }
@@ -393,7 +412,7 @@ export default {
         case 'Long':
         case 'Double': {
           if (this.value === null) return null
-          if (this.value === '' || isNaN(this.value) || isNaN(Number(this.value))) {
+          if (this.value === '' || Number.isNaN(this.value) || Number.isNaN(Number(this.value))) {
             return 'Invalid number'
           }
 
@@ -430,6 +449,11 @@ export default {
         case 'Null': {
           if (this.value === null) return null
           return this.value === null ? null : 'Value must be null'
+        }
+        case 'File': {
+          // no validation
+          // Edit mode should not be used for existing File variables
+          return null
         }
         case 'Object': {
           if (this.value === null) return null
@@ -480,7 +504,10 @@ export default {
       if (!this.name) {
         return true // Disable save if name is empty
       }
-      if (this.type === 'Object') {
+      if (this.type === 'File' && this.fileToUpload === null) {
+        return true // Disable save if file is not selected
+      }
+      else if (this.type === 'Object') {
         if (!this.objectTypeName ||
             this.objectTypeName.toString().trim().length === 0 ||
             !this.serializationDataFormat ||
@@ -524,6 +551,7 @@ export default {
       this.valueSerialized = ''
       this.objectTypeName = ''
       this.serializationDataFormat = ''
+      this.fileToUpload = null
     },
 
     setData: function(variable = {}) {
@@ -570,10 +598,15 @@ export default {
             case 'Double':
               this.$refs.numberValue?.focus()
               break
+            case 'Date':
+            case 'File':
+            case 'Boolean':
+              // no focusable input
+              break
             case 'String':
+            case 'Object':
             case 'Json':
             case 'Xml':
-            case 'Object':
               this.$refs.textValue?.focus()
               break
           }

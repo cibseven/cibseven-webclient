@@ -22,6 +22,7 @@
     :saving="saving"
     :error="error"
     :show-only-error="showOnlyError"
+    :allow-file-upload="allowFileUpload"
 
     @add-variable="saveVariable"
   ></AddVariableModalUI>
@@ -39,6 +40,10 @@ props: {
     historic: {
       type: Boolean,
       default: false
+    },
+    allowFileUpload: {
+      type: Boolean,
+      default: true
     }
   },
   data() {

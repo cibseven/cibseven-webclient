@@ -21,6 +21,7 @@
     :edit-mode="false"
     :saving="saving"
     :error="error"
+    :allow-file-upload="allowFileUpload"
     @add-variable="addVariable"
   ></AddVariableModalUI>
 </template>
@@ -32,7 +33,13 @@ import AddVariableModalUI from '@/components/process/modals/AddVariableModalUI.v
 export default {
   name: 'AddVariableModal',
   components: { AddVariableModalUI },
-  props: { selectedInstance: Object },
+  props: {
+    selectedInstance: Object,
+    allowFileUpload: {
+      type: Boolean,
+      default: true
+    }
+  },
   emits: ['variable-added'],
   data: function() {
     return {
