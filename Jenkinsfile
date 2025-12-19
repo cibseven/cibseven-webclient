@@ -297,7 +297,7 @@ pipeline {
                 anyOf {
                     allOf {
                         // Automatically deploy on main branch if version is SNAPSHOT
-                        branch 'main'
+                        branch pipelineParams.primaryBranch
                         expression { mavenProjectInformation.version.endsWith("-SNAPSHOT") == true }
                         expression { !params.DEPLOY_TO_MAVEN_CENTRAL }
                     }
@@ -409,7 +409,7 @@ pipeline {
             when {
                 anyOf {
                     allOf {
-                        branch 'main'
+                        branch pipelineParams.primaryBranch
                         expression { mavenProjectInformation.version.endsWith("-SNAPSHOT") == true }
                     }
                     expression { params.DEPLOY_ANY_BRANCH_TO_HARBOR == true }
@@ -420,6 +420,10 @@ pipeline {
                     withMaven() {
                         // "package" before jib:build is needed to support maven multi module projects
                         // see https://github.com/GoogleContainerTools/jib/tree/master/examples/multi-module
+                        //
+                        // -Djib.useOnlyProjectCache=true and -Djib.disableUpdateChecks=true are used to speed up the build
+                        // and to resolve the build failure which is related to the Jib Maven plugin trying to access a cache directory.
+                        // This is a common issue when building Docker images with Jib in Jenkins.
                         sh """
                             mvn -f ./pom.xml \
                                 package \
@@ -427,6 +431,8 @@ pipeline {
                                 -Dmaven.test.skip \
                                 -DskipTests \
                                 -Dlicense.skipDownloadLicenses=true \
+                                -Djib.useOnlyProjectCache=true \
+                                -Djib.disableUpdateChecks=true \
                                 -T4 \
                                 -Dbuild.number=${BUILD_NUMBER}
                         """
@@ -472,7 +478,7 @@ pipeline {
             when {
                 anyOf {
                     allOf {
-                        branch 'main'
+                        branch pipelineParams.primaryBranch
                         expression { mavenProjectInformation.version.endsWith("-SNAPSHOT") == true }
                     }
                     expression { params.DEPLOY_ANY_BRANCH_TO_HARBOR }
@@ -537,7 +543,7 @@ pipeline {
         failure {
             script {
                 log.warning '❌ Build failed'
-                if (env.BRANCH_NAME == 'main') {
+                if (env.BRANCH_NAME == pipelineParams.primaryBranch) {
                     notifyResult(
                         office365WebhookId: pipelineParams.office365WebhookId,
                         message: "❌ Build failed on main branch. Access build info at ${env.BUILD_URL}"
@@ -549,7 +555,7 @@ pipeline {
         fixed {
             script {
                 log.info '✅ Previous issues fixed'
-                if (env.BRANCH_NAME == 'main') {
+                if (env.BRANCH_NAME == pipelineParams.primaryBranch) {
                     notifyResult(
                         office365WebhookId: pipelineParams.office365WebhookId,
                         message: "✅ Previous issues on main branch fixed. Access build info at ${env.BUILD_URL}"
