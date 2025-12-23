@@ -273,6 +273,7 @@ describe('AddVariableModal.vue UI interactions', () => {
     it.each([
       [{ name: '', type: 'String', value: 'text' }, true],
       [{ name: 'name', type: 'String', value: 'text' }, false],
+      [{ name: 'name', type: 'File', value: 'text' }, true],
     ])('isSubmitDisabled(%s)', async (data, result) => {
       await setData(data)
       expect(wrapper.vm.isSubmitDisabled).toBe(result)
@@ -375,6 +376,13 @@ describe('AddVariableModal.vue UI interactions', () => {
       [{ type: 'Double', value: 0 }, true],
       [{ type: 'Double', value: 10.99 }, true],
       [{ type: 'Double', value: Number.MAX_SAFE_INTEGER+100 }, true],
+
+      [{ type: 'file', value: null }, false],
+      [{ type: 'file', value: 'Text' }, false],
+      [{ type: 'file', value: 0 }, false],
+      [{ type: 'file', value: 100 }, false],
+      [{ type: 'file', value: true }, false],
+      [{ type: 'file', value: false }, false],
 
       // Json with invalid values
       [{ type: 'Json', value: '{ invalid json' }, false],

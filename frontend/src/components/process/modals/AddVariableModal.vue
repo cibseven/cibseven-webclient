@@ -21,18 +21,25 @@
     :edit-mode="false"
     :saving="saving"
     :error="error"
+    :allow-file-upload="allowFileUpload"
     @add-variable="addVariable"
   ></AddVariableModalUI>
 </template>
 
 <script>
-import { ProcessService } from '@/services.js'
+import { ProcessService, VariableInstanceService } from '@/services.js'
 import AddVariableModalUI from '@/components/process/modals/AddVariableModalUI.vue'
 
 export default {
   name: 'AddVariableModal',
   components: { AddVariableModalUI },
-  props: { selectedInstance: Object },
+  props: {
+    selectedInstance: Object,
+    allowFileUpload: {
+      type: Boolean,
+      default: true
+    }
+  },
   emits: ['variable-added'],
   data: function() {
     return {
@@ -51,7 +58,11 @@ export default {
     },
     addVariable: async function(variable) {
       this.saving = true
-      await ProcessService.putLocalExecutionVariable(this.selectedInstance.id, variable.name, variable).then(() => {
+      const method = (variable.type === 'File') ?
+        VariableInstanceService.uploadFile(this.selectedInstance.id, variable) :
+        ProcessService.putLocalExecutionVariable(this.selectedInstance.id, variable.name, variable)
+
+      await method.then(() => {
         this.$refs.addVariableModalUI.hide()
         this.$emit('variable-added')
       }).catch(error => {
