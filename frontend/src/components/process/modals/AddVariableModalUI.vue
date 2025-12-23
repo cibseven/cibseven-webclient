@@ -618,7 +618,7 @@ export default {
     },
 
     onSubmit: function() {
-      const variable = {
+      let variable = {
         name: this.name,
         type: this.type,
         value: this.value,
@@ -630,6 +630,13 @@ export default {
       if (variable.type === 'Null') variable.value = null
       if (variable.type === 'Date') variable.value = moment(variable.value).format('YYYY-MM-DDTHH:mm:ss.SSSZZ')
       if (variable.type !== 'Object') delete variable.valueInfo
+      if (variable.type === 'File') {
+        variable = {
+          name: this.name,
+          type: this.type,
+          file: this.fileToUpload,
+        }
+      }
 
       // minimize value
       if (variable.type === 'Json') {

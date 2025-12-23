@@ -102,10 +102,24 @@ props: {
     },
 
     async saveVariable(variable) {
+      if (variable.type === 'File') {
+        return this.updateFileVariable(variable)
+      }
       const isEditDeserializedValue = (variable.type === 'Object' &&
         // only for non-json serialized objects
         (variable.valueInfo?.serializationDataFormat !== 'application/json'))
       return isEditDeserializedValue ? this.updateVariableDeserialized(variable) : this.updateVariableSerialized(variable)
+    },
+
+    async updateFileVariable(variable) {
+      this.saving = true
+      await VariableInstanceService.uploadFile(this.executionId, variable).then(() => {
+        this.$refs.addVariableModalUI.hide()
+        this.$emit('variable-updated')
+      }).catch((error) => {
+        this.error = error.message
+        this.saving = false
+      })
     },
 
     async updateVariableDeserialized(variable) {

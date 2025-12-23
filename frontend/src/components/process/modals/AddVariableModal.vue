@@ -27,7 +27,7 @@
 </template>
 
 <script>
-import { ProcessService } from '@/services.js'
+import { ProcessService, VariableInstanceService } from '@/services.js'
 import AddVariableModalUI from '@/components/process/modals/AddVariableModalUI.vue'
 
 export default {
@@ -58,7 +58,11 @@ export default {
     },
     addVariable: async function(variable) {
       this.saving = true
-      await ProcessService.putLocalExecutionVariable(this.selectedInstance.id, variable.name, variable).then(() => {
+      const method = (variable.type === 'File') ?
+        VariableInstanceService.uploadFile(this.selectedInstance.id, variable) :
+        ProcessService.putLocalExecutionVariable(this.selectedInstance.id, variable.name, variable)
+
+      await method.then(() => {
         this.$refs.addVariableModalUI.hide()
         this.$emit('variable-added')
       }).catch(error => {

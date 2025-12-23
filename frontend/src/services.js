@@ -268,6 +268,17 @@ const VariableInstanceService = {
       url += `?deserializeValue=${deserializeValue}`
     }
     return axios.get(url)
+  },
+
+  /**
+   * @param {*} executionId 
+   * @param {Object} variable object as `{ name, type: 'File', file: Blob }`
+   */
+  async uploadFile(executionId, variable) {
+    const formData = new FormData()
+    formData.append('data', variable.file)
+    formData.append('valueType', 'File')
+    return ProcessService.modifyVariableDataByExecutionId(executionId, variable.name, formData)
   }
 }
 
