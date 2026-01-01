@@ -112,7 +112,7 @@ public class ProcessDefinitionService extends BaseService implements Initializin
 	public ResponseEntity<ProcessStart> submitForm(
 			@PathVariable String processDefinitionKey, 
 			@RequestBody String formResult, 
-			@RequestParam Optional<String> assignee, HttpServletRequest rq, CIBUser user) {
+			HttpServletRequest rq, CIBUser user) {
 		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.CREATE_ALL);
 		ProcessStart processStart = bpmProvider.submitForm(processDefinitionKey, formResult, user);
 		return new ResponseEntity<>(processStart, new HttpHeaders(), HttpStatus.OK);
