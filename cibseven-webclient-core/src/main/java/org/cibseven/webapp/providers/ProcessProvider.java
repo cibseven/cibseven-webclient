@@ -503,7 +503,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 
 	@Override
 	public ResponseEntity<String> getRenderedForm(String processDefinitionId, Map<String, Object> params, CIBUser user) {
-		String url = getEngineRestUrl() + "/process-definition/" + processDefinitionId + "/rendered-form";
+		String url = getEngineRestUrl(user) + "/process-definition/" + processDefinitionId + "/rendered-form";
 		try {
 			// Build query parameters from the params map
 			StringBuilder queryParams = new StringBuilder();
