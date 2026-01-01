@@ -84,6 +84,11 @@ public class ProcessDefinitionService extends BaseService implements Initializin
 		return sevenProvider.getRenderedStartForm(processDefinitionId, params, user);
 	}
 
+	@Operation(
+			summary = "Get form variables for process definition",
+			description = "<strong>Return: Map of form variable names to Variable objects for the given process definition key. "
+					+ "Variables can optionally be deserialized and filtered by name.</strong>")
+	@ApiResponse(responseCode = "404", description = "Process definition or form variables not found")
 	@RequestMapping(value = "/{key}/form-variables", method = RequestMethod.GET)
 	public Map<String, Variable> fetchProcessDefinitionFormVariablesByNames(
 			@PathVariable String key,
