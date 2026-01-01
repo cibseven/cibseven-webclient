@@ -45,6 +45,7 @@ public interface ITaskProvider {
 	public void setAssignee(String taskId, String assignee, CIBUser user);
 	public void submit(String taskId, CIBUser user);
 	public void submit(Task task, List<Variable> formResult, CIBUser user);
+	public void submit(String taskId, String formResult, CIBUser user);
 	public Object formReference(String taskId, CIBUser user);
 	public Object form(String taskId, CIBUser user);
 	public Collection<Task> findTasksByFilter(TaskFiltering filters, String filterId, CIBUser user, Integer firstResult, Integer maxResults);
@@ -58,6 +59,7 @@ public interface ITaskProvider {
 	public void handleBpmnError(String taskId, Map<String, Object> data, CIBUser user) throws SystemException;
 	public Collection<TaskHistory> findTasksByTaskIdHistory(String taskId, CIBUser user);
 	public ResponseEntity<byte[]> getDeployedForm(String taskId, CIBUser user);
+	public ResponseEntity<String> getRenderedForm(String taskId, Map<String, Object> params, CIBUser user);
 	public Integer findHistoryTasksCount(Map<String, Object> filters, CIBUser user);
 	public Collection<CandidateGroupTaskCount> getTaskCountByCandidateGroup(CIBUser user);
 	

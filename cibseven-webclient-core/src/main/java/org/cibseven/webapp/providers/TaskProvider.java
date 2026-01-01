@@ -152,6 +152,12 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 	}
 
 	@Override
+	public void submit(String taskId, String formResult, CIBUser user) {
+		String url = getEngineRestUrl(user) + "/task/" + taskId + "/submit-form";	
+		doPost(url, formResult, String.class, user);
+	}
+
+	@Override
 	public Object formReference(String taskId, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/task/" + taskId + "/form-variables?variableNames=formReference";
 		ProcessVariables body =  ((ResponseEntity<ProcessVariables>) doGet(url, ProcessVariables.class, user, false)).getBody();
@@ -260,6 +266,31 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 	public ResponseEntity<byte[]> getDeployedForm(String taskId, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/task/" + taskId + "/deployed-form";
 		return doGetWithHeader(url, byte[].class, user, true, MediaType.APPLICATION_OCTET_STREAM);
+	}
+
+	@Override
+	public ResponseEntity<String> getRenderedForm(String taskId, Map<String, Object> params, CIBUser user) {
+		String url = getEngineRestUrl() + "/task/" + taskId + "/rendered-form";
+		try {
+			// Build query parameters from the params map
+			StringBuilder queryParams = new StringBuilder();
+			for (Map.Entry<String, Object> entry : params.entrySet()) {
+				if (queryParams.length() > 0) {
+					queryParams.append("&");
+				}
+				queryParams.append(URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8.toString()))
+					.append("=")
+					.append(URLEncoder.encode(String.valueOf(entry.getValue()), StandardCharsets.UTF_8.toString()));
+			}
+			
+			if (queryParams.length() > 0) {
+				url += "?" + queryParams.toString();
+			}
+			
+			return doGetWithHeader(url, String.class, user, true, MediaType.ALL);
+		} catch (UnsupportedEncodingException e) {
+			throw new SystemException("Error encoding URL parameters for rendered form request", e);
+		}
 	}
 
 	@Override

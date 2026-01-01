@@ -308,17 +308,15 @@ function loadEmbeddedForm(
     parentConfig,
     config
 ) {
-    const headers = {
-        authorization: parentConfig.authToken
-    };
-    
-    // CamSDK.Client handles the engine path internally based on the engine parameter
+    const headers = parentConfig.engineName
+        ? { authorization: parentConfig.authToken, 'X-Process-Engine': parentConfig.engineName }
+        : { authorization: parentConfig.authToken };
     
     const client = new CamSDK.Client({
         mock: false,
-        apiUri: config.engineRestPath || '/engine-rest',
+        apiUri: config.servicesBasePath,
         headers: headers,
-        engine: parentConfig.engineName || 'default'
+        engine: false // false to define absolute apiUri
     });
     return new Promise((resolve, reject) => {
         if (isStartForm) {
