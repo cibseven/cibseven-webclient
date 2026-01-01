@@ -296,6 +296,12 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	}
 
 	@Override
+	public ProcessStart submitForm(String processDefinitionKey, String formResult, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
+		String url = getEngineRestUrl(user) + "/process-definition/" + processDefinitionKey + "/submit-form";	
+		return doPost(url, formResult, ProcessStart.class, user).getBody();
+	}
+
+	@Override
 	public Collection<ProcessStatistics> findProcessStatistics(String processId, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
 		String url = getEngineRestUrl(user) + "/process-definition/" + processId + "/statistics?failedJobs=true&incidents=true";
 		return Arrays.asList(((ResponseEntity<ProcessStatistics[]>) doGet(url, ProcessStatistics[].class, user, false)).getBody());

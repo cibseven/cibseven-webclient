@@ -320,7 +320,13 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public ProcessStart submitForm(String processDefinitionKey, String tenantId, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
+		// Used by Webdesk
 		return processProvider.submitForm(processDefinitionKey, tenantId, data, user);
+	}
+
+	@Override
+	public ProcessStart submitForm(String key, String formResult, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
+		return processProvider.submitForm(key, formResult, user);
 	}
 	
 	@Override
@@ -819,8 +825,13 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 	
 	@Override
-	public Map<String, Variable> fetchProcessFormVariables(String key, CIBUser user) throws NoObjectFoundException, SystemException {
-		return variableProvider.fetchProcessFormVariables(key, user);
+	public Map<String, Variable> fetchProcessFormVariables(String key, boolean deserializeValues, CIBUser user) throws NoObjectFoundException, SystemException {
+		return variableProvider.fetchProcessFormVariables(key, deserializeValues, user);
+	}
+
+	@Override
+	public Map<String, Variable> fetchProcessFormVariables(List<String> variableListName, String key, boolean deserializeValues, CIBUser user) throws NoObjectFoundException, SystemException {
+		return variableProvider.fetchProcessFormVariables(variableListName, key, deserializeValues, user);
 	}
 	
 	@Override

@@ -558,6 +558,19 @@ public interface BpmProvider {
 	 ProcessStart submitForm(String processDefinitionKey, String tenantId, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException;
 
 	/**
+	 * Submit a form to start a process with the given key.
+	 *
+	 * @param key the process definition key
+	 * @param formResult the form submission data as a JSON string
+	 * @param user the authenticated user submitting the form
+	 * @return information about the started process instance
+	 * @throws UnsupportedTypeException when a variable value type is not supported by the engine
+	 * @throws ExpressionEvaluationException when an expression in the process definition cannot be evaluated
+	 * @throws SystemException in case of any other error
+	 */
+	ProcessStart submitForm(String key, String formResult, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException;
+	
+	/**
 	 * Modify a variable in the Process Instance.
 	 * @param executionId Id of the execution.
 	 * @param data to be updated.
@@ -949,7 +962,10 @@ public interface BpmProvider {
 	Map<String, Variable> fetchFormVariables(List<String> variableListName, String taskId, CIBUser user)
 			throws NoObjectFoundException, SystemException;
 
-	Map<String, Variable> fetchProcessFormVariables(String key, CIBUser user)
+	Map<String, Variable> fetchProcessFormVariables(String key, boolean deserializeValues, CIBUser user)
+			throws NoObjectFoundException, SystemException;
+
+	Map<String, Variable> fetchProcessFormVariables(List<String> variableListName, String key, boolean deserializeValues, CIBUser user)
 			throws NoObjectFoundException, SystemException;
 
 	NamedByteArrayDataSource fetchVariableFileData(String taskId, String variableName, CIBUser user)
