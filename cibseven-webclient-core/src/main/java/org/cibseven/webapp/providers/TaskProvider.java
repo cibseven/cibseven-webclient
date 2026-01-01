@@ -152,6 +152,12 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 	}
 
 	@Override
+	public void submit(String taskId, String formResult, CIBUser user) {
+		String url = getEngineRestUrl(user) + "/task/" + taskId + "/submit-form";	
+		doPost(url, formResult, String.class, user);
+	}
+
+	@Override
 	public Object formReference(String taskId, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/task/" + taskId + "/form-variables?variableNames=formReference";
 		ProcessVariables body =  ((ResponseEntity<ProcessVariables>) doGet(url, ProcessVariables.class, user, false)).getBody();

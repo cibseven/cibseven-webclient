@@ -159,6 +159,11 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 
 	@Override
+	public void submit(String taskId, String formResult, CIBUser user) {
+		taskProvider.submit(taskId, formResult, user);
+	}
+
+	@Override
 	public Object formReference(String taskId, CIBUser user) {
 		return taskProvider.formReference(taskId, user);
 	}
@@ -820,10 +825,10 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 	
 	@Override
-	public Map<String, Variable> fetchFormVariables(List<String> variableListName, String taskId, CIBUser user) throws NoObjectFoundException, SystemException {
-		return variableProvider.fetchFormVariables(variableListName, taskId, user);
+	public Map<String, Variable> fetchFormVariables(List<String> variableListName, String taskId, boolean deserializeValues, CIBUser user) throws NoObjectFoundException, SystemException {
+		return variableProvider.fetchFormVariables(variableListName, taskId, deserializeValues, user);
 	}
-	
+
 	@Override
 	public Map<String, Variable> fetchProcessFormVariables(String key, boolean deserializeValues, CIBUser user) throws NoObjectFoundException, SystemException {
 		return variableProvider.fetchProcessFormVariables(key, deserializeValues, user);

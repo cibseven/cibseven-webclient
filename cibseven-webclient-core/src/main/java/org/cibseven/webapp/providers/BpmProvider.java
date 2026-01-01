@@ -959,7 +959,7 @@ public interface BpmProvider {
 	Map<String, Variable> fetchFormVariables(String taskId, boolean deserializeValues, CIBUser user)
 			throws NoObjectFoundException, SystemException;
 
-	Map<String, Variable> fetchFormVariables(List<String> variableListName, String taskId, CIBUser user)
+	Map<String, Variable> fetchFormVariables(List<String> variableListName, String taskId, boolean deserializeValues, CIBUser user)
 			throws NoObjectFoundException, SystemException;
 
 	Map<String, Variable> fetchProcessFormVariables(String key, boolean deserializeValues, CIBUser user)
@@ -1014,6 +1014,17 @@ public interface BpmProvider {
      * @throws SystemException in case of any other error.
 	 */
 	void submit(Task task, List<Variable> formResult, CIBUser user) throws SystemException, SubmitDeniedException;
+
+	/**
+	 * Submits a task form to the process engine.
+	 *
+	 * @param taskId the id of the task the form belongs to
+	 * @param formResult serialized form payload (usually JSON) to be submitted
+	 * @param user the user performing the operation
+	 *
+	 * @throws SystemException in case of an error
+	 */
+	void submit(String taskId, String formResult, CIBUser user) throws NoObjectFoundException, SystemException;
 
 	Long countIncident(Map<String, Object> params, CIBUser user);
 	Long countHistoricIncident(Map<String, Object> params, CIBUser user);
