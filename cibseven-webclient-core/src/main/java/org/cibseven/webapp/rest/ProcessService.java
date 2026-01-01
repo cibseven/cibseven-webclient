@@ -47,7 +47,6 @@ import org.cibseven.webapp.rest.model.ProcessDiagram;
 import org.cibseven.webapp.rest.model.ProcessInstance;
 import org.cibseven.webapp.rest.model.ProcessStart;
 import org.cibseven.webapp.rest.model.ProcessStatistics;
-import org.cibseven.webapp.rest.model.StartForm;
 import org.cibseven.webapp.rest.model.Variable;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.InputStreamSource;
