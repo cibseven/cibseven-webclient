@@ -52,6 +52,7 @@ public class ProcessDefinitionService extends BaseService implements Initializin
 	
 	SevenProvider sevenProvider;
 	
+	@Override
 	public void afterPropertiesSet() {
 		if (bpmProvider instanceof SevenProvider)
 			sevenProvider = (SevenProvider) bpmProvider;
