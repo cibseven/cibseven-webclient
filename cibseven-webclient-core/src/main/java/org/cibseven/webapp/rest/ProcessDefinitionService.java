@@ -44,7 +44,7 @@ import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.core.MediaType;
 
 @ApiResponses({
-	@ApiResponse(responseCode = "500", description = "An unexpected system error occured"),
+	@ApiResponse(responseCode = "500", description = "An unexpected system error occurred"),
 	@ApiResponse(responseCode = "401", description = "Unauthorized")
 })
 @RestController @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/process-definition")
