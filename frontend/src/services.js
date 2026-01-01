@@ -153,7 +153,7 @@ const ProcessService = {
       }
     })
   },
-  startForm: function(processDefinitionId) { return axios.get(getServicesBasePath() + "/process/" + processDefinitionId + "/start-form") },
+  startForm: function(processDefinitionId) { return axios.get(getServicesBasePath() + "/process-definition/" + processDefinitionId + "/startForm") },
   getDeployedStartForm: function(processDefinitionId) { return axios.get(getServicesBasePath() + "/process/" + processDefinitionId + "/deployed-start-form") },
   suspendInstance: function(processInstanceId, suspend) {
     return axios.put(getServicesBasePath() + "/process/instance/" + processInstanceId + "/suspend", null, { params: { suspend: suspend } })

@@ -257,19 +257,6 @@ public class ProcessService extends BaseService implements InitializingBean {
 	}
 	
 	@Operation(
-			summary = "Get start-form to start a process",
-			description = "<strong>Return: Startform variables and formReference")
-	@ApiResponse(responseCode = "404", description = "Process not found")
-	@RequestMapping(value = "/{processDefinitionId}/start-form", method = RequestMethod.GET)
-	public StartForm fetchStartForm(
-			@Parameter(description = "Process to be started") @PathVariable String processDefinitionId,
-			Locale loc, HttpServletRequest request) {
-		CIBUser user = checkAuthorization(request, false);
-		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_ALL);
-		return bpmProvider.fetchStartForm(processDefinitionId, user);
-	}
-	
-	@Operation(
 			summary = "Get deployed start form for process",
 			description = "<strong>Return: Start form data as JSON")
 	@ApiResponse(responseCode = "404", description = "Process or start form not found")
@@ -294,19 +281,6 @@ public class ProcessService extends BaseService implements InitializingBean {
 		} catch (Exception e) {
 			throw new SystemException("Error parsing deployed start form: " + e.getMessage(), e);
 		}
-	}
-
-	@Operation(
-			summary = "Get rendered form HTML for process definition",
-			description = "<strong>Return: Rendered form HTML as string</strong>")
-	@ApiResponse(responseCode = "404", description= "Process definition or rendered form not found")
-	@RequestMapping(value = "/{processDefinitionId}/rendered-form", method = RequestMethod.GET, produces = "text/html")
-	public ResponseEntity<String> getRenderedForm(
-			@Parameter(description = "Process definition Id") @PathVariable String processDefinitionId,
-			@RequestParam Map<String, Object> params,
-			Locale loc, CIBUser user) {
-		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_ALL);
-		return sevenProvider.getRenderedStartForm(processDefinitionId, params, user);
 	}
 	
 	@Operation(
@@ -551,6 +525,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			@Parameter(description = "Tenant id") @RequestParam(required = false) String tenantId,
 			@RequestBody Map<String, Object> data,
 			Locale loc, HttpServletRequest rq) {
+		// Used by Webdesk
 		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.CREATE_ALL);
 		return bpmProvider.submitForm(key, tenantId, data, user);
