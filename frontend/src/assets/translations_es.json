@@ -363,7 +363,8 @@
 			"due": "Fecha de vencimiento",
 			"followUp": "Seguimiento",
 			"taskID": "ID de tarea",
-			"actions": "Acciones"
+			"actions": "Acciones",
+			"openTask": "Abrir tarea \"{name}\" en la lista de tareas"
 		},
 		"calledProcesses": {
 			"callingActivity": "Actividad",
@@ -1072,6 +1073,7 @@
 		"SystemException": "Se ha producido un problema técnico inesperado. ¿Deseas enviar un informe?",
 		"DoxichangeException": "No se ha podido generar la vista previa. ¿Deseas enviar el documento afectado para su análisis?",
 		"AccessDeniedException": "Sin autorización ({0})",
+		"NoPermission": "No tienes los permisos necesarios para realizar esta acción.\nPermiso requerido: \"{permission}\".\nReferenciado desde: {refPath}",
 		"EntryAlreadyExistsException": "{0} ya existe",
 		"NoObjectFoundException": "¡Se ha producido un problema durante la ejecución del proceso! Por favor, actualice la página en su navegador e inténtelo de nuevo.",
 		"InvalidAttributeValueException": "¡Se ha producido un problema durante la ejecución del proceso! Por favor, actualice la página en su navegador e inténtelo de nuevo.",
@@ -1094,13 +1096,15 @@
 		"ExistingGroupRequestException": "El grupo ya existe",
 		"VariableModificationException": "La variable no pudo ser modificada exitosamente. Por favor, actualice la página e inténtelo de nuevo.",
 		"processNotFound": "Proceso con clave \"{0}\" no encontrado",
+		"notFoundInstanceId": "La instancia del proceso con ID \"{instanceId}\" no pudo ser encontrada.\nReferenciado desde: {refPath}",
 		"filterSaveError": "Ocurrió un error al intentar guardar el filtro, verifique los datos ingresados.",
 		"passwordDoNotMatch": "Las contraseñas no coinciden",
 		"PasswordPolicyException": "La contraseña no coincide con los parámetros de política de contraseña",
 		"InvalidUserIdException": "El ID de usuario contiene caracteres no válidos. Sólo se permiten caracteres alfanuméricos (a-z, A-Z, 0-9). Por favor, corrija su entrada.",
 		"invalidEmail": "Introduce una dirección de correo electrónico válida.",
 		"InvalidValueHistoryTimeToLive": "No están permitidos valores nulos para el tiempo de vida del histórico.",
-		"DmnTransformationException": "El recurso no pudo ser actualizado. No se puede transformar el recurso DMN."
+		"DmnTransformationException": "El recurso no pudo ser actualizado. No se puede transformar el recurso DMN.",
+		"unknown": "Se produjo un error inesperado. Por favor, inténtelo de nuevo."
 	},
 	"searches": {
 		"filter": "Filtrar",
@@ -1109,7 +1113,9 @@
 		"searchByTaskName": "Buscar por nombre de tarea...",
 		"searchByDeploymentName": "Búsqueda por nombre de despliegue...",
 		"searchByBusinessKey": "Búsqueda por business key...",
-		"searchByFilterName": "Buscar por nombre de filtro..."
+		"searchByFilterName": "Buscar por nombre de filtro...",
+		"wildcardHelp": "Se admite la búsqueda con comodines.",
+		"wildcardExample": "Use % para representar cualquier número de caracteres (ej. %proceso%)."
 	},
 	"sorting": {
 		"created": "@:task.details.created",
@@ -1402,5 +1408,16 @@
 		"noGroups": "sin grupo",
 		"groupName": "Grupo",
 		"assignmentsByGroupInfo": "Una tarea puede estar asignada a varios grupos."
+	},
+	"setup": {
+		"title": "Configuración Inicial",
+		"description": "¡Bienvenido a CIB seven! Cree una cuenta de administrador para comenzar.",
+		"createAdminUser": "Crear cuenta de administrador",
+		"createUser": "Crear usuario",
+		"success": "¡Cuenta de administrador creada exitosamente! Redirigiendo al inicio de sesión...",
+		"help": {
+			"title": "¿Por qué se muestra esta página?",
+			"description": "Está intentando acceder al motor de procesos \"{0}\". Este motor está configurado para usar el servicio de identidad integrado (base de datos) pero no tiene usuarios administrativos configurados. Esta página le permite crear un usuario inicial para acceder al motor de procesos."
+		}
 	}
 }

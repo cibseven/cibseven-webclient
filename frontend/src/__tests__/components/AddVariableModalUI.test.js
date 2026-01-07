@@ -18,9 +18,9 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { i18n } from '@/i18n'
 import AddVariableModalUI from '@/components/process/modals/AddVariableModalUI.vue'
-import { readFileSync } from 'fs'
-import { resolve } from 'path'
-import { BButton, BFormGroup, BFormInput, BFormSelect, BFormCheckbox, BAlert } from 'cib-common-components'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+import { BButton, BFormGroup, BFormInput, BFormSelect, BFormCheckbox, BAlert } from '@cib/common-frontend'
 
 // Mock dependencies
 vi.mock('@/services.js', () => ({
@@ -90,7 +90,7 @@ describe('AddVariableModal.vue UI interactions', () => {
 
   async function changeType(newType) {
     const select = wrapper.find('select')
-    await select.setValue(newType)    
+    await select.setValue(newType)
   }
 
   async function setValue(newValue) {
@@ -273,6 +273,7 @@ describe('AddVariableModal.vue UI interactions', () => {
     it.each([
       [{ name: '', type: 'String', value: 'text' }, true],
       [{ name: 'name', type: 'String', value: 'text' }, false],
+      [{ name: 'name', type: 'File', value: 'text' }, true],
     ])('isSubmitDisabled(%s)', async (data, result) => {
       await setData(data)
       expect(wrapper.vm.isSubmitDisabled).toBe(result)
@@ -376,6 +377,13 @@ describe('AddVariableModal.vue UI interactions', () => {
       [{ type: 'Double', value: 10.99 }, true],
       [{ type: 'Double', value: Number.MAX_SAFE_INTEGER+100 }, true],
 
+      [{ type: 'file', value: null }, false],
+      [{ type: 'file', value: 'Text' }, false],
+      [{ type: 'file', value: 0 }, false],
+      [{ type: 'file', value: 100 }, false],
+      [{ type: 'file', value: true }, false],
+      [{ type: 'file', value: false }, false],
+
       // Json with invalid values
       [{ type: 'Json', value: '{ invalid json' }, false],
       [{ type: 'Json', value: 123 }, false],
@@ -454,13 +462,13 @@ describe('AddVariableModal.vue UI interactions', () => {
     it('chain', async () => {
       await setData({ type: 'String', value: 'text' })
       expect(wrapper.vm.value).toBe('text')
-      
+
       await changeType('Boolean')
       expect(wrapper.vm.value).toBe(true)
       await changeType('Long')
       expect(wrapper.vm.value).toBe(1)
       await changeType('Double')
-      expect(wrapper.vm.value).toBe(1.0)
+      expect(wrapper.vm.value).toBe(1)
       await changeType('Date')
       expect(wrapper.vm.value).toBe(wrapper.vm.currentDate())
       await changeType('Json')
@@ -471,886 +479,183 @@ describe('AddVariableModal.vue UI interactions', () => {
       expect(wrapper.vm.value).toBe('')
     })
 
-    describe('from String', () => {
-      describe('from String "text"', () => {
+    // Helper function to reduce duplication
+    const testTypeConversion = (sourceType, sourceValues, conversions, additionalSetup = {}) => {
+      describe(`from ${sourceType}`, () => {
+        const sourceValuesArray = Array.isArray(sourceValues) ? sourceValues : [sourceValues]
+        describe.each(sourceValuesArray)(`${sourceType} with value: %s`, (sourceValue) => {
+          beforeEach(async () => {
+            await setData({ type: sourceType, value: sourceValue, ...additionalSetup })
+            expect(wrapper.vm.value).toBe(sourceValue)
+          })
 
-        beforeEach(async () => {
-          await setData({ type: 'String', value: 'text' })
-          expect(wrapper.vm.value).toBe('text')
-        })
-
-        it('to Boolean', async () => {
-          await changeType('Boolean')
-          expect(wrapper.vm.value).toBe(true)
-        })
-
-        it('to Long', async () => {
-          await changeType('Long')
-          expect(wrapper.vm.value).toBe(0)
-        })
-
-        it('to Double', async () => {
-          await changeType('Double')
-          expect(wrapper.vm.value).toBe(0.0)
-        })
-
-        it('to Date', async () => {
-          await changeType('Date')
-          expect(wrapper.vm.value).toBe(wrapper.vm.currentDate())
-        })
-
-        it('to Json', async () => {
-          await changeType('Json')
-          expect(wrapper.vm.value).toBe('{}')
-        })
-
-        it('to Xml', async () => {
-          await changeType('Xml')
-          expect(wrapper.vm.value).toBe('')
-        })
-        
-        it('to Object', async () => {
-          await changeType('Object')
-          expect(wrapper.vm.value).toBe('text')
+          const conversionsNoSourceType = conversions.filter(([targetType]) => targetType !== sourceType)
+          it.each(conversionsNoSourceType)('to %s', async (targetType, expectedValue) => {
+            await changeType(targetType)
+            expect(wrapper.vm.value).toBe(expectedValue === null ? wrapper.vm.currentDate() : expectedValue)
+          })
         })
       })
-
-      describe('from String ""', () => {
-
-        beforeEach(async () => {
-          await setData({ type: 'String', value: '' })
-          expect(wrapper.vm.value).toBe('')
-        })
-
-        it('to Boolean', async () => {
-          await changeType('Boolean')
-          expect(wrapper.vm.value).toBe(true)
-        })
-
-        it('to Long', async () => {
-          await changeType('Long')
-          expect(wrapper.vm.value).toBe(0)
-        })
-
-        it('to Double', async () => {
-          await changeType('Double')
-          expect(wrapper.vm.value).toBe(0.0)
-        })
-
-        it('to Date', async () => {
-          await changeType('Date')
-          expect(wrapper.vm.value).toBe(wrapper.vm.currentDate())
-        })
-
-        it('to Json', async () => {
-          await changeType('Json')
-          expect(wrapper.vm.value).toBe('{}')
-        })
-
-        it('to Xml', async () => {
-          await changeType('Xml')
-          expect(wrapper.vm.value).toBe('')
-        })
-        
-        it('to Object', async () => {
-          await changeType('Object')
-          expect(wrapper.vm.value).toBe('')
-        })
-      })
-
-      describe('from String "10.50"', () => {
-
-        beforeEach(async () => {
-          await setData({ type: 'String', value: '10.50' })
-          expect(wrapper.vm.value).toBe('10.50')
-        })
-
-        it('to Boolean', async () => {
-          await changeType('Boolean')
-          expect(wrapper.vm.value).toBe(true)
-        })
-
-        it('to Long', async () => {
-          await changeType('Long')
-          expect(wrapper.vm.value).toBe(10)
-        })
-
-        it('to Double', async () => {
-          await changeType('Double')
-          expect(wrapper.vm.value).toBe(10.5)
-        })
-
-        it('to Date', async () => {
-          await changeType('Date')
-          expect(wrapper.vm.value).toBe(wrapper.vm.currentDate())
-        })
-
-        it('to Json', async () => {
-          await changeType('Json')
-          expect(wrapper.vm.value).toBe('10.5')
-        })
-
-        it('to Xml', async () => {
-          await changeType('Xml')
-          expect(wrapper.vm.value).toBe('')
-        })
-        
-        it('to Object', async () => {
-          await changeType('Object')
-          expect(wrapper.vm.value).toBe('10.5')
-        })
-      })
-
-      describe('from String "{"a":"b"}"', () => {
-
-        beforeEach(async () => {
-          await setData({ type: 'String', value: '{"a":"b"}' })
-          expect(wrapper.vm.value).toBe('{"a":"b"}')
-        })
-
-        it('to Boolean', async () => {
-          await changeType('Boolean')
-          expect(wrapper.vm.value).toBe(true)
-        })
-
-        it('to Long', async () => {
-          await changeType('Long')
-          expect(wrapper.vm.value).toBe(0)
-        })
-
-        it('to Double', async () => {
-          await changeType('Double')
-          expect(wrapper.vm.value).toBe(0.0)
-        })
-
-        it('to Date', async () => {
-          await changeType('Date')
-          expect(wrapper.vm.value).toBe(wrapper.vm.currentDate())
-        })
-
-        it('to Json', async () => {
-          await changeType('Json')
-          expect(wrapper.vm.value).toBe('{\n  "a": "b"\n}')
-        })
-
-        it('to Xml', async () => {
-          await changeType('Xml')
-          expect(wrapper.vm.value).toBe('')
-        })
-
-        it('to Object', async () => {
-          await changeType('Object')
-          expect(wrapper.vm.value).toBe('{\n  "a": "b"\n}')
-        })
-      })
-    })
-
-    describe('from Boolean', () => {
-
-      describe('true', () => {
-        beforeEach(async () => {
-          await setData({ type: 'Boolean', value: true })
-          expect(wrapper.vm.value).toBe(true)
-        })        
-
-        it('true to Long', async () => {
-          await changeType('Long')
-          expect(wrapper.vm.value).toBe(1)
-        })
-
-        it('true to Double', async () => {
-          await changeType('Double')
-          expect(wrapper.vm.value).toBe(1.0)
-        })
-
-        it('true to String', async () => {
-          await changeType('String')
-          expect(wrapper.vm.value).toBe('')
-        })
-
-        it('true to Date', async () => {
-          await changeType('Date')
-          expect(wrapper.vm.value).toBe(wrapper.vm.currentDate())
-        })
-
-        it('true to Json', async () => {
-          await changeType('Json')
-          expect(wrapper.vm.value).toBe('{}')
-        })
-
-        it('true to Xml', async () => {
-          await changeType('Xml')
-          expect(wrapper.vm.value).toBe('')
-        })
-
-        it('true to Object', async () => {
-          await changeType('Object')
-          expect(wrapper.vm.value).toBe('')
-        })
-      })
-
-      describe('false', () => {
-        beforeEach(async () => {
-          await setData({ type: 'Boolean', value: false })
-          expect(wrapper.vm.value).toBe(false)
-        })
-
-        it('false to Long', async () => {
-          await changeType('Long')
-          expect(wrapper.vm.value).toBe(0)
-        })
-
-        it('false to Double', async () => {
-          await changeType('Double')
-          expect(wrapper.vm.value).toBe(0.0)
-        })
-
-        it('false to String', async () => {
-          await changeType('String')
-          expect(wrapper.vm.value).toBe('')
-        })
-
-        it('false to Date', async () => {
-          await changeType('Date')
-          expect(wrapper.vm.value).toBe(wrapper.vm.currentDate())
-        })
-
-        it('false to Json', async () => {
-          await changeType('Json')
-          expect(wrapper.vm.value).toBe('{}')
-        })
-
-        it('false to Xml', async () => {
-          await changeType('Xml')
-          expect(wrapper.vm.value).toBe('')
-        })
-
-        it('false to Object', async () => {
-          await changeType('Object')
-          expect(wrapper.vm.value).toBe('')
-        })
-      })
-
-      describe('null', () => {
-        beforeEach(async () => {
-          await setData({ type: 'Boolean', value: null })
-          expect(wrapper.vm.value).toBe(null)
-        })
-
-        it('null to Long', async () => {
-          await changeType('Long')
-          expect(wrapper.vm.value).toBe(0)
-        })
-
-        it('null to Double', async () => {
-          await changeType('Double')
-          expect(wrapper.vm.value).toBe(0.0)
-        })
-
-        it('null to String', async () => {
-          await changeType('String')
-          expect(wrapper.vm.value).toBe('')
-        })
-
-        it('null to Date', async () => {
-          await changeType('Date')
-          expect(wrapper.vm.value).toBe(wrapper.vm.currentDate())
-        })
-
-        it('null to Json', async () => {
-          await changeType('Json')
-          expect(wrapper.vm.value).toBe('{}')
-        })
-
-        it('null to Xml', async () => {
-          await changeType('Xml')
-          expect(wrapper.vm.value).toBe('')
-        })
-
-        it('null to Object', async () => {
-          await changeType('Object')
-          expect(wrapper.vm.value).toBe('')
-        })
-      })
-    })
-
-    describe('from Long', () => {
-
-      describe('0', () => {
-        beforeEach(async () => {
-          await setData({ type: 'Long', value: 0 })
-          expect(wrapper.vm.value).toBe(0)
-        })
-
-        it('0 to Boolean', async () => {
-          await changeType('Boolean')
-          expect(wrapper.vm.value).toBe(true)
-        })
-
-        it('0 to Double', async () => {
-          await changeType('Double')
-          expect(wrapper.vm.value).toBe(0.0)
-        })
-
-        it('0 to String', async () => {
-          await changeType('String')
-          expect(wrapper.vm.value).toBe('')
-        })
-
-        it('0 to Json', async () => {
-          await changeType('Json')
-          expect(wrapper.vm.value).toBe('{}')
-        })
-
-        it('0 to Date', async () => {
-          await changeType('Date')
-          expect(wrapper.vm.value).toBe(wrapper.vm.currentDate())
-        })
-
-        it('0 to Xml', async () => {
-          await changeType('Xml')
-          expect(wrapper.vm.value).toBe('')
-        })
-
-        it('0 to Object', async () => {
-          await changeType('Object')
-          expect(wrapper.vm.value).toBe('')
-        })
-      })
-
-      describe('100', () => {
-        beforeEach(async () => {
-          await setData({ type: 'Long', value: 100 })
-          expect(wrapper.vm.value).toBe(100)
-        })
-
-        it('100 to Boolean', async () => {
-          await changeType('Boolean')
-          expect(wrapper.vm.value).toBe(true)
-        })
-
-        it('100 to Double', async () => {
-          await changeType('Double')
-          expect(wrapper.vm.value).toBe(100.0)
-        })
-
-        it('100 to String', async () => {
-          await changeType('String')
-          expect(wrapper.vm.value).toBe('100')
-        })
-
-        it('100 to Json', async () => {
-          await changeType('Json')
-          expect(wrapper.vm.value).toBe('{}')
-        })
-
-        it('100 to Date', async () => {
-          await changeType('Date')
-          expect(wrapper.vm.value).toBe(wrapper.vm.currentDate())
-        })
-
-        it('100 to Xml', async () => {
-          await changeType('Xml')
-          expect(wrapper.vm.value).toBe('')
-        })
-
-        it('100 to Object', async () => {
-          await changeType('Object')
-          expect(wrapper.vm.value).toBe('100')
-        })
-      })
-    })
-
-    describe('from Double', () => {
-
-      describe('0.0', () => {
-        beforeEach(async () => {
-          await setData({ type: 'Double', value: 0.0 })
-          expect(wrapper.vm.value).toBe(0.0)
-        })
-
-        it('0 to Boolean', async () => {
-          await changeType('Boolean')
-          expect(wrapper.vm.value).toBe(true)
-        })
-
-        it('0 to Double', async () => {
-          await changeType('Double')
-          expect(wrapper.vm.value).toBe(0.0)
-        })
-
-        it('0 to String', async () => {
-          await changeType('String')
-          expect(wrapper.vm.value).toBe('')
-        })
-
-        it('0 to Json', async () => {
-          await changeType('Json')
-          expect(wrapper.vm.value).toBe('{}')
-        })
-      })
-
-      describe('100.50', () => {
-        beforeEach(async () => {
-          await setData({ type: 'Double', value: 100.50 })
-          expect(wrapper.vm.value).toBe(100.50)
-        })
-
-        it('100.50 to Boolean', async () => {
-          await changeType('Boolean')
-          expect(wrapper.vm.value).toBe(true)
-        })
-
-        it('100.50 to Double', async () => {
-          await changeType('Double')
-          expect(wrapper.vm.value).toBe(100.50)
-        })
-
-        it('100.50 to String', async () => {
-          await changeType('String')
-          expect(wrapper.vm.value).toBe('100.5')
-        })
-
-        it('100.50 to Json', async () => {
-          await changeType('Json')
-          expect(wrapper.vm.value).toBe('{}')
-        })
-
-        it('100.50 to Date', async () => {
-          await changeType('Date')
-          expect(wrapper.vm.value).toBe(wrapper.vm.currentDate())
-        })
-
-        it('100.50 to Long', async () => {
-          await changeType('Long')
-          expect(wrapper.vm.value).toBe(100)
-        })
-
-        it('100.50 to Xml', async () => {
-          await changeType('Xml')
-          expect(wrapper.vm.value).toBe('')
-        })
-
-        it('100.50 to Object', async () => {
-          await changeType('Object')
-          expect(wrapper.vm.value).toBe('100.5')
-        })
-      })
-
-      describe('100.50', () => {
-        beforeEach(async () => {
-          await setData({ type: 'Double', value: 100.50 })
-          expect(wrapper.vm.value).toBe(100.50)
-        })
-
-        it('100.50 to Boolean', async () => {
-          await changeType('Boolean')
-          expect(wrapper.vm.value).toBe(true)
-        })
-
-        it('100.50 to Double', async () => {
-          await changeType('Double')
-          expect(wrapper.vm.value).toBe(100.50)
-        })
-
-        it('100.50 to String', async () => {
-          await changeType('String')
-          expect(wrapper.vm.value).toBe('100.5')
-        })
-
-        it('100.50 to Json', async () => {
-          await changeType('Json')
-          expect(wrapper.vm.value).toBe('{}')
-        })
-
-        it('100.50 to Date', async () => {
-          await changeType('Date')
-          expect(wrapper.vm.value).toBe(wrapper.vm.currentDate())
-        })
-
-        it('100.50 to Long', async () => {
-          await changeType('Long')
-          expect(wrapper.vm.value).toBe(100)
-        })
-
-        it('100.50 to Xml', async () => {
-          await changeType('Xml')
-          expect(wrapper.vm.value).toBe('')
-        })
-
-        it('100.50 to Object', async () => {
-          await changeType('Object')
-          expect(wrapper.vm.value).toBe('100.5')
-        })
-      })
-    })
-
-    describe('from Date', () => {
-
-      describe('valid date', () => {
-        beforeEach(async () => {
-          await setData({ type: 'Date', value: '2025-09-25' })
-          expect(wrapper.vm.value).toBe('2025-09-25')
-        })
-
-        it('date to Boolean', async () => {
-          await changeType('Boolean')
-          expect(wrapper.vm.value).toBe(true)
-        })
-
-        it('date to Long', async () => {
-          await changeType('Long')
-          expect(wrapper.vm.value).toBe(0)
-        })
-
-        it('date to Double', async () => {
-          await changeType('Double')
-          expect(wrapper.vm.value).toBe(0.0)
-        })
-
-        it('date to String', async () => {
-          await changeType('String')
-          expect(wrapper.vm.value).toBe('2025-09-25')
-        })
-
-        it('date to Json', async () => {
-          await changeType('Json')
-          expect(wrapper.vm.value).toBe('{}')
-        })
-
-        it('date to Xml', async () => {
-          await changeType('Xml')
-          expect(wrapper.vm.value).toBe('')
-        })
-
-        it('date to Object', async () => {
-          await changeType('Object')
-          expect(wrapper.vm.value).toBe('2025-09-25')
-        })
-      })
-
-      describe('null date', () => {
-        beforeEach(async () => {
-          await setData({ type: 'Date', value: null })
-          expect(wrapper.vm.value).toBe(null)
-        })
-
-        it('null date to Boolean', async () => {
-          await changeType('Boolean')
-          expect(wrapper.vm.value).toBe(true)
-        })
-
-        it('null date to Long', async () => {
-          await changeType('Long')
-          expect(wrapper.vm.value).toBe(0)
-        })
-
-        it('null date to Double', async () => {
-          await changeType('Double')
-          expect(wrapper.vm.value).toBe(0.0)
-        })
-
-        it('null date to String', async () => {
-          await changeType('String')
-          expect(wrapper.vm.value).toBe('')
-        })
-
-        it('null date to Json', async () => {
-          await changeType('Json')
-          expect(wrapper.vm.value).toBe('{}')
-        })
-
-        it('null date to Xml', async () => {
-          await changeType('Xml')
-          expect(wrapper.vm.value).toBe('')
-        })
-
-        it('null date to Object', async () => {
-          await changeType('Object')
-          expect(wrapper.vm.value).toBe('')
-        })
-      })
-    })
-
-    describe('from Short', () => {
-
-      describe('0', () => {
-        beforeEach(async () => {
-          await setData({ type: 'Short', value: 0 })
-          expect(wrapper.vm.value).toBe(0)
-        })
-
-        it('0 to Boolean', async () => {
-          await changeType('Boolean')
-          expect(wrapper.vm.value).toBe(true)
-        })
-
-        it('0 to Long', async () => {
-          await changeType('Long')
-          expect(wrapper.vm.value).toBe(0)
-        })
-
-        it('0 to Double', async () => {
-          await changeType('Double')
-          expect(wrapper.vm.value).toBe(0.0)
-        })
-
-        it('0 to String', async () => {
-          await changeType('String')
-          expect(wrapper.vm.value).toBe('')
-        })
-
-        it('0 to Date', async () => {
-          await changeType('Date')
-          expect(wrapper.vm.value).toBe(wrapper.vm.currentDate())
-        })
-
-        it('0 to Json', async () => {
-          await changeType('Json')
-          expect(wrapper.vm.value).toBe('{}')
-        })
-
-        it('0 to Xml', async () => {
-          await changeType('Xml')
-          expect(wrapper.vm.value).toBe('')
-        })
-
-        it('0 to Object', async () => {
-          await changeType('Object')
-          expect(wrapper.vm.value).toBe('')
-        })
-      })
-
-      describe('100', () => {
-        beforeEach(async () => {
-          await setData({ type: 'Short', value: 100 })
-          expect(wrapper.vm.value).toBe(100)
-        })
-
-        it('100 to Boolean', async () => {
-          await changeType('Boolean')
-          expect(wrapper.vm.value).toBe(true)
-        })
-
-        it('100 to Long', async () => {
-          await changeType('Long')
-          expect(wrapper.vm.value).toBe(100)
-        })
-
-        it('100 to Double', async () => {
-          await changeType('Double')
-          expect(wrapper.vm.value).toBe(100.0)
-        })
-
-        it('100 to String', async () => {
-          await changeType('String')
-          expect(wrapper.vm.value).toBe('100')
-        })
-
-        it('100 to Date', async () => {
-          await changeType('Date')
-          expect(wrapper.vm.value).toBe(wrapper.vm.currentDate())
-        })
-
-        it('100 to Json', async () => {
-          await changeType('Json')
-          expect(wrapper.vm.value).toBe('{}')
-        })
-
-        it('100 to Xml', async () => {
-          await changeType('Xml')
-          expect(wrapper.vm.value).toBe('')
-        })
-
-        it('100 to Object', async () => {
-          await changeType('Object')
-          expect(wrapper.vm.value).toBe('100')
-        })
-      })
-    })
-
-    describe('from Integer', () => {
-
-      describe('0', () => {
-        beforeEach(async () => {
-          await setData({ type: 'Integer', value: 0 })
-          expect(wrapper.vm.value).toBe(0)
-        })
-
-        it('0 to Boolean', async () => {
-          await changeType('Boolean')
-          expect(wrapper.vm.value).toBe(true)
-        })
-
-        it('0 to Long', async () => {
-          await changeType('Long')
-          expect(wrapper.vm.value).toBe(0)
-        })
-
-        it('0 to Double', async () => {
-          await changeType('Double')
-          expect(wrapper.vm.value).toBe(0.0)
-        })
-
-        it('0 to String', async () => {
-          await changeType('String')
-          expect(wrapper.vm.value).toBe('')
-        })
-
-        it('0 to Date', async () => {
-          await changeType('Date')
-          expect(wrapper.vm.value).toBe(wrapper.vm.currentDate())
-        })
-
-        it('0 to Json', async () => {
-          await changeType('Json')
-          expect(wrapper.vm.value).toBe('{}')
-        })
-
-        it('0 to Xml', async () => {
-          await changeType('Xml')
-          expect(wrapper.vm.value).toBe('')
-        })
-
-        it('0 to Object', async () => {
-          await changeType('Object')
-          expect(wrapper.vm.value).toBe('')
-        })
-      })
-
-      describe('100', () => {
-        beforeEach(async () => {
-          await setData({ type: 'Integer', value: 100 })
-          expect(wrapper.vm.value).toBe(100)
-        })
-
-        it('100 to Boolean', async () => {
-          await changeType('Boolean')
-          expect(wrapper.vm.value).toBe(true)
-        })
-
-        it('100 to Long', async () => {
-          await changeType('Long')
-          expect(wrapper.vm.value).toBe(100)
-        })
-
-        it('100 to Double', async () => {
-          await changeType('Double')
-          expect(wrapper.vm.value).toBe(100.0)
-        })
-
-        it('100 to String', async () => {
-          await changeType('String')
-          expect(wrapper.vm.value).toBe('100')
-        })
-
-        it('100 to Date', async () => {
-          await changeType('Date')
-          expect(wrapper.vm.value).toBe(wrapper.vm.currentDate())
-        })
-
-        it('100 to Json', async () => {
-          await changeType('Json')
-          expect(wrapper.vm.value).toBe('{}')
-        })
-
-        it('100 to Xml', async () => {
-          await changeType('Xml')
-          expect(wrapper.vm.value).toBe('')
-        })
-
-        it('100 to Object', async () => {
-          await changeType('Object')
-          expect(wrapper.vm.value).toBe('100')
-        })
-      })
-    })
+    }
+
+    const zeroValues = [
+      ['Boolean', true],
+      ['Long', 0],
+      ['Short', 0],
+      ['Double', 0],
+      ['Integer', 0],
+      ['String', ''],
+      ['Date', null],
+      ['Json', '{}'],
+      ['Xml', ''],
+      ['Object', '']
+    ]
+
+    // String conversions
+    testTypeConversion('String', 'text', [
+      ['Boolean', true],
+      ['Long', 0],
+      ['Double', 0],
+      ['Date', null],
+      ['Json', '{}'],
+      ['Xml', ''],
+      ['Object', 'text'],
+    ])
+
+    testTypeConversion('String', ['', null], zeroValues)
+
+    testTypeConversion('String', '10.50', [
+      ['Boolean', true],
+      ['Long', 10],
+      ['Double', 10.5],
+      ['Date', null],
+      ['Json', '10.5'],
+      ['Xml', ''],
+      ['Object', '10.5'],
+    ])
+
+    testTypeConversion('String', '{"a":"b"}', [
+      ['Boolean', true],
+      ['Long', 0],
+      ['Double', 0],
+      ['Date', null],
+      ['Json', '{\n  "a": "b"\n}'],
+      ['Xml', ''],
+      ['Object', '{\n  "a": "b"\n}'],
+    ])
+
+    // Boolean conversions
+    testTypeConversion('Boolean', true, [
+      ['Long', 1],
+      ['Double', 1],
+      ['Short', 1],
+      ['Integer', 1],
+      ['String', ''],
+      ['Date', null],
+      ['Json', '{}'],
+      ['Xml', ''],
+      ['Object', '']
+    ])
+
+    testTypeConversion('Boolean', [false, null], zeroValues)
+
+    // Long conversions
+    testTypeConversion('Long', [0, null], zeroValues)
+
+    testTypeConversion('Long', 100, [
+      ['Boolean', true],
+      ['Double', 100],
+      ['String', '100'],
+      ['Json', '{}'],
+      ['Date', null],
+      ['Xml', ''],
+      ['Object', '100']
+    ])
+
+    // Double conversions
+    testTypeConversion('Double', 0.0, [
+      ['Boolean', true],
+      ['Double', 0],
+      ['String', ''],
+      ['Json', '{}']
+    ])
+
+    testTypeConversion('Double', 100.50, [
+      ['Boolean', true],
+      ['Double', 100.50],
+      ['String', '100.5'],
+      ['Json', '{}'],
+      ['Date', null],
+      ['Long', 100],
+      ['Xml', ''],
+      ['Object', '100.5']
+    ])
+
+    // Date conversions
+    testTypeConversion('Date', '2025-09-25', [
+      ['Boolean', true],
+      ['Long', 0],
+      ['Double', 0],
+      ['String', '2025-09-25'],
+      ['Json', '{}'],
+      ['Xml', ''],
+      ['Object', '2025-09-25']
+    ])
+
+    testTypeConversion('Date', [null, ''], zeroValues)
+
+    // Short conversions
+    testTypeConversion('Short', [0, null], zeroValues)
+
+    testTypeConversion('Short', 100, [
+      ['Boolean', true],
+      ['Long', 100],
+      ['Double', 100],
+      ['String', '100'],
+      ['Date', null],
+      ['Json', '{}'],
+      ['Xml', ''],
+      ['Object', '100']
+    ])
+
+    // Integer conversions
+    testTypeConversion('Integer', [0, null], zeroValues)
+
+    testTypeConversion('Integer', 100, [
+      ['Boolean', true],
+      ['Long', 100],
+      ['Double', 100],
+      ['String', '100'],
+      ['Date', null],
+      ['Json', '{}'],
+      ['Xml', ''],
+      ['Object', '100']
+    ])
+
+    // Json conversions
+    testTypeConversion('Json', '{}', zeroValues)
+
+    testTypeConversion('Json', '123', [
+      ['Boolean', true],
+      ['Long', 123],
+      ['Double', 123],
+      ['String', '123'],
+      ['Date', null],
+      ['Xml', '']
+    ])
 
     describe('from Json', () => {
-
-      describe('empty object', () => {
-        beforeEach(async () => {
-          await setData({ type: 'Json', value: '{}' })
-          expect(wrapper.vm.value).toBe('{}')
-        })
-
-        it('"{}" to Boolean', async () => {
-          await changeType('Boolean')
-          expect(wrapper.vm.value).toBe(true)
-        })
-
-        it('"{}" to Long', async () => {
-          await changeType('Long')
-          expect(wrapper.vm.value).toBe(0)
-        })
-
-        it('"{}" to Double', async () => {
-          await changeType('Double')
-          expect(wrapper.vm.value).toBe(0.0)
-        })
-
-        it('"{}" to String', async () => {
-          await changeType('String')
-          expect(wrapper.vm.value).toBe('{}')
-        })
-
-        it('"{}" to Date', async () => {
-          await changeType('Date')
-          expect(wrapper.vm.value).toBe(wrapper.vm.currentDate())
-        })
-
-        it('"{}" to Xml', async () => {
-          await changeType('Xml')
-          expect(wrapper.vm.value).toBe('')
-        })
-
-        it('"{}" to Object', async () => {
-          await changeType('Object')
-          expect(wrapper.vm.value).toBe('{}')
-        })
-      })
-
-      describe('number json', () => {
+      describe('number json "123" to Object', () => {
         beforeEach(async () => {
           await setData({ type: 'Json', value: '123' })
           expect(wrapper.vm.value).toBe('123')
-        })
-
-        it('"123" to Boolean', async () => {
-          await changeType('Boolean')
-          expect(wrapper.vm.value).toBe(true)
-        })
-
-        it('"123" to Long', async () => {
-          await changeType('Long')
-          expect(wrapper.vm.value).toBe(123)
-        })
-
-        it('"123" to Double', async () => {
-          await changeType('Double')
-          expect(wrapper.vm.value).toBe(123.0)
-        })
-
-        it('"123" to String', async () => {
-          await changeType('String')
-          expect(wrapper.vm.value).toBe('123')
-        })
-
-        it('"123" to Date', async () => {
-          await changeType('Date')
-          expect(wrapper.vm.value).toBe(wrapper.vm.currentDate())
-        })
-
-        it('"123" to Xml', async () => {
-          await changeType('Xml')
-          expect(wrapper.vm.value).toBe('')
         })
 
         it('"123" to Object', async () => {
           await changeType('Object')
           expect(wrapper.vm.value).toBe('123')
           expect(wrapper.vm.objectTypeName).toBe('')
-          expect(wrapper.vm.serializationDataFormat).toBe('')          
+          expect(wrapper.vm.serializationDataFormat).toBe('')
         })
       })
 
@@ -1360,34 +665,16 @@ describe('AddVariableModal.vue UI interactions', () => {
           expect(wrapper.vm.value).toBe('{"a":"b"}')
         })
 
-        it('"{"a":"b"}" to Boolean', async () => {
-          await changeType('Boolean')
-          expect(wrapper.vm.value).toBe(true)
-        })
-
-        it('"{"a":"b"}" to Long', async () => {
-          await changeType('Long')
-          expect(wrapper.vm.value).toBe(0)
-        })
-
-        it('"{"a":"b"}" to Double', async () => {
-          await changeType('Double')
-          expect(wrapper.vm.value).toBe(0.0)
-        })
-
-        it('"{"a":"b"}" to String', async () => {
-          await changeType('String')
-          expect(wrapper.vm.value).toBe('{"a":"b"}')
-        })
-
-        it('"{"a":"b"}" to Date', async () => {
-          await changeType('Date')
-          expect(wrapper.vm.value).toBe(wrapper.vm.currentDate())
-        })
-
-        it('"{"a":"b"}" to Xml', async () => {
-          await changeType('Xml')
-          expect(wrapper.vm.value).toBe('')
+        it.each([
+          ['Boolean', true],
+          ['Long', 0],
+          ['Double', 0],
+          ['String', '{"a":"b"}'],
+          ['Date', null],
+          ['Xml', '']
+        ])('"{"a":"b"}" to %s', async (targetType, expectedValue) => {
+          await changeType(targetType)
+          expect(wrapper.vm.value).toBe(expectedValue === null ? wrapper.vm.currentDate() : expectedValue)
         })
 
         it('"{"a":"b"}" to Object', async () => {
@@ -1399,228 +686,33 @@ describe('AddVariableModal.vue UI interactions', () => {
       })
     })
 
-    describe('from Xml', () => {
+    // Xml conversions
+    testTypeConversion('Xml', [ '', null ], zeroValues)
 
-      describe('empty xml', () => {
-        beforeEach(async () => {
-          await setData({ type: 'Xml', value: '' })
-          expect(wrapper.vm.value).toBe('')
-        })
+    testTypeConversion('Xml', '<root>test</root>', [
+      ['Boolean', true],
+      ['Long', 0],
+      ['Double', 0],
+      ['String', '<root>test</root>'],
+      ['Date', null],
+      ['Json', '{}'],
+      ['Object', '<root>test</root>']
+    ])
 
-        it('"" to Boolean', async () => {
-          await changeType('Boolean')
-          expect(wrapper.vm.value).toBe(true)
-        })
+    // Object conversions
+    testTypeConversion('Object', '', zeroValues, { objectTypeName: 'TestClass', serializationDataFormat: 'application/json' })
 
-        it('"" to Long', async () => {
-          await changeType('Long')
-          expect(wrapper.vm.value).toBe(0)
-        })
+    testTypeConversion('Object', '{"name":"test"}', [
+      ['Boolean', true],
+      ['Long', 0],
+      ['Double', 0],
+      ['String', '{"name":"test"}'],
+      ['Date', null],
+      ['Json', '{\n  "name": "test"\n}'],
+      ['Xml', '']
+    ], { objectTypeName: 'TestClass', serializationDataFormat: 'application/json' })
 
-        it('"" to Double', async () => {
-          await changeType('Double')
-          expect(wrapper.vm.value).toBe(0.0)
-        })
-
-        it('"" to String', async () => {
-          await changeType('String')
-          expect(wrapper.vm.value).toBe('')
-        })
-
-        it('"" to Date', async () => {
-          await changeType('Date')
-          expect(wrapper.vm.value).toBe(wrapper.vm.currentDate())
-        })
-
-        it('"" to Json', async () => {
-          await changeType('Json')
-          expect(wrapper.vm.value).toBe('{}')
-        })
-
-        it('"" to Object', async () => {
-          await changeType('Object')
-          expect(wrapper.vm.value).toBe('')
-        })
-      })
-
-      describe('valid xml', () => {
-        beforeEach(async () => {
-          await setData({ type: 'Xml', value: '<root>test</root>' })
-          expect(wrapper.vm.value).toBe('<root>test</root>')
-        })
-
-        it('"<root>test</root>" to Boolean', async () => {
-          await changeType('Boolean')
-          expect(wrapper.vm.value).toBe(true)
-        })
-
-        it('"<root>test</root>" to Long', async () => {
-          await changeType('Long')
-          expect(wrapper.vm.value).toBe(0)
-        })
-
-        it('"<root>test</root>" to Double', async () => {
-          await changeType('Double')
-          expect(wrapper.vm.value).toBe(0.0)
-        })
-
-        it('"<root>test</root>" to String', async () => {
-          await changeType('String')
-          expect(wrapper.vm.value).toBe('<root>test</root>')
-        })
-
-        it('"<root>test</root>" to Date', async () => {
-          await changeType('Date')
-          expect(wrapper.vm.value).toBe(wrapper.vm.currentDate())
-        })
-
-        it('"<root>test</root>" to Json', async () => {
-          await changeType('Json')
-          expect(wrapper.vm.value).toBe('{}')
-        })
-
-        it('"<root>test</root>" to Object', async () => {
-          await changeType('Object')
-          expect(wrapper.vm.value).toBe('<root>test</root>')
-        })
-      })
-    })
-
-    describe('from Object', () => {
-
-      describe('empty object', () => {
-        beforeEach(async () => {
-          await setData({ type: 'Object', value: '', objectTypeName: 'TestClass', serializationDataFormat: 'application/json' })
-          expect(wrapper.vm.value).toBe('')
-        })
-
-        it('"" to Boolean', async () => {
-          await changeType('Boolean')
-          expect(wrapper.vm.value).toBe(true)
-        })
-
-        it('"" to Long', async () => {
-          await changeType('Long')
-          expect(wrapper.vm.value).toBe(0)
-        })
-
-        it('"" to Double', async () => {
-          await changeType('Double')
-          expect(wrapper.vm.value).toBe(0.0)
-        })
-
-        it('"" to String', async () => {
-          await changeType('String')
-          expect(wrapper.vm.value).toBe('')
-        })
-
-        it('"" to Date', async () => {
-          await changeType('Date')
-          expect(wrapper.vm.value).toBe(wrapper.vm.currentDate())
-        })
-
-        it('"" to Json', async () => {
-          await changeType('Json')
-          expect(wrapper.vm.value).toBe('{}')
-        })
-
-        it('"" to Xml', async () => {
-          await changeType('Xml')
-          expect(wrapper.vm.value).toBe('')
-        })
-      })
-
-      describe('object with data', () => {
-        beforeEach(async () => {
-          await setData({ type: 'Object', value: '{"name":"test"}', objectTypeName: 'TestClass', serializationDataFormat: 'application/json' })
-          expect(wrapper.vm.value).toBe('{"name":"test"}')
-        })
-
-        it('"{"name":"test"}" to Boolean', async () => {
-          await changeType('Boolean')
-          expect(wrapper.vm.value).toBe(true)
-        })
-
-        it('"{"name":"test"}" to Long', async () => {
-          await changeType('Long')
-          expect(wrapper.vm.value).toBe(0)
-        })
-
-        it('"{"name":"test"}" to Double', async () => {
-          await changeType('Double')
-          expect(wrapper.vm.value).toBe(0.0)
-        })
-
-        it('"{"name":"test"}" to String', async () => {
-          await changeType('String')
-          expect(wrapper.vm.value).toBe('{"name":"test"}')
-        })
-
-        it('"{"name":"test"}" to Date', async () => {
-          await changeType('Date')
-          expect(wrapper.vm.value).toBe(wrapper.vm.currentDate())
-        })
-
-        it('"{"name":"test"}" to Json', async () => {
-          await changeType('Json')
-          expect(wrapper.vm.value).toBe('{\n  "name": "test"\n}')
-        })
-
-        it('"{"name":"test"}" to Xml', async () => {
-          await changeType('Xml')
-          expect(wrapper.vm.value).toBe('')
-        })
-      })
-    })
-
-    describe('from Null', () => {
-
-      describe('null value', () => {
-        beforeEach(async () => {
-          await setData({ type: 'Null', value: null })
-          expect(wrapper.vm.value).toBe(null)
-        })
-
-        it('null to Boolean', async () => {
-          await changeType('Boolean')
-          expect(wrapper.vm.value).toBe(true)
-        })
-
-        it('null to Long', async () => {
-          await changeType('Long')
-          expect(wrapper.vm.value).toBe(0)
-        })
-
-        it('null to Double', async () => {
-          await changeType('Double')
-          expect(wrapper.vm.value).toBe(0.0)
-        })
-
-        it('null to String', async () => {
-          await changeType('String')
-          expect(wrapper.vm.value).toBe('')
-        })
-
-        it('null to Date', async () => {
-          await changeType('Date')
-          expect(wrapper.vm.value).toBe(wrapper.vm.currentDate())
-        })
-
-        it('null to Json', async () => {
-          await changeType('Json')
-          expect(wrapper.vm.value).toBe('{}')
-        })
-
-        it('null to Xml', async () => {
-          await changeType('Xml')
-          expect(wrapper.vm.value).toBe('')
-        })
-
-        it('null to Object', async () => {
-          await changeType('Object')
-          expect(wrapper.vm.value).toBe('')
-        })
-      })
-    })
+    // Null conversions
+    testTypeConversion('Null', [null, ''], zeroValues)
   })
 })

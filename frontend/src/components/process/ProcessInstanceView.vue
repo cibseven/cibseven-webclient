@@ -29,6 +29,7 @@
                 ...Object.fromEntries(
                   Object.entries($route.query).filter(([key]) => key !== 'parentProcessDefinitionId')
                 ),
+                ...(parentProcess.tenantId ? { tenantId: parentProcess.tenantId } : {}),
                 tab: 'instances'
               }
             }"
@@ -38,10 +39,8 @@
           <span v-if="superProcessInstance" class="pe-1">:</span>
           <router-link v-if="superProcessInstance"
             :to="{
-              name: 'process',
+              name: 'process-instance-id',
               params: {
-                processKey: superProcessInstance.processDefinitionKey,
-                versionIndex: superProcessInstance.processDefinitionVersion,
                 instanceId: superProcessInstance.id
               },
               query: { tab: 'variables' }
@@ -73,13 +72,19 @@
     <div @mousedown="handleMouseDown" class="v-resizable position-absolute w-100" style="left: 0" :style="'height: ' + bpmnViewerHeight + 'px; ' + toggleTransition">
       <component :is="BpmnViewerPlugin" v-if="BpmnViewerPlugin" ref="diagram" class="h-100"
         @child-activity="filterByChildActivity($event)" @task-selected="selectTask($event)" @activity-map-ready="activityMap = $event"
-        :activityId="activityId" :activity-instance="activityInstance" :process-definition-id="process.id" :selected-instance="selectedInstance" :activity-instance-history="activityInstanceHistory" 
+        :activityId="selectedActivityId" :activity-instance="activityInstance" :process-definition-id="process.id" :selected-instance="selectedInstance" :activity-instance-history="activityInstanceHistory" 
         :statistics="process.statistics" :active-tab="activeTab" >
       </component>
-      <BpmnViewer v-else ref="diagram" class="h-100"
-        @child-activity="filterByChildActivity($event)" @task-selected="selectTask($event)" :activityId="activityId" 
-        :activity-instance="activityInstance" :selected-instance="selectedInstance" :activity-instance-history="activityInstanceHistory" 
-        :statistics="process.statistics" :process-definition-id="process.id">
+      <BpmnViewer v-else ref="diagram"
+        :process-definition-id="process.id"
+        :activity-instance="activityInstance"
+        :activity-instance-history="activityInstanceHistory" 
+        :statistics="process.statistics"
+        :selected-instance="selectedInstance"
+        :activityId="selectedActivityId" 
+        @task-selected="selectTask($event)"
+        @child-activity="filterByChildActivity($event)"
+        class="h-100">
       </BpmnViewer>
       <span role="button" size="sm" variant="light" class="bg-white px-2 py-1 me-1 position-absolute border rounded" style="bottom: 90px; right: 11px;" @click="toggleContent">
         <span class="mdi mdi-18px" :class="toggleIcon"></span>
@@ -99,7 +104,7 @@
 
       <VariablesTable v-if="activeTab === 'variables'" :selected-instance="selectedInstance" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory"></VariablesTable>
       <IncidentsTable v-else-if="activeTab === 'incidents'" :scrollable-area="$refs.rContent" :instance="selectedInstance" :process="process" :activity-instance="activityInstance" 
-        :is-instance-view="true" :activity-instance-history="activityInstanceHistory"></IncidentsTable>
+        :is-instance-view="true" :activity-instance-history="activityInstanceHistory" :tenant-id="tenantId"></IncidentsTable>
       <UserTasksTable v-else-if="activeTab === 'usertasks'" :selected-instance="selectedInstance"></UserTasksTable>
       <JobsTable v-else-if="activeTab === 'jobs'" :instance="selectedInstance" :process="process"></JobsTable>
       <CalledProcessInstancesTable v-else-if="activeTab === 'calledProcessInstances'" :selected-instance="selectedInstance" :activity-instance-history="activityInstanceHistory"></CalledProcessInstancesTable>
@@ -112,7 +117,7 @@
 
 <script>
 import { ProcessService, HistoryService } from '@/services.js'
-import { mapActions } from 'vuex'
+import { mapActions, mapGetters } from 'vuex'
 
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
 import tabUrlMixin from '@/components/process/mixins/tabUrlMixin.js'
@@ -135,6 +140,7 @@ export default {
   mixins: [resizerMixin, tabUrlMixin],
   props: {
     process: Object,
+    tenantId: String,
     selectedInstance: Object,
     activityInstance: Object,
     activityInstanceHistory: Object
@@ -143,7 +149,6 @@ export default {
   data: function() {
     return {
       filterHeight: 0,
-      activityId: '',
       defaultTab: 'variables',
       parentProcess: null,
       superProcessInstance: null
@@ -152,7 +157,7 @@ export default {
   watch: {
     'process.id': function() {
       ProcessService.fetchDiagram(this.process.id).then(response => {
-        this.$refs.diagram.showDiagram(response.bpmn20Xml, null, null)
+        this.$refs.diagram.showDiagram(response.bpmn20Xml, this.selectedActivityId)
       })
     },
     'selectedInstance.superProcessInstanceId': function(newVal) {
@@ -165,6 +170,7 @@ export default {
     }
   },
   computed: {
+    ...mapGetters(['selectedActivityId']),
     ProcessInstanceTabsPlugin() {
       return this.$options.components && this.$options.components.ProcessInstanceTabsPlugin
         ? this.$options.components.ProcessInstanceTabsPlugin
@@ -183,7 +189,7 @@ export default {
   },
   mounted: function() {
     ProcessService.fetchDiagram(this.process.id).then(response => {
-      this.$refs.diagram.showDiagram(response.bpmn20Xml, null, null)
+      this.$refs.diagram.showDiagram(response.bpmn20Xml, this.selectedActivityId)
     })
     // Load super process instance if available
     if (this.selectedInstance?.superProcessInstanceId) {
@@ -196,16 +202,19 @@ export default {
     }
   },
   methods: {
-    ...mapActions(['loadHistoricActivityStatistics', 'clearHistoricActivityStatistics']),
+    ...mapActions(['clearActivitySelection', 'setHighlightedElement', 'selectActivity', 'loadHistoricActivityStatistics', 'clearHistoricActivityStatistics']),
     selectTask: function(event) {
-      this.selectedTask = event
       this.$emit('task-selected', event);
     },
     filterByChildActivity: function(event) {
-      if (event) {
-        this.activityId = event.activityId
-      } else {
-        this.activityId = ''
+      const activityId = event?.id || ''
+      if (activityId) {
+        this.selectActivity({ activityId: activityId })
+        this.setHighlightedElement(activityId)
+      }
+      else {
+        this.clearActivitySelection()
+        this.setHighlightedElement('')
       }
     },
     loadSuperProcessInstance: async function(superProcessInstanceId) {

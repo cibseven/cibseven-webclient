@@ -70,9 +70,7 @@
 </template>
 
 <script>
-  import FlowTable from '@/components/common-components/FlowTable.vue'
-  import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
-  import { BWaitingBox } from 'cib-common-components'
+  import { FlowTable, ConfirmDialog, BWaitingBox } from '@cib/common-frontend'
   import { mapActions, mapGetters } from 'vuex'
 
   export default {
@@ -116,10 +114,10 @@
         })
       },
       add: function() {
-        this.$router.push('/seven/auth/admin/create-tenant')
+        this.$router.push({ name: 'createTenant' })
       },
       edit: function(tenant) {
-        this.$router.push('/seven/auth/admin/tenant/' + tenant.id + '?tab=information')
+        this.$router.push({ name: 'adminTenant', params: { tenantId: tenant.id }, query: { tab: 'information' } })
       },
       prepareRemove: function(tenant) {
         this.tenantSelected = tenant

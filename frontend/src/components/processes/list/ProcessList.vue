@@ -62,17 +62,17 @@
       <div class="m-3 mb-0">
       <FlowTable :items="processesFiltered" thead-class="sticky-header" striped primary-key="id" prefix="process." :fields="fields" @click="goToShowProcessHistory($event)" @select="focused = $event[0]" @mouseenter="focused = $event" @mouseleave="focused = null">
         <template v-slot:cell(key)="table">
-          <CopyableActionButton 
-            :display-value="table.item.key" 
-            :copy-value="table.item.key" 
+          <CopyableActionButton
+            :display-value="table.item.key"
+            :copy-value="table.item.key"
             :to="getProcessRoute(table.item)"
             @copy="copyValueToClipboard"
           />
         </template>
         <template v-slot:cell(name)="table">
-          <CopyableActionButton 
-            :display-value="table.item.name || ''" 
-            :copy-value="table.item.name || ''" 
+          <CopyableActionButton
+            :display-value="table.item.name || ''"
+            :copy-value="table.item.name || ''"
             :to="getProcessRoute(table.item)"
             @copy="copyValueToClipboard"
           />
@@ -80,7 +80,7 @@
         <template v-slot:cell(incidents)="table">
           <span v-if="loadingInstances"><b-spinner small></b-spinner></span>
           <div v-else-if="table.item.incidents > 0">
-            <span :title="$t('process.instanceIncidents')" class="mdi mdi-18px mdi-alert-outline text-warning"></span><span>{{ table.item.incidents }}</span>
+            <span :title="$t('process.instanceIncidents')" class="mdi mdi-18px mdi-alert-outline text-warning"></span><span class="ms-1" :title="$t('process.instanceIncidents')" >{{ table.item.incidents }}</span>
           </div>
           <span :title="$t('process.instanceWithoutIncidents')" v-else class="mdi mdi-18px mdi-check-circle-outline text-success"></span>
         </template>
@@ -121,9 +121,7 @@
 
 <script>
 import { permissionsMixin } from '@/permissions.js'
-import FlowTable from '@/components/common-components/FlowTable.vue'
-import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
-import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
+import { CopyableActionButton, SuccessAlert, FlowTable } from '@cib/common-frontend'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 
 export default {
@@ -163,19 +161,19 @@ export default {
     },
     processesFiltered: function() {
       if (!this.$store.state.process.list) return []
-      var processes = this.$store.state.process.list.filter(process => {
+       let processes = this.$store.state.process.list.filter(process => {
         return ((process.key.toUpperCase().includes(this.filter.toUpperCase()) ||
             ((process.name) ? process.name.toUpperCase().includes(this.filter.toUpperCase()) : false)))
       })
       processes = processes.filter(process => {
-        var incidents = this.onlyIncidents ? process.incidents > 0 : true
-        var onlyActive = this.onlyActive ? process.suspended === 'false' : true
+        const incidents = this.onlyIncidents ? process.incidents > 0 : true
+        const onlyActive = this.onlyActive ? process.suspended === 'false' : true
         return incidents && onlyActive
       })
       processes.sort((objA, objB) => {
-        var nameA = objA.name ? objA.name.toUpperCase() : objA.name
-        var nameB = objB.name ? objB.name.toUpperCase() : objB.name
-        var comp = nameA < nameB ? -1 : nameA > nameB ? 1 : 0
+        const nameA = objA.name ? objA.name.toUpperCase() : objA.name
+        const nameB = objB.name ? objB.name.toUpperCase() : objB.name
+        let comp = nameA < nameB ? -1 : (nameA > nameB ? 1 : 0)
 
         if (this.$root.config.subProcessFolder) {
           if (objA.resource.indexOf(this.$root.config.subProcessFolder) > -1) comp = 1
@@ -214,7 +212,7 @@ export default {
   },
   methods: {
     goToDeployment: function(process) {
-      this.$router.push('/seven/auth/deployments/' + process.deploymentId)
+      this.$router.push({ name: 'deployments', params: { deploymentId: process.deploymentId } })
     },
     goToCockpit: function(process) {
       window.open(this.$root.config.cockpitUrl + '#/process-definition/' + process.id, '_blank')

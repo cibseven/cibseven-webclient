@@ -90,10 +90,7 @@ import { AdminService } from '@/services.js'
 import { moment } from '@/globals.js'
 import { debounce } from '@/utils/debounce.js'
 import { getStringObjByKeys } from '@/components/admin/utils.js'
-import FlowTable from '@/components/common-components/FlowTable.vue'
-import TaskPopper from '@/components/common-components/TaskPopper.vue'
-import { BWaitingBox } from 'cib-common-components'
-import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
+import { FlowTable, TaskPopper, ConfirmDialog, BWaitingBox } from '@cib/common-frontend'
 
 export default {
   name: 'AdminUsers',
@@ -140,7 +137,7 @@ export default {
       })
     }),
     add: function () {
-      this.$router.push('/seven/auth/admin/create-user')
+      this.$router.push({ name: 'createUser' })
     },
     prepareRemove: function (user) {
       this.userSelected = user
@@ -154,7 +151,7 @@ export default {
       })
     },
     openUser: function (user) {
-      this.$router.push('/seven/auth/admin/user/' + user.id + '?tab=profile')
+      this.$router.push({ name: 'adminUser', params: { userId: user.id }, query: { tab: 'profile' } })
     },
     showMore: function(el) {
       if (this.firstResult <= this.users.length && !this.loading) {
@@ -179,9 +176,9 @@ export default {
       }
     },
     findUsers: debounce(800, function(filter) {
-      var firstNameLike = null
-      var lastNameLike = null
-      var id = null
+      let firstNameLike = null
+      let lastNameLike = null
+      let id = null
       firstNameLike = ({ firstNameLike: '*' + filter + '*' })
       lastNameLike = ({ lastNameLike: '*' + filter + '*' })
       id = ({ id: filter })
@@ -201,15 +198,15 @@ export default {
     }),
     exportCSV: function() {
       this.exporting = true
-      var keys = ['id', 'firstName', 'lastName', 'email']
-      var csvContent = keys.map(k => this.$t('admin.users.' + k)).join(';') + '\n'
+      const keys = ['id', 'firstName', 'lastName', 'email']
+      let csvContent = keys.map(k => this.$t('admin.users.' + k)).join(';') + '\n'
       AdminService.findUsers().then(users => {
         if (users.length > 0) {
           users.forEach(r => {
             csvContent += getStringObjByKeys(keys, r) + '\n'
           })
-          var csvBlob = new Blob([csvContent], { type: 'text/csv' })
-          var filename = 'users_' + moment().format('YYYYMMDD_HHmm') + '.csv'
+          const csvBlob = new Blob([csvContent], { type: 'text/csv' })
+          const filename = 'users_' + moment().format('YYYYMMDD_HHmm') + '.csv'
           this.$refs.importPopper.triggerDownload(csvBlob, filename)
         }
         this.exporting = false

@@ -23,7 +23,7 @@
         <div class="col-12 p-0">
           <b-card class="border-0 p-5" :title="$t('admin.users.create')">
             <b-card-text class="border-top pt-4 mt-3">
-              <form @submit.prevent="onSubmit($event)">
+              <form @submit.prevent="onSubmit">
                 <b-form-group labels-cols-lg="2" :label="$t('admin.users.account')" label-size="lg" label-class="h6 pt-0 mb-4" class="m-0">
                   <b-form-group :label="$t('admin.users.id') + '*'" label-cols-sm="2"
                     label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
@@ -68,7 +68,7 @@
                     <b-form-input v-model="profile.email" type="email" autocomplete="email" :state="isValidEmail(profile.email)"></b-form-input>
                   </b-form-group>
                   <div class="d-flex justify-content-end gap-2 mt-4">
-                    <b-button type="reset" @click="onReset()" variant="light">{{ $t('admin.users.cancel') }}</b-button>
+                    <b-button type="button" @click="onReset()" variant="light">{{ $t('admin.users.cancel') }}</b-button>
                     <b-button type="submit" variant="primary">{{ $t('admin.users.create') }}</b-button>
                   </div>
                 </b-form-group>
@@ -92,7 +92,7 @@
 <script>
 import { AdminService } from '@/services.js'
 import { notEmpty, same, isValidEmail } from '@/components/admin/utils.js'
-import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
+import { SuccessAlert } from '@cib/common-frontend'
 
 export default {
   name: 'CreateUser',
@@ -114,18 +114,17 @@ export default {
         return 'text'
       return 'password'
     },
-    onSubmit: function(evt) {
-      evt.preventDefault()
+    onSubmit: function() {
       if (!same(this.credentials.password, this.passwordRepeat)) return
       AdminService.createUser({ 'profile': this.profile, 'credentials': this.credentials }).then(() => {
         this.passwordPolicyError = false
         this.userIdError = false
         this.$refs.userCreated.show(1)
         setTimeout(() => {
-          this.$router.push('/seven/auth/admin/users')
+          this.$router.push({ name: 'adminUsers' })
         }, 1000)
       }, error => {
-        var data = error.response.data
+        const data = error.response.data
         if (data) {
           if (data.type === 'PasswordPolicyException') this.passwordPolicyError = true
           else if (data.type === 'InvalidUserIdException') this.userIdError = true
@@ -133,7 +132,7 @@ export default {
       })
     },
     onReset: function() {
-      this.$router.push('/seven/auth/admin/users')
+      this.$router.push({ name: 'adminUsers' })
     },
     notEmpty: function(value) {
       return notEmpty(value)

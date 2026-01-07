@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { HistoryService, ProcessService, TaskService } from '@/services.js'
+import { HistoryService, ProcessService } from '@/services.js'
 
 const serviceMap = {
 	ProcessService: ProcessService,
@@ -26,6 +26,7 @@ export default {
 	data: function () {
 		return {
 			loading: true,
+			fetching: false,
 			filter: {
 				deserializeValues: false,
 			},
@@ -51,24 +52,24 @@ export default {
 	},
 	computed: {
 		activityInstancesGrouped: function () {
-				var res = []
+				const res = []
 				if (this.activityInstance) {
 					res[this.activityInstance.id] = this.activityInstance.name
 					this.activityInstance.childActivityInstances.forEach(ai => {
-						res[ai.id] = ai.name
+						res[ai.id] = ai.name || ai.activityId
 					})
 				} else {
 					res[this.selectedInstance.id] = this.selectedInstance.processDefinitionName
 					if (this.activityInstanceHistory) {
 						this.activityInstanceHistory.forEach(ai => {
-							res[ai.id] = ai.activityName
+							res[ai.id] = ai.activityName || ai.activityId
 						})
 					}
 				}
 				return res
 		},
 		restFilter: function () {
-			let result = {
+			const result = {
 				...this.filter,
 				deserializeValues: false,
 				sortBy: 'variableName',
@@ -84,13 +85,9 @@ export default {
 			return result
 		}
 	},
-	mounted() {
-		if (!this.$route.query.q) {
-			this.loadSelectedInstanceVariables()
-		}
-	},
 	methods: {
 		loadSelectedInstanceVariables: function() {
+			if (this.fetching) return // Prevent concurrent requests
 			if (this.selectedInstance && this.activityInstancesGrouped) {
 				if (this.selectedInstance.state === 'ACTIVE' || this.$root.config.camundaHistoryLevel === 'none') {
 					this.fetchInstanceVariables('ProcessService', 'fetchProcessInstanceVariables')
@@ -102,8 +99,9 @@ export default {
 			}
 		},
 		fetchInstanceVariables: async function (service, method) {
+			this.fetching = true
 			this.loading = true
-			let variables = await serviceMap[service][method](this.selectedInstance.id, this.restFilter)
+			const variables = await serviceMap[service][method](this.selectedInstance.id, this.restFilter)
 			variables.forEach(v => {
 				v.scope = this.activityInstancesGrouped[v.activityInstanceId]
 			})
@@ -112,6 +110,7 @@ export default {
 			this.variables = variables
 			this.filteredVariables = [...variables]
 			this.loading = false
+			this.fetching = false
 		},    
     displayValue(item) {
       if (this.isFileValueDataSource(item)) {
@@ -193,26 +192,20 @@ export default {
 		},
 		downloadFile: function(variable) {
 			if (this.isFileValueDataSource(variable)) {
-				if (this.selectedInstance.state === 'ACTIVE') {
-					TaskService.downloadFile(variable.processInstanceId, variable.name).then(data => {
-						this.$refs.importPopper.triggerDownload(data, this.getFileVariableName(variable))
-					})
-				} else {
-					const filter = { variableName: variable.name, deserializeValues: false }
-					HistoryService.fetchProcessInstanceVariablesHistory(variable.processInstanceId, filter).then(result => {
-						if (result && result.length > 0) {
-							const value = result[0].value
-							const fileData = typeof value === 'string' ? JSON.parse(value) : value
-							const blob = new Blob([Uint8Array.from(atob(fileData.data), c => c.charCodeAt(0))], { type: fileData.contentType })
-							this.$refs.importPopper.triggerDownload(blob, fileData.name)
-						}
-					})
-				}
+				const filter = { variableName: variable.name, deserializeValues: true }
+				HistoryService.fetchProcessInstanceVariablesHistory(variable.processInstanceId, filter).then(result => {
+					if (result && result.length > 0) {
+						const value = result[0].value
+						const fileData = typeof value === 'string' ? JSON.parse(value) : value
+						const blob = new Blob([Uint8Array.from(atob(fileData.data), c => c.charCodeAt(0))], { type: fileData.contentType })
+						this.$refs.importPopper.triggerDownload(blob, fileData.name)
+					}
+				})
 			} else if (variable.type === 'Object') {
-				var blob = new Blob([Uint8Array.from(atob(variable.value.data), c => c.charCodeAt(0))], { type: variable.value.contentType })
+				const blob = new Blob([Uint8Array.from(atob(variable.value.data), c => c.charCodeAt(0))], { type: variable.value.contentType })
 				this.$refs.importPopper.triggerDownload(blob, this.getFileVariableName(variable))
 			} else {
-				var download = this.selectedInstance.state === 'ACTIVE' ?
+				const download = this.selectedInstance.state === 'ACTIVE' ?
 					ProcessService.fetchVariableDataByExecutionId(variable.executionId, variable.name) :
 					HistoryService.fetchHistoryVariableDataById(variable.id)
 				download.then(data => {
@@ -222,20 +215,20 @@ export default {
 		},
 		uploadFile: function () {
 			if (this.isFileValueDataSource(this.selectedVariable)) {
-				var reader = new FileReader()
+				const reader = new FileReader()
 				reader.onload = event => {
-					var fileData = {
+					const fileData = {
 						contentType: this.file.type,
 						name: this.file.name,
 						encoding: 'UTF-8',
 						data: event.target.result.split(',')[1],
 						objectTypeName: this.selectedVariable.valueInfo.objectTypeName
 					}
-					var valueInfo = {
+					const valueInfo = {
 						objectTypeName: this.selectedVariable.valueInfo.objectTypeName,
 						serializationDataFormat: 'application/json'
 					}
-					var data = { fileObject: true, processDefinitionId: this.selectedVariable.processDefinitionId, modifications: {} }
+					const data = { fileObject: true, processDefinitionId: this.selectedVariable.processDefinitionId, modifications: {} }
 					data.modifications[this.selectedVariable.name] = {
 						value: JSON.stringify(fileData),
 						valueInfo: valueInfo, type: this.selectedVariable.type
@@ -247,7 +240,7 @@ export default {
 				reader.onerror = () => { }
 				reader.readAsDataURL(this.file)
 			} else {
-				var formData = new FormData()
+				const formData = new FormData()
 				formData.append('data', this.file)
 				formData.append('valueType', 'File')
 				const fileObj = { name: this.file.name, type: this.file.type }
@@ -261,7 +254,7 @@ export default {
 		},
 		saveOrEditVariable: function (variable) {
 			if (variable.modify) {
-				var data = { modifications: {} }
+				const data = { modifications: {} }
 				data.modifications[variable.name] = { value: variable.value }
 				ProcessService.modifyVariableByExecutionId(variable.executionId, data).then(() => {
 					variable.modify = false

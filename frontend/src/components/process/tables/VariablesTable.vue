@@ -38,12 +38,15 @@
         { label: 'value', key: 'value', class: 'col-3', tdClass: 'py-1' },
         { label: 'scope', key: 'scope', class: 'col-2', tdClass: 'py-1' },
         { label: 'actions', key: 'actions', class: 'col-2', sortable: false, tdClass: 'py-1' }]">
+
         <template v-slot:cell(name)="table">
           <div :title="table.item.name" class="text-truncate">{{ table.item.name }}</div>
         </template>
+
         <template v-slot:cell(type)="table">
           <div :title="table.item.type" class="text-truncate">{{ table.item.type }}</div>
         </template>
+
         <template v-slot:cell(value)="table">
           <CopyableActionButton
             :displayValue="displayValue(table.item)"
@@ -53,6 +56,11 @@
             @copy="copyValueToClipboard"
           />
         </template>
+
+        <template v-slot:cell(scope)="table">
+          <div :title="table.item.scope">{{ table.item.scope }}</div>
+        </template>
+
         <template v-slot:cell(actions)="table">
           <component :is="VariablesTableActionsPlugin" v-if="VariablesTableActionsPlugin" :table-item="table.item" :selected-instance="selectedInstance" :file-objects="fileObjects"></component>
           <b-button v-if="isFile(table.item)" :title="displayValueTooltip(table.item)"
@@ -100,16 +108,12 @@
 </template>
 
 <script>
-import { BWaitingBox } from 'cib-common-components'
-import FlowTable from '@/components/common-components/FlowTable.vue'
-import TaskPopper from '@/components/common-components/TaskPopper.vue'
+import { BWaitingBox, FlowTable, TaskPopper, SuccessAlert, CopyableActionButton } from '@cib/common-frontend'
 import DeleteVariableModal from '@/components/process/modals/DeleteVariableModal.vue'
 import AddVariableModal from '@/components/process/modals/AddVariableModal.vue'
 import EditVariableModal from '@/components/process/modals/EditVariableModal.vue'
-import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import processesVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
-import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
 import { permissionsMixin } from '@/permissions.js'
 import { mapGetters } from 'vuex'
 
@@ -176,6 +180,11 @@ export default {
         this.$refs.historicVariableDeleted.show()
       }
     },
-  }
+  },  
+	mounted() {
+		if (!this.$route.query.q) {
+			this.loadSelectedInstanceVariables()
+		}
+	}
 }
 </script>

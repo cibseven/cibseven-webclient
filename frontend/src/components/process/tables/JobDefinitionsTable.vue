@@ -21,7 +21,7 @@
     <div v-if="loading">
       <p class="text-center p-4"><BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}</p>
     </div>
-    <FlowTable v-else-if="jobDefinitions.length > 0" striped thead-class="sticky-header" 
+    <FlowTable v-else-if="jobDefinitions.length > 0" striped thead-class="sticky-header"
       :items="jobDefinitions" primary-key="id" prefix="process-instance.jobDefinitions." sort-by="suspended" :fields="[
       { label: 'state', key: 'suspended', class: 'col-2', tdClass: 'py-1' },
       { label: 'activity', key: 'activityId', class: 'col-2', tdClass: 'py-1' },
@@ -68,12 +68,9 @@
 </template>
 
 <script>
-import FlowTable from '@/components/common-components/FlowTable.vue'
-import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
+import { FlowTable, CopyableActionButton, SuccessAlert,BWaitingBox } from '@cib/common-frontend'
 import JobDefinitionStateModal from '@/components/process/modals/JobDefinitionStateModal.vue'
 import JobDefinitionPriorityModal from '@/components/process/modals/JobDefinitionPriorityModal.vue'
-import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
-import { BWaitingBox } from 'cib-common-components'
 import { mapActions, mapGetters } from 'vuex'
 import { permissionsMixin } from '@/permissions.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
@@ -119,7 +116,7 @@ export default {
   methods: {
     ...mapActions(['setHighlightedElement']),
     ...mapActions('job', ['loadJobDefinitionsByProcessDefinition']),
-    
+
     async loadJobDefinitionsData(processId) {
       this.loading = true
       try {
@@ -146,8 +143,8 @@ export default {
     stateActionKey: function(item) {
       if (!item) return null
       return item.suspended
-        ? this.$t('process-instance.jobDefinitions.suspendJob')
-        : this.$t('process-instance.jobDefinitions.activateJob')
+        ? this.$t('process-instance.jobDefinitions.activateJob')
+        : this.$t('process-instance.jobDefinitions.suspendJob')
     },
     openChangeStateJobModal: function(item) {
       this.$refs.changeJobStateModal.show(item)

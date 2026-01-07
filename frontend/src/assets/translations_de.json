@@ -363,7 +363,8 @@
 			"due": "Fälligkeitsdatum",
 			"followUp": "Nachverfolgung",
 			"taskID": "Aufgaben-ID",
-			"actions": "Aktionen"
+			"actions": "Aktionen",
+			"openTask": "Aufgabe \"{name}\" in der Tasklist öffnen"
 		},
 		"calledProcesses": {
 			"callingActivity": "Aktivität",
@@ -1072,6 +1073,7 @@
 		"SystemException": "Es ist ein unerwartetes technisches Problem aufgetreten. Möchtest du einen Bericht senden?",		
 		"DoxichangeException": "Die Vorschau konnte nicht erzeugt werden. Möchtest du das betroffene Dokument zur Analyse bereitstellen?",
 		"AccessDeniedException": "Keine Berechtigung ({0})",
+		"NoPermission": "Sie haben nicht die erforderlichen Berechtigungen, um diese Aktion auszuführen.\nErforderliche Berechtigung: \"{permission}\".\nReferenziert von: {refPath}",
 		"EntryAlreadyExistsException": "{0} ist bereits vorhanden",
 		"NoObjectFoundException": "Bei der Ausführung der Anfrage ist ein Problem aufgetreten! Bitte aktualisieren Sie die Seite in Ihrem Browser und versuchen Sie es erneut.",
 		"InvalidAttributeValueException": "Bei der Ausführung der Anfrage ist ein Problem aufgetreten! Bitte aktualisieren Sie die Seite in Ihrem Browser und versuchen Sie es erneut.",
@@ -1094,13 +1096,15 @@
 		"ExistingGroupRequestException": "Die Gruppe existiert bereits",
 		"VariableModificationException": "Die Variable konnte nicht erfolgreich geändert werden. Bitte aktualisieren Sie die Seite und versuchen Sie es erneut.",
 		"processNotFound": "Prozess mit Schlüssel \"{0}\" nicht gefunden",
+		"notFoundInstanceId": "Die Prozessinstanz mit der ID \"{instanceId}\" konnte nicht gefunden werden.\nReferenziert von: {refPath}",
 		"filterSaveError": "Beim Speichern des Filters ist ein Fehler aufgetreten, bitte überprüfen Sie die eingegebenen Daten.",
 		"passwordDoNotMatch": "Passwörter stimmen nicht überein",
 		"PasswordPolicyException": "Passwort stimmt nicht mit Richtlinie überein",
 		"InvalidUserIdException": "Die Benutzer-ID enthält unzulässige Zeichen. Es sind nur alphanumerische Zeichen (a-z, A-Z, 0-9) erlaubt. Bitte korrigieren Sie Ihre Eingabe.",
 		"invalidEmail": "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
 		"InvalidValueHistoryTimeToLive": "Nullwerte für die Lebensdauer des Verlaufs sind nicht erlaubt.",
-		"DmnTransformationException": "Die Ressource konnte nicht aktualisiert werden. DMN-Ressource kann nicht transformiert werden."
+		"DmnTransformationException": "Die Ressource konnte nicht aktualisiert werden. DMN-Ressource kann nicht transformiert werden.",
+		"unknown": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut."
 	},
 	"searches": {
 		"filter": "Filtern",
@@ -1109,7 +1113,9 @@
 		"searchByTaskName": "Suche in Aufgaben...",
 		"searchByDeploymentName": "Suche nach Deployment...",
 		"searchByBusinessKey": "Suche nach Fachlicher Schlüssel...",
-		"searchByFilterName": "Suche nach Filternamen..."
+		"searchByFilterName": "Suche nach Filternamen...",
+		"wildcardHelp": "Platzhaltersuche wird unterstützt.",
+		"wildcardExample": "Verwenden Sie % für beliebig viele Zeichen (z.B. %Prozess%)."
 	},
 	"sorting": {
 		"created": "@:task.details.created",
@@ -1402,5 +1408,16 @@
 		"noGroups": "ohne Gruppe",
 		"groupName": "Gruppe",
 		"assignmentsByGroupInfo": "Eine Aufgabe kann mehreren Gruppen zugewiesen sein."
+	},
+	"setup": {
+		"title": "Ersteinrichtung",
+		"description": "Willkommen bei CIB seven! Erstellen Sie ein Administratorkonto, um zu beginnen.",
+		"createAdminUser": "Administratorkonto erstellen",
+		"createUser": "Benutzer erstellen",
+		"success": "Administratorkonto erfolgreich erstellt! Weiterleitung zur Anmeldung...",
+		"help": {
+			"title": "Warum wird diese Seite angezeigt?",
+			"description": "Sie versuchen, auf die Prozess-Engine \"{0}\" zuzugreifen. Diese Engine ist für die Verwendung des integrierten Identitätsdienstes (Datenbank) konfiguriert, hat jedoch keine administrativen Benutzer eingerichtet. Auf dieser Seite können Sie einen ersten Benutzer für den Zugriff auf die Prozess-Engine erstellen."
+		}
 	}
 }

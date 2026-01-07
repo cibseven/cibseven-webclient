@@ -54,6 +54,7 @@
           :activity-instance="activityInstance"
           :activity-instance-history="activityInstanceHistory"
           :selected-instance="selectedInstance"
+          :tenant-id="tenantId"
           @task-selected="setSelectedTask($event)"></ProcessInstanceView>
       </transition>
     </SidebarsFlow>
@@ -67,13 +68,12 @@ import { TaskService, ProcessService, HistoryService } from '@/services.js'
 import ProcessInstancesView from '@/components/process/ProcessInstancesView.vue'
 import ProcessDetailsSidebar from '@/components/process/ProcessDetailsSidebar.vue'
 import ProcessInstanceView from '@/components/process/ProcessInstanceView.vue'
-import SidebarsFlow from '@/components/common-components/SidebarsFlow.vue'
-import TaskPopper from '@/components/common-components/TaskPopper.vue'
+import { SidebarsFlow, TaskPopper } from '@cib/common-frontend'
 import { mapGetters, mapActions } from 'vuex'
 import { formatDate } from '@/utils/dates.js'
 
-function getStringObjByKeys(keys, obj) {
-  var result = ''
+function getStringObjByKeys(keys, obj) { // TODO rewrite to use join()
+  let result = ''
   keys.forEach(key => {
     result += obj[key] + ';'
   })
@@ -203,7 +203,7 @@ export default {
             //     ^      - deleted
             //   ^   ^    - one of final nextVersionIndex
             //
-            var nextVersionIndex = versions[0].version
+            let nextVersionIndex = versions[0].version
             versions.forEach((version) => {
               const currentDistance = Math.abs(Number(nextVersionIndex) - Number(params.processDefinition.version))
               const thisDistance = Math.abs(Number(nextVersionIndex) - Number(version.version))
@@ -217,7 +217,10 @@ export default {
                 processKey: params.processDefinition.key,
                 versionIndex: nextVersionIndex,
               },
-              query: this.$route.query
+              query: {
+                ...this.$route.query,
+                ...(this.tenantId ? { tenantId: this.tenantId } : {}),
+              }
             })
             this.processDefinitions = versions
           }
@@ -275,7 +278,7 @@ export default {
     findProcessAndAssignData(selectedProcess) {
       if (selectedProcess) {
           ProcessService.findProcessById(selectedProcess.id, true).then(process => {
-            for (let v of this.processDefinitions) {
+            for (const v of this.processDefinitions) {
               if (v.id === process.id) {
                 Object.assign(v, process)
                 break
@@ -317,7 +320,7 @@ export default {
       })
     },
     setSelectedInstance: function(evt) {
-      var selectedInstance = evt.selectedInstance
+      const selectedInstance = evt.selectedInstance
       if (!selectedInstance) {
         this.selectedInstance = null
       }
@@ -354,7 +357,7 @@ export default {
             return
           }
           this.task = task[0]
-          var serviceCall = !this.task.endTime ? TaskService.fetchActivityVariables :
+          const serviceCall = !this.task.endTime ? TaskService.fetchActivityVariables :
             HistoryService.fetchActivityVariablesHistory
           serviceCall(this.task.activityInstanceId).then(variables => {
             variables.forEach(variable => {
@@ -379,7 +382,7 @@ export default {
       return 'mdi-flag-triangle'
     },
     exportCSV: function() {
-      var headers = [
+      const headers = [
         { text: 'state', key: 'state' },
         { text: 'businessKey', key: 'businessKey' },
         { text: 'startTime', key: 'startTime' },
@@ -390,8 +393,8 @@ export default {
         { text: 'details.definitionVersion', key: 'processDefinitionVersion' }
       ]
       headers.forEach(h => h.text = this.$t('process.' + h.text))
-      var csvContent = headers.map(h => h.text).join(';') + '\n'
-      var keys = headers.map(h => h.key)
+      let csvContent = headers.map(h => h.text).join(';') + '\n'
+      const keys = headers.map(h => h.key)
       this.instances.forEach(v => {
         const formattedValues = {
           ...v,
@@ -400,8 +403,8 @@ export default {
         }
         csvContent += getStringObjByKeys(keys, formattedValues) + '\n'
       })
-      var csvBlob = new Blob([csvContent], { type: 'text/csv' })
-      var filename = 'Management_Instances_' + moment().format('YYYYMMDD_HHmm') + '.csv'
+      const csvBlob = new Blob([csvContent], { type: 'text/csv' })
+      const filename = 'Management_Instances_' + moment().format('YYYYMMDD_HHmm') + '.csv'
       this.$refs.importPopper.triggerDownload(csvBlob, filename)
     }
   }

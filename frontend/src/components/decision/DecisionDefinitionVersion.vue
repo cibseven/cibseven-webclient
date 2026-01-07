@@ -24,14 +24,14 @@
         <span class="mdi mdi-18px" :class="toggleIcon"></span>
       </span>
     </div>
-    
+
     <div class="position-absolute w-100" style="left: 0; z-index: 1" :style="'height: '+ tabsAreaHeight +'px; top: ' + (bottomContentPosition - tabsAreaHeight + 1) + 'px; ' + toggleTransition">
       <div class="d-flex align-items-end">
         <ScrollableTabsContainer :tabs-area-height="tabsAreaHeight">
           <li class="nav-item m-0 flex-shrink-0 border-0" v-for="(tab, index) in tabs" :key="index">
-            <a role="button" @click="changeTab(tab)" class="nav-link py-2" 
-              :class="{ 
-                'active active-tab-border': tab.active, 
+            <a role="button" @click="changeTab(tab)" class="nav-link py-2"
+              :class="{
+                'active active-tab-border': tab.active,
                 'bg-light': !tab.active,
                 'border-start-0': index === 0,
               }">
@@ -89,7 +89,7 @@ import DmnViewer from '@/components/decision/DmnViewer.vue'
 import InstancesTable from '@/components/decision/InstancesTable.vue'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
 import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
-import { BWaitingBox } from 'cib-common-components'
+import { BWaitingBox } from '@cib/common-frontend'
 import { mapGetters, mapActions } from 'vuex'
 import { debounce } from '@/utils/debounce.js'
 
@@ -161,7 +161,7 @@ export default {
     },
     loadInstances(showMore) {
       if (this.$root.config.camundaHistoryLevel !== 'none') {
-        let data = {
+        const data = {
           key: this.decision.key,
           version: this.versionIndex,
           params: {

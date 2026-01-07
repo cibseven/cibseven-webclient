@@ -36,7 +36,7 @@
         <CopyableActionButton
           :displayValue="table.item.id"
           :title="$t('process.showInstance') + ':\n' + table.item.id"
-          :to="`/seven/auth/process/${table.item.processDefinitionKey}/${table.item.processDefinitionVersion}/${table.item.id}?tab=variables`"
+          :to="selectInstanceRoute(table.item)"
           @copy="copyValueToClipboard"
         />
       </template>
@@ -83,12 +83,9 @@
 import { ProcessService, HistoryService } from '@/services.js'
 import { permissionsMixin } from '@/permissions.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
-import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
+import { CopyableActionButton, FlowTable, SuccessAlert, BWaitingBox } from '@cib/common-frontend'
 import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
-import FlowTable from '@/components/common-components/FlowTable.vue'
-import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import ConfirmActionOnProcessInstanceModal from '@/components/process/modals/ConfirmActionOnProcessInstanceModal.vue'
-import { BWaitingBox } from 'cib-common-components'
 import { mapGetters, mapActions } from 'vuex'
 
 export default {
@@ -226,16 +223,23 @@ export default {
       this.resetPagination()
       this.loadInstancesData()
     },
-    selectInstance: function(instance) {
-      this.$router.push({
+    selectInstanceRoute: function(instance) {
+      return {
         name: 'process',
         params: {
           processKey: instance.processDefinitionKey,
           versionIndex: instance.processDefinitionVersion,
           instanceId: instance.id,
         },
-        query: { ...this.$route.query, tab: 'variables' } // Set default tab for instance view
-      })
+        query: {
+          ...this.$route.query,
+          ...(this.tenantId ? { tenantId: this.tenantId } : {} ),
+          tab: 'variables', // Set default tab for instance view
+        },
+      }
+    },
+    selectInstance: function(instance) {
+      this.$router.push(this.selectInstanceRoute(instance))
     },
     // "Stop Instance" button
     confirmStopInstance: function(instance) {

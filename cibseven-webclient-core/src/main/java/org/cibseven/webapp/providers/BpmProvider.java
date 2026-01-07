@@ -743,6 +743,15 @@ public interface BpmProvider {
 			Optional<String> sortBy, Optional<String> sortOrder, CIBUser user);
 
 	/**
+	 * Get the count of users in the system with optional filters.
+	 * 
+	 * @param filters the filters to apply (e.g., memberOfGroup). Can be null or empty for no filtering.
+	 * @param user the user performing the operation.
+	 * @return the count of users matching the filters.
+	 */
+	long countUsers(Map<String, Object> filters, CIBUser user);
+
+	/**
 	 * Create a new user.
 	 * 
 	 * @param user the new user to be created.
@@ -1203,5 +1212,21 @@ public interface BpmProvider {
 	 * @throws SystemException in case of an error
 	 */
 	Collection<Engine> getProcessEngineNames();
+
+	/**
+	 * Determine whether an initial user needs to be created
+	 *
+	 * @return true if admin group is available and write access is set
+	 * @throws SystemException in case of an error
+	 */
+	Boolean requiresSetup(String engine);
+
+	/**
+	 * Creates a new initial user assigned to the also created admin group.
+	 *
+	 * @param user the new user to be created.
+	 * @throws InvalidUserIdException when the user ID is invalid.
+	 */
+	void createSetupUser(NewUser user, String engine) throws InvalidUserIdException;
 
 }

@@ -18,14 +18,14 @@
 -->
 <template>
   <div :style="{ 'height': 'calc(100% - 55px)' }" class="d-flex flex-column bg-light overflow-auto">
-    <div class="h-100 container" :style="tiles.length === 4 ? 'max-width: 960px' : ''">
+    <div class="h-100 container" :style="countStartItems === 4 ? 'max-width: 960px' : ''">
       <div ref="startContainer" class="row justify-content-center">
         <div v-if="tiles.includes('startProcess')"
           class="col-4 mt-5 mx-2 mx-md-3 bg-white rounded" style="max-width: 330px; min-width: 250px; height:250px">
           <div class="row border rounded shadow-sm h-100">
             <div class="align-top" style="flex:auto">
               <div class="text-truncate ps-1"></div>
-              <router-link to="/seven/auth/start-process" class="h-100 text-decoration-none text-reset">
+              <router-link :to="{ name: 'start-process' }" class="h-100 text-decoration-none text-reset">
                 <div class="container">
                   <div class="row ps-3" style="height:55px">
                     <div class="col-12 align-items-center d-flex">
@@ -48,7 +48,7 @@
           <div class="row border rounded shadow-sm h-100">
             <div class="align-top" style="flex:auto">
               <div class="text-truncate ps-1"></div>
-              <router-link to="/seven/auth/tasks" class="h-100 text-decoration-none text-reset">
+              <router-link :to="{ name: 'tasks' }" class="h-100 text-decoration-none text-reset">
                 <div class="container">
                   <div class="row ps-3" style="height:55px">
                     <div class="col-12 align-items-center d-flex">
@@ -72,7 +72,7 @@
           <div class="row border rounded shadow-sm h-100">
             <div class="align-top" style="flex:auto">
               <div class="text-truncate ps-1"></div>
-              <router-link to="/seven/auth/processes" class="h-100 text-decoration-none text-reset">
+              <router-link :to="{ name: 'cockpit' }" class="h-100 text-decoration-none text-reset">
                 <div class="container">
                   <div class="row ps-3" style="height:55px">
                     <div class="col-12 align-items-center d-flex">
@@ -112,7 +112,7 @@
           <div class="row border rounded shadow-sm h-100">
             <div class="align-top" style="flex:auto">
               <div class="text-truncate ps-1"></div>
-              <router-link to="/seven/auth/admin" class="h-100 text-decoration-none text-reset" tabindex="-1">
+              <router-link :to="{ name: 'usersManagement' }" class="h-100 text-decoration-none text-reset" tabindex="-1">
                 <div class="container">
                   <div class="row ps-3" style="height:55px">
                     <div class="col-12 align-items-center d-flex">
@@ -151,30 +151,41 @@
             </b-overlay>
           </div>
         </div>
+        <component :is="StartViewPlugin" v-if="StartViewPlugin"></component>
       </div>
       <div v-if="!applicationPermissions($root.config.permissions.tasklist, 'tasklist') &&
         !applicationPermissions($root.config.permissions.cockpit, 'cockpit') && !hasAdminManagementPermissions($root.config.permissions)">
         <img :alt="$t('start.emptyStart')" src="@/assets/images/start/empty_start_page.svg" class="d-block mx-auto mt-5 mb-3" style="max-width: 250px">
         <div class="h5 text-secondary text-center">{{ $t('start.emptyStart') }}</div>
       </div>
+      <ErrorDialog v-if="$route.query.errorType" ref="errorPopup" variant="warning" />
     </div>
   </div>
 </template>
 
 <script>
 import { permissionsMixin } from '@/permissions.js'
+import { ErrorDialog } from '@cib/common-frontend'
 
 export default {
   name: "StartView",
+  components: { ErrorDialog },
   mixins: [permissionsMixin],
   inject: ['loadProcesses'],
   data: function() {
     return {
       showAdminOptions: false,
-      showCockpitOptions: false
+      showCockpitOptions: false,
+      items: [],
+      mutationObserver: null
     }
   },  
   computed: {
+    StartViewPlugin: function() {
+      return this.$options.components && this.$options.components.StartViewPlugin
+        ? this.$options.components.StartViewPlugin
+        : null
+    },
     tiles() {
       const tiles = []
       if (this.applicationPermissions(this.$root.config.permissions.tasklist, 'tasklist') && this.startableProcesses) {
@@ -199,21 +210,55 @@ export default {
       return this.$store.state.process.list.filter(process => {
         return ((!process.revoked))
       }).sort((objA, objB) => {
-        var nameA = objA.name ? objA.name.toUpperCase() : objA.name
-        var nameB = objB.name ? objB.name.toUpperCase() : objB.name
-        var comp = nameA < nameB ? -1 : nameA > nameB ? 1 : 0
+        const nameA = objA.name ? objA.name.toUpperCase() : objA.name
+        const nameB = objB.name ? objB.name.toUpperCase() : objB.name
+        let comp = nameA < nameB ? -1 : (nameA > nameB ? 1 : 0)
         if (this.$root.config.subProcessFolder) {
           if (objA.resource.indexOf(this.$root.config.subProcessFolder) > -1) comp = 1
           else if (objB.resource.indexOf(this.$root.config.subProcessFolder) > -1) comp = -1
         }
         return comp
       })
-    }
+    },
+    countStartItems: function () {
+      return this.items.length
+    },
   },
   methods: {
     startProcess: function () {
       this.$refs.startProcess.show()
       this.loadProcesses(false)
+    },
+    updateItems() {
+      if (this.$refs.startContainer) {
+        this.items = Array.from(this.$refs.startContainer.children)
+      }
+    }
+  },
+  mounted() {
+    this.updateItems()
+    if (this.$refs.startContainer) {
+      this.mutationObserver = new MutationObserver(() => {
+        this.updateItems()
+      })      
+      this.mutationObserver.observe(this.$refs.startContainer, {
+        childList: true,
+        subtree: false
+      })
+    }
+    if (this.$route.query.errorType) {
+      this.$nextTick(() => {
+        this.$refs.errorPopup.show({
+          type: this.$route.query?.errorType,
+          params: this.$route.query,
+        })
+      })
+    }
+  },
+  beforeUnmount() {
+    if (this.mutationObserver) {
+      this.mutationObserver.disconnect()
+      this.mutationObserver = null
     }
   }
 }

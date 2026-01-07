@@ -56,6 +56,15 @@ export default defineConfig({
       vue: 'vue/dist/vue.esm-bundler.js',
     },
   },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        // Suppress deprecation warnings from Bootstrap
+        quietDeps: true,
+        silenceDeprecations: ['legacy-js-api', 'import', 'global-builtin']
+      }
+    }
+  },
   server: {
     proxy: {
       '/info': {
@@ -134,16 +143,18 @@ export default defineConfig({
           fileName: (format) => `cibseven-components.${format}.js`,
         },
         rollupOptions: {
-          external: ['vue', /^\/assets\/images\//, 'bootstrap', 'vue-i18n', 'vue-router'],
+          external: ['vue', /^\/assets\/images\//, 'bootstrap', 'vue-i18n', 'vue-router', 'axios'],
           output: {
             globals: {
               vue: 'Vue',
               bootstrap: 'bootstrap',
               'vue-i18n': 'VueI18n',
-              'vue-router': 'VueRouter'
+              'vue-router': 'VueRouter',
+              axios: 'axios',
             },
             // Ensure CSS is extracted and placed in the dist folder
             assetFileNames: 'cibseven-components.[ext]',
+            inlineDynamicImports: true,
           },
         },
         cssCodeSplit: true, // Ensure CSS is extracted into a separate file
@@ -154,7 +165,7 @@ export default defineConfig({
         input: {
           main: path.resolve(__dirname, 'index.html'),
           ssoLogin: path.resolve(__dirname, 'sso-login.html'),
-          embeddedForms: path.resolve(__dirname, 'embedded-forms.html')
+          embeddedForms: path.resolve(__dirname, 'embedded-forms.html'),
         }
       }
     }

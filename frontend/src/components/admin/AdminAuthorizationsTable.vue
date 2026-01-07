@@ -179,10 +179,7 @@ import { AdminService } from '@/services.js'
 import { moment } from '@/globals.js'
 import { debounce } from '@/utils/debounce.js'
 import { getStringObjByKeys } from '@/components/admin/utils.js'
-import FlowTable from '@/components/common-components/FlowTable.vue'
-import TaskPopper from '@/components/common-components/TaskPopper.vue'
-import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
-import { BWaitingBox } from 'cib-common-components'
+import { FlowTable, TaskPopper, ConfirmDialog, BWaitingBox } from '@cib/common-frontend'
 
 export default {
   name: 'AdminAuthorizationsTable',
@@ -223,7 +220,7 @@ export default {
   },
   computed: {
     authorizationFields: function() {
-      var baseFields = [
+      const baseFields = [
         { label: 'type', key: 'type', class: 'col' },
         { label: 'userIdGroupId', key: 'userIdGroupId', class: 'col' },
         { label: 'permissions', key: 'permissions', class: 'col' },
@@ -269,7 +266,7 @@ export default {
 
           if (resourceTypeId === '5') {
             this.authorizations.forEach(authorization => {
-              var filter = this.$store.state.filter.list.find(obj => obj.id === authorization.resourceId)
+              const filter = this.$store.state.filter.list.find(obj => obj.id === authorization.resourceId)
               if (filter) authorization.name = filter.name
             })
           }
@@ -277,7 +274,7 @@ export default {
         })
     }),
     getClasses: function(authorization) {
-      var classes = []
+      const classes = []
       if (authorization !== this.focused) classes.push('invisible')
       return classes
     },
@@ -338,7 +335,7 @@ export default {
         authorization.userId = null
       }
       authorization.userIdGroupId = authorization.userId != null ? authorization.userId : authorization.groupId
-      
+
       if (this.selected.length === this.resourcesTypes[this.$route.params.resourceTypeId].permissions.length) {
         authorization.permissions = ['ALL']
       } else if (this.selected.length === 0) {
@@ -417,22 +414,22 @@ export default {
       })
     }),
     onFilterNameChange: function(item) {
-      var filter = this.$store.state.filter.list.find(obj => obj.name === item.name)
+      const filter = this.$store.state.filter.list.find(obj => obj.name === item.name)
       if (filter) item.resourceId = filter.id
       else item.resourceId = '*'
     },
     exportCSV: function() {
       this.exporting = true
-      var params = this.$route.params
-      var keys = ['type', 'userIdGroupId', 'permissions', 'resourceId']
-      var csvContent = keys.map(k => this.$t('admin.authorizations.' + k)).join(';') + '\n'
+      const params = this.$route.params
+      const keys = ['type', 'userIdGroupId', 'permissions', 'resourceId']
+      let csvContent = keys.map(k => this.$t('admin.authorizations.' + k)).join(';') + '\n'
       AdminService.findAuthorizations({ resourceType: params.resourceTypeId }).then(auths => {
         if (auths.length > 0) {
           auths.forEach(r => {
             csvContent += getStringObjByKeys(keys, r) + '\n'
           })
-          var csvBlob = new Blob([csvContent], { type: 'text/csv' })
-          var filename = 'authorizations_' + this.$t('admin.authorizations.resourcesTypes.' + params.resourceTypeKey) +
+          const csvBlob = new Blob([csvContent], { type: 'text/csv' })
+          const filename = 'authorizations_' + this.$t('admin.authorizations.resourcesTypes.' + params.resourceTypeKey) +
             '_' + moment().format('YYYYMMDD_HHmm') + '.csv'
           this.$refs.importPopper.triggerDownload(csvBlob, filename)
         }

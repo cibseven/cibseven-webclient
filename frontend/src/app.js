@@ -14,23 +14,24 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import './assets/main.css'
+import './assets/main.css'  // Application-specific styles
 // Note: 'materialdesignicons.css' is after 'main.css', as inside 'main.css' we have required '@charset "UTF-8";' statement
-import '@mdi/font/css/materialdesignicons.css'
-import { axios } from './globals.js'
+import '@mdi/font/css/materialdesignicons.min.css'
+import '@cib/common-frontend/dist/style.css'
 
-import 'bootstrap'
+import { axios } from './globals.js'
 
 import { createApp } from 'vue'
 
 import store from './store'
 import { createAppRouter, appRoutes } from './router.js'
-import registerOwnComponents from './register.js'
+import registerComponents from './register.js'
 import { permissionsMixin }  from './permissions.js'
 
 import { InfoService, AuthService, setServicesBasePath } from './services.js'
-import { getTheme, hasHeader, isMobile, checkExternalReturn } from './utils/init'
-import { applyTheme, handleAxiosError, fetchAndStoreProcesses, fetchDecisionsIfEmpty, setupTaskNotifications } from './utils/init'
+import { hasHeader, isMobile, checkExternalReturn,
+  getTheme, loadTheme, applyTheme,
+  handleAxiosError, fetchAndStoreProcesses, fetchDecisionsIfEmpty, setupTaskNotifications } from './utils/init'
 import { applyConfigDefaults } from './utils/config.js'
 import { i18n, switchLanguage } from './i18n'
 
@@ -52,112 +53,114 @@ Promise.all([
   // Apply defaults before merging
   const configFromFile = applyConfigDefaults(responses[0].data)
   Object.assign(configFromFile, responses[1].data)
-  var config = configFromFile
+  const config = configFromFile
 
   setServicesBasePath(config.servicesBasePath)
 
   // (Optional) check if possible
   //axios.defaults.baseURL = appConfig.adminBasePath
 
-  // Load personalized-css
-  var theme = getTheme(config)
-  applyTheme(theme)
-
-  switchLanguage(config, i18n.global.locale).then(() => {
-
-    const app = createApp({ /*jshint nonew:false */
-      name: 'CIB7App',
-      el: '#app',
-      mixins: [permissionsMixin],
-      provide: function() {
-        return {
-          currentLanguage(lang) {
-            // get language
-            if (!lang) return i18n.global.locale
-            // set language
-            return switchLanguage(config, lang).then(() => {
-              return i18n.global.locale
-            })
-          },
-          loadProcesses(extraInfo) {
-              return fetchAndStoreProcesses(this, this.$store, config, extraInfo)
-          },
-          async loadDecisions() {
-            return fetchDecisionsIfEmpty(this.$store)
-          },
-          isMobile: isMobile,
-          AuthService: AuthService
-        }
-      },
-      data: function() {
-        return {
-          user: null,
-          config: config,
-          consent: localStorage.getItem('consent'),
-          logoPath: 'themes/' + theme + '/logo.svg',
-          loginImgPath: 'themes/' + theme + '/login-image.svg',
-          resetPasswordImgPath: 'webjars/seven/components/password/reset-password.svg',
-          theme: theme,
-          header: hasHeader(),
-          processUpdateInterval: null
-        }
-      },
-      watch: {
-        user: function(user) {
-          if (user) {
-            this.handleTaskWorker()
-            this.startProcessAutoUpdate()
-          } else {
-            this.stopProcessAutoUpdate()
-          }
-        }
-      },
-      mounted: function() {
-        if ('Notification' in window && this.config.notifications.tasks.enabled &&
-          (Notification.permission !== 'granted' || Notification.permission !== 'denied')) {
-          Notification.requestPermission()
-        }
-      },
-      methods: {
-        remember: function() { localStorage.setItem('consent', true) },
-        sendReport: function(data) { axios.post('report', data) },
-        handleTaskWorker: function() {
-          setupTaskNotifications(this, this.$root, theme)
-        },
-        startProcessAutoUpdate: function() {
-          if (this.config.processes?.autoUpdate?.enabled && this.config.processes?.autoUpdate?.interval) {
-            this.stopProcessAutoUpdate() // Clear any existing interval
-            const interval = Math.max(this.config.processes.autoUpdate.interval, 15000) // Minimum 15 seconds
-            this.processUpdateInterval = setInterval(() => {
-              fetchAndStoreProcesses(this, this.$store, this.config, true)
-            }, interval)
+  // Load theme CSS and static assets (favicon, etc.)
+  const theme = getTheme(config)
+  loadTheme(theme).then(() => {
+    applyTheme(theme)
+    switchLanguage(config, i18n.global.locale).then(() => {
+      const app = createApp({ /*jshint nonew:false */
+        name: 'CIB7App',
+        el: '#app',
+        mixins: [permissionsMixin],
+        provide: function() {
+          return {
+            currentLanguage(lang) {
+              // get language
+              if (!lang) return i18n.global.locale
+              // set language
+              return switchLanguage(config, lang).then(() => {
+                return i18n.global.locale
+              })
+            },
+            loadProcesses(extraInfo) {
+                return fetchAndStoreProcesses(this, this.$store, config, extraInfo)
+            },
+            async loadDecisions() {
+              return fetchDecisionsIfEmpty(this.$store)
+            },
+            isMobile: isMobile,
+            AuthService: AuthService
           }
         },
-        stopProcessAutoUpdate: function() {
-          if (this.processUpdateInterval) {
-            clearInterval(this.processUpdateInterval)
-            this.processUpdateInterval = null
+        data: function() {
+          const imagePath = 'webjars/seven/components/password/reset-password.svg'
+          return {
+            user: null,
+            config: config,
+            consent: localStorage.getItem('consent'),
+            logoPath: 'themes/' + theme + '/logo.svg',
+            logoIconPath: 'themes/' + theme + '/logo-icon.svg',
+            loginImgPath: 'themes/' + theme + '/login-image.svg',
+            resetPasswordImgPath: imagePath,
+            theme: theme,
+            header: hasHeader(),
+            processUpdateInterval: null
+          }
+        },
+        watch: {
+          user: function(user) {
+            if (user) {
+              this.handleTaskWorker()
+              this.startProcessAutoUpdate()
+            } else {
+              this.stopProcessAutoUpdate()
+            }
+          }
+        },
+        mounted: function() {
+          if ('Notification' in window && this.config.notifications.tasks.enabled &&
+            (Notification.permission !== 'granted' || Notification.permission !== 'denied')) {
+            Notification.requestPermission()
+          }
+        },
+        methods: {
+          remember: function() { localStorage.setItem('consent', true) },
+          sendReport: function(data) { axios.post('report', data) },
+          handleTaskWorker: function() {
+            setupTaskNotifications(this, this.$root, theme)
+          },
+          startProcessAutoUpdate: function() {
+            if (this.config.processes?.autoUpdate?.enabled && this.config.processes?.autoUpdate?.interval) {
+              this.stopProcessAutoUpdate() // Clear any existing interval
+              const interval = Math.max(this.config.processes.autoUpdate.interval, 15000) // Minimum 15 seconds
+              this.processUpdateInterval = setInterval(() => {
+                fetchAndStoreProcesses(this, this.$store, this.config, true)
+              }, interval)
+            }
+          },
+          stopProcessAutoUpdate: function() {
+            if (this.processUpdateInterval) {
+              clearInterval(this.processUpdateInterval)
+              this.processUpdateInterval = null
+            }
           }
         }
-      }
+      })
+
+      registerComponents(app)
+
+      const router = createAppRouter(appRoutes)
+      app.use(router)
+      app.use(store)
+      app.use(i18n)
+      const root = app.mount('#app')
+      router.setRoot(root)
+
+      axios.interceptors.response.use(
+        res => res.data,
+        error => {
+          return handleAxiosError(router, root, error)
+        }
+      )
+
+      return config
     })
-
-    registerOwnComponents(app)
-
-    const router = createAppRouter(appRoutes)
-    app.use(router)
-    app.use(store)
-    app.use(i18n)
-    const root = app.mount('#app')
-    router.setRoot(root)
-
-    axios.interceptors.response.use(
-      res => res.data,
-      error => {
-        return handleAxiosError(router, root, error)
-      }
-    )
-
-    return config
   })
 })

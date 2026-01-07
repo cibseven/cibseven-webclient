@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 import { createI18n } from 'vue-i18n'
-import { mergeLocaleMessage as loadTranslationsFromCommonComponents } from 'cib-common-components'
+import { mergeLocaleMessage as loadTranslationsFromCommonComponents } from '@cib/common-frontend'
 import { axios, moment } from './globals.js'
 import { getTheme } from './utils/init'
 import 'moment/dist/locale/de'
@@ -85,10 +85,8 @@ const defaultTranslationSources = [
 ]
 
 const loadTranslations = async function(config, lang, sources = defaultTranslationSources) {
-  if (sources.includes(translationSources.commonComponents)) {
-    // Add translations from cib-common-components/src/assets/translations_*.json
-    loadTranslationsFromCommonComponents(i18n, lang)
-  }
+  // Add translations from @cib/common-frontend library
+  loadTranslationsFromCommonComponents(i18n, lang)
 
   if (sources.includes(translationSources.sevenComponents)) {
     // Add translations from src/assets/translations_*.json
@@ -114,9 +112,9 @@ const setLanguage = function(language) {
   moment.locale(language)
 }
 
-var loadedLanguages = []
+const loadedLanguages = []
 const switchLanguage = async function(config, lang) {
-  var language = config.supportedLanguages.includes(lang) ? lang : config.supportedLanguages[0]
+  const language = config.supportedLanguages.includes(lang) ? lang : config.supportedLanguages[0]
 
   if (loadedLanguages.includes(language)) {
     setLanguage(language)

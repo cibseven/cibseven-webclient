@@ -57,7 +57,7 @@ export default {
   },
   computed: {
     favoriteFilters: function() {
-      var filters = this.$store.state.filter.list.filter(f => {
+      const filters = this.$store.state.filter.list.filter(f => {
         return f.favorite
       })
       return filters.sort(function(a, b) {
@@ -89,7 +89,7 @@ export default {
       })
     },
     getStyles: function(filter, key) {
-      var styles = { top: key * this.sizes.filter + this.sizes.arrow + 'px', width: this.sizes.filter + 'px' }
+      const styles = { top: key * this.sizes.filter + this.sizes.arrow + 'px', width: this.sizes.filter + 'px' }
       if (this.$store.state.filter.selected.id === filter.id) {
         styles['border-top'] = '5px solid!important'
         styles['border-top-color'] = 'var(--bs-primary)!important'
@@ -97,19 +97,19 @@ export default {
       return styles
     },
     getDotsStyle: function() {
-      var styles = { width: this.sizes.dots + 'px' }
+      const styles = { width: this.sizes.dots + 'px' }
       styles.top = this.favoritesDisplayed.length * this.sizes.filter + this.sizes.arrow + 'px'
       return styles
     },
     selectFilter: function(filter) {
-      var selectedFilter = this.$store.state.filter.list.find(f => {
+      const selectedFilter = this.$store.state.filter.list.find(f => {
         return f.id === filter.id
       })
       if (selectedFilter) {
         this.$store.state.filter.selected = selectedFilter
         this.$emit('selected-filter', selectedFilter.id)
         localStorage.setItem('filter', JSON.stringify(selectedFilter))
-        var path = '/seven/auth/tasks/' + selectedFilter.id +
+        const path = '/seven/auth/tasks/' + selectedFilter.id +
           (this.$route.params.taskId ? '/' + this.$route.params.taskId : '')
         if (this.$route.path !== path) this.$router.replace(path)
       }

@@ -21,20 +21,20 @@
     :left-caption="$t('admin.users.title') + ' - ' + user.id" :left-size="[12, 6, 4, 3, 2]">
     <template v-slot:left>
       <b-list-group>
-        <b-list-group-item class="border-0 px-3 py-2" :active="$route.query.tab === 'profile' || !$route.query.tab" exact :to="'?tab=profile'">
+        <b-list-group-item v-if="!user.noInfo" class="border-0 px-3 py-2" :active="selectedTab === 'profile'" exact :to="'?tab=profile'">
           <span> {{ $t('admin.users.profile') }}</span>
         </b-list-group-item>
-        <b-list-group-item v-if="$root.config.userEditable" class="border-0 px-3 py-2" :active="$route.query.tab === 'account'" exact :to="'?tab=account'">
+        <b-list-group-item v-if="!user.noInfo && $root.config.userEditable" class="border-0 px-3 py-2" :active="selectedTab === 'account'" exact :to="'?tab=account'">
           <span> {{ $t('password.recover.changePassword') }}</span>
         </b-list-group-item>
-        <b-list-group-item class="border-0 px-3 py-2" :active="$route.query.tab === 'groups'" exact :to="'?tab=groups'">
+        <b-list-group-item v-if="!user.noInfo" class="border-0 px-3 py-2" :active="selectedTab === 'groups'" exact :to="'?tab=groups'">
           <span> {{ $t('admin.users.groups') }}</span>
         </b-list-group-item>
-        <b-list-group-item class="border-0 px-3 py-2" :active="$route.query.tab === 'tenants'" exact :to="'?tab=tenants'">
+        <b-list-group-item v-if="!user.noInfo" class="border-0 px-3 py-2" :active="selectedTab === 'tenants'" exact :to="'?tab=tenants'">
           <span> {{ $t('admin.tenants.title') }}</span>
         </b-list-group-item>
         <b-list-group-item v-if="$root.user && $root.user.id === user.id" class="border-0 px-3 py-2"
-          :active="$route.query.tab === 'preferences'" exact :to="'?tab=preferences'">
+          :active="selectedTab === 'preferences'" exact :to="'?tab=preferences'">
           <span> {{ $t('admin.preferences.title') }}</span>
         </b-list-group-item>
       </b-list-group>
@@ -42,14 +42,14 @@
 
     <transition name="slide-in" mode="out-in">
       <div class="d-flex flex-column bg-light w-100 h-100" v-if="user.id">
-        <b-button v-if="editMode" variant="light" style="min-height: 40px; line-height: 20px;" :block="true" class="rounded-0 border-bottom text-start" href="#/seven/auth/admin/users">
+        <b-button v-if="editMode" variant="light" style="min-height: 40px; line-height: 20px;" :block="true" class="rounded-0 border-bottom text-start" :to="{ name: 'adminUsers' }">
           <span class="mdi mdi-arrow-left me-2"></span>
           <span class="fw-bold">{{ $t('admin.users.title') }}</span>
         </b-button>
         <div class="container-fluid overflow-auto">
 
           <!-- Profile Tab -->
-          <div v-if="$route.query.tab === 'profile' || !$route.query.tab" class="row pt-3 ps-4 pe-4">
+          <div v-if="selectedTab === 'profile'" class="row pt-3 ps-4 pe-4">
             <ContentBlock
               :title="$t('admin.users.editMessage', [user.firstName + ' ' + user.lastName])"
               class="col-lg-6 col-md-8 col-sm-12">
@@ -76,7 +76,7 @@
           </div>
 
           <!-- Account Tab -->
-          <div v-else-if="$route.query.tab === 'account' && $root.config.userEditable" class="row pt-3 ps-4 pe-4">
+          <div v-else-if="selectedTab === 'account' && $root.config.userEditable" class="row pt-3 ps-4 pe-4">
             <ContentBlock
               :title="$t('password.recover.changePassword')"
               class="col-lg-6 col-md-8 col-sm-12">
@@ -94,7 +94,7 @@
           </div>
 
           <!-- Groups Tab -->
-          <div v-else-if="$route.query.tab === 'groups'" class="row pt-3 ps-4 pe-4">
+          <div v-else-if="selectedTab === 'groups'" class="row pt-3 ps-4 pe-4">
             <ContentBlock
               :title="$t('admin.users.group.title', [user.firstName + ' ' + user.lastName])"
               class="">
@@ -121,7 +121,7 @@
           </div>
 
           <!-- Tenants Tab -->
-          <div v-else-if="$route.query.tab === 'tenants'" class="row pt-3 ps-4 pe-4">
+          <div v-else-if="selectedTab === 'tenants'" class="row pt-3 ps-4 pe-4">
             <ContentBlock
               :title="$t('admin.tenants.associationTitle', [user.firstName + ' ' + user.lastName])"
               class="">
@@ -151,7 +151,7 @@
           </div>
 
           <!-- Preferences Tab -->
-          <div v-else-if="$route.query.tab === 'preferences'" class="row pt-3 ps-4 pe-4">
+          <div v-else-if="selectedTab === 'preferences'" class="row pt-3 ps-4 pe-4">
             <ProfilePreferencesTab></ProfilePreferencesTab>
           </div>
 
@@ -244,12 +244,10 @@
 <script>
 import { AdminService } from '@/services.js'
 import { notEmpty, same } from '@/components/admin/utils.js'
-import SidebarsFlow from '@/components/common-components/SidebarsFlow.vue'
-import FlowTable from '@/components/common-components/FlowTable.vue'
-import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
-import CIBForm from '@/components/common-components/CIBForm.vue'
+
+import { SidebarsFlow, FlowTable, SuccessAlert, CIBForm, ContentBlock }  from '@cib/common-frontend'
 import ProfilePreferencesTab from '@/components/admin/ProfilePreferencesTab.vue'
-import ContentBlock from '@/components/common-components/ContentBlock.vue'
+
 import { mapActions, mapGetters } from 'vuex'
 
 export default {
@@ -265,7 +263,7 @@ export default {
   data: function () {
     return {
       leftOpen: true,
-      user: { id: null, firstName: null,  lastName: null, email: null },
+      user: { id: null, firstName: null,  lastName: null, email: null, noInfo: true },
       dirty: false,
       credentials: { authenticatedUserPassword: null, password: null },
       passwordRepeat: null,
@@ -284,19 +282,23 @@ export default {
   watch: {
     '$route.params.userId': function() {
       if (!this.editMode && this.$route.params.userId !== this.$router.app.user.id) {
-        this.$router.push('/seven/auth/start')
+        this.$router.push({ name: 'start' })
       } else {
         this.loadUser(this.$route.params.userId)
         this.clean()
       }
     },
     '$route.query.tab': function() {
-      if (this.$route.query.tab === 'groups') this.loadGroups(this.$route.params.userId)
-      else if (this.$route.query.tab === 'tenants') this.loadTenants(this.$route.params.userId)
+      if (this.selectedTab === 'groups') this.loadGroups(this.$route.params.userId)
+      else if (this.selectedTab === 'tenants') this.loadTenants(this.$route.params.userId)
     }
   },
   computed: {
     ...mapGetters(['tenants']),
+    selectedTab() {
+      const defaultTab = this.user.noInfo ? 'preferences' : 'profile'
+      return this.$route.query.tab || defaultTab
+    },
     groupFields() {
       const isEditable = this.editMode && this.$root.config.userEditable
       const fields = [
@@ -362,14 +364,14 @@ export default {
   },
   created: function () {
     if (this.$route.params.userId) this.loadUser(this.$route.params.userId)
-    if (this.$route.query.tab === 'groups') this.loadGroups(this.$route.params.userId)
-    else if (this.$route.query.tab === 'tenants') this.loadTenants(this.$route.params.userId)
+    if (this.selectedTab === 'groups') this.loadGroups(this.$route.params.userId)
+    else if (this.selectedTab === 'tenants') this.loadTenants(this.$route.params.userId)
   },
   methods: {
     ...mapActions(['fetchTenants', 'getTenantsByUser', 'removeUserFromTenant', 'addUserToTenant']),
-    loadUser: function(userId) {
-      AdminService.findUsers({ id: userId }).then(response => {
-        this.user = response[0]
+    loadUser: async function(userId) {
+      return AdminService.findUsers({ id: userId }).then(response => {
+        this.user = response[0] || { id: userId, firstName: null,  lastName: null, email: null, noInfo: true }
       })
     },
     loadGroups: function(userId) {
@@ -399,7 +401,7 @@ export default {
           this.passwordPolicyError = false
           this.$refs.updatePassword.show(2)
         }, error => {
-          var data = error.response.data
+          const data = error.response.data
           if (data && data.type === 'PasswordPolicyException') {
             this.passwordPolicyError = true
           }
@@ -409,7 +411,7 @@ export default {
     deleteUser: function() {
       AdminService.deleteUser(this.user.id).then(() => {
         this.$refs.deleteUser.show(2)
-        this.$router.push('/seven/auth/admin/users')
+        this.$router.push({ name: 'adminUsers' })
       })
     },
     unassignGroup: function(group) {
@@ -420,12 +422,12 @@ export default {
     },
     loadUnassignedGroups: function() {
       this.unAssignedGroupsLoading = true
-      var userGroups = JSON.parse(JSON.stringify(this.groups))
+      const userGroups = JSON.parse(JSON.stringify(this.groups))
       this.unAssignedGroups = []
       AdminService.findGroups().then(allGroups => {
         allGroups.forEach(group => {
-          var isAssigned = false
-          userGroups.forEach(userGroup => {
+          let isAssigned = false
+          userGroups.forEach(userGroup => { // TODO optimize with findIndex
             if (group.id === userGroup.id) isAssigned = true
           })
           if (!isAssigned){
@@ -472,8 +474,8 @@ export default {
       await this.fetchTenants()
       const userTenants = JSON.parse(JSON.stringify(this.userTenants))
       this.unassignedTenants = []
-      this.tenants.forEach(tenant => {
-        var isAssigned = false
+      this.tenants.forEach(tenant => { // TODO optimize with findIndex
+        let isAssigned = false
         userTenants.forEach(userTenant => {
           if (tenant.id === userTenant.id) isAssigned = true
         })

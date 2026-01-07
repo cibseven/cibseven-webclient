@@ -363,7 +363,8 @@
 			"due": "Due Date",
 			"followUp": "Follow-Up",
 			"taskID": "Task ID",
-			"actions": "Actions"
+			"actions": "Actions",
+			"openTask": "Open \"{name}\" task in Tasklist"
 		},
 		"calledProcesses": {
 			"callingActivity": "Activity",
@@ -1072,6 +1073,7 @@
 		"SystemException": "An unexpected technical error occurred. Do you want to send a report?",
 		"DoxichangeException": "The preview can’t be generated. Do you want to send the affected document for analysis?",
 		"AccessDeniedException": "No Permission ({0})",
+		"NoPermission": "You do not have the necessary permissions to perform this action.\nRequired persmission: \"{permission}\".\nReferenced from: {refPath}",
 		"EntryAlreadyExistsException": "{0} already exists",
 		"NoObjectFoundException": "While performing this operation a specific problem has occurred. Please refresh the page in your browser and try again.",
 		"InvalidAttributeValueException": "While performing this operation a specific problem has occurred. Please refresh the page in your browser and try again.",
@@ -1094,13 +1096,15 @@
 		"ExistingGroupRequestException": "Group already exists",
 		"VariableModificationException": "The variable could not be changed successfully. Please refresh the page and try again.",
 		"processNotFound": "Process with key \"{0}\" not found",
+		"notFoundInstanceId": "The process instance with ID \"{instanceId}\" could not be found.\nReferenced from: {refPath}",
 		"filterSaveError": "An error occurred  trying to save the filter, please check the data introduced.",
 		"passwordDoNotMatch": "Passwords do not match",
 		"PasswordPolicyException": "Password does not match policy",
 		"InvalidUserIdException": "The user ID contains invalid characters. Only alphanumeric characters (a-z, A-Z, 0-9) are allowed. Please correct your entry.",
 		"invalidEmail": "Please enter a valid email address.",
 		"InvalidValueHistoryTimeToLive": "Null values are not allowed for history time to live.",
-		"DmnTransformationException": "The resource could not be updated. Unable to transform DMN resource."
+		"DmnTransformationException": "The resource could not be updated. Unable to transform DMN resource.",
+		"unknown": "An unexpected error occurred. Please try again."
 		
 	},
 	"searches": {
@@ -1110,7 +1114,9 @@
 		"searchByTaskName": "Search by task name...",
 		"searchByDeploymentName": "Search by deployment...",
 		"searchByBusinessKey": "Search by business key...",
-		"searchByFilterName": "Search by filter name..."
+		"searchByFilterName": "Search by filter name...",
+		"wildcardHelp": "Wildcard search is supported.",
+		"wildcardExample": "Use % to represent any number of characters (e.g. %process%)."
 	},
 	"sorting": {
 		"created": "@:task.details.created",
@@ -1403,5 +1409,16 @@
 		"noGroups": "without group",
 		"groupName": "Group",
 		"assignmentsByGroupInfo": "A task may have multiple groups."
+	},
+	"setup": {
+		"title": "Initial Setup",
+		"description": "Welcome to CIB seven! Create an administrator account to get started.",
+		"createAdminUser": "Create Administrator Account",
+		"createUser": "Create User",
+		"success": "Administrator account created successfully! Redirecting to login...",
+		"help": {
+			"title": "Why is this page shown?",
+			"description": "You are trying to access the process engine \"{0}\". This engine is configured to use the built-in identity service (database) but has no administrative users configured. This page allows you to create an initial user for accessing the process engine."
+		}
 	}
 }

@@ -38,7 +38,7 @@
 
 <script>
 import platform from 'platform'
-import CIBForm from '@/components/common-components/CIBForm.vue'
+import { CIBForm } from '@cib/common-frontend'
 import FeedbackScreenshot from '@/components/modals/FeedbackScreenshot.vue'
 import { axios } from '@/globals.js'
 
@@ -54,7 +54,7 @@ export default {
       this.$refs.modal.show()
     },
     report: function() {
-      var params = {
+      const params = {
         email : this.email2,
         platform: platform,
         screen: {
@@ -64,8 +64,8 @@ export default {
       }
       this.$emit('report', params)
       console && console.warn('Reporting problem', params)
-      var formData = new FormData()
-      var text = window.location.origin + window.location.pathname + '\n' + this.problem
+      const formData = new FormData()
+      const text = window.location.origin + window.location.pathname + '\n' + this.problem
       formData.append('description', new Blob([text], { type : 'text/plain' }), 'description.txt')
       formData.append('logs', new Blob([JSON.stringify(params)], { type : 'application/json' }), 'params.json')
       if (this.clip) formData.append('original', this.clip)

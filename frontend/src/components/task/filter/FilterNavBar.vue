@@ -108,8 +108,7 @@
 <script>
 import { permissionsMixin } from '@/permissions.js'
 import FilterModal from '@/components/task/filter/FilterModal.vue'
-import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
-import { BWaitingBox } from 'cib-common-components'
+import { ConfirmDialog, BWaitingBox } from '@cib/common-frontend'
 import { formatDate } from '@/utils/dates.js'
 import { mapActions } from 'vuex'
 
@@ -155,7 +154,7 @@ export default {
   },
   computed: {
     filtersFiltered: function() {
-      var filters = []
+      let filters = []
       if (this.$store.state.filter.list) {
         filters = this.$store.state.filter.list.filter(filter => {
           return (filter.name) ? filter.name.toUpperCase().includes(this.filter.toUpperCase()) : false
@@ -208,7 +207,7 @@ export default {
       })
     },
     setFilterByName: function() {
-      var selectedFilter = this.$store.state.filter.list.find(filter => {
+      const selectedFilter = this.$store.state.filter.list.find(filter => {
         return filter.name === this.$route.query.filtername
       })
       if (selectedFilter) {
@@ -217,7 +216,7 @@ export default {
     },
     checkFilterIdInUrl: function(filterId) {
       if (this.$store.state.filter.list.length > 0 && filterId) {
-        var filterStore = this.$store.state.filter.list.find(filter => {
+        const filterStore = this.$store.state.filter.list.find(filter => {
           return filter.id === filterId
         })
         if (filterStore) this.selectFilter(filterStore)
@@ -226,8 +225,8 @@ export default {
     },
     selectFilter: function(filter) {
       if (this.$store.state.filter.list.length > 0) {
-        var taskId = this.$route.query.filtername ? this.$route.params.filterId : this.$route.params.taskId
-        var selectedFilter = this.$store.state.filter.list.find(f => {
+        const taskId = this.$route.query.filtername ? this.$route.params.filterId : this.$route.params.taskId
+        let selectedFilter = this.$store.state.filter.list.find(f => {
           return f.id === filter.id
         })
         try {
@@ -242,8 +241,8 @@ export default {
           this.$store.state.filter.selected = selectedFilter || this.$store.state.filter.list[0]
           this.$emit('selected-filter', this.$store.state.filter.selected.id)
           localStorage.setItem('filter', JSON.stringify(this.$store.state.filter.selected))
-          var filterId = this.$route.params.filterId === '*' ? '*' : this.$store.state.filter.selected.id
-          var path = '/seven/auth/tasks/' + filterId + (taskId ? '/' + taskId : '')
+          const filterId = this.$route.params.filterId === '*' ? '*' : this.$store.state.filter.selected.id
+          const path = '/seven/auth/tasks/' + filterId + (taskId ? '/' + taskId : '')
           if (this.$route.path !== path) {
             this.isSelectingFilter = true
             this.$router.replace(path)
@@ -259,7 +258,7 @@ export default {
       }
     },
     getClasses: function(filter) {
-      var classes = []
+      const classes = []
       if (filter !== this.focused) classes.push('invisible')
       return classes
     },

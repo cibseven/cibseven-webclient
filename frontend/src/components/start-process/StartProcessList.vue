@@ -76,7 +76,7 @@
       <SuccessAlert top="0" style="z-index: 1031" ref="processStarted">
         <span>
           {{ $t('process.processCheck') }}
-          <router-link to="/seven/auth/tasks" place="tasks">{{ $t('process.tasks') }}</router-link>
+          <router-link :to="{ name: 'tasks' }" place="tasks">{{ $t('process.tasks') }}</router-link>
         </span>
       </SuccessAlert>
       <b-modal static ref="diagramModal" size="xl" :title="$t('process.diagram.title', [processName(selected)])" dialog-class="h-75" content-class="h-100" :ok-only="true">
@@ -95,7 +95,7 @@ import ProcessAdvanced from '@/components/process/ProcessAdvanced.vue'
 import ProcessCard from '@/components/process/ProcessCard.vue'
 import StartProcess from '@/components/start-process/StartProcess.vue'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
-import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
+import { SuccessAlert } from '@cib/common-frontend'
 import { ProcessService } from '@/services.js'
 
 export default {
@@ -117,7 +117,7 @@ export default {
       this.checkProcessInUrl(key)
     }
   },
-  created: function() {    
+  created: function() {
     this.loadProcesses(false) // the method takes localStorage.getItem('favorites') into account
     this.view = this.isMobile() ? 'image-outline' : localStorage.getItem('viewMode') || 'image-outline'
   },
@@ -129,9 +129,9 @@ export default {
             ((process.name) ? process.name.toUpperCase().includes(this.filter.toUpperCase()) : false)) &&
             (!process.revoked))
       }).sort((objA, objB) => {
-        var nameA = objA.name ? objA.name.toUpperCase() : objA.name
-        var nameB = objB.name ? objB.name.toUpperCase() : objB.name
-        var comp = nameA < nameB ? -1 : nameA > nameB ? 1 : 0
+        const nameA = objA.name ? objA.name.toUpperCase() : objA.name
+        const nameB = objB.name ? objB.name.toUpperCase() : objB.name
+        let comp = nameA < nameB ? -1 : (nameA > nameB ? 1 : 0)
 
         if (this.$root.config.subProcessFolder) {
           if (objA.resource.indexOf(this.$root.config.subProcessFolder) > -1) comp = 1
@@ -154,7 +154,7 @@ export default {
   },
   methods: {
     checkProcessInUrl: function (processKey) {
-      var index = this.processesByOptions.findIndex(process => { return process.key === processKey })
+      const index = this.processesByOptions.findIndex(process => { return process.key === processKey })
       if (index > -1) this.startProcess(this.processesByOptions[index])
       else {
         this.$root.$refs.error.show({ type: 'processNotFound', params: [processKey] })
@@ -175,7 +175,7 @@ export default {
     },
     favoriteHandler: function(process) {
       process.favorite = !process.favorite
-      var favorites = this.favoritesFilter(this.$store.state.process.list).map(r => { return r.key })
+      const favorites = this.favoritesFilter(this.$store.state.process.list).map(r => { return r.key })
       localStorage.setItem('favorites', JSON.stringify(favorites))
     },
     changeViewMode: function(mdi) {
@@ -195,7 +195,7 @@ export default {
     viewProcess: function(process) {
       this.selected = process
       ProcessService.fetchDiagram(process.id).then(response => {
-        this.$refs.diagram.showDiagram(response.bpmn20Xml, null, null)
+        this.$refs.diagram.showDiagram(response.bpmn20Xml)
         this.$refs.diagramModal.show()
       })
     }

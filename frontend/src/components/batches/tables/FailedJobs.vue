@@ -19,7 +19,7 @@
 <template>
   <ContentBlock :title="$t('batches.failedJobs')">
     <div class="overflow-auto p-0" style="max-height: 35vh">
-      <FlowTable v-if="jobs && jobs.length > 0 && !loading" striped thead-class="sticky-header" :items="jobs" primary-key="id" prefix="batches." 
+      <FlowTable v-if="jobs && jobs.length > 0 && !loading" striped thead-class="sticky-header" :items="jobs" primary-key="id" prefix="batches."
         :fields="[
           { label: 'id', key: 'id', class: 'col-3', tdClass: 'p-1' },
           { label: 'exception', key: 'exceptionMessage', class: 'col-6', tdClass: 'p-1' },
@@ -36,13 +36,13 @@
           </div>
         </template>
         <template v-slot:cell(actions)="table">
-          <b-button :title="$t('batches.retryJob')" size="sm" variant="outline-secondary" 
+          <b-button :title="$t('batches.retryJob')" size="sm" variant="outline-secondary"
             class="border-0 mdi mdi-18px mdi-reload" @click="retryJob(table.item.id)">
           </b-button>
-          <b-button :title="$t('batches.deleteJob')" size="sm" variant="outline-secondary" 
+          <b-button :title="$t('batches.deleteJob')" size="sm" variant="outline-secondary"
             class="border-0 mdi mdi-18px mdi-delete-outline" @click="deleteJob(table.item.id)">
           </b-button>
-          <b-button :title="$t('batches.seeFullLog')" size="sm" variant="outline-secondary" 
+          <b-button :title="$t('batches.seeFullLog')" size="sm" variant="outline-secondary"
             class="border-0 mdi mdi-18px mdi-text-long" @click="seeFullLog(table.item.id)">
           </b-button>
         </template>
@@ -60,10 +60,8 @@
 
 <script>
 import { mapActions, mapGetters } from 'vuex'
-import ContentBlock from '@/components/common-components/ContentBlock.vue'
-import FlowTable from '@/components/common-components/FlowTable.vue'
+import { ContentBlock, FlowTable, BWaitingBox } from '@cib/common-frontend'
 import JobLogModal from '../modals/JobLogModal.vue'
-import { BWaitingBox } from 'cib-common-components'
 
 export default {
   name: 'FailedJobs',

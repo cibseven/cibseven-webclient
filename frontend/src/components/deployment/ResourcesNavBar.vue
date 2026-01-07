@@ -173,11 +173,11 @@ export default {
       ProcessService.findProcessesWithFilters('deploymentId=' + this.deployment.id + '&resourceName=' + resource.name)
         .then(processesDefinition => {
           if (processesDefinition.length > 0) {
-            var processDefinition = processesDefinition[0]
+            const processDefinition = processesDefinition[0]
             ProcessService.fetchDiagram(processDefinition.id).then(response => {
               setTimeout(() => {
                 this.diagramLoading = false
-                this.$refs.diagram.showDiagram(response.bpmn20Xml, null, null)
+                this.$refs.diagram.showDiagram(response.bpmn20Xml)
               }, 500)
             }).catch(() => {
               this.diagramLoading = false
@@ -226,7 +226,7 @@ export default {
     loadDeployment: function () {
       if (this.deploymentId) {
         if (this.deployments) {
-          let found = this.deployments.find(d => {
+          const found = this.deployments.find(d => {
             return d.id === this.deploymentId
           })
           if (found) {

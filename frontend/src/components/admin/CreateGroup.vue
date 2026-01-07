@@ -23,7 +23,7 @@
         <div class="col-12 p-0">
           <b-card class="border-0 p-5" :title="$t('admin.groups.createLabel')">
             <b-card-text class="border-top pt-4 mt-3">
-              <CIBForm @submitted="onSubmit()">
+              <CIBForm @submitted="onSubmit">
                 <b-form-group labels-cols-lg="2" label-size="lg" label-class="fw-bold pt-0 pb-4">
                   <b-form-group :label="$t('admin.groups.id') + '*'" label-cols-sm="2"
                     label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
@@ -37,7 +37,7 @@
                     <b-form-input v-model="group.type"></b-form-input>
                   </b-form-group>
                   <div class="d-flex justify-content-end gap-2 mt-4">
-                    <b-button type="reset" @click="onReset()" variant="light">{{ $t('admin.groups.cancel') }}</b-button>
+                    <b-button type="button" @click="onReset()" variant="light">{{ $t('admin.groups.cancel') }}</b-button>
                     <b-button type="submit" variant="primary">{{ $t('admin.groups.createLabel') }}</b-button>
                   </div>
                 </b-form-group>
@@ -55,9 +55,7 @@
 <script>
 import { AdminService } from '@/services.js'
 import { notEmpty, isValidId } from '@/components/admin/utils.js'
-import ErrorDialog from '@/components/common-components/ErrorDialog.vue'
-import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
-import CIBForm from '@/components/common-components/CIBForm.vue'
+import { ErrorDialog, SuccessAlert, CIBForm } from '@cib/common-frontend'
 
 export default {
   name: 'CreateGroup',
@@ -72,12 +70,12 @@ export default {
       AdminService.createGroup(this.group).then(() => {
         this.$refs.groupCreated.show(1)
         setTimeout(() => {
-          this.$router.push('/seven/auth/admin/groups')
+          this.$router.push({ name: 'adminGroups' })
         }, 1000)
       })
     },
     onReset: function() {
-      this.$router.push('/seven/auth/admin/groups')
+      this.$router.push({ name: 'adminGroups' })
     },
     notEmpty: function(value) {
       return notEmpty(value)

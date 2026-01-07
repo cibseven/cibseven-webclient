@@ -594,6 +594,10 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 		return userProvider.getUserAuthorization(userId, user);
 	}
 	
+	public long countUsers(Map<String, Object> filters, CIBUser user) throws SystemException {
+		return userProvider.countUsers(filters, user);
+	}
+	
 	public Collection<SevenUser> fetchUsers(CIBUser user) throws SystemException {
 		return userProvider.fetchUsers(user);
 	}
@@ -1279,4 +1283,13 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 		return engineProvider.getProcessEngineNames();
 	}
 
+	@Override
+	public Boolean requiresSetup(String engine) {
+		return engineProvider.requiresSetup(engine);
+	}
+
+	@Override
+	public void createSetupUser(NewUser user, String engine) throws InvalidUserIdException {
+		engineProvider.createSetupUser(user, engine);
+	}
 }

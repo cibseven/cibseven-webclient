@@ -21,11 +21,11 @@
     <b-modal ref="modal" :title="$t('process-instance.stacktrace')" size="xl" :ok-only="true">
       <div v-if="stackTraceMessage" class="container-fluid p-0">
         <div class="position-relative">
-          <textarea 
-            ref="textarea" 
-            v-model="stackTraceMessage" 
-            rows="20" 
-            readonly 
+          <textarea
+            ref="textarea"
+            v-model="stackTraceMessage"
+            rows="20"
+            readonly
             class="form-control w-100"
           ></textarea>
           <b-button
@@ -46,7 +46,7 @@
 </template>
 
 <script>
-import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
+import { SuccessAlert } from '@cib/common-frontend'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 
 export default {

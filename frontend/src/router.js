@@ -19,7 +19,7 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 
 import { axios } from './globals.js'
 
-import { AuthService } from '@/services.js'
+import { AuthService, SetupService } from '@/services.js'
 import { permissionsMixin } from '@/permissions.js'
 import CibSeven from '@/components/CibSeven.vue'
 import StartView from '@/components/start/StartView.vue'
@@ -45,7 +45,8 @@ import HumanTasksView from '@/components/task/HumanTasksView.vue'
 import TasksView from '@/components/task/TasksView.vue'
 import TaskView from '@/components/task/TaskView.vue'
 import LoginView from '@/components/login/LoginView.vue'
-import { BWaitingBox } from 'cib-common-components'
+import InitialSetup from '@/components/setup/InitialSetup.vue'
+import { BWaitingBox, TranslationsDownload } from '@cib/common-frontend'
 import DeployedForm from '@/components/forms/DeployedForm.vue'
 import StartDeployedForm from '@/components/forms/StartDeployedForm.vue'
 import TenantsView from '@/components/tenants/TenantsView.vue'
@@ -55,21 +56,34 @@ import BatchesView from '@/components/batches/BatchesView.vue'
 import SystemView from '@/components/system/SystemView.vue'
 import SystemDiagnostics from '@/components/system/SystemDiagnostics.vue'
 import ExecutionMetrics from '@/components/system/ExecutionMetrics.vue'
-import TranslationsDownload from '@/components/common-components/TranslationsDownload.vue'
+import { redirectToProcessInstance, redirectToTask } from '@/utils/redirects.js'
 
 const appRoutes = [
-    { path: '/', redirect: '/seven/auth/start-configurable' },
+    { path: '/',  name: 'root', redirect: '/seven/auth/start-configurable' },
     {
       path: '/api/translations',
       name: 'translations',
       component: TranslationsDownload,
     },
-    { path: '/seven', component: CibSeven, children: [
+    { path: '/seven', name: 'seven', component: CibSeven, children: [
       { path: 'login', name: 'login', beforeEnter: function(to, from, next) {
-          if (router.root.config.ssoActive) //If SSO go to other login
-            location.href = './sso-login.html?nextUrl=' + encodeURIComponent(to.query.nextUrl ? to.query.nextUrl : '')
-          else next()
+          // Check if setup is required first
+          SetupService.getStatus().then(res => {
+            if (res.data) {
+              next({ name: 'setup' }) // Redirect to setup if no users exist
+            } else if (router.root.config.ssoActive) {
+              location.href = './sso-login.html?nextUrl=' + encodeURIComponent(to.query.nextUrl ? to.query.nextUrl : '')
+            } else {
+              next()
+            }
+          }).catch(() => {
+            // On error, proceed with normal login flow
+            if (router.root.config.ssoActive)
+              location.href = './sso-login.html?nextUrl=' + encodeURIComponent(to.query.nextUrl ? to.query.nextUrl : '')
+            else next()
+          })
         }, component: LoginView },
+      { path: 'setup', name: 'setup', beforeEnter: setupGuard, component: InitialSetup },
       { path: 'auth', name: 'auth', beforeEnter: authGuard(true), component: {
         components: { BWaitingBox }, template: '<BWaitingBox ref="loader" class="d-flex justify-content-center" styling="width:20%">\
           <router-view ref="down" class="w-100 h-100"></router-view></BWaitingBox>',
@@ -86,6 +100,18 @@ const appRoutes = [
           })
         },
       }, children: [
+        { path: 'no-permission', name: 'no-permission',
+          beforeEnter: async (to, from, next) => {
+            next({
+              name: 'start',
+              query: {
+                errorType: 'NoPermission',
+                permission: to.query?.permission,
+                refPath: to.query?.refPath,
+              }
+            })
+          }
+        },
 
         // Start page with configurable redirects
         { path: 'start-configurable', name: 'start-configurable',
@@ -93,30 +119,42 @@ const appRoutes = [
             const cockpitAvailable = router.root.applicationPermissions(router.root.config.permissions['cockpit'], 'cockpit')
             const tasklistAvailable = router.root.applicationPermissions(router.root.config.permissions['tasklist'], 'tasklist')
 
-            const cockpitOverride = cockpitAvailable ? null : '/seven/auth/start'
-            const tasklistOverride = tasklistAvailable ? null : '/seven/auth/start'
+            const cockpitOverride = cockpitAvailable ? null : {
+              name: 'no-permission',
+              query: {
+                permission: 'cockpit',
+                refPath: from.fullPath,
+              }
+            }
+            const tasklistOverride = tasklistAvailable ? null : {
+              name: 'no-permission',
+              query: {
+                permission: 'tasklist',
+                refPath: from.fullPath,
+              }
+            }
 
             const configuredStartPage = localStorage?.getItem('cibseven:preferences:startPage') || 'start'
             switch (configuredStartPage) {
               case 'processes-dashboard':
-                next(cockpitOverride || '/seven/auth/processes/dashboard')
+                next(cockpitOverride || { name: 'processesDashboard' })
                 break;
               case 'decisions-list':
-                next(cockpitOverride || '/seven/auth/decisions/list')
+                next(cockpitOverride || { name: 'decision-list' })
                 break;
               case 'human-tasks-dashboard':
-                next(cockpitOverride || '/seven/auth/human-tasks')
+                next(cockpitOverride || { name: 'human-tasks' })
                 break;
 
               case 'tasks':
-                next(tasklistOverride || '/seven/auth/tasks')
+                next(tasklistOverride || { name: 'tasks'})
                 break;
               case 'start-process':
-                next(tasklistOverride || '/seven/auth/start-process')
+                next(tasklistOverride || { name: 'start-process' })
                 break;
               case 'start':
               default:
-                next('/seven/auth/start')
+                next({ name: 'start' })
                 break;
             }
           }
@@ -125,13 +163,19 @@ const appRoutes = [
         { path: 'start', name: 'start', component: StartView },
         { path: 'account/:userId', name: 'account', beforeEnter: (to, from, next) => {
             permissionsDeniedGuard('userProfile')(to, from, result => {
-                if (result) next(result)
+              if (result) next(result)
               else {
-                    if (to.params.userId && to.params.userId === router.root.user.id &&
-                      router.root.config.layout.showUserSettings)next()
-                    else next('/seven/auth/start')
-                }
-              })
+                if (to.params.userId && to.params.userId === router.root.user.id &&
+                  router.root.config.layout.showUserSettings)next()
+                else next({
+                  name: 'no-permission',
+                  query: {
+                    permission: 'userProfile',
+                    refPath: from.fullPath,
+                  }
+                })
+              }
+            })
           }, component: ProfileUser
         },
 
@@ -141,7 +185,8 @@ const appRoutes = [
         },
 
         // Tasks in active processes
-        { path: 'tasks', beforeEnter: permissionsGuard('tasklist'), component: TasksView,
+        { path: 'task/:taskId', name: 'task-id', beforeEnter: async (to, from, next) => redirectToTask(router, to, from, next) },
+        { path: 'tasks', name: 'tasks', beforeEnter: permissionsGuard('tasklist'), component: TasksView,
           children: [
             { path: ':filterId/:taskId?', name: 'tasklist', component: TaskView }
           ]
@@ -153,12 +198,28 @@ const appRoutes = [
         },
 
         // Process management (power-user)
-        { path: 'processes', redirect: '/seven/auth/processes/dashboard', beforeEnter: permissionsGuard('cockpit') },
+        { path: 'processes', name: 'cockpit', redirect: '/seven/auth/processes/dashboard', beforeEnter: permissionsGuard('cockpit') },
         { path: 'processes/dashboard', name: 'processesDashboard', beforeEnter: permissionsGuard('cockpit'),
           component: ProcessesDashboardView
         },
         { path: 'processes/list', name: 'processManagement', beforeEnter: permissionsGuard('cockpit'),
           component: ProcessListView
+        },
+        // process instance by id redirect
+        { path: 'processes/instance/:instanceId?', name: 'process-instance-id',
+          beforeEnter: async (to, from, next) => redirectToProcessInstance(router, to, from, next),
+        },
+        { path: 'processes/not-found-instanceId', name: 'not-found-instanceId',
+          beforeEnter: async (to, from, next) => {
+            next({
+              name: 'start',
+              query: {
+                errorType: 'notFoundInstanceId',
+                instanceId: to.query?.instanceId,
+                refPath: to.query?.refPath,
+              }
+            })
+          }
         },
         { path: 'process/:processKey/:versionIndex?/:instanceId?', name: 'process', beforeEnter: permissionsGuard('cockpit'),
           component: ProcessView, props: route => ({
@@ -169,12 +230,13 @@ const appRoutes = [
           })
         },
         // decisions
-        { path: 'decisions', redirect: '/seven/auth/decisions/list', beforeEnter: permissionsGuard('cockpit') },
+        { path: 'decisions', name: 'decisions', redirect: '/seven/auth/decisions/list', beforeEnter: permissionsGuard('cockpit') },
         { path: 'decisions/list', name: 'decision-list', beforeEnter: permissionsGuard('cockpit'),
           component: DecisionListView
         },
         {
           path: 'decision/:decisionKey',
+          name: 'decision',
           beforeEnter: permissionsGuard('cockpit'),
           component: DecisionView,
           props: true,
@@ -206,7 +268,7 @@ const appRoutes = [
           },
           children: [
             { path: '', name: 'usersManagement', component: UsersManagement },
-            { path: 'users', name:'adminUsers',
+            { path: 'users', name: 'adminUsers',
               beforeEnter: permissionsGuardUserAdmin('usersManagement', 'user'), component: AdminUsers },
             { path: 'user/:userId', name: 'adminUser',
               beforeEnter: permissionsGuardUserAdmin('usersManagement', 'user'), component: ProfileUser,
@@ -215,7 +277,7 @@ const appRoutes = [
             { path: 'groups', name: 'adminGroups', beforeEnter: permissionsGuardUserAdmin('groupsManagement', 'group'), component: AdminGroups },
             { path: 'group/:groupId', name: 'adminGroup', beforeEnter: permissionsGuardUserAdmin('groupsManagement', 'group'), component: ProfileGroup },
             // Tenants
-            { path: 'tenants', name:'adminTenants', beforeEnter: permissionsGuardUserAdmin('tenantsManagement', 'tenant'), component: TenantsView },
+            { path: 'tenants', name: 'adminTenants', beforeEnter: permissionsGuardUserAdmin('tenantsManagement', 'tenant'), component: TenantsView },
             { path: 'tenant/:tenantId', name: 'adminTenant', beforeEnter: permissionsGuardUserAdmin('tenantsManagement', 'tenant'), component: EditTenant },
             // System
             { path: 'system', redirect: '/seven/auth/admin/system/system-diagnostics', name: 'adminSystem', component: SystemView,
@@ -241,19 +303,21 @@ const appRoutes = [
     ]},
     {
       path: '/deployed-form/:locale/:taskId/:token?/:theme?/:translation?',
+      name: 'deployed-form',
       beforeEnter: combineGuards(authGuard(false), permissionsGuard('tasklist')),
       props: true,
       component: DeployedForm
     },
     {
       path: '/start-deployed-form/:locale/:processDefinitionId/:token?/:theme?/:translation?',
+      name: 'start-deployed-form',
       beforeEnter: combineGuards(authGuard(false), permissionsGuard('tasklist')),
       props: true,
       component: StartDeployedForm
     },
   ];
 
-var router = null
+let router = null
 
 function authGuard(strict) {
   return function(to, from, next) {
@@ -262,8 +326,8 @@ function authGuard(strict) {
     if (router.root.user) next()
     else getSelfInfo()['catch'](error => {
       if (error.response) {
-        var res = error.response
-        var params = res.data.params && res.data.params.length > 0
+        const res = error.response
+        const params = res.data.params && res.data.params.length > 0
         if (res.data && res.data.type === 'TokenExpiredException' && params) {
           console && console.info('Prolonged token')
           if (sessionStorage.getItem('token')) sessionStorage.setItem('token', res.data.params[0])
@@ -272,7 +336,16 @@ function authGuard(strict) {
         } else {
           console && console.warn('Not authenticated, redirecting ...')
           sessionStorage.getItem('token') ? sessionStorage.removeItem('token') : localStorage.removeItem('token')
-          next({ path: strict ? '/seven/login' : undefined, query: { nextUrl: to.fullPath } })
+          // Check if setup is required before redirecting to login
+          checkSetupRequired().then(requiresSetup => {
+            if (requiresSetup) {
+              next({ name: 'setup' })
+            } else {
+              next({ path: strict ? '/seven/login' : undefined, query: { nextUrl: to.fullPath } })
+            }
+          }).catch(() => {
+            next({ path: strict ? '/seven/login' : undefined, query: { nextUrl: to.fullPath } })
+          })
           if ((res.data.type !== 'AuthenticationException' && res.data.type !== 'TokenExpiredException') || params)
             router.root.$refs.error.show(res.data) // When reloading $refs.error is often undefined => init race condition ?
         }
@@ -280,11 +353,16 @@ function authGuard(strict) {
           console && console.error('Strange AJAX error', error)
     })
 
+    function checkSetupRequired() {
+      return SetupService.getStatus()
+        .then(res => res.data)
+    }
+
     function getSelfInfo() {
       if (to.query.token) sessionStorage.setItem('token', to.query.token)
-      var token = sessionStorage.getItem('token') || localStorage.getItem('token')
-      var headers = { authorization: token }
-      var inst = axios.create() // bypass standard error handling
+      const token = sessionStorage.getItem('token') || localStorage.getItem('token')
+      const headers = { authorization: token }
+      const inst = axios.create() // bypass standard error handling
       return inst.get(router.root.config.servicesBasePath + '/auth', { headers: headers }).then(res => {
         console && console.info('auth successful', res.data)
         axios.defaults.headers.common.authorization = res.data.authToken
@@ -296,22 +374,60 @@ function authGuard(strict) {
     }
   }
 }
+
+function setupGuard(to, from, next) {
+  SetupService.getStatus().then(res => {
+    if (res.data) {
+      next() // Allow access to setup page
+    } else {
+      next({ name: 'login' }) // Setup not required, redirect to login
+    }
+  }).catch(error => {
+    console && console.error('Error checking setup status', error)
+    next({ name: 'login' }) // On error, redirect to login
+  })
+}
+
 function permissionsGuard(permission) {
   return function(to, from, next) {
     if (router.root.applicationPermissions(router.root.config.permissions[permission], permission)) next()
-    else next('/seven/auth/start')
+    else {
+      next({
+        name: 'no-permission',
+        query: {
+          permission: permission,
+          refPath: from.fullPath,
+        }
+      })
+    }
   }
 }
 function permissionsDeniedGuard(permission) {
   return function(to, from, next) {
     if (!router.root.applicationPermissionsDenied(router.root.config.permissions[permission], permission)) next()
-    else next('/seven/auth/start')
+    else {
+      next({
+        name: 'no-permission',
+        query: {
+          permission: permission,
+          refPath: from.fullPath,
+        }
+      })
+    }
   }
 }
 function permissionsGuardUserAdmin(permission, condition) {
   return function(to, from, next) {
     if (router.root.adminManagementPermissions(router.root.config.permissions[permission], condition)) next()
-    else next('/seven/auth/start')
+    else {
+      next({
+        name: 'no-permission',
+        query: {
+          permission: permission,
+          refPath: from.fullPath,
+        }
+      })
+    }
   }
 }
 
@@ -372,6 +488,7 @@ export {
   createAppRouter,
 
   authGuard,
+  setupGuard,
   permissionsGuard,
   permissionsDeniedGuard,
   permissionsGuardUserAdmin

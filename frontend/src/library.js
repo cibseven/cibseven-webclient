@@ -16,10 +16,11 @@
  */
 // Import the CSS to ensure it is bundled with the package
 import './assets/main.css';
+import '@cib/common-frontend/dist/style.css';
 
 import { axios, moment } from '@/globals.js'
 import { permissionsMixin } from '@/permissions.js'
-import registerOwnComponents from './register.js'
+import registerComponents from './register.js'
 import processesVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
 import processesMixin from '@/components/process/mixins/processesMixin.js'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
@@ -29,41 +30,33 @@ import usersMixin from '@/mixins/usersMixin.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { debounce } from '@/utils/debounce.js'
 import { formatDate, formatDateForTooltips, formatDuration } from '@/utils/dates.js'
-import { HoverStyle } from '@/components/common-components/directives.js'
-import { InfoService, AuthService, SystemService } from './services.js'
+import { InfoService, AuthService, SystemService, SetupService } from './services.js'
 import { initEmbeddedForm } from './embedded-form/embedded-form.js'
 import { i18n, setLanguage, loadTranslations, translationSources } from './i18n'
 import { appRoutes,
   createAppRouter,
   authGuard,
+  setupGuard,
   permissionsGuard,
   permissionsDeniedGuard,
   permissionsGuardUserAdmin } from './router.js'
-import { updateAppTitle, checkExternalReturn, isMobile, hasHeader, getTheme } from './utils/init.js'
+import { updateAppTitle, checkExternalReturn, isMobile, hasHeader, getTheme, loadTheme } from './utils/init.js'
 import { applyTheme, handleAxiosError, fetchAndStoreProcesses, fetchDecisionsIfEmpty, setupTaskNotifications } from './utils/init'
 import { parseXMLDocumentation } from './utils/parser.js'
 import { applyConfigDefaults } from './utils/config.js'
 import { ENGINE_STORAGE_KEY } from './constants.js'
 import CibSeven from '@/components/CibSeven.vue'
-import FlowTable from '@/components/common-components/FlowTable.vue'
-import ContentBlock from '@/components/common-components/ContentBlock.vue'
-import ErrorDialog from '@/components/common-components/ErrorDialog.vue'
 import AboutModal from '@/components/modals/AboutModal.vue'
-import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
 import FeedbackModal from '@/components/modals/FeedbackModal.vue'
-import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
-import TaskPopper from '@/components/common-components/TaskPopper.vue'
 import FeedbackScreenshot from '@/components/modals/FeedbackScreenshot.vue'
 import TaskList from '@/components/common-components/TaskList.vue'
 import CIBHeaderFlow from '@/components/common-components/CIBHeaderFlow.vue'
 import ResetDialog from '@/components/login/ResetDialog.vue'
 import OtpDialog from '@/components/login/OtpDialog.vue'
-import CIBForm from '@/components/common-components/CIBForm.vue'
 import SecureInput from '@/components/login/SecureInput.vue'
 import FilterableSelect from '@/components/task/filter/FilterableSelect.vue'
 import IconButton from '@/components/render-template/IconButton.vue'
 import MultisortModal from '@/components/process/modals/MultisortModal.vue'
-import SidebarsFlow from '@/components/common-components/SidebarsFlow.vue'
 import SmartSearch from '@/components/task/SmartSearch.vue'
 import SupportModal from '@/components/modals/SupportModal.vue'
 import AdminAuthorizations from '@/components/admin/AdminAuthorizations.vue'
@@ -78,7 +71,6 @@ import ProfilePreferencesTab from '@/components/admin/ProfilePreferencesTab.vue'
 import ProfileUser from '@/components/admin/ProfileUser.vue'
 import UsersManagement from '@/components/admin/UsersManagement.vue'
 import DeploymentList from '@/components/deployment/DeploymentList.vue'
-import PagedScrollableContent from '@/components/common-components/PagedScrollableContent.vue'
 import DeploymentsView from '@/components/deployment/DeploymentsView.vue'
 import ResourcesNavBar from '@/components/deployment/ResourcesNavBar.vue'
 import FilterModal from '@/components/task/filter/FilterModal.vue'
@@ -120,7 +112,6 @@ import TaskView from '@/components/task/TaskView.vue'
 import TasksContent from '@/components/task/TasksContent.vue'
 import TasksNavBar from '@/components/task/TasksNavBar.vue'
 import TasksView from '@/components/task/TasksView.vue'
-import HighlightedText from '@/components/common-components/HighlightedText.vue'
 import HumanTasksView from '@/components/task/HumanTasksView.vue'
 import DecisionView from '@/components/decision/DecisionView.vue'
 import DecisionList from '@/components/decisions/list/DecisionList.vue'
@@ -134,8 +125,7 @@ import BatchesView from '@/components/batches/BatchesView.vue'
 import RuntimeBatches from '@/components/batches/tables/RuntimeBatches.vue'
 import HistoricBatches from '@/components/batches/tables/HistoricBatches.vue'
 import BatchDetails from '@/components/batches/tables/BatchDetails.vue'
-import SystemView from '@/components/system/SystemView.vue'
-import { SystemSidebarItems } from '@/components/system/SystemView.vue'
+import SystemView, { SystemSidebarItems }  from '@/components/system/SystemView.vue'
 import SystemDiagnostics from '@/components/system/SystemDiagnostics.vue'
 import ExecutionMetrics from '@/components/system/ExecutionMetrics.vue'
 import ShortcutsModal from '@/components/modals/ShortcutsModal.vue'
@@ -150,9 +140,7 @@ import DmnViewer from '@/components/decision/DmnViewer.vue'
 import TemplateBase from '@/components/forms/TemplateBase.vue'
 import StartView from '@/components/start/StartView.vue'
 import LoginView from '@/components/login/LoginView.vue'
-import GenericTabs from '@/components/common-components/GenericTabs.vue'
-import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
-import TranslationsDownload from '@/components/common-components/TranslationsDownload.vue'
+import InitialSetup from '@/components/setup/InitialSetup.vue'
 import StackTraceModal from '@/components/process/modals/StackTraceModal.vue'
 import RetryModal from '@/components/process/modals/RetryModal.vue'
 import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
@@ -174,108 +162,12 @@ import JobDueDateModal from '@/components/process/modals/JobDueDateModal.vue'
 
 // mixins
 import assigneeMixin from '@/mixins/assigneeMixin.js'
-import { getEnabledShortcuts, getShortcutsForModal, 
+import { getEnabledShortcuts, getShortcutsForModal,
   getGlobalNavigationShortcuts, getTaskEventShortcuts, checkKeyMatch } from './utils/shortcuts.js'
-
-const registerComponents = function(app) {
-  app.component('cib-seven', CibSeven)
-  app.component('flow-table', FlowTable)
-  app.component('content-block', ContentBlock)
-  app.component('error-dialog', ErrorDialog)
-  app.component('confirm-dialog', ConfirmDialog)
-  app.component('about-modal', AboutModal)
-  app.component('feedback-modal', FeedbackModal)
-  app.component('shortcuts-modal', ShortcutsModal)
-  app.component('shortcuts-table', ShortcutsTable)
-  app.component('success-alert', SuccessAlert)
-  app.component('task-popper', TaskPopper)
-  app.component('feedback-screenshot', FeedbackScreenshot)
-  app.component('task-list', TaskList)
-  app.component('cib-header-flow', CIBHeaderFlow)
-  app.component('reset-dialog', ResetDialog)
-  app.component('otp-dialog', OtpDialog)
-  app.component('cib-form', CIBForm)
-  app.component('secure-input', SecureInput)
-  app.component('filterable-select', FilterableSelect)
-  app.component('icon-button', IconButton)
-  app.component('multisort-modal', MultisortModal)
-  app.component('sidebars-flow', SidebarsFlow)
-  app.component('smart-search', SmartSearch)
-  app.component('support-modal', SupportModal)
-  app.component('admin-authorizations', AdminAuthorizations)
-  app.component('admin-authorizations-table', AdminAuthorizationsTable)
-  app.component('admin-groups', AdminGroups)
-  app.component('admin-users', AdminUsers)
-  app.component('authorizations-nav-bar', AuthorizationsNavBar)
-  app.component('create-group', CreateGroup)
-  app.component('create-user', CreateUser)
-  app.component('profile-group', ProfileGroup)
-  app.component('profile-preferences-tab', ProfilePreferencesTab)
-  app.component('profile-user', ProfileUser)
-  app.component('users-management', UsersManagement)
-  app.component('deployment-list', DeploymentList)
-  app.component('paged-scrollable-content', PagedScrollableContent)
-  app.component('deployments-view', DeploymentsView)
-  app.component('resources-nav-bar', ResourcesNavBar)
-  app.component('filter-modal', FilterModal)
-  app.component('filter-nav-bar', FilterNavBar)
-  app.component('filter-nav-collapsed', FilterNavCollapsed)
-  app.component('process-view', ProcessView)
-  app.component('add-variable-modal', AddVariableModal)
-  app.component('add-variable-modal-ui', AddVariableModalUI)
-  app.component('edit-variable-modal', EditVariableModal)
-  app.component('delete-variable-modal', DeleteVariableModal)
-  app.component('bpmn-viewer', BpmnViewer)
-  app.component('instances-table', InstancesTable)
-  app.component('process-instances-view', ProcessInstancesView)
-  app.component('process-advanced', ProcessAdvanced)
-  app.component('process-card', ProcessCard)
-  app.component('process-details-sidebar', ProcessDetailsSidebar)
-  app.component('start-process-list', StartProcessList)
-  app.component('start-process-view', StartProcessView)
-  app.component('process-list', ProcessList)
-  app.component('process-list-view', ProcessListView)
-  app.component('process-table', ProcessTable)
-  app.component('process-instance-view', ProcessInstanceView)
-  app.component('process-definition-view', ProcessDefinitionView)
-  app.component('delete-process-definition-modal', DeleteProcessDefinitionModal)
-  app.component('confirm-action-on-process-instance-modal', ConfirmActionOnProcessInstanceModal)
-  app.component('processes-dashboard-view', ProcessesDashboardView)
-  app.component('pie-chart', PieChart)
-  app.component('deployment-item', DeploymentItem)
-  app.component('start-process', StartProcess)
-  app.component('task-assignation-modal', TaskAssignationModal)
-  app.component('variables-table', VariablesTable)
-  app.component('incidents-table', IncidentsTable)
-  app.component('user-tasks-table', UserTasksTable)
-  app.component('render-template', RenderTemplate)
-  app.component('advanced-search-modal', AdvancedSearchModal)
-  app.component('task-content', TaskContent)
-  app.component('task-view', TaskView)
-  app.component('tasks-content', TasksContent)
-  app.component('tasks-nav-bar', TasksNavBar)
-  app.component('tasks-view', TasksView)
-  app.component('highlighted-text', HighlightedText)
-  app.component('human-tasks', HumanTasksView)
-  app.component('decision-view', DecisionView)
-  app.component('decision-list', DecisionList)
-  app.component('decision-list-view', DecisionListView)
-  app.component('tenants-view', TenantsView)
-  app.component('edit-tenant', EditTenant)
-  app.component('create-tenant', CreateTenant)
-  app.component('batches-view', BatchesView)
-  app.component('system-view', SystemView)
-  app.component('deployed-form', DeployedForm)
-  app.component('decision-definition-details', DecisionDefinitionDetails)
-  app.component('decision-version-list-sidebar', DecisionVersionListSidebar)
-  app.component('dmn-viewer', DmnViewer)
-  app.component('template-base', TemplateBase)
-  app.component('start-view', StartView)
-  app.component('login-view', LoginView)
-}
 
 export {
   registerComponents,
+
   TenantsView,
   CreateTenant,
   EditTenant,
@@ -285,7 +177,6 @@ export {
   axios,
   moment,
   permissionsMixin,
-  registerOwnComponents,
   store,
   modules as storeModules,
   usersMixin,
@@ -297,28 +188,19 @@ export {
   formatDate,
   formatDateForTooltips,
   formatDuration,
-  HoverStyle,
   CibSeven,
-  FlowTable,
-  ContentBlock,
-  ErrorDialog,
-  ConfirmDialog,
   FeedbackModal,
   ShortcutsModal,
   ShortcutsTable,
-  SuccessAlert,
-  TaskPopper,
   FeedbackScreenshot,
   TaskList,
   CIBHeaderFlow,
   ResetDialog,
   OtpDialog,
-  CIBForm,
   SecureInput,
   FilterableSelect,
   IconButton,
   MultisortModal,
-  SidebarsFlow,
   SmartSearch,
   SupportModal,
   AdminAuthorizations,
@@ -333,7 +215,6 @@ export {
   ProfileUser,
   UsersManagement,
   DeploymentList,
-  PagedScrollableContent,
   DeploymentsView,
   ResourcesNavBar,
   FilterModal,
@@ -375,7 +256,6 @@ export {
   TasksContent,
   TasksNavBar,
   TasksView,
-  HighlightedText,
   TaskService,
   HistoryService,
   ProcessService,
@@ -404,17 +284,16 @@ export {
   TemplateBase,
   StartView,
   LoginView,
-  GenericTabs,
-  CopyableActionButton,
+  InitialSetup,
   InfoService,
   AuthService,
   SystemService,
+  SetupService,
   DeploymentService,
   i18n,
   setLanguage,
   loadTranslations,
   translationSources,
-  TranslationsDownload,
   StackTraceModal,
   RetryModal,
   JobLogModal,
@@ -439,6 +318,7 @@ export {
   appRoutes,
   createAppRouter,
   authGuard,
+  setupGuard,
   permissionsGuard,
   permissionsDeniedGuard,
   permissionsGuardUserAdmin,
@@ -448,6 +328,7 @@ export {
   isMobile,
   hasHeader,
   getTheme,
+  loadTheme,
   applyTheme,
   handleAxiosError,
   fetchAndStoreProcesses,
@@ -470,3 +351,5 @@ export {
   // Constants
   ENGINE_STORAGE_KEY
 }
+
+export * from '@cib/common-frontend'

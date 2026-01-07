@@ -32,6 +32,7 @@ import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.exception.InvalidUserIdException;
 import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.webapp.providers.utils.URLUtils;
 import org.cibseven.webapp.rest.model.Authorization;
 import org.cibseven.webapp.rest.model.Authorizations;
 import org.cibseven.webapp.rest.model.NewUser;
@@ -45,6 +46,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -119,6 +121,19 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 		}
 
 		return auths;
+	}
+	
+	/**
+	 * Get the count of users in the system with optional filters.
+	 */
+	public long countUsers(Map<String, Object> filters, CIBUser user) throws SystemException {
+		String url = URLUtils.buildUrlWithParams(
+			getEngineRestUrl(user) + "/user/count",
+			filters != null ? filters : Map.of()
+		);
+		ResponseEntity<JsonNode> response = doGet(url, JsonNode.class, user, false);
+		JsonNode body = response.getBody();
+		return body != null ? body.get("count").asLong() : 0;
 	}
 	
 	public Collection<SevenUser> fetchUsers(CIBUser user) throws SystemException {

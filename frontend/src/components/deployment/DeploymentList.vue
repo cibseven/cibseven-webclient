@@ -85,7 +85,7 @@ export default {
     }
   },
   created: function() {
-    let found = this.deployments.some(d => {
+    const found = this.deployments.some(d => {
       return (d.id === this.deploymentId)
     })
     if (found) {
@@ -100,7 +100,7 @@ export default {
     },
     setDeploymentFromUrl: function(deploymentId) {
       if (this.deployments.length > 0 && deploymentId) {
-        var deployment = this.deployments.find(d => {
+        const deployment = this.deployments.find(d => {
           return d.id === deploymentId
         })
         if (deployment) this.$emit('select-deployment', deployment)

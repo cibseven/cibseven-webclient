@@ -35,7 +35,7 @@
 
     <transition name="slide-in" mode="out-in">
       <div v-if="group.id" class="d-flex flex-column h-100 bg-light">
-        <b-button variant="light" style="min-height: 40px; line-height: 20px;" :block="true" class="rounded-0 border-bottom text-start" href="#/seven/auth/admin/groups">
+        <b-button variant="light" style="min-height: 40px; line-height: 20px;" :block="true" class="rounded-0 border-bottom text-start" :to="{ name: 'adminGroups' }">
           <span class="mdi mdi-arrow-left me-2"></span>
           <span class="fw-semibold">{{ $t('admin.groups.title') }}</span>
         </b-button>
@@ -164,11 +164,7 @@
 <script>
 import { AdminService } from '@/services.js'
 import { notEmpty } from '@/components/admin/utils.js'
-import SidebarsFlow from '@/components/common-components/SidebarsFlow.vue'
-import FlowTable from '@/components/common-components/FlowTable.vue'
-import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
-import CIBForm from '@/components/common-components/CIBForm.vue'
-import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
+import { SidebarsFlow, FlowTable, SuccessAlert, CIBForm, ConfirmDialog } from '@cib/common-frontend'
 import { mapActions, mapGetters } from 'vuex'
 
 export default {
@@ -233,7 +229,7 @@ export default {
     deleteGroup: function() {
       AdminService.deleteGroup(this.group.id).then(() => {
         this.$refs.deleteGroup.show(2)
-        this.$router.push('/seven/auth/admin/groups')
+        this.$router.push({ name: 'adminGroups' })
       })
     },
     clean: function () {
@@ -255,8 +251,8 @@ export default {
       const groupTenants = JSON.parse(JSON.stringify(this.groupTenants))
       this.unassignedTenants = []
       this.tenants.forEach(tenant => {
-        var isAssigned = false
-        groupTenants.forEach(groupTenant => {
+        let isAssigned = false
+        groupTenants.forEach(groupTenant => {// TODO optimize with findIndex
           if (tenant.id === groupTenant.id) isAssigned = true
         })
         if (!isAssigned){

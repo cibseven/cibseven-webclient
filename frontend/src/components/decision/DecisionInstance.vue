@@ -38,9 +38,9 @@
       <div class="d-flex align-items-end">
         <ScrollableTabsContainer :tabs-area-height="tabsAreaHeight">
           <li class="nav-item m-0 flex-shrink-0 border-0" v-for="(tab, index) in tabs" :key="index">
-            <a role="button" @click="changeTab(tab)" class="nav-link py-2" 
-              :class="{ 
-                'active active-tab-border': tab.active, 
+            <a role="button" @click="changeTab(tab)" class="nav-link py-2"
+              :class="{
+                'active active-tab-border': tab.active,
                 'bg-light border border-bottom-0': !tab.active,
                 'border-start-0': index === 0
               }">
@@ -80,7 +80,7 @@ import { DecisionService } from '@/services.js'
 import DmnViewer from '@/components/decision/DmnViewer.vue'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
 import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
-import FlowTable from '@/components/common-components/FlowTable.vue'
+import { FlowTable } from '@cib/common-frontend'
 import { mapActions } from 'vuex'
 
 export default {
@@ -103,7 +103,7 @@ export default {
     }
   },
   mounted() {
-    let params = {
+    const params = {
       decisionInstanceId: this.instanceId,
       includeInputs: true,
       includeOutputs: true,

@@ -19,7 +19,7 @@
 <template>
   <b-modal ref="jobLogModal" :title="$t('batches.jobLog.modalTitle')" size="xl">
     <div>
-      <FlowTable v-if="jobLogs && !selectedJobLog && !loading" striped thead-class="sticky-header" :items="jobLogs" primary-key="id" prefix="batches.jobLog." 
+      <FlowTable v-if="jobLogs && !selectedJobLog && !loading" striped thead-class="sticky-header" :items="jobLogs" primary-key="id" prefix="batches.jobLog."
         :fields="jobLogFields" @click="showJobLogDetails($event)">
         <template v-slot:cell(state)="table">{{ state(table.item) }}</template>
         <template v-slot:cell(jobExceptionMessage)="table">
@@ -46,12 +46,12 @@
           <div v-for="field in filteredJobLogFields" :key="field.key" class="mb-2 col-4">
             <strong>{{ $t('batches.jobLog.' + field.label) }}:</strong>
             <div>
-              {{ 
+              {{
                 field.key === 'timestamp'
                 ? formatDate(selectedJobLog[field.key])
                 : field.key === 'state'
                   ? state(selectedJobLog)
-                  : selectedJobLog[field.key]  
+                  : selectedJobLog[field.key]
               }}
             </div>
           </div>
@@ -77,10 +77,8 @@
 
 <script>
   import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
-  import { BWaitingBox } from 'cib-common-components'
+  import { BWaitingBox, FlowTable, SuccessAlert } from '@cib/common-frontend'
   import { mapActions, mapGetters } from 'vuex'
-  import FlowTable from '@/components/common-components/FlowTable.vue'
-  import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 
   export default {
     name: 'JobLogModal',

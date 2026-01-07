@@ -69,9 +69,8 @@
 import AuthService from '@/components/login/authService.js'
 import OptDialog from '@/components/login/OtpDialog.vue'
 import ResetDialog from '@/components/login/ResetDialog.vue'
-import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
+import { SuccessAlert, CIBForm } from '@cib/common-frontend'
 import SecureInput from '@/components/login/SecureInput.vue'
-import CIBForm from '@/components/common-components/CIBForm.vue'
 
 export default {
   name: 'LoginForm',
@@ -93,11 +92,11 @@ export default {
   },
   methods: {
     onLogin: function() {
-      var self = this
+      const self = this
       this.credentials.username = this.$refs.username.value // https://helpdesk.cib.de/browse/DOXISAFES-456
       this.credentials.password = this.$refs.password.$refs.input.value
       AuthService.login(this.credentials, this.rememberMe).then(function(user) { self.$emit('success', user) }, function(error) {
-        var res = error.response.data
+        const res = error.response.data
         if (res && res.type === 'LoginException' && res.params && res.params.length >= 1 && res.params[0] === 'StandardLogin') {
           self.credentials2.username = self.credentials.username
           self.credentials2.password = self.credentials.password
@@ -118,7 +117,7 @@ export default {
       }.bind(this),
       function(error) {
         this.$refs.emailDialog.hide()
-        var res = error.response.data
+        const res = error.response.data
         if (res && res.type === 'LoginException' && res.params && res.params.length >= 1 && res.params[0] === 'StandardLogin')
           this.$refs.resetDialog.show(res.params[1])
         else this.$root.$refs.error.show(res)

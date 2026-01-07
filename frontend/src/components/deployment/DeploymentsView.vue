@@ -21,7 +21,7 @@
     <div style="background-color: rgba(98, 142, 199, 0.2);">
       <div class="d-flex align-items-center py-2 container-fluid">
         <div class="col-8 d-flex align-items-center gap-2">
-          <div class="border rounded d-flex flex-fill align-items-center bg-white me-3" style="max-width: 220px;">
+          <div class="border rounded d-flex flex-fill align-items-center bg-white" style="max-width: 220px;">
             <b-button
               size="sm" class="mdi mdi-magnify mdi-18px text-secondary py-0" variant="link"
               :title="$t('searches.search')"></b-button>
@@ -34,6 +34,11 @@
               />
             </div>
           </div>
+          <span 
+            ref="wildcardHelper"
+            class="mdi mdi-help-circle mdi-18px text-secondary me-3" 
+            style="cursor: pointer;">
+          </span>
           <b-form-group class="mb-0">
             <b-input-group size="sm" class="align-items-center">
               <b-input-group-prepend class="me-2 align-items-center">
@@ -79,7 +84,7 @@
         :rightSize="[12, 4, 3, 3, 3]">
         <template v-slot:right>
           <ResourcesNavBar v-if="!resourcesLoading" :resources="resources" :deploymentId="deploymentId"
-            @delete-deployment="$refs.deleteSelectedModal.show()" @show-deployment="loadToSelectedDeployment" 
+            @delete-deployment="$refs.deleteSelectedModal.show()" @show-deployment="loadToSelectedDeployment"
             @deployment-success="onDeploymentSuccess">
           </ResourcesNavBar>
           <b-waiting-box v-else styling="width: 35px" class="h-100 d-flex justify-content-center"></b-waiting-box>
@@ -143,6 +148,10 @@
         <b-button @click="deleteDeployment(); $refs.deleteSelectedModal.hide()" variant="primary">{{ $t('confirm.delete') }}</b-button>
       </template>
     </b-modal>
+    <b-popover :target="() => $refs.wildcardHelper" triggers="hover">
+      <div>{{ $t('searches.wildcardHelp') }}</div>
+      <div>{{ $t('searches.wildcardExample') }}</div>
+    </b-popover>
     <SuccessAlert top="0" style="z-index: 1031" ref="deploymentsDeleted"> {{ $t('deployment.deploymentsDeleted',
       [deploymentsDelData.deleted, deploymentsDelData.total]) }}</SuccessAlert>
     <SuccessAlert ref="success" top="0" style="z-index: 1031">{{ $t('alert.successOperation') }}</SuccessAlert>
@@ -155,10 +164,8 @@ import { ProcessService } from '@/services.js'
 import { moment } from '@/globals.js'
 import { debounce } from '@/utils/debounce.js'
 import DeploymentList from '@/components/deployment/DeploymentList.vue'
-import PagedScrollableContent from '@/components/common-components/PagedScrollableContent.vue'
 import ResourcesNavBar from '@/components/deployment/ResourcesNavBar.vue'
-import SidebarsFlow from '@/components/common-components/SidebarsFlow.vue'
-import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
+import { SidebarsFlow, SuccessAlert, PagedScrollableContent } from '@cib/common-frontend'
 
 export default {
   name: 'DeploymentsView',
@@ -201,7 +208,7 @@ export default {
       this.loadNextPage()
     },
     deploymentId: function () {
-      let found = this.deployments.some(d => {
+      const found = this.deployments.some(d => {
         return (d.id === this.deploymentId)
       })
       if (!found) {
@@ -326,7 +333,7 @@ export default {
     loadToSelectedDeployment: async function () {
       this.searchDeployment = true
       this.refreshTotalCount()
-      let found = this.deployments.some(dep => {
+      const found = this.deployments.some(dep => {
         return dep.id === this.deploymentId
       })
       if (found) {
@@ -335,13 +342,13 @@ export default {
       this.loadDeployments(this.deployments.length)
     },
     deleteDeployments: function () {
-      var vm = this
+      const vm = this
       this.deleteLoader = true
       this.deploymentsDelData.total = this.deploymentsSelected.length
       this.deploymentsDelData.deleted = 0
-      var pool = this.deploymentsSelected.slice(0, this.deploymentsSelected.length)
+      let pool = this.deploymentsSelected.slice(0, this.deploymentsSelected.length)
       pool.forEach(deployment => {
-        let found = this.groups.findIndex(group => {
+        const found = this.groups.findIndex(group => {
           const index = group.data.findIndex(d => {
             return deployment.id === d.id
           })
@@ -359,7 +366,7 @@ export default {
       pool = this.deploymentsSelected.slice(0, this.deploymentsSelected.length)
       startTask()
       function startTask() {
-        var deployment = pool.shift()
+        const deployment = pool.shift()
         if (deployment) {
           deleteDeployment(deployment)
         } else {
@@ -398,7 +405,7 @@ export default {
         this.deploymentsDelData.total = 1
         this.deploymentsDelData.deleted++
         this.$refs.deploymentsDeleted.show()
-        let found = this.groups.findIndex(group => {
+        const found = this.groups.findIndex(group => {
           const index = group.data.findIndex(d => {
             return this.deploymentId === d.id
           })

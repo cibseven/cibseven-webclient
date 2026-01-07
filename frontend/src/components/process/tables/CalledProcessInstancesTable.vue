@@ -30,7 +30,7 @@
      <template v-slot:cell(calledProcessInstance)="table">
        <CopyableActionButton
          :display-value="table.item.calledProcessInstance"
-         :title="table.item.name"
+         :title="$t('process-instance.calledProcesses.calledProcessInstance') + ':\n' + table.item.calledProcessInstance"
          :to="{
            name: 'process',
            params: {
@@ -38,7 +38,11 @@
              versionIndex: table.item.version,
              instanceId: table.item.calledProcessInstance
            },
-           query: { parentProcessDefinitionId: this.selectedInstance.processDefinitionId, tab: 'variables' }
+           query: {
+             parentProcessDefinitionId: this.selectedInstance.processDefinitionId,
+             ...(table.item.tenantId ? { tenantId: table.item.tenantId } : {} ),
+             tab: 'variables',
+           }
          }"
          @copy="copyValueToClipboard"
        />
@@ -46,14 +50,18 @@
      <template v-slot:cell(process)="table">
        <CopyableActionButton
          :display-value="table.item.name || table.item.key"
-         :title="table.item.name || table.item.key"
+         :title="$t('process-instance.calledProcesses.process') + ':\n' + (table.item.name || table.item.key)"
          :to="{
            name: 'process',
            params: {
              processKey: table.item.key,
              versionIndex: table.item.version
            },
-           query: { parentProcessDefinitionId: this.selectedInstance.processDefinitionId, tab: 'instances' }
+           query: {
+             parentProcessDefinitionId: this.selectedInstance.processDefinitionId,
+             ...(table.item.tenantId ? { tenantId: table.item.tenantId } : {} ),
+             tab: 'instances',
+          }
          }"
          @copy="copyValueToClipboard"
        />
@@ -62,7 +70,7 @@
         <CopyableActionButton
           :display-value="table.item.callingActivity.activityName || table.item.callingActivity.activityId"
           :copy-value="table.item.callingActivity.activityId"
-          :title="table.item.callingActivity.activityName || table.item.callingActivity.activityId"
+          :title="$t('process-instance.calledProcesses.callingActivity') + ':\n' + (table.item.callingActivity.activityName || table.item.callingActivity.activityId)"
           @click="setHighlightedElement(table.item.callingActivity.activityId)"
           @copy="copyValueToClipboard"
         />
@@ -81,11 +89,8 @@
 <script>
 import { formatDate } from '@/utils/dates.js'
 import { HistoryService, ProcessService } from '@/services.js'
-import FlowTable from '@/components/common-components/FlowTable.vue'
-import { BWaitingBox } from 'cib-common-components'
-import CopyableActionButton from '@/components/common-components/CopyableActionButton.vue'
+import { FlowTable, BWaitingBox, CopyableActionButton, SuccessAlert } from '@cib/common-frontend'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
-import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
 import { mapActions } from 'vuex'
 
 export default {
@@ -144,21 +149,22 @@ export default {
           this.calledInstanceList = response
         } else if (response.length > 0) {
           this.calledInstanceList = this.calledInstanceList.concat(response)
-        }    
-        
+        }
+
         this.matchedCalledList = this.calledInstanceList.map(processPL => {
           const key = processPL.processDefinitionKey
           const version = processPL.processDefinitionVersion
           const state = processPL.state
-          
-          let foundInst = this.activityInstanceHistory.find(processAIH => {
+          const tenantId = processPL.tenantId
+
+          const foundInst = this.activityInstanceHistory.find(processAIH => {
             if (processAIH.activityType === "callActivity"){
               if (processAIH.calledProcessInstanceId === processPL.id) {
                 return processAIH
               }
             }
           })
-          let foundProcess = this.$store.state.process.list.find(processSPL => {
+          const foundProcess = this.$store.state.process.list.find(processSPL => {
             if (key === processSPL.key) {
               return processSPL
             }
@@ -169,7 +175,8 @@ export default {
             key: key,
             version: version,
             name: foundProcess ? foundProcess.name : key,
-            state: state
+            state: state,
+            tenantId: tenantId
           })
         })
         this.loading = false

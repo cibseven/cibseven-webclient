@@ -71,31 +71,31 @@ export default {
         {
           title: 'admin.users.title',
           image: adminUsersImage,
-          link: '/seven/auth/admin/users',
+          link: { name: 'adminUsers' },
           hasAccess: this.adminManagementPermissions(this.$root.config.permissions.usersManagement, 'user')
         },
         {
           title: 'admin.groups.title',
           image: groupsAdminImage,
-          link: '/seven/auth/admin/groups',
+          link: { name: 'adminGroups' },
           hasAccess: this.adminManagementPermissions(this.$root.config.permissions.groupsManagement, 'group')
         },
         {
           title: 'admin.tenants.title',
           image: tenantsAdminImage,
-          link: '/seven/auth/admin/tenants',
+          link: { name: 'adminTenants' },
           hasAccess: this.adminManagementPermissions(this.$root.config.permissions.tenantsManagement, 'tenant')
         },
         {
           title: 'admin.authorizations.title',
           image: authorizationsAdminImage,
-          link: '/seven/auth/admin/authorizations',
+          link: { name: 'authorizations' },
           hasAccess: this.adminManagementPermissions(this.$root.config.permissions.authorizationsManagement, 'authorization')
         },
         {
           title: 'admin.system.title',
           image: systemAdminImage,
-          link: '/seven/auth/admin/system',
+          link: { name: 'adminSystem' },
           hasAccess: this.adminManagementPermissions(this.$root.config.permissions.systemManagement, 'system')
         },
       ]

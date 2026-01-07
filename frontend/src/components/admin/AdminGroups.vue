@@ -92,10 +92,7 @@ import { AdminService } from '@/services.js'
 import { moment } from '@/globals.js'
 import { debounce } from '@/utils/debounce.js'
 import { getStringObjByKeys } from '@/components/admin/utils.js'
-import FlowTable from '@/components/common-components/FlowTable.vue'
-import TaskPopper from '@/components/common-components/TaskPopper.vue'
-import { BWaitingBox } from 'cib-common-components'
-import ConfirmDialog from '@/components/common-components/ConfirmDialog.vue'
+import { FlowTable , TaskPopper, ConfirmDialog, BWaitingBox } from '@cib/common-frontend'
 
 export default {
   name: 'AdminGroups',
@@ -131,7 +128,7 @@ export default {
       })
     }),
     add: function() {
-      this.$router.push('/seven/auth/admin/create-group')
+      this.$router.push({ name: 'createGroup' })
     },
     prepareRemove: function(group) {
       this.groupSelected = group
@@ -145,7 +142,7 @@ export default {
       })
     },
     edit: function(group) {
-      this.$router.push('/seven/auth/admin/group/' + group.id + '?tab=information')
+      this.$router.push({ name: 'adminGroup', params: { groupId: group.id }, query: { tab: 'information' } })
     },
     showMore: function(el) {
       if (this.firstResult <= this.groups.length && !this.loading) {
@@ -170,8 +167,8 @@ export default {
       }
     },
     findGroups: debounce(800, function(filter) {
-      var nameLike = ({ nameLike: '*' + filter + '*' })
-      var id = ({ id: filter })
+      const nameLike = ({ nameLike: '*' + filter + '*' })
+      const id = ({ id: filter })
 
       Promise.all([AdminService.findGroups(nameLike), AdminService.findGroups(id)])
       .then(groups => {
@@ -188,15 +185,15 @@ export default {
     }),
     exportCSV: function() {
       this.exporting = true
-      var keys = ['id', 'name', 'type']
-      var csvContent = keys.map(k => this.$t('admin.groups.' + k)).join(';') + '\n'
+      const keys = ['id', 'name', 'type']
+      let csvContent = keys.map(k => this.$t('admin.groups.' + k)).join(';') + '\n'
       AdminService.findGroups().then(groups => {
         if (groups.length > 0) {
           groups.forEach(r => {
             csvContent += getStringObjByKeys(keys, r) + '\n'
           })
-          var csvBlob = new Blob([csvContent], { type: 'text/csv' })
-          var filename = 'groups_' + moment().format('YYYYMMDD_HHmm') + '.csv'
+          const csvBlob = new Blob([csvContent], { type: 'text/csv' })
+          const filename = 'groups_' + moment().format('YYYYMMDD_HHmm') + '.csv'
           this.$refs.importPopper.triggerDownload(csvBlob, filename)
         }
         this.exporting = false
