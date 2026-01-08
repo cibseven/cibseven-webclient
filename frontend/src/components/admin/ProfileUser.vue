@@ -81,13 +81,20 @@
               :title="$t('password.recover.changePassword')"
               class="col-lg-6 col-md-8 col-sm-12">
               <b-form-group labels-cols-lg="4" label-size="lg" label-class="fw-bold pt-0 pb-4" class="m-0">
-                <b-form-group :label="$t('password.recover.id') + '*'" label-cols-sm="4"
+                <b-form-group :label="$t('password.recover.currentUserPassword') + '*'" label-cols-sm="4"
                   label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
-                  <b-form-input v-model="user.id" :state="notEmpty(user.id)" required readonly></b-form-input>
+                  <b-form-input v-model="credentials.authenticatedUserPassword"></b-form-input>
+                </b-form-group>
+                <b-form-group :label="$t('password.recover.newPassword') + '*'" label-cols-sm="4"
+                  label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
+                  <b-form-input v-model="credentials.password"></b-form-input>
+                </b-form-group>
+                <b-form-group :label="$t('password.recover.newPasswordRepeat') + '*'" label-cols-sm="4"
+                  label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
+                  <b-form-input v-model="passwordRepeat"></b-form-input>
                 </b-form-group>
                 <div class="float-end d-flex align-items-center">
-                  <b-spinner variant="primary" class="mx-2" v-if="sendingEmail"></b-spinner>
-                  <b-button type="submit" variant="secondary" :disabled="sendingEmail" @click="onSendEmail()">{{ $t('password.recover.sendEmail') }}</b-button>
+                  <b-button type="submit" variant="secondary" @click="changePassword($event)">{{$t('password.recover.changePassword')}}</b-button>
                 </div>
               </b-form-group>
             </ContentBlock>
@@ -275,7 +282,6 @@ export default {
       focusedTenant: null,
       passwordPolicyError: false,
       passwordVisibility: { current: false, new: false, repeat: false },
-      sendingEmail: false,
       userTenants: []
     }
   },
@@ -452,15 +458,6 @@ export default {
       this.credentials = { authenticatedUserPassword: null, password: null }
       this.passwordRepeat = null
       this.groups = null
-    },
-    onSendEmail: function() {
-      this.sendingEmail = true
-      this.AuthService.passwordRecover({ id: this.user.id }).then(() => {
-        this.sendingEmail = false
-        this.$refs.emailSent.show()
-      }, () => {
-        this.sendingEmail = false
-      })
     },
     openAssignTenantModal: function() {
       this.loadUnassignedTenants()

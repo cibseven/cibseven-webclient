@@ -1267,7 +1267,10 @@
 			"sendEmail": "Send recovery email",
 			"id": "@:admin.users.id",
 			"changePassword": "Change password",
-			"emailSent": "The e-mail with the link to recover your password has been sent."
+			"emailSent": "The e-mail with the link to recover your password has been sent.",
+			"currentUserPassword": "Current Password",
+			"newPassword": "New Password",
+			"newPasswordRepeat": "New Password (repeat)"
 		},
 		"policy": {
 			"title": "Password Policy",
