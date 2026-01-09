@@ -16,9 +16,40 @@
  */
 // https://on.cypress.io/api
 
-describe('My First Test', () => {
+Cypress.Commands.add('loginFail', (email, password) => {
+  cy.visit('#/seven/login')
+  cy.get(':nth-child(3) > form > :nth-child(1) > .row > .col > .form-control').type(email)
+  cy.get('.input-group > .form-control').type(password)
+  cy.get('button[type=submit]').click()
+
+  cy.contains('Authentication data is wrong').should('be.visible')
+  //cy.get('.modal.show .modal-dialog .modal-content .modal-footer .btn').click()
+  //cy.contains('Authentication data is wrong').should('not.be.visible')
+})
+
+
+describe('Simple tests', () => {
   it('visits the app root url', () => {
     cy.visit('/')
-    cy.contains('h1', 'You did it!')
+    cy.contains('h1', 'CIB seven')
+  })
+
+  it('login', () => {
+    cy.login('demo', 'demo')
+    cy.logout()
+
+    cy.login('mary', 'mary', 'Mary Anne')
+    cy.logout()
+
+    cy.login('john', 'john', "John Doe")
+    cy.logout()
+  })
+
+  it('failed login 1', () => {
+    cy.loginFail('demo', 'wrong password')
+  })
+
+  it('failed login 2', () => {
+    cy.loginFail('demo-non-existing', 'demo')
   })
 })
