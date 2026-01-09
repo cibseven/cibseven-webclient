@@ -227,7 +227,7 @@ public class TaskService extends BaseService implements InitializingBean {
 			@RequestParam Map<String, Object> params,
 			Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
-		return sevenProvider.getRenderedForm(taskId, params, user);
+		return bpmProvider.getRenderedForm(taskId, params, user);
 	}
 
 	@Operation(

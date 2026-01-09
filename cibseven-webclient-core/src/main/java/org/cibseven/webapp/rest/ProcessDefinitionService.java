@@ -80,7 +80,7 @@ public class ProcessDefinitionService extends BaseService implements Initializin
 			@RequestParam Map<String, Object> params,
 			Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_ALL);
-		return sevenProvider.getRenderedStartForm(processDefinitionId, params, user);
+		return bpmProvider.getRenderedStartForm(processDefinitionId, params, user);
 	}
 
 	@Operation(

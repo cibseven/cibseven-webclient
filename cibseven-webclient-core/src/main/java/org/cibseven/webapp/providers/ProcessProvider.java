@@ -503,27 +503,8 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 
 	@Override
 	public ResponseEntity<String> getRenderedForm(String processDefinitionId, Map<String, Object> params, CIBUser user) {
-		String url = getEngineRestUrl(user) + "/process-definition/" + processDefinitionId + "/rendered-form";
-		try {
-			// Build query parameters from the params map
-			StringBuilder queryParams = new StringBuilder();
-			for (Map.Entry<String, Object> entry : params.entrySet()) {
-				if (queryParams.length() > 0) {
-					queryParams.append("&");
-				}
-				queryParams.append(URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8.toString()))
-					.append("=")
-					.append(URLEncoder.encode(String.valueOf(entry.getValue()), StandardCharsets.UTF_8.toString()));
-			}
-			
-			if (queryParams.length() > 0) {
-				url += "?" + queryParams.toString();
-			}
-			
-			return doGetWithHeader(url, String.class, user, true, MediaType.ALL);
-		} catch (UnsupportedEncodingException e) {
-			throw new SystemException("Error encoding URL parameters for rendered form request", e);
-		}
+		String url = URLUtils.buildUrlWithParams(getEngineRestUrl(user) + "/process-definition/" + processDefinitionId + "/rendered-form", params);
+		return doGetWithHeader(url, String.class, user, true, MediaType.ALL);
 	}
 
 	@Override
