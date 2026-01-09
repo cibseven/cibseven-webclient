@@ -523,8 +523,11 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	 * @param processStatistics Collection of ProcessStatistics to group
 	 * @return List of grouped ProcessStatistics with aggregated values
 	 */
-	@Override
 	public List<ProcessStatistics> groupProcessStatisticsByKeyAndTenant(Collection<ProcessStatistics> processStatistics) {
+		return groupProcessStatisticsByKeyAndTenantImpl(processStatistics);
+	}
+	
+	public static List<ProcessStatistics> groupProcessStatisticsByKeyAndTenantImpl(Collection<ProcessStatistics> processStatistics) {
 		return processStatistics.stream()
 			.collect(Collectors.groupingBy(
 				stat -> new KeyTenant(stat.getDefinition().getKey(), stat.getDefinition().getTenantId())
@@ -562,6 +565,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 			})
 			.collect(Collectors.toList());
 	}
+
 	@Override
 	public Object fetchHistoricActivityStatistics(String id, Map<String, Object> params, CIBUser user) {
 	    String url = URLUtils.buildUrlWithParams(getEngineRestUrl(user) + "/history/process-definition/" + id + "/statistics", params);
