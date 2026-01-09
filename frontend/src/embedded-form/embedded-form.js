@@ -308,13 +308,17 @@ function loadEmbeddedForm(
     parentConfig,
     config
 ) {
+    // Build headers with authorization and optional engine name
     const headers = {
         authorization: parentConfig.authToken
     };
+    if (parentConfig.engineName) {
+        headers['X-Process-Engine'] = parentConfig.engineName;
+    }
     
     // Determine the correct API URI based on engine mappings (if configured)
     const engineName = parentConfig.engineName || 'default';
-    let apiUri = parentConfig.engineRestPath;
+    let apiUri = parentConfig.engineRestPath || config.servicesBasePath;
     
     // Check if we have a mapping for this specific engine
     if (parentConfig.engineRestMappings && Array.isArray(parentConfig.engineRestMappings)) {
@@ -337,7 +341,7 @@ function loadEmbeddedForm(
         mock: false,
         apiUri: apiUri,
         headers: headers,
-        engine: engineName || 'default'
+        engine: false
     });
     return new Promise((resolve, reject) => {
         if (isStartForm) {
