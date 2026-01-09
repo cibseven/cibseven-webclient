@@ -316,26 +316,8 @@ function loadEmbeddedForm(
         headers['X-Process-Engine'] = parentConfig.engineName;
     }
     
-    // Determine the correct API URI based on engine mappings (if configured)
-    const engineName = parentConfig.engineName || 'default';
-    let apiUri = parentConfig.engineRestPath || config.servicesBasePath;
-    
-    // Check if we have a mapping for this specific engine
-    if (parentConfig.engineRestMappings && Array.isArray(parentConfig.engineRestMappings)) {
-        const mapping = parentConfig.engineRestMappings.find(m => m.engineName === engineName);
-        if (mapping) {
-            // Use the mapped URL and path
-            let baseUrl = mapping.url;
-            if (baseUrl.endsWith('/')) {
-                baseUrl = baseUrl.substring(0, baseUrl.length - 1);
-            }
-            let restPath = mapping.path;
-            if (!restPath.startsWith('/')) {
-                restPath = '/' + restPath;
-            }
-            apiUri = baseUrl + restPath;
-        }
-    }
+    // Use middleware services path instead of direct engine-rest access
+    const apiUri = config.servicesBasePath;
     
     const client = new CamSDK.Client({
         mock: false,
