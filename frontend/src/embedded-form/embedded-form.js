@@ -308,9 +308,13 @@ function loadEmbeddedForm(
     parentConfig,
     config
 ) {
-    const headers = parentConfig.engineName
-        ? { authorization: parentConfig.authToken, 'X-Process-Engine': parentConfig.engineName }
-        : { authorization: parentConfig.authToken };
+    // Build headers with authorization and optional engine name
+    const headers = {
+        authorization: parentConfig.authToken
+    };
+    if (parentConfig.engineName) {
+        headers['X-Process-Engine'] = parentConfig.engineName;
+    }
     
     const client = new CamSDK.Client({
         mock: false,
