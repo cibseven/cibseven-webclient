@@ -316,14 +316,11 @@ function loadEmbeddedForm(
         headers['X-Process-Engine'] = parentConfig.engineName;
     }
     
-    // Use middleware services path instead of direct engine-rest access
-    const apiUri = config.servicesBasePath;
-    
     const client = new CamSDK.Client({
         mock: false,
-        apiUri: apiUri,
+        apiUri: config.servicesBasePath,
         headers: headers,
-        engine: false
+        engine: false // false to define absolute apiUri
     });
     return new Promise((resolve, reject) => {
         if (isStartForm) {
