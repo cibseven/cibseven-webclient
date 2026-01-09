@@ -20,7 +20,7 @@
   <div>
     <BWaitingBox v-if="loader" class="h-100 d-flex justify-content-center" ref="loader" styling="width:20%"></BWaitingBox>
     <div v-show="!loader" class="h-100">
-      <iframe v-show="!submitForm && formFrame" class="h-100" ref="template-frame" frameBorder="0"
+      <iframe v-show="!submitForm && formFrame" tabindex="-1" class="h-100" ref="template-frame" frameBorder="0"
         src="" width="100%" height="100%" :style="fullModeStyles"></iframe>
       <div class="pt-2" v-if="!formFrame">
         <span class="small-text d-none d-sm-inline" style="vertical-align: middle">
@@ -58,6 +58,7 @@ import { TaskService } from '@/services.js'
 import IconButton from '@/components/render-template/IconButton.vue'
 import { SuccessAlert, BWaitingBox } from '@cib/common-frontend'
 import { ENGINE_STORAGE_KEY } from '@/constants.js'
+import { getIframeContext, findAndScroll } from '@/utils/iframe.js'
 
 export default {
   name: 'RenderTemplate',
@@ -358,9 +359,16 @@ export default {
     onBeforeUnload: function() {
       const formFrame = this.$refs['template-frame']
       if (formFrame) {
-        formFrame.contentWindow.postMessage({ type: 'contextChanged' }, '*');
+        formFrame.contentWindow.postMessage({ type: 'contextChanged' }, '*')
         this.loadIframe()
       }
+    },
+    handleScrollIframe(deltaY, x, y) {
+      const frame = this.$refs['template-frame']
+      const ctx = getIframeContext(frame, x, y)
+      if (!ctx) return
+      const el = ctx.doc.elementFromPoint(ctx.x, ctx.y)
+      findAndScroll(el, deltaY, ctx.x, ctx.y, ctx.doc)
     }
   },
   beforeUnmount: function() {
