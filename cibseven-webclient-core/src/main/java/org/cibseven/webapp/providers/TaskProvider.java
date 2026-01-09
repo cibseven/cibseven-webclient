@@ -35,6 +35,7 @@ import org.cibseven.webapp.rest.model.TaskFiltering;
 import org.cibseven.webapp.rest.model.TaskForm;
 import org.cibseven.webapp.rest.model.TaskHistory;
 import org.cibseven.webapp.rest.model.Variable;
+import org.cibseven.webapp.providers.utils.URLUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -152,6 +153,12 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 	}
 
 	@Override
+	public void submit(String taskId, String formResult, CIBUser user) {
+		String url = getEngineRestUrl(user) + "/task/" + taskId + "/submit-form";	
+		doPost(url, formResult, String.class, user);
+	}
+
+	@Override
 	public Object formReference(String taskId, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/task/" + taskId + "/form-variables?variableNames=formReference";
 		ProcessVariables body =  ((ResponseEntity<ProcessVariables>) doGet(url, ProcessVariables.class, user, false)).getBody();
@@ -260,6 +267,12 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 	public ResponseEntity<byte[]> getDeployedForm(String taskId, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/task/" + taskId + "/deployed-form";
 		return doGetWithHeader(url, byte[].class, user, true, MediaType.APPLICATION_OCTET_STREAM);
+	}
+
+	@Override
+	public ResponseEntity<String> getRenderedForm(String taskId, Map<String, Object> params, CIBUser user) {
+		String url = URLUtils.buildUrlWithParams(getEngineRestUrl() + "/task/" + taskId + "/rendered-form", params);
+		return doGetWithHeader(url, String.class, user, true, MediaType.ALL);
 	}
 
 	@Override

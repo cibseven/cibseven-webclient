@@ -16,7 +16,9 @@
  */
 package org.cibseven.webapp.providers;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
@@ -294,6 +296,12 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	}
 
 	@Override
+	public ProcessStart submitForm(String processDefinitionKey, String formResult, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
+		String url = getEngineRestUrl(user) + "/process-definition/" + processDefinitionKey + "/submit-form";	
+		return doPost(url, formResult, ProcessStart.class, user).getBody();
+	}
+
+	@Override
 	public Collection<ProcessStatistics> findProcessStatistics(String processId, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
 		String url = getEngineRestUrl(user) + "/process-definition/" + processId + "/statistics?failedJobs=true&incidents=true";
 		return Arrays.asList(((ResponseEntity<ProcessStatistics[]>) doGet(url, ProcessStatistics[].class, user, false)).getBody());
@@ -491,6 +499,12 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	public ResponseEntity<byte[]> getDeployedStartForm(String processDefinitionId, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/process-definition/" + processDefinitionId + "/deployed-start-form";
 		return doGetWithHeader(url, byte[].class, user, true, MediaType.APPLICATION_OCTET_STREAM);
+	}
+
+	@Override
+	public ResponseEntity<String> getRenderedForm(String processDefinitionId, Map<String, Object> params, CIBUser user) {
+		String url = URLUtils.buildUrlWithParams(getEngineRestUrl(user) + "/process-definition/" + processDefinitionId + "/rendered-form", params);
+		return doGetWithHeader(url, String.class, user, true, MediaType.ALL);
 	}
 
 	@Override
