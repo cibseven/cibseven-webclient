@@ -56,8 +56,8 @@ describe('Process instance variables tests', () => {
 
     cy.get(formModal).find('button.btn-primary').click()
 
+    // TODO dialog is still shown so, let's reffresh the page
     // refresh the page
-    cy.wait(1000) // TODO replace with better wait
     cy.reload()
 
     // verify table first column has no `variableName` variable
