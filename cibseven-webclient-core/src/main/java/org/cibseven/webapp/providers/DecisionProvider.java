@@ -79,7 +79,7 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 	@Override
 	public Object getDiagramByKeyAndTenant(String key, String tenant, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/decision-definition/key/" + key + "/tenant-id/" + tenant + "/diagram";
-		return ((ResponseEntity<Decision>) doGet(url, Decision.class, user, false)).getBody();
+		return ((ResponseEntity<Object>) doGet(url, Object.class, user, false)).getBody();
 	}
 
 	@Override
@@ -123,7 +123,7 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 	@Override
 	public Object getDiagramById(String id, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/decision-definition/" + id + "/diagram";
-		return ((ResponseEntity<Decision>) doGet(url, Decision.class, user, false)).getBody();
+		return ((ResponseEntity<Object>) doGet(url, Object.class, user, false)).getBody();
 	}
 
 	@Override
