@@ -30,7 +30,7 @@ export default {
       this.setupEventListeners()
     })
   },
-  beforeDestroy() {
+  beforeUnmount() {
     this.cleanupEventListeners()
   },
   methods: {
