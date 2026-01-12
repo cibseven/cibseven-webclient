@@ -68,6 +68,7 @@
     "eslint": "9.39.1",
     "eslint-plugin-cypress": "5.2.1",
     "eslint-plugin-vue": "9.32.0",
+    "eslint-plugin-vuejs-accessibility": "2.4.1",
     "jsdom": "26.1.0",
     "prettier": "3.5.3",
     "sass": "1.89.0",

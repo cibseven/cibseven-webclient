@@ -1185,7 +1185,7 @@
 		"deleteRunningInstances": "Detener instancias de proceso activas",
 		"goToManagement": "Ir al area de administración de procesos",
 		"loadingProcesses": "Cargando...",
-		"noModelSelected": "Seleccione un modelo para verlo",
+		"noDeploymentSelected": "Seleccione un despliegue para verlo",
 		"selectAll": "Seleccionar todo",
 		"deleteDeployments": "Eliminar despliegues",
 		"showModel": "Mostrar modelo",

@@ -30,7 +30,7 @@
     </div>
 
     <img :src="img || screenshotImageSrc" style="display: block; margin-left: auto; margin-right: auto"
-      :style="{ visibility: imgSrc && 'hidden', height: (height || 43) + 'px' }">
+      :style="{ visibility: imgSrc && 'hidden', height: (height || 43) + 'px' }" alt="">
 
     <div style="text-align: center"
       :style="{ 'text-decoration': focused && !disabled ? 'underline' : null, visibility: imgSrc && 'hidden', 'margin-bottom': (height || 43)/4 + 'px' }">
