@@ -103,8 +103,7 @@
                 <b-waiting-box class="d-inline me-2" styling="width: 35px"></b-waiting-box> {{ $t('admin.loading') }}
               </div>
               <div v-else>
-                <img src="@/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mt-5 mb-3"
-                  style="width: 200px">
+                <img src="@/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mt-5 mb-3" style="width: 200px" alt="">
                 <div class="h5">{{ $t('deployment.noDeployments') }}</div>
               </div>
             </div>

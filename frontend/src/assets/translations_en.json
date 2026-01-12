@@ -1186,7 +1186,7 @@
 		"deleteRunningInstances": "Stop running process instances",
 		"goToManagement": "Go to process management area",
 		"loadingProcesses": "Loading...",
-		"noModelSelected": "Select a model to view it",
+		"noDeploymentSelected": "Select a deployment to view it",
 		"selectAll": "Select all",
 		"deleteDeployments": "Delete deployments",
 		"showModel": "Show model",

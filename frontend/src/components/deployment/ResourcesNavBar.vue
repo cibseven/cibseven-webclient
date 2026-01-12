@@ -69,7 +69,8 @@
           </div>
         </div> 
         <div v-else>
-          <img src="@/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mt-5 mb-3" style="width: 200px">
+          <img src="@/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mt-5 mb-3" style="width: 200px" alt="">
+          <div class="h5 text-secondary text-center">{{ $t('deployment.noDeploymentSelected') }}</div>
         </div>
       </div>
     </div>

@@ -1185,7 +1185,7 @@
 		"deleteRunningInstances": "Остановить текущие экземпляры процесса",
 		"goToManagement": "Перейти в область управления процессами",
 		"loadingProcesses": "Загрузка...",
-		"noModelSelected": "Выберите модель для просмотра",
+		"noDeploymentSelected": "Выберите развертывание для просмотра",
 		"selectAll": "Выбрать все",
 		"deleteDeployments": "Удалить развертывания",
 		"showModel": "Показать модель",

@@ -85,7 +85,7 @@
       </div>
       <BWaitingBox ref="filterLoader" class="d-flex flex-fill justify-content-center pt-4" styling="width:30%">
         <div v-if="filtersFiltered.length < 1">
-          <img src="@/assets/images/task/no_tasks.svg" class="d-block mx-auto mt-3 mb-2" style="width: 200px">
+          <img src="@/assets/images/task/no_tasks.svg" class="d-block mx-auto mt-3 mb-2" style="width: 200px" alt="">
           <div class="h5 text-secondary text-center">{{ $t('nav-bar.filters.no-filters') }}</div>
         </div>
       </BWaitingBox>

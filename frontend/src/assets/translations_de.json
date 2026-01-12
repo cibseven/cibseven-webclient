@@ -1185,7 +1185,7 @@
 		"deleteRunningInstances": "Laufende Prozessinstanzen stoppen",
 		"goToManagement": "Zum Prozessmanagement wechseln ",
 		"loadingProcesses": "Wird geladen...",
-		"noModelSelected": "Ein Modell zum Ansehen auswählen",
+		"noDeploymentSelected": "Ein Deployment zum Ansehen auswählen",
 		"selectAll": "Alle auswählen",
 		"deleteDeployments": "Deployments löschen",
 		"showModel": "Modell anzeigen",

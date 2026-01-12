@@ -21,7 +21,7 @@
     <BWaitingBox v-if="loader" class="h-100 d-flex justify-content-center" ref="loader" styling="width:20%"></BWaitingBox>
     <div v-show="!loader" class="h-100">
       <iframe v-show="!submitForm && formFrame" class="h-100" ref="template-frame" frameBorder="0"
-        src="" width="100%" height="100%" :style="fullModeStyles"></iframe>
+        src="" width="100%" height="100%" :style="fullModeStyles" :title="task?.name"></iframe>
       <div class="pt-2" v-if="!formFrame">
         <span class="small-text d-none d-sm-inline" style="vertical-align: middle">
           <strong>{{ $t('task.emptyTask') }}</strong> |
