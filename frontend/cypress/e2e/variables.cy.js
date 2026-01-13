@@ -18,9 +18,22 @@
 
 describe('Process instance variables tests', () => {
   it('add/remove variable', () => {
-    cy.login('demo', 'demo')
+    cy.loginDefault()
+
+    //cy.get('.d-md-flex > :nth-child(1) > .nav-item > .nav-link').click()
+    //cy.wait(5000)
 
     cy.visit('#/seven/auth/processes/list')
+
+    if (Cypress.env('ENV') === 'stage') {
+      // filter test process definition on stage
+      cy.get('.form-control-plaintext').type('test')
+
+      // sort ASCENDING by number of instances
+      cy.get(':nth-child(2) > .d-flex > .sort-icon > .mdi').click()
+      // sort DESCENDING by number of instances
+      cy.get('span > .mdi').click()
+    }
 
     // click any first process definition to see its instances
     cy.get(':nth-child(1) > :nth-child(3) > .text-truncate').click()
