@@ -69,6 +69,8 @@ import org.springframework.util.MultiValueMap;
 import com.fasterxml.jackson.core.StreamReadConstraints;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cibseven.webapp.rest.CustomRestTemplate;
+import org.cibseven.webapp.config.EngineRestMapping;
+import org.cibseven.webapp.config.EngineRestMappingProperties;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -88,18 +90,46 @@ public abstract class SevenProviderBase {
 	@Lazy
 	protected BaseUserProvider<? extends StandardLogin> baseUserProvider;
 
+	@Autowired(required = false)
+	protected EngineRestMappingProperties engineRestMappingProperties;
+
 	/**
 	 * Constructs the full engine REST base URL using the engine from the user object.
+	 * If engine-specific mappings are configured, uses the mapped URL and path for that engine.
+	 * Otherwise, falls back to the default URL and path configuration.
 	 * @param user the user object containing the engine name
 	 * @return the complete engine REST URL
 	 */
 	protected String getEngineRestUrl(CIBUser user) {
+		String engineName = user != null ? user.getEngine() : null;
+		
+		// Check if we have a specific mapping for this engine
+		if (engineName != null && !engineName.isEmpty() && engineRestMappingProperties != null) {
+			EngineRestMapping mapping = engineRestMappingProperties.getMappings().stream()
+				.filter(m -> engineName.equals(m.getEngineName()))
+				.findFirst()
+				.orElse(null);
+			
+			if (mapping != null) {
+				// Use the mapped URL and path
+				String baseUrl = mapping.getUrl();
+				if (baseUrl.endsWith("/")) {
+					baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
+				}
+				String restPath = mapping.getPath();
+				if (!restPath.startsWith("/")) {
+					restPath = "/" + restPath;
+				}
+				return baseUrl + restPath + "/engine/" + engineName;
+			}
+		}
+		
+		// Fall back to default configuration
 		String baseUrl = cibsevenUrl.endsWith("/") ? cibsevenUrl.substring(0, cibsevenUrl.length() - 1) : cibsevenUrl;
 		String restPath = engineRestPath.startsWith("/") ? engineRestPath : "/" + engineRestPath;
 		
-		String engineName = user != null ? user.getEngine() : null;
-		// If engine name is provided and not "default", add it to the path
-		if (engineName != null && !engineName.isEmpty() && !"default".equals(engineName)) {
+		// If engine name is provided add it to the path
+		if (engineName != null && !engineName.isEmpty()) {
 			return baseUrl + restPath + "/engine/" + engineName;
 		}
 		
