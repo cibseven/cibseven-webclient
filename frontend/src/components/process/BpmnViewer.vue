@@ -145,9 +145,14 @@ export default {
       this.loader = true
       this.viewer.importXML(xml).then(() => {
         setTimeout(() => {
-          this.viewer.get('canvas').zoom('fit-viewport')
-          this.loader = false
-          this.highlightElement(selectedActivityId)
+          if (!this.viewer || !this.$refs.diagram) return
+          try {
+            this.viewer.get('canvas').zoom('fit-viewport')
+            this.loader = false
+            this.highlightElement(selectedActivityId)
+          } catch {
+            console.warn('BpmnViewer: Unable to zoom diagram, component may have been unmounted')
+          }
         }, 500)
       })
     },
