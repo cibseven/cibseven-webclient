@@ -20,9 +20,6 @@ describe('Process instance variables tests', () => {
   it('add/remove variable', () => {
     cy.loginDefault()
 
-    //cy.get('.d-md-flex > :nth-child(1) > .nav-item > .nav-link').click()
-    //cy.wait(5000)
-
     cy.visit('#/seven/auth/processes/list')
 
     if (Cypress.env('ENV') === 'stage') {
