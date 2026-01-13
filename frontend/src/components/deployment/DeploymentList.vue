@@ -31,9 +31,9 @@
                 <b-card style="min-height: 120px;">
                   <b-card-body :class="d === deployment ? 'border-start border-primary border-4' : ''" class="text-start">
                     <b-card-text>
-                      <label @click.stop class="d-flex justify-content-between m-0 hover-highlight">
+                      <label @click.stop class="d-flex justify-content-between m-0 hover-highlight" :for="'checkbox-' + d.id + '-' + d.name">
                         <span class="fw-bold text-break">{{ d.name || d.id }}</span>
-                        <b-form-checkbox size="sm" v-model="d.isSelected" @click.stop></b-form-checkbox>
+                        <input type="checkbox" class="form-check-input" size="sm" v-model="d.isSelected" @click.stop :id="'checkbox-' + d.id + '-' + d.name">
                       </label>
                       <div class="d-flex align-items-center pt-2">
                         <span :title="formatDateForTooltips(d.deploymentTime)">{{ formatDate(d.deploymentTime) }}</span>

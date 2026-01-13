@@ -30,11 +30,10 @@
       <div v-else-if="!hideProcessSelection">
         <div class="form-group mt-3">
           <div class="input-group">
-            <div class="input-group-append">
-              <label class="btn border-end-0 border-light" style="cursor: default"><span class="mdi mdi-magnify"
-                style="line-height: initial"></span></label>
-            </div>
-            <input class="form-control border-start-0 border-light" type="text" :placeholder="$t('searches.search')" v-model.trim="processesFilter" :disabled="isStartingProcess">
+            <label for="processesFilter" class="btn border-end-0 border-light" style="cursor: default">
+              <span class="mdi mdi-magnify" style="line-height: initial"></span>
+            </label>
+            <input id="processesFilter" class="form-control border-start-0 border-light" type="text" :placeholder="$t('searches.search')" v-model.trim="processesFilter" :disabled="isStartingProcess">
           </div>
         </div>
         <b-list-group v-if="startableProcesses.length > 0" >
