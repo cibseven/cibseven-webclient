@@ -74,9 +74,7 @@ import { TaskService } from '@/services.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
 import TaskAssignationModal from '@/components/process/modals/TaskAssignationModal.vue'
-import { FlowTable } from '@cib/common-frontend'
-import { SuccessAlert, CopyableActionButton } from '@cib/common-frontend'
-import { BWaitingBox } from '@cib/common-frontend'
+import { FlowTable, SuccessAlert, CopyableActionButton, BWaitingBox } from '@cib/common-frontend'
 
 export default {
   name: 'UserTasksTable',
@@ -105,7 +103,7 @@ export default {
     formatDate,
     formatDateForTooltips,
     changeAssignee: function(event) {
-      var userTask = this.userTasks.find(task => task.id === event.taskId)
+      const userTask = this.userTasks.find(task => task.id === event.taskId)
       userTask.assignee = event.assignee
     }
   }

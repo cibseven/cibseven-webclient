@@ -308,27 +308,25 @@ function loadEmbeddedForm(
     parentConfig,
     config
 ) {
-    const headers = {
-        authorization: parentConfig.authToken
-    };
+    const headers = parentConfig.engineName
+        ? { authorization: parentConfig.authToken, 'X-Process-Engine': parentConfig.engineName }
+        : { authorization: parentConfig.authToken };
     
-    // CamSDK.Client handles the engine path internally based on the engine parameter
-    
-    var client = new CamSDK.Client({
+    const client = new CamSDK.Client({
         mock: false,
-        apiUri: config.engineRestPath || '/engine-rest',
+        apiUri: config.servicesBasePath,
         headers: headers,
-        engine: parentConfig.engineName || 'default'
+        engine: false // false to define absolute apiUri
     });
     return new Promise((resolve, reject) => {
         if (isStartForm) {
-            let processService = client.resource('process-definition');
+            const processService = client.resource('process-definition');
             processService.startForm({ id: referenceId }, (err, taskFormInfo) => {
                 if (err) reject(err);
                 else loadForm(taskFormInfo);
             });
         } else {
-            let taskService = client.resource('task');
+            const taskService = client.resource('task');
             // loads the task form using the task ID provided
             taskService.form(referenceId, (err, taskFormInfo) => {
                 if (err) reject(err);
@@ -336,7 +334,7 @@ function loadEmbeddedForm(
             });
         }
         async function loadForm(formInfo) {
-            let formConfig = {
+            const formConfig = {
                 client: client,
                 done: function(err, form) {
                   if (err) {
@@ -347,19 +345,19 @@ function loadEmbeddedForm(
                 }
             };
             if (formInfo.key.includes('deployment:')) {
-                let resource = await loadDeployedForm(client, isStartForm, referenceId);
+                const resource = await loadDeployedForm(client, isStartForm, referenceId);
                 formContainer.innerHTML = resource;
                 formConfig.formElement = $(formContainer);
                 if (embeddedContainer) embeddedContainer.style.display = 'none';
             } else if (formInfo.key.includes('/rendered-form')) {
                 // Load Camunda generated form HTML and normalize it for Vue integration
-                let resource = await loadGeneratedForm(isStartForm, referenceId, formContainer, client, config);
+                const resource = await loadGeneratedForm(isStartForm, referenceId, formContainer, client, config);
                 formContainer.innerHTML = resource;
                 formConfig.formElement = $(formContainer);
                 if (embeddedContainer) embeddedContainer.style.display = 'none';
             } else {
                 // Start with a relative url and replace doubled slashes if necessary
-                var url = formInfo.key
+                const url = formInfo.key
                     .replace('embedded:', '')
                     .replace('app:', (formInfo.contextPath || '') + '/')
                     .replace(/^(\/+|([^/]))/, '/$2')
@@ -421,7 +419,7 @@ function loadGeneratedForm(isStartForm, referenceId, formContainer, client, conf
                     console.error('Error getting rendered form:', err);
                     reject(err);
                 } else {
-                    var updatedHtml = normalizeGeneratedFormHtml(renderedFormHtml);
+                    const updatedHtml = normalizeGeneratedFormHtml(renderedFormHtml);
                     resolve(updatedHtml);
                 }
             }
@@ -445,7 +443,7 @@ function loadGeneratedForm(isStartForm, referenceId, formContainer, client, conf
                         console.error('Error getting rendered form:', err);
                         reject(err);
                     } else {
-                        var updatedHtml = normalizeGeneratedFormHtml(renderedFormHtml);
+                        const updatedHtml = normalizeGeneratedFormHtml(renderedFormHtml);
                         resolve(updatedHtml);
                     }
                 }

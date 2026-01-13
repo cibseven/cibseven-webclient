@@ -45,7 +45,6 @@ import org.cibseven.webapp.rest.model.ProcessDiagram;
 import org.cibseven.webapp.rest.model.ProcessInstance;
 import org.cibseven.webapp.rest.model.ProcessStart;
 import org.cibseven.webapp.rest.model.ProcessStatistics;
-import org.cibseven.webapp.rest.model.StartForm;
 import org.cibseven.webapp.rest.model.Variable;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.InputStreamSource;
@@ -248,19 +247,6 @@ public class ProcessService extends BaseService implements InitializingBean {
 		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.CREATE_ALL);
 		return bpmProvider.startProcess(key, tenantId, data, user);
-	}
-	
-	@Operation(
-			summary = "Get start-form to start a process",
-			description = "<strong>Return: Startform variables and formReference")
-	@ApiResponse(responseCode = "404", description = "Process not found")
-	@RequestMapping(value = "/{processDefinitionId}/start-form", method = RequestMethod.GET)
-	public StartForm fetchStartForm(
-			@Parameter(description = "Process to be started") @PathVariable String processDefinitionId,
-			Locale loc, HttpServletRequest request) {
-		CIBUser user = checkAuthorization(request, false);
-		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_ALL);
-		return bpmProvider.fetchStartForm(processDefinitionId, user);
 	}
 	
 	@Operation(
@@ -532,6 +518,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			@Parameter(description = "Tenant id") @RequestParam(required = false) String tenantId,
 			@RequestBody Map<String, Object> data,
 			Locale loc, HttpServletRequest rq) {
+		// Used by Webdesk
 		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.CREATE_ALL);
 		return bpmProvider.submitForm(key, tenantId, data, user);

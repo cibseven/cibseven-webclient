@@ -21,7 +21,7 @@ if (localStorage.getItem('filterSettings')) {
   localStorage.removeItem('filterSettings')
 }
 
-var settings = JSON.parse(localStorage.getItem('addFilterSettings') || JSON.stringify({
+const settings = JSON.parse(localStorage.getItem('addFilterSettings') || JSON.stringify({
   reminder: false,
   dueDate: false
 }))
@@ -53,7 +53,7 @@ const FilterStore = {
   },
   mutations: {
     setFilters: function(state, params) {
-      var favorites = localStorage.getItem('favoriteFilters') ?
+      let favorites = localStorage.getItem('favoriteFilters') ?
         JSON.parse(localStorage.getItem('favoriteFilters')) : []
       params.filters.forEach(f => {
         if (favorites.includes(f.id)) f.favorite = true
@@ -79,11 +79,11 @@ const FilterStore = {
       })
     },
     deleteFavoriteFilter: function(state, params) {
-      var indx = state.list.findIndex(f => {
+      const indx = state.list.findIndex(f => {
         return f.id === params.filterId
       })
       state.list[indx].favorite = false
-      var favorites = localStorage.getItem('favoriteFilters')
+      let favorites = localStorage.getItem('favoriteFilters')
       if (favorites) {
         favorites = JSON.parse(favorites)
         favorites = favorites.filter(f => {
@@ -93,11 +93,11 @@ const FilterStore = {
       }
     },
     addFavoriteFilter: function(state, params) {
-      var indx = state.list.findIndex(f => {
+      const indx = state.list.findIndex(f => {
         return f.id === params.filterId
       })
       state.list[indx].favorite = true
-      var favorites = localStorage.getItem('favoriteFilters') ?
+      const favorites = localStorage.getItem('favoriteFilters') ?
         JSON.parse(localStorage.getItem('favoriteFilters')) : []
       favorites.push(params.filterId)
       localStorage.setItem('favoriteFilters', JSON.stringify(favorites))
@@ -130,7 +130,7 @@ const FilterStore = {
       return FilterService.findFilters()
     },
     updateFilter: function(ctx, params) {
-      var selectedFilterIndx = ctx.state.list.findIndex(filter => {
+      const selectedFilterIndx = ctx.state.list.findIndex(filter => {
         return filter.id === params.filter.id
       })
       if (selectedFilterIndx > -1) {

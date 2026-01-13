@@ -1113,7 +1113,9 @@
 		"searchByTaskName": "Пошук за назвою завдання...",
 		"searchByDeploymentName": "Пошук за назвою розгортання...",
 		"searchByBusinessKey": "Пошук за бізнес-ключем...",
-		"searchByFilterName": "Пошук за назвою фільтра..."
+		"searchByFilterName": "Пошук за назвою фільтра...",
+		"wildcardHelp": "Підтримується пошук із підстановочними знаками.",
+		"wildcardExample": "Використовуйте % для представлення будь-якої кількості символів (наприклад, %процес%)."
 	},
 	"sorting": {
 		"created": "@:task.details.created",
@@ -1183,7 +1185,7 @@
 		"deleteRunningInstances": "Зупинити поточні екземпляри процесу",
 		"goToManagement": "Перейти в область керування процесами",
 		"loadingProcesses": "Завантаження...",
-		"noModelSelected": "Виберіть модель для перегляду",
+		"noDeploymentSelected": "Виберіть розгортання для перегляду",
 		"selectAll": "Вибрати все",
 		"deleteDeployments": "Видалити розгортання",
 		"showModel": "Показати модель",

@@ -54,6 +54,7 @@ public interface IProcessProvider {
 	public void suspendProcessDefinition(String processDefinitionId, Boolean suspend, Boolean includeProcessInstances, String executionDate, CIBUser user);
 	public ProcessStart startProcess(String processDefinitionKey, String tenantId, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException;
 	public ProcessStart submitForm(String processDefinitionKey, String tenantId, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException;
+	public ProcessStart submitForm(String processDefinitionKey, String formResult, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException;
 	public Collection<ProcessStatistics> findProcessStatistics(String processId, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException;
 	public Collection<ProcessStatistics> getProcessStatistics(Map<String, Object> queryParams, CIBUser user);
 	public List<ProcessStatistics> groupProcessStatisticsByKeyAndTenant(Collection<ProcessStatistics> processStatistics);
@@ -68,6 +69,8 @@ public interface IProcessProvider {
 	public Variable fetchProcessInstanceVariable(String processInstanceId, String variableName, boolean deserializeValue, CIBUser user) throws SystemException;
 	public Collection<Process> findCalledProcessDefinitions(String processDefinitionId, CIBUser user);
 	public ResponseEntity<byte[]> getDeployedStartForm(String processDefinitionId, CIBUser user);
+	public ResponseEntity<String> getRenderedForm(String processDefinitionId, Map<String, Object> params, CIBUser user);
+		
 	public void updateHistoryTimeToLive(String id, Map<String, Object> data, CIBUser user);
 	public void deleteProcessInstanceFromHistory(String id, CIBUser user);
 	public void deleteProcessDefinition(String id, Optional<Boolean> cascade, CIBUser user);

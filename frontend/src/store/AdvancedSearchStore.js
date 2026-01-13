@@ -41,16 +41,16 @@ const AdvancedSearchStore = {
           ctx.commit('setAdvancedSearch', params)
       },
       loadAdvancedSearchData: function(ctx) {
-          var storedData = localStorage.getItem('_advancedSearch')
-          var parsedData = JSON.parse(storedData)
+          const storedData = localStorage.getItem('_advancedSearch')
+          const parsedData = JSON.parse(storedData)
           ctx.commit('initializeAdvancedSearch', parsedData)
       }
     },
   getters: {
       formatedCriteriaData(state) {
-           var result = {}
+           const result = {}
           state.criterias.forEach(criteria => {
-            var { key, name, operator, value } = criteria
+            const { key, name, operator, value } = criteria
             if (!result[key]) result[key] = []
             result[key].push({ name, operator, value })
           })

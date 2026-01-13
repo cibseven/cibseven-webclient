@@ -210,6 +210,53 @@ public class TaskService extends BaseService implements InitializingBean {
 		checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
 		return bpmProvider.form(taskId, user);
 	}
+
+	@Operation(
+			summary = "Get rendered form HTML for task",
+			description = "<strong>Return: Rendered form HTML as string</strong>")
+	@ApiResponse(responseCode = "404", description= "Task or rendered form not found")
+	@RequestMapping(value = "/task/{taskId}/rendered-form", method = RequestMethod.GET, produces = "text/html")
+	public ResponseEntity<String> getRenderedForm(
+			@Parameter(description = "Task Id") @PathVariable String taskId,
+			@RequestParam Map<String, Object> params,
+			Locale loc, CIBUser user) {
+		checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
+		return bpmProvider.getRenderedForm(taskId, params, user);
+	}
+
+	@Operation(
+			summary = "Get form variables for a specific task",
+			description = "<strong>Return: Form variables for the task</strong>")
+	@ApiResponse(responseCode = "404", description = "Task not found")
+	@RequestMapping(value = "/task/{taskId}/form-variables", method = RequestMethod.GET)
+	public Map<String, Variable> fetchFormVariables(
+			@PathVariable String taskId,
+			@RequestParam(required = false, defaultValue = "true") boolean deserializeValues,
+			@RequestParam(required = false) String variableNames,
+			CIBUser user) throws Exception {
+		checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
+		List<String> variableListName = null;
+		if (variableNames != null && !variableNames.isEmpty()) {
+			variableListName = List.of(variableNames.split(","));
+		}
+		if (variableListName != null) {
+			return bpmProvider.fetchFormVariables(variableListName, taskId, deserializeValues, user);
+		} else {
+			return bpmProvider.fetchFormVariables(taskId, deserializeValues, user);
+		}
+	}
+
+	@Operation(summary = "Submit form with variables", description = "Request body: Form variables to submit" + "<br>" +
+			"<strong>Return: void</strong>")
+	@ApiResponse(responseCode = "404", description = "Task not found")
+	@RequestMapping(value = "/task/{taskId}/submit-form", method = RequestMethod.POST)
+	public void submit(
+			@Parameter(description = "Task id") @PathVariable String taskId,
+			@RequestBody String formResult,
+			Locale loc, HttpServletRequest rq, CIBUser user) {
+		checkPermission(user, SevenResourceType.TASK, PermissionConstants.UPDATE_ALL);
+		bpmProvider.submit(taskId, formResult, user);
+	}
 	
 	@Operation(
 			summary = "Set assignee to an specific task",

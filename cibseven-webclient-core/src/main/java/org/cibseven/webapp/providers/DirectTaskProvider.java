@@ -16,6 +16,7 @@
  */
 package org.cibseven.webapp.providers;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLDecoder;
@@ -35,6 +36,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.io.IOUtils;
 import org.cibseven.bpm.engine.AuthorizationException;
 import org.cibseven.bpm.engine.EntityTypes;
+import org.cibseven.bpm.engine.FormService;
 import org.cibseven.bpm.engine.ProcessEngine;
 import org.cibseven.bpm.engine.ProcessEngineException;
 import org.cibseven.bpm.engine.exception.NotFoundException;
@@ -45,6 +47,7 @@ import org.cibseven.bpm.engine.history.HistoricTaskInstance;
 import org.cibseven.bpm.engine.history.HistoricTaskInstanceQuery;
 import org.cibseven.bpm.engine.identity.Group;
 import org.cibseven.bpm.engine.identity.GroupQuery;
+import org.cibseven.bpm.engine.impl.form.validator.FormFieldValidationException;
 import org.cibseven.bpm.engine.impl.identity.Authentication;
 import org.cibseven.bpm.engine.impl.util.IoUtil;
 import org.cibseven.bpm.engine.query.Query;
@@ -54,6 +57,7 @@ import org.cibseven.bpm.engine.rest.dto.converter.DelegationStateConverter;
 import org.cibseven.bpm.engine.rest.dto.converter.StringListConverter;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricTaskInstanceDto;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricTaskInstanceQueryDto;
+import org.cibseven.bpm.engine.rest.dto.runtime.StartProcessInstanceDto;
 import org.cibseven.bpm.engine.rest.dto.task.CompleteTaskDto;
 import org.cibseven.bpm.engine.rest.dto.task.FormDto;
 import org.cibseven.bpm.engine.rest.dto.task.TaskBpmnErrorDto;
@@ -61,8 +65,10 @@ import org.cibseven.bpm.engine.rest.dto.task.TaskCountByCandidateGroupResultDto;
 import org.cibseven.bpm.engine.rest.dto.task.TaskDto;
 import org.cibseven.bpm.engine.rest.dto.task.TaskQueryDto;
 import org.cibseven.bpm.engine.rest.dto.task.TaskWithAttachmentAndCommentDto;
+import org.cibseven.bpm.engine.rest.exception.RestException;
 import org.cibseven.bpm.engine.rest.mapper.JacksonConfigurator;
 import org.cibseven.bpm.engine.rest.util.ApplicationContextPathUtil;
+import org.cibseven.bpm.engine.rest.util.EncodingUtil;
 import org.cibseven.bpm.engine.rest.util.QueryUtil;
 import org.cibseven.bpm.engine.task.DelegationState;
 import org.cibseven.bpm.engine.task.TaskCountByCandidateGroupResult;
@@ -570,5 +576,50 @@ public class DirectTaskProvider implements ITaskProvider {
 	private boolean isEmptyJson(String jsonString) {
 		final Pattern EMPTY_JSON_BODY = Pattern.compile("\\s*\\{\\s*\\}\\s*");
 		return jsonString == null || jsonString.trim().isEmpty() || EMPTY_JSON_BODY.matcher(jsonString).matches();
+	}
+
+	@Override
+	public void submit(String taskId, String formResult, CIBUser user) {
+    ProcessEngine engine = directProviderUtil.getProcessEngine(user);
+		FormService formService = engine.getFormService();
+		ObjectMapper objectMapper = directProviderUtil.getObjectMapper(user);
+		CompleteTaskDto dto;
+		try {
+			dto = objectMapper.readValue(formResult, CompleteTaskDto.class);
+		} catch (JsonProcessingException e) {
+			throw new SystemException(e.getMessage(), e);
+		} 
+
+		try {
+			VariableMap variables = VariableValueDto.toMap(dto.getVariables(), engine, objectMapper);
+			if (dto.isWithVariablesInReturn()) {
+				formService.submitTaskFormWithVariablesInReturn(taskId, variables, false);
+				} else {
+					formService.submitTaskForm(taskId, variables);
+				}
+
+		} catch (RestException|ProcessEngineException e) {
+			String errorMessage = String.format("Cannot submit task form %s: %s", taskId, e.getMessage());
+			throw new SystemException(errorMessage, e);
+		}
+		
+	}
+
+	@Override
+	public ResponseEntity<String> getRenderedForm(String taskId, Map<String, Object> params, CIBUser user) {
+    FormService formService = directProviderUtil.getProcessEngine(user).getFormService();
+
+		Object renderedTaskForm = formService.getRenderedTaskForm(taskId);
+		if(renderedTaskForm != null) {
+			String content = renderedTaskForm.toString();
+			InputStream stream = new ByteArrayInputStream(content.getBytes(EncodingUtil.DEFAULT_ENCODING));
+			try {
+				return new ResponseEntity<String>(IOUtils.toString(stream, Charset.defaultCharset()), HttpStatusCode.valueOf(200));
+			} catch (IOException e) {
+				throw new SystemException(e.getMessage(), e);
+			}
+		}
+
+		throw new SystemException("No matching rendered form for task with the id " + taskId + " found.");
 	}
 }

@@ -33,12 +33,12 @@
 		<jjwt.version>0.12.6</jjwt.version>
 		<commons-io.version>2.18.0</commons-io.version>
 		<common-auth.version>1.3.0</common-auth.version>
-		<version.spring.boot>3.5.6</version.spring.boot>
+		<version.spring.boot>3.5.9</version.spring.boot>
 		<version.openapi-starter-webmvc-ui>2.8.13</version.openapi-starter-webmvc-ui>
 		<version.commons-lang3>3.18.0</version.commons-lang3>
 		
 		<image.tomcat-10-base>harbor.cib.de/dev/tomcat-10-base:3.0.0</image.tomcat-10-base>
-		<jib-maven-plugin.version>3.4.6</jib-maven-plugin.version>
+		<jib-maven-plugin.version>3.5.1</jib-maven-plugin.version>
 		<jib.from.image>${image.tomcat-10-base}</jib.from.image>
 		<jib.to.image>harbor.cib.de/dev/cibseven-webclient:${project.version}</jib.to.image>
 

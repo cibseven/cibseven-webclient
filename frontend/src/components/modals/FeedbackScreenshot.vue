@@ -30,7 +30,7 @@
     </div>
 
     <img :src="img || screenshotImageSrc" style="display: block; margin-left: auto; margin-right: auto"
-      :style="{ visibility: imgSrc && 'hidden', height: (height || 43) + 'px' }">
+      :style="{ visibility: imgSrc && 'hidden', height: (height || 43) + 'px' }" alt="">
 
     <div style="text-align: center"
       :style="{ 'text-decoration': focused && !disabled ? 'underline' : null, visibility: imgSrc && 'hidden', 'margin-bottom': (height || 43)/4 + 'px' }">
@@ -57,10 +57,10 @@ export default {
   },
   methods: {
     screenShoot: function(evt) {
-      var reader = new FileReader()
+      const reader = new FileReader()
       reader.onload = function() { this.imgSrc = reader.result }.bind(this)
-      for (var i = 0; i < evt.clipboardData.items.length; i++) {
-        var item = evt.clipboardData.items[i];
+      for (let i = 0; i < evt.clipboardData.items.length; i++) {
+        const item = evt.clipboardData.items[i];
         if (item.type.startsWith('image/')) {
           reader.readAsDataURL(item.getAsFile())
           this.$emit('update:modelValue', item.getAsFile())

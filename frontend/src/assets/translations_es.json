@@ -1113,7 +1113,9 @@
 		"searchByTaskName": "Buscar por nombre de tarea...",
 		"searchByDeploymentName": "Búsqueda por nombre de despliegue...",
 		"searchByBusinessKey": "Búsqueda por business key...",
-		"searchByFilterName": "Buscar por nombre de filtro..."
+		"searchByFilterName": "Buscar por nombre de filtro...",
+		"wildcardHelp": "Se admite la búsqueda con comodines.",
+		"wildcardExample": "Use % para representar cualquier número de caracteres (ej. %proceso%)."
 	},
 	"sorting": {
 		"created": "@:task.details.created",
@@ -1183,7 +1185,7 @@
 		"deleteRunningInstances": "Detener instancias de proceso activas",
 		"goToManagement": "Ir al area de administración de procesos",
 		"loadingProcesses": "Cargando...",
-		"noModelSelected": "Seleccione un modelo para verlo",
+		"noDeploymentSelected": "Seleccione un despliegue para verlo",
 		"selectAll": "Seleccionar todo",
 		"deleteDeployments": "Eliminar despliegues",
 		"showModel": "Mostrar modelo",

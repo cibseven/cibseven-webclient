@@ -28,6 +28,7 @@ import java.util.Map.Entry;
 
 import org.apache.commons.io.IOUtils;
 import org.cibseven.bpm.engine.AuthorizationException;
+import org.cibseven.bpm.engine.FormService;
 import org.cibseven.bpm.engine.ProcessEngine;
 import org.cibseven.bpm.engine.ProcessEngineException;
 import org.cibseven.bpm.engine.history.HistoricVariableInstance;
@@ -291,13 +292,13 @@ public class DirectVariableProvider implements IVariableProvider {
 	@Override
 	public Map<String, Variable> fetchFormVariables(String taskId, boolean deserializeValues, CIBUser user)
 			throws NoObjectFoundException, SystemException {
-		return fetchFormVariables(null, taskId, user);
+		return fetchFormVariables(null, taskId, deserializeValues, user);
 	}
 
 	@Override
-	public Map<String, Variable> fetchFormVariables(List<String> variableListName, String taskId, CIBUser user)
+	public Map<String, Variable> fetchFormVariables(List<String> variableListName, String taskId, boolean deserializeValues, CIBUser user)
 			throws NoObjectFoundException, SystemException {
-		VariableMap startFormVariables = directProviderUtil.getProcessEngine(user).getFormService().getTaskFormVariables(taskId, variableListName, true);
+		VariableMap startFormVariables = directProviderUtil.getProcessEngine(user).getFormService().getTaskFormVariables(taskId, variableListName, deserializeValues);
 		Map<String, VariableValueDto> variableDtos = VariableValueDto.fromMap(startFormVariables);
 		Map<String, Variable> variablesMap = new HashMap<>();
 		for (Entry<String, VariableValueDto> e : variableDtos.entrySet()) {
@@ -307,7 +308,7 @@ public class DirectVariableProvider implements IVariableProvider {
 	}
 
 	@Override
-	public Map<String, Variable> fetchProcessFormVariables(String key, CIBUser user)
+	public Map<String, Variable> fetchProcessFormVariables(String key, boolean deserializeValues, CIBUser user)
 			throws NoObjectFoundException, SystemException {
 		List<String> formVariables = null;
 
@@ -320,7 +321,7 @@ public class DirectVariableProvider implements IVariableProvider {
 
 		}
 
-		VariableMap startFormVariables = directProviderUtil.getProcessEngine(user).getFormService().getStartFormVariables(processDefinition.getId(), formVariables, true);
+		VariableMap startFormVariables = directProviderUtil.getProcessEngine(user).getFormService().getStartFormVariables(processDefinition.getId(), formVariables, deserializeValues);
 		Map<String, VariableValueDto> variableDtos = VariableValueDto.fromMap(startFormVariables);
 		Map<String, Variable> variablesMap = new HashMap<>();
 		for (Entry<String, VariableValueDto> e : variableDtos.entrySet()) {
@@ -825,5 +826,27 @@ public class DirectVariableProvider implements IVariableProvider {
 			instanceResults.add(resultInstance);
 		}
 		return instanceResults;
+	}
+
+	@Override
+	public Map<String, Variable> fetchProcessFormVariables(List<String> variableListName, String key,
+			boolean deserializeValues, CIBUser user) throws NoObjectFoundException, SystemException {
+		ProcessDefinition processDefinition = directProviderUtil.getProcessEngine(user).getRepositoryService()
+				.createProcessDefinitionQuery().processDefinitionKey(key).withoutTenantId().latestVersion().singleResult();
+		if (processDefinition == null) {
+			String errorMessage = String.format("No matching process definition with key: %s and no tenant-id", key);
+			throw new SystemException(errorMessage);
+		}
+
+		FormService formService = directProviderUtil.getProcessEngine(user).getFormService();
+		VariableMap startFormVariables = formService.getStartFormVariables(processDefinition.getId(), variableListName,
+				deserializeValues);
+		Map<String, Variable> result = new HashMap<>();
+		for (String variableName : startFormVariables.keySet()) {
+			VariableValueDto valueDto = VariableValueDto.fromTypedValue(startFormVariables.getValueTyped(variableName),
+					false);
+			result.put(variableName, directProviderUtil.convertValue(valueDto, Variable.class, user));
+		}
+		return result;
 	}
 }

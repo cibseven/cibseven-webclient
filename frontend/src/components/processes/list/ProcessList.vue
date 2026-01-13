@@ -161,19 +161,19 @@ export default {
     },
     processesFiltered: function() {
       if (!this.$store.state.process.list) return []
-      var processes = this.$store.state.process.list.filter(process => {
+       let processes = this.$store.state.process.list.filter(process => {
         return ((process.key.toUpperCase().includes(this.filter.toUpperCase()) ||
             ((process.name) ? process.name.toUpperCase().includes(this.filter.toUpperCase()) : false)))
       })
       processes = processes.filter(process => {
-        var incidents = this.onlyIncidents ? process.incidents > 0 : true
-        var onlyActive = this.onlyActive ? process.suspended === 'false' : true
+        const incidents = this.onlyIncidents ? process.incidents > 0 : true
+        const onlyActive = this.onlyActive ? process.suspended === 'false' : true
         return incidents && onlyActive
       })
       processes.sort((objA, objB) => {
-        var nameA = objA.name ? objA.name.toUpperCase() : objA.name
-        var nameB = objB.name ? objB.name.toUpperCase() : objB.name
-        var comp = nameA < nameB ? -1 : nameA > nameB ? 1 : 0
+        const nameA = objA.name ? objA.name.toUpperCase() : objA.name
+        const nameB = objB.name ? objB.name.toUpperCase() : objB.name
+        let comp = nameA < nameB ? -1 : (nameA > nameB ? 1 : 0)
 
         if (this.$root.config.subProcessFolder) {
           if (objA.resource.indexOf(this.$root.config.subProcessFolder) > -1) comp = 1

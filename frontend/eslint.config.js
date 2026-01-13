@@ -19,6 +19,7 @@ import pluginVue from 'eslint-plugin-vue'
 import pluginVitest from '@vitest/eslint-plugin'
 import pluginCypress from 'eslint-plugin-cypress/flat'
 import skipFormatting from '@vue/eslint-config-prettier/skip-formatting'
+import pluginVueA11y from "eslint-plugin-vuejs-accessibility";
 
 export default [
   {
@@ -46,10 +47,32 @@ export default [
       'cypress/support/**/*.{js,ts,jsx,tsx}'
     ],
   },
+
+  ...pluginVueA11y.configs["flat/recommended"],
+  {
+    rules: {
+      // Already set as error in vuejs-accessibility/recommended:
+      // "vuejs-accessibility/alt-text": "error",
+
+      // override rules settings here to make them warnings
+      "vuejs-accessibility/click-events-have-key-events": "warn",
+      "vuejs-accessibility/anchor-has-content": "warn",
+      "vuejs-accessibility/label-has-for": "warn",
+      "vuejs-accessibility/no-static-element-interactions": "warn",
+      "vuejs-accessibility/mouse-events-have-key-events": "warn",
+      "vuejs-accessibility/form-control-has-label": "warn",
+      "vuejs-accessibility/interactive-supports-focus": "warn",
+      "vuejs-accessibility/no-autofocus": "warn",
+    }
+  },
+
   {
     "rules": {
       "vue/require-name-property": "error",
       "vue/require-explicit-emits": "error",
+      "no-duplicate-imports": "error",
+      "no-var": "error",
+      "prefer-const": "error",
     }
   },
   skipFormatting,

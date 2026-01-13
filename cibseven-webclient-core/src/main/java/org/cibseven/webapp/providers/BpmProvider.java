@@ -198,6 +198,19 @@ public interface BpmProvider {
 	}
 
 	/**
+	 * Submits a task form to the process engine.
+     *
+     * @param taskId the id of the task the form belongs to
+     * @param formResult serialized form payload (usually JSON) to be submitted
+     * @param user the user performing the operation
+     *
+     * @throws SystemException in case of an error
+     */
+	default void submit(String taskId, String formResult, CIBUser user) throws NoObjectFoundException, SystemException {
+		getTaskProvider().submit(taskId, formResult, user);
+	}
+	
+	/**
 	 * Fetch form-reference variable from task.
 	 * @param taskId filter by task id.
 	 * @param user the user performing the search
@@ -347,6 +360,9 @@ public interface BpmProvider {
 		return getTaskProvider().getDeployedForm(taskId, user);
 	}
 
+	default ResponseEntity<String> getRenderedForm(String taskId, Map<String, Object> params, CIBUser user) {
+		return getTaskProvider().getRenderedForm(taskId, params, user);
+	}
 	default Integer findHistoryTasksCount(Map<String, Object> filters, CIBUser user) throws SystemException {
 		return getTaskProvider().findHistoryTasksCount(filters, user);
 	}
@@ -438,7 +454,6 @@ public interface BpmProvider {
    */
 	default Deployment deployBpmn(MultiValueMap<String, Object> data, MultiValueMap<String, MultipartFile> file, CIBUser user) throws SystemException {
 		return getDeploymentProvider().deployBpmn(data, file, user);
-
 	}
 
 	/**
@@ -945,12 +960,17 @@ public interface BpmProvider {
 		return getVariableProvider().fetchFormVariables(taskId, deserializeValues, user);
 	}
 
-	default Map<String, Variable> fetchFormVariables(List<String> variableListName, String taskId, CIBUser user) throws NoObjectFoundException, SystemException {
-		return getVariableProvider().fetchFormVariables(variableListName, taskId, user);
+	default Map<String, Variable> fetchFormVariables(List<String> variableListName, String taskId, boolean deserializeValues, CIBUser user) throws NoObjectFoundException, SystemException {
+		return getVariableProvider().fetchFormVariables(variableListName, taskId, deserializeValues, user);
 	}
 
-	default Map<String, Variable> fetchProcessFormVariables(String key, CIBUser user) throws NoObjectFoundException, SystemException {
-		return getVariableProvider().fetchProcessFormVariables(key, user);
+	default Map<String, Variable> fetchProcessFormVariables(String key, boolean deserializeValues, CIBUser user) throws NoObjectFoundException, SystemException {
+		return getVariableProvider().fetchProcessFormVariables(key, deserializeValues, user);
+	}
+
+	default Map<String, Variable> fetchProcessFormVariables(List<String> variableListName, String key, boolean deserializeValues, CIBUser user)
+			throws NoObjectFoundException, SystemException {
+				return getVariableProvider().fetchProcessFormVariables(variableListName, key, deserializeValues, user);
 	}
 
 	default NamedByteArrayDataSource fetchVariableFileData(String taskId, String variableName, CIBUser user) throws NoObjectFoundException, UnexpectedTypeException, SystemException {
@@ -1497,6 +1517,21 @@ public interface BpmProvider {
 	}
 
 	/**
+	 * Submit a form to start a process with the given key.
+	 *
+	 * @param key the process definition key
+	 * @param formResult the form submission data as a JSON string
+	 * @param user the authenticated user submitting the form
+	 * @return information about the started process instance
+	 * @throws UnsupportedTypeException when a variable value type is not supported by the engine
+	 * @throws ExpressionEvaluationException when an expression in the process definition cannot be evaluated
+	 * @throws SystemException in case of any other error
+	 */
+	default ProcessStart submitForm(String key, String formResult, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
+		return getProcessProvider().submitForm(key, formResult, user);
+	}
+	
+	/**
 	 * Search statistics from a process.
 	 * @param processId filter by process id.
 	 * @param user the user performing the search
@@ -1611,6 +1646,10 @@ public interface BpmProvider {
 
 	default ResponseEntity<byte[]> getDeployedStartForm(String processDefinitionId, CIBUser user) throws SystemException {
 		return getProcessProvider().getDeployedStartForm(processDefinitionId, user);
+	}
+
+	default ResponseEntity<String> getRenderedStartForm(String processDefinitionId, Map<String, Object> params, CIBUser user) {
+		return getProcessProvider().getRenderedForm(processDefinitionId, params, user);
 	}
 
 	default void updateHistoryTimeToLive(String id, Map<String, Object> data, CIBUser user) throws SystemException {

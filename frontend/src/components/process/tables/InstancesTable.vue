@@ -83,10 +83,9 @@
 import { ProcessService, HistoryService } from '@/services.js'
 import { permissionsMixin } from '@/permissions.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
-import { CopyableActionButton, FlowTable, SuccessAlert } from '@cib/common-frontend'
+import { CopyableActionButton, FlowTable, SuccessAlert, BWaitingBox } from '@cib/common-frontend'
 import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
 import ConfirmActionOnProcessInstanceModal from '@/components/process/modals/ConfirmActionOnProcessInstanceModal.vue'
-import { BWaitingBox } from '@cib/common-frontend'
 import { mapGetters, mapActions } from 'vuex'
 
 export default {

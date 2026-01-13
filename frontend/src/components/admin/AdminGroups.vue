@@ -92,9 +92,7 @@ import { AdminService } from '@/services.js'
 import { moment } from '@/globals.js'
 import { debounce } from '@/utils/debounce.js'
 import { getStringObjByKeys } from '@/components/admin/utils.js'
-import { FlowTable } from '@cib/common-frontend'
-import { TaskPopper, ConfirmDialog } from '@cib/common-frontend'
-import { BWaitingBox } from '@cib/common-frontend'
+import { FlowTable , TaskPopper, ConfirmDialog, BWaitingBox } from '@cib/common-frontend'
 
 export default {
   name: 'AdminGroups',
@@ -169,8 +167,8 @@ export default {
       }
     },
     findGroups: debounce(800, function(filter) {
-      var nameLike = ({ nameLike: '*' + filter + '*' })
-      var id = ({ id: filter })
+      const nameLike = ({ nameLike: '*' + filter + '*' })
+      const id = ({ id: filter })
 
       Promise.all([AdminService.findGroups(nameLike), AdminService.findGroups(id)])
       .then(groups => {
@@ -187,15 +185,15 @@ export default {
     }),
     exportCSV: function() {
       this.exporting = true
-      var keys = ['id', 'name', 'type']
-      var csvContent = keys.map(k => this.$t('admin.groups.' + k)).join(';') + '\n'
+      const keys = ['id', 'name', 'type']
+      let csvContent = keys.map(k => this.$t('admin.groups.' + k)).join(';') + '\n'
       AdminService.findGroups().then(groups => {
         if (groups.length > 0) {
           groups.forEach(r => {
             csvContent += getStringObjByKeys(keys, r) + '\n'
           })
-          var csvBlob = new Blob([csvContent], { type: 'text/csv' })
-          var filename = 'groups_' + moment().format('YYYYMMDD_HHmm') + '.csv'
+          const csvBlob = new Blob([csvContent], { type: 'text/csv' })
+          const filename = 'groups_' + moment().format('YYYYMMDD_HHmm') + '.csv'
           this.$refs.importPopper.triggerDownload(csvBlob, filename)
         }
         this.exporting = false

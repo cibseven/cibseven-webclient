@@ -92,11 +92,11 @@ export default {
   },
   methods: {
     onLogin: function() {
-      var self = this
+      const self = this
       this.credentials.username = this.$refs.username.value // https://helpdesk.cib.de/browse/DOXISAFES-456
       this.credentials.password = this.$refs.password.$refs.input.value
       AuthService.login(this.credentials, this.rememberMe).then(function(user) { self.$emit('success', user) }, function(error) {
-        var res = error.response.data
+        const res = error.response.data
         if (res && res.type === 'LoginException' && res.params && res.params.length >= 1 && res.params[0] === 'StandardLogin') {
           self.credentials2.username = self.credentials.username
           self.credentials2.password = self.credentials.password
@@ -117,7 +117,7 @@ export default {
       }.bind(this),
       function(error) {
         this.$refs.emailDialog.hide()
-        var res = error.response.data
+        const res = error.response.data
         if (res && res.type === 'LoginException' && res.params && res.params.length >= 1 && res.params[0] === 'StandardLogin')
           this.$refs.resetDialog.show(res.params[1])
         else this.$root.$refs.error.show(res)

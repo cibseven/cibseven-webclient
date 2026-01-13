@@ -60,8 +60,7 @@
 <script>
 import { ProcessService } from '@/services.js'
 import RenderTemplate from '@/components/render-template/RenderTemplate.vue'
-import { BWaitingBox } from '@cib/common-frontend'
-import { HighlightedText } from '@cib/common-frontend'
+import { BWaitingBox, HighlightedText } from '@cib/common-frontend'
 import { permissionsMixin } from '@/permissions.js'
 
 export default {
@@ -86,10 +85,10 @@ export default {
           (process.name ? process.name.toLowerCase().indexOf(this.processesFilter.toLowerCase()) !== -1 :
           process.key.toLowerCase().indexOf(this.processesFilter.toLowerCase()) !== -1)
       }).sort((objA, objB) => {
-        var nameA = objA.name ? objA.name.toUpperCase() : objA.key.toUpperCase()
-          var nameB = objB.name ? objB.name.toUpperCase() : objB.key.toUpperCase()
-          return nameA < nameB ? -1 : nameA > nameB ? 1 : 0
-        })
+        const nameA = objA.name ? objA.name.toUpperCase() : objA.key.toUpperCase()
+        const nameB = objB.name ? objB.name.toUpperCase() : objB.key.toUpperCase()
+        return nameA < nameB ? -1 : (nameA > nameB ? 1 : 0)
+      })
     },
     processName: function() {
       return this.selectedProcess.name !== null ? this.selectedProcess.name : this.selectedProcess.key
@@ -139,7 +138,7 @@ export default {
               this.startParams.processDefinitionId = processLatest.id
               this.startParams.isEmbedded = true
             } else {
-              var templateType
+              let templateType
               //Camunda form
               if (url.camundaFormRef || url.key && url.key.startsWith('camunda-forms:')) {
                 templateType = 'start-deployed-form'

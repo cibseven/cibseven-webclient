@@ -68,7 +68,7 @@
         </FlowTable>
 
         <div v-if="criterias.length === 0">
-          <img src="@/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mb-3" style="width: 200px">
+          <img src="@/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mb-3" style="width: 200px" alt="">
           <div class="h5 text-secondary text-center">{{ $t('nav-bar.filters.noCriterias') }}</div>
         </div>
         <hr>
@@ -113,7 +113,7 @@ export default {
   },
   computed: {
     criteriaKeys: function() {
-      var criteriaKeys = []
+      const criteriaKeys = []
       this.$root.config.taskFilter.advancedSearch.criteriaKeys.forEach(item => {
         criteriaKeys.push({ value: item, text: this.$t('advanced-search.criteriaKeys.' + item) })
       })
@@ -131,7 +131,7 @@ export default {
       this.$refs.advancedSearchModal.show()
     },
     addCriteria: function() {
-      var value = this.selectedCriteriaValue.value
+      let value = this.selectedCriteriaValue.value
       if (value === "true") value = true
       else if (value === "false") value = false
       this.criterias.push({

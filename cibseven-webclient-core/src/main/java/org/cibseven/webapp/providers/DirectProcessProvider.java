@@ -16,6 +16,7 @@
  */
 package org.cibseven.webapp.providers;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -35,6 +36,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.io.IOUtils;
 import org.cibseven.bpm.engine.AuthorizationException;
 import org.cibseven.bpm.engine.BadUserRequestException;
+import org.cibseven.bpm.engine.FormService;
 import org.cibseven.bpm.engine.ProcessEngine;
 import org.cibseven.bpm.engine.ProcessEngineException;
 import org.cibseven.bpm.engine.exception.NotFoundException;
@@ -44,6 +46,7 @@ import org.cibseven.bpm.engine.history.HistoricActivityStatistics;
 import org.cibseven.bpm.engine.history.HistoricActivityStatisticsQuery;
 import org.cibseven.bpm.engine.history.HistoricProcessInstance;
 import org.cibseven.bpm.engine.history.HistoricProcessInstanceQuery;
+import org.cibseven.bpm.engine.impl.form.validator.FormFieldValidationException;
 import org.cibseven.bpm.engine.impl.util.IoUtil;
 import org.cibseven.bpm.engine.management.ActivityStatistics;
 import org.cibseven.bpm.engine.management.ActivityStatisticsQuery;
@@ -72,8 +75,10 @@ import org.cibseven.bpm.engine.rest.dto.runtime.StartProcessInstanceDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.VariableInstanceQueryDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.modification.ProcessInstanceModificationInstructionDto;
 import org.cibseven.bpm.engine.rest.dto.task.FormDto;
+import org.cibseven.bpm.engine.rest.exception.RestException;
 import org.cibseven.bpm.engine.rest.impl.history.HistoricActivityStatisticsQueryDto;
 import org.cibseven.bpm.engine.rest.util.ApplicationContextPathUtil;
+import org.cibseven.bpm.engine.rest.util.EncodingUtil;
 import org.cibseven.bpm.engine.rest.util.QueryUtil;
 import org.cibseven.bpm.engine.runtime.ProcessInstanceQuery;
 import org.cibseven.bpm.engine.runtime.ProcessInstanceWithVariables;
@@ -84,6 +89,7 @@ import org.cibseven.webapp.exception.ExpressionEvaluationException;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.exception.UnsupportedTypeException;
+import org.cibseven.webapp.providers.utils.URLUtils;
 import org.cibseven.webapp.rest.model.HistoryProcessInstance;
 import org.cibseven.webapp.rest.model.Incident;
 import org.cibseven.webapp.rest.model.Process;
@@ -95,9 +101,12 @@ import org.cibseven.webapp.rest.model.StartForm;
 import org.cibseven.webapp.rest.model.Variable;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.ws.rs.core.MultivaluedHashMap;
@@ -843,6 +852,66 @@ public class DirectProcessProvider implements IProcessProvider {
 			HistoryProcessInstanceResults.add(directProviderUtil.convertValue(resultHistoricProcessInstanceDto, HistoryProcessInstance.class, user));
 		}
 		return HistoryProcessInstanceResults;
+	}
+
+	@Override
+	public ProcessStart submitForm(String processDefinitionKey, String formResult, CIBUser user)
+			throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
+		ObjectMapper objectMapper = directProviderUtil.getObjectMapper(user);
+		StartProcessInstanceDto parameters;
+		try {
+			parameters = objectMapper.readValue(formResult, StartProcessInstanceDto.class);
+		} catch (JsonProcessingException e) {
+			throw new SystemException(e.getMessage(), e);
+		} 
+    FormService formService = directProviderUtil.getProcessEngine(user).getFormService();
+
+    org.cibseven.bpm.engine.runtime.ProcessInstance instance = null;
+		ProcessDefinition processDefinition = directProviderUtil.getProcessEngine(user).getRepositoryService().createProcessDefinitionQuery()
+				.processDefinitionKey(processDefinitionKey)
+				.withoutTenantId().latestVersion().singleResult();
+
+		if (processDefinition == null) {
+			String errorMessage = String.format("No matching process definition with key: %s", processDefinitionKey);
+			throw new SystemException(errorMessage);
+		}
+
+		try {
+			Map<String, Object> variables = VariableValueDto.toMap(parameters.getVariables(), directProviderUtil.getProcessEngine(user), objectMapper);
+			String businessKey = parameters.getBusinessKey();
+			if (businessKey != null) {
+				instance = formService.submitStartForm(processDefinition.getId(), businessKey, variables);
+			} else {
+				instance = formService.submitStartForm(processDefinition.getId(), variables);
+			}
+    } catch (AuthorizationException e) {
+      throw e;
+
+    } catch (ProcessEngineException|RestException e) {
+      String errorMessage = String.format("Cannot instantiate process definition %s: %s", processDefinition.getId(), e.getMessage());
+      throw new SystemException(errorMessage, e);
+    }
+
+    ProcessInstanceDto result = ProcessInstanceDto.fromProcessInstance(instance);
+    return  directProviderUtil.convertValue(result, ProcessStart.class, user);
+	}
+
+	@Override
+	public ResponseEntity<String> getRenderedForm(String processDefinitionId, Map<String, Object> params, CIBUser user) {
+    FormService formService = directProviderUtil.getProcessEngine(user).getFormService();
+
+		Object startForm = formService.getRenderedStartForm(processDefinitionId);
+		if (startForm != null) {
+			String content = startForm.toString();
+			InputStream stream = new ByteArrayInputStream(content.getBytes(EncodingUtil.DEFAULT_ENCODING));
+			try {
+				return new ResponseEntity<String>(IOUtils.toString(stream, Charset.defaultCharset()), HttpStatusCode.valueOf(200));
+			} catch (IOException e) {
+				throw new SystemException(e.getMessage(), e);
+			}
+	}
+
+		throw new SystemException("No matching rendered start form for process definition with the id " + processDefinitionId + " found.");
 	}
 
 }

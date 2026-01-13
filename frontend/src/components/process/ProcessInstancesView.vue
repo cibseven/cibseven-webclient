@@ -178,8 +178,7 @@ import resizerMixin from '@/components/process/mixins/resizerMixin.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import tabUrlMixin from '@/components/process/mixins/tabUrlMixin.js'
 import { debounce } from '@/utils/debounce.js'
-import { SuccessAlert, ConfirmDialog } from '@cib/common-frontend'
-import { BWaitingBox } from '@cib/common-frontend'
+import { SuccessAlert, ConfirmDialog, BWaitingBox } from '@cib/common-frontend'
 import ProcessInstancesTabs from '@/components/process/ProcessInstancesTabs.vue'
 import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
 import { mapGetters, mapActions } from 'vuex'
@@ -349,7 +348,7 @@ export default {
       this.$router.push('/seven/auth/deployments/' + this.process.deploymentId)
     },
     downloadBpmn: function() {
-      var filename = this.process.resource.substr(this.process.resource.lastIndexOf('/') + 1, this.process.resource.lenght)
+      const filename = this.process.resource.substr(this.process.resource.lastIndexOf('/') + 1, this.process.resource.lenght)
       window.location.href = getServicesBasePath() + '/process/' + this.process.id + '/data?filename=' + filename +
         '&token=' + this.$root.user.authToken
     },

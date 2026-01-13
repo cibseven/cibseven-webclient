@@ -1113,7 +1113,9 @@
 		"searchByTaskName": "Поиск по названию задачи...",
 		"searchByDeploymentName": "Поиск по развертыванию...",
 		"searchByBusinessKey": "Поиск по бизнес-ключу...",
-		"searchByFilterName": "Поиск по названию фильтра..."
+		"searchByFilterName": "Поиск по названию фильтра...",
+		"wildcardHelp": "Поддерживается поиск с подстановочными знаками.",
+		"wildcardExample": "Используйте % для представления любого количества символов (например, %процесс%)."
 	},
 	"sorting": {
 		"created": "@:task.details.created",
@@ -1183,7 +1185,7 @@
 		"deleteRunningInstances": "Остановить текущие экземпляры процесса",
 		"goToManagement": "Перейти в область управления процессами",
 		"loadingProcesses": "Загрузка...",
-		"noModelSelected": "Выберите модель для просмотра",
+		"noDeploymentSelected": "Выберите развертывание для просмотра",
 		"selectAll": "Выбрать все",
 		"deleteDeployments": "Удалить развертывания",
 		"showModel": "Показать модель",
