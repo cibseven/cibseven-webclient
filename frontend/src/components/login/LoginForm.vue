@@ -21,7 +21,7 @@
   <div>
     <CIBForm @submitted="onLogin">
       <b-form-group label-cols="4" :label="$t('login.username')" :invalid-feedback="$t('errors.invalid')">
-        <input ref="username" v-model="credentials.username" class="form-control" required autofocus autocomplete="username">
+        <input ref="username" v-model="credentials.username" class="form-control" required autocomplete="username">
       </b-form-group>
       <b-form-group label-cols="4" :label="$t('login.password')">
         <SecureInput ref="password" v-model="credentials.password" class="col-8" required></SecureInput>

@@ -53,6 +53,7 @@ export default [
     rules: {
       // Already set as error in vuejs-accessibility/recommended:
       // "vuejs-accessibility/alt-text": "error",
+      // "vuejs-accessibility/no-autofocus": "error",
 
       // override rules settings here to make them warnings
       "vuejs-accessibility/click-events-have-key-events": "warn",
@@ -62,7 +63,6 @@ export default [
       "vuejs-accessibility/mouse-events-have-key-events": "warn",
       "vuejs-accessibility/form-control-has-label": "warn",
       "vuejs-accessibility/interactive-supports-focus": "warn",
-      "vuejs-accessibility/no-autofocus": "warn",
     }
   },
 

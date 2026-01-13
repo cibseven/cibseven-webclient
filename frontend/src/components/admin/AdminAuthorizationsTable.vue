@@ -73,8 +73,8 @@
                     <span class="mdi" :class="isUserToEdit ? 'mdi-account' : 'mdi-account-group'"></span>
                   </b-button>
                 </b-input-group-prepend>
-                <b-form-input v-if="row.item.userId" v-model="row.item.userId" autofocus></b-form-input>
-                <b-form-input v-else v-model="row.item.groupId" autofocus></b-form-input>
+                <b-form-input v-if="row.item.userId" v-model="row.item.userId"></b-form-input>
+                <b-form-input v-else v-model="row.item.groupId"></b-form-input>
               </b-input-group>
             </div>
             <div v-else>
