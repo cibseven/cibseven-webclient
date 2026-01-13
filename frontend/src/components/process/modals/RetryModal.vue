@@ -21,13 +21,13 @@
 		<div class="container-fluid pt-2">
 			<p>{{ $t(translationPrefix + 'retryMsg') }}</p>
 			<b-form-group>
-				<label class="fw-medium mt-2 mb-1">{{ $t(translationPrefix + 'dueDateMsg') }}</label>
+				<p class="fw-medium mt-2 mb-1">{{ $t(translationPrefix + 'dueDateMsg') }}</p>
 				<div class="form-check" v-for="(option, index) in executionOptions" :key="option">
 					<input class="form-check-input" type="radio" :id="`execution-option-${index}`" :value="option" v-model="executionOption" />
 					<label class="form-check-label" :for="`execution-option-${index}`">{{ $t(translationPrefix + option) }}</label>
 				</div>
 				<div v-if="executionOption === 'setDueDate'" class="row">
-					<label class="fw-medium mt-2 mb-1">{{ $t(translationPrefix + 'scheduleAt') }}</label>
+					<p class="fw-medium mt-2 mb-1">{{ $t(translationPrefix + 'scheduleAt') }}</p>
 					<div class="col-6">
 						<b-form-datepicker v-model="scheduledAt.date" size="sm" :date-disabled-fn="isInThePast" input-class="text-start">
 							<template v-slot:prepend>

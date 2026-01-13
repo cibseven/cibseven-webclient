@@ -51,8 +51,9 @@
                     <h6 class="text-muted mb-3">{{ $t('admin.users.account') }}</h6>
 
                     <div class="mb-3">
-                      <label class="form-label">{{ $t('admin.users.id') }} *</label>
+                      <label class="form-label" for="profileId">{{ $t('admin.users.id') }} *</label>
                       <input
+                        id="profileId"
                         type="text"
                         class="form-control"
                         v-model="profile.id"
@@ -68,7 +69,7 @@
                     </div>
 
                     <div class="mb-3">
-                      <label class="form-label">
+                      <label class="form-label" for="password">
                         {{ $t('admin.users.password') }} *
                         <span
                           v-if="passwordPolicyEnabled"
@@ -89,6 +90,7 @@
                       </label>
                       <div class="input-group">
                         <input
+                          id="password"
                           :type="showPassword ? 'text' : 'password'"
                           class="form-control"
                           v-model="credentials.password"
@@ -113,9 +115,10 @@
                     </div>
 
                     <div class="mb-3">
-                      <label class="form-label">{{ $t('admin.users.passwordRepeat') }} *</label>
+                      <label class="form-label" for="passwordRepeat">{{ $t('admin.users.passwordRepeat') }} *</label>
                       <div class="input-group">
                         <input
+                          id="passwordRepeat"
                           :type="showPassRepeat ? 'text' : 'password'"
                           class="form-control"
                           v-model="passwordRepeat"
@@ -148,8 +151,9 @@
                     <h6 class="text-muted mb-3">{{ $t('admin.users.profile') }}</h6>
 
                     <div class="mb-3">
-                      <label class="form-label">{{ $t('admin.users.firstName') }} *</label>
+                      <label class="form-label" for="firstName">{{ $t('admin.users.firstName') }} *</label>
                       <input
+                        id="firstName"
                         type="text"
                         class="form-control"
                         v-model="profile.firstName"
@@ -162,8 +166,9 @@
                     </div>
 
                     <div class="mb-3">
-                      <label class="form-label">{{ $t('admin.users.lastName') }} *</label>
+                      <label class="form-label" for="lastName">{{ $t('admin.users.lastName') }} *</label>
                       <input
+                        id="lastName"
                         type="text"
                         class="form-control"
                         v-model="profile.lastName"
@@ -176,8 +181,9 @@
                     </div>
 
                     <div class="mb-3">
-                      <label class="form-label">{{ $t('admin.users.email') }}</label>
+                      <label class="form-label" for="email">{{ $t('admin.users.email') }}</label>
                       <input
+                        id="email"
                         type="email"
                         class="form-control"
                         v-model="profile.email"

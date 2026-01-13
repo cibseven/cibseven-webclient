@@ -21,8 +21,8 @@
     <form ref="formAdvancedSearch" @submit.stop.prevent="handleSubmit">
       <div class="row mb-3">
         <div class="col-5">
-          <label>{{ $t('advanced-search.criteriaKey') }}</label>
-          <b-form-select v-model="selectedCriteriaKey" :options="criteriaKeys">
+          <label for="criteriaKey">{{ $t('advanced-search.criteriaKey') }}</label>
+          <b-form-select id="criteriaKey" v-model="selectedCriteriaKey" :options="criteriaKeys">
             <template v-slot:first>
               <b-form-select-option :value="null" disabled>-- {{ $t('advanced-search.selectProperty') }} --</b-form-select-option>
             </template>
