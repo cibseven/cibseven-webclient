@@ -14,9 +14,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeAll, beforeEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { i18n } from '@/i18n'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import CIBHeaderFlow from '@/components/common-components/CIBHeaderFlow.vue'
 
 // Mock EngineService
@@ -26,35 +28,51 @@ vi.mock('@/services.js', () => ({
   }
 }))
 
-describe('CIBHeaderFlow.vue', () => {
-  let wrapper
-
-  const createWrapper = (props = {}) => {
-    return mount(CIBHeaderFlow, {
-      props: {
-        languages: ['en', 'de'],
-        user: { id: '1', displayName: 'Test User' },
-        ...props
+const createWrapper = (props = {}) => {
+  return mount(CIBHeaderFlow, {
+    props: {
+      languages: ['en', 'de'],
+      user: { id: '1', displayName: 'Test User' },
+      ...props
+    },
+    global: {
+      provide: {
+        currentLanguage: vi.fn((lang) => lang || 'en')
       },
-      global: {
-        provide: {
-          currentLanguage: vi.fn((lang) => lang || 'en')
-        },
-        mocks: {
-          $t: (msg) => msg,
-          $te: () => true,
-        },
-        plugins: [i18n],
-        stubs: {
-          'b-navbar': { template: '<nav class="navbar"><slot></slot></nav>' },
-          'b-collapse': { template: '<div><slot></slot></div>', props: ['modelValue'] },
-          'b-navbar-nav': { template: '<div class="navbar-nav"><slot></slot></div>' },
-          'b-nav-item-dropdown': { template: '<div class="nav-item-dropdown"><slot name="button-content"></slot><slot></slot></div>' },
-          'b-dropdown-item': { template: '<div class="dropdown-item"><slot></slot></div>' }
-        }
+      mocks: {
+        $t: (msg) => msg,
+        $te: () => true,
+      },
+      plugins: [i18n],
+      stubs: {
+        'b-navbar': { template: '<nav class="navbar"><slot></slot></nav>' },
+        'b-collapse': { template: '<div><slot></slot></div>', props: ['modelValue'] },
+        'b-navbar-nav': { template: '<div class="navbar-nav"><slot></slot></div>' },
+        'b-nav-item-dropdown': { template: '<div class="nav-item-dropdown"><slot name="button-content"></slot><slot></slot></div>' },
+        'b-dropdown-item': { template: '<div class="dropdown-item"><slot></slot></div>' }
       }
-    })
-  }
+    }
+  })
+}
+
+describe('CIBHeaderFlow.vue', () => {
+
+  beforeAll(() => {
+    const translations = {
+      ...JSON.parse(
+        // eslint-disable-next-line no-undef
+        readFileSync(resolve(__dirname, '../../assets/translations_en.json'), 'utf-8')
+      ),
+      bcomponents: {
+        ariaLabelClose: 'Close',
+      },
+    }
+
+    i18n.global.locale = 'en'
+    i18n.global.setLocaleMessage('en', translations)
+  })
+
+  let wrapper
 
   describe('Hamburger Menu Toggle', () => {
     it('should toggle isCollapsed when clicking hamburger button', async () => {

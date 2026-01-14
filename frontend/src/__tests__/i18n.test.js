@@ -42,9 +42,13 @@ function haveSameProperties(objBase, objTest, path) {
     const keysBase = Object.keys(objBase)
     const keysTest = Object.keys(objTest)
 
+    // Sort keys for comparison
+    keysBase.sort()
+    keysTest.sort()
+
     // Compare key sets
-    const keysBaseSorted = keysBase.sort().join(',')
-    const keysTestSorted = keysTest.sort().join(',')
+    const keysBaseSorted = keysBase.join(',')
+    const keysTestSorted = keysTest.join(',')
     expect(keysBaseSorted, `Missing/extra key for "${path}" path`).toBe(keysTestSorted)
 
     // Recurse into nested objects
@@ -161,24 +165,25 @@ function reportSameValuesTable(objBase, objTest, languages, path) {
   expect(objBase).not.toBeNull()
   expect(objTest).not.toBeNull()
 
+  if (skipPath(path)) {
+    return true
+  }
+
   if (typeof objBase === 'string') {
-    if (!skipPath(path)) {
+    const hasSameValues = objTest.map(
+      (v, index) => objBase === v && !skipValue(objBase, languages[index])
+    ).find(v => v)
+    if (hasSameValues) {
 
-      const hasSameValues = objTest.map(
-        (v, index) => objBase === v && !skipValue(objBase, languages[index])
-      ).find(v => v)
-      if (hasSameValues) {
-
-        if (!hasHeader) {
-          console.log(`Error: Next strings have the same values comparing to EN`)
-          hasHeader = true
-        }
-
-        const v = objTest.map(
-          (v, index) => (objBase === v && !skipValue(objBase, languages[index])) ? languages[index] : '  '
-        ).join(' | ')
-        console.log(`| en | ${v} | ${path} |`)
+      if (!hasHeader) {
+        console.log(`Error: Next strings have the same values comparing to EN`)
+        hasHeader = true
       }
+
+      const v = objTest.map(
+        (v, index) => (objBase === v && !skipValue(objBase, languages[index])) ? languages[index] : '  '
+      ).join(' | ')
+      console.log(`| en | ${v} | ${path} |`)
     }
   }
   else {
@@ -209,24 +214,21 @@ describe('translations', () => {
 
   describe('compare en with', () => {
     const translationEn = getTranslation('en')
-    languages.filter(lang => lang !== 'en').forEach(lang => {
-      it(`${lang}`, () => {
-        const translationLang = getTranslation(lang)
-        expect(haveSameProperties(translationEn, translationLang, lang)).toBeTruthy()
-      })
+    const additionalLanguages = languages.filter(lang => lang !== 'en')
+
+    it.each(additionalLanguages)(`en.keys === %s.keys`, (lang) => {
+      const translationLang = getTranslation(lang)
+      expect(haveSameProperties(translationEn, translationLang, lang)).toBeTruthy()
     })
 
-    languages.filter(lang => lang !== 'en').forEach(lang => {
-      it(`${lang}, report same values`, () => {
-        const translationLang = getTranslation(lang)
-        expect(reportSameValues(translationEn, translationLang, lang, lang)).toBeTruthy()
-      })
+    it.each(additionalLanguages)(`en !== %s, report same values`, (lang) => {
+      const translationLang = getTranslation(lang)
+      expect(reportSameValues(translationEn, translationLang, lang, lang)).toBeTruthy()
     })
 
     it(`same values as table`, () => {
-      const filteredLanguages = languages.filter(lang => lang !== 'en')
-      const translations = filteredLanguages.map(lang => getTranslation(lang))
-      expect(reportSameValuesTable(translationEn, translations, filteredLanguages, '')).toBeTruthy()
+      const translations = additionalLanguages.map(lang => getTranslation(lang))
+      expect(reportSameValuesTable(translationEn, translations, additionalLanguages, '')).toBeTruthy()
     })
   })
 })

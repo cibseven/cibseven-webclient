@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, vi, beforeAll } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { i18n } from '@/i18n'
 import AddVariableModalUI from '@/components/process/modals/AddVariableModalUI.vue'
@@ -29,58 +29,62 @@ vi.mock('@/services.js', () => ({
   }
 }))
 
+function createWrapper(props = {}) {
+
+  return mount(AddVariableModalUI, {
+    props: props,
+    global: {
+      provide: {
+        // Provide any necessary global properties or mocks
+      },
+      mocks: {
+        $t: (msg) => msg,
+        $te: () => true,
+      },
+      plugins: [i18n],
+      stubs: {
+        'b-modal': {
+          template: '<div><slot></slot></div>',
+          methods: {
+            show: vi.fn(),
+            hide: vi.fn(),
+          }
+        },
+        'b-form-group': BFormGroup,
+        'b-form-input': BFormInput,
+        'b-form-select': BFormSelect,
+        'b-form-checkbox': BFormCheckbox,
+        'b-form-datepicker': true,
+        'b-form-file': true,
+        'b-button': BButton,
+        'b-alert': BAlert,
+        'b-tab': { template: '<div><slot></slot></div>' },
+        'b-tabs': { template: '<div><slot></slot></div>' },
+      }
+    }
+  })
+}
+
 describe('AddVariableModal.vue UI interactions', () => {
+
   let wrapper
 
-  function createWrapper(props = {}) {
-    return mount(AddVariableModalUI, {
-      props: props,
-      global: {
-        provide: {
-          // Provide any necessary global properties or mocks
-        },
-        mocks: {
-          $t: (msg) => msg,
-          $te: () => true,
-        },
-        plugins: [i18n],
-        stubs: {
-          'b-modal': {
-            template: '<div><slot></slot></div>',
-            methods: {
-              show: vi.fn(),
-              hide: vi.fn(),
-            }
-          },
-          'b-form-group': BFormGroup,
-          'b-form-input': BFormInput,
-          'b-form-select': BFormSelect,
-          'b-form-checkbox': BFormCheckbox,
-          'b-form-datepicker': true,
-          'b-button': BButton,
-          'b-alert': BAlert,
-          'b-tab': { template: '<div><slot></slot></div>' },
-          'b-tabs': { template: '<div><slot></slot></div>' },
-        }
-      }
-    })
-  }
-
-  const translations = {...JSON.parse(
-      // eslint-disable-next-line no-undef
-      readFileSync(resolve(__dirname, '../../assets/translations_en.json'), 'utf-8')
-    ),
-    ...{
+  beforeAll(() => {
+    const translations = {
+      ...JSON.parse(
+        // eslint-disable-next-line no-undef
+        readFileSync(resolve(__dirname, '../../assets/translations_en.json'), 'utf-8')
+      ),
       bcomponents: {
         ariaLabelClose: 'Close',
       },
     }
-  }
 
-  beforeEach(() => {
     i18n.global.locale = 'en'
     i18n.global.setLocaleMessage('en', translations)
+  })
 
+  beforeEach(() => {
     wrapper = createWrapper({})
   })
 
@@ -97,51 +101,29 @@ describe('AddVariableModal.vue UI interactions', () => {
     await wrapper.setData({ value: newValue })
   }
 
-  describe('editMode', () => {
-    describe('editMode=true', () => {
-      it('allowEditName=undefined', async () => {
-        wrapper = createWrapper({ editMode: true })
-        expect(wrapper.vm.editMode).toBe(true)
-        expect(wrapper.vm.computedAllowEditName).toBe(false)
-        expect(wrapper.find('input').attributes('disabled')).toBeDefined()
-      })
-
-      it('allowEditName=false', async () => {
-        wrapper = createWrapper({ editMode: true, allowEditName: false })
-        expect(wrapper.vm.editMode).toBe(true)
-        expect(wrapper.vm.computedAllowEditName).toBe(false)
-        expect(wrapper.find('input').attributes('disabled')).toBeDefined()
-      })
-
-      it('allowEditName=true', async () => {
-        wrapper = createWrapper({ editMode: true, allowEditName: true })
-        expect(wrapper.vm.editMode).toBe(true)
-        expect(wrapper.vm.computedAllowEditName).toBe(true)
-        expect(wrapper.find('input').attributes('disabled')).toBeUndefined()
-      })
+  describe.each([
+    true,
+    false,
+  ])('editMode=%s', (editMode) => {
+    it('allowEditName=undefined', async () => {
+      wrapper = createWrapper({ editMode })
+      expect(wrapper.vm.editMode).toBe(editMode)
+      expect(wrapper.vm.computedAllowEditName).toBe(!editMode)
+      expect(wrapper.find('input').attributes('disabled')).toBe(editMode ? '': undefined)
     })
 
-    describe('editMode=false', () => {
-      it('allowEditName=undefined', async () => {
-        wrapper = createWrapper({ editMode: false })
-        expect(wrapper.vm.editMode).toBe(false)
-        expect(wrapper.vm.computedAllowEditName).toBe(true)
-        expect(wrapper.find('input').attributes('disabled')).toBeUndefined()
-      })
+    it('allowEditName=false', async () => {
+      wrapper = createWrapper({ editMode: editMode, allowEditName: false })
+      expect(wrapper.vm.editMode).toBe(editMode)
+      expect(wrapper.vm.computedAllowEditName).toBe(!editMode)
+      expect(wrapper.find('input').attributes('disabled')).toBe(editMode ? '': undefined)
+    })
 
-      it('allowEditName=false', async () => {
-        wrapper = createWrapper({ editMode: false, allowEditName: false })
-        expect(wrapper.vm.editMode).toBe(false)
-        expect(wrapper.vm.computedAllowEditName).toBe(true)
-        expect(wrapper.find('input').attributes('disabled')).toBeUndefined()
-      })
-
-      it('allowEditName=true', async () => {
-        wrapper = createWrapper({ editMode: false, allowEditName: true })
-        expect(wrapper.vm.editMode).toBe(false)
-        expect(wrapper.vm.computedAllowEditName).toBe(true)
-        expect(wrapper.find('input').attributes('disabled')).toBeUndefined()
-      })
+    it('allowEditName=true', async () => {
+      wrapper = createWrapper({ editMode: editMode, allowEditName: true })
+      expect(wrapper.vm.editMode).toBe(editMode)
+      expect(wrapper.vm.computedAllowEditName).toBe(true)
+      expect(wrapper.find('input').attributes('disabled')).toBeUndefined()
     })
   })
 
@@ -573,16 +555,16 @@ describe('AddVariableModal.vue UI interactions', () => {
     ])
 
     // Double conversions
-    testTypeConversion('Double', 0.0, [
+    testTypeConversion('Double', 0, [
       ['Boolean', true],
       ['Double', 0],
       ['String', ''],
       ['Json', '{}']
     ])
 
-    testTypeConversion('Double', 100.50, [
+    testTypeConversion('Double', 100.5, [
       ['Boolean', true],
-      ['Double', 100.50],
+      ['Double', 100.5],
       ['String', '100.5'],
       ['Json', '{}'],
       ['Date', null],
@@ -645,44 +627,39 @@ describe('AddVariableModal.vue UI interactions', () => {
     ])
 
     describe('from Json', () => {
-      describe('number json "123" to Object', () => {
-        beforeEach(async () => {
-          await setData({ type: 'Json', value: '123' })
-          expect(wrapper.vm.value).toBe('123')
-        })
+      it('json object "123" to Object', async () => {
+        await setData({ type: 'Json', value: '123' })
+        expect(wrapper.vm.value).toBe('123')
 
-        it('"123" to Object', async () => {
-          await changeType('Object')
-          expect(wrapper.vm.value).toBe('123')
-          expect(wrapper.vm.objectTypeName).toBe('')
-          expect(wrapper.vm.serializationDataFormat).toBe('')
-        })
+        await changeType('Object')
+        expect(wrapper.vm.value).toBe('123')
+        expect(wrapper.vm.objectTypeName).toBe('')
+        expect(wrapper.vm.serializationDataFormat).toBe('')
       })
 
-      describe('json object {"a":"b"}', () => {
-        beforeEach(async () => {
-          await setData({ type: 'Json', value: '{"a":"b"}' })
-          expect(wrapper.vm.value).toBe('{"a":"b"}')
-        })
+      it.each([
+        ['Boolean', true],
+        ['Long', 0],
+        ['Double', 0],
+        ['String', '{"a":"b"}'],
+        ['Date', null],
+        ['Xml', '']
+      ])('json object "{"a":"b"}" to %s', async (targetType, expectedValue) => {
+        await setData({ type: 'Json', value: '{"a":"b"}' })
+        expect(wrapper.vm.value).toBe('{"a":"b"}')
 
-        it.each([
-          ['Boolean', true],
-          ['Long', 0],
-          ['Double', 0],
-          ['String', '{"a":"b"}'],
-          ['Date', null],
-          ['Xml', '']
-        ])('"{"a":"b"}" to %s', async (targetType, expectedValue) => {
-          await changeType(targetType)
-          expect(wrapper.vm.value).toBe(expectedValue === null ? wrapper.vm.currentDate() : expectedValue)
-        })
+        await changeType(targetType)
+        expect(wrapper.vm.value).toBe(expectedValue === null ? wrapper.vm.currentDate() : expectedValue)
+      })
 
-        it('"{"a":"b"}" to Object', async () => {
-          await changeType('Object')
-          expect(wrapper.vm.value).toBe('{\n  "a": "b"\n}')
-          expect(wrapper.vm.objectTypeName).toBe('java.util.Map')
-          expect(wrapper.vm.serializationDataFormat).toBe('application/json')
-        })
+      it('json object "{"a":"b"}" to Object', async () => {
+        await setData({ type: 'Json', value: '{"a":"b"}' })
+        expect(wrapper.vm.value).toBe('{"a":"b"}')
+
+        await changeType('Object')
+        expect(wrapper.vm.value).toBe('{\n  "a": "b"\n}')
+        expect(wrapper.vm.objectTypeName).toBe('java.util.Map')
+        expect(wrapper.vm.serializationDataFormat).toBe('application/json')
       })
     })
 
