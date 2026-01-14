@@ -277,7 +277,8 @@ export default {
     },
     showPopoverHowToAssign: {
       get() {
-        return localStorage?.getItem('showPopoverHowToAssign') !== 'false' || true
+        if (!localStorage) return true
+        return localStorage?.getItem('showPopoverHowToAssign') !== 'false'
       },
       set(val) {
         localStorage?.setItem('showPopoverHowToAssign', val)

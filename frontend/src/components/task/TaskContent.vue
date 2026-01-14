@@ -211,7 +211,7 @@ export default {
       this.resetTimer()
       this.timer = setTimeout(() => {
         if (assignee === null || assignee !== this.$root.user.id) {
-          this.displayPopover = localStorage.getItem('showPopoverHowToAssign') === 'false' ? false : true
+          this.displayPopover = localStorage.getItem('showPopoverHowToAssign') !== 'false'
           // To hide popover when clicking outside of it
           if (this.displayPopover) {
             this.startListeningTouchEvents()
@@ -241,7 +241,7 @@ export default {
       }
     },
     disablePopover: function() {
-      localStorage.setItem('showPopoverHowToAssign', false)
+      localStorage.setItem('showPopoverHowToAssign', 'false')
       this.displayPopover = false
     },
     update: function() {
