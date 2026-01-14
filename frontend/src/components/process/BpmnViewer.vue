@@ -348,7 +348,7 @@ export default {
       
       // Add transitions not in historyStatistics
       this.activityInstance.childTransitionInstances.forEach(trans => {
-        if (!historyStatistics.find(hs => hs.id === trans.activityId)) {
+        if (!historyStatistics.some(hs => hs.id === trans.activityId)) {
           merged.push({
             id: trans.activityId,
             instances: 1,
@@ -385,7 +385,7 @@ export default {
       
       // Add historyStatistics not in this.statistics
       historyStatistics?.forEach(hs => {
-        if (!this.statistics.find(s => s.id === hs.id)) {
+        if (!this.statistics.some(s => s.id === hs.id)) {
           merged.push(hs)
         }
       })

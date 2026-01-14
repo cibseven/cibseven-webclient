@@ -101,8 +101,8 @@ methods: {
       const minutes = now.getMinutes().toString().padStart(2, '0')
       this.invalidDate = false
       this.selectedJobDefinition = selectedJobDefinition
-      this.includeExistingJob = true,
-      this.executionOption = 'immediately',
+      this.includeExistingJob = true
+      this.executionOption = 'immediately'
       this.scheduledAt = { date: new Date(), time: `${hours}:${minutes}` }
       this.$refs.changeJobStateModal.show()
     },

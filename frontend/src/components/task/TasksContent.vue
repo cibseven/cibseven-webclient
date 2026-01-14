@@ -108,7 +108,7 @@ export default {
   data: function () {
     let leftOpenFilter = localStorage.getItem('leftOpenFilter') ?
       localStorage.getItem('leftOpenFilter') === 'true' : true
-    const externalMode = window.location.href.includes('externalMode') ? true : false
+    const externalMode = window.location.href.includes('externalMode')
     if (externalMode) leftOpenFilter = false
     return {
       leftOpenFilter: leftOpenFilter,
@@ -313,7 +313,7 @@ export default {
       this.$refs.completedTask.show(2)
       this.processInstanceHistory = null
       this.listTasksWithFilterAuto()
-      this.checkAndOpenTask(JSON.parse(JSON.stringify(this.task)))
+      this.checkAndOpenTask(structuredClone(this.task))
       this.task = null
       this.assignee = null
     },

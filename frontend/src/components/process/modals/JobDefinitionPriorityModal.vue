@@ -76,7 +76,7 @@ export default {
           return false
         }
         const parsed = Number(this.priority)
-        return !isNaN(parsed) && Number.isInteger(parsed)
+        return !Number.isNaN(parsed) && Number.isInteger(parsed)
       }
       return false
     }

@@ -71,13 +71,11 @@ Promise.all([
         mixins: [permissionsMixin],
         provide: function() {
           return {
-            currentLanguage(lang) {
-              // get language
-              if (!lang) return i18n.global.locale
-              // set language
-              return switchLanguage(config, lang).then(() => {
-                return i18n.global.locale
-              })
+            async currentLanguage(lang) {
+              if (lang) {
+                await switchLanguage(config, lang)
+              }
+              return i18n.global.locale
             },
             loadProcesses(extraInfo) {
                 return fetchAndStoreProcesses(this, this.$store, config, extraInfo)

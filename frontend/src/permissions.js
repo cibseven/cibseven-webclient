@@ -66,7 +66,7 @@ const permissionsMixin = {
 			//Handle custom CREATE permissions case//
 			if (create) {
 				const createCheck = permissionsCheck.find(function(p) {
-					return p.granted.indexOf('*') !== -1 && p.revoked.indexOf('*') === -1
+					return p.granted.includes('*') && !p.revoked.includes('*')
 				})
 				return !!createCheck
 			}
@@ -88,17 +88,17 @@ const permissionsMixin = {
 			groups.forEach(function(group) {
 				this.$_permissionsMixin_getPermissionsGrouped(permissionsToHandle, group).forEach(function(p) {
 					const allPermsIncluded = permissionsToCheck.every(function(v) {
-						return p.permissions.indexOf(v) !== -1
+						return p.permissions.includes(v)
 					})
 					const somePermsIncluded = permissionsToCheck.some(function(v) {
-						return p.permissions.indexOf(v) !== -1
+						return p.permissions.includes(v)
 					})
 					if (p.type === 2) {
-						if (permissionsProcesses.revoked.indexOf(p.resourceId) === -1 &&
-							(somePermsIncluded || p.permissions.indexOf('ALL') !== -1))
+						if (!permissionsProcesses.revoked.includes(p.resourceId) &&
+							(somePermsIncluded || p.permissions.includes('ALL')))
 							permissionsProcesses.revoked.push(p.resourceId)
-					} else if ((p.permissions.indexOf('ALL') !== -1 || allPermsIncluded)) {
-						if (permissionsProcesses.granted.indexOf(p.resourceId) === -1)
+					} else if ((p.permissions.includes('ALL') || allPermsIncluded)) {
+						if (!permissionsProcesses.granted.includes(p.resourceId))
 							permissionsProcesses.granted.push(p.resourceId)
 					}
 				})
@@ -112,24 +112,18 @@ const permissionsMixin = {
 		},
 		$_permissionsMixin_checkPermissionsAllowed: function(object, key, permissionsCheck) {
 			if (!this.$root.config.authorizationEnabled) return true;
-			let check = false
 			const val = key ? object[key] : object
-			for (let i = 0; i < permissionsCheck.length; i++) {
-				if ((permissionsCheck[i].granted.indexOf(val) !== -1 || permissionsCheck[i].granted.indexOf('*') !== -1) &&
-				permissionsCheck[i].revoked.indexOf(val) === -1 && permissionsCheck[i].revoked.indexOf('*') === -1) check = true
-				else return false
-			}
-			return check
+			return (permissionsCheck.length > 0) && permissionsCheck.every(permission =>
+				(permission.granted.includes(val) || permission.granted.includes('*')) &&
+				!permission.revoked.includes(val) && !permission.revoked.includes('*')
+			)
 		},
 		$_permissionsMixin_checkPermissionsDenied: function(object, key, permissionsCheck) {
 			if (!this.$root.config.authorizationEnabled) return false;
 			const val = key ? object[key] : object
-			for (let i = 0; i < permissionsCheck.length; i++) {
-				if (permissionsCheck[i].revoked.indexOf(val) !== -1 || permissionsCheck[i].revoked.indexOf('*') !== -1) {
-					return true
-				}
-			}
-			return false
+			return permissionsCheck.some(permission =>
+				permission.revoked.includes(val) || permission.revoked.includes('*')
+			)
 		}
 	}
 }

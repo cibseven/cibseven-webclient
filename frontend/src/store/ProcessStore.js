@@ -73,7 +73,7 @@ const ProcessStore = {
     },
     setFavorites: function (ctx, params) {
       ctx.state.list.forEach(process => {
-        if (params.favorites.indexOf(process.key) !== -1) ctx.commit('setFavorite', { process: process, value: true })
+        if (params.favorites.includes(process.key)) ctx.commit('setFavorite', { process: process, value: true })
         else ctx.commit('setFavorite', { process: process, value: false })
       })
     },

@@ -283,7 +283,7 @@ export default {
       // auth needs to be removed from list.
       if (this.authorizations[0].id === "0") this.authorizations.shift()
       this.edit = authorization.id
-      this.isUserToEdit = (authorization.userId != null) ? true : false
+      this.isUserToEdit = (authorization.userId != null)
       if (authorization.permissions.length === 0) {
         this.selected = []
       }

@@ -86,7 +86,7 @@ export default {
 			this.invalidDate = false
 			this.selectedItem = selectedItem
 			this.executionOption = 'keepDueDate'
-			this.scheduledAt = { date: new Date(), time: `${hours}:${minutes}` },
+			this.scheduledAt = { date: new Date(), time: `${hours}:${minutes}` }
 			this.$refs.retryModal.show()
 		},
 		hide: function() {

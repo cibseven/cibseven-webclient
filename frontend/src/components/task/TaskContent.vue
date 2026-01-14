@@ -54,7 +54,6 @@
                   class="mdi mdi-18px mdi-account">
                   {{ ' ' + getCompleteName }}
                 </b-form-tag>
-                <!-- <span class="mdi mdi-18px mdi-account mdi-dark"></span><span class="p-1" style="line-height: initial">{{ getCompleteName }}</span> -->
               </span>
               <span v-else>
                 <b-button ref="assignToMeButton" variant="link" class="p-0 text-dark me-2"
@@ -212,7 +211,7 @@ export default {
       this.resetTimer()
       this.timer = setTimeout(() => {
         if (assignee === null || assignee !== this.$root.user.id) {
-          this.displayPopover = localStorage.getItem('showPopoverHowToAssign') === 'false' ? false : true
+          this.displayPopover = localStorage.getItem('showPopoverHowToAssign') !== 'false'
           // To hide popover when clicking outside of it
           if (this.displayPopover) {
             this.startListeningTouchEvents()
@@ -242,7 +241,7 @@ export default {
       }
     },
     disablePopover: function() {
-      localStorage.setItem('showPopoverHowToAssign', false)
+      localStorage.setItem('showPopoverHowToAssign', 'false')
       this.displayPopover = false
     },
     update: function() {

@@ -475,7 +475,7 @@ export default {
         d.name = d.name || d.id
 
         let group = '-'
-        let name = '-'
+        let name
         if (this.sortBy === 'name') {
           group = (d.name || '-')[0].toUpperCase() || '-'
           name = group

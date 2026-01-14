@@ -324,7 +324,7 @@ export default {
     editCriteria: function(index) {
       this.isEditing = true
       // so the row of the table doesnt change too when the inputs are modified
-      const criteriaToEdit = JSON.parse(JSON.stringify(this.criteriasToAdd[index]))
+      const criteriaToEdit = structuredClone(this.criteriasToAdd[index])
       this.criteriaEdited = { key: criteriaToEdit.key, rowIndex: index }
       this.selectedCriteriaKey = criteriaToEdit.key
       this.selectCriteria(this.selectedCriteriaKey)
@@ -363,7 +363,7 @@ export default {
       this.selectedCriteriaType = null
       this.includeAssigned = false
       this.selectedCriteriaVariable = [{ name: '', operator: 'eq', value: '' }]
-      this.isEditing = false,
+      this.isEditing = false
       this.criteriaEdited = { key: null, rowIndex: null}
 
       // Prepared criterias
