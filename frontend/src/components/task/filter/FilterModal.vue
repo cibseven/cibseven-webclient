@@ -363,7 +363,7 @@ export default {
       this.selectedCriteriaType = null
       this.includeAssigned = false
       this.selectedCriteriaVariable = [{ name: '', operator: 'eq', value: '' }]
-      this.isEditing = false,
+      this.isEditing = false
       this.criteriaEdited = { key: null, rowIndex: null}
 
       // Prepared criterias
