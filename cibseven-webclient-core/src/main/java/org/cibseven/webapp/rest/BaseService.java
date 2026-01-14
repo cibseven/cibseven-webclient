@@ -37,8 +37,9 @@ public class BaseService {
 
 	@Autowired
 	protected BpmProvider bpmProvider;
+	@SuppressWarnings("rawtypes")
 	@Autowired
-	protected BaseUserProvider<StandardLogin> baseUserProvider;
+	protected BaseUserProvider baseUserProvider;
 	
 	@Value("${camunda.bpm.authorization.enabled:false}")
 	private boolean authorizationEnabled;
