@@ -125,7 +125,7 @@ export default {
       if (this.$store.state.advancedSearch.criterias.length > 0) {
         this.matchAllCriteria = this.$store.state.advancedSearch.matchAllCriteria
         this.criterias = this.$store.state.advancedSearch.criterias.map(criteria => {
-          return Object.assign({}, criteria)
+          return { ...criteria }
         })
       }
       this.$refs.advancedSearchModal.show()
