@@ -82,10 +82,10 @@ var convertToType = function(value, type) {
       case 'Integer':
       case 'Long':
       case 'Short':
-        return parseInt(value, 10);
+        return Number.parseInt(value, 10);
       case 'Float':
       case 'Double':
-        return parseFloat(value);
+        return Number.parseFloat(value);
       case 'Boolean':
         return 'true' === value;
       case 'Date':

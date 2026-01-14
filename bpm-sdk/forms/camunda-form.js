@@ -619,7 +619,7 @@ CamundaForm.prototype.transformFiles = function(callback) {
           throw new Error(
             'Maximum file size of ' +
               bytesToSize(
-                parseInt(element.getAttribute('cam-max-filesize'), 10) ||
+                Number.parseInt(element.getAttribute('cam-max-filesize'), 10) ||
                   5000000
               ) +
               ' exceeded.'
