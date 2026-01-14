@@ -54,7 +54,6 @@
                   class="mdi mdi-18px mdi-account">
                   {{ ' ' + getCompleteName }}
                 </b-form-tag>
-                <!-- <span class="mdi mdi-18px mdi-account mdi-dark"></span><span class="p-1" style="line-height: initial">{{ getCompleteName }}</span> -->
               </span>
               <span v-else>
                 <b-button ref="assignToMeButton" variant="link" class="p-0 text-dark me-2"
