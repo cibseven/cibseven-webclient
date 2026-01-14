@@ -86,7 +86,8 @@ export default {
       }).sort((objA, objB) => {
         const nameA = objA.name ? objA.name.toUpperCase() : objA.key.toUpperCase()
         const nameB = objB.name ? objB.name.toUpperCase() : objB.key.toUpperCase()
-        return nameA < nameB ? -1 : (nameA > nameB ? 1 : 0)
+        const compareAMoreB = nameA > nameB ? 1 : 0
+        return nameA < nameB ? -1 : compareAMoreB
       })
     },
     processName: function() {
