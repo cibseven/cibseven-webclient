@@ -109,14 +109,14 @@ describe('AddVariableModal.vue UI interactions', () => {
       wrapper = createWrapper({ editMode })
       expect(wrapper.vm.editMode).toBe(editMode)
       expect(wrapper.vm.computedAllowEditName).toBe(!editMode)
-      expect(wrapper.find('input').attributes('disabled')).toBe(editMode ? '': undefined)
+      expect(wrapper.find('input').attributes('disabled')).toBe(editMode ? '' : undefined)
     })
 
     it('allowEditName=false', async () => {
       wrapper = createWrapper({ editMode: editMode, allowEditName: false })
       expect(wrapper.vm.editMode).toBe(editMode)
       expect(wrapper.vm.computedAllowEditName).toBe(!editMode)
-      expect(wrapper.find('input').attributes('disabled')).toBe(editMode ? '': undefined)
+      expect(wrapper.find('input').attributes('disabled')).toBe(editMode ? '' : undefined)
     })
 
     it('allowEditName=true', async () => {
