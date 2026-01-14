@@ -113,7 +113,7 @@ const permissionsMixin = {
 		$_permissionsMixin_checkPermissionsAllowed: function(object, key, permissionsCheck) {
 			if (!this.$root.config.authorizationEnabled) return true;
 			const val = key ? object[key] : object
-			return permissionsCheck.every(permission =>
+			return (permissionsCheck.length > 0) && permissionsCheck.every(permission =>
 				(permission.granted.includes(val) || permission.granted.includes('*')) &&
 				!permission.revoked.includes(val) && !permission.revoked.includes('*')
 			)
