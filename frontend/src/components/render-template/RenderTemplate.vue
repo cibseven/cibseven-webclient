@@ -199,7 +199,7 @@ export default {
     },
     completeTask: function(task) {
       this.submitForm = true
-      const data = JSON.parse(JSON.stringify(this.task))
+      const data = structuredClone(this.task)
       if (task) data.processInstanceId = task.id
       if (this.task.url) {
         this.$emit('complete-task', data)
@@ -284,7 +284,7 @@ export default {
           }
           if (this.$root.config.engineRestMappings) {
             // Convert to plain array of plain objects to ensure it can be cloned
-            config.engineRestMappings = JSON.parse(JSON.stringify(this.$root.config.engineRestMappings))
+            config.engineRestMappings = structuredClone(this.$root.config.engineRestMappings)
           }
           const response = {
             method: 'configResponse',

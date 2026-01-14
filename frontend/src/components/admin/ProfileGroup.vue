@@ -248,7 +248,7 @@ export default {
     },
     async loadUnassignedTenants() {
       await this.fetchTenants()
-      const groupTenants = JSON.parse(JSON.stringify(this.groupTenants))
+      const groupTenants = structuredClone(this.groupTenants)
       this.unassignedTenants = []
       this.tenants.forEach(tenant => {
         let isAssigned = false

@@ -462,7 +462,7 @@ export default {
       }
     },
     copyTaskForDateManagement: function(task, type) {
-      this.selectedDateT = JSON.parse(JSON.stringify(task))
+      this.selectedDateT = structuredClone(task)
       if (task[type]) {
         this.selectedDateT[type] = new Date(task[type])
         if (type === 'due') this.selectedDateT.dueTime = this.selectedDateT[type].getHours() + ':' + this.selectedDateT[type].getMinutes()

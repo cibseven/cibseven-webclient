@@ -32,7 +32,7 @@ export const createStoreTestSuite = (storeName, storeModule, customTests = {}) =
       if (typeof storeModule.state === 'function') {
         state = storeModule.state()
       } else {
-        state = JSON.parse(JSON.stringify(storeModule.state))
+        state = structuredClone(storeModule.state)
       }
       
       mockCommit = vi.fn()

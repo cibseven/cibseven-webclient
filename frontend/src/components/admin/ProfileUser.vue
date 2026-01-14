@@ -422,7 +422,7 @@ export default {
     },
     loadUnassignedGroups: function() {
       this.unAssignedGroupsLoading = true
-      const userGroups = JSON.parse(JSON.stringify(this.groups))
+      const userGroups = structuredClone(this.groups)
       this.unAssignedGroups = []
       AdminService.findGroups().then(allGroups => {
         allGroups.forEach(group => {
@@ -472,7 +472,7 @@ export default {
     },
     async loadUnassignedTenants() {
       await this.fetchTenants()
-      const userTenants = JSON.parse(JSON.stringify(this.userTenants))
+      const userTenants = structuredClone(this.userTenants)
       this.unassignedTenants = []
       this.tenants.forEach(tenant => { // TODO optimize with findIndex
         let isAssigned = false
