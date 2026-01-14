@@ -269,7 +269,8 @@ export default {
     // notifications
     tasksCheckNotificationsDisabled: {
       get() {
-        return localStorage?.getItem('tasksCheckNotificationsDisabled') === 'true' || false
+        if (!localStorage) return false
+        return localStorage.getItem('tasksCheckNotificationsDisabled') === 'true'
       },
       set(val) {
         localStorage?.setItem('tasksCheckNotificationsDisabled', val)
@@ -278,7 +279,7 @@ export default {
     showPopoverHowToAssign: {
       get() {
         if (!localStorage) return true
-        return localStorage?.getItem('showPopoverHowToAssign') !== 'false'
+        return localStorage.getItem('showPopoverHowToAssign') !== 'false'
       },
       set(val) {
         localStorage?.setItem('showPopoverHowToAssign', val)
