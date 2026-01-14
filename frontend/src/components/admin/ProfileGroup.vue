@@ -251,10 +251,7 @@ export default {
       const groupTenants = structuredClone(this.groupTenants)
       this.unassignedTenants = []
       this.tenants.forEach(tenant => {
-        let isAssigned = false
-        groupTenants.forEach(groupTenant => {// TODO optimize with findIndex
-          if (tenant.id === groupTenant.id) isAssigned = true
-        })
+        const isAssigned = groupTenants.some(groupTenant => groupTenant.id === tenant.id)
         if (!isAssigned){
           tenant.selected = false
           this.unassignedTenants.push(tenant)

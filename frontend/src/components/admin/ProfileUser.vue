@@ -426,10 +426,7 @@ export default {
       this.unAssignedGroups = []
       AdminService.findGroups().then(allGroups => {
         allGroups.forEach(group => {
-          let isAssigned = false
-          userGroups.forEach(userGroup => { // TODO optimize with findIndex
-            if (group.id === userGroup.id) isAssigned = true
-          })
+          const isAssigned = userGroups.some(userGroup => userGroup.id === group.id)
           if (!isAssigned){
             group.selected = false
             this.unAssignedGroups.push(group)
@@ -474,11 +471,8 @@ export default {
       await this.fetchTenants()
       const userTenants = structuredClone(this.userTenants)
       this.unassignedTenants = []
-      this.tenants.forEach(tenant => { // TODO optimize with findIndex
-        let isAssigned = false
-        userTenants.forEach(userTenant => {
-          if (tenant.id === userTenant.id) isAssigned = true
-        })
+      this.tenants.forEach(tenant => {
+        const isAssigned = userTenants.some(userTenant => userTenant.id === tenant.id)
         if (!isAssigned){
           tenant.selected = false
           this.unassignedTenants.push(tenant)
