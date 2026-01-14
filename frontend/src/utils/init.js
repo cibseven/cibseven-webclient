@@ -39,8 +39,7 @@ export function hasHeader() {
 
 import platform from 'platform'
 export function isMobile() {
-  if ((platform.os.family === 'Android') || (platform.os.family === 'iOS')) return true
-  else return false
+  return ((platform.os.family === 'Android') || (platform.os.family === 'iOS'))
 }
 
 export function checkExternalReturn(href, hash) {

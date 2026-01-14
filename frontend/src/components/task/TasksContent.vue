@@ -108,7 +108,7 @@ export default {
   data: function () {
     let leftOpenFilter = localStorage.getItem('leftOpenFilter') ?
       localStorage.getItem('leftOpenFilter') === 'true' : true
-    const externalMode = window.location.href.includes('externalMode') ? true : false
+    const externalMode = window.location.href.includes('externalMode')
     if (externalMode) leftOpenFilter = false
     return {
       leftOpenFilter: leftOpenFilter,
