@@ -214,8 +214,8 @@ export default {
         const nameB = objB.name ? objB.name.toUpperCase() : objB.name
         let comp = nameA < nameB ? -1 : (nameA > nameB ? 1 : 0)
         if (this.$root.config.subProcessFolder) {
-          if (objA.resource.indexOf(this.$root.config.subProcessFolder) > -1) comp = 1
-          else if (objB.resource.indexOf(this.$root.config.subProcessFolder) > -1) comp = -1
+          if (objA.resource.includes(this.$root.config.subProcessFolder)) comp = 1
+          else if (objB.resource.includes(this.$root.config.subProcessFolder)) comp = -1
         }
         return comp
       })

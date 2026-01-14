@@ -81,8 +81,8 @@ export default {
     startableProcesses: function() {
       return this.$store.state.process.list.filter(process => {
         return process.startableInTasklist === true && !process.revoked && process.suspended !== 'true' &&
-          (process.name ? process.name.toLowerCase().indexOf(this.processesFilter.toLowerCase()) !== -1 :
-          process.key.toLowerCase().indexOf(this.processesFilter.toLowerCase()) !== -1)
+          (process.name ? process.name.toLowerCase().includes(this.processesFilter.toLowerCase()) :
+          process.key.toLowerCase().includes(this.processesFilter.toLowerCase()))
       }).sort((objA, objB) => {
         const nameA = objA.name ? objA.name.toUpperCase() : objA.key.toUpperCase()
         const nameB = objB.name ? objB.name.toUpperCase() : objB.key.toUpperCase()

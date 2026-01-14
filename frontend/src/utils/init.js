@@ -52,7 +52,7 @@ export function checkExternalReturn(href, hash) {
 
     const tokenStartPos = hashAux.indexOf('token=') + 'token='.length
 
-    if(hashAux.indexOf('&', tokenStartPos) > -1)
+    if (hashAux.includes('&', tokenStartPos))
       token = hashAux.substring(tokenStartPos, hashAux.indexOf('&', tokenStartPos))
     else
       token = hashAux.substring(tokenStartPos)
@@ -107,7 +107,7 @@ export function handleAxiosError(router, root, error) {
         'UnsupportedTypeException', 'ExpressionEvaluationException', 'ExistingUserRequestException',
         'ExistingGroupRequestException', 'AccessDeniedException', 'SystemException', 'InvalidUserIdException', 'InvalidValueHistoryTimeToLive',
         'VariableModificationException', 'WrongDeploymenIdException', 'NoRessourcesFoundException', 'DmnTransformationException']
-      if (res.data.type && exceptions.indexOf(res.data.type) !== -1)
+      if (res.data.type && exceptions.includes(res.data.type))
         root.$refs.error.show(res.data)
       //root.$refs.report.show(res.data)
       return Promise.reject(error)
