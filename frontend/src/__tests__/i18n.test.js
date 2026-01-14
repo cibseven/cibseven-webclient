@@ -15,8 +15,10 @@
  *  limitations under the License.
  */
 import { describe, it, expect } from 'vitest'
-import { readFileSync } from 'fs'
-import { resolve } from 'path'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+
+const languages = ['de', 'en', 'es', 'ru', 'ua']
 
 function getTranslation(lang) {
   // eslint-disable-next-line no-undef
@@ -195,7 +197,6 @@ function reportSameValuesTable(objBase, objTest, languages, path) {
 }
 
 describe('translations', () => {
-  const languages = ['de', 'en', 'es', 'ru', 'ua']
 
   describe('loadable', () => {
     languages.forEach(lang => {
