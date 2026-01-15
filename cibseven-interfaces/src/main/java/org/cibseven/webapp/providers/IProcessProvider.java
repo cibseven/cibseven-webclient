@@ -17,9 +17,12 @@
 package org.cibseven.webapp.providers;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.cibseven.webapp.Data;
 import org.cibseven.webapp.auth.CIBUser;
@@ -35,6 +38,9 @@ import org.cibseven.webapp.rest.model.ProcessStatistics;
 import org.cibseven.webapp.rest.model.StartForm;
 import org.cibseven.webapp.rest.model.Variable;
 import org.springframework.http.ResponseEntity;
+
+import org.cibseven.webapp.rest.model.IncidentInfo;
+import org.cibseven.webapp.rest.model.KeyTenant;
 
 public interface IProcessProvider {
 	
@@ -77,4 +83,42 @@ public interface IProcessProvider {
 	public Long countProcessesInstancesHistory(Map<String, Object> filters, CIBUser user);
 	public Object fetchHistoricActivityStatistics(String id, Map<String, Object> params, CIBUser user);
 	
+	default List<ProcessStatistics> groupProcessStatisticsByKeyAndTenantImpl(Collection<ProcessStatistics> processStatistics) {
+        return processStatistics.stream()
+            .collect(Collectors.groupingBy(
+                stat -> new KeyTenant(stat.getDefinition().getKey(), stat.getDefinition().getTenantId())
+            ))
+            .values()
+            .stream()
+            .map(group -> {
+                ProcessStatistics result = new ProcessStatistics();
+
+                // Sort by version descending and use the latest version's definition
+                ProcessStatistics latestVersion = group.stream()
+                    .max(Comparator.comparing(stat -> stat.getDefinition().getVersion()))
+                    .orElse(group.iterator().next());
+
+                result.setDefinition(latestVersion.getDefinition());
+                result.setId(latestVersion.getId());
+
+                // Aggregate instances and failed jobs
+                result.setInstances(group.stream().mapToLong(ProcessStatistics::getInstances).sum());
+                result.setFailedJobs(group.stream().mapToLong(ProcessStatistics::getFailedJobs).sum());
+
+                // Aggregate incidents
+                long totalIncidentCount = group.stream()
+                    .flatMap(stat -> stat.getIncidents().stream())
+                    .mapToLong(IncidentInfo::getIncidentCount)
+                    .sum();
+
+                IncidentInfo totalIncident = new IncidentInfo();
+                totalIncident.setIncidentType("all");
+                totalIncident.setIncidentCount(totalIncidentCount);
+
+                result.setIncidents(Collections.singletonList(totalIncident));
+
+                return result;
+            })
+            .collect(Collectors.toList());
+    }
 }

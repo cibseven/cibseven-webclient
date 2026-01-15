@@ -171,7 +171,7 @@ public class DirectVariableProvider implements IVariableProvider {
 		if (variablesSerialized.isEmpty())
 			return Collections.emptyList();
 
-		VariableProvider.mergeVariablesValues(variablesDeserialized, variablesSerialized, deserializeValues);
+		mergeVariablesValues(variablesDeserialized, variablesSerialized, deserializeValues);
 		Collection<Variable> variables = (deserializeValues) ? variablesDeserialized : variablesSerialized;
 		return variables;
 	}
@@ -217,7 +217,7 @@ public class DirectVariableProvider implements IVariableProvider {
 			variablesSerializedTyped.addAll(variablesSerialized);
 		}
 
-		VariableProvider.mergeVariablesValues(variablesDeserializedTyped, variablesSerializedTyped, deserializeValues);
+		mergeVariablesValues(variablesDeserializedTyped, variablesSerializedTyped, deserializeValues);
 
 		Collection<VariableHistory> variables = (deserializeValues) ? variablesDeserialized : variablesSerialized;
 		return variables;

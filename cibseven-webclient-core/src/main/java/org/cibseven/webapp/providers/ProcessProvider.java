@@ -541,45 +541,6 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		return groupProcessStatisticsByKeyAndTenantImpl(processStatistics);
 	}
 	
-	public static List<ProcessStatistics> groupProcessStatisticsByKeyAndTenantImpl(Collection<ProcessStatistics> processStatistics) {
-		return processStatistics.stream()
-			.collect(Collectors.groupingBy(
-				stat -> new KeyTenant(stat.getDefinition().getKey(), stat.getDefinition().getTenantId())
-			))
-			.values()
-			.stream()
-			.map(group -> {
-				ProcessStatistics result = new ProcessStatistics();
-
-				// Sort by version descending and use the latest version's definition
-				ProcessStatistics latestVersion = group.stream()
-					.max(Comparator.comparing(stat -> stat.getDefinition().getVersion()))
-					.orElse(group.get(0));
-
-				result.setDefinition(latestVersion.getDefinition());
-				result.setId(latestVersion.getId());
-
-				// Aggregate instances and failed jobs
-				result.setInstances(group.stream().mapToLong(ProcessStatistics::getInstances).sum());
-				result.setFailedJobs(group.stream().mapToLong(ProcessStatistics::getFailedJobs).sum());
-
-				// Aggregate incidents
-				long totalIncidentCount = group.stream()
-					.flatMap(stat -> stat.getIncidents().stream())
-					.mapToLong(IncidentInfo::getIncidentCount)
-					.sum();
-
-				IncidentInfo totalIncident = new IncidentInfo();
-				totalIncident.setIncidentType("all");
-				totalIncident.setIncidentCount(totalIncidentCount);
-
-				result.setIncidents(Collections.singletonList(totalIncident));
-
-				return result;
-			})
-			.collect(Collectors.toList());
-	}
-
 	@Override
 	public Object fetchHistoricActivityStatistics(String id, Map<String, Object> params, CIBUser user) {
 	    String url = URLUtils.buildUrlWithParams(getEngineRestUrl(user) + "/history/process-definition/" + id + "/statistics", params);

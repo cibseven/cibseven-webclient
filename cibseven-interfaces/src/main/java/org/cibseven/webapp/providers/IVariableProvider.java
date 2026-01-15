@@ -58,5 +58,45 @@ public interface IVariableProvider {
 	public void submitVariables(String processInstanceId, List<Variable> formResult, CIBUser user, String processDefinitionId) throws SystemException;
 	public Map<String, Variable> fetchProcessFormVariablesById(String id, CIBUser user) throws SystemException;
 	public void putLocalExecutionVariable(String executionId, String varName, Map<String, Object> data, CIBUser user);
-	
+	default public void mergeVariablesValues(
+			Collection<Variable> variablesDeserialized,
+			Collection<Variable> variablesSerialized,
+			boolean deserializeValues) {
+
+			if (variablesDeserialized == null) {
+				return;
+			}
+
+			if (variablesSerialized == null) {
+				return;
+			}
+
+			Collection<Variable> variables = (deserializeValues) ? variablesDeserialized : variablesSerialized;
+			variables.forEach(variable -> {
+				String name = variable.getName();
+				
+				// Skip variables with null names to avoid NullPointerException
+				if (name == null) {
+					return;
+				}
+
+				Variable variableSerialized = (!deserializeValues) ? variable : variablesSerialized.stream()
+					.filter(v -> v.getName() != null && v.getName().equals(name))
+					.findFirst()
+					.orElse(null);
+				if (variableSerialized != null) {
+					variable.setValueSerialized(variableSerialized.getValue());
+				}
+
+				Variable variableDeserialized = (deserializeValues) ? variable : variablesDeserialized.stream()
+					.filter(v -> v.getName() != null && v.getName().equals(name))
+					.findFirst()
+					.orElse(null);
+				if (variableDeserialized != null) {
+					variable.setValueDeserialized(variableDeserialized.getValue());
+				}
+			});
+		}
+
+
 }

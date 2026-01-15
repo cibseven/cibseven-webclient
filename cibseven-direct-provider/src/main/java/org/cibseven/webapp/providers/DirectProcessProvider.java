@@ -174,7 +174,7 @@ public class DirectProcessProvider implements IProcessProvider {
 
 	@Override
 	public List<ProcessStatistics> groupProcessStatisticsByKeyAndTenant(Collection<ProcessStatistics> processStatistics) {
-		return ProcessProvider.groupProcessStatisticsByKeyAndTenantImpl(processStatistics);
+		return groupProcessStatisticsByKeyAndTenantImpl(processStatistics);
 	}
 
 	public Collection<ProcessStatistics> getProcessStatistics(Map<String, Object> queryParams, CIBUser user) {
