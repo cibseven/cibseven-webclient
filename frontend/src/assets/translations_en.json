@@ -662,6 +662,7 @@
 			"unassignUserMessage": "User {0} removed from tenant",
 			"unassignGroupMessage": "Group {0} removed from tenant",
 			"addTo": "Add to a tenant",
+			"unassignTenant": "Unassign from tenant",
 			"id": "ID",
 			"name": "Name",
 			"add": "Add tenant",
@@ -689,6 +690,12 @@
 			"permissions": "Permissions",
 			"resourceId": "Resource ID",
 			"actions": "Actions",
+			"buttons": {
+				"edit": "Edit authorization",
+				"delete": "Delete authorization",
+				"save": "Save authorization",
+				"cancel": "Cancel modifications"
+			},
 			"name": "Resource name",
 			"search": "Search",	
 			"types": {

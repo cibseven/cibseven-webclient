@@ -662,6 +662,7 @@
 			"unassignUserMessage": "Benutzer {0} wurde vom Mandanten entfernt",
 			"unassignGroupMessage": "Gruppe {0} wurde vom Mandanten entfernt",
 			"addTo": "Zum Mandanten hinzufügen",
+			"unassignTenant": "Vom Mandanten entfernen",
 			"id": "ID",
 			"name": "Name",
 			"add": "Mandanten hinzufügen",
@@ -689,6 +690,12 @@
 			"permissions": "Zugriffsrechte",
 			"resourceId": "Ressourcen-ID",
 			"actions": "Aktionen",
+			"buttons": {
+				"edit": "Berechtigung bearbeiten",
+				"delete": "Berechtigung löschen",
+				"save": "Berechtigung speichern",
+				"cancel": "Änderungen verwerfen"
+			},
 			"name": "Ressourcenname",
 			"search": "Suche",	
 			"types": {
