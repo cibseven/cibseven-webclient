@@ -48,6 +48,18 @@ export default [
     ],
   },
 
+  {
+    // Playwright test files
+    files: [
+      'playwright/e2e/**/*.{spec,test}.{js,ts,jsx,tsx}',
+      'playwright/helpers/**/*.{js,ts,jsx,tsx}'
+    ],
+    rules: {
+      // Allow console.log in test files for debugging
+      'no-console': 'off',
+    },
+  },
+
   ...pluginVueA11y.configs["flat/recommended"],
   {
     rules: {
