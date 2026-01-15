@@ -17,10 +17,10 @@
 
 -->
 <template>
-  <router-link v-if="to" :to="to" :title="title" class="text-decoration-none rounded hovered">
+  <router-link v-bind="$attrs" v-if="to" :to="to" :title="title" class="text-decoration-none rounded hovered">
     <span :class="'mdi mdi-18px ' + icon"></span>
   </router-link>
-  <button v-else @click.stop="onClick" class="btn btn-link hovered" :title="title">
+  <button v-else v-bind="$attrs" @click.stop="onClick" class="btn btn-link hovered" :title="title">
     <span :class="'mdi mdi-18px ' + icon"></span>
   </button>
 </template>
