@@ -71,7 +71,10 @@ Promise.all([
         mixins: [permissionsMixin],
         provide: function() {
           return {
-            async currentLanguage(lang) {
+            currentLanguage() {
+              return i18n.global.locale
+            },
+            async setCurrentLanguage(lang) {
               if (lang) {
                 await switchLanguage(config, lang)
               }
