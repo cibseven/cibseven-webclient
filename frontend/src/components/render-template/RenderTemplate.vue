@@ -283,8 +283,9 @@ export default {
             config.engineName = engineName
           }
           if (this.$root.config.engineRestMappings) {
-            // Convert to plain array of plain objects to ensure it can be cloned
-            config.engineRestMappings = structuredClone(this.$root.config.engineRestMappings)
+            // Convert to plain array of plain objects using JSON serialization
+            // Note: do not use structuredClone() here
+            config.engineRestMappings = JSON.parse(JSON.stringify(this.$root.config.engineRestMappings))
           }
           const response = {
             method: 'configResponse',
