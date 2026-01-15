@@ -65,7 +65,7 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 				Arrays.sort(defaultEngines, (e1, e2) -> e1.getName().compareToIgnoreCase(e2.getName()));
 				
 				for (Engine engine : defaultEngines) {
-					enrichEngine(engine, defaultUrl, defaultPath, defaultDisplayName, defaultTooltip);
+					enrichEngine(engine, defaultUrl, defaultPath, defaultDisplayName, defaultTooltip, true);
 					allEngines.add(engine);
 				}
 			}
@@ -85,7 +85,7 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 						Arrays.sort(additionalEngines, (e1, e2) -> e1.getName().compareToIgnoreCase(e2.getName()));
 						
 						for (Engine engine : additionalEngines) {
-							enrichEngine(engine, additional.getUrl(), additional.getPath(), additional.getDisplayName(), additional.getTooltip());
+							enrichEngine(engine, additional.getUrl(), additional.getPath(), additional.getDisplayName(), additional.getTooltip(), false);
 							allEngines.add(engine);
 						}
 					}
@@ -105,15 +105,21 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 	 * @param sourcePath the REST path of the engine server
 	 * @param baseDisplayName the base display name from config
 	 * @param baseTooltip the base tooltip from config
+	 * @param isDefaultSource true if from default source, false if from additional source
 	 */
-	private void enrichEngine(Engine engine, String sourceUrl, String sourcePath, String baseDisplayName, String baseTooltip) {
+	private void enrichEngine(Engine engine, String sourceUrl, String sourcePath, String baseDisplayName, String baseTooltip, boolean isDefaultSource) {
 		// Store the URL and path so engine knows where it came from
 		engine.setUrl(sourceUrl);
 		engine.setPath(sourcePath);
 		
-		// Create unique ID for frontend (used in localStorage and routing)
-		// Format: url|path|engineName ensures uniqueness across multiple servers
-		engine.setId(sourceUrl + "|" + sourcePath + "|" + engine.getName());
+		// Set ID format based on source:
+		// - Default engine: simple format (just engine name) for backward compatibility and relative URLs in embedded forms
+		// - Additional engine: full format (url|path|engineName) for unique identification across servers
+		if (isDefaultSource) {
+			engine.setId(engine.getName());
+		} else {
+			engine.setId(sourceUrl + "|" + sourcePath + "|" + engine.getName());
+		}
 		
 		// Set displayName: append engine name in parentheses if not "default"
 		if (baseDisplayName != null && !baseDisplayName.isEmpty()) {

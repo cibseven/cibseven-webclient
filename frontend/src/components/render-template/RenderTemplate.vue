@@ -280,8 +280,9 @@ export default {
             engineRestPath: this.$root.config.engineRestPath
           }
           if (engineId) {
-            // Engine ID format: "url|path|engineName"
-            // Pass the full ID so embedded form can parse it
+            // Engine ID can be either:
+            // - Simple string (default engine) -> use relative path
+            // - "url|path|engineName" format (additional engine) -> parse and use absolute URL
             config.engineId = engineId
           }
           const response = {

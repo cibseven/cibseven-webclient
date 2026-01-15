@@ -27,7 +27,7 @@ cibseven:
       displayName:
       tooltip:
       # additionalEngineRest:
-      #   - url: http://localhost:8080
+      #   - url: http://localhost:5173
       #     path: /engine-rest
       #     displayName: Local Server Test
       #     tooltip: Local test environment
