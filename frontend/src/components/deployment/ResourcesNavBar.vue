@@ -43,9 +43,9 @@
                 <div class="text-truncate me-0" style="flex: 1">
                   <span :title="$t('deployment.showModel')">{{ resource.name }}</span>
                 </div>
-                <b-button @click.stop="showResource(resource)" size="sm" variant="outline-secondary"
-                  class="border-0 mdi mdi-18px mdi-eye-outline text-dark bg-white"
-                  :title="$t('deployment.showModel')"></b-button>
+                <CellActionButton @click.stop="showResource(resource)"
+                  icon="mdi-eye-outline"
+                  :title="$t('deployment.showModel')"></CellActionButton>
                 <component :is="ResourcesNavBarActionsPlugin" v-if="ResourcesNavBarActionsPlugin" :resource="resource" :deployment="deployment" @deployment-success="$emit('deployment-success')"></component>
               </div>
             </b-list-group-item>
@@ -98,13 +98,14 @@
 import { ProcessService } from '@/services.js'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
 import DmnViewer from '@/components/decision/DmnViewer.vue'
+import CellActionButton from '@/components/common-components/CellActionButton.vue'
 import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
 import { mapActions } from 'vuex'
 
 export default {
   name: 'ResourcesNavBar',
   emits: ['delete-deployment', 'show-deployment', 'deployment-success'],
-  components: { BpmnViewer, DmnViewer },
+  components: { BpmnViewer, DmnViewer, CellActionButton },
   props: { resources: Array, deploymentId: String },
   data: function () {
     return {

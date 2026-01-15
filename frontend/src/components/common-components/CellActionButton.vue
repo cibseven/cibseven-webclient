@@ -17,7 +17,7 @@
 
 -->
 <template>
-  <router-link v-if="to" :to="to" :title="title" class="text-decoration-none hovered">
+  <router-link v-if="to" :to="to" :title="title" class="text-decoration-none rounded hovered">
     <span :class="'mdi mdi-18px ' + icon"></span>
   </router-link>
   <button v-else @click.stop="onClick" class="btn btn-link hovered" :title="title">
@@ -49,6 +49,7 @@ export default {
   display: block;
   transition: background-color 0.3s ease;
   padding: 4px 8px;
+  color: var(--bs-gray-800);
 }
 .hovered:hover {
   background-color: var(--bs-gray-500) !important;

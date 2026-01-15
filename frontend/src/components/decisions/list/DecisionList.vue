@@ -97,7 +97,7 @@ export default {
       return [
         { label: 'name', key: 'name'},
         { label: 'tenantId', key: 'tenantId'},
-        { label: 'actions', key: 'actions', sortable: false, tdClass: 'py-0 text-center', thClass: 'justify-content-center' }
+        { label: 'actions', key: 'actions', sortable: false, tdClass: 'py-0 d-flex justify-content-center', thClass: 'justify-content-center' }
       ]
     }
   },

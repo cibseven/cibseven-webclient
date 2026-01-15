@@ -30,7 +30,7 @@
       { label: 'due', key: 'due', class: 'col-2', tdClass: 'py-1' },
       { label: 'followUp', key: 'followUp', class: 'col-1', tdClass: 'py-1' },
       { label: 'taskID', key: 'id', class: 'col-2', tdClass: 'position-relative py-1' },
-      { label: 'actions', key: 'actions', class: 'col-1', sortable: false, tdClass: 'py-1' }]">
+      { label: 'actions', key: 'actions', class: 'col-1', sortable: false, tdClass: 'py-0' }]">
       <template v-slot:cell(name)="table">
         <span :title="table.item.description || table.item.name" class="text-truncate d-block">{{ table.item.name }}</span>
       </template>
@@ -44,9 +44,14 @@
             class="mdi mdi-18px mdi-pencil-outline px-2 position-absolute end-0 text-secondary lh-sm"></span>
         </div>
       </template>
+
       <template v-slot:cell(created)="table">
         <span :title="formatDateForTooltips(table.item.created)" class="text-truncate d-block">{{ formatDate(table.item.created) }}</span>
       </template>
+      <template v-slot:cell(due)="table">
+        <span :title="formatDateForTooltips(table.item.due)" class="text-truncate d-block">{{ formatDate(table.item.due) }}</span>
+      </template>
+
       <template v-slot:cell(id)="table">
         <CopyableActionButton
           :display-value="table.item.id"

@@ -46,11 +46,9 @@
           </div>
           <div class="col-3 p-0">
             <b-button v-if="!isEditing" :disabled="!selectedCriteriaKey" @click="addCriteria" size="sm" class="mdi mdi-plus" variant="secondary">{{ $t('nav-bar.filters.addCriteria') }}</b-button>
-            <div v-else>
-              <b-button style="opacity: 1" class="px-2 border-0 shadow-none" variant="link">
-              <span class="mdi mdi-18px mdi-content-save-outline" @click="updateCriteria()"></span></b-button>
-              <span class="border-start h-50"></span>
-              <b-button style="opacity: 1" class="px-2 border-0 shadow-none" variant="link" @click="cancelEditCriteria()"><span class="mdi mdi-18px mdi-block-helper"></span></b-button>
+            <div v-else class="d-flex justify-content-center">
+              <CellActionButton @click="updateCriteria()" icon="mdi-content-save-outline" :title="$t('commons.save')"></CellActionButton>
+              <CellActionButton @click="cancelEditCriteria()" icon="mdi-block-helper" :title="$t('confirm.cancel')"></CellActionButton>
             </div>
           </div>
         </div>
@@ -86,8 +84,8 @@
           <span v-else> {{ formatCriteria(row.item.value) }} </span>
         </template>
         <template v-slot:cell(buttons)="row">
-          <b-button class="mdi mdi-18px mdi-pencil border-0" size="sm" variant="outline-secondary" @click="editCriteria(row.index)" :title="$t('commons.edit')"></b-button>
-          <b-button class="mdi mdi-18px mdi-delete-outline border-0" size="sm" variant="outline-secondary" @click="deleteCriteria(row.index)" :title="$t('confirm.delete')"></b-button>
+          <CellActionButton icon="mdi-pencil" @click="editCriteria(row.index)" :title="$t('commons.edit')"></CellActionButton>
+          <CellActionButton icon="mdi-delete-outline" @click="deleteCriteria(row.index)" :title="$t('confirm.delete')"></CellActionButton>
         </template>
       </FlowTable>
       <div v-if="criteriasToAdd.length < 1">
@@ -115,6 +113,7 @@
 <script>
 import { permissionsMixin } from '@/permissions.js'
 import FilterableSelect from '@/components/task/filter/FilterableSelect.vue'
+import CellActionButton from '@/components/common-components/CellActionButton.vue'
 import { FlowTable } from '@cib/common-frontend'
 
 const candidateOptions = ['candidateGroup', 'candidateGroupExpression',
@@ -122,7 +121,7 @@ const candidateOptions = ['candidateGroup', 'candidateGroupExpression',
 
 export default {
   name: 'FilterModal',
-  components: { FilterableSelect, FlowTable },
+  components: { FilterableSelect, FlowTable, CellActionButton },
   props: { tasks: Array, processes: Array, layout2: Boolean },
   mixins: [permissionsMixin],
   emits: [

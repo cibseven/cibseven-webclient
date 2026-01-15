@@ -313,7 +313,7 @@ export default {
       this.$refs.completedTask.show(2)
       this.processInstanceHistory = null
       this.listTasksWithFilterAuto()
-      this.checkAndOpenTask(structuredClone(this.task))
+      this.checkAndOpenTask(JSON.parse(JSON.stringify(this.task)))
       this.task = null
       this.assignee = null
     },
