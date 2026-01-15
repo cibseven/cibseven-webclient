@@ -35,7 +35,9 @@
         <span :title="table.item.description || table.item.name" class="text-truncate d-block">{{ table.item.name }}</span>
       </template>
       <template v-slot:cell(assignee)="table">
-        <div :title="table.item.assignee" class="text-truncate w-100" :class="focusedCell === table.item.assignee ? 'pe-4': ''" @mouseenter="focusedCell = table.item.assignee" @mouseleave="focusedCell = null">
+        <div :title="table.item.assignee" class="text-truncate w-100" :class="focusedCell === table.item.assignee ? 'pe-4': ''" 
+          @mouseenter="focusedCell = table.item.assignee" @focusin="focusedCell = table.item.assignee"
+          @mouseleave="focusedCell = null" @focusout="focusedCell = null">
           {{ table.item.assignee || '&nbsp;' }}
           <span v-if="focusedCell === table.item.assignee" @click.stop="$refs.taskAssignationModal.show(table.item.id, true)"
             :title="$t('process-instance.assignModal.manageAssignee')"
@@ -54,10 +56,8 @@
         />
       </template>
       <template v-slot:cell(actions)="table">
-        <b-button :title="$t('process-instance.assignModal.manageUsersGroups')" @click="$refs.taskAssignationModal.show(table.item.id, false)"
-          size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-account"></b-button>
-        <b-button :title="$t('process-instance.usertasks.openTask', { name: table.item.name })" :to="{ name: 'task-id', params: { taskId: table.item.id } }"
-          size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-clipboard-text-play-outline"></b-button>
+        <CellActionButton :title="$t('process-instance.assignModal.manageUsersGroups')" @click="$refs.taskAssignationModal.show(table.item.id, false)" icon="mdi-account"></CellActionButton>
+        <CellActionButton :title="$t('process-instance.usertasks.openTask', { name: table.item.name })" :to="{ name: 'task-id', params: { taskId: table.item.id } }" icon="mdi-clipboard-text-play-outline"></CellActionButton>
       </template>
     </FlowTable>
     <div v-else-if="!loading">
@@ -75,10 +75,11 @@ import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
 import TaskAssignationModal from '@/components/process/modals/TaskAssignationModal.vue'
 import { FlowTable, SuccessAlert, CopyableActionButton, BWaitingBox } from '@cib/common-frontend'
+import CellActionButton from '@/components/common-components/CellActionButton.vue'
 
 export default {
   name: 'UserTasksTable',
-  components: { TaskAssignationModal, FlowTable, SuccessAlert, CopyableActionButton, BWaitingBox },
+  components: { TaskAssignationModal, FlowTable, SuccessAlert, CopyableActionButton, BWaitingBox, CellActionButton },
   mixins: [copyToClipboardMixin],
   props: { selectedInstance: Object },
   data: function() {

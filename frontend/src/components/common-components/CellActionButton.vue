@@ -17,7 +17,8 @@
 
 -->
 <template>
-  <b-button @click.stop="$emit('click')" class="px-2" :title="title" variant="link">
+  <router-link v-if="to" :to="to" :title="title" class="text-decoration-none"><span :class="'mdi mdi-18px ' + icon"></span></router-link>
+  <b-button v-else @click.stop="onClick" class="px-2" :title="title" variant="link">
     <span :class="'mdi mdi-18px ' + icon"></span>
   </b-button>
 </template>
@@ -28,7 +29,15 @@ export default {
   emits: ['click'],
   props: { 
     title: { type: String, required: true },
-    icon: { type: String, required: true }
+    icon: { type: String, required: true },
+    to: { type: [String, Object], default: undefined }
   },
+  methods: {
+    onClick(event) {
+      if (!this.to) {
+        this.$emit('click', event)
+      }
+    }
+  }
 }
 </script>
