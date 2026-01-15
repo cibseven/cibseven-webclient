@@ -33,7 +33,7 @@
                     <b-card-text>
                       <label @click.stop class="d-flex justify-content-between m-0 hover-highlight" :for="'checkbox-' + d.id + '-' + d.name">
                         <span class="fw-bold text-break">{{ d.name || d.id }}</span>
-                        <input type="checkbox" class="form-check-input" size="sm" v-model="d.isSelected" @click.stop :id="'checkbox-' + d.id + '-' + d.name">
+                        <input type="checkbox" class="form-check-input" v-model="d.isSelected" @click.stop :id="'checkbox-' + d.id + '-' + d.name">
                       </label>
                       <div class="d-flex align-items-center pt-2">
                         <span :title="formatDateForTooltips(d.deploymentTime)">{{ formatDate(d.deploymentTime) }}</span>

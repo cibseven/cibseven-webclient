@@ -17,7 +17,7 @@
 
 -->
 <template>
-  <b-button @click="$emit('click')" class="px-2" :title="title" variant="link">
+  <b-button @click.stop="$emit('click')" class="px-2" :title="title" variant="link">
     <span :class="'mdi mdi-18px ' + icon"></span>
   </b-button>
 </template>

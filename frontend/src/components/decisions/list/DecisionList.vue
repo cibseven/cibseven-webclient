@@ -45,11 +45,9 @@
         </div>
         <div class="container overflow-auto h-100 rounded g-0">
           <div class="m-3 mb-0">
-            <FlowTable :items="decisionsFiltered" thead-class="sticky-header" striped native-layout primary-key="id" prefix="decision." :fields="fields" @click="goToDecision($event)" @select="focused = $event[0]" @mouseenter="focused = $event" @mouseleave="focused = null">
+            <FlowTable :items="decisionsFiltered" thead-class="sticky-header" striped native-layout primary-key="id" prefix="decision." :fields="fields" @click="goToDecision($event)">
               <template v-slot:cell(actions)="table">
-                <b-button :disabled="focused !== table.item" style="opacity: 1" @click.stop="goToDecision(table.item)" class="px-2 border-0 shadow-none" :title="$t('decision.showManagement')" variant="link">
-                  <span class="mdi mdi-18px mdi-account-tie-outline"></span>
-                </b-button>
+                <CellActionButton @click="goToDecision(table.item)" :title="$t('decision.showManagement')" icon="mdi-account-tie-outline"></CellActionButton>
               </template>
             </FlowTable>
             <div v-if="!decisionsFiltered.length">
@@ -67,16 +65,16 @@
 import { permissionsMixin } from '@/permissions.js'
 import { FlowTable, BWaitingBox } from '@cib/common-frontend'
 import { mapActions, mapGetters } from 'vuex'
+import CellActionButton from '@/components/common-components/CellActionButton.vue'
 
 export default {
   name: 'DecisionList',
-  components: { FlowTable, BWaitingBox },
+  components: { FlowTable, BWaitingBox, CellActionButton },
   mixins: [permissionsMixin],
   data: function() {
     return {
       selected: null,
       filter: '',
-      focused: null
     }
   },
   computed: {
