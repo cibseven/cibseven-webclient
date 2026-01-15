@@ -17,10 +17,12 @@
 
 -->
 <template>
-  <router-link v-if="to" :to="to" :title="title" class="text-decoration-none"><span :class="'mdi mdi-18px ' + icon"></span></router-link>
-  <b-button v-else @click.stop="onClick" class="px-2" :title="title" variant="link">
+  <router-link v-if="to" :to="to" :title="title" class="text-decoration-none hovered">
     <span :class="'mdi mdi-18px ' + icon"></span>
-  </b-button>
+  </router-link>
+  <button v-else @click.stop="onClick" class="btn btn-link hovered" :title="title">
+    <span :class="'mdi mdi-18px ' + icon"></span>
+  </button>
 </template>
 
 <script>
@@ -41,3 +43,24 @@ export default {
   }
 }
 </script>
+
+<style lang="css" scoped>
+.hovered {
+  display: block;
+  transition: background-color 0.3s ease;
+  padding: 4px 8px;
+}
+.hovered:hover {
+  background-color: var(--bs-gray-500) !important;
+  color: var(--bs-dark) !important;
+}
+.hovered:focus {
+  background-color: var(--bs-gray-500) !important;
+  color: var(--bs-dark) !important;
+  outline: 2px solid var(--bs-dark);
+  outline-offset: 0px;
+  padding: 2px 6px;
+  box-shadow: none;
+  margin: 2px;
+}
+</style>
