@@ -18,7 +18,9 @@
 -->
 <template>
   <div tabindex="0" @focus="focused = process" style="flex: auto; margin: 10px" class="row border rounded-lg shadow-sm bg-white" :style="viewStyles[view].cardSize">
-    <div class="h-100 container position-relative" @mouseenter="focused = process" @mouseleave="focused = null">
+    <div class="h-100 container position-relative"
+      @mouseenter="focused = process" @focusin="focused = process"
+      @mouseleave="focused = null" @focusout="focused = null">
       <transition name="fade">
         <div v-show="focused" class="text-center position-absolute py-3" style="bottom: 0; left: 0; right: 0; z-index: 2"
           :style="focused ? 'background: rgba(255, 255, 255, 0.8)' : ''">
