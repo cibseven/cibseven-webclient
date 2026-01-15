@@ -101,12 +101,13 @@ public abstract class SevenProviderBase {
 	 * @return the complete engine REST URL
 	 */
 	protected String getEngineRestUrl(CIBUser user) {
-		String engineName = user != null ? user.getEngine() : null;
+		String engineIdentifier = user != null ? user.getEngine() : null;
 		
-		// Check if we have a specific mapping for this engine
-		if (engineName != null && !engineName.isEmpty() && engineRestMappingProperties != null) {
+		// Check if we have a specific mapping for this engine identifier (mappingId)
+		if (engineIdentifier != null && !engineIdentifier.isEmpty() && engineRestMappingProperties != null) {
+			// Match by mappingId (local engine name)
 			EngineRestMapping mapping = engineRestMappingProperties.getMappings().stream()
-				.filter(m -> engineName.equals(m.getEngineName()))
+				.filter(m -> engineIdentifier.equals(m.getMappingId()))
 				.findFirst()
 				.orElse(null);
 			
@@ -120,7 +121,7 @@ public abstract class SevenProviderBase {
 				if (!restPath.startsWith("/")) {
 					restPath = "/" + restPath;
 				}
-				return baseUrl + restPath + "/engine/" + engineName;
+				return baseUrl + restPath + "/engine/" + mapping.getEngineName();
 			}
 		}
 		
@@ -128,9 +129,9 @@ public abstract class SevenProviderBase {
 		String baseUrl = cibsevenUrl.endsWith("/") ? cibsevenUrl.substring(0, cibsevenUrl.length() - 1) : cibsevenUrl;
 		String restPath = engineRestPath.startsWith("/") ? engineRestPath : "/" + engineRestPath;
 		
-		// If engine name is provided add it to the path
-		if (engineName != null && !engineName.isEmpty()) {
-			return baseUrl + restPath + "/engine/" + engineName;
+		// If engine identifier is provided add it to the path
+		if (engineIdentifier != null && !engineIdentifier.isEmpty()) {
+			return baseUrl + restPath + "/engine/" + engineIdentifier;
 		}
 		
 		return baseUrl + restPath;

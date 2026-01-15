@@ -27,6 +27,17 @@ import java.util.List;
  * Configuration properties for engine-specific REST endpoint mappings.
  * Allows configuring different URLs and paths for different engine instances.
  * 
+ * The mappings configuration is OPTIONAL. If not configured, the application will use
+ * the default engineRest.url and engineRest.path for all engines.
+ * 
+ * When mappings are configured, each mapping requires:
+ * - mappingId (REQUIRED): The local engine name shown in the UI
+ * - engineName (REQUIRED): The remote engine name on the target server
+ * - url (REQUIRED): The base URL for the engine REST API
+ * - path (REQUIRED): The REST API path
+ * - displayName (optional): User-friendly name for display
+ * - tooltip (optional): Additional information shown on hover
+ * 
  * Example configuration in application.yaml:
 
  * cibseven:
@@ -35,12 +46,20 @@ import java.util.List;
  *       url: http://localhost:8080
  *       path: /engine-rest
  *       mappings:
- *         - engineName: production
- *           url: http://prod-engine.example.com
+ *         - mappingId: dev-server
+ *           engineName: default
+ *           displayName: Dev Server
+ *           tooltip: Dev production environment
+ *           url: https://dev.cib.de/
  *           path: /engine-rest
- *         - engineName: development
- *           url: http://dev-engine.example.com
+ *         - mappingId: local-server
+ *           engineName: default
+ *           displayName: Local Server
+ *           tooltip: Local production environment
+ *           url: http://localhost:8080
  *           path: /engine-rest
+ *
+ * This allows multiple local engines to connect to remote engines with the same name.
  */
 @Data
 @Component

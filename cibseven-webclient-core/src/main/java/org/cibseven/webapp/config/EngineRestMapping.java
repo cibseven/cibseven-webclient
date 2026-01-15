@@ -21,21 +21,48 @@ import lombok.Data;
 /**
  * Configuration class for mapping engine names to their specific REST endpoints.
  * Allows overriding the default engine REST URL and path for specific engines.
+ * 
+ * All fields marked as REQUIRED must be provided when defining a mapping.
  */
 @Data
 public class EngineRestMapping {
 	/**
-	 * The name of the engine (e.g., "production", "development")
+	 * The local engine name (REQUIRED).
+	 * This is the name of the engine in your main/local environment that will be shown in the UI.
+	 * It acts as the unique identifier for this mapping.
+	 * Example: "dev-server", "local-server", "qa-environment"
+	 */
+	private String mappingId;
+	
+	/**
+	 * The remote engine name (REQUIRED).
+	 * This is the name of the engine on the remote server that this mapping points to.
+	 * Example: "default", "production", "development"
 	 */
 	private String engineName;
 	
 	/**
-	 * The base URL for this engine's REST API (e.g., "http://localhost:8080")
+	 * Custom display name for the engine (optional).
+	 * Use this to provide a user-friendly name when multiple engines share the same engineName.
+	 * If not provided, the mappingId will be used for display.
+	 */
+	private String displayName;
+	
+	/**
+	 * Tooltip text for the engine (optional).
+	 * Provides additional information about the engine when hovering over it in the UI.
+	 */
+	private String tooltip;
+	
+	/**
+	 * The base URL for this engine's REST API (REQUIRED).
+	 * Example: "http://localhost:8080", "https://dev.cib.de/"
 	 */
 	private String url;
 	
 	/**
-	 * The REST API path for this engine (e.g., "/engine-rest")
+	 * The REST API path for this engine (REQUIRED).
+	 * Example: "/engine-rest"
 	 */
 	private String path;
 }

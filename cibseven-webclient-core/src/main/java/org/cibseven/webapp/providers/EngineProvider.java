@@ -36,11 +36,36 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 
 	@Override
 	public Collection<Engine> getProcessEngineNames() {
-		String url = getEngineRestUrl() + "/engine";
+		// If no mappings configured, fetch engines from default URL
+		if (engineRestMappingProperties == null || engineRestMappingProperties.getMappings() == null || engineRestMappingProperties.getMappings().isEmpty()) {
+			String url = getEngineRestUrl() + "/engine";
+			return Arrays.asList(((ResponseEntity<Engine[]>) doGet(url, Engine[].class, null, false)).getBody());
+		}
 		
-		return Arrays.asList(
-			((ResponseEntity<Engine[]>) doGet(url, Engine[].class, null, false)).getBody()
-		);
+		// With mappings configured, create an Engine entry for each mapping
+		// The mappingId represents the local engine name shown in the UI
+		java.util.List<Engine> engines = new java.util.ArrayList<>();
+		
+		for (org.cibseven.webapp.config.EngineRestMapping mapping : engineRestMappingProperties.getMappings()) {
+			if (mapping.getMappingId() == null || mapping.getMappingId().isEmpty()) {
+				log.warn("Skipping mapping with missing mappingId. EngineName: {}", mapping.getEngineName());
+				continue;
+			}
+			
+			if (mapping.getEngineName() == null || mapping.getEngineName().isEmpty()) {
+				log.warn("Skipping mapping with missing engineName. MappingId: {}", mapping.getMappingId());
+				continue;
+			}
+			
+			Engine engine = new Engine();
+			engine.setName(mapping.getEngineName()); // Remote engine name
+			engine.setMappingId(mapping.getMappingId()); // Local engine name (identifier)
+			engine.setDisplayName(mapping.getDisplayName());
+			engine.setTooltip(mapping.getTooltip());
+			engines.add(engine);
+		}
+		
+		return engines;
 	}
 
 	@Override

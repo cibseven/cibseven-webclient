@@ -27,6 +27,13 @@ import lombok.Data;
 @Data @NoArgsConstructor @AllArgsConstructor @JsonIgnoreProperties(ignoreUnknown = true) 
 public class Engine {
 	private String name;
+	private String mappingId;
+	private String displayName;
+	private String tooltip;
+
+	public Engine(String name) {
+		this.name = name;
+	}
 
 	public String json() throws JsonProcessingException {
 		return new ObjectMapper().writeValueAsString(this);

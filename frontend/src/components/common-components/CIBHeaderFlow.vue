@@ -35,19 +35,19 @@
           <slot name="customNavItems"></slot>
           
           <!-- Engine Selector - only show if more than one engine -->
-          <b-nav-item-dropdown v-if="engines.length > 1" extra-toggle-classes="py-1" right :title="$t('cib-header.engine')">
+          <b-nav-item-dropdown v-if="normalizedEngines.length > 1" extra-toggle-classes="py-1" right :title="$t('cib-header.engine')">
             <template v-slot:button-content>
               <span class="mdi mdi-24px mdi-engine align-middle me-2"></span><span class="d-md-none">{{ $t('cib-header.engine') }}</span>
             </template>
             <b-dropdown-item 
-              v-for="engine in engines" 
-              :key="engine.name" 
-              :active="engine.name === selectedEngine" 
-              @click="selectEngine(engine.name)" 
-              :title="$t('cib-header.engine') + ': ' + engine.name">
+              v-for="engine in normalizedEngines" 
+              :key="engine.id" 
+              :active="engine.id === selectedEngine" 
+              @click="selectEngine(engine.id)" 
+              :title="engine.tooltip || $t('cib-header.engine') + ': ' + engine.label">
               <div class="d-flex align-items-baseline">
                 <span class="flex-grow-1">
-                  {{ engine.name }}
+                  {{ engine.label }}
                 </span>
               </div>
             </b-dropdown-item>
@@ -107,6 +107,15 @@ export default {
       isCollapsed: false
     }
   },
+  computed: {
+    normalizedEngines() {
+      return this.engines.map(engine => ({
+        ...engine,
+        id: engine.mappingId || engine.name,
+        label: engine.displayName || engine.name
+      }))
+    }
+  },
   mounted() {
     this.loadEngines()
     // Close menu when clicking outside on mobile
@@ -149,17 +158,17 @@ export default {
       // Check if an engine is already selected in localStorage
       const storedEngine = localStorage.getItem(ENGINE_STORAGE_KEY)
       
-      if (storedEngine && this.engines.some(e => e.name === storedEngine)) {
+      if (storedEngine && this.normalizedEngines.some(e => e.id === storedEngine)) {
         this.selectedEngine = storedEngine
       } else {
         // No stored engine or stored engine not found in list
         // Try to find 'default' engine
-        const defaultEngine = this.engines.find(e => e.name === 'default')
+        const defaultEngine = this.normalizedEngines.find(e => e.name === 'default')
         if (defaultEngine) {
-          this.selectedEngine = defaultEngine.name
-        } else if (this.engines.length > 0) {
+          this.selectedEngine = defaultEngine.id
+        } else if (this.normalizedEngines.length > 0) {
           // Take the first engine
-          this.selectedEngine = this.engines[0].name
+          this.selectedEngine = this.normalizedEngines[0].id
         }
         
         // Store the selected engine
@@ -168,9 +177,9 @@ export default {
         }
       }
     },
-    selectEngine(engineName) {
-      this.selectedEngine = engineName
-      localStorage.setItem(ENGINE_STORAGE_KEY, engineName)
+    selectEngine(engineIdentifier) {
+      this.selectedEngine = engineIdentifier
+      localStorage.setItem(ENGINE_STORAGE_KEY, engineIdentifier)
       this.logout()
     }
   }
