@@ -199,7 +199,7 @@ export default {
     },
     completeTask: function(task) {
       this.submitForm = true
-      const data = structuredClone(this.task)
+      const data = JSON.parse(JSON.stringify(this.task))
       if (task) data.processInstanceId = task.id
       if (this.task.url) {
         this.$emit('complete-task', data)
