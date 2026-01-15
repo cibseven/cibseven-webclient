@@ -49,7 +49,7 @@ import java.util.List;
  *         - mappingId: dev-server
  *           engineName: default
  *           displayName: Dev Server
- *           tooltip: Dev production environment
+ *           tooltip: Development environment
  *           url: https://dev.cib.de/
  *           path: /engine-rest
  *         - mappingId: local-server
