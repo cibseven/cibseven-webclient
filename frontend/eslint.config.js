@@ -25,11 +25,19 @@ export default [
   {
     name: 'app/files-to-lint',
     files: ['**/*.{js,mjs,jsx,vue}'],
+    ignores: ['playwright/**', 'cypress/**'],
   },
 
   {
     name: 'app/files-to-ignore',
-    ignores: ['**/dist/**', '**/dist-ssr/**', '**/coverage/**'],
+    ignores: [
+      '**/dist/**',
+      '**/dist-ssr/**',
+      '**/coverage/**',
+      '**/target/**',
+      '**/playwright-report/**',
+      '**/test-results/**',
+    ],
   },
 
   js.configs.recommended,
