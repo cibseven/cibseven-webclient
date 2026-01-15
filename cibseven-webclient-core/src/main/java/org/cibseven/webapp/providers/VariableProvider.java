@@ -108,7 +108,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
     }
 	}
 
-	private void mergeVariablesValues(
+	public static void mergeVariablesValues(
 		Collection<Variable> variablesDeserialized,
 		Collection<Variable> variablesSerialized,
 		boolean deserializeValues) {
