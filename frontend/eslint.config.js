@@ -54,7 +54,6 @@ export default [
       // override rules settings here to make them warnings
       "vuejs-accessibility/click-events-have-key-events": "warn",
       "vuejs-accessibility/no-static-element-interactions": "warn",
-      "vuejs-accessibility/mouse-events-have-key-events": "warn",
       "vuejs-accessibility/form-control-has-label": "warn",
       "vuejs-accessibility/interactive-supports-focus": "warn",
 
