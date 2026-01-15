@@ -58,7 +58,7 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 			}
 			
 			Engine engine = new Engine();
-			engine.setName(mapping.getEngineName()); // Remote engine name
+			engine.setName(mapping.getEngineName()); // Set to remote engine name
 			engine.setMappingId(mapping.getMappingId()); // Local engine name (identifier)
 			engine.setDisplayName(mapping.getDisplayName());
 			engine.setTooltip(mapping.getTooltip());
