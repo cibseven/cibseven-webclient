@@ -278,6 +278,28 @@ if (process.env.ENV === 'stage') {
 }
 ```
 
+### 3. Fragile Selectors in variables.spec.js
+Some selectors in `variables.spec.js` still use `:nth-child()` patterns (lines 31-33, 37, 40) for consistency with the original Cypress implementation. These should be improved in a future iteration by:
+- Adding `data-testid` attributes to the application UI
+- Using more semantic selectors (e.g., role-based, text-based)
+- Working with the development team to add better test hooks
+
+**Example improvements for future:**
+```javascript
+// Current (fragile)
+await page.locator(':nth-child(1) > :nth-child(3) > .text-truncate').click()
+
+// Future improvement (more robust)
+await page.locator('[data-testid="process-definition"]').first().click()
+// or
+await page.getByRole('row').first().getByRole('link', { name: /process/i }).click()
+```
+
+This was intentionally kept as-is in the migration to:
+- Maintain exact feature parity with Cypress tests
+- Make minimal changes during initial migration
+- Allow for incremental improvements after validation
+
 ## Resources
 
 ### Playwright Documentation

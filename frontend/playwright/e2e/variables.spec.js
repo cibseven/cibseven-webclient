@@ -28,15 +28,18 @@ test.describe('Process instance variables tests', () => {
       await page.locator('.form-control-plaintext').fill('test')
 
       // sort ASCENDING by number of instances
+      // NOTE: These selectors are fragile and should be improved with data-testid attributes
       await page.locator(':nth-child(2) > .d-flex > .sort-icon > .mdi').click()
       // sort DESCENDING by number of instances
       await page.locator('span > .mdi').click()
     }
 
     // click any first process definition to see its instances
+    // NOTE: These selectors are fragile and should be improved with data-testid attributes
     await page.locator(':nth-child(1) > :nth-child(3) > .text-truncate').click()
 
     // click any first process instance to see its variables
+    // NOTE: These selectors are fragile and should be improved with data-testid attributes
     await page.locator(':nth-child(1) > :nth-child(5) > .text-truncate').click()
 
     // create random variable name
