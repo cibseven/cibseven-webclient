@@ -57,7 +57,7 @@
             <template v-slot:button-content>
               <span class="mdi mdi-24px mdi-web align-middle me-2"></span><span class="d-md-none">{{ $t('cib-header.languages') }}</span>
             </template>
-            <b-dropdown-item v-for="lang in languages" :key="lang" :active="lang === currentLanguage()" @click="currentLanguage(lang)" :title="$t('cib-header.languages') + ': ' + $t('cib-header.' + lang)">
+            <b-dropdown-item v-for="lang in languages" :key="lang" :active="lang === currentLanguage()" @click="setCurrentLanguage(lang)" :title="$t('cib-header.languages') + ': ' + $t('cib-header.' + lang)">
               <div class="d-flex align-items-baseline">
                 <span class="lang-label text-center text-uppercase text-dark bg-body-secondary rounded me-2">
                   {{ lang }}
@@ -97,7 +97,7 @@ import { ENGINE_STORAGE_KEY } from '@/constants.js'
 
 export default {
   name: 'CIBHeaderFlow',
-  inject: ['currentLanguage'],
+  inject: ['currentLanguage', 'setCurrentLanguage'],
   props: { languages: Array, user: Object },
   emits: ['logout'],
   data() {
