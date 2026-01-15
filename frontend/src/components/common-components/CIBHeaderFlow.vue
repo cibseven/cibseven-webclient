@@ -111,7 +111,9 @@ export default {
     normalizedEngines() {
       return this.engines.map(engine => ({
         ...engine,
-        id: engine.mappingId || engine.name,
+        // id is set by the backend in format "url|path|engineName"
+        // Use it directly, or fall back to name for legacy support
+        id: engine.id || engine.name,
         label: engine.displayName || engine.name
       }))
     }

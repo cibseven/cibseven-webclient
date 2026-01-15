@@ -24,6 +24,17 @@ cibseven:
       # This allows customization for different Jersey application paths
       # Example: path: /different-path
       path: /engine-rest
+      displayName:
+      tooltip:
+      # additionalEngineRest:
+      #   - url: http://localhost:8080
+      #     path: /engine-rest
+      #     displayName: Local Server Test
+      #     tooltip: Local test environment
+      #   - url: https://dev.cib.de/
+      #     path: /engine-rest
+      #     displayName: Dev Server
+      #     tooltip: Development environment
     historyLevel: full
     # Token generation
     authentication:
