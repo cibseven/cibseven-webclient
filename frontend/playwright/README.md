@@ -65,8 +65,13 @@ npx playwright test --headed
 
 After running tests, view the HTML report:
 ```bash
-npx playwright show-report
+npx playwright show-report target/playwright/html-report
 ```
+
+Test results are stored in:
+- **Test artifacts**: `target/playwright/test-results/`
+- **HTML report**: `target/playwright/html-report/`
+- **JUnit XML**: `target/playwright/junit-results.xml`
 
 ## Environment Configuration
 
@@ -148,12 +153,15 @@ Playwright automatically handles many common errors that required explicit handl
 ## Configuration
 
 The Playwright configuration is defined in `playwright.config.js`:
-- Base URL: `http://localhost:5173`
-- Test directory: `./playwright/e2e`
-- Browsers: Chromium, Firefox, WebKit
-- Retries: 2 on CI, 0 locally
-- Screenshots: On failure only
-- Trace: On first retry
+- **Version**: Playwright v1.57.0
+- **Base URL**: `http://localhost:5173`
+- **Test directory**: `./playwright/e2e`
+- **Output directory**: `./target/playwright/test-results`
+- **Browsers**: Chromium, Firefox, WebKit
+- **Retries**: 2 on CI, 0 locally
+- **Screenshots**: On failure only
+- **Trace**: On first retry
+- **Reporters**: HTML (target/playwright/html-report), JUnit (target/playwright/junit-results.xml)
 
 ## Coexistence with Cypress
 

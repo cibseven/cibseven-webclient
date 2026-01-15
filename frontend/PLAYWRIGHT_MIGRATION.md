@@ -25,8 +25,9 @@ This document provides an overview of the Cypress to Playwright migration for E2
 - `playwright/README.md` - Comprehensive guide for running Playwright tests
 
 ### Configuration Updates
-- `package.json` - Added `@playwright/test` dependency and npm scripts
-- `eslint.config.js` - Added Playwright-specific ESLint rules
+- `package.json` - Added `@playwright/test` v1.57.0 dependency and npm scripts
+- `playwright.config.js` - Configured test output to `target/playwright/` directory with HTML and JUnit reports
+- `eslint.config.js` - Added Playwright-specific ESLint rules and exclusions to prevent test.describe() errors
 - `.gitignore` - Added Playwright artifacts to ignore list
 
 ## Key Differences Between Cypress and Playwright
