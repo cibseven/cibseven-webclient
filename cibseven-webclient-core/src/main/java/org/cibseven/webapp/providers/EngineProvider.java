@@ -52,7 +52,7 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 			: cibsevenUrl;
 		String defaultPath = engineRestProperties != null && engineRestProperties.getPath() != null 
 			? engineRestProperties.getPath() 
-			: engineRestPath;
+			: (engineRestPath != null ? engineRestPath : "/engine-rest");
 		String defaultDisplayName = engineRestProperties != null ? engineRestProperties.getDisplayName() : null;
 		String defaultTooltip = engineRestProperties != null ? engineRestProperties.getTooltip() : null;
 		
@@ -77,7 +77,8 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 		if (engineRestProperties != null && engineRestProperties.getAdditionalEngineRest() != null) {
 			for (EngineRestSource additional : engineRestProperties.getAdditionalEngineRest()) {
 				try {
-					String additionalUrl = buildUrl(additional.getUrl(), additional.getPath()) + "/engine";
+					String additionalPath = additional.getPath() != null ? additional.getPath() : "/engine-rest";
+					String additionalUrl = buildUrl(additional.getUrl(), additionalPath) + "/engine";
 					Engine[] additionalEngines = ((ResponseEntity<Engine[]>) doGet(additionalUrl, Engine[].class, null, false)).getBody();
 					
 					if (additionalEngines != null) {
@@ -85,7 +86,7 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 						Arrays.sort(additionalEngines, (e1, e2) -> e1.getName().compareToIgnoreCase(e2.getName()));
 						
 						for (Engine engine : additionalEngines) {
-							enrichEngine(engine, additional.getUrl(), additional.getPath(), additional.getDisplayName(), additional.getTooltip(), false);
+							enrichEngine(engine, additional.getUrl(), additionalPath, additional.getDisplayName(), additional.getTooltip(), false);
 							allEngines.add(engine);
 						}
 					}
