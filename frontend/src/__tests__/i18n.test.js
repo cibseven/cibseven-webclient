@@ -172,7 +172,7 @@ function reportSameValuesTable(objBase, objTest, languages, path) {
   if (typeof objBase === 'string') {
     const hasSameValues = objTest.map(
       (v, index) => objBase === v && !skipValue(objBase, languages[index])
-    ).find(v => v)
+    ).find(Boolean)
     if (hasSameValues) {
 
       if (!hasHeader) {
