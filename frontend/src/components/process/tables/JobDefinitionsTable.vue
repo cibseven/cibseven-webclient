@@ -28,7 +28,7 @@
       { label: 'type', key: 'jobType', class: 'col-2', tdClass: 'py-1' },
       { label: 'configuration', key: 'jobConfiguration', class: 'col-2', tdClass: 'py-1' },
       { label: 'overridingJobPriority', key: 'overridingJobPriority', class: 'col-2', tdClass: 'py-1' },
-      { label: 'actions', key: 'actions', class: 'col-2', sortable: false, tdClass: 'py-1' }
+      { label: 'actions', key: 'actions', class: 'col-2', sortable: false, tdClass: 'py-0' }
       ]">
       <template v-slot:cell(suspended)="table">
         <div :title="getStateLabel(table.item)" class="text-truncate">
@@ -45,15 +45,14 @@
         />
       </template>
       <template v-slot:cell(actions)="table">
-        <b-button v-if="hasUpdatePermission" :title="stateActionKey(table.item)"
-          size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px"
-          :class="table.item.suspended ? 'mdi-play' : 'mdi-pause'"
-          @click.stop="openChangeStateJobModal(table.item)">
-        </b-button>
-        <b-button :title="$t('process-instance.jobDefinitions.changeJobPriority')"
-          size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-cog"
-          @click.stop="openChangeJobPriorityModal(table.item)">
-        </b-button>
+        <CellActionButton v-if="hasUpdatePermission" :title="stateActionKey(table.item)"
+          :icon="table.item.suspended ? 'mdi-play' : 'mdi-pause'"
+          @click="openChangeStateJobModal(table.item)">
+        </CellActionButton>
+        <CellActionButton :title="$t('process-instance.jobDefinitions.changeJobPriority')"
+          icon="mdi-cog"
+          @click="openChangeJobPriorityModal(table.item)">
+        </CellActionButton>
         <component :is="JobDefinitionsTableActionsPlugin" v-if="JobDefinitionsTableActionsPlugin" :table-item="table.item"></component>
       </template>
     </FlowTable>
@@ -74,10 +73,11 @@ import JobDefinitionPriorityModal from '@/components/process/modals/JobDefinitio
 import { mapActions, mapGetters } from 'vuex'
 import { permissionsMixin } from '@/permissions.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
+import CellActionButton from '@/components/common-components/CellActionButton.vue'
 
 export default {
   name: 'JobDefinitionsTable',
-  components: { FlowTable, CopyableActionButton, JobDefinitionStateModal, JobDefinitionPriorityModal, SuccessAlert, BWaitingBox },
+  components: { FlowTable, CopyableActionButton, JobDefinitionStateModal, JobDefinitionPriorityModal, SuccessAlert, BWaitingBox, CellActionButton },
   mixins: [copyToClipboardMixin, permissionsMixin],
   props: {
     process: Object,

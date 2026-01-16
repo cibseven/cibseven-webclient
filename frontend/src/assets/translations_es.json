@@ -662,6 +662,7 @@
 			"unassignUserMessage": "El usuario {0} ha sido eliminado del tenant",
 			"unassignGroupMessage": "Grupo {0} eliminado del tenant",
 			"addTo": "Agregar a un tenant",
+			"unassignTenant": "Eliminar del tenant",
 			"id": "ID",
 			"name": "Nombre",
 			"add": "Añadir tenant",
@@ -689,6 +690,12 @@
 			"permissions": "Permisos",
 			"resourceId": "ID del recurso",
 			"actions": "Acciones",
+			"buttons": {
+				"edit": "Editar autorización",
+				"delete": "Eliminar autorización",
+				"save": "Guardar autorización",
+				"cancel": "Cancelar modificaciones"
+			},
 			"name": "Nombre del recurso",
 			"search": "Buscar",	
 			"types": {

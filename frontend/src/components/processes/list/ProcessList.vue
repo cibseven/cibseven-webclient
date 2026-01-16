@@ -60,7 +60,7 @@
     </div>
     <div class="container overflow-auto h-100 rounded g-0">
       <div class="m-3 mb-0">
-      <FlowTable :items="processesFiltered" thead-class="sticky-header" striped primary-key="id" prefix="process." :fields="fields" @click="goToShowProcessHistory($event)" @select="focused = $event[0]" @mouseenter="focused = $event" @mouseleave="focused = null">
+      <FlowTable :items="processesFiltered" thead-class="sticky-header" striped primary-key="id" prefix="process." :fields="fields" @click="goToShowProcessHistory($event)">
         <template v-slot:cell(key)="table">
           <CopyableActionButton
             :display-value="table.item.key"
@@ -92,18 +92,10 @@
           <span v-else>___</span>
         </template>
         <template v-slot:cell(actions)="table">
-          <component :is="ProcessDefinitionActionsPlugin" v-if="ProcessDefinitionActionsPlugin" :focused="focused" :item="table.item" :onlyWithIncidents="onlyIncidents" :onlyActive="onlyActive"></component>
-          <b-button :disabled="focused !== table.item" style="opacity: 1" @click.stop="goToShowProcessHistory(table.item)" class="px-2 border-0 shadow-none" :title="$t('process.showManagement')" variant="link">
-            <span class="mdi mdi-18px mdi-account-tie-outline"></span>
-          </b-button>
-          <span class="border-start h-50" :class="focused === table.item ? 'border-secondary' : ''"></span>
-          <b-button :disabled="focused !== table.item" style="opacity: 1" @click.stop="goToDeployment(table.item)" class="px-2 border-0 shadow-none" :title="$t('process.showDeployment')" variant="link">
-            <span class="mdi mdi-18px mdi-file-eye-outline"></span>
-          </b-button>
-          <span class="border-start h-50" :class="focused === table.item ? 'border-secondary' : ''"></span>
-          <b-button :disabled="focused !== table.item" style="opacity: 1" @click.stop="goToCockpit(table.item)" class="px-2 border-0 shadow-none" :title="$t('process.showCockpit')" variant="link">
-            <span class="mdi mdi-18px mdi-radar"></span>
-          </b-button>
+          <component :is="ProcessDefinitionActionsPlugin" v-if="ProcessDefinitionActionsPlugin" :item="table.item" :onlyWithIncidents="onlyIncidents" :onlyActive="onlyActive"></component>
+          <CellActionButton @click.stop="goToShowProcessHistory(table.item)" :title="$t('process.showManagement')" icon="mdi-account-tie-outline"></CellActionButton>
+          <CellActionButton @click.stop="goToDeployment(table.item)" :title="$t('process.showDeployment')" icon="mdi-file-eye-outline"></CellActionButton>
+          <CellActionButton @click.stop="goToCockpit(table.item)" :title="$t('process.showCockpit')" icon="mdi-radar"></CellActionButton>
         </template>
       </FlowTable>
       <div v-if="!processesFiltered.length">
@@ -123,17 +115,17 @@
 import { permissionsMixin } from '@/permissions.js'
 import { CopyableActionButton, SuccessAlert, FlowTable } from '@cib/common-frontend'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
+import CellActionButton from '@/components/common-components/CellActionButton.vue'
 
 export default {
   name: 'ProcessList',
-  components: { FlowTable, CopyableActionButton, SuccessAlert },
+  components: { FlowTable, CopyableActionButton, SuccessAlert, CellActionButton },
   inject: ['loadProcesses'],
   mixins: [permissionsMixin, copyToClipboardMixin],
   data: function() {
     return {
       selected: null,
       filter: '',
-      focused: null,
       loadingInstances: true
     }
   },

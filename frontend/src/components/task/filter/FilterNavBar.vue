@@ -43,7 +43,9 @@
       </div>
       <div v-if="filtersFiltered.length > 0" class="overflow-auto flex-fill">
         <b-list-group>
-          <b-list-group-item v-for="filter of filtersFiltered" :key="filter.id" @mouseenter="focused = filter" @mouseleave="focused = null"
+          <b-list-group-item v-for="filter of filtersFiltered" :key="filter.id"
+            @mouseenter="focused = filter" @focusin="focused = filter"
+            @mouseleave="focused = null" @focusout="focused = null"
             action class="border-0 rounded-0 p-2" :class="filter.id === $store.state.filter.selected.id ? 'active' : ''" :to="'/seven/auth/tasks/' + filter.id">
             <div class="d-flex align-items-center">
               <div class="col-7 p-0" style="word-wrap: break-word">

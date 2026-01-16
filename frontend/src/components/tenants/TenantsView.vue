@@ -36,18 +36,10 @@
       </div>
     </div>
     <div class="container overflow-auto bg-white shadow-sm border rounded g-0">
-      <FlowTable striped :items="filteredTenants" :fields="tenantFields" primary-key="id" prefix="admin.tenants."
-        @contextmenu="focused = $event" @mouseenter="focused = $event" @mouseleave="focused = null">
+      <FlowTable striped :items="filteredTenants" :fields="tenantFields" primary-key="id" prefix="admin.tenants.">
         <template v-slot:cell(actions)="row">
-          <div>
-            <b-button :disabled="focused !== row.item" style="opacity: 1" @click="edit(row.item)" class="px-2 border-0 shadow-none" :title="$t('admin.tenants.editTenant')" variant="link">
-              <span class="mdi mdi-18px mdi-pencil-outline"></span>
-            </b-button>
-            <span class="border-start h-50" :class="focused === row.item ? 'border-secondary' : ''"></span>
-            <b-button :disabled="focused !== row.item" style="opacity: 1" @click="prepareRemove(row.item)" class="px-2 border-0 shadow-none" :title="$t('admin.tenants.deleteTenant')" variant="link">
-              <span class="mdi mdi-18px mdi-delete-outline"></span>
-            </b-button>
-          </div>
+          <CellActionButton @click="edit(row.item)" :title="$t('admin.tenants.editTenant')" icon="mdi-pencil-outline"></CellActionButton>
+          <CellActionButton @click="prepareRemove(row.item)" :title="$t('admin.tenants.deleteTenant')" icon="mdi-delete-outline"></CellActionButton>
         </template>
       </FlowTable>
       <div class="mb-3 text-center w-100" v-if="loading">
@@ -70,64 +62,64 @@
 </template>
 
 <script>
-  import { FlowTable, ConfirmDialog, BWaitingBox } from '@cib/common-frontend'
-  import { mapActions, mapGetters } from 'vuex'
+import { FlowTable, ConfirmDialog, BWaitingBox } from '@cib/common-frontend'
+import { mapActions, mapGetters } from 'vuex'
+import CellActionButton from '@/components/common-components/CellActionButton.vue'
 
-  export default {
-    name: 'TenantsView',
-    components: { FlowTable, BWaitingBox, ConfirmDialog },
-    data() {
-      return {
-        loading: false,
-        filter: '',
-        focused: null,
-        tenantSelected: null
-      }
+export default {
+  name: 'TenantsView',
+  components: { FlowTable, BWaitingBox, ConfirmDialog, CellActionButton },
+  data() {
+    return {
+      loading: false,
+      filter: '',
+      tenantSelected: null
+    }
+  },
+  computed: {
+    ...mapGetters(['tenants']),
+    tenantFields: function() {
+      return [
+        { label: 'id', key: 'id', class: 'col-5', tdClass: 'py-1' },
+        { label: 'name', key: 'name', class: 'col-5', tdClass: 'py-1' },
+        { label: 'actions', key: 'actions', class: 'col-2 text-center', sortable: false, thClass: 'justify-content-center', tdClass: 'justify-content-center py-0' }
+      ]
     },
-    computed: {
-      ...mapGetters(['tenants']),
-      tenantFields: function() {
-        return [
-          { label: 'id', key: 'id', class: 'col-5', tdClass: 'py-1' },
-          { label: 'name', key: 'name', class: 'col-5', tdClass: 'py-1' },
-          { label: 'actions', key: 'actions', class: 'col-2 text-center', sortable: false, thClass: 'justify-content-center', tdClass: 'justify-content-center py-0' }
-        ]
-      },
-      filteredTenants: function() {
-        if (!this.filter) return this.tenants
-        const str = this.filter.toLowerCase()
-        return this.tenants.filter(tenant =>
-          tenant.id?.toLowerCase().includes(str) ||
-          tenant.name?.toLowerCase().includes(str)
-        )
-      },
+    filteredTenants: function() {
+      if (!this.filter) return this.tenants
+      const str = this.filter.toLowerCase()
+      return this.tenants.filter(tenant =>
+        tenant.id?.toLowerCase().includes(str) ||
+        tenant.name?.toLowerCase().includes(str)
+      )
     },
-    mounted() {
-      this.loadTenants()
+  },
+  mounted() {
+    this.loadTenants()
+  },
+  methods: {
+    ...mapActions(['fetchTenants', 'deleteTenant']),
+    loadTenants: function() {
+      this.loading = true
+      this.fetchTenants().finally(() => {
+        this.loading = false
+      })
     },
-    methods: {
-      ...mapActions(['fetchTenants', 'deleteTenant']),
-      loadTenants: function() {
-        this.loading = true
-        this.fetchTenants().finally(() => {
-          this.loading = false
-        })
-      },
-      add: function() {
-        this.$router.push({ name: 'createTenant' })
-      },
-      edit: function(tenant) {
-        this.$router.push({ name: 'adminTenant', params: { tenantId: tenant.id }, query: { tab: 'information' } })
-      },
-      prepareRemove: function(tenant) {
-        this.tenantSelected = tenant
-        this.$refs.deleteModal.show()
-      },
-      remove: function(tenant) {
-        this.deleteTenant(tenant.id).then(() => {
-          this.tenantSelected = null
-        })
-      }
+    add: function() {
+      this.$router.push({ name: 'createTenant' })
+    },
+    edit: function(tenant) {
+      this.$router.push({ name: 'adminTenant', params: { tenantId: tenant.id }, query: { tab: 'information' } })
+    },
+    prepareRemove: function(tenant) {
+      this.tenantSelected = tenant
+      this.$refs.deleteModal.show()
+    },
+    remove: function(tenant) {
+      this.deleteTenant(tenant.id).then(() => {
+        this.tenantSelected = null
+      })
     }
   }
+}
 </script>

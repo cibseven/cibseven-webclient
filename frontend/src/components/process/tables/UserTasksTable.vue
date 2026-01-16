@@ -24,27 +24,34 @@
     <FlowTable v-else-if="userTasks.length > 0" resizable striped thead-class="sticky-header" :items="userTasks" primary-key="id" prefix="process-instance.usertasks."
       sort-by="created" :sort-desc="true" :fields="[
       { label: 'activity', key: 'name', class: 'col-2', tdClass: 'py-1' },
-      { label: 'assignee', key: 'assignee', class: 'col-1', tdClass: 'position-relative py-1' },
+      { label: 'assignee', key: 'assignee', class: 'col-1', tdClass: 'position-relative py-0' },
       { label: 'owner', key: 'owner', class: 'col-1', tdClass: 'py-1' },
       { label: 'startTime', key: 'created', class: 'col-2', tdClass: 'py-1' },
       { label: 'due', key: 'due', class: 'col-2', tdClass: 'py-1' },
       { label: 'followUp', key: 'followUp', class: 'col-1', tdClass: 'py-1' },
-      { label: 'taskID', key: 'id', class: 'col-2', tdClass: 'position-relative py-1' },
-      { label: 'actions', key: 'actions', class: 'col-1', sortable: false, tdClass: 'py-1' }]">
+      { label: 'taskID', key: 'id', class: 'col-2', tdClass: 'py-0' },
+      { label: 'actions', key: 'actions', class: 'col-1', sortable: false, tdClass: 'py-0' }]">
       <template v-slot:cell(name)="table">
         <span :title="table.item.description || table.item.name" class="text-truncate d-block">{{ table.item.name }}</span>
       </template>
       <template v-slot:cell(assignee)="table">
-        <div :title="table.item.assignee" class="text-truncate w-100" :class="focusedCell === table.item.assignee ? 'pe-4': ''" @mouseenter="focusedCell = table.item.assignee" @mouseleave="focusedCell = null">
+        <div :title="table.item.assignee" class="text-truncate w-100" :class="focusedCell === table.item.assignee ? 'pe-4': ''" 
+          @mouseenter="focusedCell = table.item.assignee" @focusin="focusedCell = table.item.assignee"
+          @mouseleave="focusedCell = null" @focusout="focusedCell = null">
           {{ table.item.assignee || '&nbsp;' }}
           <span v-if="focusedCell === table.item.assignee" @click.stop="$refs.taskAssignationModal.show(table.item.id, true)"
             :title="$t('process-instance.assignModal.manageAssignee')"
             class="mdi mdi-18px mdi-pencil-outline px-2 position-absolute end-0 text-secondary lh-sm"></span>
         </div>
       </template>
+
       <template v-slot:cell(created)="table">
         <span :title="formatDateForTooltips(table.item.created)" class="text-truncate d-block">{{ formatDate(table.item.created) }}</span>
       </template>
+      <template v-slot:cell(due)="table">
+        <span :title="formatDateForTooltips(table.item.due)" class="text-truncate d-block">{{ formatDate(table.item.due) }}</span>
+      </template>
+
       <template v-slot:cell(id)="table">
         <CopyableActionButton
           :display-value="table.item.id"
@@ -54,10 +61,8 @@
         />
       </template>
       <template v-slot:cell(actions)="table">
-        <b-button :title="$t('process-instance.assignModal.manageUsersGroups')" @click="$refs.taskAssignationModal.show(table.item.id, false)"
-          size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-account"></b-button>
-        <b-button :title="$t('process-instance.usertasks.openTask', { name: table.item.name })" :to="{ name: 'task-id', params: { taskId: table.item.id } }"
-          size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-clipboard-text-play-outline"></b-button>
+        <CellActionButton :title="$t('process-instance.assignModal.manageUsersGroups')" @click="$refs.taskAssignationModal.show(table.item.id, false)" icon="mdi-account"></CellActionButton>
+        <CellActionButton :title="$t('process-instance.usertasks.openTask', { name: table.item.name })" :to="{ name: 'task-id', params: { taskId: table.item.id } }" icon="mdi-clipboard-text-play-outline"></CellActionButton>
       </template>
     </FlowTable>
     <div v-else-if="!loading">
@@ -75,10 +80,11 @@ import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
 import TaskAssignationModal from '@/components/process/modals/TaskAssignationModal.vue'
 import { FlowTable, SuccessAlert, CopyableActionButton, BWaitingBox } from '@cib/common-frontend'
+import CellActionButton from '@/components/common-components/CellActionButton.vue'
 
 export default {
   name: 'UserTasksTable',
-  components: { TaskAssignationModal, FlowTable, SuccessAlert, CopyableActionButton, BWaitingBox },
+  components: { TaskAssignationModal, FlowTable, SuccessAlert, CopyableActionButton, BWaitingBox, CellActionButton },
   mixins: [copyToClipboardMixin],
   props: { selectedInstance: Object },
   data: function() {

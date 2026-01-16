@@ -90,7 +90,9 @@
       <div class="overflow-auto flex-fill border-bottom" @scroll="handleScrollTasks">
         <div v-if="tasksFiltered.length > 0">
           <b-list-group class="mx-3">
-            <b-list-group-item @click="selectedTask(task)" v-for="task of tasksFiltered" :key="task.id" :ref="'taskItem-' + task.id" @mouseenter="focused = task" @mouseleave="focused = null"
+            <b-list-group-item @click="selectedTask(task)" v-for="task of tasksFiltered" :key="task.id" :ref="'taskItem-' + task.id"
+              @mouseenter="focused = task" @focusin="focused = task"
+              @mouseleave="focused = null" @focusout="focused = null"
               class="rounded-0 mt-3 p-2 bg-white border-0" :class="task.id === $route.params.taskId ? 'active shadow' : ''" draggable="false"
               tabindex=0 style="cursor: pointer" v-on:keyup.enter="selectedTask(task)" action>
               <div class="d-flex align-items-center">
@@ -457,7 +459,7 @@ export default {
       }
     },
     copyTaskForDateManagement: function(task, type) {
-      this.selectedDateT = structuredClone(task)
+      this.selectedDateT = JSON.parse(JSON.stringify(task))
       if (task[type]) {
         this.selectedDateT[type] = new Date(task[type])
         if (type === 'due') this.selectedDateT.dueTime = this.selectedDateT[type].getHours() + ':' + this.selectedDateT[type].getMinutes()

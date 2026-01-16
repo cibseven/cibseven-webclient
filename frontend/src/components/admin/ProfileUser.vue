@@ -106,14 +106,9 @@
               </template>
 
               <div v-if="groups" class="p-2">
-                <FlowTable striped :items="groups" primary-key="id" prefix="admin.groups." :fields="groupFields"
-                  @contextmenu="focusedGroup = $event" @mouseenter="focusedGroup = $event" @mouseleave="focusedGroup = null">
+                <FlowTable striped :items="groups" primary-key="id" prefix="admin.groups." :fields="groupFields">
                   <template v-slot:cell(actions)="row">
-                    <div>
-                      <b-button :disabled="focusedGroup !== row.item" style="opacity: 1" @click="unassignGroup(row.item)" class="px-2 border-0 shadow-none" :title="$t('admin.groups.deleteGroup')" variant="link">
-                        <span class="mdi mdi-18px mdi-delete-outline"></span>
-                      </b-button>
-                    </div>
+                    <CellActionButton @click="unassignGroup(row.item)" :title="$t('admin.groups.deleteGroup')" icon="mdi-delete-outline"></CellActionButton>
                   </template>
                 </FlowTable>
               </div>
@@ -133,14 +128,9 @@
               </template>
 
               <div v-if="userTenants.length > 0" class="p-2">
-                <FlowTable striped :items="userTenants" primary-key="id" prefix="admin.tenants." :fields="tenantFields"
-                  @contextmenu="focusedTenant = $event" @mouseenter="focusedTenant = $event" @mouseleave="focusedTenant = null">
+                <FlowTable striped :items="userTenants" primary-key="id" prefix="admin.tenants." :fields="tenantFields">
                   <template v-slot:cell(actions)="row">
-                    <div>
-                      <b-button :disabled="focusedTenant !== row.item" style="opacity: 1" @click="unassignTenant(row.item)" class="px-2 border-0 shadow-none" variant="link">
-                        <span class="mdi mdi-18px mdi-delete-outline"></span>
-                      </b-button>
-                    </div>
+                    <CellActionButton @click="unassignTenant(row.item)" :title="$t('admin.tenants.unassignTenant')" icon="mdi-delete-outline"></CellActionButton>
                   </template>
                 </FlowTable>
               </div>
@@ -244,15 +234,14 @@
 <script>
 import { AdminService } from '@/services.js'
 import { notEmpty, same } from '@/components/admin/utils.js'
-
 import { SidebarsFlow, FlowTable, SuccessAlert, CIBForm, ContentBlock }  from '@cib/common-frontend'
 import ProfilePreferencesTab from '@/components/admin/ProfilePreferencesTab.vue'
-
+import CellActionButton from '@/components/common-components/CellActionButton.vue'
 import { mapActions, mapGetters } from 'vuex'
 
 export default {
   name: 'ProfileUser',
-  components: { SidebarsFlow, FlowTable, SuccessAlert, CIBForm, ProfilePreferencesTab, ContentBlock },
+  components: { SidebarsFlow, FlowTable, SuccessAlert, CIBForm, ProfilePreferencesTab, ContentBlock, CellActionButton },
   inject: ['AuthService'],
   props: {
     editMode: {
@@ -271,8 +260,6 @@ export default {
       unAssignedGroups: [],
       unAssignedGroupsLoading: false,
       unassignedTenants: [],
-      focusedGroup: null,
-      focusedTenant: null,
       passwordPolicyError: false,
       passwordVisibility: { current: false, new: false, repeat: false },
       sendingEmail: false,
@@ -422,7 +409,7 @@ export default {
     },
     loadUnassignedGroups: function() {
       this.unAssignedGroupsLoading = true
-      const userGroups = structuredClone(this.groups)
+      const userGroups = JSON.parse(JSON.stringify(this.groups))
       this.unAssignedGroups = []
       AdminService.findGroups().then(allGroups => {
         allGroups.forEach(group => {
@@ -469,7 +456,7 @@ export default {
     },
     async loadUnassignedTenants() {
       await this.fetchTenants()
-      const userTenants = structuredClone(this.userTenants)
+      const userTenants = JSON.parse(JSON.stringify(this.userTenants))
       this.unassignedTenants = []
       this.tenants.forEach(tenant => {
         const isAssigned = userTenants.some(userTenant => userTenant.id === tenant.id)
