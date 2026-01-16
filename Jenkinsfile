@@ -373,7 +373,7 @@ pipeline {
             }
         }
 
-        stage('Release bpm-sdk') {
+        stage('Release npm bpm-sdk') {
             when {
                 allOf {
                     expression { params.RELEASE_BPM_SDK }
@@ -390,7 +390,7 @@ pipeline {
             }
         }
 
-        stage('Release cibseven-components') {
+        stage('Release npm cibseven-components') {
             when {
                 anyOf {
                     expression { params.RELEASE_CIBSEVEN_COMPONENTS }
