@@ -316,7 +316,7 @@ function loadEmbeddedForm(
     // Determine API URI and engine name based on engineId format:
     // - If engineId contains '|', it's format "url|path|engineName" (additional engine)
     // - If engineId doesn't contain '|', it's a simple engine name (default engine)
-    let apiUri = config.servicesBasePath;
+    const apiUri = config.servicesBasePath;
     let engineName = null;
     
     if (parentConfig.engineId && parentConfig.engineId.includes('|')) {
