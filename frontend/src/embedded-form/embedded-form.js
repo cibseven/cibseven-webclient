@@ -308,17 +308,35 @@ function loadEmbeddedForm(
     parentConfig,
     config
 ) {
-    // Build headers with authorization and optional engine name
+    // Build headers with authorization
     const headers = {
         authorization: parentConfig.authToken
     };
-    if (parentConfig.engineName) {
-        headers['X-Process-Engine'] = parentConfig.engineName;
+    
+    // Determine API URI and engine name based on engineId format:
+    // - If engineId contains '|', it's format "url|path|engineName" (additional engine)
+    // - If engineId doesn't contain '|', it's a simple engine name (default engine)
+    const apiUri = config.servicesBasePath;
+    let engineName = null;
+    
+    if (parentConfig.engineId && parentConfig.engineId.includes('|')) {
+        // Additional engine with full URL info
+        const parts = parentConfig.engineId.split('|');
+        if (parts.length === 3) {
+            engineName = parts[2];
+        }
+    } else if (parentConfig.engineId) {
+        engineName = parentConfig.engineId;
+    }
+    
+    // Add engine name to headers if present
+    if (engineName) {
+        headers['X-Process-Engine'] = engineName;
     }
     
     const client = new CamSDK.Client({
         mock: false,
-        apiUri: config.servicesBasePath,
+        apiUri: apiUri,
         headers: headers,
         engine: false // false to define absolute apiUri
     });

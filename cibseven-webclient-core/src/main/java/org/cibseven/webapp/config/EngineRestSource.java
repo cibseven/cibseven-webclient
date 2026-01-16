@@ -19,23 +19,33 @@ package org.cibseven.webapp.config;
 import lombok.Data;
 
 /**
- * Configuration class for mapping engine names to their specific REST endpoints.
- * Allows overriding the default engine REST URL and path for specific engines.
+ * Configuration for an engine REST endpoint source.
+ * Defines where to fetch engine instances from.
  */
 @Data
-public class EngineRestMapping {
+public class EngineRestSource {
 	/**
-	 * The name of the engine (e.g., "production", "development")
-	 */
-	private String engineName;
-	
-	/**
-	 * The base URL for this engine's REST API (e.g., "http://localhost:8080")
+	 * The base URL for this engine's REST API (REQUIRED).
+	 * Example: "http://localhost:8080", "https://dev.cib.de/"
 	 */
 	private String url;
 	
 	/**
-	 * The REST API path for this engine (e.g., "/engine-rest")
+	 * The REST API path for this engine (REQUIRED).
+	 * Example: "/engine-rest"
 	 */
 	private String path;
+	
+	/**
+	 * Base display name for engines from this REST endpoint (optional).
+	 * The actual engine name will be appended in parentheses if not "default".
+	 * Example: "Dev Server" -> displays as "Dev Server" for default engine, "Dev Server (production)" for production engine
+	 */
+	private String displayName;
+	
+	/**
+	 * Base tooltip text for engines from this REST endpoint (optional).
+	 * The actual engine name will be appended in parentheses if not "default".
+	 */
+	private String tooltip;
 }

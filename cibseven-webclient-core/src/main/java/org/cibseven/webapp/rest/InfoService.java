@@ -17,7 +17,6 @@
 package org.cibseven.webapp.rest;
 
 import org.cibseven.webapp.auth.SevenUserProvider;
-import org.cibseven.webapp.config.EngineRestMappingProperties;
 import org.cibseven.webapp.rest.model.InfoVersion;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -70,9 +69,6 @@ public class InfoService extends BaseService {
 	@Autowired
 	InfoVersion infoVersion;
 	
-	@Autowired(required = false)
-	EngineRestMappingProperties engineRestMappingProperties;
-	
 	@PostConstruct
 	public void init() {
 		// If userEditable is not set in yaml, set it based on userProvider
@@ -112,12 +108,6 @@ public class InfoService extends BaseService {
 		configJson.put("engineRestPath", engineRestPath);
 		configJson.put("engineRestUrl", engineRestUrl);
 		configJson.put("authorizationEnabled", authorizationEnabled);
-		
-		// Add engine mappings if configured
-		if (engineRestMappingProperties != null && !engineRestMappingProperties.getMappings().isEmpty()) {
-			ObjectMapper mapper = new ObjectMapper();
-			configJson.set("engineRestMappings", mapper.valueToTree(engineRestMappingProperties.getMappings()));
-		}
 		
         try {
             ObjectMapper mapper = new ObjectMapper();

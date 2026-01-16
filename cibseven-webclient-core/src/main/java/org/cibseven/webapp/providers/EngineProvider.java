@@ -16,13 +16,18 @@
  */
 package org.cibseven.webapp.providers;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
+import org.cibseven.webapp.config.EngineRestProperties;
+import org.cibseven.webapp.config.EngineRestSource;
 import org.cibseven.webapp.exception.InvalidUserIdException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.Engine;
 import org.cibseven.webapp.rest.model.NewUser;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
@@ -34,13 +39,125 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class EngineProvider extends SevenProviderBase implements IEngineProvider {
 
+	@Autowired(required = false)
+	private EngineRestProperties engineRestProperties;
+
 	@Override
 	public Collection<Engine> getProcessEngineNames() {
-		String url = getEngineRestUrl() + "/engine";
+		List<Engine> allEngines = new ArrayList<>();
 		
-		return Arrays.asList(
-			((ResponseEntity<Engine[]>) doGet(url, Engine[].class, null, false)).getBody()
-		);
+		// Get default URL and path from properties, fallback to @Value fields from parent if not configured
+		String defaultUrl = engineRestProperties != null && engineRestProperties.getUrl() != null 
+			? engineRestProperties.getUrl() 
+			: cibsevenUrl;
+		String defaultPath = engineRestProperties != null && engineRestProperties.getPath() != null && !engineRestProperties.getPath().isEmpty()
+			? engineRestProperties.getPath() 
+			: engineRestPath;
+		String defaultDisplayName = engineRestProperties != null ? engineRestProperties.getDisplayName() : null;
+		String defaultTooltip = engineRestProperties != null ? engineRestProperties.getTooltip() : null;
+		
+		try {
+			String fullUrl = buildUrl(defaultUrl, defaultPath) + "/engine";
+			Engine[] defaultEngines = ((ResponseEntity<Engine[]>) doGet(fullUrl, Engine[].class, null, false)).getBody();
+			
+			if (defaultEngines != null) {
+				// Sort engines alphabetically by name within this source
+				Arrays.sort(defaultEngines, (e1, e2) -> e1.getName().compareToIgnoreCase(e2.getName()));
+				
+				for (Engine engine : defaultEngines) {
+					enrichEngine(engine, defaultUrl, defaultPath, defaultDisplayName, defaultTooltip, true);
+					allEngines.add(engine);
+				}
+			}
+		} catch (Exception e) {
+			log.warn("Failed to fetch engines from default URL: {}", e.getMessage());
+		}
+		
+		// Fetch engines from additional URLs
+		if (engineRestProperties != null && engineRestProperties.getAdditionalEngineRest() != null) {
+			for (EngineRestSource additional : engineRestProperties.getAdditionalEngineRest()) {
+				try {
+					String additionalPath = additional.getPath() != null && !additional.getPath().isEmpty() 
+						? additional.getPath() 
+						: "/engine-rest";
+					String additionalUrl = buildUrl(additional.getUrl(), additionalPath) + "/engine";
+					Engine[] additionalEngines = ((ResponseEntity<Engine[]>) doGet(additionalUrl, Engine[].class, null, false)).getBody();
+					
+					if (additionalEngines != null) {
+						// Sort engines alphabetically by name within this source
+						Arrays.sort(additionalEngines, (e1, e2) -> e1.getName().compareToIgnoreCase(e2.getName()));
+						
+						for (Engine engine : additionalEngines) {
+							enrichEngine(engine, additional.getUrl(), additionalPath, additional.getDisplayName(), additional.getTooltip(), false);
+							allEngines.add(engine);
+						}
+					}
+				} catch (Exception e) {
+					log.warn("Failed to fetch engines from additional URL {}: {}", additional.getUrl(), e.getMessage());
+				}
+			}
+		}
+		
+		return allEngines;
+	}
+	
+	/**
+	 * Enriches an engine with id, url, path, displayName, and tooltip.
+	 * @param engine the engine to enrich
+	 * @param sourceUrl the base URL of the engine REST server
+	 * @param sourcePath the REST path of the engine server
+	 * @param baseDisplayName the base display name from config
+	 * @param baseTooltip the base tooltip from config
+	 * @param isDefaultSource true if from default source, false if from additional source
+	 */
+	private void enrichEngine(Engine engine, String sourceUrl, String sourcePath, String baseDisplayName, String baseTooltip, boolean isDefaultSource) {
+		// Store the URL and path so engine knows where it came from
+		engine.setUrl(sourceUrl);
+		engine.setPath(sourcePath);
+		
+		// Set ID format based on source:
+		// - Default engine: simple format (just engine name) for backward compatibility and relative URLs in embedded forms
+		// - Additional engine: full format (url|path|engineName) for unique identification across servers
+		if (isDefaultSource) {
+			engine.setId(engine.getName());
+		} else {
+			engine.setId(sourceUrl + "|" + sourcePath + "|" + engine.getName());
+		}
+		
+		// Set displayName: append engine name in parentheses if not "default"
+		if (baseDisplayName != null && !baseDisplayName.isEmpty()) {
+			if ("default".equals(engine.getName())) {
+				engine.setDisplayName(baseDisplayName);
+			} else {
+				engine.setDisplayName(baseDisplayName + " (" + engine.getName() + ")");
+			}
+		} else {
+			engine.setDisplayName(engine.getName());
+		}
+		
+		// Set tooltip: append engine name in parentheses if not "default"
+		if (baseTooltip != null && !baseTooltip.isEmpty()) {
+			if ("default".equals(engine.getName())) {
+				engine.setTooltip(baseTooltip);
+			} else {
+				engine.setTooltip(baseTooltip + " (" + engine.getName() + ")");
+			}
+		}
+	}
+	
+	/**
+	 * Builds a URL from base URL and path.
+	 */
+	private String buildUrl(String url, String path) {
+		String baseUrl = url;
+		if (baseUrl.endsWith("/")) {
+			baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
+		}
+		String restPath = path;
+		if (!restPath.startsWith("/")) {
+			restPath = "/" + restPath;
+		}
+		return baseUrl + restPath;
 	}
 
 	@Override

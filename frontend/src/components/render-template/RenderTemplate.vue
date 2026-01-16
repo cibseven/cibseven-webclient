@@ -272,20 +272,18 @@ export default {
         else if (e.data.method === 'cancelTask') this.cancelTask()
         else if (e.data.method === 'updateFilters') this.updateFilters(e.data)
         else if (e.data.method === 'requestConfig') {
-          // Securely provide config (auth token + engine + mappings) to iframe via postMessage
-          const engineName = localStorage.getItem(ENGINE_STORAGE_KEY)
+          // Securely provide config (auth token + engine) to iframe via postMessage
+          const engineId = localStorage.getItem(ENGINE_STORAGE_KEY)
           const config = {
             authToken: this.$root.user.authToken,
             engineRestUrl: this.$root.config.engineRestUrl,
             engineRestPath: this.$root.config.engineRestPath
           }
-          if (engineName) {
-            config.engineName = engineName
-          }
-          if (this.$root.config.engineRestMappings) {
-            // Convert to plain array of plain objects using JSON serialization
-            // Note: do not use structuredClone() here
-            config.engineRestMappings = JSON.parse(JSON.stringify(this.$root.config.engineRestMappings))
+          if (engineId) {
+            // Engine ID can be either:
+            // - Simple string (default engine) -> use relative path
+            // - "url|path|engineName" format (additional engine) -> parse and use absolute URL
+            config.engineId = engineId
           }
           const response = {
             method: 'configResponse',
