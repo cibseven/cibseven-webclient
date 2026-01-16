@@ -63,7 +63,7 @@
             <span v-else> {{ row.item.value }} </span>
           </template>
           <template v-slot:cell(buttons)="row">
-            <b-button class="p-0 px-2 border-0 mdi mdi-24px mdi-delete-outline shadow-none" variant="link" @click="deleteCriteria(row.index)"></b-button>
+            <CellActionButton icon="mdi-delete-outline" @click="deleteCriteria(row.index)" :title="$t('nav-bar.filters.delete')"></CellActionButton>
           </template>
         </FlowTable>
 
@@ -87,10 +87,11 @@
 
 <script>
 import { FlowTable } from '@cib/common-frontend'
+import CellActionButton from '@/components/common-components/CellActionButton.vue'
 
 export default {
   name: 'AdvancedSearchModal',
-  components: { FlowTable },
+  components: { FlowTable, CellActionButton },
   emits: ['refresh-tasks'],
   data: function () {
     return {
