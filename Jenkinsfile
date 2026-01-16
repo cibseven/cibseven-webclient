@@ -85,12 +85,14 @@ pipeline {
         booleanParam(
             name: 'RELEASE_BPM_SDK',
             defaultValue: false,
-            description: 'Build and deploy bpm-sdk to artifacts.cibseven.org'
+            description: 'Build and deploy bpm-sdk NPM package to artifacts.cibseven.org'
         )
         booleanParam(
             name: 'RELEASE_CIBSEVEN_COMPONENTS',
             defaultValue: false,
-            description: 'Build and deploy cibseven-components to artifacts.cibseven.org'
+            description: '''Build and deploy cibseven-components NPM package to artifacts.cibseven.org
+            - If not set, the package will only be released automatically on the primary branch when the version in package.json is a dev version and not yet published.
+            '''
         )
         booleanParam(
             name: 'DEPLOY_TO_ARTIFACTS',
@@ -390,8 +392,13 @@ pipeline {
 
         stage('Release cibseven-components') {
             when {
-                allOf {
+                anyOf {
                     expression { params.RELEASE_CIBSEVEN_COMPONENTS }
+                    allOf {
+                        branch pipelineParams.primaryBranch
+                        expression { isDevNpmVersion() }
+                        expression { isDevNpmVersionPublished() == false }
+                    }
                 }
             }
             steps {
@@ -584,3 +591,30 @@ def isSNAPSHOTVersion() {
     return mavenProjectInformation.version.endsWith("-SNAPSHOT")
 }
 
+def isDevNpmVersion() {
+    def packageVersion = sh(
+        script: "grep '\"version\"' frontend/package.json | cut -d'\"' -f4",
+        returnStdout: true
+    ).trim()
+    return packageVersion.contains('-dev')    
+}
+
+def isDevNpmVersionPublished() {
+    def packageVersion = sh(
+        script: "grep '\"version\"' frontend/package.json | cut -d'\"' -f4",
+        returnStdout: true
+    ).trim()
+    def packageName = sh(
+        script: "grep '\"name\"' frontend/package.json | cut -d'\"' -f4",
+        returnStdout: true
+    ).trim()
+
+    def result = sh(
+        script: "npm view ${packageName}@${packageVersion} version || echo 'not found'",
+        returnStdout: true
+    ).trim()
+
+    log.info "Checking if npm package ${packageName} with version ${packageVersion} is published. Result: ${result}"
+
+    return result != 'not found'
+}
