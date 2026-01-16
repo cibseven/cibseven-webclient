@@ -18,10 +18,12 @@
 -->
 <template>
   <router-link v-bind="$attrs" v-if="to" :to="to" :title="title" class="text-decoration-none rounded hovered">
-    <span :class="'mdi mdi-18px ' + icon"></span>
+    <span v-if="icon" :class="'mdi mdi-18px ' + icon"></span>
+    <slot></slot>
   </router-link>
   <button v-else v-bind="$attrs" @click.stop="onClick" class="btn btn-link hovered" :title="title">
-    <span :class="'mdi mdi-18px ' + icon"></span>
+    <span v-if="icon" :class="'mdi mdi-18px ' + icon"></span>
+    <slot></slot>
   </button>
 </template>
 
@@ -31,7 +33,7 @@ export default {
   emits: ['click'],
   props: { 
     title: { type: String, required: true },
-    icon: { type: String, required: true },
+    icon: { type: String, required: false, default: undefined },
     to: { type: [String, Object], default: undefined }
   },
   methods: {

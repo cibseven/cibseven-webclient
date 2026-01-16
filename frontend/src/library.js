@@ -42,6 +42,7 @@ export { TaskService, FilterService, ProcessService, VariableInstanceService, Hi
   AnalyticsService, BatchService, TenantService, ExternalTaskService, DeploymentService, EngineService, SetupService, getServicesBasePath, setServicesBasePath, createDocumentEndpointUrl } from '@/services.js';
 export { getEnabledShortcuts, getShortcutsForModal,
   getGlobalNavigationShortcuts, getTaskEventShortcuts, checkKeyMatch } from './utils/shortcuts.js'
+export { createProvideObject } from '@/utils/provide.js'
 
 // mixins
 export { default as processesVariablesMixin } from '@/components/process/mixins/processesVariablesMixin.js'

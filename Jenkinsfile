@@ -612,7 +612,7 @@ def isNpmVersionPublished() {
     def result
     container(Constants.NODE_20_CONTAINER) {
         result = sh(
-            script: "npm view ${packageName}@${packageVersion} version || echo 'not found'",
+            script: "cd frontend && npm view ${packageName}@${packageVersion} version || echo 'not found'",
             returnStdout: true
         ).trim()
     }
