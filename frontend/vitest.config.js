@@ -34,13 +34,12 @@ export default mergeConfig(
           'dist/**',
           'target/**',
           'node_modules/**',
-          'coverage/**',
 
-          // Exlclude app files
+          // Exclude test files
           'src/__tests__/**',
 
           // Test and config files
-          'cypress/e2e/**', // Exclude Cypress tests
+          'cypress/**', // Exclude Cypress tests
           'cypress.config.js', // Exclude Cypress config
           'vite.config.js', // Exclude Vite config
           'vitest.config.js', // Exclude this config file itself

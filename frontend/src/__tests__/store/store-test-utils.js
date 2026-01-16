@@ -160,5 +160,5 @@ export const testHelpers = {
 
 // Helper to get nested object values
 const getNestedValue = (obj, path) => {
-  return path.split('.').reduce((current, key) => current && current[key], obj)
+  return path.split('.').reduce((current, key) => current?.[key], obj)
 }

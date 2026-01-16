@@ -14,9 +14,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeAll, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { i18n } from '@/i18n'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import RenderTemplate from '@/components/render-template/RenderTemplate.vue'
 import { createProvideObject } from '@/utils/provide.js'
 
@@ -36,6 +38,10 @@ function createWrapper(props = {}) {
       },
       plugins: [i18n],
       stubs: {
+        'b-calendar': { template: '<div><slot></slot></div>' },
+        'b-button': { template: '<div><slot></slot></div>' },
+        'b-modal': { template: '<div><slot></slot></div>' },
+        'b-alert': { template: '<div><slot></slot></div>' },
       }
     }
   })
@@ -43,6 +49,16 @@ function createWrapper(props = {}) {
 
 describe('RenderTemplate.vue', () => {
   let wrapper
+
+  beforeAll(() => {
+    const translations = JSON.parse(
+      // eslint-disable-next-line no-undef
+      readFileSync(resolve(__dirname, '../../assets/translations_en.json'), 'utf-8')
+    )
+
+    i18n.global.locale = 'en'
+    i18n.global.setLocaleMessage('en', translations)
+  })
 
   beforeEach(() => {
     wrapper = createWrapper({

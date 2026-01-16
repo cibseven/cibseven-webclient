@@ -37,7 +37,8 @@ const createWrapper = (props = {}) => {
     },
     global: {
       provide: {
-        currentLanguage: vi.fn((lang) => lang || 'en')
+        currentLanguage: vi.fn((lang) => lang || 'en'),
+        setCurrentLanguage: vi.fn((lang) => lang || 'en')
       },
       mocks: {
         $t: (msg) => msg,
