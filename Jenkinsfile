@@ -397,7 +397,7 @@ pipeline {
                     allOf {
                         branch pipelineParams.primaryBranch
                         expression { isDevNpmVersion() }
-                        expression { isDevNpmVersionPublished() == false }
+                        expression { isNpmVersionPublished() == false }
                     }
                 }
             }
@@ -599,7 +599,7 @@ def isDevNpmVersion() {
     return packageVersion.contains('-dev')    
 }
 
-def isDevNpmVersionPublished() {
+def isNpmVersionPublished() {
     def packageVersion = sh(
         script: "grep '\"version\"' frontend/package.json | cut -d'\"' -f4",
         returnStdout: true
