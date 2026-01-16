@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import org.cibseven.bpm.BpmPlatform;
 import org.cibseven.bpm.engine.AuthorizationException;
 import org.cibseven.bpm.engine.IdentityService;
 import org.cibseven.bpm.engine.ProcessEngine;
@@ -29,6 +30,7 @@ import org.cibseven.bpm.engine.ProcessEngineException;
 import org.cibseven.bpm.engine.impl.identity.Authentication;
 import org.cibseven.bpm.engine.rest.dto.runtime.VariableInstanceDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.VariableInstanceQueryDto;
+import org.cibseven.bpm.engine.rest.exception.RestException;
 import org.cibseven.bpm.engine.rest.mapper.JacksonConfigurator;
 import org.cibseven.bpm.engine.rest.util.QueryUtil;
 import org.cibseven.bpm.engine.runtime.VariableInstance;
@@ -56,7 +58,12 @@ public class DirectProviderUtil {
 		if (processEngines.containsKey(processEngineName))
 			processEngine = processEngines.get(processEngineName);
 		else {
-			processEngine = EngineUtil.lookupProcessEngine(processEngineName);
+			// either one of the two methods can be used to lookup the process engine - the other might fail for unknown reasons
+			try {
+				processEngine = EngineUtil.lookupProcessEngine(processEngineName);
+			} catch (RestException ex) {
+				processEngine = BpmPlatform.getProcessEngineService().getProcessEngine(processEngineName);
+			}
 			processEngines.put(processEngineName, processEngine);
 			ObjectMapper objectMapper = new ObjectMapper();
 			JacksonConfigurator.configureObjectMapper(objectMapper);
