@@ -314,23 +314,18 @@ function loadEmbeddedForm(
     };
     
     // Determine API URI and engine name based on engineId format:
-    // - If engineId contains '|', it's format "url|path|engineName" (additional engine) -> use absolute URL
-    // - If engineId doesn't contain '|', it's a simple engine name (default engine) -> use relative path
+    // - If engineId contains '|', it's format "url|path|engineName" (additional engine)
+    // - If engineId doesn't contain '|', it's a simple engine name (default engine)
     let apiUri = config.servicesBasePath;
     let engineName = null;
     
     if (parentConfig.engineId && parentConfig.engineId.includes('|')) {
-        // Additional engine with full URL info - parse and use absolute URL
+        // Additional engine with full URL info
         const parts = parentConfig.engineId.split('|');
         if (parts.length === 3) {
-            const [url, path, name] = parts;
-            const baseUrl = url.endsWith('/') ? url.slice(0, -1) : url;
-            const restPath = path.startsWith('/') ? path : '/' + path;
-            apiUri = baseUrl + restPath;
-            engineName = name;
+            engineName = parts[2];
         }
     } else if (parentConfig.engineId) {
-        // Default engine - use relative path
         engineName = parentConfig.engineId;
     }
     
