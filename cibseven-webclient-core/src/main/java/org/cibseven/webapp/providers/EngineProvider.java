@@ -50,9 +50,9 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 		String defaultUrl = engineRestProperties != null && engineRestProperties.getUrl() != null 
 			? engineRestProperties.getUrl() 
 			: cibsevenUrl;
-		String defaultPath = engineRestProperties != null && engineRestProperties.getPath() != null 
+		String defaultPath = engineRestProperties != null && engineRestProperties.getPath() != null && !engineRestProperties.getPath().isEmpty()
 			? engineRestProperties.getPath() 
-			: (engineRestPath != null ? engineRestPath : "/engine-rest");
+			: engineRestPath;
 		String defaultDisplayName = engineRestProperties != null ? engineRestProperties.getDisplayName() : null;
 		String defaultTooltip = engineRestProperties != null ? engineRestProperties.getTooltip() : null;
 		
@@ -77,7 +77,9 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 		if (engineRestProperties != null && engineRestProperties.getAdditionalEngineRest() != null) {
 			for (EngineRestSource additional : engineRestProperties.getAdditionalEngineRest()) {
 				try {
-					String additionalPath = additional.getPath() != null ? additional.getPath() : "/engine-rest";
+					String additionalPath = additional.getPath() != null && !additional.getPath().isEmpty() 
+						? additional.getPath() 
+						: "/engine-rest";
 					String additionalUrl = buildUrl(additional.getUrl(), additionalPath) + "/engine";
 					Engine[] additionalEngines = ((ResponseEntity<Engine[]>) doGet(additionalUrl, Engine[].class, null, false)).getBody();
 					
