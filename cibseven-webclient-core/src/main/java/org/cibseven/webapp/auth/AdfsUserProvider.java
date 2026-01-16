@@ -16,9 +16,10 @@
  */
 package org.cibseven.webapp.auth;
 
-import java.io.IOException;
 import java.util.Base64;
+
 import javax.crypto.SecretKey;
+
 import org.cibseven.webapp.auth.exception.AuthenticationException;
 import org.cibseven.webapp.auth.exception.TokenExpiredException;
 import org.cibseven.webapp.auth.providers.JwtUserProvider;
@@ -26,45 +27,30 @@ import org.cibseven.webapp.auth.sso.SSOLogin;
 import org.cibseven.webapp.auth.sso.SSOUser;
 import org.cibseven.webapp.auth.sso.SsoHelper;
 import org.cibseven.webapp.auth.sso.TokenResponse;
-import org.cibseven.webapp.exception.SystemException;
 import org.springframework.beans.factory.annotation.Value;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * @deprecated Use OAuth2UserProvider instead
+ */
 @Slf4j
-public class AdfsUserProvider extends BaseUserProvider<SSOLogin> {
+@Deprecated
+public class AdfsUserProvider extends OAuth2UserProvider {
 	
-	@Value("${cibseven.webclient.sso.endpoints.token}") String tokenEndpoint;
-	@Value("${cibseven.webclient.sso.endpoints.jwks}") String certEndpoint;
 	@Value("${cibseven.webclient.sso.domain:}") String domain;
-	@Value("${cibseven.webclient.sso.clientId}") String clientId;
-	@Value("${cibseven.webclient.sso.clientSecret}") String clientSecret;
-	@Value("${cibseven.webclient.sso.userIdProperty}") String userIdProperty;
-	@Value("${cibseven.webclient.sso.userNameProperty}") String userNameProperty;
 	@Value("${cibseven.webclient.sso.infoInIdToken: false}") boolean infoInIdToken;
 	@Value("${cibseven.webclient.sso.technicalUserId}") String technicalUserId;
-	
-	@Value("${cibseven.webclient.authentication.jwtSecret}") String secret;
-	@Value("${cibseven.webclient.authentication.tokenValidMinutes}") long validMinutes;
-	@Value("${cibseven.webclient.authentication.tokenProlongMinutes}") long prolongMinutes;
-	
-	@Getter JwtTokenSettings settings;
-	SsoHelper ssoHelper;
-	JwtParser flowParser;
-	
+
 	@PostConstruct
+	@Override
 	public void init() {
 		settings = new JwtTokenSettings(secret, validMinutes, prolongMinutes);
 		ssoHelper = new SsoHelper(tokenEndpoint, clientId, clientSecret, certEndpoint, null, null);
@@ -77,12 +63,12 @@ public class AdfsUserProvider extends BaseUserProvider<SSOLogin> {
 	public User login(SSOLogin params, HttpServletRequest rq) {
 		TokenResponse tokens;
 		if (params.getUsername() == null)
-			tokens = ssoHelper.codeExchange(params.getCode(), params.getRedirectUrl(), params.getNonce(), false, true);
+			tokens = getSsoHelper().codeExchange(params.getCode(), params.getRedirectUrl(), params.getNonce(), false, true);
 		else {
 			String username = params.getUsername();
 			if (!username.contains("@") && !username.contains("\\"))
 				username = username + "@" + domain;
-			tokens = ssoHelper.passwordLogin(username, params.getPassword());
+			tokens = getSsoHelper().passwordLogin(username, params.getPassword());
 		}
 		
 		Claims userClaims = infoInIdToken ? tokens.getIdClaims() : tokens.getAccessClaims();
@@ -97,54 +83,8 @@ public class AdfsUserProvider extends BaseUserProvider<SSOLogin> {
 		user.setRefreshToken(null);
 		return user;
 	}
-
-	@Override
-	public User getUserInfo(User user, String userId) {
-		if (user.getId().equals(userId)) {
-			((SSOUser) user).setRefreshToken(null);
-			return user;
-		}
-		else
-			throw new SystemException("Not implemented");
-	}
-
-	@Override
-	public User deserialize(String json, String token) {
-		try {
-			ObjectMapper mapper = new ObjectMapper();
-			mapper.addMixIn(SSOUser.class, org.cibseven.webapp.auth.BaseUserProvider.UserSerialization.class);
-			SSOUser user = mapper.readValue(json, SSOUser.class);
-			user.setAuthToken(token);
-			return user;
-		} catch (IllegalArgumentException x) { // for example doXigate token used with doXisafe
-			throw new AuthenticationException(json);
-		} catch (IOException x) {
-			throw new SystemException(x);
-		}
-	}
-
-	@Override
-	public String serialize(User user) {
-		try {
-			ObjectMapper mapper = new ObjectMapper();
-			mapper.addMixIn(SSOUser.class, org.cibseven.webapp.auth.BaseUserProvider.UserSerialization.class);
-			return mapper.writeValueAsString(user);
-		} catch (JsonProcessingException x) {
-			throw new SystemException(x);
-		}
-	}
-
-	@Override
-	public User verify(Claims claims) {
-		SSOUser user = (SSOUser) deserialize(claims.get("user", String.class), "");
-		TokenResponse tokens = ssoHelper.refreshToken(user.getRefreshToken());
-		user.setRefreshToken(tokens.getRefresh_token());
-		return user;
-	}
-
-	@Override
-	public void logout(User user) {	}
 	
+	@Override
 	public User parse(String token, TokenSettings settings) {
 		try {
 			Claims claims = flowParser.parseSignedClaims(token).getPayload();
@@ -163,21 +103,11 @@ public class AdfsUserProvider extends BaseUserProvider<SSOLogin> {
 		} catch (JwtException x) {
 			throw new AuthenticationException(token);
 		} catch (IllegalArgumentException e) {
-			Claims claims = ssoHelper.getKeyResolver().checkToken(token);
+			Claims claims = getSsoHelper().getKeyResolver().checkToken(token);
 			SSOUser user = new SSOUser(technicalUserId);
 			user.setDisplayName(claims.get("appid", String.class));
 			user.setAuthToken(createToken(settings, false, false, user));
 			return user;
 		}
-	}
-	
-	@Override
-	public SSOLogin createLoginParams() {
-		return new SSOLogin();
-	}
-
-	@Override
-	public User getSelfInfoJSessionId(String userId, String jSessionId, HttpServletRequest rq) {
-		return null;
 	}
 }
