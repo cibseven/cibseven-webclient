@@ -609,12 +609,15 @@ def isNpmVersionPublished() {
         returnStdout: true
     ).trim()
 
-    def result = sh(
-        script: "npm view ${packageName}@${packageVersion} version || echo 'not found'",
-        returnStdout: true
-    ).trim()
+    def result
+    container(Constants.NODE_20_CONTAINER) {
+        result = sh(
+            script: "npm view ${packageName}@${packageVersion} version || echo 'not found'",
+            returnStdout: true
+        ).trim()
+    }
 
     log.info "Checking if npm package ${packageName} with version ${packageVersion} is published. Result: ${result}"
 
-    return result != 'not found'
+    return result == packageVersion
 }
