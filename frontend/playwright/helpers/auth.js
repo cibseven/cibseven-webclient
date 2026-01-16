@@ -22,7 +22,7 @@
 export async function loginDefault(page) {
   const env = process.env.ENV
   console.log('process.env.ENV=', env)
-  
+
   if (env === 'stage') {
     const username = process.env.username
     const password = process.env.password
@@ -41,24 +41,24 @@ export async function loginDefault(page) {
  */
 export async function login(page, username, password, displayName) {
   await page.goto('#/seven/login')
-  
+
   // Fill in username - using more robust selectors
-  await page.locator('form input.form-control[type="text"]').first().fill(username)
-  
+  await page.locator(':nth-child(3) > form > :nth-child(1) > .row > .col > .form-control').fill(username)
+
   // Fill in password
   await page.locator('.input-group > .form-control').fill(password)
-  
+
   // Click login button
   await page.locator('button[type=submit]').click()
-  
+
   // Capitalize username for user name display
   const capitalize = (s) => s && s[0].toUpperCase() + s.slice(1)
   displayName = displayName || capitalize(username)
-  
+
   // Wait for the user account dropdown with the account icon to be visible
   const accountDropdown = page.locator('.mdi-account').locator('..')
   await accountDropdown.waitFor({ state: 'visible', timeout: 10000 })
-  
+
   // Check that the user name is correct
   await accountDropdown.locator(`text=${displayName}`).waitFor({ state: 'visible' })
 }
@@ -70,10 +70,10 @@ export async function login(page, username, password, displayName) {
 export async function logout(page) {
   // Click the account dropdown
   await page.locator('.mdi-account').locator('..').click()
-  
+
   // Click logout
   await page.locator('.dropdown-menu-end .dropdown-item').filter({ hasText: 'Logout' }).click()
-  
+
   // Verify we're back at login page
   await page.locator('button[type=submit]').filter({ hasText: 'Login' }).waitFor({ state: 'visible' })
   await page.getByRole('heading', { name: 'CIB seven', level: 1 }).waitFor({ state: 'visible' })
@@ -87,16 +87,16 @@ export async function logout(page) {
  */
 export async function loginFail(page, email, password) {
   await page.goto('#/seven/login')
-  
+
   // Fill in username - using more robust selectors
   await page.locator('form input.form-control[type="text"]').first().fill(email)
-  
+
   // Fill in password
   await page.locator('.input-group > .form-control').fill(password)
-  
+
   // Click login button
   await page.locator('button[type=submit]').click()
-  
+
   // Verify error message is visible
   await page.locator('text=/Authentication data is wrong|Username or password is incorrect/').waitFor({ state: 'visible' })
 }
