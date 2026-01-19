@@ -57,8 +57,6 @@ public class AdfsUserProvider extends BaseUserProvider<SSOLogin> {
 	@Value("${cibseven.webclient.sso.technicalUserId}") String technicalUserId;
 	
 	@Value("${cibseven.webclient.authentication.jwtSecret}") String secret;
-	@Value("${cibseven.webclient.authentication.tokenValidMinutes}") long validMinutes;
-	@Value("${cibseven.webclient.authentication.tokenProlongMinutes}") long prolongMinutes;
 	
 	@Getter JwtTokenSettings settings;
 	SsoHelper ssoHelper;
@@ -93,7 +91,9 @@ public class AdfsUserProvider extends BaseUserProvider<SSOLogin> {
 		// Set engine from request header
 		setEngineFromRequest(user, rq);
 		
-		user.setAuthToken(createToken(getSettings(), true, false, user));
+		// Get the appropriate token settings for this engine
+		TokenSettings tokenSettings = getSettingsForEngine(user.getEngine());
+		user.setAuthToken(createToken(tokenSettings, true, false, user));
 		user.setRefreshToken(null);
 		return user;
 	}
@@ -146,18 +146,24 @@ public class AdfsUserProvider extends BaseUserProvider<SSOLogin> {
 	public void logout(User user) {	}
 	
 	public User parse(String token, TokenSettings settings) {
+		// Determine the correct settings based on the engine in the token
+		TokenSettings effectiveSettings = getEffectiveSettingsForToken(token, settings);
+		
 		try {
-			Claims claims = flowParser.parseSignedClaims(token).getPayload();
+			// Create parser with effective settings for engine-specific secret
+			SecretKey key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(effectiveSettings.getSecret()));
+			JwtParser parser = Jwts.parser().verifyWith(key).build();
+			Claims claims = parser.parseSignedClaims(token).getPayload();
 			User user = deserialize((String) claims.get("user"), JwtUserProvider.BEARER_PREFIX + token);
 			if ((boolean) claims.get("verify") && verify(claims) == null)
 				throw new AuthenticationException(token);
 			return user;			
 		} catch (ExpiredJwtException x) {
 			long ageMillis = System.currentTimeMillis() - x.getClaims().getExpiration().getTime();
-			if ((boolean) x.getClaims().get("prolongable") && (ageMillis < settings.getProlong().toMillis())) {
+			if ((boolean) x.getClaims().get("prolongable") && (ageMillis < effectiveSettings.getProlong().toMillis())) {
 				User user = verify(x.getClaims());
 				if (user != null)
-					throw new TokenExpiredException(createToken(settings, true, false, user));				
+					throw new TokenExpiredException(createToken(effectiveSettings, true, false, user));				
 			}
 			throw new TokenExpiredException();			
 		} catch (JwtException x) {
@@ -166,7 +172,7 @@ public class AdfsUserProvider extends BaseUserProvider<SSOLogin> {
 			Claims claims = ssoHelper.getKeyResolver().checkToken(token);
 			SSOUser user = new SSOUser(technicalUserId);
 			user.setDisplayName(claims.get("appid", String.class));
-			user.setAuthToken(createToken(settings, false, false, user));
+			user.setAuthToken(createToken(effectiveSettings, false, false, user));
 			return user;
 		}
 	}

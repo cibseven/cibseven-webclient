@@ -65,8 +65,6 @@ public class LdapUserProvider extends BaseUserProvider<StandardLogin> {
 	@Value("${cibseven.webclient.ldap.followReferrals:}") String ldapFollowReferrals;
 	
 	@Value("${cibseven.webclient.authentication.jwtSecret:}") String secret;
-	@Value("${cibseven.webclient.authentication.tokenValidMinutes:60}") long validMinutes;
-	@Value("${cibseven.webclient.authentication.tokenProlongMinutes:1440}") long prolongMinutes;
 	
 	@PostConstruct
 	public void init() {
@@ -97,7 +95,9 @@ public class LdapUserProvider extends BaseUserProvider<StandardLogin> {
 			// Set engine from request header
 			setEngineFromRequest(user, rq);
 			
-			user.setAuthToken(createToken(getSettings(), true, false, user));
+			// Get the appropriate token settings for this engine
+			TokenSettings tokenSettings = getSettingsForEngine(user.getEngine());
+			user.setAuthToken(createToken(tokenSettings, true, false, user));
 	        
 	        return user;
 		} catch (NamingException x) {
@@ -210,7 +210,10 @@ public class LdapUserProvider extends BaseUserProvider<StandardLogin> {
 			}
 			CIBUser user =  (CIBUser) deserialize(userClaims.get("user").toString(), null);
 			user.setDisplayName(result.getAttributes().get(ldapDisplayNameAttribute).get().toString());
-	        user.setAuthToken(createToken(getSettings(), true, false, user));
+			
+			// Get the appropriate token settings for this engine
+			TokenSettings tokenSettings = getSettingsForEngine(user.getEngine());
+	        user.setAuthToken(createToken(tokenSettings, true, false, user));
 	        
 	        return user;
         } catch(NamingException e) {
@@ -219,8 +222,11 @@ public class LdapUserProvider extends BaseUserProvider<StandardLogin> {
 	}
 
 	public User parse(String token, TokenSettings settings) {
+		// Determine the correct settings based on the engine in the token
+		TokenSettings effectiveSettings = getEffectiveSettingsForToken(token, settings);
+		
 		try {			
-			SecretKey key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(settings.getSecret()));
+			SecretKey key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(effectiveSettings.getSecret()));
 			Claims claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
 			User user = deserialize((String) claims.get("user"), JwtUserProvider.BEARER_PREFIX + token);
 			if ((boolean) claims.get("verify") && verify(claims, claims.getIssuedAt()) == null)
@@ -230,10 +236,10 @@ public class LdapUserProvider extends BaseUserProvider<StandardLogin> {
 			
 		} catch (ExpiredJwtException x) {
 			long ageMillis = System.currentTimeMillis() - x.getClaims().getExpiration().getTime();
-			if ((boolean) x.getClaims().get("prolongable") && (ageMillis < settings.getProlong().toMillis())) {
+			if ((boolean) x.getClaims().get("prolongable") && (ageMillis < effectiveSettings.getProlong().toMillis())) {
 				User user = verify(x.getClaims(), x.getClaims().getIssuedAt());
 				if (user != null)
-					throw new TokenExpiredException(createToken(settings, true, false, user));				
+					throw new TokenExpiredException(createToken(effectiveSettings, true, false, user));				
 			}
 			throw new TokenExpiredException();
 			

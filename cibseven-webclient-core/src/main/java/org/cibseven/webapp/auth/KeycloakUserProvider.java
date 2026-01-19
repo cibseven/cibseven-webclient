@@ -72,8 +72,6 @@ public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
 	@Value("${cibseven.webclient.sso.userNameProperty}") String userNameProperty;
 	@Value("${cibseven.webclient.sso.accessTokenToEngineRest:false}") boolean forwardToken;
 	@Value("${cibseven.webclient.authentication.jwtSecret}") String secret;
-	@Value("${cibseven.webclient.authentication.tokenValidMinutes}") long validMinutes;
-	@Value("${cibseven.webclient.authentication.tokenProlongMinutes}") long prolongMinutes;
 	
 	@Getter private SsoHelper ssoHelper;
 	@Getter private JwtTokenSettings settings;
@@ -161,21 +159,21 @@ public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
 			// Get the user from the access token
 			SSOUser user = getUserFromAccessToken(params.getAuthToken());
 			
+			// Set engine from request header
+			setEngineFromRequest(user, rq);
+			
 			// Use SsoHelper to extract token expiration
 			Date expiration = ssoHelper.getTokenExpiration(params.getAuthToken());
 			
-			// Create a new token with the expiration from the third-party token if available
-			JwtTokenSettings tokenSettings = getSettings();
+			// Get the appropriate token settings for this engine
+			TokenSettings tokenSettings = getSettingsForEngine(user.getEngine());
 			if (expiration != null) {
 				// Create a custom token settings with the expiration from the third-party token
-				long validMinutes = (expiration.getTime() - System.currentTimeMillis()) / 60000; // Convert to minutes
-				if (validMinutes > 0) {
-					tokenSettings = new JwtTokenSettings(tokenSettings.getSecret(), validMinutes, 0);
+				long tokenValidMinutes = (expiration.getTime() - System.currentTimeMillis()) / 60000; // Convert to minutes
+				if (tokenValidMinutes > 0) {
+					tokenSettings = new JwtTokenSettings(tokenSettings.getSecret(), tokenValidMinutes, 0);
 				}
 			}
-			
-			// Set engine from request header
-			setEngineFromRequest(user, rq);
 			
 			user.setAuthToken(createToken(tokenSettings, false, false, user));
 			return user;
@@ -189,7 +187,9 @@ public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
 		// Set engine from request header
 		setEngineFromRequest(user, rq);
 		
-		user.setAuthToken(createToken(getSettings(), true, false, user));
+		// Get the appropriate token settings for this engine
+		TokenSettings tokenSettings = getSettingsForEngine(user.getEngine());
+		user.setAuthToken(createToken(tokenSettings, true, false, user));
 		user.setRefreshToken(null);
 		return user;
 	}
@@ -248,18 +248,25 @@ public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
 	
 	@Override
 	public User parse(String token, TokenSettings settings) {
-		try {			
-			Claims claims = flowParser.parseSignedClaims(token).getPayload();
+		try {
+			// Get effective settings based on engine from token
+			TokenSettings effectiveSettings = getEffectiveSettingsForToken(token, settings);
+			JwtParser parser = Jwts.parser().verifyWith(effectiveSettings.getSecret()).build();
+			
+			Claims claims = parser.parseSignedClaims(token).getPayload();
 			User user = deserialize((String) claims.get("user"), JwtUserProvider.BEARER_PREFIX + token);
 			if ((boolean) claims.get("verify") && verify(claims) == null)
 				throw new AuthenticationException(token);
 			return user;
 		} catch (ExpiredJwtException x) {
+			// Get effective settings based on engine from token
+			TokenSettings effectiveSettings = getEffectiveSettingsForToken(token, settings);
+			
 			long ageMillis = System.currentTimeMillis() - x.getClaims().getExpiration().getTime();
-			if ((boolean) x.getClaims().get("prolongable") && (ageMillis < settings.getProlong().toMillis())) {
+			if ((boolean) x.getClaims().get("prolongable") && (ageMillis < effectiveSettings.getProlong().toMillis())) {
 				User user = verify(x.getClaims());
 				if (user != null)
-					throw new TokenExpiredException(createToken(settings, true, false, user));				
+					throw new TokenExpiredException(createToken(effectiveSettings, true, false, user));				
 			}
 			throw new TokenExpiredException();			
 		} catch (IllegalArgumentException | InvalidKeyException | MalformedJwtException e) { //token received from third-party isn't ours, get the userInfo from the defined endpoint on the config file
