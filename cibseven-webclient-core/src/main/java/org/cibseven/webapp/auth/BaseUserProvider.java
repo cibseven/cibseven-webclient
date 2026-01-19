@@ -18,6 +18,9 @@ package org.cibseven.webapp.auth;
 
 import org.cibseven.webapp.auth.providers.JwtUserProvider;
 import org.cibseven.webapp.auth.rest.StandardLogin;
+import org.cibseven.webapp.config.EngineRestProperties;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -27,6 +30,15 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.Getter;
 
 public abstract class BaseUserProvider<R extends StandardLogin> implements JwtUserProvider<R> {
+
+	@Value("${cibseven.webclient.authentication.tokenValidMinutes:60}") 
+	protected long validMinutes;
+	
+	@Value("${cibseven.webclient.authentication.tokenProlongMinutes:1440}") 
+	protected long prolongMinutes;
+
+	@Autowired(required = false) 
+	protected EngineRestProperties engineRestProperties;
 
 	public abstract User login(R params, HttpServletRequest rq);
 	public abstract void logout(User user);
@@ -48,19 +60,6 @@ public abstract class BaseUserProvider<R extends StandardLogin> implements JwtUs
 			createKey(settings.getSecret());
 		} catch(WeakKeyException | IllegalArgumentException e) {
 			throw new IllegalArgumentException("Secret must be at least 155 characters long and a base64 decodable string");
-		}
-	}
-	
-	/**
-	 * Sets the engine from the X-Process-Engine header to the user object.
-	 * This should be called in login methods to store the engine with the user.
-	 * @param user The user object (must be CIBUser or subclass)
-	 * @param request The HTTP request containing the X-Process-Engine header
-	 */
-	protected void setEngineFromRequest(User user, HttpServletRequest request) {
-		if (user instanceof CIBUser) {
-			String engine = request.getHeader("X-Process-Engine");
-			((CIBUser) user).setEngine(engine);
 		}
 	}
 	

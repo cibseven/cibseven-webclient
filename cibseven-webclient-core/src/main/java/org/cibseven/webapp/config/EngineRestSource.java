@@ -48,4 +48,11 @@ public class EngineRestSource {
 	 * The actual engine name will be appended in parentheses if not "default".
 	 */
 	private String tooltip;
+	
+	/**
+	 * JWT secret for this engine's authentication (optional).
+	 * If not specified, the default cibseven.webclient.authentication.jwtSecret will be used.
+	 * Must be at least 155 characters long and a base64 decodable string.
+	 */
+	private String jwtSecret;
 }

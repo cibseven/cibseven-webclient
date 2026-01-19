@@ -31,10 +31,12 @@ cibseven:
       #     path: /engine-rest
       #     displayName: Local Server Test
       #     tooltip: Local test environment
+      #     jwtSecret:
       #   - url: https://dev.cib.de/
       #     path: /engine-rest
       #     displayName: Dev Server
       #     tooltip: Development environment
+      #     jwtSecret:
     historyLevel: full
     # Token generation
     authentication:

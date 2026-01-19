@@ -69,8 +69,6 @@ import org.springframework.util.MultiValueMap;
 import com.fasterxml.jackson.core.StreamReadConstraints;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cibseven.webapp.rest.CustomRestTemplate;
-import org.cibseven.webapp.config.EngineRestProperties;
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
