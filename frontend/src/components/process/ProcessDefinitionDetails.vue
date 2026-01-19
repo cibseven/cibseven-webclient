@@ -95,7 +95,7 @@
       <button @click="editHistoryTimeToLive()" class="btn btn-sm mdi mdi-pencil float-end border-0"
         :title="$t('process-instance.edit')"></button>
     </span>
-    <span class="col-12">{{ historyTimeToLive + ' ' + $t('process.days') }}</span>
+    <span class="col-12">{{ historyTimeToLive !== '0' ? historyTimeToLive : '∞' }}{{ ' ' + $t('process.days') }}</span>
   </div>
   <hr class="my-2">
   <div class="row">
@@ -124,9 +124,17 @@
   </div>
 
   <b-modal ref="historyTimeToLive" :title="$t('process.details.historyTimeToLive')">
-    <div class="d-flex col-6 align-items-center ps-0">
-      <input class="form-control" type="number" v-model="historyTimeToLiveChanged">
-      <span class="ms-2">{{ $t('process.days') }}</span>
+    <p>
+      <span>{{ $t('process.details.definitionName') }}: </span>
+      <strong>{{ version.name }}</strong>
+      <br>
+      <span class="">{{ $t('process.details.definitionVersion') }}: </span>
+      <strong>{{ version.version }}</strong>
+    </p>
+    <label class="form-check-label pb-2" for="historyTimeToLiveInput">{{ $t('process.details.historyTimeToLive') }}</label>
+    <div class="input-group">
+      <input id="historyTimeToLiveInput" class="form-control" min="0" max="9999" type="number" v-model="historyTimeToLiveChanged">
+      <span class="input-group-text">{{ $t('process.days') }}</span>
     </div>
     <template v-slot:modal-footer>
       <b-button @click="$refs.historyTimeToLive.hide()" variant="light">{{ $t('confirm.cancel') }}</b-button>
@@ -157,8 +165,8 @@ export default {
   data: function() {
     return {
       selectedDeployment: null,
-      historyTimeToLive: '',
-      historyTimeToLiveChanged: ''
+      historyTimeToLive: null,
+      historyTimeToLiveChanged: null
     }
   },
   emits: ['onUpdateHistoryTimeToLive'],
@@ -208,7 +216,7 @@ export default {
       this.$refs.historyTimeToLive.show()
     },
     updateHistoryTimeToLive: function() {
-      const data = { historyTimeToLive: this.historyTimeToLiveChanged || null }
+      const data = { historyTimeToLive: this.historyTimeToLiveChanged }
       ProcessService.updateHistoryTimeToLive(this.version.id, data).then(() => {
         this.historyTimeToLive = data.historyTimeToLive
         this.$refs.historyTimeToLive.hide()
