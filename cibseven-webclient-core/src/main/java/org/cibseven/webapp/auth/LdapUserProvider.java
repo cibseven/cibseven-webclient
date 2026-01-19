@@ -35,6 +35,7 @@ import org.cibseven.webapp.auth.exception.AuthenticationException;
 import org.cibseven.webapp.auth.exception.LoginException;
 import org.cibseven.webapp.auth.exception.TokenExpiredException;
 import org.cibseven.webapp.auth.providers.JwtUserProvider;
+import org.cibseven.webapp.auth.utils.EngineTokenUtils;
 import org.cibseven.webapp.auth.rest.StandardLogin;
 import org.cibseven.webapp.exception.SystemException;
 import org.springframework.beans.factory.annotation.Value;
@@ -93,10 +94,11 @@ public class LdapUserProvider extends BaseUserProvider<StandardLogin> {
 			user.setDisplayName(result.getAttributes().get(ldapDisplayNameAttribute).get().toString());
 			
 			// Set engine from request header
-			setEngineFromRequest(user, rq);
+			EngineTokenUtils.setEngineFromRequest(user, rq);
 			
 			// Get the appropriate token settings for this engine
-			TokenSettings tokenSettings = getSettingsForEngine(user.getEngine());
+			TokenSettings tokenSettings = EngineTokenUtils.getSettingsForEngine(
+				user.getEngine(), engineRestProperties, getSettings(), validMinutes, prolongMinutes);
 			user.setAuthToken(createToken(tokenSettings, true, false, user));
 	        
 	        return user;
@@ -212,7 +214,8 @@ public class LdapUserProvider extends BaseUserProvider<StandardLogin> {
 			user.setDisplayName(result.getAttributes().get(ldapDisplayNameAttribute).get().toString());
 			
 			// Get the appropriate token settings for this engine
-			TokenSettings tokenSettings = getSettingsForEngine(user.getEngine());
+			TokenSettings tokenSettings = EngineTokenUtils.getSettingsForEngine(
+				user.getEngine(), engineRestProperties, getSettings(), validMinutes, prolongMinutes);
 	        user.setAuthToken(createToken(tokenSettings, true, false, user));
 	        
 	        return user;
@@ -223,7 +226,8 @@ public class LdapUserProvider extends BaseUserProvider<StandardLogin> {
 
 	public User parse(String token, TokenSettings settings) {
 		// Determine the correct settings based on the engine in the token
-		TokenSettings effectiveSettings = getEffectiveSettingsForToken(token, settings);
+		TokenSettings effectiveSettings = EngineTokenUtils.getEffectiveSettingsForToken(
+			token, engineRestProperties, settings, validMinutes, prolongMinutes);
 		
 		try {			
 			SecretKey key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(effectiveSettings.getSecret()));

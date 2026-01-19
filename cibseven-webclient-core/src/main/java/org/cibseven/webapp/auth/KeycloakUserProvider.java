@@ -32,6 +32,7 @@ import javax.crypto.SecretKey;
 import org.cibseven.webapp.auth.exception.AuthenticationException;
 import org.cibseven.webapp.auth.exception.TokenExpiredException;
 import org.cibseven.webapp.auth.providers.JwtUserProvider;
+import org.cibseven.webapp.auth.utils.EngineTokenUtils;
 import org.cibseven.webapp.auth.sso.SSOLogin;
 import org.cibseven.webapp.auth.sso.SSOUser;
 import org.cibseven.webapp.auth.sso.SsoHelper;
@@ -160,13 +161,14 @@ public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
 			SSOUser user = getUserFromAccessToken(params.getAuthToken());
 			
 			// Set engine from request header
-			setEngineFromRequest(user, rq);
+			EngineTokenUtils.setEngineFromRequest(user, rq);
 			
 			// Use SsoHelper to extract token expiration
 			Date expiration = ssoHelper.getTokenExpiration(params.getAuthToken());
 			
 			// Get the appropriate token settings for this engine
-			TokenSettings tokenSettings = getSettingsForEngine(user.getEngine());
+			TokenSettings tokenSettings = EngineTokenUtils.getSettingsForEngine(
+				user.getEngine(), engineRestProperties, getSettings(), validMinutes, prolongMinutes);
 			if (expiration != null) {
 				// Create a custom token settings with the expiration from the third-party token
 				long tokenValidMinutes = (expiration.getTime() - System.currentTimeMillis()) / 60000; // Convert to minutes
@@ -185,10 +187,11 @@ public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
 		user.setRefreshToken(tokens.getRefresh_token());
 		
 		// Set engine from request header
-		setEngineFromRequest(user, rq);
+		EngineTokenUtils.setEngineFromRequest(user, rq);
 		
 		// Get the appropriate token settings for this engine
-		TokenSettings tokenSettings = getSettingsForEngine(user.getEngine());
+		TokenSettings tokenSettings = EngineTokenUtils.getSettingsForEngine(
+			user.getEngine(), engineRestProperties, getSettings(), validMinutes, prolongMinutes);
 		user.setAuthToken(createToken(tokenSettings, true, false, user));
 		user.setRefreshToken(null);
 		return user;
@@ -250,7 +253,8 @@ public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
 	public User parse(String token, TokenSettings settings) {
 		try {
 			// Get effective settings based on engine from token
-			TokenSettings effectiveSettings = getEffectiveSettingsForToken(token, settings);
+			TokenSettings effectiveSettings = EngineTokenUtils.getEffectiveSettingsForToken(
+				token, engineRestProperties, settings, validMinutes, prolongMinutes);
 			SecretKey key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(effectiveSettings.getSecret()));
 			JwtParser parser = Jwts.parser().verifyWith(key).build();
 			
@@ -261,7 +265,8 @@ public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
 			return user;
 		} catch (ExpiredJwtException x) {
 			// Get effective settings based on engine from token
-			TokenSettings effectiveSettings = getEffectiveSettingsForToken(token, settings);
+			TokenSettings effectiveSettings = EngineTokenUtils.getEffectiveSettingsForToken(
+				token, engineRestProperties, settings, validMinutes, prolongMinutes);
 			
 			long ageMillis = System.currentTimeMillis() - x.getClaims().getExpiration().getTime();
 			if ((boolean) x.getClaims().get("prolongable") && (ageMillis < effectiveSettings.getProlong().toMillis())) {
