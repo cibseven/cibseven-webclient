@@ -100,12 +100,12 @@
   <hr class="my-2">
   <div class="row">
     <span class="text-secondary fw-bold col-5 pe-0">{{ $t('process.details.firstStart') }}</span>
-    <span class="col-7 text-end" :title="formatDateForTooltips(minTimestamp)">{{ formatDate(minTimestamp) }}</span>
+    <span class="col-7 text-end" :title="formatDateForTooltips(minTimestamp)">{{ formatDate(minTimestamp) || '-' }}</span>
   </div>
   <hr class="my-2">
   <div class="row">
     <span class="text-secondary fw-bold col-5 pe-0">{{ $t('process.details.lastStart') }}</span>
-    <span class="col-7 text-end" :title="formatDateForTooltips(maxTimestamp)">{{ formatDate(maxTimestamp) }}</span>
+    <span class="col-7 text-end" :title="formatDateForTooltips(maxTimestamp)">{{ formatDate(maxTimestamp) || '-' }}</span>
   </div>
   <hr class="my-2">
   <div class="row align-items-center">
