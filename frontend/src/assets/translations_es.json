@@ -1186,7 +1186,7 @@
 		"version": "Versión",
 		"downloadVersionBpmn": "@:process.downloadBpmn",
 		"noDeployments": "No existen despliegues aún",
-		"deploymentTime": "Hora",
+		"deploymentTime": "Desplegado el",
 		"source": "Fuente",
 		"confirmDeleteDeployment": "Realmente quiere borrar los despliegues seleccionados?",
 		"deleteRunningInstances": "Detener instancias de proceso activas",
