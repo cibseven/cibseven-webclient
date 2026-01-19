@@ -65,7 +65,7 @@ pipeline {
             yaml BuildPodCreator.cibStandardPod(nodepool: Constants.NODEPOOL_STABLE)
                     .withContainerFromName(pipelineParams.mvnContainerName, pipelineParams.buildPodConfig[pipelineParams.mvnContainerName])
                     .withHelm3Container()
-                    .withNode20Container()
+                    .withNode24Container()
                     .asYaml()
             defaultContainer pipelineParams.mvnContainerName
         }
@@ -195,7 +195,7 @@ pipeline {
                 stage('OWASP Dependency-Track') {
                     steps {
                         script {
-                            container(Constants.NODE_20_CONTAINER) {
+                            container(Constants.NODE_24_CONTAINER) {
                                 script {
 
                                     sh """
@@ -239,7 +239,7 @@ pipeline {
                 stage('Run SonarQube Checks') {
                     steps {
                         script {
-                            container(Constants.NODE_20_CONTAINER) {
+                            container(Constants.NODE_24_CONTAINER) {
                                 withSonarQubeEnv(credentialsId: Constants.SONARQUBE_CREDENTIALS_ID, installationName: 'SonarQube') {
                                     script {
                                         // Install sonar-scanner
@@ -610,7 +610,7 @@ def isNpmVersionPublished() {
     ).trim()
 
     def result
-    container(Constants.NODE_20_CONTAINER) {
+    container(Constants.NODE_24_CONTAINER) {
         result = sh(
             script: "cd frontend && npm view ${packageName}@${packageVersion} version || echo 'not found'",
             returnStdout: true
