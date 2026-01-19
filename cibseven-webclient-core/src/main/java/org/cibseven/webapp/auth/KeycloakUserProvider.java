@@ -251,7 +251,8 @@ public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
 		try {
 			// Get effective settings based on engine from token
 			TokenSettings effectiveSettings = getEffectiveSettingsForToken(token, settings);
-			JwtParser parser = Jwts.parser().verifyWith(effectiveSettings.getSecret()).build();
+			SecretKey key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(effectiveSettings.getSecret()));
+			JwtParser parser = Jwts.parser().verifyWith(key).build();
 			
 			Claims claims = parser.parseSignedClaims(token).getPayload();
 			User user = deserialize((String) claims.get("user"), JwtUserProvider.BEARER_PREFIX + token);
