@@ -257,10 +257,10 @@ public class ProcessService extends BaseService implements InitializingBean {
 	
 	@Operation(
 			summary = "Get deployed start form for process",
-			description = "<strong>Return: Start form data as JSON")
+			description = "<strong>Return: Start form data as bytes (JSON or HTML)")
 	@ApiResponse(responseCode = "404", description = "Process or start form not found")
 	@RequestMapping(value = "/{processDefinitionId}/deployed-start-form", method = RequestMethod.GET)
-	public Object getDeployedStartForm(
+	public ResponseEntity<byte[]> getDeployedStartForm(
 			@Parameter(description = "Process definition Id") @PathVariable String processDefinitionId,
 			Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_ALL);
@@ -270,15 +270,15 @@ public class ProcessService extends BaseService implements InitializingBean {
 			byte[] body = response.getBody();
 			
 			if (body == null || body.length == 0) {
-				return null;
+				return ResponseEntity.noContent().build();
 			}
 			
-			String jsonString = new String(body, StandardCharsets.UTF_8);
-			ObjectMapper objectMapper = new ObjectMapper();
-			return objectMapper.readValue(jsonString, Object.class);
+			return ResponseEntity.ok()
+					.headers(response.getHeaders())
+					.body(body);
 			
 		} catch (Exception e) {
-			throw new SystemException("Error parsing deployed start form: " + e.getMessage(), e);
+			throw new SystemException("Error getting deployed start form: " + e.getMessage(), e);
 		}
 	}
 	
