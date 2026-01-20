@@ -394,26 +394,16 @@ function loadEmbeddedForm(
                             'authorization': parentConfig.authToken
                         }
                     });
-                    if (!engineResponse.ok) {
-                        throw new Error(
-                            `Failed to fetch engine configuration: ${engineResponse.status} ${engineResponse.statusText}`
-                        );
-                    }
                     const engines = await engineResponse.json();
                     // Find the matching engine by id or use first available
                     const engine = engines.find(e => e.id === parentConfig.engineId) || engines[0];
                     
                     // Build full URL using engine base url (without REST path) and form path
                     // Example: "http://localhost:8080" + "/forms/assign-reviewer.html"
-                    if (engine && typeof engine.url === 'string') {
-                        formConfig.formUrl = engine.url.replace(/\/$/, '') + formPath;
-                    } else {
-                        console.warn('Engine URL is missing or invalid, falling back to relative form path.');
-                        formConfig.formUrl = formPath;
-                    }
+                    formConfig.formUrl = engine.url.replace(/\/$/, '') + formPath;
                 } catch (err) {
                     console.error('Error fetching engine configuration:', err);
-                    // Fallback: extract base URL
+                    // Fallback: use relative form path
                     formConfig.formUrl = formPath;
                 }
                 
