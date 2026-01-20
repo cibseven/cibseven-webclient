@@ -389,12 +389,14 @@ function loadEmbeddedForm(
                 
                 // Get engine configuration from services endpoint to build full URL
                 try {
-                    const engineResponse = await fetch(apiUri + '/engine', {
-                        headers: {
-                            'authorization': parentConfig.authToken
-                        }
+                    const engines = await new Promise((resolve, reject) => {
+                        client.http.get('engine', {
+                            done: function(err, engines) {
+                                if (err) reject(err);
+                                else resolve(engines);
+                            }
+                        });
                     });
-                    const engines = await engineResponse.json();
                     // Find the matching engine by id or use first available
                     const engine = engines.find(e => e.id === parentConfig.engineId) || engines[0];
                     
