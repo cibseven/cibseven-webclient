@@ -432,14 +432,20 @@ function loadDeployedForm(client, isStartForm, referenceId) {
                     'Accept': '*/*'
                 },
                 done: function(err, resource) {
-                    if (err) reject(err);
-                    else resolve(resource);
+                    if (err) {
+                        console.error('Error loading deployed start form:', err);
+                        reject(err);
+                    } else {
+                        resolve(resource);
+                    }
                 }
             });
         } else {
             client.resource('task').deployedForm(referenceId, (err, resource) => {
-                if (err) reject(err);
-                else {
+                if (err) {
+                    console.error('Error loading deployed form:', err);
+                    reject(err);
+                } else {
                     resolve(resource);
                 }
             });
