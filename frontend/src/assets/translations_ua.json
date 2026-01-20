@@ -1186,7 +1186,7 @@
 		"version": "Версія",
 		"downloadVersionBpmn": "@:process.downloadBpmn",
 		"noDeployments": "Немає доступних розгортань процесів",
-		"deploymentTime": "Час",
+		"deploymentTime": "Дата розгортання",
 		"source": "Джерело",
 		"confirmDeleteDeployment": "Ви дійсно хочете видалити обрані розгортання?",
 		"deleteRunningInstances": "Зупинити поточні екземпляри процесу",

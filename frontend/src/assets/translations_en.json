@@ -1187,7 +1187,7 @@
 		"version": "Version",
 		"downloadVersionBpmn": "@:process.downloadBpmn",
 		"noDeployments": "No deployments available",
-		"deploymentTime": "Time",
+		"deploymentTime": "Deployed on",
 		"source": "Source",
 		"confirmDeleteDeployment": "Do you really want to delete the selected deployments?",
 		"deleteRunningInstances": "Stop running process instances",
