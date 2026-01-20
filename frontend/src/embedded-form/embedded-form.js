@@ -394,6 +394,11 @@ function loadEmbeddedForm(
                             'authorization': parentConfig.authToken
                         }
                     });
+                    if (!engineResponse.ok) {
+                        throw new Error(
+                            `Failed to fetch engine configuration: ${engineResponse.status} ${engineResponse.statusText}`
+                        );
+                    }
                     const engines = await engineResponse.json();
                     // Find the matching engine by id or use first available
                     const engine = engines.find(e => e.id === parentConfig.engineId) || engines[0];
