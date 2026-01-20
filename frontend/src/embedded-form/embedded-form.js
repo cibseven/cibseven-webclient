@@ -389,7 +389,7 @@ function loadEmbeddedForm(
                 
                 // Get engine configuration from services endpoint to build full URL
                 try {
-                    const engineResponse = await fetch('services/v1/engine', {
+                    const engineResponse = await fetch(apiUri + '/engine', {
                         headers: {
                             'authorization': parentConfig.authToken
                         }
