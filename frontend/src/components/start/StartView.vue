@@ -66,13 +66,13 @@
             </div>
           </div>
         </div>
-        <div v-if="tiles.includes('cockpit')"
-          class="col-4 mt-5 mx-2 mx-md-3 bg-white rounded" style="max-width: 330px; min-width: 250px; height:250px" tabindex="0"
+        <b-button v-if="tiles.includes('cockpit')"
+          :to="{ name: 'cockpit' }" 
+          class="btn btn-link col-4 mt-5 mx-2 mx-md-3 bg-white rounded border shadow-sm py-0 text-start" style="max-width: 330px; min-width: 250px; height:250px" tabindex="0"
           @focus="showCockpitOptions = true" @blur="showCockpitOptions = true" @click="showCockpitOptions = true" @mouseover="showCockpitOptions = true" @mouseleave="showCockpitOptions = false">
-          <div class="row border rounded shadow-sm h-100">
+          <div class="row h-100">
             <div class="align-top" style="flex:auto">
-              <div class="text-truncate ps-1"></div>
-              <router-link :to="{ name: 'cockpit' }" class="h-100 text-decoration-none text-reset">
+              <div class="h-100 text-decoration-none text-reset">
                 <div class="container">
                   <div class="row ps-3" style="height:55px">
                     <div class="col-12 align-items-center d-flex">
@@ -86,11 +86,11 @@
                     </div>
                   </div>
                 </div>
-              </router-link>
+              </div>
             </div>
             <b-overlay :show="showCockpitOptions" :opacity="0" no-center no-wrap>
               <template #overlay>
-                <b-list-group class="py-2 bg-white rounded-bottom" style="opacity: .9; position: absolute; bottom: 1px; width: calc(100% - 2px); margin-left: 1px">
+                <b-list-group class="py-2 bg-white rounded-bottom" style="opacity: .9; position: absolute; bottom: 1px; width: calc(100% - 2px); margin-left: 1px" @click.stop>
                   <b-list-group-item to="/seven/auth/processes/list" class="py-1 px-3 border-start-0 border-top-0 border-end-0 h6 fw-normal mb-0" :title="$t('start.cockpit.processes.tooltip')">
                     <span class="mdi mdi-18px mdi-map-legend pe-1"></span>{{ $t('start.cockpit.processes.title') }}</b-list-group-item>
                   <b-list-group-item to="/seven/auth/decisions" class="py-1 px-3 border-start-0 border-top-0 border-end-0 h6 fw-normal mb-0" :title="$t('start.cockpit.decisions.tooltip')">
@@ -105,14 +105,15 @@
               </template>
             </b-overlay>
           </div>
-        </div>
-        <div v-if="tiles.includes('admin')"
-        class="col-4 mt-5 mx-2 mx-md-3 bg-white rounded" style="max-width: 330px; min-width: 250px; height:250px" tabindex="0"
-        @focus="showAdminOptions = true" @blur="showAdminOptions = true" @click="showAdminOptions = true" @mouseover="showAdminOptions = true" @mouseleave="showAdminOptions = false">
-          <div class="row border rounded shadow-sm h-100">
+        </b-button>
+        <b-button v-if="tiles.includes('admin')"
+          :to="{ name: 'usersManagement' }"
+          class="btn btn-link col-4 mt-5 mx-2 mx-md-3 bg-white rounded border shadow-sm py-0 text-start" style="max-width: 330px; min-width: 250px; height:250px" tabindex="0"
+          @focus="showAdminOptions = true" @blur="showAdminOptions = true" @click="showAdminOptions = true" @mouseover="showAdminOptions = true" @mouseleave="showAdminOptions = false">
+          <div class="row h-100">
             <div class="align-top" style="flex:auto">
               <div class="text-truncate ps-1"></div>
-              <router-link :to="{ name: 'usersManagement' }" class="h-100 text-decoration-none text-reset" tabindex="-1">
+              <div class="h-100 text-decoration-none text-reset">
                 <div class="container">
                   <div class="row ps-3" style="height:55px">
                     <div class="col-12 align-items-center d-flex">
@@ -126,11 +127,11 @@
                     </div>
                   </div>
                 </div>
-              </router-link>
+              </div>
             </div>
             <b-overlay :show="showAdminOptions" :opacity="0" no-center no-wrap>
               <template #overlay>
-                <b-list-group class="py-2 bg-white rounded-bottom" style="opacity: .9; position: absolute; bottom: 1px; width: calc(100% - 2px); margin-left: 1px">
+                <b-list-group class="py-2 bg-white rounded-bottom" style="opacity: .9; position: absolute; bottom: 1px; width: calc(100% - 2px); margin-left: 1px" @click.stop>
                   <b-list-group-item v-if="adminManagementPermissions($root.config.permissions.usersManagement, 'user')"
                     to="/seven/auth/admin/users" class="py-1 px-3 border-start-0 border-top-0 border-end-0 h6 fw-normal mb-0" :title="$t('admin.users.title')">
                     <span class="mdi mdi-18px mdi-account-search-outline pe-1"></span>{{ $t('admin.users.title') }}</b-list-group-item>
@@ -150,7 +151,7 @@
               </template>
             </b-overlay>
           </div>
-        </div>
+        </b-button>
         <component :is="StartViewPlugin" v-if="StartViewPlugin"></component>
       </div>
       <div v-if="!applicationPermissions($root.config.permissions.tasklist, 'tasklist') &&
@@ -265,3 +266,15 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.btn-link,
+.btn-link * {
+  text-decoration: none !important;
+}
+
+.btn:focus {
+  outline: 2px solid var(--bs-gray-600);
+  outline-offset: 0px;
+}
+</style>
