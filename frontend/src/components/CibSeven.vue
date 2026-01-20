@@ -428,6 +428,7 @@ export default {
       localStorage.removeItem('tokenModeler')
       sessionStorage.removeItem('accessToken')
       sessionStorage.removeItem('tokenModeler')
+      // Note: engine token cleanup is handled by CIBHeaderFlow.logout()
     },
     openStartProcess: function() {
       this.$eventBus.emit('openStartProcess')

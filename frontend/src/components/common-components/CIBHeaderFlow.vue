@@ -94,6 +94,12 @@
 <script>
 import { EngineService } from '@/services.js'
 import { ENGINE_STORAGE_KEY } from '@/constants.js'
+import { 
+  storeTokenForEngine, 
+  removeTokenForEngine, 
+  hasTokenForEngine, 
+  restoreTokenForEngine 
+} from '@/utils/engineTokens.js'
 
 export default {
   name: 'CIBHeaderFlow',
@@ -116,6 +122,14 @@ export default {
         id: engine.id || engine.name,
         label: engine.displayName || engine.name
       }))
+    }
+  },
+  watch: {
+    // When user is set (after login), store the token for the current engine
+    user(newUser) {
+      if (newUser && this.selectedEngine) {
+        storeTokenForEngine(this.selectedEngine)
+      }
     }
   },
   mounted() {
@@ -146,6 +160,10 @@ export default {
       this.isCollapsed = false
     },
     logout: function() {
+      // Remove the token for the current engine from the cache
+      if (this.selectedEngine) {
+        removeTokenForEngine(this.selectedEngine)
+      }
       sessionStorage.getItem('token') ? sessionStorage.removeItem('token') : localStorage.removeItem('token')
       this.$emit('logout')
     },
@@ -180,9 +198,28 @@ export default {
       }
     },
     selectEngine(engineIdentifier) {
+      const previousEngine = this.selectedEngine
+      
+      // Store current token for the old engine before switching
+      if (previousEngine) {
+        storeTokenForEngine(previousEngine)
+      }
+      
       this.selectedEngine = engineIdentifier
       localStorage.setItem(ENGINE_STORAGE_KEY, engineIdentifier)
-      this.logout()
+      
+      // Check if we have a cached token for the new engine
+      if (hasTokenForEngine(engineIdentifier)) {
+        // Restore the cached token for the new engine
+        restoreTokenForEngine(engineIdentifier)
+        // Change the URL to the start page first, then force a full reload
+        // This ensures the app reinitializes with the correct engine context and URL
+        window.location.hash = '#/seven/auth/start-configurable'
+        window.location.reload()
+      } else {
+        // No cached token, need to logout and re-authenticate
+        this.logout()
+      }
     }
   }
 }
