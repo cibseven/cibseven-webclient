@@ -400,7 +400,12 @@ function loadEmbeddedForm(
                     
                     // Build full URL using engine base url (without REST path) and form path
                     // Example: "http://localhost:8080" + "/forms/assign-reviewer.html"
-                    formConfig.formUrl = engine.url.replace(/\/$/, '') + formPath;
+                    if (engine && typeof engine.url === 'string') {
+                        formConfig.formUrl = engine.url.replace(/\/$/, '') + formPath;
+                    } else {
+                        console.warn('Engine URL is missing or invalid, falling back to relative form path.');
+                        formConfig.formUrl = formPath;
+                    }
                 } catch (err) {
                     console.error('Error fetching engine configuration:', err);
                     // Fallback: extract base URL
