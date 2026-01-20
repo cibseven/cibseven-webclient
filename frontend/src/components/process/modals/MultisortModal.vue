@@ -28,23 +28,30 @@
         </div>
       </div>
       <div v-if="!moving">
-        <div v-for="(criteria, index) in sortingCriteria" :key="index" class="row align-items-center py-3" :class="index === selectedIndex ? 'bg-light' : ''" @click="selectedIndex = index">
-          <div class="col-2">
-            <span v-if="index === 0">{{ $t('multisort.orderBy') }}</span>
-            <span v-else>{{ $t('multisort.thenBy') }}</span>
+        <button v-for="(criteria, index) in sortingCriteria" :key="index"
+          class="border-0 w-100 ms-0 pt-3 pb-0 multisort-row"
+          :class="index === selectedIndex ? 'selected' : ''"
+          @click="selectedIndex = index">
+          <div class="row align-items-center">
+            <div class="col-2 pb-3">
+              <span v-if="index === 0">{{ $t('multisort.orderBy') }}</span>
+              <span v-else>{{ $t('multisort.thenBy') }}</span>
+            </div>
+            <div class="col-5">
+              <b-form-select v-model="criteria.field" :options="sortKeysWithText"></b-form-select>
+            </div>
+            <div class="col-5 pe-3">
+              <b-form-select v-model="criteria.order" :options="orders"></b-form-select>
+            </div>
           </div>
-          <div class="col-5">
-            <b-form-select v-model="criteria.field" :options="sortKeysWithText"></b-form-select>
-          </div>
-          <div class="col-5">
-            <b-form-select v-model="criteria.order" :options="orders"></b-form-select>
-          </div>
-        </div>
+        </button>
       </div>
       <div class="mt-3">
-        <b-button @click="addCriteria" variant="light" class="mdi mdi-plus" :title="$t('multisort.add')">{{ $t('multisort.add') }}</b-button>
-        <b-button @click="moveCriteria('up')" variant="light" size="sm" class="mdi mdi-18px mdi-chevron-up" :disabled="selectedIndex === 0 || selectedIndex === null" :title="$t('multisort.moveUp')"></b-button>
-        <b-button @click="moveCriteria('down')" variant="light" size="sm" class="mdi mdi-18px mdi-chevron-down" :disabled="selectedIndex === (sortingCriteria.length - 1) || selectedIndex === null" :title="$t('multisort.moveDown')"></b-button>
+        <b-button @click="addCriteria" variant="light" class="mdi mdi-plus me-3" :title="$t('multisort.add')">{{ $t('multisort.add') }}</b-button>
+        <div class="btn-group me-3">
+          <b-button @click="moveCriteria('up')" variant="light" size="sm" class="mdi mdi-18px mdi-chevron-up" :disabled="selectedIndex === 0 || selectedIndex === null" :title="$t('multisort.moveUp')"></b-button>
+          <b-button @click="moveCriteria('down')" variant="light" size="sm" class="mdi mdi-18px mdi-chevron-down" :disabled="selectedIndex === (sortingCriteria.length - 1) || selectedIndex === null" :title="$t('multisort.moveDown')"></b-button>
+        </div>
         <b-button @click="removeCriteria" variant="outline-danger" size="sm" class="mdi mdi-18px mdi-delete-outline" :disabled="sortingCriteria.length === 1" :title="$t('multisort.remove')"></b-button>
       </div>
     </div>
@@ -122,3 +129,16 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.multisort-row {
+  background-color: var(--bs-white) !important;
+  border-left: 5px solid !important;
+  border-color: var(--bs-white) !important;
+}
+.multisort-row.selected {
+  background-color: var(--bs-light) !important;
+  border-left: 5px solid !important;
+  border-color: var(--bs-primary) !important;
+}
+</style>
