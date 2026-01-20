@@ -95,7 +95,7 @@
       <button @click="editHistoryTimeToLive()" class="btn btn-sm mdi mdi-pencil float-end border-0"
         :title="$t('process-instance.edit')"></button>
     </span>
-    <span class="col-12">{{ historyTimeToLive !== '0' ? historyTimeToLive : '∞' }}{{ ' ' + $t('process.days') }}</span>
+    <span class="col-12">{{ historyTimeToLive !== 0 ? historyTimeToLive : '∞' }}{{ ' ' + $t('process.days') }}</span>
   </div>
   <hr class="my-2">
   <div class="row">
@@ -216,6 +216,9 @@ export default {
       this.$refs.historyTimeToLive.show()
     },
     updateHistoryTimeToLive: function() {
+      if (this.historyTimeToLiveChanged === '') {
+        this.historyTimeToLiveChanged = 0
+      }
       const data = { historyTimeToLive: this.historyTimeToLiveChanged }
       ProcessService.updateHistoryTimeToLive(this.version.id, data).then(() => {
         this.historyTimeToLive = data.historyTimeToLive
