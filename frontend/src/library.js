@@ -166,6 +166,7 @@ export { default as CalledProcessInstancesTable } from '@/components/process/tab
 export { default as JobDefinitionsTable } from '@/components/process/tables/JobDefinitionsTable.vue'
 export { default as JobsTable } from '@/components/process/tables/JobsTable.vue'
 export { default as JobDueDateModal } from '@/components/process/modals/JobDueDateModal.vue'
+export { default as ViewerFrame } from '@/components/common-components/ViewerFrame.vue'
 
 // re-export common frontend library
 export * from '@cib/common-frontend'

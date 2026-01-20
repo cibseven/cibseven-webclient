@@ -27,12 +27,9 @@
       </h5>
     </router-link>
 
-    <div @mousedown="handleMouseDown" class="v-resizable position-absolute w-100" style="left: 0" :style="'height: ' + bpmnViewerHeight + 'px; ' + toggleTransition">
+    <ViewerFrame :resizerMixin="this">
       <DmnViewer ref="diagram" class="h-100" />
-      <span role="button" size="sm" variant="light" class="bg-white px-2 py-1 me-1 position-absolute border rounded" style="bottom: 90px; right: 11px;" @click="toggleContent">
-        <span class="mdi mdi-18px" :class="toggleIcon"></span>
-      </span>
-    </div>
+    </ViewerFrame>
 
     <div class="position-absolute w-100" style="left: 0; z-index: 1" :style="'height: '+ tabsAreaHeight +'px; top: ' + (bottomContentPosition - tabsAreaHeight + 1) + 'px; ' + toggleTransition">
       <div class="d-flex align-items-end">
@@ -71,12 +68,13 @@ import { DecisionService } from '@/services.js'
 import DmnViewer from '@/components/decision/DmnViewer.vue'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
 import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
+import ViewerFrame from '@/components/common-components/ViewerFrame.vue'
 import { FlowTable, GenericTabs } from '@cib/common-frontend'
 import { mapActions } from 'vuex'
 
 export default {
   name: 'DecisionInstance',
-  components: { DmnViewer, FlowTable, GenericTabs, ScrollableTabsContainer },
+  components: { DmnViewer, FlowTable, GenericTabs, ScrollableTabsContainer, ViewerFrame },
   mixins: [permissionsMixin, resizerMixin],
   props: {
     versionIndex: String,
@@ -125,8 +123,3 @@ export default {
   }
 }
 </script>
-<style scoped>
-.active-tab-border {
-  border-bottom: 3px solid white!important;
-}
-</style>

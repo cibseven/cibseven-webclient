@@ -69,7 +69,7 @@
       </li>
     </ol>
 
-    <div @mousedown="handleMouseDown" class="v-resizable position-absolute w-100" style="left: 0" :style="'height: ' + bpmnViewerHeight + 'px; ' + toggleTransition">
+    <ViewerFrame :resizerMixin="this">
       <component :is="BpmnViewerPlugin" v-if="BpmnViewerPlugin" ref="diagram" class="h-100"
         @child-activity="filterByChildActivity($event)" @task-selected="selectTask($event)" @activity-map-ready="activityMap = $event"
         :activityId="selectedActivityId" :activity-instance="activityInstance" :process-definition-id="process.id" :selected-instance="selectedInstance" :activity-instance-history="activityInstanceHistory" 
@@ -86,10 +86,7 @@
         @child-activity="filterByChildActivity($event)"
         class="h-100">
       </BpmnViewer>
-      <span role="button" size="sm" variant="light" class="bg-white px-2 py-1 me-1 position-absolute border rounded" style="bottom: 90px; right: 11px;" @click="toggleContent">
-        <span class="mdi mdi-18px" :class="toggleIcon"></span>
-      </span>
-    </div>
+    </ViewerFrame>
 
     <div class="position-absolute w-100 border-bottom" style="z-index: 2; left: 0;" :style="'height: '+ tabsAreaHeight +'px; top: ' + (bottomContentPosition - tabsAreaHeight) + 'px; ' + toggleTransition">
       <div class="d-flex align-items-end">
@@ -130,13 +127,13 @@ import CalledProcessInstancesTable from '@/components/process/tables/CalledProce
 import ExternalTasksTable from '@/components/process/tables/ExternalTasksTable.vue'
 import ProcessInstanceTabs from '@/components/process/ProcessInstanceTabs.vue'
 import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
-
+import ViewerFrame from '@/components/common-components/ViewerFrame.vue'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
 
 export default {
   name: 'ProcessInstanceView',
   components: { VariablesTable, IncidentsTable, UserTasksTable, BpmnViewer, 
-    JobsTable, CalledProcessInstancesTable, ExternalTasksTable, ProcessInstanceTabs, ScrollableTabsContainer },
+    JobsTable, CalledProcessInstancesTable, ExternalTasksTable, ProcessInstanceTabs, ScrollableTabsContainer, ViewerFrame },
   mixins: [resizerMixin, tabUrlMixin],
   props: {
     process: Object,
