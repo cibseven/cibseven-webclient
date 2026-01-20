@@ -19,10 +19,11 @@
 <template>
     <div class="container-fluid">
       <div v-for="group of groups" :key="group.name">
-        <p role="heading" aria-level="4" class="mdi mdi-18px text-end pt-3 mb-1" :class="group.visible ? 'mdi-minus' : 'mdi-plus'"
+        <b-button variant="link" role="heading" aria-level="4" class="mdi mdi-18px text-end pt-3 mb-1 w-100" :class="group.visible ? 'mdi-minus' : 'mdi-plus'"
+          :title="group.visible ? $t('task.collapse') : $t('task.expand')"
           @click="$eventBus.emit('bv::toggle::collapse', group.name)" style="cursor: pointer">
           <span class="float-start h5">{{ group.name }}</span>
-        </p>
+        </b-button>
         <hr class="mt-0 mb-0">
         <b-collapse class="me-3" :id="group.name" v-model="group.visible">
           <div class="row">
