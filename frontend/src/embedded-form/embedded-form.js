@@ -424,15 +424,16 @@ function loadEmbeddedForm(
 function loadDeployedForm(client, isStartForm, referenceId) {
     return new Promise((resolve, reject) => {
         if (isStartForm) {
-            client.resource('process-definition').deployedForm(
-                { id: referenceId },
-                (err, resource) => {
+            client.http.get(`process/${referenceId}/deployed-start-form`, {
+                headers: {
+                    ...client.http.config.headers,
+                    'Accept': '*/*'
+                },
+                done: function(err, resource) {
                     if (err) reject(err);
-                    else {
-                        resolve(resource);
-                    }
+                    else resolve(resource);
                 }
-            );
+            });
         } else {
             client.resource('task').deployedForm(referenceId, (err, resource) => {
                 if (err) reject(err);
