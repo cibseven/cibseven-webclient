@@ -378,13 +378,35 @@ function loadEmbeddedForm(
                 formConfig.formElement = $(formContainer);
                 if (embeddedContainer) embeddedContainer.style.display = 'none';
             } else {
-                // Start with a relative url and replace doubled slashes if necessary
-                const url = formInfo.key
+                // Construct form path from embedded form key
+                // Example: "embedded:app:forms/assign-reviewer.html" with contextPath "/" 
+                // becomes "/forms/assign-reviewer.html"
+                const formPath = formInfo.key
                     .replace('embedded:', '')
                     .replace('app:', (formInfo.contextPath || '') + '/')
                     .replace(/^(\/+|([^/]))/, '/$2')
                     .replace(/\/\/+/, '/');
-                formConfig.formUrl = url;
+                
+                // Get engine configuration from services endpoint to build full URL
+                try {
+                    const engineResponse = await fetch('services/v1/engine', {
+                        headers: {
+                            'authorization': parentConfig.authToken
+                        }
+                    });
+                    const engines = await engineResponse.json();
+                    // Find the matching engine by id or use first available
+                    const engine = engines.find(e => e.id === parentConfig.engineId) || engines[0];
+                    
+                    // Build full URL using engine base url (without REST path) and form path
+                    // Example: "http://localhost:8080" + "/forms/assign-reviewer.html"
+                    formConfig.formUrl = engine.url.replace(/\/$/, '') + formPath;
+                } catch (err) {
+                    console.error('Error fetching engine configuration:', err);
+                    // Fallback: extract base URL
+                    formConfig.formUrl = formPath;
+                }
+                
                 formConfig.containerElement = $(embeddedContainer);
                 if (formContainer) formContainer.style.display = 'none';
             }
