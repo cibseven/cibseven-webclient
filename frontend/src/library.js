@@ -147,6 +147,7 @@ export { default as DecisionVersionListSidebar } from '@/components/decision/Dec
 export { default as DmnViewer } from '@/components/decision/DmnViewer.vue'
 export { default as TemplateBase } from '@/components/forms/TemplateBase.vue'
 export { default as StartView } from '@/components/start/StartView.vue'
+export { default as StartViewItem } from '@/components/start/StartViewItem.vue'
 export { default as LoginView } from '@/components/login/LoginView.vue'
 export { default as InitialSetup } from '@/components/setup/InitialSetup.vue'
 export { default as StackTraceModal } from '@/components/process/modals/StackTraceModal.vue'

@@ -20,138 +20,26 @@
   <div :style="{ 'height': 'calc(100% - 55px)' }" class="d-flex flex-column bg-light overflow-auto">
     <div class="h-100 container" :style="countStartItems === 4 ? 'max-width: 960px' : ''">
       <div ref="startContainer" class="row justify-content-center">
-        <div v-if="tiles.includes('startProcess')"
-          class="col-4 mt-5 mx-2 mx-md-3 bg-white rounded" style="max-width: 330px; min-width: 250px; height:250px">
-          <div class="row border rounded shadow-sm h-100">
-            <div class="align-top" style="flex:auto">
-              <div class="text-truncate ps-1"></div>
-              <router-link :to="{ name: 'start-process' }" class="h-100 text-decoration-none text-reset">
-                <div class="container">
-                  <div class="row ps-3" style="height:55px">
-                    <div class="col-12 align-items-center d-flex">
-                      <span class="border-start h-100 me-3 border-primary" style="border-width: 3px !important"></span>
-                      <h4 class="m-0">{{ $t('start.startProcess.title') }}</h4>
-                    </div>
-                  </div>
-                  <div class="row text-center">
-                    <div class="col-12 p-0 pt-1">
-                      <img :alt="$t('start.startProcess.title')" src="@/assets/images/start/process.svg" style="height:180px; max-width:225px">
-                    </div>
-                  </div>
-                </div>
-              </router-link>
-            </div>
-          </div>
-        </div>
-        <div v-if="tiles.includes('tasklist')"
-          class="col-4 mt-5 mx-2 mx-md-3 bg-white rounded" style="max-width: 330px; min-width: 250px; height:250px">
-          <div class="row border rounded shadow-sm h-100">
-            <div class="align-top" style="flex:auto">
-              <div class="text-truncate ps-1"></div>
-              <router-link :to="{ name: 'tasks' }" class="h-100 text-decoration-none text-reset">
-                <div class="container">
-                  <div class="row ps-3" style="height:55px">
-                    <div class="col-12 align-items-center d-flex">
-                      <span class="border-start h-100 me-3 border-primary" style="border-width: 3px !important"></span>
-                      <h4 class="m-0">{{ $t('start.taskList.title') }}</h4>
-                    </div>
-                  </div>
-                  <div class="row text-center">
-                    <div class="col-12 p-0 pt-1">
-                      <img :alt="$t('start.taskList.title')" src="@/assets/images/start/task.svg" style="height:180px; max-width:225px">
-                    </div>
-                  </div>
-                </div>
-              </router-link>
-            </div>
-          </div>
-        </div>
-        <b-button v-if="tiles.includes('cockpit')"
-          :to="{ name: 'cockpit' }" 
-          class="btn btn-link col-4 mt-5 mx-2 mx-md-3 bg-white rounded border shadow-sm py-0 text-start" style="max-width: 330px; min-width: 250px; height:250px" tabindex="0"
-          @focus="showCockpitOptions = true" @blur="showCockpitOptions = true" @click="showCockpitOptions = true" @mouseover="showCockpitOptions = true" @mouseleave="showCockpitOptions = false">
-          <div class="row h-100">
-            <div class="align-top" style="flex:auto">
-              <div class="h-100 text-decoration-none text-reset">
-                <div class="container">
-                  <div class="row ps-3" style="height:55px">
-                    <div class="col-12 align-items-center d-flex">
-                      <span class="border-start h-100 me-3 border-primary" style="border-width: 3px !important"></span>
-                      <h4 class="m-0">{{ $t('start.cockpit.title') }}</h4>
-                    </div>
-                  </div>
-                  <div class="row text-center">
-                    <div class="col-12 p-0 pt-1">
-                      <img :alt="$t('start.cockpit.title')" src="@/assets/images/start/management.svg" style="height:180px; max-width:225px">
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <b-overlay :show="showCockpitOptions" :opacity="0" no-center no-wrap>
-              <template #overlay>
-                <b-list-group class="py-2 bg-white rounded-bottom" style="opacity: .9; position: absolute; bottom: 1px; width: calc(100% - 2px); margin-left: 1px" @click.stop>
-                  <b-list-group-item to="/seven/auth/processes/list" class="py-1 px-3 border-start-0 border-top-0 border-end-0 h6 fw-normal mb-0" :title="$t('start.cockpit.processes.tooltip')">
-                    <span class="mdi mdi-18px mdi-map-legend pe-1"></span>{{ $t('start.cockpit.processes.title') }}</b-list-group-item>
-                  <b-list-group-item to="/seven/auth/decisions" class="py-1 px-3 border-start-0 border-top-0 border-end-0 h6 fw-normal mb-0" :title="$t('start.cockpit.decisions.tooltip')">
-                    <span class="mdi mdi-18px mdi-wall-sconce-flat-outline pe-1"></span>{{ $t('start.cockpit.decisions.title') }}</b-list-group-item>
-                  <b-list-group-item to="/seven/auth/human-tasks" class="py-1 px-3 border-start-0 border-top-0 border-end-0 h6 fw-normal mb-0" :title="$t('start.cockpit.humanTasks.tooltip')">
-                    <span class="mdi mdi-18px mdi-account-file-text-outline pe-1"></span>{{ $t('start.cockpit.humanTasks.title') }}</b-list-group-item>
-                  <b-list-group-item to="/seven/auth/deployments" class="py-1 px-3 border-start-0 border-top-0 border-end-0 h6 fw-normal mb-0" :title="$t('start.cockpit.deployments.tooltip')">
-                    <span class="mdi mdi-18px mdi-upload-box-outline pe-1"></span>{{ $t('start.cockpit.deployments.title') }}</b-list-group-item>
-                  <b-list-group-item to="/seven/auth/batches" class="py-1 px-3 border-0 h6 fw-normal mb-0" :title="$t('start.cockpit.batches.tooltip')">
-                    <span class="mdi mdi-18px mdi-repeat pe-1"> </span>{{ $t('start.cockpit.batches.title') }}</b-list-group-item>
-                </b-list-group>
-              </template>
-            </b-overlay>
-          </div>
-        </b-button>
-        <b-button v-if="tiles.includes('admin')"
-          :to="{ name: 'usersManagement' }"
-          class="btn btn-link col-4 mt-5 mx-2 mx-md-3 bg-white rounded border shadow-sm py-0 text-start" style="max-width: 330px; min-width: 250px; height:250px" tabindex="0"
-          @focus="showAdminOptions = true" @blur="showAdminOptions = true" @click="showAdminOptions = true" @mouseover="showAdminOptions = true" @mouseleave="showAdminOptions = false">
-          <div class="row h-100">
-            <div class="align-top" style="flex:auto">
-              <div class="text-truncate ps-1"></div>
-              <div class="h-100 text-decoration-none text-reset">
-                <div class="container">
-                  <div class="row ps-3" style="height:55px">
-                    <div class="col-12 align-items-center d-flex">
-                      <span class="border-start h-100 me-3 border-primary" style="border-width: 3px !important"></span>
-                      <h4 class="m-0">{{ $t('start.admin.title') }}</h4>
-                    </div>
-                  </div>
-                  <div class="row text-center">
-                    <div class="col-12 p-0 pt-1">
-                      <img :alt="$t('start.admin.title')" src="@/assets/images/start/admin.svg" style="height:180px; max-width:225px">
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <b-overlay :show="showAdminOptions" :opacity="0" no-center no-wrap>
-              <template #overlay>
-                <b-list-group class="py-2 bg-white rounded-bottom" style="opacity: .9; position: absolute; bottom: 1px; width: calc(100% - 2px); margin-left: 1px" @click.stop>
-                  <b-list-group-item v-if="adminManagementPermissions($root.config.permissions.usersManagement, 'user')"
-                    to="/seven/auth/admin/users" class="py-1 px-3 border-start-0 border-top-0 border-end-0 h6 fw-normal mb-0" :title="$t('admin.users.title')">
-                    <span class="mdi mdi-18px mdi-account-search-outline pe-1"></span>{{ $t('admin.users.title') }}</b-list-group-item>
-                  <b-list-group-item v-if="adminManagementPermissions($root.config.permissions.groupsManagement, 'group')"
-                    to="/seven/auth/admin/groups" class="py-1 px-3 border-start-0 border-top-0 border-end-0 h6 fw-normal mb-0" :title="$t('admin.groups.title')">
-                    <span class="mdi mdi-18px mdi-account-group-outline pe-1"></span>{{ $t('admin.groups.title') }}</b-list-group-item>
-                  <b-list-group-item v-if="adminManagementPermissions($root.config.permissions.groupsManagement, 'group')"
-                    to="/seven/auth/admin/tenants" class="py-1 px-3 border-start-0 border-top-0 border-end-0 h6 fw-normal mb-0" :title="$t('admin.tenants.tooltip')">
-                    <span class="mdi mdi-18px mdi-domain pe-1"></span>{{ $t('admin.tenants.title') }}</b-list-group-item>
-                  <b-list-group-item v-if="adminManagementPermissions($root.config.permissions.authorizationsManagement, 'authorization')"
-                    to="/seven/auth/admin/authorizations" class="py-1 px-3 border-start-0 border-top-0 border-end-0 h6 fw-normal mb-0" :title="$t('admin.authorizations.title')">
-                    <span class="mdi mdi-18px mdi-account-key-outline pe-1"></span>{{ $t('admin.authorizations.title') }}</b-list-group-item>
-                  <b-list-group-item v-if="adminManagementPermissions($root.config.permissions.systemManagement, 'system')"
-                    to="/seven/auth/admin/system" class="py-1 px-3 border-0 h6 fw-normal mb-0" :title="$t('admin.system.tooltip')">
-                    <span class="mdi mdi-18px mdi-cog-outline pe-1"></span>{{ $t('admin.system.title') }}</b-list-group-item>
-                </b-list-group>
-              </template>
-            </b-overlay>
-          </div>
-        </b-button>
+        <StartViewItem v-if="tiles.includes('startProcess')" :to="{ name: 'start-process' }" :title="$t('start.startProcess.title')" :src="images.process"></StartViewItem>
+        <StartViewItem v-if="tiles.includes('tasklist')" :to="{ name: 'tasks' }" :title="$t('start.taskList.title')" :src="images.task"></StartViewItem>
+        <StartViewItem v-if="tiles.includes('cockpit')" :to="{ name: 'cockpit' }" :title="$t('start.cockpit.title')" :src="images.management"
+          :options="[
+            { to: '/seven/auth/processes/list', icon: 'mdi-map-legend', title: $t('start.cockpit.processes.title'), tooltip: $t('start.cockpit.processes.tooltip') },
+            { to: '/seven/auth/decisions', icon: 'mdi-wall-sconce-flat-outline', title: $t('start.cockpit.decisions.title'), tooltip: $t('start.cockpit.decisions.tooltip') },
+            { to: '/seven/auth/human-tasks', icon: 'mdi-account-file-text-outline', title: $t('start.cockpit.humanTasks.title'), tooltip: $t('start.cockpit.humanTasks.tooltip') },
+            { to: '/seven/auth/deployments', icon: 'mdi-upload-box-outline', title: $t('start.cockpit.deployments.title'), tooltip: $t('start.cockpit.deployments.tooltip') },
+            { to: '/seven/auth/batches', icon: 'mdi-repeat', title: $t('start.cockpit.batches.title'), tooltip: $t('start.cockpit.batches.tooltip') }
+          ]"
+        ></StartViewItem>
+        <StartViewItem v-if="tiles.includes('admin')" :to="{ name: 'usersManagement' }" :title="$t('start.admin.title')" :src="images.admin"
+          :options="[
+            { to: '/seven/auth/admin/users', icon: 'mdi-account-search-outline', title: $t('admin.users.title'), tooltip: $t('admin.users.title') },
+            { to: '/seven/auth/admin/groups', icon: 'mdi-account-group-outline', title: $t('admin.groups.title'), tooltip: $t('admin.groups.title') },
+            { to: '/seven/auth/admin/tenants', icon: 'mdi-domain', title: $t('admin.tenants.title'), tooltip: $t('admin.tenants.tooltip') },
+            { to: '/seven/auth/admin/authorizations', icon: 'mdi-account-key-outline', title: $t('admin.authorizations.title'), tooltip: $t('admin.authorizations.title') },
+            { to: '/seven/auth/admin/system', icon: 'mdi-cog-outline', title: $t('admin.system.title'), tooltip: $t('admin.system.tooltip') }
+          ]"
+        ></StartViewItem>
         <component :is="StartViewPlugin" v-if="StartViewPlugin"></component>
       </div>
       <div v-if="!applicationPermissions($root.config.permissions.tasklist, 'tasklist') &&
@@ -167,10 +55,17 @@
 <script>
 import { permissionsMixin } from '@/permissions.js'
 import { ErrorDialog } from '@cib/common-frontend'
+import StartViewItem from '@/components/start/StartViewItem.vue'
+
+// images
+import processImage from '@/assets/images/start/process.svg'
+import taskImage from '@/assets/images/start/task.svg'
+import managementImage from '@/assets/images/start/management.svg'
+import adminImage from '@/assets/images/start/admin.svg'
 
 export default {
   name: "StartView",
-  components: { ErrorDialog },
+  components: { ErrorDialog, StartViewItem },
   mixins: [permissionsMixin],
   inject: ['loadProcesses'],
   data: function() {
@@ -178,7 +73,13 @@ export default {
       showAdminOptions: false,
       showCockpitOptions: false,
       items: [],
-      mutationObserver: null
+      mutationObserver: null,
+      images: {
+        process: processImage,
+        task: taskImage,
+        management: managementImage,
+        admin: adminImage
+      }
     }
   },  
   computed: {
@@ -266,15 +167,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-.btn-link,
-.btn-link * {
-  text-decoration: none !important;
-}
-
-.btn:focus {
-  outline: 2px solid var(--bs-gray-600);
-  outline-offset: 0px;
-}
-</style>
