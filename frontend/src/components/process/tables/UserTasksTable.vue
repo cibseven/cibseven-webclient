@@ -24,25 +24,25 @@
     <FlowTable v-else-if="userTasks.length > 0" resizable striped thead-class="sticky-header" :items="userTasks" primary-key="id" prefix="process-instance.usertasks."
       sort-by="created" :sort-desc="true" :fields="[
       { label: 'activity', key: 'name', class: 'col-2', tdClass: 'py-1' },
-      { label: 'assignee', key: 'assignee', class: 'col-1', tdClass: 'position-relative py-0' },
+      { label: 'assignee', key: 'assignee', class: 'col-1', tdClass: 'py-0' },
       { label: 'owner', key: 'owner', class: 'col-1', tdClass: 'py-1' },
       { label: 'startTime', key: 'created', class: 'col-2', tdClass: 'py-1' },
       { label: 'due', key: 'due', class: 'col-2', tdClass: 'py-1' },
       { label: 'followUp', key: 'followUp', class: 'col-1', tdClass: 'py-1' },
       { label: 'taskID', key: 'id', class: 'col-2', tdClass: 'py-0' },
       { label: 'actions', key: 'actions', class: 'col-1', sortable: false, tdClass: 'py-0' }]">
+
       <template v-slot:cell(name)="table">
         <span :title="table.item.description || table.item.name" class="text-truncate d-block">{{ table.item.name }}</span>
       </template>
+
       <template v-slot:cell(assignee)="table">
-        <div :title="table.item.assignee" class="text-truncate w-100" :class="focusedCell === table.item.assignee ? 'pe-4': ''" 
-          @mouseenter="focusedCell = table.item.assignee" @focusin="focusedCell = table.item.assignee"
-          @mouseleave="focusedCell = null" @focusout="focusedCell = null">
-          {{ table.item.assignee || '&nbsp;' }}
-          <span v-if="focusedCell === table.item.assignee" @click.stop="$refs.taskAssignationModal.show(table.item.id, true)"
-            :title="$t('process-instance.assignModal.manageAssignee')"
-            class="mdi mdi-18px mdi-pencil-outline px-2 position-absolute end-0 text-secondary lh-sm"></span>
-        </div>
+        <CopyableActionButton
+          :displayValue="table.item.assignee"
+          :clickable="false"
+          @copy="copyValueToClipboard"
+        />
+        <CellActionButton @click="$refs.taskAssignationModal.show(table.item.id, true)" :title="$t('process-instance.assignModal.manageAssignee')" icon="mdi-pencil-outline"></CellActionButton>
       </template>
 
       <template v-slot:cell(created)="table">
@@ -91,7 +91,6 @@ export default {
     return {
       loading: true,
       userTasks: [],
-      focusedCell: null
     }
   },
   mounted: function() {
