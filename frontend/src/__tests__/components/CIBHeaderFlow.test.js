@@ -20,7 +20,6 @@ import { i18n } from '@/i18n'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import CIBHeaderFlow from '@/components/common-components/CIBHeaderFlow.vue'
-import { ENGINE_STORAGE_KEY, ENGINE_TOKENS_STORAGE_KEY } from '@/constants.js'
 
 // Mock EngineService
 vi.mock('@/services.js', () => ({
