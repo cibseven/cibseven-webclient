@@ -38,9 +38,13 @@ import org.cibseven.webapp.rest.model.CandidateGroupTaskCount;
 import org.cibseven.webapp.rest.model.IdentityLink;
 import org.cibseven.webapp.rest.model.Task;
 import org.cibseven.webapp.rest.model.TaskFiltering;
+import org.cibseven.webapp.rest.model.TaskForm;
+import org.cibseven.webapp.rest.model.StartForm;
 import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -63,6 +67,12 @@ import jakarta.ws.rs.core.MediaType;
 public class TaskService extends BaseService implements InitializingBean {
 	
 	SevenProvider sevenProvider;
+	
+	@Autowired
+	private CustomRestTemplate restTemplate;
+	
+	@Value("${cibseven.webclient.engineRest.url:./}") 
+	private String cibsevenUrl;
 	
 	public void afterPropertiesSet() {
 		if (bpmProvider instanceof SevenProvider)
@@ -481,5 +491,106 @@ public class TaskService extends BaseService implements InitializingBean {
 	  @GetMapping("/task/report/candidate-group-count")
 	  public Collection<CandidateGroupTaskCount> getTaskCountByCandidateGroup(@RequestParam Optional<String> locale, CIBUser user) throws Exception {
 	    return bpmProvider.getTaskCountByCandidateGroup(user);
+	  }
+
+	  @Operation(
+			summary = "Proxy embedded form content from engine",
+			description = "<strong>Fetches embedded form HTML from the engine. Retrieves form info from engine, extracts form path, and fetches the HTML content.</strong>")
+	  @ApiResponse(responseCode = "200", description = "Form HTML content")
+	  @ApiResponse(responseCode = "403", description = "Only HTML files are allowed")
+	  @ApiResponse(responseCode = "404", description = "Form not found")
+	  @GetMapping("/task/form-proxy")
+	  public ResponseEntity<String> proxyFormContent(
+			@Parameter(description = "Reference ID (task ID or process definition ID)") @RequestParam String referenceId,
+			@Parameter(description = "Whether this is a start form") @RequestParam boolean isStartForm,
+			CIBUser user) {
+		checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
+		
+		// Get form info from the engine
+		String formKey;
+		String contextPath = null;
+		
+		if (isStartForm) {
+			StartForm startForm = bpmProvider.fetchStartForm(referenceId, user);
+			if (startForm == null) {
+				throw new SystemException("Start form not found for process definition: " + referenceId);
+			}
+			formKey = startForm.getKey();
+			contextPath = startForm.getContextPath();
+		} else {
+			Object formResult = bpmProvider.form(referenceId, user);
+			if (formResult instanceof String && "empty-task".equals(formResult)) {
+				throw new SystemException("Task form not found for task: " + referenceId);
+			}
+			if (!(formResult instanceof TaskForm)) {
+				throw new SystemException("Unexpected form result type: " + formResult.getClass().getName());
+			}
+			TaskForm taskForm = (TaskForm) formResult;
+			formKey = taskForm.getKey();
+			contextPath = taskForm.getContextPath();
+		}
+		
+		if (formKey == null || formKey.isEmpty()) {
+			throw new SystemException("Form key is null or empty");
+		}
+		
+		// Construct form path from form key
+		// Example: "embedded:app:forms/assign-reviewer.html" with contextPath "/" becomes "/forms/assign-reviewer.html"
+		String formPath = formKey
+				.replace("embedded:", "")
+				.replace("app:", (contextPath != null ? contextPath : "") + "/")
+				.replaceAll("^(\\/+|([^/]))", "/$2")
+				.replaceAll("\\/\\/+", "/");
+		
+		// Security: Only allow HTML files
+		if (!formPath.toLowerCase().endsWith(".html") && !formPath.toLowerCase().endsWith(".htm")) {
+			throw new AccessDeniedException("Only HTML files are allowed. Form path: " + formPath);
+		}
+		
+		// Build base URL from user's engine ID
+		String baseUrl = null;
+		String engineId = user.getEngine();
+		
+		if (engineId != null && !engineId.isEmpty() && engineId.contains("|")) {
+			// Parse the engine ID format: "url|path|engineName"
+			String[] parts = engineId.split("\\|", 3);
+			if (parts.length == 3) {
+				baseUrl = parts[0];
+			}
+		} else {
+			// Use default configured engine URL for legacy format or default engine
+			baseUrl = cibsevenUrl;
+		}
+		
+		if (baseUrl == null) {
+			throw new SystemException("Cannot determine engine URL");
+		}
+		
+		// Remove trailing slash from base URL and ensure formPath starts with /
+		if (baseUrl.endsWith("/")) {
+			baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
+		}
+		if (!formPath.startsWith("/")) {
+			formPath = "/" + formPath;
+		}
+		
+		// Build full URL
+		String fullUrl = baseUrl + formPath;
+		
+		try {
+			// Fetch the form content from the engine
+			ResponseEntity<String> response = restTemplate.getForEntity(fullUrl, String.class);
+			
+			// Return the HTML content with appropriate headers
+			HttpHeaders headers = new HttpHeaders();
+			headers.add(HttpHeaders.CONTENT_TYPE, "text/html; charset=UTF-8");
+			
+			return ResponseEntity
+					.status(response.getStatusCode())
+					.headers(headers)
+					.body(response.getBody());
+		} catch (Exception e) {
+			throw new SystemException("Error fetching form from URL: " + fullUrl + " - " + e.getMessage(), e);
+		}
 	  }
 }

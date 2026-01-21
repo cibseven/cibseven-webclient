@@ -378,39 +378,43 @@ function loadEmbeddedForm(
                 formConfig.formElement = $(formContainer);
                 if (embeddedContainer) embeddedContainer.style.display = 'none';
             } else {
-                // Construct form path from embedded form key
-                // Example: "embedded:app:forms/assign-reviewer.html" with contextPath "/" 
-                // becomes "/forms/assign-reviewer.html"
-                const formPath = formInfo.key
-                    .replace('embedded:', '')
-                    .replace('app:', (formInfo.contextPath || '') + '/')
-                    .replace(/^(\/+|([^/]))/, '/$2')
-                    .replace(/\/\/+/, '/');
-                
-                // Get engine configuration from services endpoint to build full URL
+                // Fetch form HTML via backend proxy - backend validates form URL and proxies content for security and CORS handling
                 try {
-                    const engines = await new Promise((resolve, reject) => {
-                        client.http.get('engine', {
-                            done: function(err, engines) {
-                                if (err) reject(err);
-                                else resolve(engines);
+                    const resource = await new Promise((resolveForm, rejectForm) => {
+                        client.http.get('task/form-proxy', {
+                            data: { 
+                                referenceId: referenceId,
+                                isStartForm: isStartForm 
+                            },
+                            headers: {
+                                ...client.http.config.headers,
+                                'Accept': 'text/html'
+                            },
+                            done: function(err, formHtml) {
+                                if (err) {
+                                    console.error('Error fetching form content:', err);
+                                    rejectForm(err);
+                                } else {
+                                    resolveForm(formHtml);
+                                }
                             }
                         });
                     });
-                    // Find the matching engine by id or use first available
-                    const engine = engines.find(e => e.id === parentConfig.engineId) || engines[0];
-                    
-                    // Build full URL using engine base url (without REST path) and form path
-                    // Example: "http://localhost:8080" + "/forms/assign-reviewer.html"
-                    formConfig.formUrl = engine.url.replace(/\/$/, '') + formPath;
+                    formContainer.innerHTML = resource;
+                    formConfig.formElement = $(formContainer);
+                    if (embeddedContainer) embeddedContainer.style.display = 'none';
                 } catch (err) {
-                    console.error('Error fetching engine configuration:', err);
-                    // Fallback: use relative form path
+                    console.error('Error fetching form content:', err);
+                    // Fallback: construct form path from formInfo key and use containerElement approach
+                    const formPath = formInfo.key
+                        .replace('embedded:', '')
+                        .replace('app:', (formInfo.contextPath || '') + '/')
+                        .replace(/^(\/+|([^/]))/, '/$2')
+                        .replace(/\/\/+/, '/');
                     formConfig.formUrl = formPath;
+                    formConfig.containerElement = $(embeddedContainer);
+                    if (formContainer) formContainer.style.display = 'none';
                 }
-                
-                formConfig.containerElement = $(embeddedContainer);
-                if (formContainer) formContainer.style.display = 'none';
             }
 
             if (isStartForm) {
