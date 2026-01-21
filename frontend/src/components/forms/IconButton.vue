@@ -18,7 +18,7 @@
 -->
 <template>
   <b-button :size="size" :variant="variant" :title="text" :disabled="disabled" class="mx-1">
-    <template v-if="icon || cibIcon">
+    <template v-if="icon || cibIcon || loading">
       <span v-if="!loading" :class="setIconClasses" class="d-inline-block align-middle me-1" style="line-height: 0;"></span>
       <b-spinner v-else small></b-spinner>
     </template>
