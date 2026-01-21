@@ -41,11 +41,13 @@ import org.cibseven.webapp.rest.model.TaskFiltering;
 import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.client.RestTemplate;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -63,6 +65,9 @@ import jakarta.ws.rs.core.MediaType;
 public class TaskService extends BaseService implements InitializingBean {
 	
 	SevenProvider sevenProvider;
+	
+	@Autowired
+	private RestTemplate restTemplate;
 	
 	public void afterPropertiesSet() {
 		if (bpmProvider instanceof SevenProvider)
@@ -481,5 +486,33 @@ public class TaskService extends BaseService implements InitializingBean {
 	  @GetMapping("/task/report/candidate-group-count")
 	  public Collection<CandidateGroupTaskCount> getTaskCountByCandidateGroup(@RequestParam Optional<String> locale, CIBUser user) throws Exception {
 	    return bpmProvider.getTaskCountByCandidateGroup(user);
+	  }
+
+	  @Operation(
+			summary = "Proxy form content from external URL",
+			description = "<strong>Fetches form HTML from the provided URL and returns it to avoid CORS issues</strong>")
+	  @ApiResponse(responseCode = "200", description = "Form HTML content")
+	  @ApiResponse(responseCode = "404", description = "Form URL not found")
+	  @GetMapping("/task/form-proxy")
+	  public ResponseEntity<String> proxyFormContent(
+			@Parameter(description = "Form URL to fetch") @RequestParam String url,
+			CIBUser user) {
+		checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
+		
+		try {
+			// Fetch the form content from the provided URL
+			ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+			
+			// Return the HTML content with appropriate headers
+			HttpHeaders headers = new HttpHeaders();
+			headers.add(HttpHeaders.CONTENT_TYPE, "text/html; charset=UTF-8");
+			
+			return ResponseEntity
+					.status(response.getStatusCode())
+					.headers(headers)
+					.body(response.getBody());
+		} catch (Exception e) {
+			throw new SystemException("Error fetching form from URL: " + url + " - " + e.getMessage(), e);
+		}
 	  }
 }

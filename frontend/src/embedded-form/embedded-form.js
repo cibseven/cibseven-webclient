@@ -402,15 +402,36 @@ function loadEmbeddedForm(
                     
                     // Build full URL using engine base url (without REST path) and form path
                     // Example: "http://localhost:8080" + "/forms/assign-reviewer.html"
-                    formConfig.formUrl = engine.url.replace(/\/$/, '') + formPath;
+                    const formUrl = engine.url.replace(/\/$/, '') + formPath;
+                    
+                    // Fetch form content via middleware proxy to avoid CORS issues
+                    const resource = await new Promise((resolveForm, rejectForm) => {
+                        client.http.get('task/form-proxy', {
+                            data: { url: formUrl },
+                            headers: {
+                                ...client.http.config.headers,
+                                'Accept': 'text/html'
+                            },
+                            done: function(err, formHtml) {
+                                if (err) {
+                                    console.error('Error fetching form content:', err);
+                                    rejectForm(err);
+                                } else {
+                                    resolveForm(formHtml);
+                                }
+                            }
+                        });
+                    });
+                    formContainer.innerHTML = resource;
+                    formConfig.formElement = $(formContainer);
+                    if (embeddedContainer) embeddedContainer.style.display = 'none';
                 } catch (err) {
-                    console.error('Error fetching engine configuration:', err);
+                    console.error('Error fetching engine configuration or form content:', err);
                     // Fallback: use relative form path
                     formConfig.formUrl = formPath;
+                    formConfig.containerElement = $(embeddedContainer);
+                    if (formContainer) formContainer.style.display = 'none';
                 }
-                
-                formConfig.containerElement = $(embeddedContainer);
-                if (formContainer) formContainer.style.display = 'none';
             }
 
             if (isStartForm) {
