@@ -17,8 +17,8 @@
 
 -->
 <template>
-  <b-button :to="to" variant="link"
-    class="col-4 mt-5 mx-2 mx-md-3 bg-white rounded border shadow-sm py-0 text-start" style="max-width: 330px; min-width: 250px; height:250px" tabindex="0"
+  <router-link :to="to" variant="link"
+    class="btn btn-link col-4 mt-5 mx-2 mx-md-3 bg-white rounded border shadow-sm py-0 text-start" style="max-width: 330px; min-width: 250px; height:250px" tabindex="0"
     @focus="showOptions = true" @blur="showOptions = true" @click="showOptions = true" @mouseover="showOptions = true" @mouseleave="showOptions = false">
     <div class="row h-100">
       <div class="align-top" style="flex:auto">
@@ -48,7 +48,7 @@
         </template>
       </b-overlay>
     </div>
-  </b-button>
+  </router-link>
 </template>
 
 <script>
@@ -87,7 +87,21 @@ export default {
   text-decoration: none !important;
 }
 .btn:focus {
+  outline: 2px solid var(--bs-dark);
+  outline-offset: 0px;
+}
+.btn:active {
   outline: 2px solid var(--bs-gray-600);
   outline-offset: 0px;
 }
+
+.list-group-item:focus {
+  outline: 2px solid var(--bs-dark);
+  outline-offset: 0px;
+}
+.list-group-item:active {
+  outline: 0px solid var(--bs-gray-600);
+  outline-offset: 0px;
+}
+
 </style>
