@@ -36,7 +36,16 @@ export { appRoutes,
 export { updateAppTitle, checkExternalReturn, isMobile, hasHeader, getTheme, loadTheme, applyTheme, handleAxiosError, fetchAndStoreProcesses, fetchDecisionsIfEmpty, setupTaskNotifications } from './utils/init'
 export { parseXMLDocumentation } from './utils/parser.js'
 export { applyConfigDefaults } from './utils/config.js'
-export { ENGINE_STORAGE_KEY } from './constants.js'
+export { ENGINE_STORAGE_KEY, ENGINE_TOKENS_STORAGE_KEY } from './constants.js'
+export { 
+  getEngineTokens, 
+  getTokenForEngine, 
+  storeTokenForEngine, 
+  removeTokenForEngine, 
+  clearAllEngineTokens, 
+  hasTokenForEngine, 
+  restoreTokenForEngine 
+} from './utils/engineTokens.js'
 export { TaskService, FilterService, ProcessService, VariableInstanceService, HistoricVariableInstanceService, AdminService, JobService, JobDefinitionService, SystemService,
   HistoryService, IncidentService, AuthService, InfoService, FormsService, TemplateService, DecisionService,
   AnalyticsService, BatchService, TenantService, ExternalTaskService, DeploymentService, EngineService, SetupService, getServicesBasePath, setServicesBasePath, createDocumentEndpointUrl } from '@/services.js';
