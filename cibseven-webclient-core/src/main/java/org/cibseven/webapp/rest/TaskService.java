@@ -437,6 +437,11 @@ public class TaskService extends BaseService implements InitializingBean {
 	    return res.getContent();
 	  }
 
+	  @RequestMapping(value = "/task/{taskId}/variables/{variableName}/data", method = RequestMethod.GET)
+	  public byte[] fetchVariablesFileData(@PathVariable String taskId, @PathVariable String variableName, 
+	      @RequestParam Optional<Boolean> deserialize, HttpServletRequest rq) {
+	    return fetchVariableFileData(taskId, variableName, deserialize, rq);
+	  }
 
 		@Operation(summary = "Upload file data to a task variable", description = "Upload binary data or file to a specific task variable"
 				+ "<br>" +
@@ -542,11 +547,6 @@ public class TaskService extends BaseService implements InitializingBean {
 				.replaceAll("^(\\/+|([^/]))", "/$2")
 				.replaceAll("\\/\\/+", "/");
 		
-		// Security: Only allow HTML files
-		if (!formPath.toLowerCase().endsWith(".html") && !formPath.toLowerCase().endsWith(".htm")) {
-			throw new AccessDeniedException("Only HTML files are allowed. Form path: " + formPath);
-		}
-		
 		// Build base URL from user's engine ID
 		String baseUrl = null;
 		String engineId = user.getEngine();
@@ -590,7 +590,7 @@ public class TaskService extends BaseService implements InitializingBean {
 					.headers(headers)
 					.body(response.getBody());
 		} catch (Exception e) {
-			throw new SystemException("Error fetching form from URL: " + fullUrl + " - " + e.getMessage(), e);
+			throw new SystemException("Error fetching form from URL: " + formPath + " - " + e.getMessage(), e);
 		}
 	  }
 }
