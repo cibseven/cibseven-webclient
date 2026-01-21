@@ -48,7 +48,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.client.RestTemplate;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -68,7 +67,7 @@ public class TaskService extends BaseService implements InitializingBean {
 	SevenProvider sevenProvider;
 	
 	@Autowired
-	private RestTemplate restTemplate;
+	private CustomRestTemplate restTemplate;
 	
 	@Value("${cibseven.webclient.engineRest.url:./}") 
 	private String cibsevenUrl;
