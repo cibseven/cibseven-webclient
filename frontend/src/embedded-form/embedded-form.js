@@ -387,27 +387,11 @@ function loadEmbeddedForm(
                     .replace(/^(\/+|([^/]))/, '/$2')
                     .replace(/\/\/+/, '/');
                 
-                // Get engine configuration from services endpoint to build full URL
+                // Fetch form content via middleware proxy - backend will build full URL
                 try {
-                    const engines = await new Promise((resolve, reject) => {
-                        client.http.get('engine', {
-                            done: function(err, engines) {
-                                if (err) reject(err);
-                                else resolve(engines);
-                            }
-                        });
-                    });
-                    // Find the matching engine by id or use first available
-                    const engine = engines.find(e => e.id === parentConfig.engineId) || engines[0];
-                    
-                    // Build full URL using engine base url (without REST path) and form path
-                    // Example: "http://localhost:8080" + "/forms/assign-reviewer.html"
-                    const formUrl = engine.url.replace(/\/$/, '') + formPath;
-                    
-                    // Fetch form content via middleware proxy to avoid CORS issues
                     const resource = await new Promise((resolveForm, rejectForm) => {
                         client.http.get('task/form-proxy', {
-                            data: { url: formUrl },
+                            data: { formPath: formPath },
                             headers: {
                                 ...client.http.config.headers,
                                 'Accept': 'text/html'
@@ -426,7 +410,7 @@ function loadEmbeddedForm(
                     formConfig.formElement = $(formContainer);
                     if (embeddedContainer) embeddedContainer.style.display = 'none';
                 } catch (err) {
-                    console.error('Error fetching engine configuration or form content:', err);
+                    console.error('Error fetching form content:', err);
                     // Fallback: use relative form path
                     formConfig.formUrl = formPath;
                     formConfig.containerElement = $(embeddedContainer);

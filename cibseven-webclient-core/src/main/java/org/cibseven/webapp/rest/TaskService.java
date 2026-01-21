@@ -42,6 +42,7 @@ import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -68,6 +69,9 @@ public class TaskService extends BaseService implements InitializingBean {
 	
 	@Autowired
 	private RestTemplate restTemplate;
+	
+	@Value("${cibseven.webclient.engineRest.url:./}") 
+	private String cibsevenUrl;
 	
 	public void afterPropertiesSet() {
 		if (bpmProvider instanceof SevenProvider)
@@ -489,19 +493,55 @@ public class TaskService extends BaseService implements InitializingBean {
 	  }
 
 	  @Operation(
-			summary = "Proxy form content from external URL",
-			description = "<strong>Fetches form HTML from the provided URL and returns it to avoid CORS issues</strong>")
+			summary = "Proxy form content from engine",
+			description = "<strong>Fetches form HTML from the engine using the provided form path</strong>")
 	  @ApiResponse(responseCode = "200", description = "Form HTML content")
-	  @ApiResponse(responseCode = "404", description = "Form URL not found")
+	  @ApiResponse(responseCode = "403", description = "Only HTML files are allowed")
+	  @ApiResponse(responseCode = "404", description = "Form not found")
 	  @GetMapping("/task/form-proxy")
 	  public ResponseEntity<String> proxyFormContent(
-			@Parameter(description = "Form URL to fetch") @RequestParam String url,
+			@Parameter(description = "Form path to fetch (e.g., /forms/myform.html)") @RequestParam String formPath,
 			CIBUser user) {
 		checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
 		
+		// Security: Only allow HTML files
+		if (!formPath.toLowerCase().endsWith(".html") && !formPath.toLowerCase().endsWith(".htm")) {
+			throw new AccessDeniedException("Only HTML files are allowed. Provided path: " + formPath);
+		}
+		
+		// Build base URL from user's engine ID
+		String baseUrl = null;
+		String engineId = user.getEngine();
+		
+		if (engineId != null && !engineId.isEmpty() && engineId.contains("|")) {
+			// Parse the engine ID format: "url|path|engineName"
+			String[] parts = engineId.split("\\|", 3);
+			if (parts.length == 3) {
+				baseUrl = parts[0];
+			}
+		} else {
+			// Use default configured engine URL for legacy format or default engine
+			baseUrl = cibsevenUrl;
+		}
+		
+		if (baseUrl == null) {
+			throw new SystemException("Cannot determine engine URL");
+		}
+		
+		// Remove trailing slash from base URL and ensure formPath starts with /
+		if (baseUrl.endsWith("/")) {
+			baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
+		}
+		if (!formPath.startsWith("/")) {
+			formPath = "/" + formPath;
+		}
+		
+		// Build full URL
+		String fullUrl = baseUrl + formPath;
+		
 		try {
-			// Fetch the form content from the provided URL
-			ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+			// Fetch the form content from the engine
+			ResponseEntity<String> response = restTemplate.getForEntity(fullUrl, String.class);
 			
 			// Return the HTML content with appropriate headers
 			HttpHeaders headers = new HttpHeaders();
@@ -512,7 +552,7 @@ public class TaskService extends BaseService implements InitializingBean {
 					.headers(headers)
 					.body(response.getBody());
 		} catch (Exception e) {
-			throw new SystemException("Error fetching form from URL: " + url + " - " + e.getMessage(), e);
+			throw new SystemException("Error fetching form from URL: " + fullUrl + " - " + e.getMessage(), e);
 		}
 	  }
 }
