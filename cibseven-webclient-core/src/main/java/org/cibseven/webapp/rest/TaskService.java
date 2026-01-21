@@ -511,14 +511,14 @@ public class TaskService extends BaseService implements InitializingBean {
 		String contextPath = null;
 		
 		if (isStartForm) {
-			StartForm startForm = sevenProvider.fetchStartForm(referenceId, user);
+			StartForm startForm = bpmProvider.fetchStartForm(referenceId, user);
 			if (startForm == null) {
 				throw new SystemException("Start form not found for process definition: " + referenceId);
 			}
 			formKey = startForm.getKey();
 			contextPath = startForm.getContextPath();
 		} else {
-			Object formResult = sevenProvider.form(referenceId, user);
+			Object formResult = bpmProvider.form(referenceId, user);
 			if (formResult instanceof String && "empty-task".equals(formResult)) {
 				throw new SystemException("Task form not found for task: " + referenceId);
 			}
