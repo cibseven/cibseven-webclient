@@ -378,13 +378,37 @@ function loadEmbeddedForm(
                 formConfig.formElement = $(formContainer);
                 if (embeddedContainer) embeddedContainer.style.display = 'none';
             } else {
-                // Start with a relative url and replace doubled slashes if necessary
-                const url = formInfo.key
+                // Construct form path from embedded form key
+                // Example: "embedded:app:forms/assign-reviewer.html" with contextPath "/" 
+                // becomes "/forms/assign-reviewer.html"
+                const formPath = formInfo.key
                     .replace('embedded:', '')
                     .replace('app:', (formInfo.contextPath || '') + '/')
                     .replace(/^(\/+|([^/]))/, '/$2')
                     .replace(/\/\/+/, '/');
-                formConfig.formUrl = url;
+                
+                // Get engine configuration from services endpoint to build full URL
+                try {
+                    const engines = await new Promise((resolve, reject) => {
+                        client.http.get('engine', {
+                            done: function(err, engines) {
+                                if (err) reject(err);
+                                else resolve(engines);
+                            }
+                        });
+                    });
+                    // Find the matching engine by id or use first available
+                    const engine = engines.find(e => e.id === parentConfig.engineId) || engines[0];
+                    
+                    // Build full URL using engine base url (without REST path) and form path
+                    // Example: "http://localhost:8080" + "/forms/assign-reviewer.html"
+                    formConfig.formUrl = engine.url.replace(/\/$/, '') + formPath;
+                } catch (err) {
+                    console.error('Error fetching engine configuration:', err);
+                    // Fallback: use relative form path
+                    formConfig.formUrl = formPath;
+                }
+                
                 formConfig.containerElement = $(embeddedContainer);
                 if (formContainer) formContainer.style.display = 'none';
             }
@@ -402,19 +426,26 @@ function loadEmbeddedForm(
 function loadDeployedForm(client, isStartForm, referenceId) {
     return new Promise((resolve, reject) => {
         if (isStartForm) {
-            client.resource('process-definition').deployedForm(
-                { id: referenceId },
-                (err, resource) => {
-                    if (err) reject(err);
-                    else {
+            client.http.get(`process/${referenceId}/deployed-start-form`, {
+                headers: {
+                    ...client.http.config.headers,
+                    'Accept': '*/*'
+                },
+                done: function(err, resource) {
+                    if (err) {
+                        console.error('Error loading deployed start form:', err);
+                        reject(err);
+                    } else {
                         resolve(resource);
                     }
                 }
-            );
+            });
         } else {
             client.resource('task').deployedForm(referenceId, (err, resource) => {
-                if (err) reject(err);
-                else {
+                if (err) {
+                    console.error('Error loading deployed form:', err);
+                    reject(err);
+                } else {
                     resolve(resource);
                 }
             });
