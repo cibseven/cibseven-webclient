@@ -17,9 +17,11 @@
 
 -->
 <template>
-  <div tabindex="0" @focus="focused = process" style="flex: auto; margin: 10px" class="row border rounded-lg shadow-sm bg-white" :style="viewStyles[view].cardSize"
+  <div style="flex: auto; margin: 10px" class="row border rounded-lg shadow-sm bg-white" :style="viewStyles[view].cardSize"
     v-b-popover.hover.top="showDescription(process.key)">
-    <div class="h-100 container position-relative"
+    <button class="h-100 container position-relative btn"
+      tabindex="0"
+      @focus="focused = process" 
       @mouseenter="focused = true" @focusin="focused = true"
       @mouseleave="focused = null" @focusout="focused = null">
       <transition name="fade">
@@ -46,7 +48,7 @@
           <img v-else :alt="processName" :style="viewStyles[view].imgSize" src="@/assets/images/process/default.svg">
         </div>
       </div>
-    </div>
+    </button>
   </div>
 </template>
 

@@ -147,6 +147,7 @@ export { default as DecisionVersionListSidebar } from '@/components/decision/Dec
 export { default as DmnViewer } from '@/components/decision/DmnViewer.vue'
 export { default as TemplateBase } from '@/components/forms/TemplateBase.vue'
 export { default as StartView } from '@/components/start/StartView.vue'
+export { default as StartViewItem } from '@/components/start/StartViewItem.vue'
 export { default as LoginView } from '@/components/login/LoginView.vue'
 export { default as InitialSetup } from '@/components/setup/InitialSetup.vue'
 export { default as StackTraceModal } from '@/components/process/modals/StackTraceModal.vue'
@@ -166,6 +167,7 @@ export { default as CalledProcessInstancesTable } from '@/components/process/tab
 export { default as JobDefinitionsTable } from '@/components/process/tables/JobDefinitionsTable.vue'
 export { default as JobsTable } from '@/components/process/tables/JobsTable.vue'
 export { default as JobDueDateModal } from '@/components/process/modals/JobDueDateModal.vue'
+export { default as ViewerFrame } from '@/components/common-components/ViewerFrame.vue'
 
 // re-export common frontend library
 export * from '@cib/common-frontend'

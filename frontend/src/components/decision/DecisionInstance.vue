@@ -27,26 +27,14 @@
       </h5>
     </router-link>
 
-    <div @mousedown="handleMouseDown" class="v-resizable position-absolute w-100" style="left: 0" :style="'height: ' + bpmnViewerHeight + 'px; ' + toggleTransition">
+    <ViewerFrame :resizerMixin="this">
       <DmnViewer ref="diagram" class="h-100" />
-      <span role="button" size="sm" variant="light" class="bg-white px-2 py-1 me-1 position-absolute border rounded" style="bottom: 90px; right: 11px;" @click="toggleContent">
-        <span class="mdi mdi-18px" :class="toggleIcon"></span>
-      </span>
-    </div>
+    </ViewerFrame>
 
     <div class="position-absolute w-100" style="left: 0; z-index: 1" :style="'height: '+ tabsAreaHeight +'px; top: ' + (bottomContentPosition - tabsAreaHeight + 1) + 'px; ' + toggleTransition">
       <div class="d-flex align-items-end">
         <ScrollableTabsContainer :tabs-area-height="tabsAreaHeight">
-          <li class="nav-item m-0 flex-shrink-0 border-0" v-for="(tab, index) in tabs" :key="index">
-            <a role="button" @click="changeTab(tab)" class="nav-link py-2"
-              :class="{
-                'active active-tab-border': tab.active,
-                'bg-light border border-bottom-0': !tab.active,
-                'border-start-0': index === 0
-              }">
-              {{ $t('decision.' + tab.id) }}
-            </a>
-          </li>
+          <GenericTabs :tabs="tabs" :modelValue="activeTab" @update:modelValue="changeTab" @tab-click=";"></GenericTabs>
         </ScrollableTabsContainer>
       </div>
     </div>
@@ -80,12 +68,13 @@ import { DecisionService } from '@/services.js'
 import DmnViewer from '@/components/decision/DmnViewer.vue'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
 import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
-import { FlowTable } from '@cib/common-frontend'
+import ViewerFrame from '@/components/common-components/ViewerFrame.vue'
+import { FlowTable, GenericTabs } from '@cib/common-frontend'
 import { mapActions } from 'vuex'
 
 export default {
   name: 'DecisionInstance',
-  components: { DmnViewer, FlowTable, ScrollableTabsContainer },
+  components: { DmnViewer, FlowTable, GenericTabs, ScrollableTabsContainer, ViewerFrame },
   mixins: [permissionsMixin, resizerMixin],
   props: {
     versionIndex: String,
@@ -96,8 +85,8 @@ export default {
     return {
       instance: null,
       tabs: [
-        { id: 'inputs', active: true },
-        { id: 'outputs', active: false }
+        { id: 'inputs', text: 'decision.inputs' },
+        { id: 'outputs', text: 'decision.outputs' }
       ],
       activeTab: 'inputs'
     }
@@ -119,10 +108,7 @@ export default {
   methods: {
     ...mapActions(['getXmlById']),
     changeTab(selectedTab) {
-      this.tabs.forEach(tab => {
-        tab.active = tab.id === selectedTab.id
-      })
-      this.activeTab = selectedTab.id
+      this.activeTab = selectedTab
     },
     loadDiagram() {
       this.getXmlById(this.instance.decisionDefinitionId).then(response => {
@@ -137,8 +123,3 @@ export default {
   }
 }
 </script>
-<style scoped>
-.active-tab-border {
-  border-bottom: 3px solid white!important;
-}
-</style>
