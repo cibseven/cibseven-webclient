@@ -38,6 +38,8 @@ import org.cibseven.webapp.rest.model.CandidateGroupTaskCount;
 import org.cibseven.webapp.rest.model.IdentityLink;
 import org.cibseven.webapp.rest.model.Task;
 import org.cibseven.webapp.rest.model.TaskFiltering;
+import org.cibseven.webapp.rest.model.TaskForm;
+import org.cibseven.webapp.rest.model.StartForm;
 import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
 import org.springframework.beans.factory.InitializingBean;
@@ -492,20 +494,57 @@ public class TaskService extends BaseService implements InitializingBean {
 	  }
 
 	  @Operation(
-			summary = "Proxy form content from engine",
-			description = "<strong>Fetches form HTML from the engine using the provided form path</strong>")
+			summary = "Proxy embedded form content from engine",
+			description = "<strong>Fetches embedded form HTML from the engine. Retrieves form info from engine, extracts form path, and fetches the HTML content.</strong>")
 	  @ApiResponse(responseCode = "200", description = "Form HTML content")
 	  @ApiResponse(responseCode = "403", description = "Only HTML files are allowed")
 	  @ApiResponse(responseCode = "404", description = "Form not found")
 	  @GetMapping("/task/form-proxy")
 	  public ResponseEntity<String> proxyFormContent(
-			@Parameter(description = "Form path to fetch (e.g., /forms/myform.html)") @RequestParam String formPath,
+			@Parameter(description = "Reference ID (task ID or process definition ID)") @RequestParam String referenceId,
+			@Parameter(description = "Whether this is a start form") @RequestParam boolean isStartForm,
 			CIBUser user) {
 		checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
 		
+		// Get form info from the engine
+		String formKey;
+		String contextPath = null;
+		
+		if (isStartForm) {
+			StartForm startForm = sevenProvider.fetchStartForm(referenceId, user);
+			if (startForm == null) {
+				throw new SystemException("Start form not found for process definition: " + referenceId);
+			}
+			formKey = startForm.getKey();
+			contextPath = startForm.getContextPath();
+		} else {
+			Object formResult = sevenProvider.form(referenceId, user);
+			if (formResult instanceof String && "empty-task".equals(formResult)) {
+				throw new SystemException("Task form not found for task: " + referenceId);
+			}
+			if (!(formResult instanceof TaskForm)) {
+				throw new SystemException("Unexpected form result type: " + formResult.getClass().getName());
+			}
+			TaskForm taskForm = (TaskForm) formResult;
+			formKey = taskForm.getKey();
+			contextPath = taskForm.getContextPath();
+		}
+		
+		if (formKey == null || formKey.isEmpty()) {
+			throw new SystemException("Form key is null or empty");
+		}
+		
+		// Construct form path from form key
+		// Example: "embedded:app:forms/assign-reviewer.html" with contextPath "/" becomes "/forms/assign-reviewer.html"
+		String formPath = formKey
+				.replace("embedded:", "")
+				.replace("app:", (contextPath != null ? contextPath : "") + "/")
+				.replaceAll("^(\\/+|([^/]))", "/$2")
+				.replaceAll("\\/\\/+", "/");
+		
 		// Security: Only allow HTML files
 		if (!formPath.toLowerCase().endsWith(".html") && !formPath.toLowerCase().endsWith(".htm")) {
-			throw new AccessDeniedException("Only HTML files are allowed. Provided path: " + formPath);
+			throw new AccessDeniedException("Only HTML files are allowed. Form path: " + formPath);
 		}
 		
 		// Build base URL from user's engine ID

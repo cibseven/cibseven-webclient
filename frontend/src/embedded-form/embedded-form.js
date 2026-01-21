@@ -378,20 +378,14 @@ function loadEmbeddedForm(
                 formConfig.formElement = $(formContainer);
                 if (embeddedContainer) embeddedContainer.style.display = 'none';
             } else {
-                // Construct form path from embedded form key
-                // Example: "embedded:app:forms/assign-reviewer.html" with contextPath "/" 
-                // becomes "/forms/assign-reviewer.html"
-                const formPath = formInfo.key
-                    .replace('embedded:', '')
-                    .replace('app:', (formInfo.contextPath || '') + '/')
-                    .replace(/^(\/+|([^/]))/, '/$2')
-                    .replace(/\/\/+/, '/');
-                
-                // Fetch form content via middleware proxy - backend will build full URL
+                // Fetch form HTML via backend proxy - backend validates form URL and proxies content for security and CORS handling
                 try {
                     const resource = await new Promise((resolveForm, rejectForm) => {
                         client.http.get('task/form-proxy', {
-                            data: { formPath: formPath },
+                            data: { 
+                                referenceId: referenceId,
+                                isStartForm: isStartForm 
+                            },
                             headers: {
                                 ...client.http.config.headers,
                                 'Accept': 'text/html'
@@ -411,7 +405,12 @@ function loadEmbeddedForm(
                     if (embeddedContainer) embeddedContainer.style.display = 'none';
                 } catch (err) {
                     console.error('Error fetching form content:', err);
-                    // Fallback: use relative form path
+                    // Fallback: construct form path from formInfo key and use containerElement approach
+                    const formPath = formInfo.key
+                        .replace('embedded:', '')
+                        .replace('app:', (formInfo.contextPath || '') + '/')
+                        .replace(/^(\/+|([^/]))/, '/$2')
+                        .replace(/\/\/+/, '/');
                     formConfig.formUrl = formPath;
                     formConfig.containerElement = $(embeddedContainer);
                     if (formContainer) formContainer.style.display = 'none';
