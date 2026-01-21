@@ -40,7 +40,7 @@
     <div v-if="showButtons" v-show="!loader" class="border-top pb-2 pt-3 shadow text-center bg-white" style="z-index: 9999">
       <slot name="button-row"></slot>
       <IconButton v-if="!isMobile" icon="fullscreen" @click="fullScreen()" :text="$t('actions.fullscreen')"></IconButton>
-      <IconButton v-if="!noDiagramm && !isMobile()" icon="package" @click="showDiagram()" :text="$t('actions.showProcess')"></IconButton>
+      <IconButton v-if="!noDiagramm && !isMobile()" icon="package-variant-closed" @click="showDiagram()" :text="$t('actions.showProcess')"></IconButton>
     </div>
 
   </div>
