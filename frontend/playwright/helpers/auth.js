@@ -89,7 +89,7 @@ export async function loginFail(page, email, password) {
   await page.goto('#/seven/login')
 
   // Fill in username - using more robust selectors
-  await page.locator('form input.form-control[type="text"]').first().fill(email)
+  await page.locator(':nth-child(3) > form > :nth-child(1) > .row > .col > .form-control').first().fill(email)
 
   // Fill in password
   await page.locator('.input-group > .form-control').fill(password)
