@@ -40,10 +40,13 @@
       </div>
       <b-overlay v-if="options" :show="showOptions" :opacity="0" no-center no-wrap>
         <template #overlay>
-          <b-list-group class="py-2 bg-white rounded-bottom" style="opacity: .9; position: absolute; bottom: 1px; width: calc(100% - 2px); margin-left: 1px" @click.stop>
-            <b-list-group-item v-for="option in options" :key="option.to" :to="option.to" class="py-1 px-3 border-start-0 border-top-0 border-end-0 h6 fw-normal mb-0" :title="option.tooltip">
+          <b-list-group class="py-2 bg-white rounded-bottom" style="opacity: .9; position: absolute; bottom: 1px; width: calc(100% - 2px); margin-left: 1px">
+            <router-link v-for="(option, index) in options" :key="index" :to="option.to"
+              class="list-group-item list-group-item-light py-1 px-3 border-start-0 border-top-0 border-end-0 h6 fw-normal mb-0"
+              :class="index === options.length - 1 ? 'border-bottom-0' : 'border-bottom'"
+              :title="option.tooltip">
               <span :class="['pe-1 mdi mdi-18px', option.icon]"></span>{{ option.title }}
-            </b-list-group-item>
+            </router-link>
           </b-list-group>
         </template>
       </b-overlay>
@@ -95,11 +98,14 @@ export default {
   outline-offset: 0px;
 }
 
-.list-group-item:focus {
+a.list-group-item:hover {
+  background-color: var(--bs-light);
+}
+a.list-group-item:focus {
   outline: 2px solid var(--bs-dark);
   outline-offset: 0px;
 }
-.list-group-item:active {
+a.list-group-item:active {
   outline: 0px solid var(--bs-gray-600);
   outline-offset: 0px;
 }
