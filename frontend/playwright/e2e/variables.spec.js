@@ -66,11 +66,15 @@ test.describe('Process instance variables tests', () => {
     const variableRow = tableBody.locator('tr').filter({ hasText: variableName })
     await variableRow.locator('.mdi-delete-outline').click()
 
-    await formModal.locator('button.btn-primary').click()
+        // Wait for navigation to complete
+    await page.waitForLoadState('networkidle')
 
-    // TODO dialog is still shown so, let's refresh the page
-    // refresh the page
-    await page.reload()
+    await page.getByRole('button', { name: 'Delete' }).click()
+    // or 
+    // await page.locator('.modal.fade.show > .modal-dialog > .modal-content > .modal-footer > div > div >button.btn.btn-primary').click()
+
+    // Wait for navigation to complete
+    await page.waitForLoadState('networkidle')
 
     // verify table first column has no `variableName` variable
     await expect(tableBody).not.toContainText(variableName)
