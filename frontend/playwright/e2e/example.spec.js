@@ -18,12 +18,12 @@ import { test, expect } from '@playwright/test'
 import { loginDefault, login, logout, loginFail } from '../helpers/auth.js'
 
 test.describe('Simple tests', () => {
-  test('visits the app root url', async ({ page }) => {
+  test('visits the app root url @smoke', async ({ page }) => {
     await page.goto('/')
     await expect(page.getByRole('heading', { name: 'CIB seven', level: 1 })).toBeVisible()
   })
 
-  test('login', async ({ page }) => {
+  test('login @auth', async ({ page }) => {
     if (process.env.ENV === 'stage') {
       await loginDefault(page)
       await logout(page)
@@ -39,11 +39,11 @@ test.describe('Simple tests', () => {
     }
   })
 
-  test('failed login 1', async ({ page }) => {
+  test('failed login 1 @auth', async ({ page }) => {
     await loginFail(page, 'demo', 'wrong password')
   })
 
-  test('failed login 2', async ({ page }) => {
+  test('failed login 2 @auth', async ({ page }) => {
     await loginFail(page, 'demo-non-existing', 'demo')
   })
 })

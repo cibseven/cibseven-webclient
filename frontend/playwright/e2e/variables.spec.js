@@ -17,7 +17,7 @@
 import { test, expect } from '@playwright/test'
 import { loginDefault, logout } from '../helpers/auth.js'
 
-test.describe('Process instance variables tests', () => {
+test.describe('Process instance variables tests @variables', () => {
   test('add/remove variable', async ({ page }) => {
     await loginDefault(page)
 
