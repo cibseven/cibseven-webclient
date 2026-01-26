@@ -34,16 +34,17 @@ test.describe('Simple tests', () => {
       await login(page, 'mary', 'mary', 'Mary Anne')
       await logout(page)
 
-      await login(page, 'john', 'john', 'John Doe')
-      await logout(page)
+      // Do not check 'john' user as it might be blocked due to failed login attempts below (in parallel test runs)
+      // await login(page, 'john', 'john', 'John Doe')
+      // await logout(page)
     }
   })
 
   test('failed login 1 @auth', async ({ page }) => {
-    await loginFail(page, 'demo', 'wrong password')
+    await loginFail(page, 'john', 'wrong password')
   })
 
   test('failed login 2 @auth', async ({ page }) => {
-    await loginFail(page, 'demo-non-existing', 'demo')
+    await loginFail(page, 'john-non-existing', 'john')
   })
 })
