@@ -16,6 +16,7 @@
  */
 import { test, expect } from '@playwright/test'
 import { loginDefault, login, logout, loginFail } from '../helpers/auth.js'
+import process from 'node:process'
 
 test.describe('Simple tests', () => {
   test('visits the app root url @smoke', async ({ page }) => {

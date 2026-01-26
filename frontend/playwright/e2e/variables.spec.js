@@ -16,6 +16,7 @@
  */
 import { test, expect } from '@playwright/test'
 import { loginDefault, logout } from '../helpers/auth.js'
+import process from 'node:process'
 
 test.describe('Process instance variables tests @variables', () => {
   test('add/remove variable', async ({ page }) => {
