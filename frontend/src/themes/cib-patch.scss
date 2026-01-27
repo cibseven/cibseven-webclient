@@ -34,9 +34,27 @@ $navbar-collapse-bg: $white;
   margin-bottom: $form-group-margin-bottom;
 }
 
-.dropdown-item.active, .dropdown-item:active {
+.dropdown-item {
+  border-left: 4px solid white;
+}
+.dropdown-item.active {
   color: $dropdown-link-active-color;
   background-color: $dropdown-link-active-bg;
+  border-left: 4px solid $primary;
+}
+.dropdown-item:hover {
+  border-left: 4px solid $dropdown-link-active-bg;
+}
+.dropdown-item.active:hover,
+.dropdown-item.active:focus {
+  border-left: 4px solid $primary;
+}
+.dropdown-item:focus {
+  color: $dropdown-link-active-color;
+  background-color: $dropdown-link-active-bg;
+  border-left: 4px solid $dropdown-link-active-bg;
+  outline: 2px solid var(--bs-dark);
+  outline-offset: 0px;
 }
 
 .list-group-item.active {
