@@ -19,7 +19,13 @@ package org.cibseven.webapp.providers;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -147,6 +153,96 @@ public class UserProviderIT extends BaseHelper {
         // Assert
         assertThat(result).isNotNull();
         assertThat(result.isAuthenticated()).isTrue();
-    }    
+    }
+
+    @Test
+    void testVerifyUserConcurrent5_0() throws Exception {
+        verifyUserConcurrent(5, 0);
+    }
+
+    @Test
+    void testVerifyUserConcurrent0_5() throws Exception {
+        verifyUserConcurrent(0, 5);
+    }
+
+    @Test
+    void testVerifyUserConcurrent1_5() throws Exception {
+        verifyUserConcurrent(1, 5);
+    }
+
+    @Test
+    void testVerifyUserConcurrent5_1() throws Exception {
+        verifyUserConcurrent(5, 1);
+    }
+
+    @Test
+    void testVerifyUserConcurrent5_5() throws Exception {
+        verifyUserConcurrent(5, 5);
+    }
+
+    void verifyUserConcurrent(int numberOfCallsSuccess, int numberOfCallsFailed) throws Exception {
+        // Arrange
+        String username = "john";
+        String password = "password123";
+
+        String mockResponseBody = loadMockResponse("mocks/verify_user_mock.json");
+        String mockResponseBodyFailed = "{\n" +
+                "  \"authenticated\": false,\n" +
+                "  \"userId\": \"john\"\n" +
+                "}";
+
+        // Enqueue responses for each parallel call
+        for (int i = 0; i < numberOfCallsSuccess; i++) {
+            mockWebServer.enqueue(new MockResponse()
+                    .setBody(mockResponseBody)
+                    .addHeader("Content-Type", "application/json"));
+        }
+
+        for (int i = 0; i < numberOfCallsFailed; i++) {
+            mockWebServer.enqueue(new MockResponse()
+                    .setBody(mockResponseBodyFailed)
+                    .addHeader("Content-Type", "application/json"));
+        }
+
+        ExecutorService executorService = Executors.newFixedThreadPool(numberOfCallsSuccess + numberOfCallsFailed);
+
+        try {
+            // Act - Create parallel CompletableFuture tasks
+            List<CompletableFuture<SevenVerifyUser>> futures = IntStream.range(0, numberOfCallsSuccess + numberOfCallsFailed)
+                    .mapToObj(i -> CompletableFuture.supplyAsync(() -> {
+                        try {
+                            CIBUser user = getCibUser();
+                            return userProvider.verifyUser(username, password, user);
+                        } catch (Exception e) {
+                            throw new RuntimeException("Failed to verify user", e);
+                        }
+                    }, executorService))
+                    .collect(Collectors.toList());
+
+            // Wait for all futures to complete
+            CompletableFuture<Void> allOf = CompletableFuture.allOf(
+                    futures.toArray(new CompletableFuture[0]));
+            allOf.join();
+
+            // Collect results
+            List<SevenVerifyUser> results = futures.stream()
+                    .map(CompletableFuture::join)
+                    .collect(Collectors.toList());
+
+            // Assert
+            assertThat(results).hasSize(numberOfCallsSuccess + numberOfCallsFailed);
+            
+            int returnedFailed = (int) results.stream().filter(result -> !result.isAuthenticated()).count();
+            assertThat(returnedFailed).isEqualTo(numberOfCallsFailed);
+
+            int returnedSuccess = (int) results.stream().filter(SevenVerifyUser::isAuthenticated).count();
+            assertThat(returnedSuccess).isEqualTo(numberOfCallsSuccess);
+
+            // Verify all mock requests were consumed
+            assertThat(mockWebServer.getRequestCount()).isEqualTo(numberOfCallsSuccess + numberOfCallsFailed);
+        } finally {
+            executorService.shutdown();
+        }
+    }
 
 }
