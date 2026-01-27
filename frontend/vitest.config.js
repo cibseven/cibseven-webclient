@@ -23,7 +23,11 @@ export default mergeConfig(
   defineConfig({
     test: {
       environment: 'jsdom',
-      exclude: [...configDefaults.exclude, 'e2e/**'],
+      exclude: [
+        ...configDefaults.exclude,
+        'cypress/**',
+        'playwright/**',
+      ],
       root: fileURLToPath(new URL('./', import.meta.url)),
       coverage: {
         provider: 'istanbul',
@@ -42,6 +46,8 @@ export default mergeConfig(
           // Test and config files
           'cypress/e2e/**', // Exclude Cypress tests
           'cypress.config.js', // Exclude Cypress config
+          'playwright/**', // Exclude Playwright tests
+          'playwright.config.js', // Exclude Playwright config
           'vite.config.js', // Exclude Vite config
           'vitest.config.js', // Exclude this config file itself
           '**/*.config.js', // Exclude all config files

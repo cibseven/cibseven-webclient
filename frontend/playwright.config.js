@@ -15,6 +15,7 @@
  *  limitations under the License.
  */
 import { defineConfig, devices } from '@playwright/test'
+import process from 'node:process'
 
 /**
  * Read environment variables from file.
