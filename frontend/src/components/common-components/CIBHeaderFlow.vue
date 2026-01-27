@@ -59,7 +59,7 @@
             </template>
             <b-dropdown-item v-for="lang in languages" :key="lang" :active="lang === currentLanguage()" @click="setCurrentLanguage(lang)" :title="$t('cib-header.languages') + ': ' + $t('cib-header.' + lang)">
               <div class="d-flex align-items-baseline">
-                <span class="lang-label text-center text-uppercase text-dark bg-body-secondary rounded me-2">
+                <span class="lang-label text-center text-uppercase text-dark rounded me-2" :class="{ 'lang-label-active': lang === currentLanguage() }">
                   {{ lang }}
                 </span>
                 <span class="flex-grow-1">
@@ -240,5 +240,13 @@ export default {
 .lang-label {
   min-width: 36px;
   display: inline-block;
+  background-color: var(--bs-gray-200) !important;
+}
+.dropdown-item:hover .lang-label {
+  background-color: var(--bs-gray-400) !important;
+}
+.lang-label-active,
+.dropdown-item:hover .lang-label-active {
+  background-color: var(--bs-gray-500) !important;
 }
 </style>

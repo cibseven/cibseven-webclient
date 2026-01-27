@@ -5,7 +5,7 @@
 $gray: #c1cedd;
 $form-group-margin-bottom: 1rem;
 $dropdown-link-active-color: $dark;
-$dropdown-link-active-bg: $light;
+$dropdown-link-active-bg: var(--bs-gray-300);
 $list-group-active-color: $dark;
 $list-group-active-bg: $light;
 $list-group-color-light: $dark;
@@ -36,6 +36,7 @@ $navbar-collapse-bg: $white;
 
 .dropdown-item {
   border-left: 4px solid white;
+  padding-left: 0.7rem !important;
 }
 .dropdown-item.active {
   color: $dropdown-link-active-color;
@@ -44,6 +45,7 @@ $navbar-collapse-bg: $white;
 }
 .dropdown-item:hover {
   border-left: 4px solid $dropdown-link-active-bg;
+  background-color: var(--bs-gray-200);
 }
 .dropdown-item.active:hover,
 .dropdown-item.active:focus {
