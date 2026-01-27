@@ -67,7 +67,7 @@
             icon="mdi-download-outline"
             @click="downloadFile(table.item)">
           </CellActionButton>
-          <CellActionButton v-if="isFile(table.item)" :title="$t('process-instance.upload')"
+          <CellActionButton v-if="isFile(table.item) && isActiveInstance" :title="$t('process-instance.upload')"
             icon="mdi-upload-outline"
             @click="selectedVariable = table.item; $refs.uploadFile.show()">
           </CellActionButton>
