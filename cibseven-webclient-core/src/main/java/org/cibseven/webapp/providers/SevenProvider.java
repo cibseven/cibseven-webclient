@@ -24,6 +24,7 @@ import java.util.Optional;
 import org.cibseven.webapp.Data;
 import org.cibseven.webapp.NamedByteArrayDataSource;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.auth.rest.StandardLogin;
 import org.cibseven.webapp.exception.ExpressionEvaluationException;
 import org.cibseven.webapp.exception.InvalidUserIdException;
 import org.cibseven.webapp.exception.NoObjectFoundException;
@@ -623,8 +624,8 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 		return userProvider.fetchUsers(user);
 	}
 	
-	public SevenVerifyUser verifyUser(String username, String password, CIBUser user) throws SystemException {
-		return userProvider.verifyUser(username, password, user);
+	public SevenVerifyUser verifyUser(StandardLogin login, CIBUser user) throws SystemException {
+		return userProvider.verifyUser(login, user);
 	}
 	
 	@Override

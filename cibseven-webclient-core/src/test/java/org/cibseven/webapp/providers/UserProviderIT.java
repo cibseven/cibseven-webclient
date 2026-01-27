@@ -29,6 +29,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.auth.rest.StandardLogin;
 import org.cibseven.webapp.rest.model.SevenUser;
 import org.cibseven.webapp.rest.model.SevenVerifyUser;
 import org.cibseven.webapp.rest.model.User;
@@ -140,7 +141,8 @@ public class UserProviderIT extends BaseHelper {
                 .addHeader("Content-Type", "application/json"));
 
         // Act
-        SevenVerifyUser result = userProvider.verifyUser(username, password, user);
+        StandardLogin login = new StandardLogin(username, password);
+        SevenVerifyUser result = userProvider.verifyUser(login, user);
 
         // Assert
         assertThat(result).isNotNull();

@@ -73,7 +73,7 @@ public class SevenUserProvider extends BaseUserProvider<StandardLogin> {
 			TokenSettings tokenSettings = EngineTokenUtils.getSettingsForEngine(
 				user.getEngine(), engineRestProperties, getSettings(), validMinutes, prolongMinutes);
 			
-			SevenVerifyUser sevenVerifyUser = sevenProvider.verifyUser(user.getId(), login.getPassword(), user);
+			SevenVerifyUser sevenVerifyUser = sevenProvider.verifyUser(login, user);
 			
 			if (sevenVerifyUser.isAuthenticated()) {
 			  // Token is needed for the next request (/user/xxx/profile)
