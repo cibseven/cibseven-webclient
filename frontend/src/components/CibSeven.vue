@@ -121,7 +121,7 @@
         <b-dropdown-item v-if="$root.user && $root.config.layout.showUserSettings && !applicationPermissionsDenied($root.config.permissions.userProfile, 'userProfile')"
           :to="'/seven/auth/account/' + $root.user.id"
           :active="isMenuItemActive({active: ['seven/auth/account']})"
-          :title="$t('seven.account')">{{ $t('seven.account') }}</b-dropdown-item>
+          :title="$t('admin.users.profile')">{{ $t('admin.users.profile') }}</b-dropdown-item>
       </template>
     </CIBHeaderFlow>
 

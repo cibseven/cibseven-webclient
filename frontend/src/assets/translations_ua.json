@@ -867,7 +867,6 @@
 		"titleInfo": "Інформація",
 		"filters": "Фільтри",
 		"types": "Типи авторизацій",
-		"account": "@:admin.users.profile",
 		"chat": "Чат"
 	},
 	"nav-bar": {

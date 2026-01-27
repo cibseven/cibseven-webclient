@@ -867,7 +867,6 @@
 		"titleInfo": "Information",
 		"filters": "Filters",
 		"types": "Types",
-		"account": "@:admin.users.profile",
 		"chat": "Chat"
 	},
 	"nav-bar": {
