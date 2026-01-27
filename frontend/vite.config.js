@@ -24,13 +24,6 @@ import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
 const backendUrl = 'http://localhost:8080/webapp'
-//Needed for Embedded forms
-const engineRestUrl = 'http://localhost:8080/'
-//Engine REST API path - customize this if using a custom Jersey application path
-//Should match the cibseven.webclient.engineRest.path property in application.yml
-/* eslint-disable no-undef */
-const engineRestPath = process.env.ENGINE_REST_PATH || '/engine-rest'
-/* eslint-enable no-undef */
 
 // Detect build mode
 /* eslint-disable no-undef */
@@ -99,39 +92,6 @@ export default defineConfig({
           })
         },
       },
-      [engineRestPath]: {
-        target: engineRestUrl,
-        changeOrigin: true,
-        secure: false,
-        configure: (proxy, _options) => {
-          proxy.on('error', (err, _req, _res) => {
-            console.log('proxy error', err)
-          })
-          proxy.on('proxyReq', (proxyReq, req, _res) => {
-            //console.log('Sending Request to the Target:', req.method, backendUrl + req.url)
-          })
-          proxy.on('proxyRes', (proxyRes, req, _res) => {
-            //console.log('Received Response from the Target:', proxyRes.statusCode, backendUrl + req.url)
-          })
-        },
-      },
-	  //Add embedded form root urls
-     '/camunda-invoice': {
-       target: engineRestUrl,
-       changeOrigin: true,
-       secure: false,
-       configure: (proxy, _options) => {
-         proxy.on('error', (err, _req, _res) => {
-           console.log('proxy error', err)
-         })
-         proxy.on('proxyReq', (proxyReq, req, _res) => {
-           //console.log('Sending Request to the Target:', req.method, backendUrl + req.url)
-         })
-         proxy.on('proxyRes', (proxyRes, req, _res) => {
-           //console.log('Received Response from the Target:', proxyRes.statusCode, backendUrl + req.url)
-         })
-       },
-     }
     },
   },
   build: isLibrary
