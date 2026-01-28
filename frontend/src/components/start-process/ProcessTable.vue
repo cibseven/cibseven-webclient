@@ -26,7 +26,7 @@
       </template>
       <template v-slot:cell(name)="table">
         <b-button variant="link" @click="$emit('start-process', table.item)" :title="table.item.description || table.item.name || table.item.key">
-          <HighlightedText :text="table.item.name || table.item.key" :keyword="processesFilter"></HighlightedText>
+          <HighlightedText :text="table.item.name || table.item.key" :keyword="processesFilter"/>
         </b-button>
       </template>
       <template v-slot:cell(key)="table">
@@ -35,6 +35,11 @@
       <template v-slot:cell(tenantId)="table">
         <div class="text-truncate" :title="table.item.tenantId">{{ table.item.tenantId }}</div>
       </template>
+      <template v-slot:cell(description)="table">
+        <div v-if="$te('process-descriptions.' + table.item.key)" v-b-popover.hover.left="$t('process-descriptions.' + table.item.key)" class="text-truncate">
+          {{ $t('process-descriptions.' + table.item.key) }}
+        </div>
+      </template>
       <template v-slot:cell(actions)="table">
         <transition name="fade">
           <div v-show="(focused && focused.id === table.item.id)">
@@ -42,28 +47,25 @@
           </div>
         </transition>
       </template>
-      <template v-slot:cell(description)="table">
-        <div v-if="$te('process-descriptions.' + table.item.key)" v-b-popover.hover.left="$t('process-descriptions.' + table.item.key)" class="text-truncate">
-          {{ $t('process-descriptions.' + table.item.key) }}
-        </div>
-      </template>
     </FlowTable>
   </div>
 </template>
 
 <script>
-import { permissionsMixin } from '@/permissions.js'
-import processesMixin from '@/components/process/mixins/processesMixin.js'
-import { FlowTable } from '@cib/common-frontend'
+import { FlowTable, HighlightedText } from '@cib/common-frontend'
 
 export default {
   name: 'ProcessTable',
-  components: { FlowTable },
-  mixins: [permissionsMixin, processesMixin],
+  components: { FlowTable, HighlightedText },
   props: {
     processes: Array,
     processesFilter: String
-   },
+  },
+  data() {
+    return {
+      focused: null
+    }
+  },
   emits: ['favorite', 'start-process'],
   computed: {
     fields: function() {
