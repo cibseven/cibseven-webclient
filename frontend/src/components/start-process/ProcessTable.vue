@@ -30,9 +30,7 @@
         </b-button>
       </template>
       <template v-slot:cell(key)="table">
-        <div class="text-truncate" :title="table.item.key">
-          <HighlightedText :text="table.item.key" :keyword="processesFilter"/>
-        </div>
+        <HighlightedText :text="table.item.key" :keyword="processesFilter" :title="table.item.key"/>
       </template>
       <template v-slot:cell(tenantId)="table">
         <div class="text-truncate" :title="table.item.tenantId">{{ table.item.tenantId }}</div>
