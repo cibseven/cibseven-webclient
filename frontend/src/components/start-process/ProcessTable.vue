@@ -24,6 +24,17 @@
       <template v-slot:cell(favorite)="table">
         <b-button :title="$t('process.favorite')" tabindex="-1" @click="$emit('favorite', table.item)" variant="link" class="mdi mdi-24px" :class="table.item.favorite ? 'mdi-star text-primary' : 'mdi-star-outline text-secondary'"></b-button>
       </template>
+      <template v-slot:cell(name)="table">
+        <b-button variant="link" @click="$emit('start-process', table.item)" :title="table.item.description || table.item.name || table.item.key">
+          <HighlightedText :text="table.item.name || table.item.key" :keyword="processesFilter"></HighlightedText>
+        </b-button>
+      </template>
+      <template v-slot:cell(key)="table">
+        <div class="text-truncate" :title="table.item.key">{{ table.item.key }}</div>
+      </template>
+      <template v-slot:cell(tenantId)="table">
+        <div class="text-truncate" :title="table.item.tenantId">{{ table.item.tenantId }}</div>
+      </template>
       <template v-slot:cell(actions)="table">
         <transition name="fade">
           <div v-show="(focused && focused.id === table.item.id)">
@@ -49,7 +60,10 @@ export default {
   name: 'ProcessTable',
   components: { FlowTable },
   mixins: [permissionsMixin, processesMixin],
-  props: { processes: Array },
+  props: {
+    processes: Array,
+    processesFilter: String
+   },
   emits: ['favorite', 'start-process'],
   computed: {
     fields: function() {

@@ -58,7 +58,7 @@
     </div>
     <div class="container-fluid overflow-auto h-100" :class="!isTable ? 'bg-light' : ''">
       <div v-if="processesByOptions.length && isTable" class="d-flex h-100">
-        <ProcessTable :processes="processesByOptions" @start-process="startProcess($event)" @view-process="viewProcess($event)" @favorite="favoriteHandler($event)"></ProcessTable>
+        <ProcessTable :processes="processesByOptions" :processesFilter="filter" @start-process="startProcess($event)" @view-process="viewProcess($event)" @favorite="favoriteHandler($event)"></ProcessTable>
       </div>
       <div v-if="processesByOptions.length && !isTable" class="d-flex flex-wrap px-5 pt-3 justify-content-center">
         <div v-for="process in processesByOptions" :key="process.id">
