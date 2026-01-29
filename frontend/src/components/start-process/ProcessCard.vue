@@ -37,7 +37,7 @@
       <template v-if="view === 'image-outline'">
         <div :style="viewStyles[view].textBlock" class="row pt-2 pe-3 align-items-center">
           <h5 class="m-0 align-items-center col-11 text-truncate pe-0" :title="processName">
-            {{ processName }}
+            <HighlightedText :text="processName" :keyword="filter">{{ processName }}</HighlightedText>
           </h5>
           <div class="col-1 p-0">
             <b-button :title="$t('process.favorite')" tabindex="-1" @click="$emit('favorite', process)" variant="link" class="mdi mdi-24px text-primary p-0" style="z-index: 1"
@@ -68,7 +68,9 @@
 
         <div :style="viewStyles[view].textBlock">
           <div v-if="process.tenantId" class="fst-italic mb-2" :title="$t('process.tenant') + ': ' + process.tenantId">{{ process.tenantId }}</div>
-          <h5 class="text-truncate" :title="processName">{{ processName }}</h5>
+          <h5 class="text-truncate" :title="processName">
+            <HighlightedText :text="processName" :keyword="filter">{{ processName }}</HighlightedText>
+          </h5>
           <div v-html="getDescription(this.process)" class="inline-description"></div>
         </div>
       </template>
@@ -78,12 +80,16 @@
 </template>
 
 <script>
+import { HighlightedText } from '@cib/common-frontend'
+
 export default {
   name: 'ProcessCard',
   emits: ['favorite', 'start-process'],
+  components: { HighlightedText },
   props: {
     process: Object,
     view: String,
+    filter: String
   },
   data() {
     return {

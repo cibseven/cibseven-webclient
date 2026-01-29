@@ -65,6 +65,7 @@
         <div v-for="process in processesByOptions" :key="process.id">
           <ProcessCard
             :process="process" :view="view"
+            :filter="filter"
             @start-process="startProcess($event)"
             @view-process="viewProcess($event)"
             @favorite="favoriteHandler($event)">
