@@ -43,12 +43,13 @@
             <b-dropdown-item @click="changeViewMode('image-outline')" :active="view === 'image-outline'">
               <span class="mdi mdi-24px mdi-image-outline centered-icon">{{ $t('process.image-outline') }}</span>
             </b-dropdown-item>
-            <b-dropdown-item @click="changeViewMode('view-module')" :active="view === 'view-module'">
-              <span class="mdi mdi-24px mdi-view-module centered-icon">{{ $t('process.view-module') }}</span>
-            </b-dropdown-item>
             <b-dropdown-item @click="changeViewMode('view-comfy')" :active="view === 'view-comfy'">
               <span class="mdi mdi-24px mdi-view-comfy centered-icon">{{ $t('process.view-comfy') }}</span>
             </b-dropdown-item>
+            <b-dropdown-item @click="changeViewMode('view-module')" :active="view === 'view-module'">
+              <span class="mdi mdi-24px mdi-view-module centered-icon">{{ $t('process.view-module') }}</span>
+            </b-dropdown-item>
+            <b-dropdown-divider></b-dropdown-divider>
             <b-dropdown-item @click="changeViewMode('view-list')" :active="view === 'view-list'">
               <span class="mdi mdi-24px mdi-view-list centered-icon">{{ $t('process.view-list') }}</span>
             </b-dropdown-item>
@@ -62,10 +63,12 @@
       </div>
       <div v-if="processesByOptions.length && !isTable" class="d-flex flex-wrap px-5 pt-3 justify-content-center">
         <div v-for="process in processesByOptions" :key="process.id">
-          <ProcessCard v-if="view !== 'image-outline'" :process="process" :process-name="processName(process)" :view="view"
-            @start-process="startProcess($event)" @view-process="viewProcess($event)" @favorite="favoriteHandler($event)"></ProcessCard>
-          <ProcessAdvanced v-else :process="process" :process-name="processName(process)" :view="view"
-            @start-process="startProcess($event)" @view-process="viewProcess($event)" @favorite="favoriteHandler($event)"></ProcessAdvanced>
+          <ProcessCard
+            :process="process" :view="view"
+            @start-process="startProcess($event)"
+            @view-process="viewProcess($event)"
+            @favorite="favoriteHandler($event)">
+          </ProcessCard>
         </div>
       </div>
       <div v-if="!processesByOptions.length">
@@ -91,7 +94,6 @@
 <script>
 import { permissionsMixin } from '@/permissions.js'
 import ProcessTable from '@/components/start-process/ProcessTable.vue'
-import ProcessAdvanced from '@/components/start-process/ProcessAdvanced.vue'
 import ProcessCard from '@/components/start-process/ProcessCard.vue'
 import StartProcess from '@/components/start-process/StartProcess.vue'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
@@ -100,7 +102,7 @@ import { ProcessService } from '@/services.js'
 
 export default {
   name: 'StartProcessList',
-  components: { ProcessTable, ProcessAdvanced, ProcessCard, StartProcess, BpmnViewer, SuccessAlert },
+  components: { ProcessTable, ProcessCard, StartProcess, BpmnViewer, SuccessAlert },
   inject: ['loadProcesses', 'isMobile'],
   mixins: [permissionsMixin],
   data: function () {
