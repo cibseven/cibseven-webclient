@@ -25,7 +25,7 @@
         <b-button :title="$t('process.favorite')" tabindex="-1" @click="$emit('favorite', table.item)" variant="link" class="mdi mdi-24px" :class="table.item.favorite ? 'mdi-star text-primary' : 'mdi-star-outline text-secondary'"></b-button>
       </template>
       <template v-slot:cell(name)="table">
-        <b-button variant="link" @click="$emit('start-process', table.item)" :title="table.item.description || table.item.name || table.item.key">
+        <b-button variant="link" @click="$emit('start-process', table.item)" :title="table.item.name || table.item.key" class="ps-0 pe-0 text-start">
           <HighlightedText :text="table.item.name || table.item.key" :keyword="processesFilter"/>
         </b-button>
       </template>
@@ -36,8 +36,7 @@
         <div class="text-truncate" :title="$t('process.tenant') + ': ' + table.item.tenantId">{{ table.item.tenantId }}</div>
       </template>
       <template v-slot:cell(description)="table">
-        <div v-if="$te('process-descriptions.' + table.item.key)" v-b-popover.hover.left="$t('process-descriptions.' + table.item.key)" class="text-truncate">
-          {{ $t('process-descriptions.' + table.item.key) }}
+        <div v-if="getDescription(table.item)" v-b-popover.hover.left="getDescription(table.item)" class="inline-description" v-html="getDescription(table.item)">
         </div>
       </template>
       <template v-slot:cell(actions)="table">
@@ -78,6 +77,25 @@ export default {
           { label: 'actions', key: 'actions', sortable: false, tdClass: 'py-0', class: 'col-2 d-flex justify-content-center' },
         ]
     }
-  }
+  },
+  methods: {
+    getDescription(process) {
+      if (this.$te('process-descriptions.' + process.key)) return this.$t('process-descriptions.' + process.key)
+      return process.description || ''
+    }
+  }  
 }
 </script>
+
+<style lang="css" scoped>
+.inline-description {
+  display: -webkit-box;
+  line-clamp: 5;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+
+  -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+}
+</style>
