@@ -33,7 +33,7 @@
         <HighlightedText :text="table.item.key" :keyword="processesFilter" :title="table.item.key"/>
       </template>
       <template v-slot:cell(tenantId)="table">
-        <div class="text-truncate" :title="table.item.tenantId">{{ table.item.tenantId }}</div>
+        <div class="text-truncate" :title="$t('process.tenant') + ': ' + table.item.tenantId">{{ table.item.tenantId }}</div>
       </template>
       <template v-slot:cell(description)="table">
         <div v-if="$te('process-descriptions.' + table.item.key)" v-b-popover.hover.left="$t('process-descriptions.' + table.item.key)" class="text-truncate">
