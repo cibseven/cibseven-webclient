@@ -36,7 +36,8 @@
         <div class="text-truncate" :title="$t('process.tenant') + ': ' + table.item.tenantId">{{ table.item.tenantId }}</div>
       </template>
       <template v-slot:cell(description)="table">
-        <div v-if="getDescription(table.item)" v-b-popover.hover.left="getDescription(table.item)" class="inline-description" v-html="getDescription(table.item)">
+        <div v-if="getDescription(table.item)" v-b-popover.hover.left="getDescription(table.item)" v-html="getDescription(table.item)"
+          :class="['inline-description', { 'with-mask': isDescriptionTruncated(table.item) }]" >
         </div>
       </template>
       <template v-slot:cell(actions)="table">
@@ -82,6 +83,13 @@ export default {
     getDescription(process) {
       if (this.$te('process-descriptions.' + process.key)) return this.$t('process-descriptions.' + process.key)
       return process.description || ''
+    },
+    isDescriptionTruncated(process) {
+      const desc = this.getDescription(process)
+      if (!desc) return false
+      // Approximate: check if text length suggests more than 5 lines (rough estimate)
+      const avgCharsPerLine = 25
+      return desc.length > (avgCharsPerLine * 5)
     }
   }  
 }
@@ -94,7 +102,9 @@ export default {
   -webkit-line-clamp: 5;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
 
+.inline-description.with-mask {
   -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
   mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
 }
