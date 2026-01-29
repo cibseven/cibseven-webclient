@@ -19,7 +19,6 @@
 <template>
   <div style="flex: auto; margin: 10px" class="row border rounded-lg shadow-sm bg-white" :style="viewStyles[view].cardSize" v-b-popover.hover.top="getTooltipHtml()">
     <button class="h-100 container position-relative btn"
-      tabindex="0"
       @focus="focused = process"
       @mouseenter="focused = process" @focusin="focused = process"
       @mouseleave="focused = null" @focusout="focused = null">
