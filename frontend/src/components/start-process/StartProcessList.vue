@@ -91,8 +91,8 @@
 <script>
 import { permissionsMixin } from '@/permissions.js'
 import ProcessTable from '@/components/start-process/ProcessTable.vue'
-import ProcessAdvanced from '@/components/process/ProcessAdvanced.vue'
-import ProcessCard from '@/components/process/ProcessCard.vue'
+import ProcessAdvanced from '@/components/start-process/ProcessAdvanced.vue'
+import ProcessCard from '@/components/start-process/ProcessCard.vue'
 import StartProcess from '@/components/start-process/StartProcess.vue'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
 import { SuccessAlert } from '@cib/common-frontend'
