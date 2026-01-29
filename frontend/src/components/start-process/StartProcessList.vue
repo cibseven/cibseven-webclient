@@ -208,6 +208,12 @@ export default {
 </script>
 
 <style lang="css" scoped>
+/* Customizing the separator to reduce gap */
+.dropdown-divider {
+  margin-top: 0.15rem; /* Reduce top gap */
+  margin-bottom: 0.15rem; /* Reduce bottom gap */
+}
+
 .centered-icon {
   /* vertically center the Material Design icon with the text */
   display: inline-flex;
