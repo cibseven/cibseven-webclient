@@ -18,8 +18,9 @@
 -->
 <template>
   <div style="flex: auto; margin: 10px" class="row border rounded-lg shadow-sm bg-white" :style="viewStyles[view].cardSize" v-b-popover.hover.top="getTooltipHtml()">
-    <button class="h-100 container position-relative btn"
+    <button class="h-100 container position-relative btn card-button"
       @focus="focused = process"
+      @click="focused = process"
       @mouseenter="focused = process" @focusin="focused = process"
       @mouseleave="focused = null" @focusout="focused = null">
 
@@ -147,6 +148,18 @@ export default {
 </script>
 
 <style lang="css" scoped>
+.card-button {
+  cursor: default;
+}
+.card-button:focus {
+  outline: 2px solid var(--bs-dark);
+  outline-offset: 0px;
+}
+.card-button:active {
+  outline: 0px solid white;
+  outline-offset: 0px;
+}
+
 .inline-description {
   display: -webkit-box;
   line-clamp: 5;
