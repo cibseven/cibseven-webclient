@@ -38,7 +38,7 @@
         </div>
         <b-list-group v-if="startableProcesses.length > 0" >
           <b-list-group-item v-for="process of startableProcesses" :key="process.key" class="p-1 d-flex align-items-center" tabindex="-1" style="cursor: default">
-            <b-button :disabled="isStartingProcess" variant="link" @click="startProcess(process)" :title="process.description || process.name || process.key">
+            <b-button :disabled="isStartingProcess" variant="link" @click="startProcess(process)" v-b-popover.hover.right="process.description">
               <HighlightedText :text="process.name || process.key" :keyword="processesFilter"></HighlightedText>
             </b-button>
             <span v-if="process.tenantId" class="fst-italic">{{ process.tenantId }}</span>
