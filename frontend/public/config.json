@@ -308,5 +308,6 @@
 				"event": "focusTask"
 			}
 		}
-	}
+	},
+	"modelerEnabled": true
 }

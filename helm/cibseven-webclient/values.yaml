@@ -562,7 +562,8 @@ configmaps:
                 "description": "infoAndHelp.shortcuts.shortcuts.focusTask",
                 "event": "focusTask"
               }
-            }
+            },
+            modelerEnabled: false
           }
         }
 

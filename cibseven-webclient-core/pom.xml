@@ -136,6 +136,13 @@
 	        <scope>test</scope>
 	    </dependency>
 
+		<!-- Swagger/OpenAPI for REST API documentation -->
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>${version.openapi-starter-webmvc-ui}</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>

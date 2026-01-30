@@ -18,6 +18,13 @@
 			<version>${project.version}</version>
 		</dependency>
 
+		<!-- CIB seven Modeler integration -->
+		<dependency>
+			<groupId>org.cibseven.modeler</groupId>
+			<artifactId>cibseven-modeler-core</artifactId>
+			<version>${version.cibseven-modeler}</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>

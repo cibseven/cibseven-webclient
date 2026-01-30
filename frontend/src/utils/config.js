@@ -169,7 +169,8 @@ const DEFAULT_CONFIG = {
     { "key": "createdBefore", "text": "createdBefore", "type": "text", "group": "datesGroup" },
     { "key": "dueBefore", "text": "dueBefore", "type": "text", "group": "datesGroup" },
     { "key": "dueAfter", "text": "dueAfter", "type": "text", "group": "datesGroup" }
-  ]
+  ],
+  modelerEnabled: true
 }
 
 /**

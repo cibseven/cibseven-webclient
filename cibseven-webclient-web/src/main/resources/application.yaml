@@ -1,10 +1,29 @@
-spring:
+﻿spring:
   banner:
     location: classpath:banner.txt
   config:
     import:
       - optional:classpath:cibseven-webclient.properties
       - optional:classpath:cibseven-webclient.yaml
+  datasource:
+    url:
+    username:
+    password:
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    # Flyway is the single source of truth for schema management and migrations
+    enabled: false
+    # Use vendor-specific migrations automatically. Flyway will resolve {vendor} to oracle, postgresql, mariadb, mysql, h2
+    locations: classpath:db/migration-{vendor},classpath:db/migration-common
+    # Allow adopting an existing empty schema
+    baseline-on-migrate: false
+    baseline-version: 0
+    # Allow adopting an existing none-empty schema
+    #baseline-on-migrate: true
+    #baseline-version: 1
   servlet:
     register-default-servlet: true
     multipart:
@@ -40,7 +59,7 @@ cibseven:
     historyLevel: full
     # Token generation
     authentication:
-      jwtSecret: 
+      jwtSecret:
       tokenValidMinutes: 60
       tokenProlongMinutes: 1440
     # LDAP
@@ -75,7 +94,7 @@ cibseven:
 
     # External token user creation
     token:
-      secret: 
+      secret:
       deny:
         external:
           ip: true
@@ -145,6 +164,9 @@ springdoc:
     operationsSorter: alpha
     tagsSorter: alpha
     doc-expansion: none
+  # cibseven-webclient server url for the swagger-ui. Only needs to be set if the automatic detection is wrong.
+  cibseven-webclient:
+    serverUrl: ""
 
 # Activate "/actuator/info" and "/actuator/health" endpoints
 management:

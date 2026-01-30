@@ -1065,6 +1065,10 @@
 			"title": "Admin",
 			"tooltip": "Abrir Admin"
 		},
+		"modeler": {
+			"title": "Modeler",
+			"tooltip": "Abrir Modeler para diseñar y editar BPMN, DMN y formularios"
+		},
 		"oldCockpit": {
 			"title":"Cockpit antiguo",
 			"tooltip": "Abrir Cockpit antiguo"

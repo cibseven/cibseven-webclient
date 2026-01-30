@@ -23,6 +23,18 @@ import 'moment/dist/locale/es'
 import 'moment/dist/locale/uk'
 import 'moment/dist/locale/ru'
 
+// Import modeler translations dynamically
+let modelerTranslations = null
+async function loadModelerTranslations() {
+  if (modelerTranslations) return
+  try {
+    const modeler = await import('cibseven-modeler')
+    modelerTranslations = modeler.modelerTranslations
+  } catch (err) {
+    console.debug('Modeler translations not available:', err.message)
+  }
+}
+
 function getDefaultLanguage() {
   let language = localStorage.getItem('language')
   if (!language) {
@@ -49,6 +61,13 @@ const loadTranslationsFromSevenComponents = function(i18n, lang) {
   i18n.global.mergeLocaleMessage(lang, translation)
 }
 
+const loadTranslationsFromModeler = async function(i18n, lang) {
+  await loadModelerTranslations()
+  if (modelerTranslations && modelerTranslations[lang]) {
+    i18n.global.mergeLocaleMessage(lang, modelerTranslations[lang])
+  }
+}
+
 const loadTranslationsFromPublic = async function(lang) {
   // Load translations from public/translations_*.json
   try {
@@ -73,6 +92,7 @@ const loadTranslationsFromThemes = async function(config, lang) {
 const translationSources = {
   commonComponents: 'commonComponents',
   sevenComponents: 'sevenComponents',
+  modelerComponents: 'modelerComponents',
   public: 'public',
   themes: 'themes'
 }
@@ -80,6 +100,7 @@ const translationSources = {
 const defaultTranslationSources = [
   translationSources.commonComponents,
   translationSources.sevenComponents,
+  translationSources.modelerComponents,
   translationSources.public,
   translationSources.themes
 ]
@@ -91,6 +112,11 @@ const loadTranslations = async function(config, lang, sources = defaultTranslati
   if (sources.includes(translationSources.sevenComponents)) {
     // Add translations from src/assets/translations_*.json
     loadTranslationsFromSevenComponents(i18n, lang)
+  }
+
+  if (sources.includes(translationSources.modelerComponents)) {
+    // Add translations from cibseven-modeler library
+    await loadTranslationsFromModeler(i18n, lang)
   }
 
   if (sources.includes(translationSources.public)) {

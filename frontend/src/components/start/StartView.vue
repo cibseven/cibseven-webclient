@@ -40,6 +40,7 @@
             { to: '/seven/auth/admin/system', icon: 'mdi-cog-outline', title: $t('admin.system.title'), tooltip: $t('admin.system.tooltip') }
           ]"
         ></StartViewItem>
+        <StartViewItem v-if="tiles.includes('modeler')" :to="{ name: 'modeler' }" :title="$t('start.modeler.title')" :src="images.modeler"></StartViewItem>
         <component :is="StartViewPlugin" v-if="StartViewPlugin"></component>
       </div>
       <div v-if="!applicationPermissions($root.config.permissions.tasklist, 'tasklist') &&
@@ -62,6 +63,7 @@ import processImage from '@/assets/images/start/process.svg'
 import taskImage from '@/assets/images/start/task.svg'
 import managementImage from '@/assets/images/start/management.svg'
 import adminImage from '@/assets/images/start/admin.svg'
+import modelerImage from '@/assets/images/start/modeler.svg'
 
 export default {
   name: "StartView",
@@ -77,6 +79,7 @@ export default {
       images: {
         process: processImage,
         task: taskImage,
+        modeler: modelerImage,
         management: managementImage,
         admin: adminImage
       }
@@ -101,6 +104,9 @@ export default {
       }
       if (this.hasAdminManagementPermissions(this.$root.config.permissions)) {
         tiles.push('admin')
+      }
+      if (this.$root.config.modelerEnabled) {
+        tiles.push('modeler')
       }
       return tiles
     },
