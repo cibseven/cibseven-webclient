@@ -25,11 +25,19 @@ export default [
   {
     name: 'app/files-to-lint',
     files: ['**/*.{js,mjs,jsx,vue}'],
+    ignores: ['playwright/**', 'cypress/**'],
   },
 
   {
     name: 'app/files-to-ignore',
-    ignores: ['**/dist/**', '**/dist-ssr/**', '**/coverage/**'],
+    ignores: [
+      '**/dist/**',
+      '**/dist-ssr/**',
+      '**/coverage/**',
+      '**/target/**',
+      '**/playwright-report/**',
+      '**/test-results/**',
+    ],
   },
 
   js.configs.recommended,
@@ -46,6 +54,18 @@ export default [
       'cypress/e2e/**/*.{cy,spec}.{js,ts,jsx,tsx}',
       'cypress/support/**/*.{js,ts,jsx,tsx}'
     ],
+  },
+
+  {
+    // Playwright test files
+    files: [
+      'playwright/e2e/**/*.{spec,test}.{js,ts,jsx,tsx}',
+      'playwright/helpers/**/*.{js,ts,jsx,tsx}'
+    ],
+    rules: {
+      // Allow console.log in test files for debugging
+      'no-console': 'off',
+    },
   },
 
   ...pluginVueA11y.configs["flat/recommended"],
