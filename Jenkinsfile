@@ -7,7 +7,6 @@ import de.cib.pipeline.library.kubernetes.BuildPodCreator
 import de.cib.pipeline.library.logging.Logger
 import de.cib.pipeline.library.ConstantsInternal
 import de.cib.pipeline.library.MavenProjectInformation
-import de.cib.pipeline.library.helm.HelmChartInformation
 import groovy.transform.Field
 
 @Field Logger log = new Logger(this)
@@ -491,20 +490,14 @@ pipeline {
                     expression { params.DEPLOY_ANY_BRANCH_TO_HARBOR }
                 }
             }
-	        steps {
-	            script {
-                    HelmChartInformation helmChartInformation = readHelmChart(path: 'helm/cibseven-webclient')
-                    helmChartInformation.setUploadVersion(mavenProjectInformation.version)
-                    helmChartInformation.setUploadAppVersion(mavenProjectInformation.version)
-                    deployHelmChart(
-                        helmChartInformation: helmChartInformation,
-                        updateDependencies: true,
-                        runChecks: true,
-                        dryRun: false
-                    )
-	            }
-	        }
-	    }
+            steps {
+                deployHelmChart(
+                    path: 'helm/cibseven-webclient',
+                    version: mavenProjectInformation.version,
+                    appVersion: mavenProjectInformation.version
+                )
+            }
+        }
     }
 
     post {
