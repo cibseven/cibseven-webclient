@@ -16,8 +16,6 @@
  */
 package org.cibseven.webapp.rest;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.List;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,7 +23,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.cibseven.webapp.auth.SevenResourceType;
-import org.cibseven.webapp.auth.rest.StandardLogin;
 
 import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.CIBUser;
@@ -37,6 +34,8 @@ public class BaseService {
 
 	@Autowired
 	protected BpmProvider bpmProvider;
+
+	@SuppressWarnings("rawtypes")
 	@Autowired
 	protected BaseUserProvider baseUserProvider;
 	
@@ -44,24 +43,7 @@ public class BaseService {
 	private boolean authorizationEnabled;
 
 	protected CIBUser checkAuthorization(HttpServletRequest rq, boolean basicAuthAllowed) {
-		CIBUser user = null;
-		String authorization = rq.getHeader("Authorization");
-		if (basicAuthAllowed && authorization != null && authorization.toLowerCase().startsWith("basic")) {
-		    // Authorization: Basic base64credentials
-		    String base64Credentials = authorization.substring("Basic".length()).trim();
-		    byte[] credDecoded = Base64.getDecoder().decode(base64Credentials);
-		    String credentials = new String(credDecoded, StandardCharsets.UTF_8);
-		    // credentials = username:password
-		    final String[] values = credentials.split(":", 2);
-		    StandardLogin login = baseUserProvider.createLoginParams();
-		    login.setUsername(values[0]);
-		    login.setPassword(values[1]);
-		    user = (CIBUser) baseUserProvider.login(login, rq);
-		} 
-		else {
-				user = (CIBUser) baseUserProvider.authenticateUser(rq);
-		}
-		return user;
+		return baseUserProvider.checkAuthorization(rq, basicAuthAllowed);
 	}
 
 	public void checkSpecificProcessRights(CIBUser user, String processKey) {
