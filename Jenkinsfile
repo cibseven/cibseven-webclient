@@ -63,7 +63,7 @@ pipeline {
         kubernetes {
             yaml BuildPodCreator.cibStandardPod(nodepool: Constants.NODEPOOL_STABLE)
                     .withContainerFromName(pipelineParams.mvnContainerName, pipelineParams.buildPodConfig[pipelineParams.mvnContainerName])
-                    .withHelm3Container()
+                    .withHelm4Container()
                     .withNode24Container()
                     .asYaml()
             defaultContainer pipelineParams.mvnContainerName
