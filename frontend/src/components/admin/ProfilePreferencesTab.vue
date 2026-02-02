@@ -21,10 +21,10 @@
 
     <ContentBlock :title="$t('admin.preferences.general.title')">
       <b-form-group>
-        <label class="form-label">
-          <span class="fw-semibold">{{ $t('admin.preferences.general.startPage.label') }}</span>
+        <h6 class="fw-semibold">
+          {{ $t('admin.preferences.general.startPage.label') }}
           <span v-b-popover.hover.right="$t('admin.preferences.general.startPage.description')" class="mdi mdi-18px mdi-information-outline text-info ms-1"></span>
-        </label>
+        </h6>
         <div class="d-flex justify-content-between align-items-center">
           <div class="w-100">
             <b-form-select v-model="startPage" :options="startPageOptions"
@@ -42,20 +42,20 @@
 
     <ContentBlock :title="$t('admin.preferences.dates.title')">
       <b-form-group>
-        <label class="form-label">
-          <span class="fw-semibold">{{ $t('admin.preferences.dates.formatDefault') }}</span>
+        <h6 class="fw-semibold">
+          {{ $t('admin.preferences.dates.formatDefault') }}
           <span v-b-popover.hover.right="$t('admin.preferences.dates.formatDefaultDescription')" class="mdi mdi-18px mdi-information-outline text-info ms-1"></span>
-        </label>
+        </h6>
         <b-form-select v-model="formatDefault" :options="dateFormatOptions"
           class="col-lg-6 col-md-8 col-sm-12 mb-0"
         />
       </b-form-group>
 
       <b-form-group>
-        <label class="form-label">
-          <span class="fw-semibold">{{ $t('admin.preferences.dates.formatLong') }}</span>
+        <h6 class="fw-semibold">
+          {{ $t('admin.preferences.dates.formatLong') }}
           <span v-b-popover.hover.right="$t('admin.preferences.dates.formatLongDescription')" class="mdi mdi-18px mdi-information-outline text-info ms-1"></span>
-        </label>
+        </h6>
         <b-form-select v-model="formatLong" :options="dateFormatOptions"
           class="col-lg-6 col-md-8 col-sm-12 mb-0"
         />
@@ -269,7 +269,8 @@ export default {
     // notifications
     tasksCheckNotificationsDisabled: {
       get() {
-        return localStorage?.getItem('tasksCheckNotificationsDisabled') === 'true' || false
+        if (!localStorage) return false
+        return localStorage.getItem('tasksCheckNotificationsDisabled') === 'true'
       },
       set(val) {
         localStorage?.setItem('tasksCheckNotificationsDisabled', val)
@@ -277,7 +278,8 @@ export default {
     },
     showPopoverHowToAssign: {
       get() {
-        return localStorage?.getItem('showPopoverHowToAssign') !== 'false' || true
+        if (!localStorage) return true
+        return localStorage.getItem('showPopoverHowToAssign') !== 'false'
       },
       set(val) {
         localStorage?.setItem('showPopoverHowToAssign', val)

@@ -21,7 +21,7 @@
     <div>
       <p class="mb-3">{{ $t('process-instance.jobDefinitions.overridingMsg') }}</p>
       <div v-if="selectedJobDefinition && selectedJobDefinition.overridingJobPriority !== null" class="mb-2">
-        <label class="fw-medium mt-2 mb-1">{{ $t('process-instance.jobDefinitions.execute') }}</label>
+        <p class="fw-medium mt-2 mb-1">{{ $t('process-instance.jobDefinitions.execute') }}</p>
         <div class="form-check" v-for="option in overridingOptions" :key="option">
           <input class="form-check-input" type="radio" :id="option" :value="option" v-model="overridingOption" />
           <label class="form-check-label" :for="option">{{ $t('process-instance.jobDefinitions.' + option) }}</label>
@@ -29,8 +29,8 @@
       </div>
       <div v-if="overridingOption === 'set'">
         <b-form-group>
-          <label class="fw-semibold">{{ $t('process-instance.jobDefinitions.jobPriority') }}</label>
-          <b-form-input v-model="priority" type="number"></b-form-input>
+          <label for="jobPriority" class="fw-semibold">{{ $t('process-instance.jobDefinitions.jobPriority') }}</label>
+          <b-form-input id="jobPriority" v-model="priority" type="number"></b-form-input>
           <span v-if="priorityError" class="text-danger">{{ $t('process-instance.jobDefinitions.invalidPriorityError') }}</span>
         </b-form-group>
         <b-form-group>
@@ -76,7 +76,7 @@ export default {
           return false
         }
         const parsed = Number(this.priority)
-        return !isNaN(parsed) && Number.isInteger(parsed)
+        return !Number.isNaN(parsed) && Number.isInteger(parsed)
       }
       return false
     }

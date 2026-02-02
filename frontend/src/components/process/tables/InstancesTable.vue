@@ -54,17 +54,17 @@
         <span :title="formatDateForTooltips(table.item.endTime)" class="text-truncate d-block">{{ formatDate(table.item.endTime) }}</span>
       </template>
       <template v-slot:cell(actions)="table">
-        <b-button v-if="table.item.state === 'ACTIVE' && processByPermissions($root.config.permissions.suspendProcessInstance, table.item)" @click.stop="confirmSuspend(table.item)"
-        size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-pause-circle-outline" :title="$t('process.suspendInstance')"></b-button>
-        <b-button v-else-if="table.item.state === 'SUSPENDED' && processByPermissions($root.config.permissions.suspendProcessInstance, table.item)" @click.stop="confirmActivate(table.item)"
-        size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-play-circle-outline" :title="$t('process.activateInstance')"></b-button>
-        <b-button @click="selectInstance(table.item)" size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-eye-outline" :title="$t('process.showInstance')"></b-button>
-        <b-button v-if="['ACTIVE', 'SUSPENDED'].includes(table.item.state) && processByPermissions($root.config.permissions.deleteProcessInstance, table.item)"
-        @click.stop="confirmStopInstance(table.item)"
-        size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-stop-circle-outline" :title="$t('process.stopInstance')"></b-button>
-        <b-button v-else-if="['COMPLETED', 'EXTERNALLY_TERMINATED'].includes(table.item.state) && processByPermissions($root.config.permissions.deleteProcessInstance, table.item)"
-        @click.stop="confirmDeleteHistoryInstance(table.item)"
-        size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-delete-outline" :title="$t('process.deleteHistoryInstance')"></b-button>
+        <CellActionButton v-if="table.item.state === 'ACTIVE' && processByPermissions($root.config.permissions.suspendProcessInstance, table.item)" @click="confirmSuspend(table.item)"
+        icon="mdi-pause-circle-outline" :title="$t('process.suspendInstance')"></CellActionButton>
+        <CellActionButton v-else-if="table.item.state === 'SUSPENDED' && processByPermissions($root.config.permissions.suspendProcessInstance, table.item)" @click="confirmActivate(table.item)"
+        icon="mdi-play-circle-outline" :title="$t('process.activateInstance')"></CellActionButton>
+        <CellActionButton :to="selectInstanceRoute(table.item)" icon="mdi-eye-outline" :title="$t('process.showInstance')"></CellActionButton>
+        <CellActionButton v-if="['ACTIVE', 'SUSPENDED'].includes(table.item.state) && processByPermissions($root.config.permissions.deleteProcessInstance, table.item)"
+        @click="confirmStopInstance(table.item)"
+        icon="mdi-stop-circle-outline" :title="$t('process.stopInstance')"></CellActionButton>
+        <CellActionButton v-else-if="['COMPLETED', 'EXTERNALLY_TERMINATED'].includes(table.item.state) && processByPermissions($root.config.permissions.deleteProcessInstance, table.item)"
+        @click="confirmDeleteHistoryInstance(table.item)"
+        icon="mdi-delete-outline" :title="$t('process.deleteHistoryInstance')"></CellActionButton>
       </template>
     </FlowTable>
     <div v-if="loading" class="py-3 text-center w-100">
@@ -83,15 +83,15 @@
 import { ProcessService, HistoryService } from '@/services.js'
 import { permissionsMixin } from '@/permissions.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
-import { CopyableActionButton, FlowTable, SuccessAlert } from '@cib/common-frontend'
+import { CopyableActionButton, FlowTable, SuccessAlert, BWaitingBox } from '@cib/common-frontend'
 import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
 import ConfirmActionOnProcessInstanceModal from '@/components/process/modals/ConfirmActionOnProcessInstanceModal.vue'
-import { BWaitingBox } from '@cib/bootstrap-components'
 import { mapGetters, mapActions } from 'vuex'
+import CellActionButton from '@/components/common-components/CellActionButton.vue'
 
 export default {
   name: 'InstancesTable',
-  components: { FlowTable, SuccessAlert, ConfirmActionOnProcessInstanceModal, BWaitingBox, CopyableActionButton },
+  components: { FlowTable, SuccessAlert, ConfirmActionOnProcessInstanceModal, BWaitingBox, CopyableActionButton, CellActionButton },
   emits: ['instance-deleted', 'filter-instances'],
   mixins: [copyToClipboardMixin, permissionsMixin],
   props: {

@@ -24,6 +24,7 @@ import java.util.Optional;
 import org.cibseven.webapp.Data;
 import org.cibseven.webapp.NamedByteArrayDataSource;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.auth.rest.StandardLogin;
 import org.cibseven.webapp.exception.ExpressionEvaluationException;
 import org.cibseven.webapp.exception.InvalidUserIdException;
 import org.cibseven.webapp.exception.NoObjectFoundException;
@@ -159,6 +160,11 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 
 	@Override
+	public void submit(String taskId, String formResult, CIBUser user) {
+		taskProvider.submit(taskId, formResult, user);
+	}
+
+	@Override
 	public Object formReference(String taskId, CIBUser user) {
 		return taskProvider.formReference(taskId, user);
 	}
@@ -221,6 +227,11 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	@Override
 	public ResponseEntity<byte[]> getDeployedForm(String taskId, CIBUser user) {
 		return taskProvider.getDeployedForm(taskId, user);
+	}
+	
+	@Override
+	public ResponseEntity<String> getRenderedForm(String taskId, Map<String, Object> params, CIBUser user) {
+		return taskProvider.getRenderedForm(taskId, params, user);
 	}
 	
 	@Override
@@ -315,7 +326,13 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	
 	@Override
 	public ProcessStart submitForm(String processDefinitionKey, String tenantId, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
+		// Used by Webdesk
 		return processProvider.submitForm(processDefinitionKey, tenantId, data, user);
+	}
+
+	@Override
+	public ProcessStart submitForm(String key, String formResult, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
+		return processProvider.submitForm(key, formResult, user);
 	}
 	
 	@Override
@@ -374,6 +391,11 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	@Override
 	public ResponseEntity<byte[]> getDeployedStartForm(String processDefinitionId, CIBUser user) {
 		return processProvider.getDeployedStartForm(processDefinitionId, user);
+	}
+
+	@Override
+	public ResponseEntity<String> getRenderedStartForm(String processDefinitionId, Map<String, Object> params, CIBUser user) {
+		return processProvider.getRenderedForm(processDefinitionId, params, user);
 	}
 
 	@Override
@@ -594,12 +616,16 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 		return userProvider.getUserAuthorization(userId, user);
 	}
 	
+	public long countUsers(Map<String, Object> filters, CIBUser user) throws SystemException {
+		return userProvider.countUsers(filters, user);
+	}
+	
 	public Collection<SevenUser> fetchUsers(CIBUser user) throws SystemException {
 		return userProvider.fetchUsers(user);
 	}
 	
-	public SevenVerifyUser verifyUser(String username, String password, CIBUser user) throws SystemException {
-		return userProvider.verifyUser(username, password, user);
+	public SevenVerifyUser verifyUser(StandardLogin login, CIBUser user) throws SystemException {
+		return userProvider.verifyUser(login, user);
 	}
 	
 	@Override
@@ -800,13 +826,18 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	}
 	
 	@Override
-	public Map<String, Variable> fetchFormVariables(List<String> variableListName, String taskId, CIBUser user) throws NoObjectFoundException, SystemException {
-		return variableProvider.fetchFormVariables(variableListName, taskId, user);
+	public Map<String, Variable> fetchFormVariables(List<String> variableListName, String taskId, boolean deserializeValues, CIBUser user) throws NoObjectFoundException, SystemException {
+		return variableProvider.fetchFormVariables(variableListName, taskId, deserializeValues, user);
 	}
-	
+
 	@Override
-	public Map<String, Variable> fetchProcessFormVariables(String key, CIBUser user) throws NoObjectFoundException, SystemException {
-		return variableProvider.fetchProcessFormVariables(key, user);
+	public Map<String, Variable> fetchProcessFormVariables(String key, boolean deserializeValues, CIBUser user) throws NoObjectFoundException, SystemException {
+		return variableProvider.fetchProcessFormVariables(key, deserializeValues, user);
+	}
+
+	@Override
+	public Map<String, Variable> fetchProcessFormVariables(List<String> variableListName, String key, boolean deserializeValues, CIBUser user) throws NoObjectFoundException, SystemException {
+		return variableProvider.fetchProcessFormVariables(variableListName, key, deserializeValues, user);
 	}
 	
 	@Override
@@ -1279,4 +1310,13 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 		return engineProvider.getProcessEngineNames();
 	}
 
+	@Override
+	public Boolean requiresSetup(String engine) {
+		return engineProvider.requiresSetup(engine);
+	}
+
+	@Override
+	public void createSetupUser(NewUser user, String engine) throws InvalidUserIdException {
+		engineProvider.createSetupUser(user, engine);
+	}
 }

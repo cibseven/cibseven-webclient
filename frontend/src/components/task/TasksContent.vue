@@ -92,8 +92,7 @@ import { debounce } from '@/utils/debounce.js'
 import TasksNavBar from '@/components/task/TasksNavBar.vue'
 import FilterNavBar from '@/components/task/filter/FilterNavBar.vue'
 import FilterNavCollapsed from '@/components/task/filter/FilterNavCollapsed.vue'
-import { SidebarsFlow, SuccessAlert } from '@cib/common-frontend'
-import { BWaitingBox } from '@cib/bootstrap-components'
+import { SidebarsFlow, SuccessAlert, BWaitingBox } from '@cib/common-frontend'
 import { updateAppTitle } from '@/utils/init'
 import { splitToWords } from '@/utils/search'
 import { getTaskEventShortcuts, checkKeyMatch } from '@/utils/shortcuts.js'
@@ -107,9 +106,9 @@ export default {
   inject: ['isMobile', 'AuthService'],
   mixins: [permissionsMixin, assigneeMixin],
   data: function () {
-    var leftOpenFilter = localStorage.getItem('leftOpenFilter') ?
+    let leftOpenFilter = localStorage.getItem('leftOpenFilter') ?
       localStorage.getItem('leftOpenFilter') === 'true' : true
-    var externalMode = window.location.href.includes('externalMode') ? true : false
+    const externalMode = window.location.href.includes('externalMode')
     if (externalMode) leftOpenFilter = false
     return {
       leftOpenFilter: leftOpenFilter,
@@ -185,10 +184,16 @@ export default {
     leftOpenFilter: function() {
       if (this.leftOpenTask) localStorage.setItem('leftOpenFilter', this.leftOpenFilter)
     },
+    '$route.query.tasksFilter': {
+      immediate: true,
+      handler: function(newFilter) {
+        this.search = newFilter || ''
+      }
+    },
     search: debounce(800, function() { this.listTasksWithFilter() })
   },
   created: function() {
-    var taskSorting = localStorage.getItem('taskSorting') ? JSON.parse(localStorage.getItem('taskSorting')) : {}
+    const taskSorting = localStorage.getItem('taskSorting') ? JSON.parse(localStorage.getItem('taskSorting')) : {}
     if (!localStorage.getItem('taskSorting') ||
       (localStorage.getItem('taskSorting') && (taskSorting.sorting || taskSorting.order))) {
       localStorage.setItem('taskSorting', JSON.stringify(this.$root.config.taskSorting.default))
@@ -225,8 +230,8 @@ export default {
     listTasksWithFilterAuto: function(showMore) {
       if (this.$route.params.filterId) {
         if (showMore) this.$refs.navbar.$refs.taskLoader.done = false
-        var firstResult = showMore ? this.taskResultsIndex : 0
-        var maxResults = showMore ? this.$root.config.maxTaskResults : this.taskResultsIndex
+        const firstResult = showMore ? this.taskResultsIndex : 0
+        const maxResults = showMore ? this.$root.config.maxTaskResults : this.taskResultsIndex
         if (this.$store.state.filter.selected.id) {
           this.fetchTasks(firstResult, maxResults, showMore)
         }
@@ -235,10 +240,10 @@ export default {
       }
     },
     fetchTasks: function(firstResult, maxResults, showMore) {
-      var taskSorting = [JSON.parse(localStorage.getItem('taskSorting'))]
+      const taskSorting = [JSON.parse(localStorage.getItem('taskSorting'))]
       //If necessary we add the created extra sorting so the data is well sorted
       if (taskSorting[0].sortBy !== 'created') taskSorting.push({ sortBy: 'created', sortOrder: 'desc' })
-      var filters = { sorting: taskSorting }
+      const filters = { sorting: taskSorting }
       if (this.search) {
         filters.orQueries = splitToWords(this.search).map((searchQuery) => ({
             nameLike: '%' + searchQuery + '%',
@@ -252,10 +257,10 @@ export default {
       }
       this.AuthService.fetchAuths().then(permissions => {
         this.$root.user.permissions = permissions
-        var advCriterias = this.$store.state.advancedSearch.criterias
+        const advCriterias = this.$store.state.advancedSearch.criterias
         if (advCriterias.length > 0) {
           if (this.$store.state.advancedSearch.matchAllCriteria === true) {
-            for (var key in this.$store.getters.formatedCriteriaData) {
+            for (const key in this.$store.getters.formatedCriteriaData) {
               // eslint-disable-next-line no-prototype-builtins
               if (this.$store.getters.formatedCriteriaData.hasOwnProperty(key)) {
                 filters[key] = this.$store.getters.formatedCriteriaData[key]
@@ -269,7 +274,7 @@ export default {
         }
         TaskService.findTasksByFilter(this.$store.state.filter.selected.id, filters,
           { firstResult: firstResult, maxResults: maxResults }).then(result => {
-          var tasks = this.tasksByPermissions(this.$root.config.permissions.displayTasks, result)
+          const tasks = this.tasksByPermissions(this.$root.config.permissions.displayTasks, result)
           //Only needed to fetch the businessKey of every instance.
           this.updateProcessesInstances(tasks, showMore)
         }, () => {
@@ -279,7 +284,7 @@ export default {
     },
     updateTask: function(updatedTask) {
       this.processInstanceHistory.tasksHistory[0].due = updatedTask.due
-      var index = this.tasks.findIndex(task => {
+      const index = this.tasks.findIndex(task => {
         return task.id === updatedTask.id
       })
       //Because of the longpoll this.task is not necessarily the same object like in this.tasks
@@ -287,8 +292,8 @@ export default {
       this.listTasksWithFilterAuto()
     },
     updateAssignee: function(taskStore, target) {
-      let assigneeString = taskStore?.assignee || null
-      let taskId = taskStore?.taskId || null
+      const assigneeString = taskStore?.assignee || null
+      const taskId = taskStore?.taskId || null
       if (this.task && this.task.id === taskId) {
         this.assignee = assigneeString
         this.task.assignee = assigneeString
@@ -316,15 +321,15 @@ export default {
       if (this.$root.config.automaticallyOpenTask) this.openTaskAutomatically(task, started)
     },
     openTaskAutomatically: function(task, started) {
-      var counter = 0
+      let counter = 0
       const intervalTime = 2500
       const maxExecutions = 3
-      var method = started ? HistoryService.findProcessInstance(task.processInstanceId) :
+      const method = started ? HistoryService.findProcessInstance(task.processInstanceId) :
         HistoryService.findTasksByTaskIdHistory(task.id)
       method.then(response => {
-        var data = Array.isArray(response) ? response[0] : response
+        const data = Array.isArray(response) ? response[0] : response
         if (data) {
-          var intervalId = setInterval(() => {
+          const intervalId = setInterval(() => {
             counter++
             if (counter > maxExecutions) clearInterval(intervalId)
             else this.openTask(data, intervalId)
@@ -335,11 +340,11 @@ export default {
       })
     },
     openTask: function(resOrin, intervalId) {
-      var createdAfter = resOrin.endTime || resOrin.startTime
+      let createdAfter = resOrin.endTime || resOrin.startTime
       if (createdAfter) createdAfter = moment(createdAfter).subtract(5, 'seconds').format('YYYY-MM-DDTHH:mm:ss.SSSZZ')
       TaskService.findTasksByProcessInstanceAsignee(null, createdAfter).then(tasks => {
         if (tasks.length > 0) {
-          var taskRedirect = tasks.find(t => t.processInstanceId === resOrin.rootProcessInstanceId)
+          const taskRedirect = tasks.find(t => t.processInstanceId === resOrin.rootProcessInstanceId)
           if (taskRedirect) {
             clearInterval(intervalId)
             this.$router.push('/seven/auth/tasks/' + this.$store.state.filter.selected.id + '/' + taskRedirect.id)
@@ -396,7 +401,7 @@ export default {
     },
     updateProcessesInstances: function(tasks, showMore) {
       if (tasks && tasks.length > 0) {
-        var processesInstancesIds = []
+        const processesInstancesIds = []
         tasks.forEach(task => {
           processesInstancesIds.push(task.processInstanceId)
         })
@@ -405,7 +410,7 @@ export default {
         ProcessService.findCurrentProcessesInstances({ processInstanceIds : processesInstancesIds }).then(instances => {
           this.processesInstances = instances
           tasks.forEach(task => {
-            var instance = this.processesInstances.find(p => {
+            const instance = this.processesInstances.find(p => {
               return p.id === task.processInstanceId
             })
             if (instance) task.businessKey = instance.businessKey
@@ -428,7 +433,7 @@ export default {
       this.processInstanceHistory = null
       this.task = null
       if (this.$route.params.filterId) {
-        var path = '/seven/auth/tasks/' + this.$route.params.filterId
+        const path = '/seven/auth/tasks/' + this.$route.params.filterId
         if (path !== this.$route.path) this.$router.push(path)
       }
     },
@@ -500,7 +505,7 @@ export default {
     },
     checkActiveTask: function() {
       if (this.task) {
-        var task = this.tasks.find(t => { return t.id === this.task.id })
+        const task = this.tasks.find(t => { return t.id === this.task.id })
         if (!task) {
           clearInterval(this.interval)
           TaskService.checkActiveTask(this.task.id, this.$root.user.authToken).catch(() => {

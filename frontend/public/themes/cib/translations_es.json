@@ -1,5 +1,8 @@
 {
 	"login": {
 		"productName": "CIB seven"
+	},
+	"process-descriptions": {
+		"my-process-key": "Mi Descripción de Proceso"
 	}
 }

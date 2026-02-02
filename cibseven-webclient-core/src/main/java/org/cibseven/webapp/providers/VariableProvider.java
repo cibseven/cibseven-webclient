@@ -320,8 +320,8 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 	}	
 
 	@Override
-	public Map<String, Variable> fetchFormVariables(List<String> variableListName, String taskId, CIBUser user) throws NoObjectFoundException, SystemException {
-		String url = getEngineRestUrl(user) + "/task/" + taskId + "/form-variables?variableNames=";
+	public Map<String, Variable> fetchFormVariables(List<String> variableListName, String taskId, boolean deserializeValues, CIBUser user) throws NoObjectFoundException, SystemException {
+		String url = getEngineRestUrl(user) + "/task/" + taskId + "/form-variables?deserializeValues=" + deserializeValues + "&variableNames=";
 
 		for(String variable: variableListName) {
 			url += variable + ",";
@@ -331,10 +331,21 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 	}
 
 	@Override
-	public Map<String, Variable> fetchProcessFormVariables(String key, CIBUser user) throws NoObjectFoundException, SystemException {
+	public Map<String, Variable> fetchProcessFormVariables(String key, boolean deserializeValues, CIBUser user) throws NoObjectFoundException, SystemException {
 		String url = getEngineRestUrl(user) + "/process-definition/key/" + key + "/form-variables";
+		url += "?deserializeValues=" + deserializeValues;
 		return doGet(url, new ParameterizedTypeReference<Map<String, Variable>>() {}, user).getBody();
-	}	
+	}
+
+	@Override
+	public Map<String, Variable> fetchProcessFormVariables(List<String> variableListName, String key, boolean deserializeValues, CIBUser user) throws NoObjectFoundException, SystemException {
+		String url = getEngineRestUrl(user) + "/process-definition/" + key + "/form-variables?deserializeValues=" + deserializeValues + "&variableNames=";
+		for(String variable: variableListName) {
+			url += variable + ",";
+		}
+
+		return doGet(url, new ParameterizedTypeReference<Map<String, Variable>>() {}, user).getBody();
+	}
 
 	@Override
 	public NamedByteArrayDataSource fetchVariableFileData(String taskId, String variableName, CIBUser user) throws NoObjectFoundException, UnexpectedTypeException, SystemException {		

@@ -30,6 +30,7 @@
         <SmartSearch class="m-1 mb-2"
           :maxlength="50"
           :options="$root.config.taskFilter.smartSearch.options"
+          :initialFilter="$route.query.tasksFilter || ''"
           @search-filter="$emit('search-filter', $event)"
           @open-advanced-search="$refs.advancedSearchModal.show()"></SmartSearch>
         <hr class="my-0">
@@ -89,7 +90,9 @@
       <div class="overflow-auto flex-fill border-bottom" @scroll="handleScrollTasks">
         <div v-if="tasksFiltered.length > 0">
           <b-list-group class="mx-3">
-            <b-list-group-item @click="selectedTask(task)" v-for="task of tasksFiltered" :key="task.id" :ref="'taskItem-' + task.id" @mouseenter="focused = task" @mouseleave="focused = null"
+            <b-list-group-item @click="selectedTask(task)" v-for="task of tasksFiltered" :key="task.id" :ref="'taskItem-' + task.id"
+              @mouseenter="focused = task" @focusin="focused = task"
+              @mouseleave="focused = null" @focusout="focused = null"
               class="rounded-0 mt-3 p-2 bg-white border-0" :class="task.id === $route.params.taskId ? 'active shadow' : ''" draggable="false"
               tabindex=0 style="cursor: pointer" v-on:keyup.enter="selectedTask(task)" action>
               <div class="d-flex align-items-center">
@@ -141,11 +144,6 @@
               </b-modal>
             </b-list-group-item>
           </b-list-group>
-  <!-- 				<div v-if="tasksFiltered.length >= taskResultsIndex" class="text-center mt-3"> -->
-  <!-- 					<b-button variant="outline-secondary" @click="$emit('show-more')"> -->
-  <!-- 						{{ $t('task.showMore') }} -->
-  <!-- 					</b-button> -->
-  <!-- 				</div> -->
         </div>
         <BWaitingBox v-show="tasksFiltered.length < 1" ref="taskLoader" class="d-flex justify-content-center pt-4" styling="width:30%">
           <div v-if="tasksFiltered.length < 1 && $store.state.filter.selected.name === 'default'">
@@ -176,8 +174,7 @@ import { formatDateForTooltips } from '@/utils/dates.js'
 import StartProcess from '@/components/start-process/StartProcess.vue'
 import AdvancedSearchModal from '@/components/task/AdvancedSearchModal.vue'
 import SmartSearch from '@/components/task/SmartSearch.vue'
-import { ConfirmDialog } from '@cib/common-frontend'
-import { BWaitingBox } from '@cib/bootstrap-components'
+import { ConfirmDialog, BWaitingBox } from '@cib/common-frontend'
 import { mapActions } from 'vuex'
 
 export default {
@@ -238,11 +235,11 @@ export default {
   },
   computed: {
     tasksFiltered: function() {
-      var tasks = []
+      let tasks = []
       if (this.tasks) {
         tasks = this.tasks.filter(task => {
-          var reminder = task.followUp && moment(task.followUp)
-          var dueDate = task.due && moment(task.due)
+          const reminder = task.followUp && moment(task.followUp)
+          const dueDate = task.due && moment(task.due)
           if (!this.$store.state.filter.settings.reminder && !this.$store.state.filter.settings.dueDate) return true
           return this.dateFitsFilter(reminder, this.$store.state.filter.settings.reminder) ||
             this.dateFitsFilter(dueDate, this.$store.state.filter.settings.dueDate)
@@ -267,9 +264,9 @@ export default {
     loadAdvancedFilters: function() {
       this.advancedFilter = []
       this.$root.config.taskFilter.advancedSearch.processVariables.forEach(pv => {
-        var criteria = this.$store.state.advancedSearch.criterias
+        const criteria = this.$store.state.advancedSearch.criterias
           .find(obj => obj.id === pv.key && (obj.operator === 'eq' || obj.operator === 'like'))
-        var advancedFilterObj = {
+        const advancedFilterObj = {
           key: pv.key,
           variableName: pv.variableName,
           displayName: pv.displayName,
@@ -291,10 +288,10 @@ export default {
       })
     },
     updateAdvancedFilters: debounce(800, function() {
-      var criterias = this.advancedFilter
+      const criterias = this.advancedFilter
         .filter(filterItem => filterItem.check && (filterItem.value || filterItem.type === 'Boolean'))
         .map(filterItem => {
-          var value = filterItem.type === 'Boolean' ? filterItem.defaultValue : filterItem.value
+          let value = filterItem.type === 'Boolean' ? filterItem.defaultValue : filterItem.value
           if (filterItem.operator === 'like') value = '%' + value + '%'
           return {
             id: filterItem.key,
@@ -315,7 +312,7 @@ export default {
     }),
     checkTaskIdInUrl: function(taskId) {
       if (this.tasks.length > 0 && taskId && this.$route.params.filterId !== '*') {
-        var index = this.tasks.findIndex(task => {
+        const index = this.tasks.findIndex(task => {
           return task.id === taskId
         })
         if (index > -1) this.$emit('selected-task', this.tasks[index])
@@ -334,7 +331,7 @@ export default {
               return this.$emit('selected-task', task)
             }
 
-            var userIdLink = identityLinks.find(i => {
+            const userIdLink = identityLinks.find(i => {
               return i.type === 'candidate' && i.userId && i.userId.toLowerCase() === this.$root.user.userID.toLowerCase()
             })
             if (userIdLink) return this.$emit('selected-task', task)
@@ -344,10 +341,10 @@ export default {
       })
     },
     manageCandidateGroups: function(identityLinks, task) {
-      var promises = []
-      for (var i in identityLinks) {
+      const promises = []
+      for (const i in identityLinks) {
         if (identityLinks[i].type === 'candidate' && identityLinks[i].groupId) {
-          var promise = AdminService.findUsers({ memberOfGroup: identityLinks[i].groupId }).then(users => {
+          const promise = AdminService.findUsers({ memberOfGroup: identityLinks[i].groupId }).then(users => {
             return users.some(u => {
               return u.id.toLowerCase() === this.$root.user.userID.toLowerCase()
             })
@@ -356,7 +353,7 @@ export default {
         }
       }
       Promise.all(promises).then(results => {
-        if (results.some(r => { return r })) this.$emit('selected-task', task)
+        if (results.some(Boolean)) this.$emit('selected-task', task)
         else {
           this.$root.$refs.error.show({ type: 'AccessDeniedException', params: [task.id] })
           this.$router.push('/seven/auth/tasks/' + this.$store.state.filter.selected.id)
@@ -369,7 +366,7 @@ export default {
       else return moment(date).fromNow()
     },
     getDueClasses: function(task) {
-      var classes = []
+      const classes = []
       if (!task.due) classes.push('text-muted')
       else if (moment(task.due).isBefore(moment())) classes.push('text-danger')
       else if (moment().add(this.$root.config.warnOnDueExpirationIn, 'hours').isAfter(moment(task.due))) classes.push('text-warning')
@@ -377,7 +374,7 @@ export default {
       return classes
     },
     getReminderClasses: function(task) {
-      var classes = []
+      const classes = []
       if (!task.followUp) classes.push('text-muted')
       if (!this.isMobile() && task !== this.focused && task.id !== this.selectedDateT.id && !task.followUp) classes.push('invisible')
       return classes
@@ -396,11 +393,11 @@ export default {
     },
     selectedTask: function(task) {
 	    this.justSelectedFromList = true;
-      var selection = window.getSelection()
-      var filterId = this.$store.state.filter.selected ?
+      const selection = window.getSelection()
+      const filterId = this.$store.state.filter.selected ?
         this.$store.state.filter.selected.id : this.$route.params.filterId
       if (!selection.toString()) {
-        var route = '/seven/auth/tasks/' + filterId + '/' + task.id
+        const route = '/seven/auth/tasks/' + filterId + '/' + task.id
         if (this.$router.currentRoute.path !== route){
           this.$router.push(route)
         }
@@ -408,7 +405,7 @@ export default {
     },
     getProcessName: function(processDefinitionId) {
       if (processDefinitionId === null || !this.$root.config.layout.showProcessName) return ''
-      var process = this.$store.state.process.list.find(item => {
+      const process = this.$store.state.process.list.find(item => {
         return (item.id.split(':')[0] === processDefinitionId.split(':')[0])
       })
       return process && process.name ? process.name : ''
@@ -417,7 +414,7 @@ export default {
       if (this.$root.user.id.toLowerCase() === task.assignee.toLowerCase()) return this.$root.user.id // .displayName
       else {
         if (this.$store.state.user.listCandidates) {
-          var user = this.$store.state.user.listCandidates.find(user => {
+          const user = this.$store.state.user.listCandidates.find(user => {
             return user.id.toLowerCase() === task.assignee.toLowerCase()
           })
           if ((user) && (user.displayName)) return user.displayName
@@ -452,7 +449,7 @@ export default {
     setTime: function(time, type) {
       if (!this.selectedDateT[type]) return
       if (time) {
-        var timeSplit = time.split(':')
+        const timeSplit = time.split(':')
         this.selectedDateT[type].setHours(timeSplit[0])
         this.selectedDateT[type].setMinutes(timeSplit[1])
       } else {

@@ -21,7 +21,7 @@
   <div>
     <CIBForm @submitted="onLogin">
       <b-form-group label-cols="4" :label="$t('login.username')" :invalid-feedback="$t('errors.invalid')">
-        <input ref="username" v-model="credentials.username" class="form-control" required autofocus autocomplete="username">
+        <input ref="username" v-model="credentials.username" class="form-control" required autocomplete="username">
       </b-form-group>
       <b-form-group label-cols="4" :label="$t('login.password')">
         <SecureInput ref="password" v-model="credentials.password" class="col-8" required></SecureInput>
@@ -30,27 +30,28 @@
       <slot></slot>
 
       <div class="d-flex justify-content-between">
-        <div class="form-group float-start">
+        <div class="form-group float-start d-flex align-items-center">
           <b-form-checkbox v-model="rememberMe">{{ $t('login.rememberMe') }}</b-form-checkbox>
         </div>
         <div v-if="!hideForgotten" class="form-group float-end">
-          <a class="text-primary" style="cursor:pointer" @click="$refs.emailDialog.show()">{{ $t('login.forgotten') }}</a>
+          <b-button variant="link" class="text-primary" style="cursor:pointer" @click="$refs.emailDialog.show()">{{ $t('login.forgotten') }}</b-button>
         </div>
       </div>
 
       <div class="form-group">
         <button type="submit" class="btn btn-primary btn-block w-100">{{ $t('login.login') }}</button>
       </div>
-      <div v-if="onRegister" class="form-group text-center">
+      <div v-if="onRegister" class="form-group text-center d-flex justify-content-center align-items-center">
         {{ $t('login.register') }}
-        <a @click="onRegister" class="text-primary" style="cursor:pointer">{{ $t('login.registerLink') }}</a>
+        <b-button variant="link" @click="onRegister" class="text-primary" style="cursor:pointer">{{ $t('login.registerLink') }}</b-button>
       </div>
     </CIBForm>
 
     <b-modal ref="emailDialog" :title="$t('login.forgotten')" @shown="$refs.email.focus()">
       <CIBForm ref="form" @submitted="onForgotten">
         <b-form-group :invalid-feedback="$t('errors.invalid')">
-          <input ref="email" :type="forgottenType" :placeholder="$t('login.email')" class="form-control" required autocomplete="email">
+          <label for="email" class="mb-2">{{ $t('login.email') }}</label>
+          <input id="email" ref="email" :type="forgottenType" :placeholder="$t('login.email')" class="form-control" required autocomplete="email">
         </b-form-group>
       </CIBForm>
       <template v-slot:modal-footer>
@@ -92,11 +93,11 @@ export default {
   },
   methods: {
     onLogin: function() {
-      var self = this
+      const self = this
       this.credentials.username = this.$refs.username.value // https://helpdesk.cib.de/browse/DOXISAFES-456
       this.credentials.password = this.$refs.password.$refs.input.value
       AuthService.login(this.credentials, this.rememberMe).then(function(user) { self.$emit('success', user) }, function(error) {
-        var res = error.response.data
+        const res = error.response.data
         if (res && res.type === 'LoginException' && res.params && res.params.length >= 1 && res.params[0] === 'StandardLogin') {
           self.credentials2.username = self.credentials.username
           self.credentials2.password = self.credentials.password
@@ -117,7 +118,7 @@ export default {
       }.bind(this),
       function(error) {
         this.$refs.emailDialog.hide()
-        var res = error.response.data
+        const res = error.response.data
         if (res && res.type === 'LoginException' && res.params && res.params.length >= 1 && res.params[0] === 'StandardLogin')
           this.$refs.resetDialog.show(res.params[1])
         else this.$root.$refs.error.show(res)

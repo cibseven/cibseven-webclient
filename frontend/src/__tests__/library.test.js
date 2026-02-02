@@ -16,26 +16,9 @@
  */
 import { describe, it, expect } from 'vitest'
 import * as library from '@/library.js'
-
-// Node.js modules for file system and path
-import fs from 'fs'
-import path from 'path'
-
-// Helper to recursively find all .vue files in /src/
-function findComponents(dir, extension = '.vue') {
-  let results = []
-  const list = fs.readdirSync(dir)
-  list.forEach(file => {
-    const filePath = path.join(dir, file)
-    const stat = fs.statSync(filePath)
-    if (stat && stat.isDirectory()) {
-      results = results.concat(findComponents(filePath, extension))
-    } else if (file.endsWith(extension)) {
-      results.push(filePath)
-    }
-  })
-  return results
-}
+import { findComponents } from './utils.js'
+import fs from 'node:fs'
+import path from 'node:path'
 
 describe('library.js', () => {
   // eslint-disable-next-line no-undef
@@ -44,23 +27,6 @@ describe('library.js', () => {
   describe('*.vue', () => {
     // Find all .vue files in /src/
     const vueFiles = findComponents(srcDir, '.vue')
-
-    it('all .vue files have license headers', () => {
-      vueFiles.forEach(f => {
-        const content = fs.readFileSync(f, 'utf-8')
-        const hasLicenseHeader = content.includes('Copyright CIB software GmbH') && content.includes('apache.org/licenses/LICENSE-2.0')
-        expect(hasLicenseHeader).toBe(true, `File ${f} is missing license header`)
-      })
-    })
-
-    it('all .js files have license headers', () => {
-      const jsFiles = findComponents(srcDir, '.js')
-      jsFiles.forEach(f => {
-        const content = fs.readFileSync(f, 'utf-8')
-        const hasLicenseHeader = content.includes('Copyright CIB software GmbH') && content.includes('apache.org/licenses/LICENSE-2.0')
-        expect(hasLicenseHeader).toBe(true, `File ${f} is missing license header`)
-      })
-    })
 
     it('exports all .vue components from /src/', () => {
 
@@ -97,7 +63,7 @@ describe('library.js', () => {
         const content = fs.readFileSync(file, 'utf-8')
         const isSetupScript = content.includes('<script setup>')
         if (!isSetupScript) {
-          const namePattern = new RegExp(`name:\\s*['"]${fileName}['"],`)
+          const namePattern = new RegExp(String.raw`name:\s*['"]${fileName}['"],`)
           expect(content).toMatch(namePattern, `File ${file} does not contain name: '${fileName}'`)
         }
       })

@@ -16,7 +16,9 @@
  */
 package org.cibseven.webapp.providers;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
@@ -106,7 +108,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 						process.setSuspended(definition.getSuspended() != null ? definition.getSuspended().toString() : null);
 						process.setTenantId(definition.getTenantId());
 						process.setVersionTag(definition.getVersionTag());
-						process.setHistoryTimeToLive(definition.getHistoryTimeToLive() != null ? definition.getHistoryTimeToLive().toString() : null);
+						process.setHistoryTimeToLive(definition.getHistoryTimeToLive());
 						process.setStartableInTasklist(definition.getStartableInTasklist());
 					}
 
@@ -291,6 +293,12 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		String url = getEngineRestUrl(user) + "/process-definition/key/" + processDefinitionKey;
 		url += (tenantId != null ? ("/tenant-id/" + tenantId) : "") + "/submit-form";
 		return ((ResponseEntity<ProcessStart>) doPost(url, data, ProcessStart.class, user)).getBody();
+	}
+
+	@Override
+	public ProcessStart submitForm(String processDefinitionKey, String formResult, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
+		String url = getEngineRestUrl(user) + "/process-definition/" + processDefinitionKey + "/submit-form";	
+		return doPost(url, formResult, ProcessStart.class, user).getBody();
 	}
 
 	@Override
@@ -491,6 +499,12 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	public ResponseEntity<byte[]> getDeployedStartForm(String processDefinitionId, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/process-definition/" + processDefinitionId + "/deployed-start-form";
 		return doGetWithHeader(url, byte[].class, user, true, MediaType.APPLICATION_OCTET_STREAM);
+	}
+
+	@Override
+	public ResponseEntity<String> getRenderedForm(String processDefinitionId, Map<String, Object> params, CIBUser user) {
+		String url = URLUtils.buildUrlWithParams(getEngineRestUrl(user) + "/process-definition/" + processDefinitionId + "/rendered-form", params);
+		return doGetWithHeader(url, String.class, user, true, MediaType.ALL);
 	}
 
 	@Override

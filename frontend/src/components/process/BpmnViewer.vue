@@ -46,7 +46,7 @@
 
 <script>
 import NavigatedViewer from 'bpmn-js/lib/NavigatedViewer'
-import { BWaitingBox } from '@cib/bootstrap-components'
+import { BWaitingBox } from '@cib/common-frontend'
 import { mapActions, mapGetters } from 'vuex'
 import { HistoryService } from '@/services.js'
 
@@ -145,9 +145,14 @@ export default {
       this.loader = true
       this.viewer.importXML(xml).then(() => {
         setTimeout(() => {
-          this.viewer.get('canvas').zoom('fit-viewport')
-          this.loader = false
-          this.highlightElement(selectedActivityId)
+          if (!this.viewer || !this.$refs.diagram) return
+          try {
+            this.viewer.get('canvas').zoom('fit-viewport')
+            this.loader = false
+            this.highlightElement(selectedActivityId)
+          } catch {
+            console.warn('BpmnViewer: Unable to zoom diagram, component may have been unmounted')
+          }
         }, 500)
       })
     },
@@ -343,7 +348,7 @@ export default {
       
       // Add transitions not in historyStatistics
       this.activityInstance.childTransitionInstances.forEach(trans => {
-        if (!historyStatistics.find(hs => hs.id === trans.activityId)) {
+        if (!historyStatistics.some(hs => hs.id === trans.activityId)) {
           merged.push({
             id: trans.activityId,
             instances: 1,
@@ -380,7 +385,7 @@ export default {
       
       // Add historyStatistics not in this.statistics
       historyStatistics?.forEach(hs => {
-        if (!this.statistics.find(s => s.id === hs.id)) {
+        if (!this.statistics.some(s => s.id === hs.id)) {
           merged.push(hs)
         }
       })
@@ -511,12 +516,12 @@ export default {
       })
     },
     getBadgeOverlayHtml: function(number, classes, type, activityId) {
-      var title = this.$t('bpmn-viewer.legend.' + type)
-      var styleStr = "width: max-content;"
+      const title = this.$t('bpmn-viewer.legend.' + type)
+      let styleStr = "width: max-content;"
       if (activityId) {
         styleStr += " cursor: pointer;"
       }
-      var overlayHtml = `
+      const overlayHtml = `
         <span data-activity-id="${activityId || ''}" data-type="${type || ''}" class="bubble position-absolute" style="${styleStr}" title="${title}">
           <span class="badge rounded-pill border border-dark px-2 py-1 me-1 ${classes}">${number}</span>
         </span>
@@ -532,7 +537,7 @@ export default {
       list.splice(0, list.length)
     },
     setHtmlOnDiagram: function(id, html, position) {
-      let overlays = this.viewer.get('overlays')
+      const overlays = this.viewer.get('overlays')
       const overlayId = overlays.add(id, { position, html })
       this.overlayList.push(overlayId)
       return overlayId
@@ -614,7 +619,7 @@ export default {
       this.jobDefinitions.forEach(jobDefinition => {
         const shape = elementRegistry.get(jobDefinition.activityId)
         if (shape && jobDefinition.suspended) {
-          var title = this.$t('bpmn-viewer.legend.suspendedJobDefinition')
+          const title = this.$t('bpmn-viewer.legend.suspendedJobDefinition')
           const suspendedBadge = `
             <span class="badge bg-warning rounded-pill text-white border border-dark px-2 py-1" title="${title}">
               <span class="mdi mdi-pause"></span>

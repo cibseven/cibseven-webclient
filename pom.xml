@@ -33,18 +33,20 @@
 		<jjwt.version>0.12.6</jjwt.version>
 		<commons-io.version>2.18.0</commons-io.version>
 		<common-auth.version>1.3.0</common-auth.version>
-		<version.spring.boot>3.5.6</version.spring.boot>
+		<version.spring.boot>3.5.9</version.spring.boot>
 		<version.openapi-starter-webmvc-ui>2.8.13</version.openapi-starter-webmvc-ui>
 		<version.commons-lang3>3.18.0</version.commons-lang3>
 		
 		<image.tomcat-10-base>harbor.cib.de/dev/tomcat-10-base:3.0.0</image.tomcat-10-base>
-		<jib-maven-plugin.version>3.4.6</jib-maven-plugin.version>
+		<jib-maven-plugin.version>3.5.1</jib-maven-plugin.version>
 		<jib.from.image>${image.tomcat-10-base}</jib.from.image>
 		<jib.to.image>harbor.cib.de/dev/cibseven-webclient:${project.version}</jib.to.image>
 
 		<version.eirslett.frontend.maven.plugin>1.15.4</version.eirslett.frontend.maven.plugin>
 		<version.nodejs>24.11.1</version.nodejs>
 		<version.npm>11.6.2</version.npm>
+
+		<version.log4j2>2.25.3</version.log4j2>
 
 		<!-- NPM publish tag configuration - empty by default (uses 'latest'), can be overridden with tag dev -->
 		<npm.publish.tag.arg></npm.publish.tag.arg>
@@ -293,6 +295,27 @@ You may obtain a copy of the License at
 				<scope>import</scope>
 				<type>pom</type>
 				<version>${version.spring.boot}</version>
+			</dependency>
+			<!-- Override log4j versions to fix security vulnerabilities -->
+			<dependency>
+				<groupId>org.apache.logging.log4j</groupId>
+				<artifactId>log4j-api</artifactId>
+				<version>${version.log4j2}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.logging.log4j</groupId>
+				<artifactId>log4j-core</artifactId>
+				<version>${version.log4j2}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.logging.log4j</groupId>
+				<artifactId>log4j-slf4j-impl</artifactId>
+				<version>${version.log4j2}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.logging.log4j</groupId>
+				<artifactId>log4j-to-slf4j</artifactId>
+				<version>${version.log4j2}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

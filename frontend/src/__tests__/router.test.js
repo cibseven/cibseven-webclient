@@ -16,26 +16,9 @@
  */
 import { describe, it, expect } from 'vitest'
 import { appRoutes, createAppRouter } from '@/router.js'
-
-// Node.js modules for file system and path
-import fs from 'fs'
-import path from 'path'
-
-// Helper to recursively find all .js files in /src/
-function findComponents(dir, extension = '.js') {
-  let results = []
-  const list = fs.readdirSync(dir)
-  list.forEach(file => {
-    const filePath = path.join(dir, file)
-    const stat = fs.statSync(filePath)
-    if (stat && stat.isDirectory()) {
-      results = results.concat(findComponents(filePath, extension))
-    } else if (file.endsWith(extension)) {
-      results.push(filePath)
-    }
-  })
-  return results
-}
+import { findComponents } from './utils.js'
+import fs from 'node:fs'
+import path from 'node:path'
 
 describe('router', () => {
 

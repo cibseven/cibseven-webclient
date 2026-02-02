@@ -30,10 +30,9 @@
     <b-form-group label-cols="4" :label="$t('login.username')" :invalid-feedback="$t('errors.invalid')">
       <input v-model="credentials2.username" class="form-control">
     </b-form-group>
-    <div class="form-group form-row">
-      <label class="col-4 col-form-label">{{ $t('login.password') }}</label>
-      <SecureInput v-model="credentials2.password" autocomplete="current-password" class="col-8"></SecureInput>
-    </div>
+    <b-form-group label-cols="4" :label="$t('login.password')">
+      <SecureInput v-model="credentials2.password" autocomplete="current-password" class="col-8" required></SecureInput>
+    </b-form-group>
     <div class="form-row justify-content-end pr-1">
       <button :disabled="!credentials2.username || !credentials2.password" class="btn btn-primary" @click="onForgotten3">{{ $t('login.reset2fa') }}</button>
     </div>
@@ -73,7 +72,7 @@ export default {
         this.$refs.resetDialog.hide()
         this.$emit('success')
       }.bind(this), function(error) {
-        var res = error.response.data
+        const res = error.response.data
         if (res && res.type === 'LoginException') res.type = 'LoginExceptionTwoFactor'
         this.$root.$refs.error.show(res)
       }.bind(this))
@@ -84,7 +83,7 @@ export default {
         this.$refs.resetDialog.hide()
         this.$emit('success')
       }.bind(this), function(error) {
-        var res = error.response.data
+        const res = error.response.data
         if (res && res.type === 'LoginException') res.type = 'LoginExceptionTwoFactor'
         this.$root.$refs.error.show(res)
       }.bind(this))

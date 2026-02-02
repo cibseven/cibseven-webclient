@@ -73,18 +73,18 @@ export default {
   },
   computed: {
     filteredElements: function() {
-      var list = {}
+      const list = {}
       if (this.elements) {
         if (Array.isArray(this.elements)) {
           this.elements.forEach(element => {
-            if((element.id.toLowerCase().indexOf(this.filter.toLowerCase()) !== -1) ||
-              ((element.firstName + ' ' + element.lastName).toLowerCase().indexOf(this.filter.toLowerCase()) !== -1))
+            if((element.id.toLowerCase().includes(this.filter.toLowerCase())) ||
+              ((element.firstName + ' ' + element.lastName).toLowerCase().includes(this.filter.toLowerCase())))
               list[element.id] = element
           })
         } else {
           Object.keys(this.elements).forEach(key => {
-            if ((this.elements[key].id.toLowerCase().indexOf(this.filter.toLowerCase()) !== -1) ||
-              ((this.elements[key].firstName + ' ' + this.elements[key].lastName).toLowerCase().indexOf(this.filter.toLowerCase()) !== -1))
+            if ((this.elements[key].id.toLowerCase().includes(this.filter.toLowerCase())) ||
+              ((this.elements[key].firstName + ' ' + this.elements[key].lastName).toLowerCase().includes(this.filter.toLowerCase())))
               list[key] = this.elements[key]
           })
         }
@@ -92,7 +92,7 @@ export default {
       return list
     },
     isValid: function() {
-      var allElements = this.elements
+      let allElements = this.elements
       if (!Array.isArray(allElements)) allElements = Object.keys(allElements)
       return !this.noInvalidValues || !this.value ||
         allElements.includes(element => { if (this.value === element.id) return true; else return false })

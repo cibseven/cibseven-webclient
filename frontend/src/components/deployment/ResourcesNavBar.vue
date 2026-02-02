@@ -43,9 +43,9 @@
                 <div class="text-truncate me-0" style="flex: 1">
                   <span :title="$t('deployment.showModel')">{{ resource.name }}</span>
                 </div>
-                <b-button @click.stop="showResource(resource)" size="sm" variant="outline-secondary"
-                  class="border-0 mdi mdi-18px mdi-eye-outline text-dark bg-white"
-                  :title="$t('deployment.showModel')"></b-button>
+                <CellActionButton @click.stop="showResource(resource)"
+                  icon="mdi-eye-outline"
+                  :title="$t('deployment.showModel')"></CellActionButton>
                 <component :is="ResourcesNavBarActionsPlugin" v-if="ResourcesNavBarActionsPlugin" :resource="resource" :deployment="deployment" @deployment-success="$emit('deployment-success')"></component>
               </div>
             </b-list-group-item>
@@ -69,7 +69,8 @@
           </div>
         </div> 
         <div v-else>
-          <img src="@/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mt-5 mb-3" style="width: 200px">
+          <img src="@/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mt-5 mb-3" style="width: 200px" alt="">
+          <div class="h5 text-secondary text-center">{{ $t('deployment.noDeploymentSelected') }}</div>
         </div>
       </div>
     </div>
@@ -97,13 +98,14 @@
 import { ProcessService } from '@/services.js'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
 import DmnViewer from '@/components/decision/DmnViewer.vue'
+import CellActionButton from '@/components/common-components/CellActionButton.vue'
 import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
 import { mapActions } from 'vuex'
 
 export default {
   name: 'ResourcesNavBar',
   emits: ['delete-deployment', 'show-deployment', 'deployment-success'],
-  components: { BpmnViewer, DmnViewer },
+  components: { BpmnViewer, DmnViewer, CellActionButton },
   props: { resources: Array, deploymentId: String },
   data: function () {
     return {
@@ -173,7 +175,7 @@ export default {
       ProcessService.findProcessesWithFilters('deploymentId=' + this.deployment.id + '&resourceName=' + resource.name)
         .then(processesDefinition => {
           if (processesDefinition.length > 0) {
-            var processDefinition = processesDefinition[0]
+            const processDefinition = processesDefinition[0]
             ProcessService.fetchDiagram(processDefinition.id).then(response => {
               setTimeout(() => {
                 this.diagramLoading = false
@@ -226,7 +228,7 @@ export default {
     loadDeployment: function () {
       if (this.deploymentId) {
         if (this.deployments) {
-          let found = this.deployments.find(d => {
+          const found = this.deployments.find(d => {
             return d.id === this.deploymentId
           })
           if (found) {

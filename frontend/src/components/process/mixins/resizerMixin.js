@@ -53,7 +53,7 @@ export default {
             }
         },
         resize: function(e) {
-            var dy = e.y - this.mousePosition
+            const dy = e.y - this.mousePosition
             this.mousePosition = e.y
             this.bpmnViewerHeight += dy
             if (this.bpmnViewerHeight < (this.bpmnViewerHeight + this.$refs.rContent.offsetHeight)) this.toggleIcon = 'mdi-chevron-down'

@@ -75,9 +75,7 @@
 import { permissionsMixin } from '@/permissions.js'
 import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
-import { FlowTable } from '@cib/common-frontend'
-import { SuccessAlert } from '@cib/common-frontend'
-import { CopyableActionButton } from '@cib/common-frontend'
+import { FlowTable, SuccessAlert, CopyableActionButton } from '@cib/common-frontend'
 import { HistoryService } from '@/services.js'
 import { mapMutations, mapGetters } from 'vuex'
 
@@ -108,7 +106,7 @@ export default {
       })
     },
     async goToProcessDefinition(instance) {
-      let processData = await HistoryService.findProcessInstance(instance.processInstanceId)
+      const processData = await HistoryService.findProcessInstance(instance.processInstanceId)
       this.$router.push({
         name: 'process',
         params: {

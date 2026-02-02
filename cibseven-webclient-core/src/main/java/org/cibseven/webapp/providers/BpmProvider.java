@@ -558,6 +558,19 @@ public interface BpmProvider {
 	 ProcessStart submitForm(String processDefinitionKey, String tenantId, Map<String, Object> data, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException;
 
 	/**
+	 * Submit a form to start a process with the given key.
+	 *
+	 * @param key the process definition key
+	 * @param formResult the form submission data as a JSON string
+	 * @param user the authenticated user submitting the form
+	 * @return information about the started process instance
+	 * @throws UnsupportedTypeException when a variable value type is not supported by the engine
+	 * @throws ExpressionEvaluationException when an expression in the process definition cannot be evaluated
+	 * @throws SystemException in case of any other error
+	 */
+	ProcessStart submitForm(String key, String formResult, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException;
+	
+	/**
 	 * Modify a variable in the Process Instance.
 	 * @param executionId Id of the execution.
 	 * @param data to be updated.
@@ -741,6 +754,15 @@ public interface BpmProvider {
 			Optional<String> lastNameLike, Optional<String> email, Optional<String> emailLike, Optional<String> memberOfGroup, Optional<String> memberOfTenant, 
 			Optional<String> idIn, Optional<String> firstResult, Optional<String> maxResult, 
 			Optional<String> sortBy, Optional<String> sortOrder, CIBUser user);
+
+	/**
+	 * Get the count of users in the system with optional filters.
+	 * 
+	 * @param filters the filters to apply (e.g., memberOfGroup). Can be null or empty for no filtering.
+	 * @param user the user performing the operation.
+	 * @return the count of users matching the filters.
+	 */
+	long countUsers(Map<String, Object> filters, CIBUser user);
 
 	/**
 	 * Create a new user.
@@ -937,10 +959,13 @@ public interface BpmProvider {
 	Map<String, Variable> fetchFormVariables(String taskId, boolean deserializeValues, CIBUser user)
 			throws NoObjectFoundException, SystemException;
 
-	Map<String, Variable> fetchFormVariables(List<String> variableListName, String taskId, CIBUser user)
+	Map<String, Variable> fetchFormVariables(List<String> variableListName, String taskId, boolean deserializeValues, CIBUser user)
 			throws NoObjectFoundException, SystemException;
 
-	Map<String, Variable> fetchProcessFormVariables(String key, CIBUser user)
+	Map<String, Variable> fetchProcessFormVariables(String key, boolean deserializeValues, CIBUser user)
+			throws NoObjectFoundException, SystemException;
+
+	Map<String, Variable> fetchProcessFormVariables(List<String> variableListName, String key, boolean deserializeValues, CIBUser user)
 			throws NoObjectFoundException, SystemException;
 
 	NamedByteArrayDataSource fetchVariableFileData(String taskId, String variableName, CIBUser user)
@@ -989,6 +1014,17 @@ public interface BpmProvider {
      * @throws SystemException in case of any other error.
 	 */
 	void submit(Task task, List<Variable> formResult, CIBUser user) throws SystemException, SubmitDeniedException;
+
+	/**
+	 * Submits a task form to the process engine.
+	 *
+	 * @param taskId the id of the task the form belongs to
+	 * @param formResult serialized form payload (usually JSON) to be submitted
+	 * @param user the user performing the operation
+	 *
+	 * @throws SystemException in case of an error
+	 */
+	void submit(String taskId, String formResult, CIBUser user) throws NoObjectFoundException, SystemException;
 
 	Long countIncident(Map<String, Object> params, CIBUser user);
 	Long countHistoricIncident(Map<String, Object> params, CIBUser user);
@@ -1066,7 +1102,11 @@ public interface BpmProvider {
 	
 	ResponseEntity<byte[]> getDeployedForm(String taskId, CIBUser user);
 	
+	ResponseEntity<String> getRenderedForm(String taskId, Map<String, Object> params, CIBUser user);
+	
 	ResponseEntity<byte[]> getDeployedStartForm(String processDefinitionId, CIBUser user);
+	
+	ResponseEntity<String> getRenderedStartForm(String processDefinitionId, Map<String, Object> params, CIBUser user);
 	
 	void updateHistoryTimeToLive(String id, Map<String, Object> data, CIBUser user);
 
@@ -1203,5 +1243,21 @@ public interface BpmProvider {
 	 * @throws SystemException in case of an error
 	 */
 	Collection<Engine> getProcessEngineNames();
+
+	/**
+	 * Determine whether an initial user needs to be created
+	 *
+	 * @return true if admin group is available and write access is set
+	 * @throws SystemException in case of an error
+	 */
+	Boolean requiresSetup(String engine);
+
+	/**
+	 * Creates a new initial user assigned to the also created admin group.
+	 *
+	 * @param user the new user to be created.
+	 * @throws InvalidUserIdException when the user ID is invalid.
+	 */
+	void createSetupUser(NewUser user, String engine) throws InvalidUserIdException;
 
 }

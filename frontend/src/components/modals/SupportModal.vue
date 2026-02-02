@@ -69,13 +69,11 @@ export default {
   },
   methods: {
     isTextProperty: function(property) {
-      let language = localStorage.getItem('language')
-      if (this.$root.config.supportDialog && this.$root.config.supportDialog[language] &&
-          this.$root.config.supportDialog[language][property]) return true
-      return false
+      const language = localStorage.getItem('language')
+      return this.$root.config.supportDialog && this.$root.config.supportDialog[language] && this.$root.config.supportDialog[language][property]
     },
     getTextFromProperty: function(property) {
-      let language = localStorage.getItem('language')
+      const language = localStorage.getItem('language')
       if (this.$root.config.supportDialog && this.$root.config.supportDialog[language] &&
         this.$root.config.supportDialog[language][property])
           return this.$root.config.supportDialog[language][property]

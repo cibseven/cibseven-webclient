@@ -46,22 +46,15 @@
             {label: 'name', key: 'name', class: 'col-md-4 col-sm-4', tdClass: 'py-1' },
             {label: 'type', key: 'type', class: 'col-md-2 col-sm-2', tdClass: 'py-1' },
             {label: 'actions', key: 'actions', class: 'col-md-2 col-sm-2 text-center', sortable: false, thClass: 'justify-content-center', tdClass: 'justify-content-center py-0' }]"
-        @contextmenu="focused = $event" @mouseenter="focused = $event" @mouseleave="focused = null">
+      >
         <template v-slot:cell(actions)="row">
-          <div v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'">
-            <b-button :disabled="focused !== row.item" style="opacity: 1" @click="edit(row.item)" class="px-2 border-0 shadow-none" :title="$t('admin.groups.editGroup')" variant="link">
-              <span class="mdi mdi-18px mdi-pencil-outline"></span>
-            </b-button>
-            <span class="border-start h-50" :class="focused === row.item ? 'border-secondary' : ''"></span>
-            <b-button :disabled="focused !== row.item" style="opacity: 1" @click="prepareRemove(row.item)" class="px-2 border-0 shadow-none" :title="$t('admin.groups.deleteGroup')" variant="link">
-              <span class="mdi mdi-18px mdi-delete-outline"></span>
-            </b-button>
-          </div>
-          <div v-else>
-            <b-button :disabled="focused !== row.item" style="opacity: 1" @click="edit(row.item)" class="px-2 border-0 shadow-none" :title="$t('admin.groups.viewGroup')" variant="link">
-              <span class="mdi mdi-18px mdi-eye-outline"></span>
-            </b-button>
-          </div>
+          <template v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'">
+            <CellActionButton @click="edit(row.item)" :title="$t('admin.groups.editGroup')" icon="mdi-pencil-outline"></CellActionButton>
+            <CellActionButton @click="prepareRemove(row.item)" :title="$t('admin.groups.deleteGroup')" icon="mdi-delete-outline"></CellActionButton>
+          </template>
+          <template v-else>
+            <CellActionButton @click="edit(row.item)" :title="$t('admin.groups.viewGroup')" icon="mdi-eye-outline"></CellActionButton>
+          </template>
         </template>
       </FlowTable>
       <div class="mb-3 text-center w-100" v-if="loading">
@@ -92,17 +85,15 @@ import { AdminService } from '@/services.js'
 import { moment } from '@/globals.js'
 import { debounce } from '@/utils/debounce.js'
 import { getStringObjByKeys } from '@/components/admin/utils.js'
-import { FlowTable } from '@cib/common-frontend'
-import { TaskPopper, ConfirmDialog } from '@cib/common-frontend'
-import { BWaitingBox } from '@cib/bootstrap-components'
+import { FlowTable , TaskPopper, ConfirmDialog, BWaitingBox } from '@cib/common-frontend'
+import CellActionButton from '@/components/common-components/CellActionButton.vue'
 
 export default {
   name: 'AdminGroups',
-  components: { FlowTable, TaskPopper, BWaitingBox, ConfirmDialog },
+  components: { FlowTable, TaskPopper, BWaitingBox, ConfirmDialog, CellActionButton },
   data: function () {
     return {
       selected: null,
-      focused: null,
       filter: '',
       groups: [],
       groupSelected: null,
@@ -169,8 +160,8 @@ export default {
       }
     },
     findGroups: debounce(800, function(filter) {
-      var nameLike = ({ nameLike: '*' + filter + '*' })
-      var id = ({ id: filter })
+      const nameLike = ({ nameLike: '*' + filter + '*' })
+      const id = ({ id: filter })
 
       Promise.all([AdminService.findGroups(nameLike), AdminService.findGroups(id)])
       .then(groups => {
@@ -187,15 +178,15 @@ export default {
     }),
     exportCSV: function() {
       this.exporting = true
-      var keys = ['id', 'name', 'type']
-      var csvContent = keys.map(k => this.$t('admin.groups.' + k)).join(';') + '\n'
+      const keys = ['id', 'name', 'type']
+      let csvContent = keys.map(k => this.$t('admin.groups.' + k)).join(';') + '\n'
       AdminService.findGroups().then(groups => {
         if (groups.length > 0) {
           groups.forEach(r => {
             csvContent += getStringObjByKeys(keys, r) + '\n'
           })
-          var csvBlob = new Blob([csvContent], { type: 'text/csv' })
-          var filename = 'groups_' + moment().format('YYYYMMDD_HHmm') + '.csv'
+          const csvBlob = new Blob([csvContent], { type: 'text/csv' })
+          const filename = 'groups_' + moment().format('YYYYMMDD_HHmm') + '.csv'
           this.$refs.importPopper.triggerDownload(csvBlob, filename)
         }
         this.exporting = false

@@ -42,23 +42,15 @@
     </div>
     <div class="container overflow-auto bg-white shadow-sm border rounded g-0" @scroll="showMore">
       <FlowTable striped thead-class="sticky-header" :items="users" primary-key="id"
-        prefix="admin.users." :fields="tableFields"
-        @contextmenu="focused = $event" @mouseenter="focused = $event" @mouseleave="focused = null">
+        prefix="admin.users." :fields="tableFields">
         <template v-slot:cell(actions)="row">
-          <div v-if="$root.config.userEditable">
-            <b-button :disabled="focused !== row.item" style="opacity: 1" @click="openUser(row.item)" class="px-2 border-0 shadow-none" :title="$t('admin.users.editUser')" variant="link">
-              <span class="mdi mdi-18px mdi-pencil-outline"></span>
-            </b-button>
-            <span class="border-start h-50" :class="focused === row.item ? 'border-secondary' : ''"></span>
-            <b-button :disabled="focused !== row.item" style="opacity: 1" @click="prepareRemove(row.item)" class="px-2 border-0 shadow-none" :title="$t('admin.users.deleteUser')" variant="link">
-              <span class="mdi mdi-18px mdi-delete-outline"></span>
-            </b-button>
-          </div>
-          <div v-else>
-            <b-button :disabled="focused !== row.item" style="opacity: 1" @click="openUser(row.item)" class="px-2 border-0 shadow-none" :title="$t('admin.users.viewUser')" variant="link">
-              <span class="mdi mdi-18px mdi-eye-outline"></span>
-            </b-button>
-          </div>
+          <template v-if="$root.config.userEditable">
+            <CellActionButton @click="openUser(row.item)" :title="$t('admin.users.editUser')" icon="mdi-pencil-outline"></CellActionButton>
+            <CellActionButton @click="prepareRemove(row.item)" :title="$t('admin.users.deleteUser')" icon="mdi-delete-outline"></CellActionButton>
+          </template>
+          <template v-else>
+            <CellActionButton @click="openUser(row.item)" :title="$t('admin.users.viewUser')" icon="mdi-eye-outline"></CellActionButton>
+          </template>
         </template>
       </FlowTable>
       <div class="mb-3 text-center w-100" v-if="loading">
@@ -90,17 +82,15 @@ import { AdminService } from '@/services.js'
 import { moment } from '@/globals.js'
 import { debounce } from '@/utils/debounce.js'
 import { getStringObjByKeys } from '@/components/admin/utils.js'
-import { FlowTable } from '@cib/common-frontend'
-import { TaskPopper, ConfirmDialog } from '@cib/common-frontend'
-import { BWaitingBox } from '@cib/bootstrap-components'
+import { FlowTable, TaskPopper, ConfirmDialog, BWaitingBox } from '@cib/common-frontend'
+import CellActionButton from '@/components/common-components/CellActionButton.vue'
 
 export default {
   name: 'AdminUsers',
-  components: { FlowTable, TaskPopper, BWaitingBox, ConfirmDialog },
+  components: { FlowTable, TaskPopper, BWaitingBox, ConfirmDialog, CellActionButton },
   data: function () {
     return {
       selected: null,
-      focused: null,
       filter: '',
       users: [],
       userSelected: null,
@@ -178,9 +168,9 @@ export default {
       }
     },
     findUsers: debounce(800, function(filter) {
-      var firstNameLike = null
-      var lastNameLike = null
-      var id = null
+      let firstNameLike = null
+      let lastNameLike = null
+      let id = null
       firstNameLike = ({ firstNameLike: '*' + filter + '*' })
       lastNameLike = ({ lastNameLike: '*' + filter + '*' })
       id = ({ id: filter })
@@ -200,15 +190,15 @@ export default {
     }),
     exportCSV: function() {
       this.exporting = true
-      var keys = ['id', 'firstName', 'lastName', 'email']
-      var csvContent = keys.map(k => this.$t('admin.users.' + k)).join(';') + '\n'
+      const keys = ['id', 'firstName', 'lastName', 'email']
+      let csvContent = keys.map(k => this.$t('admin.users.' + k)).join(';') + '\n'
       AdminService.findUsers().then(users => {
         if (users.length > 0) {
           users.forEach(r => {
             csvContent += getStringObjByKeys(keys, r) + '\n'
           })
-          var csvBlob = new Blob([csvContent], { type: 'text/csv' })
-          var filename = 'users_' + moment().format('YYYYMMDD_HHmm') + '.csv'
+          const csvBlob = new Blob([csvContent], { type: 'text/csv' })
+          const filename = 'users_' + moment().format('YYYYMMDD_HHmm') + '.csv'
           this.$refs.importPopper.triggerDownload(csvBlob, filename)
         }
         this.exporting = false

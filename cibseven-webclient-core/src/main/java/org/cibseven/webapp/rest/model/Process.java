@@ -33,7 +33,7 @@ public class Process {
 	String deploymentId;
 	String description;
 	String diagram;
-	String historyTimeToLive;
+	Integer historyTimeToLive;
 	String id;
 	String key;
 	String name;

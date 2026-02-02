@@ -15,21 +15,26 @@
  *  limitations under the License.
  */
 import './assets/main.css'  // Application-specific styles
-import '@mdi/font/css/materialdesignicons.css'
+// Note: 'materialdesignicons.css' is after 'main.css', as inside 'main.css' we have required '@charset "UTF-8";' statement
+import '@mdi/font/css/materialdesignicons.min.css'
+import '@cib/common-frontend/dist/style.css'
+
 import { axios } from './globals.js'
 
 import { createApp } from 'vue'
 
 import store from './store'
 import { createAppRouter, appRoutes } from './router.js'
-import registerOwnComponents from './register.js'
+import registerComponents from './register.js'
 import { permissionsMixin }  from './permissions.js'
 
-import { InfoService, AuthService, setServicesBasePath } from './services.js'
-import { getTheme, hasHeader, isMobile, checkExternalReturn, loadTheme } from './utils/init'
-import { applyTheme, handleAxiosError, fetchAndStoreProcesses, fetchDecisionsIfEmpty, setupTaskNotifications } from './utils/init'
+import { InfoService, setServicesBasePath } from './services.js'
+import { hasHeader, checkExternalReturn,
+  getTheme, loadTheme, applyTheme,
+  handleAxiosError, fetchAndStoreProcesses, setupTaskNotifications } from './utils/init'
 import { applyConfigDefaults } from './utils/config.js'
 import { i18n, switchLanguage } from './i18n'
+import { createProvideObject } from './utils/provide.js'
 
 // check for token inside hash
 // if it exists => redirect to new uri
@@ -49,7 +54,7 @@ Promise.all([
   // Apply defaults before merging
   const configFromFile = applyConfigDefaults(responses[0].data)
   Object.assign(configFromFile, responses[1].data)
-  var config = configFromFile
+  const config = configFromFile
 
   setServicesBasePath(config.servicesBasePath)
 
@@ -57,7 +62,7 @@ Promise.all([
   //axios.defaults.baseURL = appConfig.adminBasePath
 
   // Load theme CSS and static assets (favicon, etc.)
-  var theme = getTheme(config)
+  const theme = getTheme(config)
   loadTheme(theme).then(() => {
     applyTheme(theme)
     switchLanguage(config, i18n.global.locale).then(() => {
@@ -66,33 +71,18 @@ Promise.all([
         el: '#app',
         mixins: [permissionsMixin],
         provide: function() {
-          return {
-            currentLanguage(lang) {
-              // get language
-              if (!lang) return i18n.global.locale
-              // set language
-              return switchLanguage(config, lang).then(() => {
-                return i18n.global.locale
-              })
-            },
-            loadProcesses(extraInfo) {
-                return fetchAndStoreProcesses(this, this.$store, config, extraInfo)
-            },
-            async loadDecisions() {
-              return fetchDecisionsIfEmpty(this.$store)
-            },
-            isMobile: isMobile,
-            AuthService: AuthService
-          }
+          return createProvideObject(config, this, this.$store)
         },
         data: function() {
+          const imagePath = 'webjars/seven/components/password/reset-password.svg'
           return {
             user: null,
             config: config,
             consent: localStorage.getItem('consent'),
             logoPath: 'themes/' + theme + '/logo.svg',
+            logoIconPath: 'themes/' + theme + '/logo-icon.svg',
             loginImgPath: 'themes/' + theme + '/login-image.svg',
-            resetPasswordImgPath: 'webjars/seven/components/password/reset-password.svg',
+            resetPasswordImgPath: imagePath,
             theme: theme,
             header: hasHeader(),
             processUpdateInterval: null
@@ -138,7 +128,7 @@ Promise.all([
         }
       })
 
-      registerOwnComponents(app)
+      registerComponents(app)
 
       const router = createAppRouter(appRoutes)
       app.use(router)

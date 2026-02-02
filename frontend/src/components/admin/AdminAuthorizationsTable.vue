@@ -45,7 +45,7 @@
         <FlowTable striped thead-class="sticky-header light" :items="authorizations" primary-key="id"
           prefix="admin.authorizations." :fields="authorizationFields"
           class="shadow-sm border rounded"
-          @contextmenu="focused = $event" @mouseenter="focused = $event" @mouseleave="focused = null">
+        >
           <template v-slot:cell(type)="row">
             <div class="w-100 d-flex align-items-center" v-if="edit === row.item.id && edit === '0'">
               <span> {{ $t('admin.authorizations.types.' + types[row.item.type].key) }} </span>
@@ -73,8 +73,8 @@
                     <span class="mdi" :class="isUserToEdit ? 'mdi-account' : 'mdi-account-group'"></span>
                   </b-button>
                 </b-input-group-prepend>
-                <b-form-input v-if="row.item.userId" v-model="row.item.userId" autofocus></b-form-input>
-                <b-form-input v-else v-model="row.item.groupId" autofocus></b-form-input>
+                <b-form-input v-if="row.item.userId" v-model="row.item.userId"></b-form-input>
+                <b-form-input v-else v-model="row.item.groupId"></b-form-input>
               </b-input-group>
             </div>
             <div v-else>
@@ -132,19 +132,14 @@
             <div v-else> {{ row.item.resourceId }} </div>
           </template>
           <template v-slot:cell(actions)="row">
-            <div class="d-flex">
-              <div v-if="edit === row.item.id">
-                <b-button style="opacity: 1" class="px-2 border-0 shadow-none" variant="link" @click="save(row.item)"
-                  :disabled="focused !== row.item || (row.item.userId == null && row.item.groupId == null)"><span class="mdi mdi-18px mdi-content-save-outline"></span></b-button>
-                <span class="border-start h-50" :class="focused === row.item ? 'border-secondary' : ''"></span>
-                <b-button :disabled="focused !== row.item" style="opacity: 1" class="px-2 border-0 shadow-none" variant="link" @click="cancelEdit(row.item)"><span class="mdi mdi-18px mdi-block-helper"></span></b-button>
-              </div>
-              <div v-else>
-                <b-button :disabled="focused !== row.item" style="opacity: 1" variant="link" class="px-2 border-0 shadow-none" @click="prepareEdit(row.item)"><span class="mdi mdi-18px mdi-pencil-outline"></span></b-button>
-                <span class="border-start h-50" :class="focused === row.item ? 'border-secondary' : ''"></span>
-                <b-button :disabled="focused !== row.item" style="opacity: 1" variant="link" class="px-2 border-0 shadow-none" @click="prepareRemove(row.item)"><span class="mdi mdi-18px mdi-delete-outline"></span></b-button>
-              </div>
-            </div>
+            <template v-if="edit === row.item.id">
+              <CellActionButton @click="save(row.item)" :disabled="row.item.userId == null && row.item.groupId == null" :title="$t('admin.authorizations.buttons.save')" icon="mdi-content-save-outline"></CellActionButton>
+              <CellActionButton @click="cancelEdit(row.item)" :title="$t('admin.authorizations.buttons.cancel')" icon="mdi-block-helper"></CellActionButton>
+            </template>
+            <template v-else>
+              <CellActionButton @click="prepareEdit(row.item)" :title="$t('admin.authorizations.buttons.edit')" icon="mdi-pencil-outline"></CellActionButton>
+              <CellActionButton @click="prepareRemove(row.item)" :title="$t('admin.authorizations.buttons.delete')" icon="mdi-delete-outline"></CellActionButton>
+            </template>
           </template>
         </FlowTable>
         <div class="text-center w-100" v-if="loading">
@@ -179,17 +174,15 @@ import { AdminService } from '@/services.js'
 import { moment } from '@/globals.js'
 import { debounce } from '@/utils/debounce.js'
 import { getStringObjByKeys } from '@/components/admin/utils.js'
-import { FlowTable } from '@cib/common-frontend'
-import { TaskPopper, ConfirmDialog } from '@cib/common-frontend'
-import { BWaitingBox } from '@cib/bootstrap-components'
+import { FlowTable, TaskPopper, ConfirmDialog, BWaitingBox } from '@cib/common-frontend'
+import CellActionButton from '@/components/common-components/CellActionButton.vue'
 
 export default {
   name: 'AdminAuthorizationsTable',
-  components: { FlowTable, TaskPopper, BWaitingBox, ConfirmDialog },
+  components: { FlowTable, TaskPopper, BWaitingBox, ConfirmDialog, CellActionButton },
   data: function () {
     return {
       selected: [],
-      focused: null,
       filter: '',
       authorizations: [],
       resourcesTypes: this.$root.config.admin.resourcesTypes,
@@ -222,7 +215,7 @@ export default {
   },
   computed: {
     authorizationFields: function() {
-      var baseFields = [
+      const baseFields = [
         { label: 'type', key: 'type', class: 'col' },
         { label: 'userIdGroupId', key: 'userIdGroupId', class: 'col' },
         { label: 'permissions', key: 'permissions', class: 'col' },
@@ -268,24 +261,19 @@ export default {
 
           if (resourceTypeId === '5') {
             this.authorizations.forEach(authorization => {
-              var filter = this.$store.state.filter.list.find(obj => obj.id === authorization.resourceId)
+              const filter = this.$store.state.filter.list.find(obj => obj.id === authorization.resourceId)
               if (filter) authorization.name = filter.name
             })
           }
           this.loading = false
         })
     }),
-    getClasses: function(authorization) {
-      var classes = []
-      if (authorization !== this.focused) classes.push('invisible')
-      return classes
-    },
     prepareEdit: function (authorization) {
       // In case we press edit and we are in the middle to add a new authorization, that extra "unfinished"
       // auth needs to be removed from list.
       if (this.authorizations[0].id === "0") this.authorizations.shift()
       this.edit = authorization.id
-      this.isUserToEdit = (authorization.userId != null) ? true : false
+      this.isUserToEdit = (authorization.userId != null)
       if (authorization.permissions.length === 0) {
         this.selected = []
       }
@@ -416,22 +404,22 @@ export default {
       })
     }),
     onFilterNameChange: function(item) {
-      var filter = this.$store.state.filter.list.find(obj => obj.name === item.name)
+      const filter = this.$store.state.filter.list.find(obj => obj.name === item.name)
       if (filter) item.resourceId = filter.id
       else item.resourceId = '*'
     },
     exportCSV: function() {
       this.exporting = true
-      var params = this.$route.params
-      var keys = ['type', 'userIdGroupId', 'permissions', 'resourceId']
-      var csvContent = keys.map(k => this.$t('admin.authorizations.' + k)).join(';') + '\n'
+      const params = this.$route.params
+      const keys = ['type', 'userIdGroupId', 'permissions', 'resourceId']
+      let csvContent = keys.map(k => this.$t('admin.authorizations.' + k)).join(';') + '\n'
       AdminService.findAuthorizations({ resourceType: params.resourceTypeId }).then(auths => {
         if (auths.length > 0) {
           auths.forEach(r => {
             csvContent += getStringObjByKeys(keys, r) + '\n'
           })
-          var csvBlob = new Blob([csvContent], { type: 'text/csv' })
-          var filename = 'authorizations_' + this.$t('admin.authorizations.resourcesTypes.' + params.resourceTypeKey) +
+          const csvBlob = new Blob([csvContent], { type: 'text/csv' })
+          const filename = 'authorizations_' + this.$t('admin.authorizations.resourcesTypes.' + params.resourceTypeKey) +
             '_' + moment().format('YYYYMMDD_HHmm') + '.csv'
           this.$refs.importPopper.triggerDownload(csvBlob, filename)
         }

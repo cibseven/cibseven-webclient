@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 import { describe, it, expect } from 'vitest'
-import { isValidEmail } from '@/components/admin/utils'
+import { isValidEmail, same, isValidId } from '@/components/admin/utils'
 
 describe('isValidEmail', () => {
   it('null', () => {
@@ -74,5 +74,48 @@ describe('isValidEmail', () => {
     expect(isValidEmail('"user"@example.com')).toBeFalsy()
     // Invalid: double dot in subdomain
     expect(isValidEmail('user@subdomain..example.com')).toBeFalsy()
+  })
+})
+
+describe('same', () => {
+  it('null', () => {
+    expect(same(null, null)).toBeFalsy()
+    expect(same(null, 'test')).toBeFalsy()
+    expect(same('test', null)).toBeFalsy()
+  })
+
+  it('same values', () => {
+    expect(same('test', 'test')).toBeTruthy()
+    expect(same('12345', '12345')).toBeTruthy()
+  })
+
+  it('different values', () => {
+    expect(same('test', 'Test')).toBeFalsy()
+    expect(same('12345', '1234')).toBeFalsy()
+  })
+
+  it('empty values', () => {
+    expect(same('', '')).toBeFalsy()
+    expect(same('', 'test')).toBeFalsy()
+    expect(same('test', '')).toBeFalsy()
+  })
+})
+
+describe('isValidId', () => {
+  it('null', () => {
+    expect(isValidId(null)).toBeFalsy()
+    expect(isValidId('')).toBeFalsy()
+  })
+
+  it('valid ids', () => {
+    expect(isValidId('valid-id')).toBeTruthy()
+    expect(isValidId('valid_id123')).toBeTruthy()
+    expect(isValidId('ValidID')).toBeTruthy()
+  })
+
+  it('invalid ids', () => {
+    expect(isValidId('invalid id')).toBeFalsy()
+    expect(isValidId('invalid\tid')).toBeFalsy()
+    expect(isValidId('invalid\nid')).toBeFalsy()
   })
 })

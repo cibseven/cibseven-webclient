@@ -77,10 +77,8 @@
 
 <script>
   import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
-  import { BWaitingBox } from '@cib/bootstrap-components'
+  import { BWaitingBox, FlowTable, SuccessAlert } from '@cib/common-frontend'
   import { mapActions, mapGetters } from 'vuex'
-  import { FlowTable } from '@cib/common-frontend'
-  import { SuccessAlert } from '@cib/common-frontend'
 
   export default {
     name: 'JobLogModal',

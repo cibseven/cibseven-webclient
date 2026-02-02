@@ -36,15 +36,9 @@
           </div>
         </template>
         <template v-slot:cell(actions)="table">
-          <b-button :title="$t('batches.retryJob')" size="sm" variant="outline-secondary"
-            class="border-0 mdi mdi-18px mdi-reload" @click="retryJob(table.item.id)">
-          </b-button>
-          <b-button :title="$t('batches.deleteJob')" size="sm" variant="outline-secondary"
-            class="border-0 mdi mdi-18px mdi-delete-outline" @click="deleteJob(table.item.id)">
-          </b-button>
-          <b-button :title="$t('batches.seeFullLog')" size="sm" variant="outline-secondary"
-            class="border-0 mdi mdi-18px mdi-text-long" @click="seeFullLog(table.item.id)">
-          </b-button>
+          <CellActionButton @click="retryJob(table.item.id)" :title="$t('batches.retryJob')" icon="mdi-reload"></CellActionButton>
+          <CellActionButton @click="deleteJob(table.item.id)" :title="$t('batches.deleteJob')" icon="mdi-delete-outline"></CellActionButton>
+          <CellActionButton @click="seeFullLog(table.item.id)" :title="$t('batches.seeFullLog')" icon="mdi-text-long"></CellActionButton>
         </template>
       </FlowTable>
       <div class="mb-3 text-center w-100" v-if="loading">
@@ -60,13 +54,13 @@
 
 <script>
 import { mapActions, mapGetters } from 'vuex'
-import { ContentBlock, FlowTable } from '@cib/common-frontend'
+import { ContentBlock, FlowTable, BWaitingBox } from '@cib/common-frontend'
 import JobLogModal from '../modals/JobLogModal.vue'
-import { BWaitingBox } from '@cib/bootstrap-components'
+import CellActionButton from '@/components/common-components/CellActionButton.vue';
 
 export default {
   name: 'FailedJobs',
-  components: { ContentBlock, FlowTable, JobLogModal, BWaitingBox },
+  components: { ContentBlock, FlowTable, JobLogModal, BWaitingBox, CellActionButton },
   props: { batch: Object },
   data: function() {
     return {

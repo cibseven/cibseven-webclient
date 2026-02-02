@@ -39,7 +39,7 @@ public class BaseService {
 	@Autowired
 	protected BaseUserProvider baseUserProvider;
 	
-	@Value("${camunda.bpm.authorization.enabled:false}")
+	@Value("${camunda.bpm.authorization.enabled:true}")
 	private boolean authorizationEnabled;
 
 	protected CIBUser checkAuthorization(HttpServletRequest rq, boolean basicAuthAllowed) {

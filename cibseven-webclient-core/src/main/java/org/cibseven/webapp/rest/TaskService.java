@@ -38,9 +38,13 @@ import org.cibseven.webapp.rest.model.CandidateGroupTaskCount;
 import org.cibseven.webapp.rest.model.IdentityLink;
 import org.cibseven.webapp.rest.model.Task;
 import org.cibseven.webapp.rest.model.TaskFiltering;
+import org.cibseven.webapp.rest.model.TaskForm;
+import org.cibseven.webapp.rest.model.StartForm;
 import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -54,7 +58,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.core.MediaType;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ApiResponses({
 	@ApiResponse(responseCode = "500", description = "An unexpected system error occured"),
@@ -64,6 +67,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class TaskService extends BaseService implements InitializingBean {
 	
 	SevenProvider sevenProvider;
+	
+	@Autowired
+	private CustomRestTemplate restTemplate;
+	
+	@Value("${cibseven.webclient.engineRest.url:./}") 
+	private String cibsevenUrl;
 	
 	public void afterPropertiesSet() {
 		if (bpmProvider instanceof SevenProvider)
@@ -180,10 +189,10 @@ public class TaskService extends BaseService implements InitializingBean {
 	
 	@Operation(
 			summary = "Get deployed form for task",
-			description = "<strong>Return: Form data as JSON")
+			description = "<strong>Return: Form data as bytes (JSON or HTML)")
 	@ApiResponse(responseCode = "404", description= "Task or form not found")
 	@RequestMapping(value = "/task/{taskId}/deployed-form", method = RequestMethod.GET)
-	public Object getDeployedForm(
+	public ResponseEntity<byte[]> getDeployedForm(
 			@Parameter(description = "Task Id") @PathVariable String taskId,
 			Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
@@ -193,15 +202,15 @@ public class TaskService extends BaseService implements InitializingBean {
 			byte[] body = response.getBody();
 			
 			if (body == null || body.length == 0) {
-				return null;
+				return ResponseEntity.noContent().build();
 			}
 			
-			String jsonString = new String(body, StandardCharsets.UTF_8);
-			ObjectMapper objectMapper = new ObjectMapper();
-			return objectMapper.readValue(jsonString, Object.class);
+			return ResponseEntity.ok()
+					.headers(response.getHeaders())
+					.body(body);
 			
 		} catch (Exception e) {
-			throw new SystemException("Error parsing deployed form: " + e.getMessage(), e);
+			throw new SystemException("Error getting deployed form: " + e.getMessage(), e);
 		}
 	}
 
@@ -215,6 +224,53 @@ public class TaskService extends BaseService implements InitializingBean {
 			Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
 		return bpmProvider.form(taskId, user);
+	}
+
+	@Operation(
+			summary = "Get rendered form HTML for task",
+			description = "<strong>Return: Rendered form HTML as string</strong>")
+	@ApiResponse(responseCode = "404", description= "Task or rendered form not found")
+	@RequestMapping(value = "/task/{taskId}/rendered-form", method = RequestMethod.GET, produces = "text/html")
+	public ResponseEntity<String> getRenderedForm(
+			@Parameter(description = "Task Id") @PathVariable String taskId,
+			@RequestParam Map<String, Object> params,
+			Locale loc, CIBUser user) {
+		checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
+		return bpmProvider.getRenderedForm(taskId, params, user);
+	}
+
+	@Operation(
+			summary = "Get form variables for a specific task",
+			description = "<strong>Return: Form variables for the task</strong>")
+	@ApiResponse(responseCode = "404", description = "Task not found")
+	@RequestMapping(value = "/task/{taskId}/form-variables", method = RequestMethod.GET)
+	public Map<String, Variable> fetchFormVariables(
+			@PathVariable String taskId,
+			@RequestParam(required = false, defaultValue = "true") boolean deserializeValues,
+			@RequestParam(required = false) String variableNames,
+			CIBUser user) throws Exception {
+		checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
+		List<String> variableListName = null;
+		if (variableNames != null && !variableNames.isEmpty()) {
+			variableListName = List.of(variableNames.split(","));
+		}
+		if (variableListName != null) {
+			return bpmProvider.fetchFormVariables(variableListName, taskId, deserializeValues, user);
+		} else {
+			return bpmProvider.fetchFormVariables(taskId, deserializeValues, user);
+		}
+	}
+
+	@Operation(summary = "Submit form with variables", description = "Request body: Form variables to submit" + "<br>" +
+			"<strong>Return: void</strong>")
+	@ApiResponse(responseCode = "404", description = "Task not found")
+	@RequestMapping(value = "/task/{taskId}/submit-form", method = RequestMethod.POST)
+	public void submit(
+			@Parameter(description = "Task id") @PathVariable String taskId,
+			@RequestBody String formResult,
+			Locale loc, HttpServletRequest rq, CIBUser user) {
+		checkPermission(user, SevenResourceType.TASK, PermissionConstants.UPDATE_ALL);
+		bpmProvider.submit(taskId, formResult, user);
 	}
 	
 	@Operation(
@@ -311,7 +367,6 @@ public class TaskService extends BaseService implements InitializingBean {
 	public Collection<VariableHistory> fetchActivityVariables(
 			@Parameter(description = "Activity instance Id") @PathVariable String activityInstanceId,
 			Locale loc, CIBUser user) {
-		checkCockpitRights(user);
         checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.READ_ALL);
 		return bpmProvider.fetchActivityVariables(activityInstanceId, user);
 	}
@@ -382,6 +437,11 @@ public class TaskService extends BaseService implements InitializingBean {
 	    return res.getContent();
 	  }
 
+	  @RequestMapping(value = "/task/{taskId}/variables/{variableName}/data", method = RequestMethod.GET)
+	  public byte[] fetchVariablesFileData(@PathVariable String taskId, @PathVariable String variableName, 
+	      @RequestParam Optional<Boolean> deserialize, HttpServletRequest rq) {
+	    return fetchVariableFileData(taskId, variableName, deserialize, rq);
+	  }
 
 		@Operation(summary = "Upload file data to a task variable", description = "Upload binary data or file to a specific task variable"
 				+ "<br>" +
@@ -436,5 +496,101 @@ public class TaskService extends BaseService implements InitializingBean {
 	  @GetMapping("/task/report/candidate-group-count")
 	  public Collection<CandidateGroupTaskCount> getTaskCountByCandidateGroup(@RequestParam Optional<String> locale, CIBUser user) throws Exception {
 	    return bpmProvider.getTaskCountByCandidateGroup(user);
+	  }
+
+	  @Operation(
+			summary = "Proxy embedded form content from engine",
+			description = "<strong>Fetches embedded form HTML from the engine. Retrieves form info from engine, extracts form path, and fetches the HTML content.</strong>")
+	  @ApiResponse(responseCode = "200", description = "Form HTML content")
+	  @ApiResponse(responseCode = "403", description = "Only HTML files are allowed")
+	  @ApiResponse(responseCode = "404", description = "Form not found")
+	  @GetMapping("/task/form-proxy")
+	  public ResponseEntity<String> proxyFormContent(
+			@Parameter(description = "Reference ID (task ID or process definition ID)") @RequestParam String referenceId,
+			@Parameter(description = "Whether this is a start form") @RequestParam boolean isStartForm,
+			CIBUser user) {
+		checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
+		
+		// Get form info from the engine
+		String formKey;
+		String contextPath = null;
+		
+		if (isStartForm) {
+			StartForm startForm = bpmProvider.fetchStartForm(referenceId, user);
+			if (startForm == null) {
+				throw new SystemException("Start form not found for process definition: " + referenceId);
+			}
+			formKey = startForm.getKey();
+			contextPath = startForm.getContextPath();
+		} else {
+			Object formResult = bpmProvider.form(referenceId, user);
+			if (formResult instanceof String && "empty-task".equals(formResult)) {
+				throw new SystemException("Task form not found for task: " + referenceId);
+			}
+			if (!(formResult instanceof TaskForm)) {
+				throw new SystemException("Unexpected form result type: " + formResult.getClass().getName());
+			}
+			TaskForm taskForm = (TaskForm) formResult;
+			formKey = taskForm.getKey();
+			contextPath = taskForm.getContextPath();
+		}
+		
+		if (formKey == null || formKey.isEmpty()) {
+			throw new SystemException("Form key is null or empty");
+		}
+		
+		// Construct form path from form key
+		// Example: "embedded:app:forms/assign-reviewer.html" with contextPath "/" becomes "/forms/assign-reviewer.html"
+		String formPath = formKey
+				.replace("embedded:", "")
+				.replace("app:", (contextPath != null ? contextPath : "") + "/")
+				.replaceAll("^(\\/+|([^/]))", "/$2")
+				.replaceAll("\\/\\/+", "/");
+		
+		// Build base URL from user's engine ID
+		String baseUrl = null;
+		String engineId = user.getEngine();
+		
+		if (engineId != null && !engineId.isEmpty() && engineId.contains("|")) {
+			// Parse the engine ID format: "url|path|engineName"
+			String[] parts = engineId.split("\\|", 3);
+			if (parts.length == 3) {
+				baseUrl = parts[0];
+			}
+		} else {
+			// Use default configured engine URL for legacy format or default engine
+			baseUrl = cibsevenUrl;
+		}
+		
+		if (baseUrl == null) {
+			throw new SystemException("Cannot determine engine URL");
+		}
+		
+		// Remove trailing slash from base URL and ensure formPath starts with /
+		if (baseUrl.endsWith("/")) {
+			baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
+		}
+		if (!formPath.startsWith("/")) {
+			formPath = "/" + formPath;
+		}
+		
+		// Build full URL
+		String fullUrl = baseUrl + formPath;
+		
+		try {
+			// Fetch the form content from the engine
+			ResponseEntity<String> response = restTemplate.getForEntity(fullUrl, String.class);
+			
+			// Return the HTML content with appropriate headers
+			HttpHeaders headers = new HttpHeaders();
+			headers.add(HttpHeaders.CONTENT_TYPE, "text/html; charset=UTF-8");
+			
+			return ResponseEntity
+					.status(response.getStatusCode())
+					.headers(headers)
+					.body(response.getBody());
+		} catch (Exception e) {
+			throw new SystemException("Error fetching form from URL: " + formPath + " - " + e.getMessage(), e);
+		}
 	  }
 }

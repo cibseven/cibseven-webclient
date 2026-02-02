@@ -24,6 +24,7 @@ import javax.crypto.SecretKey;
 import org.cibseven.webapp.auth.exception.AuthenticationException;
 import org.cibseven.webapp.auth.exception.TokenExpiredException;
 import org.cibseven.webapp.auth.providers.JwtUserProvider;
+import org.cibseven.webapp.auth.utils.EngineTokenUtils;
 import org.cibseven.webapp.auth.rest.StandardLogin;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.providers.BpmProvider;
@@ -46,9 +47,7 @@ import jakarta.servlet.http.HttpServletRequest;
 
 public class SevenUserProvider extends BaseUserProvider<StandardLogin> {
 	
-	@Value("${cibseven.webclient.authentication.jwtSecret:}") String secret;	
-	@Value("${cibseven.webclient.authentication.tokenValidMinutes:60}") long validMinutes;	
-	@Value("${cibseven.webclient.authentication.tokenProlongMinutes:1440}") long prolongMinutes;
+	@Value("${cibseven.webclient.authentication.jwtSecret:}") String secret;
 	
 	@Value("${cibseven.webclient.engineRest.url:./}") String cibsevenUrl;
 	
@@ -68,17 +67,22 @@ public class SevenUserProvider extends BaseUserProvider<StandardLogin> {
 	public CIBUser login(StandardLogin login, HttpServletRequest rq) {	
 		try {
 			CIBUser user =  new CIBUser(login.getUsername());
-			setEngineFromRequest(user, rq);
-			SevenVerifyUser sevenVerifyUser = sevenProvider.verifyUser(user.getId(), login.getPassword(), user);
+			EngineTokenUtils.setEngineFromRequest(user, rq);
+			
+			// Get the appropriate token settings for this engine
+			TokenSettings tokenSettings = EngineTokenUtils.getSettingsForEngine(
+				user.getEngine(), engineRestProperties, getSettings(), validMinutes, prolongMinutes);
+			
+			SevenVerifyUser sevenVerifyUser = sevenProvider.verifyUser(login, user);
 			
 			if (sevenVerifyUser.isAuthenticated()) {
 			  // Token is needed for the next request (/user/xxx/profile)
-			  user.setAuthToken(createToken(getSettings(), true, false, user));
+			  user.setAuthToken(createToken(tokenSettings, true, false, user));
 				SevenUser cUser = sevenProvider.getUserProfile(user.getId(), user);
 				user.setUserID(cUser.getId());
 				user.setDisplayName(cUser.getFirstName() + " " + cUser.getLastName());
 				// Token is created for the second time to include the display name
-				user.setAuthToken(createToken(getSettings(), true, false, user));
+				user.setAuthToken(createToken(tokenSettings, true, false, user));
 				return user;	
 			}
 			else {
@@ -148,8 +152,12 @@ public class SevenUserProvider extends BaseUserProvider<StandardLogin> {
 	}
 	
 	public User parse(String token, TokenSettings settings) {
+		// Determine the correct settings based on the engine in the token
+		TokenSettings effectiveSettings = EngineTokenUtils.getEffectiveSettingsForToken(
+			token, engineRestProperties, settings, validMinutes, prolongMinutes);
+		
 		try {
-			SecretKey key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(settings.getSecret()));
+			SecretKey key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(effectiveSettings.getSecret()));
 			Claims claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
 			
 			User user = deserialize((String) claims.get("user"), JwtUserProvider.BEARER_PREFIX + token);
@@ -159,10 +167,10 @@ public class SevenUserProvider extends BaseUserProvider<StandardLogin> {
 			
 		} catch (ExpiredJwtException x) {
 			long ageMillis = System.currentTimeMillis() - x.getClaims().getExpiration().getTime();
-			if ((boolean) x.getClaims().get("prolongable") && (ageMillis < settings.getProlong().toMillis())) {
+			if ((boolean) x.getClaims().get("prolongable") && (ageMillis < effectiveSettings.getProlong().toMillis())) {
 				User user = verify(x.getClaims());
 				if (user != null) {
-					throw new TokenExpiredException(createToken(settings, true, false, user));
+					throw new TokenExpiredException(createToken(effectiveSettings, true, false, user));
 				}
 			}
 			throw new TokenExpiredException();

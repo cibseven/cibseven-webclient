@@ -46,11 +46,9 @@
           </div>
           <div class="col-3 p-0">
             <b-button v-if="!isEditing" :disabled="!selectedCriteriaKey" @click="addCriteria" size="sm" class="mdi mdi-plus" variant="secondary">{{ $t('nav-bar.filters.addCriteria') }}</b-button>
-            <div v-else>
-              <b-button style="opacity: 1" class="px-2 border-0 shadow-none" variant="link">
-              <span class="mdi mdi-18px mdi-content-save-outline" @click="updateCriteria()"></span></b-button>
-              <span class="border-start h-50"></span>
-              <b-button style="opacity: 1" class="px-2 border-0 shadow-none" variant="link" @click="cancelEditCriteria()"><span class="mdi mdi-18px mdi-block-helper"></span></b-button>
+            <div v-else class="d-flex justify-content-center">
+              <CellActionButton @click="updateCriteria()" icon="mdi-content-save-outline" :title="$t('commons.save')"></CellActionButton>
+              <CellActionButton @click="cancelEditCriteria()" icon="mdi-block-helper" :title="$t('confirm.cancel')"></CellActionButton>
             </div>
           </div>
         </div>
@@ -86,12 +84,12 @@
           <span v-else> {{ formatCriteria(row.item.value) }} </span>
         </template>
         <template v-slot:cell(buttons)="row">
-          <b-button class="mdi mdi-18px mdi-pencil border-0" size="sm" variant="outline-secondary" @click="editCriteria(row.index)" :title="$t('commons.edit')"></b-button>
-          <b-button class="mdi mdi-18px mdi-delete-outline border-0" size="sm" variant="outline-secondary" @click="deleteCriteria(row.index)" :title="$t('confirm.delete')"></b-button>
+          <CellActionButton icon="mdi-pencil" @click="editCriteria(row.index)" :title="$t('commons.edit')"></CellActionButton>
+          <CellActionButton icon="mdi-delete-outline" @click="deleteCriteria(row.index)" :title="$t('confirm.delete')"></CellActionButton>
         </template>
       </FlowTable>
       <div v-if="criteriasToAdd.length < 1">
-        <img src="@/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mb-3" style="width: 200px">
+        <img src="@/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mb-3" style="width: 200px" alt="">
         <div class="h5 text-secondary text-center">{{ $t('nav-bar.filters.noCriterias') }}</div>
         <hr>
       </div>
@@ -115,6 +113,7 @@
 <script>
 import { permissionsMixin } from '@/permissions.js'
 import FilterableSelect from '@/components/task/filter/FilterableSelect.vue'
+import CellActionButton from '@/components/common-components/CellActionButton.vue'
 import { FlowTable } from '@cib/common-frontend'
 
 const candidateOptions = ['candidateGroup', 'candidateGroupExpression',
@@ -122,7 +121,7 @@ const candidateOptions = ['candidateGroup', 'candidateGroupExpression',
 
 export default {
   name: 'FilterModal',
-  components: { FilterableSelect, FlowTable },
+  components: { FilterableSelect, FlowTable, CellActionButton },
   props: { tasks: Array, processes: Array, layout2: Boolean },
   mixins: [permissionsMixin],
   emits: [
@@ -197,7 +196,7 @@ export default {
   },
   methods: { // TODO: Refactor, many methods and unnecessary structur,,
     selectFilter: function(value) {
-      var selectedFilter = this.$store.state.filter.list.find(filter => {
+      const selectedFilter = this.$store.state.filter.list.find(filter => {
         return filter.id === value
       })
       if (selectedFilter) {
@@ -207,7 +206,7 @@ export default {
       }
     },
     createFilter: function() {
-      var query = {}
+      const query = {}
       if (this.matchAllCriteria) {
         this.criteriasToAdd.forEach(criteria => {
           // if key == '...Like' -> value = '%' + value + '%'
@@ -237,7 +236,7 @@ export default {
           this.$root.$refs.error.show({ type: 'filterSaveError' })
         })
       } else {
-        var filterCreate = {
+        const filterCreate = {
           id: null,
           resourceType: 'Task',
           name: this.selectedFilterName,
@@ -272,12 +271,12 @@ export default {
       this.selectedCriteriaVariable.splice(index, 1)
     },
     rowClass: function(item) {
-      let stylesForRow = ['row']
+      const stylesForRow = ['row']
       if (item.key === this.criteriaEdited.key ) stylesForRow.push('table-active')
       return stylesForRow
     },
     addCriteria: function() {
-      var valueToAdd = []
+      let valueToAdd = []
       if (this.selectedCriteriaType === 'variable') {
         valueToAdd = this.selectedCriteriaVariable
       } else if (this.selectedCriteriaType === 'array') {
@@ -296,7 +295,7 @@ export default {
       this.selectedCriteriaVariable = [{ name: '', operator: 'eq', value: '' }]
     },
     updateCriteria: function() {
-      var valueToAdd = []
+      let valueToAdd = []
       if (this.selectedCriteriaType === 'variable') {
         valueToAdd = this.selectedCriteriaVariable
       } else if (this.selectedCriteriaType === 'array') {
@@ -324,7 +323,7 @@ export default {
     editCriteria: function(index) {
       this.isEditing = true
       // so the row of the table doesnt change too when the inputs are modified
-      let criteriaToEdit = JSON.parse(JSON.stringify(this.criteriasToAdd[index]))
+      const criteriaToEdit = JSON.parse(JSON.stringify(this.criteriasToAdd[index]))
       this.criteriaEdited = { key: criteriaToEdit.key, rowIndex: index }
       this.selectedCriteriaKey = criteriaToEdit.key
       this.selectCriteria(this.selectedCriteriaKey)
@@ -346,7 +345,7 @@ export default {
       this.criteriaEdited = { key: null, rowIndex: null }
     },
     selectCriteria: function(evt) {
-      var criteria = this.criterias.find(option => {
+      const criteria = this.criterias.find(option => {
         return option.value === evt
       })
       if (criteria) this.selectedCriteriaType = criteria.type
@@ -363,11 +362,11 @@ export default {
       this.selectedCriteriaType = null
       this.includeAssigned = false
       this.selectedCriteriaVariable = [{ name: '', operator: 'eq', value: '' }]
-      this.isEditing = false,
+      this.isEditing = false
       this.criteriaEdited = { key: null, rowIndex: null}
 
       // Prepared criterias
-      var auxCriterias = {}
+      const auxCriterias = {}
       this.$root.config.filters.forEach(filter => {
         if (filter.group) {
           if (auxCriterias[filter.group] === undefined) {
@@ -397,10 +396,10 @@ export default {
         if (this.$store.state.filter.selected.query.orQueries && this.$store.state.filter.selected.query.orQueries.length > 0) {
           this.matchAllCriteria = false
           Object.keys(this.$store.state.filter.selected.query.orQueries[0]).forEach(key => {
-            var filterVal = this.$store.state.filter.selected.query.orQueries[0][key]
+            const filterVal = this.$store.state.filter.selected.query.orQueries[0][key]
             if (key === 'includeAssignedTasks') this.includeAssigned = filterVal
             if (!filterVal || (filterVal && filterVal.length === 0)) return
-            var index = this.criterias.findIndex(item => {
+            const index = this.criterias.findIndex(item => {
               return item.value === key
             })
             if (index > -1) {
@@ -416,10 +415,10 @@ export default {
         } else {
           //Match all criterias.
           Object.keys(this.$store.state.filter.selected.query).forEach(key => {
-            var filterVal = this.$store.state.filter.selected.query[key]
+            const filterVal = this.$store.state.filter.selected.query[key]
             if (key === 'includeAssignedTasks') this.includeAssigned = filterVal
             if (!filterVal || (filterVal && filterVal.length === 0)) return
-            var index = this.criterias.findIndex(item => {
+            const index = this.criterias.findIndex(item => {
               return item.value === key
             })
             if (index > -1) {
@@ -445,7 +444,7 @@ export default {
           value = '%' + value;
         }
 
-        let length = value.length - 1;
+        const length = value.length - 1;
         if (value[length] !== '%') {
           value = value + '%';
         }

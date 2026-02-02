@@ -32,27 +32,26 @@ export function hasHeader() {
     }, {})
   }
 
-  var params = parseParams(window.location.hash)
-  var header = params.header || 'true'
+  const params = parseParams(window.location.hash)
+  const header = params.header || 'true'
   return header
 }
 
 import platform from 'platform'
 export function isMobile() {
-  if ((platform.os.family === 'Android') || (platform.os.family === 'iOS')) return true
-  else return false
+  return ((platform.os.family === 'Android') || (platform.os.family === 'iOS'))
 }
 
 export function checkExternalReturn(href, hash) {
-  //var hrefAux = href
-  var hashAux = hash
+  //let hrefAux = href
+  const hashAux = hash
 
   if (hashAux.includes('token=')) {
-    var token = ''
+    let token = ''
 
-    var tokenStartPos = hashAux.indexOf('token=') + 'token='.length
+    const tokenStartPos = hashAux.indexOf('token=') + 'token='.length
 
-    if(hashAux.indexOf('&', tokenStartPos) > -1)
+    if (hashAux.includes('&', tokenStartPos))
       token = hashAux.substring(tokenStartPos, hashAux.indexOf('&', tokenStartPos))
     else
       token = hashAux.substring(tokenStartPos)
@@ -64,7 +63,7 @@ export function checkExternalReturn(href, hash) {
 }
 
 export function updateAppTitle(productName, sectionName = undefined, taskName = undefined) {
-  var title = productName
+  let title = productName
   if (sectionName) {
     title += ' | '
     title += sectionName
@@ -79,7 +78,7 @@ export function updateAppTitle(productName, sectionName = undefined, taskName = 
 
 export function handleAxiosError(router, root, error) {
   if (error.response) {
-    var res = error.response
+    const res = error.response
     if (res.status === 401) { // Unauthorized
       if (res.data && res.data.type === 'TokenExpiredException' && res.data.params && res.data.params.length > 0) {
         console && console.info('Prolonged token')
@@ -103,11 +102,11 @@ export function handleAxiosError(router, root, error) {
       }
       return Promise.reject(error)
     } else if (res.status === 500) {
-      var exceptions = ['NoObjectFoundException', 'InvalidAttributeValueException', 'SubmitDeniedException',
+      const exceptions = ['NoObjectFoundException', 'InvalidAttributeValueException', 'SubmitDeniedException',
         'UnsupportedTypeException', 'ExpressionEvaluationException', 'ExistingUserRequestException',
         'ExistingGroupRequestException', 'AccessDeniedException', 'SystemException', 'InvalidUserIdException', 'InvalidValueHistoryTimeToLive',
         'VariableModificationException', 'WrongDeploymenIdException', 'NoRessourcesFoundException', 'DmnTransformationException']
-      if (res.data.type && exceptions.indexOf(res.data.type) !== -1)
+      if (res.data.type && exceptions.includes(res.data.type))
         root.$refs.error.show(res.data)
       //root.$refs.report.show(res.data)
       return Promise.reject(error)
@@ -117,7 +116,7 @@ export function handleAxiosError(router, root, error) {
     }
   } else { // for example "Network Error" - doesn't work with spaces in translations.json
     console && console.error('Strange AJAX error', error)
-    var message = error.message.replace(' ', '_')
+    const message = error.message.replace(' ', '_')
     if (message !== 'Request_aborted') root.$refs.error.show({ type: message })
     return Promise.reject(error)
   }
@@ -145,7 +144,7 @@ export async function loadTheme(themeName) {
 
 export function applyTheme(theme) {
 
-  var favicon = document.createElement('Link')
+  const favicon = document.createElement('Link')
   favicon.setAttribute('rel', 'icon')
   favicon.setAttribute('type', 'image/x-icon')
   favicon.setAttribute('href', 'themes/' + theme + '/favicon.ico')

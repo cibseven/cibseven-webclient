@@ -175,7 +175,7 @@ const DecisionStore = {
       if (newVersions.length > 0) {
         // Merge current versions with new versions, sorted by version number descending
         const mergedVersions = [...currentVersions, ...newVersions]
-          .sort((a, b) => parseInt(b.version) - parseInt(a.version))
+          .sort((a, b) => Number.parseInt(b.version) - Number.parseInt(a.version))
         // Update store with merged versions
         commit('setDecisionVersions', { key, versions: mergedVersions })
       }

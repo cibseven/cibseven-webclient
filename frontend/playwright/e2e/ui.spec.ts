@@ -14,21 +14,22 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-export default {
-  props: { view: String, processName: String },
-  data: function() {
-    return {
-      focused: null,
-      imageLoadFailed: false
-    }
-  },
-  methods: {
-    onImageLoadFailure: function() {
-      this.imageLoadFailed = true
-    },
-    showDescription: function(key) {
-      if (this.$te('process-descriptions.' + key)) return this.$t('process-descriptions.' + key)
-      return ''
-    }
-  }
-}
+import { test } from '@playwright/test'
+import { LoginPage } from '../fixtures/LoginPage.js'
+
+test.describe('UI @nav', () => {
+  test('navigation non authed', async ({ page }) => {
+    const loginPage = new LoginPage(page)
+    await loginPage.goto()
+    await loginPage.clickHome()
+  })
+
+  test('navigation authed', async ({ page }) => {
+    const loginPage = new LoginPage(page)
+    await loginPage.goto()
+    const startPage = await loginPage.loginDefault()
+    await startPage.clickHome()
+    const accountMenu = await startPage.clickAccountMenu()
+    await accountMenu.logout()
+  })
+})

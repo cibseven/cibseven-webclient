@@ -87,7 +87,7 @@ application:
       # Engine rest
       engineRest:
         url: ./
-      
+
       historyLevel: "full"
       
       link:

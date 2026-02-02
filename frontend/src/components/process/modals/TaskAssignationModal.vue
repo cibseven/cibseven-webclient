@@ -124,7 +124,7 @@ export default {
         obj.type === identity.type)
     },
     addIdentity: function() {
-      var newIdentityLink = { type: this.selectedIdentity.type }
+      const newIdentityLink = { type: this.selectedIdentity.type }
       newIdentityLink[this.selectedIdentity.value] = this.identity
 
       this.identityExists = this.identityLinks.find(obj => {
@@ -137,7 +137,7 @@ export default {
           this.identity = ''
           if (this.selectedIdentity.type !== 'assignee') this.identityLinks.push(newIdentityLink)
           else {
-            var assigneeIdentity = this.identityLinks.find(ilink => ilink.type === 'assignee')
+            const assigneeIdentity = this.identityLinks.find(ilink => ilink.type === 'assignee')
             assigneeIdentity ? assigneeIdentity.userId = newIdentityLink.userId : this.identityLinks.push(newIdentityLink)
             this.$emit('change-assignee', { taskId: this.taskId, assignee: newIdentityLink.userId })
           }

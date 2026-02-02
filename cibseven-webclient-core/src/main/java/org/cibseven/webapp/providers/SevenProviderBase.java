@@ -69,7 +69,6 @@ import org.springframework.util.MultiValueMap;
 import com.fasterxml.jackson.core.StreamReadConstraints;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cibseven.webapp.rest.CustomRestTemplate;
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -89,18 +88,39 @@ public abstract class SevenProviderBase {
 	protected BaseUserProvider<? extends StandardLogin> baseUserProvider;
 
 	/**
-	 * Constructs the full engine REST base URL using the engine from the user object.
-	 * @param user the user object containing the engine name
+	 * Constructs the full engine REST base URL using the engine ID from the user object.
+	 * The engine ID format is "{url}|{path}|{engineName}".
+	 * Example: "http://localhost:8080|/engine-rest|default"
+	 * 
+	 * @param user the user object containing the engine ID
 	 * @return the complete engine REST URL
 	 */
 	protected String getEngineRestUrl(CIBUser user) {
+		String engineId = user != null ? user.getEngine() : null;
+		
+		if (engineId != null && !engineId.isEmpty() && engineId.contains("|")) {
+			// Parse the engine ID format: "url|path|engineName"
+			String[] parts = engineId.split("\\|", 3);
+			if (parts.length == 3) {
+				String url = parts[0];
+				String path = parts[1];
+				String engineName = parts[2];
+				
+				// Build the full URL
+				String baseUrl = url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
+				String restPath = path.startsWith("/") ? path : "/" + path;
+				return baseUrl + restPath + "/engine/" + engineName;
+			}
+		}
+		
+		// Fall back to default configuration (for legacy engine names or when no engine specified)
 		String baseUrl = cibsevenUrl.endsWith("/") ? cibsevenUrl.substring(0, cibsevenUrl.length() - 1) : cibsevenUrl;
 		String restPath = engineRestPath.startsWith("/") ? engineRestPath : "/" + engineRestPath;
 		
-		String engineName = user != null ? user.getEngine() : null;
-		// If engine name is provided and not "default", add it to the path
-		if (engineName != null && !engineName.isEmpty() && !"default".equals(engineName)) {
-			return baseUrl + restPath + "/engine/" + engineName;
+		// If engine identifier is provided add it to the path
+		if (engineId != null && !engineId.isEmpty()) {
+			// Legacy format - just use the engine name directly
+			return baseUrl + restPath + "/engine/" + engineId;
 		}
 		
 		return baseUrl + restPath;
