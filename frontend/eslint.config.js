@@ -71,11 +71,6 @@ export default [
   ...pluginVueA11y.configs["flat/recommended"],
   {
     rules: {
-      // override rules settings here to make them warnings
-      "vuejs-accessibility/click-events-have-key-events": "warn",
-      "vuejs-accessibility/form-control-has-label": "warn",
-      "vuejs-accessibility/interactive-supports-focus": "warn",
-
       "vuejs-accessibility/label-has-for": [
         "error",
         {
