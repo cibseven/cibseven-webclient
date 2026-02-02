@@ -212,7 +212,8 @@ public class UserProviderIT extends BaseHelper {
                     .mapToObj(i -> CompletableFuture.supplyAsync(() -> {
                         try {
                             CIBUser user = getCibUser();
-                            return userProvider.verifyUser(username, password, user);
+                            StandardLogin login = new StandardLogin(username, password);
+                            return userProvider.verifyUser(login, user);
                         } catch (Exception e) {
                             throw new RuntimeException("Failed to verify user", e);
                         }
