@@ -16,8 +16,6 @@
  */
 package org.cibseven.webapp.rest;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.List;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,7 +23,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.cibseven.webapp.auth.SevenResourceType;
-import org.cibseven.webapp.auth.rest.StandardLogin;
 
 import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.CIBUser;
@@ -37,6 +34,7 @@ public class BaseService {
 
 	@Autowired
 	protected BpmProvider bpmProvider;
+
 	@SuppressWarnings("rawtypes")
 	@Autowired
 	protected BaseUserProvider baseUserProvider;
@@ -45,8 +43,7 @@ public class BaseService {
 	private boolean authorizationEnabled;
 
 	protected CIBUser checkAuthorization(HttpServletRequest rq, boolean basicAuthAllowed) {
-		CIBUser user = (CIBUser) baseUserProvider.checkAuthorization(rq, basicAuthAllowed);
-		return user;
+		return baseUserProvider.checkAuthorization(rq, basicAuthAllowed);
 	}
 
 	public void checkSpecificProcessRights(CIBUser user, String processKey) {

@@ -34,24 +34,28 @@ public abstract class BaseUserProvider<R extends StandardLogin> implements JwtUs
 	public abstract User login(R params, HttpServletRequest rq);
 	public abstract void logout(User user);
 	public abstract User getSelfInfoJSessionId(String userId, String jSessionId, HttpServletRequest rq);
-	
+
+	/**
+	 * Checks authorization from request. If basicAuthAllowed is true, it will also check for Basic Auth header.
+	 * @return The authenticated CIBUser
+	 */
 	public CIBUser checkAuthorization(HttpServletRequest rq, boolean basicAuthAllowed) {
 		CIBUser user = null;
 		String authorization = rq.getHeader("Authorization");
 		if (basicAuthAllowed && authorization != null && authorization.toLowerCase().startsWith("basic")) {
-		    // Authorization: Basic base64credentials
-		    String base64Credentials = authorization.substring("Basic".length()).trim();
-		    byte[] credDecoded = Base64.getDecoder().decode(base64Credentials);
-		    String credentials = new String(credDecoded, StandardCharsets.UTF_8);
-		    // credentials = username:password
-		    final String[] values = credentials.split(":", 2);
-		    StandardLogin login = createLoginParams();
-		    login.setUsername(values[0]);
-		    login.setPassword(values[1]);
-		    user = (CIBUser) login((R)login, rq);
+			// Authorization: Basic base64credentials
+			String base64Credentials = authorization.substring("Basic".length()).trim();
+			byte[] credDecoded = Base64.getDecoder().decode(base64Credentials);
+			String credentials = new String(credDecoded, StandardCharsets.UTF_8);
+			// credentials = username:password
+			final String[] values = credentials.split(":", 2);
+			StandardLogin login = createLoginParams();
+			login.setUsername(values[0]);
+			login.setPassword(values[1]);
+			user = (CIBUser) login((R)login, rq);
 		} 
 		else {
-				user = (CIBUser) authenticateUser(rq);
+			user = (CIBUser) authenticateUser(rq);
 		}
 		return user;
 	}
