@@ -175,6 +175,7 @@ export { default as JobDefinitionsTable } from '@/components/process/tables/JobD
 export { default as JobsTable } from '@/components/process/tables/JobsTable.vue'
 export { default as JobDueDateModal } from '@/components/process/modals/JobDueDateModal.vue'
 export { default as ViewerFrame } from '@/components/common-components/ViewerFrame.vue'
+export { default as RemovableBadge } from '@/components/common-components/RemovableBadge.vue'
 
 // re-export common frontend library
 export * from '@cib/common-frontend'
