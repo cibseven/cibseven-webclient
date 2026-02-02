@@ -20,7 +20,7 @@
   <b-modal ref="modal" :title="$t('problem-report.title')" @shown="$refs.textArea.focus()">
     <CIBForm ref="form" @submitted="report(); $refs.modal.hide(); problem = null">
       <b-form-group :invalid-feedback="$t('errors.invalid')">
-        <input v-model="email2" type="email" :placeholder="$t('problem-report.email')" class="form-control">
+        <input v-model="email2" type="email" :placeholder="$t('problem-report.email')" :aria-label="$t('problem-report.email')" class="form-control">
       </b-form-group>
       <b-form-group>
         <b-form-textarea ref="textArea" v-model="problem" :rows="10" :max-rows="10" required></b-form-textarea>

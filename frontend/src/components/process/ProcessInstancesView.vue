@@ -90,11 +90,11 @@
               </div>
               <div v-if="selectedActivityId" class="col-3 p-3">
                 <span class="badge bg-info rounded-pill p-2 pe-3" style="font-weight: 500; font-size: 0.75rem">
-                  <span
-                    @click="removeSelectedActivityBadge"
+                  <button
+                    @click.stop="removeSelectedActivityBadge"
                     :title="$t('process.activityIdBadge.remove')"
-                    role="button" class="mdi mdi-close-thick py-2 px-1"></span>
-                    <span :title="$t('process.activityIdBadge.tooltip.' + selectedActivityInstancesListMode, { activityId: selectedActivityId })">
+                    class="btn btn-link p-0 mdi mdi-close-thick text-reset"></button>
+                    <span class="ps-1" :title="$t('process.activityIdBadge.tooltip.' + selectedActivityInstancesListMode, { activityId: selectedActivityId })">
                       {{ $t('process.activityIdBadge.title.' + selectedActivityInstancesListMode, { activityId: selectedActivityId }) }}
                     </span>
                 </span>

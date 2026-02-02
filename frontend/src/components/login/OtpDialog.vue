@@ -22,7 +22,7 @@
     <CIBForm ref="form2" @submitted="onLogin2">
       <div class="mb-3">{{ $t('login.needOtp') }}</div>
       <b-form-group :invalid-feedback="$t('errors.invalid')">
-        <input ref="otp" type="number" max="999999" v-model="credentials2.otp" :placeholder="$t('login.otp')" class="form-control" required>
+        <input ref="otp" type="number" max="999999" v-model="credentials2.otp" :placeholder="$t('login.otp')" :aria-label="$t('login.otp')" class="form-control" required>
       </b-form-group>
     </CIBForm>
     <template v-slot:modal-footer>

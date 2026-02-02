@@ -44,6 +44,7 @@
                     <input
                       type="text"
                       :placeholder="$t('searches.filter')"
+                      :aria-label="$t('searches.filter')"
                       class="form-control-plaintext w-100"
                       @input="search($event.target.value)"
                     />

@@ -18,7 +18,7 @@
 -->
 <template>
   <div class="input-group">
-    <input ref="input" :value="modelValue" :placeholder="placeholder" :type="show ? 'text' : 'password'" class="form-control rounded-right"
+    <input ref="input" :value="modelValue" :placeholder="placeholder" :aria-label="placeholder" :type="show ? 'text' : 'password'" class="form-control rounded-right"
       style="padding-right: 2.5rem; position: relative; z-index: 1"
       :required="required" :disabled="disabled" :autocomplete="autocomplete" @input="handleInput">
     <b-button type="button" variant="link" size="sm" tabindex="0" @click="show = !show" @keydown.enter="show = !show" @keydown.space.prevent="show = !show" class="mdi mdi-18px mdi-eye text-secondary pt-0"

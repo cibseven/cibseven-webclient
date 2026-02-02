@@ -111,6 +111,7 @@
               :class="{ 'is-invalid': valueValidationError !== null }"
               rows="5"
               :placeholder="$t('process-instance.variables.enterValue')"
+              :aria-label="$t('process-instance.variables.value')"
               v-model="value"
               :disabled="disabled || saving || loading">
             </textarea>
@@ -119,6 +120,7 @@
             <textarea
               class="form-control mt-2"
               rows="5"
+              :aria-label="$t('process-instance.variables.valueSerialized')"
               v-model="valueSerialized"
               :disabled="true"></textarea>
           </b-tab>
@@ -131,6 +133,7 @@
           :class="{ 'is-invalid': valueValidationError !== null }"
           rows="5"
           :placeholder="$t('process-instance.variables.enterValue')"
+          :aria-label="$t('process-instance.variables.enterValue')"
           :disabled="disabled || saving || loading"
           v-model="value">
         </textarea>
