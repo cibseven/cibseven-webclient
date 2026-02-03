@@ -809,10 +809,14 @@
 	"cib-header": {
 		"productName": "CIB seven",
 		"languages": "Idioma",
+		"languagesMenu": "Idioma",
 		"engine": "Motor",
+		"engineMenu": "Selección de motor",
 		"help": "Información & Ayuda",
+		"helpMenu": "Ayuda",
 		"user": "Cuenta",
 		"logout": "Cerrar sesión",
+		"userMenu": "Cuenta de usuario",
 		"en": "English",
 		"de": "Deutsch",
 		"es": "Español",
@@ -1171,6 +1175,7 @@
 	},
 	"navigation": {
 		"home": "Inicio",
+		"navigation": "Navegación",
 		"menu": "Menú de Navegación",
 		"infoAndHelp": "Información y ayuda"
 	},

@@ -809,10 +809,14 @@
 		"cib-header": {
 			"productName": "CIB seven",
 			"languages": "Мова",
+			"languagesMenu": "Мова",
 			"engine": "Двигун",
+			"engineMenu": "Вибір двигуна",
 			"help": "Інформація та допомога",
+			"helpMenu": "Допомога",
 			"logout": "Вихід",
 			"user": "Обліковий запис",
+			"userMenu": "Обліковий запис користувача",
 			"en": "English",
 			"de": "Deutsch",
 			"es": "Español",
@@ -1171,6 +1175,7 @@
 	},
 	"navigation": {
 		"home": "Головна сторінка",
+		"navigation": "Навігація",
 		"menu": "Навігаційне меню",
 		"infoAndHelp": "Інформація та допомога"
 	},

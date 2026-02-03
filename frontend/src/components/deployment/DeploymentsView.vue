@@ -32,6 +32,7 @@
                 type="text"
                 v-model.trim="filter"
                 :placeholder="$t('searches.search')"
+                :aria-label="$t('searches.search')"
                 class="form-control-plaintext form-control-sm w-100"
               />
             </div>

@@ -108,7 +108,8 @@ function skipValue(value, lang) {
       'status',
       'format',
       'name: {name}version: {version}',
-      'element'
+      'element',
+      'navigation',
     ],
     'es': [
       'tenant',

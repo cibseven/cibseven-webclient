@@ -27,6 +27,7 @@
             v-model="stackTraceMessage"
             rows="20"
             readonly
+            :aria-label="$t('process-instance.stacktrace')"
             class="form-control w-100"
             id="stackTraceTextarea"
           ></textarea>
