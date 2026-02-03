@@ -21,12 +21,14 @@
     <b-modal ref="modal" :title="$t('process-instance.stacktrace')" size="xl" :ok-only="true">
       <div v-if="stackTraceMessage" class="container-fluid p-0">
         <div class="position-relative">
+          <label class="visually-hidden" for="stackTraceTextarea">{{ $t('process-instance.stacktrace') }}</label>
           <textarea
             ref="textarea"
             v-model="stackTraceMessage"
             rows="20"
             readonly
             class="form-control w-100"
+            id="stackTraceTextarea"
           ></textarea>
           <b-button
             variant="link"

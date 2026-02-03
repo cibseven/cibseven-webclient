@@ -29,7 +29,9 @@
               size="sm" class="mdi mdi-magnify mdi-24px text-secondary" variant="link"
               :title="$t('searches.refreshAndFilter')"></b-button>
             <div class="flex-grow-1">
+              <label class="visually-hidden" for="filter-process-list">{{ $t('searches.filter') }}</label>
               <input
+                id="filter-process-list"
                 type="text"
                 v-model.trim="filter"
                 :placeholder="$t('searches.filter')"

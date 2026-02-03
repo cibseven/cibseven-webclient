@@ -89,15 +89,11 @@
                 </b-input-group>
               </div>
               <div v-if="selectedActivityId" class="col-3 p-3">
-                <span class="badge bg-info rounded-pill p-2 pe-3" style="font-weight: 500; font-size: 0.75rem">
-                  <span
-                    @click="removeSelectedActivityBadge"
-                    :title="$t('process.activityIdBadge.remove')"
-                    role="button" class="mdi mdi-close-thick py-2 px-1"></span>
-                    <span :title="$t('process.activityIdBadge.tooltip.' + selectedActivityInstancesListMode, { activityId: selectedActivityId })">
-                      {{ $t('process.activityIdBadge.title.' + selectedActivityInstancesListMode, { activityId: selectedActivityId }) }}
-                    </span>
-                </span>
+                <RemovableBadge
+                  @on-remove="removeSelectedActivityBadge"
+                  :tooltip-remove="$t('process.activityIdBadge.remove')"
+                  :label="$t('process.activityIdBadge.title.' + selectedActivityInstancesListMode, { activityId: selectedActivityId })"
+                  :tooltip="$t('process.activityIdBadge.tooltip.' + selectedActivityInstancesListMode, { activityId: selectedActivityId })"/>
               </div>
             </template>
 
@@ -179,13 +175,14 @@ import { SuccessAlert, ConfirmDialog, BWaitingBox } from '@cib/common-frontend'
 import ProcessInstancesTabs from '@/components/process/ProcessInstancesTabs.vue'
 import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
 import ViewerFrame from '@/components/common-components/ViewerFrame.vue'
+import RemovableBadge from '@/components/common-components/RemovableBadge.vue'
 import { mapGetters, mapActions } from 'vuex'
 
 export default {
   name: 'ProcessInstancesView',
   components: { InstancesTable, JobDefinitionsTable, BpmnViewer, MultisortModal,
      SuccessAlert, ConfirmDialog, BWaitingBox, IncidentsTable, CalledProcessDefinitionsTable,
-     ProcessInstancesTabs, ScrollableTabsContainer, ViewerFrame },
+     ProcessInstancesTabs, ScrollableTabsContainer, ViewerFrame, RemovableBadge },
   inject: ['loadProcesses'],
   mixins: [permissionsMixin, resizerMixin, copyToClipboardMixin, tabUrlMixin],
   emits: ['task-selected', 'filter-instances', 'instance-deleted'],
