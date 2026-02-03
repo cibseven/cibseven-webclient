@@ -17,8 +17,13 @@
 
 -->
 <template>
+<<<<<<< HEAD
   <div class="input-group">
     <input ref="input" :value="modelValue" :placeholder="placeholder" :aria-label="placeholder" :type="show ? 'text' : 'password'" class="form-control rounded-right"
+=======
+  <b-form-group label-cols="4" content-cols="8" :label="$t('login.password')" :invalid-feedback="$t('errors.invalid')">
+    <input ref="input" id="input" :value="modelValue" :placeholder="placeholder" :type="show ? 'text' : 'password'" class="form-control rounded-right"
+>>>>>>> ec0703e77084526dac50f064fdaebdc990501478
       style="padding-right: 2.5rem; position: relative; z-index: 1"
       :required="required" :disabled="disabled" :autocomplete="autocomplete" @input="handleInput">
     <b-button type="button" variant="link" size="sm" tabindex="0" @click="show = !show" @keydown.enter="show = !show" @keydown.space.prevent="show = !show" class="mdi mdi-18px mdi-eye text-secondary pt-0"
@@ -26,7 +31,7 @@
       :aria-label="show ? $t('login.hidePassword') : $t('login.showPassword')"
       style="position: absolute; right: 5px; top: 4px; z-index: 3; cursor: pointer"></b-button>
     <div class="invalid-feedback">{{ $t('errors.invalid') }}</div>
-  </div>
+  </b-form-group>
 </template>
 
 <script>

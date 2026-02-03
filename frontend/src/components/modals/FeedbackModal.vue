@@ -20,10 +20,16 @@
   <b-modal ref="modal" :title="$t('problem-report.title')" @shown="$refs.textArea.focus()">
     <CIBForm ref="form" @submitted="report(); $refs.modal.hide(); problem = null">
       <b-form-group :invalid-feedback="$t('errors.invalid')">
+<<<<<<< HEAD
         <input v-model="email2" type="email" :placeholder="$t('problem-report.email')" :aria-label="$t('problem-report.email')" class="form-control">
+=======
+        <label class="visually-hidden" for="emailInput">{{ $t('problem-report.email') }}</label>
+        <input id="emailInput" v-model="email2" type="email" :placeholder="$t('problem-report.email')" class="form-control">
+>>>>>>> ec0703e77084526dac50f064fdaebdc990501478
       </b-form-group>
       <b-form-group>
-        <b-form-textarea ref="textArea" v-model="problem" :rows="10" :max-rows="10" required></b-form-textarea>
+        <label class="visually-hidden" for="problemTextarea">{{ $t('process-instance.stacktrace') }}</label>
+        <b-form-textarea ref="textArea" id="problemTextarea" v-model="problem" :rows="10" :max-rows="10" required></b-form-textarea>
       </b-form-group>
       <b-form-group>
         <FeedbackScreenshot tabindex="-1" @input="clip = $event"></FeedbackScreenshot>

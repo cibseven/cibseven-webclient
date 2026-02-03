@@ -105,8 +105,10 @@
         <!-- Input: Object (only in edit mode) -->
         <b-tabs v-else-if="editMode && type === 'Object'" :activeTab="1">
           <b-tab id="1" :title="$t('process-instance.variables.value')">
+            <label class="visually-hidden" for="textValueDeserialized">{{ $t('process-instance.variables.value') }}</label>
             <textarea
               ref="textValue"
+              id="textValueDeserialized"
               class="form-control mt-2"
               :class="{ 'is-invalid': valueValidationError !== null }"
               rows="5"
@@ -117,7 +119,9 @@
             </textarea>
           </b-tab>
           <b-tab id="2" :title="$t('process-instance.variables.valueSerialized')">
+            <label class="visually-hidden" for="textValueSerialized">{{ $t('process-instance.variables.valueSerialized') }}</label>
             <textarea
+              id="textValueSerialized"
               class="form-control mt-2"
               rows="5"
               :aria-label="$t('process-instance.variables.valueSerialized')"
@@ -127,6 +131,7 @@
         </b-tabs>
 
         <!-- Input: String, Json, Xml, Object -->
+<<<<<<< HEAD
         <textarea v-else
           ref="textValue"
           class="form-control"
@@ -137,6 +142,21 @@
           :disabled="disabled || saving || loading"
           v-model="value">
         </textarea>
+=======
+        <template v-else>
+          <label class="visually-hidden" for="textValue">{{ $t('process-instance.variables.value') }} *</label>
+          <textarea
+            ref="textValue"
+            id="textValue"
+            class="form-control"
+            :class="{ 'is-invalid': valueValidationError !== null }"
+            rows="5"
+            :placeholder="$t('process-instance.variables.enterValue')"
+            :disabled="disabled || saving || loading"
+            v-model="value">
+          </textarea>
+        </template>
+>>>>>>> ec0703e77084526dac50f064fdaebdc990501478
 
         <!-- Validation Error -->
         <div v-if="valueValidationError" class="invalid-feedback">
