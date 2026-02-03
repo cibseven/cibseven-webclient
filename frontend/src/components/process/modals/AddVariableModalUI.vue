@@ -131,18 +131,6 @@
         </b-tabs>
 
         <!-- Input: String, Json, Xml, Object -->
-<<<<<<< HEAD
-        <textarea v-else
-          ref="textValue"
-          class="form-control"
-          :class="{ 'is-invalid': valueValidationError !== null }"
-          rows="5"
-          :placeholder="$t('process-instance.variables.enterValue')"
-          :aria-label="$t('process-instance.variables.enterValue')"
-          :disabled="disabled || saving || loading"
-          v-model="value">
-        </textarea>
-=======
         <template v-else>
           <label class="visually-hidden" for="textValue">{{ $t('process-instance.variables.value') }} *</label>
           <textarea
@@ -156,7 +144,6 @@
             v-model="value">
           </textarea>
         </template>
->>>>>>> ec0703e77084526dac50f064fdaebdc990501478
 
         <!-- Validation Error -->
         <div v-if="valueValidationError" class="invalid-feedback">

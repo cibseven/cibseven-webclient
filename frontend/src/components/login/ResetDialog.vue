@@ -20,13 +20,8 @@
 <template>
   <b-modal ref="resetDialog" v-if="credentials2" no-close-on-backdrop :title="$t('login.2fa')" @shown="$refs.otp2.focus()">
     <div class="mb-3">{{ $t('login.needOtp') }}</div>
-<<<<<<< HEAD
-    <b-form-group label-cols="4" :label="$t('login.otp')" :invalid-feedback="$t('errors.invalid')">
-      <input ref="otp2" type="number" max="999999" v-model="credentials2.otp" :aria-label="$t('login.otp')" class="form-control">
-=======
     <b-form-group label-cols="4" content-cols="8" :label="$t('login.otp')" :invalid-feedback="$t('errors.invalid')">
       <input ref="otp2" type="number" max="999999" v-model="credentials2.otp" :placeholder="$t('login.otp')" :aria-label="$t('login.otp')" class="form-control">
->>>>>>> ec0703e77084526dac50f064fdaebdc990501478
     </b-form-group>
     <div class="form-row justify-content-end pr-1">
       <button :disabled="!credentials2.otp" class="btn btn-primary" @click="onForgotten2">{{ $t('login.resetPassword') }}</button>

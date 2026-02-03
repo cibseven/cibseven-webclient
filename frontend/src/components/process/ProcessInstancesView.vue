@@ -89,23 +89,11 @@
                 </b-input-group>
               </div>
               <div v-if="selectedActivityId" class="col-3 p-3">
-<<<<<<< HEAD
-                <span class="badge bg-info rounded-pill p-2 pe-3" style="font-weight: 500; font-size: 0.75rem">
-                  <button
-                    @click.stop="removeSelectedActivityBadge"
-                    :title="$t('process.activityIdBadge.remove')"
-                    class="btn btn-link p-0 mdi mdi-close-thick text-reset"></button>
-                    <span class="ps-1" :title="$t('process.activityIdBadge.tooltip.' + selectedActivityInstancesListMode, { activityId: selectedActivityId })">
-                      {{ $t('process.activityIdBadge.title.' + selectedActivityInstancesListMode, { activityId: selectedActivityId }) }}
-                    </span>
-                </span>
-=======
                 <RemovableBadge
                   @on-remove="removeSelectedActivityBadge"
                   :tooltip-remove="$t('process.activityIdBadge.remove')"
                   :label="$t('process.activityIdBadge.title.' + selectedActivityInstancesListMode, { activityId: selectedActivityId })"
                   :tooltip="$t('process.activityIdBadge.tooltip.' + selectedActivityInstancesListMode, { activityId: selectedActivityId })"/>
->>>>>>> ec0703e77084526dac50f064fdaebdc990501478
               </div>
             </template>
 
