@@ -1175,6 +1175,7 @@
 	},
 	"navigation": {
 		"home": "Startseite",
+		"navigation": "Navigation",
 		"menu": "Navigationsmenü",
 		"infoAndHelp": "Infos & Hilfe"
 	},

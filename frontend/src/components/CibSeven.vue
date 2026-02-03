@@ -38,12 +38,12 @@
 
       <!-- Desktop: Show menus as icons outside collapse -->
       <div class="d-none d-md-flex">
-        <b-button v-if="$root.config.layout.showFeedbackButton" variant="outline-secondary" @click="$refs.report.show()" class="border-0 py-0 me-2" :title="$t('seven.feedback')">
+        <b-button v-if="$root.config.layout.showFeedbackButton" variant="outline-secondary" @click="$refs.report.show()" class="border-0 py-0 me-2" :title="$t('seven.feedback')" :label="$t('seven.feedback')">
           <span class="mdi mdi-24px mdi-message-alert"></span>
         </b-button>
 
         <b-navbar-nav v-if="computedMenuItems.length > 0">
-          <b-nav-item-dropdown extra-toggle-classes="py-1" right :title="$t('navigation.menu')">
+          <b-nav-item-dropdown extra-toggle-classes="py-1" right :title="$t('navigation.menu')" :label="$t('navigation.navigation')">
             <template v-slot:button-content>
               <span class="visually-hidden">{{ $t('navigation.menu') }}</span>
               <span class="mdi mdi-24px mdi-menu align-middle"></span>
@@ -66,7 +66,7 @@
         </b-navbar-nav>
         
         <b-navbar-nav v-if="$root.config.layout.showInfoAndHelp">
-          <b-nav-item-dropdown extra-toggle-classes="py-1" right :title="$t('navigation.infoAndHelp')">
+          <b-nav-item-dropdown extra-toggle-classes="py-1" right :title="$t('navigation.infoAndHelp')" :label="$t('navigation.infoAndHelp')">
             <template v-slot:button-content>
               <span class="visually-hidden">{{ $t('navigation.infoAndHelp') }}</span>
               <span class="mdi mdi-24px mdi-help-circle align-middle"></span>
@@ -81,13 +81,13 @@
 
       <!-- Mobile: Show menus as list items inside CIBHeaderFlow's collapse (via customNavItems slot) -->
       <template v-if="computedMenuItems.length > 0" #customNavItems>
-        <b-nav-item-dropdown v-if="$root.config.layout.showFeedbackButton" class="d-md-none" no-caret :title="$t('seven.feedback')">
+        <b-nav-item-dropdown v-if="$root.config.layout.showFeedbackButton" class="d-md-none" no-caret :title="$t('seven.feedback')" :label="$t('seven.feedback')">
           <template v-slot:button-content>
             <span class="mdi mdi-24px mdi-message-alert align-middle me-2"></span>{{ $t('seven.feedback') }}
           </template>
           <b-dropdown-item @click="closeMenuAndShow('report')">{{ $t('seven.feedback') }}</b-dropdown-item>
         </b-nav-item-dropdown>
-        <b-nav-item-dropdown class="d-md-none" extra-toggle-classes="py-1" right :title="$t('navigation.menu')">
+        <b-nav-item-dropdown class="d-md-none" extra-toggle-classes="py-1" right :title="$t('navigation.menu')" :label="$t('navigation.navigation')">
           <template v-slot:button-content>
             <span class="mdi mdi-24px mdi-menu align-middle me-2"></span>{{ $t('navigation.menu') }}
           </template>
@@ -106,7 +106,7 @@
             </b-dropdown-group>
           </template>
         </b-nav-item-dropdown>
-        <b-nav-item-dropdown class="d-md-none" extra-toggle-classes="py-1" right :title="$t('navigation.infoAndHelp')">
+        <b-nav-item-dropdown class="d-md-none" extra-toggle-classes="py-1" right :title="$t('navigation.infoAndHelp')" :label="$t('navigation.infoAndHelp')">
           <template v-slot:button-content>
             <span class="mdi mdi-24px mdi-help-circle align-middle me-2"></span>{{ $t('navigation.infoAndHelp') }}
           </template>

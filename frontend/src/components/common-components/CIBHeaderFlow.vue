@@ -39,8 +39,8 @@
             v-if="normalizedEngines.length > 1" 
             extra-toggle-classes="py-1" 
             right 
-            :title="$t('cib-header.engine')"
-            :aria-label="$t('cib-header.engineMenu')">
+            :title="$t('cib-header.engineMenu')"
+            :label="$t('cib-header.engineMenu')">
             <template v-slot:button-content>
               <span class="mdi mdi-24px mdi-engine align-middle me-2" aria-hidden="true"></span><span class="d-md-none">{{ $t('cib-header.engine') }}</span>
             </template>
@@ -62,7 +62,7 @@
             extra-toggle-classes="py-1" 
             right 
             :title="$t('cib-header.languages')"
-            :aria-label="$t('cib-header.languagesMenu')">
+            :label="$t('cib-header.languagesMenu')">
             <template v-slot:button-content>
               <span class="mdi mdi-24px mdi-web align-middle me-2" aria-hidden="true"></span><span class="d-md-none">{{ $t('cib-header.languages') }}</span>
             </template>
@@ -82,7 +82,7 @@
             v-if="$slots.helpItems" 
             extra-toggle-classes="py-1" 
             right
-            :aria-label="$t('cib-header.helpMenu')">
+            :label="$t('cib-header.helpMenu')">
             <template v-slot:button-content>
               <span class="mdi mdi-24px mdi-help-circle align-middle" aria-hidden="true"></span>
               <span class="d-md-none">{{ $t('cib-header.helpMenu') }}</span>
@@ -95,7 +95,7 @@
             :title="$t('admin.users.account')" 
             extra-toggle-classes="py-1" 
             right
-            :aria-label="$t('cib-header.userMenu')">
+            :label="$t('cib-header.userMenu')">
             <template v-slot:button-content>
               <span class="mdi mdi-24px mdi-account align-middle" aria-hidden="true"></span> <span>{{ user.displayName }}</span>
             </template>
