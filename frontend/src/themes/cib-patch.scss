@@ -150,7 +150,7 @@ textarea:not(:disabled):focus,
 select:not(:disabled):focus {
   border-color: $dark !important;
   outline: 2px solid $dark !important;
-  outline-offset: 0px;
+  outline-offset: -1px;
   box-shadow: none !important;
 }
 
@@ -160,7 +160,7 @@ input.is-valid:not([type="checkbox"]):not([type="radio"]):not(:disabled):focus,
 textarea.is-valid:not(:disabled):focus {
   border-color: $success !important;
   outline: 2px solid $success !important;
-  outline-offset: 0px;
+  outline-offset: -1px;
   box-shadow: none !important;
 }
 
@@ -170,7 +170,7 @@ input.is-invalid:not([type="checkbox"]):not([type="radio"]):not(:disabled):focus
 textarea.is-invalid:not(:disabled):focus {
   border-color: $danger !important;
   outline: 2px solid $danger !important;
-  outline-offset: 0px;
+  outline-offset: -1px;
   box-shadow: none !important;
 }
 
