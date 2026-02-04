@@ -37,15 +37,11 @@
           </b-input-group>
         </div>
         <div v-if="selectedActivityId" class="col-6 p-3">
-          <span class="badge bg-info rounded-pill p-2 pe-3" style="font-weight: 500; font-size: 0.75rem">
-            <span
-              @click="removeSelectedActivityBadge"
-              :title="$t('process-instance.incidents.activityIdBadge.remove')"
-              role="button" class="mdi mdi-close-thick py-2 px-1"></span>
-              <span :title="$t('process-instance.incidents.activityIdBadge.tooltip', { activityId: selectedActivityId })">
-                {{ $t('process-instance.incidents.activityIdBadge.title', { activityId: selectedActivityId }) }}
-              </span>
-          </span>
+          <RemovableBadge
+            @on-remove="removeSelectedActivityBadge"
+            :tooltip-remove="$t('process-instance.incidents.activityIdBadge.remove')"
+            :label="$t('process-instance.incidents.activityIdBadge.title', { activityId: selectedActivityId })"
+            :tooltip="$t('process-instance.incidents.activityIdBadge.tooltip', { activityId: selectedActivityId })"/>
         </div>
       </div>
 
@@ -192,14 +188,16 @@
       </template>
 
       <template v-slot:cell(actions)="table">
-        <b-button v-if="!table.item.endTime" :title="$t('process-instance.incidents.editAnnotation')"
-          size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-note-edit-outline"
-          @click="$refs.annotationModal.show(table.item.id, table.item.annotation)">
-        </b-button>
-        <b-button v-if="!table.item.endTime" :title="$t('process-instance.incidents.retryJob')"
-          size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-reload"
-          @click="$refs.incidentRetryModal.show(table.item)">
-        </b-button>
+        <div class="d-flex">
+          <CellActionButton v-if="!table.item.endTime" :title="$t('process-instance.incidents.editAnnotation')"
+            icon="mdi-note-edit-outline"
+            @click="$refs.annotationModal.show(table.item.id, table.item.annotation)">
+          </CellActionButton>
+          <CellActionButton v-if="!table.item.endTime" :title="$t('process-instance.incidents.retryJob')"
+            icon="mdi-reload"
+            @click="$refs.incidentRetryModal.show(table.item)">
+          </CellActionButton>
+        </div>
       </template>
     </FlowTable>
       <div v-if="!loading && incidents.length === 0">
@@ -222,13 +220,15 @@ import { FlowTable, SuccessAlert, PagedScrollableContent, CopyableActionButton }
 import RetryModal from '@/components/process/modals/RetryModal.vue'
 import AnnotationModal from '@/components/process/modals/AnnotationModal.vue'
 import StackTraceModal from '@/components/process/modals/StackTraceModal.vue'
+import CellActionButton from '@/components/common-components/CellActionButton.vue'
+import RemovableBadge from '@/components/common-components/RemovableBadge.vue'
 import { formatDateForTooltips } from '@/utils/dates.js'
 import { mapGetters, mapActions } from 'vuex'
 import { debounce } from '@/utils/debounce.js'
 
 export default {
   name: 'IncidentsTable',
-  components: { FlowTable, SuccessAlert, RetryModal, AnnotationModal, StackTraceModal, PagedScrollableContent, CopyableActionButton },
+  components: { FlowTable, SuccessAlert, RetryModal, AnnotationModal, StackTraceModal, PagedScrollableContent, CopyableActionButton, CellActionButton, RemovableBadge },
   mixins: [copyToClipboardMixin],
   props: {
     instance: Object,

@@ -29,7 +29,7 @@
       { label: 'retries', key: 'retries', class: 'col-1', tdClass: 'py-1' },
       { label: 'activity', key: 'activityId', class: 'col-2', tdClass: 'py-1' },
       { label: 'failedActivity', key: 'failedActivityId', class: 'col-2', tdClass: 'py-1' },
-      { label: 'actions', key: 'actions', class: 'col-1', sortable: false, tdClass: 'py-1' }]">
+      { label: 'actions', key: 'actions', class: 'col-1', sortable: false, tdClass: 'py-0' }]">
       <template v-slot:cell(id)="table">
         <span :title="table.item.id" class="text-truncate">{{ table.item.id }}</span>
       </template>
@@ -46,10 +46,8 @@
         <span :title="table.item.failedActivityId" class="text-truncate">{{ $store.state.activity.processActivities[table.item.failedActivityId] }}</span>
       </template>
       <template v-slot:cell(actions)="table">
-        <b-button :title="suspendedStatusText(table.item)" @click="setSuspendedJob(table.item, !table.item.suspended)"
-          size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px" :class="table.item.suspended ? 'mdi-play' : 'mdi-pause'"></b-button>
-        <b-button :title="$t('process-instance.jobs.changeDueDate')" @click="changeJobDueDate(table.item)"
-          size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-clock-outline"></b-button>
+        <CellActionButton @click="setSuspendedJob(table.item, !table.item.suspended)" :title="suspendedStatusText(table.item)"  :icon="table.item.suspended ? 'mdi-play' : 'mdi-pause'"></CellActionButton>
+        <CellActionButton @click="changeJobDueDate(table.item)" :title="$t('process-instance.jobs.changeDueDate')" :icon="'mdi-clock-outline'"></CellActionButton>
       </template>
     </FlowTable>
     <div v-else-if="!loading">
@@ -66,11 +64,12 @@ import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
 import { FlowTable, SuccessAlert, BWaitingBox } from '@cib/common-frontend'
 import JobDueDateModal from '@/components/process/modals/JobDueDateModal.vue'
+import CellActionButton from '@/components/common-components/CellActionButton.vue'
 import { mapGetters, mapActions } from 'vuex'
 
 export default {
   name: 'JobsTable',
-  components: { FlowTable, SuccessAlert, BWaitingBox, JobDueDateModal },
+  components: { FlowTable, SuccessAlert, BWaitingBox, JobDueDateModal, CellActionButton },
   mixins: [copyToClipboardMixin],
   props: {
     instance: Object,

@@ -14,9 +14,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { i18n } from '@/i18n'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import CIBHeaderFlow from '@/components/common-components/CIBHeaderFlow.vue'
 
 // Mock EngineService
@@ -26,35 +28,60 @@ vi.mock('@/services.js', () => ({
   }
 }))
 
-describe('CIBHeaderFlow.vue', () => {
-  let wrapper
+// Mock engineTokens module
+vi.mock('@/utils/engineTokens.js', () => ({
+  storeTokenForEngine: vi.fn(),
+  removeTokenForEngine: vi.fn(),
+  hasTokenForEngine: vi.fn(() => false),
+  restoreTokenForEngine: vi.fn()
+}))
 
-  const createWrapper = (props = {}) => {
-    return mount(CIBHeaderFlow, {
-      props: {
-        languages: ['en', 'de'],
-        user: { id: '1', displayName: 'Test User' },
-        ...props
+const createWrapper = (props = {}) => {
+  return mount(CIBHeaderFlow, {
+    props: {
+      languages: ['en', 'de'],
+      user: { id: '1', displayName: 'Test User' },
+      ...props
+    },
+    global: {
+      provide: {
+        currentLanguage: vi.fn((lang) => lang || 'en'),
+        setCurrentLanguage: vi.fn((lang) => lang || 'en')
       },
-      global: {
-        provide: {
-          currentLanguage: vi.fn((lang) => lang || 'en')
-        },
-        mocks: {
-          $t: (msg) => msg,
-          $te: () => true,
-        },
-        plugins: [i18n],
-        stubs: {
-          'b-navbar': { template: '<nav class="navbar"><slot></slot></nav>' },
-          'b-collapse': { template: '<div><slot></slot></div>', props: ['modelValue'] },
-          'b-navbar-nav': { template: '<div class="navbar-nav"><slot></slot></div>' },
-          'b-nav-item-dropdown': { template: '<div class="nav-item-dropdown"><slot name="button-content"></slot><slot></slot></div>' },
-          'b-dropdown-item': { template: '<div class="dropdown-item"><slot></slot></div>' }
-        }
+      mocks: {
+        $t: (msg) => msg,
+        $te: () => true,
+      },
+      plugins: [i18n],
+      stubs: {
+        'b-navbar': { template: '<nav class="navbar"><slot></slot></nav>' },
+        'b-collapse': { template: '<div><slot></slot></div>', props: ['modelValue'] },
+        'b-navbar-nav': { template: '<div class="navbar-nav"><slot></slot></div>' },
+        'b-nav-item-dropdown': { template: '<div class="nav-item-dropdown"><slot name="button-content"></slot><slot></slot></div>' },
+        'b-dropdown-item': { template: '<div class="dropdown-item"><slot></slot></div>' }
       }
-    })
-  }
+    }
+  })
+}
+
+describe('CIBHeaderFlow.vue', () => {
+
+  beforeAll(() => {
+    const translations = {
+      ...JSON.parse(
+        // eslint-disable-next-line no-undef
+        readFileSync(resolve(__dirname, '../../assets/translations_en.json'), 'utf-8')
+      ),
+      bcomponents: {
+        ariaLabelClose: 'Close',
+      },
+    }
+
+    i18n.global.locale = 'en'
+    i18n.global.setLocaleMessage('en', translations)
+  })
+
+  let wrapper
 
   describe('Hamburger Menu Toggle', () => {
     it('should toggle isCollapsed when clicking hamburger button', async () => {
@@ -154,6 +181,97 @@ describe('CIBHeaderFlow.vue', () => {
       wrapper.unmount()
       expect(removeEventListenerSpy).toHaveBeenCalledWith('click', handleClickOutside)
       removeEventListenerSpy.mockRestore()
+    })
+  })
+
+  describe('Engine Token Management', () => {
+    let engineTokensMock
+
+    beforeEach(async () => {
+      vi.clearAllMocks()
+      localStorage.clear()
+      sessionStorage.clear()
+      // Get the mocked module
+      engineTokensMock = await import('@/utils/engineTokens.js')
+    })
+
+    afterEach(() => {
+      localStorage.clear()
+      sessionStorage.clear()
+    })
+
+    it('should store token when user is set', async () => {
+      wrapper = createWrapper({ user: null })
+      wrapper.vm.selectedEngine = 'engine1'
+      
+      await wrapper.setProps({ user: { id: '1', displayName: 'Test User' } })
+      
+      expect(engineTokensMock.storeTokenForEngine).toHaveBeenCalledWith('engine1')
+    })
+
+    it('should remove token for current engine when logout is called', async () => {
+      wrapper = createWrapper()
+      wrapper.vm.selectedEngine = 'engine1'
+      localStorage.setItem('token', 'test-token')
+      
+      wrapper.vm.logout()
+      
+      expect(engineTokensMock.removeTokenForEngine).toHaveBeenCalledWith('engine1')
+    })
+
+    it('should store current token before switching engines', async () => {
+      wrapper = createWrapper()
+      wrapper.vm.selectedEngine = 'engine1'
+      localStorage.setItem('token', 'old-token')
+      
+      // Mock hasTokenForEngine to return false (no cached token for new engine)
+      engineTokensMock.hasTokenForEngine.mockReturnValue(false)
+      
+      wrapper.vm.selectEngine('engine2')
+      
+      expect(engineTokensMock.storeTokenForEngine).toHaveBeenCalledWith('engine1')
+    })
+
+    it('should restore cached token when switching to engine with cached token', async () => {
+      wrapper = createWrapper()
+      wrapper.vm.selectedEngine = 'engine1'
+      localStorage.setItem('token', 'old-token')
+      
+      // Mock hasTokenForEngine to return true (cached token exists)
+      engineTokensMock.hasTokenForEngine.mockReturnValue(true)
+      engineTokensMock.restoreTokenForEngine.mockReturnValue('cached-token')
+      
+      // Mock window.location
+      const originalLocation = window.location
+      delete window.location
+      window.location = {
+        hash: '',
+        reload: vi.fn()
+      }
+      
+      wrapper.vm.selectEngine('engine2')
+      
+      expect(engineTokensMock.restoreTokenForEngine).toHaveBeenCalledWith('engine2')
+      expect(window.location.hash).toBe('#/seven/auth/start-configurable')
+      expect(window.location.reload).toHaveBeenCalled()
+      
+      // Restore original location
+      window.location = originalLocation
+    })
+
+    it('should call logout when no cached token exists for new engine', async () => {
+      wrapper = createWrapper()
+      wrapper.vm.selectedEngine = 'engine1'
+      localStorage.setItem('token', 'old-token')
+      
+      engineTokensMock.hasTokenForEngine.mockReturnValue(false)
+      
+      // Spy on logout method
+      const logoutSpy = vi.spyOn(wrapper.vm, 'logout')
+      
+      wrapper.vm.selectEngine('engine2')
+      
+      expect(logoutSpy).toHaveBeenCalled()
     })
   })
 })

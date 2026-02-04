@@ -80,9 +80,8 @@ export const createStoreTestSuite = (storeName, storeModule, customTests = {}) =
           })
 
           // Custom mutation tests
-          if (customTests.mutations && customTests.mutations[mutationName]) {
-            customTests.mutations[mutationName](mutation, () => state, mutationName)
-          }
+          const mutationTest = customTests.mutations?.[mutationName]
+          mutationTest?.(mutation, () => state, mutationName)
         })
       })
     }
@@ -104,9 +103,8 @@ export const createStoreTestSuite = (storeName, storeModule, customTests = {}) =
           })
 
           // Custom getter tests
-          if (customTests.getters && customTests.getters[getterName]) {
-            customTests.getters[getterName](getter, () => state, getterName)
-          }
+          const getterTest = customTests.getters?.[getterName]
+          getterTest?.(getter, () => state, getterName)
         })
       })
     }
@@ -122,10 +120,9 @@ export const createStoreTestSuite = (storeName, storeModule, customTests = {}) =
           })
 
           // Custom action tests
-          if (customTests.actions && customTests.actions[actionName]) {
-            const getContext = () => ({ commit: mockCommit, dispatch: mockDispatch, state, getters: mockGetters })
-            customTests.actions[actionName](action, getContext, actionName)
-          }
+          const getContext = () => ({ commit: mockCommit, dispatch: mockDispatch, state, getters: mockGetters })
+          const actionTest = customTests.actions?.[actionName]
+          actionTest?.(action, getContext, actionName)          
         })
       })
     }
@@ -163,5 +160,5 @@ export const testHelpers = {
 
 // Helper to get nested object values
 const getNestedValue = (obj, path) => {
-  return path.split('.').reduce((current, key) => current && current[key], obj)
+  return path.split('.').reduce((current, key) => current?.[key], obj)
 }

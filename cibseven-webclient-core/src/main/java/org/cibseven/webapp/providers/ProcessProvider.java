@@ -108,7 +108,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 						process.setSuspended(definition.getSuspended() != null ? definition.getSuspended().toString() : null);
 						process.setTenantId(definition.getTenantId());
 						process.setVersionTag(definition.getVersionTag());
-						process.setHistoryTimeToLive(definition.getHistoryTimeToLive() != null ? definition.getHistoryTimeToLive().toString() : null);
+						process.setHistoryTimeToLive(definition.getHistoryTimeToLive());
 						process.setStartableInTasklist(definition.getStartableInTasklist());
 					}
 

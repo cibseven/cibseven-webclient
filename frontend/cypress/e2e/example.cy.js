@@ -22,7 +22,7 @@ Cypress.Commands.add('loginFail', (email, password) => {
   cy.get('.input-group > .form-control').type(password)
   cy.get('button[type=submit]').click()
 
-  cy.contains('Authentication data is wrong').should('be.visible')
+  cy.contains(/Authentication data is wrong|Username or password is incorrect/).should('be.visible')
   //cy.get('.modal.show .modal-dialog .modal-content .modal-footer .btn').click()
   //cy.contains('Authentication data is wrong').should('not.be.visible')
 })
@@ -35,14 +35,20 @@ describe('Simple tests', () => {
   })
 
   it('login', () => {
-    cy.login('demo', 'demo')
-    cy.logout()
+    if (Cypress.env('ENV') === 'stage') {
+      cy.loginDefault()
+      cy.logout()
+    }
+    else {
+      cy.login('demo', 'demo')
+      cy.logout()
 
-    cy.login('mary', 'mary', 'Mary Anne')
-    cy.logout()
+      cy.login('mary', 'mary', 'Mary Anne')
+      cy.logout()
 
-    cy.login('john', 'john', "John Doe")
-    cy.logout()
+      cy.login('john', 'john', "John Doe")
+      cy.logout()
+    }
   })
 
   it('failed login 1', () => {

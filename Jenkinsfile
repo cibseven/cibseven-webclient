@@ -7,7 +7,6 @@ import de.cib.pipeline.library.kubernetes.BuildPodCreator
 import de.cib.pipeline.library.logging.Logger
 import de.cib.pipeline.library.ConstantsInternal
 import de.cib.pipeline.library.MavenProjectInformation
-import de.cib.pipeline.library.helm.HelmChartInformation
 import groovy.transform.Field
 
 @Field Logger log = new Logger(this)
@@ -64,8 +63,8 @@ pipeline {
         kubernetes {
             yaml BuildPodCreator.cibStandardPod(nodepool: Constants.NODEPOOL_STABLE)
                     .withContainerFromName(pipelineParams.mvnContainerName, pipelineParams.buildPodConfig[pipelineParams.mvnContainerName])
-                    .withHelm3Container()
-                    .withNode20Container()
+                    .withHelm4Container()
+                    .withNode24Container()
                     .asYaml()
             defaultContainer pipelineParams.mvnContainerName
         }
@@ -85,12 +84,14 @@ pipeline {
         booleanParam(
             name: 'RELEASE_BPM_SDK',
             defaultValue: false,
-            description: 'Build and deploy bpm-sdk to artifacts.cibseven.org'
+            description: 'Build and deploy bpm-sdk NPM package to artifacts.cibseven.org'
         )
         booleanParam(
             name: 'RELEASE_CIBSEVEN_COMPONENTS',
             defaultValue: false,
-            description: 'Build and deploy cibseven-components to artifacts.cibseven.org'
+            description: '''Build and deploy cibseven-components NPM package to artifacts.cibseven.org
+            - If not set, the package will only be released automatically on the primary branch when the version in package.json is a dev version and not yet published.
+            '''
         )
         booleanParam(
             name: 'DEPLOY_TO_ARTIFACTS',
@@ -193,7 +194,7 @@ pipeline {
                 stage('OWASP Dependency-Track') {
                     steps {
                         script {
-                            container(Constants.NODE_20_CONTAINER) {
+                            container(Constants.NODE_24_CONTAINER) {
                                 script {
 
                                     sh """
@@ -237,7 +238,7 @@ pipeline {
                 stage('Run SonarQube Checks') {
                     steps {
                         script {
-                            container(Constants.NODE_20_CONTAINER) {
+                            container(Constants.NODE_24_CONTAINER) {
                                 withSonarQubeEnv(credentialsId: Constants.SONARQUBE_CREDENTIALS_ID, installationName: 'SonarQube') {
                                     script {
                                         // Install sonar-scanner
@@ -371,7 +372,7 @@ pipeline {
             }
         }
 
-        stage('Release bpm-sdk') {
+        stage('Release npm bpm-sdk') {
             when {
                 allOf {
                     expression { params.RELEASE_BPM_SDK }
@@ -388,10 +389,15 @@ pipeline {
             }
         }
 
-        stage('Release cibseven-components') {
+        stage('Release npm cibseven-components') {
             when {
-                allOf {
+                anyOf {
                     expression { params.RELEASE_CIBSEVEN_COMPONENTS }
+                    allOf {
+                        branch pipelineParams.primaryBranch
+                        expression { isDevNpmVersion() }
+                        expression { isNpmVersionPublished() == false }
+                    }
                 }
             }
             steps {
@@ -484,20 +490,14 @@ pipeline {
                     expression { params.DEPLOY_ANY_BRANCH_TO_HARBOR }
                 }
             }
-	        steps {
-	            script {
-                    HelmChartInformation helmChartInformation = readHelmChart(path: 'helm/cibseven-webclient')
-                    helmChartInformation.setUploadVersion(mavenProjectInformation.version)
-                    helmChartInformation.setUploadAppVersion(mavenProjectInformation.version)
-                    deployHelmChart(
-                        helmChartInformation: helmChartInformation,
-                        updateDependencies: true,
-                        runChecks: true,
-                        dryRun: false
-                    )
-	            }
-	        }
-	    }
+            steps {
+                deployHelmChart(
+                    path: 'helm/cibseven-webclient',
+                    version: mavenProjectInformation.version,
+                    appVersion: mavenProjectInformation.version
+                )
+            }
+        }
     }
 
     post {
@@ -584,3 +584,33 @@ def isSNAPSHOTVersion() {
     return mavenProjectInformation.version.endsWith("-SNAPSHOT")
 }
 
+def isDevNpmVersion() {
+    def packageVersion = sh(
+        script: "grep '\"version\"' frontend/package.json | cut -d'\"' -f4",
+        returnStdout: true
+    ).trim()
+    return packageVersion.contains('-dev')    
+}
+
+def isNpmVersionPublished() {
+    def packageVersion = sh(
+        script: "grep '\"version\"' frontend/package.json | cut -d'\"' -f4",
+        returnStdout: true
+    ).trim()
+    def packageName = sh(
+        script: "grep '\"name\"' frontend/package.json | cut -d'\"' -f4",
+        returnStdout: true
+    ).trim()
+
+    def result
+    container(Constants.NODE_24_CONTAINER) {
+        result = sh(
+            script: "cd frontend && npm view ${packageName}@${packageVersion} version || echo 'not found'",
+            returnStdout: true
+        ).trim()
+    }
+
+    log.info "Checking if npm package ${packageName} with version ${packageVersion} is published. Result: ${result}"
+
+    return result == packageVersion
+}

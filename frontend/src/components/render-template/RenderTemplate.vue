@@ -55,7 +55,7 @@
 <script>
 import { permissionsMixin } from '@/permissions.js'
 import { TaskService } from '@/services.js'
-import IconButton from '@/components/render-template/IconButton.vue'
+import IconButton from '@/components/forms/IconButton.vue'
 import { SuccessAlert, BWaitingBox } from '@cib/common-frontend'
 import { ENGINE_STORAGE_KEY } from '@/constants.js'
 
@@ -273,12 +273,17 @@ export default {
         else if (e.data.method === 'updateFilters') this.updateFilters(e.data)
         else if (e.data.method === 'requestConfig') {
           // Securely provide config (auth token + engine) to iframe via postMessage
-          const engineName = localStorage.getItem(ENGINE_STORAGE_KEY)
+          const engineId = localStorage.getItem(ENGINE_STORAGE_KEY)
           const config = {
-            authToken: this.$root.user.authToken
+            authToken: this.$root.user.authToken,
+            engineRestUrl: this.$root.config.engineRestUrl,
+            engineRestPath: this.$root.config.engineRestPath
           }
-          if (engineName) {
-            config.engineName = engineName
+          if (engineId) {
+            // Engine ID can be either:
+            // - Simple string (default engine) -> use relative path
+            // - "url|path|engineName" format (additional engine) -> parse and use absolute URL
+            config.engineId = engineId
           }
           const response = {
             method: 'configResponse',

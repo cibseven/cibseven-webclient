@@ -25,11 +25,19 @@ export default [
   {
     name: 'app/files-to-lint',
     files: ['**/*.{js,mjs,jsx,vue}'],
+    ignores: ['playwright/**', 'cypress/**'],
   },
 
   {
     name: 'app/files-to-ignore',
-    ignores: ['**/dist/**', '**/dist-ssr/**', '**/coverage/**'],
+    ignores: [
+      '**/dist/**',
+      '**/dist-ssr/**',
+      '**/coverage/**',
+      '**/target/**',
+      '**/playwright-report/**',
+      '**/test-results/**',
+    ],
   },
 
   js.configs.recommended,
@@ -48,21 +56,29 @@ export default [
     ],
   },
 
+  {
+    // Playwright test files
+    files: [
+      'playwright/e2e/**/*.{spec,test}.{js,ts,jsx,tsx}',
+      'playwright/helpers/**/*.{js,ts,jsx,tsx}'
+    ],
+    rules: {
+      // Allow console.log in test files for debugging
+      'no-console': 'off',
+    },
+  },
+
   ...pluginVueA11y.configs["flat/recommended"],
   {
     rules: {
-      // Already set as error in vuejs-accessibility/recommended:
-      // "vuejs-accessibility/alt-text": "error",
-
-      // override rules settings here to make them warnings
-      "vuejs-accessibility/click-events-have-key-events": "warn",
-      "vuejs-accessibility/anchor-has-content": "warn",
-      "vuejs-accessibility/label-has-for": "warn",
-      "vuejs-accessibility/no-static-element-interactions": "warn",
-      "vuejs-accessibility/mouse-events-have-key-events": "warn",
-      "vuejs-accessibility/form-control-has-label": "warn",
-      "vuejs-accessibility/interactive-supports-focus": "warn",
-      "vuejs-accessibility/no-autofocus": "warn",
+      "vuejs-accessibility/label-has-for": [
+        "error",
+        {
+          "required": {
+            "every": ["id"]
+          },
+        }
+      ],
     }
   },
 

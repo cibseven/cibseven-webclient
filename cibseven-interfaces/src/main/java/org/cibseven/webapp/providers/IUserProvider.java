@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.auth.rest.StandardLogin;
 import org.cibseven.webapp.exception.InvalidUserIdException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.Authorization;
@@ -37,7 +38,7 @@ public interface IUserProvider {
 	public long countUsers(Map<String, Object> filters, CIBUser user) throws SystemException;
 	public Authorizations getUserAuthorization(String userId, CIBUser user);	
 	public Collection<SevenUser> fetchUsers(CIBUser user) throws SystemException;
-	public SevenVerifyUser verifyUser(String username, String password, CIBUser user) throws SystemException;
+	public SevenVerifyUser verifyUser(StandardLogin login, CIBUser user) throws SystemException;
 	public Collection<User> findUsers(Optional<String> id, Optional<String> firstName, Optional<String> firstNameLike, Optional<String> lastName, Optional<String> lastNameLike,
 			Optional<String> email, Optional<String> emailLike, Optional<String> memberOfGroup, Optional<String> memberOfTenant, Optional<String> idIn,
 			Optional<String> firstResult, Optional<String> maxResults, Optional<String> sortBy, Optional<String> sortOrder, CIBUser user);

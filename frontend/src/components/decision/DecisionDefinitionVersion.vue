@@ -18,26 +18,14 @@
 -->
 <template>
   <div v-if="decision" class="h-100">
-    <div @mousedown="handleMouseDown" class="v-resizable position-absolute w-100" style="left: 0" :style="'height: ' + bpmnViewerHeight + 'px; ' + toggleTransition">
+    <ViewerFrame :resizerMixin="this">
       <DmnViewer ref="diagram" class="h-100" />
-      <span role="button" size="sm" variant="light" class="bg-white px-2 py-1 me-1 position-absolute border rounded" style="bottom: 90px; right: 11px;" @click="toggleContent">
-        <span class="mdi mdi-18px" :class="toggleIcon"></span>
-      </span>
-    </div>
+    </ViewerFrame>
 
     <div class="position-absolute w-100" style="left: 0; z-index: 1" :style="'height: '+ tabsAreaHeight +'px; top: ' + (bottomContentPosition - tabsAreaHeight + 1) + 'px; ' + toggleTransition">
       <div class="d-flex align-items-end">
         <ScrollableTabsContainer :tabs-area-height="tabsAreaHeight">
-          <li class="nav-item m-0 flex-shrink-0 border-0" v-for="(tab, index) in tabs" :key="index">
-            <a role="button" @click="changeTab(tab)" class="nav-link py-2"
-              :class="{
-                'active active-tab-border': tab.active,
-                'bg-light': !tab.active,
-                'border-start-0': index === 0,
-              }">
-              {{ $t('decision.' + tab.id) }}
-            </a>
-          </li>
+          <GenericTabs :tabs="tabs" :modelValue="activeTab" @update:modelValue="changeTab" @tab-click=";"></GenericTabs>
         </ScrollableTabsContainer>
       </div>
     </div>
@@ -53,7 +41,9 @@
                     size="sm" class="mdi mdi-magnify mdi-24px text-secondary" variant="link"
                     :title="$t('searches.refreshAndFilter')"></b-button>
                   <div class="flex-grow-1">
+                    <label class="visually-hidden" for="filter-decision-instances">{{ $t('searches.filter') }}</label>
                     <input
+                      id="filter-decision-instances"
                       type="text"
                       :placeholder="$t('searches.filter')"
                       class="form-control-plaintext w-100"
@@ -89,13 +79,14 @@ import DmnViewer from '@/components/decision/DmnViewer.vue'
 import InstancesTable from '@/components/decision/InstancesTable.vue'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
 import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
-import { BWaitingBox } from '@cib/common-frontend'
+import ViewerFrame from '@/components/common-components/ViewerFrame.vue'
+import { BWaitingBox, GenericTabs } from '@cib/common-frontend'
 import { mapGetters, mapActions } from 'vuex'
 import { debounce } from '@/utils/debounce.js'
 
 export default {
   name: 'DecisionDefinitionVersion',
-  components: { DmnViewer, InstancesTable, BWaitingBox, ScrollableTabsContainer },
+  components: { DmnViewer, InstancesTable, ViewerFrame, BWaitingBox, GenericTabs, ScrollableTabsContainer },
   mixins: [permissionsMixin, resizerMixin],
   props: {
     versionIndex: String,
@@ -105,7 +96,7 @@ export default {
   data: function() {
     return {
       topBarHeight: 0,
-      tabs: [ { id: 'instances', active: true } ],
+      tabs: [ { id: 'instances', text: 'decision.instances' } ],
       activeTab: 'instances',
       sortByDefaultKey: 'evaluationTime',
       sorting: false,
@@ -136,10 +127,7 @@ export default {
   methods: {
     ...mapActions(['getXmlById', 'getHistoricDecisionInstances']),
     changeTab: function(selectedTab) {
-      this.tabs.forEach((tab) => {
-        tab.active = tab.id === selectedTab.id
-      })
-      this.activeTab = selectedTab.id
+      this.activeTab = selectedTab
     },
     loadDiagram() {
       this.getXmlById(this.decision.id)
@@ -195,8 +183,3 @@ export default {
   }
 }
 </script>
-<style scoped>
-.active-tab-border {
-  border-bottom: 3px solid white!important;
-}
-</style>

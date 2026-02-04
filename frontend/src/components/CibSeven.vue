@@ -119,7 +119,9 @@
 
       <template v-slot:userItems>
         <b-dropdown-item v-if="$root.user && $root.config.layout.showUserSettings && !applicationPermissionsDenied($root.config.permissions.userProfile, 'userProfile')"
-          :to="'/seven/auth/account/' + $root.user.id" :title="$t('seven.account')">{{ $t('seven.account') }}</b-dropdown-item>
+          :to="'/seven/auth/account/' + $root.user.id"
+          :active="isMenuItemActive({active: ['seven/auth/account']})"
+          :title="$t('admin.users.profile')">{{ $t('admin.users.profile') }}</b-dropdown-item>
       </template>
     </CIBHeaderFlow>
 
@@ -319,11 +321,12 @@ export default {
       }).sort((objA, objB) => {
         const nameA = objA.name ? objA.name.toUpperCase() : objA.name
         const nameB = objB.name ? objB.name.toUpperCase() : objB.name
-        let comp = nameA < nameB ? -1 : (nameA > nameB ? 1 : 0)
+        const compareAMoreB = nameA > nameB ? 1 : 0
+        let comp = nameA < nameB ? -1 : compareAMoreB
 
         if (this.$root.config.subProcessFolder) {
-          if (objA.resource.indexOf(this.$root.config.subProcessFolder) > -1) comp = 1
-          else if (objB.resource.indexOf(this.$root.config.subProcessFolder) > -1) comp = -1
+          if (objA.resource.includes(this.$root.config.subProcessFolder)) comp = 1
+          else if (objB.resource.includes(this.$root.config.subProcessFolder)) comp = -1
         }
         return comp
       })
@@ -427,6 +430,7 @@ export default {
       localStorage.removeItem('tokenModeler')
       sessionStorage.removeItem('accessToken')
       sessionStorage.removeItem('tokenModeler')
+      // Note: engine token cleanup is handled by CIBHeaderFlow.logout()
     },
     openStartProcess: function() {
       this.$eventBus.emit('openStartProcess')

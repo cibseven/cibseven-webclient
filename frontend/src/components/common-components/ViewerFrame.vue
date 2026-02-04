@@ -17,27 +17,29 @@
 
 -->
 <template>
-  <b-button :size="size" :variant="variant" :title="text" :disabled="disabled">
-    <span :class="setIconClasses" class="d-inline-block align-middle" style="line-height: 0;"></span>
-    <span class="d-none d-sm-inline">{{ text }}</span>
-  </b-button>
+  <div @mousedown="resizerMixin.handleMouseDown"
+    class="v-resizable position-absolute w-100" style="left: 0"
+    :style="'height: ' + resizerMixin.bpmnViewerHeight + 'px; ' + resizerMixin.toggleTransition">
+
+    <slot></slot>
+
+    <b-button size="sm" variant="light" class="me-1 position-absolute" style="bottom: 90px; right: 11px;"
+      @click="resizerMixin.toggleContent"
+      :title="resizerMixin.toggleIcon === 'mdi-chevron-up' ? $t('task.collapse') : $t('task.expand')">
+      <span class="mdi mdi-18px" :class="resizerMixin.toggleIcon"></span>
+    </b-button>
+
+  </div>
 </template>
 
 <script>
 export default {
-  name: 'IconButton',
+  name: 'ViewerFrame',
   props: {
-    variant: { type: String, default: 'outline-secondary' },
-    icon: String,
-    font: { type: Number, default: 18 },
-    size: { type: String, default: 'sm' },
-    disabled: { type: Boolean, default: false },
-    text: String
-  },
-  computed: {
-    setIconClasses: function() {
-      return 'icon-cib-' + this.font + 'px icon-' + this.icon
+    resizerMixin: {
+      type: Object,
+      required: true,
     }
-  }
+  },
 }
 </script>

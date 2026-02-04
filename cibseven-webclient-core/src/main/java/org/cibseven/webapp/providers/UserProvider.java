@@ -30,6 +30,7 @@ import java.util.Optional;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenResourceType;
+import org.cibseven.webapp.auth.rest.StandardLogin;
 import org.cibseven.webapp.exception.InvalidUserIdException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.providers.utils.URLUtils;
@@ -47,6 +48,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -56,7 +59,8 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 	
 	@Value("${cibseven.webclient.user.provider:org.cibseven.webapp.auth.SevenUserProvider}") String userProvider;
 	@Value("${cibseven.webclient.users.search.wildcard:}") String wildcard;
-	
+	private final ObjectMapper objectMapper = new ObjectMapper();
+
 	@Override
 	public Authorizations getUserAuthorization(String userId, CIBUser user) {
 		Authorizations auths = new Authorizations();
@@ -141,11 +145,21 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 		return Arrays.asList(((ResponseEntity<SevenUser[]>) doGet(url, SevenUser[].class, user, false)).getBody());	
 	}
 	
-	public SevenVerifyUser verifyUser(String username, String password, CIBUser user) throws SystemException {
+	public SevenVerifyUser verifyUser(StandardLogin login, CIBUser user) throws SystemException {
 		String url = getEngineRestUrl(user) + "/identity/verify";
-		String body = "{\"username\": \"" + username + "\", \"password\": \"" + password + "\"}";
-		return ((ResponseEntity<SevenVerifyUser>) doPost(url, body, SevenVerifyUser.class, user)).getBody();	
-	}	
+
+		String bodyString;
+		ObjectNode loginNode = objectMapper.createObjectNode();
+		if (login.getUsername() != null) loginNode.put("username", login.getUsername());
+		if (login.getPassword() != null) loginNode.put("password", login.getPassword());
+		try {
+			bodyString = objectMapper.writeValueAsString(loginNode);
+		} catch (JsonProcessingException e) {
+			throw new SystemException(e);
+		}
+
+		return doPost(url, bodyString, SevenVerifyUser.class, user).getBody();	
+	}
 	
 	@Override
 	public Collection<User> findUsers(Optional<String> id, Optional<String> firstName, Optional<String> firstNameLike, Optional<String> lastName,

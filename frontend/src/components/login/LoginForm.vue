@@ -20,37 +20,36 @@
 <template>
   <div>
     <CIBForm @submitted="onLogin">
-      <b-form-group label-cols="4" :label="$t('login.username')" :invalid-feedback="$t('errors.invalid')">
-        <input ref="username" v-model="credentials.username" class="form-control" required autofocus autocomplete="username">
+      <b-form-group label-cols="4" content-cols="8" :label="$t('login.username')" :invalid-feedback="$t('errors.invalid')">
+        <input ref="username" v-model="credentials.username" class="form-control" required autocomplete="username">
       </b-form-group>
-      <b-form-group label-cols="4" :label="$t('login.password')">
-        <SecureInput ref="password" v-model="credentials.password" class="col-8" required></SecureInput>
-      </b-form-group>
+      <SecureInput ref="password" v-model="credentials.password" required></SecureInput>
 
       <slot></slot>
 
       <div class="d-flex justify-content-between">
-        <div class="form-group float-start">
+        <div class="form-group float-start d-flex align-items-center">
           <b-form-checkbox v-model="rememberMe">{{ $t('login.rememberMe') }}</b-form-checkbox>
         </div>
         <div v-if="!hideForgotten" class="form-group float-end">
-          <a class="text-primary" style="cursor:pointer" @click="$refs.emailDialog.show()">{{ $t('login.forgotten') }}</a>
+          <b-button variant="link" type="button" class="text-primary" style="cursor:pointer" @click="$refs.emailDialog.show()">{{ $t('login.forgotten') }}</b-button>
         </div>
       </div>
 
       <div class="form-group">
         <button type="submit" class="btn btn-primary btn-block w-100">{{ $t('login.login') }}</button>
       </div>
-      <div v-if="onRegister" class="form-group text-center">
+      <div v-if="onRegister" class="form-group text-center d-flex justify-content-center align-items-center">
         {{ $t('login.register') }}
-        <a @click="onRegister" class="text-primary" style="cursor:pointer">{{ $t('login.registerLink') }}</a>
+        <b-button variant="link" @click="onRegister" class="text-primary" style="cursor:pointer">{{ $t('login.registerLink') }}</b-button>
       </div>
     </CIBForm>
 
     <b-modal ref="emailDialog" :title="$t('login.forgotten')" @shown="$refs.email.focus()">
       <CIBForm ref="form" @submitted="onForgotten">
         <b-form-group :invalid-feedback="$t('errors.invalid')">
-          <input ref="email" :type="forgottenType" :placeholder="$t('login.email')" class="form-control" required autocomplete="email">
+          <label for="email" class="mb-2">{{ $t('login.email') }}</label>
+          <input id="email" ref="email" :type="forgottenType" :placeholder="$t('login.email')" class="form-control" required autocomplete="email">
         </b-form-group>
       </CIBForm>
       <template v-slot:modal-footer>

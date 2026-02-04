@@ -21,8 +21,8 @@
     <form ref="formAdvancedSearch" @submit.stop.prevent="handleSubmit">
       <div class="row mb-3">
         <div class="col-5">
-          <label>{{ $t('advanced-search.criteriaKey') }}</label>
-          <b-form-select v-model="selectedCriteriaKey" :options="criteriaKeys">
+          <label for="criteriaKey">{{ $t('advanced-search.criteriaKey') }}</label>
+          <b-form-select id="criteriaKey" v-model="selectedCriteriaKey" :options="criteriaKeys">
             <template v-slot:first>
               <b-form-select-option :value="null" disabled>-- {{ $t('advanced-search.selectProperty') }} --</b-form-select-option>
             </template>
@@ -63,7 +63,7 @@
             <span v-else> {{ row.item.value }} </span>
           </template>
           <template v-slot:cell(buttons)="row">
-            <b-button class="p-0 px-2 border-0 mdi mdi-24px mdi-delete-outline shadow-none" variant="link" @click="deleteCriteria(row.index)"></b-button>
+            <CellActionButton icon="mdi-delete-outline" @click="deleteCriteria(row.index)" :title="$t('nav-bar.filters.delete')"></CellActionButton>
           </template>
         </FlowTable>
 
@@ -87,10 +87,11 @@
 
 <script>
 import { FlowTable } from '@cib/common-frontend'
+import CellActionButton from '@/components/common-components/CellActionButton.vue'
 
 export default {
   name: 'AdvancedSearchModal',
-  components: { FlowTable },
+  components: { FlowTable, CellActionButton },
   emits: ['refresh-tasks'],
   data: function () {
     return {
@@ -125,7 +126,7 @@ export default {
       if (this.$store.state.advancedSearch.criterias.length > 0) {
         this.matchAllCriteria = this.$store.state.advancedSearch.matchAllCriteria
         this.criterias = this.$store.state.advancedSearch.criterias.map(criteria => {
-          return Object.assign({}, criteria)
+          return { ...criteria }
         })
       }
       this.$refs.advancedSearchModal.show()

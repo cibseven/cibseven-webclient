@@ -19,6 +19,7 @@ package org.cibseven.webapp.rest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.auth.rest.StandardLogin;
 import org.cibseven.webapp.rest.model.Credentials;
 import org.cibseven.webapp.rest.model.User;
 import org.cibseven.webapp.rest.model.NewUser;
@@ -47,6 +48,6 @@ public class BaseUsersTestHelper {
 	}
 	
 	public SevenVerifyUser verifyUser(String id, String password, CIBUser user) {
-		return userProvider.verifyUser(id, password, user);
+		return userProvider.verifyUser(new StandardLogin(id, password), user);
 	}
 }

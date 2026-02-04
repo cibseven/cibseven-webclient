@@ -21,16 +21,16 @@
     <div>
       <p>{{ getStateMsg }}</p>
       <b-form-group>
-        <b-form-checkbox v-model="includeExistingJob">
+        <b-form-checkbox v-model="includeExistingJob" id="includeExisting">
           {{ $t('process-instance.jobDefinitions.includeExisting') }}
         </b-form-checkbox>
-        <label class="fw-medium mt-2 mb-1">{{ $t('process-instance.jobDefinitions.execute') }}</label>
+        <label for="includeExisting" class="fw-medium mt-2 mb-1">{{ $t('process-instance.jobDefinitions.execute') }}</label>
         <div class="form-check" v-for="option in executionOptions" :key="option">
           <input class="form-check-input" type="radio" :id="option" :value="option" v-model="executionOption" />
           <label class="form-check-label" :for="option">{{ $t('process-instance.jobDefinitions.' + option) }}</label>
         </div>
         <div v-if="executionOption === 'delayed'" class="row">
-          <label class="fw-medium mt-2 mb-1">{{ $t('process-instance.jobDefinitions.scheduleAt') }}</label>
+          <p class="fw-medium mt-2 mb-1">{{ $t('process-instance.jobDefinitions.scheduleAt') }}</p>
           <div class="col-6">
             <b-form-datepicker v-model="scheduledAt.date" size="sm" :date-disabled-fn="isInThePast" input-class="text-start">
               <template v-slot:prepend>
@@ -101,8 +101,8 @@ methods: {
       const minutes = now.getMinutes().toString().padStart(2, '0')
       this.invalidDate = false
       this.selectedJobDefinition = selectedJobDefinition
-      this.includeExistingJob = true,
-      this.executionOption = 'immediately',
+      this.includeExistingJob = true
+      this.executionOption = 'immediately'
       this.scheduledAt = { date: new Date(), time: `${hours}:${minutes}` }
       this.$refs.changeJobStateModal.show()
     },

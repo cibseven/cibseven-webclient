@@ -28,12 +28,13 @@ import { createAppRouter, appRoutes } from './router.js'
 import registerComponents from './register.js'
 import { permissionsMixin }  from './permissions.js'
 
-import { InfoService, AuthService, setServicesBasePath } from './services.js'
-import { hasHeader, isMobile, checkExternalReturn,
+import { InfoService, setServicesBasePath } from './services.js'
+import { hasHeader, checkExternalReturn,
   getTheme, loadTheme, applyTheme,
-  handleAxiosError, fetchAndStoreProcesses, fetchDecisionsIfEmpty, setupTaskNotifications } from './utils/init'
+  handleAxiosError, fetchAndStoreProcesses, setupTaskNotifications } from './utils/init'
 import { applyConfigDefaults } from './utils/config.js'
 import { i18n, switchLanguage } from './i18n'
+import { createProvideObject } from './utils/provide.js'
 
 // check for token inside hash
 // if it exists => redirect to new uri
@@ -70,24 +71,7 @@ Promise.all([
         el: '#app',
         mixins: [permissionsMixin],
         provide: function() {
-          return {
-            currentLanguage(lang) {
-              // get language
-              if (!lang) return i18n.global.locale
-              // set language
-              return switchLanguage(config, lang).then(() => {
-                return i18n.global.locale
-              })
-            },
-            loadProcesses(extraInfo) {
-                return fetchAndStoreProcesses(this, this.$store, config, extraInfo)
-            },
-            async loadDecisions() {
-              return fetchDecisionsIfEmpty(this.$store)
-            },
-            isMobile: isMobile,
-            AuthService: AuthService
-          }
+          return createProvideObject(config, this, this.$store)
         },
         data: function() {
           const imagePath = 'webjars/seven/components/password/reset-password.svg'

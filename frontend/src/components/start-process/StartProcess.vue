@@ -30,17 +30,16 @@
       <div v-else-if="!hideProcessSelection">
         <div class="form-group mt-3">
           <div class="input-group">
-            <div class="input-group-append">
-              <label class="btn border-end-0 border-light" style="cursor: default"><span class="mdi mdi-magnify"
-                style="line-height: initial"></span></label>
-            </div>
-            <input class="form-control border-start-0 border-light" type="text" :placeholder="$t('searches.search')" v-model.trim="processesFilter" :disabled="isStartingProcess">
+            <label for="processesFilter" class="btn border-end-0 border-light" style="cursor: default">
+              <span class="mdi mdi-magnify" style="line-height: initial"></span>
+            </label>
+            <input id="processesFilter" class="form-control border-start-0 border-light" type="text" :placeholder="$t('searches.search')" v-model.trim="processesFilter" :disabled="isStartingProcess">
           </div>
         </div>
         <b-list-group v-if="startableProcesses.length > 0" >
-          <b-list-group-item v-for="process of startableProcesses" :key="process.key" class="p-1 d-flex align-items-center">
-            <b-button :disabled="isStartingProcess" variant="link" @click="startProcess(process)">
-              <HighlightedText :text="process.name ? process.name : process.key" :keyword="processesFilter"></HighlightedText>
+          <b-list-group-item v-for="process of startableProcesses" :key="process.key" class="p-1 d-flex align-items-center" tabindex="-1" style="cursor: default">
+            <b-button :disabled="isStartingProcess" variant="link" @click="startProcess(process)" v-b-popover.hover.right="process.description">
+              <HighlightedText :text="process.name || process.key" :keyword="processesFilter"></HighlightedText>
             </b-button>
             <span v-if="process.tenantId" class="fst-italic">{{ process.tenantId }}</span>
             <BWaitingBox v-if="isStartingProcess && process.loading" class="d-inline ms-auto me-1 float-end" styling="width: 24px"></BWaitingBox>
@@ -82,12 +81,13 @@ export default {
     startableProcesses: function() {
       return this.$store.state.process.list.filter(process => {
         return process.startableInTasklist === true && !process.revoked && process.suspended !== 'true' &&
-          (process.name ? process.name.toLowerCase().indexOf(this.processesFilter.toLowerCase()) !== -1 :
-          process.key.toLowerCase().indexOf(this.processesFilter.toLowerCase()) !== -1)
+          (process.name ? process.name.toLowerCase().includes(this.processesFilter.toLowerCase()) :
+          process.key.toLowerCase().includes(this.processesFilter.toLowerCase()))
       }).sort((objA, objB) => {
         const nameA = objA.name ? objA.name.toUpperCase() : objA.key.toUpperCase()
         const nameB = objB.name ? objB.name.toUpperCase() : objB.key.toUpperCase()
-        return nameA < nameB ? -1 : (nameA > nameB ? 1 : 0)
+        const compareAMoreB = nameA > nameB ? 1 : 0
+        return nameA < nameB ? -1 : compareAMoreB
       })
     },
     processName: function() {

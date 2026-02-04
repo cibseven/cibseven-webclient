@@ -43,12 +43,13 @@
             <b-dropdown-item @click="changeViewMode('image-outline')" :active="view === 'image-outline'">
               <span class="mdi mdi-24px mdi-image-outline centered-icon">{{ $t('process.image-outline') }}</span>
             </b-dropdown-item>
-            <b-dropdown-item @click="changeViewMode('view-module')" :active="view === 'view-module'">
-              <span class="mdi mdi-24px mdi-view-module centered-icon">{{ $t('process.view-module') }}</span>
-            </b-dropdown-item>
             <b-dropdown-item @click="changeViewMode('view-comfy')" :active="view === 'view-comfy'">
               <span class="mdi mdi-24px mdi-view-comfy centered-icon">{{ $t('process.view-comfy') }}</span>
             </b-dropdown-item>
+            <b-dropdown-item @click="changeViewMode('view-module')" :active="view === 'view-module'">
+              <span class="mdi mdi-24px mdi-view-module centered-icon">{{ $t('process.view-module') }}</span>
+            </b-dropdown-item>
+            <b-dropdown-divider></b-dropdown-divider>
             <b-dropdown-item @click="changeViewMode('view-list')" :active="view === 'view-list'">
               <span class="mdi mdi-24px mdi-view-list centered-icon">{{ $t('process.view-list') }}</span>
             </b-dropdown-item>
@@ -58,14 +59,17 @@
     </div>
     <div class="container-fluid overflow-auto h-100" :class="!isTable ? 'bg-light' : ''">
       <div v-if="processesByOptions.length && isTable" class="d-flex h-100">
-        <ProcessTable :processes="processesByOptions" @start-process="startProcess($event)" @view-process="viewProcess($event)" @favorite="favoriteHandler($event)"></ProcessTable>
+        <ProcessTable :processes="processesByOptions" :processesFilter="filter" @start-process="startProcess($event)" @view-process="viewProcess($event)" @favorite="favoriteHandler($event)"></ProcessTable>
       </div>
       <div v-if="processesByOptions.length && !isTable" class="d-flex flex-wrap px-5 pt-3 justify-content-center">
         <div v-for="process in processesByOptions" :key="process.id">
-          <ProcessCard v-if="view !== 'image-outline'" :process="process" :process-name="processName(process)" :view="view"
-            @start-process="startProcess($event)" @view-process="viewProcess($event)" @favorite="favoriteHandler($event)"></ProcessCard>
-          <ProcessAdvanced v-else :process="process" :process-name="processName(process)" :view="view"
-            @start-process="startProcess($event)" @view-process="viewProcess($event)" @favorite="favoriteHandler($event)"></ProcessAdvanced>
+          <ProcessCard
+            :process="process" :view="view"
+            :filter="filter"
+            @start-process="startProcess($event)"
+            @view-process="viewProcess($event)"
+            @favorite="favoriteHandler($event)">
+          </ProcessCard>
         </div>
       </div>
       <div v-if="!processesByOptions.length">
@@ -91,8 +95,7 @@
 <script>
 import { permissionsMixin } from '@/permissions.js'
 import ProcessTable from '@/components/start-process/ProcessTable.vue'
-import ProcessAdvanced from '@/components/process/ProcessAdvanced.vue'
-import ProcessCard from '@/components/process/ProcessCard.vue'
+import ProcessCard from '@/components/start-process/ProcessCard.vue'
 import StartProcess from '@/components/start-process/StartProcess.vue'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
 import { SuccessAlert } from '@cib/common-frontend'
@@ -100,7 +103,7 @@ import { ProcessService } from '@/services.js'
 
 export default {
   name: 'StartProcessList',
-  components: { ProcessTable, ProcessAdvanced, ProcessCard, StartProcess, BpmnViewer, SuccessAlert },
+  components: { ProcessTable, ProcessCard, StartProcess, BpmnViewer, SuccessAlert },
   inject: ['loadProcesses', 'isMobile'],
   mixins: [permissionsMixin],
   data: function () {
@@ -131,11 +134,12 @@ export default {
       }).sort((objA, objB) => {
         const nameA = objA.name ? objA.name.toUpperCase() : objA.name
         const nameB = objB.name ? objB.name.toUpperCase() : objB.name
-        let comp = nameA < nameB ? -1 : (nameA > nameB ? 1 : 0)
+        const compareAMoreB = nameA > nameB ? 1 : 0
+        let comp = nameA < nameB ? -1 : compareAMoreB
 
         if (this.$root.config.subProcessFolder) {
-          if (objA.resource.indexOf(this.$root.config.subProcessFolder) > -1) comp = 1
-          else if (objB.resource.indexOf(this.$root.config.subProcessFolder) > -1) comp = -1
+          if (objA.resource.includes(this.$root.config.subProcessFolder)) comp = 1
+          else if (objB.resource.includes(this.$root.config.subProcessFolder)) comp = -1
         }
         return comp
       })
@@ -204,6 +208,12 @@ export default {
 </script>
 
 <style lang="css" scoped>
+/* Customizing the separator to reduce gap */
+.dropdown-divider {
+  margin-top: 0.15rem; /* Reduce top gap */
+  margin-bottom: 0.15rem; /* Reduce bottom gap */
+}
+
 .centered-icon {
   /* vertically center the Material Design icon with the text */
   display: inline-flex;

@@ -90,7 +90,9 @@
       <div class="overflow-auto flex-fill border-bottom" @scroll="handleScrollTasks">
         <div v-if="tasksFiltered.length > 0">
           <b-list-group class="mx-3">
-            <b-list-group-item @click="selectedTask(task)" v-for="task of tasksFiltered" :key="task.id" :ref="'taskItem-' + task.id" @mouseenter="focused = task" @mouseleave="focused = null"
+            <b-list-group-item @click="selectedTask(task)" v-for="task of tasksFiltered" :key="task.id" :ref="'taskItem-' + task.id"
+              @mouseenter="focused = task" @focusin="focused = task"
+              @mouseleave="focused = null" @focusout="focused = null"
               class="rounded-0 mt-3 p-2 bg-white border-0" :class="task.id === $route.params.taskId ? 'active shadow' : ''" draggable="false"
               tabindex=0 style="cursor: pointer" v-on:keyup.enter="selectedTask(task)" action>
               <div class="d-flex align-items-center">
@@ -142,11 +144,6 @@
               </b-modal>
             </b-list-group-item>
           </b-list-group>
-  <!-- 				<div v-if="tasksFiltered.length >= taskResultsIndex" class="text-center mt-3"> -->
-  <!-- 					<b-button variant="outline-secondary" @click="$emit('show-more')"> -->
-  <!-- 						{{ $t('task.showMore') }} -->
-  <!-- 					</b-button> -->
-  <!-- 				</div> -->
         </div>
         <BWaitingBox v-show="tasksFiltered.length < 1" ref="taskLoader" class="d-flex justify-content-center pt-4" styling="width:30%">
           <div v-if="tasksFiltered.length < 1 && $store.state.filter.selected.name === 'default'">
@@ -356,7 +353,7 @@ export default {
         }
       }
       Promise.all(promises).then(results => {
-        if (results.some(r => { return r })) this.$emit('selected-task', task)
+        if (results.some(Boolean)) this.$emit('selected-task', task)
         else {
           this.$root.$refs.error.show({ type: 'AccessDeniedException', params: [task.id] })
           this.$router.push('/seven/auth/tasks/' + this.$store.state.filter.selected.id)

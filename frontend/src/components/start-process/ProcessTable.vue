@@ -18,9 +18,27 @@
 -->
 <template>
   <div class="container overflow-auto h-100 bg-white shadow-sm border rounded">
-    <FlowTable striped :items="processes" primary-key="id" prefix="process." :fields="fields" @select="focused = $event[0]" @mouseenter="focused = $event" @mouseleave="focused = null">
+    <FlowTable striped :items="processes" primary-key="id" prefix="process." :fields="fields" @select="focused = $event[0]"
+      @mouseenter="focused = $event" @focusin="focused = $event"
+      @mouseleave="focused = null" @focusout="focused = null">
       <template v-slot:cell(favorite)="table">
         <b-button :title="$t('process.favorite')" tabindex="-1" @click="$emit('favorite', table.item)" variant="link" class="mdi mdi-24px" :class="table.item.favorite ? 'mdi-star text-primary' : 'mdi-star-outline text-secondary'"></b-button>
+      </template>
+      <template v-slot:cell(name)="table">
+        <b-button variant="link" @click="$emit('start-process', table.item)" :title="table.item.name || table.item.key" class="ps-0 pe-0 text-start">
+          <HighlightedText :text="table.item.name || table.item.key" :keyword="processesFilter"/>
+        </b-button>
+      </template>
+      <template v-slot:cell(key)="table">
+        <HighlightedText :text="table.item.key" :keyword="processesFilter" :title="table.item.key"/>
+      </template>
+      <template v-slot:cell(tenantId)="table">
+        <div class="text-truncate" :title="$t('process.tenant') + ': ' + table.item.tenantId">{{ table.item.tenantId }}</div>
+      </template>
+      <template v-slot:cell(description)="table">
+        <div v-if="getDescription(table.item)" v-b-popover.hover.left="getDescription(table.item)" v-html="getDescription(table.item)"
+          :class="['inline-description', { 'with-mask': isDescriptionTruncated(table.item) }]" >
+        </div>
       </template>
       <template v-slot:cell(actions)="table">
         <transition name="fade">
@@ -29,25 +47,25 @@
           </div>
         </transition>
       </template>
-      <template v-slot:cell(description)="table">
-        <div v-if="$te('process-descriptions.' + table.item.key)" v-b-popover.hover.left="$t('process-descriptions.' + table.item.key)" class="text-truncate">
-          {{ $t('process-descriptions.' + table.item.key) }}
-        </div>
-      </template>
     </FlowTable>
   </div>
 </template>
 
 <script>
-import { permissionsMixin } from '@/permissions.js'
-import processesMixin from '@/components/process/mixins/processesMixin.js'
-import { FlowTable } from '@cib/common-frontend'
+import { FlowTable, HighlightedText } from '@cib/common-frontend'
 
 export default {
   name: 'ProcessTable',
-  components: { FlowTable },
-  mixins: [permissionsMixin, processesMixin],
-  props: { processes: Array },
+  components: { FlowTable, HighlightedText },
+  props: {
+    processes: Array,
+    processesFilter: String
+  },
+  data() {
+    return {
+      focused: null
+    }
+  },
   emits: ['favorite', 'start-process'],
   computed: {
     fields: function() {
@@ -60,6 +78,34 @@ export default {
           { label: 'actions', key: 'actions', sortable: false, tdClass: 'py-0', class: 'col-2 d-flex justify-content-center' },
         ]
     }
-  }
+  },
+  methods: {
+    getDescription(process) {
+      if (this.$te('process-descriptions.' + process.key)) return this.$t('process-descriptions.' + process.key)
+      return process.description || ''
+    },
+    isDescriptionTruncated(process) {
+      const desc = this.getDescription(process)
+      if (!desc) return false
+      // Approximate: check if text length suggests more than 5 lines (rough estimate)
+      const avgCharsPerLine = 25
+      return desc.length > (avgCharsPerLine * 5)
+    }
+  }  
 }
 </script>
+
+<style lang="css" scoped>
+.inline-description {
+  display: -webkit-box;
+  line-clamp: 5;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.inline-description.with-mask {
+  -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+}
+</style>

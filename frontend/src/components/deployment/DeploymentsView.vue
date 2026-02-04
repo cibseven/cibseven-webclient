@@ -26,7 +26,9 @@
               size="sm" class="mdi mdi-magnify mdi-18px text-secondary py-0" variant="link"
               :title="$t('searches.search')"></b-button>
             <div class="flex-grow-1">
+              <label class="visually-hidden" for="filter-deployment-list">{{ $t('searches.search') }}</label>
               <input
+                id="filter-deployment-list"
                 type="text"
                 v-model.trim="filter"
                 :placeholder="$t('searches.search')"
@@ -475,7 +477,7 @@ export default {
         d.name = d.name || d.id
 
         let group = '-'
-        let name = '-'
+        let name
         if (this.sortBy === 'name') {
           group = (d.name || '-')[0].toUpperCase() || '-'
           name = group

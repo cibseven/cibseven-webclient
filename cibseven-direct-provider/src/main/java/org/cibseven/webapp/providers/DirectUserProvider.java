@@ -43,6 +43,7 @@ import org.cibseven.bpm.engine.rest.dto.task.UserDto;
 import org.cibseven.bpm.engine.rest.util.QueryUtil;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenResourceType;
+import org.cibseven.webapp.auth.rest.StandardLogin;
 import org.cibseven.webapp.exception.InvalidUserIdException;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
@@ -167,13 +168,15 @@ public class DirectUserProvider implements IUserProvider {
 	}
 
 	@Override
-	public SevenVerifyUser verifyUser(String username, String password, CIBUser user) throws SystemException {
-		if ((username == null || username.isBlank()) || (password == null || password.isBlank()))
+	public SevenVerifyUser verifyUser(StandardLogin login, CIBUser user) throws SystemException {
+		if ((login.getUsername() == null || login.getUsername().isBlank()) || 
+				(login.getPassword() == null || login.getPassword().isBlank()))
 			throw new SystemException("Username and password are required");
 		SevenVerifyUser verifyUser = new SevenVerifyUser();
-		boolean valid = directProviderUtil.getProcessEngine(user).getIdentityService().checkPassword(username, password);
+		boolean valid = directProviderUtil.getProcessEngine(user).getIdentityService()
+				.checkPassword(login.getUsername(), login.getPassword());
 		verifyUser.setAuthenticated(valid);
-		verifyUser.setAuthenticatedUser(username);
+		verifyUser.setAuthenticatedUser(login.getUsername());
 		return verifyUser;
 	}
 

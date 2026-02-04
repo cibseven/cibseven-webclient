@@ -145,9 +145,14 @@ export default {
       this.loader = true
       this.viewer.importXML(xml).then(() => {
         setTimeout(() => {
-          this.viewer.get('canvas').zoom('fit-viewport')
-          this.loader = false
-          this.highlightElement(selectedActivityId)
+          if (!this.viewer || !this.$refs.diagram) return
+          try {
+            this.viewer.get('canvas').zoom('fit-viewport')
+            this.loader = false
+            this.highlightElement(selectedActivityId)
+          } catch {
+            console.warn('BpmnViewer: Unable to zoom diagram, component may have been unmounted')
+          }
         }, 500)
       })
     },
@@ -343,7 +348,7 @@ export default {
       
       // Add transitions not in historyStatistics
       this.activityInstance.childTransitionInstances.forEach(trans => {
-        if (!historyStatistics.find(hs => hs.id === trans.activityId)) {
+        if (!historyStatistics.some(hs => hs.id === trans.activityId)) {
           merged.push({
             id: trans.activityId,
             instances: 1,
@@ -380,7 +385,7 @@ export default {
       
       // Add historyStatistics not in this.statistics
       historyStatistics?.forEach(hs => {
-        if (!this.statistics.find(s => s.id === hs.id)) {
+        if (!this.statistics.some(s => s.id === hs.id)) {
           merged.push(hs)
         }
       })

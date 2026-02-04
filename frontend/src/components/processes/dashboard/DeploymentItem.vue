@@ -18,19 +18,15 @@
 -->
 <template>
   <div class="col-3 my-2">
-    <router-link :to="link" :title="tooltip" class="text-decoration-none">
-      <div class="py-3 text-center rounded hovered"
-        :class="{ clicked: isClicked }"
-        @mousedown="isClicked = true"
-        @mouseup="isClicked = false"
-        @mouseleave="isClicked = false"
-      >
-        <h5 class="link-dark">{{ title }}</h5>
-        <h2 class="link-dark">
-          <span v-if="count !== null" :class="computedValueClass">{{ count }}</span>
-          <span v-else><BWaitingBox class="d-inline" styling="width: 24px" :title="$t('admin.loading')"></BWaitingBox></span>
-        </h2>
-      </div>
+    <router-link :to="link" :title="tooltip" class="text-decoration-none py-3 text-center rounded hovered" 
+      :class="{ 'clicked': isClicked }"
+      @mousedown="isClicked = true" @mouseup="isClicked = false"
+      @mouseleave="isClicked = false" @focusout="isClicked = false">
+      <h5 class="link-dark">{{ title }}</h5>
+      <h2 class="link-dark">
+        <span v-if="count !== null" :class="computedValueClass">{{ count }}</span>
+        <span v-else><BWaitingBox class="d-inline" styling="width: 24px" :title="$t('admin.loading')"></BWaitingBox></span>
+      </h2>
     </router-link>
   </div>
 </template>
@@ -62,11 +58,13 @@ export default {
 
 <style lang="css" scoped>
 .hovered {
+  display: block;
   transition: background-color 0.3s ease;
   background-color: var(--bs-light);
 }
-.hovered:hover {
- background-color: color-mix(in srgb, var(--bs-light) 95%, #000 5%) !important;
+.hovered:hover,
+.hovered:focus {
+  background-color: color-mix(in srgb, var(--bs-light) 95%, #000 5%) !important;
 }
 .hovered.clicked {
   box-shadow: inset 0 2px 4px rgba(0,0,0,0.1) !important;

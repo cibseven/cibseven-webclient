@@ -21,8 +21,8 @@
   <b-modal ref="otpDialog" v-if="credentials2" :title="$t('login.2fa')" @shown="$refs.otp.focus()">
     <CIBForm ref="form2" @submitted="onLogin2">
       <div class="mb-3">{{ $t('login.needOtp') }}</div>
-      <b-form-group :invalid-feedback="$t('errors.invalid')">
-        <input ref="otp" type="number" max="999999" v-model="credentials2.otp" :placeholder="$t('login.otp')" class="form-control" required>
+      <b-form-group label-cols="4" content-cols="8" :label="$t('login.otp')" :invalid-feedback="$t('errors.invalid')">
+        <input ref="otp" type="number" max="999999" v-model="credentials2.otp" :placeholder="$t('login.otp')" :aria-label="$t('login.otp')" class="form-control" required>
       </b-form-group>
     </CIBForm>
     <template v-slot:modal-footer>

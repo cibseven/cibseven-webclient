@@ -19,10 +19,11 @@
 <template>
     <div class="container-fluid">
       <div v-for="group of groups" :key="group.name">
-        <p role="heading" aria-level="4" class="mdi mdi-18px text-end pt-3 mb-1" :class="group.visible ? 'mdi-minus' : 'mdi-plus'"
+        <b-button variant="link" role="heading" aria-level="4" class="mdi mdi-18px text-end pt-3 mb-1 w-100" :class="group.visible ? 'mdi-minus' : 'mdi-plus'"
+          :title="group.visible ? $t('task.collapse') : $t('task.expand')"
           @click="$eventBus.emit('bv::toggle::collapse', group.name)" style="cursor: pointer">
           <span class="float-start h5">{{ group.name }}</span>
-        </p>
+        </b-button>
         <hr class="mt-0 mb-0">
         <b-collapse class="me-3" :id="group.name" v-model="group.visible">
           <div class="row">
@@ -31,9 +32,9 @@
                 <b-card style="min-height: 120px;">
                   <b-card-body :class="d === deployment ? 'border-start border-primary border-4' : ''" class="text-start">
                     <b-card-text>
-                      <label @click.stop class="d-flex justify-content-between m-0 hover-highlight">
+                      <label @click.stop class="d-flex justify-content-between m-0 hover-highlight" :for="'checkbox-' + d.id + '-' + d.name">
                         <span class="fw-bold text-break">{{ d.name || d.id }}</span>
-                        <b-form-checkbox size="sm" v-model="d.isSelected" @click.stop></b-form-checkbox>
+                        <input type="checkbox" class="form-check-input" v-model="d.isSelected" @click.stop :id="'checkbox-' + d.id + '-' + d.name">
                       </label>
                       <div class="d-flex align-items-center pt-2">
                         <span :title="formatDateForTooltips(d.deploymentTime)">{{ formatDate(d.deploymentTime) }}</span>

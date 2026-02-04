@@ -40,7 +40,7 @@
       </li>
     </ol>
 
-    <div @mousedown="handleMouseDown" class="v-resizable position-absolute w-100" style="left: 0" :style="'height: ' + bpmnViewerHeight + 'px; ' + toggleTransition">
+    <ViewerFrame :resizerMixin="this">
       <component :is="BpmnViewerPlugin" v-if="BpmnViewerPlugin" ref="diagram" @task-selected="selectTask($event)" @activity-map-ready="activityMap = $event"
         :process-definition-id="process.id" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" :statistics="process.statistics"
         :active-tab="activeTab" class="h-100">
@@ -56,10 +56,7 @@
         @activity-map-ready="activityMap = $event"
         class="h-100">
       </BpmnViewer>
-      <span role="button" size="sm" variant="light" class="bg-white px-2 py-1 me-1 position-absolute border rounded" style="bottom: 90px; right: 11px;" @click="toggleContent">
-        <span class="mdi mdi-18px" :class="toggleIcon"></span>
-      </span>
-    </div>
+    </ViewerFrame>
 
     <div class="position-absolute w-100" style="left: 0; z-index: 2" :style="'height: '+ tabsAreaHeight +'px; top: ' + (bottomContentPosition - tabsAreaHeight + 1) + 'px; ' + toggleTransition">
       <div class="d-flex align-items-end">
@@ -92,15 +89,11 @@
                 </b-input-group>
               </div>
               <div v-if="selectedActivityId" class="col-3 p-3">
-                <span class="badge bg-info rounded-pill p-2 pe-3" style="font-weight: 500; font-size: 0.75rem">
-                  <span
-                    @click="removeSelectedActivityBadge"
-                    :title="$t('process.activityIdBadge.remove')"
-                    role="button" class="mdi mdi-close-thick py-2 px-1"></span>
-                    <span :title="$t('process.activityIdBadge.tooltip.' + selectedActivityInstancesListMode, { activityId: selectedActivityId })">
-                      {{ $t('process.activityIdBadge.title.' + selectedActivityInstancesListMode, { activityId: selectedActivityId }) }}
-                    </span>
-                </span>
+                <RemovableBadge
+                  @on-remove="removeSelectedActivityBadge"
+                  :tooltip-remove="$t('process.activityIdBadge.remove')"
+                  :label="$t('process.activityIdBadge.title.' + selectedActivityInstancesListMode, { activityId: selectedActivityId })"
+                  :tooltip="$t('process.activityIdBadge.tooltip.' + selectedActivityInstancesListMode, { activityId: selectedActivityId })"/>
               </div>
             </template>
 
@@ -181,13 +174,15 @@ import { debounce } from '@/utils/debounce.js'
 import { SuccessAlert, ConfirmDialog, BWaitingBox } from '@cib/common-frontend'
 import ProcessInstancesTabs from '@/components/process/ProcessInstancesTabs.vue'
 import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
+import ViewerFrame from '@/components/common-components/ViewerFrame.vue'
+import RemovableBadge from '@/components/common-components/RemovableBadge.vue'
 import { mapGetters, mapActions } from 'vuex'
 
 export default {
   name: 'ProcessInstancesView',
   components: { InstancesTable, JobDefinitionsTable, BpmnViewer, MultisortModal,
      SuccessAlert, ConfirmDialog, BWaitingBox, IncidentsTable, CalledProcessDefinitionsTable,
-     ProcessInstancesTabs, ScrollableTabsContainer },
+     ProcessInstancesTabs, ScrollableTabsContainer, ViewerFrame, RemovableBadge },
   inject: ['loadProcesses'],
   mixins: [permissionsMixin, resizerMixin, copyToClipboardMixin, tabUrlMixin],
   emits: ['task-selected', 'filter-instances', 'instance-deleted'],

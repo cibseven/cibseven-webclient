@@ -25,6 +25,7 @@ import org.cibseven.webapp.rest.model.Decision;
 import org.cibseven.webapp.Data;
 import org.cibseven.webapp.NamedByteArrayDataSource;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.auth.rest.StandardLogin;
 import org.cibseven.webapp.exception.ExpressionEvaluationException;
 import org.cibseven.webapp.exception.InvalidAttributeValueException;
 import org.cibseven.webapp.exception.InvalidUserIdException;
@@ -652,8 +653,8 @@ public interface BpmProvider {
 	* @return verification
 	* @throws SystemException
 	*/
-	default SevenVerifyUser verifyUser(String username, String password, CIBUser user) throws SystemException {
-		return getUserProvider().verifyUser(username, password, user);
+	default SevenVerifyUser verifyUser(StandardLogin login, CIBUser user) throws SystemException {
+		return getUserProvider().verifyUser(login, user);
 	}
 
 	/**
