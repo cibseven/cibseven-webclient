@@ -63,6 +63,9 @@ public class DirectProviderUtil {
 				processEngine = EngineUtil.lookupProcessEngine(processEngineName);
 			} catch (RestException ex) {
 				processEngine = BpmPlatform.getProcessEngineService().getProcessEngine(processEngineName);
+			} finally {
+				if (processEngine == null)
+					throw new SystemException("No process engine found with name " + processEngineName);
 			}
 			processEngines.put(processEngineName, processEngine);
 			ObjectMapper objectMapper = new ObjectMapper();
