@@ -207,12 +207,17 @@ export default {
       this.loadNextPage()
     },
     deploymentId: function () {
-      const found = this.deployments.some(d => {
-        return (d.id === this.deploymentId)
-      })
-      if (!found) {
-        this.deploymentsReady = false
-        this.loadToSelectedDeployment()
+      if (!this.deploymentId) {
+        this.deployment = null
+        this.resources = null
+      } else {
+        const found = this.deployments.some(d => {
+          return (d.id === this.deploymentId)
+        })
+        if (!found) {
+          this.deploymentsReady = false
+          this.loadToSelectedDeployment()
+        }
       }
     }
   },
