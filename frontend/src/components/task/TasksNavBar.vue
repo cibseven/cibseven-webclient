@@ -100,9 +100,9 @@
                   <span class="fw-bold">{{ task.name }}</span>
                 </h6>
                 <div class="d-flex ms-auto">
-                  <b-button @click.stop="$refs['followUp' + task.id][0].show()" @keydown.enter.stop.prevent="$refs['followUp' + task.id][0].show()" 
+                  <b-button @click.stop="$refs['followUp' + task.id][0].show()" @keydown.enter.stop.prevent="$refs['followUp' + task.id][0].show()" @keyup.enter.stop.prevent 
                   @keydown.space.stop.prevent="$refs['followUp' + task.id][0].show()" v-if="$root.config.layout.showFilterReminderDate" size="sm" :class="getReminderClasses(task)" variant="outline-secondary" class="mdi mdi-18px mdi-alarm border-0" :title="getDateFormatted(task.followUp, 'L', 'setReminder')"></b-button>
-                  <b-button @click.stop="$refs['due' + task.id][0].show()" @keydown.enter.stop.prevent="$refs['due' + task.id][0].show()" 
+                  <b-button @click.stop="$refs['due' + task.id][0].show()" @keydown.enter.stop.prevent="$refs['due' + task.id][0].show()" @keyup.enter.stop.prevent 
                   @keydown.space.stop.prevent="$refs['due' + task.id][0].show()" v-if="$root.config.layout.showFilterDueDate" size="sm" :class="getDueClasses(task)" variant="outline-secondary" class="mdi mdi-18px mdi-calendar-alert border-0" :title="getDateFormatted(task.due, 'L', 'setDeadline')"></b-button>
                 </div>
               </div>
@@ -117,7 +117,7 @@
                 <div class="d-flex ms-auto">
                   <div class="h6 text-end p-0 fw-normal m-0" v-if="task.assignee != null"><span class="mdi mdi-18px mdi-account text-secondary"></span><span class="p-1">{{ getCompleteName(task) }}</span></div>
                   <div class="h6 text-end p-0 fw-normal n-0" v-if="task.assignee == null">
-                    <b-button variant="link" class="p-0 text-dark" @click.stop="checkAssignee(task)"><span class="mdi mdi-18px mdi-account-question text-secondary"></span> {{ $t('task.assignToMe') }}</b-button>
+                    <b-button variant="link" class="p-0 text-dark" @click.stop="checkAssignee(task)" @keydown.enter.stop="checkAssignee(task)" @keyup.enter.stop.prevent @keydown.space.prevent.stop="checkAssignee(task)"><span class="mdi mdi-18px mdi-account-question text-secondary"></span> {{ $t('task.assignToMe') }}</b-button>
                   </div>
                 </div>
               </div>
