@@ -92,8 +92,8 @@ $link-hover-color: $gray-800;
 $nav-tabs-link-hover-border-color: $gray-500 $gray-500 $nav-tabs-border-color;
 //$nav-tabs-link-active-border-color: $primary $gray-500 $nav-tabs-link-active-bg;
 $btn-disabled-opacity: .30;
-$form-feedback-valid-color: color.adjust($success, $lightness: -50%);
-$form-feedback-invalid-color: color.adjust($danger, $lightness: -20%);
+$form-feedback-valid-color: $success;
+$form-feedback-invalid-color: $danger;
 $form-feedback-icon-valid-color: $success;
 $form-feedback-icon-invalid-color: $danger;
 $enable-shadows: true;
@@ -107,7 +107,7 @@ $blockquote-small-color: $gray-700;
 $nav-tabs-link-active-border-color: $gray-600 $gray-600 $white;
 
 // Additional overrides:
-$text-muted: $gray-700;
+$body-secondary-color: $gray-700;
 $nav-link-padding-y: 0;
 $nav-link-padding-x: 1rem;
 $btn-light-bg: $white;
