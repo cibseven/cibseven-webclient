@@ -16,74 +16,45 @@
  */
 package org.cibseven.webapp.providers;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
-import java.util.regex.Pattern;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
-import org.cibseven.bpm.engine.AuthorizationException;
-import org.cibseven.bpm.engine.EntityTypes;
-import org.cibseven.bpm.engine.FormService;
-import org.cibseven.bpm.engine.ProcessEngine;
-import org.cibseven.bpm.engine.ProcessEngineException;
-import org.cibseven.bpm.engine.exception.NotFoundException;
-import org.cibseven.bpm.engine.exception.NullValueException;
-import org.cibseven.bpm.engine.form.CamundaFormRef;
-import org.cibseven.bpm.engine.form.FormData;
-import org.cibseven.bpm.engine.history.HistoricTaskInstance;
-import org.cibseven.bpm.engine.history.HistoricTaskInstanceQuery;
-import org.cibseven.bpm.engine.identity.Group;
-import org.cibseven.bpm.engine.identity.GroupQuery;
-import org.cibseven.bpm.engine.impl.form.validator.FormFieldValidationException;
-import org.cibseven.bpm.engine.impl.identity.Authentication;
-import org.cibseven.bpm.engine.impl.util.IoUtil;
-import org.cibseven.bpm.engine.query.Query;
-import org.cibseven.bpm.engine.rest.dto.AbstractQueryDto;
+import org.cibseven.bpm.engine.rest.dto.CountResultDto;
 import org.cibseven.bpm.engine.rest.dto.VariableValueDto;
-import org.cibseven.bpm.engine.rest.dto.converter.DelegationStateConverter;
-import org.cibseven.bpm.engine.rest.dto.converter.StringListConverter;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricTaskInstanceDto;
-import org.cibseven.bpm.engine.rest.dto.history.HistoricTaskInstanceQueryDto;
-import org.cibseven.bpm.engine.rest.dto.runtime.StartProcessInstanceDto;
 import org.cibseven.bpm.engine.rest.dto.task.CompleteTaskDto;
 import org.cibseven.bpm.engine.rest.dto.task.FormDto;
+import org.cibseven.bpm.engine.rest.dto.task.IdentityLinkDto;
 import org.cibseven.bpm.engine.rest.dto.task.TaskBpmnErrorDto;
-import org.cibseven.bpm.engine.rest.dto.task.TaskCountByCandidateGroupResultDto;
 import org.cibseven.bpm.engine.rest.dto.task.TaskDto;
 import org.cibseven.bpm.engine.rest.dto.task.TaskQueryDto;
-import org.cibseven.bpm.engine.rest.dto.task.TaskWithAttachmentAndCommentDto;
+import org.cibseven.bpm.engine.rest.dto.task.UserIdDto;
 import org.cibseven.bpm.engine.rest.exception.RestException;
-import org.cibseven.bpm.engine.rest.mapper.JacksonConfigurator;
-import org.cibseven.bpm.engine.rest.util.ApplicationContextPathUtil;
-import org.cibseven.bpm.engine.rest.util.EncodingUtil;
-import org.cibseven.bpm.engine.rest.util.QueryUtil;
-import org.cibseven.bpm.engine.task.DelegationState;
-import org.cibseven.bpm.engine.task.TaskCountByCandidateGroupResult;
-import org.cibseven.bpm.engine.task.TaskQuery;
+import org.cibseven.bpm.engine.rest.impl.FilterRestServiceImpl;
+import org.cibseven.bpm.engine.rest.impl.TaskRestServiceImpl;
+import org.cibseven.bpm.engine.rest.impl.history.HistoricTaskInstanceRestServiceImpl;
+import org.cibseven.bpm.engine.rest.sub.runtime.FilterResource;
+import org.cibseven.bpm.engine.rest.sub.task.TaskReportResource;
+import org.cibseven.bpm.engine.rest.sub.task.TaskResource;
 import org.cibseven.bpm.engine.variable.VariableMap;
 import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.exception.NoObjectFoundException;
-import org.cibseven.webapp.exception.SubmitDeniedException;
 import org.cibseven.webapp.exception.SystemException;
-import org.cibseven.webapp.rest.model.CamundaForm;
 import org.cibseven.webapp.rest.model.CandidateGroupTaskCount;
 import org.cibseven.webapp.rest.model.IdentityLink;
 import org.cibseven.webapp.rest.model.Task;
 import org.cibseven.webapp.rest.model.TaskFiltering;
-import org.cibseven.webapp.rest.model.TaskForm;
 import org.cibseven.webapp.rest.model.TaskHistory;
 import org.cibseven.webapp.rest.model.Variable;
 import org.springframework.http.HttpStatusCode;
@@ -91,10 +62,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class DirectTaskProvider implements ITaskProvider {
+import jakarta.ws.rs.core.MultivaluedHashMap;
+import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriInfo;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class DirectTaskProvider extends SevenProviderBase implements ITaskProvider {
 
 	DirectProviderUtil directProviderUtil;
 	public DirectTaskProvider(DirectProviderUtil directProviderUtil){
@@ -103,99 +80,141 @@ public class DirectTaskProvider implements ITaskProvider {
 
 	@Override
 	public Collection<Task> findTasks(String filter, CIBUser user) {
-		Map<String, Object> filters = new HashMap<>();
+		TaskRestServiceImpl taskRestServiceImpl = new TaskRestServiceImpl(directProviderUtil.getEngineName(user), directProviderUtil.getObjectMapper(user));
+
+		Integer firstResult = null;
+		Integer maxResults = null;
+		MultivaluedMap<String, String> filters = new MultivaluedHashMap<>();
 		String[] splitFilter = filter.split("&");
 		for (String params : splitFilter) {
 			String[] splitValue = params.split("=");
-			if (splitValue.length > 1)
-				filters.put(splitValue[0], URLDecoder.decode(splitValue[1], Charset.forName("UTF-8")));
+			if (splitValue.length > 1) {
+				if (splitValue[0].equals("firstResult")) {
+					firstResult = Integer.parseInt(splitValue[1]);
+				} else if (splitValue[0].equals("maxResults")) {
+					maxResults = Integer.parseInt(splitValue[1]);
+				} else {
+					filters.put(splitValue[0], Arrays.asList(URLDecoder.decode(splitValue[1], Charset.forName("UTF-8"))));
+				}
+			}
 		}
-		return convertTasks(queryTasks(filters, user), user);
+		
+		UriInfo uriInfo = new DirectUriInfo(filters);
+		DirectRequest request = new DirectRequest();
+		Object tasks = taskRestServiceImpl.getTasks(request, uriInfo, firstResult, maxResults);
+		return convertTasksObjectToCollection(tasks, user);
 	}
 
+	private Collection<Task> convertTasksObjectToCollection(Object tasks, CIBUser user) {
+		List<Task> resultList = new ArrayList<>();
+		if (tasks instanceof List<?>) {
+		    List<?> taskList = (List<?>) tasks;
+		    if (taskList.isEmpty() || taskList.get(0) instanceof TaskDto) {
+		        for (Object obj : taskList) {
+		            resultList.add(directProviderUtil.getObjectMapper(user).convertValue(obj, Task.class));
+		        }
+		    } else {
+		        throw new IllegalStateException("Expected List<TaskDto> but got a List of " + taskList.get(0).getClass());
+		    }
+		} else {
+		    throw new IllegalStateException("Expected List<TaskDto> but got " + tasks.getClass());
+		}
+		return resultList;
+	}
+	
+	private Task convertTaskObjectToTask(Object task, CIBUser user) {
+    if (task == null)
+    	return null;
+    if (task != null && task instanceof TaskDto) {
+          return directProviderUtil.getObjectMapper(user).convertValue(task, Task.class);
+    } else {
+      throw new IllegalStateException("Expected TaskDto but got  " + task.getClass());
+    }
+	}
+	
 	@Override
 	public Integer findTasksCount(@RequestBody Map<String, Object> filters, CIBUser user) {
-		return queryTasks(filters, user).size();
+		TaskRestServiceImpl taskRestServiceImpl = new TaskRestServiceImpl(directProviderUtil.getEngineName(user), directProviderUtil.getObjectMapper(user));
+		UriInfo uriInfo = new DirectUriInfo(filters);
+		CountResultDto countResultDto = taskRestServiceImpl.getTasksCount(uriInfo);
+		return (int)countResultDto.getCount();
 	}
 
 	@Override
 	public Collection<Task> findTasksByProcessInstance(String processInstanceId, CIBUser user) {
-		TaskQuery taskQuery = directProviderUtil.getProcessEngine(user).getTaskService().createTaskQuery().processInstanceId(processInstanceId);
-		List<org.cibseven.bpm.engine.task.Task> resultList = taskQuery.initializeFormKeys().list();
-		return convertTasks(resultList, user);
+		TaskRestServiceImpl taskRestServiceImpl = new TaskRestServiceImpl(directProviderUtil.getEngineName(user), directProviderUtil.getObjectMapper(user));
+		MultivaluedMap<String, String> queryParameters = new MultivaluedHashMap<>();
+		queryParameters.add("processInstanceId", processInstanceId);
+		UriInfo uriInfo = new DirectUriInfo(queryParameters);
+		DirectRequest request = new DirectRequest();
+		
+		Object tasks = taskRestServiceImpl.getTasks(request, uriInfo, null, null);
+		return convertTasksObjectToCollection(tasks, user);
 	}
 
 	@Override
 	public Collection<Task> findTasksByProcessInstanceAsignee(Optional<String> processInstanceId,
 			Optional<String> createdAfter, CIBUser user) {
-		TaskQueryDto dto = new TaskQueryDto();
-		if (createdAfter.isPresent()) {
-			dto.setCreatedAfter(directProviderUtil.getObjectMapper(user).convertValue(createdAfter.get(), Date.class));
-		}
-		dto.setAssignee(user.getId());
+		TaskRestServiceImpl taskRestServiceImpl = new TaskRestServiceImpl(directProviderUtil.getEngineName(user), directProviderUtil.getObjectMapper(user));
+		MultivaluedMap<String, String> queryParameters = new MultivaluedHashMap<>();
 		if (processInstanceId.isPresent())
-			dto.setProcessInstanceId(processInstanceId.get());
-		TaskQuery taskQuery = dto.toQuery(directProviderUtil.getProcessEngine(user));
-		List<org.cibseven.bpm.engine.task.Task> resultList = taskQuery.initializeFormKeys().list();
-		return convertTasks(resultList, user);
+			queryParameters.add("processInstanceId", processInstanceId.get());
+		
+		queryParameters.add("assignee=", user.getId());
+		if (createdAfter.isPresent())
+			queryParameters.add("createdAfter=", createdAfter.get());
+		
+		UriInfo uriInfo = new DirectUriInfo(queryParameters);
+		DirectRequest request = new DirectRequest();
 
+		Object tasks = taskRestServiceImpl.getTasks(request, uriInfo, null, null);
+		return convertTasksObjectToCollection(tasks, user);
 	}
 
 	@Override
 	public Task findTaskById(String id, CIBUser user) {
-		org.cibseven.bpm.engine.task.Task result = directProviderUtil.getProcessEngine(user).getTaskService().createTaskQuery().taskId(id).initializeFormKeys()
-				.singleResult();
-		if (result == null)
-			throw new NoObjectFoundException(null);
-		return directProviderUtil.getObjectMapper(user).convertValue(TaskDto.fromEntity(result), Task.class);
+		TaskRestServiceImpl taskRestServiceImpl = new TaskRestServiceImpl(directProviderUtil.getEngineName(user), directProviderUtil.getObjectMapper(user));
+		TaskResource taskResource = taskRestServiceImpl.getTask(id, false, false, false);
+		DirectRequest request = new DirectRequest();
+		Object task = taskResource.getTask(request);
+		return convertTaskObjectToTask(task, user);
 	}
 
 	@Override
 	public void update(Task task, CIBUser user) {
-		org.cibseven.bpm.engine.task.Task foundTask = directProviderUtil.getProcessEngine(user).getTaskService().createTaskQuery().taskId(task.getId()).initializeFormKeys()
-				.singleResult();
-
-		if (foundTask == null) {
-			throw new NoObjectFoundException(new SystemException("No matching task with id " + task.getId()));
-		}
-
-		foundTask.setName(task.getName());
-		foundTask.setDescription(task.getDescription());
-		foundTask.setPriority((int) task.getPriority());
-		foundTask.setAssignee(task.getAssignee());
-		foundTask.setOwner(task.getOwner());
-
-		DelegationState state = null;
-		if (task.getDelegationState() != null) {
-			DelegationStateConverter converter = new DelegationStateConverter();
-			state = converter.convertQueryParameterToType(task.getDelegationState());
-		}
-		foundTask.setDelegationState(state);
-
-		foundTask.setDueDate(directProviderUtil.getObjectMapper(user).convertValue(task.getDue(), Date.class));
-		foundTask.setFollowUpDate(directProviderUtil.getObjectMapper(user).convertValue(task.getFollowUp(), Date.class));
-		foundTask.setParentTaskId(task.getParentTaskId());
-		foundTask.setCaseInstanceId(task.getCaseInstanceId());
-		foundTask.setTenantId(task.getTenantId());
-
-		directProviderUtil.getProcessEngine(user).getTaskService().saveTask(foundTask);
+		TaskRestServiceImpl taskRestServiceImpl = new TaskRestServiceImpl(directProviderUtil.getEngineName(user), directProviderUtil.getObjectMapper(user));
+		TaskResource taskResource = taskRestServiceImpl.getTask(task.getId(), false, false, false);
+		TaskDto restTask = directProviderUtil.getObjectMapper(user).convertValue(task, TaskDto.class);
+		taskResource.updateTask(restTask);
 	}
 
 	@Override
 	public void setAssignee(String taskId, String assignee, CIBUser user) {
-		org.cibseven.bpm.engine.task.Task foundTask = getTaskById(taskId, user);
-		foundTask.setAssignee(assignee);
-		directProviderUtil.getProcessEngine(user).getTaskService().saveTask(foundTask);
+		TaskRestServiceImpl taskRestServiceImpl = new TaskRestServiceImpl(directProviderUtil.getEngineName(user), directProviderUtil.getObjectMapper(user));
+		TaskResource taskResource = taskRestServiceImpl.getTask(taskId, false, false, false);
+
+		if (assignee == null)
+			taskResource.unclaim();
+		else {
+			UserIdDto dto = new UserIdDto();
+			dto.setUserId(assignee);
+			taskResource.setAssignee(dto);
+		}
 	}
 
 	@Override
 	public void submit(String taskId, CIBUser user) {
+		TaskRestServiceImpl taskRestServiceImpl = new TaskRestServiceImpl(directProviderUtil.getEngineName(user), directProviderUtil.getObjectMapper(user));
+		TaskResource taskResource = taskRestServiceImpl.getTask(taskId, false, false, false);
+		taskResource.submit(new CompleteTaskDto());
 		VariableMap variables = null;
 		directProviderUtil.getProcessEngine(user).getFormService().submitTaskForm(taskId, variables);
 	}
 
 	@Override
 	public void submit(Task task, List<Variable> formResult, CIBUser user) {
+		TaskRestServiceImpl taskRestServiceImpl = new TaskRestServiceImpl(directProviderUtil.getEngineName(user), directProviderUtil.getObjectMapper(user));
+		TaskResource taskResource = taskRestServiceImpl.getTask(task.getId(), false, false, false);
 		Map<String, VariableValueDto> variables = new HashMap<>();
 		for (Variable variable : formResult) {
 			VariableValueDto variableValueDto = directProviderUtil.convertValue(variable, VariableValueDto.class, user);
@@ -207,140 +226,90 @@ public class DirectTaskProvider implements ITaskProvider {
 		}
 		CompleteTaskDto completeTaskDto = new CompleteTaskDto();
 		completeTaskDto.setVariables(variables);
-
 		try {
-			VariableMap variablesMap = VariableValueDto.toMap(completeTaskDto.getVariables(), directProviderUtil.getProcessEngine(user), directProviderUtil.getObjectMapper(user));
-			directProviderUtil.getProcessEngine(user).getFormService().submitTaskForm(task.getId(), variablesMap);
-		} catch (AuthorizationException e) {
-			throw e;
-		} catch (ProcessEngineException e) {
-			String errorMessage = String.format("Cannot submit task form %s: %s", task.getId(), e.getMessage());
-			throw new SubmitDeniedException(new SystemException(errorMessage, e));
+			taskResource.submit(completeTaskDto);
+		} catch (RestException e) {
+			throw wrapException(e, user);
 		}
 	}
 
 	@Override
 	public Object formReference(String taskId, CIBUser user) {
-		List<String> formVariables = null;
-		String variableNames = "formReference";
-		if (variableNames != null) {
-			StringListConverter stringListConverter = new StringListConverter();
-			formVariables = stringListConverter.convertQueryParameterToType(variableNames);
-		}
-		boolean deserializeValues = true;
-		VariableMap startFormVariables = directProviderUtil.getProcessEngine(user).getFormService().getTaskFormVariables(taskId, formVariables, deserializeValues);
-		Set<String> keys = startFormVariables.keySet();
-		if (keys.isEmpty())
-			return new String("empty-task");
-		else {
-			return VariableValueDto.fromMap(startFormVariables);
-		}
+		TaskRestServiceImpl taskRestServiceImpl = new TaskRestServiceImpl(directProviderUtil.getEngineName(user), directProviderUtil.getObjectMapper(user));
+		TaskResource taskResource = taskRestServiceImpl.getTask(taskId, false, false, false);
+		Map<String, VariableValueDto> variableDtos = taskResource.getFormVariables("formReference", true);
+		return variableDtos;
 	}
 
 	@Override
 	public Object form(String taskId, CIBUser user) {
-		org.cibseven.bpm.engine.task.Task task = getTaskById(taskId, user);
-		FormData formData;
-		try {
-			formData = directProviderUtil.getProcessEngine(user).getFormService().getTaskFormData(taskId);
-		} catch (AuthorizationException e) {
-			throw e;
-		} catch (ProcessEngineException e) {
-			throw new SystemException("Cannot get form for task " + taskId, e);
-		}
-
-		FormDto dto = FormDto.fromFormData(formData);
-		if (dto.getKey() == null || dto.getKey().isEmpty()) {
-			if (formData != null && formData.getFormFields() != null && !formData.getFormFields().isEmpty()) {
-				dto.setKey("embedded:engine://engine/:engine/task/" + taskId + "/rendered-form");
-			}
-		}
-		if (dto.getKey() == null || dto.getKey().isEmpty()) {
-			return "empty-task";
-		}
-
-		directProviderUtil.runWithoutAuthorization(() -> {
-			String processDefinitionId = task.getProcessDefinitionId();
-			String caseDefinitionId = task.getCaseDefinitionId();
-			if (processDefinitionId != null) {
-				dto.setContextPath(
-						ApplicationContextPathUtil.getApplicationPathByProcessDefinitionId(directProviderUtil.getProcessEngine(user), processDefinitionId));
-
-			} else if (caseDefinitionId != null) {
-				dto.setContextPath(
-						ApplicationContextPathUtil.getApplicationPathByCaseDefinitionId(directProviderUtil.getProcessEngine(user), caseDefinitionId));
-			}
-			return null;
-		}, user);
-
-		TaskForm taskForm = new TaskForm();
-		CamundaFormRef camundaFormRef = dto.getCamundaFormRef();
-		if (camundaFormRef != null)
-			taskForm.setCamundaFormRef(new CamundaForm(camundaFormRef.getKey(), camundaFormRef.getBinding(),
-					Integer.toString(camundaFormRef.getVersion())));
-		taskForm.setContextPath(dto.getContextPath());
-		taskForm.setKey(dto.getKey());
-		return taskForm;
-
+		TaskRestServiceImpl taskRestServiceImpl = new TaskRestServiceImpl(directProviderUtil.getEngineName(user), directProviderUtil.getObjectMapper(user));
+		TaskResource taskResource = taskRestServiceImpl.getTask(taskId, false, false, false);
+		FormDto formData = taskResource.getForm();
+		return formData;
 	}
 
 	@Override
 	public Collection<Task> findTasksByFilter(TaskFiltering filters, String filterId, CIBUser user, Integer firstResult,
 			Integer maxResults) {
-		List<?> entities = executeFilterList(filters, filterId, user, firstResult, maxResults);
+		FilterRestServiceImpl filterRestServiceImpl = new FilterRestServiceImpl(directProviderUtil.getEngineName(user), directProviderUtil.getObjectMapper(user));
+		FilterResource filterResource = filterRestServiceImpl.getFilter(filterId);
+		DirectRequest request = new DirectRequest();
 
-		if (entities != null && !entities.isEmpty()) {
-			List<Task> list = convertToDtoList(entities, user);
-			return list;
-		} else {
-			return Collections.emptyList();
-		}
+		Object tasks = filterResource.executeList(request, firstResult, maxResults);
+		return convertTasksObjectToCollection(tasks, user);
 	}
 
 	@Override
 	public Integer findTasksCountByFilter(String filterId, CIBUser user, TaskFiltering filters) {
-		List<?> entities = executeFilterList(filters, filterId, user, null, null);
-		return entities.size();
+		FilterRestServiceImpl filterRestServiceImpl = new FilterRestServiceImpl(directProviderUtil.getEngineName(user), directProviderUtil.getObjectMapper(user));
+		FilterResource filterResource = filterRestServiceImpl.getFilter(filterId);
+		try {
+			CountResultDto dto = filterResource.queryCount(filters.json());
+			if (dto == null)
+				throw new NullPointerException();
+			return (int)dto.getCount();
+		} catch (JsonProcessingException e) {
+			SystemException se = new SystemException(e);
+			log.info("Exception in findTasksCountByFilter(...):", se);
+			throw se;
+		}
 	}
 
 	@Override
 	public Collection<TaskHistory> findTasksByProcessInstanceHistory(String processInstanceId, CIBUser user) {
-		List<TaskHistory> taskHistoryList = new ArrayList<>();
-		List<HistoricTaskInstance> results = directProviderUtil.getProcessEngine(user).getHistoryService().createHistoricTaskInstanceQuery()
-				.processInstanceId(processInstanceId).unlimitedList();
-		for (HistoricTaskInstance result : results) {
-			taskHistoryList.add(directProviderUtil.convertValue(HistoricTaskInstanceDto.fromHistoricTaskInstance(result), TaskHistory.class, user));
-		}
-		return taskHistoryList;
+		Map<String, Object> filters = new HashMap<>();
+		filters.put("processInstanceId", processInstanceId);
+		filters.put("sortBy", "startTime");
+		filters.put("sortOrder", "desc");
+		return findTasksByFilters(filters, user);
 	}
 
 	@Override
 	public Collection<TaskHistory> findTasksByDefinitionKeyHistory(String taskDefinitionKey, String processInstanceId,
 			CIBUser user) {
-		List<TaskHistory> taskHistoryList = new ArrayList<>();
-		List<HistoricTaskInstance> results = directProviderUtil.getProcessEngine(user).getHistoryService().createHistoricTaskInstanceQuery()
-				.taskDefinitionKey(taskDefinitionKey).processInstanceId(processInstanceId).unlimitedList();
-		for (HistoricTaskInstance result : results) {
-			taskHistoryList.add(directProviderUtil.convertValue(HistoricTaskInstanceDto.fromHistoricTaskInstance(result), TaskHistory.class, user));
-		}
-		return taskHistoryList;
+		Map<String, Object> filters = new HashMap<>();
+		filters.put("processInstanceId", processInstanceId);
+		filters.put("taskDefinitionKey", taskDefinitionKey);
+		return findTasksByFilters(filters, user);
 	}
 
 	@Override
 	public Collection<Task> findTasksPost(Map<String, Object> data, CIBUser user) throws SystemException {
-		TaskQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(data, TaskQueryDto.class);
-		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
-		TaskQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
+		TaskRestServiceImpl taskRestServiceImpl = new TaskRestServiceImpl(directProviderUtil.getEngineName(user), directProviderUtil.getObjectMapper(user));
 
-		query.initializeFormKeys();
-		List<org.cibseven.bpm.engine.task.Task> matchingTasks = QueryUtil.list(query, null, null);
-
-		List<TaskDto> tasks = new ArrayList<>();
-		if (Boolean.TRUE.equals(queryDto.getWithCommentAttachmentInfo())) {
-			tasks = matchingTasks.stream().map(TaskWithAttachmentAndCommentDto::fromEntity).collect(Collectors.toList());
-		} else {
-			tasks = matchingTasks.stream().map(TaskDto::fromEntity).collect(Collectors.toList());
+		Integer firstResult = null;
+		Integer maxResults = null;
+		for (Entry<String, Object> entry : data.entrySet()) {
+			if (entry.getKey().equals("firstResult"))
+				firstResult = Integer.parseInt((String) data.get("firstResult"));
+			else if (entry.getKey().equals("maxResults"))
+				maxResults = Integer.parseInt((String) data.get("maxResults"));
 		}
+
+		TaskQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(data, TaskQueryDto.class);
+		List<TaskDto> tasks = taskRestServiceImpl.queryTasks(queryDto, firstResult, maxResults);		
+
 		List<Task> resultTasks = new ArrayList<>();
 		for (TaskDto matchingTask : tasks) {
 			resultTasks.add(directProviderUtil.convertValue(matchingTask, Task.class, user));
@@ -350,238 +319,103 @@ public class DirectTaskProvider implements ITaskProvider {
 
 	@Override
 	public Collection<IdentityLink> findIdentityLink(String taskId, Optional<String> type, CIBUser user) {
-		List<org.cibseven.bpm.engine.task.IdentityLink> identityLinks = directProviderUtil.getProcessEngine(user).getTaskService().getIdentityLinksForTask(taskId);
-
+		TaskRestServiceImpl taskRestServiceImpl = new TaskRestServiceImpl(directProviderUtil.getEngineName(user), directProviderUtil.getObjectMapper(user));
+		TaskResource taskResource = taskRestServiceImpl.getTask(taskId, false, false, false);
+	  List<IdentityLinkDto> links = taskResource.getIdentityLinks(type.orElse(null));
 		Collection<IdentityLink> result = new ArrayList<>();
-		for (org.cibseven.bpm.engine.task.IdentityLink link : identityLinks) {
-			if (type.isEmpty() || type.get().equals(link.getType())) {
-				result.add(new IdentityLink(link.getUserId(), link.getGroupId(), link.getType()));
-			}
+		for (IdentityLinkDto link : links) {
+			result.add(directProviderUtil.convertValue(link, IdentityLink.class, user));
 		}
 		return result;
 	}
 
 	@Override
 	public void createIdentityLink(String taskId, Map<String, Object> data, CIBUser user) {
-		String userId = (String) data.get("userId");
-		String groupId = (String) data.get("groupId");
-		if (userId != null && groupId != null) {
-			throw new SystemException("Identity Link requires userId or groupId, but not both.");
-		}
-
-		if (userId == null && groupId == null) {
-			throw new SystemException("Identity Link requires userId or groupId.");
-		}
-
-		String type = (String) data.get("type");
-		if (userId != null) {
-			directProviderUtil.getProcessEngine(user).getTaskService().addUserIdentityLink(taskId, userId, type);
-		} else if (groupId != null) {
-			directProviderUtil.getProcessEngine(user).getTaskService().addGroupIdentityLink(taskId, groupId, type);
-		}
+		TaskRestServiceImpl taskRestServiceImpl = new TaskRestServiceImpl(directProviderUtil.getEngineName(user), directProviderUtil.getObjectMapper(user));
+		TaskResource taskResource = taskRestServiceImpl.getTask(taskId, false, false, false);
+		taskResource.addIdentityLink(directProviderUtil.getObjectMapper(user).convertValue(data, IdentityLinkDto.class));
 	}
 
 	@Override
 	public void deleteIdentityLink(String taskId, Map<String, Object> data, CIBUser user) {
-		String userId = (String) data.get("userId");
-		String groupId = (String) data.get("groupId");
-		if (userId != null && groupId != null) {
-			throw new SystemException("Identity Link requires userId or groupId, but not both.");
-		}
-
-		if (userId == null && groupId == null) {
-			throw new SystemException("Identity Link requires userId or groupId.");
-		}
-
-		String type = (String) data.get("type");
-		if (userId != null) {
-			directProviderUtil.getProcessEngine(user).getTaskService().deleteUserIdentityLink(taskId, userId, type);
-		} else if (groupId != null) {
-			directProviderUtil.getProcessEngine(user).getTaskService().deleteGroupIdentityLink(taskId, groupId, type);
-		}
-
+		TaskRestServiceImpl taskRestServiceImpl = new TaskRestServiceImpl(directProviderUtil.getEngineName(user), directProviderUtil.getObjectMapper(user));
+		TaskResource taskResource = taskRestServiceImpl.getTask(taskId, false, false, false);
+		taskResource.deleteIdentityLink(directProviderUtil.getObjectMapper(user).convertValue(data, IdentityLinkDto.class));
 	}
 
 	@Override
 	public void handleBpmnError(String taskId, Map<String, Object> data, CIBUser user) throws SystemException {
-		TaskBpmnErrorDto dto = directProviderUtil.getObjectMapper(user).convertValue(data, TaskBpmnErrorDto.class);
-		try {
-			directProviderUtil.getProcessEngine(user).getTaskService().handleBpmnError(taskId, dto.getErrorCode(), dto.getErrorMessage(),
-					VariableValueDto.toMap(dto.getVariables(), directProviderUtil.getProcessEngine(user), directProviderUtil.getObjectMapper(user)));
-		} catch (NotFoundException e) {
-			throw new SystemException(e.getMessage(), e);
-		}
+		TaskRestServiceImpl taskRestServiceImpl = new TaskRestServiceImpl(directProviderUtil.getEngineName(user), directProviderUtil.getObjectMapper(user));
+		TaskResource taskResource = taskRestServiceImpl.getTask(taskId, false, false, false);
+		taskResource.handleBpmnError(directProviderUtil.getObjectMapper(user).convertValue(data, TaskBpmnErrorDto.class));
 	}
 
 	@Override
 	public Collection<TaskHistory> findTasksByTaskIdHistory(String taskId, CIBUser user) {
+		Map<String, Object> filters = new HashMap<>();
+		filters.put("taskId", taskId);
+		return findTasksByFilters(filters, user);
+	}
+
+	private Collection<TaskHistory> findTasksByFilters(Map<String, Object> filters, CIBUser user) {
+		UriInfo uriInfo = new DirectUriInfo(filters);
+		HistoricTaskInstanceRestServiceImpl historicTaskInstanceRestServiceImpl = new HistoricTaskInstanceRestServiceImpl(
+				directProviderUtil.getObjectMapper(user), directProviderUtil.getProcessEngine(user));
+		List<HistoricTaskInstanceDto> instances = historicTaskInstanceRestServiceImpl.getHistoricTaskInstances(uriInfo, null, null);
+		
 		List<TaskHistory> taskHistoryList = new ArrayList<>();
-		List<HistoricTaskInstance> results = directProviderUtil.getProcessEngine(user).getHistoryService().createHistoricTaskInstanceQuery().taskId(taskId).unlimitedList();
-		for (HistoricTaskInstance result : results) {
-			taskHistoryList.add(directProviderUtil.convertValue(HistoricTaskInstanceDto.fromHistoricTaskInstance(result), TaskHistory.class, user));
+		for (HistoricTaskInstanceDto instance : instances) {
+			taskHistoryList.add(directProviderUtil.convertValue(instance, TaskHistory.class, user));
 		}
 		return taskHistoryList;
 	}
 
 	@Override
 	public ResponseEntity<byte[]> getDeployedForm(String taskId, CIBUser user) {
-		InputStream form = directProviderUtil.getProcessEngine(user).getFormService().getDeployedTaskForm(taskId);
-		if (form != null) {
-			try {
-				byte[] bytes = IOUtils.toByteArray(form);
-				ResponseEntity<byte[]> responseEntity = new ResponseEntity<>(bytes, HttpStatusCode.valueOf(200));
-				return responseEntity;
-			} catch (IOException e) {
-				throw new SystemException(e.getMessage());
-			} finally {
-				IoUtil.closeSilently(form);
-			}
+		TaskRestServiceImpl taskRestServiceImpl = new TaskRestServiceImpl(directProviderUtil.getEngineName(user), directProviderUtil.getObjectMapper(user));
+		TaskResource taskResource = taskRestServiceImpl.getTask(taskId, false, false, false);
+	  try {
+		Response response = taskResource.getDeployedForm();
+	  return new ResponseEntity<byte[]>(IOUtils.toByteArray((InputStream) response.getEntity()), HttpStatusCode.valueOf(response.getStatus()));
+	  } catch (RestException e) {
+	  	throw wrapException(e, user);
+	  } catch (IOException e) {
+			throw new SystemException(e.getMessage(), e);
 		}
-		return new ResponseEntity<byte[]>(HttpStatusCode.valueOf(422));
 	}
 
 	@Override
 	public Integer findHistoryTasksCount(Map<String, Object> filters, CIBUser user) {
-		HistoricTaskInstanceQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(filters, HistoricTaskInstanceQueryDto.class);
-		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
-		HistoricTaskInstanceQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
-
-		long count = query.count();
-		return (int) count;
+		UriInfo uriInfo = new DirectUriInfo(filters);
+		HistoricTaskInstanceRestServiceImpl historicTaskInstanceRestServiceImpl = new HistoricTaskInstanceRestServiceImpl(
+				directProviderUtil.getObjectMapper(user), directProviderUtil.getProcessEngine(user));
+		CountResultDto dto = historicTaskInstanceRestServiceImpl.getHistoricTaskInstancesCount(uriInfo);
+		return (int)dto.getCount();
 	}
 
 	@Override
 	public Collection<CandidateGroupTaskCount> getTaskCountByCandidateGroup(CIBUser user) {
-		TaskCountByCandidateGroupResultDto reportDto = new TaskCountByCandidateGroupResultDto();
-		List<TaskCountByCandidateGroupResult> results = reportDto.executeTaskCountByCandidateGroupReport(directProviderUtil.getProcessEngine(user));
-		Collection<CandidateGroupTaskCount> resultTaskCount = new ArrayList<>();
-		for (TaskCountByCandidateGroupResult result : results) {
-			resultTaskCount.add(directProviderUtil.convertValue(TaskCountByCandidateGroupResultDto.fromTaskCountByCandidateGroupResultDto(result),
-					CandidateGroupTaskCount.class, user));
-		}
-		return resultTaskCount;
-	}
-
-	private Collection<Task> convertTasks(Collection<org.cibseven.bpm.engine.task.Task> engineTasks, CIBUser user) {
-		List<Task> resultList = new ArrayList<>();
-		for (org.cibseven.bpm.engine.task.Task engineTask : engineTasks)
-			resultList.add(directProviderUtil.getObjectMapper(user).convertValue(TaskDto.fromEntity(engineTask), Task.class));
-		return resultList;
-	}
-
-	private List<org.cibseven.bpm.engine.task.Task> queryTasks(Map<String, Object> filters, CIBUser user) {
-		ObjectMapper localObjectMapper = new ObjectMapper();
-		JacksonConfigurator.configureObjectMapper(localObjectMapper);
-		localObjectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		TaskQueryDto dto = localObjectMapper.convertValue(filters, TaskQueryDto.class);
-		TaskQuery taskQuery = dto.toQuery(directProviderUtil.getProcessEngine(user));
-		List<org.cibseven.bpm.engine.task.Task> taskList = taskQuery.taskInvolvedUser(user.getUserID()).list();
-		return taskList;
-	}
-
-	protected org.cibseven.bpm.engine.task.Task getTaskById(String taskId, CIBUser user) {
-		org.cibseven.bpm.engine.task.Task foundTask = directProviderUtil.getProcessEngine(user).getTaskService().createTaskQuery().taskId(taskId).initializeFormKeys()
-				.singleResult();
-		if (foundTask == null) {
-			throw new NoObjectFoundException(new SystemException("No matching task with id " + taskId));
-		}
-		return foundTask;
-	}
-
-	private List<?> executeFilterList(TaskFiltering filters, String filterId, CIBUser user, Integer firstResult,
-			Integer maxResults) {
-		// authentication is required to access the current user while executing the
-		// query
-		GroupQuery groupQuery = directProviderUtil.getProcessEngine(user).getIdentityService().createGroupQuery();
-		List<Group> userGroups = groupQuery.groupMember(user.getId()).orderByGroupName().asc().unlimitedList();
-		List<String> groupNames = new ArrayList<>();
-		for (Group userGroup : userGroups)
-			groupNames.add(userGroup.getId());
-
-		Authentication authentication = new Authentication(user.getId(), groupNames);
-		directProviderUtil.getProcessEngine(user).getIdentityService().setAuthentication(authentication);
-
-		String extendingQuery;
-		try {
-			extendingQuery = filters.json();
-		} catch (JsonProcessingException e) {
-			throw new SystemException("Failed json conversion", e);
-		}
-		List<?> entities = executeFilterList(extendingQuery, filterId, firstResult, maxResults, user);
-		return entities;
-	}
-
-	private List<?> executeFilterList(String extendingQueryString, String filterId, Integer firstResult, Integer maxResults, CIBUser user) {
-		Query<?, ?> extendingQuery = convertQuery(extendingQueryString, filterId, user);
-		try {
-			if (firstResult != null || maxResults != null) {
-				if (firstResult == null) {
-					firstResult = 0;
-				}
-				if (maxResults == null) {
-					maxResults = Integer.MAX_VALUE;
-				}
-				return directProviderUtil.getProcessEngine(user).getFilterService().listPage(filterId, extendingQuery, firstResult, maxResults);
-			} else {
-				return directProviderUtil.getProcessEngine(user).getFilterService().list(filterId, extendingQuery);
-			}
-		} catch (NullValueException e) {
-			throw new SystemException("Filter not found", e);
-		}
-	}
-
-	private Query<?, ?> convertQuery(String queryString, String filterId, CIBUser user) {
-		if (isEmptyJson(queryString)) {
-			return null;
-		} else {
-			ProcessEngine processEngine = directProviderUtil.getProcessEngine(user);
-			String resourceType = directProviderUtil.getProcessEngine(user).getFilterService().getFilter(filterId).getResourceType();
-
-			AbstractQueryDto<?> queryDto = getQueryDtoForQuery(queryString, resourceType, user);
-			queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
-			return queryDto.toQuery(processEngine);
-		}
-	}
-
-	private AbstractQueryDto<?> getQueryDtoForQuery(String queryString, String resourceType, CIBUser user) {
-		try {
-			if (EntityTypes.TASK.equals(resourceType)) {
-				return directProviderUtil.getObjectMapper(user).readValue(queryString, TaskQueryDto.class);
-			} else {
-				throw new SystemException(
-						"Queries for resource type '" + resourceType + "' are currently not supported by filters.");
-			}
-		} catch (IOException e) {
-			throw new SystemException("Invalid query for resource type '" + resourceType + "'", e);
-		}
-	}
-
-	private List<Task> convertToDtoList(List<?> entities, CIBUser user) {
-		List<Task> dtoList = new ArrayList<>();
-		for (Object entity : entities) {
-			dtoList.add(convertToDto(entity, user));
-		}
-		return dtoList;
-	}
-
-	private Task convertToDto(Object entity, CIBUser user) {
-		if (entity instanceof org.cibseven.bpm.engine.task.Task) {
-			return directProviderUtil.convertValue(TaskDto.fromEntity((org.cibseven.bpm.engine.task.Task) entity), Task.class, user);
-		} else {
-			throw new SystemException(
-					"Entities of class '" + entity.getClass().getCanonicalName() + "' are currently not supported by filters.");
-		}
-	}
-
-	private boolean isEmptyJson(String jsonString) {
-		final Pattern EMPTY_JSON_BODY = Pattern.compile("\\s*\\{\\s*\\}\\s*");
-		return jsonString == null || jsonString.trim().isEmpty() || EMPTY_JSON_BODY.matcher(jsonString).matches();
+		TaskRestServiceImpl taskRestServiceImpl = new TaskRestServiceImpl(directProviderUtil.getEngineName(user), directProviderUtil.getObjectMapper(user));
+	  TaskReportResource taskReportResource = taskRestServiceImpl.getTaskReportResource();
+	  DirectRequest request = new DirectRequest();
+	  Response response = taskReportResource.getTaskCountByCandidateGroupReport(request);
+	  Object entity = response.getEntity();
+	  if (entity != null && entity instanceof List<?>) {
+	  	List<?> entityList = (List<?>) entity;
+	  	if (!entityList.isEmpty() && entityList.get(0) instanceof CandidateGroupTaskCount) {
+	  		return entityList.stream().filter(e -> e instanceof CandidateGroupTaskCount).map(e -> (CandidateGroupTaskCount) e).collect(Collectors.toList());
+	  	} else {
+	  		throw new IllegalStateException("Expected List<CandidateGroupTaskCount> but got a List of " + entityList.get(0).getClass());
+	  	}
+	  } else {
+	  	throw new IllegalStateException("Expected List<CandidateGroupTaskCount> but got " + (entity != null ? entity.getClass() : "null"));
+	  }
 	}
 
 	@Override
 	public void submit(String taskId, String formResult, CIBUser user) {
-    ProcessEngine engine = directProviderUtil.getProcessEngine(user);
-		FormService formService = engine.getFormService();
+		TaskRestServiceImpl taskRestServiceImpl = new TaskRestServiceImpl(directProviderUtil.getEngineName(user), directProviderUtil.getObjectMapper(user));
+		TaskResource taskResource = taskRestServiceImpl.getTask(taskId, false, false, false);
 		ObjectMapper objectMapper = directProviderUtil.getObjectMapper(user);
 		CompleteTaskDto dto;
 		try {
@@ -589,37 +423,27 @@ public class DirectTaskProvider implements ITaskProvider {
 		} catch (JsonProcessingException e) {
 			throw new SystemException(e.getMessage(), e);
 		} 
-
-		try {
-			VariableMap variables = VariableValueDto.toMap(dto.getVariables(), engine, objectMapper);
-			if (dto.isWithVariablesInReturn()) {
-				formService.submitTaskFormWithVariablesInReturn(taskId, variables, false);
-				} else {
-					formService.submitTaskForm(taskId, variables);
-				}
-
-		} catch (RestException|ProcessEngineException e) {
-			String errorMessage = String.format("Cannot submit task form %s: %s", taskId, e.getMessage());
-			throw new SystemException(errorMessage, e);
-		}
-		
+	  try {
+	  	taskResource.submit(dto);
+		} catch (RestException e) {
+	  	throw wrapException(e, user);
+	  }
 	}
 
 	@Override
 	public ResponseEntity<String> getRenderedForm(String taskId, Map<String, Object> params, CIBUser user) {
-    FormService formService = directProviderUtil.getProcessEngine(user).getFormService();
-
-		Object renderedTaskForm = formService.getRenderedTaskForm(taskId);
-		if(renderedTaskForm != null) {
-			String content = renderedTaskForm.toString();
-			InputStream stream = new ByteArrayInputStream(content.getBytes(EncodingUtil.DEFAULT_ENCODING));
+		TaskRestServiceImpl taskRestServiceImpl = new TaskRestServiceImpl(directProviderUtil.getEngineName(user), directProviderUtil.getObjectMapper(user));
+		TaskResource taskResource = taskRestServiceImpl.getTask(taskId, false, false, false);
+		Response response = taskResource.getRenderedForm();
+		Object entity = response.getEntity();
+		if (entity != null) {
 			try {
-				return new ResponseEntity<String>(IOUtils.toString(stream, Charset.defaultCharset()), HttpStatusCode.valueOf(200));
+				return new ResponseEntity<String>(IOUtils.toString((InputStream) entity, Charset.defaultCharset()), HttpStatusCode.valueOf(response.getStatus()));
 			} catch (IOException e) {
 				throw new SystemException(e.getMessage(), e);
 			}
+		} else {
+			throw new SystemException("No matching rendered form for task with the id " + taskId + " found.");
 		}
-
-		throw new SystemException("No matching rendered form for task with the id " + taskId + " found.");
 	}
 }

@@ -23,11 +23,7 @@ import org.springframework.web.client.HttpStatusCodeException;
  */
 public class VariableModificationException extends RuntimeException {
 
-    public VariableModificationException(HttpStatusCodeException cause) {
-        super(cause);
-    }
-
-    public VariableModificationException(String message, HttpStatusCodeException cause) {
+    public VariableModificationException(String message, Throwable cause) {
         super(message, cause);
     }
 }

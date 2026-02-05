@@ -407,9 +407,18 @@ public abstract class SevenProviderBase {
 		Set<Integer> resourceFilter = Arrays.asList(resourceType).stream().collect(Collectors.toSet());
 		return authorizations.stream().filter(authorization -> resourceFilter.contains(authorization.getResourceType())).collect(Collectors.toList());
 	}
-
+	protected static RuntimeException wrapException(RuntimeException e, CIBUser user) {
+		String technicalErrorMsg = e.getMessage();
+		if (technicalErrorMsg == null)
+			return e;
+		return wrapException(e, technicalErrorMsg, user) ;
+	}
 	protected static RuntimeException wrapException(HttpStatusCodeException cause, CIBUser user) {
 		String technicalErrorMsg = cause.getResponseBodyAsString();
+		return wrapException(cause, technicalErrorMsg, user) ;
+	}
+
+	protected static RuntimeException wrapException(Throwable cause, String technicalErrorMsg, CIBUser user) {
 		RuntimeException wrapperException = null;
 		if (technicalErrorMsg.matches(".*Cannot change tenantId of Task.*Tenant id to set.*")) {
 			String invalidValue = technicalErrorMsg.replaceFirst(".*Tenant id to set '", "").replaceFirst("'.*", "");
@@ -435,7 +444,7 @@ public abstract class SevenProviderBase {
 		} else if (technicalErrorMsg.matches(".*The given authenticated user password is not valid.*")) {
 			wrapperException = new SystemException(cause); // TODO? Create a specific exception this error.
 		} else if (technicalErrorMsg.matches(".*Cannot modify variables for execution.*execution.*doesn't exist: execution is null.*")) {
-			wrapperException = new VariableModificationException(cause);
+			wrapperException = new VariableModificationException(technicalErrorMsg, cause);
 		} else if (technicalErrorMsg.matches(".*No matching task with id.*")
 				|| technicalErrorMsg.matches(".*Process instance with id.*does not exist.*")
 				|| technicalErrorMsg.matches(".*Cannot find task with id.*")
@@ -459,7 +468,7 @@ public abstract class SevenProviderBase {
 		} else if (technicalErrorMsg.matches(".*Null historyTimeToLive values are not allowed.*")) {
 			wrapperException = new InvalidValueHistoryTimeToLive(cause);
 		} else if (technicalErrorMsg.matches(".*processInstanceIds is empty.*")) {
-			wrapperException = new BatchOperationException(cause);
+			wrapperException = new BatchOperationException(technicalErrorMsg, cause);
 		} else if (technicalErrorMsg.matches(".*Deployment with id .*does not exist.*")) {
 			wrapperException = new WrongDeploymenIdException(cause);
 		} else if (technicalErrorMsg.matches(".*Deployment resources for deployment id .*do not exist.*")) {

@@ -24,11 +24,7 @@ import org.springframework.web.client.HttpStatusCodeException;
  */
 public class BatchOperationException extends RuntimeException {
 
-    public BatchOperationException(HttpStatusCodeException cause) {
-        super(cause.getResponseBodyAsString(), cause);
-    }
-
-    public BatchOperationException(String message, HttpStatusCodeException cause) {
+    public BatchOperationException(String message, Throwable cause) {
         super(message, cause);
     }
 }
