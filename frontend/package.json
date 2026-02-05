@@ -33,9 +33,7 @@
     "test:e2e:playwright:debug": "start-server-and-test 'vite dev --port 5173' http://localhost:5173 'playwright test --debug'",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "format": "prettier --write src/",
-    "bump:dev": "../bump-dev-version.sh frontend",
-    "remove:dev": "../npm-version-release.sh frontend"
+    "format": "prettier --write src/"
   },
   "dependencies": {
     "@bpmn-io/form-js": "1.15.2",
