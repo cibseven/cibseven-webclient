@@ -25,15 +25,15 @@
     "remove:dev": "../npm-version-release.sh bpm-sdk"
   },
   "dependencies": {
-    "fast-xml-parser": "^5.3.4",
-    "jquery": "^3.7.1",
-    "moment": "^2.30.1",
-    "superagent": "^10.2.1"
+    "fast-xml-parser": "5.3.4",
+    "jquery": "3.7.1",
+    "moment": "2.30.1",
+    "superagent": "10.2.1"
   },
   "devDependencies": {
-    "cross-env": "^7.0.3",
-    "vite": "^7.0.4",
-    "vitest": "^3.2.3"
+    "cross-env": "7.0.3",
+    "vite": "7.2.0",
+    "vitest": "3.2.3"
   },
   "publishConfig": {
     "registry": "https://artifacts.cibseven.org/repository/npm-hosted/"
