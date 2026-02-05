@@ -39,7 +39,7 @@
             <b-input-group size="sm" class="align-items-center">
               <b-dropdown ref="sortingList" size="sm" variant="link" class="me-1" toggle-class="text-decoration-none" :title="$t('sorting.sortBy')" no-caret>
                 <template #button-content>
-                  <i v-hover-style="{ classes: ['text-primary'] }" class="mdi mdi-18px mdi-filter-variant"></i><span class="visually-hidden">{{ $t('sorting.sortBy') }}</span>
+                  <i class="mdi mdi-18px mdi-filter-variant"></i><span class="visually-hidden">{{ $t('sorting.sortBy') }}</span>
                 </template>
                 <b-dd-item-btn v-for="item in filteredFields" :key="item" @click="taskSorting.sortBy = item; setSorting('key'); $refs.sortingList.hide()" :class="taskSorting.sortBy === item ? 'active' : ''">
                   {{ $t('sorting.' + item) }}
@@ -47,7 +47,7 @@
               </b-dropdown>
               <b-button variant="link" class="text-decoration-none px-0" @click="$refs.sortingList.show()">{{ $t('sorting.' + taskSorting.sortBy) }}</b-button>
               <template v-slot:append>
-                <b-button size="sm" v-hover-style="{ classes: ['text-primary'] }" variant="link" @click="setSorting('order')" class="mdi mdi-18px ms-1"
+                <b-button size="sm" variant="link" @click="setSorting('order')" class="mdi mdi-18px ms-1"
                   :class="taskSorting.sortOrder === 'desc' ? 'mdi-arrow-down' : 'mdi-arrow-up'"
                   :title="taskSorting.sortOrder === 'desc' ? $t('sorting.desc') : $t('sorting.asc')">
                   <span v-if="taskSorting.sortOrder === 'desc'" class="visually-hidden">{{ $t('sorting.desc') }}</span>
@@ -58,7 +58,7 @@
           </b-form-group>
           <div v-if="$root.config.layout.showFilterReminderDate || $root.config.layout.showFilterDueDate ||
             ($root.config.taskFilter.advancedSearch.processVariables.length > 0 && $root.config.taskFilter.advancedSearch.filterEnabled)" class="ms-auto col-auto">
-            <b-button ref="filters" v-hover-style="{ classes: ['text-primary'] }" variant="link" :title="$t('nav-bar.filtersAdditionalsTitle')">
+            <b-button ref="filters" variant="link" :title="$t('nav-bar.filtersAdditionalsTitle')">
               <span class="mdi mdi-18px"
                 :class="$store.state.filter.settings.reminder || $store.state.filter.settings.dueDate || $store.state.advancedSearch.criterias.length > 0 ? 'mdi-filter-menu text-primary' : 'mdi-filter-menu-outline'"></span>
             </b-button>

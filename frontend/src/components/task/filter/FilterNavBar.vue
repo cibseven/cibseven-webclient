@@ -31,8 +31,8 @@
           <b-form-input :title="$t('searches.searchByFilterName')" size="sm" ref="input" type="search" v-model.trim="filter"
           class="form-control border-start-0 ps-0 form-control border-light shadow-none" :placeholder="$t('searches.searchByFilterName')"/>
           <template #append>
-            <b-button size="sm" v-hover-style="{ classes: ['text-primary'] }" variant="secondary-outline"
-              @click="sortOrder === 'desc' ? sortOrder = 'asc' : sortOrder = 'desc'" class="mdi mdi-16px py-0"
+            <b-button size="sm" variant="secondary-outline"
+              @click="sortOrder === 'desc' ? sortOrder = 'asc' : sortOrder = 'desc'" class="mdi mdi-16px py-0 border-0"
               :class="sortOrder === 'desc' ? 'mdi-arrow-down' : 'mdi-arrow-up'"
               :title="sortOrder === 'desc' ? $t('sorting.desc') : $t('sorting.asc')">
               <span v-if="sortOrder === 'desc'" class="visually-hidden">{{ $t('sorting.desc') }}</span>
