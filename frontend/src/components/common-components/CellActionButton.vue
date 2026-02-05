@@ -59,10 +59,11 @@ export default {
 }
 .hovered:focus {
   background-color: var(--bs-gray-500) !important;
+  transition: background-color 0s ease;
   color: var(--bs-dark) !important;
   outline: 2px solid var(--bs-dark);
-  outline-offset: 0px;
-  padding: 2px 6px;
+  outline-offset: -2px;
+  padding: 0px 6px;
   box-shadow: none;
   margin: 2px;
 }
