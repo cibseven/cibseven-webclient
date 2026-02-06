@@ -21,7 +21,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 // Mock diagram viewers to avoid loading heavy diagram libraries during tests
-// and resolve the issue: TypeError: Ids is not a constructor in node_modules/dmn-js-drd/src/draw/DrdRenderer.js:32:20
+// and avoid the issue: TypeError: Ids is not a constructor in node_modules/dmn-js-drd/src/draw/DrdRenderer.js:32:20
 vi.mock('@/components/decision/DmnViewer.vue', () => ({
   default: {
     name: 'DmnViewer',
