@@ -20,9 +20,7 @@
     "build": "vite build",
     "build:library": "cross-env BUILD_MODE=library vite build",
     "dev": "vite",
-    "test": "vitest run",
-    "bump:dev": "../bump-dev-version.sh bpm-sdk",
-    "remove:dev": "../npm-version-release.sh bpm-sdk"
+    "test": "vitest run"
   },
   "dependencies": {
     "fast-xml-parser": "5.3.4",
