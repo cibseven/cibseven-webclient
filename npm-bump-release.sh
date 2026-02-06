@@ -96,6 +96,12 @@ if [ "$create_pr" = true ]; then
   echo "Staging changes..."
   git add package.json
   echo "✓ Added package.json"
+
+  # Also add package-lock.json if it exists and is tracked
+  if [ -f package-lock.json ] && git ls-files --error-unmatch package-lock.json &> /dev/null; then
+    git add package-lock.json
+    echo "✓ Added package-lock.json"
+  fi
   echo ""
 
   commit_message="release: $package $new_version"
@@ -147,6 +153,12 @@ else
   echo "Staging changes..."
   git add package.json
   echo "✓ Added package.json"
+
+  # Also add package-lock.json if it exists and is tracked
+  if [ -f package-lock.json ] && git ls-files --error-unmatch package-lock.json &> /dev/null; then
+    git add package-lock.json
+    echo "✓ Added package-lock.json"
+  fi
   echo ""
 
   commit_message="release: $package $new_version"
