@@ -14,11 +14,27 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { appRoutes, createAppRouter } from '@/router.js'
 import { findComponents } from './utils.js'
 import fs from 'node:fs'
 import path from 'node:path'
+
+// Mock diagram viewers to avoid loading heavy diagram libraries during tests
+// and resolve the issue: TypeError: Ids is not a constructor in node_modules/dmn-js-drd/src/draw/DrdRenderer.js:32:20
+vi.mock('@/components/decision/DmnViewer.vue', () => ({
+  default: {
+    name: 'DmnViewer',
+    template: '<div class="dmn-viewer-mock"></div>'
+  }
+}))
+
+vi.mock('@/components/process/BpmnViewer.vue', () => ({
+  default: {
+    name: 'BpmnViewer',
+    template: '<div class="bpmn-viewer-mock"></div>'
+  }
+}))
 
 describe('router', () => {
 
