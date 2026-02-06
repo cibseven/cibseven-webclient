@@ -31,4 +31,3 @@ target
 
 *.tsbuildinfo
 /node/
-package-lock.json
