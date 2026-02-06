@@ -164,7 +164,12 @@ echo "Package: $package"
 echo "Version: $old_version → $new_version"
 if [ "$create_pr" = true ]; then
   echo "Branch: $branch_name"
-  echo "PR: $pr_url"
+  if [ -n "$pr_url" ]; then
+    echo "PR: $pr_url"
+  else
+    echo "PR: Not created (install GitHub CLI or create manually)"
+    echo "    https://github.com/cibseven/cibseven-webclient/compare/$branch_name"
+  fi
 fi
 echo ""
 echo "Done! ✓"
