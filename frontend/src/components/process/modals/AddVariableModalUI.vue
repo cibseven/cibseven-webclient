@@ -29,7 +29,7 @@
 
       <!-- Name -->
       <b-form-group>
-        <template #label>{{ $t('process-instance.variables.name') }}<span v-if="!editMode">*</span></template>
+        <template #label>{{ $t('process-instance.variables.name') }} <span v-if="!editMode" class="text-danger">*</span></template>
         <b-form-input ref="variableName" v-model="name"
           @focus="isNameFocused = true, nameFocused++"
           @blur="isNameFocused = false"
@@ -46,11 +46,11 @@
       <!-- Object Type Name -->
       <div v-if="type === 'Object'">
         <b-form-group>
-          <template #label>{{ $t('process-instance.variables.objectTypeName') }}*</template>
+          <template #label>{{ $t('process-instance.variables.objectTypeName') }} <span class="text-danger">*</span></template>
           <b-form-input v-model="objectTypeName" :disabled="disabled || saving || loading"></b-form-input>
         </b-form-group>
         <b-form-group>
-          <template #label>{{ $t('process-instance.variables.serializationDataFormat') }}*</template>
+          <template #label>{{ $t('process-instance.variables.serializationDataFormat') }} <span class="text-danger">*</span></template>
           <b-form-input v-model="serializationDataFormat" :disabled="disabled || saving || loading"></b-form-input>
         </b-form-group>
       </div>
@@ -61,7 +61,7 @@
         <!-- Label -->
         <template #label v-if="type !== 'File' && (!editMode || (type !== 'Object'))">
           {{ $t('process-instance.variables.value') }}
-          <span v-if="type != 'Boolean' && !disabled">*</span>
+          <span v-if="type === 'Json' && !disabled" class="text-danger">*</span>
         </template>
         <p v-if="value === null"><small class="form-text text-muted">Null value is specified.</small></p>
 
@@ -97,7 +97,7 @@
         <div v-else-if="type === 'File' && allowFileUpload">
           <b-form-file placeholder="" :browse-text="$t('process-instance.selectFile')" :disabled="disabled || saving || loading" v-model="fileToUpload">
             <template #label>
-              {{ $t('process-instance.upload') }} *
+              {{ $t('process-instance.upload') }} <span class="text-danger">*</span>
             </template>
           </b-form-file>
         </div>
@@ -132,7 +132,7 @@
 
         <!-- Input: String, Json, Xml, Object -->
         <template v-else>
-          <label class="visually-hidden" for="textValue">{{ $t('process-instance.variables.value') }} *</label>
+          <label class="visually-hidden" for="textValue">{{ $t('process-instance.variables.value') }}</label>
           <textarea
             ref="textValue"
             id="textValue"

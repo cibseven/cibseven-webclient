@@ -59,7 +59,7 @@
                   {{ $t('deployment.showDeployment') }}</b-button>
                 <b-button variant="light" size="sm" @click="$emit('delete-deployment', this.deployment)"
                   :title="$t('deployment.delete')">
-                  <span class="mdi mdi-trash-can"></span>
+                  <span class="mdi mdi-delete-outline"></span>
                   {{ $t('deployment.delete') }}</b-button>
               </div>
             </div>
