@@ -23,7 +23,7 @@
       <div v-if="selectedJobDefinition && selectedJobDefinition.overridingJobPriority !== null" class="mb-2">
         <p class="fw-medium mt-2 mb-1">{{ $t('process-instance.jobDefinitions.execute') }}</p>
         <div class="form-check" v-for="option in overridingOptions" :key="option">
-          <input class="form-check-input" type="radio" :id="option" :value="option" v-model="overridingOption" />
+          <input class="form-check-input" type="radio" name="overridingOption" :id="option" :value="option" v-model="overridingOption" />
           <label class="form-check-label" :for="option">{{ $t('process-instance.jobDefinitions.' + option) }}</label>
         </div>
       </div>
