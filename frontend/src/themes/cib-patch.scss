@@ -100,6 +100,11 @@ $gray: #c1cedd;
   background-color: $btn-light-hover-bg;
 }
 
+.btn-light:focus,
+.btn-light:focus-visible {
+  background-color: $gray-500;
+}
+
 .btn.border-0 {
   box-shadow: none;
 }
@@ -197,6 +202,10 @@ button:not(:disabled):focus-visible,
   outline: 2px solid $dark !important;
   outline-offset: 2px;
   box-shadow: none !important;
+}
+
+.btn-close:hover {
+  opacity: 1;
 }
 
 /* CSS custom scrollbar */
