@@ -1277,7 +1277,10 @@
 			"sendEmail": "Enviar email de recuperacion",
 			"id": "@:admin.users.id",
 			"changePassword": "Cambiar contraseña",
-			"emailSent": "El correo electrónico con el enlace para recuperar su contraseña ha sido enviado."
+			"emailSent": "El correo electrónico con el enlace para recuperar su contraseña ha sido enviado.",
+			"currentUserPassword": "Contraseña actual",
+			"newPassword": "Nueva contraseña",
+			"newPasswordRepeat": "Nueva contraseña (repita)"
 		},
 		"policy": {
 			"title": "Política de contraseñas",

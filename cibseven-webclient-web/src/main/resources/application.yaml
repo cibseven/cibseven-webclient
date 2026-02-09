@@ -63,6 +63,7 @@ cibseven:
       # provider: org.cibseven.webapp.auth.KeycloakUserProvider
       # provider: org.cibseven.webapp.auth.AdfsUserProvider
       editable:
+      passwordDirectChangeable: true
 
     # Set the wild card is gonna be used for the users search. By default is "*".
     users:
