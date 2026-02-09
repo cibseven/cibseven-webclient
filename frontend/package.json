@@ -8,13 +8,15 @@
   "files": [
     "dist/cibseven-components.css",
     "dist/cibseven-components.es.js",
-    "dist/cibseven-components.umd.js"
+    "dist/cibseven-components.umd.js",
+    "src/themes"
   ],
   "exports": {
     ".": {
       "import": "./dist/cibseven-components.es.js",
       "require": "./dist/cibseven-components.umd.js"
-    }
+    },
+    "./themes/*": "./src/themes/*"
   },
   "scripts": {
     "dev": "vite",
