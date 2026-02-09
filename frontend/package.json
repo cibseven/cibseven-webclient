@@ -38,15 +38,15 @@
     "remove:dev": "../npm-version-release.sh frontend"
   },
   "dependencies": {
-    "@bpmn-io/form-js": "1.15.2",
+    "@bpmn-io/form-js": "1.19.0",
     "@cib/common-frontend": "1.0.3-dev.7",
     "@mdi/font": "7.4.47",
     "apexcharts": "4.7.0",
     "axios": "1.13.2",
     "bootstrap": "5.3.8",
     "bpm-sdk": "2.1.1",
-    "bpmn-js": "18.3.2",
-    "dmn-js": "17.2.0",
+    "bpmn-js": "18.12.0",
+    "dmn-js": "17.5.0",
     "js-sha256": "0.11.0",
     "moment": "2.30.1",
     "platform": "1.3.6",
