@@ -107,7 +107,7 @@
                 </div>
               </div>
               <div v-if="task.businessKey && $root.config.layout.showBusinessKey" class="d-flex align-items-center mb-1">
-                <span :title="$t(task.businessKey)">{{ task.businessKey }}</span><br>
+                <span :title="task.businessKey">{{ task.businessKey }}</span><br>
               </div>
               <div v-if="getProcessName(task.processDefinitionId)" class="fw-normal h5">
                 {{ getProcessName(task.processDefinitionId) }}
