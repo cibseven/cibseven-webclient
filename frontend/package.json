@@ -1,6 +1,6 @@
 {
   "name": "cibseven-components",
-  "version": "2.1.4-dev.0",
+  "version": "2.1.4-dev.1",
   "type": "module",
   "license": "",
   "main": "./src/main.js",
@@ -8,13 +8,15 @@
   "files": [
     "dist/cibseven-components.css",
     "dist/cibseven-components.es.js",
-    "dist/cibseven-components.umd.js"
+    "dist/cibseven-components.umd.js",
+    "src/themes"
   ],
   "exports": {
     ".": {
       "import": "./dist/cibseven-components.es.js",
       "require": "./dist/cibseven-components.umd.js"
-    }
+    },
+    "./themes/*": "./src/themes/*"
   },
   "scripts": {
     "dev": "vite",
@@ -33,13 +35,11 @@
     "test:e2e:playwright:debug": "start-server-and-test 'vite dev --port 5173' http://localhost:5173 'playwright test --debug'",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "format": "prettier --write src/",
-    "bump:dev": "../bump-dev-version.sh frontend",
-    "remove:dev": "../npm-version-release.sh frontend"
+    "format": "prettier --write src/"
   },
   "dependencies": {
     "@bpmn-io/form-js": "1.15.2",
-    "@cib/common-frontend": "1.0.2",
+    "@cib/common-frontend": "1.0.3-dev.7",
     "@mdi/font": "7.4.47",
     "apexcharts": "4.7.0",
     "axios": "1.13.2",

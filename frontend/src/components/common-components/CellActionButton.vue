@@ -17,11 +17,11 @@
 
 -->
 <template>
-  <router-link v-bind="$attrs" v-if="to" :to="to" :title="title" class="text-decoration-none rounded hovered">
+  <router-link v-bind="$attrs" v-if="to" :to="to" :title="title" class="text-decoration-none rounded hovered-link">
     <span v-if="icon" :class="'mdi mdi-18px ' + icon"></span>
     <slot></slot>
   </router-link>
-  <button v-else v-bind="$attrs" @click.stop="onClick" class="btn btn-link hovered" :title="title">
+  <button v-else v-bind="$attrs" @click.stop="onClick" class="btn btn-link hovered-button" :title="title">
     <span v-if="icon" :class="'mdi mdi-18px ' + icon"></span>
     <slot></slot>
   </button>
@@ -47,23 +47,46 @@ export default {
 </script>
 
 <style lang="css" scoped>
-.hovered {
+/* common styles for both link and button */
+
+.hovered-link,
+.hovered-button {
   display: block;
   transition: background-color 0.3s ease;
-  padding: 4px 8px;
   color: var(--bs-gray-800);
 }
-.hovered:hover {
+.hovered-link:hover,
+.hovered-button:hover  {
   background-color: var(--bs-gray-500) !important;
   color: var(--bs-dark) !important;
 }
-.hovered:focus {
+.hovered-link:focus,
+.hovered-button:focus  {
   background-color: var(--bs-gray-500) !important;
   color: var(--bs-dark) !important;
-  outline: 2px solid var(--bs-dark);
-  outline-offset: 0px;
-  padding: 2px 6px;
   box-shadow: none;
-  margin: 2px;
+  outline: 2px solid var(--bs-dark);
+  outline-offset: 2px;
 }
+
+/* Specific styles for link and button to prevent layout shift on focus */
+
+.hovered-link {
+  margin: 0px;
+  padding: 4px 8px;
+}
+.hovered-link:focus {
+  margin: 0px 2px;
+  padding: 0px 6px;
+}
+
+.hovered-button {
+  margin: 0px;
+  padding: 4px 8px;
+}
+.hovered-button:focus {
+  margin: 2px;
+  padding: 0px 6px;
+}
+
 </style>

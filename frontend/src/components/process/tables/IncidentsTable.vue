@@ -37,15 +37,11 @@
           </b-input-group>
         </div>
         <div v-if="selectedActivityId" class="col-6 p-3">
-          <span class="badge bg-info rounded-pill p-2 pe-3" style="font-weight: 500; font-size: 0.75rem">
-            <span
-              @click="removeSelectedActivityBadge"
-              :title="$t('process-instance.incidents.activityIdBadge.remove')"
-              role="button" class="mdi mdi-close-thick py-2 px-1"></span>
-              <span :title="$t('process-instance.incidents.activityIdBadge.tooltip', { activityId: selectedActivityId })">
-                {{ $t('process-instance.incidents.activityIdBadge.title', { activityId: selectedActivityId }) }}
-              </span>
-          </span>
+          <RemovableBadge
+            @on-remove="removeSelectedActivityBadge"
+            :tooltip-remove="$t('process-instance.incidents.activityIdBadge.remove')"
+            :label="$t('process-instance.incidents.activityIdBadge.title', { activityId: selectedActivityId })"
+            :tooltip="$t('process-instance.incidents.activityIdBadge.tooltip', { activityId: selectedActivityId })"/>
         </div>
       </div>
 
@@ -225,13 +221,14 @@ import RetryModal from '@/components/process/modals/RetryModal.vue'
 import AnnotationModal from '@/components/process/modals/AnnotationModal.vue'
 import StackTraceModal from '@/components/process/modals/StackTraceModal.vue'
 import CellActionButton from '@/components/common-components/CellActionButton.vue'
+import RemovableBadge from '@/components/common-components/RemovableBadge.vue'
 import { formatDateForTooltips } from '@/utils/dates.js'
 import { mapGetters, mapActions } from 'vuex'
 import { debounce } from '@/utils/debounce.js'
 
 export default {
   name: 'IncidentsTable',
-  components: { FlowTable, SuccessAlert, RetryModal, AnnotationModal, StackTraceModal, PagedScrollableContent, CopyableActionButton, CellActionButton },
+  components: { FlowTable, SuccessAlert, RetryModal, AnnotationModal, StackTraceModal, PagedScrollableContent, CopyableActionButton, CellActionButton, RemovableBadge },
   mixins: [copyToClipboardMixin],
   props: {
     instance: Object,

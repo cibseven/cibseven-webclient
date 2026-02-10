@@ -20,12 +20,10 @@
 <template>
   <div>
     <CIBForm @submitted="onLogin">
-      <b-form-group label-cols="4" :label="$t('login.username')" :invalid-feedback="$t('errors.invalid')">
+      <b-form-group label-cols="4" content-cols="8" :label="$t('login.username')" :invalid-feedback="$t('errors.invalid')">
         <input ref="username" v-model="credentials.username" class="form-control" required autocomplete="username">
       </b-form-group>
-      <b-form-group label-cols="4" :label="$t('login.password')">
-        <SecureInput ref="password" v-model="credentials.password" class="col-8" required></SecureInput>
-      </b-form-group>
+      <SecureInput ref="password" v-model="credentials.password" required></SecureInput>
 
       <slot></slot>
 
@@ -34,7 +32,7 @@
           <b-form-checkbox v-model="rememberMe">{{ $t('login.rememberMe') }}</b-form-checkbox>
         </div>
         <div v-if="!hideForgotten" class="form-group float-end">
-          <b-button variant="link" class="text-primary" style="cursor:pointer" @click="$refs.emailDialog.show()">{{ $t('login.forgotten') }}</b-button>
+          <b-button variant="link" type="button" class="text-primary" style="cursor:pointer" @click="$refs.emailDialog.show()">{{ $t('login.forgotten') }}</b-button>
         </div>
       </div>
 

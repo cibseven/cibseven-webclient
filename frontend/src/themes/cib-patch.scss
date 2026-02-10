@@ -3,22 +3,6 @@
 /* CIB Patch */
 
 $gray: #c1cedd;
-$form-group-margin-bottom: 1rem;
-$dropdown-link-active-color: $dark;
-$dropdown-link-active-bg: var(--bs-gray-300);
-$list-group-active-color: $dark;
-$list-group-active-bg: $light;
-$list-group-color-light: $dark;
-$text-muted-color: $gray;
-$btn-link-color: $dark;
-$btn-link-hover-color: $secondary;
-$nav-link-padding: 0 1rem;
-$navbar-link-color: $dark;
-$navbar-link-hover-color: $secondary;
-$btn-light-bg: $white;
-$btn-light-hover-bg: $light;
-$alert-bg: $white;
-$navbar-collapse-bg: $white;
 
 .bg-gray {
   --bs-bg-opacity: 1;
@@ -30,27 +14,27 @@ $navbar-collapse-bg: $white;
   background-color: transparent !important;
 }
 
-.form-group {
-  margin-bottom: $form-group-margin-bottom;
-}
-
 .dropdown-item {
   border-left: 4px solid white;
   padding-left: 0.7rem !important;
 }
+
 .dropdown-item.active {
   color: $dropdown-link-active-color;
   background-color: $dropdown-link-active-bg;
   border-left: 4px solid $primary;
 }
+
 .dropdown-item:hover {
   border-left: 4px solid $dropdown-link-active-bg;
   background-color: var(--bs-gray-200);
 }
+
 .dropdown-item.active:hover,
 .dropdown-item.active:focus {
   border-left: 4px solid $primary;
 }
+
 .dropdown-item:focus {
   color: $dropdown-link-active-color;
   background-color: $dropdown-link-active-bg;
@@ -66,32 +50,38 @@ $navbar-collapse-bg: $white;
 }
 
 .list-group-item-light {
-  color: $list-group-color-light;
+  color: $dark;
 }
 
-.text-muted {
-  color: $text-muted-color !important;
+.form-group {
+  margin-bottom: 1rem;
 }
 
 .btn-link {
-  color: $btn-link-color;
+  color: $dark;
 }
 
 .btn-link:hover, .btn-link:focus-visible {
-  color: $btn-link-hover-color;
-}
-
-.nav-link {
-  padding: $nav-link-padding;
+  color: $secondary;
 }
 
 .navbar-light .navbar-nav .nav-link {
-  color: $navbar-link-color;
+  color: $dark;
+}
+
+.nav-link {
+    padding: 0 1rem;
 }
 
 .navbar-light .navbar-nav .nav-link:hover, .navbar-light .navbar-nav .nav-link:focus {
-  color: $navbar-link-hover-color;
+  color: $secondary;
 }
+
+.nav-link:focus-visible {
+  outline: auto;
+  box-shadow: none;
+}
+
 
 .custom-select {
   -moz-appearance: none;
@@ -110,6 +100,11 @@ $navbar-collapse-bg: $white;
   background-color: $btn-light-hover-bg;
 }
 
+.btn-light:focus,
+.btn-light:focus-visible {
+  background-color: $gray-500;
+}
+
 .btn.border-0 {
   box-shadow: none;
 }
@@ -118,7 +113,7 @@ $navbar-collapse-bg: $white;
 .alert-success,
 .alert-info,
 .alert-danger {
-  background-color: $alert-bg;
+  background-color: $white;
 }
 
 .list-group-item + .list-group-item.active {
@@ -126,11 +121,12 @@ $navbar-collapse-bg: $white;
 }
 
 .navbar-collapse {
-  background-color: $navbar-collapse-bg;
+  background-color: $white;
 }
 
-input[type="checkbox"] {
+input[type="checkbox"], input[type="radio"] {
   background-color: $body-bg;
+  border: 1px solid $gray-650;
   cursor: pointer;
 
   &:checked {
@@ -141,7 +137,75 @@ input[type="checkbox"] {
 
 .form-check-input:checked {
 	background-color: $primary;
-    border-color: $primary;
+  border-color: $primary;
+}
+
+.form-control:not(:disabled):hover,
+.form-select:not(:disabled):hover,
+input:not([type="checkbox"]):not([type="radio"]):not(:disabled):hover,
+textarea:not(:disabled):hover,
+select:not(:disabled):hover {
+  border-color: $gray-800 !important;
+}
+
+.form-control:not(:disabled):focus,
+.form-select:not(:disabled):focus,
+input:not([type="checkbox"]):not([type="radio"]):not(:disabled):focus,
+textarea:not(:disabled):focus,
+select:not(:disabled):focus {
+  border-color: $gray-800 !important;
+  outline: 2px solid $gray-800 !important;
+  outline-offset: -1px;
+  box-shadow: none !important;
+}
+
+.form-control.is-valid:not(:disabled):focus,
+.form-select.is-valid:not(:disabled):focus,
+input.is-valid:not([type="checkbox"]):not([type="radio"]):not(:disabled):focus,
+textarea.is-valid:not(:disabled):focus {
+  border-color: $success !important;
+  outline: 2px solid $success !important;
+  outline-offset: -1px;
+  box-shadow: none !important;
+}
+
+.form-control.is-invalid:not(:disabled):focus,
+.form-select.is-invalid:not(:disabled):focus,
+input.is-invalid:not([type="checkbox"]):not([type="radio"]):not(:disabled):focus,
+textarea.is-invalid:not(:disabled):focus {
+  border-color: $danger !important;
+  outline: 2px solid $danger !important;
+  outline-offset: -1px;
+  box-shadow: none !important;
+}
+
+.form-check-input:not(:disabled):hover,
+input[type="checkbox"]:not(:disabled):hover,
+input[type="radio"]:not(:disabled):hover {
+  border-color: $gray-800;
+  box-shadow: none !important;
+}
+
+.form-check-input:not(:disabled):focus,
+input[type="checkbox"]:not(:disabled):focus,
+input[type="radio"]:not(:disabled):focus {
+  border-color: $gray-800;
+  outline: 2px solid $gray-800;
+  outline-offset: 2px;
+  box-shadow: none !important;
+}
+
+button:not(:disabled):focus,
+button:not(:disabled):focus-visible,
+.btn:not(a):not(:disabled):focus,
+.btn:not(a):not(:disabled):focus-visible {
+  outline: 2px solid $dark !important;
+  outline-offset: 2px;
+  box-shadow: none !important;
+}
+
+.btn-close:hover {
+  opacity: 1;
 }
 
 /* CSS custom scrollbar */

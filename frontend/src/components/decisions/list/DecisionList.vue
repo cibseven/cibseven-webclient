@@ -29,10 +29,13 @@
                   size="sm" class="mdi mdi-magnify mdi-24px text-secondary" variant="link"
                   :title="$t('searches.refreshAndFilter')"></b-button>
                 <div class="flex-grow-1">
+                  <label class="visually-hidden" for="filter-decision-list">{{ $t('searches.filter') }}</label>
                   <input
+                    id="filter-decision-list"
                     type="text"
                     v-model.trim="filter"
                     :placeholder="$t('searches.filter')"
+                    :aria-label="$t('searches.filter')"
                     class="form-control-plaintext w-100"
                   />
                 </div>

@@ -26,10 +26,13 @@
               size="sm" class="mdi mdi-magnify mdi-18px text-secondary py-0" variant="link"
               :title="$t('searches.search')"></b-button>
             <div class="flex-grow-1">
+              <label class="visually-hidden" for="filter-deployment-list">{{ $t('searches.search') }}</label>
               <input
+                id="filter-deployment-list"
                 type="text"
                 v-model.trim="filter"
                 :placeholder="$t('searches.search')"
+                :aria-label="$t('searches.search')"
                 class="form-control-plaintext form-control-sm w-100"
               />
             </div>
@@ -46,7 +49,7 @@
               </b-input-group-prepend>
               <b-input-group-append class="d-flex align-items-center">
                 <b-form-select size="sm" v-model="sortBy" :options="sortingFields" class="mb-0"></b-form-select>
-                <b-button size="sm" v-hover-style="{ classes: ['text-primary'] }" variant="secondary-outline"
+                <b-button size="sm" variant="secondary-outline"
                   @click="changeSortingOrder()" class="mdi mdi-18px ms-1 border-0"
                   :class="sortOrder === 'desc' ? 'mdi-arrow-down' : 'mdi-arrow-up'"
                   :title="sortOrder === 'desc' ? $t('sorting.desc') : $t('sorting.asc')"></b-button>

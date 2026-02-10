@@ -55,7 +55,7 @@
                     <td class="text-center py-1">
                       <button
                         @click="removeIdentityLink(identityLink, idx)"
-                        class="btn btn-outline-secondary border-0 mdi mdi-18px mdi-delete"
+                        class="btn btn-outline-secondary border-0 mdi mdi-18px mdi-delete-outline"
                         :title="$t('process-instance.assignModal.delete')">
                       </button>
                     </td>

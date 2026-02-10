@@ -17,7 +17,7 @@
 
 -->
 <template>
-    <div class="container-fluid">
+    <div class="container-fluid mt-1">
       <div v-for="group of groups" :key="group.name">
         <b-button variant="link" role="heading" aria-level="4" class="mdi mdi-18px text-end pt-3 mb-1 w-100" :class="group.visible ? 'mdi-minus' : 'mdi-plus'"
           :title="group.visible ? $t('task.collapse') : $t('task.expand')"

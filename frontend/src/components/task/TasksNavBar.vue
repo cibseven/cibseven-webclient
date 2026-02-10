@@ -39,7 +39,7 @@
             <b-input-group size="sm" class="align-items-center">
               <b-dropdown ref="sortingList" size="sm" variant="link" class="me-1" toggle-class="text-decoration-none" :title="$t('sorting.sortBy')" no-caret>
                 <template #button-content>
-                  <i v-hover-style="{ classes: ['text-primary'] }" class="mdi mdi-18px mdi-filter-variant"></i><span class="visually-hidden">{{ $t('sorting.sortBy') }}</span>
+                  <i class="mdi mdi-18px mdi-filter-variant"></i><span class="visually-hidden">{{ $t('sorting.sortBy') }}</span>
                 </template>
                 <b-dd-item-btn v-for="item in filteredFields" :key="item" @click="taskSorting.sortBy = item; setSorting('key'); $refs.sortingList.hide()" :class="taskSorting.sortBy === item ? 'active' : ''">
                   {{ $t('sorting.' + item) }}
@@ -47,7 +47,7 @@
               </b-dropdown>
               <b-button variant="link" class="text-decoration-none px-0" @click="$refs.sortingList.show()">{{ $t('sorting.' + taskSorting.sortBy) }}</b-button>
               <template v-slot:append>
-                <b-button size="sm" v-hover-style="{ classes: ['text-primary'] }" variant="link" @click="setSorting('order')" class="mdi mdi-18px ms-1"
+                <b-button size="sm" variant="link" @click="setSorting('order')" class="mdi mdi-18px ms-1"
                   :class="taskSorting.sortOrder === 'desc' ? 'mdi-arrow-down' : 'mdi-arrow-up'"
                   :title="taskSorting.sortOrder === 'desc' ? $t('sorting.desc') : $t('sorting.asc')">
                   <span v-if="taskSorting.sortOrder === 'desc'" class="visually-hidden">{{ $t('sorting.desc') }}</span>
@@ -58,7 +58,7 @@
           </b-form-group>
           <div v-if="$root.config.layout.showFilterReminderDate || $root.config.layout.showFilterDueDate ||
             ($root.config.taskFilter.advancedSearch.processVariables.length > 0 && $root.config.taskFilter.advancedSearch.filterEnabled)" class="ms-auto col-auto">
-            <b-button ref="filters" v-hover-style="{ classes: ['text-primary'] }" variant="link" :title="$t('nav-bar.filtersAdditionalsTitle')">
+            <b-button ref="filters" variant="link" :title="$t('nav-bar.filtersAdditionalsTitle')">
               <span class="mdi mdi-18px"
                 :class="$store.state.filter.settings.reminder || $store.state.filter.settings.dueDate || $store.state.advancedSearch.criterias.length > 0 ? 'mdi-filter-menu text-primary' : 'mdi-filter-menu-outline'"></span>
             </b-button>
@@ -100,12 +100,14 @@
                   <span class="fw-bold">{{ task.name }}</span>
                 </h6>
                 <div class="d-flex ms-auto">
-                  <b-button @click="$refs['followUp' + task.id][0].show()" v-if="$root.config.layout.showFilterReminderDate" size="sm" :class="getReminderClasses(task)" variant="outline-secondary" class="mdi mdi-18px mdi-alarm border-0" :title="getDateFormatted(task.followUp, 'L', 'setReminder')"></b-button>
-                  <b-button @click="$refs['due' + task.id][0].show()" v-if="$root.config.layout.showFilterDueDate" size="sm" :class="getDueClasses(task)" variant="outline-secondary" class="mdi mdi-18px mdi-calendar-alert border-0" :title="getDateFormatted(task.due, 'L', 'setDeadline')"></b-button>
+                  <b-button @click.stop="$refs['followUp' + task.id][0].show()" @keydown.enter.stop.prevent="$refs['followUp' + task.id][0].show()" @keyup.enter.stop.prevent 
+                  @keydown.space.stop.prevent="$refs['followUp' + task.id][0].show()" v-if="$root.config.layout.showFilterReminderDate" size="sm" :class="getReminderClasses(task)" variant="light" class="mdi mdi-18px mdi-alarm border-0 me-1" :title="getDateFormatted(task.followUp, 'L', 'setReminder')"></b-button>
+                  <b-button @click.stop="$refs['due' + task.id][0].show()" @keydown.enter.stop.prevent="$refs['due' + task.id][0].show()" @keyup.enter.stop.prevent 
+                  @keydown.space.stop.prevent="$refs['due' + task.id][0].show()" v-if="$root.config.layout.showFilterDueDate" size="sm" :class="getDueClasses(task)" variant="light" class="mdi mdi-18px mdi-calendar-alert border-0" :title="getDateFormatted(task.due, 'L', 'setDeadline')"></b-button>
                 </div>
               </div>
               <div v-if="task.businessKey && $root.config.layout.showBusinessKey" class="d-flex align-items-center mb-1">
-                <span :title="$t(task.businessKey)">{{ task.businessKey }}</span><br>
+                <span :title="task.businessKey">{{ task.businessKey }}</span><br>
               </div>
               <div v-if="getProcessName(task.processDefinitionId)" class="fw-normal h5">
                 {{ getProcessName(task.processDefinitionId) }}
@@ -115,7 +117,7 @@
                 <div class="d-flex ms-auto">
                   <div class="h6 text-end p-0 fw-normal m-0" v-if="task.assignee != null"><span class="mdi mdi-18px mdi-account text-secondary"></span><span class="p-1">{{ getCompleteName(task) }}</span></div>
                   <div class="h6 text-end p-0 fw-normal n-0" v-if="task.assignee == null">
-                    <b-button variant="link" class="p-0 text-dark" @click.stop="checkAssignee(task)"><span class="mdi mdi-18px mdi-account-question text-secondary"></span> {{ $t('task.assignToMe') }}</b-button>
+                    <b-button variant="link" class="p-0 text-dark" @click.stop="checkAssignee(task)" @keydown.enter.stop="checkAssignee(task)" @keyup.enter.stop.prevent @keydown.space.prevent.stop="checkAssignee(task)"><span class="mdi mdi-18px mdi-account-question text-secondary"></span> {{ $t('task.assignToMe') }}</b-button>
                   </div>
                 </div>
               </div>
@@ -367,16 +369,14 @@ export default {
     },
     getDueClasses: function(task) {
       const classes = []
-      if (!task.due) classes.push('text-muted')
-      else if (moment(task.due).isBefore(moment())) classes.push('text-danger')
+      if (moment(task.due).isBefore(moment())) classes.push('text-danger')
       else if (moment().add(this.$root.config.warnOnDueExpirationIn, 'hours').isAfter(moment(task.due))) classes.push('text-warning')
-      if (!this.isMobile() && task !== this.focused && task.id !== this.selectedDateT.id && !task.due) classes.push('invisible')
+      if (!this.isMobile() && task !== this.focused && task.id !== this.selectedDateT.id && !task.due) classes.push('action-button-hidden')
       return classes
     },
     getReminderClasses: function(task) {
       const classes = []
-      if (!task.followUp) classes.push('text-muted')
-      if (!this.isMobile() && task !== this.focused && task.id !== this.selectedDateT.id && !task.followUp) classes.push('invisible')
+      if (!this.isMobile() && task !== this.focused && task.id !== this.selectedDateT.id && !task.followUp) classes.push('action-button-hidden')
       return classes
     },
     claim: function(task) {
@@ -511,3 +511,16 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.action-button-hidden {
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.list-group-item:hover .action-button-hidden,
+.list-group-item:focus-within .action-button-hidden,
+.action-button-hidden:focus {
+  opacity: 1;
+}
+</style>
