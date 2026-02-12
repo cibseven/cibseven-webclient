@@ -23,7 +23,7 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
-const backendUrl = 'http://localhost:8082'
+const backendUrl = 'http://localhost:8080/webapp'
 
 // Detect build mode
 /* eslint-disable no-undef */
