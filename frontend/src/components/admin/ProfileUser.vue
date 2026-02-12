@@ -80,7 +80,7 @@
             <ContentBlock
               :title="$t('password.recover.changePassword')"
               class="col-lg-6 col-md-8 col-sm-12">
-              <b-form-group v-if="$root.config.passwordDirectChangeable" labels-cols-lg="4" label-size="lg" label-class="fw-bold pt-0 pb-4" class="m-0">
+              <b-form-group v-if="$root.config.userPasswordChangeEnabled" labels-cols-lg="4" label-size="lg" label-class="fw-bold pt-0 pb-4" class="m-0">
                 <b-form-group :label="$t('password.recover.currentUserPassword') + '*'" label-cols-sm="4"
                   label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
                     <b-form-input type="password" v-model="credentials.authenticatedUserPassword"></b-form-input>
@@ -304,8 +304,8 @@ export default {
       const defaultTab = this.user.noInfo ? 'preferences' : 'profile'
       return this.$route.query.tab || defaultTab
     },
-    passwordDirectChangeable() {
-      return this.$root.config.passwordDirectChangeable
+    userPasswordChangeEnabled() {
+      return this.$root.config.userPasswordChangeEnabled
     },
     groupFields() {
       const isEditable = this.editMode && this.$root.config.userEditable
