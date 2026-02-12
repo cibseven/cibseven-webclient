@@ -32,6 +32,11 @@ export default {
   name: 'ModelerView',
   components: { CibsevenModeler },
   inject: ['currentLanguage'],
+  provide() {
+    return {
+      config: this.$root.config
+    }
+  },
   created() {
     // Configure modeler to use webclient's axios and base path
     setAxiosInstance(axios)
