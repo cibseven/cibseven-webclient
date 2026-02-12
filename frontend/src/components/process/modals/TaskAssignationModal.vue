@@ -17,7 +17,7 @@
 
 -->
 <template>
-  <b-modal ref="assignationModal" :title="selectedIdentity.type === 'assignee' ? $t('process-instance.assignModal.manageAssignee') : $t('process-instance.assignModal.manageUsersGroups')" :ok-only="true">
+  <b-modal ref="assignationModal" :title="modalTitle" :ok-only="true">
     <div>
       <ul class="nav nav-tabs mb-4">
         <li class="nav-item" v-for="(identity, idx) in filteredIdentities" :key="idx">
@@ -98,18 +98,49 @@ export default {
       selectedIdentity: {},
       identity: '',
       taskId: '',
-      identityExists: false
+      identityExists: false,
+      showOnlySelected: false,
+      customTitle: null
     }
   },
   computed: {
     filteredIdentities() {
+      if (this.showOnlySelected) {
+        return this.identities.filter(identity => identity.text === this.selectedIdentity.text)
+      }
       return this.identities.filter(identity => identity.type === this.selectedIdentity.type)
+    },
+    modalTitle() {
+      if (this.customTitle) {
+        return this.customTitle
+      }
+      return this.selectedIdentity.type === 'assignee' 
+        ? this.$t('process-instance.assignModal.manageAssignee') 
+        : this.$t('process-instance.assignModal.manageUsersGroups')
     }
   },
   methods: {
-    show: function(taskId, assignee) {
+    show: function(taskId, assignee, specificTab = null) {
       this.selectedIdentity = this.identities[1]
       if (assignee) this.selectedIdentity = this.identities[0]
+      
+      if (specificTab) {
+        const foundIdentity = this.identities.find(identity => identity.text === specificTab)
+        if (foundIdentity) {
+          this.selectedIdentity = foundIdentity
+          this.showOnlySelected = true
+          // Set custom title based on the specific tab
+          if (specificTab === 'groups') {
+            this.customTitle = 'Manage groups'
+          } else if (specificTab === 'users') {
+            this.customTitle = 'Manage users'
+          }
+        }
+      } else {
+        this.showOnlySelected = false
+        this.customTitle = null
+      }
+      
       this.taskId = taskId
       this.identityLinks = []
       this.identityExists = false
