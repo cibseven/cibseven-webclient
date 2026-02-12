@@ -97,7 +97,7 @@
               tabindex=0 style="cursor: pointer" v-on:keyup.enter="selectedTask(task)" action>
               <div class="d-flex align-items-center">
                 <h6 style="max-width: 100%; font-size: 1rem">
-                  <span class="fw-bold">{{ task.name }}</span>
+                  <HighlightedText :text="task.name" :keyword="search" class="fw-bold">{{ task.name }}</HighlightedText>
                 </h6>
                 <div class="d-flex ms-auto">
                   <b-button @click.stop="$refs['followUp' + task.id][0].show()" @keydown.enter.stop.prevent="$refs['followUp' + task.id][0].show()" @keyup.enter.stop.prevent 
@@ -107,7 +107,7 @@
                 </div>
               </div>
               <div v-if="task.businessKey && $root.config.layout.showBusinessKey" class="d-flex align-items-center mb-1">
-                <span :title="task.businessKey">{{ task.businessKey }}</span><br>
+                <HighlightedText :text="task.businessKey" :keyword="search" :title="$t('process.businessKey') + ': ' + task.businessKey"/>
               </div>
               <div v-if="getProcessName(task.processDefinitionId)" class="fw-normal h5">
                 {{ getProcessName(task.processDefinitionId) }}
@@ -115,9 +115,14 @@
               <div class="d-flex align-items-center">
                 <div class="h6 fw-normal m-0" :title="formatDateForTooltips(task.created)">{{ getDateFormatted(task.created) }}</div><br>
                 <div class="d-flex ms-auto">
-                  <div class="h6 text-end p-0 fw-normal m-0" v-if="task.assignee != null"><span class="mdi mdi-18px mdi-account text-secondary"></span><span class="p-1">{{ getCompleteName(task) }}</span></div>
+                  <div class="h6 text-end p-0 fw-normal m-0" v-if="task.assignee != null">
+                    <HighlightedText :text="getCompleteName(task)" :keyword="search" class="mdi mdi-18px mdi-account text-secondary p-1"></HighlightedText>
+                  </div>
                   <div class="h6 text-end p-0 fw-normal n-0" v-if="task.assignee == null">
-                    <b-button variant="link" class="p-0 text-dark" @click.stop="checkAssignee(task)" @keydown.enter.stop="checkAssignee(task)" @keyup.enter.stop.prevent @keydown.space.prevent.stop="checkAssignee(task)"><span class="mdi mdi-18px mdi-account-question text-secondary"></span> {{ $t('task.assignToMe') }}</b-button>
+                    <b-button variant="link" class="p-0 text-dark" @click.stop="checkAssignee(task)" @keydown.enter.stop="checkAssignee(task)" @keyup.enter.stop.prevent @keydown.space.prevent.stop="checkAssignee(task)">
+                      <span class="mdi mdi-18px mdi-account-question text-secondary"></span>
+                      {{ $t('task.assignToMe') }}
+                    </b-button>
                   </div>
                 </div>
               </div>
@@ -176,13 +181,13 @@ import { formatDateForTooltips } from '@/utils/dates.js'
 import StartProcess from '@/components/start-process/StartProcess.vue'
 import AdvancedSearchModal from '@/components/task/AdvancedSearchModal.vue'
 import SmartSearch from '@/components/task/SmartSearch.vue'
-import { ConfirmDialog, BWaitingBox } from '@cib/common-frontend'
+import { ConfirmDialog, BWaitingBox, HighlightedText } from '@cib/common-frontend'
 import { mapActions } from 'vuex'
 
 export default {
   name: 'TasksNavBar',
-  components: { StartProcess, AdvancedSearchModal, SmartSearch, ConfirmDialog, BWaitingBox },
-  props: { tasks: Array, taskResultsIndex: Number },
+  components: { StartProcess, AdvancedSearchModal, SmartSearch, ConfirmDialog, BWaitingBox, HighlightedText },
+  props: { tasks: Array, taskResultsIndex: Number, search: String },
   inject: ['currentLanguage','isMobile'],
   emits: ['search-filter', 'process-started', 'selected-task', 'update-assignee', 'show-more', 'refresh-tasks', 'refresh-tasks-number'],
   data: function () {
@@ -194,7 +199,6 @@ export default {
       focused: null,
       taskSorting: { sortBy: null, sortOrder: 'desc' },
       selectedDateT: {},
-      selectedFilter: '',
       pauseRefreshButton: false,
       advancedFilter: [],
       advancedFilterAux: null,

@@ -41,6 +41,7 @@
           @update-assignee="updateAssignee($event, 'task')" @set-filter="filter = $event; listTasksWithFilter()"
           @open-sidebar-date="rightOpenTask = true" @show-more="showMore()" :taskResultsIndex="taskResultsIndex"
           @process-started="listTasksWithFilter();$refs.processStarted.show(10); checkAndOpenTask($event, true)"
+          :search="search"
           @search-filter="search = $event" @refresh-tasks="listTasksWithFilter()" @refresh-tasks-number="refreshTasksNumber"></TasksNavBar>
       </template>
 
