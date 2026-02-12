@@ -2,7 +2,7 @@
 <jboss-deployment-structure>
   <deployment>
     <dependencies>
-      <system export="true">
+      <system>
         <paths>
           <path name="jdk/net"/>
         </paths>
