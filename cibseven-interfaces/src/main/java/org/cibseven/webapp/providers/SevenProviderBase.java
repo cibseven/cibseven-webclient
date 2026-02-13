@@ -403,7 +403,7 @@ public abstract class SevenProviderBase {
 	}
 
 
-	protected Collection<Authorization> filterResources(Collection<Authorization> authorizations, int resourceType) {
+	public static Collection<Authorization> filterResources(Collection<Authorization> authorizations, int resourceType) {
 		Set<Integer> resourceFilter = Arrays.asList(resourceType).stream().collect(Collectors.toSet());
 		return authorizations.stream().filter(authorization -> resourceFilter.contains(authorization.getResourceType())).collect(Collectors.toList());
 	}
