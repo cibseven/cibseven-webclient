@@ -494,8 +494,6 @@
 		"userAssigned": "Der Benutzer {0} wurde erfolgreich zugewiesen"
 	},
 	"batches": {
-		"title": "Stapel",
-		"tooltip": "Stapeloperationen",
 		"inProgressBatches": "Laufende Stapel",
 		"historicBatches": "Abgeschlossene Stapel",
 		"runtimeDetails": "Details zum laufenden Stapel",

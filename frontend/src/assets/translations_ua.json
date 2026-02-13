@@ -494,8 +494,6 @@
 			"userAssigned": "Користувача {0} успішно призначено"
 		},
 		"batches": {
-			"title": "Пакети",
-			"tooltip": "Операції з пакетами",
 			"inProgressBatches": "Поточні пакети",
 			"historicBatches": "Завершені пакети",
 			"runtimeDetails": "Деталі поточного пакета",

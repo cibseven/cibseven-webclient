@@ -494,8 +494,6 @@
 		"userAssigned": "The user {0} was successfully assigned"
 	},
 	"batches": {
-		"title": "Batches",
-		"tooltip": "Batch operations",
 		"inProgressBatches": "In progress batches",
 		"historicBatches": "Ended batches",
 		"runtimeDetails": "In progress batch details",

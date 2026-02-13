@@ -494,8 +494,6 @@
 		"userAssigned": "Пользователь {0} успешно назначен"
 	},
 	"batches": {
-		"title": "Пакеты",
-		"tooltip": "Операции с пакетами",
 		"inProgressBatches": "Текущие пакеты",
 		"historicBatches": "Завершённые пакеты",
 		"runtimeDetails": "Детали текущего пакета",

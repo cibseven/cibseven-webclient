@@ -494,8 +494,6 @@
 		"userAssigned": "El usuario {0} fue asignado con éxito"
 	},
 	"batches": {
-		"title": "Lotes",
-		"tooltip": "Operaciones por lotes",
 		"inProgressBatches": "Lotes en curso",
 		"historicBatches": "Lotes finalizados",
 		"runtimeDetails": "Detalles del lote en curso",

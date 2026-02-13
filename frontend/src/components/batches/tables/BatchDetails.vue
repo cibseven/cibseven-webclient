@@ -17,7 +17,7 @@
 
 -->
 <template>
-  <ContentBlock :title="$t('batches.' + batchType + 'Details')" v-if="batchId && batchType">
+  <ContentBlock :title="$t(titleLabel)" v-if="batchId && batchType">
     <template #actions>
       <div v-if="batchDetails && batchDetails.length > 0 && !loading">
         <b-button v-if="batchType === 'runtime'" class="me-1" size="sm" variant="light"
@@ -86,6 +86,9 @@ export default {
     },
     batchType: function() {
       return this.$route.query.type
+    },
+    titleLabel: function() {
+      return (this.batchType === 'history') ? 'batches.historyDetails' : 'batches.runtimeDetails'
     },
     batchDetails: function() {
       if (!this.batch) return []
