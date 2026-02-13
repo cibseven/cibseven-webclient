@@ -79,7 +79,7 @@ export function updateAppTitle(productName, sectionName = undefined, taskName = 
 export function handleAxiosError(router, root, error) {
   // Skip showing error dialogs for deployed form routes loaded inside iframes.
   // These form components handle errors themselves and forward them to the parent window via postMessage.
-  const routeName = router?.currentRoute?.value?.name
+  const routeName = router.currentRoute.value?.name
   const isDeployedForm = routeName === 'deployed-form' || routeName === 'start-deployed-form'
 
   if (error.response) {
