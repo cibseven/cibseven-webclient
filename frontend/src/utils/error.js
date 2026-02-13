@@ -116,3 +116,42 @@ export function extractErrorMessage(error, fallback) {
     // Fallback
     return fallback || 'An unexpected error occurred';
 }
+
+/**
+ * Check if the error message is the BPM SDK "Form must provide exactly one element <form ..>" error.
+ * This typically means the form HTML is empty or the form resource was not deployed.
+ * @param {string} message - Already extracted error message string
+ * @returns {boolean} True if this is a form-element SDK error
+ */
+export function isFormElementError(message) {
+    if (!message || typeof message !== 'string') return false;
+    return message.includes('Form must provide exactly one element');
+}
+
+/**
+ * Check if the error message indicates a deployed form resource was not found.
+ * Matches engine errors like:
+ * - "The form with the resource name '...' cannot be found in deployment with id ..."
+ * - "No Camunda Form Definition was found for Camunda Form Ref: CamundaFormRefImpl [key=..., ...]"
+ * @param {string} message - Already extracted error message string
+ * @returns {boolean} True if this is a deployed-form-not-found error
+ */
+export function isDeployedFormNotFoundError(message) {
+    if (!message || typeof message !== 'string') return false;
+    return message.includes('cannot be found in deployment with id')
+        || message.includes('No Camunda Form Definition was found');
+}
+
+/**
+ * Extract the form name from a deployed form not-found error message.
+ * Matches engine errors like:
+ * - "The form with the resource name 'X' cannot be found in deployment with id ..."
+ * - "No Camunda Form Definition was found for Camunda Form Ref: CamundaFormRefImpl [key=X, ...]"
+ * @param {string} message - Already extracted error message string
+ * @returns {string|null} The extracted form name, or null if no match
+ */
+export function extractDeployedFormName(message) {
+    if (!message || typeof message !== 'string') return null;
+    const match = message.match(/resource name '([^']+)'|\[key=([^,\]]+)/);
+    return match ? (match[1] || match[2]) : null;
+}
