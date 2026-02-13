@@ -783,10 +783,8 @@
 		"languagesMenu": "Language",
 		"engine": "Engine",
 		"engineMenu": "Engine selection",
-		"help": "Info & Help",
 		"helpMenu": "Help",
 		"logout": "Logout",
-		"user": "Account",
 		"userMenu": "User account",
 		"en": "English",
 		"de": "Deutsch",
@@ -816,7 +814,6 @@
 		"email": "@:login.email"
 	},
 	"snapshot": {
-		"title": "Upload your screenshot",
 		"titleAbove": "Click here and then press [Ctrl] + [V]",
 		"titleBelow": "(with your screenshot in clipboard)"
 	},
@@ -1101,15 +1098,11 @@
 	"deployment": {
 		"title": "Deployments",
 		"resourcesCaption": "Models contained",
-		"version": "Version",
-		"downloadVersionBpmn": "@:process.downloadBpmn",
 		"noDeployments": "No deployments available",
 		"deploymentTime": "Deployed on",
 		"source": "Source",
 		"confirmDeleteDeployment": "Do you really want to delete the selected deployments?",
 		"deleteRunningInstances": "Stop running process instances",
-		"goToManagement": "Go to process management area",
-		"loadingProcesses": "Loading...",
 		"noDeploymentSelected": "Select a deployment to view it",
 		"selectAll": "Select all",
 		"deleteDeployments": "Delete deployments",

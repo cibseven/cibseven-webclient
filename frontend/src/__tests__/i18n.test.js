@@ -258,10 +258,12 @@ describe('i18n', () => {
       // convert transaltion object to flat list of keys
       let stringLongKeys = extractKeys(translationEn, '')
 
+      const langKeys = languages.map(l => `cib-header.${l}`)
       stringLongKeys = stringLongKeys.filter(keyPath => 
         !keyPath.startsWith('admin.authorizations.resourcesTypes.') &&
         !keyPath.startsWith('errors.') &&
-        !keyPath.startsWith('nav-bar.filters.keys.')
+        !keyPath.startsWith('nav-bar.filters.keys.') &&
+        !langKeys.includes(keyPath)
       )
 
       // Find all .vue files in /src/

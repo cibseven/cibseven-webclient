@@ -783,9 +783,7 @@
 		"languagesMenu": "Idioma",
 		"engine": "Motor",
 		"engineMenu": "Selección de motor",
-		"help": "Información & Ayuda",
 		"helpMenu": "Ayuda",
-		"user": "Cuenta",
 		"logout": "Cerrar sesión",
 		"userMenu": "Cuenta de usuario",
 		"en": "English",
@@ -816,7 +814,6 @@
 		"email": "@:login.email"
 	},
 	"snapshot": {
-		"title": "Sube tu captura de pantalla",
 		"titleAbove": "Haz clic aquí y después pulsa [Ctrl] + [V]",
 		"titleBelow": "(con tu captura de pantalla en el portapapeles)"
 	},
@@ -1100,15 +1097,11 @@
 	"deployment": {
 		"title": "Despliegues",
 		"resourcesCaption": "Modelos contenidos",
-		"version": "Versión",
-		"downloadVersionBpmn": "@:process.downloadBpmn",
 		"noDeployments": "No existen despliegues aún",
 		"deploymentTime": "Desplegado el",
 		"source": "Fuente",
 		"confirmDeleteDeployment": "Realmente quiere borrar los despliegues seleccionados?",
 		"deleteRunningInstances": "Detener instancias de proceso activas",
-		"goToManagement": "Ir al area de administración de procesos",
-		"loadingProcesses": "Cargando...",
 		"noDeploymentSelected": "Seleccione un despliegue para verlo",
 		"selectAll": "Seleccionar todo",
 		"deleteDeployments": "Eliminar despliegues",

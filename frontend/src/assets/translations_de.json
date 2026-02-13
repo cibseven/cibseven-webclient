@@ -783,9 +783,7 @@
 		"languagesMenu": "Sprache",
 		"engine": "Engine",
 		"engineMenu": "Engine-Auswahl",
-		"help": "Info & Hilfe",
 		"helpMenu": "Hilfe",
-		"user": "Konto",
 		"logout": "Abmelden",
 		"userMenu": "Benutzerkonto",
 		"en": "English",
@@ -816,7 +814,6 @@
 		"email": "@:login.email"	
 	},
 	"snapshot": {
-		"title": "Deinen Screenshot hochladen",
 		"titleAbove": "Hier klicken und danach [Strg] + [V] drücken",
 		"titleBelow": "(mit deinem Screenshot in der Zwischenablage)"
 	},	
@@ -1100,15 +1097,11 @@
 	"deployment": {
 		"title": "Deployments",
 		"resourcesCaption": "Enthaltene Modelle",
-		"version": "Version",
-		"downloadVersionBpmn": "@:process.downloadBpmn",
 		"noDeployments": "Keine Deployments verfügbar",
 		"deploymentTime": "Bereitgestellt am",
 		"source": "Quelle",
 		"confirmDeleteDeployment": "Möchten Sie die ausgewählten Deployments wirklich löschen?",
 		"deleteRunningInstances": "Laufende Prozessinstanzen stoppen",
-		"goToManagement": "Zum Prozessmanagement wechseln ",
-		"loadingProcesses": "Wird geladen...",
 		"noDeploymentSelected": "Ein Deployment zum Ansehen auswählen",
 		"selectAll": "Alle auswählen",
 		"deleteDeployments": "Deployments löschen",

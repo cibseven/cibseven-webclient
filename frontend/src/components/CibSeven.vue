@@ -38,7 +38,7 @@
 
       <!-- Desktop: Show menus as icons outside collapse -->
       <div class="d-none d-md-flex">
-        <b-button v-if="$root.config.layout.showFeedbackButton" variant="outline-secondary" @click="$refs.report.show()" class="border-0 py-0 me-2" :title="$t('seven.feedback')" :label="$t('seven.feedback')">
+        <b-button variant="outline-secondary" @click="$refs.report.show()" class="border-0 py-0 me-2" :title="$t('seven.feedback')" :label="$t('seven.feedback')">
           <span class="mdi mdi-24px mdi-message-alert"></span>
         </b-button>
 

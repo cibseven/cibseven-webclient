@@ -783,10 +783,8 @@
 			"languagesMenu": "Мова",
 			"engine": "Двигун",
 			"engineMenu": "Вибір двигуна",
-			"help": "Інформація та допомога",
 			"helpMenu": "Допомога",
 			"logout": "Вихід",
-			"user": "Обліковий запис",
 			"userMenu": "Обліковий запис користувача",
 			"en": "English",
 			"de": "Deutsch",
@@ -816,7 +814,6 @@
 			"email": "@:login.email"
 		},
 		"snapshot": {
-			"title": "Завантажте ваш знімок екрана",
 			"titleAbove": "Клацніть тут, а потім натисніть [Ctrl] + [V]",
 			"titleBelow": "(щоб додати знімок з буфера обміну)"
 	},
@@ -1100,15 +1097,11 @@
 	"deployment": {
 		"title": "Розгортання процесів",
 		"resourcesCaption": "Включені моделі",
-		"version": "Версія",
-		"downloadVersionBpmn": "@:process.downloadBpmn",
 		"noDeployments": "Немає доступних розгортань процесів",
 		"deploymentTime": "Дата розгортання",
 		"source": "Джерело",
 		"confirmDeleteDeployment": "Ви дійсно хочете видалити обрані розгортання?",
 		"deleteRunningInstances": "Зупинити поточні екземпляри процесу",
-		"goToManagement": "Перейти в область керування процесами",
-		"loadingProcesses": "Завантаження...",
 		"noDeploymentSelected": "Виберіть розгортання для перегляду",
 		"selectAll": "Вибрати все",
 		"deleteDeployments": "Видалити розгортання",

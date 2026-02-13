@@ -783,10 +783,8 @@
 		"languagesMenu": "Язык",
 		"engine": "Движок",
 		"engineMenu": "Выбор движка",
-		"help": "Информация и помощь",
 		"helpMenu": "Помощь",
 		"logout": "Выход",
-		"user": "Учетная запись",
 		"userMenu": "Учетная запись пользователя",
 		"en": "English",
 		"de": "Deutsch",
@@ -816,7 +814,6 @@
 		"email": "@:login.email"	
 	},
 	"snapshot": {
-		"title": "Загрузите Ваш снимок экрана",
 		"titleAbove": "Кликните здесь и затем нажмите [Ctrl] + [V]",
 		"titleBelow": "(чтобы добавить снимок экрана из буфера обмена)"
 	},
@@ -1100,15 +1097,11 @@
 	"deployment": {
 		"title": "Развёртывания процессов",
 		"resourcesCaption": "Включённые модели",
-		"version": "Версия",
-		"downloadVersionBpmn": "@:process.downloadBpmn",
 		"noDeployments": "Нет доступных развёртываний процесса",
 		"deploymentTime": "Дата развертывания",
 		"source": "Источник",
 		"confirmDeleteDeployment": "Вы действительно хотите удалить выбранные развертывания?",
 		"deleteRunningInstances": "Остановить текущие экземпляры процесса",
-		"goToManagement": "Перейти в область управления процессами",
-		"loadingProcesses": "Загрузка...",
 		"noDeploymentSelected": "Выберите развертывание для просмотра",
 		"selectAll": "Выбрать все",
 		"deleteDeployments": "Удалить развертывания",
