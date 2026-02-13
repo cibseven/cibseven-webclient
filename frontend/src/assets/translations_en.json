@@ -822,15 +822,12 @@
 	},
 	"seven": {
 		"feedback": "Feedback",
-		"about": "About",
-		"version": "Version",
 		"selectTask": "Select a task from the task list to view it",
 		"taskCompleted": "Task completed",
 		"allTasks": "Tasks",
 		"titleInfo": "Information",
 		"filters": "Filters",
-		"types": "Types",
-		"chat": "Chat"
+		"types": "Types"
 	},
 	"nav-bar": {
 		"no-tasks-pending": "You have no tasks pending",

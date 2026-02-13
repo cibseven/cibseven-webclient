@@ -822,15 +822,12 @@
 	},	
 	"seven": {
 		"feedback": "Rückmeldung",
-		"about": "Über",
-		"version": "Version",
 		"selectTask": "Eine Aufgabe aus der Aufgabenliste zum Ansehen auswählen",
 		"taskCompleted": "Aufgabe erledigt",
 		"allTasks": "Aufgaben",
 		"titleInfo": "Information",
 		"filters": "Filter",
-		"types": "Typen",
-		"chat": "Chat"
+		"types": "Typen"
 	},
 	"nav-bar": {
 		"no-tasks-pending": "Sie haben keine offenen Aufgaben",

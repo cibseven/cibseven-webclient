@@ -82,7 +82,6 @@ function skipValue(value, lang) {
       '{activityid}',
 
       'ctrl', // en = ru
-      'chat', // en = de = es
 
       // module names
       'tasklist',

@@ -822,15 +822,12 @@
 	},
 	"seven": {
 		"feedback": "Tu opinión",
-		"about": "Acerca de",
-		"version": "Versión",
 		"selectTask": "Seleccione una tarea de la lista de tareas para verla",
 		"taskCompleted": "Tarea realizada",
 		"allTasks": "Mis Tareas",
 		"titleInfo": "Información",
 		"filters": "Filtros",
-		"types": "Tipos",
-		"chat": "Chat"
+		"types": "Tipos"
 	},
 	"nav-bar": {
 		"no-tasks-pending": "No tiene tareas pendientes",

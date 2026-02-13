@@ -822,15 +822,12 @@
 	},
 	"seven": {
 		"feedback": "Обратная связь",
-		"about": "О doXisafe",
-		"version": "Версия",
 		"selectTask": "Выберите задачу из списка для просмотра",
 		"taskCompleted": "Задача выполнена",
 		"allTasks": "Задачи",
 		"titleInfo": "Информация",
 		"filters": "Фильтры",
-		"types": "Типы авторизаций",
-		"chat": "Чат"
+		"types": "Типы авторизаций"
 	},
 	"nav-bar": {
 		"no-tasks-pending": "У Вас нет незавершённых задач",
