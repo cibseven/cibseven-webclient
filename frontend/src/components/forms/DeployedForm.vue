@@ -40,7 +40,7 @@ import '@bpmn-io/form-js/dist/assets/form-js.css'
 
 import { convertFormDataForFormJs, findDocumentPreviewComponents, getDocumentReferenceVariableName, determineValueTypeFromSchema } from './formJsUtils.js'
 
-import { extractErrorMessage } from '@/utils/error.js'
+import { extractErrorMessage, isDeployedFormNotFoundError, extractDeployedFormName } from '@/utils/error.js'
 
 export default {
   name: "DeployedForm",
@@ -143,7 +143,11 @@ export default {
 
       } catch (error) {
         console.error('Error loading form:', error);
-        this.sendMessageToParent({ method: 'displayErrorMessage', data: extractErrorMessage(error) })
+        const errorMessage = extractErrorMessage(error);
+        const message = isDeployedFormNotFoundError(errorMessage)
+            ? this.$t('errors.deployedFormNotFound', [extractDeployedFormName(errorMessage) || ''])
+            : errorMessage;
+        this.sendMessageToParent({ method: 'displayErrorMessage', data: message })
         this.loader = false;
 
       }
