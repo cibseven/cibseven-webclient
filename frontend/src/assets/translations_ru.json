@@ -377,6 +377,8 @@
 		"assignModal": {
 			"manageUsersGroups": "Управление пользователями/группами",
 			"manageAssignee": "Управление назначенным пользователем",
+			"manageGroups": "Управление группами",
+			"manageUsers": "Управление пользователями",
 			"groupId": "ID группы",
 			"userId": "@:admin.users.id",
 			"groups": "Группы",
