@@ -758,24 +758,7 @@
 				"fromTo": "{from} bis {to}"
 			}
 		}
-	},
-	"account-form": {
-		"title": "Zugangsdaten ändern",
-		"username": "@:login.username",
-		"password": "@:login.password",		
-		"email": "@:login.email",
-		"update": "Speichern",
-		"delete": "Zugang löschen",
-		"deleteMessage": "Soll das Konto (inklusive aller Dateien) wirklich gelöscht werden? Diese Aktion kann nicht rückgängig gemacht werden!"		
-	},
-	"security-bar": {
-		"strength1": "Unsicher",
-		"strength2": "Schwach",
-		"strength3": "Akzeptabel",
-		"strength4": "Stark",
-		"strength5": "Perfekt",
-		"prefix": "Sicherheit:"
-	},		
+	},	
 	"confirm": {
 		"ok": "Ok",
 		"cancel": "Abbrechen",
@@ -792,7 +775,7 @@
 		"title": "Bitte teile uns dein Problem oder Verbesserungsvorschläge mit",
 		"ok": "Absenden",
 		"cancel": "@:confirm.cancel",
-		"email": "@:account-form.email"
+		"email": "@:login.email"
 	},
 	"cib-header": {
 		"productName": "CIB seven",
@@ -811,10 +794,6 @@
 		"ua": "Українська",
 		"ru": "Русский"
 	},
-	"cib-datepicker": {
-		"months" : "Januar_Februar_März_April_Mai_Juni_Juli_August_September_Oktober_November_Dezember",
-		"weeks": "Mo_Di_Mi_Do_Fr_Sa_So"
-	},
 	"cib-datepicker2": {
 		"noDate": "Kein Datum",
 		"reset" : "Auswahl löschen",
@@ -824,25 +803,17 @@
 		"noDate": "Keine Zeit ausgewählt",
 		"reset" : "Auswahl löschen"
 	},
-	"file-area": {
-		"titleAbove": "Datei(en) ablegen",
-		"titleBelow": "oder aussuchen"
-	},
 	"task-popper": {
 		"title": "Datei(en) ablegen"
 	},
-	"pdf-encryption": {
-		"title": "Sicher - von Anfang an!",
-		"text": "Verschlüsselung erfolgt direkt beim Hochladen deiner Datei.<br>Einfach Passwort eingeben und loslegen:"
-	},		
 	"register": {
 		"title": "Registrieren",
 		"register": "Registrieren",
 		"login": "Doch ein Konto?",
 		"loginLink": "Anmelden",
-		"username": "@:account-form.username",
-		"password": "@:account-form.password",		
-		"email": "@:account-form.email"	
+		"username": "@:login.username",
+		"password": "@:login.password",		
+		"email": "@:login.email"	
 	},
 	"snapshot": {
 		"title": "Deinen Screenshot hochladen",
@@ -983,7 +954,6 @@
 				"txtlteq": "<= kleiner als oder gleich"
 			}
 		},
-		"additionalFiltersApplied": "angewandte Filter: {n}",
 		"dueDate": "@:task.details.due",
 		"reminder": "Wiedervorlagedatum",
 		"reminderDate": {
@@ -1109,8 +1079,6 @@
 		"refreshAndFilter": "Aktualisieren und filtern",
 		"search": "Suchen...",
 		"searchByTaskName": "Suche in Aufgaben...",
-		"searchByDeploymentName": "Suche nach Deployment...",
-		"searchByBusinessKey": "Suche nach Fachlicher Schlüssel...",
 		"searchByFilterName": "Suche nach Filternamen...",
 		"wildcardHelp": "Platzhaltersuche wird unterstützt.",
 		"wildcardExample": "Verwenden Sie % für beliebig viele Zeichen (z.B. %Prozess%)."
@@ -1153,9 +1121,6 @@
 		"deploymentsDeleted": "{0} von {1} Deployments wurden erfolgreich gelöscht",
 		"tenant": "Mandant",
 		"errorLoading": "Ressource für die ausgewählte Bereitstellung konnte nicht geladen werden"
-	},
-	"cib-table2": {
-		"filter": "Filter"
 	},
 	"navigation": {
 		"home": "Startseite",
@@ -1264,7 +1229,6 @@
 		"type": "Übereinstimmungstyp",
 		"apply": "Anwenden",
 		"cancel": "Abbrechen",
-		"cleanAll": "Alle Kriterien löschen",
 		"any": "Irgendein",
 		"all": "Alle",
 		"criteriaKeys": {    	

@@ -148,9 +148,6 @@ export default {
     deleteCriteria: function(index) {
       this.criterias.splice(index, 1)
     },
-    cleanAllCriteria: function() {
-      this.criteria = []
-    },
     handleSubmit: function() {
       this.$store.dispatch('updateAdvancedSearch', {
         matchAllCriteria: this.matchAllCriteria,

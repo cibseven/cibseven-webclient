@@ -759,23 +759,6 @@
 				}
 			}
 		},
-		"account-form": {
-			"title": "Управління обліковим записом",
-			"username": "@:login.username",
-			"password": "@:login.password",
-			"email": "@:login.email",
-			"update": "Зберегти",
-			"delete": "Видалити обліковий запис",
-			"deleteMessage": "Видалити обліковий запис разом з усіма документами? Цю дію не можна скасувати."
-		},
-		"security-bar": {
-			"strength1": "Занадто простий",
-			"strength2": "Простий",
-			"strength3": "Прийнятний",
-			"strength4": "Надійний",
-			"strength5": "Дуже надійний",
-			"prefix": "Надійність:"
-		},
 		"confirm": {
 			"ok": "OK",
 			"cancel": "Скасувати",
@@ -792,7 +775,7 @@
 			"title": "Виникла проблема або пропозиція щодо покращення? Дайте нам знати!",
 			"ok": "Надіслати",
 			"cancel": "@:confirm.cancel",
-			"email": "@:account-form.email"
+			"email": "@:login.email"
 		},
 		"cib-header": {
 			"productName": "CIB seven",
@@ -811,10 +794,6 @@
 			"ua": "Українська",
 			"ru": "Русский"
 		},
-		"cib-datepicker": {
-			"months": "Січень_Лютий_Березень_Квітень_Травень_Червень_Липень_Серпень_Вересень_Жовтень_Листопад_Грудень",
-			"weeks": "Пн_Вт_Ср_Чт_Пт_Сб_Нд"
-		},
 		"cib-datepicker2": {
 			"noDate": "Дата не обрана",
 			"reset": "Очистити вибір",
@@ -824,25 +803,17 @@
 			"noDate": "Час не обрано",
 			"reset": "Очистити вибір"
 		},
-		"file-area": {
-			"titleAbove": "Перетягніть документи сюди",
-			"titleBelow": "або знайдіть їх"
-		},
 		"task-popper": {
 			"title": "Завантажити документ(и)"
-		},
-		"pdf-encryption": {
-			"title": "Безпека з початку!",
-			"text": "Ваші документи шифруються під час завантаження.<br>Введіть пароль, щоб продовжити:"
 		},
 		"register": {
 			"title": "Реєстрація",
 			"register": "Зареєструватися",
 			"login": "Вже є обліковий запис?",
 			"loginLink": "Увійти",
-			"username": "@:account-form.username",
-			"password": "@:account-form.password",
-			"email": "@:account-form.email"
+			"username": "@:login.username",
+			"password": "@:login.password",
+			"email": "@:login.email"
 		},
 		"snapshot": {
 			"title": "Завантажте ваш знімок екрана",
@@ -983,7 +954,6 @@
 				"txtlteq": "<= менше або дорівнює"
 			}
 		},
-		"additionalFiltersApplied": "Застосовано фільтрів: {n}",
 		"dueDate": "@:task.details.due",
 		"reminder": "Нагадування",
 		"reminderDate": {
@@ -1109,8 +1079,6 @@
 		"refreshAndFilter": "Оновити та відфільтрувати",
 		"search": "Пошук...",
 		"searchByTaskName": "Пошук за назвою завдання...",
-		"searchByDeploymentName": "Пошук за назвою розгортання...",
-		"searchByBusinessKey": "Пошук за бізнес-ключем...",
 		"searchByFilterName": "Пошук за назвою фільтра...",
 		"wildcardHelp": "Підтримується пошук із підстановочними знаками.",
 		"wildcardExample": "Використовуйте % для представлення будь-якої кількості символів (наприклад, %процес%)."
@@ -1153,9 +1121,6 @@
 		"deploymentsDeleted": "{0} з {1} розгортань успішно видалено",
 		"tenant": "Орендар",
 		"errorLoading": "Не вдалося завантажити ресурс для обраного розгортання"
-	},
-	"cib-table2": {
-		"filter": "Фільтр"
 	},
 	"navigation": {
 		"home": "Головна сторінка",
@@ -1263,7 +1228,6 @@
 		"type": "Тип співпадіння",
 		"apply": "Застосувати",
 		"cancel": "Скасувати",
-		"cleanAll": "Очистити всі критерії",
 		"any": "Будь-який",
 		"all": "Усі",
 		"criteriaKeys": {

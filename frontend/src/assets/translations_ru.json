@@ -759,23 +759,6 @@
 			}
 		}
 	},
-	"account-form": {
-		"title": "Управление учетной записью",
-		"username": "@:login.username",
-		"password": "@:login.password",		
-		"email": "@:login.email",
-		"update": "Сохранить",
-		"delete": "Удалить учетную запись",
-		"deleteMessage": "Удалить учетную запись, включая все документы? Данная операция не может быть отменена."		
-	},
-	"security-bar": {
-		"strength1": "Слишком простой",
-		"strength2": "Простой",
-		"strength3": "Приемлемый",
-		"strength4": "Надёжный",
-		"strength5": "Очень надёжный",
-		"prefix": "Надежность:"
-	},	
 	"confirm": {
 		"ok": "OK",
 		"cancel": "Отмена",
@@ -792,7 +775,7 @@
 		"title": "У Вас возникла проблема или предложение об улучшении? Дайте нам знать!",
 		"ok": "Отправить",
 		"cancel": "@:confirm.cancel",
-		"email": "@:account-form.email"
+		"email": "@:login.email"
 	},
 	"cib-header": {
 		"productName": "CIB seven",
@@ -811,10 +794,6 @@
 		"ua": "Українська",
 		"ru": "Русский"
 	},
-	"cib-datepicker": {
-		"months" : "Январь_Февраль_Март_Апрель_Май_Июнь_Июль_Август_Сентябрь_Октябрь_Ноябрь_Декабрь",
-		"weeks": "Пн_Вт_Ср_Чт_Пт_Сб_Вс"
-	},
 	"cib-datepicker2": {
 		"noDate": "Дата не выбрана",
 		"reset" : "Очистить выбор",
@@ -824,25 +803,17 @@
 		"noDate": "Время не выбрано",
 		"reset" : "Понятный выбор"
 	},
-	"file-area": {
-		"titleAbove": "Перетащите документы",
-		"titleBelow": "или найдите их"
-	},
 	"task-popper": {
 		"title": "Загрузить документ(ы)"
-	},
-	"pdf-encryption": {
-		"title": "Безопасно с самого начала!",
-		"text": "Ваши документы уже зашифрованы при загрузке.<br>Введите пароль, чтобы продолжить:"
 	},
 	"register": {
 		"title": "Регистрация",
 		"register": "Зарегистрироваться",
 		"login": "Уже есть учетная запись?",
 		"loginLink": "Войти",
-		"username": "@:account-form.username",
-		"password": "@:account-form.password",		
-		"email": "@:account-form.email"	
+		"username": "@:login.username",
+		"password": "@:login.password",		
+		"email": "@:login.email"	
 	},
 	"snapshot": {
 		"title": "Загрузите Ваш снимок экрана",
@@ -983,7 +954,6 @@
 				"txtlteq": "<= меньше или равно"
 			}
 		},
-		"additionalFiltersApplied": "Применённые фильтры: {n}",
 		"dueDate": "@:task.details.due",
 		"reminder": "Напоминание",
 		"reminderDate": {
@@ -1109,8 +1079,6 @@
 		"refreshAndFilter": "Обновить и отфильтровать",
 		"search": "Поиск...",
 		"searchByTaskName": "Поиск по названию задачи...",
-		"searchByDeploymentName": "Поиск по развертыванию...",
-		"searchByBusinessKey": "Поиск по бизнес-ключу...",
 		"searchByFilterName": "Поиск по названию фильтра...",
 		"wildcardHelp": "Поддерживается поиск с подстановочными знаками.",
 		"wildcardExample": "Используйте % для представления любого количества символов (например, %процесс%)."
@@ -1153,9 +1121,6 @@
 		"deploymentsDeleted": "{0} из {1} развертываний успешно удалены",
 		"tenant": "Тенант",
 		"errorLoading": "Не удалось загрузить ресурс для выбранного развертывания"
-	},
-	"cib-table2": {
-		"filter": "Фильтр"
 	},
 	"navigation": {
 		"home": "Домашняя страница",
@@ -1263,7 +1228,6 @@
 		"type": "Тип совпадения",
 		"apply": "Применить",
 		"cancel": "Отмена",
-		"cleanAll": "Очистить все критерии",
 		"any": "Любой",
 		"all": "Все",
 		"criteriaKeys": {    	

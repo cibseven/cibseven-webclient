@@ -269,6 +269,9 @@ describe('i18n', () => {
       const vueFiles = findComponents('src', '.vue')
       expect(vueFiles.length).toBeGreaterThan(0)
 
+      const jsFiles = findComponents('src', '.js')
+      expect(jsFiles.length).toBeGreaterThan(0)
+
       const patterns = [
         key => `$t('${key}'`,
         key => ` label: '${key}'`,
@@ -279,11 +282,13 @@ describe('i18n', () => {
         key => `? '${key}' :`,
         key => `: '${key}'`,
         key => `// - '${key}'`,
+        key => `keypath="${key}"`,
+        key => `i18n.global.t('${key}'`,
       ]
 
       // Check usage of each key in .vue files
       // When found in any file, we consider it used => remove from list
-      for (const file of vueFiles) {
+      for (const file of [...vueFiles, ...jsFiles]) {
         const content = readFileSync(file, 'utf-8')
         stringLongKeys = stringLongKeys.filter(keyPath => {
           return !patterns.some(pattern =>
@@ -294,6 +299,7 @@ describe('i18n', () => {
 
       // Report unused keys
       if (stringLongKeys.length > 0) {
+        stringLongKeys = stringLongKeys.sort((a, b) => a.localeCompare(b))
         const message = `Unused translation keys in en (checked ${vueFiles.length} .vue files):\n` + stringLongKeys.map(k => `- ${k}`).join('\n')
         expect(message).toBe('')
       }
@@ -305,7 +311,7 @@ describe('i18n', () => {
 
       // convert transaltion object to flat list of keys
       const stringLongKeys = extractKeys(translationEn, '')
-      const notDeclaredKeys = []
+      let notDeclaredKeys = []
 
       // get keys from @cib/common-frontend package using commonFrontendMergeLocaleMessage()
       const commonFrontendTranslationEn = {}
@@ -355,6 +361,7 @@ describe('i18n', () => {
 
       // Report unused keys
       if (notDeclaredKeys.length > 0) {
+        notDeclaredKeys = notDeclaredKeys.sort((a, b) => a.localeCompare(b))
         const message = `Next translation keys are missing in en, but used in checked ${vueFiles.length} .vue files:\n` + notDeclaredKeys.map(k => `- ${k}`).join('\n')
         expect(message).toBe('')
       }

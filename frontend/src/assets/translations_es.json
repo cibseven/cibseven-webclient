@@ -759,23 +759,6 @@
 			}
 		}
 	},
-	"account-form": {
-		"title": "Administrar cuenta",
-		"username": "@:login.username",
-		"password": "@:login.password",
-		"email": "@:login.email",
-		"update": "Actualizar",
-		"delete": "Eliminar cuenta",
-		"deleteMessage": "Estás seguro de querer eliminar tu cuenta, incluyendo todos los documentos? Esta acción no se puede deshacer!"
-	},
-	"security-bar": {
-		"strength1": "Insegura",
-		"strength2": "Débil",
-		"strength3": "Aceptable",
-		"strength4": "Fuerte",
-		"strength5": "Perfecta",
-		"prefix": "Seguridad:"
-	},
 	"confirm": {
 		"ok": "Ok",
 		"cancel": "Cancelar",
@@ -792,7 +775,7 @@
 		"title": "Gracias por informarnos de un problema o por tus sugerencias de mejora.",
 		"ok": "Enviar",
 		"cancel": "@:confirm.cancel",
-		"email": "@:account-form.email"
+		"email": "@:login.email"
 	},
 	"cib-header": {
 		"productName": "CIB seven",
@@ -811,10 +794,6 @@
 		"ua": "Українська",
 		"ru": "Русский"
 	},
-	"cib-datepicker": {
-		"months": "Enero_Febrero_Marzo_Abril_Mayo_Junio_Julio_Agosto_Septiembre_Octubre_Noviembre_Diciembre",
-		"weeks": "Lu_Ma_Mi_Ju_Vi_Sa_Do"
-	},
 	"cib-datepicker2": {
 		"noDate": "Ninguna fecha",
 		"reset": "Borrar la selección",
@@ -824,25 +803,17 @@
 		"noDate": "Ningún horario",
 		"reset": "Borrar la selección"
 	},
-	"file-area": {
-		"titleAbove": "Arrastrar documentos",
-		"titleBelow": "o seleccionar"
-	},
 	"task-popper": {
 		"title": "Subiendo archivos"
-	},
-	"pdf-encryption": {
-		"title": "¡Seguro desde el principio!",
-		"text": "Tu documento está encriptado ya durante la carga.<br>Introduce una contraseña para proseguir:"
 	},
 	"register": {
 		"title": "Registro",
 		"register": "Regístrate",
 		"login": "¿Ya tienes una cuenta?",
 		"loginLink": "Iniciar sesión",
-		"username": "@:account-form.username",
-		"password": "@:account-form.password",
-		"email": "@:account-form.email"
+		"username": "@:login.username",
+		"password": "@:login.password",
+		"email": "@:login.email"
 	},
 	"snapshot": {
 		"title": "Sube tu captura de pantalla",
@@ -983,7 +954,6 @@
 				"txtlteq": "<= menor o igual que"
 			}
 		},
-		"additionalFiltersApplied": "Filtros aplicados: {n}",
 		"dueDate": "@:task.details.due",
 		"reminder": "Recordatorio",
 		"reminderDate": {
@@ -1109,8 +1079,6 @@
 		"refreshAndFilter": "Actualizar y filtrar",
 		"search": "Buscar...",
 		"searchByTaskName": "Buscar por nombre de tarea...",
-		"searchByDeploymentName": "Búsqueda por nombre de despliegue...",
-		"searchByBusinessKey": "Búsqueda por business key...",
 		"searchByFilterName": "Buscar por nombre de filtro...",
 		"wildcardHelp": "Se admite la búsqueda con comodines.",
 		"wildcardExample": "Use % para representar cualquier número de caracteres (ej. %proceso%)."
@@ -1153,9 +1121,6 @@
 		"deploymentsDeleted": "{0} de {1} despliegues se han eliminado correctamente",
 		"tenant": "Tenant",
 		"errorLoading": "No se puede cargar el recurso para el despliegue seleccionado"
-	},
-	"cib-table2": {
-		"filter": "Filtrar"
 	},
 	"navigation": {
 		"home": "Inicio",
@@ -1263,7 +1228,6 @@
 		"type": "Tipo de coincidencia",
 		"apply": "Aplicar",
 		"cancel": "Cancelar",
-		"cleanAll": "Limpiar todos los criterios",
 		"any": "Cualquiera",
 		"all": "Todos",
 		"criteriaKeys": {	    	

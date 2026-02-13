@@ -759,23 +759,6 @@
 			}
 		}
 	},
-	"account-form": {
-		"title": "Manage account",
-		"username": "@:login.username",
-		"password": "@:login.password",
-		"email": "@:login.email",
-		"update": "Save",
-		"delete": "Delete account",
-		"deleteMessage": "Do you really want to delete your account, including all documents? This action cannot be undone!"
-	},
-	"security-bar": {
-		"strength1": "Not secure",
-		"strength2": "Weak",
-		"strength3": "Acceptable",
-		"strength4": "Strong",
-		"strength5": "Perfect",
-		"prefix": "Security:"
-	},
 	"confirm": {
 		"ok": "Ok",
 		"cancel": "Cancel",
@@ -792,7 +775,7 @@
 		"title": "Please let us know your problem or suggestions for improvement",
 		"ok": "Send",
 		"cancel": "@:confirm.cancel",
-		"email": "@:account-form.email"
+		"email": "@:login.email"
 	},
 	"cib-header": {
 		"productName": "CIB seven",
@@ -811,10 +794,6 @@
 		"ua": "Українська",
 		"ru": "Русский"
 	},
-	"cib-datepicker": {
-		"months": "January_February_March_April_May_June_July_August_September_October_November_December",
-		"weeks": "Mo_Tu_We_Th_Fr_Sa_Su"
-	},
 	"cib-datepicker2": {
 		"noDate": "No date",
 		"reset": "Clear selection",
@@ -824,25 +803,17 @@
 		"noDate": "No time selected",
 		"reset": "Clear selection"
 	},
-	"file-area": {
-		"titleAbove": "Drag your documents",
-		"titleBelow": "or choose"
-	},
 	"task-popper": {
 		"title": "Uploading file(s)"
-	},
-	"pdf-encryption": {
-		"title": "It's safe - from the very beginning!",
-		"text": "Your document is encrypted already while loading.<br>Enter your password to proceed:"
 	},
 	"register": {
 		"title": "Register",
 		"register": "Register",
 		"login": "Do you already have an account?",
 		"loginLink": "Login",
-		"username": "@:account-form.username",
-		"password": "@:account-form.password",
-		"email": "@:account-form.email"
+		"username": "@:login.username",
+		"password": "@:login.password",
+		"email": "@:login.email"
 	},
 	"snapshot": {
 		"title": "Upload your screenshot",
@@ -983,7 +954,6 @@
 				"txtlteq": "<= lower than or equal to"
 			}
 		},
-		"additionalFiltersApplied": "Filters applied: {n}",
 		"dueDate": "@:task.details.due",
 		"reminder": "Reminder date",
 		"reminderDate": {
@@ -1110,8 +1080,6 @@
 		"refreshAndFilter": "Refresh and filter",
 		"search": "Search...",
 		"searchByTaskName": "Search by task name...",
-		"searchByDeploymentName": "Search by deployment...",
-		"searchByBusinessKey": "Search by business key...",
 		"searchByFilterName": "Search by filter name...",
 		"wildcardHelp": "Wildcard search is supported.",
 		"wildcardExample": "Use % to represent any number of characters (e.g. %process%)."
@@ -1154,9 +1122,6 @@
 		"deploymentsDeleted": "{0} out of {1} deployments have been successfully deleted",
 		"tenant": "Tenant",
 		"errorLoading": "Unable to load resource for the selected deployment"
-	},
-	"cib-table2": {
-		"filter": "Filter"
 	},
 	"navigation": {
 		"home": "Home",
@@ -1264,7 +1229,6 @@
 		"type": "Match type",
 		"apply": "Apply",
 		"cancel": "Cancel",
-		"cleanAll": "Clear all criteria",
 		"any": "Any",
 		"all": "All",
 		"criteriaKeys": {    	
