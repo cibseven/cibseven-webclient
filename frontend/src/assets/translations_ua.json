@@ -2,12 +2,6 @@
 	"commons": {
 		"edit": "Редагувати",
 		"save": "Зберегти",
-		"copyValue": "Скопіювати значення",
-		"noMoreResults": "Більше немає результатів",
-		"loadMore": {
-			"title": "Завантажити ще",
-			"tooltip": "Натисніть, щоб завантажити наступні {chunkSize} записів"
-		},
 		"actualisation": {
 			"progress": "Оновлення даних...",
 			"lastUpdate": "Останнє оновлення: {date}",
@@ -1174,10 +1168,6 @@
 	},
 	"cib-table2": {
 		"filter": "Фільтр"
-	},
-	"table": {
-		"selectColumns": "Показати стовпці",
-		"toggleColumn": "Перемкнути стовпець \"{column}\""
 	},
 	"navigation": {
 		"home": "Головна сторінка",

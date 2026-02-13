@@ -2,12 +2,6 @@
 	"commons": {
 		"edit": "Edit",
 		"save": "Save",
-		"copyValue": "Copy value",
-		"noMoreResults": "No more results",
-		"loadMore": {
-			"title": "Load more",
-			"tooltip": "Click to load next {chunkSize} records"
-		},
 		"actualisation": {
 			"progress": "Updating data...",
 			"lastUpdate": "Last update: {date}",
@@ -1175,10 +1169,6 @@
 	},
 	"cib-table2": {
 		"filter": "Filter"
-	},
-	"table": {
-		"selectColumns": "Display columns",
-		"toggleColumn": "Toggle \"{column}\" column"
 	},
 	"navigation": {
 		"home": "Home",

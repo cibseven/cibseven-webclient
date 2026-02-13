@@ -2,12 +2,6 @@
 	"commons": {
 		"edit": "Bearbeiten",
 		"save": "Speichern",
-		"copyValue": "Wert kopieren",
-		"noMoreResults": "Keine weiteren Ergebnisse",
-		"loadMore": {
-			"title": "Mehr laden",
-			"tooltip": "Klicken Sie, um die nächsten {chunkSize} Einträge zu laden"
-		},
 		"actualisation": {
 			"progress": "Daten werden aktualisiert...",
 			"lastUpdate": "Letztes Update: {date}",
@@ -1174,10 +1168,6 @@
 	},
 	"cib-table2": {
 		"filter": "Filter"
-	},
-	"table": {
-		"selectColumns": "Spalten anzeigen",
-		"toggleColumn": "{column} Spalte umschalten"
 	},
 	"navigation": {
 		"home": "Startseite",
