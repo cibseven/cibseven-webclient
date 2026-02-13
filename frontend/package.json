@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "@bpmn-io/form-js": "1.15.2",
-    "@cib/common-frontend": "1.0.3-dev.8",
+    "@cib/common-frontend": "1.0.3-dev.9",
     "@mdi/font": "7.4.47",
     "apexcharts": "4.7.0",
     "axios": "1.13.2",
