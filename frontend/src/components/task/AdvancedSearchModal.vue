@@ -45,10 +45,12 @@
       </b-button>
 
       <div class="container-fluid border">
-        <FlowTable striped :selectable="false" :items="criterias" prefix="advanced-search.table."
-          :fields="[{label: 'key', key: 'key', class: 'col-5'},
-              {label: 'value', key: 'value', class: 'col-5'},
-              {label: '', key: 'buttons', class: 'col-2', sortable: false, tdClass: 'py-0 text-center d-block'}]">
+        <FlowTable striped :selectable="false" :items="criterias"
+          :fields="[
+            { label: 'advanced-search.table.key', key: 'key', class: 'col-5'},
+            { label: 'advanced-search.table.value', key: 'value', class: 'col-5'},
+            { label: '', key: 'buttons', class: 'col-2', sortable: false, tdClass: 'py-0 text-center d-block'},
+          ]">
           <template v-slot:cell(key)="row">
             {{ $t('advanced-search.criteriaKeys.' + row.item.key) }}
           </template>

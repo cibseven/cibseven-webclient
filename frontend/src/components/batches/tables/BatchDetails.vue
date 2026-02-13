@@ -35,10 +35,10 @@
     </template>
     <div v-if="batchDetails && batchDetails.length > 0 && !loading" class="p-0">
       <div class="overflow-auto">
-        <FlowTable v-if="batchDetails" striped thead-class="sticky-header" :items="batchDetails" primary-key="id" prefix="batches."
+        <FlowTable v-if="batchDetails" striped thead-class="sticky-header" :items="batchDetails" primary-key="id"
           :fields="[
-            { label: 'property', key: 'property', class: 'col-6', tdClass: 'p-1' },
-            { label: 'value', key: 'value', class: 'col-6', tdClass: 'p-1' },
+            { label: 'batches.property', key: 'property', class: 'col-6', tdClass: 'p-1' },
+            { label: 'batches.value', key: 'value', class: 'col-6', tdClass: 'p-1' },
           ]">
         </FlowTable>
       </div>

@@ -277,8 +277,23 @@ describe('i18n', () => {
             continue
           }
 
+          // ...$t('batches.id... or ...$t("batches.id... or ...$t(`batches.id...
           const usagePattern = new RegExp(`\\$t\\(\\s*['"\`]${keyPath}['"\`]`)
           if (usagePattern.test(content)) {
+            // Found usage, remove from list
+            stringLongKeys.splice(i, 1)
+          }
+
+          // ...label: 'batches.id'...
+          const usagePatternLabel = new RegExp(` label: '${keyPath}'`)
+          if (usagePatternLabel.test(content)) {
+            // Found usage, remove from list
+            stringLongKeys.splice(i, 1)
+          }
+
+          // simple usage 'key'?
+          const usagePatternSimple = new RegExp(`'${keyPath}'`)
+          if (usagePatternSimple.test(content)) {
             // Found usage, remove from list
             stringLongKeys.splice(i, 1)
           }

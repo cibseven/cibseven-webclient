@@ -36,7 +36,7 @@
       </div>
     </div>
     <div class="container overflow-auto bg-white shadow-sm border rounded g-0">
-      <FlowTable striped :items="filteredTenants" :fields="tenantFields" primary-key="id" prefix="admin.tenants.">
+      <FlowTable striped :items="filteredTenants" :fields="tenantFields" primary-key="id">
         <template v-slot:cell(actions)="row">
           <CellActionButton @click="edit(row.item)" :title="$t('admin.tenants.editTenant')" icon="mdi-pencil-outline"></CellActionButton>
           <CellActionButton @click="prepareRemove(row.item)" :title="$t('admin.tenants.deleteTenant')" icon="mdi-delete-outline"></CellActionButton>
@@ -80,9 +80,9 @@ export default {
     ...mapGetters(['tenants']),
     tenantFields: function() {
       return [
-        { label: 'id', key: 'id', class: 'col-5', tdClass: 'py-1' },
-        { label: 'name', key: 'name', class: 'col-5', tdClass: 'py-1' },
-        { label: 'actions', key: 'actions', class: 'col-2 text-center', sortable: false, thClass: 'justify-content-center', tdClass: 'justify-content-center py-0' }
+        { label: 'admin.tenants.id', key: 'id', class: 'col-5', tdClass: 'py-1' },
+        { label: 'admin.tenants.name', key: 'name', class: 'col-5', tdClass: 'py-1' },
+        { label: 'admin.tenants.actions', key: 'actions', class: 'col-2 text-center', sortable: false, thClass: 'justify-content-center', tdClass: 'justify-content-center py-0' }
       ]
     },
     filteredTenants: function() {

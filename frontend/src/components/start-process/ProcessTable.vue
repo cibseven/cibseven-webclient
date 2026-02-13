@@ -18,7 +18,7 @@
 -->
 <template>
   <div class="container overflow-auto h-100 bg-white shadow-sm border rounded">
-    <FlowTable striped :items="processes" primary-key="id" prefix="process." :fields="fields" @select="focused = $event[0]"
+    <FlowTable striped :items="processes" primary-key="id" :fields="fields" @select="focused = $event[0]"
       @mouseenter="focused = $event" @focusin="focused = $event"
       @mouseleave="focused = null" @focusout="focused = null">
       <template v-slot:cell(favorite)="table">
@@ -69,14 +69,14 @@ export default {
   emits: ['favorite', 'start-process'],
   computed: {
     fields: function() {
-      return [{ label: 'favorite', key: 'favorite', sortable: false, thClass:'py-0', tdClass:'py-0 ps-0',
-        class: 'col-1 d-flex align-items-center justify-content-center'},
-          { label: 'name', key: 'name', class: 'col-3' },
-          { label: 'key', key: 'key', class: 'col-2' },
-          { label: 'tenant', key: 'tenantId', class: 'col-2' },
-          { label: 'description', key: 'description', sortable: false, class: 'col-2' },
-          { label: 'actions', key: 'actions', sortable: false, tdClass: 'py-0', class: 'col-2 d-flex justify-content-center' },
-        ]
+      return [
+        { label: 'process.favorite', key: 'favorite', sortable: false, thClass:'py-0', tdClass:'py-0 ps-0', class: 'col-1 d-flex align-items-center justify-content-center'},
+        { label: 'process.name', key: 'name', class: 'col-3' },
+        { label: 'process.key', key: 'key', class: 'col-2' },
+        { label: 'process.tenant', key: 'tenantId', class: 'col-2' },
+        { label: 'process.description', key: 'description', sortable: false, class: 'col-2' },
+        { label: 'process.actions', key: 'actions', sortable: false, tdClass: 'py-0', class: 'col-2 d-flex justify-content-center' },
+      ]
     }
   },
   methods: {

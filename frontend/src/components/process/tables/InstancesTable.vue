@@ -18,15 +18,15 @@
 -->
 <template>
   <div>
-    <FlowTable v-if="instances.length > 0 && !sorting" striped resizable thead-class="sticky-header" :items="instances" primary-key="id" prefix="process."
+    <FlowTable v-if="instances.length > 0 && !sorting" striped resizable thead-class="sticky-header" :items="instances" primary-key="id"
       :sort-by="currentSortBy" :sort-desc="currentSortDesc" external-sort :fields="[
-      { label: 'state', key: 'state', class: 'col-1', thClass: 'text-center', sortable: false, tdClass: 'justify-content-center text-center py-0' },
-      { label: 'businessKey', key: 'businessKey', class: 'col-2', tdClass: 'py-1' },
-      { label: 'startTime', key: 'startTime', class: 'col-2', tdClass: 'py-1' },
-      { label: 'endTime', key: 'endTime', class: 'col-2', tdClass: 'py-1' },
-      { label: 'instanceId', key: 'id', class: 'col-2', tdClass: 'py-1' },
-      { label: 'startUserId', key: 'startUserId', class: 'col-1', sortable: false, tdClass: 'py-1' },
-      { label: 'actions', key: 'actions', class: 'col-2', sortable: false, tdClass: 'py-0' }]"
+      { label: 'process.state', key: 'state', class: 'col-1', thClass: 'text-center', sortable: false, tdClass: 'justify-content-center text-center py-0' },
+      { label: 'process.businessKey', key: 'businessKey', class: 'col-2', tdClass: 'py-1' },
+      { label: 'process.startTime', key: 'startTime', class: 'col-2', tdClass: 'py-1' },
+      { label: 'process.endTime', key: 'endTime', class: 'col-2', tdClass: 'py-1' },
+      { label: 'process.instanceId', key: 'id', class: 'col-2', tdClass: 'py-1' },
+      { label: 'process.startUserId', key: 'startUserId', class: 'col-1', sortable: false, tdClass: 'py-1' },
+      { label: 'process.actions', key: 'actions', class: 'col-2', sortable: false, tdClass: 'py-0' }]"
       @click="selectInstance($event)" @external-sort="handleSortChanged">
       <template v-slot:cell(state)="table">
         <span :title="getIconTitle(table.item.state)" class="mdi mdi-18px" :class="getIconState(table.item.state)"></span>

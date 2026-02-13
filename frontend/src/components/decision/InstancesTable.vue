@@ -17,13 +17,13 @@
 
 -->
 <template>
-  <FlowTable striped resizable thead-class="sticky-header" :items="instances" primary-key="id" prefix="decision."
+  <FlowTable striped resizable thead-class="sticky-header" :items="instances" primary-key="id"
     :sort-by="sortByDefaultKey" :sort-desc="sortDesc" :fields="[
-    { label: 'id', key: 'id', class: 'col-2', tdClass: 'py-1 position-relative' },
-    { label: 'evaluationTime', key: 'evaluationTime', class: 'col-2', tdClass: 'py-1' },
-    { label: 'callingProcess', key: 'processDefinitionKey', class: 'col-3', tdClass: 'py-1 position-relative' },
-    { label: 'callingInstanceId', key: 'processInstanceId', class: 'col-3', tdClass: 'py-1' },
-    { label: 'activityId', key: 'activityId', class: 'col-2', tdClass: 'py-1' }]">
+    { label: 'decision.id', key: 'id', class: 'col-2', tdClass: 'py-1 position-relative' },
+    { label: 'decision.evaluationTime', key: 'evaluationTime', class: 'col-2', tdClass: 'py-1' },
+    { label: 'decision.callingProcess', key: 'processDefinitionKey', class: 'col-3', tdClass: 'py-1 position-relative' },
+    { label: 'decision.callingInstanceId', key: 'processInstanceId', class: 'col-3', tdClass: 'py-1' },
+    { label: 'decision.activityId', key: 'activityId', class: 'col-2', tdClass: 'py-1' }]">
 
     <template v-slot:cell(id)="table">
       <CopyableActionButton

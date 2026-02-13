@@ -19,7 +19,6 @@
 <template>
   <FlowTable v-if="items && items.length > 0" striped :resizable="false" thead-class="sticky-header" :items="items"
     primary-key="buttons"
-    prefix=""
     sort-by=""
     :fields="[
       { label: 'infoAndHelp.shortcuts.columnShortcut', key: 'buttons', class: 'col-4 justify-content-center', tdClass: 'py-1', sortable: false },

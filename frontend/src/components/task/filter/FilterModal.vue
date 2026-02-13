@@ -69,10 +69,12 @@
     </b-form-group>
 
     <div class="container-fluid border">
-      <FlowTable :selectable="false" striped :items="criteriasToAdd" prefix="nav-bar.filters.criteria."
-        :fields="[{label: 'key', key: 'name', class: 'col-5'},
-            {label: 'value', key: 'value', class: 'col-5'},
-            {label: '', key: 'buttons', class: 'col-2', sortable: false, tdClass: 'py-0'}]">
+      <FlowTable :selectable="false" striped :items="criteriasToAdd"
+        :fields="[
+          { label: 'nav-bar.filters.criteria.key', key: 'name', class: 'col-5'},
+          { label: 'nav-bar.filters.criteria.value', key: 'value', class: 'col-5'},
+          { label: '', key: 'buttons', class: 'col-2', sortable: false, tdClass: 'py-0'},
+        ]">
         <template v-slot:cell(value)="row">
           <div v-if="row.item.key === 'processVariables'">
             <div v-for="(item, index) of row.item.value" class="row g-0" :key="index">

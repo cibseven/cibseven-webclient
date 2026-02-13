@@ -63,7 +63,7 @@
     </div>
     <div class="container overflow-auto h-100 rounded g-0">
       <div class="m-3 mb-0">
-      <FlowTable :items="processesFiltered" thead-class="sticky-header" striped primary-key="id" prefix="process." :fields="fields" @click="goToShowProcessHistory($event)">
+      <FlowTable :items="processesFiltered" thead-class="sticky-header" striped primary-key="id" :fields="fields" @click="goToShowProcessHistory($event)">
         <template v-slot:cell(key)="table">
           <CopyableActionButton
             :display-value="table.item.key"
@@ -192,12 +192,12 @@ export default {
     },
     fields: function() {
       return [
-        { label: 'status', key: 'incidents', thClass:'py-0', tdClass:'py-0 ps-0', class: 'col-1 d-flex align-items-center justify-content-center' },
-        { label: 'runningInstances', key: 'runningInstances', class: 'col-1 d-flex justify-content-center', tdClass: 'py-1' },
-        { label: 'key', key: 'key', class: 'col-3', tdClass: 'py-1' },
-        { label: 'name', key: 'name', class: 'col-3', tdClass: 'py-1' },
-        { label: 'tenant', key: 'tenantId', class: 'col-2', tdClass: 'py-1' },
-        { label: 'actions', key: 'actions', sortable: false, class: 'col-2 d-flex justify-content-center', tdClass: 'py-0' },
+        { label: 'process.status', key: 'incidents', thClass:'py-0', tdClass:'py-0 ps-0', class: 'col-1 d-flex align-items-center justify-content-center' },
+        { label: 'process.runningInstances', key: 'runningInstances', class: 'col-1 d-flex justify-content-center', tdClass: 'py-1' },
+        { label: 'process.key', key: 'key', class: 'col-3', tdClass: 'py-1' },
+        { label: 'process.name', key: 'name', class: 'col-3', tdClass: 'py-1' },
+        { label: 'process.tenant', key: 'tenantId', class: 'col-2', tdClass: 'py-1' },
+        { label: 'process.actions', key: 'actions', sortable: false, class: 'col-2 d-flex justify-content-center', tdClass: 'py-0' },
       ]
     }
   },
