@@ -783,12 +783,7 @@
 		"strength5": "Perfecta",
 		"prefix": "Seguridad:"
 	},
-	"error": {
-		"title": "Error",
-		"ok": "@:confirm.ok"
-	},
 	"confirm": {
-		"title": "Confirmar",
 		"ok": "Ok",
 		"cancel": "Cancelar",
 		"close": "Cerrar",
