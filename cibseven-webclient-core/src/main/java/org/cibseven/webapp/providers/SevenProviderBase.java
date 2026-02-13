@@ -117,8 +117,9 @@ public abstract class SevenProviderBase {
 		String baseUrl = cibsevenUrl.endsWith("/") ? cibsevenUrl.substring(0, cibsevenUrl.length() - 1) : cibsevenUrl;
 		String restPath = engineRestPath.startsWith("/") ? engineRestPath : "/" + engineRestPath;
 		
-		// If engine identifier is provided add it to the path
-		if (engineId != null && !engineId.isEmpty()) {
+		// If engine identifier is provided and not 'default', add it to the path
+		// Only use legacy format if engineId doesn't contain pipe (avoid treating malformed pipe format as legacy)
+		if (engineId != null && !engineId.isEmpty() && !"default".equals(engineId) && !engineId.contains("|")) {
 			// Legacy format - just use the engine name directly
 			return baseUrl + restPath + "/engine/" + engineId;
 		}
