@@ -218,7 +218,6 @@
 		"processInstanceId": "Process Instance ID",
 		"businessKey": "Business Key",
 		"info": "Process details",
-		"variablesInfo": "Process variables",
 		"active": "Active",
 		"history": "History",
 		"download": "Download",
@@ -453,7 +452,6 @@
 		"info": "Task details",
 		"reminder": "Reminder date",
 		"priority": "Priority",
-		"variablesInfo": "Task variables",
 		"taskId": "Task ID",
 		"assign": "Assign to someone",
 		"assignToMe": "Assign to me",
@@ -823,14 +821,12 @@
 		"taskCompleted": "Task completed",
 		"allTasks": "Tasks",
 		"titleInfo": "Information",
-		"filters": "Filters",
 		"types": "Types"
 	},
 	"nav-bar": {
 		"no-tasks-pending": "You have no tasks pending",
 		"no-tasks": "No tasks found",
 		"tasks-count": "Open tasks: {count}",
-		"processes": "@:process.title",
 		"filters": {
 			"addFilter": "Add Filter",
 			"updateFilter": "Update Filter",
@@ -843,7 +839,6 @@
 			"addCriteria": "Add criteria",
 			"filterExists": "This filter already exists",
 			"selectedCriteria": "Selected criteria",
-			"deleteCriteria": "Delete criteria",
 			"no-filters": "No filters found",
 			"edit": "@:commons.edit",
 			"delete": "@:confirm.delete",
@@ -950,22 +945,9 @@
 		},
 		"dueDate": "@:task.details.due",
 		"reminder": "Reminder date",
-		"reminderDate": {
-			"all": "Until today",
-			"today": "Tomorrow",
-			"next3D": "From the day after tomorrow"
-		},
-		"taskDeadline": {
-			"all": "All",
-			"today": "Until today",
-			"next3D": "From tomorrow onwards"
-		},
 		"filtersTitle": "Filters",
-		"tasksTitle": "Tasks",
 		"refresh": "Refresh task list",
-		"sortingTitle": "Sorting",
-		"filtersAdditionalsTitle": "Additional filters",
-		"changeSize": "Increase task list width"
+		"filtersAdditionalsTitle": "Additional filters"
 	},
 	"ienotify": {
 		"remember": "Do not show this message again",

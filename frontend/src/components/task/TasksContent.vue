@@ -17,7 +17,7 @@
 
 -->
 <template>
-  <SidebarsFlow ref="regionFilter" role="region" :aria-label="$t('seven.filters')" @selected-filter="selectedFilter()" v-model:left-open="leftOpenFilter" :left-caption="leftCaptionFilter" :rightSize="[12, 4, 2, 2, 2]" :leftSize="[12, 4, 2, 2, 2]">
+  <SidebarsFlow ref="regionFilter" role="region" :aria-label="$t('nav-bar.filtersTitle')" @selected-filter="selectedFilter()" v-model:left-open="leftOpenFilter" :left-caption="leftCaptionFilter" :rightSize="[12, 4, 2, 2, 2]" :leftSize="[12, 4, 2, 2, 2]">
     <GlobalEvents
       v-for="shortcut in taskShortcuts"
       :key="shortcut.id"
@@ -149,7 +149,7 @@ export default {
       return this.$store.state.filter.selected.name
     },
     leftCaptionFilter: function() {
-      return this.leftOpenTask ? this.$t('seven.filters') : ''
+      return this.leftOpenTask ? this.$t('nav-bar.filtersTitle') : ''
     },
     getTasksNavbarSize: function() { return this.tasksNavbarSizes[this.tasksNavbarSize] },
     taskShortcuts() {

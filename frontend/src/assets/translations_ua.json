@@ -218,7 +218,6 @@
 		"processInstanceId": "ID екземпляра процесу",
 		"businessKey": "Бізнес-ключ",
 		"info": "Інформація про процес",
-		"variablesInfo": "Змінні процесу",
 		"active": "Активний",
 		"history": "Історія змін",
 		"download": "Завантажити",
@@ -453,7 +452,6 @@
 			"info": "Інформація про завдання",
 			"reminder": "Дата нагадування",
 			"priority": "Пріоритет",
-			"variablesInfo": "Змінні завдання",
 			"taskId": "ID завдання",
 			"assign": "Призначити",
 			"assignToMe": "Призначити мені",
@@ -823,14 +821,12 @@
 		"taskCompleted": "Завдання виконано",
 		"allTasks": "Завдання",
 		"titleInfo": "Інформація",
-		"filters": "Фільтри",
 		"types": "Типи авторизацій"
 	},
 	"nav-bar": {
 		"no-tasks-pending": "У вас немає незавершених завдань",
 		"no-tasks": "Завдань не знайдено",
 		"tasks-count": "Відкритих завдань: {count}",
-		"processes": "@:process.title",
 		"filters": {
 			"addFilter": "Додати фільтр",
 			"updateFilter": "Оновити фільтр",
@@ -843,7 +839,6 @@
 			"addCriteria": "Додати критерій",
 			"filterExists": "Цей фільтр вже існує",
 			"selectedCriteria": "Вибраний критерій",
-			"deleteCriteria": "Видалити критерій",
 			"no-filters": "Фільтрів не знайдено",
 			"edit": "Редагувати фільтр",
 			"delete": "Видалити фільтр",
@@ -950,22 +945,9 @@
 		},
 		"dueDate": "@:task.details.due",
 		"reminder": "Нагадування",
-		"reminderDate": {
-			"all": "До сьогоднішнього дня",
-			"today": "Завтра",
-			"next3D": "Післязавтра"
-		},
-		"taskDeadline": {
-			"all": "Усі",
-			"today": "До сьогоднішнього дня",
-			"next3D": "З завтрашнього дня"
-		},
 		"filtersTitle": "Фільтри",
-		"tasksTitle": "Завдання",
 		"refresh": "Оновити список завдань",
-		"sortingTitle": "Сортування",
-		"filtersAdditionalsTitle": "Додаткові фільтри",
-		"changeSize": "Збільшити ширину списку завдань"
+		"filtersAdditionalsTitle": "Додаткові фільтри"
 	},
 	"ienotify": {
 		"remember": "Більше не показувати це повідомлення",

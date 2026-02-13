@@ -218,7 +218,6 @@
 		"processInstanceId": "ID de la instancia del proceso",
 		"businessKey": "Business Key",
 		"info": "Detalles del proceso",
-		"variablesInfo": "Variables del proceso",
 		"active": "Activo",
 		"history": "Historial",
 		"download": "Descargar",
@@ -453,7 +452,6 @@
 		"info": "Detalles de la tarea",
 		"reminder": "Fecha recordatorio",
 		"priority": "Prioridad",
-		"variablesInfo": "Variables de la tarea",
 		"taskId": "Identificador de tarea",
 		"assign": "Asignar a alguien",
 		"assignToMe": "Asignarme",
@@ -823,14 +821,12 @@
 		"taskCompleted": "Tarea realizada",
 		"allTasks": "Mis Tareas",
 		"titleInfo": "Información",
-		"filters": "Filtros",
 		"types": "Tipos"
 	},
 	"nav-bar": {
 		"no-tasks-pending": "No tiene tareas pendientes",
 		"no-tasks": "No se encontraron tareas",
 		"tasks-count": "Tareas abiertas: {count}",
-		"processes": "@:process.title",
 		"filters": {
 			"addFilter": "Añadir filtro",
 			"updateFilter": "Actualizar filtro",
@@ -843,7 +839,6 @@
 			"addCriteria": "Añadir criterio",
 			"filterExists": "Este filtro ya existe",
 			"selectedCriteria": "Criterios seleccionados",
-			"deleteCriteria": "Eliminar criterio",
 			"no-filters": "No se encontraron filtros",
 			"edit": "@:commons.edit",
 			"delete": "@:confirm.delete",
@@ -950,22 +945,9 @@
 		},
 		"dueDate": "@:task.details.due",
 		"reminder": "Recordatorio",
-		"reminderDate": {
-			"all": "Hasta hoy",
-			"today": "Mañana",
-			"next3D": "A partir de pasado mañana"
-		},
-		"taskDeadline": {
-			"all": "Todos",
-			"today": "Hasta hoy",
-			"next3D": "Desde mañana"
-		},
 		"filtersTitle": "Filtros",
-		"tasksTitle": "Tareas",
 		"refresh": "Actualizar la lista de tareas",
-		"sortingTitle": "Clasificación",
-		"filtersAdditionalsTitle": "Filtros adicionales",
-		"changeSize": "Incrementar ancho de lista de tareas"
+		"filtersAdditionalsTitle": "Filtros adicionales"
 	},
 	"ienotify": {
 		"remember": "No volver a mostrar este mensaje",

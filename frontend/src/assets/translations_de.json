@@ -218,7 +218,6 @@
 		"processInstanceId": "Prozessinstanz Id",
 		"businessKey": "Fachlicher Schlüssel",
 		"info": "Prozessdetails",
-		"variablesInfo": "Prozessvariablen",
 		"active": "Aktiv",
 		"history": "Historie",
 		"download": "Herunterladen",
@@ -453,7 +452,6 @@
 		"info": "Aufgabedetails",
 		"reminder": "Wiedervorlagedatum",
 		"priority": "Priorität",
-		"variablesInfo": "Aufgabenvariablen",
 		"taskId": "Aufgaben-ID",
 		"assign": "Jemandem zuweisen",
 		"assignToMe": "Mir zuweisen",
@@ -823,14 +821,12 @@
 		"taskCompleted": "Aufgabe erledigt",
 		"allTasks": "Aufgaben",
 		"titleInfo": "Information",
-		"filters": "Filter",
 		"types": "Typen"
 	},
 	"nav-bar": {
 		"no-tasks-pending": "Sie haben keine offenen Aufgaben",
 		"no-tasks": "Keine Aufgaben gefunden",
 		"tasks-count": "Offene Aufgaben: {count}",
-		"processes": "@:process.title",
 		"filters": {
 			"addFilter": "Filter hinzufügen",
 			"updateFilter": "Filter aktualisieren",
@@ -843,7 +839,6 @@
 			"addCriteria": "Kriterium hinzufügen",
 			"filterExists": "Dieser Filter existiert bereits",
 			"selectedCriteria": "Ausgewählte Kriterien",
-			"deleteCriteria": "Kriterium Löschen",
 			"no-filters": "Keine Filter gefunden",
 			"edit": "@:commons.edit",
 			"delete": "@:confirm.delete",
@@ -950,22 +945,9 @@
 		},
 		"dueDate": "@:task.details.due",
 		"reminder": "Wiedervorlagedatum",
-		"reminderDate": {
-			"all": "Bis heute",
-			"today": "Morgen",
-			"next3D": "Ab übermorgen"
-		},
-		"taskDeadline": {
-			"all": "Alle",
-			"today": "Bis heute",
-			"next3D": "Ab morgen"
-		},
 		"filtersTitle": "Filter",
-		"tasksTitle": "Aufgaben",
 		"refresh": "Aufgabenliste aktualisieren",
-		"sortingTitle": "Sortierung",
-		"filtersAdditionalsTitle": "Weitere Filter",
-		"changeSize": "Breite der Aufgabenliste vergrößern"
+		"filtersAdditionalsTitle": "Weitere Filter"
 	},
 	"ienotify": { 
 		"remember": "Diese Meldung nicht mehr anzeigen",

@@ -218,7 +218,6 @@
 		"processInstanceId": "ID экземпляра процесса",
 		"businessKey": "Бизнес-ключ",
 		"info": "Информация о процессе",
-		"variablesInfo": "Переменные процесса",
 		"active": "Активный",
 		"history": "История изменений",
 		"download": "Скачать",
@@ -453,7 +452,6 @@
 		"info": "Информация о задаче",
 		"reminder": "Дата напоминания",
 		"priority": "Приоритет",		
-		"variablesInfo": "Переменные задачи",
 		"taskId": "ID задачи",
 		"assign": "Назначить кого-либо",
 		"assignToMe": "Назначить меня",
@@ -823,14 +821,12 @@
 		"taskCompleted": "Задача выполнена",
 		"allTasks": "Задачи",
 		"titleInfo": "Информация",
-		"filters": "Фильтры",
 		"types": "Типы авторизаций"
 	},
 	"nav-bar": {
 		"no-tasks-pending": "У Вас нет незавершённых задач",
 		"no-tasks": "Задачи не найдены",
 		"tasks-count": "Открытых задач: {count}",
-		"processes": "@:process.title",
 		"filters": {
 			"addFilter": "Добавить фильтр",
 			"updateFilter": "Обновить фильтр",
@@ -843,7 +839,6 @@
 			"addCriteria": "Добавить критерий",
 			"filterExists": "Данный фильтр уже существует",
 			"selectedCriteria": "Выбранный критерий",
-			"deleteCriteria": "Удалить критерий",
 			"no-filters": "Фильтры не найдены",
 			"edit": "Редактировать фильтр",
 			"delete": "Удалить фильтр",
@@ -950,22 +945,9 @@
 		},
 		"dueDate": "@:task.details.due",
 		"reminder": "Напоминание",
-		"reminderDate": {
-			"all": "До сегодняшнего дня",
-			"today": "Завтра",
-			"next3D": "С послезавтра"
-		},
-		"taskDeadline": {
-			"all": "Все",
-			"today": "До сегодняшнего дня",
-			"next3D": "С завтрашнего дня"
-		},
 		"filtersTitle": "Фильтры",
-		"tasksTitle": "Задачи",
 		"refresh": "Обновить список задач",
-		"sortingTitle": "Сортировка",
-		"filtersAdditionalsTitle": "Дополнительные фильтры",
-		"changeSize": "Увеличить ширину списка задач"
+		"filtersAdditionalsTitle": "Дополнительные фильтры"
 	},
 	"ienotify": { 
 		"remember": "Больше не показывать это сообщение",
