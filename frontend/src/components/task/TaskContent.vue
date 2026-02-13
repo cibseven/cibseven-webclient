@@ -61,10 +61,10 @@
                     class="mdi mdi-18px mdi-account-question mdi-dark"></span> {{ $t('task.assignToMe') }}</b-button>
               </span>
               <FilterableSelect v-if="task.assignee == null" v-model:loading="loadingUsers" @enter="findUsers($event)"
-                @clean-elements="resetUsers($event)" style="width: 150px;" v-model="assignee"
+                @clean-elements="resetUsers($event)" class="w-20" v-model="assignee"
                 :elements="$store.state.user.searchUsers" :placeholder="$t('task.assign')" noInvalidValues />
               <b-button @click="openTaskAssignationModal" class="ms-2" variant="outline-secondary" size="sm" >
-                Add Group
+                {{ $t('admin.groups.add') }}
               </b-button>
             </div>
           </div>
@@ -99,7 +99,7 @@
     <ConfirmDialog ref="confirmTaskAssign" @ok="update()" @cancel="assignee = null">
       <span>{{ $t('confirm.assignUser') }}</span>
     </ConfirmDialog>
-    <TaskAssignationModal ref="taskAssignationModal" @change-assignee="handleChangeAssignee" />
+    <TaskAssignationModal ref="taskAssignationModal" />
   </div>
 </template>
 
@@ -289,14 +289,6 @@ export default {
     openTaskAssignationModal: function() {
       this.$refs.taskAssignationModal.show(this.task.id, null, 'groups');
     },
-    handleChangeAssignee: function({ taskId, assignee }) {
-      if (taskId === this.task.id) {
-        this.assignee = assignee
-        this.task.assignee = assignee
-        this.setSelectedAssignee({ taskId: taskId, assignee: assignee })
-        this.$emit('update-assignee', { taskId: taskId, assignee: assignee })
-      }
-    }
   }
 }
 </script>

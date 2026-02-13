@@ -131,9 +131,9 @@ export default {
           this.showOnlySelected = true
           // Set custom title based on the specific tab
           if (specificTab === 'groups') {
-            this.customTitle = 'Manage groups'
+            this.customTitle = this.$t('process-instance.assignModal.manageGroups')
           } else if (specificTab === 'users') {
-            this.customTitle = 'Manage users'
+            this.customTitle = this.$t('process-instance.assignModal.manageUsers')
           }
         }
       } else {
