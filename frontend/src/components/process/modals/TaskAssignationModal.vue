@@ -121,8 +121,6 @@ export default {
   },
   methods: {
     show: function(taskId, assignee, specificTab = null) {
-      this.selectedIdentity = this.identities[1]
-      if (assignee) this.selectedIdentity = this.identities[0]
       
       if (specificTab) {
         const foundIdentity = this.identities.find(identity => identity.text === specificTab)
@@ -137,6 +135,7 @@ export default {
           }
         }
       } else {
+        this.selectedIdentity = assignee ? this.identities[0] : this.identities[1]
         this.showOnlySelected = false
         this.customTitle = null
       }

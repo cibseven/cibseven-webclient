@@ -61,9 +61,9 @@
                     class="mdi mdi-18px mdi-account-question mdi-dark"></span> {{ $t('task.assignToMe') }}</b-button>
               </span>
               <FilterableSelect v-if="task.assignee == null" v-model:loading="loadingUsers" @enter="findUsers($event)"
-                @clean-elements="resetUsers($event)" class="w-20" v-model="assignee"
+                @clean-elements="resetUsers($event)" class="w-auto" v-model="assignee"
                 :elements="$store.state.user.searchUsers" :placeholder="$t('task.assign')" noInvalidValues />
-              <b-button @click="openTaskAssignationModal" class="ms-2" variant="outline-secondary" size="sm" >
+              <b-button @click="openTaskAssignationModal" class="ms-2" variant="light" size="sm" >
                 {{ $t('admin.groups.add') }}
               </b-button>
             </div>
