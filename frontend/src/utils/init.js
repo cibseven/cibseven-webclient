@@ -77,6 +77,11 @@ export function updateAppTitle(productName, sectionName = undefined, taskName = 
 }
 
 export function handleAxiosError(router, root, error) {
+  // Skip showing error dialogs for deployed form routes loaded inside iframes.
+  // These form components handle errors themselves and forward them to the parent window via postMessage.
+  const routeName = router?.currentRoute?.value?.name
+  const isDeployedForm = routeName === 'deployed-form' || routeName === 'start-deployed-form'
+
   if (error.response) {
     const res = error.response
     if (res.status === 401) { // Unauthorized
@@ -106,7 +111,7 @@ export function handleAxiosError(router, root, error) {
         'UnsupportedTypeException', 'ExpressionEvaluationException', 'ExistingUserRequestException',
         'ExistingGroupRequestException', 'AccessDeniedException', 'SystemException', 'InvalidUserIdException', 'InvalidValueHistoryTimeToLive',
         'VariableModificationException', 'WrongDeploymenIdException', 'NoRessourcesFoundException', 'DmnTransformationException']
-      if (res.data.type && exceptions.includes(res.data.type))
+      if (!isDeployedForm && res.data.type && exceptions.includes(res.data.type))
         root.$refs.error.show(res.data)
       //root.$refs.report.show(res.data)
       return Promise.reject(error)
@@ -117,7 +122,7 @@ export function handleAxiosError(router, root, error) {
   } else { // for example "Network Error" - doesn't work with spaces in translations.json
     console && console.error('Strange AJAX error', error)
     const message = error.message.replace(' ', '_')
-    if (message !== 'Request_aborted') root.$refs.error.show({ type: message })
+    if (!isDeployedForm && message !== 'Request_aborted') root.$refs.error.show({ type: message })
     return Promise.reject(error)
   }
 }
