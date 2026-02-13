@@ -279,6 +279,7 @@ describe('i18n', () => {
         key => ` title: '${key}'`,
         key => ` tooltip: '${key}'`,
         key => ` text: '${key}'`, // TODO: remove after `GenericTabs` refactoring
+        key => ` message: '${key}'`, // TODO: remove after ('filter-alert', { message: ...}) refactoring
         key => `return '${key}'`,
         key => `? '${key}' :`,
         key => `: '${key}'`,

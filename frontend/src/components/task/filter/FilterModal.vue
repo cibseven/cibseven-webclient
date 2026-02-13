@@ -229,7 +229,7 @@ export default {
         this.$store.state.filter.selected.properties.priority = this.selectedFilterPriority || 0
         this.$store.state.filter.selected.query = query
         this.$store.dispatch('updateFilter', { filter: this.$store.state.filter.selected }).then(() => {
-          this.$emit('filter-alert', { message: 'msgFilterUpdated', filter: this.selectedFilterName })
+          this.$emit('filter-alert', { message: 'nav-bar.filters.msgFilterUpdated', filter: this.selectedFilterName })
           this.$refs.filterHandler.hide()
           this.$emit('set-filter', this.$store.state.filter.selected.id)
           this.selectedFilterId = this.$store.state.filter.selected.id
@@ -253,7 +253,7 @@ export default {
           }
         }
         this.$store.dispatch('createFilter', { filter: filterCreate }).then(filter => {
-          this.$emit('filter-alert', { message: 'msgFilterCreated', filter: this.selectedFilterName })
+          this.$emit('filter-alert', { message: 'nav-bar.filters.msgFilterCreated', filter: this.selectedFilterName })
           this.$refs.filterHandler.hide()
           this.$emit('set-filter', filter.id)
           this.$emit('select-filter', filter)

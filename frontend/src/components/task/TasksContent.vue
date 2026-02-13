@@ -76,7 +76,7 @@
     <SuccessAlert top="0" style="z-index: 1031" ref="completedTask">{{ $t('seven.taskCompleted') }}</SuccessAlert>
     <SuccessAlert top="0" style="z-index: 1031" ref="processStarted">{{ $t('process.processStarted') }}</SuccessAlert>
     <SuccessAlert top="0" style="z-index: 1031" ref="filter">
-      <i18n-t :keypath="'nav-bar.filters.' + filterMessage" tag="span" scope="global">
+      <i18n-t :keypath="filterMessage" tag="span" scope="global">
         <template #name>
           <strong>{{ filterName }}</strong>
         </template>
