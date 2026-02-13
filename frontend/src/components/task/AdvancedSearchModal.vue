@@ -58,7 +58,7 @@
             <div class="col-12" v-if="row.item.key === 'processVariables'">
               <div class="row">
                 <div :title="row.item.name" class="col-5 p-0 text-truncate">{{ row.item.name }}</div>
-                <div class="col-2 text-center">{{ $t('advanced-search.operators.' + row.item.operator) }}</div>
+                <div class="col-2 text-center">{{ $t(row.item.label) }}</div>
                 <div :title="row.item.value" class="col-5 p-0 text-truncate text-end">{{ row.item.value }}</div>
               </div>
             </div>
@@ -102,14 +102,14 @@ export default {
       selectedCriteriaKey: 'processVariables',
       selectedCriteriaValue: { name: null, operator: 'eq', value: '' },
       operators: [
-        { value: 'eq', text: '=' },
-        { value: 'neq', text: '!=' },
-        { value: 'gt', text: '>' },
-        { value: 'gteq', text: '>=' },
-        { value: 'lt', text: '<' },
-        { value: 'lteq', text: '<=' },
-        { value: 'like', text: 'like' },
-        { value: 'notLike', text: 'not like' }
+        { value: 'eq', text: '=', label: 'advanced-search.operators.eq' },
+        { value: 'neq', text: '!=', label: 'advanced-search.operators.neq' },
+        { value: 'gt', text: '>', label: 'advanced-search.operators.gt' },
+        { value: 'gteq', text: '>=', label: 'advanced-search.operators.gteq' },
+        { value: 'lt', text: '<', label: 'advanced-search.operators.lt' },
+        { value: 'lteq', text: '<=', label: 'advanced-search.operators.lteq' },
+        { value: 'like', text: 'like', label: 'advanced-search.operators.like' },
+        { value: 'notLike', text: 'not like', label: 'advanced-search.operators.notLike' }
       ],
       isValidForm: true
     }

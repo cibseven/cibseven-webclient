@@ -79,7 +79,7 @@
           <div v-if="row.item.key === 'processVariables'">
             <div v-for="(item, index) of row.item.value" class="row g-0" :key="index">
               <div :title="item.name" class="col-5 p-0 text-truncate">{{ item.name }}</div>
-              <div class="col-2 text-center">{{ $t('nav-bar.filters.operators.' + item.operator) }}</div>
+              <div class="col-2 text-center">{{ $t(item.label) }}</div>
               <div :title="item.value" class="col-5 p-0 text-truncate text-end">{{ item.value }}</div>
             </div>
           </div>
@@ -179,12 +179,12 @@ export default {
     },
     variableOperators: function() {
       return  [
-        { value: 'eq', text: this.$t('nav-bar.filters.operators.txteq') },
-        { value: 'neq', text: this.$t('nav-bar.filters.operators.txtneq') },
-        { value: 'gt', text: this.$t('nav-bar.filters.operators.txtgt') },
-        { value: 'gteq', text: this.$t('nav-bar.filters.operators.txtgteq') },
-        { value: 'lt', text: this.$t('nav-bar.filters.operators.txtlt') },
-        { value: 'lteq', text: this.$t('nav-bar.filters.operators.txtlteq') }
+        { value: 'eq', text: this.$t('nav-bar.filters.operators.txteq'), label: 'nav-bar.filters.operators.eq' },
+        { value: 'neq', text: this.$t('nav-bar.filters.operators.txtneq'), label: 'nav-bar.filters.operators.neq' },
+        { value: 'gt', text: this.$t('nav-bar.filters.operators.txtgt'), label: 'nav-bar.filters.operators.gt' },
+        { value: 'gteq', text: this.$t('nav-bar.filters.operators.txtgteq'), label: 'nav-bar.filters.operators.gteq' },
+        { value: 'lt', text: this.$t('nav-bar.filters.operators.txtlt'), label: 'nav-bar.filters.operators.lt' },
+        { value: 'lteq', text: this.$t('nav-bar.filters.operators.txtlteq'), label: 'nav-bar.filters.operators.lteq' }
       ]
     },
     existCandidateSelected: function() {

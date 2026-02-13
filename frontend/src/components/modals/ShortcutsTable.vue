@@ -39,6 +39,15 @@
 <script>
 import { FlowTable } from '@cib/common-frontend'
 
+// Used description keys:
+// - 'infoAndHelp.shortcuts.shortcuts.startProcessView'
+// - 'infoAndHelp.shortcuts.shortcuts.tasksView'
+// - 'infoAndHelp.shortcuts.shortcuts.processesView'
+// - 'infoAndHelp.shortcuts.shortcuts.startProcess'
+// - 'infoAndHelp.shortcuts.shortcuts.focusFilters'
+// - 'infoAndHelp.shortcuts.shortcuts.focusTasks'
+// - 'infoAndHelp.shortcuts.shortcuts.focusTask'
+
 export default {
   name: 'ShortcutsTable',
   components: { FlowTable },

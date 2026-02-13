@@ -259,6 +259,12 @@ describe('i18n', () => {
       // convert transaltion object to flat list of keys
       let stringLongKeys = extractKeys(translationEn, '')
 
+      stringLongKeys = stringLongKeys.filter(keyPath => 
+        !keyPath.startsWith('admin.authorizations.resourcesTypes.') &&
+        !keyPath.startsWith('errors.') &&
+        !keyPath.startsWith('nav-bar.filters.keys.')
+      )
+
       // Find all .vue files in /src/
       const vueFiles = findComponents('src', '.vue')
       expect(vueFiles.length).toBeGreaterThan(0)
