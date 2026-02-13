@@ -1085,6 +1085,8 @@
 		"AccessDeniedException": "No Permission ({0})",
 		"NoPermission": "You do not have the necessary permissions to perform this action.\nRequired persmission: \"{permission}\".\nReferenced from: {refPath}",
 		"EntryAlreadyExistsException": "{0} already exists",
+		"formNotFound": "The form \"{0}\" could not be loaded. The form is either empty or the form resource was not deployed correctly. Please check the deployment and try again.",
+		"deployedFormNotFound": "The deployed form resource \"{0}\" could not be found in the deployment. Please verify that the form resource is included in the deployment and try again.",
 		"NoObjectFoundException": "While performing this operation a specific problem has occurred. Please refresh the page in your browser and try again.",
 		"InvalidAttributeValueException": "While performing this operation a specific problem has occurred. Please refresh the page in your browser and try again.",
 		"SubmitDeniedException": "While performing this operation a specific problem has occurred. Please refresh the page in your browser and try again.",
