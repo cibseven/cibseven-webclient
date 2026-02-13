@@ -270,6 +270,8 @@ describe('i18n', () => {
         key => ` tooltip: '${key}'`,
         key => ` text: '${key}'`, // TODO: remove after `GenericTabs` refactoring
         key => `return '${key}'`,
+        key => `? '${key}' :`,
+        key => `: '${key}'`,
         key => `// - '${key}'`,
       ]
 

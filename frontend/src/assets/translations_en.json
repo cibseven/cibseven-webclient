@@ -436,10 +436,6 @@
 		"zoomOut": "Zoom out",
 		"resetZoom": "Reset zoom",
 		"legend": {
-			"title": "Guide",
-			"completedTask": "Completed task",
-			"currentTask": "Current task",
-			"selectedTask": "@:task.selectedTask",
 			"runningInstances": "Running activity instances",
 			"openIncidents": "Open incidents",
 			"closedIncidents": "Closed incidents",
@@ -1258,14 +1254,6 @@
 			"support": "If the email still does not arrive, please contact support.",
 			"supportLink": "Contact support"		
 		}
-	},
-	"status-progress": {
-		"state": "Status",
-		"stateOptions": {
-			"DONE": "Done",
-			"PENDING": "Pending"
-		},
-		"noState": "There is no status for this task"
 	},
 	"advanced-search": {
 		"title": "Advanced search",

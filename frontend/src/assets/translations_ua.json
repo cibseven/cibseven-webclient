@@ -436,10 +436,6 @@
 			"zoomOut": "Зменшити",
 			"resetZoom": "Скинути масштаб",
 			"legend": {
-				"title": "Легенда",
-				"completedTask": "Завершене завдання",
-				"currentTask": "Поточне завдання",
-				"selectedTask": "@:task.selectedTask",
 				"runningInstances": "Запущені екземпляри завдань",
 				"openIncidents": "Відкриті інциденти",
 				"closedIncidents": "Закриті інциденти",
@@ -1257,14 +1253,6 @@
 			"support": "Якщо лист не надійшов, зверніться до служби підтримки.",
 			"supportLink": "Зв'язатися з підтримкою"
 		}
-	},
-	"status-progress": {
-		"state": "Статус",
-		"stateOptions": {
-			"DONE": "Виконано",
-			"PENDING": "В очікуванні"
-		},
-		"noState": "Для цього завдання статус не задано"
 	},
 	"advanced-search": {
 		"title": "Розширений пошук",

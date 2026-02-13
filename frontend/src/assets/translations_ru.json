@@ -436,10 +436,6 @@
 		"zoomOut": "Уменьшить",
 		"resetZoom": "Сбросить масштаб",
 		"legend": {
-			"title": "Легенда",
-			"completedTask": "Завершённая задача",
-			"currentTask": "Текущая задача",			
-			"selectedTask": "@:task.selectedTask",
 			"runningInstances": "Выполняющиеся экземпляры заданий",
 			"openIncidents": "Открытые инциденты",
 			"closedIncidents": "Закрытые инциденты",
@@ -1257,14 +1253,6 @@
 			"support": "Если письмо так и не пришло, свяжитесь со службой поддержки.",
 			"supportLink": "Связаться с поддержкой"
 		}
-	},
-	"status-progress": {
-		"state": "Статус",
-		"stateOptions": {
-			"DONE": "Сделанный",
-			"PENDING": "В ожидании"
-		},
-		"noState": "Для этой задачи нет статуса"
 	},
 	"advanced-search": {
 		"title": "Расширенный поиск",

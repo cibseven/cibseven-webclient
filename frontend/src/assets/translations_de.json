@@ -436,10 +436,6 @@
 		"zoomOut": "Herauszoomen",
 		"resetZoom": "Zoom zurücksetzen",
 		"legend": {
-			"title": "Legende",
-			"completedTask": "Abgeschlossene Aufgabe",
-			"currentTask": "Aktuelle Aufgabe",
-			"selectedTask": "@:task.selectedTask",
 			"runningInstances": "Laufende Aktivitätsinstanzen",
 			"openIncidents": "Offene Vorfälle",
 			"closedIncidents": "Geschlossene Vorfälle",
@@ -1258,14 +1254,7 @@
 			"supportLink": "Support kontaktieren"		
 		}
 	},
-	"status-progress": {
-		"state": "Status",
-		"stateOptions": {
-			"DONE": "Erledigt",
-			"PENDING": "Ausstehend"
-		},
-		"noState": "Für diese Aufgabe gibt es keinen Status"
-	},
+
 	"advanced-search": {
 		"title": "Erweiterte Suche",
 		"criteriaKey": "Kriteriumsschlüssel",

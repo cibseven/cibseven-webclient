@@ -436,10 +436,6 @@
 		"zoomOut": "Alejarse",
 		"resetZoom": "Restablecer zoom",
 		"legend": {
-			"title": "Leyenda",
-			"completedTask": "Tarea finalizada",
-			"currentTask": "Tarea actual",
-			"selectedTask": "@:task.selectedTask",
 			"runningInstances": "Instancias de actividad en ejecución",
 			"openIncidents": "Incidentes abiertos",
 			"closedIncidents": "Incidentes cerrados",
@@ -1257,14 +1253,6 @@
 			"support": "Si el correo sigue sin llegar, por favor contacta al soporte.",
 			"supportLink": "Contactar al soporte"		
 		}
-	},
-	"status-progress": {
-		"state": "Estado",
-		"stateOptions": {
-			"DONE": "Finalizado",
-			"PENDING": "Pendiente"
-		},
-		"noState": "No existe estado para esta tarea"
 	},
 	"advanced-search": {
 		"title": "Búsqueda avanzada",
