@@ -257,47 +257,31 @@ describe('i18n', () => {
       const translationEn = getTranslation('en')
 
       // convert transaltion object to flat list of keys
-      const stringLongKeys = extractKeys(translationEn, '')
+      let stringLongKeys = extractKeys(translationEn, '')
 
       // Find all .vue files in /src/
       const vueFiles = findComponents('src', '.vue')
       expect(vueFiles.length).toBeGreaterThan(0)
 
+      const patterns = [
+        key => `$t('${key}'`,
+        key => ` label: '${key}'`,
+        key => ` title: '${key}'`,
+        key => ` tooltip: '${key}'`,
+        key => ` text: '${key}'`, // TODO: remove after `GenericTabs` refactoring
+        key => `return '${key}'`,
+        key => `// - '${key}'`,
+      ]
+
       // Check usage of each key in .vue files
       // When found in any file, we consider it used => remove from list
       for (const file of vueFiles) {
         const content = readFileSync(file, 'utf-8')
-
-        for (let i = stringLongKeys.length - 1; i >= 0; i--) {
-          const keyPath = stringLongKeys[i]
-
-          // Remove ignored paths
-          if (skipPath(keyPath)) {
-            stringLongKeys.splice(i, 1)
-            continue
-          }
-
-          // ...$t('batches.id... or ...$t("batches.id... or ...$t(`batches.id...
-          const usagePattern = new RegExp(`\\$t\\(\\s*['"\`]${keyPath}['"\`]`)
-          if (usagePattern.test(content)) {
-            // Found usage, remove from list
-            stringLongKeys.splice(i, 1)
-          }
-
-          // ...label: 'batches.id'...
-          const usagePatternLabel = new RegExp(` label: '${keyPath}'`)
-          if (usagePatternLabel.test(content)) {
-            // Found usage, remove from list
-            stringLongKeys.splice(i, 1)
-          }
-
-          // simple usage 'key'?
-          const usagePatternSimple = new RegExp(`'${keyPath}'`)
-          if (usagePatternSimple.test(content)) {
-            // Found usage, remove from list
-            stringLongKeys.splice(i, 1)
-          }
-        }
+        stringLongKeys = stringLongKeys.filter(keyPath => {
+          return !patterns.some(pattern =>
+            content.includes(pattern(keyPath))
+          )
+        })
       }
 
       // Report unused keys
