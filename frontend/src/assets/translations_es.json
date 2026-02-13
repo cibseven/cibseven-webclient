@@ -11,8 +11,7 @@
 		"notAvailable": {
 			"label": "N/A",
 			"tooltip": "No disponible"
-		},
-		"remove": "Eliminar"
+		}
 	},
 	"login": {
 		"productName": "@:cib-header.productName",
@@ -1371,6 +1370,11 @@
 		"noGroups": "sin grupo",
 		"groupName": "Grupo",
 		"assignmentsByGroupInfo": "Una tarea puede estar asignada a varios grupos."
+	},
+	"deployed-form": {
+		"accept": "Aceptar",
+		"fullscreen": "Pantalla completa",
+		"showProcess": "Ver proceso"
 	},
 	"setup": {
 		"title": "Configuración Inicial",

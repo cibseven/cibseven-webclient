@@ -11,8 +11,7 @@
 		"notAvailable": {
 			"label": "N/A",
 			"tooltip": "Nicht verfügbar"
-		},
-		"remove": "Entfernen"
+		}
 	},
 	"login": {
 		"productName": "@:cib-header.productName",
@@ -1371,6 +1370,11 @@
 		"noGroups": "ohne Gruppe",
 		"groupName": "Gruppe",
 		"assignmentsByGroupInfo": "Eine Aufgabe kann mehreren Gruppen zugewiesen sein."
+	},
+	"deployed-form": {
+		"accept": "Akzeptieren",
+		"fullscreen": "Vollbild",
+		"showProcess": "Prozess anzeigen"
 	},
 	"setup": {
 		"title": "Ersteinrichtung",

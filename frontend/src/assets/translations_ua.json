@@ -11,8 +11,7 @@
 		"notAvailable": {
 			"label": "N/A",
 			"tooltip": "Не доступно"
-		},
-		"remove": "Видалити"
+		}
 	},
 	"login": {
 		"productName": "@:cib-header.productName",
@@ -1371,6 +1370,11 @@
 		"noGroups": "без групи",
 		"groupName": "Група",
 		"assignmentsByGroupInfo": "Завдання може бути призначене кільком групам."
+	},
+	"deployed-form": {
+		"accept": "Прийняти",
+		"fullscreen": "Повноекранний режим",
+		"showProcess": "Переглянути процес"
 	},
 	"setup": {
 		"title": "Початкове налаштування",

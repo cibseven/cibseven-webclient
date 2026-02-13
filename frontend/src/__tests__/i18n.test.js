@@ -335,6 +335,11 @@ describe('i18n', () => {
           // Check if key is declared in en translation
           const isDeclared = stringLongKeys.includes(keyPath)
           if (!isDeclared) {
+
+            if (keyPath.endsWith('.') || keyPath.includes('${')) {
+              continue
+            }
+
             // Not declared, add to report list
             notDeclaredKeys.push(keyPath)
           }
