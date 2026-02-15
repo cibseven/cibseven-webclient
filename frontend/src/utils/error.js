@@ -15,6 +15,13 @@
  *  limitations under the License.
  */
 
+// Error message pattern constants
+const ERROR_PATTERNS = {
+    FORM_ELEMENT: 'Form must provide exactly one element',
+    DEPLOYMENT_NOT_FOUND: 'cannot be found in deployment with id',
+    CAMUNDA_FORM_NOT_FOUND: 'No Camunda Form Definition was found'
+};
+
 /**
  * Extract server error details from error messages that contain embedded JSON.
  * Engine errors often include stringified JSON like: "... occurred: {\"type\":\"...\",\"message\":\"...\"}"
@@ -31,24 +38,80 @@ function extractServerErrorFromMessage(message) {
         return null;
     }
 
-    const closingBraceIndex = message.lastIndexOf('}');
-    if (closingBraceIndex <= lastBraceIndex) {
-        return null;
+    // Try to extract JSON substring - attempt from last '{' to end first
+    let jsonSubstring = message.substring(lastBraceIndex);
+
+    // Handle escaped quotes that might be present in the error message
+    // Check if the string appears to have escaped JSON (contains \" but parsing would fail)
+    const hasEscapedQuotes = jsonSubstring.includes('\\"');
+    if (hasEscapedQuotes) {
+        // Try to determine if we need to unescape by checking if JSON.parse would fail
+        try {
+            JSON.parse(jsonSubstring);
+            // If it parses successfully, don't unescape
+        } catch {
+            // If parsing fails, try unescaping
+            jsonSubstring = jsonSubstring.replace(/\\"/g, '"');
+        }
     }
 
-    let jsonSubstring = message.substring(lastBraceIndex, closingBraceIndex + 1);
+    // Try to parse and find the first valid JSON object
+    let depth = 0;
+    let endIndex = -1;
 
-    if (jsonSubstring.includes('\\"')) {
-        jsonSubstring = jsonSubstring.replace(/\\"/g, '"');
+    for (let i = 0; i < jsonSubstring.length; i++) {
+        if (jsonSubstring[i] === '{') {
+            depth++;
+        } else if (jsonSubstring[i] === '}') {
+            depth--;
+            if (depth === 0) {
+                endIndex = i + 1;
+                break;
+            }
+        }
+    }
+
+    if (endIndex > 0) {
+        jsonSubstring = jsonSubstring.substring(0, endIndex);
     }
 
     try {
         const parsedError = JSON.parse(jsonSubstring);
-        if (parsedError.type && parsedError.message) {
+        if (parsedError && typeof parsedError === 'object' && parsedError.type && parsedError.message) {
             return parsedError;
         }
     } catch {
         // Not valid JSON, ignore
+    }
+
+    return null;
+}
+
+/**
+ * Extract error message from a response data object (works for both Axios and BPM SDK).
+ * @param {Object} data - Response data object (error.response.data or error.response.body)
+ * @returns {string|null} Extracted error message or null if not found
+ */
+function extractFromResponseData(data) {
+    if (!data || typeof data !== 'object') {
+        return null;
+    }
+
+    // Check for params array first (most specific error messages)
+    if (data.params && Array.isArray(data.params) && data.params.length > 0) {
+        const message = data.params[0];
+        if (typeof message === 'string') {
+            const serverError = extractServerErrorFromMessage(message);
+            if (serverError) {
+                return serverError.message;
+            }
+            return message;
+        }
+    }
+
+    // Fall back to message property
+    if (data.message && typeof data.message === 'string') {
+        return data.message;
     }
 
     return null;
@@ -74,33 +137,17 @@ export function extractErrorMessage(error, fallback) {
 
     // Axios errors - error.response.data contains the server response body
     if (typeof error === 'object' && error.response && error.response.data) {
-        const data = error.response.data;
-        if (data.params && data.params.length > 0) {
-            const message = data.params[0];
-            const serverError = extractServerErrorFromMessage(message);
-            if (serverError) {
-                return serverError.message;
-            }
-            return message;
-        }
-        if (data.message) {
-            return data.message;
+        const extracted = extractFromResponseData(error.response.data);
+        if (extracted) {
+            return extracted;
         }
     }
 
     // BPM SDK errors - error.response.body contains the server response
     if (typeof error === 'object' && error.response && error.response.body) {
-        const body = error.response.body;
-        if (body.params && body.params.length > 0) {
-            const message = body.params[0];
-            const serverError = extractServerErrorFromMessage(message);
-            if (serverError) {
-                return serverError.message;
-            }
-            return message;
-        }
-        if (body.message) {
-            return body.message;
+        const extracted = extractFromResponseData(error.response.body);
+        if (extracted) {
+            return extracted;
         }
     }
 
@@ -125,7 +172,7 @@ export function extractErrorMessage(error, fallback) {
  */
 export function isFormElementError(message) {
     if (!message || typeof message !== 'string') return false;
-    return message.includes('Form must provide exactly one element');
+    return message.includes(ERROR_PATTERNS.FORM_ELEMENT);
 }
 
 /**
@@ -138,8 +185,8 @@ export function isFormElementError(message) {
  */
 export function isDeployedFormNotFoundError(message) {
     if (!message || typeof message !== 'string') return false;
-    return message.includes('cannot be found in deployment with id')
-        || message.includes('No Camunda Form Definition was found');
+    return message.includes(ERROR_PATTERNS.DEPLOYMENT_NOT_FOUND)
+        || message.includes(ERROR_PATTERNS.CAMUNDA_FORM_NOT_FOUND);
 }
 
 /**
@@ -152,6 +199,18 @@ export function isDeployedFormNotFoundError(message) {
  */
 export function extractDeployedFormName(message) {
     if (!message || typeof message !== 'string') return null;
-    const match = message.match(/resource name '([^']+)'|\[key=([^,\]]+)/);
-    return match ? (match[1] || match[2]) : null;
+
+    // First pattern: resource name 'formName'
+    const resourceNameMatch = message.match(/resource name '([^']+)'/);
+    if (resourceNameMatch) {
+        return resourceNameMatch[1];
+    }
+
+    // Second pattern: [key=formName, ...]
+    const keyMatch = message.match(/\[key=([^,\]]+)/);
+    if (keyMatch) {
+        return keyMatch[1];
+    }
+
+    return null;
 }
