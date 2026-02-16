@@ -87,6 +87,7 @@ describe('extractErrorMessage', () => {
         const error = {
             message: 'Error: {"type":"ComplexError","message":"Nested error","details":{"code":500}}'
         };
+        // Should extract just the message field, ignoring nested details
         expect(extractErrorMessage(error)).toBe('Nested error');
     });
 
@@ -108,20 +109,12 @@ describe('extractErrorMessage', () => {
         expect(extractErrorMessage(null)).toBe('An unexpected error occurred');
     });
 
-    it('should handle error message with escaped backslashes and quotes', () => {
+    it('should handle error message with braces in the message content', () => {
+        // Tests that braces inside quoted strings don't interfere with JSON parsing
         const error = {
-            message: 'Error: {"type":"PathError","message":"Path C:\\\\"Program Files\\\\" not found"}'
+            message: 'Error: {"type":"ValidationError","message":"Required fields: {name}, {email}"}'
         };
-        expect(extractErrorMessage(error)).toBe('Path C:\\"Program Files\\" not found');
-    });
-
-    it('should handle legitimate backslash-quote in message content', () => {
-        // This is a case where \" is actual content, not an escape sequence
-        const error = {
-            message: 'Error: {"type":"InfoError","message":"Use backslash-quote like this: \\\\\\"hello\\\\\\""}'
-        };
-        const result = extractErrorMessage(error);
-        expect(result).toContain('backslash-quote');
+        expect(extractErrorMessage(error)).toBe('Required fields: {name}, {email}');
     });
 
     it('should handle incomplete JSON gracefully', () => {

@@ -33,80 +33,93 @@ function extractServerErrorFromMessage(message) {
         return null;
     }
 
-    const lastBraceIndex = message.lastIndexOf('{');
-    if (lastBraceIndex === -1) {
+    // Try to find and extract a valid JSON object from the message
+    // We search for all '{' positions and try to parse from each one
+    const bracePositions = [];
+    for (let i = 0; i < message.length; i++) {
+        if (message[i] === '{') {
+            bracePositions.push(i);
+        }
+    }
+
+    if (bracePositions.length === 0) {
         return null;
     }
 
-    // Try to extract JSON substring - attempt from last '{' to end first
-    let jsonSubstring = message.substring(lastBraceIndex);
+    // Try from the last '{' first, then work backwards
+    for (let posIdx = bracePositions.length - 1; posIdx >= 0; posIdx--) {
+        const startIndex = bracePositions[posIdx];
+        let jsonSubstring = message.substring(startIndex);
 
-    // Find the end of the JSON object by tracking brace depth while respecting string contexts
-    // This ensures we don't count braces inside quoted strings
-    let depth = 0;
-    let endIndex = -1;
-    let inString = false;
-    let escapeNext = false;
+        // Find the end of the JSON object by tracking brace depth while respecting string contexts
+        // This ensures we don't count braces inside quoted strings
+        let depth = 0;
+        let endIndex = -1;
+        let inString = false;
+        let escapeNext = false;
 
-    for (let i = 0; i < jsonSubstring.length; i++) {
-        const char = jsonSubstring[i];
+        for (let i = 0; i < jsonSubstring.length; i++) {
+            const char = jsonSubstring[i];
 
-        if (escapeNext) {
-            // Skip this character as it's escaped
-            escapeNext = false;
-            continue;
-        }
+            if (escapeNext) {
+                // Skip this character as it's escaped
+                escapeNext = false;
+                continue;
+            }
 
-        if (char === '\\') {
-            // Next character is escaped
-            escapeNext = true;
-            continue;
-        }
+            if (char === '\\') {
+                // Next character is escaped
+                escapeNext = true;
+                continue;
+            }
 
-        if (char === '"') {
-            // Toggle string state
-            inString = !inString;
-            continue;
-        }
+            if (char === '"') {
+                // Toggle string state
+                inString = !inString;
+                continue;
+            }
 
-        // Only count braces when we're not inside a string
-        if (!inString) {
-            if (char === '{') {
-                depth++;
-            } else if (char === '}') {
-                depth--;
-                if (depth === 0) {
-                    endIndex = i + 1;
-                    break;
+            // Only count braces when we're not inside a string
+            if (!inString) {
+                if (char === '{') {
+                    depth++;
+                } else if (char === '}') {
+                    depth--;
+                    if (depth === 0) {
+                        endIndex = i + 1;
+                        break;
+                    }
                 }
             }
         }
-    }
 
-    if (endIndex > 0) {
+        if (endIndex <= 0) {
+            continue; // No valid closing brace found
+        }
+
         jsonSubstring = jsonSubstring.substring(0, endIndex);
-    }
 
-    // Handle escaped quotes in the extracted JSON substring
-    // Engine errors sometimes include doubly-escaped JSON like {\"type\":\"...\"}
-    const hasEscapedQuotes = jsonSubstring.includes('\\"');
-    if (hasEscapedQuotes) {
-        // Try parsing first - if it works, the string is already valid JSON
+        // Handle escaped quotes in the extracted JSON substring
+        // Engine errors sometimes include doubly-escaped JSON like {\"type\":\"...\"}
+        const hasEscapedQuotes = jsonSubstring.includes('\\"');
+        if (hasEscapedQuotes) {
+            // Try parsing first - if it works, the string is already valid JSON
+            try {
+                JSON.parse(jsonSubstring);
+            } catch {
+                // If parsing fails, try unescaping quotes and parse again
+                jsonSubstring = jsonSubstring.replace(/\\"/g, '"');
+            }
+        }
+
         try {
-            JSON.parse(jsonSubstring);
+            const parsedError = JSON.parse(jsonSubstring);
+            if (parsedError && typeof parsedError === 'object' && parsedError.type && parsedError.message) {
+                return parsedError;
+            }
         } catch {
-            // If parsing fails, try unescaping quotes and parse again
-            jsonSubstring = jsonSubstring.replace(/\\"/g, '"');
+            // Not valid JSON, continue to next position
         }
-    }
-
-    try {
-        const parsedError = JSON.parse(jsonSubstring);
-        if (parsedError && typeof parsedError === 'object' && parsedError.type && parsedError.message) {
-            return parsedError;
-        }
-    } catch {
-        // Not valid JSON, ignore
     }
 
     return null;
