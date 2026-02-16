@@ -117,17 +117,11 @@ export function initEmbeddedForm(options = {}) {
                             }
                         },
                         err => {
-                            // Error already displayed by specific handler inside loadEmbeddedForm
-                            console.error(err);
-                            throw err;
+                            // Error already displayed by specific handler inside loadEmbeddedForm; just consume the rejection
+                            console.error('Error initializing form:', err);
+                            loaderDiv.style.display = 'none';
                         }
-                    ).catch(err => {
-                        console.error('Error initializing embedded form:', err);
-                        errorDiv.style.display = '';
-                        errorDiv.innerHTML = i18n.global.t('task.actions.initError', [extractErrorMessage(err)]);
-                        loaderDiv.style.display = 'none';
-                        throw err;
-                    });
+                    );
                 });
             });
         });
@@ -349,7 +343,7 @@ function loadEmbeddedForm(
                     services.displayErrorMessage(extractErrorMessage(err));
                     reject(err);
                 } else {
-                    loadForm(taskFormInfo);
+                    loadForm(taskFormInfo).catch(reject);
                 }
             });
         } else {
@@ -360,7 +354,7 @@ function loadEmbeddedForm(
                     services.displayErrorMessage(extractErrorMessage(err));
                     reject(err);
                 } else {
-                    loadForm(taskFormInfo);
+                    loadForm(taskFormInfo).catch(reject);
                 }
             });
         }
