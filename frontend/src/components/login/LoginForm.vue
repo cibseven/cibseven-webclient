@@ -20,10 +20,15 @@
 <template>
   <div>
     <CIBForm @submitted="onLogin">
-      <b-form-group label-cols="4" content-cols="8" :label="$t('login.username')" :invalid-feedback="$t('errors.invalid')">
-        <input ref="username" v-model="credentials.username" class="form-control" required autocomplete="username">
+      <b-form-group label-cols="4" content-cols="8" label-for="username-input" :label="$t('login.username')">
+        <input id="username-input" ref="username" v-model="credentials.username" class="form-control" :class="{ 'is-invalid': usernameError || generalError }" autocomplete="username" :aria-describedby="(usernameError || generalError) ? 'username-error' : null" :aria-invalid="(usernameError || generalError) ? 'true' : 'false'" :aria-required="true">
+        <div v-if="usernameError" id="username-error" class="invalid-feedback d-block" role="alert">{{ usernameError }}</div>
+        <div v-if="generalError" id="username-error" class="invalid-feedback d-block" role="alert">{{ generalError }}</div>
       </b-form-group>
-      <SecureInput ref="password" v-model="credentials.password" required></SecureInput>
+      <b-form-group label-cols="4" content-cols="8" label-for="password-input" :label="$t('login.password')">
+        <SecureInput ref="password" v-model="credentials.password" :aria-describedby="passwordError ? 'password-error' : null" :has-error="!!passwordError" :required="true"></SecureInput>
+        <div v-if="passwordError" id="password-error" class="invalid-feedback d-block" role="alert">{{ passwordError }}</div>
+      </b-form-group>
 
       <slot></slot>
 
@@ -86,14 +91,41 @@ export default {
     return {
       rememberMe: true,
       show: false,
-      email: null
+      email: null,
+      usernameError: null,
+      passwordError: null,
+      generalError: null
     }
+  },
+  mounted: function() {
+    // Focus username field on login page for accessibility
+    this.$nextTick(() => {
+      this.$refs.username?.focus()
+    })
   },
   methods: {
     onLogin: function() {
       const self = this
+      // Clear previous errors
+      this.usernameError = null
+      this.passwordError = null
+      this.generalError = null
+      
       this.credentials.username = this.$refs.username.value // https://helpdesk.cib.de/browse/DOXISAFES-456
       this.credentials.password = this.$refs.password.$refs.input.value
+      
+      // Validate before submission
+      if (!this.credentials.username) {
+        this.usernameError = this.$t('login.usernameRequired')
+        this.$refs.username.focus()
+        return
+      }
+      if (!this.credentials.password) {
+        this.passwordError = this.$t('login.passwordRequired')
+        this.$refs.password.$refs.input.focus()
+        return
+      }
+      
       AuthService.login(this.credentials, this.rememberMe).then(function(user) { self.$emit('success', user) }, function(error) {
         const res = error.response.data
         if (res && res.type === 'LoginException' && res.params && res.params.length >= 1 && res.params[0] === 'StandardLogin') {
@@ -103,7 +135,10 @@ export default {
         } else if (error.response.status === 429) { // Too many requests
           res.params[1] = new Date(res.params[1]).toLocaleString('de-DE')
           self.$root.$refs.error.show(res)
-        } else self.$root.$refs.error.show(res)
+        } else {
+          self.generalError = self.$t('errors.AuthenticationException')
+          self.$refs.username.focus()
+        }
       })
     }, // https://vuejs.org/v2/guide/components-custom-events.html
 

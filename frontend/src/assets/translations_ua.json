@@ -28,7 +28,11 @@
 		"rememberMe": "Запам’ятати пароль",
 		"email": "Електронна адреса",
 		"login": "Увійти",
-		"forgotten": "Забули пароль?"
+		"forgotten": "Забули пароль?",
+		"usernameRequired": "Ім'я користувача обов'язкове",
+		"passwordRequired": "Пароль обов'язковий",
+		"showPassword": "Показати пароль",
+		"hidePassword": "Сховати пароль"
 	},
 	"processes-dashboard": {
 		"headerActive": "Панель операцій",

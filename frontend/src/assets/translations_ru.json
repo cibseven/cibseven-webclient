@@ -28,7 +28,11 @@
 		"rememberMe": "Запомнить пароль",
 		"email": "Адрес электронной почты",
 		"login": "Войти",
-		"forgotten": "Забыли пароль?"
+		"forgotten": "Забыли пароль?",
+		"usernameRequired": "Имя пользователя обязательно",
+		"passwordRequired": "Пароль обязателен",
+		"showPassword": "Показать пароль",
+		"hidePassword": "Скрыть пароль"
 	},
 	"processes-dashboard": {
 		"headerActive": "Панель операций",

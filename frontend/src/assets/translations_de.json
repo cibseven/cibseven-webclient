@@ -28,7 +28,11 @@
 		"rememberMe": "Angemeldet bleiben",
 		"email": "Email",
 		"login": "Anmelden",
-		"forgotten": "Passwort zurücksetzen?"
+		"forgotten": "Passwort zurücksetzen?",
+		"usernameRequired": "Benutzername ist erforderlich",
+		"passwordRequired": "Passwort ist erforderlich",
+		"showPassword": "Passwort anzeigen",
+		"hidePassword": "Passwort verbergen"
 	},
 	"processes-dashboard": {
 		"headerActive": "Operatives Dashboard",

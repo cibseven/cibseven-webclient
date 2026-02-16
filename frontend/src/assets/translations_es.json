@@ -28,7 +28,11 @@
 		"rememberMe": "Recuérdame",
 		"email": "Email",
 		"login": "Iniciar sesión",
-		"forgotten": "¿Olvidaste tu contraseña?"
+		"forgotten": "¿Olvidaste tu contraseña?",
+		"usernameRequired": "El nombre de usuario es obligatorio",
+		"passwordRequired": "La contraseña es obligatoria",
+		"showPassword": "Mostrar contraseña",
+		"hidePassword": "Ocultar contraseña"
 	},
 	"processes-dashboard": {
 		"headerActive": "Panel de Operaciones",
