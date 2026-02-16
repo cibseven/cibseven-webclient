@@ -134,7 +134,7 @@ export function initEmbeddedForm(options = {}) {
     });
 }
 
-const services = {    
+const services = {
     completeTask() {
         callParent('completeTask');
     },
