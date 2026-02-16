@@ -23,6 +23,49 @@ const ERROR_PATTERNS = {
 };
 
 /**
+ * Find the end index of a JSON object by matching braces while respecting
+ * string boundaries and escape sequences.
+ * @param {string} str - String to parse
+ * @param {number} startIndex - Index of the opening brace
+ * @returns {number} Index after the closing brace, or -1 if not found
+ */
+function findMatchingBraceEnd(str, startIndex) {
+    let depth = 0;
+    let inString = false;
+    let i = startIndex;
+
+    while (i < str.length) {
+        const char = str[i];
+
+        // Handle escape sequences inside strings
+        if (inString && char === '\\' && i + 1 < str.length) {
+            // Skip the next character (it's escaped)
+            i += 2;
+            continue;
+        }
+
+        // Toggle string state on quote characters
+        if (char === '"') {
+            inString = !inString;
+        } else if (!inString) {
+            // Only count braces outside of strings
+            if (char === '{') {
+                depth++;
+            } else if (char === '}') {
+                depth--;
+                if (depth === 0) {
+                    return i + 1;
+                }
+            }
+        }
+
+        i++;
+    }
+
+    return -1;
+}
+
+/**
  * Extract server error details from error messages that contain embedded JSON.
  * Engine errors often include stringified JSON like: "... occurred: {\"type\":\"...\",\"message\":\"...\"}"
  * @param {string} message - Error message that may contain embedded JSON
@@ -39,44 +82,19 @@ function extractServerErrorFromMessage(message) {
     }
 
     // Try to extract JSON substring - attempt from last '{' to end first
-    let jsonSubstring = message.substring(lastBraceIndex);
+    const jsonSubstring = message.substring(lastBraceIndex);
 
-    // Handle escaped quotes that might be present in the error message
-    // Check if the string appears to have escaped JSON (contains \" but parsing would fail)
-    const hasEscapedQuotes = jsonSubstring.includes('\\"');
-    if (hasEscapedQuotes) {
-        // Try to determine if we need to unescape by checking if JSON.parse would fail
-        try {
-            JSON.parse(jsonSubstring);
-            // If it parses successfully, don't unescape
-        } catch {
-            // If parsing fails, try unescaping
-            jsonSubstring = jsonSubstring.replace(/\\"/g, '"');
-        }
+    // Find the matching closing brace, respecting string boundaries and escape sequences
+    const endIndex = findMatchingBraceEnd(jsonSubstring, 0);
+
+    if (endIndex <= 0) {
+        return null;
     }
 
-    // Try to parse and find the first valid JSON object
-    let depth = 0;
-    let endIndex = -1;
-
-    for (let i = 0; i < jsonSubstring.length; i++) {
-        if (jsonSubstring[i] === '{') {
-            depth++;
-        } else if (jsonSubstring[i] === '}') {
-            depth--;
-            if (depth === 0) {
-                endIndex = i + 1;
-                break;
-            }
-        }
-    }
-
-    if (endIndex > 0) {
-        jsonSubstring = jsonSubstring.substring(0, endIndex);
-    }
+    const trimmedJson = jsonSubstring.substring(0, endIndex);
 
     try {
-        const parsedError = JSON.parse(jsonSubstring);
+        const parsedError = JSON.parse(trimmedJson);
         if (parsedError && typeof parsedError === 'object' && parsedError.type && parsedError.message) {
             return parsedError;
         }
