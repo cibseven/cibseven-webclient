@@ -406,7 +406,7 @@ function loadEmbeddedForm(
                             },
                             done: function(err, formHtml) {
                                 if (err) {
-                                    // Do not show error, got to fallback
+                                    // Do not show error, go to fallback
                                     rejectForm(err);
                                 } else {
                                     resolveForm(formHtml);
