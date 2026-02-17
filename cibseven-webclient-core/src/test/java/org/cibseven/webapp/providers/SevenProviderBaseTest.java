@@ -212,7 +212,7 @@ public class SevenProviderBaseTest {
         when(user.getEngine()).thenReturn("http://remote:9090|/custom-path|default");
 
         String result = provider.getEngineRestUrl(user);
-        // Should use the pipe format regardless of "default" in the engine name
-        assertEquals("http://remote:9090/custom-path/engine/default", result);
+        // Should use base engine REST URL for "default" engine (without /engine/default suffix)
+        assertEquals("http://remote:9090/custom-path", result);
     }
 }

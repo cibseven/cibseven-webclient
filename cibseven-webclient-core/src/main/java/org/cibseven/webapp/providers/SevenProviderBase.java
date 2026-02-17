@@ -109,6 +109,12 @@ public abstract class SevenProviderBase {
 				// Build the full URL
 				String baseUrl = url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
 				String restPath = path.startsWith("/") ? path : "/" + path;
+				
+				// Always use base engine REST URL for "default" engine (without /engine/default suffix)
+				if ("default".equals(engineName)) {
+					return baseUrl + restPath;
+				}
+				
 				return baseUrl + restPath + "/engine/" + engineName;
 			}
 		}
