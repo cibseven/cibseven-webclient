@@ -18,9 +18,7 @@ import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { findComponents } from './utils.js'
-import {
-  mergeLocaleMessage as commonFrontendMergeLocaleMessage
-} from '@cib/common-frontend'
+import { mergeLocaleMessage as commonFrontendMergeLocaleMessage } from '@cib/common-frontend'
 
 const languages = ['de', 'en', 'es', 'ru', 'ua']
 
@@ -257,6 +255,7 @@ describe('i18n', () => {
 
       // convert transaltion object to flat list of keys
       let stringLongKeys = extractKeys(translationEn, '')
+      expect(stringLongKeys.length).toBeGreaterThan(0)
 
       const langKeys = languages.map(l => `cib-header.${l}`)
       stringLongKeys = stringLongKeys.filter(keyPath => 
@@ -313,6 +312,7 @@ describe('i18n', () => {
 
       // convert transaltion object to flat list of keys
       const stringLongKeys = extractKeys(translationEn, '')
+      expect(stringLongKeys.length).toBeGreaterThan(0)
       let notDeclaredKeys = []
 
       // get keys from @cib/common-frontend package using commonFrontendMergeLocaleMessage()
@@ -376,6 +376,7 @@ describe('i18n', () => {
 
     // convert transaltion object to flat list of keys
     const ownLongKeys = extractKeys(translationEn, '')
+    expect(ownLongKeys.length).toBeGreaterThan(0)
 
     // get keys from @cib/common-frontend package using commonFrontendMergeLocaleMessage()
     const parentEn = {}
@@ -386,6 +387,7 @@ describe('i18n', () => {
     expect(parentLongKeys.length).toBeGreaterThan(0)
 
     // Check that none of own keys is in common-frontend keys
+    expect(ownLongKeys.length).not.toBe(parentLongKeys.length)
     const redeclaredKeys = ownLongKeys.filter(k => parentLongKeys.includes(k))
     if (redeclaredKeys.length > 0) {
       const message = 'Next translation keys are redeclaring keys from @cib/common-frontend:\n' + redeclaredKeys.map(k => `- ${k}`).join('\n')
