@@ -1,6 +1,6 @@
 #!groovy
 
-@Library('cib-pipeline-library@master') _
+@Library('cib-pipeline-library') _
 
 import de.cib.pipeline.library.Constants
 import de.cib.pipeline.library.kubernetes.BuildPodCreator
