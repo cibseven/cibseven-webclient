@@ -58,21 +58,23 @@
         </p>
       </span>
     </ConfirmDialog>
+    <SuccessAlert top="0" style="z-index: 1031" ref="tenantDeleted">{{ $t('admin.tenants.tenantDeletedMessage', [deletedTenantId]) }}</SuccessAlert>
   </div>
 </template>
 
 <script>
-import { FlowTable, ConfirmDialog, BWaitingBox } from '@cib/common-frontend'
+import { FlowTable, ConfirmDialog, BWaitingBox, SuccessAlert } from '@cib/common-frontend'
 import { mapActions, mapGetters } from 'vuex'
 import CellActionButton from '@/components/common-components/CellActionButton.vue'
 
 export default {
   name: 'TenantsView',
-  components: { FlowTable, BWaitingBox, ConfirmDialog, CellActionButton },
+  components: { FlowTable, BWaitingBox, ConfirmDialog, SuccessAlert, CellActionButton },
   data() {
     return {
       loading: false,
       filter: '',
+      deletedTenantId: null,
       tenantSelected: null
     }
   },
@@ -118,6 +120,8 @@ export default {
     remove: function(tenant) {
       this.deleteTenant(tenant.id).then(() => {
         this.tenantSelected = null
+        this.deletedTenantId = tenant.id
+        this.$refs.tenantDeleted.show(1)
       })
     }
   }

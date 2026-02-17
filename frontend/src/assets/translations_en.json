@@ -544,7 +544,6 @@
 			"firstName": "First name",
 			"lastName": "Last name",
 			"email": "Email",
-			"search": "Search",
 			"add": "Add user",
 			"account": "User Account",
 			"profile": "User Profile",
@@ -623,7 +622,6 @@
 			"id": "Group ID",
 			"name": "Name",
 			"type": "Type",
-			"search": "Search",
 			"add": "Add group",
 			"cancel": "Cancel",
 			"createLabel": "Create new group",
@@ -688,7 +686,6 @@
 				"cancel": "Cancel modifications"
 			},
 			"name": "Resource name",
-			"search": "Search",	
 			"types": {
 				"allow": "ALLOW",
 				"deny": "DENY",

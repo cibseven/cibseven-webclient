@@ -544,7 +544,6 @@
 			"firstName": "Vornamen",
 			"lastName": "Nachname",
 			"email": "E-Mail",
-			"search": "Suche",
 			"add": "Benutzer hinzufügen",
 			"account": "Benutzerkonto",
 			"profile": "Benutzerprofil",
@@ -623,7 +622,6 @@
 			"id": "Gruppe-ID",
 			"name": "Name",
 			"type": "Typ",
-			"search": "Suche",
 			"add": "Gruppe hinzufügen",
 			"cancel": "Abbrechen",
 			"createLabel": "Neue Gruppe erstellen",
@@ -688,7 +686,6 @@
 				"cancel": "Änderungen verwerfen"
 			},
 			"name": "Ressourcenname",
-			"search": "Suche",	
 			"types": {
 				"allow": "ALLOW",
 				"deny": "DENY",

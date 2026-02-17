@@ -544,7 +544,6 @@
 			"firstName": "Nombre",
 			"lastName": "Apellidos",
 			"email": "Email",
-			"search": "Buscar",
 			"add": "Añadir usuario",
 			"account": "Cuenta",
 			"profile": "Perfil",
@@ -623,7 +622,6 @@
 			"id": "ID",
 			"name": "Nombre",
 			"type": "Tipo",
-			"search": "Buscar",
 			"add": "Añadir grupo",
 			"cancel": "Cancelar",
 			"createLabel": "Crear nuevo grupo",
@@ -688,7 +686,6 @@
 				"cancel": "Cancelar modificaciones"
 			},
 			"name": "Nombre del recurso",
-			"search": "Buscar",	
 			"types": {
 				"allow": "ALLOW",
 				"deny": "DENY",
