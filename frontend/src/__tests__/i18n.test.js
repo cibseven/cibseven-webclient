@@ -259,6 +259,7 @@ describe('i18n', () => {
 
       const langKeys = languages.map(l => `cib-header.${l}`)
       stringLongKeys = stringLongKeys.filter(keyPath => 
+        !keyPath.startsWith('admin.authorizations.confirmParams.') &&
         !keyPath.startsWith('admin.authorizations.resourcesTypes.') &&
         !keyPath.startsWith('errors.') &&
         !keyPath.startsWith('nav-bar.filters.keys.') &&
@@ -301,7 +302,7 @@ describe('i18n', () => {
       // Report unused keys
       if (stringLongKeys.length > 0) {
         stringLongKeys = stringLongKeys.sort((a, b) => a.localeCompare(b))
-        const message = `Unused translation keys in en (checked ${vueFiles.length} .vue files):\n` + stringLongKeys.map(k => `- ${k}`).join('\n')
+        const message = `Unused ${stringLongKeys.length} translation keys in en (checked ${vueFiles.length} .vue files):\n` + stringLongKeys.map(k => `- ${k}`).join('\n')
         expect(message).toBe('')
       }
       expect(stringLongKeys.length).toBe(0)

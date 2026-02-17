@@ -28,7 +28,7 @@
     <template v-slot:cell(id)="table">
       <CopyableActionButton
         :display-value="table.item.id"
-        :title="$t('decision.id') + ':\n' + table.item.id"
+        :title="$t('decision.showInstance') + '\n' + $t('decision.id') + ': ' + table.item.id"
         @copy="copyValueToClipboard"
         @click="goToInstance(table.item)"
       />
