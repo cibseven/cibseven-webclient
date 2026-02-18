@@ -37,8 +37,7 @@
 			},
 			"open-incidents": {
 				"title": "Offene Vorfälle",
-				"tooltip": "Alle derzeit offenen Vorfälle überprüfen",
-				"none": "Keine Vorfälle!"
+				"tooltip": "Alle derzeit offenen Vorfälle überprüfen"
 			},
 			"open-human-tasks": {
 				"title": "Offene Aufgaben",
@@ -557,14 +556,9 @@
 			"groups": "Gruppen",
 			"editMessage": "Benutzer {0} bearbeiten",
 			"update": "Profil aktualisieren",
-			"userPassword": "{0} Passwort",			
-			"currentUserPassword": "Bisheriges Passwort",
-			"newPassword": "Neues Passwort",
-			"newPasswordRepeat": "Neues Passwort (wiederholen)",
 			"deleteUser": "Benutzer löschen",
 			"editUser": "Benutzer bearbeiten",
 			"viewUser": "Benutzer anzeigen",
-			"changePassword": "Passwort ändern",
 			"updateProfileMessage": "Benutzerprofil erfolgreich aktualisiert",
 			"updatePasswordMessage": "Passwort erfolgreich aktualisiert",
 			"unassignGroupMessage": "Benutzer {0} aus Gruppe entfernt",
@@ -794,18 +788,6 @@
 	"cib-timepicker": {
 		"noDate": "Keine Zeit ausgewählt",
 		"reset" : "Auswahl löschen"
-	},
-	"task-popper": {
-		"title": "Datei(en) ablegen"
-	},
-	"register": {
-		"title": "Registrieren",
-		"register": "Registrieren",
-		"login": "Doch ein Konto?",
-		"loginLink": "Anmelden",
-		"username": "@:login.username",
-		"password": "@:login.password",		
-		"email": "@:login.email"	
 	},
 	"snapshot": {
 		"titleAbove": "Hier klicken und danach [Strg] + [V] drücken",
@@ -1165,24 +1147,10 @@
 			]
 		},
 		"recover": {
-			"title": "Passwort-Wiederherstellung",
-			"email": "E-Mail",
-			"emailDescription": "E-Mail, die dem Konto zugeordnet ist, das Sie wiederherstellen möchten",
-			"cancel": "Abbrechen",
 			"sendEmail": "Wiederherstellungs-E-Mail senden",
 			"id": "@:admin.users.id",
 			"changePassword": "Passwort ändern",
 			"emailSent": "Die E-Mail mit dem Link zur Wiederherstellung Ihres Passworts wurde versandt."
-		},
-		"emailInfo": {
-			"title": "Eine E-Mail wurde zugestellt",
-			"header": "Zum Zurücksetzen des Passworts bitte den Link in der E-Mail bestätigen.",
-			"body": "Diese Seite schließt sich automatisch, sobald die E-Mail geöffnet wird, und leitet zum Passwort-Reset weiter.",
-			"footerTitle": "Keine E-Mail erhalten?",
-			"footerBody": "Spam-Ordner überprüfen oder erneut auf „E-Mail senden“ klicken.",
-			"sendMail": "E-Mail erneut senden",
-			"support": "Falls die E-Mail weiterhin nicht ankommt, den Support kontaktieren.",
-			"supportLink": "Support kontaktieren"		
 		}
 	},
 
@@ -1193,12 +1161,8 @@
 		"property": "Eigenschaftsname",
 		"value": "Wert",
 		"add": "Kriterium hinzufügen",
-		"remove": "Kriterium entfernen",
-		"type": "Übereinstimmungstyp",
 		"apply": "Anwenden",
 		"cancel": "Abbrechen",
-		"any": "Irgendein",
-		"all": "Alle",
 		"criteriaKeys": {    	
 			"processVariables": "Prozessvariable"
 		},

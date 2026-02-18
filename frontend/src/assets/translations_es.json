@@ -37,8 +37,7 @@
 			},
 			"open-incidents": {
 				"title": "Incidentes abiertos",
-				"tooltip": "Revisa todos los incidentes abiertos actualmente",
-				"none": "¡Sin incidentes!"
+				"tooltip": "Revisa todos los incidentes abiertos actualmente"
 			},
 			"open-human-tasks": {
 				"title": "Tareas humanas abiertas",
@@ -557,14 +556,9 @@
 			"groups": "Grupos",
 			"editMessage": "Editar usuario ({0})",
 			"update": "Actualizar perfil",
-			"userPassword": "Contraseña de {0}",
-			"currentUserPassword": "Contraseña actual",
-			"newPassword": "Nueva contraseña",
-			"newPasswordRepeat": "Nueva contraseña (repetir)",
 			"deleteUser": "Eliminar usuario",
 			"editUser": "Editar usuario",
 			"viewUser": "Mostrar usuario",
-			"changePassword": "Cambiar contraseña",
 			"updateProfileMessage": "Perfil de usuario actualizado",
 			"updatePasswordMessage": "Contraseña actualizada",
 			"unassignGroupMessage": "El usuario {0} ha sido eliminado del grupo",
@@ -794,18 +788,6 @@
 	"cib-timepicker": {
 		"noDate": "Ningún horario",
 		"reset": "Borrar la selección"
-	},
-	"task-popper": {
-		"title": "Subiendo archivos"
-	},
-	"register": {
-		"title": "Registro",
-		"register": "Regístrate",
-		"login": "¿Ya tienes una cuenta?",
-		"loginLink": "Iniciar sesión",
-		"username": "@:login.username",
-		"password": "@:login.password",
-		"email": "@:login.email"
 	},
 	"snapshot": {
 		"titleAbove": "Haz clic aquí y después pulsa [Ctrl] + [V]",
@@ -1153,10 +1135,6 @@
 	},
 	"password": {
 		"recover": {
-			"title": "Recuperación de Contraseña",
-			"email": "Email",
-			"emailDescription": "Email asociado a la cuenta que quiere recuperar",
-			"cancel": "Cancelar",
 			"sendEmail": "Enviar email de recuperacion",
 			"id": "@:admin.users.id",
 			"changePassword": "Cambiar contraseña",
@@ -1173,16 +1151,6 @@
 				"al menos una cifra",
 				"al menos un carácter especial"
 			]
-		},
-		"emailInfo": {
-			"title": "Se ha enviado un correo electrónico",
-			"header": "Para restablecer la contraseña, por favor confirma el enlace en el correo electrónico.",
-			"body": "Esta página se cerrará automáticamente tan pronto como se abra el correo y redirigirá al restablecimiento de contraseña.",
-			"footerTitle": "¿No has recibido el correo?",
-			"footerBody": "Revisa tu carpeta de spam o haz clic en 'Reenviar email'.",
-			"sendMail": "Reenviar email",
-			"support": "Si el correo sigue sin llegar, por favor contacta al soporte.",
-			"supportLink": "Contactar al soporte"		
 		}
 	},
 	"advanced-search": {
@@ -1192,12 +1160,8 @@
 		"property": "Nombre de la propiedad",
 		"value": "Valor",
 		"add": "Añadir criterio",
-		"remove": "Eliminar criterio",
-		"type": "Tipo de coincidencia",
 		"apply": "Aplicar",
 		"cancel": "Cancelar",
-		"any": "Cualquiera",
-		"all": "Todos",
 		"criteriaKeys": {	    	
 			"processVariables": "Variable de proceso"
 		},

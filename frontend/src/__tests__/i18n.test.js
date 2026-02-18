@@ -250,10 +250,10 @@ describe('i18n', () => {
   })
 
   describe('usage', () => {
-    it.skip('all en keys should be used', () => {
+    it('all en keys should be used', () => {
       const translationEn = getTranslation('en')
 
-      // convert transaltion object to flat list of keys
+      // convert translation object to flat list of keys
       let stringLongKeys = extractKeys(translationEn, '')
       expect(stringLongKeys.length).toBeGreaterThan(0)
 
@@ -261,8 +261,19 @@ describe('i18n', () => {
       stringLongKeys = stringLongKeys.filter(keyPath => 
         !keyPath.startsWith('admin.authorizations.confirmParams.') &&
         !keyPath.startsWith('admin.authorizations.resourcesTypes.') &&
+        !keyPath.startsWith('admin.authorizations.types.') &&
+        !keyPath.startsWith('advanced-search.criteriaKeys.') &&
         !keyPath.startsWith('errors.') &&
         !keyPath.startsWith('nav-bar.filters.keys.') &&
+        !keyPath.startsWith('sorting.') &&
+        !keyPath.startsWith('password.policy.items.') &&
+
+        // TODO: remove this block when localizations will be moved to EE
+        !keyPath.startsWith('decision.details.') &&
+        !keyPath.startsWith('process-instance.') &&
+        !keyPath.startsWith('process.') &&
+        !keyPath.startsWith('task.') &&
+
         !langKeys.includes(keyPath)
       )
 
@@ -297,6 +308,10 @@ describe('i18n', () => {
             content.includes(pattern(keyPath))
           )
         })
+
+        if (stringLongKeys.length === 0) {
+          break
+        }
       }
 
       // Report unused keys
@@ -311,7 +326,7 @@ describe('i18n', () => {
     it('all used keys should be declared in en', () => {
       const translationEn = getTranslation('en')
 
-      // convert transaltion object to flat list of keys
+      // convert translation object to flat list of keys
       const stringLongKeys = extractKeys(translationEn, '')
       expect(stringLongKeys.length).toBeGreaterThan(0)
       let notDeclaredKeys = []
@@ -375,7 +390,7 @@ describe('i18n', () => {
   it('all own keys should not redeclare keys from @cib/common-frontend', () => {
     const translationEn = getTranslation('en')
 
-    // convert transaltion object to flat list of keys
+    // convert translation object to flat list of keys
     const ownLongKeys = extractKeys(translationEn, '')
     expect(ownLongKeys.length).toBeGreaterThan(0)
 

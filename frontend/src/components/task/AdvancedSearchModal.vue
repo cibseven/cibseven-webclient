@@ -40,7 +40,7 @@
           <b-form-input :placeholder="$t('advanced-search.value')" v-model="selectedCriteriaValue.value"></b-form-input>
         </div>
       </div>
-      <b-button @click="addCriteria" :title="$t('advanced-search.add')" variant="primary" class="mb-3">
+      <b-button @click="addCriteria" type="button" :title="$t('advanced-search.add')" variant="primary" class="mb-3">
         <span class="d-inline-block align-middle mdi mdi-16px mdi-plus" style="line-height: 0"></span> {{ $t('advanced-search.add') }}
       </b-button>
 
@@ -128,7 +128,10 @@ export default {
       if (this.$store.state.advancedSearch.criterias.length > 0) {
         this.matchAllCriteria = this.$store.state.advancedSearch.matchAllCriteria
         this.criterias = this.$store.state.advancedSearch.criterias.map(criteria => {
-          return { ...criteria }
+          return {
+            ...criteria,
+            label: 'advanced-search.operators.' + criteria.operator
+          }
         })
       }
       this.$refs.advancedSearchModal.show()
@@ -141,6 +144,7 @@ export default {
         key: this.selectedCriteriaKey,
         name: this.selectedCriteriaValue.name,
         operator: this.selectedCriteriaValue.operator,
+        label: 'advanced-search.operators.' + this.selectedCriteriaValue.operator,
         value: value
       })
       this.selectedCriteriaValue = { name: null, operator: 'eq', value: '' }

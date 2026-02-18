@@ -37,8 +37,7 @@
 			},
 			"open-incidents": {
 				"title": "Open Incidents",
-				"tooltip": "Review all currently open incidents",
-				"none": "No incidents!"
+				"tooltip": "Review all currently open incidents"
 			},
 			"open-human-tasks": {
 				"title": "Open Human Tasks",
@@ -557,14 +556,9 @@
 			"groups": "Groups",
 			"editMessage": "Edit user ({0})",
 			"update": "Update Profile",
-			"userPassword": "{0}'s Password",
-			"currentUserPassword": "Current Password",
-			"newPassword": "New Password",
-			"newPasswordRepeat": "New Password (repeat)",
 			"editUser": "Edit user",
 			"viewUser": "Display user",
 			"deleteUser": "Delete user",
-			"changePassword": "Change Password",
 			"updateProfileMessage": "User profile successfully updated",
 			"updatePasswordMessage": "Password successfully updated",
 			"unassignGroupMessage": "User {0} removed from group",
@@ -794,18 +788,6 @@
 	"cib-timepicker": {
 		"noDate": "No time selected",
 		"reset": "Clear selection"
-	},
-	"task-popper": {
-		"title": "Uploading file(s)"
-	},
-	"register": {
-		"title": "Register",
-		"register": "Register",
-		"login": "Do you already have an account?",
-		"loginLink": "Login",
-		"username": "@:login.username",
-		"password": "@:login.password",
-		"email": "@:login.email"
 	},
 	"snapshot": {
 		"titleAbove": "Click here and then press [Ctrl] + [V]",
@@ -1154,10 +1136,6 @@
 	},
 	"password": {
 		"recover": {
-			"title": "Password Recovery",
-			"email": "Email",
-			"emailDescription": "Email associated with the account you want to recover",
-			"cancel": "Cancel",
 			"sendEmail": "Send recovery email",
 			"id": "@:admin.users.id",
 			"changePassword": "Change password",
@@ -1174,16 +1152,6 @@
 				"at least one digit",
 				"at least one special character"
 			]
-		},
-		"emailInfo": {
-			"title": "An email has been sent",
-			"header": "To reset your password, please confirm the link in the email.",
-			"body": "This page will automatically close as soon as the email is opened and will redirect to the password reset.",
-			"footerTitle": "Didn't receive the email?",
-			"footerBody": "Check your spam folder or click on 'Resend email' again.",
-			"sendMail": "Resend email",
-			"support": "If the email still does not arrive, please contact support.",
-			"supportLink": "Contact support"		
 		}
 	},
 	"advanced-search": {
@@ -1193,12 +1161,8 @@
 		"property": "Property name",
 		"value": "Value",
 		"add": "Add criteria",
-		"remove": "Remove criteria",
-		"type": "Match type",
 		"apply": "Apply",
 		"cancel": "Cancel",
-		"any": "Any",
-		"all": "All",
 		"criteriaKeys": {    	
 			"processVariables": "Process variable"
 		},
