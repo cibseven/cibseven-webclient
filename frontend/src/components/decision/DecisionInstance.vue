@@ -28,7 +28,7 @@
     </router-link>
 
     <ViewerFrame :resizerMixin="this">
-      <DmnViewer ref="diagram" class="h-100" />
+      <DmnViewer ref="diagram" class="h-100" @view-changed="onViewChanged" />
     </ViewerFrame>
 
     <div class="position-absolute w-100" style="left: 0; z-index: 1" :style="'height: '+ tabsAreaHeight +'px; top: ' + (bottomContentPosition - tabsAreaHeight + 1) + 'px; ' + toggleTransition">
@@ -67,6 +67,7 @@ import { permissionsMixin } from '@/permissions.js'
 import { DecisionService } from '@/services.js'
 import DmnViewer from '@/components/decision/DmnViewer.vue'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
+import decisionInstanceMixin from '@/mixins/decisionInstanceMixin.js'
 import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
 import ViewerFrame from '@/components/common-components/ViewerFrame.vue'
 import { FlowTable, GenericTabs } from '@cib/common-frontend'
@@ -75,7 +76,7 @@ import { mapActions } from 'vuex'
 export default {
   name: 'DecisionInstance',
   components: { DmnViewer, FlowTable, GenericTabs, ScrollableTabsContainer, ViewerFrame },
-  mixins: [permissionsMixin, resizerMixin],
+  mixins: [permissionsMixin, resizerMixin, decisionInstanceMixin],
   props: {
     versionIndex: String,
     instanceId: String,
@@ -119,6 +120,12 @@ export default {
       .catch(error => {
         console.error("Error loading diagram:", error)
       })
+    }
+    ,
+    onViewChanged() {
+      // When the viewer switches views or updates, clear and reapply overlays
+      if (this.clearModifications) this.clearModifications()
+      if (this.applyInstanceValues) this.applyInstanceValues()
     }
   }
 }
