@@ -28,7 +28,11 @@
 		"rememberMe": "Remember me",
 		"email": "Email",
 		"login": "Login",
-		"forgotten": "Password forgotten?"
+		"forgotten": "Password forgotten?",
+		"usernameRequired": "Username is required",
+		"passwordRequired": "Password is required",
+		"showPassword": "Show password",
+		"hidePassword": "Hide password"
 	},
 	"processes-dashboard": {
 		"headerActive": "Operations Dashboard",
