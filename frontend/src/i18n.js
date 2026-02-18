@@ -85,8 +85,10 @@ const defaultTranslationSources = [
 ]
 
 const loadTranslations = async function(config, lang, sources = defaultTranslationSources) {
-  // Add translations from @cib/common-frontend library
-  commonFrontendMergeLocaleMessage(i18n, lang)
+  if (sources.includes(translationSources.commonComponents)) {
+    // Add translations from @cib/common-frontend library
+    commonFrontendMergeLocaleMessage(i18n, lang)
+  }
 
   if (sources.includes(translationSources.sevenComponents)) {
     // Add translations from src/assets/translations_*.json
