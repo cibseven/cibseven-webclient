@@ -18,7 +18,7 @@
 -->
 <template>
   <div>
-    <b-button variant="light" class="rounded-0 text-nowrap position-absolute" @click="$emit('update:leftOpen', true)"
+    <b-button variant="light" class="rounded-0 text-nowrap position-absolute" :aria-label="$t('seven.filters')" :aria-expanded="String(leftOpen)" @click="$emit('update:leftOpen', true)"
       style="right: 100%; top: 0; transform: rotate(-90deg); transform-origin: right top; height: 40px"
       :style="favoriteFilters.length > 0 ? 'width: ' + sizes.arrow + 'px' : ''">
       <span v-if="favoriteFilters.length <= 0">{{ $t('nav-bar.filtersTitle') }}</span>
