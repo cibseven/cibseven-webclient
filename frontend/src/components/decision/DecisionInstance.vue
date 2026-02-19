@@ -67,16 +67,15 @@ import { permissionsMixin } from '@/permissions.js'
 import { DecisionService } from '@/services.js'
 import DmnViewer from '@/components/decision/DmnViewer.vue'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
-import decisionInstanceMixin from '@/mixins/decisionInstanceMixin.js'
 import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
 import ViewerFrame from '@/components/common-components/ViewerFrame.vue'
 import { FlowTable, GenericTabs } from '@cib/common-frontend'
-import { mapActions } from 'vuex'
+import { mapActions, mapGetters } from 'vuex'
 
 export default {
   name: 'DecisionInstance',
   components: { DmnViewer, FlowTable, GenericTabs, ScrollableTabsContainer, ViewerFrame },
-  mixins: [permissionsMixin, resizerMixin, decisionInstanceMixin],
+  mixins: [permissionsMixin, resizerMixin],
   props: {
     versionIndex: String,
     instanceId: String,
@@ -90,6 +89,20 @@ export default {
         { id: 'outputs', text: 'decision.outputs' }
       ],
       activeTab: 'inputs'
+    }
+  },
+  computed: {
+    ...mapGetters('diagram', ['isDiagramReady'])
+  },
+  watch: {
+    isDiagramReady(isReady) {
+      if (isReady && this.instance) this.applyInstanceValues()
+    },
+    instance: {
+      handler() {
+        if (this.isDiagramReady) this.applyInstanceValues()
+      },
+      deep: true
     }
   },
   mounted() {
@@ -123,9 +136,110 @@ export default {
     }
     ,
     onViewChanged() {
-      // When the viewer switches views or updates, clear and reapply overlays
-      if (this.clearModifications) this.clearModifications()
-      if (this.applyInstanceValues) this.applyInstanceValues()
+      this.applyInstanceValues()
+    },
+
+    applyInstanceValues() {
+      const container = this.$refs.diagram?.$refs?.diagram
+      if (!container) return
+      const table = container.querySelector('.tjs-table') || container.querySelector('table')
+      if (!table) return
+      this.applyInputHeaders(table)
+      this.applyOutputRows(table)
+    },
+
+    applyInputHeaders(table) {
+      table.querySelectorAll('th.input-cell').forEach(th => {
+        const colId = th.getAttribute('data-col-id')
+        const input = this.instance?.inputs?.find(i => i.clauseId === colId)
+        if (!colId || !input) return
+        const clauseDiv = th.querySelector('div.clause')
+        if (!clauseDiv || clauseDiv.getAttribute('data-original-text')) return
+        const original = clauseDiv.textContent.trim()
+        clauseDiv.setAttribute('data-original-text', original)
+        clauseDiv.textContent = ''
+        const span = document.createElement('span')
+        span.textContent = original + ' '
+        clauseDiv.appendChild(span)
+        const bold = document.createElement('strong')
+        bold.className = 'fw-bold'
+        bold.textContent = '= ' + String(input.value)
+        clauseDiv.appendChild(bold)
+      })
+    },
+
+    applyOutputRows(table) {
+      const headerRow = table.querySelector('thead tr')
+      if (!headerRow) return
+      const headerCells = Array.from(headerRow.children)
+
+      const tbody = table.querySelector('tbody')
+      if (!tbody) return
+
+      // Build input column map: colIndex → expected input value
+      const inputColumns = []
+      table.querySelectorAll('th.input-cell').forEach(th => {
+        const colId = th.getAttribute('data-col-id')
+        const input = this.instance?.inputs?.find(i => i.clauseId === colId)
+        if (colId && input) {
+          inputColumns.push({
+            colIndex: headerCells.indexOf(th),
+            value: String(input.value).trim()
+          })
+        }
+      })
+
+      table.querySelectorAll('th.output-cell').forEach(th => {
+        const colId = th.getAttribute('data-col-id')
+        const output = colId
+          ? this.instance?.outputs?.find(o => o.clauseId === colId)
+          : this.instance?.outputs?.[0]
+        if (!output || !output.value) return
+
+        const outputColIndex = headerCells.indexOf(th)
+        const outputValue = String(output.value).trim()
+
+        Array.from(tbody.rows).forEach(row => {
+          const td = row.children[outputColIndex]
+          if (!td) return
+
+          const tdText = td.getAttribute('data-original-text') ?? td.textContent
+          if (this.normalizeCell(tdText) !== outputValue) return
+
+          // DMN string literals ("value") can be compared exactly; expressions (< 250) cannot
+          const disqualified = inputColumns.some(({ colIndex, value }) => {
+            const cell = row.children[colIndex]
+            if (!cell) return false
+            const raw = (cell.getAttribute('data-original-text') ?? cell.textContent).trim()
+            if (!this.isDmnStringLiteral(raw)) return false
+            return this.normalizeCell(raw) !== value
+          })
+
+          if (!disqualified) this.applyRowHighlight(row, td)
+        })
+      })
+    },
+
+    applyRowHighlight(row, td) {
+      row.classList.add('table-info')
+      if (td.getAttribute('data-original-text')) return
+      td.setAttribute('data-original-text', td.textContent.trim())
+      const originalValue = td.getAttribute('data-original-text')
+      td.textContent = originalValue + ' '
+      const span = document.createElement('span')
+      span.className = 'fw-bold'
+      span.textContent = '= ' + String(originalValue)
+      td.appendChild(span)
+    },
+
+    // Strips surrounding DMN double-quotes and trims whitespace for exact comparison
+    normalizeCell(text) {
+      return text.trim().replace(/^"|"$/g, '').trim()
+    },
+
+    // Returns true if the cell text is a DMN string literal (wrapped in double quotes)
+    isDmnStringLiteral(text) {
+      return /^".*"$/.test(text.trim())
     }
   }
 }

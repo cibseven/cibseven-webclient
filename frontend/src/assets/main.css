@@ -72,45 +72,5 @@ thead.resizable tr, thead.resizable + tbody tr {
   text-decoration: none !important;
 }
 
-.dmn-instance-badge {
-  display: inline-block;
-  font-size: 0.85rem;
-  font-weight: 400;
-  color: #333;
-  border-radius: 3px;
-  padding: 2px 6px;
-  margin-left: 4px;
-  vertical-align: middle;
-  white-space: nowrap;
-}
-
-.dmn-instance-badge .dmn-instance-bold {
-  font-weight: 700;
-  color: var(--dmn-instance-badge-bold-color, #22242A);
-  margin-left: 2px;
-}
-
-.dmn-instance-bold {
-  font-weight: 700;
-  color: #22242A;
-}
-
-.dmn-instance-row-matched,
-.dmn-instance-row-matched > td {
-  background-color: var(--dmn-instance-row-match-bg, #e0f2fb) !important;
-  transition: background-color 120ms ease-in-out;
-}
-
-/* Default row background class for non-matching rows */
-.dmn-instance-row-default,
-.dmn-instance-row-default > td {
-  background-color: var(--dmn-instance-row-default-bg, #ffffff) !important;
-}
-
-:root {
-  --dmn-instance-row-match-bg: #e0f2fb;
-  --dmn-instance-row-default-bg: #ffffff;
-  --dmn-instance-badge-bold-color: #22242A;
-}
 
 
