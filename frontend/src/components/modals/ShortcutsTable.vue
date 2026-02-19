@@ -19,7 +19,6 @@
 <template>
   <FlowTable v-if="items && items.length > 0" striped :resizable="false" thead-class="sticky-header" :items="items"
     primary-key="buttons"
-    prefix=""
     sort-by=""
     :fields="[
       { label: 'infoAndHelp.shortcuts.columnShortcut', key: 'buttons', class: 'col-4 justify-content-center', tdClass: 'py-1', sortable: false },
@@ -39,6 +38,15 @@
 
 <script>
 import { FlowTable } from '@cib/common-frontend'
+
+// Used description keys:
+// - 'infoAndHelp.shortcuts.shortcuts.startProcessView'
+// - 'infoAndHelp.shortcuts.shortcuts.tasksView'
+// - 'infoAndHelp.shortcuts.shortcuts.processesView'
+// - 'infoAndHelp.shortcuts.shortcuts.startProcess'
+// - 'infoAndHelp.shortcuts.shortcuts.focusFilters'
+// - 'infoAndHelp.shortcuts.shortcuts.focusTasks'
+// - 'infoAndHelp.shortcuts.shortcuts.focusTask'
 
 export default {
   name: 'ShortcutsTable',

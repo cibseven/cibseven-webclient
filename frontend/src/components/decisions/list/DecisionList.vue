@@ -48,7 +48,7 @@
         </div>
         <div class="container overflow-auto h-100 rounded g-0">
           <div class="m-3 mb-0">
-            <FlowTable :items="decisionsFiltered" thead-class="sticky-header" striped native-layout primary-key="id" prefix="decision." :fields="fields" @click="goToDecision($event)">
+            <FlowTable :items="decisionsFiltered" thead-class="sticky-header" striped native-layout primary-key="id" :fields="fields" @click="goToDecision($event)">
               <template v-slot:cell(actions)="table">
                 <CellActionButton @click="goToDecision(table.item)" :title="$t('decision.showManagement')" icon="mdi-account-tie-outline"></CellActionButton>
               </template>
@@ -98,9 +98,9 @@ export default {
     },
     fields: function() {
       return [
-        { label: 'name', key: 'name'},
-        { label: 'tenantId', key: 'tenantId'},
-        { label: 'actions', key: 'actions', sortable: false, tdClass: 'py-0 d-flex justify-content-center', thClass: 'justify-content-center' }
+        { label: 'decision.name', key: 'name'},
+        { label: 'decision.tenantId', key: 'tenantId'},
+        { label: 'decision.actions', key: 'actions', sortable: false, tdClass: 'py-0 d-flex justify-content-center', thClass: 'justify-content-center' }
       ]
     }
   },

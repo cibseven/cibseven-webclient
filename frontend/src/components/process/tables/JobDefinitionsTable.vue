@@ -22,13 +22,13 @@
       <p class="text-center p-4"><BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}</p>
     </div>
     <FlowTable v-else-if="jobDefinitions.length > 0" striped thead-class="sticky-header"
-      :items="jobDefinitions" primary-key="id" prefix="process-instance.jobDefinitions." sort-by="suspended" :fields="[
-      { label: 'state', key: 'suspended', class: 'col-2', tdClass: 'py-1' },
-      { label: 'activity', key: 'activityId', class: 'col-2', tdClass: 'py-1' },
-      { label: 'type', key: 'jobType', class: 'col-2', tdClass: 'py-1' },
-      { label: 'configuration', key: 'jobConfiguration', class: 'col-2', tdClass: 'py-1' },
-      { label: 'overridingJobPriority', key: 'overridingJobPriority', class: 'col-2', tdClass: 'py-1' },
-      { label: 'actions', key: 'actions', class: 'col-2', sortable: false, tdClass: 'py-0' }
+      :items="jobDefinitions" primary-key="id" sort-by="suspended" :fields="[
+      { label: 'process-instance.jobDefinitions.state', key: 'suspended', class: 'col-2', tdClass: 'py-1' },
+      { label: 'process-instance.jobDefinitions.activity', key: 'activityId', class: 'col-2', tdClass: 'py-1' },
+      { label: 'process-instance.jobDefinitions.type', key: 'jobType', class: 'col-2', tdClass: 'py-1' },
+      { label: 'process-instance.jobDefinitions.configuration', key: 'jobConfiguration', class: 'col-2', tdClass: 'py-1' },
+      { label: 'process-instance.jobDefinitions.overridingJobPriority', key: 'overridingJobPriority', class: 'col-2', tdClass: 'py-1' },
+      { label: 'process-instance.jobDefinitions.actions', key: 'actions', class: 'col-2', sortable: false, tdClass: 'py-0' }
       ]">
       <template v-slot:cell(suspended)="table">
         <div :title="getStateLabel(table.item)" class="text-truncate">

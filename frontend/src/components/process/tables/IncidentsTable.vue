@@ -51,7 +51,6 @@
       resizable
       thead-class="sticky-header"
       primary-key="id"
-      prefix=""
       native-layout
       :column-definitions="columnDefinitions"
       :columns="visibleColumns"

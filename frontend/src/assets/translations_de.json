@@ -2,12 +2,6 @@
 	"commons": {
 		"edit": "Bearbeiten",
 		"save": "Speichern",
-		"copyValue": "Wert kopieren",
-		"noMoreResults": "Keine weiteren Ergebnisse",
-		"loadMore": {
-			"title": "Mehr laden",
-			"tooltip": "Klicken Sie, um die nächsten {chunkSize} Einträge zu laden"
-		},
 		"actualisation": {
 			"progress": "Daten werden aktualisiert...",
 			"lastUpdate": "Letztes Update: {date}",
@@ -17,8 +11,7 @@
 		"notAvailable": {
 			"label": "N/A",
 			"tooltip": "Nicht verfügbar"
-		},
-		"remove": "Entfernen"
+		}
 	},
 	"login": {
 		"productName": "@:cib-header.productName",
@@ -28,6 +21,14 @@
 		"rememberMe": "Angemeldet bleiben",
 		"email": "Email",
 		"login": "Anmelden",
+		"2fa": "Zweistufige Überprüfung",
+		"emailSent": "An folgende E-Mail-Adresse wurde eine Nachricht verschickt: {0}! Befolgen Sie bitte die Anweisungen. Sie haben keine E-Mail erhalten? Bitte überprüfen Sie Ihren Spam-Ordner.",
+		"needOtp": "Bitte bestätigen Sie Ihre Anfrage über die <b>App</b>.",
+		"otp": "Bestätigungscode",
+		"register": "Noch kein Konto?",
+		"registerLink": "Jetzt registrieren",
+		"reset2fa": "Vertrautes Gerät zurücksetzen",
+		"resetPassword": "Passwort zurücksetzen",
 		"forgotten": "Passwort zurücksetzen?",
 		"usernameRequired": "Benutzername ist erforderlich",
 		"passwordRequired": "Passwort ist erforderlich",
@@ -44,8 +45,7 @@
 			},
 			"open-incidents": {
 				"title": "Offene Vorfälle",
-				"tooltip": "Alle derzeit offenen Vorfälle überprüfen",
-				"none": "Keine Vorfälle!"
+				"tooltip": "Alle derzeit offenen Vorfälle überprüfen"
 			},
 			"open-human-tasks": {
 				"title": "Offene Aufgaben",
@@ -225,7 +225,6 @@
 		"processInstanceId": "Prozessinstanz Id",
 		"businessKey": "Fachlicher Schlüssel",
 		"info": "Prozessdetails",
-		"variablesInfo": "Prozessvariablen",
 		"active": "Aktiv",
 		"history": "Historie",
 		"download": "Herunterladen",
@@ -443,10 +442,6 @@
 		"zoomOut": "Herauszoomen",
 		"resetZoom": "Zoom zurücksetzen",
 		"legend": {
-			"title": "Legende",
-			"completedTask": "Abgeschlossene Aufgabe",
-			"currentTask": "Aktuelle Aufgabe",
-			"selectedTask": "@:task.selectedTask",
 			"runningInstances": "Laufende Aktivitätsinstanzen",
 			"openIncidents": "Offene Vorfälle",
 			"closedIncidents": "Geschlossene Vorfälle",
@@ -464,7 +459,6 @@
 		"info": "Aufgabedetails",
 		"reminder": "Wiedervorlagedatum",
 		"priority": "Priorität",
-		"variablesInfo": "Aufgabenvariablen",
 		"taskId": "Aufgaben-ID",
 		"assign": "Jemandem zuweisen",
 		"assignToMe": "Mir zuweisen",
@@ -505,8 +499,6 @@
 		"userAssigned": "Der Benutzer {0} wurde erfolgreich zugewiesen"
 	},
 	"batches": {
-		"title": "Stapel",
-		"tooltip": "Stapeloperationen",
 		"inProgressBatches": "Laufende Stapel",
 		"historicBatches": "Abgeschlossene Stapel",
 		"runtimeDetails": "Details zum laufenden Stapel",
@@ -559,7 +551,6 @@
 			"firstName": "Vornamen",
 			"lastName": "Nachname",
 			"email": "E-Mail",
-			"search": "Suche",
 			"add": "Benutzer hinzufügen",
 			"account": "Benutzerkonto",
 			"profile": "Benutzerprofil",
@@ -573,14 +564,9 @@
 			"groups": "Gruppen",
 			"editMessage": "Benutzer {0} bearbeiten",
 			"update": "Profil aktualisieren",
-			"userPassword": "{0} Passwort",			
-			"currentUserPassword": "Bisheriges Passwort",
-			"newPassword": "Neues Passwort",
-			"newPasswordRepeat": "Neues Passwort (wiederholen)",
 			"deleteUser": "Benutzer löschen",
 			"editUser": "Benutzer bearbeiten",
 			"viewUser": "Benutzer anzeigen",
-			"changePassword": "Passwort ändern",
 			"updateProfileMessage": "Benutzerprofil erfolgreich aktualisiert",
 			"updatePasswordMessage": "Passwort erfolgreich aktualisiert",
 			"unassignGroupMessage": "Benutzer {0} aus Gruppe entfernt",
@@ -638,7 +624,6 @@
 			"id": "Gruppe-ID",
 			"name": "Name",
 			"type": "Typ",
-			"search": "Suche",
 			"add": "Gruppe hinzufügen",
 			"cancel": "Abbrechen",
 			"createLabel": "Neue Gruppe erstellen",
@@ -703,7 +688,6 @@
 				"cancel": "Änderungen verwerfen"
 			},
 			"name": "Ressourcenname",
-			"search": "Suche",	
 			"types": {
 				"allow": "ALLOW",
 				"deny": "DENY",
@@ -761,7 +745,6 @@
 			"execution-metrics": {
 				"title": "Ausführungsmetriken",
 				"metricsHelp": "Erfasste Anzahl von Prozessinstanzen und Entscheidungsinstanzen, die von der Engine verarbeitet wurden, sowie Task-Benutzern, die einer Benutzeraufgabe zugewiesen wurden.",
-				"startDateContract": "Vertragsbeginn",
 				"process-instances": "Prozessinstanzen",
 				"decision-instances": "Entscheidungsinstanzen",
 				"task-users": "Aufgabenbenutzer",
@@ -771,30 +754,8 @@
 				"fromTo": "{from} bis {to}"
 			}
 		}
-	},
-	"account-form": {
-		"title": "Zugangsdaten ändern",
-		"username": "@:login.username",
-		"password": "@:login.password",		
-		"email": "@:login.email",
-		"update": "Speichern",
-		"delete": "Zugang löschen",
-		"deleteMessage": "Soll das Konto (inklusive aller Dateien) wirklich gelöscht werden? Diese Aktion kann nicht rückgängig gemacht werden!"		
-	},
-	"security-bar": {
-		"strength1": "Unsicher",
-		"strength2": "Schwach",
-		"strength3": "Akzeptabel",
-		"strength4": "Stark",
-		"strength5": "Perfekt",
-		"prefix": "Sicherheit:"
-	},		
-	"error": {
-		"title": "Fehler",
-		"ok": "@:confirm.ok"
-	},
+	},	
 	"confirm": {
-		"title": "Bitte bestätigen",
 		"ok": "Ok",
 		"cancel": "Abbrechen",
 		"close": "Schließen",
@@ -810,7 +771,7 @@
 		"title": "Bitte teile uns dein Problem oder Verbesserungsvorschläge mit",
 		"ok": "Absenden",
 		"cancel": "@:confirm.cancel",
-		"email": "@:account-form.email"
+		"email": "@:login.email"
 	},
 	"cib-header": {
 		"productName": "CIB seven",
@@ -818,9 +779,7 @@
 		"languagesMenu": "Sprache",
 		"engine": "Engine",
 		"engineMenu": "Engine-Auswahl",
-		"help": "Info & Hilfe",
 		"helpMenu": "Hilfe",
-		"user": "Konto",
 		"logout": "Abmelden",
 		"userMenu": "Benutzerkonto",
 		"en": "English",
@@ -828,10 +787,6 @@
 		"es": "Español",
 		"ua": "Українська",
 		"ru": "Русский"
-	},
-	"cib-datepicker": {
-		"months" : "Januar_Februar_März_April_Mai_Juni_Juli_August_September_Oktober_November_Dezember",
-		"weeks": "Mo_Di_Mi_Do_Fr_Sa_So"
 	},
 	"cib-datepicker2": {
 		"noDate": "Kein Datum",
@@ -842,48 +797,22 @@
 		"noDate": "Keine Zeit ausgewählt",
 		"reset" : "Auswahl löschen"
 	},
-	"file-area": {
-		"titleAbove": "Datei(en) ablegen",
-		"titleBelow": "oder aussuchen"
-	},
-	"task-popper": {
-		"title": "Datei(en) ablegen"
-	},
-	"pdf-encryption": {
-		"title": "Sicher - von Anfang an!",
-		"text": "Verschlüsselung erfolgt direkt beim Hochladen deiner Datei.<br>Einfach Passwort eingeben und loslegen:"
-	},		
-	"register": {
-		"title": "Registrieren",
-		"register": "Registrieren",
-		"login": "Doch ein Konto?",
-		"loginLink": "Anmelden",
-		"username": "@:account-form.username",
-		"password": "@:account-form.password",		
-		"email": "@:account-form.email"	
-	},
 	"snapshot": {
-		"title": "Deinen Screenshot hochladen",
 		"titleAbove": "Hier klicken und danach [Strg] + [V] drücken",
 		"titleBelow": "(mit deinem Screenshot in der Zwischenablage)"
 	},	
 	"seven": {
 		"feedback": "Rückmeldung",
-		"about": "Über",
-		"version": "Version",
 		"selectTask": "Eine Aufgabe aus der Aufgabenliste zum Ansehen auswählen",
 		"taskCompleted": "Aufgabe erledigt",
 		"allTasks": "Aufgaben",
 		"titleInfo": "Information",
-		"filters": "Filter",
-		"types": "Typen",
-		"chat": "Chat"
+		"types": "Typen"
 	},
 	"nav-bar": {
 		"no-tasks-pending": "Sie haben keine offenen Aufgaben",
 		"no-tasks": "Keine Aufgaben gefunden",
 		"tasks-count": "Offene Aufgaben: {count}",
-		"processes": "@:process.title",
 		"filters": {
 			"addFilter": "Filter hinzufügen",
 			"updateFilter": "Filter aktualisieren",
@@ -896,7 +825,6 @@
 			"addCriteria": "Kriterium hinzufügen",
 			"filterExists": "Dieser Filter existiert bereits",
 			"selectedCriteria": "Ausgewählte Kriterien",
-			"deleteCriteria": "Kriterium Löschen",
 			"no-filters": "Keine Filter gefunden",
 			"edit": "@:commons.edit",
 			"delete": "@:confirm.delete",
@@ -1001,25 +929,11 @@
 				"txtlteq": "<= kleiner als oder gleich"
 			}
 		},
-		"additionalFiltersApplied": "angewandte Filter: {n}",
 		"dueDate": "@:task.details.due",
 		"reminder": "Wiedervorlagedatum",
-		"reminderDate": {
-			"all": "Bis heute",
-			"today": "Morgen",
-			"next3D": "Ab übermorgen"
-		},
-		"taskDeadline": {
-			"all": "Alle",
-			"today": "Bis heute",
-			"next3D": "Ab morgen"
-		},
 		"filtersTitle": "Filter",
-		"tasksTitle": "Aufgaben",
 		"refresh": "Aufgabenliste aktualisieren",
-		"sortingTitle": "Sortierung",
-		"filtersAdditionalsTitle": "Weitere Filter",
-		"changeSize": "Breite der Aufgabenliste vergrößern"
+		"filtersAdditionalsTitle": "Weitere Filter"
 	},
 	"ienotify": { 
 		"remember": "Diese Meldung nicht mehr anzeigen",
@@ -1127,8 +1041,6 @@
 		"refreshAndFilter": "Aktualisieren und filtern",
 		"search": "Suchen...",
 		"searchByTaskName": "Suche in Aufgaben...",
-		"searchByDeploymentName": "Suche nach Deployment...",
-		"searchByBusinessKey": "Suche nach Fachlicher Schlüssel...",
 		"searchByFilterName": "Suche nach Filternamen...",
 		"wildcardHelp": "Platzhaltersuche wird unterstützt.",
 		"wildcardExample": "Verwenden Sie % für beliebig viele Zeichen (z.B. %Prozess%)."
@@ -1153,15 +1065,11 @@
 	"deployment": {
 		"title": "Deployments",
 		"resourcesCaption": "Enthaltene Modelle",
-		"version": "Version",
-		"downloadVersionBpmn": "@:process.downloadBpmn",
 		"noDeployments": "Keine Deployments verfügbar",
 		"deploymentTime": "Bereitgestellt am",
 		"source": "Quelle",
 		"confirmDeleteDeployment": "Möchten Sie die ausgewählten Deployments wirklich löschen?",
 		"deleteRunningInstances": "Laufende Prozessinstanzen stoppen",
-		"goToManagement": "Zum Prozessmanagement wechseln ",
-		"loadingProcesses": "Wird geladen...",
 		"noDeploymentSelected": "Ein Deployment zum Ansehen auswählen",
 		"selectAll": "Alle auswählen",
 		"deleteDeployments": "Deployments löschen",
@@ -1171,13 +1079,6 @@
 		"deploymentsDeleted": "{0} von {1} Deployments wurden erfolgreich gelöscht",
 		"tenant": "Mandant",
 		"errorLoading": "Ressource für die ausgewählte Bereitstellung konnte nicht geladen werden"
-	},
-	"cib-table2": {
-		"filter": "Filter"
-	},
-	"table": {
-		"selectColumns": "Spalten anzeigen",
-		"toggleColumn": "{column} Spalte umschalten"
 	},
 	"navigation": {
 		"home": "Startseite",
@@ -1254,34 +1155,13 @@
 			]
 		},
 		"recover": {
-			"title": "Passwort-Wiederherstellung",
-			"email": "E-Mail",
-			"emailDescription": "E-Mail, die dem Konto zugeordnet ist, das Sie wiederherstellen möchten",
-			"cancel": "Abbrechen",
 			"sendEmail": "Wiederherstellungs-E-Mail senden",
 			"id": "@:admin.users.id",
 			"changePassword": "Passwort ändern",
 			"emailSent": "Die E-Mail mit dem Link zur Wiederherstellung Ihres Passworts wurde versandt."
-		},
-		"emailInfo": {
-			"title": "Eine E-Mail wurde zugestellt",
-			"header": "Zum Zurücksetzen des Passworts bitte den Link in der E-Mail bestätigen.",
-			"body": "Diese Seite schließt sich automatisch, sobald die E-Mail geöffnet wird, und leitet zum Passwort-Reset weiter.",
-			"footerTitle": "Keine E-Mail erhalten?",
-			"footerBody": "Spam-Ordner überprüfen oder erneut auf „E-Mail senden“ klicken.",
-			"sendMail": "E-Mail erneut senden",
-			"support": "Falls die E-Mail weiterhin nicht ankommt, den Support kontaktieren.",
-			"supportLink": "Support kontaktieren"		
 		}
 	},
-	"status-progress": {
-		"state": "Status",
-		"stateOptions": {
-			"DONE": "Erledigt",
-			"PENDING": "Ausstehend"
-		},
-		"noState": "Für diese Aufgabe gibt es keinen Status"
-	},
+
 	"advanced-search": {
 		"title": "Erweiterte Suche",
 		"criteriaKey": "Kriteriumsschlüssel",
@@ -1289,13 +1169,8 @@
 		"property": "Eigenschaftsname",
 		"value": "Wert",
 		"add": "Kriterium hinzufügen",
-		"remove": "Kriterium entfernen",
-		"type": "Übereinstimmungstyp",
 		"apply": "Anwenden",
 		"cancel": "Abbrechen",
-		"cleanAll": "Alle Kriterien löschen",
-		"any": "Irgendein",
-		"all": "Alle",
 		"criteriaKeys": {    	
 			"processVariables": "Prozessvariable"
 		},
@@ -1326,14 +1201,10 @@
 		"emptyProcessList": "Ihre Entscheidungsliste ist derzeit leer.",
 		"emptyProcessListFiltered": "Es gibt keinen Entscheidung für den angewandten Filter.",
 		"decision": "Entscheidung",
-		"deleteProcessDefinition": "Prozessdefinition löschen",
 		"refreshVersions": "Historische Versionen aktualisieren",
 		"loadVersions": "Alle Versionen der Historie laden",
 		"days": "Tage",
 		"instances": "Instanzen",
-		"activateProcess": "Prozessdefinition aktivieren",
-		"downloadBpmn": "BPMN file herunterladen",
-		"showDeployment": "Deployment ansehen",
 		"showInstance": "Instanz anzeigen",
 		"evaluationTime": "Auswertungszeit",
 		"callingProcess": "Aufrufender Prozess/Vorgang",
@@ -1386,6 +1257,11 @@
 		"noGroups": "ohne Gruppe",
 		"groupName": "Gruppe",
 		"assignmentsByGroupInfo": "Eine Aufgabe kann mehreren Gruppen zugewiesen sein."
+	},
+	"deployed-form": {
+		"accept": "Akzeptieren",
+		"fullscreen": "Vollbild",
+		"showProcess": "Prozess anzeigen"
 	},
 	"setup": {
 		"title": "Ersteinrichtung",
