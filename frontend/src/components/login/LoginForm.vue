@@ -50,15 +50,20 @@
       </div>
     </CIBForm>
 
-    <b-modal ref="emailDialog" :title="$t('login.forgotten')" @shown="$refs.email.focus()">
-      <CIBForm ref="form" @submitted="onForgotten">
-        <b-form-group :invalid-feedback="$t('errors.invalid')">
-          <label for="email" class="mb-2">{{ $t('login.email') }}</label>
-          <input id="email" ref="email" :type="forgottenType" :placeholder="$t('login.email')" class="form-control" required autocomplete="email">
+    <b-modal ref="emailDialog" :title="$t('login.forgotten')" @shown="onEmailDialogShown">
+      <CIBForm ref="form" @submitted="onForgotten" @fail="onEmailFail">
+        <b-form-group label-for="email" :label="$t('login.email')">
+          <input id="email" ref="email" :type="forgottenType" :placeholder="$t('login.email')"
+            class="form-control" :class="{ 'is-invalid': emailError }"
+            required autocomplete="email"
+            :aria-required="true"
+            :aria-invalid="emailError ? 'true' : 'false'"
+            :aria-describedby="emailError ? 'email-error' : null">
+          <div v-if="emailError" id="email-error" class="invalid-feedback d-block" role="alert">{{ emailError }}</div>
         </b-form-group>
       </CIBForm>
       <template v-slot:modal-footer>
-        <b-button @click="$refs.form.onSubmit()" variant="primary">{{ $t('confirm.ok') }}</b-button>
+        <b-button type="button" @click="$refs.form.onSubmit()" variant="primary">{{ $t('confirm.ok') }}</b-button>
       </template>
     </b-modal>
 
@@ -92,6 +97,7 @@ export default {
       rememberMe: true,
       show: false,
       email: null,
+      emailError: null,
       usernameError: null,
       passwordError: null,
       generalError: null
@@ -142,7 +148,16 @@ export default {
       })
     }, // https://vuejs.org/v2/guide/components-custom-events.html
 
+    onEmailDialogShown: function() {
+      this.emailError = null
+      this.$refs.email.focus()
+    },
+    onEmailFail: function() {
+      this.emailError = this.$t('errors.invalid')
+      this.$nextTick(() => this.$refs.email.focus())
+    },
     onForgotten: function() {
+      this.emailError = null
       this.email = this.$refs.email.value
       if (this.credentials2) this.credentials2.email = this.email
       AuthService.requestPasswordReset({ email: this.email }).then(function() {
