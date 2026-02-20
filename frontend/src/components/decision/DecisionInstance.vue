@@ -133,8 +133,8 @@ export default {
       .catch(error => {
         console.error("Error loading diagram:", error)
       })
-    }
-    ,
+    },
+
     onViewChanged() {
       this.applyInstanceValues()
     },
@@ -215,13 +215,12 @@ export default {
             return this.normalizeCell(raw) !== value
           })
 
-          if (!disqualified) this.applyRowHighlight(row, td)
+          if (!disqualified) this.applyHighlightText(row, td)
         })
       })
     },
 
-    applyRowHighlight(row, td) {
-      row.classList.add('table-info')
+    applyHighlightText(row, td) {
       if (td.getAttribute('data-original-text')) return
       td.setAttribute('data-original-text', td.textContent.trim())
       const originalValue = td.getAttribute('data-original-text')
