@@ -625,6 +625,7 @@
 			"name": "Name",
 			"type": "Type",
 			"add": "Add group",
+			"addCandidateGroups": "Add candidate groups",
 			"cancel": "Cancel",
 			"createLabel": "Create new group",
 			"groupCreatedMessage": "Group {0} created",

@@ -625,6 +625,7 @@
 			"name": "Имя",
 			"type": "Тип",
 			"add": "Добавить группу",
+			"addCandidateGroups": "Добавить кандидатные группы",
 			"cancel": "Отмена",
 			"createLabel": "Создать новую группу",
 			"groupCreatedMessage": "Создана группа {0}"	,

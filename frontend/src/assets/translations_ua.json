@@ -625,6 +625,7 @@
 				"name": "Назва",
 				"type": "Тип",
 				"add": "Додати групу",
+				"addCandidateGroups": "Додати кандидатські групи",
 				"cancel": "Скасувати",
 				"createLabel": "Створити нову групу",
 				"groupCreatedMessage": "Група {0} створена",
