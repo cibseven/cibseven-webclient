@@ -134,11 +134,9 @@ export default {
         console.error("Error loading diagram:", error)
       })
     },
-
     onViewChanged() {
       this.applyInstanceValues()
     },
-
     applyInstanceValues() {
       const container = this.$refs.diagram?.$refs?.diagram
       if (!container) return
@@ -147,7 +145,6 @@ export default {
       this.applyInputHeaders(table)
       this.applyOutputRows(table)
     },
-
     applyInputHeaders(table) {
       table.querySelectorAll('th.input-cell').forEach(th => {
         const colId = th.getAttribute('data-col-id')
@@ -167,7 +164,6 @@ export default {
         clauseDiv.appendChild(bold)
       })
     },
-
     applyOutputRows(table) {
       const headerRow = table.querySelector('thead tr')
       if (!headerRow) return
@@ -188,7 +184,6 @@ export default {
           })
         }
       })
-
       table.querySelectorAll('th.output-cell').forEach(th => {
         const colId = th.getAttribute('data-col-id')
         const output = colId
@@ -219,7 +214,6 @@ export default {
         })
       })
     },
-
     applyHighlightText(row, td) {
       if (td.getAttribute('data-original-text')) return
       td.setAttribute('data-original-text', td.textContent.trim())
@@ -230,12 +224,10 @@ export default {
       span.textContent = '= ' + String(originalValue)
       td.appendChild(span)
     },
-
     // Strips surrounding DMN double-quotes and trims whitespace for exact comparison
     normalizeCell(text) {
       return text.trim().replace(/^"|"$/g, '').trim()
     },
-
     // Returns true if the cell text is a DMN string literal (wrapped in double quotes)
     isDmnStringLiteral(text) {
       return /^".*"$/.test(text.trim())

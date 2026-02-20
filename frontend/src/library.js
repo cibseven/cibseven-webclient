@@ -60,7 +60,6 @@ export { default as tabUrlMixin } from '@/components/process/mixins/tabUrlMixin.
 export { default as usersMixin } from '@/mixins/usersMixin.js'
 export { default as copyToClipboardMixin } from '@/mixins/copyToClipboardMixin.js'
 export { default as assigneeMixin } from '@/mixins/assigneeMixin.js'
-export { default as decisionInstanceMixin } from '@/mixins/decisionInstanceMixin.js'
 
 // components
 export { default as CibSeven } from '@/components/CibSeven.vue'
