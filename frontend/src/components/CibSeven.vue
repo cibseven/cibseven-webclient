@@ -125,7 +125,9 @@
       </template>
     </CIBHeaderFlow>
 
-    <router-view class="flex-grow-1 overflow-hidden" ref="down"></router-view>
+    <main class="flex-grow-1 overflow-hidden d-flex flex-column">
+      <router-view class="flex-grow-1 overflow-hidden" ref="down"></router-view>
+    </main>
 
     <b-modal ref="ieNotification" :title="$t('seven.titleInfo')">
       <div class="container-fluid">
