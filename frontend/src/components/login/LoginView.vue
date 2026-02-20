@@ -17,7 +17,7 @@
 
 -->
 <template>
-  <div class="container-fluid">
+  <main class="container-fluid">
     <div class="row h-100 align-items-center">
       <div class="bg-light h-100 d-none d-md-block col-md-4 p-5">
         <img class="h-100 w-100" :src="$root.loginImgPath" alt="">
@@ -34,7 +34,7 @@
       </div>
     </div>
     <footer class="fixed-bottom text-center text-muted">CIB seven &copy; CIB, {{ new Date().getFullYear() }}</footer>
-  </div>
+  </main>
 </template>
 
 <script>
