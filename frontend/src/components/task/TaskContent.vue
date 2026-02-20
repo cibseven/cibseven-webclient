@@ -63,8 +63,8 @@
               <FilterableSelect v-if="task.assignee == null" v-model:loading="loadingUsers" @enter="findUsers($event)"
                 @clean-elements="resetUsers($event)" class="w-auto" v-model="assignee"
                 :elements="$store.state.user.searchUsers" :placeholder="$t('task.assign')" noInvalidValues />
-              <b-button @click="openTaskAssignationModal" class="ms-2" variant="light" size="sm" >
-                {{ $t('admin.groups.add') }}
+              <b-button v-if="applicationPermissions($root.config.permissions.cockpit, 'cockpit')" @click="openTaskAssignationModal" class="ms-2" variant="light" size="sm" >
+                {{ $t('admin.groups.addCandidateGroups') }}
               </b-button>
             </div>
           </div>
@@ -113,11 +113,12 @@ import FilterableSelect from '@/components/task/filter/FilterableSelect.vue'
 import { ConfirmDialog } from '@cib/common-frontend'
 import assigneeMixin from '@/mixins/assigneeMixin.js'
 import TaskAssignationModal from '@/components/process/modals/TaskAssignationModal.vue'
+import { permissionsMixin } from '@/permissions'
 
 export default {
   name: 'TaskContent',
   components: { RenderTemplate, FilterableSelect, ConfirmDialog, TaskAssignationModal },
-  mixins: [usersMixin, assigneeMixin],
+  mixins: [usersMixin, assigneeMixin, permissionsMixin],
   inject: ['isMobile'],
   props: { task: Object },
   emits: ['complete-task', 'update-assignee'],
