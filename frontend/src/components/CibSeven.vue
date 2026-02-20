@@ -342,7 +342,7 @@ export default {
         if (item) {
           // exceptional case with 'Processes' menu item
           if (this.$route.name === 'process') {
-            const hasInstanceIdParam = 'instanceId' in this.$route.params
+            const hasInstanceIdParam = this.$route.params?.instanceId?.length > 0
             if (hasInstanceIdParam) {
               title = this.$t('start.cockpit.process-instance.title')
             }
