@@ -1038,7 +1038,7 @@
 		"unknown": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut."
 	},
 	"searches": {
-		"filter": "Filtern",
+		"filter": "Filtern...",
 		"refreshAndFilter": "Aktualisieren und filtern",
 		"search": "Suchen...",
 		"searchByTaskName": "Suche in Aufgaben...",
