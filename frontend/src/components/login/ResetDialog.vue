@@ -18,21 +18,27 @@
 -->
 <!-- eslint-disable vue/no-mutating-props -->
 <template>
-  <b-modal ref="resetDialog" v-if="credentials2" no-close-on-backdrop :title="$t('login.2fa')" @shown="$refs.otp2.focus()">
-    <div class="mb-3">{{ $t('login.needOtp') }}</div>
-    <b-form-group label-cols="4" content-cols="8" :label="$t('login.otp')" :invalid-feedback="$t('errors.invalid')">
-      <input ref="otp2" type="number" max="999999" v-model="credentials2.otp" :placeholder="$t('login.otp')" :aria-label="$t('login.otp')" class="form-control">
-    </b-form-group>
-    <div class="form-row justify-content-end pr-1">
-      <button :disabled="!credentials2.otp" class="btn btn-primary" @click="onForgotten2">{{ $t('login.resetPassword') }}</button>
-    </div>
-    <hr>
-    <b-form-group label-cols="4" content-cols="8" :label="$t('login.username')" :invalid-feedback="$t('errors.invalid')">
-      <input v-model="credentials2.username" :placeholder="$t('login.username')" :aria-label="$t('login.username')" class="form-control">
-    </b-form-group>
-    <SecureInput v-model="credentials2.password" :autocomplete="'current-password'" required></SecureInput>
+  <b-modal ref="resetDialog" v-if="credentials2" no-close-on-backdrop :title="$t('login.2fa')" aria-describedby="reset-dialog-description" @shown="$refs.otp2.focus()">
+    <div id="reset-dialog-description" class="mb-3">{{ $t('login.needOtp') }}</div>
+    <fieldset>
+      <legend class="visually-hidden">{{ $t('login.2fa') }}</legend>
+      <b-form-group label-cols="4" content-cols="8" label-for="otp-input" :label="$t('login.otp')" :invalid-feedback="$t('errors.invalid')">
+        <input id="otp-input" ref="otp2" type="number" inputmode="numeric" max="999999" v-model="credentials2.otp" :placeholder="$t('login.otp')" autocomplete="one-time-code" aria-required="true" class="form-control">
+      </b-form-group>
+      <div class="form-row justify-content-end pr-1">
+        <button type="button" :disabled="!credentials2.otp" class="btn btn-primary" @click="onForgotten2">{{ $t('login.resetPassword') }}</button>
+      </div>
+    </fieldset>
+    <hr aria-hidden="true">
+    <fieldset>
+      <legend class="visually-hidden">{{ $t('login.reset2fa') }}</legend>
+      <b-form-group label-cols="4" content-cols="8" label-for="reset-username-input" :label="$t('login.username')" :invalid-feedback="$t('errors.invalid')">
+        <input id="reset-username-input" v-model="credentials2.username" :placeholder="$t('login.username')" autocomplete="username" aria-required="true" class="form-control">
+      </b-form-group>
+      <SecureInput v-model="credentials2.password" :autocomplete="'current-password'" required></SecureInput>
+    </fieldset>
     <template v-slot:modal-footer>
-      <button :disabled="!credentials2.username || !credentials2.password" class="btn btn-primary" @click="onForgotten3">{{ $t('login.reset2fa') }}</button>
+      <button type="button" :disabled="!credentials2.username || !credentials2.password" class="btn btn-primary" @click="onForgotten3">{{ $t('login.reset2fa') }}</button>
     </template>
   </b-modal>
 </template>
