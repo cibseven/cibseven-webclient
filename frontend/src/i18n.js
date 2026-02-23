@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 import { createI18n } from 'vue-i18n'
-import { mergeLocaleMessage as loadTranslationsFromCommonComponents } from '@cib/common-frontend'
+import { mergeLocaleMessage as commonFrontendMergeLocaleMessage } from '@cib/common-frontend'
 import { axios, moment } from './globals.js'
 import { getTheme } from './utils/init'
 import 'moment/dist/locale/de'
@@ -106,8 +106,10 @@ const defaultTranslationSources = [
 ]
 
 const loadTranslations = async function(config, lang, sources = defaultTranslationSources) {
-  // Add translations from @cib/common-frontend library
-  loadTranslationsFromCommonComponents(i18n, lang)
+  if (sources.includes(translationSources.commonComponents)) {
+    // Add translations from @cib/common-frontend library
+    commonFrontendMergeLocaleMessage(i18n, lang)
+  }
 
   if (sources.includes(translationSources.sevenComponents)) {
     // Add translations from src/assets/translations_*.json

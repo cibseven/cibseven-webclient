@@ -20,9 +20,9 @@
   <div class="h-100 d-flex flex-column">
     <CIBHeaderFlow v-if="$root.header === 'true'" ref="headerFlow" class="flex-shrink-0" :languages="$root.config.supportedLanguages.sort()" :user="$root.user" @logout="logout">
       <div class="me-auto d-flex flex-row overflow-hidden" style="min-height: 38px;">
-        <b-navbar-brand class="py-0 flex-shrink-0" :title="$t('navigation.home')" to="/seven/auth/start">
-          <img height="38px" :alt="$t('cib-header.productName')" :src="$root.logoPath" class="d-none d-md-inline"/>
-          <img height="38px" :alt="$t('cib-header.productName')" :src="$root.logoIconPath" class="d-md-none"/>
+        <b-navbar-brand ref="brandHome" class="py-0 flex-shrink-0" :aria-label="$t('cib-header.productName') + ' - ' + $t('navigation.home')" to="/seven/auth/start">
+          <img height="38px" alt="" :src="$root.logoPath" class="d-none d-md-inline"/>
+          <img height="38px" alt="" :src="$root.logoIconPath" class="d-md-none"/>
           <span class="d-none d-md-inline align-middle"></span>
         </b-navbar-brand>
         <div v-if="pageTitle" style="max-height: 38px; min-width: 0;" class="d-flex align-items-center overflow-hidden flex-shrink-1">
@@ -32,8 +32,8 @@
         </div>
       </div>
 
-      <b-button v-if="$root.user && startableProcesses && $route.name === 'tasklist'" class="d-none d-sm-block py-0 me-3" variant="light" :title="$t('start.startProcess.title')" @click="openStartProcess()">
-        <span class="mdi mdi-18px mdi-rocket"><span class="d-none d-lg-inline ms-2">{{ $t('start.startProcess.title') }}</span></span>
+      <b-button v-if="$root.user && startableProcesses && $route.name === 'tasklist'" class="d-none d-sm-block py-0 me-3" variant="light" :title="$t('start.startProcess.title')" :aria-label="$t('start.startProcess.title')" aria-haspopup="dialog" @click="openStartProcess()">
+        <span class="mdi mdi-18px mdi-rocket" aria-hidden="true"><span class="d-none d-lg-inline ms-2">{{ $t('start.startProcess.title') }}</span></span>
       </b-button>
 
       <!-- Desktop: Show menus as icons outside collapse -->
@@ -80,14 +80,14 @@
       </div>
 
       <!-- Mobile: Show menus as list items inside CIBHeaderFlow's collapse (via customNavItems slot) -->
-      <template v-if="computedMenuItems.length > 0" #customNavItems>
+      <template v-if="$root.user || ($root.config.layout.showInfoAndHelp && helpMenuItems.length > 0)" #customNavItems>
         <b-nav-item-dropdown v-if="$root.config.layout.showFeedbackButton" class="d-md-none" no-caret :title="$t('seven.feedback')" :label="$t('seven.feedback')">
           <template v-slot:button-content>
             <span class="mdi mdi-24px mdi-message-alert align-middle me-2"></span>{{ $t('seven.feedback') }}
           </template>
           <b-dropdown-item @click="closeMenuAndShow('report')">{{ $t('seven.feedback') }}</b-dropdown-item>
         </b-nav-item-dropdown>
-        <b-nav-item-dropdown class="d-md-none" extra-toggle-classes="py-1" right :title="$t('navigation.menu')" :label="$t('navigation.navigation')">
+        <b-nav-item-dropdown v-if="computedMenuItems.length > 0" class="d-md-none" extra-toggle-classes="py-1" right :title="$t('navigation.menu')" :label="$t('navigation.navigation')">
           <template v-slot:button-content>
             <span class="mdi mdi-24px mdi-menu align-middle me-2"></span>{{ $t('navigation.menu') }}
           </template>
@@ -125,7 +125,9 @@
       </template>
     </CIBHeaderFlow>
 
-    <router-view class="flex-grow-1 overflow-hidden" ref="down"></router-view>
+    <main class="flex-grow-1 overflow-hidden d-flex flex-column">
+      <router-view class="flex-grow-1 overflow-hidden" ref="down"></router-view>
+    </main>
 
     <b-modal ref="ieNotification" :title="$t('seven.titleInfo')">
       <div class="container-fluid">
@@ -405,6 +407,15 @@ export default {
       if (!isNotifiedUser) this.$refs.ieNotification.show() //must notify the user
     }
     this.refreshAppTitle(this.pageTitle)
+    // Focus the brand-home link for screen reader accessibility when user is logged in
+    if (this.$root.user) {
+      this.$nextTick(() => {
+        if (this.$refs.headerFlow && this.$refs.brandHome) {
+          const brandLink = this.$refs.brandHome.$refs.brandLink
+          brandLink?.focus()
+        }
+      })
+    }
   },
   methods: {
     // override this method to add/remove menu items

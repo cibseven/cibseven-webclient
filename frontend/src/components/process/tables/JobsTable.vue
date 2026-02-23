@@ -21,15 +21,15 @@
     <div v-if="loading">
       <p class="text-center p-4"><BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}</p>
     </div>
-    <FlowTable v-else-if="jobs && jobs.length > 0" resizable striped thead-class="sticky-header" :items="jobs" primary-key="id" prefix="process-instance.jobs."
+    <FlowTable v-else-if="jobs && jobs.length > 0" resizable striped thead-class="sticky-header" :items="jobs" primary-key="id"
       sort-by="id" :sort-desc="true" :fields="[
-      { label: 'id', key: 'id', class: 'col-2', tdClass: 'py-1' },
-      { label: 'dueDate', key: 'dueDate', class: 'col-2', tdClass: 'position-relative py-1' },
-      { label: 'createTime', key: 'createTime', class: 'col-2', tdClass: 'py-1' },
-      { label: 'retries', key: 'retries', class: 'col-1', tdClass: 'py-1' },
-      { label: 'activity', key: 'activityId', class: 'col-2', tdClass: 'py-1' },
-      { label: 'failedActivity', key: 'failedActivityId', class: 'col-2', tdClass: 'py-1' },
-      { label: 'actions', key: 'actions', class: 'col-1', sortable: false, tdClass: 'py-0' }]">
+      { label: 'process-instance.jobs.id', key: 'id', class: 'col-2', tdClass: 'py-1' },
+      { label: 'process-instance.jobs.dueDate', key: 'dueDate', class: 'col-2', tdClass: 'position-relative py-1' },
+      { label: 'process-instance.jobs.createTime', key: 'createTime', class: 'col-2', tdClass: 'py-1' },
+      { label: 'process-instance.jobs.retries', key: 'retries', class: 'col-1', tdClass: 'py-1' },
+      { label: 'process-instance.jobs.activity', key: 'activityId', class: 'col-2', tdClass: 'py-1' },
+      { label: 'process-instance.jobs.failedActivity', key: 'failedActivityId', class: 'col-2', tdClass: 'py-1' },
+      { label: 'process-instance.jobs.actions', key: 'actions', class: 'col-1', sortable: false, tdClass: 'py-0' }]">
       <template v-slot:cell(id)="table">
         <span :title="table.item.id" class="text-truncate">{{ table.item.id }}</span>
       </template>

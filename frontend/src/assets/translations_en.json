@@ -2,12 +2,6 @@
 	"commons": {
 		"edit": "Edit",
 		"save": "Save",
-		"copyValue": "Copy value",
-		"noMoreResults": "No more results",
-		"loadMore": {
-			"title": "Load more",
-			"tooltip": "Click to load next {chunkSize} records"
-		},
 		"actualisation": {
 			"progress": "Updating data...",
 			"lastUpdate": "Last update: {date}",
@@ -17,8 +11,7 @@
 		"notAvailable": {
 			"label": "N/A",
 			"tooltip": "Not available"
-		},
-		"remove": "Remove"
+		}
 	},
 	"login": {
 		"productName": "@:cib-header.productName",
@@ -28,7 +21,19 @@
 		"rememberMe": "Remember me",
 		"email": "Email",
 		"login": "Login",
-		"forgotten": "Password forgotten?"
+		"2fa": "Two-step verification",
+		"emailSent": "A message has been sent to the following email address: {0}! Please follow the instructions. Didn't receive an email? Please check your spam folder.",
+		"needOtp": "Please confirm your request via the <b>app</b>.",
+		"otp": "Verification code",
+		"register": "Don't have an account yet?",
+		"registerLink": "Register now",
+		"reset2fa": "Reset trusted device",
+		"resetPassword": "Reset password",
+		"forgotten": "Password forgotten?",
+		"usernameRequired": "Username is required",
+		"passwordRequired": "Password is required",
+		"showPassword": "Show password",
+		"hidePassword": "Hide password"
 	},
 	"processes-dashboard": {
 		"headerActive": "Operations Dashboard",
@@ -40,8 +45,7 @@
 			},
 			"open-incidents": {
 				"title": "Open Incidents",
-				"tooltip": "Review all currently open incidents",
-				"none": "No incidents!"
+				"tooltip": "Review all currently open incidents"
 			},
 			"open-human-tasks": {
 				"title": "Open Human Tasks",
@@ -221,7 +225,6 @@
 		"processInstanceId": "Process Instance ID",
 		"businessKey": "Business Key",
 		"info": "Process details",
-		"variablesInfo": "Process variables",
 		"active": "Active",
 		"history": "History",
 		"download": "Download",
@@ -377,6 +380,8 @@
 		"assignModal": {
 			"manageUsersGroups": "Manage users/groups",
 			"manageAssignee": "Manage assigned user",
+			"manageGroups": "Manage groups",
+			"manageUsers": "Manage users",
 			"groupId": "Group ID",
 			"userId": "@:admin.users.id",
 			"groups": "Groups",
@@ -437,10 +442,6 @@
 		"zoomOut": "Zoom out",
 		"resetZoom": "Reset zoom",
 		"legend": {
-			"title": "Guide",
-			"completedTask": "Completed task",
-			"currentTask": "Current task",
-			"selectedTask": "@:task.selectedTask",
 			"runningInstances": "Running activity instances",
 			"openIncidents": "Open incidents",
 			"closedIncidents": "Closed incidents",
@@ -458,7 +459,6 @@
 		"info": "Task details",
 		"reminder": "Reminder date",
 		"priority": "Priority",
-		"variablesInfo": "Task variables",
 		"taskId": "Task ID",
 		"assign": "Assign to someone",
 		"assignToMe": "Assign to me",
@@ -499,8 +499,6 @@
 		"userAssigned": "The user {0} was successfully assigned"
 	},
 	"batches": {
-		"title": "Batches",
-		"tooltip": "Batch operations",
 		"inProgressBatches": "In progress batches",
 		"historicBatches": "Ended batches",
 		"runtimeDetails": "In progress batch details",
@@ -553,7 +551,6 @@
 			"firstName": "First name",
 			"lastName": "Last name",
 			"email": "Email",
-			"search": "Search",
 			"add": "Add user",
 			"account": "User Account",
 			"profile": "User Profile",
@@ -567,14 +564,9 @@
 			"groups": "Groups",
 			"editMessage": "Edit user ({0})",
 			"update": "Update Profile",
-			"userPassword": "{0}'s Password",
-			"currentUserPassword": "Current Password",
-			"newPassword": "New Password",
-			"newPasswordRepeat": "New Password (repeat)",
 			"editUser": "Edit user",
 			"viewUser": "Display user",
 			"deleteUser": "Delete user",
-			"changePassword": "Change Password",
 			"updateProfileMessage": "User profile successfully updated",
 			"updatePasswordMessage": "Password successfully updated",
 			"unassignGroupMessage": "User {0} removed from group",
@@ -632,8 +624,8 @@
 			"id": "Group ID",
 			"name": "Name",
 			"type": "Type",
-			"search": "Search",
 			"add": "Add group",
+			"addCandidateGroups": "Add candidate groups",
 			"cancel": "Cancel",
 			"createLabel": "Create new group",
 			"groupCreatedMessage": "Group {0} created",
@@ -697,7 +689,6 @@
 				"cancel": "Cancel modifications"
 			},
 			"name": "Resource name",
-			"search": "Search",	
 			"types": {
 				"allow": "ALLOW",
 				"deny": "DENY",
@@ -755,7 +746,6 @@
 			"execution-metrics": {
 				"title": "Execution Metrics",
 				"metricsHelp": "Recorded number of Process Instances and Decision Instances processed by the engine and Task Users that were assigned to a user task.",
-				"startDateContract": "Contract start date",
 				"process-instances": "Process instances",
 				"decision-instances": "Decision instances",
 				"task-users": "Task users",
@@ -766,29 +756,7 @@
 			}
 		}
 	},
-	"account-form": {
-		"title": "Manage account",
-		"username": "@:login.username",
-		"password": "@:login.password",
-		"email": "@:login.email",
-		"update": "Save",
-		"delete": "Delete account",
-		"deleteMessage": "Do you really want to delete your account, including all documents? This action cannot be undone!"
-	},
-	"security-bar": {
-		"strength1": "Not secure",
-		"strength2": "Weak",
-		"strength3": "Acceptable",
-		"strength4": "Strong",
-		"strength5": "Perfect",
-		"prefix": "Security:"
-	},
-	"error": {
-		"title": "Error",
-		"ok": "@:confirm.ok"
-	},
 	"confirm": {
-		"title": "Please confirm",
 		"ok": "Ok",
 		"cancel": "Cancel",
 		"close": "Close",
@@ -804,7 +772,7 @@
 		"title": "Please let us know your problem or suggestions for improvement",
 		"ok": "Send",
 		"cancel": "@:confirm.cancel",
-		"email": "@:account-form.email"
+		"email": "@:login.email"
 	},
 	"cib-header": {
 		"productName": "CIB seven",
@@ -812,20 +780,14 @@
 		"languagesMenu": "Language",
 		"engine": "Engine",
 		"engineMenu": "Engine selection",
-		"help": "Info & Help",
 		"helpMenu": "Help",
 		"logout": "Logout",
-		"user": "Account",
 		"userMenu": "User account",
 		"en": "English",
 		"de": "Deutsch",
 		"es": "Español",
 		"ua": "Українська",
 		"ru": "Русский"
-	},
-	"cib-datepicker": {
-		"months": "January_February_March_April_May_June_July_August_September_October_November_December",
-		"weeks": "Mo_Tu_We_Th_Fr_Sa_Su"
 	},
 	"cib-datepicker2": {
 		"noDate": "No date",
@@ -836,48 +798,22 @@
 		"noDate": "No time selected",
 		"reset": "Clear selection"
 	},
-	"file-area": {
-		"titleAbove": "Drag your documents",
-		"titleBelow": "or choose"
-	},
-	"task-popper": {
-		"title": "Uploading file(s)"
-	},
-	"pdf-encryption": {
-		"title": "It's safe - from the very beginning!",
-		"text": "Your document is encrypted already while loading.<br>Enter your password to proceed:"
-	},
-	"register": {
-		"title": "Register",
-		"register": "Register",
-		"login": "Do you already have an account?",
-		"loginLink": "Login",
-		"username": "@:account-form.username",
-		"password": "@:account-form.password",
-		"email": "@:account-form.email"
-	},
 	"snapshot": {
-		"title": "Upload your screenshot",
 		"titleAbove": "Click here and then press [Ctrl] + [V]",
 		"titleBelow": "(with your screenshot in clipboard)"
 	},
 	"seven": {
 		"feedback": "Feedback",
-		"about": "About",
-		"version": "Version",
 		"selectTask": "Select a task from the task list to view it",
 		"taskCompleted": "Task completed",
 		"allTasks": "Tasks",
 		"titleInfo": "Information",
-		"filters": "Filters",
-		"types": "Types",
-		"chat": "Chat"
+		"types": "Types"
 	},
 	"nav-bar": {
 		"no-tasks-pending": "You have no tasks pending",
 		"no-tasks": "No tasks found",
 		"tasks-count": "Open tasks: {count}",
-		"processes": "@:process.title",
 		"filters": {
 			"addFilter": "Add Filter",
 			"updateFilter": "Update Filter",
@@ -890,7 +826,6 @@
 			"addCriteria": "Add criteria",
 			"filterExists": "This filter already exists",
 			"selectedCriteria": "Selected criteria",
-			"deleteCriteria": "Delete criteria",
 			"no-filters": "No filters found",
 			"edit": "@:commons.edit",
 			"delete": "@:confirm.delete",
@@ -995,25 +930,11 @@
 				"txtlteq": "<= lower than or equal to"
 			}
 		},
-		"additionalFiltersApplied": "Filters applied: {n}",
 		"dueDate": "@:task.details.due",
 		"reminder": "Reminder date",
-		"reminderDate": {
-			"all": "Until today",
-			"today": "Tomorrow",
-			"next3D": "From the day after tomorrow"
-		},
-		"taskDeadline": {
-			"all": "All",
-			"today": "Until today",
-			"next3D": "From tomorrow onwards"
-		},
 		"filtersTitle": "Filters",
-		"tasksTitle": "Tasks",
 		"refresh": "Refresh task list",
-		"sortingTitle": "Sorting",
-		"filtersAdditionalsTitle": "Additional filters",
-		"changeSize": "Increase task list width"
+		"filtersAdditionalsTitle": "Additional filters"
 	},
 	"ienotify": {
 		"remember": "Do not show this message again",
@@ -1126,8 +1047,6 @@
 		"refreshAndFilter": "Refresh and filter",
 		"search": "Search...",
 		"searchByTaskName": "Search by task name...",
-		"searchByDeploymentName": "Search by deployment...",
-		"searchByBusinessKey": "Search by business key...",
 		"searchByFilterName": "Search by filter name...",
 		"wildcardHelp": "Wildcard search is supported.",
 		"wildcardExample": "Use % to represent any number of characters (e.g. %process%)."
@@ -1152,15 +1071,11 @@
 	"deployment": {
 		"title": "Deployments",
 		"resourcesCaption": "Models contained",
-		"version": "Version",
-		"downloadVersionBpmn": "@:process.downloadBpmn",
 		"noDeployments": "No deployments available",
 		"deploymentTime": "Deployed on",
 		"source": "Source",
 		"confirmDeleteDeployment": "Do you really want to delete the selected deployments?",
 		"deleteRunningInstances": "Stop running process instances",
-		"goToManagement": "Go to process management area",
-		"loadingProcesses": "Loading...",
 		"noDeploymentSelected": "Select a deployment to view it",
 		"selectAll": "Select all",
 		"deleteDeployments": "Delete deployments",
@@ -1170,13 +1085,6 @@
 		"deploymentsDeleted": "{0} out of {1} deployments have been successfully deleted",
 		"tenant": "Tenant",
 		"errorLoading": "Unable to load resource for the selected deployment"
-	},
-	"cib-table2": {
-		"filter": "Filter"
-	},
-	"table": {
-		"selectColumns": "Display columns",
-		"toggleColumn": "Toggle \"{column}\" column"
 	},
 	"navigation": {
 		"home": "Home",
@@ -1241,10 +1149,6 @@
 	},
 	"password": {
 		"recover": {
-			"title": "Password Recovery",
-			"email": "Email",
-			"emailDescription": "Email associated with the account you want to recover",
-			"cancel": "Cancel",
 			"sendEmail": "Send recovery email",
 			"id": "@:admin.users.id",
 			"changePassword": "Change password",
@@ -1261,25 +1165,7 @@
 				"at least one digit",
 				"at least one special character"
 			]
-		},
-		"emailInfo": {
-			"title": "An email has been sent",
-			"header": "To reset your password, please confirm the link in the email.",
-			"body": "This page will automatically close as soon as the email is opened and will redirect to the password reset.",
-			"footerTitle": "Didn't receive the email?",
-			"footerBody": "Check your spam folder or click on 'Resend email' again.",
-			"sendMail": "Resend email",
-			"support": "If the email still does not arrive, please contact support.",
-			"supportLink": "Contact support"		
 		}
-	},
-	"status-progress": {
-		"state": "Status",
-		"stateOptions": {
-			"DONE": "Done",
-			"PENDING": "Pending"
-		},
-		"noState": "There is no status for this task"
 	},
 	"advanced-search": {
 		"title": "Advanced search",
@@ -1288,13 +1174,8 @@
 		"property": "Property name",
 		"value": "Value",
 		"add": "Add criteria",
-		"remove": "Remove criteria",
-		"type": "Match type",
 		"apply": "Apply",
 		"cancel": "Cancel",
-		"cleanAll": "Clear all criteria",
-		"any": "Any",
-		"all": "All",
 		"criteriaKeys": {    	
 			"processVariables": "Process variable"
 		},
@@ -1325,14 +1206,10 @@
 		"emptyProcessList": "Your decision list is currently empty.",
 		"emptyProcessListFiltered": "There is no decision for the applied filter.",
 		"decision": "Decision",
-		"deleteProcessDefinition": "Delete decision definition",
 		"refreshVersions": "Refresh history versions",
 		"loadVersions": "Load all history versions",
 		"days": "days",
 		"instances": "Instances",
-		"activateProcess": "Activate decision definition",
-		"downloadBpmn": "Download DMN file",
-		"showDeployment": "See deployment",
 		"showInstance": "View instance",
 		"evaluationTime": "Evaluation Time",
 		"callingProcess": "Calling Process/Case",
@@ -1385,6 +1262,11 @@
 		"noGroups": "without group",
 		"groupName": "Group",
 		"assignmentsByGroupInfo": "A task may have multiple groups."
+	},
+	"deployed-form": {
+		"accept": "Accept",
+		"fullscreen": "Fullscreen",
+		"showProcess": "View process"
 	},
 	"setup": {
 		"title": "Initial Setup",

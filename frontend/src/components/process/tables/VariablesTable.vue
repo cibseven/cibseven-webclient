@@ -31,13 +31,13 @@
       </div>
     </div>
     <div class="overflow-y-scroll bg-white container-fluid g-0 flex-grow-1">
-      <FlowTable v-if="!loading" striped resizable thead-class="sticky-header" :items="filteredVariables" primary-key="id" prefix="process-instance.variables."
+      <FlowTable v-if="!loading" striped resizable thead-class="sticky-header" :items="filteredVariables" primary-key="id"
         sort-by="name" :fields="[
-        { label: 'name', key: 'name', class: 'col-3', tdClass: 'py-1' },
-        { label: 'type', key: 'type', class: 'col-2', tdClass: 'py-1' },
-        { label: 'value', key: 'value', class: 'col-3', tdClass: 'py-1' },
-        { label: 'scope', key: 'scope', class: 'col-2', tdClass: 'py-1' },
-        { label: 'actions', key: 'actions', class: 'col-2', sortable: false, tdClass: 'py-0' }]">
+        { label: 'process-instance.variables.name', key: 'name', class: 'col-3', tdClass: 'py-1' },
+        { label: 'process-instance.variables.type', key: 'type', class: 'col-2', tdClass: 'py-1' },
+        { label: 'process-instance.variables.value', key: 'value', class: 'col-3', tdClass: 'py-1' },
+        { label: 'process-instance.variables.scope', key: 'scope', class: 'col-2', tdClass: 'py-1' },
+        { label: 'process-instance.variables.actions', key: 'actions', class: 'col-2', sortable: false, tdClass: 'py-0' }]">
 
         <template v-slot:cell(name)="table">
           <div :title="table.item.name" class="text-truncate">{{ table.item.name }}</div>

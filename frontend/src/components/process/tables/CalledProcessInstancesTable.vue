@@ -18,12 +18,12 @@
 -->
 <template>
   <div class="overflow-auto bg-white container-fluid g-0 h-100" @scroll="handleScroll">
-    <FlowTable v-if="matchedCalledList.length > 0" striped thead-class="sticky-header" :items="matchedCalledList" primary-key="id" prefix="process-instance.calledProcesses."
+    <FlowTable v-if="matchedCalledList.length > 0" striped thead-class="sticky-header" :items="matchedCalledList" primary-key="id"
       sort-by="process" :fields="[
-      { label: 'state', key: 'state', class: 'col-1', tdClass: 'py-1 justify-content-center' },
-      { label: 'calledProcessInstance', key: 'calledProcessInstance', class: 'col-4', tdClass: 'py-1' },
-      { label: 'process', key: 'process', class: 'col-4', tdClass: 'py-1' },
-      { label: 'callingActivity', key: 'callingActivity', class: 'col-3', tdClass: 'py-1' }]">
+      { label: 'process-instance.calledProcesses.state', key: 'state', class: 'col-1', tdClass: 'py-1 justify-content-center' },
+      { label: 'process-instance.calledProcesses.calledProcessInstance', key: 'calledProcessInstance', class: 'col-4', tdClass: 'py-1' },
+      { label: 'process-instance.calledProcesses.process', key: 'process', class: 'col-4', tdClass: 'py-1' },
+      { label: 'process-instance.calledProcesses.callingActivity', key: 'callingActivity', class: 'col-3', tdClass: 'py-1' }]">
      <template v-slot:cell(state)="table">
       <span :title="getIconTitle(table.item)" class="mdi mdi-18px" :class="getIconState(table.item)"></span>
     </template>

@@ -26,7 +26,7 @@
         <div class="row justify-content-center">
           <div class="col-12 col-md-8 col-lg-5">
             <h1 class="text-dark text-center">{{ $t('login.productName') }}</h1>
-            <h3 class="text-secondary text-center">{{ $t('login.productSlogan') }}</h3>
+            <h2 class="text-secondary text-center h3">{{ $t('login.productSlogan') }}</h2>
             <LoginForm :credentials="credentials" hide-forgotten
               @success="onSuccess" @forgotten="onForgotten"></LoginForm>
           </div>

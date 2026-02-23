@@ -266,7 +266,7 @@ export default {
     },
     deleteFilter: function() {
       this.$store.dispatch('deleteFilter', { filterId: this.workingFilter.id }).then(() => {
-        this.$emit('filter-alert', { message: 'msgFilterDeleted', filter: this.workingFilter.name })
+        this.$emit('filter-alert', { message: 'nav-bar.filters.msgFilterDeleted', filter: this.workingFilter.name })
         localStorage.removeItem('filter')
 		if (this.$store.state.filter.selected === this.workingFilter && this.$store.state.filter.list[0]) {
 			this.selectFilter(this.$store.state.filter.list[0])

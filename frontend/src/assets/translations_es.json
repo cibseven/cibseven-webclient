@@ -2,12 +2,6 @@
 	"commons": {
 		"edit": "Editar",
 		"save": "Guardar",
-		"copyValue": "Copiar valor",
-		"noMoreResults": "No hay más resultados",
-		"loadMore": {
-			"title": "Cargar más",
-			"tooltip": "Haga clic para cargar los siguientes {chunkSize} registros"
-		},
 		"actualisation": {
 			"progress": "Actualizando datos...",
 			"lastUpdate": "Última actualización: {date}",
@@ -17,8 +11,7 @@
 		"notAvailable": {
 			"label": "N/A",
 			"tooltip": "No disponible"
-		},
-		"remove": "Eliminar"
+		}
 	},
 	"login": {
 		"productName": "@:cib-header.productName",
@@ -28,7 +21,19 @@
 		"rememberMe": "Recuérdame",
 		"email": "Email",
 		"login": "Iniciar sesión",
-		"forgotten": "¿Olvidaste tu contraseña?"
+		"2fa": "Verificación en dos pasos",
+		"emailSent": "¡Se ha enviado un mensaje a la siguiente dirección de correo electrónico: {0}! Por favor, siga las instrucciones. ¿No ha recibido el mensaje? Compruebe su carpeta de spam.",
+		"needOtp": "Por favor, confirme su solicitud a través de la <b>aplicación</b>.",
+		"otp": "Código de verificación",
+		"register": "¿Aún no tienes cuenta?",
+		"registerLink": "Regístrate ahora",
+		"reset2fa": "Restablecer dispositivo de confianza",
+		"resetPassword": "Restablecer contraseña",
+		"forgotten": "¿Olvidaste tu contraseña?",
+		"usernameRequired": "El nombre de usuario es obligatorio",
+		"passwordRequired": "La contraseña es obligatoria",
+		"showPassword": "Mostrar contraseña",
+		"hidePassword": "Ocultar contraseña"
 	},
 	"processes-dashboard": {
 		"headerActive": "Panel de Operaciones",
@@ -40,8 +45,7 @@
 			},
 			"open-incidents": {
 				"title": "Incidentes abiertos",
-				"tooltip": "Revisa todos los incidentes abiertos actualmente",
-				"none": "¡Sin incidentes!"
+				"tooltip": "Revisa todos los incidentes abiertos actualmente"
 			},
 			"open-human-tasks": {
 				"title": "Tareas humanas abiertas",
@@ -221,7 +225,6 @@
 		"processInstanceId": "ID de la instancia del proceso",
 		"businessKey": "Business Key",
 		"info": "Detalles del proceso",
-		"variablesInfo": "Variables del proceso",
 		"active": "Activo",
 		"history": "Historial",
 		"download": "Descargar",
@@ -377,6 +380,8 @@
 		"assignModal": {
 			"manageUsersGroups": "Administrar usuarios/grupos",
 			"manageAssignee": "Administrar usuario asignado",
+			"manageGroups": "Administrar grupos",
+			"manageUsers": "Administrar usuarios",
 			"groupId": "ID de grupo",
 			"userId": "@:admin.users.id",
 			"groups": "Grupos",
@@ -437,10 +442,6 @@
 		"zoomOut": "Alejarse",
 		"resetZoom": "Restablecer zoom",
 		"legend": {
-			"title": "Leyenda",
-			"completedTask": "Tarea finalizada",
-			"currentTask": "Tarea actual",
-			"selectedTask": "@:task.selectedTask",
 			"runningInstances": "Instancias de actividad en ejecución",
 			"openIncidents": "Incidentes abiertos",
 			"closedIncidents": "Incidentes cerrados",
@@ -458,7 +459,6 @@
 		"info": "Detalles de la tarea",
 		"reminder": "Fecha recordatorio",
 		"priority": "Prioridad",
-		"variablesInfo": "Variables de la tarea",
 		"taskId": "Identificador de tarea",
 		"assign": "Asignar a alguien",
 		"assignToMe": "Asignarme",
@@ -499,8 +499,6 @@
 		"userAssigned": "El usuario {0} fue asignado con éxito"
 	},
 	"batches": {
-		"title": "Lotes",
-		"tooltip": "Operaciones por lotes",
 		"inProgressBatches": "Lotes en curso",
 		"historicBatches": "Lotes finalizados",
 		"runtimeDetails": "Detalles del lote en curso",
@@ -553,7 +551,6 @@
 			"firstName": "Nombre",
 			"lastName": "Apellidos",
 			"email": "Email",
-			"search": "Buscar",
 			"add": "Añadir usuario",
 			"account": "Cuenta",
 			"profile": "Perfil",
@@ -567,14 +564,9 @@
 			"groups": "Grupos",
 			"editMessage": "Editar usuario ({0})",
 			"update": "Actualizar perfil",
-			"userPassword": "Contraseña de {0}",
-			"currentUserPassword": "Contraseña actual",
-			"newPassword": "Nueva contraseña",
-			"newPasswordRepeat": "Nueva contraseña (repetir)",
 			"deleteUser": "Eliminar usuario",
 			"editUser": "Editar usuario",
 			"viewUser": "Mostrar usuario",
-			"changePassword": "Cambiar contraseña",
 			"updateProfileMessage": "Perfil de usuario actualizado",
 			"updatePasswordMessage": "Contraseña actualizada",
 			"unassignGroupMessage": "El usuario {0} ha sido eliminado del grupo",
@@ -632,8 +624,8 @@
 			"id": "ID",
 			"name": "Nombre",
 			"type": "Tipo",
-			"search": "Buscar",
 			"add": "Añadir grupo",
+			"addCandidateGroups": "Añadir grupos candidatos",
 			"cancel": "Cancelar",
 			"createLabel": "Crear nuevo grupo",
 			"groupCreatedMessage": "El grupo {0} ha sido creado",
@@ -697,7 +689,6 @@
 				"cancel": "Cancelar modificaciones"
 			},
 			"name": "Nombre del recurso",
-			"search": "Buscar",	
 			"types": {
 				"allow": "ALLOW",
 				"deny": "DENY",
@@ -755,7 +746,6 @@
 			"execution-metrics": {
 				"title": "Métricas de ejecución",
 				"metricsHelp": "Número registrado de instancias de proceso e instancias de decisión procesadas por el motor y usuarios de tareas asignados a una tarea de usuario.",
-				"startDateContract": "Fecha de inicio del contrato",
 				"process-instances": "Instancias de proceso",
 				"decision-instances": "Instancias de decisión",
 				"task-users": "Usuarios de tareas",
@@ -766,29 +756,7 @@
 			}
 		}
 	},
-	"account-form": {
-		"title": "Administrar cuenta",
-		"username": "@:login.username",
-		"password": "@:login.password",
-		"email": "@:login.email",
-		"update": "Actualizar",
-		"delete": "Eliminar cuenta",
-		"deleteMessage": "Estás seguro de querer eliminar tu cuenta, incluyendo todos los documentos? Esta acción no se puede deshacer!"
-	},
-	"security-bar": {
-		"strength1": "Insegura",
-		"strength2": "Débil",
-		"strength3": "Aceptable",
-		"strength4": "Fuerte",
-		"strength5": "Perfecta",
-		"prefix": "Seguridad:"
-	},
-	"error": {
-		"title": "Error",
-		"ok": "@:confirm.ok"
-	},
 	"confirm": {
-		"title": "Confirmar",
 		"ok": "Ok",
 		"cancel": "Cancelar",
 		"close": "Cerrar",
@@ -804,7 +772,7 @@
 		"title": "Gracias por informarnos de un problema o por tus sugerencias de mejora.",
 		"ok": "Enviar",
 		"cancel": "@:confirm.cancel",
-		"email": "@:account-form.email"
+		"email": "@:login.email"
 	},
 	"cib-header": {
 		"productName": "CIB seven",
@@ -812,9 +780,7 @@
 		"languagesMenu": "Idioma",
 		"engine": "Motor",
 		"engineMenu": "Selección de motor",
-		"help": "Información & Ayuda",
 		"helpMenu": "Ayuda",
-		"user": "Cuenta",
 		"logout": "Cerrar sesión",
 		"userMenu": "Cuenta de usuario",
 		"en": "English",
@@ -822,10 +788,6 @@
 		"es": "Español",
 		"ua": "Українська",
 		"ru": "Русский"
-	},
-	"cib-datepicker": {
-		"months": "Enero_Febrero_Marzo_Abril_Mayo_Junio_Julio_Agosto_Septiembre_Octubre_Noviembre_Diciembre",
-		"weeks": "Lu_Ma_Mi_Ju_Vi_Sa_Do"
 	},
 	"cib-datepicker2": {
 		"noDate": "Ninguna fecha",
@@ -836,48 +798,22 @@
 		"noDate": "Ningún horario",
 		"reset": "Borrar la selección"
 	},
-	"file-area": {
-		"titleAbove": "Arrastrar documentos",
-		"titleBelow": "o seleccionar"
-	},
-	"task-popper": {
-		"title": "Subiendo archivos"
-	},
-	"pdf-encryption": {
-		"title": "¡Seguro desde el principio!",
-		"text": "Tu documento está encriptado ya durante la carga.<br>Introduce una contraseña para proseguir:"
-	},
-	"register": {
-		"title": "Registro",
-		"register": "Regístrate",
-		"login": "¿Ya tienes una cuenta?",
-		"loginLink": "Iniciar sesión",
-		"username": "@:account-form.username",
-		"password": "@:account-form.password",
-		"email": "@:account-form.email"
-	},
 	"snapshot": {
-		"title": "Sube tu captura de pantalla",
 		"titleAbove": "Haz clic aquí y después pulsa [Ctrl] + [V]",
 		"titleBelow": "(con tu captura de pantalla en el portapapeles)"
 	},
 	"seven": {
 		"feedback": "Tu opinión",
-		"about": "Acerca de",
-		"version": "Versión",
 		"selectTask": "Seleccione una tarea de la lista de tareas para verla",
 		"taskCompleted": "Tarea realizada",
 		"allTasks": "Mis Tareas",
 		"titleInfo": "Información",
-		"filters": "Filtros",
-		"types": "Tipos",
-		"chat": "Chat"
+		"types": "Tipos"
 	},
 	"nav-bar": {
 		"no-tasks-pending": "No tiene tareas pendientes",
 		"no-tasks": "No se encontraron tareas",
 		"tasks-count": "Tareas abiertas: {count}",
-		"processes": "@:process.title",
 		"filters": {
 			"addFilter": "Añadir filtro",
 			"updateFilter": "Actualizar filtro",
@@ -890,7 +826,6 @@
 			"addCriteria": "Añadir criterio",
 			"filterExists": "Este filtro ya existe",
 			"selectedCriteria": "Criterios seleccionados",
-			"deleteCriteria": "Eliminar criterio",
 			"no-filters": "No se encontraron filtros",
 			"edit": "@:commons.edit",
 			"delete": "@:confirm.delete",
@@ -995,25 +930,11 @@
 				"txtlteq": "<= menor o igual que"
 			}
 		},
-		"additionalFiltersApplied": "Filtros aplicados: {n}",
 		"dueDate": "@:task.details.due",
 		"reminder": "Recordatorio",
-		"reminderDate": {
-			"all": "Hasta hoy",
-			"today": "Mañana",
-			"next3D": "A partir de pasado mañana"
-		},
-		"taskDeadline": {
-			"all": "Todos",
-			"today": "Hasta hoy",
-			"next3D": "Desde mañana"
-		},
 		"filtersTitle": "Filtros",
-		"tasksTitle": "Tareas",
 		"refresh": "Actualizar la lista de tareas",
-		"sortingTitle": "Clasificación",
-		"filtersAdditionalsTitle": "Filtros adicionales",
-		"changeSize": "Incrementar ancho de lista de tareas"
+		"filtersAdditionalsTitle": "Filtros adicionales"
 	},
 	"ienotify": {
 		"remember": "No volver a mostrar este mensaje",
@@ -1125,8 +1046,6 @@
 		"refreshAndFilter": "Actualizar y filtrar",
 		"search": "Buscar...",
 		"searchByTaskName": "Buscar por nombre de tarea...",
-		"searchByDeploymentName": "Búsqueda por nombre de despliegue...",
-		"searchByBusinessKey": "Búsqueda por business key...",
 		"searchByFilterName": "Buscar por nombre de filtro...",
 		"wildcardHelp": "Se admite la búsqueda con comodines.",
 		"wildcardExample": "Use % para representar cualquier número de caracteres (ej. %proceso%)."
@@ -1151,15 +1070,11 @@
 	"deployment": {
 		"title": "Despliegues",
 		"resourcesCaption": "Modelos contenidos",
-		"version": "Versión",
-		"downloadVersionBpmn": "@:process.downloadBpmn",
 		"noDeployments": "No existen despliegues aún",
 		"deploymentTime": "Desplegado el",
 		"source": "Fuente",
 		"confirmDeleteDeployment": "Realmente quiere borrar los despliegues seleccionados?",
 		"deleteRunningInstances": "Detener instancias de proceso activas",
-		"goToManagement": "Ir al area de administración de procesos",
-		"loadingProcesses": "Cargando...",
 		"noDeploymentSelected": "Seleccione un despliegue para verlo",
 		"selectAll": "Seleccionar todo",
 		"deleteDeployments": "Eliminar despliegues",
@@ -1169,13 +1084,6 @@
 		"deploymentsDeleted": "{0} de {1} despliegues se han eliminado correctamente",
 		"tenant": "Tenant",
 		"errorLoading": "No se puede cargar el recurso para el despliegue seleccionado"
-	},
-	"cib-table2": {
-		"filter": "Filtrar"
-	},
-	"table": {
-		"selectColumns": "Mostrar columnas",
-		"toggleColumn": "Alternar \"{column}\" columna"
 	},
 	"navigation": {
 		"home": "Inicio",
@@ -1240,10 +1148,6 @@
 	},
 	"password": {
 		"recover": {
-			"title": "Recuperación de Contraseña",
-			"email": "Email",
-			"emailDescription": "Email asociado a la cuenta que quiere recuperar",
-			"cancel": "Cancelar",
 			"sendEmail": "Enviar email de recuperacion",
 			"id": "@:admin.users.id",
 			"changePassword": "Cambiar contraseña",
@@ -1260,25 +1164,7 @@
 				"al menos una cifra",
 				"al menos un carácter especial"
 			]
-		},
-		"emailInfo": {
-			"title": "Se ha enviado un correo electrónico",
-			"header": "Para restablecer la contraseña, por favor confirma el enlace en el correo electrónico.",
-			"body": "Esta página se cerrará automáticamente tan pronto como se abra el correo y redirigirá al restablecimiento de contraseña.",
-			"footerTitle": "¿No has recibido el correo?",
-			"footerBody": "Revisa tu carpeta de spam o haz clic en 'Reenviar email'.",
-			"sendMail": "Reenviar email",
-			"support": "Si el correo sigue sin llegar, por favor contacta al soporte.",
-			"supportLink": "Contactar al soporte"		
 		}
-	},
-	"status-progress": {
-		"state": "Estado",
-		"stateOptions": {
-			"DONE": "Finalizado",
-			"PENDING": "Pendiente"
-		},
-		"noState": "No existe estado para esta tarea"
 	},
 	"advanced-search": {
 		"title": "Búsqueda avanzada",
@@ -1287,13 +1173,8 @@
 		"property": "Nombre de la propiedad",
 		"value": "Valor",
 		"add": "Añadir criterio",
-		"remove": "Eliminar criterio",
-		"type": "Tipo de coincidencia",
 		"apply": "Aplicar",
 		"cancel": "Cancelar",
-		"cleanAll": "Limpiar todos los criterios",
-		"any": "Cualquiera",
-		"all": "Todos",
 		"criteriaKeys": {	    	
 			"processVariables": "Variable de proceso"
 		},
@@ -1324,14 +1205,10 @@
 		"emptyProcessList": "Tu lista de decisiones está actualmente vacía.",
 		"emptyProcessListFiltered": "No hay decisiones que coincidan con el filtro aplicado.",
 		"decision": "Decisión",
-		"deleteProcessDefinition": "Eliminar definición de decisión",
 		"refreshVersions": "Actualizar versiones históricas",
 		"loadVersions": "Cargar todas las versiones históricas",
 		"days": "días",
 		"instances": "Instancias",
-		"activateProcess": "Activar definición de decisión",
-		"downloadBpmn": "Descargar archivo DMN",
-		"showDeployment": "Ver despliegue",
 		"showInstance": "Ver instancia",
 		"evaluationTime": "Tiempo de evaluación",
 		"callingProcess": "Proceso/Caso de origen",
@@ -1384,6 +1261,11 @@
 		"noGroups": "sin grupo",
 		"groupName": "Grupo",
 		"assignmentsByGroupInfo": "Una tarea puede estar asignada a varios grupos."
+	},
+	"deployed-form": {
+		"accept": "Aceptar",
+		"fullscreen": "Pantalla completa",
+		"showProcess": "Ver proceso"
 	},
 	"setup": {
 		"title": "Configuración Inicial",

@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jboss-deployment-structure>
   <deployment>
+    <dependencies>
+      <system>
+        <paths>
+          <path name="jdk/net"/>
+        </paths>
+      </system>
+    </dependencies>
     <exclude-subsystems>
       <subsystem name="logging"/>
     </exclude-subsystems>

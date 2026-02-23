@@ -23,11 +23,11 @@
 
         <ContentBlock class="col-12 col-md-5" :title="$t('human-tasks.assignmentsByType')">
           <FlowTable striped resizable thead-class="sticky-header" :items="countsByType"
-            primary-key="id" prefix="human-tasks."
+            primary-key="id"
             sort-by="label" :fields="[
-            { label: 'tasks', key: 'tasks', class: 'col-3', tdClass: 'py-1 fw-bold justify-content-center',
-              thClass: 'd-flex justify-content-center', sortable: false },
-            { label: 'types', key: 'types', class: 'col-9', tdClass: 'py-1', sortable: false }]">
+              { label: 'human-tasks.tasks', key: 'tasks', class: 'col-3', tdClass: 'py-1 fw-bold justify-content-center', thClass: 'd-flex justify-content-center', sortable: false },
+              { label: 'human-tasks.types', key: 'types', class: 'col-9', tdClass: 'py-1', sortable: false },
+            ]">
             <template v-slot:cell(tasks)="table">
               <transition name="fade" mode="out-in">
                 <span v-if="!loading[table.item.id]">{{ table.item.tasks }}</span>
@@ -42,12 +42,12 @@
 
         <ContentBlock class="col-12 col-md-5" :title="$t('human-tasks.assignmentsByGroup')" :info="$t('human-tasks.assignmentsByGroupInfo')">
           <FlowTable striped resizable thead-class="sticky-header" :items="taskCountByCandidateGroup"
-            primary-key="id" prefix="human-tasks."
+            primary-key="id"
             :loading="loading[4]"
             sort-by="label" :fields="[
-            { label: 'tasks', key: 'taskCount', class: 'col-3', tdClass: 'py-1 justify-content-center',
-              thClass: 'd-flex justify-content-center', sortable: false },
-            { label: 'groupName', key: 'groupName', class: 'col-9', tdClass: 'py-1', sortable: false }]">
+              { label: 'human-tasks.tasks', key: 'taskCount', class: 'col-3', tdClass: 'py-1 justify-content-center', thClass: 'd-flex justify-content-center', sortable: false },
+              { label: 'human-tasks.groupName', key: 'groupName', class: 'col-9', tdClass: 'py-1', sortable: false },
+            ]">
             <template v-slot:cell(groupName)="table">
               <div>{{ table.item.groupName ? table.item.groupName : $t('human-tasks.noGroups') }}</div>
             </template>

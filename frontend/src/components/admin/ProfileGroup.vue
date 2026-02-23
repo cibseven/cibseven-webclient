@@ -74,10 +74,12 @@
                 </div>
                 <div v-if="users" class="container-fluid overflow-auto bg-white shadow-sm border rounded g-0">
                   <FlowTable :items="users" primary-key="id" striped
-                    prefix="admin.users." :fields="[{ label: 'id', key: 'id', class: 'col-md-3 col-sm-3', tdClass: 'py-2' },
-                      { label: 'firstName', key: 'firstName', class: 'col-md-3 col-sm-3', tdClass: 'py-2' },
-                      { label: 'lastName', key: 'lastName', class: 'col-md-3 col-sm-3', tdClass: 'py-2' },
-                      { label: 'email', key: 'email', class: 'col-md-3 col-sm-3', tdClass: 'py-2' }]">
+                    :fields="[
+                      { label: 'admin.users.id', key: 'id', class: 'col-md-3 col-sm-3', tdClass: 'py-2' },
+                      { label: 'admin.users.firstName', key: 'firstName', class: 'col-md-3 col-sm-3', tdClass: 'py-2' },
+                      { label: 'admin.users.lastName', key: 'lastName', class: 'col-md-3 col-sm-3', tdClass: 'py-2' },
+                      { label: 'admin.users.email', key: 'email', class: 'col-md-3 col-sm-3', tdClass: 'py-2' },
+                    ]">
                   </FlowTable>
                 </div>
               </div>
@@ -103,9 +105,11 @@
                 </div>
                 <div v-if="groupTenants.length > 0" class="container-fluid overflow-auto bg-white shadow-sm border rounded g-0">
                   <FlowTable :items="groupTenants" primary-key="id" striped
-                    prefix="admin.tenants." :fields="[{ label: 'fullId', key: 'id', class: 'col-5', tdClass: 'py-1' },
-                      { label: 'fullName', key: 'name', class: 'col-5', tdClass: 'py-1' },
-                      { label: 'actions', key: 'actions', class: 'col-2', tdClass: 'justify-content-center py-0', thClass: 'justify-content-center text-center', sortable: false }]"
+                    :fields="[
+                      { label: 'admin.tenants.fullId', key: 'id', class: 'col-5', tdClass: 'py-1' },
+                      { label: 'admin.tenants.fullName', key: 'name', class: 'col-5', tdClass: 'py-1' },
+                      { label: 'admin.tenants.actions', key: 'actions', class: 'col-2', tdClass: 'justify-content-center py-0', thClass: 'justify-content-center text-center', sortable: false },
+                    ]"
                   >
                     <template v-slot:cell(actions)="row">
                       <CellActionButton @click="unassignTenant(row.item)" :title="$t('admin.tenants.unassignTenant')" icon="mdi-delete-outline"></CellActionButton>
@@ -119,10 +123,12 @@
 
         <b-modal ref="assignTenantsModal" :title="$t('admin.tenants.addTo')" size="lg">
           <div v-if="unassignedTenants.length > 0" class="container g-0">
-            <FlowTable :items="unassignedTenants" primary-key="id" prefix="admin.tenants." striped
-              :fields="[{ label: '', key: 'selected', class: 'col-sm-1', sortable: false, thClass: 'text-center, border-top-0', tdClass: 'text-center' },
-              { label: 'fullId', key: 'id', class: 'col-6', thClass: 'border-top-0' },
-              { label: 'fullName', key: 'name', class: 'col-5', thClass: 'border-top-0' }]">
+            <FlowTable :items="unassignedTenants" primary-key="id" striped
+              :fields="[
+                { label: '', key: 'selected', class: 'col-sm-1', sortable: false, thClass: 'text-center, border-top-0', tdClass: 'text-center' },
+                { label: 'admin.tenants.fullId', key: 'id', class: 'col-6', thClass: 'border-top-0' },
+                { label: 'admin.tenants.fullName', key: 'name', class: 'col-5', thClass: 'border-top-0' }
+              ]">
               <template v-slot:cell(selected)="row">
                 <b-form-checkbox v-model="row.item.selected"></b-form-checkbox>
               </template>

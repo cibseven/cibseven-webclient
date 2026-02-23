@@ -69,15 +69,17 @@
     </b-form-group>
 
     <div class="container-fluid border">
-      <FlowTable :selectable="false" striped :items="criteriasToAdd" prefix="nav-bar.filters.criteria."
-        :fields="[{label: 'key', key: 'name', class: 'col-5'},
-            {label: 'value', key: 'value', class: 'col-5'},
-            {label: '', key: 'buttons', class: 'col-2', sortable: false, tdClass: 'py-0'}]">
+      <FlowTable :selectable="false" striped :items="criteriasToAdd"
+        :fields="[
+          { label: 'nav-bar.filters.criteria.key', key: 'name', class: 'col-5'},
+          { label: 'nav-bar.filters.criteria.value', key: 'value', class: 'col-5'},
+          { label: '', key: 'buttons', class: 'col-2', sortable: false, tdClass: 'py-0'},
+        ]">
         <template v-slot:cell(value)="row">
           <div v-if="row.item.key === 'processVariables'">
             <div v-for="(item, index) of row.item.value" class="row g-0" :key="index">
               <div :title="item.name" class="col-5 p-0 text-truncate">{{ item.name }}</div>
-              <div class="col-2 text-center">{{ $t('nav-bar.filters.operators.' + item.operator) }}</div>
+              <div class="col-2 text-center">{{ $t(item.label) }}</div>
               <div :title="item.value" class="col-5 p-0 text-truncate text-end">{{ item.value }}</div>
             </div>
           </div>
@@ -177,12 +179,12 @@ export default {
     },
     variableOperators: function() {
       return  [
-        { value: 'eq', text: this.$t('nav-bar.filters.operators.txteq') },
-        { value: 'neq', text: this.$t('nav-bar.filters.operators.txtneq') },
-        { value: 'gt', text: this.$t('nav-bar.filters.operators.txtgt') },
-        { value: 'gteq', text: this.$t('nav-bar.filters.operators.txtgteq') },
-        { value: 'lt', text: this.$t('nav-bar.filters.operators.txtlt') },
-        { value: 'lteq', text: this.$t('nav-bar.filters.operators.txtlteq') }
+        { value: 'eq', text: this.$t('nav-bar.filters.operators.txteq'), label: 'nav-bar.filters.operators.eq' },
+        { value: 'neq', text: this.$t('nav-bar.filters.operators.txtneq'), label: 'nav-bar.filters.operators.neq' },
+        { value: 'gt', text: this.$t('nav-bar.filters.operators.txtgt'), label: 'nav-bar.filters.operators.gt' },
+        { value: 'gteq', text: this.$t('nav-bar.filters.operators.txtgteq'), label: 'nav-bar.filters.operators.gteq' },
+        { value: 'lt', text: this.$t('nav-bar.filters.operators.txtlt'), label: 'nav-bar.filters.operators.lt' },
+        { value: 'lteq', text: this.$t('nav-bar.filters.operators.txtlteq'), label: 'nav-bar.filters.operators.lteq' }
       ]
     },
     existCandidateSelected: function() {
@@ -227,7 +229,7 @@ export default {
         this.$store.state.filter.selected.properties.priority = this.selectedFilterPriority || 0
         this.$store.state.filter.selected.query = query
         this.$store.dispatch('updateFilter', { filter: this.$store.state.filter.selected }).then(() => {
-          this.$emit('filter-alert', { message: 'msgFilterUpdated', filter: this.selectedFilterName })
+          this.$emit('filter-alert', { message: 'nav-bar.filters.msgFilterUpdated', filter: this.selectedFilterName })
           this.$refs.filterHandler.hide()
           this.$emit('set-filter', this.$store.state.filter.selected.id)
           this.selectedFilterId = this.$store.state.filter.selected.id
@@ -251,7 +253,7 @@ export default {
           }
         }
         this.$store.dispatch('createFilter', { filter: filterCreate }).then(filter => {
-          this.$emit('filter-alert', { message: 'msgFilterCreated', filter: this.selectedFilterName })
+          this.$emit('filter-alert', { message: 'nav-bar.filters.msgFilterCreated', filter: this.selectedFilterName })
           this.$refs.filterHandler.hide()
           this.$emit('set-filter', filter.id)
           this.$emit('select-filter', filter)

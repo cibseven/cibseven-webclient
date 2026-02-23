@@ -2,12 +2,6 @@
 	"commons": {
 		"edit": "Редактировать",
 		"save": "Сохранить",
-		"copyValue": "Копировать значение",
-		"noMoreResults": "Больше нет результатов",
-		"loadMore": {
-			"title": "Загрузить ещё",
-			"tooltip": "Нажмите, чтобы загрузить следующие {chunkSize} записей"
-		},
 		"actualisation": {
 			"progress": "Обновление данных...",
 			"lastUpdate": "Последнее обновление: {date}",
@@ -17,8 +11,7 @@
 		"notAvailable": {
 			"label": "N/A",
 			"tooltip": "Не доступно"
-		},
-		"remove": "Удалить"
+		}
 	},
 	"login": {
 		"productName": "@:cib-header.productName",
@@ -28,7 +21,19 @@
 		"rememberMe": "Запомнить пароль",
 		"email": "Адрес электронной почты",
 		"login": "Войти",
-		"forgotten": "Забыли пароль?"
+		"2fa": "Двухэтапная проверка",
+		"emailSent": "На адрес электронной почты {0} было отправлено сообщение! Пожалуйста, следуйте инструкциям. Не получили письмо? Проверьте папку со спамом.",
+		"needOtp": "Пожалуйста, подтвердите запрос через <b>приложение</b>.",
+		"otp": "Код подтверждения",
+		"register": "Еще нет аккаунта?",
+		"registerLink": "Зарегистрироваться",
+		"reset2fa": "Сбросить доверенное устройство",
+		"resetPassword": "Сбросить пароль",
+		"forgotten": "Забыли пароль?",
+		"usernameRequired": "Имя пользователя обязательно",
+		"passwordRequired": "Пароль обязателен",
+		"showPassword": "Показать пароль",
+		"hidePassword": "Скрыть пароль"
 	},
 	"processes-dashboard": {
 		"headerActive": "Панель операций",
@@ -40,8 +45,7 @@
 			},
 			"open-incidents": {
 				"title": "Открытые инциденты",
-				"tooltip": "Просмотреть все текущие открытые инциденты",
-				"none": "Нет инцидентов!"
+				"tooltip": "Просмотреть все текущие открытые инциденты"
 			},
 			"open-human-tasks": {
 				"title": "Открытые задачи пользователей",
@@ -221,7 +225,6 @@
 		"processInstanceId": "ID экземпляра процесса",
 		"businessKey": "Бизнес-ключ",
 		"info": "Информация о процессе",
-		"variablesInfo": "Переменные процесса",
 		"active": "Активный",
 		"history": "История изменений",
 		"download": "Скачать",
@@ -377,6 +380,8 @@
 		"assignModal": {
 			"manageUsersGroups": "Управление пользователями/группами",
 			"manageAssignee": "Управление назначенным пользователем",
+			"manageGroups": "Управление группами",
+			"manageUsers": "Управление пользователями",
 			"groupId": "ID группы",
 			"userId": "@:admin.users.id",
 			"groups": "Группы",
@@ -437,10 +442,6 @@
 		"zoomOut": "Уменьшить",
 		"resetZoom": "Сбросить масштаб",
 		"legend": {
-			"title": "Легенда",
-			"completedTask": "Завершённая задача",
-			"currentTask": "Текущая задача",			
-			"selectedTask": "@:task.selectedTask",
 			"runningInstances": "Выполняющиеся экземпляры заданий",
 			"openIncidents": "Открытые инциденты",
 			"closedIncidents": "Закрытые инциденты",
@@ -458,7 +459,6 @@
 		"info": "Информация о задаче",
 		"reminder": "Дата напоминания",
 		"priority": "Приоритет",		
-		"variablesInfo": "Переменные задачи",
 		"taskId": "ID задачи",
 		"assign": "Назначить кого-либо",
 		"assignToMe": "Назначить меня",
@@ -499,8 +499,6 @@
 		"userAssigned": "Пользователь {0} успешно назначен"
 	},
 	"batches": {
-		"title": "Пакеты",
-		"tooltip": "Операции с пакетами",
 		"inProgressBatches": "Текущие пакеты",
 		"historicBatches": "Завершённые пакеты",
 		"runtimeDetails": "Детали текущего пакета",
@@ -553,7 +551,6 @@
 			"firstName": "Имя",
 			"lastName": "Фамилия",
 			"email": "Электронная почта",
-			"search": "Поиск",
 			"add": "Добавить пользователя",
 			"account": "Учетная запись пользователя",
 			"profile": "Профиль пользователя",
@@ -567,14 +564,9 @@
 			"groups": "Группы",
 			"editMessage": "Редактировать пользователя ({0})",
 			"update": "Обновить профиль",
-			"userPassword": "Пароль {0}",
-			"currentUserPassword": "текущий пароль",
-			"newPassword": "Новый пароль",
-			"newPasswordRepeat": "Новый пароль (повтор)",
 			"editUser": "Редактировать пользователя",
 			"viewUser": "Показать пользователя",
 			"deleteUser": "Удалить пользователя",
-			"changePassword": "Изменить пароль",
 			"updateProfileMessage": "Профиль пользователя успешно обновлен",
 			"updatePasswordMessage": "Пароль успешно обновлен",
 			"unassignGroupMessage": "Пользователь {0} удален из группы",
@@ -632,8 +624,8 @@
 			"id": "ID",
 			"name": "Имя",
 			"type": "Тип",
-			"search": "Поиск",
 			"add": "Добавить группу",
+			"addCandidateGroups": "Добавить кандидатные группы",
 			"cancel": "Отмена",
 			"createLabel": "Создать новую группу",
 			"groupCreatedMessage": "Создана группа {0}"	,
@@ -697,7 +689,6 @@
 				"cancel": "Отменить изменения"
 			},
 			"name": "Имя ресурса",
-			"search": "Поиск",	
 			"types": {
 				"allow": "ALLOW",
 				"deny": "DENY",
@@ -755,7 +746,6 @@
 			"execution-metrics": {
 				"title": "Метрики выполнения",
 				"metricsHelp": "Зарегистрированное количество экземпляров процессов и решений, обработанных движком, и пользователей задач, назначенных на пользовательскую задачу.",
-				"startDateContract": "Дата начала контракта",
 				"process-instances": "Экземпляры процессов",
 				"decision-instances": "Экземпляры решений",
 				"task-users": "Пользователи задач",
@@ -766,29 +756,7 @@
 			}
 		}
 	},
-	"account-form": {
-		"title": "Управление учетной записью",
-		"username": "@:login.username",
-		"password": "@:login.password",		
-		"email": "@:login.email",
-		"update": "Сохранить",
-		"delete": "Удалить учетную запись",
-		"deleteMessage": "Удалить учетную запись, включая все документы? Данная операция не может быть отменена."		
-	},
-	"security-bar": {
-		"strength1": "Слишком простой",
-		"strength2": "Простой",
-		"strength3": "Приемлемый",
-		"strength4": "Надёжный",
-		"strength5": "Очень надёжный",
-		"prefix": "Надежность:"
-	},	
-	"error": {
-		"title": "Ошибка",
-		"ok": "@:confirm.ok"
-	},
 	"confirm": {
-		"title": "Необходимо подтверждение",
 		"ok": "OK",
 		"cancel": "Отмена",
 		"close": "Закрыть",
@@ -804,7 +772,7 @@
 		"title": "У Вас возникла проблема или предложение об улучшении? Дайте нам знать!",
 		"ok": "Отправить",
 		"cancel": "@:confirm.cancel",
-		"email": "@:account-form.email"
+		"email": "@:login.email"
 	},
 	"cib-header": {
 		"productName": "CIB seven",
@@ -812,20 +780,14 @@
 		"languagesMenu": "Язык",
 		"engine": "Движок",
 		"engineMenu": "Выбор движка",
-		"help": "Информация и помощь",
 		"helpMenu": "Помощь",
 		"logout": "Выход",
-		"user": "Учетная запись",
 		"userMenu": "Учетная запись пользователя",
 		"en": "English",
 		"de": "Deutsch",
 		"es": "Español",
 		"ua": "Українська",
 		"ru": "Русский"
-	},
-	"cib-datepicker": {
-		"months" : "Январь_Февраль_Март_Апрель_Май_Июнь_Июль_Август_Сентябрь_Октябрь_Ноябрь_Декабрь",
-		"weeks": "Пн_Вт_Ср_Чт_Пт_Сб_Вс"
 	},
 	"cib-datepicker2": {
 		"noDate": "Дата не выбрана",
@@ -836,48 +798,22 @@
 		"noDate": "Время не выбрано",
 		"reset" : "Понятный выбор"
 	},
-	"file-area": {
-		"titleAbove": "Перетащите документы",
-		"titleBelow": "или найдите их"
-	},
-	"task-popper": {
-		"title": "Загрузить документ(ы)"
-	},
-	"pdf-encryption": {
-		"title": "Безопасно с самого начала!",
-		"text": "Ваши документы уже зашифрованы при загрузке.<br>Введите пароль, чтобы продолжить:"
-	},
-	"register": {
-		"title": "Регистрация",
-		"register": "Зарегистрироваться",
-		"login": "Уже есть учетная запись?",
-		"loginLink": "Войти",
-		"username": "@:account-form.username",
-		"password": "@:account-form.password",		
-		"email": "@:account-form.email"	
-	},
 	"snapshot": {
-		"title": "Загрузите Ваш снимок экрана",
 		"titleAbove": "Кликните здесь и затем нажмите [Ctrl] + [V]",
 		"titleBelow": "(чтобы добавить снимок экрана из буфера обмена)"
 	},
 	"seven": {
 		"feedback": "Обратная связь",
-		"about": "О doXisafe",
-		"version": "Версия",
 		"selectTask": "Выберите задачу из списка для просмотра",
 		"taskCompleted": "Задача выполнена",
 		"allTasks": "Задачи",
 		"titleInfo": "Информация",
-		"filters": "Фильтры",
-		"types": "Типы авторизаций",
-		"chat": "Чат"
+		"types": "Типы авторизаций"
 	},
 	"nav-bar": {
 		"no-tasks-pending": "У Вас нет незавершённых задач",
 		"no-tasks": "Задачи не найдены",
 		"tasks-count": "Открытых задач: {count}",
-		"processes": "@:process.title",
 		"filters": {
 			"addFilter": "Добавить фильтр",
 			"updateFilter": "Обновить фильтр",
@@ -890,7 +826,6 @@
 			"addCriteria": "Добавить критерий",
 			"filterExists": "Данный фильтр уже существует",
 			"selectedCriteria": "Выбранный критерий",
-			"deleteCriteria": "Удалить критерий",
 			"no-filters": "Фильтры не найдены",
 			"edit": "Редактировать фильтр",
 			"delete": "Удалить фильтр",
@@ -995,25 +930,11 @@
 				"txtlteq": "<= меньше или равно"
 			}
 		},
-		"additionalFiltersApplied": "Применённые фильтры: {n}",
 		"dueDate": "@:task.details.due",
 		"reminder": "Напоминание",
-		"reminderDate": {
-			"all": "До сегодняшнего дня",
-			"today": "Завтра",
-			"next3D": "С послезавтра"
-		},
-		"taskDeadline": {
-			"all": "Все",
-			"today": "До сегодняшнего дня",
-			"next3D": "С завтрашнего дня"
-		},
 		"filtersTitle": "Фильтры",
-		"tasksTitle": "Задачи",
 		"refresh": "Обновить список задач",
-		"sortingTitle": "Сортировка",
-		"filtersAdditionalsTitle": "Дополнительные фильтры",
-		"changeSize": "Увеличить ширину списка задач"
+		"filtersAdditionalsTitle": "Дополнительные фильтры"
 	},
 	"ienotify": { 
 		"remember": "Больше не показывать это сообщение",
@@ -1125,8 +1046,6 @@
 		"refreshAndFilter": "Обновить и отфильтровать",
 		"search": "Поиск...",
 		"searchByTaskName": "Поиск по названию задачи...",
-		"searchByDeploymentName": "Поиск по развертыванию...",
-		"searchByBusinessKey": "Поиск по бизнес-ключу...",
 		"searchByFilterName": "Поиск по названию фильтра...",
 		"wildcardHelp": "Поддерживается поиск с подстановочными знаками.",
 		"wildcardExample": "Используйте % для представления любого количества символов (например, %процесс%)."
@@ -1151,15 +1070,11 @@
 	"deployment": {
 		"title": "Развёртывания процессов",
 		"resourcesCaption": "Включённые модели",
-		"version": "Версия",
-		"downloadVersionBpmn": "@:process.downloadBpmn",
 		"noDeployments": "Нет доступных развёртываний процесса",
 		"deploymentTime": "Дата развертывания",
 		"source": "Источник",
 		"confirmDeleteDeployment": "Вы действительно хотите удалить выбранные развертывания?",
 		"deleteRunningInstances": "Остановить текущие экземпляры процесса",
-		"goToManagement": "Перейти в область управления процессами",
-		"loadingProcesses": "Загрузка...",
 		"noDeploymentSelected": "Выберите развертывание для просмотра",
 		"selectAll": "Выбрать все",
 		"deleteDeployments": "Удалить развертывания",
@@ -1169,13 +1084,6 @@
 		"deploymentsDeleted": "{0} из {1} развертываний успешно удалены",
 		"tenant": "Тенант",
 		"errorLoading": "Не удалось загрузить ресурс для выбранного развертывания"
-	},
-	"cib-table2": {
-		"filter": "Фильтр"
-	},
-	"table": {
-		"selectColumns": "Показать столбцы",
-		"toggleColumn": "Переключить колонку \"{column}\""
 	},
 	"navigation": {
 		"home": "Домашняя страница",
@@ -1240,10 +1148,6 @@
 	},
 	"password": {
 		"recover": {
-			"title": "Востановление пароля",
-			"email": "Эл.почта",
-			"emailDescription": "Электронная почта, связанная с учетной записью, которую вы хотите восстановить",
-			"cancel": "Отмена",
 			"sendEmail": "Выслать письмо по смене пароля",
 			"id": "@:admin.users.id",
 			"changePassword": "Изменить пароль",
@@ -1260,25 +1164,7 @@
 				"хотя бы одна цифра",
 				"хотя бы один специальный символ"
 			]
-		},
-		"emailInfo": {
-			"title": "Письмо было отправлено",
-			"header": "Чтобы сбросить пароль, подтвердите ссылку в письме.",
-			"body": "Эта страница автоматически закроется после открытия письма и произойдёт перенаправление на сброс пароля.",
-			"footerTitle": "Не получили письмо?",
-			"footerBody": "Проверьте папку со спамом или нажмите «Отправить письмо повторно».",
-			"sendMail": "Отправить письмо повторно",
-			"support": "Если письмо так и не пришло, свяжитесь со службой поддержки.",
-			"supportLink": "Связаться с поддержкой"
 		}
-	},
-	"status-progress": {
-		"state": "Статус",
-		"stateOptions": {
-			"DONE": "Сделанный",
-			"PENDING": "В ожидании"
-		},
-		"noState": "Для этой задачи нет статуса"
 	},
 	"advanced-search": {
 		"title": "Расширенный поиск",
@@ -1287,13 +1173,8 @@
 		"property": "Имя",
 		"value": "Значение",
 		"add": "Добавить критерий",
-		"remove": "Удалить критерий",
-		"type": "Тип совпадения",
 		"apply": "Применить",
 		"cancel": "Отмена",
-		"cleanAll": "Очистить все критерии",
-		"any": "Любой",
-		"all": "Все",
 		"criteriaKeys": {    	
 			"processVariables": "Переменная процесса"
 		},
@@ -1324,14 +1205,10 @@
 		"emptyProcessList": "Список решений в настоящее время пуст.",
 		"emptyProcessListFiltered": "Нет решений, соответствующих применённому фильтру.",
 		"decision": "Решение",
-		"deleteProcessDefinition": "Удалить определение решения",
 		"refreshVersions": "Обновить историю версий",
 		"loadVersions": "Загрузить все версии истории",
 		"days": "дней",
 		"instances": "Экземпляры",
-		"activateProcess": "Активировать определение решения",
-		"downloadBpmn": "Скачать файл DMN",
-		"showDeployment": "Просмотреть развёртывание",
 		"showInstance": "Просмотреть экземпляр",
 		"evaluationTime": "Время оценки",
 		"callingProcess": "Вызывающий процесс/кейс",
@@ -1384,6 +1261,11 @@
 		"noGroups": "без группы",
 		"groupName": "Группа",
 		"assignmentsByGroupInfo": "Задача может быть назначена нескольким группам."
+	},
+	"deployed-form": {
+		"accept": "Принять",
+		"fullscreen": "Полноэкранный режим",
+		"showProcess": "Просмотреть процесс"
 	},
 	"setup": {
 		"title": "Начальная настройка",
