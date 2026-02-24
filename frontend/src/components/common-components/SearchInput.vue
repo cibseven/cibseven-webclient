@@ -18,7 +18,7 @@
 -->
 <template>
   <div v-bind="$attrs" class="border-0-on-hover">
-    <label for="searchInput" class="visually-hidden">{{ $t('searches.search').replace('...', '') }}</label>
+    <label for="searchInput" class="visually-hidden">{{ computedLabel.replace('...', '') }}</label>
     <span class="mdi mdi-magnify mdi-16px"
       :class="{
         'leading-icon-sm': size === 'sm',
@@ -32,12 +32,11 @@
       class="form-control border-light input-with-leading-icon"
       :class="{
         'form-control-sm': size === 'sm',
-        'form-control-md': size === 'md',
-        'form-control-lg': size === 'lg'
+        'form-control-md': size === 'md' || size === 'lg'
       }"
       type="text"
-      :placeholder="$t('searches.search')"
-      :aria-label="$t('searches.search').replace('...', '')"
+      :placeholder="computedLabel"
+      :aria-label="computedLabel.replace('...', '')"
       :value="modelValue"
       :disabled="disabled"
       @input="onInput"
@@ -53,10 +52,16 @@ export default {
     modelValue: { type: String, default: '' },
     modelModifiers: { type: Object, default: () => ({}) },
     disabled: { type: Boolean, default: false },
+    label: { type: String, default: '' },
     size: {
       type: String,
       default: 'md',
       validator: value => ['sm', 'md', 'lg'].includes(value)
+    }
+  },
+  computed: {
+    computedLabel() {
+      return this.label || this.$t('searches.search')
     }
   },
   methods: {

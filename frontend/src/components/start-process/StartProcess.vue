@@ -28,7 +28,7 @@
         @complete-task="$refs.startProcess.hide(); $emit('process-started', $event)"></RenderTemplate>
       </div>
       <div v-else-if="!hideProcessSelection">
-        <SearchInput class="my-3" :disabled="isStartingProcess" v-model.trim="processesFilter"/>
+        <SearchInput class="my-3" :disabled="isStartingProcess" v-model.trim="processesFilter" :label="$t('searches.filter')"/>
         <b-list-group v-if="startableProcesses.length > 0" >
           <b-list-group-item v-for="process of startableProcesses" :key="process.key" class="p-1 d-flex align-items-center" tabindex="-1" style="cursor: default">
             <b-button :disabled="isStartingProcess" variant="link" @click="startProcess(process)" v-b-popover.hover.right="process.description">
