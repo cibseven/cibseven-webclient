@@ -28,28 +28,26 @@ function getPackageJson(relativePath = '../package.json') {
   return JSON.parse(packageJsonContent)
 }
 
+function checkLicenseHeader(files) {
+  for (const f of files) {
+    const content = fs.readFileSync(f, 'utf-8')
+    const hasLicenseHeader = content.includes('Copyright CIB software GmbH') && content.includes('apache.org/licenses/LICENSE-2.0')
+    const message = hasLicenseHeader || `File "${f}" is missing license header`
+    expect(message).toBe(true)
+  }
+}
+
 describe('package', () => {
 
   describe('license header', () => {
-
-    it('all .vue files have license headers', () => {
-      const vueFiles = findComponents(srcDir, '.vue')
-      expect(vueFiles.length).toBeGreaterThan(0)
-      for (const f of vueFiles) {
-        const content = fs.readFileSync(f, 'utf-8')
-        const hasLicenseHeader = content.includes('Copyright CIB software GmbH') && content.includes('apache.org/licenses/LICENSE-2.0')
-        expect(hasLicenseHeader).toBe(true, `File ${f} is missing license header`)
-      }
-    })
-
-    it('all .js files have license headers', () => {
-      const jsFiles = findComponents(srcDir, '.js')
-      expect(jsFiles.length).toBeGreaterThan(0)
-      for (const f of jsFiles) {
-        const content = fs.readFileSync(f, 'utf-8')
-        const hasLicenseHeader = content.includes('Copyright CIB software GmbH') && content.includes('apache.org/licenses/LICENSE-2.0')
-        expect(hasLicenseHeader).toBe(true, `File ${f} is missing license header`)
-      }
+    it.each([
+      ['.vue'],
+      ['.js'],
+      ['.scss'],
+    ])('all %s files have license headers', (extension) => {
+      const files = findComponents(srcDir, extension)
+      expect(files.length).toBeGreaterThan(0)
+      checkLicenseHeader(files)
     })
   })
 
