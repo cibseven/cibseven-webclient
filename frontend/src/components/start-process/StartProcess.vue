@@ -28,14 +28,7 @@
         @complete-task="$refs.startProcess.hide(); $emit('process-started', $event)"></RenderTemplate>
       </div>
       <div v-else-if="!hideProcessSelection">
-        <div class="form-group mt-3">
-          <div class="input-group">
-            <label for="processesFilter" class="btn border-end-0 border-light" style="cursor: default">
-              <span class="mdi mdi-magnify" style="line-height: initial"></span>
-            </label>
-            <input id="processesFilter" class="form-control border-start-0 border-light" type="text" :placeholder="$t('searches.search')" v-model.trim="processesFilter" :disabled="isStartingProcess">
-          </div>
-        </div>
+        <SearchInput class="my-3" :disabled="isStartingProcess" v-model.trim="processesFilter"/>
         <b-list-group v-if="startableProcesses.length > 0" >
           <b-list-group-item v-for="process of startableProcesses" :key="process.key" class="p-1 d-flex align-items-center" tabindex="-1" style="cursor: default">
             <b-button :disabled="isStartingProcess" variant="link" @click="startProcess(process)" v-b-popover.hover.right="process.description">
@@ -61,10 +54,11 @@ import { ProcessService } from '@/services.js'
 import RenderTemplate from '@/components/render-template/RenderTemplate.vue'
 import { BWaitingBox, HighlightedText } from '@cib/common-frontend'
 import { permissionsMixin } from '@/permissions.js'
+import SearchInput from '@/components/common-components/SearchInput.vue';
 
 export default {
   name: 'StartProcess',
-  components: { RenderTemplate, BWaitingBox, HighlightedText },
+  components: { RenderTemplate, BWaitingBox, HighlightedText, SearchInput },
   inject: ['loadProcesses', 'currentLanguage'],
   emits: ['process-started'],
   props: { hideProcessSelection: Boolean },

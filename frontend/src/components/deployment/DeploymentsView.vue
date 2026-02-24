@@ -21,22 +21,7 @@
     <div style="background-color: rgba(98, 142, 199, 0.2);">
       <div class="d-flex align-items-center py-2 container-fluid">
         <div class="col-8 d-flex align-items-center gap-2">
-          <div class="border rounded d-flex flex-fill align-items-center bg-white" style="max-width: 220px;">
-            <b-button
-              size="sm" class="mdi mdi-magnify mdi-18px text-secondary py-0" variant="link"
-              :title="$t('searches.search')"></b-button>
-            <div class="flex-grow-1">
-              <label class="visually-hidden" for="filter-deployment-list">{{ $t('searches.search') }}</label>
-              <input
-                id="filter-deployment-list"
-                type="text"
-                v-model.trim="filter"
-                :placeholder="$t('searches.search')"
-                :aria-label="$t('searches.search')"
-                class="form-control-plaintext form-control-sm w-100"
-              />
-            </div>
-          </div>
+          <SearchInput class="border rounded" size="sm" v-model.trim="filter"/>
           <span 
             ref="wildcardHelper"
             class="mdi mdi-help-circle mdi-18px text-secondary me-3" 
@@ -167,11 +152,12 @@ import { moment } from '@/globals.js'
 import { debounce } from '@/utils/debounce.js'
 import DeploymentList from '@/components/deployment/DeploymentList.vue'
 import ResourcesNavBar from '@/components/deployment/ResourcesNavBar.vue'
+import SearchInput from '@/components/common-components/SearchInput.vue'
 import { SidebarsFlow, SuccessAlert, PagedScrollableContent } from '@cib/common-frontend'
 
 export default {
   name: 'DeploymentsView',
-  components: { PagedScrollableContent, DeploymentList, ResourcesNavBar, SidebarsFlow, SuccessAlert },
+  components: { PagedScrollableContent, DeploymentList, ResourcesNavBar, SidebarsFlow, SuccessAlert, SearchInput },
   inject: ['loadProcesses'],
   mixins: [permissionsMixin],
   props: { deploymentId: String },
