@@ -64,6 +64,7 @@ export { default as assigneeMixin } from '@/mixins/assigneeMixin.js'
 // components
 export { default as CibSeven } from '@/components/CibSeven.vue'
 export { default as CellActionButton } from '@/components/common-components/CellActionButton.vue'
+export { default as SearchInput } from '@/components/common-components/SearchInput.vue'
 export { default as AboutModal } from '@/components/modals/AboutModal.vue'
 export { default as FeedbackModal } from '@/components/modals/FeedbackModal.vue'
 export { default as FeedbackScreenshot } from '@/components/modals/FeedbackScreenshot.vue'
