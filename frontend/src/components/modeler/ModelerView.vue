@@ -41,6 +41,8 @@ export default {
     // Configure modeler to use webclient's axios and base path
     setAxiosInstance(axios)
     setServicesBasePath(getServicesBasePath())
+    this.$store.dispatch('modeler/elementTemplates/fetchAllElementTemplates')
+      .catch(error => console.warn('Could not load element templates:', error))
   }
 }
 </script>

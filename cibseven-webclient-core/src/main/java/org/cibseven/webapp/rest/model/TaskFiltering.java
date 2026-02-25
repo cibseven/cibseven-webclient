@@ -34,6 +34,7 @@ public class TaskFiltering {
 	List<TaskSorting> sorting;
 	List<ProcessVariablesCriteria> processVariables;
 	List<TaskFilterQuery> orQueries;
+	Boolean likePatternIgnoreCase;
 	
 	public String json() throws JsonProcessingException {
 		return new ObjectMapper().writeValueAsString(this);
