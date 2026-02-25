@@ -31,7 +31,8 @@
             <template #prepend>
               <b-button :title="$t('searches.search')" aria-hidden="true" class="rounded-left" variant="secondary"><span class="mdi mdi-magnify" style="line-height: initial"></span></b-button>
             </template>
-            <b-form-input  :title="$t('searches.search')" :placeholder="$t('searches.search')" v-model.trim="filter"></b-form-input>
+            <label class="visually-hidden" for="process-search">{{ $t('searches.search').replace('...', '') }}</label>
+            <b-form-input id="process-search" :title="$t('searches.search')" :placeholder="$t('searches.search')" v-model.trim="filter"></b-form-input>
           </b-input-group>
         </div>
         <div v-if="!isMobile()" class="col-md-3 d-flex align-items-center justify-content-end p-0">
