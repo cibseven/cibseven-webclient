@@ -91,6 +91,7 @@
 		"endTime": "Кінцева дата",
 		"businessKey": "Бізнес-ключ",
 		"title": "Процеси",
+		"viewMode": "Режим перегляду",
 		"view-comfy": "Маленькі",
 		"view-module": "Великі",
 		"view-list": "Список",

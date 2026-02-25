@@ -38,7 +38,8 @@
           <div class="d-inline me-1">{{ $t('process.' + view) }}</div>
           <b-dropdown ref="viewDropdown" variant="outline-secondary" toggle-class="border-0 p-0" right class="d-inline-flex">
             <template v-slot:button-content>
-              <span :title="$t('process.' + view)"><span :class="activeViewMode"></span></span>
+              <span class="visually-hidden">{{ $t('process.viewMode') }}</span>
+              <span :title="$t('process.' + view)"><span :class="'mdi mdi-24px mdi-' + view"></span></span>
             </template>
             <template v-for="item in viewItems" :key="item.view">
               <b-dropdown-divider v-if="item.divider"></b-dropdown-divider>
@@ -146,7 +147,6 @@ export default {
       })
     },
     isTable: function() { return this.view === 'view-list' },
-    activeViewMode: function() { return 'mdi mdi-24px mdi-' + this.view },
     processesByOptions: function() { return this[this.selectedOption + 'Filter'](this.processesFiltered) },
     textEmptyProcessesList: function() {
       return this.selectedOption === 'all' && this.filter === ''  ? 'process.emptyProcessList' : 'process.emptyProcessListFiltered'

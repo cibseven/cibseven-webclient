@@ -91,6 +91,7 @@
 		"endTime": "Enddatum",
 		"businessKey": "Fachlicher Schlüssel",
 		"title": "Prozesse",
+		"viewMode": "Ansichtsmodus",
 		"view-comfy": "Klein",
 		"view-module": "Groß",
 		"view-list": "Liste",
