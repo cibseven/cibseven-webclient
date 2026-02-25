@@ -1043,7 +1043,7 @@
 		
 	},
 	"searches": {
-		"filter": "Filter",
+		"filter": "Filter...",
 		"refreshAndFilter": "Refresh and filter",
 		"search": "Search...",
 		"searchByTaskName": "Search by task name...",

@@ -1042,7 +1042,7 @@
 		"unknown": "Se produjo un error inesperado. Por favor, inténtelo de nuevo."
 	},
 	"searches": {
-		"filter": "Filtrar",
+		"filter": "Filtrar...",
 		"refreshAndFilter": "Actualizar y filtrar",
 		"search": "Buscar...",
 		"searchByTaskName": "Buscar por nombre de tarea...",
