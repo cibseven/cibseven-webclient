@@ -20,7 +20,7 @@
   <div class="h-100 d-flex flex-column">
     <CIBHeaderFlow v-if="$root.header === 'true'" ref="headerFlow" class="flex-shrink-0" :languages="$root.config.supportedLanguages.sort()" :user="$root.user" @logout="logout">
       <div class="me-auto d-flex flex-row overflow-hidden" style="min-height: 38px;">
-        <b-navbar-brand ref="brandHome" class="py-0 flex-shrink-0" :aria-label="$t('cib-header.productName') + ' - ' + $t('navigation.home')" to="/seven/auth/start">
+        <b-navbar-brand ref="brandHome" class="py-0 flex-shrink-0" :aria-label="productName + ' - ' + $t('navigation.home')" to="/seven/auth/start">
           <img height="38px" alt="" :src="$root.logoPath" class="d-none d-md-inline"/>
           <img height="38px" alt="" :src="$root.logoIconPath" class="d-md-none"/>
           <span class="d-none d-md-inline align-middle"></span>
@@ -121,7 +121,7 @@
         <b-dropdown-item v-if="$root.user && $root.config.layout.showUserSettings && !applicationPermissionsDenied($root.config.permissions.userProfile, 'userProfile')"
           :to="'/seven/auth/account/' + $root.user.id"
           :active="isMenuItemActive({active: ['seven/auth/account']})"
-          :title="$t('admin.users.profile')">{{ $t('admin.users.profile') }}</b-dropdown-item>
+          :title="$t('start.account.profile.tooltip')">{{ $t('start.account.profile.title') }}</b-dropdown-item>
       </template>
     </CIBHeaderFlow>
 
@@ -186,6 +186,9 @@ export default {
     }
   },
   computed: {
+    productName() {
+      return this.$root.config.productNamePageTitle || this.$t('login.productName')
+    },
     menuItems: function() {
       return [{
           show: this.permissionsTaskList && this.startableProcesses,
@@ -258,12 +261,12 @@ export default {
             }, {
               to: '/seven/auth/admin/users',
               active: ['seven/auth/admin/user', 'seven/auth/admin/create-user'],
-              tooltip: 'admin.users.title',
+              tooltip: 'admin.users.tooltip',
               title: 'admin.users.title'
             }, {
               to: '/seven/auth/admin/groups',
               active: ['seven/auth/admin/group', 'seven/auth/admin/create-group'],
-              tooltip: 'admin.groups.title',
+              tooltip: 'admin.groups.tooltip',
               title: 'admin.groups.title'
             }, {
               to: '/seven/auth/admin/tenants',
@@ -273,7 +276,7 @@ export default {
             }, {
               to: '/seven/auth/admin/authorizations',
               active: ['seven/auth/admin/authorizations'],
-              tooltip: 'admin.authorizations.title',
+              tooltip: 'admin.authorizations.tooltip',
               title: 'admin.authorizations.title'
             }, {
               to: '/seven/auth/admin/system',
@@ -310,7 +313,7 @@ export default {
       if (this.$root.config.flowLinkImprint) items.push({ type: 'link', href: this.$root.config.flowLinkImprint, title: 'infoAndHelp.flowLinkImprint', tooltip: 'infoAndHelp.flowLinkImprint' })
       if (this.$root.user) items.push({ type: 'button', ref: 'shortcuts', title: 'infoAndHelp.shortcuts.title', tooltip: 'infoAndHelp.shortcuts.tooltip' })
       if (this.$root.config.layout.showSupportInfo) items.push({ type: 'button', ref: 'support', title: 'infoAndHelp.flowModalSupport.modalText', tooltip: 'infoAndHelp.flowModalSupport.modalText' })
-      items.push({ type: 'button', ref: 'about', title: 'infoAndHelp.flowModalAbout.modalText', tooltip: 'infoAndHelp.flowModalAbout.modalText' })
+      items.push({ type: 'button', ref: 'about', title: 'infoAndHelp.about.title', tooltip: 'infoAndHelp.about.tooltip' })
       return items
     },
     startableProcesses: function() {
@@ -479,7 +482,7 @@ export default {
         case 'adminTenants':
           // "CIB seven | Admin | <view>"
           updateAppTitle(
-            this.$root.config.productNamePageTitle || this.$t('cib-header.productName'),
+            this.productName,
             this.$t('start.admin.title'),
             title
           )
@@ -487,7 +490,7 @@ export default {
         default:
           // "CIB seven | <view>"
           updateAppTitle(
-            this.$root.config.productNamePageTitle || this.$t('cib-header.productName'),
+            this.productName,
             title
           )
           break

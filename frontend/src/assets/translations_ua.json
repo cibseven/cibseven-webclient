@@ -14,7 +14,7 @@
 		}
 	},
 	"login": {
-		"productName": "@:cib-header.productName",
+		"productName": "CIB seven",
 		"productSlogan": "Платформа для керування процесами",
 		"username": "Ім’я користувача",
 		"password": "Пароль",
@@ -91,6 +91,7 @@
 		"endTime": "Кінцева дата",
 		"businessKey": "Бізнес-ключ",
 		"title": "Процеси",
+		"viewMode": "Режим перегляду",
 		"view-comfy": "Маленькі",
 		"view-module": "Великі",
 		"view-list": "Список",
@@ -547,6 +548,7 @@
 			"exportCsv": "Експортувати все",
 			"users": {
 				"title": "Користувачі",
+				"tooltip": "Управление пользователями",
 				"id": "Користувач",
 				"firstName": "Ім’я",
 				"lastName": "Прізвище",
@@ -621,6 +623,7 @@
 			},
 			"groups": {
 				"title": "Групи",
+				"tooltip": "Управление группами",
 				"id": "ID",
 				"name": "Назва",
 				"type": "Тип",
@@ -677,6 +680,7 @@
 			},
 			"authorizations": {
 				"title": "Авторизації",
+				"tooltip": "Управление авторизациями",
 				"type": "Тип",
 				"userIdGroupId": "Користувач / Група",
 				"permissions": "Дозволи",
@@ -775,14 +779,11 @@
 			"email": "@:login.email"
 		},
 		"cib-header": {
-			"productName": "CIB seven",
 			"languages": "Мова",
 			"languagesMenu": "Мова",
 			"engine": "Двигун",
 			"engineMenu": "Вибір двигуна",
 			"helpMenu": "Допомога",
-			"logout": "Вихід",
-			"userMenu": "Обліковий запис користувача",
 			"en": "English",
 			"de": "Deutsch",
 			"es": "Español",
@@ -998,7 +999,18 @@
 			"title": "Старий Cockpit",
 			"tooltip": "Відкрити старий Cockpit"
 		},
-		"emptyStart": "Наразі у вас немає прав для виконання будь-яких завдань. Будь ласка, зверніться до адміністратора CIB seven, щоб отримати права."
+		"account": {
+			"tooltip": "Переглянути та змінити інформацію про ваш обліковий запис або вийти з системи",
+			"profile": {
+				"title": "Профіль користувача",
+				"tooltip": "Переглянути та змінити інформацію про ваш обліковий запис"
+			},
+			"logout": {
+				"title": "Вийти",
+				"tooltip": "Вийти з {productName}"
+			}
+		},
+		"emptyStart": "Наразі у вас немає прав для виконання будь-яких завдань. Будь ласка, зверніться до адміністратора {productName}, щоб отримати права."
 	},
 	"errors": {
 		"invalid": "Будь ласка, введіть достовірну інформацію",
@@ -1126,9 +1138,9 @@
 			"email": "cibsupport{'@'}cib.de",
 			"version": "Версія"
 		},
-		"flowModalAbout": {
-			"modalText": "Про сайт",
-			"title": "CIB seven"
+		"about": {
+			"title": "Про сайт",
+			"tooltip": "Переглянути версію"
 		}
 	},
 	"multisort": {

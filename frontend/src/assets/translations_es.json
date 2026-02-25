@@ -14,7 +14,7 @@
 		}
 	},
 	"login": {
-		"productName": "@:cib-header.productName",
+		"productName": "CIB seven",
 		"productSlogan": "Plataforma para la gestión de procesos",
 		"username": "Nombre de usuario",
 		"password": "Contraseña",
@@ -91,6 +91,7 @@
 		"endTime": "Fecha fin",
 		"businessKey": "Business Key",
 		"title": "Procesos",
+		"viewMode": "Modo de vista",
 		"view-comfy": "Pequeña",
 		"view-module": "Grande",
 		"view-list": "Lista",
@@ -547,6 +548,7 @@
 		"exportCsv": "Exportar todo",
 		"users": {
 			"title": "Usuarios",
+			"tooltip": "Gestión de usuarios",
 			"id": "ID Usuario",
 			"firstName": "Nombre",
 			"lastName": "Apellidos",
@@ -621,6 +623,7 @@
 		},
 		"groups": {
 			"title": "Grupos",
+			"tooltip": "Gestión de grupos",
 			"id": "ID",
 			"name": "Nombre",
 			"type": "Tipo",
@@ -677,6 +680,7 @@
 		},
 		"authorizations": {
 			"title": "Autorizaciones",
+			"tooltip": "Gestión de autorizaciones",
 			"type": "Tipo",
 			"userIdGroupId": "Usuario / Grupo",
 			"permissions": "Permisos",
@@ -775,14 +779,11 @@
 		"email": "@:login.email"
 	},
 	"cib-header": {
-		"productName": "CIB seven",
 		"languages": "Idioma",
 		"languagesMenu": "Idioma",
 		"engine": "Motor",
 		"engineMenu": "Selección de motor",
 		"helpMenu": "Ayuda",
-		"logout": "Cerrar sesión",
-		"userMenu": "Cuenta de usuario",
 		"en": "English",
 		"de": "Deutsch",
 		"es": "Español",
@@ -998,7 +999,18 @@
 			"title":"Cockpit antiguo",
 			"tooltip": "Abrir Cockpit antiguo"
 		},
-		"emptyStart": "Actualmente no tiene permisos para realizar tareas aquí. Por favor contacte con el administrador de CIB seven para que le asigne permisos."
+		"account": {
+			"tooltip": "Ver y editar la información de su cuenta o cerrar sesión",
+			"profile": {
+				"title": "Perfil de usuario",
+				"tooltip": "Ver y editar la información de su cuenta"
+			},
+			"logout": {
+				"title": "Cerrar sesión",
+				"tooltip": "Cerrar sesión de {productName}"
+			}
+		},
+		"emptyStart": "Actualmente no tiene permisos para realizar tareas aquí. Por favor contacte con el administrador de {productName} para que le asigne permisos."
 	},
 	"errors": {
 		"invalid": "Por favor, introduce un valor válido",
@@ -1126,9 +1138,9 @@
 			"email": "cibsupport{'@'}cib.de",
 			"version": "Versión"
 		},
-		"flowModalAbout": {
-			"modalText": "Versión",
-			"title": "CIB seven"
+		"about": {
+			"title": "Versión",
+			"tooltip": "Ver versión"
 		}
 	},
 	"multisort": {

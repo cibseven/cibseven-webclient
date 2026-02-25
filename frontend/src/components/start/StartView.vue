@@ -45,8 +45,8 @@
       </div>
       <div v-if="!applicationPermissions($root.config.permissions.tasklist, 'tasklist') &&
         !applicationPermissions($root.config.permissions.cockpit, 'cockpit') && !hasAdminManagementPermissions($root.config.permissions)">
-        <img :alt="$t('start.emptyStart')" src="@/assets/images/start/empty_start_page.svg" class="d-block mx-auto mt-5 mb-3" style="max-width: 250px">
-        <div class="h5 text-secondary text-center">{{ $t('start.emptyStart') }}</div>
+        <img alt="" src="@/assets/images/start/empty_start_page.svg" class="d-block mx-auto mt-5 mb-3" style="max-width: 250px">
+        <div class="h5 text-secondary text-center">{{ $t('start.emptyStart', { productName }) }}</div>
       </div>
       <ErrorDialog v-if="$route.query.errorType" ref="errorPopup" variant="warning" />
     </div>
@@ -86,6 +86,9 @@ export default {
     }
   },  
   computed: {
+    productName() {
+      return this.$root.config.productNamePageTitle || this.$t('login.productName')
+    },
     StartViewPlugin: function() {
       return this.$options.components && this.$options.components.StartViewPlugin
         ? this.$options.components.StartViewPlugin

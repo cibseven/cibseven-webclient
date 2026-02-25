@@ -36,7 +36,7 @@
 
       <template v-if="view === 'image-outline'">
         <div :style="viewStyles[view].textBlock" class="row pt-2 pe-3 align-items-center">
-          <h5 class="m-0 align-items-center col-11 text-truncate pe-0" :title="processName">
+          <h5 class="m-0 align-items-center col-11 text-truncate pe-0" :title="$t('process.name') + ': ' + processName">
             <HighlightedText :text="processName" :keyword="filter">{{ processName }}</HighlightedText>
           </h5>
           <div class="col-1 p-0">
@@ -68,7 +68,7 @@
 
         <div :style="viewStyles[view].textBlock">
           <div v-if="process.tenantId" class="fst-italic mb-2" :title="$t('process.tenant') + ': ' + process.tenantId">{{ process.tenantId }}</div>
-          <h5 class="text-truncate" :title="processName">
+          <h5 class="text-truncate" :title="$t('process.name') + ': ' + processName">
             <HighlightedText :text="processName" :keyword="filter">{{ processName }}</HighlightedText>
           </h5>
           <div v-html="getDescription(this.process)" class="inline-description"></div>

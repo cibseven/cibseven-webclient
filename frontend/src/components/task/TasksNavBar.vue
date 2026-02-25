@@ -145,8 +145,8 @@
                 <b-form-timepicker v-model="selectedDateT.dueTime" @input="setTime($event, 'due')" no-close-button :label-no-time-selected="$t('cib-timepicker.noDate')"
                   reset-button class="flex-fill" reset-value="23:59:00" :label-reset-button="$t('cib-timepicker.reset')" :locale="currentLanguage()"></b-form-timepicker>
                 <template v-slot:modal-footer>
-                  <b-button :title="$t('confirm.cancel')" @click="$refs['due' + task.id][0].hide()" variant="light">{{ $t('confirm.cancel') }}</b-button>
-                  <b-button :title="$t('task.setDeadline')" @click="setDate(task, 'due')" variant="primary">{{ $t('task.setDeadline') }}</b-button>
+                  <b-button @click="$refs['due' + task.id][0].hide()" variant="light">{{ $t('confirm.cancel') }}</b-button>
+                  <b-button @click="setDate(task, 'due')" variant="primary">{{ $t('task.setDeadline') }}</b-button>
                 </template>
               </b-modal>
             </b-list-group-item>
