@@ -40,19 +40,12 @@
             <template v-slot:button-content>
               <span :title="$t('process.' + view)"><span :class="activeViewMode"></span></span>
             </template>
-            <b-dropdown-item @click="changeViewMode('image-outline')" :active="view === 'image-outline'">
-              <span class="mdi mdi-24px mdi-image-outline centered-icon">{{ $t('process.image-outline') }}</span>
-            </b-dropdown-item>
-            <b-dropdown-item @click="changeViewMode('view-comfy')" :active="view === 'view-comfy'">
-              <span class="mdi mdi-24px mdi-view-comfy centered-icon">{{ $t('process.view-comfy') }}</span>
-            </b-dropdown-item>
-            <b-dropdown-item @click="changeViewMode('view-module')" :active="view === 'view-module'">
-              <span class="mdi mdi-24px mdi-view-module centered-icon">{{ $t('process.view-module') }}</span>
-            </b-dropdown-item>
-            <b-dropdown-divider></b-dropdown-divider>
-            <b-dropdown-item @click="changeViewMode('view-list')" :active="view === 'view-list'">
-              <span class="mdi mdi-24px mdi-view-list centered-icon">{{ $t('process.view-list') }}</span>
-            </b-dropdown-item>
+            <template v-for="item in viewItems" :key="item.view">
+              <b-dropdown-divider v-if="item.divider"></b-dropdown-divider>
+              <b-dropdown-item-button @click="changeViewMode(item.view)" :active="view === item.view">
+                <span :class="'mdi mdi-24px ' + item.icon + ' centered-icon'">{{ item.title }}</span>
+              </b-dropdown-item-button>
+            </template>
           </b-dropdown>
         </div>
       </div>
@@ -125,6 +118,14 @@ export default {
     this.view = this.isMobile() ? 'image-outline' : localStorage.getItem('viewMode') || 'image-outline'
   },
   computed: {
+    viewItems() {
+      return [
+        { view: 'image-outline', icon: 'mdi-image-outline', title: this.$t('process.image-outline') },
+        { view: 'view-comfy', icon: 'mdi-view-comfy', title: this.$t('process.view-comfy') },
+        { view: 'view-module', icon: 'mdi-view-module', title: this.$t('process.view-module') },
+        { view: 'view-list', icon: 'mdi-view-list', title: this.$t('process.view-list'), divider: true }
+      ]
+    },
     processesFiltered: function() {
       if (!this.$store.state.process.list) return []
       return this.$store.state.process.list.filter(process => {
