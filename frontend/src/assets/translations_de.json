@@ -1003,7 +1003,7 @@
 				"tooltip": "Von {productName} abmelden"
 			}
 		},
-		"emptyStart": "Derzeit haben Sie keine Berechtigung, hier Aufgaben auszuführen. Bitte wenden Sie sich an den CIB seven Administrator, um Berechtigungen zu erhalten."
+		"emptyStart": "Derzeit haben Sie keine Berechtigung, hier Aufgaben auszuführen. Bitte wenden Sie sich an den {productName} Administrator, um Berechtigungen zu erhalten."
 	},
 	"errors": {		
 		"invalid": "Es fehlt eine gültige Eingabe",

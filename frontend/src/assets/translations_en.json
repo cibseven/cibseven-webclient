@@ -1003,7 +1003,7 @@
 				"tooltip": "Logout from {productName}"
 			}
 		},
-		"emptyStart": "Currently you do not have permission to perform any task here. Please contact the CIB seven administrator to get permissions."
+		"emptyStart": "Currently you do not have permission to perform any task here. Please contact the {productName} administrator to get permissions."
 	},
 	"errors": {
 		"invalid": "Please enter some valid information",

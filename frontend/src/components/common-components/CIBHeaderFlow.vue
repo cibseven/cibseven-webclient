@@ -132,7 +132,7 @@ export default {
   },
   computed: {
     productName() {
-      return this.$root.config.productName || this.$t('login.productName')
+      return this.$root.config.productNamePageTitle || this.$t('login.productName')
     },
     normalizedEngines() {
       return this.engines.map(engine => ({

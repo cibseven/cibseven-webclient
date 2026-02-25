@@ -1003,7 +1003,7 @@
 				"tooltip": "Cerrar sesión de {productName}"
 			}
 		},
-		"emptyStart": "Actualmente no tiene permisos para realizar tareas aquí. Por favor contacte con el administrador de CIB seven para que le asigne permisos."
+		"emptyStart": "Actualmente no tiene permisos para realizar tareas aquí. Por favor contacte con el administrador de {productName} para que le asigne permisos."
 	},
 	"errors": {
 		"invalid": "Por favor, introduce un valor válido",
