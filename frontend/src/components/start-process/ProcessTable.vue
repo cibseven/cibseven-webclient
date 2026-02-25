@@ -25,12 +25,12 @@
         <b-button :title="$t('process.favorite')" tabindex="-1" @click="$emit('favorite', table.item)" variant="link" class="mdi mdi-24px" :class="table.item.favorite ? 'mdi-star text-primary' : 'mdi-star-outline text-secondary'"></b-button>
       </template>
       <template v-slot:cell(name)="table">
-        <b-button variant="link" @click="$emit('start-process', table.item)" :title="table.item.name || table.item.key" class="ps-0 pe-0 text-start">
+        <b-button variant="link" @click="$emit('start-process', table.item)" :title="$t('process.startProcess') + ': ' + (table.item.name || table.item.key)" class="ps-0 pe-0 text-start">
           <HighlightedText :text="table.item.name || table.item.key" :keyword="processesFilter"/>
         </b-button>
       </template>
       <template v-slot:cell(key)="table">
-        <HighlightedText :text="table.item.key" :keyword="processesFilter" :title="table.item.key"/>
+        <HighlightedText :text="table.item.key" :keyword="processesFilter" :title="$t('process.key') + ': ' + table.item.key"/>
       </template>
       <template v-slot:cell(tenantId)="table">
         <div class="text-truncate" :title="$t('process.tenant') + ': ' + table.item.tenantId">{{ table.item.tenantId }}</div>
