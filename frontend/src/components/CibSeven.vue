@@ -261,12 +261,12 @@ export default {
             }, {
               to: '/seven/auth/admin/users',
               active: ['seven/auth/admin/user', 'seven/auth/admin/create-user'],
-              tooltip: 'admin.users.title',
+              tooltip: 'admin.users.tooltip',
               title: 'admin.users.title'
             }, {
               to: '/seven/auth/admin/groups',
               active: ['seven/auth/admin/group', 'seven/auth/admin/create-group'],
-              tooltip: 'admin.groups.title',
+              tooltip: 'admin.groups.tooltip',
               title: 'admin.groups.title'
             }, {
               to: '/seven/auth/admin/tenants',
@@ -276,7 +276,7 @@ export default {
             }, {
               to: '/seven/auth/admin/authorizations',
               active: ['seven/auth/admin/authorizations'],
-              tooltip: 'admin.authorizations.title',
+              tooltip: 'admin.authorizations.tooltip',
               title: 'admin.authorizations.title'
             }, {
               to: '/seven/auth/admin/system',

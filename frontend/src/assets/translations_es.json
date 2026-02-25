@@ -547,6 +547,7 @@
 		"exportCsv": "Exportar todo",
 		"users": {
 			"title": "Usuarios",
+			"tooltip": "Gestión de usuarios",
 			"id": "ID Usuario",
 			"firstName": "Nombre",
 			"lastName": "Apellidos",
@@ -621,6 +622,7 @@
 		},
 		"groups": {
 			"title": "Grupos",
+			"tooltip": "Gestión de grupos",
 			"id": "ID",
 			"name": "Nombre",
 			"type": "Tipo",
@@ -677,6 +679,7 @@
 		},
 		"authorizations": {
 			"title": "Autorizaciones",
+			"tooltip": "Gestión de autorizaciones",
 			"type": "Tipo",
 			"userIdGroupId": "Usuario / Grupo",
 			"permissions": "Permisos",
