@@ -14,7 +14,7 @@
 		}
 	},
 	"login": {
-		"productName": "@:cib-header.productName",
+		"productName": "CIB seven",
 		"productSlogan": "Process Management Platform",
 		"username": "Username",
 		"password": "Password",
@@ -91,6 +91,7 @@
 		"endTime": "End time",
 		"businessKey": "Business key",
 		"title": "Processes",
+		"viewMode": "View mode",
 		"view-comfy": "Small",
 		"view-module": "Large",
 		"view-list": "List",
@@ -547,6 +548,7 @@
 		"exportCsv": "Export all",
 		"users": {
 			"title": "Users",
+			"tooltip": "Users management",
 			"id": "User ID",
 			"firstName": "First name",
 			"lastName": "Last name",
@@ -621,6 +623,7 @@
 		},
 		"groups": {
 			"title": "Groups",
+			"tooltip": "Groups management",
 			"id": "Group ID",
 			"name": "Name",
 			"type": "Type",
@@ -677,6 +680,7 @@
 		},
 		"authorizations": {
 			"title": "Authorizations",
+			"tooltip": "Authorizations management",
 			"type": "Type",
 			"userIdGroupId": "User / Group",
 			"permissions": "Permissions",
@@ -775,14 +779,11 @@
 		"email": "@:login.email"
 	},
 	"cib-header": {
-		"productName": "CIB seven",
 		"languages": "Language",
 		"languagesMenu": "Language",
 		"engine": "Engine",
 		"engineMenu": "Engine selection",
 		"helpMenu": "Help",
-		"logout": "Logout",
-		"userMenu": "User account",
 		"en": "English",
 		"de": "Deutsch",
 		"es": "Español",
@@ -994,7 +995,18 @@
 			"title": "Old Cockpit",
 			"tooltip": "Open old Cockpit"
 		},
-		"emptyStart": "Currently you do not have permission to perform any task here. Please contact the CIB seven administrator to get permissions."
+		"account": {
+			"tooltip": "View and edit your account information or log out",
+			"profile": {
+				"title": "User Profile",
+				"tooltip": "View and edit your account information"
+			},
+			"logout": {
+				"title": "Logout",
+				"tooltip": "Logout from {productName}"
+			}
+		},
+		"emptyStart": "Currently you do not have permission to perform any task here. Please contact the {productName} administrator to get permissions."
 	},
 	"errors": {
 		"invalid": "Please enter some valid information",
@@ -1123,9 +1135,9 @@
 			"email": "cibsupport{'@'}cib.de",
 			"version": "Version"
 		},
-		"flowModalAbout": {
-			"modalText": "About",
-			"title": "CIB seven"
+		"about": {
+			"title": "About",
+			"tooltip": "View version"
 		}
 	},
 	"multisort": {

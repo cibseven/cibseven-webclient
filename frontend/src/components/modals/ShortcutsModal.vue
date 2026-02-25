@@ -23,7 +23,7 @@
         <span class="mdi mdi-48px mdi-keyboard-outline pe-1 text-info"></span>
       </div>
       <div class="col-10 ps-0">
-        <h5 v-if="itemsGlobal.length > 0">{{ $t('infoAndHelp.flowModalAbout.title') }}</h5>
+        <h5 v-if="itemsGlobal.length > 0">{{ productName }}</h5>
         <ShortcutsTable :items="itemsGlobal"></ShortcutsTable>
         <h5 v-if="itemsTasks.length > 0">{{ $t('start.taskList.title') }}</h5>
         <ShortcutsTable :items="itemsTasks"></ShortcutsTable>
@@ -40,6 +40,9 @@ export default {
   name: 'ShortcutsModal',
   components: { ShortcutsTable },
   computed: {
+    productName() {
+      return this.$root.config.productNamePageTitle || this.$t('login.productName')
+    },
     itemsGlobal() {
       return getShortcutsForModal(this.$root.config, 'global')
     },
