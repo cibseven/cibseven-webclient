@@ -20,7 +20,7 @@
   <div class="h-100 d-flex flex-column">
     <CIBHeaderFlow v-if="$root.header === 'true'" ref="headerFlow" class="flex-shrink-0" :languages="$root.config.supportedLanguages.sort()" :user="$root.user" @logout="logout">
       <div class="me-auto d-flex flex-row overflow-hidden" style="min-height: 38px;">
-        <b-navbar-brand ref="brandHome" class="py-0 flex-shrink-0" :aria-label="$t('cib-header.productName') + ' - ' + $t('navigation.home')" to="/seven/auth/start">
+        <b-navbar-brand ref="brandHome" class="py-0 flex-shrink-0" :aria-label="productName + ' - ' + $t('navigation.home')" to="/seven/auth/start">
           <img height="38px" alt="" :src="$root.logoPath" class="d-none d-md-inline"/>
           <img height="38px" alt="" :src="$root.logoIconPath" class="d-md-none"/>
           <span class="d-none d-md-inline align-middle"></span>
@@ -186,6 +186,9 @@ export default {
     }
   },
   computed: {
+    productName() {
+      return this.$root.config.productNamePageTitle || this.$t('login.productName')
+    },
     menuItems: function() {
       return [{
           show: this.permissionsTaskList && this.startableProcesses,
@@ -479,7 +482,7 @@ export default {
         case 'adminTenants':
           // "CIB seven | Admin | <view>"
           updateAppTitle(
-            this.$root.config.productNamePageTitle || this.$t('cib-header.productName'),
+            this.productName,
             this.$t('start.admin.title'),
             title
           )
@@ -487,7 +490,7 @@ export default {
         default:
           // "CIB seven | <view>"
           updateAppTitle(
-            this.$root.config.productNamePageTitle || this.$t('cib-header.productName'),
+            this.productName,
             title
           )
           break

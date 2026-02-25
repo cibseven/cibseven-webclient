@@ -14,7 +14,7 @@
 		}
 	},
 	"login": {
-		"productName": "@:cib-header.productName",
+		"productName": "CIB seven",
 		"productSlogan": "Prozess Management Plattform",
 		"username": "Benutzername",
 		"password": "Passwort",
@@ -775,7 +775,6 @@
 		"email": "@:login.email"
 	},
 	"cib-header": {
-		"productName": "CIB seven",
 		"languages": "Sprache",
 		"languagesMenu": "Sprache",
 		"engine": "Engine",
