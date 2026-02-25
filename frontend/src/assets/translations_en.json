@@ -780,7 +780,6 @@
 		"engine": "Engine",
 		"engineMenu": "Engine selection",
 		"helpMenu": "Help",
-		"logout": "Logout",
 		"userMenu": "User account",
 		"en": "English",
 		"de": "Deutsch",
@@ -992,6 +991,17 @@
 		"oldCockpit": {
 			"title": "Old Cockpit",
 			"tooltip": "Open old Cockpit"
+		},
+		"account": {
+			"tooltip": "View and edit your account information or log out",
+			"profile": {
+				"title": "User Profile",
+				"tooltip": "View and edit your account information"
+			},
+			"logout": {
+				"title": "Logout",
+				"tooltip": "Logout from {productName}"
+			}
 		},
 		"emptyStart": "Currently you do not have permission to perform any task here. Please contact the CIB seven administrator to get permissions."
 	},

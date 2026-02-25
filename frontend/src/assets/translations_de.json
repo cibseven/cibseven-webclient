@@ -780,7 +780,6 @@
 		"engine": "Engine",
 		"engineMenu": "Engine-Auswahl",
 		"helpMenu": "Hilfe",
-		"logout": "Abmelden",
 		"userMenu": "Benutzerkonto",
 		"en": "English",
 		"de": "Deutsch",
@@ -992,6 +991,17 @@
 		"oldCockpit": {
 			"title": "Altes Cockpit",
 			"tooltip": "Altes Cockpit öffnen"
+		},
+		"account": {
+			"tooltip": "Kontoinformationen ansehen und bearbeiten oder abmelden",
+			"profile": {
+				"title": "Benutzerprofil",
+				"tooltip": "Kontoinformationen ansehen und bearbeiten"
+			},
+			"logout": {
+				"title": "Abmelden",
+				"tooltip": "Von {productName} abmelden"
+			}
 		},
 		"emptyStart": "Derzeit haben Sie keine Berechtigung, hier Aufgaben auszuführen. Bitte wenden Sie sich an den CIB seven Administrator, um Berechtigungen zu erhalten."
 	},

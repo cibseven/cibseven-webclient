@@ -100,7 +100,7 @@
               <span class="mdi mdi-24px mdi-account align-middle" aria-hidden="true"></span> <span>{{ user.displayName }}</span>
             </template>
             <slot name="userItems"></slot>
-            <b-dropdown-item-button @click="logout" :title="$t('cib-header.logout')">{{ $t('cib-header.logout') }}</b-dropdown-item-button>
+            <b-dropdown-item-button @click="logout" :title="$t('start.account.logout.tooltip', { productName })">{{ $t('start.account.logout.title') }}</b-dropdown-item-button>
           </b-nav-item-dropdown>
         </b-navbar-nav>
       </b-collapse>
@@ -131,6 +131,9 @@ export default {
     }
   },
   computed: {
+    productName() {
+      return this.$root.config.productName || this.$t('login.productName')
+    },
     normalizedEngines() {
       return this.engines.map(engine => ({
         ...engine,

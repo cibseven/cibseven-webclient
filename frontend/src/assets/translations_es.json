@@ -780,7 +780,6 @@
 		"engine": "Motor",
 		"engineMenu": "Selección de motor",
 		"helpMenu": "Ayuda",
-		"logout": "Cerrar sesión",
 		"userMenu": "Cuenta de usuario",
 		"en": "English",
 		"de": "Deutsch",
@@ -992,6 +991,17 @@
 		"oldCockpit": {
 			"title":"Cockpit antiguo",
 			"tooltip": "Abrir Cockpit antiguo"
+		},
+		"account": {
+			"tooltip": "Ver y editar la información de su cuenta o cerrar sesión",
+			"profile": {
+				"title": "Perfil de usuario",
+				"tooltip": "Ver y editar la información de su cuenta"
+			},
+			"logout": {
+				"title": "Cerrar sesión",
+				"tooltip": "Cerrar sesión de {productName}"
+			}
 		},
 		"emptyStart": "Actualmente no tiene permisos para realizar tareas aquí. Por favor contacte con el administrador de CIB seven para que le asigne permisos."
 	},
