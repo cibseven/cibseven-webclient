@@ -92,10 +92,10 @@
 
           <b-nav-item-dropdown 
             v-if="user" 
-            :title="$t('admin.users.account')" 
+            :title="$t('start.account.tooltip')" 
             extra-toggle-classes="py-1" 
             right
-            :label="$t('cib-header.userMenu')">
+            :label="$t('admin.users.account')">
             <template v-slot:button-content>
               <span class="mdi mdi-24px mdi-account align-middle" aria-hidden="true"></span> <span>{{ user.displayName }}</span>
             </template>
