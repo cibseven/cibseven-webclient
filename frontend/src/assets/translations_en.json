@@ -1132,9 +1132,9 @@
 			"email": "cibsupport{'@'}cib.de",
 			"version": "Version"
 		},
-		"flowModalAbout": {
-			"modalText": "About",
-			"title": "CIB seven"
+		"about": {
+			"title": "About",
+			"tooltip": "View version"
 		}
 	},
 	"multisort": {

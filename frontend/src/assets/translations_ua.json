@@ -1131,9 +1131,9 @@
 			"email": "cibsupport{'@'}cib.de",
 			"version": "Версія"
 		},
-		"flowModalAbout": {
-			"modalText": "Про сайт",
-			"title": "CIB seven"
+		"about": {			
+			"title": "Про сайт",
+			"tooltip": "Переглянути версію"
 		}
 	},
 	"multisort": {
