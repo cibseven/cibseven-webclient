@@ -31,45 +31,44 @@
             <template #prepend>
               <b-button :title="$t('searches.search')" aria-hidden="true" class="rounded-left" variant="secondary"><span class="mdi mdi-magnify" style="line-height: initial"></span></b-button>
             </template>
-            <b-form-input  :title="$t('searches.search')" :placeholder="$t('searches.search')" v-model.trim="filter"></b-form-input>
+            <label class="visually-hidden" for="process-search">{{ $t('searches.search').replace('...', '') }}</label>
+            <b-form-input id="process-search" :title="$t('searches.search')" :placeholder="$t('searches.search')" v-model.trim="filter"></b-form-input>
           </b-input-group>
         </div>
         <div v-if="!isMobile()" class="col-md-3 d-flex align-items-center justify-content-end p-0">
           <div class="d-inline me-1">{{ $t('process.' + view) }}</div>
           <b-dropdown ref="viewDropdown" variant="outline-secondary" toggle-class="border-0 p-0" right class="d-inline-flex">
             <template v-slot:button-content>
-              <span :title="$t('process.' + view)"><span :class="activeViewMode"></span></span>
+              <span class="visually-hidden">{{ $t('process.viewMode') }}</span>
+              <span :title="$t('process.' + view)"><span :class="'mdi mdi-24px mdi-' + view"></span></span>
             </template>
-            <b-dropdown-item @click="changeViewMode('image-outline')" :active="view === 'image-outline'">
-              <span class="mdi mdi-24px mdi-image-outline centered-icon">{{ $t('process.image-outline') }}</span>
-            </b-dropdown-item>
-            <b-dropdown-item @click="changeViewMode('view-module')" :active="view === 'view-module'">
-              <span class="mdi mdi-24px mdi-view-module centered-icon">{{ $t('process.view-module') }}</span>
-            </b-dropdown-item>
-            <b-dropdown-item @click="changeViewMode('view-comfy')" :active="view === 'view-comfy'">
-              <span class="mdi mdi-24px mdi-view-comfy centered-icon">{{ $t('process.view-comfy') }}</span>
-            </b-dropdown-item>
-            <b-dropdown-item @click="changeViewMode('view-list')" :active="view === 'view-list'">
-              <span class="mdi mdi-24px mdi-view-list centered-icon">{{ $t('process.view-list') }}</span>
-            </b-dropdown-item>
+            <template v-for="item in viewItems" :key="item.view">
+              <b-dropdown-divider v-if="item.divider"></b-dropdown-divider>
+              <b-dropdown-item-button @click="changeViewMode(item.view)" :active="view === item.view">
+                <span :class="'mdi mdi-24px ' + item.icon + ' centered-icon'">{{ item.title }}</span>
+              </b-dropdown-item-button>
+            </template>
           </b-dropdown>
         </div>
       </div>
     </div>
     <div class="container-fluid overflow-auto h-100" :class="!isTable ? 'bg-light' : ''">
       <div v-if="processesByOptions.length && isTable" class="d-flex h-100">
-        <ProcessTable :processes="processesByOptions" @start-process="startProcess($event)" @view-process="viewProcess($event)" @favorite="favoriteHandler($event)"></ProcessTable>
+        <ProcessTable :processes="processesByOptions" :processesFilter="filter" @start-process="startProcess($event)" @view-process="viewProcess($event)" @favorite="favoriteHandler($event)"></ProcessTable>
       </div>
       <div v-if="processesByOptions.length && !isTable" class="d-flex flex-wrap px-5 pt-3 justify-content-center">
         <div v-for="process in processesByOptions" :key="process.id">
-          <ProcessCard v-if="view !== 'image-outline'" :process="process" :process-name="processName(process)" :view="view"
-            @start-process="startProcess($event)" @view-process="viewProcess($event)" @favorite="favoriteHandler($event)"></ProcessCard>
-          <ProcessAdvanced v-else :process="process" :process-name="processName(process)" :view="view"
-            @start-process="startProcess($event)" @view-process="viewProcess($event)" @favorite="favoriteHandler($event)"></ProcessAdvanced>
+          <ProcessCard
+            :process="process" :view="view"
+            :filter="filter"
+            @start-process="startProcess($event)"
+            @view-process="viewProcess($event)"
+            @favorite="favoriteHandler($event)">
+          </ProcessCard>
         </div>
       </div>
       <div v-if="!processesByOptions.length">
-        <img :alt="$t(textEmptyProcessesList)" src="@/assets/images/process/empty_processes_list_dark_background.svg" class="d-block mx-auto mt-5 mb-3" style="max-width: 250px">
+        <img alt="" src="@/assets/images/process/empty_processes_list_dark_background.svg" class="d-block mx-auto mt-5 mb-3" style="max-width: 250px">
         <div class="h5 text-secondary text-center">{{ $t(textEmptyProcessesList) }}</div>
       </div>
       <StartProcess ref="processStart" @process-started="$refs.processStarted.show(10)" hideProcessSelection></StartProcess>
@@ -91,8 +90,7 @@
 <script>
 import { permissionsMixin } from '@/permissions.js'
 import ProcessTable from '@/components/start-process/ProcessTable.vue'
-import ProcessAdvanced from '@/components/process/ProcessAdvanced.vue'
-import ProcessCard from '@/components/process/ProcessCard.vue'
+import ProcessCard from '@/components/start-process/ProcessCard.vue'
 import StartProcess from '@/components/start-process/StartProcess.vue'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
 import { SuccessAlert } from '@cib/common-frontend'
@@ -100,7 +98,7 @@ import { ProcessService } from '@/services.js'
 
 export default {
   name: 'StartProcessList',
-  components: { ProcessTable, ProcessAdvanced, ProcessCard, StartProcess, BpmnViewer, SuccessAlert },
+  components: { ProcessTable, ProcessCard, StartProcess, BpmnViewer, SuccessAlert },
   inject: ['loadProcesses', 'isMobile'],
   mixins: [permissionsMixin],
   data: function () {
@@ -122,6 +120,14 @@ export default {
     this.view = this.isMobile() ? 'image-outline' : localStorage.getItem('viewMode') || 'image-outline'
   },
   computed: {
+    viewItems() {
+      return [
+        { view: 'image-outline', icon: 'mdi-image-outline', title: this.$t('process.image-outline') },
+        { view: 'view-comfy', icon: 'mdi-view-comfy', title: this.$t('process.view-comfy') },
+        { view: 'view-module', icon: 'mdi-view-module', title: this.$t('process.view-module') },
+        { view: 'view-list', icon: 'mdi-view-list', title: this.$t('process.view-list'), divider: true }
+      ]
+    },
     processesFiltered: function() {
       if (!this.$store.state.process.list) return []
       return this.$store.state.process.list.filter(process => {
@@ -142,7 +148,6 @@ export default {
       })
     },
     isTable: function() { return this.view === 'view-list' },
-    activeViewMode: function() { return 'mdi mdi-24px mdi-' + this.view },
     processesByOptions: function() { return this[this.selectedOption + 'Filter'](this.processesFiltered) },
     textEmptyProcessesList: function() {
       return this.selectedOption === 'all' && this.filter === ''  ? 'process.emptyProcessList' : 'process.emptyProcessListFiltered'
@@ -205,6 +210,12 @@ export default {
 </script>
 
 <style lang="css" scoped>
+/* Customizing the separator to reduce gap */
+.dropdown-divider {
+  margin-top: 0.15rem; /* Reduce top gap */
+  margin-bottom: 0.15rem; /* Reduce bottom gap */
+}
+
 .centered-icon {
   /* vertically center the Material Design icon with the text */
   display: inline-flex;

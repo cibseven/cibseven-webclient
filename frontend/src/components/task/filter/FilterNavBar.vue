@@ -31,8 +31,8 @@
           <b-form-input :title="$t('searches.searchByFilterName')" size="sm" ref="input" type="search" v-model.trim="filter"
           class="form-control border-start-0 ps-0 form-control border-light shadow-none" :placeholder="$t('searches.searchByFilterName')"/>
           <template #append>
-            <b-button size="sm" v-hover-style="{ classes: ['text-primary'] }" variant="secondary-outline"
-              @click="sortOrder === 'desc' ? sortOrder = 'asc' : sortOrder = 'desc'" class="mdi mdi-16px py-0"
+            <b-button size="sm" variant="light"
+              @click="sortOrder === 'desc' ? sortOrder = 'asc' : sortOrder = 'desc'" class="mdi mdi-16px py-0 border-0"
               :class="sortOrder === 'desc' ? 'mdi-arrow-down' : 'mdi-arrow-up'"
               :title="sortOrder === 'desc' ? $t('sorting.desc') : $t('sorting.asc')">
               <span v-if="sortOrder === 'desc'" class="visually-hidden">{{ $t('sorting.desc') }}</span>
@@ -60,25 +60,25 @@
               </div>
               <div :class="getClasses(filter)" class="ms-auto">
                 <button v-if="filterByPermissions($root.config.permissions.editFilter, $store.state.filter.selected)"
-                  class="btn btn-outline-secondary btn-sm border-0" type="button" :title="$t('nav-bar.filters.edit')" @click.stop="selectFilter(filter); showFilterDialog('edit')">
-                  <span class="visually-hidden">{{ $t('nav-bar.filters.edit') }}</span>
+                  class="btn btn-light btn-sm border-0 me-1" type="button" :title="$t('nav-bar.filters.edit')" @click.stop="selectFilter(filter); showFilterDialog('edit')" @keydown.enter.stop.prevent="selectFilter(filter); showFilterDialog('edit')" @keydown.space.stop.prevent="selectFilter(filter); showFilterDialog('edit')">
+                  <span class="visually-hidden">{{ $t('nav-bar.filters.editFilter', { filterName: filter.name }) }}</span>
                   <span class="mdi mdi-pencil"></span>
                 </button>
                 <button v-if="filterByPermissions($root.config.permissions.deleteFilter, $store.state.filter.selected)"
-                  class="btn btn-outline-secondary btn-sm border-0" type="button" :title="$t('nav-bar.filters.delete')"
-                  @click.stop="workingFilter = filter; $refs.confirmDeleteFilter.show()">
-                  <span class="visually-hidden">{{ $t('nav-bar.filters.delete') }}</span>
+                  class="btn btn-light btn-sm border-0 me-1" type="button" :title="$t('nav-bar.filters.delete')"
+                  @click.stop="workingFilter = filter; $refs.confirmDeleteFilter.show()" @keydown.enter.stop.prevent="workingFilter = filter; $refs.confirmDeleteFilter.show()" @keydown.space.stop.prevent="workingFilter = filter; $refs.confirmDeleteFilter.show()">
+                  <span class="visually-hidden">{{ $t('nav-bar.filters.deleteFilter', { filterName: filter.name }) }}</span>
                   <span class="mdi mdi-close"></span>
                 </button>
               </div>
-              <button v-if="filter.favorite" class="btn btn-outline-secondary btn-sm border-0" type="button"
-                @click.stop="deleteFavoriteFilter(filter)" :title="$t('nav-bar.filters.pin')">
-                <span class="visually-hidden">{{ $t('nav-bar.filters.pin') }}</span>
+              <button v-if="filter.favorite" class="btn btn-light btn-sm border-0" type="button"
+                @click.stop="deleteFavoriteFilter(filter)" @keydown.enter.stop.prevent="deleteFavoriteFilter(filter)" @keydown.space.stop.prevent="deleteFavoriteFilter(filter)" :title="$t('nav-bar.filters.unpin')">
+                <span class="visually-hidden">{{ $t('nav-bar.filters.unpinFilter', { filterName: filter.name }) }}</span>
                 <span class="mdi mdi-pin text-dark"></span>
               </button>
-              <button v-else class="btn btn-outline-secondary btn-sm border-0" type="button"
-                @click.stop="setFavoriteFilter(filter)" :title="$t('nav-bar.filters.pin')">
-                <span class="visually-hidden">{{ $t('nav-bar.filters.pin') }}</span>
+              <button v-else class="btn btn-light btn-sm border-0" type="button"
+                @click.stop="setFavoriteFilter(filter)" @keydown.enter.stop.prevent="setFavoriteFilter(filter)" @keydown.space.stop.prevent="setFavoriteFilter(filter)" :title="$t('nav-bar.filters.pin')">
+                <span class="visually-hidden">{{ $t('nav-bar.filters.pinFilter', { filterName: filter.name }) }}</span>
                 <span class="mdi mdi-pin text-muted"></span>
               </button>
             </div>
@@ -260,13 +260,13 @@ export default {
       }
     },
     getClasses: function(filter) {
-      const classes = []
-      if (filter !== this.focused) classes.push('invisible')
+      const classes = ['action-buttons-hidden']
+      if (filter === this.focused) classes.pop()
       return classes
     },
     deleteFilter: function() {
       this.$store.dispatch('deleteFilter', { filterId: this.workingFilter.id }).then(() => {
-        this.$emit('filter-alert', { message: 'msgFilterDeleted', filter: this.workingFilter.name })
+        this.$emit('filter-alert', { message: 'nav-bar.filters.msgFilterDeleted', filter: this.workingFilter.name })
         localStorage.removeItem('filter')
 		if (this.$store.state.filter.selected === this.workingFilter && this.$store.state.filter.list[0]) {
 			this.selectFilter(this.$store.state.filter.list[0])
@@ -290,3 +290,16 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.action-buttons-hidden {
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.list-group-item:hover .action-buttons-hidden,
+.list-group-item:focus-within .action-buttons-hidden,
+.action-buttons-hidden:focus-within {
+  opacity: 1;
+}
+</style>

@@ -39,7 +39,7 @@
             <b-input-group size="sm" class="align-items-center">
               <b-dropdown ref="sortingList" size="sm" variant="link" class="me-1" toggle-class="text-decoration-none" :title="$t('sorting.sortBy')" no-caret>
                 <template #button-content>
-                  <i v-hover-style="{ classes: ['text-primary'] }" class="mdi mdi-18px mdi-filter-variant"></i><span class="visually-hidden">{{ $t('sorting.sortBy') }}</span>
+                  <i class="mdi mdi-18px mdi-filter-variant"></i><span class="visually-hidden">{{ $t('sorting.sortBy') }}</span>
                 </template>
                 <b-dd-item-btn v-for="item in filteredFields" :key="item" @click="taskSorting.sortBy = item; setSorting('key'); $refs.sortingList.hide()" :class="taskSorting.sortBy === item ? 'active' : ''">
                   {{ $t('sorting.' + item) }}
@@ -47,7 +47,7 @@
               </b-dropdown>
               <b-button variant="link" class="text-decoration-none px-0" @click="$refs.sortingList.show()">{{ $t('sorting.' + taskSorting.sortBy) }}</b-button>
               <template v-slot:append>
-                <b-button size="sm" v-hover-style="{ classes: ['text-primary'] }" variant="link" @click="setSorting('order')" class="mdi mdi-18px ms-1"
+                <b-button size="sm" variant="link" @click="setSorting('order')" class="mdi mdi-18px ms-1"
                   :class="taskSorting.sortOrder === 'desc' ? 'mdi-arrow-down' : 'mdi-arrow-up'"
                   :title="taskSorting.sortOrder === 'desc' ? $t('sorting.desc') : $t('sorting.asc')">
                   <span v-if="taskSorting.sortOrder === 'desc'" class="visually-hidden">{{ $t('sorting.desc') }}</span>
@@ -58,7 +58,7 @@
           </b-form-group>
           <div v-if="$root.config.layout.showFilterReminderDate || $root.config.layout.showFilterDueDate ||
             ($root.config.taskFilter.advancedSearch.processVariables.length > 0 && $root.config.taskFilter.advancedSearch.filterEnabled)" class="ms-auto col-auto">
-            <b-button ref="filters" v-hover-style="{ classes: ['text-primary'] }" variant="link" :title="$t('nav-bar.filtersAdditionalsTitle')">
+            <b-button ref="filters" variant="link" :title="$t('nav-bar.filtersAdditionalsTitle')">
               <span class="mdi mdi-18px"
                 :class="$store.state.filter.settings.reminder || $store.state.filter.settings.dueDate || $store.state.advancedSearch.criterias.length > 0 ? 'mdi-filter-menu text-primary' : 'mdi-filter-menu-outline'"></span>
             </b-button>
@@ -97,15 +97,17 @@
               tabindex=0 style="cursor: pointer" v-on:keyup.enter="selectedTask(task)" action>
               <div class="d-flex align-items-center">
                 <h6 style="max-width: 100%; font-size: 1rem">
-                  <span class="fw-bold">{{ task.name }}</span>
+                  <HighlightedText :text="task.name" :keyword="search" class="fw-bold">{{ task.name }}</HighlightedText>
                 </h6>
                 <div class="d-flex ms-auto">
-                  <b-button @click="$refs['followUp' + task.id][0].show()" v-if="$root.config.layout.showFilterReminderDate" size="sm" :class="getReminderClasses(task)" variant="outline-secondary" class="mdi mdi-18px mdi-alarm border-0" :title="getDateFormatted(task.followUp, 'L', 'setReminder')"></b-button>
-                  <b-button @click="$refs['due' + task.id][0].show()" v-if="$root.config.layout.showFilterDueDate" size="sm" :class="getDueClasses(task)" variant="outline-secondary" class="mdi mdi-18px mdi-calendar-alert border-0" :title="getDateFormatted(task.due, 'L', 'setDeadline')"></b-button>
+                  <b-button @click.stop="$refs['followUp' + task.id][0].show()" @keydown.enter.stop.prevent="$refs['followUp' + task.id][0].show()" @keyup.enter.stop.prevent 
+                  @keydown.space.stop.prevent="$refs['followUp' + task.id][0].show()" v-if="$root.config.layout.showFilterReminderDate" size="sm" :class="getReminderClasses(task)" variant="light" class="mdi mdi-18px mdi-alarm border-0 me-1" :title="getDateFormatted(task.followUp, 'L', 'setReminder')"></b-button>
+                  <b-button @click.stop="$refs['due' + task.id][0].show()" @keydown.enter.stop.prevent="$refs['due' + task.id][0].show()" @keyup.enter.stop.prevent 
+                  @keydown.space.stop.prevent="$refs['due' + task.id][0].show()" v-if="$root.config.layout.showFilterDueDate" size="sm" :class="getDueClasses(task)" variant="light" class="mdi mdi-18px mdi-calendar-alert border-0" :title="getDateFormatted(task.due, 'L', 'setDeadline')"></b-button>
                 </div>
               </div>
               <div v-if="task.businessKey && $root.config.layout.showBusinessKey" class="d-flex align-items-center mb-1">
-                <span :title="$t(task.businessKey)">{{ task.businessKey }}</span><br>
+                <HighlightedText :text="task.businessKey" :keyword="search" :title="$t('process.businessKey') + ': ' + task.businessKey"/>
               </div>
               <div v-if="getProcessName(task.processDefinitionId)" class="fw-normal h5">
                 {{ getProcessName(task.processDefinitionId) }}
@@ -113,9 +115,14 @@
               <div class="d-flex align-items-center">
                 <div class="h6 fw-normal m-0" :title="formatDateForTooltips(task.created)">{{ getDateFormatted(task.created) }}</div><br>
                 <div class="d-flex ms-auto">
-                  <div class="h6 text-end p-0 fw-normal m-0" v-if="task.assignee != null"><span class="mdi mdi-18px mdi-account text-secondary"></span><span class="p-1">{{ getCompleteName(task) }}</span></div>
+                  <div class="h6 text-end p-0 fw-normal m-0" v-if="task.assignee != null">
+                    <HighlightedText :text="getCompleteName(task)" :keyword="search" class="mdi mdi-18px mdi-account text-secondary p-1"></HighlightedText>
+                  </div>
                   <div class="h6 text-end p-0 fw-normal n-0" v-if="task.assignee == null">
-                    <b-button variant="link" class="p-0 text-dark" @click.stop="checkAssignee(task)"><span class="mdi mdi-18px mdi-account-question text-secondary"></span> {{ $t('task.assignToMe') }}</b-button>
+                    <b-button variant="link" class="p-0 text-dark" @click.stop="checkAssignee(task)" @keydown.enter.stop="checkAssignee(task)" @keyup.enter.stop.prevent @keydown.space.prevent.stop="checkAssignee(task)">
+                      <span class="mdi mdi-18px mdi-account-question text-secondary"></span>
+                      {{ $t('task.assignToMe') }}
+                    </b-button>
                   </div>
                 </div>
               </div>
@@ -138,8 +145,8 @@
                 <b-form-timepicker v-model="selectedDateT.dueTime" @input="setTime($event, 'due')" no-close-button :label-no-time-selected="$t('cib-timepicker.noDate')"
                   reset-button class="flex-fill" reset-value="23:59:00" :label-reset-button="$t('cib-timepicker.reset')" :locale="currentLanguage()"></b-form-timepicker>
                 <template v-slot:modal-footer>
-                  <b-button :title="$t('confirm.cancel')" @click="$refs['due' + task.id][0].hide()" variant="light">{{ $t('confirm.cancel') }}</b-button>
-                  <b-button :title="$t('task.setDeadline')" @click="setDate(task, 'due')" variant="primary">{{ $t('task.setDeadline') }}</b-button>
+                  <b-button @click="$refs['due' + task.id][0].hide()" variant="light">{{ $t('confirm.cancel') }}</b-button>
+                  <b-button @click="setDate(task, 'due')" variant="primary">{{ $t('task.setDeadline') }}</b-button>
                 </template>
               </b-modal>
             </b-list-group-item>
@@ -147,11 +154,11 @@
         </div>
         <BWaitingBox v-show="tasksFiltered.length < 1" ref="taskLoader" class="d-flex justify-content-center pt-4" styling="width:30%">
           <div v-if="tasksFiltered.length < 1 && $store.state.filter.selected.name === 'default'">
-            <img :alt="$t('nav-bar.no-tasks-pending')" src="@/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mt-3 mb-2" style="width: 200px">
+            <img alt="" src="@/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mt-3 mb-2" style="width: 200px">
             <div class="h5 text-secondary text-center">{{ $t('nav-bar.no-tasks-pending') }}</div>
           </div>
           <div v-if="tasksFiltered.length < 1 && $store.state.filter.selected.name !== 'default'">
-            <img :alt="$t('nav-bar.no-tasks')" src="@/assets/images/task/no_tasks.svg" class="d-block mx-auto mt-3 mb-2" style="width: 200px">
+            <img alt="" src="@/assets/images/task/no_tasks.svg" class="d-block mx-auto mt-3 mb-2" style="width: 200px">
             <div class="h5 text-secondary text-center">{{ $t('nav-bar.no-tasks') }}</div>
           </div>
         </BWaitingBox>
@@ -174,13 +181,13 @@ import { formatDateForTooltips } from '@/utils/dates.js'
 import StartProcess from '@/components/start-process/StartProcess.vue'
 import AdvancedSearchModal from '@/components/task/AdvancedSearchModal.vue'
 import SmartSearch from '@/components/task/SmartSearch.vue'
-import { ConfirmDialog, BWaitingBox } from '@cib/common-frontend'
+import { ConfirmDialog, BWaitingBox, HighlightedText } from '@cib/common-frontend'
 import { mapActions } from 'vuex'
 
 export default {
   name: 'TasksNavBar',
-  components: { StartProcess, AdvancedSearchModal, SmartSearch, ConfirmDialog, BWaitingBox },
-  props: { tasks: Array, taskResultsIndex: Number },
+  components: { StartProcess, AdvancedSearchModal, SmartSearch, ConfirmDialog, BWaitingBox, HighlightedText },
+  props: { tasks: Array, taskResultsIndex: Number, search: String },
   inject: ['currentLanguage','isMobile'],
   emits: ['search-filter', 'process-started', 'selected-task', 'update-assignee', 'show-more', 'refresh-tasks', 'refresh-tasks-number'],
   data: function () {
@@ -192,7 +199,6 @@ export default {
       focused: null,
       taskSorting: { sortBy: null, sortOrder: 'desc' },
       selectedDateT: {},
-      selectedFilter: '',
       pauseRefreshButton: false,
       advancedFilter: [],
       advancedFilterAux: null,
@@ -367,16 +373,14 @@ export default {
     },
     getDueClasses: function(task) {
       const classes = []
-      if (!task.due) classes.push('text-muted')
-      else if (moment(task.due).isBefore(moment())) classes.push('text-danger')
+      if (moment(task.due).isBefore(moment())) classes.push('text-danger')
       else if (moment().add(this.$root.config.warnOnDueExpirationIn, 'hours').isAfter(moment(task.due))) classes.push('text-warning')
-      if (!this.isMobile() && task !== this.focused && task.id !== this.selectedDateT.id && !task.due) classes.push('invisible')
+      if (!this.isMobile() && task !== this.focused && task.id !== this.selectedDateT.id && !task.due) classes.push('action-button-hidden')
       return classes
     },
     getReminderClasses: function(task) {
       const classes = []
-      if (!task.followUp) classes.push('text-muted')
-      if (!this.isMobile() && task !== this.focused && task.id !== this.selectedDateT.id && !task.followUp) classes.push('invisible')
+      if (!this.isMobile() && task !== this.focused && task.id !== this.selectedDateT.id && !task.followUp) classes.push('action-button-hidden')
       return classes
     },
     claim: function(task) {
@@ -511,3 +515,16 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.action-button-hidden {
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.list-group-item:hover .action-button-hidden,
+.list-group-item:focus-within .action-button-hidden,
+.action-button-hidden:focus {
+  opacity: 1;
+}
+</style>

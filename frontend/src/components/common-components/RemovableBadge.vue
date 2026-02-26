@@ -17,25 +17,40 @@
 
 -->
 <template>
-  <div>
-    <div class="row flex-nowrap" v-for="(task, index) in tasks" :key="index">
-      <div class="col-10">
-        <b-progress
-          :variant="task.state == null ? 'info' : (task.state ? 'success' : 'danger')"
-          :animated="task.progress === (almost || 100) && task.state == null">
-          <b-progress-bar :value="task.progress" :label="task.name"></b-progress-bar>
-        </b-progress>
-      </div>
-      <div class="col-1">
-        <b-button-close v-if="task.cancel && task.state == null" @click="task.cancel" style="margin-top: -0.4rem" :title="$t('confirm.close')"></b-button-close>
-      </div>
-    </div>
+  <div class="badge bg-info rounded-pill ps-0 pe-3 pt-0 pb-1 d-inline-flex align-items-center" :title="tooltip">
+
+    <button @click="onRemove" class="btn btn-link p-0 m-0 ms-2 text-white px-1" :title="tooltipRemove">
+      <small class="mdi mdi-close-thick" style="font-weight: 500; font-size: 0.75rem"></small>
+    </button>
+
+    <span style="font-weight: 500; font-size: 0.75rem" class="pt-1">
+      {{ label }}
+    </span>
+
   </div>
 </template>
 
 <script>
 export default {
-  name: 'TaskList',
-  props: { tasks: Array, almost: Number }
+  name: 'RemovableBadge',
+  emits: ['on-remove'],
+  props: { 
+    tooltipRemove: { type: String, required: true },
+    label: { type: String, required: true },
+    tooltip: { type: String, required: false }
+  },
+  methods: {
+    onRemove(event) {
+      this.$emit('on-remove', event)
+    }
+  }
 }
 </script>
+
+<style lang="css" scoped>
+.btn-link:focus {
+  outline: 2px solid var(--bs-dark);
+  outline-offset: 0px;
+  box-shadow: none;
+}
+</style>

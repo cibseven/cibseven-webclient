@@ -61,8 +61,11 @@
                     class="mdi mdi-18px mdi-account-question mdi-dark"></span> {{ $t('task.assignToMe') }}</b-button>
               </span>
               <FilterableSelect v-if="task.assignee == null" v-model:loading="loadingUsers" @enter="findUsers($event)"
-                @clean-elements="resetUsers($event)" class="w-25" v-model="assignee"
+                @clean-elements="resetUsers($event)" class="w-auto" v-model="assignee"
                 :elements="$store.state.user.searchUsers" :placeholder="$t('task.assign')" noInvalidValues />
+              <b-button v-if="applicationPermissions($root.config.permissions.cockpit, 'cockpit')" @click="openTaskAssignationModal" class="ms-2" variant="light" size="sm" >
+                {{ $t('admin.groups.addCandidateGroups') }}
+              </b-button>
             </div>
           </div>
         </div>
@@ -96,6 +99,7 @@
     <ConfirmDialog ref="confirmTaskAssign" @ok="update()" @cancel="assignee = null">
       <span>{{ $t('confirm.assignUser') }}</span>
     </ConfirmDialog>
+    <TaskAssignationModal ref="taskAssignationModal" />
   </div>
 </template>
 
@@ -108,11 +112,13 @@ import RenderTemplate from '@/components/render-template/RenderTemplate.vue'
 import FilterableSelect from '@/components/task/filter/FilterableSelect.vue'
 import { ConfirmDialog } from '@cib/common-frontend'
 import assigneeMixin from '@/mixins/assigneeMixin.js'
+import TaskAssignationModal from '@/components/process/modals/TaskAssignationModal.vue'
+import { permissionsMixin } from '@/permissions'
 
 export default {
   name: 'TaskContent',
-  components: { RenderTemplate, FilterableSelect, ConfirmDialog },
-  mixins: [usersMixin, assigneeMixin],
+  components: { RenderTemplate, FilterableSelect, ConfirmDialog, TaskAssignationModal },
+  mixins: [usersMixin, assigneeMixin, permissionsMixin],
   inject: ['isMobile'],
   props: { task: Object },
   emits: ['complete-task', 'update-assignee'],
@@ -280,7 +286,10 @@ export default {
       if (!this.$root.config.layout.disableCandidateUsers) {
         this.$store.dispatch('findUsersByCandidates', { idIn: this.candidateUsers })
       }
-    }
+    },
+    openTaskAssignationModal: function() {
+      this.$refs.taskAssignationModal.show(this.task.id, null, 'groups');
+    },
   }
 }
 </script>

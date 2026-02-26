@@ -21,19 +21,7 @@
     <div style="background-color: rgba(98, 142, 199, 0.2);">
       <div class="d-flex align-items-center py-2 container-fluid">
         <div class="col-8 d-flex align-items-center gap-2">
-          <div class="border rounded d-flex flex-fill align-items-center bg-white" style="max-width: 220px;">
-            <b-button
-              size="sm" class="mdi mdi-magnify mdi-18px text-secondary py-0" variant="link"
-              :title="$t('searches.search')"></b-button>
-            <div class="flex-grow-1">
-              <input
-                type="text"
-                v-model.trim="filter"
-                :placeholder="$t('searches.search')"
-                class="form-control-plaintext form-control-sm w-100"
-              />
-            </div>
-          </div>
+          <SearchInput class="border rounded" size="sm" v-model.trim="filter"/>
           <span 
             ref="wildcardHelper"
             class="mdi mdi-help-circle mdi-18px text-secondary me-3" 
@@ -46,7 +34,7 @@
               </b-input-group-prepend>
               <b-input-group-append class="d-flex align-items-center">
                 <b-form-select size="sm" v-model="sortBy" :options="sortingFields" class="mb-0"></b-form-select>
-                <b-button size="sm" v-hover-style="{ classes: ['text-primary'] }" variant="secondary-outline"
+                <b-button size="sm" variant="secondary-outline"
                   @click="changeSortingOrder()" class="mdi mdi-18px ms-1 border-0"
                   :class="sortOrder === 'desc' ? 'mdi-arrow-down' : 'mdi-arrow-up'"
                   :title="sortOrder === 'desc' ? $t('sorting.desc') : $t('sorting.asc')"></b-button>
@@ -164,11 +152,12 @@ import { moment } from '@/globals.js'
 import { debounce } from '@/utils/debounce.js'
 import DeploymentList from '@/components/deployment/DeploymentList.vue'
 import ResourcesNavBar from '@/components/deployment/ResourcesNavBar.vue'
+import SearchInput from '@/components/common-components/SearchInput.vue'
 import { SidebarsFlow, SuccessAlert, PagedScrollableContent } from '@cib/common-frontend'
 
 export default {
   name: 'DeploymentsView',
-  components: { PagedScrollableContent, DeploymentList, ResourcesNavBar, SidebarsFlow, SuccessAlert },
+  components: { PagedScrollableContent, DeploymentList, ResourcesNavBar, SidebarsFlow, SuccessAlert, SearchInput },
   inject: ['loadProcesses'],
   mixins: [permissionsMixin],
   props: { deploymentId: String },
@@ -207,12 +196,17 @@ export default {
       this.loadNextPage()
     },
     deploymentId: function () {
-      const found = this.deployments.some(d => {
-        return (d.id === this.deploymentId)
-      })
-      if (!found) {
-        this.deploymentsReady = false
-        this.loadToSelectedDeployment()
+      if (!this.deploymentId) {
+        this.deployment = null
+        this.resources = null
+      } else {
+        const found = this.deployments.some(d => {
+          return (d.id === this.deploymentId)
+        })
+        if (!found) {
+          this.deploymentsReady = false
+          this.loadToSelectedDeployment()
+        }
       }
     }
   },

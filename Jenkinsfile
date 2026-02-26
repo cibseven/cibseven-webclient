@@ -1,6 +1,6 @@
 #!groovy
 
-@Library('cib-pipeline-library@master') _
+@Library('cib-pipeline-library') _
 
 import de.cib.pipeline.library.Constants
 import de.cib.pipeline.library.kubernetes.BuildPodCreator
@@ -63,7 +63,7 @@ pipeline {
         kubernetes {
             yaml BuildPodCreator.cibStandardPod(nodepool: Constants.NODEPOOL_STABLE)
                     .withContainerFromName(pipelineParams.mvnContainerName, pipelineParams.buildPodConfig[pipelineParams.mvnContainerName])
-                    .withHelm3Container()
+                    .withHelm4Container()
                     .withNode24Container()
                     .asYaml()
             defaultContainer pipelineParams.mvnContainerName
@@ -430,6 +430,8 @@ pipeline {
                         // -Djib.useOnlyProjectCache=true and -Djib.disableUpdateChecks=true are used to speed up the build
                         // and to resolve the build failure which is related to the Jib Maven plugin trying to access a cache directory.
                         // This is a common issue when building Docker images with Jib in Jenkins.
+                        //
+                        // -Djib.serialize=true - force Jib to run sequentially while allowing the rest of the Maven build to remain parallel.
                         sh """
                             mvn -f ./pom.xml \
                                 package \
@@ -439,7 +441,7 @@ pipeline {
                                 -Dlicense.skipDownloadLicenses=true \
                                 -Djib.useOnlyProjectCache=true \
                                 -Djib.disableUpdateChecks=true \
-                                -T4 \
+                                -Djib.serialize=true \
                                 -Dbuild.number=${BUILD_NUMBER}
                         """
                     }

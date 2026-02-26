@@ -51,7 +51,7 @@
                     <h6 class="text-muted mb-3">{{ $t('admin.users.account') }}</h6>
 
                     <div class="mb-3">
-                      <label class="form-label" for="profileId">{{ $t('admin.users.id') }} *</label>
+                      <label class="form-label" for="profileId">{{ $t('admin.users.id') }} <span class="text-danger">*</span></label>
                       <input
                         id="profileId"
                         type="text"
@@ -70,7 +70,7 @@
 
                     <div class="mb-3">
                       <label class="form-label" for="password">
-                        {{ $t('admin.users.password') }} *
+                        {{ $t('admin.users.password') }} <span class="text-danger">*</span>
                         <span
                           v-if="passwordPolicyEnabled"
                           ref="passwordHelper"
@@ -115,7 +115,7 @@
                     </div>
 
                     <div class="mb-3">
-                      <label class="form-label" for="passwordRepeat">{{ $t('admin.users.passwordRepeat') }} *</label>
+                      <label class="form-label" for="passwordRepeat">{{ $t('admin.users.passwordRepeat') }} <span class="text-danger">*</span></label>
                       <div class="input-group">
                         <input
                           id="passwordRepeat"
@@ -151,7 +151,7 @@
                     <h6 class="text-muted mb-3">{{ $t('admin.users.profile') }}</h6>
 
                     <div class="mb-3">
-                      <label class="form-label" for="firstName">{{ $t('admin.users.firstName') }} *</label>
+                      <label class="form-label" for="firstName">{{ $t('admin.users.firstName') }} <span class="text-danger">*</span></label>
                       <input
                         id="firstName"
                         type="text"
@@ -166,7 +166,7 @@
                     </div>
 
                     <div class="mb-3">
-                      <label class="form-label" for="lastName">{{ $t('admin.users.lastName') }} *</label>
+                      <label class="form-label" for="lastName">{{ $t('admin.users.lastName') }} <span class="text-danger">*</span></label>
                       <input
                         id="lastName"
                         type="text"
