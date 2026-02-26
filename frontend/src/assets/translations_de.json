@@ -1179,16 +1179,6 @@
 			"currentUserPassword": "Aktuelles Passwort",
 			"newPassword": "Neues Passwort",
 			"newPasswordRepeat": "Neues Passwort (wiederholen)"
-		},
-		"emailInfo": {
-			"title": "Eine E-Mail wurde zugestellt",
-			"header": "Zum Zurücksetzen des Passworts bitte den Link in der E-Mail bestätigen.",
-			"body": "Diese Seite schließt sich automatisch, sobald die E-Mail geöffnet wird, und leitet zum Passwort-Reset weiter.",
-			"footerTitle": "Keine E-Mail erhalten?",
-			"footerBody": "Spam-Ordner überprüfen oder erneut auf „E-Mail senden“ klicken.",
-			"sendMail": "E-Mail erneut senden",
-			"support": "Falls die E-Mail weiterhin nicht ankommt, den Support kontaktieren.",
-			"supportLink": "Support kontaktieren"		
 		}
 	},
 
