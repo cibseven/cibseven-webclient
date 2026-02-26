@@ -45,17 +45,18 @@
                 <template #button-content>
                   <i class="mdi mdi-18px mdi-filter-variant"></i><span class="visually-hidden">{{ $t('sorting.sortBy') }}</span>
                 </template>
-                <b-dd-item-btn v-for="item in filteredFields" :key="item" @click="taskSorting.sortBy = item; setSorting('key'); $refs.sortingList.hide()" :class="taskSorting.sortBy === item ? 'active' : ''">
+                <b-dropdown-item-button v-for="item in filteredFields" :key="item"
+                  @click="taskSorting.sortBy = item; setSorting('key'); $refs.sortingList.hide()"
+                  :active="taskSorting.sortBy === item">
                   {{ $t('sorting.' + item) }}
-                </b-dd-item-btn>
+                </b-dropdown-item-button>
               </b-dropdown>
               <b-button variant="link" class="text-decoration-none px-0" @click="$refs.sortingList.show()">{{ $t('sorting.' + taskSorting.sortBy) }}</b-button>
               <template v-slot:append>
                 <b-button size="sm" variant="link" @click="setSorting('order')" class="mdi mdi-18px ms-1"
                   :class="taskSorting.sortOrder === 'desc' ? 'mdi-arrow-down' : 'mdi-arrow-up'"
-                  :title="taskSorting.sortOrder === 'desc' ? $t('sorting.desc') : $t('sorting.asc')">
-                  <span v-if="taskSorting.sortOrder === 'desc'" class="visually-hidden">{{ $t('sorting.desc') }}</span>
-                  <span v-else class="visually-hidden">{{ $t('sorting.asc') }}</span>
+                  :title="taskSorting.sortOrder === 'desc' ? $t('sorting.desc') : $t('sorting.asc')"
+                  :aria-label="taskSorting.sortOrder === 'desc' ? $t('sorting.desc') : $t('sorting.asc')">
                 </b-button>
               </template>
             </b-input-group>
