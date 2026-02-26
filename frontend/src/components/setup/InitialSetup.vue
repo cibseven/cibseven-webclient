@@ -23,7 +23,6 @@
         <h2 class="h4">{{ $t('setup.title') }}</h2>
         <p>{{ $t('setup.description') }}</p>
       </div>
-
       <div class="container-fluid">
         <div class="row justify-content-center">
           <!-- Help Text - shows first on mobile -->
@@ -78,7 +77,7 @@
                           :class="passwordPolicyError ? 'text-danger' : 'text-secondary'"
                           style="cursor: pointer"
                         ></span>
-                        <b-popover v-if="passwordPolicyEnabled" :target="() => $refs.passwordHelper" triggers="hover" placement="right">
+                        <b-popover  :target="() => $refs.passwordHelper" triggers="hover" placement="right">
                           <h6>{{ $t('password.policy.title') }}</h6>
                           <div>{{ $t('password.policy.header') }}</div>
                           <ul class="mb-0 ps-3">
@@ -95,11 +94,12 @@
                           class="form-control"
                           v-model="credentials.password"
                           :class="{
-                            'is-invalid': submitted && !notEmpty(credentials.password),
-                            'is-valid': notEmpty(credentials.password) && !passwordPolicyError,
+                            'is-invalid': submitted && !notEmpty(credentials.password) && !passwordPolicyCorrect,
+                            'is-valid': notEmpty(credentials.password) && passwordPolicyCorrect,
                           }"
                           required
                         />
+                        {{ passwordPolicyCorrect }}
                         <button
                           tabindex="-1"
                           class="btn btn-outline-secondary"
@@ -234,6 +234,12 @@ export default {
       userIdError: false,
       submitted: false,
       submitting: false,
+      specialCharacterCheck: true,
+      numberCheck: true,
+      uppercaseCheck: true,
+      lengthCheck: true,
+      containsInformationCheck: true,
+      passwordPolicyCorrect: false
     }
   },
   computed: {
@@ -242,6 +248,21 @@ export default {
     },
     engineName() {
       return localStorage.getItem(ENGINE_STORAGE_KEY) || 'default'
+    }
+  },
+  watch: {
+    'credentials.password'(newValue) {
+      if (newValue) {
+        SetupService.validatePasswordPolicy(this.credentials.password, this.profile)
+          .then(() => {
+            this.passwordPolicyCorrect = true
+          })
+          .catch(() => {
+            this.passwordPolicyCorrect = false
+          })
+      } else {
+        this.passwordPolicyCorrect = false
+      }
     },
   },
   methods: {
