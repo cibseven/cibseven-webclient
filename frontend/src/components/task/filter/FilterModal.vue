@@ -36,7 +36,8 @@
     <b-form-group :label-cols="12" label-class="mb-3" label-size="sm" :label="$t('nav-bar.filters.selectedCriteria')">
       <div class="container">
         <div class="row text-center px-3">
-          <b-form-select style="background-image: none" class="col-4" size="sm" @change="selectCriteria($event)" v-model="selectedCriteriaKey" :options="criteriasGrouped">
+          <label class="visually-hidden" for="criteria-select">{{ $t('nav-bar.filters.selectProperty') }}</label>
+          <b-form-select id="criteria-select" style="background-image: none" class="col-4" size="sm" @change="selectCriteria($event)" v-model="selectedCriteriaKey" :options="criteriasGrouped">
             <template v-slot:first>
               <b-form-select-option :value="null" disabled>-- {{ $t('nav-bar.filters.selectProperty') }} --</b-form-select-option>
             </template>
