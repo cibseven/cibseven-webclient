@@ -33,8 +33,9 @@
         <h1 v-else-if="$route.name === 'start'" class="visually-hidden">{{ $t('navigation.home') + ' - ' + $t('navigation.menu') }}</h1>
       </div>
 
-      <b-button v-if="$root.user && startableProcesses && $route.name === 'tasklist'" class="d-none d-sm-block py-0 me-3" variant="light" :title="$t('start.startProcess.title')" :aria-label="$t('start.startProcess.title')" aria-haspopup="dialog" @click="openStartProcess()">
-        <span class="mdi mdi-18px mdi-rocket" aria-hidden="true"><span class="d-none d-lg-inline ms-2">{{ $t('start.startProcess.title') }}</span></span>
+      <b-button v-if="$root.user && startableProcesses && $route.name === 'tasklist'" class="d-none d-sm-block py-0 me-3" variant="light" :aria-label="$t('start.startProcess.title')" aria-haspopup="dialog" @click="openStartProcess()">
+        <span class="mdi mdi-18px mdi-rocket" aria-hidden="true"></span>
+        <span class="d-none d-lg-inline ms-2">{{ $t('start.startProcess.title') }}</span>
       </b-button>
 
       <!-- Desktop: Show menus as icons outside collapse -->

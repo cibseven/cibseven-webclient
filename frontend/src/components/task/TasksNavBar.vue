@@ -20,10 +20,14 @@
   <div v-show="showTasks" class="overflow-auto h-100">
     <div class="h-100 d-flex flex-column border border-end-0 border-top-0 bg-light">
 
-      <b-button style="top: 3px; right: 30px" class="border-0 position-absolute" v-if="$root.config.layout.showTaskListManualRefresh"
-        variant="btn-outline-primary" size="sm" :title="$t('nav-bar.refresh')" @click="refreshTasks()" :style="pauseRefreshButton ? 'opacity: 0.5' : ''">
-        <span class="visually-hidden">{{ $t('nav-bar.refresh') }}</span>
-        <span class="mdi mdi-18px mdi-refresh"></span>
+      <b-button v-if="$root.config.layout.showTaskListManualRefresh"
+        type="button" @click="refreshTasks()" 
+        variant="btn-outline-primary" size="sm"
+        :title="$t('nav-bar.refresh')"
+        :aria-label="$t('nav-bar.refresh')"
+        style="top: 3px; right: 30px" class="border-0 position-absolute" 
+        :style="pauseRefreshButton ? 'opacity: 0.5' : ''">
+        <span class="mdi mdi-18px mdi-refresh" aria-hidden="true"></span>
       </b-button>
 
       <div class="py-1 px-2 mb-1 bg-task-filter">
