@@ -27,7 +27,7 @@
             <div class="row ps-3" style="height:55px">
               <div class="col-12 align-items-center d-flex">
                 <span class="border-start h-100 me-3 border-primary" style="border-width: 3px !important"></span>
-                <h4 class="m-0">{{ title }}</h4>
+                <h2 class="h4 m-0">{{ title }}</h2>
               </div>
             </div>
             <div class="row text-center">
