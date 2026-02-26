@@ -55,7 +55,6 @@ export { createProvideObject } from '@/utils/provide.js'
 
 // mixins
 export { default as processesVariablesMixin } from '@/components/process/mixins/processesVariablesMixin.js'
-export { default as processesMixin } from '@/components/process/mixins/processesMixin.js'
 export { default as resizerMixin } from '@/components/process/mixins/resizerMixin.js'
 export { default as tabUrlMixin } from '@/components/process/mixins/tabUrlMixin.js'
 export { default as usersMixin } from '@/mixins/usersMixin.js'
@@ -65,6 +64,7 @@ export { default as assigneeMixin } from '@/mixins/assigneeMixin.js'
 // components
 export { default as CibSeven } from '@/components/CibSeven.vue'
 export { default as CellActionButton } from '@/components/common-components/CellActionButton.vue'
+export { default as SearchInput } from '@/components/common-components/SearchInput.vue'
 export { default as AboutModal } from '@/components/modals/AboutModal.vue'
 export { default as FeedbackModal } from '@/components/modals/FeedbackModal.vue'
 export { default as FeedbackScreenshot } from '@/components/modals/FeedbackScreenshot.vue'
@@ -103,8 +103,7 @@ export { default as DeleteVariableModal } from '@/components/process/modals/Dele
 export { default as BpmnViewer } from '@/components/process/BpmnViewer.vue'
 export { default as InstancesTable } from '@/components/process/tables/InstancesTable.vue'
 export { default as ProcessInstancesView } from '@/components/process/ProcessInstancesView.vue'
-export { default as ProcessAdvanced } from '@/components/process/ProcessAdvanced.vue'
-export { default as ProcessCard } from '@/components/process/ProcessCard.vue'
+export { default as ProcessCard } from '@/components/start-process/ProcessCard.vue'
 export { default as ProcessDetailsSidebar } from '@/components/process/ProcessDetailsSidebar.vue'
 export { default as StartProcessList } from '@/components/start-process/StartProcessList.vue'
 export { default as StartProcessView } from '@/components/start-process/StartProcessView.vue'
@@ -177,6 +176,7 @@ export { default as JobDefinitionsTable } from '@/components/process/tables/JobD
 export { default as JobsTable } from '@/components/process/tables/JobsTable.vue'
 export { default as JobDueDateModal } from '@/components/process/modals/JobDueDateModal.vue'
 export { default as ViewerFrame } from '@/components/common-components/ViewerFrame.vue'
+export { default as RemovableBadge } from '@/components/common-components/RemovableBadge.vue'
 
 // re-export common frontend library
 export * from '@cib/common-frontend'

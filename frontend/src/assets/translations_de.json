@@ -2,12 +2,6 @@
 	"commons": {
 		"edit": "Bearbeiten",
 		"save": "Speichern",
-		"copyValue": "Wert kopieren",
-		"noMoreResults": "Keine weiteren Ergebnisse",
-		"loadMore": {
-			"title": "Mehr laden",
-			"tooltip": "Klicken Sie, um die nächsten {chunkSize} Einträge zu laden"
-		},
 		"actualisation": {
 			"progress": "Daten werden aktualisiert...",
 			"lastUpdate": "Letztes Update: {date}",
@@ -17,18 +11,29 @@
 		"notAvailable": {
 			"label": "N/A",
 			"tooltip": "Nicht verfügbar"
-		},
-		"remove": "Entfernen"
+		}
 	},
 	"login": {
-		"productName": "@:cib-header.productName",
+		"productName": "CIB seven",
 		"productSlogan": "Prozess Management Plattform",
 		"username": "Benutzername",
 		"password": "Passwort",
 		"rememberMe": "Angemeldet bleiben",
 		"email": "Email",
 		"login": "Anmelden",
-		"forgotten": "Passwort zurücksetzen?"
+		"2fa": "Zweistufige Überprüfung",
+		"emailSent": "An folgende E-Mail-Adresse wurde eine Nachricht verschickt: {0}! Befolgen Sie bitte die Anweisungen. Sie haben keine E-Mail erhalten? Bitte überprüfen Sie Ihren Spam-Ordner.",
+		"needOtp": "Bitte bestätigen Sie Ihre Anfrage über die <b>App</b>.",
+		"otp": "Bestätigungscode",
+		"register": "Noch kein Konto?",
+		"registerLink": "Jetzt registrieren",
+		"reset2fa": "Vertrautes Gerät zurücksetzen",
+		"resetPassword": "Passwort zurücksetzen",
+		"forgotten": "Passwort zurücksetzen?",
+		"usernameRequired": "Benutzername ist erforderlich",
+		"passwordRequired": "Passwort ist erforderlich",
+		"showPassword": "Passwort anzeigen",
+		"hidePassword": "Passwort verbergen"
 	},
 	"processes-dashboard": {
 		"headerActive": "Operatives Dashboard",
@@ -40,8 +45,7 @@
 			},
 			"open-incidents": {
 				"title": "Offene Vorfälle",
-				"tooltip": "Alle derzeit offenen Vorfälle überprüfen",
-				"none": "Keine Vorfälle!"
+				"tooltip": "Alle derzeit offenen Vorfälle überprüfen"
 			},
 			"open-human-tasks": {
 				"title": "Offene Aufgaben",
@@ -87,6 +91,7 @@
 		"endTime": "Enddatum",
 		"businessKey": "Fachlicher Schlüssel",
 		"title": "Prozesse",
+		"viewMode": "Ansichtsmodus",
 		"view-comfy": "Klein",
 		"view-module": "Groß",
 		"view-list": "Liste",
@@ -221,7 +226,6 @@
 		"processInstanceId": "Prozessinstanz Id",
 		"businessKey": "Fachlicher Schlüssel",
 		"info": "Prozessdetails",
-		"variablesInfo": "Prozessvariablen",
 		"active": "Aktiv",
 		"history": "Historie",
 		"download": "Herunterladen",
@@ -377,6 +381,8 @@
 		"assignModal": {
 			"manageUsersGroups": "Benutzer/Gruppen verwalten",
 			"manageAssignee": "Zugewiesenen Benutzer verwalten",
+			"manageGroups": "Gruppen verwalten",
+			"manageUsers": "Benutzer verwalten",
 			"groupId": "Gruppen-ID",
 			"userId": "@:admin.users.id",
 			"groups": "Gruppen",
@@ -437,10 +443,6 @@
 		"zoomOut": "Herauszoomen",
 		"resetZoom": "Zoom zurücksetzen",
 		"legend": {
-			"title": "Legende",
-			"completedTask": "Abgeschlossene Aufgabe",
-			"currentTask": "Aktuelle Aufgabe",
-			"selectedTask": "@:task.selectedTask",
 			"runningInstances": "Laufende Aktivitätsinstanzen",
 			"openIncidents": "Offene Vorfälle",
 			"closedIncidents": "Geschlossene Vorfälle",
@@ -458,7 +460,6 @@
 		"info": "Aufgabedetails",
 		"reminder": "Wiedervorlagedatum",
 		"priority": "Priorität",
-		"variablesInfo": "Aufgabenvariablen",
 		"taskId": "Aufgaben-ID",
 		"assign": "Jemandem zuweisen",
 		"assignToMe": "Mir zuweisen",
@@ -499,8 +500,6 @@
 		"userAssigned": "Der Benutzer {0} wurde erfolgreich zugewiesen"
 	},
 	"batches": {
-		"title": "Stapel",
-		"tooltip": "Stapeloperationen",
 		"inProgressBatches": "Laufende Stapel",
 		"historicBatches": "Abgeschlossene Stapel",
 		"runtimeDetails": "Details zum laufenden Stapel",
@@ -549,11 +548,11 @@
 		"exportCsv": "Alle exportieren",
 		"users": {
 			"title": "Benutzer",
+			"tooltip": "Benutzerverwaltung",
 			"id": "Benutzername",
 			"firstName": "Vornamen",
 			"lastName": "Nachname",
 			"email": "E-Mail",
-			"search": "Suche",
 			"add": "Benutzer hinzufügen",
 			"account": "Benutzerkonto",
 			"profile": "Benutzerprofil",
@@ -567,14 +566,9 @@
 			"groups": "Gruppen",
 			"editMessage": "Benutzer {0} bearbeiten",
 			"update": "Profil aktualisieren",
-			"userPassword": "{0} Passwort",			
-			"currentUserPassword": "Bisheriges Passwort",
-			"newPassword": "Neues Passwort",
-			"newPasswordRepeat": "Neues Passwort (wiederholen)",
 			"deleteUser": "Benutzer löschen",
 			"editUser": "Benutzer bearbeiten",
 			"viewUser": "Benutzer anzeigen",
-			"changePassword": "Passwort ändern",
 			"updateProfileMessage": "Benutzerprofil erfolgreich aktualisiert",
 			"updatePasswordMessage": "Passwort erfolgreich aktualisiert",
 			"unassignGroupMessage": "Benutzer {0} aus Gruppe entfernt",
@@ -629,11 +623,12 @@
 		},
 		"groups": {
 			"title": "Gruppen",
+			"tooltip": "Gruppenverwaltung",
 			"id": "Gruppe-ID",
 			"name": "Name",
 			"type": "Typ",
-			"search": "Suche",
 			"add": "Gruppe hinzufügen",
+			"addCandidateGroups": "Kandidaten-Gruppen hinzufügen",
 			"cancel": "Abbrechen",
 			"createLabel": "Neue Gruppe erstellen",
 			"groupCreatedMessage": "Gruppe {0} erstellt",
@@ -685,6 +680,7 @@
 		},
 		"authorizations": {
 			"title": "Berechtigungen",
+			"tooltip": "Berechtigungen verwalten",
 			"type": "Typ",
 			"userIdGroupId": "Benutzer / Gruppe",
 			"permissions": "Zugriffsrechte",
@@ -697,7 +693,6 @@
 				"cancel": "Änderungen verwerfen"
 			},
 			"name": "Ressourcenname",
-			"search": "Suche",	
 			"types": {
 				"allow": "ALLOW",
 				"deny": "DENY",
@@ -755,7 +750,6 @@
 			"execution-metrics": {
 				"title": "Ausführungsmetriken",
 				"metricsHelp": "Erfasste Anzahl von Prozessinstanzen und Entscheidungsinstanzen, die von der Engine verarbeitet wurden, sowie Task-Benutzern, die einer Benutzeraufgabe zugewiesen wurden.",
-				"startDateContract": "Vertragsbeginn",
 				"process-instances": "Prozessinstanzen",
 				"decision-instances": "Entscheidungsinstanzen",
 				"task-users": "Aufgabenbenutzer",
@@ -765,30 +759,8 @@
 				"fromTo": "{from} bis {to}"
 			}
 		}
-	},
-	"account-form": {
-		"title": "Zugangsdaten ändern",
-		"username": "@:login.username",
-		"password": "@:login.password",		
-		"email": "@:login.email",
-		"update": "Speichern",
-		"delete": "Zugang löschen",
-		"deleteMessage": "Soll das Konto (inklusive aller Dateien) wirklich gelöscht werden? Diese Aktion kann nicht rückgängig gemacht werden!"		
-	},
-	"security-bar": {
-		"strength1": "Unsicher",
-		"strength2": "Schwach",
-		"strength3": "Akzeptabel",
-		"strength4": "Stark",
-		"strength5": "Perfekt",
-		"prefix": "Sicherheit:"
-	},		
-	"error": {
-		"title": "Fehler",
-		"ok": "@:confirm.ok"
-	},
+	},	
 	"confirm": {
-		"title": "Bitte bestätigen",
 		"ok": "Ok",
 		"cancel": "Abbrechen",
 		"close": "Schließen",
@@ -804,24 +776,19 @@
 		"title": "Bitte teile uns dein Problem oder Verbesserungsvorschläge mit",
 		"ok": "Absenden",
 		"cancel": "@:confirm.cancel",
-		"email": "@:account-form.email"
+		"email": "@:login.email"
 	},
 	"cib-header": {
-		"productName": "CIB seven",
 		"languages": "Sprache",
+		"languagesMenu": "Sprache",
 		"engine": "Engine",
-		"help": "Info & Hilfe",
-		"user": "Konto",
-		"logout": "Abmelden",
+		"engineMenu": "Engine-Auswahl",
+		"helpMenu": "Hilfe",
 		"en": "English",
 		"de": "Deutsch",
 		"es": "Español",
 		"ua": "Українська",
 		"ru": "Русский"
-	},
-	"cib-datepicker": {
-		"months" : "Januar_Februar_März_April_Mai_Juni_Juli_August_September_Oktober_November_Dezember",
-		"weeks": "Mo_Di_Mi_Do_Fr_Sa_So"
 	},
 	"cib-datepicker2": {
 		"noDate": "Kein Datum",
@@ -832,48 +799,22 @@
 		"noDate": "Keine Zeit ausgewählt",
 		"reset" : "Auswahl löschen"
 	},
-	"file-area": {
-		"titleAbove": "Datei(en) ablegen",
-		"titleBelow": "oder aussuchen"
-	},
-	"task-popper": {
-		"title": "Datei(en) ablegen"
-	},
-	"pdf-encryption": {
-		"title": "Sicher - von Anfang an!",
-		"text": "Verschlüsselung erfolgt direkt beim Hochladen deiner Datei.<br>Einfach Passwort eingeben und loslegen:"
-	},		
-	"register": {
-		"title": "Registrieren",
-		"register": "Registrieren",
-		"login": "Doch ein Konto?",
-		"loginLink": "Anmelden",
-		"username": "@:account-form.username",
-		"password": "@:account-form.password",		
-		"email": "@:account-form.email"	
-	},
 	"snapshot": {
-		"title": "Deinen Screenshot hochladen",
 		"titleAbove": "Hier klicken und danach [Strg] + [V] drücken",
 		"titleBelow": "(mit deinem Screenshot in der Zwischenablage)"
 	},	
 	"seven": {
 		"feedback": "Rückmeldung",
-		"about": "Über",
-		"version": "Version",
 		"selectTask": "Eine Aufgabe aus der Aufgabenliste zum Ansehen auswählen",
 		"taskCompleted": "Aufgabe erledigt",
 		"allTasks": "Aufgaben",
 		"titleInfo": "Information",
-		"filters": "Filter",
-		"types": "Typen",
-		"chat": "Chat"
+		"types": "Typen"
 	},
 	"nav-bar": {
 		"no-tasks-pending": "Sie haben keine offenen Aufgaben",
 		"no-tasks": "Keine Aufgaben gefunden",
 		"tasks-count": "Offene Aufgaben: {count}",
-		"processes": "@:process.title",
 		"filters": {
 			"addFilter": "Filter hinzufügen",
 			"updateFilter": "Filter aktualisieren",
@@ -886,11 +827,15 @@
 			"addCriteria": "Kriterium hinzufügen",
 			"filterExists": "Dieser Filter existiert bereits",
 			"selectedCriteria": "Ausgewählte Kriterien",
-			"deleteCriteria": "Kriterium Löschen",
 			"no-filters": "Keine Filter gefunden",
 			"edit": "@:commons.edit",
+			"editFilter": "Bearbeite \"{filterName}\" Filter",
 			"delete": "@:confirm.delete",
-			"pin": "Anfügen",
+			"deleteFilter": "Lösche \"{filterName}\" Filter",
+			"pin": "Anheften",
+			"pinFilter": "Heften \"{filterName}\" Filter",
+			"unpin": "Lösen",
+			"unpinFilter": "Lösen \"{filterName}\" Filter",
 			"includeAssigned": "Zugewiesene Aufgaben einbeziehen",
 			"keys": {
 				"processInstanceId": "Prozessinstanz-ID",
@@ -968,7 +913,6 @@
 				"key": "Kriterien-Key",
 				"value": "Kriterien-Wert"
 			},
-			"matchAnyCriteria": "Einige der Kriterien sind erfüllt",
 			"matchAllCriteria": "Alle Kriterien sind erfüllt",
 			"msgFilterCreated": "Filter \"{name}\" erstellt",
 			"msgFilterUpdated": "Filter \"{name}\" aktualisiert",
@@ -991,25 +935,11 @@
 				"txtlteq": "<= kleiner als oder gleich"
 			}
 		},
-		"additionalFiltersApplied": "angewandte Filter: {n}",
 		"dueDate": "@:task.details.due",
 		"reminder": "Wiedervorlagedatum",
-		"reminderDate": {
-			"all": "Bis heute",
-			"today": "Morgen",
-			"next3D": "Ab übermorgen"
-		},
-		"taskDeadline": {
-			"all": "Alle",
-			"today": "Bis heute",
-			"next3D": "Ab morgen"
-		},
 		"filtersTitle": "Filter",
-		"tasksTitle": "Aufgaben",
 		"refresh": "Aufgabenliste aktualisieren",
-		"sortingTitle": "Sortierung",
-		"filtersAdditionalsTitle": "Weitere Filter",
-		"changeSize": "Breite der Aufgabenliste vergrößern"
+		"filtersAdditionalsTitle": "Weitere Filter"
 	},
 	"ienotify": { 
 		"remember": "Diese Meldung nicht mehr anzeigen",
@@ -1069,7 +999,18 @@
 			"title": "Altes Cockpit",
 			"tooltip": "Altes Cockpit öffnen"
 		},
-		"emptyStart": "Derzeit haben Sie keine Berechtigung, hier Aufgaben auszuführen. Bitte wenden Sie sich an den CIB seven Administrator, um Berechtigungen zu erhalten."
+		"account": {
+			"tooltip": "Kontoinformationen ansehen und bearbeiten oder abmelden",
+			"profile": {
+				"title": "Benutzerprofil",
+				"tooltip": "Kontoinformationen ansehen und bearbeiten"
+			},
+			"logout": {
+				"title": "Abmelden",
+				"tooltip": "Von {productName} abmelden"
+			}
+		},
+		"emptyStart": "Derzeit haben Sie keine Berechtigung, hier Aufgaben auszuführen. Bitte wenden Sie sich an den {productName} Administrator, um Berechtigungen zu erhalten."
 	},
 	"errors": {		
 		"invalid": "Es fehlt eine gültige Eingabe",
@@ -1113,12 +1054,10 @@
 		"unknown": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut."
 	},
 	"searches": {
-		"filter": "Filtern",
+		"filter": "Filtern...",
 		"refreshAndFilter": "Aktualisieren und filtern",
 		"search": "Suchen...",
 		"searchByTaskName": "Suche in Aufgaben...",
-		"searchByDeploymentName": "Suche nach Deployment...",
-		"searchByBusinessKey": "Suche nach Fachlicher Schlüssel...",
 		"searchByFilterName": "Suche nach Filternamen...",
 		"wildcardHelp": "Platzhaltersuche wird unterstützt.",
 		"wildcardExample": "Verwenden Sie % für beliebig viele Zeichen (z.B. %Prozess%)."
@@ -1140,57 +1079,14 @@
 			"deploymentTime": "Datum"
 		}	
 	},
-	"process-descriptions": {
-		"e-rechnung-erstellen": "Einfach RTF-Datei hochladen und Rechnung im ZUGFeRD-Format erhalten. ",
-		"kontakterstellung-exchange": "Bei diesem Verfahren wird ein Kontakt nur dann erstellt, wenn er nicht bereits auf unserem Exchange Server existiert. Duplikate werden vermieden.",
-		"serienbrief-newsletter": "Beim Bereitstellen einer RTF- und einer CSV-Datei kann ein Newsletter an viele Kunden gleichzeitig versendet werden. ",
-		"mail-polling-service-process": "Prüft E-Mail-Staus, um den Prozess für die Rechnungserstellung für Beraterleistungen an die Fiducia zu initiieren.",
-		"rechnungserstellung-fgi": "Automatische Rechnungserstellung entsprechend der geleisteten Beraterstunden von CIB bei der Fiducia.",
-		"rechnungserstellung-brewer": "Automatische Rechnungserstellung für Bestellungen aus dem Web für den CIB pdf brewer 3. ",
-		"reisebuchungsantrag": "Beantragen Sie eine Geschäftsreise und erhalten Sie über diesen Prozess eine Genehmigung.",
-		"serienbrief-fiducia": "Mit einer CSV-Datei (mit Kontaktdaten) und einer CWP-Datei (mit Briefinhalten) erstellen Sie eine Vielzahl an Briefen und versenden diese gleichzeitig einfach per Post über CIB fairbrieft.",
-		"serienbrief-rechnung-pu": "Automatische Erstellung von Rechnungen für Wartungs-/Aktualisierungsprojekte.",
-		"service-plafo-polling": "Extrahiert aus CIB plafo die Informationen über die notwendigen zu erstellenden Rechnungen, speichert sie in CIB doXima und versendet sie auf Wunsch per E-Mail.",
-		"rechnungserstellung": "Unterprozess, der vom Standard-Prozess aufgerufen wird und sich mit einer einzelnen Rechnung befasst.",
-		"signing-legal-docs": "Bitten Sie mehrere Mitarbeiter, ein Rechtsdokument gleichzeitig zu unterschreiben und verwalten Sie die daraus resultierenden Dokumente mit diesen Unterschriften.",
-		"signing-process": "Unterprozess, der von dem Standard-Unterprozess aufgerufen wird und sich mit einer einzelnen Unterschriftenaktion eines Mitarbeiters befasst.",
-		"archivekey-1000": "Verwaltet Angebote, Bestellformulare und optional auch Datenschutzdokumente für Beratungsdienste.",
-		"freigabe-workflow": "Prozess zur Genehmigung von Unterschriften in Kombination mit CIB coSys Workflows - gestartet von CIB doXiview.",
-		"serienbrief-vertragszusatz": "Sende ein Rundschreiben an eine Gruppe von Mitarbeitern, die in einer CSV-Datei aufgelistet sind.",
-		"absence-request": "Genehmigte Urlaubsanträge automatisch in Jira buchen",
-		"reisebuchungsantrag-showcase": "Antrag auf Genehmigung von Geschäftsreisen",
-		"AntragDVMoHo": "Beantragung von mobilem Arbeiten und/oder Arbeiten im Homeoffice",
-		"buroanwesenheit": "Ermöglicht es Mitarbeitern, darüber zu informieren, wo sie sich an jedem Tag der kommenden Woche aufhalten werden (Home Office, Büro, Urlaub,...)",
-		"crowdsource-freigabe": "Ermöglicht es Ihnen zu bewerten, ob ein Dokument zur Sammlung der KI-Trainingsdokumente hinzugefügt werden soll.",
-		"employment_contract_german": "Erstellung von Arbeitsverträgen für alle deutschen CIB Firmen, inklusive Anhänge Zusatzvereinbarung und Vertraulichkeitsvereinbarung.",
-		"anstellungsvertrag-spanien": "Erstellung von Arbeitsverträgen für alle spanischen CIB Firmen, inklusive Anhänge Buen Uso und Conducta.",
-		"bankdokumente-verarbeiten": "",
-		"spain_demo1-generar_carta_seguros": "Erstellung von einem Brief einer Versicherungsfirma. Demo aud Spanish.",
-		"spain_demo3-contrato_trabajo": "Formular ausfüllen und einen Vetrag erzeugen. Vorteile von doXiview, doXisign und teilen mit doXisafe oder Email.",
-		"spain_demo4-configurar_vehiculo": "Konfigurieren Sie ein Fahrzeug, indem Sie Modell, Farbe und Zubehör auswählen. Ein Dokument mit den Details wird erstellt.",
-		"spain_demo5-certificado_empadronamiento": "Nach dem Ausfüllen eines Formulars wird eine Meldebescheinigung erstellt. Demo auf Spanisch.",
-		"spain_demo6-anonimizacion": "Dokumentenanonymisierung mit doXiview. Demo auf Spanisch.",
-		"spain_demo7-justicia_extracion_datos": "Data von juristischen Dokumenten extrahieren und anonymisieren. Demo auf Spanisch.",
-		"spain_demo8-rellenar_expedientes": "Demo auf Spanisch\nSchritt 1: Formular ausfüllen.\nSchritt 2: CIBREC-Felder von erzeugten Dokument A editieren..\nSchritt 3: Das mit den Daten von Dokument A erzeugte Dokument B überprüfen.",
-		"spain_demo9-extract_invoice_data": "Dank der KI werden die Daten von einer Rechnung extrahiert. Demo auf Spanisch.",
-		"spain_demo10-clasificacion_documentos": "Dokumentklassifizierung.",
-		"spain_demo10a-clasificacion_documentos_empresa": "Dokumentklassifizierung.",
-		"spain_demo11-extract_sensible_data": "Entitätenerkennung in einem Dokument (Vorname, Nachname, Telefonnummer, E-Mail, PLZ und Datum).",
-		"spain_demo12-read_invoices_from_email": "Rechungen von E-Mail lesen.\nVon jeder gefundenen Rechnung wird ein neuer Task gestartet, wo die wichstichsten Daten der Rechnung extrahiert werden.",
-		"deutsche_schule_demo_1_beurlaubung": "Füllen Sie ein Formular aus, um die Abwesenheit eines Schülers an der deutschen Schule zu beantragen. Demo auf Deutsch."
-	},
 	"deployment": {
 		"title": "Deployments",
 		"resourcesCaption": "Enthaltene Modelle",
-		"version": "Version",
-		"downloadVersionBpmn": "@:process.downloadBpmn",
 		"noDeployments": "Keine Deployments verfügbar",
 		"deploymentTime": "Bereitgestellt am",
 		"source": "Quelle",
 		"confirmDeleteDeployment": "Möchten Sie die ausgewählten Deployments wirklich löschen?",
 		"deleteRunningInstances": "Laufende Prozessinstanzen stoppen",
-		"goToManagement": "Zum Prozessmanagement wechseln ",
-		"loadingProcesses": "Wird geladen...",
 		"noDeploymentSelected": "Ein Deployment zum Ansehen auswählen",
 		"selectAll": "Alle auswählen",
 		"deleteDeployments": "Deployments löschen",
@@ -1201,15 +1097,9 @@
 		"tenant": "Mandant",
 		"errorLoading": "Ressource für die ausgewählte Bereitstellung konnte nicht geladen werden"
 	},
-	"cib-table2": {
-		"filter": "Filter"
-	},
-	"table": {
-		"selectColumns": "Spalten anzeigen",
-		"toggleColumn": "{column} Spalte umschalten"
-	},
 	"navigation": {
 		"home": "Startseite",
+		"navigation": "Navigation",
 		"menu": "Navigationsmenü",
 		"infoAndHelp": "Infos & Hilfe"
 	},
@@ -1248,9 +1138,9 @@
 			"email": "cibsupport{'@'}cib.de",
 			"version": "Version"
 		},
-		"flowModalAbout": {
-			"modalText": "Über",
-			"title": "CIB seven"
+		"about": {
+			"title": "Über",
+			"tooltip": "Version anzeigen"
 		}
 	},
 	"multisort": {
@@ -1282,10 +1172,6 @@
 			]
 		},
 		"recover": {
-			"title": "Passwort-Wiederherstellung",
-			"email": "E-Mail",
-			"emailDescription": "E-Mail, die dem Konto zugeordnet ist, das Sie wiederherstellen möchten",
-			"cancel": "Abbrechen",
 			"sendEmail": "Wiederherstellungs-E-Mail senden",
 			"id": "@:admin.users.id",
 			"changePassword": "Passwort ändern",
@@ -1305,14 +1191,7 @@
 			"supportLink": "Support kontaktieren"		
 		}
 	},
-	"status-progress": {
-		"state": "Status",
-		"stateOptions": {
-			"DONE": "Erledigt",
-			"PENDING": "Ausstehend"
-		},
-		"noState": "Für diese Aufgabe gibt es keinen Status"
-	},
+
 	"advanced-search": {
 		"title": "Erweiterte Suche",
 		"criteriaKey": "Kriteriumsschlüssel",
@@ -1320,13 +1199,8 @@
 		"property": "Eigenschaftsname",
 		"value": "Wert",
 		"add": "Kriterium hinzufügen",
-		"remove": "Kriterium entfernen",
-		"type": "Übereinstimmungstyp",
 		"apply": "Anwenden",
 		"cancel": "Abbrechen",
-		"cleanAll": "Alle Kriterien löschen",
-		"any": "Irgendein",
-		"all": "Alle",
 		"criteriaKeys": {    	
 			"processVariables": "Prozessvariable"
 		},
@@ -1357,14 +1231,10 @@
 		"emptyProcessList": "Ihre Entscheidungsliste ist derzeit leer.",
 		"emptyProcessListFiltered": "Es gibt keinen Entscheidung für den angewandten Filter.",
 		"decision": "Entscheidung",
-		"deleteProcessDefinition": "Prozessdefinition löschen",
 		"refreshVersions": "Historische Versionen aktualisieren",
 		"loadVersions": "Alle Versionen der Historie laden",
 		"days": "Tage",
 		"instances": "Instanzen",
-		"activateProcess": "Prozessdefinition aktivieren",
-		"downloadBpmn": "BPMN file herunterladen",
-		"showDeployment": "Deployment ansehen",
 		"showInstance": "Instanz anzeigen",
 		"evaluationTime": "Auswertungszeit",
 		"callingProcess": "Aufrufender Prozess/Vorgang",
@@ -1417,6 +1287,11 @@
 		"noGroups": "ohne Gruppe",
 		"groupName": "Gruppe",
 		"assignmentsByGroupInfo": "Eine Aufgabe kann mehreren Gruppen zugewiesen sein."
+	},
+	"deployed-form": {
+		"accept": "Akzeptieren",
+		"fullscreen": "Vollbild",
+		"showProcess": "Prozess anzeigen"
 	},
 	"setup": {
 		"title": "Ersteinrichtung",

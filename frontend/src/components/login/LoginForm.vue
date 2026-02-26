@@ -20,11 +20,14 @@
 <template>
   <div>
     <CIBForm @submitted="onLogin">
-      <b-form-group label-cols="4" :label="$t('login.username')" :invalid-feedback="$t('errors.invalid')">
-        <input ref="username" v-model="credentials.username" class="form-control" required autocomplete="username">
+      <b-form-group label-cols="4" content-cols="8" label-for="username-input" :label="$t('login.username')">
+        <input id="username-input" ref="username" v-model="credentials.username" class="form-control" :class="{ 'is-invalid': usernameError || generalError }" autocomplete="username" :aria-describedby="(usernameError || generalError) ? 'username-error' : null" :aria-invalid="(usernameError || generalError) ? 'true' : 'false'" :aria-required="true">
+        <div v-if="usernameError" id="username-error" class="invalid-feedback d-block" role="alert">{{ usernameError }}</div>
+        <div v-if="generalError" id="username-error" class="invalid-feedback d-block" role="alert">{{ generalError }}</div>
       </b-form-group>
-      <b-form-group label-cols="4" :label="$t('login.password')">
-        <SecureInput ref="password" v-model="credentials.password" class="col-8" required></SecureInput>
+      <b-form-group label-cols="4" content-cols="8" label-for="password-input" :label="$t('login.password')">
+        <SecureInput ref="password" v-model="credentials.password" :aria-describedby="passwordError ? 'password-error' : null" :has-error="!!passwordError" :required="true"></SecureInput>
+        <div v-if="passwordError" id="password-error" class="invalid-feedback d-block" role="alert">{{ passwordError }}</div>
       </b-form-group>
 
       <slot></slot>
@@ -34,7 +37,7 @@
           <b-form-checkbox v-model="rememberMe">{{ $t('login.rememberMe') }}</b-form-checkbox>
         </div>
         <div v-if="!hideForgotten" class="form-group float-end">
-          <b-button variant="link" class="text-primary" style="cursor:pointer" @click="$refs.emailDialog.show()">{{ $t('login.forgotten') }}</b-button>
+          <b-button variant="link" type="button" class="text-primary" style="cursor:pointer" @click="$refs.emailDialog.show()">{{ $t('login.forgotten') }}</b-button>
         </div>
       </div>
 
@@ -47,15 +50,20 @@
       </div>
     </CIBForm>
 
-    <b-modal ref="emailDialog" :title="$t('login.forgotten')" @shown="$refs.email.focus()">
-      <CIBForm ref="form" @submitted="onForgotten">
-        <b-form-group :invalid-feedback="$t('errors.invalid')">
-          <label for="email" class="mb-2">{{ $t('login.email') }}</label>
-          <input id="email" ref="email" :type="forgottenType" :placeholder="$t('login.email')" class="form-control" required autocomplete="email">
+    <b-modal ref="emailDialog" :title="$t('login.forgotten')" @shown="onEmailDialogShown">
+      <CIBForm ref="form" @submitted="onForgotten" @fail="onEmailFail">
+        <b-form-group label-for="email" :label="$t('login.email')">
+          <input id="email" ref="email" :type="forgottenType" :placeholder="$t('login.email')"
+            class="form-control" :class="{ 'is-invalid': emailError }"
+            required autocomplete="email"
+            :aria-required="true"
+            :aria-invalid="emailError ? 'true' : 'false'"
+            :aria-describedby="emailError ? 'email-error' : null">
+          <div v-if="emailError" id="email-error" class="invalid-feedback d-block" role="alert">{{ emailError }}</div>
         </b-form-group>
       </CIBForm>
       <template v-slot:modal-footer>
-        <b-button @click="$refs.form.onSubmit()" variant="primary">{{ $t('confirm.ok') }}</b-button>
+        <b-button type="button" @click="$refs.form.onSubmit()" variant="primary">{{ $t('confirm.ok') }}</b-button>
       </template>
     </b-modal>
 
@@ -88,14 +96,42 @@ export default {
     return {
       rememberMe: true,
       show: false,
-      email: null
+      email: null,
+      emailError: null,
+      usernameError: null,
+      passwordError: null,
+      generalError: null
     }
+  },
+  mounted: function() {
+    // Focus username field on login page for accessibility
+    this.$nextTick(() => {
+      this.$refs.username?.focus()
+    })
   },
   methods: {
     onLogin: function() {
       const self = this
+      // Clear previous errors
+      this.usernameError = null
+      this.passwordError = null
+      this.generalError = null
+      
       this.credentials.username = this.$refs.username.value // https://helpdesk.cib.de/browse/DOXISAFES-456
       this.credentials.password = this.$refs.password.$refs.input.value
+      
+      // Validate before submission
+      if (!this.credentials.username) {
+        this.usernameError = this.$t('login.usernameRequired')
+        this.$refs.username.focus()
+        return
+      }
+      if (!this.credentials.password) {
+        this.passwordError = this.$t('login.passwordRequired')
+        this.$refs.password.$refs.input.focus()
+        return
+      }
+      
       AuthService.login(this.credentials, this.rememberMe).then(function(user) { self.$emit('success', user) }, function(error) {
         const res = error.response.data
         if (res && res.type === 'LoginException' && res.params && res.params.length >= 1 && res.params[0] === 'StandardLogin') {
@@ -105,11 +141,23 @@ export default {
         } else if (error.response.status === 429) { // Too many requests
           res.params[1] = new Date(res.params[1]).toLocaleString('de-DE')
           self.$root.$refs.error.show(res)
-        } else self.$root.$refs.error.show(res)
+        } else {
+          self.generalError = self.$t('errors.AuthenticationException')
+          self.$refs.username.focus()
+        }
       })
     }, // https://vuejs.org/v2/guide/components-custom-events.html
 
+    onEmailDialogShown: function() {
+      this.emailError = null
+      this.$refs.email.focus()
+    },
+    onEmailFail: function() {
+      this.emailError = this.$t('errors.invalid')
+      this.$nextTick(() => this.$refs.email.focus())
+    },
     onForgotten: function() {
+      this.emailError = null
       this.email = this.$refs.email.value
       if (this.credentials2) this.credentials2.email = this.email
       AuthService.requestPasswordReset({ email: this.email }).then(function() {

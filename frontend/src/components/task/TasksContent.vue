@@ -17,7 +17,7 @@
 
 -->
 <template>
-  <SidebarsFlow ref="regionFilter" role="region" :aria-label="$t('seven.filters')" @selected-filter="selectedFilter()" v-model:left-open="leftOpenFilter" :left-caption="leftCaptionFilter" :rightSize="[12, 4, 2, 2, 2]" :leftSize="[12, 4, 2, 2, 2]">
+  <SidebarsFlow ref="regionFilter" role="region" :aria-label="$t('nav-bar.filtersTitle')" @selected-filter="selectedFilter()" v-model:left-open="leftOpenFilter" :left-caption="leftCaptionFilter" :rightSize="[12, 4, 2, 2, 2]" :leftSize="[12, 4, 2, 2, 2]">
     <GlobalEvents
       v-for="shortcut in taskShortcuts"
       :key="shortcut.id"
@@ -41,6 +41,7 @@
           @update-assignee="updateAssignee($event, 'task')" @set-filter="filter = $event; listTasksWithFilter()"
           @open-sidebar-date="rightOpenTask = true" @show-more="showMore()" :taskResultsIndex="taskResultsIndex"
           @process-started="listTasksWithFilter();$refs.processStarted.show(10); checkAndOpenTask($event, true)"
+          :search="search"
           @search-filter="search = $event" @refresh-tasks="listTasksWithFilter()" @refresh-tasks-number="refreshTasksNumber"></TasksNavBar>
       </template>
 
@@ -51,7 +52,7 @@
         </router-view>
         <BWaitingBox v-else-if="task === null && $route.query.externalMode !== undefined" class="h-100 d-flex justify-content-center" styling="width:20%"></BWaitingBox>
         <div v-else class="text-secondary text-center">
-          <img :alt="$t('seven.selectTask')" src="@/assets/images/task/tasklist_empty.svg" class="mt-5" style="max-width: 250px">
+          <img alt="" src="@/assets/images/task/tasklist_empty.svg" class="mt-5" style="max-width: 250px">
           <h5>{{ $t('seven.selectTask') }}</h5>
         </div>
       </transition>
@@ -75,7 +76,7 @@
     <SuccessAlert top="0" style="z-index: 1031" ref="completedTask">{{ $t('seven.taskCompleted') }}</SuccessAlert>
     <SuccessAlert top="0" style="z-index: 1031" ref="processStarted">{{ $t('process.processStarted') }}</SuccessAlert>
     <SuccessAlert top="0" style="z-index: 1031" ref="filter">
-      <i18n-t :keypath="'nav-bar.filters.' + filterMessage" tag="span" scope="global">
+      <i18n-t :keypath="filterMessage" tag="span" scope="global">
         <template #name>
           <strong>{{ filterName }}</strong>
         </template>
@@ -148,7 +149,7 @@ export default {
       return this.$store.state.filter.selected.name
     },
     leftCaptionFilter: function() {
-      return this.leftOpenTask ? this.$t('seven.filters') : ''
+      return this.leftOpenTask ? this.$t('nav-bar.filtersTitle') : ''
     },
     getTasksNavbarSize: function() { return this.tasksNavbarSizes[this.tasksNavbarSize] },
     taskShortcuts() {
@@ -374,7 +375,7 @@ export default {
       this.task = task
       this.assignee = task.assignee || null
       updateAppTitle(
-        this.$root.config.productNamePageTitle || this.$t('cib-header.productName'),
+        this.$root.config.productNamePageTitle || this.$t('login.productName'),
         this.$t('start.taskList.title'),
         task.name
       )

@@ -18,10 +18,10 @@
 -->
 <template>
   <div>
-    <b-button variant="light" class="rounded-0 text-nowrap position-absolute" @click="$emit('update:leftOpen', true)"
+    <b-button variant="light" class="rounded-0 text-nowrap position-absolute" :aria-label="$t('nav-bar.filtersTitle')" :aria-expanded="String(leftOpen)" @click="$emit('update:leftOpen', true)"
       style="right: 100%; top: 0; transform: rotate(-90deg); transform-origin: right top; height: 40px"
       :style="favoriteFilters.length > 0 ? 'width: ' + sizes.arrow + 'px' : ''">
-      <span v-if="favoriteFilters.length <= 0">{{ $t('seven.filters') }}</span>
+      <span v-if="favoriteFilters.length <= 0">{{ $t('nav-bar.filtersTitle') }}</span>
       <i class="mdi mdi-18px mdi-chevron-down"></i>
     </b-button>
     <template v-for="(filter, key) in favoritesDisplayed">
@@ -33,9 +33,13 @@
     </template>
     <b-dropdown v-if="favoritesNoDisplayed.length > 0" variant="link" toggle-class="px-0" no-caret class="position-absolute" style="left: 0" :style="getDotsStyle()">
       <template #button-content>
-        <i v-hover-style="{ classes: ['text-primary'] }" class="mdi mdi-18px mdi-dots-horizontal"></i>
+        <div class="mx-2" :title="$t('task.showMore')">
+          <i class="mdi mdi-18px mdi-dots-horizontal"></i>
+        </div>
       </template>
-      <b-dd-item-btn v-for="filter in favoritesNoDisplayed" @click="selectFilter(filter)" :key="filter.id">{{ filter.name }}</b-dd-item-btn>
+      <b-dd-item-btn v-for="filter in favoritesNoDisplayed" @click="selectFilter(filter)" :key="filter.id" :class="isActive(filter) ? 'active' : ''">
+        {{ filter.name }}
+      </b-dd-item-btn>
     </b-dropdown>
   </div>
 </template>
@@ -100,6 +104,9 @@ export default {
       const styles = { width: this.sizes.dots + 'px' }
       styles.top = this.favoritesDisplayed.length * this.sizes.filter + this.sizes.arrow + 'px'
       return styles
+    },
+    isActive(filter) {
+      return this.$store.state.filter.selected.id === filter.id
     },
     selectFilter: function(filter) {
       const selectedFilter = this.$store.state.filter.list.find(f => {

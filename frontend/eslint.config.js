@@ -18,7 +18,6 @@ import js from '@eslint/js'
 import pluginVue from 'eslint-plugin-vue'
 import pluginVitest from '@vitest/eslint-plugin'
 import pluginCypress from 'eslint-plugin-cypress/flat'
-import skipFormatting from '@vue/eslint-config-prettier/skip-formatting'
 import pluginVueA11y from "eslint-plugin-vuejs-accessibility";
 
 export default [
@@ -71,11 +70,6 @@ export default [
   ...pluginVueA11y.configs["flat/recommended"],
   {
     rules: {
-      // override rules settings here to make them warnings
-      "vuejs-accessibility/click-events-have-key-events": "warn",
-      "vuejs-accessibility/form-control-has-label": "warn",
-      "vuejs-accessibility/interactive-supports-focus": "warn",
-
       "vuejs-accessibility/label-has-for": [
         "error",
         {
@@ -96,5 +90,27 @@ export default [
       "prefer-const": "error",
     }
   },
-  skipFormatting,
+
+  // CIB formatting rules
+  {
+    'rules': {
+      //'semi': ['error', 'never'],
+      // 'quotes': ['error', 'single', { 'avoidEscape': true }],
+      'max-len': ['error', { 'code': 350 }],
+      //'space-before-function-paren': ['error', {
+      //  'anonymous': 'never',
+      //  'named': 'never',
+      //  'asyncArrow': 'always'
+      //}],
+      // 'object-shorthand': ['error', 'always']
+    },
+  },
+
+  // JSON-specific rules
+  {
+    files: ['translations_*.json'],
+    rules: {
+      'indent': ['error', 'tab']
+    },
+  },
 ]

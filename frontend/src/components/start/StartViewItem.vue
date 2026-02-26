@@ -91,11 +91,11 @@ export default {
 }
 .btn:focus {
   outline: 2px solid var(--bs-dark);
-  outline-offset: 0px;
+  outline-offset: -2px;
 }
 .btn:active {
   outline: 2px solid var(--bs-gray-600);
-  outline-offset: 0px;
+  outline-offset: -2px;
 }
 
 a.list-group-item:hover {
@@ -103,11 +103,10 @@ a.list-group-item:hover {
 }
 a.list-group-item:focus {
   outline: 2px solid var(--bs-dark);
-  outline-offset: 0px;
+  outline-offset: -2px;
 }
 a.list-group-item:active {
   outline: 0px solid var(--bs-gray-600);
-  outline-offset: 0px;
+  outline-offset: -2px;
 }
-
 </style>

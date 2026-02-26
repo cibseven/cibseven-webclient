@@ -40,15 +40,17 @@
           <b-form-input :placeholder="$t('advanced-search.value')" v-model="selectedCriteriaValue.value"></b-form-input>
         </div>
       </div>
-      <b-button @click="addCriteria" :title="$t('advanced-search.add')" variant="primary" class="mb-3">
+      <b-button @click="addCriteria" type="button" :title="$t('advanced-search.add')" variant="primary" class="mb-3">
         <span class="d-inline-block align-middle mdi mdi-16px mdi-plus" style="line-height: 0"></span> {{ $t('advanced-search.add') }}
       </b-button>
 
       <div class="container-fluid border">
-        <FlowTable striped :selectable="false" :items="criterias" prefix="advanced-search.table."
-          :fields="[{label: 'key', key: 'key', class: 'col-5'},
-              {label: 'value', key: 'value', class: 'col-5'},
-              {label: '', key: 'buttons', class: 'col-2', sortable: false, tdClass: 'py-0 text-center d-block'}]">
+        <FlowTable striped :selectable="false" :items="criterias"
+          :fields="[
+            { label: 'advanced-search.table.key', key: 'key', class: 'col-5'},
+            { label: 'advanced-search.table.value', key: 'value', class: 'col-5'},
+            { label: '', key: 'buttons', class: 'col-2', sortable: false, tdClass: 'py-0 text-center d-block'},
+          ]">
           <template v-slot:cell(key)="row">
             {{ $t('advanced-search.criteriaKeys.' + row.item.key) }}
           </template>
@@ -56,7 +58,7 @@
             <div class="col-12" v-if="row.item.key === 'processVariables'">
               <div class="row">
                 <div :title="row.item.name" class="col-5 p-0 text-truncate">{{ row.item.name }}</div>
-                <div class="col-2 text-center">{{ $t('advanced-search.operators.' + row.item.operator) }}</div>
+                <div class="col-2 text-center">{{ $t(row.item.label) }}</div>
                 <div :title="row.item.value" class="col-5 p-0 text-truncate text-end">{{ row.item.value }}</div>
               </div>
             </div>
@@ -100,14 +102,14 @@ export default {
       selectedCriteriaKey: 'processVariables',
       selectedCriteriaValue: { name: null, operator: 'eq', value: '' },
       operators: [
-        { value: 'eq', text: '=' },
-        { value: 'neq', text: '!=' },
-        { value: 'gt', text: '>' },
-        { value: 'gteq', text: '>=' },
-        { value: 'lt', text: '<' },
-        { value: 'lteq', text: '<=' },
-        { value: 'like', text: 'like' },
-        { value: 'notLike', text: 'not like' }
+        { value: 'eq', text: '=', label: 'advanced-search.operators.eq' },
+        { value: 'neq', text: '!=', label: 'advanced-search.operators.neq' },
+        { value: 'gt', text: '>', label: 'advanced-search.operators.gt' },
+        { value: 'gteq', text: '>=', label: 'advanced-search.operators.gteq' },
+        { value: 'lt', text: '<', label: 'advanced-search.operators.lt' },
+        { value: 'lteq', text: '<=', label: 'advanced-search.operators.lteq' },
+        { value: 'like', text: 'like', label: 'advanced-search.operators.like' },
+        { value: 'notLike', text: 'not like', label: 'advanced-search.operators.notLike' }
       ],
       isValidForm: true
     }
@@ -126,7 +128,10 @@ export default {
       if (this.$store.state.advancedSearch.criterias.length > 0) {
         this.matchAllCriteria = this.$store.state.advancedSearch.matchAllCriteria
         this.criterias = this.$store.state.advancedSearch.criterias.map(criteria => {
-          return { ...criteria }
+          return {
+            ...criteria,
+            label: 'advanced-search.operators.' + criteria.operator
+          }
         })
       }
       this.$refs.advancedSearchModal.show()
@@ -139,15 +144,13 @@ export default {
         key: this.selectedCriteriaKey,
         name: this.selectedCriteriaValue.name,
         operator: this.selectedCriteriaValue.operator,
+        label: 'advanced-search.operators.' + this.selectedCriteriaValue.operator,
         value: value
       })
       this.selectedCriteriaValue = { name: null, operator: 'eq', value: '' }
     },
     deleteCriteria: function(index) {
       this.criterias.splice(index, 1)
-    },
-    cleanAllCriteria: function() {
-      this.criteria = []
     },
     handleSubmit: function() {
       this.$store.dispatch('updateAdvancedSearch', {
