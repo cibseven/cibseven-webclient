@@ -154,11 +154,11 @@
         </div>
         <BWaitingBox v-show="tasksFiltered.length < 1" ref="taskLoader" class="d-flex justify-content-center pt-4" styling="width:30%">
           <div v-if="tasksFiltered.length < 1 && $store.state.filter.selected.name === 'default'">
-            <img :alt="$t('nav-bar.no-tasks-pending')" src="@/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mt-3 mb-2" style="width: 200px">
+            <img alt="" src="@/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mt-3 mb-2" style="width: 200px">
             <div class="h5 text-secondary text-center">{{ $t('nav-bar.no-tasks-pending') }}</div>
           </div>
           <div v-if="tasksFiltered.length < 1 && $store.state.filter.selected.name !== 'default'">
-            <img :alt="$t('nav-bar.no-tasks')" src="@/assets/images/task/no_tasks.svg" class="d-block mx-auto mt-3 mb-2" style="width: 200px">
+            <img alt="" src="@/assets/images/task/no_tasks.svg" class="d-block mx-auto mt-3 mb-2" style="width: 200px">
             <div class="h5 text-secondary text-center">{{ $t('nav-bar.no-tasks') }}</div>
           </div>
         </BWaitingBox>

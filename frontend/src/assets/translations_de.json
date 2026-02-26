@@ -829,8 +829,13 @@
 			"selectedCriteria": "Ausgewählte Kriterien",
 			"no-filters": "Keine Filter gefunden",
 			"edit": "@:commons.edit",
+			"editFilter": "Bearbeite \"{filterName}\" Filter",
 			"delete": "@:confirm.delete",
-			"pin": "Anfügen",
+			"deleteFilter": "Lösche \"{filterName}\" Filter",
+			"pin": "Anheften",
+			"pinFilter": "Heften \"{filterName}\" Filter",
+			"unpin": "Lösen",
+			"unpinFilter": "Lösen \"{filterName}\" Filter",
 			"includeAssigned": "Zugewiesene Aufgaben einbeziehen",
 			"keys": {
 				"processInstanceId": "Prozessinstanz-ID",
@@ -908,7 +913,6 @@
 				"key": "Kriterien-Key",
 				"value": "Kriterien-Wert"
 			},
-			"matchAnyCriteria": "Einige der Kriterien sind erfüllt",
 			"matchAllCriteria": "Alle Kriterien sind erfüllt",
 			"msgFilterCreated": "Filter \"{name}\" erstellt",
 			"msgFilterUpdated": "Filter \"{name}\" aktualisiert",
