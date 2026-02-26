@@ -913,7 +913,6 @@
 				"key": "Criteria key",
 				"value": "Criteria value"
 			},
-			"matchAnyCriteria": "Any of the criteria are met",
 			"matchAllCriteria": "All of the criteria are met",
 			"msgFilterCreated": "Filter \"{name}\" has been created",
 			"msgFilterUpdated": "Filter \"{name}\" has been changed successfully",

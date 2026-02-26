@@ -913,7 +913,6 @@
 				"key": "Ключ критерію",
 				"value": "Значення критерію"
 			},
-			"matchAnyCriteria": "Відповідає будь-якому критерію",
 			"matchAllCriteria": "Відповідає всім критеріям",
 			"msgFilterCreated": "Фільтр \"{name}\" створено",
 			"msgFilterUpdated": "Фільтр \"{name}\" оновлено",

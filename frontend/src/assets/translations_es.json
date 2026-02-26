@@ -913,7 +913,6 @@
 				"key": "Key del criterio",
 				"value": "Valor del criterio"
 			},
-			"matchAnyCriteria": "Se cumplen algunos de los criterios",
 			"matchAllCriteria": "Se cumplen todos los criterios",
 			"msgFilterCreated": "Filtro \"{name}\" creado",
 			"msgFilterUpdated": "Filtro \"{name}\" actualizado",
