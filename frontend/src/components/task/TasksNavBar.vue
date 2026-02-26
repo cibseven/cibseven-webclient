@@ -105,10 +105,20 @@
                   <HighlightedText :text="task.name" :keyword="search" class="fw-bold">{{ task.name }}</HighlightedText>
                 </h3>
                 <div class="d-flex ms-auto">
-                  <b-button @click.stop="$refs['followUp' + task.id][0].show()" @keydown.enter.stop.prevent="$refs['followUp' + task.id][0].show()" @keyup.enter.stop.prevent 
-                  @keydown.space.stop.prevent="$refs['followUp' + task.id][0].show()" v-if="$root.config.layout.showFilterReminderDate" size="sm" :class="getReminderClasses(task)" variant="light" class="mdi mdi-18px mdi-alarm border-0 me-1" :title="getDateFormatted(task.followUp, 'L', 'setReminder')"></b-button>
-                  <b-button @click.stop="$refs['due' + task.id][0].show()" @keydown.enter.stop.prevent="$refs['due' + task.id][0].show()" @keyup.enter.stop.prevent 
-                  @keydown.space.stop.prevent="$refs['due' + task.id][0].show()" v-if="$root.config.layout.showFilterDueDate" size="sm" :class="getDueClasses(task)" variant="light" class="mdi mdi-18px mdi-calendar-alert border-0" :title="getDateFormatted(task.due, 'L', 'setDeadline')"></b-button>
+                  <b-button
+                    @click.stop="copyTaskForDateManagement(task, 'followUp'); $refs.followUp.show()"
+                    @keydown.enter.stop.prevent="copyTaskForDateManagement(task, 'followUp'); $refs.followUp.show()"
+                    @keyup.enter.stop.prevent 
+                    @keydown.space.stop.prevent="$refs.followUp.show()"
+                    v-if="$root.config.layout.showFilterReminderDate"
+                    size="sm" :class="getReminderClasses(task)" variant="light" class="mdi mdi-18px mdi-alarm border-0 me-1" :title="getDateFormatted(task.followUp, 'L', 'setReminder')"></b-button>
+                  <b-button
+                    @click.stop="copyTaskForDateManagement(task, 'due'); $refs.due.show()"
+                    @keydown.enter.stop.prevent="copyTaskForDateManagement(task, 'due'); $refs.due.show()"
+                    @keyup.enter.stop.prevent 
+                    @keydown.space.stop.prevent="$refs.due.show()"
+                    v-if="$root.config.layout.showFilterDueDate"
+                    size="sm" :class="getDueClasses(task)" variant="light" class="mdi mdi-18px mdi-calendar-alert border-0" :title="getDateFormatted(task.due, 'L', 'setDeadline')"></b-button>
                 </div>
               </div>
               <div v-if="task.businessKey && $root.config.layout.showBusinessKey" class="d-flex align-items-center mb-1">
@@ -131,31 +141,33 @@
                   </div>
                 </div>
               </div>
-              <b-modal :ref="'followUp' + task.id" @show="copyTaskForDateManagement(task, 'followUp')" @hide="selectedDateT = {}">
-                <b-calendar @input="setTime(null, 'followUp')" v-model="selectedDateT.followUp" value-as-date :start-weekday="1" :locale="currentLanguage()" block
-                :label-no-date-selected="$t('cib-datepicker2.noDate')" :date-format-options="{ year: 'numeric', month: '2-digit', day: '2-digit' }"
-                :label-reset-button="$t('cib-datepicker2.reset')" :label-today-button="$t('cib-datepicker2.today')" :date-disabled-fn="isInThePast" label-help="">
-                </b-calendar>
-                <template v-slot:modal-footer>
-                  <b-button @click="$refs['followUp' + task.id][0].hide()" variant="light">{{ $t('confirm.cancel') }}</b-button>
-                  <b-button @click="setDate(task, 'followUp')" variant="primary">{{ $t('task.setReminder') }}</b-button>
-                </template>
-              </b-modal>
-              <b-modal :ref="'due' + task.id" @show="copyTaskForDateManagement(task, 'due')" @hide="selectedDateT = {}">
-                <b-calendar @input="setTime(selectedDateT.dueTime, 'due')" v-model="selectedDateT.due" value-as-date :start-weekday="1" :locale="currentLanguage()" block
-                :label-no-date-selected="$t('cib-datepicker2.noDate')" :date-format-options="{ year: 'numeric', month: '2-digit', day: '2-digit' }"
-                :label-reset-button="$t('cib-datepicker2.reset')" :label-today-button="$t('cib-datepicker2.today')" label-help="">
-                </b-calendar>
-                <hr>
-                <b-form-timepicker v-model="selectedDateT.dueTime" @input="setTime($event, 'due')" no-close-button :label-no-time-selected="$t('cib-timepicker.noDate')"
-                  reset-button class="flex-fill" reset-value="23:59:00" :label-reset-button="$t('cib-timepicker.reset')" :locale="currentLanguage()"></b-form-timepicker>
-                <template v-slot:modal-footer>
-                  <b-button @click="$refs['due' + task.id][0].hide()" variant="light">{{ $t('confirm.cancel') }}</b-button>
-                  <b-button @click="setDate(task, 'due')" variant="primary">{{ $t('task.setDeadline') }}</b-button>
-                </template>
-              </b-modal>
             </b-list-group-item>
           </b-list-group>
+
+          <b-modal ref="followUp" @hide="selectedDateT = {}" :title="$t('task.setReminder') + (taskToEdit ? ' - ' + taskToEdit.name : '')">
+            <b-calendar uid="followUp" @input="setTime(null, 'followUp')" v-model="selectedDateT.followUp" value-as-date :start-weekday="1" :locale="currentLanguage()" block
+              :label-no-date-selected="$t('cib-datepicker2.noDate')" :date-format-options="{ year: 'numeric', month: '2-digit', day: '2-digit' }"
+              :label-reset-button="$t('cib-datepicker2.reset')" :label-today-button="$t('cib-datepicker2.today')" :date-disabled-fn="isInThePast" label-help="">
+            </b-calendar>
+            <template v-slot:modal-footer>
+              <b-button @click="$refs.followUp.hide()" variant="light">{{ $t('confirm.cancel') }}</b-button>
+              <b-button @click="setDate(taskToEdit, 'followUp')" variant="primary">{{ $t('task.setReminder') }}</b-button>
+            </template>
+          </b-modal>
+          <b-modal ref="due" @hide="selectedDateT = {}" :title="$t('task.setDeadline') + (taskToEdit ? ' - ' + taskToEdit.name : '')">
+            <b-calendar uid="due" @input="setTime(selectedDateT.dueTime, 'due')" v-model="selectedDateT.due" value-as-date :start-weekday="1" :locale="currentLanguage()" block
+              :label-no-date-selected="$t('cib-datepicker2.noDate')" :date-format-options="{ year: 'numeric', month: '2-digit', day: '2-digit' }"
+              :label-reset-button="$t('cib-datepicker2.reset')" :label-today-button="$t('cib-datepicker2.today')" label-help="">
+            </b-calendar>
+            <hr>
+            <b-form-timepicker v-model="selectedDateT.dueTime" @input="setTime($event, 'due')" no-close-button :label-no-time-selected="$t('cib-timepicker.noDate')"
+              reset-button class="flex-fill" reset-value="23:59:00" :label-reset-button="$t('cib-timepicker.reset')" :locale="currentLanguage()"></b-form-timepicker>
+            <template v-slot:modal-footer>
+              <b-button @click="$refs.due.hide()" variant="light">{{ $t('confirm.cancel') }}</b-button>
+              <b-button @click="setDate(taskToEdit, 'due')" variant="primary">{{ $t('task.setDeadline') }}</b-button>
+            </template>
+          </b-modal>
+
         </div>
         <BWaitingBox v-show="tasksFiltered.length < 1" ref="taskLoader" class="d-flex justify-content-center pt-4" styling="width:30%">
           <div v-if="tasksFiltered.length < 1 && $store.state.filter.selected.name === 'default'">
@@ -203,6 +215,7 @@ export default {
       mode: 'create',
       focused: null,
       taskSorting: { sortBy: null, sortOrder: 'desc' },
+      taskToEdit: null,
       selectedDateT: {},
       pauseRefreshButton: false,
       advancedFilter: [],
@@ -447,7 +460,7 @@ export default {
     setDate: function(task, type) {
       task[type] = this.selectedDateT[type] ? moment(this.selectedDateT[type]).format('YYYY-MM-DDTHH:mm:ss.SSSZZ') : null
       TaskService.update(task)
-      this.$refs[type + task.id][0].hide()
+      this.$refs[type].hide()
     },
     handleScrollTasks: function(el) {
       if (this.tasks.length < this.taskResultsIndex) return
@@ -468,6 +481,7 @@ export default {
       }
     },
     copyTaskForDateManagement: function(task, type) {
+      this.taskToEdit = task
       this.selectedDateT = JSON.parse(JSON.stringify(task))
       if (task[type]) {
         this.selectedDateT[type] = new Date(task[type])
