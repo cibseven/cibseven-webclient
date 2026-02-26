@@ -1275,6 +1275,7 @@
 		"assignmentsByGroupInfo": "Задача может быть назначена нескольким группам."
 	},
 	"deployed-form": {
+		"selectDate": "Выбрать дату",
 		"accept": "Принять",
 		"fullscreen": "Полноэкранный режим",
 		"showProcess": "Просмотреть процесс"

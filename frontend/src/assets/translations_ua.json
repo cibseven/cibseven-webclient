@@ -1275,6 +1275,7 @@
 		"assignmentsByGroupInfo": "Завдання може бути призначене кільком групам."
 	},
 	"deployed-form": {
+		"selectDate": "Вибрати дату",
 		"accept": "Прийняти",
 		"fullscreen": "Повноекранний режим",
 		"showProcess": "Переглянути процес"
