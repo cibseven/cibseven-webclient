@@ -102,7 +102,7 @@
         </template>
       </FlowTable>
       <div v-if="!processesFiltered.length">
-        <img :alt="$t(textEmptyProcessesList)" src="@/assets/images/process/empty_processes_list.svg" class="d-block mx-auto mt-5 mb-3" style="max-width: 250px">
+        <img alt="" src="@/assets/images/process/empty_processes_list.svg" class="d-block mx-auto mt-5 mb-3" style="max-width: 250px">
         <div class="h5 text-secondary text-center">{{ $t(textEmptyProcessesList) }}</div>
       </div>
       </div>

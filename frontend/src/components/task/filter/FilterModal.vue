@@ -100,8 +100,6 @@
       </b-form-checkbox>
       <b-form-checkbox class="mb-3" v-model="matchAllCriteria" name="check-button" switch>
         <span>{{ $t('nav-bar.filters.matchAllCriteria') }}</span>
-        <!-- <span v-if="matchAllCriteria">{{ $t('nav-bar.filters.matchAllCriteria') }}</span>
-        <span v-else>{{ $t('nav-bar.filters.matchAnyCriteria') }}</span> -->
       </b-form-checkbox>
     </div>
 
