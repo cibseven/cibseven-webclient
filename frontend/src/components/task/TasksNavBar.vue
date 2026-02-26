@@ -100,9 +100,9 @@
               class="rounded-0 mt-3 p-2 bg-white border-0" :class="task.id === $route.params.taskId ? 'active shadow' : ''" draggable="false"
               tabindex=0 style="cursor: pointer" v-on:keyup.enter="selectedTask(task)" action>
               <div class="d-flex align-items-center">
-                <h6 style="max-width: 100%; font-size: 1rem">
+                <h3 class="h6" style="max-width: 100%; font-size: 1rem">
                   <HighlightedText :text="task.name" :keyword="search" class="fw-bold">{{ task.name }}</HighlightedText>
-                </h6>
+                </h3>
                 <div class="d-flex ms-auto">
                   <b-button @click.stop="$refs['followUp' + task.id][0].show()" @keydown.enter.stop.prevent="$refs['followUp' + task.id][0].show()" @keyup.enter.stop.prevent 
                   @keydown.space.stop.prevent="$refs['followUp' + task.id][0].show()" v-if="$root.config.layout.showFilterReminderDate" size="sm" :class="getReminderClasses(task)" variant="light" class="mdi mdi-18px mdi-alarm border-0 me-1" :title="getDateFormatted(task.followUp, 'L', 'setReminder')"></b-button>
