@@ -21,12 +21,14 @@
     <div class="row">
       <div class="col-md-8">
         <b-form-group label-size="sm" :label-cols="4" :label="$t('nav-bar.filters.filterNameLabel')" :invalid-feedback="$t('nav-bar.filters.filterExists')">
-          <b-form-input size="sm" v-model="selectedFilterName" :placeholder="$t('nav-bar.filters.filterNamePlaceholder')" :state="isNameInvalid ? false : null"></b-form-input>
+          <label for="filter-name" class="visually-hidden">{{ $t('nav-bar.filters.filterNameLabel') }}</label>
+          <b-form-input id="filter-name" size="sm" v-model="selectedFilterName" :placeholder="$t('nav-bar.filters.filterNamePlaceholder')" :state="isNameInvalid ? false : null"></b-form-input>
         </b-form-group>
       </div>
       <div class="col-md-4">
         <b-form-group label-size="sm" :label-cols="6" :label="$t('nav-bar.filters.filterPriorityLabel')">
-          <b-form-input size="sm" v-model="selectedFilterPriority"></b-form-input>
+          <label for="filter-priority" class="visually-hidden">{{ $t('nav-bar.filters.filterPriorityLabel') }}</label>
+          <b-form-input id="filter-priority" size="sm" v-model="selectedFilterPriority"></b-form-input>
         </b-form-group>
       </div>
     </div>
@@ -34,7 +36,8 @@
     <b-form-group :label-cols="12" label-class="mb-3" label-size="sm" :label="$t('nav-bar.filters.selectedCriteria')">
       <div class="container">
         <div class="row text-center px-3">
-          <b-form-select style="background-image: none" class="col-4" size="sm" @change="selectCriteria($event)" v-model="selectedCriteriaKey" :options="criteriasGrouped">
+          <label class="visually-hidden" for="criteria-select">{{ $t('nav-bar.filters.selectProperty') }}</label>
+          <b-form-select id="criteria-select" style="background-image: none" class="col-4" size="sm" @change="selectCriteria($event)" v-model="selectedCriteriaKey" :options="criteriasGrouped">
             <template v-slot:first>
               <b-form-select-option :value="null" disabled>-- {{ $t('nav-bar.filters.selectProperty') }} --</b-form-select-option>
             </template>
@@ -42,7 +45,10 @@
           <div v-if="selectedCriteriaType !== 'variable'" class="col-5 pe-0">
             <FilterableSelect v-if="$store.state.user.searchUsers.length > 1 && selectedCriteriaType === 'filterable'" class="w-100" :placeholder="$t('nav-bar.filters.insertValue')"
             v-model="selectedCriteriaValue" :elements="$store.state.user.searchUsers" noInvalidValues/>
-            <b-form-input v-else size="sm" :placeholder="$t('nav-bar.filters.insertValue')" v-model="selectedCriteriaValue"></b-form-input>
+            <template v-else>
+              <label class="visually-hidden" for="filterable-select">{{ $t('nav-bar.filters.insertValue') }}</label>
+              <b-form-input id="filterable-select" size="sm" :placeholder="$t('nav-bar.filters.insertValue')" v-model="selectedCriteriaValue"></b-form-input>
+            </template>
           </div>
           <div class="col-3 p-0">
             <b-button v-if="!isEditing" :disabled="!selectedCriteriaKey" @click="addCriteria" size="sm" class="mdi mdi-plus" variant="secondary">{{ $t('nav-bar.filters.addCriteria') }}</b-button>
@@ -73,8 +79,14 @@
         :fields="[
           { label: 'nav-bar.filters.criteria.key', key: 'name', class: 'col-5'},
           { label: 'nav-bar.filters.criteria.value', key: 'value', class: 'col-5'},
-          { label: '', key: 'buttons', class: 'col-2', sortable: false, tdClass: 'py-0'},
+          { label: 'process.actions', key: 'actions', class: 'col-2', sortable: false, tdClass: 'py-0'},
         ]">
+
+        <template v-slot:header(actions)>
+            <!-- hide 'actions' header for better UI but keep it accessible for screen readers -->
+          <span class="visually-hidden">{{ $t('process.actions') }}</span>
+        </template>
+
         <template v-slot:cell(value)="row">
           <div v-if="row.item.key === 'processVariables'">
             <div v-for="(item, index) of row.item.value" class="row g-0" :key="index">
@@ -85,7 +97,7 @@
           </div>
           <span v-else> {{ formatCriteria(row.item.value) }} </span>
         </template>
-        <template v-slot:cell(buttons)="row">
+        <template v-slot:cell(actions)="row">
           <CellActionButton icon="mdi-pencil" @click="editCriteria(row.index)" :title="$t('commons.edit')"></CellActionButton>
           <CellActionButton icon="mdi-delete-outline" @click="deleteCriteria(row.index)" :title="$t('confirm.delete')"></CellActionButton>
         </template>

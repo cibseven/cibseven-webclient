@@ -1276,6 +1276,7 @@
 		"assignmentsByGroupInfo": "Eine Aufgabe kann mehreren Gruppen zugewiesen sein."
 	},
 	"deployed-form": {
+		"selectDate": "Datum auswählen",
 		"accept": "Akzeptieren",
 		"fullscreen": "Vollbild",
 		"showProcess": "Prozess anzeigen"

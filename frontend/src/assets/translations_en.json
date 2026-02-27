@@ -1276,6 +1276,7 @@
 		"assignmentsByGroupInfo": "A task may have multiple groups."
 	},
 	"deployed-form": {
+		"selectDate": "Select a date",
 		"accept": "Accept",
 		"fullscreen": "Fullscreen",
 		"showProcess": "View process"
