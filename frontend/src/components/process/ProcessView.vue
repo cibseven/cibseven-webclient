@@ -17,25 +17,52 @@
 
 -->
 <template>
-    <ProcessDefinitionView
-      v-if="!loading && computedVersionIndex"
-      :processKey="processKey"
-      :versionIndex="computedVersionIndex"
-      :instanceId="computedInstanceId"
-      :tenantId="tenantId"
-    ></ProcessDefinitionView>
+  <ProcessDefinitionView
+    v-if="computedVersionIndex && !isError"
+    :processKey="processKey"
+    :versionIndex="computedVersionIndex"
+    :instanceId="computedInstanceId"
+    :tenantId="tenantId"
+  ></ProcessDefinitionView>
+
+  <div v-else class="h-100 d-flex flex-column justify-content-center align-items-center">
+
+    <!-- Show error message if the URL parameters are not valid -->
+    <div v-if="isError" class="alert alert-danger">
+      <h2 class="h5 text-danger">Error: Unrecognized process definition/instance URL</h2>
+      <p class="text-muted">The URL must be in one of the following formats:</p>
+      <ul class="text-muted">
+        <li><code>#&#47;seven&#47;auth&#47;process&#47;:processKey</code> (alias for <code>#&#47;seven&#47;auth&#47;process&#47;:processKey&#47;:versionIndex</code> with the latest version)</li>
+        <li><code>#&#47;seven&#47;auth&#47;process&#47;:processKey&#47;:versionIndex</code></li>
+        <li><code>#&#47;seven&#47;auth&#47;process&#47;:processKey&#47;:versionIndex&#47;:instanceId</code></li>
+      </ul>
+      <p class="text-muted">If your process definition or instance has a tenant, please include it in the end of the URL as a mandatory parameter:
+        <br>
+        <code>#&#47;seven&#47;auth&#47;process&#47;:processKey&#47;:versionIndex&#47;:instanceId<span class="border border-primary p-1">?tenantId=:tenantId</span></code>.
+      </p>
+      <p class="text-muted">Please check the URL and try again.</p>
+    </div>
+
+    <!-- Show loading spinner while waiting for the latest version to be loaded -->
+    <div v-else class="text-center">
+      <BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}
+    </div>
+
+  </div>
+
 </template>
 
 <script>
 import ProcessDefinitionView from '@/components/process/ProcessDefinitionView.vue'
+import { BWaitingBox } from '@cib/common-frontend'
 
 export default {
   name: 'ProcessView',
-  components: { ProcessDefinitionView },
+  components: { ProcessDefinitionView, BWaitingBox },
   props: {
     processKey: { type: String, required: true },
-    versionIndex: { type: String, default: '' },
-    instanceId: { type: String, default: '' },
+    versionIndex: { type: String, default: null },
+    instanceId: { type: String, default: null },
     tenantId: { type: String, default: null }
   },
   watch: {
@@ -44,48 +71,46 @@ export default {
     tenantId: 'loadProcess',
     instanceId: 'loadProcess'
   },
-  data: function() {
+  data() {
     return {
-      process: null,
-      loading: false
+      latestProcessVersion: null,
     }
   },
   computed: {
-    computedVersionIndex: function() {
-      if (this.loading) {
-        return ''
-      } else if (this.versionIndex) {
-        return this.versionIndex
-      } else if (this.process !== null) {
-        return this.process.version
-      } else {
-        return ''
+    isError() {
+      if (!this.processKey) {
+        // processKey is required, but check it anyway
+        return true
       }
+      if (this.instanceId && !this.versionIndex) {
+        // instanceId is only valid if versionIndex is provided, otherwise it is an error
+        return true
+      }
+      return false
     },
-    computedInstanceId: function() {
+    computedVersionIndex() {
+      return this.versionIndex || this.latestProcessVersion
+    },
+    computedInstanceId() {
       // only valid with proper "versionIndex"
-      return this.versionIndex ? this.instanceId : '';
+      return this.versionIndex ? this.instanceId : null
     }
   },
   methods: {
-    loadProcess: function() {
-      if (!this.versionIndex) {
-        this.loading = true
-        this.$store.dispatch('getProcessByDefinitionKey', { key: this.processKey, tenantId: this.tenantId })
-		.then(process => {
-          this.process = process
-          this.loading = false
+    loadProcess() {
+      if (!this.versionIndex && !this.instanceId) {
+        // version was not specified =>
+        // request URL is: #/process/:processKey (alias for #/process/:processKey/<latest>)
+        // => get latest version and soft "redirect" (without changing the URL) to it
+        // #/process/:processKey/:versionIndex
+        this.$store.dispatch('getProcessByDefinitionKey', { key: this.processKey, tenantId: this.tenantId }).then(process => {
+          this.latestProcessVersion = process?.version || null
         })
       }
     }
   },
-  created: function() {
+  created() {
     this.loadProcess()
-  },
-  beforeUpdate: function() {
-    if (this.process != null && this.process.version !== this.computedVersionIndex) {
-      this.process = null
-    }
   }
 }
 </script>
