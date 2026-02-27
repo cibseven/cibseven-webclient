@@ -995,6 +995,10 @@
 			"title": "Адмін",
 			"tooltip": "Відкрити Адмін панель"
 		},
+		"modeler": {
+			"title": "Modeler",
+			"tooltip": "Відкрити Modeler для проектування та редагування BPMN, DMN та форм"
+		},
 		"oldCockpit": {
 			"title": "Старий Cockpit",
 			"tooltip": "Відкрити старий Cockpit"

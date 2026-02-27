@@ -250,7 +250,20 @@ export default {
             }
           ]
         }, {
-          show: this.permissionsUsers && (this.permissionsTaskList || this.permissionsCockpit),
+          show: this.permissionsModeler && (this.permissionsTaskList || this.permissionsCockpit),
+          divider: true,
+        }, {
+          show: this.permissionsModeler,
+          groupTitle: 'start.modeler.title',
+          items: [{
+              to: '/seven/auth/modeler',
+              active: ['seven/auth/modeler'],
+              tooltip: 'start.modeler.tooltip',
+              title: 'start.modeler.title'
+            }
+          ]
+        }, {
+          show: this.permissionsUsers && (this.permissionsTaskList || this.permissionsCockpit || this.permissionsModeler),
           divider: true,
         }, {
           show: this.permissionsUsers,
@@ -401,6 +414,9 @@ export default {
     },
     permissionsUsers: function() {
       return this.$root.user && this.hasAdminManagementPermissions(this.$root.config.permissions)
+    },
+    permissionsModeler: function() {
+      return this.$root.user && this.$root.config.modeler?.enabled
     },
     isUsersManagementActive: function() {
       return this.$route.path.includes('seven/auth/admin/user') ||
