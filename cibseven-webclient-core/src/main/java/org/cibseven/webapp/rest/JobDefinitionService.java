@@ -88,7 +88,14 @@ public class JobDefinitionService extends BaseService implements InitializingBea
 	@PutMapping("/{jobDefinitionId}/job-priority")
 	public ResponseEntity<Void> overrideJobDefinitionPriority(@PathVariable String jobDefinitionId, @RequestBody String params, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		//checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.UPDATE_ALL);
+		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.UPDATE_ALL);
+		// OR logic:
+		// https://github.com/cibseven/cibseven/blob/main/engine/src/main/java/org/cibseven/bpm/engine/ManagementService.java#L1119-L1128
+		try {
+			checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.UPDATE_INSTANCE_ALL);
+		} catch (AccessDeniedException x) {
+			checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.UPDATE_ALL);
+		}
 		bpmProvider.overrideJobDefinitionPriority(jobDefinitionId, params, user);
 		// return 204 No Content, no body
 		return ResponseEntity.noContent().build();
@@ -112,7 +119,20 @@ public class JobDefinitionService extends BaseService implements InitializingBea
 	@PutMapping("/{id}/retries")
 	public ResponseEntity<Void> retryJobDefinitionById(@PathVariable String id, @RequestBody Map<String, Object> data, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		//checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.UPDATE_ALL);
+		// OR logic:
+		try {
+			checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.RETRY_JOB_ALL);
+		} catch (AccessDeniedException x) {
+			try {
+				checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.UPDATE_INSTANCE_ALL);
+			} catch (AccessDeniedException x2) {
+				try {
+					checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.RETRY_JOB_ALL);
+				} catch (AccessDeniedException x3) {
+					checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.UPDATE_ALL);
+				}
+			}
+		}
 		bpmProvider.retryJobDefinitionById(id, data, user);
 		// return 204 No Content, no body
 		return ResponseEntity.noContent().build();
