@@ -73,6 +73,7 @@ import org.cibseven.webapp.rest.model.VariableHistory;
 import org.cibseven.webapp.rest.model.VariableInstance;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -1138,13 +1139,13 @@ public interface BpmProvider {
 
 	Decision getDecisionDefinitionByKeyAndTenant(String key, String tenant, CIBUser user);
 	Object getDiagramByKeyAndTenant(String key, String tenant, CIBUser user);
-	Object evaluateDecisionDefinitionByKeyAndTenant(String key, String tenant, CIBUser user);
-	Object updateHistoryTTLByKeyAndTenant(String key, String tenant, CIBUser user);
+	Object evaluateDecisionDefinitionByKeyAndTenant(Map<String, Object> data, String key, String tenant, CIBUser user);
+	void updateHistoryTTLByKeyAndTenant(Map<String, Object> data, String key, String tenant, CIBUser user);
 	Object getXmlByKey(String key, CIBUser user);
 	Object getXmlByKeyAndTenant(String key, String tenant, CIBUser user);
 	Decision getDecisionDefinitionById(String id, Optional<Boolean> extraInfo, CIBUser user);
 	Object getDiagramById(String id, CIBUser user);
-	Object evaluateDecisionDefinitionById(String id, CIBUser user);
+	Object evaluateDecisionDefinitionById(String id, Map<String, Object> data, CIBUser user);
 	void updateHistoryTTLById(String id, Map<String, Object> data, CIBUser user);
 	Object getXmlById(String id, CIBUser user);
 

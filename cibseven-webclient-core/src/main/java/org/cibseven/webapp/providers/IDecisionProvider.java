@@ -35,13 +35,13 @@ public interface IDecisionProvider {
 
 	public Decision getDecisionDefinitionByKeyAndTenant(String key, String tenant, CIBUser user);
 	public Object getDiagramByKeyAndTenant(String key, String tenant, CIBUser user);
-	public Object evaluateDecisionDefinitionByKeyAndTenant(String key, String tenant, CIBUser user);
-	public Object updateHistoryTTLByKeyAndTenant(String key, String tenant, CIBUser user);
+	public Object evaluateDecisionDefinitionByKeyAndTenant(Map<String, Object> data, String key, String tenant, CIBUser user);
+	public void updateHistoryTTLByKeyAndTenant(Map<String, Object> data, String key, String tenant, CIBUser user);
 	public Object getXmlByKey(String key, CIBUser user);
 	public Object getXmlByKeyAndTenant(String key, String tenant, CIBUser user);
 	public Decision getDecisionDefinitionById(String id, Optional<Boolean> extraInfo, CIBUser user);
 	public Object getDiagramById(String id, CIBUser user);
-	public Object evaluateDecisionDefinitionById(String id, CIBUser user);
+	public Object evaluateDecisionDefinitionById(String id, Map<String, Object> data, CIBUser user);
 	public void updateHistoryTTLById(String id, Map<String, Object> data, CIBUser user);
 	public Object getXmlById(String id, CIBUser user);
 	public Collection<Decision> getDecisionVersionsByKey(String key, Optional<Boolean> lazyLoad, CIBUser user);
