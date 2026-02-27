@@ -1022,6 +1022,8 @@
 		"AccessDeniedException": "Sin autorización ({0})",
 		"NoPermission": "No tienes los permisos necesarios para realizar esta acción.\nPermiso requerido: \"{permission}\".\nReferenciado desde: {refPath}",
 		"EntryAlreadyExistsException": "{0} ya existe",
+		"formNotFound": "No se pudo cargar el formulario \"{0}\". El formulario está vacío o el recurso del formulario no se desplegó correctamente. Por favor, verifique el despliegue e inténtelo de nuevo.",
+		"deployedFormNotFound": "El recurso del formulario desplegado \"{0}\" no se pudo encontrar en el despliegue. Por favor, verifique que el recurso del formulario esté incluido en el despliegue e inténtelo de nuevo.",
 		"NoObjectFoundException": "¡Se ha producido un problema durante la ejecución del proceso! Por favor, actualice la página en su navegador e inténtelo de nuevo.",
 		"InvalidAttributeValueException": "¡Se ha producido un problema durante la ejecución del proceso! Por favor, actualice la página en su navegador e inténtelo de nuevo.",
 		"SubmitDeniedException": "¡Se ha producido un problema durante la ejecución del proceso! Por favor, actualice la página en su navegador e inténtelo de nuevo.",
