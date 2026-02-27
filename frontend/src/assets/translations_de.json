@@ -1175,7 +1175,10 @@
 			"sendEmail": "Wiederherstellungs-E-Mail senden",
 			"id": "@:admin.users.id",
 			"changePassword": "Passwort ändern",
-			"emailSent": "Die E-Mail mit dem Link zur Wiederherstellung Ihres Passworts wurde versandt."
+			"emailSent": "Die E-Mail mit dem Link zur Wiederherstellung Ihres Passworts wurde versandt.",
+			"currentUserPassword": "Aktuelles Passwort",
+			"newPassword": "Neues Passwort",
+			"newPasswordRepeat": "Neues Passwort (wiederholen)"
 		}
 	},
 

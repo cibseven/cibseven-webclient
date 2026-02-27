@@ -80,7 +80,24 @@
             <ContentBlock
               :title="$t('password.recover.changePassword')"
               class="col-lg-6 col-md-8 col-sm-12">
-              <b-form-group labels-cols-lg="4" label-size="lg" label-class="fw-bold pt-0 pb-4" class="m-0">
+              <b-form-group v-if="$root.config.passwordDirectChangeable" labels-cols-lg="4" label-size="lg" label-class="fw-bold pt-0 pb-4" class="m-0">
+                <b-form-group :label="$t('password.recover.currentUserPassword') + '*'" label-cols-sm="4"
+                  label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
+                    <b-form-input type="password" v-model="credentials.authenticatedUserPassword"></b-form-input>
+                </b-form-group>
+                <b-form-group :label="$t('password.recover.newPassword') + '*'" label-cols-sm="4"
+                  label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
+                  <b-form-input type="password" v-model="credentials.password"></b-form-input>
+                </b-form-group>
+                <b-form-group :label="$t('password.recover.newPasswordRepeat') + '*'" label-cols-sm="4"
+                  label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
+                  <b-form-input type="password" v-model="passwordRepeat"></b-form-input>
+                </b-form-group>
+                <div class="float-end d-flex align-items-center">
+                  <b-button type="submit" variant="secondary" @click="changePassword($event)">{{$t('password.recover.changePassword')}}</b-button>
+                </div>
+              </b-form-group>
+              <b-form-group v-else labels-cols-lg="4" label-size="lg" label-class="fw-bold pt-0 pb-4" class="m-0">
                 <b-form-group :label="$t('password.recover.id') + '*'" label-cols-sm="4"
                   label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
                   <b-form-input v-model="user.id" :state="notEmpty(user.id)" required readonly></b-form-input>
@@ -251,7 +268,8 @@ export default {
     editMode: {
       type: Boolean,
       default: false
-    }
+      
+    },
   },
   data: function () {
     return {
@@ -289,6 +307,9 @@ export default {
     selectedTab() {
       const defaultTab = this.user.noInfo ? 'preferences' : 'profile'
       return this.$route.query.tab || defaultTab
+    },
+    passwordDirectChangeable() {
+      return this.$root.config.passwordDirectChangeable
     },
     groupFields() {
       const isEditable = this.editMode && this.$root.config.userEditable
