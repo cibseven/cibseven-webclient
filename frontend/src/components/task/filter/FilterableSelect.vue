@@ -23,15 +23,19 @@
       @show="function(evt) { disabled ? evt.preventDefault() : null }" @hide="$emit('hide')" no-caret>
       <template v-slot:button-content>
         <b-input-group>
-          <b-form-input size="sm" type="text" ref="inputFilter" :value="value"
+          <label class="visually-hidden" for="user-id-to-assign">{{ $t('admin.users.id') }}</label>
+          <b-form-input id="user-id-to-assign" size="sm" type="text" ref="inputFilter" :value="value"
             style="cursor: auto" :placeholder="placeholder" @keydown.prevent ></b-form-input>
         </b-input-group>
       </template>
-      <b-dd-form form-class="p-2"><b-form-input class="w-100" ref="filter" v-model.trim="filter" @input="onInput"></b-form-input></b-dd-form>
+      <b-dd-form form-class="p-2">
+        <label class="visually-hidden" for="search-user-id-to-assign">{{ $t('admin.users.id') }}</label>
+        <b-form-input id="search-user-id-to-assign" class="w-100" ref="filter" v-model.trim="filter" @input="onInput"></b-form-input>
+      </b-dd-form>
       <div v-if="loading" class="w-100 text-center"><b-spinner></b-spinner></div>
       <b-dropdown-group v-if="elements && !loading" style="max-height:150px" class="overflow-auto">
         <b-dd-item-btn button-class="p-1 d-flex" v-for="(label, value, index) in filteredElements"
-          :key="index" @click="$emit('update:modelValue', label.id)">
+          :key="index" @click="$emit('update:modelValue', label.id)" role="menuitem">
             <b-avatar class="me-2" :text="label.id" variant="light"></b-avatar>
             <span class="me-auto">
               <div>{{ label.firstName + " " + label.lastName }}</div>

@@ -39,7 +39,7 @@
           </b-list-group-item>
         </b-list-group>
         <div v-else class="container">
-          <h5 class="text-secondary text-center">{{ $t(this.textEmptyProcessesList()) }}</h5>
+          <h2 class="h5 text-secondary text-center">{{ $t(this.textEmptyProcessesList()) }}</h2>
         </div>
       </div>
       <template v-slot:modal-footer>

@@ -186,28 +186,30 @@ export default {
       })
       table.querySelectorAll('th.output-cell').forEach(th => {
         const colId = th.getAttribute('data-col-id')
-        const output = colId
-          ? this.instance?.outputs?.find(o => o.clauseId === colId)
-          : this.instance?.outputs?.[0]
-        if (!output || !output.value) return
+        const outputs = colId
+          ? this.instance?.outputs?.filter(o => o.clauseId === colId)
+          : this.instance?.outputs
+        if (!outputs?.length) return
 
         const outputColIndex = headerCells.indexOf(th)
-        const outputValue = String(output.value).trim()
+        const outputValues = new Set(outputs.map(o => String(o.value).trim()).filter(Boolean))
 
         Array.from(tbody.rows).forEach(row => {
           const td = row.children[outputColIndex]
           if (!td) return
 
           const tdText = td.getAttribute('data-original-text') ?? td.textContent
-          if (this.normalizeCell(tdText) !== outputValue) return
+          if (!outputValues.has(this.normalizeCell(tdText))) return
 
-          // DMN string literals ("value") can be compared exactly; expressions (< 250) cannot
+          // DMN string literals can disambiguate; numeric expressions cannot
+          // Multi-value cells like "budget", "exceptional" are split and checked individually
           const disqualified = inputColumns.some(({ colIndex, value }) => {
             const cell = row.children[colIndex]
             if (!cell) return false
             const raw = (cell.getAttribute('data-original-text') ?? cell.textContent).trim()
             if (!this.isDmnStringLiteral(raw)) return false
-            return this.normalizeCell(raw) !== value
+            const cellValues = raw.split(',').map(v => this.normalizeCell(v.trim()))
+            return !cellValues.includes(value)
           })
 
           if (!disqualified) this.applyHighlightText(row, td)
@@ -216,12 +218,12 @@ export default {
     },
     applyHighlightText(row, td) {
       if (td.getAttribute('data-original-text')) return
-      td.setAttribute('data-original-text', td.textContent.trim())
-      const originalValue = td.getAttribute('data-original-text')
+      const originalValue = td.textContent.trim()
+      td.setAttribute('data-original-text', originalValue)
       td.textContent = originalValue + ' '
       const span = document.createElement('span')
       span.className = 'fw-bold'
-      span.textContent = '= ' + String(originalValue)
+      span.textContent = '= ' + originalValue
       td.appendChild(span)
     },
     // Strips surrounding DMN double-quotes and trims whitespace for exact comparison

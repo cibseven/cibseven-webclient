@@ -52,6 +52,10 @@ $gray: #c1cedd;
   color: $dropdown-link-active-color;
   background-color: $dropdown-link-active-bg;
   border-left: 4px solid $dropdown-link-active-bg;
+  outline: 0;
+}
+
+.dropdown-item:focus-visible {
   outline: 2px solid var(--bs-dark);
   outline-offset: 0px;
 }
@@ -203,14 +207,26 @@ input[type="radio"]:not(:disabled):hover {
 input[type="checkbox"]:not(:disabled):focus,
 input[type="radio"]:not(:disabled):focus {
   border-color: $gray-800;
+  outline: 0;
+  box-shadow: none !important;
+}
+
+.form-check-input:not(:disabled):focus-visible,
+input[type="checkbox"]:not(:disabled):focus-visible,
+input[type="radio"]:not(:disabled):focus-visible {
+  border-color: $gray-800;
   outline: 2px solid $gray-800;
   outline-offset: 2px;
   box-shadow: none !important;
 }
 
 button:not(:disabled):focus,
+.btn:not(a):not(:disabled):focus {
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+
 button:not(:disabled):focus-visible,
-.btn:not(a):not(:disabled):focus,
 .btn:not(a):not(:disabled):focus-visible {
   outline: 2px solid $dark !important;
   outline-offset: 2px;

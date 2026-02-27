@@ -54,7 +54,7 @@
               </template>
             </FlowTable>
             <div v-if="!decisionsFiltered.length">
-              <img :alt="$t(textEmptyDecisionsList)" src="@/assets/images/decision/empty_processes_list.svg" class="d-block mx-auto mt-5 mb-3" style="max-width: 250px">
+              <img alt="" src="@/assets/images/decision/empty_processes_list.svg" class="d-block mx-auto mt-5 mb-3" style="max-width: 250px">
               <div class="h5 text-secondary text-center">{{ $t(textEmptyDecisionsList) }}</div>
             </div>
           </div>

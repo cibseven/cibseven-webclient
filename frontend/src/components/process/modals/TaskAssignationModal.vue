@@ -69,9 +69,10 @@
       </div>
 
       <b-input-group>
-        <b-form-input v-model="identity" @keyup.enter="addIdentity" autocomplete="off" />
+        <label class="visually-hidden" for="identity-input">{{ $t('process-instance.assignModal.' + selectedIdentity.value) }}</label>
+        <b-form-input v-model="identity" id="identity-input" @keyup.enter="addIdentity" autocomplete="off" />
         <b-input-group-append>
-          <b-button @click="addIdentity" variant="primary" :disabled="!identity" :title="$t('process-instance.assignModal.add')">
+          <b-button @click="addIdentity" variant="primary" :disabled="!identity">
             {{ $t('process-instance.assignModal.add') }}
           </b-button>
         </b-input-group-append>
