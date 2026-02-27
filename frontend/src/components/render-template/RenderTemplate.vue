@@ -30,7 +30,7 @@
       </div>
       <SuccessAlert top="0" style="z-index: 1031" ref="messageSaved"> {{ $t('alert.successSaveTask') }}</SuccessAlert>
       <SuccessAlert top="0" style="z-index: 1031" ref="messageSuccess"> {{ $t('alert.successOperation') }}</SuccessAlert>
-      <b-modal ref="datePickerModal">
+      <b-modal ref="datePickerModal" :title="$t('deployed-form.selectDate')" hide-footer>
         <b-calendar
           v-model="datePickerValue"
           value-as-date

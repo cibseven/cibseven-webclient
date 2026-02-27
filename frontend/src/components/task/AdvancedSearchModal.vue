@@ -49,8 +49,14 @@
           :fields="[
             { label: 'advanced-search.table.key', key: 'key', class: 'col-5'},
             { label: 'advanced-search.table.value', key: 'value', class: 'col-5'},
-            { label: '', key: 'buttons', class: 'col-2', sortable: false, tdClass: 'py-0 text-center d-block'},
+            { label: 'process.actions', key: 'actions', class: 'col-2', sortable: false, tdClass: 'py-0 text-center d-block'},
           ]">
+
+          <template v-slot:header(actions)>
+            <!-- hide 'actions' header for better UI but keep it accessible for screen readers -->
+            <span class="visually-hidden">{{ $t('process.actions') }}</span>
+          </template>
+
           <template v-slot:cell(key)="row">
             {{ $t('advanced-search.criteriaKeys.' + row.item.key) }}
           </template>
@@ -64,7 +70,7 @@
             </div>
             <span v-else> {{ row.item.value }} </span>
           </template>
-          <template v-slot:cell(buttons)="row">
+          <template v-slot:cell(actions)="row">
             <CellActionButton icon="mdi-delete-outline" @click="deleteCriteria(row.index)" :title="$t('nav-bar.filters.delete')"></CellActionButton>
           </template>
         </FlowTable>

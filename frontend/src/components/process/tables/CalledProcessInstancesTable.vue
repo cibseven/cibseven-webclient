@@ -21,8 +21,9 @@
     <FlowTable v-if="matchedCalledList.length > 0" striped thead-class="sticky-header" :items="matchedCalledList" primary-key="id"
       sort-by="process" :fields="[
       { label: 'process-instance.calledProcesses.state', key: 'state', class: 'col-1', tdClass: 'py-1 justify-content-center' },
-      { label: 'process-instance.calledProcesses.calledProcessInstance', key: 'calledProcessInstance', class: 'col-4', tdClass: 'py-1' },
-      { label: 'process-instance.calledProcesses.process', key: 'process', class: 'col-4', tdClass: 'py-1' },
+      { label: 'process-instance.calledProcesses.calledProcessInstance', key: 'calledProcessInstance', class: 'col-3', tdClass: 'py-1' },
+      { label: 'process-instance.calledProcesses.process', key: 'process', class: 'col-3', tdClass: 'py-1' },
+      { label: 'process.businessKey', key: 'businessKey', class: 'col-2', tdClass: 'py-1' },
       { label: 'process-instance.calledProcesses.callingActivity', key: 'callingActivity', class: 'col-3', tdClass: 'py-1' }]">
      <template v-slot:cell(state)="table">
       <span :title="getIconTitle(table.item)" class="mdi mdi-18px" :class="getIconState(table.item)"></span>
@@ -66,6 +67,13 @@
          @copy="copyValueToClipboard"
        />
      </template>
+      <template v-slot:cell(businessKey)="table">
+        <CopyableActionButton
+          :display-value="table.item.businessKey"
+          :clickable="false"
+          @copy="copyValueToClipboard"
+        />
+      </template>
       <template v-slot:cell(callingActivity)="table">
         <CopyableActionButton
           :display-value="table.item.callingActivity.activityName || table.item.callingActivity.activityId"
@@ -156,6 +164,7 @@ export default {
           const version = processPL.processDefinitionVersion
           const state = processPL.state
           const tenantId = processPL.tenantId
+          const businessKey = processPL.businessKey
 
           const foundInst = this.activityInstanceHistory.find(processAIH => {
             if (processAIH.activityType === "callActivity"){
@@ -176,7 +185,8 @@ export default {
             version: version,
             name: foundProcess ? foundProcess.name : key,
             state: state,
-            tenantId: tenantId
+            tenantId: tenantId,
+            businessKey: businessKey
           })
         })
         this.loading = false

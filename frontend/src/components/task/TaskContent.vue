@@ -46,8 +46,7 @@
         <div class="col-12">
           <div class="form-inline">
             <div class="form-group d-flex align-items-center mb-0">
-              <component ref="titleTask" tabindex="0" class="mb-0 me-4 d-inline" :is="isMobile() ? 'h6' : 'h5'">{{
-                task.name }}</component>
+              <h3 ref="titleTask" class="mb-0 me-4 d-inline" :class="isMobile() ? 'h6' : 'h5'">{{ task.name }}</h3>
               <span v-if="task.assignee != null">
                 <b-form-tag variant="secondary" @remove="assignee = null; update()" :key="task.id"
                   :title="getCompleteName" :remove-label="$t('task.assignedUserTitle')"
@@ -57,8 +56,10 @@
               </span>
               <span v-else>
                 <b-button ref="assignToMeButton" variant="link" class="p-0 text-dark me-2"
-                  @click="assignee = $root.user.id" :title="$t('infoAndHelp.shortcuts.shortcuts.claimTask')"><span
-                    class="mdi mdi-18px mdi-account-question mdi-dark"></span> {{ $t('task.assignToMe') }}</b-button>
+                  @click="assignee = $root.user.id" :title="$t('infoAndHelp.shortcuts.shortcuts.claimTask')">
+                  <span class="mdi mdi-18px mdi-account-question mdi-dark"></span>
+                  {{ $t('task.assignToMe') }}
+                </b-button>
               </span>
               <FilterableSelect v-if="task.assignee == null" v-model:loading="loadingUsers" @enter="findUsers($event)"
                 @clean-elements="resetUsers($event)" class="w-auto" v-model="assignee"

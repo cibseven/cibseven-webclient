@@ -829,8 +829,13 @@
 			"selectedCriteria": "Criterios seleccionados",
 			"no-filters": "No se encontraron filtros",
 			"edit": "@:commons.edit",
+			"editFilter": "Editar filtro \"{filterName}\"",
 			"delete": "@:confirm.delete",
-			"pin": "Adjuntar",
+			"deleteFilter": "Eliminar filtro \"{filterName}\"",
+			"pin": "Fijar",
+			"pinFilter": "Fijar filtro \"{filterName}\"",
+			"unpin": "Desfijar",
+			"unpinFilter": "Desfijar filtro \"{filterName}\"",
 			"includeAssigned": "Incluir las tareas asignadas",
 			"keys": {
 				"processInstanceId": "ID de instancia de proceso",
@@ -908,7 +913,6 @@
 				"key": "Key del criterio",
 				"value": "Valor del criterio"
 			},
-			"matchAnyCriteria": "Se cumplen algunos de los criterios",
 			"matchAllCriteria": "Se cumplen todos los criterios",
 			"msgFilterCreated": "Filtro \"{name}\" creado",
 			"msgFilterUpdated": "Filtro \"{name}\" actualizado",
@@ -1275,6 +1279,7 @@
 		"assignmentsByGroupInfo": "Una tarea puede estar asignada a varios grupos."
 	},
 	"deployed-form": {
+		"selectDate": "Seleccionar una fecha",
 		"accept": "Aceptar",
 		"fullscreen": "Pantalla completa",
 		"showProcess": "Ver proceso"

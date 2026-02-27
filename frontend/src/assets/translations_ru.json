@@ -829,8 +829,13 @@
 			"selectedCriteria": "Выбранный критерий",
 			"no-filters": "Фильтры не найдены",
 			"edit": "Редактировать фильтр",
-			"delete": "Удалить фильтр",
-			"pin": "Прикрепить",
+			"editFilter": "Редактировать фильтр \"{filterName}\"",
+			"delete": "@:confirm.delete",
+			"deleteFilter": "Удалить фильтр \"{filterName}\"",
+			"pin": "Закрепить",
+			"pinFilter": "Закрепить фильтр \"{filterName}\"",
+			"unpin": "Открепить",
+			"unpinFilter": "Открепить фильтр \"{filterName}\"",
 			"includeAssigned": "Включить назначенные задачи",
 			"keys": {
 				"processInstanceId": "ID экземпляра процесса",
@@ -908,7 +913,6 @@
 				"key": "Ключ критерия",
 				"value": "Значение критерия"
 			},
-			"matchAnyCriteria": "Соответствует какому-либо из критериев",
 			"matchAllCriteria": "Соответствует всем критериям",
 			"msgFilterCreated": "Фильтр \"{name}\" создан",
 			"msgFilterUpdated": "Фильтр \"{name}\" обновлён",
@@ -1275,6 +1279,7 @@
 		"assignmentsByGroupInfo": "Задача может быть назначена нескольким группам."
 	},
 	"deployed-form": {
+		"selectDate": "Выбрать дату",
 		"accept": "Принять",
 		"fullscreen": "Полноэкранный режим",
 		"showProcess": "Просмотреть процесс"
