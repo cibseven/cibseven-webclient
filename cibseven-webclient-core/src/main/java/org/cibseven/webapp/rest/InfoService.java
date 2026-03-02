@@ -50,7 +50,7 @@ public class InfoService extends BaseService {
 	@Value("${cibseven.webclient.historyLevel:full}") private String camundaHistoryLevel;
 	@Value("${cibseven.webclient.user.provider:org.cibseven.webapp.auth.SevenUserProvider}") private String userProvider;
 	@Value("${cibseven.webclient.user.editable:#{null}}") private Boolean userEditable;
-	@Value("${cibseven.webclient.user.passwordDirectChangeable:}") private Boolean passwordDirectChangeable;
+	@Value("${cibseven.webclient.user.userPasswordChangeEnabled:}") private Boolean userPasswordChangeEnabled;
 	
 	@Value("${cibseven.webclient.productNamePageTitle:CIB seven}") private String productNamePageTitle;
 	
@@ -98,7 +98,7 @@ public class InfoService extends BaseService {
 		configJson.put("camundaHistoryLevel", camundaHistoryLevel);
 		configJson.put("userProvider", userProvider);
 		configJson.put("userEditable", userEditable);
-		configJson.put("passwordDirectChangeable", passwordDirectChangeable);
+		configJson.put("userPasswordChangeEnabled", userPasswordChangeEnabled);
 		configJson.put("flowLinkTerms", flowLinkTerms);
 		configJson.put("flowLinkPrivacy", flowLinkPrivacy);
 		configJson.put("flowLinkImprint", flowLinkImprint);
