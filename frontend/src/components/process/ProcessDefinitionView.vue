@@ -30,7 +30,9 @@
           :version-index="versionIndex"
           @on-refresh-process-definitions="onRefreshProcessDefinitions"
           @on-delete-process-definition="onDeleteProcessDefinition"
-          :instances="instances" :selected-instance="selectedInstance"></ProcessDetailsSidebar>
+          :instances="instances"
+          :selected-instance="selectedInstance"
+        ></ProcessDetailsSidebar>
       </template>
       <transition name="slide-in" mode="out-in">
         <ProcessInstancesView ref="process" v-if="process && !selectedInstance && !instanceId"
@@ -90,14 +92,14 @@ export default {
     tenantId: { type: String }
   },
   watch: {
-    processKey: function() {
+    processKey() {
       // Reset process state when processKey changes
       this.process = null
       this.selectedInstance = null
       this.activityInstance = null
       this.activityInstanceHistory = null
       this.parentProcess = null
-      this.loadProcessFromRoute()
+      this.loadProcessDefinitionFromRoute()
     },
     versionIndex() {
       if (this.process && this.process.key === this.processKey) {
@@ -106,7 +108,7 @@ export default {
       }
     }
   },
-  data: function() {
+  data() {
     return {
       leftOpen: true,
       process: null, // selected process definition
@@ -122,19 +124,19 @@ export default {
   },
   computed: {
     ...mapGetters('instances', ['instances']),
-    shortendLeftCaption: function() {
+    shortendLeftCaption() {
       return this.$t('process.details.historyVersions')
     },
-    processName: function() {
+    processName() {
       if (!this.process) return ''
-      return this.process.name ? this.process.name : this.process.key
+      return this.process.name || this.process.key
     },
   },
-  created: function() {
+  created() {
     this.clearActivitySelection()
-    this.loadProcessFromRoute()
+    this.loadProcessDefinitionFromRoute()
   },
-  beforeUpdate: function() {
+  beforeUpdate() {
     if (this.process != null && this.process.version !== this.versionIndex) {
       // different process-definition was selected
       this.selectedInstance = null
@@ -163,7 +165,7 @@ export default {
         HistoryService.findProcessInstance(instanceId) :
         ProcessService.findProcessInstance(instanceId)
     },
-    loadInstanceById: function(instanceId) {
+    loadInstanceById(instanceId) {
       this.findProcessInstance(instanceId).then(instance => {
         if (instance) {
           this.setSelectedInstance({ selectedInstance: instance })
@@ -178,14 +180,34 @@ export default {
         }
       })
     },
-    loadProcessFromRoute: function() {
-      this.loadProcessByDefinitionKey().then((redirected) => {
-        if (!redirected && this.instanceId) {
-          this.loadInstanceById(this.instanceId)
+    async loadProcessDefinitionFromRoute() {
+      return ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.tenantId, this.$root.config.lazyLoadHistory).then(versions => {
+        const requestedDefinition = versions.find(processDefinition => processDefinition.version === this.versionIndex)
+        if (requestedDefinition) {
+          this.processDefinitions = versions
+
+          const needCalcStats = this.process == null
+          if (needCalcStats) {
+            this.resetStatsLazyLoad(this.$root.config.lazyLoadHistory)
+          }
+
+          this.loadProcessVersion(requestedDefinition).then(() => {
+            // false - no redirect
+            return false
+          })
+
+          if (this.instanceId) {
+            this.loadInstanceById(this.instanceId)
+          }
+        }
+        else {
+          // definition is no longer available
+          // let's redirect to the latest one
+          this.$router.push('/seven/auth/process/' + this.processKey)
         }
       })
     },
-    onDeleteProcessDefinition: function(params) {
+    onDeleteProcessDefinition(params) {
       ProcessService.deleteProcessDefinition(params.processDefinition.id, true).then(() => {
         // reload versions
         ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.tenantId, this.$root.config.lazyLoadHistory)
@@ -230,7 +252,7 @@ export default {
     // call from:
     // - user have deleted a non-selected process definition (this.process is still valid)
     // - user clicked "refresh process definitions" button
-    onRefreshProcessDefinitions: function(lazyLoad) {
+    onRefreshProcessDefinitions(lazyLoad) {
       return ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.tenantId, lazyLoad).then(versions => {
         this.processDefinitions = versions
         if (this.processDefinitions.length > 0) {
@@ -240,31 +262,7 @@ export default {
         return versions
       })
     },
-    loadProcessByDefinitionKey: function() {
-      return ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.tenantId, this.$root.config.lazyLoadHistory)
-      .then(versions => {
-        const requestedDefinition = versions.find(processDefinition => processDefinition.version === this.versionIndex)
-        if (requestedDefinition) {
-          this.processDefinitions = versions
-          const needCalcStats = this.process == null
-          if (needCalcStats) {
-            this.resetStatsLazyLoad(this.$root.config.lazyLoadHistory)
-          }
-          return this.loadProcessVersion(requestedDefinition).then(() => {
-            // false - no redirect
-            return false
-          })
-        }
-        else {
-          // definition is no longer available
-          // let's redirect to the latest one
-          this.$router.push('/seven/auth/process/' + this.processKey)
-          // true - redirect
-          return true
-        }
-      })
-    },
-    resetStatsLazyLoad: function(lazyLoad) {
+    resetStatsLazyLoad(lazyLoad) {
       if (lazyLoad) {
         this.processDefinitions.forEach(v => {
           v.runningInstances = '-'
@@ -272,8 +270,6 @@ export default {
           v.completedInstances = '-'
         })
       }
-      // false - no redirect
-      return false
     },
     findProcessAndAssignData(selectedProcess) {
       if (selectedProcess) {
@@ -287,7 +283,7 @@ export default {
           })
         }
     },
-    loadProcessVersion: function(process) {
+    loadProcessVersion(process) {
       return new Promise(() => {
         this.process = process
         this.findProcessAndAssignData(process)
@@ -305,12 +301,12 @@ export default {
         return Promise.resolve() // Instances are now loaded by InstancesTable
       })
     },
-    loadStatistics: function() {
+    loadStatistics() {
       ProcessService.findProcessStatistics(this.process.id).then(statistics => {
         this.$store.dispatch('setStatistics', { process: this.process, statistics: statistics })
       })
     },
-    onInstanceDeleted: function() {
+    onInstanceDeleted() {
       this.setSelectedInstance({ selectedInstance: null })
       return Promise.all([
         this.loadStatistics()
@@ -319,7 +315,7 @@ export default {
         this.$refs.process.refreshDiagram()
       })
     },
-    setSelectedInstance: function(evt) {
+    setSelectedInstance(evt) {
       const selectedInstance = evt.selectedInstance
       if (!selectedInstance) {
         this.selectedInstance = null
@@ -349,7 +345,7 @@ export default {
         }
       }
     },
-    setSelectedTask: function(selectedTask) {
+    setSelectedTask(selectedTask) {
       if (this.selectedInstance && selectedTask) {
         HistoryService.findTasksByDefinitionKeyHistory(selectedTask.id, this.selectedInstance.id).then(function(task) {
           if (task.length === 0) {
@@ -368,11 +364,11 @@ export default {
         }.bind(this))
       }
     },
-    filterInstances: function(filter) {
+    filterInstances(filter) {
       this.filter = filter
       // InstancesTable will automatically reload when filter changes
     },
-    getIconState: function(state) {
+    getIconState(state) {
       switch(state) {
         case 'ACTIVE':
           return 'mdi-chevron-triple-right text-success'
@@ -381,7 +377,7 @@ export default {
       }
       return 'mdi-flag-triangle'
     },
-    exportCSV: function() {
+    exportCSV() {
       const headers = [
         { text: 'state', key: 'state' },
         { text: 'businessKey', key: 'businessKey' },
