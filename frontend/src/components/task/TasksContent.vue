@@ -244,7 +244,7 @@ export default {
       const taskSorting = [JSON.parse(localStorage.getItem('taskSorting'))]
       //If necessary we add the created extra sorting so the data is well sorted
       if (taskSorting[0].sortBy !== 'created') taskSorting.push({ sortBy: 'created', sortOrder: 'desc' })
-      const filters = { sorting: taskSorting }
+      const filters = { sorting: taskSorting, likePatternIgnoreCase: true }
       if (this.search) {
         filters.orQueries = splitToWords(this.search).map((searchQuery) => ({
             nameLike: '%' + searchQuery + '%',
