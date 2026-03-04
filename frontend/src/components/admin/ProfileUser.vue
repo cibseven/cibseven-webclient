@@ -93,7 +93,7 @@
                 </b-form-group>
                 <b-form-group :label="$t('password.recover.newPassword') + '*'" label-cols-sm="4" label-align-sm="left"
                   label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
-                  <b-form-input type="password" v-model="credentials.password" @blur="validatePassword"
+                  <b-form-input type="password" v-model="credentials.password" @blur="validatePassword" @input="resetPasswordValidation"
                     ref="newPasswordInput" :state="passwordValid"></b-form-input>
                   <div v-if="passwordValid === false" class="invalid-feedback d-block">
                     <h6>{{ $t('password.policy.title') }}</h6>
@@ -110,7 +110,7 @@
                 <b-form-group :label="$t('password.recover.newPasswordRepeat') + '*'" label-cols-sm="4"
                   label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
                   <b-form-input type="password" v-model="passwordRepeat" :class="{
-                    'is-invalid': !same(credentials.password, passwordRepeat),
+                    'is-invalid': passwordRepeat && !same(credentials.password, passwordRepeat),
                     'is-valid': passwordValid && same(credentials.password, passwordRepeat),
                   }"></b-form-input>
                 </b-form-group>
@@ -418,6 +418,9 @@ export default {
       return AdminService.findUsers({ id: userId }).then(response => {
         this.user = response[0] || { id: userId, firstName: null, lastName: null, email: null, noInfo: true }
       })
+    },
+    resetPasswordValidation: function () {
+      this.passwordValid = null
     },
     validatePassword: function () {
       console.log('validate password')
