@@ -88,7 +88,7 @@ export default {
   props: {
     processKey: { type: String, required: true },
     versionIndex: { type: String, required: true },
-    instanceId: { type: String, required: true },
+    instanceId: { type: String },
     tenantId: { type: String }
   },
   watch: {
