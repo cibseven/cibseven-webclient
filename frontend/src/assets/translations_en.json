@@ -155,6 +155,8 @@
 		},
 		"emptyProcessList": "Your process list is currently empty.",
 		"emptyProcessListFiltered": "There is no process for the applied filter.",
+		"definitionVersionNotFound": "Process definition version \"{0}\" not found. Falling back to the latest version.",
+		"definitionNotFound": "Process definition key \"{processKey}\" with \"{tenantId}\" tenant ID not found.",
 		"back": "Back",
 		"incidentsCounter": "Incidents: {0}",
 		"incidents": "Incidents",		

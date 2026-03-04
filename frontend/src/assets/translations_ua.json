@@ -155,6 +155,8 @@
 		},
 		"emptyProcessList": "Ваш список процесів порожній.",
 		"emptyProcessListFiltered": "Немає процесів для вибраного фільтра.",
+		"definitionVersionNotFound": "Версія визначення процесу \"{0}\" не знайдена. Використовується остання версія.",
+		"definitionNotFound": "Визначення процесу з ключем \"{processKey}\" та ID клієнта \"{tenantId}\" не знайдено.",
 		"back": "Назад",
 		"incidentsCounter": "Інциденти: {0}",
 		"incidents": "Інциденти",

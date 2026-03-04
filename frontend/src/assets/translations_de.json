@@ -155,6 +155,8 @@
 		},
 		"emptyProcessList": "Ihre Prozessliste ist derzeit leer.",
 		"emptyProcessListFiltered": "Es gibt keinen Prozess für den angewandten Filter.",
+		"definitionVersionNotFound": "Prozessdefinitionsversion \"{0}\" nicht gefunden. Es wird auf die neueste Version zurückgegriffen.",
+		"definitionNotFound": "Prozessdefinition mit dem Schlüssel \"{processKey}\" und der Mandanten-ID \"{tenantId}\" nicht gefunden.",
 		"back": "Zurück",
 		"incidentsCounter": "Vorfälle: {0}",
 		"incidents": "Vorfälle",	

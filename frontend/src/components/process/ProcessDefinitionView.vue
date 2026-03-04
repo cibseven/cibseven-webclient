@@ -24,10 +24,29 @@
     </div>
     <SidebarsFlow ref="sidebars" class="border-top overflow-auto" :left-open="leftOpen" @update:left-open="leftOpen = $event" :left-caption="shortendLeftCaption">
       <template v-slot:left>
+        <template v-if="errorVersionNotFound !== null">
+          <div class="alert alert-warning m-3 d-flex align-items-center" role="alert">
+            <div class="me-3">
+              <span class="mdi-36px mdi mdi-alert-outline text-warning"></span>
+            </div>
+            <div>
+              {{ $t('process.definitionVersionNotFound', [errorVersionNotFound]) }}
+            </div>
+          </div>
+
+          <div v-if="processDefinitions.length === 0" class="alert alert-warning m-3 d-flex align-items-center" role="alert">
+            <div class="me-3">
+              <span class="mdi-36px mdi mdi-alert-outline text-warning"></span>
+            </div>
+            <div>
+              {{ $t('process.definitionNotFound', { processKey: processKey, tenantId: tenantId }) }}
+            </div>
+          </div>
+        </template>
         <ProcessDetailsSidebar ref="navbar" v-if="process"
           :process-key="processKey"
           :process-definitions="processDefinitions"
-          :version-index="versionIndex"
+          :version-index="computedVersionIndex"
           @on-refresh-process-definitions="onRefreshProcessDefinitions"
           @on-delete-process-definition="onDeleteProcessDefinition"
           :instances="instances"
@@ -39,7 +58,7 @@
           :loading="loading"
           :process="process"
           :process-key="processKey"
-          :version-index="versionIndex"
+          :version-index="computedVersionIndex"
           :activity-instance="activityInstance"
           :activity-instance-history="activityInstanceHistory"
           :tenant-id="tenantId"
@@ -58,6 +77,16 @@
           :selected-instance="selectedInstance"
           :tenant-id="tenantId"
           @task-selected="setSelectedTask($event)"></ProcessInstanceView>
+      </transition>
+      <transition name="slide-in" mode="out-in">
+        <div v-if="errorVersionNotFound !== null &&processDefinitions.length === 0" class="alert alert-warning m-3 d-flex align-items-center" role="alert">
+          <div class="me-3">
+            <span class="mdi-36px mdi mdi-alert-outline text-warning"></span>
+          </div>
+          <div>
+            {{ $t('process.definitionNotFound', { processKey: processKey, tenantId: tenantId }) }}
+          </div>
+        </div>
       </transition>
     </SidebarsFlow>
     <TaskPopper ref="importPopper"></TaskPopper>
@@ -92,19 +121,24 @@ export default {
     tenantId: { type: String }
   },
   watch: {
-    processKey() {
-      // Reset process state when processKey changes
-      this.process = null
-      this.selectedInstance = null
-      this.activityInstance = null
-      this.activityInstanceHistory = null
-      this.parentProcess = null
-      this.loadProcessDefinitionFromRoute()
+    processKey: {
+      handler() {
+        // Reset process state when processKey changes
+        this.process = null
+        this.selectedInstance = null
+        this.activityInstance = null
+        this.activityInstanceHistory = null
+        this.parentProcess = null
+        this.errorVersionNotFound = null
+        this.clearActivitySelection()
+
+        this.loadProcessDefinitionFromRoute()
+      },
+      immediate: true      
     },
     versionIndex() {
       if (this.process && this.process.key === this.processKey) {
-        const process = this.processDefinitions.find(processDefinition => processDefinition.version === this.versionIndex)
-        if (process) this.loadProcessVersion(process)
+        this.switchToDefinitionVersion()
       }
     }
   },
@@ -113,6 +147,7 @@ export default {
       leftOpen: true,
       process: null, // selected process definition
       processDefinitions: [],
+      errorVersionNotFound: null,
       selectedInstance: null,
       task: null,
       activityInstance: null,
@@ -128,13 +163,12 @@ export default {
       return this.$t('process.details.historyVersions')
     },
     processName() {
-      if (!this.process) return ''
+      if (!this.process) return this.processKey
       return this.process.name || this.process.key
     },
-  },
-  created() {
-    this.clearActivitySelection()
-    this.loadProcessDefinitionFromRoute()
+    computedVersionIndex() {
+      return this.process?.version || this.versionIndex
+    },
   },
   beforeUpdate() {
     if (this.process != null && this.process.version !== this.versionIndex) {
@@ -165,47 +199,51 @@ export default {
         HistoryService.findProcessInstance(instanceId) :
         ProcessService.findProcessInstance(instanceId)
     },
-    loadInstanceById(instanceId) {
-      this.findProcessInstance(instanceId).then(instance => {
-        if (instance) {
-          this.setSelectedInstance({ selectedInstance: instance })
-        }
-      }).catch(() => {
+    async loadInstanceById(instanceId) {
+      let instance = null
+      try {
+        instance = await this.findProcessInstance(instanceId)
+      } catch {
+        // ignore error, fallback below
+      }
+      if (!instance && this.instances) {
         // Fallback to checking store instances
-        if (this.instances) {
-          const selectedInstance = this.instances.find(i => i.id == instanceId)
-          if (selectedInstance) {
-            this.setSelectedInstance({ selectedInstance })
-          }
-        }
-      })
+        instance = this.instances.find(i => i.id == instanceId)
+      }
+      if (instance) {
+        this.setSelectedInstance({ selectedInstance: instance })
+      }
     },
     async loadProcessDefinitionFromRoute() {
-      return ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.tenantId, this.$root.config.lazyLoadHistory).then(versions => {
-        const requestedDefinition = versions.find(processDefinition => processDefinition.version === this.versionIndex)
-        if (requestedDefinition) {
-          this.processDefinitions = versions
-
-          const needCalcStats = this.process == null
-          if (needCalcStats) {
-            this.resetStatsLazyLoad(this.$root.config.lazyLoadHistory)
-          }
-
-          this.loadProcessVersion(requestedDefinition).then(() => {
-            // false - no redirect
-            return false
-          })
-
-          if (this.instanceId) {
-            this.loadInstanceById(this.instanceId)
-          }
+      await ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.tenantId, this.$root.config.lazyLoadHistory).then(versions => {
+        this.processDefinitions = versions
+        const needCalcStats = this.process == null
+        if (needCalcStats) {
+          this.resetStatsLazyLoad(this.$root.config.lazyLoadHistory)
         }
-        else {
-          // definition is no longer available
-          // let's redirect to the latest one
-          this.$router.push('/seven/auth/process/' + this.processKey)
-        }
+
+        return this.switchToDefinitionVersion()
       })
+    },
+    async switchToDefinitionVersion() {
+      const requestedDefinition = this.processDefinitions.find(processDefinition => processDefinition.version === this.versionIndex)
+      if (requestedDefinition) {
+        await this.loadProcessVersion(requestedDefinition)
+        this.errorVersionNotFound = null
+      }
+      else if (this.processDefinitions.length > 0) {
+        // version from URL not found, load latest version
+        this.errorVersionNotFound = this.versionIndex
+        await this.loadProcessVersion(this.processDefinitions[0])
+      }
+      else {
+        // no process definitions with such key
+        this.errorVersionNotFound = this.versionIndex
+      }
+
+      if (this.instanceId) {
+        await this.loadInstanceById(this.instanceId)
+      }
     },
     onDeleteProcessDefinition(params) {
       ProcessService.deleteProcessDefinition(params.processDefinition.id, true).then(() => {
@@ -215,7 +253,7 @@ export default {
           if (versions.length === 0) {
             // no more process-definitions with such key
             this.$router.replace('/seven/auth/processes')
-          } else if (params.processDefinition.version !== this.versionIndex) {
+          } else if (params.processDefinition.version !== this.computedVersionIndex) {
             // remove deleted process-definition from the list
             this.processDefinitions = versions
           }  else {
@@ -252,15 +290,14 @@ export default {
     // call from:
     // - user have deleted a non-selected process definition (this.process is still valid)
     // - user clicked "refresh process definitions" button
-    onRefreshProcessDefinitions(lazyLoad) {
-      return ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.tenantId, lazyLoad).then(versions => {
-        this.processDefinitions = versions
-        if (this.processDefinitions.length > 0) {
-          this.resetStatsLazyLoad(lazyLoad)
-          this.loadProcessVersion(this.process)
-        }
-        return versions
-      })
+    async onRefreshProcessDefinitions(lazyLoad) {
+      const versions = await ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.tenantId, lazyLoad)
+      this.processDefinitions = versions
+      if (this.processDefinitions.length > 0) {
+        this.resetStatsLazyLoad(lazyLoad)
+        await this.loadProcessVersion(this.process)
+      }
+      return versions
     },
     resetStatsLazyLoad(lazyLoad) {
       if (lazyLoad) {
@@ -271,9 +308,9 @@ export default {
         })
       }
     },
-    findProcessAndAssignData(selectedProcess) {
+    async findProcessAndAssignData(selectedProcess) {
       if (selectedProcess) {
-          ProcessService.findProcessById(selectedProcess.id, true).then(process => {
+          await ProcessService.findProcessById(selectedProcess.id, true).then(process => {
             for (const v of this.processDefinitions) {
               if (v.id === process.id) {
                 Object.assign(v, process)
@@ -283,26 +320,22 @@ export default {
           })
         }
     },
-    loadProcessVersion(process) {
-      return new Promise(() => {
-        this.process = process
-        this.findProcessAndAssignData(process)
-        if (!this.process.statistics) this.loadStatistics()
+    async loadProcessVersion(process) {
+      this.process = process
+      await this.findProcessAndAssignData(process)
+      if (!this.process.statistics) await this.loadStatistics()
 
-        // Load parent process if parentProcessDefinitionId exists in route query
-        if (this.$route.query.parentProcessDefinitionId) {
-          this.getProcessById({ id: this.$route.query.parentProcessDefinitionId }).then(response => {
-            this.parentProcess = response
-          })
-        } else {
-          this.parentProcess = null
-        }
-
-        return Promise.resolve() // Instances are now loaded by InstancesTable
-      })
+      // Load parent process if parentProcessDefinitionId exists in route query
+      if (this.$route.query.parentProcessDefinitionId) {
+        this.getProcessById({ id: this.$route.query.parentProcessDefinitionId }).then(response => {
+          this.parentProcess = response
+        })
+      } else {
+        this.parentProcess = null
+      }
     },
-    loadStatistics() {
-      ProcessService.findProcessStatistics(this.process.id).then(statistics => {
+    async loadStatistics() {
+      await ProcessService.findProcessStatistics(this.process.id).then(statistics => {
         this.$store.dispatch('setStatistics', { process: this.process, statistics: statistics })
       })
     },
@@ -310,8 +343,8 @@ export default {
       this.setSelectedInstance({ selectedInstance: null })
       return Promise.all([
         this.loadStatistics()
-      ]).then(() => {
-        this.findProcessAndAssignData(this.process)
+      ]).then(async () => {
+        await this.findProcessAndAssignData(this.process)
         this.$refs.process.refreshDiagram()
       })
     },
