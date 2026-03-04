@@ -66,14 +66,14 @@ export default {
     tenantId: { type: String, default: null }
   },
   watch: {
-    processKey: 'loadProcess',    
-    versionIndex: 'loadProcess',
-    tenantId: 'loadProcess',
-    instanceId: 'loadProcess'
+    combinedProps: {
+      handler: 'openLatestVersion',
+      immediate: true,
+    },
   },
   data() {
     return {
-      latestProcessVersion: null,
+      latestVersionIndex: null,
     }
   },
   computed: {
@@ -88,8 +88,18 @@ export default {
       }
       return false
     },
+    combinedProps() {
+      // Combine all props into a single computed property to watch for changes in any of them.
+      // This allows us to react once to changes in any of the URL parameters and reload the process definition accordingly.
+      return [
+        this.processKey,
+        this.versionIndex,
+        this.tenantId,
+        this.instanceId
+      ];
+    },
     computedVersionIndex() {
-      return this.versionIndex || this.latestProcessVersion
+      return this.versionIndex || this.latestVersionIndex
     },
     computedInstanceId() {
       // only valid with proper "versionIndex"
@@ -97,20 +107,17 @@ export default {
     }
   },
   methods: {
-    loadProcess() {
+    openLatestVersion() {
       if (!this.versionIndex && !this.instanceId) {
         // version was not specified =>
         // request URL is: #/process/:processKey (alias for #/process/:processKey/<latest>)
         // => get latest version and soft "redirect" (without changing the URL) to it
         // #/process/:processKey/:versionIndex
         this.$store.dispatch('getProcessByDefinitionKey', { key: this.processKey, tenantId: this.tenantId }).then(process => {
-          this.latestProcessVersion = process?.version || null
+          this.latestVersionIndex = process?.version || null
         })
       }
     }
   },
-  created() {
-    this.loadProcess()
-  }
 }
 </script>
