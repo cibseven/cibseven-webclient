@@ -102,14 +102,16 @@ const appRoutes = [
       }, children: [
         { path: 'no-permission', name: 'no-permission',
           beforeEnter: async (to, from, next) => {
-            next({
-              name: 'start',
-              query: {
-                errorType: 'NoPermission',
-                permission: to.query?.permission,
-                refPath: to.query?.refPath,
-              }
-            })
+            if (router.root?.$refs?.error) {
+              router.root.$refs.error.show({
+                type: 'NoPermission',
+                params: {
+                  permission: to.query?.permission,
+                  refPath: from.path,
+                }
+              })
+            }
+            next(false)
           }
         },
 

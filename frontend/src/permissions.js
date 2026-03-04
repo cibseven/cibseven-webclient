@@ -24,10 +24,12 @@ const permissionsMixin = {
 			this.adminManagementPermissions(permissions.systemManagement, 'system'))
 		},
 		applicationPermissions: function(permissionsRequired, access) {
+			if (!permissionsRequired) return false
 			const permissionsCheck = this.$_permissionsMixin_setAllPermissionsObject(permissionsRequired)
 			return this.$_permissionsMixin_checkPermissionsAllowed(access, null, permissionsCheck)
 		},
 		applicationPermissionsDenied: function (permissionsRequired, access) {
+			if (!permissionsRequired) return true
 			const permissionsCheck = this.$_permissionsMixin_setAllPermissionsObject(permissionsRequired)
 			return this.$_permissionsMixin_checkPermissionsDenied(access, null, permissionsCheck)
 		},
@@ -78,6 +80,7 @@ const permissionsMixin = {
 			return this.$_permissionsMixin_checkPermissionsAllowed(access, null, permissionsCheck)
 		},
 		$_permissionsMixin_setAllPermissionsObject: function(permissionsRequired) {
+			if (!permissionsRequired) return []
 			return Object.keys(permissionsRequired).map(function(key) {
 				return this.$_permissionsMixin_getPermissionsProcessed(this.$root.user.permissions[key], permissionsRequired[key])
 			}.bind(this))
