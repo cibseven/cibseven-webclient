@@ -245,7 +245,7 @@ export default {
         await this.loadInstanceById(this.instanceId)
       }
     },
-    onDeleteProcessDefinition(params) {
+    async onDeleteProcessDefinition(params) {
       ProcessService.deleteProcessDefinition(params.processDefinition.id, true).then(() => {
         // reload versions
         ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.tenantId, this.$root.config.lazyLoadHistory)
@@ -339,7 +339,7 @@ export default {
         this.$store.dispatch('setStatistics', { process: this.process, statistics: statistics })
       })
     },
-    onInstanceDeleted() {
+    async onInstanceDeleted() {
       this.setSelectedInstance({ selectedInstance: null })
       return Promise.all([
         this.loadStatistics()
@@ -348,7 +348,7 @@ export default {
         this.$refs.process.refreshDiagram()
       })
     },
-    setSelectedInstance(evt) {
+    async setSelectedInstance(evt) {
       const selectedInstance = evt.selectedInstance
       if (!selectedInstance) {
         this.selectedInstance = null
@@ -378,7 +378,7 @@ export default {
         }
       }
     },
-    setSelectedTask(selectedTask) {
+    async setSelectedTask(selectedTask) {
       if (this.selectedInstance && selectedTask) {
         HistoryService.findTasksByDefinitionKeyHistory(selectedTask.id, this.selectedInstance.id).then(function(task) {
           if (task.length === 0) {
