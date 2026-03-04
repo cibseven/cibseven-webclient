@@ -21,8 +21,8 @@
     <CIBForm ref="form" @submitted="report(); $refs.modal.hide(); problem = null">
       <div class="row gx-1 mb-3">
         <label class="visually-hidden" for="emailInput">{{ $t('problem-report.email') }}</label>
-        <input id="emailInput" v-model="email2" type="email" :placeholder="$t('problem-report.email')" class="form-control">
-        <div v-if="state === false" class="invalid-feedback d-block" role="alert" aria-live="assertive">{{ $t('errors.invalid') }}</div>
+        <input id="emailInput" ref="emailInput" v-model="email2" type="email" :placeholder="$t('problem-report.email')" class="form-control" :class="{'is-invalid': emailState === false}" @input="onEmailInput">
+        <div v-if="emailState === false" class="invalid-feedback d-block" role="alert" aria-live="assertive">{{ $t('errors.invalid') }}</div>
       </div>
       <div class="row gx-1">
         <label class="visually-hidden" for="problemTextarea">{{ $t('process-instance.stacktrace') }}</label>
@@ -50,11 +50,15 @@ export default {
   components: { CIBForm, FeedbackScreenshot },
   props: { url: String, email: String },
   emits: ['sent', 'report'],
-  data: function() { return { problem: '', email2: null, clip: null } },
+  data: function() { return { problem: '', email2: null, clip: null, emailState: null } },
   methods: {
     show: function() {
       this.email2 = this.email
+      this.emailState = null
       this.$refs.modal.show()
+    },
+    onEmailInput: function(e) {
+      this.emailState = e.target.value ? e.target.validity.valid : null
     },
     report: function() {
       const params = {
