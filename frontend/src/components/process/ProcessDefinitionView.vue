@@ -122,7 +122,7 @@ export default {
   },
   watch: {
     processKey: {
-      handler() {
+      async handler() {
         // Reset process state when processKey changes
         this.process = null
         this.selectedInstance = null
@@ -132,13 +132,13 @@ export default {
         this.errorVersionNotFound = null
         this.clearActivitySelection()
 
-        this.loadProcessDefinitionFromRoute()
+        await this.loadProcessDefinitionFromRoute()
       },
       immediate: true      
     },
-    versionIndex() {
+    async versionIndex() {
       if (this.process && this.process.key === this.processKey) {
-        this.switchToDefinitionVersion()
+        await this.switchToDefinitionVersion()
       }
     }
   },
@@ -170,7 +170,7 @@ export default {
       return this.process?.version || this.versionIndex
     },
   },
-  beforeUpdate() {
+  async beforeUpdate() {
     if (this.process != null && this.process.version !== this.versionIndex) {
       // different process-definition was selected
       this.selectedInstance = null
@@ -179,7 +179,7 @@ export default {
       this.task = null
     }
     else if (this.selectedInstance == null && this.instanceId) {
-      this.loadInstanceById(this.instanceId)
+      await this.loadInstanceById(this.instanceId)
     }
     else if (!this.instanceId) {
       this.selectedInstance = null
@@ -211,18 +211,18 @@ export default {
         instance = this.instances.find(i => i.id == instanceId)
       }
       if (instance) {
-        this.setSelectedInstance({ selectedInstance: instance })
+        await this.setSelectedInstance({ selectedInstance: instance })
       }
     },
     async loadProcessDefinitionFromRoute() {
-      await ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.tenantId, this.$root.config.lazyLoadHistory).then(versions => {
+      await ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.tenantId, this.$root.config.lazyLoadHistory).then(async versions => {
         this.processDefinitions = versions
         const needCalcStats = this.process == null
         if (needCalcStats) {
           this.resetStatsLazyLoad(this.$root.config.lazyLoadHistory)
         }
 
-        return this.switchToDefinitionVersion()
+        await this.switchToDefinitionVersion()
       })
     },
     async switchToDefinitionVersion() {
@@ -246,9 +246,9 @@ export default {
       }
     },
     async onDeleteProcessDefinition(params) {
-      ProcessService.deleteProcessDefinition(params.processDefinition.id, true).then(() => {
+      await ProcessService.deleteProcessDefinition(params.processDefinition.id, true).then(async () => {
         // reload versions
-        ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.tenantId, this.$root.config.lazyLoadHistory)
+        await ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.tenantId, this.$root.config.lazyLoadHistory)
         .then(versions => {
           if (versions.length === 0) {
             // no more process-definitions with such key
@@ -327,7 +327,7 @@ export default {
 
       // Load parent process if parentProcessDefinitionId exists in route query
       if (this.$route.query.parentProcessDefinitionId) {
-        this.getProcessById({ id: this.$route.query.parentProcessDefinitionId }).then(response => {
+        await this.getProcessById({ id: this.$route.query.parentProcessDefinitionId }).then(response => {
           this.parentProcess = response
         })
       } else {
@@ -340,13 +340,10 @@ export default {
       })
     },
     async onInstanceDeleted() {
-      this.setSelectedInstance({ selectedInstance: null })
-      return Promise.all([
-        this.loadStatistics()
-      ]).then(async () => {
-        await this.findProcessAndAssignData(this.process)
-        this.$refs.process.refreshDiagram()
-      })
+      await this.setSelectedInstance({ selectedInstance: null })
+      await this.loadStatistics()
+      await this.findProcessAndAssignData(this.process)
+      this.$refs.process.refreshDiagram()
     },
     async setSelectedInstance(evt) {
       const selectedInstance = evt.selectedInstance
@@ -362,16 +359,16 @@ export default {
         this.selectedInstance = selectedInstance
         if (this.selectedInstance.state === 'ACTIVE') {
           //Management
-          ProcessService.findActivityInstance(selectedInstance.id).then(activityInstance => {
+          await ProcessService.findActivityInstance(selectedInstance.id).then(async activityInstance => {
             this.activityInstance = activityInstance
-            HistoryService.findActivitiesInstancesHistory(selectedInstance.id).then(activityInstanceHistory => {
+            await HistoryService.findActivitiesInstancesHistory(selectedInstance.id).then(activityInstanceHistory => {
               this.activityInstanceHistory = activityInstanceHistory
             })
           })
         } else {
           //History
           if (this.$root.config.camundaHistoryLevel !== 'none') {
-            HistoryService.findActivitiesInstancesHistory(selectedInstance.id).then(activityInstanceHistory => {
+            await HistoryService.findActivitiesInstancesHistory(selectedInstance.id).then(activityInstanceHistory => {
               this.activityInstanceHistory = activityInstanceHistory
             })
           }
@@ -380,7 +377,7 @@ export default {
     },
     async setSelectedTask(selectedTask) {
       if (this.selectedInstance && selectedTask) {
-        HistoryService.findTasksByDefinitionKeyHistory(selectedTask.id, this.selectedInstance.id).then(function(task) {
+        await HistoryService.findTasksByDefinitionKeyHistory(selectedTask.id, this.selectedInstance.id).then(async function(task) {
           if (task.length === 0) {
             this.task = null
             return
@@ -388,7 +385,7 @@ export default {
           this.task = task[0]
           const serviceCall = !this.task.endTime ? TaskService.fetchActivityVariables :
             HistoryService.fetchActivityVariablesHistory
-          serviceCall(this.task.activityInstanceId).then(variables => {
+          await serviceCall(this.task.activityInstanceId).then(variables => {
             variables.forEach(variable => {
               variable.value = variable.type === 'Object' ? JSON.stringify(variable.value) : variable.value
             })
