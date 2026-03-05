@@ -164,7 +164,7 @@
 <script>
 import platform from 'platform'
 import { permissionsMixin } from '@/permissions.js'
-import { navigationPermissionsMixin } from '@/mixins/navigationPermissionsMixin.js'
+import navigationPermissionsMixin from '@/mixins/navigationPermissionsMixin.js'
 import { getGlobalNavigationShortcuts, checkKeyMatch } from '@/utils/shortcuts.js'
 import ShortcutsModal from '@/components/modals/ShortcutsModal.vue'
 import AboutModal from '@/components/modals/AboutModal.vue'

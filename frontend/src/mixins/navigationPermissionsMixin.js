@@ -19,7 +19,7 @@
  * Provides computed properties for the high-level navigation permission checks.
  * Requires permissionsMixin to be present on the same component.
  */
-const navigationPermissionsMixin = {
+export default {
   computed: {
     permissionsTaskList() {
       return this.$root.user && this.applicationPermissions(this.$root.config.permissions.tasklist, 'tasklist')
@@ -47,5 +47,3 @@ const navigationPermissionsMixin = {
     },
   }
 }
-
-export { navigationPermissionsMixin }

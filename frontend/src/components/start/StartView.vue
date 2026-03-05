@@ -47,7 +47,7 @@
 
 <script>
 import { permissionsMixin } from '@/permissions.js'
-import { navigationPermissionsMixin } from '@/mixins/navigationPermissionsMixin.js'
+import navigationPermissionsMixin from '@/mixins/navigationPermissionsMixin.js'
 import { ErrorDialog } from '@cib/common-frontend'
 import StartViewItem from '@/components/start/StartViewItem.vue'
 
