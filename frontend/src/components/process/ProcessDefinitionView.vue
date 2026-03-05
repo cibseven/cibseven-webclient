@@ -88,6 +88,16 @@
           </div>
         </div>
       </transition>
+      <transition name="slide-in" mode="out-in">
+        <div v-if="errorLoadingInstanceId !== null" class="alert alert-warning m-3 d-flex align-items-center" role="alert">
+          <div class="me-3">
+            <span class="mdi-36px mdi mdi-alert-outline text-warning"></span>
+          </div>
+          <div>
+            {{ $t('process.instanceNotFound', { instanceId: instanceId, error: errorLoadingInstanceId }) }}
+          </div>
+        </div>
+      </transition>
     </SidebarsFlow>
     <TaskPopper ref="importPopper"></TaskPopper>
   </div>
@@ -140,6 +150,11 @@ export default {
       if (this.process && this.process.key === this.processKey) {
         await this.switchToDefinitionVersion()
       }
+    },
+    async instanceId() {
+      if (this.process && this.process.key === this.processKey) {
+        await this.loadInstanceById(this.instanceId)
+      }
     }
   },
   data() {
@@ -148,6 +163,7 @@ export default {
       process: null, // selected process definition
       processDefinitions: [],
       errorVersionNotFound: null,
+      errorLoadingInstanceId: null,
       selectedInstance: null,
       task: null,
       activityInstance: null,
@@ -200,11 +216,17 @@ export default {
         ProcessService.findProcessInstance(instanceId)
     },
     async loadInstanceById(instanceId) {
+      this.selectedInstance = null
+      this.activityInstanceHistory = null
+      this.task = null
+
       let instance = null
       try {
+        this.errorLoadingInstanceId = null
         instance = await this.findProcessInstance(instanceId)
-      } catch {
+      } catch (error) {
         // ignore error, fallback below
+        this.errorLoadingInstanceId = error.message
       }
       if (!instance && this.instances) {
         // Fallback to checking store instances
