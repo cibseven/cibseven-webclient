@@ -168,33 +168,20 @@ export default {
       
       this.$refs.diagramModal.show()
 
-      if (this.isDmnResource) {
-        // Handle DMN resources
-        const content = await this.getContent(resource)
-        if (content) {
-          setTimeout(() => {
-            this.diagramLoading = false
-            this.$refs.dmnDiagram.showDiagram(content)
-          }, 500)
-        }
-        else {
+      const content = await this.getContent(resource)
+      if (content) {
+        setTimeout(() => {
           this.diagramLoading = false
-          this.error = true
-        }
+          if (this.isDmnResource) {
+            this.$refs.dmnDiagram.showDiagram(content)
+          } else {
+            this.$refs.diagram.showDiagram(content)
+          }
+        }, 500)
       }
       else {
-        // Handle BPMN resources
-        const content = await this.getContent(resource)
-        if (content) {
-          setTimeout(() => {
-            this.diagramLoading = false
-            this.$refs.diagram.showDiagram(content)
-          }, 500)
-        }
-        else {
-          this.diagramLoading = false
-          this.error = true
-        }
+        this.diagramLoading = false
+        this.error = true
       }
     },
     loadDeployment: function () {
