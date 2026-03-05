@@ -47,6 +47,10 @@
                   tabindex="-1"
                   icon="mdi-eye-outline"
                   :title="$t('deployment.showModel')"></CellActionButton>
+                <CellActionButton v-if="canDownload(resource)" @click.stop="download(resource)"
+                  tabindex="-1"
+                  icon="mdi-download"
+                  :title="$t('process.downloadBpmn')"></CellActionButton>
                 <component :is="ResourcesNavBarActionsPlugin" v-if="ResourcesNavBarActionsPlugin" :resource="resource" :deployment="deployment" @deployment-success="$emit('deployment-success')"></component>
               </div>
             </li>
@@ -146,7 +150,7 @@ export default {
     ...mapActions(['getDecisionList', 'getXmlById']),
     formatDate,
     formatDateForTooltips,
-    showResource: function (resource) {
+    async showResource(resource) {
       this.error = false
       this.diagramLoading = true
       this.resource = resource
@@ -166,65 +170,32 @@ export default {
 
       if (this.isDmnResource) {
         // Handle DMN resources
-        this.loadDmnResource(resource)
-      } else {
-        // Handle BPMN resources
-        this.loadBpmnResource(resource)
+        const content = await this.getContent(resource)
+        if (content) {
+          setTimeout(() => {
+            this.diagramLoading = false
+            this.$refs.dmnDiagram.showDiagram(content)
+          }, 500)
+        }
+        else {
+          this.diagramLoading = false
+          this.error = true
+        }
       }
-    },
-    loadBpmnResource: function(resource) {
-      ProcessService.findProcessesWithFilters('deploymentId=' + this.deployment.id + '&resourceName=' + resource.name)
-        .then(processesDefinition => {
-          if (processesDefinition.length > 0) {
-            const processDefinition = processesDefinition[0]
-            ProcessService.fetchDiagram(processDefinition.id).then(response => {
-              setTimeout(() => {
-                this.diagramLoading = false
-                this.$refs.diagram.showDiagram(response.bpmn20Xml)
-              }, 500)
-            }).catch(() => {
-              this.diagramLoading = false
-              this.error = true
-            })
-          } else {
+      else {
+        // Handle BPMN resources
+        const content = await this.getContent(resource)
+        if (content) {
+          setTimeout(() => {
             this.diagramLoading = false
-            this.error = true
-          }
-        }).catch(() => {
+            this.$refs.diagram.showDiagram(content)
+          }, 500)
+        }
+        else {
           this.diagramLoading = false
           this.error = true
-        })
-    },
-    loadDmnResource: function(resource) {
-      // Get decision definitions for this deployment and resource name for exact match
-      this.getDecisionList({ 
-        deploymentId: this.deployment.id,
-        resourceName: resource.name 
-      })
-        .then(decisions => {
-          if (decisions.length > 0) {
-            const decision = decisions[0] // Should be exact match with resourceName
-            // Get the XML using store action
-            this.getXmlById(decision.id)
-              .then(response => {
-                setTimeout(() => {
-                  this.diagramLoading = false
-                  this.$refs.dmnDiagram.showDiagram(response.dmnXml)
-                }, 500)
-              })
-              .catch(() => {
-                this.diagramLoading = false
-                this.error = true
-              })
-          } else {
-            this.diagramLoading = false
-            this.error = true
-          }
-        })
-        .catch(() => {
-          this.diagramLoading = false
-          this.error = true
-        })
+        }
+      }
     },
     loadDeployment: function () {
       if (this.deploymentId) {
@@ -246,6 +217,46 @@ export default {
             this.deployment = deployment
           })
         }
+      }
+    },
+    canDownload(resource) {
+      return resource.name.toLowerCase().endsWith('.bpmn') || resource.name.toLowerCase().endsWith('.dmn')
+    },
+    async getContent(resource) {
+      this.diagramLoading = true
+      let content = null
+      const isBpmn = resource.name.toLowerCase().endsWith('.bpmn')
+      if (isBpmn) {
+        const processesDefinition = await ProcessService.findProcessesWithFilters('deploymentId=' + this.deployment.id + '&resourceName=' + resource.name)
+        const processDefinition = Array.isArray(processesDefinition) ? processesDefinition[0] : null
+        const response = processDefinition ? await ProcessService.fetchDiagram(processDefinition.id) : null
+        content = response ? response.bpmn20Xml : null
+      }
+      else {
+        const decisions = await this.getDecisionList({ 
+          deploymentId: this.deployment.id,
+          resourceName: resource.name 
+        })
+        const descision = Array.isArray(decisions) ? decisions[0] : null
+        const response = descision ? await this.getXmlById(descision.id) : null
+        content = response ? response.dmnXml : null
+      }
+      return content
+    },
+    async download(resource) {
+      const content = await this.getContent(resource)
+      this.diagramLoading = false
+      // download BPMN XML if content is available
+      if (content) {
+        const blob = new Blob([content], { type: 'application/xml' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = resource.name
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
       }
     },
     toggleButton: function () {
