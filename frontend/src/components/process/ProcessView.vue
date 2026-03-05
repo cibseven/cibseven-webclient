@@ -28,7 +28,7 @@
   <div v-else class="h-100 d-flex flex-column justify-content-center align-items-center">
 
     <!-- Show error message if the URL parameters are not valid -->
-    <div v-if="isError" class="alert alert-danger">
+    <WarningBox v-if="isError">
       <h2 class="h5 text-danger">Error: Unrecognized process definition/instance URL</h2>
       <p class="text-muted">The URL must be in one of the following formats:</p>
       <ul class="text-muted">
@@ -41,7 +41,7 @@
         <code>#&#47;seven&#47;auth&#47;process&#47;:processKey&#47;:versionIndex&#47;:instanceId<span class="border border-primary p-1">?tenantId=:tenantId</span></code>.
       </p>
       <p class="text-muted">Please check the URL and try again.</p>
-    </div>
+    </WarningBox>
 
     <!-- Show loading spinner while waiting for the latest version to be loaded -->
     <div v-else class="text-center">
@@ -55,10 +55,11 @@
 <script>
 import ProcessDefinitionView from '@/components/process/ProcessDefinitionView.vue'
 import { BWaitingBox } from '@cib/common-frontend'
+import WarningBox from '@/components/common-components/WarningBox.vue';
 
 export default {
   name: 'ProcessView',
-  components: { ProcessDefinitionView, BWaitingBox },
+  components: { ProcessDefinitionView, BWaitingBox, WarningBox },
   props: {
     processKey: { type: String, required: true },
     versionIndex: { type: String, default: null },
