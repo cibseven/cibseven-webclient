@@ -96,7 +96,7 @@ export default {
         { value: 'userId', text: 'users', type: 'candidate' },
         { value: 'groupId', text: 'groups', type: 'candidate' }
       ],
-      selectedIdentity: {},
+      selectedIdentity: { value: 'userId', text: 'assignee', type: 'assignee' },
       identity: '',
       taskId: '',
       identityExists: false,
