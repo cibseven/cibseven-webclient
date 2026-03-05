@@ -36,8 +36,7 @@
         ></StartViewItem>
         <component :is="StartViewPlugin" v-if="StartViewPlugin"></component>
       </div>
-      <div v-if="!applicationPermissions($root.config.permissions.tasklist, 'tasklist') &&
-        !applicationPermissions($root.config.permissions.cockpit, 'cockpit') && !hasAdminManagementPermissions($root.config.permissions)">
+      <div v-if="!permissionsTaskList && !permissionsCockpit && !permissionsUsers">
         <img alt="" src="@/assets/images/start/empty_start_page.svg" class="d-block mx-auto mt-5 mb-3" style="max-width: 250px">
         <div class="h5 text-secondary text-center">{{ $t('start.emptyStart', { productName }) }}</div>
       </div>
@@ -48,6 +47,7 @@
 
 <script>
 import { permissionsMixin } from '@/permissions.js'
+import { navigationPermissionsMixin } from '@/mixins/navigationPermissionsMixin.js'
 import { ErrorDialog } from '@cib/common-frontend'
 import StartViewItem from '@/components/start/StartViewItem.vue'
 
@@ -60,7 +60,7 @@ import adminImage from '@/assets/images/start/admin.svg'
 export default {
   name: "StartView",
   components: { ErrorDialog, StartViewItem },
-  mixins: [permissionsMixin],
+  mixins: [permissionsMixin, navigationPermissionsMixin],
   inject: ['loadProcesses'],
   data: function() {
     return {
@@ -87,30 +87,30 @@ export default {
     },
     adminOptions() {
       const options = []
-      if (this.adminManagementPermissions(this.$root.config.permissions.usersManagement, 'user'))
+      if (this.permissionsUsersManagement)
         options.push({ to: '/seven/auth/admin/users', icon: 'mdi-account-search-outline', title: this.$t('admin.users.title'), tooltip: this.$t('admin.users.title') })
-      if (this.adminManagementPermissions(this.$root.config.permissions.groupsManagement, 'group'))
+      if (this.permissionsGroupsManagement)
         options.push({ to: '/seven/auth/admin/groups', icon: 'mdi-account-group-outline', title: this.$t('admin.groups.title'), tooltip: this.$t('admin.groups.title') })
-      if (this.adminManagementPermissions(this.$root.config.permissions.tenantsManagement, 'tenant'))
+      if (this.permissionsTenantsManagement)
         options.push({ to: '/seven/auth/admin/tenants', icon: 'mdi-domain', title: this.$t('admin.tenants.title'), tooltip: this.$t('admin.tenants.tooltip') })
-      if (this.adminManagementPermissions(this.$root.config.permissions.authorizationsManagement, 'authorization'))
+      if (this.permissionsAuthorizationsManagement)
         options.push({ to: '/seven/auth/admin/authorizations', icon: 'mdi-account-key-outline', title: this.$t('admin.authorizations.title'), tooltip: this.$t('admin.authorizations.title') })
-      if (this.adminManagementPermissions(this.$root.config.permissions.systemManagement, 'system'))
+      if (this.permissionsSystemManagement)
         options.push({ to: '/seven/auth/admin/system', icon: 'mdi-cog-outline', title: this.$t('admin.system.title'), tooltip: this.$t('admin.system.tooltip') })
       return options
     },
     tiles() {
       const tiles = []
-      if (this.applicationPermissions(this.$root.config.permissions.tasklist, 'tasklist') && this.startableProcesses) {
+      if (this.permissionsTaskList && this.startableProcesses) {
         tiles.push('startProcess')
       }
-      if (this.applicationPermissions(this.$root.config.permissions.tasklist, 'tasklist')) {
+      if (this.permissionsTaskList) {
         tiles.push('tasklist')
       }
-      if (this.applicationPermissions(this.$root.config.permissions.cockpit, 'cockpit')) {
+      if (this.permissionsCockpit) {
         tiles.push('cockpit')
       }
-      if (this.hasAdminManagementPermissions(this.$root.config.permissions)) {
+      if (this.permissionsUsers) {
         tiles.push('admin')
       }
       return tiles

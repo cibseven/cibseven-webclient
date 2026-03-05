@@ -164,6 +164,7 @@
 <script>
 import platform from 'platform'
 import { permissionsMixin } from '@/permissions.js'
+import { navigationPermissionsMixin } from '@/mixins/navigationPermissionsMixin.js'
 import { getGlobalNavigationShortcuts, checkKeyMatch } from '@/utils/shortcuts.js'
 import ShortcutsModal from '@/components/modals/ShortcutsModal.vue'
 import AboutModal from '@/components/modals/AboutModal.vue'
@@ -175,7 +176,7 @@ import { updateAppTitle } from '@/utils/init'
 export default {
   name: 'CibSeven',
   components: { ShortcutsModal, AboutModal, SupportModal, CIBHeaderFlow, FeedbackModal },
-  mixins: [permissionsMixin],
+  mixins: [permissionsMixin, navigationPermissionsMixin],
   inject: ['isMobile'],
   data: function() {
     return {
@@ -397,30 +398,6 @@ export default {
         }
         return true
       })
-    },
-    permissionsTaskList: function() {
-      return this.$root.user && this.applicationPermissions(this.$root.config.permissions.tasklist, 'tasklist')
-    },
-    permissionsCockpit: function() {
-      return this.$root.user && this.applicationPermissions(this.$root.config.permissions.cockpit, 'cockpit')
-    },
-    permissionsUsers: function() {
-      return this.$root.user && this.hasAdminManagementPermissions(this.$root.config.permissions)
-    },
-    permissionsUsersManagement: function() {
-      return this.$root.user && this.adminManagementPermissions(this.$root.config.permissions.usersManagement, 'user')
-    },
-    permissionsGroupsManagement: function() {
-      return this.$root.user && this.adminManagementPermissions(this.$root.config.permissions.groupsManagement, 'group')
-    },
-    permissionsTenantsManagement: function() {
-      return this.$root.user && this.adminManagementPermissions(this.$root.config.permissions.tenantsManagement, 'tenant')
-    },
-    permissionsAuthorizationsManagement: function() {
-      return this.$root.user && this.adminManagementPermissions(this.$root.config.permissions.authorizationsManagement, 'authorization')
-    },
-    permissionsSystemManagement: function() {
-      return this.$root.user && this.adminManagementPermissions(this.$root.config.permissions.systemManagement, 'system')
     },
     isUsersManagementActive: function() {
       return this.$route.path.includes('seven/auth/admin/user') ||
