@@ -25,23 +25,8 @@
     <SidebarsFlow ref="sidebars" class="border-top overflow-auto" :left-open="leftOpen" @update:left-open="leftOpen = $event" :left-caption="shortendLeftCaption">
       <template v-slot:left>
         <template v-if="errorVersionNotFound !== null">
-          <div class="alert alert-warning m-3 d-flex align-items-center" role="alert">
-            <div class="me-3">
-              <span class="mdi-36px mdi mdi-alert-outline text-warning"></span>
-            </div>
-            <div>
-              {{ $t('process.definitionVersionNotFound', [errorVersionNotFound]) }}
-            </div>
-          </div>
-
-          <div v-if="processDefinitions.length === 0" class="alert alert-warning m-3 d-flex align-items-center" role="alert">
-            <div class="me-3">
-              <span class="mdi-36px mdi mdi-alert-outline text-warning"></span>
-            </div>
-            <div>
-              {{ $t('process.definitionNotFound', { processKey: processKey, tenantId: tenantId }) }}
-            </div>
-          </div>
+          <WarningBox :message="$t('process.definitionVersionNotFound', [errorVersionNotFound])"/>
+          <WarningBox v-if="processDefinitions.length === 0" :message="$t('process.definitionNotFound', { processKey: processKey, tenantId: tenantId })"/>
         </template>
         <ProcessDetailsSidebar ref="navbar" v-if="process"
           :process-key="processKey"
@@ -79,24 +64,10 @@
           @task-selected="setSelectedTask($event)"></ProcessInstanceView>
       </transition>
       <transition name="slide-in" mode="out-in">
-        <div v-if="errorVersionNotFound !== null &&processDefinitions.length === 0" class="alert alert-warning m-3 d-flex align-items-center" role="alert">
-          <div class="me-3">
-            <span class="mdi-36px mdi mdi-alert-outline text-warning"></span>
-          </div>
-          <div>
-            {{ $t('process.definitionNotFound', { processKey: processKey, tenantId: tenantId }) }}
-          </div>
-        </div>
+        <WarningBox v-if="errorVersionNotFound !== null && processDefinitions.length === 0" :message="$t('process.definitionNotFound', { processKey: processKey, tenantId: tenantId })"/>
       </transition>
       <transition name="slide-in" mode="out-in">
-        <div v-if="errorLoadingInstanceId !== null" class="alert alert-warning m-3 d-flex align-items-center" role="alert">
-          <div class="me-3">
-            <span class="mdi-36px mdi mdi-alert-outline text-warning"></span>
-          </div>
-          <div>
-            {{ $t('process.instanceNotFound', { instanceId: instanceId, error: errorLoadingInstanceId }) }}
-          </div>
-        </div>
+        <WarningBox v-if="errorLoadingInstanceId !== null" :message="$t('process.instanceNotFound', { instanceId: instanceId, error: errorLoadingInstanceId })"/>
       </transition>
     </SidebarsFlow>
     <TaskPopper ref="importPopper"></TaskPopper>
@@ -109,6 +80,7 @@ import { TaskService, ProcessService, HistoryService } from '@/services.js'
 import ProcessInstancesView from '@/components/process/ProcessInstancesView.vue'
 import ProcessDetailsSidebar from '@/components/process/ProcessDetailsSidebar.vue'
 import ProcessInstanceView from '@/components/process/ProcessInstanceView.vue'
+import WarningBox from '@/components/common-components/WarningBox.vue'
 import { SidebarsFlow, TaskPopper } from '@cib/common-frontend'
 import { mapGetters, mapActions } from 'vuex'
 import { formatDate } from '@/utils/dates.js'
@@ -123,7 +95,7 @@ function getStringObjByKeys(keys, obj) { // TODO rewrite to use join()
 
 export default {
   name: 'ProcessDefinitionView',
-  components: { ProcessInstancesView, ProcessDetailsSidebar, ProcessInstanceView, SidebarsFlow, TaskPopper },
+  components: { ProcessInstancesView, ProcessDetailsSidebar, ProcessInstanceView, SidebarsFlow, TaskPopper, WarningBox },
   props: {
     processKey: { type: String, required: true },
     versionIndex: { type: String, required: true },

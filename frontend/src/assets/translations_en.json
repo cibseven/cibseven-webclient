@@ -157,7 +157,7 @@
 		"emptyProcessListFiltered": "There is no process for the applied filter.",
 		"definitionVersionNotFound": "Process definition version \"{0}\" not found. Falling back to the latest version.",
 		"definitionNotFound": "Process definition key \"{processKey}\" with \"{tenantId}\" tenant ID not found.",
-		"instanceNotFound": "Process instance with ID \"{instanceId}\" not found.\nServer response: {error}",
+		"instanceNotFound": "Process instance with ID \"{instanceId}\" not found.\nServer response:\n{error}",
 		"back": "Back",
 		"incidentsCounter": "Incidents: {0}",
 		"incidents": "Incidents",		

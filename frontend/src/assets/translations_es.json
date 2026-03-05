@@ -157,7 +157,7 @@
 		"emptyProcessListFiltered": "No existe ningún proceso para el filtro aplicado.",
 		"definitionVersionNotFound": "Versión de la definición del proceso \"{0}\" no encontrada. Se utilizará la versión más reciente.",
 		"definitionNotFound": "Definición de proceso con la clave \"{processKey}\" y el ID de tenant \"{tenantId}\" no encontrada.",
-		"instanceNotFound": "Instancia de proceso con ID \"{instanceId}\" no encontrada.\nRespuesta del servidor: {error}",
+		"instanceNotFound": "Instancia de proceso con ID \"{instanceId}\" no encontrada.\nRespuesta del servidor:\n{error}",
 		"back": "Atrás",
 		"incidentsCounter": "Incidentes: {0}",
 		"incidents": "Incidencias",
