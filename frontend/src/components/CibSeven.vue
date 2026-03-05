@@ -263,26 +263,31 @@ export default {
               tooltip: 'start.admin.tooltip',
               title: 'start.admin.title'
             }, {
+              show: this.permissionsUsersManagement,
               to: '/seven/auth/admin/users',
               active: ['seven/auth/admin/user', 'seven/auth/admin/create-user'],
               tooltip: 'admin.users.tooltip',
               title: 'admin.users.title'
             }, {
+              show: this.permissionsGroupsManagement,
               to: '/seven/auth/admin/groups',
               active: ['seven/auth/admin/group', 'seven/auth/admin/create-group'],
               tooltip: 'admin.groups.tooltip',
               title: 'admin.groups.title'
             }, {
+              show: this.permissionsTenantsManagement,
               to: '/seven/auth/admin/tenants',
               active: ['seven/auth/admin/tenant', 'seven/auth/admin/create-tenant'],
               tooltip: 'admin.tenants.tooltip',
               title: 'admin.tenants.title'
             }, {
+              show: this.permissionsAuthorizationsManagement,
               to: '/seven/auth/admin/authorizations',
               active: ['seven/auth/admin/authorizations'],
               tooltip: 'admin.authorizations.tooltip',
               title: 'admin.authorizations.title'
             }, {
+              show: this.permissionsSystemManagement,
               to: '/seven/auth/admin/system',
               active: ['seven/auth/admin/system'],
               tooltip: 'admin.system.tooltip',
@@ -402,6 +407,21 @@ export default {
     permissionsUsers: function() {
       return this.$root.user && this.hasAdminManagementPermissions(this.$root.config.permissions)
     },
+    permissionsUsersManagement: function() {
+      return this.$root.user && this.adminManagementPermissions(this.$root.config.permissions.usersManagement, 'user')
+    },
+    permissionsGroupsManagement: function() {
+      return this.$root.user && this.adminManagementPermissions(this.$root.config.permissions.groupsManagement, 'group')
+    },
+    permissionsTenantsManagement: function() {
+      return this.$root.user && this.adminManagementPermissions(this.$root.config.permissions.tenantsManagement, 'tenant')
+    },
+    permissionsAuthorizationsManagement: function() {
+      return this.$root.user && this.adminManagementPermissions(this.$root.config.permissions.authorizationsManagement, 'authorization')
+    },
+    permissionsSystemManagement: function() {
+      return this.$root.user && this.adminManagementPermissions(this.$root.config.permissions.systemManagement, 'system')
+    },
     isUsersManagementActive: function() {
       return this.$route.path.includes('seven/auth/admin/user') ||
         this.$route.path.includes('seven/auth/admin/group') ||
@@ -427,7 +447,12 @@ export default {
   methods: {
     // override this method to add/remove menu items
     getVisibleMenuItems: function(items) {
-      return items.filter(group => group.show)
+      return items
+        .filter(group => group.show)
+        .map(group => ({
+          ...group,
+          items: group.items ? group.items.filter(item => item.show !== false) : group.items
+        }))
     },
     isMenuItemActive: function(item) {
       if (!item.active) {
