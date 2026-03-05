@@ -50,7 +50,7 @@
                 <CellActionButton v-if="canDownload(resource)" @click.stop="download(resource)"
                   tabindex="-1"
                   icon="mdi-download"
-                  :title="$t('process.downloadBpmn')"></CellActionButton>
+                  :title="$t('process-instance.download')"></CellActionButton>
                 <component :is="ResourcesNavBarActionsPlugin" v-if="ResourcesNavBarActionsPlugin" :resource="resource" :deployment="deployment" @deployment-success="$emit('deployment-success')"></component>
               </div>
             </li>
