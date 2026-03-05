@@ -394,11 +394,7 @@ function setupGuard(to, from, next) {
 }
 
 function modelerGuard(to, from, next) {
-  if (router.root.config.modeler?.enabled) {
-    next()
-  } else {
-    next({ name: 'start' })
-  }
+  permissionsGuard('modeler')(to, from, next)
 }
 
 function permissionsGuard(permission) {

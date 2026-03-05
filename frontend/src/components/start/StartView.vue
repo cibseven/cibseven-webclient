@@ -116,7 +116,7 @@ export default {
       if (this.permissionsUsers) {
         tiles.push('admin')
       }
-      if (this.$root.config.modeler?.enabled) {
+      if (this.permissionsModeler) {
         tiles.push('modeler')
       }
       return tiles

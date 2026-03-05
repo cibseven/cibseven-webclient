@@ -72,6 +72,9 @@
 		"cockpit": {
 			"application": ["ACCESS"]
 		},
+		"modeler": {
+			"application": ["ACCESS"]
+		},
 		"displayTasks": {
 			"task": ["READ", "UPDATE"]
 		},
@@ -310,7 +313,6 @@
 		}
 	},
 	"modeler": {
-		"enabled": true,
 		"excludeTemplates": [],
 		"filterBpmn": [
 			{ "name": "User Task", "type": "bpmn:UserTask", "color": "#E10030" },

@@ -412,9 +412,6 @@ export default {
         return true
       })
     },
-    permissionsModeler: function() {
-      return this.$root.user && this.$root.config.modeler?.enabled
-    },
     isUsersManagementActive: function() {
       return this.$route.path.includes('seven/auth/admin/user') ||
         this.$route.path.includes('seven/auth/admin/group') ||

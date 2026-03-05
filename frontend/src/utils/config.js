@@ -29,6 +29,7 @@ const DEFAULT_CONFIG = {
   permissions: {
     tasklist: { application: ["ACCESS"] },
     cockpit: { application: ["ACCESS"] },
+    modeler: { application: ["ACCESS"] },
     displayTasks: { task: ["READ", "UPDATE"] },
     displayFilter: { filter: ["READ"] },
     editFilter: { filter: ["UPDATE"] },
@@ -171,7 +172,6 @@ const DEFAULT_CONFIG = {
     { "key": "dueAfter", "text": "dueAfter", "type": "text", "group": "datesGroup" }
   ],
   modeler: {
-    enabled: true,
     excludeTemplates: [],
     filterBpmn: [
       { "name": "User Task", "type": "bpmn:UserTask", "color": "#E10030" },
