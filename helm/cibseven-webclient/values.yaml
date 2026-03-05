@@ -359,10 +359,13 @@ configmaps:
           "warnOnDueExpirationIn": 48,
           "permissions": {
             "tasklist": {
-              "application": ["ALL"]
+              "application": ["ACCESS"]
             },
             "cockpit": {
-              "application": ["ALL"]
+              "application": ["ACCESS"]
+            },
+            "modeler": {
+              "application": ["ACCESS"]
             },
             "displayTasks": {
               "task": ["READ", "UPDATE"]
@@ -564,7 +567,6 @@ configmaps:
               }
             },
             "modeler": {
-              "enabled": true,
               "excludeTemplates": [],
               "filterBpmn": [
                 { "name": "User Task", "type": "bpmn:UserTask", "color": "#E10030" },
