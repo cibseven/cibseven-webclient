@@ -32,13 +32,7 @@
           ]"
         ></StartViewItem>
         <StartViewItem v-if="tiles.includes('admin')" :to="{ name: 'usersManagement' }" :title="$t('start.admin.title')" :src="images.admin"
-          :options="[
-            { to: '/seven/auth/admin/users', icon: 'mdi-account-search-outline', title: $t('admin.users.title'), tooltip: $t('admin.users.title') },
-            { to: '/seven/auth/admin/groups', icon: 'mdi-account-group-outline', title: $t('admin.groups.title'), tooltip: $t('admin.groups.title') },
-            { to: '/seven/auth/admin/tenants', icon: 'mdi-domain', title: $t('admin.tenants.title'), tooltip: $t('admin.tenants.tooltip') },
-            { to: '/seven/auth/admin/authorizations', icon: 'mdi-account-key-outline', title: $t('admin.authorizations.title'), tooltip: $t('admin.authorizations.title') },
-            { to: '/seven/auth/admin/system', icon: 'mdi-cog-outline', title: $t('admin.system.title'), tooltip: $t('admin.system.tooltip') }
-          ]"
+          :options="adminOptions"
         ></StartViewItem>
         <component :is="StartViewPlugin" v-if="StartViewPlugin"></component>
       </div>
@@ -90,6 +84,20 @@ export default {
       return this.$options.components && this.$options.components.StartViewPlugin
         ? this.$options.components.StartViewPlugin
         : null
+    },
+    adminOptions() {
+      const options = []
+      if (this.adminManagementPermissions(this.$root.config.permissions.usersManagement, 'user'))
+        options.push({ to: '/seven/auth/admin/users', icon: 'mdi-account-search-outline', title: this.$t('admin.users.title'), tooltip: this.$t('admin.users.title') })
+      if (this.adminManagementPermissions(this.$root.config.permissions.groupsManagement, 'group'))
+        options.push({ to: '/seven/auth/admin/groups', icon: 'mdi-account-group-outline', title: this.$t('admin.groups.title'), tooltip: this.$t('admin.groups.title') })
+      if (this.adminManagementPermissions(this.$root.config.permissions.tenantsManagement, 'tenant'))
+        options.push({ to: '/seven/auth/admin/tenants', icon: 'mdi-domain', title: this.$t('admin.tenants.title'), tooltip: this.$t('admin.tenants.tooltip') })
+      if (this.adminManagementPermissions(this.$root.config.permissions.authorizationsManagement, 'authorization'))
+        options.push({ to: '/seven/auth/admin/authorizations', icon: 'mdi-account-key-outline', title: this.$t('admin.authorizations.title'), tooltip: this.$t('admin.authorizations.title') })
+      if (this.adminManagementPermissions(this.$root.config.permissions.systemManagement, 'system'))
+        options.push({ to: '/seven/auth/admin/system', icon: 'mdi-cog-outline', title: this.$t('admin.system.title'), tooltip: this.$t('admin.system.tooltip') })
+      return options
     },
     tiles() {
       const tiles = []

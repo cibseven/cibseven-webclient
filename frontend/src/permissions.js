@@ -24,11 +24,13 @@ const permissionsMixin = {
 			this.adminManagementPermissions(permissions.systemManagement, 'system'))
 		},
 		applicationPermissions: function(permissionsRequired, access) {
+			if (!this.$root.config.authorizationEnabled) return true
 			if (!permissionsRequired) return false
 			const permissionsCheck = this.$_permissionsMixin_setAllPermissionsObject(permissionsRequired)
 			return this.$_permissionsMixin_checkPermissionsAllowed(access, null, permissionsCheck)
 		},
 		applicationPermissionsDenied: function (permissionsRequired, access) {
+			if (!this.$root.config.authorizationEnabled) return false
 			if (!permissionsRequired) return true
 			const permissionsCheck = this.$_permissionsMixin_setAllPermissionsObject(permissionsRequired)
 			return this.$_permissionsMixin_checkPermissionsDenied(access, null, permissionsCheck)
