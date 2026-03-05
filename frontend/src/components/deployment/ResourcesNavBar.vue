@@ -96,6 +96,7 @@
       </div>
     </b-modal>
 
+    <TaskPopper ref="downloadPopper"></TaskPopper>
   </div>
 </template>
 
@@ -105,12 +106,13 @@ import BpmnViewer from '@/components/process/BpmnViewer.vue'
 import DmnViewer from '@/components/decision/DmnViewer.vue'
 import CellActionButton from '@/components/common-components/CellActionButton.vue'
 import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
+import { TaskPopper } from '@cib/common-frontend'
 import { mapActions } from 'vuex'
 
 export default {
   name: 'ResourcesNavBar',
   emits: ['delete-deployment', 'show-deployment', 'deployment-success'],
-  components: { BpmnViewer, DmnViewer, CellActionButton },
+  components: { BpmnViewer, DmnViewer, CellActionButton, TaskPopper },
   props: { resources: Array, deploymentId: String },
   data: function () {
     return {
@@ -233,17 +235,9 @@ export default {
     async download(resource) {
       const content = await this.getContent(resource)
       this.diagramLoading = false
-      // download BPMN XML if content is available
       if (content) {
         const blob = new Blob([content], { type: 'application/xml' })
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = resource.name
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
-        URL.revokeObjectURL(url)
+        this.$refs.downloadPopper.triggerDownload(blob, resource.name)
       }
     },
     toggleButton: function () {
