@@ -27,12 +27,10 @@ import org.cibseven.webapp.rest.CustomRestTemplate;
 import org.cibseven.webapp.rest.model.InfoVersion;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.CacheControl;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
@@ -64,18 +62,12 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 	havingValue = "true",
 	matchIfMissing = true
 )
-@EntityScan("org.cibseven.modeler.model")
-@EnableJpaRepositories("org.cibseven.modeler.repository")
-@ComponentScan({ 
-	"org.cibseven.webapp.providers", 
-	"org.cibseven.webapp.auth", 
-	"org.cibseven.webapp.rest", 
-	"org.cibseven.webapp.template", 
-	"org.cibseven.webapp.config",
-	"org.cibseven.modeler.rest",
-	"org.cibseven.modeler.provider",
-	"org.cibseven.modeler.config",
-	"org.cibseven.modeler.repository"
+@ComponentScan({
+	"org.cibseven.webapp.providers",
+	"org.cibseven.webapp.auth",
+	"org.cibseven.webapp.rest",
+	"org.cibseven.webapp.template",
+	"org.cibseven.webapp.config"
 })
 public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArgumentResolver {
 

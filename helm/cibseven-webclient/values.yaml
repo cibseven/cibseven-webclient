@@ -42,6 +42,8 @@ application:
 
   cibseven:
     webclient:
+      modeler:
+        enabled: true
       # LDAP
       ldap:
         url: ""

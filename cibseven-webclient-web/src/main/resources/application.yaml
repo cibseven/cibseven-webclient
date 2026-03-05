@@ -1,4 +1,4 @@
-﻿spring:
+spring:
   banner:
     location: classpath:banner.txt
   config:
@@ -36,6 +36,12 @@ cibseven:
   webclient:
     # Global enable/disable flag for the entire CIB seven webclient
     enabled: true
+    modeler:
+      # Enable or disable the modeler feature including its database components
+      # (JPA entities, repositories, REST endpoints, Flyway migrations).
+      # Set to false for production deployments where the modeler is not needed.
+      # When disabled, no datasource or schema migrations are required.
+      enabled: true
     # Engine rest
     engineRest:
       url: http://localhost:8080
