@@ -72,7 +72,7 @@ export default {
       }
       if (activityInstancesGrouped) {
         variables.forEach(v => {
-          v.scope = activityInstancesGrouped[v.activityInstanceId]
+          v.scope = activityInstancesGrouped[v.activityInstanceId] || v.activityInstanceId
         })
       }
       commit('setVariables', variables)
