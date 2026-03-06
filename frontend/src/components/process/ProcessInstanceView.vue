@@ -154,7 +154,7 @@ export default {
   watch: {
     'process.id': function() {
       ProcessService.fetchDiagram(this.process.id).then(response => {
-        this.$refs.diagram.showDiagram(response.bpmn20Xml, this.selectedActivityId)
+        this.$refs.diagram?.showDiagram(response.bpmn20Xml, this.selectedActivityId)
       })
     },
     'selectedInstance.superProcessInstanceId': function(newVal) {
@@ -186,7 +186,7 @@ export default {
   },
   mounted: function() {
     ProcessService.fetchDiagram(this.process.id).then(response => {
-      this.$refs.diagram.showDiagram(response.bpmn20Xml, this.selectedActivityId)
+      this.$refs.diagram?.showDiagram(response.bpmn20Xml, this.selectedActivityId)
     })
     // Load super process instance if available
     if (this.selectedInstance?.superProcessInstanceId) {

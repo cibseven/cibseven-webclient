@@ -155,12 +155,15 @@
 		},
 		"emptyProcessList": "Ваш список процессов пуст.",
 		"emptyProcessListFiltered": "Нет процессов для применённого фильтра.",
+		"definitionVersionNotFound": "Версия определения процесса \"{0}\" не найдена. Будет использована последняя версия.",
+		"definitionNotFound": "Определение процесса с ключом \"{processKey}\" и ID тенанта \"{tenantId}\" не найдено.",
+		"instanceNotFound": "Экземпляр процесса с ID \"{instanceId}\" не найден.\nОтвет сервера:\n{error}",
 		"back": "Назад",
 		"incidentsCounter": "Инциденты: {0}",
 		"incidents": "Инциденты",
 		"variables": "Переменные",
 		"usertasks": "Пользовательские задачи",
-		"calledProcessInstances": "Называемые экземпляры процессов",
+		"calledProcessInstances": "Вызванные экземпляры процессов",
 		"onlyIncidents": {
 			"title": "Только с инцидентами",
 			"tooltip": "Показать только процессы с инцидентами"
