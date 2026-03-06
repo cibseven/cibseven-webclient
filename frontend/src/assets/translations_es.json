@@ -281,6 +281,7 @@
 			"valueSerialized": "Valor serializado",
 			"actions": "Acciones",
 			"scope": "Ámbito",
+			"activityInstanceId": "ID de instancia de actividad",
 			"objectTypeName": "Nombre del tipo de objeto",
 			"serializationDataFormat": "Formato de datos de serialización",
 			"confirmDelete": "¿Desea eliminar la variable?",
