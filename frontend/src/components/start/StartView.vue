@@ -34,6 +34,7 @@
         <StartViewItem v-if="tiles.includes('admin')" :to="{ name: 'usersManagement' }" :title="$t('start.admin.title')" :src="images.admin"
           :options="adminOptions"
         ></StartViewItem>
+        <StartViewItem v-if="tiles.includes('modeler')" :to="{ name: 'modeler' }" :title="$t('start.modeler.title')" :src="images.modeler"></StartViewItem>
         <component :is="StartViewPlugin" v-if="StartViewPlugin"></component>
       </div>
       <div v-if="!permissionsTaskList && !permissionsCockpit && !permissionsUsers">
@@ -56,6 +57,7 @@ import processImage from '@/assets/images/start/process.svg'
 import taskImage from '@/assets/images/start/task.svg'
 import managementImage from '@/assets/images/start/management.svg'
 import adminImage from '@/assets/images/start/admin.svg'
+import modelerImage from '@/assets/images/start/modeler.svg'
 
 export default {
   name: "StartView",
@@ -71,6 +73,7 @@ export default {
       images: {
         process: processImage,
         task: taskImage,
+        modeler: modelerImage,
         management: managementImage,
         admin: adminImage
       }
@@ -112,6 +115,9 @@ export default {
       }
       if (this.permissionsUsers) {
         tiles.push('admin')
+      }
+      if (this.permissionsModeler) {
+        tiles.push('modeler')
       }
       return tiles
     },

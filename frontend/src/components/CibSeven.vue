@@ -251,7 +251,20 @@ export default {
             }
           ]
         }, {
-          show: this.permissionsUsers && (this.permissionsTaskList || this.permissionsCockpit),
+          show: this.permissionsModeler && (this.permissionsTaskList || this.permissionsCockpit),
+          divider: true,
+        }, {
+          show: this.permissionsModeler,
+          groupTitle: 'start.modeler.title',
+          items: [{
+              to: '/seven/auth/modeler',
+              active: ['seven/auth/modeler'],
+              tooltip: 'start.modeler.tooltip',
+              title: 'start.modeler.title'
+            }
+          ]
+        }, {
+          show: this.permissionsUsers && (this.permissionsTaskList || this.permissionsCockpit || this.permissionsModeler),
           divider: true,
         }, {
           show: this.permissionsUsers,
