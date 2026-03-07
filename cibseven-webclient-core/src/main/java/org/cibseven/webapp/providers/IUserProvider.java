@@ -41,7 +41,8 @@ public interface IUserProvider {
 	public SevenVerifyUser verifyUser(StandardLogin login, CIBUser user) throws SystemException;
 	public Collection<User> findUsers(Optional<String> id, Optional<String> firstName, Optional<String> firstNameLike, Optional<String> lastName, Optional<String> lastNameLike,
 			Optional<String> email, Optional<String> emailLike, Optional<String> memberOfGroup, Optional<String> memberOfTenant, Optional<String> idIn,
-			Optional<String> firstResult, Optional<String> maxResults, Optional<String> sortBy, Optional<String> sortOrder, CIBUser user);
+			Optional<String> firstResult, Optional<String> maxResults, Optional<String> sortBy, Optional<String> sortOrder,
+			Optional<Boolean> likePatternIgnoreCase, CIBUser user);
 
 	public void createUser(NewUser user, CIBUser flowUser) throws InvalidUserIdException;
 	public void updateUserProfile(String userId, User user, CIBUser flowUser);
