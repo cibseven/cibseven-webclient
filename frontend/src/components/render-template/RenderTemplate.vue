@@ -220,7 +220,7 @@ export default {
       // Process HTTP error responses and display corresponding error messages
       let type = ''
       const errorParams = []
-      switch (data.status) {
+        switch (data.status) {
         case 404:
           if (data.type !== 'generic') {
             type = 'taskSelectedNotExist'
@@ -231,7 +231,7 @@ export default {
           errorParams.push(this.task.id)
           break
         default:
-          type = 'errorSaveTask'
+          type = 'SystemException'
       }
       this.$root.$refs.error.show({ type: type, params: errorParams })
       if (data.status === 404 && data.type !== 'generic')
