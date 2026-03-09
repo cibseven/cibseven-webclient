@@ -281,6 +281,7 @@
 			"valueSerialized": "Сериализованное значение",
 			"actions": "Действия",
 			"scope": "Область",
+			"activityInstanceId": "ID экземпляра активности",
 			"objectTypeName": "Имя типа объекта",
 			"serializationDataFormat": "Формат данных сериализации",
 			"confirmDelete": "Вы хотите удалить переменную?",

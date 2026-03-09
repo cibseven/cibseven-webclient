@@ -281,6 +281,7 @@
 			"valueSerialized": "Serialized value",
 			"actions": "Actions",
 			"scope": "Scope",
+			"activityInstanceId": "Activity instance ID",
 			"objectTypeName": "Object type name",
 			"serializationDataFormat": "Serialization data format",
 			"confirmDelete": "Do you want to delete the variable?",
