@@ -296,6 +296,14 @@ You may obtain a copy of the License at
 				<type>pom</type>
 				<version>${version.spring.boot}</version>
 			</dependency>
+
+			<!-- temporary override jackson-core version 2.19.4, referenced from springboot 3.5.11, to version 2.21.1 to fix CWE-770 -->
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-core</artifactId>
+				<version>2.21.1</version>
+			</dependency>
+			
 			<!-- Override log4j versions to fix security vulnerabilities -->
 			<dependency>
 				<groupId>org.apache.logging.log4j</groupId>
