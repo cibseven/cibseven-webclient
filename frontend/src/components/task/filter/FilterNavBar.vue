@@ -231,24 +231,24 @@ export default {
         let selectedFilter = this.$store.state.filter.list.find(f => {
           return f.id === filter.id
         })
-        try {
-          //Use of '*' as special character when we don't specify the filter on a link
-          selectedFilter = (!this.$route.params.filterId || this.$route.params.filterId === '*') && localStorage.getItem('filter') ?
-            JSON.parse(localStorage.getItem('filter')) : selectedFilter
-        } catch(error) {
-          console.error('Filter format wrong: corrected')
-          console.error(error)
-        }
-        if ((!this.$route.params.filterId || selectedFilter) || !selectedFilter) {
-          this.$store.state.filter.selected = selectedFilter || this.$store.state.filter.list[0]
-          this.$emit('selected-filter', this.$store.state.filter.selected.id)
-          localStorage.setItem('filter', JSON.stringify(this.$store.state.filter.selected))
-          const filterId = this.$route.params.filterId === '*' ? '*' : this.$store.state.filter.selected.id
-          const path = '/seven/auth/tasks/' + filterId + (taskId ? '/' + taskId : '')
-          if (this.$route.path !== path) {
-            this.isSelectingFilter = true
-            this.$router.replace(path)
+        if (!selectedFilter ) {
+          try {
+            //Use of '*' as special character when we don't specify the filter on a link
+            selectedFilter = (!this.$route.params.filterId || this.$route.params.filterId === '*') && localStorage.getItem('filter') ?
+              JSON.parse(localStorage.getItem('filter')) : selectedFilter
+          } catch(error) {
+            console.error('Filter format wrong: corrected')
+            console.error(error)
           }
+        }
+        this.$store.state.filter.selected = selectedFilter || this.$store.state.filter.list[0]
+        this.$emit('selected-filter', this.$store.state.filter.selected.id)
+        localStorage.setItem('filter', JSON.stringify(this.$store.state.filter.selected))
+        const filterId = this.$route.params.filterId === '*' ? '*' : this.$store.state.filter.selected.id
+        const path = '/seven/auth/tasks/' + filterId + (taskId ? '/' + taskId : '')
+        if (this.$route.path !== path) {
+          this.isSelectingFilter = true
+          this.$router.replace(path)
         }
         this.updateSelectedFilterTasksCountIfNeeded()
       }
