@@ -32,12 +32,17 @@
     </div>
     <div class="overflow-y-scroll bg-white container-fluid g-0 flex-grow-1">
       <FlowTable v-if="!loading" striped resizable thead-class="sticky-header" :items="filteredVariables" primary-key="id"
-        sort-by="name" :fields="[
-        { label: 'process-instance.variables.name', key: 'name', class: 'col-3', tdClass: 'py-1' },
-        { label: 'process-instance.variables.type', key: 'type', class: 'col-2', tdClass: 'py-1' },
-        { label: 'process-instance.variables.value', key: 'value', class: 'col-3', tdClass: 'py-1' },
-        { label: 'process-instance.variables.scope', key: 'scope', class: 'col-2', tdClass: 'py-1' },
-        { label: 'process-instance.variables.actions', key: 'actions', class: 'col-2', sortable: false, tdClass: 'py-0' }]">
+        native-layout
+        useCase="instance-variables"
+        :columns="['name', 'type', 'value', 'scope', 'actions']"
+        sort-by="name"
+        :column-definitions="[
+        { label: 'process-instance.variables.name', key: 'name', tdClass: 'py-1' },
+        { label: 'process-instance.variables.type', key: 'type', tdClass: 'py-1' },
+        { label: 'process-instance.variables.value', key: 'value', tdClass: 'py-1' },
+        { label: 'process-instance.variables.scope', key: 'scope', tdClass: 'py-1', groupSeparator: true },
+        { label: 'process-instance.variables.activityInstanceId', key: 'activityInstanceId', tdClass: 'py-1' },
+        { label: 'process-instance.variables.actions', key: 'actions', groupSeparator: true, disableToggle: true, sortable: false, tdClass: 'py-0 d-flex' }]">
 
         <template v-slot:cell(name)="table">
           <div :title="table.item.name" class="text-truncate">{{ table.item.name }}</div>
@@ -58,7 +63,21 @@
         </template>
 
         <template v-slot:cell(scope)="table">
-          <div :title="table.item.scope">{{ table.item.scope }}</div>
+          <CopyableActionButton
+            :displayValue="table.item.scope"
+            :clickable="false"
+            :title="$t('process-instance.variables.scope') + ':\n' + table.item.scope"
+            @copy="copyValueToClipboard"
+          />          
+        </template>
+
+        <template v-slot:cell(activityInstanceId)="table">
+          <CopyableActionButton
+            :displayValue="table.item.activityInstanceId"
+            :clickable="false"
+            :title="$t('process-instance.variables.activityInstanceId') + ':\n' + table.item.activityInstanceId"
+            @copy="copyValueToClipboard"
+          />
         </template>
 
         <template v-slot:cell(actions)="table">

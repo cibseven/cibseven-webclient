@@ -155,12 +155,15 @@
 		},
 		"emptyProcessList": "Ваш список процессов пуст.",
 		"emptyProcessListFiltered": "Нет процессов для применённого фильтра.",
+		"definitionVersionNotFound": "Версия определения процесса \"{0}\" не найдена. Будет использована последняя версия.",
+		"definitionNotFound": "Определение процесса с ключом \"{processKey}\" и ID тенанта \"{tenantId}\" не найдено.",
+		"instanceNotFound": "Экземпляр процесса с ID \"{instanceId}\" не найден.\nОтвет сервера:\n{error}",
 		"back": "Назад",
 		"incidentsCounter": "Инциденты: {0}",
 		"incidents": "Инциденты",
 		"variables": "Переменные",
 		"usertasks": "Пользовательские задачи",
-		"calledProcessInstances": "Называемые экземпляры процессов",
+		"calledProcessInstances": "Вызванные экземпляры процессов",
 		"onlyIncidents": {
 			"title": "Только с инцидентами",
 			"tooltip": "Показать только процессы с инцидентами"
@@ -278,6 +281,7 @@
 			"valueSerialized": "Сериализованное значение",
 			"actions": "Действия",
 			"scope": "Область",
+			"activityInstanceId": "ID экземпляра активности",
 			"objectTypeName": "Имя типа объекта",
 			"serializationDataFormat": "Формат данных сериализации",
 			"confirmDelete": "Вы хотите удалить переменную?",
@@ -1163,7 +1167,10 @@
 			"sendEmail": "Выслать письмо по смене пароля",
 			"id": "@:admin.users.id",
 			"changePassword": "Изменить пароль",
-			"emailSent": "Письмо со ссылкой для восстановления пароля было отправлено."
+			"emailSent": "Письмо со ссылкой для восстановления пароля было отправлено.",
+			"currentUserPassword": "Текущий пароль",
+			"newPassword": "Новый пароль",
+			"newPasswordRepeat": "Новый пароль (повторить)"
 		},
 		"policy": {
 			"title": "Политика паролей",
