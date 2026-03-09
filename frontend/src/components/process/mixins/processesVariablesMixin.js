@@ -103,7 +103,7 @@ export default {
 			this.loading = true
 			const variables = await serviceMap[service][method](this.selectedInstance.id, this.restFilter)
 			variables.forEach(v => {
-				v.scope = this.activityInstancesGrouped[v.activityInstanceId]
+				v.scope = this.activityInstancesGrouped[v.activityInstanceId] || v.activityInstanceId
 			})
 			variables.sort((a, b) => a.name.localeCompare(b.name))
 
