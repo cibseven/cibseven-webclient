@@ -164,7 +164,7 @@ const appRoutes = [
         { path: 'start', name: 'start', component: StartView },
 
         // Modeler
-        { path: 'modeler', name: 'modeler', beforeEnter: modelerGuard, component: ModelerView, meta: { title: 'start.modeler.title' } },
+        { path: 'modeler/:diagramId?', name: 'modeler', beforeEnter: modelerGuard, component: ModelerView, meta: { title: 'start.modeler.title' } },
 
         { path: 'account/:userId', name: 'account', beforeEnter: (to, from, next) => {
             permissionsDeniedGuard('userProfile')(to, from, result => {
