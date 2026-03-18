@@ -13,6 +13,11 @@ spring:
     open-in-view: false
     hibernate:
       ddl-auto: validate
+    properties:
+      hibernate:
+        integration:
+          envers:
+            enabled: false
   flyway:
     # Flyway is the single source of truth for schema management and migrations
     enabled: false
