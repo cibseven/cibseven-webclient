@@ -209,7 +209,24 @@ export default {
       }
     },
     async loadProcessDefinitionFromRoute() {
-      await ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.tenantId, this.$root.config.lazyLoadHistory).then(async versions => {
+
+      let tenantId = this.tenantId
+      
+      if (this.instanceId) {
+        await this.loadInstanceById(this.instanceId)
+        if (this.selectedInstance) {
+          // instance found, load its process definition
+          await ProcessService.findProcessById(this.selectedInstance.processDefinitionId, true).then(process => {
+            this.process = process
+          })
+          if (this.process) {
+            await this.loadStatistics()
+            tenantId = this.process.tenantId
+          }
+        }
+      }
+
+      await ProcessService.findProcessVersionsByDefinitionKey(this.processKey, tenantId, this.$root.config.lazyLoadHistory).then(async versions => {
         this.processDefinitions = versions
         const needCalcStats = this.process == null
         if (needCalcStats) {
