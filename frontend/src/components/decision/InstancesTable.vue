@@ -45,7 +45,7 @@
         :display-value="table.item.processDefinitionKey"
         :title="$t('decision.callingProcess') + ':\n' + table.item.processDefinitionKey"
         @copy="copyValueToClipboard"
-        @click="goToProcessDefinition(table.item)"
+        :to="getProcessDefinitionRoute(table.item)"
       />
     </template>
 
@@ -76,7 +76,6 @@ import { permissionsMixin } from '@/permissions.js'
 import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { FlowTable, SuccessAlert, CopyableActionButton } from '@cib/common-frontend'
-import { HistoryService } from '@/services.js'
 import { mapMutations, mapGetters } from 'vuex'
 
 export default {
@@ -105,19 +104,13 @@ export default {
         }
       })
     },
-    async goToProcessDefinition(instance) {
-      const processData = await HistoryService.findProcessInstance(instance.processInstanceId)
-      this.$router.push({
-        name: 'process',
+    getProcessDefinitionRoute(instance) {
+      return {
+        name: 'process-definition-id',
         params: {
-          processKey: processData.processDefinitionKey,
-          versionIndex: processData.processDefinitionVersion
-        },
-        query: {
-          ...(processData.tenantId ? { tenantId: processData.tenantId } : {}),
-          tab: 'instances',
+          definitionId: instance.processDefinitionId,
         }
-      })
+      }
     }
   }
 }
