@@ -37,12 +37,13 @@
         :columns="['name', 'type', 'value', 'scope', 'actions']"
         sort-by="name"
         :column-definitions="[
-        { label: 'process-instance.variables.name', key: 'name', tdClass: 'py-1' },
-        { label: 'process-instance.variables.type', key: 'type', tdClass: 'py-1' },
-        { label: 'process-instance.variables.value', key: 'value', tdClass: 'py-1' },
-        { label: 'process-instance.variables.scope', key: 'scope', tdClass: 'py-1', groupSeparator: true },
-        { label: 'process-instance.variables.activityInstanceId', key: 'activityInstanceId', tdClass: 'py-1' },
-        { label: 'process-instance.variables.actions', key: 'actions', groupSeparator: true, disableToggle: true, sortable: false, tdClass: 'py-0 d-flex' }]">
+          { label: 'process-instance.variables.name', key: 'name', tdClass: 'pb-0' },
+          { label: 'process-instance.variables.type', key: 'type', tdClass: 'pb-0' },
+          { label: 'process-instance.variables.value', key: 'value', tdClass: 'pb-0' },
+          { label: 'process-instance.variables.scope', key: 'scope', tdClass: 'pb-0', groupSeparator: true },
+          { label: 'process-instance.variables.activityInstanceId', key: 'activityInstanceId', tdClass: 'pb-0' },
+          { label: 'process-instance.variables.actions', key: 'actions', groupSeparator: true, disableToggle: true, sortable: false, tdClass: 'py-0' },
+        ]">
 
         <template v-slot:cell(name)="table">
           <div :title="table.item.name" class="text-truncate">{{ table.item.name }}</div>
@@ -81,22 +82,24 @@
         </template>
 
         <template v-slot:cell(actions)="table">
-          <component :is="VariablesTableActionsPlugin" v-if="VariablesTableActionsPlugin" :table-item="table.item" :selected-instance="selectedInstance" :file-objects="fileObjects"></component>
-          <CellActionButton v-if="isFile(table.item)" :title="displayValueTooltip(table.item)"
-            icon="mdi-download-outline"
-            @click="downloadFile(table.item)">
-          </CellActionButton>
-          <CellActionButton v-if="isFile(table.item) && isActiveInstance" :title="$t('process-instance.upload')"
-            icon="mdi-upload-outline"
-            @click="selectedVariable = table.item; $refs.uploadFile.show()">
-          </CellActionButton>
-          <CellActionButton v-if="'File' !== table.item.type && !isFileValueDataSource(table.item)"
-            :title="$t(isActiveInstance ? 'process-instance.edit' : 'process-instance.variables.historicVariable.tooltip')" 
-            :icon="isActiveInstance ? 'mdi-square-edit-outline' : 'mdi-eye-outline'"
-            @click="modifyVariable(table.item)">
-          </CellActionButton>
-          <CellActionButton v-if="hasDeletionPermission" :title="$t('confirm.delete')" 
-            icon="mdi-delete-outline" @click="deleteVariable(table.item)"></CellActionButton>
+          <div class="d-flex">
+            <component :is="VariablesTableActionsPlugin" v-if="VariablesTableActionsPlugin" :table-item="table.item" :selected-instance="selectedInstance" :file-objects="fileObjects"></component>
+            <CellActionButton v-if="isFile(table.item)" :title="displayValueTooltip(table.item)"
+              icon="mdi-download-outline"
+              @click="downloadFile(table.item)">
+            </CellActionButton>
+            <CellActionButton v-if="isFile(table.item) && isActiveInstance" :title="$t('process-instance.upload')"
+              icon="mdi-upload-outline"
+              @click="selectedVariable = table.item; $refs.uploadFile.show()">
+            </CellActionButton>
+            <CellActionButton v-if="'File' !== table.item.type && !isFileValueDataSource(table.item)"
+              :title="$t(isActiveInstance ? 'process-instance.edit' : 'process-instance.variables.historicVariable.tooltip')" 
+              :icon="isActiveInstance ? 'mdi-square-edit-outline' : 'mdi-eye-outline'"
+              @click="modifyVariable(table.item)">
+            </CellActionButton>
+            <CellActionButton v-if="hasDeletionPermission" :title="$t('confirm.delete')" 
+              icon="mdi-delete-outline" @click="deleteVariable(table.item)"></CellActionButton>
+          </div>
         </template>
       </FlowTable>
       <div v-else>
