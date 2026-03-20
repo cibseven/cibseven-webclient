@@ -16,6 +16,15 @@
  */
 import { describe, it, expect } from 'vitest'
 import { permissionsMixin } from '../permissions.js'
+import {
+  AUTH_TYPE_GLOBAL,
+  AUTH_TYPE_GRANT,
+  AUTH_TYPE_REVOKE,
+  getPermissionsProcessed,
+  buildPermissionsChecks,
+  checkPermissionsAllowed,
+  checkPermissionsDenied,
+} from '../utils/permissionsUtils.js'
 
 // ---------------------------------------------------------------------------
 // Realistic permission config from config.json / config.js defaults
@@ -46,11 +55,16 @@ const configPermissions = {
 // Helpers to build realistic server-side authorization objects
 // ---------------------------------------------------------------------------
 function allow(resourceId, permissions, { userId = 'demo', groupId = null } = {}) {
-  return { userId, groupId, resourceId, permissions, type: 1 }
+  return { userId, groupId, resourceId, permissions, type: AUTH_TYPE_GRANT }
 }
 
 function deny(resourceId, permissions, { userId = 'demo', groupId = null } = {}) {
-  return { userId, groupId, resourceId, permissions, type: 2 }
+  return { userId, groupId, resourceId, permissions, type: AUTH_TYPE_REVOKE }
+}
+
+/** Global authorization (type 0): applies to all users, userId and groupId are null */
+function global(resourceId, permissions) {
+  return { userId: null, groupId: null, resourceId, permissions, type: AUTH_TYPE_GLOBAL }
 }
 
 // ---------------------------------------------------------------------------
@@ -389,4 +403,169 @@ describe('tasksByPermissions', () => {
     expect(result).toHaveLength(tasks.length)
   })
 })
+
+// ---------------------------------------------------------------------------
+// permissionsUtils — getPermissionsProcessed (unit tests for the pure helper)
+// ---------------------------------------------------------------------------
+describe('getPermissionsProcessed', () => {
+  it('returns empty granted/revoked for empty input', () => {
+    expect(getPermissionsProcessed([], ['READ'])).toEqual({ granted: [], revoked: [] })
+    expect(getPermissionsProcessed(null, ['READ'])).toEqual({ granted: [], revoked: [] })
+  })
+
+  it('adds resourceId to granted when all required perms are present in a GRANT entry', () => {
+    const entries = [allow('task-1', ['READ', 'UPDATE'])]
+    const result = getPermissionsProcessed(entries, ['READ', 'UPDATE'])
+    expect(result.granted).toContain('task-1')
+    expect(result.revoked).toHaveLength(0)
+  })
+
+  it('does NOT grant when only some (not all) required perms are present', () => {
+    const entries = [allow('task-1', ['READ'])]
+    const result = getPermissionsProcessed(entries, ['READ', 'UPDATE'])
+    expect(result.granted).not.toContain('task-1')
+  })
+
+  it('grants when entry has ALL permission', () => {
+    const entries = [allow('*', ['ALL'])]
+    const result = getPermissionsProcessed(entries, ['READ', 'UPDATE'])
+    expect(result.granted).toContain('*')
+  })
+
+  it('adds resourceId to revoked for REVOKE entry when any required perm matches', () => {
+    const entries = [deny('task-1', ['READ'])]
+    const result = getPermissionsProcessed(entries, ['READ', 'UPDATE'])
+    expect(result.revoked).toContain('task-1')
+    expect(result.granted).toHaveLength(0)
+  })
+
+  it('includes GLOBAL (type 0) entries — previously excluded due to null userId/groupId', () => {
+    const entries = [global('*', ['ALL'])]
+    const result = getPermissionsProcessed(entries, ['READ'])
+    expect(result.granted).toContain('*')
+    expect(result.revoked).toHaveLength(0)
+  })
+
+  it('global (type 0) grant for specific resource ID is included in granted', () => {
+    const entries = [global('task-1', ['READ'])]
+    const result = getPermissionsProcessed(entries, ['READ'])
+    expect(result.granted).toContain('task-1')
+  })
+
+  it('deduplicates resource IDs in granted/revoked', () => {
+    const entries = [
+      allow('task-1', ['READ', 'UPDATE']),
+      allow('task-1', ['ALL'], { userId: null, groupId: 'group-a' }),
+    ]
+    const result = getPermissionsProcessed(entries, ['READ', 'UPDATE'])
+    expect(result.granted.filter(id => id === 'task-1')).toHaveLength(1)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// permissionsUtils — checkPermissionsAllowed / checkPermissionsDenied
+// ---------------------------------------------------------------------------
+describe('checkPermissionsAllowed', () => {
+  it('returns true when authorizationEnabled is false', () => {
+    expect(checkPermissionsAllowed('any', null, [], false)).toBe(true)
+  })
+
+  it('returns false when permissionsCheck is empty', () => {
+    expect(checkPermissionsAllowed('any', null, [], true)).toBe(false)
+  })
+
+  it('returns true when value is in granted and not in revoked', () => {
+    const checks = [{ granted: ['task-1'], revoked: [] }]
+    expect(checkPermissionsAllowed({ id: 'task-1' }, 'id', checks, true)).toBe(true)
+  })
+
+  it('returns true when wildcard is in granted and value is not revoked', () => {
+    const checks = [{ granted: ['*'], revoked: [] }]
+    expect(checkPermissionsAllowed({ id: 'task-99' }, 'id', checks, true)).toBe(true)
+  })
+
+  it('returns false when value is in revoked even if granted', () => {
+    const checks = [{ granted: ['task-1', '*'], revoked: ['task-1'] }]
+    expect(checkPermissionsAllowed({ id: 'task-1' }, 'id', checks, true)).toBe(false)
+  })
+
+  it('returns false when wildcard is revoked', () => {
+    const checks = [{ granted: ['*'], revoked: ['*'] }]
+    expect(checkPermissionsAllowed({ id: 'task-1' }, 'id', checks, true)).toBe(false)
+  })
+})
+
+describe('checkPermissionsDenied', () => {
+  it('returns false when authorizationEnabled is false', () => {
+    const checks = [{ granted: [], revoked: ['*'] }]
+    expect(checkPermissionsDenied('any', null, checks, false)).toBe(false)
+  })
+
+  it('returns true when value is explicitly revoked', () => {
+    const checks = [{ granted: [], revoked: ['task-1'] }]
+    expect(checkPermissionsDenied({ id: 'task-1' }, 'id', checks, true)).toBe(true)
+  })
+
+  it('returns true when wildcard is revoked', () => {
+    const checks = [{ granted: [], revoked: ['*'] }]
+    expect(checkPermissionsDenied({ id: 'any-task' }, 'id', checks, true)).toBe(true)
+  })
+
+  it('returns false when nothing is revoked', () => {
+    const checks = [{ granted: ['*'], revoked: [] }]
+    expect(checkPermissionsDenied({ id: 'task-1' }, 'id', checks, true)).toBe(false)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Global (type 0) authorization — integration via the mixin
+// ---------------------------------------------------------------------------
+describe('global authorization (type 0) via permissionsMixin', () => {
+  it('applicationPermissions returns true when a GLOBAL grant covers the application', () => {
+    const ctx = createContext({
+      application: [global('*', ['ALL'])],
+    })
+    expect(ctx.applicationPermissions(configPermissions.tasklist, 'tasklist')).toBe(true)
+    expect(ctx.applicationPermissions(configPermissions.cockpit,  'cockpit')).toBe(true)
+  })
+
+  it('applicationPermissions returns true for specific resource with GLOBAL grant', () => {
+    const ctx = createContext({
+      application: [global('tasklist', ['ACCESS'])],
+    })
+    expect(ctx.applicationPermissions(configPermissions.tasklist, 'tasklist')).toBe(true)
+    expect(ctx.applicationPermissions(configPermissions.cockpit,  'cockpit')).toBe(false)
+  })
+
+  it('applicationPermissions returns false when access is specifically revoked despite a wildcard grant', () => {
+    const ctx = createContext({
+      application: [
+        allow('*', ['ALL']),
+        deny('tasklist', ['ACCESS']),
+      ],
+    })
+    expect(ctx.applicationPermissions(configPermissions.tasklist, 'tasklist')).toBe(false)
+    expect(ctx.applicationPermissions(configPermissions.cockpit,  'cockpit')).toBe(true)
+  })
+
+  it('processesByPermissions marks processes as allowed via GLOBAL grant', () => {
+    const ctx = createContext({
+      processDefinition: [global('*', ['ALL'])],
+    })
+    const processes = [
+      { key: 'proc-a' },
+      { key: 'proc-b' },
+    ]
+    const result = ctx.processesByPermissions(configPermissions.displayProcess, JSON.parse(JSON.stringify(processes)))
+    result.forEach(p => expect(p.revoked).toBe(false))
+  })
+
+  it('adminManagementPermissions returns true via GLOBAL grant on user resource', () => {
+    const ctx = createContext({
+      user: [global('*', ['ALL'])],
+    })
+    expect(ctx.adminManagementPermissions(configPermissions.usersManagement, 'user')).toBe(true)
+  })
+})
+
 
