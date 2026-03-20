@@ -29,7 +29,9 @@ export {
   buildPermissionsChecks,
   checkPermissionsAllowed,
   checkPermissionsDenied,
+  checkActionAllowed,
 } from '@/utils/permissionsUtils.js'
+export { ACTION_PERMISSIONS, toConfigPermissions } from '@/utils/actionPermissions.js'
 export { default as registerComponents } from './register.js'
 export { default as store, modules as storeModules } from '@/store'
 export { debounce } from '@/utils/debounce.js'

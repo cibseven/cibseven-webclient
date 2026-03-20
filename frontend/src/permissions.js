@@ -18,7 +18,9 @@ import {
 	buildPermissionsChecks,
 	checkPermissionsAllowed,
 	checkPermissionsDenied,
+	checkActionAllowed,
 } from './utils/permissionsUtils.js'
+import { ACTION_PERMISSIONS } from './utils/actionPermissions.js'
 
 const permissionsMixin = {
 	methods: {
@@ -85,6 +87,27 @@ const permissionsMixin = {
 		adminManagementPermissions: function(permissionsRequired, access) {
 			const permissionsCheck = buildPermissionsChecks(permissionsRequired, this.$root.user.permissions)
 			return checkPermissionsAllowed(access, null, permissionsCheck, this.$root.config.authorizationEnabled)
+		},
+		/**
+		 * Check whether the current user is allowed to perform a named action on a
+		 * specific resource, using the centralized ACTION_PERMISSIONS registry.
+		 *
+		 * Supports both conjunctive (AND) and disjunctive (OR) permission definitions:
+		 *   • Plain-object action  – all resource types must grant access.
+		 *   • Array-of-alternatives – any single alternative is sufficient.
+		 *
+		 * @param {string} actionName   Key from ACTION_PERMISSIONS (e.g. 'deleteProcessInstance').
+		 * @param {string} resourceId   The resource identifier to check against
+		 *                              (e.g. the process definition key or task ID).
+		 * @returns {boolean}
+		 */
+		checkActionPermission: function(actionName, resourceId) {
+			const actionDef = ACTION_PERMISSIONS[actionName]
+			if (actionDef === undefined) {
+				console.warn(`[permissionsMixin] checkActionPermission: unknown action "${actionName}". Check ACTION_PERMISSIONS in actionPermissions.js.`)
+				return false
+			}
+			return checkActionAllowed(actionDef, resourceId, this.$root.user.permissions, this.$root.config.authorizationEnabled)
 		},
 	}
 }

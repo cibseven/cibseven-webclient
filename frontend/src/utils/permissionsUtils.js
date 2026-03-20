@@ -149,6 +149,36 @@ function checkPermissionsDenied(object, key, permissionsCheck, authorizationEnab
 	})
 }
 
+/**
+ * Check whether a given resource is permitted for a particular action, handling
+ * both conjunctive (AND) and disjunctive (OR) action permission definitions.
+ *
+ * @param {Object|Array} actionDef
+ *   The action's entry from ACTION_PERMISSIONS.
+ *   • Plain object  { resourceType: ['PERM', …] } – conjunctive: ALL resource types must grant.
+ *   • Array  [{ resourceType: ['PERM'] }, …]       – disjunctive: ANY alternative must grant.
+ * @param {string}  resourceId         The resource identifier to check (e.g. process definition key).
+ * @param {Object}  userPermissions    The current user's raw authorization entries, keyed by resource type.
+ * @param {boolean} authorizationEnabled  When false every check returns true.
+ * @returns {boolean}
+ */
+function checkActionAllowed(actionDef, resourceId, userPermissions, authorizationEnabled) {
+	if (!authorizationEnabled) return true
+	if (!actionDef) return false
+
+	if (Array.isArray(actionDef)) {
+		// Disjunctive: at least one alternative must grant access
+		return actionDef.some(function(alternative) {
+			const checks = buildPermissionsChecks(alternative, userPermissions)
+			return checkPermissionsAllowed(resourceId, null, checks, true)
+		})
+	}
+
+	// Conjunctive: every resource type must grant access
+	const checks = buildPermissionsChecks(actionDef, userPermissions)
+	return checkPermissionsAllowed(resourceId, null, checks, true)
+}
+
 export {
 	AUTH_TYPE_GLOBAL,
 	AUTH_TYPE_GRANT,
@@ -158,4 +188,5 @@ export {
 	buildPermissionsChecks,
 	checkPermissionsAllowed,
 	checkPermissionsDenied,
+	checkActionAllowed,
 }
