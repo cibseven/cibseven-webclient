@@ -45,13 +45,15 @@
           @search-filter="search = $event" @refresh-tasks="listTasksWithFilter()" @refresh-tasks-number="refreshTasksNumber"></TasksNavBar>
       </template>
 
-      <transition name="slide-in" mode="out-in">
-        <router-view v-if="task !== null" role="region" :aria-label="$t('task.selectedTask')" ref="down" class="h-100" style="overflow-y: auto" v-slot="{ Component }">
+      <router-view v-if="task !== null" role="region" :aria-label="$t('task.selectedTask')" ref="down" class="h-100" style="overflow-y: auto" v-slot="{ Component }">
+        <transition name="slide-in" mode="out-in">
           <component :is="Component" ref="taskComponent" @update-task="updateTask($event)"
             @update-assignee="updateAssignee($event, 'taskList')" :task="task" @complete-task="completedTask($event)" />
-        </router-view>
-        <BWaitingBox v-else-if="task === null && $route.query.externalMode !== undefined" class="h-100 d-flex justify-content-center" styling="width:20%"></BWaitingBox>
-        <div v-else class="text-secondary text-center">
+        </transition>
+      </router-view>
+      <transition name="slide-in" mode="out-in">
+        <BWaitingBox v-if="task === null && $route.query.externalMode !== undefined" class="h-100 d-flex justify-content-center" styling="width:20%"></BWaitingBox>
+        <div v-else-if="task === null" class="text-secondary text-center">
           <img alt="" src="@/assets/images/task/tasklist_empty.svg" class="mt-5" style="max-width: 250px">
           <h3 class="h5">{{ $t('seven.selectTask') }}</h3>
         </div>
@@ -244,7 +246,7 @@ export default {
       const taskSorting = [JSON.parse(localStorage.getItem('taskSorting'))]
       //If necessary we add the created extra sorting so the data is well sorted
       if (taskSorting[0].sortBy !== 'created') taskSorting.push({ sortBy: 'created', sortOrder: 'desc' })
-      const filters = { sorting: taskSorting }
+      const filters = { sorting: taskSorting, likePatternIgnoreCase: true }
       if (this.search) {
         filters.orQueries = splitToWords(this.search).map((searchQuery) => ({
             nameLike: '%' + searchQuery + '%',

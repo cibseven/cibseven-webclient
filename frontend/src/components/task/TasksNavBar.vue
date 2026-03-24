@@ -98,11 +98,11 @@
             <b-list-group-item @click="selectedTask(task)" v-for="task of tasksFiltered" :key="task.id" :ref="'taskItem-' + task.id"
               @mouseenter="focused = task" @focusin="focused = task"
               @mouseleave="focused = null" @focusout="focused = null"
-              class="rounded-0 mt-3 p-2 bg-white border-0" :class="task.id === $route.params.taskId ? 'active shadow' : ''" draggable="false"
+              class="rounded-0 mt-3 p-2 bg-white border-0 text-break" :class="task.id === $route.params.taskId ? 'active shadow' : ''" draggable="false"
               tabindex=0 style="cursor: pointer" v-on:keyup.enter="selectedTask(task)" action>
               <div class="d-flex align-items-center">
                 <h3 class="h6" style="max-width: 100%; font-size: 1rem">
-                  <HighlightedText :text="task.name" :keyword="search" class="fw-bold">{{ task.name }}</HighlightedText>
+                  <HighlightedText :text="task.name" :keyword="search" class="fw-bold" style="min-width: 0">{{ task.name }}</HighlightedText>
                 </h3>
                 <div class="d-flex ms-auto">
                   <b-button
@@ -122,9 +122,9 @@
                 </div>
               </div>
               <div v-if="task.businessKey && $root.config.layout.showBusinessKey" class="d-flex align-items-center mb-1">
-                <HighlightedText :text="task.businessKey" :keyword="search" :title="$t('process.businessKey') + ': ' + task.businessKey"/>
+                <HighlightedText :text="task.businessKey" :keyword="search" :title="$t('process.businessKey') + ': ' + task.businessKey" style="min-width: 0"/>
               </div>
-              <div v-if="getProcessName(task.processDefinitionId)" class="fw-normal h5">
+              <div v-if="getProcessName(task.processDefinitionId)" class="fw-normal h5"  style="min-width: 0">
                 {{ getProcessName(task.processDefinitionId) }}
               </div>
               <div class="d-flex align-items-center">

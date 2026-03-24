@@ -37,6 +37,44 @@ async function getRuntimeProcessInstanceData(instanceId) {
   })
 }
 
+export async function redirectToProcessDefinition(router, to, from, next) {
+  const cockpitAvailable = router.root.applicationPermissions(router.root.config.permissions['cockpit'], 'cockpit')
+  if (cockpitAvailable) {
+    const definitionId = to.params.definitionId
+    await ProcessService.findProcessById(definitionId, false).then(processDefinition => {
+      next({
+        name: 'process',
+        params: {
+          processKey: processDefinition.key,
+          versionIndex: processDefinition.version,
+        },
+        query: {
+          ...to.query,
+          ...(processDefinition.tenantId ? { tenantId: processDefinition.tenantId } : {}),
+          tab: to.query?.tab || 'instances',
+        }
+      })
+    }).catch(() => {
+      next({
+        name: 'not-found-definitionId',
+        query: {
+          definitionId,
+          refPath: from.fullPath,
+        }
+      })
+    })
+  }
+  else {
+    next({
+      name: 'no-permission',
+      query: {
+        permission: 'cockpit',
+        refPath: from.fullPath,
+      }
+    })
+  }
+}
+
 export async function redirectToProcessInstance(router, to, from, next) {
   const instanceId = to.params.instanceId
   const cockpitAvailable = router.root.applicationPermissions(router.root.config.permissions['cockpit'], 'cockpit')

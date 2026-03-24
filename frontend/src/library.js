@@ -60,6 +60,7 @@ export { default as tabUrlMixin } from '@/components/process/mixins/tabUrlMixin.
 export { default as usersMixin } from '@/mixins/usersMixin.js'
 export { default as copyToClipboardMixin } from '@/mixins/copyToClipboardMixin.js'
 export { default as assigneeMixin } from '@/mixins/assigneeMixin.js'
+export { default as navigationPermissionsMixin } from '@/mixins/navigationPermissionsMixin.js'
 
 // components
 export { default as CibSeven } from '@/components/CibSeven.vue'
@@ -177,6 +178,7 @@ export { default as JobsTable } from '@/components/process/tables/JobsTable.vue'
 export { default as JobDueDateModal } from '@/components/process/modals/JobDueDateModal.vue'
 export { default as ViewerFrame } from '@/components/common-components/ViewerFrame.vue'
 export { default as RemovableBadge } from '@/components/common-components/RemovableBadge.vue'
+export { default as WarningBox } from '@/components/common-components/WarningBox.vue'
 
 // re-export common frontend library
 export * from '@cib/common-frontend'
