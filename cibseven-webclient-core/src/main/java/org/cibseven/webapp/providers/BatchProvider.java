@@ -29,7 +29,7 @@ import org.cibseven.webapp.rest.model.HistoryBatch;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 @Component
 public class BatchProvider extends SevenProviderBase implements IBatchProvider {

@@ -69,8 +69,8 @@ public class DecisionService extends BaseService implements InitializingBean {
 	SevenProvider sevenProvider;
 	
 	public void afterPropertiesSet() {
-		if (bpmProvider instanceof SevenProvider)
-			sevenProvider = (SevenProvider) bpmProvider;
+		if (bpmProvider instanceof SevenProvider provider)
+			sevenProvider = provider;
 		else throw new SystemException("DecisionService expects a BpmProvider");
 	}
 	

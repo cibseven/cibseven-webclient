@@ -38,7 +38,7 @@ import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.ResourceHttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.context.request.ServletWebRequest;
@@ -51,9 +51,9 @@ import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.mvc.WebContentInterceptor;
 
-import com.fasterxml.jackson.core.StreamReadConstraints;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import tools.jackson.core.StreamReadConstraints;
+import tools.jackson.core.json.JsonFactory;
+import tools.jackson.databind.json.JsonMapper;
 
 @Configuration
 @ConditionalOnProperty(
@@ -71,15 +71,16 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 	int jacksonParserMaxSize;
 
     @Bean
-    public ObjectMapper objectMapper() {
-        ObjectMapper objectMapper = new ObjectMapper();
+    public JsonMapper objectMapper() {
         StreamReadConstraints streamReadConstraints = StreamReadConstraints
                 .builder()
                 .maxStringLength(jacksonParserMaxSize)
                 .build();
-        objectMapper.getFactory().setStreamReadConstraints(streamReadConstraints);
-        objectMapper.registerModule(new JavaTimeModule());
-        return objectMapper;
+        JsonFactory jsonFactory = JsonFactory.builder()
+                .streamReadConstraints(streamReadConstraints)
+                .build();
+        return JsonMapper.builder(jsonFactory)
+                .build();
     }
 
 	@Override
@@ -88,9 +89,7 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 		converters.add(new StringHttpMessageConverter(StandardCharsets.UTF_8)); // needed for UiService
 		converters.add(new ByteArrayHttpMessageConverter()); // needed for fetching data variables
 		converters.add(new FormHttpMessageConverter());
-        MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
-		converter.setObjectMapper(objectMapper());
-		converters.add(converter);
+		converters.add(new JacksonJsonHttpMessageConverter(objectMapper()));
 	}
 
 	@Override

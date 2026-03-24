@@ -37,10 +37,13 @@ import org.cibseven.webapp.rest.model.UserGroup;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -60,8 +63,8 @@ public class AdminService extends BaseService implements InitializingBean {
 	SevenProvider sevenProvider;
 	
 	public void afterPropertiesSet() {
-		if (bpmProvider instanceof SevenProvider)
-			sevenProvider = (SevenProvider) bpmProvider;
+		if (bpmProvider instanceof SevenProvider provider)
+			sevenProvider = provider;
 		else throw new SystemException("AdminService expects a BpmProvider");
 	}	
 	
@@ -69,7 +72,7 @@ public class AdminService extends BaseService implements InitializingBean {
 		summary = "Get a user based on filters",
 		description  = "<strong>Return: User/s")
 	@ApiResponse(responseCode = "404", description = "User not found")
-	@RequestMapping(value = "/user", method = RequestMethod.GET)
+	@GetMapping("/user")
 	public Collection<User> findUsers(
 	@Parameter(description = "User Id") @RequestParam Optional<String> id,
 	@Parameter(description = "User first name") @RequestParam Optional<String> firstName,
@@ -105,7 +108,7 @@ public class AdminService extends BaseService implements InitializingBean {
 		summary = "Create user",
 		description  = "Request body: User" + "<br>" +
 			"<strong>Return:</strong> 204 No Content")
-	@RequestMapping(value = "/user/create", method = RequestMethod.POST)
+	@PostMapping("/user/create")
 	public ResponseEntity<Void> createUser(
 			@RequestBody NewUser user,
 			Locale loc, CIBUser flowUser) {
@@ -130,7 +133,7 @@ public class AdminService extends BaseService implements InitializingBean {
 			description = "Request body: User" + "<br>" +
 			"<strong>Return:</strong> 204 No Content")
 	@ApiResponse(responseCode = "404", description = "User not found")
-	@RequestMapping(value = "/user/{userId}/profile", method = RequestMethod.PUT)
+	@PutMapping("/user/{userId}/profile")
 	public ResponseEntity<Void> updateUserProfile(
 			@Parameter(description = "User Id") @PathVariable String userId, 
 			@RequestBody User user, 
@@ -154,7 +157,7 @@ public class AdminService extends BaseService implements InitializingBean {
 			summary = "Add user to a group",
 			description = "<strong>Return:</strong> 204 No Content")
 	@ApiResponse(responseCode = "404", description = "Group or user not found")
-	@RequestMapping(value = "/group/{groupId}/members/{userId}", method = RequestMethod.PUT)
+	@PutMapping("/group/{groupId}/members/{userId}")
 	public ResponseEntity<Void> addMemberToGroup(
 			@Parameter(description = "Group Id") @PathVariable String groupId, 
 			@Parameter(description = "User Id") @PathVariable String userId, 
@@ -179,7 +182,7 @@ public class AdminService extends BaseService implements InitializingBean {
 			summary = "Delete user from a group",
 			description = "<strong>Return:</strong> 204 No Content")
 	@ApiResponse(responseCode = "404", description = "Group or user not found")
-	@RequestMapping(value = "/group/{groupId}/members/{userId}", method = RequestMethod.DELETE)
+	@DeleteMapping("/group/{groupId}/members/{userId}")
 	public ResponseEntity<Void> deleteMemberFromGroup(
 			@Parameter(description = "Group Id") @PathVariable String groupId, 
 			@Parameter(description = "User Id") @PathVariable String userId, 
@@ -207,7 +210,7 @@ public class AdminService extends BaseService implements InitializingBean {
 			description = "Request body: A JSON object with the following properties: password and authenticatedUserPassword" + "<br>" +
 			"<strong>Return:</strong> 204 No Content")
 	@ApiResponse(responseCode = "404", description  = "User not found")
-	@RequestMapping(value = "/user/{userId}/credentials", method = RequestMethod.PUT)
+	@PutMapping("/user/{userId}/credentials")
 	public ResponseEntity<Void> updateUserCredentials(
 			@Parameter(description = "User Id") @PathVariable String userId, 
 			@RequestBody Map<String, Object> data, 
@@ -230,7 +233,7 @@ public class AdminService extends BaseService implements InitializingBean {
 			summary = "Delete a user by Id",
 			description = "<strong>Return:</strong> 204 No Content")
 	@ApiResponse(responseCode = "404", description = "This user does not exist")
-	@RequestMapping(value = "/user/{userId}", method = RequestMethod.DELETE)
+	@DeleteMapping("/user/{userId}")
 	public ResponseEntity<Void> deleteUser(
 			@Parameter(description = "User Id") @PathVariable String userId, 
 			Locale loc, CIBUser user) {
@@ -244,7 +247,7 @@ public class AdminService extends BaseService implements InitializingBean {
 			summary = "Get a group based on filters",
 			description = "<strong>Return: Collection of groups")
 	@ApiResponse(responseCode = "404", description = "Group not found")
-	@RequestMapping(value = "/group", method = RequestMethod.GET)
+	@GetMapping("/group")
 	public Collection<UserGroup> findGroups(
 			@Parameter(description = "Group Id") @RequestParam Optional<String> id, 
 			@Parameter(description = "Group name") @RequestParam Optional<String> name,
@@ -308,7 +311,7 @@ public class AdminService extends BaseService implements InitializingBean {
 			summary = "Create group",
 			description = "Request body: A JSON object with the following properties: id, name and type" + "<br>" +
 			"<strong>Return:</strong> 204 No Content")
-	@RequestMapping(value = "/group/create", method = RequestMethod.POST)
+	@PostMapping("/group/create")
 	public ResponseEntity<Void> createGroup(
 			@RequestBody UserGroup group,
 			Locale loc, CIBUser user) {
@@ -333,7 +336,7 @@ public class AdminService extends BaseService implements InitializingBean {
 			description = "Request body: A JSON object with the following properties: id, name and type" + "<br>" +
 			"<strong>Return:</strong> 204 No Content")
 	@ApiResponse(responseCode = "404", description = "Group not found")
-	@RequestMapping(value = "/group/{groupId}", method = RequestMethod.PUT)
+	@PutMapping("/group/{groupId}")
 	public ResponseEntity<Void> updateGroup(
 			@Parameter(description = "Group Id") @PathVariable String groupId, 
 			@RequestBody UserGroup group, 
@@ -356,7 +359,7 @@ public class AdminService extends BaseService implements InitializingBean {
 			summary = "Delete a group by Id",
 			description = "<strong>Return:</strong> 204 No Content")
 	@ApiResponse(responseCode = "404", description = "Group not found")
-	@RequestMapping(value = "/group/{groupId}", method = RequestMethod.DELETE)
+	@DeleteMapping("/group/{groupId}")
 	public ResponseEntity<Void> deleteGroup(
 			@Parameter(description = "Group Id") @PathVariable String groupId, 
 			Locale loc, CIBUser user) {
@@ -370,7 +373,7 @@ public class AdminService extends BaseService implements InitializingBean {
 			summary = "Get authorization based on filters",
 			description = "<strong>Return: Collection of authorizations")
 	@ApiResponse(responseCode = "404", description = "Authorization not found")
-	@RequestMapping(value = "/authorization", method = RequestMethod.GET)
+	@GetMapping("/authorization")
 	public Collection<Authorization> findAuthorization(
 			@Parameter(description = "Authorization Id") @RequestParam Optional<String> id,
 			@Parameter(description = "Authorization type (0=global, 1=grant, 2=revoke)"
@@ -414,7 +417,7 @@ public class AdminService extends BaseService implements InitializingBean {
 			summary = "Create authorization",
 			description = "Request body: A JSON object with the following properties: type, permissions, userId, groupId, resourceType and resourceId" + "<br>" +
 			"<strong>Return: ResponseEntity<Authorization>")
-	@RequestMapping(value = "/authorization/create", method = RequestMethod.POST)
+	@PostMapping("/authorization/create")
 	public ResponseEntity<Authorization> createAuthorization(
 			@RequestBody Authorization authorization,
 			Locale loc, CIBUser user) {
@@ -435,7 +438,7 @@ public class AdminService extends BaseService implements InitializingBean {
 			description = "Request body: A JSON object with the following properties: permissions, userId, groupId, resourceType and resourceId" + "<br>" +
 			"<strong>Return:</strong> 204 No Content")
 	@ApiResponse(responseCode = "404", description = "Authorization not found")
-	@RequestMapping(value = "/authorization/{authorizationId}", method = RequestMethod.PUT)
+	@PutMapping("/authorization/{authorizationId}")
 	public ResponseEntity<Void> updateAuthorization(
 			@Parameter(description = "Authorization Id") @PathVariable String authorizationId, 
 			@RequestBody Map<String, Object> data, 
@@ -458,7 +461,7 @@ public class AdminService extends BaseService implements InitializingBean {
 			summary = "Delete authorization by Id",
 			description = "<strong>Return:</strong> 204 No Content")
 	@ApiResponse(responseCode = "404", description = "Authorization not found")
-	@RequestMapping(value = "/authorization/{authorizationId}", method = RequestMethod.DELETE)
+	@DeleteMapping("/authorization/{authorizationId}")
 	public ResponseEntity<Void> deleteAuthorization(
 			@Parameter(description = "Authorization Id") @PathVariable String authorizationId, 
 			Locale loc, CIBUser user) {

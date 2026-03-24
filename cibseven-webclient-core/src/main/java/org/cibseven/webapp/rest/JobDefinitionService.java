@@ -46,8 +46,8 @@ public class JobDefinitionService extends BaseService implements InitializingBea
 	SevenProvider sevenProvider;
 	
 	public void afterPropertiesSet() {
-		if (bpmProvider instanceof SevenProvider)
-			sevenProvider = (SevenProvider) bpmProvider;
+		if (bpmProvider instanceof SevenProvider provider)
+			sevenProvider = provider;
 		else throw new SystemException("JobDefinitionService expects a BpmProvider");
 	}
 	
