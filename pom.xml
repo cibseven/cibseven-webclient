@@ -33,7 +33,7 @@
 		<jjwt.version>0.12.6</jjwt.version>
 		<commons-io.version>2.18.0</commons-io.version>
 		<common-auth.version>1.3.0</common-auth.version>
-		<version.spring.boot>3.5.10</version.spring.boot>
+		<version.spring.boot>3.5.11</version.spring.boot>
 		<version.openapi-starter-webmvc-ui>2.8.13</version.openapi-starter-webmvc-ui>
 		<version.commons-lang3>3.18.0</version.commons-lang3>
 		
@@ -289,6 +289,15 @@ You may obtain a copy of the License at
 
 	<dependencyManagement>
 		<dependencies>
+			<!-- temporary override fasterxml version 2.19.4, referenced from springboot 3.5.11/12, to version 2.21.1 to fix CWE-770 -->
+			<dependency>
+				<groupId>com.fasterxml.jackson</groupId>
+				<artifactId>jackson-bom</artifactId>
+				<version>2.21.1</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-dependencies</artifactId>
@@ -296,14 +305,7 @@ You may obtain a copy of the License at
 				<type>pom</type>
 				<version>${version.spring.boot}</version>
 			</dependency>
-
-			<!-- temporary override jackson-core version 2.19.4, referenced from springboot 3.5.11, to version 2.21.1 to fix CWE-770 -->
-			<dependency>
-				<groupId>com.fasterxml.jackson.core</groupId>
-				<artifactId>jackson-core</artifactId>
-				<version>2.21.1</version>
-			</dependency>
-			
+		
 			<!-- Override log4j versions to fix security vulnerabilities -->
 			<dependency>
 				<groupId>org.apache.logging.log4j</groupId>
