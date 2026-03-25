@@ -57,7 +57,7 @@ import SystemView from '@/components/system/SystemView.vue'
 import SystemDiagnostics from '@/components/system/SystemDiagnostics.vue'
 import ExecutionMetrics from '@/components/system/ExecutionMetrics.vue'
 import ModelerView from '@/components/modeler/ModelerView.vue'
-import { redirectToProcessInstance, redirectToTask } from '@/utils/redirects.js'
+import { redirectToProcessInstance, redirectToProcessDefinition, redirectToTask } from '@/utils/redirects.js'
 
 const appRoutes = [
     { path: '/',  name: 'root', redirect: '/seven/auth/start-configurable' },
@@ -209,6 +209,10 @@ const appRoutes = [
         },
         { path: 'processes/list', name: 'processManagement', beforeEnter: permissionsGuard('cockpit'),
           component: ProcessListView
+        },
+        // process definition by id redirect
+        { path: 'processes/definition/:definitionId?', name: 'process-definition-id',
+          beforeEnter: async (to, from, next) => redirectToProcessDefinition(router, to, from, next),
         },
         // process instance by id redirect
         { path: 'processes/instance/:instanceId?', name: 'process-instance-id',
