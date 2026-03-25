@@ -21,7 +21,7 @@ import lombok.Data;
 @Data
 public class Metric {
     private String metric;
-    private int sum;
-    private int subscriptionYear;
-    private int subscriptionMonth;
+    private Integer sum;
+    private Integer subscriptionYear;
+    private Integer subscriptionMonth;
 }

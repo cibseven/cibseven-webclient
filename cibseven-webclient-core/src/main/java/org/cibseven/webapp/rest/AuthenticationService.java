@@ -21,12 +21,15 @@ import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.User;
 import org.cibseven.webapp.auth.rest.StandardLogin;
 import org.cibseven.webapp.rest.model.Authorizations;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -40,29 +43,29 @@ public class AuthenticationService extends BaseService {
 	
 	@Operation(summary  = "Authenticates a user and returns (among other things) a token to be passed with other services")
 	@ApiResponses({@ApiResponse(responseCode = "401", description = "Credentials are wrong") })
-	@RequestMapping(value = "/login", method = RequestMethod.POST)
+	@PostMapping("/login")
 	public User login(@RequestBody Map<String, Object> data, HttpServletRequest rq) {
 		String honeypot = (String) data.get("lastname");
 		if (honeypot != null) return null;
 	    //String username = (String) data.get("username");
 	    //String password = (String) data.get("password");
 		data.remove("lastname");
-		StandardLogin standardLogin = new ObjectMapper().convertValue(data, StandardLogin.class);
+		StandardLogin standardLogin = new JsonMapper().convertValue(data, StandardLogin.class);
 
 	    return baseUserProvider.login(standardLogin, rq);
 	}	
 	
-	@RequestMapping(value = "/logout", method = RequestMethod.POST)
+	@PostMapping("/logout")
 	public void logout(User user) {
 		baseUserProvider.logout(user);
 	}
 	
-	@RequestMapping(method = RequestMethod.GET)
+	@GetMapping
 	public User getSelfInfo(@NotNull User user, HttpServletRequest rq) {
 		return baseUserProvider.getUserInfo(user, user.getId());
 	}
 	
-	@RequestMapping(value = "/authorizations", method = RequestMethod.GET)
+	@GetMapping("/authorizations")
 	public Authorizations getUserAuthorizations(@NotNull CIBUser user) {
 		return bpmProvider.getUserAuthorization(user.getId(), user);
 	}

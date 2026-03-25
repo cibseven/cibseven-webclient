@@ -41,7 +41,7 @@ import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -58,7 +58,7 @@ public class DeploymentProvider extends SevenProviderBase implements IDeployment
 			headers.add(HttpHeaders.AUTHORIZATION, user.getAuthToken());
 			headers.add(USER_ID_HEADER, user.getId());
 		}
-		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
 
 		file.forEach((key, value) -> { 
 			try {

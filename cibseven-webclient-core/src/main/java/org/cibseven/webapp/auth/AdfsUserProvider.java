@@ -16,7 +16,6 @@
  */
 package org.cibseven.webapp.auth;
 
-import java.io.IOException;
 import java.util.Base64;
 import javax.crypto.SecretKey;
 import org.cibseven.webapp.auth.exception.AuthenticationException;
@@ -30,8 +29,8 @@ import org.cibseven.webapp.auth.sso.TokenResponse;
 import org.cibseven.webapp.exception.SystemException;
 import org.springframework.beans.factory.annotation.Value;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -43,6 +42,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import tools.jackson.core.JacksonException;
 
 @Slf4j
 public class AdfsUserProvider extends BaseUserProvider<SSOLogin> {
@@ -113,14 +113,15 @@ public class AdfsUserProvider extends BaseUserProvider<SSOLogin> {
 	@Override
 	public User deserialize(String json, String token) {
 		try {
-			ObjectMapper mapper = new ObjectMapper();
-			mapper.addMixIn(SSOUser.class, org.cibseven.webapp.auth.BaseUserProvider.UserSerialization.class);
+			ObjectMapper mapper = JsonMapper.builder()
+					.addMixIn(SSOUser.class, org.cibseven.webapp.auth.BaseUserProvider.UserSerialization.class)
+					.build();
 			SSOUser user = mapper.readValue(json, SSOUser.class);
 			user.setAuthToken(token);
 			return user;
 		} catch (IllegalArgumentException x) { // for example doXigate token used with doXisafe
 			throw new AuthenticationException(json);
-		} catch (IOException x) {
+		} catch (JacksonException x) {
 			throw new SystemException(x);
 		}
 	}
@@ -128,10 +129,11 @@ public class AdfsUserProvider extends BaseUserProvider<SSOLogin> {
 	@Override
 	public String serialize(User user) {
 		try {
-			ObjectMapper mapper = new ObjectMapper();
-			mapper.addMixIn(SSOUser.class, org.cibseven.webapp.auth.BaseUserProvider.UserSerialization.class);
+			ObjectMapper mapper = JsonMapper.builder()
+					.addMixIn(SSOUser.class, org.cibseven.webapp.auth.BaseUserProvider.UserSerialization.class)
+					.build();
 			return mapper.writeValueAsString(user);
-		} catch (JsonProcessingException x) {
+		} catch (JacksonException x) {
 			throw new SystemException(x);
 		}
 	}

@@ -25,10 +25,11 @@ import org.cibseven.webapp.rest.model.ProcessDiagram;
 import org.cibseven.webapp.rest.model.Task;
 import org.cibseven.webapp.rest.model.Variable;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import lombok.Data;
+import tools.jackson.core.JacksonException;
 
 @Data
 public class Template {
@@ -38,7 +39,7 @@ public class Template {
 	private List<ActivityInstanceHistory> activityInstanceHistory;
 	private Task task;
 
-	public String asJson() throws JsonProcessingException {
-		return new ObjectMapper().writeValueAsString(this);
+	public String asJson() throws JacksonException {
+		return new JsonMapper().writeValueAsString(this);
 	}			
 }

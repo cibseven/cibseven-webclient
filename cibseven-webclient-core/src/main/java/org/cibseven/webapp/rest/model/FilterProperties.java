@@ -25,8 +25,8 @@ import lombok.NoArgsConstructor;
 @Data @AllArgsConstructor @NoArgsConstructor @JsonIgnoreProperties(ignoreUnknown = true)
 public class FilterProperties {
 	private String color;
-	private boolean showUndefinedVariable;
+	private Boolean showUndefinedVariable;
 	private String description;
-	private boolean refresh;
-	private int priority;
+	private Boolean refresh;
+	private Integer priority;
 }

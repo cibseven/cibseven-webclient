@@ -62,8 +62,8 @@ public class AnalyticsService extends BaseService implements InitializingBean {
 	SevenProvider sevenProvider;
 
 	public void afterPropertiesSet() {
-		if (bpmProvider instanceof SevenProvider)
-			sevenProvider = (SevenProvider) bpmProvider;
+		if (bpmProvider instanceof SevenProvider provider)
+			sevenProvider = provider;
 		else
 			throw new SystemException("AnalyticsService expects a BpmProvider");
 	}
@@ -119,14 +119,14 @@ public class AnalyticsService extends BaseService implements InitializingBean {
 		params = Map.of("unfinished", true, "unassigned", true, "withoutCandidateGroups", true);
 		Integer unassignedTasks = bpmProvider.findTasksCount(params, user);
 
-		analytics.setOpenHumanTasks(List.of(new AnalyticsInfo("1", "assigned", assignedTasks),
-				new AnalyticsInfo("2", "assignedGroups", assignedGroups),
-				new AnalyticsInfo("3", "unassigned", unassignedTasks)));
+		analytics.setOpenHumanTasks(List.of(new AnalyticsInfo("1", "assigned", assignedTasks != null ? assignedTasks.longValue() : 0L),
+				new AnalyticsInfo("2", "assignedGroups", assignedGroups != null ? assignedGroups.longValue() : 0L),
+				new AnalyticsInfo("3", "unassigned", unassignedTasks != null ? unassignedTasks.longValue() : 0L)));
 
-		analytics.setProcessDefinitionsCount(runningInstances.size());
+		analytics.setProcessDefinitionsCount((long) runningInstances.size());
 		Collection<Decision> decisionDefinitionList = bpmProvider.getDecisionDefinitionList(new HashMap<>(), user);
 		if (decisionDefinitionList == null) {
-			analytics.setDecisionDefinitionsCount(-1);
+			analytics.setDecisionDefinitionsCount(-1L);
 		} else {
 			// Count the number of distinct keys
 			long distinctKeyCount = decisionDefinitionList.stream().map(Decision::getKey).distinct().count();
@@ -136,7 +136,7 @@ public class AnalyticsService extends BaseService implements InitializingBean {
 
 		Long deploymentsCount = bpmProvider.countDeployments(user, "");
 		if (deploymentsCount == null) {
-			analytics.setDeploymentsCount(-1);
+			analytics.setDeploymentsCount(-1L);
 		} else {
 			analytics.setDeploymentsCount(deploymentsCount);
 		}

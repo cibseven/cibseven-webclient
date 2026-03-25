@@ -16,9 +16,11 @@
  */
 package org.cibseven.webapp.exception;
 
+import java.io.Serial;
+
 public class ExistingUserRequestException extends RuntimeException {
 
-	private static final long serialVersionUID = 1L;
+	@Serial private static final long serialVersionUID = 1L;
 
 	public ExistingUserRequestException(Throwable cause) {
 		super("The user already exists", cause);

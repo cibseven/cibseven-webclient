@@ -53,8 +53,8 @@ public class ProcessDefinitionService extends BaseService implements Initializin
 	
 	@Override
 	public void afterPropertiesSet() {
-		if (bpmProvider instanceof SevenProvider)
-			sevenProvider = (SevenProvider) bpmProvider;
+		if (bpmProvider instanceof SevenProvider provider)
+			sevenProvider = provider;
 		else throw new SystemException("ProcessDefinitionService expects a BpmProvider");
 	}
 
@@ -62,7 +62,7 @@ public class ProcessDefinitionService extends BaseService implements Initializin
 			summary = "Get start-form to start a process",
 			description = "<strong>Return: Startform variables and formReference")
 	@ApiResponse(responseCode = "404", description = "Process not found")
-	@RequestMapping(value = "/{processDefinitionId}/startForm", method = RequestMethod.GET)
+	@GetMapping("/{processDefinitionId}/startForm")
 	public StartForm fetchStartForm(
 			@Parameter(description = "Process to be started") @PathVariable String processDefinitionId,
 			Locale loc, HttpServletRequest request, CIBUser user) {
@@ -74,7 +74,7 @@ public class ProcessDefinitionService extends BaseService implements Initializin
 			summary = "Get rendered form HTML for process definition",
 			description = "<strong>Return: Rendered form HTML as string</strong>")
 	@ApiResponse(responseCode = "404", description= "Process definition or rendered form not found")
-	@RequestMapping(value = "/{processDefinitionId}/rendered-form", method = RequestMethod.GET, produces = "text/html")
+	@GetMapping(value = "/{processDefinitionId}/rendered-form", produces = "text/html")
 	public ResponseEntity<String> getRenderedStartForm(
 			@Parameter(description = "Process definition Id") @PathVariable String processDefinitionId,
 			@RequestParam Map<String, Object> params,
@@ -88,7 +88,7 @@ public class ProcessDefinitionService extends BaseService implements Initializin
 			description = "<strong>Return: Map of form variable names to Variable objects for the given process definition key. "
 					+ "Variables can optionally be deserialized and filtered by name.</strong>")
 	@ApiResponse(responseCode = "404", description = "Process definition or form variables not found")
-	@RequestMapping(value = "/{key}/form-variables", method = RequestMethod.GET)
+	@GetMapping("/{key}/form-variables")
 	public Map<String, Variable> fetchProcessDefinitionFormVariablesByNames(
 			@PathVariable String key,
 			@RequestParam(required = false, defaultValue = "true") boolean deserializeValues,
@@ -107,7 +107,7 @@ public class ProcessDefinitionService extends BaseService implements Initializin
 	}
 
 	@Consumes(MediaType.APPLICATION_JSON)
-	@RequestMapping(value = "/{processDefinitionKey}/submit-form", method = RequestMethod.POST)
+	@PostMapping("/{processDefinitionKey}/submit-form")
 	public ResponseEntity<ProcessStart> submitForm(
 			@PathVariable String processDefinitionKey, 
 			@RequestBody String formResult, 

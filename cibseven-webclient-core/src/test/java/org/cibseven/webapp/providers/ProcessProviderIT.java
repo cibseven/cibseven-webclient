@@ -38,8 +38,8 @@ import org.cibseven.webapp.rest.model.ProcessStart;
 import org.cibseven.webapp.rest.model.StartForm;
 import org.cibseven.webapp.rest.TestRestTemplateConfiguration;
 
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.MockWebServer;
+import mockwebserver3.MockResponse;
+import mockwebserver3.MockWebServer;
 
 @SpringBootTest
 @ContextConfiguration(classes = {ProcessProvider.class, TestRestTemplateConfiguration.class, MockUserProviderTestConfiguration.class})
@@ -79,7 +79,7 @@ public class ProcessProviderIT extends BaseHelper {
     @AfterEach
     void tearDown() throws Exception {
         // Shutdown the MockWebServer after each test
-        mockWebServer.shutdown();
+        mockWebServer.close();
     }
 
     @Test
@@ -90,9 +90,10 @@ public class ProcessProviderIT extends BaseHelper {
         // Load the mock response from a file
         String mockResponseBody = loadMockResponse("mocks/processes_mock.json");
 
-        mockWebServer.enqueue(new MockResponse()
-                .setBody(mockResponseBody)
-                .addHeader("Content-Type", "application/json"));
+        mockWebServer.enqueue(new MockResponse.Builder()
+				.body(mockResponseBody)
+				.addHeader("Content-Type", "application/json")
+				.build());
 
         // Act
         Collection<Process> processes = processProvider.findProcesses(user);
@@ -116,9 +117,10 @@ public class ProcessProviderIT extends BaseHelper {
         // Load the mock response from a file
         String mockResponseBody = loadMockResponse("mocks/process_mock.json");
 
-        mockWebServer.enqueue(new MockResponse()
-                .setBody(mockResponseBody)
-                .addHeader("Content-Type", "application/json"));
+        mockWebServer.enqueue(new MockResponse.Builder()
+				.body(mockResponseBody)
+				.addHeader("Content-Type", "application/json")
+				.build());
 
         // Act
         Process process = processProvider.findProcessByDefinitionKey(processKey, null, user);
@@ -139,9 +141,10 @@ public class ProcessProviderIT extends BaseHelper {
         // Load the mock response from a file
         String mockResponseBody = loadMockResponse("mocks/process_diagram_mock.json");
 
-        mockWebServer.enqueue(new MockResponse()
-                .setBody(mockResponseBody)
-                .addHeader("Content-Type", "application/json"));
+        mockWebServer.enqueue(new MockResponse.Builder()
+				.body(mockResponseBody)
+				.addHeader("Content-Type", "application/json")
+				.build());
 
         // Act
         ProcessDiagram diagram = processProvider.fetchDiagram(processDefinitionId, user);
@@ -161,9 +164,10 @@ public class ProcessProviderIT extends BaseHelper {
         // Load the mock response from a file
         String mockResponseBody = loadMockResponse("mocks/process_start_form_mock.json");
 
-        mockWebServer.enqueue(new MockResponse()
-                .setBody(mockResponseBody)
-                .addHeader("Content-Type", "application/json"));
+        mockWebServer.enqueue(new MockResponse.Builder()
+				.body(mockResponseBody)
+				.addHeader("Content-Type", "application/json")
+				.build());
 
         // Act
         StartForm startForm = processProvider.fetchStartForm(processDefinitionId, user);
@@ -184,9 +188,10 @@ public class ProcessProviderIT extends BaseHelper {
         // Load the mock response from a file
         String mockResponseBody = loadMockResponse("mocks/process_instance_mock.json");
 
-        mockWebServer.enqueue(new MockResponse()
-                .setBody(mockResponseBody)
-                .addHeader("Content-Type", "application/json"));
+        mockWebServer.enqueue(new MockResponse.Builder()
+				.body(mockResponseBody)
+				.addHeader("Content-Type", "application/json")
+				.build());
 
         // Act
         ProcessStart processStart = processProvider.startProcess(processDefinitionKey, null, null, user);

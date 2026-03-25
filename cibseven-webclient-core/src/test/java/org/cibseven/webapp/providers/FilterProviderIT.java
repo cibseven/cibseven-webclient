@@ -31,8 +31,8 @@ import org.cibseven.webapp.rest.model.Filter;
 import org.cibseven.webapp.rest.model.FilterCriterias;
 import org.cibseven.webapp.rest.model.FilterProperties;
 
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.MockWebServer;
+import mockwebserver3.MockResponse;
+import mockwebserver3.MockWebServer;
 
 @SpringBootTest
 @ContextConfiguration(classes = {FilterProvider.class, TestRestTemplateConfiguration.class, MockUserProviderTestConfiguration.class})
@@ -60,7 +60,7 @@ public class FilterProviderIT extends BaseHelper {
     @AfterEach
     void tearDown() throws Exception {
         // Shutdown the MockWebServer after each test
-        mockWebServer.shutdown();
+        mockWebServer.close();
     }
 
     @Test
@@ -71,9 +71,10 @@ public class FilterProviderIT extends BaseHelper {
         // Load the mock response from a file
         String mockResponseBody = loadMockResponse("mocks/filter_mock.json");
 
-        mockWebServer.enqueue(new MockResponse()
-                .setBody(mockResponseBody)
-                .addHeader("Content-Type", "application/json"));
+        mockWebServer.enqueue(new MockResponse.Builder()
+				.body(mockResponseBody)
+				.addHeader("Content-Type", "application/json")
+				.build());
 
         // Act
         var filters = filterProvider.findFilters(user);
@@ -106,9 +107,10 @@ public class FilterProviderIT extends BaseHelper {
         // Load the mock response from a file
         String mockResponseBody = loadMockResponse("mocks/filter_create_mock.json");
 
-        mockWebServer.enqueue(new MockResponse()
-                .setBody(mockResponseBody)
-                .addHeader("Content-Type", "application/json"));
+        mockWebServer.enqueue(new MockResponse.Builder()
+				.body(mockResponseBody)
+				.addHeader("Content-Type", "application/json")
+				.build());
 
         // Act
         Filter createdFilter = filterProvider.createFilter(filter, user);
@@ -134,7 +136,8 @@ public class FilterProviderIT extends BaseHelper {
             new FilterProperties("red", true, "Updated Description", true, 20)
         );
 
-        mockWebServer.enqueue(new MockResponse().setResponseCode(204));
+        mockWebServer.enqueue(new MockResponse.Builder().code(204)
+				.build());
 
         // Act
         filterProvider.updateFilter(filter, user);
@@ -142,7 +145,7 @@ public class FilterProviderIT extends BaseHelper {
         // Assert
         var request = mockWebServer.takeRequest();
         assertThat(request.getMethod()).isEqualTo("PUT");
-        assertThat(request.getPath()).isEqualTo("/engine-rest/filter/filter-1");
+        assertThat(request.getUrl().encodedPath()).isEqualTo("/engine-rest/filter/filter-1");
     }
 
     @Test
@@ -151,7 +154,8 @@ public class FilterProviderIT extends BaseHelper {
         String filterId = "filter-1";
         CIBUser user = getCibUser();
 
-        mockWebServer.enqueue(new MockResponse().setResponseCode(204));
+        mockWebServer.enqueue(new MockResponse.Builder().code(204)
+				.build());
 
         // Act
         filterProvider.deleteFilter(filterId, user);
@@ -159,6 +163,6 @@ public class FilterProviderIT extends BaseHelper {
         // Assert
         var request = mockWebServer.takeRequest();
         assertThat(request.getMethod()).isEqualTo("DELETE");
-        assertThat(request.getPath()).isEqualTo("/engine-rest/filter/filter-1");
+        assertThat(request.getUrl().encodedPath()).isEqualTo("/engine-rest/filter/filter-1");
     }
 }

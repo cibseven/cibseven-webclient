@@ -33,9 +33,9 @@ public class Analytics {
   private List<AnalyticsInfo> openIncidents = new ArrayList<>();
   private List<AnalyticsInfo> openHumanTasks = new ArrayList<>();
 	
-	private long processDefinitionsCount;
-	private long decisionDefinitionsCount;
-	private long deploymentsCount;
-	private long batchesCount;
+	private Long processDefinitionsCount;
+	private Long decisionDefinitionsCount;
+	private Long deploymentsCount;
+	private Long batchesCount;
 	
 }
