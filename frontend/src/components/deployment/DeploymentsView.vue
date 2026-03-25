@@ -334,8 +334,7 @@ export default {
       }
       this.loadDeployments(this.deployments.length)
     },
-    deleteDeployments: function () {
-      const vm = this
+    deleteDeployments: async function () {
       this.deleteLoader = true
       this.deploymentsDelData.total = this.deploymentsSelected.length
       this.deploymentsDelData.deleted = 0
@@ -357,35 +356,27 @@ export default {
         }
       })
       pool = this.deploymentsSelected.slice(0, this.deploymentsSelected.length)
-      startTask()
-      function startTask() {
-        const deployment = pool.shift()
-        if (deployment) {
-          deleteDeployment(deployment)
-        } else {
-          vm.loadProcesses(false)
-          vm.deleteLoader = false
-          vm.$refs.deploymentsDeleted.show()
-        }
-      }
-      function deleteDeployment(deployment) {
-        ProcessService.deleteDeployment(deployment.id, true).then(() => {
-          vm.deploymentsDelData.deleted++
-          vm.deployments = vm.deployments.filter(df => {
+      while (pool.length > 0) {
+        let deployment = pool.shift()
+        const deletePromise = ProcessService.deleteDeployment(deployment.id, true).then(() => {
+          this.deploymentsDelData.deleted++
+          this.deployments = this.deployments.filter(df => {
             return deployment.id !== df.id
           })
-          if (vm.deployment && deployment.id === vm.deployment.id) {
-            vm.deployment = null
-            vm.resources = null
-            vm.$router.push({
+          if (this.deployment && deployment.id === this.deployment.id) {
+            this.deployment = null
+            this.resources = null
+            this.$router.push({
               name: 'deployments'
             })
           }
-          setTimeout(() => {
-            startTask()
-          }, 1000)
         })
+        await deletePromise
       }
+      this.loadProcesses(false)
+      this.deleteLoader = false
+      this.$refs.deploymentsDeleted.show()
+      this.refreshTotalCount()
     },
     deleteDeployment: function () {
       ProcessService.deleteDeployment(this.deploymentId, true).then(() => {
