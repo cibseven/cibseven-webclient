@@ -27,7 +27,7 @@ public class Decision {
 	private String key;
 	private String category;
 	private String name;
-	private int version;
+	private Integer version;
 	private String resource;
 	private String deploymentId;
 	private String decisionRequirementsDefinitionId;
@@ -35,5 +35,5 @@ public class Decision {
 	private String tenantId;
 	private String versionTag;
 	private Integer historyTimeToLive;
-	long allInstances;
+	Long allInstances;
 }

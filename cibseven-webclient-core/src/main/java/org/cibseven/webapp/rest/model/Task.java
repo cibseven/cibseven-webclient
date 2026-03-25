@@ -44,7 +44,7 @@ public class Task {
 	String name;
 	String owner;
 	String parentTaskId;
-	long priority;
+	Long priority;
 	String suspended;
 	String tenantId;
 	CamundaForm camundaFormRef;

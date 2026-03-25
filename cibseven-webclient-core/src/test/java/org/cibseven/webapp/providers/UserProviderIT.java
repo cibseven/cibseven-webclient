@@ -155,7 +155,7 @@ public class UserProviderIT extends BaseHelper {
 
         // Assert
         assertThat(result).isNotNull();
-        assertThat(result.isAuthenticated()).isTrue();
+        assertThat(result.getAuthenticated()).isTrue();
     }
 
     @Test
@@ -240,10 +240,10 @@ public class UserProviderIT extends BaseHelper {
             // Assert
             assertThat(results).hasSize(numberOfCallsSuccess + numberOfCallsFailed);
             
-            int returnedFailed = (int) results.stream().filter(result -> !result.isAuthenticated()).count();
+            int returnedFailed = (int) results.stream().filter(result -> !Boolean.TRUE.equals(result.getAuthenticated())).count();
             assertThat(returnedFailed).isEqualTo(numberOfCallsFailed);
 
-            int returnedSuccess = (int) results.stream().filter(SevenVerifyUser::isAuthenticated).count();
+            int returnedSuccess = (int) results.stream().filter(result -> Boolean.TRUE.equals(result.getAuthenticated())).count();
             assertThat(returnedSuccess).isEqualTo(numberOfCallsSuccess);
 
             // Verify all mock requests were consumed

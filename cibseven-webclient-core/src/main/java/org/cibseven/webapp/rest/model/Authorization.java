@@ -28,11 +28,11 @@ import tools.jackson.core.JacksonException;
 @Data @AllArgsConstructor @NoArgsConstructor @JsonIgnoreProperties(ignoreUnknown = true)
 public class Authorization {
 	private String id;
-	private int type;
+	private Integer type;
 	private String[] permissions;
 	private String userId;
 	private String groupId;
-	private int resourceType;
+	private Integer resourceType;
 	private String resourceId;
 	
 	public String json() throws JacksonException {
