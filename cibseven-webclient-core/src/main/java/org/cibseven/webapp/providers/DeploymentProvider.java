@@ -41,8 +41,6 @@ import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import tools.jackson.databind.JsonNode;
-
 import jakarta.servlet.http.HttpServletRequest;
 
 @Component
@@ -110,8 +108,8 @@ public class DeploymentProvider extends SevenProviderBase implements IDeployment
 			builder.queryParam("nameLike", nameLike);
 		}
 		String url = builder.toUriString();
-		JsonNode response = ((ResponseEntity<JsonNode>) doGet(url, JsonNode.class, user, true)).getBody();
-		return response != null ? response.get("count").asLong() : 0L;
+		Map response = ((ResponseEntity<Map>) doGet(url, Map.class, user, true)).getBody();
+		return response != null ? ((Number) response.get("count")).longValue() : 0L;
 	}
 
   @Override

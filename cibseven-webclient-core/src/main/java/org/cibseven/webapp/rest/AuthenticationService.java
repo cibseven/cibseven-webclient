@@ -28,8 +28,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.json.JsonMapper;
+import org.cibseven.webapp.compat.JacksonHelper;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -50,7 +49,7 @@ public class AuthenticationService extends BaseService {
 	    //String username = (String) data.get("username");
 	    //String password = (String) data.get("password");
 		data.remove("lastname");
-		StandardLogin standardLogin = new JsonMapper().convertValue(data, StandardLogin.class);
+		StandardLogin standardLogin = JacksonHelper.convertValue(data, StandardLogin.class);
 
 	    return baseUserProvider.login(standardLogin, rq);
 	}	

@@ -31,8 +31,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import tools.jackson.databind.JsonNode;
-
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
@@ -56,7 +54,7 @@ public class SystemService extends BaseService implements InitializingBean {
 	}
 
 	@GetMapping("/telemetry/data")
-	public JsonNode getTelemetryData(CIBUser user) {
+	public Object getTelemetryData(CIBUser user) {
 		return bpmProvider.getTelemetryData(user);
 	}
 

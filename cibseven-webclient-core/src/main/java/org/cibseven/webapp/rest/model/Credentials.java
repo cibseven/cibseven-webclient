@@ -17,19 +17,18 @@
 package org.cibseven.webapp.rest.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.json.JsonMapper;
+
+import org.cibseven.webapp.compat.JacksonHelper;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import tools.jackson.core.JacksonException;
 
 @Data @NoArgsConstructor @AllArgsConstructor @JsonIgnoreProperties(ignoreUnknown = true)
 public class Credentials {
 	private String password;
 	
-	public String json() throws JacksonException {
-		return new JsonMapper().writeValueAsString(this);
+	public String json() {
+		return JacksonHelper.toJson(this);
 	}	
 }

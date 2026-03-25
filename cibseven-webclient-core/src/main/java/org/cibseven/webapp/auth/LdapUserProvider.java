@@ -36,10 +36,9 @@ import org.cibseven.webapp.auth.exception.TokenExpiredException;
 import org.cibseven.webapp.auth.providers.JwtUserProvider;
 import org.cibseven.webapp.auth.utils.EngineTokenUtils;
 import org.cibseven.webapp.auth.rest.StandardLogin;
+import org.cibseven.webapp.compat.JacksonHelper;
 import org.cibseven.webapp.exception.SystemException;
 import org.springframework.beans.factory.annotation.Value;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.json.JsonMapper;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -49,7 +48,6 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import tools.jackson.core.JacksonException;
 
 @Slf4j
 public class LdapUserProvider extends BaseUserProvider<StandardLogin> {
@@ -155,29 +153,17 @@ public class LdapUserProvider extends BaseUserProvider<StandardLogin> {
 	@Override
 	public User deserialize(String json, String token) {
 		try {
-			ObjectMapper mapper = JsonMapper.builder()
-					.addMixIn(CIBUser.class, UserSerialization.class)
-					.build();
-			CIBUser user = mapper.readValue(json, CIBUser.class);
+			CIBUser user = JacksonHelper.fromJsonWithMixin(json, CIBUser.class, CIBUser.class, UserSerialization.class);
 			user.setAuthToken(token);
 			return user;
 		} catch (IllegalArgumentException x) { // for example doXigate token used with doXisafe
 			throw new AuthenticationException(json);
-		} catch (JacksonException x) {
-			throw new SystemException(x);
 		}
 	}
 
 	@Override
 	public String serialize(User user) {
-		try {
-			ObjectMapper mapper = JsonMapper.builder()
-					.addMixIn(CIBUser.class, UserSerialization.class)
-					.build();
-			return mapper.writeValueAsString(user);
-		} catch (JacksonException x) {
-			throw new SystemException(x);
-		}
+		return JacksonHelper.toJsonWithMixin(user, CIBUser.class, UserSerialization.class);
 	}
 
 	@Override

@@ -20,17 +20,15 @@ import java.util.Map;
 
 import org.cibseven.webapp.rest.model.Variable;
 
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.json.JsonMapper;
+import org.cibseven.webapp.compat.JacksonHelper;
 
 import lombok.Data;
-import tools.jackson.core.JacksonException;
 
 @Data
 public class StartFormTemplate {
 	private Map<String, Variable> variables;
-	
-	public String asJson() throws JacksonException {
-		return new JsonMapper().writeValueAsString(this);
+
+	public String asJson() {
+		return JacksonHelper.toJson(this);
 	}
 }

@@ -26,17 +26,16 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.annotation.PostConstruct;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.json.JsonMapper;
-import tools.jackson.databind.node.JsonNodeFactory;
-import tools.jackson.databind.node.ObjectNode;
+import org.cibseven.webapp.compat.JacksonHelper;
+import org.cibseven.webapp.exception.SystemException;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
-import tools.jackson.core.JacksonException;
 
 @ApiResponses({ @ApiResponse(responseCode= "500", description = "An unexpected system error occured") })
 @RestController @RequestMapping("/info") @Slf4j
@@ -91,8 +90,8 @@ public class InfoService extends BaseService {
 			summary = "Get config JSON",
 			description = "<strong>Return: Config JSON object")
 	@GetMapping("/properties")
-	public ObjectNode getConfig() {
-		ObjectNode configJson = JsonNodeFactory.instance.objectNode();
+	public Map<String, Object> getConfig() {
+		Map<String, Object> configJson = new LinkedHashMap<>();
 		configJson.put("cockpitUrl", cockpitUrl);
 		configJson.put("theme", theme);
 		configJson.put("ssoActive", ssoActive);
@@ -113,10 +112,9 @@ public class InfoService extends BaseService {
 		configJson.put("authorizationEnabled", authorizationEnabled);
 		
         try {
-            ObjectMapper mapper = new JsonMapper();
-        	JsonNode supportDialogJson = mapper.readTree(supportDialog);
-			configJson.set("supportDialog", supportDialogJson);
-		} catch (JacksonException e) {
+            Object supportDialogJson = JacksonHelper.fromJson(supportDialog, Object.class);
+			configJson.put("supportDialog", supportDialogJson);
+		} catch (SystemException e) {
 			log.warn("Property support dialog is not set or incorrect");
 		}
        

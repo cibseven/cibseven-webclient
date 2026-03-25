@@ -19,7 +19,7 @@ package org.cibseven.webapp.rest.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import tools.jackson.databind.node.ArrayNode;
+import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -107,12 +107,12 @@ public class FilterCriterias {
 	private String candidateGroupsExpression;
 	private Boolean active;
 	private Boolean suspended;
-	private ArrayNode taskVariables;
-	private ArrayNode processVariables;
-	private ArrayNode caseInstanceVariables;
+	private List<Object> taskVariables;
+	private List<Object> processVariables;
+	private List<Object> caseInstanceVariables;
 	private Boolean variableNamesIgnoreCase;
 	private Boolean variableValuesIgnoreCase;
 	private String parentTaskId;
-	private ArrayNode orQueries;
-	private ArrayNode sorting;
+	private List<Object> orQueries;
+	private List<Object> sorting;
 }

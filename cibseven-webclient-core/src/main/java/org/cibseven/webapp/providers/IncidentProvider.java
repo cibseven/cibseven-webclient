@@ -28,8 +28,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.http.MediaType;
 
-import tools.jackson.databind.JsonNode;
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -39,15 +37,15 @@ public class IncidentProvider extends SevenProviderBase implements IIncidentProv
 	@Override
 	public Long countIncident(Map<String, Object> params, CIBUser user) {
 		String url = URLUtils.buildUrlWithParams(getEngineRestUrl(user) + "/incident/count", params);
-		JsonNode response = ((ResponseEntity<JsonNode>) doGet(url, JsonNode.class, user, true)).getBody();
-		return response != null ? response.get("count").asLong() : 0L;
+		Map response = ((ResponseEntity<Map>) doGet(url, Map.class, user, true)).getBody();
+		return response != null ? ((Number) response.get("count")).longValue() : 0L;
 	}
 
 	@Override
 	public Long countHistoricIncident(Map<String, Object> params, CIBUser user) {
 		String url = URLUtils.buildUrlWithParams(getEngineRestUrl(user) + "/history/incident/count", params);
-		JsonNode response = ((ResponseEntity<JsonNode>) doGet(url, JsonNode.class, user, true)).getBody();
-		return response != null ? response.get("count").asLong() : 0L;
+		Map response = ((ResponseEntity<Map>) doGet(url, Map.class, user, true)).getBody();
+		return response != null ? ((Number) response.get("count")).longValue() : 0L;
 	}
 
 	@Override

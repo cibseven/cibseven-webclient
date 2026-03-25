@@ -29,7 +29,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
-import tools.jackson.core.JacksonException;
 
 @Slf4j
 @Component
@@ -52,10 +51,9 @@ public class TenantProvider extends SevenProviderBase implements ITenantProvider
 		String url = getEngineRestUrl(user) + "/tenant/create";
 		try {
 			doPost(url, newTenant.json(), null, user);
-		} catch (JacksonException e) {
-			SystemException se = new SystemException(e);
-			log.error("Exception in createTenant(...):", se);
-			throw se;
+		} catch (SystemException e) {
+			log.error("Exception in createTenant(...):", e);
+			throw e;
 		}
 	}
 	
@@ -70,10 +68,9 @@ public class TenantProvider extends SevenProviderBase implements ITenantProvider
 		String url = getEngineRestUrl(user) + "/tenant/" + tenant.getId();
 		try {		
 			doPut(url, tenant.json() , user);
-		} catch (JacksonException e) {
-			SystemException se = new SystemException(e);
-			log.error("Exception in updateTenant(...):", se);
-			throw se;
+		} catch (SystemException e) {
+			log.error("Exception in updateTenant(...):", e);
+			throw e;
 		}
 	}
 	

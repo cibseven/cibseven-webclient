@@ -75,8 +75,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.multipart.MultipartFile;
 
-import tools.jackson.databind.JsonNode;
-
 import jakarta.servlet.http.HttpServletRequest;
 
 public interface BpmProvider {
@@ -1179,7 +1177,7 @@ public interface BpmProvider {
 	Object getCleanableBatchReport(Map<String, Object> queryParams, CIBUser user);
 	Object getCleanableBatchReportCount(CIBUser user);
 
-	JsonNode getTelemetryData(CIBUser user);
+	Object getTelemetryData(CIBUser user);
 	Collection<Metric> getMetrics(Map<String, Object> queryParams, CIBUser user);
 
 	Collection<Tenant> fetchTenants(Map<String, Object> queryParams, CIBUser user);

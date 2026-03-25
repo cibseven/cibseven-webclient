@@ -26,8 +26,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import tools.jackson.databind.json.JsonMapper;
-import tools.jackson.databind.node.ObjectNode;
 
 import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.CIBUser;
@@ -59,16 +57,13 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.MultiValueMap;
 
-import tools.jackson.core.StreamReadConstraints;
-import tools.jackson.core.json.JsonFactory;
-import tools.jackson.databind.json.JsonMapper;
+import org.cibseven.webapp.compat.RestTemplateFactory;
 import org.cibseven.webapp.rest.CustomRestTemplate;
 import lombok.extern.slf4j.Slf4j;
 
@@ -239,20 +234,6 @@ public abstract class SevenProviderBase {
 		}
 	}
 
-	protected <T> ResponseEntity<T> doPost(String url, ObjectNode body, Class<T> neededClass, CIBUser user) {
-		HttpHeaders headers = createAuthHeader(user);
-		headers.setContentType(MediaType.APPLICATION_JSON);
-		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
-
-		HttpEntity<Object> request = new HttpEntity<>(body, headers);
-
-		try {
-			return customRestTemplate.exchange(builder.build().toUri(), HttpMethod.POST, request, neededClass);
-		} catch (HttpStatusCodeException e) {
-			throw wrapException(e, user);
-		}
-	}
-
 	protected <T> ResponseEntity<T> doPostParameterized(String url, Map<String, Object> body, ParameterizedTypeReference<T> neededClass, CIBUser user) {
 		HttpHeaders headers = createAuthHeader(user);
 		headers.setContentType(MediaType.APPLICATION_JSON);
@@ -385,31 +366,7 @@ public abstract class SevenProviderBase {
 	 * @return A newly configured RestTemplate instance
 	 */
 	protected RestTemplate createPatchRestTemplate() {
-        // Create a new RestTemplate instance instead of modifying the shared one
-        RestTemplate restTemplate = new RestTemplate();
-
-        // Configure the ObjectMapper for this specific use case
-        StreamReadConstraints streamReadConstraints = StreamReadConstraints
-                .builder()
-                .maxStringLength(jacksonParserMaxSize)
-                .build();
-        JsonFactory jsonFactory = JsonFactory.builder()
-                .streamReadConstraints(streamReadConstraints)
-                .build();
-        JsonMapper objectMapper = JsonMapper.builder(jsonFactory)
-                .build();
-
-        // Add all converters from the customRestTemplate to the new instance
-        // Create a copy of the converters list to avoid concurrent modification issues
-		// It's important to create a defensive copy of the shared message converters.
-		// This avoids potential ConcurrentModificationExceptions if the shared CustomRestTemplate
-		// is accessed by multiple threads simultaneously.
-        restTemplate.setMessageConverters(new ArrayList<>(customRestTemplate.getMessageConverters()));
-
-        // Add the custom message converter to the new RestTemplate instance
-        restTemplate.getMessageConverters().add(new JacksonJsonHttpMessageConverter(objectMapper));
-
-        return restTemplate;
+		return RestTemplateFactory.createPatchRestTemplate(customRestTemplate, jacksonParserMaxSize);
 	}
 
 

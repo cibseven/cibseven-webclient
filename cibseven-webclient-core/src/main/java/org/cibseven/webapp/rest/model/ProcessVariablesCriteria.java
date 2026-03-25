@@ -17,15 +17,14 @@
 package org.cibseven.webapp.rest.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.json.JsonMapper;
+
+import org.cibseven.webapp.compat.JacksonHelper;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import tools.jackson.core.JacksonException;
 
 @Getter @Setter @ToString @AllArgsConstructor @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -34,7 +33,7 @@ public class ProcessVariablesCriteria {
 	String operator;
 	Object value;
 	
-	public String json() throws JacksonException {
-		return new JsonMapper().writeValueAsString(this);
+	public String json() {
+		return JacksonHelper.toJson(this);
 	}
 }

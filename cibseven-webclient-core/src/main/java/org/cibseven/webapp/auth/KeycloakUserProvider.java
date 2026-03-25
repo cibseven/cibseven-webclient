@@ -37,13 +37,11 @@ import org.cibseven.webapp.auth.sso.SSOUser;
 import org.cibseven.webapp.auth.sso.SsoHelper;
 import org.cibseven.webapp.auth.sso.TokenCache;
 import org.cibseven.webapp.auth.sso.TokenResponse;
+import org.cibseven.webapp.compat.JacksonHelper;
 import org.cibseven.webapp.exception.SystemException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.json.JsonMapper;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -58,7 +56,6 @@ import jakarta.annotation.PreDestroy;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import tools.jackson.core.JacksonException;
 
 @Slf4j
 public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
@@ -210,29 +207,17 @@ public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
 	@Override
 	public User deserialize(String json, String token) {
 		try {
-			ObjectMapper mapper = JsonMapper.builder()
-					.addMixIn(SSOUser.class, org.cibseven.webapp.auth.BaseUserProvider.UserSerialization.class)
-					.build();
-			SSOUser user = mapper.readValue(json, SSOUser.class);
+			SSOUser user = JacksonHelper.fromJsonWithMixin(json, SSOUser.class, SSOUser.class, org.cibseven.webapp.auth.BaseUserProvider.UserSerialization.class);
 			user.setAuthToken(token);
 			return user;
 		} catch (IllegalArgumentException x) { // for example doXigate token used with doXisafe
 			throw new AuthenticationException(json);
-		} catch (JacksonException x) {
-			throw new SystemException(x);
 		}
 	}
 
 	@Override
 	public String serialize(User user) {
-		try {
-			ObjectMapper mapper = JsonMapper.builder()
-					.addMixIn(SSOUser.class, UserSerialization.class)
-					.build();
-			return mapper.writeValueAsString(user);
-		} catch (JacksonException x) {
-			throw new SystemException(x);
-		}
+		return JacksonHelper.toJsonWithMixin(user, SSOUser.class, UserSerialization.class);
 	}
 
 	@Override

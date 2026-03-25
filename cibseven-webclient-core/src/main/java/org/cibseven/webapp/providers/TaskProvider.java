@@ -21,11 +21,13 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.compat.JacksonHelper;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.CandidateGroupTaskCount;
 import org.cibseven.webapp.rest.model.IdentityLink;
@@ -40,21 +42,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.json.JsonMapper;
-import tools.jackson.databind.node.ObjectNode;
 
 import lombok.extern.slf4j.Slf4j;
-import tools.jackson.core.JacksonException;
 
 @Slf4j
 @Component
 public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 
 	@Autowired private IVariableProvider variableProvider;
-
-	private final ObjectMapper objectMapper = new JsonMapper();
 
 	@Override
 	public Collection<Task> findTasks(String filter, CIBUser user) {
@@ -65,11 +60,11 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 	@Override
 	public Integer findTasksCount(Map<String, Object> filters, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/task/count";
-		JsonNode body =  ((ResponseEntity<JsonNode>) doPost(url, filters, JsonNode.class, user)).getBody();
+		Map body = ((ResponseEntity<Map>) doPost(url, filters, Map.class, user)).getBody();
 		if (body == null) {
 			throw new NullPointerException();
 		}
-		return body.get("count").asInt();
+		return ((Number) body.get("count")).intValue();
 	}
 
 	@Override
@@ -103,7 +98,7 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 	public void update(Task task, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/task/" + task.getId();
 
-		ObjectNode taskUpdate = objectMapper.createObjectNode();
+		Map<String, Object> taskUpdate = new LinkedHashMap<>();
 
 		if(task.getName() != null) taskUpdate.put("name", task.getName());
 		if(task.getDescription() != null) taskUpdate.put("description", task.getDescription());
@@ -116,12 +111,8 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 		if(task.getCaseInstanceId() != null) taskUpdate.put("caseInstanceId", task.getCaseInstanceId());
 		if(task.getTenantId() != null) taskUpdate.put("tenantId", task.getTenantId());
 
-		try {
-			String filteredTask = objectMapper.writeValueAsString(taskUpdate);
-			doPut(url, filteredTask, user);
-		} catch (JacksonException e) {
-			throw new SystemException(e);
-		}
+		String filteredTask = JacksonHelper.toJson(taskUpdate);
+		doPut(url, filteredTask, user);
 	}
 
 	@Override
@@ -186,10 +177,9 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 		String url = getEngineRestUrl(user) + "/filter/" + filterId + "/list?firstResult=" + firstResult + "&maxResults=" + maxResults;
 		try {
 			return Arrays.asList(((ResponseEntity<Task[]>) doPost(url, filters.json(), Task[].class, user)).getBody());
-		} catch (JacksonException e) {
-			SystemException se = new SystemException(e);
-			log.info("Exception in getTasksFiltered(...):", se);
-			throw se;
+		} catch (SystemException e) {
+			log.info("Exception in getTasksFiltered(...):", e);
+			throw e;
 		}
 	}
 
@@ -197,15 +187,14 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 	public Integer findTasksCountByFilter(String filterId, CIBUser user, TaskFiltering filters) {
 		String url = getEngineRestUrl(user) + "/filter/" + filterId + "/count";		
 		try {
-			JsonNode body =  ((ResponseEntity<JsonNode>) doPost(url, filters.json(), JsonNode.class, user)).getBody();
+			Map body = ((ResponseEntity<Map>) doPost(url, filters.json(), Map.class, user)).getBody();
 			if (body == null) {
 				throw new NullPointerException();
 			}
-			return body.get("count").asInt();
-		} catch (JacksonException e) {
-			SystemException se = new SystemException(e);
-			log.info("Exception in findTasksCountByFilter(...):", se);
-			throw se;
+			return ((Number) body.get("count")).intValue();
+		} catch (SystemException e) {
+			log.info("Exception in findTasksCountByFilter(...):", e);
+			throw e;
 		}
 	}
 
@@ -279,11 +268,11 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 	@Override
 	public Integer findHistoryTasksCount(Map<String, Object> filters, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/history/task/count";
-		JsonNode body = ((ResponseEntity<JsonNode>) doPost(url, filters, JsonNode.class, user)).getBody();
+		Map body = ((ResponseEntity<Map>) doPost(url, filters, Map.class, user)).getBody();
 		if (body == null) {
 			throw new NullPointerException();
 		}
-		return body.get("count").asInt();
+		return ((Number) body.get("count")).intValue();
 	}
 
 	@Override

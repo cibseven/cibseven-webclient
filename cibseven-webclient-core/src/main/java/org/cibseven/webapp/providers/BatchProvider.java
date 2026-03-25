@@ -29,8 +29,6 @@ import org.cibseven.webapp.rest.model.HistoryBatch;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import tools.jackson.databind.JsonNode;
-
 @Component
 public class BatchProvider extends SevenProviderBase implements IBatchProvider {
 	
@@ -86,8 +84,8 @@ public class BatchProvider extends SevenProviderBase implements IBatchProvider {
 	@Override
 	public Long getHistoricBatchCount(Map<String, Object> queryParams, CIBUser user) {
 		String url = URLUtils.buildUrlWithParams(getEngineRestUrl(user) + "/history/batch/count", queryParams);
-		JsonNode response = ((ResponseEntity<JsonNode>) doGet(url, JsonNode.class, user, true)).getBody();
-		return response != null ? response.get("count").asLong() : 0L;
+		Map response = ((ResponseEntity<Map>) doGet(url, Map.class, user, true)).getBody();
+		return response != null ? ((Number) response.get("count")).longValue() : 0L;
     }
     
 	@Override

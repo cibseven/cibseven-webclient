@@ -25,12 +25,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.auth.rest.StandardLogin;
+import org.cibseven.webapp.compat.JacksonHelper;
 import org.cibseven.webapp.exception.InvalidUserIdException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.providers.utils.URLUtils;
@@ -46,13 +48,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.json.JsonMapper;
-import tools.jackson.databind.node.ObjectNode;
-
 import lombok.extern.slf4j.Slf4j;
-import tools.jackson.core.JacksonException;
 
 @Slf4j
 @Component
@@ -60,7 +56,6 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 	
 	@Value("${cibseven.webclient.user.provider:org.cibseven.webapp.auth.SevenUserProvider}") String userProvider;
 	@Value("${cibseven.webclient.users.search.wildcard:}") String wildcard;
-	private final ObjectMapper objectMapper = new JsonMapper();
 
 	@Override
 	public Authorizations getUserAuthorization(String userId, CIBUser user) {
@@ -136,9 +131,9 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 			getEngineRestUrl(user) + "/user/count",
 			filters != null ? filters : Map.of()
 		);
-		ResponseEntity<JsonNode> response = doGet(url, JsonNode.class, user, false);
-		JsonNode body = response.getBody();
-		return body != null ? body.get("count").asLong() : 0;
+		ResponseEntity<Map> response = doGet(url, Map.class, user, false);
+		Map body = response.getBody();
+		return body != null ? ((Number) body.get("count")).longValue() : 0;
 	}
 	
 	public Collection<SevenUser> fetchUsers(CIBUser user) throws SystemException {
@@ -149,15 +144,10 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 	public SevenVerifyUser verifyUser(StandardLogin login, CIBUser user) throws SystemException {
 		String url = getEngineRestUrl(user) + "/identity/verify";
 
-		String bodyString;
-		ObjectNode loginNode = objectMapper.createObjectNode();
+		Map<String, Object> loginNode = new LinkedHashMap<>();
 		if (login.getUsername() != null) loginNode.put("username", login.getUsername());
 		if (login.getPassword() != null) loginNode.put("password", login.getPassword());
-		try {
-			bodyString = objectMapper.writeValueAsString(loginNode);
-		} catch (JacksonException e) {
-			throw new SystemException(e);
-		}
+		String bodyString = JacksonHelper.toJson(loginNode);
 
 		return doPost(url, bodyString, SevenVerifyUser.class, user).getBody();	
 	}
@@ -294,10 +284,9 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 		
 			doPost(url, body , null, flowUser);
 
-		} catch (JacksonException e) {
-			SystemException se = new SystemException(e);
-			log.info("Exception in createUser(...):", se);
-			throw se;
+		} catch (SystemException e) {
+			log.info("Exception in createUser(...):", e);
+			throw e;
 		}
 	}
 	
@@ -310,11 +299,10 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 		{
 			doPut(url, user.json(), flowUser);
 		} 
-		catch (JacksonException e) 
+		catch (SystemException e)
 		{
-			SystemException se = new SystemException(e);
-			log.info("Exception in updateUserProfile(...):", se);
-			throw se;
+			log.info("Exception in updateUserProfile(...):", e);
+			throw e;
 		}
 	}
 
@@ -391,10 +379,9 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 		try {
 			doPost(url, group.json() , null, user);
 		} 
-		catch (JacksonException e) {
-			SystemException se = new SystemException(e);
-			log.info("Exception in createGroup(...):", se);
-			throw se;
+		catch (SystemException e) {
+			log.info("Exception in createGroup(...):", e);
+			throw e;
 		}
 	}
 
@@ -404,10 +391,9 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 		try {
 			doPut(url, group.json(), user);
 		} 
-		catch (JacksonException e) {
-			SystemException se = new SystemException(e);
-			log.info("Exception in updateGroup(...):", se);
-			throw se;
+		catch (SystemException e) {
+			log.info("Exception in updateGroup(...):", e);
+			throw e;
 		}
 	}
 
@@ -447,10 +433,9 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 		try {
 			return doPost(url, authorization.json(), Authorization.class, user);
 		} 
-		catch (JacksonException e) {
-			SystemException se = new SystemException(e);
-			log.info("Exception in createAuthorization(...):", se);
-			throw se;
+		catch (SystemException e) {
+			log.info("Exception in createAuthorization(...):", e);
+			throw e;
 		}
 	}
 

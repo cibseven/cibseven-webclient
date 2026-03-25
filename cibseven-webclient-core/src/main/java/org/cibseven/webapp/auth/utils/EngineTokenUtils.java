@@ -17,16 +17,15 @@
 package org.cibseven.webapp.auth.utils;
 
 import java.util.Base64;
+import java.util.Map;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.JwtTokenSettings;
 import org.cibseven.webapp.auth.User;
 import org.cibseven.webapp.auth.providers.JwtUserProvider.TokenSettings;
+import org.cibseven.webapp.compat.JacksonHelper;
 import org.cibseven.webapp.config.EngineRestProperties;
 import org.cibseven.webapp.config.EngineRestSource;
-
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.json.JsonMapper;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -158,16 +157,17 @@ public class EngineTokenUtils {
 			
 			// Decode the payload (middle part)
 			String payload = new String(Base64.getUrlDecoder().decode(parts[1]));
-			ObjectMapper mapper = new JsonMapper();
-			var claims = mapper.readTree(payload);
-			
+			@SuppressWarnings("unchecked")
+			Map<String, Object> claims = JacksonHelper.fromJson(payload, Map.class);
+
 			// Extract user JSON and parse engine from it
-			var userNode = claims.get("user");
-			if (userNode != null && userNode.isString()) {
-				var userData = mapper.readTree(userNode.asString());
-				var engineNode = userData.get("engine");
-				if (engineNode != null && engineNode.isString()) {
-					return engineNode.asString();
+			Object userValue = claims.get("user");
+			if (userValue instanceof String userJson) {
+				@SuppressWarnings("unchecked")
+				Map<String, Object> userData = JacksonHelper.fromJson(userJson, Map.class);
+				Object engineValue = userData.get("engine");
+				if (engineValue instanceof String engineStr) {
+					return engineStr;
 				}
 			}
 		} catch (Exception e) {

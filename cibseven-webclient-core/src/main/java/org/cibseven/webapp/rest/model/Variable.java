@@ -21,11 +21,9 @@ import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.json.JsonMapper;
+import org.cibseven.webapp.compat.JacksonHelper;
 
 import lombok.Data;
-import tools.jackson.core.JacksonException;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -92,8 +90,8 @@ public class Variable {
 		return value == null;
 	}
 
-	public String asJson() throws JacksonException {
-		return new JsonMapper().writeValueAsString(this);
+	public String asJson() {
+		return JacksonHelper.toJson(this);
 	}
 	
 	/*

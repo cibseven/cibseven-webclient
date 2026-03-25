@@ -32,8 +32,6 @@ import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.rest.model.Metric;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import tools.jackson.databind.JsonNode;
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -48,11 +46,11 @@ public class SystemProvider extends SevenProviderBase implements ISystemProvider
 			params += addQueryParameter(params, entry.getKey(), value, true);
 	    }
 		url += params;
-		JsonNode body =  ((ResponseEntity<JsonNode>) doGet(url, JsonNode.class, user, true)).getBody();
+		Map body = ((ResponseEntity<Map>) doGet(url, Map.class, user, true)).getBody();
 		if (body == null) {
 			throw new NullPointerException();
 		}
-		return body.get("result").asInt();
+		return ((Number) body.get("result")).intValue();
 	}
 	
 	private Map<String, Object> createSumParamsMap(String metric, String startDate, String endDate) {
@@ -64,9 +62,9 @@ public class SystemProvider extends SevenProviderBase implements ISystemProvider
 	}
 
 	@Override
-	public JsonNode getTelemetryData(CIBUser user) {
+	public Object getTelemetryData(CIBUser user) {
 		String url = getEngineRestUrl(user) + "/telemetry/data";
-		return ((ResponseEntity<JsonNode>) doGet(url, JsonNode.class, user, false)).getBody();
+		return ((ResponseEntity<Map>) doGet(url, Map.class, user, false)).getBody();
 	}
 
 	@Override

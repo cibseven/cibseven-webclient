@@ -21,13 +21,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.io.IOUtils;
-import tools.jackson.core.JacksonException;
 
 import org.cibseven.webapp.NamedByteArrayDataSource;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.compat.JacksonHelper;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.exception.UnexpectedTypeException;
@@ -50,10 +51,6 @@ import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.json.JsonMapper;
-import tools.jackson.databind.node.ObjectNode;
 
 import jakarta.activation.DataSource;
 import lombok.extern.slf4j.Slf4j;
@@ -366,9 +363,8 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 					Class<?> clazz =  Class.forName(objectType);
 
 					if (DataSource.class.isAssignableFrom(clazz)) {
-						final ObjectMapper mapper = new JsonMapper();
 						@SuppressWarnings("unchecked")
-						DataSource ds = mapper.convertValue(variable.getValue(), (Class<? extends DataSource>) clazz);
+						DataSource ds = JacksonHelper.fromJson(JacksonHelper.toJson(variable.getValue()), (Class<? extends DataSource>) clazz);
 
 						return new NamedByteArrayDataSource(ds.getName(), ds.getContentType(),
 								IOUtils.toByteArray(ds.getInputStream()));
@@ -387,7 +383,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		    return new NamedByteArrayDataSource(filename, mimeType, data);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
-		} catch (JacksonException | IOException e) {
+		} catch (SystemException | IOException e) {
 			throw new SystemException(e);
 		}
 	}
@@ -437,9 +433,8 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 					Class<?> clazz =  Class.forName(objectType);
 
 					if (DataSource.class.isAssignableFrom(clazz)) {
-						final ObjectMapper mapper = new JsonMapper();
 						@SuppressWarnings("unchecked")
-						DataSource ds = mapper.convertValue(variable.getValue(), (Class<? extends DataSource>) clazz);
+						DataSource ds = JacksonHelper.fromJson(JacksonHelper.toJson(variable.getValue()), (Class<? extends DataSource>) clazz);
 
 						//return new ResponseEntity<>(IOUtils.toByteArray(ds.getInputStream()), HttpStatus.OK);
 						return generateFileResponse(IOUtils.toByteArray(ds.getInputStream()));
@@ -454,7 +449,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 			return generateFileResponse(data); //ResponseEntity<>(data, HttpStatus.OK);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
-		} catch (JacksonException | IOException e) {
+		} catch (SystemException | IOException e) {
 			throw new SystemException(e);
 		}
 	}
@@ -495,12 +490,11 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 	public ProcessStart submitStartFormVariables(String processDefinitionId, List<Variable> formResult, CIBUser user) throws SystemException {
 		//String url = camundaUrl + "/engine-rest/process-definition/key/" + processDefinitionKey + "/submit-form";
 		String url = getEngineRestUrl(user) + "/process-definition/" + processDefinitionId + "/submit-form";
-		ObjectMapper mapper = new JsonMapper();
-		ObjectNode variables = mapper.getNodeFactory().objectNode();
-		ObjectNode modifications = mapper.getNodeFactory().objectNode();
-		try {		
+		Map<String, Object> variables = new LinkedHashMap<>();
+		Map<String, Object> modifications = new LinkedHashMap<>();
+		try {
 			for (Variable variable: formResult) {
-				ObjectNode variablePost = mapper.getNodeFactory().objectNode();
+				Map<String, Object> variablePost = new LinkedHashMap<>();
                 String val = String.valueOf(variable.getValue());
 				if (variable.getValue() == null) {
 					variablePost.put("type", "Null");
@@ -525,26 +519,20 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 				}
 
 				if (variable.getType().equals("Object")) {
-					variablePost.set("valueInfo", mapper.valueToTree(variable.getValueInfo()));
+					variablePost.put("valueInfo", variable.getValueInfo());
 					variablePost.put("type", "Object");
-					try {
-						variablePost.put("value", mapper.writeValueAsString(variable.getValue()));
-					} catch (JacksonException e) {
-						SystemException se = new SystemException(e);
-						log.info("Exception in submitVariables(...):", se);
-						throw se;
-					}
+					variablePost.put("value", JacksonHelper.toJson(variable.getValue()));
 				}
-		
+
 				if (variable.getType().equals("File")) {
-					variablePost.set("valueInfo", mapper.valueToTree(variable.getValueInfo()));
+					variablePost.put("valueInfo", variable.getValueInfo());
 					variablePost.put("type", "File");
 				}
 
-				variables.set(variable.getName(), variablePost);
+				variables.put(variable.getName(), variablePost);
 			}
 
-			modifications.set("variables", variables);
+			modifications.put("variables", variables);
 			return doPost(url, modifications, ProcessStart.class, user).getBody();
 		} catch (HttpStatusCodeException e) {
 			SystemException se = new SystemException(e.getResponseBodyAsString() + "[VARIABLES] " + variables, e);
@@ -573,18 +561,17 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 	public void saveVariableInProcessInstanceId(String processInstanceId, List<Variable> variables, CIBUser user) throws SystemException {
 		String url = getEngineRestUrl(user) + "/process-instance/" + processInstanceId + "/variables";
 
-		ObjectMapper mapper = new JsonMapper();
-		ObjectNode variablesF = mapper.getNodeFactory().objectNode();
-		ObjectNode modifications = mapper.getNodeFactory().objectNode();
+		Map<String, Object> variablesF = new LinkedHashMap<>();
+		Map<String, Object> modifications = new LinkedHashMap<>();
 
 		for (Variable variable: variables) {
-			ObjectNode variablePost = mapper.getNodeFactory().objectNode();	
+			Map<String, Object> variablePost = new LinkedHashMap<>();
 			variablePost.put("value", String.valueOf(variable.getValue()));
 			variablePost.put("type", variable.getType());
-			variablesF.set(variable.getName(), variablePost);
+			variablesF.put(variable.getName(), variablePost);
 		}
 
-		modifications.set("modifications", variablesF);
+		modifications.put("modifications", variablesF);
 
 		try {
 			doPost(url, modifications, String.class, user);
@@ -598,12 +585,11 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 	public void submitVariables(String processInstanceId, List<Variable> formResult, CIBUser user, String processDefinitionId) throws SystemException {
 		String url = getEngineRestUrl(user) + "/process-instance/" + processInstanceId + "/variables";
 
-		ObjectMapper mapper = new JsonMapper();
-		ObjectNode variables = mapper.getNodeFactory().objectNode();
-		ObjectNode modifications = mapper.getNodeFactory().objectNode();
+		Map<String, Object> variables = new LinkedHashMap<>();
+		Map<String, Object> modifications = new LinkedHashMap<>();
 
 		for (Variable variable: formResult) {
-			ObjectNode variablePost = mapper.getNodeFactory().objectNode();
+			Map<String, Object> variablePost = new LinkedHashMap<>();
 			String val = String.valueOf(variable.getValue());
 			if (variable.getValue() == null) {
 				variablePost.put("type", "Null");
@@ -628,33 +614,21 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 			}
 
 			if (variable.getType().equals("json")) {
-				variablePost.set("valueInfo", mapper.valueToTree(variable.getValueInfo()));
+				variablePost.put("valueInfo", variable.getValueInfo());
 				variablePost.put("type", "json");
-				try {
-					variablePost.put("value", mapper.writeValueAsString(variable.getValue()));
-				} catch (JacksonException e) {
-					SystemException se = new SystemException(e);
-					log.info("Exception in submitVariables(...):", se);
-					throw se;
-				}
+				variablePost.put("value", JacksonHelper.toJson(variable.getValue()));
 			}
 
 			if (variable.getType().equals("Object")) {
-				variablePost.set("valueInfo", mapper.valueToTree(variable.getValueInfo()));
+				variablePost.put("valueInfo", variable.getValueInfo());
 				variablePost.put("type", "Object");
-				try {
-					variablePost.put("value", mapper.writeValueAsString(variable.getValue()));
-				} catch (JacksonException e) {
-					SystemException se = new SystemException(e);
-					log.info("Exception in submitVariables(...):", se);
-					throw se;
-				}
+				variablePost.put("value", JacksonHelper.toJson(variable.getValue()));
 			}
 
-			variables.set(variable.getName(), variablePost);
+			variables.put(variable.getName(), variablePost);
 		}
 
-		modifications.set("modifications", variables);
+		modifications.put("modifications", variables);
 
 		try {
 			doPost(url, modifications, String.class, user);

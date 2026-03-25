@@ -57,11 +57,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpStatusCodeException;
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.json.JsonMapper;
 
-import tools.jackson.core.JacksonException;
+import org.cibseven.webapp.compat.JacksonHelper;
 
 @Component
 public class ProcessProvider extends SevenProviderBase implements IProcessProvider{
@@ -139,11 +136,11 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 
 			for(Process process : processes) {
 				String urlInstances = getEngineRestUrl(user) + "/process-instance/count?processDefinitionId=" + process.getId();
-				JsonNode body = ((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody();
+				Map body = ((ResponseEntity<Map>) doGet(urlInstances, Map.class, user, false)).getBody();
 				if (body == null) {
 					throw new NullPointerException();
 				}
-				process.setRunningInstances(body.get("count").asLong());
+				process.setRunningInstances(((Number) body.get("count")).longValue());
 			}
 
 			return processes;
@@ -170,23 +167,23 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 			for(Process process : processes) {
 				String urlInstances = getEngineRestUrl(user) + "/history/process-instance/count?processDefinitionId=" + process.getId();
 
-				JsonNode body = ((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody();
+				Map body = ((ResponseEntity<Map>) doGet(urlInstances, Map.class, user, false)).getBody();
 				if (body == null)
 					throw new NullPointerException();
-				process.setAllInstances(body.get("count").asLong());
+				process.setAllInstances(((Number) body.get("count")).longValue());
 
 				urlInstances = getEngineRestUrl(user) + "/history/process-instance/count?unfinished=true&processDefinitionId=" + process.getId();
 
-				body = ((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody();
+				body = ((ResponseEntity<Map>) doGet(urlInstances, Map.class, user, false)).getBody();
 				if (body == null)
 					throw new NullPointerException();
-				process.setRunningInstances(body.get("count").asLong());
+				process.setRunningInstances(((Number) body.get("count")).longValue());
 
 				urlInstances = getEngineRestUrl(user) + "/history/process-instance/count?completed=true&processDefinitionId=" + process.getId();
-				body = ((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody();
+				body = ((ResponseEntity<Map>) doGet(urlInstances, Map.class, user, false)).getBody();
 				if (body == null)
 					throw new NullPointerException();
-				process.setCompletedInstances(body.get("count").asLong());
+				process.setCompletedInstances(((Number) body.get("count")).longValue());
 			}
 		}
 		return processes;
@@ -203,27 +200,27 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 
 			// all instances
 			String urlInstances = getEngineRestUrl(user) + "/history/process-instance/count?processDefinitionId=" + id;
-			JsonNode body = ((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody();
+			Map body = ((ResponseEntity<Map>) doGet(urlInstances, Map.class, user, false)).getBody();
 			if (body == null)
 				throw new NullPointerException();
-			process.setAllInstances(body.get("count").asLong());
+			process.setAllInstances(((Number) body.get("count")).longValue());
 
 			// running instances
 			// should be fetched from runtime api, due to:
 			// - when historyLevel is none, no history is recorded
 			// - it could be faster when a lot of instances are completed in the past
 			urlInstances = getEngineRestUrl(user) + "/process-instance/count?processDefinitionId=" + process.getId();
-			body = ((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody();;
+			body = ((ResponseEntity<Map>) doGet(urlInstances, Map.class, user, false)).getBody();;
 			if (body == null)
 				throw new NullPointerException();
-			process.setRunningInstances(body.get("count").asLong());
+			process.setRunningInstances(((Number) body.get("count")).longValue());
 
 			// completed instances
 			urlInstances = getEngineRestUrl(user) + "/history/process-instance/count?completed=true&processDefinitionId=" + process.getId();
-			body = ((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody();;
+			body = ((ResponseEntity<Map>) doGet(urlInstances, Map.class, user, false)).getBody();;
 			if (body == null)
 				throw new NullPointerException();
-			process.setCompletedInstances(body.get("count").asLong());
+			process.setCompletedInstances(((Number) body.get("count")).longValue());
 		}
 
 		return process;
@@ -405,13 +402,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		}
 		url += "&firstResult=" + firstResult + "&maxResults=" + maxResults;
 		data.put("processDefinitionId", id);
-		ObjectMapper objectMapper = new JsonMapper();
-		String body = "";
-		try {
-			body = objectMapper.writeValueAsString(data);
-		} catch (JacksonException e) {
-			throw new SystemException(e);
-		}
+		String body = JacksonHelper.toJson(data);
 		//findIncident
 		Collection<HistoryProcessInstance> processes = Arrays.asList(((ResponseEntity<HistoryProcessInstance[]>) doPost(url, body, HistoryProcessInstance[].class, user)).getBody());
 
@@ -430,12 +421,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		        dataIdIn.put("maxResults", maxResults);
 		        dataIdIn.put("sorting", sorting);
 
-		        String bodyIdIn = "";
-		        try {
-		        	bodyIdIn = objectMapper.writeValueAsString(dataIdIn);
-		        } catch (JacksonException e) {
-		            throw new SystemException(e);
-		        }
+		        String bodyIdIn = JacksonHelper.toJson(dataIdIn);
 
 		        processes = Arrays.asList(
 		            ((ResponseEntity<HistoryProcessInstance[]>) doPost(url, bodyIdIn, HistoryProcessInstance[].class, user)).getBody()
@@ -454,11 +440,11 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	@Override
 	public Long countProcessesInstancesHistory(Map<String, Object> filters, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/history/process-instance/count";
-		JsonNode body = ((ResponseEntity<JsonNode>) doPost(url, filters, JsonNode.class, user)).getBody();
+		Map body = ((ResponseEntity<Map>) doPost(url, filters, Map.class, user)).getBody();
 		if (body == null) {
 			throw new NullPointerException();
 		}
-		return body.get("count").asLong();
+		return ((Number) body.get("count")).longValue();
 	}
 
 	@Override

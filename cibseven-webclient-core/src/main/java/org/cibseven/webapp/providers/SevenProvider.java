@@ -77,8 +77,6 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
 
-import tools.jackson.databind.JsonNode;
-
 import jakarta.servlet.http.HttpServletRequest;
 
 public class SevenProvider extends SevenProviderBase implements BpmProvider {
@@ -1168,7 +1166,7 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	*/                                                                                                                      
 
 	@Override
-	public JsonNode getTelemetryData(CIBUser user) {
+	public Object getTelemetryData(CIBUser user) {
 		return systemProvider.getTelemetryData(user);
 	}
 	
