@@ -20,6 +20,8 @@ import org.cibseven.webapp.auth.SevenUserProvider;
 import org.cibseven.webapp.rest.model.InfoVersion;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -90,8 +92,8 @@ public class InfoService extends BaseService {
 	@Operation(
 			summary = "Get config JSON",
 			description = "<strong>Return: Config JSON object")
-	@GetMapping("/properties")
-	public ObjectNode getConfig() {
+	@GetMapping(value = "/properties", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<String> getConfig() {
 		ObjectNode configJson = JsonNodeFactory.instance.objectNode();
 		configJson.put("cockpitUrl", cockpitUrl);
 		configJson.put("theme", theme);
@@ -107,25 +109,31 @@ public class InfoService extends BaseService {
 		configJson.put("flowLinkHelp", flowLinkHelp);
 		configJson.put("productNamePageTitle", productNamePageTitle);
 		configJson.put("servicesBasePath", servicesBasePath);
-		
+
 		configJson.put("engineRestPath", engineRestPath);
 		configJson.put("engineRestUrl", engineRestUrl);
 		configJson.put("authorizationEnabled", authorizationEnabled);
-		
+
+		ObjectMapper mapper = new JsonMapper();
         try {
-            ObjectMapper mapper = new JsonMapper();
         	JsonNode supportDialogJson = mapper.readTree(supportDialog);
 			configJson.set("supportDialog", supportDialogJson);
 		} catch (JacksonException e) {
 			log.warn("Property support dialog is not set or incorrect");
 		}
-       
+
 		if (ssoActive) {
 			configJson.put("authorizationEndpoint", authorizationEndpoint);
 			configJson.put("clientId", clientId);
 			configJson.put("scopes", scopes);
 		}
-		return configJson;
+
+		try {
+			return ResponseEntity.ok(mapper.writeValueAsString(configJson));
+		} catch (JacksonException e) {
+			log.error("Error serializing config properties", e);
+			return ResponseEntity.internalServerError().build();
+		}
 	}
 	
 }

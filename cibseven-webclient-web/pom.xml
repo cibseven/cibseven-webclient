@@ -14,7 +14,7 @@
 
 		<dependency>
 			<groupId>org.cibseven.webapp</groupId>
-			<artifactId>cibseven-webclient-core</artifactId>
+			<artifactId>cibseven-webclient-core-spring-boot-4</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
