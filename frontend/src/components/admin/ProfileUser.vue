@@ -21,16 +21,20 @@
     :left-caption="$t('admin.users.title') + ' - ' + user.id" :left-size="[12, 6, 4, 3, 2]">
     <template v-slot:left>
       <b-list-group>
-        <b-list-group-item v-if="!user.noInfo" class="border-0 px-3 py-2" :active="selectedTab === 'profile'" exact :to="'?tab=profile'">
+        <b-list-group-item v-if="!user.noInfo" class="border-0 px-3 py-2" :active="selectedTab === 'profile'" exact
+          :to="'?tab=profile'">
           <span> {{ $t('admin.users.profile') }}</span>
         </b-list-group-item>
-        <b-list-group-item v-if="!user.noInfo && $root.config.userEditable" class="border-0 px-3 py-2" :active="selectedTab === 'account'" exact :to="'?tab=account'">
+        <b-list-group-item v-if="!user.noInfo && $root.config.userEditable" class="border-0 px-3 py-2"
+          :active="selectedTab === 'account'" exact :to="'?tab=account'">
           <span> {{ $t('password.recover.changePassword') }}</span>
         </b-list-group-item>
-        <b-list-group-item v-if="!user.noInfo" class="border-0 px-3 py-2" :active="selectedTab === 'groups'" exact :to="'?tab=groups'">
+        <b-list-group-item v-if="!user.noInfo" class="border-0 px-3 py-2" :active="selectedTab === 'groups'" exact
+          :to="'?tab=groups'">
           <span> {{ $t('admin.users.groups') }}</span>
         </b-list-group-item>
-        <b-list-group-item v-if="!user.noInfo" class="border-0 px-3 py-2" :active="selectedTab === 'tenants'" exact :to="'?tab=tenants'">
+        <b-list-group-item v-if="!user.noInfo" class="border-0 px-3 py-2" :active="selectedTab === 'tenants'" exact
+          :to="'?tab=tenants'">
           <span> {{ $t('admin.tenants.title') }}</span>
         </b-list-group-item>
         <b-list-group-item v-if="$root.user && $root.user.id === user.id" class="border-0 px-3 py-2"
@@ -42,7 +46,8 @@
 
     <transition name="slide-in" mode="out-in">
       <div class="d-flex flex-column bg-light w-100 h-100" v-if="user.id">
-        <b-button v-if="editMode" variant="light" style="min-height: 40px; line-height: 20px;" :block="true" class="rounded-0 border-bottom text-start" :to="{ name: 'adminUsers' }">
+        <b-button v-if="editMode" variant="light" style="min-height: 40px; line-height: 20px;" :block="true"
+          class="rounded-0 border-bottom text-start" :to="{ name: 'adminUsers' }">
           <span class="mdi mdi-arrow-left me-2"></span>
           <span class="fw-bold">{{ $t('admin.users.title') }}</span>
         </b-button>
@@ -50,26 +55,28 @@
 
           <!-- Profile Tab -->
           <div v-if="selectedTab === 'profile'" class="row pt-3 ps-4 pe-4">
-            <ContentBlock
-              :title="$t('admin.users.editMessage', [user.firstName + ' ' + user.lastName])"
+            <ContentBlock :title="$t('admin.users.editMessage', [user.firstName + ' ' + user.lastName])"
               class="col-lg-6 col-md-8 col-sm-12">
               <CIBForm @submitted="update()">
-                <b-form-group :label="$t('admin.users.firstName') + '*'" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4"
-                  :invalid-feedback="$t('errors.invalid')">
-                  <b-form-input v-model="user.firstName"  @update:modelValue="dirty=true"
-                    :state="notEmpty(user.firstName)" :readonly="!$root.config.userEditable || !editMode" required></b-form-input>
+                <b-form-group :label="$t('admin.users.firstName') + '*'" label-cols-sm="6" label-cols-md="6"
+                  label-cols-lg="4" label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
+                  <b-form-input v-model="user.firstName" @update:modelValue="dirty = true"
+                    :state="notEmpty(user.firstName)" :readonly="!$root.config.userEditable || !editMode"
+                    required></b-form-input>
                 </b-form-group>
-                <b-form-group :label="$t('admin.users.lastName') + '*'" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4"
-                  :invalid-feedback="$t('errors.invalid')">
-                  <b-form-input v-model="user.lastName"  @update:modelValue="dirty=true"
-                    :state="notEmpty(user.lastName)" :readonly="!$root.config.userEditable || !editMode" required></b-form-input>
+                <b-form-group :label="$t('admin.users.lastName') + '*'" label-cols-sm="6" label-cols-md="6"
+                  label-cols-lg="4" label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
+                  <b-form-input v-model="user.lastName" @update:modelValue="dirty = true" :state="notEmpty(user.lastName)"
+                    :readonly="!$root.config.userEditable || !editMode" required></b-form-input>
                 </b-form-group>
-                <b-form-group :label="$t('admin.users.email')" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4"
-                  :invalid-feedback="$t('errors.invalid')">
-                  <b-form-input v-model="user.email" type="email" autocomplete="email"  @update:modelValue="dirty = true" :readonly="!$root.config.userEditable || !editMode"></b-form-input>
+                <b-form-group :label="$t('admin.users.email')" label-cols-sm="6" label-cols-md="6" label-cols-lg="4"
+                  label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
+                  <b-form-input v-model="user.email" type="email" autocomplete="email" @update:modelValue="dirty = true"
+                    :readonly="!$root.config.userEditable || !editMode"></b-form-input>
                 </b-form-group>
                 <div class="float-end" v-if="$root.config.userEditable">
-                  <b-button type="submit" variant="secondary" :disabled="!dirty" >{{ $t('admin.users.update') }}</b-button>
+                  <b-button type="submit" variant="secondary" :disabled="!dirty">{{ $t('admin.users.update')
+                    }}</b-button>
                 </div>
               </CIBForm>
             </ContentBlock>
@@ -77,34 +84,50 @@
 
           <!-- Account Tab -->
           <div v-else-if="selectedTab === 'account' && $root.config.userEditable" class="row pt-3 ps-4 pe-4">
-            <ContentBlock
-              :title="$t('password.recover.changePassword')"
-              class="col-lg-6 col-md-8 col-sm-12">
-              <b-form-group v-if="$root.config.userPasswordChangeEnabled" labels-cols-lg="4" label-size="lg" label-class="fw-bold pt-0 pb-4" class="m-0">
+            <ContentBlock :title="$t('password.recover.changePassword')" class="col-lg-6 col-md-8 col-sm-12">
+              <b-form-group v-if="$root.config.userPasswordChangeEnabled" labels-cols-lg="4" label-size="lg"
+                label-class="fw-bold pt-0 pb-4" class="m-0">
                 <b-form-group :label="$t('password.recover.currentUserPassword') + '*'" label-cols-sm="4"
                   label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
-                    <b-form-input type="password" v-model="credentials.authenticatedUserPassword"></b-form-input>
+                  <b-form-input type="password" v-model="credentials.authenticatedUserPassword"></b-form-input>
                 </b-form-group>
-                <b-form-group :label="$t('password.recover.newPassword') + '*'" label-cols-sm="4"
-                  label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
-                  <b-form-input type="password" v-model="credentials.password"></b-form-input>
+                <b-form-group :label="$t('password.recover.newPassword') + '*'" label-cols-sm="4" label-align-sm="left"
+                  label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
+                  <b-form-input type="password" v-model="credentials.password" @blur="validatePassword" @input="resetPasswordValidation"
+                    ref="newPasswordInput" :state="passwordValid"></b-form-input>
+                  <div v-if="passwordValid === false" class="invalid-feedback d-block">
+                    <h6>{{ $t('password.policy.title') }}</h6>
+                    <div>{{ $t('password.policy.header') }}</div>
+                    <ul>
+                      <li
+                        v-for="(item, idx) in passwordRulesBroken.length ? passwordRulesBroken : $tm('password.policy.items')"
+                        :key="idx">
+                        {{ item }}
+                      </li>
+                    </ul>
+                  </div>
                 </b-form-group>
                 <b-form-group :label="$t('password.recover.newPasswordRepeat') + '*'" label-cols-sm="4"
                   label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
-                  <b-form-input type="password" v-model="passwordRepeat"></b-form-input>
+                  <b-form-input type="password" v-model="passwordRepeat" :class="{
+                    'is-invalid': passwordRepeat && !same(credentials.password, passwordRepeat),
+                    'is-valid': passwordValid && same(credentials.password, passwordRepeat),
+                  }"></b-form-input>
                 </b-form-group>
                 <div class="float-end d-flex align-items-center">
-                  <b-button type="submit" variant="secondary" @click="changePassword($event)">{{$t('password.recover.changePassword')}}</b-button>
+                  <b-button type="submit" variant="secondary"
+                    @click="changePassword($event)">{{ $t('password.recover.changePassword') }}</b-button>
                 </div>
               </b-form-group>
               <b-form-group v-else labels-cols-lg="4" label-size="lg" label-class="fw-bold pt-0 pb-4" class="m-0">
-                <b-form-group :label="$t('password.recover.id') + '*'" label-cols-sm="4"
-                  label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
+                <b-form-group :label="$t('password.recover.id') + '*'" label-cols-sm="4" label-align-sm="left"
+                  label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
                   <b-form-input v-model="user.id" :state="notEmpty(user.id)" required readonly></b-form-input>
                 </b-form-group>
                 <div class="float-end d-flex align-items-center">
                   <b-spinner variant="primary" class="mx-2" v-if="sendingEmail"></b-spinner>
-                  <b-button type="submit" variant="secondary" :disabled="sendingEmail" @click="onSendEmail()">{{ $t('password.recover.sendEmail') }}</b-button>
+                  <b-button type="submit" variant="secondary" :disabled="sendingEmail" @click="onSendEmail()">{{
+                    $t('password.recover.sendEmail') }}</b-button>
                 </div>
               </b-form-group>
             </ContentBlock>
@@ -112,12 +135,11 @@
 
           <!-- Groups Tab -->
           <div v-else-if="selectedTab === 'groups'" class="row pt-3 ps-4 pe-4">
-            <ContentBlock
-              :title="$t('admin.users.group.title', [user.firstName + ' ' + user.lastName])"
-              class="">
+            <ContentBlock :title="$t('admin.users.group.title', [user.firstName + ' ' + user.lastName])" class="">
 
               <template v-if="editMode" v-slot:actions>
-                <b-button size="sm" variant="secondary" v-if="$root.config.userEditable" @click="openAssignGroupModal" class="mdi mdi-plus">
+                <b-button size="sm" variant="secondary" v-if="$root.config.userEditable" @click="openAssignGroupModal"
+                  class="mdi mdi-plus">
                   <span class="ms-2">{{ $t('admin.users.group.add') }}</span>
                 </b-button>
               </template>
@@ -125,7 +147,8 @@
               <div v-if="groups" class="p-2">
                 <FlowTable striped :items="groups" primary-key="id" :fields="groupFields">
                   <template v-slot:cell(actions)="row">
-                    <CellActionButton @click="unassignGroup(row.item)" :title="$t('admin.groups.deleteGroup')" icon="mdi-delete-outline"></CellActionButton>
+                    <CellActionButton @click="unassignGroup(row.item)" :title="$t('admin.groups.deleteGroup')"
+                      icon="mdi-delete-outline"></CellActionButton>
                   </template>
                 </FlowTable>
               </div>
@@ -134,12 +157,12 @@
 
           <!-- Tenants Tab -->
           <div v-else-if="selectedTab === 'tenants'" class="row pt-3 ps-4 pe-4">
-            <ContentBlock
-              :title="$t('admin.tenants.associationTitle', [user.firstName + ' ' + user.lastName])"
+            <ContentBlock :title="$t('admin.tenants.associationTitle', [user.firstName + ' ' + user.lastName])"
               class="">
 
               <template v-if="editMode" v-slot:actions>
-                <b-button size="sm" variant="secondary" v-if="$root.config.userEditable" @click="openAssignTenantModal" class="mdi mdi-plus">
+                <b-button size="sm" variant="secondary" v-if="$root.config.userEditable" @click="openAssignTenantModal"
+                  class="mdi mdi-plus">
                   <span class="ms-2"> {{ $t('admin.tenants.addTo') }} </span>
                 </b-button>
               </template>
@@ -147,7 +170,8 @@
               <div v-if="userTenants.length > 0" class="p-2">
                 <FlowTable striped :items="userTenants" primary-key="id" :fields="tenantFields">
                   <template v-slot:cell(actions)="row">
-                    <CellActionButton @click="unassignTenant(row.item)" :title="$t('admin.tenants.unassignTenant')" icon="mdi-delete-outline"></CellActionButton>
+                    <CellActionButton @click="unassignTenant(row.item)" :title="$t('admin.tenants.unassignTenant')"
+                      icon="mdi-delete-outline"></CellActionButton>
                   </template>
                 </FlowTable>
               </div>
@@ -167,13 +191,12 @@
         <!-- Assign Groups Modal -->
         <b-modal v-if="editMode" ref="assignGroupsModal" :title="$t('admin.users.group.add')" size="lg">
           <div class="container g-0">
-            <FlowTable :items="unAssignedGroups" primary-key="id" striped
-              :fields="[
-                { label: '', key: 'selected', class: 'col-sm-1', sortable: false, thClass: 'text-center', tdClass: 'text-center' },
-                { label: 'admin.groups.id', key: 'id', class: 'col-sm-3' },
-                { label: 'admin.groups.name', key: 'name', class: 'col-sm-5' },
-                { label: 'admin.groups.type', key: 'type', class: 'col-sm-3' },
-              ]">
+            <FlowTable :items="unAssignedGroups" primary-key="id" striped :fields="[
+              { label: '', key: 'selected', class: 'col-sm-1', sortable: false, thClass: 'text-center', tdClass: 'text-center' },
+              { label: 'admin.groups.id', key: 'id', class: 'col-sm-3' },
+              { label: 'admin.groups.name', key: 'name', class: 'col-sm-5' },
+              { label: 'admin.groups.type', key: 'type', class: 'col-sm-3' },
+            ]">
               <template v-slot:cell(selected)="row">
                 <b-form-checkbox v-model="row.item.selected"></b-form-checkbox>
               </template>
@@ -187,18 +210,18 @@
           </div>
           <template v-slot:modal-footer>
             <b-button @click="$refs.assignGroupsModal.hide()" variant="light">{{ $t('confirm.cancel') }}</b-button>
-            <b-button @click="assignGroups(); $refs.assignGroupsModal.hide()" variant="primary">{{ $t('confirm.ok') }}</b-button>
+            <b-button @click="assignGroups(); $refs.assignGroupsModal.hide()" variant="primary">{{ $t('confirm.ok')
+              }}</b-button>
           </template>
         </b-modal>
 
         <b-modal v-if="editMode" ref="assignTenantsModal" :title="$t('admin.tenants.addTo')" size="lg">
           <div v-if="unassignedTenants.length > 0" class="container g-0">
-            <FlowTable :items="unassignedTenants" primary-key="id" striped
-              :fields="[
-                { label: '', key: 'selected', class: 'col-sm-1', sortable: false, tdClass: 'text-center' },
-                { label: 'admin.tenants.fullId', key: 'id', class: 'col-6' },
-                { label: 'admin.tenants.fullName', key: 'name', class: 'col-5' },
-              ]">
+            <FlowTable :items="unassignedTenants" primary-key="id" striped :fields="[
+              { label: '', key: 'selected', class: 'col-sm-1', sortable: false, tdClass: 'text-center' },
+              { label: 'admin.tenants.fullId', key: 'id', class: 'col-6' },
+              { label: 'admin.tenants.fullName', key: 'name', class: 'col-5' },
+            ]">
               <template v-slot:cell(selected)="row">
                 <b-form-checkbox v-model="row.item.selected"></b-form-checkbox>
               </template>
@@ -209,7 +232,8 @@
           </div>
           <template v-slot:modal-footer>
             <b-button @click="$refs.assignTenantsModal.hide()" variant="light">{{ $t('confirm.cancel') }}</b-button>
-            <b-button @click="assignTenants(); $refs.assignTenantsModal.hide()" variant="primary">{{ $t('confirm.ok') }}</b-button>
+            <b-button @click="assignTenants(); $refs.assignTenantsModal.hide()" variant="primary">{{ $t('confirm.ok')
+              }}</b-button>
           </template>
         </b-modal>
 
@@ -230,7 +254,8 @@
           </div>
           <template v-slot:modal-footer>
             <b-button @click="$refs.deleteModal.hide()" variant="light">{{ $t('confirm.cancel') }}</b-button>
-            <b-button @click="deleteUser(); $refs.deleteModal.hide()" variant="primary">{{ $t('confirm.ok') }}</b-button>
+            <b-button @click="deleteUser(); $refs.deleteModal.hide()" variant="primary">{{ $t('confirm.ok')
+              }}</b-button>
           </template>
         </b-modal>
 
@@ -244,18 +269,27 @@
       </ul>
     </b-popover>
     <SuccessAlert ref="emailSent"> {{ $t('password.recover.emailSent') }} </SuccessAlert>
-    <SuccessAlert ref="updateProfile" top="0" style="z-index: 1031">{{ $t('admin.users.updateProfileMessage', [user.id]) }}</SuccessAlert>
-    <SuccessAlert ref="updatePassword" top="0" style="z-index: 1031">{{ $t('admin.users.updatePasswordMessage', [user.id]) }}</SuccessAlert>
-    <SuccessAlert ref="deleteUser" top="0" style="z-index: 1031">{{ $t('admin.users.userDeletedMessage', [user.id]) }}</SuccessAlert>
-    <SuccessAlert ref="unassignGroup" top="0" style="z-index: 1031">{{ $t('admin.users.unassignGroupMessage', [user.id]) }}</SuccessAlert>
-    <SuccessAlert ref="unassignTenant" top="0" style="z-index: 1031">{{ $t('admin.tenants.unassignUserMessage', [user.id]) }}</SuccessAlert>
+    <SuccessAlert ref="updateProfile" top="0" style="z-index: 1031">{{ $t('admin.users.updateProfileMessage', [user.id])
+      }}
+    </SuccessAlert>
+    <SuccessAlert ref="updatePassword" top="0" style="z-index: 1031">{{ $t('admin.users.updatePasswordMessage',
+      [user.id])
+      }}</SuccessAlert>
+    <SuccessAlert ref="deleteUser" top="0" style="z-index: 1031">{{ $t('admin.users.userDeletedMessage', [user.id]) }}
+    </SuccessAlert>
+    <SuccessAlert ref="unassignGroup" top="0" style="z-index: 1031">{{ $t('admin.users.unassignGroupMessage', [user.id])
+      }}
+    </SuccessAlert>
+    <SuccessAlert ref="unassignTenant" top="0" style="z-index: 1031">{{ $t('admin.tenants.unassignUserMessage',
+      [user.id])
+      }}</SuccessAlert>
   </SidebarsFlow>
 </template>
 
 <script>
-import { AdminService } from '@/services.js'
+import { AdminService, SetupService } from '@/services.js'
 import { notEmpty, same } from '@/components/admin/utils.js'
-import { SidebarsFlow, FlowTable, SuccessAlert, CIBForm, ContentBlock }  from '@cib/common-frontend'
+import { SidebarsFlow, FlowTable, SuccessAlert, CIBForm, ContentBlock } from '@cib/common-frontend'
 import ProfilePreferencesTab from '@/components/admin/ProfilePreferencesTab.vue'
 import CellActionButton from '@/components/common-components/CellActionButton.vue'
 import { mapActions, mapGetters } from 'vuex'
@@ -268,13 +302,13 @@ export default {
     editMode: {
       type: Boolean,
       default: false
-      
+
     },
   },
   data: function () {
     return {
       leftOpen: true,
-      user: { id: null, firstName: null,  lastName: null, email: null, noInfo: true },
+      user: { id: null, firstName: null, lastName: null, email: null, noInfo: true },
       dirty: false,
       credentials: { authenticatedUserPassword: null, password: null },
       passwordRepeat: null,
@@ -285,11 +319,13 @@ export default {
       passwordPolicyError: false,
       passwordVisibility: { current: false, new: false, repeat: false },
       sendingEmail: false,
-      userTenants: []
+      userTenants: [],
+      passwordValid: null,
+      passwordRulesBroken: []
     }
   },
   watch: {
-    '$route.params.userId': function() {
+    '$route.params.userId': function () {
       if (!this.editMode && this.$route.params.userId !== this.$router.app.user.id) {
         this.$router.push({ name: 'start' })
       } else {
@@ -297,7 +333,7 @@ export default {
         this.clean()
       }
     },
-    '$route.query.tab': function() {
+    '$route.query.tab': function () {
       if (this.selectedTab === 'groups') this.loadGroups(this.$route.params.userId)
       else if (this.selectedTab === 'tenants') this.loadTenants(this.$route.params.userId)
     }
@@ -378,37 +414,19 @@ export default {
   },
   methods: {
     ...mapActions(['fetchTenants', 'getTenantsByUser', 'removeUserFromTenant', 'addUserToTenant']),
-    loadUser: async function(userId) {
+    loadUser: async function (userId) {
       return AdminService.findUsers({ id: userId }).then(response => {
-        this.user = response[0] || { id: userId, firstName: null,  lastName: null, email: null, noInfo: true }
+        this.user = response[0] || { id: userId, firstName: null, lastName: null, email: null, noInfo: true }
       })
     },
-    loadGroups: function(userId) {
-      AdminService.findGroups({ member: userId }).then(response => {
-        this.groups = response
-      })
+    resetPasswordValidation: function () {
+      this.passwordValid = null
     },
-    async loadTenants(userId) {
-      this.userTenants = await this.getTenantsByUser(userId)
-    },
-    update: function() {
-      AdminService.updateUserProfile(this.user.id, this.user).then(() => {
-        this.$refs.updateProfile.show(2)
-      })
-    },
-    notEmpty: function(value) {
-      return notEmpty(value)
-    },
-    same: function(value, value2) {
-      return same(value, value2)
-    },
-    changePassword: function (evt) {
-      evt.preventDefault()
-      if (same(this.credentials.password, this.passwordRepeat) && notEmpty(this.credentials.authenticatedUserPassword)) {
-        AdminService.updateUserCredentials(this.user.id, this.credentials.password,
-          this.credentials.authenticatedUserPassword).then(() => {
-          this.passwordPolicyError = false
-          this.$refs.updatePassword.show(2)
+    validatePassword: function () {
+      console.log('validate password')
+      if (notEmpty(this.credentials.password)) {
+        SetupService.validatePasswordPolicy(this.credentials.password, this.user).then((response) => {
+          this.passwordValid = response.data.valid
         }, error => {
           const data = error.response.data
           if (data && data.type === 'PasswordPolicyException') {
@@ -417,26 +435,60 @@ export default {
         })
       }
     },
-    deleteUser: function() {
+    loadGroups: function (userId) {
+      AdminService.findGroups({ member: userId }).then(response => {
+        this.groups = response
+      })
+    },
+    async loadTenants(userId) {
+      this.userTenants = await this.getTenantsByUser(userId)
+    },
+    update: function () {
+      AdminService.updateUserProfile(this.user.id, this.user).then(() => {
+        this.$refs.updateProfile.show(2)
+      })
+    },
+    notEmpty: function (value) {
+      return notEmpty(value)
+    },
+    same: function (value, value2) {
+      return same(value, value2)
+    },
+    changePassword: function (evt) {
+      evt.preventDefault()
+      if (same(this.credentials.password, this.passwordRepeat) && notEmpty(this.credentials.authenticatedUserPassword)) {
+        AdminService.updateUserCredentials(this.user.id, this.credentials.password,
+          this.credentials.authenticatedUserPassword).then(() => {
+            this.passwordPolicyError = false
+            this.$refs.updatePassword.show(2)
+          }, error => {
+            const data = error.response.data
+            if (data && data.type === 'PasswordPolicyException') {
+              this.passwordPolicyError = true
+            }
+          })
+      }
+    },
+    deleteUser: function () {
       AdminService.deleteUser(this.user.id).then(() => {
         this.$refs.deleteUser.show(2)
         this.$router.push({ name: 'adminUsers' })
       })
     },
-    unassignGroup: function(group) {
+    unassignGroup: function (group) {
       AdminService.deleteMember(group.id, this.user.id).then(() => {
         this.$refs.unassignGroup.show(2)
         this.loadGroups(this.user.id)
       })
     },
-    loadUnassignedGroups: function() {
+    loadUnassignedGroups: function () {
       this.unAssignedGroupsLoading = true
       const userGroups = JSON.parse(JSON.stringify(this.groups))
       this.unAssignedGroups = []
       AdminService.findGroups().then(allGroups => {
         allGroups.forEach(group => {
           const isAssigned = userGroups.some(userGroup => userGroup.id === group.id)
-          if (!isAssigned){
+          if (!isAssigned) {
             group.selected = false
             this.unAssignedGroups.push(group)
           }
@@ -444,7 +496,7 @@ export default {
         this.unAssignedGroupsLoading = false
       })
     },
-    openAssignGroupModal: function() {
+    openAssignGroupModal: function () {
       this.loadUnassignedGroups()
       this.$refs.assignGroupsModal.show()
     },
@@ -457,13 +509,13 @@ export default {
         }
       })
     },
-    clean: function() {
+    clean: function () {
       this.dirty = false
       this.credentials = { authenticatedUserPassword: null, password: null }
       this.passwordRepeat = null
       this.groups = null
     },
-    onSendEmail: function() {
+    onSendEmail: function () {
       this.sendingEmail = true
       this.AuthService.passwordRecover({ id: this.user.id }).then(() => {
         this.sendingEmail = false
@@ -472,7 +524,7 @@ export default {
         this.sendingEmail = false
       })
     },
-    openAssignTenantModal: function() {
+    openAssignTenantModal: function () {
       this.loadUnassignedTenants()
       this.$refs.assignTenantsModal.show()
     },
@@ -482,7 +534,7 @@ export default {
       this.unassignedTenants = []
       this.tenants.forEach(tenant => {
         const isAssigned = userTenants.some(userTenant => userTenant.id === tenant.id)
-        if (!isAssigned){
+        if (!isAssigned) {
           tenant.selected = false
           this.unassignedTenants.push(tenant)
         }

@@ -54,6 +54,8 @@ import org.cibseven.webapp.rest.model.JobDefinition;
 import org.cibseven.webapp.rest.model.Message;
 import org.cibseven.webapp.rest.model.Metric;
 import org.cibseven.webapp.rest.model.NewUser;
+import org.cibseven.webapp.rest.model.PasswordPolicyRequest;
+import org.cibseven.webapp.rest.model.PasswordPolicyResponse;
 import org.cibseven.webapp.rest.model.Process;
 import org.cibseven.webapp.rest.model.ProcessDiagram;
 import org.cibseven.webapp.rest.model.ProcessInstance;
@@ -101,6 +103,7 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
     @Autowired private ITenantProvider tenantProvider;
     @Autowired private IExternalTaskProvider externalTaskProvider;
     @Autowired private IEngineProvider engineProvider;
+	@Autowired private IdentityProvider identityProvider;
     
     
     /*
@@ -1328,5 +1331,9 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	@Override
 	public void createSetupUser(NewUser user, String engine) throws InvalidUserIdException {
 		engineProvider.createSetupUser(user, engine);
+	}
+	@Override
+	public PasswordPolicyResponse validatePasswordPolicy(PasswordPolicyRequest request, CIBUser user) throws SystemException {
+		return identityProvider.validatePasswordPolicy(request, user);
 	}
 }

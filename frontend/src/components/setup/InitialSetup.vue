@@ -23,7 +23,7 @@
         <h2 class="h4">{{ $t('setup.title') }}</h2>
         <p>{{ $t('setup.description') }}</p>
       </div>
-
+      
       <div class="container-fluid">
         <div class="row justify-content-center">
           <!-- Help Text - shows first on mobile -->
