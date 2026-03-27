@@ -755,7 +755,7 @@ public interface BpmProvider {
 	Collection<User> findUsers(Optional<String> id, Optional<String> firstName, Optional<String> firstNameLike, Optional<String> lastName,
 			Optional<String> lastNameLike, Optional<String> email, Optional<String> emailLike, Optional<String> memberOfGroup, Optional<String> memberOfTenant, 
 			Optional<String> idIn, Optional<String> firstResult, Optional<String> maxResult, 
-			Optional<String> sortBy, Optional<String> sortOrder, CIBUser user);
+			Optional<String> sortBy, Optional<String> sortOrder, Optional<Boolean> likePatternIgnoreCase, CIBUser user);
 
 	/**
 	 * Get the count of users in the system with optional filters.
