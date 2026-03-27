@@ -20,41 +20,19 @@
  * Provides fallback configuration for inherited projects
  */
 
+import { ACTION_PERMISSIONS, toConfigPermissions } from './actionPermissions.js'
+
 // Default configuration values
 const DEFAULT_CONFIG = {
   supportedLanguages: ["en"],
   theme: "cib",
   taskListTime: "30000",
   warnOnDueExpirationIn: 48,
-  permissions: {
-    tasklist: { application: ["ACCESS"] },
-    cockpit: { application: ["ACCESS"] },
-    displayTasks: { task: ["READ", "UPDATE"] },
-    displayFilter: { filter: ["READ"] },
-    editFilter: { filter: ["UPDATE"] },
-    deleteFilter: { filter: ["DELETE"] },
-    createFilter: { filter: ["CREATE"] },
-    startProcess: {
-      processDefinition: ["READ", "CREATE_INSTANCE"],
-      processInstance: ["CREATE"]
-    },
-    displayProcess: { processDefinition: ["READ"] },
-    managementProcess: { processDefinition: ["READ"] },
-    historyProcess: { processDefinition: ["READ", "READ_HISTORY"] },
-    usersManagement: { user: ["ALL"] },
-    groupsManagement: { group: ["ALL"] },
-    authorizationsManagement: { authorization: ["ALL"] },
-    systemManagement: { system: ["ALL"] },
-    tenantsManagement: { tenant: ["ALL"] },
-    userProfile: { application: ["ALL"] },
-    udpateInstanceProcessDefinition: { processDefinition: ["UPDATE_INSTANCE"] },
-    updateProcessDefinition : { processDefinition: ["UPDATE"] },
-    deleteProcessDefinition: { processDefinition: ["DELETE"] },
-    suspendProcessInstance: {processInstance: ["SUSPEND"] },
-	  updateProcessInstance: { processInstance: ["UPDATE"] },
-    deleteProcessInstance: { processInstance: ["DELETE"] },
-    deleteHistoricProcessInstance: { historicProcessInstance: ["DELETE"] },
-  },
+  // Permission requirements for every action are centrally defined in
+  // actionPermissions.js.  toConfigPermissions() converts the full
+  // (AND + OR) definitions into the flat format expected by the legacy
+  // mixin methods (processByPermissions, filtersByPermissions, etc.).
+  permissions: toConfigPermissions(ACTION_PERMISSIONS),
   taskSorting: {
     fields: ["created", "dueDate", "name", "assignee", "priority"],
     default: {

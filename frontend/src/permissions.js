@@ -14,6 +14,14 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+import {
+	buildPermissionsChecks,
+	checkPermissionsAllowed,
+	checkPermissionsDenied,
+	checkActionAllowed,
+} from './utils/permissionsUtils.js'
+import { ACTION_PERMISSIONS } from './utils/actionPermissions.js'
+
 const permissionsMixin = {
 	methods: {
 		hasAdminManagementPermissions: function(permissions) {
@@ -26,47 +34,46 @@ const permissionsMixin = {
 		applicationPermissions: function(permissionsRequired, access) {
 			if (!this.$root.config.authorizationEnabled) return true
 			if (!permissionsRequired) return false
-			const permissionsCheck = this.$_permissionsMixin_setAllPermissionsObject(permissionsRequired)
-			return this.$_permissionsMixin_checkPermissionsAllowed(access, null, permissionsCheck)
+			const permissionsCheck = buildPermissionsChecks(permissionsRequired, this.$root.user.permissions)
+			return checkPermissionsAllowed(access, null, permissionsCheck, this.$root.config.authorizationEnabled)
 		},
-		applicationPermissionsDenied: function (permissionsRequired, access) {
+		applicationPermissionsDenied: function(permissionsRequired, access) {
 			if (!this.$root.config.authorizationEnabled) return false
 			if (!permissionsRequired) return true
-			const permissionsCheck = this.$_permissionsMixin_setAllPermissionsObject(permissionsRequired)
-			return this.$_permissionsMixin_checkPermissionsDenied(access, null, permissionsCheck)
+			const permissionsCheck = buildPermissionsChecks(permissionsRequired, this.$root.user.permissions)
+			return checkPermissionsDenied(access, null, permissionsCheck, this.$root.config.authorizationEnabled)
 		},
 		tasksByPermissions: function(permissionsRequired, tasks) {
-			const permissionsCheck = this.$_permissionsMixin_setAllPermissionsObject(permissionsRequired)
+			const permissionsCheck = buildPermissionsChecks(permissionsRequired, this.$root.user.permissions)
 			const tmpTasks = []
 			tasks.forEach(function(t) {
-				if (this.$_permissionsMixin_checkPermissionsAllowed(t, 'id', permissionsCheck)) tmpTasks.push(t)
+				if (checkPermissionsAllowed(t, 'id', permissionsCheck, this.$root.config.authorizationEnabled)) tmpTasks.push(t)
 			}.bind(this))
 			return tmpTasks
 		},
 		processesByPermissions: function(permissionsRequired, processes) {
-			const permissionsCheck = this.$_permissionsMixin_setAllPermissionsObject(permissionsRequired)
+			const permissionsCheck = buildPermissionsChecks(permissionsRequired, this.$root.user.permissions)
 			processes.forEach(function(p) {
-				if (this.$_permissionsMixin_checkPermissionsAllowed(p, 'key', permissionsCheck)) p.revoked = false
+				if (checkPermissionsAllowed(p, 'key', permissionsCheck, this.$root.config.authorizationEnabled)) p.revoked = false
 				else p.revoked = true
 			}.bind(this))
 			return processes
 		},
 		processByPermissions: function(permissionsRequired, process) {
-			const permissionsCheck = this.$_permissionsMixin_setAllPermissionsObject(permissionsRequired)
-			return this.$_permissionsMixin_checkPermissionsAllowed(process, 'key', permissionsCheck)
+			const permissionsCheck = buildPermissionsChecks(permissionsRequired, this.$root.user.permissions)
+			return checkPermissionsAllowed(process, 'key', permissionsCheck, this.$root.config.authorizationEnabled)
 		},
 		filtersByPermissions: function(permissionsRequired, filters) {
 			const tmpFilters = []
 			if (!filters || !Array.isArray(filters) || !filters.length) return tmpFilters // Return empty array if no filters are provided or filters is not an array
-			const permissionsCheck = this.$_permissionsMixin_setAllPermissionsObject(permissionsRequired)
-
+			const permissionsCheck = buildPermissionsChecks(permissionsRequired, this.$root.user.permissions)
 			filters.forEach(function(f) {
-				if (this.$_permissionsMixin_checkPermissionsAllowed(f, 'id', permissionsCheck)) tmpFilters.push(f)
+				if (checkPermissionsAllowed(f, 'id', permissionsCheck, this.$root.config.authorizationEnabled)) tmpFilters.push(f)
 			}.bind(this))
 			return tmpFilters
 		},
 		filterByPermissions: function(permissionsRequired, filter, create) {
-			const permissionsCheck = this.$_permissionsMixin_setAllPermissionsObject(permissionsRequired)
+			const permissionsCheck = buildPermissionsChecks(permissionsRequired, this.$root.user.permissions)
 			//Handle custom CREATE permissions case//
 			if (create) {
 				const createCheck = permissionsCheck.find(function(p) {
@@ -75,61 +82,33 @@ const permissionsMixin = {
 				return !!createCheck
 			}
 			/////////////////////////////////////////
-			return filter ? this.$_permissionsMixin_checkPermissionsAllowed(filter, 'id', permissionsCheck) : false
+			return filter ? checkPermissionsAllowed(filter, 'id', permissionsCheck, this.$root.config.authorizationEnabled) : false
 		},
 		adminManagementPermissions: function(permissionsRequired, access) {
-			const permissionsCheck = this.$_permissionsMixin_setAllPermissionsObject(permissionsRequired)
-			return this.$_permissionsMixin_checkPermissionsAllowed(access, null, permissionsCheck)
+			const permissionsCheck = buildPermissionsChecks(permissionsRequired, this.$root.user.permissions)
+			return checkPermissionsAllowed(access, null, permissionsCheck, this.$root.config.authorizationEnabled)
 		},
-		$_permissionsMixin_setAllPermissionsObject: function(permissionsRequired) {
-			if (!permissionsRequired) return []
-			return Object.keys(permissionsRequired).map(function(key) {
-				return this.$_permissionsMixin_getPermissionsProcessed(this.$root.user.permissions[key], permissionsRequired[key])
-			}.bind(this))
+		/**
+		 * Check whether the current user is allowed to perform a named action on a
+		 * specific resource, using the centralized ACTION_PERMISSIONS registry.
+		 *
+		 * Supports both conjunctive (AND) and disjunctive (OR) permission definitions:
+		 *   • Plain-object action  – all resource types must grant access.
+		 *   • Array-of-alternatives – any single alternative is sufficient.
+		 *
+		 * @param {string} actionName   Key from ACTION_PERMISSIONS (e.g. 'deleteProcessInstance').
+		 * @param {string} resourceId   The resource identifier to check against
+		 *                              (e.g. the process definition key or task ID).
+		 * @returns {boolean}
+		 */
+		checkActionPermission: function(actionName, resourceId) {
+			const actionDef = ACTION_PERMISSIONS[actionName]
+			if (actionDef === undefined) {
+				console.warn(`[permissionsMixin] checkActionPermission: unknown action "${actionName}". Check ACTION_PERMISSIONS in actionPermissions.js.`)
+				return false
+			}
+			return checkActionAllowed(actionDef, resourceId, this.$root.user.permissions, this.$root.config.authorizationEnabled)
 		},
-		$_permissionsMixin_getPermissionsProcessed: function(permissionsToHandle, permissionsToCheck) {
-			const permissionsProcesses = {granted: [], revoked: []}
-			const groups = ["groupId", "userId"]
-			groups.forEach(function(group) {
-				this.$_permissionsMixin_getPermissionsGrouped(permissionsToHandle, group).forEach(function(p) {
-					const allPermsIncluded = permissionsToCheck.every(function(v) {
-						return p.permissions.includes(v)
-					})
-					const somePermsIncluded = permissionsToCheck.some(function(v) {
-						return p.permissions.includes(v)
-					})
-					if (p.type === 2) {
-						if (!permissionsProcesses.revoked.includes(p.resourceId) &&
-							(somePermsIncluded || p.permissions.includes('ALL')))
-							permissionsProcesses.revoked.push(p.resourceId)
-					} else if ((p.permissions.includes('ALL') || allPermsIncluded)) {
-						if (!permissionsProcesses.granted.includes(p.resourceId))
-							permissionsProcesses.granted.push(p.resourceId)
-					}
-				})
-			}.bind(this))
-			return permissionsProcesses
-		},
-		$_permissionsMixin_getPermissionsGrouped: function(permissions, field) {
-			return permissions?.filter(function(p) {
-				return p[field] !== null
-			}) || []
-		},
-		$_permissionsMixin_checkPermissionsAllowed: function(object, key, permissionsCheck) {
-			if (!this.$root.config.authorizationEnabled) return true;
-			const val = key ? object[key] : object
-			return (permissionsCheck.length > 0) && permissionsCheck.every(permission =>
-				(permission.granted.includes(val) || permission.granted.includes('*')) &&
-				!permission.revoked.includes(val) && !permission.revoked.includes('*')
-			)
-		},
-		$_permissionsMixin_checkPermissionsDenied: function(object, key, permissionsCheck) {
-			if (!this.$root.config.authorizationEnabled) return false;
-			const val = key ? object[key] : object
-			return permissionsCheck.some(permission =>
-				permission.revoked.includes(val) || permission.revoked.includes('*')
-			)
-		}
 	}
 }
 
