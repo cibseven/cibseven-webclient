@@ -54,7 +54,8 @@ export default defineConfig({
       scss: {
         // Suppress deprecation warnings from Bootstrap
         quietDeps: true,
-        silenceDeprecations: ['legacy-js-api', 'import', 'global-builtin']
+        silenceDeprecations: ['legacy-js-api', 'import', 'global-builtin'],
+        loadPaths: ['node_modules']
       }
     }
   },
