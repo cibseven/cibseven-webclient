@@ -357,26 +357,24 @@ export default {
       })
       pool = this.deploymentsSelected.slice(0, this.deploymentsSelected.length)
       while (pool.length > 0) {
-        let deployment = pool.shift()
-        const deletePromise = ProcessService.deleteDeployment(deployment.id, true).then(() => {
-          this.deploymentsDelData.deleted++
-          this.deployments = this.deployments.filter(df => {
-            return deployment.id !== df.id
-          })
-          if (this.deployment && deployment.id === this.deployment.id) {
-            this.deployment = null
-            this.resources = null
-            this.$router.push({
-              name: 'deployments'
-            })
-          }
-        })
-        await deletePromise
+  const deployment = pool.shift()
+  try {
+    await ProcessService.deleteDeployment(deployment.id, true)
+    this.deploymentsDelData.deleted++
+    this.deployments = this.deployments.filter(df => deployment.id !== df.id)
+    if (this.deployment && deployment.id === this.deployment.id) {
+      this.deployment = null
+      this.resources = null
+      this.$router.push({ name: 'deployments' })
+    }
+    } catch (error) {
+      console.error(`Failed to delete deployment with id ${deployment.id}:`, error)
       }
       this.loadProcesses(false)
       this.deleteLoader = false
       this.$refs.deploymentsDeleted.show()
       this.refreshTotalCount()
+    }
     },
     deleteDeployment: function () {
       ProcessService.deleteDeployment(this.deploymentId, true).then(() => {
