@@ -21,11 +21,11 @@
     <div v-if="showSpinner">
       <p class="text-center p-4"><BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}</p>
     </div>
-    <FlowTable v-else-if="calledProcessDefinitions.length > 0" resizable striped thead-class="sticky-header" :items="calledProcessDefinitions" primary-key="id" prefix="process-instance.calledProcessDefinitions."
+    <FlowTable v-else-if="calledProcessDefinitions.length > 0" resizable striped thead-class="sticky-header" :items="calledProcessDefinitions" primary-key="id"
       :fields="[
-        { label: 'calledProcessDefinition', key: 'label', class: 'col-4', tdClass: 'py-1' },
-        { label: 'state', key: 'state', class: 'col-4', tdClass: 'py-1' },
-        { label: 'activity', key: 'activity', class: 'col-4', tdClass: 'py-1' }
+        { label: 'process-instance.calledProcessDefinitions.calledProcessDefinition', key: 'label', class: 'col-4', tdClass: 'py-1' },
+        { label: 'process-instance.calledProcessDefinitions.state', key: 'state', class: 'col-4', tdClass: 'py-1' },
+        { label: 'process-instance.calledProcessDefinitions.activity', key: 'activity', class: 'col-4', tdClass: 'py-1' },
       ]">
       <template v-slot:cell(label)="table">
         <CopyableActionButton
@@ -38,7 +38,11 @@
                 processKey: table.item.definitionKey,
                 versionIndex: table.item.version
               },
-              query: { parentProcessDefinitionId: process.id, tab: 'instances' }
+              query: {
+                parentProcessDefinitionId: process.id,
+                ...(table.item.tenantId ? { tenantId: table.item.tenantId } : {}),
+                tab: 'instances',
+              }
             }"
           />
       </template>
@@ -70,12 +74,9 @@
 </template>
 
 <script>
-import { FlowTable } from '@cib/common-frontend'
-import { BWaitingBox } from '@cib/bootstrap-components'
+import { FlowTable, BWaitingBox, CopyableActionButton, SuccessAlert } from '@cib/common-frontend'
 import { mapActions, mapGetters } from 'vuex'
-import { CopyableActionButton, SuccessAlert } from '@cib/common-frontend'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
-
 
 export default {
   name: 'CalledProcessDefinitionsTable',

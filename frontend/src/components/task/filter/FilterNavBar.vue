@@ -31,8 +31,8 @@
           <b-form-input :title="$t('searches.searchByFilterName')" size="sm" ref="input" type="search" v-model.trim="filter"
           class="form-control border-start-0 ps-0 form-control border-light shadow-none" :placeholder="$t('searches.searchByFilterName')"/>
           <template #append>
-            <b-button size="sm" v-hover-style="{ classes: ['text-primary'] }" variant="secondary-outline"
-              @click="sortOrder === 'desc' ? sortOrder = 'asc' : sortOrder = 'desc'" class="mdi mdi-16px py-0"
+            <b-button size="sm" variant="light"
+              @click="sortOrder === 'desc' ? sortOrder = 'asc' : sortOrder = 'desc'" class="mdi mdi-16px py-0 border-0"
               :class="sortOrder === 'desc' ? 'mdi-arrow-down' : 'mdi-arrow-up'"
               :title="sortOrder === 'desc' ? $t('sorting.desc') : $t('sorting.asc')">
               <span v-if="sortOrder === 'desc'" class="visually-hidden">{{ $t('sorting.desc') }}</span>
@@ -43,7 +43,9 @@
       </div>
       <div v-if="filtersFiltered.length > 0" class="overflow-auto flex-fill">
         <b-list-group>
-          <b-list-group-item v-for="filter of filtersFiltered" :key="filter.id" @mouseenter="focused = filter" @mouseleave="focused = null"
+          <b-list-group-item v-for="filter of filtersFiltered" :key="filter.id"
+            @mouseenter="focused = filter" @focusin="focused = filter"
+            @mouseleave="focused = null" @focusout="focused = null"
             action class="border-0 rounded-0 p-2" :class="filter.id === $store.state.filter.selected.id ? 'active' : ''" :to="'/seven/auth/tasks/' + filter.id">
             <div class="d-flex align-items-center">
               <div class="col-7 p-0" style="word-wrap: break-word">
@@ -58,25 +60,25 @@
               </div>
               <div :class="getClasses(filter)" class="ms-auto">
                 <button v-if="filterByPermissions($root.config.permissions.editFilter, $store.state.filter.selected)"
-                  class="btn btn-outline-secondary btn-sm border-0" type="button" :title="$t('nav-bar.filters.edit')" @click.stop="selectFilter(filter); showFilterDialog('edit')">
-                  <span class="visually-hidden">{{ $t('nav-bar.filters.edit') }}</span>
+                  class="btn btn-light btn-sm border-0 me-1" type="button" :title="$t('nav-bar.filters.edit')" @click.stop="selectFilter(filter); showFilterDialog('edit')" @keydown.enter.stop.prevent="selectFilter(filter); showFilterDialog('edit')" @keydown.space.stop.prevent="selectFilter(filter); showFilterDialog('edit')">
+                  <span class="visually-hidden">{{ $t('nav-bar.filters.editFilter', { filterName: filter.name }) }}</span>
                   <span class="mdi mdi-pencil"></span>
                 </button>
                 <button v-if="filterByPermissions($root.config.permissions.deleteFilter, $store.state.filter.selected)"
-                  class="btn btn-outline-secondary btn-sm border-0" type="button" :title="$t('nav-bar.filters.delete')"
-                  @click.stop="workingFilter = filter; $refs.confirmDeleteFilter.show()">
-                  <span class="visually-hidden">{{ $t('nav-bar.filters.delete') }}</span>
+                  class="btn btn-light btn-sm border-0 me-1" type="button" :title="$t('nav-bar.filters.delete')"
+                  @click.stop="workingFilter = filter; $refs.confirmDeleteFilter.show()" @keydown.enter.stop.prevent="workingFilter = filter; $refs.confirmDeleteFilter.show()" @keydown.space.stop.prevent="workingFilter = filter; $refs.confirmDeleteFilter.show()">
+                  <span class="visually-hidden">{{ $t('nav-bar.filters.deleteFilter', { filterName: filter.name }) }}</span>
                   <span class="mdi mdi-close"></span>
                 </button>
               </div>
-              <button v-if="filter.favorite" class="btn btn-outline-secondary btn-sm border-0" type="button"
-                @click.stop="deleteFavoriteFilter(filter)" :title="$t('nav-bar.filters.pin')">
-                <span class="visually-hidden">{{ $t('nav-bar.filters.pin') }}</span>
+              <button v-if="filter.favorite" class="btn btn-light btn-sm border-0" type="button"
+                @click.stop="deleteFavoriteFilter(filter)" @keydown.enter.stop.prevent="deleteFavoriteFilter(filter)" @keydown.space.stop.prevent="deleteFavoriteFilter(filter)" :title="$t('nav-bar.filters.unpin')">
+                <span class="visually-hidden">{{ $t('nav-bar.filters.unpinFilter', { filterName: filter.name }) }}</span>
                 <span class="mdi mdi-pin text-dark"></span>
               </button>
-              <button v-else class="btn btn-outline-secondary btn-sm border-0" type="button"
-                @click.stop="setFavoriteFilter(filter)" :title="$t('nav-bar.filters.pin')">
-                <span class="visually-hidden">{{ $t('nav-bar.filters.pin') }}</span>
+              <button v-else class="btn btn-light btn-sm border-0" type="button"
+                @click.stop="setFavoriteFilter(filter)" @keydown.enter.stop.prevent="setFavoriteFilter(filter)" @keydown.space.stop.prevent="setFavoriteFilter(filter)" :title="$t('nav-bar.filters.pin')">
+                <span class="visually-hidden">{{ $t('nav-bar.filters.pinFilter', { filterName: filter.name }) }}</span>
                 <span class="mdi mdi-pin text-muted"></span>
               </button>
             </div>
@@ -85,7 +87,7 @@
       </div>
       <BWaitingBox ref="filterLoader" class="d-flex flex-fill justify-content-center pt-4" styling="width:30%">
         <div v-if="filtersFiltered.length < 1">
-          <img src="@/assets/images/task/no_tasks.svg" class="d-block mx-auto mt-3 mb-2" style="width: 200px">
+          <img src="@/assets/images/task/no_tasks.svg" class="d-block mx-auto mt-3 mb-2" style="width: 200px" alt="">
           <div class="h5 text-secondary text-center">{{ $t('nav-bar.filters.no-filters') }}</div>
         </div>
       </BWaitingBox>
@@ -108,8 +110,7 @@
 <script>
 import { permissionsMixin } from '@/permissions.js'
 import FilterModal from '@/components/task/filter/FilterModal.vue'
-import { ConfirmDialog } from '@cib/common-frontend'
-import { BWaitingBox } from '@cib/bootstrap-components'
+import { ConfirmDialog, BWaitingBox } from '@cib/common-frontend'
 import { formatDate } from '@/utils/dates.js'
 import { mapActions } from 'vuex'
 
@@ -155,7 +156,7 @@ export default {
   },
   computed: {
     filtersFiltered: function() {
-      var filters = []
+      let filters = []
       if (this.$store.state.filter.list) {
         filters = this.$store.state.filter.list.filter(filter => {
           return (filter.name) ? filter.name.toUpperCase().includes(this.filter.toUpperCase()) : false
@@ -208,7 +209,7 @@ export default {
       })
     },
     setFilterByName: function() {
-      var selectedFilter = this.$store.state.filter.list.find(filter => {
+      const selectedFilter = this.$store.state.filter.list.find(filter => {
         return filter.name === this.$route.query.filtername
       })
       if (selectedFilter) {
@@ -217,7 +218,7 @@ export default {
     },
     checkFilterIdInUrl: function(filterId) {
       if (this.$store.state.filter.list.length > 0 && filterId) {
-        var filterStore = this.$store.state.filter.list.find(filter => {
+        const filterStore = this.$store.state.filter.list.find(filter => {
           return filter.id === filterId
         })
         if (filterStore) this.selectFilter(filterStore)
@@ -226,28 +227,28 @@ export default {
     },
     selectFilter: function(filter) {
       if (this.$store.state.filter.list.length > 0) {
-        var taskId = this.$route.query.filtername ? this.$route.params.filterId : this.$route.params.taskId
-        var selectedFilter = this.$store.state.filter.list.find(f => {
+        const taskId = this.$route.query.filtername ? this.$route.params.filterId : this.$route.params.taskId
+        let selectedFilter = this.$store.state.filter.list.find(f => {
           return f.id === filter.id
         })
-        try {
-          //Use of '*' as special character when we don't specify the filter on a link
-          selectedFilter = (!this.$route.params.filterId || this.$route.params.filterId === '*') && localStorage.getItem('filter') ?
-            JSON.parse(localStorage.getItem('filter')) : selectedFilter
-        } catch(error) {
-          console.error('Filter format wrong: corrected')
-          console.error(error)
-        }
-        if ((!this.$route.params.filterId || selectedFilter) || !selectedFilter) {
-          this.$store.state.filter.selected = selectedFilter || this.$store.state.filter.list[0]
-          this.$emit('selected-filter', this.$store.state.filter.selected.id)
-          localStorage.setItem('filter', JSON.stringify(this.$store.state.filter.selected))
-          var filterId = this.$route.params.filterId === '*' ? '*' : this.$store.state.filter.selected.id
-          var path = '/seven/auth/tasks/' + filterId + (taskId ? '/' + taskId : '')
-          if (this.$route.path !== path) {
-            this.isSelectingFilter = true
-            this.$router.replace(path)
+        if (!selectedFilter ) {
+          try {
+            //Use of '*' as special character when we don't specify the filter on a link
+            selectedFilter = (!this.$route.params.filterId || this.$route.params.filterId === '*') && localStorage.getItem('filter') ?
+              JSON.parse(localStorage.getItem('filter')) : selectedFilter
+          } catch(error) {
+            console.error('Filter format wrong: corrected')
+            console.error(error)
           }
+        }
+        this.$store.state.filter.selected = selectedFilter || this.$store.state.filter.list[0]
+        this.$emit('selected-filter', this.$store.state.filter.selected.id)
+        localStorage.setItem('filter', JSON.stringify(this.$store.state.filter.selected))
+        const filterId = this.$route.params.filterId === '*' ? '*' : this.$store.state.filter.selected.id
+        const path = '/seven/auth/tasks/' + filterId + (taskId ? '/' + taskId : '')
+        if (this.$route.path !== path) {
+          this.isSelectingFilter = true
+          this.$router.replace(path)
         }
         this.updateSelectedFilterTasksCountIfNeeded()
       }
@@ -259,13 +260,13 @@ export default {
       }
     },
     getClasses: function(filter) {
-      var classes = []
-      if (filter !== this.focused) classes.push('invisible')
+      const classes = ['action-buttons-hidden']
+      if (filter === this.focused) classes.pop()
       return classes
     },
     deleteFilter: function() {
       this.$store.dispatch('deleteFilter', { filterId: this.workingFilter.id }).then(() => {
-        this.$emit('filter-alert', { message: 'msgFilterDeleted', filter: this.workingFilter.name })
+        this.$emit('filter-alert', { message: 'nav-bar.filters.msgFilterDeleted', filter: this.workingFilter.name })
         localStorage.removeItem('filter')
 		if (this.$store.state.filter.selected === this.workingFilter && this.$store.state.filter.list[0]) {
 			this.selectFilter(this.$store.state.filter.list[0])
@@ -289,3 +290,16 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.action-buttons-hidden {
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.list-group-item:hover .action-buttons-hidden,
+.list-group-item:focus-within .action-buttons-hidden,
+.action-buttons-hidden:focus-within {
+  opacity: 1;
+}
+</style>

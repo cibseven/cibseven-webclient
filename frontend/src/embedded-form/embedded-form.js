@@ -16,7 +16,7 @@
  */
 import { InfoService } from "@/services";
 import { switchLanguage, i18n } from "@/i18n";
-import { getTheme } from "@/utils/init";
+import { getTheme, loadTheme } from "@/utils/init";
 import CamSDK from "bpm-sdk";
 // Import jQuery to wrap DOM elements for BPM SDK compatibility - the SDK expects jQuery objects for .find() method calls
 import $ from 'jquery';
@@ -46,95 +46,87 @@ export function initEmbeddedForm(options = {}) {
     return InfoService.getProperties().then(response => {
         const config = response.data;
 
-        function loadTheme() {
-            const css = document.createElement('link');
-            css.rel = 'stylesheet';
-            css.type = 'text/css';
-            css.href = 'themes/' + getTheme(config) + '/styles.css';
-            document.head.appendChild(css);
-        }
+        return loadTheme(getTheme(config)).then(() => {
+            const searchParams = new URLSearchParams(window.location.search);
+            const lang = searchParams.get('lang');
+            const processDefinitionId = searchParams.get('processDefinitionId');
+            const taskId = searchParams.get('taskId');
+            // Check if this is a Camunda generated form (vs embedded form)
+            const generated = searchParams.get('generated');
+            config.supportedLanguages = [lang];
 
-        loadTheme();
+            // Request configuration from parent window via postMessage
+            return services.requestConfig().then(parentConfig => {
+                return switchLanguage(config, lang).then(() => {
+                    const isStartForm = !!processDefinitionId;
+                    const isGeneratedForm = !!generated;
+                    let embeddedForm;
 
-        const searchParams = new URLSearchParams(window.location.search);
-        const lang = searchParams.get('lang');
-        const processDefinitionId = searchParams.get('processDefinitionId');
-        const taskId = searchParams.get('taskId');
-        // Check if this is a Camunda generated form (vs embedded form)
-        const generated = searchParams.get('generated');
-        config.supportedLanguages = [lang];
-
-        // Request configuration from parent window via postMessage
-        return services.requestConfig().then(parentConfig => {
-            return switchLanguage(config, lang).then(() => {
-                const isStartForm = !!processDefinitionId;
-                const isGeneratedForm = !!generated;
-                let embeddedForm;
-
-                if (isStartForm) {
-                    submitButton.innerHTML = i18n.global.t('process.start');
-                } else {
-                    submitButton.innerHTML = i18n.global.t('task.actions.submit');
-                }
-                submitButton.addEventListener('click', () => {
-                    blockButtons(submitButton, saveButton);
-                    embeddedForm.submit(err => {
-                        if (err) {
-                            errorDiv.style.display = '';
-                            errorDiv.innerHTML = i18n.global.t('task.actions.saveError', [err]);
-                        } else {
-                            services.completeTask();
-                        }
-                        unblockButtons(submitButton, saveButton);
-                    });
-                });
-
-                if (isStartForm) {
-                    saveButton.style.display = 'none';
-                }
-                saveButton.innerHTML = i18n.global.t('task.actions.save');
-                saveButton.addEventListener('click', () => {
-                    blockButtons(submitButton, saveButton);
-                    embeddedForm.store(err => {
-                        if (err) {
-                            errorDiv.style.display = '';
-                            errorDiv.innerHTML = i18n.global.t('task.actions.saveError', [err]);
-                        } else {
-                            services.displaySuccessMessage();
-                        }
-                        unblockButtons(submitButton, saveButton);
-                    });
-                });
-
-                return loadEmbeddedForm(
-                    isStartForm,
-                    isGeneratedForm,
-                    processDefinitionId || taskId,
-                    embeddedContainer,
-                    formContainer,
-                    parentConfig,
-                    config
-                ).then(
-                    form => {
-                        embeddedForm = form;
-                        loaderDiv.style.display = 'none';
-                        contentDiv.style.display = 'flex';
-                        // Setup date picker handlers for generated forms to use Vue date picker from parent window
-                        if (isGeneratedForm) {
-                            setupDatePickerHandlers(formContainer);
-                        }
-                    },
-                    err => {
-                        console.error(err);
-                        services.displayErrorMessage(err);
-                        throw err;
+                    if (isStartForm) {
+                        submitButton.innerHTML = i18n.global.t('process.start');
+                    } else {
+                        submitButton.innerHTML = i18n.global.t('task.actions.submit');
                     }
-                ).catch(err => {
-                    console.error('Error initializing embedded form:', err);
-                    errorDiv.style.display = '';
-                    errorDiv.innerHTML = i18n.global.t('task.actions.initError', [err]);
-                    loaderDiv.style.display = 'none';
-                    throw err;
+                    submitButton.addEventListener('click', () => {
+                        blockButtons(submitButton, saveButton);
+                        embeddedForm.submit(err => {
+                            if (err) {
+                                errorDiv.style.display = '';
+                                errorDiv.innerHTML = i18n.global.t('task.actions.saveError', [err]);
+                            } else {
+                                services.completeTask();
+                            }
+                            unblockButtons(submitButton, saveButton);
+                        });
+                    });
+
+                    if (isStartForm) {
+                        saveButton.style.display = 'none';
+                    }
+                    saveButton.innerHTML = i18n.global.t('task.actions.save');
+                    saveButton.addEventListener('click', () => {
+                        blockButtons(submitButton, saveButton);
+                        embeddedForm.store(err => {
+                            if (err) {
+                                errorDiv.style.display = '';
+                                errorDiv.innerHTML = i18n.global.t('task.actions.saveError', [err]);
+                            } else {
+                                services.displaySuccessMessage();
+                            }
+                            unblockButtons(submitButton, saveButton);
+                        });
+                    });
+
+                    return loadEmbeddedForm(
+                        isStartForm,
+                        isGeneratedForm,
+                        processDefinitionId || taskId,
+                        embeddedContainer,
+                        formContainer,
+                        parentConfig,
+                        config
+                    ).then(
+                        form => {
+                            embeddedForm = form;
+                            loaderDiv.style.display = 'none';
+                            contentDiv.style.display = 'flex';
+                            // Setup date picker handlers for generated forms to use Vue date picker from parent window
+                            if (isGeneratedForm) {
+                                setupDatePickerHandlers(formContainer);
+                            }
+                        },
+                        err => {
+                            console.error(err);
+                            services.displayErrorMessage(err);
+                            throw err;
+                        }
+                    ).catch(err => {
+                        console.error('Error initializing embedded form:', err);
+                        errorDiv.style.display = '';
+                        errorDiv.innerHTML = i18n.global.t('task.actions.initError', [err]);
+                        loaderDiv.style.display = 'none';
+                        throw err;
+                    });
                 });
             });
         });
@@ -316,27 +308,47 @@ function loadEmbeddedForm(
     parentConfig,
     config
 ) {
+    // Build headers with authorization
     const headers = {
         authorization: parentConfig.authToken
     };
     
-    // CamSDK.Client handles the engine path internally based on the engine parameter
+    // Determine API URI and engine name based on engineId format:
+    // - If engineId contains '|', it's format "url|path|engineName" (additional engine)
+    // - If engineId doesn't contain '|', it's a simple engine name (default engine)
+    const apiUri = config.servicesBasePath;
+    let engineName = null;
     
-    var client = new CamSDK.Client({
+    if (parentConfig.engineId && parentConfig.engineId.includes('|')) {
+        // Additional engine with full URL info
+        const parts = parentConfig.engineId.split('|');
+        if (parts.length === 3) {
+            engineName = parts[2];
+        }
+    } else if (parentConfig.engineId) {
+        engineName = parentConfig.engineId;
+    }
+    
+    // Add engine name to headers if present
+    if (engineName) {
+        headers['X-Process-Engine'] = engineName;
+    }
+    
+    const client = new CamSDK.Client({
         mock: false,
-        apiUri: config.engineRestPath || '/engine-rest',
+        apiUri: apiUri,
         headers: headers,
-        engine: parentConfig.engineName || 'default'
+        engine: false // false to define absolute apiUri
     });
     return new Promise((resolve, reject) => {
         if (isStartForm) {
-            let processService = client.resource('process-definition');
+            const processService = client.resource('process-definition');
             processService.startForm({ id: referenceId }, (err, taskFormInfo) => {
                 if (err) reject(err);
                 else loadForm(taskFormInfo);
             });
         } else {
-            let taskService = client.resource('task');
+            const taskService = client.resource('task');
             // loads the task form using the task ID provided
             taskService.form(referenceId, (err, taskFormInfo) => {
                 if (err) reject(err);
@@ -344,7 +356,7 @@ function loadEmbeddedForm(
             });
         }
         async function loadForm(formInfo) {
-            let formConfig = {
+            const formConfig = {
                 client: client,
                 done: function(err, form) {
                   if (err) {
@@ -355,26 +367,54 @@ function loadEmbeddedForm(
                 }
             };
             if (formInfo.key.includes('deployment:')) {
-                let resource = await loadDeployedForm(client, isStartForm, referenceId);
+                const resource = await loadDeployedForm(client, isStartForm, referenceId);
                 formContainer.innerHTML = resource;
                 formConfig.formElement = $(formContainer);
                 if (embeddedContainer) embeddedContainer.style.display = 'none';
             } else if (formInfo.key.includes('/rendered-form')) {
                 // Load Camunda generated form HTML and normalize it for Vue integration
-                let resource = await loadGeneratedForm(isStartForm, referenceId, formContainer, client, config);
+                const resource = await loadGeneratedForm(isStartForm, referenceId, formContainer, client, config);
                 formContainer.innerHTML = resource;
                 formConfig.formElement = $(formContainer);
                 if (embeddedContainer) embeddedContainer.style.display = 'none';
             } else {
-                // Start with a relative url and replace doubled slashes if necessary
-                var url = formInfo.key
-                    .replace('embedded:', '')
-                    .replace('app:', (formInfo.contextPath || '') + '/')
-                    .replace(/^(\/+|([^/]))/, '/$2')
-                    .replace(/\/\/+/, '/');
-                formConfig.formUrl = url;
-                formConfig.containerElement = $(embeddedContainer);
-                if (formContainer) formContainer.style.display = 'none';
+                // Fetch form HTML via backend proxy - backend validates form URL and proxies content for security and CORS handling
+                try {
+                    const resource = await new Promise((resolveForm, rejectForm) => {
+                        client.http.get('task/form-proxy', {
+                            data: { 
+                                referenceId: referenceId,
+                                isStartForm: isStartForm 
+                            },
+                            headers: {
+                                ...client.http.config.headers,
+                                'Accept': 'text/html'
+                            },
+                            done: function(err, formHtml) {
+                                if (err) {
+                                    console.error('Error fetching form content:', err);
+                                    rejectForm(err);
+                                } else {
+                                    resolveForm(formHtml);
+                                }
+                            }
+                        });
+                    });
+                    formContainer.innerHTML = resource;
+                    formConfig.formElement = $(formContainer);
+                    if (embeddedContainer) embeddedContainer.style.display = 'none';
+                } catch (err) {
+                    console.error('Error fetching form content:', err);
+                    // Fallback: construct form path from formInfo key and use containerElement approach
+                    const formPath = formInfo.key
+                        .replace('embedded:', '')
+                        .replace('app:', (formInfo.contextPath || '') + '/')
+                        .replace(/^(\/+|([^/]))/, '/$2')
+                        .replace(/\/\/+/, '/');
+                    formConfig.formUrl = formPath;
+                    formConfig.containerElement = $(embeddedContainer);
+                    if (formContainer) formContainer.style.display = 'none';
+                }
             }
 
             if (isStartForm) {
@@ -390,19 +430,26 @@ function loadEmbeddedForm(
 function loadDeployedForm(client, isStartForm, referenceId) {
     return new Promise((resolve, reject) => {
         if (isStartForm) {
-            client.resource('process-definition').deployedForm(
-                { id: referenceId },
-                (err, resource) => {
-                    if (err) reject(err);
-                    else {
+            client.http.get(`process/${referenceId}/deployed-start-form`, {
+                headers: {
+                    ...client.http.config.headers,
+                    'Accept': '*/*'
+                },
+                done: function(err, resource) {
+                    if (err) {
+                        console.error('Error loading deployed start form:', err);
+                        reject(err);
+                    } else {
                         resolve(resource);
                     }
                 }
-            );
+            });
         } else {
             client.resource('task').deployedForm(referenceId, (err, resource) => {
-                if (err) reject(err);
-                else {
+                if (err) {
+                    console.error('Error loading deployed form:', err);
+                    reject(err);
+                } else {
                     resolve(resource);
                 }
             });
@@ -429,7 +476,7 @@ function loadGeneratedForm(isStartForm, referenceId, formContainer, client, conf
                     console.error('Error getting rendered form:', err);
                     reject(err);
                 } else {
-                    var updatedHtml = normalizeGeneratedFormHtml(renderedFormHtml);
+                    const updatedHtml = normalizeGeneratedFormHtml(renderedFormHtml);
                     resolve(updatedHtml);
                 }
             }
@@ -453,7 +500,7 @@ function loadGeneratedForm(isStartForm, referenceId, formContainer, client, conf
                         console.error('Error getting rendered form:', err);
                         reject(err);
                     } else {
-                        var updatedHtml = normalizeGeneratedFormHtml(renderedFormHtml);
+                        const updatedHtml = normalizeGeneratedFormHtml(renderedFormHtml);
                         resolve(updatedHtml);
                     }
                 }

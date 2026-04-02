@@ -243,6 +243,9 @@ CamundaForm.prototype.initializeForm = function(done) {
   // initialize field handlers
   this.initializeFieldHandlers();
 
+  // setup file download handlers
+  this.setupFileDownloadHandlers();
+
   // execute the scripts
   this.executeFormScripts();
 
@@ -284,6 +287,54 @@ CamundaForm.prototype.initializeFieldHandlers = function() {
   for (var FieldHandler in this.formFieldHandlers) {
     this.initializeHandler(this.formFieldHandlers[FieldHandler]);
   }
+};
+
+/**
+ * @memberof CamSDK.form.CamundaForm.prototype
+ */
+CamundaForm.prototype.setupFileDownloadHandlers = function() {
+  var self = this;
+  
+  // Find all file download links and intercept clicks to add authentication
+  $('a[cam-file-download]', this.formElement).on('click', function(e) {
+    e.preventDefault();
+    
+    var link = $(this);
+    var href = link.attr('href');
+    var filename = link.text() || 'download';
+    
+    // Build the full URL - resolve relative to current page
+    var fullUrl = new URL(href, window.location.href).href;
+    
+    // Use fetch API with authorization headers to download the file
+    var headers = self.client.http.config.headers || {};
+    
+    fetch(fullUrl, {
+      method: 'GET',
+      headers: headers,
+      credentials: 'same-origin'
+    })
+    .then(function(response) {
+      if (!response.ok) {
+        throw new Error('Download failed: ' + response.statusText);
+      }
+      return response.blob();
+    })
+    .then(function(blob) {
+      // Create a temporary download link and trigger it
+      var url = window.URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    })
+    .catch(function(err) {
+      console.error('Error downloading file:', err);
+    });
+  });
 };
 
 /**
@@ -619,7 +670,7 @@ CamundaForm.prototype.transformFiles = function(callback) {
           throw new Error(
             'Maximum file size of ' +
               bytesToSize(
-                parseInt(element.getAttribute('cam-max-filesize'), 10) ||
+                Number.parseInt(element.getAttribute('cam-max-filesize'), 10) ||
                   5000000
               ) +
               ' exceeded.'

@@ -39,7 +39,7 @@ const UserStore = {
   actions: {
     findUsersByCandidates: function(ctx, params) {
       if (params.idIn.length > 0) {
-        var idIn = params.idIn.join(',')
+        const idIn = params.idIn.join(',')
         return AdminService.findUsers({ idIn: idIn }).then(users => {
           ctx.commit('concatCandidateUsers', users)
           ctx.commit('concatSearchUsers', users)
@@ -48,8 +48,8 @@ const UserStore = {
     },
     findUsers: function(ctx, params) {
       if (ctx.state.listCandidates.length > 0) {
-        var fn = params.filter.toLowerCase()
-        var users = ctx.state.listCandidates.filter(u => {
+        const fn = params.filter.toLowerCase()
+        const users = ctx.state.listCandidates.filter(u => {
           return u.id.toLowerCase() === fn ||
           (u.firstName && u.firstName.toLowerCase().includes(fn)) ||
           (u.lastName && u.lastName.toLowerCase().includes(fn))
@@ -57,9 +57,9 @@ const UserStore = {
         ctx.commit('setSearchUsers', users)
         return Promise.resolve()
       } else {
-        var firstNameLike = { firstNameLike: '*' + params.filter + '*', maxResults: params.maxResults }
-        var lastNameLike = { lastNameLike: '*' + params.filter + '*', maxResults: params.maxResults }
-        var id = { id: params.filter }
+        const firstNameLike = { firstNameLike: '*' + params.filter + '*', maxResults: params.maxResults }
+        const lastNameLike = { lastNameLike: '*' + params.filter + '*', maxResults: params.maxResults }
+        const id = { id: params.filter }
         return Promise.all([AdminService.findUsers(firstNameLike), AdminService.findUsers(lastNameLike), AdminService.findUsers(id)])
         .then(users => {
           users = users[0].concat(users[1]).concat(users[2])

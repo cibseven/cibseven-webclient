@@ -18,8 +18,8 @@ import { mount } from '@vue/test-utils'
 import { describe, it, expect } from 'vitest'
 import { i18n } from '@/i18n'
 import FilterModal from '@/components/task/filter/FilterModal.vue'
-import { readFileSync } from 'fs'
-import { resolve } from 'path'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 
 function getWrapper() {
   const mockStore = {

@@ -31,7 +31,6 @@
 						thead-class="sticky-header"
 						:items="monthlyItems"
 						primary-key="index"
-						prefix="admin.system.execution-metrics."
 						:fields="monthlyFields"
 					>
 					</FlowTable>
@@ -44,7 +43,6 @@
 						thead-class="sticky-header"
 						:items="yearlyItems"
 						primary-key="index"
-						prefix="admin.system.execution-metrics."
 						:fields="yearlyFields"
 					>
 					</FlowTable>
@@ -62,8 +60,7 @@
 import { SystemService } from '@/services.js'
 import { moment } from '@/globals.js'
 import VueApexCharts from 'vue3-apexcharts'
-import { FlowTable } from '@cib/common-frontend'
-import { BWaitingBox } from '@cib/bootstrap-components'
+import { FlowTable, BWaitingBox } from '@cib/common-frontend'
 
 export default {
   name: 'ExecutionMetrics',
@@ -225,21 +222,21 @@ export default {
           tdClass: 'py-1',
         },
         {
-          label: 'process-instances',
+          label: 'admin.system.execution-metrics.process-instances',
           key: 'process-instances',
           sortable: false,
           class: 'col-2',
           tdClass: 'py-1',
         },
         {
-          label: 'decision-instances',
+          label: 'admin.system.execution-metrics.decision-instances',
           key: 'decision-instances',
           sortable: false,
           class: 'col-2',
           tdClass: 'py-1',
         },
         {
-          label: 'task-users',
+          label: 'admin.system.execution-metrics.task-users',
           key: 'task-users',
           class: 'col-2',
           sortable: false,
@@ -257,21 +254,21 @@ export default {
           tdClass: 'py-1',
         },
         {
-          label: 'process-instances',
+          label: 'admin.system.execution-metrics.process-instances',
           key: 'process-instances',
           sortable: false,
           class: 'col-2',
           tdClass: 'py-1',
         },
         {
-          label: 'decision-instances',
+          label: 'admin.system.execution-metrics.decision-instances',
           key: 'decision-instances',
           sortable: false,
           class: 'col-2',
           tdClass: 'py-1',
         },
         {
-          label: 'task-users',
+          label: 'admin.system.execution-metrics.task-users',
           key: 'task-users',
           class: 'col-2',
           sortable: false,

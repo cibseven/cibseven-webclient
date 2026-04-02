@@ -18,27 +18,36 @@
 -->
 <template>
   <div class="h-100 d-flex flex-column">
-    <CIBHeaderFlow v-if="$root.header === 'true'" class="flex-shrink-0" :languages="$root.config.supportedLanguages.sort()" :user="$root.user" @logout="logout">
-      <div class="me-auto d-flex flex-column flex-md-row" style="height: 38px">
-        <b-navbar-brand class="py-0" :title="$t('navigation.home')" to="/seven/auth/start">
-          <img height="38px" :alt="$t('cib-header.productName')" :src="$root.logoPath"/>
+    <CIBHeaderFlow v-if="$root.header === 'true'" ref="headerFlow" class="flex-shrink-0" :languages="$root.config.supportedLanguages.sort()" :user="$root.user" @logout="logout">
+      <div class="me-auto d-flex flex-row overflow-hidden" style="min-height: 38px;">
+        <b-navbar-brand ref="brandHome" class="py-0 flex-shrink-0" :aria-label="productName + ' - ' + $t('navigation.home')" to="/seven/auth/start">
+          <img height="38px" alt="" :src="$root.logoPath" class="d-none d-md-inline"/>
+          <img height="38px" alt="" :src="$root.logoIconPath" class="d-md-none"/>
           <span class="d-none d-md-inline align-middle"></span>
         </b-navbar-brand>
-        <div v-if="pageTitle" style="max-height: 38px;" class="d-flex align-items-center text-truncate">
-          <span class="border-start border-secondary py-3 me-3"></span>
-          <h3 style="line-height: normal"
-          class="m-0 text-secondary text-truncate">{{ pageTitle }}</h3>
+        <div v-if="pageTitle" style="max-height: 38px; min-width: 0;" class="d-flex align-items-center overflow-hidden flex-shrink-1">
+          <span class="border-start border-secondary py-3 me-2 me-md-3 d-none d-md-inline"></span>
+          <h1 style="line-height: normal"
+          class="h3 m-0 text-secondary text-truncate">{{ pageTitle }}</h1>
         </div>
+        <h1 v-else-if="$route.name === 'start'" class="visually-hidden">{{ $t('navigation.home') + ' - ' + $t('navigation.menu') }}</h1>
       </div>
 
-      <b-button v-if="$root.user && startableProcesses && $route.name === 'tasklist'" class="d-none d-sm-block py-0 me-3" variant="light" :title="$t('start.startProcess.title')" @click="openStartProcess()">
-        <span class="mdi mdi-18px mdi-rocket"><span class="d-none d-lg-inline ms-2">{{ $t('start.startProcess.title') }}</span></span>
+      <b-button v-if="$root.user && startableProcesses && $route.name === 'tasklist'" class="d-none d-sm-block py-0 me-3" variant="light"
+        :title="$t('start.startProcess.title')"
+        :aria-label="$t('start.startProcess.title')" aria-haspopup="dialog" @click="openStartProcess()">
+        <span class="mdi mdi-18px mdi-rocket" aria-hidden="true"></span>
+        <span class="d-none d-lg-inline ms-2">{{ $t('start.startProcess.title') }}</span>
       </b-button>
 
-      <!-- Main menu -->
-      <b-collapse v-if="computedMenuItems.length > 0" is-nav id="nav_collapse" class="flex-grow-0 d-none d-md-flex">
-        <b-navbar-nav>
-          <b-nav-item-dropdown extra-toggle-classes="py-1" right :title="$t('navigation.menu')">
+      <!-- Desktop: Show menus as icons outside collapse -->
+      <div class="d-none d-md-flex">
+        <b-button v-if="$root.config.layout.showFeedbackButton" variant="outline-secondary" @click="$refs.report.show()" class="border-0 py-0 me-2" :title="$t('seven.feedback')" :label="$t('seven.feedback')">
+          <span class="mdi mdi-24px mdi-message-alert"></span>
+        </b-button>
+
+        <b-navbar-nav v-if="computedMenuItems.length > 0">
+          <b-nav-item-dropdown extra-toggle-classes="py-1" right :title="$t('navigation.menu')" :label="$t('navigation.navigation')">
             <template v-slot:button-content>
               <span class="visually-hidden">{{ $t('navigation.menu') }}</span>
               <span class="mdi mdi-24px mdi-menu align-middle"></span>
@@ -59,38 +68,70 @@
             </template>
           </b-nav-item-dropdown>
         </b-navbar-nav>
-      </b-collapse>
-
-      <div>
-        <b-button v-if="$root.config.layout.showFeedbackButton" variant="outline-secondary" @click="$refs.report.show()" class="border-0 py-0 d-none d-md-flex" :title="$t('seven.feedback')">
-          <span class="mdi mdi-24px mdi-message-alert"></span>
-        </b-button>
+        
+        <b-navbar-nav v-if="$root.config.layout.showInfoAndHelp">
+          <b-nav-item-dropdown extra-toggle-classes="py-1" right :title="$t('navigation.infoAndHelp')" :label="$t('navigation.infoAndHelp')">
+            <template v-slot:button-content>
+              <span class="visually-hidden">{{ $t('navigation.infoAndHelp') }}</span>
+              <span class="mdi mdi-24px mdi-help-circle align-middle"></span>
+            </template>
+            <template v-for="(item, idx) in helpMenuItems" :key="idx">
+              <b-dropdown-item v-if="item.type === 'link'" :href="item.href" :title="$t(item.tooltip)" target="_blank">{{ $t(item.title) }}</b-dropdown-item>
+              <b-dropdown-item-button v-else :title="$t(item.tooltip)" @click="$refs[item.ref].show()">{{ $t(item.title) }}</b-dropdown-item-button>
+            </template>
+          </b-nav-item-dropdown>
+        </b-navbar-nav>
       </div>
 
-      <b-navbar-nav>
-        <b-nav-item-dropdown extra-toggle-classes="py-1" right :title="$t('navigation.infoAndHelp')">
+      <!-- Mobile: Show menus as list items inside CIBHeaderFlow's collapse (via customNavItems slot) -->
+      <template v-if="$root.user || ($root.config.layout.showInfoAndHelp && helpMenuItems.length > 0)" #customNavItems>
+        <b-nav-item-dropdown v-if="$root.config.layout.showFeedbackButton" class="d-md-none" no-caret :title="$t('seven.feedback')" :label="$t('seven.feedback')">
           <template v-slot:button-content>
-            <span class="visually-hidden">{{ $t('navigation.infoAndHelp') }}</span>
-            <span class="mdi mdi-24px mdi-help-circle align-middle"></span>
+            <span class="mdi mdi-24px mdi-message-alert align-middle me-2"></span>{{ $t('seven.feedback') }}
           </template>
-          <b-dropdown-item v-if="$root.config.flowLinkHelp != ''" :href="$root.config.flowLinkHelp" :title="$t('infoAndHelp.flowLinkHelp')" target="_blank">{{ $t('infoAndHelp.flowLinkHelp') }}</b-dropdown-item>
-          <b-dropdown-item v-if="$root.config.flowLinkAccessibility != ''" :href="$root.config.flowLinkAccessibility" :title="$t('infoAndHelp.flowLinkAccessibility')" target="_blank">{{ $t('infoAndHelp.flowLinkAccessibility') }}</b-dropdown-item>
-          <b-dropdown-item v-if="$root.config.flowLinkTerms != ''" :href="$root.config.flowLinkTerms" :title="$t('infoAndHelp.flowLinkTerms')" target="_blank">{{ $t('infoAndHelp.flowLinkTerms') }}</b-dropdown-item>
-          <b-dropdown-item v-if="$root.config.flowLinkPrivacy != ''" :href="$root.config.flowLinkPrivacy" :title="$t('infoAndHelp.flowLinkPrivacy')" target="_blank">{{ $t('infoAndHelp.flowLinkPrivacy') }}</b-dropdown-item>
-          <b-dropdown-item v-if="$root.config.flowLinkImprint != ''" :href="$root.config.flowLinkImprint" :title="$t('infoAndHelp.flowLinkImprint')" target="_blank">{{ $t('infoAndHelp.flowLinkImprint') }}</b-dropdown-item>
-          <b-dropdown-item-button v-if="$root.user" :title="$t('infoAndHelp.shortcuts.tooltip')" @click="$refs.shortcuts.show()">{{ $t('infoAndHelp.shortcuts.title') }}</b-dropdown-item-button>
-          <b-dropdown-item-button v-if="$root.config.layout.showSupportInfo" :title="$t('infoAndHelp.flowModalSupport.modalText')" @click="$refs.support.show()">{{ $t('infoAndHelp.flowModalSupport.modalText') }}</b-dropdown-item-button>
-          <b-dropdown-item-button @click="$refs.about.show()" :title="$t('infoAndHelp.flowModalAbout.modalText')">{{ $t('infoAndHelp.flowModalAbout.modalText') }}</b-dropdown-item-button>
+          <b-dropdown-item-button @click="closeMenuAndShow('report')">{{ $t('seven.feedback') }}</b-dropdown-item-button>
         </b-nav-item-dropdown>
-      </b-navbar-nav>
+        <b-nav-item-dropdown v-if="computedMenuItems.length > 0" class="d-md-none" extra-toggle-classes="py-1" right :title="$t('navigation.menu')" :label="$t('navigation.navigation')">
+          <template v-slot:button-content>
+            <span class="mdi mdi-24px mdi-menu align-middle me-2"></span>{{ $t('navigation.menu') }}
+          </template>
+          <template v-for="(group, gIdx) in computedMenuItems" :key="gIdx">
+            <b-dropdown-divider v-if="group.divider"></b-dropdown-divider>
+            <b-dropdown-group v-else-if="group.items && group.items.length > 0" :header="$t(group.groupTitle)">
+              <b-dropdown-item
+                v-for="(item, idx) in group.items"
+                :key="'mob-' + idx"
+                :to="item.to"
+                :href="item.href"
+                :title="$t(item.tooltip)"
+                :active="isMenuItemActive(item)"
+                :target="item.external ? '_blank' : undefined"
+              ><span :class="item.group ? 'fw-semibold' : ''">{{ $t(item.title) }}</span></b-dropdown-item>
+            </b-dropdown-group>
+          </template>
+        </b-nav-item-dropdown>
+        <b-nav-item-dropdown class="d-md-none" extra-toggle-classes="py-1" right :title="$t('navigation.infoAndHelp')" :label="$t('navigation.infoAndHelp')">
+          <template v-slot:button-content>
+            <span class="mdi mdi-24px mdi-help-circle align-middle me-2"></span>{{ $t('navigation.infoAndHelp') }}
+          </template>
+          <template v-for="(item, idx) in helpMenuItems" :key="idx">
+            <b-dropdown-item v-if="item.type === 'link'" :href="item.href" :title="$t(item.tooltip)" target="_blank">{{ $t(item.title) }}</b-dropdown-item>
+            <b-dropdown-item-button v-else :title="$t(item.tooltip)" @click="closeMenuAndShow(item.ref)">{{ $t(item.title) }}</b-dropdown-item-button>
+          </template>
+        </b-nav-item-dropdown>
+      </template>
 
       <template v-slot:userItems>
         <b-dropdown-item v-if="$root.user && $root.config.layout.showUserSettings && !applicationPermissionsDenied($root.config.permissions.userProfile, 'userProfile')"
-          :to="'/seven/auth/account/' + $root.user.id" :title="$t('seven.account')">{{ $t('seven.account') }}</b-dropdown-item>
+          :to="'/seven/auth/account/' + $root.user.id"
+          :active="isMenuItemActive({active: ['seven/auth/account']})"
+          :title="$t('start.account.profile.tooltip')">{{ $t('start.account.profile.title') }}</b-dropdown-item>
       </template>
     </CIBHeaderFlow>
 
-    <router-view class="flex-grow-1 overflow-hidden" ref="down"></router-view>
+    <main class="flex-grow-1 overflow-hidden d-flex flex-column">
+      <router-view class="flex-grow-1 overflow-hidden" ref="down"></router-view>
+    </main>
 
     <b-modal ref="ieNotification" :title="$t('seven.titleInfo')">
       <div class="container-fluid">
@@ -123,6 +164,7 @@
 <script>
 import platform from 'platform'
 import { permissionsMixin } from '@/permissions.js'
+import navigationPermissionsMixin from '@/mixins/navigationPermissionsMixin.js'
 import { getGlobalNavigationShortcuts, checkKeyMatch } from '@/utils/shortcuts.js'
 import ShortcutsModal from '@/components/modals/ShortcutsModal.vue'
 import AboutModal from '@/components/modals/AboutModal.vue'
@@ -134,7 +176,7 @@ import { updateAppTitle } from '@/utils/init'
 export default {
   name: 'CibSeven',
   components: { ShortcutsModal, AboutModal, SupportModal, CIBHeaderFlow, FeedbackModal },
-  mixins: [permissionsMixin],
+  mixins: [permissionsMixin, navigationPermissionsMixin],
   inject: ['isMobile'],
   data: function() {
     return {
@@ -149,6 +191,9 @@ export default {
     }
   },
   computed: {
+    productName() {
+      return this.$root.config.productNamePageTitle || this.$t('login.productName')
+    },
     menuItems: function() {
       return [{
           show: this.permissionsTaskList && this.startableProcesses,
@@ -219,26 +264,31 @@ export default {
               tooltip: 'start.admin.tooltip',
               title: 'start.admin.title'
             }, {
+              show: this.permissionsUsersManagement,
               to: '/seven/auth/admin/users',
               active: ['seven/auth/admin/user', 'seven/auth/admin/create-user'],
-              tooltip: 'admin.users.title',
+              tooltip: 'admin.users.tooltip',
               title: 'admin.users.title'
             }, {
+              show: this.permissionsGroupsManagement,
               to: '/seven/auth/admin/groups',
               active: ['seven/auth/admin/group', 'seven/auth/admin/create-group'],
-              tooltip: 'admin.groups.title',
+              tooltip: 'admin.groups.tooltip',
               title: 'admin.groups.title'
             }, {
+              show: this.permissionsTenantsManagement,
               to: '/seven/auth/admin/tenants',
               active: ['seven/auth/admin/tenant', 'seven/auth/admin/create-tenant'],
               tooltip: 'admin.tenants.tooltip',
               title: 'admin.tenants.title'
             }, {
+              show: this.permissionsAuthorizationsManagement,
               to: '/seven/auth/admin/authorizations',
               active: ['seven/auth/admin/authorizations'],
-              tooltip: 'admin.authorizations.title',
+              tooltip: 'admin.authorizations.tooltip',
               title: 'admin.authorizations.title'
             }, {
+              show: this.permissionsSystemManagement,
               to: '/seven/auth/admin/system',
               active: ['seven/auth/admin/system'],
               tooltip: 'admin.system.tooltip',
@@ -246,10 +296,10 @@ export default {
             }
           ]
         }, {
-          show: this.permissionsCockpit,
+          show: this.permissionsCockpit && this.$root.config.cockpitUrl,
           divider: true,
         }, {
-          show: this.permissionsCockpit,
+          show: this.permissionsCockpit && this.$root.config.cockpitUrl,
           groupTitle: 'start.oldCockpit.title',
           items: [{
               href: this.$root.config.cockpitUrl,
@@ -264,6 +314,18 @@ export default {
     computedMenuItems: function() {
       return this.getVisibleMenuItems(this.menuItems)
     },
+    helpMenuItems: function() {
+      const items = []
+      if (this.$root.config.flowLinkHelp) items.push({ type: 'link', href: this.$root.config.flowLinkHelp, title: 'infoAndHelp.flowLinkHelp', tooltip: 'infoAndHelp.flowLinkHelp' })
+      if (this.$root.config.flowLinkAccessibility) items.push({ type: 'link', href: this.$root.config.flowLinkAccessibility, title: 'infoAndHelp.flowLinkAccessibility', tooltip: 'infoAndHelp.flowLinkAccessibility' })
+      if (this.$root.config.flowLinkTerms) items.push({ type: 'link', href: this.$root.config.flowLinkTerms, title: 'infoAndHelp.flowLinkTerms', tooltip: 'infoAndHelp.flowLinkTerms' })
+      if (this.$root.config.flowLinkPrivacy) items.push({ type: 'link', href: this.$root.config.flowLinkPrivacy, title: 'infoAndHelp.flowLinkPrivacy', tooltip: 'infoAndHelp.flowLinkPrivacy' })
+      if (this.$root.config.flowLinkImprint) items.push({ type: 'link', href: this.$root.config.flowLinkImprint, title: 'infoAndHelp.flowLinkImprint', tooltip: 'infoAndHelp.flowLinkImprint' })
+      if (this.$root.user) items.push({ type: 'button', ref: 'shortcuts', title: 'infoAndHelp.shortcuts.title', tooltip: 'infoAndHelp.shortcuts.tooltip' })
+      if (this.$root.config.layout.showSupportInfo) items.push({ type: 'button', ref: 'support', title: 'infoAndHelp.flowModalSupport.modalText', tooltip: 'infoAndHelp.flowModalSupport.modalText' })
+      items.push({ type: 'button', ref: 'about', title: 'infoAndHelp.about.title', tooltip: 'infoAndHelp.about.tooltip' })
+      return items
+    },
     startableProcesses: function() {
       return this.processesFiltered.find(p => { return p.startableInTasklist })
     },
@@ -272,13 +334,14 @@ export default {
       return this.$store.state.process.list.filter(process => {
         return ((!process.revoked))
       }).sort((objA, objB) => {
-        var nameA = objA.name ? objA.name.toUpperCase() : objA.name
-        var nameB = objB.name ? objB.name.toUpperCase() : objB.name
-        var comp = nameA < nameB ? -1 : nameA > nameB ? 1 : 0
+        const nameA = objA.name ? objA.name.toUpperCase() : objA.name
+        const nameB = objB.name ? objB.name.toUpperCase() : objB.name
+        const compareAMoreB = nameA > nameB ? 1 : 0
+        let comp = nameA < nameB ? -1 : compareAMoreB
 
         if (this.$root.config.subProcessFolder) {
-          if (objA.resource.indexOf(this.$root.config.subProcessFolder) > -1) comp = 1
-          else if (objB.resource.indexOf(this.$root.config.subProcessFolder) > -1) comp = -1
+          if (objA.resource.includes(this.$root.config.subProcessFolder)) comp = 1
+          else if (objB.resource.includes(this.$root.config.subProcessFolder)) comp = -1
         }
         return comp
       })
@@ -294,7 +357,7 @@ export default {
         if (item) {
           // exceptional case with 'Processes' menu item
           if (this.$route.name === 'process') {
-            const hasInstanceIdParam = 'instanceId' in this.$route.params
+            const hasInstanceIdParam = this.$route.params?.instanceId?.length > 0
             if (hasInstanceIdParam) {
               title = this.$t('start.cockpit.process-instance.title')
             }
@@ -336,15 +399,6 @@ export default {
         return true
       })
     },
-    permissionsTaskList: function() {
-      return this.$root.user && this.applicationPermissions(this.$root.config.permissions.tasklist, 'tasklist')
-    },
-    permissionsCockpit: function() {
-      return this.$root.user && this.applicationPermissions(this.$root.config.permissions.cockpit, 'cockpit')
-    },
-    permissionsUsers: function() {
-      return this.$root.user && this.hasAdminManagementPermissions(this.$root.config.permissions)
-    },
     isUsersManagementActive: function() {
       return this.$route.path.includes('seven/auth/admin/user') ||
         this.$route.path.includes('seven/auth/admin/group') ||
@@ -353,15 +407,29 @@ export default {
   },
   mounted: function () {
     if (platform.name === 'IE') {
-      var isNotifiedUser = localStorage.getItem('ienotify')
+      const isNotifiedUser = localStorage.getItem('ienotify')
       if (!isNotifiedUser) this.$refs.ieNotification.show() //must notify the user
     }
     this.refreshAppTitle(this.pageTitle)
+    // Focus the brand-home link for screen reader accessibility when user is logged in
+    if (this.$root.user) {
+      this.$nextTick(() => {
+        if (this.$refs.headerFlow && this.$refs.brandHome) {
+          const brandLink = this.$refs.brandHome.$refs.brandLink
+          brandLink?.focus()
+        }
+      })
+    }
   },
   methods: {
     // override this method to add/remove menu items
     getVisibleMenuItems: function(items) {
-      return items.filter(group => group.show)
+      return items
+        .filter(group => group.show)
+        .map(group => ({
+          ...group,
+          items: group.items ? group.items.filter(item => item.show !== false) : group.items
+        }))
     },
     isMenuItemActive: function(item) {
       if (!item.active) {
@@ -382,6 +450,7 @@ export default {
       localStorage.removeItem('tokenModeler')
       sessionStorage.removeItem('accessToken')
       sessionStorage.removeItem('tokenModeler')
+      // Note: engine token cleanup is handled by CIBHeaderFlow.logout()
     },
     openStartProcess: function() {
       this.$eventBus.emit('openStartProcess')
@@ -395,6 +464,14 @@ export default {
       }
     },
     doNotShowIeNotification: function() { if (this.rememberNotShow) localStorage.setItem('ienotify', true) },
+    closeMenuAndShow: function(modalRef) {
+      // Close the burger menu on mobile before showing modal
+      if (this.$refs.headerFlow) {
+        this.$refs.headerFlow.closeMenu()
+      }
+      // Show the modal
+      this.$refs[modalRef].show()
+    },
     // change title of the whole web-page in browser
     refreshAppTitle: function (title) {
       switch (this.$route.name) {
@@ -411,7 +488,7 @@ export default {
         case 'adminTenants':
           // "CIB seven | Admin | <view>"
           updateAppTitle(
-            this.$root.config.productNamePageTitle || this.$t('cib-header.productName'),
+            this.productName,
             this.$t('start.admin.title'),
             title
           )
@@ -419,7 +496,7 @@ export default {
         default:
           // "CIB seven | <view>"
           updateAppTitle(
-            this.$root.config.productNamePageTitle || this.$t('cib-header.productName'),
+            this.productName,
             title
           )
           break

@@ -31,7 +31,7 @@
 </template>
 
 <script>
-import { BWaitingBox } from '@cib/bootstrap-components'
+import { BWaitingBox } from '@cib/common-frontend'
 import VueApexCharts from 'vue3-apexcharts'
 
 export default {

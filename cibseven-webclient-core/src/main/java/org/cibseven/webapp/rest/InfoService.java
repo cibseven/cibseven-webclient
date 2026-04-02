@@ -50,6 +50,7 @@ public class InfoService extends BaseService {
 	@Value("${cibseven.webclient.historyLevel:full}") private String camundaHistoryLevel;
 	@Value("${cibseven.webclient.user.provider:org.cibseven.webapp.auth.SevenUserProvider}") private String userProvider;
 	@Value("${cibseven.webclient.user.editable:#{null}}") private Boolean userEditable;
+	@Value("${cibseven.webclient.user.userPasswordChangeEnabled:}") private Boolean userPasswordChangeEnabled;
 	
 	@Value("${cibseven.webclient.productNamePageTitle:CIB seven}") private String productNamePageTitle;
 	
@@ -62,8 +63,9 @@ public class InfoService extends BaseService {
 	@Value("${cibseven.webclient.link.help:}") private String flowLinkHelp;
 	@Value("${cibseven.webclient.support-dialog:}") private String supportDialog;
 	@Value("${cibseven.webclient.engineRest.path:/engine-rest}") private String engineRestPath;
+	@Value("${cibseven.webclient.engineRest.url:./}") private String engineRestUrl;
 
-	@Value("${camunda.bpm.authorization.enabled:false}") private boolean authorizationEnabled;	
+	@Value("${camunda.bpm.authorization.enabled:true}") private boolean authorizationEnabled;	
 	
 	@Autowired
 	InfoVersion infoVersion;
@@ -96,6 +98,7 @@ public class InfoService extends BaseService {
 		configJson.put("camundaHistoryLevel", camundaHistoryLevel);
 		configJson.put("userProvider", userProvider);
 		configJson.put("userEditable", userEditable);
+		configJson.put("userPasswordChangeEnabled", userPasswordChangeEnabled);
 		configJson.put("flowLinkTerms", flowLinkTerms);
 		configJson.put("flowLinkPrivacy", flowLinkPrivacy);
 		configJson.put("flowLinkImprint", flowLinkImprint);
@@ -105,6 +108,7 @@ public class InfoService extends BaseService {
 		configJson.put("servicesBasePath", servicesBasePath);
 		
 		configJson.put("engineRestPath", engineRestPath);
+		configJson.put("engineRestUrl", engineRestUrl);
 		configJson.put("authorizationEnabled", authorizationEnabled);
 		
         try {

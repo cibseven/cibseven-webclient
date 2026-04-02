@@ -17,11 +17,16 @@
 import { describe, it, expect } from 'vitest'
 import { parseXMLDocumentation } from '@/utils/parser'
 
+function parse(tasksXml) {
+  return parseXMLDocumentation(`<?xml version="1.0" encoding="UTF-8"?>
+    <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL">
+      ${tasksXml}
+    </bpmn:definitions>`)
+}
+
 describe('parseXMLDocumentation', () => {
   it('should return empty array for empty XML', () => {
-    const bpmnXml = '<?xml version="1.0" encoding="UTF-8"?><bpmn:definitions></bpmn:definitions>'
-    const result = parseXMLDocumentation(bpmnXml)
-    expect(result).toEqual([])
+    expect(parseXMLDocumentation('')).toEqual([])
   })
   it('should return empty array for null or undefined input', () => {
     expect(parseXMLDocumentation(null)).toEqual([])
@@ -29,21 +34,16 @@ describe('parseXMLDocumentation', () => {
   })
 
   it('should handle malformed XML gracefully', () => {
-    const bpmnXml = 'invalid xml'
     // parseXMLDocumentation should handle this gracefully and return empty array
-    const result = parseXMLDocumentation(bpmnXml)
+    const result = parseXMLDocumentation('invalid xml')
     expect(Array.isArray(result)).toBe(true)
   })
 
   it('should parse single task with documentation', () => {
-    const bpmnXml = `<?xml version="1.0" encoding="UTF-8"?>
-      <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL">
-        <bpmn:task id="task1" name="Test Task">
+    const result = parse(`<bpmn:task id="task1" name="Test Task">
           <bpmn:documentation>This is a test task documentation</bpmn:documentation>
-        </bpmn:task>
-      </bpmn:definitions>`
-    
-    const result = parseXMLDocumentation(bpmnXml)
+        </bpmn:task>`)
+
     expect(result).toHaveLength(1)
     expect(result[0]).toEqual({
       id: 'task1',
@@ -53,17 +53,14 @@ describe('parseXMLDocumentation', () => {
   })
 
   it('should parse multiple tasks with documentation', () => {
-    const bpmnXml = `<?xml version="1.0" encoding="UTF-8"?>
-      <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL">
-        <bpmn:userTask id="userTask1" name="User Task">
+    const result = parse(
+        `<bpmn:userTask id="userTask1" name="User Task">
           <bpmn:documentation>User task documentation</bpmn:documentation>
         </bpmn:userTask>
         <bpmn:serviceTask id="serviceTask1" name="Service Task">
           <bpmn:documentation>Service task documentation</bpmn:documentation>
-        </bpmn:serviceTask>
-      </bpmn:definitions>`
-    
-    const result = parseXMLDocumentation(bpmnXml)
+        </bpmn:serviceTask>`)
+
     expect(result).toHaveLength(2)
     expect(result[0]).toEqual({
       id: 'userTask1',
@@ -78,14 +75,10 @@ describe('parseXMLDocumentation', () => {
   })
 
   it('should handle tasks without names (fallback to id)', () => {
-    const bpmnXml = `<?xml version="1.0" encoding="UTF-8"?>
-      <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL">
-        <bpmn:scriptTask id="script1">
+    const result = parse(`<bpmn:scriptTask id="script1">
           <bpmn:documentation>Script task without name</bpmn:documentation>
-        </bpmn:scriptTask>
-      </bpmn:definitions>`
-    
-    const result = parseXMLDocumentation(bpmnXml)
+        </bpmn:scriptTask>`)
+
     expect(result).toHaveLength(1)
     expect(result[0]).toEqual({
       id: 'script1',
@@ -95,14 +88,10 @@ describe('parseXMLDocumentation', () => {
   })
 
   it('should handle tasks without IDs', () => {
-    const bpmnXml = `<?xml version="1.0" encoding="UTF-8"?>
-      <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL">
-        <bpmn:manualTask name="Manual Task">
+    const result = parse(`<bpmn:manualTask name="Manual Task">
           <bpmn:documentation>Manual task without ID</bpmn:documentation>
-        </bpmn:manualTask>
-      </bpmn:definitions>`
-    
-    const result = parseXMLDocumentation(bpmnXml)
+        </bpmn:manualTask>`)
+
     expect(result).toHaveLength(1)
     expect(result[0]).toEqual({
       id: null,
@@ -112,15 +101,11 @@ describe('parseXMLDocumentation', () => {
   })
 
   it('should ignore tasks without documentation', () => {
-    const bpmnXml = `<?xml version="1.0" encoding="UTF-8"?>
-      <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL">
-        <bpmn:task id="task1" name="Task Without Doc" />
+    const result = parse(`<bpmn:task id="task1" name="Task Without Doc" />
         <bpmn:userTask id="task2" name="Task With Doc">
           <bpmn:documentation>This has documentation</bpmn:documentation>
-        </bpmn:userTask>
-      </bpmn:definitions>`
-    
-    const result = parseXMLDocumentation(bpmnXml)
+        </bpmn:userTask>`)
+
     expect(result).toHaveLength(1)
     expect(result[0]).toEqual({
       id: 'task2',
@@ -130,9 +115,7 @@ describe('parseXMLDocumentation', () => {
   })
 
   it('should ignore tasks with empty documentation', () => {
-    const bpmnXml = `<?xml version="1.0" encoding="UTF-8"?>
-      <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL">
-        <bpmn:task id="task1" name="Task With Empty Doc">
+    const result = parse(`<bpmn:task id="task1" name="Task With Empty Doc">
           <bpmn:documentation></bpmn:documentation>
         </bpmn:task>
         <bpmn:task id="task2" name="Task With Whitespace Doc">
@@ -140,10 +123,8 @@ describe('parseXMLDocumentation', () => {
         </bpmn:task>
         <bpmn:userTask id="task3" name="Task With Valid Doc">
           <bpmn:documentation>Valid documentation</bpmn:documentation>
-        </bpmn:userTask>
-      </bpmn:definitions>`
-    
-    const result = parseXMLDocumentation(bpmnXml)
+        </bpmn:userTask>`)
+
     expect(result).toHaveLength(1)
     expect(result[0]).toEqual({
       id: 'task3',
@@ -153,9 +134,7 @@ describe('parseXMLDocumentation', () => {
   })
 
   it('should handle all supported activity types', () => {
-    const bpmnXml = `<?xml version="1.0" encoding="UTF-8"?>
-      <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL">
-        <bpmn:task id="task1" name="Task">
+    const result = parse(`<bpmn:task id="task1" name="Task">
           <bpmn:documentation>Task doc</bpmn:documentation>
         </bpmn:task>
         <bpmn:userTask id="userTask1" name="User Task">
@@ -178,12 +157,10 @@ describe('parseXMLDocumentation', () => {
         </bpmn:callActivity>
         <bpmn:subProcess id="subProcess1" name="Sub Process">
           <bpmn:documentation>Sub process doc</bpmn:documentation>
-        </bpmn:subProcess>
-      </bpmn:definitions>`
-    
-    const result = parseXMLDocumentation(bpmnXml)
+        </bpmn:subProcess>`)
+
     expect(result).toHaveLength(8)
-    
+
     const taskTypes = result.map(r => r.element)
     expect(taskTypes).toContain('Task')
     expect(taskTypes).toContain('User Task')
@@ -196,7 +173,7 @@ describe('parseXMLDocumentation', () => {
   })
 
   it('should handle non-namespaced BPMN elements', () => {
-    const bpmnXml = `<?xml version="1.0" encoding="UTF-8"?>
+    const result = parseXMLDocumentation(`<?xml version="1.0" encoding="UTF-8"?>
       <definitions>
         <task id="task1" name="Non-namespaced Task">
           <documentation>Non-namespaced documentation</documentation>
@@ -204,9 +181,8 @@ describe('parseXMLDocumentation', () => {
         <userTask id="userTask1" name="Non-namespaced User Task">
           <documentation>Non-namespaced user task doc</documentation>
         </userTask>
-      </definitions>`
-    
-    const result = parseXMLDocumentation(bpmnXml)
+      </definitions>`)
+
     expect(result).toHaveLength(2)
     expect(result[0]).toEqual({
       id: 'task1',
@@ -221,17 +197,13 @@ describe('parseXMLDocumentation', () => {
   })
 
   it('should handle mixed namespaced and non-namespaced elements', () => {
-    const bpmnXml = `<?xml version="1.0" encoding="UTF-8"?>
-      <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL">
-        <bpmn:task id="task1" name="Namespaced Task">
+    const result = parse(`<bpmn:task id="task1" name="Namespaced Task">
           <bpmn:documentation>Namespaced documentation</bpmn:documentation>
         </bpmn:task>
         <userTask id="userTask1" name="Non-namespaced User Task">
           <documentation>Non-namespaced documentation</documentation>
-        </userTask>
-      </bpmn:definitions>`
-    
-    const result = parseXMLDocumentation(bpmnXml)
+        </userTask>`)
+
     expect(result).toHaveLength(2)
     expect(result[0]).toEqual({
       id: 'task1',
@@ -246,18 +218,14 @@ describe('parseXMLDocumentation', () => {
   })
 
   it('should trim whitespace from documentation', () => {
-    const bpmnXml = `<?xml version="1.0" encoding="UTF-8"?>
-      <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL">
-        <bpmn:task id="task1" name="Task">
+    const result = parse(`<bpmn:task id="task1" name="Task">
           <bpmn:documentation>
             
             This documentation has whitespace
             
           </bpmn:documentation>
-        </bpmn:task>
-      </bpmn:definitions>`
-    
-    const result = parseXMLDocumentation(bpmnXml)
+        </bpmn:task>`)
+
     expect(result).toHaveLength(1)
     expect(result[0]).toEqual({
       id: 'task1',
@@ -267,17 +235,13 @@ describe('parseXMLDocumentation', () => {
   })
 
   it('should handle duplicate elements correctly', () => {
-    const bpmnXml = `<?xml version="1.0" encoding="UTF-8"?>
-      <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL">
-        <bpmn:task id="task1" name="Task 1">
+    const result = parse(`<bpmn:task id="task1" name="Task 1">
           <bpmn:documentation>First task documentation</bpmn:documentation>
         </bpmn:task>
         <bpmn:task id="task2" name="Task 2">
           <bpmn:documentation>Second task documentation</bpmn:documentation>
-        </bpmn:task>
-      </bpmn:definitions>`
-    
-    const result = parseXMLDocumentation(bpmnXml)
+        </bpmn:task>`)
+
     expect(result).toHaveLength(2)
     expect(result[0]).toEqual({
       id: 'task1',
@@ -292,9 +256,7 @@ describe('parseXMLDocumentation', () => {
   })
 
   it('should handle complex nested BPMN structure', () => {
-    const bpmnXml = `<?xml version="1.0" encoding="UTF-8"?>
-      <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL">
-        <bpmn:process id="process1">
+    const result = parse(`<bpmn:process id="process1">
           <bpmn:subProcess id="subprocess1" name="Main Subprocess">
             <bpmn:documentation>Subprocess documentation</bpmn:documentation>
             <bpmn:task id="nestedTask1" name="Nested Task">
@@ -304,12 +266,9 @@ describe('parseXMLDocumentation', () => {
           <bpmn:userTask id="mainTask1" name="Main Task">
             <bpmn:documentation>Main task documentation</bpmn:documentation>
           </bpmn:userTask>
-        </bpmn:process>
-      </bpmn:definitions>`
-    
-    const result = parseXMLDocumentation(bpmnXml)
+        </bpmn:process>`)
+
     expect(result).toHaveLength(3)
-    
     const taskNames = result.map(r => r.element)
     expect(taskNames).toContain('Main Subprocess')
     expect(taskNames).toContain('Nested Task')

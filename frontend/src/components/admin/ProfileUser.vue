@@ -21,20 +21,20 @@
     :left-caption="$t('admin.users.title') + ' - ' + user.id" :left-size="[12, 6, 4, 3, 2]">
     <template v-slot:left>
       <b-list-group>
-        <b-list-group-item class="border-0 px-3 py-2" :active="$route.query.tab === 'profile' || !$route.query.tab" exact :to="'?tab=profile'">
+        <b-list-group-item v-if="!user.noInfo" class="border-0 px-3 py-2" :active="selectedTab === 'profile'" exact :to="'?tab=profile'">
           <span> {{ $t('admin.users.profile') }}</span>
         </b-list-group-item>
-        <b-list-group-item v-if="$root.config.userEditable" class="border-0 px-3 py-2" :active="$route.query.tab === 'account'" exact :to="'?tab=account'">
+        <b-list-group-item v-if="!user.noInfo && $root.config.userEditable" class="border-0 px-3 py-2" :active="selectedTab === 'account'" exact :to="'?tab=account'">
           <span> {{ $t('password.recover.changePassword') }}</span>
         </b-list-group-item>
-        <b-list-group-item class="border-0 px-3 py-2" :active="$route.query.tab === 'groups'" exact :to="'?tab=groups'">
+        <b-list-group-item v-if="!user.noInfo" class="border-0 px-3 py-2" :active="selectedTab === 'groups'" exact :to="'?tab=groups'">
           <span> {{ $t('admin.users.groups') }}</span>
         </b-list-group-item>
-        <b-list-group-item class="border-0 px-3 py-2" :active="$route.query.tab === 'tenants'" exact :to="'?tab=tenants'">
+        <b-list-group-item v-if="!user.noInfo" class="border-0 px-3 py-2" :active="selectedTab === 'tenants'" exact :to="'?tab=tenants'">
           <span> {{ $t('admin.tenants.title') }}</span>
         </b-list-group-item>
         <b-list-group-item v-if="$root.user && $root.user.id === user.id" class="border-0 px-3 py-2"
-          :active="$route.query.tab === 'preferences'" exact :to="'?tab=preferences'">
+          :active="selectedTab === 'preferences'" exact :to="'?tab=preferences'">
           <span> {{ $t('admin.preferences.title') }}</span>
         </b-list-group-item>
       </b-list-group>
@@ -42,14 +42,14 @@
 
     <transition name="slide-in" mode="out-in">
       <div class="d-flex flex-column bg-light w-100 h-100" v-if="user.id">
-        <b-button v-if="editMode" variant="light" style="min-height: 40px; line-height: 20px;" :block="true" class="rounded-0 border-bottom text-start" href="#/seven/auth/admin/users">
+        <b-button v-if="editMode" variant="light" style="min-height: 40px; line-height: 20px;" :block="true" class="rounded-0 border-bottom text-start" :to="{ name: 'adminUsers' }">
           <span class="mdi mdi-arrow-left me-2"></span>
           <span class="fw-bold">{{ $t('admin.users.title') }}</span>
         </b-button>
         <div class="container-fluid overflow-auto">
 
           <!-- Profile Tab -->
-          <div v-if="$route.query.tab === 'profile' || !$route.query.tab" class="row pt-3 ps-4 pe-4">
+          <div v-if="selectedTab === 'profile'" class="row pt-3 ps-4 pe-4">
             <ContentBlock
               :title="$t('admin.users.editMessage', [user.firstName + ' ' + user.lastName])"
               class="col-lg-6 col-md-8 col-sm-12">
@@ -76,11 +76,28 @@
           </div>
 
           <!-- Account Tab -->
-          <div v-else-if="$route.query.tab === 'account' && $root.config.userEditable" class="row pt-3 ps-4 pe-4">
+          <div v-else-if="selectedTab === 'account' && $root.config.userEditable" class="row pt-3 ps-4 pe-4">
             <ContentBlock
               :title="$t('password.recover.changePassword')"
               class="col-lg-6 col-md-8 col-sm-12">
-              <b-form-group labels-cols-lg="4" label-size="lg" label-class="fw-bold pt-0 pb-4" class="m-0">
+              <b-form-group v-if="$root.config.userPasswordChangeEnabled" labels-cols-lg="4" label-size="lg" label-class="fw-bold pt-0 pb-4" class="m-0">
+                <b-form-group :label="$t('password.recover.currentUserPassword') + '*'" label-cols-sm="4"
+                  label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
+                    <b-form-input type="password" v-model="credentials.authenticatedUserPassword"></b-form-input>
+                </b-form-group>
+                <b-form-group :label="$t('password.recover.newPassword') + '*'" label-cols-sm="4"
+                  label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
+                  <b-form-input type="password" v-model="credentials.password"></b-form-input>
+                </b-form-group>
+                <b-form-group :label="$t('password.recover.newPasswordRepeat') + '*'" label-cols-sm="4"
+                  label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
+                  <b-form-input type="password" v-model="passwordRepeat"></b-form-input>
+                </b-form-group>
+                <div class="float-end d-flex align-items-center">
+                  <b-button type="submit" variant="secondary" @click="changePassword($event)">{{$t('password.recover.changePassword')}}</b-button>
+                </div>
+              </b-form-group>
+              <b-form-group v-else labels-cols-lg="4" label-size="lg" label-class="fw-bold pt-0 pb-4" class="m-0">
                 <b-form-group :label="$t('password.recover.id') + '*'" label-cols-sm="4"
                   label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
                   <b-form-input v-model="user.id" :state="notEmpty(user.id)" required readonly></b-form-input>
@@ -94,7 +111,7 @@
           </div>
 
           <!-- Groups Tab -->
-          <div v-else-if="$route.query.tab === 'groups'" class="row pt-3 ps-4 pe-4">
+          <div v-else-if="selectedTab === 'groups'" class="row pt-3 ps-4 pe-4">
             <ContentBlock
               :title="$t('admin.users.group.title', [user.firstName + ' ' + user.lastName])"
               class="">
@@ -106,14 +123,9 @@
               </template>
 
               <div v-if="groups" class="p-2">
-                <FlowTable striped :items="groups" primary-key="id" prefix="admin.groups." :fields="groupFields"
-                  @contextmenu="focusedGroup = $event" @mouseenter="focusedGroup = $event" @mouseleave="focusedGroup = null">
+                <FlowTable striped :items="groups" primary-key="id" :fields="groupFields">
                   <template v-slot:cell(actions)="row">
-                    <div>
-                      <b-button :disabled="focusedGroup !== row.item" style="opacity: 1" @click="unassignGroup(row.item)" class="px-2 border-0 shadow-none" :title="$t('admin.groups.deleteGroup')" variant="link">
-                        <span class="mdi mdi-18px mdi-delete-outline"></span>
-                      </b-button>
-                    </div>
+                    <CellActionButton @click="unassignGroup(row.item)" :title="$t('admin.groups.deleteGroup')" icon="mdi-delete-outline"></CellActionButton>
                   </template>
                 </FlowTable>
               </div>
@@ -121,7 +133,7 @@
           </div>
 
           <!-- Tenants Tab -->
-          <div v-else-if="$route.query.tab === 'tenants'" class="row pt-3 ps-4 pe-4">
+          <div v-else-if="selectedTab === 'tenants'" class="row pt-3 ps-4 pe-4">
             <ContentBlock
               :title="$t('admin.tenants.associationTitle', [user.firstName + ' ' + user.lastName])"
               class="">
@@ -133,14 +145,9 @@
               </template>
 
               <div v-if="userTenants.length > 0" class="p-2">
-                <FlowTable striped :items="userTenants" primary-key="id" prefix="admin.tenants." :fields="tenantFields"
-                  @contextmenu="focusedTenant = $event" @mouseenter="focusedTenant = $event" @mouseleave="focusedTenant = null">
+                <FlowTable striped :items="userTenants" primary-key="id" :fields="tenantFields">
                   <template v-slot:cell(actions)="row">
-                    <div>
-                      <b-button :disabled="focusedTenant !== row.item" style="opacity: 1" @click="unassignTenant(row.item)" class="px-2 border-0 shadow-none" variant="link">
-                        <span class="mdi mdi-18px mdi-delete-outline"></span>
-                      </b-button>
-                    </div>
+                    <CellActionButton @click="unassignTenant(row.item)" :title="$t('admin.tenants.unassignTenant')" icon="mdi-delete-outline"></CellActionButton>
                   </template>
                 </FlowTable>
               </div>
@@ -151,7 +158,7 @@
           </div>
 
           <!-- Preferences Tab -->
-          <div v-else-if="$route.query.tab === 'preferences'" class="row pt-3 ps-4 pe-4">
+          <div v-else-if="selectedTab === 'preferences'" class="row pt-3 ps-4 pe-4">
             <ProfilePreferencesTab></ProfilePreferencesTab>
           </div>
 
@@ -160,11 +167,13 @@
         <!-- Assign Groups Modal -->
         <b-modal v-if="editMode" ref="assignGroupsModal" :title="$t('admin.users.group.add')" size="lg">
           <div class="container g-0">
-            <FlowTable :items="unAssignedGroups" primary-key="id" prefix="admin.groups." striped
-              :fields="[{ label: '', key: 'selected', class: 'col-sm-1', sortable: false, thClass: 'text-center', tdClass: 'text-center' },
-              { label: 'id', key: 'id', class: 'col-sm-3' },
-              { label: 'name', key: 'name', class: 'col-sm-5' },
-              { label: 'type', key: 'type', class: 'col-sm-3' }]">
+            <FlowTable :items="unAssignedGroups" primary-key="id" striped
+              :fields="[
+                { label: '', key: 'selected', class: 'col-sm-1', sortable: false, thClass: 'text-center', tdClass: 'text-center' },
+                { label: 'admin.groups.id', key: 'id', class: 'col-sm-3' },
+                { label: 'admin.groups.name', key: 'name', class: 'col-sm-5' },
+                { label: 'admin.groups.type', key: 'type', class: 'col-sm-3' },
+              ]">
               <template v-slot:cell(selected)="row">
                 <b-form-checkbox v-model="row.item.selected"></b-form-checkbox>
               </template>
@@ -184,10 +193,12 @@
 
         <b-modal v-if="editMode" ref="assignTenantsModal" :title="$t('admin.tenants.addTo')" size="lg">
           <div v-if="unassignedTenants.length > 0" class="container g-0">
-            <FlowTable :items="unassignedTenants" primary-key="id" prefix="admin.tenants." striped
-              :fields="[{ label: '', key: 'selected', class: 'col-sm-1', sortable: false, tdClass: 'text-center' },
-              { label: 'fullId', key: 'id', class: 'col-6' },
-              { label: 'fullName', key: 'name', class: 'col-5' }]">
+            <FlowTable :items="unassignedTenants" primary-key="id" striped
+              :fields="[
+                { label: '', key: 'selected', class: 'col-sm-1', sortable: false, tdClass: 'text-center' },
+                { label: 'admin.tenants.fullId', key: 'id', class: 'col-6' },
+                { label: 'admin.tenants.fullName', key: 'name', class: 'col-5' },
+              ]">
               <template v-slot:cell(selected)="row">
                 <b-form-checkbox v-model="row.item.selected"></b-form-checkbox>
               </template>
@@ -244,26 +255,26 @@
 <script>
 import { AdminService } from '@/services.js'
 import { notEmpty, same } from '@/components/admin/utils.js'
-
 import { SidebarsFlow, FlowTable, SuccessAlert, CIBForm, ContentBlock }  from '@cib/common-frontend'
 import ProfilePreferencesTab from '@/components/admin/ProfilePreferencesTab.vue'
-
+import CellActionButton from '@/components/common-components/CellActionButton.vue'
 import { mapActions, mapGetters } from 'vuex'
 
 export default {
   name: 'ProfileUser',
-  components: { SidebarsFlow, FlowTable, SuccessAlert, CIBForm, ProfilePreferencesTab, ContentBlock },
+  components: { SidebarsFlow, FlowTable, SuccessAlert, CIBForm, ProfilePreferencesTab, ContentBlock, CellActionButton },
   inject: ['AuthService'],
   props: {
     editMode: {
       type: Boolean,
       default: false
-    }
+      
+    },
   },
   data: function () {
     return {
       leftOpen: true,
-      user: { id: null, firstName: null,  lastName: null, email: null },
+      user: { id: null, firstName: null,  lastName: null, email: null, noInfo: true },
       dirty: false,
       credentials: { authenticatedUserPassword: null, password: null },
       passwordRepeat: null,
@@ -271,8 +282,6 @@ export default {
       unAssignedGroups: [],
       unAssignedGroupsLoading: false,
       unassignedTenants: [],
-      focusedGroup: null,
-      focusedTenant: null,
       passwordPolicyError: false,
       passwordVisibility: { current: false, new: false, repeat: false },
       sendingEmail: false,
@@ -282,36 +291,40 @@ export default {
   watch: {
     '$route.params.userId': function() {
       if (!this.editMode && this.$route.params.userId !== this.$router.app.user.id) {
-        this.$router.push('/seven/auth/start')
+        this.$router.push({ name: 'start' })
       } else {
         this.loadUser(this.$route.params.userId)
         this.clean()
       }
     },
     '$route.query.tab': function() {
-      if (this.$route.query.tab === 'groups') this.loadGroups(this.$route.params.userId)
-      else if (this.$route.query.tab === 'tenants') this.loadTenants(this.$route.params.userId)
+      if (this.selectedTab === 'groups') this.loadGroups(this.$route.params.userId)
+      else if (this.selectedTab === 'tenants') this.loadTenants(this.$route.params.userId)
     }
   },
   computed: {
     ...mapGetters(['tenants']),
+    selectedTab() {
+      const defaultTab = this.user.noInfo ? 'preferences' : 'profile'
+      return this.$route.query.tab || defaultTab
+    },
     groupFields() {
       const isEditable = this.editMode && this.$root.config.userEditable
       const fields = [
         {
-          label: 'id',
+          label: 'admin.groups.id',
           key: 'id',
           class: 'col-md-4 col-sm-4',
           ...(isEditable && { tdClass: 'py-1' })
         },
         {
-          label: 'name',
+          label: 'admin.groups.name',
           key: 'name',
           class: 'col-md-4 col-sm-4',
           ...(isEditable && { tdClass: 'py-1' })
         },
         {
-          label: 'type',
+          label: 'admin.groups.type',
           key: 'type',
           class: isEditable ? 'col-md-2 col-sm-2' : 'col-md-4 col-sm-4',
           ...(isEditable && { tdClass: 'py-1' })
@@ -319,7 +332,7 @@ export default {
       ]
       if (isEditable) {
         fields.push({
-          label: 'actions',
+          label: 'admin.groups.actions',
           key: 'actions',
           class: 'col-md-2 col-sm-2',
           sortable: false,
@@ -333,13 +346,13 @@ export default {
       const isEditable = this.editMode && this.$root.config.userEditable
       const fields = [
         {
-          label: 'fullId',
+          label: 'admin.tenants.fullId',
           key: 'id',
           class: isEditable ? 'col-md-4 col-sm-4' : 'col-md-6 col-sm-6',
           ...(isEditable && { tdClass: 'py-1' })
         },
         {
-          label: 'fullName',
+          label: 'admin.tenants.fullName',
           key: 'name',
           class: isEditable ? 'col-md-4 col-sm-4' : 'col-md-6 col-sm-6',
           ...(isEditable && { tdClass: 'py-1' })
@@ -347,7 +360,7 @@ export default {
       ]
       if (isEditable) {
         fields.push({
-          label: 'actions',
+          label: 'admin.tenants.actions',
           key: 'actions',
           class: 'col-md-4 col-sm-4',
           sortable: false,
@@ -360,14 +373,14 @@ export default {
   },
   created: function () {
     if (this.$route.params.userId) this.loadUser(this.$route.params.userId)
-    if (this.$route.query.tab === 'groups') this.loadGroups(this.$route.params.userId)
-    else if (this.$route.query.tab === 'tenants') this.loadTenants(this.$route.params.userId)
+    if (this.selectedTab === 'groups') this.loadGroups(this.$route.params.userId)
+    else if (this.selectedTab === 'tenants') this.loadTenants(this.$route.params.userId)
   },
   methods: {
     ...mapActions(['fetchTenants', 'getTenantsByUser', 'removeUserFromTenant', 'addUserToTenant']),
-    loadUser: function(userId) {
-      AdminService.findUsers({ id: userId }).then(response => {
-        this.user = response[0]
+    loadUser: async function(userId) {
+      return AdminService.findUsers({ id: userId }).then(response => {
+        this.user = response[0] || { id: userId, firstName: null,  lastName: null, email: null, noInfo: true }
       })
     },
     loadGroups: function(userId) {
@@ -397,7 +410,7 @@ export default {
           this.passwordPolicyError = false
           this.$refs.updatePassword.show(2)
         }, error => {
-          var data = error.response.data
+          const data = error.response.data
           if (data && data.type === 'PasswordPolicyException') {
             this.passwordPolicyError = true
           }
@@ -407,7 +420,7 @@ export default {
     deleteUser: function() {
       AdminService.deleteUser(this.user.id).then(() => {
         this.$refs.deleteUser.show(2)
-        this.$router.push('/seven/auth/admin/users')
+        this.$router.push({ name: 'adminUsers' })
       })
     },
     unassignGroup: function(group) {
@@ -418,14 +431,11 @@ export default {
     },
     loadUnassignedGroups: function() {
       this.unAssignedGroupsLoading = true
-      var userGroups = JSON.parse(JSON.stringify(this.groups))
+      const userGroups = JSON.parse(JSON.stringify(this.groups))
       this.unAssignedGroups = []
       AdminService.findGroups().then(allGroups => {
         allGroups.forEach(group => {
-          var isAssigned = false
-          userGroups.forEach(userGroup => {
-            if (group.id === userGroup.id) isAssigned = true
-          })
+          const isAssigned = userGroups.some(userGroup => userGroup.id === group.id)
           if (!isAssigned){
             group.selected = false
             this.unAssignedGroups.push(group)
@@ -471,10 +481,7 @@ export default {
       const userTenants = JSON.parse(JSON.stringify(this.userTenants))
       this.unassignedTenants = []
       this.tenants.forEach(tenant => {
-        var isAssigned = false
-        userTenants.forEach(userTenant => {
-          if (tenant.id === userTenant.id) isAssigned = true
-        })
+        const isAssigned = userTenants.some(userTenant => userTenant.id === tenant.id)
         if (!isAssigned){
           tenant.selected = false
           this.unassignedTenants.push(tenant)

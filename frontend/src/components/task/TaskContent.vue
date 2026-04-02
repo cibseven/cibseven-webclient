@@ -46,24 +46,27 @@
         <div class="col-12">
           <div class="form-inline">
             <div class="form-group d-flex align-items-center mb-0">
-              <component ref="titleTask" tabindex="0" class="mb-0 me-4 d-inline" :is="isMobile() ? 'h6' : 'h5'">{{
-                task.name }}</component>
+              <h3 ref="titleTask" class="mb-0 me-4 d-inline" :class="isMobile() ? 'h6' : 'h5'">{{ task.name }}</h3>
               <span v-if="task.assignee != null">
                 <b-form-tag variant="secondary" @remove="assignee = null; update()" :key="task.id"
                   :title="getCompleteName" :remove-label="$t('task.assignedUserTitle')"
                   class="mdi mdi-18px mdi-account">
                   {{ ' ' + getCompleteName }}
                 </b-form-tag>
-                <!-- <span class="mdi mdi-18px mdi-account mdi-dark"></span><span class="p-1" style="line-height: initial">{{ getCompleteName }}</span> -->
               </span>
               <span v-else>
                 <b-button ref="assignToMeButton" variant="link" class="p-0 text-dark me-2"
-                  @click="assignee = $root.user.id" :title="$t('infoAndHelp.shortcuts.shortcuts.claimTask')"><span
-                    class="mdi mdi-18px mdi-account-question mdi-dark"></span> {{ $t('task.assignToMe') }}</b-button>
+                  @click="assignee = $root.user.id" :title="$t('infoAndHelp.shortcuts.shortcuts.claimTask')">
+                  <span class="mdi mdi-18px mdi-account-question mdi-dark"></span>
+                  {{ $t('task.assignToMe') }}
+                </b-button>
               </span>
               <FilterableSelect v-if="task.assignee == null" v-model:loading="loadingUsers" @enter="findUsers($event)"
-                @clean-elements="resetUsers($event)" class="w-25" v-model="assignee"
+                @clean-elements="resetUsers($event)" class="w-auto" v-model="assignee"
                 :elements="$store.state.user.searchUsers" :placeholder="$t('task.assign')" noInvalidValues />
+              <b-button v-if="applicationPermissions($root.config.permissions.cockpit, 'cockpit')" @click="openTaskAssignationModal" class="ms-2" variant="light" size="sm" >
+                {{ $t('admin.groups.addCandidateGroups') }}
+              </b-button>
             </div>
           </div>
         </div>
@@ -101,6 +104,7 @@
     <ConfirmDialog ref="confirmTaskAssign" @ok="update()" @cancel="assignee = null">
       <span>{{ $t('confirm.assignUser') }}</span>
     </ConfirmDialog>
+    <TaskAssignationModal ref="taskAssignationModal" />
   </div>
 </template>
 
@@ -113,11 +117,13 @@ import RenderTemplate from '@/components/render-template/RenderTemplate.vue'
 import FilterableSelect from '@/components/task/filter/FilterableSelect.vue'
 import { ConfirmDialog } from '@cib/common-frontend'
 import assigneeMixin from '@/mixins/assigneeMixin.js'
+import TaskAssignationModal from '@/components/process/modals/TaskAssignationModal.vue'
+import { permissionsMixin } from '@/permissions'
 
 export default {
   name: 'TaskContent',
-  components: { RenderTemplate, FilterableSelect, ConfirmDialog },
-  mixins: [usersMixin, assigneeMixin],
+  components: { RenderTemplate, FilterableSelect, ConfirmDialog, TaskAssignationModal },
+  mixins: [usersMixin, assigneeMixin, permissionsMixin],
   inject: ['isMobile'],
   props: { task: Object },
   emits: ['complete-task', 'update-assignee'],
@@ -207,12 +213,12 @@ export default {
     },
     loadIdentityLinks: function(taskId) {
       this.candidateUsers = []
-      var promises = []
+      const promises = []
       TaskService.findIdentityLinks(taskId).then(identityLinks => {
         identityLinks.forEach(identityLink => {
           if (identityLink.type === 'candidate') {
             if (identityLink.groupId !== null) {
-              var promise = AdminService.findUsers({ memberOfGroup: identityLink.groupId }).then(users => {
+              const promise = AdminService.findUsers({ memberOfGroup: identityLink.groupId }).then(users => {
                 this.$store.commit('setCandidateUsers', users)
                 this.$store.commit('setSearchUsers', users)
               })
@@ -232,7 +238,7 @@ export default {
       this.resetTimer()
       this.timer = setTimeout(() => {
         if (assignee === null || assignee !== this.$root.user.id) {
-          this.displayPopover = localStorage.getItem('showPopoverHowToAssign') === 'false' ? false : true
+          this.displayPopover = localStorage.getItem('showPopoverHowToAssign') !== 'false'
           // To hide popover when clicking outside of it
           if (this.displayPopover) {
             this.startListeningTouchEvents()
@@ -262,7 +268,7 @@ export default {
       }
     },
     disablePopover: function() {
-      localStorage.setItem('showPopoverHowToAssign', false)
+      localStorage.setItem('showPopoverHowToAssign', 'false')
       this.displayPopover = false
     },
     update: function() {
@@ -301,7 +307,10 @@ export default {
       if (!this.$root.config.layout.disableCandidateUsers) {
         this.$store.dispatch('findUsersByCandidates', { idIn: this.candidateUsers })
       }
-    }
+    },
+    openTaskAssignationModal: function() {
+      this.$refs.taskAssignationModal.show(this.task.id, null, 'groups');
+    },
   }
 }
 </script>

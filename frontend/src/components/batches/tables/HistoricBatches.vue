@@ -19,17 +19,21 @@
 <template>
   <ContentBlock :title="$t('batches.historicBatches')">
     <div class="overflow-auto p-0" style="max-height: 35vh" @scroll="showMore">
-      <FlowTable v-if="historicBatches.length > 0" striped thead-class="sticky-header" :items="historicBatches" primary-key="id" prefix="batches."
+      <FlowTable v-if="historicBatches.length > 0" striped thead-class="sticky-header" :items="historicBatches" primary-key="id"
         :fields="[
-          { label: 'id', key: 'id', class: 'col-5', tdClass: 'p-0' },
-          { label: 'type', key: 'type', class: 'col-3', tdClass: 'p-1' },
-          { label: 'startTime', key: 'startTime', class: 'col-2', tdClass: 'p-1' },
-          { label: 'endTime', key: 'endTime', class: 'col-2', tdClass: 'p-1' },
+          { label: 'batches.id', key: 'id', class: 'col-5', tdClass: 'p-0' },
+          { label: 'batches.type', key: 'type', class: 'col-3', tdClass: 'p-1' },
+          { label: 'batches.startTime', key: 'startTime', class: 'col-2', tdClass: 'p-1' },
+          { label: 'batches.endTime', key: 'endTime', class: 'col-2', tdClass: 'p-1' },
         ]"
         sort-by="endTime" sort-desc @click="loadBatchDetails($event)">
         <template v-slot:cell(id)="table">
-          <div class="p-1 text-truncate" :class="batchIsSelected(table.item.id) ? 'border-start border-4 border-primary' : ''">
-            {{ table.item.id }}
+          <div
+            class="p-0 m-0 h-100 w-100 d-flex align-items-center"
+            :class="batchIsSelected(table.item.id) ? 'border-start border-4 border-primary' : ''">
+            <div class="p-1 text-truncate">
+              {{ table.item.id }}
+            </div>
           </div>
         </template>
         <template v-slot:cell(startTime)="table">
@@ -53,8 +57,7 @@
 import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
 import { mapGetters, mapActions } from 'vuex'
 import { debounce } from '@/utils/debounce.js'
-import { BWaitingBox } from '@cib/bootstrap-components'
-import { FlowTable, ContentBlock } from '@cib/common-frontend'
+import { BWaitingBox, FlowTable, ContentBlock } from '@cib/common-frontend'
 
 export default {
   name: 'HistoricBatches',

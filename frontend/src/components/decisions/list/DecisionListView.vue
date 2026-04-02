@@ -25,7 +25,7 @@
 
 <script>
 import DecisionList from '@/components/decisions/list/DecisionList.vue'
-import { BWaitingBox } from '@cib/bootstrap-components'
+import { BWaitingBox } from '@cib/common-frontend'
 
 export default {
   name: 'DecisionListView',

@@ -18,10 +18,10 @@
 -->
 <template>
   <div>
-    <b-button variant="light" class="rounded-0 text-nowrap position-absolute" @click="$emit('update:leftOpen', true)"
+    <b-button variant="light" class="rounded-0 text-nowrap position-absolute" :aria-label="$t('nav-bar.filtersTitle')" :aria-expanded="String(leftOpen)" @click="$emit('update:leftOpen', true)"
       style="right: 100%; top: 0; transform: rotate(-90deg); transform-origin: right top; height: 40px"
       :style="favoriteFilters.length > 0 ? 'width: ' + sizes.arrow + 'px' : ''">
-      <span v-if="favoriteFilters.length <= 0">{{ $t('seven.filters') }}</span>
+      <span v-if="favoriteFilters.length <= 0">{{ $t('nav-bar.filtersTitle') }}</span>
       <i class="mdi mdi-18px mdi-chevron-down"></i>
     </b-button>
     <template v-for="(filter, key) in favoritesDisplayed">
@@ -33,9 +33,13 @@
     </template>
     <b-dropdown v-if="favoritesNoDisplayed.length > 0" variant="link" toggle-class="px-0" no-caret class="position-absolute" style="left: 0" :style="getDotsStyle()">
       <template #button-content>
-        <i v-hover-style="{ classes: ['text-primary'] }" class="mdi mdi-18px mdi-dots-horizontal"></i>
+        <div class="mx-2" :title="$t('task.showMore')">
+          <i class="mdi mdi-18px mdi-dots-horizontal"></i>
+        </div>
       </template>
-      <b-dd-item-btn v-for="filter in favoritesNoDisplayed" @click="selectFilter(filter)" :key="filter.id">{{ filter.name }}</b-dd-item-btn>
+      <b-dd-item-btn v-for="filter in favoritesNoDisplayed" @click="selectFilter(filter)" :key="filter.id" :class="isActive(filter) ? 'active' : ''">
+        {{ filter.name }}
+      </b-dd-item-btn>
     </b-dropdown>
   </div>
 </template>
@@ -57,7 +61,7 @@ export default {
   },
   computed: {
     favoriteFilters: function() {
-      var filters = this.$store.state.filter.list.filter(f => {
+      const filters = this.$store.state.filter.list.filter(f => {
         return f.favorite
       })
       return filters.sort(function(a, b) {
@@ -89,7 +93,7 @@ export default {
       })
     },
     getStyles: function(filter, key) {
-      var styles = { top: key * this.sizes.filter + this.sizes.arrow + 'px', width: this.sizes.filter + 'px' }
+      const styles = { top: key * this.sizes.filter + this.sizes.arrow + 'px', width: this.sizes.filter + 'px' }
       if (this.$store.state.filter.selected.id === filter.id) {
         styles['border-top'] = '5px solid!important'
         styles['border-top-color'] = 'var(--bs-primary)!important'
@@ -97,19 +101,22 @@ export default {
       return styles
     },
     getDotsStyle: function() {
-      var styles = { width: this.sizes.dots + 'px' }
+      const styles = { width: this.sizes.dots + 'px' }
       styles.top = this.favoritesDisplayed.length * this.sizes.filter + this.sizes.arrow + 'px'
       return styles
     },
+    isActive(filter) {
+      return this.$store.state.filter.selected.id === filter.id
+    },
     selectFilter: function(filter) {
-      var selectedFilter = this.$store.state.filter.list.find(f => {
+      const selectedFilter = this.$store.state.filter.list.find(f => {
         return f.id === filter.id
       })
       if (selectedFilter) {
         this.$store.state.filter.selected = selectedFilter
         this.$emit('selected-filter', selectedFilter.id)
         localStorage.setItem('filter', JSON.stringify(selectedFilter))
-        var path = '/seven/auth/tasks/' + selectedFilter.id +
+        const path = '/seven/auth/tasks/' + selectedFilter.id +
           (this.$route.params.taskId ? '/' + this.$route.params.taskId : '')
         if (this.$route.path !== path) this.$router.replace(path)
       }

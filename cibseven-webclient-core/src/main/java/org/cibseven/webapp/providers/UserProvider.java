@@ -30,8 +30,10 @@ import java.util.Optional;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenResourceType;
+import org.cibseven.webapp.auth.rest.StandardLogin;
 import org.cibseven.webapp.exception.InvalidUserIdException;
 import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.webapp.providers.utils.URLUtils;
 import org.cibseven.webapp.rest.model.Authorization;
 import org.cibseven.webapp.rest.model.Authorizations;
 import org.cibseven.webapp.rest.model.NewUser;
@@ -45,6 +47,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -54,7 +59,8 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 	
 	@Value("${cibseven.webclient.user.provider:org.cibseven.webapp.auth.SevenUserProvider}") String userProvider;
 	@Value("${cibseven.webclient.users.search.wildcard:}") String wildcard;
-	
+	private final ObjectMapper objectMapper = new ObjectMapper();
+
 	@Override
 	public Authorizations getUserAuthorization(String userId, CIBUser user) {
 		Authorizations auths = new Authorizations();
@@ -121,16 +127,39 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 		return auths;
 	}
 	
+	/**
+	 * Get the count of users in the system with optional filters.
+	 */
+	public long countUsers(Map<String, Object> filters, CIBUser user) throws SystemException {
+		String url = URLUtils.buildUrlWithParams(
+			getEngineRestUrl(user) + "/user/count",
+			filters != null ? filters : Map.of()
+		);
+		ResponseEntity<JsonNode> response = doGet(url, JsonNode.class, user, false);
+		JsonNode body = response.getBody();
+		return body != null ? body.get("count").asLong() : 0;
+	}
+	
 	public Collection<SevenUser> fetchUsers(CIBUser user) throws SystemException {
 		String url = getEngineRestUrl(user) + "/user";
 		return Arrays.asList(((ResponseEntity<SevenUser[]>) doGet(url, SevenUser[].class, user, false)).getBody());	
 	}
 	
-	public SevenVerifyUser verifyUser(String username, String password, CIBUser user) throws SystemException {
+	public SevenVerifyUser verifyUser(StandardLogin login, CIBUser user) throws SystemException {
 		String url = getEngineRestUrl(user) + "/identity/verify";
-		String body = "{\"username\": \"" + username + "\", \"password\": \"" + password + "\"}";
-		return ((ResponseEntity<SevenVerifyUser>) doPost(url, body, SevenVerifyUser.class, user)).getBody();	
-	}	
+
+		String bodyString;
+		ObjectNode loginNode = objectMapper.createObjectNode();
+		if (login.getUsername() != null) loginNode.put("username", login.getUsername());
+		if (login.getPassword() != null) loginNode.put("password", login.getPassword());
+		try {
+			bodyString = objectMapper.writeValueAsString(loginNode);
+		} catch (JsonProcessingException e) {
+			throw new SystemException(e);
+		}
+
+		return doPost(url, bodyString, SevenVerifyUser.class, user).getBody();	
+	}
 	
 	@Override
 	public Collection<User> findUsers(Optional<String> id, Optional<String> firstName, Optional<String> firstNameLike, Optional<String> lastName,

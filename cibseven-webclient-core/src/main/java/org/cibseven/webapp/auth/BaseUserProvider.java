@@ -16,8 +16,14 @@
  */
 package org.cibseven.webapp.auth;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+
 import org.cibseven.webapp.auth.providers.JwtUserProvider;
 import org.cibseven.webapp.auth.rest.StandardLogin;
+import org.cibseven.webapp.config.EngineRestProperties;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -28,10 +34,44 @@ import lombok.Getter;
 
 public abstract class BaseUserProvider<R extends StandardLogin> implements JwtUserProvider<R> {
 
+	@Value("${cibseven.webclient.authentication.tokenValidMinutes:60}") 
+	protected long validMinutes;
+	
+	@Value("${cibseven.webclient.authentication.tokenProlongMinutes:1440}") 
+	protected long prolongMinutes;
+
+	@Autowired(required = false) 
+	protected EngineRestProperties engineRestProperties;
+
 	public abstract User login(R params, HttpServletRequest rq);
 	public abstract void logout(User user);
 	public abstract User getSelfInfoJSessionId(String userId, String jSessionId, HttpServletRequest rq);
-	
+
+	/**
+	 * Checks authorization from request. If basicAuthAllowed is true, it will also check for Basic Auth header.
+	 * @return The authenticated CIBUser
+	 */
+	public CIBUser checkAuthorization(HttpServletRequest rq, boolean basicAuthAllowed) {
+		CIBUser user = null;
+		String authorization = rq.getHeader("Authorization");
+		if (basicAuthAllowed && authorization != null && authorization.toLowerCase().startsWith("basic")) {
+			// Authorization: Basic base64credentials
+			String base64Credentials = authorization.substring("Basic".length()).trim();
+			byte[] credDecoded = Base64.getDecoder().decode(base64Credentials);
+			String credentials = new String(credDecoded, StandardCharsets.UTF_8);
+			// credentials = username:password
+			final String[] values = credentials.split(":", 2);
+			StandardLogin login = createLoginParams();
+			login.setUsername(values[0]);
+			login.setPassword(values[1]);
+			user = (CIBUser) login((R)login, rq);
+		} 
+		else {
+			user = (CIBUser) authenticateUser(rq);
+		}
+		return user;
+	}
+
 	/**
 	 * Authenticates user from request.
 	 */
@@ -48,19 +88,6 @@ public abstract class BaseUserProvider<R extends StandardLogin> implements JwtUs
 			createKey(settings.getSecret());
 		} catch(WeakKeyException | IllegalArgumentException e) {
 			throw new IllegalArgumentException("Secret must be at least 155 characters long and a base64 decodable string");
-		}
-	}
-	
-	/**
-	 * Sets the engine from the X-Process-Engine header to the user object.
-	 * This should be called in login methods to store the engine with the user.
-	 * @param user The user object (must be CIBUser or subclass)
-	 * @param request The HTTP request containing the X-Process-Engine header
-	 */
-	protected void setEngineFromRequest(User user, HttpServletRequest request) {
-		if (user instanceof CIBUser) {
-			String engine = request.getHeader("X-Process-Engine");
-			((CIBUser) user).setEngine(engine);
 		}
 	}
 	

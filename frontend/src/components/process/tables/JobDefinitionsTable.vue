@@ -22,13 +22,13 @@
       <p class="text-center p-4"><BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}</p>
     </div>
     <FlowTable v-else-if="jobDefinitions.length > 0" striped thead-class="sticky-header"
-      :items="jobDefinitions" primary-key="id" prefix="process-instance.jobDefinitions." sort-by="suspended" :fields="[
-      { label: 'state', key: 'suspended', class: 'col-2', tdClass: 'py-1' },
-      { label: 'activity', key: 'activityId', class: 'col-2', tdClass: 'py-1' },
-      { label: 'type', key: 'jobType', class: 'col-2', tdClass: 'py-1' },
-      { label: 'configuration', key: 'jobConfiguration', class: 'col-2', tdClass: 'py-1' },
-      { label: 'overridingJobPriority', key: 'overridingJobPriority', class: 'col-2', tdClass: 'py-1' },
-      { label: 'actions', key: 'actions', class: 'col-2', sortable: false, tdClass: 'py-1' }
+      :items="jobDefinitions" primary-key="id" sort-by="suspended" :fields="[
+      { label: 'process-instance.jobDefinitions.state', key: 'suspended', class: 'col-2', tdClass: 'py-1' },
+      { label: 'process-instance.jobDefinitions.activity', key: 'activityId', class: 'col-2', tdClass: 'py-1' },
+      { label: 'process-instance.jobDefinitions.type', key: 'jobType', class: 'col-2', tdClass: 'py-1' },
+      { label: 'process-instance.jobDefinitions.configuration', key: 'jobConfiguration', class: 'col-2', tdClass: 'py-1' },
+      { label: 'process-instance.jobDefinitions.overridingJobPriority', key: 'overridingJobPriority', class: 'col-2', tdClass: 'py-1' },
+      { label: 'process-instance.jobDefinitions.actions', key: 'actions', class: 'col-2', sortable: false, tdClass: 'py-0' }
       ]">
       <template v-slot:cell(suspended)="table">
         <div :title="getStateLabel(table.item)" class="text-truncate">
@@ -45,15 +45,14 @@
         />
       </template>
       <template v-slot:cell(actions)="table">
-        <b-button v-if="hasUpdatePermission" :title="stateActionKey(table.item)"
-          size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px"
-          :class="table.item.suspended ? 'mdi-play' : 'mdi-pause'"
-          @click.stop="openChangeStateJobModal(table.item)">
-        </b-button>
-        <b-button :title="$t('process-instance.jobDefinitions.changeJobPriority')"
-          size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-cog"
-          @click.stop="openChangeJobPriorityModal(table.item)">
-        </b-button>
+        <CellActionButton v-if="hasUpdatePermission" :title="stateActionKey(table.item)"
+          :icon="table.item.suspended ? 'mdi-play' : 'mdi-pause'"
+          @click="openChangeStateJobModal(table.item)">
+        </CellActionButton>
+        <CellActionButton :title="$t('process-instance.jobDefinitions.changeJobPriority')"
+          icon="mdi-cog"
+          @click="openChangeJobPriorityModal(table.item)">
+        </CellActionButton>
         <component :is="JobDefinitionsTableActionsPlugin" v-if="JobDefinitionsTableActionsPlugin" :table-item="table.item"></component>
       </template>
     </FlowTable>
@@ -68,18 +67,17 @@
 </template>
 
 <script>
-import { FlowTable } from '@cib/common-frontend'
-import { CopyableActionButton, SuccessAlert } from '@cib/common-frontend'
+import { FlowTable, CopyableActionButton, SuccessAlert,BWaitingBox } from '@cib/common-frontend'
 import JobDefinitionStateModal from '@/components/process/modals/JobDefinitionStateModal.vue'
 import JobDefinitionPriorityModal from '@/components/process/modals/JobDefinitionPriorityModal.vue'
-import { BWaitingBox } from '@cib/bootstrap-components'
 import { mapActions, mapGetters } from 'vuex'
 import { permissionsMixin } from '@/permissions.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
+import CellActionButton from '@/components/common-components/CellActionButton.vue'
 
 export default {
   name: 'JobDefinitionsTable',
-  components: { FlowTable, CopyableActionButton, JobDefinitionStateModal, JobDefinitionPriorityModal, SuccessAlert, BWaitingBox },
+  components: { FlowTable, CopyableActionButton, JobDefinitionStateModal, JobDefinitionPriorityModal, SuccessAlert, BWaitingBox, CellActionButton },
   mixins: [copyToClipboardMixin, permissionsMixin],
   props: {
     process: Object,
@@ -145,8 +143,8 @@ export default {
     stateActionKey: function(item) {
       if (!item) return null
       return item.suspended
-        ? this.$t('process-instance.jobDefinitions.suspendJob')
-        : this.$t('process-instance.jobDefinitions.activateJob')
+        ? this.$t('process-instance.jobDefinitions.activateJob')
+        : this.$t('process-instance.jobDefinitions.suspendJob')
     },
     openChangeStateJobModal: function(item) {
       this.$refs.changeJobStateModal.show(item)

@@ -28,7 +28,6 @@ You may obtain a copy of the License at
       thead-class="sticky-header"
       :items="externalTasks"
       primary-key="id"
-      prefix="process-instance.externalTasks."
       :fields="tableFields"
       sort-by="priority"
     >
@@ -66,10 +65,8 @@ You may obtain a copy of the License at
 
 <script>
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
-import { FlowTable } from '@cib/common-frontend'
-import { SuccessAlert, CopyableActionButton } from '@cib/common-frontend'
+import { FlowTable, BWaitingBox, SuccessAlert, CopyableActionButton } from '@cib/common-frontend'
 import { formatDateForTooltips } from '@/utils/dates.js'
-import { BWaitingBox } from '@cib/bootstrap-components'
 import { mapGetters, mapActions } from 'vuex'
 
 export default {
@@ -89,45 +86,45 @@ export default {
     tableFields() {
       return [
         {
-          label: 'id',
+          label: 'process-instance.externalTasks.id',
           key: 'id',
           class: 'col-2',
           sortable: true,
           tdClass: 'position-relative',
         },
         {
-          label: 'activityId',
+          label: 'process-instance.externalTasks.activityId',
           key: 'activityId',
           class: 'col-2',
           sortable: false,
           tdClass: 'position-relative',
         },
         {
-          label: 'retries',
+          label: 'process-instance.externalTasks.retries',
           key: 'retries',
           class: 'col-1',
           sortable: true,
         },
         {
-          label: 'workerId',
+          label: 'process-instance.externalTasks.workerId',
           key: 'workerId',
           class: 'col-2',
           sortable: true,
         },
         {
-          label: 'lockExpirationTime',
+          label: 'process-instance.externalTasks.lockExpirationTime',
           key: 'lockExpirationTime',
           class: 'col-2',
           sortable: true,
         },
         {
-          label: 'topicName',
+          label: 'process-instance.externalTasks.topicName',
           key: 'topicName',
           class: 'col-2',
           sortable: true,
         },
         {
-          label: 'priority',
+          label: 'process-instance.externalTasks.priority',
           key: 'priority',
           class: 'col-1',
           sortable: true,

@@ -19,11 +19,11 @@
 <template>
   <ContentBlock :title="$t('batches.failedJobs')">
     <div class="overflow-auto p-0" style="max-height: 35vh">
-      <FlowTable v-if="jobs && jobs.length > 0 && !loading" striped thead-class="sticky-header" :items="jobs" primary-key="id" prefix="batches."
+      <FlowTable v-if="jobs && jobs.length > 0 && !loading" striped thead-class="sticky-header" :items="jobs" primary-key="id"
         :fields="[
-          { label: 'id', key: 'id', class: 'col-3', tdClass: 'p-1' },
-          { label: 'exception', key: 'exceptionMessage', class: 'col-6', tdClass: 'p-1' },
-          { label: 'actions', key: 'actions', sortable: false, class: 'col-3 d-flex justify-content-center', tdClass: 'py-0' }
+          { label: 'batches.id', key: 'id', class: 'col-3', tdClass: 'p-1' },
+          { label: 'batches.exception', key: 'exceptionMessage', class: 'col-6', tdClass: 'p-1' },
+          { label: 'batches.actions', key: 'actions', sortable: false, class: 'col-3 d-flex justify-content-center', tdClass: 'py-0' }
         ]">
         <template v-slot:cell(id)="table">
           <div class="text-truncate" :title="table.item.id">
@@ -36,15 +36,9 @@
           </div>
         </template>
         <template v-slot:cell(actions)="table">
-          <b-button :title="$t('batches.retryJob')" size="sm" variant="outline-secondary"
-            class="border-0 mdi mdi-18px mdi-reload" @click="retryJob(table.item.id)">
-          </b-button>
-          <b-button :title="$t('batches.deleteJob')" size="sm" variant="outline-secondary"
-            class="border-0 mdi mdi-18px mdi-delete-outline" @click="deleteJob(table.item.id)">
-          </b-button>
-          <b-button :title="$t('batches.seeFullLog')" size="sm" variant="outline-secondary"
-            class="border-0 mdi mdi-18px mdi-text-long" @click="seeFullLog(table.item.id)">
-          </b-button>
+          <CellActionButton @click="retryJob(table.item.id)" :title="$t('batches.retryJob')" icon="mdi-reload"></CellActionButton>
+          <CellActionButton @click="deleteJob(table.item.id)" :title="$t('batches.deleteJob')" icon="mdi-delete-outline"></CellActionButton>
+          <CellActionButton @click="seeFullLog(table.item.id)" :title="$t('batches.seeFullLog')" icon="mdi-text-long"></CellActionButton>
         </template>
       </FlowTable>
       <div class="mb-3 text-center w-100" v-if="loading">
@@ -60,13 +54,13 @@
 
 <script>
 import { mapActions, mapGetters } from 'vuex'
-import { ContentBlock, FlowTable } from '@cib/common-frontend'
+import { ContentBlock, FlowTable, BWaitingBox } from '@cib/common-frontend'
 import JobLogModal from '../modals/JobLogModal.vue'
-import { BWaitingBox } from '@cib/bootstrap-components'
+import CellActionButton from '@/components/common-components/CellActionButton.vue';
 
 export default {
   name: 'FailedJobs',
-  components: { ContentBlock, FlowTable, JobLogModal, BWaitingBox },
+  components: { ContentBlock, FlowTable, JobLogModal, BWaitingBox, CellActionButton },
   props: { batch: Object },
   data: function() {
     return {

@@ -189,9 +189,9 @@ var AbstractClientResource = BaseClass.extend(
             } else {
               results.items = itemsRes;
               // QUESTION: should we return that too?
-              results.firstResult = parseInt(params.firstResult || 0, 10);
+              results.firstResult = Number.parseInt(params.firstResult || 0, 10);
               results.maxResults =
-                results.firstResult + parseInt(params.maxResults || 10, 10);
+                results.firstResult + Number.parseInt(params.maxResults || 10, 10);
               listFinished = true;
               checkCompletion();
             }

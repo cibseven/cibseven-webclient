@@ -16,7 +16,9 @@
  */
 package org.cibseven.webapp.providers;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
@@ -106,7 +108,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 						process.setSuspended(definition.getSuspended() != null ? definition.getSuspended().toString() : null);
 						process.setTenantId(definition.getTenantId());
 						process.setVersionTag(definition.getVersionTag());
-						process.setHistoryTimeToLive(definition.getHistoryTimeToLive() != null ? definition.getHistoryTimeToLive().toString() : null);
+						process.setHistoryTimeToLive(definition.getHistoryTimeToLive());
 						process.setStartableInTasklist(definition.getStartableInTasklist());
 					}
 
@@ -238,6 +240,44 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	}
 
 	@Override
+	public Collection<HistoryProcessInstance> findProcessesInstancesRuntime(Map<String, Object> data, Optional<Integer> firstResult, Optional<Integer> maxResults, CIBUser user) {
+		// the two-call approach (runtime → history) is fundamentally the right design
+		// since "/process-instance" has runtime-specific filters not available in the history API.
+
+		// fetch runtime instances
+		Map<String, Object> queryParams = new HashMap<String, Object>();
+		if (firstResult.isPresent()) queryParams.put("firstResult", firstResult.get());
+		if (maxResults.isPresent()) queryParams.put("maxResults", maxResults.get());
+		String url = URLUtils.buildUrlWithParams(getEngineRestUrl(user) + "/process-instance", queryParams);
+		Collection<ProcessInstance> processes = Arrays.asList(((ResponseEntity<ProcessInstance[]>) doPost(url, data, ProcessInstance[].class, user)).getBody());
+
+		// get ids of runtime instances
+		List<String> processInstanceIds = processes.stream().map(ProcessInstance::getId).collect(Collectors.toList());
+		if (processInstanceIds.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		// Note: Between the two calls, a runtime instance could complete.
+		// The history call will still find it (history is permanent),
+		// but state in the result may be COMPLETED instead of ACTIVE.
+		// This is usually acceptable but worth being aware of.
+
+		// fetch history for those ids to get full info
+		Map<String, Object> dataHistory = new HashMap<>();
+		dataHistory.put("processInstanceIds", processInstanceIds);
+
+		Integer firstResult0 = 0;
+		Collection<HistoryProcessInstance> historicInstances = findProcessesInstancesHistory(dataHistory, Optional.of(firstResult0), maxResults, user);
+
+		// sort [historicInstances] like they are inside [processInstanceIds]
+		historicInstances = historicInstances.stream()
+				.sorted(Comparator.comparingInt(h -> processInstanceIds.indexOf(h.getId())))
+				.collect(Collectors.toList());
+
+		return historicInstances;
+	}
+
+	@Override
 	public ProcessDiagram fetchDiagram(String id, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/process-definition/" + id + "/xml";
 		return ((ResponseEntity<ProcessDiagram>) doGet(url, ProcessDiagram.class, user, false)).getBody();
@@ -291,6 +331,12 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		String url = getEngineRestUrl(user) + "/process-definition/key/" + processDefinitionKey;
 		url += (tenantId != null ? ("/tenant-id/" + tenantId) : "") + "/submit-form";
 		return ((ResponseEntity<ProcessStart>) doPost(url, data, ProcessStart.class, user)).getBody();
+	}
+
+	@Override
+	public ProcessStart submitForm(String processDefinitionKey, String formResult, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
+		String url = getEngineRestUrl(user) + "/process-definition/" + processDefinitionKey + "/submit-form";	
+		return doPost(url, formResult, ProcessStart.class, user).getBody();
 	}
 
 	@Override
@@ -452,6 +498,16 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	}
 
 	@Override
+	public Long countProcessesInstancesRuntime(Map<String, Object> filters, CIBUser user) {
+		String url = getEngineRestUrl(user) + "/process-instance/count";
+		JsonNode body = ((ResponseEntity<JsonNode>) doPost(url, filters, JsonNode.class, user)).getBody();
+		if (body == null) {
+			throw new NullPointerException();
+		}
+		return body.get("count").asLong();
+	}
+
+	@Override
 	public ProcessInstance findProcessInstance(String processInstanceId, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/process-instance/" + processInstanceId;
 		return ((ResponseEntity<ProcessInstance>) doGet(url, ProcessInstance.class, user, false)).getBody();
@@ -491,6 +547,12 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	public ResponseEntity<byte[]> getDeployedStartForm(String processDefinitionId, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/process-definition/" + processDefinitionId + "/deployed-start-form";
 		return doGetWithHeader(url, byte[].class, user, true, MediaType.APPLICATION_OCTET_STREAM);
+	}
+
+	@Override
+	public ResponseEntity<String> getRenderedForm(String processDefinitionId, Map<String, Object> params, CIBUser user) {
+		String url = URLUtils.buildUrlWithParams(getEngineRestUrl(user) + "/process-definition/" + processDefinitionId + "/rendered-form", params);
+		return doGetWithHeader(url, String.class, user, true, MediaType.ALL);
 	}
 
 	@Override

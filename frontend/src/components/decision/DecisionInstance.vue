@@ -27,26 +27,14 @@
       </h5>
     </router-link>
 
-    <div @mousedown="handleMouseDown" class="v-resizable position-absolute w-100" style="left: 0" :style="'height: ' + bpmnViewerHeight + 'px; ' + toggleTransition">
-      <DmnViewer ref="diagram" class="h-100" />
-      <span role="button" size="sm" variant="light" class="bg-white px-2 py-1 me-1 position-absolute border rounded" style="bottom: 90px; right: 11px;" @click="toggleContent">
-        <span class="mdi mdi-18px" :class="toggleIcon"></span>
-      </span>
-    </div>
+    <ViewerFrame :resizerMixin="this">
+      <DmnViewer ref="diagram" class="h-100" @view-changed="onViewChanged" />
+    </ViewerFrame>
 
     <div class="position-absolute w-100" style="left: 0; z-index: 1" :style="'height: '+ tabsAreaHeight +'px; top: ' + (bottomContentPosition - tabsAreaHeight + 1) + 'px; ' + toggleTransition">
       <div class="d-flex align-items-end">
         <ScrollableTabsContainer :tabs-area-height="tabsAreaHeight">
-          <li class="nav-item m-0 flex-shrink-0 border-0" v-for="(tab, index) in tabs" :key="index">
-            <a role="button" @click="changeTab(tab)" class="nav-link py-2"
-              :class="{
-                'active active-tab-border': tab.active,
-                'bg-light border border-bottom-0': !tab.active,
-                'border-start-0': index === 0
-              }">
-              {{ $t('decision.' + tab.id) }}
-            </a>
-          </li>
+          <GenericTabs :tabs="tabs" :modelValue="activeTab" @update:modelValue="changeTab" @tab-click=";"></GenericTabs>
         </ScrollableTabsContainer>
       </div>
     </div>
@@ -54,19 +42,19 @@
     <div class="position-absolute w-100 border-top" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
       <div v-if="activeTab === 'inputs'">
         <div ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 0; left: 0; bottom: 0">
-          <FlowTable striped resizable thead-class="sticky-header" :items="instance.inputs" primary-key="id" prefix="decision." :fields="[
-            { label: 'name', key: 'clauseName', class: 'col-4', tdClass: 'py-1' },
-            { label: 'type', key: 'type', class: 'col-4', tdClass: 'py-1' },
-            { label: 'value', key: 'value', class: 'col-4', tdClass: 'py-1' }]">
+          <FlowTable striped resizable thead-class="sticky-header" :items="instance.inputs" primary-key="id" :fields="[
+            { label: 'decision.name', key: 'clauseName', class: 'col-4', tdClass: 'py-1' },
+            { label: 'decision.type', key: 'type', class: 'col-4', tdClass: 'py-1' },
+            { label: 'decision.value', key: 'value', class: 'col-4', tdClass: 'py-1' }]">
           </FlowTable>
         </div>
       </div>
       <div v-if="activeTab === 'outputs'">
         <div ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 0; left: 0; bottom: 0">
-          <FlowTable striped resizable thead-class="sticky-header" :items="instance.outputs" primary-key="id" prefix="decision." :fields="[
-            { label: 'name', key: 'clauseName', class: 'col-4', tdClass: 'py-1' },
-            { label: 'type', key: 'type', class: 'col-4', tdClass: 'py-1' },
-            { label: 'value', key: 'value', class: 'col-4', tdClass: 'py-1' }]">
+          <FlowTable striped resizable thead-class="sticky-header" :items="instance.outputs" primary-key="id" :fields="[
+            { label: 'decision.name', key: 'clauseName', class: 'col-4', tdClass: 'py-1' },
+            { label: 'decision.type', key: 'type', class: 'col-4', tdClass: 'py-1' },
+            { label: 'decision.value', key: 'value', class: 'col-4', tdClass: 'py-1' }]">
           </FlowTable>
         </div>
       </div>
@@ -80,12 +68,13 @@ import { DecisionService } from '@/services.js'
 import DmnViewer from '@/components/decision/DmnViewer.vue'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
 import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
-import { FlowTable } from '@cib/common-frontend'
-import { mapActions } from 'vuex'
+import ViewerFrame from '@/components/common-components/ViewerFrame.vue'
+import { FlowTable, GenericTabs } from '@cib/common-frontend'
+import { mapActions, mapGetters } from 'vuex'
 
 export default {
   name: 'DecisionInstance',
-  components: { DmnViewer, FlowTable, ScrollableTabsContainer },
+  components: { DmnViewer, FlowTable, GenericTabs, ScrollableTabsContainer, ViewerFrame },
   mixins: [permissionsMixin, resizerMixin],
   props: {
     versionIndex: String,
@@ -96,14 +85,28 @@ export default {
     return {
       instance: null,
       tabs: [
-        { id: 'inputs', active: true },
-        { id: 'outputs', active: false }
+        { id: 'inputs', text: 'decision.inputs' },
+        { id: 'outputs', text: 'decision.outputs' }
       ],
       activeTab: 'inputs'
     }
   },
+  computed: {
+    ...mapGetters('diagram', ['isDiagramReady'])
+  },
+  watch: {
+    isDiagramReady(isReady) {
+      if (isReady && this.instance) this.applyInstanceValues()
+    },
+    instance: {
+      handler() {
+        if (this.isDiagramReady) this.applyInstanceValues()
+      },
+      deep: true
+    }
+  },
   mounted() {
-    let params = {
+    const params = {
       decisionInstanceId: this.instanceId,
       includeInputs: true,
       includeOutputs: true,
@@ -119,10 +122,7 @@ export default {
   methods: {
     ...mapActions(['getXmlById']),
     changeTab(selectedTab) {
-      this.tabs.forEach(tab => {
-        tab.active = tab.id === selectedTab.id
-      })
-      this.activeTab = selectedTab.id
+      this.activeTab = selectedTab
     },
     loadDiagram() {
       this.getXmlById(this.instance.decisionDefinitionId).then(response => {
@@ -133,12 +133,107 @@ export default {
       .catch(error => {
         console.error("Error loading diagram:", error)
       })
+    },
+    onViewChanged() {
+      this.applyInstanceValues()
+    },
+    applyInstanceValues() {
+      const container = this.$refs.diagram?.$refs?.diagram
+      if (!container) return
+      const table = container.querySelector('.tjs-table') || container.querySelector('table')
+      if (!table) return
+      this.applyInputHeaders(table)
+      this.applyOutputRows(table)
+    },
+    applyInputHeaders(table) {
+      table.querySelectorAll('th.input-cell').forEach(th => {
+        const colId = th.getAttribute('data-col-id')
+        const input = this.instance?.inputs?.find(i => i.clauseId === colId)
+        if (!colId || !input) return
+        const clauseDiv = th.querySelector('div.clause')
+        if (!clauseDiv || clauseDiv.getAttribute('data-original-text')) return
+        const original = clauseDiv.textContent.trim()
+        clauseDiv.setAttribute('data-original-text', original)
+        clauseDiv.textContent = ''
+        const span = document.createElement('span')
+        span.textContent = original + ' '
+        clauseDiv.appendChild(span)
+        const bold = document.createElement('strong')
+        bold.className = 'fw-bold'
+        bold.textContent = '= ' + String(input.value)
+        clauseDiv.appendChild(bold)
+      })
+    },
+    applyOutputRows(table) {
+      const headerRow = table.querySelector('thead tr')
+      if (!headerRow) return
+      const headerCells = Array.from(headerRow.children)
+
+      const tbody = table.querySelector('tbody')
+      if (!tbody) return
+
+      // Build input column map: colIndex → expected input value
+      const inputColumns = []
+      table.querySelectorAll('th.input-cell').forEach(th => {
+        const colId = th.getAttribute('data-col-id')
+        const input = this.instance?.inputs?.find(i => i.clauseId === colId)
+        if (colId && input) {
+          inputColumns.push({
+            colIndex: headerCells.indexOf(th),
+            value: String(input.value).trim()
+          })
+        }
+      })
+      table.querySelectorAll('th.output-cell').forEach(th => {
+        const colId = th.getAttribute('data-col-id')
+        const outputs = colId
+          ? this.instance?.outputs?.filter(o => o.clauseId === colId)
+          : this.instance?.outputs
+        if (!outputs?.length) return
+
+        const outputColIndex = headerCells.indexOf(th)
+        const outputValues = new Set(outputs.map(o => String(o.value).trim()).filter(Boolean))
+
+        Array.from(tbody.rows).forEach(row => {
+          const td = row.children[outputColIndex]
+          if (!td) return
+
+          const tdText = td.getAttribute('data-original-text') ?? td.textContent
+          if (!outputValues.has(this.normalizeCell(tdText))) return
+
+          // DMN string literals can disambiguate; numeric expressions cannot
+          // Multi-value cells like "budget", "exceptional" are split and checked individually
+          const disqualified = inputColumns.some(({ colIndex, value }) => {
+            const cell = row.children[colIndex]
+            if (!cell) return false
+            const raw = (cell.getAttribute('data-original-text') ?? cell.textContent).trim()
+            if (!this.isDmnStringLiteral(raw)) return false
+            const cellValues = raw.split(',').map(v => this.normalizeCell(v.trim()))
+            return !cellValues.includes(value)
+          })
+
+          if (!disqualified) this.applyHighlightText(row, td)
+        })
+      })
+    },
+    applyHighlightText(row, td) {
+      if (td.getAttribute('data-original-text')) return
+      const originalValue = td.textContent.trim()
+      td.setAttribute('data-original-text', originalValue)
+      td.textContent = originalValue + ' '
+      const span = document.createElement('span')
+      span.className = 'fw-bold'
+      span.textContent = '= ' + originalValue
+      td.appendChild(span)
+    },
+    // Strips surrounding DMN double-quotes and trims whitespace for exact comparison
+    normalizeCell(text) {
+      return text.trim().replace(/^"|"$/g, '').trim()
+    },
+    // Returns true if the cell text is a DMN string literal (wrapped in double quotes)
+    isDmnStringLiteral(text) {
+      return /^".*"$/.test(text.trim())
     }
   }
 }
 </script>
-<style scoped>
-.active-tab-border {
-  border-bottom: 3px solid white!important;
-}
-</style>

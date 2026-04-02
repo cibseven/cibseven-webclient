@@ -28,7 +28,7 @@
             <span class="mdi mdi-18px" :class="toggleIcon"></span>
           </a>
           <div class="collapse border-none" id="deploymentInfo">
-            <div class="card card-body text-dark border-white bg-white py-2">
+            <div class="card card-body text-dark border-white py-2">
               <div>
                 <div class="pb-2" :title="formatDateForTooltips(deployment.deploymentTime)">{{ formatDate(deployment.deploymentTime) }}</div>
                 <div class="pb-2 small">{{ $t('deployment.tenant') }}: {{ deployment.tenantId }}</div>
@@ -36,20 +36,25 @@
               </div>
             </div>
           </div>
-          <b-list-group v-if="resources && resources.length > 0">
-            <b-list-group-item v-for="resource of resources" :key="resource.id" button
-              class="border-0 rounded-0 text-dark border-white bg-white" @click="showResource(resource)">
+          <ul v-if="resources && resources.length > 0" class="list-group">
+            <li v-for="resource of resources" :key="resource.id"
+              class="list-group-item border-0 rounded-0 text-dark border-white ps-1" >
               <div class="d-flex align-items-center justify-content-between">
-                <div class="text-truncate me-0" style="flex: 1">
+                <button class="btn btn-link text-truncate text-decoration-none me-0 text-start" style="flex: 1" @click.stop="showResource(resource)">
                   <span :title="$t('deployment.showModel')">{{ resource.name }}</span>
-                </div>
-                <b-button @click.stop="showResource(resource)" size="sm" variant="outline-secondary"
-                  class="border-0 mdi mdi-18px mdi-eye-outline text-dark bg-white"
-                  :title="$t('deployment.showModel')"></b-button>
+                </button>
+                <CellActionButton @click.stop="showResource(resource)"
+                  tabindex="-1"
+                  icon="mdi-eye-outline"
+                  :title="$t('deployment.showModel')"></CellActionButton>
+                <CellActionButton v-if="canDownload(resource)" @click.stop="download(resource)"
+                  tabindex="-1"
+                  icon="mdi-download"
+                  :title="$t('process-instance.download')"></CellActionButton>
                 <component :is="ResourcesNavBarActionsPlugin" v-if="ResourcesNavBarActionsPlugin" :resource="resource" :deployment="deployment" @deployment-success="$emit('deployment-success')"></component>
               </div>
-            </b-list-group-item>
-            <b-list-group-item class="text-dark border-white bg-white">
+            </li>
+            <div class="p-2">
               <div class="d-flex flex-column align-items-start gap-2">
                 <component :is="ResourcesNavBarDeploymentActionsPlugin" v-if="ResourcesNavBarDeploymentActionsPlugin" :deployment="deployment" @deployment-success="$emit('deployment-success')" class="w-100"></component>
                 <b-button variant="light" size="sm" @click="$emit('show-deployment', this.deployment)"
@@ -58,18 +63,19 @@
                   {{ $t('deployment.showDeployment') }}</b-button>
                 <b-button variant="light" size="sm" @click="$emit('delete-deployment', this.deployment)"
                   :title="$t('deployment.delete')">
-                  <span class="mdi mdi-trash-can"></span>
+                  <span class="mdi mdi-delete-outline"></span>
                   {{ $t('deployment.delete') }}</b-button>
               </div>
-            </b-list-group-item>
-          </b-list-group>
+            </div>
+          </ul>
           <div v-else class="h-100 d-flex flex-column justify-content-center align-items-center text-center">
             <span class="mdi mdi-48px mdi-file-cancel-outline pe-1 text-warning"></span>
             <span>{{ $t('deployment.errorLoading') }}</span>
           </div>
         </div> 
         <div v-else>
-          <img src="@/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mt-5 mb-3" style="width: 200px">
+          <img src="@/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mt-5 mb-3" style="width: 200px" alt="">
+          <div class="h5 text-secondary text-center">{{ $t('deployment.noDeploymentSelected') }}</div>
         </div>
       </div>
     </div>
@@ -90,6 +96,7 @@
       </div>
     </b-modal>
 
+    <TaskPopper ref="downloadPopper"></TaskPopper>
   </div>
 </template>
 
@@ -97,13 +104,15 @@
 import { ProcessService } from '@/services.js'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
 import DmnViewer from '@/components/decision/DmnViewer.vue'
+import CellActionButton from '@/components/common-components/CellActionButton.vue'
 import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
+import { TaskPopper } from '@cib/common-frontend'
 import { mapActions } from 'vuex'
 
 export default {
   name: 'ResourcesNavBar',
   emits: ['delete-deployment', 'show-deployment', 'deployment-success'],
-  components: { BpmnViewer, DmnViewer },
+  components: { BpmnViewer, DmnViewer, CellActionButton, TaskPopper },
   props: { resources: Array, deploymentId: String },
   data: function () {
     return {
@@ -143,7 +152,7 @@ export default {
     ...mapActions(['getDecisionList', 'getXmlById']),
     formatDate,
     formatDateForTooltips,
-    showResource: function (resource) {
+    async showResource(resource) {
       this.error = false
       this.diagramLoading = true
       this.resource = resource
@@ -161,72 +170,26 @@ export default {
       
       this.$refs.diagramModal.show()
 
-      if (this.isDmnResource) {
-        // Handle DMN resources
-        this.loadDmnResource(resource)
-      } else {
-        // Handle BPMN resources
-        this.loadBpmnResource(resource)
+      const content = await this.getContent(resource)
+      if (content) {
+        setTimeout(() => {
+          this.diagramLoading = false
+          if (this.isDmnResource) {
+            this.$refs.dmnDiagram.showDiagram(content)
+          } else {
+            this.$refs.diagram.showDiagram(content)
+          }
+        }, 500)
       }
-    },
-    loadBpmnResource: function(resource) {
-      ProcessService.findProcessesWithFilters('deploymentId=' + this.deployment.id + '&resourceName=' + resource.name)
-        .then(processesDefinition => {
-          if (processesDefinition.length > 0) {
-            var processDefinition = processesDefinition[0]
-            ProcessService.fetchDiagram(processDefinition.id).then(response => {
-              setTimeout(() => {
-                this.diagramLoading = false
-                this.$refs.diagram.showDiagram(response.bpmn20Xml, null, null)
-              }, 500)
-            }).catch(() => {
-              this.diagramLoading = false
-              this.error = true
-            })
-          } else {
-            this.diagramLoading = false
-            this.error = true
-          }
-        }).catch(() => {
-          this.diagramLoading = false
-          this.error = true
-        })
-    },
-    loadDmnResource: function(resource) {
-      // Get decision definitions for this deployment and resource name for exact match
-      this.getDecisionList({ 
-        deploymentId: this.deployment.id,
-        resourceName: resource.name 
-      })
-        .then(decisions => {
-          if (decisions.length > 0) {
-            const decision = decisions[0] // Should be exact match with resourceName
-            // Get the XML using store action
-            this.getXmlById(decision.id)
-              .then(response => {
-                setTimeout(() => {
-                  this.diagramLoading = false
-                  this.$refs.dmnDiagram.showDiagram(response.dmnXml)
-                }, 500)
-              })
-              .catch(() => {
-                this.diagramLoading = false
-                this.error = true
-              })
-          } else {
-            this.diagramLoading = false
-            this.error = true
-          }
-        })
-        .catch(() => {
-          this.diagramLoading = false
-          this.error = true
-        })
+      else {
+        this.diagramLoading = false
+        this.error = true
+      }
     },
     loadDeployment: function () {
       if (this.deploymentId) {
         if (this.deployments) {
-          let found = this.deployments.find(d => {
+          const found = this.deployments.find(d => {
             return d.id === this.deploymentId
           })
           if (found) {
@@ -243,6 +206,38 @@ export default {
             this.deployment = deployment
           })
         }
+      }
+    },
+    canDownload(resource) {
+      return resource.name.toLowerCase().endsWith('.bpmn') || resource.name.toLowerCase().endsWith('.dmn')
+    },
+    async getContent(resource) {
+      this.diagramLoading = true
+      let content = null
+      const isBpmn = resource.name.toLowerCase().endsWith('.bpmn')
+      if (isBpmn) {
+        const processesDefinition = await ProcessService.findProcessesWithFilters('deploymentId=' + this.deployment.id + '&resourceName=' + resource.name)
+        const processDefinition = Array.isArray(processesDefinition) ? processesDefinition[0] : null
+        const response = processDefinition ? await ProcessService.fetchDiagram(processDefinition.id) : null
+        content = response ? response.bpmn20Xml : null
+      }
+      else {
+        const decisions = await this.getDecisionList({ 
+          deploymentId: this.deployment.id,
+          resourceName: resource.name 
+        })
+        const descision = Array.isArray(decisions) ? decisions[0] : null
+        const response = descision ? await this.getXmlById(descision.id) : null
+        content = response ? response.dmnXml : null
+      }
+      return content
+    },
+    async download(resource) {
+      const content = await this.getContent(resource)
+      this.diagramLoading = false
+      if (content) {
+        const blob = new Blob([content], { type: 'application/xml' })
+        this.$refs.downloadPopper.triggerDownload(blob, resource.name)
       }
     },
     toggleButton: function () {

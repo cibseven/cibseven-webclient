@@ -66,7 +66,7 @@
       <button @click="editHistoryTimeToLive()" class="btn btn-sm mdi mdi-pencil float-end border-0"
         :title="$t('decision-instance.edit')"></button>
     </span>
-    <span class="col-12">{{ historyTimeToLive + ' ' + $t('decision.days') }}</span>
+    <span class="col-12">{{ historyTimeToLive !== 0 ? historyTimeToLive : '∞' }}{{ ' ' + $t('decision.days') }}</span>
   </div>
   <hr class="my-2">
   <div class="row align-items-center">
@@ -75,9 +75,17 @@
   </div>
 
   <b-modal ref="historyTimeToLive" :title="$t('decision.details.historyTimeToLive')">
-    <div class="d-flex col-6 align-items-center ps-0">
-      <input class="form-control" type="number" v-model="historyTimeToLiveChanged">
-      <span class="ms-2">{{ $t('decision.days') }}</span>
+    <p>
+      <span>{{ $t('decision.details.definitionName') }}: </span>
+      <strong>{{ version.name }}</strong>
+      <br>
+      <span class="">{{ $t('decision.details.definitionVersion') }}: </span>
+      <strong>{{ version.version }}</strong>
+    </p>
+    <label class="form-check-label pb-2" for="historyTimeToLiveInput">{{ $t('decision.details.historyTimeToLive') }}</label>
+    <div class="input-group">
+      <input id="historyTimeToLiveInput" class="form-control" type="number" v-model="historyTimeToLiveChanged">
+      <span class="input-group-text">{{ $t('decision.days') }}</span>
     </div>
     <template v-slot:modal-footer>
       <b-button @click="$refs.historyTimeToLive.hide()" variant="light">{{ $t('confirm.cancel') }}</b-button>
@@ -116,6 +124,9 @@ export default {
       this.$refs.historyTimeToLive.show()
     },
     updateHistoryTimeToLive() {
+      if (this.historyTimeToLiveChanged === '') {
+        this.historyTimeToLiveChanged = 0
+      }
       DecisionService.updateHistoryTTLById(this.version.id,
       { historyTimeToLive: this.historyTimeToLiveChanged }).then(() => {
         // eslint-disable-next-line vue/no-mutating-props

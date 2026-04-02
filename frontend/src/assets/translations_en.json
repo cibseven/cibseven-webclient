@@ -2,12 +2,6 @@
 	"commons": {
 		"edit": "Edit",
 		"save": "Save",
-		"copyValue": "Copy value",
-		"noMoreResults": "No more results",
-		"loadMore": {
-			"title": "Load more",
-			"tooltip": "Click to load next {chunkSize} records"
-		},
 		"actualisation": {
 			"progress": "Updating data...",
 			"lastUpdate": "Last update: {date}",
@@ -17,18 +11,29 @@
 		"notAvailable": {
 			"label": "N/A",
 			"tooltip": "Not available"
-		},
-		"remove": "Remove"
+		}
 	},
 	"login": {
-		"productName": "@:cib-header.productName",
+		"productName": "CIB seven",
 		"productSlogan": "Process Management Platform",
 		"username": "Username",
 		"password": "Password",
 		"rememberMe": "Remember me",
 		"email": "Email",
 		"login": "Login",
-		"forgotten": "Password forgotten?"
+		"2fa": "Two-step verification",
+		"emailSent": "A message has been sent to the following email address: {0}! Please follow the instructions. Didn't receive an email? Please check your spam folder.",
+		"needOtp": "Please confirm your request via the <b>app</b>.",
+		"otp": "Verification code",
+		"register": "Don't have an account yet?",
+		"registerLink": "Register now",
+		"reset2fa": "Reset trusted device",
+		"resetPassword": "Reset password",
+		"forgotten": "Password forgotten?",
+		"usernameRequired": "Username is required",
+		"passwordRequired": "Password is required",
+		"showPassword": "Show password",
+		"hidePassword": "Hide password"
 	},
 	"processes-dashboard": {
 		"headerActive": "Operations Dashboard",
@@ -40,8 +45,7 @@
 			},
 			"open-incidents": {
 				"title": "Open Incidents",
-				"tooltip": "Review all currently open incidents",
-				"none": "No incidents!"
+				"tooltip": "Review all currently open incidents"
 			},
 			"open-human-tasks": {
 				"title": "Open Human Tasks",
@@ -87,6 +91,7 @@
 		"endTime": "End time",
 		"businessKey": "Business key",
 		"title": "Processes",
+		"viewMode": "View mode",
 		"view-comfy": "Small",
 		"view-module": "Large",
 		"view-list": "List",
@@ -150,6 +155,9 @@
 		},
 		"emptyProcessList": "Your process list is currently empty.",
 		"emptyProcessListFiltered": "There is no process for the applied filter.",
+		"definitionVersionNotFound": "Process definition version \"{0}\" not found. Falling back to the latest version.",
+		"definitionNotFound": "Process definition key \"{processKey}\" with \"{tenantId}\" tenant ID not found.",
+		"instanceNotFound": "Process instance with ID \"{instanceId}\" not found.\nServer response:\n{error}",
 		"back": "Back",
 		"incidentsCounter": "Incidents: {0}",
 		"incidents": "Incidents",		
@@ -221,7 +229,6 @@
 		"processInstanceId": "Process Instance ID",
 		"businessKey": "Business Key",
 		"info": "Process details",
-		"variablesInfo": "Process variables",
 		"active": "Active",
 		"history": "History",
 		"download": "Download",
@@ -274,6 +281,7 @@
 			"valueSerialized": "Serialized value",
 			"actions": "Actions",
 			"scope": "Scope",
+			"activityInstanceId": "Activity instance ID",
 			"objectTypeName": "Object type name",
 			"serializationDataFormat": "Serialization data format",
 			"confirmDelete": "Do you want to delete the variable?",
@@ -363,7 +371,8 @@
 			"due": "Due Date",
 			"followUp": "Follow-Up",
 			"taskID": "Task ID",
-			"actions": "Actions"
+			"actions": "Actions",
+			"openTask": "Open \"{name}\" task in Tasklist"
 		},
 		"calledProcesses": {
 			"callingActivity": "Activity",
@@ -376,6 +385,8 @@
 		"assignModal": {
 			"manageUsersGroups": "Manage users/groups",
 			"manageAssignee": "Manage assigned user",
+			"manageGroups": "Manage groups",
+			"manageUsers": "Manage users",
 			"groupId": "Group ID",
 			"userId": "@:admin.users.id",
 			"groups": "Groups",
@@ -436,10 +447,6 @@
 		"zoomOut": "Zoom out",
 		"resetZoom": "Reset zoom",
 		"legend": {
-			"title": "Guide",
-			"completedTask": "Completed task",
-			"currentTask": "Current task",
-			"selectedTask": "@:task.selectedTask",
 			"runningInstances": "Running activity instances",
 			"openIncidents": "Open incidents",
 			"closedIncidents": "Closed incidents",
@@ -457,7 +464,6 @@
 		"info": "Task details",
 		"reminder": "Reminder date",
 		"priority": "Priority",
-		"variablesInfo": "Task variables",
 		"taskId": "Task ID",
 		"assign": "Assign to someone",
 		"assignToMe": "Assign to me",
@@ -498,8 +504,6 @@
 		"userAssigned": "The user {0} was successfully assigned"
 	},
 	"batches": {
-		"title": "Batches",
-		"tooltip": "Batch operations",
 		"inProgressBatches": "In progress batches",
 		"historicBatches": "Ended batches",
 		"runtimeDetails": "In progress batch details",
@@ -548,11 +552,11 @@
 		"exportCsv": "Export all",
 		"users": {
 			"title": "Users",
+			"tooltip": "Users management",
 			"id": "User ID",
 			"firstName": "First name",
 			"lastName": "Last name",
 			"email": "Email",
-			"search": "Search",
 			"add": "Add user",
 			"account": "User Account",
 			"profile": "User Profile",
@@ -566,14 +570,9 @@
 			"groups": "Groups",
 			"editMessage": "Edit user ({0})",
 			"update": "Update Profile",
-			"userPassword": "{0}'s Password",
-			"currentUserPassword": "Current Password",
-			"newPassword": "New Password",
-			"newPasswordRepeat": "New Password (repeat)",
 			"editUser": "Edit user",
 			"viewUser": "Display user",
 			"deleteUser": "Delete user",
-			"changePassword": "Change Password",
 			"updateProfileMessage": "User profile successfully updated",
 			"updatePasswordMessage": "Password successfully updated",
 			"unassignGroupMessage": "User {0} removed from group",
@@ -628,11 +627,12 @@
 		},
 		"groups": {
 			"title": "Groups",
+			"tooltip": "Groups management",
 			"id": "Group ID",
 			"name": "Name",
 			"type": "Type",
-			"search": "Search",
 			"add": "Add group",
+			"addCandidateGroups": "Add candidate groups",
 			"cancel": "Cancel",
 			"createLabel": "Create new group",
 			"groupCreatedMessage": "Group {0} created",
@@ -661,6 +661,7 @@
 			"unassignUserMessage": "User {0} removed from tenant",
 			"unassignGroupMessage": "Group {0} removed from tenant",
 			"addTo": "Add to a tenant",
+			"unassignTenant": "Unassign from tenant",
 			"id": "ID",
 			"name": "Name",
 			"add": "Add tenant",
@@ -683,13 +684,19 @@
 		},
 		"authorizations": {
 			"title": "Authorizations",
+			"tooltip": "Authorizations management",
 			"type": "Type",
 			"userIdGroupId": "User / Group",
 			"permissions": "Permissions",
 			"resourceId": "Resource ID",
 			"actions": "Actions",
+			"buttons": {
+				"edit": "Edit authorization",
+				"delete": "Delete authorization",
+				"save": "Save authorization",
+				"cancel": "Cancel modifications"
+			},
 			"name": "Resource name",
-			"search": "Search",	
 			"types": {
 				"allow": "ALLOW",
 				"deny": "DENY",
@@ -747,7 +754,6 @@
 			"execution-metrics": {
 				"title": "Execution Metrics",
 				"metricsHelp": "Recorded number of Process Instances and Decision Instances processed by the engine and Task Users that were assigned to a user task.",
-				"startDateContract": "Contract start date",
 				"process-instances": "Process instances",
 				"decision-instances": "Decision instances",
 				"task-users": "Task users",
@@ -758,29 +764,7 @@
 			}
 		}
 	},
-	"account-form": {
-		"title": "Manage account",
-		"username": "@:login.username",
-		"password": "@:login.password",
-		"email": "@:login.email",
-		"update": "Save",
-		"delete": "Delete account",
-		"deleteMessage": "Do you really want to delete your account, including all documents? This action cannot be undone!"
-	},
-	"security-bar": {
-		"strength1": "Not secure",
-		"strength2": "Weak",
-		"strength3": "Acceptable",
-		"strength4": "Strong",
-		"strength5": "Perfect",
-		"prefix": "Security:"
-	},
-	"error": {
-		"title": "Error",
-		"ok": "@:confirm.ok"
-	},
 	"confirm": {
-		"title": "Please confirm",
 		"ok": "Ok",
 		"cancel": "Cancel",
 		"close": "Close",
@@ -796,24 +780,19 @@
 		"title": "Please let us know your problem or suggestions for improvement",
 		"ok": "Send",
 		"cancel": "@:confirm.cancel",
-		"email": "@:account-form.email"
+		"email": "@:login.email"
 	},
 	"cib-header": {
-		"productName": "CIB seven",
 		"languages": "Language",
+		"languagesMenu": "Language",
 		"engine": "Engine",
-		"help": "Info & Help",
-		"logout": "Logout",
-		"user": "Account",
+		"engineMenu": "Engine selection",
+		"helpMenu": "Help",
 		"en": "English",
 		"de": "Deutsch",
 		"es": "Español",
 		"ua": "Українська",
 		"ru": "Русский"
-	},
-	"cib-datepicker": {
-		"months": "January_February_March_April_May_June_July_August_September_October_November_December",
-		"weeks": "Mo_Tu_We_Th_Fr_Sa_Su"
 	},
 	"cib-datepicker2": {
 		"noDate": "No date",
@@ -824,49 +803,22 @@
 		"noDate": "No time selected",
 		"reset": "Clear selection"
 	},
-	"file-area": {
-		"titleAbove": "Drag your documents",
-		"titleBelow": "or choose"
-	},
-	"task-popper": {
-		"title": "Uploading file(s)"
-	},
-	"pdf-encryption": {
-		"title": "It's safe - from the very beginning!",
-		"text": "Your document is encrypted already while loading.<br>Enter your password to proceed:"
-	},
-	"register": {
-		"title": "Register",
-		"register": "Register",
-		"login": "Do you already have an account?",
-		"loginLink": "Login",
-		"username": "@:account-form.username",
-		"password": "@:account-form.password",
-		"email": "@:account-form.email"
-	},
 	"snapshot": {
-		"title": "Upload your screenshot",
 		"titleAbove": "Click here and then press [Ctrl] + [V]",
 		"titleBelow": "(with your screenshot in clipboard)"
 	},
 	"seven": {
 		"feedback": "Feedback",
-		"about": "About",
-		"version": "Version",
 		"selectTask": "Select a task from the task list to view it",
 		"taskCompleted": "Task completed",
 		"allTasks": "Tasks",
 		"titleInfo": "Information",
-		"filters": "Filters",
-		"types": "Types",
-		"account": "User settings",
-		"chat": "Chat"
+		"types": "Types"
 	},
 	"nav-bar": {
 		"no-tasks-pending": "You have no tasks pending",
 		"no-tasks": "No tasks found",
 		"tasks-count": "Open tasks: {count}",
-		"processes": "@:process.title",
 		"filters": {
 			"addFilter": "Add Filter",
 			"updateFilter": "Update Filter",
@@ -879,11 +831,15 @@
 			"addCriteria": "Add criteria",
 			"filterExists": "This filter already exists",
 			"selectedCriteria": "Selected criteria",
-			"deleteCriteria": "Delete criteria",
 			"no-filters": "No filters found",
 			"edit": "@:commons.edit",
+			"editFilter": "Edit \"{filterName}\" filter",
 			"delete": "@:confirm.delete",
+			"deleteFilter": "Delete \"{filterName}\" filter",
 			"pin": "Pin",
+			"pinFilter": "Pin \"{filterName}\" filter",
+			"unpin": "Unpin",
+			"unpinFilter": "Unpin \"{filterName}\" filter",
 			"includeAssigned": "Include assigned tasks",
 			"keys": {
 				"processInstanceId": "Process instance ID",
@@ -961,7 +917,6 @@
 				"key": "Criteria key",
 				"value": "Criteria value"
 			},
-			"matchAnyCriteria": "Any of the criteria are met",
 			"matchAllCriteria": "All of the criteria are met",
 			"msgFilterCreated": "Filter \"{name}\" has been created",
 			"msgFilterUpdated": "Filter \"{name}\" has been changed successfully",
@@ -984,25 +939,11 @@
 				"txtlteq": "<= lower than or equal to"
 			}
 		},
-		"additionalFiltersApplied": "Filters applied: {n}",
 		"dueDate": "@:task.details.due",
 		"reminder": "Reminder date",
-		"reminderDate": {
-			"all": "Until today",
-			"today": "Tomorrow",
-			"next3D": "From the day after tomorrow"
-		},
-		"taskDeadline": {
-			"all": "All",
-			"today": "Until today",
-			"next3D": "From tomorrow onwards"
-		},
 		"filtersTitle": "Filters",
-		"tasksTitle": "Tasks",
 		"refresh": "Refresh task list",
-		"sortingTitle": "Sorting",
-		"filtersAdditionalsTitle": "Additional filters",
-		"changeSize": "Increase task list width"
+		"filtersAdditionalsTitle": "Additional filters"
 	},
 	"ienotify": {
 		"remember": "Do not show this message again",
@@ -1062,7 +1003,18 @@
 			"title": "Old Cockpit",
 			"tooltip": "Open old Cockpit"
 		},
-		"emptyStart": "Currently you do not have permission to perform any task here. Please contact the CIB seven administrator to get permissions."
+		"account": {
+			"tooltip": "View and edit your account information or log out",
+			"profile": {
+				"title": "User Profile",
+				"tooltip": "View and edit your account information"
+			},
+			"logout": {
+				"title": "Logout",
+				"tooltip": "Logout from {productName}"
+			}
+		},
+		"emptyStart": "Currently you do not have permission to perform any task here. Please contact the {productName} administrator to get permissions."
 	},
 	"errors": {
 		"invalid": "Please enter some valid information",
@@ -1072,6 +1024,7 @@
 		"SystemException": "An unexpected technical error occurred. Do you want to send a report?",
 		"DoxichangeException": "The preview can’t be generated. Do you want to send the affected document for analysis?",
 		"AccessDeniedException": "No Permission ({0})",
+		"NoPermission": "You do not have the necessary permissions to perform this action.\nRequired persmission: \"{permission}\".\nReferenced from: {refPath}",
 		"EntryAlreadyExistsException": "{0} already exists",
 		"NoObjectFoundException": "While performing this operation a specific problem has occurred. Please refresh the page in your browser and try again.",
 		"InvalidAttributeValueException": "While performing this operation a specific problem has occurred. Please refresh the page in your browser and try again.",
@@ -1101,17 +1054,18 @@
 		"InvalidUserIdException": "The user ID contains invalid characters. Only alphanumeric characters (a-z, A-Z, 0-9) are allowed. Please correct your entry.",
 		"invalidEmail": "Please enter a valid email address.",
 		"InvalidValueHistoryTimeToLive": "Null values are not allowed for history time to live.",
-		"DmnTransformationException": "The resource could not be updated. Unable to transform DMN resource."
+		"DmnTransformationException": "The resource could not be updated. Unable to transform DMN resource.",
+		"unknown": "An unexpected error occurred. Please try again."
 		
 	},
 	"searches": {
-		"filter": "Filter",
+		"filter": "Filter...",
 		"refreshAndFilter": "Refresh and filter",
 		"search": "Search...",
 		"searchByTaskName": "Search by task name...",
-		"searchByDeploymentName": "Search by deployment...",
-		"searchByBusinessKey": "Search by business key...",
-		"searchByFilterName": "Search by filter name..."
+		"searchByFilterName": "Search by filter name...",
+		"wildcardHelp": "Wildcard search is supported.",
+		"wildcardExample": "Use % to represent any number of characters (e.g. %process%)."
 	},
 	"sorting": {
 		"created": "@:task.details.created",
@@ -1130,58 +1084,15 @@
 			"deploymentTime": "Date"
 		}
 	},
-	"process-descriptions": {
-		"e-rechnung-erstellen": "Simply upload a RTF file and get your ZUGFeRD invoice from it.",
-		"kontakterstellung-exchange": "With this process a contact creation will just happen if the contact is not already in our Exchange server, thus avoiding duplicates.",
-		"serienbrief-newsletter": "Providing a RTF and a CSV file you will be able to send a newsletter to many customers at once.",
-		"mail-polling-service-process": "Checks email post to see if there is any invoice to be generated for Fiducia regarding the consultant area.",
-		"rechnungserstellung-fgi": "Automatic creation of invoices for Fiducia according to the number of hours CIB consultants invested monthly.",
-		"rechnungserstellung-brewer": "Automatic creation of invoices related to the CIB PDF brewer 3 ordered via the PDF brewer web.",
-		"reisebuchungsantrag": "Request a business travel and get approval via this process.",
-		"serienbrief-fiducia": "Generate multiple letters at once providing a CSV (containing the contacts) and a CWP (containing the content) and send them easily to CIB fairbrieft (per post).",
-		"serienbrief-rechnung-pu": "Automatic creation of invoices for maintenance/update projects.",
-		"service-plafo-polling": "Extracts from CIB plafo the info about the necessary invoices to be generated, stores them in CIB doXima and sends them via email if wanted.",
-		"rechnungserstellung": "Subprocess being called from the general one that deals with a single invoice.",
-		"signing-legal-docs": "Ask several employees to sign a legal document at once and manage the resulting documents with those signatures easily. ",
-		"signing-process": "Subprocess being called from the general one that deals with a single signature action from an employee.",
-		"archivekey-1000": "Manages offers, order forms and optionally also data protection documents for consultant services.",
-		"freigabe-workflow": "Process started from CIB doXiview to approve signatures in combination with CIB coSys workflows.",
-		"serienbrief-vertragszusatz": "Send a mailing to a group of employees listed in a CSV file.",
-		"absence-request": "Holiday request for approval",
-		"reisebuchungsantrag-showcase": "Request for approval of business trips",
-		"AntragDVMoHo": "Applying for mobile and/or home office working",
-		"buroanwesenheit": "Allows employees to report where they will be located on each day of the coming week (home office, office, holidays,...).",
-		"crowdsource-freigabe": "Allows to evaluate whether a document should be added to the collection of documents for AI training.",
-		"employment_contract_german": "Preparation of employment contracts for all German CIB companies, including annexes supplementary agreement and confidentiality agreement.",
-		"anstellungsvertrag-spanien": "Preparation of employment contracts for all Spanish CIB companies, including annexes Buen Uso and Conducta.",
-		"bankdokumente-verarbeiten": "",
-		"spain_demo1-generar_carta_seguros": "Create a letter of an insurance company filling out a form. Demo in Spanish.",
-		"spain_demo3-contrato_trabajo": "Fill a form and create a contract. You can show the advantages of doXiview, doXisign and sharing by doXisafe or e-mail.",
-		"spain_demo4-configurar_vehiculo": "Config the vehicle settings by choosing the model, color and accessories. A document with the details is created. Demo in spanish",
-		"spain_demo5-certificado_empadronamiento": "A registration certificate is generated after filling out a form.",
-		"spain_demo6-anonimizacion": "Document anonymization using doXiview.",
-		"spain_demo7-justicia_extracion_datos": "Data extraction and anonymization of justice documents.",
-		"spain_demo8-rellenar_expedientes": "Fill a form and create many documents\nStep 1: Fill a form.\nStep2: Check the result of the 4 filled documents.",
-		"spain_demo9-extract_invoice_data": "Upload an invoice and extract the most important data. Demo in spanish.",
-		"spain_demo10-clasificacion_documentos": "Classification of documents.",
-		"spain_demo10a-clasificacion_documentos_empresa": "Document classification.",
-		"spain_demo11-extract_sensible_data": "Identification of sensible data inside a document (name, family name, phone number, email, post code and date).",
-		"spain_demo12-read_invoices_from_email": "Read invoices from an email.\nFor each invoice a new task is created where the invoice data is shown.",
-		"deutsche_schule_demo_1_beurlaubung": "Fill out a form to request the absence of a student in the German school. Demo in german."
-	},
 	"deployment": {
 		"title": "Deployments",
 		"resourcesCaption": "Models contained",
-		"version": "Version",
-		"downloadVersionBpmn": "@:process.downloadBpmn",
 		"noDeployments": "No deployments available",
-		"deploymentTime": "Time",
+		"deploymentTime": "Deployed on",
 		"source": "Source",
 		"confirmDeleteDeployment": "Do you really want to delete the selected deployments?",
 		"deleteRunningInstances": "Stop running process instances",
-		"goToManagement": "Go to process management area",
-		"loadingProcesses": "Loading...",
-		"noModelSelected": "Select a model to view it",
+		"noDeploymentSelected": "Select a deployment to view it",
 		"selectAll": "Select all",
 		"deleteDeployments": "Delete deployments",
 		"showModel": "Show model",
@@ -1191,15 +1102,9 @@
 		"tenant": "Tenant",
 		"errorLoading": "Unable to load resource for the selected deployment"
 	},
-	"cib-table2": {
-		"filter": "Filter"
-	},
-	"table": {
-		"selectColumns": "Display columns",
-		"toggleColumn": "Toggle \"{column}\" column"
-	},
 	"navigation": {
 		"home": "Home",
+		"navigation": "Navigation",
 		"menu": "Navigation menu",
 		"infoAndHelp": "Info & help"
 	},
@@ -1238,9 +1143,9 @@
 			"email": "cibsupport{'@'}cib.de",
 			"version": "Version"
 		},
-		"flowModalAbout": {
-			"modalText": "About",
-			"title": "CIB seven"
+		"about": {
+			"title": "About",
+			"tooltip": "View version"
 		}
 	},
 	"multisort": {
@@ -1260,14 +1165,13 @@
 	},
 	"password": {
 		"recover": {
-			"title": "Password Recovery",
-			"email": "Email",
-			"emailDescription": "Email associated with the account you want to recover",
-			"cancel": "Cancel",
 			"sendEmail": "Send recovery email",
 			"id": "@:admin.users.id",
 			"changePassword": "Change password",
-			"emailSent": "The e-mail with the link to recover your password has been sent."
+			"emailSent": "The e-mail with the link to recover your password has been sent.",
+			"currentUserPassword": "Current Password",
+			"newPassword": "New Password",
+			"newPasswordRepeat": "New Password (repeat)"
 		},
 		"policy": {
 			"title": "Password Policy",
@@ -1280,25 +1184,7 @@
 				"at least one digit",
 				"at least one special character"
 			]
-		},
-		"emailInfo": {
-			"title": "An email has been sent",
-			"header": "To reset your password, please confirm the link in the email.",
-			"body": "This page will automatically close as soon as the email is opened and will redirect to the password reset.",
-			"footerTitle": "Didn't receive the email?",
-			"footerBody": "Check your spam folder or click on 'Resend email' again.",
-			"sendMail": "Resend email",
-			"support": "If the email still does not arrive, please contact support.",
-			"supportLink": "Contact support"		
 		}
-	},
-	"status-progress": {
-		"state": "Status",
-		"stateOptions": {
-			"DONE": "Done",
-			"PENDING": "Pending"
-		},
-		"noState": "There is no status for this task"
 	},
 	"advanced-search": {
 		"title": "Advanced search",
@@ -1307,13 +1193,8 @@
 		"property": "Property name",
 		"value": "Value",
 		"add": "Add criteria",
-		"remove": "Remove criteria",
-		"type": "Match type",
 		"apply": "Apply",
 		"cancel": "Cancel",
-		"cleanAll": "Clear all criteria",
-		"any": "Any",
-		"all": "All",
 		"criteriaKeys": {    	
 			"processVariables": "Process variable"
 		},
@@ -1344,14 +1225,10 @@
 		"emptyProcessList": "Your decision list is currently empty.",
 		"emptyProcessListFiltered": "There is no decision for the applied filter.",
 		"decision": "Decision",
-		"deleteProcessDefinition": "Delete decision definition",
 		"refreshVersions": "Refresh history versions",
 		"loadVersions": "Load all history versions",
 		"days": "days",
 		"instances": "Instances",
-		"activateProcess": "Activate decision definition",
-		"downloadBpmn": "Download DMN file",
-		"showDeployment": "See deployment",
 		"showInstance": "View instance",
 		"evaluationTime": "Evaluation Time",
 		"callingProcess": "Calling Process/Case",
@@ -1404,5 +1281,22 @@
 		"noGroups": "without group",
 		"groupName": "Group",
 		"assignmentsByGroupInfo": "A task may have multiple groups."
+	},
+	"deployed-form": {
+		"selectDate": "Select a date",
+		"accept": "Accept",
+		"fullscreen": "Fullscreen",
+		"showProcess": "View process"
+	},
+	"setup": {
+		"title": "Initial Setup",
+		"description": "Welcome to CIB seven! Create an administrator account to get started.",
+		"createAdminUser": "Create Administrator Account",
+		"createUser": "Create User",
+		"success": "Administrator account created successfully! Redirecting to login...",
+		"help": {
+			"title": "Why is this page shown?",
+			"description": "You are trying to access the process engine \"{0}\". This engine is configured to use the built-in identity service (database) but has no administrative users configured. This page allows you to create an initial user for accessing the process engine."
+		}
 	}
 }

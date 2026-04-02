@@ -20,33 +20,15 @@
   <div :style="{ 'height': 'calc(100% - 55px)' }" class="d-flex flex-column">
     <div class="h-100 container-fluid overflow-auto bg-light">
       <div v-if="items.length > 0" class="row justify-content-center">
-        <div v-for="item in items" :key="item.title"
-          class="col-4 mt-5 mx-3 bg-white" style="max-width:330px; height:250px">
-          <div class="row border rounded shadow-sm h-100">
-            <div class="align-top" style="flex:auto">
-              <div class="text-truncate ps-1"></div>
-              <router-link :to="item.link" class="h-100 text-decoration-none text-reset">
-                <div class="container">
-                  <div class="row ps-3" style="height:55px">
-                    <div class="col-12 align-items-center d-flex">
-                      <span class="border-start h-100 me-3 border-primary" style="border-width: 3px !important"></span>
-                      <h4 class="m-0">{{ $t(item.title) }}</h4>
-                    </div>
-                  </div>
-                  <div class="row text-center">
-                    <div class="col-12 p-0 pt-1">
-                      <img v-if="item.image" :alt="$t(item.title)" :src="item.image" style="height:180px">
-                    </div>
-                  </div>
-                </div>
-              </router-link>
-            </div>
-          </div>
-        </div>
+        <StartViewItem v-for="item in items" :key="item.title"
+          :title="$t(item.title)"
+          :src="item.image"
+          :to="item.link"
+        ></StartViewItem>
       </div>
       <div v-else>
-        <img src="@/assets/images/start/empty_start_page.svg" class="d-block mx-auto mt-5 mb-3" style="max-width: 250px">
-        <div class="h5 text-secondary text-center">{{ $t('start.emptyStart') }}</div>
+        <img src="@/assets/images/start/empty_start_page.svg" class="d-block mx-auto mt-5 mb-3" style="max-width: 250px" alt="">
+        <div class="h5 text-secondary text-center">{{ $t('start.emptyStart', { productName }) }}</div>
       </div>
     </div>
   </div>
@@ -54,6 +36,7 @@
 
 <script>
 import { permissionsMixin } from '@/permissions.js'
+import StartViewItem from '@/components/start/StartViewItem.vue'
 
 // Import the images to ensure it is bundled with the package
 import adminUsersImage from '@/assets/images/admin/users_admin.svg'
@@ -65,37 +48,41 @@ import systemAdminImage from '@/assets/images/admin/system_admin.svg'
 export default {
   name: 'UsersManagement',
   mixins: [permissionsMixin],
+  components: { StartViewItem },
   computed: {
+    productName() {
+      return this.$root.config.productNamePageTitle || this.$t('login.productName')
+    },
     items: function() {
       const rawItems = [
         {
           title: 'admin.users.title',
           image: adminUsersImage,
-          link: '/seven/auth/admin/users',
+          link: { name: 'adminUsers' },
           hasAccess: this.adminManagementPermissions(this.$root.config.permissions.usersManagement, 'user')
         },
         {
           title: 'admin.groups.title',
           image: groupsAdminImage,
-          link: '/seven/auth/admin/groups',
+          link: { name: 'adminGroups' },
           hasAccess: this.adminManagementPermissions(this.$root.config.permissions.groupsManagement, 'group')
         },
         {
           title: 'admin.tenants.title',
           image: tenantsAdminImage,
-          link: '/seven/auth/admin/tenants',
+          link: { name: 'adminTenants' },
           hasAccess: this.adminManagementPermissions(this.$root.config.permissions.tenantsManagement, 'tenant')
         },
         {
           title: 'admin.authorizations.title',
           image: authorizationsAdminImage,
-          link: '/seven/auth/admin/authorizations',
+          link: { name: 'authorizations' },
           hasAccess: this.adminManagementPermissions(this.$root.config.permissions.authorizationsManagement, 'authorization')
         },
         {
           title: 'admin.system.title',
           image: systemAdminImage,
-          link: '/seven/auth/admin/system',
+          link: { name: 'adminSystem' },
           hasAccess: this.adminManagementPermissions(this.$root.config.permissions.systemManagement, 'system')
         },
       ]

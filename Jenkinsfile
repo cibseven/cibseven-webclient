@@ -7,7 +7,6 @@ import de.cib.pipeline.library.kubernetes.BuildPodCreator
 import de.cib.pipeline.library.logging.Logger
 import de.cib.pipeline.library.ConstantsInternal
 import de.cib.pipeline.library.MavenProjectInformation
-import de.cib.pipeline.library.helm.HelmChartInformation
 import groovy.transform.Field
 
 @Field Logger log = new Logger(this)
@@ -16,6 +15,8 @@ import groovy.transform.Field
     pom: ConstantsInternal.DEFAULT_MAVEN_POM_PATH,
     mvnContainerName: Constants.MAVEN_JDK_17_CONTAINER,
 	office365WebhookId: Constants.OFFICE_365_CIBSEVEN_WEBHOOK_ID,
+    primaryBranch: 'main',
+    dependencyTrackSynchronous: true,
     uiParamPresets: [:],
     testMode: false,
     buildPodConfig: [
@@ -62,7 +63,8 @@ pipeline {
         kubernetes {
             yaml BuildPodCreator.cibStandardPod(nodepool: Constants.NODEPOOL_STABLE)
                     .withContainerFromName(pipelineParams.mvnContainerName, pipelineParams.buildPodConfig[pipelineParams.mvnContainerName])
-                    .withHelm3Container()
+                    .withHelm4Container()
+                    .withNode24Container()
                     .asYaml()
             defaultContainer pipelineParams.mvnContainerName
         }
@@ -73,22 +75,23 @@ pipeline {
         booleanParam(
             name: 'VERIFY',
             defaultValue: true,
-            description: 'Build and test using "mvn verify"'
-        )
-        booleanParam(
-            name: 'RELEASE_COMMON_COMPONENTS',
-            defaultValue: false,
-            description: 'Build and deploy cib-common-components to artifacts.cibseven.org'
+            description: '''Build and verify the project. This includes:
+            - Build and test using "mvn verify" (all branches)
+            - Run SonarQube Checks on primary branch
+            - Run Dependency-Track upload on primary branch
+            '''
         )
         booleanParam(
             name: 'RELEASE_BPM_SDK',
             defaultValue: false,
-            description: 'Build and deploy bpm-sdk to artifacts.cibseven.org'
+            description: 'Build and deploy bpm-sdk NPM package to artifacts.cibseven.org'
         )
         booleanParam(
             name: 'RELEASE_CIBSEVEN_COMPONENTS',
             defaultValue: false,
-            description: 'Build and deploy cibseven-components to artifacts.cibseven.org'
+            description: '''Build and deploy cibseven-components NPM package to artifacts.cibseven.org
+            - If not set, the package will only be released automatically on the primary branch when the version in package.json is a dev version and not yet published.
+            '''
         )
         booleanParam(
             name: 'DEPLOY_TO_ARTIFACTS',
@@ -167,14 +170,124 @@ pipeline {
 
                         // Show coverage in Jenkins UI
                         recordCoverage(
-                            tools: [[parser: 'COBERTURA', pattern: 'frontend/coverage/cobertura-coverage.xml']],
+                            tools: [[parser: 'COBERTURA', pattern: 'frontend/target/coverage/cobertura-coverage.xml']],
                             sourceCodeRetention: 'LAST_BUILD',
                             sourceDirectories: [[path: 'frontend/src']]
                         )
 
                         // This archives the whole HTML coverage report so you can download or view it from Jenkins
                         // This archives the Vitest test reports so you can download or view them from Jenkins
-                        archiveArtifacts artifacts: 'frontend/coverage/lcov-report/**, frontend/target/vitest-reports/**, cibseven-webclient-core/target/failsafe-reports/**', allowEmptyArchive: false, fingerprint: true
+                        archiveArtifacts artifacts: 'frontend/target/coverage/lcov-report/**, frontend/target/vitest-reports/**, cibseven-webclient-core/target/failsafe-reports/**', allowEmptyArchive: false, fingerprint: true
+                    }
+                }
+            }
+        }
+
+        stage('SAST') {
+            when {
+                allOf {
+                    branch pipelineParams.primaryBranch
+                    expression { params.VERIFY }
+                }
+            }
+            parallel {
+                stage('OWASP Dependency-Track') {
+                    steps {
+                        script {
+                            container(Constants.NODE_24_CONTAINER) {
+                                script {
+
+                                    sh """
+                                        cd ./frontend
+                                        npm install --global @cyclonedx/cyclonedx-npm@4.1.0 --ignore-scripts
+                                        cyclonedx-npm --output-file bom.xml --output-format XML
+                                    """
+
+                                    // Read version from package.json
+                                    def packageJson = readJSON file: './frontend/package.json'
+                                    env.VERSION = packageJson.version
+                                    env.PACKAGE_NAME = packageJson.name
+                                    env.DESCRIPTION = packageJson.description
+
+                                    if (env.VERSION.isEmpty()) {
+                                        error("Could not find version in package.json")
+                                    }
+
+                                    withCredentials([string(credentialsId: Constants.DEPENDENCY_TRACK_CREDENTIALS_ID, variable: 'API_KEY')]) {
+                                        dependencyTrackPublisher(
+                                            autoCreateProjects: true,
+                                            artifact: 'frontend/bom.xml',
+                                            projectName: "${env.PACKAGE_NAME}",
+                                            projectVersion: "${env.VERSION}",
+                                            projectProperties: [
+                                                description: "${env.DESCRIPTION}",
+                                                tags: ['npm'],
+                                                isLatest: true
+                                            ],
+                                            synchronous: pipelineParams.dependencyTrackSynchronous,
+                                            failOnViolationFail: false,
+                                            dependencyTrackApiKey: API_KEY
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                stage('Run SonarQube Checks') {
+                    steps {
+                        script {
+                            container(Constants.NODE_24_CONTAINER) {
+                                withSonarQubeEnv(credentialsId: Constants.SONARQUBE_CREDENTIALS_ID, installationName: 'SonarQube') {
+                                    script {
+                                        // Install sonar-scanner
+                                        sh '''
+                                            echo "Installing sonarqube-scanner ..."
+                                            cd ./frontend
+                                            npm install -g sonarqube-scanner@4.3.2 --ignore-scripts
+                                        '''
+
+                                        // Read version from package.json
+                                        def packageJson = readJSON file: './frontend/package.json'
+                                        env.VERSION = packageJson.version
+                                        env.PACKAGE_NAME = packageJson.name
+                                        env.DESCRIPTION = packageJson.description
+
+                                        if (env.VERSION.isEmpty()) {
+                                            error("Could not find version in package.json")
+                                        }
+
+                                        // Sanitize project key: SonarQube only allows alphanumeric, '-', '_', '.' and ':' characters
+                                        // Replace '@' and '/' with '-' to create a valid project key
+                                        def sanitizedProjectKey = env.PACKAGE_NAME.replaceAll('@', '').replaceAll('/', '-')
+
+                                        // Run SonarQube analysis
+                                        sh """
+                                            cd ./frontend
+                                            sonar-scanner \
+                                                -Dsonar.projectKey=${sanitizedProjectKey} \
+                                                -Dsonar.projectName=${env.PACKAGE_NAME} \
+                                                -Dsonar.projectVersion=${env.VERSION} \
+                                                -Dsonar.sources=src \
+                                                -Dsonar.exclusions='**/node_modules/**,**/dist/**,**/build/**,**/*.min.js' \
+                                                -Dsonar.javascript.lcov.reportPaths='target/coverage/lcov.info' \
+                                                -Dsonar.coverage.exclusions='**/*.test.js,**/*.spec.js,**/*.test.ts,**/*.spec.ts' \
+                                                -Dsonar.dependencyCheck.skip=true
+                                        """
+                                    }
+                                }
+                                script {
+                                    timeout(time: 5, unit: 'MINUTES') {
+                                        def qg = waitForQualityGate()
+                                        if (qg.status != 'OK') {
+                                            log.info "Pipeline unstable due to quality gate failure: ${qg.status}"
+                                            // currentBuild.result = 'UNSTABLE'
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -185,7 +298,7 @@ pipeline {
                 anyOf {
                     allOf {
                         // Automatically deploy on main branch if version is SNAPSHOT
-                        branch 'main'
+                        branch pipelineParams.primaryBranch
                         expression { mavenProjectInformation.version.endsWith("-SNAPSHOT") == true }
                         expression { !params.DEPLOY_TO_MAVEN_CENTRAL }
                     }
@@ -216,13 +329,13 @@ pipeline {
 
                         // Show coverage in Jenkins UI
                         recordCoverage(
-                            tools: [[parser: 'COBERTURA', pattern: 'frontend/coverage/cobertura-coverage.xml']],
+                            tools: [[parser: 'COBERTURA', pattern: 'frontend/target/coverage/cobertura-coverage.xml']],
                             sourceCodeRetention: 'LAST_BUILD',
                             sourceDirectories: [[path: 'frontend/src']]
                         )
 
                         // This archives the whole HTML coverage report so you can download or view it from Jenkins
-                        archiveArtifacts artifacts: 'frontend/coverage/lcov-report/**', allowEmptyArchive: false
+                        archiveArtifacts artifacts: 'frontend/target/coverage/lcov-report/**', allowEmptyArchive: false
                     }
                 }
             }
@@ -259,24 +372,7 @@ pipeline {
             }
         }
 
-        stage('Release cib-common-components') {
-            when {
-                allOf {
-                    expression { params.RELEASE_COMMON_COMPONENTS }
-                }
-            }
-            steps {
-                script {
-                    withCredentials([file(credentialsId: 'credential-cibseven-artifacts-npmrc', variable: 'NPMRC_FILE')]) {
-                        withMaven() {
-                            npmReleasePackage('cib-common-components', env.NPMRC_FILE)
-                        }
-                    }
-                }
-            }
-        }
-
-        stage('Release bpm-sdk') {
+        stage('Release npm bpm-sdk') {
             when {
                 allOf {
                     expression { params.RELEASE_BPM_SDK }
@@ -293,10 +389,15 @@ pipeline {
             }
         }
 
-        stage('Release cibseven-components') {
+        stage('Release npm cibseven-components') {
             when {
-                allOf {
+                anyOf {
                     expression { params.RELEASE_CIBSEVEN_COMPONENTS }
+                    allOf {
+                        branch pipelineParams.primaryBranch
+                        expression { isDevNpmVersion() }
+                        expression { isNpmVersionPublished() == false }
+                    }
                 }
             }
             steps {
@@ -314,7 +415,7 @@ pipeline {
             when {
                 anyOf {
                     allOf {
-                        branch 'main'
+                        branch pipelineParams.primaryBranch
                         expression { mavenProjectInformation.version.endsWith("-SNAPSHOT") == true }
                     }
                     expression { params.DEPLOY_ANY_BRANCH_TO_HARBOR == true }
@@ -325,6 +426,12 @@ pipeline {
                     withMaven() {
                         // "package" before jib:build is needed to support maven multi module projects
                         // see https://github.com/GoogleContainerTools/jib/tree/master/examples/multi-module
+                        //
+                        // -Djib.useOnlyProjectCache=true and -Djib.disableUpdateChecks=true are used to speed up the build
+                        // and to resolve the build failure which is related to the Jib Maven plugin trying to access a cache directory.
+                        // This is a common issue when building Docker images with Jib in Jenkins.
+                        //
+                        // -Djib.serialize=true - force Jib to run sequentially while allowing the rest of the Maven build to remain parallel.
                         sh """
                             mvn -f ./pom.xml \
                                 package \
@@ -332,7 +439,9 @@ pipeline {
                                 -Dmaven.test.skip \
                                 -DskipTests \
                                 -Dlicense.skipDownloadLicenses=true \
-                                -T4 \
+                                -Djib.useOnlyProjectCache=true \
+                                -Djib.disableUpdateChecks=true \
+                                -Djib.serialize=true \
                                 -Dbuild.number=${BUILD_NUMBER}
                         """
                     }
@@ -377,26 +486,20 @@ pipeline {
             when {
                 anyOf {
                     allOf {
-                        branch 'main'
+                        branch pipelineParams.primaryBranch
                         expression { mavenProjectInformation.version.endsWith("-SNAPSHOT") == true }
                     }
                     expression { params.DEPLOY_ANY_BRANCH_TO_HARBOR }
                 }
             }
-	        steps {
-	            script {
-                    HelmChartInformation helmChartInformation = readHelmChart(path: 'helm/cibseven-webclient')
-                    helmChartInformation.setUploadVersion(mavenProjectInformation.version)
-                    helmChartInformation.setUploadAppVersion(mavenProjectInformation.version)
-                    deployHelmChart(
-                        helmChartInformation: helmChartInformation,
-                        updateDependencies: true,
-                        runChecks: true,
-                        dryRun: false
-                    )
-	            }
-	        }
-	    }
+            steps {
+                deployHelmChart(
+                    path: 'helm/cibseven-webclient',
+                    version: mavenProjectInformation.version,
+                    appVersion: mavenProjectInformation.version
+                )
+            }
+        }
     }
 
     post {
@@ -415,13 +518,6 @@ pipeline {
                         message: "Application was successfully released with version ${mavenProjectInformation.version}"
                     )
                 }
-				
-				if (params.RELEASE_COMMON_COMPONENTS) {
-					notifyResult(
-                        office365WebhookId: pipelineParams.office365WebhookId,
-                        message: "✅ cib-common-components was successfully released to artifacts.cibseven.org with version ${mavenProjectInformation.version}"
-                    )
-				}
 
 				if (params.RELEASE_BPM_SDK) {
 					notifyResult(
@@ -449,7 +545,7 @@ pipeline {
         failure {
             script {
                 log.warning '❌ Build failed'
-                if (env.BRANCH_NAME == 'main') {
+                if (env.BRANCH_NAME == pipelineParams.primaryBranch) {
                     notifyResult(
                         office365WebhookId: pipelineParams.office365WebhookId,
                         message: "❌ Build failed on main branch. Access build info at ${env.BUILD_URL}"
@@ -461,7 +557,7 @@ pipeline {
         fixed {
             script {
                 log.info '✅ Previous issues fixed'
-                if (env.BRANCH_NAME == 'main') {
+                if (env.BRANCH_NAME == pipelineParams.primaryBranch) {
                     notifyResult(
                         office365WebhookId: pipelineParams.office365WebhookId,
                         message: "✅ Previous issues on main branch fixed. Access build info at ${env.BUILD_URL}"
@@ -490,3 +586,33 @@ def isSNAPSHOTVersion() {
     return mavenProjectInformation.version.endsWith("-SNAPSHOT")
 }
 
+def isDevNpmVersion() {
+    def packageVersion = sh(
+        script: "grep '\"version\"' frontend/package.json | cut -d'\"' -f4",
+        returnStdout: true
+    ).trim()
+    return packageVersion.contains('-dev')    
+}
+
+def isNpmVersionPublished() {
+    def packageVersion = sh(
+        script: "grep '\"version\"' frontend/package.json | cut -d'\"' -f4",
+        returnStdout: true
+    ).trim()
+    def packageName = sh(
+        script: "grep '\"name\"' frontend/package.json | cut -d'\"' -f4",
+        returnStdout: true
+    ).trim()
+
+    def result
+    container(Constants.NODE_24_CONTAINER) {
+        result = sh(
+            script: "cd frontend && npm view ${packageName}@${packageVersion} version || echo 'not found'",
+            returnStdout: true
+        ).trim()
+    }
+
+    log.info "Checking if npm package ${packageName} with version ${packageVersion} is published. Result: ${result}"
+
+    return result == packageVersion
+}

@@ -18,15 +18,28 @@
 -->
 <template>
   <div>
-    <FlowTable v-if="instances.length > 0 && !sorting" striped resizable thead-class="sticky-header" :items="instances" primary-key="id" prefix="process."
-      :sort-by="currentSortBy" :sort-desc="currentSortDesc" external-sort :fields="[
-      { label: 'state', key: 'state', class: 'col-1', thClass: 'text-center', sortable: false, tdClass: 'justify-content-center text-center py-0' },
-      { label: 'businessKey', key: 'businessKey', class: 'col-2', tdClass: 'py-1' },
-      { label: 'startTime', key: 'startTime', class: 'col-2', tdClass: 'py-1' },
-      { label: 'endTime', key: 'endTime', class: 'col-2', tdClass: 'py-1' },
-      { label: 'instanceId', key: 'id', class: 'col-2', tdClass: 'py-1' },
-      { label: 'startUserId', key: 'startUserId', class: 'col-1', sortable: false, tdClass: 'py-1' },
-      { label: 'actions', key: 'actions', class: 'col-2', sortable: false, tdClass: 'py-0' }]"
+    <FlowTable v-if="instances.length > 0 && !sorting"
+      striped
+      resizable
+      native-layout
+      useCase="instances-per-definition"
+      thead-class="sticky-header"
+      :items="instances"
+      primary-key="id"
+      :sort-by="currentSortBy"
+      :sort-desc="currentSortDesc"
+      external-sort
+      :columns="['state', 'businessKey', 'startTime', 'endTime', 'id', 'startUserId', 'actions']"
+      :column-definitions="[
+        { label: 'process.state', key: 'state',  thClass: 'text-center', sortable: false, tdClass: 'justify-content-center text-center pb-0' },
+        { label: 'process.businessKey', key: 'businessKey', tdClass: 'pb-0' },
+        { label: 'process.startTime', key: 'startTime', tdClass: 'pb-0' },
+        { label: 'process.endTime', key: 'endTime', tdClass: 'pb-0' },
+        { label: 'process.instanceId', key: 'id', tdClass: 'pb-0' },
+        { label: 'process.tenant', key: 'tenantId',  sortable: false, groupSeparator: true, tdClass: 'pb-0' },
+        { label: 'process.startUserId', key: 'startUserId', sortable: false, tdClass: 'pb-0' },
+        { label: 'process.actions', key: 'actions', sortable: false, disableToggle: true, groupSeparator: true, tdClass: 'py-0' },
+      ]"
       @click="selectInstance($event)" @external-sort="handleSortChanged">
       <template v-slot:cell(state)="table">
         <span :title="getIconTitle(table.item.state)" class="mdi mdi-18px" :class="getIconState(table.item.state)"></span>
@@ -36,7 +49,7 @@
         <CopyableActionButton
           :displayValue="table.item.id"
           :title="$t('process.showInstance') + ':\n' + table.item.id"
-          :to="`/seven/auth/process/${table.item.processDefinitionKey}/${table.item.processDefinitionVersion}/${table.item.id}?tab=variables`"
+          :to="selectInstanceRoute(table.item)"
           @copy="copyValueToClipboard"
         />
       </template>
@@ -53,18 +66,25 @@
       <template v-slot:cell(endTime)="table">
         <span :title="formatDateForTooltips(table.item.endTime)" class="text-truncate d-block">{{ formatDate(table.item.endTime) }}</span>
       </template>
+
+      <template v-slot:cell(tenantId)="table">
+        <span v-if="table.item.tenantId" class="text-truncate d-block" :title="$t('process.tenant') + ':\n' + table.item.tenantId">{{ table.item.tenantId }}</span>
+      </template>
+
       <template v-slot:cell(actions)="table">
-        <b-button v-if="table.item.state === 'ACTIVE' && processByPermissions($root.config.permissions.suspendProcessInstance, table.item)" @click.stop="confirmSuspend(table.item)"
-        size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-pause-circle-outline" :title="$t('process.suspendInstance')"></b-button>
-        <b-button v-else-if="table.item.state === 'SUSPENDED' && processByPermissions($root.config.permissions.suspendProcessInstance, table.item)" @click.stop="confirmActivate(table.item)"
-        size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-play-circle-outline" :title="$t('process.activateInstance')"></b-button>
-        <b-button @click="selectInstance(table.item)" size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-eye-outline" :title="$t('process.showInstance')"></b-button>
-        <b-button v-if="['ACTIVE', 'SUSPENDED'].includes(table.item.state) && processByPermissions($root.config.permissions.deleteProcessInstance, table.item)"
-        @click.stop="confirmStopInstance(table.item)"
-        size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-stop-circle-outline" :title="$t('process.stopInstance')"></b-button>
-        <b-button v-else-if="['COMPLETED', 'EXTERNALLY_TERMINATED'].includes(table.item.state) && processByPermissions($root.config.permissions.deleteProcessInstance, table.item)"
-        @click.stop="confirmDeleteHistoryInstance(table.item)"
-        size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-delete-outline" :title="$t('process.deleteHistoryInstance')"></b-button>
+        <div class="d-flex">
+          <CellActionButton v-if="table.item.state === 'ACTIVE' && processByPermissions($root.config.permissions.suspendProcessInstance, table.item)" @click="confirmSuspend(table.item)"
+          icon="mdi-pause-circle-outline" :title="$t('process.suspendInstance')"></CellActionButton>
+          <CellActionButton v-else-if="table.item.state === 'SUSPENDED' && processByPermissions($root.config.permissions.suspendProcessInstance, table.item)" @click="confirmActivate(table.item)"
+          icon="mdi-play-circle-outline" :title="$t('process.activateInstance')"></CellActionButton>
+          <CellActionButton :to="selectInstanceRoute(table.item)" icon="mdi-eye-outline" :title="$t('process.showInstance')"></CellActionButton>
+          <CellActionButton v-if="['ACTIVE', 'SUSPENDED'].includes(table.item.state) && processByPermissions($root.config.permissions.deleteProcessInstance, table.item)"
+          @click="confirmStopInstance(table.item)"
+          icon="mdi-stop-circle-outline" :title="$t('process.stopInstance')"></CellActionButton>
+          <CellActionButton v-else-if="['COMPLETED', 'EXTERNALLY_TERMINATED'].includes(table.item.state) && processByPermissions($root.config.permissions.deleteProcessInstance, table.item)"
+          @click="confirmDeleteHistoryInstance(table.item)"
+          icon="mdi-delete-outline" :title="$t('process.deleteHistoryInstance')"></CellActionButton>
+        </div>
       </template>
     </FlowTable>
     <div v-if="loading" class="py-3 text-center w-100">
@@ -83,15 +103,15 @@
 import { ProcessService, HistoryService } from '@/services.js'
 import { permissionsMixin } from '@/permissions.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
-import { CopyableActionButton, FlowTable, SuccessAlert } from '@cib/common-frontend'
+import { CopyableActionButton, FlowTable, SuccessAlert, BWaitingBox } from '@cib/common-frontend'
 import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
 import ConfirmActionOnProcessInstanceModal from '@/components/process/modals/ConfirmActionOnProcessInstanceModal.vue'
-import { BWaitingBox } from '@cib/bootstrap-components'
 import { mapGetters, mapActions } from 'vuex'
+import CellActionButton from '@/components/common-components/CellActionButton.vue'
 
 export default {
   name: 'InstancesTable',
-  components: { FlowTable, SuccessAlert, ConfirmActionOnProcessInstanceModal, BWaitingBox, CopyableActionButton },
+  components: { FlowTable, SuccessAlert, ConfirmActionOnProcessInstanceModal, BWaitingBox, CopyableActionButton, CellActionButton },
   emits: ['instance-deleted', 'filter-instances'],
   mixins: [copyToClipboardMixin, permissionsMixin],
   props: {
@@ -224,16 +244,23 @@ export default {
       this.resetPagination()
       this.loadInstancesData()
     },
-    selectInstance: function(instance) {
-      this.$router.push({
+    selectInstanceRoute: function(instance) {
+      return {
         name: 'process',
         params: {
           processKey: instance.processDefinitionKey,
           versionIndex: instance.processDefinitionVersion,
           instanceId: instance.id,
         },
-        query: { ...this.$route.query, tab: 'variables' } // Set default tab for instance view
-      })
+        query: {
+          ...this.$route.query,
+          ...(instance.tenantId ? { tenantId: instance.tenantId } : {} ),
+          tab: 'variables', // Set default tab for instance view
+        },
+      }
+    },
+    selectInstance: function(instance) {
+      this.$router.push(this.selectInstanceRoute(instance))
     },
     // "Stop Instance" button
     confirmStopInstance: function(instance) {

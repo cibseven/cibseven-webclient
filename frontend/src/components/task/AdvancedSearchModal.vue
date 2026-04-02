@@ -21,8 +21,8 @@
     <form ref="formAdvancedSearch" @submit.stop.prevent="handleSubmit">
       <div class="row mb-3">
         <div class="col-5">
-          <label>{{ $t('advanced-search.criteriaKey') }}</label>
-          <b-form-select v-model="selectedCriteriaKey" :options="criteriaKeys">
+          <label for="criteriaKey">{{ $t('advanced-search.criteriaKey') }}</label>
+          <b-form-select id="criteriaKey" v-model="selectedCriteriaKey" :options="criteriaKeys">
             <template v-slot:first>
               <b-form-select-option :value="null" disabled>-- {{ $t('advanced-search.selectProperty') }} --</b-form-select-option>
             </template>
@@ -40,15 +40,23 @@
           <b-form-input :placeholder="$t('advanced-search.value')" v-model="selectedCriteriaValue.value"></b-form-input>
         </div>
       </div>
-      <b-button @click="addCriteria" :title="$t('advanced-search.add')" variant="primary" class="mb-3">
+      <b-button @click="addCriteria" type="button" :title="$t('advanced-search.add')" variant="primary" class="mb-3">
         <span class="d-inline-block align-middle mdi mdi-16px mdi-plus" style="line-height: 0"></span> {{ $t('advanced-search.add') }}
       </b-button>
 
       <div class="container-fluid border">
-        <FlowTable striped :selectable="false" :items="criterias" prefix="advanced-search.table."
-          :fields="[{label: 'key', key: 'key', class: 'col-5'},
-              {label: 'value', key: 'value', class: 'col-5'},
-              {label: '', key: 'buttons', class: 'col-2', sortable: false, tdClass: 'py-0 text-center d-block'}]">
+        <FlowTable striped :selectable="false" :items="criterias"
+          :fields="[
+            { label: 'advanced-search.table.key', key: 'key', class: 'col-5'},
+            { label: 'advanced-search.table.value', key: 'value', class: 'col-5'},
+            { label: 'process.actions', key: 'actions', class: 'col-2', sortable: false, tdClass: 'py-0 text-center d-block'},
+          ]">
+
+          <template v-slot:header(actions)>
+            <!-- hide 'actions' header for better UI but keep it accessible for screen readers -->
+            <span class="visually-hidden">{{ $t('process.actions') }}</span>
+          </template>
+
           <template v-slot:cell(key)="row">
             {{ $t('advanced-search.criteriaKeys.' + row.item.key) }}
           </template>
@@ -56,19 +64,19 @@
             <div class="col-12" v-if="row.item.key === 'processVariables'">
               <div class="row">
                 <div :title="row.item.name" class="col-5 p-0 text-truncate">{{ row.item.name }}</div>
-                <div class="col-2 text-center">{{ $t('advanced-search.operators.' + row.item.operator) }}</div>
+                <div class="col-2 text-center">{{ $t(row.item.label) }}</div>
                 <div :title="row.item.value" class="col-5 p-0 text-truncate text-end">{{ row.item.value }}</div>
               </div>
             </div>
             <span v-else> {{ row.item.value }} </span>
           </template>
-          <template v-slot:cell(buttons)="row">
-            <b-button class="p-0 px-2 border-0 mdi mdi-24px mdi-delete-outline shadow-none" variant="link" @click="deleteCriteria(row.index)"></b-button>
+          <template v-slot:cell(actions)="row">
+            <CellActionButton icon="mdi-delete-outline" @click="deleteCriteria(row.index)" :title="$t('nav-bar.filters.delete')"></CellActionButton>
           </template>
         </FlowTable>
 
         <div v-if="criterias.length === 0">
-          <img src="@/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mb-3" style="width: 200px">
+          <img src="@/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mb-3" style="width: 200px" alt="">
           <div class="h5 text-secondary text-center">{{ $t('nav-bar.filters.noCriterias') }}</div>
         </div>
         <hr>
@@ -87,10 +95,11 @@
 
 <script>
 import { FlowTable } from '@cib/common-frontend'
+import CellActionButton from '@/components/common-components/CellActionButton.vue'
 
 export default {
   name: 'AdvancedSearchModal',
-  components: { FlowTable },
+  components: { FlowTable, CellActionButton },
   emits: ['refresh-tasks'],
   data: function () {
     return {
@@ -99,21 +108,21 @@ export default {
       selectedCriteriaKey: 'processVariables',
       selectedCriteriaValue: { name: null, operator: 'eq', value: '' },
       operators: [
-        { value: 'eq', text: '=' },
-        { value: 'neq', text: '!=' },
-        { value: 'gt', text: '>' },
-        { value: 'gteq', text: '>=' },
-        { value: 'lt', text: '<' },
-        { value: 'lteq', text: '<=' },
-        { value: 'like', text: 'like' },
-        { value: 'notLike', text: 'not like' }
+        { value: 'eq', text: '=', label: 'advanced-search.operators.eq' },
+        { value: 'neq', text: '!=', label: 'advanced-search.operators.neq' },
+        { value: 'gt', text: '>', label: 'advanced-search.operators.gt' },
+        { value: 'gteq', text: '>=', label: 'advanced-search.operators.gteq' },
+        { value: 'lt', text: '<', label: 'advanced-search.operators.lt' },
+        { value: 'lteq', text: '<=', label: 'advanced-search.operators.lteq' },
+        { value: 'like', text: 'like', label: 'advanced-search.operators.like' },
+        { value: 'notLike', text: 'not like', label: 'advanced-search.operators.notLike' }
       ],
       isValidForm: true
     }
   },
   computed: {
     criteriaKeys: function() {
-      var criteriaKeys = []
+      const criteriaKeys = []
       this.$root.config.taskFilter.advancedSearch.criteriaKeys.forEach(item => {
         criteriaKeys.push({ value: item, text: this.$t('advanced-search.criteriaKeys.' + item) })
       })
@@ -125,28 +134,29 @@ export default {
       if (this.$store.state.advancedSearch.criterias.length > 0) {
         this.matchAllCriteria = this.$store.state.advancedSearch.matchAllCriteria
         this.criterias = this.$store.state.advancedSearch.criterias.map(criteria => {
-          return Object.assign({}, criteria)
+          return {
+            ...criteria,
+            label: 'advanced-search.operators.' + criteria.operator
+          }
         })
       }
       this.$refs.advancedSearchModal.show()
     },
     addCriteria: function() {
-      var value = this.selectedCriteriaValue.value
+      let value = this.selectedCriteriaValue.value
       if (value === "true") value = true
       else if (value === "false") value = false
       this.criterias.push({
         key: this.selectedCriteriaKey,
         name: this.selectedCriteriaValue.name,
         operator: this.selectedCriteriaValue.operator,
+        label: 'advanced-search.operators.' + this.selectedCriteriaValue.operator,
         value: value
       })
       this.selectedCriteriaValue = { name: null, operator: 'eq', value: '' }
     },
     deleteCriteria: function(index) {
       this.criterias.splice(index, 1)
-    },
-    cleanAllCriteria: function() {
-      this.criteria = []
     },
     handleSubmit: function() {
       this.$store.dispatch('updateAdvancedSearch', {

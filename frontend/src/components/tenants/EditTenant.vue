@@ -35,7 +35,7 @@
 
     <transition name="slide-in" mode="out-in">
       <div v-if="tenant.id" class="d-flex flex-column h-100 bg-light">
-        <b-button variant="light" style="min-height: 40px; line-height: 20px;" :block="true" class="rounded-0 border-bottom text-start" href="#/seven/auth/admin/tenants">
+        <b-button variant="light" style="min-height: 40px; line-height: 20px;" :block="true" class="rounded-0 border-bottom text-start" :to="{ name: 'adminTenants' }">
           <span class="mdi mdi-arrow-left me-2"></span>
           <span class="fw-semibold">{{ $t('admin.tenants.title') }}</span>
         </b-button>
@@ -71,10 +71,12 @@
                 </div>
                 <div v-if="users" class="container-fluid overflow-auto bg-white shadow-sm border rounded g-0">
                   <FlowTable :items="users" primary-key="id" striped
-                    prefix="admin.users." :fields="[{label: 'id', key: 'id', class: 'col-md-3 col-sm-3', tdClass: 'py-2' },
-                      {label: 'firstName', key: 'firstName', class: 'col-md-3 col-sm-3', tdClass: 'py-2' },
-                      {label: 'lastName', key: 'lastName', class: 'col-md-3 col-sm-3', tdClass: 'py-2' },
-                      {label: 'email', key: 'email', class: 'col-md-3 col-sm-3', tdClass: 'py-2' }]">
+                    :fields="[
+                      { label: 'admin.users.id', key: 'id', class: 'col-md-3 col-sm-3', tdClass: 'py-2' },
+                      { label: 'admin.users.firstName', key: 'firstName', class: 'col-md-3 col-sm-3', tdClass: 'py-2' },
+                      { label: 'admin.users.lastName', key: 'lastName', class: 'col-md-3 col-sm-3', tdClass: 'py-2' },
+                      { label: 'admin.users.email', key: 'email', class: 'col-md-3 col-sm-3', tdClass: 'py-2' },
+                    ]">
                   </FlowTable>
                 </div>
               </div>
@@ -93,10 +95,10 @@
                 </div>
                 <div v-if="groups" class="container-fluid overflow-auto bg-white shadow-sm border rounded g-0">
                   <FlowTable :items="groups" primary-key="id" striped
-                    prefix="admin.groups." :fields="[
-                      { label: 'id', key: 'id', class: 'col-4', tdClass: 'py-2' },
-                      { label: 'name', key: 'name', class: 'col-4', tdClass: 'py-2' },
-                      { label: 'type', key: 'type', class: 'col-4', tdClass: 'py-2' }
+                    :fields="[
+                      { label: 'admin.groups.id', key: 'id', class: 'col-4', tdClass: 'py-2' },
+                      { label: 'admin.groups.name', key: 'name', class: 'col-4', tdClass: 'py-2' },
+                      { label: 'admin.groups.type', key: 'type', class: 'col-4', tdClass: 'py-2' },
                     ]">
                   </FlowTable>
                 </div>
@@ -181,7 +183,7 @@
       remove: function() {
         this.deleteTenant(this.tenant.id).then(() => {
           this.$refs.deleteTenant.show(2)
-          this.$router.push('/seven/auth/admin/tenants')
+          this.$router.push({ name: 'adminTenants' })
         })
       },
       clean: function () {

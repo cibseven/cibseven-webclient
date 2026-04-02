@@ -19,23 +19,30 @@
 <template>
   <ContentBlock :title="$t('batches.inProgressBatches')">
     <div class="overflow-auto p-0" style="max-height: 35vh">
-      <FlowTable v-if="batches && batches.length > 0 && !loading" striped thead-class="sticky-header" :items="batches" primary-key="id" prefix="batches."
+      <FlowTable v-if="batches && batches.length > 0 && !loading" striped thead-class="sticky-header" :items="batches" primary-key="id"
         :fields="[
-            { label: 'id', key: 'id', class: 'col-2', tdClass: 'p-0' },
-            { label: 'type', key: 'type', class: 'col-2', tdClass: 'p-1' },
-            { label: 'user', key: 'createUserId', class: 'col-2', tdClass: 'p-1' },
-            { label: 'startTime', key: 'startTime', class: 'col-2', tdClass: 'p-1' },
-            { label: 'failedJobs', key: 'failedJobs', class: 'col-2', tdClass: 'p-1' },
-            { label: 'progress', key: 'progress', class: 'col-2', tdClass: 'p-1' }
+            { label: 'batches.id', key: 'id', class: 'col-2', tdClass: 'p-0' },
+            { label: 'batches.type', key: 'type', class: 'col-2', tdClass: 'p-1' },
+            { label: 'batches.user', key: 'createUserId', class: 'col-2', tdClass: 'p-1' },
+            { label: 'batches.startTime', key: 'startTime', class: 'col-2', tdClass: 'p-1' },
+            { label: 'batches.failedJobs', key: 'failedJobs', class: 'col-2', tdClass: 'p-1' },
+            { label: 'batches.progress', key: 'progress', class: 'col-2', tdClass: 'p-1' }
         ]"
         @click="loadBatchDetails($event)" sort-by="startTime" sort-desc>
         <template v-slot:cell(id)="table">
-          <div class="p-1 text-truncate" :class="batchIsSelected(table.item.id) ? 'border-start border-4 border-primary' : ''">
-            {{ table.item.id }}
+          <div
+            class="p-0 m-0 h-100 w-100 d-flex align-items-center"
+            :class="batchIsSelected(table.item.id) ? 'border-start border-4 border-primary' : ''">
+            <div class="p-1 text-truncate">
+              {{ table.item.id }}
+            </div>
           </div>
         </template>
         <template v-slot:cell(startTime)="table">
           <div :title="formatDateForTooltips(table.item.startTime)">{{ formatDate(table.item.startTime) }}</div>
+        </template>
+        <template v-slot:cell(failedJobs)="table">
+          <div class="text-center w-100">{{ table.item.failedJobs }}</div>
         </template>
         <template v-slot:cell(progress)="table">
           <div class="w-100">
@@ -55,9 +62,8 @@
 
 <script>
 import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
-import { FlowTable, ContentBlock } from '@cib/common-frontend'
+import { FlowTable, ContentBlock, BWaitingBox } from '@cib/common-frontend'
 import { mapGetters, mapActions } from 'vuex'
-import { BWaitingBox } from '@cib/bootstrap-components'
 
 export default {
   name: 'RuntimeBatches',

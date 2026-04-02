@@ -29,11 +29,14 @@
                   size="sm" class="mdi mdi-magnify mdi-24px text-secondary" variant="link"
                   :title="$t('searches.refreshAndFilter')"></b-button>
                 <div class="flex-grow-1">
+                  <label class="visually-hidden" for="filter-decision-list">{{ $t('searches.filter') }}</label>
                   <input
+                    id="filter-decision-list"
                     type="text"
                     v-model.trim="filter"
                     :placeholder="$t('searches.filter')"
-                    class="form-control-plaintext w-100"
+                    :aria-label="$t('searches.filter')"
+                    class="form-control-plaintext w-100 border-0 px-2"
                   />
                 </div>
                 <div class="block text-secondary ms-2 me-3 text-nowrap"
@@ -45,15 +48,13 @@
         </div>
         <div class="container overflow-auto h-100 rounded g-0">
           <div class="m-3 mb-0">
-            <FlowTable :items="decisionsFiltered" thead-class="sticky-header" striped native-layout primary-key="id" prefix="decision." :fields="fields" @click="goToDecision($event)" @select="focused = $event[0]" @mouseenter="focused = $event" @mouseleave="focused = null">
+            <FlowTable :items="decisionsFiltered" thead-class="sticky-header" striped native-layout primary-key="id" :fields="fields" @click="goToDecision($event)">
               <template v-slot:cell(actions)="table">
-                <b-button :disabled="focused !== table.item" style="opacity: 1" @click.stop="goToDecision(table.item)" class="px-2 border-0 shadow-none" :title="$t('decision.showManagement')" variant="link">
-                  <span class="mdi mdi-18px mdi-account-tie-outline"></span>
-                </b-button>
+                <CellActionButton @click="goToDecision(table.item)" :title="$t('decision.showManagement')" icon="mdi-account-tie-outline"></CellActionButton>
               </template>
             </FlowTable>
             <div v-if="!decisionsFiltered.length">
-              <img :alt="$t(textEmptyDecisionsList)" src="@/assets/images/decision/empty_processes_list.svg" class="d-block mx-auto mt-5 mb-3" style="max-width: 250px">
+              <img alt="" src="@/assets/images/decision/empty_processes_list.svg" class="d-block mx-auto mt-5 mb-3" style="max-width: 250px">
               <div class="h5 text-secondary text-center">{{ $t(textEmptyDecisionsList) }}</div>
             </div>
           </div>
@@ -65,19 +66,18 @@
 
 <script>
 import { permissionsMixin } from '@/permissions.js'
-import { FlowTable } from '@cib/common-frontend'
-import { BWaitingBox } from '@cib/bootstrap-components'
+import { FlowTable, BWaitingBox } from '@cib/common-frontend'
 import { mapActions, mapGetters } from 'vuex'
+import CellActionButton from '@/components/common-components/CellActionButton.vue'
 
 export default {
   name: 'DecisionList',
-  components: { FlowTable, BWaitingBox },
+  components: { FlowTable, BWaitingBox, CellActionButton },
   mixins: [permissionsMixin],
   data: function() {
     return {
       selected: null,
       filter: '',
-      focused: null
     }
   },
   computed: {
@@ -98,9 +98,9 @@ export default {
     },
     fields: function() {
       return [
-        { label: 'name', key: 'name'},
-        { label: 'tenantId', key: 'tenantId'},
-        { label: 'actions', key: 'actions', sortable: false, tdClass: 'py-0 text-center', thClass: 'justify-content-center' }
+        { label: 'decision.name', key: 'name'},
+        { label: 'decision.tenantId', key: 'tenantId'},
+        { label: 'decision.actions', key: 'actions', sortable: false, tdClass: 'py-0 d-flex justify-content-center', thClass: 'justify-content-center' }
       ]
     }
   },

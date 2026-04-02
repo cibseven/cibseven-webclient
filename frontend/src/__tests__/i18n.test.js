@@ -15,8 +15,12 @@
  *  limitations under the License.
  */
 import { describe, it, expect } from 'vitest'
-import { readFileSync } from 'fs'
-import { resolve } from 'path'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+import { findComponents } from './utils.js'
+import { mergeLocaleMessage as commonFrontendMergeLocaleMessage } from '@cib/common-frontend'
+
+const languages = ['de', 'en', 'es', 'ru', 'ua']
 
 function getTranslation(lang) {
   // eslint-disable-next-line no-undef
@@ -40,9 +44,13 @@ function haveSameProperties(objBase, objTest, path) {
     const keysBase = Object.keys(objBase)
     const keysTest = Object.keys(objTest)
 
+    // Sort keys for comparison
+    keysBase.sort((a, b) => a.localeCompare(b))
+    keysTest.sort((a, b) => a.localeCompare(b))
+
     // Compare key sets
-    const keysBaseSorted = keysBase.sort().join(',')
-    const keysTestSorted = keysTest.sort().join(',')
+    const keysBaseSorted = keysBase.join(',')
+    const keysTestSorted = keysTest.join(',')
     expect(keysBaseSorted, `Missing/extra key for "${path}" path`).toBe(keysTestSorted)
 
     // Recurse into nested objects
@@ -72,7 +80,6 @@ function skipValue(value, lang) {
       '{activityid}',
 
       'ctrl', // en = ru
-      'chat', // en = de = es
 
       // module names
       'tasklist',
@@ -102,7 +109,8 @@ function skipValue(value, lang) {
       'status',
       'format',
       'name: {name}version: {version}',
-      'element'
+      'element',
+      'navigation',
     ],
     'es': [
       'tenant',
@@ -124,7 +132,7 @@ function skipValue(value, lang) {
 }
 
 function reportSameValues(objBase, objTest, path, lang) {
-  var status = true
+  let status = true
 
   // Check if both are objects and not null
   expect(objBase).not.toBeNull()
@@ -153,30 +161,31 @@ function reportSameValues(objBase, objTest, path, lang) {
   return status
 }
 
-var hasHeader = false
+let hasHeader = false
 function reportSameValuesTable(objBase, objTest, languages, path) {
   // Check if both are objects and not null
   expect(objBase).not.toBeNull()
   expect(objTest).not.toBeNull()
 
+  if (skipPath(path)) {
+    return true
+  }
+
   if (typeof objBase === 'string') {
-    if (!skipPath(path)) {
+    const hasSameValues = objTest.map(
+      (v, index) => objBase === v && !skipValue(objBase, languages[index])
+    ).find(Boolean)
+    if (hasSameValues) {
 
-      const hasSameValues = objTest.map(
-        (v, index) => objBase === v && !skipValue(objBase, languages[index])
-      ).find(v => v)
-      if (hasSameValues) {
-
-        if (!hasHeader) {
-          console.log(`Error: Next strings have the same values comparing to EN`)
-          hasHeader = true
-        }
-
-        const v = objTest.map(
-          (v, index) => (objBase === v && !skipValue(objBase, languages[index])) ? languages[index] : '  '
-        ).join(' | ')
-        console.log(`| en | ${v} | ${path} |`)
+      if (!hasHeader) {
+        console.log(`Error: Next strings have the same values comparing to EN`)
+        hasHeader = true
       }
+
+      const v = objTest.map(
+        (v, index) => (objBase === v && !skipValue(objBase, languages[index])) ? languages[index] : '  '
+      ).join(' | ')
+      console.log(`| en | ${v} | ${path} |`)
     }
   }
   else {
@@ -194,8 +203,22 @@ function reportSameValuesTable(objBase, objTest, languages, path) {
   return true
 }
 
-describe('translations', () => {
-  const languages = ['de', 'en', 'es', 'ru', 'ua']
+function extractKeys(obj, path) {
+  const stringKeys = []
+  if (typeof obj === 'string') {
+    stringKeys.push(path)
+  } else if (typeof obj === 'object' && obj !== null) {
+    for (const key of Object.keys(obj)) {
+      const keyPath = path.length > 0 ? `${path}.${key}` : key
+      stringKeys.push(
+        ...extractKeys(obj[key], keyPath),
+      )
+    }
+  }
+  return stringKeys
+}
+
+describe('i18n', () => {
 
   describe('loadable', () => {
     languages.forEach(lang => {
@@ -208,24 +231,184 @@ describe('translations', () => {
 
   describe('compare en with', () => {
     const translationEn = getTranslation('en')
-    languages.filter(lang => lang !== 'en').forEach(lang => {
-      it(`${lang}`, () => {
-        const translationLang = getTranslation(lang)
-        expect(haveSameProperties(translationEn, translationLang, lang)).toBeTruthy()
-      })
+    const additionalLanguages = languages.filter(lang => lang !== 'en')
+
+    it.each(additionalLanguages)(`en.keys === %s.keys`, (lang) => {
+      const translationLang = getTranslation(lang)
+      expect(haveSameProperties(translationEn, translationLang, lang)).toBeTruthy()
     })
 
-    languages.filter(lang => lang !== 'en').forEach(lang => {
-      it(`${lang}, report same values`, () => {
-        const translationLang = getTranslation(lang)
-        expect(reportSameValues(translationEn, translationLang, lang, lang)).toBeTruthy()
-      })
+    it.each(additionalLanguages)(`en !== %s, report same values`, (lang) => {
+      const translationLang = getTranslation(lang)
+      expect(reportSameValues(translationEn, translationLang, lang, lang)).toBeTruthy()
     })
 
     it(`same values as table`, () => {
-      const filteredLanguages = languages.filter(lang => lang !== 'en')
-      const translations = filteredLanguages.map(lang => getTranslation(lang))
-      expect(reportSameValuesTable(translationEn, translations, filteredLanguages, '')).toBeTruthy()
+      const translations = additionalLanguages.map(lang => getTranslation(lang))
+      expect(reportSameValuesTable(translationEn, translations, additionalLanguages, '')).toBeTruthy()
     })
+  })
+
+  describe('usage', () => {
+    it('all en keys should be used', () => {
+      const translationEn = getTranslation('en')
+
+      // convert translation object to flat list of keys
+      let stringLongKeys = extractKeys(translationEn, '')
+      expect(stringLongKeys.length).toBeGreaterThan(0)
+
+      const langKeys = languages.map(l => `cib-header.${l}`)
+      stringLongKeys = stringLongKeys.filter(keyPath => 
+        !keyPath.startsWith('admin.authorizations.confirmParams.') &&
+        !keyPath.startsWith('admin.authorizations.resourcesTypes.') &&
+        !keyPath.startsWith('admin.authorizations.types.') &&
+        !keyPath.startsWith('advanced-search.criteriaKeys.') &&
+        !keyPath.startsWith('errors.') &&
+        !keyPath.startsWith('nav-bar.filters.keys.') &&
+        !keyPath.startsWith('sorting.') &&
+        !keyPath.startsWith('password.policy.items.') &&
+
+        // TODO: remove this block when localizations will be moved to EE
+        !keyPath.startsWith('decision.details.') &&
+        !keyPath.startsWith('process-instance.') &&
+        !keyPath.startsWith('process.') &&
+        !keyPath.startsWith('task.') &&
+
+        !langKeys.includes(keyPath)
+      )
+
+      // Find all .vue files in /src/
+      const vueFiles = findComponents('src', '.vue')
+      expect(vueFiles.length).toBeGreaterThan(0)
+
+      const jsFiles = findComponents('src', '.js')
+      expect(jsFiles.length).toBeGreaterThan(0)
+
+      const patterns = [
+        key => `$t('${key}'`,
+        key => ` label: '${key}'`,
+        key => ` title: '${key}'`,
+        key => ` tooltip: '${key}'`,
+        key => ` text: '${key}'`, // TODO: remove after `GenericTabs` refactoring
+        key => ` message: '${key}'`, // TODO: remove after ('filter-alert', { message: ...}) refactoring
+        key => `return '${key}'`,
+        key => `? '${key}' :`,
+        key => `: '${key}'`,
+        key => `// - '${key}'`,
+        key => `keypath="${key}"`,
+        key => `i18n.global.t('${key}'`,
+      ]
+
+      // Check usage of each key in .vue files
+      // When found in any file, we consider it used => remove from list
+      for (const file of [...vueFiles, ...jsFiles]) {
+        const content = readFileSync(file, 'utf-8')
+        stringLongKeys = stringLongKeys.filter(keyPath => {
+          return !patterns.some(pattern =>
+            content.includes(pattern(keyPath))
+          )
+        })
+
+        if (stringLongKeys.length === 0) {
+          break
+        }
+      }
+
+      // Report unused keys
+      if (stringLongKeys.length > 0) {
+        stringLongKeys = stringLongKeys.sort((a, b) => a.localeCompare(b))
+        const message = `Unused ${stringLongKeys.length} translation keys in en (checked ${vueFiles.length} .vue files):\n` + stringLongKeys.map(k => `- ${k}`).join('\n')
+        expect(message).toBe('')
+      }
+      expect(stringLongKeys.length).toBe(0)
+    })
+
+    it('all used keys should be declared in en', () => {
+      const translationEn = getTranslation('en')
+
+      // convert translation object to flat list of keys
+      const stringLongKeys = extractKeys(translationEn, '')
+      expect(stringLongKeys.length).toBeGreaterThan(0)
+      let notDeclaredKeys = []
+
+      // get keys from @cib/common-frontend package using commonFrontendMergeLocaleMessage()
+      const commonFrontendTranslationEn = {}
+      commonFrontendMergeLocaleMessage({ global: { mergeLocaleMessage: (lang, messages) => {
+        Object.assign(commonFrontendTranslationEn, messages)
+      } } }, 'en')
+      const commonFrontendStringLongKeys = extractKeys(commonFrontendTranslationEn, '')
+      expect(commonFrontendStringLongKeys.length).toBeGreaterThan(0)
+      // add them to declared keys list
+      stringLongKeys.push(
+        ...commonFrontendStringLongKeys,
+      )
+
+      // Find all .vue files in /src/
+      const vueFiles = findComponents('src', '.vue')
+      expect(vueFiles.length).toBeGreaterThan(0)
+
+      // Check usage of each used key in .vue files
+      // When not found in localization file, we consider it is not declared => report error
+      for (const file of vueFiles) {
+        const content = readFileSync(file, 'utf-8')
+
+        // get all $t('...') usages in the file
+        const usagePattern = /\$t\(\s*['"`]([^'"`]+)['"`]/g
+        let match
+        while ((match = usagePattern.exec(content)) !== null) {
+          const keyPath = match[1]
+
+          // Remove ignored paths
+          if (skipPath(keyPath)) {
+            continue
+          }
+
+          // Check if key is declared in en translation
+          const isDeclared = stringLongKeys.includes(keyPath)
+          if (!isDeclared) {
+
+            if (keyPath.endsWith('.') || keyPath.includes('${')) {
+              continue
+            }
+
+            // Not declared, add to report list
+            notDeclaredKeys.push(keyPath)
+          }
+        }
+      }
+
+      // Report unused keys
+      if (notDeclaredKeys.length > 0) {
+        notDeclaredKeys = notDeclaredKeys.sort((a, b) => a.localeCompare(b))
+        const message = `Next translation keys are missing in en, but used in checked ${vueFiles.length} .vue files:\n` + notDeclaredKeys.map(k => `- ${k}`).join('\n')
+        expect(message).toBe('')
+      }
+      expect(notDeclaredKeys.length).toBe(0)
+    })
+  })
+
+  it('all own keys should not redeclare keys from @cib/common-frontend', () => {
+    const translationEn = getTranslation('en')
+
+    // convert translation object to flat list of keys
+    const ownLongKeys = extractKeys(translationEn, '')
+    expect(ownLongKeys.length).toBeGreaterThan(0)
+
+    // get keys from @cib/common-frontend package using commonFrontendMergeLocaleMessage()
+    const parentEn = {}
+    commonFrontendMergeLocaleMessage({ global: { mergeLocaleMessage: (lang, messages) => {
+      Object.assign(parentEn, messages)
+    } } }, 'en')
+    const parentLongKeys = extractKeys(parentEn, '')
+    expect(parentLongKeys.length).toBeGreaterThan(0)
+
+    // Check that none of own keys is in common-frontend keys
+    expect(ownLongKeys.length).not.toBe(parentLongKeys.length)
+    const redeclaredKeys = ownLongKeys.filter(k => parentLongKeys.includes(k))
+    if (redeclaredKeys.length > 0) {
+      const message = 'Next translation keys are redeclaring keys from @cib/common-frontend:\n' + redeclaredKeys.map(k => `- ${k}`).join('\n')
+      expect(message).toBe('')
+    }
+    expect(redeclaredKeys.length).toBe(0)
   })
 })

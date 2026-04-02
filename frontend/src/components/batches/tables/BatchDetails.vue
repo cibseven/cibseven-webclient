@@ -17,7 +17,7 @@
 
 -->
 <template>
-  <ContentBlock :title="$t('batches.' + batchType + 'Details')" v-if="batchId && batchType">
+  <ContentBlock :title="$t(titleLabel)" v-if="batchId && batchType">
     <template #actions>
       <div v-if="batchDetails && batchDetails.length > 0 && !loading">
         <b-button v-if="batchType === 'runtime'" class="me-1" size="sm" variant="light"
@@ -35,10 +35,10 @@
     </template>
     <div v-if="batchDetails && batchDetails.length > 0 && !loading" class="p-0">
       <div class="overflow-auto">
-        <FlowTable v-if="batchDetails" striped thead-class="sticky-header" :items="batchDetails" primary-key="id" prefix="batches."
+        <FlowTable v-if="batchDetails" striped thead-class="sticky-header" :items="batchDetails" primary-key="id"
           :fields="[
-            { label: 'property', key: 'property', class: 'col-6', tdClass: 'p-1' },
-            { label: 'value', key: 'value', class: 'col-6', tdClass: 'p-1' },
+            { label: 'batches.property', key: 'property', class: 'col-6', tdClass: 'p-1' },
+            { label: 'batches.value', key: 'value', class: 'col-6', tdClass: 'p-1' },
           ]">
         </FlowTable>
       </div>
@@ -57,117 +57,119 @@
 </template>
 
 <script>
-  import { formatDate } from '@/utils/dates.js'
-  import FailedJobs from './FailedJobs.vue'
-  import { BWaitingBox } from '@cib/bootstrap-components'
-  import { mapActions, mapGetters } from 'vuex'
-  import { FlowTable, ContentBlock, ConfirmDialog } from '@cib/common-frontend'
+import { formatDate } from '@/utils/dates.js'
+import FailedJobs from './FailedJobs.vue'
+import { BWaitingBox, FlowTable, ContentBlock, ConfirmDialog } from '@cib/common-frontend'
+import { mapActions, mapGetters } from 'vuex'
 
-  export default {
-    name: 'BatchDetails',
-    components: { FailedJobs, FlowTable, BWaitingBox, ConfirmDialog, ContentBlock },
-    watch: {
-      '$route.query': {
-        handler() {
-          this.loadBatchDetails()
-        },
-        immediate: true
-      }
-    },
-    data: function() {
-      return {
-        batch: null,
-        loading: true
-      }
-    },
-    computed: {
-      ...mapGetters(['selectedHistoricBatch']),
-      batchId: function() {
-        return this.$route.query.id
-      },
-      batchType: function() {
-        return this.$route.query.type
-      },
-      batchDetails: function() {
-        if (!this.batch) return []
-        return Object.entries(this.batch)
-          .filter(entry => {
-            const value = entry[1]
-            return value !== null && value !== undefined
-          })
-          .map(([key, value]) => {
-            let formattedValue = value
-            if (key.toLowerCase().includes('time') && typeof value === 'string') {
-              formattedValue = this.formatDate(value)
-            }
-            return {
-              property: key,
-              value: formattedValue
-            }
-          })
-      }
-    },
-    methods: {
-      ...mapActions([
-        'deleteHistoricBatch',
-        'deleteRuntimeBatch',
-        'getHistoricBatch',
-        'getBatchStatistics',
-        'setBatchSuspensionState'
-      ]),
-      ...mapActions('job', [
-        'retryJobDefinitionById'
-      ]),
-      formatDate,
-      async loadBatchDetails() {
-        if (!this.batchId || !this.batchType) return
-        this.batch = null
-        this.loading = true
-        try {
-          if (this.batchType === 'history') {
-            this.batch = await this.getHistoricBatch(this.batchId)
-          } else if (this.batchType === 'runtime') {
-            const res = await this.getBatchStatistics({ batchId: this.batchId })
-            if (res && res.length > 0) {
-              this.batch = res[0]
-            } else {
-              // If runtime is empty, update the URL to type=history so the watcher reloads automatically
-              this.$router.replace({
-                query: {
-                  ...this.$route.query,
-                  type: 'history'
-                }
-              })
-            }
-          }
-        } finally {
-          this.loading = false
-        }
-      },
-      async setBatchSuspension() {
-        const params = { suspended: !this.batch.suspended }
-        await this.setBatchSuspensionState({ id: this.batchId, params })
-        this.batch.suspended = !this.batch.suspended
-      },
-      removeBatch: function() {
-        if (this.batchType === 'history') {
-          this.deleteHistoricBatch(this.batchId).then(() => {
-            this.$router.replace({ query: {} })
-          })
-        } else if (this.batchType === 'runtime') {
-          this.deleteRuntimeBatch(this.batchId).then(() => {
-            this.$router.replace({ query: {} })
-          })
-        }
-      },
-      async retryJobs() {
-        const params = {
-          id: this.batch.batchJobDefinitionId,
-          retries: 1
-        }
-        await this.retryJobDefinitionById({ id: this.batch.batchJobDefinitionId, params })
+export default {
+  name: 'BatchDetails',
+  components: { FailedJobs, FlowTable, BWaitingBox, ConfirmDialog, ContentBlock },
+  watch: {
+    '$route.query': {
+      handler() {
         this.loadBatchDetails()
+      },
+      immediate: true
+    }
+  },
+  data: function() {
+    return {
+      batch: null,
+      loading: true
+    }
+  },
+  computed: {
+    ...mapGetters(['selectedHistoricBatch']),
+    batchId: function() {
+      return this.$route.query.id
+    },
+    batchType: function() {
+      return this.$route.query.type
+    },
+    titleLabel: function() {
+      return (this.batchType === 'history') ? 'batches.historyDetails' : 'batches.runtimeDetails'
+    },
+    batchDetails: function() {
+      if (!this.batch) return []
+      return Object.entries(this.batch)
+        .filter(entry => {
+          const value = entry[1]
+          return value !== null && value !== undefined
+        })
+        .map(([key, value]) => {
+          let formattedValue = value
+          if (key.toLowerCase().includes('time') && typeof value === 'string') {
+            formattedValue = this.formatDate(value)
+          }
+          return {
+            property: key,
+            value: formattedValue
+          }
+        })
+    }
+  },
+  methods: {
+    ...mapActions([
+      'deleteHistoricBatch',
+      'deleteRuntimeBatch',
+      'getHistoricBatch',
+      'getBatchStatistics',
+      'setBatchSuspensionState'
+    ]),
+    ...mapActions('job', [
+      'retryJobDefinitionById'
+    ]),
+    formatDate,
+    async loadBatchDetails() {
+      if (!this.batchId || !this.batchType) return
+      this.batch = null
+      this.loading = true
+      try {
+        if (this.batchType === 'history') {
+          this.batch = await this.getHistoricBatch(this.batchId)
+        } else if (this.batchType === 'runtime') {
+          const res = await this.getBatchStatistics({ batchId: this.batchId })
+          if (res && res.length > 0) {
+            this.batch = res[0]
+          } else {
+            // If runtime is empty, update the URL to type=history so the watcher reloads automatically
+            this.$router.replace({
+              query: {
+                ...this.$route.query,
+                type: 'history'
+              }
+            })
+          }
+        }
+      } finally {
+        this.loading = false
       }
+    },
+    async setBatchSuspension() {
+      const params = { suspended: !this.batch.suspended }
+      await this.setBatchSuspensionState({ id: this.batchId, params })
+      this.batch.suspended = !this.batch.suspended
+    },
+    removeBatch: function() {
+      if (this.batchType === 'history') {
+        this.deleteHistoricBatch(this.batchId).then(() => {
+          this.$router.replace({ query: {} })
+        })
+      } else if (this.batchType === 'runtime') {
+        this.deleteRuntimeBatch(this.batchId).then(() => {
+          this.$router.replace({ query: {} })
+        })
+      }
+    },
+    async retryJobs() {
+      const params = {
+        id: this.batch.batchJobDefinitionId,
+        retries: 1
+      }
+      await this.retryJobDefinitionById({ id: this.batch.batchJobDefinitionId, params })
+      this.loadBatchDetails()
     }
   }
+}
 </script>

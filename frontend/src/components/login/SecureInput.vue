@@ -17,22 +17,39 @@
 
 -->
 <template>
-  <div class="input-group">
-    <input ref="input" :value="modelValue" :placeholder="placeholder" :type="show ? 'text' : 'password'" class="form-control rounded-right pr-5"
-      :required="required" :disabled="disabled" :autocomplete="autocomplete" @input="$emit('update:modelValue', $event.target.value)">
-    <span @click="show = !show" class="mdi mdi-18px mdi-eye text-secondary"
-    style="position: absolute; right: 11px; top: 4px; z-index: 3; cursor: pointer"></span>
-    <div class="invalid-feedback">{{ $t('errors.invalid') }}</div>
+  <div class="position-relative">
+    <input id="password-input" ref="input" :value="modelValue" :placeholder="placeholder" :type="show ? 'text' : 'password'" class="form-control pe-5"
+      :class="{ 'is-invalid': hasError }"
+      :disabled="disabled" :autocomplete="autocomplete" :aria-describedby="ariaDescribedby" :aria-invalid="hasError ? 'true' : 'false'" :aria-required="required" @input="handleInput">
+    <b-button type="button" variant="link" size="sm" tabindex="0" @click="show = !show" @keydown.enter="show = !show" @keydown.space.prevent="show = !show" 
+      class="mdi mdi-18px text-secondary position-absolute end-0 top-0 mt-1 me-1 p-0"
+      :class="show ? 'mdi-eye-off' : 'mdi-eye'"
+      :aria-label="show ? $t('login.hidePassword') : $t('login.showPassword')"
+      :title="show ? $t('login.hidePassword') : $t('login.showPassword')"
+      style="cursor: pointer;"></b-button>
   </div>
 </template>
 
 <script>
 export default {
   name: 'SecureInput',
-  props: { modelValue: String, placeholder: String, required: Boolean, disabled: Boolean, autocomplete: String },
+  props: { 
+    modelValue: String, 
+    placeholder: String, 
+    required: Boolean, 
+    disabled: Boolean, 
+    autocomplete: String,
+    ariaDescribedby: String,
+    hasError: { type: Boolean, default: false }
+  },
   emits: ['update:modelValue'],
   data: function() {
     return { show: false }
+  },
+  methods: {
+    handleInput(event) {
+      this.$emit('update:modelValue', event.target.value)
+    }
   }
 }
 </script>

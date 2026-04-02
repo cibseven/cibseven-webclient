@@ -35,7 +35,7 @@
 
     <transition name="slide-in" mode="out-in">
       <div v-if="group.id" class="d-flex flex-column h-100 bg-light">
-        <b-button variant="light" style="min-height: 40px; line-height: 20px;" :block="true" class="rounded-0 border-bottom text-start" href="#/seven/auth/admin/groups">
+        <b-button variant="light" style="min-height: 40px; line-height: 20px;" :block="true" class="rounded-0 border-bottom text-start" :to="{ name: 'adminGroups' }">
           <span class="mdi mdi-arrow-left me-2"></span>
           <span class="fw-semibold">{{ $t('admin.groups.title') }}</span>
         </b-button>
@@ -74,11 +74,12 @@
                 </div>
                 <div v-if="users" class="container-fluid overflow-auto bg-white shadow-sm border rounded g-0">
                   <FlowTable :items="users" primary-key="id" striped
-                    prefix="admin.users." :fields="[{ label: 'id', key: 'id', class: 'col-md-3 col-sm-3', tdClass: 'py-2' },
-                      { label: 'firstName', key: 'firstName', class: 'col-md-3 col-sm-3', tdClass: 'py-2' },
-                      { label: 'lastName', key: 'lastName', class: 'col-md-3 col-sm-3', tdClass: 'py-2' },
-                      { label: 'email', key: 'email', class: 'col-md-3 col-sm-3', tdClass: 'py-2' }]"
-                    @contextmenu="focusedUser = $event" @mouseenter="focusedUser = $event" @mouseleave="focusedUser = null">
+                    :fields="[
+                      { label: 'admin.users.id', key: 'id', class: 'col-md-3 col-sm-3', tdClass: 'py-2' },
+                      { label: 'admin.users.firstName', key: 'firstName', class: 'col-md-3 col-sm-3', tdClass: 'py-2' },
+                      { label: 'admin.users.lastName', key: 'lastName', class: 'col-md-3 col-sm-3', tdClass: 'py-2' },
+                      { label: 'admin.users.email', key: 'email', class: 'col-md-3 col-sm-3', tdClass: 'py-2' },
+                    ]">
                   </FlowTable>
                 </div>
               </div>
@@ -104,16 +105,14 @@
                 </div>
                 <div v-if="groupTenants.length > 0" class="container-fluid overflow-auto bg-white shadow-sm border rounded g-0">
                   <FlowTable :items="groupTenants" primary-key="id" striped
-                    prefix="admin.tenants." :fields="[{ label: 'fullId', key: 'id', class: 'col-5', tdClass: 'py-2' },
-                      { label: 'fullName', key: 'name', class: 'col-5', tdClass: 'py-2' },
-                      { label: 'actions', key: 'actions', class: 'col-2', tdClass: 'justify-content-center py-2', thClass: 'justify-content-center text-center', sortable: false }]"
-                    @contextmenu="focusedTenant = $event" @mouseenter="focusedTenant = $event" @mouseleave="focusedTenant = null">
+                    :fields="[
+                      { label: 'admin.tenants.fullId', key: 'id', class: 'col-5', tdClass: 'py-1' },
+                      { label: 'admin.tenants.fullName', key: 'name', class: 'col-5', tdClass: 'py-1' },
+                      { label: 'admin.tenants.actions', key: 'actions', class: 'col-2', tdClass: 'justify-content-center py-0', thClass: 'justify-content-center text-center', sortable: false },
+                    ]"
+                  >
                     <template v-slot:cell(actions)="row">
-                      <div>
-                        <b-button :disabled="focusedTenant !== row.item" style="opacity: 1" @click="unassignTenant(row.item)" class="px-2 border-0 shadow-none" variant="link">
-                          <span class="mdi mdi-18px mdi-delete-outline"></span>
-                        </b-button>
-                      </div>
+                      <CellActionButton @click="unassignTenant(row.item)" :title="$t('admin.tenants.unassignTenant')" icon="mdi-delete-outline"></CellActionButton>
                     </template>
                   </FlowTable>
                 </div>
@@ -124,10 +123,12 @@
 
         <b-modal ref="assignTenantsModal" :title="$t('admin.tenants.addTo')" size="lg">
           <div v-if="unassignedTenants.length > 0" class="container g-0">
-            <FlowTable :items="unassignedTenants" primary-key="id" prefix="admin.tenants." striped
-              :fields="[{ label: '', key: 'selected', class: 'col-sm-1', sortable: false, thClass: 'text-center, border-top-0', tdClass: 'text-center' },
-              { label: 'fullId', key: 'id', class: 'col-6', thClass: 'border-top-0' },
-              { label: 'fullName', key: 'name', class: 'col-5', thClass: 'border-top-0' }]">
+            <FlowTable :items="unassignedTenants" primary-key="id" striped
+              :fields="[
+                { label: '', key: 'selected', class: 'col-sm-1', sortable: false, thClass: 'text-center, border-top-0', tdClass: 'text-center' },
+                { label: 'admin.tenants.fullId', key: 'id', class: 'col-6', thClass: 'border-top-0' },
+                { label: 'admin.tenants.fullName', key: 'name', class: 'col-5', thClass: 'border-top-0' }
+              ]">
               <template v-slot:cell(selected)="row">
                 <b-form-checkbox v-model="row.item.selected"></b-form-checkbox>
               </template>
@@ -166,19 +167,17 @@ import { AdminService } from '@/services.js'
 import { notEmpty } from '@/components/admin/utils.js'
 import { SidebarsFlow, FlowTable, SuccessAlert, CIBForm, ConfirmDialog } from '@cib/common-frontend'
 import { mapActions, mapGetters } from 'vuex'
+import CellActionButton from '@/components/common-components/CellActionButton.vue'
 
 export default {
   name: 'ProfileGroup',
-  components: { SidebarsFlow, FlowTable, SuccessAlert, CIBForm, ConfirmDialog },
+  components: { SidebarsFlow, FlowTable, SuccessAlert, CIBForm, ConfirmDialog, CellActionButton },
   data: function() {
     return {
       leftOpen: true,
       group: { id: null, name: null,  type: null },
       dirty: false,
       users: null,
-      selectedUser: null,
-      focusedUser: null,
-      focusedTenant: null,
       perPage: 15,
       page: 1,
       groupTenants: [],
@@ -229,7 +228,7 @@ export default {
     deleteGroup: function() {
       AdminService.deleteGroup(this.group.id).then(() => {
         this.$refs.deleteGroup.show(2)
-        this.$router.push('/seven/auth/admin/groups')
+        this.$router.push({ name: 'adminGroups' })
       })
     },
     clean: function () {
@@ -251,10 +250,7 @@ export default {
       const groupTenants = JSON.parse(JSON.stringify(this.groupTenants))
       this.unassignedTenants = []
       this.tenants.forEach(tenant => {
-        var isAssigned = false
-        groupTenants.forEach(groupTenant => {
-          if (tenant.id === groupTenant.id) isAssigned = true
-        })
+        const isAssigned = groupTenants.some(groupTenant => groupTenant.id === tenant.id)
         if (!isAssigned){
           tenant.selected = false
           this.unassignedTenants.push(tenant)

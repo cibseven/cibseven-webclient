@@ -19,15 +19,18 @@
 <template>
   <b-modal ref="modal" :title="$t('problem-report.title')" @shown="$refs.textArea.focus()">
     <CIBForm ref="form" @submitted="report(); $refs.modal.hide(); problem = null">
-      <b-form-group :invalid-feedback="$t('errors.invalid')">
-        <input v-model="email2" type="email" :placeholder="$t('problem-report.email')" class="form-control">
-      </b-form-group>
-      <b-form-group>
-        <b-form-textarea ref="textArea" v-model="problem" :rows="10" :max-rows="10" required></b-form-textarea>
-      </b-form-group>
-      <b-form-group>
+      <div class="row gx-1 mb-3">
+        <label class="visually-hidden" for="emailInput">{{ $t('problem-report.email') }}</label>
+        <input id="emailInput" ref="emailInput" v-model="email2" type="email" :placeholder="$t('problem-report.email')" class="form-control" :class="{'is-invalid': emailState === false}" @input="onEmailInput">
+        <div v-if="emailState === false" class="invalid-feedback d-block" role="alert" aria-live="assertive">{{ $t('errors.invalid') }}</div>
+      </div>
+      <div class="row gx-1">
+        <label class="visually-hidden" for="problemTextarea">{{ $t('process-instance.stacktrace') }}</label>
+        <b-form-textarea ref="textArea" id="problemTextarea" v-model="problem" :rows="10" :max-rows="10" required></b-form-textarea>
+      </div>
+      <div class="row gx-1">
         <FeedbackScreenshot tabindex="-1" @input="clip = $event"></FeedbackScreenshot>
-      </b-form-group>
+      </div>
     </CIBForm>
     <template v-slot:modal-footer>
       <b-button @click="$refs.modal.hide()" variant="light">{{ $t('problem-report.cancel') }}</b-button>
@@ -47,14 +50,18 @@ export default {
   components: { CIBForm, FeedbackScreenshot },
   props: { url: String, email: String },
   emits: ['sent', 'report'],
-  data: function() { return { problem: '', email2: null, clip: null } },
+  data: function() { return { problem: '', email2: null, clip: null, emailState: null } },
   methods: {
     show: function() {
       this.email2 = this.email
+      this.emailState = null
       this.$refs.modal.show()
     },
+    onEmailInput: function(e) {
+      this.emailState = e.target.value ? e.target.validity.valid : null
+    },
     report: function() {
-      var params = {
+      const params = {
         email : this.email2,
         platform: platform,
         screen: {
@@ -64,8 +71,8 @@ export default {
       }
       this.$emit('report', params)
       console && console.warn('Reporting problem', params)
-      var formData = new FormData()
-      var text = window.location.origin + window.location.pathname + '\n' + this.problem
+      const formData = new FormData()
+      const text = window.location.origin + window.location.pathname + '\n' + this.problem
       formData.append('description', new Blob([text], { type : 'text/plain' }), 'description.txt')
       formData.append('logs', new Blob([JSON.stringify(params)], { type : 'application/json' }), 'params.json')
       if (this.clip) formData.append('original', this.clip)

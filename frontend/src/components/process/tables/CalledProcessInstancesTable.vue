@@ -18,19 +18,20 @@
 -->
 <template>
   <div class="overflow-auto bg-white container-fluid g-0 h-100" @scroll="handleScroll">
-    <FlowTable v-if="matchedCalledList.length > 0" striped thead-class="sticky-header" :items="matchedCalledList" primary-key="id" prefix="process-instance.calledProcesses."
+    <FlowTable v-if="matchedCalledList.length > 0" striped thead-class="sticky-header" :items="matchedCalledList" primary-key="id"
       sort-by="process" :fields="[
-      { label: 'state', key: 'state', class: 'col-1', tdClass: 'py-1 justify-content-center' },
-      { label: 'calledProcessInstance', key: 'calledProcessInstance', class: 'col-4', tdClass: 'py-1' },
-      { label: 'process', key: 'process', class: 'col-4', tdClass: 'py-1' },
-      { label: 'callingActivity', key: 'callingActivity', class: 'col-3', tdClass: 'py-1' }]">
+      { label: 'process-instance.calledProcesses.state', key: 'state', class: 'col-1', tdClass: 'py-1 justify-content-center' },
+      { label: 'process-instance.calledProcesses.calledProcessInstance', key: 'calledProcessInstance', class: 'col-3', tdClass: 'py-1' },
+      { label: 'process-instance.calledProcesses.process', key: 'process', class: 'col-3', tdClass: 'py-1' },
+      { label: 'process.businessKey', key: 'businessKey', class: 'col-2', tdClass: 'py-1' },
+      { label: 'process-instance.calledProcesses.callingActivity', key: 'callingActivity', class: 'col-3', tdClass: 'py-1' }]">
      <template v-slot:cell(state)="table">
       <span :title="getIconTitle(table.item)" class="mdi mdi-18px" :class="getIconState(table.item)"></span>
     </template>
      <template v-slot:cell(calledProcessInstance)="table">
        <CopyableActionButton
          :display-value="table.item.calledProcessInstance"
-         :title="table.item.name"
+         :title="$t('process-instance.calledProcesses.calledProcessInstance') + ':\n' + table.item.calledProcessInstance"
          :to="{
            name: 'process',
            params: {
@@ -38,7 +39,11 @@
              versionIndex: table.item.version,
              instanceId: table.item.calledProcessInstance
            },
-           query: { parentProcessDefinitionId: this.selectedInstance.processDefinitionId, tab: 'variables' }
+           query: {
+             parentProcessDefinitionId: this.selectedInstance.processDefinitionId,
+             ...(table.item.tenantId ? { tenantId: table.item.tenantId } : {} ),
+             tab: 'variables',
+           }
          }"
          @copy="copyValueToClipboard"
        />
@@ -46,23 +51,34 @@
      <template v-slot:cell(process)="table">
        <CopyableActionButton
          :display-value="table.item.name || table.item.key"
-         :title="table.item.name || table.item.key"
+         :title="$t('process-instance.calledProcesses.process') + ':\n' + (table.item.name || table.item.key)"
          :to="{
            name: 'process',
            params: {
              processKey: table.item.key,
              versionIndex: table.item.version
            },
-           query: { parentProcessDefinitionId: this.selectedInstance.processDefinitionId, tab: 'instances' }
+           query: {
+             parentProcessDefinitionId: this.selectedInstance.processDefinitionId,
+             ...(table.item.tenantId ? { tenantId: table.item.tenantId } : {} ),
+             tab: 'instances',
+          }
          }"
          @copy="copyValueToClipboard"
        />
      </template>
+      <template v-slot:cell(businessKey)="table">
+        <CopyableActionButton
+          :display-value="table.item.businessKey"
+          :clickable="false"
+          @copy="copyValueToClipboard"
+        />
+      </template>
       <template v-slot:cell(callingActivity)="table">
         <CopyableActionButton
           :display-value="table.item.callingActivity.activityName || table.item.callingActivity.activityId"
           :copy-value="table.item.callingActivity.activityId"
-          :title="table.item.callingActivity.activityName || table.item.callingActivity.activityId"
+          :title="$t('process-instance.calledProcesses.callingActivity') + ':\n' + (table.item.callingActivity.activityName || table.item.callingActivity.activityId)"
           @click="setHighlightedElement(table.item.callingActivity.activityId)"
           @copy="copyValueToClipboard"
         />
@@ -81,9 +97,7 @@
 <script>
 import { formatDate } from '@/utils/dates.js'
 import { HistoryService, ProcessService } from '@/services.js'
-import { FlowTable } from '@cib/common-frontend'
-import { BWaitingBox } from '@cib/bootstrap-components'
-import { CopyableActionButton, SuccessAlert } from '@cib/common-frontend'
+import { FlowTable, BWaitingBox, CopyableActionButton, SuccessAlert } from '@cib/common-frontend'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { mapActions } from 'vuex'
 
@@ -149,15 +163,17 @@ export default {
           const key = processPL.processDefinitionKey
           const version = processPL.processDefinitionVersion
           const state = processPL.state
+          const tenantId = processPL.tenantId
+          const businessKey = processPL.businessKey
 
-          let foundInst = this.activityInstanceHistory.find(processAIH => {
+          const foundInst = this.activityInstanceHistory.find(processAIH => {
             if (processAIH.activityType === "callActivity"){
               if (processAIH.calledProcessInstanceId === processPL.id) {
                 return processAIH
               }
             }
           })
-          let foundProcess = this.$store.state.process.list.find(processSPL => {
+          const foundProcess = this.$store.state.process.list.find(processSPL => {
             if (key === processSPL.key) {
               return processSPL
             }
@@ -168,7 +184,9 @@ export default {
             key: key,
             version: version,
             name: foundProcess ? foundProcess.name : key,
-            state: state
+            state: state,
+            tenantId: tenantId,
+            businessKey: businessKey
           })
         })
         this.loading = false

@@ -37,15 +37,11 @@
           </b-input-group>
         </div>
         <div v-if="selectedActivityId" class="col-6 p-3">
-          <span class="badge bg-info rounded-pill p-2 pe-3" style="font-weight: 500; font-size: 0.75rem">
-            <span
-              @click="clearActivitySelection"
-              :title="$t('process-instance.incidents.activityIdBadge.remove')"
-              role="button" class="mdi mdi-close-thick py-2 px-1"></span>
-              <span :title="$t('process-instance.incidents.activityIdBadge.tooltip', { activityId: selectedActivityId })">
-                {{ $t('process-instance.incidents.activityIdBadge.title', { activityId: selectedActivityId }) }}
-              </span>
-          </span>
+          <RemovableBadge
+            @on-remove="removeSelectedActivityBadge"
+            :tooltip-remove="$t('process-instance.incidents.activityIdBadge.remove')"
+            :label="$t('process-instance.incidents.activityIdBadge.title', { activityId: selectedActivityId })"
+            :tooltip="$t('process-instance.incidents.activityIdBadge.tooltip', { activityId: selectedActivityId })"/>
         </div>
       </div>
 
@@ -55,7 +51,6 @@
       resizable
       thead-class="sticky-header"
       primary-key="id"
-      prefix=""
       native-layout
       :column-definitions="columnDefinitions"
       :columns="visibleColumns"
@@ -100,7 +95,7 @@
           :display-value="row.item.processInstanceId"
           :copy-value="row.item.processInstanceId"
           :title="row.item.processInstanceId"
-          @click="navigateToIncidentProcessInstance(row.item.processInstanceId)"
+          :to="linkToIncidentProcessInstance(row.item.processInstanceId)"
           @copy="copyValueToClipboard"
         />
         <span v-else class="text-muted fst-italic" :title="$t('commons.notAvailable.tooltip')">{{ $t('commons.notAvailable.label') }}</span>
@@ -133,7 +128,7 @@
         <CopyableActionButton
           :display-value="$store.state.activity.processActivities[table.item.activityId] || table.item.activityId"
           :copy-value="$store.state.activity.processActivities[table.item.activityId] || table.item.activityId"
-          :title="$t('process-instance.incidents.activity') + ':\n' + ($store.state.activity.processActivities[table.item.activityId] || table.item.activityId)"
+          :title="getActivityIdTooltip(table.item.activityId)"
           :clickable="false"
           @copy="copyValueToClipboard"
         />
@@ -143,8 +138,9 @@
         <CopyableActionButton
           :display-value="$store.state.activity.processActivities[table.item.failedActivityId] || table.item.failedActivityId"
           :copy-value="$store.state.activity.processActivities[table.item.failedActivityId] || table.item.failedActivityId"
-          :title="$t('process-instance.incidents.failedActivity') + ':\n' + ($store.state.activity.processActivities[table.item.failedActivityId] || table.item.failedActivityId)"
-          :clickable="false"
+          :title="getActivityIdTooltip(table.item.failedActivityId)"
+          :clickable="!selectedActivityId"
+          @click="selectFailedActivityId(table.item.failedActivityId)"
           @copy="copyValueToClipboard"
         />
       </template>
@@ -164,7 +160,7 @@
           :display-value="table.item.causeIncidentProcessInstanceId"
           :copy-value="table.item.causeIncidentProcessInstanceId"
           :title="$t('process-instance.incidents.causeIncidentProcessInstanceId') + ':\n' + table.item.causeIncidentProcessInstanceId"
-          @click="navigateToIncidentProcessInstance(table.item.causeIncidentProcessInstanceId)"
+          :to="linkToIncidentProcessInstance(table.item.causeIncidentProcessInstanceId, process.id)"
           @copy="copyValueToClipboard"
         />
       </template>
@@ -174,7 +170,7 @@
           :display-value="table.item.rootCauseIncidentProcessInstanceId"
           :copy-value="table.item.rootCauseIncidentProcessInstanceId"
           :title="$t('process-instance.incidents.rootCauseIncidentProcessInstanceId') + ':\n' + table.item.rootCauseIncidentProcessInstanceId"
-          @click="navigateToIncidentProcessInstance(table.item.rootCauseIncidentProcessInstanceId)"
+          :to="linkToIncidentProcessInstance(table.item.rootCauseIncidentProcessInstanceId, process.id)"
           @copy="copyValueToClipboard"
         />
       </template>
@@ -191,14 +187,16 @@
       </template>
 
       <template v-slot:cell(actions)="table">
-        <b-button v-if="!table.item.endTime" :title="$t('process-instance.incidents.editAnnotation')"
-          size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-note-edit-outline"
-          @click="$refs.annotationModal.show(table.item.id, table.item.annotation)">
-        </b-button>
-        <b-button v-if="!table.item.endTime" :title="$t('process-instance.incidents.retryJob')"
-          size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-reload"
-          @click="$refs.incidentRetryModal.show(table.item)">
-        </b-button>
+        <div class="d-flex">
+          <CellActionButton v-if="!table.item.endTime" :title="$t('process-instance.incidents.editAnnotation')"
+            icon="mdi-note-edit-outline"
+            @click="$refs.annotationModal.show(table.item.id, table.item.annotation)">
+          </CellActionButton>
+          <CellActionButton v-if="!table.item.endTime" :title="$t('process-instance.incidents.retryJob')"
+            icon="mdi-reload"
+            @click="$refs.incidentRetryModal.show(table.item)">
+          </CellActionButton>
+        </div>
       </template>
     </FlowTable>
       <div v-if="!loading && incidents.length === 0">
@@ -216,24 +214,25 @@
 
 <script>
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
-import { IncidentService, HistoryService } from '@/services.js'
-import { FlowTable } from '@cib/common-frontend'
-import { SuccessAlert } from '@cib/common-frontend'
+import { IncidentService } from '@/services.js'
+import { FlowTable, SuccessAlert, PagedScrollableContent, CopyableActionButton } from '@cib/common-frontend'
 import RetryModal from '@/components/process/modals/RetryModal.vue'
 import AnnotationModal from '@/components/process/modals/AnnotationModal.vue'
 import StackTraceModal from '@/components/process/modals/StackTraceModal.vue'
-import { PagedScrollableContent, CopyableActionButton } from '@cib/common-frontend'
+import CellActionButton from '@/components/common-components/CellActionButton.vue'
+import RemovableBadge from '@/components/common-components/RemovableBadge.vue'
 import { formatDateForTooltips } from '@/utils/dates.js'
 import { mapGetters, mapActions } from 'vuex'
 import { debounce } from '@/utils/debounce.js'
 
 export default {
   name: 'IncidentsTable',
-  components: { FlowTable, SuccessAlert, RetryModal, AnnotationModal, StackTraceModal, PagedScrollableContent, CopyableActionButton },
+  components: { FlowTable, SuccessAlert, RetryModal, AnnotationModal, StackTraceModal, PagedScrollableContent, CopyableActionButton, CellActionButton, RemovableBadge },
   mixins: [copyToClipboardMixin],
   props: {
     instance: Object,
     process: Object,
+    tenantId: String,
     activityInstance: Object,
     isInstanceView: Boolean,
     scrollableArea: Object,
@@ -333,16 +332,14 @@ export default {
     },
     'selectedActivityId': {
       handler() {
-        if (!this.isInstanceView) {
-          this.firstResult = 0
-          const id = this.isInstanceView ? this.instance.id : this.process.id
-          this.loadIncidentsData(id, this.isInstanceView)
-        }
+        this.firstResult = 0
+        const id = this.isInstanceView ? this.instance.id : this.process.id
+        this.loadIncidentsData(id, this.isInstanceView)
       }
     }
   },
   methods: {
-    ...mapActions(['clearActivitySelection']),
+    ...mapActions(['clearActivitySelection', 'setHighlightedElement', 'selectActivity']),
     ...mapActions('incidents', ['loadRuntimeIncidents', 'loadHistoryIncidents', 'removeIncident', 'updateIncidentAnnotation', 'setIncidents']),
     formatDateForTooltips,
     async fetchCount(params) {
@@ -367,7 +364,7 @@ export default {
         sortBy: this.currentSortBy,
         sortOrder: this.currentSortDesc ? 'asc' : 'desc',
         ...(isInstance ? { processInstanceId: id } : { processDefinitionId: id }),
-        ...((this.selectedActivityId && !this.isInstanceView) ? { failedActivityId: this.selectedActivityId } : {} ),
+        ...(this.selectedActivityId ? { failedActivityId: this.selectedActivityId } : {} ),
         ...(this.freeText ? { incidentMessageLike: `%${this.freeText}%` } : {} ),
       }
 
@@ -450,12 +447,13 @@ export default {
     incrementNumberRetry: function({ item, params }) {
       // Choose the appropriate retry method based on incident type
       let retryPromise
+      const configuration = item.configuration ?? item.rootCauseIncidentConfiguration
       if (item.incidentType === 'failedExternalTask') {
         // For external task incidents, use the external task retry endpoint
-        retryPromise = IncidentService.retryExternalTaskById(item.configuration, params)
+        retryPromise = IncidentService.retryExternalTaskById(configuration, params)
       } else {
         // For other incident types, use job retry
-        retryPromise = IncidentService.retryJobById(item.configuration, params)
+        retryPromise = IncidentService.retryJobById(configuration, params)
       }
       retryPromise.then(() => {
         this.removeIncident(item.id)
@@ -471,26 +469,17 @@ export default {
     getIncidentMessage(incident) {
       return incident.rootCauseIncidentMessage || incident.incidentMessage
     },
-    async navigateToIncidentProcessInstance(processInstanceId) {
-      if (!processInstanceId) return
-      try {
-        const processInstance = await HistoryService.findProcessInstance(processInstanceId)
-        const processKey = processInstance.processDefinitionKey
-        const versionIndex = processInstance.processDefinitionVersion
-        const params = { processKey, versionIndex, instanceId: processInstance.id }
-
-        const routeConfig = {
-          name: 'process',
-          params,
-          query: {
-            parentProcessDefinitionId: this.process.id,
-            tab: 'incidents'
-          }
+    linkToIncidentProcessInstance(processInstanceId, parentProcessDefinitionId = '') {
+      return {
+        name: 'process-instance-id',
+        params: {
+          instanceId: processInstanceId,
+        },
+        query: {
+          ...(parentProcessDefinitionId ? { parentProcessDefinitionId } : {}
+          ),
+          tab: 'incidents',
         }
-
-        await this.$router.push(routeConfig)
-      } catch (error) {
-        console.error('Failed to navigate to incident process instance:', error)
       }
     },
     onInput: debounce(800, function(freeText) {
@@ -499,6 +488,18 @@ export default {
       const id = this.isInstanceView ? this.instance.id : this.process.id
       this.loadIncidentsData(id, this.isInstanceView)
     }),
+    removeSelectedActivityBadge() {
+      this.clearActivitySelection()
+      this.setHighlightedElement('')
+    },
+    selectFailedActivityId(failedActivityId) {
+      this.selectActivity({ activityId: failedActivityId })
+      this.setHighlightedElement(failedActivityId)
+    },
+    getActivityIdTooltip(activityId) {
+      const activityName = this.$store.state.activity.processActivities[activityId] || activityId
+      return this.$t('process-instance.incidents.activity') + ':\n' + activityName + '\n\n' + this.$t('decision.activityId') + ':\n' + activityId
+    },
   }
 }
 </script>

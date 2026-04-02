@@ -21,19 +21,12 @@
     <div style="background-color: rgba(98, 142, 199, 0.2);">
       <div class="d-flex align-items-center py-2 container-fluid">
         <div class="col-8 d-flex align-items-center gap-2">
-          <div class="border rounded d-flex flex-fill align-items-center bg-white me-3" style="max-width: 220px;">
-            <b-button
-              size="sm" class="mdi mdi-magnify mdi-18px text-secondary py-0" variant="link"
-              :title="$t('searches.search')"></b-button>
-            <div class="flex-grow-1">
-              <input
-                type="text"
-                v-model.trim="filter"
-                :placeholder="$t('searches.search')"
-                class="form-control-plaintext form-control-sm w-100"
-              />
-            </div>
-          </div>
+          <SearchInput class="border rounded" size="sm" v-model.trim="filter"/>
+          <span 
+            ref="wildcardHelper"
+            class="mdi mdi-help-circle mdi-18px text-secondary me-3" 
+            style="cursor: pointer;">
+          </span>
           <b-form-group class="mb-0">
             <b-input-group size="sm" class="align-items-center">
               <b-input-group-prepend class="me-2 align-items-center">
@@ -41,7 +34,7 @@
               </b-input-group-prepend>
               <b-input-group-append class="d-flex align-items-center">
                 <b-form-select size="sm" v-model="sortBy" :options="sortingFields" class="mb-0"></b-form-select>
-                <b-button size="sm" v-hover-style="{ classes: ['text-primary'] }" variant="secondary-outline"
+                <b-button size="sm" variant="secondary-outline"
                   @click="changeSortingOrder()" class="mdi mdi-18px ms-1 border-0"
                   :class="sortOrder === 'desc' ? 'mdi-arrow-down' : 'mdi-arrow-up'"
                   :title="sortOrder === 'desc' ? $t('sorting.desc') : $t('sorting.asc')"></b-button>
@@ -98,8 +91,7 @@
                 <b-waiting-box class="d-inline me-2" styling="width: 35px"></b-waiting-box> {{ $t('admin.loading') }}
               </div>
               <div v-else>
-                <img src="@/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mt-5 mb-3"
-                  style="width: 200px">
+                <img src="@/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mt-5 mb-3" style="width: 200px" alt="">
                 <div class="h5">{{ $t('deployment.noDeployments') }}</div>
               </div>
             </div>
@@ -143,6 +135,10 @@
         <b-button @click="deleteDeployment(); $refs.deleteSelectedModal.hide()" variant="primary">{{ $t('confirm.delete') }}</b-button>
       </template>
     </b-modal>
+    <b-popover :target="() => $refs.wildcardHelper" triggers="hover">
+      <div>{{ $t('searches.wildcardHelp') }}</div>
+      <div>{{ $t('searches.wildcardExample') }}</div>
+    </b-popover>
     <SuccessAlert top="0" style="z-index: 1031" ref="deploymentsDeleted"> {{ $t('deployment.deploymentsDeleted',
       [deploymentsDelData.deleted, deploymentsDelData.total]) }}</SuccessAlert>
     <SuccessAlert ref="success" top="0" style="z-index: 1031">{{ $t('alert.successOperation') }}</SuccessAlert>
@@ -156,11 +152,12 @@ import { moment } from '@/globals.js'
 import { debounce } from '@/utils/debounce.js'
 import DeploymentList from '@/components/deployment/DeploymentList.vue'
 import ResourcesNavBar from '@/components/deployment/ResourcesNavBar.vue'
+import SearchInput from '@/components/common-components/SearchInput.vue'
 import { SidebarsFlow, SuccessAlert, PagedScrollableContent } from '@cib/common-frontend'
 
 export default {
   name: 'DeploymentsView',
-  components: { PagedScrollableContent, DeploymentList, ResourcesNavBar, SidebarsFlow, SuccessAlert },
+  components: { PagedScrollableContent, DeploymentList, ResourcesNavBar, SidebarsFlow, SuccessAlert, SearchInput },
   inject: ['loadProcesses'],
   mixins: [permissionsMixin],
   props: { deploymentId: String },
@@ -199,12 +196,17 @@ export default {
       this.loadNextPage()
     },
     deploymentId: function () {
-      let found = this.deployments.some(d => {
-        return (d.id === this.deploymentId)
-      })
-      if (!found) {
-        this.deploymentsReady = false
-        this.loadToSelectedDeployment()
+      if (!this.deploymentId) {
+        this.deployment = null
+        this.resources = null
+      } else {
+        const found = this.deployments.some(d => {
+          return (d.id === this.deploymentId)
+        })
+        if (!found) {
+          this.deploymentsReady = false
+          this.loadToSelectedDeployment()
+        }
       }
     }
   },
@@ -324,7 +326,7 @@ export default {
     loadToSelectedDeployment: async function () {
       this.searchDeployment = true
       this.refreshTotalCount()
-      let found = this.deployments.some(dep => {
+      const found = this.deployments.some(dep => {
         return dep.id === this.deploymentId
       })
       if (found) {
@@ -333,13 +335,13 @@ export default {
       this.loadDeployments(this.deployments.length)
     },
     deleteDeployments: function () {
-      var vm = this
+      const vm = this
       this.deleteLoader = true
       this.deploymentsDelData.total = this.deploymentsSelected.length
       this.deploymentsDelData.deleted = 0
-      var pool = this.deploymentsSelected.slice(0, this.deploymentsSelected.length)
+      let pool = this.deploymentsSelected.slice(0, this.deploymentsSelected.length)
       pool.forEach(deployment => {
-        let found = this.groups.findIndex(group => {
+        const found = this.groups.findIndex(group => {
           const index = group.data.findIndex(d => {
             return deployment.id === d.id
           })
@@ -357,7 +359,7 @@ export default {
       pool = this.deploymentsSelected.slice(0, this.deploymentsSelected.length)
       startTask()
       function startTask() {
-        var deployment = pool.shift()
+        const deployment = pool.shift()
         if (deployment) {
           deleteDeployment(deployment)
         } else {
@@ -396,7 +398,7 @@ export default {
         this.deploymentsDelData.total = 1
         this.deploymentsDelData.deleted++
         this.$refs.deploymentsDeleted.show()
-        let found = this.groups.findIndex(group => {
+        const found = this.groups.findIndex(group => {
           const index = group.data.findIndex(d => {
             return this.deploymentId === d.id
           })
@@ -467,7 +469,7 @@ export default {
         d.name = d.name || d.id
 
         let group = '-'
-        let name = '-'
+        let name
         if (this.sortBy === 'name') {
           group = (d.name || '-')[0].toUpperCase() || '-'
           name = group

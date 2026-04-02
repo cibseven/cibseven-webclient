@@ -23,12 +23,12 @@
 // Default configuration values
 const DEFAULT_CONFIG = {
   supportedLanguages: ["en"],
-  theme: "generic",
+  theme: "cib",
   taskListTime: "30000",
   warnOnDueExpirationIn: 48,
   permissions: {
-    tasklist: { application: ["ALL"] },
-    cockpit: { application: ["ALL"] },
+    tasklist: { application: ["ACCESS"] },
+    cockpit: { application: ["ACCESS"] },
     displayTasks: { task: ["READ", "UPDATE"] },
     displayFilter: { filter: ["READ"] },
     editFilter: { filter: ["UPDATE"] },

@@ -21,12 +21,14 @@
     <div class="row">
       <div class="col-md-8">
         <b-form-group label-size="sm" :label-cols="4" :label="$t('nav-bar.filters.filterNameLabel')" :invalid-feedback="$t('nav-bar.filters.filterExists')">
-          <b-form-input size="sm" v-model="selectedFilterName" :placeholder="$t('nav-bar.filters.filterNamePlaceholder')" :state="isNameInvalid ? false : null"></b-form-input>
+          <label for="filter-name" class="visually-hidden">{{ $t('nav-bar.filters.filterNameLabel') }}</label>
+          <b-form-input id="filter-name" size="sm" v-model="selectedFilterName" :placeholder="$t('nav-bar.filters.filterNamePlaceholder')" :state="isNameInvalid ? false : null"></b-form-input>
         </b-form-group>
       </div>
       <div class="col-md-4">
         <b-form-group label-size="sm" :label-cols="6" :label="$t('nav-bar.filters.filterPriorityLabel')">
-          <b-form-input size="sm" v-model="selectedFilterPriority"></b-form-input>
+          <label for="filter-priority" class="visually-hidden">{{ $t('nav-bar.filters.filterPriorityLabel') }}</label>
+          <b-form-input id="filter-priority" size="sm" v-model="selectedFilterPriority"></b-form-input>
         </b-form-group>
       </div>
     </div>
@@ -34,7 +36,8 @@
     <b-form-group :label-cols="12" label-class="mb-3" label-size="sm" :label="$t('nav-bar.filters.selectedCriteria')">
       <div class="container">
         <div class="row text-center px-3">
-          <b-form-select style="background-image: none" class="col-4" size="sm" @change="selectCriteria($event)" v-model="selectedCriteriaKey" :options="criteriasGrouped">
+          <label class="visually-hidden" for="criteria-select">{{ $t('nav-bar.filters.selectProperty') }}</label>
+          <b-form-select id="criteria-select" style="background-image: none" class="col-4" size="sm" @change="selectCriteria($event)" v-model="selectedCriteriaKey" :options="criteriasGrouped">
             <template v-slot:first>
               <b-form-select-option :value="null" disabled>-- {{ $t('nav-bar.filters.selectProperty') }} --</b-form-select-option>
             </template>
@@ -42,15 +45,16 @@
           <div v-if="selectedCriteriaType !== 'variable'" class="col-5 pe-0">
             <FilterableSelect v-if="$store.state.user.searchUsers.length > 1 && selectedCriteriaType === 'filterable'" class="w-100" :placeholder="$t('nav-bar.filters.insertValue')"
             v-model="selectedCriteriaValue" :elements="$store.state.user.searchUsers" noInvalidValues/>
-            <b-form-input v-else size="sm" :placeholder="$t('nav-bar.filters.insertValue')" v-model="selectedCriteriaValue"></b-form-input>
+            <template v-else>
+              <label class="visually-hidden" for="filterable-select">{{ $t('nav-bar.filters.insertValue') }}</label>
+              <b-form-input id="filterable-select" size="sm" :placeholder="$t('nav-bar.filters.insertValue')" v-model="selectedCriteriaValue"></b-form-input>
+            </template>
           </div>
           <div class="col-3 p-0">
             <b-button v-if="!isEditing" :disabled="!selectedCriteriaKey" @click="addCriteria" size="sm" class="mdi mdi-plus" variant="secondary">{{ $t('nav-bar.filters.addCriteria') }}</b-button>
-            <div v-else>
-              <b-button style="opacity: 1" class="px-2 border-0 shadow-none" variant="link">
-              <span class="mdi mdi-18px mdi-content-save-outline" @click="updateCriteria()"></span></b-button>
-              <span class="border-start h-50"></span>
-              <b-button style="opacity: 1" class="px-2 border-0 shadow-none" variant="link" @click="cancelEditCriteria()"><span class="mdi mdi-18px mdi-block-helper"></span></b-button>
+            <div v-else class="d-flex justify-content-center">
+              <CellActionButton @click="updateCriteria()" icon="mdi-content-save-outline" :title="$t('commons.save')"></CellActionButton>
+              <CellActionButton @click="cancelEditCriteria()" icon="mdi-block-helper" :title="$t('confirm.cancel')"></CellActionButton>
             </div>
           </div>
         </div>
@@ -71,27 +75,35 @@
     </b-form-group>
 
     <div class="container-fluid border">
-      <FlowTable :selectable="false" striped :items="criteriasToAdd" prefix="nav-bar.filters.criteria."
-        :fields="[{label: 'key', key: 'name', class: 'col-5'},
-            {label: 'value', key: 'value', class: 'col-5'},
-            {label: '', key: 'buttons', class: 'col-2', sortable: false, tdClass: 'py-0'}]">
+      <FlowTable :selectable="false" striped :items="criteriasToAdd"
+        :fields="[
+          { label: 'nav-bar.filters.criteria.key', key: 'name', class: 'col-5'},
+          { label: 'nav-bar.filters.criteria.value', key: 'value', class: 'col-5'},
+          { label: 'process.actions', key: 'actions', class: 'col-2', sortable: false, tdClass: 'py-0'},
+        ]">
+
+        <template v-slot:header(actions)>
+            <!-- hide 'actions' header for better UI but keep it accessible for screen readers -->
+          <span class="visually-hidden">{{ $t('process.actions') }}</span>
+        </template>
+
         <template v-slot:cell(value)="row">
           <div v-if="row.item.key === 'processVariables'">
             <div v-for="(item, index) of row.item.value" class="row g-0" :key="index">
               <div :title="item.name" class="col-5 p-0 text-truncate">{{ item.name }}</div>
-              <div class="col-2 text-center">{{ $t('nav-bar.filters.operators.' + item.operator) }}</div>
+              <div class="col-2 text-center">{{ $t(item.label) }}</div>
               <div :title="item.value" class="col-5 p-0 text-truncate text-end">{{ item.value }}</div>
             </div>
           </div>
           <span v-else> {{ formatCriteria(row.item.value) }} </span>
         </template>
-        <template v-slot:cell(buttons)="row">
-          <b-button class="mdi mdi-18px mdi-pencil border-0" size="sm" variant="outline-secondary" @click="editCriteria(row.index)" :title="$t('commons.edit')"></b-button>
-          <b-button class="mdi mdi-18px mdi-delete-outline border-0" size="sm" variant="outline-secondary" @click="deleteCriteria(row.index)" :title="$t('confirm.delete')"></b-button>
+        <template v-slot:cell(actions)="row">
+          <CellActionButton icon="mdi-pencil" @click="editCriteria(row.index)" :title="$t('commons.edit')"></CellActionButton>
+          <CellActionButton icon="mdi-delete-outline" @click="deleteCriteria(row.index)" :title="$t('confirm.delete')"></CellActionButton>
         </template>
       </FlowTable>
       <div v-if="criteriasToAdd.length < 1">
-        <img src="@/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mb-3" style="width: 200px">
+        <img src="@/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mb-3" style="width: 200px" alt="">
         <div class="h5 text-secondary text-center">{{ $t('nav-bar.filters.noCriterias') }}</div>
         <hr>
       </div>
@@ -100,8 +112,6 @@
       </b-form-checkbox>
       <b-form-checkbox class="mb-3" v-model="matchAllCriteria" name="check-button" switch>
         <span>{{ $t('nav-bar.filters.matchAllCriteria') }}</span>
-        <!-- <span v-if="matchAllCriteria">{{ $t('nav-bar.filters.matchAllCriteria') }}</span>
-        <span v-else>{{ $t('nav-bar.filters.matchAnyCriteria') }}</span> -->
       </b-form-checkbox>
     </div>
 
@@ -115,6 +125,7 @@
 <script>
 import { permissionsMixin } from '@/permissions.js'
 import FilterableSelect from '@/components/task/filter/FilterableSelect.vue'
+import CellActionButton from '@/components/common-components/CellActionButton.vue'
 import { FlowTable } from '@cib/common-frontend'
 
 const candidateOptions = ['candidateGroup', 'candidateGroupExpression',
@@ -122,7 +133,7 @@ const candidateOptions = ['candidateGroup', 'candidateGroupExpression',
 
 export default {
   name: 'FilterModal',
-  components: { FilterableSelect, FlowTable },
+  components: { FilterableSelect, FlowTable, CellActionButton },
   props: { tasks: Array, processes: Array, layout2: Boolean },
   mixins: [permissionsMixin],
   emits: [
@@ -178,12 +189,12 @@ export default {
     },
     variableOperators: function() {
       return  [
-        { value: 'eq', text: this.$t('nav-bar.filters.operators.txteq') },
-        { value: 'neq', text: this.$t('nav-bar.filters.operators.txtneq') },
-        { value: 'gt', text: this.$t('nav-bar.filters.operators.txtgt') },
-        { value: 'gteq', text: this.$t('nav-bar.filters.operators.txtgteq') },
-        { value: 'lt', text: this.$t('nav-bar.filters.operators.txtlt') },
-        { value: 'lteq', text: this.$t('nav-bar.filters.operators.txtlteq') }
+        { value: 'eq', text: this.$t('nav-bar.filters.operators.txteq'), label: 'nav-bar.filters.operators.eq' },
+        { value: 'neq', text: this.$t('nav-bar.filters.operators.txtneq'), label: 'nav-bar.filters.operators.neq' },
+        { value: 'gt', text: this.$t('nav-bar.filters.operators.txtgt'), label: 'nav-bar.filters.operators.gt' },
+        { value: 'gteq', text: this.$t('nav-bar.filters.operators.txtgteq'), label: 'nav-bar.filters.operators.gteq' },
+        { value: 'lt', text: this.$t('nav-bar.filters.operators.txtlt'), label: 'nav-bar.filters.operators.lt' },
+        { value: 'lteq', text: this.$t('nav-bar.filters.operators.txtlteq'), label: 'nav-bar.filters.operators.lteq' }
       ]
     },
     existCandidateSelected: function() {
@@ -197,7 +208,7 @@ export default {
   },
   methods: { // TODO: Refactor, many methods and unnecessary structur,,
     selectFilter: function(value) {
-      var selectedFilter = this.$store.state.filter.list.find(filter => {
+      const selectedFilter = this.$store.state.filter.list.find(filter => {
         return filter.id === value
       })
       if (selectedFilter) {
@@ -207,7 +218,7 @@ export default {
       }
     },
     createFilter: function() {
-      var query = {}
+      const query = {}
       if (this.matchAllCriteria) {
         this.criteriasToAdd.forEach(criteria => {
           // if key == '...Like' -> value = '%' + value + '%'
@@ -228,7 +239,7 @@ export default {
         this.$store.state.filter.selected.properties.priority = this.selectedFilterPriority || 0
         this.$store.state.filter.selected.query = query
         this.$store.dispatch('updateFilter', { filter: this.$store.state.filter.selected }).then(() => {
-          this.$emit('filter-alert', { message: 'msgFilterUpdated', filter: this.selectedFilterName })
+          this.$emit('filter-alert', { message: 'nav-bar.filters.msgFilterUpdated', filter: this.selectedFilterName })
           this.$refs.filterHandler.hide()
           this.$emit('set-filter', this.$store.state.filter.selected.id)
           this.selectedFilterId = this.$store.state.filter.selected.id
@@ -237,7 +248,7 @@ export default {
           this.$root.$refs.error.show({ type: 'filterSaveError' })
         })
       } else {
-        var filterCreate = {
+        const filterCreate = {
           id: null,
           resourceType: 'Task',
           name: this.selectedFilterName,
@@ -252,7 +263,7 @@ export default {
           }
         }
         this.$store.dispatch('createFilter', { filter: filterCreate }).then(filter => {
-          this.$emit('filter-alert', { message: 'msgFilterCreated', filter: this.selectedFilterName })
+          this.$emit('filter-alert', { message: 'nav-bar.filters.msgFilterCreated', filter: this.selectedFilterName })
           this.$refs.filterHandler.hide()
           this.$emit('set-filter', filter.id)
           this.$emit('select-filter', filter)
@@ -272,12 +283,12 @@ export default {
       this.selectedCriteriaVariable.splice(index, 1)
     },
     rowClass: function(item) {
-      let stylesForRow = ['row']
+      const stylesForRow = ['row']
       if (item.key === this.criteriaEdited.key ) stylesForRow.push('table-active')
       return stylesForRow
     },
     addCriteria: function() {
-      var valueToAdd = []
+      let valueToAdd = []
       if (this.selectedCriteriaType === 'variable') {
         valueToAdd = this.selectedCriteriaVariable
       } else if (this.selectedCriteriaType === 'array') {
@@ -296,7 +307,7 @@ export default {
       this.selectedCriteriaVariable = [{ name: '', operator: 'eq', value: '' }]
     },
     updateCriteria: function() {
-      var valueToAdd = []
+      let valueToAdd = []
       if (this.selectedCriteriaType === 'variable') {
         valueToAdd = this.selectedCriteriaVariable
       } else if (this.selectedCriteriaType === 'array') {
@@ -324,7 +335,7 @@ export default {
     editCriteria: function(index) {
       this.isEditing = true
       // so the row of the table doesnt change too when the inputs are modified
-      let criteriaToEdit = JSON.parse(JSON.stringify(this.criteriasToAdd[index]))
+      const criteriaToEdit = JSON.parse(JSON.stringify(this.criteriasToAdd[index]))
       this.criteriaEdited = { key: criteriaToEdit.key, rowIndex: index }
       this.selectedCriteriaKey = criteriaToEdit.key
       this.selectCriteria(this.selectedCriteriaKey)
@@ -346,7 +357,7 @@ export default {
       this.criteriaEdited = { key: null, rowIndex: null }
     },
     selectCriteria: function(evt) {
-      var criteria = this.criterias.find(option => {
+      const criteria = this.criterias.find(option => {
         return option.value === evt
       })
       if (criteria) this.selectedCriteriaType = criteria.type
@@ -363,11 +374,11 @@ export default {
       this.selectedCriteriaType = null
       this.includeAssigned = false
       this.selectedCriteriaVariable = [{ name: '', operator: 'eq', value: '' }]
-      this.isEditing = false,
+      this.isEditing = false
       this.criteriaEdited = { key: null, rowIndex: null}
 
       // Prepared criterias
-      var auxCriterias = {}
+      const auxCriterias = {}
       this.$root.config.filters.forEach(filter => {
         if (filter.group) {
           if (auxCriterias[filter.group] === undefined) {
@@ -397,10 +408,10 @@ export default {
         if (this.$store.state.filter.selected.query.orQueries && this.$store.state.filter.selected.query.orQueries.length > 0) {
           this.matchAllCriteria = false
           Object.keys(this.$store.state.filter.selected.query.orQueries[0]).forEach(key => {
-            var filterVal = this.$store.state.filter.selected.query.orQueries[0][key]
+            const filterVal = this.$store.state.filter.selected.query.orQueries[0][key]
             if (key === 'includeAssignedTasks') this.includeAssigned = filterVal
             if (!filterVal || (filterVal && filterVal.length === 0)) return
-            var index = this.criterias.findIndex(item => {
+            const index = this.criterias.findIndex(item => {
               return item.value === key
             })
             if (index > -1) {
@@ -416,10 +427,10 @@ export default {
         } else {
           //Match all criterias.
           Object.keys(this.$store.state.filter.selected.query).forEach(key => {
-            var filterVal = this.$store.state.filter.selected.query[key]
+            const filterVal = this.$store.state.filter.selected.query[key]
             if (key === 'includeAssignedTasks') this.includeAssigned = filterVal
             if (!filterVal || (filterVal && filterVal.length === 0)) return
-            var index = this.criterias.findIndex(item => {
+            const index = this.criterias.findIndex(item => {
               return item.value === key
             })
             if (index > -1) {
@@ -445,7 +456,7 @@ export default {
           value = '%' + value;
         }
 
-        let length = value.length - 1;
+        const length = value.length - 1;
         if (value[length] !== '%') {
           value = value + '%';
         }

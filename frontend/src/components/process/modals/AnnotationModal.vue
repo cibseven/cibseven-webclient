@@ -71,7 +71,7 @@ export default {
     },
     saveAnnotation: function() {
       if (this.invalidAnnotation) return
-      var params = { annotation: this.annotation }
+      const params = { annotation: this.annotation }
       this.$emit('set-annotation', {
           id: this.id,
           params

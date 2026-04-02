@@ -26,8 +26,45 @@
 //
 //
 // -- This is a parent command --
-// Cypress.Commands.add('login', (email, password) => { ... })
-//
+Cypress.Commands.add('loginDefault', () => {
+  console.log('Cypress.env(\'ENV\')=', Cypress.env('ENV'))
+  if (Cypress.env('ENV') === 'stage') {
+    const username = Cypress.env('username')
+    const password = Cypress.env('password')
+    cy.login(username, password)
+  }
+  else {
+    cy.login('demo', 'demo')
+  }
+})
+
+Cypress.Commands.add('login', (username, password, displayName) => {
+  cy.visit('#/seven/login')
+  cy.get(':nth-child(3) > form > :nth-child(1) > .row > .col > .form-control').type(username)
+  cy.get('.input-group > .form-control').type(password, { log: false })
+  cy.get('button[type=submit]').click()
+
+  // capitalize username for user name display
+  const capitalize = (s) => s && s[0].toUpperCase() + s.slice(1)
+  displayName = displayName || capitalize(username)
+
+  // check that we are logged in
+  // Wait for the user account dropdown with the account icon to be visible
+  cy.get('.mdi-account', { timeout: 10000 })
+    .parent('a.nav-link.dropdown-toggle')
+    .should('be.visible')
+    // check that the user name is correct
+    .and('contain', displayName)
+})
+
+Cypress.Commands.add('logout', () => {
+  cy.get('.mdi-account').parent('a.nav-link.dropdown-toggle').click()
+  cy.get('.dropdown-menu-end .dropdown-item').contains('Logout').click()
+  cy.get('button[type=submit]').should('contain', 'Login')
+
+  cy.contains('h1', 'CIB seven')
+})
+
 //
 // -- This is a child command --
 // Cypress.Commands.add('drag', { prevSubject: 'element'}, (subject, options) => { ... })

@@ -1,0 +1,261 @@
+/*
+ * Copyright CIB software GmbH and/or licensed to CIB software GmbH
+ * under one or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information regarding copyright
+ * ownership. CIB software licenses this file to you under the Apache License,
+ * Version 2.0; you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+$gray: #c1cedd;
+
+.bg-gray {
+  --bs-bg-opacity: 1;
+  background-color: $gray;
+}
+
+.bg-transparent {
+  --bs-bg-opacity: 1;
+  background-color: transparent !important;
+}
+
+.dropdown-item {
+  border-left: 4px solid white;
+  padding-left: 0.7rem !important;
+}
+
+.dropdown-item.active {
+  color: $dropdown-link-active-color;
+  background-color: $dropdown-link-active-bg;
+  border-left: 4px solid $primary;
+}
+
+.dropdown-item:hover {
+  border-left: 4px solid $dropdown-link-active-bg;
+  background-color: var(--bs-gray-200);
+}
+
+.dropdown-item.active:hover,
+.dropdown-item.active:focus {
+  border-left: 4px solid $primary;
+}
+
+.dropdown-item:focus {
+  color: $dropdown-link-active-color;
+  background-color: $dropdown-link-active-bg;
+  border-left: 4px solid $dropdown-link-active-bg;
+  outline: 0;
+}
+
+.dropdown-item:focus-visible {
+  outline: 2px solid var(--bs-dark);
+  outline-offset: 0px;
+}
+
+.list-group-item.active {
+  color: $dark;
+  border-color: $primary !important;
+  background-color: $light;
+}
+
+.list-group-item-light {
+  color: $dark;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.btn-link {
+  color: $dark;
+}
+
+.btn-link:hover, .btn-link:focus-visible {
+  color: $secondary;
+}
+
+.navbar-light .navbar-nav .nav-link {
+  color: $dark;
+}
+
+.nav-link {
+    padding: 0 1rem;
+}
+
+.navbar-light .navbar-nav .nav-link:hover, .navbar-light .navbar-nav .nav-link:focus {
+  color: $secondary;
+}
+
+.nav-link:focus-visible {
+  outline: auto;
+  box-shadow: none;
+}
+
+
+.custom-select {
+  -moz-appearance: none;
+  -webkit-appearance: none;
+}
+
+.btn-light {
+  background-color: $btn-light-bg;
+  --bs-btn-border-color: #{$gray-600};
+  --bs-btn-hover-border-color: #{$gray-600};
+  --bs-btn-active-border-color: #{$gray-600};
+  --bs-btn-disabled-border-color: #{$gray-600};
+}
+
+.btn-light:hover {
+  background-color: $btn-light-hover-bg;
+}
+
+.btn-light:focus,
+.btn-light:focus-visible {
+  background-color: $gray-500;
+}
+
+.btn.border-0 {
+  box-shadow: none;
+}
+
+.alert-warning,
+.alert-success,
+.alert-info,
+.alert-danger {
+  background-color: $white;
+}
+
+.list-group-item + .list-group-item.active {
+  margin-top: 0px;
+}
+
+.navbar-collapse {
+  background-color: $white;
+}
+
+input[type="checkbox"], input[type="radio"] {
+  background-color: $body-bg;
+  border: 1px solid $gray-650;
+  cursor: pointer;
+
+  &:checked {
+    background-color: $primary;
+    border-color: $primary;
+  }
+}
+
+.form-check-input:checked {
+	background-color: $primary;
+  border-color: $primary;
+}
+
+.form-control:not(:disabled):hover,
+.form-select:not(:disabled):hover,
+input:not([type="checkbox"]):not([type="radio"]):not(:disabled):hover,
+textarea:not(:disabled):hover,
+select:not(:disabled):hover {
+  border-color: $gray-800 !important;
+}
+
+.form-control:not(:disabled):focus,
+.form-select:not(:disabled):focus,
+input:not([type="checkbox"]):not([type="radio"]):not(:disabled):focus,
+textarea:not(:disabled):focus,
+select:not(:disabled):focus {
+  border-color: $gray-800 !important;
+  outline: 2px solid $gray-800 !important;
+  outline-offset: -1px;
+  box-shadow: none !important;
+}
+
+.form-control.is-valid:not(:disabled):focus,
+.form-select.is-valid:not(:disabled):focus,
+input.is-valid:not([type="checkbox"]):not([type="radio"]):not(:disabled):focus,
+textarea.is-valid:not(:disabled):focus {
+  border-color: $success !important;
+  outline: 2px solid $success !important;
+  outline-offset: -1px;
+  box-shadow: none !important;
+}
+
+.form-control.is-invalid:not(:disabled):focus,
+.form-select.is-invalid:not(:disabled):focus,
+input.is-invalid:not([type="checkbox"]):not([type="radio"]):not(:disabled):focus,
+textarea.is-invalid:not(:disabled):focus {
+  border-color: $danger !important;
+  outline: 2px solid $danger !important;
+  outline-offset: -1px;
+  box-shadow: none !important;
+}
+
+.form-check-input:not(:disabled):hover,
+input[type="checkbox"]:not(:disabled):hover,
+input[type="radio"]:not(:disabled):hover {
+  border-color: $gray-800;
+  box-shadow: none !important;
+}
+
+.form-check-input:not(:disabled):focus,
+input[type="checkbox"]:not(:disabled):focus,
+input[type="radio"]:not(:disabled):focus {
+  border-color: $gray-800;
+  outline: 0;
+  box-shadow: none !important;
+}
+
+.form-check-input:not(:disabled):focus-visible,
+input[type="checkbox"]:not(:disabled):focus-visible,
+input[type="radio"]:not(:disabled):focus-visible {
+  border-color: $gray-800;
+  outline: 2px solid $gray-800;
+  outline-offset: 2px;
+  box-shadow: none !important;
+}
+
+button:not(:disabled):focus,
+.btn:not(a):not(:disabled):focus {
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+
+button:not(:disabled):focus-visible,
+.btn:not(a):not(:disabled):focus-visible {
+  outline: 2px solid $dark !important;
+  outline-offset: 2px;
+  box-shadow: none !important;
+}
+
+.btn-close:hover {
+  opacity: 1;
+}
+
+/* CSS custom scrollbar */
+* {
+	scrollbar-color: $gray $white;
+	scrollbar-width: thin;
+}
+::-webkit-scrollbar { 
+	width: 8px; /* width of the entire scrollbar(vertical) */
+	height: 8px; /* height of the entire scrollbar(horizontal) */
+}
+::-webkit-scrollbar-track { background: $white; /* color of the tracking area */}
+::-webkit-scrollbar-thumb {
+	background-color: $gray; /* color of the scroll thumb */
+	border-radius: 20px; /* roundness of the scroll thumb */
+}
+::-webkit-scrollbar-thumb:hover { background: $secondary; }
+
+// Remove borders from tbody rows in tables
+.table {
+  > tbody > tr > * {
+    border-bottom-width: 0;
+  }
+}

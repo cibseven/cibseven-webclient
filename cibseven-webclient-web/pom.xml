@@ -65,6 +65,7 @@
 					<include>*.txt</include>
 					<!-- <include>*.xml</include> -->
 					<include>*.txt</include>
+					<include>**/*.scss</include>
 				</includes>
 			</resource>
 		</resources>

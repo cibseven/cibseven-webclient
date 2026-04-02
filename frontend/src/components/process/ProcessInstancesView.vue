@@ -40,19 +40,23 @@
       </li>
     </ol>
 
-    <div @mousedown="handleMouseDown" class="v-resizable position-absolute w-100" style="left: 0" :style="'height: ' + bpmnViewerHeight + 'px; ' + toggleTransition">
+    <ViewerFrame :resizerMixin="this">
       <component :is="BpmnViewerPlugin" v-if="BpmnViewerPlugin" ref="diagram" @task-selected="selectTask($event)" @activity-map-ready="activityMap = $event"
         :process-definition-id="process.id" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" :statistics="process.statistics"
         :active-tab="activeTab" class="h-100">
       </component>
-      <BpmnViewer v-else ref="diagram" @task-selected="selectTask($event)" @activity-map-ready="activityMap = $event"
-        :process-definition-id="process.id" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" :statistics="process.statistics"
-        :active-tab="activeTab" class="h-100">
+      <BpmnViewer v-else ref="diagram"
+        :process-definition-id="process.id"
+        :activity-instance="activityInstance"
+        :activity-instance-history="activityInstanceHistory"
+        :statistics="process.statistics"
+        :selected-instance="null"
+        :active-tab="activeTab"
+        @task-selected="selectTask($event)"
+        @activity-map-ready="activityMap = $event"
+        class="h-100">
       </BpmnViewer>
-      <span role="button" size="sm" variant="light" class="bg-white px-2 py-1 me-1 position-absolute border rounded" style="bottom: 90px; right: 11px;" @click="toggleContent">
-        <span class="mdi mdi-18px" :class="toggleIcon"></span>
-      </span>
-    </div>
+    </ViewerFrame>
 
     <div class="position-absolute w-100" style="left: 0; z-index: 2" :style="'height: '+ tabsAreaHeight +'px; top: ' + (bottomContentPosition - tabsAreaHeight + 1) + 'px; ' + toggleTransition">
       <div class="d-flex align-items-end">
@@ -85,15 +89,11 @@
                 </b-input-group>
               </div>
               <div v-if="selectedActivityId" class="col-3 p-3">
-                <span class="badge bg-info rounded-pill p-2 pe-3" style="font-weight: 500; font-size: 0.75rem">
-                  <span
-                    @click="clearActivitySelection"
-                    :title="$t('process.activityIdBadge.remove')"
-                    role="button" class="mdi mdi-close-thick py-2 px-1"></span>
-                    <span :title="$t('process.activityIdBadge.tooltip.' + selectedActivityInstancesListMode, { activityId: selectedActivityId })">
-                      {{ $t('process.activityIdBadge.title.' + selectedActivityInstancesListMode, { activityId: selectedActivityId }) }}
-                    </span>
-                </span>
+                <RemovableBadge
+                  @on-remove="removeSelectedActivityBadge"
+                  :tooltip-remove="$t('process.activityIdBadge.remove')"
+                  :label="$t('process.activityIdBadge.title.' + selectedActivityInstancesListMode, { activityId: selectedActivityId })"
+                  :tooltip="$t('process.activityIdBadge.tooltip.' + selectedActivityInstancesListMode, { activityId: selectedActivityId })"/>
               </div>
             </template>
 
@@ -128,7 +128,10 @@
           ></InstancesTable>
         </template>
         <IncidentsTable v-else-if="activeTab === 'incidents'"
-          :process="process" :activity-instance="activityInstance" />
+          :process="process"
+          :activity-instance="activityInstance"
+          :tenant-id="tenantId"
+        />
         <JobDefinitionsTable v-else-if="activeTab === 'jobDefinitions'"
           :process="process" />
         <CalledProcessDefinitionsTable v-else-if="activeTab === 'calledProcessDefinitions'" :process="process" />
@@ -168,17 +171,18 @@ import resizerMixin from '@/components/process/mixins/resizerMixin.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import tabUrlMixin from '@/components/process/mixins/tabUrlMixin.js'
 import { debounce } from '@/utils/debounce.js'
-import { SuccessAlert, ConfirmDialog } from '@cib/common-frontend'
-import { BWaitingBox } from '@cib/bootstrap-components'
+import { SuccessAlert, ConfirmDialog, BWaitingBox } from '@cib/common-frontend'
 import ProcessInstancesTabs from '@/components/process/ProcessInstancesTabs.vue'
 import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
+import ViewerFrame from '@/components/common-components/ViewerFrame.vue'
+import RemovableBadge from '@/components/common-components/RemovableBadge.vue'
 import { mapGetters, mapActions } from 'vuex'
 
 export default {
   name: 'ProcessInstancesView',
   components: { InstancesTable, JobDefinitionsTable, BpmnViewer, MultisortModal,
      SuccessAlert, ConfirmDialog, BWaitingBox, IncidentsTable, CalledProcessDefinitionsTable,
-     ProcessInstancesTabs, ScrollableTabsContainer },
+     ProcessInstancesTabs, ScrollableTabsContainer, ViewerFrame, RemovableBadge },
   inject: ['loadProcesses'],
   mixins: [permissionsMixin, resizerMixin, copyToClipboardMixin, tabUrlMixin],
   emits: ['task-selected', 'filter-instances', 'instance-deleted'],
@@ -199,7 +203,6 @@ export default {
   data: function() {
     return {
       selectedInstance: null,
-      selectedTask: null,
       topBarHeight: 0,
       events: {},
       usages: [],
@@ -218,7 +221,7 @@ export default {
           await this.loadHistoricActivityStatistics({ processDefinitionId: this.process.id })
           await this.loadStaticCalledProcessDefinitions({ processDefinitionId: this.process.id })
           ProcessService.fetchDiagram(newId).then(response => {
-            this.$refs.diagram.showDiagram(response.bpmn20Xml)
+            this.$refs.diagram.showDiagram(response.bpmn20Xml, this.selectedActivityId)
             this.setDiagramXml(response.bpmn20Xml)
           })
         }
@@ -244,7 +247,7 @@ export default {
     this.loadStaticCalledProcessDefinitions({ processDefinitionId: this.process.id })
     ProcessService.fetchDiagram(this.process.id).then(response => {
       setTimeout(() => {
-        this.$refs.diagram.showDiagram(response.bpmn20Xml)
+        this.$refs.diagram.showDiagram(response.bpmn20Xml, this.selectedActivityId)
         this.setDiagramXml(response.bpmn20Xml)
       }, 100)
     })
@@ -316,7 +319,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions(['clearActivitySelection', 'setDiagramXml', 'loadHistoricActivityStatistics', 'clearHistoricActivityStatistics']),
+    ...mapActions(['clearActivitySelection', 'setHighlightedElement', 'setDiagramXml', 'loadHistoricActivityStatistics', 'clearHistoricActivityStatistics']),
     ...mapActions('calledProcessDefinitions', ['loadStaticCalledProcessDefinitions']),
     applySorting: function(sortingCriteria) {
       this.sorting = true
@@ -334,14 +337,13 @@ export default {
       })
     },
     selectTask: function(event) {
-      this.selectedTask = event
       this.$emit('task-selected', event);
     },
     viewDeployment: function() {
       this.$router.push('/seven/auth/deployments/' + this.process.deploymentId)
     },
     downloadBpmn: function() {
-      var filename = this.process.resource.substr(this.process.resource.lastIndexOf('/') + 1, this.process.resource.lenght)
+      const filename = this.process.resource.substr(this.process.resource.lastIndexOf('/') + 1, this.process.resource.lenght)
       window.location.href = getServicesBasePath() + '/process/' + this.process.id + '/data?filename=' + filename +
         '&token=' + this.$root.user.authToken
     },
@@ -401,7 +403,11 @@ export default {
         ...this.filter,
         editField: freeText,
       })
-    })
+    }),
+    removeSelectedActivityBadge: function() {
+      this.clearActivitySelection()
+      this.setHighlightedElement('')
+    }
   }
 }
 </script>

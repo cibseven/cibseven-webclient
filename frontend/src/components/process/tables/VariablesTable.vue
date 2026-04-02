@@ -31,19 +31,28 @@
       </div>
     </div>
     <div class="overflow-y-scroll bg-white container-fluid g-0 flex-grow-1">
-      <FlowTable v-if="!loading" striped resizable thead-class="sticky-header" :items="filteredVariables" primary-key="id" prefix="process-instance.variables."
-        sort-by="name" :fields="[
-        { label: 'name', key: 'name', class: 'col-3', tdClass: 'py-1' },
-        { label: 'type', key: 'type', class: 'col-2', tdClass: 'py-1' },
-        { label: 'value', key: 'value', class: 'col-3', tdClass: 'py-1' },
-        { label: 'scope', key: 'scope', class: 'col-2', tdClass: 'py-1' },
-        { label: 'actions', key: 'actions', class: 'col-2', sortable: false, tdClass: 'py-1' }]">
+      <FlowTable v-if="!loading" striped resizable thead-class="sticky-header" :items="filteredVariables" primary-key="id"
+        native-layout
+        useCase="instance-variables"
+        :columns="['name', 'type', 'value', 'scope', 'actions']"
+        sort-by="name"
+        :column-definitions="[
+          { label: 'process-instance.variables.name', key: 'name', tdClass: 'pb-0' },
+          { label: 'process-instance.variables.type', key: 'type', tdClass: 'pb-0' },
+          { label: 'process-instance.variables.value', key: 'value', tdClass: 'pb-0' },
+          { label: 'process-instance.variables.scope', key: 'scope', tdClass: 'pb-0', groupSeparator: true },
+          { label: 'process-instance.variables.activityInstanceId', key: 'activityInstanceId', tdClass: 'pb-0' },
+          { label: 'process-instance.variables.actions', key: 'actions', groupSeparator: true, disableToggle: true, sortable: false, tdClass: 'py-0' },
+        ]">
+
         <template v-slot:cell(name)="table">
           <div :title="table.item.name" class="text-truncate">{{ table.item.name }}</div>
         </template>
+
         <template v-slot:cell(type)="table">
           <div :title="table.item.type" class="text-truncate">{{ table.item.type }}</div>
         </template>
+
         <template v-slot:cell(value)="table">
           <CopyableActionButton
             :displayValue="displayValue(table.item)"
@@ -53,23 +62,44 @@
             @copy="copyValueToClipboard"
           />
         </template>
+
+        <template v-slot:cell(scope)="table">
+          <CopyableActionButton
+            :displayValue="table.item.scope"
+            :clickable="false"
+            :title="$t('process-instance.variables.scope') + ':\n' + table.item.scope"
+            @copy="copyValueToClipboard"
+          />          
+        </template>
+
+        <template v-slot:cell(activityInstanceId)="table">
+          <CopyableActionButton
+            :displayValue="table.item.activityInstanceId"
+            :clickable="false"
+            :title="$t('process-instance.variables.activityInstanceId') + ':\n' + table.item.activityInstanceId"
+            @copy="copyValueToClipboard"
+          />
+        </template>
+
         <template v-slot:cell(actions)="table">
-          <component :is="VariablesTableActionsPlugin" v-if="VariablesTableActionsPlugin" :table-item="table.item" :selected-instance="selectedInstance" :file-objects="fileObjects"></component>
-          <b-button v-if="isFile(table.item)" :title="displayValueTooltip(table.item)"
-            size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-download-outline"
-            @click="downloadFile(table.item)">
-          </b-button>
-          <b-button v-if="isFile(table.item)" :title="$t('process-instance.upload')"
-            size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-upload-outline"
-            @click="selectedVariable = table.item; $refs.uploadFile.show()">
-          </b-button>
-          <b-button v-if="'File' !== table.item.type && !isFileValueDataSource(table.item)"
-            :title="$t(isActiveInstance ? 'process-instance.edit' : 'process-instance.variables.historicVariable.tooltip')" size="sm" variant="outline-secondary"
-            class="border-0 mdi mdi-18px" :class="isActiveInstance ? 'mdi-square-edit-outline' : 'mdi-eye-outline'"
-            @click="modifyVariable(table.item)">
-          </b-button>
-          <b-button v-if="hasDeletionPermission" :title="$t('confirm.delete')" size="sm" variant="outline-secondary"
-            class="border-0 mdi mdi-18px mdi-delete-outline" @click="deleteVariable(table.item)"></b-button>
+          <div class="d-flex">
+            <component :is="VariablesTableActionsPlugin" v-if="VariablesTableActionsPlugin" :table-item="table.item" :selected-instance="selectedInstance" :file-objects="fileObjects"></component>
+            <CellActionButton v-if="isFile(table.item)" :title="displayValueTooltip(table.item)"
+              icon="mdi-download-outline"
+              @click="downloadFile(table.item)">
+            </CellActionButton>
+            <CellActionButton v-if="isFile(table.item) && isActiveInstance" :title="$t('process-instance.upload')"
+              icon="mdi-upload-outline"
+              @click="selectedVariable = table.item; $refs.uploadFile.show()">
+            </CellActionButton>
+            <CellActionButton v-if="'File' !== table.item.type && !isFileValueDataSource(table.item)"
+              :title="$t(isActiveInstance ? 'process-instance.edit' : 'process-instance.variables.historicVariable.tooltip')" 
+              :icon="isActiveInstance ? 'mdi-square-edit-outline' : 'mdi-eye-outline'"
+              @click="modifyVariable(table.item)">
+            </CellActionButton>
+            <CellActionButton v-if="hasDeletionPermission" :title="$t('confirm.delete')" 
+              icon="mdi-delete-outline" @click="deleteVariable(table.item)"></CellActionButton>
+          </div>
         </template>
       </FlowTable>
       <div v-else>
@@ -100,20 +130,19 @@
 </template>
 
 <script>
-import { BWaitingBox } from '@cib/bootstrap-components'
-import { FlowTable } from '@cib/common-frontend'
-import { TaskPopper, SuccessAlert, CopyableActionButton } from '@cib/common-frontend'
+import { BWaitingBox, FlowTable, TaskPopper, SuccessAlert, CopyableActionButton } from '@cib/common-frontend'
 import DeleteVariableModal from '@/components/process/modals/DeleteVariableModal.vue'
 import AddVariableModal from '@/components/process/modals/AddVariableModal.vue'
 import EditVariableModal from '@/components/process/modals/EditVariableModal.vue'
 import processesVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
+import CellActionButton from '@/components/common-components/CellActionButton.vue'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { permissionsMixin } from '@/permissions.js'
 import { mapGetters } from 'vuex'
 
 export default {
   name: 'VariablesTable',
-  components: { FlowTable, TaskPopper, AddVariableModal, DeleteVariableModal, EditVariableModal, SuccessAlert, BWaitingBox, CopyableActionButton },
+  components: { FlowTable, TaskPopper, AddVariableModal, DeleteVariableModal, EditVariableModal, SuccessAlert, BWaitingBox, CopyableActionButton, CellActionButton },
   mixins: [ processesVariablesMixin, copyToClipboardMixin, permissionsMixin ],
   data: function() {
     return {
@@ -174,6 +203,11 @@ export default {
         this.$refs.historicVariableDeleted.show()
       }
     },
-  }
+  },  
+	mounted() {
+		if (!this.$route.query.q) {
+			this.loadSelectedInstanceVariables()
+		}
+	}
 }
 </script>

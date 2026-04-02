@@ -21,15 +21,15 @@
     <div v-if="loading">
       <p class="text-center p-4"><BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}</p>
     </div>
-    <FlowTable v-else-if="jobs && jobs.length > 0" resizable striped thead-class="sticky-header" :items="jobs" primary-key="id" prefix="process-instance.jobs."
+    <FlowTable v-else-if="jobs && jobs.length > 0" resizable striped thead-class="sticky-header" :items="jobs" primary-key="id"
       sort-by="id" :sort-desc="true" :fields="[
-      { label: 'id', key: 'id', class: 'col-2', tdClass: 'py-1' },
-      { label: 'dueDate', key: 'dueDate', class: 'col-2', tdClass: 'position-relative py-1' },
-      { label: 'createTime', key: 'createTime', class: 'col-2', tdClass: 'py-1' },
-      { label: 'retries', key: 'retries', class: 'col-1', tdClass: 'py-1' },
-      { label: 'activity', key: 'activityId', class: 'col-2', tdClass: 'py-1' },
-      { label: 'failedActivity', key: 'failedActivityId', class: 'col-2', tdClass: 'py-1' },
-      { label: 'actions', key: 'actions', class: 'col-1', sortable: false, tdClass: 'py-1' }]">
+      { label: 'process-instance.jobs.id', key: 'id', class: 'col-2', tdClass: 'py-1' },
+      { label: 'process-instance.jobs.dueDate', key: 'dueDate', class: 'col-2', tdClass: 'position-relative py-1' },
+      { label: 'process-instance.jobs.createTime', key: 'createTime', class: 'col-2', tdClass: 'py-1' },
+      { label: 'process-instance.jobs.retries', key: 'retries', class: 'col-1', tdClass: 'py-1' },
+      { label: 'process-instance.jobs.activity', key: 'activityId', class: 'col-2', tdClass: 'py-1' },
+      { label: 'process-instance.jobs.failedActivity', key: 'failedActivityId', class: 'col-2', tdClass: 'py-1' },
+      { label: 'process-instance.jobs.actions', key: 'actions', class: 'col-1', sortable: false, tdClass: 'py-0' }]">
       <template v-slot:cell(id)="table">
         <span :title="table.item.id" class="text-truncate">{{ table.item.id }}</span>
       </template>
@@ -46,10 +46,8 @@
         <span :title="table.item.failedActivityId" class="text-truncate">{{ $store.state.activity.processActivities[table.item.failedActivityId] }}</span>
       </template>
       <template v-slot:cell(actions)="table">
-        <b-button :title="suspendedStatusText(table.item)" @click="setSuspendedJob(table.item, !table.item.suspended)"
-          size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px" :class="table.item.suspended ? 'mdi-play' : 'mdi-pause'"></b-button>
-        <b-button :title="$t('process-instance.jobs.changeDueDate')" @click="changeJobDueDate(table.item)"
-          size="sm" variant="outline-secondary" class="border-0 mdi mdi-18px mdi-clock-outline"></b-button>
+        <CellActionButton @click="setSuspendedJob(table.item, !table.item.suspended)" :title="suspendedStatusText(table.item)"  :icon="table.item.suspended ? 'mdi-play' : 'mdi-pause'"></CellActionButton>
+        <CellActionButton v-if="table.item.dueDate" @click="changeJobDueDate(table.item)" :title="$t('process-instance.jobs.changeDueDate')" :icon="'mdi-clock-outline'"></CellActionButton>
       </template>
     </FlowTable>
     <div v-else-if="!loading">
@@ -64,15 +62,14 @@
 <script>
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
-import { FlowTable } from '@cib/common-frontend'
-import { SuccessAlert } from '@cib/common-frontend'
+import { FlowTable, SuccessAlert, BWaitingBox } from '@cib/common-frontend'
 import JobDueDateModal from '@/components/process/modals/JobDueDateModal.vue'
-import { BWaitingBox } from '@cib/bootstrap-components'
+import CellActionButton from '@/components/common-components/CellActionButton.vue'
 import { mapGetters, mapActions } from 'vuex'
 
 export default {
   name: 'JobsTable',
-  components: { FlowTable, SuccessAlert, BWaitingBox, JobDueDateModal },
+  components: { FlowTable, SuccessAlert, BWaitingBox, JobDueDateModal, CellActionButton },
   mixins: [copyToClipboardMixin],
   props: {
     instance: Object,

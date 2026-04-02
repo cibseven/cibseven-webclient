@@ -57,6 +57,15 @@
     </span>
     <router-link class="col-12" :to="'/seven/auth/deployments/' + version.deploymentId">{{ version.deploymentId }}</router-link>
   </div>
+  <template v-if="selectedDeployment">
+    <hr class="my-2">
+    <div class="row">
+      <span class="text-secondary fw-bold col-5 pe-0">
+        {{ $t('deployment.deploymentTime') }}
+      </span>
+      <span class="col-7 text-end" :title="formatDateForTooltips(selectedDeployment?.deploymentTime)">{{ formatDate(selectedDeployment?.deploymentTime) }}</span>
+    </div>
+  </template>
   <hr class="my-2">
   <div class="row">
     <span class="text-secondary fw-bold col-12">
@@ -73,9 +82,9 @@
       <button @click="copyValueToClipboard(selectedInstance.superProcessInstanceId)" class="btn btn-sm mdi mdi-content-copy float-end border-0"
         :title="$t('process.details.copyValue')"></button>
     </span>
-    <a class="text-decoration-underline" style="cursor:pointer" @click.prevent="navigateToSuperProcessInstance(selectedInstance.superProcessInstanceId)">
+    <RouterLink class="text-decoration-underline" style="cursor:pointer" :to="routeToSuperProcessInstance(selectedInstance.superProcessInstanceId)">
       {{ selectedInstance.superProcessInstanceId }}
-    </a>
+    </RouterLink>
   </div>
   <hr class="my-2">
   <div class="row">
@@ -86,17 +95,17 @@
       <button @click="editHistoryTimeToLive()" class="btn btn-sm mdi mdi-pencil float-end border-0"
         :title="$t('process-instance.edit')"></button>
     </span>
-    <span class="col-12">{{ historyTimeToLive + ' ' + $t('process.days') }}</span>
+    <span class="col-12">{{ historyTimeToLive !== 0 ? historyTimeToLive : '∞' }}{{ ' ' + $t('process.days') }}</span>
   </div>
   <hr class="my-2">
   <div class="row">
     <span class="text-secondary fw-bold col-5 pe-0">{{ $t('process.details.firstStart') }}</span>
-    <span class="col-7 text-end">{{ getDate('min') }}</span>
+    <span class="col-7 text-end" :title="formatDateForTooltips(minTimestamp)">{{ formatDate(minTimestamp) || '-' }}</span>
   </div>
   <hr class="my-2">
   <div class="row">
     <span class="text-secondary fw-bold col-5 pe-0">{{ $t('process.details.lastStart') }}</span>
-    <span class="col-7 text-end">{{ getDate('max') }}</span>
+    <span class="col-7 text-end" :title="formatDateForTooltips(maxTimestamp)">{{ formatDate(maxTimestamp) || '-' }}</span>
   </div>
   <hr class="my-2">
   <div class="row align-items-center">
@@ -115,9 +124,17 @@
   </div>
 
   <b-modal ref="historyTimeToLive" :title="$t('process.details.historyTimeToLive')">
-    <div class="d-flex col-6 align-items-center ps-0">
-      <input class="form-control" type="number" v-model="historyTimeToLiveChanged">
-      <span class="ms-2">{{ $t('process.days') }}</span>
+    <p>
+      <span>{{ $t('process.details.definitionName') }}: </span>
+      <strong>{{ version.name }}</strong>
+      <br>
+      <span class="">{{ $t('process.details.definitionVersion') }}: </span>
+      <strong>{{ version.version }}</strong>
+    </p>
+    <label class="form-check-label pb-2" for="historyTimeToLiveInput">{{ $t('process.details.historyTimeToLive') }}</label>
+    <div class="input-group">
+      <input id="historyTimeToLiveInput" class="form-control" min="0" max="9999" type="number" v-model="historyTimeToLiveChanged">
+      <span class="input-group-text">{{ $t('process.days') }}</span>
     </div>
     <template v-slot:modal-footer>
       <b-button @click="$refs.historyTimeToLive.hide()" variant="light">{{ $t('confirm.cancel') }}</b-button>
@@ -130,8 +147,8 @@
 
 <script>
 import { moment } from '@/globals.js'
-import { formatDate } from '@/utils/dates.js'
-import { ProcessService, HistoryService } from '@/services.js'
+import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
+import { ProcessService } from '@/services.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { SuccessAlert } from '@cib/common-frontend'
 
@@ -147,57 +164,77 @@ export default {
   },
   data: function() {
     return {
-      versions: [],
-      historyTimeToLive: '',
-      historyTimeToLiveChanged: ''
+      selectedDeployment: null,
+      historyTimeToLive: null,
+      historyTimeToLiveChanged: null
     }
   },
   emits: ['onUpdateHistoryTimeToLive'],
+  watch: {
+    versionIndex() {
+      if (this.isVersionSelected) {
+        ProcessService.findDeployment(this.version.deploymentId).then(deployment => {
+          this.selectedDeployment = deployment
+        })
+      }
+      else {
+        this.selectedDeployment = null
+      }
+    }
+  },
   computed: {
     isVersionSelected() {
       return this.version.version === this.versionIndex
+    },
+    timestamps() {
+      return this.instances
+        .filter(i => i.processDefinitionVersion === this.version.version)
+        .map(i => moment(i.startTime).valueOf())
+    },
+    minTimestamp() {
+      if (this.timestamps.length === 0) return null
+      return Math.min(...this.timestamps)
+    },
+    maxTimestamp() {
+      if (this.timestamps.length === 0) return null
+      return Math.max(...this.timestamps)
     }
   },
-  mounted: function() {
+  mounted() {
     this.historyTimeToLive = this.version.historyTimeToLive
+    if (this.isVersionSelected) {
+      ProcessService.findDeployment(this.version.deploymentId).then(deployment => {
+        this.selectedDeployment = deployment
+      })
+    }
   },
   methods: {
-    getDate: function(type) {
-      const timestamps = this.instances.filter(i => i.processDefinitionVersion === this.version.version).map(i => moment(i.startTime).valueOf())
-      if (timestamps.length === 0) return '-'
-      const date = type === 'min' ? Math.min(...timestamps) : Math.max(...timestamps)
-      return formatDate(date)
-    },
+    formatDate,
+    formatDateForTooltips,
     editHistoryTimeToLive: function() {
       this.historyTimeToLiveChanged = this.historyTimeToLive
       this.$refs.historyTimeToLive.show()
     },
     updateHistoryTimeToLive: function() {
-      var data = { historyTimeToLive: this.historyTimeToLiveChanged || null }
+      if (this.historyTimeToLiveChanged === '') {
+        this.historyTimeToLiveChanged = 0
+      }
+      const data = { historyTimeToLive: this.historyTimeToLiveChanged }
       ProcessService.updateHistoryTimeToLive(this.version.id, data).then(() => {
         this.historyTimeToLive = data.historyTimeToLive
         this.$refs.historyTimeToLive.hide()
         this.$emit('onUpdateHistoryTimeToLive', this.version.id, data.historyTimeToLive);
       })
     },
-    navigateToSuperProcessInstance: async function(superProcessInstanceId) {
-      if (!superProcessInstanceId) return
-      try {
-        const processInstance = await HistoryService.findProcessInstance(superProcessInstanceId)
-        const processKey = processInstance.processDefinitionKey
-        const versionIndex = processInstance.processDefinitionVersion
-        const params = { processKey, versionIndex, instanceId: processInstance.id }
-
-        const routeConfig = {
-          name: 'process',
-          params,
-          query: {
-            tab: 'variables'
-          }
+    routeToSuperProcessInstance(superProcessInstanceId) {
+      return {
+        name: 'process-instance-id',
+        params: {
+          instanceId: superProcessInstanceId
+        },
+        query: {
+          tab: 'calledProcessInstances'
         }
-        await this.$router.push(routeConfig)
-      } catch (error) {
-        console.error('Failed to navigate to super process instance:', error)
       }
     }
   }

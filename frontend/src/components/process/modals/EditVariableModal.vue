@@ -22,6 +22,7 @@
     :saving="saving"
     :error="error"
     :show-only-error="showOnlyError"
+    :allow-file-upload="allowFileUpload"
 
     @add-variable="saveVariable"
   ></AddVariableModalUI>
@@ -29,8 +30,7 @@
 
 <script>
 import AddVariableModalUI from '@/components/process/modals/AddVariableModalUI.vue'
-import { ProcessService } from '@/services.js'
-import { VariableInstanceService, HistoricVariableInstanceService } from '@/services.js'
+import { ProcessService, VariableInstanceService, HistoricVariableInstanceService } from '@/services.js'
 
 export default {
 name: 'EditVariableModal',
@@ -40,6 +40,10 @@ props: {
     historic: {
       type: Boolean,
       default: false
+    },
+    allowFileUpload: {
+      type: Boolean,
+      default: true
     }
   },
   data() {
@@ -98,16 +102,30 @@ props: {
     },
 
     async saveVariable(variable) {
+      if (variable.type === 'File') {
+        return this.updateFileVariable(variable)
+      }
       const isEditDeserializedValue = (variable.type === 'Object' &&
         // only for non-json serialized objects
         (variable.valueInfo?.serializationDataFormat !== 'application/json'))
       return isEditDeserializedValue ? this.updateVariableDeserialized(variable) : this.updateVariableSerialized(variable)
     },
 
+    async updateFileVariable(variable) {
+      this.saving = true
+      await VariableInstanceService.uploadFile(this.executionId, variable).then(() => {
+        this.$refs.addVariableModalUI.hide()
+        this.$emit('variable-updated')
+      }).catch((error) => {
+        this.error = error.message
+        this.saving = false
+      })
+    },
+
     async updateVariableDeserialized(variable) {
       this.saving = true
 
-      var formData = new FormData()
+      const formData = new FormData()
       const jsonBlob = new Blob([variable.value.toString()], { type: 'application/json' })
       formData.append('data', jsonBlob, 'blob')
       formData.append('valueType', variable.valueInfo?.objectTypeName || 'java.lang.Object')

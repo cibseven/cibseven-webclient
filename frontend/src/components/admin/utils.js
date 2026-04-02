@@ -29,7 +29,9 @@ export function same(value, value2) {
 
 export function isValidId(value) {
   if (value === null) return null
-  if (value.indexOf(' ') >= 0) return false
+  if (value.includes(' ')) return false
+  if (value.includes('\t')) return false
+  if (value.includes('\n')) return false
   return notEmpty(value)
 }
 
@@ -42,7 +44,7 @@ export function isValidEmail(value) {
 }
 
 export function getStringObjByKeys(keys, obj) {
-  var result = ''
+  let result = ''
   keys.forEach(key => {
     if (key === 'userIdGroupId') {
       if (obj.userId) result += obj.userId + ';'

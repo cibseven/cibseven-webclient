@@ -30,7 +30,7 @@
       </div>
       <SuccessAlert top="0" style="z-index: 1031" ref="messageSaved"> {{ $t('alert.successSaveTask') }}</SuccessAlert>
       <SuccessAlert top="0" style="z-index: 1031" ref="messageSuccess"> {{ $t('alert.successOperation') }}</SuccessAlert>
-      <b-modal ref="datePickerModal">
+      <b-modal ref="datePickerModal" :title="$t('deployed-form.selectDate')" hide-footer>
         <b-calendar
           v-model="datePickerValue"
           value-as-date
@@ -44,8 +44,8 @@
           label-help=""
         ></b-calendar>
         <template v-slot:modal-footer>
-          <b-button :title="$t('confirm.cancel')" @click="$refs.datePickerModal.hide()" variant="light">{{ $t('confirm.cancel') }}</b-button>
-          <b-button :title="$t('confirm.ok')" @click="onDatePickerConfirm()" variant="primary">{{ $t('confirm.ok') }}</b-button>
+          <b-button @click="$refs.datePickerModal.hide()" variant="light">{{ $t('confirm.cancel') }}</b-button>
+          <b-button @click="onDatePickerConfirm()" variant="primary">{{ $t('confirm.ok') }}</b-button>
         </template>
       </b-modal>
     </div>
@@ -55,9 +55,8 @@
 <script>
 import { permissionsMixin } from '@/permissions.js'
 import { TaskService } from '@/services.js'
-import IconButton from '@/components/render-template/IconButton.vue'
-import { SuccessAlert } from '@cib/common-frontend'
-import { BWaitingBox } from '@cib/bootstrap-components'
+import IconButton from '@/components/forms/IconButton.vue'
+import { SuccessAlert, BWaitingBox } from '@cib/common-frontend'
 import { ENGINE_STORAGE_KEY } from '@/constants.js'
 import { getIframeContext, findAndScroll } from '@/utils/iframe.js'
 
@@ -100,7 +99,7 @@ export default {
   },
   mounted: function() {
     this.loadIframe()
-    var formFrame = this.$refs['template-frame']
+    const formFrame = this.$refs['template-frame']
     window.addEventListener('message', this.processMessage)
 
     formFrame.setAttribute('allowfullscreen', true)
@@ -122,10 +121,10 @@ export default {
       this.loader = true
       this.submitForm = false
       this.formFrame = true
-      var theme = localStorage.getItem('theme') || this.$root.theme
-      var themeContext = ''
-      var translationContext = ''
-      if (['cib', 'generic'].includes(theme) || !theme) {
+      const theme = localStorage.getItem('theme') || this.$root.theme
+      let themeContext = ''
+      let translationContext = ''
+      if (['cib'].includes(theme) || !theme) {
         themeContext = encodeURIComponent('bootstrap/bootstrap_4.5.0.min.css?v=1.14.0')
       }
       else {
@@ -133,7 +132,7 @@ export default {
         themeContext = 'themes/' + theme + '/bootstrap_4.5.0.min.css'
       }
 
-      let formFrame = this.$refs['template-frame']
+      const formFrame = this.$refs['template-frame']
       //Startforms
       if (this.task.url) {
         formFrame.src = this.task.url + '/' + themeContext + '/' + translationContext
@@ -146,7 +145,7 @@ export default {
         formFrame.src = `embedded-forms.html?generated=true&processDefinitionId=${this.task.processDefinitionId}&lang=${this.currentLanguage()}`
         this.loader = false
       } else if (this.task.id) {
-        var form = this.task.formKey || await TaskService.form(this.task.id)
+        const form = this.task.formKey || await TaskService.form(this.task.id)
         if (form.key && form.key.includes('/rendered-form')) {
           // Generated forms
           this.formFrame = true
@@ -201,7 +200,7 @@ export default {
     },
     completeTask: function(task) {
       this.submitForm = true
-      var data = JSON.parse(JSON.stringify(this.task))
+      const data = JSON.parse(JSON.stringify(this.task))
       if (task) data.processInstanceId = task.id
       if (this.task.url) {
         this.$emit('complete-task', data)
@@ -220,8 +219,8 @@ export default {
       }
 
       // Process HTTP error responses and display corresponding error messages
-      var type = ''
-      var errorParams = []
+      let type = ''
+      const errorParams = []
       switch (data.status) {
         case 404:
           if (data.type !== 'generic') {
@@ -253,19 +252,19 @@ export default {
       })
     },
     selectFilter: function(filterId) {
-      var selectedFilter = this.$store.state.filter.list.find(f => {
+      const selectedFilter = this.$store.state.filter.list.find(f => {
         return f.id === filterId
       })
       if (selectedFilter) {
         this.$store.state.filter.selected = selectedFilter
         localStorage.setItem('filter', JSON.stringify(selectedFilter))
-        var path = '/seven/auth/tasks/' + selectedFilter.id +
+        const path = '/seven/auth/tasks/' + selectedFilter.id +
           (this.$route.params.taskId ? '/' + this.$route.params.taskId : '')
         if (this.$route.path !== path) this.$router.replace(path)
       }
     },
     processMessage: function(e) {
-      var formFrame = this.$refs['template-frame']
+      const formFrame = this.$refs['template-frame']
       if (e.source === formFrame.contentWindow && e.data.method) {
         if (e.data.method === 'completeTask') this.completeTask(e.data.task)
         else if (e.data.method === 'displaySuccessMessage') this.$refs.messageSaved.show(10)
@@ -275,12 +274,17 @@ export default {
         else if (e.data.method === 'updateFilters') this.updateFilters(e.data)
         else if (e.data.method === 'requestConfig') {
           // Securely provide config (auth token + engine) to iframe via postMessage
-          const engineName = localStorage.getItem(ENGINE_STORAGE_KEY)
+          const engineId = localStorage.getItem(ENGINE_STORAGE_KEY)
           const config = {
-            authToken: this.$root.user.authToken
+            authToken: this.$root.user.authToken,
+            engineRestUrl: this.$root.config.engineRestUrl,
+            engineRestPath: this.$root.config.engineRestPath
           }
-          if (engineName) {
-            config.engineName = engineName
+          if (engineId) {
+            // Engine ID can be either:
+            // - Simple string (default engine) -> use relative path
+            // - "url|path|engineName" format (additional engine) -> parse and use absolute URL
+            config.engineId = engineId
           }
           const response = {
             method: 'configResponse',
@@ -302,8 +306,8 @@ export default {
             const match = date.match(dateRegex);
             if (match) {
               const [, day, month, year] = match;
-              var dateObject = new Date(year, month - 1, day);
-              if (isNaN(dateObject.getTime())) {
+              const dateObject = new Date(year, month - 1, day);
+              if (Number.isNaN(dateObject.getTime())) {
                 this.datePickerValue = null;
               } else {
                 this.datePickerValue = dateObject;
@@ -325,7 +329,7 @@ export default {
     onDatePickerConfirm: function() {
       let result = null
       if (this.datePickerValue) {
-        let d = new Date(this.datePickerValue)
+        const d = new Date(this.datePickerValue)
         // Format as dd/mm/yyyy
         const day = String(d.getDate()).padStart(2, '0')
         const month = String(d.getMonth() + 1).padStart(2, '0')
@@ -358,7 +362,7 @@ export default {
       this.datePickerRequest = null
     },
     onBeforeUnload: function() {
-      var formFrame = this.$refs['template-frame']
+      const formFrame = this.$refs['template-frame']
       if (formFrame) {
         formFrame.contentWindow.postMessage({ type: 'contextChanged' }, '*')
         this.loadIframe()

@@ -30,8 +30,8 @@ export default {
     '$route.query.filtername': function(filtername) {
       if (filtername) {
         if (this.$store.state.filter.list) {
-          var taskId = this.$route.params.filterId
-          var filter = this.$store.state.filter.list.find(filter => {
+          const taskId = this.$route.params.filterId
+          const filter = this.$store.state.filter.list.find(filter => {
             return filtername.toUpperCase() === filter.name.toUpperCase()
           })
           if (filter) {

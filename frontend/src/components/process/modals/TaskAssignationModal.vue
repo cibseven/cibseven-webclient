@@ -17,7 +17,7 @@
 
 -->
 <template>
-  <b-modal ref="assignationModal" :title="selectedIdentity.type === 'assignee' ? $t('process-instance.assignModal.manageAssignee') : $t('process-instance.assignModal.manageUsersGroups')" :ok-only="true">
+  <b-modal ref="assignationModal" :title="modalTitle" :ok-only="true">
     <div>
       <ul class="nav nav-tabs mb-4">
         <li class="nav-item" v-for="(identity, idx) in filteredIdentities" :key="idx">
@@ -55,7 +55,7 @@
                     <td class="text-center py-1">
                       <button
                         @click="removeIdentityLink(identityLink, idx)"
-                        class="btn btn-outline-secondary border-0 mdi mdi-18px mdi-delete"
+                        class="btn btn-outline-secondary border-0 mdi mdi-18px mdi-delete-outline"
                         :title="$t('process-instance.assignModal.delete')">
                       </button>
                     </td>
@@ -69,9 +69,10 @@
       </div>
 
       <b-input-group>
-        <b-form-input v-model="identity" @keyup.enter="addIdentity" autocomplete="off" />
+        <label class="visually-hidden" for="identity-input">{{ $t('process-instance.assignModal.' + selectedIdentity.value) }}</label>
+        <b-form-input v-model="identity" id="identity-input" @keyup.enter="addIdentity" autocomplete="off" />
         <b-input-group-append>
-          <b-button @click="addIdentity" variant="primary" :disabled="!identity" :title="$t('process-instance.assignModal.add')">
+          <b-button @click="addIdentity" variant="primary" :disabled="!identity">
             {{ $t('process-instance.assignModal.add') }}
           </b-button>
         </b-input-group-append>
@@ -95,21 +96,51 @@ export default {
         { value: 'userId', text: 'users', type: 'candidate' },
         { value: 'groupId', text: 'groups', type: 'candidate' }
       ],
-      selectedIdentity: {},
+      selectedIdentity: { value: 'userId', text: 'assignee', type: 'assignee' },
       identity: '',
       taskId: '',
-      identityExists: false
+      identityExists: false,
+      showOnlySelected: false,
+      customTitle: null
     }
   },
   computed: {
     filteredIdentities() {
+      if (this.showOnlySelected) {
+        return this.identities.filter(identity => identity.text === this.selectedIdentity.text)
+      }
       return this.identities.filter(identity => identity.type === this.selectedIdentity.type)
+    },
+    modalTitle() {
+      if (this.customTitle) {
+        return this.customTitle
+      }
+      return this.selectedIdentity.type === 'assignee' 
+        ? this.$t('process-instance.assignModal.manageAssignee') 
+        : this.$t('process-instance.assignModal.manageUsersGroups')
     }
   },
   methods: {
-    show: function(taskId, assignee) {
-      this.selectedIdentity = this.identities[1]
-      if (assignee) this.selectedIdentity = this.identities[0]
+    show: function(taskId, assignee, specificTab = null) {
+      
+      if (specificTab) {
+        const foundIdentity = this.identities.find(identity => identity.text === specificTab)
+        if (foundIdentity) {
+          this.selectedIdentity = foundIdentity
+          this.showOnlySelected = true
+          // Set custom title based on the specific tab
+          if (specificTab === 'groups') {
+            this.customTitle = this.$t('process-instance.assignModal.manageGroups')
+          } else if (specificTab === 'users') {
+            this.customTitle = this.$t('process-instance.assignModal.manageUsers')
+          }
+        }
+      } else {
+        this.selectedIdentity = assignee ? this.identities[0] : this.identities[1]
+        this.showOnlySelected = false
+        this.customTitle = null
+      }
+      
       this.taskId = taskId
       this.identityLinks = []
       this.identityExists = false
@@ -124,7 +155,7 @@ export default {
         obj.type === identity.type)
     },
     addIdentity: function() {
-      var newIdentityLink = { type: this.selectedIdentity.type }
+      const newIdentityLink = { type: this.selectedIdentity.type }
       newIdentityLink[this.selectedIdentity.value] = this.identity
 
       this.identityExists = this.identityLinks.find(obj => {
@@ -137,7 +168,7 @@ export default {
           this.identity = ''
           if (this.selectedIdentity.type !== 'assignee') this.identityLinks.push(newIdentityLink)
           else {
-            var assigneeIdentity = this.identityLinks.find(ilink => ilink.type === 'assignee')
+            const assigneeIdentity = this.identityLinks.find(ilink => ilink.type === 'assignee')
             assigneeIdentity ? assigneeIdentity.userId = newIdentityLink.userId : this.identityLinks.push(newIdentityLink)
             this.$emit('change-assignee', { taskId: this.taskId, assignee: newIdentityLink.userId })
           }
