@@ -25,7 +25,8 @@ CREATE TABLE processes_diagrams (
     active NUMBER(1) DEFAULT 1 NOT NULL,
     type VARCHAR2(50) NOT NULL DEFAULT 'bpmn-c7',
     version NUMBER(10,0),
-    diagram BLOB
+    diagram BLOB,
+    updated_by VARCHAR2(255)
 );
 
 CREATE TABLE revinfo (
@@ -86,7 +87,8 @@ CREATE TABLE forms (
     active NUMBER(1) DEFAULT 1 NOT NULL,
     form_schema BLOB NOT NULL,
     formid VARCHAR2(100 CHAR) NOT NULL UNIQUE,
-    version NUMBER(11) DEFAULT 1
+    version NUMBER(11) DEFAULT 1,
+    updated_by VARCHAR2(255)
 );
 
 CREATE TABLE form_usage (

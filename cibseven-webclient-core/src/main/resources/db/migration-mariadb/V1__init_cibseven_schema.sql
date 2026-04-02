@@ -25,7 +25,8 @@ CREATE TABLE IF NOT EXISTS processes_diagrams (
     active TINYINT(1) DEFAULT 1 NOT NULL,
     type VARCHAR(50) NOT NULL DEFAULT 'bpmn-c7',
     version INT,
-    diagram LONGBLOB
+    diagram LONGBLOB,
+    updated_by VARCHAR(255) NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS revinfo (
@@ -84,7 +85,8 @@ CREATE TABLE IF NOT EXISTS forms (
     active TINYINT(1) DEFAULT 1 NOT NULL,
     form_schema LONGBLOB NOT NULL,
     formid VARCHAR(100) NOT NULL UNIQUE,
-    version INT(11) DEFAULT 1
+    version INT(11) DEFAULT 1,
+    updated_by VARCHAR(255) NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS form_usage (
