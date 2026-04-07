@@ -92,8 +92,14 @@ export default {
 				if (this.selectedInstance.state === 'ACTIVE' || this.$root.config.camundaHistoryLevel === 'none') {
 					this.fetchInstanceVariables('ProcessService', 'fetchProcessInstanceVariables')
 				} else {
-					if (this.$root.config.camundaHistoryLevel === 'full') {
+					if (this.$root.config.camundaHistoryLevel === 'full' || this.$root.config.camundaHistoryLevel === 'audit') {
 						this.fetchInstanceVariables('HistoryService', 'fetchProcessInstanceVariablesHistory')
+					} else {
+						// no variables available for finished process instances if history level is 'activity' or 'none'
+						this.variables = []
+						this.filteredVariables = []
+						this.loading = false
+						this.fetching = false
 					}
 				}
 			}

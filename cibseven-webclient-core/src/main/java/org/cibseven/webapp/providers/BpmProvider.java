@@ -354,6 +354,8 @@ public interface BpmProvider {
      * @throws SystemException in case of an error.
      */
 	Collection<ProcessInstance> findCurrentProcessesInstances(Map<String, Object> data, CIBUser user) throws SystemException;
+
+	Collection<HistoryProcessInstance> findProcessesInstancesRuntime(Map<String, Object> data, Optional<Integer> firstResult, Optional<Integer> maxResults, CIBUser user) throws SystemException;
 	
 	/**
      * Search process instance with a specific process instance id.
@@ -929,6 +931,7 @@ public interface BpmProvider {
 	Collection<HistoryProcessInstance> findProcessesInstancesHistoryById(String id, Optional<String> activityId, Optional<Boolean> active, Integer firstResult, Integer maxResults, String text, CIBUser user) throws SystemException;
 	
 	Long countProcessesInstancesHistory(Map<String, Object> filters, CIBUser user);	
+	Long countProcessesInstancesRuntime(Map<String, Object> filters, CIBUser user);
 	
 	/**
 	 * Get user by id.
