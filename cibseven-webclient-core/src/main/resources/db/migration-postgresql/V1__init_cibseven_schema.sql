@@ -25,7 +25,8 @@ CREATE TABLE IF NOT EXISTS processes_diagrams (
     active BOOLEAN DEFAULT TRUE NOT NULL,
     type VARCHAR(50) NOT NULL DEFAULT 'bpmn-c7',
     version INTEGER,
-    diagram BYTEA
+    diagram BYTEA,
+    updated_by VARCHAR(255)
 );
 
 CREATE TABLE IF NOT EXISTS revinfo (
@@ -84,7 +85,8 @@ CREATE TABLE IF NOT EXISTS forms (
     active BOOLEAN DEFAULT TRUE NOT NULL,
     form_schema BYTEA NOT NULL,
     formid VARCHAR(100) NOT NULL UNIQUE,
-    version INTEGER DEFAULT 1
+    version INTEGER DEFAULT 1,
+    updated_by VARCHAR(255)
 );
 
 CREATE TABLE IF NOT EXISTS form_usage (
