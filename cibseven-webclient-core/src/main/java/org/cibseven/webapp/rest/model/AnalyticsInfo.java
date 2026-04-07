@@ -26,5 +26,5 @@ import lombok.NoArgsConstructor;
 public class AnalyticsInfo {
   private String id;
   private String title;
-  private long value;
+  private Long value;
 }

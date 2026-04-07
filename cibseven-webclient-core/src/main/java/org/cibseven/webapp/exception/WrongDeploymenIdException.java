@@ -16,9 +16,11 @@
  */
 package org.cibseven.webapp.exception;
 
+import java.io.Serial;
+
 public class WrongDeploymenIdException extends RuntimeException {
 
-	private static final long serialVersionUID = 1L;
+	@Serial private static final long serialVersionUID = 1L;
 
 	public WrongDeploymenIdException(Throwable cause) {
 		super("Deployment resources for this deploymentId do not exist.", cause);

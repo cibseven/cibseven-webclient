@@ -23,5 +23,5 @@ import lombok.Data;
 @Data @JsonIgnoreProperties(ignoreUnknown = true) 
 public class SevenVerifyUser {
 	private String authenticatedUser;
-	private boolean authenticated;
+	private Boolean authenticated;
 }

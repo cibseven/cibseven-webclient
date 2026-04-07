@@ -28,7 +28,7 @@ import org.cibseven.webapp.rest.model.HistoricDecisionInstance;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 @Component
 public class DecisionProvider extends SevenProviderBase implements IDecisionProvider{
@@ -149,7 +149,7 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 		String url = getEngineRestUrl(user) + "/decision-definition?key=" + key + "&sortBy=version&sortOrder=desc";
 		Collection<Decision> decisions = Arrays.asList(((ResponseEntity<Decision[]>) doGet(url, Decision[].class, user, false)).getBody());		
 		
-		if (!lazyLoad.isPresent() || (lazyLoad.isPresent() && !lazyLoad.get())) {
+		if (lazyLoad.isEmpty() || (lazyLoad.isPresent() && !lazyLoad.get())) {
 			for(Decision decision : decisions) {
 				String urlCount = getEngineRestUrl(user) + "/history/decision-instance/count?decisionDefinitionId=" + decision.getId();
 				JsonNode body = ((ResponseEntity<JsonNode>) doGet(urlCount, JsonNode.class, user, false)).getBody();

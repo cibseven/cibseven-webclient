@@ -17,24 +17,25 @@
 package org.cibseven.webapp.rest.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import tools.jackson.core.JacksonException;
 
 @Data @AllArgsConstructor @NoArgsConstructor @JsonIgnoreProperties(ignoreUnknown = true)
 public class Authorization {
 	private String id;
-	private int type;
+	private Integer type;
 	private String[] permissions;
 	private String userId;
 	private String groupId;
-	private int resourceType;
+	private Integer resourceType;
 	private String resourceId;
 	
-	public String json() throws JsonProcessingException {
-		return new ObjectMapper().writeValueAsString(this);
+	public String json() throws JacksonException {
+		return new JsonMapper().writeValueAsString(this);
 	}
 }

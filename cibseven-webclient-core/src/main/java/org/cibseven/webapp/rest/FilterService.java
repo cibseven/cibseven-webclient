@@ -24,10 +24,13 @@ import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.providers.PermissionConstants;
 import org.cibseven.webapp.rest.model.Filter;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -46,7 +49,7 @@ public class FilterService extends BaseService{
 			summary = "Get collections of filters",
 			description = "Get all filters" + "<br>" +
 			"<strong>Return: Collection filters fetched in the search")
-	@RequestMapping(method = RequestMethod.GET)
+	@GetMapping
 	public Collection<Filter> findFilter(
 			Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.FILTER, PermissionConstants.READ_ALL);
@@ -57,7 +60,7 @@ public class FilterService extends BaseService{
 			summary = "Create filter",
 			description = "Request body: A JSON object with the following properties: id, resourceType, name, owner, query and properties" + "<br>" +
 			"<strong>Return: Filter")
-	@RequestMapping(method = RequestMethod.POST)
+	@PostMapping
 	public Filter createFilter(
 			@RequestBody Filter filter,
 			Locale loc, CIBUser user) {
@@ -69,7 +72,7 @@ public class FilterService extends BaseService{
 			summary = "Update filter",
 			description = "Request body: A JSON object with the following properties: id, resourceType, name, owner, query and properties" + "<br>" +
 			"<strong>Return: void")
-	@RequestMapping(method = RequestMethod.PUT)
+	@PutMapping
 	public ResponseEntity<Void> updateFilter(
 			@RequestBody Filter filter,
 			Locale loc, CIBUser user) {
@@ -83,7 +86,7 @@ public class FilterService extends BaseService{
 			summary = "Delete filter",
 			description = "<strong>Return: void")
 	@ApiResponse(responseCode = "404", description = "Filter not found")
-	@RequestMapping(value = "/{filterId}", method = RequestMethod.DELETE)
+	@DeleteMapping("/{filterId}")
 	public ResponseEntity<Void> deleteFilter(
 			@Parameter(description = "Filter Id") @PathVariable String filterId,
 			Locale loc, CIBUser user) {
