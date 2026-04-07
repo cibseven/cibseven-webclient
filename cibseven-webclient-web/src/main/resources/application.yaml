@@ -45,7 +45,8 @@ cibseven:
       # Enable or disable the modeler feature including its database components
       # (JPA entities, repositories, REST endpoints, Flyway migrations).
       # Set to false for production deployments where the modeler is not needed.
-      # When disabled, no datasource or schema migrations are required.
+      # When disabled, DataSource, JPA, and Flyway auto-configurations are excluded
+      # automatically - no datasource or schema migrations are required.
       enabled: true
     # Engine rest
     engineRest:
