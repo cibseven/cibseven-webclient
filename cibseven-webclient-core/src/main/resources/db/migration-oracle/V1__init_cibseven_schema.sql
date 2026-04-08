@@ -17,7 +17,7 @@ CREATE TABLE element_templates (
 
 CREATE TABLE processes_diagrams (
     id VARCHAR2(36) PRIMARY KEY,
-    name VARCHAR2(100 CHAR) NOT NULL,
+    name VARCHAR2(255) NOT NULL,
     processkey VARCHAR2(100) NOT NULL UNIQUE,
     description VARCHAR2(150),
     created TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -38,7 +38,7 @@ CREATE SEQUENCE revinfo_seq START WITH 1 INCREMENT BY 1;
 
 CREATE TABLE processes_diagrams_aud (
     id VARCHAR2(36) NOT NULL,
-    name VARCHAR2(100 CHAR),
+    name VARCHAR2(255),
     processkey VARCHAR2(100),
     description VARCHAR2(150),
     created TIMESTAMP,
