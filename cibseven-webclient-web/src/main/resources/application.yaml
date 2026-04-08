@@ -150,15 +150,15 @@ springdoc:
 # Activate "/actuator/info" and "/actuator/health" endpoints
 management:
   endpoints:
-    access.default: none # Disable all endpoints by default
+    enabled-by-default: false # Disable all endpoints by default
     web:
       exposure:
         include: health,info # Include only health and info endpoints
   endpoint:
     info:
-      access: read-only # Enable the info endpoint
+      enabled: true # Enable the info endpoint
     health:
-      access: read-only # Enable the health endpoint
+      enabled: true # Enable the health endpoint
       probes:
         enabled: true # Enable health probes (if applicable)
   info:

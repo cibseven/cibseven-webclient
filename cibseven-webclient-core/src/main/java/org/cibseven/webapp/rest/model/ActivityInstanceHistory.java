@@ -28,9 +28,9 @@ public class ActivityInstanceHistory {
 	private String assignee;
 	private String calledCaseInstanceId;
 	private String calledProcessInstanceId;
-	private Boolean canceled;
-	private Boolean completeScope;
-	private Long durationInMillis;
+	private boolean canceled;
+	private boolean completeScope;
+	private long durationInMillis;
 	private String endTime;
 	private String executionId;
 	private String id;

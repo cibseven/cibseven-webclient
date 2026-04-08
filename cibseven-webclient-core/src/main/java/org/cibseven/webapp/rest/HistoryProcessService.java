@@ -31,11 +31,9 @@ import org.cibseven.webapp.rest.model.ActivityInstanceHistory;
 import org.cibseven.webapp.rest.model.HistoryProcessInstance;
 import org.cibseven.webapp.rest.model.VariableHistory;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -63,7 +61,7 @@ public class HistoryProcessService extends BaseService {
 			summary = "Queries for historic process instances that fulfill the given parameters",
 			description = "Parameters firstResult and maxResults are used for pagination")
 	@ApiResponse(responseCode = "400", description = "There is at least one invalid parameter value")
-	@PostMapping("/process-history/instance")
+	@RequestMapping(value = "/process-history/instance", method = RequestMethod.POST)
 	public Collection<HistoryProcessInstance> findProcessesInstancesHistory(
 			@Parameter(description = "Parameters to filter query") @RequestBody Map<String, Object> filters,
 			@Parameter(description = "Index of the first result to return") @RequestParam Optional<Integer> firstResult,
@@ -78,7 +76,7 @@ public class HistoryProcessService extends BaseService {
 	    description = "Returns the total number of matching historic process instances"
 	)
 	@ApiResponse(responseCode = "400", description = "There is at least one invalid parameter value")
-	@PostMapping("/process-history/instance/count")
+	@RequestMapping(value = "/process-history/instance/count", method = RequestMethod.POST)
 	public Long countProcessesInstancesHistory(
 	        @Parameter(description = "Parameters to filter query") @RequestBody Map<String, Object> filters,
 	        CIBUser user) {
@@ -90,7 +88,7 @@ public class HistoryProcessService extends BaseService {
 			summary = "Get processes instances with a specific process key (in the history)",
 			description = "Parameters firstResult and maxResults are used for pagination")
 	@ApiResponse(responseCode = "404", description = "Process not found")
-	@GetMapping("/process-history/instance/by-process-key/{key}")
+	@RequestMapping(value = "/process-history/instance/by-process-key/{key}", method = RequestMethod.GET)
 	public Collection<HistoryProcessInstance> findProcessesInstancesHistory(
 			@Parameter(description = "Process key") @PathVariable String key, 
 			@Parameter(description = "True means that unfinished processes will be fetched<br>False only finished processes will be fetched") @RequestParam Optional<Boolean> active, 
@@ -105,7 +103,7 @@ public class HistoryProcessService extends BaseService {
 			summary = "Get processes instances with a specific process id (in the history)",
 			description = "Parameters firstResult and maxResults are used for pagination<br>Parameters text and activityId are used for filtering")
 	@ApiResponse(responseCode = "404", description = "Process not found")
-	@GetMapping("/process-history/instance/by-process-id/{id}")
+	@RequestMapping(value = "/process-history/instance/by-process-id/{id}", method = RequestMethod.GET)
 	public Collection<HistoryProcessInstance> findProcessesInstancesHistoryById(
 			@Parameter(description = "Process Id") @PathVariable String id,
 			@Parameter(description = "Process Activity Id") @RequestParam Optional<String> activityId,
@@ -122,7 +120,7 @@ public class HistoryProcessService extends BaseService {
 			summary = "Get variables from a specific process instance",
 			description = "The variables found belongs to the history, they have other attributes and variables from finished process instances are also fetched")
 	@ApiResponse(responseCode = "404", description = "Variable not found")
-	@GetMapping("/process-history/instance/by-process-instance/{processInstanceId}/variables")
+	@RequestMapping(value = "/process-history/instance/by-process-instance/{processInstanceId}/variables", method = RequestMethod.GET)
 	public Collection<VariableHistory> fetchProcessInstanceVariablesHistory(
 			@Parameter(description = "Filter by process instance Id") @PathVariable String processInstanceId,
 			@Parameter(description = "Variable name") @RequestParam Optional<String> variableName,
@@ -146,7 +144,7 @@ public class HistoryProcessService extends BaseService {
 	
 	// Used for chat-comments, to find parent of a process instanceId
 	@ApiResponse(responseCode = "404", description = "Process instance not found")
-	@GetMapping("/process-history/instance/{processInstanceId}")
+	@RequestMapping(value = "/process-history/instance/{processInstanceId}", method = RequestMethod.GET)
 	public HistoryProcessInstance findProcessInstance(
 			@Parameter(description = "Process instance Id") @PathVariable String processInstanceId,
 			Locale loc, HttpServletRequest rq) {
@@ -156,7 +154,7 @@ public class HistoryProcessService extends BaseService {
 	}
 	
 	@ApiResponse(responseCode = "404", description = "Process instance not found")
-	@DeleteMapping("/process-history/instance/{id}")
+	@RequestMapping(value = "/process-history/instance/{id}", method = RequestMethod.DELETE)
 	public ResponseEntity<Void> deleteProcessInstanceFromHistory(
 			@Parameter(description = "Process instance Id") @PathVariable String id,
 			Locale loc, HttpServletRequest rq) {
@@ -169,7 +167,7 @@ public class HistoryProcessService extends BaseService {
 	
 	@Operation(summary = "Delete a variable in the historic process instance")
 	@ApiResponse(responseCode = "404")
-	@DeleteMapping("/process-history/instance/{id}/variables")
+	@RequestMapping(value = "/process-history/instance/{id}/variables", method = RequestMethod.DELETE)
 	public ResponseEntity<Void> deleteVariableHistoryInstance(
 			@Parameter(description = "Id of the variable") @PathVariable String id,
 			Locale loc, CIBUser user) {
@@ -185,7 +183,7 @@ public class HistoryProcessService extends BaseService {
 	@ApiResponses({
 		@ApiResponse(responseCode = "400", description = "Invalid attribute value exception")
 	})
-	@GetMapping("/process-history/activity")
+	@RequestMapping(value = "/process-history/activity", method = RequestMethod.GET)
 	public Collection<ActivityInstanceHistory> findActivitiesInstancesHistory(@RequestParam Map<String, Object> queryParams, CIBUser user) {
 		checkPermission(user, SevenResourceType.HISTORIC_PROCESS_INSTANCE, PermissionConstants.READ_ALL);
 		return bpmProvider.findActivitiesInstancesHistory(queryParams, user);
@@ -198,7 +196,7 @@ public class HistoryProcessService extends BaseService {
 		@ApiResponse(responseCode = "400", description = "Invalid attribute value exception"),
 		@ApiResponse(responseCode = "404", description = "Process instance not found")
 	})
-	@GetMapping("/process-history/activity/by-process-instance/{processInstanceId}")
+	@RequestMapping(value = "/process-history/activity/by-process-instance/{processInstanceId}", method = RequestMethod.GET)
 	public Collection<ActivityInstanceHistory> findActivitiesInstancesHistory(
 			@Parameter(description = "Filter by process instance Id") @PathVariable String processInstanceId,
 			Locale loc, CIBUser user) {
@@ -213,7 +211,7 @@ public class HistoryProcessService extends BaseService {
 		@ApiResponse(responseCode = "400", description = "Invalid attribute value exception"),
 		@ApiResponse(responseCode = "404", description = "Process definition not found")
 	})
-	@GetMapping("/process-history/activity/by-process-definition/{processDefinitionId}")
+	@RequestMapping(value = "/process-history/activity/by-process-definition/{processDefinitionId}", method = RequestMethod.GET)
 	public Collection<ActivityInstanceHistory> findActivitiesProcessDefinitionHistory(
 			@Parameter(description = "Filter by process definition Id") @PathVariable String processDefinitionId,
 			@RequestParam Map<String, Object> params,
@@ -224,7 +222,7 @@ public class HistoryProcessService extends BaseService {
 	
 	@Operation(summary = "Get historic activity statistics for a given process definition")
 	@ApiResponse(responseCode = "404", description = "Process definition not found")
-	@GetMapping("/process-history/process-definition/{id}/statistics")
+	@RequestMapping(value = "/process-history/process-definition/{id}/statistics", method = RequestMethod.GET)
 	public Object getHistoricActivityStatistics(@Parameter(description = "ID of the process definition") @PathVariable String id, @RequestParam Map<String, Object> params, CIBUser user) {
 	    checkPermission(user, SevenResourceType.HISTORIC_PROCESS_INSTANCE, PermissionConstants.READ_ALL);
 	    return bpmProvider.fetchHistoricActivityStatistics(id, params, user);
@@ -232,7 +230,7 @@ public class HistoryProcessService extends BaseService {
 	
 	@Operation(summary = "Get a variable data from the process history")
 	@ApiResponse(responseCode = "404", description = "Variable not found")
-	@GetMapping("/process-history/variable/{id}/data")
+	@RequestMapping(value = "/process-history/variable/{id}/data", method = RequestMethod.GET)
 	public ResponseEntity<byte[]> fetchHistoryVariableDataById(
 			@Parameter(description = "Id of the variable") @PathVariable String id,
 			Locale loc, CIBUser user) {

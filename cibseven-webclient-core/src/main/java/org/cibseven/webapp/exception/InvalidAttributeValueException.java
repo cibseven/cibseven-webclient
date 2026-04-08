@@ -16,15 +16,14 @@
  */
 package org.cibseven.webapp.exception;
 
-import java.io.Serial;
 import java.util.Optional;
 
 public class InvalidAttributeValueException extends RuntimeException {
 
-	@Serial private static final long serialVersionUID = -3122514142168860236L;
+	private static final long serialVersionUID = -3122514142168860236L;
 
 
 	public InvalidAttributeValueException(Optional<String> invalidValue, Throwable cause) {
-		super("The value \"%s\" is not valid!".formatted(invalidValue.orElseGet(() -> "(empty)")), cause);
+		super(String.format("The value \"%s\" is not valid!", invalidValue.orElseGet(() -> "(empty)")), cause);
 	}
 }

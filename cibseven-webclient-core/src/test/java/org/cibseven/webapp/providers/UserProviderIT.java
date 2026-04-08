@@ -41,8 +41,8 @@ import org.cibseven.webapp.rest.model.SevenVerifyUser;
 import org.cibseven.webapp.rest.model.User;
 import org.cibseven.webapp.rest.TestRestTemplateConfiguration;
 
-import mockwebserver3.MockResponse;
-import mockwebserver3.MockWebServer;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
 
 @SpringBootTest
 @ContextConfiguration(classes = {UserProvider.class, TestRestTemplateConfiguration.class, MockUserProviderTestConfiguration.class})
@@ -68,7 +68,7 @@ public class UserProviderIT extends BaseHelper {
 
     @AfterEach
     void tearDown() throws Exception {
-        mockWebServer.close();
+        mockWebServer.shutdown();
     }
 
     @Test
@@ -78,10 +78,9 @@ public class UserProviderIT extends BaseHelper {
 
         String mockResponseBody = loadMockResponse("mocks/users_mock.json");
 
-        mockWebServer.enqueue(new MockResponse.Builder()
-				.body(mockResponseBody)
-				.addHeader("Content-Type", "application/json")
-				.build());
+        mockWebServer.enqueue(new MockResponse()
+                .setBody(mockResponseBody)
+                .addHeader("Content-Type", "application/json"));
 
         // Act
         Collection<SevenUser> users = userProvider.fetchUsers(user);
@@ -102,10 +101,9 @@ public class UserProviderIT extends BaseHelper {
 
         String mockResponseBody = loadMockResponse("mocks/users_mock.json");
 
-        mockWebServer.enqueue(new MockResponse.Builder()
-				.body(mockResponseBody)
-				.addHeader("Content-Type", "application/json")
-				.build());
+        mockWebServer.enqueue(new MockResponse()
+                .setBody(mockResponseBody)
+                .addHeader("Content-Type", "application/json"));
 
         // Act
         Collection<User> users = userProvider.findUsers(
@@ -144,10 +142,9 @@ public class UserProviderIT extends BaseHelper {
 
         String mockResponseBody = loadMockResponse("mocks/verify_user_mock.json");
 
-        mockWebServer.enqueue(new MockResponse.Builder()
-				.body(mockResponseBody)
-				.addHeader("Content-Type", "application/json")
-				.build());
+        mockWebServer.enqueue(new MockResponse()
+                .setBody(mockResponseBody)
+                .addHeader("Content-Type", "application/json"));
 
         // Act
         StandardLogin login = new StandardLogin(username, password);
@@ -155,7 +152,7 @@ public class UserProviderIT extends BaseHelper {
 
         // Assert
         assertThat(result).isNotNull();
-        assertThat(result.getAuthenticated()).isTrue();
+        assertThat(result.isAuthenticated()).isTrue();
     }
 
     @Test
@@ -189,26 +186,22 @@ public class UserProviderIT extends BaseHelper {
         String password = "password123";
 
         String mockResponseBody = loadMockResponse("mocks/verify_user_mock.json");
-        String mockResponseBodyFailed = """
-                {
-                  "authenticated": false,
-                  "userId": "john"
-                }\
-                """;
+        String mockResponseBodyFailed = "{\n" +
+                "  \"authenticated\": false,\n" +
+                "  \"userId\": \"john\"\n" +
+                "}";
 
         // Enqueue responses for each parallel call
         for (int i = 0; i < numberOfCallsSuccess; i++) {
-            mockWebServer.enqueue(new MockResponse.Builder()
-					.body(mockResponseBody)
-					.addHeader("Content-Type", "application/json")
-					.build());
+            mockWebServer.enqueue(new MockResponse()
+                    .setBody(mockResponseBody)
+                    .addHeader("Content-Type", "application/json"));
         }
 
         for (int i = 0; i < numberOfCallsFailed; i++) {
-            mockWebServer.enqueue(new MockResponse.Builder()
-					.body(mockResponseBodyFailed)
-					.addHeader("Content-Type", "application/json")
-					.build());
+            mockWebServer.enqueue(new MockResponse()
+                    .setBody(mockResponseBodyFailed)
+                    .addHeader("Content-Type", "application/json"));
         }
 
         ExecutorService executorService = Executors.newFixedThreadPool(numberOfCallsSuccess + numberOfCallsFailed);
@@ -240,10 +233,10 @@ public class UserProviderIT extends BaseHelper {
             // Assert
             assertThat(results).hasSize(numberOfCallsSuccess + numberOfCallsFailed);
             
-            int returnedFailed = (int) results.stream().filter(result -> !Boolean.TRUE.equals(result.getAuthenticated())).count();
+            int returnedFailed = (int) results.stream().filter(result -> !result.isAuthenticated()).count();
             assertThat(returnedFailed).isEqualTo(numberOfCallsFailed);
 
-            int returnedSuccess = (int) results.stream().filter(result -> Boolean.TRUE.equals(result.getAuthenticated())).count();
+            int returnedSuccess = (int) results.stream().filter(SevenVerifyUser::isAuthenticated).count();
             assertThat(returnedSuccess).isEqualTo(numberOfCallsSuccess);
 
             // Verify all mock requests were consumed

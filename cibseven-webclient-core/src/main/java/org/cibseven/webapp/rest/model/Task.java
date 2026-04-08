@@ -19,15 +19,14 @@ package org.cibseven.webapp.rest.model;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import tools.jackson.core.JacksonException;
 
 @Getter @Setter @ToString @AllArgsConstructor @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -44,7 +43,7 @@ public class Task {
 	String name;
 	String owner;
 	String parentTaskId;
-	Long priority;
+	long priority;
 	String suspended;
 	String tenantId;
 	CamundaForm camundaFormRef;
@@ -56,7 +55,7 @@ public class Task {
 	@JsonProperty("processDefinitionId") @JsonAlias({"processDefinitionKey"}) String processDefinitionId;
 	@JsonProperty("processInstanceId") @JsonAlias({"processInstanceKey"}) String processInstanceId;
 	
-	public String json() throws JacksonException {
-		return new JsonMapper().writeValueAsString(this);
+	public String json() throws JsonProcessingException {
+		return new ObjectMapper().writeValueAsString(this);
 	}
 }

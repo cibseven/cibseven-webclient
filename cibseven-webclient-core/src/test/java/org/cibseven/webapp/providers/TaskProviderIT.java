@@ -32,9 +32,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.rest.model.Task;
-
-import mockwebserver3.MockResponse;
-import mockwebserver3.MockWebServer;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
 import org.cibseven.webapp.rest.TestRestTemplateConfiguration;
 
 @SpringBootTest
@@ -77,7 +76,7 @@ public class TaskProviderIT extends BaseHelper {
 
 	@AfterEach
     void tearDown() throws Exception {
-        mockWebServer.close();
+        mockWebServer.shutdown();
     }
 
     @Test
@@ -88,10 +87,9 @@ public class TaskProviderIT extends BaseHelper {
         // Load the mock response from a file
         String mockResponseBody = loadMockResponse("mocks/tasks_mock.json");
 
-        mockWebServer.enqueue(new MockResponse.Builder()
-				.body(mockResponseBody)
-				.addHeader("Content-Type", "application/json")
-				.build());
+        mockWebServer.enqueue(new MockResponse()
+                .setBody(mockResponseBody)
+                .addHeader("Content-Type", "application/json"));
 
         // Act
         Collection<Task> tasks = taskProvider.findTasks(null, user);
@@ -113,10 +111,9 @@ public class TaskProviderIT extends BaseHelper {
         // Load the mock response from a file
         String mockResponseBody = loadMockResponse("mocks/task_count_mock.json");
 
-        mockWebServer.enqueue(new MockResponse.Builder()
-				.body(mockResponseBody)
-				.addHeader("Content-Type", "application/json")
-				.build());
+        mockWebServer.enqueue(new MockResponse()
+                .setBody(mockResponseBody)
+                .addHeader("Content-Type", "application/json"));
 
         Map<String, Object> params = Map.of();
         // Act
@@ -136,10 +133,9 @@ public class TaskProviderIT extends BaseHelper {
         // Load the mock response from a file
         String mockResponseBody = loadMockResponse("mocks/tasks_mock.json");
 
-        mockWebServer.enqueue(new MockResponse.Builder()
-				.body(mockResponseBody)
-				.addHeader("Content-Type", "application/json")
-				.build());
+        mockWebServer.enqueue(new MockResponse()
+                .setBody(mockResponseBody)
+                .addHeader("Content-Type", "application/json"));
 
         // Act
         Collection<Task> tasks = taskProvider.findTasksByProcessInstance(processInstanceId, user);
@@ -158,10 +154,9 @@ public class TaskProviderIT extends BaseHelper {
         // Load the mock response from a file
         String mockResponseBody = loadMockResponse("mocks/task_mock.json");
 
-        mockWebServer.enqueue(new MockResponse.Builder()
-				.body(mockResponseBody)
-				.addHeader("Content-Type", "application/json")
-				.build());
+        mockWebServer.enqueue(new MockResponse()
+                .setBody(mockResponseBody)
+                .addHeader("Content-Type", "application/json"));
 
         // Act
         Task task = taskProvider.findTaskById(taskId, user);

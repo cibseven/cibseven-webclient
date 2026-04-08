@@ -16,13 +16,11 @@
  */
 package org.cibseven.webapp.exception;
 
-import java.io.Serial;
-
 import lombok.NonNull;
 
 public class SystemException extends RuntimeException {
-
-	@Serial private static final long serialVersionUID = 1L;
+	
+	private static final long serialVersionUID = 1L;
 
 	public SystemException(@NonNull Throwable cause) {
 		super("Some unexpected technical problem occured", cause);

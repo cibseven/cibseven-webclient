@@ -16,7 +16,11 @@
  */
 package org.cibseven.webapp;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Serializable;
 
 import jakarta.activation.DataSource;
 
@@ -24,7 +28,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 public class NamedByteArrayDataSource implements DataSource, Serializable {
-	@Serial private static final long serialVersionUID = 8390059640047573444L;
+	private static final long serialVersionUID = 8390059640047573444L;
 
 	@Getter @Setter
 	private String name;

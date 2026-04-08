@@ -25,8 +25,9 @@ import org.cibseven.webapp.rest.model.Filter;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+
 import lombok.extern.slf4j.Slf4j;
-import tools.jackson.core.JacksonException;
 
 @Slf4j
 @Component
@@ -43,7 +44,7 @@ public class FilterProvider extends SevenProviderBase implements IFilterProvider
 		String url = getEngineRestUrl(user) + "/filter/create";
 		try {
 			return ((ResponseEntity<Filter>) doPost(url, filter.json(), Filter.class, user)).getBody();
-		} catch (JacksonException e) {
+		} catch (JsonProcessingException e) {
 			SystemException se = new SystemException(e);
 			log.info("Exception in createFilter(...):", se);
 			throw se;
@@ -55,7 +56,7 @@ public class FilterProvider extends SevenProviderBase implements IFilterProvider
 		String url = getEngineRestUrl(user) + "/filter/" + filter.getId();
 		try {
 			doPut(url, filter.json(), user);
-		} catch (JacksonException e) {
+		} catch (JsonProcessingException e) {
 			SystemException se = new SystemException(e);
 			log.info("Exception in updateFilter(...):", se);
 			throw se;

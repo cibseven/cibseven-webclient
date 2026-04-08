@@ -55,13 +55,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -74,6 +71,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.core.MediaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ApiResponses({
 	@ApiResponse(responseCode = "500", description = "An unexpected system error occured"),
@@ -85,8 +83,8 @@ public class ProcessService extends BaseService implements InitializingBean {
 	SevenProvider sevenProvider;
 	
 	public void afterPropertiesSet() {
-		if (bpmProvider instanceof SevenProvider provider)
-			sevenProvider = provider;
+		if (bpmProvider instanceof SevenProvider)
+			sevenProvider = (SevenProvider) bpmProvider;
 		else throw new SystemException("ProcessService expects a BpmProvider");
 	}
 
@@ -94,7 +92,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			summary = "Get all processes",
 			description = "<strong>Return: Collection of processes")
 	@ApiResponse(responseCode = "400", description = "There is at least one invalid parameter value")
-	@GetMapping
+	@RequestMapping(method = RequestMethod.GET)
 	public Collection<Process> findProcesses(Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_ALL);
 		return bpmProvider.findProcesses(user);
@@ -104,7 +102,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			summary = "Get all processes with number of incidents and process instances",
 			description = "<strong>Return: Collection of processes with number of incidents and process instances")
 	@ApiResponse(responseCode = "400", description = "There is at least one invalid parameter value")
-	@GetMapping("/extra-info")
+	@RequestMapping(value = "/extra-info", method = RequestMethod.GET)
 	public Collection<Process> findProcessesWithInfo(Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_ALL);
 		return bpmProvider.findProcessesWithInfo(user);
@@ -118,7 +116,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 		@ApiResponse(responseCode = "400", description = "There is at least one invalid parameter value"),
 		@ApiResponse(responseCode = "404", description = "Process not found")
 	})
-	@PostMapping
+	@RequestMapping(method = RequestMethod.POST)
 	public Collection<Process> findProcessesWithFilters(
 			@RequestBody Optional<String> filters,
 			Locale loc, CIBUser user) {
@@ -130,7 +128,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			summary = "Get process with a specific key and tenant",
 			description = "<strong>Return: Process")
 	@ApiResponse(responseCode = "404", description = "Process not found")
-	@GetMapping("/{key}")
+	@RequestMapping(value = "/{key}", method = RequestMethod.GET)
 	public Process findProcessByDefinitionKey(
 			@Parameter(description = "Process definition key") @PathVariable String key,
 			@Parameter(description = "Tenant id") @RequestParam(required = false) String tenantId,
@@ -144,7 +142,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			summary = "Get processes versions with a specific key and tenant",
 			description = "<strong>Return: Collections of processes")
 	@ApiResponse(responseCode = "404", description = "Process not found")
-	@GetMapping("process-definition/versions/{key}")
+	@RequestMapping(value = "process-definition/versions/{key}", method = RequestMethod.GET)
 	public Collection<Process> findProcessVersionsByDefinitionKey(
 			@Parameter(description = "Process definition key") @PathVariable String key,
 			@Parameter(description = "Tenant id") @RequestParam(required = false) String tenantId,
@@ -157,7 +155,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			summary = "Get process with a specific Id",
 			description = "<strong>Return: Process")
 	@ApiResponse(responseCode = "404", description = "Process not found")
-	@GetMapping("/process-definition-id/{id}")
+	@RequestMapping(value = "/process-definition-id/{id}", method = RequestMethod.GET)
 	public Process findProcessById(
 			@Parameter(description = "Process definition Id") @PathVariable String id,
 			@RequestParam Optional<Boolean> extraInfo, Locale loc, CIBUser user) {
@@ -173,7 +171,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 		@ApiResponse(responseCode = "400", description = "There is at least one invalid parameter value"),
 		@ApiResponse(responseCode = "404", description = "Process not found")
 	})
-	@PostMapping("/instances")
+	@RequestMapping(value = "/instances", method = RequestMethod.POST)
 	public Collection<ProcessInstance> findCurrentProcessesInstances(
 			@RequestBody Map<String, Object> data,
 			Locale loc, HttpServletRequest rq) {
@@ -186,7 +184,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			summary = "Get processes instances with a specific process key",
 			description = "<strong>Return: Collection of processes instances")
 	@ApiResponse(responseCode = "404", description = "Process not found")
-	@GetMapping("/instances/by-process-key/{key}")
+	@RequestMapping(value = "/instances/by-process-key/{key}", method = RequestMethod.GET)
 	public Collection<ProcessInstance> findProcessesInstances(
 			@Parameter(description = "Process instance key") @PathVariable String key,
 			Locale loc, CIBUser user) {
@@ -198,7 +196,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			summary = "Get activity that belongs to a process instance",
 			description = "<strong>Return: Activity")
 	@ApiResponse(responseCode = "404", description = "Activity not found")
-	@GetMapping("/activity/by-process-instance/{processInstanceId}")
+	@RequestMapping(value = "/activity/by-process-instance/{processInstanceId}", method = RequestMethod.GET)
 	public ActivityInstance findActivityInstance(
 			@Parameter(description = "Process instance Id") @PathVariable String processInstanceId,
 			Locale loc, CIBUser user) {
@@ -210,7 +208,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			summary = "Get called processes definitions from a process instance",
 			description = "<strong>Return: Processes")
 	@ApiResponse(responseCode = "404", description = "Processes definitions not found")
-	@GetMapping("/called-process-definitions/{processDefinitionId}")
+	@RequestMapping(value = "/called-process-definitions/{processDefinitionId}", method = RequestMethod.GET)
 	public Collection<Process> findCalledProcessDefinitions(
 			@Parameter(description = "Process definition id") @PathVariable String processDefinitionId,
 			Locale loc, CIBUser user) {
@@ -223,7 +221,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			description = "A XML that contains the specification to render the diagram" + "<br>" + 
 			"<strong>Return: Process diagram XML that contains diagram to be render")
 	@ApiResponse(responseCode = "404", description = "Process not found")
-	@GetMapping("/{processId}/diagram") @CrossOrigin
+	@RequestMapping(value = "/{processId}/diagram", method = RequestMethod.GET) @CrossOrigin
 	public ProcessDiagram fetchDiagram(
 			@Parameter(description = "Process definition Id") @PathVariable String processId,
 			Locale loc, CIBUser user) {
@@ -232,7 +230,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 	}
 	
 	// Legacy
-	@PostMapping("/{key}/start-v")
+	@RequestMapping(value = "/{key}/start-v", method = RequestMethod.POST)
 	public ProcessStart startProcessLegacy(@PathVariable String key, @RequestBody Map<String, Object> data, Locale loc, HttpServletRequest rq) {
 		return startProcess(key, null, data, loc, rq);
 	}	
@@ -246,7 +244,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 		@ApiResponse(responseCode = "412", description = "Expression cannot be evaluated"),
 		@ApiResponse(responseCode = "415", description = "Unsupported value type")
 	})
-	@PostMapping("/{key}/start")
+	@RequestMapping(value = "/{key}/start", method = RequestMethod.POST)
 	public ProcessStart startProcess(
 			@Parameter(description = "Process to be started") @PathVariable String key,
 			@Parameter(description = "Tenant id") @RequestParam(required = false) String tenantId,
@@ -261,7 +259,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			summary = "Get deployed start form for process",
 			description = "<strong>Return: Start form data as bytes (JSON or HTML)")
 	@ApiResponse(responseCode = "404", description = "Process or start form not found")
-	@GetMapping("/{processDefinitionId}/deployed-start-form")
+	@RequestMapping(value = "/{processDefinitionId}/deployed-start-form", method = RequestMethod.GET)
 	public ResponseEntity<byte[]> getDeployedStartForm(
 			@Parameter(description = "Process definition Id") @PathVariable String processDefinitionId,
 			Locale loc, CIBUser user) {
@@ -288,7 +286,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			summary = "Download BPMN",
 			description = "<strong>Return: BPMN")
 	@ApiResponse(responseCode = "404", description = "Process not found")
-	@GetMapping("/{processId}/data")
+	@RequestMapping(value = "/{processId}/data", method = RequestMethod.GET)
 	public ResponseEntity<InputStreamSource> downloadBpmn(
 			@Parameter(description = "Process definition Id") @PathVariable String processId,
 			@Parameter(description = "Name of the file containing the BPMN") @RequestParam String filename,
@@ -313,7 +311,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			summary = "Activate/Suspend process instance by Id",
 			description = "<strong>Return: void")
 	@ApiResponse(responseCode = "404", description = "Process not found")
-	@PutMapping("/instance/{processInstanceId}/suspend")
+	@RequestMapping(value = "/instance/{processInstanceId}/suspend", method = RequestMethod.PUT)
 	public ResponseEntity<Void> suspendProcessInstance(
 			@Parameter(description = "Process instance Id") @PathVariable String processInstanceId,
 			@Parameter(description = "If true, the process instance will be activated"
@@ -329,7 +327,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			summary = "Delete process instance by Id",
 			description = "<strong>Return: void")
 	@ApiResponse(responseCode = "404", description = "Process not found")
-	@DeleteMapping("/instance/{processInstanceId}/delete")
+	@RequestMapping(value = "/instance/{processInstanceId}/delete", method = RequestMethod.DELETE)
 	public ResponseEntity<Void> deleteProcessInstance(
 			@Parameter(description = "Process instance Id") @PathVariable String processInstanceId,
 			Locale loc, CIBUser user) {
@@ -343,7 +341,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			summary = "Delete process definition by Id",
 			description = "<strong>Return: void")
 	@ApiResponse(responseCode = "404", description = "Process not found")
-	@DeleteMapping("/{id}/delete")
+	@RequestMapping(value = "/{id}/delete", method = RequestMethod.DELETE)
 	public ResponseEntity<Void> deleteProcessDefinition(
 			@Parameter(description = "Process definition Id") @PathVariable String id,
 			@RequestParam Optional<Boolean> cascade,
@@ -361,7 +359,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 		@ApiResponse(responseCode = "404", description = "Process not found"),
 		@ApiResponse(responseCode = "415", description = "Unsupported value type")
 	})
-	@PutMapping("/{processId}/suspend")
+	@RequestMapping(value = "/{processId}/suspend", method = RequestMethod.PUT)
 	public ResponseEntity<Void> suspendProcessDefinition(
 			@Parameter(description = "Process definition Id") @PathVariable String processId,
 			@Parameter(description = "If true, the process instance will be activated"
@@ -381,7 +379,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			summary = "Get incidents for a specific process",
 			description = "<strong>Return: void")
 	@ApiResponse(responseCode = "404", description = "Process not found")
-	@GetMapping("/{key}/incidents")
+	@RequestMapping(value = "/{key}/incidents", method = RequestMethod.GET)
 	public Collection<Incident> fetchIncidents(
 			@Parameter(description = "Process key") @PathVariable String key,
 			Locale loc, CIBUser user) {
@@ -392,7 +390,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 	@Operation(
 			summary = "Deploy process BPMN",
 			description = "<strong>Return: Deployment")
-	@PostMapping("/deployment/create")
+	@RequestMapping(value = "/deployment/create", method = RequestMethod.POST)
 	public Deployment deployBpmn(
 			@Parameter(description = "Metadata of the diagram to be deployed (deployment-name, deployment-source, deploy-changed-only)") @RequestParam MultiValueMap<String, Object> data,
 			@Parameter(description = "Diagram to be deployed") @RequestParam MultiValueMap<String, MultipartFile> file,
@@ -405,7 +403,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 	@Operation(
 			summary = "Check deployment",
 			description = "<strong>Return: Boolean (always true)")
-	@GetMapping("/deployment")
+	@RequestMapping(value = "/deployment", method = RequestMethod.GET)
 	public boolean checkDeployBpmn(HttpServletRequest rq) {
 		checkAuthorization(rq, true);
 		return true;
@@ -414,7 +412,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 	@Operation(
 			summary = "Get count of all deployments for given query",
 			description = "<strong>Return: number of deployments")
-	@GetMapping("/deployments/count")
+	@RequestMapping(value = "/deployments/count", method = RequestMethod.GET)
 	public Long countDeployments(
 		CIBUser user,
 		@RequestParam(value = "nameLike", required = false, defaultValue = "") String nameLike
@@ -426,7 +424,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 	@Operation(
 			summary = "Get all deployments for given query",
 			description = "<strong>Return: Collection of deployments")
-	@GetMapping("/deployments")
+	@RequestMapping(value = "/deployments", method = RequestMethod.GET)
 	public Collection<Deployment> findDeployments(
 		CIBUser user,
 		@RequestParam(value = "nameLike", required = false, defaultValue = "") String nameLike,
@@ -443,7 +441,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			summary = "Get deployment with a specific Id",
 			description = "<strong>Return: Deployment")
 	@ApiResponse(responseCode = "404", description = "Process not found")
-	@GetMapping("/deployments/{deploymentId}")
+	@RequestMapping(value = "/deployments/{deploymentId}", method = RequestMethod.GET)
 	public Deployment findDeployment(
 		@Parameter(description = "Deployment Id") @PathVariable String deploymentId,
 		CIBUser user) {
@@ -455,7 +453,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			summary = "Get all deployment resources of a given deployment",
 			description = "<strong>Return: Collection of deployment resources")
 	@ApiResponse(responseCode = "404", description = "Deployment not found")
-	@GetMapping("/deployments/{deploymentId}/resources")
+	@RequestMapping(value = "/deployments/{deploymentId}/resources", method = RequestMethod.GET)
 	public Collection<DeploymentResource> findDeploymentResources(
 			@Parameter(description = "Deployment Id") @PathVariable String deploymentId,
 			CIBUser user) {
@@ -467,7 +465,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			summary = "Get binary content of a deployment resource for the given deployment by id",
 			description = "<strong>Return: Resource data")
 	@ApiResponse(responseCode = "404", description = "Deployment or Resource not found")
-	@GetMapping("/deployments/{deploymentId}/resources/{resourceId}/data")
+	@RequestMapping(value = "/deployments/{deploymentId}/resources/{resourceId}/data", method = RequestMethod.GET)
 	public ResponseEntity<InputStreamSource> fetchDataFromDeploymentResource(
 			@Parameter(description = "Deployment Id") @PathVariable String deploymentId,
 			@Parameter(description = "Resource Id") @PathVariable String resourceId,
@@ -492,7 +490,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			summary = "Delete deployment by Id",
 			description = "<strong>Return: void")
 	@ApiResponse(responseCode = "404", description = "Deployment not found")
-	@DeleteMapping("/deployments/{deploymentId}")
+	@RequestMapping(value = "/deployments/{deploymentId}", method = RequestMethod.DELETE)
 	public ResponseEntity<Void> deleteDeployment(
 			@Parameter(description = "Deployment Id") @PathVariable String deploymentId,
 			@Parameter(description = "Delete in cascade?") @RequestParam Boolean cascade,
@@ -506,7 +504,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 	@Operation(
 			summary = "Correlates a message to the process engine to either trigger a message start event or an intermediate message catching event",
 			description = "<strong>Return: Collection of messages")
-	@PostMapping("/message")
+	@RequestMapping(value = "/message", method = RequestMethod.POST)
 	public Collection<Message> correlateMessage(
 			@Parameter(description = "Variables to start process") @RequestBody Map<String, Object> data,
 			Locale loc, HttpServletRequest rq) {
@@ -520,7 +518,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			description = "Request body: Variables to submit" + "<br>" +
 			"<strong>Return: Information about the process started")
 	@ApiResponse(responseCode = "404", description = "Process not found")
-	@PostMapping("/{key}/submit-form")
+	@RequestMapping(value = "/{key}/submit-form", method = RequestMethod.POST)
 	public ProcessStart submitForm(
 			@Parameter(description = "Process to be started") @PathVariable String key,
 			@Parameter(description = "Tenant id") @RequestParam(required = false) String tenantId,
@@ -537,7 +535,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			description = "Request body: Data to be updated" + "<br>" +
 			"<strong>Return: void")
 	@ApiResponse(responseCode = "404", description = "Execution not found")
-	@PostMapping("/execution/{executionId}/localVariables")
+	@RequestMapping(value = "/execution/{executionId}/localVariables", method = RequestMethod.POST)
 	public ResponseEntity<Void> modifyVariableByExecutionId(
 			@Parameter(description = "Id of the execution") @PathVariable String executionId,
 			@RequestBody Map<String, Object> data,
@@ -552,7 +550,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			summary = "Modify a variable data in the process instance",
 			description = "<strong>Return: void")
 	@ApiResponse(responseCode = "404", description = "Execution not found")
-	@PostMapping("/execution/{executionId}/localVariables/{variableName}/data")
+	@RequestMapping(value = "/execution/{executionId}/localVariables/{variableName}/data", method = RequestMethod.POST)
 	public ResponseEntity<Void> modifyVariableDataByExecutionId(
 			@Parameter(description = "Execution Id") @PathVariable String executionId,
 			@Parameter(description = "Name of the variable") @PathVariable String variableName,
@@ -570,7 +568,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			summary = "Get a variable data in the process instance",
 			description = "<strong>Return: Data")
 	@ApiResponse(responseCode = "404", description = "Execution not found")
-	@GetMapping("/execution/{executionId}/localVariables/{variableName}/data")
+	@RequestMapping(value = "/execution/{executionId}/localVariables/{variableName}/data", method = RequestMethod.GET)
 	public ResponseEntity<byte[]> fetchVariableDataByExecutionId(
 			@Parameter(description = "Execution Id") @PathVariable String executionId,
 			@Parameter(description = "Name of the variable") @PathVariable String variableName,
@@ -582,7 +580,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 	@Operation(
 			summary = "Delete a variable in the process instance")
 	@ApiResponse(responseCode = "404", description = "Execution not found")
-	@DeleteMapping("/execution/{executionId}/localVariables/{variableName}")
+	@RequestMapping(value = "/execution/{executionId}/localVariables/{variableName}", method = RequestMethod.DELETE)
 	public ResponseEntity<Void> deleteVariableByExecutionId(
 			@Parameter(description = "Id of the execution") @PathVariable String executionId,
 			@PathVariable String variableName,
@@ -597,7 +595,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			summary = "Get variables from a process instance",
 			description = "<strong>Return: Collection of variables")
 	@ApiResponse(responseCode = "404", description = "Process instance not found")
-	@GetMapping("/variable-instance/process-instance/{processInstanceId}/variables")
+	@RequestMapping(value = "/variable-instance/process-instance/{processInstanceId}/variables", method = RequestMethod.GET)
 	public Collection<Variable> fetchProcessInstanceVariables(
 			@Parameter(description = "Process instance Id") @PathVariable String processInstanceId,
 			@Parameter(description = "Variable name") @RequestParam Optional<String> variableName,
@@ -622,7 +620,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			summary = "Get statistics from a process",
 			description = "<strong>Return: Collection of processes instance statistics")
 	@ApiResponse(responseCode = "404", description = "Process instance not found")
-	@GetMapping("/process-definition/{processId}/statistics")
+	@RequestMapping(value = "/process-definition/{processId}/statistics", method = RequestMethod.GET)
 	public Collection<ProcessStatistics> findProcessStatistics(
 			@Parameter(description = "Process Id") @PathVariable String processId,
 			Locale loc, CIBUser user) {
@@ -633,7 +631,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 	@Operation(
 			summary = "Get statistics for all processes ",
 			description = "<strong>Return: Collection of all processes statistics")
-  @GetMapping("/process-definition/statistics")
+  @RequestMapping(value = "/process-definition/statistics", method = RequestMethod.GET)
 	public Collection<ProcessStatistics> getProcessStatistics(@RequestParam Map<String, Object> queryParams, Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_ALL);
 		return bpmProvider.getProcessStatistics(queryParams, user);
@@ -645,7 +643,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			description =  "Requested by OFDKA" + "<br>" +
 			"<strong>Return: Process instance")
 	@ApiResponse(responseCode = "404", description = "Process instance not found")
-	@GetMapping("/process-instance/{processInstanceId}")
+	@RequestMapping(value = "/process-instance/{processInstanceId}", method = RequestMethod.GET)
 	public ProcessInstance findProcessInstance(
 			@Parameter(description = "Process instance Id") @PathVariable String processInstanceId,
 			Locale loc, HttpServletRequest rq) {
@@ -660,7 +658,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			description = "Requested by OFDKA" + "<br>" +
 			"<strong>Return: Variable data")
 	@ApiResponse(responseCode = "404", description = "Process instance not found")
-	@GetMapping("/process-instance/{processInstanceId}/variables/{variableName}/data")
+	@RequestMapping(value = "/process-instance/{processInstanceId}/variables/{variableName}/data", method = RequestMethod.GET)
 	public ResponseEntity<byte[]> findProcessInstanceVariableData(
 			@Parameter(description = "Process instance Id") @PathVariable String processInstanceId,
 			@Parameter(description = "Varaible name") @PathVariable String variableName,
@@ -697,7 +695,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			summary = "Upload file data for a variable of a given process instance by Id",
 			description = "<strong>Return: void")
 	@ApiResponse(responseCode = "404", description = "Process instance not found")
-	@PostMapping("/process-instance/{processInstanceId}/variables/{variableName}/data")
+	@RequestMapping(value = "/process-instance/{processInstanceId}/variables/{variableName}/data", method = RequestMethod.POST)
 	public ResponseEntity<Void> uploadProcessInstanceVariableFileData(
 			@Parameter(description = "Process instance Id") @PathVariable String processInstanceId,
 			@Parameter(description = "Variable name") @PathVariable String variableName,
@@ -722,7 +720,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			description = "Get a variable of a given process instance by Id" +
 			"<strong>Return: Variables")
 	@ApiResponse(responseCode = "404", description = "Process instance not found")
-	@GetMapping("/process-instance/{processInstanceId}/variables/{variableName}")
+	@RequestMapping(value = "/process-instance/{processInstanceId}/variables/{variableName}", method = RequestMethod.GET)
 	public Variable findProcessInstanceVariable(
 			@Parameter(description = "Process instance Id") @PathVariable String processInstanceId,
 			@Parameter(description = "Variable name") @PathVariable String variableName,
@@ -738,7 +736,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			description = "Get a variable of a given process instance by Id" +
 			"<strong>Return: Variables")
 	@ApiResponse(responseCode = "404", description = "Process instance not found")
-	@GetMapping("/process-instance/{processInstanceId}/chat-comments")
+	@RequestMapping(value = "/process-instance/{processInstanceId}/chat-comments", method = RequestMethod.GET)
 	public Variable fetchChatComments(
 			@Parameter(description = "Process instance Id") @PathVariable String processInstanceId,
 			@Parameter(description = "Process definition Id") @RequestParam String processDefinitionKey,
@@ -762,7 +760,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			description = "Get a variable of a given process instance by Id" +
 			"<strong>Return: Variables")
 	@ApiResponse(responseCode = "404", description = "Process instance not found")
-	@GetMapping("/process-instance/{processInstanceId}/status-dataset")
+	@RequestMapping(value = "/process-instance/{processInstanceId}/status-dataset", method = RequestMethod.GET)
 	public Variable fetchStatusDataset(
 			@Parameter(description = "Process instance Id") @PathVariable String processInstanceId,
 			@Parameter(description = "Process definition Id") @RequestParam String processDefinitionKey,
@@ -781,7 +779,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 		
 	}
 
-	@PostMapping("/process-instance/{processInstanceId}/submit-variables")
+	@RequestMapping(value = "/process-instance/{processInstanceId}/submit-variables", method = RequestMethod.POST)
 	public ResponseEntity<String> submitVariables(@RequestBody List<Variable> variables, 
 			@PathVariable String processInstanceId, @RequestParam Optional<String> processDefinitionKey, HttpServletRequest rq) {
 		
@@ -806,7 +804,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			summary = "Get event subscriptions that fulfill given parameters",
 			description = "Requested by OFDKA" + "<br>" +
 			"<strong>Return: Collection of event subscriptions")
-	@GetMapping("/event-subscriptions")
+	@RequestMapping(value = "/event-subscriptions", method = RequestMethod.GET)
 	public Collection<EventSubscription> getEventSubscriptions(
 			@Parameter(description = "Process instance Id") @RequestParam Optional<String> processInstanceId,
 			@Parameter(description = "Event type") @RequestParam Optional<String> eventType,
@@ -820,7 +818,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 	@Operation(
 			summary = "Update process definition history time to live",
 			description = "<strong>Return: void")
-	@PutMapping("/{id}/history-time-to-live")
+	@RequestMapping(value = "/{id}/history-time-to-live", method = RequestMethod.PUT)
 	public ResponseEntity<Void> updateHistoryTimeToLive(@PathVariable String id, 
 			@RequestBody Map<String, Object> data, Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.UPDATE_ALL);
@@ -831,7 +829,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 
 	@Operation(summary = "Create a variable in the process instance")
 	@ApiResponse(responseCode = "404", description = "Execution not found")
-	@PutMapping("/execution/{executionId}/localVariables/{varName}")
+	@RequestMapping(value = "/execution/{executionId}/localVariables/{varName}", method = RequestMethod.PUT)
 	public ResponseEntity<Void> putLocalExecutionVariable(
 			@Parameter(description = "Id of the execution") @PathVariable String executionId,
 			@Parameter(description = "Variable name") @PathVariable String varName,
@@ -844,7 +842,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 	}
 
 	@Consumes(MediaType.APPLICATION_JSON)
-	@PostMapping("{processDefinitionId}/submit-startform-variables")
+	@RequestMapping(value = "{processDefinitionId}/submit-startform-variables", method = RequestMethod.POST)
 	public ResponseEntity<ProcessStart> submitStartFormVariables(
 			@PathVariable String processDefinitionId, 
 			@RequestBody List<Variable> formResult, 
@@ -861,7 +859,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 	}
 
 	@Consumes(MediaType.APPLICATION_JSON)
-	@PostMapping("{processInstanceId}/variables")
+	@RequestMapping(value = "{processInstanceId}/variables", method = RequestMethod.POST)
 	public ResponseEntity<String> saveVariable(@PathVariable String processInstanceId, @RequestBody List<Variable> variables, HttpServletRequest rq) {
 		try {
 			CIBUser userAuth = (CIBUser) baseUserProvider.authenticateUser(rq);
@@ -875,7 +873,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 	}
  
 	@Consumes(MediaType.APPLICATION_JSON)
-	@GetMapping("{processInstanceId}/variable/{variableName}")
+	@RequestMapping(value = "{processInstanceId}/variable/{variableName}", method = RequestMethod.GET)
 	public ResponseEntity<Variable> fetchVariableByProcessInstanceId(@PathVariable String processInstanceId, @PathVariable String variableName, HttpServletRequest rq) {
 		try {
 			CIBUser userAuth = (CIBUser) baseUserProvider.authenticateUser(rq);

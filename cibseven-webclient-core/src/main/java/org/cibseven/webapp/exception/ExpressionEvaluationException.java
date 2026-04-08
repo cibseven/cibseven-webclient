@@ -16,11 +16,9 @@
  */
 package org.cibseven.webapp.exception;
 
-import java.io.Serial;
-
 public class ExpressionEvaluationException extends RuntimeException {
 
-	@Serial private static final long serialVersionUID = -6659684074308234448L;
+	private static final long serialVersionUID = -6659684074308234448L;
 
 
 	public ExpressionEvaluationException(Throwable cause) {

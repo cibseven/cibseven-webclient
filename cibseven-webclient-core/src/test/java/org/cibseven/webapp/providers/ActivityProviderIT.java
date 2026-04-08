@@ -26,8 +26,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import mockwebserver3.MockResponse;
-import mockwebserver3.MockWebServer;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.rest.model.ActivityInstance;
@@ -63,7 +63,7 @@ public class ActivityProviderIT extends BaseHelper {
     @AfterEach
     void tearDown() throws Exception {
     	// Shutdown the MockWebServer after each test
-        mockWebServer.close();
+        mockWebServer.shutdown();
     }
 
     @Test
@@ -76,10 +76,9 @@ public class ActivityProviderIT extends BaseHelper {
         String mockResponseBody = loadMockResponse("mocks/activity_instance_mock.json");
 
         // Enqueue the mock response for the MockWebServer
-        mockWebServer.enqueue(new MockResponse.Builder()
-				.body(mockResponseBody)
-				.addHeader("Content-Type", "application/json")
-				.build());
+        mockWebServer.enqueue(new MockResponse()
+                .setBody(mockResponseBody)
+                .addHeader("Content-Type", "application/json"));
 
         // Act: Call the method under test
         ActivityInstance result = activityProvider.findActivityInstance(processInstanceId, user);
@@ -123,7 +122,7 @@ public class ActivityProviderIT extends BaseHelper {
         // Verify the request sent to the MockWebServer
         var request = mockWebServer.takeRequest();
         assertThat(request.getMethod()).isEqualTo("GET");
-        assertThat(request.getUrl().encodedPath()).isEqualTo("/engine-rest/process-instance/12345/activity-instances");
+        assertThat(request.getPath()).isEqualTo("/engine-rest/process-instance/12345/activity-instances");
     }
 
     @Test
@@ -136,10 +135,9 @@ public class ActivityProviderIT extends BaseHelper {
         String mockResponseBody = loadMockResponse("mocks/activity_instances_history_mock.json");
 
         // Enqueue the mock response for the MockWebServer
-        mockWebServer.enqueue(new MockResponse.Builder()
-				.body(mockResponseBody)
-				.addHeader("Content-Type", "application/json")
-				.build());
+        mockWebServer.enqueue(new MockResponse()
+                .setBody(mockResponseBody)
+                .addHeader("Content-Type", "application/json"));
 
         // Act
         List<ActivityInstanceHistory> result = activityProvider.findActivitiesInstancesHistory(processInstanceId, user);
@@ -163,8 +161,7 @@ public class ActivityProviderIT extends BaseHelper {
         // Verify the request sent to the MockWebServer
         var request = mockWebServer.takeRequest();
         assertThat(request.getMethod()).isEqualTo("GET");
-        assertThat(request.getUrl().encodedPath()).isEqualTo("/engine-rest/history/activity-instance");
-        assertThat(request.getUrl().queryParameter("processInstanceId")).isEqualTo("12345");
+        assertThat(request.getPath()).isEqualTo("/engine-rest/history/activity-instance?processInstanceId=12345");
     }
 
     @Test
@@ -175,8 +172,7 @@ public class ActivityProviderIT extends BaseHelper {
         CIBUser user = getCibUser();
 
         // Enqueue a mock response for the MockWebServer
-        mockWebServer.enqueue(new MockResponse.Builder().code(204)
-				.build());
+        mockWebServer.enqueue(new MockResponse().setResponseCode(204));
 
         // Act
         activityProvider.deleteVariableByExecutionId(executionId, variableName, user);
@@ -184,7 +180,7 @@ public class ActivityProviderIT extends BaseHelper {
         // Verify the request sent to the MockWebServer
         var request = mockWebServer.takeRequest();
         assertThat(request.getMethod()).isEqualTo("DELETE");
-        assertThat(request.getUrl().encodedPath()).isEqualTo("/engine-rest/execution/execution-123/localVariables/variable-1");
+        assertThat(request.getPath()).isEqualTo("/engine-rest/execution/execution-123/localVariables/variable-1");
     }
 
     @Test
@@ -194,8 +190,7 @@ public class ActivityProviderIT extends BaseHelper {
         CIBUser user = getCibUser();
 
         // Enqueue a mock response for the MockWebServer
-        mockWebServer.enqueue(new MockResponse.Builder().code(204)
-				.build());
+        mockWebServer.enqueue(new MockResponse().setResponseCode(204));
 
         // Act
         activityProvider.deleteVariableHistoryInstance(variableId, user);
@@ -203,7 +198,7 @@ public class ActivityProviderIT extends BaseHelper {
         // Verify the request sent to the MockWebServer
         var request = mockWebServer.takeRequest();
         assertThat(request.getMethod()).isEqualTo("DELETE");
-        assertThat(request.getUrl().encodedPath()).isEqualTo("/engine-rest/history/variable-instance/variable-history-123");
+        assertThat(request.getPath()).isEqualTo("/engine-rest/history/variable-instance/variable-history-123");
     }    
 
 }

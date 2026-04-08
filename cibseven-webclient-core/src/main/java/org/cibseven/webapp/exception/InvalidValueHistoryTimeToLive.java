@@ -16,11 +16,9 @@
  */
 package org.cibseven.webapp.exception;
 
-import java.io.Serial;
-
 public class InvalidValueHistoryTimeToLive extends RuntimeException {
 
-	@Serial private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 	
 	public InvalidValueHistoryTimeToLive(Throwable cause) {
 		super("Null historyTimeToLive values are not allowed", cause);

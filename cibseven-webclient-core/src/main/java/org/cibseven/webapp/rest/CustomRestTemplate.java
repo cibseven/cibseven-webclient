@@ -397,12 +397,12 @@ public class CustomRestTemplate extends RestTemplate {
             // Use the stored connection manager reference instead of trying to access it through reflection
             if (this.connectionManager != null) {
                 // Return the connection pool statistics
-                return "MaxTotal: %d, DefaultMaxPerRoute: %d, Available: %d, Leased: %d, Pending: %d".formatted(
-						connectionManager.getMaxTotal(),
-						connectionManager.getDefaultMaxPerRoute(),
-						connectionManager.getTotalStats().getAvailable(),
-						connectionManager.getTotalStats().getLeased(),
-						connectionManager.getTotalStats().getPending());
+                return String.format("MaxTotal: %d, DefaultMaxPerRoute: %d, Available: %d, Leased: %d, Pending: %d",
+                        connectionManager.getMaxTotal(),
+                        connectionManager.getDefaultMaxPerRoute(),
+                        connectionManager.getTotalStats().getAvailable(),
+                        connectionManager.getTotalStats().getLeased(),
+                        connectionManager.getTotalStats().getPending());
             }
             return "Connection pool statistics not available (connection manager not initialized)";
         } catch (Exception e) {

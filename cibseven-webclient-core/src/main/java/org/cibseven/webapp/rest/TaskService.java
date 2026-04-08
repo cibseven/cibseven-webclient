@@ -75,8 +75,8 @@ public class TaskService extends BaseService implements InitializingBean {
 	private String cibsevenUrl;
 	
 	public void afterPropertiesSet() {
-		if (bpmProvider instanceof SevenProvider provider)
-			sevenProvider = provider;
+		if (bpmProvider instanceof SevenProvider)
+			sevenProvider = (SevenProvider) bpmProvider;
 		else throw new SystemException("TaskService expects a BpmProvider");
 	}	
 	
@@ -100,7 +100,7 @@ public class TaskService extends BaseService implements InitializingBean {
 	}
 	 
 	//Not used
-	@GetMapping("/task/by-process-instance/{processInstanceId}")
+	@RequestMapping(value = "/task/by-process-instance/{processInstanceId}", method = RequestMethod.GET)
 	public Collection<Task> findTasksByProcessInstance(@PathVariable String processInstanceId, Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
 		return bpmProvider.findTasksByProcessInstance(processInstanceId, user);
@@ -110,7 +110,7 @@ public class TaskService extends BaseService implements InitializingBean {
 			summary = "Get tasks which belongs to a specific process instance and a user",
 			description = "<strong>Return: Fetched tasks")
 	@ApiResponse(responseCode = "404", description= "Task not found")
-	@GetMapping("/task/by-process-instance-asignee")
+	@RequestMapping(value = "/task/by-process-instance-asignee", method = RequestMethod.GET)
 	public Collection<Task> findTasksByProcessInstanceAsignee(
 			@Parameter(description = "Process instance Id") @RequestParam Optional<String> processInstanceId,
 			@Parameter(description = "Created after") @RequestParam Optional<String> createdAfter,
@@ -122,7 +122,7 @@ public class TaskService extends BaseService implements InitializingBean {
 			summary = "Get task with a specific Id",
 			description = "<strong>Return: Fetched task")
 	@ApiResponse(responseCode = "404", description= "Task not found")
-	@GetMapping("/task/{taskId}")
+	@RequestMapping(value = "/task/{taskId}", method = RequestMethod.GET)
 	public Task findTaskById(
 			@Parameter(description = "Task Id") @PathVariable String taskId,
 			Locale loc, CIBUser user) {
@@ -135,7 +135,7 @@ public class TaskService extends BaseService implements InitializingBean {
 			description = "Request body: List of properties which will be use to filter tasks" + "<br>" +
 			"<strong>Return: Collection of Tasks fetched in the search")
 	@ApiResponse(responseCode = "404", description= "Task not found")
-	@PostMapping("/task/by-filter/{filterId}")
+	@RequestMapping(value = "/task/by-filter/{filterId}", method = RequestMethod.POST)
 	public Collection<Task> findTasksByFilter(
 			@RequestBody TaskFiltering filters,
 			@Parameter(description = "Filter Id") @PathVariable String filterId,
@@ -151,7 +151,7 @@ public class TaskService extends BaseService implements InitializingBean {
 			description = "Request body: List of properties which will be use to filter tasks" + "<br>" +
 			"<strong>Return: Collection of Tasks fetched in the search")
 	@ApiResponse(responseCode = "404", description= "Task not found")
-	@PostMapping("/task/by-filter/{filterId}/count")
+	@RequestMapping(value = "/task/by-filter/{filterId}/count", method = RequestMethod.POST)
 	public Integer findTasksCountByFilter(
 			@Parameter(description = "Filter Id") @PathVariable String filterId,
 			@RequestBody TaskFiltering filters,
@@ -165,7 +165,7 @@ public class TaskService extends BaseService implements InitializingBean {
 			description = "Saving the variables is done by the ui-element-template (in ours)" + "<br>" +
 			"<strong>Return: void")
 	@ApiResponse(responseCode = "403", description = "Forbidden")
-	@PostMapping("/task/submit/{taskId}")
+	@RequestMapping(value = "/task/submit/{taskId}", method = RequestMethod.POST)
 	public ResponseEntity<Void> submit(
 			@Parameter(description = "Task Id") @PathVariable String taskId,
 			Locale loc, CIBUser user) {
@@ -179,7 +179,7 @@ public class TaskService extends BaseService implements InitializingBean {
 			summary = "Get form-reference variable from task",
 			description = "<strong>Return: form-reference")
 	@ApiResponse(responseCode = "404", description= "Task not found")
-	@GetMapping("/task/{taskId}/form-reference")
+	@RequestMapping(value = "/task/{taskId}/form-reference", method = RequestMethod.GET)
 	public Object formReference(
 			@Parameter(description = "Task Id") @PathVariable String taskId,
 			Locale loc, CIBUser user) {
@@ -191,7 +191,7 @@ public class TaskService extends BaseService implements InitializingBean {
 			summary = "Get deployed form for task",
 			description = "<strong>Return: Form data as bytes (JSON or HTML)")
 	@ApiResponse(responseCode = "404", description= "Task or form not found")
-	@GetMapping("/task/{taskId}/deployed-form")
+	@RequestMapping(value = "/task/{taskId}/deployed-form", method = RequestMethod.GET)
 	public ResponseEntity<byte[]> getDeployedForm(
 			@Parameter(description = "Task Id") @PathVariable String taskId,
 			Locale loc, CIBUser user) {
@@ -218,7 +218,7 @@ public class TaskService extends BaseService implements InitializingBean {
 			summary = "Retrieves the form configuration data associated with a specific task",
 			description = "<strong>Return: TaskForm object containing key, camundaFormRef, and contextPath</strong>")
 	@ApiResponse(responseCode = "404", description= "Task not found")
-	@GetMapping("/task/{taskId}/form")
+	@RequestMapping(value = "/task/{taskId}/form", method = RequestMethod.GET)
 	public Object form(
 			@Parameter(description = "Task Id") @PathVariable String taskId,
 			Locale loc, CIBUser user) {
@@ -230,7 +230,7 @@ public class TaskService extends BaseService implements InitializingBean {
 			summary = "Get rendered form HTML for task",
 			description = "<strong>Return: Rendered form HTML as string</strong>")
 	@ApiResponse(responseCode = "404", description= "Task or rendered form not found")
-	@GetMapping(value = "/task/{taskId}/rendered-form", produces = "text/html")
+	@RequestMapping(value = "/task/{taskId}/rendered-form", method = RequestMethod.GET, produces = "text/html")
 	public ResponseEntity<String> getRenderedForm(
 			@Parameter(description = "Task Id") @PathVariable String taskId,
 			@RequestParam Map<String, Object> params,
@@ -243,7 +243,7 @@ public class TaskService extends BaseService implements InitializingBean {
 			summary = "Get form variables for a specific task",
 			description = "<strong>Return: Form variables for the task</strong>")
 	@ApiResponse(responseCode = "404", description = "Task not found")
-	@GetMapping("/task/{taskId}/form-variables")
+	@RequestMapping(value = "/task/{taskId}/form-variables", method = RequestMethod.GET)
 	public Map<String, Variable> fetchFormVariables(
 			@PathVariable String taskId,
 			@RequestParam(required = false, defaultValue = "true") boolean deserializeValues,
@@ -264,7 +264,7 @@ public class TaskService extends BaseService implements InitializingBean {
 	@Operation(summary = "Submit form with variables", description = "Request body: Form variables to submit" + "<br>" +
 			"<strong>Return: void</strong>")
 	@ApiResponse(responseCode = "404", description = "Task not found")
-	@PostMapping("/task/{taskId}/submit-form")
+	@RequestMapping(value = "/task/{taskId}/submit-form", method = RequestMethod.POST)
 	public void submit(
 			@Parameter(description = "Task id") @PathVariable String taskId,
 			@RequestBody String formResult,
@@ -277,7 +277,7 @@ public class TaskService extends BaseService implements InitializingBean {
 			summary = "Set assignee to an specific task",
 			description = "UserID will be the assignee" + "<br>" + "<strong>Return: void")
 	@ApiResponse(responseCode = "404", description= "Task or User not found")
-	@PostMapping("/task/{taskId}/assignee/{userId}")
+	@RequestMapping(value = "/task/{taskId}/assignee/{userId}", method = RequestMethod.POST)
 	public ResponseEntity<Void> setAssignee(
 			@Parameter(description = "Task Id") @PathVariable String taskId,
 			@Parameter(description = "User to be set as assignee") @PathVariable String userId,
@@ -292,7 +292,7 @@ public class TaskService extends BaseService implements InitializingBean {
 			summary = "Update task",
 			description = "Request body: Task to be updated with the desired values already modified" + "<br>" +
 			"<strong>Return: void")
-	@PutMapping("/task/update")
+	@RequestMapping(value = "/task/update", method = RequestMethod.PUT)
 	public ResponseEntity<Void> update(
 			@RequestBody Task task,
 			Locale loc, CIBUser user) {
@@ -309,7 +309,7 @@ public class TaskService extends BaseService implements InitializingBean {
 			"This method is slightly more powerful than the Get Tasks method because it allows filtering by multiple process or task variables of types String, Number or Boolean."
 			+ "<br>" + "Request body: Variables to apply search"
 			+ "<br>" + "<strong>Return: Collection tasks fetched in the search")
-	@PostMapping("/task")
+	@RequestMapping(value = "/task", method = RequestMethod.POST)
 	public Collection<Task> findTasksPost(
 			@RequestBody Map<String, Object> data,
 			Locale loc, HttpServletRequest rq) {
@@ -322,7 +322,7 @@ public class TaskService extends BaseService implements InitializingBean {
 			summary = "Get identity links, e.g. to get the candidates user or groups of a task",
 			description = "<strong>Return: Identity links")
 	@ApiResponse(responseCode = "404", description= "Identity links not found")
-	@GetMapping("/task/{taskId}/identity-links")
+	@RequestMapping(value = "/task/{taskId}/identity-links", method = RequestMethod.GET)
 	public Collection<IdentityLink> findIdentityLink(
 			@Parameter(description = "Task Id") @PathVariable String taskId,
 			@Parameter(description = "Type of links to include e.g. 'candidate'") @RequestParam Optional<String> type,
@@ -334,7 +334,7 @@ public class TaskService extends BaseService implements InitializingBean {
 	@Operation(
 			summary = "Create identity links, e.g. to set the candidates user or groups of a task",
 			description = "<strong>Return: void")
-	@PostMapping("/task/{taskId}/identity-links")
+	@RequestMapping(value = "/task/{taskId}/identity-links", method = RequestMethod.POST)
 	public ResponseEntity<Void> createIdentityLink(
 			@Parameter(description = "Task Id") @PathVariable String taskId,
 			@RequestBody Map<String, Object> data,
@@ -348,7 +348,7 @@ public class TaskService extends BaseService implements InitializingBean {
 	@Operation(
 			summary = "Delete identity links, e.g. to remove the candidates user or groups of a task",
 			description = "<strong>Return: void")
-	@PostMapping("/task/{taskId}/identity-links/delete")
+	@RequestMapping(value = "/task/{taskId}/identity-links/delete", method = RequestMethod.POST)
 	public ResponseEntity<Void> deleteIdentityLink(
 			@Parameter(description = "Task Id") @PathVariable String taskId,
 			@RequestBody Map<String, Object> data,
@@ -363,7 +363,7 @@ public class TaskService extends BaseService implements InitializingBean {
 			summary = "Get variables from a specific activity",
 			description = "<strong>Return: Fetched variables")
 	@ApiResponse(responseCode = "404", description= "Activity instance not found")
-	@GetMapping("/task/{activityInstanceId}/variables")
+	@RequestMapping(value = "/task/{activityInstanceId}/variables", method = RequestMethod.GET)
 	public Collection<VariableHistory> fetchActivityVariables(
 			@Parameter(description = "Activity instance Id") @PathVariable String activityInstanceId,
 			Locale loc, CIBUser user) {
@@ -375,14 +375,14 @@ public class TaskService extends BaseService implements InitializingBean {
 			summary = "Download file from process instance by variable name",
 			description = "<strong>Return: File data")
 	@ApiResponse(responseCode = "404", description= "Variable name not found")
-	@GetMapping("/task/{processInstanceId}/variable/download/{variableName}")
+	@RequestMapping(value = "/task/{processInstanceId}/variable/download/{variableName}", method = RequestMethod.GET)
 	public ResponseEntity<byte[]> downloadFiles(@PathVariable String processInstanceId, @PathVariable String variableName, CIBUser user) {
         checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.READ_ALL);
 		return bpmProvider.fetchProcessInstanceVariableData(processInstanceId, variableName, user);
 	}
 	
 	 @Consumes(MediaType.APPLICATION_JSON)
-	  @PostMapping("/task/{taskId}/submit-variables")
+	  @RequestMapping(value = "/task/{taskId}/submit-variables", method = RequestMethod.POST)
 	  public ResponseEntity<String> submitVariables(@PathVariable String taskId, @RequestBody List<Variable> formResult, 
 	      @RequestParam String processInstanceId, @RequestParam Optional<String> assignee, @RequestParam String processDefinitionId,
 	      @RequestParam Optional<Boolean> close, @RequestParam Optional<String> name, HttpServletRequest rq) {
@@ -419,7 +419,7 @@ public class TaskService extends BaseService implements InitializingBean {
 	    return (ResponseEntity<T>) response;
 	  }
 
-	  @GetMapping("/task/{taskId}/variable/{variableName}")
+	  @RequestMapping(value = "/task/{taskId}/variable/{variableName}", method = RequestMethod.GET)
 	  public Variable fetchVariable(@PathVariable String taskId, @PathVariable String variableName, 
 	      @RequestParam Optional<Boolean> deserialize, HttpServletRequest rq) {
 	    CIBUser userAuth = (CIBUser) baseUserProvider.authenticateUser(rq);
@@ -428,7 +428,7 @@ public class TaskService extends BaseService implements InitializingBean {
 	    return bpmProvider.fetchVariable(taskId, variableName, deserializeValue, userAuth);
 	  }
 	  
-	  @GetMapping("/task/{taskId}/variable/{variableName}/data")
+	  @RequestMapping(value = "/task/{taskId}/variable/{variableName}/data", method = RequestMethod.GET)
 	  public byte[] fetchVariableFileData(@PathVariable String taskId, @PathVariable String variableName, 
 	      @RequestParam Optional<Boolean> deserialize, HttpServletRequest rq) {
 	    CIBUser userAuth = (CIBUser) baseUserProvider.authenticateUser(rq);
@@ -437,7 +437,7 @@ public class TaskService extends BaseService implements InitializingBean {
 	    return res.getContent();
 	  }
 
-	  @GetMapping("/task/{taskId}/variables/{variableName}/data")
+	  @RequestMapping(value = "/task/{taskId}/variables/{variableName}/data", method = RequestMethod.GET)
 	  public byte[] fetchVariablesFileData(@PathVariable String taskId, @PathVariable String variableName, 
 	      @RequestParam Optional<Boolean> deserialize, HttpServletRequest rq) {
 	    return fetchVariableFileData(taskId, variableName, deserialize, rq);
@@ -447,7 +447,7 @@ public class TaskService extends BaseService implements InitializingBean {
 				+ "<br>" +
 				"<strong>Request body: Multipart form data with 'data' (binary) and 'valueType' (Bytes/File) parts")
 		@ApiResponse(responseCode = "404", description = "Task or variable not found")
-		@PostMapping(value = "/task/{id}/variables/{variableName}/data", consumes = "multipart/form-data")
+		@RequestMapping(value = "/task/{id}/variables/{variableName}/data", method = RequestMethod.POST, consumes = "multipart/form-data")
 		public ResponseEntity<Void> uploadVariableFileData(
 				@Parameter(description = "Task Id") @PathVariable String id,
 				@Parameter(description = "Variable name") @PathVariable String variableName,
@@ -467,7 +467,7 @@ public class TaskService extends BaseService implements InitializingBean {
 			}
 		}
 
-	  @PostMapping("/task/{taskId}")
+	  @RequestMapping(value = "/task/{taskId}", method = RequestMethod.POST)
 	  public Map<String, Variable> fetchVariables(@PathVariable String taskId, 
 	      @RequestParam Optional<Boolean> deserialize, 
 	      @RequestParam Optional<String> locale, CIBUser user) throws Exception {
@@ -475,7 +475,7 @@ public class TaskService extends BaseService implements InitializingBean {
 	    return bpmProvider.fetchFormVariables(taskId, deserialize.orElse(false), user);
 	  }
 
-	  @DeleteMapping("/task/{taskId}/variable/{variableName}")
+	  @RequestMapping(value = "/task/{taskId}/variable/{variableName}", method = RequestMethod.DELETE)
 	  public ResponseEntity<Void> deleteVariable(@PathVariable String taskId, @PathVariable String variableName, HttpServletRequest rq) {
 	    CIBUser userAuth = (CIBUser) baseUserProvider.authenticateUser(rq);
         checkPermission(userAuth, SevenResourceType.TASK, PermissionConstants.DELETE_ALL);
@@ -484,7 +484,7 @@ public class TaskService extends BaseService implements InitializingBean {
       return ResponseEntity.noContent().build();
 	  }
 	  
-	  @PostMapping("/task/{taskId}/bpmnError")
+	  @RequestMapping(value = "/task/{taskId}/bpmnError", method = RequestMethod.POST)
 	  public ResponseEntity<Void> handleBpmnError(@PathVariable String taskId, @RequestBody Map<String, Object> data, 
 	      @RequestParam Optional<String> locale, CIBUser user) throws Exception {
 		checkPermission(user, SevenResourceType.TASK, PermissionConstants.UPDATE_ALL);

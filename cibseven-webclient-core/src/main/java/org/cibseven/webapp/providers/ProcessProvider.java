@@ -57,11 +57,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpStatusCodeException;
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.json.JsonMapper;
-
-import tools.jackson.core.JacksonException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
 public class ProcessProvider extends SevenProviderBase implements IProcessProvider{
@@ -166,7 +164,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		url += tenantId != null ? ("&tenantIdIn=" + tenantId) : "&withoutTenantId=true";
 		Collection<Process> processes = Arrays.asList(((ResponseEntity<Process[]>) doGet(url, Process[].class, user, false)).getBody());		
 
-		if (lazyLoad.isEmpty() || (lazyLoad.isPresent() && !lazyLoad.get())) {
+		if (!lazyLoad.isPresent() || (lazyLoad.isPresent() && !lazyLoad.get())) {
 			for(Process process : processes) {
 				String urlInstances = getEngineRestUrl(user) + "/history/process-instance/count?processDefinitionId=" + process.getId();
 
@@ -443,11 +441,11 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		}
 		url += "&firstResult=" + firstResult + "&maxResults=" + maxResults;
 		data.put("processDefinitionId", id);
-		ObjectMapper objectMapper = new JsonMapper();
+		ObjectMapper objectMapper = new ObjectMapper();
 		String body = "";
 		try {
 			body = objectMapper.writeValueAsString(data);
-		} catch (JacksonException e) {
+		} catch (JsonProcessingException e) {
 			throw new SystemException(e);
 		}
 		//findIncident
@@ -471,7 +469,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		        String bodyIdIn = "";
 		        try {
 		        	bodyIdIn = objectMapper.writeValueAsString(dataIdIn);
-		        } catch (JacksonException e) {
+		        } catch (JsonProcessingException e) {
 		            throw new SystemException(e);
 		        }
 

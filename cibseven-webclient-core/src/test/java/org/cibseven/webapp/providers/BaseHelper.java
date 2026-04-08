@@ -19,7 +19,7 @@ package org.cibseven.webapp.providers;
 import java.io.FileNotFoundException;
 import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.cibseven.webapp.auth.CIBUser;
 
@@ -55,7 +55,7 @@ public class BaseHelper {
             throw new FileNotFoundException("Mock response file not found: " + filePath);
         }
 
-        return Files.readString(Path.of(resource.toURI()));
+        return Files.readString(Paths.get(resource.toURI()));
     }
 
     /**

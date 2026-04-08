@@ -30,8 +30,8 @@ import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.DeploymentResource;
 import org.cibseven.webapp.rest.TestRestTemplateConfiguration;
 
-import mockwebserver3.MockResponse;
-import mockwebserver3.MockWebServer;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
 
 import java.util.List;
 
@@ -61,7 +61,7 @@ public class DeploymentProviderIT extends BaseHelper {
     @AfterEach
     void tearDown() throws Exception {
         // Shutdown the MockWebServer after each test
-        mockWebServer.close();
+        mockWebServer.shutdown();
     }
 
     @Test
@@ -71,10 +71,9 @@ public class DeploymentProviderIT extends BaseHelper {
 
         // Load the mock response from a file
         String mockResponseBody = loadMockResponse("mocks/deployment_count_mock.json");
-        mockWebServer.enqueue(new MockResponse.Builder()
-				.body(mockResponseBody)
-				.addHeader("Content-Type", "application/json")
-				.build());
+        mockWebServer.enqueue(new MockResponse()
+                .setBody(mockResponseBody)
+                .addHeader("Content-Type", "application/json"));
 
         // Act
         String nameLike = "";
@@ -92,10 +91,9 @@ public class DeploymentProviderIT extends BaseHelper {
 
         // Load the mock response from a file
         String mockResponseBody = loadMockResponse("mocks/deployment_mock.json");
-        mockWebServer.enqueue(new MockResponse.Builder()
-				.body(mockResponseBody)
-				.addHeader("Content-Type", "application/json")
-				.build());
+        mockWebServer.enqueue(new MockResponse()
+                .setBody(mockResponseBody)
+                .addHeader("Content-Type", "application/json"));
 
         // Act
         String nameLike = "";
@@ -132,10 +130,9 @@ public class DeploymentProviderIT extends BaseHelper {
         // Load the mock response from a file
         String mockResponseBody = loadMockResponse("mocks/deployment_resource_mock.json");
 
-        mockWebServer.enqueue(new MockResponse.Builder()
-				.body(mockResponseBody)
-				.addHeader("Content-Type", "application/json")
-				.build());
+        mockWebServer.enqueue(new MockResponse()
+                .setBody(mockResponseBody)
+                .addHeader("Content-Type", "application/json"));
 
         // Act
         List<DeploymentResource> resources = (List<DeploymentResource>) deploymentProvider.findDeploymentResources(deploymentId, user);
@@ -162,8 +159,7 @@ public class DeploymentProviderIT extends BaseHelper {
         boolean cascade = true;
         CIBUser user = getCibUser();
 
-        mockWebServer.enqueue(new MockResponse.Builder().code(204)
-				.build());
+        mockWebServer.enqueue(new MockResponse().setResponseCode(204));
 
         // Act
         deploymentProvider.deleteDeployment(deploymentId, cascade, user);
@@ -171,7 +167,6 @@ public class DeploymentProviderIT extends BaseHelper {
         // Assert
         var request = mockWebServer.takeRequest();
         assertThat(request.getMethod()).isEqualTo("DELETE");
-        assertThat(request.getUrl().encodedPath()).isEqualTo("/engine-rest/deployment/deployment-1");
-        assertThat(request.getUrl().queryParameter("cascade")).isEqualTo("true");
+        assertThat(request.getPath()).isEqualTo("/engine-rest/deployment/deployment-1?cascade=true");
     }
 }

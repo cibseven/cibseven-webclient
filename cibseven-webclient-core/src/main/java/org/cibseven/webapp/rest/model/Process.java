@@ -44,8 +44,8 @@ public class Process {
 	String version;
 	String versionTag;
 	List<String> calledFromActivityIds;
-	Long runningInstances;
-	Long allInstances;
-	Long completedInstances;
-	Long incidents;
+	long runningInstances;
+	long allInstances;
+	long completedInstances;
+	long incidents;
 }

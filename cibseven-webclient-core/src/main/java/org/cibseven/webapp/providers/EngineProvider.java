@@ -31,8 +31,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+
 import lombok.extern.slf4j.Slf4j;
-import tools.jackson.core.JacksonException;
 
 @Slf4j
 @Component
@@ -190,7 +191,7 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 
 			doPost(url, body , null, null);
 
-		} catch (JacksonException e) {
+		} catch (JsonProcessingException e) {
 			SystemException se = new SystemException(e);
 			log.info("Exception in createUser(...):", se);
 			throw se;

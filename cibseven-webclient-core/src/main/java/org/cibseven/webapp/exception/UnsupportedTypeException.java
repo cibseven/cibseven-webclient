@@ -16,11 +16,9 @@
  */
 package org.cibseven.webapp.exception;
 
-import java.io.Serial;
-
 public class UnsupportedTypeException extends RuntimeException {
 
-	@Serial private static final long serialVersionUID = -7007910135736694086L;
+	private static final long serialVersionUID = -7007910135736694086L;
 
 
 	public UnsupportedTypeException(Throwable cause) {

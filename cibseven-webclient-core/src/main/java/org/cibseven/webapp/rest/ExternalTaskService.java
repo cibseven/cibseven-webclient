@@ -35,8 +35,8 @@ public class ExternalTaskService extends BaseService implements InitializingBean
   SevenProvider sevenProvider;
 
   public void afterPropertiesSet() {
-    if (bpmProvider instanceof SevenProvider provider)
-      sevenProvider = provider;
+    if (bpmProvider instanceof SevenProvider)
+      sevenProvider = (SevenProvider) bpmProvider;
     else
       throw new SystemException("ExternalTaskService expects a BpmProvider");
   }

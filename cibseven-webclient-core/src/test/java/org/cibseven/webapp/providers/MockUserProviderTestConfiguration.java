@@ -24,12 +24,11 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
-import tools.jackson.core.JacksonException;
 
 /**
  * Test configuration that provides a mock BaseUserProvider for integration tests.
@@ -98,9 +97,9 @@ public class MockUserProviderTestConfiguration {
         @Override
         public String serialize(User user) {
             try {
-                ObjectMapper mapper = new JsonMapper();
+                ObjectMapper mapper = new ObjectMapper();
                 return mapper.writeValueAsString(user);
-            } catch (JacksonException e) {
+            } catch (JsonProcessingException e) {
                 return "{}";
             }
         }
@@ -114,7 +113,7 @@ public class MockUserProviderTestConfiguration {
         @Override
         public User deserialize(String json, String token) {
             try {
-                ObjectMapper mapper = new JsonMapper();
+                ObjectMapper mapper = new ObjectMapper();
                 CIBUser user = mapper.readValue(json, CIBUser.class);
                 user.setAuthToken(token);
                 return user;

@@ -40,13 +40,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.json.JsonMapper;
-import tools.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import lombok.extern.slf4j.Slf4j;
-import tools.jackson.core.JacksonException;
 
 @Slf4j
 @Component
@@ -54,7 +53,7 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 
 	@Autowired private IVariableProvider variableProvider;
 
-	private final ObjectMapper objectMapper = new JsonMapper();
+	private final ObjectMapper objectMapper = new ObjectMapper();
 
 	@Override
 	public Collection<Task> findTasks(String filter, CIBUser user) {
@@ -119,7 +118,7 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 		try {
 			String filteredTask = objectMapper.writeValueAsString(taskUpdate);
 			doPut(url, filteredTask, user);
-		} catch (JacksonException e) {
+		} catch (JsonProcessingException e) {
 			throw new SystemException(e);
 		}
 	}
@@ -186,7 +185,7 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 		String url = getEngineRestUrl(user) + "/filter/" + filterId + "/list?firstResult=" + firstResult + "&maxResults=" + maxResults;
 		try {
 			return Arrays.asList(((ResponseEntity<Task[]>) doPost(url, filters.json(), Task[].class, user)).getBody());
-		} catch (JacksonException e) {
+		} catch (JsonProcessingException e) {
 			SystemException se = new SystemException(e);
 			log.info("Exception in getTasksFiltered(...):", se);
 			throw se;
@@ -202,7 +201,7 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 				throw new NullPointerException();
 			}
 			return body.get("count").asInt();
-		} catch (JacksonException e) {
+		} catch (JsonProcessingException e) {
 			SystemException se = new SystemException(e);
 			log.info("Exception in findTasksCountByFilter(...):", se);
 			throw se;

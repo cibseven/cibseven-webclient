@@ -28,8 +28,9 @@ import org.cibseven.webapp.rest.model.Tenant;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+
 import lombok.extern.slf4j.Slf4j;
-import tools.jackson.core.JacksonException;
 
 @Slf4j
 @Component
@@ -52,7 +53,7 @@ public class TenantProvider extends SevenProviderBase implements ITenantProvider
 		String url = getEngineRestUrl(user) + "/tenant/create";
 		try {
 			doPost(url, newTenant.json(), null, user);
-		} catch (JacksonException e) {
+		} catch (JsonProcessingException e) {
 			SystemException se = new SystemException(e);
 			log.error("Exception in createTenant(...):", se);
 			throw se;
@@ -70,7 +71,7 @@ public class TenantProvider extends SevenProviderBase implements ITenantProvider
 		String url = getEngineRestUrl(user) + "/tenant/" + tenant.getId();
 		try {		
 			doPut(url, tenant.json() , user);
-		} catch (JacksonException e) {
+		} catch (JsonProcessingException e) {
 			SystemException se = new SystemException(e);
 			log.error("Exception in updateTenant(...):", se);
 			throw se;
