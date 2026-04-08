@@ -16,11 +16,9 @@
  */
 package org.cibseven.webapp.exception;
 
-import java.io.Serial;
-
 public class SubmitDeniedException extends RuntimeException {
 
-	@Serial private static final long serialVersionUID = -2365549217918889097L;
+	private static final long serialVersionUID = -2365549217918889097L;
 
 
 	public SubmitDeniedException(Throwable cause) {

@@ -16,11 +16,9 @@
  */
 package org.cibseven.webapp.exception;
 
-import java.io.Serial;
-
 public class MissingVariableException extends RuntimeException {
 
-	@Serial private static final long serialVersionUID = -6903203826129435319L;
+	private static final long serialVersionUID = -6903203826129435319L;
 
 	public MissingVariableException(Throwable cause) {
 		super("The variable could not be found!", cause);

@@ -25,8 +25,8 @@ import lombok.Data;
 @Data @JsonIgnoreProperties(ignoreUnknown = true) 
 public class ProcessStatistics {
 	private String id;
-	private Long instances;
-	private Long failedJobs;
+	private long instances;
+	private long failedJobs;
 	private List<IncidentInfo> incidents;
 	ProcessDefinitionInfo definition;
 }

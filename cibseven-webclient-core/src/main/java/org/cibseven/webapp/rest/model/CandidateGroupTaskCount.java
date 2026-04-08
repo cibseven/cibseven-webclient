@@ -23,5 +23,5 @@ import lombok.Data;
 @Data @JsonIgnoreProperties(ignoreUnknown = true)
 public class CandidateGroupTaskCount {
 	private String groupName;
-    private Integer taskCount;
+    private int taskCount;
 }

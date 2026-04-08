@@ -16,11 +16,9 @@
  */
 package org.cibseven.webapp.exception;
 
-import java.io.Serial;
-
 public class OptimisticLockingException extends ApplicationException {
 
-	@Serial private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
 	public OptimisticLockingException(Throwable cause) {
 		super("Entity was updated by another transaction concurrently.", cause);

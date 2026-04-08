@@ -16,13 +16,11 @@
  */
 package org.cibseven.webapp.exception;
 
-import java.io.Serial;
-
 import lombok.Getter;
 
 abstract public class ApplicationException extends RuntimeException {
-
-	@Serial private static final long serialVersionUID = 1L;
+	
+	private static final long serialVersionUID = 1L;
 	
 	@Getter protected Object[] data;
 	

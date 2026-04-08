@@ -55,8 +55,8 @@ public class HistoricVariableInstanceService extends BaseService implements Init
 	SevenProvider sevenProvider;
 	
 	public void afterPropertiesSet() {
-		if (bpmProvider instanceof SevenProvider provider)
-			sevenProvider = provider;
+		if (bpmProvider instanceof SevenProvider)
+			sevenProvider = (SevenProvider) bpmProvider;
 		else throw new SystemException("HistoricVariableInstanceService expects a SevenProvider");
 	}
 	

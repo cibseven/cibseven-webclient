@@ -36,12 +36,11 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.cibseven.webapp.rest.TestRestTemplateConfiguration;
 
-import tools.jackson.core.type.TypeReference;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-import mockwebserver3.MockResponse;
-import mockwebserver3.MockWebServer;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
 
 @SpringBootTest
 @ContextConfiguration(classes = {VariableProvider.class, TestRestTemplateConfiguration.class, MockUserProviderTestConfiguration.class})
@@ -67,7 +66,7 @@ public class VariableProviderIT extends BaseHelper {
 
     @AfterEach
     void tearDown() throws Exception {
-        mockWebServer.close();
+        mockWebServer.shutdown();
     }
 
     @Test
@@ -77,15 +76,13 @@ public class VariableProviderIT extends BaseHelper {
 
         String mockResponseBody = loadMockResponse("mocks/variable_mock.json");
 
-        mockWebServer.enqueue(new MockResponse.Builder()
-				.body(mockResponseBody)
-				.addHeader("Content-Type", "application/json")
-				.build());
+        mockWebServer.enqueue(new MockResponse()
+        		.setBody(mockResponseBody)
+        		.addHeader("Content-Type", "application/json"));
 
-        mockWebServer.enqueue(new MockResponse.Builder()
-				.body(mockResponseBody)
-				.addHeader("Content-Type", "application/json")
-				.build());
+        mockWebServer.enqueue(new MockResponse()
+        		.setBody(mockResponseBody)
+        		.addHeader("Content-Type", "application/json"));
 
         final Map<String, Object> data = Map.of(
             "deserializeValues", true
@@ -103,10 +100,9 @@ public class VariableProviderIT extends BaseHelper {
         CIBUser user = getCibUser();
 
         String mockResponseBody = loadMockResponse("mocks/variable_history_mock.json");
-        mockWebServer.enqueue(new MockResponse.Builder()
-				.body(mockResponseBody)
-				.addHeader("Content-Type", "application/json")
-				.build());
+        mockWebServer.enqueue(new MockResponse()
+        		.setBody(mockResponseBody)
+        		.addHeader("Content-Type", "application/json"));
 
         Collection<VariableHistory> history = variableProvider.fetchActivityVariablesHistory(activityInstanceId, user);
 
@@ -123,7 +119,7 @@ public class VariableProviderIT extends BaseHelper {
         String processDefinitionId = "definition-1";
         CIBUser user = getCibUser();
 
-        ObjectMapper mapper = new JsonMapper();
+        ObjectMapper mapper = new ObjectMapper();
 
         List<Variable> formResult = mapper.readValue(
             new File("src/test/resources/mocks/variable_form_result_mock.json"),
@@ -132,8 +128,7 @@ public class VariableProviderIT extends BaseHelper {
 
         String mockResponseBody = loadMockResponse("mocks/process_start_mock.json");
 
-        mockWebServer.enqueue(new MockResponse.Builder().body(mockResponseBody).addHeader("Content-Type", "application/json")
-				.build());
+        mockWebServer.enqueue(new MockResponse().setBody(mockResponseBody).addHeader("Content-Type", "application/json"));
 
         ProcessStart result = variableProvider.submitStartFormVariables(processDefinitionId, formResult, user);
 

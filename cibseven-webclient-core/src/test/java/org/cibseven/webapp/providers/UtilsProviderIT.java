@@ -35,8 +35,8 @@ import org.cibseven.webapp.rest.model.EventSubscription;
 import org.cibseven.webapp.rest.model.Message;
 import org.cibseven.webapp.rest.TestRestTemplateConfiguration;
 
-import mockwebserver3.MockResponse;
-import mockwebserver3.MockWebServer;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
 
 @SpringBootTest
 @ContextConfiguration(classes = {UtilsProvider.class, TestRestTemplateConfiguration.class, MockUserProviderTestConfiguration.class})
@@ -62,7 +62,7 @@ public class UtilsProviderIT extends BaseHelper {
 
     @AfterEach
     void tearDown() throws Exception {
-        mockWebServer.close();
+        mockWebServer.shutdown();
     }
 
     @Test
@@ -72,10 +72,9 @@ public class UtilsProviderIT extends BaseHelper {
 
         String mockResponseBody = loadMockResponse("mocks/message_mock.json");
 
-        mockWebServer.enqueue(new MockResponse.Builder()
-				.body(mockResponseBody)
-				.addHeader("Content-Type", "application/json")
-				.build());
+        mockWebServer.enqueue(new MockResponse()
+                .setBody(mockResponseBody)
+                .addHeader("Content-Type", "application/json"));
 
         Map<String, Object> requestData = Map.of("messageName", "testMessage");
 
@@ -97,10 +96,9 @@ public class UtilsProviderIT extends BaseHelper {
 
         String stacktrace = "Sample stacktrace content";
 
-        mockWebServer.enqueue(new MockResponse.Builder()
-				.body(stacktrace)
-				.addHeader("Content-Type", MediaType.TEXT_PLAIN_VALUE)
-				.build());
+        mockWebServer.enqueue(new MockResponse()
+                .setBody(stacktrace)
+                .addHeader("Content-Type", MediaType.TEXT_PLAIN_VALUE));
 
         // Act
         String result = utilsProvider.findStacktrace("job-1", user);
@@ -115,9 +113,8 @@ public class UtilsProviderIT extends BaseHelper {
         // Arrange
         CIBUser user = getCibUser();
 
-        mockWebServer.enqueue(new MockResponse.Builder()
-				.code(204)
-				.build());
+        mockWebServer.enqueue(new MockResponse()
+                .setResponseCode(204));
 
         Map<String, Object> requestData = Map.of("retries", 3);
 
@@ -132,10 +129,9 @@ public class UtilsProviderIT extends BaseHelper {
 
         String mockResponseBody = loadMockResponse("mocks/event_subscriptions_mock.json");
 
-        mockWebServer.enqueue(new MockResponse.Builder()
-				.body(mockResponseBody)
-				.addHeader("Content-Type", "application/json")
-				.build());
+        mockWebServer.enqueue(new MockResponse()
+                .setBody(mockResponseBody)
+                .addHeader("Content-Type", "application/json"));
 
         // Act
         Collection<EventSubscription> subscriptions = utilsProvider.getEventSubscriptions(

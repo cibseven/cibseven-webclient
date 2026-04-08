@@ -16,11 +16,9 @@
  */
 package org.cibseven.webapp.exception;
 
-import java.io.Serial;
-
 public class AccessDeniedException extends RuntimeException { //TODO ? remove
 	
-	@Serial private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
 	public AccessDeniedException(String object) {
 		super(object);

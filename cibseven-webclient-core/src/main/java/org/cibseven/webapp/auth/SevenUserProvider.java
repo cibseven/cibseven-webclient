@@ -16,6 +16,7 @@
  */
 package org.cibseven.webapp.auth;
 
+import java.io.IOException;
 import java.util.Base64;
 
 import javax.crypto.SecretKey;
@@ -33,8 +34,8 @@ import org.cibseven.webapp.rest.model.SevenVerifyUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -43,7 +44,6 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
-import tools.jackson.core.JacksonException;
 
 public class SevenUserProvider extends BaseUserProvider<StandardLogin> {
 	
@@ -57,8 +57,8 @@ public class SevenUserProvider extends BaseUserProvider<StandardLogin> {
 	@PostConstruct
 	public void init() {
 		settings = new JwtTokenSettings(secret, validMinutes, prolongMinutes);
-		if (provider instanceof SevenProvider sevenProvider1)
-			sevenProvider = sevenProvider1;
+		if (provider instanceof SevenProvider)
+			sevenProvider = (SevenProvider) provider;
 		else throw new SystemException("SevenUserProvider expects a SevenProvider");
 		checkKey();
 	}
@@ -75,7 +75,7 @@ public class SevenUserProvider extends BaseUserProvider<StandardLogin> {
 			
 			SevenVerifyUser sevenVerifyUser = sevenProvider.verifyUser(login, user);
 			
-			if (Boolean.TRUE.equals(sevenVerifyUser.getAuthenticated())) {
+			if (sevenVerifyUser.isAuthenticated()) {
 			  // Token is needed for the next request (/user/xxx/profile)
 			  user.setAuthToken(createToken(tokenSettings, true, false, user));
 				SevenUser cUser = sevenProvider.getUserProfile(user.getId(), user);
@@ -117,15 +117,14 @@ public class SevenUserProvider extends BaseUserProvider<StandardLogin> {
 	@Override	
 	public User deserialize(String json, String token) {
 		try {
-			ObjectMapper mapper = JsonMapper.builder()
-					.addMixIn(CIBUser.class, UserSerialization.class)
-					.build();
+			ObjectMapper mapper = new ObjectMapper();
+			mapper.addMixIn(CIBUser.class, UserSerialization.class);
 			CIBUser user = mapper.readValue(json, CIBUser.class);
 			user.setAuthToken(token);
 			return user;
 		} catch (IllegalArgumentException x) {
 			throw new AuthenticationException(json);
-		} catch (JacksonException x) {
+		} catch (IOException x) {
 			throw new SystemException(x);
 		}
 	}
@@ -133,11 +132,10 @@ public class SevenUserProvider extends BaseUserProvider<StandardLogin> {
 	@Override
 	public String serialize(User user) {
 		try {
-			ObjectMapper mapper = JsonMapper.builder()
-					.addMixIn(CIBUser.class, UserSerialization.class)
-					.build();
+			ObjectMapper mapper = new ObjectMapper();
+			mapper.addMixIn(CIBUser.class, UserSerialization.class);
 			return mapper.writeValueAsString(user);
-		} catch (JacksonException x) {
+		} catch (JsonProcessingException x) {
 			throw new SystemException(x);
 		}
 	}

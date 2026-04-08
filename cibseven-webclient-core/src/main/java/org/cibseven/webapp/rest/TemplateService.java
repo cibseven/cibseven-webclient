@@ -31,9 +31,9 @@ import org.cibseven.webapp.template.TemplateTask;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -62,7 +62,7 @@ public class TemplateService extends BaseService implements InitializingBean {
 	@Override
 	public void afterPropertiesSet() throws Exception { }
 	
-	@GetMapping("/{element}/{taskId}")
+	@RequestMapping(value = "/{element}/{taskId}", method = RequestMethod.GET)
 	public Template getTemplate(@PathVariable String element, @PathVariable String taskId, @RequestParam Optional<String> locale, HttpServletRequest request) throws Exception {
 	  CIBUser user = checkAuthorization(request, false);
 		return name2element.get(element).getTemplate(taskId, locale, user);

@@ -25,8 +25,7 @@ import org.cibseven.webapp.auth.providers.JwtUserProvider.TokenSettings;
 import org.cibseven.webapp.config.EngineRestProperties;
 import org.cibseven.webapp.config.EngineRestSource;
 
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -45,9 +44,9 @@ public class EngineTokenUtils {
 	 * @param request The HTTP request containing the X-Process-Engine header
 	 */
 	public static void setEngineFromRequest(User user, HttpServletRequest request) {
-		if (user instanceof CIBUser bUser) {
+		if (user instanceof CIBUser) {
 			String engine = request.getHeader("X-Process-Engine");
-			bUser.setEngine(engine);
+			((CIBUser) user).setEngine(engine);
 		}
 	}
 	
@@ -158,16 +157,16 @@ public class EngineTokenUtils {
 			
 			// Decode the payload (middle part)
 			String payload = new String(Base64.getUrlDecoder().decode(parts[1]));
-			ObjectMapper mapper = new JsonMapper();
+			ObjectMapper mapper = new ObjectMapper();
 			var claims = mapper.readTree(payload);
 			
 			// Extract user JSON and parse engine from it
 			var userNode = claims.get("user");
-			if (userNode != null && userNode.isString()) {
-				var userData = mapper.readTree(userNode.asString());
+			if (userNode != null && userNode.isTextual()) {
+				var userData = mapper.readTree(userNode.asText());
 				var engineNode = userData.get("engine");
-				if (engineNode != null && engineNode.isString()) {
-					return engineNode.asString();
+				if (engineNode != null && engineNode.isTextual()) {
+					return engineNode.asText();
 				}
 			}
 		} catch (Exception e) {

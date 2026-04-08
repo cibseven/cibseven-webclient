@@ -173,8 +173,8 @@ public class SsoHelper {
 		var introspectionResult = callIntrospection(token);
 		if (introspectionResult != null && introspectionResult.containsKey("exp")) {
 			Object expValue = introspectionResult.get("exp");
-			if (expValue instanceof Number number) {
-				long expTimestamp = number.longValue() * 1000; // Convert seconds to milliseconds
+			if (expValue instanceof Number) {
+				long expTimestamp = ((Number) expValue).longValue() * 1000; // Convert seconds to milliseconds
 				expiration = new Date(expTimestamp);
 				log.debug("Token introspection expiration: {}", expiration);
 			}
@@ -265,7 +265,7 @@ public class SsoHelper {
 		// bytes to hex
 		StringBuilder sb = new StringBuilder();
 		for (byte b : hashInBytes) {
-			sb.append("%02x".formatted(b));
+			sb.append(String.format("%02x", b));
 		}
 		return sb.toString();
 	}

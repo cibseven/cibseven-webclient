@@ -16,6 +16,7 @@
  */
 package org.cibseven.webapp.auth;
 
+import java.io.IOException;
 import java.util.Base64;
 import java.util.Calendar;
 import java.util.Date;
@@ -42,8 +43,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -58,7 +59,6 @@ import jakarta.annotation.PreDestroy;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import tools.jackson.core.JacksonException;
 
 @Slf4j
 public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
@@ -210,15 +210,14 @@ public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
 	@Override
 	public User deserialize(String json, String token) {
 		try {
-			ObjectMapper mapper = JsonMapper.builder()
-					.addMixIn(SSOUser.class, org.cibseven.webapp.auth.BaseUserProvider.UserSerialization.class)
-					.build();
+			ObjectMapper mapper = new ObjectMapper();
+			mapper.addMixIn(SSOUser.class, org.cibseven.webapp.auth.BaseUserProvider.UserSerialization.class);
 			SSOUser user = mapper.readValue(json, SSOUser.class);
 			user.setAuthToken(token);
 			return user;
 		} catch (IllegalArgumentException x) { // for example doXigate token used with doXisafe
 			throw new AuthenticationException(json);
-		} catch (JacksonException x) {
+		} catch (IOException x) {
 			throw new SystemException(x);
 		}
 	}
@@ -226,11 +225,10 @@ public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
 	@Override
 	public String serialize(User user) {
 		try {
-			ObjectMapper mapper = JsonMapper.builder()
-					.addMixIn(SSOUser.class, UserSerialization.class)
-					.build();
+			ObjectMapper mapper = new ObjectMapper();
+			mapper.addMixIn(SSOUser.class, UserSerialization.class);
 			return mapper.writeValueAsString(user);
-		} catch (JacksonException x) {
+		} catch (JsonProcessingException x) {
 			throw new SystemException(x);
 		}
 	}
@@ -278,7 +276,9 @@ public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
 			}
 			throw new TokenExpiredException();			
 		} catch (IllegalArgumentException | InvalidKeyException | MalformedJwtException e) { //token received from third-party isn't ours, get the userInfo from the defined endpoint on the config file
-			return getUserFromAccessToken(token);
+			User user = getUserFromAccessToken(token);
+	        
+			return user;
 		} catch (JwtException x) {
 			throw new AuthenticationException(token);
 		}

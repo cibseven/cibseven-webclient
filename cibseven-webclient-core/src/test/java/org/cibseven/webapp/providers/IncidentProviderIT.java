@@ -34,8 +34,8 @@ import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.rest.model.Incident;
 import org.cibseven.webapp.rest.TestRestTemplateConfiguration;
 
-import mockwebserver3.MockResponse;
-import mockwebserver3.MockWebServer;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
 
 
 @SpringBootTest
@@ -62,7 +62,7 @@ public class IncidentProviderIT extends BaseHelper {
 
     @AfterEach
     void tearDown() throws Exception {
-        mockWebServer.close();
+        mockWebServer.shutdown();
     }
 
     @Test
@@ -72,10 +72,9 @@ public class IncidentProviderIT extends BaseHelper {
 
         String mockResponseBody = "{\"count\": 5}";
 
-        mockWebServer.enqueue(new MockResponse.Builder()
-				.body(mockResponseBody)
-				.addHeader("Content-Type", "application/json")
-				.build());
+        mockWebServer.enqueue(new MockResponse()
+                .setBody(mockResponseBody)
+                .addHeader("Content-Type", "application/json"));
 
         Map<String, Object> params = new HashMap<>();
         params.put("incidentId", "incident-1");
@@ -95,10 +94,9 @@ public class IncidentProviderIT extends BaseHelper {
 
         String mockResponseBody = loadMockResponse("mocks/incidents_mock.json");
 
-        mockWebServer.enqueue(new MockResponse.Builder()
-				.body(mockResponseBody)
-				.addHeader("Content-Type", "application/json")
-				.build());
+        mockWebServer.enqueue(new MockResponse()
+                .setBody(mockResponseBody)
+                .addHeader("Content-Type", "application/json"));
 
         // Act
         Map<String, Object> params = new HashMap<>();
@@ -122,10 +120,9 @@ public class IncidentProviderIT extends BaseHelper {
 
         String mockResponseBody = loadMockResponse("mocks/incidents_mock.json");
 
-        mockWebServer.enqueue(new MockResponse.Builder()
-				.body(mockResponseBody)
-				.addHeader("Content-Type", "application/json")
-				.build());
+        mockWebServer.enqueue(new MockResponse()
+                .setBody(mockResponseBody)
+                .addHeader("Content-Type", "application/json"));
 
         // Act
         List<Incident> incidents = incidentProvider.findIncidentByInstanceId("process-instance-1", user);
@@ -145,10 +142,9 @@ public class IncidentProviderIT extends BaseHelper {
 
         String mockResponseBody = loadMockResponse("mocks/incidents_mock.json");
 
-        mockWebServer.enqueue(new MockResponse.Builder()
-				.body(mockResponseBody)
-				.addHeader("Content-Type", "application/json")
-				.build());
+        mockWebServer.enqueue(new MockResponse()
+                .setBody(mockResponseBody)
+                .addHeader("Content-Type", "application/json"));
 
         // Act
         Collection<Incident> incidents = incidentProvider.fetchIncidents("process-key-1", user);

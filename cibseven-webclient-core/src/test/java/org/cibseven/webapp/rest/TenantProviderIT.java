@@ -90,7 +90,7 @@ public class TenantProviderIT extends BaseHelper {
 
         // Create demo1 user
         baseUsersTestHelper.createUser("demo1", "demo1", "demo1", "", user);
-        assertThat(baseUsersTestHelper.verifyUser("demo1", "", user).getAuthenticated()).isTrue();
+        assertThat(baseUsersTestHelper.verifyUser("demo1", "", user).isAuthenticated()).isTrue();
 
         // Create tenant        
         baseTenantsTestHelper.createTenant("tenantDemo1", "tenantDemo1", user);
@@ -110,7 +110,7 @@ public class TenantProviderIT extends BaseHelper {
 
     	// Remove demo1 user
     	baseUsersTestHelper.deleteUser("demo1", user);
-        assertThat(baseUsersTestHelper.verifyUser("demo1", "", user).getAuthenticated()).isFalse();
+        assertThat(baseUsersTestHelper.verifyUser("demo1", "", user).isAuthenticated()).isFalse();
     }
 
     @Test

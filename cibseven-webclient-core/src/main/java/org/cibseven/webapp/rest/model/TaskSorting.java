@@ -17,14 +17,14 @@
 package org.cibseven.webapp.rest.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import tools.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import tools.jackson.core.JacksonException;
 
 @Getter @Setter @ToString @AllArgsConstructor @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -32,7 +32,7 @@ public class TaskSorting {
 	String sortBy;
 	String sortOrder;
 	
-	public String json() throws JacksonException {
-		return new JsonMapper().writeValueAsString(this);
+	public String json() throws JsonProcessingException {
+		return new ObjectMapper().writeValueAsString(this);
 	}
 }

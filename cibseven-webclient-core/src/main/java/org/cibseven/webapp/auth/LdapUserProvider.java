@@ -16,6 +16,7 @@
  */
 package org.cibseven.webapp.auth;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Base64;
@@ -38,8 +39,8 @@ import org.cibseven.webapp.auth.utils.EngineTokenUtils;
 import org.cibseven.webapp.auth.rest.StandardLogin;
 import org.cibseven.webapp.exception.SystemException;
 import org.springframework.beans.factory.annotation.Value;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -49,7 +50,6 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import tools.jackson.core.JacksonException;
 
 @Slf4j
 public class LdapUserProvider extends BaseUserProvider<StandardLogin> {
@@ -155,15 +155,14 @@ public class LdapUserProvider extends BaseUserProvider<StandardLogin> {
 	@Override
 	public User deserialize(String json, String token) {
 		try {
-			ObjectMapper mapper = JsonMapper.builder()
-					.addMixIn(CIBUser.class, UserSerialization.class)
-					.build();
+			ObjectMapper mapper = new ObjectMapper();
+			mapper.addMixIn(CIBUser.class, UserSerialization.class);
 			CIBUser user = mapper.readValue(json, CIBUser.class);
 			user.setAuthToken(token);
 			return user;
 		} catch (IllegalArgumentException x) { // for example doXigate token used with doXisafe
 			throw new AuthenticationException(json);
-		} catch (JacksonException x) {
+		} catch (IOException x) {
 			throw new SystemException(x);
 		}
 	}
@@ -171,11 +170,10 @@ public class LdapUserProvider extends BaseUserProvider<StandardLogin> {
 	@Override
 	public String serialize(User user) {
 		try {
-			ObjectMapper mapper = JsonMapper.builder()
-					.addMixIn(CIBUser.class, UserSerialization.class)
-					.build();
+			ObjectMapper mapper = new ObjectMapper();
+			mapper.addMixIn(CIBUser.class, UserSerialization.class);
 			return mapper.writeValueAsString(user);
-		} catch (JacksonException x) {
+		} catch (JsonProcessingException x) {
 			throw new SystemException(x);
 		}
 	}

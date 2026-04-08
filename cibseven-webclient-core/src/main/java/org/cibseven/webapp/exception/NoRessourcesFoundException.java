@@ -16,11 +16,9 @@
  */
 package org.cibseven.webapp.exception;
 
-import java.io.Serial;
-
 public class NoRessourcesFoundException extends RuntimeException {
 
-	@Serial private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
 	public NoRessourcesFoundException(Throwable cause) {
 		super("No deployment could not be found for this Id!", cause);

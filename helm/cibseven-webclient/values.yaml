@@ -25,7 +25,9 @@ global:
     # otlp, jaeger(deprecated)
     tracesExporter: "otlp"
     otlpTracesEndpoint: "http://observability-grafana-agent.observability:4317"
-    otlpTracesProtocol: "grpc"
+    otlpTracesProtocol: "grpc" # see https://opentelemetry.io/docs/languages/sdk-configuration/otlp-exporter/#otel_exporter_otlp_traces_protocol
+
+  podLabels: { }
 
   probes:
     enabled: true
@@ -565,6 +567,7 @@ configmaps:
         }
 
 secrets:
+  env: { }
   files:
     application.yaml:
       path: /opt/cib/conf/cibseven-webclient.yaml
@@ -574,7 +577,9 @@ secrets:
       path: /opt/cib/conf/template-config.properties
       value: |-
 
+volumes: { }
 
+initContainers: { }
 
 replicaCount: 1
 
@@ -591,6 +596,7 @@ fullnameOverride: ""
 
 serviceAccount:
   create: false
+  annotations: { }
   name: ""
 
 podLabels: "{{ .Values.global.podLabels | toYaml }}"
@@ -658,4 +664,8 @@ resources:
 autoscaling:
   enabled: false
 
+nodeSelector: { }
+
 tolerations: [ ]
+
+affinity: { }
