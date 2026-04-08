@@ -46,6 +46,7 @@ CREATE TABLE IF NOT EXISTS processes_diagrams_aud (
     version INT(11),
     diagram_mod TINYINT(1) DEFAULT 0,
     diagram LONGBLOB,
+    updated_by VARCHAR(100),
     rev INT(11) NOT NULL,
     revtype SMALLINT(6),
     CONSTRAINT pk_resources_aud PRIMARY KEY (id, rev),

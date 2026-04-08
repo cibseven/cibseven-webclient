@@ -46,6 +46,7 @@ CREATE TABLE IF NOT EXISTS processes_diagrams_aud (
     version INTEGER,
     diagram_mod BOOLEAN DEFAULT false,
     diagram BLOB,
+    updated_by VARCHAR(100),
     rev INT NOT NULL,
     revtype TINYINT,
     CONSTRAINT pk_resources_aud PRIMARY KEY (id, rev),

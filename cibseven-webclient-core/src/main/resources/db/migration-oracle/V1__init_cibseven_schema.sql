@@ -48,6 +48,7 @@ CREATE TABLE processes_diagrams_aud (
     version NUMBER(11),
     diagram_mod NUMBER(1) DEFAULT 0,
     diagram BLOB,
+    updated_by VARCHAR2(100 CHAR),
     rev NUMBER(10,0) NOT NULL,
     revtype NUMBER(6,0),
     CONSTRAINT pk_resources_aud PRIMARY KEY (id, rev),
