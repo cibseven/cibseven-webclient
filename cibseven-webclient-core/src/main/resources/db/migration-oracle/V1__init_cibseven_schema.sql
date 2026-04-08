@@ -17,7 +17,7 @@ CREATE TABLE element_templates (
 
 CREATE TABLE processes_diagrams (
     id VARCHAR2(36) PRIMARY KEY,
-    name VARCHAR2(255) NOT NULL,
+    name VARCHAR2(100 CHAR) NOT NULL,
     processkey VARCHAR2(100) NOT NULL UNIQUE,
     description VARCHAR2(150),
     created TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -26,7 +26,7 @@ CREATE TABLE processes_diagrams (
     type VARCHAR2(50) NOT NULL DEFAULT 'bpmn-c7',
     version NUMBER(10,0),
     diagram BLOB,
-    updated_by VARCHAR2(255)
+    updated_by VARCHAR2(100 CHAR)
 );
 
 CREATE TABLE revinfo (
@@ -38,7 +38,7 @@ CREATE SEQUENCE revinfo_seq START WITH 1 INCREMENT BY 1;
 
 CREATE TABLE processes_diagrams_aud (
     id VARCHAR2(36) NOT NULL,
-    name VARCHAR2(255),
+    name VARCHAR2(100 CHAR),
     processkey VARCHAR2(100),
     description VARCHAR2(150),
     created TIMESTAMP,
@@ -63,14 +63,14 @@ CREATE SEQUENCE hibernate_sequence
 
 CREATE TABLE user_sessions (
     id VARCHAR2(36) PRIMARY KEY,
-    user_id VARCHAR2(255) NOT NULL,
+    user_id VARCHAR2(100 CHAR) NOT NULL,
     created_at TIMESTAMP NOT NULL,
     expires_at TIMESTAMP
 );
 
 CREATE TABLE diagram_usage (
     id VARCHAR2(36) PRIMARY KEY,
-    user_id VARCHAR2(255) NOT NULL,
+    user_id VARCHAR2(100 CHAR) NOT NULL,
     diagram_id VARCHAR2(36) NOT NULL,
     session_id VARCHAR2(36) NOT NULL,
     opened_at TIMESTAMP NOT NULL,
@@ -88,12 +88,12 @@ CREATE TABLE forms (
     form_schema BLOB NOT NULL,
     formid VARCHAR2(100 CHAR) NOT NULL UNIQUE,
     version NUMBER(11) DEFAULT 1,
-    updated_by VARCHAR2(255)
+    updated_by VARCHAR2(100 CHAR)
 );
 
 CREATE TABLE form_usage (
     id VARCHAR2(36) PRIMARY KEY,
-    user_id VARCHAR2(255) NOT NULL,
+    user_id VARCHAR2(100 CHAR) NOT NULL,
     form_id VARCHAR2(36) NOT NULL,
     session_id VARCHAR2(36) NOT NULL,
     opened_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,

@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS processes_diagrams (
     type VARCHAR(50) NOT NULL DEFAULT 'bpmn-c7',
     version INTEGER,
     diagram BYTEA,
-    updated_by VARCHAR(255)
+    updated_by VARCHAR(100)
 );
 
 CREATE TABLE IF NOT EXISTS revinfo (
@@ -61,14 +61,14 @@ CREATE SEQUENCE IF NOT EXISTS hibernate_sequence
 
 CREATE TABLE IF NOT EXISTS user_sessions (
     id VARCHAR(36) PRIMARY KEY,
-    user_id VARCHAR(255) NOT NULL,
+    user_id VARCHAR(100) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     expires_at TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS diagram_usage (
     id VARCHAR(36) PRIMARY KEY,
-    user_id VARCHAR(255) NOT NULL,
+    user_id VARCHAR(100) NOT NULL,
     diagram_id VARCHAR(36) NOT NULL,
     session_id VARCHAR(36) NOT NULL,
     opened_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -86,12 +86,12 @@ CREATE TABLE IF NOT EXISTS forms (
     form_schema BYTEA NOT NULL,
     formid VARCHAR(100) NOT NULL UNIQUE,
     version INTEGER DEFAULT 1,
-    updated_by VARCHAR(255)
+    updated_by VARCHAR(100)
 );
 
 CREATE TABLE IF NOT EXISTS form_usage (
     id VARCHAR(36) PRIMARY KEY,
-    user_id VARCHAR(255) NOT NULL,
+    user_id VARCHAR(100) NOT NULL,
     form_id VARCHAR(36) NOT NULL,
     session_id VARCHAR(36) NOT NULL,
     opened_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
