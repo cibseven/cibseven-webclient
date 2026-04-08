@@ -20,6 +20,18 @@ import '@cib/common-frontend/dist/style.css';
 
 export {  axios, moment, createUUID } from '@/globals.js'
 export { permissionsMixin } from '@/permissions.js'
+export {
+  AUTH_TYPE_GLOBAL,
+  AUTH_TYPE_GRANT,
+  AUTH_TYPE_REVOKE,
+  isAuthorizationEntryRelevant,
+  getPermissionsProcessed,
+  buildPermissionsChecks,
+  checkPermissionsAllowed,
+  checkPermissionsDenied,
+  checkActionAllowed,
+} from '@/utils/permissionsUtils.js'
+export { ACTION_PERMISSIONS, toConfigPermissions } from '@/utils/actionPermissions.js'
 export { default as registerComponents } from './register.js'
 export { default as store, modules as storeModules } from '@/store'
 export { debounce } from '@/utils/debounce.js'
