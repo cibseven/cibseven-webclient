@@ -52,6 +52,7 @@ public interface IProcessProvider {
 	public Process findProcessById(String id, Optional<Boolean> extraInfo, CIBUser user) throws SystemException;
 	public Collection<ProcessInstance> findProcessesInstances(String key, CIBUser user);
 	public Collection<ProcessInstance> findCurrentProcessesInstances(Map<String, Object> data, CIBUser user);
+	public Collection<HistoryProcessInstance> findProcessesInstancesRuntime(Map<String, Object> data, Optional<Integer> firstResult, Optional<Integer> maxResults, CIBUser user);
 	public ProcessDiagram fetchDiagram(String id, CIBUser user);
 	public StartForm fetchStartForm(String processDefinitionId, CIBUser user);
 	public Data downloadBpmn(String id, String fileName, CIBUser user);
@@ -81,6 +82,7 @@ public interface IProcessProvider {
 	public void deleteProcessInstanceFromHistory(String id, CIBUser user);
 	public void deleteProcessDefinition(String id, Optional<Boolean> cascade, CIBUser user);
 	public Long countProcessesInstancesHistory(Map<String, Object> filters, CIBUser user);
+	public Long countProcessesInstancesRuntime(Map<String, Object> filters, CIBUser user);
 	public Object fetchHistoricActivityStatistics(String id, Map<String, Object> params, CIBUser user);
 	
 	default List<ProcessStatistics> groupProcessStatisticsByKeyAndTenantImpl(Collection<ProcessStatistics> processStatistics) {

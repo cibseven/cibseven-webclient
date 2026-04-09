@@ -26,7 +26,7 @@
         </b-form-checkbox>
         <label for="includeExisting" class="fw-medium mt-2 mb-1">{{ $t('process-instance.jobDefinitions.execute') }}</label>
         <div class="form-check" v-for="option in executionOptions" :key="option">
-          <input class="form-check-input" type="radio" :id="option" :value="option" v-model="executionOption" />
+          <input class="form-check-input" type="radio" name="executionOption" :id="option" :value="option" v-model="executionOption" />
           <label class="form-check-label" :for="option">{{ $t('process-instance.jobDefinitions.' + option) }}</label>
         </div>
         <div v-if="executionOption === 'delayed'" class="row">

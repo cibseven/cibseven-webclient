@@ -26,7 +26,8 @@
         <b-input-group-text class="py-0 border-light"><span class="mdi mdi-18px mdi-magnify"
           style="line-height: initial"></span></b-input-group-text>
       </template>
-      <b-form-input :title="$t('searches.searchByTaskName')" size="sm" ref="input" type="search" v-model="filter" :list="id"
+      <label :for="id" class="visually-hidden">{{ $t('searches.searchByTaskName').replace('...', '') }}</label>
+      <b-form-input :title="$t('searches.searchByTaskName')" size="sm" ref="input" type="search" v-model="filter" :id="id"
         class="form-control border-start-0 ps-0 form-control border-light shadow-none"
         :placeholder="$t('searches.searchByTaskName')" :maxlength="maxlength" @input="onInput"/>
       <template v-slot:append v-if="$root.config.taskFilter.advancedSearch.criteriaKeys.length > 0 &&

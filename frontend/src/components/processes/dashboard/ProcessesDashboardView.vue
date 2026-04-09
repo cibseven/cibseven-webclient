@@ -186,6 +186,10 @@ export default {
         this.openIncidents = analytics.openIncidents
 
         analytics.openHumanTasks.forEach((data) => {
+          // Used values are:
+          // - 'processes-dashboard.items.open-human-tasks.assigned'
+          // - 'processes-dashboard.items.open-human-tasks.unassigned'
+          // - 'processes-dashboard.items.open-human-tasks.assignedGroups'
           data.title = this.$t('processes-dashboard.items.open-human-tasks.' + data.title)
         })
         this.openHumanTasks = analytics.openHumanTasks

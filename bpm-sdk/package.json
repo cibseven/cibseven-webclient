@@ -20,20 +20,18 @@
     "build": "vite build",
     "build:library": "cross-env BUILD_MODE=library vite build",
     "dev": "vite",
-    "test": "vitest run",
-    "bump:dev": "../bump-dev-version.sh bpm-sdk",
-    "remove:dev": "../npm-version-release.sh bpm-sdk"
+    "test": "vitest run"
   },
   "dependencies": {
-    "fast-xml-parser": "^5.2.3",
-    "jquery": "^3.7.1",
-    "moment": "^2.30.1",
-    "superagent": "^10.2.1"
+    "fast-xml-parser": "5.3.4",
+    "jquery": "3.7.1",
+    "moment": "2.30.1",
+    "superagent": "10.2.2"
   },
   "devDependencies": {
-    "cross-env": "^7.0.3",
-    "vite": "^7.0.4",
-    "vitest": "^3.2.3"
+    "cross-env": "7.0.3",
+    "vite": "7.2.0",
+    "vitest": "3.2.3"
   },
   "publishConfig": {
     "registry": "https://artifacts.cibseven.org/repository/npm-hosted/"

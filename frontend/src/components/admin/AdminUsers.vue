@@ -42,7 +42,7 @@
     </div>
     <div class="container overflow-auto bg-white shadow-sm border rounded g-0" @scroll="showMore">
       <FlowTable striped thead-class="sticky-header" :items="users" primary-key="id"
-        prefix="admin.users." :fields="tableFields">
+        :fields="tableFields">
         <template v-slot:cell(actions)="row">
           <template v-if="$root.config.userEditable">
             <CellActionButton @click="openUser(row.item)" :title="$t('admin.users.editUser')" icon="mdi-pencil-outline"></CellActionButton>
@@ -103,11 +103,11 @@ export default {
   computed: {
     tableFields() {
       return [
-        { label: 'id', key: 'id', class: 'col-md-2 col-sm-2', tdClass: 'py-1' },
-        { label: 'firstName', key: 'firstName', class: 'col-md-3 col-sm-3', tdClass: 'py-1' },
-        { label: 'lastName', key: 'lastName', class: 'col-md-2 col-sm-2', tdClass: 'py-1' },
-        { label: 'email', key: 'email', class: 'col-md-3 col-sm-3', tdClass: 'py-1' },
-        { label: 'actions', key: 'actions', class: 'col-md-2 col-sm-2 text-center', sortable: false, thClass: 'justify-content-center', tdClass: 'justify-content-center py-0' }
+        { label: 'admin.users.id', key: 'id', class: 'col-md-2 col-sm-2', tdClass: 'py-1' },
+        { label: 'admin.users.firstName', key: 'firstName', class: 'col-md-3 col-sm-3', tdClass: 'py-1' },
+        { label: 'admin.users.lastName', key: 'lastName', class: 'col-md-2 col-sm-2', tdClass: 'py-1' },
+        { label: 'admin.users.email', key: 'email', class: 'col-md-3 col-sm-3', tdClass: 'py-1' },
+        { label: 'admin.users.actions', key: 'actions', class: 'col-md-2 col-sm-2 text-center', sortable: false, thClass: 'justify-content-center', tdClass: 'justify-content-center py-0' }
       ]
     }
   },

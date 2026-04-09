@@ -23,7 +23,7 @@
       <div>
         <p class="fw-medium mt-2 mb-2">{{ $t('process-instance.jobs.recalculate') }}</p>
         <div class="form-check mb-2" v-for="option in dueDateOptions" :key="option.value">
-          <input class="form-check-input" type="radio" :id="option.value" :value="option.value" v-model="selectedOption" />
+          <input class="form-check-input" type="radio" name="dueDateOption" :id="option.value" :value="option.value" v-model="selectedOption" />
           <label class="form-check-label" :for="option.value">{{ option.label }}</label>
         </div>
       </div>

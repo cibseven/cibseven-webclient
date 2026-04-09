@@ -21,16 +21,16 @@
     <div v-if="loading">
       <p class="text-center p-4"><BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}</p>
     </div>
-    <FlowTable v-else-if="userTasks.length > 0" resizable striped thead-class="sticky-header" :items="userTasks" primary-key="id" prefix="process-instance.usertasks."
+    <FlowTable v-else-if="userTasks.length > 0" resizable striped thead-class="sticky-header" :items="userTasks" primary-key="id"
       sort-by="created" :sort-desc="true" :fields="[
-      { label: 'activity', key: 'name', class: 'col-2', tdClass: 'py-1' },
-      { label: 'assignee', key: 'assignee', class: 'col-1', tdClass: 'py-0' },
-      { label: 'owner', key: 'owner', class: 'col-1', tdClass: 'py-1' },
-      { label: 'startTime', key: 'created', class: 'col-2', tdClass: 'py-1' },
-      { label: 'due', key: 'due', class: 'col-2', tdClass: 'py-1' },
-      { label: 'followUp', key: 'followUp', class: 'col-1', tdClass: 'py-1' },
-      { label: 'taskID', key: 'id', class: 'col-2', tdClass: 'py-0' },
-      { label: 'actions', key: 'actions', class: 'col-1', sortable: false, tdClass: 'py-0' }]">
+      { label: 'process-instance.usertasks.activity', key: 'name', class: 'col-2', tdClass: 'py-1' },
+      { label: 'process-instance.usertasks.assignee', key: 'assignee', class: 'col-1', tdClass: 'py-0' },
+      { label: 'process-instance.usertasks.owner', key: 'owner', class: 'col-1', tdClass: 'py-1' },
+      { label: 'process-instance.usertasks.startTime', key: 'created', class: 'col-2', tdClass: 'py-1' },
+      { label: 'process-instance.usertasks.due', key: 'due', class: 'col-2', tdClass: 'py-1' },
+      { label: 'process-instance.usertasks.followUp', key: 'followUp', class: 'col-1', tdClass: 'py-1' },
+      { label: 'process-instance.usertasks.taskID', key: 'id', class: 'col-2', tdClass: 'py-0' },
+      { label: 'process-instance.usertasks.actions', key: 'actions', class: 'col-1', sortable: false, tdClass: 'py-0' }]">
 
       <template v-slot:cell(name)="table">
         <span :title="table.item.description || table.item.name" class="text-truncate d-block">{{ table.item.name }}</span>

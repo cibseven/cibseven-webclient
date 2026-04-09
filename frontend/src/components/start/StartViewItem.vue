@@ -27,7 +27,7 @@
             <div class="row ps-3" style="height:55px">
               <div class="col-12 align-items-center d-flex">
                 <span class="border-start h-100 me-3 border-primary" style="border-width: 3px !important"></span>
-                <h4 class="m-0">{{ title }}</h4>
+                <h2 class="h4 m-0">{{ title }}</h2>
               </div>
             </div>
             <div class="row text-center">
@@ -91,11 +91,11 @@ export default {
 }
 .btn:focus {
   outline: 2px solid var(--bs-dark);
-  outline-offset: 0px;
+  outline-offset: -2px;
 }
 .btn:active {
   outline: 2px solid var(--bs-gray-600);
-  outline-offset: 0px;
+  outline-offset: -2px;
 }
 
 a.list-group-item:hover {
@@ -103,11 +103,10 @@ a.list-group-item:hover {
 }
 a.list-group-item:focus {
   outline: 2px solid var(--bs-dark);
-  outline-offset: 0px;
+  outline-offset: -2px;
 }
 a.list-group-item:active {
   outline: 0px solid var(--bs-gray-600);
-  outline-offset: 0px;
+  outline-offset: -2px;
 }
-
 </style>

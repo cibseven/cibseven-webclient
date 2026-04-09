@@ -17,7 +17,7 @@
 
 -->
 <template>
-  <b-modal ref="about" :title="$t('infoAndHelp.flowModalAbout.title')">
+  <b-modal ref="about" :title="productName">
     <div class="row">
       <div class="col-2">
         <svg id="Ebene_1" data-name="Ebene 1"
@@ -62,6 +62,9 @@ export default {
     }
   },
   computed: {
+    productName() {
+      return this.$root.config.productNamePageTitle || this.$t('login.productName')
+    },
     permissionsAdmin: function() {
       return this.$root.user && this.adminManagementPermissions(this.$root.config.permissions.systemManagement, 'system')
     }

@@ -43,7 +43,7 @@
     <div class="container-fluid overflow-auto h-100 g-0" @scroll="showMore">
       <div class="px-4 mb-5">
         <FlowTable striped thead-class="sticky-header light" :items="authorizations" primary-key="id"
-          prefix="admin.authorizations." :fields="authorizationFields"
+          :fields="authorizationFields"
           class="shadow-sm border rounded"
         >
           <template v-slot:cell(type)="row">
@@ -216,15 +216,15 @@ export default {
   computed: {
     authorizationFields: function() {
       const baseFields = [
-        { label: 'type', key: 'type', class: 'col' },
-        { label: 'userIdGroupId', key: 'userIdGroupId', class: 'col' },
-        { label: 'permissions', key: 'permissions', class: 'col' },
-        { label: 'resourceId', key: 'resourceId', class: 'col' },
-        { label: 'actions', key: 'actions', class: 'col text-center', sortable: false,
+        { label: 'admin.authorizations.type', key: 'type', class: 'col' },
+        { label: 'admin.authorizations.userIdGroupId', key: 'userIdGroupId', class: 'col' },
+        { label: 'admin.authorizations.permissions', key: 'permissions', class: 'col' },
+        { label: 'admin.authorizations.resourceId', key: 'resourceId', class: 'col' },
+        { label: 'admin.authorizations.actions', key: 'actions', class: 'col text-center', sortable: false,
           thClass: 'justify-content-center', tdClass: 'justify-content-center py-0' }
       ]
       if (this.$route.params.resourceTypeId === '5')
-        baseFields.splice(3, 0, { label: 'name', key: 'name', class: 'col' })
+        baseFields.splice(3, 0, { label: 'admin.authorizations.name', key: 'name', class: 'col' })
 
       return baseFields
     },

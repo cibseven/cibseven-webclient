@@ -30,7 +30,7 @@
       </div>
       <SuccessAlert top="0" style="z-index: 1031" ref="messageSaved"> {{ $t('alert.successSaveTask') }}</SuccessAlert>
       <SuccessAlert top="0" style="z-index: 1031" ref="messageSuccess"> {{ $t('alert.successOperation') }}</SuccessAlert>
-      <b-modal ref="datePickerModal">
+      <b-modal ref="datePickerModal" :title="$t('deployed-form.selectDate')">
         <b-calendar
           v-model="datePickerValue"
           value-as-date
@@ -44,8 +44,8 @@
           label-help=""
         ></b-calendar>
         <template v-slot:modal-footer>
-          <b-button :title="$t('confirm.cancel')" @click="$refs.datePickerModal.hide()" variant="light">{{ $t('confirm.cancel') }}</b-button>
-          <b-button :title="$t('confirm.ok')" @click="onDatePickerConfirm()" variant="primary">{{ $t('confirm.ok') }}</b-button>
+          <b-button @click="$refs.datePickerModal.hide()" variant="light">{{ $t('confirm.cancel') }}</b-button>
+          <b-button @click="onDatePickerConfirm()" variant="primary">{{ $t('confirm.ok') }}</b-button>
         </template>
       </b-modal>
     </div>

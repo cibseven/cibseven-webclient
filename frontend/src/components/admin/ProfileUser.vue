@@ -80,7 +80,24 @@
             <ContentBlock
               :title="$t('password.recover.changePassword')"
               class="col-lg-6 col-md-8 col-sm-12">
-              <b-form-group labels-cols-lg="4" label-size="lg" label-class="fw-bold pt-0 pb-4" class="m-0">
+              <b-form-group v-if="$root.config.userPasswordChangeEnabled" labels-cols-lg="4" label-size="lg" label-class="fw-bold pt-0 pb-4" class="m-0">
+                <b-form-group :label="$t('password.recover.currentUserPassword') + '*'" label-cols-sm="4"
+                  label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
+                    <b-form-input type="password" v-model="credentials.authenticatedUserPassword"></b-form-input>
+                </b-form-group>
+                <b-form-group :label="$t('password.recover.newPassword') + '*'" label-cols-sm="4"
+                  label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
+                  <b-form-input type="password" v-model="credentials.password"></b-form-input>
+                </b-form-group>
+                <b-form-group :label="$t('password.recover.newPasswordRepeat') + '*'" label-cols-sm="4"
+                  label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
+                  <b-form-input type="password" v-model="passwordRepeat"></b-form-input>
+                </b-form-group>
+                <div class="float-end d-flex align-items-center">
+                  <b-button type="submit" variant="secondary" @click="changePassword($event)">{{$t('password.recover.changePassword')}}</b-button>
+                </div>
+              </b-form-group>
+              <b-form-group v-else labels-cols-lg="4" label-size="lg" label-class="fw-bold pt-0 pb-4" class="m-0">
                 <b-form-group :label="$t('password.recover.id') + '*'" label-cols-sm="4"
                   label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
                   <b-form-input v-model="user.id" :state="notEmpty(user.id)" required readonly></b-form-input>
@@ -106,7 +123,7 @@
               </template>
 
               <div v-if="groups" class="p-2">
-                <FlowTable striped :items="groups" primary-key="id" prefix="admin.groups." :fields="groupFields">
+                <FlowTable striped :items="groups" primary-key="id" :fields="groupFields">
                   <template v-slot:cell(actions)="row">
                     <CellActionButton @click="unassignGroup(row.item)" :title="$t('admin.groups.deleteGroup')" icon="mdi-delete-outline"></CellActionButton>
                   </template>
@@ -128,7 +145,7 @@
               </template>
 
               <div v-if="userTenants.length > 0" class="p-2">
-                <FlowTable striped :items="userTenants" primary-key="id" prefix="admin.tenants." :fields="tenantFields">
+                <FlowTable striped :items="userTenants" primary-key="id" :fields="tenantFields">
                   <template v-slot:cell(actions)="row">
                     <CellActionButton @click="unassignTenant(row.item)" :title="$t('admin.tenants.unassignTenant')" icon="mdi-delete-outline"></CellActionButton>
                   </template>
@@ -150,11 +167,13 @@
         <!-- Assign Groups Modal -->
         <b-modal v-if="editMode" ref="assignGroupsModal" :title="$t('admin.users.group.add')" size="lg">
           <div class="container g-0">
-            <FlowTable :items="unAssignedGroups" primary-key="id" prefix="admin.groups." striped
-              :fields="[{ label: '', key: 'selected', class: 'col-sm-1', sortable: false, thClass: 'text-center', tdClass: 'text-center' },
-              { label: 'id', key: 'id', class: 'col-sm-3' },
-              { label: 'name', key: 'name', class: 'col-sm-5' },
-              { label: 'type', key: 'type', class: 'col-sm-3' }]">
+            <FlowTable :items="unAssignedGroups" primary-key="id" striped
+              :fields="[
+                { label: '', key: 'selected', class: 'col-sm-1', sortable: false, thClass: 'text-center', tdClass: 'text-center' },
+                { label: 'admin.groups.id', key: 'id', class: 'col-sm-3' },
+                { label: 'admin.groups.name', key: 'name', class: 'col-sm-5' },
+                { label: 'admin.groups.type', key: 'type', class: 'col-sm-3' },
+              ]">
               <template v-slot:cell(selected)="row">
                 <b-form-checkbox v-model="row.item.selected"></b-form-checkbox>
               </template>
@@ -174,10 +193,12 @@
 
         <b-modal v-if="editMode" ref="assignTenantsModal" :title="$t('admin.tenants.addTo')" size="lg">
           <div v-if="unassignedTenants.length > 0" class="container g-0">
-            <FlowTable :items="unassignedTenants" primary-key="id" prefix="admin.tenants." striped
-              :fields="[{ label: '', key: 'selected', class: 'col-sm-1', sortable: false, tdClass: 'text-center' },
-              { label: 'fullId', key: 'id', class: 'col-6' },
-              { label: 'fullName', key: 'name', class: 'col-5' }]">
+            <FlowTable :items="unassignedTenants" primary-key="id" striped
+              :fields="[
+                { label: '', key: 'selected', class: 'col-sm-1', sortable: false, tdClass: 'text-center' },
+                { label: 'admin.tenants.fullId', key: 'id', class: 'col-6' },
+                { label: 'admin.tenants.fullName', key: 'name', class: 'col-5' },
+              ]">
               <template v-slot:cell(selected)="row">
                 <b-form-checkbox v-model="row.item.selected"></b-form-checkbox>
               </template>
@@ -247,7 +268,8 @@ export default {
     editMode: {
       type: Boolean,
       default: false
-    }
+      
+    },
   },
   data: function () {
     return {
@@ -290,19 +312,19 @@ export default {
       const isEditable = this.editMode && this.$root.config.userEditable
       const fields = [
         {
-          label: 'id',
+          label: 'admin.groups.id',
           key: 'id',
           class: 'col-md-4 col-sm-4',
           ...(isEditable && { tdClass: 'py-1' })
         },
         {
-          label: 'name',
+          label: 'admin.groups.name',
           key: 'name',
           class: 'col-md-4 col-sm-4',
           ...(isEditable && { tdClass: 'py-1' })
         },
         {
-          label: 'type',
+          label: 'admin.groups.type',
           key: 'type',
           class: isEditable ? 'col-md-2 col-sm-2' : 'col-md-4 col-sm-4',
           ...(isEditable && { tdClass: 'py-1' })
@@ -310,7 +332,7 @@ export default {
       ]
       if (isEditable) {
         fields.push({
-          label: 'actions',
+          label: 'admin.groups.actions',
           key: 'actions',
           class: 'col-md-2 col-sm-2',
           sortable: false,
@@ -324,13 +346,13 @@ export default {
       const isEditable = this.editMode && this.$root.config.userEditable
       const fields = [
         {
-          label: 'fullId',
+          label: 'admin.tenants.fullId',
           key: 'id',
           class: isEditable ? 'col-md-4 col-sm-4' : 'col-md-6 col-sm-6',
           ...(isEditable && { tdClass: 'py-1' })
         },
         {
-          label: 'fullName',
+          label: 'admin.tenants.fullName',
           key: 'name',
           class: isEditable ? 'col-md-4 col-sm-4' : 'col-md-6 col-sm-6',
           ...(isEditable && { tdClass: 'py-1' })
@@ -338,7 +360,7 @@ export default {
       ]
       if (isEditable) {
         fields.push({
-          label: 'actions',
+          label: 'admin.tenants.actions',
           key: 'actions',
           class: 'col-md-4 col-sm-4',
           sortable: false,

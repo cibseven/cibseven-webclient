@@ -44,6 +44,13 @@ const createWrapper = (props = {}) => {
       ...props
     },
     global: {
+      mixins: [{
+        data() {
+          return {
+            config: { productNamePageTitle: 'CIB seven' }
+          }
+        }
+      }],
       provide: {
         currentLanguage: vi.fn((lang) => lang || 'en'),
         setCurrentLanguage: vi.fn((lang) => lang || 'en')

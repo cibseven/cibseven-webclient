@@ -18,19 +18,19 @@
 -->
 <template>
   <div class="container overflow-auto h-100 bg-white shadow-sm border rounded">
-    <FlowTable striped :items="processes" primary-key="id" prefix="process." :fields="fields" @select="focused = $event[0]"
+    <FlowTable striped :items="processes" primary-key="id" :fields="fields" @select="focused = $event[0]"
       @mouseenter="focused = $event" @focusin="focused = $event"
       @mouseleave="focused = null" @focusout="focused = null">
       <template v-slot:cell(favorite)="table">
         <b-button :title="$t('process.favorite')" tabindex="-1" @click="$emit('favorite', table.item)" variant="link" class="mdi mdi-24px" :class="table.item.favorite ? 'mdi-star text-primary' : 'mdi-star-outline text-secondary'"></b-button>
       </template>
       <template v-slot:cell(name)="table">
-        <b-button variant="link" @click="$emit('start-process', table.item)" :title="table.item.name || table.item.key" class="ps-0 pe-0 text-start">
+        <b-button variant="link" @click="$emit('start-process', table.item)" :title="$t('process.startProcess') + ': ' + (table.item.name || table.item.key)" class="ps-0 pe-0 text-start">
           <HighlightedText :text="table.item.name || table.item.key" :keyword="processesFilter"/>
         </b-button>
       </template>
       <template v-slot:cell(key)="table">
-        <HighlightedText :text="table.item.key" :keyword="processesFilter" :title="table.item.key"/>
+        <HighlightedText :text="table.item.key" :keyword="processesFilter" :title="$t('process.key') + ': ' + table.item.key"/>
       </template>
       <template v-slot:cell(tenantId)="table">
         <div class="text-truncate" :title="$t('process.tenant') + ': ' + table.item.tenantId">{{ table.item.tenantId }}</div>
@@ -69,14 +69,14 @@ export default {
   emits: ['favorite', 'start-process'],
   computed: {
     fields: function() {
-      return [{ label: 'favorite', key: 'favorite', sortable: false, thClass:'py-0', tdClass:'py-0 ps-0',
-        class: 'col-1 d-flex align-items-center justify-content-center'},
-          { label: 'name', key: 'name', class: 'col-3' },
-          { label: 'key', key: 'key', class: 'col-2' },
-          { label: 'tenant', key: 'tenantId', class: 'col-2' },
-          { label: 'description', key: 'description', sortable: false, class: 'col-2' },
-          { label: 'actions', key: 'actions', sortable: false, tdClass: 'py-0', class: 'col-2 d-flex justify-content-center' },
-        ]
+      return [
+        { label: 'process.favorite', key: 'favorite', sortable: false, thClass:'py-0', tdClass:'py-0 ps-0', class: 'col-1 d-flex align-items-center justify-content-center'},
+        { label: 'process.name', key: 'name', class: 'col-3' },
+        { label: 'process.key', key: 'key', class: 'col-2' },
+        { label: 'process.tenant', key: 'tenantId', class: 'col-2' },
+        { label: 'process.description', key: 'description', sortable: false, class: 'col-2' },
+        { label: 'process.actions', key: 'actions', sortable: false, tdClass: 'py-0', class: 'col-2 d-flex justify-content-center' },
+      ]
     }
   },
   methods: {

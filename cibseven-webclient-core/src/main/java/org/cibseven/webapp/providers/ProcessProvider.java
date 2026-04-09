@@ -240,6 +240,44 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	}
 
 	@Override
+	public Collection<HistoryProcessInstance> findProcessesInstancesRuntime(Map<String, Object> data, Optional<Integer> firstResult, Optional<Integer> maxResults, CIBUser user) {
+		// the two-call approach (runtime → history) is fundamentally the right design
+		// since "/process-instance" has runtime-specific filters not available in the history API.
+
+		// fetch runtime instances
+		Map<String, Object> queryParams = new HashMap<String, Object>();
+		if (firstResult.isPresent()) queryParams.put("firstResult", firstResult.get());
+		if (maxResults.isPresent()) queryParams.put("maxResults", maxResults.get());
+		String url = URLUtils.buildUrlWithParams(getEngineRestUrl(user) + "/process-instance", queryParams);
+		Collection<ProcessInstance> processes = Arrays.asList(((ResponseEntity<ProcessInstance[]>) doPost(url, data, ProcessInstance[].class, user)).getBody());
+
+		// get ids of runtime instances
+		List<String> processInstanceIds = processes.stream().map(ProcessInstance::getId).collect(Collectors.toList());
+		if (processInstanceIds.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		// Note: Between the two calls, a runtime instance could complete.
+		// The history call will still find it (history is permanent),
+		// but state in the result may be COMPLETED instead of ACTIVE.
+		// This is usually acceptable but worth being aware of.
+
+		// fetch history for those ids to get full info
+		Map<String, Object> dataHistory = new HashMap<>();
+		dataHistory.put("processInstanceIds", processInstanceIds);
+
+		Integer firstResult0 = 0;
+		Collection<HistoryProcessInstance> historicInstances = findProcessesInstancesHistory(dataHistory, Optional.of(firstResult0), maxResults, user);
+
+		// sort [historicInstances] like they are inside [processInstanceIds]
+		historicInstances = historicInstances.stream()
+				.sorted(Comparator.comparingInt(h -> processInstanceIds.indexOf(h.getId())))
+				.collect(Collectors.toList());
+
+		return historicInstances;
+	}
+
+	@Override
 	public ProcessDiagram fetchDiagram(String id, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/process-definition/" + id + "/xml";
 		return ((ResponseEntity<ProcessDiagram>) doGet(url, ProcessDiagram.class, user, false)).getBody();
@@ -452,6 +490,16 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	@Override
 	public Long countProcessesInstancesHistory(Map<String, Object> filters, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/history/process-instance/count";
+		JsonNode body = ((ResponseEntity<JsonNode>) doPost(url, filters, JsonNode.class, user)).getBody();
+		if (body == null) {
+			throw new NullPointerException();
+		}
+		return body.get("count").asLong();
+	}
+
+	@Override
+	public Long countProcessesInstancesRuntime(Map<String, Object> filters, CIBUser user) {
+		String url = getEngineRestUrl(user) + "/process-instance/count";
 		JsonNode body = ((ResponseEntity<JsonNode>) doPost(url, filters, JsonNode.class, user)).getBody();
 		if (body == null) {
 			throw new NullPointerException();

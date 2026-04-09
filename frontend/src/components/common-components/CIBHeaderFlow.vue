@@ -17,7 +17,7 @@
 
 -->
 <template>
-  <div style="height: 55px"> <!-- Empty container with height of navbar -->
+  <header style="height: 55px"> <!-- Empty container with height of navbar -->
     <b-navbar toggleable="md" fixed="top" type="light" class="border-bottom bg-white px-3">
       <slot></slot>
       <button 
@@ -35,11 +35,16 @@
           <slot name="customNavItems"></slot>
           
           <!-- Engine Selector - only show if more than one engine -->
-          <b-nav-item-dropdown v-if="normalizedEngines.length > 1" extra-toggle-classes="py-1" right :title="$t('cib-header.engine')">
+          <b-nav-item-dropdown 
+            v-if="normalizedEngines.length > 1" 
+            extra-toggle-classes="py-1" 
+            right 
+            :title="$t('cib-header.engineMenu')"
+            :label="$t('cib-header.engineMenu')">
             <template v-slot:button-content>
-              <span class="mdi mdi-24px mdi-engine align-middle me-2"></span><span class="d-md-none">{{ $t('cib-header.engine') }}</span>
+              <span class="mdi mdi-24px mdi-engine align-middle me-2" aria-hidden="true"></span><span class="d-md-none">{{ $t('cib-header.engine') }}</span>
             </template>
-            <b-dropdown-item 
+            <b-dropdown-item-button
               v-for="engine in normalizedEngines" 
               :key="engine.id" 
               :active="engine.id === selectedEngine" 
@@ -50,14 +55,18 @@
                   {{ engine.label }}
                 </span>
               </div>
-            </b-dropdown-item>
+            </b-dropdown-item-button>
           </b-nav-item-dropdown>
 
-          <b-nav-item-dropdown extra-toggle-classes="py-1" right :title="$t('cib-header.languages')">
+          <b-nav-item-dropdown 
+            extra-toggle-classes="py-1" 
+            right 
+            :title="$t('cib-header.languages')"
+            :label="$t('cib-header.languagesMenu')">
             <template v-slot:button-content>
-              <span class="mdi mdi-24px mdi-web align-middle me-2"></span><span class="d-md-none">{{ $t('cib-header.languages') }}</span>
+              <span class="mdi mdi-24px mdi-web align-middle me-2" aria-hidden="true"></span><span class="d-md-none">{{ $t('cib-header.languages') }}</span>
             </template>
-            <b-dropdown-item v-for="lang in languages" :key="lang" :active="lang === currentLanguage()" @click="setCurrentLanguage(lang)" :title="$t('cib-header.languages') + ': ' + $t('cib-header.' + lang)">
+            <b-dropdown-item-button v-for="lang in languages" :key="lang" :active="lang === currentLanguage()" @click="setCurrentLanguage(lang)" :title="$t('cib-header.languages') + ': ' + $t('cib-header.' + lang)">
               <div class="d-flex align-items-baseline">
                 <span class="lang-label text-center text-uppercase text-dark rounded me-2" :class="{ 'lang-label-active': lang === currentLanguage() }">
                   {{ lang }}
@@ -66,29 +75,37 @@
                   {{ $t('cib-header.' + lang) }}
                 </span>
               </div>
-            </b-dropdown-item>
+            </b-dropdown-item-button>
           </b-nav-item-dropdown>
 
-          <b-nav-item-dropdown v-if="$slots.helpItems" extra-toggle-classes="py-1" right>
+          <b-nav-item-dropdown 
+            v-if="$slots.helpItems" 
+            extra-toggle-classes="py-1" 
+            right
+            :label="$t('cib-header.helpMenu')">
             <template v-slot:button-content>
-              <span :title="$t('cib-header.helpItems')" class="mdi mdi-24px mdi-help-circle align-middle"></span>
-              {{ $t('cib-header.helpItems') }}
+              <span class="mdi mdi-24px mdi-help-circle align-middle" aria-hidden="true"></span>
+              <span class="d-md-none">{{ $t('cib-header.helpMenu') }}</span>
             </template>
             <slot name="helpItems"></slot>
           </b-nav-item-dropdown>
 
-          <b-nav-item-dropdown v-if="user" :title="$t('admin.users.account')" extra-toggle-classes="py-1" right>
+          <b-nav-item-dropdown 
+            v-if="user" 
+            :title="$t('start.account.tooltip')" 
+            extra-toggle-classes="py-1" 
+            right
+            :label="$t('admin.users.account')">
             <template v-slot:button-content>
-              <span class="visually-hidden">{{ $t('admin.users.account') }}</span>
-              <span class="mdi mdi-24px mdi-account align-middle"></span> {{ user.displayName }}
+              <span class="mdi mdi-24px mdi-account align-middle" aria-hidden="true"></span> <span>{{ user.displayName }}</span>
             </template>
             <slot name="userItems"></slot>
-            <b-dropdown-item @click="logout" :title="$t('cib-header.logout')">{{ $t('cib-header.logout') }}</b-dropdown-item>
+            <b-dropdown-item-button @click="logout" :title="$t('start.account.logout.tooltip', { productName })">{{ $t('start.account.logout.title') }}</b-dropdown-item-button>
           </b-nav-item-dropdown>
         </b-navbar-nav>
       </b-collapse>
     </b-navbar>
-  </div>
+  </header>
 </template>
 
 <script>
@@ -114,6 +131,9 @@ export default {
     }
   },
   computed: {
+    productName() {
+      return this.$root.config.productNamePageTitle || this.$t('login.productName')
+    },
     normalizedEngines() {
       return this.engines.map(engine => ({
         ...engine,

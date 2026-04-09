@@ -27,7 +27,7 @@
               path: `/seven/auth/process/${parentProcess.key}/${parentProcess.version}`,
               query: {
                 ...Object.fromEntries(
-                  Object.entries($route.query).filter(([key]) => key !== 'parentProcessDefinitionId')
+                  Object.entries($route.query).filter(([key]) => !['tab', 'tenantId', 'parentProcessDefinitionId'].includes(key))
                 ),
                 ...(parentProcess.tenantId ? { tenantId: parentProcess.tenantId } : {}),
                 tab: 'instances'
@@ -55,9 +55,13 @@
         <router-link 
           :to="{
             path: `/seven/auth/process/${process.key}/${process.version}`,
-            query: { ...Object.fromEntries(
-              Object.entries($route.query).filter(([key]) => !['tab'].includes(key))
-            ), tab: 'instances' }
+            query: {
+              ...Object.fromEntries(
+                Object.entries($route.query).filter(([key]) => !['tab', 'tenantId'].includes(key))
+              ),
+              ...(process.tenantId ? { tenantId: process.tenantId } : {}),
+              tab: 'instances',
+            }
           }"
           class="text-decoration-none d-flex align-items-center fw-bold text-info">
           {{ process.name || process.key }}
@@ -154,7 +158,7 @@ export default {
   watch: {
     'process.id': function() {
       ProcessService.fetchDiagram(this.process.id).then(response => {
-        this.$refs.diagram.showDiagram(response.bpmn20Xml, this.selectedActivityId)
+        this.$refs.diagram?.showDiagram(response.bpmn20Xml, this.selectedActivityId)
       })
     },
     'selectedInstance.superProcessInstanceId': function(newVal) {
@@ -186,7 +190,7 @@ export default {
   },
   mounted: function() {
     ProcessService.fetchDiagram(this.process.id).then(response => {
-      this.$refs.diagram.showDiagram(response.bpmn20Xml, this.selectedActivityId)
+      this.$refs.diagram?.showDiagram(response.bpmn20Xml, this.selectedActivityId)
     })
     // Load super process instance if available
     if (this.selectedInstance?.superProcessInstanceId) {

@@ -36,7 +36,7 @@
       </div>
     </div>
     <div class="container overflow-auto bg-white shadow-sm border rounded g-0">
-      <FlowTable striped :items="filteredTenants" :fields="tenantFields" primary-key="id" prefix="admin.tenants.">
+      <FlowTable striped :items="filteredTenants" :fields="tenantFields" primary-key="id">
         <template v-slot:cell(actions)="row">
           <CellActionButton @click="edit(row.item)" :title="$t('admin.tenants.editTenant')" icon="mdi-pencil-outline"></CellActionButton>
           <CellActionButton @click="prepareRemove(row.item)" :title="$t('admin.tenants.deleteTenant')" icon="mdi-delete-outline"></CellActionButton>
@@ -58,21 +58,23 @@
         </p>
       </span>
     </ConfirmDialog>
+    <SuccessAlert top="0" style="z-index: 1031" ref="tenantDeleted">{{ $t('admin.tenants.tenantDeletedMessage', [deletedTenantId]) }}</SuccessAlert>
   </div>
 </template>
 
 <script>
-import { FlowTable, ConfirmDialog, BWaitingBox } from '@cib/common-frontend'
+import { FlowTable, ConfirmDialog, BWaitingBox, SuccessAlert } from '@cib/common-frontend'
 import { mapActions, mapGetters } from 'vuex'
 import CellActionButton from '@/components/common-components/CellActionButton.vue'
 
 export default {
   name: 'TenantsView',
-  components: { FlowTable, BWaitingBox, ConfirmDialog, CellActionButton },
+  components: { FlowTable, BWaitingBox, ConfirmDialog, SuccessAlert, CellActionButton },
   data() {
     return {
       loading: false,
       filter: '',
+      deletedTenantId: null,
       tenantSelected: null
     }
   },
@@ -80,9 +82,9 @@ export default {
     ...mapGetters(['tenants']),
     tenantFields: function() {
       return [
-        { label: 'id', key: 'id', class: 'col-5', tdClass: 'py-1' },
-        { label: 'name', key: 'name', class: 'col-5', tdClass: 'py-1' },
-        { label: 'actions', key: 'actions', class: 'col-2 text-center', sortable: false, thClass: 'justify-content-center', tdClass: 'justify-content-center py-0' }
+        { label: 'admin.tenants.id', key: 'id', class: 'col-5', tdClass: 'py-1' },
+        { label: 'admin.tenants.name', key: 'name', class: 'col-5', tdClass: 'py-1' },
+        { label: 'admin.tenants.actions', key: 'actions', class: 'col-2 text-center', sortable: false, thClass: 'justify-content-center', tdClass: 'justify-content-center py-0' }
       ]
     },
     filteredTenants: function() {
@@ -118,6 +120,8 @@ export default {
     remove: function(tenant) {
       this.deleteTenant(tenant.id).then(() => {
         this.tenantSelected = null
+        this.deletedTenantId = tenant.id
+        this.$refs.tenantDeleted.show(1)
       })
     }
   }

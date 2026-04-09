@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -107,6 +108,7 @@ import org.springframework.http.ResponseEntity;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.ws.rs.core.MultivaluedHashMap;
@@ -912,6 +914,58 @@ public class DirectProcessProvider implements IProcessProvider {
 	}
 
 		throw new SystemException("No matching rendered start form for process definition with the id " + processDefinitionId + " found.");
+	}
+
+	@Override
+	public Collection<HistoryProcessInstance> findProcessesInstancesRuntime(Map<String, Object> data, 
+			Optional<Integer> firstResult, Optional<Integer> maxResults, CIBUser user) {
+		// the two-call approach (runtime → history) is fundamentally the right design
+		// since "/process-instance" has runtime-specific filters not available in the history API.
+
+		ProcessInstanceQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(data, ProcessInstanceQueryDto.class);
+		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
+		ProcessInstanceQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
+
+		List<org.cibseven.bpm.engine.runtime.ProcessInstance> matchingInstances = QueryUtil.list(query, firstResult.orElse(null), maxResults.orElse(null));
+
+		List<ProcessInstance> instanceResults = new ArrayList<>();
+		for (org.cibseven.bpm.engine.runtime.ProcessInstance instance : matchingInstances) {
+			ProcessInstanceDto resultInstance = ProcessInstanceDto.fromProcessInstance(instance);
+			instanceResults.add(directProviderUtil.convertValue(resultInstance, ProcessInstance.class, user));
+		}
+		if (instanceResults.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		// Note: Between the two calls, a runtime instance could complete.
+		// The history call will still find it (history is permanent),
+		// but state in the result may be COMPLETED instead of ACTIVE.
+		// This is usually acceptable but worth being aware of.
+
+		// fetch history for those ids to get full info
+		Map<String, Object> dataHistory = new HashMap<>();
+		dataHistory.put("processInstanceIds", instanceResults);
+
+		Integer firstResult0 = 0;
+		//TODO: dataHistory as input parameter could be wrong!
+		Collection<HistoryProcessInstance> historicInstances = findProcessesInstancesHistory(dataHistory, Optional.of(firstResult0), maxResults, user);
+	// sort [historicInstances] like they are inside [processInstanceIds]
+		historicInstances = historicInstances.stream()
+				.sorted(Comparator.comparingInt(h -> instanceResults.indexOf(h.getId())))
+				.collect(Collectors.toList());
+
+		return historicInstances;
+	}
+
+	@Override
+	public Long countProcessesInstancesRuntime(Map<String, Object> filters, CIBUser user) {
+		ObjectMapper objectMapper = directProviderUtil.getObjectMapper(user);
+		HistoricProcessInstanceQueryDto historicProcessInstanceQueryDto = objectMapper.convertValue(filters,
+				HistoricProcessInstanceQueryDto.class);
+    ProcessEngine engine = directProviderUtil.getProcessEngine(user);
+    historicProcessInstanceQueryDto.setObjectMapper(objectMapper);
+    HistoricProcessInstanceQuery query = historicProcessInstanceQueryDto.toQuery(engine);
+    return query.count();
 	}
 
 }

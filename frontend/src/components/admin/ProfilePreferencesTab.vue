@@ -208,7 +208,7 @@ export default {
       const options = []
 
       options.push({
-        label: this.$root.config.productNamePageTitle || this.$t('cib-header.productName'),
+        label: this.$root.config.productNamePageTitle || this.$t('login.productName'),
         options: [
           { value: 'start', text: this.$t('admin.preferences.general.startPage.options.home') },
         ]
