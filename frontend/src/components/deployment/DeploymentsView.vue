@@ -339,42 +339,39 @@ export default {
       this.deploymentsDelData.total = this.deploymentsSelected.length
       this.deploymentsDelData.deleted = 0
       let pool = this.deploymentsSelected.slice(0, this.deploymentsSelected.length)
-      pool.forEach(deployment => {
-        const found = this.groups.findIndex(group => {
-          const index = group.data.findIndex(d => {
-            return deployment.id === d.id
-          })
-          if (index !== -1) {
-            group.data.splice(index, 1)
-            return group
-          }
-        })
-        if (found !== -1) {
-          if (this.groups[found].data.length < 1) {
-            this.groups.splice(found, 1)
-          }
-        }
-      })
-      pool = this.deploymentsSelected.slice(0, this.deploymentsSelected.length)
       while (pool.length > 0) {
-  const deployment = pool.shift()
-  try {
-    await ProcessService.deleteDeployment(deployment.id, true)
-    this.deploymentsDelData.deleted++
-    this.deployments = this.deployments.filter(df => deployment.id !== df.id)
-    if (this.deployment && deployment.id === this.deployment.id) {
-      this.deployment = null
-      this.resources = null
-      this.$router.push({ name: 'deployments' })
-    }
-    } catch (error) {
-      console.error(`Failed to delete deployment with id ${deployment.id}:`, error)
+        const deployment = pool.shift()
+        try {
+          await ProcessService.deleteDeployment(deployment.id, true)
+          const found = this.groups.findIndex(group => {
+            const index = group.data.findIndex(d => {
+              return deployment.id === d.id
+              })
+              if (index !== -1) {
+                group.data.splice(index, 1)
+              return group
+            }
+          })
+          if (found !== -1) {
+            if (this.groups[found].data.length < 1) {
+              this.groups.splice(found, 1)
+            }
+          }
+          this.deploymentsDelData.deleted++
+          this.deployments = this.deployments.filter(df => deployment.id !== df.id)
+          if (this.deployment && deployment.id === this.deployment.id) {
+            this.deployment = null
+            this.resources = null
+            this.$router.push({ name: 'deployments' })
+          }
+        } catch (error) {
+          console.error(`Failed to delete deployment with id ${deployment.id}:`, error)
+        }
       }
       this.loadProcesses(false)
       this.deleteLoader = false
       this.$refs.deploymentsDeleted.show()
       this.refreshTotalCount()
-    }
     },
     deleteDeployment: function () {
       ProcessService.deleteDeployment(this.deploymentId, true).then(() => {
