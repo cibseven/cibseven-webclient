@@ -177,9 +177,6 @@ springdoc:
     operationsSorter: alpha
     tagsSorter: alpha
     doc-expansion: none
-  # cibseven-webclient server url for the swagger-ui. Only needs to be set if the automatic detection is wrong.
-  cibseven-webclient:
-    serverUrl: ""
 
 # Activate "/actuator/info" and "/actuator/health" endpoints
 management:
