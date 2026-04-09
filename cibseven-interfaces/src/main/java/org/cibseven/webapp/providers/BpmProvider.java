@@ -1602,6 +1602,10 @@ public interface BpmProvider {
 		return getProcessProvider().countProcessesInstancesHistory(filters, user);
 	}
 
+	default Long countProcessesInstancesRuntime(Map<String, Object> filters, CIBUser user) {
+		return getProcessProvider().countProcessesInstancesRuntime(filters, user);
+	}
+
 	/**
 	 * Required by OFDKA
 	 * Search process instance with a specific process instance id.
@@ -1675,6 +1679,11 @@ public interface BpmProvider {
 	default Collection<ProcessInstance> findCurrentProcessesInstances(Map<String, Object> data, CIBUser user)
 			throws SystemException {
 		return getProcessProvider().findCurrentProcessesInstances(data, user);
+	}
+
+
+	default Collection<HistoryProcessInstance> findProcessesInstancesRuntime(Map<String, Object> data, Optional<Integer> firstResult, Optional<Integer> maxResults, CIBUser user) throws SystemException {
+		return getProcessProvider().findProcessesInstancesRuntime(data, firstResult, maxResults, user);
 	}
 
 	/**
