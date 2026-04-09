@@ -16,24 +16,13 @@
  */
 import { createI18n } from 'vue-i18n'
 import { mergeLocaleMessage as commonFrontendMergeLocaleMessage } from '@cib/common-frontend'
+import { mergeModelerTranslations } from 'cibseven-modeler'
 import { axios, moment } from './globals.js'
 import { getTheme } from './utils/init'
 import 'moment/dist/locale/de'
 import 'moment/dist/locale/es'
 import 'moment/dist/locale/uk'
 import 'moment/dist/locale/ru'
-
-// Import modeler translations dynamically
-let modelerTranslations = null
-async function loadModelerTranslations() {
-  if (modelerTranslations) return
-  try {
-    const modeler = await import('cibseven-modeler')
-    modelerTranslations = modeler.modelerTranslations
-  } catch (err) {
-    console.debug('Modeler translations not available:', err.message)
-  }
-}
 
 function getDefaultLanguage() {
   let language = localStorage.getItem('language')
@@ -61,11 +50,8 @@ const loadTranslationsFromSevenComponents = function(i18n, lang) {
   i18n.global.mergeLocaleMessage(lang, translation)
 }
 
-const loadTranslationsFromModeler = async function(i18n, lang) {
-  await loadModelerTranslations()
-  if (modelerTranslations && modelerTranslations[lang]) {
-    i18n.global.mergeLocaleMessage(lang, modelerTranslations[lang])
-  }
+const loadTranslationsFromModeler = function(i18n, lang) {
+  mergeModelerTranslations(i18n, lang)
 }
 
 const loadTranslationsFromPublic = async function(lang) {
@@ -118,7 +104,7 @@ const loadTranslations = async function(config, lang, sources = defaultTranslati
 
   if (sources.includes(translationSources.modelerComponents)) {
     // Add translations from cibseven-modeler library
-    await loadTranslationsFromModeler(i18n, lang)
+    loadTranslationsFromModeler(i18n, lang)
   }
 
   if (sources.includes(translationSources.public)) {
