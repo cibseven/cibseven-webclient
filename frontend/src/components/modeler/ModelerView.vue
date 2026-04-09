@@ -18,7 +18,13 @@
 -->
 <template>
   <div class="d-flex flex-column overflow-hidden h-100">
-    <CibsevenModeler ref="modeler" />
+    <div v-if="$root.config.modelerDbConfigured === false"
+         class="d-flex flex-column align-items-center justify-content-center h-100 text-center p-5">
+      <span class="mdi mdi-database-off-outline text-secondary mb-3" style="font-size: 4rem;" aria-hidden="true"></span>
+      <h4 class="text-secondary mb-2">{{ $t('start.modeler.dbNotConfigured.title') }}</h4>
+      <p class="text-muted">{{ $t('start.modeler.dbNotConfigured.description') }}</p>
+    </div>
+    <CibsevenModeler v-else ref="modeler" />
   </div>
 </template>
 
@@ -38,6 +44,7 @@ export default {
     }
   },
   created() {
+    if (this.$root.config.modelerDbConfigured === false) return
     // Configure modeler to use webclient's axios and base path
     setAxiosInstance(axios)
     setServicesBasePath(getServicesBasePath())

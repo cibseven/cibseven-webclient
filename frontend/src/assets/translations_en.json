@@ -1001,7 +1001,11 @@
 		},
 		"modeler": {
 			"title": "Modeler",
-			"tooltip": "Open Modeler to design and edit BPMN, DMN, and Forms"
+			"tooltip": "Open Modeler to design and edit BPMN, DMN, and Forms",
+			"dbNotConfigured": {
+				"title": "Modeler database not configured",
+				"description": "The modeler is enabled but no database connection has been set up. Please configure the 'spring.datasource.url' property to activate the modeler."
+			}
 		},
 		"oldCockpit": {
 			"title": "Old Cockpit",
