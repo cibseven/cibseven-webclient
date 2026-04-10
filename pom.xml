@@ -48,6 +48,9 @@
 
 		<version.log4j2>2.25.3</version.log4j2>
 
+		<!-- CIB seven Modeler integration -->
+		<version.cibseven-modeler>1.0.0-SNAPSHOT</version.cibseven-modeler>
+
 		<!-- NPM publish tag configuration - empty by default (uses 'latest'), can be overridden with tag dev -->
 		<npm.publish.tag.arg></npm.publish.tag.arg>
 
