@@ -338,7 +338,7 @@ export default {
       this.deleteLoader = true
       this.deploymentsDelData.total = this.deploymentsSelected.length
       this.deploymentsDelData.deleted = 0
-      let pool = this.deploymentsSelected.slice(0, this.deploymentsSelected.length)
+      const pool = this.deploymentsSelected.slice(0, this.deploymentsSelected.length)
       while (pool.length > 0) {
         const deployment = pool.shift()
         try {
