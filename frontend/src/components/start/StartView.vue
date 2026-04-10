@@ -31,10 +31,10 @@
             { to: '/seven/auth/batches', icon: 'mdi-repeat', title: $t('start.cockpit.batches.title'), tooltip: $t('start.cockpit.batches.tooltip') }
           ]"
         ></StartViewItem>
+        <StartViewItem v-if="tiles.includes('modeler')" :to="{ name: 'modeler' }" :title="$t('start.modeler.title')" :src="images.modeler"></StartViewItem>
         <StartViewItem v-if="tiles.includes('admin')" :to="{ name: 'usersManagement' }" :title="$t('start.admin.title')" :src="images.admin"
           :options="adminOptions"
         ></StartViewItem>
-        <StartViewItem v-if="tiles.includes('modeler')" :to="{ name: 'modeler' }" :title="$t('start.modeler.title')" :src="images.modeler"></StartViewItem>
         <component :is="StartViewPlugin" v-if="StartViewPlugin"></component>
       </div>
       <div v-if="!permissionsTaskList && !permissionsCockpit && !permissionsUsers">
