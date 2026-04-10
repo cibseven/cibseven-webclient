@@ -43,10 +43,12 @@ export default {
         service = 'ProcessService'
         method = 'fetchProcessInstanceVariables'
       } else {
-        if (camundaHistoryLevel === 'full') {
+        if (camundaHistoryLevel === 'full' || camundaHistoryLevel === 'audit') {
           service = 'HistoryService'
           method = 'fetchProcessInstanceVariablesHistory'
         } else {
+          // no variables available for finished process instances if history level is 'activity' or 'none'
+          commit('setVariables', [])
           return []
         }
       }

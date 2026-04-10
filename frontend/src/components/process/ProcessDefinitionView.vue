@@ -124,7 +124,7 @@ export default {
       }
     },
     async instanceId() {
-      if (this.process && this.process.key === this.processKey) {
+      if (this.process && this.process.key === this.processKey && this.instanceId) {
         await this.loadInstanceById(this.instanceId)
       }
     }
