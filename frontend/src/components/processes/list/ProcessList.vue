@@ -98,7 +98,6 @@
           <component :is="ProcessDefinitionActionsPlugin" v-if="ProcessDefinitionActionsPlugin" :item="table.item" :onlyWithIncidents="onlyIncidents" :onlyActive="onlyActive"></component>
           <CellActionButton @click.stop="goToShowProcessHistory(table.item)" :title="$t('process.showManagement')" icon="mdi-account-tie-outline"></CellActionButton>
           <CellActionButton @click.stop="goToDeployment(table.item)" :title="$t('process.showDeployment')" icon="mdi-file-eye-outline"></CellActionButton>
-          <CellActionButton @click.stop="goToCockpit(table.item)" :title="$t('process.showCockpit')" icon="mdi-radar"></CellActionButton>
         </template>
       </FlowTable>
       <div v-if="!processesFiltered.length">
@@ -209,9 +208,6 @@ export default {
   methods: {
     goToDeployment: function(process) {
       this.$router.push({ name: 'deployments', params: { deploymentId: process.deploymentId } })
-    },
-    goToCockpit: function(process) {
-      window.open(this.$root.config.cockpitUrl + '#/process-definition/' + process.id, '_blank')
     },
     goToShowProcessHistory: function(process) {
       this.$router.push(this.getProcessRoute(process))

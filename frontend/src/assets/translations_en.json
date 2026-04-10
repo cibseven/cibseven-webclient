@@ -100,7 +100,6 @@
 		"start": "Start",
 		"showProcess": "View process",
 		"showInstance": "View instance",
-		"showCockpit": "Open in the old Cockpit",
 		"downloadBpmn": "Download BPMN file",
 		"openModeler": "Open BPMN file in Modeler",
 		"showManagement": "Management",
@@ -1006,10 +1005,6 @@
 				"title": "Modeler database not configured",
 				"description": "The modeler is enabled but no database connection has been set up. Please configure the 'spring.datasource.url' property to activate the modeler."
 			}
-		},
-		"oldCockpit": {
-			"title": "Old Cockpit",
-			"tooltip": "Open old Cockpit"
 		},
 		"account": {
 			"tooltip": "View and edit your account information or log out",

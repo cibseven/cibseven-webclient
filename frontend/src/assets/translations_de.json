@@ -100,7 +100,6 @@
 		"start": "Starten",
 		"showProcess": "Prozess anzeigen",
 		"showInstance": "Instanz anzeigen",
-		"showCockpit": "Im alten Cockpit öffnen",
 		"downloadBpmn": "BPMN file herunterladen",
 		"openModeler": "BPMN-Datei im Modeler öffnen",
 		"showManagement": "Verwaltung",
@@ -1006,10 +1005,6 @@
 				"title": "Modeler-Datenbank nicht konfiguriert",
 				"description": "Der Modeler ist aktiviert, aber es wurde keine Datenbankverbindung eingerichtet. Bitte konfigurieren Sie die Eigenschaft 'spring.datasource.url', um den Modeler zu aktivieren."
 			}
-		},
-		"oldCockpit": {
-			"title": "Altes Cockpit",
-			"tooltip": "Altes Cockpit öffnen"
 		},
 		"account": {
 			"tooltip": "Kontoinformationen ansehen und bearbeiten oder abmelden",

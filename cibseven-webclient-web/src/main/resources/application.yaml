@@ -112,9 +112,6 @@ cibseven:
         external:
           ip: true
 
-    cockpit:
-      url: /camunda/app/cockpit/default/
-
     theme: cib
 
     # RestTemplate configuration
