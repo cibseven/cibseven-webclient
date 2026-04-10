@@ -48,8 +48,12 @@
 
 		<version.log4j2>2.25.3</version.log4j2>
 
-		<!-- CIB seven Modeler integration -->
-		<version.cibseven-modeler>1.0.0-SNAPSHOT</version.cibseven-modeler>
+		<!-- Database driver versions (used by modeler JPA integration) -->
+		<version.postgresql>42.7.9</version.postgresql>
+		<version.mariadb>3.5.7</version.mariadb>
+		<version.h2>2.4.240</version.h2>
+		<version.mysql>9.5.0</version.mysql>
+		<version.oracle>23.26.0.0.0</version.oracle>
 
 		<!-- NPM publish tag configuration - empty by default (uses 'latest'), can be overridden with tag dev -->
 		<npm.publish.tag.arg></npm.publish.tag.arg>
