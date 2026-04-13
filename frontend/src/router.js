@@ -56,6 +56,7 @@ import BatchesView from '@/components/batches/BatchesView.vue'
 import SystemView from '@/components/system/SystemView.vue'
 import SystemDiagnostics from '@/components/system/SystemDiagnostics.vue'
 import ExecutionMetrics from '@/components/system/ExecutionMetrics.vue'
+import ModelerView from '@/components/modeler/ModelerView.vue'
 import { redirectToProcessInstance, redirectToProcessDefinition, redirectToTask } from '@/utils/redirects.js'
 
 const appRoutes = [
@@ -161,6 +162,10 @@ const appRoutes = [
         },
 
         { path: 'start', name: 'start', component: StartView },
+
+        // Modeler
+        { path: 'modeler/:diagramId?', name: 'modeler', beforeEnter: modelerGuard, component: ModelerView, meta: { title: 'start.modeler.title' } },
+
         { path: 'account/:userId', name: 'account', beforeEnter: (to, from, next) => {
             permissionsDeniedGuard('userProfile')(to, from, result => {
               if (result) next(result)
@@ -392,6 +397,10 @@ function setupGuard(to, from, next) {
   })
 }
 
+function modelerGuard(to, from, next) {
+  permissionsGuard('modeler')(to, from, next)
+}
+
 function permissionsGuard(permission) {
   return function(to, from, next) {
     if (router.root.applicationPermissions(router.root.config.permissions[permission], permission)) next()
@@ -493,6 +502,7 @@ export {
 
   authGuard,
   setupGuard,
+  modelerGuard,
   permissionsGuard,
   permissionsDeniedGuard,
   permissionsGuardUserAdmin

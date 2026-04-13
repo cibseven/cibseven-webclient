@@ -22,7 +22,13 @@ export default mergeConfig(
   viteConfig,
   defineConfig({
     test: {
+      server: {
+        deps: {
+          inline: [/cibseven-modeler/, /@bpmn-io\/form-js/],
+        },
+      },
       environment: 'jsdom',
+      setupFiles: ['src/__tests__/vitest.setup.js'],
       exclude: [
         ...configDefaults.exclude,
         'cypress/**',
