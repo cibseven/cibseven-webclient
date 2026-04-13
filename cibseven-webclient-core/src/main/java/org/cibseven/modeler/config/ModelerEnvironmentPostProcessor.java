@@ -34,6 +34,14 @@ import org.springframework.core.env.MapPropertySource;
  * the classpath would cause a startup failure if no {@code spring.datasource.url}
  * is provided.</p>
  *
+ * <p>When the modeler is disabled but a {@code spring.datasource.url} is present
+ * (e.g. the embedded BPM engine uses it), only JPA, Hibernate, and Flyway
+ * auto-configurations are excluded. {@code DataSourceAutoConfiguration} is kept so
+ * that Spring Boot creates a {@code DataSource} bean, which in turn allows
+ * {@code DataSourceTransactionManagerAutoConfiguration} to create the
+ * {@code PlatformTransactionManager} required by the BPM engine's datasource
+ * configuration.</p>
+ *
  * <p>Registered via {@code META-INF/spring.factories}. Runs at
  * {@link Ordered#LOWEST_PRECEDENCE} so that all application config files
  * ({@code application.yaml}, {@code cibseven-webclient.yaml}) are already loaded
@@ -47,8 +55,19 @@ public class ModelerEnvironmentPostProcessor implements EnvironmentPostProcessor
 
     private static final String EXCLUDE_PROPERTY = "spring.autoconfigure.exclude";
 
-    private static final String EXCLUSIONS = String.join(",",
+    /** Excludes all datasource-related auto-configurations including {@code DataSourceAutoConfiguration}. */
+    private static final String ALL_EXCLUSIONS = String.join(",",
         "org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration",
+        "org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration",
+        "org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration",
+        "org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration"
+    );
+
+    /**
+     * Excludes only JPA / Flyway auto-configurations, keeping {@code DataSourceAutoConfiguration}
+     * so the BPM engine's {@code PlatformTransactionManager} can still be created.
+     */
+    private static final String JPA_FLYWAY_EXCLUSIONS = String.join(",",
         "org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration",
         "org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration",
         "org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration"
@@ -57,20 +76,23 @@ public class ModelerEnvironmentPostProcessor implements EnvironmentPostProcessor
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
         boolean modelerEnabled = environment.getProperty(MODELER_ENABLED_PROPERTY, Boolean.class, true);
+        String datasourceUrl = environment.getProperty(DATASOURCE_URL_PROPERTY);
+        boolean datasourceConfigured = datasourceUrl != null && !datasourceUrl.isBlank();
 
         if (!modelerEnabled) {
             Map<String, Object> properties = new HashMap<>();
-            properties.put(EXCLUDE_PROPERTY, EXCLUSIONS);
+            // When a datasource URL is present, keep DataSourceAutoConfiguration so that Spring Boot
+            // creates the DataSource/TransactionManager beans the BPM engine relies on.
+            properties.put(EXCLUDE_PROPERTY, datasourceConfigured ? JPA_FLYWAY_EXCLUSIONS : ALL_EXCLUSIONS);
             environment.getPropertySources().addLast(
                 new MapPropertySource("modelerDisabledAutoConfigExclusions", properties)
             );
             return;
         }
 
-        String datasourceUrl = environment.getProperty(DATASOURCE_URL_PROPERTY);
-        if (datasourceUrl == null || datasourceUrl.isBlank()) {
+        if (!datasourceConfigured) {
             Map<String, Object> properties = new HashMap<>();
-            properties.put(EXCLUDE_PROPERTY, EXCLUSIONS);
+            properties.put(EXCLUDE_PROPERTY, ALL_EXCLUSIONS);
             properties.put(MODELER_DB_CONFIGURED_PROPERTY, false);
             environment.getPropertySources().addLast(
                 new MapPropertySource("modelerDbNotConfiguredExclusions", properties)
