@@ -29,7 +29,7 @@ import org.springframework.context.annotation.Import;
  *
  * <p>Activates all modeler components (JPA entities, repositories, REST controllers,
  * and service providers) when {@code cibseven.webclient.modeler.enabled} is
- * {@code true} (the default).</p>
+ * {@code true} (the default is false).</p>
  *
  * <p>Set {@code cibseven.webclient.modeler.enabled=false} to fully disable the
  * modeler. When disabled, {@link ModelerEnvironmentPostProcessor} additionally
