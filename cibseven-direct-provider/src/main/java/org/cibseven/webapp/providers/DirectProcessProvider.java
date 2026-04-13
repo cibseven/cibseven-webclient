@@ -307,16 +307,12 @@ public class DirectProcessProvider implements IProcessProvider {
 						.toQuery(directProviderUtil.getProcessEngine(user));
 				List<HistoricProcessInstance> matchingHistoricProcessInstances = historicProcessInstanceQuery.unlimitedList();
 
-				if (matchingHistoricProcessInstances.isEmpty())
-					throw new NullPointerException();
 				process.setAllInstances(matchingHistoricProcessInstances.size());
 
 				historicProcessInstanceQueryDto.setUnfinished(true);
 				historicProcessInstanceQuery = historicProcessInstanceQueryDto.toQuery(directProviderUtil.getProcessEngine(user));
 				matchingHistoricProcessInstances = historicProcessInstanceQuery.unlimitedList();
 
-				if (matchingHistoricProcessInstances.isEmpty())
-					throw new NullPointerException();
 				process.setRunningInstances(matchingHistoricProcessInstances.size());
 
 				historicProcessInstanceQueryDto.setUnfinished(false);
@@ -324,8 +320,6 @@ public class DirectProcessProvider implements IProcessProvider {
 				historicProcessInstanceQuery = historicProcessInstanceQueryDto.toQuery(directProviderUtil.getProcessEngine(user));
 				matchingHistoricProcessInstances = historicProcessInstanceQuery.unlimitedList();
 
-				if (matchingHistoricProcessInstances.isEmpty())
-					throw new NullPointerException();
 				process.setCompletedInstances(matchingHistoricProcessInstances.size());
 			}
 		}
