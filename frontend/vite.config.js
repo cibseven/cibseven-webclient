@@ -104,7 +104,7 @@ export default defineConfig({
           fileName: (format) => `cibseven-components.${format}.js`,
         },
         rollupOptions: {
-          external: ['vue', /^\/assets\/images\//, 'bootstrap', 'vue-i18n', 'vue-router', 'axios'],
+          external: ['vue', /^\/assets\/images\//, 'bootstrap', 'vue-i18n', 'vue-router', 'axios', /^cibseven-modeler/],
           output: {
             globals: {
               vue: 'Vue',
@@ -112,6 +112,7 @@ export default defineConfig({
               'vue-i18n': 'VueI18n',
               'vue-router': 'VueRouter',
               axios: 'axios',
+              'cibseven-modeler': 'CibsevenModeler',
             },
             // Ensure CSS is extracted and placed in the dist folder
             assetFileNames: 'cibseven-components.[ext]',

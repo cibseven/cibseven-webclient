@@ -85,6 +85,7 @@ function skipValue(value, lang) {
       'tasklist',
       'cockpit',
       'admin',
+      'modeler',
 
       // authorizations.types:
       'allow',

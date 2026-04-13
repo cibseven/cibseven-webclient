@@ -27,6 +27,9 @@ export default {
     permissionsCockpit() {
       return this.$root.user && this.applicationPermissions(this.$root.config.permissions.cockpit, 'cockpit')
     },
+    permissionsModeler() {
+      return this.$root.user && this.$root.config.modelerEnabled !== false && this.applicationPermissions(this.$root.config.permissions.modeler, 'modeler')
+    },
     permissionsUsers() {
       return this.$root.user && this.hasAdminManagementPermissions(this.$root.config.permissions)
     },
