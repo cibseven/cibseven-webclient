@@ -14,5 +14,10 @@
 # MacOS
 .DS_Store
 
+# Local configuration
+cibseven-webclient-local.yaml
+*.properties.local
+data/
+
 # Environment variables
 .env
