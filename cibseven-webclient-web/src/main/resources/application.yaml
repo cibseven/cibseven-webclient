@@ -47,7 +47,7 @@ cibseven:
       # Set to false for production deployments where the modeler is not needed.
       # When disabled, DataSource, JPA, and Flyway auto-configurations are excluded
       # automatically - no datasource or schema migrations are required.
-      enabled: true
+      enabled: false
     # Engine rest
     engineRest:
       url: http://localhost:8080
