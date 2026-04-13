@@ -130,8 +130,8 @@ class ModelerEnvironmentPostProcessorTest {
         processor.postProcessEnvironment(environment, application);
 
         String exclude = environment.getProperty("spring.autoconfigure.exclude");
-        assertTrue(exclude.contains("JpaRepositoriesAutoConfiguration"),
-            "Expected JpaRepositoriesAutoConfiguration to be excluded");
+        assertTrue(exclude.contains("DataJpaRepositoriesAutoConfiguration"),
+            "Expected DataJpaRepositoriesAutoConfiguration to be excluded");
     }
 
     @Test

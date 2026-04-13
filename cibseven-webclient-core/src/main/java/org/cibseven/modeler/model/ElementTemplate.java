@@ -20,8 +20,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.UuidGenerator;
 import org.hibernate.type.SqlTypes;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
@@ -38,7 +38,6 @@ import java.time.LocalDateTime;
  * users can easily add to their process diagrams.
  * </p>
  */
-@SuppressWarnings("deprecation")
 @Entity
 @Table(name = "element_templates")
 @Data
@@ -46,8 +45,8 @@ import java.time.LocalDateTime;
 public class ElementTemplate {
 
 	@Id
-	@GeneratedValue(generator = "uuid")
-	@GenericGenerator(name = "uuid", strategy = "uuid2")
+	@GeneratedValue
+	@UuidGenerator
 	@Column(name = "id", updatable = false, nullable = false)
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	private String id;

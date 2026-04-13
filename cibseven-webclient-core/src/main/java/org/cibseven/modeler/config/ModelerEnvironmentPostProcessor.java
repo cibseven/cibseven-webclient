@@ -19,8 +19,8 @@ package org.cibseven.modeler.config;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.boot.EnvironmentPostProcessor;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.env.EnvironmentPostProcessor;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
@@ -48,10 +48,10 @@ public class ModelerEnvironmentPostProcessor implements EnvironmentPostProcessor
     private static final String EXCLUDE_PROPERTY = "spring.autoconfigure.exclude";
 
     private static final String EXCLUSIONS = String.join(",",
-        "org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration",
-        "org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration",
-        "org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration",
-        "org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration"
+        "org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration",
+        "org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration",
+        "org.springframework.boot.data.jpa.autoconfigure.DataJpaRepositoriesAutoConfiguration",
+        "org.springframework.boot.flyway.autoconfigure.FlywayAutoConfiguration"
     );
 
     @Override
