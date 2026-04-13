@@ -96,7 +96,7 @@ class ModelerEnvironmentPostProcessorTest {
     }
 
     @Test
-    void addsDataSourceExclusion_whenModelerDisabled() {
+    void addsDataSourceExclusion_whenModelerDisabledAndNoDatasourceUrl() {
         environment.getPropertySources().addFirst(
             new MapPropertySource("test", Map.of("cibseven.webclient.modeler.enabled", "false"))
         );
@@ -105,11 +105,33 @@ class ModelerEnvironmentPostProcessorTest {
 
         String exclude = environment.getProperty("spring.autoconfigure.exclude");
         assertTrue(exclude.contains("DataSourceAutoConfiguration"),
-            "Expected DataSourceAutoConfiguration to be excluded");
+            "Expected DataSourceAutoConfiguration to be excluded when no datasource URL is set");
     }
 
     @Test
-    void addsHibernateJpaExclusion_whenModelerDisabled() {
+    void doesNotExcludeDataSource_whenModelerDisabledButDatasourceUrlConfigured() {
+        // BPM engine uses spring.datasource.url — DataSourceAutoConfiguration must stay active
+        // so that DataSourceTransactionManagerAutoConfiguration can create PlatformTransactionManager
+        environment.getPropertySources().addFirst(
+            new MapPropertySource("test", Map.of(
+                "cibseven.webclient.modeler.enabled", "false",
+                "spring.datasource.url", "jdbc:h2:./process-engine"
+            ))
+        );
+
+        processor.postProcessEnvironment(environment, application);
+
+        String exclude = environment.getProperty("spring.autoconfigure.exclude");
+        assertTrue(exclude == null || !exclude.contains("DataSourceAutoConfiguration"),
+            "DataSourceAutoConfiguration must not be excluded when spring.datasource.url is configured");
+        assertTrue(exclude.contains("HibernateJpaAutoConfiguration"),
+            "Expected HibernateJpaAutoConfiguration to still be excluded");
+        assertTrue(exclude.contains("FlywayAutoConfiguration"),
+            "Expected FlywayAutoConfiguration to still be excluded");
+    }
+
+    @Test
+    void addsHibernateJpaExclusion_whenModelerDisabledAndNoDatasourceUrl() {
         environment.getPropertySources().addFirst(
             new MapPropertySource("test", Map.of("cibseven.webclient.modeler.enabled", "false"))
         );
@@ -122,7 +144,7 @@ class ModelerEnvironmentPostProcessorTest {
     }
 
     @Test
-    void addsJpaRepositoriesExclusion_whenModelerDisabled() {
+    void addsJpaRepositoriesExclusion_whenModelerDisabledAndNoDatasourceUrl() {
         environment.getPropertySources().addFirst(
             new MapPropertySource("test", Map.of("cibseven.webclient.modeler.enabled", "false"))
         );
@@ -135,7 +157,7 @@ class ModelerEnvironmentPostProcessorTest {
     }
 
     @Test
-    void addsFlywayExclusion_whenModelerDisabled() {
+    void addsFlywayExclusion_whenModelerDisabledAndNoDatasourceUrl() {
         environment.getPropertySources().addFirst(
             new MapPropertySource("test", Map.of("cibseven.webclient.modeler.enabled", "false"))
         );
