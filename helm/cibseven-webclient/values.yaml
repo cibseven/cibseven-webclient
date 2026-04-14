@@ -49,10 +49,14 @@ application:
       hibernate:
         ddl-auto: validate
       properties:
-      hibernate:
-        integration:
-          envers:
-            enabled: false
+        hibernate:
+          integration:
+            envers:
+              enabled: false
+        org:
+          hibernate:
+            envers:
+              revision_table_name: mod_revinfo
   cibseven:
     webclient:
       modeler:
