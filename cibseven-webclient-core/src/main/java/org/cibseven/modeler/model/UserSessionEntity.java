@@ -37,7 +37,7 @@ import lombok.Setter;
 @Getter
 @RequiredArgsConstructor
 @Entity
-@Table(name = "user_sessions")
+@Table(name = "mod_user_sessions")
 public class UserSessionEntity {
 
 	@Id

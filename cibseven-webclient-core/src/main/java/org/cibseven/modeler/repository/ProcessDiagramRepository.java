@@ -73,14 +73,14 @@ public interface ProcessDiagramRepository extends JpaRepository<ProcessDiagramEn
 
 	@Transactional
 	@Modifying
-	@Query(value = "DELETE FROM processes_diagrams_aud pa "
+	@Query(value = "DELETE FROM mod_processes_diagrams_aud pa "
 			+ " WHERE diagram IS NOT NULL "
 			+ "AND NOT EXISTS ( "
 			+ "    SELECT 1 "
 			+ "    FROM ( "
 			+ "        SELECT id, version, "
 			+ "               ROW_NUMBER() OVER (PARTITION BY id ORDER BY version DESC) AS rn "
-			+ "        FROM processes_diagrams_aud "
+			+ "        FROM mod_processes_diagrams_aud "
 			+ "        WHERE version IS NOT NULL"
 			+ "    ) AS ranked "
 			+ "    WHERE ranked.id = pa.id "

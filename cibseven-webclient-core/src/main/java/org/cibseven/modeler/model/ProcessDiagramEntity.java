@@ -42,7 +42,7 @@ import lombok.Setter;
 
 @Setter @Getter @RequiredArgsConstructor
 @Entity
-@Table(name = "processes_diagrams")
+@Table(name = "mod_processes_diagrams")
 @Audited
 public class ProcessDiagramEntity {
 

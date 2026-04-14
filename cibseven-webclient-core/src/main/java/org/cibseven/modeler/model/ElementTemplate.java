@@ -40,7 +40,7 @@ import java.time.LocalDateTime;
  */
 @SuppressWarnings("deprecation")
 @Entity
-@Table(name = "element_templates")
+@Table(name = "mod_element_templates")
 @Data
 @NoArgsConstructor
 public class ElementTemplate {

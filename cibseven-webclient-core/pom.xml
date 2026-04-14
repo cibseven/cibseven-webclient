@@ -192,6 +192,20 @@
 			<scope>runtime</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>com.microsoft.sqlserver</groupId>
+			<artifactId>mssql-jdbc</artifactId>
+			<version>${version.mssql}</version>
+			<scope>runtime</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.ibm.db2</groupId>
+			<artifactId>jcc</artifactId>
+			<version>${version.db2}</version>
+			<scope>runtime</scope>
+		</dependency>
+
 		<!-- ==================== End Modeler dependencies ==================== -->
 
 		<dependency>
