@@ -26,11 +26,17 @@ import org.springframework.context.annotation.Import;
  * Spring Boot auto-configuration entry point for the CIB seven Modeler.
  *
  * <p>Activates all modeler components (JPA entities, repositories, REST controllers,
- * and service providers) when {@code cibseven.webclient.modeler.enabled=false}.
+ * and service providers) when {@code cibseven.webclient.modeler.enabled=true}.
  * Defaults to disabled ({@code matchIfMissing = false}).</p>
  *
  * <p>Schema creation is the responsibility of the parent project. This module
  * only wires the JPA entities and repositories against an already-existing schema.</p>
+ *
+ * <p>When the modeler is disabled and no {@code spring.datasource.url} is configured,
+ * {@link ModelerEnvironmentPostProcessor} excludes {@code DataSourceAutoConfiguration}
+ * to prevent Spring Boot from auto-creating an embedded H2 database. Hibernate and JPA
+ * repository auto-configurations are not excluded — Spring Boot's own conditionals
+ * suppress them naturally when no {@code DataSource} bean exists.</p>
  *
  * <p>Registered via
  * {@code META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports}.</p>
