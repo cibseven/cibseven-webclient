@@ -18,6 +18,10 @@ spring:
         integration:
           envers:
             enabled: false
+      org:
+        hibernate:
+          envers:
+            revision_table_name: mod_revinfo
   servlet:
     register-default-servlet: true
     multipart:
