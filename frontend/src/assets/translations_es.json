@@ -1001,11 +1001,7 @@
 		},
 		"modeler": {
 			"title": "Modeler",
-			"tooltip": "Abrir Modeler para diseñar y editar BPMN, DMN y formularios",
-			"dbNotConfigured": {
-				"title": "Base de datos del modelador no configurada",
-				"description": "El modelador está habilitado, pero no se ha configurado una conexión a la base de datos. Por favor, configure la propiedad 'spring.datasource.url' para activar el modelador."
-			}
+			"tooltip": "Abrir Modeler para diseñar y editar BPMN, DMN y formularios"
 		},
 		"oldCockpit": {
 			"title":"Cockpit antiguo",

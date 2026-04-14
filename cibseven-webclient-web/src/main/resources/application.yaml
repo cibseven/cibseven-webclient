@@ -12,23 +12,12 @@ spring:
   jpa:
     open-in-view: false
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none
     properties:
       hibernate:
         integration:
           envers:
             enabled: false
-  flyway:
-    # Flyway is the single source of truth for schema management and migrations
-    enabled: false
-    # Use vendor-specific migrations automatically. Flyway will resolve {vendor} to oracle, postgresql, mariadb, mysql, h2
-    locations: classpath:db/migration-{vendor},classpath:db/migration-common
-    # Allow adopting an existing empty schema
-    baseline-on-migrate: false
-    baseline-version: 0
-    # Allow adopting an existing none-empty schema
-    #baseline-on-migrate: true
-    #baseline-version: 1
   servlet:
     register-default-servlet: true
     multipart:
@@ -42,11 +31,9 @@ cibseven:
     # Global enable/disable flag for the entire CIB seven webclient
     enabled: true
     modeler:
-      # Enable or disable the modeler feature including its database components
-      # (JPA entities, repositories, REST endpoints, Flyway migrations).
-      # Set to false for production deployments where the modeler is not needed.
-      # When disabled, DataSource, JPA, and Flyway auto-configurations are excluded
-      # automatically - no datasource or schema migrations are required.
+      # Enable or disable the modeler (JPA entities, repositories, REST endpoints).
+      # Requires the parent project to provide a configured DataSource and pre-created schema.
+      # Set to false for deployments where the modeler is not needed.
       enabled: false
     # Engine rest
     engineRest:
