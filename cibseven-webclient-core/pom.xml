@@ -198,6 +198,12 @@
 			<groupId>org.cibseven.templates</groupId>
 			<artifactId>cibseven-ui-locator-core</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
+			<exclusions>
+				<exclusion>
+					<groupId>javax.xml.bind</groupId>
+					<artifactId>jaxb-api</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		
 		<dependency>

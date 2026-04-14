@@ -125,6 +125,8 @@ export { default as IncidentsTable } from '@/components/process/tables/Incidents
 export { default as UserTasksTable } from '@/components/process/tables/UserTasksTable.vue'
 export { default as ExternalTasksTable } from '@/components/process/tables/ExternalTasksTable.vue'
 export { default as RenderTemplate } from '@/components/render-template/RenderTemplate.vue'
+export { default as RenderIframe } from '@/components/render-template/RenderIframe.vue'
+export { default as RenderEuit } from '@/components/render-template/RenderEuit.vue'
 export { default as AdvancedSearchModal } from '@/components/task/AdvancedSearchModal.vue'
 export { default as TaskContent } from '@/components/task/TaskContent.vue'
 export { default as TaskView } from '@/components/task/TaskView.vue'

@@ -56,8 +56,8 @@
 <script>
 import { permissionsMixin } from '@/permissions.js'
 import { TaskService } from '@/services.js'
-import IconButton from '@/components/render-template/IconButton.vue'
-import SuccessAlert from '@/components/common-components/SuccessAlert.vue'
+import IconButton from '@/components/forms/IconButton.vue'
+import { SuccessAlert } from '@cib/common-frontend'
 import RenderIframe from '@/components/render-template/RenderIframe.vue'
 import RenderEuit from '@/components/render-template/RenderEuit.vue'
 
@@ -65,6 +65,7 @@ export default {
   name: 'RenderTemplate',
   components: { IconButton, SuccessAlert, RenderIframe, RenderEuit },
   props: ['task'],
+  emits: ['complete-task'],
   mixins: [permissionsMixin],
   inject: ['currentLanguage', 'AuthService'],
   computed: {
@@ -96,11 +97,11 @@ export default {
       }
     },
     displayErrorMessage: function(params) {
-      var type = ''
-      var errorParams = []
+      let type = ''
+      const errorParams = []
       switch (params && params.status) {
         case 404:
-          if (data.type !== 'generic') {
+          if (params.type !== 'generic') {
             type = 'taskSelectedNotExist'
           } else type = 'NoObjectFoundException'
           break
@@ -115,7 +116,7 @@ export default {
           type = 'errorSaveTask'
       }
       this.$root.$refs.error.show({ type: type, params: errorParams })
-      if (data.status === 404 && data.type !== 'generic')
+      if (params.status === 404 && params.type !== 'generic')
         this.$router.push('/seven/auth/tasks/' + this.$route.params.filterId)
     },
     cancelTask: function() {

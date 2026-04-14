@@ -128,7 +128,7 @@ export default {
             this.startParams.processDefinitionId = processLatest.id
             this.startParams.formKey = url.key
 
-            var templateType
+            let templateType
             //Camunda form
             if (url.camundaFormRef) {
               templateType = 'start-deployed-form'

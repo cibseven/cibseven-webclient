@@ -1,17 +1,35 @@
+<!--
+
+    Copyright CIB software GmbH and/or licensed to CIB software GmbH
+    under one or more contributor license agreements. See the NOTICE file
+    distributed with this work for additional information regarding copyright
+    ownership. CIB software licenses this file to you under the Apache License,
+    Version 2.0; you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+
+-->
 <template>
     <BWaitingBox v-if="loader" class="h-100 d-flex justify-content-center" ref="loader" styling="width:20%"></BWaitingBox>
     <iframe v-show="!submitForm && formFrame" class="h-100 w-100" ref="template-frame" frameBorder="0"
-            src="" :style="fullModeStyles" allow="fullscreen"
+            src="" :style="fullModeStyles" :title="task?.name" allow="fullscreen"
             allowfullscreen webkitallowfullscreen mozallowfullscreen oallowfullscreen msallowfullscreen></iframe>
 </template>
 
 <script>
-import { BWaitingBox } from 'cib-common-components'
+import { BWaitingBox } from '@cib/common-frontend'
 
 export default {
     name: 'RenderIframe',
     props: ['task'],
-    emits: ['complete-task', 'error', 'cancel'],
+    emits: ['complete-task', 'error', 'cancel', 'saved', 'generic-success', 'filter-update'],
     components: { BWaitingBox },
     inject: ['currentLanguage', 'TaskService'],
     data: function() {
@@ -53,9 +71,9 @@ export default {
             this.loader = true
             this.submitForm = false
             this.formFrame = true
-            var theme = localStorage.getItem('theme') || this.$root.theme
-            var themeContext = ''
-            var translationContext = ''
+            const theme = localStorage.getItem('theme') || this.$root.theme
+            let themeContext = ''
+            let translationContext = ''
             if (['cib', 'generic'].includes(theme) || !theme) {
                 themeContext = encodeURIComponent('bootstrap/bootstrap_4.5.0.min.css?v=1.14.0')
             }
@@ -64,7 +82,7 @@ export default {
                 themeContext = 'themes/' + theme + '/bootstrap_4.5.0.min.css'
             }
 
-            let formFrame = this.$refs['template-frame']
+            const formFrame = this.$refs['template-frame']
             //Startforms
             if (this.task.url) {
                 formFrame.src = this.task.url + '/' + themeContext + '/' + translationContext
@@ -110,7 +128,7 @@ export default {
             }
         },
         processMessage: function(e) {
-            var formFrame = this.$refs['template-frame']
+            const formFrame = this.$refs['template-frame']
             if (e.source === formFrame.contentWindow && e.data.method) {
                 if (e.data.method === 'completeTask') this.$emit('complete-task', e.data.task)
                 else if (e.data.method === 'displaySuccessMessage') this.$emit('saved')
@@ -118,7 +136,7 @@ export default {
                 else if (e.data.method === 'displayErrorMessage') this.$emit('error')
                 else if (e.data.method === 'cancelTask') this.$emit('cancel')
                 else if (e.data.method === 'updateFilters') this.$emit('filter-update')
-        //					var res = this[e.data.method](e.data)
+        //					let res = this[e.data.method](e.data)
         //					if (e.data.callback) {
         //						formFrame.contentWindow.postMessage({
         //						    'callback': e.data.callback,
@@ -128,7 +146,7 @@ export default {
             }
         },
         onBeforeUnload: function() {
-            var formFrame = this.$refs['template-frame']
+            const formFrame = this.$refs['template-frame']
             if (formFrame) {
                 formFrame.contentWindow.postMessage({ type: 'contextChanged' }, '*');
                 this.loadIframe()
