@@ -83,7 +83,7 @@ public class ProcessDiagramEntity {
 	@Column(name = "version", columnDefinition = "integer default 1")
 	private int version;
 
-	@JdbcTypeCode(SqlTypes.BLOB)
+	@JdbcTypeCode(SqlTypes.LONGVARBINARY)
 	@Column(name = "diagram")
 	@Audited(withModifiedFlag = true)
 	private byte[] diagram;

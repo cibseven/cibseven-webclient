@@ -67,7 +67,7 @@ public class ElementTemplate {
 	@Column(name = "name", nullable = false, length = 200)
 	private String name;
 
-	@Lob
+	@JdbcTypeCode(SqlTypes.LONGVARCHAR)
 	@Column(name = "description")
 	private String description;
 
@@ -76,7 +76,7 @@ public class ElementTemplate {
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	private ElementTemplateOrigin origin;
 
-	@Lob
+	@JdbcTypeCode(SqlTypes.LONGVARCHAR)
 	@Column(name = "content")
 	private String content;
 
