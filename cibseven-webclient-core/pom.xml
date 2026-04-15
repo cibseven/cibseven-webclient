@@ -135,13 +135,6 @@
 			<artifactId>spring-data-envers</artifactId>
 		</dependency>
 
-		<!-- Needed for the XML processing in ModelerService.java -->
-		<dependency>
-			<groupId>javax.xml.bind</groupId>
-			<artifactId>jaxb-api</artifactId>
-			<version>2.3.1</version>
-		</dependency>
-
 		<!-- Validation support for modeler REST controllers -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
