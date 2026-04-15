@@ -7,7 +7,7 @@
 	</parent>
 	<artifactId>cibseven-direct-provider</artifactId>
 	<name>CIB seven webclient direct provider</name>
-	<description>Services of the direct provider access to the cibseven backend</description>
+	<description>Services of the direct provider access to the cibseven engine</description>
 
 	<dependencies>
 		<dependency>
