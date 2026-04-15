@@ -53,14 +53,14 @@ public interface ProcessDiagramRepository extends JpaRepository<ProcessDiagramEn
 		"   SELECT p.id, p.name, p.type, p.processkey, " +
 		"          NULL AS formid, " +
 		"          p.description, p.created, p.updated, p.updated_by, p.version " +
-		"   FROM processes_diagrams p " +
+		"   FROM mod_processes_diagrams p " +
 		"   WHERE (:keyword IS NULL OR LOWER(p.name) LIKE LOWER(:keyword) " +
 		"          OR LOWER(p.processkey) LIKE LOWER(:keyword)) " +
 		"   AND (:type IS NULL OR p.type LIKE :type) " +
 		"   UNION ALL " +
 		"   SELECT f.id, f.formid, 'form', f.formid, f.formid, " +
 		"          f.description, f.created, f.updated, f.updated_by, f.version " +
-		"   FROM forms f " +
+		"   FROM mod_forms f " +
 		"   WHERE (:keyword IS NULL OR LOWER(f.formid) LIKE LOWER(:keyword)) " +
 		"   AND (:type IS NULL OR 'form' LIKE :type) " +
 		") t " +
