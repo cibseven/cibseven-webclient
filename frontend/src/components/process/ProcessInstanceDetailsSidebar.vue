@@ -145,9 +145,10 @@ export default {
           }
 
         groups.push([
-          { label: 'process.details.definitionName', value: this.processDefinition.name || this.processDefinition.id, link },
+          { label: 'process.details.versionTag', value: this.processDefinition.versionTag, link },
           { label: 'process.details.definitionId', value: this.processDefinition.id, link },
           { label: 'process.details.definitionKey', value: this.processDefinition.key, link },
+          { label: 'process.details.definitionName', value: this.processDefinition.name || this.processDefinition.id, link },
           { label: 'process.details.definitionVersion', value: this.processDefinition.version, suspended: this.processDefinition.suspended === 'true', link },
           { label: 'process.details.tenantId', value: this.processDefinition.tenantId, link },
         ])
@@ -166,6 +167,7 @@ export default {
       }
       return 'mdi-flag-triangle'
     },
+
     getIconTitle(state) {
       switch(state) {
         case 'ACTIVE':
