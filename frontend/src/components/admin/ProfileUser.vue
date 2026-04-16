@@ -83,18 +83,18 @@
           </div>
 
           <!-- Account Tab -->
-          <div v-else-if="selectedTab === 'account' && $root.config.userEditable" class="row pt-3 ps-4 pe-4">
+          <div v-else-if="selectedTab === 'account' && $root.config.userEditable && $root.config.userPasswordChangeEnabled" class="row pt-3 ps-4 pe-4">
             <ContentBlock :title="$t('password.recover.changePassword')" class="col-lg-6 col-md-8 col-sm-12">
               <b-form-group v-if="$root.config.userPasswordChangeEnabled" labels-cols-lg="4" label-size="lg"
                 label-class="fw-bold pt-0 pb-4" class="m-0">
                 <b-form-group :label="$t('password.recover.currentUserPassword') + '*'" label-cols-sm="4"
                   label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
-                  <b-form-input type="password" v-model="credentials.authenticatedUserPassword"></b-form-input>
+                  <SecureInput v-model="credentials.authenticatedUserPassword"></SecureInput>
                 </b-form-group>
                 <b-form-group :label="$t('password.recover.newPassword') + '*'" label-cols-sm="4" label-align-sm="left"
                   label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
-                  <b-form-input type="password" v-model="credentials.password" @blur="validatePassword" @input="resetPasswordValidation"
-                    ref="newPasswordInput" :state="passwordValid"></b-form-input>
+                  <SecureInput v-model="credentials.password" @blur="validatePassword" @input="resetPasswordValidation"
+                    ref="newPasswordInput" :state="passwordValid"></SecureInput>
                   <div v-if="passwordValid === false" class="invalid-feedback d-block">
                     <h6>{{ $t('password.policy.title') }}</h6>
                     <div>{{ $t('password.policy.header') }}</div>
@@ -109,10 +109,10 @@
                 </b-form-group>
                 <b-form-group :label="$t('password.recover.newPasswordRepeat') + '*'" label-cols-sm="4"
                   label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
-                  <b-form-input type="password" v-model="passwordRepeat" :class="{
+                  <SecureInput v-model="passwordRepeat" :class="{
                     'is-invalid': passwordRepeat && !same(credentials.password, passwordRepeat),
                     'is-valid': passwordValid && same(credentials.password, passwordRepeat),
-                  }"></b-form-input>
+                  }"></SecureInput>
                 </b-form-group>
                 <div class="float-end d-flex align-items-center">
                   <b-button type="submit" variant="secondary"
@@ -293,10 +293,11 @@ import { SidebarsFlow, FlowTable, SuccessAlert, CIBForm, ContentBlock } from '@c
 import ProfilePreferencesTab from '@/components/admin/ProfilePreferencesTab.vue'
 import CellActionButton from '@/components/common-components/CellActionButton.vue'
 import { mapActions, mapGetters } from 'vuex'
+import SecureInput from '@/components/login/SecureInput.vue'
 
 export default {
   name: 'ProfileUser',
-  components: { SidebarsFlow, FlowTable, SuccessAlert, CIBForm, ProfilePreferencesTab, ContentBlock, CellActionButton },
+  components: { SidebarsFlow, FlowTable, SuccessAlert, CIBForm, ProfilePreferencesTab, ContentBlock, CellActionButton, SecureInput },
   inject: ['AuthService'],
   props: {
     editMode: {
@@ -423,7 +424,6 @@ export default {
       this.passwordValid = null
     },
     validatePassword: function () {
-      console.log('validate password')
       if (notEmpty(this.credentials.password)) {
         SetupService.validatePasswordPolicy(this.credentials.password, this.user).then((response) => {
           this.passwordValid = response.data.valid

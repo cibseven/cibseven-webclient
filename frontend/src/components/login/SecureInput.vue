@@ -18,7 +18,7 @@
 -->
 <template>
   <div class="position-relative">
-    <input id="password-input" ref="input" :value="modelValue" :placeholder="placeholder" :type="show ? 'text' : 'password'" class="form-control pe-5"
+    <input id="password-input" v-bind="$attrs" ref="input" :value="modelValue" :placeholder="placeholder" :type="show ? 'text' : 'password'" class="form-control pe-5"
       :class="{ 'is-invalid': hasError }"
       :disabled="disabled" :autocomplete="autocomplete" :aria-describedby="ariaDescribedby" :aria-invalid="hasError ? 'true' : 'false'" :aria-required="required" @input="handleInput">
     <b-button type="button" variant="link" size="sm" tabindex="0" @click="show = !show" @keydown.enter="show = !show" @keydown.space.prevent="show = !show" 
@@ -29,7 +29,12 @@
       style="cursor: pointer;"></b-button>
   </div>
 </template>
-
+<style scoped>
+.form-control.is-invalid,
+.form-control.is-valid {
+  background-image: none !important;
+}
+</style>
 <script>
 export default {
   name: 'SecureInput',
