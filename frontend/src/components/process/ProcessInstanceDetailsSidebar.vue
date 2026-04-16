@@ -160,6 +160,7 @@ export default {
           { label: 'process.details.definitionName', value: this.processDefinition.name || this.processDefinition.id, link },
           { label: 'process.details.versionTag', value: this.processDefinition.versionTag, link },
           { label: 'process.details.definitionVersion', value: this.processDefinition.version, suspended: this.processDefinition.suspended === 'true', link },
+          { label: 'process.details.deploymentId', value: this.processDefinition.deploymentId, link: { name: 'deployments', params: { deploymentId: this.processDefinition.deploymentId } } },
           { label: 'process.details.tenantId', value: this.processDefinition.tenantId, link },
         ])
       }
