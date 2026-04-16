@@ -63,13 +63,17 @@
               <template v-if="item.suspended">
                 <span class="mdi mdi-18px mdi-pause-circle-outline text-warning me-1" :title="$t('process-instance.jobDefinitions.suspended')"></span>
               </template>
-              <CopyableActionButton
+
+              <span v-if="item.date === true" :title="formatDateForTooltips(item.value)" class="text-truncate d-block">{{ formatDate(item.value) }}</span>
+              <span v-else-if="item.duration === true" :title="formatDuration(item.value)" class="text-truncate d-block">{{ formatDuration(item.value) }}</span>
+              <CopyableActionButton v-else
                 :displayValue="item.value"
                 :clickable="item.link !== undefined"
                 :to="item.link"
                 :title="$t(item.label) + ':\n' + item.value"
                 @copy="copyValueToClipboard"
               />
+
             </div>
           </div>
         </template>
@@ -85,6 +89,7 @@
 import { SuccessAlert, CopyableActionButton } from '@cib/common-frontend'
 import { permissionsMixin } from '@/permissions.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
+import { formatDate, formatDateForTooltips, formatDuration } from '@/utils/dates.js'
 
 export default {
   name: 'ProcessInstanceDetailsSidebar',
@@ -101,6 +106,12 @@ export default {
       if (this.instance) {
         groups.push([
           { label: 'process-instance.processInstanceId', value: this.instance.id, state: this.instance.state, incidents: this.instance.incidents?.length > 0 },
+          { label: 'process-instance.details.start', value: this.instance.startTime, date: true },
+          { label: 'process-instance.details.startUser', value: this.instance.startUserId },
+          ...(this.instance.endTime ? [
+            { label: 'process-instance.details.finish', value: this.instance.endTime, date: true },
+            { label: 'process-instance.details.duration', value: this.instance.durationInMillis, duration: true },
+          ] : []),
           { label: 'process.details.tenantId', value: this.instance.tenantId },
           { label: 'process-instance.businessKey', value: this.instance.businessKey },
         ])
@@ -132,7 +143,6 @@ export default {
       }
 
       if (this.processDefinition) {
-
         const link = {
             path: `/seven/auth/process/${this.processDefinition.key}/${this.processDefinition.version}`,
             query: {
@@ -158,6 +168,10 @@ export default {
     }
   },
   methods: {
+    formatDate,
+    formatDateForTooltips,
+    formatDuration,
+
     getIconState(state) {
       switch(state) {
         case 'ACTIVE':
