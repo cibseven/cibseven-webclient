@@ -127,7 +127,7 @@
 			"unfinishedInstances": "Запущенных экземпляров",
 			"finishedInstances": "Всего оконченных экземпляров без ошибок",
 			"definitionVersion": "Версия определения",
-			"versionTag": "День версии",
+			"versionTag": "Тэг версии",
 			"definitionId": "ID определения",
 			"definitionKey": "Ключ определения",
 			"definitionName": "Имя определения",
