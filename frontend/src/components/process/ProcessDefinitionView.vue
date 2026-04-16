@@ -153,6 +153,9 @@ export default {
   computed: {
     ...mapGetters('instances', ['instances']),
     shortendLeftCaption() {
+      if (this.selectedInstance || this.instanceId) {
+        return this.$t('process-instance.info')
+      }
       return this.$t('process.details.historyVersions')
     },
     processName() {
