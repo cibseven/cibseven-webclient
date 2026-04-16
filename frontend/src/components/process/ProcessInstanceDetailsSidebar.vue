@@ -19,7 +19,7 @@
 <template>
   <div class="h-100 d-flex flex-column bg-light" v-if="instance && processDefinition">
     <div class="overflow-auto h-100">
-      <div v-for="(group, groupIndex) in groups" :key="groupIndex" class="m-3 bg-white shadow">
+      <div v-for="(group, groupIndex) in groups" :key="groupIndex" class="m-3 bg-white shadow-sm rounded">
 
         <template v-if="group[0].chain !== undefined">
           <div class="p-2 ps-3 pb-0 fw-bold">
@@ -49,7 +49,7 @@
         </template>
 
         <template v-else>
-          <div v-for="item in group" :key="item.label" class="p-2 ps-3 border-bottom">
+          <div v-for="(item, itemIndex) in group" :key="item.label" :class="itemIndex === group.length - 1 ? 'p-2 ps-3' : 'p-2 ps-3 border-bottom'">
             <div :class="item.value ? 'fw-bold' : 'text-muted'">
               {{ $t(item.label) }}
             </div>
