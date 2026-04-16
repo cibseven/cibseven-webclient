@@ -106,8 +106,8 @@ export default {
       if (this.instance) {
         groups.push([
           { label: 'process-instance.processInstanceId', value: this.instance.id, state: this.instance.state, incidents: this.instance.incidents?.length > 0 },
-          { label: 'process-instance.details.start', value: this.instance.startTime, date: true },
           { label: 'process-instance.details.startUser', value: this.instance.startUserId },
+          { label: 'process-instance.details.start', value: this.instance.startTime, date: true },
           ...(this.instance.endTime ? [
             { label: 'process-instance.details.finish', value: this.instance.endTime, date: true },
             { label: 'process-instance.details.duration', value: this.instance.durationInMillis, duration: true },
