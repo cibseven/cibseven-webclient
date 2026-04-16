@@ -36,7 +36,8 @@
             </template>
             <CopyableActionButton
               :displayValue="item.value"
-              :clickable="false"
+              :clickable="item.link !== undefined"
+              :to="item.link"
               :title="$t(item.label) + ':\n' + item.value"
               @copy="copyValueToClipboard"
             />
@@ -75,12 +76,24 @@ export default {
       }
 
       if (this.processDefinition) {
+
+        const link = {
+            path: `/seven/auth/process/${this.processDefinition.key}/${this.processDefinition.version}`,
+            query: {
+              ...Object.fromEntries(
+                Object.entries(this.$route.query).filter(([key]) => !['tab', 'tenantId'].includes(key))
+              ),
+              ...(this.processDefinition.tenantId ? { tenantId: this.processDefinition.tenantId } : {}),
+              tab: 'instances',
+            }
+          }
+
         groups.push([
-          { label: 'process.details.definitionName', value: this.processDefinition.name },
-          { label: 'process.details.definitionId', value: this.processDefinition.id },
-          { label: 'process.details.definitionKey', value: this.processDefinition.key },
-          { label: 'process.details.definitionVersion', value: this.processDefinition.version, suspended: this.processDefinition.suspended === 'true' },
-          { label: 'process.details.tenantId', value: this.processDefinition.tenantId },
+          { label: 'process.details.definitionName', value: this.processDefinition.name, link },
+          { label: 'process.details.definitionId', value: this.processDefinition.id, link },
+          { label: 'process.details.definitionKey', value: this.processDefinition.key, link },
+          { label: 'process.details.definitionVersion', value: this.processDefinition.version, suspended: this.processDefinition.suspended === 'true', link },
+          { label: 'process.details.tenantId', value: this.processDefinition.tenantId, link },
         ])
       }
 
