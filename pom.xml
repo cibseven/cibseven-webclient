@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.cibseven</groupId>
 		<artifactId>release-parent</artifactId>
-		<version>1.3.0</version>
+		<version>1.4.0</version>
 	</parent>
 
 	<groupId>org.cibseven.webapp</groupId>
@@ -47,6 +47,15 @@
 		<version.npm>11.8.0</version.npm>
 
 		<version.log4j2>2.25.3</version.log4j2>
+
+		<!-- Database driver versions (used by modeler JPA integration) -->
+		<version.postgresql>42.7.9</version.postgresql>
+		<version.mariadb>3.5.7</version.mariadb>
+		<version.h2>2.4.240</version.h2>
+		<version.mysql>9.5.0</version.mysql>
+		<version.oracle>23.26.0.0.0</version.oracle>
+		<version.mssql>12.8.1.jre11</version.mssql>
+		<version.db2>11.5.9.0</version.db2>
 
 		<!-- NPM publish tag configuration - empty by default (uses 'latest'), can be overridden with tag dev -->
 		<npm.publish.tag.arg></npm.publish.tag.arg>

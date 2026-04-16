@@ -5,6 +5,23 @@ spring:
     import:
       - optional:classpath:cibseven-webclient.properties
       - optional:classpath:cibseven-webclient.yaml
+  datasource:
+    url:
+    username:
+    password:
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        integration:
+          envers:
+            enabled: false
+      org:
+        hibernate:
+          envers:
+            revision_table_name: mod_revinfo
   servlet:
     register-default-servlet: true
     multipart:
@@ -17,6 +34,11 @@ cibseven:
   webclient:
     # Global enable/disable flag for the entire CIB seven webclient
     enabled: true
+    modeler:
+      # Enable or disable the modeler (JPA entities, repositories, REST endpoints).
+      # Requires the parent project to provide a configured DataSource and pre-created schema.
+      # Set to false for deployments where the modeler is not needed.
+      enabled: false
     # Engine rest
     engineRest:
       url: http://localhost:8080
@@ -40,7 +62,7 @@ cibseven:
     historyLevel: full
     # Token generation
     authentication:
-      jwtSecret: 
+      jwtSecret:
       tokenValidMinutes: 60
       tokenProlongMinutes: 1440
     # LDAP
@@ -76,7 +98,7 @@ cibseven:
 
     # External token user creation
     token:
-      secret: 
+      secret:
       deny:
         external:
           ip: true
