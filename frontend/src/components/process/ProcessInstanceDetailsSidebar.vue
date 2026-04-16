@@ -50,7 +50,7 @@
 
         <template v-else>
           <div v-for="(item, itemIndex) in group" :key="item.label" :class="itemIndex === group.length - 1 ? 'p-2 ps-3' : 'p-2 ps-3 border-bottom'">
-            <div :class="item.value ? 'fw-bold' : 'text-muted'">
+            <div class="fw-bold">
               {{ $t(item.label) }}
             </div>
             <div class="d-flex align-items-center" v-if="item.value">
@@ -155,10 +155,10 @@ export default {
           }
 
         groups.push([
-          { label: 'process.details.versionTag', value: this.processDefinition.versionTag, link },
           { label: 'process.details.definitionId', value: this.processDefinition.id, link },
           { label: 'process.details.definitionKey', value: this.processDefinition.key, link },
           { label: 'process.details.definitionName', value: this.processDefinition.name || this.processDefinition.id, link },
+          { label: 'process.details.versionTag', value: this.processDefinition.versionTag, link },
           { label: 'process.details.definitionVersion', value: this.processDefinition.version, suspended: this.processDefinition.suspended === 'true', link },
           { label: 'process.details.tenantId', value: this.processDefinition.tenantId, link },
         ])
