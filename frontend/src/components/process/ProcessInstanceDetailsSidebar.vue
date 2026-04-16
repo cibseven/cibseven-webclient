@@ -57,8 +57,8 @@
               <template v-if="item.state">
                 <span :title="getIconTitle(item.state)" class="mdi mdi-18px me-1" :class="getIconState(item.state)"></span>
               </template>
-              <template v-if="item.incidents">
-                <span :title="$t('process.instanceIncidents')" class="mdi mdi-18px mdi-alert-outline text-warning me-1"></span>
+              <template v-if="item.incidents === true && incidentsCount > 0">
+                <span :title="$t('process.instanceIncidents') + ' (' + (this.incidentsCount) + ')'" class="mdi mdi-18px mdi-alert-outline text-warning me-1"></span>
               </template>
               <template v-if="item.suspended">
                 <span class="mdi mdi-18px mdi-pause-circle-outline text-warning me-1" :title="$t('process-instance.jobDefinitions.suspended')"></span>
@@ -90,6 +90,7 @@ import { SuccessAlert, CopyableActionButton } from '@cib/common-frontend'
 import { permissionsMixin } from '@/permissions.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { formatDate, formatDateForTooltips, formatDuration } from '@/utils/dates.js'
+import { IncidentService } from '@/services.js'
 
 export default {
   name: 'ProcessInstanceDetailsSidebar',
@@ -99,13 +100,31 @@ export default {
     instance: { type: Object, default: null },
     processDefinition: { type: Object, default: null },
   },
+
+  data() {
+    return {
+      incidentsCount: null,
+    }
+  },
+
+  watch: {
+    'instance.id': {
+      handler() {
+        if (this.instance?.id) {
+          this.loadIncidentsCount()
+        }
+      },
+      immediate: true
+    },
+  },
+
   computed: {
     groups() {
       const groups = []
 
       if (this.instance) {
         groups.push([
-          { label: 'process-instance.processInstanceId', value: this.instance.id, state: this.instance.state, incidents: this.instance.incidents?.length > 0 },
+          { label: 'process-instance.processInstanceId', value: this.instance.id, state: this.instance.state, incidents: true },
           { label: 'process-instance.details.startUser', value: this.instance.startUserId },
           { label: 'process-instance.details.start', value: this.instance.startTime, date: true },
           ...(this.instance.endTime ? [
@@ -192,6 +211,43 @@ export default {
       }
       return this.$t('process.instanceFinished')
     },
+
+    isHistoricView() {
+      switch (this.$root.config.camundaHistoryLevel) {
+        case 'none':
+        case 'activity':
+        case 'audit':
+          return false // always runtime view
+        case 'full':
+        default:
+          return true // always history view
+      }
+    },
+
+    async loadIncidentsCount() {
+      if (this.instance?.id) {
+
+        const params = {
+          sortBy: 'incidentType',
+          sortOrder: 'desc',
+          processInstanceId: this.instance.id,
+        }
+
+        const method = this.isHistoricView ?
+          IncidentService.fetchHistoricIncidentsCount :
+          IncidentService.findIncidentsCount
+
+        method(params).then(count => {
+          this.incidentsCount = count
+        }).catch(() => {
+          this.incidentsCount = null
+        })
+      }
+      else {
+        this.incidentsCount = null
+      }
+    },
+
   }
 }
 </script>
