@@ -249,6 +249,7 @@
 			"unknown": "Unbekannt"
 		},
 		"details": {
+			"instancesChain": "Hauptprozess",
 			"startUser": "Startnutzer",
 			"start": "Gestartet am",
 			"finish": "Abgeschlossen am",

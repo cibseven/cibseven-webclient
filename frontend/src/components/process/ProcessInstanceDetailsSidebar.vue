@@ -17,32 +17,63 @@
 
 -->
 <template>
-  <div class="h-100 d-flex flex-column bg-light">
+  <div class="h-100 d-flex flex-column bg-light" v-if="instance && processDefinition">
     <div class="overflow-auto h-100">
       <div v-for="(group, groupIndex) in groups" :key="groupIndex" class="m-3 bg-white shadow">
-        <div v-for="item in group" :key="item.label" class="p-2 ps-3 border-bottom">
-          <div :class="item.value ? 'fw-bold' : 'text-muted'">
-            {{ $t(item.label) }}
+
+        <template v-if="group[0].chain !== undefined">
+          <div class="p-2 ps-3 pb-0 fw-bold">
+            {{ $t('process-instance.details.instancesChain') }}
           </div>
-          <div class="d-flex align-items-center" v-if="item.value">
-            <template v-if="item.state">
-              <span :title="getIconTitle(item.state)" class="mdi mdi-18px me-1" :class="getIconState(item.state)"></span>
-            </template>
-            <template v-if="item.incidents">
-              <span :title="$t('process.instanceIncidents')" class="mdi mdi-18px mdi-alert-outline text-warning me-1"></span>
-            </template>
-            <template v-if="item.suspended">
-              <span class="mdi mdi-18px mdi-pause-circle-outline text-warning me-1" :title="$t('process-instance.jobDefinitions.suspended')"></span>
-            </template>
-            <CopyableActionButton
-              :displayValue="item.value"
-              :clickable="item.link !== undefined"
-              :to="item.link"
-              :title="$t(item.label) + ':\n' + item.value"
-              @copy="copyValueToClipboard"
-            />
+
+          <div class="p-2 ps-2 pt-0">
+            <div v-for="(item, itemIndex) in group" :key="itemIndex" class="d-flex align-items-center">
+
+              <template v-if="itemIndex === 0">
+                <span class="mdi mdi-18px mdi-circle-small"></span>
+              </template>
+              <template v-if="itemIndex > 0">
+                <span :style="{ width: ((itemIndex) * 23) + 'px' }"></span>
+                <span class="mdi mdi-18px mdi-subdirectory-arrow-right"></span>
+              </template>
+
+              <CopyableActionButton
+                :displayValue="item.value"
+                :clickable="item.link !== undefined"
+                :to="item.link"
+                :title="$t(item.label) + ':\n' + item.value"
+                @copy="copyValueToClipboard"
+              />
+            </div>
           </div>
-        </div>
+        </template>
+
+        <template v-else>
+          <div v-for="item in group" :key="item.label" class="p-2 ps-3 border-bottom">
+            <div :class="item.value ? 'fw-bold' : 'text-muted'">
+              {{ $t(item.label) }}
+            </div>
+            <div class="d-flex align-items-center" v-if="item.value">
+              <template v-if="item.state">
+                <span :title="getIconTitle(item.state)" class="mdi mdi-18px me-1" :class="getIconState(item.state)"></span>
+              </template>
+              <template v-if="item.incidents">
+                <span :title="$t('process.instanceIncidents')" class="mdi mdi-18px mdi-alert-outline text-warning me-1"></span>
+              </template>
+              <template v-if="item.suspended">
+                <span class="mdi mdi-18px mdi-pause-circle-outline text-warning me-1" :title="$t('process-instance.jobDefinitions.suspended')"></span>
+              </template>
+              <CopyableActionButton
+                :displayValue="item.value"
+                :clickable="item.link !== undefined"
+                :to="item.link"
+                :title="$t(item.label) + ':\n' + item.value"
+                @copy="copyValueToClipboard"
+              />
+            </div>
+          </div>
+        </template>
+
       </div>
     </div>
   </div>
@@ -75,6 +106,31 @@ export default {
         ])
       }
 
+      // instances chain
+      if (this.instance) {
+        let chain = [
+          this.instance.rootProcessInstanceId,
+          this.instance.superProcessInstanceId,
+          this.instance.id,
+        ].filter(Boolean)
+
+        // remove consecutive duplicates (not all duplicates globally)
+        chain = chain.filter((item, index) => {
+          // Always keep the first element (index === 0)
+          // For every next element, keep it only if it's different from the previous one
+          return index === 0 || item !== chain[index - 1];
+        })
+
+        if (chain.length > 1) {
+          groups.push(chain.map(id => ({
+            chain: true,
+            label: id === this.instance.id ? 'process-instance.processInstanceId' : 'process-instance.details.superProcessInstanceId',
+            value: id,
+            link: id === this.instance.id ? undefined : { name: 'process-instance-id', params: { instanceId: id } }
+          })))
+        }
+      }
+
       if (this.processDefinition) {
 
         const link = {
@@ -89,7 +145,7 @@ export default {
           }
 
         groups.push([
-          { label: 'process.details.definitionName', value: this.processDefinition.name, link },
+          { label: 'process.details.definitionName', value: this.processDefinition.name || this.processDefinition.id, link },
           { label: 'process.details.definitionId', value: this.processDefinition.id, link },
           { label: 'process.details.definitionKey', value: this.processDefinition.key, link },
           { label: 'process.details.definitionVersion', value: this.processDefinition.version, suspended: this.processDefinition.suspended === 'true', link },
@@ -101,7 +157,7 @@ export default {
     }
   },
   methods: {
-    getIconState: function(state) {
+    getIconState(state) {
       switch(state) {
         case 'ACTIVE':
           return 'mdi-chevron-triple-right text-success'
@@ -110,7 +166,7 @@ export default {
       }
       return 'mdi-flag-triangle'
     },
-    getIconTitle: function(state) {
+    getIconTitle(state) {
       switch(state) {
         case 'ACTIVE':
           return this.$t('process.instanceRunning')
