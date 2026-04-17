@@ -49,7 +49,7 @@ public class BatchService extends BaseService implements InitializingBean {
 	public Collection<Batch> getBatches(
 			@RequestParam Map<String, Object> params,
 			HttpServletRequest rq) {
-		CIBUser user = checkAuthorization(rq, true);
+		CIBUser user = checkAuthentication(rq, true);
 		checkPermission(user, SevenResourceType.BATCH, PermissionConstants.READ_ALL);
 		return bpmProvider.getBatches(params, user);
 	}
@@ -58,7 +58,7 @@ public class BatchService extends BaseService implements InitializingBean {
 	public Collection<Batch> getBatchStatistics(
 			@RequestParam Map<String, Object> params,
 			Locale loc, HttpServletRequest rq) {
-		CIBUser user = checkAuthorization(rq, true);
+		CIBUser user = checkAuthentication(rq, true);
 		checkPermission(user, SevenResourceType.BATCH, PermissionConstants.READ_ALL);
 		return bpmProvider.getBatchStatistics(params, user);
 	}
@@ -68,7 +68,7 @@ public class BatchService extends BaseService implements InitializingBean {
    			@PathVariable String id,
 			@RequestParam Map<String, Object> params,
 			HttpServletRequest rq) {
-		CIBUser user = checkAuthorization(rq, true);
+		CIBUser user = checkAuthentication(rq, true);
 		checkPermission(user, SevenResourceType.BATCH, PermissionConstants.DELETE_ALL);
 		bpmProvider.deleteBatch(id, params, user);
     // return 204 No Content, no body
@@ -80,7 +80,7 @@ public class BatchService extends BaseService implements InitializingBean {
    			@PathVariable String id,
    			@RequestBody Map<String, Object> params,
 			HttpServletRequest rq) {
-		CIBUser user = checkAuthorization(rq, true);
+		CIBUser user = checkAuthentication(rq, true);
 		checkPermission(user, SevenResourceType.BATCH, PermissionConstants.UPDATE_ALL);
 		bpmProvider.setBatchSuspensionState(id, params, user);
     // return 204 No Content, no body

@@ -27,6 +27,10 @@ import org.cibseven.webapp.rest.model.Authorizations;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+/**
+ * @deprecated since 2.2.0, permission checks in webclient backend will be completely removed
+ */
+@Deprecated(since = "2.2.0", forRemoval = true)
 public class SevenAuthorizationUtils{ 
 
 	@Getter @AllArgsConstructor

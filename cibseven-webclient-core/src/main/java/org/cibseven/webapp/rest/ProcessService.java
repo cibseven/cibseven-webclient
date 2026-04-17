@@ -133,7 +133,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			@Parameter(description = "Process definition key") @PathVariable String key,
 			@Parameter(description = "Tenant id") @RequestParam(required = false) String tenantId,
 			Locale loc, HttpServletRequest request) {
-		CIBUser user = checkAuthorization(request, false);
+		CIBUser user = checkAuthentication(request, false);
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_ALL);
 		return bpmProvider.findProcessByDefinitionKey(key, tenantId, user);
 	}
@@ -175,7 +175,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 	public Collection<ProcessInstance> findCurrentProcessesInstances(
 			@RequestBody Map<String, Object> data,
 			Locale loc, HttpServletRequest rq) {
-		CIBUser user = checkAuthorization(rq, true);
+		CIBUser user = checkAuthentication(rq, true);
 		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.READ_ALL);
 		return bpmProvider.findCurrentProcessesInstances(data, user);
 	}
@@ -250,7 +250,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			@Parameter(description = "Tenant id") @RequestParam(required = false) String tenantId,
 			@RequestBody Map<String, Object> data,
 			Locale loc, HttpServletRequest rq) {
-		CIBUser user = checkAuthorization(rq, true);
+		CIBUser user = checkAuthentication(rq, true);
 		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.CREATE_ALL);
 		return bpmProvider.startProcess(key, tenantId, data, user);
 	}
@@ -294,7 +294,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			HttpServletRequest rq, HttpServletResponse res)	{		
 		try {
 			rq = new HeaderModifyingRequestWrapper(rq, token);
-			CIBUser user = checkAuthorization(rq, true);
+			CIBUser user = checkAuthentication(rq, true);
 			checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_ALL);
 			try {
 				return response(bpmProvider.downloadBpmn(processId, filename, user));
@@ -395,7 +395,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			@Parameter(description = "Metadata of the diagram to be deployed (deployment-name, deployment-source, deploy-changed-only)") @RequestParam MultiValueMap<String, Object> data,
 			@Parameter(description = "Diagram to be deployed") @RequestParam MultiValueMap<String, MultipartFile> file,
 			HttpServletRequest rq) {
-		CIBUser user = checkAuthorization(rq, true);
+		CIBUser user = checkAuthentication(rq, true);
 		checkPermission(user, SevenResourceType.DEPLOYMENT, PermissionConstants.CREATE_ALL);
 		return bpmProvider.deployBpmn(data, file, user);
 	}
@@ -405,7 +405,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			description = "<strong>Return: Boolean (always true)")
 	@RequestMapping(value = "/deployment", method = RequestMethod.GET)
 	public boolean checkDeployBpmn(HttpServletRequest rq) {
-		checkAuthorization(rq, true);
+		checkAuthentication(rq, true);
 		return true;
 	}
 
@@ -508,8 +508,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 	public Collection<Message> correlateMessage(
 			@Parameter(description = "Variables to start process") @RequestBody Map<String, Object> data,
 			Locale loc, HttpServletRequest rq) {
-		CIBUser user = checkAuthorization(rq, true);
-		//checkPermission(user, SevenResourceType.MESSAGE, PermissionConstants.CREATE_ALL);
+		CIBUser user = checkAuthentication(rq, true);
 		return bpmProvider.correlateMessage(data, user);
 	}
 	
@@ -525,7 +524,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			@RequestBody Map<String, Object> data,
 			Locale loc, HttpServletRequest rq) {
 		// Used by Webdesk
-		CIBUser user = checkAuthorization(rq, true);
+		CIBUser user = checkAuthentication(rq, true);
 		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.CREATE_ALL);
 		return bpmProvider.submitForm(key, tenantId, data, user);
 	}
@@ -647,7 +646,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 	public ProcessInstance findProcessInstance(
 			@Parameter(description = "Process instance Id") @PathVariable String processInstanceId,
 			Locale loc, HttpServletRequest rq) {
-		CIBUser user = checkAuthorization(rq, true);
+		CIBUser user = checkAuthentication(rq, true);
 		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.READ_ALL);
 		return sevenProvider.findProcessInstance(processInstanceId, user);
 	}
@@ -671,7 +670,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 		if (token.isPresent() && !token.get().isEmpty()) {
 			rq = new HeaderModifyingRequestWrapper(rq, token.get());
 		}
-		CIBUser user = checkAuthorization(rq, true);
+		CIBUser user = checkAuthentication(rq, true);
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_INSTANCE_VARIABLE_ALL);
 		
 		// Get the variable data from the provider
@@ -702,7 +701,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			@Parameter(description = "File data to be uploaded") @RequestParam(required = true) MultipartFile data,
 			@Parameter(description = "Value type") @RequestParam Optional<String> valueType,
 			Locale loc, HttpServletRequest rq) {
-		CIBUser user = checkAuthorization(rq, true);
+		CIBUser user = checkAuthentication(rq, true);
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.UPDATE_INSTANCE_VARIABLE_ALL);
 		final String valueTypeStr = valueType.orElse("File"); //  Enum: "Bytes" "File"
 		try {
@@ -726,7 +725,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			@Parameter(description = "Variable name") @PathVariable String variableName,
 			@Parameter(description = "Deserialize value") @RequestParam(required = false) Boolean deserializeValue,
 			Locale loc, HttpServletRequest rq) {
-		CIBUser user = checkAuthorization(rq, true);
+		CIBUser user = checkAuthentication(rq, true);
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_INSTANCE_VARIABLE_ALL);
 		boolean deserialize = (deserializeValue == null) || (deserializeValue != null && deserializeValue == true);
 		return sevenProvider.fetchProcessInstanceVariable(processInstanceId, variableName, deserialize, user);
@@ -742,11 +741,9 @@ public class ProcessService extends BaseService implements InitializingBean {
 			@Parameter(description = "Process definition Id") @RequestParam String processDefinitionKey,
 			@Parameter(description = "Deserialize value") @RequestParam(required = false) String deserialize,
 			Locale loc, HttpServletRequest rq) {
-		CIBUser user = checkAuthorization(rq, true);
+		CIBUser user = checkAuthentication(rq, true);
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_INSTANCE_VARIABLE_ALL);
 		
-		// TODO: Check the permission, but not considered the groups, needs to be checked.
-		// checkSpecificProcessRights(user, processDefinitionKey);
 		try {
 			boolean deserializeValue = (deserialize == null) || (deserialize != null && deserialize == "true");
 			return sevenProvider.fetchProcessInstanceVariable(processInstanceId, "chatComments", deserializeValue, user);	
@@ -766,10 +763,9 @@ public class ProcessService extends BaseService implements InitializingBean {
 			@Parameter(description = "Process definition Id") @RequestParam String processDefinitionKey,
 			@Parameter(description = "Deserialize value") @RequestParam(required = false) String deserialize,
 			Locale loc, HttpServletRequest rq) {
-		CIBUser user = checkAuthorization(rq, true);
+		CIBUser user = checkAuthentication(rq, true);
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_INSTANCE_VARIABLE_ALL);
-		// TODO: Check the permission, but not considered the groups, needs to be checked.
-		// checkSpecificProcessRights(user, processDefinitionKey);
+		
 		try {
 			boolean deserializeValue = (deserialize == null) || (deserialize != null && deserialize == "true");
 			return sevenProvider.fetchProcessInstanceVariable(processInstanceId, "_statusDataset", deserializeValue, user);	
@@ -783,7 +779,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 	public ResponseEntity<String> submitVariables(@RequestBody List<Variable> variables, 
 			@PathVariable String processInstanceId, @RequestParam Optional<String> processDefinitionKey, HttpServletRequest rq) {
 		
-		CIBUser userAuth = (CIBUser) checkAuthorization(rq, true);
+		CIBUser userAuth = (CIBUser) checkAuthentication(rq, true);
 		checkPermission(userAuth, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.UPDATE_INSTANCE_VARIABLE_ALL);
 		bpmProvider.submitVariables(processInstanceId, variables, userAuth, processDefinitionKey.orElse("cib flow"));
 		return new ResponseEntity<>("ok", new HttpHeaders(), HttpStatus.OK);
@@ -810,8 +806,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			@Parameter(description = "Event type") @RequestParam Optional<String> eventType,
 			@Parameter(description = "Event name") @RequestParam Optional<String> eventName,
 			Locale loc, HttpServletRequest rq) {
-		CIBUser user = checkAuthorization(rq, true);
-		//checkPermission(user, SevenResourceType.EVENT_SUBSCRIPTION, PermissionConstants.READ_ALL);
+		CIBUser user = checkAuthentication(rq, true);
 		return sevenProvider.getEventSubscriptions(processInstanceId, eventType, eventName, user);
 	}
 

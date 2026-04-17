@@ -102,7 +102,7 @@ public class ModelerService extends BaseService {
 		@RequestParam(required = false) String keyword
 	) {
 		if (authenticationEnabled) {
-			checkAuthorization(rq, true);
+			checkAuthentication(rq, true);
 		}
 		return dbProcessDiagramProvider.getDiagrams(keyword, diagramType, firstResult, maxResults);
 	}
@@ -115,7 +115,7 @@ public class ModelerService extends BaseService {
 		@RequestParam(required = false) String keyword,
 		@RequestParam(required = false) String type) {
 		if (authenticationEnabled) {
-			checkAuthorization(rq, true);
+			checkAuthentication(rq, true);
 		}
 		return unifiedDiagramProvider.getDiagrams(keyword, type, firstResult, maxResults);
 	}
@@ -127,7 +127,7 @@ public class ModelerService extends BaseService {
 			HttpServletRequest rq) {
 		CIBUser user = null;
 		if (authenticationEnabled) {
-			user = checkAuthorization(rq, true);
+			user = checkAuthentication(rq, true);
 		}
 		return bpmProvider.deployBpmn(data, file, user);
 	}
@@ -140,7 +140,7 @@ public class ModelerService extends BaseService {
 			HttpServletRequest rq) {
 		CIBUser user = null;
 		if (authenticationEnabled) {
-			user = checkAuthorization(rq, true);
+			user = checkAuthentication(rq, true);
 		}
 		return bpmProvider.startProcess(key, null, data, user);
 	}
@@ -152,7 +152,7 @@ public class ModelerService extends BaseService {
 			HttpServletRequest rq) {
 		CIBUser user = null;
 		if (authenticationEnabled) {
-			user = checkAuthorization(rq, true);
+			user = checkAuthentication(rq, true);
 		}
 		ProcessDiagramEntity diagramEntity = dbProcessDiagramProvider.findByProcessKey(deploymentName);
 		if (diagramEntity == null) throw new SystemException(new IllegalArgumentException("Diagram not found for key: " + deploymentName));
@@ -166,7 +166,7 @@ public class ModelerService extends BaseService {
 	public ProcessDiagramEntity createProcessFromFile(@Parameter(description = "Process diagram to be created") @RequestParam MultiValueMap<String, MultipartFile> file, @RequestParam boolean overwrite,HttpServletRequest rq) throws Exception {
 		CIBUser user = null;
 		if (authenticationEnabled) {
-			user = checkAuthorization(rq, true);
+			user = checkAuthentication(rq, true);
 		}
 		ProcessDiagramEntity entity = new ProcessDiagramEntity();
 		MultipartFile multipartFile = file.getFirst("file");
@@ -206,7 +206,7 @@ public class ModelerService extends BaseService {
 			HttpServletRequest rq) {
 		CIBUser user = null;
 		if (authenticationEnabled) {
-			user = checkAuthorization(rq, true);
+			user = checkAuthentication(rq, true);
 		}
 		ProcessDiagramEntity entity = dbProcessDiagramProvider.findById(id).get();
 		byte[] bytes = entity.getDiagram(); 
@@ -244,7 +244,7 @@ public class ModelerService extends BaseService {
 	@ResponseStatus(HttpStatus.OK)
 	public void checkDeployBpmn(HttpServletRequest rq) {
 		if (authenticationEnabled) {
-			checkAuthorization(rq, true);
+			checkAuthentication(rq, true);
 		}
 	}
 
@@ -252,7 +252,7 @@ public class ModelerService extends BaseService {
 	public ProcessDiagramEntity save(@RequestParam MultiValueMap<String, String> data, @RequestParam MultiValueMap<String, MultipartFile> diagram, HttpServletRequest rq) {
 		CIBUser user = null;
 		if (authenticationEnabled) {
-			user = checkAuthorization(rq, true);
+			user = checkAuthentication(rq, true);
 		}
 		ProcessDiagramEntity entity = new ProcessDiagramEntity();
 		if (data.containsKey("name")) entity.setName(data.get("name").get(0).toString());
@@ -276,7 +276,7 @@ public class ModelerService extends BaseService {
 			@RequestParam MultiValueMap<String, MultipartFile> diagram, HttpServletRequest rq) {
 		CIBUser user = null;
 		if (authenticationEnabled) {
-			user = checkAuthorization(rq, true);
+			user = checkAuthentication(rq, true);
 		}
 		
 		try {
@@ -321,7 +321,7 @@ public class ModelerService extends BaseService {
 		HttpServletRequest rq) {
 
 		if (authenticationEnabled) {
-			checkAuthorization(rq, true);
+			checkAuthentication(rq, true);
 		}
 
 		String sessionIdsString = data.getFirst("sessionId");
@@ -351,7 +351,7 @@ public class ModelerService extends BaseService {
 
 		CIBUser user = null;
 		if (authenticationEnabled) {
-			user = checkAuthorization(rq, true);
+			user = checkAuthentication(rq, true);
 		}
 		DiagramUsageEntity newDiagramUsageEntity = diagramUsageProvider.checkSessionUser(id);
 		Map<String, String> response = new HashMap<>();
@@ -381,7 +381,7 @@ public class ModelerService extends BaseService {
 		
 		CIBUser user = null;
 		if (authenticationEnabled) {
-			user = checkAuthorization(rq, true);
+			user = checkAuthentication(rq, true);
 		}
 		FormUsageEntity newFormUsageEntity = formUsageProvider.checkSessionUser(id);
 		Map<String, String> response = new HashMap<>();
@@ -411,7 +411,7 @@ public class ModelerService extends BaseService {
 	public ProcessDiagramEntity saveProject(@RequestBody ProcessDiagramEntity data, HttpServletRequest rq) {
 		CIBUser user = null;
 		if (authenticationEnabled) {
-			user = checkAuthorization(rq, true);
+			user = checkAuthentication(rq, true);
 		}
 		String updatedBy = userIdFrom(user);
 		Optional<ProcessDiagramEntity> entity = dbProcessDiagramProvider.findById(data.getId());
@@ -443,7 +443,7 @@ public class ModelerService extends BaseService {
 	public ProcessDiagramEntity update(@RequestParam MultiValueMap<String, String> data, @RequestParam MultiValueMap<String, MultipartFile> diagram, HttpServletRequest rq) {
 		CIBUser user = null;
 		if (authenticationEnabled) {
-			user = checkAuthorization(rq, true);
+			user = checkAuthentication(rq, true);
 		}
 		ProcessDiagramEntity entity = new ProcessDiagramEntity();
 		if (data.containsKey("id")) entity.setId(data.get("id").get(0).toString());
@@ -474,7 +474,7 @@ public class ModelerService extends BaseService {
 	@RequestMapping(value = "/process/find-by-name/data", method = RequestMethod.POST)
 	public ResponseEntity<byte[]> findByName(@RequestParam String name, HttpServletRequest rq) {
 		if (authenticationEnabled) {
-			checkAuthorization(rq, true);
+			checkAuthentication(rq, true);
 		}
 		ProcessDiagramEntity diagram = dbProcessDiagramProvider.findByName(name);
 		if (diagram == null) return ResponseEntity.notFound().build();
@@ -488,7 +488,7 @@ public class ModelerService extends BaseService {
 	@RequestMapping(value = "/process/find-by-key/data", method = RequestMethod.POST)
 	public ResponseEntity<byte[]> findByKey(@RequestParam String key, HttpServletRequest rq) {
 		if (authenticationEnabled) {
-			checkAuthorization(rq, true);
+			checkAuthentication(rq, true);
 		}
 		ProcessDiagramEntity diagram = dbProcessDiagramProvider.findByProcessKey(key);
 		if (diagram == null) return ResponseEntity.notFound().build();
@@ -502,7 +502,7 @@ public class ModelerService extends BaseService {
 	@RequestMapping(value = "/process/{id}/data", method = RequestMethod.GET)
 	public ResponseEntity<byte[]> findByIdData(@PathVariable String id,  HttpServletRequest rq) {
 		if (authenticationEnabled) {
-			checkAuthorization(rq, true);
+			checkAuthentication(rq, true);
 		}
 		ProcessDiagramEntity entity = dbProcessDiagramProvider.findById(id).orElse(null);
 		if (entity == null) {
@@ -519,7 +519,7 @@ public class ModelerService extends BaseService {
 	@RequestMapping(value = "/process/{id}", method = RequestMethod.GET)
 	public ResponseEntity<ProcessDiagramEntity> findById(@PathVariable String id, HttpServletRequest rq) {
 		if (authenticationEnabled) {
-			checkAuthorization(rq, true);
+			checkAuthentication(rq, true);
 		}
 		ProcessDiagramEntity entity = dbProcessDiagramProvider.findById(id).orElse(null);
 		if (entity == null) {
@@ -531,7 +531,7 @@ public class ModelerService extends BaseService {
 	@RequestMapping(value = "/process/delete/{id}", method = RequestMethod.DELETE)
 	public void delete(@PathVariable String id, HttpServletRequest rq) {
 		if (authenticationEnabled) {
-			checkAuthorization(rq, true);
+			checkAuthentication(rq, true);
 		}
 		dbProcessDiagramProvider.delete(id);
 	}
@@ -540,7 +540,7 @@ public class ModelerService extends BaseService {
 	public FormEntity saveForm(@RequestParam("formid") String formid, @RequestParam("form_schema") MultipartFile formSchema, HttpServletRequest rq) {
 		CIBUser user = null;
 	    if (authenticationEnabled) {
-			user = checkAuthorization(rq, true);
+			user = checkAuthentication(rq, true);
 		}
 	    FormEntity entity = new FormEntity();
 	    entity.setFormId(formid); 
@@ -558,7 +558,7 @@ public class ModelerService extends BaseService {
 	@RequestMapping(value = "/form/delete/{id}", method = RequestMethod.DELETE)
 	public void deleteForm(@PathVariable String id, HttpServletRequest rq) {
 		if (authenticationEnabled) {
-			checkAuthorization(rq, true);
+			checkAuthentication(rq, true);
 		}
 		formProvider.delete(id);
 	}
@@ -569,7 +569,7 @@ public class ModelerService extends BaseService {
 		@RequestParam("form_schema") MultipartFile formSchema, HttpServletRequest rq) {
 	    CIBUser user = null;
 		if (authenticationEnabled) {
-			user = checkAuthorization(rq, true);
+			user = checkAuthentication(rq, true);
 		}
 	    FormEntity entity = new FormEntity();
 	    entity.setFormId(formid); 
@@ -599,7 +599,7 @@ public class ModelerService extends BaseService {
 		@RequestParam int maxResults,
 		@RequestParam(required = false) String keyword) {
 		if (authenticationEnabled) {
-			checkAuthorization(rq, true);
+			checkAuthentication(rq, true);
 		}
 		return formProvider.getForms(keyword, firstResult, maxResults);
 	}
@@ -607,7 +607,7 @@ public class ModelerService extends BaseService {
 	@RequestMapping(value = "/form/{id}/data", method = RequestMethod.GET)
 	public ResponseEntity<byte[]> findFormById(@PathVariable String id,  HttpServletRequest rq) {
 		if (authenticationEnabled) {
-			checkAuthorization(rq, true);
+			checkAuthentication(rq, true);
 		}
 		FormEntity form = formProvider.findById(id).orElse(null);
 		if (form == null) return ResponseEntity.notFound().build();

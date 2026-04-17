@@ -45,7 +45,7 @@ public class ExternalTaskService extends BaseService implements InitializingBean
   public Collection<ExternalTask> getExternalTasks(
       @RequestParam Map<String, Object> params,
       Locale loc, HttpServletRequest rq) {
-    CIBUser user = checkAuthorization(rq, true);
+    CIBUser user = checkAuthentication(rq, true);
     return bpmProvider.getExternalTasks(params, user);
   }
 }

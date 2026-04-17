@@ -64,7 +64,7 @@ public class TemplateService extends BaseService implements InitializingBean {
 	
 	@RequestMapping(value = "/{element}/{taskId}", method = RequestMethod.GET)
 	public Template getTemplate(@PathVariable String element, @PathVariable String taskId, @RequestParam Optional<String> locale, HttpServletRequest request) throws Exception {
-	  CIBUser user = checkAuthorization(request, false);
+	  CIBUser user = checkAuthentication(request, false);
 		return name2element.get(element).getTemplate(taskId, locale, user);
 	}
 	

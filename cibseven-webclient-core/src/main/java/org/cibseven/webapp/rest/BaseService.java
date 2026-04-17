@@ -39,27 +39,31 @@ public class BaseService {
 	@Autowired
 	protected BaseUserProvider baseUserProvider;
 	
-	@Value("${camunda.bpm.authorization.enabled:true}")
+	@Value("${cibseven.webclient.legacy.authorization.enabled:false}")
 	private boolean authorizationEnabled;
 
+	/**
+	 * @deprecated since 2.2.0, use {@link #checkAuthentication(HttpServletRequest, boolean)} instead
+	 * @param rq
+	 * @param basicAuthAllowed
+	 * @return
+	 */
+	@Deprecated(since = "2.2.0")
 	protected CIBUser checkAuthorization(HttpServletRequest rq, boolean basicAuthAllowed) {
+		return checkAuthentication(rq, basicAuthAllowed);
+	}
+
+	protected CIBUser checkAuthentication(HttpServletRequest rq, boolean basicAuthAllowed) {
 		return baseUserProvider.checkAuthorization(rq, basicAuthAllowed);
 	}
 
-	public void checkSpecificProcessRights(CIBUser user, String processKey) {
-		if (!authorizationEnabled) return;	
-		Authorizations authorizations = bpmProvider.getUserAuthorization(user.getId(), user);
-		// hasSpecificProcessRights now throws detailed AccessDeniedException when permission check fails
-		SevenAuthorizationUtils.hasSpecificProcessRights(authorizations, processKey);
-	}
-
-	public void checkCockpitRights(CIBUser user) {
-		if (!authorizationEnabled) return;	
-		Authorizations authorizations = bpmProvider.getUserAuthorization(user.getId(), user);
-		// hasCockpitRights now throws detailed AccessDeniedException when permission check fails
-		SevenAuthorizationUtils.hasCockpitRights(authorizations);
-	}
-
+	/**
+	 * @deprecated Permission checks in webclient backend will be completely removed
+	 * @param user
+	 * @param type
+	 * @param permissions
+	 */
+	@Deprecated(since = "2.2.0")
 	public void checkPermission(CIBUser user, SevenResourceType type, List<String> permissions) {
 		if (!authorizationEnabled) return;	
 		Authorizations authorizations = bpmProvider.getUserAuthorization(user.getId(), user);
